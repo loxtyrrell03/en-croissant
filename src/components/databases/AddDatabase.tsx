@@ -5,10 +5,12 @@ import {
   Center,
   Divider,
   Group,
+  InputWrapper,
   Loader,
   Modal,
   Paper,
   ScrollArea,
+  SegmentedControl,
   SimpleGrid,
   Stack,
   Tabs,
@@ -19,17 +21,31 @@ import { useForm } from "@mantine/form";
 import { IconAlertCircle } from "@tabler/icons-react";
 import { basename, resolve } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-dialog";
-import { useAtom, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { KeyedMutator } from "swr";
 import { commands, type DatabaseInfo } from "@/bindings";
-import { databaseConversionStateAtom, storedDatabasesDirAtom } from "@/state/atoms";
+import { databaseConversionStateAtom, sessionsAtom, storedDatabasesDirAtom } from "@/state/atoms";
 import { getDatabases, type SuccessDatabaseInfo, useDefaultDatabases } from "@/utils/db";
 import { capitalize, formatBytes, formatNumber } from "@/utils/format";
+import {
+  getDefaultOnlineGameDatabaseTitle,
+  getOnlineGameSourceLabel,
+  importOnlineGamesToDatabase,
+  resetDatabaseConversionState,
+  type OnlineGameSource,
+} from "@/utils/onlineGameImport";
 import { unwrap } from "@/utils/unwrap";
 import FileInput from "../common/FileInput";
 import ProgressButton from "../common/ProgressButton";
+
+type OnlineDatabaseFormValues = {
+  source: OnlineGameSource;
+  username: string;
+  title: string;
+  description: string;
+};
 
 function AddDatabase({
   databases,
@@ -49,8 +65,26 @@ function AddDatabase({
   const { t } = useTranslation();
   const [databaseDir] = useAtom(storedDatabasesDirAtom);
   const setConversionState = useSetAtom(databaseConversionStateAtom);
+  const sessions = useAtomValue(sessionsAtom);
+  const [onlineImporting, setOnlineImporting] = useState(false);
 
   const { defaultDatabases, error, isLoading } = useDefaultDatabases(opened);
+
+  function getOnlineDatabaseTitle(values: OnlineDatabaseFormValues) {
+    const username = values.username.trim();
+    return (
+      values.title.trim() ||
+      (username ? getDefaultOnlineGameDatabaseTitle(values.source, username) : "")
+    );
+  }
+
+  function getLichessToken(username: string) {
+    return sessions.find(
+      (session) =>
+        session.lichess?.username.toLowerCase() === username.toLowerCase() &&
+        session.lichess.accessToken,
+    )?.lichess?.accessToken;
+  }
 
   async function convertDB(path: string, title: string, description?: string) {
     setLoading(true);
@@ -59,6 +93,12 @@ function AddDatabase({
     setConversionState((prev) => ({
       ...prev,
       inProgress: true,
+      phase: "converting",
+      progress: null,
+      progressId: null,
+      totalGames: 0,
+      totalGamesExpected: null,
+      elapsedSeconds: 0,
       targetDatabasePath: dbPath,
       targetDatabaseTitle: title,
       sourceFileName,
@@ -101,6 +141,40 @@ function AddDatabase({
     },
   });
 
+  const onlineForm = useForm<OnlineDatabaseFormValues>({
+    initialValues: {
+      source: "lichess",
+      username: "",
+      title: "",
+      description: "",
+    },
+
+    validate: {
+      username: (value) => {
+        if (!value.trim()) return t("Home.Accounts.EnterUsername");
+      },
+      title: (_value, values) => {
+        const title = getOnlineDatabaseTitle(values);
+        if (
+          title &&
+          databases.find(
+            (e) => e.type === "success" && e.title.toLowerCase() === title.toLowerCase(),
+          )
+        ) {
+          return t("Common.NameAlreadyUsed");
+        }
+      },
+    },
+  });
+
+  const onlineTitlePlaceholder =
+    onlineForm.values.username.trim() !== ""
+      ? getDefaultOnlineGameDatabaseTitle(
+          onlineForm.values.source,
+          onlineForm.values.username.trim(),
+        )
+      : getOnlineGameSourceLabel(onlineForm.values.source);
+
   return (
     <Modal
       opened={opened}
@@ -111,6 +185,7 @@ function AddDatabase({
       <Tabs defaultValue="web">
         <Tabs.List>
           <Tabs.Tab value="web">{t("Databases.Add.Web")}</Tabs.Tab>
+          <Tabs.Tab value="online">{t("Home.Accounts.DownloadGames")}</Tabs.Tab>
           <Tabs.Tab value="local">{t("Common.Local")}</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="web" pt="xs">
@@ -139,6 +214,85 @@ function AddDatabase({
               )}
             </SimpleGrid>
           </ScrollArea.Autosize>
+        </Tabs.Panel>
+        <Tabs.Panel value="online" pt="xs">
+          <form
+            onSubmit={onlineForm.onSubmit(async (values) => {
+              if (disableLocalConversion || onlineImporting) return;
+
+              const source = values.source;
+              const username = values.username.trim();
+              const title = getOnlineDatabaseTitle(values);
+              const dbPath = await resolve(databaseDir, `${title}.db3`);
+
+              setOnlineImporting(true);
+              setOpened(false);
+              try {
+                await importOnlineGamesToDatabase({
+                  source,
+                  username,
+                  databaseDir,
+                  dbPath,
+                  title,
+                  description: values.description.trim() || null,
+                  since: null,
+                  token: source === "lichess" ? getLichessToken(username) : undefined,
+                  setConversionState,
+                });
+                setDatabases(await getDatabases());
+                onlineForm.reset();
+              } catch (e) {
+                console.error(e);
+                onlineForm.setFieldError("username", e instanceof Error ? e.message : String(e));
+              } finally {
+                setOnlineImporting(false);
+                resetDatabaseConversionState(setConversionState);
+              }
+            })}
+          >
+            <Stack gap="sm">
+              <InputWrapper label={t("Home.Accounts.Website")} required>
+                <SegmentedControl
+                  fullWidth
+                  data={[
+                    { label: "Lichess", value: "lichess" },
+                    { label: "Chess.com", value: "chesscom" },
+                  ]}
+                  value={onlineForm.values.source}
+                  onChange={(value) =>
+                    onlineForm.setFieldValue("source", value as OnlineGameSource)
+                  }
+                />
+              </InputWrapper>
+
+              <TextInput
+                label={t("Home.Accounts.Username")}
+                withAsterisk
+                {...onlineForm.getInputProps("username")}
+              />
+
+              <TextInput
+                label={t("Common.Name")}
+                placeholder={onlineTitlePlaceholder}
+                {...onlineForm.getInputProps("title")}
+              />
+
+              <TextInput
+                label={t("Common.Description")}
+                {...onlineForm.getInputProps("description")}
+              />
+
+              <Button
+                fullWidth
+                mt="sm"
+                type="submit"
+                loading={onlineImporting}
+                disabled={disableLocalConversion || onlineImporting}
+              >
+                {onlineImporting ? t("Import.Importing") : t("Home.Card.ImportGame.Button")}
+              </Button>
+            </Stack>
+          </form>
         </Tabs.Panel>
         <Tabs.Panel value="local" pt="xs">
           <form

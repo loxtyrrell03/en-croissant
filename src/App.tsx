@@ -49,7 +49,7 @@ import "mantine-datatable/styles.css";
 
 import "@/styles/global.css";
 
-import { commands } from "./bindings";
+import { commands, events } from "./bindings";
 import { openFile } from "./utils/files";
 
 const colorSchemeManager = localStorageColorSchemeManager({
@@ -227,6 +227,11 @@ export default function App() {
         inProgress: true,
         totalGames,
         elapsedSeconds: elapsedMs / 1000,
+        phase: prev.phase ?? "converting",
+        progress:
+          prev.totalGamesExpected && prev.totalGamesExpected > 0
+            ? Math.min(99, (totalGames / prev.totalGamesExpected) * 100)
+            : prev.progress,
       }));
     }).then((fn) => {
       unlisten = fn;
@@ -234,6 +239,26 @@ export default function App() {
 
     return () => {
       unlisten?.();
+    };
+  }, [setDatabaseConversionState]);
+
+  useEffect(() => {
+    const unlisten = events.progressEvent.listen(({ payload }) => {
+      setDatabaseConversionState((prev) => {
+        if (!prev.inProgress || prev.progressId !== payload.id) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          phase: "downloading",
+          progress: payload.progress,
+        };
+      });
+    });
+
+    return () => {
+      unlisten.then((fn) => fn());
     };
   }, [setDatabaseConversionState]);
 

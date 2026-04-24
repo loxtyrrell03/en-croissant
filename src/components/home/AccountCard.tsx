@@ -19,20 +19,22 @@ import {
   IconRefresh,
   IconTrash,
 } from "@tabler/icons-react";
-import { basename } from "@tauri-apps/api/path";
 import { resolve } from "@tauri-apps/api/path";
-import { info } from "@tauri-apps/plugin-log";
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { DatabaseInfo } from "@/bindings";
-import { commands, events } from "@/bindings";
+import { events } from "@/bindings";
 import { databaseConversionStateAtom, storedDatabasesDirAtom } from "@/state/atoms";
-import { downloadChessCom } from "@/utils/chess.com/api";
 import { getDatabases, query_games } from "@/utils/db";
 import { capitalize } from "@/utils/format";
-import { downloadLichess } from "@/utils/lichess/api";
-import { unwrap } from "@/utils/unwrap";
+import {
+  getDefaultOnlineGameDatabaseTitle,
+  getOnlineGameDatabaseFilename,
+  getOnlineGameImportId,
+  importOnlineGamesToDatabase,
+  resetDatabaseConversionState,
+} from "@/utils/onlineGameImport";
 import LichessLogo from "./LichessLogo";
 
 interface AccountCardProps {
@@ -100,44 +102,11 @@ export function AccountCard({
   const [progress, setProgress] = useState<number | null>(null);
   const [databaseDir] = useAtom(storedDatabasesDirAtom);
   const [, setConversionState] = useAtom(databaseConversionStateAtom);
-
-  async function convert(filepath: string, timestamp: number | null) {
-    info(`converting ${filepath} ${timestamp}`);
-    const filename = title + (type === "lichess" ? " Lichess" : " Chess.com");
-    const dbPath = await resolve(
-      databaseDir,
-      `${filepath
-        .split(/(\\|\/)/g)
-        .pop()
-        ?.replace(".pgn", ".db3")}`,
-    );
-    const sourceFileName = await basename(filepath);
-    setConversionState((prev) => ({
-      ...prev,
-      inProgress: true,
-      targetDatabasePath: dbPath,
-      targetDatabaseTitle: filename,
-      sourceFileName,
-    }));
-    unwrap(
-      await commands.convertPgn(
-        filepath,
-        dbPath,
-        timestamp ? timestamp / 1000 : null,
-        filename,
-        null,
-      ),
-    );
-    events.progressEvent.emit({
-      id: `${type}_${title}`,
-      progress: 100,
-      finished: true,
-    });
-  }
+  const importId = getOnlineGameImportId(type, title);
 
   useEffect(() => {
     const unlisten = events.progressEvent.listen(async (e) => {
-      if (e.payload.id === `${type}_${title}`) {
+      if (e.payload.id === importId) {
         setProgress(e.payload.progress);
         if (e.payload.finished) {
           setLoading(false);
@@ -150,7 +119,7 @@ export function AccountCard({
     return () => {
       unlisten.then((f) => f());
     };
-  }, [setDatabases]);
+  }, [importId, setDatabases]);
 
   const downloadedGames = database?.type === "success" ? database.game_count : 0;
   const effectiveTotal = Math.max(total, downloadedGames);
@@ -212,34 +181,28 @@ export function AccountCard({
                 onClick={async () => {
                   setLoading(true);
                   const lastGameDate = database ? await getLastGameDate({ database }) : null;
-                  if (type === "lichess") {
-                    await downloadLichess(
-                      title,
-                      lastGameDate,
-                      total - downloadedGames,
-                      setProgress,
-                      token,
-                    );
-                  } else {
-                    await downloadChessCom(title, lastGameDate);
-                  }
-                  const p = await resolve(databaseDir, `${title}_${type}.pgn`);
+                  const dbPath = await resolve(
+                    databaseDir,
+                    getOnlineGameDatabaseFilename(type, title),
+                  );
                   try {
-                    await convert(p, lastGameDate);
-                    const dbPath = p.replace(".pgn", ".db3");
-                    await commands.deleteEmptyGames(dbPath);
+                    await importOnlineGamesToDatabase({
+                      source: type,
+                      username: title,
+                      databaseDir,
+                      dbPath,
+                      title: getDefaultOnlineGameDatabaseTitle(type, title),
+                      since: lastGameDate,
+                      remainingGames: total - downloadedGames,
+                      token,
+                      setProgress,
+                      setConversionState,
+                    });
+                    setDatabases(await getDatabases());
                   } catch (e) {
                     console.error(e);
                   } finally {
-                    setConversionState((prev) => ({
-                      ...prev,
-                      inProgress: false,
-                      totalGames: 0,
-                      elapsedSeconds: 0,
-                      targetDatabasePath: null,
-                      targetDatabaseTitle: null,
-                      sourceFileName: null,
-                    }));
+                    resetDatabaseConversionState(setConversionState);
                   }
                   setLoading(false);
                 }}

@@ -1,4 +1,5 @@
 import {
+  ActionIcon,
   Alert,
   Group,
   ScrollArea,
@@ -7,11 +8,12 @@ import {
   Stack,
   Tabs,
   Text,
+  Tooltip,
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import { Link } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
-import { memo, useContext, useEffect, useMemo, useState } from "react";
+import { memo, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr/immutable";
 import { match } from "ts-pattern";
@@ -23,6 +25,8 @@ import {
   currentDbTypeAtom,
   currentLocalOptionsAtom,
   currentTabAtom,
+  defaultDatabaseSourceAtom,
+  type DatabaseSourcePreference,
   lichessOptionsAtom,
   masterOptionsAtom,
   referenceDbAtom,
@@ -32,6 +36,7 @@ import { cancelDatabaseSearch, getDatabases, type Opening, searchPosition } from
 import { formatNumber } from "@/utils/format";
 import { convertToNormalized, getLichessGames, getMasterGames } from "@/utils/lichess/api";
 import type { LichessGamesOptions, MasterGamesOptions } from "@/utils/lichess/explorer";
+import { IconStar, IconStarFilled } from "@tabler/icons-react";
 import DatabaseLoader from "./DatabaseLoader";
 import GamesTable from "./GamesTable";
 import NoDatabaseWarning from "./NoDatabaseWarning";
@@ -68,6 +73,12 @@ export type LocalOptions = {
 
 function sortOpenings(openings: Opening[]) {
   return openings.sort((a, b) => b.black + b.draw + b.white - (a.black + a.draw + a.white));
+}
+
+function isDatabaseSourcePreferenceEqual(a: DatabaseSourcePreference, b: DatabaseSourcePreference) {
+  if (a.type !== b.type) return false;
+  if (a.type === "local" && b.type === "local") return a.value === b.value;
+  return true;
 }
 
 async function fetchOpening(db: DBType, tab: string, requestId: string) {
@@ -113,6 +124,7 @@ function DatabasePanel() {
   const store = useContext(TreeStateContext)!;
   const fen = useStore(store, (s) => s.currentNode().fen);
   const [referenceDatabase, setReferenceDatabase] = useAtom(referenceDbAtom);
+  const [defaultDatabaseSource, setDefaultDatabaseSource] = useAtom(defaultDatabaseSourceAtom);
   const sessions = useAtomValue(sessionsAtom);
   const [debouncedFen] = useDebouncedValue(fen, 50);
   const [lichessOptions, setLichessOptions] = useAtom(lichessOptionsAtom);
@@ -163,6 +175,38 @@ function DatabasePanel() {
 
   const tab = useAtomValue(currentTabAtom);
   const [tabType, setTabType] = useAtom(currentDbTabAtom);
+  const appliedDefaultRef = useRef(false);
+
+  useEffect(() => {
+    if (appliedDefaultRef.current) return;
+    appliedDefaultRef.current = true;
+
+    if (defaultDatabaseSource.type === "local") {
+      setDb("local");
+      if (defaultDatabaseSource.value) {
+        setReferenceDatabase(defaultDatabaseSource.value);
+      }
+      return;
+    }
+
+    setDb(defaultDatabaseSource.type);
+  }, [defaultDatabaseSource, setDb, setReferenceDatabase]);
+
+  const selectedDefaultSource = useMemo(() => {
+    if (db === "local") {
+      return {
+        type: "local" as const,
+        value: referenceDatabase,
+      };
+    }
+
+    return { type: db };
+  }, [db, referenceDatabase]);
+  const currentSelectionIsDefault = isDatabaseSourcePreferenceEqual(
+    selectedDefaultSource,
+    defaultDatabaseSource,
+  );
+  const canSaveDefault = db !== "local" || !!referenceDatabase;
   const databaseRequestId = useMemo(
     () =>
       [
@@ -196,7 +240,9 @@ function DatabasePanel() {
     isLoading,
     error,
   } = useSWR(
-    tabType !== "options" && !missingExplorerToken ? { dbType, requestId: databaseRequestId } : null,
+    tabType !== "options" && !missingExplorerToken
+      ? { dbType, requestId: databaseRequestId }
+      : null,
     async ({ dbType, requestId }) => {
       return fetchOpening(dbType, tab?.value || "", requestId);
     },
@@ -236,6 +282,26 @@ function DatabasePanel() {
               allowDeselect={false}
             />
           )}
+          <Tooltip
+            label={
+              currentSelectionIsDefault
+                ? "Current default database source"
+                : "Make this the default database source"
+            }
+          >
+            <ActionIcon
+              variant="default"
+              size="lg"
+              disabled={!canSaveDefault}
+              onClick={() => setDefaultDatabaseSource(selectedDefaultSource)}
+            >
+              {currentSelectionIsDefault ? (
+                <IconStarFilled size="1rem" />
+              ) : (
+                <IconStar size="1rem" />
+              )}
+            </ActionIcon>
+          </Tooltip>
         </Group>
 
         {tabType !== "options" && (

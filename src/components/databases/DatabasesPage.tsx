@@ -10,6 +10,7 @@ import {
   Loader,
   Paper,
   Rating,
+  RingProgress,
   ScrollArea,
   SimpleGrid,
   Skeleton,
@@ -33,6 +34,7 @@ import useSWR from "swr";
 import type { DatabaseInfo } from "@/bindings";
 import { commands } from "@/bindings";
 import {
+  type DatabaseConversionState,
   databaseConversionStateAtom,
   referenceDbAtom,
   storedDatabasesDirAtom,
@@ -46,6 +48,21 @@ import GenericCard from "../common/GenericCard";
 import OpenFolderButton from "../common/OpenFolderButton";
 import AddDatabase from "./AddDatabase";
 import { PlayerSearchInput } from "./PlayerSearchInput";
+
+function resetDatabaseConversionStateFields() {
+  return {
+    inProgress: false,
+    phase: null,
+    progress: null,
+    progressId: null,
+    totalGames: 0,
+    totalGamesExpected: null,
+    elapsedSeconds: 0,
+    targetDatabasePath: null,
+    targetDatabaseTitle: null,
+    sourceFileName: null,
+  };
+}
 
 export default function DatabasesPage() {
   const { t } = useTranslation();
@@ -61,22 +78,13 @@ export default function DatabasesPage() {
     () => (databases ?? []).find((db) => db.file === selected) ?? null,
     [databases, selected],
   );
-  const visibleDatabases = useMemo(() => {
-    return (databases ?? []).filter((item) => {
-      if (!conversionState.inProgress || !conversionState.targetDatabasePath) {
-        return true;
-      }
-
-      return item.file !== conversionState.targetDatabasePath;
-    });
-  }, [databases, conversionState.inProgress, conversionState.targetDatabasePath]);
   const filteredDatabases = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
     if (!normalizedSearch) {
-      return visibleDatabases;
+      return databases ?? [];
     }
 
-    return visibleDatabases.filter((item) => {
+    return (databases ?? []).filter((item) => {
       const values = [
         item.filename,
         item.file,
@@ -86,7 +94,22 @@ export default function DatabasesPage() {
 
       return values.some((value) => value.toLowerCase().includes(normalizedSearch));
     });
-  }, [visibleDatabases, search]);
+  }, [databases, search]);
+  const showConversionPlaceholder =
+    conversionState.inProgress &&
+    !!conversionState.targetDatabasePath &&
+    !!conversionState.targetDatabaseTitle &&
+    !(databases ?? []).some((item) => item.file === conversionState.targetDatabasePath);
+  const showFilteredConversionPlaceholder =
+    showConversionPlaceholder &&
+    (!search.trim() ||
+      [
+        conversionState.targetDatabaseTitle,
+        conversionState.targetDatabasePath,
+        conversionState.sourceFileName ?? "",
+      ]
+        .filter((value): value is string => typeof value === "string")
+        .some((value) => value.toLowerCase().includes(search.trim().toLowerCase())));
   const hasSearch = search.trim().length > 0;
   const [databaseDir] = useAtom(storedDatabasesDirAtom);
   // const [, setStorageSelected] = useAtom(selectedDatabaseAtom);
@@ -133,15 +156,7 @@ export default function DatabasesPage() {
           setConversionState((prev) => ({
             ...prev,
             inProgress: value,
-            ...(value
-              ? {}
-              : {
-                  totalGames: 0,
-                  elapsedSeconds: 0,
-                  targetDatabasePath: null,
-                  targetDatabaseTitle: null,
-                  sourceFileName: null,
-                }),
+            ...(value ? {} : resetDatabaseConversionStateFields()),
           }));
         }}
         disableLocalConversion={conversionState.inProgress}
@@ -184,8 +199,8 @@ export default function DatabasesPage() {
                     <Loader size="xs" />
                     <Text size="sm">
                       {conversionState.sourceFileName || conversionState.targetDatabaseTitle
-                        ? `${t("Databases.Add.Convert")}: ${conversionState.sourceFileName ?? conversionState.targetDatabaseTitle}`
-                        : t("Databases.Add.Convert")}
+                        ? `${getConversionPhaseLabel(conversionState)}: ${conversionState.sourceFileName ?? conversionState.targetDatabaseTitle}`
+                        : getConversionPhaseLabel(conversionState)}
                     </Text>
                   </Group>
                   {conversionState.totalGames > 0 && (
@@ -202,6 +217,9 @@ export default function DatabasesPage() {
             )}
             <ScrollArea flex={1}>
               <SimpleGrid cols={{ base: 1, md: 2 }} spacing={{ base: "md", md: "sm" }} p="xs">
+                {showFilteredConversionPlaceholder && (
+                  <DatabaseConversionCard conversionState={conversionState} />
+                )}
                 {isLoading && (
                   <>
                     <Skeleton h="8rem" />
@@ -406,6 +424,12 @@ export default function DatabasesPage() {
                           setConversionState((prev) => ({
                             ...prev,
                             inProgress: true,
+                            phase: "converting",
+                            progress: null,
+                            progressId: null,
+                            totalGames: 0,
+                            totalGamesExpected: null,
+                            elapsedSeconds: 0,
                             targetDatabasePath: selectedDatabase.file,
                             targetDatabaseTitle: selectedDatabase.title,
                             sourceFileName,
@@ -416,12 +440,7 @@ export default function DatabasesPage() {
                           } finally {
                             setConversionState((prev) => ({
                               ...prev,
-                              inProgress: false,
-                              totalGames: 0,
-                              elapsedSeconds: 0,
-                              targetDatabasePath: null,
-                              targetDatabaseTitle: null,
-                              sourceFileName: null,
+                              ...resetDatabaseConversionStateFields(),
                             }));
                           }
                         }}
@@ -456,6 +475,77 @@ export default function DatabasesPage() {
         )}
       </Group>
     </Stack>
+  );
+}
+
+function getConversionPhaseLabel(conversionState: DatabaseConversionState) {
+  if (conversionState.phase === "downloading") {
+    return "Downloading";
+  }
+  if (conversionState.phase === "converting") {
+    return "Converting";
+  }
+  return "Processing";
+}
+
+function getConversionProgress(conversionState: DatabaseConversionState) {
+  if (typeof conversionState.progress === "number") {
+    return Math.max(0, Math.min(100, conversionState.progress));
+  }
+  return null;
+}
+
+function DatabaseConversionCard({ conversionState }: { conversionState: DatabaseConversionState }) {
+  const progress = getConversionProgress(conversionState);
+  const phaseLabel = getConversionPhaseLabel(conversionState);
+  const title = conversionState.targetDatabaseTitle ?? "New database";
+  const detail =
+    conversionState.phase === "converting" && conversionState.totalGamesExpected
+      ? `${formatNumber(conversionState.totalGames)} / ${formatNumber(conversionState.totalGamesExpected)} games`
+      : conversionState.sourceFileName;
+
+  return (
+    <Paper
+      withBorder
+      p="md"
+      radius="md"
+      style={{
+        opacity: 0.62,
+        pointerEvents: "none",
+      }}
+    >
+      <Group wrap="nowrap" justify="space-between" align="center">
+        <Group wrap="nowrap" miw={0}>
+          <IconDatabase size="1.5rem" />
+          <Box miw={0}>
+            <Text fw={500} fz="sm">
+              {title}
+            </Text>
+            <Text size="xs" c="dimmed" style={{ wordWrap: "break-word" }}>
+              {phaseLabel}
+              {detail ? `: ${detail}` : ""}
+            </Text>
+          </Box>
+        </Group>
+        <RingProgress
+          size={64}
+          thickness={6}
+          roundCaps
+          sections={[{ value: progress ?? 100, color: progress === null ? "gray" : "blue" }]}
+          label={
+            progress === null ? (
+              <Center>
+                <Loader size="xs" />
+              </Center>
+            ) : (
+              <Text ta="center" size="xs" fw={700}>
+                {Math.round(progress)}%
+              </Text>
+            )
+          }
+        />
+      </Group>
+    </Paper>
   );
 }
 

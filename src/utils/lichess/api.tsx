@@ -25,6 +25,7 @@ import {
   type MasterGamesOptions,
 } from "@/utils/lichess/explorer";
 import { countMainPly } from "@/utils/treeReducer";
+import { unwrap } from "@/utils/unwrap";
 import { getDatabasesDir } from "../directories";
 
 const baseURL = "https://lichess.org/api";
@@ -189,7 +190,7 @@ export async function convertToNormalized(data: PositionGames): Promise<Normaliz
     .map((r) => (r as PromiseFulfilledResult<NormalizedGame>).value);
 }
 
-type PositionData = {
+export type PositionData = {
   white: number;
   black: number;
   draws: number;
@@ -323,13 +324,14 @@ export async function getLichessGames(
   fen: string,
   options: LichessGamesOptions,
   token?: string,
+  play: string[] = [],
 ): Promise<PositionData> {
   const url = match(options.player)
     .with(
       P.union(undefined, ""),
-      () => `${explorerURL}/lichess?${getLichessGamesQueryParams(fen, options)}`,
+      () => `${explorerURL}/lichess?${getLichessGamesQueryParams(fen, options, play)}`,
     )
-    .otherwise(() => `${explorerURL}/player?${getLichessGamesQueryParams(fen, options)}`);
+    .otherwise(() => `${explorerURL}/player?${getLichessGamesQueryParams(fen, options, play)}`);
   const res = await fetch(url, {
     headers: apiHeaders(
       token
@@ -349,8 +351,9 @@ export async function getMasterGames(
   fen: string,
   options: MasterGamesOptions,
   token?: string,
+  play: string[] = [],
 ): Promise<PositionData> {
-  const url = `${explorerURL}/masters?${getMasterGamesQueryParams(fen, options)}`;
+  const url = `${explorerURL}/masters?${getMasterGamesQueryParams(fen, options, play)}`;
   const res = await fetch(url, {
     headers: apiHeaders(
       token
@@ -395,13 +398,15 @@ export async function downloadLichess(
   }
   const path = await resolve(await getDatabasesDir(), `${player}_lichess.pgn`);
 
-  await commands.downloadFile(
-    `lichess_${player}`,
-    url,
-    path,
-    token ?? null,
-    null,
-    games > 0 ? games * 900 : null, // approx. size of a game
+  unwrap(
+    await commands.downloadFile(
+      `lichess_${player}`,
+      url,
+      path,
+      token ?? null,
+      null,
+      games > 0 ? games * 900 : null, // approx. size of a game
+    ),
   );
 }
 

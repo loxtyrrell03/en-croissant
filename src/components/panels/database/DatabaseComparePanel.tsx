@@ -1,7 +1,21 @@
-import { Alert, Box, Group, Paper, Select, SimpleGrid, Stack, Text, Tooltip } from "@mantine/core";
+import {
+  ActionIcon,
+  Alert,
+  Box,
+  Group,
+  Paper,
+  Select,
+  SimpleGrid,
+  Stack,
+  Text,
+  Tooltip,
+} from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
+import { IconStar, IconStarFilled } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
 import { memo, useContext, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import useSWR from "swr/immutable";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
@@ -9,7 +23,11 @@ import {
   currentCompareDatabasesAtom,
   currentLocalOptionsAtom,
   currentTabAtom,
+  defaultCompareDatabasesAtom,
+  lichessOptionsAtom,
+  masterOptionsAtom,
   referenceDbAtom,
+  sessionsAtom,
 } from "@/state/atoms";
 import {
   cancelDatabaseSearch,
@@ -19,18 +37,45 @@ import {
   type SuccessDatabaseInfo,
 } from "@/utils/db";
 import { formatNumber } from "@/utils/format";
+import { getLichessGames, getMasterGames } from "@/utils/lichess/api";
+import type { LichessGamesOptions, MasterGamesOptions } from "@/utils/lichess/explorer";
 import DatabaseLoader from "./DatabaseLoader";
 import type { LocalOptions } from "./DatabasePanel";
 import OpeningsTable, { type OpeningSort, openingSortOptions } from "./OpeningsTable";
 
+const LICHESS_ALL_SOURCE = "online:lichess-all";
+const LICHESS_MASTER_SOURCE = "online:lichess-master";
+
+type CompareSource =
+  | {
+      type: "local";
+      value: string;
+      label: string;
+      database: SuccessDatabaseInfo;
+    }
+  | {
+      type: "lch_all" | "lch_master";
+      value: string;
+      label: string;
+    };
+
 function DatabaseComparePanel() {
+  const { t } = useTranslation();
   const store = useContext(TreeStateContext)!;
   const fen = useStore(store, (s) => s.currentNode().fen);
   const [debouncedFen] = useDebouncedValue(fen, 50);
   const tab = useAtomValue(currentTabAtom);
   const referenceDatabase = useAtomValue(referenceDbAtom);
   const localOptions = useAtomValue(currentLocalOptionsAtom);
+  const lichessOptions = useAtomValue(lichessOptionsAtom);
+  const masterOptions = useAtomValue(masterOptionsAtom);
+  const sessions = useAtomValue(sessionsAtom);
   const [selectedDatabases, setSelectedDatabases] = useAtom(currentCompareDatabasesAtom);
+  const [defaultCompareDatabases, setDefaultCompareDatabases] = useAtom(
+    defaultCompareDatabasesAtom,
+  );
+  const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
+    ?.accessToken;
 
   const { data: databases } = useSWR("databases", () => getDatabases());
   const localDatabases = useMemo(
@@ -40,16 +85,38 @@ function DatabaseComparePanel() {
       }),
     [databases],
   );
+  const compareSources = useMemo<CompareSource[]>(
+    () => [
+      ...localDatabases.map((database) => ({
+        type: "local" as const,
+        value: database.file,
+        label: database.title || database.filename,
+        database,
+      })),
+      {
+        type: "lch_all",
+        value: LICHESS_ALL_SOURCE,
+        label: t("Board.Database.LichessAll"),
+      },
+      {
+        type: "lch_master",
+        value: LICHESS_MASTER_SOURCE,
+        label: t("Board.Database.LichessMaster"),
+      },
+    ],
+    [localDatabases, t],
+  );
 
   useEffect(() => {
-    if (localDatabases.length === 0) return;
+    if (compareSources.length === 0) return;
 
     setSelectedDatabases((current) => {
-      const available = new Set(localDatabases.map((database) => database.file));
+      const available = new Set(compareSources.map((source) => source.value));
       const currentPair = current.slice(0, 2).filter((path) => available.has(path));
       const defaults = [
+        ...defaultCompareDatabases,
         referenceDatabase,
-        ...localDatabases.map((database) => database.file),
+        ...compareSources.map((source) => source.value),
       ].filter((path): path is string => typeof path === "string" && available.has(path));
 
       const next: string[] = [];
@@ -63,7 +130,7 @@ function DatabaseComparePanel() {
       }
       return next;
     });
-  }, [localDatabases, referenceDatabase, setSelectedDatabases]);
+  }, [compareSources, defaultCompareDatabases, referenceDatabase, setSelectedDatabases]);
 
   const setDatabaseAt = (index: number, value: string | null) => {
     setSelectedDatabases((current) => {
@@ -73,13 +140,25 @@ function DatabaseComparePanel() {
     });
   };
 
+  const setDefaultDatabaseAt = (index: number, value: string | null) => {
+    setDefaultCompareDatabases((current) => {
+      const next = current.slice(0, 2);
+      next[index] = value;
+      const otherIndex = index === 0 ? 1 : 0;
+      if (value && next[otherIndex] === value) {
+        next[otherIndex] = null;
+      }
+      return next;
+    });
+  };
+
   const selectedPair = [selectedDatabases[0] ?? null, selectedDatabases[1] ?? null] as const;
 
   return (
     <Stack h="100%" gap={6} style={{ overflow: "hidden" }}>
-      {localDatabases.length < 2 && (
+      {localDatabases.length === 0 && (
         <Alert color="blue" variant="light">
-          Add at least two local databases to compare move frequency side-by-side.
+          Local databases are optional here; you can compare against Lichess All or Lichess Masters.
         </Alert>
       )}
 
@@ -88,13 +167,18 @@ function DatabaseComparePanel() {
           <CompareDatabaseTable
             key={index}
             label={`Database ${index + 1}`}
-            databasePath={databasePath}
-            databases={localDatabases}
-            otherDatabasePath={selectedPair[index === 0 ? 1 : 0]}
+            sourceValue={databasePath}
+            sources={compareSources}
+            otherSourceValue={selectedPair[index === 0 ? 1 : 0]}
             fen={debouncedFen}
             tabId={tab?.value ?? "compare"}
             localOptions={localOptions}
+            lichessOptions={lichessOptions}
+            masterOptions={masterOptions}
+            explorerToken={explorerToken}
+            defaultSourceValue={defaultCompareDatabases[index] ?? null}
             onChange={(value) => setDatabaseAt(index, value)}
+            onMakeDefault={(value) => setDefaultDatabaseAt(index, value)}
           />
         ))}
       </SimpleGrid>
@@ -104,30 +188,43 @@ function DatabaseComparePanel() {
 
 function CompareDatabaseTable({
   label,
-  databasePath,
-  databases,
-  otherDatabasePath,
+  sourceValue,
+  sources,
+  otherSourceValue,
   fen,
   tabId,
   localOptions,
+  lichessOptions,
+  masterOptions,
+  explorerToken,
+  defaultSourceValue,
   onChange,
+  onMakeDefault,
 }: {
   label: string;
-  databasePath: string | null;
-  databases: SuccessDatabaseInfo[];
-  otherDatabasePath: string | null;
+  sourceValue: string | null;
+  sources: CompareSource[];
+  otherSourceValue: string | null;
   fen: string;
   tabId: string;
   localOptions: LocalOptions;
+  lichessOptions: LichessGamesOptions;
+  masterOptions: MasterGamesOptions;
+  explorerToken?: string;
+  defaultSourceValue: string | null;
   onChange: (value: string | null) => void;
+  onMakeDefault: (value: string | null) => void;
 }) {
+  const { t } = useTranslation();
   const [openingSort, setOpeningSort] = useState<OpeningSort>("games");
-  const database = databases.find((item) => item.file === databasePath) ?? null;
-  const searchId = database
+  const source = sources.find((item) => item.value === sourceValue) ?? null;
+  const isOnlineSource = source?.type === "lch_all" || source?.type === "lch_master";
+  const missingExplorerToken = isOnlineSource && !explorerToken;
+  const searchId = source
     ? [
         "database-compare",
         tabId,
-        database.filename,
+        source.value,
         fen,
         localOptions.type,
         localOptions.player ?? "",
@@ -135,45 +232,62 @@ function CompareDatabaseTable({
         localOptions.start_date ?? "",
         localOptions.end_date ?? "",
         localOptions.result,
+        JSON.stringify(lichessOptions),
+        JSON.stringify(masterOptions),
       ].join("|")
     : null;
   const searchKey =
-    database && searchId
+    source && searchId && !missingExplorerToken
       ? ([
           "database-compare-table",
           {
             id: searchId,
-            options: {
-              ...localOptions,
-              fen,
-              path: database.file,
-            },
+            source,
           },
         ] as const)
       : null;
-  const selectData = databases.map((item) => ({
-    value: item.file,
-    label: item.title || item.filename,
-    disabled: item.file === otherDatabasePath,
+  const selectData = sources.map((item) => ({
+    value: item.value,
+    label: item.label,
+    disabled: item.value === otherSourceValue,
   }));
 
   const {
     data: openings = [],
     isLoading,
     error,
-  } = useSWR(searchKey, async ([, { id, options }]) => {
-    const [positionOpenings] = await searchPosition(options, id);
+  } = useSWR(searchKey, async ([, { id, source }]) => {
+    if (source.type === "local") {
+      const [positionOpenings] = await searchPosition(
+        {
+          ...localOptions,
+          fen,
+          path: source.database.file,
+        },
+        id,
+      );
 
-    return sortOpenings(positionOpenings);
+      return sortOpenings(positionOpenings);
+    }
+
+    if (source.type === "lch_all") {
+      const data = await getLichessGames(fen, { ...lichessOptions, moves: 12 }, explorerToken);
+      return sortOpenings(lichessMovesToOpenings(data.moves));
+    }
+
+    if (source.type === "lch_master") {
+      const data = await getMasterGames(fen, { ...masterOptions, moves: 12 }, explorerToken);
+      return sortOpenings(lichessMovesToOpenings(data.moves));
+    }
   });
 
   useEffect(() => {
-    if (!searchId) return undefined;
+    if (!searchId || source?.type !== "local") return undefined;
 
     return () => {
       void cancelDatabaseSearch(searchId);
     };
-  }, [searchId]);
+  }, [searchId, source?.type]);
 
   const total = getOpeningTotal(openings);
 
@@ -185,10 +299,10 @@ function CompareDatabaseTable({
       style={{ display: "flex", flexDirection: "column", minHeight: 0, overflow: "hidden" }}
     >
       <Group justify="space-between" wrap="nowrap" align="flex-start" gap="xs">
-        <Tooltip label={database?.title || database?.filename || label}>
+        <Tooltip label={source?.label || label}>
           <Select
             data={selectData}
-            value={databasePath}
+            value={sourceValue}
             onChange={onChange}
             placeholder={label}
             size="xs"
@@ -197,6 +311,26 @@ function CompareDatabaseTable({
             searchable
             comboboxProps={{ withinPortal: true }}
           />
+        </Tooltip>
+        <Tooltip
+          label={
+            defaultSourceValue === sourceValue
+              ? "Default compare database"
+              : "Make this the default compare database"
+          }
+        >
+          <ActionIcon
+            variant="default"
+            size="sm"
+            disabled={!sourceValue}
+            onClick={() => onMakeDefault(sourceValue)}
+          >
+            {defaultSourceValue === sourceValue ? (
+              <IconStarFilled size="0.875rem" />
+            ) : (
+              <IconStar size="0.875rem" />
+            )}
+          </ActionIcon>
         </Tooltip>
         <Text fz="xs" style={{ whiteSpace: "nowrap" }}>
           {formatNumber(total)} matches
@@ -212,9 +346,14 @@ function CompareDatabaseTable({
         allowDeselect={false}
       />
       <DatabaseLoader isLoading={isLoading} tab={searchId} />
-      {error ? (
+      {missingExplorerToken ? (
         <Alert color="yellow" variant="light" mt="xs">
-          Could not search this database for the current position.
+          {t("Board.Database.ExplorerAuthRequired1")} <Link to="/accounts">Users</Link>{" "}
+          {t("Board.Database.ExplorerAuthRequired2")}
+        </Alert>
+      ) : error ? (
+        <Alert color="yellow" variant="light" mt="xs">
+          Could not search this source for the current position.
         </Alert>
       ) : (
         <Box mt={6} flex={1} style={{ minHeight: 0, overflow: "auto" }}>
@@ -227,6 +366,22 @@ function CompareDatabaseTable({
 
 function sortOpenings(openings: Opening[]) {
   return [...openings].sort((a, b) => getOpeningTotal([b]) - getOpeningTotal([a]));
+}
+
+function lichessMovesToOpenings(
+  moves: {
+    san: string;
+    white: number;
+    black: number;
+    draws: number;
+  }[],
+): Opening[] {
+  return moves.map((move) => ({
+    move: move.san,
+    white: move.white,
+    black: move.black,
+    draw: move.draws,
+  }));
 }
 
 function getOpeningTotal(openings: Opening[]) {

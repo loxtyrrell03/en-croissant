@@ -1,3 +1,4 @@
+import type { DrawShape } from "@lichess-org/chessground/draw";
 import type { MantineColor } from "@mantine/core";
 import { resolve } from "@tauri-apps/api/path";
 import { exists, mkdir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
@@ -181,9 +182,10 @@ export const showPlanExplorerArrowsAtom = atomWithStorage<boolean>(
     "show-plan-explorer-arrows",
     true,
 );
-export const planExplorerArrowLimitAtom = atomWithStorage<number>(
-    "plan-explorer-arrow-limit",
-    10,
+export const planExplorerArrowLimitAtom = atomWithStorage<number>("plan-explorer-arrow-limit", 10);
+export const planExplorerSourceAtom = atomWithStorage<"local" | "lch_all" | "lch_master">(
+    "plan-explorer-source",
+    "local",
 );
 export const eraseDrawablesOnClickAtom = atomWithStorage<boolean>(
     "erase-drawables-on-click",
@@ -247,11 +249,34 @@ export const addRecentFileAtom = atom(null, (get, set, file: Omit<RecentFile, "l
 
 export const referenceDbAtom = atomWithStorage<string | null>("reference-database", null);
 
+export type DatabaseSourcePreference =
+    | {
+          type: "local";
+          value: string | null;
+      }
+    | {
+          type: "lch_all" | "lch_master";
+      };
+
+export const defaultDatabaseSourceAtom = atomWithStorage<DatabaseSourcePreference>(
+    "default-database-source",
+    { type: "local", value: null },
+);
+
+export const defaultCompareDatabasesAtom = atomWithStorage<(string | null)[]>(
+    "default-compare-databases",
+    [],
+);
+
 export const selectedPuzzleDbAtom = atomWithStorage<string | null>("puzzle-db", null);
 
 export type DatabaseConversionState = {
     inProgress: boolean;
+    phase: "downloading" | "converting" | null;
+    progress: number | null;
+    progressId: string | null;
     totalGames: number;
+    totalGamesExpected: number | null;
     elapsedSeconds: number;
     targetDatabasePath: string | null;
     targetDatabaseTitle: string | null;
@@ -262,7 +287,11 @@ export const databaseConversionStateAtom = atomWithStorage<DatabaseConversionSta
     "database-conversion-state",
     {
         inProgress: false,
+        phase: null,
+        progress: null,
+        progressId: null,
         totalGames: 0,
+        totalGamesExpected: null,
         elapsedSeconds: 0,
         targetDatabasePath: null,
         targetDatabaseTitle: null,
@@ -425,6 +454,11 @@ export const currentDbTabAtom = tabValue(dbTabFamily);
 
 const compareDatabasesFamily = atomFamily((_tab: string) => atom<string[]>([]));
 export const currentCompareDatabasesAtom = tabValue(compareDatabasesFamily);
+
+const boardPreviewShapesFamily = atomFamily((_tab: string) =>
+    atom<{ fen: string; shapes: DrawShape[] } | null>(null),
+);
+export const currentBoardPreviewShapesAtom = tabValue(boardPreviewShapesFamily);
 
 const planExplorerDataFamily = atomFamily((_tab: string) => atom<PlanExplorerData | null>(null));
 export const currentPlanExplorerDataAtom = tabValue(planExplorerDataFamily);

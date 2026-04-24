@@ -15,14 +15,7 @@ import { chessgroundDests, chessgroundMove } from "chessops/compat";
 import { makeFen, parseFen } from "chessops/fen";
 import { makeSan } from "chessops/san";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import {
-  memo,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-  type MouseEvent,
-} from "react";
+import { memo, useCallback, useContext, useMemo, useRef, useState, type MouseEvent } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
@@ -32,11 +25,13 @@ import { Chessground, type ChessgroundRef } from "@/chessground/Chessground";
 import {
   autoPromoteAtom,
   bestMovesFamily,
+  currentBoardPreviewShapesAtom,
   currentEvalOpenAtom,
   currentPlanExplorerDataAtom,
   currentPlanExplorerPreviewLineAtom,
   currentShowCommentsAtom,
   currentTabAtom,
+  currentTabSelectedAtom,
   deckAtomFamily,
   enableBoardScrollAtom,
   eraseDrawablesOnClickAtom,
@@ -183,10 +178,15 @@ function Board({
   const forcedEP = useAtomValue(forcedEnPassantAtom);
   const showCoordinates = useAtomValue(showCoordinatesAtom);
   const materialDisplay = useAtomValue(materialDisplayAtom);
+  const boardPreviewShapes = useAtomValue(currentBoardPreviewShapesAtom);
   const planExplorerData = useAtomValue(currentPlanExplorerDataAtom);
-  const planExplorerPreviewLine = useAtomValue(currentPlanExplorerPreviewLineAtom);
+  const [planExplorerPreviewLine, setPlanExplorerPreviewLine] = useAtom(
+    currentPlanExplorerPreviewLineAtom,
+  );
   const showPlanExplorerArrows = useAtomValue(showPlanExplorerArrowsAtom);
   const planExplorerArrowLimit = useAtomValue(planExplorerArrowLimitAtom);
+  const currentTabSelected = useAtomValue(currentTabSelectedAtom);
+  const hoveredPlanSquareRef = useRef<SquareName | null>(null);
 
   let dests: Map<SquareName, SquareName[]> = pos ? chessgroundDests(pos) : new Map();
   if (forcedEP && pos) {
@@ -358,7 +358,8 @@ function Board({
     }
   }
 
-  const activePlanExplorerData = planExplorerData?.fen === currentNode.fen ? planExplorerData : null;
+  const activePlanExplorerData =
+    planExplorerData?.fen === currentNode.fen ? planExplorerData : null;
 
   if (showPlanExplorerArrows && activePlanExplorerData) {
     shapes = shapes.concat(
@@ -368,6 +369,10 @@ function Board({
 
   if (planExplorerPreviewLine) {
     shapes = shapes.concat(planLineToShapes(planExplorerPreviewLine));
+  }
+
+  if (boardPreviewShapes?.fen === currentNode.fen) {
+    shapes = shapes.concat(boardPreviewShapes.shapes);
   }
 
   if (currentNode.shapes.length > 0) {
@@ -451,6 +456,58 @@ function Board({
     },
     [boardRef, currentNode.fen, currentNode.shapes, orientation, planExplorerData, pos, setShapes],
   );
+
+  const previewPlanFromPointer = useCallback(
+    (event: MouseEvent<HTMLDivElement>) => {
+      if (currentTabSelected !== "plan-explorer") {
+        return;
+      }
+
+      const clearPreview = () => {
+        hoveredPlanSquareRef.current = null;
+        setPlanExplorerPreviewLine(null);
+      };
+
+      if (!boardRef.current || !pos || planExplorerData?.fen !== currentNode.fen) {
+        clearPreview();
+        return;
+      }
+
+      const squareName = squareFromPointer(event, boardRef.current, orientation);
+      if (squareName === hoveredPlanSquareRef.current) {
+        return;
+      }
+
+      hoveredPlanSquareRef.current = squareName;
+
+      if (!squareName) {
+        setPlanExplorerPreviewLine(null);
+        return;
+      }
+
+      const square = parseSquare(squareName);
+      if (square === undefined || !pos.board.get(square)) {
+        setPlanExplorerPreviewLine(null);
+        return;
+      }
+
+      setPlanExplorerPreviewLine(getPlanLineForSquare(planExplorerData, squareName));
+    },
+    [
+      boardRef,
+      currentNode.fen,
+      currentTabSelected,
+      orientation,
+      planExplorerData,
+      pos,
+      setPlanExplorerPreviewLine,
+    ],
+  );
+
+  const clearPlanHoverPreview = useCallback(() => {
+    hoveredPlanSquareRef.current = null;
+    setPlanExplorerPreviewLine(null);
+  }, [setPlanExplorerPreviewLine]);
 
   useHotkeys(keyMap.TOGGLE_EVAL_BAR.keys, () => setEvalOpen((e) => !e));
 
@@ -566,8 +623,12 @@ function Board({
               ref={boardRef}
               onContextMenu={drawPlanFromContextMenu}
               onClick={() => {
-                eraseDrawablesOnClick && clearShapes();
+                if (eraseDrawablesOnClick) {
+                  clearShapes();
+                }
               }}
+              onMouseMove={previewPlanFromPointer}
+              onMouseLeave={clearPlanHoverPreview}
               onWheel={(e) => {
                 if (enableBoardScroll) {
                   if (e.deltaY > 0) {
@@ -685,6 +746,12 @@ function Board({
                       key: "p",
                       color: "#12b886",
                       opacity: 0.9,
+                      lineWidth: 10,
+                    },
+                    preview: {
+                      key: "x",
+                      color: "#4dabf7",
+                      opacity: 0.95,
                       lineWidth: 10,
                     },
                   } as unknown as DrawBrushes,

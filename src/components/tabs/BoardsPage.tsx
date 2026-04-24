@@ -3,9 +3,16 @@ import { ActionIcon, ScrollArea, Tabs } from "@mantine/core";
 import { useHotkeys, useToggle } from "@mantine/hooks";
 import { IconPlus } from "@tabler/icons-react";
 import { useAtom, useAtomValue } from "jotai";
-import { type ReactNode, startTransition, useCallback, useEffect } from "react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { useTranslation } from "react-i18next";
-import { Mosaic, type MosaicNode } from "react-mosaic-component";
 import { match } from "ts-pattern";
 import { commands } from "@/bindings";
 import { activeTabAtom, tabsAtom } from "@/state/atoms";
@@ -19,10 +26,6 @@ import Puzzles from "../puzzles/Puzzles";
 import { BoardTab } from "./BoardTab";
 import ConfirmChangesModal from "./ConfirmChangesModal";
 import NewTabHome from "./NewTabHome";
-
-import "react-mosaic-component/react-mosaic-component.css";
-
-import "@/styles/react-mosaic.css";
 import { platform } from "@tauri-apps/plugin-os";
 import { atomWithStorage } from "jotai/utils";
 import classes from "./BoardsPage.module.css";
@@ -146,7 +149,7 @@ export default function BoardsPage() {
     window.addEventListener("keydown", handler, { capture: true });
 
     return () => window.removeEventListener("keydown", handler, { capture: true });
-  }, [closeTab]);
+  }, [activeTab, closeTab]);
 
   const keyMap = useAtomValue(keyMapAtom);
 
@@ -264,29 +267,221 @@ export default function BoardsPage() {
   );
 }
 
-type ViewId = "left" | "topRight" | "bottomRight";
-
-const fullLayout: { [viewId: string]: ReactNode } = {
-  left: <div id="left" />,
-  topRight: <div id="topRight" />,
-  bottomRight: <div id="bottomRight" />,
-};
-
-interface WindowsState {
-  currentNode: MosaicNode<ViewId> | null;
+interface WorkspaceLayoutState {
+  rightWidthPercent: number;
+  topRightHeight: number | null;
+  bottomRightHeight: number | null;
 }
 
-const windowsStateAtom = atomWithStorage<WindowsState>("windowsState", {
-  currentNode: {
-    direction: "row",
-    first: "left",
-    second: {
-      direction: "column",
-      first: "topRight",
-      second: "bottomRight",
-    },
-  },
+const workspaceLayoutAtom = atomWithStorage<WorkspaceLayoutState>("boardWorkspaceLayout", {
+  rightWidthPercent: 54,
+  topRightHeight: null,
+  bottomRightHeight: null,
 });
+
+const MIN_LEFT_WIDTH = 360;
+const MIN_RIGHT_WIDTH = 420;
+const MIN_TOP_RIGHT_HEIGHT = 180;
+const MIN_BOTTOM_RIGHT_HEIGHT = 120;
+const DEFAULT_TOP_RIGHT_RATIO = 0.76;
+const DEFAULT_BOTTOM_RIGHT_RATIO = 0.3;
+
+function BoardWorkspaceLayout() {
+  const [layout, setLayout] = useAtom(workspaceLayoutAtom);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const updateSize = () => {
+      const rect = container.getBoundingClientRect();
+      setContainerSize({
+        width: rect.width,
+        height: rect.height,
+      });
+    };
+
+    updateSize();
+
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(container);
+
+    return () => observer.disconnect();
+  }, []);
+
+  const availableHeight = Math.max(containerSize.height - 10, 0);
+  const defaultTopHeight = Math.max(
+    MIN_TOP_RIGHT_HEIGHT,
+    Math.round(availableHeight * DEFAULT_TOP_RIGHT_RATIO),
+  );
+  const defaultBottomHeight = Math.max(
+    MIN_BOTTOM_RIGHT_HEIGHT,
+    Math.round(availableHeight * DEFAULT_BOTTOM_RIGHT_RATIO),
+  );
+  const topRightHeight = Math.max(MIN_TOP_RIGHT_HEIGHT, layout.topRightHeight ?? defaultTopHeight);
+  const bottomRightHeight = Math.max(
+    MIN_BOTTOM_RIGHT_HEIGHT,
+    layout.bottomRightHeight ?? defaultBottomHeight,
+  );
+
+  const clampedRightWidthPercent = clampRightWidthPercent(
+    layout.rightWidthPercent,
+    containerSize.width,
+  );
+
+  const startColumnResize = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    event.preventDefault();
+
+    const rect = container.getBoundingClientRect();
+    const startX = event.clientX;
+    const startRightWidth = (clampedRightWidthPercent / 100) * rect.width;
+
+    startDragCursor("col-resize");
+
+    const onPointerMove = (moveEvent: PointerEvent) => {
+      const bounds = getRightWidthBounds(rect.width);
+      const nextRightWidth = clamp(
+        startRightWidth - (moveEvent.clientX - startX),
+        bounds.min,
+        bounds.max,
+      );
+
+      setLayout((current) => ({
+        ...current,
+        rightWidthPercent: (nextRightWidth / rect.width) * 100,
+      }));
+    };
+
+    const stop = () => {
+      stopDragCursor();
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", stop);
+      window.removeEventListener("pointercancel", stop);
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", stop);
+    window.addEventListener("pointercancel", stop);
+  };
+
+  const startRightPaneResize = (event: ReactPointerEvent<HTMLDivElement>) => {
+    event.preventDefault();
+
+    const startY = event.clientY;
+    const startTopHeight = topRightHeight;
+    const startBottomHeight = bottomRightHeight;
+
+    startDragCursor("row-resize");
+
+    const onPointerMove = (moveEvent: PointerEvent) => {
+      const deltaY = moveEvent.clientY - startY;
+
+      setLayout((current) => ({
+        ...current,
+        topRightHeight: Math.max(MIN_TOP_RIGHT_HEIGHT, startTopHeight + deltaY),
+        bottomRightHeight: Math.max(MIN_BOTTOM_RIGHT_HEIGHT, startBottomHeight - deltaY),
+      }));
+    };
+
+    const stop = () => {
+      stopDragCursor();
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", stop);
+      window.removeEventListener("pointercancel", stop);
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", stop);
+    window.addEventListener("pointercancel", stop);
+  };
+
+  return (
+    <div className={classes.workspaceLayout} ref={containerRef}>
+      <div
+        id="left"
+        className={classes.leftPane}
+        style={{
+          flexBasis: `${100 - clampedRightWidthPercent}%`,
+        }}
+      />
+      <div
+        className={classes.columnResizeHandle}
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize board and side panels"
+        onPointerDown={startColumnResize}
+      />
+      <div
+        className={classes.rightColumn}
+        style={{
+          flexBasis: `${clampedRightWidthPercent}%`,
+        }}
+      >
+        <div className={classes.rightColumnScroller}>
+          <div
+            id="topRight"
+            className={classes.rightPane}
+            style={{
+              height: topRightHeight,
+            }}
+          />
+          <div
+            className={classes.rowResizeHandle}
+            role="separator"
+            aria-orientation="horizontal"
+            aria-label="Resize right side panels"
+            onPointerDown={startRightPaneResize}
+          />
+          <div
+            id="bottomRight"
+            className={classes.rightPane}
+            style={{
+              height: bottomRightHeight,
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function clampRightWidthPercent(percent: number, containerWidth: number) {
+  if (containerWidth <= 0) return percent;
+
+  const bounds = getRightWidthBounds(containerWidth);
+  const minPercent = (bounds.min / containerWidth) * 100;
+  const maxPercent = (bounds.max / containerWidth) * 100;
+
+  if (maxPercent < minPercent) return 50;
+  return clamp(percent, minPercent, maxPercent);
+}
+
+function getRightWidthBounds(containerWidth: number) {
+  const min = Math.min(MIN_RIGHT_WIDTH, containerWidth / 2);
+  const minLeftWidth = Math.min(MIN_LEFT_WIDTH, containerWidth - min);
+  const max = Math.max(min, containerWidth - minLeftWidth);
+
+  return { min, max };
+}
+
+function startDragCursor(cursor: string) {
+  document.body.style.cursor = cursor;
+  document.body.style.userSelect = "none";
+}
+
+function stopDragCursor() {
+  document.body.style.cursor = "";
+  document.body.style.userSelect = "";
+}
 
 function TabSwitch({
   tab,
@@ -301,29 +496,17 @@ function TabSwitch({
   closeTab: (value: string | null, forced?: boolean) => void;
   activeTab: string | null;
 }) {
-  const [windowsState, setWindowsState] = useAtom(windowsStateAtom);
-
   return match(tab.type)
     .with("new", () => <NewTabHome id={tab.value} />)
     .with("play", () => (
       <TreeStateProvider id={tab.value}>
-        <Mosaic<ViewId>
-          renderTile={(id) => fullLayout[id]}
-          value={windowsState.currentNode}
-          onChange={(currentNode) => setWindowsState({ currentNode })}
-          resize={{ minimumPaneSizePercentage: 0 }}
-        />
+        <BoardWorkspaceLayout />
         <BoardGame />
       </TreeStateProvider>
     ))
     .with("analysis", () => (
       <TreeStateProvider id={tab.value}>
-        <Mosaic<ViewId>
-          renderTile={(id) => fullLayout[id]}
-          value={windowsState.currentNode}
-          onChange={(currentNode) => setWindowsState({ currentNode })}
-          resize={{ minimumPaneSizePercentage: 0 }}
-        />
+        <BoardWorkspaceLayout />
         <BoardAnalysis />
         <ConfirmChangesModal
           opened={saveModalOpened}
@@ -334,12 +517,7 @@ function TabSwitch({
     ))
     .with("puzzles", () => (
       <TreeStateProvider id={tab.value}>
-        <Mosaic<ViewId>
-          renderTile={(id) => fullLayout[id]}
-          value={windowsState.currentNode}
-          onChange={(currentNode) => setWindowsState({ currentNode })}
-          resize={{ minimumPaneSizePercentage: 0 }}
-        />
+        <BoardWorkspaceLayout />
         <Puzzles id={tab.value} />
       </TreeStateProvider>
     ))

@@ -13,8 +13,12 @@ This file records the work saved during the Codex session on the `codex/en-crois
 - Added a `Compare` tab to the analysis board.
 - Added side-by-side database comparison UI for local reference databases.
 - Added opening-table sorting, compact table rendering, and shared sorting helpers.
+- Added online Lichess All and Lichess Masters sources to database comparison.
+- Added saved default source controls for the Database tab and each Database Compare slot.
+- Added board arrow previews when hovering opening moves in the Database and Compare tables.
 - Added a `Gaps` tab for repertoire gap scanning, training, export, and engine verification workflows.
 - Added backend repertoire-gap search support and generated TypeScript bindings for it.
+- Added online game import into local databases from Lichess and Chess.com usernames, with progress reporting and account token reuse for Lichess when available.
 
 ## Plan Explorer
 
@@ -23,11 +27,14 @@ This file records the work saved during the Codex session on the `codex/en-crois
 - Added generated TypeScript bindings and `getPlanExplorer` frontend utilities.
 - Added a Plan Explorer table grouped by piece, with route counts, result bars, side filters, ply-depth controls, and database selection.
 - Added hover previews so moving over a route shows its arrows on the board.
+- Hovering a Plan Explorer piece row now previews the piece's most common maneuver.
 - Added click-to-pin route arrows from the Plan Explorer table.
 - Added board support for plan arrows and a `Ctrl+right-click` piece shortcut to draw that piece's normal route.
+- When the Plan Explorer tab is selected, hovering over a piece on the chessboard previews that piece's most common maneuver.
 - Added automatic plan arrows with an on-panel `Auto arrows` switch and configurable arrow limit.
 - Plan Explorer now defaults to `8 ply` and `10` automatic arrows.
 - Automatic plan selection favors significant queen, rook, bishop, and knight maneuvers plus key pawn breaks or advanced pawn moves.
+- Added Lichess All and Lichess Masters as Plan Explorer sources alongside local reference databases.
 
 ## Performance And Cancellation
 
@@ -49,6 +56,9 @@ This file records the work saved during the Codex session on the `codex/en-crois
 - Added stored atoms for Plan Explorer data, hover preview, automatic-arrow visibility, automatic-arrow limit, and compare database selection.
 - Added a global board setting for Plan Explorer automatic arrows.
 - Added plan-arrow drawing brush support on the board.
+- Replaced the old board workspace split shell with a resizable board/right-side layout, including an independently scrollable right column and draggable right-side pane heights.
+- Moved the Annotate tools out of the right-side tab strip and made them permanently visible under the chessboard.
+- Added a transient board preview arrow brush for table and Plan Explorer hover interactions.
 
 ## Generated And Supporting Files
 
@@ -60,6 +70,7 @@ This file records the work saved during the Codex session on the `codex/en-crois
 
 - `cargo check` passed.
 - `pnpm build-vite` passed.
+- `pnpm exec oxlint` passed on the touched frontend files.
 - `cargo test search_index` passed.
 - `cargo test exact_matches` passed.
 - `cargo test exact_query_ignores_too_much_material_validation` passed.

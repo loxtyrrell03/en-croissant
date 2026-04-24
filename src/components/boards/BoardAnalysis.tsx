@@ -5,7 +5,6 @@ import {
   IconDatabase,
   IconGitCompare,
   IconInfoCircle,
-  IconNotes,
   IconRoute,
   IconTargetArrow,
   IconZoomCheck,
@@ -45,6 +44,12 @@ import Board from "./Board";
 import BoardControls from "./BoardControls";
 import EditingCard from "./EditingCard";
 import EvalListener from "./EvalListener";
+
+const scrollablePanelStyle = {
+  minHeight: 0,
+  overflowX: "hidden",
+  overflowY: "auto",
+} as const;
 
 function BoardAnalysis() {
   const { t } = useTranslation();
@@ -146,12 +151,13 @@ function BoardAnalysis() {
     [
       keyMap.PRACTICE_TAB.keys,
       () => {
-        isRepertoire && setCurrentTabSelected("practice");
+        if (isRepertoire) {
+          setCurrentTabSelected("practice");
+        }
       },
     ],
     [keyMap.ANALYSIS_TAB.keys, () => setCurrentTabSelected("analysis")],
     [keyMap.DATABASE_TAB.keys, () => setCurrentTabSelected("database")],
-    [keyMap.ANNOTATE_TAB.keys, () => setCurrentTabSelected("annotate")],
     [keyMap.INFO_TAB.keys, () => setCurrentTabSelected("info")],
     [
       keyMap.TOGGLE_ALL_ENGINES.keys,
@@ -164,14 +170,28 @@ function BoardAnalysis() {
 
   return (
     <>
-      <EvalListener active={currentTabSelected === "analysis" || currentTabSelected === "compare"} />
+      <EvalListener
+        active={currentTabSelected === "analysis" || currentTabSelected === "compare"}
+      />
       <Portal target="#left" style={{ height: "100%" }}>
-        <Board
-          practicing={practicing}
-          editingMode={editingMode}
-          boardRef={boardRef}
-          selectedPiece={selectedPiece}
-        />
+        <Stack h="100%" gap="xs" style={{ minHeight: 0, overflow: "hidden" }}>
+          <Stack flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
+            <Board
+              practicing={practicing}
+              editingMode={editingMode}
+              boardRef={boardRef}
+              selectedPiece={selectedPiece}
+            />
+          </Stack>
+          <Paper
+            withBorder
+            h="15rem"
+            mah="35%"
+            style={{ minHeight: "10rem", overflow: "hidden", flexShrink: 0 }}
+          >
+            <AnnotationPanel />
+          </Paper>
+        </Stack>
       </Portal>
       <Portal target="#topRight" style={{ height: "100%" }}>
         <Paper
@@ -224,37 +244,31 @@ function BoardAnalysis() {
               <Tabs.Tab value="gaps" leftSection={<IconAlertTriangle size="1rem" />}>
                 Gaps
               </Tabs.Tab>
-              <Tabs.Tab value="annotate" leftSection={<IconNotes size="1rem" />}>
-                {t("Board.Tabs.Annotate")}
-              </Tabs.Tab>
               <Tabs.Tab value="info" leftSection={<IconInfoCircle size="1rem" />}>
                 {t("Board.Tabs.Info")}
               </Tabs.Tab>
             </Tabs.List>
             {isRepertoire && (
-              <Tabs.Panel value="practice" flex={1} style={{ overflowY: "hidden" }}>
+              <Tabs.Panel value="practice" flex={1} style={scrollablePanelStyle}>
                 <PracticePanel />
               </Tabs.Panel>
             )}
-            <Tabs.Panel value="info" flex={1} style={{ overflowY: "hidden" }}>
+            <Tabs.Panel value="info" flex={1} style={scrollablePanelStyle}>
               <InfoPanel addGame={addGame} />
             </Tabs.Panel>
-            <Tabs.Panel value="database" flex={1} style={{ overflowY: "hidden" }}>
+            <Tabs.Panel value="database" flex={1} style={scrollablePanelStyle}>
               <DatabasePanel />
             </Tabs.Panel>
-            <Tabs.Panel value="plan-explorer" flex={1} style={{ overflowY: "hidden" }}>
+            <Tabs.Panel value="plan-explorer" flex={1} style={scrollablePanelStyle}>
               <PlanExplorerPanel />
             </Tabs.Panel>
-            <Tabs.Panel value="compare" flex={1} style={{ overflowY: "hidden" }}>
+            <Tabs.Panel value="compare" flex={1} style={scrollablePanelStyle}>
               <ComparePanel />
             </Tabs.Panel>
-            <Tabs.Panel value="gaps" flex={1} style={{ overflowY: "hidden" }}>
+            <Tabs.Panel value="gaps" flex={1} style={scrollablePanelStyle}>
               <RepertoireGapsPanel />
             </Tabs.Panel>
-            <Tabs.Panel value="annotate" flex={1} style={{ overflowY: "hidden" }}>
-              <AnnotationPanel />
-            </Tabs.Panel>
-            <Tabs.Panel value="analysis" flex={1} style={{ overflowY: "hidden" }}>
+            <Tabs.Panel value="analysis" flex={1} style={scrollablePanelStyle}>
               <AnalysisPanel />
             </Tabs.Panel>
           </Tabs>

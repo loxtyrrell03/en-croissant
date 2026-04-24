@@ -17,10 +17,12 @@ import {
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import { IconRoute } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 import type { Piece } from "@lichess-org/chessground/types";
 import { commands, type PlanExplorerLine, type PlanExplorerPiece } from "@/bindings";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import useSWR from "swr/immutable";
 import { useStore } from "zustand";
 import PieceComponent from "@/components/common/Piece";
@@ -30,8 +32,12 @@ import {
   currentPlanExplorerDataAtom,
   currentPlanExplorerPreviewLineAtom,
   currentTabAtom,
+  lichessOptionsAtom,
+  masterOptionsAtom,
   planExplorerArrowLimitAtom,
+  planExplorerSourceAtom,
   referenceDbAtom,
+  sessionsAtom,
   showPlanExplorerArrowsAtom,
 } from "@/state/atoms";
 import {
@@ -41,28 +47,39 @@ import {
   type SuccessDatabaseInfo,
 } from "@/utils/db";
 import { formatNumber } from "@/utils/format";
+import { getOnlinePlanExplorer, type OnlinePlanExplorerSource } from "@/utils/lichess/planExplorer";
 import { formatPlanRoute, PLAN_BRUSH, planLineToShapes } from "@/utils/planExplorer";
 import NoDatabaseWarning from "../database/NoDatabaseWarning";
 
 type SideFilter = "all" | "white" | "black";
+type PlanExplorerSource = "local" | OnlinePlanExplorerSource;
 
 function PlanExplorerPanel() {
+  const { t } = useTranslation();
   const store = useContext(TreeStateContext)!;
   const fen = useStore(store, (s) => s.currentNode().fen);
   const currentNode = useStore(store, (s) => s.currentNode());
   const setShapes = useStore(store, (s) => s.setShapes);
   const [debouncedFen] = useDebouncedValue(fen, 50);
   const [referenceDatabase, setReferenceDatabase] = useAtom(referenceDbAtom);
-  const [showPlanExplorerArrows, setShowPlanExplorerArrows] = useAtom(
-    showPlanExplorerArrowsAtom,
-  );
+  const [showPlanExplorerArrows, setShowPlanExplorerArrows] = useAtom(showPlanExplorerArrowsAtom);
   const [arrowLimit, setArrowLimit] = useAtom(planExplorerArrowLimitAtom);
+  const [source, setSource] = useAtom(planExplorerSourceAtom);
   const currentTab = useAtomValue(currentTabAtom);
   const localOptions = useAtomValue(currentLocalOptionsAtom);
+  const lichessOptions = useAtomValue(lichessOptionsAtom);
+  const masterOptions = useAtomValue(masterOptionsAtom);
+  const sessions = useAtomValue(sessionsAtom);
   const setPlanExplorerData = useSetAtom(currentPlanExplorerDataAtom);
   const setPreviewLine = useSetAtom(currentPlanExplorerPreviewLineAtom);
   const [sideFilter, setSideFilter] = useState<SideFilter>("all");
   const [maxPlies, setMaxPlies] = useState("8");
+  const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
+    ?.accessToken;
+  const lichessOptionsKey = JSON.stringify(lichessOptions);
+  const masterOptionsKey = JSON.stringify(masterOptions);
+  const isLocalSource = source === "local";
+  const missingExplorerToken = !isLocalSource && !explorerToken;
 
   const { data: databases } = useSWR("databases", () => getDatabases());
   const localDatabases = useMemo(
@@ -82,6 +99,7 @@ function PlanExplorerPanel() {
       [
         "plan-explorer",
         currentTab?.value ?? "tab",
+        source,
         referenceDatabase ?? "none",
         debouncedFen,
         localOptions.type,
@@ -90,16 +108,31 @@ function PlanExplorerPanel() {
         localOptions.start_date ?? "",
         localOptions.end_date ?? "",
         localOptions.result,
+        lichessOptionsKey,
+        masterOptionsKey,
+        explorerToken ? "auth" : "no-auth",
         maxPlies,
       ].join("|"),
-    [currentTab?.value, debouncedFen, localOptions, maxPlies, referenceDatabase],
+    [
+      currentTab?.value,
+      debouncedFen,
+      explorerToken,
+      lichessOptionsKey,
+      localOptions,
+      masterOptionsKey,
+      maxPlies,
+      referenceDatabase,
+      source,
+    ],
   );
 
-  const searchKey = referenceDatabase
+  const canSearch = isLocalSource ? !!referenceDatabase : !!explorerToken;
+  const searchKey = canSearch
     ? [
         "plan-explorer",
         requestId,
-        referenceDatabase,
+        source,
+        referenceDatabase ?? "",
         debouncedFen,
         localOptions.type,
         localOptions.player ?? "",
@@ -107,6 +140,8 @@ function PlanExplorerPanel() {
         localOptions.start_date ?? "",
         localOptions.end_date ?? "",
         localOptions.result,
+        lichessOptionsKey,
+        masterOptionsKey,
         maxPlies,
       ]
     : null;
@@ -116,6 +151,26 @@ function PlanExplorerPanel() {
     isLoading,
     error,
   } = useSWR(searchKey, async () => {
+    if (source === "lch_all") {
+      return getOnlinePlanExplorer(
+        source,
+        debouncedFen,
+        lichessOptions,
+        Number(maxPlies),
+        explorerToken,
+      );
+    }
+
+    if (source === "lch_master") {
+      return getOnlinePlanExplorer(
+        source,
+        debouncedFen,
+        masterOptions,
+        Number(maxPlies),
+        explorerToken,
+      );
+    }
+
     return getPlanExplorer(
       {
         ...localOptions,
@@ -139,16 +194,25 @@ function PlanExplorerPanel() {
   useEffect(() => {
     setPlanExplorerData(null);
     setPreviewLine(null);
-  }, [debouncedFen, maxPlies, referenceDatabase, setPlanExplorerData, setPreviewLine]);
+  }, [
+    debouncedFen,
+    lichessOptionsKey,
+    masterOptionsKey,
+    maxPlies,
+    referenceDatabase,
+    setPlanExplorerData,
+    setPreviewLine,
+    source,
+  ]);
 
   useEffect(() => {
-    if (!referenceDatabase) return undefined;
+    if (!isLocalSource || !referenceDatabase) return undefined;
 
     return () => {
       setPreviewLine(null);
       void cancelDatabaseSearch(requestId);
     };
-  }, [referenceDatabase, requestId, setPreviewLine]);
+  }, [isLocalSource, referenceDatabase, requestId, setPreviewLine]);
 
   useEffect(() => {
     setPlanExplorerData(visiblePlanData);
@@ -167,36 +231,79 @@ function PlanExplorerPanel() {
     return visiblePlanData?.pieces ?? [];
   }, [visiblePlanData?.pieces]);
 
-  if (!referenceDatabase) {
+  const content = (() => {
+    if (isLocalSource && !referenceDatabase) {
+      return <NoDatabaseWarning />;
+    }
+
+    if (missingExplorerToken) {
+      return (
+        <Alert color="yellow">
+          {t("Board.Database.ExplorerAuthRequired1")} <Link to="/accounts">Users</Link>{" "}
+          {t("Board.Database.ExplorerAuthRequired2")}
+        </Alert>
+      );
+    }
+
     return (
-      <Stack h="100%" gap="xs" p="sm">
-        <Group justify="space-between" align="center" wrap="nowrap">
-          <DatabaseSelector
-            data={dbSelectData}
-            value={referenceDatabase}
-            onChange={setReferenceDatabase}
-          />
-          <AutoArrowControls
-            checked={showPlanExplorerArrows}
-            onChange={setShowPlanExplorerArrows}
-            arrowLimit={arrowLimit}
-            setArrowLimit={setArrowLimit}
-          />
-        </Group>
-        <NoDatabaseWarning />
-      </Stack>
+      <ScrollArea flex={1} offsetScrollbars>
+        <Table withTableBorder highlightOnHover stickyHeader>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th style={{ width: 150 }}>Piece</Table.Th>
+              <Table.Th>Routes</Table.Th>
+              <Table.Th style={{ width: 110 }}>Games</Table.Th>
+              <Table.Th style={{ width: 150 }}>Results</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {pieces.length === 0 && !isLoading ? (
+              <Table.Tr>
+                <Table.Td colSpan={4}>
+                  <Text ta="center" c="dimmed" py="lg">
+                    No piece routes found in the sampled continuations.
+                  </Text>
+                </Table.Td>
+              </Table.Tr>
+            ) : (
+              pieces.map((piece) => (
+                <PieceRow
+                  key={`${piece.color}-${piece.role}-${piece.from}`}
+                  piece={piece}
+                  drawLine={drawLine}
+                  previewLine={setPreviewLine}
+                />
+              ))
+            )}
+          </Table.Tbody>
+        </Table>
+      </ScrollArea>
     );
-  }
+  })();
 
   return (
     <Stack h="100%" gap="xs" p="sm">
       <Stack gap="xs">
-        <Group justify="space-between" align="center" wrap="nowrap">
-          <DatabaseSelector
-            data={dbSelectData}
-            value={referenceDatabase}
-            onChange={setReferenceDatabase}
-          />
+        <Group justify="space-between" align="center" wrap="wrap" gap="xs">
+          <Group gap="xs" wrap="wrap" miw={0}>
+            <SegmentedControl
+              size="sm"
+              value={source}
+              onChange={(value) => setSource(value as PlanExplorerSource)}
+              data={[
+                { label: t("Board.Database.Local"), value: "local" },
+                { label: t("Board.Database.LichessAll"), value: "lch_all" },
+                { label: t("Board.Database.LichessMaster"), value: "lch_master" },
+              ]}
+            />
+            {isLocalSource && (
+              <DatabaseSelector
+                data={dbSelectData}
+                value={referenceDatabase}
+                onChange={setReferenceDatabase}
+              />
+            )}
+          </Group>
           <Group gap="xs" wrap="nowrap">
             <AutoArrowControls
               checked={showPlanExplorerArrows}
@@ -245,38 +352,7 @@ function PlanExplorerPanel() {
         </Alert>
       )}
 
-      <ScrollArea flex={1} offsetScrollbars>
-        <Table withTableBorder highlightOnHover stickyHeader>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th style={{ width: 150 }}>Piece</Table.Th>
-              <Table.Th>Routes</Table.Th>
-              <Table.Th style={{ width: 110 }}>Games</Table.Th>
-              <Table.Th style={{ width: 150 }}>Results</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {pieces.length === 0 && !isLoading ? (
-              <Table.Tr>
-                <Table.Td colSpan={4}>
-                  <Text ta="center" c="dimmed" py="lg">
-                    No piece routes found in the sampled continuations.
-                  </Text>
-                </Table.Td>
-              </Table.Tr>
-            ) : (
-              pieces.map((piece) => (
-                <PieceRow
-                  key={`${piece.color}-${piece.role}-${piece.from}`}
-                  piece={piece}
-                  drawLine={drawLine}
-                  previewLine={setPreviewLine}
-                />
-              ))
-            )}
-          </Table.Tbody>
-        </Table>
-      </ScrollArea>
+      {content}
     </Stack>
   );
 }
@@ -328,6 +404,9 @@ function DatabaseSelector({
   value: string | null;
   onChange: (value: string | null) => void;
 }) {
+  const selectedLabel = data.find((item) => item.value === value)?.label ?? "Reference database";
+  const widthCh = Math.min(Math.max(selectedLabel.length + 4, 18), 34);
+
   return (
     <Select
       data={data}
@@ -338,8 +417,9 @@ function DatabaseSelector({
       }}
       placeholder="Reference database"
       size="sm"
-      flex={1}
-      miw={360}
+      w={`${widthCh}ch`}
+      miw={180}
+      maw="100%"
       searchable
       allowDeselect={false}
       comboboxProps={{ withinPortal: true }}
@@ -360,6 +440,8 @@ function PieceRow({
 
   return (
     <Table.Tr
+      onMouseEnter={() => topLine && previewLine(topLine)}
+      onMouseLeave={() => previewLine(null)}
       onClick={() => topLine && drawLine(topLine)}
       style={{ cursor: topLine ? "pointer" : "default" }}
     >
@@ -386,7 +468,7 @@ function PieceRow({
               gap="xs"
               wrap="nowrap"
               onMouseEnter={() => previewLine(line)}
-              onMouseLeave={() => previewLine(null)}
+              onMouseLeave={() => topLine && previewLine(topLine)}
             >
               <Tooltip label="Draw route">
                 <ActionIcon

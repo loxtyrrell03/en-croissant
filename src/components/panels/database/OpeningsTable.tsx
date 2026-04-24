@@ -1,11 +1,14 @@
 import { Group, Progress, Text } from "@mantine/core";
-import { useAtom } from "jotai";
+import { isNormal, makeSquare } from "chessops";
+import { parseSan } from "chessops/san";
+import { useAtom, useSetAtom } from "jotai";
 import { DataTable } from "mantine-datatable";
-import { memo, useContext } from "react";
+import { memo, useCallback, useContext, useEffect } from "react";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
-import { moveNotationTypeAtom } from "@/state/atoms";
+import { currentBoardPreviewShapesAtom, moveNotationTypeAtom } from "@/state/atoms";
 import { addPieceSymbol } from "@/utils/annotation";
+import { positionFromFen } from "@/utils/chessops";
 import type { Opening } from "@/utils/db";
 import { formatNumber } from "@/utils/format";
 import classes from "./OpeningsTable.module.css";
@@ -54,7 +57,51 @@ function OpeningsTable({
 }) {
   const store = useContext(TreeStateContext)!;
   const makeMove = useStore(store, (s) => s.makeMove);
+  const currentFen = useStore(store, (s) => s.currentNode().fen);
   const [moveNotationType] = useAtom(moveNotationTypeAtom);
+  const setBoardPreviewShapes = useSetAtom(currentBoardPreviewShapesAtom);
+
+  const clearMovePreview = useCallback(() => {
+    setBoardPreviewShapes(null);
+  }, [setBoardPreviewShapes]);
+
+  useEffect(() => clearMovePreview, [clearMovePreview]);
+
+  const previewMove = useCallback(
+    (moveSan: string) => {
+      if (moveSan === "Total" || moveSan === "*") {
+        clearMovePreview();
+        return;
+      }
+
+      const [pos] = positionFromFen(currentFen);
+      if (!pos) {
+        clearMovePreview();
+        return;
+      }
+
+      const move = parseSan(pos, moveSan);
+      if (!move || !isNormal(move)) {
+        clearMovePreview();
+        return;
+      }
+
+      setBoardPreviewShapes({
+        fen: currentFen,
+        shapes: [
+          {
+            orig: makeSquare(move.from),
+            dest: makeSquare(move.to),
+            brush: "preview",
+            modifiers: {
+              lineWidth: 10,
+            },
+          },
+        ],
+      });
+    },
+    [clearMovePreview, currentFen, setBoardPreviewShapes],
+  );
 
   openings = sortOpeningRows(openings, sortBy);
 
@@ -159,6 +206,10 @@ function OpeningsTable({
       idAccessor="move"
       emptyState={"No games found"}
       onRowClick={({ record }) => makeMove({ payload: record.move })}
+      customRowAttributes={(record) => ({
+        onMouseEnter: () => previewMove(record.move),
+        onMouseLeave: clearMovePreview,
+      })}
     />
   );
 }
