@@ -39,6 +39,8 @@ use crate::{
 use super::GameQuery;
 
 const DB_CACHE_LIMIT: usize = 4;
+const PLAN_EXPLORER_INDEXED_SAMPLES: usize = 5_000;
+const PLAN_EXPLORER_FALLBACK_FULL_SAMPLE_MAX_GAMES: usize = 100_000;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone)]
 pub struct ExactData {
@@ -874,6 +876,34 @@ fn reserve_plan_sample(sampled_games: &AtomicUsize, max_samples: usize) -> bool 
         .is_ok()
 }
 
+fn fen_ply(fen: &str) -> usize {
+    let mut parts = fen.split_whitespace();
+    let _board = parts.next();
+    let turn = parts.next().unwrap_or("w");
+    let _castling = parts.next();
+    let _en_passant = parts.next();
+    let _halfmove = parts.next();
+    let fullmove = parts
+        .next()
+        .and_then(|value| value.parse::<usize>().ok())
+        .unwrap_or(1);
+
+    fullmove.saturating_sub(1) * 2 + usize::from(turn == "b")
+}
+
+fn plan_explorer_sample_limit(fen: &str, uses_occurrence_index: bool, index_len: usize) -> usize {
+    if uses_occurrence_index || index_len <= PLAN_EXPLORER_FALLBACK_FULL_SAMPLE_MAX_GAMES {
+        return PLAN_EXPLORER_INDEXED_SAMPLES;
+    }
+
+    match fen_ply(fen) {
+        0..=4 => PLAN_EXPLORER_INDEXED_SAMPLES,
+        5..=8 => 3_000,
+        9..=12 => 1_500,
+        _ => 800,
+    }
+}
+
 fn collect_piece_plans(
     chess: &Chess,
     mainline: &mut impl Iterator<Item = u8>,
@@ -1682,7 +1712,6 @@ pub async fn get_plan_explorer(
 
     let start = Instant::now();
     let max_plies = max_plies.clamp(1, 30);
-    const MAX_PLAN_SAMPLES: usize = 5000;
     let cancel_flag = begin_cancelable_db_request(&state, &request_id);
     let cache_key = (query.clone(), file.clone(), max_plies);
 
@@ -1702,17 +1731,30 @@ pub async fn get_plan_explorer(
     let permit = state.new_request.acquire().await.unwrap();
 
     let mmap_index = open_mmap_search_index(&file, &state)?;
+    let has_position_index = mmap_index.has_position_index();
+    let uses_occurrence_index =
+        has_position_index && matches!(&parsed_position_query, PositionQuery::Exact(_));
+    let max_plan_samples = plan_explorer_sample_limit(
+        &position_query_js.fen,
+        uses_occurrence_index,
+        mmap_index.len(),
+    );
+    let stop_after_sample_limit =
+        !uses_occurrence_index && mmap_index.len() > PLAN_EXPLORER_FALLBACK_FULL_SAMPLE_MAX_GAMES;
 
     if let PositionQuery::Exact(exact) = &parsed_position_query {
-        if !mmap_index.has_position_index() {
-            info!("position occurrence index unavailable; using full plan explorer scan");
+        if !has_position_index {
+            info!(
+                "position occurrence index unavailable; using sampled plan explorer scan capped at {} games",
+                max_plan_samples
+            );
         } else {
             let indexed_result = plan_explorer_from_occurrences(
                 &mmap_index,
                 &query,
                 exact,
                 max_plies as usize,
-                MAX_PLAN_SAMPLES,
+                max_plan_samples,
                 wanted_result,
                 &cancel_flag,
             );
@@ -1748,44 +1790,12 @@ pub async fn get_plan_explorer(
             return;
         }
 
-        if !mmap_index.has_position_index()
-            && sampled_games.load(Ordering::Relaxed) >= MAX_PLAN_SAMPLES
-        {
+        if stop_after_sample_limit && sampled_games.load(Ordering::Relaxed) >= max_plan_samples {
             return;
         }
 
-        if let Some(white) = query.player1 {
-            if white != entry.white_id {
-                return;
-            }
-        }
-
-        if let Some(black) = query.player2 {
-            if black != entry.black_id {
-                return;
-            }
-        }
-
-        if let Some(wanted) = wanted_result {
-            if entry.result != wanted {
-                return;
-            }
-        }
-
-        if let Some(start_date) = &query.start_date {
-            if let Some(date) = entry.date {
-                if date < start_date.as_str() {
-                    return;
-                }
-            }
-        }
-
-        if let Some(end_date) = &query.end_date {
-            if let Some(date) = entry.date {
-                if date > end_date.as_str() {
-                    return;
-                }
-            }
+        if !entry_matches_query(&entry, &query, wanted_result) {
+            return;
         }
 
         let end_material: MaterialCount = ByColor {
@@ -1803,7 +1813,7 @@ pub async fn get_plan_explorer(
             &parsed_position_query,
             max_plies as usize,
             &sampled_games,
-            MAX_PLAN_SAMPLES,
+            max_plan_samples,
         ) else {
             return;
         };
@@ -1822,7 +1832,27 @@ pub async fn get_plan_explorer(
         }
     };
 
-    mmap_index.par_iter().for_each(process_entry);
+    if stop_after_sample_limit {
+        let _ = mmap_index.par_iter().try_for_each(|entry| {
+            if cancel_flag.load(Ordering::Relaxed)
+                || sampled_games.load(Ordering::Relaxed) >= max_plan_samples
+            {
+                return Err(());
+            }
+
+            process_entry(entry);
+
+            if cancel_flag.load(Ordering::Relaxed)
+                || sampled_games.load(Ordering::Relaxed) >= max_plan_samples
+            {
+                Err(())
+            } else {
+                Ok(())
+            }
+        });
+    } else {
+        mmap_index.par_iter().for_each(process_entry);
+    }
 
     if cancel_flag.load(Ordering::Relaxed) {
         drop(permit);
@@ -1943,6 +1973,63 @@ mod tests {
             .unwrap();
 
         assert!(query.matches(&chess));
+    }
+
+    #[test]
+    fn fen_ply_reads_fullmove_and_side_to_move() {
+        assert_eq!(
+            fen_ply("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
+            0
+        );
+        assert_eq!(
+            fen_ply("rnbqkbnr/pppppppp/8/8/5N2/8/PPPPPPPP/RNBQKB1R b KQkq - 1 1"),
+            1
+        );
+        assert_eq!(
+            fen_ply("rnbqkbnr/ppp1pppp/8/3p4/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 2"),
+            2
+        );
+    }
+
+    #[test]
+    fn plan_explorer_sample_limit_stays_full_for_indexed_or_small_databases() {
+        let fen = "rnbqkbnr/ppp1pppp/8/3p4/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 2";
+        assert_eq!(
+            plan_explorer_sample_limit(fen, true, 5_000_000),
+            PLAN_EXPLORER_INDEXED_SAMPLES
+        );
+        assert_eq!(
+            plan_explorer_sample_limit(fen, false, PLAN_EXPLORER_FALLBACK_FULL_SAMPLE_MAX_GAMES),
+            PLAN_EXPLORER_INDEXED_SAMPLES
+        );
+    }
+
+    #[test]
+    fn plan_explorer_sample_limit_tapers_for_deeper_mega_fallbacks() {
+        assert_eq!(
+            plan_explorer_sample_limit(
+                "rnbqkbnr/ppp1pppp/8/3p4/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 2",
+                false,
+                5_000_000,
+            ),
+            PLAN_EXPLORER_INDEXED_SAMPLES
+        );
+        assert_eq!(
+            plan_explorer_sample_limit(
+                "r1bqkbnr/pppppppp/2n5/8/8/2N2N2/PPPPPPPP/R1BQKB1R b KQkq - 3 3",
+                false,
+                5_000_000,
+            ),
+            3_000
+        );
+        assert_eq!(
+            plan_explorer_sample_limit(
+                "r1bqkb1r/pppppppp/2n2n2/8/8/2N2N2/PPPPPPPP/R1BQKB1R b KQkq - 4 5",
+                false,
+                5_000_000,
+            ),
+            1_500
+        );
     }
 
     #[test]

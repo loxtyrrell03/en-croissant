@@ -42,6 +42,7 @@ This file records the work saved during the Codex session on the `codex/en-crois
 - Database search, Plan Explorer, replay, and index generation now tolerate Shakmaty's harmless "too much material" validation case, matching the import path and avoiding false errors for displayable positions.
 - Existing v4 `.ecsi` indexes now remain readable, and very large databases skip the synchronous occurrence table so Mega Database loads do not get trapped in a huge rebuild.
 - Plan Explorer now pushes its side filter into the board arrow data, caches repeated plan lookups, and stops the Mega Database fallback scan once it has enough sampled continuations for the displayed plans.
+- The Mega Database Plan Explorer fallback now uses a depth-aware sample cap and cancels the parallel scan as soon as enough continuations have been collected, avoiding the slowdown that returned after the first few opening moves.
 
 ## Board And Settings
 
