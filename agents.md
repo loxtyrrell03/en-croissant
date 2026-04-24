@@ -41,6 +41,7 @@ This file records the work saved during the Codex session on the `codex/en-crois
 - The mmap search-index cache now keeps several recent database indexes, so Compare can keep both selected databases warm instead of constantly replacing the cache entry.
 - Database search, Plan Explorer, replay, and index generation now tolerate Shakmaty's harmless "too much material" validation case, matching the import path and avoiding false errors for displayable positions.
 - Existing v4 `.ecsi` indexes now remain readable, and very large databases skip the synchronous occurrence table so Mega Database loads do not get trapped in a huge rebuild.
+- Plan Explorer now pushes its side filter into the board arrow data, caches repeated plan lookups, and stops the Mega Database fallback scan once it has enough sampled continuations for the displayed plans.
 
 ## Board And Settings
 

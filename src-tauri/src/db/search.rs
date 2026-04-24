@@ -1684,6 +1684,12 @@ pub async fn get_plan_explorer(
     let max_plies = max_plies.clamp(1, 30);
     const MAX_PLAN_SAMPLES: usize = 5000;
     let cancel_flag = begin_cancelable_db_request(&state, &request_id);
+    let cache_key = (query.clone(), file.clone(), max_plies);
+
+    if let Some(cached) = state.plan_explorer_cache.get(&cache_key) {
+        finish_cancelable_db_request(&state, &request_id, &cancel_flag);
+        return Ok(cached.clone());
+    }
 
     let parsed_position_query = convert_position_query(position_query_js.clone())?;
     let wanted_result = query.wanted_result.as_ref().and_then(|r| match r.as_str() {
@@ -1721,13 +1727,15 @@ pub async fn get_plan_explorer(
                 start.elapsed()
             );
 
-            return Ok(PlanExplorerData {
+            let data = PlanExplorerData {
                 fen: position_query_js.fen.clone(),
                 total_games,
                 sampled_games,
                 max_plies,
                 pieces,
-            });
+            };
+            state.plan_explorer_cache.insert(cache_key, data.clone());
+            return Ok(data);
         }
     }
 
@@ -1737,6 +1745,12 @@ pub async fn get_plan_explorer(
 
     let process_entry = |entry: SearchGameEntryRef<'_>| {
         if cancel_flag.load(Ordering::Relaxed) {
+            return;
+        }
+
+        if !mmap_index.has_position_index()
+            && sampled_games.load(Ordering::Relaxed) >= MAX_PLAN_SAMPLES
+        {
             return;
         }
 
@@ -1823,13 +1837,15 @@ pub async fn get_plan_explorer(
 
     info!("finished plan explorer in {:?}", start.elapsed());
 
-    Ok(PlanExplorerData {
+    let data = PlanExplorerData {
         fen: position_query_js.fen.clone(),
         total_games: total_games.load(Ordering::Relaxed) as i32,
         sampled_games: sampled_games.load(Ordering::Relaxed) as i32,
         max_plies,
         pieces,
-    })
+    };
+    state.plan_explorer_cache.insert(cache_key, data.clone());
+    Ok(data)
 }
 
 pub async fn is_position_in_db(

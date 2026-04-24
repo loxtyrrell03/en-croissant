@@ -23,7 +23,7 @@ use std::sync::{Arc, Mutex};
 
 use chess::{BestMovesPayload, EngineProcess};
 use dashmap::DashMap;
-use db::{DatabaseProgress, GameQuery, NormalizedGame, PositionStats};
+use db::{DatabaseProgress, GameQuery, NormalizedGame, PlanExplorerData, PositionStats};
 use derivative::Derivative;
 use game::GameManager;
 use progress::{clear_progress, get_progress, ProgressEvent, ProgressStore};
@@ -82,6 +82,7 @@ pub struct AppState {
         diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<diesel::SqliteConnection>>,
     >,
     line_cache: DashMap<(GameQuery, PathBuf), (Vec<PositionStats>, Vec<NormalizedGame>)>,
+    plan_explorer_cache: DashMap<(GameQuery, PathBuf, i32), PlanExplorerData>,
     db_cache: Mutex<Vec<(PathBuf, MmapSearchIndex)>>,
     #[derivative(Default(value = "Arc::new(Semaphore::new(2))"))]
     new_request: Arc<Semaphore>,

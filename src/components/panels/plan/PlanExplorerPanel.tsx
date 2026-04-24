@@ -127,6 +127,15 @@ function PlanExplorerPanel() {
     );
   });
 
+  const visiblePlanData = useMemo(() => {
+    if (!planData) return null;
+    if (sideFilter === "all") return planData;
+    return {
+      ...planData,
+      pieces: planData.pieces.filter((piece) => piece.color === sideFilter),
+    };
+  }, [planData, sideFilter]);
+
   useEffect(() => {
     setPlanExplorerData(null);
     setPreviewLine(null);
@@ -142,10 +151,9 @@ function PlanExplorerPanel() {
   }, [referenceDatabase, requestId, setPreviewLine]);
 
   useEffect(() => {
-    if (planData) {
-      setPlanExplorerData(planData);
-    }
-  }, [planData, setPlanExplorerData]);
+    setPlanExplorerData(visiblePlanData);
+    setPreviewLine(null);
+  }, [setPlanExplorerData, setPreviewLine, visiblePlanData]);
 
   const drawLine = useCallback(
     (line: PlanExplorerLine) => {
@@ -156,10 +164,8 @@ function PlanExplorerPanel() {
   );
 
   const pieces = useMemo(() => {
-    const source = planData?.pieces ?? [];
-    if (sideFilter === "all") return source;
-    return source.filter((piece) => piece.color === sideFilter);
-  }, [planData?.pieces, sideFilter]);
+    return visiblePlanData?.pieces ?? [];
+  }, [visiblePlanData?.pieces]);
 
   if (!referenceDatabase) {
     return (

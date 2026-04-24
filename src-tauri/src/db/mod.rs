@@ -64,7 +64,7 @@ pub use self::schema::puzzles;
 pub use self::schema::themes;
 pub use self::search::{
     cancel_database_search, find_repertoire_gaps, get_plan_explorer, is_position_in_db,
-    search_position, PositionQueryJs, PositionStats,
+    search_position, PlanExplorerData, PositionQueryJs, PositionStats,
 };
 
 const DATABASE_VERSION: &str = "1.0.0";
@@ -1956,8 +1956,9 @@ pub async fn merge_players(
 #[tauri::command]
 #[specta::specta]
 pub fn clear_games(state: tauri::State<'_, AppState>) {
-    let mut state = state.db_cache.lock().unwrap();
-    state.clear();
+    let mut cache = state.db_cache.lock().unwrap();
+    cache.clear();
+    state.plan_explorer_cache.clear();
 }
 
 #[tauri::command]
