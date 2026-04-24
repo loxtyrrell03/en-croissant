@@ -688,6 +688,36 @@ fn collect_reference_positions(
         return Ok(positions);
     }
 
+    if !index.has_position_index() {
+        for entry in index.iter() {
+            let mut chess = starting_position(&entry.fen)?;
+            let mut mainline = iter_mainline_move_bytes(entry.moves);
+
+            for _ in 0..max_plies {
+                let Some(byte) = mainline.next() else {
+                    break;
+                };
+                let Some(m) = decode_move(byte, &chess) else {
+                    break;
+                };
+
+                let key = fen_key(&chess);
+                if candidate_keys.contains(&key) {
+                    let san = SanPlus::from_move(chess.clone(), &m).to_string();
+                    let uci = uci_for_move(&m);
+                    positions
+                        .entry(key)
+                        .or_default()
+                        .add_move(san, uci, entry.result);
+                }
+
+                chess.play_unchecked(&m);
+            }
+        }
+
+        return Ok(positions);
+    }
+
     let position_keys = candidate_keys
         .iter()
         .filter_map(|key| position_index_key_from_fen_key(key))
@@ -1448,38 +1478,42 @@ pub async fn search_position(
     });
 
     if let Some(PositionQuery::Exact(exact)) = &parsed_position_query {
-        info!("start occurrence-index search on {tab_id}");
-        let (openings, ids) = search_position_from_occurrences(
-            &mmap_index,
-            &query,
-            exact,
-            wanted_result,
-            &cancel_flag,
-        )?;
+        if !mmap_index.has_position_index() {
+            info!("position occurrence index unavailable; using full scan on {tab_id}");
+        } else {
+            info!("start occurrence-index search on {tab_id}");
+            let (openings, ids) = search_position_from_occurrences(
+                &mmap_index,
+                &query,
+                exact,
+                wanted_result,
+                &cancel_flag,
+            )?;
 
-        let (white_players, black_players) = diesel::alias!(players as white, players as black);
-        let games: Vec<(Game, Player, Player, Event, Site)> = games::table
-            .inner_join(white_players.on(games::white_id.eq(white_players.field(players::id))))
-            .inner_join(black_players.on(games::black_id.eq(black_players.field(players::id))))
-            .inner_join(events::table.on(games::event_id.eq(events::id)))
-            .inner_join(sites::table.on(games::site_id.eq(sites::id)))
-            .filter(games::id.eq_any(ids))
-            .order((games::white_elo.desc(), games::black_elo.desc()))
-            .load(db)?;
-        let normalized_games = normalize_games(games);
-        let file_path = file.clone();
+            let (white_players, black_players) = diesel::alias!(players as white, players as black);
+            let games: Vec<(Game, Player, Player, Event, Site)> = games::table
+                .inner_join(white_players.on(games::white_id.eq(white_players.field(players::id))))
+                .inner_join(black_players.on(games::black_id.eq(black_players.field(players::id))))
+                .inner_join(events::table.on(games::event_id.eq(events::id)))
+                .inner_join(sites::table.on(games::site_id.eq(sites::id)))
+                .filter(games::id.eq_any(ids))
+                .order((games::white_elo.desc(), games::black_elo.desc()))
+                .load(db)?;
+            let normalized_games = normalize_games(games);
+            let file_path = file.clone();
 
-        state.line_cache.insert(
-            (query.clone(), file.clone()),
-            (openings.clone(), normalized_games.clone()),
-        );
-        state.search_collisions.remove(&(query, file_path));
+            state.line_cache.insert(
+                (query.clone(), file.clone()),
+                (openings.clone(), normalized_games.clone()),
+            );
+            state.search_collisions.remove(&(query, file_path));
 
-        drop(permit);
-        finish_cancelable_db_request(&state, &tab_id, &cancel_flag);
-        info!("finished occurrence-index search in {:?}", start.elapsed());
+            drop(permit);
+            finish_cancelable_db_request(&state, &tab_id, &cancel_flag);
+            info!("finished occurrence-index search in {:?}", start.elapsed());
 
-        return Ok((openings, normalized_games));
+            return Ok((openings, normalized_games));
+        }
     }
 
     info!("start search on {tab_id}");
@@ -1664,33 +1698,37 @@ pub async fn get_plan_explorer(
     let mmap_index = open_mmap_search_index(&file, &state)?;
 
     if let PositionQuery::Exact(exact) = &parsed_position_query {
-        let indexed_result = plan_explorer_from_occurrences(
-            &mmap_index,
-            &query,
-            exact,
-            max_plies as usize,
-            MAX_PLAN_SAMPLES,
-            wanted_result,
-            &cancel_flag,
-        );
+        if !mmap_index.has_position_index() {
+            info!("position occurrence index unavailable; using full plan explorer scan");
+        } else {
+            let indexed_result = plan_explorer_from_occurrences(
+                &mmap_index,
+                &query,
+                exact,
+                max_plies as usize,
+                MAX_PLAN_SAMPLES,
+                wanted_result,
+                &cancel_flag,
+            );
 
-        drop(permit);
-        finish_cancelable_db_request(&state, &request_id, &cancel_flag);
+            drop(permit);
+            finish_cancelable_db_request(&state, &request_id, &cancel_flag);
 
-        let (total_games, sampled_games, pieces) = indexed_result?;
+            let (total_games, sampled_games, pieces) = indexed_result?;
 
-        info!(
-            "finished occurrence-index plan explorer in {:?}",
-            start.elapsed()
-        );
+            info!(
+                "finished occurrence-index plan explorer in {:?}",
+                start.elapsed()
+            );
 
-        return Ok(PlanExplorerData {
-            fen: position_query_js.fen.clone(),
-            total_games,
-            sampled_games,
-            max_plies,
-            pieces,
-        });
+            return Ok(PlanExplorerData {
+                fen: position_query_js.fen.clone(),
+                total_games,
+                sampled_games,
+                max_plies,
+                pieces,
+            });
+        }
     }
 
     let total_games = AtomicUsize::new(0);

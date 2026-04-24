@@ -75,6 +75,8 @@ const DELETE_INDEXES_SQL: &str = include_str!("delete_indexes.sql");
 
 const CREATE_TABLES_SQL: &str = include_str!("create.sql");
 const DB_CACHE_LIMIT: usize = 4;
+const POSITION_INDEX_MAX_GAMES: usize = 100_000;
+const POSITION_INDEX_MAX_MOVE_BYTES: usize = 4_000_000;
 
 const WHITE_PAWN: Piece = Piece {
     color: shakmaty::Color::White,
@@ -692,6 +694,21 @@ pub fn generate_search_index(
         ))
         .load(db)?;
 
+    let include_position_index = games.len() <= POSITION_INDEX_MAX_GAMES
+        && games
+            .iter()
+            .map(|(_, _, _, _, _, moves, _, _, _, _, _, _)| moves.len())
+            .sum::<usize>()
+            <= POSITION_INDEX_MAX_MOVE_BYTES;
+
+    if !include_position_index {
+        info!(
+            "Skipping position occurrence index for {:?}: {} games is too large for synchronous indexing",
+            db_path,
+            games.len()
+        );
+    }
+
     let mut writer = SearchIndex::with_capacity(games.len());
     for (
         id,
@@ -723,8 +740,10 @@ pub fn generate_search_index(
             white_elo,
             black_elo,
         );
-        for occurrence in collect_position_occurrences_for_entry(game_index, &entry)? {
-            writer.push_occurrence(occurrence);
+        if include_position_index {
+            for occurrence in collect_position_occurrences_for_entry(game_index, &entry)? {
+                writer.push_occurrence(occurrence);
+            }
         }
         writer.push(entry);
     }

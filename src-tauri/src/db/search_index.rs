@@ -10,11 +10,12 @@ use rayon::prelude::*;
 use rkyv::{Archive, Deserialize, Serialize};
 
 const MAGIC: &[u8; 4] = b"ECSI";
+const LEGACY_VERSION: u32 = 4;
 const VERSION: u32 = 5;
 const HEADER_SIZE: usize = 8;
 const NO_NEXT_MOVE: u16 = u16::MAX;
 
-fn verify_header(header: &[u8]) -> io::Result<()> {
+fn verify_header(header: &[u8]) -> io::Result<u32> {
     if header.len() < HEADER_SIZE {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
@@ -30,14 +31,17 @@ fn verify_header(header: &[u8]) -> io::Result<()> {
     }
 
     let version = u32::from_le_bytes(header[4..8].try_into().unwrap());
-    if version != VERSION {
+    if version != VERSION && version != LEGACY_VERSION {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
-            format!("Unsupported version: {} (expected {})", version, VERSION),
+            format!(
+                "Unsupported version: {} (expected {} or {})",
+                version, VERSION, LEGACY_VERSION
+            ),
         ));
     }
 
-    Ok(())
+    Ok(version)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Archive, Serialize, Deserialize)]
@@ -154,6 +158,11 @@ impl<'a> From<&'a ArchivedPositionOccurrence> for PositionOccurrenceRef {
             next_move: (next_move != NO_NEXT_MOVE).then_some(next_move as u8),
         }
     }
+}
+
+#[derive(Archive, Serialize, Deserialize)]
+pub struct SearchIndexV4 {
+    pub entries: Vec<SearchGameEntry>,
 }
 
 #[derive(Archive, Serialize, Deserialize)]
@@ -293,11 +302,17 @@ impl SearchGameEntry {
     }
 }
 
+#[derive(Clone, Copy)]
+enum SearchIndexArchive {
+    Legacy(&'static ArchivedSearchIndexV4),
+    Current(&'static ArchivedSearchIndex),
+}
+
 #[derive(Clone)]
 pub struct MmapSearchIndex {
     #[allow(dead_code)] // mmap must be kept alive to back the archived reference
     mmap: Arc<Mmap>,
-    archived: &'static ArchivedSearchIndex,
+    archived: SearchIndexArchive,
 }
 
 unsafe impl Send for MmapSearchIndex {}
@@ -308,57 +323,90 @@ impl MmapSearchIndex {
         let file = File::open(path)?;
         let mmap = unsafe { Mmap::map(&file)? };
 
-        verify_header(&mmap)?;
+        let version = verify_header(&mmap)?;
 
         let mmap = Arc::new(mmap);
 
         let archived_bytes = &mmap[HEADER_SIZE..];
-        let archived = unsafe { rkyv::access_unchecked::<ArchivedSearchIndex>(archived_bytes) };
-
-        let archived: &'static ArchivedSearchIndex = unsafe { std::mem::transmute(archived) };
+        let archived = if version == LEGACY_VERSION {
+            let archived =
+                unsafe { rkyv::access_unchecked::<ArchivedSearchIndexV4>(archived_bytes) };
+            let archived: &'static ArchivedSearchIndexV4 = unsafe { std::mem::transmute(archived) };
+            SearchIndexArchive::Legacy(archived)
+        } else {
+            let archived = unsafe { rkyv::access_unchecked::<ArchivedSearchIndex>(archived_bytes) };
+            let archived: &'static ArchivedSearchIndex = unsafe { std::mem::transmute(archived) };
+            SearchIndexArchive::Current(archived)
+        };
 
         Ok(Self { mmap, archived })
     }
 
     #[inline]
     pub fn len(&self) -> usize {
-        self.archived.entries.len()
+        match self.archived {
+            SearchIndexArchive::Legacy(archived) => archived.entries.len(),
+            SearchIndexArchive::Current(archived) => archived.entries.len(),
+        }
     }
 
     #[inline]
     #[allow(dead_code)]
     pub fn is_empty(&self) -> bool {
-        self.archived.entries.is_empty()
+        match self.archived {
+            SearchIndexArchive::Legacy(archived) => archived.entries.is_empty(),
+            SearchIndexArchive::Current(archived) => archived.entries.is_empty(),
+        }
     }
 
     #[inline]
     #[allow(dead_code)]
     pub fn get_entry_ref(&self, index: usize) -> Option<SearchGameEntryRef<'_>> {
-        self.archived
-            .entries
-            .get(index)
-            .map(SearchGameEntryRef::from)
+        match self.archived {
+            SearchIndexArchive::Legacy(archived) => {
+                archived.entries.get(index).map(SearchGameEntryRef::from)
+            }
+            SearchIndexArchive::Current(archived) => {
+                archived.entries.get(index).map(SearchGameEntryRef::from)
+            }
+        }
     }
 
     #[allow(dead_code)]
     pub fn iter(&self) -> impl ExactSizeIterator<Item = SearchGameEntryRef<'_>> {
-        self.archived.entries.iter().map(SearchGameEntryRef::from)
+        let entries = match self.archived {
+            SearchIndexArchive::Legacy(archived) => &archived.entries,
+            SearchIndexArchive::Current(archived) => &archived.entries,
+        };
+        entries.iter().map(SearchGameEntryRef::from)
     }
 
     pub fn par_iter(&self) -> impl ParallelIterator<Item = SearchGameEntryRef<'_>> + '_ {
-        self.archived
-            .entries
-            .par_iter()
-            .map(SearchGameEntryRef::from)
+        let entries = match self.archived {
+            SearchIndexArchive::Legacy(archived) => &archived.entries,
+            SearchIndexArchive::Current(archived) => &archived.entries,
+        };
+        entries.par_iter().map(SearchGameEntryRef::from)
+    }
+
+    pub fn has_position_index(&self) -> bool {
+        match self.archived {
+            SearchIndexArchive::Legacy(_) => false,
+            SearchIndexArchive::Current(archived) => !archived.positions.is_empty(),
+        }
     }
 
     pub fn position_occurrences(&self, key: PositionIndexKey) -> Vec<PositionOccurrenceRef> {
-        let len = self.archived.positions.len();
+        let SearchIndexArchive::Current(archived) = self.archived else {
+            return Vec::new();
+        };
+
+        let len = archived.positions.len();
         let start = self.position_occurrence_lower_bound(key);
         let mut occurrences = Vec::new();
 
         for index in start..len {
-            let Some(occurrence) = self.archived.positions.get(index) else {
+            let Some(occurrence) = archived.positions.get(index) else {
                 break;
             };
             let occurrence_key = PositionIndexKey {
@@ -375,12 +423,16 @@ impl MmapSearchIndex {
     }
 
     fn position_occurrence_lower_bound(&self, key: PositionIndexKey) -> usize {
+        let SearchIndexArchive::Current(archived) = self.archived else {
+            return 0;
+        };
+
         let mut low = 0usize;
-        let mut high = self.archived.positions.len();
+        let mut high = archived.positions.len();
 
         while low < high {
             let mid = (low + high) / 2;
-            let Some(occurrence) = self.archived.positions.get(mid) else {
+            let Some(occurrence) = archived.positions.get(mid) else {
                 break;
             };
             let occurrence_key = PositionIndexKey {
@@ -522,6 +574,44 @@ mod tests {
         // Test iterator
         let loaded_vec: Vec<_> = index.iter().collect();
         assert_eq!(loaded_vec.len(), entries.len());
+    }
+
+    #[test]
+    fn test_legacy_index_opens_without_position_index() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("legacy.ecsi");
+        let legacy = SearchIndexV4 {
+            entries: vec![SearchGameEntry {
+                id: 1,
+                white_id: 100,
+                black_id: 200,
+                date: None,
+                result: GameResult::WhiteWin,
+                pawn_home: 0xFFFF,
+                white_material: 39,
+                black_material: 39,
+                white_elo: 2700,
+                black_elo: 2650,
+                fen: None,
+                moves: vec![12, 12],
+            }],
+        };
+
+        let file = File::create(&path).unwrap();
+        let mut writer = BufWriter::new(file);
+        writer.write_all(MAGIC).unwrap();
+        writer.write_all(&LEGACY_VERSION.to_le_bytes()).unwrap();
+        let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&legacy).unwrap();
+        writer.write_all(&bytes).unwrap();
+        writer.flush().unwrap();
+
+        assert!(MmapSearchIndex::is_valid(&path));
+        let index = MmapSearchIndex::open(&path).unwrap();
+        assert_eq!(index.len(), 1);
+        assert!(!index.has_position_index());
+        assert!(index
+            .position_occurrences(PositionIndexKey { hi: 0, lo: 0 })
+            .is_empty());
     }
 
     #[test]
