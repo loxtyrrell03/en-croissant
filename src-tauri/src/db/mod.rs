@@ -52,7 +52,10 @@ use tauri_specta::Event as _;
 use self::encoding::{
     encode_comment, encode_move, encode_nag, VARIATION_END_MARKER, VARIATION_START_MARKER,
 };
-pub use self::search_index::{get_index_path, MmapSearchIndex, SearchGameEntry, SearchIndex};
+pub use self::search_index::{
+    get_index_path, MmapSearchIndex, PositionIndexKey, PositionOccurrence, SearchGameEntry,
+    SearchIndex,
+};
 
 pub use self::models::NormalizedGame;
 pub use self::models::Puzzle;
@@ -71,6 +74,7 @@ const INDEXES_SQL: &str = include_str!("indexes.sql");
 const DELETE_INDEXES_SQL: &str = include_str!("delete_indexes.sql");
 
 const CREATE_TABLES_SQL: &str = include_str!("create.sql");
+const DB_CACHE_LIMIT: usize = 4;
 
 const WHITE_PAWN: Piece = Piece {
     color: shakmaty::Color::White,
@@ -102,6 +106,59 @@ fn get_pawn_home(board: &Board) -> u16 {
     let second_rank_pawns = (white_pawns.0 >> 8) as u8;
     let seventh_rank_pawns = (black_pawns.0 >> 48) as u8;
     (second_rank_pawns as u16) | ((seventh_rank_pawns as u16) << 8)
+}
+
+pub(crate) fn position_index_key(position: &Chess) -> PositionIndexKey {
+    let fen = Fen::from_position(position.clone(), EnPassantMode::Legal).to_string();
+    let mut parts = fen.split_whitespace();
+    let board = parts.next().unwrap_or_default();
+    let turn = parts.next().unwrap_or_default();
+    PositionIndexKey::from_text(&format!("{board} {turn}"))
+}
+
+fn starting_position_from_fen(fen: Option<&str>) -> Result<Chess, Error> {
+    if let Some(fen) = fen {
+        let fen = Fen::from_ascii(fen.as_bytes())?;
+        let setup = fen.into_setup();
+        let castling_mode = CastlingMode::detect(&setup);
+        Ok(Chess::from_setup(setup, castling_mode)
+            .or_else(PositionError::ignore_too_much_material)?)
+    } else {
+        Ok(Chess::default())
+    }
+}
+
+fn collect_position_occurrences_for_entry(
+    game_index: u32,
+    entry: &SearchGameEntry,
+) -> Result<Vec<PositionOccurrence>, Error> {
+    let mut position = starting_position_from_fen(entry.fen.as_deref())?;
+    let mut ply = 0u16;
+    let mut occurrences = Vec::new();
+
+    for byte in iter_mainline_move_bytes(&entry.moves) {
+        let Some(m) = decode_move(byte, &position) else {
+            break;
+        };
+
+        occurrences.push(PositionOccurrence::new(
+            position_index_key(&position),
+            game_index,
+            ply,
+            Some(byte),
+        ));
+        position.play_unchecked(&m);
+        ply = ply.saturating_add(1);
+    }
+
+    occurrences.push(PositionOccurrence::new(
+        position_index_key(&position),
+        game_index,
+        ply,
+        None,
+    ));
+
+    Ok(occurrences)
 }
 
 #[derive(Debug)]
@@ -651,6 +708,7 @@ pub fn generate_search_index(
         black_elo,
     ) in games
     {
+        let game_index = writer.entries.len() as u32;
         let entry = SearchGameEntry::from_game_data(
             id,
             white_id,
@@ -665,6 +723,9 @@ pub fn generate_search_index(
             white_elo,
             black_elo,
         );
+        for occurrence in collect_position_occurrences_for_entry(game_index, &entry)? {
+            writer.push_occurrence(occurrence);
+        }
         writer.push(entry);
     }
     writer.write_to(&index_path)?;
@@ -1877,7 +1938,7 @@ pub async fn merge_players(
 #[specta::specta]
 pub fn clear_games(state: tauri::State<'_, AppState>) {
     let mut state = state.db_cache.lock().unwrap();
-    *state = None;
+    state.clear();
 }
 
 #[tauri::command]
@@ -1894,16 +1955,21 @@ pub async fn preload_reference_db(
     }
 
     let mut cache = state.db_cache.lock().unwrap();
-    if cache.is_none() {
-        info!("Preloading reference database from {:?}", index_path);
-        match MmapSearchIndex::open(&index_path) {
-            Ok(index) => {
-                info!("Preloaded reference database with {} games", index.len());
-                *cache = Some(index);
+    if cache.iter().any(|(cached_file, _)| cached_file == &file) {
+        return Ok(());
+    }
+
+    info!("Preloading reference database from {:?}", index_path);
+    match MmapSearchIndex::open(&index_path) {
+        Ok(index) => {
+            info!("Preloaded reference database with {} games", index.len());
+            cache.push((file, index));
+            if cache.len() > DB_CACHE_LIMIT {
+                cache.remove(0);
             }
-            Err(e) => {
-                return Err(Error::from(e));
-            }
+        }
+        Err(e) => {
+            return Err(Error::from(e));
         }
     }
 

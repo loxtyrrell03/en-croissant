@@ -36,6 +36,10 @@ This file records the work saved during the Codex session on the `codex/en-crois
 - Leaving or changing the Plan Explorer, Database, or Compare views cancels the relevant in-flight local database search.
 - The database progress listener now cleans itself up when the visible request changes or unmounts.
 - Engine analysis now runs only while the `Analysis` or `Compare` workspace is active, and local engines are stopped when leaving those views.
+- Added a serialized position-occurrence index to `.ecsi` search indexes so exact Database, Compare, and Plan Explorer lookups can jump directly to matching positions instead of replaying every game.
+- Updated reference-side repertoire gap scanning to use the occurrence index for candidate positions.
+- The mmap search-index cache now keeps several recent database indexes, so Compare can keep both selected databases warm instead of constantly replacing the cache entry.
+- Database search, Plan Explorer, replay, and index generation now tolerate Shakmaty's harmless "too much material" validation case, matching the import path and avoiding false errors for displayable positions.
 
 ## Board And Settings
 
@@ -53,4 +57,7 @@ This file records the work saved during the Codex session on the `codex/en-crois
 
 - `cargo check` passed.
 - `pnpm build-vite` passed.
+- `cargo test search_index` passed.
+- `cargo test exact_matches` passed.
+- `cargo test exact_query_ignores_too_much_material_validation` passed.
 - Earlier full `cargo test` had unrelated existing failures in eval/search fixture expectations; those were not part of this save.

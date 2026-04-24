@@ -10,8 +10,9 @@ use rayon::prelude::*;
 use rkyv::{Archive, Deserialize, Serialize};
 
 const MAGIC: &[u8; 4] = b"ECSI";
-const VERSION: u32 = 4;
+const VERSION: u32 = 5;
 const HEADER_SIZE: usize = 8;
+const NO_NEXT_MOVE: u16 = u16::MAX;
 
 fn verify_header(header: &[u8]) -> io::Result<()> {
     if header.len() < HEADER_SIZE {
@@ -89,21 +90,90 @@ pub struct SearchGameEntry {
     pub moves: Vec<u8>,
 }
 
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Archive, Serialize, Deserialize,
+)]
+#[rkyv(compare(PartialEq), derive(Debug))]
+pub struct PositionIndexKey {
+    pub hi: u64,
+    pub lo: u64,
+}
+
+impl PositionIndexKey {
+    pub fn from_text(text: &str) -> Self {
+        let mut hi = 0xcbf29ce484222325u64;
+        let mut lo = 0x84222325cbf29ce4u64;
+
+        for byte in text.as_bytes() {
+            hi ^= u64::from(*byte);
+            hi = hi.wrapping_mul(0x100000001b3);
+
+            lo ^= u64::from(*byte).rotate_left(1);
+            lo = lo.wrapping_mul(0x100000001b3);
+        }
+
+        Self { hi, lo }
+    }
+}
+
+#[derive(Debug, Clone, Archive, Serialize, Deserialize)]
+#[rkyv(compare(PartialEq), derive(Debug))]
+pub struct PositionOccurrence {
+    pub key_hi: u64,
+    pub key_lo: u64,
+    pub game_index: u32,
+    pub ply: u16,
+    pub next_move: u16,
+}
+
+impl PositionOccurrence {
+    pub fn new(key: PositionIndexKey, game_index: u32, ply: u16, next_move: Option<u8>) -> Self {
+        Self {
+            key_hi: key.hi,
+            key_lo: key.lo,
+            game_index,
+            ply,
+            next_move: next_move.map(u16::from).unwrap_or(NO_NEXT_MOVE),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct PositionOccurrenceRef {
+    pub game_index: usize,
+    pub ply: u16,
+    pub next_move: Option<u8>,
+}
+
+impl<'a> From<&'a ArchivedPositionOccurrence> for PositionOccurrenceRef {
+    fn from(archived: &'a ArchivedPositionOccurrence) -> Self {
+        let next_move: u16 = archived.next_move.into();
+        Self {
+            game_index: Into::<u32>::into(archived.game_index) as usize,
+            ply: archived.ply.into(),
+            next_move: (next_move != NO_NEXT_MOVE).then_some(next_move as u8),
+        }
+    }
+}
+
 #[derive(Archive, Serialize, Deserialize)]
 pub struct SearchIndex {
     pub entries: Vec<SearchGameEntry>,
+    pub positions: Vec<PositionOccurrence>,
 }
 
 impl SearchIndex {
     pub fn new() -> Self {
         Self {
             entries: Vec::new(),
+            positions: Vec::new(),
         }
     }
 
     pub fn with_capacity(capacity: usize) -> Self {
         Self {
             entries: Vec::with_capacity(capacity),
+            positions: Vec::new(),
         }
     }
 
@@ -111,7 +181,20 @@ impl SearchIndex {
         self.entries.push(entry);
     }
 
-    pub fn write_to<P: AsRef<Path>>(&self, path: P) -> io::Result<()> {
+    pub fn push_occurrence(&mut self, occurrence: PositionOccurrence) {
+        self.positions.push(occurrence);
+    }
+
+    pub fn write_to<P: AsRef<Path>>(&mut self, path: P) -> io::Result<()> {
+        self.positions.sort_by(|a, b| {
+            (a.key_hi, a.key_lo, a.game_index, a.ply).cmp(&(
+                b.key_hi,
+                b.key_lo,
+                b.game_index,
+                b.ply,
+            ))
+        });
+
         let file = OpenOptions::new()
             .write(true)
             .create(true)
@@ -269,6 +352,52 @@ impl MmapSearchIndex {
             .map(SearchGameEntryRef::from)
     }
 
+    pub fn position_occurrences(&self, key: PositionIndexKey) -> Vec<PositionOccurrenceRef> {
+        let len = self.archived.positions.len();
+        let start = self.position_occurrence_lower_bound(key);
+        let mut occurrences = Vec::new();
+
+        for index in start..len {
+            let Some(occurrence) = self.archived.positions.get(index) else {
+                break;
+            };
+            let occurrence_key = PositionIndexKey {
+                hi: occurrence.key_hi.into(),
+                lo: occurrence.key_lo.into(),
+            };
+            if occurrence_key != key {
+                break;
+            }
+            occurrences.push(PositionOccurrenceRef::from(occurrence));
+        }
+
+        occurrences
+    }
+
+    fn position_occurrence_lower_bound(&self, key: PositionIndexKey) -> usize {
+        let mut low = 0usize;
+        let mut high = self.archived.positions.len();
+
+        while low < high {
+            let mid = (low + high) / 2;
+            let Some(occurrence) = self.archived.positions.get(mid) else {
+                break;
+            };
+            let occurrence_key = PositionIndexKey {
+                hi: occurrence.key_hi.into(),
+                lo: occurrence.key_lo.into(),
+            };
+
+            if occurrence_key < key {
+                low = mid + 1;
+            } else {
+                high = mid;
+            }
+        }
+
+        low
+    }
+
     pub fn is_valid<P: AsRef<Path>>(path: P) -> bool {
         let path = path.as_ref();
         if !path.exists() {
@@ -364,8 +493,9 @@ mod tests {
         ];
 
         // Write
-        let index = SearchIndex {
+        let mut index = SearchIndex {
             entries: entries.clone(),
+            positions: Vec::new(),
         };
         index.write_to(&path).unwrap();
 

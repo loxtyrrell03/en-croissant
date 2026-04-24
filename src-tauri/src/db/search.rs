@@ -5,7 +5,7 @@ use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use shakmaty::{
     fen::Fen, san::SanPlus, uci::UciMove, Bitboard, ByColor, CastlingMode, Chess, Color,
-    EnPassantMode, FromSetup, Move, Position, Role, Setup, Square,
+    EnPassantMode, FromSetup, Move, Position, PositionError, Role, Setup, Square,
 };
 use specta::Type;
 use std::{
@@ -25,9 +25,11 @@ use crate::{
         encoding::{decode_move, iter_mainline_move_bytes},
         get_db_or_create, get_material_count, get_pawn_home,
         models::*,
-        normalize_games,
+        normalize_games, position_index_key,
         schema::*,
-        search_index::{get_index_path, GameResult, MmapSearchIndex, SearchGameEntryRef},
+        search_index::{
+            get_index_path, GameResult, MmapSearchIndex, PositionIndexKey, SearchGameEntryRef,
+        },
         ConnectionOptions, MaterialCount,
     },
     error::Error,
@@ -35,6 +37,8 @@ use crate::{
 };
 
 use super::GameQuery;
+
+const DB_CACHE_LIMIT: usize = 4;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone)]
 pub struct ExactData {
@@ -61,7 +65,8 @@ impl PositionQuery {
         let fen = Fen::from_ascii(fen.as_bytes())?;
         let setup = fen.into_setup();
         let castling_mode = CastlingMode::detect(&setup);
-        let position: Chess = setup.position(castling_mode)?;
+        let position = Chess::from_setup(setup, castling_mode)
+            .or_else(PositionError::ignore_too_much_material)?;
         let pawn_home = get_pawn_home(position.board());
         let material = get_material_count(position.board());
         Ok(PositionQuery::Exact(ExactData {
@@ -441,6 +446,16 @@ fn open_mmap_search_index(
     file: &Path,
     state: &tauri::State<'_, AppState>,
 ) -> Result<MmapSearchIndex, Error> {
+    {
+        let cache = state.db_cache.lock().unwrap();
+        if let Some((_, cached_index)) = cache
+            .iter()
+            .find(|(cached_file, _)| cached_file.as_path() == file)
+        {
+            return Ok(cached_index.clone());
+        }
+    }
+
     let index_path = get_index_path(file);
 
     if !MmapSearchIndex::is_valid(&index_path) {
@@ -451,7 +466,18 @@ fn open_mmap_search_index(
         super::generate_search_index(file, state)?;
     }
 
-    Ok(MmapSearchIndex::open(&index_path)?)
+    info!("Loading mmap search index for {:?}", file);
+    let index = MmapSearchIndex::open(&index_path)?;
+    {
+        let mut cache = state.db_cache.lock().unwrap();
+        cache.retain(|(cached_file, _)| cached_file.as_path() != file);
+        cache.push((file.to_path_buf(), index.clone()));
+        if cache.len() > DB_CACHE_LIMIT {
+            cache.remove(0);
+        }
+    }
+
+    Ok(index)
 }
 
 fn fen_for_output(position: &Chess) -> String {
@@ -464,6 +490,13 @@ fn fen_key(position: &Chess) -> String {
         .take(4)
         .collect::<Vec<_>>()
         .join(" ")
+}
+
+fn position_index_key_from_fen_key(key: &str) -> Option<PositionIndexKey> {
+    let mut parts = key.split_whitespace();
+    let board = parts.next()?;
+    let turn = parts.next()?;
+    Some(PositionIndexKey::from_text(&format!("{board} {turn}")))
 }
 
 fn uci_for_move(m: &Move) -> String {
@@ -499,6 +532,86 @@ fn color_matches_filter(color: Color, filter: &str) -> bool {
         "black" => color == Color::Black,
         _ => true,
     }
+}
+
+fn entry_matches_query(
+    entry: &SearchGameEntryRef<'_>,
+    query: &GameQuery,
+    wanted_result: Option<GameResult>,
+) -> bool {
+    if let Some(white) = query.player1 {
+        if white != entry.white_id {
+            return false;
+        }
+    }
+
+    if let Some(black) = query.player2 {
+        if black != entry.black_id {
+            return false;
+        }
+    }
+
+    if let Some(wanted) = wanted_result {
+        if entry.result != wanted {
+            return false;
+        }
+    }
+
+    if let Some(start_date) = &query.start_date {
+        if let Some(date) = entry.date {
+            if date < start_date.as_str() {
+                return false;
+            }
+        }
+    }
+
+    if let Some(end_date) = &query.end_date {
+        if let Some(date) = entry.date {
+            if date > end_date.as_str() {
+                return false;
+            }
+        }
+    }
+
+    true
+}
+
+fn position_at_ply(entry: &SearchGameEntryRef<'_>, ply: u16) -> Result<Chess, Error> {
+    let mut chess = starting_position(&entry.fen)?;
+
+    for byte in iter_mainline_move_bytes(entry.moves).take(ply as usize) {
+        let Some(m) = decode_move(byte, &chess) else {
+            break;
+        };
+        chess.play_unchecked(&m);
+    }
+
+    Ok(chess)
+}
+
+fn add_opening_result(
+    openings: &mut HashMap<String, PositionStats>,
+    san: String,
+    result: GameResult,
+) {
+    openings
+        .entry(san)
+        .and_modify(|opening| match result {
+            GameResult::WhiteWin => opening.white += 1,
+            GameResult::BlackWin => opening.black += 1,
+            GameResult::Draw => opening.draw += 1,
+            GameResult::Other | GameResult::None => opening.draw += 1,
+        })
+        .or_insert_with(|| PositionStats {
+            black: i32::from(result == GameResult::BlackWin),
+            white: i32::from(result == GameResult::WhiteWin),
+            draw: i32::from(
+                result == GameResult::Draw
+                    || result == GameResult::Other
+                    || result == GameResult::None,
+            ),
+            move_: String::new(),
+        });
 }
 
 fn collect_player_positions(
@@ -575,20 +688,31 @@ fn collect_reference_positions(
         return Ok(positions);
     }
 
-    for entry in index.iter() {
-        let mut chess = starting_position(&entry.fen)?;
-        let mut mainline = iter_mainline_move_bytes(entry.moves);
+    let position_keys = candidate_keys
+        .iter()
+        .filter_map(|key| position_index_key_from_fen_key(key))
+        .collect::<HashSet<_>>();
 
-        for _ in 0..max_plies {
-            let Some(byte) = mainline.next() else {
-                break;
-            };
-            let Some(m) = decode_move(byte, &chess) else {
-                break;
+    for position_key in position_keys {
+        for occurrence in index.position_occurrences(position_key) {
+            if occurrence.ply as usize >= max_plies {
+                continue;
+            }
+
+            let Some(next_byte) = occurrence.next_move else {
+                continue;
             };
 
+            let Some(entry) = index.get_entry_ref(occurrence.game_index) else {
+                continue;
+            };
+
+            let chess = position_at_ply(&entry, occurrence.ply)?;
             let key = fen_key(&chess);
             if candidate_keys.contains(&key) {
+                let Some(m) = decode_move(next_byte, &chess) else {
+                    continue;
+                };
                 let san = SanPlus::from_move(chess.clone(), &m).to_string();
                 let uci = uci_for_move(&m);
                 positions
@@ -596,8 +720,6 @@ fn collect_reference_positions(
                     .or_default()
                     .add_move(san, uci, entry.result);
             }
-
-            chess.play_unchecked(&m);
         }
     }
 
@@ -651,14 +773,7 @@ fn get_move_after_match(
     fen: &Option<&str>,
     query: &PositionQuery,
 ) -> Result<Option<String>, Error> {
-    let mut chess = if let Some(fen) = fen {
-        let fen = Fen::from_ascii(fen.as_bytes())?;
-        let setup = fen.into_setup();
-        let castling_mode = CastlingMode::detect(&setup);
-        Chess::from_setup(setup, castling_mode)?
-    } else {
-        Chess::default()
-    };
+    let mut chess = starting_position(fen)?;
 
     if query.matches(&chess) {
         let mut mainline = iter_mainline_move_bytes(move_blob).peekable();
@@ -714,7 +829,8 @@ fn starting_position(fen: &Option<&str>) -> Result<Chess, Error> {
         let fen = Fen::from_ascii(fen.as_bytes())?;
         let setup = fen.into_setup();
         let castling_mode = CastlingMode::detect(&setup);
-        Ok(Chess::from_setup(setup, castling_mode)?)
+        Ok(Chess::from_setup(setup, castling_mode)
+            .or_else(PositionError::ignore_too_much_material)?)
     } else {
         Ok(Chess::default())
     }
@@ -936,6 +1052,189 @@ pub fn cancel_database_search(id: String, state: tauri::State<'_, AppState>) {
     }
 }
 
+fn search_position_from_occurrences(
+    index: &MmapSearchIndex,
+    query: &GameQuery,
+    exact: &ExactData,
+    wanted_result: Option<GameResult>,
+    cancel_flag: &AtomicBool,
+) -> Result<(Vec<PositionStats>, Vec<i32>), Error> {
+    const MAX_SAMPLES: usize = 500;
+
+    let occurrences = index.position_occurrences(position_index_key(&exact.position));
+    let mut openings: HashMap<String, PositionStats> = HashMap::new();
+    let mut top_games = BinaryHeap::with_capacity(MAX_SAMPLES + 1);
+    let mut seen_games = HashSet::new();
+
+    for occurrence in occurrences {
+        if cancel_flag.load(Ordering::Relaxed) {
+            return Err(Error::SearchStopped);
+        }
+
+        if !seen_games.insert(occurrence.game_index) {
+            continue;
+        }
+
+        let Some(entry) = index.get_entry_ref(occurrence.game_index) else {
+            continue;
+        };
+
+        if !entry_matches_query(&entry, query, wanted_result) {
+            continue;
+        }
+
+        let position = position_at_ply(&entry, occurrence.ply)?;
+        if exact.position.turn() != position.turn() || exact.position.board() != position.board() {
+            continue;
+        }
+
+        let san = if let Some(next_byte) = occurrence.next_move {
+            let Some(next_move) = decode_move(next_byte, &position) else {
+                continue;
+            };
+            SanPlus::from_move(position, &next_move).to_string()
+        } else {
+            "*".to_string()
+        };
+
+        let elo_key = entry.white_elo.max(entry.black_elo);
+        if top_games.len() < MAX_SAMPLES {
+            top_games.push(Reverse((elo_key, entry.id)));
+        } else if let Some(&Reverse((min_elo, _))) = top_games.peek() {
+            if elo_key > min_elo {
+                top_games.pop();
+                top_games.push(Reverse((elo_key, entry.id)));
+            }
+        }
+
+        add_opening_result(&mut openings, san, entry.result);
+    }
+
+    let openings = openings
+        .into_iter()
+        .map(|(move_, mut stats)| {
+            stats.move_ = move_;
+            stats
+        })
+        .collect();
+    let ids = top_games.into_iter().map(|Reverse((_, id))| id).collect();
+
+    Ok((openings, ids))
+}
+
+fn plan_pieces_from_lines<I>(lines: I) -> Vec<PlanExplorerPiece>
+where
+    I: IntoIterator<Item = (PlanLineKey, LineStats)>,
+{
+    let mut grouped: HashMap<PieceKey, Vec<(Vec<Square>, LineStats)>> = HashMap::new();
+    for (key, stats) in lines {
+        grouped
+            .entry(key.piece)
+            .or_default()
+            .push((key.squares, stats));
+    }
+
+    let mut pieces = grouped
+        .into_iter()
+        .map(|(piece, mut lines)| {
+            lines.sort_by(|a, b| b.1.games.cmp(&a.1.games));
+            let total = lines.iter().map(|(_, stats)| stats.games).sum();
+            PlanExplorerPiece {
+                color: color_name(piece.color).to_string(),
+                role: role_name(piece.role).to_string(),
+                from: piece.from.to_string(),
+                total,
+                lines: lines
+                    .into_iter()
+                    .take(8)
+                    .map(|(squares, stats)| PlanExplorerLine {
+                        squares: squares
+                            .into_iter()
+                            .map(|square| square.to_string())
+                            .collect(),
+                        san: stats.san,
+                        uci: stats.uci,
+                        games: stats.games,
+                        white: stats.white,
+                        draw: stats.draw,
+                        black: stats.black,
+                    })
+                    .collect(),
+            }
+        })
+        .collect::<Vec<_>>();
+
+    pieces.sort_by(|a, b| {
+        b.total
+            .cmp(&a.total)
+            .then_with(|| a.color.cmp(&b.color))
+            .then_with(|| a.role.cmp(&b.role))
+            .then_with(|| a.from.cmp(&b.from))
+    });
+
+    pieces
+}
+
+fn plan_explorer_from_occurrences(
+    index: &MmapSearchIndex,
+    query: &GameQuery,
+    exact: &ExactData,
+    max_plies: usize,
+    max_samples: usize,
+    wanted_result: Option<GameResult>,
+    cancel_flag: &AtomicBool,
+) -> Result<(i32, i32, Vec<PlanExplorerPiece>), Error> {
+    let occurrences = index.position_occurrences(position_index_key(&exact.position));
+    let mut lines: HashMap<PlanLineKey, LineStats> = HashMap::new();
+    let mut seen_games = HashSet::new();
+    let mut total_games = 0i32;
+    let mut sampled_games = 0i32;
+
+    for occurrence in occurrences {
+        if cancel_flag.load(Ordering::Relaxed) {
+            return Err(Error::SearchStopped);
+        }
+
+        if !seen_games.insert(occurrence.game_index) {
+            continue;
+        }
+
+        let Some(entry) = index.get_entry_ref(occurrence.game_index) else {
+            continue;
+        };
+
+        if !entry_matches_query(&entry, query, wanted_result) {
+            continue;
+        }
+
+        total_games += 1;
+
+        if sampled_games as usize >= max_samples {
+            continue;
+        }
+
+        let position = position_at_ply(&entry, occurrence.ply)?;
+        if exact.position.turn() != position.turn() || exact.position.board() != position.board() {
+            continue;
+        }
+
+        sampled_games += 1;
+        let mut mainline = iter_mainline_move_bytes(entry.moves).skip(occurrence.ply as usize);
+        for path in collect_piece_plans(&position, &mut mainline, max_plies) {
+            let key = PlanLineKey {
+                piece: path.piece,
+                squares: path.squares.clone(),
+            };
+            lines
+                .entry(key)
+                .and_modify(|stats| stats.add_result(entry.result))
+                .or_insert_with(|| LineStats::new(&path, entry.result));
+        }
+    }
+
+    Ok((total_games, sampled_games, plan_pieces_from_lines(lines)))
+}
+
 #[tauri::command]
 #[specta::specta]
 pub async fn find_repertoire_gaps(
@@ -1115,40 +1414,7 @@ pub async fn search_position(
 
     let permit = state.new_request.acquire().await.unwrap();
 
-    let mmap_index = {
-        let mut cache = state.db_cache.lock().unwrap();
-        if cache.is_none() {
-            let index_path = get_index_path(&file);
-
-            if !MmapSearchIndex::is_valid(&index_path) {
-                info!("Search index not found, generating automatically...");
-                drop(cache);
-                if let Err(e) = super::generate_search_index(&file, &state) {
-                    return Err(Error::from(std::io::Error::other(format!(
-                        "Failed to generate search index: {}",
-                        e
-                    ))));
-                }
-                cache = state.db_cache.lock().unwrap();
-            }
-
-            info!("Loading games from mmap binary search index");
-            match MmapSearchIndex::open(&index_path) {
-                Ok(index) => {
-                    info!(
-                        "Opened mmap index with {} games: {:?}",
-                        index.len(),
-                        start.elapsed()
-                    );
-                    *cache = Some(index);
-                }
-                Err(e) => {
-                    return Err(Error::from(e));
-                }
-            }
-        }
-        cache.as_ref().unwrap().clone()
-    };
+    let mmap_index = open_mmap_search_index(&file, &state)?;
 
     let game_count = mmap_index.len();
 
@@ -1180,6 +1446,41 @@ pub async fn search_position(
         "draw" => Some(GameResult::Draw),
         _ => None,
     });
+
+    if let Some(PositionQuery::Exact(exact)) = &parsed_position_query {
+        info!("start occurrence-index search on {tab_id}");
+        let (openings, ids) = search_position_from_occurrences(
+            &mmap_index,
+            &query,
+            exact,
+            wanted_result,
+            &cancel_flag,
+        )?;
+
+        let (white_players, black_players) = diesel::alias!(players as white, players as black);
+        let games: Vec<(Game, Player, Player, Event, Site)> = games::table
+            .inner_join(white_players.on(games::white_id.eq(white_players.field(players::id))))
+            .inner_join(black_players.on(games::black_id.eq(black_players.field(players::id))))
+            .inner_join(events::table.on(games::event_id.eq(events::id)))
+            .inner_join(sites::table.on(games::site_id.eq(sites::id)))
+            .filter(games::id.eq_any(ids))
+            .order((games::white_elo.desc(), games::black_elo.desc()))
+            .load(db)?;
+        let normalized_games = normalize_games(games);
+        let file_path = file.clone();
+
+        state.line_cache.insert(
+            (query.clone(), file.clone()),
+            (openings.clone(), normalized_games.clone()),
+        );
+        state.search_collisions.remove(&(query, file_path));
+
+        drop(permit);
+        finish_cancelable_db_request(&state, &tab_id, &cancel_flag);
+        info!("finished occurrence-index search in {:?}", start.elapsed());
+
+        return Ok((openings, normalized_games));
+    }
 
     info!("start search on {tab_id}");
 
@@ -1360,40 +1661,37 @@ pub async fn get_plan_explorer(
 
     let permit = state.new_request.acquire().await.unwrap();
 
-    let mmap_index = {
-        let mut cache = state.db_cache.lock().unwrap();
-        if cache.is_none() {
-            let index_path = get_index_path(&file);
+    let mmap_index = open_mmap_search_index(&file, &state)?;
 
-            if !MmapSearchIndex::is_valid(&index_path) {
-                info!("Search index not found, generating automatically...");
-                drop(cache);
-                if let Err(e) = super::generate_search_index(&file, &state) {
-                    return Err(Error::from(std::io::Error::other(format!(
-                        "Failed to generate search index: {}",
-                        e
-                    ))));
-                }
-                cache = state.db_cache.lock().unwrap();
-            }
+    if let PositionQuery::Exact(exact) = &parsed_position_query {
+        let indexed_result = plan_explorer_from_occurrences(
+            &mmap_index,
+            &query,
+            exact,
+            max_plies as usize,
+            MAX_PLAN_SAMPLES,
+            wanted_result,
+            &cancel_flag,
+        );
 
-            info!("Loading games from mmap binary search index");
-            match MmapSearchIndex::open(&index_path) {
-                Ok(index) => {
-                    info!(
-                        "Opened mmap index with {} games: {:?}",
-                        index.len(),
-                        start.elapsed()
-                    );
-                    *cache = Some(index);
-                }
-                Err(e) => {
-                    return Err(Error::from(e));
-                }
-            }
-        }
-        cache.as_ref().unwrap().clone()
-    };
+        drop(permit);
+        finish_cancelable_db_request(&state, &request_id, &cancel_flag);
+
+        let (total_games, sampled_games, pieces) = indexed_result?;
+
+        info!(
+            "finished occurrence-index plan explorer in {:?}",
+            start.elapsed()
+        );
+
+        return Ok(PlanExplorerData {
+            fen: position_query_js.fen.clone(),
+            total_games,
+            sampled_games,
+            max_plies,
+            pieces,
+        });
+    }
 
     let total_games = AtomicUsize::new(0);
     let sampled_games = AtomicUsize::new(0);
@@ -1480,52 +1778,7 @@ pub async fn get_plan_explorer(
         return Err(Error::SearchStopped);
     }
 
-    let mut grouped: HashMap<PieceKey, Vec<(Vec<Square>, LineStats)>> = HashMap::new();
-    for entry in lines {
-        let (key, stats) = entry;
-        grouped
-            .entry(key.piece)
-            .or_default()
-            .push((key.squares, stats));
-    }
-
-    let mut pieces = grouped
-        .into_iter()
-        .map(|(piece, mut lines)| {
-            lines.sort_by(|a, b| b.1.games.cmp(&a.1.games));
-            let total = lines.iter().map(|(_, stats)| stats.games).sum();
-            PlanExplorerPiece {
-                color: color_name(piece.color).to_string(),
-                role: role_name(piece.role).to_string(),
-                from: piece.from.to_string(),
-                total,
-                lines: lines
-                    .into_iter()
-                    .take(8)
-                    .map(|(squares, stats)| PlanExplorerLine {
-                        squares: squares
-                            .into_iter()
-                            .map(|square| square.to_string())
-                            .collect(),
-                        san: stats.san,
-                        uci: stats.uci,
-                        games: stats.games,
-                        white: stats.white,
-                        draw: stats.draw,
-                        black: stats.black,
-                    })
-                    .collect(),
-            }
-        })
-        .collect::<Vec<_>>();
-
-    pieces.sort_by(|a, b| {
-        b.total
-            .cmp(&a.total)
-            .then_with(|| a.color.cmp(&b.color))
-            .then_with(|| a.role.cmp(&b.role))
-            .then_with(|| a.from.cmp(&b.from))
-    });
+    let pieces = plan_pieces_from_lines(lines);
 
     drop(permit);
     finish_cancelable_db_request(&state, &request_id, &cancel_flag);
@@ -1571,40 +1824,7 @@ pub async fn is_position_in_db(
 
     let permit = state.new_request.acquire().await.unwrap();
 
-    let mmap_index = {
-        let mut cache = state.db_cache.lock().unwrap();
-        if cache.is_none() {
-            let index_path = get_index_path(&file);
-
-            if !MmapSearchIndex::is_valid(&index_path) {
-                info!("Search index not found, generating automatically...");
-                drop(cache);
-                if let Err(e) = super::generate_search_index(&file, &state) {
-                    return Err(Error::from(std::io::Error::other(format!(
-                        "Failed to generate search index: {}",
-                        e
-                    ))));
-                }
-                cache = state.db_cache.lock().unwrap();
-            }
-
-            info!("Loading games from mmap binary search index");
-            match MmapSearchIndex::open(&index_path) {
-                Ok(index) => {
-                    info!(
-                        "Opened mmap index with {} games: {:?}",
-                        index.len(),
-                        start.elapsed()
-                    );
-                    *cache = Some(index);
-                }
-                Err(e) => {
-                    return Err(Error::from(e));
-                }
-            }
-        }
-        cache.as_ref().unwrap().clone()
-    };
+    let mmap_index = open_mmap_search_index(&file, &state)?;
 
     let check_entry = |entry: SearchGameEntryRef<'_>| -> bool {
         let end_material: MaterialCount = ByColor {
@@ -1656,6 +1876,18 @@ mod tests {
         )
         .unwrap();
         let chess = Chess::default();
+        assert!(query.matches(&chess));
+    }
+
+    #[test]
+    fn exact_query_ignores_too_much_material_validation() {
+        let query = PositionQuery::exact_from_fen("4k3/8/8/8/8/8/8/QQ2K3 w - - 0 1").unwrap();
+        let fen = Fen::from_ascii("4k3/8/8/8/8/8/8/QQ2K3 w - - 0 1".as_bytes()).unwrap();
+        let setup = fen.into_setup();
+        let chess = Chess::from_setup(setup, CastlingMode::Standard)
+            .or_else(PositionError::ignore_too_much_material)
+            .unwrap();
+
         assert!(query.matches(&chess));
     }
 
