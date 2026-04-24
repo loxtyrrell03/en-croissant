@@ -11,7 +11,7 @@ import {
 import { useDebouncedValue } from "@mantine/hooks";
 import { Link } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
-import { memo, useContext, useEffect } from "react";
+import { memo, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr/immutable";
 import { match } from "ts-pattern";
@@ -28,14 +28,14 @@ import {
   referenceDbAtom,
   sessionsAtom,
 } from "@/state/atoms";
-import { getDatabases, type Opening, searchPosition } from "@/utils/db";
+import { cancelDatabaseSearch, getDatabases, type Opening, searchPosition } from "@/utils/db";
 import { formatNumber } from "@/utils/format";
 import { convertToNormalized, getLichessGames, getMasterGames } from "@/utils/lichess/api";
 import type { LichessGamesOptions, MasterGamesOptions } from "@/utils/lichess/explorer";
 import DatabaseLoader from "./DatabaseLoader";
 import GamesTable from "./GamesTable";
 import NoDatabaseWarning from "./NoDatabaseWarning";
-import OpeningsTable from "./OpeningsTable";
+import OpeningsTable, { type OpeningSort, openingSortOptions } from "./OpeningsTable";
 import LichessOptionsPanel from "./options/LichessOptionsPanel";
 import LocalOptionsPanel from "./options/LocalOptionsPanel";
 import MasterOptionsPanel from "./options/MastersOptionsPanel";
@@ -70,7 +70,7 @@ function sortOpenings(openings: Opening[]) {
   return openings.sort((a, b) => b.black + b.draw + b.white - (a.black + a.draw + a.white));
 }
 
-async function fetchOpening(db: DBType, tab: string) {
+async function fetchOpening(db: DBType, tab: string, requestId: string) {
   return match(db)
     .with({ type: "lch_all" }, async ({ fen, options, token }) => {
       const data = await getLichessGames(fen, options, token);
@@ -98,7 +98,7 @@ async function fetchOpening(db: DBType, tab: string) {
     })
     .with({ type: "local" }, async ({ options }) => {
       if (!options.path) throw Error("Missing reference database");
-      const positionData = await searchPosition(options, tab);
+      const positionData = await searchPosition(options, requestId);
       return {
         openings: sortOpenings(positionData[0]),
         games: positionData[1],
@@ -119,6 +119,7 @@ function DatabasePanel() {
   const [masterOptions, setMasterOptions] = useAtom(masterOptionsAtom);
   const [localOptions, setLocalOptions] = useAtom(currentLocalOptionsAtom);
   const [db, setDb] = useAtom(currentDbTypeAtom);
+  const [openingSort, setOpeningSort] = useState<OpeningSort>("games");
   const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
     ?.accessToken;
   const missingExplorerToken = db !== "local" && !explorerToken;
@@ -162,15 +163,42 @@ function DatabasePanel() {
 
   const tab = useAtomValue(currentTabAtom);
   const [tabType, setTabType] = useAtom(currentDbTabAtom);
+  const databaseRequestId = useMemo(
+    () =>
+      [
+        "database",
+        tab?.value ?? "tab",
+        db,
+        debouncedFen,
+        localOptions.path ?? "",
+        localOptions.type,
+        localOptions.player ?? "",
+        localOptions.color,
+        localOptions.start_date ?? "",
+        localOptions.end_date ?? "",
+        localOptions.result,
+      ].join("|"),
+    [db, debouncedFen, localOptions, tab?.value],
+  );
+
+  useEffect(() => {
+    if (dbType.type !== "local" || tabType === "options" || missingExplorerToken) {
+      return undefined;
+    }
+
+    return () => {
+      void cancelDatabaseSearch(databaseRequestId);
+    };
+  }, [databaseRequestId, dbType.type, missingExplorerToken, tabType]);
 
   const {
     data: openingData,
     isLoading,
     error,
   } = useSWR(
-    tabType !== "options" && !missingExplorerToken ? dbType : null,
-    async (dbType: DBType) => {
-      return fetchOpening(dbType, tab?.value || "");
+    tabType !== "options" && !missingExplorerToken ? { dbType, requestId: databaseRequestId } : null,
+    async ({ dbType, requestId }) => {
+      return fetchOpening(dbType, tab?.value || "", requestId);
     },
   );
 
@@ -211,14 +239,29 @@ function DatabasePanel() {
         </Group>
 
         {tabType !== "options" && (
-          <Text style={{ whiteSpace: "nowrap" }}>
-            {t("Board.Database.Matches", {
-              matches: formatNumber(Math.max(grandTotal || 0, openingData?.games.length || 0)),
-            })}
-          </Text>
+          <Group gap="xs" wrap="nowrap">
+            {tabType === "stats" && (
+              <Select
+                data={openingSortOptions}
+                value={openingSort}
+                onChange={(value) => setOpeningSort((value as OpeningSort) ?? "games")}
+                size="sm"
+                w={160}
+                allowDeselect={false}
+              />
+            )}
+            <Text style={{ whiteSpace: "nowrap" }}>
+              {t("Board.Database.Matches", {
+                matches: formatNumber(Math.max(grandTotal || 0, openingData?.games.length || 0)),
+              })}
+            </Text>
+          </Group>
         )}
       </Group>
-      <DatabaseLoader isLoading={isLoading} tab={tab?.value ?? null} />
+      <DatabaseLoader
+        isLoading={isLoading}
+        tab={dbType.type === "local" ? databaseRequestId : (tab?.value ?? null)}
+      />
     </>
   );
 
@@ -252,7 +295,11 @@ function DatabasePanel() {
           header={header}
           missingExplorerToken={missingExplorerToken}
         >
-          <OpeningsTable openings={openingData?.openings || []} loading={isLoading} />
+          <OpeningsTable
+            openings={openingData?.openings || []}
+            loading={isLoading}
+            sortBy={openingSort}
+          />
         </PanelWithError>
         <PanelWithError
           value="games"

@@ -1,5 +1,5 @@
 {
-  "name": "en-croissant",
+  "name": "en-croissant-fork",
   "version": "0.14.2",
   "private": true,
   "type": "module",
@@ -8,6 +8,7 @@
     "build-vite": "tsgo --noEmit && vite build",
     "build": "tauri build --no-bundle",
     "dev": "tauri dev",
+    "dev:safe": "powershell -ExecutionPolicy Bypass -File scripts/safe-dev.ps1",
     "tauri": "tauri",
     "format": "oxfmt",
     "test": "vitest run",

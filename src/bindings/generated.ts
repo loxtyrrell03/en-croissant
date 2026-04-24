@@ -334,6 +334,25 @@ async getGames(file: string, query: GameQuery) : Promise<Result<QueryResponse<No
     else return { status: "error", error: e  as any };
 }
 },
+async findRepertoireGaps(request: RepertoireGapRequest) : Promise<Result<RepertoireGapReport, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("find_repertoire_gaps", { request }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async cancelDatabaseSearch(id: string) : Promise<void> {
+    await TAURI_INVOKE("cancel_database_search", { id });
+},
+async getPlanExplorer(file: string, query: GameQuery, maxPlies: number, requestId: string) : Promise<Result<PlanExplorerData, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_plan_explorer", { file, query, maxPlies, requestId }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async searchPosition(file: string, query: GameQuery, tabId: string) : Promise<Result<[PositionStats[], NormalizedGame[]], string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("search_position", { file, query, tabId }) };
@@ -517,6 +536,9 @@ export type NormalizedGame = { id: number; fen: string; event: string; event_id:
 export type OpeningBookConfig = { path: string; maxPly?: bigint }
 export type OutOpening = { name: string; fen: string }
 export type Outcome = "1-0" | "0-1" | "1/2-1/2" | "*"
+export type PlanExplorerData = { fen: string; total_games: number; sampled_games: number; max_plies: number; pieces: PlanExplorerPiece[] }
+export type PlanExplorerLine = { squares: string[]; san: string[]; uci: string[]; games: number; white: number; draw: number; black: number }
+export type PlanExplorerPiece = { color: string; role: string; from: string; total: number; lines: PlanExplorerLine[] }
 export type Player = { id: number; name: string | null; elo: number | null }
 export type PlayerConfig = { type: "human"; name: string } | { type: "engine"; name: string; path: string; options?: EngineOption[]; go: GoMode | null }
 export type PlayerGameInfo = { site_stats_data: SiteStatsData[] }
@@ -531,6 +553,10 @@ export type Puzzle = { id: number; fen: string; moves: string; rating: number; r
 export type PuzzleDatabaseInfo = { title: string; description: string; puzzleCount: number; storageSize: bigint; path: string }
 export type QueryOptions<SortT> = { skipCount: boolean; page?: number | null; pageSize?: number | null; sort: SortT; direction: SortDirection }
 export type QueryResponse<T> = { data: T; count: number | null }
+export type RepertoireGap = { fen: string; ply: number; sideToMove: string; playerMoveSan: string; playerMoveUci: string; playerGames: number; playerWhite: number; playerDraw: number; playerBlack: number; playerScore: number; referenceGames: number; referenceMoveRank: number | null; referenceMoveShare: number; severity: number; sampleGameIds: number[]; topReferenceMoves: RepertoireGapReferenceMove[] }
+export type RepertoireGapReferenceMove = { san: string; uci: string; games: number; white: number; draw: number; black: number; share: number; scoreForSide: number }
+export type RepertoireGapReport = { playerGames: number; candidatePositions: number; referencePositions: number; gaps: RepertoireGap[] }
+export type RepertoireGapRequest = { playerDb: string; referenceDb: string; playerId: number; color: string; maxPlies: number; minPlayerGames: number; minReferenceGames: number; topReferenceMoves: number; maxPlayerScore: number; minReferenceMoveShare: number }
 export type Score = { value: ScoreValue; 
 /**
  * The probability of each result (win, draw, loss).

@@ -1,0 +1,16 @@
+[    1903ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:1420/node_modules/.vite/deps/react-dom_client.js?v=3725fe62:14337
+[    1979ms] [WARNING] [DEPRECATED] atomFamily is deprecated and will be removed in v3. Please use the `jotai-family` package instead: https://github.com/jotaijs/jotai-family @ http://localhost:1420/node_modules/.vite/deps/jotai_utils.js?v=3725fe62:20
+[    1995ms] TypeError: Cannot read properties of undefined (reading 'metadata')
+    at getCurrentWindow (http://localhost:1420/node_modules/.vite/deps/@tauri-apps_api_window.js?v=3725fe62:81:47)
+    at getCurrentWebview (http://localhost:1420/node_modules/.vite/deps/@tauri-apps_api_webviewWindow.js?v=3725fe62:26:21)
+    at getCurrentWebviewWindow (http://localhost:1420/node_modules/.vite/deps/@tauri-apps_api_webviewWindow.js?v=3725fe62:551:27)
+    at http://localhost:1420/src/components/TopBar.tsx:10:19
+[  107825ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:1420/@vite/client:968
+[  157961ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:1420/node_modules/.vite/deps/react-dom_client.js?v=3725fe62:14337
+[  158013ms] [WARNING] [DEPRECATED] atomFamily is deprecated and will be removed in v3. Please use the `jotai-family` package instead: https://github.com/jotaijs/jotai-family @ http://localhost:1420/node_modules/.vite/deps/jotai_utils.js?v=3725fe62:20
+[  158023ms] TypeError: Cannot read properties of undefined (reading 'metadata')
+    at getCurrentWindow (http://localhost:1420/node_modules/.vite/deps/@tauri-apps_api_window.js?v=3725fe62:81:47)
+    at getCurrentWebview (http://localhost:1420/node_modules/.vite/deps/@tauri-apps_api_webviewWindow.js?v=3725fe62:26:21)
+    at getCurrentWebviewWindow (http://localhost:1420/node_modules/.vite/deps/@tauri-apps_api_webviewWindow.js?v=3725fe62:551:27)
+    at http://localhost:1420/src/components/TopBar.tsx:10:19
+[  489234ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:1420/@vite/client:968

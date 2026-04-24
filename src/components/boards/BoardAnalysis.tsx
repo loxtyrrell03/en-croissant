@@ -1,9 +1,12 @@
 import { Paper, Portal, Stack, Tabs } from "@mantine/core";
 import { useHotkeys, useToggle } from "@mantine/hooks";
 import {
+  IconAlertTriangle,
   IconDatabase,
+  IconGitCompare,
   IconInfoCircle,
   IconNotes,
+  IconRoute,
   IconTargetArrow,
   IconZoomCheck,
 } from "@tabler/icons-react";
@@ -32,8 +35,11 @@ import MoveControls from "../common/MoveControls";
 import { TreeStateContext } from "../common/TreeStateContext";
 import AnalysisPanel from "../panels/analysis/AnalysisPanel";
 import AnnotationPanel from "../panels/annotation/AnnotationPanel";
+import ComparePanel from "../panels/compare/ComparePanel";
 import DatabasePanel from "../panels/database/DatabasePanel";
+import RepertoireGapsPanel from "../panels/gaps/RepertoireGapsPanel";
 import InfoPanel from "../panels/info/InfoPanel";
+import PlanExplorerPanel from "../panels/plan/PlanExplorerPanel";
 import PracticePanel from "../panels/practice/PracticePanel";
 import Board from "./Board";
 import BoardControls from "./BoardControls";
@@ -158,7 +164,7 @@ function BoardAnalysis() {
 
   return (
     <>
-      <EvalListener />
+      <EvalListener active={currentTabSelected === "analysis" || currentTabSelected === "compare"} />
       <Portal target="#left" style={{ height: "100%" }}>
         <Board
           practicing={practicing}
@@ -209,6 +215,15 @@ function BoardAnalysis() {
               <Tabs.Tab value="database" leftSection={<IconDatabase size="1rem" />}>
                 {t("Board.Tabs.Database")}
               </Tabs.Tab>
+              <Tabs.Tab value="plan-explorer" leftSection={<IconRoute size="1rem" />}>
+                Plan Explorer
+              </Tabs.Tab>
+              <Tabs.Tab value="compare" leftSection={<IconGitCompare size="1rem" />}>
+                Compare
+              </Tabs.Tab>
+              <Tabs.Tab value="gaps" leftSection={<IconAlertTriangle size="1rem" />}>
+                Gaps
+              </Tabs.Tab>
               <Tabs.Tab value="annotate" leftSection={<IconNotes size="1rem" />}>
                 {t("Board.Tabs.Annotate")}
               </Tabs.Tab>
@@ -226,6 +241,15 @@ function BoardAnalysis() {
             </Tabs.Panel>
             <Tabs.Panel value="database" flex={1} style={{ overflowY: "hidden" }}>
               <DatabasePanel />
+            </Tabs.Panel>
+            <Tabs.Panel value="plan-explorer" flex={1} style={{ overflowY: "hidden" }}>
+              <PlanExplorerPanel />
+            </Tabs.Panel>
+            <Tabs.Panel value="compare" flex={1} style={{ overflowY: "hidden" }}>
+              <ComparePanel />
+            </Tabs.Panel>
+            <Tabs.Panel value="gaps" flex={1} style={{ overflowY: "hidden" }}>
+              <RepertoireGapsPanel />
             </Tabs.Panel>
             <Tabs.Panel value="annotate" flex={1} style={{ overflowY: "hidden" }}>
               <AnnotationPanel />

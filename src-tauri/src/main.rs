@@ -41,9 +41,10 @@ use crate::chess::{
     stop_engine,
 };
 use crate::db::{
-    clear_games, convert_pgn, create_indexes, delete_database, delete_db_game, delete_empty_games,
-    delete_indexes, export_to_pgn, get_player, get_players_game_info, get_tournaments,
-    preload_reference_db, search_position, MmapSearchIndex,
+    cancel_database_search, clear_games, convert_pgn, create_indexes, delete_database,
+    delete_db_game, delete_empty_games, delete_indexes, export_to_pgn, find_repertoire_gaps,
+    get_plan_explorer, get_player, get_players_game_info, get_tournaments, preload_reference_db,
+    search_position, MmapSearchIndex,
 };
 use crate::game::{
     abort_game, get_game_engine_logs, get_game_state, make_game_move, resign_game, start_game,
@@ -86,6 +87,7 @@ pub struct AppState {
     new_request: Arc<Semaphore>,
     #[derivative(Default(value = "DashMap::new()"))]
     search_collisions: DashMap<(GameQuery, PathBuf), Arc<tokio::sync::Mutex<()>>>,
+    db_cancel_flags: DashMap<String, Arc<AtomicBool>>,
     pgn_offsets: DashMap<String, Vec<u64>>,
 
     engine_processes: DashMap<(String, String), Arc<tokio::sync::Mutex<EngineProcess>>>,
@@ -152,6 +154,9 @@ fn main() {
             get_tournaments,
             get_db_info,
             get_games,
+            find_repertoire_gaps,
+            cancel_database_search,
+            get_plan_explorer,
             search_position,
             get_players,
             get_puzzle_db_info,

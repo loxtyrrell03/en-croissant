@@ -45,8 +45,8 @@
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1420"
   },
-  "productName": "en-croissant",
-  "mainBinaryName": "en-croissant",
+  "productName": "en-croissant-fork",
+  "mainBinaryName": "en-croissant-fork",
   "identifier": "org.encroissant.app",
   "plugins": {
     "cli": {
@@ -69,7 +69,7 @@
     "withGlobalTauri": false,
     "windows": [
       {
-        "title": "En Croissant",
+        "title": "En Croissant Fork",
         "visible": false,
         "decorations": true
       }

@@ -92,6 +92,9 @@ pub enum Error {
 
     #[error("Analysis cancelled")]
     AnalysisCancelled,
+
+    #[error("Search stopped")]
+    SearchStopped,
 }
 
 impl From<std::io::Error> for Error {

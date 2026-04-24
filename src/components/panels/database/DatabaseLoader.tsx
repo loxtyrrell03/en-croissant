@@ -13,6 +13,11 @@ function DatabaseLoader({ isLoading, tab }: { isLoading: boolean; tab: string | 
   const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
+    if (!tab) return undefined;
+
+    let disposed = false;
+    let cleanup: (() => void) | null = null;
+
     async function getProgress() {
       const unlisten = await listen<ProgressPayload>("search_progress", async ({ payload }) => {
         if (payload.id !== tab) return;
@@ -24,9 +29,23 @@ function DatabaseLoader({ isLoading, tab }: { isLoading: boolean; tab: string | 
           setProgress(payload.progress);
         }
       });
+
+      if (disposed) {
+        unlisten();
+      } else {
+        cleanup = unlisten;
+      }
     }
+
     getProgress();
-  }, []);
+
+    return () => {
+      disposed = true;
+      cleanup?.();
+      setProgress(0);
+      setCompleted(false);
+    };
+  }, [tab]);
 
   const isLoadingFromMemory = isLoading && progress === 0;
 

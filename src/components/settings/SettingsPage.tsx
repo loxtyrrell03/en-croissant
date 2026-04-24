@@ -51,6 +51,7 @@ import {
   showConsecutiveArrowsAtom,
   showCoordinatesAtom,
   showDestsAtom,
+  showPlanExplorerArrowsAtom,
   showVariationArrowsAtom,
   snapArrowsAtom,
   spellCheckAtom,
@@ -214,6 +215,14 @@ export default function Page() {
         description: t("Settings.VariationArrows.Desc"),
         keywords: ["arrows", "variations", "alternative"],
         render: () => <SettingsSwitch atom={showVariationArrowsAtom} />,
+      },
+      {
+        id: "plan-explorer-arrows",
+        category: "board",
+        title: "Plan explorer arrows",
+        description: "Automatically show the most common plan maneuvers for the current position.",
+        keywords: ["arrows", "plans", "maneuvers", "database"],
+        render: () => <SettingsSwitch atom={showPlanExplorerArrowsAtom} />,
       },
       {
         id: "move-notation",

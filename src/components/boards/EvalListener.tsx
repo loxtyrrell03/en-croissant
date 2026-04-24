@@ -29,9 +29,10 @@ import { getBestMoves as lichessGetBestMoves } from "@/utils/lichess/api";
 import { useThrottledEffect } from "@/utils/misc";
 import { TreeStateContext } from "../common/TreeStateContext";
 
-function EvalListener() {
+function EvalListener({ active }: { active: boolean }) {
   const [engines] = useAtom(enginesAtom);
   const threat = useAtomValue(currentThreatAtom);
+  const activeTab = useAtomValue(activeTabAtom);
   const store = useContext(TreeStateContext)!;
   const fen = useStore(store, (s) => s.root.fen);
 
@@ -41,6 +42,17 @@ function EvalListener() {
   );
 
   const [pos, error] = positionFromFen(fen);
+
+  useEffect(() => {
+    if (active || !activeTab) return;
+
+    for (const engine of engines ?? []) {
+      if (engine.loaded && engine.type === "local") {
+        void stopEngine(engine, activeTab);
+      }
+    }
+  }, [active, activeTab, engines]);
+
   if (pos) {
     for (const uci of moves) {
       const move = parseUci(uci);
@@ -76,6 +88,10 @@ function EvalListener() {
       gameMoves: searchingMoves,
     }),
   );
+
+  if (!active) {
+    return null;
+  }
 
   return (engines ?? [])
     .filter((e) => e.loaded)
@@ -131,6 +147,15 @@ function EngineListener({
       tab: activeTab!,
     }),
   );
+
+  useEffect(() => {
+    return () => {
+      if (engine.type === "local" && activeTab) {
+        void stopEngine(engine, activeTab);
+      }
+    };
+  }, [activeTab, engine]);
+
   useEffect(() => {
     if (!settings.enabled) return;
     const unlisten = events.bestMovesPayload.listen(({ payload }) => {

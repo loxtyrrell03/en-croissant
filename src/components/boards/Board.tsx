@@ -15,7 +15,14 @@ import { chessgroundDests, chessgroundMove } from "chessops/compat";
 import { makeFen, parseFen } from "chessops/fen";
 import { makeSan } from "chessops/san";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { memo, useCallback, useContext, useMemo, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type MouseEvent,
+} from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
@@ -26,6 +33,8 @@ import {
   autoPromoteAtom,
   bestMovesFamily,
   currentEvalOpenAtom,
+  currentPlanExplorerDataAtom,
+  currentPlanExplorerPreviewLineAtom,
   currentShowCommentsAtom,
   currentTabAtom,
   deckAtomFamily,
@@ -35,6 +44,7 @@ import {
   materialDisplayAtom,
   moveHighlightAtom,
   moveInputAtom,
+  planExplorerArrowLimitAtom,
   practiceCardStartTimeAtom,
   practiceSessionStatsAtom,
   practiceStateAtom,
@@ -42,6 +52,7 @@ import {
   showConsecutiveArrowsAtom,
   showCoordinatesAtom,
   showDestsAtom,
+  showPlanExplorerArrowsAtom,
   showVariationArrowsAtom,
   snapArrowsAtom,
 } from "@/state/atoms";
@@ -50,6 +61,13 @@ import classes from "@/styles/Chessboard.module.css";
 import { ANNOTATION_INFO, isBasicAnnotation } from "@/utils/annotation";
 import { getVariationLine } from "@/utils/chess";
 import { chessopsError, forceEnPassant, positionFromFen } from "@/utils/chessops";
+import {
+  getAutoPlanLines,
+  getPlanLineForSquare,
+  PLAN_BRUSH,
+  planLineToShapes,
+  planLinesToShapes,
+} from "@/utils/planExplorer";
 import { getTabFile, getTabGameNumber } from "@/utils/tabs";
 import ShowMaterial from "../common/ShowMaterial";
 import { TreeStateContext } from "../common/TreeStateContext";
@@ -67,6 +85,31 @@ const LARGE_BRUSH = 11;
 const MEDIUM_BRUSH = 7.5;
 const SMALL_BRUSH = 4;
 const BAR_HEIGHT = "1.9rem";
+const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
+
+function squareFromPointer(
+  event: MouseEvent,
+  board: HTMLDivElement,
+  orientation: "white" | "black",
+): SquareName | null {
+  const rect = board.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+
+  if (x < 0 || y < 0 || x >= rect.width || y >= rect.height) {
+    return null;
+  }
+
+  let fileIndex = Math.floor((x / rect.width) * 8);
+  let rankIndex = Math.floor((y / rect.height) * 8);
+
+  if (orientation === "black") {
+    fileIndex = 7 - fileIndex;
+    rankIndex = 7 - rankIndex;
+  }
+
+  return `${FILES[fileIndex]}${8 - rankIndex}` as SquareName;
+}
 
 interface ChessboardProps {
   editingMode: boolean;
@@ -140,6 +183,10 @@ function Board({
   const forcedEP = useAtomValue(forcedEnPassantAtom);
   const showCoordinates = useAtomValue(showCoordinatesAtom);
   const materialDisplay = useAtomValue(materialDisplayAtom);
+  const planExplorerData = useAtomValue(currentPlanExplorerDataAtom);
+  const planExplorerPreviewLine = useAtomValue(currentPlanExplorerPreviewLineAtom);
+  const showPlanExplorerArrows = useAtomValue(showPlanExplorerArrowsAtom);
+  const planExplorerArrowLimit = useAtomValue(planExplorerArrowLimitAtom);
 
   let dests: Map<SquareName, SquareName[]> = pos ? chessgroundDests(pos) : new Map();
   if (forcedEP && pos) {
@@ -311,6 +358,18 @@ function Board({
     }
   }
 
+  const activePlanExplorerData = planExplorerData?.fen === currentNode.fen ? planExplorerData : null;
+
+  if (showPlanExplorerArrows && activePlanExplorerData) {
+    shapes = shapes.concat(
+      planLinesToShapes(getAutoPlanLines(activePlanExplorerData), planExplorerArrowLimit),
+    );
+  }
+
+  if (planExplorerPreviewLine) {
+    shapes = shapes.concat(planLineToShapes(planExplorerPreviewLine));
+  }
+
   if (currentNode.shapes.length > 0) {
     shapes = shapes.concat(currentNode.shapes);
   }
@@ -360,6 +419,37 @@ function Board({
       }
     },
     [editingMode, currentNode, setFen],
+  );
+
+  const drawPlanFromContextMenu = useCallback(
+    (event: MouseEvent<HTMLDivElement>) => {
+      if (!event.ctrlKey) {
+        return;
+      }
+
+      if (!boardRef.current || !pos || planExplorerData?.fen !== currentNode.fen) {
+        return;
+      }
+
+      const squareName = squareFromPointer(event, boardRef.current, orientation);
+      if (!squareName) return;
+
+      const square = parseSquare(squareName);
+      if (square === undefined || !pos.board.get(square)) return;
+
+      const line = getPlanLineForSquare(planExplorerData, squareName);
+      if (!line) return;
+
+      const planShapes = planLineToShapes(line);
+      if (planShapes.length === 0) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const existing = currentNode.shapes.filter((shape) => shape.brush !== PLAN_BRUSH);
+      setShapes([...existing, ...planShapes]);
+    },
+    [boardRef, currentNode.fen, currentNode.shapes, orientation, planExplorerData, pos, setShapes],
   );
 
   useHotkeys(keyMap.TOGGLE_EVAL_BAR.keys, () => setEvalOpen((e) => !e));
@@ -474,6 +564,7 @@ function Board({
               }
               className={classes.chessboard}
               ref={boardRef}
+              onContextMenu={drawPlanFromContextMenu}
               onClick={() => {
                 eraseDrawablesOnClick && clearShapes();
               }}
@@ -588,6 +679,12 @@ function Board({
                       key: "v",
                       color: "#9b59b6",
                       opacity: 0.8,
+                      lineWidth: 10,
+                    },
+                    plan: {
+                      key: "p",
+                      color: "#12b886",
+                      opacity: 0.9,
                       lineWidth: 10,
                     },
                   } as unknown as DrawBrushes,

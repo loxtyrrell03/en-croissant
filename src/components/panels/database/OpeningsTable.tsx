@@ -10,10 +10,53 @@ import type { Opening } from "@/utils/db";
 import { formatNumber } from "@/utils/format";
 import classes from "./OpeningsTable.module.css";
 
-function OpeningsTable({ openings, loading }: { openings: Opening[]; loading: boolean }) {
+export type OpeningSort = "games" | "whiteRate" | "blackRate" | "drawRate" | "move";
+
+export const openingSortOptions: { label: string; value: OpeningSort }[] = [
+  { label: "Most played", value: "games" },
+  { label: "White win rate", value: "whiteRate" },
+  { label: "Black win rate", value: "blackRate" },
+  { label: "Draw rate", value: "drawRate" },
+  { label: "Move", value: "move" },
+];
+
+export function sortOpeningRows(openings: Opening[], sortBy: OpeningSort) {
+  return [...openings].sort((a, b) => {
+    if (sortBy === "move") {
+      return a.move.localeCompare(b.move);
+    }
+
+    const aTotal = getOpeningTotal(a);
+    const bTotal = getOpeningTotal(b);
+
+    if (sortBy === "games") {
+      return bTotal - aTotal;
+    }
+
+    const field = sortBy === "whiteRate" ? "white" : sortBy === "blackRate" ? "black" : "draw";
+    const aRate = aTotal === 0 ? 0 : a[field] / aTotal;
+    const bRate = bTotal === 0 ? 0 : b[field] / bTotal;
+
+    return bRate - aRate || bTotal - aTotal;
+  });
+}
+
+function OpeningsTable({
+  openings,
+  loading,
+  sortBy = "games",
+  compact = false,
+}: {
+  openings: Opening[];
+  loading: boolean;
+  sortBy?: OpeningSort;
+  compact?: boolean;
+}) {
   const store = useContext(TreeStateContext)!;
   const makeMove = useStore(store, (s) => s.makeMove);
   const [moveNotationType] = useAtom(moveNotationTypeAtom);
+
+  openings = sortOpeningRows(openings, sortBy);
 
   const whiteTotal = openings?.reduce((acc, curr) => acc + curr.white, 0);
   const blackTotal = openings?.reduce((acc, curr) => acc + curr.black, 0);
@@ -51,29 +94,33 @@ function OpeningsTable({ openings, loading }: { openings: Opening[]; loading: bo
       columns={[
         {
           accessor: "move",
-          width: 100,
+          width: compact ? 70 : 100,
           render: ({ move }) => {
             if (move === "*")
               return (
-                <Text fz="sm" fs="italic">
+                <Text fz={compact ? "xs" : "sm"} fs="italic">
                   Game end
                 </Text>
               );
             return (
-              <Text fz="sm">{moveNotationType === "symbols" ? addPieceSymbol(move) : move}</Text>
+              <Text fz={compact ? "xs" : "sm"}>
+                {moveNotationType === "symbols" ? addPieceSymbol(move) : move}
+              </Text>
             );
           },
         },
         {
           accessor: "total",
-          width: 180,
+          width: compact ? 118 : 180,
           render: ({ move, white, draw, black }) => {
             const total = white + draw + black;
             const percentage = (total / grandTotal) * 100;
             return (
-              <Group>
-                {move !== "Total" && <Text fz="sm">{percentage.toFixed(0)}%</Text>}
-                <Text fz="sm" flex={1} ta="right">
+              <Group gap={compact ? 6 : "md"} wrap="nowrap">
+                {move !== "Total" && (
+                  <Text fz={compact ? "xs" : "sm"}>{percentage.toFixed(0)}%</Text>
+                )}
+                <Text fz={compact ? "xs" : "sm"} flex={1} ta="right">
                   {formatNumber(total)}
                 </Text>
               </Group>
@@ -88,7 +135,7 @@ function OpeningsTable({ openings, loading }: { openings: Opening[]; loading: bo
             const drawPercent = (draw / total) * 100;
             const blackPercent = (black / total) * 100;
             return (
-              <Progress.Root size="xl" className={classes.result}>
+              <Progress.Root size={compact ? "lg" : "xl"} className={classes.result}>
                 <Progress.Section value={whitePercent} className={classes.whiteResultsSection}>
                   <Progress.Label c="black">
                     {whitePercent > 10 ? `${whitePercent.toFixed(1)}%` : ""}
@@ -117,3 +164,7 @@ function OpeningsTable({ openings, loading }: { openings: Opening[]; loading: bo
 }
 
 export default memo(OpeningsTable);
+
+function getOpeningTotal(opening: Opening) {
+  return opening.white + opening.draw + opening.black;
+}

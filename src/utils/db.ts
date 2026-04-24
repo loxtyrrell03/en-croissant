@@ -7,6 +7,7 @@ import {
     type DatabaseInfo,
     type GameQuery,
     type NormalizedGame,
+    type PlanExplorerData,
     type Player,
     type PlayerQuery,
     type PuzzleDatabaseInfo,
@@ -188,4 +189,36 @@ export async function searchPosition(options: LocalOptions, tab: string) {
         return Promise.reject();
     }
     return res.data;
+}
+
+export async function cancelDatabaseSearch(id: string | null | undefined) {
+    if (!id) return;
+    await commands.cancelDatabaseSearch(id);
+}
+
+export async function getPlanExplorer(
+    options: LocalOptions,
+    maxPlies: number,
+    requestId = "plan-explorer",
+): Promise<PlanExplorerData> {
+    const res = await commands.getPlanExplorer(
+        options.path!,
+        {
+            player1: options.color === "white" ? options.player : undefined,
+            player2: options.color === "black" ? options.player : undefined,
+            position: {
+                fen: options.fen,
+                type_: options.type,
+            },
+            start_date: options.start_date,
+            end_date: options.end_date,
+            wanted_result: options.result,
+        },
+        maxPlies,
+        requestId,
+    );
+    if (res.status === "error" && res.error === "Search stopped") {
+        return Promise.reject();
+    }
+    return unwrap(res);
 }

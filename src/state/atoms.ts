@@ -14,7 +14,7 @@ import type {
 } from "jotai/vanilla/utils/atomWithStorage";
 import type { ReviewLog } from "ts-fsrs";
 import { z } from "zod";
-import type { BestMoves, GoMode } from "@/bindings";
+import type { BestMoves, GoMode, PlanExplorerData } from "@/bindings";
 import { DEFAULT_TIME_CONTROL, type OpponentSettings } from "@/components/boards/OpponentForm";
 import { type Position, positionSchema } from "@/components/files/opening";
 import type { LocalOptions } from "@/components/panels/database/DatabasePanel";
@@ -177,6 +177,14 @@ export const snapArrowsAtom = atomWithStorage<boolean>("snap-dests", true);
 export const showArrowsAtom = atomWithStorage<boolean>("show-arrows", true);
 export const showConsecutiveArrowsAtom = atomWithStorage<boolean>("show-consecutive-arrows", false);
 export const showVariationArrowsAtom = atomWithStorage<boolean>("show-variation-arrows", false);
+export const showPlanExplorerArrowsAtom = atomWithStorage<boolean>(
+    "show-plan-explorer-arrows",
+    true,
+);
+export const planExplorerArrowLimitAtom = atomWithStorage<number>(
+    "plan-explorer-arrow-limit",
+    10,
+);
 export const eraseDrawablesOnClickAtom = atomWithStorage<boolean>(
     "erase-drawables-on-click",
     false,
@@ -414,6 +422,17 @@ export const currentDbTypeAtom = tabValue(dbTypeFamily);
 
 const dbTabFamily = atomFamily((_tab: string) => atom("stats"));
 export const currentDbTabAtom = tabValue(dbTabFamily);
+
+const compareDatabasesFamily = atomFamily((_tab: string) => atom<string[]>([]));
+export const currentCompareDatabasesAtom = tabValue(compareDatabasesFamily);
+
+const planExplorerDataFamily = atomFamily((_tab: string) => atom<PlanExplorerData | null>(null));
+export const currentPlanExplorerDataAtom = tabValue(planExplorerDataFamily);
+
+const planExplorerPreviewLineFamily = atomFamily((_tab: string) =>
+    atom<PlanExplorerData["pieces"][number]["lines"][number] | null>(null),
+);
+export const currentPlanExplorerPreviewLineAtom = tabValue(planExplorerPreviewLineFamily);
 
 const analysisTabFamily = atomFamily((_tab: string) => atom("engines"));
 export const currentAnalysisTabAtom = tabValue(analysisTabFamily);
