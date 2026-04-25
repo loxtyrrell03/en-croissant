@@ -38,6 +38,7 @@ import {
 } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { makeUci, parseUci, type Move } from "chessops";
+import { makeFen } from "chessops/fen";
 import { makeSan, parseSan } from "chessops/san";
 import dayjs from "dayjs";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
@@ -81,7 +82,7 @@ import type { TreeStore } from "@/state/store/tree";
 import type { Tab } from "@/utils/tabs";
 import { getTabPracticeKey } from "@/utils/tabs";
 import { positionFromFen } from "@/utils/chessops";
-import { findFen } from "@/utils/treeReducer";
+import { createNode, defaultTree, findFen, type GameHeaders } from "@/utils/treeReducer";
 import {
   readOpeningReviewDeck,
   type OpeningReviewDeck,
@@ -361,6 +362,66 @@ function applyReviewPositionMetadata(store: TreeStore, position: Position) {
   });
 }
 
+function createReviewPositionLineState(position: Position, headers: GameHeaders) {
+  const moveSequence = position.moveSequence?.trim();
+  if (!moveSequence) return null;
+
+  const tree = defaultTree();
+  tree.headers = {
+    ...headers,
+    fen: tree.root.fen,
+    orientation: position.sideToMove ?? headers.orientation ?? "white",
+    result: "*",
+  };
+  tree.dirty = false;
+
+  const [chess] = positionFromFen(tree.root.fen);
+  if (!chess) return null;
+
+  let currentNode = tree.root;
+  const path: number[] = [];
+  for (const token of tokenizeReviewMoveSequence(moveSequence)) {
+    const move = parseSan(chess, token);
+    if (!move) return null;
+    const san = makeSan(chess, move);
+    chess.play(move);
+    const node = createNode({
+      fen: makeFen(chess.toSetup()),
+      move,
+      san,
+      halfMoves: currentNode.halfMoves + 1,
+    });
+    currentNode.children = [node];
+    currentNode = node;
+    path.push(0);
+  }
+
+  if (!sameReviewPosition(currentNode.fen, position.fen)) return null;
+
+  currentNode.fen = position.fen;
+  currentNode.annotations = position.annotations ?? [];
+  currentNode.comment = position.comment ?? "";
+  currentNode.shapes = position.shapes ?? [];
+  tree.position = path;
+  return { state: tree, path };
+}
+
+function tokenizeReviewMoveSequence(moveSequence: string) {
+  return moveSequence
+    .split(/\s+/)
+    .map((token) => token.replace(/^\d+\.(\.\.)?/, "").trim())
+    .filter(
+      (token) =>
+        token &&
+        !/^\d+\.(\.\.)?$/.test(token) &&
+        !["1-0", "0-1", "1/2-1/2", "*"].includes(token),
+    );
+}
+
+function sameReviewPosition(a: string, b: string) {
+  return a.split(" ").slice(0, 4).join(" ") === b.split(" ").slice(0, 4).join(" ");
+}
+
 function parseReviewCorrectMove(position: Position, value: string) {
   const input = value.trim();
   if (!input) return null;
@@ -408,6 +469,7 @@ function OpeningReviewPanel({
   const goToMove = useStore(store, (s) => s.goToMove);
   const setHeaders = useStore(store, (s) => s.setHeaders);
   const setPracticePath = useStore(store, (s) => s.setPracticePath);
+  const setState = useStore(store, (s) => s.setState);
   const currentFen = useStore(store, (s) => s.currentNode().fen);
 
   const [deck, setDeck] = useAtom(deckAtomFamily({ file: deckPath, game: 0 }));
@@ -558,8 +620,11 @@ function OpeningReviewPanel({
       }
       onClearBoardMoveCandidate();
 
-      const path = findFen(position.fen, root);
-      if (path.length === 0 && root.fen !== position.fen) {
+      const reviewLine = createReviewPositionLineState(position, headers);
+      if (reviewLine) {
+        setState(reviewLine.state);
+        setPracticePath(reviewLine.path);
+      } else if (findFen(position.fen, root).length === 0 && root.fen !== position.fen) {
         setHeaders({
           ...headers,
           fen: position.fen,
@@ -568,6 +633,7 @@ function OpeningReviewPanel({
         });
         setPracticePath([]);
       } else {
+        const path = findFen(position.fen, root);
         goToMove(path);
         setPracticePath(path);
       }
@@ -591,6 +657,7 @@ function OpeningReviewPanel({
       setInvisible,
       setPracticePath,
       setPracticeState,
+      setState,
       setShowComments,
       store,
       onClearBoardMoveCandidate,
@@ -708,6 +775,12 @@ function OpeningReviewPanel({
   useHotkeys("space", () => advanceFullPracticeCorrect(), {
     enabled: practiceState.phase === "correct" && sessionStats.mode === "full",
   });
+
+  useEffect(() => {
+    if (practiceState.phase === "correct" || practiceState.phase === "incorrect") {
+      setShowComments(true);
+    }
+  }, [practiceState.phase, setShowComments]);
 
   if (!loaded) {
     return <Alert color="blue">Loading review deck...</Alert>;
@@ -858,11 +931,20 @@ function OpeningReviewPanel({
                     const position = deck.positions.find(
                       (deckPosition) => deckPosition.fen === practiceState.currentFen,
                     );
-                    const path = findFen(practiceState.currentFen, root);
-                    if (path.length === 0 && root.fen !== practiceState.currentFen) {
+                    const reviewLine = position
+                      ? createReviewPositionLineState(position, headers)
+                      : null;
+                    if (reviewLine) {
+                      setState(reviewLine.state);
+                      setPracticePath(reviewLine.path);
+                    } else if (
+                      findFen(practiceState.currentFen, root).length === 0 &&
+                      root.fen !== practiceState.currentFen
+                    ) {
                       setHeaders({ ...headers, fen: practiceState.currentFen, result: "*" });
                       setPracticePath([]);
                     } else {
+                      const path = findFen(practiceState.currentFen, root);
                       goToMove(path);
                       setPracticePath(path);
                     }
@@ -1282,6 +1364,7 @@ function OpeningReviewPositionsModal({
   const store = useContext(TreeStateContext)!;
   const goToMove = useStore(store, (s) => s.goToMove);
   const setHeaders = useStore(store, (s) => s.setHeaders);
+  const setState = useStore(store, (s) => s.setState);
   const headers = useStore(store, (s) => s.headers);
   const root = useStore(store, (s) => s.root);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -1297,8 +1380,10 @@ function OpeningReviewPositionsModal({
 
   const loadReviewPosition = useCallback(
     (position: Position) => {
-      const path = findFen(position.fen, root);
-      if (path.length === 0 && root.fen !== position.fen) {
+      const reviewLine = createReviewPositionLineState(position, headers);
+      if (reviewLine) {
+        setState(reviewLine.state);
+      } else if (findFen(position.fen, root).length === 0 && root.fen !== position.fen) {
         setHeaders({
           ...headers,
           fen: position.fen,
@@ -1306,12 +1391,13 @@ function OpeningReviewPositionsModal({
           result: "*",
         });
       } else {
+        const path = findFen(position.fen, root);
         goToMove(path);
       }
       applyReviewPositionMetadata(store, position);
       onClose();
     },
-    [goToMove, headers, onClose, root, setHeaders, store],
+    [goToMove, headers, onClose, root, setHeaders, setState, store],
   );
 
   const deleteReviewPosition = useCallback(
