@@ -3,28 +3,47 @@ import { isNormal, makeSquare } from "chessops";
 import { parseSan } from "chessops/san";
 import { useAtom, useSetAtom } from "jotai";
 import { DataTable } from "mantine-datatable";
-import { memo, useCallback, useContext, useEffect, useMemo } from "react";
+import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import { currentBoardPreviewShapesAtom, moveNotationTypeAtom } from "@/state/atoms";
 import { addPieceSymbol } from "@/utils/annotation";
+import { queryChessDbMoves, type ChessDbCloudMove } from "@/utils/chessdb/api";
 import { positionFromFen } from "@/utils/chessops";
 import type { Opening } from "@/utils/db";
 import { formatNumber } from "@/utils/format";
 import {
-  getOpeningMoveHealthMap,
+  getOpeningMoveStrengthMap,
   resolveOpeningMoveHealthSide,
-  type OpeningMoveHealth,
+  type OpeningMoveStrength,
+  type OpeningMoveHealthSide,
   type OpeningMoveHealthSidePreference,
-  type OpeningMoveHealthStatus,
+  type OpeningMoveStrengthStatus,
 } from "@/utils/openingMoveHealth";
 import classes from "./OpeningsTable.module.css";
 
-export type OpeningSort = "games" | "health" | "whiteRate" | "blackRate" | "drawRate" | "move";
+export type OpeningSort =
+  | "games"
+  | "health"
+  | "chessDbStrength"
+  | "chessDbWeakness"
+  | "winRateHigh"
+  | "winRateLow"
+  | "scoreHigh"
+  | "scoreLow"
+  | "whiteRate"
+  | "blackRate"
+  | "drawRate"
+  | "move";
 
 export const openingSortOptions: { label: string; value: OpeningSort }[] = [
   { label: "Most played", value: "games" },
-  { label: "Move health", value: "health" },
+  { label: "CP strength", value: "chessDbStrength" },
+  { label: "CP weakness", value: "chessDbWeakness" },
+  { label: "Highest win rate", value: "winRateHigh" },
+  { label: "Lowest win rate", value: "winRateLow" },
+  { label: "Highest score", value: "scoreHigh" },
+  { label: "Lowest score", value: "scoreLow" },
   { label: "White win rate", value: "whiteRate" },
   { label: "Black win rate", value: "blackRate" },
   { label: "Draw rate", value: "drawRate" },
@@ -43,7 +62,8 @@ export const openingMoveHealthSideOptions: {
 export function sortOpeningRows(
   openings: Opening[],
   sortBy: OpeningSort,
-  healthByMove?: Map<string, OpeningMoveHealth>,
+  healthByMove?: Map<string, OpeningMoveStrength>,
+  side: OpeningMoveHealthSide = "white",
 ) {
   return [...openings].sort((a, b) => {
     if (sortBy === "move") {
@@ -57,10 +77,32 @@ export function sortOpeningRows(
       return bTotal - aTotal;
     }
 
-    if (sortBy === "health") {
-      const aHealth = healthByMove?.get(a.move)?.score ?? 50;
-      const bHealth = healthByMove?.get(b.move)?.score ?? 50;
-      return aHealth - bHealth || bTotal - aTotal;
+    if (sortBy === "health" || sortBy === "chessDbStrength") {
+      const aStrength = getChessDbStrengthSortScore(healthByMove?.get(a.move));
+      const bStrength = getChessDbStrengthSortScore(healthByMove?.get(b.move));
+      return bStrength - aStrength || bTotal - aTotal;
+    }
+
+    if (sortBy === "chessDbWeakness") {
+      const aStrength = getChessDbStrengthSortScore(healthByMove?.get(a.move));
+      const bStrength = getChessDbStrengthSortScore(healthByMove?.get(b.move));
+      return aStrength - bStrength || bTotal - aTotal;
+    }
+
+    if (sortBy === "winRateHigh" || sortBy === "winRateLow") {
+      const aRate = getSideWinRate(a, side);
+      const bRate = getSideWinRate(b, side);
+      return sortBy === "winRateHigh"
+        ? bRate - aRate || bTotal - aTotal
+        : aRate - bRate || bTotal - aTotal;
+    }
+
+    if (sortBy === "scoreHigh" || sortBy === "scoreLow") {
+      const aScore = getSideScore(a, side);
+      const bScore = getSideScore(b, side);
+      return sortBy === "scoreHigh"
+        ? bScore - aScore || bTotal - aTotal
+        : aScore - bScore || bTotal - aTotal;
     }
 
     const field = sortBy === "whiteRate" ? "white" : sortBy === "blackRate" ? "black" : "draw";
@@ -91,6 +133,7 @@ function OpeningsTable({
   const currentFen = useStore(store, (s) => s.currentNode().fen);
   const [moveNotationType] = useAtom(moveNotationTypeAtom);
   const setBoardPreviewShapes = useSetAtom(currentBoardPreviewShapesAtom);
+  const [chessDbMoves, setChessDbMoves] = useState<ChessDbCloudMove[] | null | undefined>();
 
   const clearMovePreview = useCallback(() => {
     setBoardPreviewShapes(null);
@@ -140,11 +183,38 @@ function OpeningsTable({
   }, [currentFen, healthSidePreference]);
 
   const healthByMove = useMemo(
-    () => getOpeningMoveHealthMap(openings, healthSide, referenceOpenings),
-    [healthSide, openings, referenceOpenings],
+    () =>
+      getOpeningMoveStrengthMap({
+        openings,
+        side: healthSide,
+        fen: currentFen,
+        chessDbMoves,
+        referenceOpenings,
+      }),
+    [chessDbMoves, currentFen, healthSide, openings, referenceOpenings],
   );
 
-  openings = sortOpeningRows(openings, sortBy, healthByMove);
+  openings = sortOpeningRows(openings, sortBy, healthByMove, healthSide);
+
+  useEffect(() => {
+    let cancelled = false;
+    setChessDbMoves(undefined);
+    void queryChessDbMoves(currentFen)
+      .then((moves) => {
+        if (!cancelled) {
+          setChessDbMoves(moves);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setChessDbMoves(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentFen]);
 
   const whiteTotal = openings?.reduce((acc, curr) => acc + curr.white, 0);
   const blackTotal = openings?.reduce((acc, curr) => acc + curr.black, 0);
@@ -199,6 +269,7 @@ function OpeningsTable({
         },
         {
           accessor: "health",
+          title: "Strength",
           width: compact ? 78 : 106,
           render: ({ move }) => {
             const health = healthByMove.get(move);
@@ -212,22 +283,36 @@ function OpeningsTable({
                 label={
                   <Stack gap={2}>
                     <Text size="xs" fw={700}>
-                      {health.label} for {capitalize(health.side)}
+                      {health.label} move
                     </Text>
                     <Text size="xs">
-                      {formatPercent(health.sideScore)} score vs{" "}
-                      {formatPercent(health.positionScore)} line average
+                      {health.source === "chessdb"
+                        ? "Based on ChessDB cloud analysis."
+                        : health.pending
+                          ? "ChessDB is checking this position in the background."
+                          : "ChessDB has no cloud move list here, so this is a quick local estimate."}
                     </Text>
-                    {health.referenceRank ? (
+                    {health.cpLoss !== null ? (
                       <Text size="xs">
-                        Reference #{health.referenceRank}
+                        About {Math.round(health.cpLoss)} cp behind ChessDB's best move
+                      </Text>
+                    ) : null}
+                    {health.chessDbScoreRank ? (
+                      <Text size="xs">Engine ranking #{health.chessDbScoreRank}</Text>
+                    ) : null}
+                    {health.chessDbWinrate !== null ? (
+                      <Text size="xs">ChessDB win rate {formatPercent(health.chessDbWinrate)}</Text>
+                    ) : null}
+                    {health.source === "local" && health.referenceRank ? (
+                      <Text size="xs">
+                        Strong-games choice #{health.referenceRank}
                         {health.referenceShare !== null
                           ? `, ${formatPercent(health.referenceShare)} share`
                           : ""}
                       </Text>
-                    ) : health.topReferenceMove ? (
+                    ) : health.source === "local" && health.topReferenceMove ? (
                       <Text size="xs">
-                        Outside reference moves; top is {health.topReferenceMove}
+                        Outside strong-games moves; top is {health.topReferenceMove}
                       </Text>
                     ) : null}
                     {health.reasons.map((reason) => (
@@ -246,6 +331,61 @@ function OpeningsTable({
                 >
                   {health.label}
                 </Badge>
+              </Tooltip>
+            );
+          },
+        },
+        {
+          accessor: "strengthRank",
+          title: "Engine ranking",
+          width: compact ? 76 : 112,
+          render: ({ move }) => {
+            const health = healthByMove.get(move);
+            if (!health || move === "Total") return null;
+
+            return (
+              <Tooltip
+                withArrow
+                multiline
+                w={240}
+                label={
+                  <Stack gap={2}>
+                    <Text size="xs" fw={700}>
+                      ChessDB strength rank
+                    </Text>
+                    {health.pending ? (
+                      <Text size="xs">Checking ChessDB for this position.</Text>
+                    ) : health.source !== "chessdb" ? (
+                      <Text size="xs">No ChessDB score was found for this position.</Text>
+                    ) : health.chessDbScoreCp === null ? (
+                      <Text size="xs">ChessDB lists this move but has no usable score yet.</Text>
+                    ) : (
+                      <>
+                        <Text size="xs">
+                          Rank #{health.chessDbScoreRank ?? "-"} by centipawn score for{" "}
+                          {health.side}.
+                        </Text>
+                        <Text size="xs">
+                          Score {formatChessDbScore(health.chessDbScoreCp)}
+                          {health.cpLoss !== null
+                            ? `, ${Math.round(health.cpLoss)} cp behind the best move`
+                            : ""}
+                        </Text>
+                      </>
+                    )}
+                  </Stack>
+                }
+              >
+                <Stack gap={0}>
+                  <Text fz={compact ? "xs" : "sm"} fw={600}>
+                    {formatChessDbRank(health)}
+                  </Text>
+                  {!compact && health.chessDbScoreCp !== null ? (
+                    <Text fz="xs" c="dimmed">
+                      {formatChessDbScore(health.chessDbScoreCp)}
+                    </Text>
+                  ) : null}
+                </Stack>
               </Tooltip>
             );
           },
@@ -314,25 +454,56 @@ function getOpeningTotal(opening: Opening) {
   return opening.white + opening.draw + opening.black;
 }
 
-function healthStatusColor(status: OpeningMoveHealthStatus) {
+function getSideWinRate(opening: Opening, side: OpeningMoveHealthSide) {
+  const total = getOpeningTotal(opening);
+  if (total <= 0) return 0;
+  return (side === "white" ? opening.white : opening.black) / total;
+}
+
+function getSideScore(opening: Opening, side: OpeningMoveHealthSide) {
+  const total = getOpeningTotal(opening);
+  if (total <= 0) return 0;
+  const wins = side === "white" ? opening.white : opening.black;
+  return (wins + opening.draw * 0.5) / total;
+}
+
+function getChessDbStrengthSortScore(health?: OpeningMoveStrength) {
+  if (!health) return Number.NEGATIVE_INFINITY;
+  if (health.chessDbScoreCp !== null) return health.chessDbScoreCp;
+  if (health.source === "chessdb") return Number.NEGATIVE_INFINITY;
+  return health.score - 50;
+}
+
+function formatChessDbRank(health: OpeningMoveStrength) {
+  if (health.pending) return "...";
+  if (health.source !== "chessdb") return "-";
+  if (health.chessDbScoreCp === null && health.chessDbRank !== null) return "Listed";
+  const rank = health.chessDbScoreRank;
+  return rank ? `#${rank}` : "Out";
+}
+
+function formatChessDbScore(score: number) {
+  if (Math.abs(score) > 250_00) {
+    const mate = Math.floor((300_00 - Math.abs(score) + 1) / 2);
+    return `${score > 0 ? "+" : "-"}M${mate}`;
+  }
+  if (Math.abs(score) > 150_00) {
+    return score > 0 ? "Win" : "Loss";
+  }
+  return `${score >= 0 ? "+" : ""}${(score / 100).toFixed(2)}`;
+}
+
+function healthStatusColor(status: OpeningMoveStrengthStatus) {
   switch (status) {
     case "weak":
       return "red";
-    case "watch":
-      return "orange";
     case "strong":
       return "green";
-    case "sample":
-      return "gray";
     case "ok":
-      return "blue";
+      return "gray";
   }
 }
 
 function formatPercent(value: number) {
   return `${(value * 100).toFixed(0)}%`;
-}
-
-function capitalize(value: string) {
-  return value.charAt(0).toUpperCase() + value.slice(1);
 }

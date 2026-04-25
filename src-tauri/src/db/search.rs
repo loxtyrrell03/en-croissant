@@ -37,11 +37,12 @@ use crate::{
     AppState,
 };
 
-use super::GameQuery;
+use super::{GameQuery, Sides};
 
 const DB_CACHE_LIMIT: usize = 4;
 const PLAN_EXPLORER_INDEXED_SAMPLES: usize = 5_000;
 const PLAN_EXPLORER_FALLBACK_FULL_SAMPLE_MAX_GAMES: usize = 100_000;
+const MASTER_GAME_FAST_CANDIDATE_LIMIT: usize = 30_000;
 const OPENING_HEALTH_SCORE_GAP: f64 = 0.15;
 const OPENING_HEALTH_POOR_SCORE: f64 = 0.45;
 const OPENING_HEALTH_PROGRESS_EVENT: &str = "opening_health_progress";
@@ -703,20 +704,27 @@ fn entry_matches_query(
     query: &GameQuery,
     wanted_result: Option<GameResult>,
 ) -> bool {
-    if let Some(white) = query.player1 {
-        if white != entry.white_id {
-            return false;
-        }
+    if !entry_players_match_query(entry, query) {
+        return false;
     }
 
-    if let Some(black) = query.player2 {
-        if black != entry.black_id {
-            return false;
-        }
+    if !entry_elos_match_query(entry, query) {
+        return false;
     }
 
-    if let Some(wanted) = wanted_result {
+    if let Some(wanted) = wanted_result.or_else(|| {
+        query
+            .outcome
+            .as_deref()
+            .and_then(search_result_filter_from_str)
+    }) {
         if entry.result != wanted {
+            return false;
+        }
+    }
+
+    if let Some(outcome) = &query.outcome {
+        if outcome == "*" && !matches!(entry.result, GameResult::Other | GameResult::None) {
             return false;
         }
     }
@@ -738,6 +746,207 @@ fn entry_matches_query(
     }
 
     true
+}
+
+fn search_result_filter_from_str(value: &str) -> Option<GameResult> {
+    match value {
+        "1-0" | "whitewon" => Some(GameResult::WhiteWin),
+        "0-1" | "blackwon" => Some(GameResult::BlackWin),
+        "1/2-1/2" | "draw" => Some(GameResult::Draw),
+        _ => None,
+    }
+}
+
+fn entry_players_match_query(entry: &SearchGameEntryRef<'_>, query: &GameQuery) -> bool {
+    match query.sides {
+        Some(Sides::WhiteBlack) => {
+            query.player1.map_or(true, |player| player == entry.white_id)
+                && query.player2.map_or(true, |player| player == entry.black_id)
+        }
+        Some(Sides::BlackWhite) => {
+            query.player1.map_or(true, |player| player == entry.black_id)
+                && query.player2.map_or(true, |player| player == entry.white_id)
+        }
+        Some(Sides::Any) => {
+            query
+                .player1
+                .map_or(true, |player| player == entry.white_id || player == entry.black_id)
+                && query
+                    .player2
+                    .map_or(true, |player| player == entry.white_id || player == entry.black_id)
+        }
+        None => {
+            query.player1.map_or(true, |player| player == entry.white_id)
+                && query.player2.map_or(true, |player| player == entry.black_id)
+        }
+    }
+}
+
+fn entry_elos_match_query(entry: &SearchGameEntryRef<'_>, query: &GameQuery) -> bool {
+    match query.sides {
+        Some(Sides::WhiteBlack) => {
+            query
+                .range1
+                .map_or(true, |range| elo_in_range(entry.white_elo, range))
+                && query
+                    .range2
+                    .map_or(true, |range| elo_in_range(entry.black_elo, range))
+        }
+        Some(Sides::BlackWhite) => {
+            query
+                .range1
+                .map_or(true, |range| elo_in_range(entry.black_elo, range))
+                && query
+                    .range2
+                    .map_or(true, |range| elo_in_range(entry.white_elo, range))
+        }
+        Some(Sides::Any) => ranges_match_any_player(entry, query.range1, query.range2),
+        None => {
+            query.range1.map_or(true, |range| {
+                elo_in_range(entry.white_elo, range) || elo_in_range(entry.black_elo, range)
+            }) && query.range2.map_or(true, |range| {
+                elo_in_range(entry.white_elo, range) || elo_in_range(entry.black_elo, range)
+            })
+        }
+    }
+}
+
+fn ranges_match_any_player(
+    entry: &SearchGameEntryRef<'_>,
+    range1: Option<(i32, i32)>,
+    range2: Option<(i32, i32)>,
+) -> bool {
+    match (range1, range2) {
+        (Some(r1), Some(r2)) => {
+            elo_in_range(entry.white_elo, r1)
+                || elo_in_range(entry.black_elo, r1)
+                || elo_in_range(entry.white_elo, r2)
+                || elo_in_range(entry.black_elo, r2)
+        }
+        (Some(range), None) | (None, Some(range)) => {
+            elo_in_range(entry.white_elo, range) || elo_in_range(entry.black_elo, range)
+        }
+        (None, None) => true,
+    }
+}
+
+fn elo_in_range(elo: i16, range: (i32, i32)) -> bool {
+    let elo = i32::from(elo);
+    elo >= range.0 && elo <= range.1
+}
+
+fn master_game_elo_key(entry: &SearchGameEntryRef<'_>) -> i32 {
+    i32::from(entry.white_elo.max(0)) + i32::from(entry.black_elo.max(0))
+}
+
+fn push_top_master_game(
+    heap: &mut BinaryHeap<Reverse<(i32, i32)>>,
+    entry: &SearchGameEntryRef<'_>,
+    limit: usize,
+) {
+    let elo_key = master_game_elo_key(entry);
+    if heap.len() < limit {
+        heap.push(Reverse((elo_key, entry.id)));
+    } else if let Some(&Reverse((min_elo, _))) = heap.peek() {
+        if elo_key > min_elo {
+            heap.pop();
+            heap.push(Reverse((elo_key, entry.id)));
+        }
+    }
+}
+
+fn push_top_master_game_candidate(
+    heap: &mut BinaryHeap<Reverse<(i32, usize)>>,
+    entry: &SearchGameEntryRef<'_>,
+    index: usize,
+    limit: usize,
+) {
+    let elo_key = master_game_elo_key(entry);
+    if heap.len() < limit {
+        heap.push(Reverse((elo_key, index)));
+    } else if let Some(&Reverse((min_elo, _))) = heap.peek() {
+        if elo_key > min_elo {
+            heap.pop();
+            heap.push(Reverse((elo_key, index)));
+        }
+    }
+}
+
+fn sort_master_games(games: &mut [NormalizedGame]) {
+    games.sort_by(|a, b| {
+        let a_white = a.white_elo.unwrap_or(0);
+        let a_black = a.black_elo.unwrap_or(0);
+        let b_white = b.white_elo.unwrap_or(0);
+        let b_black = b.black_elo.unwrap_or(0);
+        let a_sum = a_white + a_black;
+        let b_sum = b_white + b_black;
+        let a_max = a_white.max(a_black);
+        let b_max = b_white.max(b_black);
+
+        b_sum
+            .cmp(&a_sum)
+            .then_with(|| b_max.cmp(&a_max))
+            .then_with(|| b.date.cmp(&a.date))
+            .then_with(|| a.white.cmp(&b.white))
+            .then_with(|| a.black.cmp(&b.black))
+    });
+}
+
+fn search_master_games_from_index_candidates(
+    index: &MmapSearchIndex,
+    query: &GameQuery,
+    position_query: &PositionQuery,
+    wanted_result: Option<GameResult>,
+    cancel_flag: &AtomicBool,
+    max_samples: usize,
+) -> Result<Vec<i32>, Error> {
+    let candidate_limit = MASTER_GAME_FAST_CANDIDATE_LIMIT.max(max_samples);
+    let mut candidates = BinaryHeap::with_capacity(candidate_limit + 1);
+
+    for (game_index, entry) in index.iter().enumerate() {
+        if cancel_flag.load(Ordering::Relaxed) {
+            return Err(Error::SearchStopped);
+        }
+
+        if !entry_matches_query(&entry, query, wanted_result) {
+            continue;
+        }
+
+        let end_material: MaterialCount = ByColor {
+            white: entry.white_material,
+            black: entry.black_material,
+        };
+        if !position_query.can_reach(&end_material, entry.pawn_home) {
+            continue;
+        }
+
+        push_top_master_game_candidate(&mut candidates, &entry, game_index, candidate_limit);
+    }
+
+    let mut candidates = candidates
+        .into_iter()
+        .map(|Reverse(candidate)| candidate)
+        .collect::<Vec<_>>();
+    candidates.sort_by(|a, b| b.0.cmp(&a.0));
+
+    let mut ids = Vec::with_capacity(max_samples);
+    for (_, game_index) in candidates {
+        if cancel_flag.load(Ordering::Relaxed) {
+            return Err(Error::SearchStopped);
+        }
+
+        let Some(entry) = index.get_entry_ref(game_index) else {
+            continue;
+        };
+        if get_move_after_match(entry.moves, &entry.fen, position_query)?.is_some() {
+            ids.push(entry.id);
+            if ids.len() >= max_samples {
+                break;
+            }
+        }
+    }
+
+    Ok(ids)
 }
 
 fn position_at_ply(entry: &SearchGameEntryRef<'_>, ply: u16) -> Result<Chess, Error> {
@@ -1675,12 +1884,13 @@ fn search_position_from_occurrences(
     exact: &ExactData,
     wanted_result: Option<GameResult>,
     cancel_flag: &AtomicBool,
+    include_openings: bool,
+    include_games: bool,
+    max_samples: usize,
 ) -> Result<(Vec<PositionStats>, Vec<i32>), Error> {
-    const MAX_SAMPLES: usize = 500;
-
     let occurrences = index.position_occurrences(indexed_position_key(index, &exact.position));
     let mut openings: HashMap<String, PositionStats> = HashMap::new();
-    let mut top_games = BinaryHeap::with_capacity(MAX_SAMPLES + 1);
+    let mut top_games = BinaryHeap::with_capacity(max_samples + 1);
     let mut seen_games = HashSet::new();
 
     for occurrence in occurrences {
@@ -1705,36 +1915,39 @@ fn search_position_from_occurrences(
             continue;
         }
 
-        let san = if let Some(next_byte) = occurrence.next_move {
-            let Some(next_move) = decode_move(next_byte, &position) else {
-                continue;
-            };
-            SanPlus::from_move(position, &next_move).to_string()
-        } else {
-            "*".to_string()
-        };
-
-        let elo_key = entry.white_elo.max(entry.black_elo);
-        if top_games.len() < MAX_SAMPLES {
-            top_games.push(Reverse((elo_key, entry.id)));
-        } else if let Some(&Reverse((min_elo, _))) = top_games.peek() {
-            if elo_key > min_elo {
-                top_games.pop();
-                top_games.push(Reverse((elo_key, entry.id)));
-            }
+        if include_games {
+            push_top_master_game(&mut top_games, &entry, max_samples);
         }
 
-        add_opening_result(&mut openings, san, entry.result);
+        if include_openings {
+            let san = if let Some(next_byte) = occurrence.next_move {
+                let Some(next_move) = decode_move(next_byte, &position) else {
+                    continue;
+                };
+                SanPlus::from_move(position, &next_move).to_string()
+            } else {
+                "*".to_string()
+            };
+            add_opening_result(&mut openings, san, entry.result);
+        }
     }
 
-    let openings = openings
-        .into_iter()
-        .map(|(move_, mut stats)| {
-            stats.move_ = move_;
-            stats
-        })
-        .collect();
-    let ids = top_games.into_iter().map(|Reverse((_, id))| id).collect();
+    let openings = if include_openings {
+        openings
+            .into_iter()
+            .map(|(move_, mut stats)| {
+                stats.move_ = move_;
+                stats
+            })
+            .collect()
+    } else {
+        Vec::new()
+    };
+    let ids = if include_games {
+        top_games.into_iter().map(|Reverse((_, id))| id).collect()
+    } else {
+        Vec::new()
+    };
 
     Ok((openings, ids))
 }
@@ -2324,13 +2537,29 @@ pub async fn search_position(
         start.elapsed()
     );
 
+    let query_options = query.options.as_ref();
+    let include_openings = query_options.map_or(true, |options| !options.skip_count);
+    let include_games = query_options
+        .and_then(|options| options.page_size)
+        .map_or(true, |page_size| page_size != 0);
+    let max_samples = query_options
+        .and_then(|options| options.page_size)
+        .filter(|page_size| *page_size > 0)
+        .map(|page_size| page_size as usize)
+        .unwrap_or(500)
+        .clamp(1, 500);
+
+    if !include_openings && !include_games {
+        finish_cancelable_db_request(&state, &tab_id, &cancel_flag);
+        return Ok((Vec::new(), Vec::new()));
+    }
+
     let openings: DashMap<String, PositionStats> = DashMap::new();
-    const MAX_SAMPLES: usize = 500;
     // Min-heap of (elo_key, game_id) to track top-rated sample games.
     // Using Reverse so peek() returns the entry with the lowest ELO,
     // which we can evict when a higher-rated game is found.
-    let top_games: Mutex<BinaryHeap<Reverse<(i16, i32)>>> =
-        Mutex::new(BinaryHeap::with_capacity(MAX_SAMPLES + 1));
+    let top_games: Mutex<BinaryHeap<Reverse<(i32, i32)>>> =
+        Mutex::new(BinaryHeap::with_capacity(max_samples + 1));
 
     let processed = AtomicUsize::new(0);
 
@@ -2358,6 +2587,9 @@ pub async fn search_position(
                 exact,
                 wanted_result,
                 &cancel_flag,
+                include_openings,
+                include_games,
+                max_samples,
             )?;
 
             let (white_players, black_players) = diesel::alias!(players as white, players as black);
@@ -2369,7 +2601,8 @@ pub async fn search_position(
                 .filter(games::id.eq_any(ids))
                 .order((games::white_elo.desc(), games::black_elo.desc()))
                 .load(db)?;
-            let normalized_games = normalize_games(games);
+            let mut normalized_games = normalize_games(games);
+            sort_master_games(&mut normalized_games);
             let file_path = file.clone();
 
             state.line_cache.insert(
@@ -2383,6 +2616,58 @@ pub async fn search_position(
             info!("finished occurrence-index search in {:?}", start.elapsed());
 
             return Ok((openings, normalized_games));
+        }
+    }
+
+    if include_games && !include_openings {
+        if let Some(position_query) = &parsed_position_query {
+            info!("start fast master-game candidate search on {tab_id}");
+            let ids = search_master_games_from_index_candidates(
+                &mmap_index,
+                &query,
+                position_query,
+                wanted_result,
+                &cancel_flag,
+                max_samples,
+            )?;
+
+            {
+                let (white_players, black_players) =
+                    diesel::alias!(players as white, players as black);
+                let games: Vec<(Game, Player, Player, Event, Site)> = if ids.is_empty() {
+                    Vec::new()
+                } else {
+                    games::table
+                        .inner_join(
+                            white_players.on(games::white_id.eq(white_players.field(players::id))),
+                        )
+                        .inner_join(
+                            black_players.on(games::black_id.eq(black_players.field(players::id))),
+                        )
+                        .inner_join(events::table.on(games::event_id.eq(events::id)))
+                        .inner_join(sites::table.on(games::site_id.eq(sites::id)))
+                        .filter(games::id.eq_any(ids))
+                        .load(db)?
+                };
+                let mut normalized_games = normalize_games(games);
+                sort_master_games(&mut normalized_games);
+                let file_path = file.clone();
+
+                state.line_cache.insert(
+                    (query.clone(), file.clone()),
+                    (Vec::new(), normalized_games.clone()),
+                );
+                state.search_collisions.remove(&(query, file_path));
+
+                drop(permit);
+                finish_cancelable_db_request(&state, &tab_id, &cancel_flag);
+                info!(
+                    "finished fast master-game candidate search in {:?}",
+                    start.elapsed()
+                );
+
+                return Ok((Vec::new(), normalized_games));
+            }
         }
     }
 
@@ -2405,38 +2690,8 @@ pub async fn search_position(
             );
         }
 
-        if let Some(white) = query.player1 {
-            if white != entry.white_id {
-                return;
-            }
-        }
-
-        if let Some(black) = query.player2 {
-            if black != entry.black_id {
-                return;
-            }
-        }
-
-        if let Some(wanted) = wanted_result {
-            if entry.result != wanted {
-                return;
-            }
-        }
-
-        if let Some(start_date) = &query.start_date {
-            if let Some(date) = entry.date {
-                if date < start_date.as_str() {
-                    return;
-                }
-            }
-        }
-
-        if let Some(end_date) = &query.end_date {
-            if let Some(date) = entry.date {
-                if date > end_date.as_str() {
-                    return;
-                }
-            }
+        if !entry_matches_query(&entry, &query, wanted_result) {
+            return;
         }
 
         if let Some(position_query) = &parsed_position_query {
@@ -2446,36 +2701,32 @@ pub async fn search_position(
             };
             if position_query.can_reach(&end_material, entry.pawn_home) {
                 if let Ok(Some(m)) = get_move_after_match(entry.moves, &entry.fen, position_query) {
-                    let elo_key = entry.white_elo.max(entry.black_elo);
                     let mut heap = top_games.lock().unwrap();
-                    if heap.len() < MAX_SAMPLES {
-                        heap.push(Reverse((elo_key, entry.id)));
-                    } else if let Some(&Reverse((min_elo, _))) = heap.peek() {
-                        if elo_key > min_elo {
-                            heap.pop();
-                            heap.push(Reverse((elo_key, entry.id)));
-                        }
+                    if include_games {
+                        push_top_master_game(&mut heap, &entry, max_samples);
                     }
                     drop(heap);
 
-                    openings
-                        .entry(m)
-                        .and_modify(|opening| match entry.result {
-                            GameResult::WhiteWin => opening.white += 1,
-                            GameResult::BlackWin => opening.black += 1,
-                            GameResult::Draw => opening.draw += 1,
-                            GameResult::Other | GameResult::None => opening.draw += 1,
-                        })
-                        .or_insert_with(|| PositionStats {
-                            black: i32::from(entry.result == GameResult::BlackWin),
-                            white: i32::from(entry.result == GameResult::WhiteWin),
-                            draw: i32::from(
-                                entry.result == GameResult::Draw
-                                    || entry.result == GameResult::Other
-                                    || entry.result == GameResult::None,
-                            ),
-                            move_: String::new(),
-                        });
+                    if include_openings {
+                        openings
+                            .entry(m)
+                            .and_modify(|opening| match entry.result {
+                                GameResult::WhiteWin => opening.white += 1,
+                                GameResult::BlackWin => opening.black += 1,
+                                GameResult::Draw => opening.draw += 1,
+                                GameResult::Other | GameResult::None => opening.draw += 1,
+                            })
+                            .or_insert_with(|| PositionStats {
+                                black: i32::from(entry.result == GameResult::BlackWin),
+                                white: i32::from(entry.result == GameResult::WhiteWin),
+                                draw: i32::from(
+                                    entry.result == GameResult::Draw
+                                        || entry.result == GameResult::Other
+                                        || entry.result == GameResult::None,
+                                ),
+                                move_: String::new(),
+                            });
+                    }
                 }
             }
         }
@@ -2490,19 +2741,27 @@ pub async fn search_position(
         return Err(Error::SearchStopped);
     }
 
-    let openings: Vec<PositionStats> = openings
-        .into_iter()
-        .map(|(k, mut v)| {
-            v.move_ = k;
-            v
-        })
-        .collect();
-    let ids: Vec<i32> = top_games
-        .into_inner()
-        .unwrap()
-        .into_iter()
-        .map(|Reverse((_, id))| id)
-        .collect();
+    let openings: Vec<PositionStats> = if include_openings {
+        openings
+            .into_iter()
+            .map(|(k, mut v)| {
+                v.move_ = k;
+                v
+            })
+            .collect()
+    } else {
+        Vec::new()
+    };
+    let ids: Vec<i32> = if include_games {
+        top_games
+            .into_inner()
+            .unwrap()
+            .into_iter()
+            .map(|Reverse((_, id))| id)
+            .collect()
+    } else {
+        Vec::new()
+    };
 
     info!("finished search in {:?}", start.elapsed());
 
@@ -2515,7 +2774,8 @@ pub async fn search_position(
         .filter(games::id.eq_any(ids))
         .order((games::white_elo.desc(), games::black_elo.desc()))
         .load(db)?;
-    let normalized_games = normalize_games(games);
+    let mut normalized_games = normalize_games(games);
+    sort_master_games(&mut normalized_games);
     let file_path = file.clone();
 
     state.line_cache.insert(
@@ -2791,6 +3051,50 @@ mod tests {
         let fen = Fen::from_ascii(fen2.as_bytes()).unwrap();
         let chess = Chess::from_setup(fen.into_setup(), shakmaty::CastlingMode::Chess960).unwrap();
         assert!(query.matches(&chess));
+    }
+
+    fn test_entry() -> SearchGameEntryRef<'static> {
+        SearchGameEntryRef {
+            id: 1,
+            white_id: 10,
+            black_id: 20,
+            date: Some("2024.01.01"),
+            result: GameResult::WhiteWin,
+            pawn_home: 0,
+            white_material: 0,
+            black_material: 0,
+            white_elo: 2750,
+            black_elo: 2690,
+            fen: None,
+            moves: &[],
+        }
+    }
+
+    #[test]
+    fn entry_query_filters_player_side_and_elo_ranges() {
+        let entry = test_entry();
+
+        let white_query = GameQuery {
+            player1: Some(10),
+            sides: Some(Sides::WhiteBlack),
+            range1: Some((2700, 2800)),
+            ..Default::default()
+        };
+        assert!(entry_matches_query(&entry, &white_query, None));
+
+        let black_query = GameQuery {
+            player1: Some(20),
+            sides: Some(Sides::BlackWhite),
+            range1: Some((2600, 2700)),
+            ..Default::default()
+        };
+        assert!(entry_matches_query(&entry, &black_query, None));
+
+        let too_high = GameQuery {
+            range1: Some((2800, 3000)),
+            ..Default::default()
+        };
+        assert!(!entry_matches_query(&entry, &too_high, None));
     }
 
     #[test]

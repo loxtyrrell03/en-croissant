@@ -1,8 +1,11 @@
+import type { ChessDbCloudMove } from "@/utils/chessdb/api";
+
 export type OpeningMoveHealthSide = "white" | "black";
 
 export type OpeningMoveHealthSidePreference = OpeningMoveHealthSide | "sideToMove";
 
 export type OpeningMoveHealthStatus = "strong" | "ok" | "watch" | "weak" | "sample";
+export type OpeningMoveStrengthStatus = "strong" | "ok" | "weak";
 
 export type OpeningMoveHealthInput = {
     move: string;
@@ -33,6 +36,19 @@ export type OpeningMoveHealth = {
     reasons: string[];
 };
 
+export type OpeningMoveStrength = Omit<OpeningMoveHealth, "label" | "reasons" | "status"> & {
+    status: OpeningMoveStrengthStatus;
+    label: "Strong" | "OK" | "Weak";
+    source: "chessdb" | "local";
+    pending: boolean;
+    cpLoss: number | null;
+    chessDbRank: number | null;
+    chessDbScoreRank: number | null;
+    chessDbScoreCp: number | null;
+    chessDbWinrate: number | null;
+    reasons: string[];
+};
+
 type ReferenceMoveHealth = OpeningMoveHealthInput & {
     games: number;
     share: number;
@@ -40,6 +56,8 @@ type ReferenceMoveHealth = OpeningMoveHealthInput & {
 };
 
 const MIN_CONFIDENT_GAMES = 4;
+const STRONG_CP_LOSS = 20;
+const WEAK_CP_LOSS = 40;
 
 export function getOpeningMoveHealthMap(
     openings: OpeningMoveHealthInput[],
@@ -61,6 +79,30 @@ export function getOpeningMoveHealthMap(
         playableOpenings.map((opening) => [
             opening.move,
             getOpeningMoveHealth(opening, totalGames, positionScore, side, reference),
+        ]),
+    );
+}
+
+export function getOpeningMoveStrengthMap({
+    openings,
+    side,
+    fen,
+    chessDbMoves,
+    referenceOpenings,
+}: {
+    openings: OpeningMoveHealthInput[];
+    side: OpeningMoveHealthSide;
+    fen: string;
+    chessDbMoves?: ChessDbCloudMove[] | null;
+    referenceOpenings?: OpeningMoveHealthInput[];
+}) {
+    const fallback = getOpeningMoveHealthMap(openings, side, referenceOpenings);
+    const chessDb = getChessDbStrengthData(fen, side, chessDbMoves);
+
+    return new Map(
+        Array.from(fallback.entries()).map(([move, health]) => [
+            move,
+            getOpeningMoveStrength(move, health, chessDb, chessDbMoves === undefined),
         ]),
     );
 }
@@ -293,6 +335,222 @@ function getHealthReasons({
         reasons.push("Results and move choice are close to the position baseline");
     }
 
+    return reasons;
+}
+
+function getOpeningMoveStrength(
+    move: string,
+    health: OpeningMoveHealth,
+    chessDb: ReturnType<typeof getChessDbStrengthData>,
+    pending: boolean,
+): OpeningMoveStrength {
+    const chessDbMove = chessDb.bySan.get(move) ?? null;
+    const fallbackStatus = healthToStrengthStatus(health.status);
+
+    if (!pending && chessDb.covered && chessDb.bestScore !== null) {
+        if (!chessDbMove || chessDbMove.scoreForSide === null) {
+            return {
+                ...health,
+                status: "weak",
+                label: "Weak",
+                source: "chessdb",
+                pending: false,
+                score: 18,
+                cpLoss: null,
+                chessDbRank: chessDbMove?.rank ?? null,
+                chessDbScoreRank: chessDbMove?.scoreRank ?? null,
+                chessDbScoreCp: chessDbMove?.scoreForSide ?? null,
+                chessDbWinrate: chessDbMove?.winrate ?? null,
+                reasons: [
+                    chessDbMove
+                        ? "ChessDB lists this move but has not published a usable score for it yet."
+                        : "ChessDB does not include this move among its preferred choices.",
+                ],
+            };
+        }
+
+        const cpLoss = Math.max(0, chessDb.bestScore - chessDbMove.scoreForSide);
+        const status = chessDbStrengthStatus(cpLoss);
+        return {
+            ...health,
+            status,
+            label: strengthLabel(status),
+            source: "chessdb",
+            pending: false,
+            score: strengthScore(status, cpLoss),
+            cpLoss,
+            chessDbRank: chessDbMove.rank,
+            chessDbScoreRank: chessDbMove.scoreRank,
+            chessDbScoreCp: chessDbMove.scoreForSide,
+            chessDbWinrate: chessDbMove.winrate,
+            reasons: chessDbStrengthReasons(status, cpLoss, chessDbMove),
+        };
+    }
+
+    return {
+        ...health,
+        status: fallbackStatus,
+        label: strengthLabel(fallbackStatus),
+        source: "local",
+        pending,
+        score: fallbackStrengthScore(fallbackStatus, health.score),
+        cpLoss: null,
+        chessDbRank: null,
+        chessDbScoreRank: null,
+        chessDbScoreCp: null,
+        chessDbWinrate: null,
+        reasons: [
+            pending
+                ? "Checking ChessDB in the background."
+                : "ChessDB has no cloud move list for this position, so this uses local results for now.",
+            ...health.reasons,
+        ],
+    };
+}
+
+function getChessDbStrengthData(
+    _fen: string,
+    side: OpeningMoveHealthSide,
+    moves: ChessDbCloudMove[] | null | undefined,
+) {
+    const bySan = new Map<
+        string,
+        {
+            scoreForSide: number | null;
+            rank: number | null;
+            scoreRank: number | null;
+            winrate: number | null;
+        }
+    >();
+    const scored: number[] = [];
+
+    if (!moves?.length) {
+        return {
+            covered: false,
+            bestScore: null,
+            bySan,
+        };
+    }
+
+    const scoredMoves: {
+        san: string;
+        scoreForSide: number;
+    }[] = [];
+
+    for (const move of moves) {
+        const scoreForSide =
+            move.scoreCpForWhite === null
+                ? null
+                : side === "black"
+                  ? -move.scoreCpForWhite
+                  : move.scoreCpForWhite;
+        if (scoreForSide !== null) {
+            scored.push(scoreForSide);
+            scoredMoves.push({
+                san: move.san,
+                scoreForSide,
+            });
+        }
+
+        bySan.set(move.san, {
+            scoreForSide,
+            rank: move.rank,
+            scoreRank: null,
+            winrate: move.winrate,
+        });
+    }
+
+    scoredMoves
+        .sort((a, b) => b.scoreForSide - a.scoreForSide || a.san.localeCompare(b.san))
+        .forEach((move, index) => {
+            const entry = bySan.get(move.san);
+            if (entry) {
+                entry.scoreRank = index + 1;
+            }
+        });
+
+    return {
+        covered: true,
+        bestScore: scored.length > 0 ? Math.max(...scored) : null,
+        bySan,
+    };
+}
+
+function chessDbStrengthStatus(cpLoss: number): OpeningMoveStrengthStatus {
+    if (cpLoss <= STRONG_CP_LOSS) return "strong";
+    if (cpLoss <= WEAK_CP_LOSS) return "ok";
+    return "weak";
+}
+
+function healthToStrengthStatus(status: OpeningMoveHealthStatus): OpeningMoveStrengthStatus {
+    switch (status) {
+        case "strong":
+            return "strong";
+        case "weak":
+            return "weak";
+        case "ok":
+        case "watch":
+        case "sample":
+            return "ok";
+    }
+}
+
+function strengthLabel(status: OpeningMoveStrengthStatus): OpeningMoveStrength["label"] {
+    switch (status) {
+        case "strong":
+            return "Strong";
+        case "ok":
+            return "OK";
+        case "weak":
+            return "Weak";
+    }
+}
+
+function strengthScore(status: OpeningMoveStrengthStatus, cpLoss: number) {
+    switch (status) {
+        case "strong":
+            return Math.round(clamp(100 - cpLoss * 1.1, 78, 100));
+        case "ok":
+            return Math.round(clamp(76 - (cpLoss - STRONG_CP_LOSS) * 1.55, 45, 77));
+        case "weak":
+            return Math.round(clamp(43 - (cpLoss - WEAK_CP_LOSS) * 0.18, 0, 43));
+    }
+}
+
+function fallbackStrengthScore(status: OpeningMoveStrengthStatus, score: number) {
+    switch (status) {
+        case "strong":
+            return Math.max(score, 76);
+        case "ok":
+            return clamp(score, 44, 75);
+        case "weak":
+            return Math.min(score, 43);
+    }
+}
+
+function chessDbStrengthReasons(
+    status: OpeningMoveStrengthStatus,
+    cpLoss: number,
+    move: { scoreRank: number | null; winrate: number | null },
+) {
+    const reasons = [
+        cpLoss <= 0
+            ? "Tied for the best ChessDB score."
+            : `${Math.round(cpLoss)} cp behind the best ChessDB score.`,
+    ];
+    if (move.scoreRank !== null) {
+        reasons.push(`Engine ranking #${move.scoreRank}.`);
+    }
+    if (move.winrate !== null) {
+        reasons.push(`ChessDB win rate ${Math.round(move.winrate * 100)}%.`);
+    }
+    if (status === "strong") {
+        reasons.push(`Within ${STRONG_CP_LOSS} cp of the best move.`);
+    } else if (status === "weak") {
+        reasons.push(`Loses more than ${WEAK_CP_LOSS} cp compared with the best move.`);
+    } else {
+        reasons.push("Playable, but not as close to the best move.");
+    }
     return reasons;
 }
 

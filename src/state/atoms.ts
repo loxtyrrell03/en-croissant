@@ -468,7 +468,9 @@ export const lichessOptionsAtom = atomWithStorage<LichessGamesOptions>(
 
 export const masterOptionsAtom = atomWithStorage<MasterGamesOptions>(
     "lichess-master-options",
-    {},
+    {
+        topGames: 15,
+    },
     createZodStorage(masterOptionsSchema, localStorage),
     {
         getOnInit: true,

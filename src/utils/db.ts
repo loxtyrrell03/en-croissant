@@ -155,6 +155,13 @@ export interface Opening {
     draw: number;
 }
 
+export type SearchPositionMode = {
+    includeOpenings?: boolean;
+    includeGames?: boolean;
+    gameLimit?: number;
+    query?: Partial<GameQuery>;
+};
+
 export async function getTournamentGames(file: string, id: number) {
     return await query_games(file, {
         options: {
@@ -166,20 +173,40 @@ export async function getTournamentGames(file: string, id: number) {
     });
 }
 
-export async function searchPosition(options: LocalOptions, tab: string) {
+export async function searchPosition(
+    options: LocalOptions,
+    tab: string,
+    mode: SearchPositionMode = {},
+) {
+    const includeOpenings = mode.includeOpenings ?? true;
+    const includeGames = mode.includeGames ?? true;
+    const query: GameQuery = {
+        player1: options.color === "white" ? options.player : undefined,
+        player2: options.color === "black" ? options.player : undefined,
+        position: {
+            fen: options.fen,
+            type_: options.type,
+        },
+        start_date: options.start_date,
+        end_date: options.end_date,
+        wanted_result: options.result,
+        ...mode.query,
+    };
+
+    if (!includeOpenings || !includeGames || mode.gameLimit !== undefined) {
+        query.options = {
+            skipCount: !includeOpenings,
+            page: null,
+            pageSize: includeGames ? (mode.gameLimit ?? null) : 0,
+            sort: "id",
+            direction: "desc",
+            ...query.options,
+        };
+    }
+
     const res = await commands.searchPosition(
         options.path!,
-        {
-            player1: options.color === "white" ? options.player : undefined,
-            player2: options.color === "black" ? options.player : undefined,
-            position: {
-                fen: options.fen,
-                type_: options.type,
-            },
-            start_date: options.start_date,
-            end_date: options.end_date,
-            wanted_result: options.result,
-        },
+        query,
         tab,
     );
     if (res.status === "error") {

@@ -77,6 +77,11 @@ export type LocalOptions = {
   result: "any" | "whitewon" | "draw" | "blackwon";
 };
 
+type MasterGamePlayerFilters = {
+  whitePlayer: number | null;
+  blackPlayer: number | null;
+};
+
 function sortOpenings(openings: Opening[]) {
   return openings.sort((a, b) => b.black + b.draw + b.white - (a.black + a.draw + a.white));
 }
@@ -87,7 +92,13 @@ function isDatabaseSourcePreferenceEqual(a: DatabaseSourcePreference, b: Databas
   return true;
 }
 
-async function fetchOpening(db: DBType, tab: string, requestId: string) {
+async function fetchOpening(
+  db: DBType,
+  tab: string,
+  requestId: string,
+  view: string,
+  masterFilters: MasterGamePlayerFilters,
+) {
   return match(db)
     .with({ type: "lch_all" }, async ({ fen, options, token }) => {
       const data = await getLichessGames(fen, options, token);
@@ -102,7 +113,7 @@ async function fetchOpening(db: DBType, tab: string, requestId: string) {
       };
     })
     .with({ type: "lch_master" }, async ({ fen, options, token }) => {
-      const data = await getMasterGames(fen, options, token);
+      const data = await getMasterGames(fen, { topGames: 15, ...options }, token);
       return {
         openings: data.moves.map((move) => ({
           move: move.san,
@@ -115,7 +126,19 @@ async function fetchOpening(db: DBType, tab: string, requestId: string) {
     })
     .with({ type: "local" }, async ({ options }) => {
       if (!options.path) throw Error("Missing reference database");
-      const positionData = await searchPosition(options, requestId);
+      const isMasterGamesView = view === "games";
+      const positionData = await searchPosition(options, requestId, {
+        includeOpenings: !isMasterGamesView,
+        includeGames: isMasterGamesView,
+        gameLimit: isMasterGamesView ? 80 : undefined,
+        query: isMasterGamesView
+          ? {
+              player1: masterFilters.whitePlayer ?? undefined,
+              player2: masterFilters.blackPlayer ?? undefined,
+              sides: "WhiteBlack",
+            }
+          : undefined,
+      });
       return {
         openings: sortOpenings(positionData[0]),
         games: positionData[1],
@@ -139,6 +162,11 @@ function DatabasePanel() {
   const [db, setDb] = useAtom(currentDbTypeAtom);
   const [moveHealthSide, setMoveHealthSide] = useAtom(databaseMoveHealthSideAtom);
   const [openingSort, setOpeningSort] = useState<OpeningSort>("games");
+  const [masterGamePlayerFilters, setMasterGamePlayerFilters] =
+    useState<MasterGamePlayerFilters>({
+      whitePlayer: null,
+      blackPlayer: null,
+    });
   const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
     ?.accessToken;
   const missingExplorerToken = db !== "local" && !explorerToken;
@@ -228,8 +256,11 @@ function DatabasePanel() {
         localOptions.start_date ?? "",
         localOptions.end_date ?? "",
         localOptions.result,
+        tabType,
+        masterGamePlayerFilters.whitePlayer ?? "",
+        masterGamePlayerFilters.blackPlayer ?? "",
       ].join("|"),
-    [db, debouncedFen, localOptions, tab?.value],
+    [db, debouncedFen, localOptions, masterGamePlayerFilters, tab?.value, tabType],
   );
 
   useEffect(() => {
@@ -251,7 +282,13 @@ function DatabasePanel() {
       ? { dbType, requestId: databaseRequestId }
       : null,
     async ({ dbType, requestId }) => {
-      return fetchOpening(dbType, tab?.value || "", requestId);
+      return fetchOpening(
+        dbType,
+        tab?.value || "",
+        requestId,
+        tabType,
+        masterGamePlayerFilters,
+      );
     },
   );
 
@@ -315,7 +352,7 @@ function DatabasePanel() {
           <Group gap="xs" wrap="nowrap">
             {tabType === "stats" && (
               <>
-                <Tooltip label="Evaluate move health for this side">
+                <Tooltip label="Evaluate move strength for this side">
                   <Select
                     data={openingMoveHealthSideOptions}
                     value={moveHealthSide}
@@ -371,7 +408,7 @@ function DatabasePanel() {
           >
             {t("Board.Database.Stats")}
           </Tabs.Tab>
-          <Tabs.Tab value="games">{t("Board.Database.Games")}</Tabs.Tab>
+          <Tabs.Tab value="games">Master games</Tabs.Tab>
           <Tabs.Tab value="options">{t("Board.Database.Options")}</Tabs.Tab>
         </Tabs.List>
 
@@ -400,6 +437,14 @@ function DatabasePanel() {
             games={openingData?.games || []}
             loading={isLoading}
             databasePath={dbType.type === "local" ? dbType.options.path : null}
+            whitePlayer={masterGamePlayerFilters.whitePlayer}
+            blackPlayer={masterGamePlayerFilters.blackPlayer}
+            onWhitePlayerChange={(whitePlayer) =>
+              setMasterGamePlayerFilters((current) => ({ ...current, whitePlayer }))
+            }
+            onBlackPlayerChange={(blackPlayer) =>
+              setMasterGamePlayerFilters((current) => ({ ...current, blackPlayer }))
+            }
           />
         </PanelWithError>
         <PanelWithError

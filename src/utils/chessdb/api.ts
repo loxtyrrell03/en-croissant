@@ -110,6 +110,7 @@ type CachedResult = {
 
 const cache = new Map<string, CachedResult[]>();
 const cloudMoveCache = new Map<string, ChessDbCloudMove[] | null>();
+const cloudMoveInFlightCache = new Map<string, Promise<ChessDbCloudMove[] | null>>();
 
 async function queryPosition(fen: string) {
     if (cache.has(fen)) {
@@ -151,12 +152,23 @@ export async function queryChessDbMoves(fen: string): Promise<ChessDbCloudMove[]
     if (cloudMoveCache.has(fen)) {
         return cloudMoveCache.get(fen)!;
     }
+    const inFlight = cloudMoveInFlightCache.get(fen);
+    if (inFlight) {
+        return inFlight;
+    }
 
+    const request = queryChessDbMovesUncached(fen).finally(() => {
+        cloudMoveInFlightCache.delete(fen);
+    });
+    cloudMoveInFlightCache.set(fen, request);
+    return request;
+}
+
+async function queryChessDbMovesUncached(fen: string): Promise<ChessDbCloudMove[] | null> {
     const side = fen.split(" ")[1];
     const url = new URL(endpoint);
     url.searchParams.append("action", "queryall");
     url.searchParams.append("json", "1");
-    url.searchParams.append("learn", "0");
     url.searchParams.append("showall", "1");
     url.searchParams.append("board", fen);
 

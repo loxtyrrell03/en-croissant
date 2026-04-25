@@ -1,4 +1,4 @@
-import { Group } from "@mantine/core";
+import { Group, NumberInput } from "@mantine/core";
 import { YearPickerInput } from "@mantine/dates";
 import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
@@ -27,6 +27,16 @@ const MasterOptionsPanel = () => {
         maxDate={new Date()}
         onChange={(value) => setOptions({ ...options, until: value ? new Date(value) : undefined })}
         clearable
+      />
+      <NumberInput
+        label="Top games"
+        value={options.topGames ?? 15}
+        min={1}
+        max={15}
+        step={1}
+        onChange={(value) =>
+          setOptions({ ...options, topGames: typeof value === "number" ? value : 15 })
+        }
       />
     </Group>
   );

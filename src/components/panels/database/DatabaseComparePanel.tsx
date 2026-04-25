@@ -195,7 +195,7 @@ function DatabaseComparePanel() {
       )}
 
       <Group justify="flex-end" wrap="nowrap">
-        <Tooltip label="Evaluate move health for this side">
+        <Tooltip label="Evaluate move strength for this side">
           <Select
             data={openingMoveHealthSideOptions}
             value={moveHealthSide}
