@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Center,
+  Checkbox,
   Divider,
   Group,
   InputWrapper,
@@ -26,7 +27,12 @@ import { type Dispatch, type SetStateAction, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { KeyedMutator } from "swr";
 import { commands, type DatabaseInfo } from "@/bindings";
-import { databaseConversionStateAtom, sessionsAtom, storedDatabasesDirAtom } from "@/state/atoms";
+import {
+  databaseConversionStateAtom,
+  onlineDatabaseUpdatesAtom,
+  sessionsAtom,
+  storedDatabasesDirAtom,
+} from "@/state/atoms";
 import { getDatabases, type SuccessDatabaseInfo, useDefaultDatabases } from "@/utils/db";
 import { capitalize, formatBytes, formatNumber } from "@/utils/format";
 import {
@@ -35,6 +41,7 @@ import {
   importOnlineGamesToDatabase,
   resetDatabaseConversionState,
   type OnlineGameSource,
+  upsertOnlineDatabaseUpdateRecord,
 } from "@/utils/onlineGameImport";
 import { unwrap } from "@/utils/unwrap";
 import FileInput from "../common/FileInput";
@@ -45,6 +52,7 @@ type OnlineDatabaseFormValues = {
   username: string;
   title: string;
   description: string;
+  autoUpdate: boolean;
 };
 
 function AddDatabase({
@@ -64,6 +72,7 @@ function AddDatabase({
 }) {
   const { t } = useTranslation();
   const [databaseDir] = useAtom(storedDatabasesDirAtom);
+  const [, setOnlineDatabaseUpdates] = useAtom(onlineDatabaseUpdatesAtom);
   const setConversionState = useSetAtom(databaseConversionStateAtom);
   const sessions = useAtomValue(sessionsAtom);
   const [onlineImporting, setOnlineImporting] = useState(false);
@@ -147,6 +156,7 @@ function AddDatabase({
       username: "",
       title: "",
       description: "",
+      autoUpdate: true,
     },
 
     validate: {
@@ -239,7 +249,25 @@ function AddDatabase({
                   token: source === "lichess" ? getLichessToken(username) : undefined,
                   setConversionState,
                 });
-                setDatabases(await getDatabases());
+                const nextDatabases = await getDatabases();
+                const createdDatabase = nextDatabases.find(
+                  (database) => database.type === "success" && database.file === dbPath,
+                );
+                setDatabases(nextDatabases);
+                setOnlineDatabaseUpdates((records) =>
+                  upsertOnlineDatabaseUpdateRecord(records, {
+                    source,
+                    username,
+                    dbPath,
+                    title,
+                    description: values.description.trim() || null,
+                    autoUpdate: values.autoUpdate,
+                    lastCheckedAt: Date.now(),
+                    lastUpdatedAt: Date.now(),
+                    lastKnownGameCount:
+                      createdDatabase?.type === "success" ? createdDatabase.game_count : null,
+                  }),
+                );
                 onlineForm.reset();
               } catch (e) {
                 console.error(e);
@@ -280,6 +308,12 @@ function AddDatabase({
               <TextInput
                 label={t("Common.Description")}
                 {...onlineForm.getInputProps("description")}
+              />
+
+              <Checkbox
+                label={t("Databases.Online.AutoUpdate")}
+                description={t("Databases.Online.AutoUpdate.Desc")}
+                {...onlineForm.getInputProps("autoUpdate", { type: "checkbox" })}
               />
 
               <Button

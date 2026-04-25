@@ -28,7 +28,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { basename } from "@tauri-apps/api/path";
 import { open as openDialog, save } from "@tauri-apps/plugin-dialog";
 import { useAtom } from "jotai";
-import { useEffect, useMemo, useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import type { DatabaseInfo } from "@/bindings";
@@ -36,12 +36,19 @@ import { commands } from "@/bindings";
 import {
   type DatabaseConversionState,
   databaseConversionStateAtom,
+  type OnlineDatabaseUpdateRecords,
+  onlineDatabaseUpdatesAtom,
   referenceDbAtom,
   storedDatabasesDirAtom,
 } from "@/state/atoms";
 import { useActiveDatabaseViewStore } from "@/state/store/database";
 import { getDatabases, type SuccessDatabaseInfo } from "@/utils/db";
 import { formatBytes, formatNumber } from "@/utils/format";
+import {
+  getOnlineDatabaseUpdateRecord,
+  getOnlineGameSourceLabel,
+  upsertOnlineDatabaseUpdateRecord,
+} from "@/utils/onlineGameImport";
 import { unwrap } from "@/utils/unwrap";
 import ConfirmModal from "../common/ConfirmModal";
 import GenericCard from "../common/GenericCard";
@@ -74,6 +81,7 @@ export default function DatabasesPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [referenceDatabase, setReferenceDatabase] = useAtom(referenceDbAtom);
   const [conversionState, setConversionState] = useAtom(databaseConversionStateAtom);
+  const [onlineDatabaseUpdates, setOnlineDatabaseUpdates] = useAtom(onlineDatabaseUpdatesAtom);
   const selectedDatabase = useMemo(
     () => (databases ?? []).find((db) => db.file === selected) ?? null,
     [databases, selected],
@@ -355,6 +363,11 @@ export default function DatabasesPage() {
                       file={selectedDatabase.file}
                       setDatabases={mutate}
                     />
+                    <OnlineAutoUpdateInput
+                      selectedDatabase={selectedDatabase}
+                      records={onlineDatabaseUpdates}
+                      setRecords={setOnlineDatabaseUpdates}
+                    />
 
                     <Divider variant="dashed" label={t("Common.Data")} />
                     <Group grow>
@@ -568,7 +581,7 @@ function GeneralSettings({
     commands
       .editDbInfo(selectedDatabase.file, debouncedTitle ?? null, debouncedDescription ?? null)
       .then(() => mutate());
-  }, [debouncedTitle, debouncedDescription]);
+  }, [debouncedTitle, debouncedDescription, mutate, selectedDatabase.file]);
 
   return (
     <>
@@ -740,5 +753,46 @@ function IndexInput({
       </Tooltip>
       {loading && <Loader size="sm" />}
     </Group>
+  );
+}
+
+function OnlineAutoUpdateInput({
+  selectedDatabase,
+  records,
+  setRecords,
+}: {
+  selectedDatabase: SuccessDatabaseInfo;
+  records: OnlineDatabaseUpdateRecords;
+  setRecords: Dispatch<SetStateAction<OnlineDatabaseUpdateRecords>>;
+}) {
+  const { t } = useTranslation();
+  const record = getOnlineDatabaseUpdateRecord(selectedDatabase, records);
+
+  if (!record) return null;
+
+  return (
+    <Tooltip
+      label={t("Databases.Online.AutoUpdate.WithSource", {
+        source: getOnlineGameSourceLabel(record.source),
+        username: record.username,
+      })}
+    >
+      <Checkbox
+        label={t("Databases.Online.AutoUpdate")}
+        checked={record.autoUpdate}
+        onChange={(event) => {
+          setRecords((records) =>
+            upsertOnlineDatabaseUpdateRecord(records, {
+              ...record,
+              dbPath: selectedDatabase.file,
+              title: selectedDatabase.title,
+              description: selectedDatabase.description,
+              autoUpdate: event.currentTarget.checked,
+              lastKnownGameCount: selectedDatabase.game_count,
+            }),
+          );
+        }}
+      />
+    </Tooltip>
   );
 }

@@ -30,8 +30,9 @@ use pgn_reader::{BufferedReader, Nag, RawHeader, SanPlus, Skip, Visitor};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use shakmaty::{
-    fen::Fen, Board, ByColor, CastlingMode, Chess, EnPassantMode, FromSetup, Piece, Position,
-    PositionError,
+    fen::Fen,
+    zobrist::{Zobrist128, ZobristHash},
+    Board, ByColor, CastlingMode, Chess, EnPassantMode, FromSetup, Piece, Position, PositionError,
 };
 use specta::Type;
 use std::{
@@ -63,8 +64,9 @@ pub use self::schema::puzzle_themes;
 pub use self::schema::puzzles;
 pub use self::schema::themes;
 pub use self::search::{
-    cancel_database_search, find_repertoire_gaps, get_plan_explorer, is_position_in_db,
-    search_position, PlanExplorerData, PositionQueryJs, PositionStats,
+    cancel_database_search, find_repertoire_gaps, get_opening_health_player_positions,
+    get_plan_explorer, is_position_in_db, search_position, set_database_search_paused,
+    PlanExplorerData, PositionQueryJs, PositionStats,
 };
 
 const DATABASE_VERSION: &str = "1.0.0";
@@ -111,11 +113,30 @@ fn get_pawn_home(board: &Board) -> u16 {
 }
 
 pub(crate) fn position_index_key(position: &Chess) -> PositionIndexKey {
+    let key: Zobrist128 = position.zobrist_hash(EnPassantMode::Legal);
+    PositionIndexKey {
+        hi: (key.0 >> 64) as u64,
+        lo: key.0 as u64,
+    }
+}
+
+pub(crate) fn legacy_position_index_key(position: &Chess) -> PositionIndexKey {
     let fen = Fen::from_position(position.clone(), EnPassantMode::Legal).to_string();
     let mut parts = fen.split_whitespace();
     let board = parts.next().unwrap_or_default();
     let turn = parts.next().unwrap_or_default();
     PositionIndexKey::from_text(&format!("{board} {turn}"))
+}
+
+pub(crate) fn position_index_key_from_fen_key(key: &str) -> Option<PositionIndexKey> {
+    let fen = format!("{key} 0 1");
+    let fen = Fen::from_ascii(fen.as_bytes()).ok()?;
+    let setup = fen.into_setup();
+    let castling_mode = CastlingMode::detect(&setup);
+    let position = Chess::from_setup(setup, castling_mode)
+        .or_else(PositionError::ignore_too_much_material)
+        .ok()?;
+    Some(position_index_key(&position))
 }
 
 fn starting_position_from_fen(fen: Option<&str>) -> Result<Chess, Error> {

@@ -1,12 +1,19 @@
 import type { SetStateAction } from "react";
 import { basename, resolve } from "@tauri-apps/api/path";
 import { commands, events } from "@/bindings";
+import type { DatabaseInfo } from "@/bindings";
 import { downloadChessCom } from "@/utils/chess.com/api";
 import { downloadLichess } from "@/utils/lichess/api";
-import type { DatabaseConversionState } from "@/state/atoms";
+import type {
+    DatabaseConversionState,
+    OnlineDatabaseUpdateRecord,
+    OnlineDatabaseUpdateRecords,
+} from "@/state/atoms";
+import type { OnlineGameSource } from "@/utils/onlineGameSource";
+import { query_games } from "@/utils/db";
 import { unwrap } from "@/utils/unwrap";
 
-export type OnlineGameSource = "lichess" | "chesscom";
+export type { OnlineGameSource } from "@/utils/onlineGameSource";
 
 type SetDatabaseConversionState = (value: SetStateAction<DatabaseConversionState>) => void;
 
@@ -42,6 +49,95 @@ export function getOnlineGameDatabaseFilename(source: OnlineGameSource, username
 
 export function getDefaultOnlineGameDatabaseTitle(source: OnlineGameSource, username: string) {
     return `${username} ${getOnlineGameSourceLabel(source)}`;
+}
+
+export function getOnlineGameIdentityFromFilename(filename: string) {
+    const lower = filename.toLowerCase();
+    const suffixes = [
+        { source: "lichess" as const, suffix: "_lichess.db3" },
+        { source: "chesscom" as const, suffix: "_chesscom.db3" },
+    ];
+
+    for (const { source, suffix } of suffixes) {
+        if (lower.endsWith(suffix)) {
+            return {
+                source,
+                username: filename.slice(0, filename.length - suffix.length),
+            };
+        }
+    }
+
+    return null;
+}
+
+export function getOnlineDatabaseUpdateRecord(
+    database: DatabaseInfo,
+    records: OnlineDatabaseUpdateRecords,
+): OnlineDatabaseUpdateRecord | null {
+    if (database.type !== "success") return null;
+
+    const stored = records[database.file];
+    if (stored) return stored;
+
+    const inferred = getOnlineGameIdentityFromFilename(database.filename);
+    if (!inferred) return null;
+
+    return {
+        ...inferred,
+        dbPath: database.file,
+        title: database.title,
+        description: database.description,
+        autoUpdate: false,
+        lastCheckedAt: null,
+        lastUpdatedAt: null,
+        lastKnownGameCount: database.game_count,
+    };
+}
+
+export function upsertOnlineDatabaseUpdateRecord(
+    records: OnlineDatabaseUpdateRecords,
+    record: Omit<
+        OnlineDatabaseUpdateRecord,
+        "lastCheckedAt" | "lastUpdatedAt" | "lastKnownGameCount"
+    > &
+        Partial<
+            Pick<
+                OnlineDatabaseUpdateRecord,
+                "lastCheckedAt" | "lastUpdatedAt" | "lastKnownGameCount"
+            >
+        >,
+): OnlineDatabaseUpdateRecords {
+    const previous = records[record.dbPath];
+    return {
+        ...records,
+        [record.dbPath]: {
+            ...previous,
+            ...record,
+            lastCheckedAt: record.lastCheckedAt ?? previous?.lastCheckedAt ?? null,
+            lastUpdatedAt: record.lastUpdatedAt ?? previous?.lastUpdatedAt ?? null,
+            lastKnownGameCount: record.lastKnownGameCount ?? previous?.lastKnownGameCount ?? null,
+        },
+    };
+}
+
+export async function getLastOnlineDatabaseGameDate(dbPath: string) {
+    const games = await query_games(dbPath, {
+        options: {
+            page: 1,
+            pageSize: 1,
+            sort: "date",
+            direction: "desc",
+            skipCount: false,
+        },
+    });
+
+    if (games.count! > 0 && games.data[0].date && games.data[0].time) {
+        const [year, month, day] = games.data[0].date.split(".").map(Number);
+        const [hour, minute, second] = games.data[0].time.split(":").map(Number);
+        return Date.UTC(year, month - 1, day, hour, minute, second);
+    }
+
+    return null;
 }
 
 export function resetDatabaseConversionState(setConversionState: SetDatabaseConversionState) {

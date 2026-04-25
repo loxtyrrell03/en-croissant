@@ -22,12 +22,13 @@ import {
   currentPracticeTabAtom,
   currentTabAtom,
   currentTabSelectedAtom,
+  deckAtomFamily,
   enableAllAtom,
   practiceStateAtom,
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
 import { defaultPGN } from "@/utils/chess";
-import { getTabFile, saveToFile } from "@/utils/tabs";
+import { getTabFile, getTabGameNumber, getTabPracticeKey, saveToFile } from "@/utils/tabs";
 import DetachedEval from "../common/DetachedEval";
 import GameNotation from "../common/GameNotation";
 import MoveControls from "../common/MoveControls";
@@ -58,7 +59,14 @@ function BoardAnalysis() {
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
   const tabFile = getTabFile(currentTab);
-  const hasPersistentOrigin = currentTab?.gameOrigin.kind !== "none";
+  const trainingDeck = useAtomValue(
+    deckAtomFamily({
+      file: getTabPracticeKey(currentTab),
+      game: getTabGameNumber(currentTab),
+    }),
+  );
+  const hasPersistentOrigin =
+    currentTab?.gameOrigin.kind !== "none" && currentTab?.gameOrigin.kind !== "opening_review";
   const autoSave = useAtomValue(autoSaveAtom);
   const { documentDir } = useLoaderData({ from: "/" });
   const boardRef = useRef(null);
@@ -70,6 +78,8 @@ function BoardAnalysis() {
   const reset = useStore(store, (s) => s.reset);
   const clearShapes = useStore(store, (s) => s.clearShapes);
   const setAnnotation = useStore(store, (s) => s.setAnnotation);
+  const goToNext = useStore(store, (s) => s.goToNext);
+  const goToPrevious = useStore(store, (s) => s.goToPrevious);
 
   const saveFile = useCallback(async () => {
     saveToFile({
@@ -126,7 +136,9 @@ function BoardAnalysis() {
   const [currentTabSelected, setCurrentTabSelected] = useAtom(currentTabSelectedAtom);
   const practiceTabSelected = useAtomValue(currentPracticeTabAtom);
   const isRepertoire = tabFile?.metadata.type === "repertoire";
-  const practicing = currentTabSelected === "practice" && practiceTabSelected === "train";
+  const showPracticeTab = isRepertoire || trainingDeck.positions.length > 0;
+  const practicing =
+    showPracticeTab && currentTabSelected === "practice" && practiceTabSelected === "train";
   const practiceState = useAtomValue(practiceStateAtom);
   const isPracticeRating = practicing && practiceState.phase === "correct";
 
@@ -136,6 +148,32 @@ function BoardAnalysis() {
       setPracticePath(null);
     }
   }, [practicing, setPracticePath]);
+
+  useEffect(() => {
+    const navigateWithArrowKeys = (event: KeyboardEvent) => {
+      if (
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        (event.key !== "ArrowRight" && event.key !== "ArrowLeft")
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
+      if (event.key === "ArrowRight") {
+        goToNext();
+      } else {
+        goToPrevious();
+      }
+    };
+
+    window.addEventListener("keydown", navigateWithArrowKeys, { capture: true });
+    return () => window.removeEventListener("keydown", navigateWithArrowKeys, { capture: true });
+  }, [goToNext, goToPrevious]);
 
   useHotkeys([
     [keyMap.SAVE_FILE.keys, () => userSaveFile()],
@@ -224,7 +262,7 @@ function BoardAnalysis() {
             }}
           >
             <Tabs.List grow>
-              {isRepertoire && (
+              {showPracticeTab && (
                 <Tabs.Tab value="practice" leftSection={<IconTargetArrow size="1rem" />}>
                   {t("Board.Tabs.Practice")}
                 </Tabs.Tab>
@@ -242,13 +280,13 @@ function BoardAnalysis() {
                 Compare
               </Tabs.Tab>
               <Tabs.Tab value="gaps" leftSection={<IconAlertTriangle size="1rem" />}>
-                Gaps
+                Opening Health
               </Tabs.Tab>
               <Tabs.Tab value="info" leftSection={<IconInfoCircle size="1rem" />}>
                 {t("Board.Tabs.Info")}
               </Tabs.Tab>
             </Tabs.List>
-            {isRepertoire && (
+            {showPracticeTab && (
               <Tabs.Panel value="practice" flex={1} style={scrollablePanelStyle}>
                 <PracticePanel />
               </Tabs.Panel>

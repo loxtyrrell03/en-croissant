@@ -1,7 +1,10 @@
+import type { DrawShape } from "@lichess-org/chessground/draw";
 import type { SetStateAction } from "react";
 import { type Card, createEmptyCard, fsrs, type Grade, generatorParameters } from "ts-fsrs";
 import { z } from "zod";
+import type { RepertoireGap } from "@/bindings";
 import type { PracticeData } from "@/state/atoms";
+import type { Annotation } from "@/utils/annotation";
 import { isPrefix } from "@/utils/misc";
 import { type TreeNode, treeIterator } from "@/utils/treeReducer";
 
@@ -12,14 +15,141 @@ const f = fsrs(params);
 export const positionSchema = z.object({
     fen: z.string(),
     answer: z.string(),
+    answerUci: z.string().optional(),
     card: z.object({}).passthrough(),
+    sideToMove: z.enum(["white", "black"]).optional(),
+    moveSequence: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    source: z.string().optional(),
+    reviewKey: z.string().optional(),
+    priority: z.number().optional(),
+    reason: z.string().optional(),
+    evidence: z.string().optional(),
+    comment: z.string().optional(),
+    annotations: z.array(z.string()).optional(),
+    shapes: z.array(z.object({}).passthrough()).optional(),
+    openingHealth: z
+        .object({
+            mode: z.enum(["self", "opponent"]).optional(),
+            sideToMove: z.enum(["white", "black"]).optional(),
+            usualMoveSan: z.string().optional(),
+            usualMoveUci: z.string().optional(),
+            games: z.number().optional(),
+            white: z.number().optional(),
+            draw: z.number().optional(),
+            black: z.number().optional(),
+            score: z.number().optional(),
+            strongGames: z.number().optional(),
+            strongWhite: z.number().nullable().optional(),
+            strongDraw: z.number().nullable().optional(),
+            strongBlack: z.number().nullable().optional(),
+            strongScore: z.number().nullable().optional(),
+            topMoveSan: z.string().nullable().optional(),
+            topMoveUci: z.string().nullable().optional(),
+            lastPlayed: z.string().nullable().optional(),
+        })
+        .optional(),
+    engine: z
+        .object({
+            source: z.enum(["lichess", "chessdb", "cloud", "local"]).optional(),
+            lossCp: z.number().optional(),
+            depth: z.number().nullable().optional(),
+            bestMoveSan: z.string().nullable().optional(),
+            bestMoveUci: z.string().nullable().optional(),
+        })
+        .optional(),
 });
 
 export type Position = {
     fen: string;
     answer: string;
+    answerUci?: string;
     card: Card;
+    sideToMove?: "white" | "black";
+    moveSequence?: string;
+    tags?: string[];
+    source?: string;
+    reviewKey?: string;
+    priority?: number;
+    reason?: string;
+    evidence?: string;
+    comment?: string;
+    annotations?: Annotation[];
+    shapes?: DrawShape[];
+    openingHealth?: {
+        mode?: "self" | "opponent";
+        sideToMove?: "white" | "black";
+        usualMoveSan?: string;
+        usualMoveUci?: string;
+        games?: number;
+        white?: number;
+        draw?: number;
+        black?: number;
+        score?: number;
+        strongGames?: number;
+        strongWhite?: number | null;
+        strongDraw?: number | null;
+        strongBlack?: number | null;
+        strongScore?: number | null;
+        topMoveSan?: string | null;
+        topMoveUci?: string | null;
+        lastPlayed?: string | null;
+    };
+    engine?: {
+        source?: "lichess" | "chessdb" | "cloud" | "local";
+        lossCp?: number;
+        depth?: number | null;
+        bestMoveSan?: string | null;
+        bestMoveUci?: string | null;
+    };
 };
+
+export const OPENING_HEALTH_SOURCE = "Opening Health";
+
+export function openingHealthClassificationLabel(classification: RepertoireGap["classification"]) {
+    switch (classification) {
+        case "repertoireGap":
+            return "Repertoire gap";
+        case "preparedUnderperforming":
+            return "Prepared but underperforming";
+        case "lowConfidence":
+            return "Low confidence";
+    }
+}
+
+export function createOpeningHealthTrainingItem(
+    gap: RepertoireGap,
+    answerMove?: { san: string; uci?: string | null },
+    options?: {
+        priority?: number;
+        reason?: string;
+        evidence?: string;
+        engine?: Position["engine"];
+        openingHealth?: Position["openingHealth"];
+    },
+): Position | null {
+    const answer = answerMove?.san || gap.topReferenceMoves[0]?.san;
+    if (!answer) return null;
+    const answerUci = answerMove?.uci ?? gap.topReferenceMoves[0]?.uci;
+    const reviewKey = `${gap.normalizedFen}|${answerUci || answer}`;
+
+    return {
+        fen: gap.fen,
+        answer,
+        answerUci: answerUci || undefined,
+        card: createEmptyCard(),
+        sideToMove: gap.sideToMove === "black" ? "black" : "white",
+        moveSequence: gap.moveSequence,
+        tags: [openingHealthClassificationLabel(gap.classification), OPENING_HEALTH_SOURCE],
+        source: OPENING_HEALTH_SOURCE,
+        reviewKey,
+        priority: options?.priority,
+        reason: options?.reason,
+        evidence: options?.evidence,
+        openingHealth: options?.openingHealth,
+        engine: options?.engine,
+    };
+}
 
 export function buildFromTree(tree: TreeNode, color: "white" | "black", start: number[]) {
     const cards: Position[] = [];
@@ -121,9 +251,11 @@ export function syncDeck(
     start: number[],
 ): { positions: Position[]; added: number; removed: number } {
     const freshPositions = buildFromTree(tree, color, start);
+    const externalPositions = existing.filter((pos) => pos.source === OPENING_HEALTH_SOURCE);
+    const managedExisting = existing.filter((pos) => pos.source !== OPENING_HEALTH_SOURCE);
 
     const existingByFen = new Map<string, Position>();
-    for (const pos of existing) {
+    for (const pos of managedExisting) {
         existingByFen.set(pos.fen, pos);
     }
 
@@ -139,8 +271,14 @@ export function syncDeck(
         }
     }
 
+    for (const pos of externalPositions) {
+        if (!merged.some((item) => item.fen === pos.fen && item.answer === pos.answer)) {
+            merged.push(pos);
+        }
+    }
+
     const freshFens = new Set(freshPositions.map((p) => p.fen));
-    const removed = existing.filter((p) => !freshFens.has(p.fen)).length;
+    const removed = managedExisting.filter((p) => !freshFens.has(p.fen)).length;
 
     return { positions: merged, added, removed };
 }

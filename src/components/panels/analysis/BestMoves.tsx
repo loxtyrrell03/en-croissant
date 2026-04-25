@@ -15,6 +15,7 @@ import {
 } from "@mantine/core";
 import { useToggle } from "@mantine/hooks";
 import {
+  IconArrowUpRight,
   IconGripVertical,
   IconPinned,
   IconPinnedOff,
@@ -38,6 +39,7 @@ import {
   engineMovesFamily,
   engineProgressFamily,
   enginesAtom,
+  showArrowsAtom,
   tabEngineSettingsFamily,
 } from "@/state/atoms";
 import { chessopsError, positionFromFen, swapMove } from "@/utils/chessops";
@@ -117,6 +119,7 @@ function BestMovesComponent({
   const [settingsOn, toggleSettingsOn] = useToggle();
   const [threat, setThreat] = useAtom(currentThreatAtom);
   const [detachedEngineId, setDetachedEngineId] = useAtom(currentDetachedEngineAtom);
+  const [showEngineArrows, setShowEngineArrows] = useAtom(showArrowsAtom);
   const isDetached = detachedEngineId === engine.id;
   const theme = useMantineTheme();
 
@@ -209,6 +212,19 @@ function BestMovesComponent({
               mb="auto"
             >
               {isDetached ? <IconPinnedOff size="1rem" /> : <IconPinned size="1rem" />}
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label={showEngineArrows ? "Hide engine arrows" : "Show engine arrows"}>
+            <ActionIcon
+              size="lg"
+              onClick={() => setShowEngineArrows((value) => !value)}
+              variant={showEngineArrows ? "light" : "transparent"}
+              color={id < 4 ? arrowColors[id].strong : theme.primaryColor}
+              mt="auto"
+              mb="auto"
+              aria-label={showEngineArrows ? "Hide engine arrows" : "Show engine arrows"}
+            >
+              <IconArrowUpRight size="1rem" />
             </ActionIcon>
           </Tooltip>
           <ActionIcon size="lg" onClick={() => toggleSettingsOn()} mt="auto" mb="auto">

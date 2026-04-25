@@ -1,20 +1,11 @@
-import {
-  ActionIcon,
-  Divider,
-  Group,
-  ScrollArea,
-  SimpleGrid,
-  Stack,
-  Text,
-  TextInput,
-} from "@mantine/core";
+import { ActionIcon, Divider, Group, ScrollArea, Stack, Text, TextInput } from "@mantine/core";
 import { IconCheck, IconEdit, IconX } from "@tabler/icons-react";
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useRef, useState } from "react";
 import type { DatabaseInfo } from "@/bindings";
 import { sessionsAtom } from "@/state/atoms";
-import { getChessComAccount, getStats } from "@/utils/chess.com/api";
-import { getLichessAccount } from "@/utils/lichess/api";
+import { getChessComAccount, getChessComGameCount, getStats } from "@/utils/chess.com/api";
+import { getLichessAccount, getLichessDownloadGameCount } from "@/utils/lichess/api";
 import type { Session } from "@/utils/session";
 import { AccountCard } from "../home/AccountCard";
 import { EmptyAccounts } from "../home/EmptyAccounts";
@@ -187,13 +178,7 @@ function LichessOrChessCom({
   if (session.lichess?.account) {
     const account = session.lichess.account;
     const lichessSession = session.lichess;
-    const totalGames =
-      (account.perfs?.ultraBullet?.games ?? 0) +
-      (account.perfs?.bullet?.games ?? 0) +
-      (account.perfs?.blitz?.games ?? 0) +
-      (account.perfs?.rapid?.games ?? 0) +
-      (account.perfs?.classical?.games ?? 0) +
-      (account.perfs?.correspondence?.games ?? 0);
+    const totalGames = getLichessDownloadGameCount(account);
 
     const stats = [];
     const speeds = ["bullet", "blitz", "rapid", "classical"] as const;
@@ -251,12 +236,7 @@ function LichessOrChessCom({
     );
   }
   if (session.chessCom?.stats) {
-    let totalGames = 0;
-    for (const stat of Object.values(session.chessCom.stats)) {
-      if (stat.record) {
-        totalGames += stat.record.win + stat.record.loss + stat.record.draw;
-      }
-    }
+    const totalGames = getChessComGameCount(session.chessCom.stats);
     return (
       <AccountCard
         key={session.chessCom.username}

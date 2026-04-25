@@ -1,9 +1,9 @@
-import { Group, Progress, Text } from "@mantine/core";
+import { Badge, Group, Progress, Stack, Text, Tooltip } from "@mantine/core";
 import { isNormal, makeSquare } from "chessops";
 import { parseSan } from "chessops/san";
 import { useAtom, useSetAtom } from "jotai";
 import { DataTable } from "mantine-datatable";
-import { memo, useCallback, useContext, useEffect } from "react";
+import { memo, useCallback, useContext, useEffect, useMemo } from "react";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import { currentBoardPreviewShapesAtom, moveNotationTypeAtom } from "@/state/atoms";
@@ -11,19 +11,40 @@ import { addPieceSymbol } from "@/utils/annotation";
 import { positionFromFen } from "@/utils/chessops";
 import type { Opening } from "@/utils/db";
 import { formatNumber } from "@/utils/format";
+import {
+  getOpeningMoveHealthMap,
+  resolveOpeningMoveHealthSide,
+  type OpeningMoveHealth,
+  type OpeningMoveHealthSidePreference,
+  type OpeningMoveHealthStatus,
+} from "@/utils/openingMoveHealth";
 import classes from "./OpeningsTable.module.css";
 
-export type OpeningSort = "games" | "whiteRate" | "blackRate" | "drawRate" | "move";
+export type OpeningSort = "games" | "health" | "whiteRate" | "blackRate" | "drawRate" | "move";
 
 export const openingSortOptions: { label: string; value: OpeningSort }[] = [
   { label: "Most played", value: "games" },
+  { label: "Move health", value: "health" },
   { label: "White win rate", value: "whiteRate" },
   { label: "Black win rate", value: "blackRate" },
   { label: "Draw rate", value: "drawRate" },
   { label: "Move", value: "move" },
 ];
 
-export function sortOpeningRows(openings: Opening[], sortBy: OpeningSort) {
+export const openingMoveHealthSideOptions: {
+  label: string;
+  value: OpeningMoveHealthSidePreference;
+}[] = [
+  { label: "Side to move", value: "sideToMove" },
+  { label: "White", value: "white" },
+  { label: "Black", value: "black" },
+];
+
+export function sortOpeningRows(
+  openings: Opening[],
+  sortBy: OpeningSort,
+  healthByMove?: Map<string, OpeningMoveHealth>,
+) {
   return [...openings].sort((a, b) => {
     if (sortBy === "move") {
       return a.move.localeCompare(b.move);
@@ -34,6 +55,12 @@ export function sortOpeningRows(openings: Opening[], sortBy: OpeningSort) {
 
     if (sortBy === "games") {
       return bTotal - aTotal;
+    }
+
+    if (sortBy === "health") {
+      const aHealth = healthByMove?.get(a.move)?.score ?? 50;
+      const bHealth = healthByMove?.get(b.move)?.score ?? 50;
+      return aHealth - bHealth || bTotal - aTotal;
     }
 
     const field = sortBy === "whiteRate" ? "white" : sortBy === "blackRate" ? "black" : "draw";
@@ -49,11 +76,15 @@ function OpeningsTable({
   loading,
   sortBy = "games",
   compact = false,
+  healthSidePreference = "sideToMove",
+  referenceOpenings,
 }: {
   openings: Opening[];
   loading: boolean;
   sortBy?: OpeningSort;
   compact?: boolean;
+  healthSidePreference?: OpeningMoveHealthSidePreference;
+  referenceOpenings?: Opening[];
 }) {
   const store = useContext(TreeStateContext)!;
   const makeMove = useStore(store, (s) => s.makeMove);
@@ -103,7 +134,17 @@ function OpeningsTable({
     [clearMovePreview, currentFen, setBoardPreviewShapes],
   );
 
-  openings = sortOpeningRows(openings, sortBy);
+  const healthSide = useMemo(() => {
+    const [pos] = positionFromFen(currentFen);
+    return resolveOpeningMoveHealthSide(healthSidePreference, pos?.turn ?? "white");
+  }, [currentFen, healthSidePreference]);
+
+  const healthByMove = useMemo(
+    () => getOpeningMoveHealthMap(openings, healthSide, referenceOpenings),
+    [healthSide, openings, referenceOpenings],
+  );
+
+  openings = sortOpeningRows(openings, sortBy, healthByMove);
 
   const whiteTotal = openings?.reduce((acc, curr) => acc + curr.white, 0);
   const blackTotal = openings?.reduce((acc, curr) => acc + curr.black, 0);
@@ -153,6 +194,59 @@ function OpeningsTable({
               <Text fz={compact ? "xs" : "sm"}>
                 {moveNotationType === "symbols" ? addPieceSymbol(move) : move}
               </Text>
+            );
+          },
+        },
+        {
+          accessor: "health",
+          width: compact ? 78 : 106,
+          render: ({ move }) => {
+            const health = healthByMove.get(move);
+            if (!health) return null;
+
+            return (
+              <Tooltip
+                withArrow
+                multiline
+                w={280}
+                label={
+                  <Stack gap={2}>
+                    <Text size="xs" fw={700}>
+                      {health.label} for {capitalize(health.side)}
+                    </Text>
+                    <Text size="xs">
+                      {formatPercent(health.sideScore)} score vs{" "}
+                      {formatPercent(health.positionScore)} line average
+                    </Text>
+                    {health.referenceRank ? (
+                      <Text size="xs">
+                        Reference #{health.referenceRank}
+                        {health.referenceShare !== null
+                          ? `, ${formatPercent(health.referenceShare)} share`
+                          : ""}
+                      </Text>
+                    ) : health.topReferenceMove ? (
+                      <Text size="xs">
+                        Outside reference moves; top is {health.topReferenceMove}
+                      </Text>
+                    ) : null}
+                    {health.reasons.map((reason) => (
+                      <Text key={reason} size="xs">
+                        {reason}
+                      </Text>
+                    ))}
+                  </Stack>
+                }
+              >
+                <Badge
+                  color={healthStatusColor(health.status)}
+                  variant="light"
+                  size={compact ? "xs" : "sm"}
+                  className={classes.healthBadge}
+                >
+                  {health.label}
+                </Badge>
+              </Tooltip>
             );
           },
         },
@@ -218,4 +312,27 @@ export default memo(OpeningsTable);
 
 function getOpeningTotal(opening: Opening) {
   return opening.white + opening.draw + opening.black;
+}
+
+function healthStatusColor(status: OpeningMoveHealthStatus) {
+  switch (status) {
+    case "weak":
+      return "red";
+    case "watch":
+      return "orange";
+    case "strong":
+      return "green";
+    case "sample":
+      return "gray";
+    case "ok":
+      return "blue";
+  }
+}
+
+function formatPercent(value: number) {
+  return `${(value * 100).toFixed(0)}%`;
+}
+
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }

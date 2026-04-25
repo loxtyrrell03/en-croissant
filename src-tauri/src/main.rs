@@ -43,8 +43,9 @@ use crate::chess::{
 use crate::db::{
     cancel_database_search, clear_games, convert_pgn, create_indexes, delete_database,
     delete_db_game, delete_empty_games, delete_indexes, export_to_pgn, find_repertoire_gaps,
-    get_plan_explorer, get_player, get_players_game_info, get_tournaments, preload_reference_db,
-    search_position, MmapSearchIndex,
+    get_opening_health_player_positions, get_plan_explorer, get_player, get_players_game_info,
+    get_tournaments, preload_reference_db, search_position, set_database_search_paused,
+    MmapSearchIndex,
 };
 use crate::game::{
     abort_game, get_game_engine_logs, get_game_state, make_game_move, resign_game, start_game,
@@ -89,6 +90,7 @@ pub struct AppState {
     #[derivative(Default(value = "DashMap::new()"))]
     search_collisions: DashMap<(GameQuery, PathBuf), Arc<tokio::sync::Mutex<()>>>,
     db_cancel_flags: DashMap<String, Arc<AtomicBool>>,
+    db_pause_flags: DashMap<String, Arc<AtomicBool>>,
     pgn_offsets: DashMap<String, Vec<u64>>,
 
     engine_processes: DashMap<(String, String), Arc<tokio::sync::Mutex<EngineProcess>>>,
@@ -156,7 +158,9 @@ fn main() {
             get_db_info,
             get_games,
             find_repertoire_gaps,
+            get_opening_health_player_positions,
             cancel_database_search,
+            set_database_search_paused,
             get_plan_explorer,
             search_position,
             get_players,
@@ -241,10 +245,6 @@ fn main() {
 
             #[cfg(desktop)]
             app.handle().plugin(tauri_plugin_cli::init())?;
-
-            #[cfg(desktop)]
-            app.handle()
-                .plugin(tauri_plugin_updater::Builder::new().build())?;
 
             log::info!("Finished rust initialization");
 

@@ -15,13 +15,16 @@ import type {
 } from "jotai/vanilla/utils/atomWithStorage";
 import type { ReviewLog } from "ts-fsrs";
 import { z } from "zod";
-import type { BestMoves, GoMode, PlanExplorerData } from "@/bindings";
+import type { BestMoves, GoMode, PlanExplorerData, RepertoireGapReport } from "@/bindings";
 import { DEFAULT_TIME_CONTROL, type OpponentSettings } from "@/components/boards/OpponentForm";
 import { type Position, positionSchema } from "@/components/files/opening";
 import type { LocalOptions } from "@/components/panels/database/DatabasePanel";
 import { positionFromFen, swapMove } from "@/utils/chessops";
 import type { SuccessDatabaseInfo } from "@/utils/db";
 import { type Engine, type EngineSettings, engineSchema } from "@/utils/engines";
+import type { OpeningMoveHealthSidePreference } from "@/utils/openingMoveHealth";
+import type { OnlineGameSource } from "@/utils/onlineGameSource";
+import type { ColoredPlanExplorerLine } from "@/utils/planExplorer";
 import {
     type LichessGamesOptions,
     lichessGamesOptionsSchema,
@@ -183,6 +186,10 @@ export const showPlanExplorerArrowsAtom = atomWithStorage<boolean>(
     true,
 );
 export const planExplorerArrowLimitAtom = atomWithStorage<number>("plan-explorer-arrow-limit", 10);
+export const planExplorerHoverEverywhereAtom = atomWithStorage<boolean>(
+    "plan-explorer-hover-everywhere",
+    false,
+);
 export const planExplorerSourceAtom = atomWithStorage<"local" | "lch_all" | "lch_master">(
     "plan-explorer-source",
     "local",
@@ -268,6 +275,11 @@ export const defaultCompareDatabasesAtom = atomWithStorage<(string | null)[]>(
     [],
 );
 
+export const databaseMoveHealthSideAtom = atomWithStorage<OpeningMoveHealthSidePreference>(
+    "database-move-health-side",
+    "sideToMove",
+);
+
 export const selectedPuzzleDbAtom = atomWithStorage<string | null>("puzzle-db", null);
 
 export type DatabaseConversionState = {
@@ -304,6 +316,25 @@ export const selectedDatabaseAtom = atomWithStorage<SuccessDatabaseInfo | null>(
     "database-view",
     null,
     createJSONStorage(() => sessionStorage),
+);
+
+export type OnlineDatabaseUpdateRecord = {
+    source: OnlineGameSource;
+    username: string;
+    dbPath: string;
+    title: string;
+    description?: string | null;
+    autoUpdate: boolean;
+    lastCheckedAt: number | null;
+    lastUpdatedAt: number | null;
+    lastKnownGameCount: number | null;
+};
+
+export type OnlineDatabaseUpdateRecords = Record<string, OnlineDatabaseUpdateRecord>;
+
+export const onlineDatabaseUpdatesAtom = atomWithStorage<OnlineDatabaseUpdateRecords>(
+    "online-database-updates",
+    {},
 );
 
 // Game Settings
@@ -456,7 +487,7 @@ const compareDatabasesFamily = atomFamily((_tab: string) => atom<string[]>([]));
 export const currentCompareDatabasesAtom = tabValue(compareDatabasesFamily);
 
 const boardPreviewShapesFamily = atomFamily((_tab: string) =>
-    atom<{ fen: string; shapes: DrawShape[] } | null>(null),
+    atom<{ fen: string; displayFen?: string; shapes: DrawShape[] } | null>(null),
 );
 export const currentBoardPreviewShapesAtom = tabValue(boardPreviewShapesFamily);
 
@@ -464,9 +495,83 @@ const planExplorerDataFamily = atomFamily((_tab: string) => atom<PlanExplorerDat
 export const currentPlanExplorerDataAtom = tabValue(planExplorerDataFamily);
 
 const planExplorerPreviewLineFamily = atomFamily((_tab: string) =>
-    atom<PlanExplorerData["pieces"][number]["lines"][number] | null>(null),
+    atom<ColoredPlanExplorerLine | null>(null),
 );
 export const currentPlanExplorerPreviewLineAtom = tabValue(planExplorerPreviewLineFamily);
+
+export type OpeningHealthProgress = {
+    id: string;
+    progress: number;
+    gamesScanned: number;
+    positionsProcessed: number;
+    phase: string;
+    finished: boolean;
+};
+
+export type OpeningHealthScanState = {
+    requestId: string | null;
+    loading: boolean;
+    paused: boolean;
+    stopRequested: boolean;
+    progress: OpeningHealthProgress | null;
+    report: RepertoireGapReport | null;
+    startedAt: number | null;
+    completedAt: number | null;
+    error: string | null;
+};
+
+export type OpeningHealthVerificationStatus = "bad" | "questionable" | "ok" | "missing";
+
+export type OpeningHealthVerification = {
+    status: OpeningHealthVerificationStatus;
+    source: "lichess" | "chessdb" | "local";
+    lossCp: number;
+    depth: number | null;
+    bestMoveSan: string | null;
+    bestMoveUci: string | null;
+    playedRank: number | null;
+    checkedAt: number;
+};
+
+export type OpeningHealthVerificationRun = {
+    running: boolean;
+    completed: number;
+    total: number;
+    engineName: string | null;
+    depth: number;
+    lichess: number;
+    chessdb: number;
+    local: number;
+    missing: number;
+} | null;
+
+export const openingHealthScanAtom = atom<OpeningHealthScanState>({
+    requestId: null,
+    loading: false,
+    paused: false,
+    stopRequested: false,
+    progress: null,
+    report: null,
+    startedAt: null,
+    completedAt: null,
+    error: null,
+});
+
+export const openingHealthVerificationsAtom = atom<Record<string, OpeningHealthVerification>>({});
+export const openingHealthVerificationRunAtom = atom<OpeningHealthVerificationRun>(null);
+
+export const openingHealthVerifyDuringScanAtom = atomWithStorage<boolean>(
+    "opening-health-verify-during-scan",
+    true,
+);
+export const openingHealthVerifyDepthAtom = atomWithStorage<number>(
+    "opening-health-verify-depth",
+    12,
+);
+export const openingHealthLocalFallbackAtom = atomWithStorage<boolean>(
+    "opening-health-local-fallback",
+    false,
+);
 
 const analysisTabFamily = atomFamily((_tab: string) => atom("engines"));
 export const currentAnalysisTabAtom = tabValue(analysisTabFamily);
@@ -552,6 +657,7 @@ export type PracticeState = {
     currentFen?: string;
     answer?: string;
     playedMove?: string;
+    playedMoveUci?: string;
     timeTaken?: number;
     positionIndex?: number;
 };

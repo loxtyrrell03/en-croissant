@@ -64,16 +64,25 @@ const ChessComGames = z.object({
 });
 
 export async function getChessComAccount(player: string): Promise<ChessComStats | null> {
+  return getChessComAccountWithOptions(player);
+}
+
+export async function getChessComAccountWithOptions(
+  player: string,
+  { silent = false }: { silent?: boolean } = {},
+): Promise<ChessComStats | null> {
   const url = `${baseURL}/pub/player/${player.toLowerCase()}/stats`;
   const response = await fetch(url, { headers: apiHeaders(), method: "GET" });
   if (!response.ok) {
     error(`Failed to fetch Chess.com account: ${response.status} ${response.url}`);
-    notifications.show({
-      title: "Failed to fetch Chess.com account",
-      message: `Could not find account "${player}" on chess.com`,
-      color: "red",
-      icon: <IconX />,
-    });
+    if (!silent) {
+      notifications.show({
+        title: "Failed to fetch Chess.com account",
+        message: `Could not find account "${player}" on chess.com`,
+        color: "red",
+        icon: <IconX />,
+      });
+    }
     return null;
   }
   const data = await response.json();
@@ -82,21 +91,59 @@ export async function getChessComAccount(player: string): Promise<ChessComStats 
     error(
       `Invalid response for Chess.com account: ${response.status} ${response.url}\n${stats.error}`,
     );
-    notifications.show({
-      title: "Failed to fetch Chess.com account",
-      message: `Invalid response for "${player}" on chess.com`,
-      color: "red",
-      icon: <IconX />,
-    });
+    if (!silent) {
+      notifications.show({
+        title: "Failed to fetch Chess.com account",
+        message: `Invalid response for "${player}" on chess.com`,
+        color: "red",
+        icon: <IconX />,
+      });
+    }
     return null;
   }
   return stats.data;
+}
+
+export function getChessComGameCount(stats: ChessComStats) {
+  let totalGames = 0;
+  for (const stat of Object.values(stats)) {
+    if (stat.record) {
+      totalGames += stat.record.win + stat.record.loss + stat.record.draw;
+    }
+  }
+  return totalGames;
 }
 
 async function getGameArchives(player: string) {
   const url = `${baseURL}/pub/player/${player}/games/archives`;
   const response = await fetch(url, { headers: apiHeaders(), method: "GET" });
   return (await response.json()) as Archive;
+}
+
+export async function getChessComLatestGameTimestamp(player: string) {
+  const archives = await getGameArchives(player);
+  const latestArchive = archives.archives.at(-1);
+  if (!latestArchive) {
+    return null;
+  }
+
+  const response = await fetch(latestArchive, {
+    headers: apiHeaders(),
+    method: "GET",
+  });
+  if (!response.ok) {
+    error(`Failed to fetch latest Chess.com games: ${response.status} ${response.url}`);
+    return null;
+  }
+
+  const games = ChessComGames.safeParse(await response.json());
+  if (!games.success) {
+    error(`Invalid response for latest Chess.com games: ${response.status} ${response.url}`);
+    return null;
+  }
+
+  const latestTimestamp = Math.max(...games.data.games.map((game) => game.end_time));
+  return Number.isFinite(latestTimestamp) ? latestTimestamp * 1000 : null;
 }
 
 export async function downloadChessCom(player: string, timestamp: number | null) {

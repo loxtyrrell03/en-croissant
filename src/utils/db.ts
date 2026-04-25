@@ -196,6 +196,11 @@ export async function cancelDatabaseSearch(id: string | null | undefined) {
     await commands.cancelDatabaseSearch(id);
 }
 
+export async function setDatabaseSearchPaused(id: string | null | undefined, paused: boolean) {
+    if (!id) return;
+    await commands.setDatabaseSearchPaused(id, paused);
+}
+
 export async function getPlanExplorer(
     options: LocalOptions,
     maxPlies: number,

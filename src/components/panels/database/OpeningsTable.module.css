@@ -13,3 +13,8 @@
 [data-mantine-color-scheme="dark"] .whiteResultsSection {
   background-color: var(--mantine-color-white);
 }
+
+.healthBadge {
+  min-width: 58px;
+  justify-content: center;
+}

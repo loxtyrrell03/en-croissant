@@ -3,10 +3,15 @@ import type { SquareName } from "chessops";
 import type { PlanExplorerData, PlanExplorerLine, PlanExplorerPiece } from "@/bindings";
 
 export const PLAN_BRUSH = "plan";
+export const PLAN_WHITE_BRUSH = "planWhite";
+export const PLAN_BLACK_BRUSH = "planBlack";
+const PLAN_BRUSHES = new Set([PLAN_BRUSH, PLAN_WHITE_BRUSH, PLAN_BLACK_BRUSH]);
 const AUTO_PLAN_MIN_SHARE = 0.05;
 const AUTO_PLAN_MAX_LINES = 10;
 const AUTO_PLAN_MAX_MAJOR_MINOR_LINES = 7;
 const AUTO_PLAN_MAX_PAWN_LINES = 3;
+
+export type ColoredPlanExplorerLine = PlanExplorerLine & { color?: string };
 
 const squarePattern = /^[a-h][1-8]$/;
 const centralFiles = new Set(["c", "d", "e", "f"]);
@@ -17,14 +22,17 @@ function isSquareName(square: string): square is SquareName {
 }
 
 export function getPlanLineForSquare(data: PlanExplorerData | null, square: SquareName) {
-    return data?.pieces.find((piece) => piece.from === square)?.lines[0] ?? null;
+    const piece = data?.pieces.find((piece) => piece.from === square);
+    return piece?.lines[0] ? withPlanLineColor(piece.lines[0], piece.color) : null;
 }
 
 export function getTopPlanLines(data: PlanExplorerData | null, limit = 3) {
     return (
         data?.pieces
-            .map((piece) => piece.lines[0])
-            .filter((line): line is PlanExplorerLine => !!line)
+            .map((piece) =>
+                piece.lines[0] ? withPlanLineColor(piece.lines[0], piece.color) : null,
+            )
+            .filter((line): line is ColoredPlanExplorerLine => !!line)
             .sort((a, b) => b.games - a.games)
             .slice(0, limit) ?? []
     );
@@ -68,34 +76,49 @@ export function getAutoPlanLines(data: PlanExplorerData | null) {
         .filter((piece) => topLineGames(piece) >= minGames)
         .sort((a, b) => topLineGames(b) - topLineGames(a) || a.from.localeCompare(b.from))
         .slice(0, AUTO_PLAN_MAX_MAJOR_MINOR_LINES)
-        .map(topLine)
-        .filter((line): line is PlanExplorerLine => !!line);
+        .map((piece) => (topLine(piece) ? withPlanLineColor(topLine(piece)!, piece.color) : null))
+        .filter((line): line is ColoredPlanExplorerLine => !!line);
 
     const pawnLines = data.pieces
         .filter((piece) => piece.role === "pawn")
         .filter((piece) => {
             const line = topLine(piece);
-            return !!line && line.games >= minGames && isCentralOrAdvancedPawnLine(line, piece.color);
+            return (
+                !!line && line.games >= minGames && isCentralOrAdvancedPawnLine(line, piece.color)
+            );
         })
         .sort((a, b) => topLineGames(b) - topLineGames(a) || a.from.localeCompare(b.from))
         .slice(0, AUTO_PLAN_MAX_PAWN_LINES)
-        .map(topLine)
-        .filter((line): line is PlanExplorerLine => !!line);
+        .map((piece) => (topLine(piece) ? withPlanLineColor(topLine(piece)!, piece.color) : null))
+        .filter((line): line is ColoredPlanExplorerLine => !!line);
 
     return [...majorMinorLines, ...pawnLines]
         .sort((a, b) => b.games - a.games)
         .slice(0, AUTO_PLAN_MAX_LINES);
 }
 
-export function planLineToShapes(line: PlanExplorerLine): DrawShape[] {
+export function withPlanLineColor(line: PlanExplorerLine, color: string): ColoredPlanExplorerLine {
+    return { ...line, color };
+}
+
+export function isPlanBrush(brush: DrawShape["brush"]) {
+    return typeof brush === "string" && PLAN_BRUSHES.has(brush);
+}
+
+function brushForPlanLine(line: ColoredPlanExplorerLine) {
+    return line.color === "black" ? PLAN_BLACK_BRUSH : PLAN_WHITE_BRUSH;
+}
+
+export function planLineToShapes(line: ColoredPlanExplorerLine): DrawShape[] {
     const squares = line.squares.filter(isSquareName);
     const shapes: DrawShape[] = [];
+    const brush = brushForPlanLine(line);
 
     for (let i = 0; i < squares.length - 1; i++) {
         shapes.push({
             orig: squares[i],
             dest: squares[i + 1],
-            brush: PLAN_BRUSH,
+            brush,
             modifiers: {
                 lineWidth: Math.max(5, 10 - i * 1.5),
             },
@@ -105,7 +128,7 @@ export function planLineToShapes(line: PlanExplorerLine): DrawShape[] {
     return shapes;
 }
 
-export function planLinesToShapes(lines: PlanExplorerLine[], maxShapes = 8): DrawShape[] {
+export function planLinesToShapes(lines: ColoredPlanExplorerLine[], maxShapes = 8): DrawShape[] {
     const shapes: DrawShape[] = [];
     const seen = new Set<string>();
 

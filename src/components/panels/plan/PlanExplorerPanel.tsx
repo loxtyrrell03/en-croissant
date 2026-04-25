@@ -35,6 +35,7 @@ import {
   lichessOptionsAtom,
   masterOptionsAtom,
   planExplorerArrowLimitAtom,
+  planExplorerHoverEverywhereAtom,
   planExplorerSourceAtom,
   referenceDbAtom,
   sessionsAtom,
@@ -48,7 +49,13 @@ import {
 } from "@/utils/db";
 import { formatNumber } from "@/utils/format";
 import { getOnlinePlanExplorer, type OnlinePlanExplorerSource } from "@/utils/lichess/planExplorer";
-import { formatPlanRoute, PLAN_BRUSH, planLineToShapes } from "@/utils/planExplorer";
+import {
+  formatPlanRoute,
+  isPlanBrush,
+  planLineToShapes,
+  withPlanLineColor,
+  type ColoredPlanExplorerLine,
+} from "@/utils/planExplorer";
 import NoDatabaseWarning from "../database/NoDatabaseWarning";
 
 type SideFilter = "all" | "white" | "black";
@@ -64,6 +71,7 @@ function PlanExplorerPanel() {
   const [referenceDatabase, setReferenceDatabase] = useAtom(referenceDbAtom);
   const [showPlanExplorerArrows, setShowPlanExplorerArrows] = useAtom(showPlanExplorerArrowsAtom);
   const [arrowLimit, setArrowLimit] = useAtom(planExplorerArrowLimitAtom);
+  const [hoverEverywhere, setHoverEverywhere] = useAtom(planExplorerHoverEverywhereAtom);
   const [source, setSource] = useAtom(planExplorerSourceAtom);
   const currentTab = useAtomValue(currentTabAtom);
   const localOptions = useAtomValue(currentLocalOptionsAtom);
@@ -220,8 +228,8 @@ function PlanExplorerPanel() {
   }, [setPlanExplorerData, setPreviewLine, visiblePlanData]);
 
   const drawLine = useCallback(
-    (line: PlanExplorerLine) => {
-      const existing = currentNode.shapes.filter((shape) => shape.brush !== PLAN_BRUSH);
+    (line: ColoredPlanExplorerLine) => {
+      const existing = currentNode.shapes.filter((shape) => !isPlanBrush(shape.brush));
       setShapes([...existing, ...planLineToShapes(line)]);
     },
     [currentNode.shapes, setShapes],
@@ -310,6 +318,8 @@ function PlanExplorerPanel() {
               onChange={setShowPlanExplorerArrows}
               arrowLimit={arrowLimit}
               setArrowLimit={setArrowLimit}
+              hoverEverywhere={hoverEverywhere}
+              setHoverEverywhere={setHoverEverywhere}
             />
             <Text size="sm" style={{ whiteSpace: "nowrap" }}>
               {formatNumber(planData?.total_games ?? 0)} matches
@@ -362,11 +372,15 @@ function AutoArrowControls({
   onChange,
   arrowLimit,
   setArrowLimit,
+  hoverEverywhere,
+  setHoverEverywhere,
 }: {
   checked: boolean;
   onChange: (checked: boolean) => void;
   arrowLimit: number;
   setArrowLimit: (value: number) => void;
+  hoverEverywhere: boolean;
+  setHoverEverywhere: (value: boolean) => void;
 }) {
   return (
     <Group gap="xs" wrap="nowrap">
@@ -390,6 +404,16 @@ function AutoArrowControls({
         size="xs"
         w={72}
         disabled={!checked}
+      />
+      <Switch
+        label="Board hover"
+        size="sm"
+        checked={hoverEverywhere}
+        onChange={(event) => setHoverEverywhere(event.currentTarget.checked)}
+        styles={{
+          label: { whiteSpace: "nowrap" },
+          track: { cursor: "pointer" },
+        }}
       />
     </Group>
   );
@@ -433,10 +457,10 @@ function PieceRow({
   previewLine,
 }: {
   piece: PlanExplorerPiece;
-  drawLine: (line: PlanExplorerLine) => void;
-  previewLine: (line: PlanExplorerLine | null) => void;
+  drawLine: (line: ColoredPlanExplorerLine) => void;
+  previewLine: (line: ColoredPlanExplorerLine | null) => void;
 }) {
-  const topLine = piece.lines[0];
+  const topLine = piece.lines[0] ? withPlanLineColor(piece.lines[0], piece.color) : null;
 
   return (
     <Table.Tr
@@ -462,37 +486,40 @@ function PieceRow({
       </Table.Td>
       <Table.Td>
         <Stack gap={4}>
-          {piece.lines.slice(0, 4).map((line) => (
-            <Group
-              key={line.squares.join("-")}
-              gap="xs"
-              wrap="nowrap"
-              onMouseEnter={() => previewLine(line)}
-              onMouseLeave={() => topLine && previewLine(topLine)}
-            >
-              <Tooltip label="Draw route">
-                <ActionIcon
-                  size="sm"
-                  variant="subtle"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    drawLine(line);
-                  }}
-                >
-                  <IconRoute size="1rem" />
-                </ActionIcon>
-              </Tooltip>
-              <Text size="sm" ff="monospace" truncate>
-                {formatPlanRoute(line.squares)}
-              </Text>
-              <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
-                {formatNumber(line.games)}
-              </Text>
-              <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
-                {piece.total > 0 ? `${((line.games / piece.total) * 100).toFixed(0)}%` : "0%"}
-              </Text>
-            </Group>
-          ))}
+          {piece.lines.slice(0, 4).map((rawLine) => {
+            const line = withPlanLineColor(rawLine, piece.color);
+            return (
+              <Group
+                key={line.squares.join("-")}
+                gap="xs"
+                wrap="nowrap"
+                onMouseEnter={() => previewLine(line)}
+                onMouseLeave={() => topLine && previewLine(topLine)}
+              >
+                <Tooltip label="Draw route">
+                  <ActionIcon
+                    size="sm"
+                    variant="subtle"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      drawLine(line);
+                    }}
+                  >
+                    <IconRoute size="1rem" />
+                  </ActionIcon>
+                </Tooltip>
+                <Text size="sm" ff="monospace" truncate>
+                  {formatPlanRoute(line.squares)}
+                </Text>
+                <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+                  {formatNumber(line.games)}
+                </Text>
+                <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+                  {piece.total > 0 ? `${((line.games / piece.total) * 100).toFixed(0)}%` : "0%"}
+                </Text>
+              </Group>
+            );
+          })}
         </Stack>
       </Table.Td>
       <Table.Td>

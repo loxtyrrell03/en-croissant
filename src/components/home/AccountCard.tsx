@@ -2,6 +2,7 @@ import {
   ActionIcon,
   Badge,
   Card,
+  Checkbox,
   Group,
   Progress,
   SimpleGrid,
@@ -25,15 +26,22 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { DatabaseInfo } from "@/bindings";
 import { events } from "@/bindings";
-import { databaseConversionStateAtom, storedDatabasesDirAtom } from "@/state/atoms";
-import { getDatabases, query_games } from "@/utils/db";
+import {
+  databaseConversionStateAtom,
+  onlineDatabaseUpdatesAtom,
+  storedDatabasesDirAtom,
+} from "@/state/atoms";
+import { getDatabases } from "@/utils/db";
 import { capitalize } from "@/utils/format";
 import {
   getDefaultOnlineGameDatabaseTitle,
+  getLastOnlineDatabaseGameDate,
+  getOnlineDatabaseUpdateRecord,
   getOnlineGameDatabaseFilename,
   getOnlineGameImportId,
   importOnlineGamesToDatabase,
   resetDatabaseConversionState,
+  upsertOnlineDatabaseUpdateRecord,
 } from "@/utils/onlineGameImport";
 import LichessLogo from "./LichessLogo";
 
@@ -102,6 +110,7 @@ export function AccountCard({
   const [progress, setProgress] = useState<number | null>(null);
   const [databaseDir] = useAtom(storedDatabasesDirAtom);
   const [, setConversionState] = useAtom(databaseConversionStateAtom);
+  const [onlineDatabaseUpdates, setOnlineDatabaseUpdates] = useAtom(onlineDatabaseUpdatesAtom);
   const importId = getOnlineGameImportId(type, title);
 
   useEffect(() => {
@@ -123,27 +132,10 @@ export function AccountCard({
 
   const downloadedGames = database?.type === "success" ? database.game_count : 0;
   const effectiveTotal = Math.max(total, downloadedGames);
-  const percentage =
-    effectiveTotal === 0 ? "0.00" : ((downloadedGames / effectiveTotal) * 100).toFixed(2);
-
-  async function getLastGameDate({ database }: { database: DatabaseInfo }) {
-    const games = await query_games(database.file, {
-      options: {
-        page: 1,
-        pageSize: 1,
-        sort: "date",
-        direction: "desc",
-        skipCount: false,
-      },
-    });
-    if (games.count! > 0 && games.data[0].date && games.data[0].time) {
-      const [year, month, day] = games.data[0].date.split(".").map(Number);
-      const [hour, minute, second] = games.data[0].time.split(":").map(Number);
-      const d = Date.UTC(year, month - 1, day, hour, minute, second);
-      return d;
-    }
-    return null;
-  }
+  const downloadedPercentage = effectiveTotal === 0 ? 0 : (downloadedGames / effectiveTotal) * 100;
+  const updateRecord = database
+    ? getOnlineDatabaseUpdateRecord(database, onlineDatabaseUpdates)
+    : null;
 
   return (
     <Card withBorder radius="md" padding="lg">
@@ -180,7 +172,10 @@ export function AccountCard({
                 disabled={loading}
                 onClick={async () => {
                   setLoading(true);
-                  const lastGameDate = database ? await getLastGameDate({ database }) : null;
+                  const lastGameDate =
+                    database?.type === "success"
+                      ? await getLastOnlineDatabaseGameDate(database.file)
+                      : null;
                   const dbPath = await resolve(
                     databaseDir,
                     getOnlineGameDatabaseFilename(type, title),
@@ -193,12 +188,31 @@ export function AccountCard({
                       dbPath,
                       title: getDefaultOnlineGameDatabaseTitle(type, title),
                       since: lastGameDate,
-                      remainingGames: total - downloadedGames,
+                      remainingGames: Math.max(total - downloadedGames, 0),
                       token,
                       setProgress,
                       setConversionState,
                     });
-                    setDatabases(await getDatabases());
+                    const nextDatabases = await getDatabases();
+                    const updatedDatabase = nextDatabases.find(
+                      (database) => database.type === "success" && database.file === dbPath,
+                    );
+                    setDatabases(nextDatabases);
+                    setOnlineDatabaseUpdates((records) =>
+                      upsertOnlineDatabaseUpdateRecord(records, {
+                        source: type,
+                        username: title,
+                        dbPath,
+                        title: getDefaultOnlineGameDatabaseTitle(type, title),
+                        description:
+                          updatedDatabase?.type === "success" ? updatedDatabase.description : null,
+                        autoUpdate: updateRecord?.autoUpdate ?? true,
+                        lastCheckedAt: Date.now(),
+                        lastUpdatedAt: Date.now(),
+                        lastKnownGameCount:
+                          updatedDatabase?.type === "success" ? updatedDatabase.game_count : null,
+                      }),
+                    );
                   } catch (e) {
                     console.error(e);
                   } finally {
@@ -236,7 +250,7 @@ export function AccountCard({
             </Text>
           </Group>
           <Progress
-            value={loading ? 100 : (downloadedGames / effectiveTotal) * 100}
+            value={loading ? 100 : downloadedPercentage}
             size="sm"
             striped={loading}
             animated={loading}
@@ -254,6 +268,27 @@ export function AccountCard({
               </Text>
             )}
           </Group>
+          {database?.type === "success" && (
+            <Checkbox
+              size="xs"
+              label={t("Databases.Online.AutoUpdate")}
+              checked={updateRecord?.autoUpdate ?? true}
+              onChange={(event) => {
+                const checked = event.currentTarget.checked;
+                setOnlineDatabaseUpdates((records) =>
+                  upsertOnlineDatabaseUpdateRecord(records, {
+                    source: type,
+                    username: title,
+                    dbPath: database.file,
+                    title: database.title,
+                    description: database.description,
+                    autoUpdate: checked,
+                    lastKnownGameCount: database.game_count,
+                  }),
+                );
+              }}
+            />
+          )}
         </Stack>
       </Card.Section>
     </Card>

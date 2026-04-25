@@ -8,7 +8,7 @@ const endpoint = "https://www.chessdb.cn/cdb.php";
 
 type AllResponse = {
     status: string;
-    moves: ChessDBData[];
+    moves?: ChessDBData[];
 };
 
 type BestResponse = {
@@ -22,10 +22,19 @@ type BestResponse = {
 type ChessDBData = {
     uci: string;
     san: string;
-    score: number;
-    rank: number;
-    note: string;
+    score: number | string;
+    rank?: number;
+    note?: string;
     winrate?: string;
+};
+
+export type ChessDbCloudMove = {
+    uci: string;
+    san: string;
+    scoreCpForWhite: number | null;
+    rank: number | null;
+    note: string | null;
+    winrate: number | null;
 };
 
 export async function getBestMoves(
@@ -100,6 +109,7 @@ type CachedResult = {
 };
 
 const cache = new Map<string, CachedResult[]>();
+const cloudMoveCache = new Map<string, ChessDbCloudMove[] | null>();
 
 async function queryPosition(fen: string) {
     if (cache.has(fen)) {
@@ -113,13 +123,15 @@ async function queryPosition(fen: string) {
     url.searchParams.append("board", fen);
     const res = (await (await fetch(url.toString())).json()) as AllResponse;
 
-    if (res.status !== "ok") {
+    if (res.status !== "ok" || !res.moves?.length) {
         return [];
     }
 
     const data: CachedResult[] = res.moves.map((m) => ({
         ...m,
-        score: side === "b" ? -m.score : m.score,
+        score: side === "b" ? -normaliseChessDbScore(m.score) : normaliseChessDbScore(m.score),
+        rank: m.rank ?? 0,
+        note: m.note ?? "",
         uci: [m.uci],
         san: [m.san],
     }));
@@ -133,6 +145,62 @@ async function queryPosition(fen: string) {
 
     cache.set(fen, data);
     return data;
+}
+
+export async function queryChessDbMoves(fen: string): Promise<ChessDbCloudMove[] | null> {
+    if (cloudMoveCache.has(fen)) {
+        return cloudMoveCache.get(fen)!;
+    }
+
+    const side = fen.split(" ")[1];
+    const url = new URL(endpoint);
+    url.searchParams.append("action", "queryall");
+    url.searchParams.append("json", "1");
+    url.searchParams.append("learn", "0");
+    url.searchParams.append("showall", "1");
+    url.searchParams.append("board", fen);
+
+    const response = await fetch(url.toString());
+    if (!response.ok) {
+        throw new Error("ChessDB cloud lookup failed.");
+    }
+
+    const res = (await response.json()) as AllResponse;
+    if (res.status !== "ok" || !res.moves?.length) {
+        cloudMoveCache.set(fen, null);
+        return null;
+    }
+
+    const data = res.moves.map<ChessDbCloudMove>((move) => {
+        const score = parseChessDbScore(move.score);
+        return {
+            uci: move.uci,
+            san: move.san,
+            scoreCpForWhite: score === null ? null : side === "b" ? -score : score,
+            rank: typeof move.rank === "number" ? move.rank : null,
+            note: move.note ?? null,
+            winrate: parseChessDbWinrate(move.winrate),
+        };
+    });
+
+    cloudMoveCache.set(fen, data);
+    return data;
+}
+
+function normaliseChessDbScore(score: number | string) {
+    return parseChessDbScore(score) ?? 0;
+}
+
+function parseChessDbScore(score: number | string) {
+    if (typeof score === "number") return Number.isFinite(score) ? score : null;
+    const parsed = Number.parseFloat(score);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseChessDbWinrate(winrate: string | undefined) {
+    if (!winrate) return null;
+    const parsed = Number.parseFloat(winrate);
+    return Number.isFinite(parsed) ? parsed / 100 : null;
 }
 
 async function queryBest(fen: string) {

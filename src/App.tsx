@@ -12,7 +12,7 @@ import { Notifications } from "@mantine/notifications";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { getMatches } from "@tauri-apps/plugin-cli";
 import { listen } from "@tauri-apps/api/event";
-import { attachConsole, error, info, warn } from "@tauri-apps/plugin-log";
+import { attachConsole, error as logError, info, warn } from "@tauri-apps/plugin-log";
 import { getDefaultStore, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { ContextMenuProvider } from "mantine-contextmenu";
 import posthog from "posthog-js";
@@ -63,6 +63,7 @@ import { check } from "@tauri-apps/plugin-updater";
 import ErrorComponent from "@/components/ErrorComponent";
 import { getDatabasesDir, getDocumentDir, getEnginesDir, getPuzzlesDir } from "@/utils/directories";
 import { initUserAgent } from "@/utils/http";
+import { useOnlineDatabaseAutoUpdater } from "@/utils/onlineDatabaseAutoUpdate";
 import { routeTree } from "./routeTree.gen";
 
 export type Dirs = {
@@ -129,7 +130,7 @@ const checkForUpdates = async () => {
       }
     }
   } catch (e) {
-    error(`Failed to check for updates: ${e}`);
+    logError(`Failed to check for updates: ${e}`);
   }
 };
 
@@ -212,6 +213,7 @@ export default function App() {
   const setDatabaseConversionState = useSetAtom(databaseConversionStateAtom);
 
   useAppStartup();
+  useOnlineDatabaseAutoUpdater();
 
   useEffect(() => {
     document.documentElement.style.fontSize = `${fontSize}%`;

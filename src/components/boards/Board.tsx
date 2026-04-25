@@ -40,6 +40,7 @@ import {
   moveHighlightAtom,
   moveInputAtom,
   planExplorerArrowLimitAtom,
+  planExplorerHoverEverywhereAtom,
   practiceCardStartTimeAtom,
   practiceSessionStatsAtom,
   practiceStateAtom,
@@ -59,11 +60,14 @@ import { chessopsError, forceEnPassant, positionFromFen } from "@/utils/chessops
 import {
   getAutoPlanLines,
   getPlanLineForSquare,
+  isPlanBrush,
   PLAN_BRUSH,
+  PLAN_BLACK_BRUSH,
+  PLAN_WHITE_BRUSH,
   planLineToShapes,
   planLinesToShapes,
 } from "@/utils/planExplorer";
-import { getTabFile, getTabGameNumber } from "@/utils/tabs";
+import { getTabGameNumber, getTabPracticeKey } from "@/utils/tabs";
 import ShowMaterial from "../common/ShowMaterial";
 import { TreeStateContext } from "../common/TreeStateContext";
 import FideInfo from "../databases/FideInfo";
@@ -116,7 +120,7 @@ interface ChessboardProps {
   blackTime?: number;
   practicing?: boolean;
   selectedPiece?: Piece | null;
-  onMove?: (uci: string) => void;
+  onMove?: (uci: string, fen: string, san: string) => void;
   cgRef?: React.Ref<ChessgroundRef>;
   enablePremoves?: boolean;
 }
@@ -179,12 +183,17 @@ function Board({
   const showCoordinates = useAtomValue(showCoordinatesAtom);
   const materialDisplay = useAtomValue(materialDisplayAtom);
   const boardPreviewShapes = useAtomValue(currentBoardPreviewShapesAtom);
+  const boardFen = boardPreviewShapes?.displayFen ?? currentNode.fen;
+  const [boardPreviewPos] = boardPreviewShapes?.displayFen
+    ? positionFromFen(boardPreviewShapes.displayFen)
+    : [null];
   const planExplorerData = useAtomValue(currentPlanExplorerDataAtom);
   const [planExplorerPreviewLine, setPlanExplorerPreviewLine] = useAtom(
     currentPlanExplorerPreviewLineAtom,
   );
   const showPlanExplorerArrows = useAtomValue(showPlanExplorerArrowsAtom);
   const planExplorerArrowLimit = useAtomValue(planExplorerArrowLimitAtom);
+  const planExplorerHoverEverywhere = useAtomValue(planExplorerHoverEverywhereAtom);
   const currentTabSelected = useAtomValue(currentTabSelectedAtom);
   const hoveredPlanSquareRef = useRef<SquareName | null>(null);
 
@@ -207,12 +216,11 @@ function Board({
   const keyMap = useAtomValue(keyMapAtom);
   useHotkeys(keyMap.SWAP_ORIENTATION.keys, () => toggleOrientation());
   const currentTab = useAtomValue(currentTabAtom);
-  const tabFile = getTabFile(currentTab);
   const [evalOpen, setEvalOpen] = useAtom(currentEvalOpenAtom);
 
   const [deck, setDeck] = useAtom(
     deckAtomFamily({
-      file: tabFile?.path || "",
+      file: getTabPracticeKey(currentTab),
       game: getTabGameNumber(currentTab),
     }),
   );
@@ -224,6 +232,7 @@ function Board({
   async function makeMove(move: NormalMove) {
     if (!pos) return;
     const san = makeSan(pos, move);
+    const uci = makeUci(move);
     if (practicing) {
       const c = deck.positions.find((c) => c.fen === currentNode.fen);
       if (!c) {
@@ -232,8 +241,10 @@ function Board({
 
       const i = deck.positions.indexOf(c);
       const timeTaken = Date.now() - cardStartTime;
+      const isCorrect = san === c.answer || c.answerUci === uci;
+      onMove?.(uci, c.fen, san);
 
-      if (san !== c.answer) {
+      if (!isCorrect) {
         if (sessionStats.mode !== "full") {
           updateCardPerformance(setDeck, i, c.card, 1);
         }
@@ -242,6 +253,7 @@ function Board({
           currentFen: c.fen,
           answer: c.answer,
           playedMove: san,
+          playedMoveUci: uci,
           positionIndex: i,
           timeTaken,
         });
@@ -266,6 +278,8 @@ function Board({
           phase: "correct",
           currentFen: c.fen,
           answer: c.answer,
+          playedMove: san,
+          playedMoveUci: uci,
           positionIndex: i,
           timeTaken,
         });
@@ -277,9 +291,7 @@ function Board({
       });
       setPendingMove(null);
 
-      if (onMove) {
-        onMove(makeUci(move));
-      }
+      onMove?.(uci, currentNode.fen, san);
     }
   }
 
@@ -371,7 +383,7 @@ function Board({
     shapes = shapes.concat(planLineToShapes(planExplorerPreviewLine));
   }
 
-  if (boardPreviewShapes?.fen === currentNode.fen) {
+  if (boardPreviewShapes?.fen === boardFen) {
     shapes = shapes.concat(boardPreviewShapes.shapes);
   }
 
@@ -451,7 +463,7 @@ function Board({
       event.preventDefault();
       event.stopPropagation();
 
-      const existing = currentNode.shapes.filter((shape) => shape.brush !== PLAN_BRUSH);
+      const existing = currentNode.shapes.filter((shape) => !isPlanBrush(shape.brush));
       setShapes([...existing, ...planShapes]);
     },
     [boardRef, currentNode.fen, currentNode.shapes, orientation, planExplorerData, pos, setShapes],
@@ -459,7 +471,7 @@ function Board({
 
   const previewPlanFromPointer = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
-      if (currentTabSelected !== "plan-explorer") {
+      if (currentTabSelected !== "plan-explorer" && !planExplorerHoverEverywhere) {
         return;
       }
 
@@ -499,6 +511,7 @@ function Board({
       currentTabSelected,
       orientation,
       planExplorerData,
+      planExplorerHoverEverywhere,
       pos,
       setPlanExplorerPreviewLine,
     ],
@@ -554,7 +567,7 @@ function Board({
             height={BAR_HEIGHT}
           >
             <ShowMaterial
-              fen={currentNode.fen}
+              fen={boardFen}
               color={orientation === "white" ? "black" : "white"}
               mode={materialDisplay}
             />
@@ -659,15 +672,15 @@ function Board({
                 ref={cgRef}
                 setBoardFen={setBoardFen}
                 orientation={orientation}
-                fen={currentNode.fen}
+                fen={boardFen}
                 animation={{ enabled: !editingMode }}
                 coordinates={showCoordinates !== "no"}
                 coordinatesOnSquares={showCoordinates === "all"}
                 movable={{
                   free: editingMode,
-                  color: movableColor,
+                  color: boardPreviewShapes?.displayFen ? undefined : movableColor,
                   dests:
-                    editingMode || viewOnly
+                    boardPreviewShapes?.displayFen || editingMode || viewOnly
                       ? undefined
                       : disableVariations && currentNode.children.length > 0
                         ? undefined
@@ -720,9 +733,13 @@ function Board({
                     }
                   },
                 }}
-                turnColor={turn}
-                check={moveHighlight && pos?.isCheck()}
-                lastMove={moveHighlight && !editingMode ? lastMove : undefined}
+                turnColor={boardPreviewPos?.turn ?? turn}
+                check={moveHighlight && (boardPreviewPos ?? pos)?.isCheck()}
+                lastMove={
+                  moveHighlight && !editingMode && !boardPreviewShapes?.displayFen
+                    ? lastMove
+                    : undefined
+                }
                 premovable={{
                   enabled: enablePremoves && !editingMode && !viewOnly,
                 }}
@@ -742,9 +759,21 @@ function Board({
                       opacity: 0.8,
                       lineWidth: 10,
                     },
-                    plan: {
+                    [PLAN_BRUSH]: {
                       key: "p",
                       color: "#12b886",
+                      opacity: 0.9,
+                      lineWidth: 10,
+                    },
+                    [PLAN_WHITE_BRUSH]: {
+                      key: "w",
+                      color: "#228be6",
+                      opacity: 0.9,
+                      lineWidth: 10,
+                    },
+                    [PLAN_BLACK_BRUSH]: {
+                      key: "b",
+                      color: "#f08c00",
                       opacity: 0.9,
                       lineWidth: 10,
                     },
@@ -782,7 +811,7 @@ function Board({
 
             {moveInput && <MoveInput currentNode={currentNode} />}
 
-            <ShowMaterial fen={currentNode.fen} color={orientation} mode={materialDisplay} />
+            <ShowMaterial fen={boardFen} color={orientation} mode={materialDisplay} />
             {hasClock && (
               <Clock color={orientation} turn={turn} whiteTime={whiteTime} blackTime={blackTime} />
             )}

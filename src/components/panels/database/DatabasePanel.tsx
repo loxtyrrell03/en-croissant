@@ -25,6 +25,7 @@ import {
   currentDbTypeAtom,
   currentLocalOptionsAtom,
   currentTabAtom,
+  databaseMoveHealthSideAtom,
   defaultDatabaseSourceAtom,
   type DatabaseSourcePreference,
   lichessOptionsAtom,
@@ -36,11 +37,16 @@ import { cancelDatabaseSearch, getDatabases, type Opening, searchPosition } from
 import { formatNumber } from "@/utils/format";
 import { convertToNormalized, getLichessGames, getMasterGames } from "@/utils/lichess/api";
 import type { LichessGamesOptions, MasterGamesOptions } from "@/utils/lichess/explorer";
+import type { OpeningMoveHealthSidePreference } from "@/utils/openingMoveHealth";
 import { IconStar, IconStarFilled } from "@tabler/icons-react";
 import DatabaseLoader from "./DatabaseLoader";
 import GamesTable from "./GamesTable";
 import NoDatabaseWarning from "./NoDatabaseWarning";
-import OpeningsTable, { type OpeningSort, openingSortOptions } from "./OpeningsTable";
+import OpeningsTable, {
+  openingMoveHealthSideOptions,
+  type OpeningSort,
+  openingSortOptions,
+} from "./OpeningsTable";
 import LichessOptionsPanel from "./options/LichessOptionsPanel";
 import LocalOptionsPanel from "./options/LocalOptionsPanel";
 import MasterOptionsPanel from "./options/MastersOptionsPanel";
@@ -131,6 +137,7 @@ function DatabasePanel() {
   const [masterOptions, setMasterOptions] = useAtom(masterOptionsAtom);
   const [localOptions, setLocalOptions] = useAtom(currentLocalOptionsAtom);
   const [db, setDb] = useAtom(currentDbTypeAtom);
+  const [moveHealthSide, setMoveHealthSide] = useAtom(databaseMoveHealthSideAtom);
   const [openingSort, setOpeningSort] = useState<OpeningSort>("games");
   const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
     ?.accessToken;
@@ -255,7 +262,7 @@ function DatabasePanel() {
 
   const header = (
     <>
-      <Group justify="space-between" w="100%" wrap="nowrap">
+      <Group justify="space-between" w="100%" wrap="wrap">
         <Group>
           <SegmentedControl
             data={[
@@ -307,14 +314,28 @@ function DatabasePanel() {
         {tabType !== "options" && (
           <Group gap="xs" wrap="nowrap">
             {tabType === "stats" && (
-              <Select
-                data={openingSortOptions}
-                value={openingSort}
-                onChange={(value) => setOpeningSort((value as OpeningSort) ?? "games")}
-                size="sm"
-                w={160}
-                allowDeselect={false}
-              />
+              <>
+                <Tooltip label="Evaluate move health for this side">
+                  <Select
+                    data={openingMoveHealthSideOptions}
+                    value={moveHealthSide}
+                    onChange={(value) =>
+                      setMoveHealthSide((value as OpeningMoveHealthSidePreference) ?? "sideToMove")
+                    }
+                    size="sm"
+                    w={145}
+                    allowDeselect={false}
+                  />
+                </Tooltip>
+                <Select
+                  data={openingSortOptions}
+                  value={openingSort}
+                  onChange={(value) => setOpeningSort((value as OpeningSort) ?? "games")}
+                  size="sm"
+                  w={160}
+                  allowDeselect={false}
+                />
+              </>
             )}
             <Text style={{ whiteSpace: "nowrap" }}>
               {t("Board.Database.Matches", {
@@ -365,6 +386,7 @@ function DatabasePanel() {
             openings={openingData?.openings || []}
             loading={isLoading}
             sortBy={openingSort}
+            healthSidePreference={moveHealthSide}
           />
         </PanelWithError>
         <PanelWithError

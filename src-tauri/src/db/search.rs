@@ -9,23 +9,24 @@ use shakmaty::{
 };
 use specta::Type;
 use std::{
-    cmp::Reverse,
+    cmp::{Ordering as CmpOrdering, Reverse},
     collections::{BinaryHeap, HashMap, HashSet},
     path::{Path, PathBuf},
     sync::{
         atomic::{AtomicBool, AtomicUsize, Ordering},
         Arc, Mutex,
     },
-    time::Instant,
+    thread,
+    time::{Duration, Instant},
 };
 use tauri::Emitter;
 
 use crate::{
     db::{
         encoding::{decode_move, iter_mainline_move_bytes},
-        get_db_or_create, get_material_count, get_pawn_home,
+        get_db_or_create, get_material_count, get_pawn_home, legacy_position_index_key,
         models::*,
-        normalize_games, position_index_key,
+        normalize_games, position_index_key, position_index_key_from_fen_key,
         schema::*,
         search_index::{
             get_index_path, GameResult, MmapSearchIndex, PositionIndexKey, SearchGameEntryRef,
@@ -41,6 +42,25 @@ use super::GameQuery;
 const DB_CACHE_LIMIT: usize = 4;
 const PLAN_EXPLORER_INDEXED_SAMPLES: usize = 5_000;
 const PLAN_EXPLORER_FALLBACK_FULL_SAMPLE_MAX_GAMES: usize = 100_000;
+const OPENING_HEALTH_SCORE_GAP: f64 = 0.15;
+const OPENING_HEALTH_POOR_SCORE: f64 = 0.45;
+const OPENING_HEALTH_PROGRESS_EVENT: &str = "opening_health_progress";
+const OPENING_HEALTH_MAX_REFERENCE_CANDIDATES: usize = 3_000;
+const OPENING_HEALTH_MAX_PLAYER_EXPORT_POSITIONS: usize = 3_000;
+const OPENING_HEALTH_MAX_REPORT_ROWS: usize = 600;
+const OPENING_HEALTH_REFERENCE_SAMPLE_GAMES: usize = 750_000;
+const OPENING_HEALTH_REFERENCE_OCCURRENCE_SAMPLE_LIMIT: usize = 5_000;
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct OpeningHealthProgress {
+    id: String,
+    progress: f32,
+    games_scanned: i32,
+    positions_processed: i32,
+    phase: String,
+    finished: bool,
+}
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone)]
 pub struct ExactData {
@@ -175,14 +195,51 @@ pub struct PositionStats {
 pub struct RepertoireGapRequest {
     pub player_db: PathBuf,
     pub reference_db: PathBuf,
-    pub player_id: i32,
+    pub player_id: Option<i32>,
     pub color: String,
     pub max_plies: i32,
     pub min_player_games: i32,
     pub min_reference_games: i32,
     pub top_reference_moves: i32,
-    pub max_player_score: f64,
-    pub min_reference_move_share: f64,
+    pub request_id: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct OpeningHealthPlayerPositionsRequest {
+    pub player_db: PathBuf,
+    pub player_id: Option<i32>,
+    pub color: String,
+    pub max_plies: i32,
+    pub request_id: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct OpeningHealthPlayerPositionsReport {
+    pub player_games: i32,
+    pub candidate_positions: i32,
+    pub positions: Vec<OpeningHealthPlayerPosition>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct OpeningHealthPlayerPosition {
+    pub fen: String,
+    pub normalized_fen: String,
+    pub ply: i32,
+    pub side_to_move: String,
+    pub move_sequence: String,
+    pub player_move_san: String,
+    pub player_move_uci: String,
+    pub player_games: i32,
+    pub player_position_games: i32,
+    pub player_white: i32,
+    pub player_draw: i32,
+    pub player_black: i32,
+    pub player_score: f64,
+    pub last_played: Option<String>,
+    pub sample_game_ids: Vec<i32>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Type)]
@@ -194,22 +251,39 @@ pub struct RepertoireGapReport {
     pub gaps: Vec<RepertoireGap>,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Type, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum RepertoireGapClassification {
+    RepertoireGap,
+    PreparedUnderperforming,
+    LowConfidence,
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct RepertoireGap {
     pub fen: String,
+    pub normalized_fen: String,
     pub ply: i32,
     pub side_to_move: String,
+    pub move_sequence: String,
     pub player_move_san: String,
     pub player_move_uci: String,
     pub player_games: i32,
+    pub player_position_games: i32,
     pub player_white: i32,
     pub player_draw: i32,
     pub player_black: i32,
     pub player_score: f64,
+    pub last_played: Option<String>,
     pub reference_games: i32,
     pub reference_move_rank: Option<i32>,
     pub reference_move_share: f64,
+    pub reference_score: Option<f64>,
+    pub top_reference_move_score: Option<f64>,
+    pub classification: RepertoireGapClassification,
+    pub popularity_gap: f64,
+    pub score_gap: f64,
     pub severity: f64,
     pub sample_game_ids: Vec<i32>,
     pub top_reference_moves: Vec<RepertoireGapReferenceMove>,
@@ -236,11 +310,12 @@ struct PlayerMoveBucket {
     white: i32,
     draw: i32,
     black: i32,
+    last_played: Option<String>,
     sample_game_ids: Vec<i32>,
 }
 
 impl PlayerMoveBucket {
-    fn new(san: String, uci: String, result: GameResult, game_id: i32) -> Self {
+    fn new(san: String, uci: String, result: GameResult, game_id: i32, date: Option<&str>) -> Self {
         let (white, draw, black) = result_counts(result);
         Self {
             san,
@@ -249,16 +324,27 @@ impl PlayerMoveBucket {
             white,
             draw,
             black,
+            last_played: date.map(ToOwned::to_owned),
             sample_game_ids: vec![game_id],
         }
     }
 
-    fn add_result(&mut self, result: GameResult, game_id: i32) {
+    fn add_result(&mut self, result: GameResult, game_id: i32, date: Option<&str>) {
         let (white, draw, black) = result_counts(result);
         self.games += 1;
         self.white += white;
         self.draw += draw;
         self.black += black;
+        if let Some(date) = date {
+            if self
+                .last_played
+                .as_deref()
+                .map(|last_played| date > last_played)
+                .unwrap_or(true)
+            {
+                self.last_played = Some(date.to_string());
+            }
+        }
         if self.sample_game_ids.len() < 12 && !self.sample_game_ids.contains(&game_id) {
             self.sample_game_ids.push(game_id);
         }
@@ -268,22 +354,81 @@ impl PlayerMoveBucket {
 #[derive(Debug, Clone)]
 struct PlayerPositionBucket {
     fen: String,
+    normalized_fen: String,
     ply: i32,
     side_to_move: Color,
+    move_sequence: String,
     moves: HashMap<String, PlayerMoveBucket>,
 }
 
 impl PlayerPositionBucket {
-    fn add_move(&mut self, san: String, uci: String, result: GameResult, game_id: i32) {
+    fn add_move(
+        &mut self,
+        san: String,
+        uci: String,
+        result: GameResult,
+        game_id: i32,
+        date: Option<&str>,
+    ) {
         self.moves
             .entry(uci.clone())
-            .and_modify(|bucket| bucket.add_result(result, game_id))
-            .or_insert_with(|| PlayerMoveBucket::new(san, uci, result, game_id));
+            .and_modify(|bucket| bucket.add_result(result, game_id, date))
+            .or_insert_with(|| PlayerMoveBucket::new(san, uci, result, game_id, date));
     }
 
     fn total_games(&self) -> i32 {
         self.moves.values().map(|bucket| bucket.games).sum()
     }
+}
+
+fn is_opening_health_candidate(bucket: &PlayerPositionBucket, min_player_games: i32) -> bool {
+    bucket.total_games() >= min_player_games
+        && top_player_move(bucket)
+            .map(|player_move| player_move.san != "*")
+            .unwrap_or(false)
+}
+
+fn opening_health_candidate_score(bucket: &PlayerPositionBucket) -> f64 {
+    top_player_move(bucket)
+        .map(|player_move| {
+            score_for_side(
+                player_move.white,
+                player_move.draw,
+                player_move.black,
+                bucket.side_to_move,
+            )
+        })
+        .unwrap_or(1.0)
+}
+
+fn compare_opening_health_candidates(
+    a: &PlayerPositionBucket,
+    b: &PlayerPositionBucket,
+) -> CmpOrdering {
+    b.total_games()
+        .cmp(&a.total_games())
+        .then_with(|| {
+            opening_health_candidate_score(a).total_cmp(&opening_health_candidate_score(b))
+        })
+        .then_with(|| a.ply.cmp(&b.ply))
+        .then_with(|| a.move_sequence.cmp(&b.move_sequence))
+}
+
+fn prioritize_opening_health_positions(
+    positions: HashMap<String, PlayerPositionBucket>,
+    min_player_games: i32,
+    limit: usize,
+) -> (HashMap<String, PlayerPositionBucket>, usize) {
+    let collected_positions = positions.len();
+    let mut candidates = positions
+        .into_iter()
+        .filter(|(_, bucket)| is_opening_health_candidate(bucket, min_player_games))
+        .collect::<Vec<_>>();
+
+    candidates.sort_by(|(_, a), (_, b)| compare_opening_health_candidates(a, b));
+    candidates.truncate(limit);
+
+    (candidates.into_iter().collect(), collected_positions)
 }
 
 #[derive(Debug, Clone)]
@@ -494,7 +639,15 @@ fn fen_key(position: &Chess) -> String {
         .join(" ")
 }
 
-fn position_index_key_from_fen_key(key: &str) -> Option<PositionIndexKey> {
+fn chess_from_fen_key(key: &str) -> Result<Chess, Error> {
+    let fen = format!("{key} 0 1");
+    let fen = Fen::from_ascii(fen.as_bytes())?;
+    let setup = fen.into_setup();
+    let castling_mode = CastlingMode::detect(&setup);
+    Ok(Chess::from_setup(setup, castling_mode).or_else(PositionError::ignore_too_much_material)?)
+}
+
+fn legacy_position_index_key_from_fen_key(key: &str) -> Option<PositionIndexKey> {
     let mut parts = key.split_whitespace();
     let board = parts.next()?;
     let turn = parts.next()?;
@@ -503,6 +656,14 @@ fn position_index_key_from_fen_key(key: &str) -> Option<PositionIndexKey> {
 
 fn uci_for_move(m: &Move) -> String {
     UciMove::from_move(m, CastlingMode::Standard).to_string()
+}
+
+fn indexed_position_key(index: &MmapSearchIndex, position: &Chess) -> PositionIndexKey {
+    if index.has_exact_position_index() {
+        position_index_key(position)
+    } else {
+        legacy_position_index_key(position)
+    }
 }
 
 fn score_for_side(white: i32, draw: i32, black: i32, side: Color) -> f64 {
@@ -616,28 +777,79 @@ fn add_opening_result(
         });
 }
 
+fn emit_opening_health_progress(
+    app: &tauri::AppHandle,
+    request_id: &str,
+    progress: f32,
+    games_scanned: i32,
+    positions_processed: i32,
+    phase: &str,
+    finished: bool,
+) -> Result<(), Error> {
+    app.emit(
+        OPENING_HEALTH_PROGRESS_EVENT,
+        OpeningHealthProgress {
+            id: request_id.to_string(),
+            progress,
+            games_scanned,
+            positions_processed,
+            phase: phase.to_string(),
+            finished,
+        },
+    )?;
+
+    Ok(())
+}
+
 fn collect_player_positions(
     index: &MmapSearchIndex,
-    player_id: i32,
+    player_id: Option<i32>,
     color_filter: &str,
     max_plies: usize,
+    cancel_flag: &AtomicBool,
+    app: &tauri::AppHandle,
+    state: &tauri::State<'_, AppState>,
+    request_id: &str,
 ) -> Result<(HashMap<String, PlayerPositionBucket>, i32), Error> {
     let mut positions: HashMap<String, PlayerPositionBucket> = HashMap::new();
     let mut player_games = 0;
+    let total_games = index.len().max(1);
 
-    for entry in index.iter() {
-        let Some(player_color) = player_color_for_entry(&entry, player_id) else {
-            continue;
-        };
+    for (entry_index, entry) in index.iter().enumerate() {
+        if cancel_flag.load(Ordering::Relaxed) {
+            return Err(Error::SearchStopped);
+        }
+        wait_if_database_search_paused(state, request_id, cancel_flag)?;
 
-        if !color_matches_filter(player_color, color_filter) {
+        if entry_index % 512 == 0 {
+            let progress = ((entry_index as f32 / total_games as f32) * 45.0).min(45.0);
+            emit_opening_health_progress(
+                app,
+                request_id,
+                progress,
+                player_games,
+                positions.len() as i32,
+                "Scanning personal games",
+                false,
+            )?;
+        }
+
+        let player_color = player_id.and_then(|id| player_color_for_entry(&entry, id));
+        if player_id.is_some() && player_color.is_none() {
             continue;
+        }
+
+        if let Some(player_color) = player_color {
+            if !color_matches_filter(player_color, color_filter) {
+                continue;
+            }
         }
 
         player_games += 1;
         let mut chess = starting_position(&entry.fen)?;
         let mut mainline = iter_mainline_move_bytes(entry.moves);
         let mut seen_in_game: HashSet<(String, String)> = HashSet::new();
+        let mut move_sequence: Vec<String> = Vec::new();
 
         for ply in 0..max_plies {
             let Some(byte) = mainline.next() else {
@@ -646,35 +858,61 @@ fn collect_player_positions(
             let Some(m) = decode_move(byte, &chess) else {
                 break;
             };
+            let san = SanPlus::from_move(chess.clone(), &m).to_string();
 
-            if chess.turn() == player_color {
+            let include_move = if let Some(player_color) = player_color {
+                chess.turn() == player_color
+            } else {
+                color_matches_filter(chess.turn(), color_filter)
+            };
+
+            if include_move {
                 let key = fen_key(&chess);
                 let uci = uci_for_move(&m);
 
                 if seen_in_game.insert((key.clone(), uci.clone())) {
-                    let san = SanPlus::from_move(chess.clone(), &m).to_string();
                     let output_fen = fen_for_output(&chess);
+                    let sequence = move_sequence.join(" ");
                     positions
-                        .entry(key)
+                        .entry(key.clone())
                         .and_modify(|bucket| {
-                            bucket.add_move(san.clone(), uci.clone(), entry.result, entry.id)
+                            bucket.add_move(
+                                san.clone(),
+                                uci.clone(),
+                                entry.result,
+                                entry.id,
+                                entry.date,
+                            )
                         })
                         .or_insert_with(|| {
                             let mut bucket = PlayerPositionBucket {
                                 fen: output_fen,
+                                normalized_fen: key.clone(),
                                 ply: ply as i32,
                                 side_to_move: chess.turn(),
+                                move_sequence: sequence,
                                 moves: HashMap::new(),
                             };
-                            bucket.add_move(san, uci, entry.result, entry.id);
+                            bucket.add_move(san.clone(), uci, entry.result, entry.id, entry.date);
                             bucket
                         });
                 }
             }
 
+            move_sequence.push(san);
             chess.play_unchecked(&m);
         }
     }
+
+    emit_opening_health_progress(
+        app,
+        request_id,
+        45.0,
+        player_games,
+        positions.len() as i32,
+        "Scanning personal games",
+        false,
+    )?;
 
     Ok((positions, player_games))
 }
@@ -683,6 +921,11 @@ fn collect_reference_positions(
     index: &MmapSearchIndex,
     candidate_keys: &HashSet<String>,
     max_plies: usize,
+    cancel_flag: &AtomicBool,
+    app: &tauri::AppHandle,
+    state: &tauri::State<'_, AppState>,
+    request_id: &str,
+    games_scanned_offset: i32,
 ) -> Result<HashMap<String, ReferencePositionBucket>, Error> {
     let mut positions: HashMap<String, ReferencePositionBucket> = HashMap::new();
 
@@ -691,11 +934,65 @@ fn collect_reference_positions(
     }
 
     if !index.has_position_index() {
-        for entry in index.iter() {
-            let mut chess = starting_position(&entry.fen)?;
+        let candidate_by_key = candidate_keys
+            .iter()
+            .filter_map(|key| {
+                position_index_key_from_fen_key(key).map(|position_key| (position_key, key.clone()))
+            })
+            .collect::<HashMap<_, _>>();
+        let matched_positions: DashMap<String, ReferencePositionBucket> = DashMap::new();
+        let move_name_cache: DashMap<(PositionIndexKey, u8), (String, String)> = DashMap::new();
+        let total_games = index.len().max(1);
+        let sample_games = total_games.min(OPENING_HEALTH_REFERENCE_SAMPLE_GAMES);
+        let reference_phase = if sample_games < total_games {
+            "Sampling strong games"
+        } else {
+            "Checking strong games"
+        };
+        let processed = AtomicUsize::new(0);
+
+        (0..sample_games).into_par_iter().for_each(|sample_index| {
+            if cancel_flag.load(Ordering::Relaxed) {
+                return;
+            }
+
+            let raw_entry_index = if sample_games == total_games {
+                sample_index
+            } else {
+                sample_index * total_games / sample_games
+            };
+            let Some(entry) = index.get_entry_ref(raw_entry_index) else {
+                return;
+            };
+
+            let scanned_games = processed.fetch_add(1, Ordering::Relaxed) + 1;
+            if scanned_games % 8192 == 0 {
+                if wait_if_database_search_paused(state, request_id, cancel_flag).is_err() {
+                    return;
+                }
+                let progress =
+                    45.0 + ((scanned_games as f32 / sample_games as f32) * 45.0).min(45.0);
+                let _ = emit_opening_health_progress(
+                    app,
+                    request_id,
+                    progress,
+                    games_scanned_offset + scanned_games as i32,
+                    matched_positions.len() as i32,
+                    reference_phase,
+                    false,
+                );
+            }
+
+            let Ok(mut chess) = starting_position(&entry.fen) else {
+                return;
+            };
             let mut mainline = iter_mainline_move_bytes(entry.moves);
 
             for _ in 0..max_plies {
+                if cancel_flag.load(Ordering::Relaxed) {
+                    return;
+                }
+
                 let Some(byte) = mainline.next() else {
                     break;
                 };
@@ -703,30 +1000,167 @@ fn collect_reference_positions(
                     break;
                 };
 
-                let key = fen_key(&chess);
-                if candidate_keys.contains(&key) {
-                    let san = SanPlus::from_move(chess.clone(), &m).to_string();
-                    let uci = uci_for_move(&m);
-                    positions
-                        .entry(key)
-                        .or_default()
-                        .add_move(san, uci, entry.result);
+                let position_key = position_index_key(&chess);
+                if let Some(key) = candidate_by_key.get(&position_key) {
+                    let (san, uci) =
+                        if let Some(cached) = move_name_cache.get(&(position_key, byte)) {
+                            cached.value().clone()
+                        } else {
+                            let decoded = (
+                                SanPlus::from_move(chess.clone(), &m).to_string(),
+                                uci_for_move(&m),
+                            );
+                            move_name_cache.insert((position_key, byte), decoded.clone());
+                            decoded
+                        };
+                    matched_positions.entry(key.clone()).or_default().add_move(
+                        san,
+                        uci,
+                        entry.result,
+                    );
                 }
 
                 chess.play_unchecked(&m);
             }
+        });
+
+        if cancel_flag.load(Ordering::Relaxed) {
+            return Err(Error::SearchStopped);
         }
 
+        positions = matched_positions.into_iter().collect();
+
+        emit_opening_health_progress(
+            app,
+            request_id,
+            90.0,
+            games_scanned_offset + sample_games as i32,
+            positions.len() as i32,
+            reference_phase,
+            false,
+        )?;
+
+        return Ok(positions);
+    }
+
+    if index.has_exact_position_index() {
+        let position_keys = candidate_keys
+            .iter()
+            .filter_map(|key| {
+                let chess = chess_from_fen_key(key).ok()?;
+                Some((position_index_key(&chess), key.clone(), chess))
+            })
+            .collect::<Vec<_>>();
+        let total_positions = position_keys.len().max(1);
+
+        for (index_position, (position_key, key, chess)) in position_keys.into_iter().enumerate() {
+            if cancel_flag.load(Ordering::Relaxed) {
+                return Err(Error::SearchStopped);
+            }
+            wait_if_database_search_paused(state, request_id, cancel_flag)?;
+
+            if index_position % 64 == 0 {
+                let progress =
+                    45.0 + ((index_position as f32 / total_positions as f32) * 45.0).min(45.0);
+                emit_opening_health_progress(
+                    app,
+                    request_id,
+                    progress,
+                    games_scanned_offset,
+                    index_position as i32,
+                    "Checking strong games",
+                    false,
+                )?;
+            }
+
+            let mut move_name_cache: HashMap<u8, (String, String)> = HashMap::new();
+            let (_, occurrences) = index.sampled_position_occurrences(
+                position_key,
+                OPENING_HEALTH_REFERENCE_OCCURRENCE_SAMPLE_LIMIT,
+            );
+            for occurrence in occurrences {
+                if occurrence.ply as usize >= max_plies {
+                    continue;
+                }
+
+                let Some(next_byte) = occurrence.next_move else {
+                    continue;
+                };
+
+                let Some(entry) = index.get_entry_ref(occurrence.game_index) else {
+                    continue;
+                };
+
+                let (san, uci) = if let Some(cached) = move_name_cache.get(&next_byte) {
+                    cached.clone()
+                } else {
+                    let Some(m) = decode_move(next_byte, &chess) else {
+                        continue;
+                    };
+                    let decoded = (
+                        SanPlus::from_move(chess.clone(), &m).to_string(),
+                        uci_for_move(&m),
+                    );
+                    move_name_cache.insert(next_byte, decoded.clone());
+                    decoded
+                };
+                positions
+                    .entry(key.clone())
+                    .or_default()
+                    .add_move(san, uci, entry.result);
+            }
+        }
+
+        emit_opening_health_progress(
+            app,
+            request_id,
+            90.0,
+            games_scanned_offset,
+            total_positions as i32,
+            "Checking strong games",
+            false,
+        )?;
+
+        return Ok(positions);
+    }
+
+    if !index.has_board_turn_position_index() {
         return Ok(positions);
     }
 
     let position_keys = candidate_keys
         .iter()
-        .filter_map(|key| position_index_key_from_fen_key(key))
-        .collect::<HashSet<_>>();
+        .filter_map(|key| legacy_position_index_key_from_fen_key(key))
+        .collect::<HashSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let total_positions = position_keys.len().max(1);
 
-    for position_key in position_keys {
-        for occurrence in index.position_occurrences(position_key) {
+    for (index_position, position_key) in position_keys.into_iter().enumerate() {
+        if cancel_flag.load(Ordering::Relaxed) {
+            return Err(Error::SearchStopped);
+        }
+        wait_if_database_search_paused(state, request_id, cancel_flag)?;
+
+        if index_position % 64 == 0 {
+            let progress =
+                45.0 + ((index_position as f32 / total_positions as f32) * 45.0).min(45.0);
+            emit_opening_health_progress(
+                app,
+                request_id,
+                progress,
+                games_scanned_offset,
+                index_position as i32,
+                "Checking strong games",
+                false,
+            )?;
+        }
+
+        let (_, occurrences) = index.sampled_position_occurrences(
+            position_key,
+            OPENING_HEALTH_REFERENCE_OCCURRENCE_SAMPLE_LIMIT,
+        );
+        for occurrence in occurrences {
             if occurrence.ply as usize >= max_plies {
                 continue;
             }
@@ -754,6 +1188,16 @@ fn collect_reference_positions(
             }
         }
     }
+
+    emit_opening_health_progress(
+        app,
+        request_id,
+        90.0,
+        games_scanned_offset,
+        total_positions as i32,
+        "Checking strong games",
+        false,
+    )?;
 
     Ok(positions)
 }
@@ -792,11 +1236,66 @@ fn sorted_reference_moves(
     moves
 }
 
-fn normalized_ratio(value: f64) -> f64 {
-    if value > 1.0 {
-        (value / 100.0).clamp(0.0, 1.0)
-    } else {
-        value.clamp(0.0, 1.0)
+fn top_player_move(bucket: &PlayerPositionBucket) -> Option<&PlayerMoveBucket> {
+    bucket.moves.values().max_by(|a, b| {
+        let a_score = score_for_side(a.white, a.draw, a.black, bucket.side_to_move);
+        let b_score = score_for_side(b.white, b.draw, b.black, bucket.side_to_move);
+
+        a.games
+            .cmp(&b.games)
+            .then_with(|| b_score.total_cmp(&a_score))
+            .then_with(|| b.san.cmp(&a.san))
+    })
+}
+
+fn classify_opening_health(
+    player_position_games: i32,
+    reference_games: i32,
+    reference_move_rank: Option<i32>,
+    player_score: f64,
+    reference_score: Option<f64>,
+    min_player_games: i32,
+    min_reference_games: i32,
+    top_reference_moves: i32,
+) -> Option<RepertoireGapClassification> {
+    if player_position_games < min_player_games || reference_games < min_reference_games {
+        return Some(RepertoireGapClassification::LowConfidence);
+    }
+
+    let in_top_reference_moves = reference_move_rank
+        .map(|rank| rank <= top_reference_moves)
+        .unwrap_or(false);
+
+    if !in_top_reference_moves {
+        return Some(RepertoireGapClassification::RepertoireGap);
+    }
+
+    let score_gap = reference_score
+        .map(|reference_score| reference_score - player_score)
+        .unwrap_or(0.0);
+
+    if score_gap >= OPENING_HEALTH_SCORE_GAP && player_score <= OPENING_HEALTH_POOR_SCORE {
+        return Some(RepertoireGapClassification::PreparedUnderperforming);
+    }
+
+    None
+}
+
+fn opening_health_severity(
+    classification: RepertoireGapClassification,
+    player_position_games: i32,
+    popularity_gap: f64,
+    score_gap: f64,
+) -> f64 {
+    let sample_weight = (player_position_games as f64).ln_1p() * 4.0;
+    match classification {
+        RepertoireGapClassification::RepertoireGap => {
+            (45.0 + popularity_gap * 45.0 + sample_weight).clamp(0.0, 100.0)
+        }
+        RepertoireGapClassification::PreparedUnderperforming => {
+            (40.0 + score_gap.max(0.0) * 120.0 + sample_weight).clamp(0.0, 100.0)
+        }
+        RepertoireGapClassification::LowConfidence => (10.0 + sample_weight).clamp(0.0, 35.0),
     }
 }
 
@@ -1081,11 +1580,15 @@ fn begin_cancelable_db_request(
     if let Some((_, old_flag)) = state.db_cancel_flags.remove(request_id) {
         old_flag.store(true, Ordering::Relaxed);
     }
+    state.db_pause_flags.remove(request_id);
 
     let flag = Arc::new(AtomicBool::new(false));
     state
         .db_cancel_flags
         .insert(request_id.to_string(), flag.clone());
+    state
+        .db_pause_flags
+        .insert(request_id.to_string(), Arc::new(AtomicBool::new(false)));
     flag
 }
 
@@ -1101,6 +1604,7 @@ fn finish_cancelable_db_request(
 
     if should_remove {
         state.db_cancel_flags.remove(request_id);
+        state.db_pause_flags.remove(request_id);
     }
 }
 
@@ -1109,6 +1613,37 @@ fn finish_cancelable_db_request(
 pub fn cancel_database_search(id: String, state: tauri::State<'_, AppState>) {
     if let Some((_, flag)) = state.db_cancel_flags.remove(&id) {
         flag.store(true, Ordering::Relaxed);
+    }
+    state.db_pause_flags.remove(&id);
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn set_database_search_paused(id: String, paused: bool, state: tauri::State<'_, AppState>) {
+    if let Some(flag) = state.db_pause_flags.get(&id) {
+        flag.store(paused, Ordering::Relaxed);
+    }
+}
+
+fn wait_if_database_search_paused(
+    state: &tauri::State<'_, AppState>,
+    request_id: &str,
+    cancel_flag: &AtomicBool,
+) -> Result<(), Error> {
+    loop {
+        if cancel_flag.load(Ordering::Relaxed) {
+            return Err(Error::SearchStopped);
+        }
+
+        let paused = state
+            .db_pause_flags
+            .get(request_id)
+            .is_some_and(|flag| flag.load(Ordering::Relaxed));
+        if !paused {
+            return Ok(());
+        }
+
+        thread::sleep(Duration::from_millis(150));
     }
 }
 
@@ -1121,7 +1656,7 @@ fn search_position_from_occurrences(
 ) -> Result<(Vec<PositionStats>, Vec<i32>), Error> {
     const MAX_SAMPLES: usize = 500;
 
-    let occurrences = index.position_occurrences(position_index_key(&exact.position));
+    let occurrences = index.position_occurrences(indexed_position_key(index, &exact.position));
     let mut openings: HashMap<String, PositionStats> = HashMap::new();
     let mut top_games = BinaryHeap::with_capacity(MAX_SAMPLES + 1);
     let mut seen_games = HashSet::new();
@@ -1244,7 +1779,7 @@ fn plan_explorer_from_occurrences(
     wanted_result: Option<GameResult>,
     cancel_flag: &AtomicBool,
 ) -> Result<(i32, i32, Vec<PlanExplorerPiece>), Error> {
-    let occurrences = index.position_occurrences(position_index_key(&exact.position));
+    let occurrences = index.position_occurrences(indexed_position_key(index, &exact.position));
     let mut lines: HashMap<PlanLineKey, LineStats> = HashMap::new();
     let mut seen_games = HashSet::new();
     let mut total_games = 0i32;
@@ -1297,8 +1832,163 @@ fn plan_explorer_from_occurrences(
 
 #[tauri::command]
 #[specta::specta]
+pub async fn get_opening_health_player_positions(
+    request: OpeningHealthPlayerPositionsRequest,
+    app: tauri::AppHandle,
+    state: tauri::State<'_, AppState>,
+) -> Result<OpeningHealthPlayerPositionsReport, Error> {
+    let max_plies = request.max_plies.clamp(1, 80) as usize;
+    let color_filter = request.color.to_ascii_lowercase();
+    let request_id = if request.request_id.is_empty() {
+        "opening-health".to_string()
+    } else {
+        request.request_id.clone()
+    };
+    let cancel_flag = begin_cancelable_db_request(&state, &request_id);
+
+    info!(
+        "Collecting opening health player rows for player {:?} using {:?}",
+        request.player_id, request.player_db
+    );
+
+    emit_opening_health_progress(
+        &app,
+        &request_id,
+        0.0,
+        0,
+        0,
+        "Waiting for database worker",
+        false,
+    )?;
+
+    let permit = state.new_request.acquire().await.unwrap();
+
+    let result = (|| -> Result<OpeningHealthPlayerPositionsReport, Error> {
+        emit_opening_health_progress(&app, &request_id, 1.0, 0, 0, "Opening databases", false)?;
+
+        if !MmapSearchIndex::is_valid(get_index_path(&request.player_db)) {
+            emit_opening_health_progress(
+                &app,
+                &request_id,
+                1.0,
+                0,
+                0,
+                "Building personal search index",
+                false,
+            )?;
+        }
+
+        let player_index = open_mmap_search_index(&request.player_db, &state)?;
+        let (player_positions, player_games) = collect_player_positions(
+            &player_index,
+            request.player_id,
+            &color_filter,
+            max_plies,
+            &cancel_flag,
+            &app,
+            &state,
+            &request_id,
+        )?;
+
+        emit_opening_health_progress(
+            &app,
+            &request_id,
+            46.0,
+            player_games,
+            player_positions.len() as i32,
+            "Preparing player positions",
+            false,
+        )?;
+
+        let mut positions = Vec::with_capacity(player_positions.len());
+
+        for player_bucket in player_positions.into_values() {
+            if cancel_flag.load(Ordering::Relaxed) {
+                return Err(Error::SearchStopped);
+            }
+            wait_if_database_search_paused(&state, &request_id, &cancel_flag)?;
+
+            let player_position_games = player_bucket.total_games();
+            let Some(player_move) = top_player_move(&player_bucket) else {
+                continue;
+            };
+
+            if player_move.san == "*" {
+                continue;
+            }
+
+            positions.push(OpeningHealthPlayerPosition {
+                fen: player_bucket.fen.clone(),
+                normalized_fen: player_bucket.normalized_fen.clone(),
+                ply: player_bucket.ply,
+                side_to_move: color_name(player_bucket.side_to_move).to_string(),
+                move_sequence: player_bucket.move_sequence.clone(),
+                player_move_san: player_move.san.clone(),
+                player_move_uci: player_move.uci.clone(),
+                player_games: player_move.games,
+                player_position_games,
+                player_white: player_move.white,
+                player_draw: player_move.draw,
+                player_black: player_move.black,
+                player_score: score_for_side(
+                    player_move.white,
+                    player_move.draw,
+                    player_move.black,
+                    player_bucket.side_to_move,
+                ),
+                last_played: player_move.last_played.clone(),
+                sample_game_ids: player_move.sample_game_ids.clone(),
+            });
+        }
+
+        positions.sort_by(|a, b| {
+            b.player_position_games
+                .cmp(&a.player_position_games)
+                .then_with(|| a.player_score.total_cmp(&b.player_score))
+                .then_with(|| a.ply.cmp(&b.ply))
+                .then_with(|| a.player_move_san.cmp(&b.player_move_san))
+        });
+        positions.truncate(OPENING_HEALTH_MAX_PLAYER_EXPORT_POSITIONS);
+
+        Ok(OpeningHealthPlayerPositionsReport {
+            player_games,
+            candidate_positions: positions.len() as i32,
+            positions,
+        })
+    })();
+
+    drop(permit);
+    finish_cancelable_db_request(&state, &request_id, &cancel_flag);
+
+    match result {
+        Ok(report) => {
+            emit_opening_health_progress(
+                &app,
+                &request_id,
+                50.0,
+                report.player_games,
+                report.candidate_positions,
+                "Player positions ready",
+                false,
+            )?;
+            Ok(report)
+        }
+        Err(error) => {
+            let phase = match &error {
+                Error::SearchStopped => "Cancelled",
+                _ => "Error",
+            };
+            let _ = emit_opening_health_progress(&app, &request_id, 100.0, 0, 0, phase, true);
+            Err(error)
+        }
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
 pub async fn find_repertoire_gaps(
     request: RepertoireGapRequest,
+    app: tauri::AppHandle,
     state: tauri::State<'_, AppState>,
 ) -> Result<RepertoireGapReport, Error> {
     let start = Instant::now();
@@ -1306,104 +1996,205 @@ pub async fn find_repertoire_gaps(
     let min_player_games = request.min_player_games.max(1);
     let min_reference_games = request.min_reference_games.max(1);
     let top_reference_moves = request.top_reference_moves.max(1) as usize;
-    let max_player_score = normalized_ratio(request.max_player_score);
-    let min_reference_move_share = normalized_ratio(request.min_reference_move_share);
+    let top_reference_moves_i32 = top_reference_moves as i32;
     let color_filter = request.color.to_ascii_lowercase();
+    let request_id = if request.request_id.is_empty() {
+        "opening-health".to_string()
+    } else {
+        request.request_id.clone()
+    };
+    let cancel_flag = begin_cancelable_db_request(&state, &request_id);
 
     info!(
-        "Finding repertoire gaps for player {} using {:?} against {:?}",
+        "Finding opening health rows for player {:?} using {:?} against {:?}",
         request.player_id, request.player_db, request.reference_db
     );
 
-    let player_index = open_mmap_search_index(&request.player_db, &state)?;
-    let reference_index = open_mmap_search_index(&request.reference_db, &state)?;
+    emit_opening_health_progress(
+        &app,
+        &request_id,
+        0.0,
+        0,
+        0,
+        "Waiting for database worker",
+        false,
+    )?;
 
-    let (player_positions, player_games) =
-        collect_player_positions(&player_index, request.player_id, &color_filter, max_plies)?;
+    let permit = state.new_request.acquire().await.unwrap();
 
-    let candidate_keys = player_positions
-        .iter()
-        .filter_map(|(key, bucket)| {
-            let has_candidate_move = bucket.moves.values().any(|mv| mv.games >= min_player_games);
-            (bucket.total_games() >= min_player_games && has_candidate_move).then(|| key.clone())
-        })
-        .collect::<HashSet<_>>();
+    let result = (|| -> Result<RepertoireGapReport, Error> {
+        emit_opening_health_progress(&app, &request_id, 1.0, 0, 0, "Opening databases", false)?;
 
-    let reference_positions =
-        collect_reference_positions(&reference_index, &candidate_keys, max_plies)?;
-
-    let mut gaps = Vec::new();
-
-    for (key, player_bucket) in player_positions {
-        if !candidate_keys.contains(&key) {
-            continue;
+        if !MmapSearchIndex::is_valid(get_index_path(&request.player_db)) {
+            emit_opening_health_progress(
+                &app,
+                &request_id,
+                1.0,
+                0,
+                0,
+                "Building personal search index",
+                false,
+            )?;
         }
 
-        let Some(reference_bucket) = reference_positions.get(&key) else {
-            continue;
-        };
+        let player_index = open_mmap_search_index(&request.player_db, &state)?;
 
-        let reference_games = reference_bucket.total_games();
-        if reference_games < min_reference_games {
-            continue;
+        if !MmapSearchIndex::is_valid(get_index_path(&request.reference_db)) {
+            emit_opening_health_progress(
+                &app,
+                &request_id,
+                1.0,
+                0,
+                0,
+                "Building strong-games index",
+                false,
+            )?;
         }
 
-        let reference_moves = sorted_reference_moves(reference_bucket, player_bucket.side_to_move);
-        if reference_moves.is_empty() || reference_moves[0].share < min_reference_move_share {
-            continue;
-        }
+        let reference_index = open_mmap_search_index(&request.reference_db, &state)?;
 
-        for player_move in player_bucket.moves.values() {
-            if player_move.games < min_player_games || player_move.san == "*" {
+        let (player_positions, player_games) = collect_player_positions(
+            &player_index,
+            request.player_id,
+            &color_filter,
+            max_plies,
+            &cancel_flag,
+            &app,
+            &state,
+            &request_id,
+        )?;
+
+        let (player_positions, collected_player_positions) = prioritize_opening_health_positions(
+            player_positions,
+            min_player_games,
+            OPENING_HEALTH_MAX_REFERENCE_CANDIDATES,
+        );
+        let candidate_keys = player_positions.keys().cloned().collect::<HashSet<_>>();
+
+        info!(
+            "Opening health selected {} candidate positions from {} personal positions",
+            candidate_keys.len(),
+            collected_player_positions
+        );
+
+        let reference_positions = collect_reference_positions(
+            &reference_index,
+            &candidate_keys,
+            max_plies,
+            &cancel_flag,
+            &app,
+            &state,
+            &request_id,
+            player_games,
+        )?;
+
+        emit_opening_health_progress(
+            &app,
+            &request_id,
+            92.0,
+            player_games,
+            candidate_keys.len() as i32,
+            "Classifying positions",
+            false,
+        )?;
+
+        let mut gaps = Vec::new();
+
+        for (key, player_bucket) in player_positions {
+            if cancel_flag.load(Ordering::Relaxed) {
+                return Err(Error::SearchStopped);
+            }
+            wait_if_database_search_paused(&state, &request_id, &cancel_flag)?;
+
+            let player_position_games = player_bucket.total_games();
+            let Some(player_move) = top_player_move(&player_bucket) else {
+                continue;
+            };
+
+            if player_move.san == "*" {
                 continue;
             }
 
+            let reference_moves = reference_positions
+                .get(&key)
+                .map(|bucket| sorted_reference_moves(bucket, player_bucket.side_to_move))
+                .unwrap_or_default();
+            let reference_games = reference_positions
+                .get(&key)
+                .map(ReferencePositionBucket::total_games)
+                .unwrap_or(0);
+            let reference_move_index = reference_moves
+                .iter()
+                .position(|mv| mv.uci == player_move.uci);
+            let reference_move_rank = reference_move_index.map(|index| index as i32 + 1);
+            let reference_move_share = reference_move_index
+                .and_then(|index| reference_moves.get(index))
+                .map(|mv| mv.share)
+                .unwrap_or(0.0);
+            let top_reference_move_score = reference_moves.first().map(|mv| mv.score_for_side);
+            let reference_score = reference_move_index
+                .and_then(|index| reference_moves.get(index))
+                .map(|mv| mv.score_for_side)
+                .or(top_reference_move_score);
             let player_score = score_for_side(
                 player_move.white,
                 player_move.draw,
                 player_move.black,
                 player_bucket.side_to_move,
             );
-            if player_score > max_player_score {
+
+            let Some(classification) = classify_opening_health(
+                player_position_games,
+                reference_games,
+                reference_move_rank,
+                player_score,
+                reference_score,
+                min_player_games,
+                min_reference_games,
+                top_reference_moves_i32,
+            ) else {
+                continue;
+            };
+
+            if classification == RepertoireGapClassification::LowConfidence {
                 continue;
             }
 
-            let reference_move_index = reference_moves
-                .iter()
-                .position(|mv| mv.uci == player_move.uci);
-            let deviates_from_reference = reference_move_index
-                .map(|index| index >= top_reference_moves)
-                .unwrap_or(true);
-
-            if !deviates_from_reference {
-                continue;
-            }
-
-            let reference_move_share = reference_move_index
-                .and_then(|index| reference_moves.get(index))
-                .map(|mv| mv.share)
-                .unwrap_or(0.0);
-            let best_reference_share = reference_moves[0].share;
+            let best_reference_share = reference_moves.first().map(|mv| mv.share).unwrap_or(0.0);
             let popularity_gap = (best_reference_share - reference_move_share).max(0.0);
-            let result_gap = (max_player_score - player_score).max(0.0);
-            let sample_weight = (player_move.games as f64).ln_1p() * 4.0;
-            let severity =
-                ((result_gap * 100.0) + (popularity_gap * 55.0) + sample_weight).clamp(0.0, 100.0);
+            let score_gap = reference_score
+                .map(|reference_score| (reference_score - player_score).max(0.0))
+                .unwrap_or(0.0);
+            let severity = opening_health_severity(
+                classification,
+                player_position_games,
+                popularity_gap,
+                score_gap,
+            );
 
             gaps.push(RepertoireGap {
                 fen: player_bucket.fen.clone(),
+                normalized_fen: player_bucket.normalized_fen.clone(),
                 ply: player_bucket.ply,
                 side_to_move: color_name(player_bucket.side_to_move).to_string(),
+                move_sequence: player_bucket.move_sequence.clone(),
                 player_move_san: player_move.san.clone(),
                 player_move_uci: player_move.uci.clone(),
                 player_games: player_move.games,
+                player_position_games,
                 player_white: player_move.white,
                 player_draw: player_move.draw,
                 player_black: player_move.black,
                 player_score,
+                last_played: player_move.last_played.clone(),
                 reference_games,
-                reference_move_rank: reference_move_index.map(|index| index as i32 + 1),
+                reference_move_rank,
                 reference_move_share,
+                reference_score,
+                top_reference_move_score,
+                classification,
+                popularity_gap,
+                score_gap,
                 severity,
                 sample_game_ids: player_move.sample_game_ids.clone(),
                 top_reference_moves: reference_moves
@@ -1413,28 +2204,55 @@ pub async fn find_repertoire_gaps(
                     .collect(),
             });
         }
+
+        gaps.sort_by(|a, b| {
+            b.severity
+                .total_cmp(&a.severity)
+                .then_with(|| b.player_position_games.cmp(&a.player_position_games))
+                .then_with(|| a.ply.cmp(&b.ply))
+        });
+        gaps.truncate(OPENING_HEALTH_MAX_REPORT_ROWS);
+
+        info!(
+            "Finished opening health scan with {} rows from {} candidate positions in {:?}",
+            gaps.len(),
+            candidate_keys.len(),
+            start.elapsed()
+        );
+
+        Ok(RepertoireGapReport {
+            player_games,
+            candidate_positions: candidate_keys.len() as i32,
+            reference_positions: reference_positions.len() as i32,
+            gaps,
+        })
+    })();
+
+    drop(permit);
+    finish_cancelable_db_request(&state, &request_id, &cancel_flag);
+
+    match result {
+        Ok(report) => {
+            emit_opening_health_progress(
+                &app,
+                &request_id,
+                99.0,
+                report.player_games,
+                report.candidate_positions,
+                "Finalizing report",
+                false,
+            )?;
+            Ok(report)
+        }
+        Err(error) => {
+            let phase = match &error {
+                Error::SearchStopped => "Cancelled",
+                _ => "Error",
+            };
+            let _ = emit_opening_health_progress(&app, &request_id, 100.0, 0, 0, phase, true);
+            Err(error)
+        }
     }
-
-    gaps.sort_by(|a, b| {
-        b.severity
-            .total_cmp(&a.severity)
-            .then_with(|| b.player_games.cmp(&a.player_games))
-            .then_with(|| a.ply.cmp(&b.ply))
-    });
-
-    info!(
-        "Finished finding {} repertoire gaps from {} candidate positions in {:?}",
-        gaps.len(),
-        candidate_keys.len(),
-        start.elapsed()
-    );
-
-    Ok(RepertoireGapReport {
-        player_games,
-        candidate_positions: candidate_keys.len() as i32,
-        reference_positions: reference_positions.len() as i32,
-        gaps,
-    })
 }
 
 #[tauri::command]
@@ -1988,6 +2806,115 @@ mod tests {
         assert_eq!(
             fen_ply("rnbqkbnr/ppp1pppp/8/3p4/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 2"),
             2
+        );
+    }
+
+    #[test]
+    fn opening_health_fen_key_ignores_clocks_and_preserves_turn() {
+        let white_to_move = starting_position(&Some(
+            "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+        ))
+        .unwrap();
+        let same_without_clocks = starting_position(&Some(
+            "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 7 44",
+        ))
+        .unwrap();
+        let black_to_move = starting_position(&Some(
+            "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2",
+        ))
+        .unwrap();
+
+        assert_eq!(fen_key(&white_to_move), fen_key(&same_without_clocks));
+        assert_ne!(fen_key(&white_to_move), fen_key(&black_to_move));
+    }
+
+    #[test]
+    fn opening_health_reference_moves_aggregate_and_sort_by_popularity() {
+        let mut bucket = ReferencePositionBucket::default();
+        bucket.add_move("e4".to_string(), "e2e4".to_string(), GameResult::WhiteWin);
+        bucket.add_move("d4".to_string(), "d2d4".to_string(), GameResult::BlackWin);
+        bucket.add_move("e4".to_string(), "e2e4".to_string(), GameResult::Draw);
+
+        let moves = sorted_reference_moves(&bucket, Color::White);
+
+        assert_eq!(moves[0].uci, "e2e4");
+        assert_eq!(moves[0].games, 2);
+        assert!((moves[0].share - 2.0 / 3.0).abs() < f64::EPSILON);
+        assert!((moves[0].score_for_side - 0.75).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn opening_health_personal_moves_aggregate_counts_and_score() {
+        let mut bucket = PlayerPositionBucket {
+            fen: "start".to_string(),
+            normalized_fen: "start w".to_string(),
+            ply: 0,
+            side_to_move: Color::White,
+            move_sequence: String::new(),
+            moves: HashMap::new(),
+        };
+
+        bucket.add_move(
+            "e4".to_string(),
+            "e2e4".to_string(),
+            GameResult::WhiteWin,
+            1,
+            Some("2024.01.01"),
+        );
+        bucket.add_move(
+            "e4".to_string(),
+            "e2e4".to_string(),
+            GameResult::Draw,
+            2,
+            Some("2024.02.01"),
+        );
+        bucket.add_move(
+            "d4".to_string(),
+            "d2d4".to_string(),
+            GameResult::BlackWin,
+            3,
+            None,
+        );
+
+        let top_move = top_player_move(&bucket).unwrap();
+        let top_score = score_for_side(top_move.white, top_move.draw, top_move.black, Color::White);
+
+        assert_eq!(bucket.total_games(), 3);
+        assert_eq!(top_move.uci, "e2e4");
+        assert_eq!(top_move.games, 2);
+        assert_eq!(top_move.last_played.as_deref(), Some("2024.02.01"));
+        assert!((top_score - 0.75).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn opening_health_classifies_repertoire_gap() {
+        let classification = classify_opening_health(5, 40, Some(4), 0.55, Some(0.55), 3, 20, 3);
+
+        assert_eq!(
+            classification,
+            Some(RepertoireGapClassification::RepertoireGap)
+        );
+    }
+
+    #[test]
+    fn opening_health_classifies_prepared_underperforming() {
+        let classification = classify_opening_health(5, 40, Some(2), 0.30, Some(0.55), 3, 20, 3);
+
+        assert_eq!(
+            classification,
+            Some(RepertoireGapClassification::PreparedUnderperforming)
+        );
+    }
+
+    #[test]
+    fn opening_health_classifies_low_confidence() {
+        assert_eq!(
+            classify_opening_health(2, 40, Some(1), 0.80, Some(0.55), 3, 20, 3),
+            Some(RepertoireGapClassification::LowConfidence)
+        );
+        assert_eq!(
+            classify_opening_health(5, 12, Some(1), 0.80, Some(0.55), 3, 20, 3),
+            Some(RepertoireGapClassification::LowConfidence)
         );
     }
 

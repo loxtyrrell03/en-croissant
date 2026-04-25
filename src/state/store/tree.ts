@@ -61,6 +61,11 @@ export interface TreeStoreState extends TreeState {
 
     setAnnotation: (payload: Annotation) => void;
     setComment: (payload: string) => void;
+    setCurrentNodeMetadata: (payload: {
+        annotations?: Annotation[];
+        comment?: string;
+        shapes?: DrawShape[];
+    }) => void;
     setHeaders: (payload: GameHeaders) => void;
     setResult: (payload: Outcome) => void;
     setShapes: (shapes: DrawShape[]) => void;
@@ -435,6 +440,17 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
                     const node = getNodeAtPath(state.root, state.position);
                     if (node) {
                         node.comment = payload;
+                    }
+                }),
+            ),
+        setCurrentNodeMetadata: (payload) =>
+            set(
+                produce((state) => {
+                    const node = getNodeAtPath(state.root, state.position);
+                    if (node) {
+                        node.annotations = payload.annotations ?? [];
+                        node.comment = payload.comment ?? "";
+                        node.shapes = payload.shapes ?? [];
                     }
                 }),
             ),

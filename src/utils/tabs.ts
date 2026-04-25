@@ -53,12 +53,17 @@ const gameOriginSchema = z.discriminatedUnion("kind", [
         database: z.string(),
         gameId: z.number(),
     }),
+    z.object({
+        kind: z.literal("opening_review"),
+        path: z.string(),
+        name: z.string(),
+    }),
 ]);
 
 export const tabSchema = z.object({
     name: z.string(),
     value: z.string(),
-    type: z.enum(["new", "play", "analysis", "puzzles"]),
+    type: z.enum(["new", "play", "analysis", "puzzles", "opening-review"]),
     gameOrigin: gameOriginSchema,
 });
 
@@ -81,9 +86,17 @@ export function getTabGameNumber(tab?: Tab | null): number {
     return 0;
 }
 
+export function getTabPracticeKey(tab?: Tab | null): string {
+    if (!tab) return "";
+    if (tab.gameOrigin.kind === "opening_review") {
+        return tab.gameOrigin.path;
+    }
+    return getTabFile(tab)?.path || "";
+}
+
 export function isPersistentGameOrigin(tab?: Tab | null): boolean {
     if (!tab) return false;
-    return tab.gameOrigin.kind !== "none";
+    return tab.gameOrigin.kind !== "none" && tab.gameOrigin.kind !== "opening_review";
 }
 
 export function genID() {

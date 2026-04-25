@@ -148,6 +148,17 @@ export type LichessAccount = {
   followsYou: boolean;
 };
 
+export function getLichessDownloadGameCount(account: LichessAccount) {
+  return (
+    (account.perfs?.ultraBullet?.games ?? 0) +
+    (account.perfs?.bullet?.games ?? 0) +
+    (account.perfs?.blitz?.games ?? 0) +
+    (account.perfs?.rapid?.games ?? 0) +
+    (account.perfs?.classical?.games ?? 0) +
+    (account.perfs?.correspondence?.games ?? 0)
+  );
+}
+
 type PositionGames = {
   uci: string;
   id: string;
@@ -209,9 +220,11 @@ export type PositionData = {
 export async function getLichessAccount({
   token,
   username,
+  silent = false,
 }: {
   token?: string;
   username?: string;
+  silent?: boolean;
 }): Promise<LichessAccount | null> {
   let response: Response;
   if (token) {
@@ -225,12 +238,14 @@ export async function getLichessAccount({
   }
   if (!response.ok) {
     error(`Failed to fetch Lichess account: ${response.status} ${response.url}`);
-    notifications.show({
-      title: "Failed to fetch Lichess account",
-      message: `Could not find account "${username}" on lichess.org`,
-      color: "red",
-      icon: <IconX />,
-    });
+    if (!silent) {
+      notifications.show({
+        title: "Failed to fetch Lichess account",
+        message: `Could not find account "${username}" on lichess.org`,
+        color: "red",
+        icon: <IconX />,
+      });
+    }
     return null;
   }
   return response.json();
@@ -252,10 +267,15 @@ export async function getBestMoves(
     }
     pos.play(m);
   }
-  const data = await getCloudEvaluation(
-    makeFen(pos.toSetup()),
-    Number.parseInt(options.extraOptions.find((o) => o.name === "MultiPV")?.value ?? "1"),
-  );
+  let data: LichessCloudData;
+  try {
+    data = await getCloudEvaluation(
+      makeFen(pos.toSetup()),
+      Number.parseInt(options.extraOptions.find((o) => o.name === "MultiPV")?.value ?? "1"),
+    );
+  } catch {
+    return [100, []];
+  }
   return [
     100,
     data.pvs?.map((m, i) => {
@@ -306,6 +326,14 @@ type LichessMate = {
   moves: string;
 };
 
+export type LichessCloudMove = {
+  uci: string;
+  san: string;
+  scoreCpForWhite: number;
+  depth: number;
+  mate: number | null;
+};
+
 async function getCloudEvaluation(fen: string, multipv: number): Promise<LichessCloudData> {
   if (cache.has(`${fen}-${multipv}`)) {
     return cache.get(`${fen}-${multipv}`)!;
@@ -315,9 +343,62 @@ async function getCloudEvaluation(fen: string, multipv: number): Promise<Lichess
   url.searchParams.append("multiPv", multipv.toString());
 
   const response = await fetch(url.toString(), { headers: apiHeaders() });
+  if (response.status === 404) {
+    throw new Error("No Lichess cloud evaluation available.");
+  }
+  if (!response.ok) {
+    throw new Error(`Lichess cloud evaluation failed: ${response.status}`);
+  }
   const data = (await response.json()) as LichessCloudData;
   cache.set(`${fen}-${multipv}`, data);
   return data;
+}
+
+export async function queryLichessCloudMoves(
+  fen: string,
+  multipv: number,
+): Promise<LichessCloudMove[] | null> {
+  const [pos] = positionFromFen(fen);
+  if (!pos) return null;
+
+  let data: LichessCloudData;
+  try {
+    data = await getCloudEvaluation(fen, multipv);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("No Lichess cloud evaluation")) {
+      return null;
+    }
+    throw error;
+  }
+
+  if (!data.pvs?.length) return null;
+
+  const moves: LichessCloudMove[] = [];
+  for (const pv of data.pvs) {
+    const [firstMove] = pv.moves.trim().split(/\s+/);
+    if (!firstMove) continue;
+
+    const move = parseUci(firstMove);
+    if (!move || !pos.isLegal(move)) continue;
+
+    const posCopy = pos.clone();
+    const san = makeSan(posCopy, move);
+    const scoreCpForWhite = "cp" in pv ? pv.cp : mateToCloudCp(pv.mate);
+    moves.push({
+      uci: uciNormalize(posCopy, move),
+      san,
+      scoreCpForWhite,
+      depth: data.depth,
+      mate: "mate" in pv ? pv.mate : null,
+    });
+  }
+
+  return moves.length > 0 ? moves : null;
+}
+
+function mateToCloudCp(mate: number) {
+  const sign = mate >= 0 ? 1 : -1;
+  return sign * (100000 - Math.min(Math.abs(mate), 100) * 1000);
 }
 
 export async function getLichessGames(

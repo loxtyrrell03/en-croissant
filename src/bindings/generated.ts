@@ -342,8 +342,19 @@ async findRepertoireGaps(request: RepertoireGapRequest) : Promise<Result<Reperto
     else return { status: "error", error: e  as any };
 }
 },
+async getOpeningHealthPlayerPositions(request: OpeningHealthPlayerPositionsRequest) : Promise<Result<OpeningHealthPlayerPositionsReport, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_opening_health_player_positions", { request }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async cancelDatabaseSearch(id: string) : Promise<void> {
     await TAURI_INVOKE("cancel_database_search", { id });
+},
+async setDatabaseSearchPaused(id: string, paused: boolean) : Promise<void> {
+    await TAURI_INVOKE("set_database_search_paused", { id, paused });
 },
 async getPlanExplorer(file: string, query: GameQuery, maxPlies: number, requestId: string) : Promise<Result<PlanExplorerData, string>> {
     try {
@@ -534,6 +545,9 @@ export type GoMode = { t: "PlayersTime"; c: PlayersTime } | { t: "Depth"; c: num
 export type MoveAnalysis = { best: BestMoves[]; novelty: boolean; is_sacrifice: boolean }
 export type NormalizedGame = { id: number; fen: string; event: string; event_id: number; site: string; site_id: number; date?: string | null; time?: string | null; round?: string | null; white: string; white_id: number; white_elo?: number | null; black: string; black_id: number; black_elo?: number | null; result: Outcome; time_control?: string | null; eco?: string | null; ply_count?: number | null; moves: string }
 export type OpeningBookConfig = { path: string; maxPly?: bigint }
+export type OpeningHealthPlayerPosition = { fen: string; normalizedFen: string; ply: number; sideToMove: string; moveSequence: string; playerMoveSan: string; playerMoveUci: string; playerGames: number; playerPositionGames: number; playerWhite: number; playerDraw: number; playerBlack: number; playerScore: number; lastPlayed: string | null; sampleGameIds: number[] }
+export type OpeningHealthPlayerPositionsReport = { playerGames: number; candidatePositions: number; positions: OpeningHealthPlayerPosition[] }
+export type OpeningHealthPlayerPositionsRequest = { playerDb: string; playerId: number | null; color: string; maxPlies: number; requestId: string }
 export type OutOpening = { name: string; fen: string }
 export type Outcome = "1-0" | "0-1" | "1/2-1/2" | "*"
 export type PlanExplorerData = { fen: string; total_games: number; sampled_games: number; max_plies: number; pieces: PlanExplorerPiece[] }
@@ -553,10 +567,11 @@ export type Puzzle = { id: number; fen: string; moves: string; rating: number; r
 export type PuzzleDatabaseInfo = { title: string; description: string; puzzleCount: number; storageSize: bigint; path: string }
 export type QueryOptions<SortT> = { skipCount: boolean; page?: number | null; pageSize?: number | null; sort: SortT; direction: SortDirection }
 export type QueryResponse<T> = { data: T; count: number | null }
-export type RepertoireGap = { fen: string; ply: number; sideToMove: string; playerMoveSan: string; playerMoveUci: string; playerGames: number; playerWhite: number; playerDraw: number; playerBlack: number; playerScore: number; referenceGames: number; referenceMoveRank: number | null; referenceMoveShare: number; severity: number; sampleGameIds: number[]; topReferenceMoves: RepertoireGapReferenceMove[] }
+export type RepertoireGap = { fen: string; normalizedFen: string; ply: number; sideToMove: string; moveSequence: string; playerMoveSan: string; playerMoveUci: string; playerGames: number; playerPositionGames: number; playerWhite: number; playerDraw: number; playerBlack: number; playerScore: number; lastPlayed: string | null; referenceGames: number; referenceMoveRank: number | null; referenceMoveShare: number; referenceScore: number | null; topReferenceMoveScore: number | null; classification: RepertoireGapClassification; popularityGap: number; scoreGap: number; severity: number; sampleGameIds: number[]; topReferenceMoves: RepertoireGapReferenceMove[] }
+export type RepertoireGapClassification = "repertoireGap" | "preparedUnderperforming" | "lowConfidence"
 export type RepertoireGapReferenceMove = { san: string; uci: string; games: number; white: number; draw: number; black: number; share: number; scoreForSide: number }
 export type RepertoireGapReport = { playerGames: number; candidatePositions: number; referencePositions: number; gaps: RepertoireGap[] }
-export type RepertoireGapRequest = { playerDb: string; referenceDb: string; playerId: number; color: string; maxPlies: number; minPlayerGames: number; minReferenceGames: number; topReferenceMoves: number; maxPlayerScore: number; minReferenceMoveShare: number }
+export type RepertoireGapRequest = { playerDb: string; referenceDb: string; playerId: number | null; color: string; maxPlies: number; minPlayerGames: number; minReferenceGames: number; topReferenceMoves: number; requestId: string }
 export type Score = { value: ScoreValue; 
 /**
  * The probability of each result (win, draw, loss).

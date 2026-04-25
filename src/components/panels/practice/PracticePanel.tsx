@@ -59,7 +59,7 @@ import {
   practiceStateAtom,
   practiceAutoDifficultyAtom,
 } from "@/state/atoms";
-import { getTabFile, getTabGameNumber } from "@/utils/tabs";
+import { getTabFile, getTabGameNumber, getTabPracticeKey } from "@/utils/tabs";
 import { findFen, getNodeAtPath } from "@/utils/treeReducer";
 import RepertoireInfo from "./RepertoireInfo";
 
@@ -70,6 +70,7 @@ function PracticePanel() {
   const root = useStore(store, (s) => s.root);
   const headers = useStore(store, (s) => s.headers);
   const goToMove = useStore(store, (s) => s.goToMove);
+  const setHeaders = useStore(store, (s) => s.setHeaders);
   const setPracticePath = useStore(store, (s) => s.setPracticePath);
   const currentFen = useStore(store, (s) => s.currentNode().fen);
 
@@ -79,7 +80,7 @@ function PracticePanel() {
 
   const [deck, setDeck] = useAtom(
     deckAtomFamily({
-      file: tabFile?.path || "",
+      file: getTabPracticeKey(currentTab),
       game: getTabGameNumber(currentTab),
     }),
   );
@@ -159,8 +160,18 @@ function PracticePanel() {
         return;
       }
       const path = findFen(c.fen, root);
-      goToMove(path);
-      setPracticePath(path);
+      if (path.length === 0 && root.fen !== c.fen) {
+        setHeaders({
+          ...headers,
+          fen: c.fen,
+          orientation: c.sideToMove ?? headers.orientation ?? "white",
+          result: "*",
+        });
+        setPracticePath([]);
+      } else {
+        goToMove(path);
+        setPracticePath(path);
+      }
       setInvisible(true);
       setShowComments(false);
       setEvalOpen(false);
@@ -171,8 +182,10 @@ function PracticePanel() {
       deck.positions,
       sessionStats.mode,
       sessionStats.remainingPositions,
+      headers,
       root,
       goToMove,
+      setHeaders,
       setPracticePath,
       setInvisible,
       setShowComments,

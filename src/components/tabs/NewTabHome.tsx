@@ -1,9 +1,12 @@
 import {
+  ActionIcon,
   Badge,
   Box,
   Button,
   Card,
   Group,
+  Modal,
+  Paper,
   ScrollArea,
   SimpleGrid,
   Stack,
@@ -35,8 +38,10 @@ import {
   IconPuzzle,
   IconTarget,
   IconTargetArrow,
+  IconTrash,
 } from "@tabler/icons-react";
-import { useNavigate } from "@tanstack/react-router";
+import { notifications } from "@mantine/notifications";
+import { useLoaderData, useNavigate } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { useTranslation } from "react-i18next";
@@ -44,6 +49,11 @@ import { commands } from "@/bindings";
 import { getStats } from "@/components/files/opening";
 import Chessboard from "../icons/Chessboard";
 import { FileIcon } from "@/components/files/FileIcon";
+import {
+  deleteOpeningReviewDeck,
+  listOpeningReviewDecks,
+  type OpeningReviewDeckSummary,
+} from "@/utils/openingReview";
 
 dayjs.extend(relativeTime);
 
@@ -104,17 +114,113 @@ function RecentFileRow({ file, onOpen }: { file: RecentFile; onOpen: (file: Rece
   );
 }
 
+function OpeningReviewModal({
+  opened,
+  decks,
+  loading,
+  deletingPath,
+  onClose,
+  onOpen,
+  onDelete,
+}: {
+  opened: boolean;
+  decks: OpeningReviewDeckSummary[];
+  loading: boolean;
+  deletingPath: string | null;
+  onClose: () => void;
+  onOpen: (deck: OpeningReviewDeckSummary) => void;
+  onDelete: (deck: OpeningReviewDeckSummary) => void;
+}) {
+  return (
+    <Modal opened={opened} onClose={onClose} title={<b>Opening Review</b>} size="lg">
+      <Stack gap="sm">
+        <Text size="sm" c="dimmed">
+          Train the positions saved from Opening Health. Progress is stored in the review file.
+        </Text>
+        {loading ? (
+          <Text c="dimmed">Loading review decks...</Text>
+        ) : decks.length === 0 ? (
+          <Paper p="md" withBorder>
+            <Stack gap="xs" align="center">
+              <IconTargetArrow size={36} style={{ opacity: 0.35 }} />
+              <Text fw={600}>No review decks yet</Text>
+              <Text size="sm" c="dimmed" ta="center">
+                Run Opening Health, then use Save review deck when the scan finishes.
+              </Text>
+            </Stack>
+          </Paper>
+        ) : (
+          <Stack gap={4}>
+            {decks.map((deck) => (
+              <Group
+                key={deck.path}
+                px="sm"
+                py="xs"
+                className={classes.recentFileRow}
+                wrap="nowrap"
+                style={{ borderRadius: "var(--mantine-radius-sm)" }}
+              >
+                <UnstyledButton
+                  onClick={() => onOpen(deck)}
+                  style={{ flex: 1, minWidth: 0, textAlign: "left" }}
+                >
+                  <Stack gap={1} style={{ minWidth: 0 }}>
+                    <Text fw={600} truncate>
+                      {deck.name}
+                    </Text>
+                    <Text size="xs" c="dimmed" truncate>
+                      {deck.source
+                        ? `${deck.total} positions - ${deck.source}`
+                        : `${deck.total} positions`}
+                    </Text>
+                  </Stack>
+                </UnstyledButton>
+                <Group gap="xs" wrap="nowrap">
+                  {(deck.due > 0 || deck.unseen > 0) && (
+                    <Badge color="orange" variant="light">
+                      {deck.due + deck.unseen} due
+                    </Badge>
+                  )}
+                  <Text size="xs" c="dimmed">
+                    {dayjs(deck.updatedAt).fromNow()}
+                  </Text>
+                  <Tooltip label="Delete review deck">
+                    <ActionIcon
+                      aria-label={`Delete ${deck.name}`}
+                      variant="subtle"
+                      color="red"
+                      loading={deletingPath === deck.path}
+                      onClick={() => onDelete(deck)}
+                    >
+                      <IconTrash size="1rem" />
+                    </ActionIcon>
+                  </Tooltip>
+                </Group>
+              </Group>
+            ))}
+          </Stack>
+        )}
+      </Stack>
+    </Modal>
+  );
+}
+
 export default function NewTabHome({ id }: { id: string }) {
   const { t } = useTranslation();
 
   const [openModal, setOpenModal] = useState(false);
   const [openRepertoireModal, setOpenRepertoireModal] = useState(false);
+  const [openReviewModal, setOpenReviewModal] = useState(false);
+  const [reviewDecks, setReviewDecks] = useState<OpeningReviewDeckSummary[]>([]);
+  const [reviewDecksLoading, setReviewDecksLoading] = useState(false);
+  const [deletingReviewDeckPath, setDeletingReviewDeckPath] = useState<string | null>(null);
   const [, setTabs] = useAtom(tabsAtom);
   const setActiveTab = useSetAtom(activeTabAtom);
 
   const [recentFiles, setRecentFiles] = useAtom(recentFilesAtom);
   const store = useStore();
   const navigate = useNavigate();
+  const { documentDir } = useLoaderData({ from: "/" });
 
   useEffect(() => {
     const checkFiles = async () => {
@@ -133,7 +239,25 @@ export default function NewTabHome({ id }: { id: string }) {
       }
     };
     checkFiles();
-  }, []);
+  }, [recentFiles, recentFiles.length, setRecentFiles]);
+
+  useEffect(() => {
+    if (!openReviewModal) return;
+
+    let disposed = false;
+    setReviewDecksLoading(true);
+    listOpeningReviewDecks(documentDir)
+      .then((decks) => {
+        if (!disposed) setReviewDecks(decks);
+      })
+      .finally(() => {
+        if (!disposed) setReviewDecksLoading(false);
+      });
+
+    return () => {
+      disposed = true;
+    };
+  }, [documentDir, openReviewModal]);
 
   const openRecentFile = useCallback(
     async (file: RecentFile) => {
@@ -171,6 +295,53 @@ export default function NewTabHome({ id }: { id: string }) {
     },
     [setTabs, setActiveTab, store, navigate],
   );
+
+  const openReviewDeck = useCallback(
+    async (deck: OpeningReviewDeckSummary) => {
+      await createTab({
+        tab: {
+          name: deck.name,
+          type: "opening-review",
+        },
+        setTabs,
+        setActiveTab,
+        gameOrigin: {
+          kind: "opening_review",
+          path: deck.path,
+          name: deck.name,
+        },
+      });
+      setOpenReviewModal(false);
+      navigate({ to: "/" });
+    },
+    [navigate, setActiveTab, setTabs],
+  );
+
+  const deleteReviewDeck = useCallback(async (deck: OpeningReviewDeckSummary) => {
+    const confirmed = window.confirm(
+      `Delete "${deck.name}"?\n\nThis removes the review deck file and cannot be undone.`,
+    );
+    if (!confirmed) return;
+
+    setDeletingReviewDeckPath(deck.path);
+    try {
+      await deleteOpeningReviewDeck(deck.path);
+      setReviewDecks((current) => current.filter((item) => item.path !== deck.path));
+      notifications.show({
+        title: "Review deck deleted",
+        message: `${deck.name} was removed.`,
+        color: "blue",
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Could not delete review deck",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    } finally {
+      setDeletingReviewDeckPath(null);
+    }
+  }, []);
 
   const cards = [
     {
@@ -213,6 +384,15 @@ export default function NewTabHome({ id }: { id: string }) {
       },
     },
     {
+      icon: <IconTarget size={60} />,
+      title: "Opening Review",
+      description: "Train saved Opening Health positions with spaced repetition.",
+      label: "Open review deck",
+      onClick: () => {
+        setOpenReviewModal(true);
+      },
+    },
+    {
       icon: <IconFileImport size={60} />,
       title: t("Home.Card.ImportGame.Title"),
       description: t("Home.Card.ImportGame.Desc"),
@@ -247,8 +427,17 @@ export default function NewTabHome({ id }: { id: string }) {
         setActiveTab={setActiveTab}
       />
       <CreateRepertoireModal opened={openRepertoireModal} setOpened={setOpenRepertoireModal} />
+      <OpeningReviewModal
+        opened={openReviewModal}
+        decks={reviewDecks}
+        loading={reviewDecksLoading}
+        deletingPath={deletingReviewDeckPath}
+        onClose={() => setOpenReviewModal(false)}
+        onOpen={openReviewDeck}
+        onDelete={deleteReviewDeck}
+      />
       <Stack gap="lg" pt="sm">
-        <SimpleGrid cols={{ base: 1, sm: 2, lg: 5 }}>
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 6 }}>
           {cards.map((card) => (
             <Card shadow="sm" p="lg" radius="md" withBorder key={card.title}>
               <Stack align="center" h="100%" justify="space-between">

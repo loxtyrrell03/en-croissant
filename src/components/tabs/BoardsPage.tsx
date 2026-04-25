@@ -23,6 +23,7 @@ import BoardAnalysis from "../boards/BoardAnalysis";
 import BoardGame from "../boards/BoardGame";
 import { TreeStateProvider } from "../common/TreeStateContext";
 import Puzzles from "../puzzles/Puzzles";
+import OpeningReviewWorkspace from "../review/OpeningReviewWorkspace";
 import { BoardTab } from "./BoardTab";
 import ConfirmChangesModal from "./ConfirmChangesModal";
 import NewTabHome from "./NewTabHome";
@@ -519,6 +520,12 @@ function TabSwitch({
       <TreeStateProvider id={tab.value}>
         <BoardWorkspaceLayout />
         <Puzzles id={tab.value} />
+      </TreeStateProvider>
+    ))
+    .with("opening-review", () => (
+      <TreeStateProvider id={tab.value}>
+        <BoardWorkspaceLayout />
+        <OpeningReviewWorkspace tab={tab} />
       </TreeStateProvider>
     ))
     .exhaustive();
