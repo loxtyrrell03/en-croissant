@@ -1,17 +1,5 @@
-import {
-  ActionIcon,
-  Alert,
-  Box,
-  Group,
-  Paper,
-  Select,
-  SimpleGrid,
-  Stack,
-  Text,
-  Tooltip,
-} from "@mantine/core";
-import { useDebouncedValue } from "@mantine/hooks";
-import { IconStar, IconStarFilled } from "@tabler/icons-react";
+import { Alert, Box, Group, Paper, Select, SimpleGrid, Stack, Text, Tooltip } from "@mantine/core";
+import { useDebouncedValue, useElementSize } from "@mantine/hooks";
 import { Link } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
 import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
@@ -24,7 +12,7 @@ import {
   currentLocalOptionsAtom,
   currentTabAtom,
   databaseMoveHealthSideAtom,
-  defaultCompareDatabasesAtom,
+  defaultCompareDatabasesAtom as rememberedCompareDatabasesAtom,
   lichessOptionsAtom,
   masterOptionsAtom,
   referenceDbAtom,
@@ -45,12 +33,15 @@ import DatabaseLoader from "./DatabaseLoader";
 import type { LocalOptions } from "./DatabasePanel";
 import OpeningsTable, {
   openingMoveHealthSideOptions,
+  type OpeningTableDensity,
   type OpeningSort,
   openingSortOptions,
 } from "./OpeningsTable";
 
 const LICHESS_ALL_SOURCE = "online:lichess-all";
 const LICHESS_MASTER_SOURCE = "online:lichess-master";
+const STACKED_COMPARE_WIDTH = 760;
+const DENSE_COMPARE_WIDTH = 960;
 
 type CompareSource =
   | {
@@ -77,13 +68,18 @@ function DatabaseComparePanel() {
   const masterOptions = useAtomValue(masterOptionsAtom);
   const sessions = useAtomValue(sessionsAtom);
   const [selectedDatabases, setSelectedDatabases] = useAtom(currentCompareDatabasesAtom);
-  const [defaultCompareDatabases, setDefaultCompareDatabases] = useAtom(
-    defaultCompareDatabasesAtom,
+  const [rememberedCompareDatabases, setRememberedCompareDatabases] = useAtom(
+    rememberedCompareDatabasesAtom,
   );
   const [moveHealthSide, setMoveHealthSide] = useAtom(databaseMoveHealthSideAtom);
   const [openingsBySearchId, setOpeningsBySearchId] = useState<Record<string, Opening[]>>({});
   const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
     ?.accessToken;
+  const { ref: panelRef, width: panelWidth } = useElementSize();
+  const isStacked = panelWidth > 0 && panelWidth < STACKED_COMPARE_WIDTH;
+  const tableDensity: OpeningTableDensity =
+    panelWidth > 0 && panelWidth < DENSE_COMPARE_WIDTH ? "dense" : "compact";
+  const sideMoveSelectWidth = tableDensity === "dense" ? 126 : 140;
 
   const { data: databases } = useSWR("databases", () => getDatabases());
   const localDatabases = useMemo(
@@ -122,7 +118,7 @@ function DatabaseComparePanel() {
       const available = new Set(compareSources.map((source) => source.value));
       const currentPair = current.slice(0, 2).filter((path) => available.has(path));
       const defaults = [
-        ...defaultCompareDatabases,
+        ...rememberedCompareDatabases,
         referenceDatabase,
         ...compareSources.map((source) => source.value),
       ].filter((path): path is string => typeof path === "string" && available.has(path));
@@ -138,26 +134,12 @@ function DatabaseComparePanel() {
       }
       return next;
     });
-  }, [compareSources, defaultCompareDatabases, referenceDatabase, setSelectedDatabases]);
+  }, [compareSources, referenceDatabase, rememberedCompareDatabases, setSelectedDatabases]);
 
   const setDatabaseAt = (index: number, value: string | null) => {
-    setSelectedDatabases((current) => {
-      const next = current.slice(0, 2);
-      if (value) next[index] = value;
-      return [...new Set(next.filter(Boolean))];
-    });
-  };
-
-  const setDefaultDatabaseAt = (index: number, value: string | null) => {
-    setDefaultCompareDatabases((current) => {
-      const next = current.slice(0, 2);
-      next[index] = value;
-      const otherIndex = index === 0 ? 1 : 0;
-      if (value && next[otherIndex] === value) {
-        next[otherIndex] = null;
-      }
-      return next;
-    });
+    const next = getNextSelectedDatabases(selectedDatabases, index, value);
+    setSelectedDatabases(next);
+    setRememberedCompareDatabases(next);
   };
 
   const selectedPair = [selectedDatabases[0] ?? null, selectedDatabases[1] ?? null] as const;
@@ -187,14 +169,22 @@ function DatabaseComparePanel() {
   }, []);
 
   return (
-    <Stack h="100%" gap={6} style={{ overflow: "hidden" }}>
-      {localDatabases.length === 0 && (
-        <Alert color="blue" variant="light">
-          Local databases are optional here; you can compare against Lichess All or Lichess Masters.
-        </Alert>
-      )}
-
-      <Group justify="flex-end" wrap="nowrap">
+    <Stack
+      ref={panelRef}
+      h="100%"
+      gap={tableDensity === "dense" ? 4 : 6}
+      style={{ overflow: "hidden" }}
+    >
+      <Group
+        justify="space-between"
+        align="center"
+        wrap={isStacked ? "wrap" : "nowrap"}
+        gap={tableDensity === "dense" ? 4 : "xs"}
+        style={{ flexShrink: 0 }}
+      >
+        <Text fw={700} fz={tableDensity === "dense" ? "xs" : "sm"}>
+          Database comparison
+        </Text>
         <Tooltip label="Evaluate move strength for this side">
           <Select
             data={openingMoveHealthSideOptions}
@@ -203,13 +193,24 @@ function DatabaseComparePanel() {
               setMoveHealthSide((value as OpeningMoveHealthSidePreference) ?? "sideToMove")
             }
             size="xs"
-            w={140}
+            w={isStacked ? "100%" : sideMoveSelectWidth}
             allowDeselect={false}
           />
         </Tooltip>
       </Group>
 
-      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs" flex={1} style={{ minHeight: 0 }}>
+      {localDatabases.length === 0 && (
+        <Alert color="blue" variant="light">
+          Local databases are optional here; you can compare against Lichess All or Lichess Masters.
+        </Alert>
+      )}
+
+      <SimpleGrid
+        cols={isStacked ? 1 : 2}
+        spacing={tableDensity === "dense" ? 6 : "xs"}
+        flex={1}
+        style={{ minHeight: 0, gridAutoRows: isStacked ? "minmax(0, 1fr)" : undefined }}
+      >
         {selectedPair.map((databasePath, index) => (
           <CompareDatabaseTable
             key={index}
@@ -222,8 +223,8 @@ function DatabaseComparePanel() {
             lichessOptions={lichessOptions}
             masterOptions={masterOptions}
             explorerToken={explorerToken}
-            defaultSourceValue={defaultCompareDatabases[index] ?? null}
             moveHealthSide={moveHealthSide}
+            density={tableDensity}
             searchId={searchIds[index]}
             referenceOpenings={
               searchIds[index === 0 ? 1 : 0]
@@ -231,7 +232,6 @@ function DatabaseComparePanel() {
                 : undefined
             }
             onChange={(value) => setDatabaseAt(index, value)}
-            onMakeDefault={(value) => setDefaultDatabaseAt(index, value)}
             onOpeningsLoaded={rememberOpenings}
           />
         ))}
@@ -250,12 +250,11 @@ function CompareDatabaseTable({
   lichessOptions,
   masterOptions,
   explorerToken,
-  defaultSourceValue,
   moveHealthSide,
+  density,
   searchId,
   referenceOpenings,
   onChange,
-  onMakeDefault,
   onOpeningsLoaded,
 }: {
   label: string;
@@ -267,12 +266,11 @@ function CompareDatabaseTable({
   lichessOptions: LichessGamesOptions;
   masterOptions: MasterGamesOptions;
   explorerToken?: string;
-  defaultSourceValue: string | null;
   moveHealthSide: OpeningMoveHealthSidePreference;
+  density: OpeningTableDensity;
   searchId: string | null;
   referenceOpenings?: Opening[];
   onChange: (value: string | null) => void;
-  onMakeDefault: (value: string | null) => void;
   onOpeningsLoaded: (searchId: string, openings: Opening[]) => void;
 }) {
   const { t } = useTranslation();
@@ -295,6 +293,11 @@ function CompareDatabaseTable({
     label: item.label,
     disabled: item.value === otherSourceValue,
   }));
+  const dense = density === "dense";
+  const controlGap = dense ? 4 : "xs";
+  const cardPadding = dense ? 6 : "xs";
+  const selectWidth = dense ? 118 : 150;
+  const sourceSelectWidth = dense ? 220 : 320;
 
   const {
     data: openingData,
@@ -344,11 +347,11 @@ function CompareDatabaseTable({
   return (
     <Paper
       withBorder
-      p="xs"
+      p={cardPadding}
       h="100%"
       style={{ display: "flex", flexDirection: "column", minHeight: 0, overflow: "hidden" }}
     >
-      <Group justify="space-between" wrap="nowrap" align="flex-start" gap="xs">
+      <Group justify="space-between" wrap="nowrap" align="flex-start" gap={controlGap}>
         <Tooltip label={source?.label || label}>
           <Select
             data={selectData}
@@ -356,33 +359,16 @@ function CompareDatabaseTable({
             onChange={onChange}
             placeholder={label}
             size="xs"
-            flex={1}
+            w={sourceSelectWidth}
+            maw="100%"
+            miw={0}
             allowDeselect={false}
             searchable
             comboboxProps={{ withinPortal: true }}
+            style={{ flex: `0 1 ${sourceSelectWidth}px` }}
           />
         </Tooltip>
-        <Tooltip
-          label={
-            defaultSourceValue === sourceValue
-              ? "Default compare database"
-              : "Make this the default compare database"
-          }
-        >
-          <ActionIcon
-            variant="default"
-            size="sm"
-            disabled={!sourceValue}
-            onClick={() => onMakeDefault(sourceValue)}
-          >
-            {defaultSourceValue === sourceValue ? (
-              <IconStarFilled size="0.875rem" />
-            ) : (
-              <IconStar size="0.875rem" />
-            )}
-          </ActionIcon>
-        </Tooltip>
-        <Text fz="xs" style={{ whiteSpace: "nowrap" }}>
+        <Text fz={dense ? "0.68rem" : "xs"} style={{ whiteSpace: "nowrap", flexShrink: 0 }}>
           {formatNumber(total)} matches
         </Text>
       </Group>
@@ -391,8 +377,8 @@ function CompareDatabaseTable({
         value={openingSort}
         onChange={(value) => setOpeningSort((value as OpeningSort) ?? "games")}
         size="xs"
-        w={150}
-        mt={6}
+        w={selectWidth}
+        mt={dense ? 4 : 6}
         allowDeselect={false}
       />
       <DatabaseLoader isLoading={isLoading} tab={searchId} />
@@ -406,12 +392,14 @@ function CompareDatabaseTable({
           Could not search this source for the current position.
         </Alert>
       ) : (
-        <Box mt={6} flex={1} style={{ minHeight: 0, overflow: "auto" }}>
+        <Box mt={dense ? 4 : 6} flex={1} style={{ minHeight: 0, overflow: "auto" }}>
           <OpeningsTable
             compact
+            density={density}
             openings={openings}
             loading={isLoading}
             sortBy={openingSort}
+            onSortChange={setOpeningSort}
             healthSidePreference={moveHealthSide}
             referenceOpenings={referenceOpenings}
           />
@@ -423,6 +411,17 @@ function CompareDatabaseTable({
 
 function sortOpenings(openings: Opening[]) {
   return [...openings].sort((a, b) => getOpeningTotal([b]) - getOpeningTotal([a]));
+}
+
+function getNextSelectedDatabases(current: string[], index: number, value: string | null) {
+  const next = current.slice(0, 2);
+  if (value) {
+    next[index] = value;
+  } else {
+    next.splice(index, 1);
+  }
+
+  return [...new Set(next.filter((path): path is string => Boolean(path)))];
 }
 
 function getCompareSearchId(

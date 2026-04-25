@@ -45,6 +45,7 @@ import {
   moveMethodAtom,
   moveNotationTypeAtom,
   nativeBarAtom,
+  openingReviewHideMovesDuringPracticeAtom,
   practiceAutoDifficultyAtom,
   previewBoardOnHoverAtom,
   showArrowsAtom,
@@ -516,6 +517,14 @@ export default function Page() {
             onChange={(val) => setPracticeAutoDifficulty(val as "none" | "1" | "2" | "3" | "4")}
           />
         ),
+      },
+      {
+        id: "opening-review-hide-moves",
+        category: "repertoire",
+        title: "Hide moves during Opening Review",
+        description: "Hide the notation panel while you are making an Opening Review attempt.",
+        keywords: ["opening review", "review", "moves", "notation", "trainer"],
+        render: () => <SettingsSwitch atom={openingReviewHideMovesDuringPracticeAtom} />,
       },
       // Sound settings
       {

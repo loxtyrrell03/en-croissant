@@ -12,12 +12,14 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import {
+  IconCopy,
   IconDatabase,
   IconDeviceFloppy,
   IconExternalLink,
   IconFilterOff,
   IconFolderPlus,
   IconSearch,
+  IconSelectAll,
 } from "@tabler/icons-react";
 import { resolve, tempDir } from "@tauri-apps/api/path";
 import { save } from "@tauri-apps/plugin-dialog";
@@ -29,9 +31,15 @@ import { DataTable } from "mantine-datatable";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useSWRConfig } from "swr";
 import { commands, type NormalizedGame, type Outcome } from "@/bindings";
+import { usePanelDensity } from "@/components/common/ResponsivePanel";
 import { PlayerSearchInput } from "@/components/databases/PlayerSearchInput";
 import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import { getDatabasesDir, getDocumentDir } from "@/utils/directories";
+import { query_games } from "@/utils/db";
+import {
+  createRepertoireDatabaseFromGameBatches,
+  createRepertoireDatabaseFromGames,
+} from "@/utils/repertoireCopy";
 import { createTab } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
 
@@ -57,6 +65,7 @@ const RESULT_PATTERN = /\s(?:1-0|0-1|1\/2-1\/2|\*)\s*$/;
 const INVALID_FILENAME_CHARS = /[\\/:*?"<>|]+/g;
 const RESERVED_WINDOWS_FILENAME = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
 const GAME_FILE_METADATA = JSON.stringify({ type: "game", tags: [] });
+const REPERTOIRE_COPY_PAGE_SIZE = 500;
 
 function GamesTable({
   games,
@@ -66,6 +75,10 @@ function GamesTable({
   blackPlayer,
   onWhitePlayerChange,
   onBlackPlayerChange,
+  searchText,
+  onSearchTextChange,
+  repertoirePlayer,
+  repertoirePlayerSide = "any",
 }: {
   games: NormalizedGame[];
   loading: boolean;
@@ -74,6 +87,10 @@ function GamesTable({
   blackPlayer?: number | null;
   onWhitePlayerChange?: (player: number | null) => void;
   onBlackPlayerChange?: (player: number | null) => void;
+  searchText?: string;
+  onSearchTextChange?: (value: string) => void;
+  repertoirePlayer?: { id?: number | null; name: string } | null;
+  repertoirePlayerSide?: "white" | "black" | "any";
 }) {
   const [, setTabs] = useAtom(tabsAtom);
   const setActiveTab = useSetAtom(activeTabAtom);
@@ -84,17 +101,38 @@ function GamesTable({
   const [appFolderName, setAppFolderName] = useState(() => defaultMasterGamesCollectionName());
   const [savingToAppFolder, setSavingToAppFolder] = useState(false);
   const [creatingDatabase, setCreatingDatabase] = useState(false);
+  const [creatingRepertoire, setCreatingRepertoire] = useState(false);
   const navigate = useNavigate();
   const { mutate } = useSWRConfig();
+  const panelDensity = usePanelDensity();
+  const compact = panelDensity !== "regular";
+  const dense = panelDensity === "dense";
+  const playerFilterWidth = dense ? 132 : compact ? 150 : 170;
+  const tableSpacing = dense ? 4 : compact ? 6 : "xs";
+  const playerTextSize = dense ? "xs" : "sm";
+  const denseColumns = {
+    avgElo: dense ? 62 : compact ? 76 : 92,
+    date: dense ? 68 : compact ? 82 : 92,
+    result: dense ? 54 : compact ? 64 : 78,
+    eco: dense ? 44 : compact ? 56 : 70,
+    actions: dense ? 56 : compact ? 68 : 82,
+  };
 
   const filteredGames = useMemo(() => {
-    return games
-      .filter((game) => gameMatchesFilters(game, filters))
-      .sort(compareMasterGames);
+    return games.filter((game) => gameMatchesFilters(game, filters)).sort(compareMasterGames);
   }, [filters, games]);
 
   const pageRecords = filteredGames.slice((page - 1) * 20, page * 20);
   const databaseRecords = selectedRecords.length > 0 ? selectedRecords : filteredGames;
+  const allFilteredSelected =
+    filteredGames.length > 0 && selectedRecords.length === filteredGames.length;
+  const canFetchFullRepertoire =
+    !!databasePath &&
+    !!repertoirePlayer &&
+    repertoirePlayer.id !== null &&
+    repertoirePlayer.id !== undefined;
+  const canCreateRepertoire =
+    !!repertoirePlayer && (databaseRecords.length > 0 || canFetchFullRepertoire);
 
   useEffect(() => {
     setPage(1);
@@ -201,12 +239,60 @@ function GamesTable({
     }
   }, [databaseRecords, mutate]);
 
+  const createRepertoireFromGames = useCallback(async () => {
+    if (!repertoirePlayer) return;
+
+    setCreatingRepertoire(true);
+    try {
+      const database =
+        selectedRecords.length > 0 || !canFetchFullRepertoire
+          ? await createRepertoireDatabaseFromGames(databaseRecords, repertoirePlayer)
+          : await createRepertoireDatabaseFromGameBatches(
+              fetchFullRepertoireGameBatches(
+                databasePath!,
+                repertoirePlayer.id!,
+                repertoirePlayerSide,
+              ),
+              repertoirePlayer,
+            );
+      await mutate("databases");
+      notifications.show({
+        title: "Repertoire database created",
+        message: `${database.title} saved ${database.positions} ${repertoirePlayer.name} response${
+          database.positions === 1 ? "" : "s"
+        }.`,
+        color: "green",
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Could not copy repertoire",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    } finally {
+      setCreatingRepertoire(false);
+    }
+  }, [
+    canFetchFullRepertoire,
+    databasePath,
+    databaseRecords,
+    mutate,
+    repertoirePlayer,
+    repertoirePlayerSide,
+    selectedRecords.length,
+  ]);
+
   const openAppFolderModal = () => {
     setAppFolderName(defaultMasterGamesCollectionName());
     setAppFolderOpened(true);
   };
 
-  const resetFilters = () => setFilters(DEFAULT_FILTERS);
+  const selectAllFilteredGames = () => setSelectedRecords(filteredGames);
+
+  const resetFilters = () => {
+    setFilters(DEFAULT_FILTERS);
+    onSearchTextChange?.("");
+  };
 
   return (
     <Stack flex={1} gap="xs" mt="xs" style={{ minHeight: 0 }}>
@@ -244,7 +330,7 @@ function GamesTable({
         <Group gap="xs" wrap="wrap">
           {databasePath && (
             <>
-              <div style={{ width: 170 }}>
+              <div style={{ width: playerFilterWidth }}>
                 <PlayerSearchInput
                   label="White player"
                   file={databasePath}
@@ -252,7 +338,7 @@ function GamesTable({
                   setValue={(value) => onWhitePlayerChange?.(value ?? null)}
                 />
               </div>
-              <div style={{ width: 170 }}>
+              <div style={{ width: playerFilterWidth }}>
                 <PlayerSearchInput
                   label="Black player"
                   file={databasePath}
@@ -264,13 +350,15 @@ function GamesTable({
           )}
           <TextInput
             leftSection={<IconSearch size="0.9rem" />}
-            placeholder="Player, event, site"
-            value={filters.search}
-            onChange={(event) =>
-              setFilters((current) => ({ ...current, search: event.currentTarget.value }))
-            }
+            placeholder="Any player, event, site"
+            value={searchText ?? filters.search}
+            onChange={(event) => {
+              const value = event.currentTarget.value;
+              setFilters((current) => ({ ...current, search: value }));
+              onSearchTextChange?.(value);
+            }}
             size="xs"
-            w={190}
+            w={dense ? 150 : 190}
           />
           <NumberInput
             placeholder="Min Elo"
@@ -285,7 +373,7 @@ function GamesTable({
             max={4000}
             step={50}
             size="xs"
-            w={95}
+            w={dense ? 78 : 95}
           />
           <Select
             placeholder="Result"
@@ -301,7 +389,7 @@ function GamesTable({
             ]}
             clearable
             size="xs"
-            w={120}
+            w={dense ? 98 : 120}
           />
           <TextInput
             placeholder="ECO"
@@ -325,7 +413,7 @@ function GamesTable({
             max={new Date().getFullYear()}
             step={1}
             size="xs"
-            w={82}
+            w={dense ? 70 : 82}
           />
           <NumberInput
             placeholder="Until"
@@ -340,7 +428,7 @@ function GamesTable({
             max={new Date().getFullYear()}
             step={1}
             size="xs"
-            w={82}
+            w={dense ? 70 : 82}
           />
           <Tooltip label="Clear filters">
             <ActionIcon variant="default" size="sm" onClick={resetFilters}>
@@ -353,6 +441,22 @@ function GamesTable({
         </Group>
 
         <Group gap="xs" wrap="wrap">
+          <Tooltip label="Select every filtered game across all pages">
+            <Button
+              variant="default"
+              size="xs"
+              leftSection={<IconSelectAll size="0.95rem" />}
+              disabled={filteredGames.length === 0 || allFilteredSelected}
+              onClick={selectAllFilteredGames}
+            >
+              {allFilteredSelected ? "All selected" : "Select all"}
+            </Button>
+          </Tooltip>
+          {selectedRecords.length > 0 ? (
+            <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+              {selectedRecords.length} selected
+            </Text>
+          ) : null}
           <Tooltip label="Save selected games into app Files">
             <Button
               variant="default"
@@ -380,6 +484,28 @@ function GamesTable({
               onClick={() => void createDatabaseFromGames()}
             >
               Database
+            </Button>
+          </Tooltip>
+          <Tooltip
+            label={
+              repertoirePlayer
+                ? selectedRecords.length > 0
+                  ? `Copy ${repertoirePlayer.name}'s repertoire from selected games`
+                  : canFetchFullRepertoire
+                    ? `Copy ${repertoirePlayer.name}'s full repertoire from this database`
+                    : `Copy ${repertoirePlayer.name}'s repertoire from shown games`
+                : "Choose a player in a player field first"
+            }
+          >
+            <Button
+              variant="default"
+              size="xs"
+              leftSection={<IconCopy size="0.95rem" />}
+              disabled={!canCreateRepertoire}
+              loading={creatingRepertoire}
+              onClick={() => void createRepertoireFromGames()}
+            >
+              Repertoire
             </Button>
           </Tooltip>
           <Tooltip label="Save selected games to a PGN file">
@@ -410,6 +536,8 @@ function GamesTable({
       <DataTable
         withTableBorder
         highlightOnHover
+        horizontalSpacing={tableSpacing}
+        verticalSpacing={dense ? 3 : compact ? 4 : "xs"}
         records={pageRecords}
         fetching={loading}
         totalRecords={filteredGames.length}
@@ -424,7 +552,7 @@ function GamesTable({
             accessor: "white",
             render: ({ white, white_elo }) => (
               <div>
-                <Text size="sm" fw={500}>
+                <Text size={playerTextSize} fw={500}>
                   {white}
                 </Text>
                 <Text size="xs" c="dimmed">
@@ -437,7 +565,7 @@ function GamesTable({
             accessor: "black",
             render: ({ black, black_elo }) => (
               <div>
-                <Text size="sm" fw={500}>
+                <Text size={playerTextSize} fw={500}>
                   {black}
                 </Text>
                 <Text size="xs" c="dimmed">
@@ -449,21 +577,21 @@ function GamesTable({
           {
             accessor: "avgElo",
             title: "Avg Elo",
-            width: 92,
+            width: denseColumns.avgElo,
             render: (game) => gameAverageElo(game) || "",
           },
-          { accessor: "date", width: 92 },
+          { accessor: "date", width: denseColumns.date },
           {
             accessor: "result",
-            width: 78,
+            width: denseColumns.result,
             render: ({ result }) => formatResult(result),
           },
-          { accessor: "eco", width: 70 },
+          { accessor: "eco", width: denseColumns.eco },
           { accessor: "event" },
           {
             accessor: "actions",
             title: "",
-            width: 82,
+            width: denseColumns.actions,
             render: (game) => (
               <Group gap={4} wrap="nowrap" justify="flex-end">
                 <Tooltip label="Open game">
@@ -503,13 +631,13 @@ function GamesTable({
 export default memo(GamesTable);
 
 function gameMatchesFilters(game: NormalizedGame, filters: GameFilters) {
-  const query = filters.search.trim().toLowerCase();
+  const query = normalizeSearchText(filters.search);
   if (query) {
-    const searchable = [game.white, game.black, game.event, game.site]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-    if (!searchable.includes(query)) return false;
+    const searchable = normalizeSearchText(
+      [game.white, game.black, game.event, game.site].filter(Boolean).join(" "),
+    );
+    const tokens = query.split(" ").filter(Boolean);
+    if (!tokens.every((token) => searchable.includes(token))) return false;
   }
 
   const eco = filters.eco.trim().toLowerCase();
@@ -530,6 +658,14 @@ function gameMatchesFilters(game: NormalizedGame, filters: GameFilters) {
   }
 
   return true;
+}
+
+function normalizeSearchText(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
 }
 
 function compareMasterGames(a: NormalizedGame, b: NormalizedGame) {
@@ -566,6 +702,35 @@ function formatResult(result: Outcome) {
 
 function ensurePgnExtension(filePath: string) {
   return filePath.toLowerCase().endsWith(".pgn") ? filePath : `${filePath}.pgn`;
+}
+
+async function* fetchFullRepertoireGameBatches(
+  databasePath: string,
+  playerId: number,
+  side: "white" | "black" | "any",
+) {
+  const sides = side === "white" ? "WhiteBlack" : side === "black" ? "BlackWhite" : "Any";
+  let page = 1;
+
+  while (true) {
+    const result = await query_games(databasePath, {
+      player1: playerId,
+      sides,
+      options: {
+        page,
+        pageSize: REPERTOIRE_COPY_PAGE_SIZE,
+        skipCount: true,
+        sort: "id",
+        direction: "desc",
+      },
+    });
+
+    if (result.data.length === 0) return;
+    yield result.data;
+
+    if (result.data.length < REPERTOIRE_COPY_PAGE_SIZE) return;
+    page += 1;
+  }
 }
 
 async function saveGamesToAppFolder(records: NormalizedGame[], folderName: string) {

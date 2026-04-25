@@ -11,7 +11,11 @@ const AUTO_PLAN_MAX_LINES = 10;
 const AUTO_PLAN_MAX_MAJOR_MINOR_LINES = 7;
 const AUTO_PLAN_MAX_PAWN_LINES = 3;
 
-export type ColoredPlanExplorerLine = PlanExplorerLine & { color?: string };
+export type PlanExplorerSegment = [SquareName, SquareName];
+export type ColoredPlanExplorerLine = PlanExplorerLine & {
+    color?: string;
+    segments?: PlanExplorerSegment[];
+};
 
 const squarePattern = /^[a-h][1-8]$/;
 const centralFiles = new Set(["c", "d", "e", "f"]);
@@ -27,15 +31,15 @@ export function getPlanLineForSquare(data: PlanExplorerData | null, square: Squa
 }
 
 export function getTopPlanLines(data: PlanExplorerData | null, limit = 3) {
-    return (
+    const lines =
         data?.pieces
             .map((piece) =>
                 piece.lines[0] ? withPlanLineColor(piece.lines[0], piece.color) : null,
             )
             .filter((line): line is ColoredPlanExplorerLine => !!line)
-            .sort((a, b) => b.games - a.games)
-            .slice(0, limit) ?? []
-    );
+            .sort((a, b) => b.games - a.games) ?? [];
+
+    return balancePlanLines(lines, limit);
 }
 
 function lineSignificanceFloor(data: PlanExplorerData) {
@@ -66,7 +70,7 @@ function topLineGames(piece: PlanExplorerPiece) {
     return topLine(piece)?.games ?? 0;
 }
 
-export function getAutoPlanLines(data: PlanExplorerData | null) {
+export function getAutoPlanLines(data: PlanExplorerData | null, limit = AUTO_PLAN_MAX_LINES) {
     if (!data) return [];
 
     const minGames = lineSignificanceFloor(data);
@@ -75,7 +79,6 @@ export function getAutoPlanLines(data: PlanExplorerData | null) {
         .filter((piece) => majorMinorRoles.has(piece.role))
         .filter((piece) => topLineGames(piece) >= minGames)
         .sort((a, b) => topLineGames(b) - topLineGames(a) || a.from.localeCompare(b.from))
-        .slice(0, AUTO_PLAN_MAX_MAJOR_MINOR_LINES)
         .map((piece) => (topLine(piece) ? withPlanLineColor(topLine(piece)!, piece.color) : null))
         .filter((line): line is ColoredPlanExplorerLine => !!line);
 
@@ -88,13 +91,19 @@ export function getAutoPlanLines(data: PlanExplorerData | null) {
             );
         })
         .sort((a, b) => topLineGames(b) - topLineGames(a) || a.from.localeCompare(b.from))
-        .slice(0, AUTO_PLAN_MAX_PAWN_LINES)
         .map((piece) => (topLine(piece) ? withPlanLineColor(topLine(piece)!, piece.color) : null))
         .filter((line): line is ColoredPlanExplorerLine => !!line);
 
-    return [...majorMinorLines, ...pawnLines]
-        .sort((a, b) => b.games - a.games)
-        .slice(0, AUTO_PLAN_MAX_LINES);
+    const balancedMajorMinorLines = balancePlanLines(
+        majorMinorLines,
+        AUTO_PLAN_MAX_MAJOR_MINOR_LINES,
+    );
+    const balancedPawnLines = balancePlanLines(pawnLines, AUTO_PLAN_MAX_PAWN_LINES);
+
+    return balancePlanLines(
+        [...balancedMajorMinorLines, ...balancedPawnLines].sort((a, b) => b.games - a.games),
+        Math.min(limit, AUTO_PLAN_MAX_LINES),
+    );
 }
 
 export function withPlanLineColor(line: PlanExplorerLine, color: string): ColoredPlanExplorerLine {
@@ -110,14 +119,17 @@ function brushForPlanLine(line: ColoredPlanExplorerLine) {
 }
 
 export function planLineToShapes(line: ColoredPlanExplorerLine): DrawShape[] {
-    const squares = line.squares.filter(isSquareName);
     const shapes: DrawShape[] = [];
     const brush = brushForPlanLine(line);
+    const segments = line.segments?.length
+        ? line.segments
+        : consecutiveSegments(line.squares.filter(isSquareName));
 
-    for (let i = 0; i < squares.length - 1; i++) {
+    for (let i = 0; i < segments.length; i++) {
+        const [orig, dest] = segments[i];
         shapes.push({
-            orig: squares[i],
-            dest: squares[i + 1],
+            orig,
+            dest,
             brush,
             modifiers: {
                 lineWidth: Math.max(5, 10 - i * 1.5),
@@ -139,13 +151,94 @@ export function planLinesToShapes(lines: ColoredPlanExplorerLine[], maxShapes = 
 
             seen.add(key);
             shapes.push(shape);
-            if (shapes.length >= maxShapes) return shapes;
         }
     }
 
-    return shapes;
+    return balancePlanShapes(shapes, maxShapes);
 }
 
 export function formatPlanRoute(squares: string[]) {
     return squares.join(" -> ");
+}
+
+function balancePlanLines(lines: ColoredPlanExplorerLine[], limit: number) {
+    const cappedLimit = Math.max(0, limit);
+    if (cappedLimit === 0) return [];
+
+    const whiteLines = lines.filter((line) => line.color === "white");
+    const blackLines = lines.filter((line) => line.color === "black");
+    if (whiteLines.length === 0 || blackLines.length === 0) {
+        return lines.slice(0, cappedLimit);
+    }
+
+    const result: ColoredPlanExplorerLine[] = [];
+    const queues = {
+        white: whiteLines,
+        black: blackLines,
+    };
+    const indexes = {
+        white: 0,
+        black: 0,
+    };
+    let nextColor: "white" | "black" = lines[0]?.color === "black" ? "black" : "white";
+
+    while (result.length < cappedLimit) {
+        const otherColor = nextColor === "white" ? "black" : "white";
+        const selectedColor =
+            indexes[nextColor] < queues[nextColor].length ? nextColor : otherColor;
+
+        if (indexes[selectedColor] >= queues[selectedColor].length) break;
+
+        result.push(queues[selectedColor][indexes[selectedColor]]);
+        indexes[selectedColor] += 1;
+        nextColor = selectedColor === "white" ? "black" : "white";
+    }
+
+    return result;
+}
+
+function balancePlanShapes(shapes: DrawShape[], limit: number) {
+    const cappedLimit = Math.max(0, limit);
+    if (cappedLimit === 0) return [];
+
+    const whiteShapes = shapes.filter((shape) => shape.brush === PLAN_WHITE_BRUSH);
+    const blackShapes = shapes.filter((shape) => shape.brush === PLAN_BLACK_BRUSH);
+    if (whiteShapes.length === 0 || blackShapes.length === 0) {
+        return shapes.slice(0, cappedLimit);
+    }
+
+    const result: DrawShape[] = [];
+    const queues = {
+        white: whiteShapes,
+        black: blackShapes,
+    };
+    const indexes = {
+        white: 0,
+        black: 0,
+    };
+    let nextColor: "white" | "black" =
+        shapes[0]?.brush === PLAN_BLACK_BRUSH ? "black" : "white";
+
+    while (result.length < cappedLimit) {
+        const otherColor = nextColor === "white" ? "black" : "white";
+        const selectedColor =
+            indexes[nextColor] < queues[nextColor].length ? nextColor : otherColor;
+
+        if (indexes[selectedColor] >= queues[selectedColor].length) break;
+
+        result.push(queues[selectedColor][indexes[selectedColor]]);
+        indexes[selectedColor] += 1;
+        nextColor = selectedColor === "white" ? "black" : "white";
+    }
+
+    return result;
+}
+
+function consecutiveSegments(squares: SquareName[]): PlanExplorerSegment[] {
+    const segments: PlanExplorerSegment[] = [];
+    for (let i = 0; i < squares.length - 1; i++) {
+        segments.push([squares[i], squares[i + 1]]);
+    }
+
+    return segments;
 }

@@ -18,7 +18,8 @@ import { useTranslation } from "react-i18next";
 import useSWR from "swr/immutable";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
-import { commands } from "@/bindings";
+import { commands, type Player } from "@/bindings";
+import { usePanelDensity } from "@/components/common/ResponsivePanel";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import {
   currentDbTabAtom,
@@ -33,11 +34,18 @@ import {
   referenceDbAtom,
   sessionsAtom,
 } from "@/state/atoms";
-import { cancelDatabaseSearch, getDatabases, type Opening, searchPosition } from "@/utils/db";
+import {
+  cancelDatabaseSearch,
+  getDatabases,
+  type Opening,
+  query_players,
+  searchPosition,
+} from "@/utils/db";
 import { formatNumber } from "@/utils/format";
 import { convertToNormalized, getLichessGames, getMasterGames } from "@/utils/lichess/api";
 import type { LichessGamesOptions, MasterGamesOptions } from "@/utils/lichess/explorer";
 import type { OpeningMoveHealthSidePreference } from "@/utils/openingMoveHealth";
+import { unwrap } from "@/utils/unwrap";
 import { IconStar, IconStarFilled } from "@tabler/icons-react";
 import DatabaseLoader from "./DatabaseLoader";
 import GamesTable from "./GamesTable";
@@ -80,7 +88,12 @@ export type LocalOptions = {
 type MasterGamePlayerFilters = {
   whitePlayer: number | null;
   blackPlayer: number | null;
+  anyPlayerText: string;
+  anyPlayerId?: number | null;
 };
+
+const MASTER_GAME_DEFAULT_LIMIT = 80;
+const MASTER_GAME_PLAYER_TEXT_LIMIT = 5_000;
 
 function sortOpenings(openings: Opening[]) {
   return openings.sort((a, b) => b.black + b.draw + b.white - (a.black + a.draw + a.white));
@@ -90,6 +103,70 @@ function isDatabaseSourcePreferenceEqual(a: DatabaseSourcePreference, b: Databas
   if (a.type !== b.type) return false;
   if (a.type === "local" && b.type === "local") return a.value === b.value;
   return true;
+}
+
+async function resolveMasterGameTextPlayer(databasePath: string, searchText: string) {
+  const queries = getPlayerSearchQueries(searchText);
+  if (queries.length === 0) return null;
+
+  const players: Player[] = [];
+  const seen = new Set<number>();
+  for (const query of queries) {
+    const result = await query_players(databasePath, {
+      name: query,
+      options: {
+        page: 1,
+        pageSize: 12,
+        skipCount: true,
+        sort: "elo",
+        direction: "desc",
+      },
+    });
+    for (const player of result.data) {
+      if (!seen.has(player.id)) {
+        players.push(player);
+        seen.add(player.id);
+      }
+    }
+  }
+
+  const normalizedSearch = normalizePlayerText(searchText);
+  const tokens = normalizedSearch.split(" ").filter(Boolean);
+  const exact = players.find(
+    (player) => normalizePlayerText(player.name ?? "") === normalizedSearch,
+  );
+  if (exact) return exact;
+
+  return (
+    players.find((player) => {
+      const normalizedName = normalizePlayerText(player.name ?? "");
+      return tokens.length > 0 && tokens.every((token) => normalizedName.includes(token));
+    }) ?? null
+  );
+}
+
+function getPlayerSearchQueries(searchText: string) {
+  const normalized = normalizePlayerText(searchText);
+  if (normalized.length < 3) return [];
+
+  const queries = new Set([searchText.trim()]);
+  const tokens = normalized.split(" ").filter(Boolean);
+  if (tokens.length === 2 && !searchText.includes(",")) {
+    queries.add(`${tokens[1]}, ${tokens[0]}`);
+  }
+  for (const token of tokens) {
+    if (token.length >= 3) queries.add(token);
+  }
+
+  return Array.from(queries).filter(Boolean);
+}
+
+function normalizePlayerText(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
 }
 
 async function fetchOpening(
@@ -127,17 +204,28 @@ async function fetchOpening(
     .with({ type: "local" }, async ({ options }) => {
       if (!options.path) throw Error("Missing reference database");
       const isMasterGamesView = view === "games";
+      const anyPlayerId = masterFilters.anyPlayerId ?? null;
+      const hasPlayerFilter =
+        !!anyPlayerId || !!masterFilters.whitePlayer || !!masterFilters.blackPlayer;
+      const playerQuery = anyPlayerId
+        ? {
+            player1: anyPlayerId,
+            sides: "Any" as const,
+          }
+        : {
+            player1: masterFilters.whitePlayer ?? undefined,
+            player2: masterFilters.blackPlayer ?? undefined,
+            sides: "WhiteBlack" as const,
+          };
       const positionData = await searchPosition(options, requestId, {
         includeOpenings: !isMasterGamesView,
         includeGames: isMasterGamesView,
-        gameLimit: isMasterGamesView ? 80 : undefined,
-        query: isMasterGamesView
-          ? {
-              player1: masterFilters.whitePlayer ?? undefined,
-              player2: masterFilters.blackPlayer ?? undefined,
-              sides: "WhiteBlack",
-            }
+        gameLimit: isMasterGamesView
+          ? hasPlayerFilter
+            ? MASTER_GAME_PLAYER_TEXT_LIMIT
+            : MASTER_GAME_DEFAULT_LIMIT
           : undefined,
+        query: isMasterGamesView ? playerQuery : undefined,
       });
       return {
         openings: sortOpenings(positionData[0]),
@@ -149,6 +237,11 @@ async function fetchOpening(
 
 function DatabasePanel() {
   const { t } = useTranslation();
+  const panelDensity = usePanelDensity();
+  const dense = panelDensity === "dense";
+  const compact = panelDensity !== "regular";
+  const controlSize = compact ? "xs" : "sm";
+  const tableDensity = dense ? "dense" : compact ? "compact" : "regular";
 
   const store = useContext(TreeStateContext)!;
   const fen = useStore(store, (s) => s.currentNode().fen);
@@ -162,16 +255,57 @@ function DatabasePanel() {
   const [db, setDb] = useAtom(currentDbTypeAtom);
   const [moveHealthSide, setMoveHealthSide] = useAtom(databaseMoveHealthSideAtom);
   const [openingSort, setOpeningSort] = useState<OpeningSort>("games");
-  const [masterGamePlayerFilters, setMasterGamePlayerFilters] =
-    useState<MasterGamePlayerFilters>({
-      whitePlayer: null,
-      blackPlayer: null,
-    });
+  const [masterGamePlayerFilters, setMasterGamePlayerFilters] = useState<MasterGamePlayerFilters>({
+    whitePlayer: null,
+    blackPlayer: null,
+    anyPlayerText: "",
+  });
+  const [debouncedMasterGamePlayerText] = useDebouncedValue(
+    masterGamePlayerFilters.anyPlayerText,
+    250,
+  );
+  const shouldResolveMasterGameTextPlayer =
+    db === "local" &&
+    !!referenceDatabase &&
+    normalizePlayerText(debouncedMasterGamePlayerText).length >= 3;
   const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
     ?.accessToken;
   const missingExplorerToken = db !== "local" && !explorerToken;
 
   const { data: databases } = useSWR(db === "local" ? "databases" : null, () => getDatabases());
+  const { data: masterGameTextPlayer } = useSWR(
+    shouldResolveMasterGameTextPlayer
+      ? ["master-game-text-player", referenceDatabase, debouncedMasterGamePlayerText]
+      : null,
+    async ([, databasePath, searchText]) => {
+      return resolveMasterGameTextPlayer(databasePath!, searchText);
+    },
+  );
+  const { data: masterWhitePlayer } = useSWR(
+    db === "local" && referenceDatabase && masterGamePlayerFilters.whitePlayer
+      ? ["master-white-player", referenceDatabase, masterGamePlayerFilters.whitePlayer]
+      : null,
+    async ([, databasePath, playerId]) => {
+      return unwrap(await commands.getPlayer(databasePath!, playerId!));
+    },
+  );
+  const { data: masterBlackPlayer } = useSWR(
+    db === "local" && referenceDatabase && masterGamePlayerFilters.blackPlayer
+      ? ["master-black-player", referenceDatabase, masterGamePlayerFilters.blackPlayer]
+      : null,
+    async ([, databasePath, playerId]) => {
+      return unwrap(await commands.getPlayer(databasePath!, playerId!));
+    },
+  );
+  const masterRepertoirePlayer =
+    masterGameTextPlayer ?? masterWhitePlayer ?? masterBlackPlayer ?? null;
+  const masterRepertoirePlayerSide: "white" | "black" | "any" = masterGameTextPlayer
+    ? "any"
+    : masterWhitePlayer
+      ? "white"
+      : masterBlackPlayer
+        ? "black"
+        : "any";
 
   const dbSelectData = (databases ?? [])
     .filter((d) => d.type === "success")
@@ -259,8 +393,18 @@ function DatabasePanel() {
         tabType,
         masterGamePlayerFilters.whitePlayer ?? "",
         masterGamePlayerFilters.blackPlayer ?? "",
+        masterGameTextPlayer?.id ?? "",
       ].join("|"),
-    [db, debouncedFen, localOptions, masterGamePlayerFilters, tab?.value, tabType],
+    [
+      db,
+      debouncedFen,
+      localOptions,
+      masterGamePlayerFilters.whitePlayer,
+      masterGamePlayerFilters.blackPlayer,
+      masterGameTextPlayer?.id,
+      tab?.value,
+      tabType,
+    ],
   );
 
   useEffect(() => {
@@ -282,13 +426,11 @@ function DatabasePanel() {
       ? { dbType, requestId: databaseRequestId }
       : null,
     async ({ dbType, requestId }) => {
-      return fetchOpening(
-        dbType,
-        tab?.value || "",
-        requestId,
-        tabType,
-        masterGamePlayerFilters,
-      );
+      return fetchOpening(dbType, tab?.value || "", requestId, tabType, {
+        ...masterGamePlayerFilters,
+        anyPlayerText: debouncedMasterGamePlayerText,
+        anyPlayerId: masterGameTextPlayer?.id ?? null,
+      });
     },
   );
 
@@ -299,9 +441,10 @@ function DatabasePanel() {
 
   const header = (
     <>
-      <Group justify="space-between" w="100%" wrap="wrap">
-        <Group>
+      <Group justify="space-between" w="100%" wrap="wrap" gap={dense ? 4 : "xs"}>
+        <Group gap={dense ? 4 : "xs"} wrap="wrap">
           <SegmentedControl
+            size={controlSize}
             data={[
               { label: t("Board.Database.Local"), value: "local" },
               { label: t("Board.Database.LichessAll"), value: "lch_all" },
@@ -320,9 +463,10 @@ function DatabasePanel() {
                 setReferenceDatabase(value);
               }}
               placeholder={t("Board.Database.SelectReference")}
-              size="sm"
+              size={controlSize}
               flex={1}
-              maw={200}
+              maw={dense ? 150 : 200}
+              miw={dense ? 116 : 150}
               allowDeselect={false}
             />
           )}
@@ -335,7 +479,7 @@ function DatabasePanel() {
           >
             <ActionIcon
               variant="default"
-              size="lg"
+              size={compact ? "sm" : "lg"}
               disabled={!canSaveDefault}
               onClick={() => setDefaultDatabaseSource(selectedDefaultSource)}
             >
@@ -349,7 +493,7 @@ function DatabasePanel() {
         </Group>
 
         {tabType !== "options" && (
-          <Group gap="xs" wrap="nowrap">
+          <Group gap={dense ? 4 : "xs"} wrap="wrap">
             {tabType === "stats" && (
               <>
                 <Tooltip label="Evaluate move strength for this side">
@@ -359,8 +503,8 @@ function DatabasePanel() {
                     onChange={(value) =>
                       setMoveHealthSide((value as OpeningMoveHealthSidePreference) ?? "sideToMove")
                     }
-                    size="sm"
-                    w={145}
+                    size={controlSize}
+                    w={dense ? 118 : 145}
                     allowDeselect={false}
                   />
                 </Tooltip>
@@ -368,13 +512,13 @@ function DatabasePanel() {
                   data={openingSortOptions}
                   value={openingSort}
                   onChange={(value) => setOpeningSort((value as OpeningSort) ?? "games")}
-                  size="sm"
-                  w={160}
+                  size={controlSize}
+                  w={dense ? 126 : 160}
                   allowDeselect={false}
                 />
               </>
             )}
-            <Text style={{ whiteSpace: "nowrap" }}>
+            <Text fz={compact ? "xs" : "sm"} style={{ whiteSpace: "nowrap" }}>
               {t("Board.Database.Matches", {
                 matches: formatNumber(Math.max(grandTotal || 0, openingData?.games.length || 0)),
               })}
@@ -393,15 +537,18 @@ function DatabasePanel() {
     <Stack h="100%" gap={0}>
       <Tabs
         defaultValue="stats"
-        orientation="vertical"
-        placement="right"
+        orientation={dense ? "horizontal" : "vertical"}
+        placement={dense ? undefined : "right"}
         value={tabType}
         onChange={(v) => setTabType(v!)}
         display="flex"
         flex={1}
-        style={{ overflow: "hidden" }}
+        style={{
+          overflow: "hidden",
+          flexDirection: dense ? "column" : undefined,
+        }}
       >
-        <Tabs.List>
+        <Tabs.List grow={dense}>
           <Tabs.Tab
             value="stats"
             disabled={dbType.type === "local" && dbType.options.type === "partial"}
@@ -420,9 +567,11 @@ function DatabasePanel() {
           missingExplorerToken={missingExplorerToken}
         >
           <OpeningsTable
+            density={tableDensity}
             openings={openingData?.openings || []}
             loading={isLoading}
             sortBy={openingSort}
+            onSortChange={setOpeningSort}
             healthSidePreference={moveHealthSide}
           />
         </PanelWithError>
@@ -445,6 +594,16 @@ function DatabasePanel() {
             onBlackPlayerChange={(blackPlayer) =>
               setMasterGamePlayerFilters((current) => ({ ...current, blackPlayer }))
             }
+            searchText={masterGamePlayerFilters.anyPlayerText}
+            onSearchTextChange={(anyPlayerText) =>
+              setMasterGamePlayerFilters((current) => ({ ...current, anyPlayerText }))
+            }
+            repertoirePlayer={
+              masterRepertoirePlayer?.name
+                ? { id: masterRepertoirePlayer.id, name: masterRepertoirePlayer.name }
+                : null
+            }
+            repertoirePlayerSide={masterRepertoirePlayerSide}
           />
         </PanelWithError>
         <PanelWithError
@@ -477,6 +636,8 @@ function PanelWithError(props: {
 }) {
   const referenceDatabase = useAtomValue(referenceDbAtom);
   const { t } = useTranslation();
+  const panelDensity = usePanelDensity();
+  const compact = panelDensity !== "regular";
   let children = props.children;
   if (props.type === "local" && !referenceDatabase) {
     children = <NoDatabaseWarning />;
@@ -495,8 +656,8 @@ function PanelWithError(props: {
 
   return (
     <Tabs.Panel
-      py="xs"
-      px="sm"
+      py={compact ? 4 : "xs"}
+      px={compact ? 6 : "sm"}
       value={props.value}
       flex={1}
       style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}

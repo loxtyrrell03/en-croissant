@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import { useStore } from "zustand";
 import type { Player, PlayerSort } from "@/bindings";
+import { usePanelDensity } from "@/components/common/ResponsivePanel";
 import { query_players } from "@/utils/db";
 import { DatabaseViewStateContext } from "./DatabaseViewStateContext";
 import GridLayout from "./GridLayout";
@@ -41,6 +42,10 @@ function PlayerTable() {
   const player = players.find((p) => p.id === selectedPlayer);
 
   const [open, setOpen] = useState(false);
+  const density = usePanelDensity();
+  const compact = density !== "regular";
+  const dense = density === "dense";
+  const tableSpacing = dense ? 4 : compact ? 6 : "xs";
 
   useHotkeys("ArrowUp", () => {
     if (selectedPlayer != null) {
@@ -65,7 +70,7 @@ function PlayerTable() {
     <GridLayout
       search={
         <>
-          <Flex style={{ alignItems: "center", gap: 10 }}>
+          <Flex style={{ alignItems: "center", gap: compact ? 6 : 10 }}>
             <TextInput
               style={{ flexGrow: 1 }}
               placeholder={t("Databases.Player.Search")}
@@ -123,6 +128,8 @@ function PlayerTable() {
         <DataTable<Player>
           withTableBorder
           highlightOnHover
+          horizontalSpacing={tableSpacing}
+          verticalSpacing={dense ? 3 : compact ? 4 : "xs"}
           records={players}
           fetching={isLoading}
           columns={[

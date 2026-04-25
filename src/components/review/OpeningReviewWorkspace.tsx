@@ -23,7 +23,10 @@ import { useToggle } from "@mantine/hooks";
 import {
   IconArrowBack,
   IconBook,
+  IconBulb,
   IconCheck,
+  IconChevronLeft,
+  IconChevronRight,
   IconDatabase,
   IconGitCompare,
   IconEye,
@@ -51,6 +54,7 @@ import EvalListener from "@/components/boards/EvalListener";
 import DetachedEval from "@/components/common/DetachedEval";
 import GameNotation from "@/components/common/GameNotation";
 import MoveControls from "@/components/common/MoveControls";
+import { ResponsivePanel } from "@/components/common/ResponsivePanel";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import {
   formatReviewInterval,
@@ -64,6 +68,7 @@ import AnalysisPanel from "@/components/panels/analysis/AnalysisPanel";
 import AnnotationPanel from "@/components/panels/annotation/AnnotationPanel";
 import ComparePanel from "@/components/panels/compare/ComparePanel";
 import DatabasePanel from "@/components/panels/database/DatabasePanel";
+import EnginePlanExplorerPanel from "@/components/panels/enginePlan/EnginePlanExplorerPanel";
 import RepertoireGapsPanel from "@/components/panels/gaps/RepertoireGapsPanel";
 import InfoPanel from "@/components/panels/info/InfoPanel";
 import PlanExplorerPanel from "@/components/panels/plan/PlanExplorerPanel";
@@ -73,6 +78,7 @@ import {
   currentInvisibleAtom,
   currentShowCommentsAtom,
   deckAtomFamily,
+  openingReviewHideMovesDuringPracticeAtom,
   practiceAutoDifficultyAtom,
   practiceCardStartTimeAtom,
   practiceSessionStatsAtom,
@@ -82,7 +88,15 @@ import type { TreeStore } from "@/state/store/tree";
 import type { Tab } from "@/utils/tabs";
 import { getTabPracticeKey } from "@/utils/tabs";
 import { positionFromFen } from "@/utils/chessops";
-import { createNode, defaultTree, findFen, type GameHeaders } from "@/utils/treeReducer";
+import {
+  createNode,
+  defaultTree,
+  findFen,
+  getNodeAtPath,
+  type GameHeaders,
+  type TreeNode,
+  type TreeState,
+} from "@/utils/treeReducer";
 import {
   readOpeningReviewDeck,
   type OpeningReviewDeck,
@@ -100,6 +114,7 @@ const reviewWorkspaceTabs = new Set([
   "analysis",
   "database",
   "plan-explorer",
+  "engine-plans",
   "compare",
   "info",
 ]);
@@ -123,10 +138,108 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     null,
   );
   const [currentTabSelected, setCurrentTabSelected] = useAtom(currentTabSelectedAtom);
-  const practiceState = useAtomValue(practiceStateAtom);
+  const [practiceState, setPracticeState] = useAtom(practiceStateAtom);
   const practicing = currentTabSelected === "review" && practiceState.phase !== "idle";
   const store = useContext(TreeStateContext)!;
-  const currentNode = useStore(store, (s) => s.currentNode());
+  const root = useStore(store, (s) => s.root);
+  const headers = useStore(store, (s) => s.headers);
+  const positionPath = useStore(store, (s) => s.position);
+  const treeDirty = useStore(store, (s) => s.dirty);
+  const goToNext = useStore(store, (s) => s.goToNext);
+  const goToPrevious = useStore(store, (s) => s.goToPrevious);
+  const goToMove = useStore(store, (s) => s.goToMove);
+  const setHeaders = useStore(store, (s) => s.setHeaders);
+  const setPracticePath = useStore(store, (s) => s.setPracticePath);
+  const setState = useStore(store, (s) => s.setState);
+  const setInvisible = useSetAtom(currentInvisibleAtom);
+  const setShowComments = useSetAtom(currentShowCommentsAtom);
+  const setEvalOpen = useSetAtom(currentEvalOpenAtom);
+
+  const activeReviewPositions = useMemo(
+    () => getReviewPositionsForPath(deck.positions, root, positionPath),
+    [deck.positions, positionPath, root],
+  );
+  const activeReviewPosition = activeReviewPositions[activeReviewPositions.length - 1] ?? null;
+  const activeReviewIndex = activeReviewPosition?.positionIndex ?? -1;
+  const canGoPrevious = loaded && !loadError && activeReviewIndex > 0;
+  const canGoNext =
+    loaded &&
+    !loadError &&
+    deck.positions.length > 0 &&
+    activeReviewIndex < deck.positions.length - 1;
+
+  const loadDeckPosition = useCallback(
+    (positionIndex: number) => {
+      const position = deck.positions[positionIndex];
+      if (!position) return;
+
+      loadReviewPositionOnBoard({
+        position,
+        headers,
+        root,
+        store,
+        goToMove,
+        setHeaders,
+        setState,
+      });
+      setPracticePath(null);
+      setPracticeState({ phase: "idle" });
+      setInvisible(false);
+      setShowComments(true);
+      setEvalOpen(true);
+      setBoardMoveCandidate(null);
+    },
+    [
+      deck.positions,
+      goToMove,
+      headers,
+      root,
+      setEvalOpen,
+      setHeaders,
+      setInvisible,
+      setPracticePath,
+      setPracticeState,
+      setShowComments,
+      setState,
+      store,
+    ],
+  );
+
+  const goToPreviousReviewPosition = useCallback(() => {
+    if (!canGoPrevious) return;
+    loadDeckPosition(activeReviewIndex - 1);
+  }, [activeReviewIndex, canGoPrevious, loadDeckPosition]);
+
+  const goToNextReviewPosition = useCallback(() => {
+    if (!canGoNext) return;
+    loadDeckPosition(activeReviewIndex === -1 ? 0 : activeReviewIndex + 1);
+  }, [activeReviewIndex, canGoNext, loadDeckPosition]);
+
+  useEffect(() => {
+    const navigateWithArrowKeys = (event: KeyboardEvent) => {
+      if (
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        (event.key !== "ArrowRight" && event.key !== "ArrowLeft")
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
+      if (event.key === "ArrowRight") {
+        goToNext();
+      } else {
+        goToPrevious();
+      }
+    };
+
+    window.addEventListener("keydown", navigateWithArrowKeys, { capture: true });
+    return () => window.removeEventListener("keydown", navigateWithArrowKeys, { capture: true });
+  }, [goToNext, goToPrevious]);
 
   useEffect(() => {
     const initialTab = tab.gameOrigin.kind === "opening_review" ? tab.gameOrigin.initialTab : null;
@@ -191,42 +304,36 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   }, [currentTabSelected, selectedToolTab, setCurrentTabSelected]);
 
   useEffect(() => {
-    if (!loaded || loadError) return;
-    const comment = currentNode.comment ?? "";
-    const annotations = currentNode.annotations ?? [];
-    const shapes = currentNode.shapes ?? [];
-    const matchingPosition = deck.positions.find((position) => position.fen === currentNode.fen);
-    if (!matchingPosition) return;
-    if (sameReviewMetadata(matchingPosition, comment, annotations, shapes)) return;
+    if (!loaded || loadError || !treeDirty || activeReviewPositions.length === 0) return;
+
+    const nextReviewTrees = activeReviewPositions.map((reviewPosition) => ({
+      ...reviewPosition,
+      reviewTree: cloneReviewTreeNode(reviewPosition.node),
+    }));
 
     setDeck((current) => {
-      const index = current.positions.findIndex((position) => position.fen === currentNode.fen);
-      if (index === -1) return current;
-      const position = current.positions[index];
-      if (sameReviewMetadata(position, comment, annotations, shapes)) return current;
+      let positions = current.positions;
+      let changed = false;
 
-      const positions = [...current.positions];
-      positions[index] = {
-        ...position,
-        comment: comment || undefined,
-        annotations: annotations.length > 0 ? annotations : undefined,
-        shapes: shapes.length > 0 ? shapes : undefined,
-      };
-      return {
-        ...current,
-        positions,
-      };
+      for (const reviewPosition of nextReviewTrees) {
+        const position = positions[reviewPosition.positionIndex];
+        if (!position || !sameReviewPosition(position.fen, reviewPosition.node.fen)) {
+          continue;
+        }
+
+        const nextPosition = withReviewTree(position, reviewPosition.reviewTree);
+        if (sameReviewPersistence(position, nextPosition)) continue;
+
+        if (!changed) {
+          positions = [...positions];
+          changed = true;
+        }
+        positions[reviewPosition.positionIndex] = nextPosition;
+      }
+
+      return changed ? { ...current, positions } : current;
     });
-  }, [
-    currentNode.annotations,
-    currentNode.comment,
-    currentNode.fen,
-    currentNode.shapes,
-    deck.positions,
-    loadError,
-    loaded,
-    setDeck,
-  ]);
+  }, [activeReviewPositions, loadError, loaded, setDeck, treeDirty]);
 
   return (
     <>
@@ -241,6 +348,14 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
               onMove={(uci, fen, san) => setBoardMoveCandidate({ fen, san, uci })}
             />
           </Stack>
+          <OpeningReviewBoardNavigation
+            positionIndex={activeReviewIndex}
+            total={deck.positions.length}
+            canGoPrevious={canGoPrevious}
+            canGoNext={canGoNext}
+            onPrevious={goToPreviousReviewPosition}
+            onNext={goToNextReviewPosition}
+          />
           <Paper
             withBorder
             h="15rem"
@@ -253,81 +368,89 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
       </Portal>
       <Portal target="#topRight" style={{ height: "100%" }}>
         <Paper withBorder h="100%" pos="relative">
-          <Tabs
-            w="100%"
-            h="100%"
-            value={selectedToolTab}
-            onChange={(value) => setCurrentTabSelected(value || "review")}
-            keepMounted={false}
-            activateTabWithKeyboard={false}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-            }}
-            styles={{
-              tabLabel: {
-                flex: 0,
-              },
-              tab: {
+          <ResponsivePanel>
+            <Tabs
+              w="100%"
+              h="100%"
+              value={selectedToolTab}
+              onChange={(value) => setCurrentTabSelected(value || "review")}
+              keepMounted={false}
+              activateTabWithKeyboard={false}
+              style={{
                 display: "flex",
-                justifyContent: "center",
-                gap: "0.3rem",
-              },
-            }}
-          >
-            <Tabs.List grow>
-              <Tabs.Tab value="review" leftSection={<IconTargetArrow size="1rem" />}>
-                Review
-              </Tabs.Tab>
-              <Tabs.Tab value="analysis" leftSection={<IconZoomCheck size="1rem" />}>
-                Analysis
-              </Tabs.Tab>
-              <Tabs.Tab value="database" leftSection={<IconDatabase size="1rem" />}>
-                Database
-              </Tabs.Tab>
-              <Tabs.Tab value="plan-explorer" leftSection={<IconRoute size="1rem" />}>
-                Plan Explorer
-              </Tabs.Tab>
-              <Tabs.Tab value="compare" leftSection={<IconGitCompare size="1rem" />}>
-                Compare
-              </Tabs.Tab>
-              <Tabs.Tab value="info" leftSection={<IconInfoCircle size="1rem" />}>
-                Info
-              </Tabs.Tab>
-            </Tabs.List>
+                flexDirection: "column",
+              }}
+              styles={{
+                tabLabel: {
+                  flex: 0,
+                },
+                tab: {
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: "0.3rem",
+                },
+              }}
+            >
+              <Tabs.List grow>
+                <Tabs.Tab value="review" leftSection={<IconTargetArrow size="1rem" />}>
+                  Review
+                </Tabs.Tab>
+                <Tabs.Tab value="analysis" leftSection={<IconZoomCheck size="1rem" />}>
+                  Analysis
+                </Tabs.Tab>
+                <Tabs.Tab value="database" leftSection={<IconDatabase size="1rem" />}>
+                  Database
+                </Tabs.Tab>
+                <Tabs.Tab value="plan-explorer" leftSection={<IconRoute size="1rem" />}>
+                  Plan Explorer
+                </Tabs.Tab>
+                <Tabs.Tab value="engine-plans" leftSection={<IconBulb size="1rem" />}>
+                  Engine Plans
+                </Tabs.Tab>
+                <Tabs.Tab value="compare" leftSection={<IconGitCompare size="1rem" />}>
+                  Compare
+                </Tabs.Tab>
+                <Tabs.Tab value="info" leftSection={<IconInfoCircle size="1rem" />}>
+                  Info
+                </Tabs.Tab>
+              </Tabs.List>
 
-            <Tabs.Panel value="review" flex={1} p="sm" style={scrollablePanelStyle}>
-              <OpeningReviewPanel
-                deckName={deckInfo?.name ?? tab.name}
-                deckPath={deckPath}
-                deckMode={deckInfo?.mode}
-                initialView={
-                  tab.gameOrigin.kind === "opening_review" && tab.gameOrigin.initialTab === "gaps"
-                    ? "analyze"
-                    : "review"
-                }
-                boardMoveCandidate={boardMoveCandidate}
-                onClearBoardMoveCandidate={() => setBoardMoveCandidate(null)}
-                loadError={loadError}
-                loaded={loaded}
-              />
-            </Tabs.Panel>
-            <Tabs.Panel value="analysis" flex={1} style={scrollablePanelStyle}>
-              <AnalysisPanel />
-            </Tabs.Panel>
-            <Tabs.Panel value="database" flex={1} style={scrollablePanelStyle}>
-              <DatabasePanel />
-            </Tabs.Panel>
-            <Tabs.Panel value="plan-explorer" flex={1} style={scrollablePanelStyle}>
-              <PlanExplorerPanel />
-            </Tabs.Panel>
-            <Tabs.Panel value="compare" flex={1} style={scrollablePanelStyle}>
-              <ComparePanel />
-            </Tabs.Panel>
-            <Tabs.Panel value="info" flex={1} style={scrollablePanelStyle}>
-              <InfoPanel />
-            </Tabs.Panel>
-          </Tabs>
+              <Tabs.Panel value="review" flex={1} p="sm" style={scrollablePanelStyle}>
+                <OpeningReviewPanel
+                  deckName={deckInfo?.name ?? tab.name}
+                  deckPath={deckPath}
+                  deckMode={deckInfo?.mode}
+                  initialView={
+                    tab.gameOrigin.kind === "opening_review" && tab.gameOrigin.initialTab === "gaps"
+                      ? "analyze"
+                      : "review"
+                  }
+                  boardMoveCandidate={boardMoveCandidate}
+                  onClearBoardMoveCandidate={() => setBoardMoveCandidate(null)}
+                  loadError={loadError}
+                  loaded={loaded}
+                />
+              </Tabs.Panel>
+              <Tabs.Panel value="analysis" flex={1} style={scrollablePanelStyle}>
+                <AnalysisPanel />
+              </Tabs.Panel>
+              <Tabs.Panel value="database" flex={1} style={scrollablePanelStyle}>
+                <DatabasePanel />
+              </Tabs.Panel>
+              <Tabs.Panel value="plan-explorer" flex={1} style={scrollablePanelStyle}>
+                <PlanExplorerPanel />
+              </Tabs.Panel>
+              <Tabs.Panel value="engine-plans" flex={1} style={scrollablePanelStyle}>
+                <EnginePlanExplorerPanel />
+              </Tabs.Panel>
+              <Tabs.Panel value="compare" flex={1} style={scrollablePanelStyle}>
+                <ComparePanel />
+              </Tabs.Panel>
+              <Tabs.Panel value="info" flex={1} style={scrollablePanelStyle}>
+                <InfoPanel />
+              </Tabs.Panel>
+            </Tabs>
+          </ResponsivePanel>
         </Paper>
       </Portal>
       <Portal target="#bottomRight" style={{ height: "100%" }}>
@@ -341,30 +464,134 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   );
 }
 
-function sameReviewMetadata(
-  position: Position,
-  comment: string,
-  annotations: NonNullable<Position["annotations"]>,
-  shapes: NonNullable<Position["shapes"]>,
-) {
+function OpeningReviewBoardNavigation({
+  positionIndex,
+  total,
+  canGoPrevious,
+  canGoNext,
+  onPrevious,
+  onNext,
+}: {
+  positionIndex: number;
+  total: number;
+  canGoPrevious: boolean;
+  canGoNext: boolean;
+  onPrevious: () => void;
+  onNext: () => void;
+}) {
+  const label =
+    total === 0
+      ? "No review positions"
+      : positionIndex >= 0
+        ? `Position ${positionIndex + 1} / ${total}`
+        : `${total} review position${total === 1 ? "" : "s"}`;
+
   return (
-    (position.comment ?? "") === comment &&
-    JSON.stringify(position.annotations ?? []) === JSON.stringify(annotations) &&
-    JSON.stringify(position.shapes ?? []) === JSON.stringify(shapes)
+    <Group justify="space-between" gap="xs" wrap="nowrap" px="xs" style={{ flexShrink: 0 }}>
+      <Button
+        size="xs"
+        variant="default"
+        leftSection={<IconChevronLeft size={14} />}
+        disabled={!canGoPrevious}
+        onClick={onPrevious}
+      >
+        Back
+      </Button>
+      <Text size="xs" c="dimmed" ta="center" lineClamp={1}>
+        {label}
+      </Text>
+      <Button
+        size="xs"
+        variant="default"
+        rightSection={<IconChevronRight size={14} />}
+        disabled={!canGoNext}
+        onClick={onNext}
+      >
+        Next
+      </Button>
+    </Group>
   );
 }
 
+function loadReviewPositionOnBoard({
+  position,
+  headers,
+  root,
+  store,
+  goToMove,
+  setHeaders,
+  setState,
+}: {
+  position: Position;
+  headers: GameHeaders;
+  root: TreeNode;
+  store: TreeStore;
+  goToMove: (move: number[]) => void;
+  setHeaders: (headers: GameHeaders) => void;
+  setState: (state: TreeState) => void;
+}) {
+  const reviewLine = createReviewPositionLineState(position, headers);
+  if (reviewLine) {
+    setState(reviewLine.state);
+    return reviewLine.path;
+  }
+
+  const path = findFen(position.fen, root);
+  if (path.length === 0 && !sameReviewPosition(root.fen, position.fen)) {
+    setHeaders({
+      ...headers,
+      fen: position.fen,
+      orientation: position.sideToMove ?? headers.orientation ?? "white",
+      result: "*",
+    });
+    applyReviewPositionMetadata(store, position);
+    return [];
+  }
+
+  goToMove(path);
+  applyReviewPositionMetadata(store, position);
+  return path;
+}
+
+function getReviewPositionsForPath(positions: Position[], root: TreeNode, path: number[]) {
+  const matches: { positionIndex: number; node: TreeNode; path: number[] }[] = [];
+
+  for (let depth = 0; depth <= path.length; depth += 1) {
+    const nodePath = path.slice(0, depth);
+    const node = getNodeAtPath(root, nodePath);
+    const positionIndex = positions.findIndex((position) =>
+      sameReviewPosition(position.fen, node.fen),
+    );
+    if (positionIndex !== -1) {
+      matches.push({ positionIndex, node, path: nodePath });
+    }
+  }
+
+  return matches;
+}
+
 function applyReviewPositionMetadata(store: TreeStore, position: Position) {
-  store.getState().setCurrentNodeMetadata({
-    annotations: position.annotations ?? [],
-    comment: position.comment ?? "",
-    shapes: position.shapes ?? [],
-  });
+  const state = store.getState();
+  const nextState = cloneTreeState(state);
+  const node = getNodeAtPath(nextState.root, nextState.position);
+  applyReviewPositionToNode(node, position);
+  state.setState(nextState);
 }
 
 function createReviewPositionLineState(position: Position, headers: GameHeaders) {
   const moveSequence = position.moveSequence?.trim();
-  if (!moveSequence) return null;
+  if (!moveSequence) {
+    const tree = defaultTree(position.fen);
+    tree.headers = {
+      ...headers,
+      fen: tree.root.fen,
+      orientation: position.sideToMove ?? headers.orientation ?? "white",
+      result: "*",
+    };
+    tree.dirty = false;
+    applyReviewPositionToNode(tree.root, position);
+    return { state: tree, path: [] };
+  }
 
   const tree = defaultTree();
   tree.headers = {
@@ -399,11 +626,101 @@ function createReviewPositionLineState(position: Position, headers: GameHeaders)
   if (!sameReviewPosition(currentNode.fen, position.fen)) return null;
 
   currentNode.fen = position.fen;
-  currentNode.annotations = position.annotations ?? [];
-  currentNode.comment = position.comment ?? "";
-  currentNode.shapes = position.shapes ?? [];
+  applyReviewPositionToNode(currentNode, position);
   tree.position = path;
   return { state: tree, path };
+}
+
+function applyReviewPositionToNode(node: TreeNode, position: Position) {
+  const reviewTree = position.reviewTree ? cloneReviewTreeNode(position.reviewTree) : null;
+  if (reviewTree) {
+    node.children = reviewTree.children;
+    node.score = reviewTree.score;
+    node.depth = reviewTree.depth;
+    node.annotations = reviewTree.annotations;
+    node.comment = reviewTree.comment;
+    node.shapes = reviewTree.shapes;
+    if (reviewTree.clock !== undefined) {
+      node.clock = reviewTree.clock;
+    } else {
+      delete node.clock;
+    }
+    return;
+  }
+
+  node.annotations = position.annotations ?? [];
+  node.comment = position.comment ?? "";
+  node.shapes = position.shapes ?? [];
+}
+
+function withReviewTree(position: Position, reviewTree: TreeNode): Position {
+  const hasContent = hasReviewTreeContent(reviewTree);
+  return {
+    ...position,
+    comment: reviewTree.comment || undefined,
+    annotations: reviewTree.annotations.length > 0 ? reviewTree.annotations : undefined,
+    shapes: reviewTree.shapes.length > 0 ? reviewTree.shapes : undefined,
+    reviewTree: hasContent ? reviewTree : undefined,
+  };
+}
+
+function hasReviewTreeContent(node: TreeNode) {
+  return (
+    node.children.length > 0 ||
+    node.annotations.length > 0 ||
+    node.shapes.length > 0 ||
+    node.comment.trim().length > 0
+  );
+}
+
+function sameReviewPersistence(left: Position, right: Position) {
+  return (
+    JSON.stringify(reviewPersistenceSnapshot(left)) ===
+    JSON.stringify(reviewPersistenceSnapshot(right))
+  );
+}
+
+function reviewPersistenceSnapshot(position: Position) {
+  return {
+    comment: position.comment || undefined,
+    annotations: position.annotations?.length ? position.annotations : undefined,
+    shapes: position.shapes?.length ? position.shapes : undefined,
+    reviewTree: position.reviewTree ? cloneReviewTreeNode(position.reviewTree) : undefined,
+  };
+}
+
+function cloneTreeState(state: TreeState): TreeState {
+  return {
+    root: cloneReviewTreeNode(state.root),
+    headers: {
+      ...state.headers,
+      start: state.headers.start ? [...state.headers.start] : undefined,
+      other: state.headers.other ? { ...state.headers.other } : undefined,
+    },
+    position: [...state.position],
+    dirty: state.dirty,
+    report: { ...state.report },
+  };
+}
+
+function cloneReviewTreeNode(node: TreeNode): TreeNode {
+  return {
+    fen: node.fen,
+    move: cloneJson(node.move) ?? null,
+    san: node.san ?? null,
+    children: node.children.map(cloneReviewTreeNode),
+    score: cloneJson(node.score) ?? null,
+    depth: node.depth ?? null,
+    halfMoves: node.halfMoves,
+    shapes: cloneJson(node.shapes ?? []),
+    annotations: [...(node.annotations ?? [])],
+    comment: node.comment ?? "",
+    ...(node.clock !== undefined ? { clock: node.clock } : {}),
+  };
+}
+
+function cloneJson<T>(value: T): T {
+  return value === null || value === undefined ? value : JSON.parse(JSON.stringify(value));
 }
 
 function tokenizeReviewMoveSequence(moveSequence: string) {
@@ -412,9 +729,7 @@ function tokenizeReviewMoveSequence(moveSequence: string) {
     .map((token) => token.replace(/^\d+\.(\.\.)?/, "").trim())
     .filter(
       (token) =>
-        token &&
-        !/^\d+\.(\.\.)?$/.test(token) &&
-        !["1-0", "0-1", "1/2-1/2", "*"].includes(token),
+        token && !/^\d+\.(\.\.)?$/.test(token) && !["1-0", "0-1", "1/2-1/2", "*"].includes(token),
     );
 }
 
@@ -481,6 +796,7 @@ function OpeningReviewPanel({
   const [sessionStats, setSessionStats] = useAtom(practiceSessionStatsAtom);
   const setCardStartTime = useSetAtom(practiceCardStartTimeAtom);
   const practiceAutoDifficulty = useAtomValue(practiceAutoDifficultyAtom);
+  const hideMovesDuringPractice = useAtomValue(openingReviewHideMovesDuringPracticeAtom);
   const [positionsOpen, setPositionsOpen] = useToggle();
   const [panelView, setPanelView] = useState<OpeningReviewPanelView>(initialView);
   const playedOverrideCandidate = useMemo(() => {
@@ -620,25 +936,17 @@ function OpeningReviewPanel({
       }
       onClearBoardMoveCandidate();
 
-      const reviewLine = createReviewPositionLineState(position, headers);
-      if (reviewLine) {
-        setState(reviewLine.state);
-        setPracticePath(reviewLine.path);
-      } else if (findFen(position.fen, root).length === 0 && root.fen !== position.fen) {
-        setHeaders({
-          ...headers,
-          fen: position.fen,
-          orientation: position.sideToMove ?? headers.orientation ?? "white",
-          result: "*",
-        });
-        setPracticePath([]);
-      } else {
-        const path = findFen(position.fen, root);
-        goToMove(path);
-        setPracticePath(path);
-      }
-      applyReviewPositionMetadata(store, position);
-      setInvisible(true);
+      const path = loadReviewPositionOnBoard({
+        position,
+        headers,
+        root,
+        store,
+        goToMove,
+        setHeaders,
+        setState,
+      });
+      setPracticePath(path);
+      setInvisible(hideMovesDuringPractice);
       setShowComments(false);
       setEvalOpen(false);
       setCardStartTime(Date.now());
@@ -662,6 +970,7 @@ function OpeningReviewPanel({
       store,
       onClearBoardMoveCandidate,
       stopPractice,
+      hideMovesDuringPractice,
     ],
   );
 
@@ -778,9 +1087,10 @@ function OpeningReviewPanel({
 
   useEffect(() => {
     if (practiceState.phase === "correct" || practiceState.phase === "incorrect") {
+      setInvisible(false);
       setShowComments(true);
     }
-  }, [practiceState.phase, setShowComments]);
+  }, [practiceState.phase, setInvisible, setShowComments]);
 
   if (!loaded) {
     return <Alert color="blue">Loading review deck...</Alert>;
@@ -931,15 +1241,20 @@ function OpeningReviewPanel({
                     const position = deck.positions.find(
                       (deckPosition) => deckPosition.fen === practiceState.currentFen,
                     );
-                    const reviewLine = position
-                      ? createReviewPositionLineState(position, headers)
-                      : null;
-                    if (reviewLine) {
-                      setState(reviewLine.state);
-                      setPracticePath(reviewLine.path);
+                    if (position) {
+                      const path = loadReviewPositionOnBoard({
+                        position,
+                        headers,
+                        root,
+                        store,
+                        goToMove,
+                        setHeaders,
+                        setState,
+                      });
+                      setPracticePath(path);
                     } else if (
                       findFen(practiceState.currentFen, root).length === 0 &&
-                      root.fen !== practiceState.currentFen
+                      !sameReviewPosition(root.fen, practiceState.currentFen)
                     ) {
                       setHeaders({ ...headers, fen: practiceState.currentFen, result: "*" });
                       setPracticePath([]);
@@ -948,8 +1263,7 @@ function OpeningReviewPanel({
                       goToMove(path);
                       setPracticePath(path);
                     }
-                    if (position) applyReviewPositionMetadata(store, position);
-                    setInvisible(true);
+                    setInvisible(hideMovesDuringPractice);
                   }}
                 >
                   Go back
@@ -1165,7 +1479,9 @@ function OpeningReviewAttemptDetails({
                 {health.strongScore === null || health.strongScore === undefined
                   ? "-"
                   : formatReviewPercent(health.strongScore)}
-                {health.strongGames ? ` across ${formatReviewNumber(health.strongGames)} games` : ""}
+                {health.strongGames
+                  ? ` across ${formatReviewNumber(health.strongGames)} games`
+                  : ""}
               </Text>
             )}
             <SimpleGrid cols={2} spacing="xs">
@@ -1364,6 +1680,7 @@ function OpeningReviewPositionsModal({
   const store = useContext(TreeStateContext)!;
   const goToMove = useStore(store, (s) => s.goToMove);
   const setHeaders = useStore(store, (s) => s.setHeaders);
+  const setPracticePath = useStore(store, (s) => s.setPracticePath);
   const setState = useStore(store, (s) => s.setState);
   const headers = useStore(store, (s) => s.headers);
   const root = useStore(store, (s) => s.root);
@@ -1380,24 +1697,19 @@ function OpeningReviewPositionsModal({
 
   const loadReviewPosition = useCallback(
     (position: Position) => {
-      const reviewLine = createReviewPositionLineState(position, headers);
-      if (reviewLine) {
-        setState(reviewLine.state);
-      } else if (findFen(position.fen, root).length === 0 && root.fen !== position.fen) {
-        setHeaders({
-          ...headers,
-          fen: position.fen,
-          orientation: position.sideToMove ?? headers.orientation ?? "white",
-          result: "*",
-        });
-      } else {
-        const path = findFen(position.fen, root);
-        goToMove(path);
-      }
-      applyReviewPositionMetadata(store, position);
+      loadReviewPositionOnBoard({
+        position,
+        headers,
+        root,
+        store,
+        goToMove,
+        setHeaders,
+        setState,
+      });
+      setPracticePath(null);
       onClose();
     },
-    [goToMove, headers, onClose, root, setHeaders, setState, store],
+    [goToMove, headers, onClose, root, setHeaders, setPracticePath, setState, store],
   );
 
   const deleteReviewPosition = useCallback(

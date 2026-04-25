@@ -26,6 +26,7 @@ import type { GameSort, NormalizedGame, Outcome } from "@/bindings";
 import { activeTabAtom, tabsAtom } from "@/state/atoms";
 import { query_games } from "@/utils/db";
 import { createTab } from "@/utils/tabs";
+import { usePanelDensity } from "@/components/common/ResponsivePanel";
 import { DatabaseViewStateContext } from "./DatabaseViewStateContext";
 import GameCard from "./GameCard";
 import GridLayout from "./GridLayout";
@@ -50,6 +51,10 @@ function GameTable() {
 
   const [, setTabs] = useAtom(tabsAtom);
   const setActiveTab = useSetAtom(activeTabAtom);
+  const density = usePanelDensity();
+  const compact = density !== "regular";
+  const dense = density === "dense";
+  const tableSpacing = dense ? 4 : compact ? 6 : "xs";
 
   const { data, error, isLoading, mutate } = useSWR(["games", file, query], () =>
     query_games(file, query),
@@ -88,9 +93,9 @@ function GameTable() {
   return (
     <GridLayout
       search={
-        <Flex style={{ gap: 20 }}>
+        <Flex style={{ gap: compact ? 8 : 20, flexWrap: compact ? "wrap" : "nowrap" }}>
           <Box style={{ flexGrow: 1 }}>
-            <Group grow>
+            <Group grow wrap={compact ? "wrap" : "nowrap"}>
               <PlayerSearchInput
                 value={query?.player1 ?? undefined}
                 setValue={(value) => setQuery({ ...query, player1: value })}
@@ -208,6 +213,8 @@ function GameTable() {
         <DataTable<NormalizedGame>
           withTableBorder
           highlightOnHover
+          horizontalSpacing={tableSpacing}
+          verticalSpacing={dense ? 3 : compact ? 4 : "xs"}
           records={games}
           fetching={isLoading}
           onRowDoubleClick={({ record }) => {

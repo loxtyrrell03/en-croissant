@@ -43,6 +43,7 @@ const DB_CACHE_LIMIT: usize = 4;
 const PLAN_EXPLORER_INDEXED_SAMPLES: usize = 5_000;
 const PLAN_EXPLORER_FALLBACK_FULL_SAMPLE_MAX_GAMES: usize = 100_000;
 const MASTER_GAME_FAST_CANDIDATE_LIMIT: usize = 30_000;
+const MASTER_GAME_MAX_SAMPLE_LIMIT: usize = 5_000;
 const OPENING_HEALTH_SCORE_GAP: f64 = 0.15;
 const OPENING_HEALTH_POOR_SCORE: f64 = 0.45;
 const OPENING_HEALTH_PROGRESS_EVENT: &str = "opening_health_progress";
@@ -2547,7 +2548,7 @@ pub async fn search_position(
         .filter(|page_size| *page_size > 0)
         .map(|page_size| page_size as usize)
         .unwrap_or(500)
-        .clamp(1, 500);
+        .clamp(1, MASTER_GAME_MAX_SAMPLE_LIMIT);
 
     if !include_openings && !include_games {
         finish_cancelable_db_request(&state, &tab_id, &cancel_flag);

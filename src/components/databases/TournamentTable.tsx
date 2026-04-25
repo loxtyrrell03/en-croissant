@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import { useStore } from "zustand";
 import { commands, type Event, type TournamentSort } from "@/bindings";
+import { usePanelDensity } from "@/components/common/ResponsivePanel";
 import { unwrap } from "@/utils/unwrap";
 import { DatabaseViewStateContext } from "./DatabaseViewStateContext";
 import GridLayout from "./GridLayout";
@@ -29,6 +30,10 @@ function TournamentTable() {
   const tournaments = data?.data ?? [];
   const count = data?.count;
   const tournament = tournaments.find((t) => t.id === selected);
+  const density = usePanelDensity();
+  const compact = density !== "regular";
+  const dense = density === "dense";
+  const tableSpacing = dense ? 4 : compact ? 6 : "xs";
 
   useHotkeys("ArrowUp", () => {
     if (selected != null) {
@@ -52,7 +57,7 @@ function TournamentTable() {
   return (
     <GridLayout
       search={
-        <Flex style={{ alignItems: "center", gap: 10 }}>
+        <Flex style={{ alignItems: "center", gap: compact ? 6 : 10 }}>
           <TextInput
             style={{ flexGrow: 1 }}
             placeholder={t("Databases.Tournament.Search")}
@@ -71,6 +76,8 @@ function TournamentTable() {
         <DataTable<Event>
           withTableBorder
           highlightOnHover
+          horizontalSpacing={tableSpacing}
+          verticalSpacing={dense ? 3 : compact ? 4 : "xs"}
           records={tournaments}
           fetching={isLoading}
           columns={[

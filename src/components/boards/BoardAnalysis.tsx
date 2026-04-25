@@ -1,6 +1,7 @@
 import { Paper, Portal, Stack, Tabs } from "@mantine/core";
 import { useHotkeys, useToggle } from "@mantine/hooks";
 import {
+  IconBulb,
   IconDatabase,
   IconGitCompare,
   IconInfoCircle,
@@ -31,11 +32,13 @@ import { getTabFile, getTabGameNumber, getTabPracticeKey, saveToFile } from "@/u
 import DetachedEval from "../common/DetachedEval";
 import GameNotation from "../common/GameNotation";
 import MoveControls from "../common/MoveControls";
+import { ResponsivePanel } from "../common/ResponsivePanel";
 import { TreeStateContext } from "../common/TreeStateContext";
 import AnalysisPanel from "../panels/analysis/AnalysisPanel";
 import AnnotationPanel from "../panels/annotation/AnnotationPanel";
 import ComparePanel from "../panels/compare/ComparePanel";
 import DatabasePanel from "../panels/database/DatabasePanel";
+import EnginePlanExplorerPanel from "../panels/enginePlan/EnginePlanExplorerPanel";
 import InfoPanel from "../panels/info/InfoPanel";
 import PlanExplorerPanel from "../panels/plan/PlanExplorerPanel";
 import PracticePanel from "../panels/practice/PracticePanel";
@@ -218,9 +221,7 @@ function BoardAnalysis() {
 
   return (
     <>
-      <EvalListener
-        active={selectedPanel === "analysis" || selectedPanel === "compare"}
-      />
+      <EvalListener active={selectedPanel === "analysis" || selectedPanel === "compare"} />
       <Portal target="#left" style={{ height: "100%" }}>
         <Stack h="100%" gap="xs" style={{ minHeight: 0, overflow: "hidden" }}>
           <Stack flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
@@ -249,71 +250,79 @@ function BoardAnalysis() {
           }}
           pos="relative"
         >
-          <Tabs
-            w="100%"
-            h="100%"
-            value={selectedPanel}
-            onChange={(v) => setCurrentTabSelected(v || "info")}
-            keepMounted={false}
-            activateTabWithKeyboard={false}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-            }}
-            styles={{
-              tabLabel: {
-                flex: 0,
-              },
-              tab: {
+          <ResponsivePanel>
+            <Tabs
+              w="100%"
+              h="100%"
+              value={selectedPanel}
+              onChange={(v) => setCurrentTabSelected(v || "info")}
+              keepMounted={false}
+              activateTabWithKeyboard={false}
+              style={{
                 display: "flex",
-                justifyContent: "center",
-                gap: "0.3rem",
-              },
-            }}
-          >
-            <Tabs.List grow>
-              {showPracticeTab && (
-                <Tabs.Tab value="practice" leftSection={<IconTargetArrow size="1rem" />}>
-                  {t("Board.Tabs.Practice")}
+                flexDirection: "column",
+              }}
+              styles={{
+                tabLabel: {
+                  flex: 0,
+                },
+                tab: {
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: "0.3rem",
+                },
+              }}
+            >
+              <Tabs.List grow>
+                {showPracticeTab && (
+                  <Tabs.Tab value="practice" leftSection={<IconTargetArrow size="1rem" />}>
+                    {t("Board.Tabs.Practice")}
+                  </Tabs.Tab>
+                )}
+                <Tabs.Tab value="analysis" leftSection={<IconZoomCheck size="1rem" />}>
+                  {t("Board.Tabs.Analysis")}
                 </Tabs.Tab>
+                <Tabs.Tab value="database" leftSection={<IconDatabase size="1rem" />}>
+                  {t("Board.Tabs.Database")}
+                </Tabs.Tab>
+                <Tabs.Tab value="plan-explorer" leftSection={<IconRoute size="1rem" />}>
+                  Plan Explorer
+                </Tabs.Tab>
+                <Tabs.Tab value="engine-plans" leftSection={<IconBulb size="1rem" />}>
+                  Engine Plans
+                </Tabs.Tab>
+                <Tabs.Tab value="compare" leftSection={<IconGitCompare size="1rem" />}>
+                  Compare
+                </Tabs.Tab>
+                <Tabs.Tab value="info" leftSection={<IconInfoCircle size="1rem" />}>
+                  {t("Board.Tabs.Info")}
+                </Tabs.Tab>
+              </Tabs.List>
+              {showPracticeTab && (
+                <Tabs.Panel value="practice" flex={1} style={scrollablePanelStyle}>
+                  <PracticePanel />
+                </Tabs.Panel>
               )}
-              <Tabs.Tab value="analysis" leftSection={<IconZoomCheck size="1rem" />}>
-                {t("Board.Tabs.Analysis")}
-              </Tabs.Tab>
-              <Tabs.Tab value="database" leftSection={<IconDatabase size="1rem" />}>
-                {t("Board.Tabs.Database")}
-              </Tabs.Tab>
-              <Tabs.Tab value="plan-explorer" leftSection={<IconRoute size="1rem" />}>
-                Plan Explorer
-              </Tabs.Tab>
-              <Tabs.Tab value="compare" leftSection={<IconGitCompare size="1rem" />}>
-                Compare
-              </Tabs.Tab>
-              <Tabs.Tab value="info" leftSection={<IconInfoCircle size="1rem" />}>
-                {t("Board.Tabs.Info")}
-              </Tabs.Tab>
-            </Tabs.List>
-            {showPracticeTab && (
-              <Tabs.Panel value="practice" flex={1} style={scrollablePanelStyle}>
-                <PracticePanel />
+              <Tabs.Panel value="info" flex={1} style={scrollablePanelStyle}>
+                <InfoPanel addGame={addGame} />
               </Tabs.Panel>
-            )}
-            <Tabs.Panel value="info" flex={1} style={scrollablePanelStyle}>
-              <InfoPanel addGame={addGame} />
-            </Tabs.Panel>
-            <Tabs.Panel value="database" flex={1} style={scrollablePanelStyle}>
-              <DatabasePanel />
-            </Tabs.Panel>
-            <Tabs.Panel value="plan-explorer" flex={1} style={scrollablePanelStyle}>
-              <PlanExplorerPanel />
-            </Tabs.Panel>
-            <Tabs.Panel value="compare" flex={1} style={scrollablePanelStyle}>
-              <ComparePanel />
-            </Tabs.Panel>
-            <Tabs.Panel value="analysis" flex={1} style={scrollablePanelStyle}>
-              <AnalysisPanel />
-            </Tabs.Panel>
-          </Tabs>
+              <Tabs.Panel value="database" flex={1} style={scrollablePanelStyle}>
+                <DatabasePanel />
+              </Tabs.Panel>
+              <Tabs.Panel value="plan-explorer" flex={1} style={scrollablePanelStyle}>
+                <PlanExplorerPanel />
+              </Tabs.Panel>
+              <Tabs.Panel value="engine-plans" flex={1} style={scrollablePanelStyle}>
+                <EnginePlanExplorerPanel />
+              </Tabs.Panel>
+              <Tabs.Panel value="compare" flex={1} style={scrollablePanelStyle}>
+                <ComparePanel />
+              </Tabs.Panel>
+              <Tabs.Panel value="analysis" flex={1} style={scrollablePanelStyle}>
+                <AnalysisPanel />
+              </Tabs.Panel>
+            </Tabs>
+          </ResponsivePanel>
         </Paper>
       </Portal>
       <Portal target="#bottomRight" style={{ height: "100%" }}>

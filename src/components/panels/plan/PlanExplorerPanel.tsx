@@ -14,14 +14,41 @@ import {
   Table,
   Text,
   Tooltip,
+  UnstyledButton,
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
-import { IconRoute } from "@tabler/icons-react";
+import {
+  IconChevronDown,
+  IconChevronUp,
+  IconPlayerStop,
+  IconRefresh,
+  IconRoute,
+} from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import type { Piece } from "@lichess-org/chessground/types";
-import { commands, type PlanExplorerLine, type PlanExplorerPiece } from "@/bindings";
+import {
+  commands,
+  events,
+  type BestMoves,
+  type EngineOption,
+  type GoMode,
+  type PlanExplorerLine,
+  type PlanExplorerPiece,
+} from "@/bindings";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
+} from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr/immutable";
 import { useStore } from "zustand";
@@ -30,17 +57,36 @@ import { TreeStateContext } from "@/components/common/TreeStateContext";
 import {
   currentLocalOptionsAtom,
   currentPlanExplorerDataAtom,
+  currentPlanExplorerEngineStrengthAtom,
   currentPlanExplorerPreviewLineAtom,
   currentTabAtom,
+  enginesAtom,
   lichessOptionsAtom,
   masterOptionsAtom,
   planExplorerArrowLimitAtom,
+  planExplorerEngineStrengthDepthAtom,
+  planExplorerEngineStrengthEnabledAtom,
+  planExplorerEngineStrengthMultipvAtom,
   planExplorerHoverEverywhereAtom,
   planExplorerSourceAtom,
   referenceDbAtom,
   sessionsAtom,
   showPlanExplorerArrowsAtom,
 } from "@/state/atoms";
+import {
+  buildEnginePlanReport,
+  enginePlanStrengthScore,
+  getPlanExplorerLineEnginePlan,
+  type EnginePlan,
+  type EnginePlanReport,
+  type PlanExplorerEnginePlanMatch,
+} from "@/utils/enginePlanExplorer";
+import {
+  type EngineSettings,
+  type LocalEngine,
+  getBestMoves as getLocalBestMoves,
+  stopEngine,
+} from "@/utils/engines";
 import {
   cancelDatabaseSearch,
   getDatabases,
@@ -60,6 +106,21 @@ import NoDatabaseWarning from "../database/NoDatabaseWarning";
 
 type SideFilter = "all" | "white" | "black";
 type PlanExplorerSource = "local" | OnlinePlanExplorerSource;
+type SortDirection = "asc" | "desc";
+type PlanSortKey = "piece" | "routes" | "games" | "results" | "engine";
+type PlanSort = {
+  key: PlanSortKey;
+  direction: SortDirection;
+};
+type PlanExplorerEngineRequest = {
+  token: number;
+  engine: LocalEngine;
+  tab: string;
+  fen: string;
+  cacheKey: string;
+  requestedMultipv: number;
+  limitLabel: string;
+};
 
 function PlanExplorerPanel() {
   const { t } = useTranslation();
@@ -74,20 +135,86 @@ function PlanExplorerPanel() {
   const [hoverEverywhere, setHoverEverywhere] = useAtom(planExplorerHoverEverywhereAtom);
   const [source, setSource] = useAtom(planExplorerSourceAtom);
   const currentTab = useAtomValue(currentTabAtom);
+  const engines = useAtomValue(enginesAtom);
   const localOptions = useAtomValue(currentLocalOptionsAtom);
   const lichessOptions = useAtomValue(lichessOptionsAtom);
   const masterOptions = useAtomValue(masterOptionsAtom);
   const sessions = useAtomValue(sessionsAtom);
   const setPlanExplorerData = useSetAtom(currentPlanExplorerDataAtom);
   const setPreviewLine = useSetAtom(currentPlanExplorerPreviewLineAtom);
+  const [engineStrengthEnabled, setEngineStrengthEnabled] = useAtom(
+    planExplorerEngineStrengthEnabledAtom,
+  );
+  const [engineStrengthDepth, setEngineStrengthDepth] = useAtom(
+    planExplorerEngineStrengthDepthAtom,
+  );
+  const [engineStrengthMultipv, setEngineStrengthMultipv] = useAtom(
+    planExplorerEngineStrengthMultipvAtom,
+  );
+  const [engineStrengthState, setEngineStrengthState] = useAtom(
+    currentPlanExplorerEngineStrengthAtom,
+  );
+  const [engineId, setEngineId] = useState<string | null>(null);
   const [sideFilter, setSideFilter] = useState<SideFilter>("all");
   const [maxPlies, setMaxPlies] = useState("8");
+  const [sort, setSort] = useState<PlanSort>({ key: "engine", direction: "desc" });
+  const engineRequestRef = useRef<PlanExplorerEngineRequest | null>(null);
+  const engineUnlistenRef = useRef<(() => void) | null>(null);
+  const engineTokenRef = useRef(0);
   const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
     ?.accessToken;
   const lichessOptionsKey = JSON.stringify(lichessOptions);
   const masterOptionsKey = JSON.stringify(masterOptions);
   const isLocalSource = source === "local";
   const missingExplorerToken = !isLocalSource && !explorerToken;
+  const clampedEngineDepth = clampNumber(engineStrengthDepth, 1, 40);
+  const clampedEngineMultipv = clampNumber(engineStrengthMultipv, 1, 20);
+  const localEngines = useMemo(
+    () =>
+      (engines ?? []).filter(
+        (engine): engine is LocalEngine => engine.type === "local",
+      ),
+    [engines],
+  );
+  const selectedEngine = useMemo(
+    () => localEngines.find((engine) => engine.id === engineId) ?? localEngines[0] ?? null,
+    [engineId, localEngines],
+  );
+  const cleanupEngineListener = useCallback(() => {
+    engineUnlistenRef.current?.();
+    engineUnlistenRef.current = null;
+  }, []);
+
+  useEffect(() => {
+    if (localEngines.length === 0) {
+      setEngineId(null);
+      return;
+    }
+    if (!engineId || !localEngines.some((engine) => engine.id === engineId)) {
+      setEngineId(localEngines[0].id);
+    }
+  }, [engineId, localEngines]);
+
+  const engineStrengthCacheKey = useMemo(() => {
+    if (!selectedEngine) return "";
+    return [
+      debouncedFen,
+      selectedEngine.id,
+      clampedEngineDepth,
+      clampedEngineMultipv,
+    ].join("|");
+  }, [clampedEngineDepth, clampedEngineMultipv, debouncedFen, selectedEngine]);
+  const cachedEngineReport = engineStrengthCacheKey
+    ? engineStrengthState.cache[engineStrengthCacheKey]
+    : null;
+  const visibleEngineReport =
+    engineStrengthEnabled &&
+    engineStrengthState.reportCacheKey === engineStrengthCacheKey &&
+    engineStrengthState.report?.fen === debouncedFen
+      ? engineStrengthState.report
+      : engineStrengthEnabled && cachedEngineReport?.fen === debouncedFen
+        ? cachedEngineReport
+        : null;
 
   const { data: databases } = useSWR("databases", () => getDatabases());
   const localDatabases = useMemo(
@@ -198,6 +325,208 @@ function PlanExplorerPanel() {
       pieces: planData.pieces.filter((piece) => piece.color === sideFilter),
     };
   }, [planData, sideFilter]);
+  const sortedVisiblePlanData = useMemo(() => {
+    if (!visiblePlanData) return null;
+    return {
+      ...visiblePlanData,
+      pieces: sortPlanPieces(visiblePlanData.pieces, sort, visibleEngineReport),
+    };
+  }, [sort, visibleEngineReport, visiblePlanData]);
+
+  const handleEngineLines = useCallback(
+    (active: PlanExplorerEngineRequest, bestLines: BestMoves[], nextProgress: number) => {
+      if (bestLines.length === 0) return;
+
+      const nextClampedProgress = Math.min(100, Math.max(0, nextProgress));
+      const nextReport = buildEnginePlanReport(active.fen, bestLines, {
+        requestedMultipv: active.requestedMultipv,
+        limitLabel: active.limitLabel,
+      });
+
+      setEngineStrengthState((current) => ({
+        ...current,
+        report: nextReport,
+        reportCacheKey: active.cacheKey,
+        cache: {
+          ...current.cache,
+          [active.cacheKey]: nextReport,
+        },
+        progress: nextClampedProgress,
+        running: nextClampedProgress < 100,
+        error: null,
+        activeRequestKey: nextClampedProgress >= 100 ? null : active.cacheKey,
+      }));
+
+      if (nextClampedProgress >= 100) {
+        engineRequestRef.current = null;
+        cleanupEngineListener();
+      }
+    },
+    [cleanupEngineListener, setEngineStrengthState],
+  );
+
+  const runEngineStrength = useCallback(
+    async (forceRefresh = false) => {
+      if (!selectedEngine || !engineStrengthCacheKey || !engineStrengthEnabled || !planData) {
+        return;
+      }
+
+      const cached = forceRefresh ? null : engineStrengthState.cache[engineStrengthCacheKey];
+      if (cached) {
+        setEngineStrengthState((current) => ({
+          ...current,
+          report: cached,
+          reportCacheKey: engineStrengthCacheKey,
+          progress: 100,
+          running: false,
+          error: null,
+          activeRequestKey: null,
+        }));
+        return;
+      }
+
+      const previous = engineRequestRef.current;
+      if (previous) {
+        void stopEngine(previous.engine, previous.tab);
+      }
+      cleanupEngineListener();
+
+      const tab = `plan-explorer-engine:${currentTab?.value ?? "tab"}`;
+      const active: PlanExplorerEngineRequest = {
+        token: engineTokenRef.current + 1,
+        engine: selectedEngine,
+        tab,
+        fen: debouncedFen,
+        cacheKey: engineStrengthCacheKey,
+        requestedMultipv: clampedEngineMultipv,
+        limitLabel: `Depth ${clampedEngineDepth}`,
+      };
+      engineTokenRef.current = active.token;
+      engineRequestRef.current = active;
+      setEngineStrengthState((current) => ({
+        ...current,
+        report: null,
+        reportCacheKey: engineStrengthCacheKey,
+        progress: 0,
+        running: true,
+        error: null,
+        activeRequestKey: engineStrengthCacheKey,
+      }));
+
+      let unlisten: () => void;
+      try {
+        unlisten = await events.bestMovesPayload.listen(({ payload }) => {
+          const current = engineRequestRef.current;
+          if (!current || current.token !== active.token) return;
+          if (payload.engine !== current.engine.id || payload.tab !== current.tab) return;
+          if (payload.fen !== current.fen || payload.moves.length !== 0) return;
+
+          handleEngineLines(current, payload.bestLines, payload.progress);
+        });
+      } catch (caught) {
+        if (engineRequestRef.current?.token === active.token) {
+          setEngineStrengthState((current) => ({
+            ...current,
+            error: caught instanceof Error ? caught.message : String(caught),
+            running: false,
+            activeRequestKey: null,
+          }));
+          engineRequestRef.current = null;
+        }
+        return;
+      }
+
+      if (engineRequestRef.current?.token === active.token) {
+        engineUnlistenRef.current = unlisten;
+      } else {
+        unlisten();
+        return;
+      }
+
+      const goMode: GoMode = { t: "Depth", c: clampedEngineDepth };
+      void getLocalBestMoves(selectedEngine, tab, goMode, {
+        fen: debouncedFen,
+        moves: [],
+        extraOptions: buildEngineOptions(selectedEngine.settings, clampedEngineMultipv),
+      })
+        .then((result) => {
+          const current = engineRequestRef.current;
+          if (!result || !current || current.token !== active.token) return;
+          handleEngineLines(current, result[1], result[0]);
+        })
+        .catch((caught) => {
+          const current = engineRequestRef.current;
+          if (!current || current.token !== active.token) return;
+          setEngineStrengthState((state) => ({
+            ...state,
+            error: caught instanceof Error ? caught.message : String(caught),
+            running: false,
+            activeRequestKey: null,
+          }));
+          engineRequestRef.current = null;
+          cleanupEngineListener();
+        });
+    },
+    [
+      cleanupEngineListener,
+      clampedEngineDepth,
+      clampedEngineMultipv,
+      currentTab?.value,
+      debouncedFen,
+      engineStrengthCacheKey,
+      engineStrengthEnabled,
+      engineStrengthState.cache,
+      handleEngineLines,
+      planData,
+      selectedEngine,
+      setEngineStrengthState,
+    ],
+  );
+
+  const stopEngineStrength = useCallback(() => {
+    const active = engineRequestRef.current;
+    engineRequestRef.current = null;
+    cleanupEngineListener();
+    setEngineStrengthState((current) => ({
+      ...current,
+      running: false,
+      activeRequestKey: null,
+    }));
+    if (active) {
+      void stopEngine(active.engine, active.tab);
+    }
+  }, [cleanupEngineListener, setEngineStrengthState]);
+
+  useEffect(() => {
+    if (!engineStrengthEnabled) {
+      stopEngineStrength();
+      return;
+    }
+    if (!selectedEngine || !planData || !engineStrengthCacheKey) return;
+    if (
+      visibleEngineReport ||
+      engineStrengthState.activeRequestKey === engineStrengthCacheKey
+    ) {
+      return;
+    }
+
+    void runEngineStrength();
+  }, [
+    engineStrengthCacheKey,
+    engineStrengthEnabled,
+    engineStrengthState.activeRequestKey,
+    planData,
+    runEngineStrength,
+    selectedEngine,
+    stopEngineStrength,
+    visibleEngineReport,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      stopEngineStrength();
+    };
+  }, [stopEngineStrength]);
 
   useEffect(() => {
     setPlanExplorerData(null);
@@ -223,9 +552,9 @@ function PlanExplorerPanel() {
   }, [isLocalSource, referenceDatabase, requestId, setPreviewLine]);
 
   useEffect(() => {
-    setPlanExplorerData(visiblePlanData);
+    setPlanExplorerData(sortedVisiblePlanData);
     setPreviewLine(null);
-  }, [setPlanExplorerData, setPreviewLine, visiblePlanData]);
+  }, [setPlanExplorerData, setPreviewLine, sortedVisiblePlanData]);
 
   const drawLine = useCallback(
     (line: ColoredPlanExplorerLine) => {
@@ -236,8 +565,8 @@ function PlanExplorerPanel() {
   );
 
   const pieces = useMemo(() => {
-    return visiblePlanData?.pieces ?? [];
-  }, [visiblePlanData?.pieces]);
+    return sortedVisiblePlanData?.pieces ?? [];
+  }, [sortedVisiblePlanData?.pieces]);
 
   const content = (() => {
     if (isLocalSource && !referenceDatabase) {
@@ -258,16 +587,29 @@ function PlanExplorerPanel() {
         <Table withTableBorder highlightOnHover stickyHeader>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th style={{ width: 150 }}>Piece</Table.Th>
-              <Table.Th>Routes</Table.Th>
-              <Table.Th style={{ width: 110 }}>Games</Table.Th>
-              <Table.Th style={{ width: 150 }}>Results</Table.Th>
+              <SortableTh sortKey="piece" sort={sort} setSort={setSort} style={{ width: 150 }}>
+                Piece
+              </SortableTh>
+              {engineStrengthEnabled && (
+                <SortableTh sortKey="engine" sort={sort} setSort={setSort} style={{ width: 130 }}>
+                  Engine
+                </SortableTh>
+              )}
+              <SortableTh sortKey="routes" sort={sort} setSort={setSort}>
+                Routes
+              </SortableTh>
+              <SortableTh sortKey="games" sort={sort} setSort={setSort} style={{ width: 110 }}>
+                Games
+              </SortableTh>
+              <SortableTh sortKey="results" sort={sort} setSort={setSort} style={{ width: 150 }}>
+                Results
+              </SortableTh>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
             {pieces.length === 0 && !isLoading ? (
               <Table.Tr>
-                <Table.Td colSpan={4}>
+                <Table.Td colSpan={engineStrengthEnabled ? 5 : 4}>
                   <Text ta="center" c="dimmed" py="lg">
                     No piece routes found in the sampled continuations.
                   </Text>
@@ -280,6 +622,9 @@ function PlanExplorerPanel() {
                   piece={piece}
                   drawLine={drawLine}
                   previewLine={setPreviewLine}
+                  engineStrengthEnabled={engineStrengthEnabled}
+                  engineReport={visibleEngineReport}
+                  engineRunning={engineStrengthState.running}
                 />
               ))
             )}
@@ -351,14 +696,129 @@ function PlanExplorerPanel() {
               { label: "Black", value: "black" },
             ]}
           />
+          <Switch
+            label="Engine strength"
+            size="sm"
+            checked={engineStrengthEnabled}
+            onChange={(event) => setEngineStrengthEnabled(event.currentTarget.checked)}
+            styles={{
+              label: { whiteSpace: "nowrap" },
+              track: { cursor: "pointer" },
+            }}
+          />
+          {engineStrengthEnabled && (
+            <>
+              <Select
+                aria-label="Plan Explorer engine"
+                data={localEngines.map((engine) => ({
+                  value: engine.id,
+                  label: engine.name,
+                }))}
+                value={selectedEngine?.id ?? null}
+                onChange={setEngineId}
+                placeholder="Engine"
+                size="sm"
+                w={180}
+                searchable
+                allowDeselect={false}
+                comboboxProps={{ withinPortal: true }}
+              />
+              <NumberInput
+                aria-label="Plan Explorer engine depth"
+                value={clampedEngineDepth}
+                onChange={(value) =>
+                  setEngineStrengthDepth(clampNumber(Number(value) || 12, 1, 40))
+                }
+                min={1}
+                max={40}
+                clampBehavior="strict"
+                size="sm"
+                w={94}
+                prefix="D "
+              />
+              <NumberInput
+                aria-label="Plan Explorer engine PV"
+                value={clampedEngineMultipv}
+                onChange={(value) =>
+                  setEngineStrengthMultipv(clampNumber(Number(value) || 5, 1, 20))
+                }
+                min={1}
+                max={20}
+                clampBehavior="strict"
+                size="sm"
+                w={94}
+                prefix="PV "
+              />
+              <Tooltip label={engineStrengthState.running ? "Stop engine strength" : "Refresh engine strength"}>
+                <ActionIcon
+                  size="lg"
+                  variant="default"
+                  disabled={!selectedEngine || !planData}
+                  onClick={() => {
+                    if (engineStrengthState.running) {
+                      stopEngineStrength();
+                      return;
+                    }
+
+                    setEngineStrengthState((current) => {
+                      const nextCache = { ...current.cache };
+                      delete nextCache[engineStrengthCacheKey];
+                      return {
+                        ...current,
+                        report:
+                          current.reportCacheKey === engineStrengthCacheKey
+                            ? null
+                            : current.report,
+                        reportCacheKey:
+                          current.reportCacheKey === engineStrengthCacheKey
+                            ? null
+                            : current.reportCacheKey,
+                        cache: nextCache,
+                      };
+                    });
+                    void runEngineStrength(true);
+                  }}
+                >
+                  {engineStrengthState.running ? (
+                    <IconPlayerStop size="1rem" />
+                  ) : (
+                    <IconRefresh size="1rem" />
+                  )}
+                </ActionIcon>
+              </Tooltip>
+              {engineStrengthState.running && (
+                <Badge variant="light">{Math.round(engineStrengthState.progress)}%</Badge>
+              )}
+            </>
+          )}
         </Group>
       </Stack>
 
-      <Progress value={isLoading ? 100 : 0} animated={isLoading} size="xs" />
+      <Progress
+        value={
+          isLoading
+            ? 100
+            : engineStrengthEnabled && engineStrengthState.running
+              ? engineStrengthState.progress
+              : 0
+        }
+        animated={isLoading || (engineStrengthEnabled && engineStrengthState.running)}
+        size="xs"
+      />
 
       {error && (
         <Alert color="red" variant="light">
           {String(error)}
+        </Alert>
+      )}
+      {engineStrengthEnabled && localEngines.length === 0 && (
+        <Alert color="yellow" variant="light">
+          No configured local Stockfish engine for Engine strength.
+        </Alert>
+      )}
+      {engineStrengthEnabled && engineStrengthState.error && (
+        <Alert color="red" variant="light">
+          {engineStrengthState.error}
         </Alert>
       )}
 
@@ -451,16 +911,180 @@ function DatabaseSelector({
   );
 }
 
+function SortableTh({
+  sortKey,
+  sort,
+  setSort,
+  children,
+  style,
+}: {
+  sortKey: PlanSortKey;
+  sort: PlanSort;
+  setSort: Dispatch<SetStateAction<PlanSort>>;
+  children: ReactNode;
+  style?: CSSProperties;
+}) {
+  const active = sort.key === sortKey;
+  const Icon = sort.direction === "asc" ? IconChevronUp : IconChevronDown;
+
+  return (
+    <Table.Th style={style}>
+      <UnstyledButton
+        w="100%"
+        onClick={() =>
+          setSort((current) =>
+            current.key === sortKey
+              ? {
+                  key: sortKey,
+                  direction: current.direction === "asc" ? "desc" : "asc",
+                }
+              : {
+                  key: sortKey,
+                  direction: defaultPlanSortDirection(sortKey),
+                },
+          )
+        }
+      >
+        <Group gap={4} wrap="nowrap">
+          <Text size="sm" fw={700}>
+            {children}
+          </Text>
+          {active && <Icon size="0.875rem" />}
+        </Group>
+      </UnstyledButton>
+    </Table.Th>
+  );
+}
+
+function sortPlanPieces(
+  pieces: PlanExplorerPiece[],
+  sort: PlanSort,
+  engineReport: EnginePlanReport | null,
+) {
+  const direction = sort.direction === "asc" ? 1 : -1;
+
+  return [...pieces].sort((a, b) => {
+    let diff = 0;
+    switch (sort.key) {
+      case "piece":
+        diff =
+          a.color.localeCompare(b.color) ||
+          a.role.localeCompare(b.role) ||
+          a.from.localeCompare(b.from);
+        break;
+      case "routes":
+        diff = a.lines.length - b.lines.length || a.total - b.total;
+        break;
+      case "games":
+        diff = a.total - b.total;
+        break;
+      case "results":
+        diff = getPieceResultScore(a) - getPieceResultScore(b) || a.total - b.total;
+        break;
+      case "engine":
+        diff =
+          getPieceEngineStrengthScore(a, engineReport) -
+            getPieceEngineStrengthScore(b, engineReport) ||
+          a.total - b.total;
+        break;
+    }
+
+    return direction * diff;
+  });
+}
+
+function defaultPlanSortDirection(key: PlanSortKey): SortDirection {
+  return key === "piece" ? "asc" : "desc";
+}
+
+function getPieceResultScore(piece: PlanExplorerPiece) {
+  const topLine = piece.lines[0];
+  if (!topLine) return 0;
+
+  return getLineResultScore(topLine, piece.color);
+}
+
+function getLineResultScore(line: PlanExplorerLine, color: string) {
+  const total = line.white + line.draw + line.black;
+  if (total <= 0) return 0;
+
+  const wins = color === "black" ? line.black : line.white;
+  return (wins + line.draw * 0.5) / total;
+}
+
+function getPieceEngineMatch(
+  piece: PlanExplorerPiece,
+  engineReport: EnginePlanReport | null,
+): PlanExplorerEnginePlanMatch | null {
+  const matches = piece.lines
+    .map((line) => getPlanExplorerLineEnginePlan(piece, line, engineReport))
+    .filter((match): match is PlanExplorerEnginePlanMatch => !!match);
+
+  return (
+    matches
+      .slice()
+      .sort(
+        (a, b) =>
+          enginePlanStrengthScore(b.plan) - enginePlanStrengthScore(a.plan) ||
+          b.plan.supportCount - a.plan.supportCount,
+      )[0] ?? null
+  );
+}
+
+function getPieceEngineStrengthScore(
+  piece: PlanExplorerPiece,
+  engineReport: EnginePlanReport | null,
+) {
+  return enginePlanStrengthScore(getPieceEngineMatch(piece, engineReport)?.plan);
+}
+
+function EngineStrengthCell({
+  match,
+  running,
+}: {
+  match: PlanExplorerEnginePlanMatch | null;
+  running: boolean;
+}) {
+  if (!match) {
+    return (
+      <Text size="xs" c="dimmed">
+        {running ? "Analyzing" : "No PV"}
+      </Text>
+    );
+  }
+
+  return (
+    <Stack gap={2}>
+      <Badge color={approvalColor(match.plan.approval)} variant="light">
+        {match.plan.approval}
+      </Badge>
+      <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+        {match.plan.supportCount} PV{match.plan.supportCount === 1 ? "" : "s"}
+      </Text>
+    </Stack>
+  );
+}
+
 function PieceRow({
   piece,
   drawLine,
   previewLine,
+  engineStrengthEnabled,
+  engineReport,
+  engineRunning,
 }: {
   piece: PlanExplorerPiece;
   drawLine: (line: ColoredPlanExplorerLine) => void;
   previewLine: (line: ColoredPlanExplorerLine | null) => void;
+  engineStrengthEnabled: boolean;
+  engineReport: EnginePlanReport | null;
+  engineRunning: boolean;
 }) {
   const topLine = piece.lines[0] ? withPlanLineColor(piece.lines[0], piece.color) : null;
+  const engineMatch = useMemo(
+    () => getPieceEngineMatch(piece, engineReport),
+    [engineReport, piece],
+  );
 
   return (
     <Table.Tr
@@ -484,10 +1108,18 @@ function PieceRow({
           </Box>
         </Group>
       </Table.Td>
+      {engineStrengthEnabled && (
+        <Table.Td>
+          <EngineStrengthCell match={engineMatch} running={engineRunning} />
+        </Table.Td>
+      )}
       <Table.Td>
         <Stack gap={4}>
           {piece.lines.slice(0, 4).map((rawLine) => {
             const line = withPlanLineColor(rawLine, piece.color);
+            const lineMatch = engineStrengthEnabled
+              ? getPlanExplorerLineEnginePlan(piece, rawLine, engineReport)
+              : null;
             return (
               <Group
                 key={line.squares.join("-")}
@@ -517,6 +1149,11 @@ function PieceRow({
                 <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
                   {piece.total > 0 ? `${((line.games / piece.total) * 100).toFixed(0)}%` : "0%"}
                 </Text>
+                {lineMatch && (
+                  <Badge size="xs" color={approvalColor(lineMatch.plan.approval)} variant="light">
+                    {lineMatch.plan.approval}
+                  </Badge>
+                )}
               </Group>
             );
           })}
@@ -554,6 +1191,44 @@ function toChessgroundPiece(piece: PlanExplorerPiece): Piece {
     color: piece.color as Piece["color"],
     role: piece.role as Piece["role"],
   };
+}
+
+function buildEngineOptions(
+  settings: EngineSettings | null | undefined,
+  multipv: number,
+): EngineOption[] {
+  const options =
+    settings
+      ?.filter((option) => option.name !== "MultiPV" && option.value !== null)
+      .map((option) => ({
+        name: option.name,
+        value: option.value?.toString() ?? "",
+      })) ?? [];
+
+  options.push({
+    name: "MultiPV",
+    value: multipv.toString(),
+  });
+
+  return options;
+}
+
+function approvalColor(approval: EnginePlan["approval"]) {
+  switch (approval) {
+    case "Strong":
+      return "green";
+    case "OK":
+      return "blue";
+    case "Weak":
+      return "orange";
+    case "Unclear":
+      return "gray";
+  }
+}
+
+function clampNumber(value: number, min: number, max: number) {
+  if (!Number.isFinite(value)) return min;
+  return Math.min(max, Math.max(min, Math.round(value)));
 }
 
 function capitalize(value: string) {

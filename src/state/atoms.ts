@@ -22,6 +22,7 @@ import type { LocalOptions } from "@/components/panels/database/DatabasePanel";
 import { positionFromFen, swapMove } from "@/utils/chessops";
 import type { SuccessDatabaseInfo } from "@/utils/db";
 import { type Engine, type EngineSettings, engineSchema } from "@/utils/engines";
+import type { EnginePlanReport } from "@/utils/enginePlanExplorer";
 import type { OpeningMoveHealthSidePreference } from "@/utils/openingMoveHealth";
 import type { OnlineGameSource } from "@/utils/onlineGameSource";
 import type { ColoredPlanExplorerLine } from "@/utils/planExplorer";
@@ -193,6 +194,29 @@ export const planExplorerHoverEverywhereAtom = atomWithStorage<boolean>(
 export const planExplorerSourceAtom = atomWithStorage<"local" | "lch_all" | "lch_master">(
     "plan-explorer-source",
     "local",
+);
+export const planExplorerEngineStrengthEnabledAtom = atomWithStorage<boolean>(
+    "plan-explorer-engine-strength-enabled",
+    true,
+);
+export const planExplorerEngineStrengthDepthAtom = atomWithStorage<number>(
+    "plan-explorer-engine-strength-depth",
+    12,
+);
+export const planExplorerEngineStrengthMultipvAtom = atomWithStorage<number>(
+    "plan-explorer-engine-strength-multipv",
+    5,
+);
+export const enginePlanMultipvAtom = atomWithStorage<number>("engine-plan-multipv", 5);
+export const enginePlanLimitModeAtom = atomWithStorage<"depth" | "time">(
+    "engine-plan-limit-mode",
+    "depth",
+);
+export const enginePlanDepthAtom = atomWithStorage<number>("engine-plan-depth", 12);
+export const enginePlanTimeMsAtom = atomWithStorage<number>("engine-plan-time-ms", 2000);
+export const enginePlanSideFilterAtom = atomWithStorage<"all" | "white" | "black">(
+    "engine-plan-side-filter",
+    "all",
 );
 export const eraseDrawablesOnClickAtom = atomWithStorage<boolean>(
     "erase-drawables-on-click",
@@ -496,6 +520,61 @@ export const currentBoardPreviewShapesAtom = tabValue(boardPreviewShapesFamily);
 const planExplorerDataFamily = atomFamily((_tab: string) => atom<PlanExplorerData | null>(null));
 export const currentPlanExplorerDataAtom = tabValue(planExplorerDataFamily);
 
+export type PlanExplorerEngineStrengthState = {
+    report: EnginePlanReport | null;
+    reportCacheKey: string | null;
+    cache: Record<string, EnginePlanReport>;
+    progress: number;
+    running: boolean;
+    error: string | null;
+    activeRequestKey: string | null;
+};
+
+const defaultPlanExplorerEngineStrengthState = (): PlanExplorerEngineStrengthState => ({
+    report: null,
+    reportCacheKey: null,
+    cache: {},
+    progress: 0,
+    running: false,
+    error: null,
+    activeRequestKey: null,
+});
+
+const planExplorerEngineStrengthFamily = atomFamily((_tab: string) =>
+    atom<PlanExplorerEngineStrengthState>(defaultPlanExplorerEngineStrengthState()),
+);
+export const currentPlanExplorerEngineStrengthAtom = tabValue(planExplorerEngineStrengthFamily);
+
+const enginePlanExplorerDataFamily = atomFamily((_tab: string) =>
+    atom<PlanExplorerData | null>(null),
+);
+export const currentEnginePlanExplorerDataAtom = tabValue(enginePlanExplorerDataFamily);
+
+export type EnginePlanPanelState = {
+    report: EnginePlanReport | null;
+    reportCacheKey: string | null;
+    cache: Record<string, EnginePlanReport>;
+    progress: number;
+    running: boolean;
+    error: string | null;
+    activeRequestKey: string | null;
+};
+
+const defaultEnginePlanPanelState = (): EnginePlanPanelState => ({
+    report: null,
+    reportCacheKey: null,
+    cache: {},
+    progress: 0,
+    running: false,
+    error: null,
+    activeRequestKey: null,
+});
+
+const enginePlanReportFamily = atomFamily((_tab: string) =>
+    atom<EnginePlanPanelState>(defaultEnginePlanPanelState()),
+);
+export const currentEnginePlanReportAtom = tabValue(enginePlanReportFamily);
+
 const planExplorerPreviewLineFamily = atomFamily((_tab: string) =>
     atom<ColoredPlanExplorerLine | null>(null),
 );
@@ -694,6 +773,10 @@ export const practiceSessionStatsAtom = tabValue(practiceSessionStatsFamily);
 export const practiceAutoDifficultyAtom = atomWithStorage<"none" | "1" | "2" | "3" | "4">(
     "practice-auto-difficulty",
     "none",
+);
+export const openingReviewHideMovesDuringPracticeAtom = atomWithStorage<boolean>(
+    "opening-review-hide-moves-during-practice",
+    false,
 );
 
 const practiceCardStartTimeFamily = atomFamily((_tab: string) => atom<number>(0));

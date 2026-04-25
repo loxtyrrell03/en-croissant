@@ -166,6 +166,7 @@ export function mergeOpeningReviewPositions(
                       comment: previous.comment,
                       annotations: previous.annotations,
                       shapes: previous.shapes,
+                      reviewTree: previous.reviewTree,
                   }
                 : position,
         );

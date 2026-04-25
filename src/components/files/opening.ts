@@ -12,6 +12,23 @@ const params = generatorParameters({ enable_fuzz: true });
 
 const f = fsrs(params);
 
+const reviewTreeNodeSchema: z.ZodType<TreeNode> = z.lazy(
+    () =>
+        z.object({
+            fen: z.string(),
+            move: z.object({}).passthrough().nullable().default(null),
+            san: z.string().nullable().default(null),
+            children: reviewTreeNodeSchema.array().default([]),
+            score: z.object({}).passthrough().nullable().default(null),
+            depth: z.number().nullable().default(null),
+            halfMoves: z.number(),
+            shapes: z.array(z.object({}).passthrough()).default([]),
+            annotations: z.array(z.string()).default([]),
+            comment: z.string().default(""),
+            clock: z.number().optional(),
+        }) as unknown as z.ZodType<TreeNode>,
+);
+
 export const positionSchema = z.object({
     fen: z.string(),
     answer: z.string(),
@@ -28,6 +45,7 @@ export const positionSchema = z.object({
     comment: z.string().optional(),
     annotations: z.array(z.string()).optional(),
     shapes: z.array(z.object({}).passthrough()).optional(),
+    reviewTree: reviewTreeNodeSchema.optional(),
     openingHealth: z
         .object({
             mode: z.enum(["self", "opponent"]).optional(),
@@ -76,6 +94,7 @@ export type Position = {
     comment?: string;
     annotations?: Annotation[];
     shapes?: DrawShape[];
+    reviewTree?: TreeNode;
     openingHealth?: {
         mode?: "self" | "opponent";
         sideToMove?: "white" | "black";

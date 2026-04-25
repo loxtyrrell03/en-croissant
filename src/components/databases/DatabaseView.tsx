@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import GameTable from "@/components/databases/GameTable";
 import PlayerTable from "@/components/databases/PlayerTable";
+import { ResponsivePanel } from "@/components/common/ResponsivePanel";
 import {
   activeDatabaseViewStore,
   type DatabaseViewStore,
@@ -24,49 +25,51 @@ function DatabaseView() {
     <Box p="sm" h="100%">
       {database && (
         <DatabaseViewStateContext.Provider value={activeDatabaseViewStore}>
-          <Stack h="100%" style={{ overflow: "hidden" }}>
-            <Group align="center">
-              <Link onClick={() => clearDatabase()} to={"/databases"}>
-                <ActionIcon variant="default">
-                  <IconArrowBackUp size="1rem" />
-                </ActionIcon>
-              </Link>
-              <Title>{databaseTitle}</Title>
-            </Group>
-            <Tabs
-              value={mode}
-              onChange={(value) =>
-                setActiveTab((value ?? "games") as DatabaseViewStore["activeTab"])
-              }
-              flex={1}
-              style={{
-                display: "flex",
-                overflow: "hidden",
-                flexDirection: "column",
-              }}
-            >
-              <Tabs.List>
-                <Tabs.Tab leftSection={<IconChess size="1rem" />} value="games">
-                  {t("Common.Games")}
-                </Tabs.Tab>
-                <Tabs.Tab leftSection={<IconUser size="1rem" />} value="players">
-                  {t("Databases.Card.Players")}
-                </Tabs.Tab>
-                <Tabs.Tab leftSection={<IconTrophy size="1rem" />} value="tournaments">
-                  {t("Databases.Settings.Events")}
-                </Tabs.Tab>
-              </Tabs.List>
-              <Tabs.Panel value="games" flex={1} style={{ overflow: "hidden" }} pt="md">
-                <GameTable />
-              </Tabs.Panel>
-              <Tabs.Panel value="players" flex={1} style={{ overflow: "hidden" }} pt="md">
-                <PlayerTable />
-              </Tabs.Panel>
-              <Tabs.Panel value="tournaments" flex={1} style={{ overflow: "hidden" }} pt="md">
-                <TournamentTable />
-              </Tabs.Panel>
-            </Tabs>
-          </Stack>
+          <ResponsivePanel>
+            <Stack h="100%" style={{ overflow: "hidden" }}>
+              <Group align="center">
+                <Link onClick={() => clearDatabase()} to={"/databases"}>
+                  <ActionIcon variant="default">
+                    <IconArrowBackUp size="1rem" />
+                  </ActionIcon>
+                </Link>
+                <Title>{databaseTitle}</Title>
+              </Group>
+              <Tabs
+                value={mode}
+                onChange={(value) =>
+                  setActiveTab((value ?? "games") as DatabaseViewStore["activeTab"])
+                }
+                flex={1}
+                style={{
+                  display: "flex",
+                  overflow: "hidden",
+                  flexDirection: "column",
+                }}
+              >
+                <Tabs.List>
+                  <Tabs.Tab leftSection={<IconChess size="1rem" />} value="games">
+                    {t("Common.Games")}
+                  </Tabs.Tab>
+                  <Tabs.Tab leftSection={<IconUser size="1rem" />} value="players">
+                    {t("Databases.Card.Players")}
+                  </Tabs.Tab>
+                  <Tabs.Tab leftSection={<IconTrophy size="1rem" />} value="tournaments">
+                    {t("Databases.Settings.Events")}
+                  </Tabs.Tab>
+                </Tabs.List>
+                <Tabs.Panel value="games" flex={1} style={{ overflow: "hidden" }} pt="md">
+                  <GameTable />
+                </Tabs.Panel>
+                <Tabs.Panel value="players" flex={1} style={{ overflow: "hidden" }} pt="md">
+                  <PlayerTable />
+                </Tabs.Panel>
+                <Tabs.Panel value="tournaments" flex={1} style={{ overflow: "hidden" }} pt="md">
+                  <TournamentTable />
+                </Tabs.Panel>
+              </Tabs>
+            </Stack>
+          </ResponsivePanel>
         </DatabaseViewStateContext.Provider>
       )}
     </Box>

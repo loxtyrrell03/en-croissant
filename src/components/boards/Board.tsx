@@ -1,5 +1,6 @@
 import type { DrawBrushes, DrawShape } from "@lichess-org/chessground/draw";
 import { ActionIcon, Box, Center, Group, Text, useMantineTheme } from "@mantine/core";
+import { useElementSize } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconChevronRight } from "@tabler/icons-react";
 import {
@@ -26,6 +27,7 @@ import {
   autoPromoteAtom,
   bestMovesFamily,
   currentBoardPreviewShapesAtom,
+  currentEnginePlanExplorerDataAtom,
   currentEvalOpenAtom,
   currentPlanExplorerDataAtom,
   currentPlanExplorerPreviewLineAtom,
@@ -84,6 +86,8 @@ const LARGE_BRUSH = 11;
 const MEDIUM_BRUSH = 7.5;
 const SMALL_BRUSH = 4;
 const BAR_HEIGHT = "1.9rem";
+const BOARD_SIDE_BAR_WIDTH = 25;
+const BOARD_ROW_GAP = 12;
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
 
 function squareFromPointer(
@@ -188,6 +192,7 @@ function Board({
     ? positionFromFen(boardPreviewShapes.displayFen)
     : [null];
   const planExplorerData = useAtomValue(currentPlanExplorerDataAtom);
+  const enginePlanExplorerData = useAtomValue(currentEnginePlanExplorerDataAtom);
   const [planExplorerPreviewLine, setPlanExplorerPreviewLine] = useAtom(
     currentPlanExplorerPreviewLineAtom,
   );
@@ -372,10 +377,26 @@ function Board({
 
   const activePlanExplorerData =
     planExplorerData?.fen === currentNode.fen ? planExplorerData : null;
+  const activeEnginePlanExplorerData =
+    enginePlanExplorerData?.fen === currentNode.fen ? enginePlanExplorerData : null;
 
-  if (showPlanExplorerArrows && activePlanExplorerData) {
+  if (
+    showPlanExplorerArrows &&
+    currentTabSelected === "engine-plans" &&
+    activeEnginePlanExplorerData
+  ) {
     shapes = shapes.concat(
-      planLinesToShapes(getAutoPlanLines(activePlanExplorerData), planExplorerArrowLimit),
+      planLinesToShapes(
+        getAutoPlanLines(activeEnginePlanExplorerData, planExplorerArrowLimit),
+        planExplorerArrowLimit,
+      ),
+    );
+  } else if (showPlanExplorerArrows && activePlanExplorerData) {
+    shapes = shapes.concat(
+      planLinesToShapes(
+        getAutoPlanLines(activePlanExplorerData, planExplorerArrowLimit),
+        planExplorerArrowLimit,
+      ),
     );
   }
 
@@ -423,6 +444,13 @@ function Board({
   const [snapArrows] = useAtom(snapArrowsAtom);
   const showComments = useAtomValue(currentShowCommentsAtom);
   const visualAnnotation = showComments ? currentNode.annotations[0] : "";
+  const { ref: boardAreaRef, width: boardAreaWidth, height: boardAreaHeight } = useElementSize();
+  const boardSize = Math.max(
+    0,
+    Math.floor(
+      Math.min(boardAreaHeight, Math.max(0, boardAreaWidth - BOARD_SIDE_BAR_WIDTH - BOARD_ROW_GAP)),
+    ),
+  );
 
   const setBoardFen = useCallback(
     (fen: string) => {
@@ -444,7 +472,10 @@ function Board({
         return;
       }
 
-      if (!boardRef.current || !pos || planExplorerData?.fen !== currentNode.fen) {
+      const routeData =
+        currentTabSelected === "engine-plans" ? enginePlanExplorerData : planExplorerData;
+
+      if (!boardRef.current || !pos || routeData?.fen !== currentNode.fen) {
         return;
       }
 
@@ -454,7 +485,7 @@ function Board({
       const square = parseSquare(squareName);
       if (square === undefined || !pos.board.get(square)) return;
 
-      const line = getPlanLineForSquare(planExplorerData, squareName);
+      const line = getPlanLineForSquare(routeData, squareName);
       if (!line) return;
 
       const planShapes = planLineToShapes(line);
@@ -466,12 +497,26 @@ function Board({
       const existing = currentNode.shapes.filter((shape) => !isPlanBrush(shape.brush));
       setShapes([...existing, ...planShapes]);
     },
-    [boardRef, currentNode.fen, currentNode.shapes, orientation, planExplorerData, pos, setShapes],
+    [
+      boardRef,
+      currentNode.fen,
+      currentNode.shapes,
+      currentTabSelected,
+      enginePlanExplorerData,
+      orientation,
+      planExplorerData,
+      pos,
+      setShapes,
+    ],
   );
 
   const previewPlanFromPointer = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
-      if (currentTabSelected !== "plan-explorer" && !planExplorerHoverEverywhere) {
+      if (
+        currentTabSelected !== "plan-explorer" &&
+        currentTabSelected !== "engine-plans" &&
+        !planExplorerHoverEverywhere
+      ) {
         return;
       }
 
@@ -480,7 +525,10 @@ function Board({
         setPlanExplorerPreviewLine(null);
       };
 
-      if (!boardRef.current || !pos || planExplorerData?.fen !== currentNode.fen) {
+      const routeData =
+        currentTabSelected === "engine-plans" ? enginePlanExplorerData : planExplorerData;
+
+      if (!boardRef.current || !pos || routeData?.fen !== currentNode.fen) {
         clearPreview();
         return;
       }
@@ -503,12 +551,13 @@ function Board({
         return;
       }
 
-      setPlanExplorerPreviewLine(getPlanLineForSquare(planExplorerData, squareName));
+      setPlanExplorerPreviewLine(getPlanLineForSquare(routeData, squareName));
     },
     [
       boardRef,
       currentNode.fen,
       currentTabSelected,
+      enginePlanExplorerData,
       orientation,
       planExplorerData,
       planExplorerHoverEverywhere,
@@ -549,9 +598,7 @@ function Board({
             gap: "0.5rem",
             flexWrap: "nowrap",
             overflow: "hidden",
-            maxWidth:
-              //            topbar   bottompadding                tabs                                  bottomb    topbar   evalbar                                gaps    ???
-              `calc(100vh - 2.25rem - var(--mantine-spacing-sm) - 2.5rem - var(--mantine-spacing-sm) - ${BAR_HEIGHT} - ${BAR_HEIGHT} + 1.563rem + var(--mantine-spacing-md) - 1rem  - 0.2rem)`,
+            minHeight: 0,
           }}
         >
           <BoardBar
@@ -580,217 +627,246 @@ function Board({
               />
             )}
           </BoardBar>
-          <Group
+          <Box
+            ref={boardAreaRef}
             style={{
-              position: "relative",
-              flexWrap: "nowrap",
+              flex: "1 1 0",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minWidth: 0,
+              minHeight: 0,
+              overflow: "hidden",
             }}
-            gap="sm"
           >
-            {showComments &&
-              currentNode.annotations.length > 0 &&
-              currentNode.move &&
-              square !== undefined && (
-                <Box pl="2.5rem" w="100%" h="100%" pos="absolute">
-                  <Box pos="relative" w="100%" h="100%">
-                    <AnnotationHint
-                      orientation={orientation}
-                      square={square}
-                      annotation={currentNode.annotations[0]}
-                    />
-                  </Box>
-                </Box>
-              )}
-            <Box
-              h="100%"
+            <Group
               style={{
-                width: 25,
+                position: "relative",
+                flexWrap: "nowrap",
+                width: boardSize ? boardSize + BOARD_SIDE_BAR_WIDTH + BOARD_ROW_GAP : "100%",
+                height: boardSize || "100%",
+                minWidth: 0,
+                minHeight: 0,
               }}
+              gap={BOARD_ROW_GAP}
             >
-              {!evalOpen && (
-                <Center h="100%" w="100%">
-                  <ActionIcon
-                    size="1rem"
-                    onClick={() => setEvalOpen(true)}
-                    onContextMenu={(e) => {
-                      setEvalOpen(true);
-                      e.preventDefault();
-                    }}
-                  >
-                    <IconChevronRight />
-                  </ActionIcon>
-                </Center>
-              )}
-              {evalOpen && <EvalBar score={currentNode.score || null} orientation={orientation} />}
-            </Box>
-            <Box
-              style={
-                isBasicAnnotation(visualAnnotation)
-                  ? {
-                      "--light-color": lightColor,
-                      "--dark-color": darkColor,
-                    }
-                  : undefined
-              }
-              className={classes.chessboard}
-              ref={boardRef}
-              onContextMenu={drawPlanFromContextMenu}
-              onClick={() => {
-                if (eraseDrawablesOnClick) {
-                  clearShapes();
+              {showComments &&
+                currentNode.annotations.length > 0 &&
+                currentNode.move &&
+                square !== undefined && (
+                  <Box pl="2.5rem" w="100%" h="100%" pos="absolute">
+                    <Box pos="relative" w="100%" h="100%">
+                      <AnnotationHint
+                        orientation={orientation}
+                        square={square}
+                        annotation={currentNode.annotations[0]}
+                      />
+                    </Box>
+                  </Box>
+                )}
+              <Box
+                h="100%"
+                style={{
+                  width: BOARD_SIDE_BAR_WIDTH,
+                  flex: `0 0 ${BOARD_SIDE_BAR_WIDTH}px`,
+                }}
+              >
+                {!evalOpen && (
+                  <Center h="100%" w="100%">
+                    <ActionIcon
+                      size="1rem"
+                      onClick={() => setEvalOpen(true)}
+                      onContextMenu={(e) => {
+                        setEvalOpen(true);
+                        e.preventDefault();
+                      }}
+                    >
+                      <IconChevronRight />
+                    </ActionIcon>
+                  </Center>
+                )}
+                {evalOpen && (
+                  <EvalBar score={currentNode.score || null} orientation={orientation} />
+                )}
+              </Box>
+              <Box
+                style={
+                  isBasicAnnotation(visualAnnotation)
+                    ? {
+                        "--light-color": lightColor,
+                        "--dark-color": darkColor,
+                        flex: "0 0 auto",
+                        minWidth: 0,
+                        minHeight: 0,
+                      }
+                    : {
+                        flex: "0 0 auto",
+                        minWidth: 0,
+                        minHeight: 0,
+                      }
                 }
-              }}
-              onMouseMove={previewPlanFromPointer}
-              onMouseLeave={clearPlanHoverPreview}
-              onWheel={(e) => {
-                if (enableBoardScroll) {
-                  if (e.deltaY > 0) {
-                    goToNext();
-                  } else {
-                    goToPrevious();
-                  }
-                }
-              }}
-            >
-              <PromotionModal
-                pendingMove={pendingMove}
-                cancelMove={() => setPendingMove(null)}
-                confirmMove={(p) => {
-                  if (pendingMove) {
-                    makeMove({
-                      from: pendingMove.from,
-                      to: pendingMove.to,
-                      promotion: p,
-                    });
+                className={classes.chessboard}
+                ref={boardRef}
+                w={boardSize || undefined}
+                h={boardSize || undefined}
+                onContextMenu={drawPlanFromContextMenu}
+                onClick={() => {
+                  if (eraseDrawablesOnClick) {
+                    clearShapes();
                   }
                 }}
-                turn={turn}
-                orientation={orientation}
-              />
+                onMouseMove={previewPlanFromPointer}
+                onMouseLeave={clearPlanHoverPreview}
+                onWheel={(e) => {
+                  if (enableBoardScroll) {
+                    if (e.deltaY > 0) {
+                      goToNext();
+                    } else {
+                      goToPrevious();
+                    }
+                  }
+                }}
+              >
+                <PromotionModal
+                  pendingMove={pendingMove}
+                  cancelMove={() => setPendingMove(null)}
+                  confirmMove={(p) => {
+                    if (pendingMove) {
+                      makeMove({
+                        from: pendingMove.from,
+                        to: pendingMove.to,
+                        promotion: p,
+                      });
+                    }
+                  }}
+                  turn={turn}
+                  orientation={orientation}
+                />
 
-              <Chessground
-                ref={cgRef}
-                setBoardFen={setBoardFen}
-                orientation={orientation}
-                fen={boardFen}
-                animation={{ enabled: !editingMode }}
-                coordinates={showCoordinates !== "no"}
-                coordinatesOnSquares={showCoordinates === "all"}
-                movable={{
-                  free: editingMode,
-                  color: boardPreviewShapes?.displayFen ? undefined : movableColor,
-                  dests:
-                    boardPreviewShapes?.displayFen || editingMode || viewOnly
-                      ? undefined
-                      : disableVariations && currentNode.children.length > 0
+                <Chessground
+                  ref={cgRef}
+                  setBoardFen={setBoardFen}
+                  orientation={orientation}
+                  fen={boardFen}
+                  animation={{ enabled: !editingMode }}
+                  coordinates={showCoordinates !== "no"}
+                  coordinatesOnSquares={showCoordinates === "all"}
+                  movable={{
+                    free: editingMode,
+                    color: boardPreviewShapes?.displayFen ? undefined : movableColor,
+                    dests:
+                      boardPreviewShapes?.displayFen || editingMode || viewOnly
                         ? undefined
-                        : dests,
-                  showDests,
-                  events: {
-                    after(orig, dest, metadata) {
-                      if (!editingMode) {
-                        const from = parseSquare(orig)!;
-                        const to = parseSquare(dest)!;
+                        : disableVariations && currentNode.children.length > 0
+                          ? undefined
+                          : dests,
+                    showDests,
+                    events: {
+                      after(orig, dest, metadata) {
+                        if (!editingMode) {
+                          const from = parseSquare(orig)!;
+                          const to = parseSquare(dest)!;
 
-                        if (pos) {
-                          if (
-                            pos.board.get(from)?.role === "pawn" &&
-                            ((dest[1] === "8" && turn === "white") ||
-                              (dest[1] === "1" && turn === "black"))
-                          ) {
-                            if (autoPromote && !metadata.ctrlKey) {
-                              makeMove({
-                                from,
-                                to,
-                                promotion: "queen",
-                              });
+                          if (pos) {
+                            if (
+                              pos.board.get(from)?.role === "pawn" &&
+                              ((dest[1] === "8" && turn === "white") ||
+                                (dest[1] === "1" && turn === "black"))
+                            ) {
+                              if (autoPromote && !metadata.ctrlKey) {
+                                makeMove({
+                                  from,
+                                  to,
+                                  promotion: "queen",
+                                });
+                              } else {
+                                setPendingMove({
+                                  from,
+                                  to,
+                                });
+                              }
                             } else {
-                              setPendingMove({
+                              makeMove({
                                 from,
                                 to,
                               });
                             }
-                          } else {
-                            makeMove({
-                              from,
-                              to,
-                            });
                           }
+                        }
+                      },
+                    },
+                  }}
+                  events={{
+                    select: (key) => {
+                      if (editingMode && selectedPiece) {
+                        const square = parseSquare(key);
+                        if (square) {
+                          const setup = parseFen(currentNode.fen).unwrap();
+                          setup.board.set(square, selectedPiece);
+                          setFen(makeFen(setup));
                         }
                       }
                     },
-                  },
-                }}
-                events={{
-                  select: (key) => {
-                    if (editingMode && selectedPiece) {
-                      const square = parseSquare(key);
-                      if (square) {
-                        const setup = parseFen(currentNode.fen).unwrap();
-                        setup.board.set(square, selectedPiece);
-                        setFen(makeFen(setup));
-                      }
-                    }
-                  },
-                }}
-                turnColor={boardPreviewPos?.turn ?? turn}
-                check={moveHighlight && (boardPreviewPos ?? pos)?.isCheck()}
-                lastMove={
-                  moveHighlight && !editingMode && !boardPreviewShapes?.displayFen
-                    ? lastMove
-                    : undefined
-                }
-                premovable={{
-                  enabled: enablePremoves && !editingMode && !viewOnly,
-                }}
-                draggable={{
-                  enabled: true,
-                  deleteOnDropOff: editingMode,
-                }}
-                drawable={{
-                  enabled: true,
-                  visible: true,
-                  defaultSnapToValidMove: snapArrows,
-                  autoShapes: shapes,
-                  brushes: {
-                    variation: {
-                      key: "v",
-                      color: "#9b59b6",
-                      opacity: 0.8,
-                      lineWidth: 10,
+                  }}
+                  turnColor={boardPreviewPos?.turn ?? turn}
+                  check={moveHighlight && (boardPreviewPos ?? pos)?.isCheck()}
+                  lastMove={
+                    moveHighlight && !editingMode && !boardPreviewShapes?.displayFen
+                      ? lastMove
+                      : undefined
+                  }
+                  premovable={{
+                    enabled: enablePremoves && !editingMode && !viewOnly,
+                  }}
+                  draggable={{
+                    enabled: true,
+                    deleteOnDropOff: editingMode,
+                  }}
+                  drawable={{
+                    enabled: true,
+                    visible: true,
+                    defaultSnapToValidMove: snapArrows,
+                    autoShapes: shapes,
+                    brushes: {
+                      variation: {
+                        key: "v",
+                        color: "#9b59b6",
+                        opacity: 0.8,
+                        lineWidth: 10,
+                      },
+                      [PLAN_BRUSH]: {
+                        key: "p",
+                        color: "#12b886",
+                        opacity: 0.9,
+                        lineWidth: 10,
+                      },
+                      [PLAN_WHITE_BRUSH]: {
+                        key: "w",
+                        color: "#228be6",
+                        opacity: 0.9,
+                        lineWidth: 10,
+                      },
+                      [PLAN_BLACK_BRUSH]: {
+                        key: "b",
+                        color: "#f08c00",
+                        opacity: 0.9,
+                        lineWidth: 10,
+                      },
+                      preview: {
+                        key: "x",
+                        color: "#4dabf7",
+                        opacity: 0.95,
+                        lineWidth: 10,
+                      },
+                    } as unknown as DrawBrushes,
+                    onChange: (shapes) => {
+                      setShapes(shapes);
                     },
-                    [PLAN_BRUSH]: {
-                      key: "p",
-                      color: "#12b886",
-                      opacity: 0.9,
-                      lineWidth: 10,
-                    },
-                    [PLAN_WHITE_BRUSH]: {
-                      key: "w",
-                      color: "#228be6",
-                      opacity: 0.9,
-                      lineWidth: 10,
-                    },
-                    [PLAN_BLACK_BRUSH]: {
-                      key: "b",
-                      color: "#f08c00",
-                      opacity: 0.9,
-                      lineWidth: 10,
-                    },
-                    preview: {
-                      key: "x",
-                      color: "#4dabf7",
-                      opacity: 0.95,
-                      lineWidth: 10,
-                    },
-                  } as unknown as DrawBrushes,
-                  onChange: (shapes) => {
-                    setShapes(shapes);
-                  },
-                }}
-              />
-            </Box>
-          </Group>
+                  }}
+                />
+              </Box>
+            </Group>
+          </Box>
           <BoardBar
             name={bottomPlayer}
             rating={orientation === "white" ? headers.white_elo : headers.black_elo}

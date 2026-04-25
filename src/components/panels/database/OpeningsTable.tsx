@@ -2,8 +2,8 @@ import { Badge, Group, Progress, Stack, Text, Tooltip } from "@mantine/core";
 import { isNormal, makeSquare } from "chessops";
 import { parseSan } from "chessops/san";
 import { useAtom, useSetAtom } from "jotai";
-import { DataTable } from "mantine-datatable";
-import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { DataTable, type DataTableSortStatus } from "mantine-datatable";
+import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import { currentBoardPreviewShapesAtom, moveNotationTypeAtom } from "@/state/atoms";
@@ -24,6 +24,7 @@ import classes from "./OpeningsTable.module.css";
 
 export type OpeningSort =
   | "games"
+  | "gamesLow"
   | "health"
   | "chessDbStrength"
   | "chessDbWeakness"
@@ -34,10 +35,15 @@ export type OpeningSort =
   | "whiteRate"
   | "blackRate"
   | "drawRate"
-  | "move";
+  | "move"
+  | "moveDesc";
+
+type OpeningSortColumn = "move" | "health" | "strengthRank" | "total" | "results";
+export type OpeningTableDensity = "regular" | "compact" | "dense";
 
 export const openingSortOptions: { label: string; value: OpeningSort }[] = [
   { label: "Most played", value: "games" },
+  { label: "Fewest played", value: "gamesLow" },
   { label: "CP strength", value: "chessDbStrength" },
   { label: "CP weakness", value: "chessDbWeakness" },
   { label: "Highest win rate", value: "winRateHigh" },
@@ -48,6 +54,7 @@ export const openingSortOptions: { label: string; value: OpeningSort }[] = [
   { label: "Black win rate", value: "blackRate" },
   { label: "Draw rate", value: "drawRate" },
   { label: "Move", value: "move" },
+  { label: "Move descending", value: "moveDesc" },
 ];
 
 export const openingMoveHealthSideOptions: {
@@ -66,8 +73,9 @@ export function sortOpeningRows(
   side: OpeningMoveHealthSide = "white",
 ) {
   return [...openings].sort((a, b) => {
-    if (sortBy === "move") {
-      return a.move.localeCompare(b.move);
+    if (sortBy === "move" || sortBy === "moveDesc") {
+      const diff = a.move.localeCompare(b.move);
+      return sortBy === "move" ? diff : -diff;
     }
 
     const aTotal = getOpeningTotal(a);
@@ -75,6 +83,10 @@ export function sortOpeningRows(
 
     if (sortBy === "games") {
       return bTotal - aTotal;
+    }
+
+    if (sortBy === "gamesLow") {
+      return aTotal - bTotal;
     }
 
     if (sortBy === "health" || sortBy === "chessDbStrength") {
@@ -117,14 +129,18 @@ function OpeningsTable({
   openings,
   loading,
   sortBy = "games",
+  onSortChange,
   compact = false,
+  density,
   healthSidePreference = "sideToMove",
   referenceOpenings,
 }: {
   openings: Opening[];
   loading: boolean;
   sortBy?: OpeningSort;
+  onSortChange?: (sortBy: OpeningSort) => void;
   compact?: boolean;
+  density?: OpeningTableDensity;
   healthSidePreference?: OpeningMoveHealthSidePreference;
   referenceOpenings?: Opening[];
 }) {
@@ -134,6 +150,26 @@ function OpeningsTable({
   const [moveNotationType] = useAtom(moveNotationTypeAtom);
   const setBoardPreviewShapes = useSetAtom(currentBoardPreviewShapesAtom);
   const [chessDbMoves, setChessDbMoves] = useState<ChessDbCloudMove[] | null | undefined>();
+  const [internalSortBy, setInternalSortBy] = useState(sortBy);
+  const lastHeaderSortRef = useRef<OpeningSort | null>(null);
+  const effectiveSortBy = onSortChange ? sortBy : internalSortBy;
+  const [sortStatus, setSortStatus] = useState<DataTableSortStatus<Opening>>(() =>
+    openingSortToStatus(effectiveSortBy),
+  );
+  const tableDensity = density ?? (compact ? "compact" : "regular");
+  const isCompact = tableDensity !== "regular";
+  const isDense = tableDensity === "dense";
+  const textSize = isDense ? "0.68rem" : isCompact ? "xs" : "sm";
+  const columnWidths = {
+    move: isDense ? 52 : isCompact ? 64 : 100,
+    health: isDense ? 58 : isCompact ? 72 : 106,
+    strengthRank: isDense ? 48 : isCompact ? 68 : 112,
+    total: isDense ? 64 : isCompact ? 90 : 180,
+    results: isDense ? 88 : isCompact ? 104 : undefined,
+  };
+  const resultClassName = [classes.result, isDense ? classes.denseResult : null]
+    .filter(Boolean)
+    .join(" ");
 
   const clearMovePreview = useCallback(() => {
     setBoardPreviewShapes(null);
@@ -194,7 +230,30 @@ function OpeningsTable({
     [chessDbMoves, currentFen, healthSide, openings, referenceOpenings],
   );
 
-  openings = sortOpeningRows(openings, sortBy, healthByMove, healthSide);
+  const updateSort = useCallback(
+    (status: DataTableSortStatus<Opening>) => {
+      const nextSort = statusToOpeningSort(status);
+      lastHeaderSortRef.current = nextSort;
+      setSortStatus(status);
+      if (onSortChange) {
+        onSortChange(nextSort);
+      } else {
+        setInternalSortBy(nextSort);
+      }
+    },
+    [onSortChange],
+  );
+
+  useEffect(() => {
+    if (lastHeaderSortRef.current === effectiveSortBy) {
+      lastHeaderSortRef.current = null;
+      return;
+    }
+
+    setSortStatus(openingSortToStatus(effectiveSortBy));
+  }, [effectiveSortBy]);
+
+  openings = sortOpeningRows(openings, effectiveSortBy, healthByMove, healthSide);
 
   useEffect(() => {
     let cancelled = false;
@@ -239,6 +298,9 @@ function OpeningsTable({
       highlightOnHover
       records={openings}
       fetching={loading || openings === null}
+      className={isDense ? classes.denseTable : undefined}
+      horizontalSpacing={isDense ? 4 : isCompact ? 6 : "xs"}
+      verticalSpacing={isDense ? 3 : isCompact ? 4 : "xs"}
       rowStyle={(game, i) => {
         if (i === openings.length - 1)
           return {
@@ -252,16 +314,19 @@ function OpeningsTable({
       columns={[
         {
           accessor: "move",
-          width: compact ? 70 : 100,
+          title: "Move",
+          width: columnWidths.move,
+          ellipsis: true,
+          sortable: true,
           render: ({ move }) => {
             if (move === "*")
               return (
-                <Text fz={compact ? "xs" : "sm"} fs="italic">
+                <Text fz={textSize} fs="italic" lh={1.2}>
                   Game end
                 </Text>
               );
             return (
-              <Text fz={compact ? "xs" : "sm"}>
+              <Text fz={textSize} lh={1.2} truncate>
                 {moveNotationType === "symbols" ? addPieceSymbol(move) : move}
               </Text>
             );
@@ -269,8 +334,10 @@ function OpeningsTable({
         },
         {
           accessor: "health",
-          title: "Strength",
-          width: compact ? 78 : 106,
+          title: isDense ? "Str." : "Strength",
+          width: columnWidths.health,
+          ellipsis: true,
+          sortable: true,
           render: ({ move }) => {
             const health = healthByMove.get(move);
             if (!health) return null;
@@ -326,10 +393,10 @@ function OpeningsTable({
                 <Badge
                   color={healthStatusColor(health.status)}
                   variant="light"
-                  size={compact ? "xs" : "sm"}
-                  className={classes.healthBadge}
+                  size={isCompact ? "xs" : "sm"}
+                  className={`${classes.healthBadge} ${isDense ? classes.denseHealthBadge : ""}`}
                 >
-                  {health.label}
+                  {isDense ? health.label.slice(0, 2).toUpperCase() : health.label}
                 </Badge>
               </Tooltip>
             );
@@ -337,8 +404,10 @@ function OpeningsTable({
         },
         {
           accessor: "strengthRank",
-          title: "Engine ranking",
-          width: compact ? 76 : 112,
+          title: isDense ? "Rank" : isCompact ? "Engine" : "Engine ranking",
+          width: columnWidths.strengthRank,
+          ellipsis: true,
+          sortable: true,
           render: ({ move }) => {
             const health = healthByMove.get(move);
             if (!health || move === "Total") return null;
@@ -377,10 +446,10 @@ function OpeningsTable({
                 }
               >
                 <Stack gap={0}>
-                  <Text fz={compact ? "xs" : "sm"} fw={600}>
+                  <Text fz={textSize} fw={600} lh={1.2}>
                     {formatChessDbRank(health)}
                   </Text>
-                  {!compact && health.chessDbScoreCp !== null ? (
+                  {!isCompact && health.chessDbScoreCp !== null ? (
                     <Text fz="xs" c="dimmed">
                       {formatChessDbScore(health.chessDbScoreCp)}
                     </Text>
@@ -392,16 +461,21 @@ function OpeningsTable({
         },
         {
           accessor: "total",
-          width: compact ? 118 : 180,
+          title: "Games",
+          width: columnWidths.total,
+          ellipsis: true,
+          sortable: true,
           render: ({ move, white, draw, black }) => {
             const total = white + draw + black;
             const percentage = (total / grandTotal) * 100;
             return (
-              <Group gap={compact ? 6 : "md"} wrap="nowrap">
+              <Group gap={isDense ? 3 : isCompact ? 6 : "md"} wrap="nowrap">
                 {move !== "Total" && (
-                  <Text fz={compact ? "xs" : "sm"}>{percentage.toFixed(0)}%</Text>
+                  <Text fz={textSize} lh={1.2}>
+                    {percentage.toFixed(0)}%
+                  </Text>
                 )}
-                <Text fz={compact ? "xs" : "sm"} flex={1} ta="right">
+                <Text fz={textSize} flex={1} ta="right" lh={1.2}>
                   {formatNumber(total)}
                 </Text>
               </Group>
@@ -410,26 +484,30 @@ function OpeningsTable({
         },
         {
           accessor: "results",
+          title: isDense ? "W/D/L" : "Win rates",
+          width: columnWidths.results,
+          ellipsis: true,
+          sortable: true,
           render: ({ black, white, draw }) => {
             const total = white + draw + black;
             const whitePercent = (white / total) * 100;
             const drawPercent = (draw / total) * 100;
             const blackPercent = (black / total) * 100;
             return (
-              <Progress.Root size={compact ? "lg" : "xl"} className={classes.result}>
+              <Progress.Root size={isCompact ? "lg" : "xl"} className={resultClassName}>
                 <Progress.Section value={whitePercent} className={classes.whiteResultsSection}>
                   <Progress.Label c="black">
-                    {whitePercent > 10 ? `${whitePercent.toFixed(1)}%` : ""}
+                    {whitePercent > (isDense ? 18 : 10) ? `${whitePercent.toFixed(1)}%` : ""}
                   </Progress.Label>
                 </Progress.Section>
                 <Progress.Section value={drawPercent} color="gray">
                   <Progress.Label>
-                    {drawPercent > 10 ? `${drawPercent.toFixed(1)}%` : ""}
+                    {drawPercent > (isDense ? 18 : 10) ? `${drawPercent.toFixed(1)}%` : ""}
                   </Progress.Label>
                 </Progress.Section>
                 <Progress.Section value={blackPercent} color="black">
                   <Progress.Label>
-                    {blackPercent > 10 ? `${blackPercent.toFixed(1)}%` : ""}
+                    {blackPercent > (isDense ? 18 : 10) ? `${blackPercent.toFixed(1)}%` : ""}
                   </Progress.Label>
                 </Progress.Section>
               </Progress.Root>
@@ -438,6 +516,8 @@ function OpeningsTable({
         },
       ]}
       idAccessor="move"
+      sortStatus={sortStatus}
+      onSortStatusChange={updateSort}
       emptyState={"No games found"}
       onRowClick={({ record }) => makeMove({ payload: record.move })}
       customRowAttributes={(record) => ({
@@ -452,6 +532,72 @@ export default memo(OpeningsTable);
 
 function getOpeningTotal(opening: Opening) {
   return opening.white + opening.draw + opening.black;
+}
+
+function openingSortToStatus(sortBy: OpeningSort): DataTableSortStatus<Opening> {
+  if (sortBy === "move" || sortBy === "moveDesc") {
+    return {
+      columnAccessor: "move",
+      direction: sortBy === "move" ? "asc" : "desc",
+    };
+  }
+
+  if (sortBy === "games" || sortBy === "gamesLow") {
+    return {
+      columnAccessor: "total",
+      direction: sortBy === "games" ? "desc" : "asc",
+    };
+  }
+
+  if (sortBy === "chessDbWeakness") {
+    return {
+      columnAccessor: "health",
+      direction: "asc",
+    };
+  }
+
+  if (sortBy === "winRateLow" || sortBy === "scoreLow") {
+    return {
+      columnAccessor: "results",
+      direction: "asc",
+    };
+  }
+
+  if (sortBy === "whiteRate" || sortBy === "blackRate" || sortBy === "drawRate") {
+    return {
+      columnAccessor: "results",
+      direction: "desc",
+    };
+  }
+
+  if (sortBy === "chessDbStrength" || sortBy === "health") {
+    return {
+      columnAccessor: "health",
+      direction: "desc",
+    };
+  }
+
+  return {
+    columnAccessor: "results",
+    direction: "desc",
+  };
+}
+
+function statusToOpeningSort(status: DataTableSortStatus<Opening>): OpeningSort {
+  const column = status.columnAccessor as OpeningSortColumn;
+  const descending = status.direction === "desc";
+
+  switch (column) {
+    case "move":
+      return descending ? "moveDesc" : "move";
+    case "health":
+    case "strengthRank":
+      return descending ? "chessDbStrength" : "chessDbWeakness";
+    case "total":
+      return descending ? "games" : "gamesLow";
+    case "results":
+      return descending ? "winRateHigh" : "winRateLow";
+  }
 }
 
 function getSideWinRate(opening: Opening, side: OpeningMoveHealthSide) {
