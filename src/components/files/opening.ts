@@ -104,7 +104,7 @@ export type Position = {
     };
 };
 
-export const OPENING_HEALTH_SOURCE = "Opening Health";
+export const OPENING_HEALTH_SOURCE = "Analyze Repertoire";
 
 export function openingHealthClassificationLabel(classification: RepertoireGap["classification"]) {
     switch (classification) {

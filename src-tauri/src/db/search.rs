@@ -50,6 +50,7 @@ const OPENING_HEALTH_MAX_PLAYER_EXPORT_POSITIONS: usize = 3_000;
 const OPENING_HEALTH_MAX_REPORT_ROWS: usize = 600;
 const OPENING_HEALTH_REFERENCE_SAMPLE_GAMES: usize = 750_000;
 const OPENING_HEALTH_REFERENCE_OCCURRENCE_SAMPLE_LIMIT: usize = 5_000;
+const OPENING_HEALTH_MAX_REFERENCE_WORKERS: usize = 6;
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -801,6 +802,17 @@ fn emit_opening_health_progress(
     Ok(())
 }
 
+fn opening_health_reference_worker_count() -> usize {
+    std::thread::available_parallelism()
+        .map(|workers| {
+            workers
+                .get()
+                .saturating_sub(1)
+                .clamp(1, OPENING_HEALTH_MAX_REFERENCE_WORKERS)
+        })
+        .unwrap_or(2)
+}
+
 fn collect_player_positions(
     index: &MmapSearchIndex,
     player_id: Option<i32>,
@@ -951,78 +963,88 @@ fn collect_reference_positions(
         };
         let processed = AtomicUsize::new(0);
 
-        (0..sample_games).into_par_iter().for_each(|sample_index| {
-            if cancel_flag.load(Ordering::Relaxed) {
-                return;
-            }
-
-            let raw_entry_index = if sample_games == total_games {
-                sample_index
-            } else {
-                sample_index * total_games / sample_games
-            };
-            let Some(entry) = index.get_entry_ref(raw_entry_index) else {
-                return;
-            };
-
-            let scanned_games = processed.fetch_add(1, Ordering::Relaxed) + 1;
-            if scanned_games % 8192 == 0 {
-                if wait_if_database_search_paused(state, request_id, cancel_flag).is_err() {
-                    return;
-                }
-                let progress =
-                    45.0 + ((scanned_games as f32 / sample_games as f32) * 45.0).min(45.0);
-                let _ = emit_opening_health_progress(
-                    app,
-                    request_id,
-                    progress,
-                    games_scanned_offset + scanned_games as i32,
-                    matched_positions.len() as i32,
-                    reference_phase,
-                    false,
-                );
-            }
-
-            let Ok(mut chess) = starting_position(&entry.fen) else {
-                return;
-            };
-            let mut mainline = iter_mainline_move_bytes(entry.moves);
-
-            for _ in 0..max_plies {
+        let scan_sample = || {
+            (0..sample_games).into_par_iter().for_each(|sample_index| {
                 if cancel_flag.load(Ordering::Relaxed) {
                     return;
                 }
 
-                let Some(byte) = mainline.next() else {
-                    break;
+                let raw_entry_index = if sample_games == total_games {
+                    sample_index
+                } else {
+                    sample_index * total_games / sample_games
                 };
-                let Some(m) = decode_move(byte, &chess) else {
-                    break;
+                let Some(entry) = index.get_entry_ref(raw_entry_index) else {
+                    return;
                 };
 
-                let position_key = position_index_key(&chess);
-                if let Some(key) = candidate_by_key.get(&position_key) {
-                    let (san, uci) =
-                        if let Some(cached) = move_name_cache.get(&(position_key, byte)) {
-                            cached.value().clone()
-                        } else {
-                            let decoded = (
-                                SanPlus::from_move(chess.clone(), &m).to_string(),
-                                uci_for_move(&m),
-                            );
-                            move_name_cache.insert((position_key, byte), decoded.clone());
-                            decoded
-                        };
-                    matched_positions.entry(key.clone()).or_default().add_move(
-                        san,
-                        uci,
-                        entry.result,
+                let scanned_games = processed.fetch_add(1, Ordering::Relaxed) + 1;
+                if scanned_games % 8192 == 0 {
+                    if wait_if_database_search_paused(state, request_id, cancel_flag).is_err() {
+                        return;
+                    }
+                    let progress =
+                        45.0 + ((scanned_games as f32 / sample_games as f32) * 45.0).min(45.0);
+                    let _ = emit_opening_health_progress(
+                        app,
+                        request_id,
+                        progress,
+                        games_scanned_offset + scanned_games as i32,
+                        matched_positions.len() as i32,
+                        reference_phase,
+                        false,
                     );
                 }
 
-                chess.play_unchecked(&m);
-            }
-        });
+                let Ok(mut chess) = starting_position(&entry.fen) else {
+                    return;
+                };
+                let mut mainline = iter_mainline_move_bytes(entry.moves);
+
+                for _ in 0..max_plies {
+                    if cancel_flag.load(Ordering::Relaxed) {
+                        return;
+                    }
+
+                    let Some(byte) = mainline.next() else {
+                        break;
+                    };
+                    let Some(m) = decode_move(byte, &chess) else {
+                        break;
+                    };
+
+                    let position_key = position_index_key(&chess);
+                    if let Some(key) = candidate_by_key.get(&position_key) {
+                        let (san, uci) =
+                            if let Some(cached) = move_name_cache.get(&(position_key, byte)) {
+                                cached.value().clone()
+                            } else {
+                                let decoded = (
+                                    SanPlus::from_move(chess.clone(), &m).to_string(),
+                                    uci_for_move(&m),
+                                );
+                                move_name_cache.insert((position_key, byte), decoded.clone());
+                                decoded
+                            };
+                        matched_positions.entry(key.clone()).or_default().add_move(
+                            san,
+                            uci,
+                            entry.result,
+                        );
+                    }
+
+                    chess.play_unchecked(&m);
+                }
+            });
+        };
+
+        match rayon::ThreadPoolBuilder::new()
+            .num_threads(opening_health_reference_worker_count())
+            .build()
+        {
+            Ok(pool) => pool.install(scan_sample),
+            Err(_) => scan_sample(),
+        };
 
         if cancel_flag.load(Ordering::Relaxed) {
             return Err(Error::SearchStopped);

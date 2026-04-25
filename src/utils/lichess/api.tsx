@@ -308,6 +308,7 @@ export async function getBestMoves(
 }
 
 const cache = new Map<string, LichessCloudData>();
+const missingCache = new Set<string>();
 
 type LichessCloudData = {
   fen: string;
@@ -335,8 +336,12 @@ export type LichessCloudMove = {
 };
 
 async function getCloudEvaluation(fen: string, multipv: number): Promise<LichessCloudData> {
-  if (cache.has(`${fen}-${multipv}`)) {
-    return cache.get(`${fen}-${multipv}`)!;
+  const cacheKey = `${fen}-${multipv}`;
+  if (cache.has(cacheKey)) {
+    return cache.get(cacheKey)!;
+  }
+  if (missingCache.has(cacheKey)) {
+    throw new Error("No Lichess cloud evaluation available.");
   }
   const url = new URL(`${baseURL}/cloud-eval`);
   url.searchParams.append("fen", fen);
@@ -344,13 +349,14 @@ async function getCloudEvaluation(fen: string, multipv: number): Promise<Lichess
 
   const response = await fetch(url.toString(), { headers: apiHeaders() });
   if (response.status === 404) {
+    missingCache.add(cacheKey);
     throw new Error("No Lichess cloud evaluation available.");
   }
   if (!response.ok) {
     throw new Error(`Lichess cloud evaluation failed: ${response.status}`);
   }
   const data = (await response.json()) as LichessCloudData;
-  cache.set(`${fen}-${multipv}`, data);
+  cache.set(cacheKey, data);
   return data;
 }
 

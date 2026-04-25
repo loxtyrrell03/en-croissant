@@ -57,6 +57,7 @@ const gameOriginSchema = z.discriminatedUnion("kind", [
         kind: z.literal("opening_review"),
         path: z.string(),
         name: z.string(),
+        initialTab: z.string().optional(),
     }),
 ]);
 

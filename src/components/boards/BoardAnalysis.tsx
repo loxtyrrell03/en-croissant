@@ -1,7 +1,6 @@
 import { Paper, Portal, Stack, Tabs } from "@mantine/core";
 import { useHotkeys, useToggle } from "@mantine/hooks";
 import {
-  IconAlertTriangle,
   IconDatabase,
   IconGitCompare,
   IconInfoCircle,
@@ -37,7 +36,6 @@ import AnalysisPanel from "../panels/analysis/AnalysisPanel";
 import AnnotationPanel from "../panels/annotation/AnnotationPanel";
 import ComparePanel from "../panels/compare/ComparePanel";
 import DatabasePanel from "../panels/database/DatabasePanel";
-import RepertoireGapsPanel from "../panels/gaps/RepertoireGapsPanel";
 import InfoPanel from "../panels/info/InfoPanel";
 import PlanExplorerPanel from "../panels/plan/PlanExplorerPanel";
 import PracticePanel from "../panels/practice/PracticePanel";
@@ -137,8 +135,14 @@ function BoardAnalysis() {
   const practiceTabSelected = useAtomValue(currentPracticeTabAtom);
   const isRepertoire = tabFile?.metadata.type === "repertoire";
   const showPracticeTab = isRepertoire || trainingDeck.positions.length > 0;
+  const selectedPanel =
+    currentTabSelected === "gaps" ||
+    currentTabSelected === "review" ||
+    (currentTabSelected === "practice" && !showPracticeTab)
+      ? "analysis"
+      : currentTabSelected;
   const practicing =
-    showPracticeTab && currentTabSelected === "practice" && practiceTabSelected === "train";
+    showPracticeTab && selectedPanel === "practice" && practiceTabSelected === "train";
   const practiceState = useAtomValue(practiceStateAtom);
   const isPracticeRating = practicing && practiceState.phase === "correct";
 
@@ -148,6 +152,12 @@ function BoardAnalysis() {
       setPracticePath(null);
     }
   }, [practicing, setPracticePath]);
+
+  useEffect(() => {
+    if (selectedPanel !== currentTabSelected) {
+      setCurrentTabSelected(selectedPanel);
+    }
+  }, [currentTabSelected, selectedPanel, setCurrentTabSelected]);
 
   useEffect(() => {
     const navigateWithArrowKeys = (event: KeyboardEvent) => {
@@ -209,7 +219,7 @@ function BoardAnalysis() {
   return (
     <>
       <EvalListener
-        active={currentTabSelected === "analysis" || currentTabSelected === "compare"}
+        active={selectedPanel === "analysis" || selectedPanel === "compare"}
       />
       <Portal target="#left" style={{ height: "100%" }}>
         <Stack h="100%" gap="xs" style={{ minHeight: 0, overflow: "hidden" }}>
@@ -242,7 +252,7 @@ function BoardAnalysis() {
           <Tabs
             w="100%"
             h="100%"
-            value={currentTabSelected}
+            value={selectedPanel}
             onChange={(v) => setCurrentTabSelected(v || "info")}
             keepMounted={false}
             activateTabWithKeyboard={false}
@@ -279,9 +289,6 @@ function BoardAnalysis() {
               <Tabs.Tab value="compare" leftSection={<IconGitCompare size="1rem" />}>
                 Compare
               </Tabs.Tab>
-              <Tabs.Tab value="gaps" leftSection={<IconAlertTriangle size="1rem" />}>
-                Opening Health
-              </Tabs.Tab>
               <Tabs.Tab value="info" leftSection={<IconInfoCircle size="1rem" />}>
                 {t("Board.Tabs.Info")}
               </Tabs.Tab>
@@ -302,9 +309,6 @@ function BoardAnalysis() {
             </Tabs.Panel>
             <Tabs.Panel value="compare" flex={1} style={scrollablePanelStyle}>
               <ComparePanel />
-            </Tabs.Panel>
-            <Tabs.Panel value="gaps" flex={1} style={scrollablePanelStyle}>
-              <RepertoireGapsPanel />
             </Tabs.Panel>
             <Tabs.Panel value="analysis" flex={1} style={scrollablePanelStyle}>
               <AnalysisPanel />

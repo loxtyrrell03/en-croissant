@@ -36,6 +36,7 @@ import {
   IconClock,
   IconFileImport,
   IconPuzzle,
+  IconSearch,
   IconTarget,
   IconTargetArrow,
   IconTrash,
@@ -50,9 +51,12 @@ import { getStats } from "@/components/files/opening";
 import Chessboard from "../icons/Chessboard";
 import { FileIcon } from "@/components/files/FileIcon";
 import {
+  createOpeningReviewDeck,
   deleteOpeningReviewDeck,
+  getAvailableOpeningReviewDeckPath,
   listOpeningReviewDecks,
   type OpeningReviewDeckSummary,
+  writeOpeningReviewDeck,
 } from "@/utils/openingReview";
 
 dayjs.extend(relativeTime);
@@ -122,6 +126,7 @@ function OpeningReviewModal({
   onClose,
   onOpen,
   onDelete,
+  onAnalyze,
 }: {
   opened: boolean;
   decks: OpeningReviewDeckSummary[];
@@ -130,13 +135,19 @@ function OpeningReviewModal({
   onClose: () => void;
   onOpen: (deck: OpeningReviewDeckSummary) => void;
   onDelete: (deck: OpeningReviewDeckSummary) => void;
+  onAnalyze: () => void;
 }) {
   return (
     <Modal opened={opened} onClose={onClose} title={<b>Opening Review</b>} size="lg">
       <Stack gap="sm">
-        <Text size="sm" c="dimmed">
-          Train the positions saved from Opening Health. Progress is stored in the review file.
-        </Text>
+        <Group justify="space-between" align="center" gap="sm">
+          <Text size="sm" c="dimmed">
+            Analyze your repertoire, save the important positions, then train them here.
+          </Text>
+          <Button size="xs" leftSection={<IconSearch size="0.9rem" />} onClick={onAnalyze}>
+            Analyze repertoire
+          </Button>
+        </Group>
         {loading ? (
           <Text c="dimmed">Loading review decks...</Text>
         ) : decks.length === 0 ? (
@@ -145,8 +156,16 @@ function OpeningReviewModal({
               <IconTargetArrow size={36} style={{ opacity: 0.35 }} />
               <Text fw={600}>No review decks yet</Text>
               <Text size="sm" c="dimmed" ta="center">
-                Run Opening Health, then use Save review deck when the scan finishes.
+                Run Analyze Repertoire, then save review positions when the scan finishes.
               </Text>
+              <Button
+                size="xs"
+                variant="light"
+                leftSection={<IconSearch size="0.9rem" />}
+                onClick={onAnalyze}
+              >
+                Analyze repertoire
+              </Button>
             </Stack>
           </Paper>
         ) : (
@@ -317,6 +336,42 @@ export default function NewTabHome({ id }: { id: string }) {
     [navigate, setActiveTab, setTabs],
   );
 
+  const openAnalyzeRepertoire = useCallback(async () => {
+    try {
+      const name = "Analyze Repertoire";
+      const path = await getAvailableOpeningReviewDeckPath(documentDir, name);
+      const deck = createOpeningReviewDeck({
+        name,
+        positions: [],
+        source: "Analyze Repertoire",
+      });
+      await writeOpeningReviewDeck(path, deck);
+
+      await createTab({
+        tab: {
+          name,
+          type: "opening-review",
+        },
+        setTabs,
+        setActiveTab,
+        gameOrigin: {
+          kind: "opening_review",
+          path,
+          name,
+          initialTab: "gaps",
+        },
+      });
+      setOpenReviewModal(false);
+      navigate({ to: "/" });
+    } catch (error) {
+      notifications.show({
+        title: "Could not open Analyze Repertoire",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    }
+  }, [documentDir, navigate, setActiveTab, setTabs]);
+
   const deleteReviewDeck = useCallback(async (deck: OpeningReviewDeckSummary) => {
     const confirmed = window.confirm(
       `Delete "${deck.name}"?\n\nThis removes the review deck file and cannot be undone.`,
@@ -386,8 +441,8 @@ export default function NewTabHome({ id }: { id: string }) {
     {
       icon: <IconTarget size={60} />,
       title: "Opening Review",
-      description: "Train saved Opening Health positions with spaced repetition.",
-      label: "Open review deck",
+      description: "Analyze your repertoire and train saved positions with spaced repetition.",
+      label: "Open",
       onClick: () => {
         setOpenReviewModal(true);
       },
@@ -435,6 +490,7 @@ export default function NewTabHome({ id }: { id: string }) {
         onClose={() => setOpenReviewModal(false)}
         onOpen={openReviewDeck}
         onDelete={deleteReviewDeck}
+        onAnalyze={openAnalyzeRepertoire}
       />
       <Stack gap="lg" pt="sm">
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 6 }}>

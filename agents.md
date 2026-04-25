@@ -15,25 +15,28 @@ This file records the work saved during the Codex session on the `codex/en-crois
 - Added opening-table sorting, compact table rendering, and shared sorting helpers.
 - Added online Lichess All and Lichess Masters sources to database comparison.
 - Added saved default source controls for the Database tab and each Database Compare slot.
-- Added board arrow previews when hovering opening moves in the Database, Compare, and Opening Health tables, with click-to-load move behavior.
+- Added board arrow previews when hovering opening moves in the Database, Compare, and Analyze Repertoire tables, with click-to-load move behavior.
 - Added a `Gaps` tab for repertoire gap scanning, training, export, and engine verification workflows.
 - Added backend repertoire-gap search support and generated TypeScript bindings for it.
 - Added online game import into local databases from Lichess and Chess.com usernames, with progress reporting and account token reuse for Lichess when available.
 - Added online database auto-update support metadata and shared online game source helpers.
 
-## Opening Health And Review
+## Analyze Repertoire And Review
 
-- Reworked Opening Health into two user-oriented modes: prep against an opponent's repertoire and find gaps in the user's own repertoire.
+- Reworked Analyze Repertoire into two user-oriented modes: prep against an opponent's repertoire and find gaps in the user's own repertoire.
 - Made the scan orientation-aware so positions are attributed to the side being prepared or reviewed rather than mixing games from the opposite color.
 - Replaced technical table copy with clearer priority, opening line, played move, next step, evidence, and result columns, plus hover info bubbles.
 - Added color filtering, frequency sorting, recency weighting, and an urgency score that emphasizes practical result gaps, frequency, recency, and only large engine drops.
-- Added cloud validation during the initial scan, preserving validation progress when leaving and returning to the Opening Health tab.
-- Added validation lookup order of Lichess Cloud first, ChessDB second, and local Stockfish fallback when enabled.
-- Added validation source and depth display in Opening Health rows, priority messages, saved review cards, and post-attempt review evidence.
+- Added cloud validation during the initial scan, preserving validation progress when leaving and returning to the Analyze Repertoire tab.
+- Changed validation to use ChessDB first for the bulk scan, Lichess Cloud only for the most urgent deep-validation rows, and local Stockfish fallback when enabled.
+- Cached Lichess Cloud hits and misses so repeated Analyze Repertoire scans do not re-query the same FEN.
+- Batched Analyze Repertoire validation updates and let the main scan finish after the bulk ChessDB pass, while slower Lichess and Stockfish upgrades continue without freezing the UI.
+- Added validation source and depth display in Analyze Repertoire rows, priority messages, saved review cards, and post-attempt review evidence.
 - Added parallel cloud validation queues so Lichess Cloud and ChessDB checks do not run one position at a time.
-- Added delete and edit controls for Opening Health rows, including direct correct-move overrides.
-- Added saved Opening Review decks from Opening Health positions, with merge support for existing decks.
-- Added a home-page Opening Review entry point and a full review workspace with Review, Analysis, Database, Plan Explorer, Compare, Opening Health, Info, notation, engine, and annotation tools.
+- Added delete and edit controls for Analyze Repertoire rows, including direct correct-move overrides.
+- Added saved Opening Review decks from Analyze Repertoire positions, with merge support for existing decks.
+- Added a home-page Opening Review entry point and a full review workspace with Review, Analysis, Database, Plan Explorer, Compare, Analyze Repertoire, Info, notation, engine, and annotation tools.
+- Moved Analyze Repertoire out of the standard board tab strip and made it launch from the Opening Review area, including an empty-deck entry point when no review decks exist.
 - Added spaced-repetition opening review practice, full-deck practice, post-attempt evidence, saved comments/arrows/annotations, card deletion, card move editing, board-played move overrides, and whole-deck deletion.
 - Added backward compatibility for older saved review cards that used the previous generic cloud validation source.
 
@@ -92,4 +95,4 @@ This file records the work saved during the Codex session on the `codex/en-crois
 - `cargo test exact_matches` passed.
 - `cargo test exact_query_ignores_too_much_material_validation` passed.
 - Earlier full `cargo test` had unrelated existing failures in eval/search fixture expectations; those were not part of this save.
-- Latest frontend verification after Opening Health and Opening Review changes: `pnpm exec oxlint` passed on the touched frontend files and `pnpm build-vite` passed.
+- Latest frontend verification after Analyze Repertoire and Opening Review changes: `pnpm exec oxlint` passed on the touched frontend files and `pnpm build-vite` passed.

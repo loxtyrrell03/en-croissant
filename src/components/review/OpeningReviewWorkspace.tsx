@@ -9,6 +9,7 @@ import {
   Portal,
   Progress,
   ScrollArea,
+  SegmentedControl,
   SimpleGrid,
   Stack,
   Table,
@@ -20,7 +21,6 @@ import {
 } from "@mantine/core";
 import { useToggle } from "@mantine/hooks";
 import {
-  IconAlertTriangle,
   IconArrowBack,
   IconBook,
   IconCheck,
@@ -100,7 +100,6 @@ const reviewWorkspaceTabs = new Set([
   "database",
   "plan-explorer",
   "compare",
-  "gaps",
   "info",
 ]);
 
@@ -109,6 +108,8 @@ type ReviewBoardMoveCandidate = {
   san: string;
   uci: string;
 };
+
+type OpeningReviewPanelView = "review" | "analyze";
 
 export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const boardRef = useRef(null);
@@ -127,8 +128,11 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const currentNode = useStore(store, (s) => s.currentNode());
 
   useEffect(() => {
-    setCurrentTabSelected("review");
-  }, [setCurrentTabSelected]);
+    const initialTab = tab.gameOrigin.kind === "opening_review" ? tab.gameOrigin.initialTab : null;
+    setCurrentTabSelected(
+      initialTab && reviewWorkspaceTabs.has(initialTab) ? initialTab : "review",
+    );
+  }, [setCurrentTabSelected, tab.gameOrigin]);
 
   useEffect(() => {
     let disposed = false;
@@ -286,9 +290,6 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
               <Tabs.Tab value="compare" leftSection={<IconGitCompare size="1rem" />}>
                 Compare
               </Tabs.Tab>
-              <Tabs.Tab value="gaps" leftSection={<IconAlertTriangle size="1rem" />}>
-                Opening Health
-              </Tabs.Tab>
               <Tabs.Tab value="info" leftSection={<IconInfoCircle size="1rem" />}>
                 Info
               </Tabs.Tab>
@@ -299,6 +300,11 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                 deckName={deckInfo?.name ?? tab.name}
                 deckPath={deckPath}
                 deckMode={deckInfo?.mode}
+                initialView={
+                  tab.gameOrigin.kind === "opening_review" && tab.gameOrigin.initialTab === "gaps"
+                    ? "analyze"
+                    : "review"
+                }
                 boardMoveCandidate={boardMoveCandidate}
                 onClearBoardMoveCandidate={() => setBoardMoveCandidate(null)}
                 loadError={loadError}
@@ -316,9 +322,6 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
             </Tabs.Panel>
             <Tabs.Panel value="compare" flex={1} style={scrollablePanelStyle}>
               <ComparePanel />
-            </Tabs.Panel>
-            <Tabs.Panel value="gaps" flex={1} style={scrollablePanelStyle}>
-              <RepertoireGapsPanel />
             </Tabs.Panel>
             <Tabs.Panel value="info" flex={1} style={scrollablePanelStyle}>
               <InfoPanel />
@@ -384,6 +387,7 @@ function OpeningReviewPanel({
   deckName,
   deckPath,
   deckMode,
+  initialView,
   boardMoveCandidate,
   onClearBoardMoveCandidate,
   loadError,
@@ -392,6 +396,7 @@ function OpeningReviewPanel({
   deckName: string;
   deckPath: string;
   deckMode?: "self" | "opponent";
+  initialView: OpeningReviewPanelView;
   boardMoveCandidate: ReviewBoardMoveCandidate | null;
   onClearBoardMoveCandidate: () => void;
   loadError: string | null;
@@ -415,6 +420,7 @@ function OpeningReviewPanel({
   const setCardStartTime = useSetAtom(practiceCardStartTimeAtom);
   const practiceAutoDifficulty = useAtomValue(practiceAutoDifficultyAtom);
   const [positionsOpen, setPositionsOpen] = useToggle();
+  const [panelView, setPanelView] = useState<OpeningReviewPanelView>(initialView);
   const playedOverrideCandidate = useMemo(() => {
     if (
       practiceState.positionIndex !== undefined &&
@@ -715,9 +721,35 @@ function OpeningReviewPanel({
     );
   }
 
+  const panelModeControl = (
+    <Group justify="space-between" align="center" wrap="nowrap">
+      <SegmentedControl
+        value={panelView}
+        onChange={(value) => setPanelView(value as OpeningReviewPanelView)}
+        data={[
+          { value: "review", label: "Review positions" },
+          { value: "analyze", label: "Analyze repertoire" },
+        ]}
+      />
+      <Text size="xs" c="dimmed">
+        Analyze lines, save what matters, then train them here.
+      </Text>
+    </Group>
+  );
+
+  if (panelView === "analyze") {
+    return (
+      <Stack h="100%" gap="sm">
+        {panelModeControl}
+        <RepertoireGapsPanel />
+      </Stack>
+    );
+  }
+
   return (
     <>
       <Stack h="100%" gap="sm">
+        {panelModeControl}
         <Group justify="space-between" align="flex-start">
           <Stack gap={2}>
             <Text fw={700}>{deckName}</Text>
@@ -1071,7 +1103,9 @@ function OpeningReviewAttemptDetails({
           </>
         ) : (
           <Text size="sm" c="dimmed">
-            {position.reason || position.evidence || "No Opening Health evidence was saved for this card."}
+            {position.reason ||
+              position.evidence ||
+              "No Analyze Repertoire evidence was saved for this card."}
           </Text>
         )}
       </Stack>
@@ -1367,7 +1401,7 @@ function OpeningReviewPositionsModal({
                   </Table.Td>
                   <Table.Td>
                     <Text size="sm" lineClamp={2}>
-                      {position.reason || position.evidence || "Saved from Opening Health"}
+                      {position.reason || position.evidence || "Saved from Analyze Repertoire"}
                     </Text>
                   </Table.Td>
                   <Table.Td>

@@ -535,6 +535,7 @@ export type OpeningHealthVerification = {
 
 export type OpeningHealthVerificationRun = {
     running: boolean;
+    phase?: "bulk" | "deep" | "engine";
     completed: number;
     total: number;
     engineName: string | null;
