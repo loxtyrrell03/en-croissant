@@ -23,6 +23,7 @@ import {
 } from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
 import { readDir, remove } from "@tauri-apps/plugin-fs";
+import clsx from "clsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
@@ -31,6 +32,7 @@ import ConfirmModal from "../common/ConfirmModal";
 import OpenFolderButton from "../common/OpenFolderButton";
 import DirectoryTree from "./DirectoryTree";
 import { DragContext } from "./DirectoryTree";
+import treeClasses from "./DirectoryTree.module.css";
 import FileCard from "./FileCard";
 import {
   type Directory,
@@ -58,6 +60,10 @@ function findEntryByPath(entries: Entry[], path: string): Entry | null {
   }
 
   return null;
+}
+
+function isDescendantPath(path: string, parent: string) {
+  return path.startsWith(parent + "/") || path.startsWith(parent + "\\");
 }
 
 const useFileDirectory = (dir: string) => {
@@ -129,6 +135,7 @@ function FilesPage() {
   const [draggingPath, setDraggingPath] = useState<string | null>(null);
   const [hoverPath, setHoverPath] = useState<string | null>(null);
   const folderRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const rootDropzoneRef = useRef<HTMLDivElement>(null);
 
   const registerFolder = useCallback((path: string, ref: HTMLDivElement | null) => {
     if (ref) {
@@ -138,10 +145,11 @@ function FilesPage() {
     }
   }, []);
 
-  const checkHover = useCallback(
-    (clientX: number, clientY: number) => {
+  const getDropTarget = useCallback(
+    (clientX: number, clientY: number, activeDraggingPath = draggingPath) => {
       let hovered: string | null = null;
       let minArea = Infinity;
+      let blockedByInvalidFolder = false;
 
       // Check all folder row bounding rects
       // Since child folders are visually inside their parent's bounding box sometimes depending
@@ -154,6 +162,15 @@ function FilesPage() {
           clientY >= rect.top &&
           clientY <= rect.bottom
         ) {
+          if (activeDraggingPath && path === activeDraggingPath) {
+            continue;
+          }
+
+          if (activeDraggingPath && isDescendantPath(path, activeDraggingPath)) {
+            blockedByInvalidFolder = true;
+            continue;
+          }
+
           const area = rect.width * rect.height;
           if (area < minArea) {
             minArea = area;
@@ -162,9 +179,12 @@ function FilesPage() {
         }
       }
 
-      // If no specific folder hovered, check if over the general documentDir space
-      if (!hovered && dropzoneRef.current) {
-        const rect = dropzoneRef.current.getBoundingClientRect();
+      if (blockedByInvalidFolder) {
+        return null;
+      }
+
+      if (!hovered && rootDropzoneRef.current) {
+        const rect = rootDropzoneRef.current.getBoundingClientRect();
         if (
           clientX >= rect.left &&
           clientX <= rect.right &&
@@ -175,12 +195,17 @@ function FilesPage() {
         }
       }
 
-      setHoverPath(hovered);
+      return hovered;
     },
-    [documentDir],
+    [documentDir, draggingPath],
   );
 
-  const dropzoneRef = useRef<HTMLDivElement>(null);
+  const checkHover = useCallback(
+    (clientX: number, clientY: number, activeDraggingPath?: string | null) => {
+      setHoverPath(getDropTarget(clientX, clientY, activeDraggingPath));
+    },
+    [getDropTarget],
+  );
 
   const requestDelete = useCallback(
     (entry: Entry) => {
@@ -218,11 +243,14 @@ function FilesPage() {
       hoverPath,
       setHoverPath,
       registerFolder,
+      getDropTarget,
       checkHover,
       documentDir,
     }),
-    [draggingPath, hoverPath, registerFolder, checkHover, documentDir],
+    [draggingPath, hoverPath, registerFolder, getDropTarget, checkHover, documentDir],
   );
+
+  const isRootDropActive = draggingPath !== null && hoverPath === documentDir;
 
   return (
     <Stack h="100%">
@@ -259,7 +287,7 @@ function FilesPage() {
 
       <Group grow flex={1} style={{ overflow: "hidden" }} px="md" pb="md">
         <Paper withBorder style={{ borderWidth: 2 }} h="100%">
-          <Stack ref={dropzoneRef} gap={0} h="100%" style={{ overflow: "hidden" }}>
+          <Stack gap={0} h="100%" style={{ overflow: "hidden" }}>
             <Group p="xs" gap="xs">
               <Input
                 size="sm"
@@ -305,7 +333,20 @@ function FilesPage() {
               ))}
             </Group>
             <Divider />
-            <ScrollArea flex={1}>
+            <ScrollArea
+              flex={1}
+              viewportRef={rootDropzoneRef}
+              className={clsx(treeClasses.rootDropTarget, {
+                [treeClasses.rootDropTargetActive]: isRootDropActive,
+              })}
+              onClick={(event) => {
+                const target = event.target as HTMLElement;
+                if (target.closest('[data-files-tree-row="true"]')) {
+                  return;
+                }
+                setSelected(null);
+              }}
+            >
               {error ? (
                 <Center h="100%">
                   <Text c="red">Failed to load files.</Text>

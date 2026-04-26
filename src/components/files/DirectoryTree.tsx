@@ -37,7 +37,8 @@ type DragContextType = {
   hoverPath: string | null;
   setHoverPath: (path: string | null) => void;
   registerFolder: (path: string, ref: HTMLDivElement | null) => void;
-  checkHover: (clientX: number, clientY: number) => void;
+  getDropTarget: (clientX: number, clientY: number, draggingPath?: string | null) => string | null;
+  checkHover: (clientX: number, clientY: number, draggingPath?: string | null) => void;
   documentDir: string;
 };
 
@@ -331,10 +332,10 @@ function DirectoryNode({
     }
 
     if (!isDraggingNode) setIsDraggingNode(true);
-    dragContext.checkHover(point.x, point.y);
+    dragContext.checkHover(point.x, point.y, node.path);
   };
 
-  const onDragStop = () => {
+  const onDragStop = (e: DraggableEvent) => {
     if (!dragContext) return;
     const wasDragging = didDragRef.current;
     didDragRef.current = false;
@@ -348,7 +349,10 @@ function DirectoryNode({
     }
 
     dragContext.setDraggingPath(null);
-    let targetId = dragContext.hoverPath;
+    const point = getEventPoint(e);
+    const targetId = point
+      ? dragContext.getDropTarget(point.x, point.y, node.path)
+      : dragContext.hoverPath;
     dragContext.setHoverPath(null);
 
     if (!wasDragging || !targetId) return;
@@ -374,7 +378,9 @@ function DirectoryNode({
           ).catch(() => {});
         }
         await refreshDirectory();
-        setExpandedIds((prev) => (prev.includes(targetId!) ? prev : [...prev, targetId!]));
+        if (targetId !== dragContext.documentDir) {
+          setExpandedIds((prev) => (prev.includes(targetId) ? prev : [...prev, targetId]));
+        }
 
         if (selectedFile) {
           if (selectedFile.path === sourcePath) {
@@ -415,6 +421,7 @@ function DirectoryNode({
       >
         <div
           ref={rowRef}
+          data-files-tree-row="true"
           className={clsx(classes.row, {
             [classes.selected]: isSelected,
             [classes.dragOver]: isOver,
