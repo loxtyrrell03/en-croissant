@@ -265,7 +265,6 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
 
       loadReviewPositionOnBoard({
         position,
-        deckMode: openingReviewDeckMode,
         headers,
         root,
         store,
@@ -282,7 +281,6 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     },
     [
       deck.positions,
-      openingReviewDeckMode,
       goToMove,
       headers,
       root,
@@ -651,14 +649,12 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
 
 function OpeningReviewMiniBoard({
   position,
-  deckMode,
   onClick,
 }: {
   position: Position;
-  deckMode?: "self" | "opponent";
   onClick: () => void;
 }) {
-  const orientation = getOpeningReviewStatsSide(position, deckMode);
+  const orientation = getOpeningReviewMoveSide(position);
 
   return (
     <Tooltip label="Load position on board" withArrow>
@@ -745,7 +741,6 @@ function OpeningReviewBoardNavigation({
 
 function loadReviewPositionOnBoard({
   position,
-  deckMode,
   headers,
   root,
   store,
@@ -754,7 +749,6 @@ function loadReviewPositionOnBoard({
   setState,
 }: {
   position: Position;
-  deckMode?: "self" | "opponent";
   headers: GameHeaders;
   root: TreeNode;
   store: TreeStore;
@@ -762,7 +756,7 @@ function loadReviewPositionOnBoard({
   setHeaders: (headers: GameHeaders) => void;
   setState: (state: TreeState) => void;
 }) {
-  const reviewLine = createReviewPositionLineState(position, headers, deckMode);
+  const reviewLine = createReviewPositionLineState(position, headers);
   if (reviewLine) {
     setState(reviewLine.state);
     return reviewLine.path;
@@ -770,13 +764,13 @@ function loadReviewPositionOnBoard({
 
   const path = findFen(position.fen, root);
   if (path.length === 0 && !sameReviewPosition(root.fen, position.fen)) {
-    setHeaders(getReviewPositionHeaders(position, headers, position.fen, deckMode));
+    setHeaders(getReviewPositionHeaders(position, headers, position.fen));
     applyReviewPositionMetadata(store, position);
     return [];
   }
 
   goToMove(path);
-  setHeaders(getReviewPositionHeaders(position, headers, headers.fen, deckMode));
+  setHeaders(getReviewPositionHeaders(position, headers, headers.fen));
   applyReviewPositionMetadata(store, position);
   return path;
 }
@@ -785,14 +779,13 @@ function getReviewPositionHeaders(
   position: Position,
   headers: GameHeaders,
   fen: string,
-  deckMode?: "self" | "opponent",
 ): GameHeaders {
   const mistake = position.mistakeReview;
   if (!mistake) {
     return {
       ...headers,
       fen,
-      orientation: getOpeningReviewPositionColour(position, deckMode),
+      orientation: getOpeningReviewMoveSide(position),
       result: "*",
     };
   }
@@ -852,22 +845,18 @@ function applyReviewPositionMetadata(store: TreeStore, position: Position) {
   state.setState(nextState);
 }
 
-function createReviewPositionLineState(
-  position: Position,
-  headers: GameHeaders,
-  deckMode?: "self" | "opponent",
-) {
+function createReviewPositionLineState(position: Position, headers: GameHeaders) {
   const moveSequence = position.moveSequence?.trim();
   if (!moveSequence) {
     const tree = defaultTree(position.fen);
-    tree.headers = getReviewPositionHeaders(position, headers, tree.root.fen, deckMode);
+    tree.headers = getReviewPositionHeaders(position, headers, tree.root.fen);
     tree.dirty = false;
     applyReviewPositionToNode(tree.root, position);
     return { state: tree, path: [] };
   }
 
   const tree = defaultTree();
-  tree.headers = getReviewPositionHeaders(position, headers, tree.root.fen, deckMode);
+  tree.headers = getReviewPositionHeaders(position, headers, tree.root.fen);
   tree.dirty = false;
 
   const [chess] = positionFromFen(tree.root.fen);
@@ -1280,7 +1269,6 @@ function OpeningReviewPanel({
 
       const path = loadReviewPositionOnBoard({
         position,
-        deckMode,
         headers,
         root,
         store,
@@ -1296,7 +1284,6 @@ function OpeningReviewPanel({
       setPracticeState({ phase: "waiting", currentFen: position.fen, positionIndex });
     },
     [
-      deckMode,
       deck.positions,
       goToMove,
       headers,
@@ -1858,7 +1845,6 @@ function OpeningReviewPanel({
                     if (position) {
                       const path = loadReviewPositionOnBoard({
                         position,
-                        deckMode,
                         headers,
                         root,
                         store,
@@ -2079,7 +2065,6 @@ function OpeningReviewPanel({
         opened={positionsOpen}
         onClose={() => setPositionsOpen(false)}
         deckPath={deckPath}
-        deckMode={deckMode}
         onTrainDue={startDuePractice}
         onTrainAll={startFullPractice}
       />
@@ -4065,6 +4050,16 @@ function getOpeningReviewPositionColour(
   return savedSide ?? "white";
 }
 
+function getOpeningReviewMoveSide(position: Position): "white" | "black" {
+  return (
+    normalizeOpeningReviewSide(
+      position.sideToMove ?? position.openingHealth?.sideToMove ?? position.fen.split(" ")[1],
+    ) ??
+    normalizeOpeningReviewSide(position.openingHealth?.reviewSide) ??
+    "white"
+  );
+}
+
 function getOpeningReviewStatsSide(
   position: Position,
   deckMode?: "self" | "opponent",
@@ -4277,7 +4272,6 @@ function formatOpeningReviewMovePrefix(moves: string[]) {
 function openingReviewPositionSortValue(
   row: OpeningReviewPositionRow,
   sort: OpeningReviewPositionSort,
-  deckMode?: "self" | "opponent",
 ) {
   switch (sort) {
     case "urgency":
@@ -4287,7 +4281,7 @@ function openingReviewPositionSortValue(
     case "lastPlayed":
       return -(parseOpeningReviewDate(row.position.openingHealth?.lastPlayed)?.getTime() ?? 0);
     case "colour":
-      return getOpeningReviewPositionColour(row.position, deckMode) === "white" ? 0 : 1;
+      return getOpeningReviewMoveSide(row.position) === "white" ? 0 : 1;
     case "opening":
       return row.opening.line;
     case "due":
@@ -4301,10 +4295,9 @@ function compareOpeningReviewPositionRows(
   a: OpeningReviewPositionRow,
   b: OpeningReviewPositionRow,
   sort: OpeningReviewPositionSort,
-  deckMode?: "self" | "opponent",
 ) {
-  const aValue = openingReviewPositionSortValue(a, sort, deckMode);
-  const bValue = openingReviewPositionSortValue(b, sort, deckMode);
+  const aValue = openingReviewPositionSortValue(a, sort);
+  const bValue = openingReviewPositionSortValue(b, sort);
 
   if (typeof aValue === "number" && typeof bValue === "number" && aValue !== bValue) {
     return aValue - bValue;
@@ -4409,14 +4402,12 @@ function OpeningReviewPositionsModal({
   opened,
   onClose,
   deckPath,
-  deckMode,
   onTrainDue,
   onTrainAll,
 }: {
   opened: boolean;
   onClose: () => void;
   deckPath: string;
-  deckMode?: "self" | "opponent";
   onTrainDue: (indices?: number[], label?: string) => void;
   onTrainAll: (indices?: number[], label?: string) => void;
 }) {
@@ -4473,11 +4464,10 @@ function OpeningReviewPositionsModal({
     () =>
       rowsWithOpenings.filter(
         ({ position }) =>
-          (colourFilter === "any" ||
-            getOpeningReviewPositionColour(position, deckMode) === colourFilter) &&
+          (colourFilter === "any" || getOpeningReviewMoveSide(position) === colourFilter) &&
           openingHealthDateMatches(position.openingHealth?.lastPlayed, dateBounds),
       ),
-    [colourFilter, dateBounds, deckMode, rowsWithOpenings],
+    [colourFilter, dateBounds, rowsWithOpenings],
   );
   const openingOptions = useMemo(() => {
     const familyCounts = new Map<string, number>();
@@ -4513,8 +4503,8 @@ function OpeningReviewPositionsModal({
             openingFilters.length === 0 ||
             openingFilters.some((filter) => openingReviewFilterMatchesOpening(filter, row.opening)),
         )
-        .sort((a, b) => compareOpeningReviewPositionRows(a, b, sortBy, deckMode)),
-    [colourFilteredRows, deckMode, openingFilters, sortBy],
+        .sort((a, b) => compareOpeningReviewPositionRows(a, b, sortBy)),
+    [colourFilteredRows, openingFilters, sortBy],
   );
   const visibleIndices = useMemo(() => visibleRows.map((row) => row.index), [visibleRows]);
   const visibleDueCount = useMemo(() => {
@@ -4621,7 +4611,6 @@ function OpeningReviewPositionsModal({
     (position: Position) => {
       loadReviewPositionOnBoard({
         position,
-        deckMode,
         headers,
         root,
         store,
@@ -4632,7 +4621,7 @@ function OpeningReviewPositionsModal({
       setPracticePath(null);
       onClose();
     },
-    [deckMode, goToMove, headers, onClose, root, setHeaders, setPracticePath, setState, store],
+    [goToMove, headers, onClose, root, setHeaders, setPracticePath, setState, store],
   );
 
   const deleteReviewPosition = useCallback(
@@ -4834,7 +4823,7 @@ function OpeningReviewPositionsModal({
               const due = new Date(position.card.due);
               const status =
                 position.card.reps === 0 ? "Unseen" : due <= new Date() ? "Due" : "Scheduled";
-              const colour = getOpeningReviewPositionColour(position, deckMode);
+              const colour = getOpeningReviewMoveSide(position);
               const openingDetail =
                 opening.variation ?? (opening.rawName !== opening.family ? opening.rawName : null);
               return (
@@ -4845,7 +4834,6 @@ function OpeningReviewPositionsModal({
                   <Table.Td>
                     <OpeningReviewMiniBoard
                       position={position}
-                      deckMode={deckMode}
                       onClick={() => loadReviewPosition(position)}
                     />
                   </Table.Td>

@@ -43,6 +43,16 @@ export function getOpeningReviewPositionColour(
     return savedSide ?? "white";
 }
 
+export function getOpeningReviewMoveSide(position: Position): "white" | "black" {
+    return (
+        normalizeOpeningReviewSide(
+            position.sideToMove ?? position.openingHealth?.sideToMove ?? position.fen.split(" ")[1],
+        ) ??
+        normalizeOpeningReviewSide(position.openingHealth?.reviewSide) ??
+        "white"
+    );
+}
+
 function oppositeOpeningReviewSide(side: "white" | "black") {
     return side === "white" ? "black" : "white";
 }
@@ -72,12 +82,10 @@ export function filterOpeningReviewRows(
     rows: OpeningReviewPositionRow[],
     colourFilter: OpeningReviewColourFilter,
     openingFilters: string[],
-    deckMode?: "self" | "opponent",
 ) {
     return rows.filter((row) => {
         const colourMatches =
-            colourFilter === "any" ||
-            getOpeningReviewPositionColour(row.position, deckMode) === colourFilter;
+            colourFilter === "any" || getOpeningReviewMoveSide(row.position) === colourFilter;
         const openingMatches =
             openingFilters.length === 0 ||
             openingFilters.some((filter) => openingReviewFilterMatchesOpening(filter, row.opening));
@@ -88,14 +96,11 @@ export function filterOpeningReviewRows(
 export function getOpeningReviewOpeningOptions(
     rows: OpeningReviewPositionRow[],
     colourFilter: OpeningReviewColourFilter,
-    deckMode?: "self" | "opponent",
 ) {
     const familyCounts = new Map<string, number>();
     const lineCounts = new Map<string, number>();
     const colourRows = rows.filter(
-        ({ position }) =>
-            colourFilter === "any" ||
-            getOpeningReviewPositionColour(position, deckMode) === colourFilter,
+        ({ position }) => colourFilter === "any" || getOpeningReviewMoveSide(position) === colourFilter,
     );
 
     for (const row of colourRows) {

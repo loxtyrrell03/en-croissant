@@ -1,7 +1,10 @@
 import { createEmptyCard } from "ts-fsrs";
 import { describe, expect, test } from "vitest";
 import type { Position } from "@/components/files/opening";
-import { getOpeningReviewPositionColour } from "@/utils/openingReviewOpenings";
+import {
+    getOpeningReviewMoveSide,
+    getOpeningReviewPositionColour,
+} from "@/utils/openingReviewOpenings";
 
 function position(overrides: Partial<Position> = {}): Position {
     return {
@@ -59,5 +62,19 @@ describe("opening review position colour", () => {
                 }),
             ),
         ).toBe("white");
+    });
+
+    test("uses the move side for review practice even in opponent decks", () => {
+        expect(
+            getOpeningReviewMoveSide(
+                position({
+                    sideToMove: "black",
+                    openingHealth: {
+                        mode: "opponent",
+                        sideToMove: "black",
+                    },
+                }),
+            ),
+        ).toBe("black");
     });
 });
