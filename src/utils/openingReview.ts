@@ -203,10 +203,18 @@ export function mergeOpeningReviewPositions(
         const key = reviewPositionKey(position);
         incomingKeys.add(key);
         const previous = existingByKey.get(key);
+        const openingHealth =
+            previous?.openingHealth?.openingName && !position.openingHealth?.openingName
+                ? {
+                      ...position.openingHealth,
+                      openingName: previous.openingHealth.openingName,
+                  }
+                : position.openingHealth;
         merged.push(
             previous
                 ? {
                       ...position,
+                      openingHealth,
                       card: previous.card,
                       comment: previous.comment,
                       annotations: previous.annotations,

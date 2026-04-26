@@ -192,6 +192,7 @@ type OpeningReviewOpeningInfo = {
   line: string;
   isVariation: boolean;
 };
+type OpeningReviewResolvedOpeningNames = Record<string, string>;
 type OpeningReviewPositionRow = ReturnType<typeof rankOpeningReviewPositions>[number] & {
   opening: OpeningReviewOpeningInfo;
 };
@@ -1082,6 +1083,15 @@ function OpeningReviewPanel({
   const [panelView, setPanelView] = useState<OpeningReviewPanelView>(initialView);
   const [dailySettingsOpen, setDailySettingsOpen] = useState(false);
   const initialPracticeStartedRef = useRef(false);
+  const persistOpeningNames = useCallback(
+    (namesByKey: OpeningReviewResolvedOpeningNames) => {
+      setDeck((current) => {
+        const positions = applyOpeningReviewResolvedOpeningNames(current.positions, namesByKey);
+        return positions === current.positions ? current : { ...current, positions };
+      });
+    },
+    [setDeck],
+  );
   const playedOverrideCandidate = useMemo(() => {
     if (
       practiceState.positionIndex !== undefined &&
@@ -1628,6 +1638,7 @@ function OpeningReviewPanel({
         {panelModeControl}
         <OpeningReviewStatsPage
           positions={deck.positions}
+          onOpeningNamesResolved={persistOpeningNames}
           onReviewOpening={(indices, label) => startFullPractice(indices, label)}
         />
       </Stack>
@@ -2131,9 +2142,11 @@ type OpeningReviewStatsAccumulator = {
 
 function OpeningReviewStatsPage({
   positions,
+  onOpeningNamesResolved,
   onReviewOpening,
 }: {
   positions: Position[];
+  onOpeningNamesResolved: (namesByKey: OpeningReviewResolvedOpeningNames) => void;
   onReviewOpening: (indices: number[], label: string) => void;
 }) {
   const [colourFilter, setColourFilter] = useState<OpeningReviewColourFilter>("any");
@@ -2158,7 +2171,14 @@ function OpeningReviewStatsPage({
         key: getOpeningReviewOpeningCacheKey(position),
         position,
       }))
-      .filter(({ key }) => !openingReviewOpeningNameCache.has(key));
+      .filter(({ key, position }) => {
+        const storedName = getOpeningReviewStoredOpeningName(position);
+        if (storedName) {
+          openingReviewOpeningNameCache.set(key, storedName);
+          return false;
+        }
+        return !openingReviewOpeningNameCache.has(key);
+      });
 
     if (missing.length === 0) return;
 
@@ -2176,6 +2196,7 @@ function OpeningReviewStatsPage({
         for (const { key, name } of resolved) {
           openingReviewOpeningNameCache.set(key, name);
         }
+        onOpeningNamesResolved(Object.fromEntries(resolved.map(({ key, name }) => [key, name])));
         setOpeningNamesByKey((current) => {
           const next = { ...current };
           for (const { key, name } of resolved) {
@@ -2191,7 +2212,7 @@ function OpeningReviewStatsPage({
     return () => {
       disposed = true;
     };
-  }, [positions]);
+  }, [onOpeningNamesResolved, positions]);
 
   const rowsWithOpenings = useMemo<OpeningReviewPositionRow[]>(
     () =>
@@ -2722,6 +2743,21 @@ function OpeningReviewStatsList({
                           />
                         </Stack>
                       )}
+                      {mode === "score" && (
+                        <Stack gap={6} mt={4} w="100%">
+                          <OpeningReviewWdlBar
+                            label="Your games"
+                            wins={row.wins}
+                            draws={row.draws}
+                            losses={row.losses}
+                            score={row.score}
+                            winRate={row.winRate}
+                            side={getOpeningReviewStatsSide(row.previewPosition)}
+                            empty="No saved games."
+                            compact
+                          />
+                        </Stack>
+                      )}
                     </Stack>
                   </Group>
                   <Stack gap={2} align="flex-end">
@@ -2848,6 +2884,7 @@ function OpeningReviewWdlBar({
   winRate,
   side,
   empty,
+  compact = false,
 }: {
   label: string;
   wins: number;
@@ -2857,6 +2894,7 @@ function OpeningReviewWdlBar({
   winRate: number | null;
   side: "white" | "black";
   empty: string;
+  compact?: boolean;
 }) {
   const total = wins + draws + losses;
   if (total === 0) {
@@ -2885,7 +2923,7 @@ function OpeningReviewWdlBar({
   )} draw${draws === 1 ? "" : "s"}, ${formatReviewNumber(losses)} loss${losses === 1 ? "" : "es"}`;
 
   return (
-    <Stack gap={4} miw={260} w="100%">
+    <Stack gap={4} miw={compact ? 0 : 260} w="100%">
       <Group justify="space-between" gap="xs" wrap="nowrap">
         <Text size="xs" c="dimmed">
           {label}
@@ -2895,7 +2933,7 @@ function OpeningReviewWdlBar({
         </Text>
       </Group>
       <Tooltip withArrow label={`${recordText}. ${winRateText}. ${scoreText}.`}>
-        <Progress.Root size="xl" className={resultClasses.result}>
+        <Progress.Root size={compact ? "lg" : "xl"} className={resultClasses.result}>
           <Progress.Section
             value={whiteResultPercent}
             className={resultClasses.whiteResultsSection}
@@ -4024,7 +4062,9 @@ function getOpeningReviewOpeningInfo(
   resolvedName?: string,
 ): OpeningReviewOpeningInfo {
   const rawName =
-    cleanOpeningReviewOpeningName(resolvedName) ?? inferOpeningReviewOpeningName(position);
+    cleanOpeningReviewOpeningName(resolvedName) ??
+    getOpeningReviewStoredOpeningName(position) ??
+    inferOpeningReviewOpeningName(position);
   const family = getOpeningReviewOpeningFamily(rawName);
   const variation = getOpeningReviewOpeningVariation(rawName, family);
   const line = variation ? `${family}: ${variation}` : family;
@@ -4114,6 +4154,34 @@ function getOpeningReviewOpeningVariation(openingName: string, family: string) {
 
 function getOpeningReviewOpeningCacheKey(position: Position) {
   return `${position.fen.split(" ").slice(0, 4).join(" ")}|${position.moveSequence ?? ""}`;
+}
+
+function getOpeningReviewStoredOpeningName(position: Position) {
+  return cleanOpeningReviewOpeningName(position.openingHealth?.openingName);
+}
+
+function applyOpeningReviewResolvedOpeningNames(
+  positions: Position[],
+  namesByKey: OpeningReviewResolvedOpeningNames,
+) {
+  let changed = false;
+  const nextPositions = positions.map((position) => {
+    const name = cleanOpeningReviewOpeningName(
+      namesByKey[getOpeningReviewOpeningCacheKey(position)],
+    );
+    if (!name || position.openingHealth?.openingName === name) return position;
+
+    changed = true;
+    return {
+      ...position,
+      openingHealth: {
+        ...position.openingHealth,
+        openingName: name,
+      },
+    };
+  });
+
+  return changed ? nextPositions : positions;
 }
 
 function getOpeningReviewPositionFenLine(position: Position) {
@@ -4464,7 +4532,14 @@ function OpeningReviewPositionsModal({
         key: getOpeningReviewOpeningCacheKey(position),
         position,
       }))
-      .filter(({ key }) => !openingReviewOpeningNameCache.has(key));
+      .filter(({ key, position }) => {
+        const storedName = getOpeningReviewStoredOpeningName(position);
+        if (storedName) {
+          openingReviewOpeningNameCache.set(key, storedName);
+          return false;
+        }
+        return !openingReviewOpeningNameCache.has(key);
+      });
 
     if (missing.length === 0) return;
 

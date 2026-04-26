@@ -65,6 +65,7 @@ export const positionSchema = z.object({
             strongScore: z.number().nullable().optional(),
             topMoveSan: z.string().nullable().optional(),
             topMoveUci: z.string().nullable().optional(),
+            openingName: z.string().optional(),
             lastPlayed: z.string().nullable().optional(),
             dateRange: z
                 .enum(["all", "3months", "6months", "year", "2years", "5years", "custom"])
@@ -174,6 +175,7 @@ export type Position = {
         strongScore?: number | null;
         topMoveSan?: string | null;
         topMoveUci?: string | null;
+        openingName?: string;
         lastPlayed?: string | null;
         dateRange?: "all" | "3months" | "6months" | "year" | "2years" | "5years" | "custom";
         startDate?: string | null;
