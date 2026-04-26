@@ -812,7 +812,13 @@ function RepertoireGapsPanel() {
   }
 
   function addToTraining(gap: RepertoireGap, suggestedMove: OpeningHealthTrainingMove) {
-    const item = createOpeningHealthTrainingItem(gap, suggestedMove);
+    const item = createOpeningHealthReviewPosition(
+      gap,
+      engineVerifications[gapKey(gap)],
+      analysisMode,
+      suggestedMove,
+      scanDateBounds,
+    );
     if (!item) {
       notifications.show({
         title: "No suggested move",
@@ -848,10 +854,19 @@ function RepertoireGapsPanel() {
   function saveVisibleRowsToOpeningSet() {
     const incoming = visibleRows
       .map((gap) => {
+        const verification = engineVerifications[gapKey(gap)];
         const trainingMove =
           correctMoveOverrides[gapKey(gap)] ??
-          getOpeningHealthTrainingMove(gap, engineVerifications[gapKey(gap)], analysisMode);
-        return trainingMove ? createOpeningHealthTrainingItem(gap, trainingMove) : null;
+          getOpeningHealthTrainingMove(gap, verification, analysisMode);
+        return trainingMove
+          ? createOpeningHealthReviewPosition(
+              gap,
+              verification,
+              analysisMode,
+              trainingMove,
+              scanDateBounds,
+            )
+          : null;
       })
       .filter((item): item is NonNullable<typeof item> => Boolean(item));
 

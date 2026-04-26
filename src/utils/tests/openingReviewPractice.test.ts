@@ -92,6 +92,53 @@ describe("opening review practice move assessment", () => {
         expect(assessment.moveLossCp).toBe(0);
     });
 
+    test("keeps saved Lichess best move ahead of ChessDB best for good alternatives", () => {
+        const assessment = assessOpeningReviewMove(
+            position({
+                fen: BLACK_TO_MOVE_FEN,
+                answer: "a6",
+                answerUci: "a7a6",
+                engine: {
+                    source: "lichess",
+                    bestMoveSan: "g6",
+                    bestMoveUci: "g7g6",
+                    depth: 50,
+                    lossCp: 280,
+                },
+            }),
+            { san: "Nf6", uci: "g8f6" },
+            [cloudMove("a6", "a7a6", -100, 1), cloudMove("Nf6", "g8f6", -40, 2)],
+        );
+
+        expect(assessment.quality).toBe("ok");
+        expect(assessment.bestMoveSan).toBe("g6");
+        expect(assessment.bestMoveUci).toBe("g7g6");
+        expect(assessment.chessDbBestMoveSan).toBe("a6");
+    });
+
+    test("does not promote ChessDB best to best when saved engine disagrees", () => {
+        const assessment = assessOpeningReviewMove(
+            position({
+                fen: BLACK_TO_MOVE_FEN,
+                answer: "Nf6",
+                answerUci: "g8f6",
+                engine: {
+                    source: "lichess",
+                    bestMoveSan: "g6",
+                    bestMoveUci: "g7g6",
+                    depth: 50,
+                    lossCp: 280,
+                },
+            }),
+            { san: "a6", uci: "a7a6" },
+            [cloudMove("a6", "a7a6", -100, 1), cloudMove("Nf6", "g8f6", -40, 2)],
+        );
+
+        expect(assessment.quality).toBe("ok");
+        expect(assessment.bestMoveSan).toBe("g6");
+        expect(assessment.moveLossCp).toBe(0);
+    });
+
     test("keeps a large ChessDB drop as incorrect", () => {
         const assessment = assessOpeningReviewMove(position(), { san: "h4", uci: "h2h4" }, [
             cloudMove("e4", "e2e4", 40, 1),

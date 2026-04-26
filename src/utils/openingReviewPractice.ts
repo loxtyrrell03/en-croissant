@@ -21,14 +21,16 @@ export function assessOpeningReviewMove(
     playedMove: { san: string; uci: string },
     chessDbMoves?: ChessDbCloudMove[] | null,
 ): OpeningReviewMoveAssessment {
-    const savedBestMoveSan = position.engine?.bestMoveSan || position.answer;
-    const savedBestMoveUci = position.engine?.bestMoveUci || position.answerUci;
+    const savedBestMove = getOpeningReviewBestMove(position);
+    const hasSavedEngineBest = Boolean(
+        position.engine?.bestMoveSan || position.engine?.bestMoveUci,
+    );
 
     if (isOpeningReviewEngineMove(position, playedMove)) {
         return {
             quality: "best",
-            bestMoveSan: savedBestMoveSan,
-            bestMoveUci: savedBestMoveUci ?? undefined,
+            bestMoveSan: savedBestMove.san,
+            bestMoveUci: savedBestMove.uci,
             moveLossCp: 0,
         };
     }
@@ -36,8 +38,8 @@ export function assessOpeningReviewMove(
     if (isOpeningReviewSavedMove(position, playedMove)) {
         return {
             quality: "correct",
-            bestMoveSan: savedBestMoveSan,
-            bestMoveUci: savedBestMoveUci ?? undefined,
+            bestMoveSan: savedBestMove.san,
+            bestMoveUci: savedBestMove.uci,
         };
     }
 
@@ -60,31 +62,35 @@ export function assessOpeningReviewMove(
         );
 
     const chessDbBest = scoredMoves[0];
-    const played = scoredMoves.find(
-        (entry) => entry.move.uci === playedMove.uci || entry.move.san === playedMove.san,
+    const played = scoredMoves.find((entry) =>
+        reviewMovesMatch(entry.move.uci, entry.move.san, playedMove),
     );
 
     if (!chessDbBest || !played) {
         return {
             quality: "incorrect",
-            bestMoveSan: savedBestMoveSan,
-            bestMoveUci: savedBestMoveUci ?? undefined,
+            bestMoveSan: savedBestMove.san,
+            bestMoveUci: savedBestMove.uci,
         };
     }
 
     const moveLossCp = Math.max(0, chessDbBest.scoreForSide - played.scoreForSide);
-    const isChessDbBest =
-        chessDbBest.move.uci === playedMove.uci || chessDbBest.move.san === playedMove.san;
-    const quality = isChessDbBest
-        ? "best"
-        : moveLossCp <= OK_ALTERNATIVE_CP_LOSS
-          ? "ok"
-          : "incorrect";
+    const isChessDbBest = reviewMovesMatch(chessDbBest.move.uci, chessDbBest.move.san, playedMove);
+    const quality =
+        !hasSavedEngineBest && isChessDbBest
+            ? "best"
+            : moveLossCp <= OK_ALTERNATIVE_CP_LOSS
+              ? "ok"
+              : "incorrect";
 
     return {
         quality,
-        bestMoveSan: chessDbBest.move.san || savedBestMoveSan,
-        bestMoveUci: chessDbBest.move.uci || savedBestMoveUci || undefined,
+        bestMoveSan: hasSavedEngineBest
+            ? savedBestMove.san
+            : chessDbBest.move.san || savedBestMove.san,
+        bestMoveUci: hasSavedEngineBest
+            ? savedBestMove.uci
+            : chessDbBest.move.uci || savedBestMove.uci,
         chessDbBestMoveSan: chessDbBest.move.san,
         chessDbBestMoveUci: chessDbBest.move.uci,
         moveLossCp,
@@ -97,7 +103,7 @@ export function isOpeningReviewSavedMove(
     playedMove: { san: string; uci: string },
 ) {
     const answerUci = getOpeningReviewAnswerUci(position);
-    if (answerUci) return answerUci === playedMove.uci;
+    if (answerUci === playedMove.uci) return true;
 
     return normalizeReviewSan(position.answer) === normalizeReviewSan(playedMove.san);
 }
@@ -107,10 +113,35 @@ export function isOpeningReviewEngineMove(
     playedMove: { san: string; uci: string },
 ) {
     const bestMoveUci = position.engine?.bestMoveUci;
-    if (bestMoveUci) return bestMoveUci === playedMove.uci;
+    if (bestMoveUci === playedMove.uci) return true;
 
     const bestMoveSan = position.engine?.bestMoveSan;
-    return Boolean(bestMoveSan && normalizeReviewSan(bestMoveSan) === normalizeReviewSan(playedMove.san));
+    return Boolean(
+        bestMoveSan && normalizeReviewSan(bestMoveSan) === normalizeReviewSan(playedMove.san),
+    );
+}
+
+function getOpeningReviewBestMove(position: Position) {
+    if (position.engine?.bestMoveSan || position.engine?.bestMoveUci) {
+        return {
+            san: position.engine.bestMoveSan || position.answer,
+            uci: position.engine.bestMoveUci ?? undefined,
+        };
+    }
+
+    return {
+        san: position.answer,
+        uci: position.answerUci,
+    };
+}
+
+function reviewMovesMatch(
+    moveUci: string | null | undefined,
+    moveSan: string | null | undefined,
+    playedMove: { san: string; uci: string },
+) {
+    if (moveUci && moveUci === playedMove.uci) return true;
+    return Boolean(moveSan && normalizeReviewSan(moveSan) === normalizeReviewSan(playedMove.san));
 }
 
 function getOpeningReviewAnswerUci(position: Position) {
@@ -132,8 +163,10 @@ function getOpeningReviewAnswerUci(position: Position) {
 function normalizeReviewSan(san: string) {
     return san
         .trim()
+        .replace(/^0-0-0/, "O-O-O")
+        .replace(/^0-0/, "O-O")
         .replace(/\s*\$\d+$/g, "")
-        .replace(/[!?]+$/g, "");
+        .replace(/[+#!?]+$/g, "");
 }
 
 function getScoreForSide(move: ChessDbCloudMove, side: "white" | "black") {
