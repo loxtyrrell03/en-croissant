@@ -3665,7 +3665,7 @@ function OpeningReviewAttemptDetails({
               />
               <ReviewDetail
                 label="Engine source"
-                value={formatReviewEngineSource(position.engine)}
+                value={formatReviewEngineSourceForPosition(position)}
               />
               <ReviewDetail label="Imported" value={formatImportedAt(position.importedAt)} />
             </SimpleGrid>
@@ -3789,9 +3789,20 @@ function formatMistakeReviewRelativeResult(
 
 function formatReviewEngineBestMove(position: Position) {
   const engine = position.engine;
-  if (!engine?.bestMoveSan) return "Not checked";
+  if (engine?.bestMoveSan) {
+    return `${engine.bestMoveSan} (${formatReviewEngineSource(engine)})`;
+  }
 
-  return `${engine.bestMoveSan} (${formatReviewEngineSource(engine)})`;
+  const health = position.openingHealth;
+  if (health?.topMoveSan) return `${health.topMoveSan} (database scan)`;
+
+  return "Not checked";
+}
+
+function formatReviewEngineSourceForPosition(position: Position) {
+  if (position.engine) return formatReviewEngineSource(position.engine);
+  if (position.openingHealth?.topMoveSan) return "Database scan";
+  return "Not checked";
 }
 
 function formatReviewEngineSource(engine: Position["engine"] | undefined) {
