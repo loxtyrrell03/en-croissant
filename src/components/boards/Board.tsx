@@ -351,11 +351,8 @@ function Board({
         const bestSource =
           c.engine?.bestMoveUci === uci || c.engine?.bestMoveSan === san ? "Engine" : "ChessDB";
 
-        if (sessionStats.mode !== "full") {
-          updateCardPerformance(setDeck, i, c.card, isAcceptedAlternative ? 2 : 1);
-        }
         setPracticeState({
-          phase: "incorrect",
+          phase: isAcceptedAlternative ? "correct" : "incorrect",
           currentFen: c.fen,
           answer: bestMove,
           playedMove: san,
@@ -368,23 +365,29 @@ function Board({
           positionIndex: i,
           timeTaken,
         });
+        if (isAcceptedAlternative) {
+          notifications.show({
+            title: isBestAlternative ? "Best move" : "OK move",
+            message: isBestAlternative
+              ? `${bestSource} has ${san} as best.`
+              : `${san} is OK; ${bestMove} is best.`,
+            color: isBestAlternative ? "green" : "blue",
+          });
+          return;
+        }
+
+        if (sessionStats.mode !== "full") {
+          updateCardPerformance(setDeck, i, c.card, 1);
+        }
         setSessionStats((prev) => ({
           ...prev,
           incorrect: prev.incorrect + 1,
           streak: 0,
         }));
         notifications.show({
-          title: isBestAlternative
-            ? "Best move"
-            : isOkAlternative
-              ? "OK move"
-              : t("Common.Incorrect"),
-          message: isBestAlternative
-            ? `${bestSource} has ${san} as best.`
-            : isOkAlternative
-              ? `${san} is OK; ${bestMove} is best.`
-              : t("Board.Practice.CorrectMoveWas", { move: bestMove }),
-          color: isBestAlternative ? "green" : isOkAlternative ? "blue" : "red",
+          title: t("Common.Incorrect"),
+          message: t("Board.Practice.CorrectMoveWas", { move: bestMove }),
+          color: "red",
         });
       } else {
         storeMakeMove({
