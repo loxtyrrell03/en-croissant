@@ -655,6 +655,103 @@ export const openingHealthLocalFallbackAtom = atomWithStorage<boolean>(
     false,
 );
 
+export type OpeningReviewAutoUpdateState = {
+    running: boolean;
+    phase: string | null;
+    progress: number | null;
+    deckName: string | null;
+    deckPath: string | null;
+    databaseTitle: string | null;
+    startedAt: number | null;
+    completedAt: number | null;
+    added: number;
+    checkedDecks: number;
+    updatedDecks: number;
+    error: string | null;
+    updatedDeckPaths: string[];
+    revision: number;
+};
+
+export const openingReviewAutoUpdateStateAtom = atomWithStorage<OpeningReviewAutoUpdateState>(
+    "opening-review-auto-update-state",
+    {
+        running: false,
+        phase: null,
+        progress: null,
+        deckName: null,
+        deckPath: null,
+        databaseTitle: null,
+        startedAt: null,
+        completedAt: null,
+        added: 0,
+        checkedDecks: 0,
+        updatedDecks: 0,
+        error: null,
+        updatedDeckPaths: [],
+        revision: 0,
+    },
+    createJSONStorage(() => sessionStorage),
+);
+
+export type MistakeReviewAutoUpdateState = OpeningReviewAutoUpdateState;
+
+export const mistakeReviewAutoUpdateStateAtom = atomWithStorage<MistakeReviewAutoUpdateState>(
+    "mistake-review-auto-update-state",
+    {
+        running: false,
+        phase: null,
+        progress: null,
+        deckName: null,
+        deckPath: null,
+        databaseTitle: null,
+        startedAt: null,
+        completedAt: null,
+        added: 0,
+        checkedDecks: 0,
+        updatedDecks: 0,
+        error: null,
+        updatedDeckPaths: [],
+        revision: 0,
+    },
+    createJSONStorage(() => sessionStorage),
+);
+
+export type MistakeReviewScanProgressState = {
+    requestId: string | null;
+    running: boolean;
+    progress: number | null;
+    deckName: string | null;
+    phase: string | null;
+    paused: boolean;
+    gamesAnalyzed: number;
+    gamesTotal: number;
+    positionsAnalyzed: number;
+    candidateMoves: number;
+    mistakesFound: number;
+    stopping: boolean;
+    error: string | null;
+    startedAt: number | null;
+    completedAt: number | null;
+};
+
+export const mistakeReviewScanProgressAtom = atom<MistakeReviewScanProgressState>({
+    requestId: null,
+    running: false,
+    progress: null,
+    deckName: null,
+    phase: null,
+    paused: false,
+    gamesAnalyzed: 0,
+    gamesTotal: 0,
+    positionsAnalyzed: 0,
+    candidateMoves: 0,
+    mistakesFound: 0,
+    stopping: false,
+    error: null,
+    startedAt: null,
+    completedAt: null,
+});
+
 const analysisTabFamily = atomFamily((_tab: string) => atom("engines"));
 export const currentAnalysisTabAtom = tabValue(analysisTabFamily);
 
@@ -740,8 +837,19 @@ export type PracticeState = {
     answer?: string;
     playedMove?: string;
     playedMoveUci?: string;
+    moveAssessment?: "best" | "ok" | "incorrect";
+    mistakeReviewLabel?: "best" | "good" | "okay" | "inaccuracy" | "mistake" | "blunder";
+    bestMove?: string;
+    bestMoveUci?: string;
+    moveLossCp?: number;
+    winProbabilityDrop?: number;
+    requestedDepth?: number;
+    reachedDepth?: number;
+    engineName?: string;
+    chessDbRank?: number | null;
     timeTaken?: number;
     positionIndex?: number;
+    resultRecorded?: boolean;
 };
 
 export const practiceStateFamily = atomFamily((_tab: string) =>

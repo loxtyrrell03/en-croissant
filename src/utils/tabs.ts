@@ -58,13 +58,26 @@ const gameOriginSchema = z.discriminatedUnion("kind", [
         path: z.string(),
         name: z.string(),
         initialTab: z.string().optional(),
+        initialPractice: z
+            .object({
+                mode: z.enum(["due", "all"]),
+                indices: z.number().array(),
+                label: z.string().optional(),
+            })
+            .optional(),
+    }),
+    z.object({
+        kind: z.literal("mistake_review"),
+        path: z.string(),
+        name: z.string(),
+        initialTab: z.string().optional(),
     }),
 ]);
 
 export const tabSchema = z.object({
     name: z.string(),
     value: z.string(),
-    type: z.enum(["new", "play", "analysis", "puzzles", "opening-review"]),
+    type: z.enum(["new", "play", "analysis", "puzzles", "opening-review", "mistake-review"]),
     gameOrigin: gameOriginSchema,
 });
 
@@ -92,12 +105,19 @@ export function getTabPracticeKey(tab?: Tab | null): string {
     if (tab.gameOrigin.kind === "opening_review") {
         return tab.gameOrigin.path;
     }
+    if (tab.gameOrigin.kind === "mistake_review") {
+        return tab.gameOrigin.path;
+    }
     return getTabFile(tab)?.path || "";
 }
 
 export function isPersistentGameOrigin(tab?: Tab | null): boolean {
     if (!tab) return false;
-    return tab.gameOrigin.kind !== "none" && tab.gameOrigin.kind !== "opening_review";
+    return (
+        tab.gameOrigin.kind !== "none" &&
+        tab.gameOrigin.kind !== "opening_review" &&
+        tab.gameOrigin.kind !== "mistake_review"
+    );
 }
 
 export function genID() {

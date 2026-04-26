@@ -528,5 +528,11 @@ function TabSwitch({
         <OpeningReviewWorkspace tab={tab} />
       </TreeStateProvider>
     ))
+    .with("mistake-review", () => (
+      <TreeStateProvider id={tab.value}>
+        <BoardWorkspaceLayout />
+        <OpeningReviewWorkspace tab={tab} />
+      </TreeStateProvider>
+    ))
     .exhaustive();
 }

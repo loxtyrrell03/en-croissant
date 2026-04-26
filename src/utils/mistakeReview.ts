@@ -1,0 +1,690 @@
+import { basename, resolve } from "@tauri-apps/api/path";
+import { exists, readDir, readTextFile, remove, writeTextFile } from "@tauri-apps/plugin-fs";
+import { createEmptyCard, type ReviewLog } from "ts-fsrs";
+import { z } from "zod";
+import type {
+    MistakeReviewScanRequest,
+    MistakeReviewScanResult,
+    MistakeReviewAnalysisMode,
+    MistakeReviewSeverity,
+    MistakeReviewSeverityFilter,
+    MistakeReviewThresholds,
+} from "@/bindings";
+import { getStats, type Position, positionSchema } from "@/components/files/opening";
+
+export const MISTAKE_REVIEW_EXTENSION = ".mistake-review.json";
+export const MISTAKE_REVIEW_VERSION = 1;
+export const MISTAKE_REVIEW_SOURCE = "Mistake Review";
+
+export const DEFAULT_MISTAKE_REVIEW_THRESHOLDS: MistakeReviewThresholds = {
+    inaccuracy: 50,
+    mistake: 100,
+    blunder: 200,
+};
+
+export const DEFAULT_MISTAKE_REVIEW_SEVERITIES: MistakeReviewSeverityFilter = {
+    inaccuracy: true,
+    mistake: true,
+    blunder: true,
+};
+
+export type MistakeReviewAttemptLabel =
+    | "best"
+    | "good"
+    | "okay"
+    | "inaccuracy"
+    | "mistake"
+    | "blunder";
+
+export type MistakeReviewGamePeriod =
+    | "all"
+    | "week"
+    | "2weeks"
+    | "month"
+    | "3months"
+    | "6months"
+    | "year";
+
+export type MistakeReviewTimeControl =
+    | "bullet"
+    | "blitz"
+    | "rapid"
+    | "classical"
+    | "correspondence"
+    | "unknown";
+
+export type MistakeReviewDateRange =
+    | "all"
+    | "week"
+    | "2weeks"
+    | "month"
+    | "3months"
+    | "6months"
+    | "year";
+
+export type MistakeReviewDailySettings = {
+    reviewsPerDay: number;
+    newItemsPerDay: number;
+    gamePeriod: MistakeReviewGamePeriod;
+    minWinProbabilityDrop: number;
+    includeInaccuracies: boolean;
+    includeMistakes: boolean;
+    includeBlunders: boolean;
+};
+
+export type MistakeReviewSettings = {
+    playerDb: string;
+    playerId: number;
+    playerName?: string | null;
+    enginePath: string;
+    engineName?: string | null;
+    analysisMode: MistakeReviewAnalysisMode;
+    fastDepth: number;
+    deepDepth: number;
+    multiPv: number;
+    timeControls: MistakeReviewTimeControl[];
+    dateRange: MistakeReviewDateRange;
+    thresholds: MistakeReviewThresholds;
+    includeSeverities: MistakeReviewSeverityFilter;
+    minWinProbabilityDrop: number;
+};
+
+export type MistakeReviewAutoUpdateConfig = MistakeReviewSettings & {
+    enabled: boolean;
+    createdAt?: number;
+    updatedAt?: number;
+    lastRunAt?: number | null;
+    lastUpdatedDatabaseAt?: number | null;
+    lastKnownGameCount?: number | null;
+    lastAnalyzedGameId?: number | null;
+    lastAdded?: number | null;
+    lastError?: string | null;
+};
+
+const reviewLogSchema = z
+    .object({
+        fen: z.string(),
+    })
+    .passthrough();
+
+const mistakeReviewThresholdSchema = z.object({
+    inaccuracy: z.number().default(DEFAULT_MISTAKE_REVIEW_THRESHOLDS.inaccuracy),
+    mistake: z.number().default(DEFAULT_MISTAKE_REVIEW_THRESHOLDS.mistake),
+    blunder: z.number().default(DEFAULT_MISTAKE_REVIEW_THRESHOLDS.blunder),
+});
+
+const mistakeReviewSeverityFilterSchema = z.object({
+    inaccuracy: z.boolean().default(true),
+    mistake: z.boolean().default(true),
+    blunder: z.boolean().default(true),
+});
+
+const mistakeReviewDailySettingsSchema = z.object({
+    reviewsPerDay: z.number().default(40),
+    newItemsPerDay: z.number().default(10),
+    gamePeriod: z
+        .enum(["all", "week", "2weeks", "month", "3months", "6months", "year"])
+        .default("all"),
+    minWinProbabilityDrop: z.number().default(0),
+    includeInaccuracies: z.boolean().default(true),
+    includeMistakes: z.boolean().default(true),
+    includeBlunders: z.boolean().default(true),
+});
+
+const mistakeReviewSettingsSchema = z.object({
+    playerDb: z.string(),
+    playerId: z.number(),
+    playerName: z.string().nullable().optional(),
+    enginePath: z.string(),
+    engineName: z.string().nullable().optional(),
+    analysisMode: z.enum(["single", "layered"]).default("single"),
+    fastDepth: z.number().default(12),
+    deepDepth: z.number().default(17),
+    multiPv: z.number().default(3),
+    timeControls: z
+        .enum(["bullet", "blitz", "rapid", "classical", "correspondence", "unknown"])
+        .array()
+        .default([]),
+    dateRange: z
+        .enum(["all", "week", "2weeks", "month", "3months", "6months", "year"])
+        .default("all"),
+    thresholds: mistakeReviewThresholdSchema.default(DEFAULT_MISTAKE_REVIEW_THRESHOLDS),
+    includeSeverities: mistakeReviewSeverityFilterSchema.default(DEFAULT_MISTAKE_REVIEW_SEVERITIES),
+    minWinProbabilityDrop: z.number().default(5),
+});
+
+const mistakeReviewAutoUpdateConfigSchema = mistakeReviewSettingsSchema.extend({
+    enabled: z.boolean().default(false),
+    createdAt: z.number().optional(),
+    updatedAt: z.number().optional(),
+    lastRunAt: z.number().nullable().optional(),
+    lastUpdatedDatabaseAt: z.number().nullable().optional(),
+    lastKnownGameCount: z.number().nullable().optional(),
+    lastAnalyzedGameId: z.number().nullable().optional(),
+    lastAdded: z.number().nullable().optional(),
+    lastError: z.string().nullable().optional(),
+});
+
+const mistakeReviewDeckSchema = z.object({
+    version: z.literal(MISTAKE_REVIEW_VERSION).optional(),
+    name: z.string(),
+    createdAt: z.number(),
+    updatedAt: z.number(),
+    source: z.string().optional(),
+    settings: mistakeReviewSettingsSchema,
+    daily: mistakeReviewDailySettingsSchema.default({
+        reviewsPerDay: 40,
+        newItemsPerDay: 10,
+        gamePeriod: "all",
+        minWinProbabilityDrop: 0,
+        includeInaccuracies: true,
+        includeMistakes: true,
+        includeBlunders: true,
+    }),
+    autoUpdate: mistakeReviewAutoUpdateConfigSchema.optional(),
+    positions: positionSchema.array(),
+    logs: reviewLogSchema.array().default([]),
+});
+
+export type MistakeReviewDeck = {
+    version: typeof MISTAKE_REVIEW_VERSION;
+    name: string;
+    createdAt: number;
+    updatedAt: number;
+    source?: string;
+    settings: MistakeReviewSettings;
+    daily: MistakeReviewDailySettings;
+    autoUpdate?: MistakeReviewAutoUpdateConfig;
+    positions: Position[];
+    logs: (ReviewLog & { fen: string })[];
+};
+
+export type MistakeReviewDeckSummary = {
+    path: string;
+    name: string;
+    updatedAt: number;
+    total: number;
+    due: number;
+    unseen: number;
+    playerName?: string | null;
+    engineName?: string | null;
+    autoUpdate?: MistakeReviewAutoUpdateConfig;
+};
+
+export async function readMistakeReviewDeck(path: string): Promise<MistakeReviewDeck> {
+    const raw = await readTextFile(path);
+    const parsed = mistakeReviewDeckSchema.parse(JSON.parse(raw));
+    return {
+        version: MISTAKE_REVIEW_VERSION,
+        ...parsed,
+        positions: parsed.positions as unknown as Position[],
+        logs: parsed.logs as unknown as MistakeReviewDeck["logs"],
+    };
+}
+
+export async function writeMistakeReviewDeck(path: string, deck: MistakeReviewDeck) {
+    const updatedDeck: MistakeReviewDeck = {
+        ...deck,
+        version: MISTAKE_REVIEW_VERSION,
+        updatedAt: Date.now(),
+    };
+    await writeTextFile(path, `${JSON.stringify(updatedDeck, null, 2)}\n`);
+    return updatedDeck;
+}
+
+export async function deleteMistakeReviewDeck(path: string) {
+    await remove(path);
+}
+
+export async function listMistakeReviewDecks(directory: string): Promise<MistakeReviewDeckSummary[]> {
+    const entries = await readDir(directory).catch(() => []);
+    const decks: MistakeReviewDeckSummary[] = [];
+
+    for (const entry of entries) {
+        if (!entry.isFile || !entry.name.endsWith(MISTAKE_REVIEW_EXTENSION)) continue;
+
+        const path = await resolve(directory, entry.name);
+        try {
+            const deck = await readMistakeReviewDeck(path);
+            const stats = getStats(deck.positions);
+            decks.push({
+                path,
+                name: deck.name,
+                updatedAt: deck.updatedAt,
+                total: stats.total,
+                due: stats.due,
+                unseen: stats.unseen,
+                playerName: deck.settings.playerName,
+                engineName: deck.settings.engineName,
+                autoUpdate: deck.autoUpdate,
+            });
+        } catch {
+            // Ignore malformed mistake decks so one broken file does not hide the rest.
+        }
+    }
+
+    return decks.sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+export async function getAvailableMistakeReviewDeckPath(directory: string, name: string) {
+    const safeName = sanitizeMistakeReviewFileName(name || "Mistake Review");
+    let path = await resolve(directory, `${safeName}${MISTAKE_REVIEW_EXTENSION}`);
+    let index = 2;
+
+    while (await exists(path)) {
+        path = await resolve(directory, `${safeName} ${index}${MISTAKE_REVIEW_EXTENSION}`);
+        index += 1;
+    }
+
+    return path;
+}
+
+export async function getMistakeReviewDisplayName(path: string) {
+    const fileName = await basename(path);
+    return fileName.replace(MISTAKE_REVIEW_EXTENSION, "");
+}
+
+export function createMistakeReviewDeck({
+    name,
+    settings,
+    autoUpdate,
+    daily,
+    positions,
+}: {
+    name: string;
+    settings: MistakeReviewSettings;
+    autoUpdate?: MistakeReviewAutoUpdateConfig;
+    daily?: Partial<MistakeReviewDailySettings>;
+    positions: Position[];
+}): MistakeReviewDeck {
+    const now = Date.now();
+    return {
+        version: MISTAKE_REVIEW_VERSION,
+        name,
+        createdAt: now,
+        updatedAt: now,
+        source: MISTAKE_REVIEW_SOURCE,
+        settings,
+        autoUpdate,
+        daily: {
+            reviewsPerDay: 40,
+            newItemsPerDay: 10,
+            gamePeriod: "all",
+            minWinProbabilityDrop: 0,
+            includeInaccuracies: true,
+            includeMistakes: true,
+            includeBlunders: true,
+            ...daily,
+        },
+        positions,
+        logs: [],
+    };
+}
+
+export function mistakeReviewRequestFromSettings(
+    settings: MistakeReviewSettings,
+    options?: { requestId?: string; sinceGameId?: number | null; maxGames?: number | null },
+): MistakeReviewScanRequest {
+    const dateBounds = getMistakeReviewScanDateBounds(settings.dateRange);
+    return {
+        requestId: options?.requestId ?? null,
+        playerDb: settings.playerDb,
+        playerId: settings.playerId,
+        playerName: settings.playerName ?? null,
+        enginePath: settings.enginePath,
+        engineName: settings.engineName ?? null,
+        fastDepth: settings.fastDepth,
+        deepDepth: settings.deepDepth,
+        analysisMode: settings.analysisMode,
+        multiPv: settings.multiPv,
+        timeControls: settings.timeControls,
+        startDate: dateBounds.startDate,
+        endDate: dateBounds.endDate,
+        thresholds: settings.thresholds,
+        includeSeverities: settings.includeSeverities,
+        minWinProbabilityDrop: settings.minWinProbabilityDrop,
+        sinceGameId: options?.sinceGameId ?? null,
+        maxGames: options?.maxGames ?? null,
+    };
+}
+
+export function createMistakeReviewPosition(
+    result: MistakeReviewScanResult,
+    settings: MistakeReviewSettings,
+): Position {
+    const severityLabel = mistakeReviewSeverityLabel(result.severity);
+    const dateText = result.date ? ` on ${result.date}` : "";
+    const occurrenceText =
+        result.occurrenceCount > 1 ? `${result.occurrenceCount} occurrences` : "1 occurrence";
+
+    return {
+        fen: result.fen,
+        answer: result.bestMoveSan,
+        answerUci: result.bestMoveUci || undefined,
+        card: createEmptyCard(),
+        sideToMove: result.sideToMove === "black" ? "black" : "white",
+        tags: [severityLabel, MISTAKE_REVIEW_SOURCE],
+        source: MISTAKE_REVIEW_SOURCE,
+        reviewKey: result.reviewKey,
+        priority: getMistakeReviewSeverityWeight(result.severity) * 100_000 + result.cpLoss,
+        reason: `${severityLabel}: ${result.playedMoveSan} lost ${Math.round(result.cpLoss)} cp.`,
+        evidence: `${occurrenceText}; latest against ${result.opponent || "Unknown"}${dateText}.`,
+        importedAt: Date.now(),
+        mistakeReview: {
+            playerDb: settings.playerDb,
+            playerId: settings.playerId,
+            playerName: settings.playerName,
+            playerColor: result.playerColor === "black" ? "black" : "white",
+            playedMoveSan: result.playedMoveSan,
+            playedMoveUci: result.playedMoveUci,
+            bestMoveSan: result.bestMoveSan,
+            bestMoveUci: result.bestMoveUci,
+            severity: result.severity,
+            cpLoss: result.cpLoss,
+            winProbabilityDrop: result.winProbabilityDrop,
+            cpBefore: result.cpBefore,
+            cpAfter: result.cpAfter,
+            requestedDepth: result.requestedDepth,
+            reachedDepth: result.reachedDepth,
+            analysisMode: result.analysisMode,
+            fastDepth: result.fastDepth,
+            multiPv: result.multiPv,
+            timeControls: settings.timeControls,
+            dateRange: settings.dateRange,
+            engineName: result.engineName,
+            enginePath: settings.enginePath,
+            gameId: result.gameId,
+            lastGameId: result.lastGameId,
+            ply: result.ply,
+            moveNumber: result.moveNumber,
+            gameIds: result.gameIds,
+            occurrenceCount: result.occurrenceCount,
+            date: result.date,
+            opponent: result.opponent,
+            timeControl: result.timeControl,
+            whiteName: result.whiteName,
+            blackName: result.blackName,
+            whiteElo: result.whiteElo,
+            blackElo: result.blackElo,
+            gameResult: result.gameResult,
+            thresholds: settings.thresholds,
+        },
+        engine: {
+            source: "local",
+            lossCp: result.cpLoss,
+            depth: result.reachedDepth,
+            bestMoveSan: result.bestMoveSan,
+            bestMoveUci: result.bestMoveUci,
+        },
+    };
+}
+
+export function mergeMistakeReviewPositions(
+    existing: MistakeReviewDeck,
+    incoming: Position[],
+): MistakeReviewDeck {
+    const existingByKey = new Map(
+        existing.positions.map((position) => [mistakeReviewPositionKey(position), position]),
+    );
+    const incomingKeys = new Set<string>();
+    const merged: Position[] = [];
+
+    for (const position of incoming) {
+        const key = mistakeReviewPositionKey(position);
+        incomingKeys.add(key);
+        const previous = existingByKey.get(key);
+        merged.push(previous ? mergeMistakeReviewPosition(previous, position) : position);
+    }
+
+    for (const position of existing.positions) {
+        if (!incomingKeys.has(mistakeReviewPositionKey(position))) {
+            merged.push(position);
+        }
+    }
+
+    return {
+        ...existing,
+        positions: merged,
+        updatedAt: Date.now(),
+    };
+}
+
+export function mistakeReviewPositionKey(position: Position) {
+    return (
+        position.reviewKey ||
+        `${normalizeFenKey(position.fen)}|${position.mistakeReview?.playedMoveUci || position.answerUci || position.answer}`
+    );
+}
+
+export function getMistakeReviewDailyBatch(
+    positions: Position[],
+    settings: MistakeReviewDailySettings,
+    options: { now?: Date; extra?: boolean } = {},
+) {
+    const now = options.now ?? new Date();
+    const filtered = positions.filter((position) => isMistakeReviewDailyEligible(position, settings, now));
+    const due = filtered
+        .filter((position) => position.card.reps > 0 && new Date(position.card.due) <= now)
+        .sort((a, b) => sortMistakeReviewDueCards(a, b, now));
+    const fresh = filtered
+        .filter((position) => position.card.reps === 0)
+        .sort(sortMistakeReviewNewCards);
+
+    if (options.extra) {
+        return [...due, ...fresh];
+    }
+
+    const target = Math.max(0, settings.reviewsPerDay);
+    const selectedDue = due.slice(0, target);
+    const remaining = Math.max(0, target - selectedDue.length);
+    const selectedNew = fresh.slice(0, Math.min(settings.newItemsPerDay, remaining));
+    return [...selectedDue, ...selectedNew];
+}
+
+export function classifyMistakeReviewAttempt(
+    cpLoss: number,
+    thresholds: MistakeReviewThresholds = DEFAULT_MISTAKE_REVIEW_THRESHOLDS,
+    exactBest = false,
+): MistakeReviewAttemptLabel {
+    if (exactBest || cpLoss <= 20) return "best";
+    if (cpLoss < 35) return "good";
+    if (cpLoss < 50) return "okay";
+    if (cpLoss >= thresholds.blunder) return "blunder";
+    if (cpLoss >= thresholds.mistake) return "mistake";
+    return "inaccuracy";
+}
+
+export function isMistakeReviewPassingLabel(label: MistakeReviewAttemptLabel) {
+    return label === "best" || label === "good";
+}
+
+export function mistakeReviewSeverityLabel(severity: MistakeReviewSeverity | MistakeReviewAttemptLabel) {
+    switch (severity) {
+        case "best":
+            return "Best";
+        case "good":
+            return "Good";
+        case "okay":
+            return "Okay";
+        case "inaccuracy":
+            return "Inaccuracy";
+        case "mistake":
+            return "Mistake";
+        case "blunder":
+            return "Blunder";
+    }
+}
+
+export function getMistakeReviewSeverityWeight(severity?: string) {
+    switch (severity) {
+        case "blunder":
+            return 3;
+        case "mistake":
+            return 2;
+        case "inaccuracy":
+            return 1;
+        default:
+            return 0;
+    }
+}
+
+function mergeMistakeReviewPosition(previous: Position, incoming: Position): Position {
+    const previousIds = previous.mistakeReview?.gameIds ?? [];
+    const incomingIds = incoming.mistakeReview?.gameIds ?? [];
+    const gameIds = Array.from(new Set([...previousIds, ...incomingIds])).sort((a, b) => a - b);
+    const occurrenceCount = Math.max(
+        previous.mistakeReview?.occurrenceCount ?? previousIds.length,
+        incoming.mistakeReview?.occurrenceCount ?? incomingIds.length,
+        gameIds.length,
+    );
+
+    return {
+        ...incoming,
+        card: previous.card,
+        comment: previous.comment,
+        annotations: previous.annotations,
+        shapes: previous.shapes,
+        reviewTree: previous.reviewTree,
+        importedAt: previous.importedAt ?? incoming.importedAt,
+        mistakeReview: {
+            ...incoming.mistakeReview,
+            gameIds,
+            occurrenceCount,
+        },
+    };
+}
+
+function isMistakeReviewDailyEligible(
+    position: Position,
+    settings: MistakeReviewDailySettings,
+    now: Date,
+) {
+    const metadata = position.mistakeReview;
+    if (!metadata) return false;
+    if ((metadata.winProbabilityDrop ?? 0) < settings.minWinProbabilityDrop) return false;
+    if (!isMistakeReviewSeverityIncluded(metadata.severity, settings)) return false;
+    if (settings.gamePeriod === "all") return true;
+
+    const playedAt = parseMistakeReviewDate(metadata.date);
+    if (!playedAt) return false;
+    const cutoff = getMistakeReviewPeriodCutoff(settings.gamePeriod, now);
+    return playedAt >= cutoff;
+}
+
+function isMistakeReviewSeverityIncluded(
+    severity: string | undefined,
+    settings: MistakeReviewDailySettings,
+) {
+    switch (severity) {
+        case "inaccuracy":
+            return settings.includeInaccuracies;
+        case "mistake":
+            return settings.includeMistakes;
+        case "blunder":
+            return settings.includeBlunders;
+        default:
+            return false;
+    }
+}
+
+function sortMistakeReviewDueCards(a: Position, b: Position, now: Date) {
+    return (
+        getMistakeReviewSeverityWeight(b.mistakeReview?.severity) -
+            getMistakeReviewSeverityWeight(a.mistakeReview?.severity) ||
+        now.getTime() - new Date(b.card.due).getTime() - (now.getTime() - new Date(a.card.due).getTime())
+    );
+}
+
+function sortMistakeReviewNewCards(a: Position, b: Position) {
+    return (
+        getMistakeReviewSeverityWeight(b.mistakeReview?.severity) -
+            getMistakeReviewSeverityWeight(a.mistakeReview?.severity) ||
+        (parseMistakeReviewDate(b.mistakeReview?.date)?.getTime() ?? 0) -
+            (parseMistakeReviewDate(a.mistakeReview?.date)?.getTime() ?? 0)
+    );
+}
+
+function getMistakeReviewPeriodCutoff(period: MistakeReviewGamePeriod, now: Date) {
+    const cutoff = new Date(now);
+    switch (period) {
+        case "week":
+            cutoff.setDate(cutoff.getDate() - 7);
+            break;
+        case "2weeks":
+            cutoff.setDate(cutoff.getDate() - 14);
+            break;
+        case "month":
+            cutoff.setMonth(cutoff.getMonth() - 1);
+            break;
+        case "3months":
+            cutoff.setMonth(cutoff.getMonth() - 3);
+            break;
+        case "6months":
+            cutoff.setMonth(cutoff.getMonth() - 6);
+            break;
+        case "year":
+            cutoff.setFullYear(cutoff.getFullYear() - 1);
+            break;
+        case "all":
+            break;
+    }
+    return cutoff;
+}
+
+function getMistakeReviewScanDateBounds(range: MistakeReviewDateRange) {
+    if (range === "all") return { startDate: null, endDate: null };
+
+    const now = new Date();
+    const start = new Date(now);
+    switch (range) {
+        case "week":
+            start.setDate(start.getDate() - 7);
+            break;
+        case "2weeks":
+            start.setDate(start.getDate() - 14);
+            break;
+        case "month":
+            start.setMonth(start.getMonth() - 1);
+            break;
+        case "3months":
+            start.setMonth(start.getMonth() - 3);
+            break;
+        case "6months":
+            start.setMonth(start.getMonth() - 6);
+            break;
+        case "year":
+            start.setFullYear(start.getFullYear() - 1);
+            break;
+    }
+
+    return {
+        startDate: formatMistakeReviewDbDate(start),
+        endDate: formatMistakeReviewDbDate(now),
+    };
+}
+
+function formatMistakeReviewDbDate(date: Date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}.${month}.${day}`;
+}
+
+function parseMistakeReviewDate(value?: string | null) {
+    if (!value) return null;
+    const normalized = value.replace(/\./g, "-").replace(/\?/g, "0");
+    const parsed = new Date(normalized);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function normalizeFenKey(fen: string) {
+    return fen.split(/\s+/).slice(0, 4).join(" ");
+}
+
+function sanitizeMistakeReviewFileName(name: string) {
+    const cleaned = name
+        .replace(/[\\/:*?"<>|]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    return cleaned || "Mistake Review";
+}

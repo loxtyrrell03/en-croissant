@@ -67,6 +67,7 @@ import {
   openingHealthVerificationsAtom,
   openingHealthVerifyDepthAtom,
   openingHealthVerifyDuringScanAtom,
+  onlineDatabaseUpdatesAtom,
   type OpeningHealthVerification,
   type OpeningHealthVerificationStatus,
   type OpeningHealthProgress,
@@ -96,11 +97,17 @@ import type { Engine, LocalEngine } from "@/utils/engines";
 import {
   createOpeningReviewDeck,
   getAvailableOpeningReviewDeckPath,
+  type OpeningReviewAutoUpdateConfig,
   listOpeningReviewDecks,
   mergeOpeningReviewPositions,
   readOpeningReviewDeck,
   writeOpeningReviewDeck,
 } from "@/utils/openingReview";
+import {
+  formatOpeningReviewLastPlayed,
+  getOpeningReviewGapReason,
+} from "@/utils/openingReviewAutoUpdate";
+import { getOnlineDatabaseUpdateRecord } from "@/utils/onlineGameImport";
 import resultClasses from "../database/OpeningsTable.module.css";
 
 type OpeningHealthMode = "opponent" | "self";
@@ -174,6 +181,7 @@ function RepertoireGapsPanel() {
   const masterOptions = useAtomValue(masterOptionsAtom);
   const engines = useAtomValue(enginesAtom);
   const sessions = useAtomValue(sessionsAtom);
+  const onlineDatabaseUpdates = useAtomValue(onlineDatabaseUpdatesAtom);
   const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
     ?.accessToken;
   const { documentDir } = useLoaderData({ from: "/" });
@@ -209,7 +217,7 @@ function RepertoireGapsPanel() {
   const [subjectPlayerId, setSubjectPlayerId] = useState<string | null>(null);
   const [subjectPlayerSearch, setSubjectPlayerSearch] = useState("");
   const [analysisMode, setAnalysisMode] = useState<OpeningHealthMode>("opponent");
-  const [colorFilter, setColorFilter] = useState<OpeningHealthColorFilter>("any");
+  const colorFilter: OpeningHealthColorFilter = "any";
   const [sortMode, setSortMode] = useState<OpeningHealthSortMode>("priority");
   const [maxPlies, setMaxPlies] = useState(DEFAULT_MAX_PLIES);
   const [minPersonalGames, setMinPersonalGames] = useState(DEFAULT_MIN_PERSONAL_GAMES);
@@ -228,6 +236,7 @@ function RepertoireGapsPanel() {
   const [reviewDeckName, setReviewDeckName] = useState("");
   const [reviewDeckPath, setReviewDeckPath] = useState<string | null>(null);
   const [reviewDeckLimit, setReviewDeckLimit] = useState(100);
+  const [reviewAutoUpdate, setReviewAutoUpdate] = useState(false);
   const [reviewSaving, setReviewSaving] = useState(false);
   const [dismissedGapKeys, setDismissedGapKeys] = useState<Set<string>>(() => new Set());
   const [correctMoveOverrides, setCorrectMoveOverrides] = useState<
@@ -253,6 +262,26 @@ function RepertoireGapsPanel() {
     () => getOpeningHealthPlayerSearchSeed(selectedPersonalDatabase),
     [selectedPersonalDatabase],
   );
+  const selectedOnlineUpdateRecord = useMemo(
+    () =>
+      selectedPersonalDatabase
+        ? getOnlineDatabaseUpdateRecord(selectedPersonalDatabase, onlineDatabaseUpdates)
+        : null,
+    [onlineDatabaseUpdates, selectedPersonalDatabase],
+  );
+  const reviewAutoUpdateBlockedReason = useMemo(() => {
+    if (!selectedOnlineUpdateRecord) {
+      return "Use a Lichess or Chess.com games database to keep a deck updated automatically.";
+    }
+    if (!referenceDb) {
+      return "Choose a strong-games source before enabling automatic deck updates.";
+    }
+    if (getOnlineReferenceSource(referenceDb)) {
+      return "Automatic deck updates currently need a local strong-games source.";
+    }
+    return null;
+  }, [referenceDb, selectedOnlineUpdateRecord]);
+  const canAutoUpdateReviewDeck = !reviewAutoUpdateBlockedReason;
   const playerSearchTerm = subjectPlayerSearch.trim() || playerSearchSeed;
   const { data: subjectPlayers } = useSWR(
     personalDb ? ["opening-health-players", personalDb, playerSearchTerm] : null,
@@ -330,6 +359,12 @@ function RepertoireGapsPanel() {
     setSubjectPlayerId(null);
     setSubjectPlayerSearch("");
   }, [personalDb]);
+
+  useEffect(() => {
+    if (!canAutoUpdateReviewDeck) {
+      setReviewAutoUpdate(false);
+    }
+  }, [canAutoUpdateReviewDeck]);
 
   useEffect(() => {
     if (subjectPlayerId || subjectPlayerOptions.length === 0) return;
@@ -790,6 +825,7 @@ function RepertoireGapsPanel() {
     setReviewDeckName(`${analysisMode === "self" ? "My gaps" : "Prep"} - ${playerName} - ${date}`);
     setReviewDeckMode((reviewDecks?.length ?? 0) > 0 ? "existing" : "new");
     setReviewDeckPath(reviewDecks?.[0]?.path ?? null);
+    setReviewAutoUpdate(canAutoUpdateReviewDeck);
     setReviewSaveOpen(true);
   }
 
@@ -818,6 +854,24 @@ function RepertoireGapsPanel() {
     setReviewSaving(true);
     try {
       const source = selectedPersonalDatabase?.title || selectedPersonalDatabase?.filename;
+      const playerName =
+        subjectPlayerOptions.find((option) => option.value === subjectPlayerId)?.label ||
+        playerSearchSeed ||
+        null;
+      const autoUpdateConfig =
+        reviewAutoUpdate && selectedOnlineUpdateRecord && personalDb && referenceDb
+          ? createOpeningReviewAutoUpdateConfig({
+              record: selectedOnlineUpdateRecord,
+              playerDb: personalDb,
+              playerId: subjectPlayerId ? Number(subjectPlayerId) : null,
+              playerName,
+              referenceDb,
+              mode: analysisMode,
+              maxPlies,
+              minPlayerGames: minPersonalGames,
+              minReferenceGames,
+            })
+          : null;
       if (reviewDeckMode === "existing") {
         if (!reviewDeckPath) {
           throw new Error("Choose an existing review deck.");
@@ -828,6 +882,7 @@ function RepertoireGapsPanel() {
           ...merged,
           mode: existing.mode ?? analysisMode,
           source: existing.source ?? source,
+          autoUpdate: autoUpdateConfig ?? existing.autoUpdate,
         });
         notifications.show({
           title: "Review deck updated",
@@ -840,6 +895,7 @@ function RepertoireGapsPanel() {
           name: reviewDeckName || "Opening Review",
           mode: analysisMode,
           source,
+          autoUpdate: autoUpdateConfig ?? undefined,
           positions,
         });
         await writeOpeningReviewDeck(path, deck);
@@ -1420,37 +1476,6 @@ function RepertoireGapsPanel() {
                 w={125}
                 disabled={!verifyDuringScan || !localFallback}
               />
-              <Stack gap={4}>
-                <Group gap={4}>
-                  <Text size="sm" fw={500}>
-                    Move colour
-                  </Text>
-                  <Tooltip
-                    label="Only show positions where this side is about to move."
-                    multiline
-                    maw={240}
-                    withArrow
-                  >
-                    <ActionIcon
-                      aria-label="Move colour help"
-                      size="xs"
-                      variant="subtle"
-                      color="gray"
-                    >
-                      <IconInfoCircle size="0.8rem" />
-                    </ActionIcon>
-                  </Tooltip>
-                </Group>
-                <SegmentedControl
-                  value={colorFilter}
-                  onChange={(value) => setColorFilter(value as OpeningHealthColorFilter)}
-                  data={[
-                    { value: "any", label: "Any" },
-                    { value: "white", label: "White" },
-                    { value: "black", label: "Black" },
-                  ]}
-                />
-              </Stack>
               <Button
                 leftSection={<IconSearch size="1rem" />}
                 onClick={analyze}
@@ -1678,6 +1703,10 @@ function RepertoireGapsPanel() {
         onDeckNameChange={setReviewDeckName}
         onDeckPathChange={setReviewDeckPath}
         onLimitChange={setReviewDeckLimit}
+        autoUpdate={reviewAutoUpdate}
+        autoUpdateAvailable={canAutoUpdateReviewDeck}
+        autoUpdateUnavailableReason={reviewAutoUpdateBlockedReason}
+        onAutoUpdateChange={setReviewAutoUpdate}
         onSave={saveReviewDeck}
       />
     </>
@@ -1713,6 +1742,10 @@ function OpeningHealthReviewSaveModal({
   onDeckNameChange,
   onDeckPathChange,
   onLimitChange,
+  autoUpdate,
+  autoUpdateAvailable,
+  autoUpdateUnavailableReason,
+  onAutoUpdateChange,
   onSave,
 }: {
   opened: boolean;
@@ -1728,6 +1761,10 @@ function OpeningHealthReviewSaveModal({
   onDeckNameChange: (name: string) => void;
   onDeckPathChange: (path: string | null) => void;
   onLimitChange: (limit: number) => void;
+  autoUpdate: boolean;
+  autoUpdateAvailable: boolean;
+  autoUpdateUnavailableReason: string | null;
+  onAutoUpdateChange: (enabled: boolean) => void;
   onSave: () => void;
 }) {
   const existingOptions = decks.map((deck) => ({
@@ -1769,12 +1806,23 @@ function OpeningHealthReviewSaveModal({
           />
         )}
         <NumberInput
-          label="Positions to save"
-          description="Saved in the current table order. Use 0 to save every trainable visible row."
+          label="Initial positions to save"
+          description="Saved in the current table order. Use 0 to save every trainable visible row; ongoing deck caps are set in Opening gap settings."
           value={limit}
           min={0}
           max={5000}
           onChange={(value) => onLimitChange(Math.max(0, Math.round(Number(value) || 0)))}
+        />
+        <Switch
+          checked={autoUpdate && autoUpdateAvailable}
+          disabled={!autoUpdateAvailable}
+          onChange={(event) => onAutoUpdateChange(event.currentTarget.checked)}
+          label="Auto-update this review deck"
+          description={
+            autoUpdateAvailable
+              ? "When this online games database imports new games, scan it again and merge fresh gaps into this deck."
+              : autoUpdateUnavailableReason
+          }
         />
         <Alert color="blue" variant="light">
           {trainableCount} visible position{trainableCount === 1 ? "" : "s"} have a clear move to
@@ -1874,6 +1922,51 @@ function countOpeningHealthReviewPositions(
   ).length;
 }
 
+function createOpeningReviewAutoUpdateConfig({
+  record,
+  playerDb,
+  playerId,
+  playerName,
+  referenceDb,
+  mode,
+  maxPlies,
+  minPlayerGames,
+  minReferenceGames,
+}: {
+  record: NonNullable<ReturnType<typeof getOnlineDatabaseUpdateRecord>>;
+  playerDb: string;
+  playerId: number | null;
+  playerName: string | null;
+  referenceDb: string;
+  mode: OpeningHealthMode;
+  maxPlies: number;
+  minPlayerGames: number;
+  minReferenceGames: number;
+}): OpeningReviewAutoUpdateConfig {
+  const now = Date.now();
+  return {
+    enabled: true,
+    playerDb,
+    playerId,
+    playerName,
+    referenceDb,
+    mode,
+    color: "any",
+    maxPlies,
+    minPlayerGames,
+    minReferenceGames,
+    topReferenceMoves: DEFAULT_TOP_REFERENCE_MOVES,
+    maxPositions: 0,
+    createdAt: now,
+    updatedAt: now,
+    lastRunAt: null,
+    lastUpdatedDatabaseAt: record.lastUpdatedAt,
+    lastKnownGameCount: record.lastKnownGameCount,
+    lastAdded: null,
+    lastError: null,
+  };
+}
+
 function createOpeningHealthReviewPosition(
   gap: RepertoireGap,
   verification: EngineVerification | undefined,
@@ -1888,7 +1981,8 @@ function createOpeningHealthReviewPosition(
   const topMove = gap.topReferenceMoves[0];
   return createOpeningHealthTrainingItem(gap, trainingMove, {
     priority: openingHealthUrgency(gap, verification),
-    reason: priority.description,
+    importedAt: Date.now(),
+    reason: getOpeningHealthReviewReason(gap, verification, mode, priority.description),
     evidence: `${formatNumber(gap.playerPositionGames)} games; ${formatLastPlayed(
       gap.lastPlayed,
     )}; result ${formatPercent(gap.playerScore)}`,
@@ -1965,7 +2059,31 @@ function getOpeningHealthTrainingMove(
     };
   }
 
+  if (gap.classification === "preparedUnderperforming") {
+    return {
+      san: gap.playerMoveSan,
+      uci: gap.playerMoveUci,
+    };
+  }
+
   return null;
+}
+
+function getOpeningHealthReviewReason(
+  gap: RepertoireGap,
+  verification: EngineVerification | undefined,
+  mode: OpeningHealthMode,
+  fallback: string,
+) {
+  if (verification?.status === "bad" || verification?.status === "questionable") {
+    const source = verificationSourceLabel(verification);
+    const bestMove = verification.bestMoveSan ? ` ${verification.bestMoveSan}` : " another move";
+    return `${source} flags ${gap.playerMoveSan}: it prefers${bestMove} by about ${Math.round(
+      verification.lossCp,
+    )} cp.`;
+  }
+
+  return getOpeningReviewGapReason(gap, mode) || fallback;
 }
 
 function getOpeningHealthModeCopy(mode: OpeningHealthMode) {
@@ -2953,7 +3071,7 @@ function openingHealthPriority(
     const source = verificationSourceLabel(verification);
     const depthText = verification.depth ? ` at depth ${verification.depth}` : "";
     return {
-      label: "Engine flags it",
+      label: "Bad move",
       color: "red",
       description: `${source}${depthText} prefers ${verification.bestMoveSan ?? "another move"} by about ${Math.round(verification.lossCp)} cp.`,
     };
@@ -2973,22 +3091,22 @@ function openingHealthPriority(
     return {
       label: "Practical issue",
       color: "yellow",
-      description: `${source}${depthText} says the move is playable; priority comes from results and frequency.`,
+      description: `${source}${depthText} says the move is playable; the flag comes from score, frequency, and recency.`,
     };
   }
 
   switch (gap.classification) {
     case "repertoireGap":
       return {
-        label: "Unverified priority",
+        label: "Rare move",
         color: "orange",
-        description: "This move is unusual in strong games and comes up enough to matter.",
+        description: `${ownerPossessive} move is unusual in strong games and comes up enough to matter.`,
       };
     case "preparedUnderperforming":
       return {
-        label: "Unverified priority",
+        label: "Good move, bad score",
         color: "orange",
-        description: `${ownerPossessive} result is ${formatPercent(gap.scoreGap)} lower than strong games after this position.`,
+        description: `${ownerPossessive} move is normal, but the score here is ${formatPercent(gap.playerScore)}; study the plans after it.`,
       };
     case "lowConfidence":
       return {
@@ -3031,12 +3149,21 @@ function openingHealthNextStep(
 
   if (gap.classification === "preparedUnderperforming") {
     return {
-      title: "Review follow-up",
+      title: gap.playerMoveSan,
       detail:
         mode === "self"
-          ? "Your move is normal; study what happens after it."
-          : "Their move is normal; look for later decisions they mishandle.",
-      trainingMove: null,
+          ? "Good move, bad results: study the plans after it."
+          : "Normal move, bad results: prepare the follow-up plans.",
+      trainingMove: {
+        san: gap.playerMoveSan,
+        uci: gap.playerMoveUci,
+        games: gap.playerPositionGames,
+        white: gap.playerWhite,
+        draw: gap.playerDraw,
+        black: gap.playerBlack,
+        share: 0,
+        scoreForSide: gap.playerScore,
+      },
     };
   }
 
@@ -3191,19 +3318,7 @@ function parseOpeningHealthDate(value: string | null | undefined) {
 }
 
 function formatLastPlayed(lastPlayed: string | null | undefined) {
-  const date = parseOpeningHealthDate(lastPlayed);
-  if (!date) return "Last played unknown";
-
-  const ageDays = Math.max(0, Math.round((Date.now() - date.getTime()) / (24 * 60 * 60 * 1000)));
-  if (ageDays < 45) return "Last played recently";
-
-  const ageMonths = Math.round(ageDays / 30.44);
-  if (ageMonths < 18) {
-    return `Last played ${ageMonths} month${ageMonths === 1 ? "" : "s"} ago`;
-  }
-
-  const ageYears = Math.round(ageMonths / 12);
-  return `Last played ${ageYears} year${ageYears === 1 ? "" : "s"} ago`;
+  return formatOpeningReviewLastPlayed(lastPlayed);
 }
 
 function buildLichessCloudVerification(

@@ -1,10 +1,15 @@
 import {
   ActionIcon,
   Autocomplete,
+  Button,
   createTheme,
+  Group,
   Input,
   localStorageColorSchemeManager,
   MantineProvider,
+  Paper,
+  Progress,
+  Text,
   Textarea,
   TextInput,
 } from "@mantine/core";
@@ -16,13 +21,14 @@ import { attachConsole, error as logError, info, warn } from "@tauri-apps/plugin
 import { getDefaultStore, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { ContextMenuProvider } from "mantine-contextmenu";
 import posthog from "posthog-js";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import {
   activeTabAtom,
   databaseConversionStateAtom,
   fontSizeAtom,
+  mistakeReviewScanProgressAtom,
   pieceSetAtom,
   primaryColorAtom,
   referenceDbAtom,
@@ -61,9 +67,12 @@ import { ask } from "@tauri-apps/plugin-dialog";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { check } from "@tauri-apps/plugin-updater";
 import ErrorComponent from "@/components/ErrorComponent";
+import { OpeningReviewAutoUpdateBanner } from "@/components/review/OpeningReviewAutoUpdateBanner";
 import { getDatabasesDir, getDocumentDir, getEnginesDir, getPuzzlesDir } from "@/utils/directories";
 import { initUserAgent } from "@/utils/http";
 import { useOnlineDatabaseAutoUpdater } from "@/utils/onlineDatabaseAutoUpdate";
+import { useMistakeReviewDeckAutoUpdater } from "@/utils/mistakeReviewAutoUpdate";
+import { useOpeningReviewDeckAutoUpdater } from "@/utils/openingReviewAutoUpdate";
 import { routeTree } from "./routeTree.gen";
 
 export type Dirs = {
@@ -115,6 +124,184 @@ declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;
   }
+}
+
+function MistakeReviewScanProgressBanner() {
+  const progress = useAtomValue(mistakeReviewScanProgressAtom);
+  const setProgress = useSetAtom(mistakeReviewScanProgressAtom);
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    if (!progress.running) return;
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [progress.running]);
+
+  if (!progress.running) return null;
+
+  const percent = Math.round(progress.progress ?? 0);
+  const gamesTotal = progress.gamesTotal || 0;
+  const gamesText = `${progress.gamesAnalyzed}/${gamesTotal}`;
+  const etaText = getMistakeReviewEtaText(progress, now);
+
+  const togglePaused = () => {
+    const requestId = progress.requestId;
+    if (!requestId || progress.stopping) return;
+
+    const paused = !progress.paused;
+    setProgress((current) =>
+      current.requestId === requestId
+        ? {
+            ...current,
+            paused,
+            phase: paused ? "Paused" : "Analyzing games",
+          }
+        : current,
+    );
+    void commands.setMistakeReviewScanPaused(requestId, paused).then((result) => {
+      if (result.status === "error") {
+        setProgress((current) =>
+          current.requestId === requestId
+            ? {
+                ...current,
+                paused: !paused,
+                error: result.error,
+              }
+            : current,
+        );
+      }
+    });
+  };
+
+  const stopScan = () => {
+    const requestId = progress.requestId;
+    if (!requestId || progress.stopping) return;
+
+    setProgress((current) =>
+      current.requestId === requestId
+        ? {
+            ...current,
+            paused: false,
+            stopping: true,
+            phase: "Stopping",
+          }
+        : current,
+    );
+    void commands.cancelAnalysis(requestId);
+  };
+
+  return (
+    <Paper
+      withBorder
+      shadow="md"
+      p="xs"
+      style={{
+        position: "fixed",
+        top: 10,
+        left: "50%",
+        transform: "translateX(-50%)",
+        zIndex: 400,
+        width: "min(44rem, calc(100vw - 2rem))",
+      }}
+    >
+      <Group justify="space-between" gap="sm" wrap="nowrap">
+        <Text size="sm" fw={700} truncate>
+          {progress.deckName ?? "Mistake Review"}
+        </Text>
+        <Group gap="xs" wrap="nowrap">
+          <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>
+            {percent}%
+          </Text>
+          <Button
+            size="compact-xs"
+            variant="light"
+            onClick={togglePaused}
+            disabled={progress.stopping}
+          >
+            {progress.paused ? "Resume" : "Pause"}
+          </Button>
+          <Button
+            size="compact-xs"
+            variant="light"
+            color="red"
+            onClick={stopScan}
+            loading={progress.stopping}
+          >
+            Stop
+          </Button>
+        </Group>
+      </Group>
+      <Text size="xs" c="dimmed" mb={4}>
+        {progress.phase ?? "Analyzing games with Stockfish"}
+      </Text>
+      <Group gap="md" mb={6}>
+        <Text size="xs">
+          Games <b>{gamesText}</b>
+        </Text>
+        <Text size="xs">
+          ETA <b>{etaText}</b>
+        </Text>
+        <Text size="xs">
+          Positions <b>{progress.positionsAnalyzed}</b>
+        </Text>
+        <Text size="xs">
+          Candidates <b>{progress.candidateMoves}</b>
+        </Text>
+        <Text size="xs">
+          Mistakes <b>{progress.mistakesFound}</b>
+        </Text>
+      </Group>
+      <Progress value={progress.progress ?? 0} size="sm" />
+    </Paper>
+  );
+}
+
+function getMistakeReviewEtaText(
+  progress: {
+    gamesAnalyzed: number;
+    gamesTotal: number;
+    progress: number | null;
+    startedAt: number | null;
+    paused: boolean;
+    stopping: boolean;
+  },
+  now: number,
+) {
+  if (progress.stopping) return "stopping";
+  if (progress.paused) return "paused";
+  if (!progress.startedAt) return "estimating";
+
+  const elapsedMs = Math.max(0, now - progress.startedAt);
+  if (elapsedMs < 1000) return "estimating";
+
+  if (progress.gamesTotal > 0 && progress.gamesAnalyzed > 0) {
+    const remainingGames = Math.max(0, progress.gamesTotal - progress.gamesAnalyzed);
+    if (remainingGames === 0) return "finishing";
+
+    return formatEtaDuration((elapsedMs / progress.gamesAnalyzed) * remainingGames);
+  }
+
+  const progressRatio = Math.min(0.99, Math.max(0, (progress.progress ?? 0) / 100));
+  if (progressRatio > 0) {
+    return formatEtaDuration((elapsedMs / progressRatio) * (1 - progressRatio));
+  }
+
+  return "estimating";
+}
+
+function formatEtaDuration(ms: number) {
+  const totalSeconds = Math.max(1, Math.round(ms / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  }
+  return `${seconds}s`;
 }
 
 const checkForUpdates = async () => {
@@ -211,9 +398,12 @@ export default function App() {
   const fontSize = useAtomValue(fontSizeAtom);
   const spellCheck = useAtomValue(spellCheckAtom);
   const setDatabaseConversionState = useSetAtom(databaseConversionStateAtom);
+  const setMistakeScanProgress = useSetAtom(mistakeReviewScanProgressAtom);
 
   useAppStartup();
   useOnlineDatabaseAutoUpdater();
+  useOpeningReviewDeckAutoUpdater();
+  useMistakeReviewDeckAutoUpdater();
 
   useEffect(() => {
     document.documentElement.style.fontSize = `${fontSize}%`;
@@ -264,6 +454,33 @@ export default function App() {
     };
   }, [setDatabaseConversionState]);
 
+  useEffect(() => {
+    const unlisten = events.mistakeReviewScanProgress.listen(({ payload }) => {
+      setMistakeScanProgress((current) =>
+        current.requestId === payload.id
+          ? {
+              ...current,
+              running: !payload.finished,
+              progress: payload.progress,
+              gamesAnalyzed: payload.gamesAnalyzed,
+              gamesTotal: payload.gamesTotal,
+              positionsAnalyzed: payload.positionsAnalyzed,
+              candidateMoves: payload.candidateMoves,
+              mistakesFound: payload.mistakesFound,
+              phase: payload.phase,
+              paused: payload.paused,
+              stopping: false,
+              completedAt: payload.finished ? Date.now() : current.completedAt,
+            }
+          : current,
+      );
+    });
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, [setMistakeScanProgress]);
+
   const theme = createTheme({
     primaryColor,
     colors: {
@@ -310,6 +527,8 @@ export default function App() {
       >
         <ContextMenuProvider>
           <Notifications />
+          <OpeningReviewAutoUpdateBanner fixed />
+          <MistakeReviewScanProgressBanner />
           <RouterProvider router={router} />
         </ContextMenuProvider>
       </MantineProvider>

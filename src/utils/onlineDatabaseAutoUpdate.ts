@@ -45,6 +45,13 @@ type RemoteGameStatus = {
     latestGameAt: number | null;
 };
 
+export type OnlineDatabaseManualUpdateResult = {
+    updated: boolean;
+    checkedAt: number;
+    remoteGameCount: number | null;
+    latestGameAt: number | null;
+};
+
 function successfulDatabases(databases: DatabaseInfo[]): SuccessDatabaseInfo[] {
     return databases.filter(
         (database): database is SuccessDatabaseInfo => database.type === "success",
@@ -133,6 +140,7 @@ async function maybeUpdateCandidate({
     setConversionState,
     setUpdateRecords,
     isConversionInProgress,
+    skipRecentCheck = false,
 }: {
     candidate: UpdateCandidate;
     databaseDir: string;
@@ -140,19 +148,34 @@ async function maybeUpdateCandidate({
     setConversionState: SetDatabaseConversionState;
     setUpdateRecords: SetOnlineDatabaseUpdateRecords;
     isConversionInProgress: () => boolean;
-}) {
+    skipRecentCheck?: boolean;
+}): Promise<OnlineDatabaseManualUpdateResult> {
     const { database, record } = candidate;
     const now = Date.now();
 
-    if (record.lastCheckedAt && now - record.lastCheckedAt < ONLINE_DATABASE_CHECK_INTERVAL_MS) {
-        return;
+    if (
+        !skipRecentCheck &&
+        record.lastCheckedAt &&
+        now - record.lastCheckedAt < ONLINE_DATABASE_CHECK_INTERVAL_MS
+    ) {
+        return {
+            updated: false,
+            checkedAt: record.lastCheckedAt,
+            remoteGameCount: record.lastKnownGameCount,
+            latestGameAt: null,
+        };
     }
 
     const lastGameDate = await getLastOnlineDatabaseGameDate(database.file);
     const remoteStatus = await getRemoteGameStatus(record, sessions);
     if (remoteStatus.gameCount === null && remoteStatus.latestGameAt === null) {
         markRecordChecked(setUpdateRecords, record, now);
-        return;
+        return {
+            updated: false,
+            checkedAt: now,
+            remoteGameCount: remoteStatus.gameCount,
+            latestGameAt: remoteStatus.latestGameAt,
+        };
     }
 
     const lastKnownRemoteCount = record.lastKnownGameCount ?? database.game_count;
@@ -165,13 +188,23 @@ async function maybeUpdateCandidate({
     const hasNewGames = hasNewGamesByCount || hasNewGamesByDate;
     if (!hasNewGames) {
         markRecordChecked(setUpdateRecords, record, now, remoteStatus.gameCount);
-        return;
+        return {
+            updated: false,
+            checkedAt: now,
+            remoteGameCount: remoteStatus.gameCount,
+            latestGameAt: remoteStatus.latestGameAt,
+        };
     }
 
     markRecordChecked(setUpdateRecords, record, now);
 
     if (isConversionInProgress()) {
-        return;
+        return {
+            updated: false,
+            checkedAt: now,
+            remoteGameCount: remoteStatus.gameCount,
+            latestGameAt: remoteStatus.latestGameAt,
+        };
     }
 
     try {
@@ -194,20 +227,74 @@ async function maybeUpdateCandidate({
             setConversionState,
         });
         await commands.clearGames();
+        const updatedDatabase = successfulDatabases(await getDatabases()).find(
+            (nextDatabase) => nextDatabase.file === database.file,
+        );
+        const updatedGameCount = updatedDatabase?.game_count ?? database.game_count;
+        const importedNewGames = updatedGameCount > database.game_count;
+        const updatedAt = Date.now();
 
         setUpdateRecords((records) =>
             upsertOnlineDatabaseUpdateRecord(records, {
                 ...record,
-                title: database.title,
-                description: database.description,
-                lastCheckedAt: Date.now(),
-                lastUpdatedAt: Date.now(),
-                lastKnownGameCount: remoteStatus.gameCount,
+                title: updatedDatabase?.title ?? database.title,
+                description: updatedDatabase?.description ?? database.description,
+                lastCheckedAt: updatedAt,
+                lastUpdatedAt: importedNewGames ? updatedAt : record.lastUpdatedAt,
+                lastKnownGameCount: importedNewGames
+                    ? updatedGameCount
+                    : (record.lastKnownGameCount ?? updatedGameCount),
             }),
         );
+        return {
+            updated: importedNewGames,
+            checkedAt: updatedAt,
+            remoteGameCount: updatedGameCount,
+            latestGameAt: remoteStatus.latestGameAt,
+        };
     } finally {
         resetDatabaseConversionState(setConversionState);
     }
+}
+
+export async function updateOnlineDatabaseNow({
+    database,
+    record,
+    databaseDir,
+    sessions,
+    setConversionState,
+    setUpdateRecords,
+    isConversionInProgress,
+}: {
+    database: SuccessDatabaseInfo;
+    record: OnlineDatabaseUpdateRecord;
+    databaseDir: string;
+    sessions: Session[];
+    setConversionState: SetDatabaseConversionState;
+    setUpdateRecords: SetOnlineDatabaseUpdateRecords;
+    isConversionInProgress: () => boolean;
+}) {
+    if (isConversionInProgress()) {
+        throw new Error("Another database update is already running.");
+    }
+
+    return maybeUpdateCandidate({
+        candidate: {
+            database,
+            record: {
+                ...record,
+                dbPath: database.file,
+                title: database.title,
+                description: database.description,
+            },
+        },
+        databaseDir,
+        sessions,
+        setConversionState,
+        setUpdateRecords,
+        isConversionInProgress,
+        skipRecentCheck: true,
+    });
 }
 
 async function checkOnlineDatabases({

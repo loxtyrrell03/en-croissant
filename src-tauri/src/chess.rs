@@ -1,11 +1,12 @@
 use std::{
+    collections::HashMap,
     fmt::Display,
     path::PathBuf,
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
     },
-    time::Instant,
+    time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 
 use derivative::Derivative;
@@ -15,7 +16,7 @@ use nonzero_ext::*;
 use serde::{Deserialize, Serialize};
 use shakmaty::{
     fen::Fen, san::SanPlus, uci::UciMove, ByColor, CastlingMode, Chess, Color, EnPassantMode,
-    Position, Role,
+    FromSetup, Position, PositionError, Role,
 };
 use specta::Type;
 use tauri_specta::Event;
@@ -27,7 +28,10 @@ use vampirc_uci::{
 };
 
 use crate::{
-    db::{is_position_in_db, GameQuery, PositionQueryJs},
+    db::{
+        encoding::{decode_move, iter_mainline_move_bytes},
+        is_position_in_db, load_mistake_review_games, GameQuery, PositionQueryJs,
+    },
     engine::{
         parse_fen_and_apply_moves, BaseEngine, EngineLog, EngineOption, EngineReader, GoMode,
     },
@@ -473,6 +477,19 @@ pub async fn cancel_analysis(id: String, state: tauri::State<'_, AppState>) -> R
 
 #[tauri::command]
 #[specta::specta]
+pub async fn set_mistake_review_scan_paused(
+    id: String,
+    paused: bool,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), Error> {
+    if let Some(flag) = state.analysis_pause_flags.get(&id) {
+        flag.store(paused, Ordering::SeqCst);
+    }
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 pub async fn analyze_game(
     id: String,
     engine: String,
@@ -631,6 +648,1218 @@ pub async fn analyze_game(
     update_progress(&state.progress_state, &app, id.clone(), 100.0, true)?;
     state.analysis_cancel_flags.remove(&id);
     Ok(analysis)
+}
+
+#[derive(Clone, Debug, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct MistakeReviewThresholds {
+    pub inaccuracy: i32,
+    pub mistake: i32,
+    pub blunder: i32,
+}
+
+impl Default for MistakeReviewThresholds {
+    fn default() -> Self {
+        Self {
+            inaccuracy: 50,
+            mistake: 100,
+            blunder: 200,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct MistakeReviewSeverityFilter {
+    pub inaccuracy: bool,
+    pub mistake: bool,
+    pub blunder: bool,
+}
+
+impl Default for MistakeReviewSeverityFilter {
+    fn default() -> Self {
+        Self {
+            inaccuracy: true,
+            mistake: true,
+            blunder: true,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, Type, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum MistakeReviewAnalysisMode {
+    Single,
+    Layered,
+}
+
+impl Default for MistakeReviewAnalysisMode {
+    fn default() -> Self {
+        Self::Single
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct MistakeReviewScanRequest {
+    pub request_id: Option<String>,
+    pub player_db: PathBuf,
+    pub player_id: i32,
+    pub player_name: Option<String>,
+    pub engine_path: String,
+    pub engine_name: Option<String>,
+    pub analysis_mode: Option<MistakeReviewAnalysisMode>,
+    pub fast_depth: Option<u32>,
+    pub deep_depth: Option<u32>,
+    pub multi_pv: Option<u16>,
+    pub thresholds: Option<MistakeReviewThresholds>,
+    pub include_severities: Option<MistakeReviewSeverityFilter>,
+    pub min_win_probability_drop: Option<f64>,
+    pub time_controls: Option<Vec<String>>,
+    pub start_date: Option<String>,
+    pub end_date: Option<String>,
+    pub since_game_id: Option<i32>,
+    pub max_games: Option<i32>,
+}
+
+#[derive(Clone, Debug, Serialize, Type, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum MistakeReviewSeverity {
+    Inaccuracy,
+    Mistake,
+    Blunder,
+}
+
+#[derive(Clone, Debug, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct MistakeReviewScanResult {
+    pub review_key: String,
+    pub fen: String,
+    pub normalized_fen: String,
+    pub side_to_move: String,
+    pub player_color: String,
+    pub played_move_san: String,
+    pub played_move_uci: String,
+    pub best_move_san: String,
+    pub best_move_uci: String,
+    pub pv_san: Vec<String>,
+    pub pv_uci: Vec<String>,
+    pub severity: MistakeReviewSeverity,
+    pub cp_loss: i32,
+    pub win_probability_drop: f64,
+    pub cp_before: i32,
+    pub cp_after: i32,
+    pub requested_depth: u32,
+    pub reached_depth: u32,
+    pub analysis_mode: MistakeReviewAnalysisMode,
+    pub fast_depth: u32,
+    pub multi_pv: u16,
+    pub engine_name: String,
+    pub game_id: i32,
+    pub last_game_id: i32,
+    pub ply: u32,
+    pub move_number: u32,
+    pub date: Option<String>,
+    pub opponent: String,
+    pub time_control: Option<String>,
+    pub white_name: String,
+    pub black_name: String,
+    pub white_elo: Option<i32>,
+    pub black_elo: Option<i32>,
+    pub game_result: Option<String>,
+    pub occurrence_count: u32,
+    pub game_ids: Vec<i32>,
+}
+
+#[derive(Clone, Debug, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct MistakeReviewScanReport {
+    pub games_scanned: u32,
+    pub candidate_moves: u32,
+    pub positions_analyzed: u32,
+    pub last_analyzed_game_id: Option<i32>,
+    pub stopped: bool,
+    pub mistakes: Vec<MistakeReviewScanResult>,
+}
+
+#[derive(Clone, Debug, Serialize, Type, Event)]
+#[serde(rename_all = "camelCase")]
+pub struct MistakeReviewScanProgress {
+    pub id: String,
+    pub progress: f32,
+    pub games_analyzed: u32,
+    pub games_total: u32,
+    pub positions_analyzed: u32,
+    pub candidate_moves: u32,
+    pub mistakes_found: u32,
+    pub phase: String,
+    pub paused: bool,
+    pub finished: bool,
+}
+
+#[derive(Clone, Debug, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct MistakeReviewMoveScoreRequest {
+    pub fen: String,
+    pub played_move_uci: String,
+    pub engine_path: String,
+    pub engine_name: Option<String>,
+    pub depth: Option<u32>,
+    pub multi_pv: Option<u16>,
+    pub thresholds: Option<MistakeReviewThresholds>,
+}
+
+#[derive(Clone, Debug, Serialize, Type, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum MistakeReviewAttemptLabel {
+    Best,
+    Good,
+    Okay,
+    Inaccuracy,
+    Mistake,
+    Blunder,
+}
+
+#[derive(Clone, Debug, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct MistakeReviewMoveScore {
+    pub label: MistakeReviewAttemptLabel,
+    pub passed: bool,
+    pub best_move_san: String,
+    pub best_move_uci: String,
+    pub played_move_san: String,
+    pub played_move_uci: String,
+    pub cp_loss: i32,
+    pub win_probability_drop: f64,
+    pub cp_before: i32,
+    pub cp_after: i32,
+    pub requested_depth: u32,
+    pub reached_depth: u32,
+    pub engine_name: String,
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn scan_mistake_review(
+    request: MistakeReviewScanRequest,
+    state: tauri::State<'_, AppState>,
+    app: tauri::AppHandle,
+) -> Result<MistakeReviewScanReport, Error> {
+    let request_id = request.request_id.clone().unwrap_or_else(|| {
+        let millis = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|duration| duration.as_millis())
+            .unwrap_or_default();
+        format!("mistake-review-{millis}")
+    });
+    let cancel_flag = Arc::new(AtomicBool::new(false));
+    let pause_flag = Arc::new(AtomicBool::new(false));
+    state
+        .analysis_cancel_flags
+        .insert(request_id.clone(), cancel_flag.clone());
+    state
+        .analysis_pause_flags
+        .insert(request_id.clone(), pause_flag.clone());
+
+    let loaded_games = load_mistake_review_games(
+        request.player_db.clone(),
+        request.player_id,
+        request.start_date.clone(),
+        request.end_date.clone(),
+        request.since_game_id,
+        request.max_games,
+        &state,
+    )?;
+
+    let thresholds = request.thresholds.unwrap_or_default();
+    let include_severities = request.include_severities.unwrap_or_default();
+    let _selected_player_name = request.player_name.as_deref();
+    let analysis_mode = request.analysis_mode.clone().unwrap_or_default();
+    let fast_depth = request.fast_depth.unwrap_or(12).max(1);
+    let requested_deep_depth = request.deep_depth.unwrap_or(17).max(1);
+    let deep_depth = if analysis_mode == MistakeReviewAnalysisMode::Layered {
+        requested_deep_depth.max(fast_depth)
+    } else {
+        requested_deep_depth
+    };
+    let multi_pv = request.multi_pv.unwrap_or(3).max(1);
+    let min_win_probability_drop = request.min_win_probability_drop.unwrap_or(5.0);
+    let time_controls = request
+        .time_controls
+        .unwrap_or_default()
+        .into_iter()
+        .map(|value| value.to_lowercase())
+        .collect::<Vec<_>>();
+    let engine_path = PathBuf::from(&request.engine_path);
+    let engine_name = request.engine_name.clone().unwrap_or_else(|| {
+        engine_path
+            .file_stem()
+            .and_then(|name| name.to_str())
+            .unwrap_or("Stockfish")
+            .to_string()
+    });
+
+    let last_loaded_game_id = loaded_games.last().map(|game| game.id);
+    let games = loaded_games
+        .into_iter()
+        .filter(|game| {
+            time_controls.is_empty()
+                || time_controls.contains(&mistake_review_time_control_bucket(&game.time_control))
+        })
+        .collect::<Vec<_>>();
+    let games_total = games.len() as u32;
+    let mut mistakes_by_key: HashMap<String, MistakeReviewScanResult> = HashMap::new();
+    let mut candidate_moves = 0u32;
+    let mut positions_analyzed = 0u32;
+    let mut games_analyzed = 0u32;
+    let mut last_analyzed_game_id = last_loaded_game_id;
+    let mut stopped = false;
+    emit_mistake_review_progress(
+        &app,
+        &request_id,
+        0,
+        games_total,
+        positions_analyzed,
+        candidate_moves,
+        mistakes_by_key.len() as u32,
+        "Preparing",
+        false,
+        false,
+    )?;
+
+    let (mut proc, mut reader) = EngineProcess::new(engine_path).await?;
+
+    'games: for (game_index, game) in games.iter().enumerate() {
+        if let Err(error) = wait_for_mistake_review_resume(
+            &app,
+            &request_id,
+            &cancel_flag,
+            &pause_flag,
+            games_analyzed,
+            games_total,
+            positions_analyzed,
+            candidate_moves,
+            mistakes_by_key.len() as u32,
+        )
+        .await
+        {
+            if matches!(error, Error::AnalysisCancelled) {
+                stopped = true;
+                break;
+            }
+            proc.kill().await?;
+            state.analysis_cancel_flags.remove(&request_id);
+            state.analysis_pause_flags.remove(&request_id);
+            return Err(error);
+        }
+
+        if cancel_flag.load(Ordering::SeqCst) {
+            stopped = true;
+            break;
+        }
+
+        let player_color = if game.white_id == request.player_id {
+            Color::White
+        } else if game.black_id == request.player_id {
+            Color::Black
+        } else {
+            continue;
+        };
+        let opponent = if player_color == Color::White {
+            game.black_name.clone()
+        } else {
+            game.white_name.clone()
+        };
+
+        let mut chess = mistake_review_starting_position(game.fen.as_deref())?;
+        let mut ply = 0u32;
+
+        for byte in iter_mainline_move_bytes(&game.moves) {
+            let Some(mv) = decode_move(byte, &chess) else {
+                break;
+            };
+
+            let side_to_move = chess.turn();
+            let fen_before = Fen::from_position(chess.clone(), EnPassantMode::Legal).to_string();
+            let played_move_uci = UciMove::from_move(&mv, CastlingMode::Standard).to_string();
+            let played_move_san = SanPlus::from_move(chess.clone(), &mv).to_string();
+            let mut after = chess.clone();
+            after.play_unchecked(&mv);
+            let fen_after = Fen::from_position(after.clone(), EnPassantMode::Legal).to_string();
+
+            if side_to_move == player_color && !after.is_game_over() {
+                if let Err(error) = wait_for_mistake_review_resume(
+                    &app,
+                    &request_id,
+                    &cancel_flag,
+                    &pause_flag,
+                    games_analyzed,
+                    games_total,
+                    positions_analyzed,
+                    candidate_moves,
+                    mistakes_by_key.len() as u32,
+                )
+                .await
+                {
+                    if matches!(error, Error::AnalysisCancelled) {
+                        stopped = true;
+                        break 'games;
+                    }
+                    proc.kill().await?;
+                    state.analysis_cancel_flags.remove(&request_id);
+                    state.analysis_pause_flags.remove(&request_id);
+                    return Err(error);
+                }
+
+                if cancel_flag.load(Ordering::SeqCst) {
+                    stopped = true;
+                    break 'games;
+                }
+
+                let should_run_deep = match &analysis_mode {
+                    MistakeReviewAnalysisMode::Single => true,
+                    MistakeReviewAnalysisMode::Layered => {
+                        let fast_before = analyze_mistake_review_position(
+                            &mut proc,
+                            &mut reader,
+                            &fen_before,
+                            fast_depth,
+                            multi_pv,
+                        )
+                        .await?;
+                        let Some(fast_best) = fast_before.first() else {
+                            chess = after;
+                            ply += 1;
+                            continue;
+                        };
+                        let fast_best_uci =
+                            fast_best.uci_moves.first().cloned().unwrap_or_default();
+
+                        if fast_best_uci == played_move_uci {
+                            false
+                        } else {
+                            let fast_after = analyze_mistake_review_position(
+                                &mut proc,
+                                &mut reader,
+                                &fen_after,
+                                fast_depth,
+                                1,
+                            )
+                            .await?;
+                            let Some(fast_after_best) = fast_after.first() else {
+                                chess = after;
+                                ply += 1;
+                                continue;
+                            };
+                            let fast_loss = cp_loss_for_player(
+                                score_to_white_cp(&fast_best.score),
+                                score_to_white_cp(&fast_after_best.score),
+                                player_color,
+                            );
+                            fast_loss >= thresholds.inaccuracy
+                        }
+                    }
+                };
+
+                if should_run_deep {
+                    candidate_moves += 1;
+                    emit_mistake_review_progress(
+                        &app,
+                        &request_id,
+                        games_analyzed,
+                        games_total,
+                        positions_analyzed,
+                        candidate_moves,
+                        mistakes_by_key.len() as u32,
+                        "Analyzing positions",
+                        false,
+                        false,
+                    )?;
+
+                    let deep_before = analyze_mistake_review_position(
+                        &mut proc,
+                        &mut reader,
+                        &fen_before,
+                        deep_depth,
+                        multi_pv,
+                    )
+                    .await?;
+                    let deep_after = analyze_mistake_review_position(
+                        &mut proc,
+                        &mut reader,
+                        &fen_after,
+                        deep_depth,
+                        1,
+                    )
+                    .await?;
+                    positions_analyzed += 1;
+                    emit_mistake_review_progress(
+                        &app,
+                        &request_id,
+                        games_analyzed,
+                        games_total,
+                        positions_analyzed,
+                        candidate_moves,
+                        mistakes_by_key.len() as u32,
+                        "Analyzing positions",
+                        false,
+                        false,
+                    )?;
+
+                    let Some(deep_best) = deep_before.first() else {
+                        chess = after;
+                        ply += 1;
+                        continue;
+                    };
+                    let Some(deep_after_best) = deep_after.first() else {
+                        chess = after;
+                        ply += 1;
+                        continue;
+                    };
+
+                    let best_move_uci = deep_best.uci_moves.first().cloned().unwrap_or_default();
+                    if best_move_uci == played_move_uci {
+                        chess = after;
+                        ply += 1;
+                        continue;
+                    }
+
+                    let cp_before = score_to_white_cp(&deep_best.score);
+                    let cp_after = score_to_white_cp(&deep_after_best.score);
+                    let cp_loss = cp_loss_for_player(cp_before, cp_after, player_color);
+                    let win_probability_drop =
+                        win_probability_drop_for_player(cp_before, cp_after, player_color);
+                    let Some(severity) = mistake_review_severity(cp_loss, &thresholds) else {
+                        chess = after;
+                        ply += 1;
+                        continue;
+                    };
+                    if !mistake_review_includes_severity(&severity, &include_severities)
+                        || win_probability_drop < min_win_probability_drop
+                    {
+                        chess = after;
+                        ply += 1;
+                        continue;
+                    }
+
+                    let normalized_fen = normalize_mistake_review_fen(&fen_before);
+                    let review_key = format!("{normalized_fen}|{played_move_uci}");
+                    let reached_depth = deep_best.depth.min(deep_after_best.depth);
+                    let result = MistakeReviewScanResult {
+                        review_key,
+                        fen: fen_before.clone(),
+                        normalized_fen,
+                        side_to_move: color_name(side_to_move).to_string(),
+                        player_color: color_name(player_color).to_string(),
+                        played_move_san,
+                        played_move_uci,
+                        best_move_san: deep_best
+                            .san_moves
+                            .first()
+                            .cloned()
+                            .unwrap_or_else(|| best_move_uci.clone()),
+                        best_move_uci,
+                        pv_san: deep_best.san_moves.clone(),
+                        pv_uci: deep_best.uci_moves.clone(),
+                        severity,
+                        cp_loss,
+                        win_probability_drop,
+                        cp_before,
+                        cp_after,
+                        requested_depth: deep_depth,
+                        reached_depth,
+                        analysis_mode: analysis_mode.clone(),
+                        fast_depth: if analysis_mode == MistakeReviewAnalysisMode::Layered {
+                            fast_depth
+                        } else {
+                            0
+                        },
+                        multi_pv,
+                        engine_name: engine_name.clone(),
+                        game_id: game.id,
+                        last_game_id: game.id,
+                        ply,
+                        move_number: (ply / 2) + 1,
+                        date: game.date.clone(),
+                        opponent: opponent.clone(),
+                        time_control: game.time_control.clone(),
+                        white_name: game.white_name.clone(),
+                        black_name: game.black_name.clone(),
+                        white_elo: game.white_elo,
+                        black_elo: game.black_elo,
+                        game_result: game.result.clone(),
+                        occurrence_count: 1,
+                        game_ids: vec![game.id],
+                    };
+                    insert_mistake_review_result(&mut mistakes_by_key, result);
+                    emit_mistake_review_progress(
+                        &app,
+                        &request_id,
+                        games_analyzed,
+                        games_total,
+                        positions_analyzed,
+                        candidate_moves,
+                        mistakes_by_key.len() as u32,
+                        "Analyzing positions",
+                        false,
+                        false,
+                    )?;
+                }
+            }
+
+            chess = after;
+            ply += 1;
+        }
+
+        last_analyzed_game_id = Some(game.id);
+        games_analyzed = (game_index + 1) as u32;
+        update_progress(
+            &state.progress_state,
+            &app,
+            request_id.clone(),
+            if games.is_empty() {
+                100.0
+            } else {
+                ((game_index + 1) as f32 / games.len() as f32) * 100.0
+            },
+            false,
+        )?;
+        emit_mistake_review_progress(
+            &app,
+            &request_id,
+            games_analyzed,
+            games_total,
+            positions_analyzed,
+            candidate_moves,
+            mistakes_by_key.len() as u32,
+            "Analyzing games",
+            false,
+            false,
+        )?;
+    }
+
+    proc.kill().await?;
+    let final_progress = if games_total == 0 {
+        100.0
+    } else {
+        (games_analyzed as f32 / games_total as f32) * 100.0
+    };
+    update_progress(
+        &state.progress_state,
+        &app,
+        request_id.clone(),
+        if stopped { final_progress } else { 100.0 },
+        true,
+    )?;
+    emit_mistake_review_progress(
+        &app,
+        &request_id,
+        games_analyzed,
+        games_total,
+        positions_analyzed,
+        candidate_moves,
+        mistakes_by_key.len() as u32,
+        if stopped { "Stopped" } else { "Done" },
+        false,
+        true,
+    )?;
+    state.analysis_cancel_flags.remove(&request_id);
+    state.analysis_pause_flags.remove(&request_id);
+
+    let mut mistakes: Vec<_> = mistakes_by_key.into_values().collect();
+    mistakes.sort_by(|a, b| {
+        b.cp_loss
+            .cmp(&a.cp_loss)
+            .then_with(|| b.occurrence_count.cmp(&a.occurrence_count))
+            .then_with(|| b.last_game_id.cmp(&a.last_game_id))
+    });
+
+    Ok(MistakeReviewScanReport {
+        games_scanned: games_analyzed,
+        candidate_moves,
+        positions_analyzed,
+        last_analyzed_game_id,
+        stopped,
+        mistakes,
+    })
+}
+
+fn emit_mistake_review_progress(
+    app: &tauri::AppHandle,
+    id: &str,
+    games_analyzed: u32,
+    games_total: u32,
+    positions_analyzed: u32,
+    candidate_moves: u32,
+    mistakes_found: u32,
+    phase: &str,
+    paused: bool,
+    finished: bool,
+) -> Result<(), Error> {
+    MistakeReviewScanProgress {
+        id: id.to_string(),
+        progress: if games_total == 0 {
+            if finished {
+                100.0
+            } else {
+                0.0
+            }
+        } else {
+            (games_analyzed as f32 / games_total as f32) * 100.0
+        },
+        games_analyzed,
+        games_total,
+        positions_analyzed,
+        candidate_moves,
+        mistakes_found,
+        phase: phase.to_string(),
+        paused,
+        finished,
+    }
+    .emit(app)?;
+    Ok(())
+}
+
+async fn wait_for_mistake_review_resume(
+    app: &tauri::AppHandle,
+    id: &str,
+    cancel_flag: &Arc<AtomicBool>,
+    pause_flag: &Arc<AtomicBool>,
+    games_analyzed: u32,
+    games_total: u32,
+    positions_analyzed: u32,
+    candidate_moves: u32,
+    mistakes_found: u32,
+) -> Result<(), Error> {
+    let mut emitted_pause = false;
+    while pause_flag.load(Ordering::SeqCst) {
+        if cancel_flag.load(Ordering::SeqCst) {
+            return Err(Error::AnalysisCancelled);
+        }
+        if !emitted_pause {
+            emit_mistake_review_progress(
+                app,
+                id,
+                games_analyzed,
+                games_total,
+                positions_analyzed,
+                candidate_moves,
+                mistakes_found,
+                "Paused",
+                true,
+                false,
+            )?;
+            emitted_pause = true;
+        }
+        tokio::time::sleep(Duration::from_millis(150)).await;
+    }
+
+    if emitted_pause {
+        emit_mistake_review_progress(
+            app,
+            id,
+            games_analyzed,
+            games_total,
+            positions_analyzed,
+            candidate_moves,
+            mistakes_found,
+            "Analyzing games",
+            false,
+            false,
+        )?;
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn score_mistake_review_move(
+    request: MistakeReviewMoveScoreRequest,
+) -> Result<MistakeReviewMoveScore, Error> {
+    let thresholds = request.thresholds.unwrap_or_default();
+    let depth = request.depth.unwrap_or(17).max(1);
+    let multi_pv = request.multi_pv.unwrap_or(3).max(1);
+    let engine_path = PathBuf::from(&request.engine_path);
+    let engine_name = request.engine_name.clone().unwrap_or_else(|| {
+        engine_path
+            .file_stem()
+            .and_then(|name| name.to_str())
+            .unwrap_or("Stockfish")
+            .to_string()
+    });
+
+    let mut position = mistake_review_starting_position(Some(&request.fen))?;
+    let player_color = position.turn();
+    let played_uci = UciMove::from_ascii(request.played_move_uci.as_bytes())?;
+    let played_move = played_uci.to_move(&position)?;
+    let played_move_san = SanPlus::from_move(position.clone(), &played_move).to_string();
+    position.play_unchecked(&played_move);
+    let fen_after = Fen::from_position(position, EnPassantMode::Legal).to_string();
+
+    let (mut proc, mut reader) = EngineProcess::new(engine_path).await?;
+    let before =
+        analyze_mistake_review_position(&mut proc, &mut reader, &request.fen, depth, multi_pv)
+            .await?;
+    let after =
+        analyze_mistake_review_position(&mut proc, &mut reader, &fen_after, depth, 1).await?;
+    proc.kill().await?;
+
+    let best = before.first().ok_or(Error::NoMovesFound)?;
+    let after_best = after.first().ok_or(Error::NoMovesFound)?;
+    let best_move_uci = best.uci_moves.first().cloned().unwrap_or_default();
+    let best_move_san = best
+        .san_moves
+        .first()
+        .cloned()
+        .unwrap_or_else(|| best_move_uci.clone());
+    let cp_before = score_to_white_cp(&best.score);
+    let cp_after = score_to_white_cp(&after_best.score);
+    let cp_loss = cp_loss_for_player(cp_before, cp_after, player_color);
+    let win_probability_drop = win_probability_drop_for_player(cp_before, cp_after, player_color);
+    let exact_best = best_move_uci == request.played_move_uci;
+    let label = mistake_review_attempt_label(cp_loss, exact_best, &thresholds);
+
+    Ok(MistakeReviewMoveScore {
+        passed: mistake_review_attempt_passed(&label),
+        label,
+        best_move_san,
+        best_move_uci,
+        played_move_san,
+        played_move_uci: request.played_move_uci,
+        cp_loss,
+        win_probability_drop,
+        cp_before,
+        cp_after,
+        requested_depth: depth,
+        reached_depth: best.depth.min(after_best.depth),
+        engine_name,
+    })
+}
+
+async fn analyze_mistake_review_position(
+    proc: &mut EngineProcess,
+    reader: &mut EngineReader,
+    fen: &str,
+    depth: u32,
+    multi_pv: u16,
+) -> Result<Vec<BestMoves>, Error> {
+    proc.set_options(EngineOptions {
+        fen: fen.to_string(),
+        moves: Vec::new(),
+        extra_options: vec![EngineOption {
+            name: "MultiPV".to_string(),
+            value: multi_pv.to_string(),
+        }],
+    })
+    .await?;
+    proc.go(&GoMode::Depth(depth)).await?;
+
+    let fen = fen.parse()?;
+    while let Some(line) = reader.next_line().await? {
+        match parse_one(&line) {
+            UciMessage::Info(attrs) => match parse_uci_attrs(attrs, &fen, &[]) {
+                Ok(best_moves) => {
+                    if best_moves.score.lower_bound == Some(true)
+                        || best_moves.score.upper_bound == Some(true)
+                    {
+                        proc.base.log_engine(&line);
+                        continue;
+                    }
+
+                    let multipv = best_moves.multipv;
+                    let cur_depth = best_moves.depth;
+                    if multipv as usize == proc.best_moves.len() + 1 {
+                        proc.best_moves.push(best_moves);
+                        if multipv == proc.real_multipv {
+                            if proc.best_moves.iter().all(|x| x.depth == cur_depth)
+                                && cur_depth >= proc.last_depth
+                            {
+                                proc.last_depth = cur_depth;
+                                proc.last_best_moves = proc.best_moves.clone();
+                            }
+                            proc.best_moves.clear();
+                        }
+                    }
+                }
+                Err(Error::NoMovesFound) => {}
+                Err(e) => warn!(
+                    "Failed to parse mistake-review info line: {}, error: {:?}",
+                    line, e
+                ),
+            },
+            UciMessage::BestMove { .. } => {
+                proc.running = false;
+                proc.base.log_engine(&line);
+                break;
+            }
+            _ => {}
+        }
+        proc.base.log_engine(&line);
+    }
+
+    Ok(proc.last_best_moves.clone())
+}
+
+fn mistake_review_starting_position(fen: Option<&str>) -> Result<Chess, Error> {
+    let fen = match fen {
+        Some(fen) if !fen.trim().is_empty() => Fen::from_ascii(fen.as_bytes())?,
+        _ => Fen::default(),
+    };
+    let setup = fen.into_setup();
+    let castling_mode = CastlingMode::detect(&setup);
+    Ok(Chess::from_setup(setup, castling_mode).or_else(PositionError::ignore_too_much_material)?)
+}
+
+fn score_to_white_cp(score: &Score) -> i32 {
+    match score.value {
+        ScoreValue::Cp(cp) => cp,
+        ScoreValue::Mate(mate) if mate > 0 => 10_000 - (mate as i32).abs().min(1_000),
+        ScoreValue::Mate(mate) => -10_000 + (mate as i32).abs().min(1_000),
+    }
+}
+
+fn cp_loss_for_player(before_white_cp: i32, after_white_cp: i32, player_color: Color) -> i32 {
+    let loss = if player_color == Color::White {
+        before_white_cp - after_white_cp
+    } else {
+        after_white_cp - before_white_cp
+    };
+    loss.max(0)
+}
+
+fn win_probability_drop_for_player(
+    before_white_cp: i32,
+    after_white_cp: i32,
+    player_color: Color,
+) -> f64 {
+    let before_white = centipawn_to_win_probability(before_white_cp);
+    let after_white = centipawn_to_win_probability(after_white_cp);
+    let before_player = if player_color == Color::White {
+        before_white
+    } else {
+        100.0 - before_white
+    };
+    let after_player = if player_color == Color::White {
+        after_white
+    } else {
+        100.0 - after_white
+    };
+    (before_player - after_player).max(0.0)
+}
+
+fn centipawn_to_win_probability(cp: i32) -> f64 {
+    50.0 + 50.0 * (2.0 / (1.0 + (-0.003_682_08 * cp as f64).exp()) - 1.0)
+}
+
+fn mistake_review_time_control_bucket(time_control: &Option<String>) -> String {
+    let Some(time_control) = time_control.as_deref() else {
+        return "unknown".to_string();
+    };
+    let trimmed = time_control.trim();
+    if trimmed.is_empty() || trimmed == "-" || trimmed == "?" {
+        return "unknown".to_string();
+    }
+    if trimmed.eq_ignore_ascii_case("correspondence") || trimmed.contains('/') {
+        return "correspondence".to_string();
+    }
+
+    let initial_seconds = trimmed
+        .split(['+', '-'])
+        .next()
+        .and_then(|value| value.parse::<i32>().ok())
+        .unwrap_or_default();
+
+    if initial_seconds <= 0 {
+        "unknown".to_string()
+    } else if initial_seconds < 180 {
+        "bullet".to_string()
+    } else if initial_seconds < 600 {
+        "blitz".to_string()
+    } else if initial_seconds < 1800 {
+        "rapid".to_string()
+    } else {
+        "classical".to_string()
+    }
+}
+
+fn mistake_review_severity(
+    cp_loss: i32,
+    thresholds: &MistakeReviewThresholds,
+) -> Option<MistakeReviewSeverity> {
+    if cp_loss >= thresholds.blunder {
+        Some(MistakeReviewSeverity::Blunder)
+    } else if cp_loss >= thresholds.mistake {
+        Some(MistakeReviewSeverity::Mistake)
+    } else if cp_loss >= thresholds.inaccuracy {
+        Some(MistakeReviewSeverity::Inaccuracy)
+    } else {
+        None
+    }
+}
+
+fn mistake_review_includes_severity(
+    severity: &MistakeReviewSeverity,
+    include: &MistakeReviewSeverityFilter,
+) -> bool {
+    match severity {
+        MistakeReviewSeverity::Inaccuracy => include.inaccuracy,
+        MistakeReviewSeverity::Mistake => include.mistake,
+        MistakeReviewSeverity::Blunder => include.blunder,
+    }
+}
+
+fn mistake_review_attempt_label(
+    cp_loss: i32,
+    exact_best: bool,
+    thresholds: &MistakeReviewThresholds,
+) -> MistakeReviewAttemptLabel {
+    if exact_best || cp_loss <= 20 {
+        MistakeReviewAttemptLabel::Best
+    } else if cp_loss < 35 {
+        MistakeReviewAttemptLabel::Good
+    } else if cp_loss < thresholds.inaccuracy {
+        MistakeReviewAttemptLabel::Okay
+    } else if cp_loss >= thresholds.blunder {
+        MistakeReviewAttemptLabel::Blunder
+    } else if cp_loss >= thresholds.mistake {
+        MistakeReviewAttemptLabel::Mistake
+    } else {
+        MistakeReviewAttemptLabel::Inaccuracy
+    }
+}
+
+fn mistake_review_attempt_passed(label: &MistakeReviewAttemptLabel) -> bool {
+    matches!(
+        label,
+        MistakeReviewAttemptLabel::Best | MistakeReviewAttemptLabel::Good
+    )
+}
+
+fn normalize_mistake_review_fen(fen: &str) -> String {
+    fen.split_whitespace().take(4).collect::<Vec<_>>().join(" ")
+}
+
+fn color_name(color: Color) -> &'static str {
+    match color {
+        Color::White => "white",
+        Color::Black => "black",
+    }
+}
+
+fn insert_mistake_review_result(
+    mistakes: &mut HashMap<String, MistakeReviewScanResult>,
+    result: MistakeReviewScanResult,
+) {
+    let Some(existing) = mistakes.get_mut(&result.review_key) else {
+        mistakes.insert(result.review_key.clone(), result);
+        return;
+    };
+
+    let mut game_ids = existing.game_ids.clone();
+    if !game_ids.contains(&result.game_id) {
+        game_ids.push(result.game_id);
+    }
+    let occurrence_count = existing.occurrence_count.saturating_add(1);
+    let latest = if result.game_id >= existing.last_game_id {
+        (
+            result.last_game_id,
+            result.date.clone(),
+            result.opponent.clone(),
+            result.time_control.clone(),
+            result.white_name.clone(),
+            result.black_name.clone(),
+            result.white_elo,
+            result.black_elo,
+            result.game_result.clone(),
+        )
+    } else {
+        (
+            existing.last_game_id,
+            existing.date.clone(),
+            existing.opponent.clone(),
+            existing.time_control.clone(),
+            existing.white_name.clone(),
+            existing.black_name.clone(),
+            existing.white_elo,
+            existing.black_elo,
+            existing.game_result.clone(),
+        )
+    };
+
+    if result.cp_loss > existing.cp_loss
+        || (result.cp_loss == existing.cp_loss && result.game_id > existing.game_id)
+    {
+        *existing = result;
+    }
+
+    existing.occurrence_count = occurrence_count;
+    existing.game_ids = game_ids;
+    existing.last_game_id = latest.0;
+    existing.date = latest.1;
+    existing.opponent = latest.2;
+    existing.time_control = latest.3;
+    existing.white_name = latest.4;
+    existing.black_name = latest.5;
+    existing.white_elo = latest.6;
+    existing.black_elo = latest.7;
+    existing.game_result = latest.8;
+}
+
+#[cfg(test)]
+mod mistake_review_tests {
+    use super::*;
+
+    fn scan_result(review_key: &str, cp_loss: i32, game_id: i32) -> MistakeReviewScanResult {
+        MistakeReviewScanResult {
+            review_key: review_key.to_string(),
+            fen: "8/8/8/8/8/8/8/8 w - - 0 1".to_string(),
+            normalized_fen: "8/8/8/8/8/8/8/8 w - -".to_string(),
+            side_to_move: "white".to_string(),
+            player_color: "white".to_string(),
+            played_move_san: "a4".to_string(),
+            played_move_uci: "a2a4".to_string(),
+            best_move_san: "Nf3".to_string(),
+            best_move_uci: "g1f3".to_string(),
+            pv_san: vec!["Nf3".to_string()],
+            pv_uci: vec!["g1f3".to_string()],
+            severity: MistakeReviewSeverity::Mistake,
+            cp_loss,
+            win_probability_drop: 8.0,
+            cp_before: 50,
+            cp_after: -70,
+            requested_depth: 17,
+            reached_depth: 17,
+            analysis_mode: MistakeReviewAnalysisMode::Single,
+            fast_depth: 12,
+            multi_pv: 3,
+            engine_name: "Stockfish".to_string(),
+            game_id,
+            last_game_id: game_id,
+            ply: 10,
+            move_number: 6,
+            date: Some(format!("2026.04.{game_id:02}")),
+            opponent: format!("Opponent {game_id}"),
+            time_control: Some("600+0".to_string()),
+            white_name: "Tyrell Lox".to_string(),
+            black_name: format!("Opponent {game_id}"),
+            white_elo: Some(1900 + game_id),
+            black_elo: Some(1800 + game_id),
+            game_result: Some("0-1".to_string()),
+            occurrence_count: 1,
+            game_ids: vec![game_id],
+        }
+    }
+
+    #[test]
+    fn cp_loss_is_oriented_to_the_selected_side() {
+        assert_eq!(cp_loss_for_player(80, -20, Color::White), 100);
+        assert_eq!(cp_loss_for_player(-80, 20, Color::Black), 100);
+        assert_eq!(cp_loss_for_player(-20, 80, Color::White), 0);
+    }
+
+    #[test]
+    fn severity_uses_configured_thresholds() {
+        let thresholds = MistakeReviewThresholds {
+            inaccuracy: 50,
+            mistake: 100,
+            blunder: 200,
+        };
+
+        assert_eq!(mistake_review_severity(49, &thresholds), None);
+        assert_eq!(
+            mistake_review_severity(50, &thresholds),
+            Some(MistakeReviewSeverity::Inaccuracy)
+        );
+        assert_eq!(
+            mistake_review_severity(120, &thresholds),
+            Some(MistakeReviewSeverity::Mistake)
+        );
+        assert_eq!(
+            mistake_review_severity(220, &thresholds),
+            Some(MistakeReviewSeverity::Blunder)
+        );
+    }
+
+    #[test]
+    fn attempt_labels_keep_srs_binary() {
+        let thresholds = MistakeReviewThresholds {
+            inaccuracy: 50,
+            mistake: 100,
+            blunder: 200,
+        };
+
+        assert_eq!(
+            mistake_review_attempt_label(0, true, &thresholds),
+            MistakeReviewAttemptLabel::Best
+        );
+        assert_eq!(
+            mistake_review_attempt_label(30, false, &thresholds),
+            MistakeReviewAttemptLabel::Good
+        );
+        assert_eq!(
+            mistake_review_attempt_label(45, false, &thresholds),
+            MistakeReviewAttemptLabel::Okay
+        );
+        assert!(mistake_review_attempt_passed(
+            &MistakeReviewAttemptLabel::Best
+        ));
+        assert!(mistake_review_attempt_passed(
+            &MistakeReviewAttemptLabel::Good
+        ));
+        assert!(!mistake_review_attempt_passed(
+            &MistakeReviewAttemptLabel::Okay
+        ));
+    }
+
+    #[test]
+    fn time_control_filters_bucket_common_game_speeds() {
+        assert_eq!(
+            mistake_review_time_control_bucket(&Some("60+0".to_string())),
+            "bullet"
+        );
+        assert_eq!(
+            mistake_review_time_control_bucket(&Some("300+3".to_string())),
+            "blitz"
+        );
+        assert_eq!(
+            mistake_review_time_control_bucket(&Some("900+10".to_string())),
+            "rapid"
+        );
+        assert_eq!(
+            mistake_review_time_control_bucket(&Some("3600+0".to_string())),
+            "classical"
+        );
+        assert_eq!(
+            mistake_review_time_control_bucket(&Some("1/3".to_string())),
+            "correspondence"
+        );
+    }
+
+    #[test]
+    fn duplicate_positions_merge_evidence_without_losing_worst_analysis() {
+        let mut mistakes = HashMap::new();
+
+        insert_mistake_review_result(&mut mistakes, scan_result("fen|a2a4", 120, 1));
+        insert_mistake_review_result(&mut mistakes, scan_result("fen|a2a4", 180, 2));
+
+        let merged = mistakes.get("fen|a2a4").unwrap();
+        assert_eq!(merged.cp_loss, 180);
+        assert_eq!(merged.occurrence_count, 2);
+        assert_eq!(merged.game_ids, vec![1, 2]);
+        assert_eq!(merged.last_game_id, 2);
+        assert_eq!(merged.opponent, "Opponent 2");
+    }
+
+    #[test]
+    fn fen_key_matches_the_website_style_position_plus_played_move_key() {
+        assert_eq!(
+            normalize_mistake_review_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+            ),
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
+        );
+    }
 }
 
 fn count_material(position: &Chess) -> i32 {

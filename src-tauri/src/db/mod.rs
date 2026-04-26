@@ -1,4 +1,4 @@
-mod encoding;
+pub(crate) mod encoding;
 mod models;
 mod ops;
 mod schema;
@@ -1236,6 +1236,83 @@ fn normalize_games(games: Vec<(Game, Player, Player, Event, Site)>) -> Vec<Norma
             }
         })
         .collect()
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct MistakeReviewGameRow {
+    pub id: i32,
+    pub date: Option<String>,
+    pub white_id: i32,
+    pub black_id: i32,
+    pub white_name: String,
+    pub white_elo: Option<i32>,
+    pub black_name: String,
+    pub black_elo: Option<i32>,
+    pub result: Option<String>,
+    pub time_control: Option<String>,
+    pub fen: Option<String>,
+    pub moves: Vec<u8>,
+}
+
+pub(crate) fn load_mistake_review_games(
+    file: PathBuf,
+    player_id: i32,
+    start_date: Option<String>,
+    end_date: Option<String>,
+    since_game_id: Option<i32>,
+    max_games: Option<i32>,
+    state: &tauri::State<'_, AppState>,
+) -> Result<Vec<MistakeReviewGameRow>, Error> {
+    let db = &mut get_db_or_create(state, file.to_str().unwrap(), ConnectionOptions::default())?;
+
+    let (white_players, black_players) = diesel::alias!(players as white, players as black);
+    let mut query = games::table
+        .inner_join(white_players.on(games::white_id.eq(white_players.field(players::id))))
+        .inner_join(black_players.on(games::black_id.eq(black_players.field(players::id))))
+        .filter(
+            games::white_id
+                .eq(player_id)
+                .or(games::black_id.eq(player_id)),
+        )
+        .into_boxed();
+
+    if let Some(since_game_id) = since_game_id {
+        query = query.filter(games::id.gt(since_game_id));
+    }
+
+    if let Some(start_date) = start_date {
+        query = query.filter(games::date.ge(start_date));
+    }
+
+    if let Some(end_date) = end_date {
+        query = query.filter(games::date.le(end_date));
+    }
+
+    query = query.order(games::id.asc());
+
+    if let Some(max_games) = max_games {
+        query = query.limit(max_games as i64);
+    }
+
+    let games: Vec<(Game, Player, Player)> = query.load(db)?;
+
+    Ok(games
+        .into_iter()
+        .map(|(game, white, black)| MistakeReviewGameRow {
+            id: game.id,
+            date: game.date,
+            white_id: game.white_id,
+            black_id: game.black_id,
+            white_name: white.name.unwrap_or_default(),
+            white_elo: game.white_elo,
+            black_name: black.name.unwrap_or_default(),
+            black_elo: game.black_elo,
+            result: game.result,
+            time_control: game.time_control,
+            fen: game.fen,
+            moves: game.moves,
+        })
+        .collect())
 }
 
 #[derive(Debug, Clone, Deserialize, Type)]

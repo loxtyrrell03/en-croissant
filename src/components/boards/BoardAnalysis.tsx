@@ -67,7 +67,9 @@ function BoardAnalysis() {
     }),
   );
   const hasPersistentOrigin =
-    currentTab?.gameOrigin.kind !== "none" && currentTab?.gameOrigin.kind !== "opening_review";
+    currentTab?.gameOrigin.kind !== "none" &&
+    currentTab?.gameOrigin.kind !== "opening_review" &&
+    currentTab?.gameOrigin.kind !== "mistake_review";
   const autoSave = useAtomValue(autoSaveAtom);
   const { documentDir } = useLoaderData({ from: "/" });
   const boardRef = useRef(null);

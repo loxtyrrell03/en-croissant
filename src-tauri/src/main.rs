@@ -38,7 +38,8 @@ use tauri_plugin_log::{Target, TargetKind};
 
 use crate::chess::{
     analyze_game, cancel_analysis, get_engine_config, get_engine_logs, kill_engine, kill_engines,
-    stop_engine,
+    scan_mistake_review, score_mistake_review_move, set_mistake_review_scan_paused, stop_engine,
+    MistakeReviewScanProgress,
 };
 use crate::db::{
     cancel_database_search, clear_games, convert_pgn, create_indexes, delete_database,
@@ -95,6 +96,7 @@ pub struct AppState {
 
     engine_processes: DashMap<(String, String), Arc<tokio::sync::Mutex<EngineProcess>>>,
     analysis_cancel_flags: DashMap<String, Arc<AtomicBool>>,
+    analysis_pause_flags: DashMap<String, Arc<AtomicBool>>,
     auth: AuthState,
     game_manager: GameManager,
     progress_state: ProgressStore,
@@ -117,6 +119,9 @@ fn main() {
             close_splashscreen,
             get_best_moves,
             analyze_game,
+            scan_mistake_review,
+            score_mistake_review_move,
+            set_mistake_review_scan_paused,
             cancel_analysis,
             stop_engine,
             kill_engine,
@@ -183,6 +188,7 @@ fn main() {
         .events(tauri_specta::collect_events!(
             BestMovesPayload,
             DatabaseProgress,
+            MistakeReviewScanProgress,
             ProgressEvent,
             GameMoveEvent,
             ClockUpdateEvent,

@@ -24,11 +24,17 @@ import {
 } from "@mantine/core";
 import { useDebouncedValue, useElementSize, useToggle } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { IconArrowRight, IconDatabase, IconPlus, IconSearch } from "@tabler/icons-react";
+import {
+  IconArrowRight,
+  IconDatabase,
+  IconPlus,
+  IconRefresh,
+  IconSearch,
+} from "@tabler/icons-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { basename } from "@tauri-apps/api/path";
 import { open as openDialog, save } from "@tauri-apps/plugin-dialog";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
@@ -40,11 +46,13 @@ import {
   type OnlineDatabaseUpdateRecords,
   onlineDatabaseUpdatesAtom,
   referenceDbAtom,
+  sessionsAtom,
   storedDatabasesDirAtom,
 } from "@/state/atoms";
 import { useActiveDatabaseViewStore } from "@/state/store/database";
 import { getDatabases, query_games, type SuccessDatabaseInfo } from "@/utils/db";
 import { formatBytes, formatNumber } from "@/utils/format";
+import { updateOnlineDatabaseNow } from "@/utils/onlineDatabaseAutoUpdate";
 import {
   getOnlineDatabaseUpdateRecord,
   getOnlineGameSourceLabel,
@@ -87,9 +95,18 @@ export default function DatabasesPage() {
   const [referenceDatabase, setReferenceDatabase] = useAtom(referenceDbAtom);
   const [conversionState, setConversionState] = useAtom(databaseConversionStateAtom);
   const [onlineDatabaseUpdates, setOnlineDatabaseUpdates] = useAtom(onlineDatabaseUpdatesAtom);
+  const sessions = useAtomValue(sessionsAtom);
+  const [updatingOnlineDatabasePath, setUpdatingOnlineDatabasePath] = useState<string | null>(null);
   const selectedDatabase = useMemo(
     () => (databases ?? []).find((db) => db.file === selected) ?? null,
     [databases, selected],
+  );
+  const selectedOnlineRecord = useMemo(
+    () =>
+      selectedDatabase?.type === "success"
+        ? getOnlineDatabaseUpdateRecord(selectedDatabase, onlineDatabaseUpdates)
+        : null,
+    [onlineDatabaseUpdates, selectedDatabase],
   );
   const filteredDatabases = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -141,6 +158,49 @@ export default function DatabasesPage() {
       setReferenceDatabase(file);
     }
   }
+
+  async function updateOnlineDatabase(database: SuccessDatabaseInfo) {
+    const record = getOnlineDatabaseUpdateRecord(database, onlineDatabaseUpdates);
+    if (!record || updatingOnlineDatabasePath) return;
+
+    setUpdatingOnlineDatabasePath(database.file);
+    try {
+      const result = await updateOnlineDatabaseNow({
+        database,
+        record,
+        databaseDir,
+        sessions,
+        setConversionState,
+        setUpdateRecords: setOnlineDatabaseUpdates,
+        isConversionInProgress: () => conversionState.inProgress,
+      });
+      await mutate();
+
+      if (result.updated) {
+        notifications.show({
+          title: "Online database updated",
+          message:
+            "Latest games were imported. Linked Opening Review decks will scan the new games automatically.",
+          color: "green",
+        });
+      } else {
+        notifications.show({
+          title: "No new games",
+          message: `${database.title} is already up to date.`,
+          color: "blue",
+        });
+      }
+    } catch (error) {
+      notifications.show({
+        title: "Could not update database",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    } finally {
+      setUpdatingOnlineDatabasePath(null);
+    }
+  }
+
   const navigate = useNavigate();
   const { ref: pagePanelsRef, width: pagePanelsWidth } = useElementSize();
   const pageDensity = getPanelDensity(pagePanelsWidth);
@@ -262,59 +322,96 @@ export default function DatabasesPage() {
                     </>
                   )}
                   {!isLoading &&
-                    filteredDatabases?.map((item) => (
-                      <GenericCard
-                        id={item.file}
-                        key={item.filename}
-                        isSelected={selectedDatabase?.filename === item.filename}
-                        setSelected={setSelected}
-                        error={item.type === "error" ? item.error : ""}
-                        onDoubleClick={() => {
-                          if (item.type === "error") return;
-                          navigate({
-                            to: "/databases/$databaseId",
-                            params: {
-                              databaseId: item.title,
-                            },
-                          });
-                          setActiveDatabase(item);
-                          //setStorageSelected(item);
-                        }}
-                        Header={
-                          <Group wrap="nowrap" justify="space-between">
-                            <Group wrap="nowrap" miw={0}>
-                              <IconDatabase size="1.5rem" />
-                              <Box miw={0}>
-                                <Text fw={500} fz="sm">
-                                  {item.type === "success" ? item.title : item.error}
-                                </Text>
-                                <Text size="xs" c="dimmed" style={{ wordWrap: "break-word" }}>
-                                  {item.type === "error" ? item.file : item.description}
-                                </Text>
-                              </Box>
+                    filteredDatabases?.map((item) => {
+                      const onlineRecord =
+                        item.type === "success"
+                          ? getOnlineDatabaseUpdateRecord(item, onlineDatabaseUpdates)
+                          : null;
+                      const onlineUpdating =
+                        item.type === "success" && updatingOnlineDatabasePath === item.file;
+
+                      return (
+                        <GenericCard
+                          id={item.file}
+                          key={item.filename}
+                          isSelected={selectedDatabase?.filename === item.filename}
+                          setSelected={setSelected}
+                          error={item.type === "error" ? item.error : ""}
+                          onDoubleClick={() => {
+                            if (item.type === "error") return;
+                            navigate({
+                              to: "/databases/$databaseId",
+                              params: {
+                                databaseId: item.title,
+                              },
+                            });
+                            setActiveDatabase(item);
+                            //setStorageSelected(item);
+                          }}
+                          Header={
+                            <Group wrap="nowrap" justify="space-between">
+                              <Group wrap="nowrap" miw={0}>
+                                <IconDatabase size="1.5rem" />
+                                <Box miw={0}>
+                                  <Text fw={500} fz="sm">
+                                    {item.type === "success" ? item.title : item.error}
+                                  </Text>
+                                  <Text size="xs" c="dimmed" style={{ wordWrap: "break-word" }}>
+                                    {item.type === "error" ? item.file : item.description}
+                                  </Text>
+                                </Box>
+                              </Group>
+                              <Group gap={4} wrap="nowrap">
+                                {item.type === "success" && onlineRecord && (
+                                  <Tooltip
+                                    label={`Update ${getOnlineGameSourceLabel(
+                                      onlineRecord.source,
+                                    )} games for ${onlineRecord.username}`}
+                                  >
+                                    <ActionIcon
+                                      aria-label={`Update ${item.title}`}
+                                      variant="subtle"
+                                      loading={onlineUpdating}
+                                      disabled={
+                                        conversionState.inProgress ||
+                                        (!!updatingOnlineDatabasePath && !onlineUpdating)
+                                      }
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        void updateOnlineDatabase(item);
+                                      }}
+                                    >
+                                      <IconRefresh size="1rem" />
+                                    </ActionIcon>
+                                  </Tooltip>
+                                )}
+                                <Rating
+                                  value={referenceDatabase === item.file ? 1 : 0}
+                                  count={1}
+                                  onChange={() => {
+                                    changeReferenceDatabase(item.file);
+                                  }}
+                                />
+                              </Group>
                             </Group>
-                            <Rating
-                              value={referenceDatabase === item.file ? 1 : 0}
-                              count={1}
-                              onChange={() => {
-                                changeReferenceDatabase(item.file);
-                              }}
-                            />
-                          </Group>
-                        }
-                        stats={[
-                          {
-                            label: t("Databases.Card.Games"),
-                            value: item.type === "success" ? formatNumber(item.game_count) : "???",
-                          },
-                          {
-                            label: t("Databases.Card.Storage"),
-                            value:
-                              item.type === "success" ? formatBytes(item.storage_size ?? 0) : "???",
-                          },
-                        ]}
-                      />
-                    ))}
+                          }
+                          stats={[
+                            {
+                              label: t("Databases.Card.Games"),
+                              value:
+                                item.type === "success" ? formatNumber(item.game_count) : "???",
+                            },
+                            {
+                              label: t("Databases.Card.Storage"),
+                              value:
+                                item.type === "success"
+                                  ? formatBytes(item.storage_size ?? 0)
+                                  : "???",
+                            },
+                          ]}
+                        />
+                      );
+                    })}
                 </SimpleGrid>
               </ScrollArea>
               {!isLoading && filteredDatabases.length === 0 && (
@@ -393,11 +490,29 @@ export default function DatabasesPage() {
                         file={selectedDatabase.file}
                         setDatabases={mutate}
                       />
-                      <OnlineAutoUpdateInput
-                        selectedDatabase={selectedDatabase}
-                        records={onlineDatabaseUpdates}
-                        setRecords={setOnlineDatabaseUpdates}
-                      />
+                      <Group justify="space-between" align="center">
+                        <OnlineAutoUpdateInput
+                          selectedDatabase={selectedDatabase}
+                          records={onlineDatabaseUpdates}
+                          setRecords={setOnlineDatabaseUpdates}
+                        />
+                        {selectedOnlineRecord && (
+                          <Button
+                            size="xs"
+                            variant="default"
+                            leftSection={<IconRefresh size="1rem" />}
+                            loading={updatingOnlineDatabasePath === selectedDatabase.file}
+                            disabled={
+                              conversionState.inProgress ||
+                              (!!updatingOnlineDatabasePath &&
+                                updatingOnlineDatabasePath !== selectedDatabase.file)
+                            }
+                            onClick={() => void updateOnlineDatabase(selectedDatabase)}
+                          >
+                            Update now
+                          </Button>
+                        )}
+                      </Group>
 
                       <Divider variant="dashed" label={t("Common.Data")} />
                       <Group grow>

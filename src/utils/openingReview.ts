@@ -7,6 +7,29 @@ import { getStats, type Position, positionSchema } from "@/components/files/open
 export const OPENING_REVIEW_EXTENSION = ".opening-review.json";
 export const OPENING_REVIEW_VERSION = 1;
 
+const openingReviewAutoUpdateConfigSchema = z.object({
+    enabled: z.boolean().default(false),
+    playerDb: z.string(),
+    playerId: z.number().nullable().optional(),
+    playerName: z.string().nullable().optional(),
+    referenceDb: z.string(),
+    mode: z.enum(["self", "opponent"]).default("self"),
+    color: z.enum(["any", "white", "black"]).default("any"),
+    maxPlies: z.number().default(30),
+    minPlayerGames: z.number().default(3),
+    minReferenceGames: z.number().default(20),
+    topReferenceMoves: z.number().default(3),
+    maxPositions: z.number().optional(),
+    limit: z.number().optional(),
+    createdAt: z.number().optional(),
+    updatedAt: z.number().optional(),
+    lastRunAt: z.number().nullable().optional(),
+    lastUpdatedDatabaseAt: z.number().nullable().optional(),
+    lastKnownGameCount: z.number().nullable().optional(),
+    lastAdded: z.number().nullable().optional(),
+    lastError: z.string().nullable().optional(),
+});
+
 const reviewLogSchema = z
     .object({
         fen: z.string(),
@@ -20,9 +43,12 @@ const openingReviewDeckSchema = z.object({
     updatedAt: z.number(),
     mode: z.enum(["self", "opponent"]).optional(),
     source: z.string().optional(),
+    autoUpdate: openingReviewAutoUpdateConfigSchema.optional(),
     positions: positionSchema.array(),
     logs: reviewLogSchema.array().default([]),
 });
+
+export type OpeningReviewAutoUpdateConfig = z.infer<typeof openingReviewAutoUpdateConfigSchema>;
 
 export type OpeningReviewDeck = {
     version: typeof OPENING_REVIEW_VERSION;
@@ -31,6 +57,7 @@ export type OpeningReviewDeck = {
     updatedAt: number;
     mode?: "self" | "opponent";
     source?: string;
+    autoUpdate?: OpeningReviewAutoUpdateConfig;
     positions: Position[];
     logs: (ReviewLog & { fen: string })[];
 };
@@ -44,6 +71,7 @@ export type OpeningReviewDeckSummary = {
     unseen: number;
     mode?: "self" | "opponent";
     source?: string;
+    autoUpdate?: OpeningReviewAutoUpdateConfig;
 };
 
 export async function readOpeningReviewDeck(path: string): Promise<OpeningReviewDeck> {
@@ -93,6 +121,7 @@ export async function listOpeningReviewDecks(
                 unseen: stats.unseen,
                 mode: deck.mode,
                 source: deck.source,
+                autoUpdate: deck.autoUpdate,
             });
         } catch {
             // Ignore malformed review files so one broken deck does not hide the rest.
@@ -124,11 +153,13 @@ export function createOpeningReviewDeck({
     name,
     mode,
     source,
+    autoUpdate,
     positions,
 }: {
     name: string;
     mode?: "self" | "opponent";
     source?: string;
+    autoUpdate?: OpeningReviewAutoUpdateConfig;
     positions: Position[];
 }): OpeningReviewDeck {
     const now = Date.now();
@@ -139,6 +170,7 @@ export function createOpeningReviewDeck({
         updatedAt: now,
         mode,
         source,
+        autoUpdate,
         positions,
         logs: [],
     };
@@ -167,6 +199,7 @@ export function mergeOpeningReviewPositions(
                       annotations: previous.annotations,
                       shapes: previous.shapes,
                       reviewTree: previous.reviewTree,
+                      importedAt: previous.importedAt ?? position.importedAt,
                   }
                 : position,
         );

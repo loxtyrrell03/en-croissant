@@ -42,6 +42,7 @@ export const positionSchema = z.object({
     priority: z.number().optional(),
     reason: z.string().optional(),
     evidence: z.string().optional(),
+    importedAt: z.number().optional(),
     comment: z.string().optional(),
     annotations: z.array(z.string()).optional(),
     shapes: z.array(z.object({}).passthrough()).optional(),
@@ -65,6 +66,61 @@ export const positionSchema = z.object({
             topMoveSan: z.string().nullable().optional(),
             topMoveUci: z.string().nullable().optional(),
             lastPlayed: z.string().nullable().optional(),
+            timeControl: z.string().nullable().optional(),
+            timeControls: z.array(z.string()).optional(),
+        })
+        .optional(),
+    mistakeReview: z
+        .object({
+            playerDb: z.string().optional(),
+            playerId: z.number().optional(),
+            playerName: z.string().nullable().optional(),
+            playerColor: z.enum(["white", "black"]).optional(),
+            playedMoveSan: z.string().optional(),
+            playedMoveUci: z.string().optional(),
+            bestMoveSan: z.string().optional(),
+            bestMoveUci: z.string().optional(),
+            severity: z.enum(["best", "good", "okay", "inaccuracy", "mistake", "blunder"]).optional(),
+            cpLoss: z.number().optional(),
+            winProbabilityDrop: z.number().optional(),
+            cpBefore: z.number().optional(),
+            cpAfter: z.number().optional(),
+            requestedDepth: z.number().optional(),
+            reachedDepth: z.number().optional(),
+            analysisMode: z.enum(["single", "layered"]).optional(),
+            fastDepth: z.number().optional(),
+            multiPv: z.number().optional(),
+            timeControls: z
+                .array(
+                    z.enum(["bullet", "blitz", "rapid", "classical", "correspondence", "unknown"]),
+                )
+                .optional(),
+            dateRange: z
+                .enum(["all", "week", "2weeks", "month", "3months", "6months", "year"])
+                .optional(),
+            engineName: z.string().optional(),
+            enginePath: z.string().optional(),
+            gameId: z.number().optional(),
+            lastGameId: z.number().optional(),
+            ply: z.number().optional(),
+            moveNumber: z.number().optional(),
+            gameIds: z.array(z.number()).optional(),
+            occurrenceCount: z.number().optional(),
+            date: z.string().nullable().optional(),
+            opponent: z.string().optional(),
+            timeControl: z.string().nullable().optional(),
+            whiteName: z.string().optional(),
+            blackName: z.string().optional(),
+            whiteElo: z.number().nullable().optional(),
+            blackElo: z.number().nullable().optional(),
+            gameResult: z.string().nullable().optional(),
+            thresholds: z
+                .object({
+                    inaccuracy: z.number(),
+                    mistake: z.number(),
+                    blunder: z.number(),
+                })
+                .optional(),
         })
         .optional(),
     engine: z
@@ -91,6 +147,7 @@ export type Position = {
     priority?: number;
     reason?: string;
     evidence?: string;
+    importedAt?: number;
     comment?: string;
     annotations?: Annotation[];
     shapes?: DrawShape[];
@@ -113,6 +170,51 @@ export type Position = {
         topMoveSan?: string | null;
         topMoveUci?: string | null;
         lastPlayed?: string | null;
+        timeControl?: string | null;
+        timeControls?: string[];
+    };
+    mistakeReview?: {
+        playerDb?: string;
+        playerId?: number;
+        playerName?: string | null;
+        playerColor?: "white" | "black";
+        playedMoveSan?: string;
+        playedMoveUci?: string;
+        bestMoveSan?: string;
+        bestMoveUci?: string;
+        severity?: "best" | "good" | "okay" | "inaccuracy" | "mistake" | "blunder";
+        cpLoss?: number;
+        winProbabilityDrop?: number;
+        cpBefore?: number;
+        cpAfter?: number;
+        requestedDepth?: number;
+        reachedDepth?: number;
+        analysisMode?: "single" | "layered";
+        fastDepth?: number;
+        multiPv?: number;
+        timeControls?: ("bullet" | "blitz" | "rapid" | "classical" | "correspondence" | "unknown")[];
+        dateRange?: "all" | "week" | "2weeks" | "month" | "3months" | "6months" | "year";
+        engineName?: string;
+        enginePath?: string;
+        gameId?: number;
+        lastGameId?: number;
+        ply?: number;
+        moveNumber?: number;
+        gameIds?: number[];
+        occurrenceCount?: number;
+        date?: string | null;
+        opponent?: string;
+        timeControl?: string | null;
+        whiteName?: string;
+        blackName?: string;
+        whiteElo?: number | null;
+        blackElo?: number | null;
+        gameResult?: string | null;
+        thresholds?: {
+            inaccuracy: number;
+            mistake: number;
+            blunder: number;
+        };
     };
     engine?: {
         source?: "lichess" | "chessdb" | "cloud" | "local";
@@ -143,6 +245,7 @@ export function createOpeningHealthTrainingItem(
         priority?: number;
         reason?: string;
         evidence?: string;
+        importedAt?: number;
         engine?: Position["engine"];
         openingHealth?: Position["openingHealth"];
     },
@@ -165,6 +268,7 @@ export function createOpeningHealthTrainingItem(
         priority: options?.priority,
         reason: options?.reason,
         evidence: options?.evidence,
+        importedAt: options?.importedAt ?? Date.now(),
         openingHealth: options?.openingHealth,
         engine: options?.engine,
     };

@@ -2,6 +2,13 @@
 
 This file records the work saved during the Codex session on the `codex/en-croissant-fork` branch.
 
+## Ongoing Workflow
+
+- Automatically create git commits as work progresses whenever an important, coherent milestone has been completed.
+- Keep each commit focused on the meaningful progress just made, with a concise message describing that milestone.
+- Do not wait until the end of a long session to save progress unless the user explicitly asks for a single final commit.
+- Avoid committing broken, half-finished, or unverified work unless the user explicitly asks for a checkpoint commit.
+
 ## Base
 
 - The branch started from upstream commit `14ae9478` (`Updated French translation`).

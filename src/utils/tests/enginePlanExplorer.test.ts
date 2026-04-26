@@ -16,6 +16,9 @@ import {
     type ColoredPlanExplorerLine,
 } from "@/utils/planExplorer";
 
+const BREAK_FEN = "rnbqkbnr/ppp1pppp/8/3p4/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+const H_FILE_BREAK_FEN = "rnbqkbnr/pppppp1p/8/6p1/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
 function pv(rank: number, uciMoves: string[], cp: number, depth = 12): BestMoves {
     return {
         nodes: 1000,
@@ -37,10 +40,10 @@ function pv(rank: number, uciMoves: string[], cp: number, depth = 12): BestMoves
 describe("Engine Plan Explorer", () => {
     test("extracts and scores recurring PV plan signals", () => {
         const report = buildEnginePlanReport(
-            INITIAL_FEN,
+            BREAK_FEN,
             [
-                pv(1, ["g1f3", "d7d6", "e2e4", "b8d7", "d2d4", "d7c5"], 30),
-                pv(2, ["g1f3", "d7d6", "e2e4", "g8f6", "d2d4", "c7c5"], 10),
+                pv(1, ["g1f3", "g8f6", "e2e4", "b8d7", "d2d4", "d7c5"], 30),
+                pv(2, ["g1f3", "b8d7", "e2e4", "g8f6", "d2d4", "c7c5"], 10),
                 pv(3, ["c2c4", "g8f6", "b1c3", "e7e5"], 0),
             ],
             {
@@ -87,7 +90,7 @@ describe("Engine Plan Explorer", () => {
 
     test("marks one low-ranked unsupported plan as weak", () => {
         const report = buildEnginePlanReport(
-            INITIAL_FEN,
+            H_FILE_BREAK_FEN,
             [
                 pv(1, ["e2e4"], 30),
                 pv(2, ["d2d4"], 20),
@@ -108,7 +111,7 @@ describe("Engine Plan Explorer", () => {
     });
 
     test("uses unclear when there are not enough PVs", () => {
-        const report = buildEnginePlanReport(INITIAL_FEN, [pv(1, ["e2e4"], 30)], {
+        const report = buildEnginePlanReport(BREAK_FEN, [pv(1, ["e2e4"], 30)], {
             requestedMultipv: 5,
             limitLabel: "Depth 12",
         });
@@ -116,6 +119,23 @@ describe("Engine Plan Explorer", () => {
         const e4Break = report.plans.find((plan) => plan.signature === "pawn_break:white:e4");
         expect(e4Break?.approval).toBe("Unclear");
         expect(e4Break?.explanation).toContain("not enough PVs");
+    });
+
+    test("does not mark quiet pawn advances as pawn breaks", () => {
+        const report = buildEnginePlanReport(
+            INITIAL_FEN,
+            [
+                pv(1, ["e2e4"], 30),
+                pv(2, ["c2c4"], 20),
+                pv(3, ["h2h4"], 10),
+            ],
+            {
+                requestedMultipv: 3,
+                limitLabel: "Depth 12",
+            },
+        );
+
+        expect(report.plans.some((plan) => plan.category === "pawnBreak")).toBe(false);
     });
 
     test("builds per-move board previews from a PV", () => {
@@ -225,9 +245,9 @@ describe("Engine Plan Explorer", () => {
 
     test("matches database plan lines to engine plan strength signals", () => {
         const report = buildEnginePlanReport(
-            INITIAL_FEN,
+            BREAK_FEN,
             [
-                pv(1, ["g1f3", "d7d6", "e2e4"], 30),
+                pv(1, ["g1f3", "g8f6", "e2e4"], 30),
                 pv(2, ["g1f3", "g8f6", "e2e4"], 20),
                 pv(3, ["c2c4", "g8f6"], 0),
             ],

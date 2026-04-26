@@ -5,6 +5,7 @@ import {
     type Square,
     type SquareName,
     makeSquare,
+    parseSquare,
     parseUci,
 } from "chessops";
 import { makeFen } from "chessops/fen";
@@ -216,7 +217,7 @@ export function extractPlansFromPv(fen: string, pv: Pick<EnginePlanPv, "uciMoves
         }
 
         if (piece.role === "pawn") {
-            recordPawnSignals(piece.color, from, to, signals);
+            recordPawnSignals(piece.color, from, to, pos, signals);
             pawnMovementFiles[piece.color].add(to[0]);
             recordPawnExpansionSegment(piece.color, from, to, pawnExpansionSegments);
         }
@@ -747,9 +748,11 @@ function recordPawnSignals(
     color: Color,
     origin: string,
     destination: string,
+    pos: NonNullable<ReturnType<typeof positionFromFen>[0]>,
     signals: Map<string, EnginePlanSignal>,
 ) {
     if (!PAWN_BREAKS[color].has(destination)) return;
+    if (!attacksEnemyPawn(color, destination, pos)) return;
 
     const file = destination[0];
     const kind = CENTRAL_FILES.has(file)
@@ -766,6 +769,41 @@ function recordPawnSignals(
         role: "pawn",
         routeSquares: [origin, destination],
     });
+}
+
+function attacksEnemyPawn(
+    color: Color,
+    destination: string,
+    pos: NonNullable<ReturnType<typeof positionFromFen>[0]>,
+) {
+    for (const squareName of pawnAttackSquares(color, destination)) {
+        const square = parseSquare(squareName);
+        if (square === undefined) continue;
+
+        const piece = pos.board.get(square);
+        if (piece?.role === "pawn" && piece.color !== color) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function pawnAttackSquares(color: Color, square: string) {
+    const fileIndex = square.charCodeAt(0) - "a".charCodeAt(0);
+    const rank = Number(square[1]);
+    const nextRank = color === "white" ? rank + 1 : rank - 1;
+    if (!Number.isInteger(rank) || nextRank < 1 || nextRank > 8) return [];
+
+    const squares: string[] = [];
+    for (const fileDelta of [-1, 1]) {
+        const nextFileIndex = fileIndex + fileDelta;
+        if (nextFileIndex < 0 || nextFileIndex > 7) continue;
+
+        squares.push(`${String.fromCharCode("a".charCodeAt(0) + nextFileIndex)}${nextRank}`);
+    }
+
+    return squares;
 }
 
 function recordSideExpansionSignals(

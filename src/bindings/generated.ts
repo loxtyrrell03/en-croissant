@@ -29,6 +29,30 @@ async analyzeGame(id: string, engine: string, goMode: GoMode, options: AnalysisO
     else return { status: "error", error: e  as any };
 }
 },
+async scanMistakeReview(request: MistakeReviewScanRequest) : Promise<Result<MistakeReviewScanReport, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("scan_mistake_review", { request }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async scoreMistakeReviewMove(request: MistakeReviewMoveScoreRequest) : Promise<Result<MistakeReviewMoveScore, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("score_mistake_review_move", { request }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async setMistakeReviewScanPaused(id: string, paused: boolean) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("set_mistake_review_scan_paused", { id, paused }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async cancelAnalysis(id: string) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("cancel_analysis", { id }) };
@@ -501,6 +525,7 @@ clockUpdateEvent: ClockUpdateEvent,
 databaseProgress: DatabaseProgress,
 gameMoveEvent: GameMoveEvent,
 gameOverEvent: GameOverEvent,
+mistakeReviewScanProgress: MistakeReviewScanProgress,
 progressEvent: ProgressEvent
 }>({
 bestMovesPayload: "best-moves-payload",
@@ -508,6 +533,7 @@ clockUpdateEvent: "clock-update-event",
 databaseProgress: "database-progress",
 gameMoveEvent: "game-move-event",
 gameOverEvent: "game-over-event",
+mistakeReviewScanProgress: "mistake-review-scan-progress",
 progressEvent: "progress-event"
 })
 
@@ -542,6 +568,17 @@ export type GameSort = "id" | "date" | "whiteElo" | "blackElo" | "ply_count"
 export type GameState = { gameId: string; status: GameStatus; initialFen: string; moves: GameMove[]; currentFen: string; ply: number; turn: string; whiteTime: bigint | null; blackTime: bigint | null; whitePlayer: string; blackPlayer: string }
 export type GameStatus = "playing" | { finished: { result: GameResult } }
 export type GoMode = { t: "PlayersTime"; c: PlayersTime } | { t: "Depth"; c: number } | { t: "Time"; c: number } | { t: "Nodes"; c: number } | { t: "Infinite" }
+export type MistakeReviewAnalysisMode = "single" | "layered"
+export type MistakeReviewAttemptLabel = "best" | "good" | "okay" | "inaccuracy" | "mistake" | "blunder"
+export type MistakeReviewMoveScore = { label: MistakeReviewAttemptLabel; passed: boolean; bestMoveSan: string; bestMoveUci: string; playedMoveSan: string; playedMoveUci: string; cpLoss: number; winProbabilityDrop: number; cpBefore: number; cpAfter: number; requestedDepth: number; reachedDepth: number; engineName: string }
+export type MistakeReviewMoveScoreRequest = { fen: string; playedMoveUci: string; enginePath: string; engineName: string | null; depth: number | null; multiPv: number | null; thresholds: MistakeReviewThresholds | null }
+export type MistakeReviewScanProgress = { id: string; progress: number; gamesAnalyzed: number; gamesTotal: number; positionsAnalyzed: number; candidateMoves: number; mistakesFound: number; phase: string; paused: boolean; finished: boolean }
+export type MistakeReviewScanReport = { gamesScanned: number; candidateMoves: number; positionsAnalyzed: number; lastAnalyzedGameId: number | null; stopped: boolean; mistakes: MistakeReviewScanResult[] }
+export type MistakeReviewScanRequest = { requestId: string | null; playerDb: string; playerId: number; playerName: string | null; enginePath: string; engineName: string | null; analysisMode: MistakeReviewAnalysisMode | null; fastDepth: number | null; deepDepth: number | null; multiPv: number | null; thresholds: MistakeReviewThresholds | null; includeSeverities: MistakeReviewSeverityFilter | null; minWinProbabilityDrop: number | null; timeControls: string[] | null; startDate: string | null; endDate: string | null; sinceGameId: number | null; maxGames: number | null }
+export type MistakeReviewScanResult = { reviewKey: string; fen: string; normalizedFen: string; sideToMove: string; playerColor: string; playedMoveSan: string; playedMoveUci: string; bestMoveSan: string; bestMoveUci: string; pvSan: string[]; pvUci: string[]; severity: MistakeReviewSeverity; cpLoss: number; winProbabilityDrop: number; cpBefore: number; cpAfter: number; requestedDepth: number; reachedDepth: number; analysisMode: MistakeReviewAnalysisMode; fastDepth: number; multiPv: number; engineName: string; gameId: number; lastGameId: number; ply: number; moveNumber: number; date: string | null; opponent: string; timeControl: string | null; whiteName: string; blackName: string; whiteElo: number | null; blackElo: number | null; gameResult: string | null; occurrenceCount: number; gameIds: number[] }
+export type MistakeReviewSeverity = "inaccuracy" | "mistake" | "blunder"
+export type MistakeReviewSeverityFilter = { inaccuracy: boolean; mistake: boolean; blunder: boolean }
+export type MistakeReviewThresholds = { inaccuracy: number; mistake: number; blunder: number }
 export type MoveAnalysis = { best: BestMoves[]; novelty: boolean; is_sacrifice: boolean }
 export type NormalizedGame = { id: number; fen: string; event: string; event_id: number; site: string; site_id: number; date?: string | null; time?: string | null; round?: string | null; white: string; white_id: number; white_elo?: number | null; black: string; black_id: number; black_elo?: number | null; result: Outcome; time_control?: string | null; eco?: string | null; ply_count?: number | null; moves: string }
 export type OpeningBookConfig = { path: string; maxPly?: bigint }

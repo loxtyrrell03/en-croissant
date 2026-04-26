@@ -761,24 +761,35 @@ fn search_result_filter_from_str(value: &str) -> Option<GameResult> {
 fn entry_players_match_query(entry: &SearchGameEntryRef<'_>, query: &GameQuery) -> bool {
     match query.sides {
         Some(Sides::WhiteBlack) => {
-            query.player1.map_or(true, |player| player == entry.white_id)
-                && query.player2.map_or(true, |player| player == entry.black_id)
-        }
-        Some(Sides::BlackWhite) => {
-            query.player1.map_or(true, |player| player == entry.black_id)
-                && query.player2.map_or(true, |player| player == entry.white_id)
-        }
-        Some(Sides::Any) => {
             query
                 .player1
-                .map_or(true, |player| player == entry.white_id || player == entry.black_id)
+                .map_or(true, |player| player == entry.white_id)
                 && query
                     .player2
-                    .map_or(true, |player| player == entry.white_id || player == entry.black_id)
+                    .map_or(true, |player| player == entry.black_id)
+        }
+        Some(Sides::BlackWhite) => {
+            query
+                .player1
+                .map_or(true, |player| player == entry.black_id)
+                && query
+                    .player2
+                    .map_or(true, |player| player == entry.white_id)
+        }
+        Some(Sides::Any) => {
+            query.player1.map_or(true, |player| {
+                player == entry.white_id || player == entry.black_id
+            }) && query.player2.map_or(true, |player| {
+                player == entry.white_id || player == entry.black_id
+            })
         }
         None => {
-            query.player1.map_or(true, |player| player == entry.white_id)
-                && query.player2.map_or(true, |player| player == entry.black_id)
+            query
+                .player1
+                .map_or(true, |player| player == entry.white_id)
+                && query
+                    .player2
+                    .map_or(true, |player| player == entry.black_id)
         }
     }
 }

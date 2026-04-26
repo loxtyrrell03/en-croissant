@@ -208,7 +208,11 @@ export function AccountCard({
                           updatedDatabase?.type === "success" ? updatedDatabase.description : null,
                         autoUpdate: updateRecord?.autoUpdate ?? true,
                         lastCheckedAt: Date.now(),
-                        lastUpdatedAt: Date.now(),
+                        lastUpdatedAt:
+                          updatedDatabase?.type === "success" &&
+                          updatedDatabase.game_count > downloadedGames
+                            ? Date.now()
+                            : (updateRecord?.lastUpdatedAt ?? null),
                         lastKnownGameCount:
                           updatedDatabase?.type === "success" ? updatedDatabase.game_count : null,
                       }),

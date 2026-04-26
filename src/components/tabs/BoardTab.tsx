@@ -5,6 +5,7 @@ import {
   IconCopy,
   IconDatabase,
   IconEdit,
+  IconExclamationCircle,
   IconPuzzle,
   IconTargetArrow,
   IconX,
@@ -134,6 +135,9 @@ function TabIcon({ tab, tabType }: { tab: Tab; tabType: string }) {
   }
   if (tabType === "opening-review") {
     return <IconTargetArrow size="0.875rem" />;
+  }
+  if (tabType === "mistake-review") {
+    return <IconExclamationCircle size="0.875rem" />;
   }
   if (tabType === "play") {
     return <IconChess size="0.875rem" />;

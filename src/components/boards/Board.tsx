@@ -15,7 +15,7 @@ import {
 import { chessgroundDests, chessgroundMove } from "chessops/compat";
 import { makeFen, parseFen } from "chessops/fen";
 import { makeSan } from "chessops/san";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { memo, useCallback, useContext, useMemo, useRef, useState, type MouseEvent } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
@@ -59,6 +59,13 @@ import classes from "@/styles/Chessboard.module.css";
 import { ANNOTATION_INFO, isBasicAnnotation } from "@/utils/annotation";
 import { getVariationLine } from "@/utils/chess";
 import { chessopsError, forceEnPassant, positionFromFen } from "@/utils/chessops";
+import { queryChessDbMoves } from "@/utils/chessdb/api";
+import { assessMistakeReviewMoveWithEngine } from "@/utils/mistakeReviewPractice";
+import {
+  assessOpeningReviewMove,
+  isOpeningReviewEngineMove,
+  isOpeningReviewSavedMove,
+} from "@/utils/openingReviewPractice";
 import {
   getAutoPlanLines,
   getPlanLineForSquare,
@@ -112,6 +119,24 @@ function squareFromPointer(
   }
 
   return `${FILES[fileIndex]}${8 - rankIndex}` as SquareName;
+}
+
+function uciArrowShape(uci: string | undefined, brush: string): DrawShape | null {
+  if (!uci) return null;
+  const move = parseUci(uci);
+  if (!move || !("from" in move) || !("to" in move)) return null;
+  const from = makeSquare(move.from);
+  const to = makeSquare(move.to);
+  if (!from || !to) return null;
+
+  return {
+    orig: from,
+    dest: to,
+    brush,
+    modifiers: {
+      lineWidth: LARGE_BRUSH,
+    },
+  };
 }
 
 interface ChessboardProps {
@@ -230,7 +255,7 @@ function Board({
     }),
   );
 
-  const setPracticeState = useSetAtom(practiceStateAtom);
+  const [practiceState, setPracticeState] = useAtom(practiceStateAtom);
   const [sessionStats, setSessionStats] = useAtom(practiceSessionStatsAtom);
   const cardStartTime = useAtomValue(practiceCardStartTimeAtom);
 
@@ -246,19 +271,100 @@ function Board({
 
       const i = deck.positions.indexOf(c);
       const timeTaken = Date.now() - cardStartTime;
-      const isCorrect = san === c.answer || c.answerUci === uci;
+      const isMistakeReview = currentTab?.gameOrigin.kind === "mistake_review";
+      const isOpeningReview = currentTab?.gameOrigin.kind === "opening_review";
+      const isEngineCorrect = isOpeningReview && isOpeningReviewEngineMove(c, { san, uci });
+      const isCorrect = isOpeningReviewSavedMove(c, { san, uci }) || isEngineCorrect;
       onMove?.(uci, c.fen, san);
 
       if (!isCorrect) {
+        storeMakeMove({
+          payload: move,
+        });
+        setPendingMove(null);
+
+        if (isMistakeReview) {
+          const moveAssessment = await assessMistakeReviewMoveWithEngine(c, { san, uci });
+          const feedbackTitle =
+            moveAssessment.label.charAt(0).toUpperCase() + moveAssessment.label.slice(1);
+
+          if (sessionStats.mode !== "full") {
+            updateCardPerformance(setDeck, i, c.card, moveAssessment.passed ? 3 : 1);
+          }
+          setPracticeState({
+            phase: moveAssessment.passed ? "correct" : "incorrect",
+            currentFen: c.fen,
+            answer: moveAssessment.bestMoveSan,
+            playedMove: san,
+            playedMoveUci: uci,
+            moveAssessment:
+              moveAssessment.label === "best"
+                ? "best"
+                : moveAssessment.label === "good"
+                  ? "ok"
+                  : "incorrect",
+            mistakeReviewLabel: moveAssessment.label,
+            bestMove: moveAssessment.bestMoveSan,
+            bestMoveUci: moveAssessment.bestMoveUci,
+            moveLossCp: moveAssessment.moveLossCp,
+            winProbabilityDrop: moveAssessment.winProbabilityDrop,
+            requestedDepth: moveAssessment.requestedDepth,
+            reachedDepth: moveAssessment.reachedDepth,
+            engineName: moveAssessment.engineName,
+            positionIndex: i,
+            timeTaken,
+            resultRecorded: moveAssessment.passed,
+          });
+          setSessionStats((prev) => ({
+            ...prev,
+            correct: moveAssessment.passed ? prev.correct + 1 : prev.correct,
+            incorrect: moveAssessment.passed ? prev.incorrect : prev.incorrect + 1,
+            streak: moveAssessment.passed ? prev.streak + 1 : 0,
+            bestStreak: moveAssessment.passed
+              ? Math.max(prev.bestStreak, prev.streak + 1)
+              : prev.bestStreak,
+          }));
+          notifications.show({
+            title: feedbackTitle,
+            message: `${moveAssessment.bestMoveSan} was the engine move to remember.`,
+            color: moveAssessment.passed ? "green" : "red",
+          });
+          if (!moveAssessment.passed) {
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            goToNext();
+          }
+          return;
+        }
+
+        const moveAssessment =
+          currentTab?.gameOrigin.kind === "opening_review"
+            ? assessOpeningReviewMove(
+                c,
+                { san, uci },
+                await queryChessDbMoves(c.fen).catch(() => null),
+              )
+            : assessOpeningReviewMove(c, { san, uci }, null);
+        const isBestAlternative = moveAssessment.quality === "best";
+        const isOkAlternative = moveAssessment.quality === "ok";
+        const isAcceptedAlternative = isBestAlternative || isOkAlternative;
+        const bestMove = moveAssessment.bestMoveSan || c.answer;
+        const bestSource =
+          c.engine?.bestMoveUci === uci || c.engine?.bestMoveSan === san ? "Engine" : "ChessDB";
+
         if (sessionStats.mode !== "full") {
-          updateCardPerformance(setDeck, i, c.card, 1);
+          updateCardPerformance(setDeck, i, c.card, isAcceptedAlternative ? 2 : 1);
         }
         setPracticeState({
           phase: "incorrect",
           currentFen: c.fen,
-          answer: c.answer,
+          answer: bestMove,
           playedMove: san,
           playedMoveUci: uci,
+          moveAssessment: isBestAlternative ? "best" : isOkAlternative ? "ok" : "incorrect",
+          bestMove,
+          bestMoveUci: moveAssessment.bestMoveUci,
+          moveLossCp: moveAssessment.moveLossCp,
+          chessDbRank: moveAssessment.chessDbRank,
           positionIndex: i,
           timeTaken,
         });
@@ -268,12 +374,18 @@ function Board({
           streak: 0,
         }));
         notifications.show({
-          title: t("Common.Incorrect"),
-          message: t("Board.Practice.CorrectMoveWas", { move: c.answer }),
-          color: "red",
+          title: isBestAlternative
+            ? "Best move"
+            : isOkAlternative
+              ? "OK move"
+              : t("Common.Incorrect"),
+          message: isBestAlternative
+            ? `${bestSource} has ${san} as best.`
+            : isOkAlternative
+              ? `${san} is OK; ${bestMove} is best.`
+              : t("Board.Practice.CorrectMoveWas", { move: bestMove }),
+          color: isBestAlternative ? "green" : isOkAlternative ? "blue" : "red",
         });
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        goToNext();
       } else {
         storeMakeMove({
           payload: move,
@@ -285,9 +397,38 @@ function Board({
           answer: c.answer,
           playedMove: san,
           playedMoveUci: uci,
+          moveAssessment: isMistakeReview || isEngineCorrect ? "best" : undefined,
+          mistakeReviewLabel: isMistakeReview ? "best" : undefined,
+          bestMove: isMistakeReview
+            ? c.mistakeReview?.bestMoveSan || c.answer
+            : isEngineCorrect
+              ? c.engine?.bestMoveSan || c.answer
+              : undefined,
+          bestMoveUci: isMistakeReview
+            ? c.mistakeReview?.bestMoveUci || c.answerUci
+            : isEngineCorrect
+              ? c.engine?.bestMoveUci || c.answerUci
+              : undefined,
+          moveLossCp: isMistakeReview ? 0 : undefined,
+          winProbabilityDrop: isMistakeReview ? 0 : undefined,
+          requestedDepth: isMistakeReview ? c.mistakeReview?.requestedDepth : undefined,
+          reachedDepth: isMistakeReview ? c.mistakeReview?.reachedDepth : undefined,
+          engineName: isMistakeReview ? c.mistakeReview?.engineName : undefined,
           positionIndex: i,
           timeTaken,
+          resultRecorded: isMistakeReview ? true : undefined,
         });
+        if (isMistakeReview) {
+          if (sessionStats.mode !== "full") {
+            updateCardPerformance(setDeck, i, c.card, 3);
+          }
+          setSessionStats((prev) => ({
+            ...prev,
+            correct: prev.correct + 1,
+            streak: prev.streak + 1,
+            bestStreak: Math.max(prev.bestStreak, prev.streak + 1),
+          }));
+        }
       }
     } else {
       storeMakeMove({
@@ -410,6 +551,34 @@ function Board({
 
   if (currentNode.shapes.length > 0) {
     shapes = shapes.concat(currentNode.shapes);
+  }
+
+  if (
+    practicing &&
+    (practiceState.phase === "incorrect" || practiceState.phase === "correct") &&
+    !boardPreviewShapes?.displayFen
+  ) {
+    const bestShape = uciArrowShape(
+      practiceState.bestMoveUci ??
+        (practiceState.phase === "correct" ? practiceState.playedMoveUci : undefined),
+      "green",
+    );
+    const playedShape =
+      practiceState.phase === "incorrect" && practiceState.moveAssessment !== "best"
+        ? uciArrowShape(practiceState.playedMoveUci, "red")
+        : null;
+    const sameMove =
+      playedShape &&
+      bestShape &&
+      playedShape.orig === bestShape.orig &&
+      playedShape.dest === bestShape.dest;
+
+    if (playedShape && !sameMove) {
+      shapes.push(playedShape);
+    }
+    if (bestShape) {
+      shapes.push(bestShape);
+    }
   }
 
   const hasClock =
