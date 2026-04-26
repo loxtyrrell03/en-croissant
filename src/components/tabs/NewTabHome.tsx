@@ -305,7 +305,7 @@ function OpeningReviewModal({
 }
 
 function OpeningReviewPositionPreviewBoard({ position }: { position: Position }) {
-  const orientation = position.sideToMove ?? position.openingHealth?.sideToMove ?? "white";
+  const orientation = getOpeningReviewPositionColour(position);
 
   return (
     <Tooltip label="Position preview" withArrow>

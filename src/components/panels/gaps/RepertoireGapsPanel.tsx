@@ -2126,6 +2126,7 @@ function createOpeningHealthReviewPosition(
     openingHealthMovesMatch(move.uci, move.san, gap.playerMoveUci, gap.playerMoveSan),
   );
   const topMove = gap.topReferenceMoves[0];
+  const sideToMove = gap.sideToMove === "black" ? "black" : "white";
   return createOpeningHealthTrainingItem(gap, trainingMove, {
     priority: openingHealthUrgency(gap, effectiveVerification),
     importedAt: Date.now(),
@@ -2145,7 +2146,8 @@ function createOpeningHealthReviewPosition(
         : undefined,
     openingHealth: {
       mode,
-      sideToMove: gap.sideToMove === "black" ? "black" : "white",
+      sideToMove,
+      reviewSide: getOpeningHealthReviewSide(mode, sideToMove),
       usualMoveSan: gap.playerMoveSan,
       usualMoveUci: gap.playerMoveUci,
       games: gap.playerPositionGames,
@@ -2166,6 +2168,15 @@ function createOpeningHealthReviewPosition(
       endDate: dateBounds?.endDate,
     },
   });
+}
+
+function getOpeningHealthReviewSide(mode: OpeningHealthMode, sideToMove: "white" | "black") {
+  if (mode === "opponent") return oppositeOpeningHealthSide(sideToMove);
+  return sideToMove;
+}
+
+function oppositeOpeningHealthSide(side: "white" | "black") {
+  return side === "white" ? "black" : "white";
 }
 
 function getOpeningHealthTrainingMove(

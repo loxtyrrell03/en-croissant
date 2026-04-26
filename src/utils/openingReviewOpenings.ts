@@ -23,6 +23,15 @@ const openingNameCache = new Map<string, string>();
 
 export function getOpeningReviewPositionColour(position: Position): "white" | "black" {
     const health = position.openingHealth;
+    if (health?.reviewSide === "black" || health?.reviewSide === "white") {
+        return health.reviewSide;
+    }
+
+    const saved = health?.sideToMove ?? position.sideToMove;
+    if (health?.mode === "opponent" && (saved === "black" || saved === "white")) {
+        return oppositeOpeningReviewSide(saved);
+    }
+
     const white = health?.white ?? 0;
     const draw = health?.draw ?? 0;
     const black = health?.black ?? 0;
@@ -39,10 +48,13 @@ export function getOpeningReviewPositionColour(position: Position): "white" | "b
         if (whiteDistance + 0.0001 < blackDistance) return "white";
     }
 
-    const saved = position.openingHealth?.sideToMove ?? position.sideToMove;
     if (saved === "black") return "black";
     if (saved === "white") return "white";
     return position.fen.split(" ")[1] === "b" ? "black" : "white";
+}
+
+function oppositeOpeningReviewSide(side: "white" | "black") {
+    return side === "white" ? "black" : "white";
 }
 
 function openingReviewScoreForSide(

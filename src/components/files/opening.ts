@@ -51,6 +51,7 @@ export const positionSchema = z.object({
         .object({
             mode: z.enum(["self", "opponent"]).optional(),
             sideToMove: z.enum(["white", "black"]).optional(),
+            reviewSide: z.enum(["white", "black"]).optional(),
             usualMoveSan: z.string().optional(),
             usualMoveUci: z.string().optional(),
             games: z.number().optional(),
@@ -161,6 +162,7 @@ export type Position = {
     openingHealth?: {
         mode?: "self" | "opponent";
         sideToMove?: "white" | "black";
+        reviewSide?: "white" | "black";
         usualMoveSan?: string;
         usualMoveUci?: string;
         games?: number;

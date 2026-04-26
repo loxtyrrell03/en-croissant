@@ -323,6 +323,7 @@ function createAutoUpdatedOpeningReviewPosition(
     if (!trainingMove) return null;
     const strongMoveResult = gap.topReferenceMoves.find((move) => move.uci === gap.playerMoveUci);
     const topMove = gap.topReferenceMoves[0];
+    const sideToMove = gap.sideToMove === "black" ? "black" : "white";
 
     return createOpeningHealthTrainingItem(gap, trainingMove, {
         priority: openingReviewGapUrgency(gap),
@@ -333,7 +334,8 @@ function createAutoUpdatedOpeningReviewPosition(
         )}; result ${formatReviewPercent(gap.playerScore)}`,
         openingHealth: {
             mode,
-            sideToMove: gap.sideToMove === "black" ? "black" : "white",
+            sideToMove,
+            reviewSide: getOpeningReviewSide(mode, sideToMove),
             usualMoveSan: gap.playerMoveSan,
             usualMoveUci: gap.playerMoveUci,
             games: gap.playerPositionGames,
@@ -354,6 +356,11 @@ function createAutoUpdatedOpeningReviewPosition(
             endDate: dateBounds.endDate,
         },
     });
+}
+
+function getOpeningReviewSide(mode: "self" | "opponent", sideToMove: "white" | "black") {
+    if (mode === "opponent") return sideToMove === "white" ? "black" : "white";
+    return sideToMove;
 }
 
 function capOpeningReviewPositions(positions: Position[], maxPositions: number) {

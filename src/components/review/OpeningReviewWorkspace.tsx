@@ -784,7 +784,7 @@ function getReviewPositionHeaders(
     return {
       ...headers,
       fen,
-      orientation: position.sideToMove ?? headers.orientation ?? "white",
+      orientation: getOpeningReviewPositionColour(position),
       result: "*",
     };
   }
@@ -3692,7 +3692,7 @@ function OpeningReviewAttemptDetails({
 
   const health = position.openingHealth;
   const mode = health?.mode ?? deckMode ?? "self";
-  const side = health?.sideToMove ?? position.sideToMove ?? "white";
+  const side = getOpeningReviewPositionColour(position);
   const ownerLabel = mode === "opponent" ? "Opponent games" : "My games";
   const usualMoveLabel = mode === "opponent" ? "They usually played" : "I usually played";
   const databaseMove = health?.topMoveSan ?? position.answer;
@@ -4013,10 +4013,19 @@ function getNextDueOpeningReviewPositionIndex(positions: Position[], scopeIndice
 }
 
 function getOpeningReviewPositionColour(position: Position): "white" | "black" {
+  const explicitReviewSide = position.openingHealth?.reviewSide;
+  if (explicitReviewSide === "black" || explicitReviewSide === "white") {
+    return explicitReviewSide;
+  }
+
+  const saved = position.openingHealth?.sideToMove ?? position.sideToMove;
+  if (position.openingHealth?.mode === "opponent" && (saved === "black" || saved === "white")) {
+    return oppositeOpeningReviewSide(saved);
+  }
+
   const inferred = inferOpeningReviewSideFromStoredScore(position);
   if (inferred) return inferred;
 
-  const saved = position.openingHealth?.sideToMove ?? position.sideToMove;
   if (saved === "black") return "black";
   if (saved === "white") return "white";
   return position.fen.split(" ")[1] === "b" ? "black" : "white";
@@ -4024,6 +4033,10 @@ function getOpeningReviewPositionColour(position: Position): "white" | "black" {
 
 function getOpeningReviewStatsSide(position: Position): "white" | "black" {
   return getOpeningReviewPositionColour(position);
+}
+
+function oppositeOpeningReviewSide(side: "white" | "black") {
+  return side === "white" ? "black" : "white";
 }
 
 function inferOpeningReviewSideFromStoredScore(position: Position): "white" | "black" | null {
