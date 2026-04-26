@@ -13,7 +13,7 @@ function position(overrides: Partial<Position> = {}): Position {
 }
 
 describe("opening review position colour", () => {
-    test("uses explicit review side ahead of side to move", () => {
+    test("uses explicit review side when deck mode is unknown", () => {
         expect(
             getOpeningReviewPositionColour(
                 position({
@@ -23,6 +23,26 @@ describe("opening review position colour", () => {
                         reviewSide: "white",
                     },
                 }),
+            ),
+        ).toBe("white");
+    });
+
+    test("deck mode overrides stale review side and score perspective", () => {
+        expect(
+            getOpeningReviewPositionColour(
+                position({
+                    sideToMove: "black",
+                    openingHealth: {
+                        mode: "self",
+                        sideToMove: "black",
+                        reviewSide: "black",
+                        white: 3,
+                        draw: 1,
+                        black: 12,
+                        score: 12.5 / 16,
+                    },
+                }),
+                "opponent",
             ),
         ).toBe("white");
     });

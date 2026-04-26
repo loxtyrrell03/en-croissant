@@ -304,8 +304,14 @@ function OpeningReviewModal({
   );
 }
 
-function OpeningReviewPositionPreviewBoard({ position }: { position: Position }) {
-  const orientation = getOpeningReviewPositionColour(position);
+function OpeningReviewPositionPreviewBoard({
+  position,
+  deckMode,
+}: {
+  position: Position;
+  deckMode?: "self" | "opponent";
+}) {
+  const orientation = getOpeningReviewPositionColour(position, deckMode);
 
   return (
     <Tooltip label="Position preview" withArrow>
@@ -422,13 +428,14 @@ function OpeningReviewDeckPositionsModal({
     () => (deck ? buildOpeningReviewRows(deck.positions, openingNamesByKey) : []),
     [deck, openingNamesByKey],
   );
+  const deckMode = deck?.mode ?? deckSummary?.mode;
   const openingOptions = useMemo(
-    () => getOpeningReviewOpeningOptions(rows, colourFilter),
-    [colourFilter, rows],
+    () => getOpeningReviewOpeningOptions(rows, colourFilter, deckMode),
+    [colourFilter, deckMode, rows],
   );
   const visibleRows = useMemo(
-    () => filterOpeningReviewRows(rows, colourFilter, openingFilters),
-    [colourFilter, openingFilters, rows],
+    () => filterOpeningReviewRows(rows, colourFilter, openingFilters, deckMode),
+    [colourFilter, deckMode, openingFilters, rows],
   );
   const visibleIndices = useMemo(() => visibleRows.map((row) => row.index), [visibleRows]);
   const visibleDueCount = useMemo(() => {
@@ -529,9 +536,7 @@ function OpeningReviewDeckPositionsModal({
                 </Badge>
               )}
               {colourFilter !== "any" && (
-                <Badge variant="light">
-                  {colourFilter === "white" ? "White" : "Black"} to move
-                </Badge>
+                <Badge variant="light">{colourFilter === "white" ? "White" : "Black"} side</Badge>
               )}
             </Group>
             <ScrollArea.Autosize mah={430}>
@@ -555,7 +560,7 @@ function OpeningReviewDeckPositionsModal({
                         : due <= new Date()
                           ? "Due"
                           : "Scheduled";
-                    const colour = getOpeningReviewPositionColour(position);
+                    const colour = getOpeningReviewPositionColour(position, deckMode);
                     const openingDetail =
                       opening.variation ??
                       (opening.rawName !== opening.family ? opening.rawName : null);
@@ -563,7 +568,10 @@ function OpeningReviewDeckPositionsModal({
                     return (
                       <Table.Tr key={`${position.reviewKey ?? position.fen}-${index}`}>
                         <Table.Td>
-                          <OpeningReviewPositionPreviewBoard position={position} />
+                          <OpeningReviewPositionPreviewBoard
+                            position={position}
+                            deckMode={deckMode}
+                          />
                         </Table.Td>
                         <Table.Td>
                           <Stack gap={2}>
@@ -581,7 +589,7 @@ function OpeningReviewDeckPositionsModal({
                               color={colour === "white" ? "gray" : "dark"}
                               w="fit-content"
                             >
-                              {colour === "white" ? "White" : "Black"} to move
+                              {colour === "white" ? "White" : "Black"} side
                             </Badge>
                           </Stack>
                         </Table.Td>

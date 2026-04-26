@@ -21,51 +21,36 @@ export type OpeningReviewPositionRow = ReturnType<typeof rankOpeningReviewPositi
 
 const openingNameCache = new Map<string, string>();
 
-export function getOpeningReviewPositionColour(position: Position): "white" | "black" {
+export function getOpeningReviewPositionColour(
+    position: Position,
+    deckMode?: "self" | "opponent",
+): "white" | "black" {
     const health = position.openingHealth;
-    if (health?.reviewSide === "black" || health?.reviewSide === "white") {
-        return health.reviewSide;
+    const savedSide = normalizeOpeningReviewSide(
+        health?.sideToMove ?? position.sideToMove ?? position.fen.split(" ")[1],
+    );
+    const mode = deckMode ?? health?.mode;
+
+    if (mode && savedSide) {
+        return mode === "opponent" ? oppositeOpeningReviewSide(savedSide) : savedSide;
     }
 
-    const saved = health?.sideToMove ?? position.sideToMove;
-    if (health?.mode === "opponent" && (saved === "black" || saved === "white")) {
-        return oppositeOpeningReviewSide(saved);
+    const reviewSide = normalizeOpeningReviewSide(health?.reviewSide);
+    if (reviewSide) {
+        return reviewSide;
     }
 
-    const white = health?.white ?? 0;
-    const draw = health?.draw ?? 0;
-    const black = health?.black ?? 0;
-    const total = white + draw + black;
-    const savedScore = typeof health?.score === "number" ? health.score : null;
-
-    if (total > 0 && savedScore !== null) {
-        const whiteScore = openingReviewScoreForSide(white, draw, black, "white");
-        const blackScore = openingReviewScoreForSide(white, draw, black, "black");
-        const whiteDistance = Math.abs(savedScore - whiteScore);
-        const blackDistance = Math.abs(savedScore - blackScore);
-
-        if (blackDistance + 0.0001 < whiteDistance) return "black";
-        if (whiteDistance + 0.0001 < blackDistance) return "white";
-    }
-
-    if (saved === "black") return "black";
-    if (saved === "white") return "white";
-    return position.fen.split(" ")[1] === "b" ? "black" : "white";
+    return savedSide ?? "white";
 }
 
 function oppositeOpeningReviewSide(side: "white" | "black") {
     return side === "white" ? "black" : "white";
 }
 
-function openingReviewScoreForSide(
-    white: number,
-    draw: number,
-    black: number,
-    side: "white" | "black",
-) {
-    const total = white + draw + black;
-    if (total <= 0) return 0;
-    return ((side === "white" ? white : black) + draw * 0.5) / total;
+function normalizeOpeningReviewSide(value: unknown): "white" | "black" | null {
+    if (value === "white" || value === "w") return "white";
+    if (value === "black" || value === "b") return "black";
+    return null;
 }
 
 export function buildOpeningReviewRows(
@@ -87,10 +72,12 @@ export function filterOpeningReviewRows(
     rows: OpeningReviewPositionRow[],
     colourFilter: OpeningReviewColourFilter,
     openingFilters: string[],
+    deckMode?: "self" | "opponent",
 ) {
     return rows.filter((row) => {
         const colourMatches =
-            colourFilter === "any" || getOpeningReviewPositionColour(row.position) === colourFilter;
+            colourFilter === "any" ||
+            getOpeningReviewPositionColour(row.position, deckMode) === colourFilter;
         const openingMatches =
             openingFilters.length === 0 ||
             openingFilters.some((filter) => openingReviewFilterMatchesOpening(filter, row.opening));
@@ -101,12 +88,14 @@ export function filterOpeningReviewRows(
 export function getOpeningReviewOpeningOptions(
     rows: OpeningReviewPositionRow[],
     colourFilter: OpeningReviewColourFilter,
+    deckMode?: "self" | "opponent",
 ) {
     const familyCounts = new Map<string, number>();
     const lineCounts = new Map<string, number>();
     const colourRows = rows.filter(
         ({ position }) =>
-            colourFilter === "any" || getOpeningReviewPositionColour(position) === colourFilter,
+            colourFilter === "any" ||
+            getOpeningReviewPositionColour(position, deckMode) === colourFilter,
     );
 
     for (const row of colourRows) {

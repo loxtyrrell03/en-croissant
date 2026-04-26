@@ -241,6 +241,9 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const autoUpdateRevisionRef = useRef(0);
   const initialPractice =
     tab.gameOrigin.kind === "opening_review" ? tab.gameOrigin.initialPractice : undefined;
+  const openingReviewDeckMode = isMistakeReview
+    ? undefined
+    : (deckInfo as OpeningReviewDeck | null)?.mode;
 
   const activeReviewPositions = useMemo(
     () => getReviewPositionsForPath(deck.positions, root, positionPath),
@@ -262,6 +265,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
 
       loadReviewPositionOnBoard({
         position,
+        deckMode: openingReviewDeckMode,
         headers,
         root,
         store,
@@ -278,6 +282,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     },
     [
       deck.positions,
+      openingReviewDeckMode,
       goToMove,
       headers,
       root,
@@ -589,9 +594,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                 <OpeningReviewPanel
                   deckName={deckInfo?.name ?? tab.name}
                   deckPath={deckPath}
-                  deckMode={
-                    isMistakeReview ? undefined : (deckInfo as OpeningReviewDeck | null)?.mode
-                  }
+                  deckMode={openingReviewDeckMode}
                   autoUpdateConfig={
                     isMistakeReview ? undefined : (deckInfo as OpeningReviewDeck | null)?.autoUpdate
                   }
@@ -648,12 +651,14 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
 
 function OpeningReviewMiniBoard({
   position,
+  deckMode,
   onClick,
 }: {
   position: Position;
+  deckMode?: "self" | "opponent";
   onClick: () => void;
 }) {
-  const orientation = getOpeningReviewStatsSide(position);
+  const orientation = getOpeningReviewStatsSide(position, deckMode);
 
   return (
     <Tooltip label="Load position on board" withArrow>
@@ -740,6 +745,7 @@ function OpeningReviewBoardNavigation({
 
 function loadReviewPositionOnBoard({
   position,
+  deckMode,
   headers,
   root,
   store,
@@ -748,6 +754,7 @@ function loadReviewPositionOnBoard({
   setState,
 }: {
   position: Position;
+  deckMode?: "self" | "opponent";
   headers: GameHeaders;
   root: TreeNode;
   store: TreeStore;
@@ -755,7 +762,7 @@ function loadReviewPositionOnBoard({
   setHeaders: (headers: GameHeaders) => void;
   setState: (state: TreeState) => void;
 }) {
-  const reviewLine = createReviewPositionLineState(position, headers);
+  const reviewLine = createReviewPositionLineState(position, headers, deckMode);
   if (reviewLine) {
     setState(reviewLine.state);
     return reviewLine.path;
@@ -763,13 +770,13 @@ function loadReviewPositionOnBoard({
 
   const path = findFen(position.fen, root);
   if (path.length === 0 && !sameReviewPosition(root.fen, position.fen)) {
-    setHeaders(getReviewPositionHeaders(position, headers, position.fen));
+    setHeaders(getReviewPositionHeaders(position, headers, position.fen, deckMode));
     applyReviewPositionMetadata(store, position);
     return [];
   }
 
   goToMove(path);
-  setHeaders(getReviewPositionHeaders(position, headers, headers.fen));
+  setHeaders(getReviewPositionHeaders(position, headers, headers.fen, deckMode));
   applyReviewPositionMetadata(store, position);
   return path;
 }
@@ -778,13 +785,14 @@ function getReviewPositionHeaders(
   position: Position,
   headers: GameHeaders,
   fen: string,
+  deckMode?: "self" | "opponent",
 ): GameHeaders {
   const mistake = position.mistakeReview;
   if (!mistake) {
     return {
       ...headers,
       fen,
-      orientation: getOpeningReviewPositionColour(position),
+      orientation: getOpeningReviewPositionColour(position, deckMode),
       result: "*",
     };
   }
@@ -844,18 +852,22 @@ function applyReviewPositionMetadata(store: TreeStore, position: Position) {
   state.setState(nextState);
 }
 
-function createReviewPositionLineState(position: Position, headers: GameHeaders) {
+function createReviewPositionLineState(
+  position: Position,
+  headers: GameHeaders,
+  deckMode?: "self" | "opponent",
+) {
   const moveSequence = position.moveSequence?.trim();
   if (!moveSequence) {
     const tree = defaultTree(position.fen);
-    tree.headers = getReviewPositionHeaders(position, headers, tree.root.fen);
+    tree.headers = getReviewPositionHeaders(position, headers, tree.root.fen, deckMode);
     tree.dirty = false;
     applyReviewPositionToNode(tree.root, position);
     return { state: tree, path: [] };
   }
 
   const tree = defaultTree();
-  tree.headers = getReviewPositionHeaders(position, headers, tree.root.fen);
+  tree.headers = getReviewPositionHeaders(position, headers, tree.root.fen, deckMode);
   tree.dirty = false;
 
   const [chess] = positionFromFen(tree.root.fen);
@@ -1268,6 +1280,7 @@ function OpeningReviewPanel({
 
       const path = loadReviewPositionOnBoard({
         position,
+        deckMode,
         headers,
         root,
         store,
@@ -1283,6 +1296,7 @@ function OpeningReviewPanel({
       setPracticeState({ phase: "waiting", currentFen: position.fen, positionIndex });
     },
     [
+      deckMode,
       deck.positions,
       goToMove,
       headers,
@@ -1638,6 +1652,7 @@ function OpeningReviewPanel({
         {panelModeControl}
         <OpeningReviewStatsPage
           positions={deck.positions}
+          deckMode={deckMode}
           onOpeningNamesResolved={persistOpeningNames}
           onReviewOpening={(indices, label) => startFullPractice(indices, label)}
         />
@@ -1843,6 +1858,7 @@ function OpeningReviewPanel({
                     if (position) {
                       const path = loadReviewPositionOnBoard({
                         position,
+                        deckMode,
                         headers,
                         root,
                         store,
@@ -2063,6 +2079,7 @@ function OpeningReviewPanel({
         opened={positionsOpen}
         onClose={() => setPositionsOpen(false)}
         deckPath={deckPath}
+        deckMode={deckMode}
         onTrainDue={startDuePractice}
         onTrainAll={startFullPractice}
       />
@@ -2142,10 +2159,12 @@ type OpeningReviewStatsAccumulator = {
 
 function OpeningReviewStatsPage({
   positions,
+  deckMode,
   onOpeningNamesResolved,
   onReviewOpening,
 }: {
   positions: Position[];
+  deckMode?: "self" | "opponent";
   onOpeningNamesResolved: (namesByKey: OpeningReviewResolvedOpeningNames) => void;
   onReviewOpening: (indices: number[], label: string) => void;
 }) {
@@ -2257,14 +2276,15 @@ function OpeningReviewStatsPage({
     () =>
       rowsWithOpenings.filter((row) => {
         const colourMatches =
-          colourFilter === "any" || getOpeningReviewStatsSide(row.position) === colourFilter;
+          colourFilter === "any" ||
+          getOpeningReviewStatsSide(row.position, deckMode) === colourFilter;
         const timeMatches =
           timeControlFilter === "all" ||
           getOpeningReviewStatsTimeControl(row.position) === timeControlFilter;
         const resultMatches =
           resultFilters.length === 0 ||
           resultFilters.some((filter) =>
-            openingReviewStatsPositionMatchesResult(row.position, filter),
+            openingReviewStatsPositionMatchesResult(row.position, filter, deckMode),
           );
         const dateMatches = openingHealthDateMatches(
           row.position.openingHealth?.lastPlayed,
@@ -2272,12 +2292,12 @@ function OpeningReviewStatsPage({
         );
         return colourMatches && timeMatches && resultMatches && dateMatches;
       }),
-    [colourFilter, dateBounds, resultFilters, rowsWithOpenings, timeControlFilter],
+    [colourFilter, dateBounds, deckMode, resultFilters, rowsWithOpenings, timeControlFilter],
   );
 
   const groupedStats = useMemo(
-    () => buildOpeningReviewStatsGroups(filteredRows, groupBy),
-    [filteredRows, groupBy],
+    () => buildOpeningReviewStatsGroups(filteredRows, groupBy, deckMode),
+    [deckMode, filteredRows, groupBy],
   );
   const summary = useMemo(() => summarizeOpeningReviewStatsGroups(groupedStats), [groupedStats]);
   const statsRows = useMemo(
@@ -2467,6 +2487,7 @@ function OpeningReviewStatsPage({
         rows={planGapRows}
         empty="No obvious plan gaps with these filters."
         mode="gap"
+        deckMode={deckMode}
       />
 
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
@@ -2475,12 +2496,14 @@ function OpeningReviewStatsPage({
           rows={bestRows}
           empty="No result data yet."
           mode="score"
+          deckMode={deckMode}
         />
         <OpeningReviewStatsList
           title="Worst openings"
           rows={worstRows}
           empty="No result data yet."
           mode="score"
+          deckMode={deckMode}
         />
       </SimpleGrid>
 
@@ -2522,7 +2545,7 @@ function OpeningReviewStatsPage({
                 {rankedRows.slice(0, 40).map((row) => (
                   <Table.Tr key={row.key}>
                     <Table.Td>
-                      <OpeningReviewStatsBoard position={row.previewPosition} />
+                      <OpeningReviewStatsBoard position={row.previewPosition} deckMode={deckMode} />
                     </Table.Td>
                     <Table.Td>
                       <Stack gap={2}>
@@ -2546,7 +2569,7 @@ function OpeningReviewStatsPage({
                         losses={row.losses}
                         score={row.score}
                         winRate={row.winRate}
-                        side={getOpeningReviewStatsSide(row.previewPosition)}
+                        side={getOpeningReviewStatsSide(row.previewPosition, deckMode)}
                         empty="No saved games for this opening."
                       />
                     </Table.Td>
@@ -2558,7 +2581,7 @@ function OpeningReviewStatsPage({
                         losses={row.referenceLosses}
                         score={row.referenceScore}
                         winRate={row.referenceWinRate}
-                        side={getOpeningReviewStatsSide(row.previewPosition)}
+                        side={getOpeningReviewStatsSide(row.previewPosition, deckMode)}
                         empty="No reference W/D/L data saved for this opening."
                       />
                     </Table.Td>
@@ -2635,8 +2658,14 @@ function OpeningReviewStatsColumnHeader({ label, detail }: { label: string; deta
   );
 }
 
-function OpeningReviewStatsBoard({ position }: { position: Position }) {
-  const orientation = getOpeningReviewStatsSide(position);
+function OpeningReviewStatsBoard({
+  position,
+  deckMode,
+}: {
+  position: Position;
+  deckMode?: "self" | "opponent";
+}) {
+  const orientation = getOpeningReviewStatsSide(position, deckMode);
 
   return (
     <Tooltip label="Representative review position" withArrow>
@@ -2666,11 +2695,13 @@ function OpeningReviewStatsList({
   rows,
   empty,
   mode,
+  deckMode,
 }: {
   title: string;
   rows: OpeningReviewStatsGroup[];
   empty: string;
   mode: "score" | "gap";
+  deckMode?: "self" | "opponent";
 }) {
   return (
     <Paper p="xs" withBorder>
@@ -2699,7 +2730,7 @@ function OpeningReviewStatsList({
               return (
                 <Group key={row.key} justify="space-between" gap="xs" wrap="nowrap" align="center">
                   <Group gap="xs" wrap="nowrap" style={{ minWidth: 0 }}>
-                    <OpeningReviewStatsBoard position={row.previewPosition} />
+                    <OpeningReviewStatsBoard position={row.previewPosition} deckMode={deckMode} />
                     <Stack gap={2} style={{ minWidth: 0 }}>
                       <Text size="sm" fw={600} lineClamp={2}>
                         {row.name}
@@ -2728,7 +2759,7 @@ function OpeningReviewStatsList({
                             losses={row.losses}
                             score={row.score}
                             winRate={row.winRate}
-                            side={getOpeningReviewStatsSide(row.previewPosition)}
+                            side={getOpeningReviewStatsSide(row.previewPosition, deckMode)}
                             empty="No saved games."
                           />
                           <OpeningReviewWdlBar
@@ -2738,7 +2769,7 @@ function OpeningReviewStatsList({
                             losses={row.referenceLosses}
                             score={row.referenceScore}
                             winRate={row.referenceWinRate}
-                            side={getOpeningReviewStatsSide(row.previewPosition)}
+                            side={getOpeningReviewStatsSide(row.previewPosition, deckMode)}
                             empty="No reference games."
                           />
                         </Stack>
@@ -2752,7 +2783,7 @@ function OpeningReviewStatsList({
                             losses={row.losses}
                             score={row.score}
                             winRate={row.winRate}
-                            side={getOpeningReviewStatsSide(row.previewPosition)}
+                            side={getOpeningReviewStatsSide(row.previewPosition, deckMode)}
                             empty="No saved games."
                             compact
                           />
@@ -2962,6 +2993,7 @@ function OpeningReviewWdlBar({
 function buildOpeningReviewStatsGroups(
   rows: OpeningReviewPositionRow[],
   groupBy: OpeningReviewStatsGroupBy,
+  deckMode?: "self" | "opponent",
 ): OpeningReviewStatsGroup[] {
   const groups = new Map<string, OpeningReviewStatsAccumulator>();
   const now = new Date();
@@ -3002,7 +3034,7 @@ function buildOpeningReviewStatsGroups(
       group.previewUrgency = row.urgency;
     }
 
-    const result = getOpeningReviewStatsResult(row.position);
+    const result = getOpeningReviewStatsResult(row.position, deckMode);
     const review = getOpeningReviewStatsReview(row.position, now);
     const timeControl = getOpeningReviewStatsTimeControl(row.position);
 
@@ -3158,14 +3190,14 @@ function sortOpeningReviewStatsRows(
   });
 }
 
-function getOpeningReviewStatsResult(position: Position) {
+function getOpeningReviewStatsResult(position: Position, deckMode?: "self" | "opponent") {
   const health = position.openingHealth;
   const white = health?.white ?? 0;
   const draw = health?.draw ?? 0;
   const black = health?.black ?? 0;
   const countedGames = white + draw + black;
   const games = countedGames > 0 ? countedGames : (health?.games ?? 0);
-  const colour = getOpeningReviewStatsSide(position);
+  const colour = getOpeningReviewStatsSide(position, deckMode);
   const wins = colour === "white" ? white : black;
   const losses = colour === "white" ? black : white;
   const score = typeof health?.score === "number" ? health.score : null;
@@ -3219,8 +3251,9 @@ function getOpeningReviewStatsReview(position: Position, now: Date) {
 function openingReviewStatsPositionMatchesResult(
   position: Position,
   result: OpeningReviewStatsResultFilter,
+  deckMode?: "self" | "opponent",
 ) {
-  const stats = getOpeningReviewStatsResult(position);
+  const stats = getOpeningReviewStatsResult(position, deckMode);
   switch (result) {
     case "wins":
       return stats.wins > 0;
@@ -3691,8 +3724,8 @@ function OpeningReviewAttemptDetails({
   }
 
   const health = position.openingHealth;
-  const mode = health?.mode ?? deckMode ?? "self";
-  const side = getOpeningReviewPositionColour(position);
+  const mode = deckMode ?? health?.mode ?? "self";
+  const side = getOpeningReviewPositionColour(position, deckMode);
   const ownerLabel = mode === "opponent" ? "Opponent games" : "My games";
   const usualMoveLabel = mode === "opponent" ? "They usually played" : "I usually played";
   const databaseMove = health?.topMoveSan ?? position.answer;
@@ -4012,62 +4045,41 @@ function getNextDueOpeningReviewPositionIndex(positions: Position[], scopeIndice
   );
 }
 
-function getOpeningReviewPositionColour(position: Position): "white" | "black" {
-  const explicitReviewSide = position.openingHealth?.reviewSide;
-  if (explicitReviewSide === "black" || explicitReviewSide === "white") {
-    return explicitReviewSide;
+function getOpeningReviewPositionColour(
+  position: Position,
+  deckMode?: "self" | "opponent",
+): "white" | "black" {
+  const health = position.openingHealth;
+  const savedSide = normalizeOpeningReviewSide(
+    health?.sideToMove ?? position.sideToMove ?? position.fen.split(" ")[1],
+  );
+  const mode = deckMode ?? health?.mode;
+
+  if (mode && savedSide) {
+    return mode === "opponent" ? oppositeOpeningReviewSide(savedSide) : savedSide;
   }
 
-  const saved = position.openingHealth?.sideToMove ?? position.sideToMove;
-  if (position.openingHealth?.mode === "opponent" && (saved === "black" || saved === "white")) {
-    return oppositeOpeningReviewSide(saved);
-  }
+  const reviewSide = normalizeOpeningReviewSide(health?.reviewSide);
+  if (reviewSide) return reviewSide;
 
-  const inferred = inferOpeningReviewSideFromStoredScore(position);
-  if (inferred) return inferred;
-
-  if (saved === "black") return "black";
-  if (saved === "white") return "white";
-  return position.fen.split(" ")[1] === "b" ? "black" : "white";
+  return savedSide ?? "white";
 }
 
-function getOpeningReviewStatsSide(position: Position): "white" | "black" {
-  return getOpeningReviewPositionColour(position);
+function getOpeningReviewStatsSide(
+  position: Position,
+  deckMode?: "self" | "opponent",
+): "white" | "black" {
+  return getOpeningReviewPositionColour(position, deckMode);
 }
 
 function oppositeOpeningReviewSide(side: "white" | "black") {
   return side === "white" ? "black" : "white";
 }
 
-function inferOpeningReviewSideFromStoredScore(position: Position): "white" | "black" | null {
-  const health = position.openingHealth;
-  const white = health?.white ?? 0;
-  const draw = health?.draw ?? 0;
-  const black = health?.black ?? 0;
-  const total = white + draw + black;
-  const savedScore = typeof health?.score === "number" ? health.score : null;
-
-  if (total <= 0 || savedScore === null) return null;
-
-  const whiteScore = openingReviewScoreForSide(white, draw, black, "white");
-  const blackScore = openingReviewScoreForSide(white, draw, black, "black");
-  const whiteDistance = Math.abs(savedScore - whiteScore);
-  const blackDistance = Math.abs(savedScore - blackScore);
-
-  if (blackDistance + 0.0001 < whiteDistance) return "black";
-  if (whiteDistance + 0.0001 < blackDistance) return "white";
+function normalizeOpeningReviewSide(value: unknown): "white" | "black" | null {
+  if (value === "white" || value === "w") return "white";
+  if (value === "black" || value === "b") return "black";
   return null;
-}
-
-function openingReviewScoreForSide(
-  white: number,
-  draw: number,
-  black: number,
-  side: "white" | "black",
-) {
-  const total = white + draw + black;
-  if (total <= 0) return 0;
-  return ((side === "white" ? white : black) + draw * 0.5) / total;
 }
 
 function getOpeningReviewOpeningInfo(
@@ -4265,6 +4277,7 @@ function formatOpeningReviewMovePrefix(moves: string[]) {
 function openingReviewPositionSortValue(
   row: OpeningReviewPositionRow,
   sort: OpeningReviewPositionSort,
+  deckMode?: "self" | "opponent",
 ) {
   switch (sort) {
     case "urgency":
@@ -4274,7 +4287,7 @@ function openingReviewPositionSortValue(
     case "lastPlayed":
       return -(parseOpeningReviewDate(row.position.openingHealth?.lastPlayed)?.getTime() ?? 0);
     case "colour":
-      return getOpeningReviewPositionColour(row.position) === "white" ? 0 : 1;
+      return getOpeningReviewPositionColour(row.position, deckMode) === "white" ? 0 : 1;
     case "opening":
       return row.opening.line;
     case "due":
@@ -4288,9 +4301,10 @@ function compareOpeningReviewPositionRows(
   a: OpeningReviewPositionRow,
   b: OpeningReviewPositionRow,
   sort: OpeningReviewPositionSort,
+  deckMode?: "self" | "opponent",
 ) {
-  const aValue = openingReviewPositionSortValue(a, sort);
-  const bValue = openingReviewPositionSortValue(b, sort);
+  const aValue = openingReviewPositionSortValue(a, sort, deckMode);
+  const bValue = openingReviewPositionSortValue(b, sort, deckMode);
 
   if (typeof aValue === "number" && typeof bValue === "number" && aValue !== bValue) {
     return aValue - bValue;
@@ -4395,12 +4409,14 @@ function OpeningReviewPositionsModal({
   opened,
   onClose,
   deckPath,
+  deckMode,
   onTrainDue,
   onTrainAll,
 }: {
   opened: boolean;
   onClose: () => void;
   deckPath: string;
+  deckMode?: "self" | "opponent";
   onTrainDue: (indices?: number[], label?: string) => void;
   onTrainAll: (indices?: number[], label?: string) => void;
 }) {
@@ -4457,10 +4473,11 @@ function OpeningReviewPositionsModal({
     () =>
       rowsWithOpenings.filter(
         ({ position }) =>
-          (colourFilter === "any" || getOpeningReviewPositionColour(position) === colourFilter) &&
+          (colourFilter === "any" ||
+            getOpeningReviewPositionColour(position, deckMode) === colourFilter) &&
           openingHealthDateMatches(position.openingHealth?.lastPlayed, dateBounds),
       ),
-    [colourFilter, dateBounds, rowsWithOpenings],
+    [colourFilter, dateBounds, deckMode, rowsWithOpenings],
   );
   const openingOptions = useMemo(() => {
     const familyCounts = new Map<string, number>();
@@ -4496,8 +4513,8 @@ function OpeningReviewPositionsModal({
             openingFilters.length === 0 ||
             openingFilters.some((filter) => openingReviewFilterMatchesOpening(filter, row.opening)),
         )
-        .sort((a, b) => compareOpeningReviewPositionRows(a, b, sortBy)),
-    [colourFilteredRows, openingFilters, sortBy],
+        .sort((a, b) => compareOpeningReviewPositionRows(a, b, sortBy, deckMode)),
+    [colourFilteredRows, deckMode, openingFilters, sortBy],
   );
   const visibleIndices = useMemo(() => visibleRows.map((row) => row.index), [visibleRows]);
   const visibleDueCount = useMemo(() => {
@@ -4604,6 +4621,7 @@ function OpeningReviewPositionsModal({
     (position: Position) => {
       loadReviewPositionOnBoard({
         position,
+        deckMode,
         headers,
         root,
         store,
@@ -4614,7 +4632,7 @@ function OpeningReviewPositionsModal({
       setPracticePath(null);
       onClose();
     },
-    [goToMove, headers, onClose, root, setHeaders, setPracticePath, setState, store],
+    [deckMode, goToMove, headers, onClose, root, setHeaders, setPracticePath, setState, store],
   );
 
   const deleteReviewPosition = useCallback(
@@ -4781,7 +4799,7 @@ function OpeningReviewPositionsModal({
             </Badge>
           )}
           {colourFilter !== "any" && (
-            <Badge variant="light">{colourFilter === "white" ? "White" : "Black"} to move</Badge>
+            <Badge variant="light">{colourFilter === "white" ? "White" : "Black"} side</Badge>
           )}
           {dateFilterActive && (
             <Badge variant="light">Last played: {formatOpeningHealthDateFilter(dateBounds)}</Badge>
@@ -4816,7 +4834,7 @@ function OpeningReviewPositionsModal({
               const due = new Date(position.card.due);
               const status =
                 position.card.reps === 0 ? "Unseen" : due <= new Date() ? "Due" : "Scheduled";
-              const colour = getOpeningReviewPositionColour(position);
+              const colour = getOpeningReviewPositionColour(position, deckMode);
               const openingDetail =
                 opening.variation ?? (opening.rawName !== opening.family ? opening.rawName : null);
               return (
@@ -4827,6 +4845,7 @@ function OpeningReviewPositionsModal({
                   <Table.Td>
                     <OpeningReviewMiniBoard
                       position={position}
+                      deckMode={deckMode}
                       onClick={() => loadReviewPosition(position)}
                     />
                   </Table.Td>
@@ -4851,7 +4870,7 @@ function OpeningReviewPositionsModal({
                         </Text>
                       )}
                       <Badge size="xs" variant="light" color={colour === "white" ? "gray" : "dark"}>
-                        {colour === "white" ? "White" : "Black"} to move
+                        {colour === "white" ? "White" : "Black"} side
                       </Badge>
                     </Stack>
                   </Table.Td>
