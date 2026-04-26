@@ -66,6 +66,11 @@ export const positionSchema = z.object({
             topMoveSan: z.string().nullable().optional(),
             topMoveUci: z.string().nullable().optional(),
             lastPlayed: z.string().nullable().optional(),
+            dateRange: z
+                .enum(["all", "3months", "6months", "year", "2years", "5years", "custom"])
+                .optional(),
+            startDate: z.string().nullable().optional(),
+            endDate: z.string().nullable().optional(),
             timeControl: z.string().nullable().optional(),
             timeControls: z.array(z.string()).optional(),
         })
@@ -170,6 +175,9 @@ export type Position = {
         topMoveSan?: string | null;
         topMoveUci?: string | null;
         lastPlayed?: string | null;
+        dateRange?: "all" | "3months" | "6months" | "year" | "2years" | "5years" | "custom";
+        startDate?: string | null;
+        endDate?: string | null;
         timeControl?: string | null;
         timeControls?: string[];
     };

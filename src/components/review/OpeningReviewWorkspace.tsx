@@ -129,6 +129,15 @@ import {
   parseOpeningReviewDate,
   rankOpeningReviewPositions,
 } from "@/utils/openingReviewAutoUpdate";
+import {
+  OPENING_HEALTH_DATE_RANGE_OPTIONS,
+  formatOpeningHealthDateFilter,
+  getOpeningHealthDateBounds,
+  openingHealthDbDateToInput,
+  openingHealthDateBoundsAreActive,
+  openingHealthDateMatches,
+  type OpeningHealthDateRange,
+} from "@/utils/openingHealthDateFilter";
 import { isOpeningReviewSavedMove } from "@/utils/openingReviewPractice";
 import resultClasses from "@/components/panels/database/OpeningsTable.module.css";
 
@@ -2130,10 +2139,17 @@ function OpeningReviewStatsPage({
   const [colourFilter, setColourFilter] = useState<OpeningReviewColourFilter>("any");
   const [resultFilters, setResultFilters] = useState<OpeningReviewStatsResultFilter[]>([]);
   const [timeControlFilter, setTimeControlFilter] = useState("all");
+  const [dateRange, setDateRange] = useState<OpeningHealthDateRange>("all");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
   const [groupBy, setGroupBy] = useState<OpeningReviewStatsGroupBy>("family");
   const [sortBy, setSortBy] = useState<OpeningReviewStatsSort>("planGap");
   const [minGames, setMinGames] = useState(3);
   const [openingNamesByKey, setOpeningNamesByKey] = useState<Record<string, string>>({});
+  const dateBounds = useMemo(
+    () => getOpeningHealthDateBounds(dateRange, customStartDate, customEndDate),
+    [customEndDate, customStartDate, dateRange],
+  );
 
   useEffect(() => {
     let disposed = false;
@@ -2229,9 +2245,13 @@ function OpeningReviewStatsPage({
           resultFilters.some((filter) =>
             openingReviewStatsPositionMatchesResult(row.position, filter),
           );
-        return colourMatches && timeMatches && resultMatches;
+        const dateMatches = openingHealthDateMatches(
+          row.position.openingHealth?.lastPlayed,
+          dateBounds,
+        );
+        return colourMatches && timeMatches && resultMatches && dateMatches;
       }),
-    [colourFilter, resultFilters, rowsWithOpenings, timeControlFilter],
+    [colourFilter, dateBounds, resultFilters, rowsWithOpenings, timeControlFilter],
   );
 
   const groupedStats = useMemo(
@@ -2334,6 +2354,31 @@ function OpeningReviewStatsPage({
                 searchable
                 allowDeselect={false}
               />
+            </Group>
+            <Group gap="xs" grow align="flex-end">
+              <Select
+                label="Last played"
+                value={dateRange}
+                onChange={(value) => setDateRange((value as OpeningHealthDateRange) ?? "all")}
+                data={OPENING_HEALTH_DATE_RANGE_OPTIONS}
+                allowDeselect={false}
+              />
+              {dateRange === "custom" && (
+                <>
+                  <TextInput
+                    label="From"
+                    type="date"
+                    value={openingHealthDbDateToInput(customStartDate)}
+                    onChange={(event) => setCustomStartDate(event.currentTarget.value)}
+                  />
+                  <TextInput
+                    label="To"
+                    type="date"
+                    value={openingHealthDbDateToInput(customEndDate)}
+                    onChange={(event) => setCustomEndDate(event.currentTarget.value)}
+                  />
+                </>
+              )}
             </Group>
             <Group gap="xs" grow align="flex-end">
               <Select
@@ -4291,8 +4336,15 @@ function OpeningReviewPositionsModal({
   const [sortBy, setSortBy] = useState<OpeningReviewPositionSort>("urgency");
   const [colourFilter, setColourFilter] = useState<OpeningReviewColourFilter>("any");
   const [openingFilters, setOpeningFilters] = useState<string[]>([]);
+  const [dateRange, setDateRange] = useState<OpeningHealthDateRange>("all");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
   const [positionsScrollElement, setPositionsScrollElement] = useState<HTMLDivElement | null>(null);
   const [openingNamesByKey, setOpeningNamesByKey] = useState<Record<string, string>>({});
+  const dateBounds = useMemo(
+    () => getOpeningHealthDateBounds(dateRange, customStartDate, customEndDate),
+    [customEndDate, customStartDate, dateRange],
+  );
   const editingPosition = useMemo(
     () => (editingIndex === null ? null : (deck.positions[editingIndex] ?? null)),
     [deck.positions, editingIndex],
@@ -4324,9 +4376,10 @@ function OpeningReviewPositionsModal({
     () =>
       rowsWithOpenings.filter(
         ({ position }) =>
-          colourFilter === "any" || getOpeningReviewPositionColour(position) === colourFilter,
+          (colourFilter === "any" || getOpeningReviewPositionColour(position) === colourFilter) &&
+          openingHealthDateMatches(position.openingHealth?.lastPlayed, dateBounds),
       ),
-    [colourFilter, rowsWithOpenings],
+    [colourFilter, dateBounds, rowsWithOpenings],
   );
   const openingOptions = useMemo(() => {
     const familyCounts = new Map<string, number>();
@@ -4370,8 +4423,10 @@ function OpeningReviewPositionsModal({
     const now = new Date();
     return visibleRows.filter(({ position }) => new Date(position.card.due) <= now).length;
   }, [visibleRows]);
-  const hasActivePositionFilter = openingFilters.length > 0 || colourFilter !== "any";
-  const trainingScopeLabel =
+  const dateFilterActive = openingHealthDateBoundsAreActive(dateBounds);
+  const hasActivePositionFilter =
+    openingFilters.length > 0 || colourFilter !== "any" || dateFilterActive;
+  const baseTrainingScopeLabel =
     openingFilters.length === 0
       ? colourFilter === "any"
         ? "all openings"
@@ -4379,6 +4434,9 @@ function OpeningReviewPositionsModal({
       : `${openingReviewFiltersDisplayName(openingFilters)}${
           colourFilter === "any" ? "" : `, ${colourFilter}`
         }`;
+  const trainingScopeLabel = dateFilterActive
+    ? `${baseTrainingScopeLabel}, last played ${formatOpeningHealthDateFilter(dateBounds)}`
+    : baseTrainingScopeLabel;
   const rowVirtualizer = useVirtualizer({
     count: visibleRows.length,
     getScrollElement: () => positionsScrollElement,
@@ -4572,6 +4630,32 @@ function OpeningReviewPositionsModal({
               ]}
             />
           </Stack>
+          <Select
+            label="Last played"
+            value={dateRange}
+            onChange={(value) => setDateRange((value as OpeningHealthDateRange) ?? "all")}
+            data={OPENING_HEALTH_DATE_RANGE_OPTIONS}
+            allowDeselect={false}
+            w={165}
+          />
+          {dateRange === "custom" && (
+            <>
+              <TextInput
+                label="From"
+                type="date"
+                value={openingHealthDbDateToInput(customStartDate)}
+                onChange={(event) => setCustomStartDate(event.currentTarget.value)}
+                w={135}
+              />
+              <TextInput
+                label="To"
+                type="date"
+                value={openingHealthDbDateToInput(customEndDate)}
+                onChange={(event) => setCustomEndDate(event.currentTarget.value)}
+                w={135}
+              />
+            </>
+          )}
           <Button
             variant="light"
             leftSection={<IconTarget size={16} />}
@@ -4610,6 +4694,9 @@ function OpeningReviewPositionsModal({
           )}
           {colourFilter !== "any" && (
             <Badge variant="light">{colourFilter === "white" ? "White" : "Black"} to move</Badge>
+          )}
+          {dateFilterActive && (
+            <Badge variant="light">Last played: {formatOpeningHealthDateFilter(dateBounds)}</Badge>
           )}
         </Group>
       </Stack>

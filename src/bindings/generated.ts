@@ -584,7 +584,7 @@ export type NormalizedGame = { id: number; fen: string; event: string; event_id:
 export type OpeningBookConfig = { path: string; maxPly?: bigint }
 export type OpeningHealthPlayerPosition = { fen: string; normalizedFen: string; ply: number; sideToMove: string; moveSequence: string; playerMoveSan: string; playerMoveUci: string; playerGames: number; playerPositionGames: number; playerWhite: number; playerDraw: number; playerBlack: number; playerScore: number; lastPlayed: string | null; sampleGameIds: number[] }
 export type OpeningHealthPlayerPositionsReport = { playerGames: number; candidatePositions: number; positions: OpeningHealthPlayerPosition[] }
-export type OpeningHealthPlayerPositionsRequest = { playerDb: string; playerId: number | null; color: string; maxPlies: number; requestId: string }
+export type OpeningHealthPlayerPositionsRequest = { playerDb: string; playerId: number | null; color: string; maxPlies: number; startDate: string | null; endDate: string | null; requestId: string }
 export type OutOpening = { name: string; fen: string }
 export type Outcome = "1-0" | "0-1" | "1/2-1/2" | "*"
 export type PlanExplorerData = { fen: string; total_games: number; sampled_games: number; max_plies: number; pieces: PlanExplorerPiece[] }
@@ -608,7 +608,7 @@ export type RepertoireGap = { fen: string; normalizedFen: string; ply: number; s
 export type RepertoireGapClassification = "repertoireGap" | "preparedUnderperforming" | "lowConfidence"
 export type RepertoireGapReferenceMove = { san: string; uci: string; games: number; white: number; draw: number; black: number; share: number; scoreForSide: number }
 export type RepertoireGapReport = { playerGames: number; candidatePositions: number; referencePositions: number; gaps: RepertoireGap[] }
-export type RepertoireGapRequest = { playerDb: string; referenceDb: string; playerId: number | null; color: string; maxPlies: number; minPlayerGames: number; minReferenceGames: number; topReferenceMoves: number; requestId: string }
+export type RepertoireGapRequest = { playerDb: string; referenceDb: string; playerId: number | null; color: string; maxPlies: number; minPlayerGames: number; minReferenceGames: number; topReferenceMoves: number; startDate: string | null; endDate: string | null; requestId: string }
 export type Score = { value: ScoreValue; 
 /**
  * The probability of each result (win, draw, loss).

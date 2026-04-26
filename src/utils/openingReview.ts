@@ -4,6 +4,16 @@ import type { ReviewLog } from "ts-fsrs";
 import { z } from "zod";
 import { getStats, type Position, positionSchema } from "@/components/files/opening";
 
+const openingHealthDateRangeSchema = z.enum([
+    "all",
+    "3months",
+    "6months",
+    "year",
+    "2years",
+    "5years",
+    "custom",
+]);
+
 export const OPENING_REVIEW_EXTENSION = ".opening-review.json";
 export const OPENING_REVIEW_VERSION = 1;
 
@@ -19,6 +29,9 @@ const openingReviewAutoUpdateConfigSchema = z.object({
     minPlayerGames: z.number().default(3),
     minReferenceGames: z.number().default(20),
     topReferenceMoves: z.number().default(3),
+    dateRange: openingHealthDateRangeSchema.default("all"),
+    startDate: z.string().nullable().optional(),
+    endDate: z.string().nullable().optional(),
     maxPositions: z.number().optional(),
     limit: z.number().optional(),
     createdAt: z.number().optional(),

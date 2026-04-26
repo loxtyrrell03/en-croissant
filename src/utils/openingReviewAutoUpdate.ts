@@ -23,6 +23,10 @@ import {
     reviewPositionKey,
     writeOpeningReviewDeck,
 } from "@/utils/openingReview";
+import {
+    getOpeningHealthDateBounds,
+    type OpeningHealthDateBounds,
+} from "@/utils/openingHealthDateFilter";
 
 const AUTO_UPDATE_TOP_REFERENCE_MOVES = 3;
 const UNSUPPORTED_ONLINE_REFERENCE_PREFIX = "online:";
@@ -205,6 +209,11 @@ async function updateOpeningReviewDeckFromOnlineDatabase(
         throw new Error("Choose a player in this deck's Opening gap settings.");
     }
     const requestId = `opening-review-auto-${Date.now()}`;
+    const dateBounds = getOpeningHealthDateBounds(
+        config.dateRange ?? "all",
+        config.startDate,
+        config.endDate,
+    );
     setState((current) => ({
         ...current,
         phase: "Scanning games",
@@ -220,6 +229,8 @@ async function updateOpeningReviewDeckFromOnlineDatabase(
         minPlayerGames: config.minPlayerGames,
         minReferenceGames: config.minReferenceGames,
         topReferenceMoves: config.topReferenceMoves || AUTO_UPDATE_TOP_REFERENCE_MOVES,
+        startDate: dateBounds.startDate,
+        endDate: dateBounds.endDate,
         requestId,
     });
 
@@ -235,7 +246,7 @@ async function updateOpeningReviewDeckFromOnlineDatabase(
             a.ply - b.ply,
     );
     const positions = sortedGaps
-        .map((gap) => createAutoUpdatedOpeningReviewPosition(gap, config.mode))
+        .map((gap) => createAutoUpdatedOpeningReviewPosition(gap, config.mode, dateBounds))
         .filter((position): position is Position => Boolean(position));
     const existingKeys = new Set(deck.positions.map(reviewPositionKey));
     const now = Date.now();
@@ -306,6 +317,7 @@ async function resolveOpeningReviewAutoUpdatePlayerId(config: OpeningReviewAutoU
 function createAutoUpdatedOpeningReviewPosition(
     gap: RepertoireGap,
     mode: "self" | "opponent",
+    dateBounds: OpeningHealthDateBounds,
 ) {
     const trainingMove = getAutoUpdateTrainingMove(gap);
     if (!trainingMove) return null;
@@ -337,6 +349,9 @@ function createAutoUpdatedOpeningReviewPosition(
             topMoveSan: topMove?.san ?? null,
             topMoveUci: topMove?.uci ?? null,
             lastPlayed: gap.lastPlayed,
+            dateRange: dateBounds.range,
+            startDate: dateBounds.startDate,
+            endDate: dateBounds.endDate,
         },
     });
 }

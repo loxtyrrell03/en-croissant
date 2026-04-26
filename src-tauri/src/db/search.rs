@@ -204,6 +204,8 @@ pub struct RepertoireGapRequest {
     pub min_player_games: i32,
     pub min_reference_games: i32,
     pub top_reference_moves: i32,
+    pub start_date: Option<String>,
+    pub end_date: Option<String>,
     pub request_id: String,
 }
 
@@ -214,6 +216,8 @@ pub struct OpeningHealthPlayerPositionsRequest {
     pub player_id: Option<i32>,
     pub color: String,
     pub max_plies: i32,
+    pub start_date: Option<String>,
+    pub end_date: Option<String>,
     pub request_id: String,
 }
 
@@ -700,6 +704,34 @@ fn color_matches_filter(color: Color, filter: &str) -> bool {
     }
 }
 
+fn entry_matches_opening_health_date_range(
+    entry: &SearchGameEntryRef<'_>,
+    start_date: Option<&str>,
+    end_date: Option<&str>,
+) -> bool {
+    if start_date.is_none() && end_date.is_none() {
+        return true;
+    }
+
+    let Some(date) = entry.date else {
+        return false;
+    };
+
+    if let Some(start_date) = start_date {
+        if date < start_date {
+            return false;
+        }
+    }
+
+    if let Some(end_date) = end_date {
+        if date > end_date {
+            return false;
+        }
+    }
+
+    true
+}
+
 fn entry_matches_query(
     entry: &SearchGameEntryRef<'_>,
     query: &GameQuery,
@@ -1039,6 +1071,8 @@ fn collect_player_positions(
     player_id: Option<i32>,
     color_filter: &str,
     max_plies: usize,
+    start_date: Option<&str>,
+    end_date: Option<&str>,
     cancel_flag: &AtomicBool,
     app: &tauri::AppHandle,
     state: &tauri::State<'_, AppState>,
@@ -1069,6 +1103,10 @@ fn collect_player_positions(
 
         let player_color = player_id.and_then(|id| player_color_for_entry(&entry, id));
         if player_id.is_some() && player_color.is_none() {
+            continue;
+        }
+
+        if !entry_matches_opening_health_date_range(&entry, start_date, end_date) {
             continue;
         }
 
@@ -2131,6 +2169,8 @@ pub async fn get_opening_health_player_positions(
             request.player_id,
             &color_filter,
             max_plies,
+            request.start_date.as_deref(),
+            request.end_date.as_deref(),
             &cancel_flag,
             &app,
             &state,
@@ -2305,6 +2345,8 @@ pub async fn find_repertoire_gaps(
             request.player_id,
             &color_filter,
             max_plies,
+            request.start_date.as_deref(),
+            request.end_date.as_deref(),
             &cancel_flag,
             &app,
             &state,

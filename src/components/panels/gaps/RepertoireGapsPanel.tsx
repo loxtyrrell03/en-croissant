@@ -107,6 +107,16 @@ import {
   formatOpeningReviewLastPlayed,
   getOpeningReviewGapReason,
 } from "@/utils/openingReviewAutoUpdate";
+import {
+  OPENING_HEALTH_DATE_RANGE_OPTIONS,
+  formatOpeningHealthDateFilter,
+  getOpeningHealthDateBounds,
+  openingHealthDbDateToInput,
+  openingHealthDateBoundsAreActive,
+  openingHealthDateBoundsAreValid,
+  type OpeningHealthDateBounds,
+  type OpeningHealthDateRange,
+} from "@/utils/openingHealthDateFilter";
 import { getOnlineDatabaseUpdateRecord } from "@/utils/onlineGameImport";
 import resultClasses from "../database/OpeningsTable.module.css";
 
@@ -222,6 +232,9 @@ function RepertoireGapsPanel() {
   const [maxPlies, setMaxPlies] = useState(DEFAULT_MAX_PLIES);
   const [minPersonalGames, setMinPersonalGames] = useState(DEFAULT_MIN_PERSONAL_GAMES);
   const [minReferenceGames, setMinReferenceGames] = useState(DEFAULT_MIN_REFERENCE_GAMES);
+  const [dateRange, setDateRange] = useState<OpeningHealthDateRange>("all");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
   const [engineVerifications, setEngineVerifications] = useAtom(openingHealthVerificationsAtom);
   const [engineVerificationRun, setEngineVerificationRun] = useAtom(
     openingHealthVerificationRunAtom,
@@ -245,6 +258,10 @@ function RepertoireGapsPanel() {
   const [editingGap, setEditingGap] = useState<RepertoireGap | null>(null);
   const [now, setNow] = useState(Date.now());
   const { report, loading, requestId, progress } = scan;
+  const scanDateBounds = useMemo(
+    () => getOpeningHealthDateBounds(dateRange, customStartDate, customEndDate),
+    [customEndDate, customStartDate, dateRange],
+  );
   const { data: reviewDecks, mutate: mutateReviewDecks } = useSWR(
     reviewSaveOpen ? ["opening-review-decks", documentDir] : null,
     () => listOpeningReviewDecks(documentDir),
@@ -486,6 +503,15 @@ function RepertoireGapsPanel() {
       return;
     }
 
+    if (!openingHealthDateBoundsAreValid(scanDateBounds)) {
+      notifications.show({
+        title: "Date range is invalid",
+        message: "The start date must be before the end date.",
+        color: "yellow",
+      });
+      return;
+    }
+
     const id = `opening-health-${Date.now()}`;
     const startedAt = Date.now();
     const initialProgress = {
@@ -538,6 +564,7 @@ function RepertoireGapsPanel() {
             colorFilter,
             minPersonalGames,
             minReferenceGames,
+            dateBounds: scanDateBounds,
             setProgress: updateProgress,
             getControlState: () => scanControlRef.current,
           })
@@ -550,6 +577,8 @@ function RepertoireGapsPanel() {
             minPlayerGames: minPersonalGames,
             minReferenceGames,
             topReferenceMoves: DEFAULT_TOP_REFERENCE_MOVES,
+            startDate: scanDateBounds.startDate,
+            endDate: scanDateBounds.endDate,
             requestId: id,
           });
 
@@ -838,6 +867,7 @@ function RepertoireGapsPanel() {
           engineVerifications[gapKey(gap)],
           analysisMode,
           correctMoveOverrides[gapKey(gap)],
+          scanDateBounds,
         ),
       )
       .filter((position): position is NonNullable<typeof position> => Boolean(position));
@@ -870,6 +900,7 @@ function RepertoireGapsPanel() {
               maxPlies,
               minPlayerGames: minPersonalGames,
               minReferenceGames,
+              dateBounds: scanDateBounds,
             })
           : null;
       if (reviewDeckMode === "existing") {
@@ -1410,6 +1441,40 @@ function RepertoireGapsPanel() {
             </Group>
 
             <Group align="flex-end">
+              <Select
+                label="Player games date"
+                value={dateRange}
+                onChange={(value) => setDateRange((value as OpeningHealthDateRange) ?? "all")}
+                data={OPENING_HEALTH_DATE_RANGE_OPTIONS}
+                allowDeselect={false}
+                w={190}
+              />
+              {dateRange === "custom" && (
+                <>
+                  <TextInput
+                    label="From"
+                    type="date"
+                    value={openingHealthDbDateToInput(customStartDate)}
+                    onChange={(event) => setCustomStartDate(event.currentTarget.value)}
+                    w={150}
+                  />
+                  <TextInput
+                    label="To"
+                    type="date"
+                    value={openingHealthDbDateToInput(customEndDate)}
+                    onChange={(event) => setCustomEndDate(event.currentTarget.value)}
+                    w={150}
+                  />
+                </>
+              )}
+              {openingHealthDateBoundsAreActive(scanDateBounds) && (
+                <Badge variant="light" mb={6}>
+                  {formatOpeningHealthDateFilter(scanDateBounds)}
+                </Badge>
+              )}
+            </Group>
+
+            <Group align="flex-end">
               <NumberInput
                 label={modeCopy.minimumGamesLabel}
                 value={minPersonalGames}
@@ -1932,6 +1997,7 @@ function createOpeningReviewAutoUpdateConfig({
   maxPlies,
   minPlayerGames,
   minReferenceGames,
+  dateBounds,
 }: {
   record: NonNullable<ReturnType<typeof getOnlineDatabaseUpdateRecord>>;
   playerDb: string;
@@ -1942,6 +2008,7 @@ function createOpeningReviewAutoUpdateConfig({
   maxPlies: number;
   minPlayerGames: number;
   minReferenceGames: number;
+  dateBounds: OpeningHealthDateBounds;
 }): OpeningReviewAutoUpdateConfig {
   const now = Date.now();
   return {
@@ -1956,6 +2023,9 @@ function createOpeningReviewAutoUpdateConfig({
     minPlayerGames,
     minReferenceGames,
     topReferenceMoves: DEFAULT_TOP_REFERENCE_MOVES,
+    dateRange: dateBounds.range,
+    startDate: dateBounds.startDate,
+    endDate: dateBounds.endDate,
     maxPositions: 0,
     createdAt: now,
     updatedAt: now,
@@ -1972,6 +2042,7 @@ function createOpeningHealthReviewPosition(
   verification: EngineVerification | undefined,
   mode: OpeningHealthMode,
   override?: OpeningHealthTrainingMove,
+  dateBounds?: OpeningHealthDateBounds,
 ) {
   const trainingMove = override ?? getOpeningHealthTrainingMove(gap, verification, mode);
   if (!trainingMove) return null;
@@ -2014,6 +2085,9 @@ function createOpeningHealthReviewPosition(
       topMoveSan: topMove?.san ?? null,
       topMoveUci: topMove?.uci ?? null,
       lastPlayed: gap.lastPlayed,
+      dateRange: dateBounds?.range,
+      startDate: dateBounds?.startDate,
+      endDate: dateBounds?.endDate,
     },
   });
 }
@@ -2233,6 +2307,7 @@ async function analyzeOnlineReference({
   colorFilter,
   minPersonalGames,
   minReferenceGames,
+  dateBounds,
   setProgress,
   getControlState,
 }: {
@@ -2247,6 +2322,7 @@ async function analyzeOnlineReference({
   colorFilter: OpeningHealthColorFilter;
   minPersonalGames: number;
   minReferenceGames: number;
+  dateBounds: OpeningHealthDateBounds;
   setProgress: (progress: OpeningHealthProgress) => void;
   getControlState: () => { paused: boolean; stopRequested: boolean };
 }): Promise<{ status: "ok"; data: RepertoireGapReport } | { status: "error"; error: string }> {
@@ -2255,6 +2331,8 @@ async function analyzeOnlineReference({
     playerId,
     color: colorFilter,
     maxPlies,
+    startDate: dateBounds.startDate,
+    endDate: dateBounds.endDate,
     requestId: id,
   });
 
