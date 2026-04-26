@@ -129,6 +129,7 @@ import {
   parseOpeningReviewDate,
   rankOpeningReviewPositions,
 } from "@/utils/openingReviewAutoUpdate";
+import { getOpeningReviewStatsPerspectiveSide } from "@/utils/openingReviewOpenings";
 import {
   OPENING_HEALTH_DATE_RANGE_OPTIONS,
   formatOpeningHealthDateFilter,
@@ -2089,6 +2090,7 @@ type OpeningReviewStatsGroup = {
   key: string;
   name: string;
   previewPosition: Position;
+  side: "white" | "black";
   indices: number[];
   positions: number;
   games: number;
@@ -2120,6 +2122,8 @@ type OpeningReviewStatsAccumulator = {
   name: string;
   previewPosition: Position;
   previewUrgency: number;
+  whiteSideWeight: number;
+  blackSideWeight: number;
   indices: number[];
   positions: number;
   games: number;
@@ -2262,14 +2266,14 @@ function OpeningReviewStatsPage({
       rowsWithOpenings.filter((row) => {
         const colourMatches =
           colourFilter === "any" ||
-          getOpeningReviewStatsSide(row.position, deckMode) === colourFilter;
+          getOpeningReviewStatsSide(row.position, deckMode, row.opening) === colourFilter;
         const timeMatches =
           timeControlFilter === "all" ||
           getOpeningReviewStatsTimeControl(row.position) === timeControlFilter;
         const resultMatches =
           resultFilters.length === 0 ||
           resultFilters.some((filter) =>
-            openingReviewStatsPositionMatchesResult(row.position, filter, deckMode),
+            openingReviewStatsPositionMatchesResult(row.position, filter, deckMode, row.opening),
           );
         const dateMatches = openingHealthDateMatches(
           row.position.openingHealth?.lastPlayed,
@@ -2472,7 +2476,6 @@ function OpeningReviewStatsPage({
         rows={planGapRows}
         empty="No obvious plan gaps with these filters."
         mode="gap"
-        deckMode={deckMode}
       />
 
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
@@ -2481,14 +2484,12 @@ function OpeningReviewStatsPage({
           rows={bestRows}
           empty="No result data yet."
           mode="score"
-          deckMode={deckMode}
         />
         <OpeningReviewStatsList
           title="Worst openings"
           rows={worstRows}
           empty="No result data yet."
           mode="score"
-          deckMode={deckMode}
         />
       </SimpleGrid>
 
@@ -2530,7 +2531,7 @@ function OpeningReviewStatsPage({
                 {rankedRows.slice(0, 40).map((row) => (
                   <Table.Tr key={row.key}>
                     <Table.Td>
-                      <OpeningReviewStatsBoard position={row.previewPosition} deckMode={deckMode} />
+                      <OpeningReviewStatsBoard position={row.previewPosition} side={row.side} />
                     </Table.Td>
                     <Table.Td>
                       <Stack gap={2}>
@@ -2554,7 +2555,7 @@ function OpeningReviewStatsPage({
                         losses={row.losses}
                         score={row.score}
                         winRate={row.winRate}
-                        side={getOpeningReviewStatsSide(row.previewPosition, deckMode)}
+                        side={row.side}
                         empty="No saved games for this opening."
                       />
                     </Table.Td>
@@ -2566,7 +2567,7 @@ function OpeningReviewStatsPage({
                         losses={row.referenceLosses}
                         score={row.referenceScore}
                         winRate={row.referenceWinRate}
-                        side={getOpeningReviewStatsSide(row.previewPosition, deckMode)}
+                        side={row.side}
                         empty="No reference W/D/L data saved for this opening."
                       />
                     </Table.Td>
@@ -2645,13 +2646,11 @@ function OpeningReviewStatsColumnHeader({ label, detail }: { label: string; deta
 
 function OpeningReviewStatsBoard({
   position,
-  deckMode,
+  side,
 }: {
   position: Position;
-  deckMode?: "self" | "opponent";
+  side: "white" | "black";
 }) {
-  const orientation = getOpeningReviewStatsSide(position, deckMode);
-
   return (
     <Tooltip label="Representative review position" withArrow>
       <Box
@@ -2667,8 +2666,8 @@ function OpeningReviewStatsBoard({
           coordinates={false}
           viewOnly
           fen={position.fen}
-          orientation={orientation}
-          turnColor={orientation}
+          orientation={side}
+          turnColor={side}
         />
       </Box>
     </Tooltip>
@@ -2680,13 +2679,11 @@ function OpeningReviewStatsList({
   rows,
   empty,
   mode,
-  deckMode,
 }: {
   title: string;
   rows: OpeningReviewStatsGroup[];
   empty: string;
   mode: "score" | "gap";
-  deckMode?: "self" | "opponent";
 }) {
   return (
     <Paper p="xs" withBorder>
@@ -2715,7 +2712,7 @@ function OpeningReviewStatsList({
               return (
                 <Group key={row.key} justify="space-between" gap="xs" wrap="nowrap" align="center">
                   <Group gap="xs" wrap="nowrap" style={{ minWidth: 0 }}>
-                    <OpeningReviewStatsBoard position={row.previewPosition} deckMode={deckMode} />
+                    <OpeningReviewStatsBoard position={row.previewPosition} side={row.side} />
                     <Stack gap={2} style={{ minWidth: 0 }}>
                       <Text size="sm" fw={600} lineClamp={2}>
                         {row.name}
@@ -2744,7 +2741,7 @@ function OpeningReviewStatsList({
                             losses={row.losses}
                             score={row.score}
                             winRate={row.winRate}
-                            side={getOpeningReviewStatsSide(row.previewPosition, deckMode)}
+                            side={row.side}
                             empty="No saved games."
                           />
                           <OpeningReviewWdlBar
@@ -2754,7 +2751,7 @@ function OpeningReviewStatsList({
                             losses={row.referenceLosses}
                             score={row.referenceScore}
                             winRate={row.referenceWinRate}
-                            side={getOpeningReviewStatsSide(row.previewPosition, deckMode)}
+                            side={row.side}
                             empty="No reference games."
                           />
                         </Stack>
@@ -2768,7 +2765,7 @@ function OpeningReviewStatsList({
                             losses={row.losses}
                             score={row.score}
                             winRate={row.winRate}
-                            side={getOpeningReviewStatsSide(row.previewPosition, deckMode)}
+                            side={row.side}
                             empty="No saved games."
                             compact
                           />
@@ -2992,6 +2989,8 @@ function buildOpeningReviewStatsGroups(
         name: key,
         previewPosition: row.position,
         previewUrgency: row.urgency,
+        whiteSideWeight: 0,
+        blackSideWeight: 0,
         indices: [],
         positions: 0,
         games: 0,
@@ -3019,9 +3018,10 @@ function buildOpeningReviewStatsGroups(
       group.previewUrgency = row.urgency;
     }
 
-    const result = getOpeningReviewStatsResult(row.position, deckMode);
+    const result = getOpeningReviewStatsResult(row.position, deckMode, row.opening);
     const review = getOpeningReviewStatsReview(row.position, now);
     const timeControl = getOpeningReviewStatsTimeControl(row.position);
+    const sideWeight = result.games > 0 ? result.games : 1;
 
     group.indices.push(row.index);
     group.positions += 1;
@@ -3029,6 +3029,11 @@ function buildOpeningReviewStatsGroups(
     group.wins += result.wins;
     group.draws += result.draws;
     group.losses += result.losses;
+    if (result.side === "white") {
+      group.whiteSideWeight += sideWeight;
+    } else {
+      group.blackSideWeight += sideWeight;
+    }
     group.scoreTotal += result.scoreTotal;
     group.scoreWeight += result.scoreWeight;
     group.referenceWins += result.referenceWins;
@@ -3068,11 +3073,13 @@ function finalizeOpeningReviewStatsGroup(group: OpeningReviewStatsAccumulator) {
     referenceCountedGames > 0 ? group.referenceWins / referenceCountedGames : null;
   const reviewScore =
     group.attempts > 0 ? Math.max(0, group.attempts - group.lapses) / group.attempts : null;
+  const side = group.blackSideWeight > group.whiteSideWeight ? "black" : "white";
 
   return {
     key: group.key,
     name: group.name,
     previewPosition: group.previewPosition,
+    side,
     indices: group.indices,
     positions: group.positions,
     games: group.games,
@@ -3175,14 +3182,18 @@ function sortOpeningReviewStatsRows(
   });
 }
 
-function getOpeningReviewStatsResult(position: Position, deckMode?: "self" | "opponent") {
+function getOpeningReviewStatsResult(
+  position: Position,
+  deckMode?: "self" | "opponent",
+  opening?: OpeningReviewOpeningInfo,
+) {
   const health = position.openingHealth;
   const white = health?.white ?? 0;
   const draw = health?.draw ?? 0;
   const black = health?.black ?? 0;
   const countedGames = white + draw + black;
   const games = countedGames > 0 ? countedGames : (health?.games ?? 0);
-  const colour = getOpeningReviewStatsSide(position, deckMode);
+  const colour = getOpeningReviewStatsSide(position, deckMode, opening);
   const wins = colour === "white" ? white : black;
   const losses = colour === "white" ? black : white;
   const score = typeof health?.score === "number" ? health.score : null;
@@ -3204,6 +3215,7 @@ function getOpeningReviewStatsResult(position: Position, deckMode?: "self" | "op
     referenceCountedGames > 0 ? referenceCountedGames : (health?.strongGames ?? 0);
 
   return {
+    side: colour,
     games,
     wins: countedGames > 0 ? wins : 0,
     draws: countedGames > 0 ? draw : 0,
@@ -3237,8 +3249,9 @@ function openingReviewStatsPositionMatchesResult(
   position: Position,
   result: OpeningReviewStatsResultFilter,
   deckMode?: "self" | "opponent",
+  opening?: OpeningReviewOpeningInfo,
 ) {
-  const stats = getOpeningReviewStatsResult(position, deckMode);
+  const stats = getOpeningReviewStatsResult(position, deckMode, opening);
   switch (result) {
     case "wins":
       return stats.wins > 0;
@@ -4063,8 +4076,13 @@ function getOpeningReviewMoveSide(position: Position): "white" | "black" {
 function getOpeningReviewStatsSide(
   position: Position,
   deckMode?: "self" | "opponent",
+  opening?: OpeningReviewOpeningInfo,
 ): "white" | "black" {
-  return getOpeningReviewPositionColour(position, deckMode);
+  return getOpeningReviewStatsPerspectiveSide(
+    position,
+    deckMode,
+    opening?.rawName ?? position.openingHealth?.openingName,
+  );
 }
 
 function oppositeOpeningReviewSide(side: "white" | "black") {

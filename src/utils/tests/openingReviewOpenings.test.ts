@@ -4,6 +4,7 @@ import type { Position } from "@/components/files/opening";
 import {
     getOpeningReviewMoveSide,
     getOpeningReviewPositionColour,
+    getOpeningReviewStatsPerspectiveSide,
 } from "@/utils/openingReviewOpenings";
 
 function position(overrides: Partial<Position> = {}): Position {
@@ -76,5 +77,37 @@ describe("opening review position colour", () => {
                 }),
             ),
         ).toBe("black");
+    });
+
+    test("uses the opposite of a white-side opening for opponent deck stats", () => {
+        expect(
+            getOpeningReviewStatsPerspectiveSide(
+                position({
+                    sideToMove: "black",
+                    openingHealth: {
+                        mode: "opponent",
+                        sideToMove: "black",
+                    },
+                }),
+                "opponent",
+                "Rapport-Jobava System",
+            ),
+        ).toBe("black");
+    });
+
+    test("uses the opposite of a black-side defense for opponent deck stats", () => {
+        expect(
+            getOpeningReviewStatsPerspectiveSide(
+                position({
+                    sideToMove: "black",
+                    openingHealth: {
+                        mode: "opponent",
+                        sideToMove: "black",
+                    },
+                }),
+                "opponent",
+                "Grünfeld Defense",
+            ),
+        ).toBe("white");
     });
 });

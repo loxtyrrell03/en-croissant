@@ -53,6 +53,102 @@ export function getOpeningReviewMoveSide(position: Position): "white" | "black" 
     );
 }
 
+export function getOpeningReviewStatsPerspectiveSide(
+    position: Position,
+    deckMode?: "self" | "opponent",
+    openingName?: string | null,
+): "white" | "black" {
+    if (deckMode === "opponent") {
+        const openingSide = inferOpeningReviewOpeningSide(openingName ?? position.openingHealth?.openingName);
+        if (openingSide) return oppositeOpeningReviewSide(openingSide);
+    }
+
+    return getOpeningReviewPositionColour(position, deckMode);
+}
+
+export function inferOpeningReviewOpeningSide(openingName: string | null | undefined) {
+    const lower = openingName
+        ?.normalize("NFD")
+        .replace(/\p{Diacritic}/gu, "")
+        .toLowerCase();
+    if (!lower) return null;
+
+    if (
+        [
+            "rapport",
+            "jobava",
+            "london system",
+            "colle system",
+            "trompowsky",
+            "king's indian attack",
+            "kings indian attack",
+            "reti",
+            "english opening",
+            "bird opening",
+            "queen's pawn",
+            "queens pawn",
+            "king's pawn",
+            "kings pawn",
+            "italian game",
+            "scotch game",
+            "vienna game",
+            "spanish opening",
+            "ruy lopez",
+        ].some((pattern) => lower.includes(pattern))
+    ) {
+        return "white";
+    }
+
+    if (lower.includes("defense") || lower.includes("defence")) return "black";
+    if (
+        [
+            "sicilian",
+            "french",
+            "caro-kann",
+            "caro kann",
+            "pirc",
+            "scandinavian",
+            "alekhine",
+            "benoni",
+            "benko",
+            "dutch",
+            "grunfeld",
+            "king's indian",
+            "kings indian",
+            "queen's indian",
+            "queens indian",
+            "nimzo-indian",
+            "bogo-indian",
+            "slav",
+            "englund",
+            "budapest",
+        ].some((pattern) => lower.includes(pattern))
+    ) {
+        return "black";
+    }
+
+    if (
+        [
+            "opening",
+            "system",
+            "attack",
+            "game",
+            "london",
+            "colle",
+            "english",
+            "bird",
+            "italian",
+            "scotch",
+            "vienna",
+            "spanish",
+        ].some((pattern) => lower.includes(pattern))
+    ) {
+        return "white";
+    }
+
+    return null;
+}
+
 function oppositeOpeningReviewSide(side: "white" | "black") {
     return side === "white" ? "black" : "white";
 }
