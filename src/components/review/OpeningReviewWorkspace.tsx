@@ -2465,6 +2465,7 @@ function OpeningReviewStatsPage({
                         losses={row.losses}
                         score={row.score}
                         winRate={row.winRate}
+                        side={getOpeningReviewStatsSide(row.previewPosition)}
                         empty="No saved games for this opening."
                       />
                     </Table.Td>
@@ -2476,6 +2477,7 @@ function OpeningReviewStatsPage({
                         losses={row.referenceLosses}
                         score={row.referenceScore}
                         winRate={row.referenceWinRate}
+                        side={getOpeningReviewStatsSide(row.previewPosition)}
                         empty="No reference W/D/L data saved for this opening."
                       />
                     </Table.Td>
@@ -2645,6 +2647,7 @@ function OpeningReviewStatsList({
                             losses={row.losses}
                             score={row.score}
                             winRate={row.winRate}
+                            side={getOpeningReviewStatsSide(row.previewPosition)}
                             empty="No saved games."
                           />
                           <OpeningReviewWdlBar
@@ -2654,6 +2657,7 @@ function OpeningReviewStatsList({
                             losses={row.referenceLosses}
                             score={row.referenceScore}
                             winRate={row.referenceWinRate}
+                            side={getOpeningReviewStatsSide(row.previewPosition)}
                             empty="No reference games."
                           />
                         </Stack>
@@ -2782,6 +2786,7 @@ function OpeningReviewWdlBar({
   losses,
   score,
   winRate,
+  side,
   empty,
 }: {
   label: string;
@@ -2790,6 +2795,7 @@ function OpeningReviewWdlBar({
   losses: number;
   score: number | null;
   winRate: number | null;
+  side: "white" | "black";
   empty: string;
 }) {
   const total = wins + draws + losses;
@@ -2809,6 +2815,8 @@ function OpeningReviewWdlBar({
   const winPercent = (wins / total) * 100;
   const drawPercent = (draws / total) * 100;
   const lossPercent = (losses / total) * 100;
+  const whiteResultPercent = side === "black" ? lossPercent : winPercent;
+  const blackResultPercent = side === "black" ? winPercent : lossPercent;
   const scoreText = score === null ? "Score unknown" : `Score ${formatReviewPercent(score)}`;
   const winRateText =
     winRate === null ? "Win rate unknown" : `Win rate ${formatReviewPercent(winRate)}`;
@@ -2828,16 +2836,21 @@ function OpeningReviewWdlBar({
       </Group>
       <Tooltip withArrow label={`${recordText}. ${winRateText}. ${scoreText}.`}>
         <Progress.Root size="xl" className={resultClasses.result}>
-          <Progress.Section value={winPercent} className={resultClasses.whiteResultsSection}>
+          <Progress.Section
+            value={whiteResultPercent}
+            className={resultClasses.whiteResultsSection}
+          >
             <Progress.Label c="black">
-              {winPercent > 10 ? `${winPercent.toFixed(1)}%` : ""}
+              {whiteResultPercent > 10 ? `${whiteResultPercent.toFixed(1)}%` : ""}
             </Progress.Label>
           </Progress.Section>
           <Progress.Section value={drawPercent} color="gray">
             <Progress.Label>{drawPercent > 10 ? `${drawPercent.toFixed(1)}%` : ""}</Progress.Label>
           </Progress.Section>
-          <Progress.Section value={lossPercent} color="black">
-            <Progress.Label>{lossPercent > 10 ? `${lossPercent.toFixed(1)}%` : ""}</Progress.Label>
+          <Progress.Section value={blackResultPercent} color="black">
+            <Progress.Label>
+              {blackResultPercent > 10 ? `${blackResultPercent.toFixed(1)}%` : ""}
+            </Progress.Label>
           </Progress.Section>
         </Progress.Root>
       </Tooltip>
