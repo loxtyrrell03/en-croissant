@@ -1,0 +1,58 @@
+- generic [ref=e2]:
+  - generic [ref=e4]:
+    - link "BlunderBust" [ref=e5] [cursor=pointer]:
+      - /url: "#"
+      - img "BlunderBust" [ref=e6]
+    - navigation [ref=e8]:
+      - link "Home" [ref=e9] [cursor=pointer]:
+        - /url: "#"
+      - link "Train" [ref=e10] [cursor=pointer]:
+        - /url: "#"
+      - link "Stats" [ref=e11] [cursor=pointer]:
+        - /url: "#"
+      - link "Tests" [ref=e12] [cursor=pointer]:
+        - /url: "#"
+      - link "Settings" [ref=e13] [cursor=pointer]:
+        - /url: "#"
+        - img [ref=e14]
+        - generic [ref=e17]: Settings
+    - generic [ref=e18]:
+      - link "Upgrade" [ref=e19] [cursor=pointer]:
+        - /url: "#"
+      - button "Sign in" [ref=e21] [cursor=pointer]
+  - generic [ref=e22]:
+    - heading "Train" [level=1] [ref=e24]
+    - generic "Quick training actions" [ref=e25]:
+      - generic [ref=e26]:
+        - button "Daily review 0" [ref=e27] [cursor=pointer]:
+          - generic [ref=e28]:
+            - generic [ref=e29]: Daily review
+            - generic [ref=e30]: "0"
+        - button "Daily review settings" [ref=e31] [cursor=pointer]:
+          - img [ref=e32]
+      - generic [ref=e35]:
+        - button "Analyse your last game" [ref=e36] [cursor=pointer]
+        - button "Analysis settings" [ref=e37] [cursor=pointer]:
+          - img [ref=e38]
+      - button "Train tactical themes" [ref=e42] [cursor=pointer]
+    - region "Set up training" [ref=e44]:
+      - generic [ref=e45]:
+        - heading "Set up training" [level=2] [ref=e46]
+        - paragraph [ref=e47]: Connect games, find mistakes, start a set.
+        - generic [ref=e48]:
+          - button "Start setup" [ref=e49] [cursor=pointer]
+          - button "View saved sets" [ref=e50] [cursor=pointer]
+      - generic "Setup preview" [ref=e51]:
+        - button "1 Connect" [ref=e52] [cursor=pointer]:
+          - generic [ref=e53]: "1"
+          - strong [ref=e54]: Connect
+        - button "2 Import" [ref=e55] [cursor=pointer]:
+          - generic [ref=e56]: "2"
+          - strong [ref=e57]: Import
+        - button "3 Analyse" [ref=e58] [cursor=pointer]:
+          - generic [ref=e59]: "3"
+          - strong [ref=e60]: Analyse
+        - button "4 Train" [ref=e61] [cursor=pointer]:
+          - generic [ref=e62]: "4"
+          - strong [ref=e63]: Train
+    - text: you
