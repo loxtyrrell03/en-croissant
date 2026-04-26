@@ -1628,6 +1628,17 @@ function OpeningReviewPanel({
   const isBestAlternative = practiceState.moveAssessment === "best";
   const isOkAlternative = practiceState.moveAssessment === "ok";
   const feedbackColor = isBestAlternative ? "green" : isOkAlternative ? "blue" : "red";
+  const correctFeedbackColor = !isMistakeReview && isOkAlternative ? "blue" : "green";
+  const correctFeedbackTitle =
+    !isMistakeReview && isOkAlternative && practiceState.playedMove
+      ? `${practiceState.playedMove} is good`
+      : !isMistakeReview && isBestAlternative && practiceState.playedMove
+        ? `${practiceState.playedMove} is best`
+        : "Correct";
+  const correctFeedbackDetail =
+    !isMistakeReview && isOkAlternative && practiceState.bestMove
+      ? `${practiceState.bestMove} is best.`
+      : undefined;
   const feedbackTitle = isMistakeReview
     ? practiceState.mistakeReviewLabel
       ? mistakeReviewSeverityLabel(practiceState.mistakeReviewLabel)
@@ -1853,6 +1864,10 @@ function OpeningReviewPanel({
         {!isMistakeReview && practiceState.phase === "correct" && sessionStats.mode !== "full" && (
           <ReviewQualityPanel
             onRate={handleQualityRating}
+            title={correctFeedbackTitle}
+            detail={correctFeedbackDetail}
+            color={correctFeedbackColor}
+            icon={isOkAlternative ? "bulb" : "check"}
             card={
               practiceState.positionIndex !== undefined
                 ? deck.positions[practiceState.positionIndex].card
@@ -4177,24 +4192,33 @@ function reviewEngineSourceLabel(source: NonNullable<Position["engine"]>["source
 
 function ReviewQualityPanel({
   onRate,
+  title,
+  detail,
+  color,
+  icon,
   card,
   timeTaken,
 }: {
   onRate: (grade: 1 | 2 | 3 | 4) => void;
+  title?: string;
+  detail?: string;
+  color?: "blue" | "green";
+  icon?: "bulb" | "check";
   card?: import("ts-fsrs").Card;
   timeTaken?: number;
 }) {
   const reviewTimes = card ? getNextReviewTimes(card) : null;
+  const feedbackColor = color ?? "green";
 
   return (
     <Paper p="sm" withBorder>
       <Stack gap="sm" align="center">
         <Group gap="xs">
-          <ThemeIcon size="md" color="green" variant="light" radius="xl">
-            <IconCheck size={16} />
+          <ThemeIcon size="md" color={feedbackColor} variant="light" radius="xl">
+            {icon === "bulb" ? <IconBulb size={16} /> : <IconCheck size={16} />}
           </ThemeIcon>
-          <Text fw={600} c="green">
-            Correct
+          <Text fw={600} c={feedbackColor}>
+            {title ?? "Correct"}
           </Text>
           {timeTaken !== undefined && (
             <Text size="xs" c="dimmed">
@@ -4202,6 +4226,11 @@ function ReviewQualityPanel({
             </Text>
           )}
         </Group>
+        {detail && (
+          <Text size="xs" c="dimmed" ta="center">
+            {detail}
+          </Text>
+        )}
         <SimpleGrid cols={4} spacing="xs" w="100%">
           {[
             { grade: 1 as const, label: "Again", color: "red" },
