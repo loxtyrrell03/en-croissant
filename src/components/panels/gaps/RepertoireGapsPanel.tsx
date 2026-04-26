@@ -845,6 +845,55 @@ function RepertoireGapsPanel() {
     });
   }
 
+  function saveVisibleRowsToOpeningSet() {
+    const incoming = visibleRows
+      .map((gap) => {
+        const trainingMove =
+          correctMoveOverrides[gapKey(gap)] ??
+          getOpeningHealthTrainingMove(gap, engineVerifications[gapKey(gap)], analysisMode);
+        return trainingMove ? createOpeningHealthTrainingItem(gap, trainingMove) : null;
+      })
+      .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+    if (incoming.length === 0) {
+      notifications.show({
+        title: "No trainable rows",
+        message: "The visible scan results do not have a clear move to save.",
+        color: "yellow",
+      });
+      return;
+    }
+
+    const existingKeys = new Set(
+      deck.positions.map((position) => `${position.fen}|${position.answerUci || position.answer}`),
+    );
+    const positionsToAdd = incoming.filter((position) => {
+      const key = `${position.fen}|${position.answerUci || position.answer}`;
+      if (existingKeys.has(key)) return false;
+      existingKeys.add(key);
+      return true;
+    });
+
+    if (positionsToAdd.length === 0) {
+      notifications.show({
+        title: "Already saved",
+        message: "Every visible trainable row is already in this opening set.",
+        color: "yellow",
+      });
+      return;
+    }
+
+    setDeck((current) => ({
+      ...current,
+      positions: [...current.positions, ...positionsToAdd],
+    }));
+    notifications.show({
+      title: "Saved to opening set",
+      message: `${positionsToAdd.length} position${positionsToAdd.length === 1 ? "" : "s"} added to this opening set.`,
+      color: "green",
+    });
+  }
+
   function openReviewSaveModal() {
     const playerName =
       subjectPlayerOptions.find((option) => option.value === subjectPlayerId)?.label ||
@@ -1613,6 +1662,15 @@ function RepertoireGapsPanel() {
               <Button
                 size="xs"
                 variant="light"
+                leftSection={<IconPlus size="1rem" />}
+                onClick={saveVisibleRowsToOpeningSet}
+                disabled={loading || visibleRows.length === 0}
+              >
+                Save to opening set
+              </Button>
+              <Button
+                size="xs"
+                variant="light"
                 leftSection={<IconDeviceFloppy size="1rem" />}
                 onClick={openReviewSaveModal}
                 disabled={visibleRows.length === 0}
@@ -2047,24 +2105,27 @@ function createOpeningHealthReviewPosition(
   const trainingMove = override ?? getOpeningHealthTrainingMove(gap, verification, mode);
   if (!trainingMove) return null;
 
-  const priority = openingHealthPriority(gap, verification, mode);
-  const strongMoveResult = gap.topReferenceMoves.find((move) => move.uci === gap.playerMoveUci);
+  const effectiveVerification = effectiveOpeningHealthVerification(gap, verification);
+  const priority = openingHealthPriority(gap, effectiveVerification, mode);
+  const strongMoveResult = gap.topReferenceMoves.find((move) =>
+    openingHealthMovesMatch(move.uci, move.san, gap.playerMoveUci, gap.playerMoveSan),
+  );
   const topMove = gap.topReferenceMoves[0];
   return createOpeningHealthTrainingItem(gap, trainingMove, {
-    priority: openingHealthUrgency(gap, verification),
+    priority: openingHealthUrgency(gap, effectiveVerification),
     importedAt: Date.now(),
-    reason: getOpeningHealthReviewReason(gap, verification, mode, priority.description),
+    reason: getOpeningHealthReviewReason(gap, effectiveVerification, mode, priority.description),
     evidence: `${formatNumber(gap.playerPositionGames)} games; ${formatLastPlayed(
       gap.lastPlayed,
     )}; result ${formatPercent(gap.playerScore)}`,
     engine:
-      verification && verification.status !== "missing"
+      effectiveVerification && effectiveVerification.status !== "missing"
         ? {
-            source: verification.source,
-            lossCp: verification.lossCp,
-            depth: verification.depth,
-            bestMoveSan: verification.bestMoveSan,
-            bestMoveUci: verification.bestMoveUci,
+            source: effectiveVerification.source,
+            lossCp: effectiveVerification.lossCp,
+            depth: effectiveVerification.depth,
+            bestMoveSan: effectiveVerification.bestMoveSan,
+            bestMoveUci: effectiveVerification.bestMoveUci,
           }
         : undefined,
     openingHealth: {
@@ -2097,32 +2158,42 @@ function getOpeningHealthTrainingMove(
   verification: EngineVerification | undefined,
   mode: OpeningHealthMode,
 ) {
+  const effectiveVerification = effectiveOpeningHealthVerification(gap, verification);
   if (
-    verification?.bestMoveUci &&
-    verification.bestMoveUci !== gap.playerMoveUci &&
-    verification.status !== "ok" &&
-    verification.status !== "missing"
+    effectiveVerification?.bestMoveUci &&
+    !openingHealthMovesMatch(
+      effectiveVerification.bestMoveUci,
+      effectiveVerification.bestMoveSan,
+      gap.playerMoveUci,
+      gap.playerMoveSan,
+    ) &&
+    effectiveVerification.status !== "ok" &&
+    effectiveVerification.status !== "missing"
   ) {
     const move = getOpeningHealthMoveFromUci(
       gap,
-      verification.bestMoveUci,
-      verification.bestMoveSan ?? "Engine move",
+      effectiveVerification.bestMoveUci,
+      effectiveVerification.bestMoveSan ?? "Engine move",
     );
-    if (move) return { san: move.san, uci: verification.bestMoveUci };
+    if (move) return { san: move.san, uci: effectiveVerification.bestMoveUci };
   }
 
   const differentSuggestedMove =
-    gap.topReferenceMoves.find((move) => move.uci !== gap.playerMoveUci) ?? null;
-  const engineSuggestedMove = verification?.bestMoveUci
+    gap.topReferenceMoves.find(
+      (move) => !openingHealthMovesMatch(move.uci, move.san, gap.playerMoveUci, gap.playerMoveSan),
+    ) ?? null;
+  const engineSuggestedMove = effectiveVerification?.bestMoveUci
     ? (gap.topReferenceMoves.find(
-        (move) => move.uci === verification.bestMoveUci && move.uci !== gap.playerMoveUci,
+        (move) =>
+          move.uci === effectiveVerification.bestMoveUci &&
+          !openingHealthMovesMatch(move.uci, move.san, gap.playerMoveUci, gap.playerMoveSan),
       ) ?? null)
     : null;
   const nextStep = openingHealthNextStep(
     gap,
     differentSuggestedMove,
     engineSuggestedMove,
-    verification,
+    effectiveVerification,
     mode,
   );
 
@@ -2485,7 +2556,13 @@ function buildOnlineGap(
       (a, b) => b.games - a.games || b.scoreForSide - a.scoreForSide || a.san.localeCompare(b.san),
     );
   const referenceMoveIndex = referenceMoves.findIndex(
-    (move) => move.uci === playerPosition.playerMoveUci,
+    (move) =>
+      openingHealthMovesMatch(
+        move.uci,
+        move.san,
+        playerPosition.playerMoveUci,
+        playerPosition.playerMoveSan,
+      ),
   );
   const referenceMoveRank = referenceMoveIndex >= 0 ? referenceMoveIndex + 1 : null;
   const referenceMoveShare =
@@ -2730,21 +2807,26 @@ function OpeningHealthRow({
   onEditMove: () => void;
   onDismiss: () => void;
 }) {
+  const effectiveVerification = effectiveOpeningHealthVerification(gap, verification);
   const differentSuggestedMove =
-    gap.topReferenceMoves.find((move) => move.uci !== gap.playerMoveUci) ?? null;
-  const engineSuggestedMove = verification?.bestMoveUci
+    gap.topReferenceMoves.find(
+      (move) => !openingHealthMovesMatch(move.uci, move.san, gap.playerMoveUci, gap.playerMoveSan),
+    ) ?? null;
+  const engineSuggestedMove = effectiveVerification?.bestMoveUci
     ? (gap.topReferenceMoves.find(
-        (move) => move.uci === verification.bestMoveUci && move.uci !== gap.playerMoveUci,
+        (move) =>
+          move.uci === effectiveVerification.bestMoveUci &&
+          !openingHealthMovesMatch(move.uci, move.san, gap.playerMoveUci, gap.playerMoveSan),
       ) ?? null)
     : null;
   const nextStep = openingHealthNextStep(
     gap,
     differentSuggestedMove,
     engineSuggestedMove,
-    verification,
+    effectiveVerification,
     mode,
   );
-  const priority = openingHealthPriority(gap, verification, mode);
+  const priority = openingHealthPriority(gap, effectiveVerification, mode);
   const sideToMove = gap.sideToMove === "black" ? "black" : "white";
   const rankText = gap.referenceMoveRank
     ? `#${gap.referenceMoveRank} in strong games`
@@ -2756,14 +2838,16 @@ function OpeningHealthRow({
     [gap],
   );
   const resultLabel = mode === "self" ? "My games" : "Opponent games";
-  const strongMoveResult = gap.topReferenceMoves.find((move) => move.uci === gap.playerMoveUci);
+  const strongMoveResult = gap.topReferenceMoves.find((move) =>
+    openingHealthMovesMatch(move.uci, move.san, gap.playerMoveUci, gap.playerMoveSan),
+  );
   const trainingMove =
-    correctMoveOverride ?? getOpeningHealthTrainingMove(gap, verification, mode);
+    correctMoveOverride ?? getOpeningHealthTrainingMove(gap, effectiveVerification, mode);
   const nextStepTitle = correctMoveOverride?.san ?? nextStep.title;
   const nextStepDetail = correctMoveOverride ? "Chosen by you for training" : nextStep.detail;
   const verificationLabel =
-    verification && verification.status !== "missing"
-      ? `${verificationSourceLabel(verification)}${verification.depth ? ` depth ${verification.depth}` : ""}`
+    effectiveVerification && effectiveVerification.status !== "missing"
+      ? `${verificationSourceLabel(effectiveVerification)}${effectiveVerification.depth ? ` depth ${effectiveVerification.depth}` : ""}`
       : null;
 
   return (
@@ -2823,7 +2907,12 @@ function OpeningHealthRow({
           <OpeningHealthSuggestedMove
             gap={gap}
             title={nextStepTitle}
-            moveUci={trainingMove?.uci ?? nextStep.trainingMove?.uci ?? verification?.bestMoveUci ?? null}
+            moveUci={
+              trainingMove?.uci ??
+              nextStep.trainingMove?.uci ??
+              effectiveVerification?.bestMoveUci ??
+              null
+            }
             fw={700}
             onLoad={onLoad}
             onPreview={onPreview}
@@ -3137,7 +3226,8 @@ function openingHealthPriority(
   mode: OpeningHealthMode,
 ) {
   const ownerPossessive = mode === "self" ? "Your" : "Their";
-  if (verification?.status === "missing") {
+  const effectiveVerification = effectiveOpeningHealthVerification(gap, verification);
+  if (effectiveVerification?.status === "missing") {
     return {
       label: "Cloud missing",
       color: "gray",
@@ -3145,27 +3235,27 @@ function openingHealthPriority(
         "No usable Lichess Cloud or ChessDB score was found; priority comes from results and frequency.",
     };
   }
-  if (verification?.status === "bad") {
-    const source = verificationSourceLabel(verification);
-    const depthText = verification.depth ? ` at depth ${verification.depth}` : "";
+  if (effectiveVerification?.status === "bad") {
+    const source = verificationSourceLabel(effectiveVerification);
+    const depthText = effectiveVerification.depth ? ` at depth ${effectiveVerification.depth}` : "";
     return {
       label: "Bad move",
       color: "red",
-      description: `${source}${depthText} prefers ${verification.bestMoveSan ?? "another move"} by about ${Math.round(verification.lossCp)} cp.`,
+      description: `${source}${depthText} prefers ${effectiveVerification.bestMoveSan ?? "another move"} by about ${Math.round(effectiveVerification.lossCp)} cp.`,
     };
   }
-  if (verification?.status === "questionable") {
-    const source = verificationSourceLabel(verification);
-    const depthText = verification.depth ? ` at depth ${verification.depth}` : "";
+  if (effectiveVerification?.status === "questionable") {
+    const source = verificationSourceLabel(effectiveVerification);
+    const depthText = effectiveVerification.depth ? ` at depth ${effectiveVerification.depth}` : "";
     return {
       label: "Engine concern",
       color: "orange",
-      description: `${source}${depthText} shows about ${Math.round(verification.lossCp)} cp of drift from the best move.`,
+      description: `${source}${depthText} shows about ${Math.round(effectiveVerification.lossCp)} cp of drift from the best move.`,
     };
   }
-  if (verification?.status === "ok") {
-    const source = verificationSourceLabel(verification);
-    const depthText = verification.depth ? ` depth ${verification.depth}` : "";
+  if (effectiveVerification?.status === "ok") {
+    const source = verificationSourceLabel(effectiveVerification);
+    const depthText = effectiveVerification.depth ? ` depth ${effectiveVerification.depth}` : "";
     return {
       label: "Practical issue",
       color: "yellow",
@@ -3202,17 +3292,23 @@ function openingHealthNextStep(
   verification: EngineVerification | undefined,
   mode: OpeningHealthMode,
 ) {
+  const effectiveVerification = effectiveOpeningHealthVerification(gap, verification);
   if (
-    verification &&
-    verification.status !== "ok" &&
-    verification.bestMoveUci &&
-    verification.bestMoveUci !== gap.playerMoveUci
+    effectiveVerification &&
+    effectiveVerification.status !== "ok" &&
+    effectiveVerification.bestMoveUci &&
+    !openingHealthMovesMatch(
+      effectiveVerification.bestMoveUci,
+      effectiveVerification.bestMoveSan,
+      gap.playerMoveUci,
+      gap.playerMoveSan,
+    )
   ) {
-    const source = verificationSourceLabel(verification);
-    const depthText = verification.depth ? ` at depth ${verification.depth}` : "";
+    const source = verificationSourceLabel(effectiveVerification);
+    const depthText = effectiveVerification.depth ? ` at depth ${effectiveVerification.depth}` : "";
     return {
-      title: verification.bestMoveSan ?? engineSuggestedMove?.san ?? "Engine move",
-      detail: `${source}${depthText} prefers this by about ${Math.round(verification.lossCp)} cp`,
+      title: effectiveVerification.bestMoveSan ?? engineSuggestedMove?.san ?? "Engine move",
+      detail: `${source}${depthText} prefers this by about ${Math.round(effectiveVerification.lossCp)} cp`,
       trainingMove: engineSuggestedMove,
     };
   }
@@ -3265,6 +3361,54 @@ function verificationSourceLabel(verification: EngineVerification) {
 
 function gapKey(gap: RepertoireGap) {
   return `${gap.normalizedFen}|${gap.playerMoveUci}`;
+}
+
+function effectiveOpeningHealthVerification(
+  gap: RepertoireGap,
+  verification: EngineVerification | undefined,
+): EngineVerification | undefined {
+  if (!verification || verification.status === "ok" || verification.status === "missing") {
+    return verification;
+  }
+
+  if (
+    openingHealthMovesMatch(
+      verification.bestMoveUci,
+      verification.bestMoveSan,
+      gap.playerMoveUci,
+      gap.playerMoveSan,
+    )
+  ) {
+    return {
+      ...verification,
+      status: "ok",
+      lossCp: 0,
+      playedRank: verification.playedRank ?? 1,
+    };
+  }
+
+  return verification;
+}
+
+function openingHealthMovesMatch(
+  aUci: string | null | undefined,
+  aSan: string | null | undefined,
+  bUci: string | null | undefined,
+  bSan: string | null | undefined,
+) {
+  if (aUci && bUci && aUci === bUci) return true;
+
+  const normalizedA = normalizeOpeningHealthSan(aSan);
+  const normalizedB = normalizeOpeningHealthSan(bSan);
+  return Boolean(normalizedA && normalizedB && normalizedA === normalizedB);
+}
+
+function normalizeOpeningHealthSan(value: string | null | undefined) {
+  return value
+    ?.trim()
+    .replace(/^0-0-0/, "O-O-O")
+    .replace(/^0-0/, "O-O")
+    .replace(/[+#?!]+$/g, "");
 }
 
 function sortOpeningHealthRows(
@@ -3342,6 +3486,7 @@ function selectOpeningHealthEngine(engines: Engine[]): LocalEngine | null {
 }
 
 function openingHealthUrgency(gap: RepertoireGap, verification?: EngineVerification) {
+  const effectiveVerification = effectiveOpeningHealthVerification(gap, verification);
   const frequency = clamp(Math.log1p(gap.playerPositionGames) / Math.log1p(1000), 0, 1);
   const recency = openingHealthRecencyScore(gap.lastPlayed);
   const resultPressure = openingHealthResultPressure(gap);
@@ -3349,9 +3494,9 @@ function openingHealthUrgency(gap: RepertoireGap, verification?: EngineVerificat
   const practicalScore =
     resultPressure * 0.48 + frequency * 0.28 + recency * 0.18 + unusualMove * 0.06;
 
-  if (!verification || verification.status === "missing") return practicalScore;
+  if (!effectiveVerification || effectiveVerification.status === "missing") return practicalScore;
 
-  const engineScore = openingHealthEngineSeverity(verification.lossCp);
+  const engineScore = openingHealthEngineSeverity(effectiveVerification.lossCp);
   const engineWeight =
     engineScore <= 0.12 ? 0.08 : 0.1 + clamp((engineScore - 0.12) / 0.88, 0, 1) * 0.28;
   return practicalScore * (1 - engineWeight) + engineScore * engineWeight;
@@ -3410,7 +3555,9 @@ function buildLichessCloudVerification(
     }))
     .sort((a, b) => b.scoreForSide - a.scoreForSide || a.move.san.localeCompare(b.move.san));
   const bestMove = scoredMoves[0];
-  const playedMoveIndex = scoredMoves.findIndex((entry) => entry.move.uci === gap.playerMoveUci);
+  const playedMoveIndex = scoredMoves.findIndex((entry) =>
+    openingHealthMovesMatch(entry.move.uci, entry.move.san, gap.playerMoveUci, gap.playerMoveSan),
+  );
   const playedMove = playedMoveIndex >= 0 ? scoredMoves[playedMoveIndex] : null;
 
   if (!bestMove) return null;
@@ -3461,9 +3608,13 @@ function buildChessDbCloudVerification(
         a.move.san.localeCompare(b.move.san),
     );
   const bestMove = scoredMoves[0];
-  const playedMoveIndex = scoredMoves.findIndex((entry) => entry.move.uci === gap.playerMoveUci);
+  const playedMoveIndex = scoredMoves.findIndex((entry) =>
+    openingHealthMovesMatch(entry.move.uci, entry.move.san, gap.playerMoveUci, gap.playerMoveSan),
+  );
   const playedMove = playedMoveIndex >= 0 ? scoredMoves[playedMoveIndex] : null;
-  const rawPlayedMove = moves.find((move) => move.uci === gap.playerMoveUci);
+  const rawPlayedMove = moves.find((move) =>
+    openingHealthMovesMatch(move.uci, move.san, gap.playerMoveUci, gap.playerMoveSan),
+  );
 
   if (!bestMove) return null;
 
@@ -3580,7 +3731,14 @@ function buildEngineVerification(
 ): EngineVerification {
   const ordered = [...bestMoves].sort((a, b) => a.multipv - b.multipv);
   const bestLine = ordered[0];
-  const playedLine = ordered.find((line) => line.uciMoves[0] === gap.playerMoveUci);
+  const playedLine = ordered.find((line) =>
+    openingHealthMovesMatch(
+      line.uciMoves[0],
+      line.sanMoves[0],
+      gap.playerMoveUci,
+      gap.playerMoveSan,
+    ),
+  );
   const bestScore = scoreForGapSide(bestLine ? engineScoreToCp(bestLine) : 0, gap.sideToMove);
   const playedScore = playedLine
     ? scoreForGapSide(engineScoreToCp(playedLine), gap.sideToMove)
