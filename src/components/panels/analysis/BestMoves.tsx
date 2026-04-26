@@ -42,6 +42,7 @@ import {
   showArrowsAtom,
   tabEngineSettingsFamily,
 } from "@/state/atoms";
+import { getBestMoveSourceLabel } from "@/utils/analysisSource";
 import { chessopsError, positionFromFen, swapMove } from "@/utils/chessops";
 import type { Engine } from "@/utils/engines";
 import { formatNodes } from "@/utils/format";
@@ -324,6 +325,7 @@ function BestMovesComponent({
                     engine={engine.name}
                     moves={engineVariation.sanMoves}
                     score={engineVariation.score}
+                    source={engineVariation.source}
                     halfMoves={halfMoves}
                     threat={threat}
                     fen={threat ? swapMove(finalFen) : finalFen}
@@ -357,6 +359,7 @@ function EngineTop({
   const isComputed = engineVariations && engineVariations.length > 0;
   const depth = isComputed ? engineVariations[0].depth : 0;
   const nps = isComputed ? formatNodes(engineVariations[0].nps) : 0;
+  const source = isComputed ? engineVariations[0].source : undefined;
 
   return (
     <Group justify="space-between">
@@ -366,6 +369,11 @@ function EngineTop({
         </Text>
         {enabled && !isGameOver && !error && !engineVariations && (
           <Code fz="xs">{t("Common.Loading")}</Code>
+        )}
+        {source && (
+          <Tooltip label={`Using ${getBestMoveSourceLabel(source)} analysis`}>
+            <Code fz="xs">{getBestMoveSourceLabel(source)}</Code>
+          </Tooltip>
         )}
         {progress < 100 &&
           enabled &&

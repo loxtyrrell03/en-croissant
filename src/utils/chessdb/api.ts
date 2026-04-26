@@ -65,6 +65,7 @@ export async function getBestMoves(
             )
             .map((m, i) => ({
                 score: { value: chessDBevalToScore(m.score), wdl: null },
+                source: "chessdb",
                 nodes: 0,
                 depth: m.depth ?? 0,
                 multipv: i + 1,

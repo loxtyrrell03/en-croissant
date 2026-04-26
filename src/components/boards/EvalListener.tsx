@@ -2,7 +2,7 @@ import { parseUci } from "chessops";
 import { INITIAL_FEN, makeFen } from "chessops/fen";
 import equal from "fast-deep-equal";
 import { useAtom, useAtomValue } from "jotai";
-import { startTransition, useContext, useEffect, useMemo } from "react";
+import { startTransition, useContext, useEffect, useMemo, useRef } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
@@ -41,7 +41,7 @@ function EvalListener({ active }: { active: boolean }) {
     useShallow((s) => getVariationLine(s.root, s.position)),
   );
 
-  const [pos, error] = positionFromFen(fen);
+  const [pos] = positionFromFen(fen);
 
   useEffect(() => {
     if (active || !activeTab) return;
@@ -147,6 +147,15 @@ function EngineListener({
       tab: activeTab!,
     }),
   );
+  const searchingMovesKey = useMemo(() => searchingMoves.join(","), [searchingMoves]);
+  const searchKey = useMemo(
+    () => `${searchingFen}:${searchingMovesKey}`,
+    [searchingFen, searchingMovesKey],
+  );
+  const latestSearchKeyRef = useRef(searchKey);
+  useEffect(() => {
+    latestSearchKeyRef.current = searchKey;
+  }, [searchKey]);
 
   useEffect(() => {
     return () => {
@@ -171,7 +180,7 @@ function EngineListener({
         startTransition(() => {
           setEngineVariation((prev) => {
             const newMap = new Map(prev);
-            newMap.set(`${searchingFen}:${searchingMoves.join(",")}`, ev);
+            newMap.set(searchKey, ev);
             if (threat) {
               newMap.delete(`${fen}:${moves.join(",")}`);
             } else if (finalFen) {
@@ -196,10 +205,17 @@ function EngineListener({
     setScore,
     settings.enabled,
     isGameOver,
+    fen,
+    moves,
+    finalFen,
+    threat,
     searchingFen,
-    JSON.stringify(searchingMoves),
+    searchingMoves,
+    searchingMovesKey,
+    searchKey,
     engine.id,
     setEngineVariation,
+    setProgress,
     firstEngineWithLines,
   ]);
 
@@ -209,12 +225,17 @@ function EngineListener({
         .with(
           "local",
           () => (fen: string, goMode: GoMode, options: EngineOptions) =>
-            localGetBestMoves(engine as LocalEngine, fen, goMode, options),
+            getLocalBestMovesWithLichessCloud(
+              engine as LocalEngine,
+              fen,
+              goMode,
+              options,
+            ),
         )
         .with("chessdb", () => chessdbGetBestMoves)
         .with("lichess", () => lichessGetBestMoves)
         .exhaustive(),
-    [engine.type, engine],
+    [engine],
   );
 
   useThrottledEffect(
@@ -239,10 +260,17 @@ function EngineListener({
               const [progress, bestMoves] = moves;
               setEngineVariation((prev) => {
                 const newMap = new Map(prev);
-                newMap.set(`${searchingFen}:${searchingMoves.join(",")}`, bestMoves);
+                newMap.set(searchKey, bestMoves);
                 return newMap;
               });
-              setProgress(progress);
+              if (latestSearchKeyRef.current === searchKey) {
+                setProgress(progress);
+                const shouldSetScore =
+                  firstEngineWithLines === engine.id || firstEngineWithLines === null;
+                if (bestMoves.length > 0 && shouldSetScore) {
+                  setScore(bestMoves[0].score);
+                }
+              }
             }
           });
         }
@@ -258,15 +286,33 @@ function EngineListener({
       JSON.stringify(settings.settings),
       settings.go,
       searchingFen,
-      JSON.stringify(searchingMoves),
+      searchingMovesKey,
+      searchKey,
       isGameOver,
       activeTab,
       getBestMoves,
+      setScore,
+      setProgress,
       setEngineVariation,
       engine,
+      firstEngineWithLines,
     ],
   );
   return null;
+}
+
+async function getLocalBestMovesWithLichessCloud(
+  engine: LocalEngine,
+  tab: string,
+  goMode: GoMode,
+  options: EngineOptions,
+) {
+  const cloudMoves = await lichessGetBestMoves(tab, goMode, options);
+  if (cloudMoves?.[1]?.length) {
+    await stopEngine(engine, tab).catch(() => undefined);
+    return cloudMoves;
+  }
+  return localGetBestMoves(engine, tab, goMode, options);
 }
 
 export default EvalListener;

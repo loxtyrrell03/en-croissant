@@ -9,11 +9,12 @@ import { useAtom, useAtomValue } from "jotai";
 import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
-import type { Score } from "@/bindings";
+import type { BestMoveSource, Score } from "@/bindings";
 import { Chessground } from "@/chessground/Chessground";
 import MoveCell from "@/components/common/MoveCell";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import { moveHighlightAtom, previewBoardOnHoverAtom, scoreTypeFamily } from "@/state/atoms";
+import { getBestMoveSourceLabel } from "@/utils/analysisSource";
 import { positionFromFen } from "@/utils/chessops";
 import { formatScore } from "@/utils/score";
 import ScoreBubble from "./ScoreBubble";
@@ -21,6 +22,7 @@ import ScoreBubble from "./ScoreBubble";
 function AnalysisRow({
   engine,
   score,
+  source,
   moves,
   halfMoves,
   threat,
@@ -29,6 +31,7 @@ function AnalysisRow({
 }: {
   engine: string;
   score: Score;
+  source?: BestMoveSource;
   moves: string[];
   halfMoves: number;
   threat: boolean;
@@ -40,7 +43,8 @@ function AnalysisRow({
 
   const allMoves = moves;
   const visibleMoves = open ? allMoves : allMoves.slice(0, 12);
-  const engineOutput = [engine, formatScore(score.value), allMoves.join(" ")]
+  const engineOutputName = source ? `${engine} (${getBestMoveSourceLabel(source)})` : engine;
+  const engineOutput = [engineOutputName, formatScore(score.value), allMoves.join(" ")]
     .filter(Boolean)
     .join(" ");
 
@@ -67,7 +71,7 @@ function AnalysisRow({
     };
   }, [reset]);
 
-  useEffect(() => reset(), [open]);
+  useEffect(() => reset(), [open, reset]);
 
   const [evalDisplay, setEvalDisplay] = useAtom(scoreTypeFamily(engine));
 
