@@ -6,6 +6,8 @@ The goal is to build a proprietary chess workstation inspired by general chess-G
 
 The GPL base of the current application must not be reused, translated, restructured, or mechanically adapted. However, the owner has attested on 2026-04-27 that everything committed to this repository during the past week is the owner's own code and assets. That owner-authored contribution set may be copied into the proprietary rebuild after it is isolated from the GPL base. This permission applies to the owner-owned delta, new owner-created files, and owner-created assets from the listed commits; it does not grant permission to copy unmodified GPL base code or third-party material with unclear rights.
 
+The proprietary rebuild should intentionally use the same broad language and platform choices as the current app to make transfer easier: a TypeScript/React front end, a Rust native back end, Tauri as the desktop shell, SQLite for local storage, UCI engine integration, and a similar board/database/engine/review product-layer split. This is architecture compatibility, not permission to copy GPL base structure or implementation.
+
 The rebuild must happen in a separate repository, not in this repository and not on top of this repository's git history. Implementation agents should work from the separate proprietary repository, this plan, later specifications, and an owner-prepared reusable-delta bundle. They should not browse the old GPL repository as an implementation reference except for a controlled owner/provenance extraction pass.
 
 This plan is not legal advice. Anything uncertain should be marked "needs manual/legal review" before commercial release.
@@ -20,6 +22,8 @@ This plan is not legal advice. Anything uncertain should be marked "needs manual
 - Copying is allowed only for the owner-attested reusable contribution set listed in this plan, preferably from an isolated export bundle rather than from the old repository.
 - New files created entirely by the owner during the past-week range may be copied wholesale if they do not contain GPL-derived/generated material.
 - For files that modify pre-existing GPL files, copy only the owner-authored hunks or re-express them in the new architecture; do not copy the surrounding GPL file wholesale.
+- Reuse the same broad languages and platform stack where useful: Rust, TypeScript, React, Tauri, SQLite, UCI engines, local files, and background jobs.
+- Reuse the same general product architecture shape where useful: desktop shell, front-end board/workspace UI, native back-end services, database/search/indexing services, engine process services, import/export services, preferences, and optional cloud/account adapters.
 - Write all other production code, tests, documentation, schemas, assets, and UI copy independently.
 - Use behavior-level specifications, user stories, acceptance criteria, public protocols, and independently authored designs.
 - Do not ask implementation agents to compare against, port from, or inspect the GPL repository once the proprietary implementation begins, except when using a reviewed owner-authored delta bundle.
@@ -96,6 +100,31 @@ Required isolation rules:
 - Import the plan document into the new repo as a specification document, then treat the old repo as closed for implementation work.
 - Start future Codex sessions from the new repo root only. Do not include this GPL-derived repo as the active workspace or adjacent source reference.
 - If an implementation task needs additional detail from this repo, pause and create a small owner-reviewed spec or delta export; do not let the implementation agent freely inspect the old repository.
+
+### Transfer-Friendly Architecture Policy
+
+To reduce rewrite friction, the new repo should deliberately mirror the current app's broad technology and responsibility split while avoiding protected implementation expression.
+
+Allowed alignment:
+
+- Use Rust for native services, process control, indexing, import/export, and performance-sensitive chess/database work.
+- Use TypeScript and React for the desktop UI.
+- Use Tauri for the desktop host and front-end/back-end bridge.
+- Use SQLite for the local database and sidecar indexes if useful.
+- Use public UCI protocol concepts for engine integration.
+- Use a similar high-level set of domains: board workspace, notation/game tree, analysis, databases, files/studies, repertoires, review/training, settings, online accounts, and background jobs.
+- Generate front-end/back-end type bindings from newly written Rust or schema definitions.
+- Keep the same owner-added feature algorithms where they come from the approved owner-delta bundle.
+
+Not allowed alignment:
+
+- Do not copy the old `src` / `src-tauri` folder structure or route/component layout wholesale.
+- Do not copy GPL command names, type names, generated binding names, state atom names, SQL table names, CSS modules, or translation keys.
+- Do not reproduce the old IPC/API surface mechanically unless it comes from owner-authored reusable delta and is reviewed.
+- Do not copy old migrations, index binary formats, generated code, package config, Tauri config, lockfiles, theme files, or asset directories.
+- Do not use the old repository as a live "how did they implement this?" reference during new implementation.
+
+Practical target: make the new repo familiar enough that owner-authored recent code can be moved with minimal conceptual translation, but different enough in file layout, naming, schema, generated APIs, styling, and documentation that GPL base code is not carried across.
 
 ## 3. Feature Inventory
 
@@ -253,11 +282,11 @@ Observed commits since 2026-04-20 on `codex/en-croissant-fork`; the actual featu
 
 ## 5. Proposed Fresh Architecture
 
-The new architecture should be domain-first. UI components should consume application services and domain models rather than owning chess rules, persistence logic, or engine protocol state.
+The new architecture should be transfer-friendly and domain-first. It should use the same broad stack and deployment shape as the current app, while defining fresh module boundaries, names, APIs, schemas, generated bindings, and UI composition. UI components should consume application services and domain models rather than owning chess rules, persistence logic, or engine protocol state.
 
 ### App Shell
 
-- Cross-platform desktop shell with a web UI front end and a local service back end.
+- Cross-platform Tauri desktop shell with a TypeScript/React web UI front end and Rust local service back end.
 - Workspace model: windows contain workspaces; workspaces contain boards, databases, studies, and training sessions.
 - Command bus for user actions such as loading a PGN, starting analysis, importing games, or running a search.
 - Event bus for domain events such as position changed, engine line updated, import progressed, or review card answered.
@@ -292,6 +321,7 @@ The new architecture should be domain-first. UI components should consume applic
 
 ### Database/Indexing Layer
 
+- Implemented primarily in Rust, with SQLite as the MVP storage engine.
 - Stores canonical game records, participants, events, annotations, studies, and source metadata.
 - Builds derived indexes in background jobs rather than during UI interactions.
 - Keeps raw imported PGN or original metadata only when useful for export/audit.
@@ -299,6 +329,7 @@ The new architecture should be domain-first. UI components should consume applic
 
 ### Search/Query Layer
 
+- Exposed to the TypeScript UI through freshly generated Tauri command bindings or an independently designed equivalent.
 - Offers query services for header search, full-text search, position occurrence search, opening statistics, transpositions, and review generation.
 - Uses cancellation tokens and stable request ids for every long-running query.
 - Returns typed result objects with provenance and confidence metadata.
@@ -323,7 +354,17 @@ The new architecture should be domain-first. UI components should consume applic
 
 ## 6. Suggested Technology Stack
 
-Use permissively licensed dependencies where possible. Verify licences at selection time and before release. Avoid GPL/AGPL dependencies unless deliberately chosen with legal review and a distribution strategy.
+Use the same broad language/platform stack as the current app unless a specific dependency creates licence or technical risk. Prefer permissively licensed dependencies where possible. Verify licences at selection time and before release. Avoid GPL/AGPL dependencies unless deliberately chosen with legal review and a distribution strategy.
+
+Preferred baseline stack for transfer ease:
+
+- Desktop shell: Tauri 2.
+- Native layer: Rust.
+- Front end: TypeScript, React, Vite.
+- Local storage: SQLite.
+- Engine integration: UCI process adapter with user-supplied engines.
+- Background work: Rust async tasks or worker threads exposed through Tauri events.
+- Generated bindings: newly generated from fresh Rust command/type definitions.
 
 | Dependency or choice | Purpose | Licence to verify | Risk level | Possible alternative |
 | --- | --- | --- | --- | --- |
@@ -562,6 +603,7 @@ Design notes:
 ### Phase 0: Repo Setup and Licence Hygiene
 
 - Create a separate fresh repository with `git init` or an equivalent empty-repo process; do not fork, clone, or rename this repository.
+- Set up the same broad stack for transfer ease: Tauri, Rust, TypeScript, React, Vite, and SQLite, subject to dependency licence review.
 - Keep the GPL-derived repository outside the implementation workspace and treat it as read-only after owner-delta extraction.
 - Import only this plan and the approved owner-delta bundle into the new repository.
 - Add original README, licence, contribution policy, and clean-room notes.
@@ -629,6 +671,7 @@ Design notes:
 ### Licence Hygiene Acceptance Criteria
 
 - The proprietary rebuild lives in a separate git repository with independent history, independent remotes, and no relationship to this GPL-derived repository other than documented import of approved owner-owned material.
+- The new repository uses the same broad language/platform architecture for transfer ease while retaining independently written file layout, module boundaries, command names, schema, generated bindings, UI copy, styling, and assets.
 - The new repository has no copied GPL base source, file structure, generated code, schemas, migrations, fixtures, UI copy, comments, documentation, assets, or build scripts.
 - Any copied material comes only from the owner-attested past-week reusable contribution set, from an audited delta bundle, with provenance notes.
 - New owner-created files from the past-week range are identified separately from owner-authored hunks inside modified GPL files.
@@ -647,7 +690,8 @@ Design notes:
 | --- | --- | --- |
 | Rebuild accidentally occurs inside the GPL-derived repository | New proprietary work may inherit contaminated history, paths, configs, or accidental copies. | Use a physically separate `git init` repository; keep this repo read-only after extraction; never add it as a remote/submodule/dependency; run implementation sessions from the new repo root only. |
 | Accidental GPL contamination | Proprietary release may be compromised. | Start fresh repo; remove old repo from active workspace; forbid source-level reference; keep clean-room design log; review diffs before release. |
-| Over-reliance on old architecture | New app may be argued to be structurally derivative or inherit old limitations. | Use domain-first architecture in this plan; rename concepts where not generic; document independent alternatives considered. |
+| Confusing stack parity with code copying | Same languages and high-level architecture could lead contributors to recreate GPL structure too closely. | Allow Tauri/Rust/TypeScript/React/SQLite parity, but require fresh file layout, names, APIs, schemas, generated bindings, UI copy, styling, and docs. |
+| Over-reliance on old architecture | New app may be argued to be structurally derivative or inherit old limitations. | Keep only broad architectural parity; use domain-first boundaries in this plan; rename concepts where not generic; document independent alternatives considered. |
 | Hidden copied UI text or assets | Licence and branding risk. | Create original copy deck, icons, themes, sounds, piece assets, and screenshots; audit translations and resource folders. |
 | Distinctive names copied into APIs | Internal structure may reveal old implementation influence. | Use new names for modules, commands, types, state keys, generated bindings, and database tables. |
 | GPL/AGPL dependency accidentally introduced | Distribution obligations may conflict with proprietary goal. | Use licence scanner; require dependency approval; avoid GPL/AGPL unless manually/legal reviewed. |
@@ -700,7 +744,7 @@ Use these prompts later in the fresh repository. Each prompt forbids open-ended 
 ### Create the separate proprietary repository
 
 ```text
-Create a brand-new proprietary repository for the chess workstation rebuild. Do not fork, clone, rename, or continue from the old GPL-derived repository. Initialize independent git history, add only original project scaffolding, import this plan as a specification document, and leave the approved owner-delta bundle as a reviewed input directory. Do not copy old source trees, build configs, generated files, assets, lockfiles, CI files, or git history.
+Create a brand-new proprietary repository for the chess workstation rebuild. Do not fork, clone, rename, or continue from the old GPL-derived repository. Initialize independent git history. Use the same broad stack for transfer ease: Tauri 2, Rust, TypeScript, React, Vite, and SQLite, subject to licence review. Add only original project scaffolding, import this plan as a specification document, and leave the approved owner-delta bundle as a reviewed input directory. Do not copy old source trees, build configs, generated files, assets, lockfiles, CI files, or git history.
 ```
 
 ### Import owner-owned reusable delta
@@ -712,7 +756,7 @@ Import the approved owner-authored reusable code bundle into this separate propr
 ### Create the initial app skeleton
 
 ```text
-Create the initial desktop app skeleton for a proprietary chess workstation in this separate fresh repository. Do not reference, inspect, or copy any old GPL repository, source files, folder structure, UI text, assets, schemas, generated code, tests, or implementation details. If an approved owner-authored reusable-delta bundle is provided, use only the approved items from that bundle. Use this repository's plan and public documentation for selected dependencies. Set up the app shell, front-end build, back-end service boundary, original placeholder branding, licence notes, and dependency licence tracking. Do not implement chess features yet.
+Create the initial desktop app skeleton for a proprietary chess workstation in this separate fresh repository. Use the same broad architecture class as the current app for transfer ease: Tauri desktop shell, Rust native service layer, TypeScript/React front end, Vite build, SQLite-ready persistence layer, generated front-end/back-end bindings from fresh definitions, and background job/event plumbing. Do not reference, inspect, or copy any old GPL repository, source files, folder structure, UI text, assets, schemas, generated code, tests, or implementation details. If an approved owner-authored reusable-delta bundle is provided, use only the approved items from that bundle. Use this repository's plan and public documentation for selected dependencies. Set up original project structure, original placeholder branding, licence notes, and dependency licence tracking. Do not implement chess features yet.
 ```
 
 ### Implement the chess domain model
