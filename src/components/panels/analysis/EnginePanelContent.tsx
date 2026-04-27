@@ -120,20 +120,10 @@ export default function EnginePanelContent({ compact = false }: { compact?: bool
               </Group>
             </Paper>
           )}
-          <Paper
-            withBorder
-            p="sm"
-            radius="md"
-            style={{
-              background:
-                "color-mix(in srgb, var(--mantine-color-dark-7), var(--mantine-color-body) 40%)",
-            }}
-          >
-            <Text size="sm" c="dimmed" style={{ lineHeight: 1.8 }}>
-              Press <Kbd>E</Kbd> to toggle engine. <Kbd>Space</Kbd> plays best move. Click moves to
-              explore.
-            </Text>
-          </Paper>
+          <Text size="xs" c="dimmed" px={compact ? 2 : 0} style={{ lineHeight: 1.8 }}>
+            Press <Kbd>E</Kbd> to toggle engine. <Kbd>Space</Kbd> plays best move. Click moves to
+            explore.
+          </Text>
           <Accordion
             variant="separated"
             multiple
