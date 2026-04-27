@@ -811,16 +811,36 @@ export type PracticeData = {
     logs: (ReviewLog & { fen: string })[];
 };
 
+const FILE_BACKED_REVIEW_DECK_EXTENSIONS = [".opening-review.json", ".mistake-review.json"];
+
+function emptyPracticeData(): PracticeData {
+    return {
+        positions: [],
+        logs: [],
+    };
+}
+
+export function getDeckStorageKey(file: string, game: number) {
+    return `deck-${file}-${game}`;
+}
+
+export function isFileBackedReviewDeck(file: string) {
+    const lowerFile = file.toLowerCase();
+    return FILE_BACKED_REVIEW_DECK_EXTENSIONS.some((extension) => lowerFile.endsWith(extension));
+}
+
 export const deckAtomFamily = atomFamily(
-    ({ file, game }: { file: string; game: number }) =>
-        atomWithStorage<PracticeData>(
-            `deck-${file}-${game}`,
-            {
-                positions: [],
-                logs: [],
-            },
+    ({ file, game }: { file: string; game: number }) => {
+        if (isFileBackedReviewDeck(file)) {
+            return atom<PracticeData>(emptyPracticeData());
+        }
+
+        return atomWithStorage<PracticeData>(
+            getDeckStorageKey(file, game),
+            emptyPracticeData(),
             createZodStorage(practiceDataSchema, localStorage) as any as SyncStorage<PracticeData>, // TODO: fix types
-        ),
+        );
+    },
 
     (a, b) => a.file === b.file && a.game === b.game,
 );

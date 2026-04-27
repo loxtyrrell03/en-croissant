@@ -87,6 +87,7 @@ import {
   currentInvisibleAtom,
   currentShowCommentsAtom,
   deckAtomFamily,
+  getDeckStorageKey,
   openingReviewHideMovesDuringPracticeAtom,
   openingReviewAutoUpdateStateAtom,
   mistakeReviewAutoUpdateStateAtom,
@@ -346,6 +347,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     let disposed = false;
     setLoaded(false);
     setLoadError(null);
+    localStorage.removeItem(getDeckStorageKey(deckPath, 0));
 
     async function loadDeck() {
       try {
