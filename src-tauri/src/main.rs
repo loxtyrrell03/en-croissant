@@ -37,8 +37,9 @@ use tauri::{Manager, Window};
 use tauri_plugin_log::{Target, TargetKind};
 
 use crate::chess::{
-    analyze_game, cancel_analysis, get_engine_config, get_engine_logs, kill_engine, kill_engines,
-    scan_mistake_review, score_mistake_review_move, set_mistake_review_scan_paused, stop_engine,
+    analyze_game, cancel_analysis, get_engine_config, get_engine_logs,
+    get_mistake_review_sample_line, kill_engine, kill_engines, scan_mistake_review,
+    score_mistake_review_move, set_mistake_review_scan_paused, stop_engine,
     MistakeReviewScanProgress,
 };
 use crate::db::{
@@ -121,6 +122,7 @@ fn main() {
             analyze_game,
             scan_mistake_review,
             score_mistake_review_move,
+            get_mistake_review_sample_line,
             set_mistake_review_scan_paused,
             cancel_analysis,
             stop_engine,

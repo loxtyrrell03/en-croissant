@@ -2,6 +2,7 @@ import {
   ActionIcon,
   Card,
   Group,
+  NumberInput,
   ScrollArea,
   Select,
   Stack,
@@ -28,7 +29,7 @@ import {
 } from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
 import { open } from "@tauri-apps/plugin-dialog";
-import { useAtom } from "jotai";
+import { useAtom, type PrimitiveAtom } from "jotai";
 import { RESET } from "jotai/utils";
 import posthog from "posthog-js";
 import { useMemo, useRef, useState } from "react";
@@ -41,7 +42,13 @@ import {
   engineHotkeysEnabledAtom,
   forcedEnPassantAtom,
   materialDisplayAtom,
+  mistakeReviewAutoRevealBestAtom,
   mistakeReviewAutoPlayLineAtom,
+  mistakeReviewEngineOffOnNavigationAtom,
+  mistakeReviewEngineOnRevealAtom,
+  mistakeReviewRevealDelayAtom,
+  mistakeReviewSampleLinePliesAtom,
+  mistakeReviewSampleLineSpeedAtom,
   moveHighlightAtom,
   moveInputAtom,
   moveMethodAtom,
@@ -154,6 +161,37 @@ function TelemetrySwitch() {
   );
 }
 
+function NumberSetting({
+  atom,
+  min,
+  max,
+  step,
+  fallback,
+}: {
+  atom: PrimitiveAtom<number>;
+  min: number;
+  max: number;
+  step: number;
+  fallback: number;
+}) {
+  const [value, setValue] = useAtom(atom);
+
+  return (
+    <NumberInput
+      value={value}
+      min={min}
+      max={max}
+      step={step}
+      w={120}
+      onChange={(nextValue) => {
+        const numericValue = Number(nextValue);
+        const safeValue = Number.isFinite(numericValue) ? numericValue : fallback;
+        setValue(Math.min(max, Math.max(min, Math.round(safeValue))));
+      }}
+    />
+  );
+}
+
 export default function Page() {
   const { t, i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
@@ -249,7 +287,7 @@ export default function Page() {
         id: "mistake-review-auto-play-line",
         category: "board",
         title: "Mistake review line playback",
-        description: "Play the saved engine line after revealing the mistake or best move.",
+        description: "Play a short engine sample line after revealing the mistake or best move.",
         keywords: ["mistake", "review", "trainer", "line", "reveal"],
         render: () => <SettingsSwitch atom={mistakeReviewAutoPlayLineAtom} />,
       },
@@ -553,6 +591,78 @@ export default function Page() {
         description: "Hide the notation panel while you are making an Opening Review attempt.",
         keywords: ["opening review", "review", "moves", "notation", "trainer"],
         render: () => <SettingsSwitch atom={openingReviewHideMovesDuringPracticeAtom} />,
+      },
+      {
+        id: "mistake-review-reveal-delay",
+        category: "repertoire",
+        title: "Mistake trainer reveal delay",
+        description: "Seconds before the Show mistake and Reveal best buttons become available.",
+        keywords: ["mistake", "review", "trainer", "reveal", "delay"],
+        render: () => (
+          <NumberSetting
+            atom={mistakeReviewRevealDelayAtom}
+            min={0}
+            max={60}
+            step={1}
+            fallback={0}
+          />
+        ),
+      },
+      {
+        id: "mistake-review-auto-reveal-best",
+        category: "repertoire",
+        title: "Mistake trainer auto-reveal",
+        description: "Reveal the best move automatically after a training attempt.",
+        keywords: ["mistake", "review", "trainer", "auto", "reveal"],
+        render: () => <SettingsSwitch atom={mistakeReviewAutoRevealBestAtom} />,
+      },
+      {
+        id: "mistake-review-sample-line-plies",
+        category: "repertoire",
+        title: "Mistake trainer sample line plies",
+        description: "Half-moves to play after reveal; set to 0 to stop playback.",
+        keywords: ["mistake", "review", "trainer", "engine", "line", "plies"],
+        render: () => (
+          <NumberSetting
+            atom={mistakeReviewSampleLinePliesAtom}
+            min={0}
+            max={20}
+            step={1}
+            fallback={6}
+          />
+        ),
+      },
+      {
+        id: "mistake-review-sample-line-speed",
+        category: "repertoire",
+        title: "Mistake trainer sample line speed",
+        description: "Milliseconds between moves when the engine sample line plays.",
+        keywords: ["mistake", "review", "trainer", "engine", "line", "speed"],
+        render: () => (
+          <NumberSetting
+            atom={mistakeReviewSampleLineSpeedAtom}
+            min={200}
+            max={3000}
+            step={100}
+            fallback={1000}
+          />
+        ),
+      },
+      {
+        id: "mistake-review-engine-on-reveal",
+        category: "repertoire",
+        title: "Engine on reveal",
+        description: "Turn engine analysis on when revealing mistake trainer moves.",
+        keywords: ["mistake", "review", "trainer", "engine", "reveal"],
+        render: () => <SettingsSwitch atom={mistakeReviewEngineOnRevealAtom} />,
+      },
+      {
+        id: "mistake-review-engine-off-navigation",
+        category: "repertoire",
+        title: "Engine off on trainer navigation",
+        description: "Turn engine analysis off when moving to another mistake trainer card.",
+        keywords: ["mistake", "review", "trainer", "engine", "navigation"],
+        render: () => <SettingsSwitch atom={mistakeReviewEngineOffOnNavigationAtom} />,
       },
       // Sound settings
       {

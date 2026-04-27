@@ -838,6 +838,26 @@ pub struct MistakeReviewMoveScore {
     pub engine_name: String,
 }
 
+#[derive(Clone, Debug, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct MistakeReviewSampleLineRequest {
+    pub fen: String,
+    pub first_move_uci: String,
+    pub engine_path: String,
+    pub engine_name: Option<String>,
+    pub depth: Option<u32>,
+    pub max_plies: Option<u32>,
+}
+
+#[derive(Clone, Debug, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct MistakeReviewSampleLine {
+    pub moves: Vec<String>,
+    pub requested_depth: u32,
+    pub reached_depth: u32,
+    pub engine_name: String,
+}
+
 #[tauri::command]
 #[specta::specta]
 pub async fn scan_mistake_review(
@@ -1433,6 +1453,58 @@ pub async fn score_mistake_review_move(
         cp_after,
         requested_depth: depth,
         reached_depth: best.depth.min(after_best.depth),
+        engine_name,
+    })
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn get_mistake_review_sample_line(
+    request: MistakeReviewSampleLineRequest,
+) -> Result<MistakeReviewSampleLine, Error> {
+    let max_plies = request.max_plies.unwrap_or(6).min(20) as usize;
+    let depth = request.depth.unwrap_or(12).max(1);
+    let engine_path = PathBuf::from(&request.engine_path);
+    let engine_name = request.engine_name.clone().unwrap_or_else(|| {
+        engine_path
+            .file_stem()
+            .and_then(|name| name.to_str())
+            .unwrap_or("Stockfish")
+            .to_string()
+    });
+
+    if max_plies == 0 {
+        return Ok(MistakeReviewSampleLine {
+            moves: Vec::new(),
+            requested_depth: depth,
+            reached_depth: 0,
+            engine_name,
+        });
+    }
+
+    let first_move_uci = request.first_move_uci.trim().to_string();
+    let mut position = mistake_review_starting_position(Some(&request.fen))?;
+    let first_uci = UciMove::from_ascii(first_move_uci.as_bytes())?;
+    let first_move = first_uci.to_move(&position)?;
+    position.play_unchecked(&first_move);
+    let fen_after_first = Fen::from_position(position, EnPassantMode::Legal).to_string();
+
+    let (mut proc, mut reader) = EngineProcess::new(engine_path).await?;
+    let continuation =
+        analyze_mistake_review_position(&mut proc, &mut reader, &fen_after_first, depth, 1).await?;
+    proc.kill().await?;
+
+    let continuation_best = continuation.first();
+    let mut moves = vec![first_move_uci];
+    if let Some(best) = continuation_best {
+        moves.extend(best.uci_moves.clone());
+    }
+    moves.truncate(max_plies);
+
+    Ok(MistakeReviewSampleLine {
+        moves,
+        requested_depth: depth,
+        reached_depth: continuation_best.map(|best| best.depth).unwrap_or(0),
         engine_name,
     })
 }

@@ -66,8 +66,15 @@ function ComparePanel() {
         <AnalysisPanel />
       </Paper>
       <Box
-        h={8}
-        style={{ position: "relative", cursor: "row-resize", flexShrink: 0 }}
+        h={12}
+        style={{
+          position: "relative",
+          cursor: "row-resize",
+          flexShrink: 0,
+          borderRadius: 999,
+          backgroundColor:
+            "color-mix(in srgb, var(--mantine-primary-color-filled) 10%, transparent)",
+        }}
         role="separator"
         aria-orientation="horizontal"
         aria-label="Resize compare panels"
@@ -79,8 +86,11 @@ function ComparePanel() {
             left: 0,
             right: 0,
             top: "50%",
-            height: 1,
-            background: "var(--mantine-color-dark-4)",
+            height: 3,
+            marginInline: 8,
+            borderRadius: 999,
+            background: "var(--mantine-primary-color-filled)",
+            opacity: 0.72,
             transform: "translateY(-50%)",
           }}
         />

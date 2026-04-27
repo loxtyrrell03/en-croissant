@@ -45,6 +45,14 @@ async scoreMistakeReviewMove(request: MistakeReviewMoveScoreRequest) : Promise<R
     else return { status: "error", error: e  as any };
 }
 },
+async getMistakeReviewSampleLine(request: MistakeReviewSampleLineRequest) : Promise<Result<MistakeReviewSampleLine, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_mistake_review_sample_line", { request }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async setMistakeReviewScanPaused(id: string, paused: boolean) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("set_mistake_review_scan_paused", { id, paused }) };
@@ -572,6 +580,8 @@ export type MistakeReviewAnalysisMode = "single" | "layered"
 export type MistakeReviewAttemptLabel = "best" | "good" | "okay" | "inaccuracy" | "mistake" | "blunder"
 export type MistakeReviewMoveScore = { label: MistakeReviewAttemptLabel; passed: boolean; bestMoveSan: string; bestMoveUci: string; playedMoveSan: string; playedMoveUci: string; cpLoss: number; winProbabilityDrop: number; cpBefore: number; cpAfter: number; requestedDepth: number; reachedDepth: number; engineName: string }
 export type MistakeReviewMoveScoreRequest = { fen: string; playedMoveUci: string; enginePath: string; engineName: string | null; depth: number | null; multiPv: number | null; thresholds: MistakeReviewThresholds | null }
+export type MistakeReviewSampleLine = { moves: string[]; requestedDepth: number; reachedDepth: number; engineName: string }
+export type MistakeReviewSampleLineRequest = { fen: string; firstMoveUci: string; enginePath: string; engineName: string | null; depth: number | null; maxPlies: number | null }
 export type MistakeReviewScanProgress = { id: string; progress: number; gamesAnalyzed: number; gamesTotal: number; positionsAnalyzed: number; candidateMoves: number; mistakesFound: number; phase: string; paused: boolean; finished: boolean }
 export type MistakeReviewScanReport = { gamesScanned: number; candidateMoves: number; positionsAnalyzed: number; lastAnalyzedGameId: number | null; stopped: boolean; mistakes: MistakeReviewScanResult[] }
 export type MistakeReviewScanRequest = { requestId: string | null; playerDb: string; playerId: number; playerName: string | null; enginePath: string; engineName: string | null; analysisMode: MistakeReviewAnalysisMode | null; fastDepth: number | null; deepDepth: number | null; multiPv: number | null; thresholds: MistakeReviewThresholds | null; includeSeverities: MistakeReviewSeverityFilter | null; minWinProbabilityDrop: number | null; timeControls: string[] | null; startDate: string | null; endDate: string | null; sinceGameId: number | null; maxGames: number | null }

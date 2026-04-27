@@ -96,54 +96,81 @@
   position: relative;
   flex-shrink: 0;
   touch-action: none;
-  opacity: 0.6;
+  opacity: 0.9;
   transition:
     background-color 120ms ease,
     opacity 120ms ease;
 }
 
 .columnResizeHandle {
-  width: 0.6rem;
+  width: 0.8rem;
   cursor: col-resize;
 }
 
 .rowResizeHandle {
-  height: 0.65rem;
+  height: 0.8rem;
   cursor: row-resize;
 }
 
 .columnResizeHandle::before,
-.rowResizeHandle::before {
+.rowResizeHandle::before,
+.columnResizeHandle::after,
+.rowResizeHandle::after {
   content: "";
   position: absolute;
-  background-color: var(--mantine-color-dark-4);
+  background-color: var(--mantine-color-dark-3);
 }
 
 .columnResizeHandle::before {
-  top: 0.35rem;
-  bottom: 0.35rem;
+  top: 0.25rem;
+  bottom: 0.25rem;
   left: 50%;
-  width: 1px;
+  width: 3px;
+  border-radius: 999px;
   transform: translateX(-50%);
 }
 
 .rowResizeHandle::before {
   top: 50%;
-  left: 0.35rem;
-  right: 0.35rem;
-  height: 1px;
+  left: 0.25rem;
+  right: 0.25rem;
+  height: 3px;
+  border-radius: 999px;
   transform: translateY(-50%);
+}
+
+.columnResizeHandle::after {
+  top: 50%;
+  left: 50%;
+  width: 0.25rem;
+  height: 1.15rem;
+  border-radius: 999px;
+  opacity: 0.45;
+  transform: translate(-50%, -50%);
+}
+
+.rowResizeHandle::after {
+  top: 50%;
+  left: 50%;
+  width: 1.15rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  opacity: 0.45;
+  transform: translate(-50%, -50%);
 }
 
 .columnResizeHandle:hover,
 .rowResizeHandle:hover {
   opacity: 1;
-  background-color: color-mix(in srgb, var(--mantine-primary-color-filled) 12%, transparent);
+  background-color: color-mix(in srgb, var(--mantine-primary-color-filled) 16%, transparent);
 }
 
 .columnResizeHandle:hover::before,
-.rowResizeHandle:hover::before {
+.rowResizeHandle:hover::before,
+.columnResizeHandle:hover::after,
+.rowResizeHandle:hover::after {
   background-color: var(--mantine-primary-color-filled);
+  opacity: 1;
 }
 
 [data-mantine-color-scheme="light"] .tabsFiller {

@@ -193,9 +193,34 @@ export const planExplorerHoverEverywhereAtom = atomWithStorage<boolean>(
 );
 export const showEngineDockAtom = atomWithStorage<boolean>("show-engine-dock", true);
 export const engineHotkeysEnabledAtom = atomWithStorage<boolean>("engine-hotkeys-enabled", true);
+export const boardManualSizeAtom = atomWithStorage<number | null>("board-manual-size", null);
 export const mistakeReviewAutoPlayLineAtom = atomWithStorage<boolean>(
     "mistake-review-auto-play-line",
     true,
+);
+export const mistakeReviewRevealDelayAtom = atomWithStorage<number>(
+    "mistake-review-reveal-delay",
+    0,
+);
+export const mistakeReviewAutoRevealBestAtom = atomWithStorage<boolean>(
+    "mistake-review-auto-reveal-best",
+    false,
+);
+export const mistakeReviewSampleLinePliesAtom = atomWithStorage<number>(
+    "mistake-review-sample-line-plies",
+    6,
+);
+export const mistakeReviewSampleLineSpeedAtom = atomWithStorage<number>(
+    "mistake-review-sample-line-speed",
+    1000,
+);
+export const mistakeReviewEngineOnRevealAtom = atomWithStorage<boolean>(
+    "mistake-review-engine-on-reveal",
+    false,
+);
+export const mistakeReviewEngineOffOnNavigationAtom = atomWithStorage<boolean>(
+    "mistake-review-engine-off-on-navigation",
+    false,
 );
 export const planExplorerSourceAtom = atomWithStorage<"local" | "lch_all" | "lch_master">(
     "plan-explorer-source",

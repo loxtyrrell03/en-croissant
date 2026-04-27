@@ -5,9 +5,13 @@ import {
   Box,
   Button,
   Center,
+  Divider,
   Group,
+  NumberInput,
   Paper,
+  Popover,
   Stack,
+  Switch,
   Text,
   ThemeIcon,
   useMantineTheme,
@@ -20,6 +24,7 @@ import {
   IconEye,
   IconPlayerPlay,
   IconRotate,
+  IconSettings,
 } from "@tabler/icons-react";
 import {
   makeSquare,
@@ -43,14 +48,17 @@ import {
   useRef,
   useState,
   type MouseEvent,
+  type PointerEvent as ReactPointerEvent,
 } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
+import { commands } from "@/bindings";
 import { Chessground, type ChessgroundRef } from "@/chessground/Chessground";
 import {
+  boardManualSizeAtom,
   autoPromoteAtom,
   bestMovesFamily,
   currentBoardPreviewShapesAtom,
@@ -62,11 +70,18 @@ import {
   currentTabAtom,
   currentTabSelectedAtom,
   deckAtomFamily,
+  enableAllAtom,
   enableBoardScrollAtom,
   eraseDrawablesOnClickAtom,
   forcedEnPassantAtom,
   materialDisplayAtom,
+  mistakeReviewAutoRevealBestAtom,
   mistakeReviewAutoPlayLineAtom,
+  mistakeReviewEngineOffOnNavigationAtom,
+  mistakeReviewEngineOnRevealAtom,
+  mistakeReviewRevealDelayAtom,
+  mistakeReviewSampleLinePliesAtom,
+  mistakeReviewSampleLineSpeedAtom,
   moveHighlightAtom,
   moveInputAtom,
   planExplorerArrowLimitAtom,
@@ -110,7 +125,7 @@ import { findFen } from "@/utils/treeReducer";
 import ShowMaterial from "../common/ShowMaterial";
 import { TreeStateContext } from "../common/TreeStateContext";
 import FideInfo from "../databases/FideInfo";
-import { updateCardPerformance } from "../files/opening";
+import { updateCardPerformance, type Position as ReviewPosition } from "../files/opening";
 import { arrowColors } from "../panels/analysis/BestMoves";
 import AnnotationHint from "./AnnotationHint";
 import { BoardBar } from "./BoardBar";
@@ -125,7 +140,16 @@ const SMALL_BRUSH = 4;
 const BAR_HEIGHT = "1.9rem";
 const BOARD_SIDE_BAR_WIDTH = 25;
 const BOARD_ROW_GAP = 12;
+const MIN_MANUAL_BOARD_SIZE = 280;
+const MISTAKE_REVIEW_PANEL_MIN_HEIGHT = 108;
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
+
+type BoardResizeCorner = "nw" | "ne" | "sw" | "se";
+
+function clampNumber(value: number, min: number, max: number) {
+  if (!Number.isFinite(value)) return min;
+  return Math.min(max, Math.max(min, value));
+}
 
 function squareFromPointer(
   event: MouseEvent,
@@ -327,10 +351,37 @@ function Board({
   const [practiceState, setPracticeState] = useAtom(practiceStateAtom);
   const [sessionStats, setSessionStats] = useAtom(practiceSessionStatsAtom);
   const cardStartTime = useAtomValue(practiceCardStartTimeAtom);
-  const mistakeReviewAutoPlayLine = useAtomValue(mistakeReviewAutoPlayLineAtom);
+  const [mistakeReviewAutoPlayLine, setMistakeReviewAutoPlayLine] = useAtom(
+    mistakeReviewAutoPlayLineAtom,
+  );
+  const [mistakeReviewRevealDelay, setMistakeReviewRevealDelay] = useAtom(
+    mistakeReviewRevealDelayAtom,
+  );
+  const [mistakeReviewAutoRevealBest, setMistakeReviewAutoRevealBest] = useAtom(
+    mistakeReviewAutoRevealBestAtom,
+  );
+  const [mistakeReviewSampleLinePlies, setMistakeReviewSampleLinePlies] = useAtom(
+    mistakeReviewSampleLinePliesAtom,
+  );
+  const [mistakeReviewSampleLineSpeed, setMistakeReviewSampleLineSpeed] = useAtom(
+    mistakeReviewSampleLineSpeedAtom,
+  );
+  const [mistakeReviewEngineOnReveal, setMistakeReviewEngineOnReveal] = useAtom(
+    mistakeReviewEngineOnRevealAtom,
+  );
+  const [mistakeReviewEngineOffOnNavigation, setMistakeReviewEngineOffOnNavigation] = useAtom(
+    mistakeReviewEngineOffOnNavigationAtom,
+  );
+  const [, setAllEnginesEnabled] = useAtom(enableAllAtom);
   const [mistakeReviewRevealState, setMistakeReviewRevealState] =
     useState<MistakeReviewRevealState | null>(null);
+  const [mistakeReviewLineBusy, setMistakeReviewLineBusy] = useState(false);
+  const [mistakeReviewRevealRemaining, setMistakeReviewRevealRemaining] = useState(0);
+  const [activeMistakeReviewPosition, setActiveMistakeReviewPosition] =
+    useState<ReviewPosition | null>(null);
   const mistakeReviewLineTimers = useRef<number[]>([]);
+  const autoRevealKeyRef = useRef<string | null>(null);
+  const previousMistakeReviewIndexRef = useRef<number | null>(null);
 
   const clearMistakeReviewLine = useCallback(() => {
     for (const timer of mistakeReviewLineTimers.current) {
@@ -363,27 +414,55 @@ function Board({
   ]);
   const currentMistakeReviewPosition =
     currentMistakeReviewIndex >= 0 ? deck.positions[currentMistakeReviewIndex] : null;
+  useEffect(() => {
+    if (!isMistakeReviewTab) {
+      setActiveMistakeReviewPosition(null);
+      previousMistakeReviewIndexRef.current = null;
+      return;
+    }
+
+    if (currentMistakeReviewPosition?.mistakeReview) {
+      setActiveMistakeReviewPosition(currentMistakeReviewPosition);
+    }
+  }, [currentMistakeReviewPosition, isMistakeReviewTab]);
+
+  const trainerMistakeReviewPosition = currentMistakeReviewPosition?.mistakeReview
+    ? currentMistakeReviewPosition
+    : activeMistakeReviewPosition;
+  const trainerMistakeReviewIndex = useMemo(() => {
+    if (currentMistakeReviewPosition?.mistakeReview) return currentMistakeReviewIndex;
+    if (!activeMistakeReviewPosition) return -1;
+    return deck.positions.findIndex((position) =>
+      sameBoardPosition(position.fen, activeMistakeReviewPosition.fen),
+    );
+  }, [
+    activeMistakeReviewPosition,
+    currentMistakeReviewIndex,
+    currentMistakeReviewPosition,
+    deck.positions,
+  ]);
 
   const returnToMistakeReviewPosition = useCallback(
-    (options: { clearReveal?: boolean } = {}) => {
-      if (!currentMistakeReviewPosition) return false;
+    (options: { clearReveal?: boolean; resetPractice?: boolean } = {}) => {
+      if (!trainerMistakeReviewPosition) return false;
       clearMistakeReviewLine();
+      setMistakeReviewLineBusy(false);
       if (options.clearReveal !== false) {
         setMistakeReviewRevealState(null);
       }
 
       const state = store.getState();
-      const path = findFen(currentMistakeReviewPosition.fen, state.root);
+      const path = findFen(trainerMistakeReviewPosition.fen, state.root);
       if (
         path.length === 0 &&
-        !sameBoardPosition(state.root.fen, currentMistakeReviewPosition.fen)
+        !sameBoardPosition(state.root.fen, trainerMistakeReviewPosition.fen)
       ) {
         setHeaders({
           ...state.headers,
-          fen: currentMistakeReviewPosition.fen,
+          fen: trainerMistakeReviewPosition.fen,
           orientation:
-            currentMistakeReviewPosition.mistakeReview?.playerColor ??
-            currentMistakeReviewPosition.sideToMove ??
+            trainerMistakeReviewPosition.mistakeReview?.playerColor ??
+            trainerMistakeReviewPosition.sideToMove ??
             state.headers.orientation ??
             "white",
           result: "*",
@@ -394,11 +473,11 @@ function Board({
         setPracticePath(path);
       }
 
-      if (practicing) {
+      if (practicing && options.resetPractice !== false) {
         setPracticeState({
           phase: "waiting",
-          currentFen: currentMistakeReviewPosition.fen,
-          positionIndex: currentMistakeReviewIndex,
+          currentFen: trainerMistakeReviewPosition.fen,
+          positionIndex: trainerMistakeReviewIndex,
         });
       }
 
@@ -406,23 +485,39 @@ function Board({
     },
     [
       clearMistakeReviewLine,
-      currentMistakeReviewIndex,
-      currentMistakeReviewPosition,
       goToMove,
       practicing,
       setHeaders,
       setPracticePath,
       setPracticeState,
       store,
+      trainerMistakeReviewIndex,
+      trainerMistakeReviewPosition,
     ],
   );
 
   const playMistakeReviewLine = useCallback(
     (line: string[]) => {
       clearMistakeReviewLine();
-      if (!mistakeReviewAutoPlayLine) return;
+      if (!mistakeReviewAutoPlayLine) {
+        setMistakeReviewLineBusy(false);
+        return;
+      }
 
-      const legalLine = line.filter((move) => parseUci(move)).slice(0, 12);
+      const maxPlies = Math.round(clampNumber(mistakeReviewSampleLinePlies, 0, 20));
+      if (maxPlies === 0) {
+        setMistakeReviewLineBusy(false);
+        return;
+      }
+
+      const intervalMs = Math.round(clampNumber(mistakeReviewSampleLineSpeed, 200, 3000));
+      const legalLine = line.filter((move) => parseUci(move)).slice(0, maxPlies);
+      if (legalLine.length === 0) {
+        setMistakeReviewLineBusy(false);
+        return;
+      }
+
+      setMistakeReviewLineBusy(true);
       for (const [index, moveUci] of legalLine.entries()) {
         const timer = window.setTimeout(
           () => {
@@ -431,50 +526,203 @@ function Board({
               store.getState().makeMove({ payload: move, changeHeaders: false });
             }
           },
-          index === 0 ? 180 : 180 + index * 520,
+          index === 0 ? 180 : 180 + index * intervalMs,
         );
         mistakeReviewLineTimers.current.push(timer);
       }
+      const finishedTimer = window.setTimeout(
+        () => setMistakeReviewLineBusy(false),
+        180 + legalLine.length * intervalMs,
+      );
+      mistakeReviewLineTimers.current.push(finishedTimer);
     },
-    [clearMistakeReviewLine, mistakeReviewAutoPlayLine, store],
+    [
+      clearMistakeReviewLine,
+      mistakeReviewAutoPlayLine,
+      mistakeReviewSampleLinePlies,
+      mistakeReviewSampleLineSpeed,
+      store,
+    ],
   );
 
-  const revealMistakeReviewBest = useCallback(() => {
-    const metadata = currentMistakeReviewPosition?.mistakeReview;
+  const resolveMistakeReviewSampleLine = useCallback(
+    async (position: ReviewPosition, firstMoveUci: string, fallbackPv?: string[]) => {
+      const maxPlies = Math.round(clampNumber(mistakeReviewSampleLinePlies, 0, 20));
+      if (maxPlies === 0) return [];
+
+      const metadata = position.mistakeReview;
+      if (metadata?.enginePath) {
+        try {
+          const result = await commands.getMistakeReviewSampleLine({
+            fen: position.fen,
+            firstMoveUci,
+            enginePath: metadata.enginePath,
+            engineName: metadata.engineName ?? null,
+            depth: 12,
+            maxPlies,
+          });
+
+          if (result.status === "ok" && result.data.moves.length > 0) {
+            return result.data.moves;
+          }
+        } catch {
+          // Fall back to the stored PV if a live sample-line probe fails.
+        }
+      }
+
+      return buildMistakeReviewLine(firstMoveUci, fallbackPv).slice(0, maxPlies);
+    },
+    [mistakeReviewSampleLinePlies],
+  );
+
+  const revealMistakeReviewBest = useCallback(async () => {
+    if (mistakeReviewRevealRemaining > 0) return;
+    const metadata = trainerMistakeReviewPosition?.mistakeReview;
     const bestMoveUci =
       metadata?.bestMoveUci ||
-      currentMistakeReviewPosition?.engine?.bestMoveUci ||
-      currentMistakeReviewPosition?.answerUci;
-    if (!currentMistakeReviewPosition || !bestMoveUci) return;
-    if (!returnToMistakeReviewPosition({ clearReveal: false })) return;
+      trainerMistakeReviewPosition?.engine?.bestMoveUci ||
+      trainerMistakeReviewPosition?.answerUci;
+    if (!trainerMistakeReviewPosition || !bestMoveUci) return;
+    if (!returnToMistakeReviewPosition({ clearReveal: false, resetPractice: false })) return;
 
     setMistakeReviewRevealState({
-      fen: currentMistakeReviewPosition.fen,
+      fen: trainerMistakeReviewPosition.fen,
       mode: "best",
       moveUci: bestMoveUci,
     });
-    playMistakeReviewLine(buildMistakeReviewLine(bestMoveUci, metadata?.pvUci));
-  }, [currentMistakeReviewPosition, playMistakeReviewLine, returnToMistakeReviewPosition]);
+    if (mistakeReviewEngineOnReveal) {
+      setAllEnginesEnabled(true);
+    }
+    setMistakeReviewLineBusy(true);
+    const sampleLine = await resolveMistakeReviewSampleLine(
+      trainerMistakeReviewPosition,
+      bestMoveUci,
+      metadata?.pvUci,
+    );
+    playMistakeReviewLine(sampleLine);
+  }, [
+    mistakeReviewEngineOnReveal,
+    mistakeReviewRevealRemaining,
+    playMistakeReviewLine,
+    resolveMistakeReviewSampleLine,
+    returnToMistakeReviewPosition,
+    setAllEnginesEnabled,
+    trainerMistakeReviewPosition,
+  ]);
 
-  const showMistakeReviewMove = useCallback(() => {
-    const metadata = currentMistakeReviewPosition?.mistakeReview;
+  const showMistakeReviewMove = useCallback(async () => {
+    if (mistakeReviewRevealRemaining > 0) return;
+    const metadata = trainerMistakeReviewPosition?.mistakeReview;
     const playedMoveUci = metadata?.playedMoveUci;
-    if (!currentMistakeReviewPosition || !playedMoveUci) return;
-    if (!returnToMistakeReviewPosition({ clearReveal: false })) return;
+    if (!trainerMistakeReviewPosition || !playedMoveUci) return;
+    if (!returnToMistakeReviewPosition({ clearReveal: false, resetPractice: false })) return;
 
     setMistakeReviewRevealState({
-      fen: currentMistakeReviewPosition.fen,
+      fen: trainerMistakeReviewPosition.fen,
       mode: "mistake",
       moveUci: playedMoveUci,
     });
-    playMistakeReviewLine([playedMoveUci]);
-  }, [currentMistakeReviewPosition, playMistakeReviewLine, returnToMistakeReviewPosition]);
+    if (mistakeReviewEngineOnReveal) {
+      setAllEnginesEnabled(true);
+    }
+    setMistakeReviewLineBusy(true);
+    const sampleLine = await resolveMistakeReviewSampleLine(
+      trainerMistakeReviewPosition,
+      playedMoveUci,
+    );
+    playMistakeReviewLine(sampleLine);
+  }, [
+    mistakeReviewEngineOnReveal,
+    mistakeReviewRevealRemaining,
+    playMistakeReviewLine,
+    resolveMistakeReviewSampleLine,
+    returnToMistakeReviewPosition,
+    setAllEnginesEnabled,
+    trainerMistakeReviewPosition,
+  ]);
+
+  const trainerMistakeReviewKey = trainerMistakeReviewPosition
+    ? `${trainerMistakeReviewPosition.reviewKey ?? trainerMistakeReviewPosition.fen}|${
+        trainerMistakeReviewPosition.mistakeReview?.playedMoveUci ?? ""
+      }`
+    : null;
+
+  useEffect(() => {
+    if (!isMistakeReviewTab || !trainerMistakeReviewKey) {
+      setMistakeReviewRevealRemaining(0);
+      return;
+    }
+
+    const delaySeconds = clampNumber(mistakeReviewRevealDelay, 0, 60);
+    if (delaySeconds === 0) {
+      setMistakeReviewRevealRemaining(0);
+      return;
+    }
+
+    const revealAt = Date.now() + delaySeconds * 1000;
+    const updateRemaining = () => {
+      setMistakeReviewRevealRemaining(Math.max(0, Math.ceil((revealAt - Date.now()) / 1000)));
+    };
+    updateRemaining();
+    const timer = window.setInterval(updateRemaining, 250);
+    return () => window.clearInterval(timer);
+  }, [isMistakeReviewTab, mistakeReviewRevealDelay, trainerMistakeReviewKey]);
+
+  useEffect(() => {
+    if (!isMistakeReviewTab) return;
+
+    const currentIndex = trainerMistakeReviewIndex >= 0 ? trainerMistakeReviewIndex : null;
+    if (!mistakeReviewEngineOffOnNavigation) {
+      previousMistakeReviewIndexRef.current = currentIndex;
+      return;
+    }
+
+    const previousIndex = previousMistakeReviewIndexRef.current;
+    if (previousIndex !== null && currentIndex !== null && previousIndex !== currentIndex) {
+      setAllEnginesEnabled(false);
+    }
+    previousMistakeReviewIndexRef.current = currentIndex;
+  }, [
+    isMistakeReviewTab,
+    mistakeReviewEngineOffOnNavigation,
+    setAllEnginesEnabled,
+    trainerMistakeReviewIndex,
+  ]);
+
+  useEffect(() => {
+    if (
+      !mistakeReviewAutoRevealBest ||
+      !isMistakeReviewTab ||
+      !trainerMistakeReviewPosition ||
+      mistakeReviewRevealRemaining > 0 ||
+      (practiceState.phase !== "correct" && practiceState.phase !== "incorrect")
+    ) {
+      return;
+    }
+
+    const key = `${trainerMistakeReviewKey}|${practiceState.phase}|${
+      practiceState.playedMoveUci ?? ""
+    }`;
+    if (autoRevealKeyRef.current === key) return;
+    autoRevealKeyRef.current = key;
+    void revealMistakeReviewBest();
+  }, [
+    isMistakeReviewTab,
+    mistakeReviewAutoRevealBest,
+    mistakeReviewRevealRemaining,
+    practiceState.phase,
+    practiceState.playedMoveUci,
+    revealMistakeReviewBest,
+    trainerMistakeReviewKey,
+    trainerMistakeReviewPosition,
+  ]);
 
   async function makeMove(move: NormalMove) {
     if (!pos) return;
     const san = makeSan(pos, move);
     const uci = makeUci(move);
     clearMistakeReviewLine();
+    setMistakeReviewLineBusy(false);
     setMistakeReviewRevealState(null);
     if (practicing) {
       const c = deck.positions.find((c) => c.fen === currentNode.fen);
@@ -542,7 +790,7 @@ function Board({
             message: `${moveAssessment.bestMoveSan} was the engine move to remember.`,
             color: moveAssessment.passed ? "green" : "red",
           });
-          if (!moveAssessment.passed) {
+          if (!moveAssessment.passed && !mistakeReviewAutoRevealBest) {
             await new Promise((resolve) => setTimeout(resolve, 500));
             goToNext();
           }
@@ -769,12 +1017,17 @@ function Board({
     shapes = shapes.concat(currentNode.shapes);
   }
 
-  const activeMistakeReviewReveal =
+  const mistakeReviewPanelReveal =
     mistakeReviewRevealState &&
-    currentMistakeReviewPosition &&
-    sameBoardPosition(mistakeReviewRevealState.fen, currentMistakeReviewPosition.fen) &&
-    !boardPreviewShapes?.displayFen
+    trainerMistakeReviewPosition &&
+    sameBoardPosition(mistakeReviewRevealState.fen, trainerMistakeReviewPosition.fen)
       ? mistakeReviewRevealState
+      : null;
+  const activeMistakeReviewReveal =
+    mistakeReviewPanelReveal &&
+    sameBoardPosition(mistakeReviewPanelReveal.fen, currentNode.fen) &&
+    !boardPreviewShapes?.displayFen
+      ? mistakeReviewPanelReveal
       : null;
 
   if (activeMistakeReviewReveal) {
@@ -846,11 +1099,49 @@ function Board({
   const showComments = useAtomValue(currentShowCommentsAtom);
   const visualAnnotation = showComments ? currentNode.annotations[0] : "";
   const { ref: boardAreaRef, width: boardAreaWidth, height: boardAreaHeight } = useElementSize();
-  const boardSize = Math.max(
+  const [manualBoardSize, setManualBoardSize] = useAtom(boardManualSizeAtom);
+  const maxBoardSize = Math.max(
     0,
     Math.floor(
       Math.min(boardAreaHeight, Math.max(0, boardAreaWidth - BOARD_SIDE_BAR_WIDTH - BOARD_ROW_GAP)),
     ),
+  );
+  const minBoardSize = Math.min(MIN_MANUAL_BOARD_SIZE, maxBoardSize);
+  const boardSize = Math.floor(
+    manualBoardSize === null
+      ? maxBoardSize
+      : clampNumber(manualBoardSize, minBoardSize, maxBoardSize),
+  );
+
+  const startBoardResize = useCallback(
+    (corner: BoardResizeCorner, event: ReactPointerEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (maxBoardSize <= 0) return;
+
+      const startX = event.clientX;
+      const startY = event.clientY;
+      const startSize = boardSize || maxBoardSize;
+      const cursor = corner === "nw" || corner === "se" ? "nwse-resize" : "nesw-resize";
+      document.body.style.cursor = cursor;
+
+      const onPointerMove = (moveEvent: PointerEvent) => {
+        const dx = corner.includes("e") ? moveEvent.clientX - startX : startX - moveEvent.clientX;
+        const dy = corner.includes("s") ? moveEvent.clientY - startY : startY - moveEvent.clientY;
+        const delta = Math.abs(dx) > Math.abs(dy) ? dx : dy;
+        setManualBoardSize(Math.round(clampNumber(startSize + delta, minBoardSize, maxBoardSize)));
+      };
+
+      const stop = () => {
+        document.body.style.cursor = "";
+        window.removeEventListener("pointermove", onPointerMove);
+        window.removeEventListener("pointerup", stop);
+      };
+
+      window.addEventListener("pointermove", onPointerMove);
+      window.addEventListener("pointerup", stop, { once: true });
+    },
+    [boardSize, maxBoardSize, minBoardSize, setManualBoardSize],
   );
 
   const setBoardFen = useCallback(
@@ -986,26 +1277,26 @@ function Board({
 
   const topPlayer = orientation === "white" ? headers.black : headers.white;
   const bottomPlayer = orientation === "white" ? headers.white : headers.black;
-  const mistakeReviewMetadata = currentMistakeReviewPosition?.mistakeReview;
+  const mistakeReviewMetadata = trainerMistakeReviewPosition?.mistakeReview;
   const mistakeReviewSeverity = (practiceState.mistakeReviewLabel ??
     mistakeReviewMetadata?.severity) as MistakeReviewAttemptLabel | undefined;
-  const mistakeReviewPanelColor = activeMistakeReviewReveal
-    ? activeMistakeReviewReveal.mode === "best"
+  const mistakeReviewPanelColor = mistakeReviewPanelReveal
+    ? mistakeReviewPanelReveal.mode === "best"
       ? "green"
       : "red"
     : mistakeReviewColor(mistakeReviewSeverity);
   const mistakeReviewLoss =
     practiceState.moveLossCp ??
     mistakeReviewMetadata?.cpLoss ??
-    currentMistakeReviewPosition?.engine?.lossCp;
+    trainerMistakeReviewPosition?.engine?.lossCp;
   const mistakeReviewBestMove =
     mistakeReviewMetadata?.bestMoveSan ||
-    currentMistakeReviewPosition?.engine?.bestMoveSan ||
-    currentMistakeReviewPosition?.answer;
+    trainerMistakeReviewPosition?.engine?.bestMoveSan ||
+    trainerMistakeReviewPosition?.answer;
   const mistakeReviewBestMoveUci =
     mistakeReviewMetadata?.bestMoveUci ||
-    currentMistakeReviewPosition?.engine?.bestMoveUci ||
-    currentMistakeReviewPosition?.answerUci;
+    trainerMistakeReviewPosition?.engine?.bestMoveUci ||
+    trainerMistakeReviewPosition?.answerUci;
   const mistakeReviewPlayedMove =
     practiceState.playedMove || mistakeReviewMetadata?.playedMoveSan || undefined;
   const showMistakeReviewControls = isMistakeReviewTab && Boolean(mistakeReviewMetadata);
@@ -1117,6 +1408,7 @@ function Board({
                 style={
                   isBasicAnnotation(visualAnnotation)
                     ? {
+                        position: "relative",
                         "--light-color": lightColor,
                         "--dark-color": darkColor,
                         flex: "0 0 auto",
@@ -1124,6 +1416,7 @@ function Board({
                         minHeight: 0,
                       }
                     : {
+                        position: "relative",
                         flex: "0 0 auto",
                         minWidth: 0,
                         minHeight: 0,
@@ -1288,6 +1581,49 @@ function Board({
                     },
                   }}
                 />
+                {(["nw", "ne", "sw", "se"] as const).map((corner) => (
+                  <Box
+                    key={corner}
+                    aria-label="Resize board"
+                    title="Drag to resize board. Double-click to reset."
+                    role="separator"
+                    onDoubleClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      setManualBoardSize(null);
+                    }}
+                    onPointerDown={(event) => startBoardResize(corner, event)}
+                    style={{
+                      position: "absolute",
+                      zIndex: 4,
+                      width: 18,
+                      height: 18,
+                      top: corner.includes("n") ? 4 : undefined,
+                      bottom: corner.includes("s") ? 4 : undefined,
+                      left: corner.includes("w") ? 4 : undefined,
+                      right: corner.includes("e") ? 4 : undefined,
+                      cursor: corner === "nw" || corner === "se" ? "nwse-resize" : "nesw-resize",
+                      borderTop: corner.includes("n")
+                        ? "2px solid var(--mantine-primary-color-filled)"
+                        : undefined,
+                      borderBottom: corner.includes("s")
+                        ? "2px solid var(--mantine-primary-color-filled)"
+                        : undefined,
+                      borderLeft: corner.includes("w")
+                        ? "2px solid var(--mantine-primary-color-filled)"
+                        : undefined,
+                      borderRight: corner.includes("e")
+                        ? "2px solid var(--mantine-primary-color-filled)"
+                        : undefined,
+                      borderRadius: 2,
+                      opacity: 0.78,
+                      backgroundColor:
+                        "color-mix(in srgb, var(--mantine-color-body) 68%, transparent)",
+                      boxShadow:
+                        "0 0 0 1px color-mix(in srgb, var(--mantine-color-black) 12%, transparent)",
+                    }}
+                  />
+                ))}
               </Box>
             </Group>
           </Box>
@@ -1317,14 +1653,20 @@ function Board({
             )}
           </BoardBar>
           {showMistakeReviewControls && (
-            <Paper withBorder p="xs" radius="sm" style={{ flexShrink: 0 }}>
+            <Paper
+              withBorder
+              p="xs"
+              radius="sm"
+              mih={MISTAKE_REVIEW_PANEL_MIN_HEIGHT}
+              style={{ flexShrink: 0 }}
+            >
               <Stack gap="xs">
                 <Group justify="space-between" gap="xs" align="flex-start">
                   <Group gap="xs" wrap="nowrap" align="center">
                     <ThemeIcon color={mistakeReviewPanelColor} variant="light" radius="xl">
-                      {activeMistakeReviewReveal?.mode === "best" ? (
+                      {mistakeReviewPanelReveal?.mode === "best" ? (
                         <IconPlayerPlay size={16} />
-                      ) : activeMistakeReviewReveal?.mode === "mistake" ? (
+                      ) : mistakeReviewPanelReveal?.mode === "mistake" ? (
                         <IconEye size={16} />
                       ) : (
                         <IconRotate size={16} />
@@ -1333,9 +1675,9 @@ function Board({
                     <Stack gap={1}>
                       <Group gap={6} align="center">
                         <Text size="sm" fw={700} c={mistakeReviewPanelColor}>
-                          {activeMistakeReviewReveal?.mode === "best"
+                          {mistakeReviewPanelReveal?.mode === "best"
                             ? "Best move revealed"
-                            : activeMistakeReviewReveal?.mode === "mistake"
+                            : mistakeReviewPanelReveal?.mode === "mistake"
                               ? "Mistake shown"
                               : "Mistake review"}
                         </Text>
@@ -1354,17 +1696,128 @@ function Board({
                         {mistakeReviewMetadata?.winProbabilityDrop !== undefined
                           ? `, ${mistakeReviewMetadata.winProbabilityDrop.toFixed(1)}% win-prob drop`
                           : ""}
+                        {mistakeReviewRevealRemaining > 0
+                          ? `, reveal in ${mistakeReviewRevealRemaining}s`
+                          : ""}
+                        {mistakeReviewLineBusy ? ", playing engine line" : ""}
                       </Text>
                     </Stack>
                   </Group>
-                  <Button
-                    size="compact-xs"
-                    variant="subtle"
-                    leftSection={<IconArrowBackUp size={14} />}
-                    onClick={() => returnToMistakeReviewPosition()}
-                  >
-                    Reset
-                  </Button>
+                  <Group gap={4} wrap="nowrap">
+                    <Popover width={340} position="top-end" shadow="md" withinPortal>
+                      <Popover.Target>
+                        <ActionIcon
+                          variant="subtle"
+                          aria-label="Train settings"
+                          title="Train settings"
+                        >
+                          <IconSettings size={16} />
+                        </ActionIcon>
+                      </Popover.Target>
+                      <Popover.Dropdown>
+                        <Stack gap="sm">
+                          <Text size="sm" fw={700}>
+                            Train settings
+                          </Text>
+                          <Group justify="space-between" gap="md" wrap="nowrap">
+                            <Box>
+                              <Text size="sm">Reveal delay</Text>
+                              <Text size="xs" c="dimmed">
+                                Seconds before reveal buttons work
+                              </Text>
+                            </Box>
+                            <NumberInput
+                              value={mistakeReviewRevealDelay}
+                              min={0}
+                              max={60}
+                              step={1}
+                              w={104}
+                              onChange={(value) =>
+                                setMistakeReviewRevealDelay(clampNumber(Number(value) || 0, 0, 60))
+                              }
+                            />
+                          </Group>
+                          <Group justify="space-between" gap="md" wrap="nowrap">
+                            <Box>
+                              <Text size="sm">Sample line plies</Text>
+                              <Text size="xs" c="dimmed">
+                                Half-moves to play after reveal
+                              </Text>
+                            </Box>
+                            <NumberInput
+                              value={mistakeReviewSampleLinePlies}
+                              min={0}
+                              max={20}
+                              step={1}
+                              w={104}
+                              onChange={(value) =>
+                                setMistakeReviewSampleLinePlies(
+                                  Math.round(clampNumber(Number(value) || 0, 0, 20)),
+                                )
+                              }
+                            />
+                          </Group>
+                          <Group justify="space-between" gap="md" wrap="nowrap">
+                            <Box>
+                              <Text size="sm">Sample line speed</Text>
+                              <Text size="xs" c="dimmed">
+                                Milliseconds between moves
+                              </Text>
+                            </Box>
+                            <NumberInput
+                              value={mistakeReviewSampleLineSpeed}
+                              min={200}
+                              max={3000}
+                              step={100}
+                              w={104}
+                              onChange={(value) =>
+                                setMistakeReviewSampleLineSpeed(
+                                  Math.round(clampNumber(Number(value) || 1000, 200, 3000)),
+                                )
+                              }
+                            />
+                          </Group>
+                          <Divider />
+                          <Switch
+                            checked={mistakeReviewAutoPlayLine}
+                            label="Play sample line on reveal"
+                            onChange={(event) =>
+                              setMistakeReviewAutoPlayLine(event.currentTarget.checked)
+                            }
+                          />
+                          <Switch
+                            checked={mistakeReviewAutoRevealBest}
+                            label="Auto-reveal best move"
+                            onChange={(event) =>
+                              setMistakeReviewAutoRevealBest(event.currentTarget.checked)
+                            }
+                          />
+                          <Switch
+                            checked={mistakeReviewEngineOnReveal}
+                            label="Turn engine on when revealing"
+                            onChange={(event) =>
+                              setMistakeReviewEngineOnReveal(event.currentTarget.checked)
+                            }
+                          />
+                          <Switch
+                            checked={mistakeReviewEngineOffOnNavigation}
+                            label="Turn engine off on navigation"
+                            onChange={(event) =>
+                              setMistakeReviewEngineOffOnNavigation(event.currentTarget.checked)
+                            }
+                          />
+                        </Stack>
+                      </Popover.Dropdown>
+                    </Popover>
+                    <Button
+                      size="compact-xs"
+                      variant="subtle"
+                      leftSection={<IconArrowBackUp size={14} />}
+                      onClick={() => returnToMistakeReviewPosition()}
+                    >
+                      Reset
+                    </Button>
+                  </Group>
                 </Group>
                 <Group gap="xs" grow>
                   <Button
@@ -1372,8 +1825,11 @@ function Board({
                     variant="light"
                     color="red"
                     leftSection={<IconEye size={14} />}
-                    onClick={showMistakeReviewMove}
-                    disabled={!mistakeReviewMetadata?.playedMoveUci}
+                    onClick={() => void showMistakeReviewMove()}
+                    disabled={
+                      mistakeReviewRevealRemaining > 0 || !mistakeReviewMetadata?.playedMoveUci
+                    }
+                    loading={mistakeReviewLineBusy && mistakeReviewPanelReveal?.mode === "mistake"}
                   >
                     Show mistake
                   </Button>
@@ -1382,8 +1838,9 @@ function Board({
                     variant="light"
                     color="green"
                     leftSection={<IconPlayerPlay size={14} />}
-                    onClick={revealMistakeReviewBest}
-                    disabled={!mistakeReviewBestMoveUci}
+                    onClick={() => void revealMistakeReviewBest()}
+                    disabled={mistakeReviewRevealRemaining > 0 || !mistakeReviewBestMoveUci}
+                    loading={mistakeReviewLineBusy && mistakeReviewPanelReveal?.mode === "best"}
                   >
                     Reveal best
                   </Button>
