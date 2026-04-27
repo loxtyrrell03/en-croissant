@@ -87,7 +87,11 @@ export const positionSchema = z.object({
             playedMoveUci: z.string().optional(),
             bestMoveSan: z.string().optional(),
             bestMoveUci: z.string().optional(),
-            severity: z.enum(["best", "good", "okay", "inaccuracy", "mistake", "blunder"]).optional(),
+            pvSan: z.array(z.string()).optional(),
+            pvUci: z.array(z.string()).optional(),
+            severity: z
+                .enum(["best", "good", "okay", "inaccuracy", "mistake", "blunder"])
+                .optional(),
             cpLoss: z.number().optional(),
             winProbabilityDrop: z.number().optional(),
             cpBefore: z.number().optional(),
@@ -194,6 +198,8 @@ export type Position = {
         playedMoveUci?: string;
         bestMoveSan?: string;
         bestMoveUci?: string;
+        pvSan?: string[];
+        pvUci?: string[];
         severity?: "best" | "good" | "okay" | "inaccuracy" | "mistake" | "blunder";
         cpLoss?: number;
         winProbabilityDrop?: number;
@@ -204,7 +210,14 @@ export type Position = {
         analysisMode?: "single" | "layered";
         fastDepth?: number;
         multiPv?: number;
-        timeControls?: ("bullet" | "blitz" | "rapid" | "classical" | "correspondence" | "unknown")[];
+        timeControls?: (
+            | "bullet"
+            | "blitz"
+            | "rapid"
+            | "classical"
+            | "correspondence"
+            | "unknown"
+        )[];
         dateRange?: "all" | "week" | "2weeks" | "month" | "3months" | "6months" | "year";
         engineName?: string;
         enginePath?: string;

@@ -17,13 +17,11 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import {
-  allEnabledAtom,
   autoSaveAtom,
   currentPracticeTabAtom,
   currentTabAtom,
   currentTabSelectedAtom,
   deckAtomFamily,
-  enableAllAtom,
   practiceStateAtom,
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
@@ -45,6 +43,8 @@ import PracticePanel from "../panels/practice/PracticePanel";
 import Board from "./Board";
 import BoardControls from "./BoardControls";
 import EditingCard from "./EditingCard";
+import EngineDockedPanel from "./EngineDockedPanel";
+import EngineKeyboardShortcuts from "./EngineKeyboardShortcuts";
 import EvalListener from "./EvalListener";
 
 const scrollablePanelStyle = {
@@ -131,9 +131,6 @@ function BoardAnalysis() {
     });
   }, [setCurrentTab, reset, tabFile]);
 
-  const [, enable] = useAtom(enableAllAtom);
-  const allEnabled = useAtomValue(allEnabledAtom);
-
   const keyMap = useAtomValue(keyMapAtom);
 
   const [currentTabSelected, setCurrentTabSelected] = useAtom(currentTabSelectedAtom);
@@ -212,18 +209,12 @@ function BoardAnalysis() {
     [keyMap.ANALYSIS_TAB.keys, () => setCurrentTabSelected("analysis")],
     [keyMap.DATABASE_TAB.keys, () => setCurrentTabSelected("database")],
     [keyMap.INFO_TAB.keys, () => setCurrentTabSelected("info")],
-    [
-      keyMap.TOGGLE_ALL_ENGINES.keys,
-      (e) => {
-        enable(!allEnabled);
-        e.preventDefault();
-      },
-    ],
   ]);
 
   return (
     <>
-      <EvalListener active={selectedPanel === "analysis" || selectedPanel === "compare"} />
+      <EvalListener active />
+      <EngineKeyboardShortcuts />
       <Portal target="#left" style={{ height: "100%" }}>
         <Stack h="100%" gap="xs" style={{ minHeight: 0, overflow: "hidden" }}>
           <Stack flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
@@ -301,21 +292,39 @@ function BoardAnalysis() {
                 </Tabs.Tab>
               </Tabs.List>
               {showPracticeTab && (
-                <Tabs.Panel value="practice" flex={1} style={scrollablePanelStyle}>
-                  <PracticePanel />
+                <Tabs.Panel value="practice" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
+                  <EngineDockedPanel>
+                    <PracticePanel />
+                  </EngineDockedPanel>
                 </Tabs.Panel>
               )}
-              <Tabs.Panel value="info" flex={1} style={scrollablePanelStyle}>
-                <InfoPanel addGame={addGame} />
+              <Tabs.Panel value="info" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
+                <EngineDockedPanel>
+                  <InfoPanel addGame={addGame} />
+                </EngineDockedPanel>
               </Tabs.Panel>
-              <Tabs.Panel value="database" flex={1} style={scrollablePanelStyle}>
-                <DatabasePanel />
+              <Tabs.Panel value="database" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
+                <EngineDockedPanel>
+                  <DatabasePanel />
+                </EngineDockedPanel>
               </Tabs.Panel>
-              <Tabs.Panel value="plan-explorer" flex={1} style={scrollablePanelStyle}>
-                <PlanExplorerPanel />
+              <Tabs.Panel
+                value="plan-explorer"
+                flex={1}
+                style={{ minHeight: 0, overflow: "hidden" }}
+              >
+                <EngineDockedPanel>
+                  <PlanExplorerPanel />
+                </EngineDockedPanel>
               </Tabs.Panel>
-              <Tabs.Panel value="engine-plans" flex={1} style={scrollablePanelStyle}>
-                <EnginePlanExplorerPanel />
+              <Tabs.Panel
+                value="engine-plans"
+                flex={1}
+                style={{ minHeight: 0, overflow: "hidden" }}
+              >
+                <EngineDockedPanel>
+                  <EnginePlanExplorerPanel />
+                </EngineDockedPanel>
               </Tabs.Panel>
               <Tabs.Panel value="compare" flex={1} style={scrollablePanelStyle}>
                 <ComparePanel />

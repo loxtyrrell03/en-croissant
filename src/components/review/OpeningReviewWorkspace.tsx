@@ -59,6 +59,8 @@ import { useStore } from "zustand";
 import { commands } from "@/bindings";
 import { Chessground } from "@/chessground/Chessground";
 import Board from "@/components/boards/Board";
+import EngineDockedPanel from "@/components/boards/EngineDockedPanel";
+import EngineKeyboardShortcuts from "@/components/boards/EngineKeyboardShortcuts";
 import EvalListener from "@/components/boards/EvalListener";
 import DetachedEval from "@/components/common/DetachedEval";
 import GameNotation from "@/components/common/GameNotation";
@@ -513,7 +515,8 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
 
   return (
     <>
-      <EvalListener active={selectedToolTab === "analysis" || selectedToolTab === "compare"} />
+      <EvalListener active />
+      <EngineKeyboardShortcuts />
       <Portal target="#left" style={{ height: "100%" }}>
         <Stack h="100%" gap="xs" style={{ minHeight: 0, overflow: "hidden" }}>
           <Stack flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
@@ -591,49 +594,70 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                 </Tabs.Tab>
               </Tabs.List>
 
-              <Tabs.Panel value="review" flex={1} p="sm" style={scrollablePanelStyle}>
-                <OpeningReviewPanel
-                  deckName={deckInfo?.name ?? tab.name}
-                  deckPath={deckPath}
-                  deckMode={openingReviewDeckMode}
-                  autoUpdateConfig={
-                    isMistakeReview ? undefined : (deckInfo as OpeningReviewDeck | null)?.autoUpdate
-                  }
-                  onAutoUpdateEnabledChange={setDeckAutoUpdateEnabled}
-                  initialView={
-                    tab.gameOrigin.kind === "opening_review" && tab.gameOrigin.initialTab === "gaps"
-                      ? "analyze"
-                      : "review"
-                  }
-                  isMistakeReview={isMistakeReview}
-                  initialPractice={initialPractice}
-                  mistakeDailySettings={
-                    isMistakeReview ? (deckInfo as MistakeReviewDeck | null)?.daily : undefined
-                  }
-                  onMistakeDailySettingsChange={setMistakeDailySettings}
-                  boardMoveCandidate={boardMoveCandidate}
-                  onClearBoardMoveCandidate={() => setBoardMoveCandidate(null)}
-                  loadError={loadError}
-                  loaded={loaded}
-                />
+              <Tabs.Panel value="review" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
+                <EngineDockedPanel contentPadding="sm">
+                  <OpeningReviewPanel
+                    deckName={deckInfo?.name ?? tab.name}
+                    deckPath={deckPath}
+                    deckMode={openingReviewDeckMode}
+                    autoUpdateConfig={
+                      isMistakeReview
+                        ? undefined
+                        : (deckInfo as OpeningReviewDeck | null)?.autoUpdate
+                    }
+                    onAutoUpdateEnabledChange={setDeckAutoUpdateEnabled}
+                    initialView={
+                      tab.gameOrigin.kind === "opening_review" &&
+                      tab.gameOrigin.initialTab === "gaps"
+                        ? "analyze"
+                        : "review"
+                    }
+                    isMistakeReview={isMistakeReview}
+                    initialPractice={initialPractice}
+                    mistakeDailySettings={
+                      isMistakeReview ? (deckInfo as MistakeReviewDeck | null)?.daily : undefined
+                    }
+                    onMistakeDailySettingsChange={setMistakeDailySettings}
+                    boardMoveCandidate={boardMoveCandidate}
+                    onClearBoardMoveCandidate={() => setBoardMoveCandidate(null)}
+                    loadError={loadError}
+                    loaded={loaded}
+                  />
+                </EngineDockedPanel>
               </Tabs.Panel>
               <Tabs.Panel value="analysis" flex={1} style={scrollablePanelStyle}>
                 <AnalysisPanel />
               </Tabs.Panel>
-              <Tabs.Panel value="database" flex={1} style={scrollablePanelStyle}>
-                <DatabasePanel />
+              <Tabs.Panel value="database" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
+                <EngineDockedPanel>
+                  <DatabasePanel />
+                </EngineDockedPanel>
               </Tabs.Panel>
-              <Tabs.Panel value="plan-explorer" flex={1} style={scrollablePanelStyle}>
-                <PlanExplorerPanel />
+              <Tabs.Panel
+                value="plan-explorer"
+                flex={1}
+                style={{ minHeight: 0, overflow: "hidden" }}
+              >
+                <EngineDockedPanel>
+                  <PlanExplorerPanel />
+                </EngineDockedPanel>
               </Tabs.Panel>
-              <Tabs.Panel value="engine-plans" flex={1} style={scrollablePanelStyle}>
-                <EnginePlanExplorerPanel />
+              <Tabs.Panel
+                value="engine-plans"
+                flex={1}
+                style={{ minHeight: 0, overflow: "hidden" }}
+              >
+                <EngineDockedPanel>
+                  <EnginePlanExplorerPanel />
+                </EngineDockedPanel>
               </Tabs.Panel>
               <Tabs.Panel value="compare" flex={1} style={scrollablePanelStyle}>
                 <ComparePanel />
               </Tabs.Panel>
-              <Tabs.Panel value="info" flex={1} style={scrollablePanelStyle}>
-                <InfoPanel />
+              <Tabs.Panel value="info" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
+                <EngineDockedPanel>
+                  <InfoPanel />
+                </EngineDockedPanel>
               </Tabs.Panel>
             </Tabs>
           </ResponsivePanel>

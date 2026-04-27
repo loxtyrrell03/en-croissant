@@ -1,8 +1,26 @@
 import type { DrawBrushes, DrawShape } from "@lichess-org/chessground/draw";
-import { ActionIcon, Box, Center, Group, Text, useMantineTheme } from "@mantine/core";
+import {
+  ActionIcon,
+  Badge,
+  Box,
+  Button,
+  Center,
+  Group,
+  Paper,
+  Stack,
+  Text,
+  ThemeIcon,
+  useMantineTheme,
+} from "@mantine/core";
 import { useElementSize } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { IconChevronRight } from "@tabler/icons-react";
+import {
+  IconArrowBackUp,
+  IconChevronRight,
+  IconEye,
+  IconPlayerPlay,
+  IconRotate,
+} from "@tabler/icons-react";
 import {
   makeSquare,
   makeUci,
@@ -16,7 +34,16 @@ import { chessgroundDests, chessgroundMove } from "chessops/compat";
 import { makeFen, parseFen } from "chessops/fen";
 import { makeSan } from "chessops/san";
 import { useAtom, useAtomValue } from "jotai";
-import { memo, useCallback, useContext, useMemo, useRef, useState, type MouseEvent } from "react";
+import {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent,
+} from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
@@ -39,6 +66,7 @@ import {
   eraseDrawablesOnClickAtom,
   forcedEnPassantAtom,
   materialDisplayAtom,
+  mistakeReviewAutoPlayLineAtom,
   moveHighlightAtom,
   moveInputAtom,
   planExplorerArrowLimitAtom,
@@ -60,6 +88,7 @@ import { ANNOTATION_INFO, isBasicAnnotation } from "@/utils/annotation";
 import { getVariationLine } from "@/utils/chess";
 import { chessopsError, forceEnPassant, positionFromFen } from "@/utils/chessops";
 import { queryChessDbMoves } from "@/utils/chessdb/api";
+import { mistakeReviewSeverityLabel, type MistakeReviewAttemptLabel } from "@/utils/mistakeReview";
 import { assessMistakeReviewMoveWithEngine } from "@/utils/mistakeReviewPractice";
 import {
   assessOpeningReviewMove,
@@ -77,6 +106,7 @@ import {
   planLinesToShapes,
 } from "@/utils/planExplorer";
 import { getTabGameNumber, getTabPracticeKey } from "@/utils/tabs";
+import { findFen } from "@/utils/treeReducer";
 import ShowMaterial from "../common/ShowMaterial";
 import { TreeStateContext } from "../common/TreeStateContext";
 import FideInfo from "../databases/FideInfo";
@@ -139,6 +169,43 @@ function uciArrowShape(uci: string | undefined, brush: string): DrawShape | null
   };
 }
 
+type MistakeReviewRevealState = {
+  fen: string;
+  mode: "best" | "mistake";
+  moveUci?: string;
+};
+
+function sameBoardPosition(a: string | undefined, b: string | undefined) {
+  if (!a || !b) return false;
+  return a.split(" ").slice(0, 4).join(" ") === b.split(" ").slice(0, 4).join(" ");
+}
+
+function mistakeReviewColor(severity: MistakeReviewAttemptLabel | undefined) {
+  switch (severity) {
+    case "best":
+      return "green";
+    case "good":
+      return "teal";
+    case "okay":
+      return "blue";
+    case "inaccuracy":
+      return "yellow";
+    case "mistake":
+      return "orange";
+    case "blunder":
+      return "red";
+    default:
+      return "gray";
+  }
+}
+
+function buildMistakeReviewLine(firstMove: string | undefined, pv?: string[]) {
+  if (!firstMove) return [];
+  if (!pv || pv.length === 0) return [firstMove];
+  if (pv[0] === firstMove) return pv;
+  return [firstMove, ...pv];
+}
+
 interface ChessboardProps {
   editingMode: boolean;
   viewOnly?: boolean;
@@ -190,7 +257,9 @@ function Board({
 
   const goToNext = useStore(store, (s) => s.goToNext);
   const goToPrevious = useStore(store, (s) => s.goToPrevious);
+  const goToMove = useStore(store, (s) => s.goToMove);
   const storeMakeMove = useStore(store, (s) => s.makeMove);
+  const setPracticePath = useStore(store, (s) => s.setPracticePath);
   const setHeaders = useStore(store, (s) => s.setHeaders);
   const clearShapes = useStore(store, (s) => s.clearShapes);
   const setShapes = useStore(store, (s) => s.setShapes);
@@ -258,11 +327,155 @@ function Board({
   const [practiceState, setPracticeState] = useAtom(practiceStateAtom);
   const [sessionStats, setSessionStats] = useAtom(practiceSessionStatsAtom);
   const cardStartTime = useAtomValue(practiceCardStartTimeAtom);
+  const mistakeReviewAutoPlayLine = useAtomValue(mistakeReviewAutoPlayLineAtom);
+  const [mistakeReviewRevealState, setMistakeReviewRevealState] =
+    useState<MistakeReviewRevealState | null>(null);
+  const mistakeReviewLineTimers = useRef<number[]>([]);
+
+  const clearMistakeReviewLine = useCallback(() => {
+    for (const timer of mistakeReviewLineTimers.current) {
+      window.clearTimeout(timer);
+    }
+    mistakeReviewLineTimers.current = [];
+  }, []);
+
+  useEffect(() => clearMistakeReviewLine, [clearMistakeReviewLine]);
+
+  const isMistakeReviewTab = currentTab?.gameOrigin.kind === "mistake_review";
+  const currentMistakeReviewIndex = useMemo(() => {
+    if (!isMistakeReviewTab) return -1;
+    if (practiceState.positionIndex !== undefined && deck.positions[practiceState.positionIndex]) {
+      return practiceState.positionIndex;
+    }
+    if (practiceState.currentFen) {
+      const index = deck.positions.findIndex((position) =>
+        sameBoardPosition(position.fen, practiceState.currentFen),
+      );
+      if (index !== -1) return index;
+    }
+    return deck.positions.findIndex((position) => sameBoardPosition(position.fen, currentNode.fen));
+  }, [
+    currentNode.fen,
+    deck.positions,
+    isMistakeReviewTab,
+    practiceState.currentFen,
+    practiceState.positionIndex,
+  ]);
+  const currentMistakeReviewPosition =
+    currentMistakeReviewIndex >= 0 ? deck.positions[currentMistakeReviewIndex] : null;
+
+  const returnToMistakeReviewPosition = useCallback(
+    (options: { clearReveal?: boolean } = {}) => {
+      if (!currentMistakeReviewPosition) return false;
+      clearMistakeReviewLine();
+      if (options.clearReveal !== false) {
+        setMistakeReviewRevealState(null);
+      }
+
+      const state = store.getState();
+      const path = findFen(currentMistakeReviewPosition.fen, state.root);
+      if (
+        path.length === 0 &&
+        !sameBoardPosition(state.root.fen, currentMistakeReviewPosition.fen)
+      ) {
+        setHeaders({
+          ...state.headers,
+          fen: currentMistakeReviewPosition.fen,
+          orientation:
+            currentMistakeReviewPosition.mistakeReview?.playerColor ??
+            currentMistakeReviewPosition.sideToMove ??
+            state.headers.orientation ??
+            "white",
+          result: "*",
+        });
+        setPracticePath([]);
+      } else {
+        goToMove(path);
+        setPracticePath(path);
+      }
+
+      if (practicing) {
+        setPracticeState({
+          phase: "waiting",
+          currentFen: currentMistakeReviewPosition.fen,
+          positionIndex: currentMistakeReviewIndex,
+        });
+      }
+
+      return true;
+    },
+    [
+      clearMistakeReviewLine,
+      currentMistakeReviewIndex,
+      currentMistakeReviewPosition,
+      goToMove,
+      practicing,
+      setHeaders,
+      setPracticePath,
+      setPracticeState,
+      store,
+    ],
+  );
+
+  const playMistakeReviewLine = useCallback(
+    (line: string[]) => {
+      clearMistakeReviewLine();
+      if (!mistakeReviewAutoPlayLine) return;
+
+      const legalLine = line.filter((move) => parseUci(move)).slice(0, 12);
+      for (const [index, moveUci] of legalLine.entries()) {
+        const timer = window.setTimeout(
+          () => {
+            const move = parseUci(moveUci);
+            if (move) {
+              store.getState().makeMove({ payload: move, changeHeaders: false });
+            }
+          },
+          index === 0 ? 180 : 180 + index * 520,
+        );
+        mistakeReviewLineTimers.current.push(timer);
+      }
+    },
+    [clearMistakeReviewLine, mistakeReviewAutoPlayLine, store],
+  );
+
+  const revealMistakeReviewBest = useCallback(() => {
+    const metadata = currentMistakeReviewPosition?.mistakeReview;
+    const bestMoveUci =
+      metadata?.bestMoveUci ||
+      currentMistakeReviewPosition?.engine?.bestMoveUci ||
+      currentMistakeReviewPosition?.answerUci;
+    if (!currentMistakeReviewPosition || !bestMoveUci) return;
+    if (!returnToMistakeReviewPosition({ clearReveal: false })) return;
+
+    setMistakeReviewRevealState({
+      fen: currentMistakeReviewPosition.fen,
+      mode: "best",
+      moveUci: bestMoveUci,
+    });
+    playMistakeReviewLine(buildMistakeReviewLine(bestMoveUci, metadata?.pvUci));
+  }, [currentMistakeReviewPosition, playMistakeReviewLine, returnToMistakeReviewPosition]);
+
+  const showMistakeReviewMove = useCallback(() => {
+    const metadata = currentMistakeReviewPosition?.mistakeReview;
+    const playedMoveUci = metadata?.playedMoveUci;
+    if (!currentMistakeReviewPosition || !playedMoveUci) return;
+    if (!returnToMistakeReviewPosition({ clearReveal: false })) return;
+
+    setMistakeReviewRevealState({
+      fen: currentMistakeReviewPosition.fen,
+      mode: "mistake",
+      moveUci: playedMoveUci,
+    });
+    playMistakeReviewLine([playedMoveUci]);
+  }, [currentMistakeReviewPosition, playMistakeReviewLine, returnToMistakeReviewPosition]);
 
   async function makeMove(move: NormalMove) {
     if (!pos) return;
     const san = makeSan(pos, move);
     const uci = makeUci(move);
+    clearMistakeReviewLine();
+    setMistakeReviewRevealState(null);
     if (practicing) {
       const c = deck.positions.find((c) => c.fen === currentNode.fen);
       if (!c) {
@@ -556,7 +769,23 @@ function Board({
     shapes = shapes.concat(currentNode.shapes);
   }
 
-  if (
+  const activeMistakeReviewReveal =
+    mistakeReviewRevealState &&
+    currentMistakeReviewPosition &&
+    sameBoardPosition(mistakeReviewRevealState.fen, currentMistakeReviewPosition.fen) &&
+    !boardPreviewShapes?.displayFen
+      ? mistakeReviewRevealState
+      : null;
+
+  if (activeMistakeReviewReveal) {
+    const revealShape = uciArrowShape(
+      activeMistakeReviewReveal.moveUci,
+      activeMistakeReviewReveal.mode === "best" ? "green" : "red",
+    );
+    if (revealShape) {
+      shapes.push(revealShape);
+    }
+  } else if (
     practicing &&
     (practiceState.phase === "incorrect" || practiceState.phase === "correct") &&
     !boardPreviewShapes?.displayFen
@@ -757,6 +986,29 @@ function Board({
 
   const topPlayer = orientation === "white" ? headers.black : headers.white;
   const bottomPlayer = orientation === "white" ? headers.white : headers.black;
+  const mistakeReviewMetadata = currentMistakeReviewPosition?.mistakeReview;
+  const mistakeReviewSeverity = (practiceState.mistakeReviewLabel ??
+    mistakeReviewMetadata?.severity) as MistakeReviewAttemptLabel | undefined;
+  const mistakeReviewPanelColor = activeMistakeReviewReveal
+    ? activeMistakeReviewReveal.mode === "best"
+      ? "green"
+      : "red"
+    : mistakeReviewColor(mistakeReviewSeverity);
+  const mistakeReviewLoss =
+    practiceState.moveLossCp ??
+    mistakeReviewMetadata?.cpLoss ??
+    currentMistakeReviewPosition?.engine?.lossCp;
+  const mistakeReviewBestMove =
+    mistakeReviewMetadata?.bestMoveSan ||
+    currentMistakeReviewPosition?.engine?.bestMoveSan ||
+    currentMistakeReviewPosition?.answer;
+  const mistakeReviewBestMoveUci =
+    mistakeReviewMetadata?.bestMoveUci ||
+    currentMistakeReviewPosition?.engine?.bestMoveUci ||
+    currentMistakeReviewPosition?.answerUci;
+  const mistakeReviewPlayedMove =
+    practiceState.playedMove || mistakeReviewMetadata?.playedMoveSan || undefined;
+  const showMistakeReviewControls = isMistakeReviewTab && Boolean(mistakeReviewMetadata);
 
   return (
     <>
@@ -1064,6 +1316,81 @@ function Board({
               <Clock color={orientation} turn={turn} whiteTime={whiteTime} blackTime={blackTime} />
             )}
           </BoardBar>
+          {showMistakeReviewControls && (
+            <Paper withBorder p="xs" radius="sm" style={{ flexShrink: 0 }}>
+              <Stack gap="xs">
+                <Group justify="space-between" gap="xs" align="flex-start">
+                  <Group gap="xs" wrap="nowrap" align="center">
+                    <ThemeIcon color={mistakeReviewPanelColor} variant="light" radius="xl">
+                      {activeMistakeReviewReveal?.mode === "best" ? (
+                        <IconPlayerPlay size={16} />
+                      ) : activeMistakeReviewReveal?.mode === "mistake" ? (
+                        <IconEye size={16} />
+                      ) : (
+                        <IconRotate size={16} />
+                      )}
+                    </ThemeIcon>
+                    <Stack gap={1}>
+                      <Group gap={6} align="center">
+                        <Text size="sm" fw={700} c={mistakeReviewPanelColor}>
+                          {activeMistakeReviewReveal?.mode === "best"
+                            ? "Best move revealed"
+                            : activeMistakeReviewReveal?.mode === "mistake"
+                              ? "Mistake shown"
+                              : "Mistake review"}
+                        </Text>
+                        {mistakeReviewSeverity && (
+                          <Badge color={mistakeReviewColor(mistakeReviewSeverity)} variant="light">
+                            {mistakeReviewSeverityLabel(mistakeReviewSeverity)}
+                          </Badge>
+                        )}
+                      </Group>
+                      <Text size="xs" c="dimmed">
+                        {mistakeReviewPlayedMove ? `Mistake: ${mistakeReviewPlayedMove}. ` : ""}
+                        Best: {mistakeReviewBestMove || "-"}
+                        {mistakeReviewLoss !== undefined
+                          ? `, ${Math.round(mistakeReviewLoss)} cp loss`
+                          : ""}
+                        {mistakeReviewMetadata?.winProbabilityDrop !== undefined
+                          ? `, ${mistakeReviewMetadata.winProbabilityDrop.toFixed(1)}% win-prob drop`
+                          : ""}
+                      </Text>
+                    </Stack>
+                  </Group>
+                  <Button
+                    size="compact-xs"
+                    variant="subtle"
+                    leftSection={<IconArrowBackUp size={14} />}
+                    onClick={() => returnToMistakeReviewPosition()}
+                  >
+                    Reset
+                  </Button>
+                </Group>
+                <Group gap="xs" grow>
+                  <Button
+                    size="xs"
+                    variant="light"
+                    color="red"
+                    leftSection={<IconEye size={14} />}
+                    onClick={showMistakeReviewMove}
+                    disabled={!mistakeReviewMetadata?.playedMoveUci}
+                  >
+                    Show mistake
+                  </Button>
+                  <Button
+                    size="xs"
+                    variant="light"
+                    color="green"
+                    leftSection={<IconPlayerPlay size={14} />}
+                    onClick={revealMistakeReviewBest}
+                    disabled={!mistakeReviewBestMoveUci}
+                  >
+                    Reveal best
+                  </Button>
+                </Group>
+              </Stack>
+            </Paper>
+          )}
         </Box>
       </Box>
       <FideInfo opened={whiteFideOpen} setOpened={setWhiteFideOpen} name={headers.white} />

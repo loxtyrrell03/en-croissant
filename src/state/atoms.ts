@@ -191,6 +191,12 @@ export const planExplorerHoverEverywhereAtom = atomWithStorage<boolean>(
     "plan-explorer-hover-everywhere",
     false,
 );
+export const showEngineDockAtom = atomWithStorage<boolean>("show-engine-dock", true);
+export const engineHotkeysEnabledAtom = atomWithStorage<boolean>("engine-hotkeys-enabled", true);
+export const mistakeReviewAutoPlayLineAtom = atomWithStorage<boolean>(
+    "mistake-review-auto-play-line",
+    true,
+);
 export const planExplorerSourceAtom = atomWithStorage<"local" | "lch_all" | "lch_master">(
     "plan-explorer-source",
     "local",

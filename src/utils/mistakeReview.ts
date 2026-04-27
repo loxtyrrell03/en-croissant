@@ -236,7 +236,9 @@ export async function deleteMistakeReviewDeck(path: string) {
     await remove(path);
 }
 
-export async function listMistakeReviewDecks(directory: string): Promise<MistakeReviewDeckSummary[]> {
+export async function listMistakeReviewDecks(
+    directory: string,
+): Promise<MistakeReviewDeckSummary[]> {
     const entries = await readDir(directory).catch(() => []);
     const decks: MistakeReviewDeckSummary[] = [];
 
@@ -379,6 +381,8 @@ export function createMistakeReviewPosition(
             playedMoveUci: result.playedMoveUci,
             bestMoveSan: result.bestMoveSan,
             bestMoveUci: result.bestMoveUci,
+            pvSan: result.pvSan,
+            pvUci: result.pvUci,
             severity: result.severity,
             cpLoss: result.cpLoss,
             winProbabilityDrop: result.winProbabilityDrop,
@@ -462,7 +466,9 @@ export function getMistakeReviewDailyBatch(
     options: { now?: Date; extra?: boolean } = {},
 ) {
     const now = options.now ?? new Date();
-    const filtered = positions.filter((position) => isMistakeReviewDailyEligible(position, settings, now));
+    const filtered = positions.filter((position) =>
+        isMistakeReviewDailyEligible(position, settings, now),
+    );
     const due = filtered
         .filter((position) => position.card.reps > 0 && new Date(position.card.due) <= now)
         .sort((a, b) => sortMistakeReviewDueCards(a, b, now));
@@ -498,7 +504,9 @@ export function isMistakeReviewPassingLabel(label: MistakeReviewAttemptLabel) {
     return label === "best" || label === "good";
 }
 
-export function mistakeReviewSeverityLabel(severity: MistakeReviewSeverity | MistakeReviewAttemptLabel) {
+export function mistakeReviewSeverityLabel(
+    severity: MistakeReviewSeverity | MistakeReviewAttemptLabel,
+) {
     switch (severity) {
         case "best":
             return "Best";
@@ -591,7 +599,9 @@ function sortMistakeReviewDueCards(a: Position, b: Position, now: Date) {
     return (
         getMistakeReviewSeverityWeight(b.mistakeReview?.severity) -
             getMistakeReviewSeverityWeight(a.mistakeReview?.severity) ||
-        now.getTime() - new Date(b.card.due).getTime() - (now.getTime() - new Date(a.card.due).getTime())
+        now.getTime() -
+            new Date(b.card.due).getTime() -
+            (now.getTime() - new Date(a.card.due).getTime())
     );
 }
 
