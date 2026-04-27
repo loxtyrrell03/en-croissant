@@ -2,9 +2,11 @@
 
 ## 1. Executive Summary
 
-The goal is to build a fresh proprietary chess workstation inspired by general chess-GUI concepts: interactive board analysis, PGN/FEN handling, UCI engine analysis, local chess databases, repertoire work, study organization, and training workflows.
+The goal is to build a proprietary chess workstation inspired by general chess-GUI concepts: interactive board analysis, PGN/FEN handling, UCI engine analysis, local chess databases, repertoire work, study organization, and training workflows.
 
-The new application must be written from scratch. It must not reuse, translate, restructure, or mechanically adapt the current GPL-3.0 codebase. The existing repository may be treated only as a private product reference for user-facing behavior and feature prioritization. Implementation agents should work from this plan and later clean-room specifications, not from GPL source files.
+The GPL base of the current application must not be reused, translated, restructured, or mechanically adapted. However, the owner has attested on 2026-04-27 that everything committed to this repository during the past week is the owner's own code and assets. That owner-authored contribution set may be copied into the proprietary rebuild after it is isolated from the GPL base. This permission applies to the owner-owned delta, new owner-created files, and owner-created assets from the listed commits; it does not grant permission to copy unmodified GPL base code or third-party material with unclear rights.
+
+Implementation agents should work from this plan, later specifications, and an owner-prepared reusable-delta bundle. They should not browse the old GPL repository as an implementation reference except for a controlled owner/provenance extraction pass.
 
 This plan is not legal advice. Anything uncertain should be marked "needs manual/legal review" before commercial release.
 
@@ -12,15 +14,18 @@ This plan is not legal advice. Anything uncertain should be marked "needs manual
 
 ### Clean-Room Boundary
 
-- Build in a new repository with no copied source tree, no copied history, and no imported GPL files.
-- Write all production code, tests, documentation, schemas, assets, and UI copy independently.
+- Build in a new repository with no copied source tree, no copied history, and no imported GPL base files.
+- Copying is allowed only for the owner-attested reusable contribution set listed in this plan, preferably from an isolated export bundle rather than from the old repository.
+- New files created entirely by the owner during the past-week range may be copied wholesale if they do not contain GPL-derived/generated material.
+- For files that modify pre-existing GPL files, copy only the owner-authored hunks or re-express them in the new architecture; do not copy the surrounding GPL file wholesale.
+- Write all other production code, tests, documentation, schemas, assets, and UI copy independently.
 - Use behavior-level specifications, user stories, acceptance criteria, public protocols, and independently authored designs.
-- Do not ask implementation agents to compare against, port from, or inspect the GPL repository once the clean-room implementation begins.
+- Do not ask implementation agents to compare against, port from, or inspect the GPL repository once the proprietary implementation begins, except when using a reviewed owner-authored delta bundle.
 - Keep a written design log explaining why major architecture, schema, UI, and dependency choices were made independently.
 
 ### Do Not Copy
 
-The proprietary rebuild must not copy from the existing GPL codebase:
+The proprietary rebuild must not copy from the GPL base or from unowned material in the existing repository. The owner-attested past-week reusable contribution set is the only planned exception.
 
 - Source files.
 - Distinctive function, class, hook, command, type, component, or module names.
@@ -33,6 +38,8 @@ The proprietary rebuild must not copy from the existing GPL codebase:
 - Documentation text, README text, comments, issue templates, or contribution guides.
 - Generated code derived from GPL files.
 - Build scripts, packaging config, capability manifests, or launcher scripts.
+
+Owner-authored files, code hunks, tests, docs, scripts, and assets from the past-week commit range may be copied only after provenance review confirms they are part of the owner's own contribution set and are not generated from GPL files unless the generated output is independently reproducible from owner-owned inputs.
 
 ### Behavior-Only Feature Descriptions
 
@@ -49,9 +56,29 @@ Avoid descriptions such as:
 - Exact table names or index encodings from the current app.
 - Exact UI strings, component names, CSS class names, or translation keys.
 
+### Owner-Attested Reusable Delta Exception
+
+The owner has stated that all work committed during the past week is their own code. For this plan, the reusable contribution range is the commits observed since 2026-04-20 on branch `codex/en-croissant-fork`, which in practice are dated 2026-04-24 through 2026-04-27 and run from `42732755` through `6c9de0d8`, plus the documentation commit `4c34803e`.
+
+Allowed reuse:
+
+- Directly copy owner-created new files from that range when they do not include GPL-derived generated output or third-party assets with unclear rights.
+- Directly copy owner-authored code hunks from modified files when the hunk can be separated from the surrounding GPL base.
+- Directly copy owner-authored tests and fixtures from that range when the test data was independently authored or otherwise rights-cleared.
+- Directly copy owner-authored documentation and prompt templates from this plan.
+- Use owner-created screenshots and session artifacts as private design references; do not ship them as product assets unless their contents and rights are reviewed.
+
+Required controls:
+
+- Prepare a reusable-delta bundle from the commit range before implementation starts.
+- Mark each copied item as `new owner file`, `owner hunk from modified GPL file`, `owner asset`, `owner test`, `generated from owner-owned input`, or `needs manual/legal review`.
+- Do not copy unchanged GPL files just because they were touched nearby.
+- Do not preserve old module paths, command names, schema names, or UI text unless they are generic or independently chosen.
+- When extraction is hard to reason about, reimplement the behavior from the neutral spec instead of copying code.
+
 ## 3. Feature Inventory
 
-Inspection basis: top-level metadata, public README-level product description, route and file names, current session change log, and user-facing screenshots/artifacts. No GPL implementation logic or source snippets were copied into this plan.
+Inspection basis: top-level metadata, public README-level product description, route and file names, current session change log, user-facing screenshots/artifacts, and the past-week commit log. No GPL implementation logic or source snippets were copied into this plan. The custom-feature classification below now treats the owner's past-week commits as an owner-attested reusable contribution set.
 
 | Feature name for new spec | User-facing behaviour | Why it matters | Classification |
 | --- | --- | --- | --- |
@@ -107,7 +134,80 @@ Inspection basis: top-level metadata, public README-level product description, r
 
 ## 4. My Added Features Preservation Plan
 
-The following specifications preserve the desired behavior without preserving implementation. The "Current reference location" column is for private owner review only. Implementation agents in the clean-room repo should not open these files.
+The following specifications preserve the desired behavior and identify owner-added code that may be copied into the proprietary rebuild when it comes from the owner-attested past-week contribution set. The "Current reference location" column is for private owner review and provenance extraction. Implementation agents in the fresh proprietary repo should use a reviewed reusable-delta bundle rather than browsing the old GPL repository.
+
+### Past-Week Owner-Added Feature Map
+
+The table below summarizes the work committed in the past week and which parts appear to be owner-added. "May copy" means copy the owner-authored code/assets/tests from the relevant commits after provenance review; it does not mean copy unmodified GPL base code surrounding a modified hunk.
+
+| Owner-added feature area | User-facing feature added | Parts the owner added in the past-week commits | Reuse guidance |
+| --- | --- | --- | --- |
+| Fork/session scaffolding and safe launch helpers | Local fork identity, safer development launch, backup-oriented startup helpers, and session notes. | Package/app metadata changes, local launch scripts, fork icon asset, session changelog, verification artifacts. | May copy owner-created scripts/docs/assets after asset rights review; do not copy GPL packaging files wholesale. |
+| Database comparison workspace | Compare two opening/reference sources for the same position. | Compare tab, side-by-side source panels, local and online source selection, compact opening tables, sorting, saved defaults, hover previews, click-to-load moves. | May copy owner-created comparison components/utilities or hunks; redesign route/module names in the new app. |
+| Online opening/reference sources | Lichess All, Lichess Masters, and master-game style reference sources in research views. | Source adapters, option panels, source metadata, normalized source-selection behavior. | May copy owner-authored adapters only after API terms review; keep service terms/licence notes. |
+| Database search performance | Faster exact-position lookup and more responsive large database behavior. | Position occurrence index work, mmap/cache behavior, cancellable request ids, stale request protection, large-database sampling caps, validation tolerance for displayable positions. | May copy owner-authored algorithms/hunks after separating them from old storage code; fresh schema/index names still required unless copied as owner-authored new files. |
+| Plan Explorer | Show common piece routes and pawn plans from reference continuations. | Plan extraction, route grouping, side filters, ply controls, result summaries, hover previews, pinned arrows, auto arrows, keyboard/mouse board shortcut, online plan sources. | May copy owner-authored plan-explorer code/tests; consider renaming public APIs and UI labels for the proprietary product. |
+| Engine plan exploration and move ranking | Use engine output or reference data to rank plans/moves and explain candidate choices. | Engine-plan panel, route/move ranking utilities, tests, integration with board overlays. | May copy owner-authored utilities and tests after isolating them from old panel infrastructure. |
+| Repertoire gaps and opening health | Find missing or weak repertoire coverage from databases and online sources. | Gaps tab, scan controls, urgency scoring, orientation-aware attribution, date filters, engine/cloud validation metadata, bulk save, export/training actions. | May copy owner-created scanner code/hunks and tests; if old database commands are intertwined, rehost logic into fresh query services. |
+| Opponent preparation and own-repertoire review | Analyze opponent games or personal games against preparation needs. | Two review modes, color-aware scans, result/recency/frequency prioritization, clearer evidence fields, saved review actions. | May copy owner-authored ranking and workflow code; write new UI copy for the proprietary app unless the copy is owner-confirmed original. |
+| Opening Review workspace | Turn analysis findings into reviewable opening decks. | Home entry point, full review workspace, deck creation/merge/delete, card editing, correct-move overrides, saved notes/arrows/annotations, backward compatibility for owner-created cards. | May copy owner-created review workspace and utilities; new storage schema should remain freshly designed unless copied schema elements are verified owner-authored. |
+| Opening Review practice | Practice saved cards with due/full-deck modes and post-attempt evidence. | Spaced-repetition practice, full-deck practice, attempt summaries, evidence after attempts, alternative-good-move feedback, review rating prompts, board-played move overrides. | May copy owner-authored practice logic/tests; verify scheduler dependency licence. |
+| Mistake trainer workflow | Train from generated or imported mistakes in a board-first practice flow. | Mistake review training workflow, reveal controls, engine dock, keyboard shortcuts, game-context placement, playback/resizing fixes, attempt summary fixes, session screenshots/artifacts. | May copy owner-created trainer code and tests; screenshots should remain private design references unless cleared for product use. |
+| Cloud and local engine validation | Combine fast cloud checks with local Stockfish analysis and fallback behavior. | ChessDB/Lichess cloud validation usage, Lichess cloud eval display in analysis, local Stockfish start without cloud delay, fallback restoration, UI contention reduction. | May copy owner-authored orchestration/hunks; respect API terms and do not bundle GPL engines without review. |
+| Engine dock and shortcut UX | Keep engine controls available during practice/review without overloading the main panel. | Docked engine panel, extracted engine panel content, keyboard shortcut helper, shortcut hint integration. | May copy owner-created components; create original styling and labels in the new app. |
+| Board overlays and responsive layout | More usable board, panels, and annotation workflow. | Resizable board/right-panel layout, responsive scaling, hidden resize handles, persistent annotation tools, transient overlay brushes, plan arrows, board settings. | May copy owner-authored layout/overlay code where separable; avoid copying old CSS/theme material. |
+| Database/review polish and perspective fixes | More accurate result perspectives and evidence display. | WDL perspective fixes for black/side-to-move, move-side review boards, opening stat name caching, summary bars, saved database move evidence. | May copy owner-authored fixes/tests; use fresh UI copy and data labels. |
+| Online game import and auto-update | Import online games into local databases and keep sources current. | Lichess/Chess.com username import, progress reporting, token reuse, auto-update metadata, shared online game source helpers. | May copy owner-authored import/update code after API terms review and token-storage redesign. |
+| File organizer improvements | Better root drag behavior and deselection in the file/workspace browser. | Directory tree drag/deselect behavior and related CSS/UI hunks. | May copy owner-authored hunks if useful; fresh app should design its own workspace/file model. |
+| Test coverage for custom features | Regression tests for plan exploration, opening health, move health, opening review, review practice, and mistake review. | Owner-created test files and expectations for the new feature set. | May copy tests when fixtures/expected data are owner-authored; otherwise rewrite cases from behavior. |
+| Proprietary rebuild planning docs | Plan for a proprietary rebuild and implementation prompts. | This Markdown file and future plan updates. | May copy directly as owner-authored documentation. |
+
+### Past-Week Commit Inventory
+
+Observed commits since 2026-04-20 on `codex/en-croissant-fork`; the actual feature work in this range is dated 2026-04-24 through 2026-04-27.
+
+| Commit | Date | Message | Owner-added feature/part |
+| --- | --- | --- | --- |
+| `42732755` | 2026-04-24 | Add plan explorer and database workflows | Initial Compare, Plan Explorer, Gaps, hover preview, local/online source, safe launch, and fork scaffolding work. |
+| `2708253f` | 2026-04-24 | Optimize database position lookups | Position occurrence indexing and exact lookup acceleration. |
+| `c7a74c3a` | 2026-04-24 | Keep large database indexes responsive | Large index cache and responsiveness improvements. |
+| `adfd2c5f` | 2026-04-24 | Make plan explorer arrows responsive | Plan arrow request ownership and side-filter responsiveness. |
+| `2b30a53d` | 2026-04-24 | Speed up plan explorer fallback scans | Sampling and cancellation improvements for fallback plan searches. |
+| `cefd3880` | 2026-04-24 | Save analysis workspace improvements | Analysis layout, compare/database/plan UI polish, online import pieces, Lichess plan source support. |
+| `d31d8bea` | 2026-04-25 | Add opening health review workflows | Opening health/gaps workflows, review workspace foundation, online auto-update, validation source handling, tests. |
+| `4b328f86` | 2026-04-25 | Move repertoire analysis into review workspace | Review workspace entry point and relocation of repertoire analysis flow. |
+| `02fed207` | 2026-04-25 | Show review line annotations in opening review | Display saved annotations inside review lines. |
+| `3b3f3337` | 2026-04-25 | Add master game tools and engine move ranking | Master/reference game tools, engine ranking, and move-health utility work. |
+| `6ea276bb` | 2026-04-25 | Add responsive panel scaling | Responsive board/panel scaling, engine plan explorer, repertoire copy, plan tests. |
+| `eaeb9f25` | 2026-04-26 | Add mistake review training workflow | Mistake review utilities, practice flow, opening review expansion, tests, home/workspace integration. |
+| `c26e0ea3` | 2026-04-26 | Add mistake trainer session artifacts | Playwright/session artifacts and screenshots for the mistake trainer workflow. |
+| `e79ad5b0` | 2026-04-26 | Fix black opening stats result mapping | Result-perspective correction for black-side review evidence. |
+| `b764521f` | 2026-04-26 | Ask for review rating on good alternatives | Practice feedback flow for acceptable alternative moves. |
+| `eeb21a12` | 2026-04-26 | Show saved database move in review evidence | Evidence panel display of stored database move context. |
+| `32316a1d` | 2026-04-26 | Clarify feedback for good review moves | More nuanced post-attempt feedback behavior. |
+| `c752f55c` | 2026-04-26 | Add opening health date filters | Date filters for opening health/review scans and persistence. |
+| `9acc5cf2` | 2026-04-26 | Fix opening health engine matching and bulk save | Engine matching and bulk-save behavior in opening health workflows. |
+| `b360f4b5` | 2026-04-26 | Prefer saved engine best move in opening review | Prefer stored validated move during review practice. |
+| `3c00cd9b` | 2026-04-26 | Cache opening stats names and add summary bars | Cached opening names and summary visualizations in review. |
+| `a345e797` | 2026-04-26 | Fix opening review board orientation | Board orientation and move-side fixes in opening review. |
+| `9eb61e47` | 2026-04-26 | Integrate Lichess cloud evals into analysis | Cloud eval source integration in the analysis display. |
+| `97baa0f9` | 2026-04-26 | Fix opening review deck perspective | Deck perspective and color handling corrections. |
+| `d9e9d485` | 2026-04-26 | Improve files root drag and deselect | File organizer drag and deselect polish. |
+| `4aa7094d` | 2026-04-26 | Use move side for opening review boards | Move-side-aware review board setup. |
+| `87c59061` | 2026-04-26 | Fix opening stats WDL perspective | WDL perspective utilities and tests. |
+| `61db2e73` | 2026-04-27 | Avoid localStorage for review deck data | Review deck persistence state improvements. |
+| `c6e77d74` | 2026-04-27 | Add mistake trainer reveal controls and engine dock | Reveal controls, docked engine panel, extracted analysis content, shortcuts. |
+| `cce28d78` | 2026-04-27 | Merge engine shortcut hint into panel | Engine shortcut hint integration. |
+| `919d15c9` | 2026-04-27 | Move mistake review game info below actions | Practice layout adjustment. |
+| `1b64912a` | 2026-04-27 | Improve mistake trainer playback and resizing | Board playback, resizing controls, settings, and supporting backend command. |
+| `42ea1570` | 2026-04-27 | Anchor mistake review game info at bottom | Practice layout anchoring. |
+| `2e5515d8` | 2026-04-27 | Hide board resize handles | Board resize-handle visibility change. |
+| `2b8d21e3` | 2026-04-27 | Fix mistake review attempt summary | Attempt summary correction. |
+| `df0ae69b` | 2026-04-27 | Start local Stockfish without cloud delay | Local engine startup path separated from cloud delay. |
+| `d07cf42d` | 2026-04-27 | Show engine plan auto arrows | Automatic engine/plan arrows and test coverage. |
+| `8dca17e2` | 2026-04-27 | Restore Lichess cloud fallback for local engines | Cloud fallback behavior when local engine path is unavailable or delayed. |
+| `4c34803e` | 2026-04-27 | Add proprietary rebuild plan | Initial rebuild plan documentation. |
+| `6c9de0d8` | 2026-04-27 | Reduce Stockfish UI contention | Stockfish process/UI contention reduction. |
 
 | Neutral feature | Behavioural specification | Current reference location |
 | --- | --- | --- |
@@ -505,8 +605,11 @@ Design notes:
 
 ### Licence Hygiene Acceptance Criteria
 
-- The new repository has no copied GPL source, file structure, generated code, schemas, migrations, fixtures, UI copy, comments, documentation, assets, or build scripts.
-- Implementation agents used only clean-room plans/specs and public protocols/docs, not the GPL repository.
+- The new repository has no copied GPL base source, file structure, generated code, schemas, migrations, fixtures, UI copy, comments, documentation, assets, or build scripts.
+- Any copied material comes only from the owner-attested past-week reusable contribution set, from an audited delta bundle, with provenance notes.
+- New owner-created files from the past-week range are identified separately from owner-authored hunks inside modified GPL files.
+- Modified GPL files are not copied wholesale unless manual/legal review confirms the entire file is owner-owned or otherwise reusable.
+- Implementation agents used only this plan, clean-room specs, public protocols/docs, and the approved owner-authored reusable-delta bundle, not the old GPL repository as an open-ended reference.
 - All dependency licences are recorded, reviewed, and compatible with the intended proprietary distribution, or explicitly marked for legal review.
 - GPL/AGPL dependencies and assets are absent unless deliberately approved with documented legal advice.
 - Stockfish or other GPL engines are not bundled unless legally approved; user-supplied external engine configuration is preferred.
@@ -539,10 +642,14 @@ Design notes:
 
 Before implementation starts:
 
-- [ ] Remove the old GPL repository from the active implementation workspace.
+- [ ] Record the owner's attestation that the past-week commits are owner-owned and reusable.
+- [ ] Create a reusable-delta bundle from commits `42732755` through `6c9de0d8`, plus documentation commit `4c34803e` if needed.
+- [ ] Classify bundled items as new owner file, owner hunk from modified GPL file, owner asset, owner test, generated from owner-owned input, or needs manual/legal review.
+- [ ] For modified GPL files, extract only owner-authored hunks or rewrite from the behavioral spec.
+- [ ] Remove the old GPL repository from the active implementation workspace after the controlled delta extraction is complete.
 - [ ] Create a fresh repository with no copied files and no copied git history.
-- [ ] Use only this plan and later clean-room specifications as implementation references.
-- [ ] Confirm implementation agents are instructed not to open, inspect, or copy the old GPL repository.
+- [ ] Use only this plan, later clean-room specifications, public documentation, and the reviewed owner-delta bundle as implementation references.
+- [ ] Confirm implementation agents are instructed not to open, inspect, or copy the old GPL repository directly.
 - [ ] Choose a proprietary-compatible licence for the new application.
 - [ ] Verify every direct and transitive dependency licence.
 - [ ] Avoid GPL/AGPL dependencies unless deliberately chosen after legal review.
@@ -560,70 +667,76 @@ Before implementation starts:
 
 ## 15. Implementation Prompt Templates
 
-Use these prompts later in the fresh repository. Each prompt intentionally forbids reference to the old GPL repository.
+Use these prompts later in the fresh repository. Each prompt forbids open-ended reference to the old GPL repository. If a task should reuse your past-week work, provide Codex with a reviewed owner-authored reusable-delta bundle and explicitly say which files or hunks are approved to copy.
+
+### Import owner-owned reusable delta
+
+```text
+Import the approved owner-authored reusable code bundle into this fresh proprietary repository. Do not open, inspect, or copy from the old GPL repository. Only use the files/hunks/assets/tests included in the approved bundle, which are owner-attested as created in the past-week commits. Preserve useful logic where it fits the new architecture, rename APIs and modules as needed for this new codebase, and do not import GPL base files, old folder structure, old UI text, old schemas, or generated files that were derived from GPL sources unless separately approved.
+```
 
 ### Create the initial app skeleton
 
 ```text
-Create the initial desktop app skeleton for a proprietary chess workstation in this fresh repository. Do not reference, inspect, or copy any old GPL repository, source files, folder structure, UI text, assets, schemas, generated code, tests, or implementation details. Use only this repository's clean-room plan and public documentation for selected dependencies. Set up the app shell, front-end build, back-end service boundary, original placeholder branding, licence notes, and dependency licence tracking. Do not implement chess features yet.
+Create the initial desktop app skeleton for a proprietary chess workstation in this fresh repository. Do not reference, inspect, or copy any old GPL repository, source files, folder structure, UI text, assets, schemas, generated code, tests, or implementation details. If an approved owner-authored reusable-delta bundle is provided, use only the approved items from that bundle. Use this repository's plan and public documentation for selected dependencies. Set up the app shell, front-end build, back-end service boundary, original placeholder branding, licence notes, and dependency licence tracking. Do not implement chess features yet.
 ```
 
 ### Implement the chess domain model
 
 ```text
-Implement an independently designed chess domain model from public chess rules and the clean-room specification only. Do not reference or copy any old GPL chess code, names, tests, or data structures. Include board snapshots, legal move generation, move application, game tree nodes, variations, comments, NAGs, clocks, and visual annotation records. Add independently authored tests based on public chess rules and original examples.
+Implement an independently designed chess domain model from public chess rules, this specification, and any approved owner-authored reusable-delta bundle only. Do not reference or copy any old GPL chess code, names, tests, or data structures. Include board snapshots, legal move generation, move application, game tree nodes, variations, comments, NAGs, clocks, and visual annotation records. Add independently authored tests based on public chess rules and original examples, or approved owner-authored tests from the reusable bundle.
 ```
 
 ### Implement the Stockfish UCI wrapper
 
 ```text
-Implement a fresh UCI engine adapter for user-supplied local engines using the public UCI protocol. Do not reference or copy any old GPL UCI wrapper, command names, process lifecycle code, logs, or tests. Support engine profile validation, initialization, position updates, MultiPV, analysis sessions, cancellation, graceful shutdown, crash handling, and diagnostics. Treat Stockfish as an external user-configured engine unless legal review approves bundling.
+Implement a UCI engine adapter for user-supplied local engines using the public UCI protocol and any approved owner-authored reusable-delta bundle. Do not reference or copy any old GPL UCI wrapper, command names, process lifecycle code, logs, or tests. Support engine profile validation, initialization, position updates, MultiPV, analysis sessions, cancellation, graceful shutdown, crash handling, and diagnostics. Treat Stockfish as an external user-configured engine unless legal review approves bundling.
 ```
 
 ### Implement the SQLite game database
 
 ```text
-Implement a newly designed SQLite persistence layer for games, players, events, sources, annotations, studies, repertoires, and background jobs. Do not reference or copy any old GPL database schema, migrations, indexes, model names, generated bindings, SQL, fixtures, or storage formats. Use the clean-room data model proposal as the starting point, create original migration names, and add tests with original sample data.
+Implement a newly designed SQLite persistence layer for games, players, events, sources, annotations, studies, repertoires, and background jobs. Do not reference or copy any old GPL database schema, migrations, indexes, model names, generated bindings, SQL, fixtures, or storage formats. You may use approved owner-authored reusable-delta code where it is clearly separated from GPL base code. Use the data model proposal as the starting point, create original migration names, and add tests with original or approved owner-authored sample data.
 ```
 
 ### Implement PGN import
 
 ```text
-Implement PGN import from public PGN format documentation and the clean-room import requirements only. Do not reference or copy any old GPL parser, lexer, import code, test fixtures, comments, diagnostics, or sample PGNs. Support headers, SAN moves, comments, NAGs, variations, clocks where present, strict and lenient modes, deduplication fingerprints, progress events, and import diagnostics. Use original test cases.
+Implement PGN import from public PGN format documentation, this plan, and any approved owner-authored reusable-delta bundle only. Do not reference or copy any old GPL parser, lexer, import code, test fixtures, comments, diagnostics, or sample PGNs. Support headers, SAN moves, comments, NAGs, variations, clocks where present, strict and lenient modes, deduplication fingerprints, progress events, and import diagnostics. Use original test cases or approved owner-authored tests.
 ```
 
 ### Implement the analysis panel
 
 ```text
-Implement an original analysis panel for the fresh app. Do not reference or copy any old GPL UI code, component names, layout, CSS, UI text, icons, or engine display logic. The panel should subscribe to the clean-room engine session model, show current evaluation, MultiPV lines, depth/time/nodes, start/stop controls, engine selection, and clear error states. Write new UI copy and original styles.
+Implement an original analysis panel for the fresh app. Do not reference or copy any old GPL UI code, component names, layout, CSS, UI text, icons, or engine display logic. You may use approved owner-authored reusable-delta logic/components where provided, but adapt them to the new architecture and original design system. The panel should subscribe to the engine session model, show current evaluation, MultiPV lines, depth/time/nodes, start/stop controls, engine selection, and clear error states. Write new UI copy and original styles.
 ```
 
 ### Implement local database search
 
 ```text
-Implement local database search using the fresh SQLite schema and clean-room query service. Do not reference or copy any old GPL search code, index format, query names, SQL, data models, tests, or performance shortcuts. Support paginated header search, full-text search if available, current-position search, opening continuation statistics, progress events, cancellation, and stale-result protection.
+Implement local database search using the fresh SQLite schema and query service. Do not reference or copy any old GPL search code, index format, query names, SQL, data models, tests, or performance shortcuts. You may use approved owner-authored reusable-delta algorithms/hunks where provenance is clear. Support paginated header search, full-text search if available, current-position search, opening continuation statistics, progress events, cancellation, and stale-result protection.
 ```
 
 ### Implement source comparison
 
 ```text
-Implement a clean-room two-source opening comparison workflow. Do not reference or copy any old GPL comparison UI, source-selection labels, state keys, schemas, or query implementation. Use the clean-room behavior spec: two independently configured sources, synchronized current position, separate loading/error states, hover previews through the board overlay service, and stale request cancellation.
+Implement a two-source opening comparison workflow. Do not reference or copy any old GPL comparison UI, source-selection labels, state keys, schemas, or query implementation. You may use approved owner-authored reusable-delta code for the comparison feature. Use the behavior spec: two independently configured sources, synchronized current position, separate loading/error states, hover previews through the board overlay service, and stale request cancellation.
 ```
 
 ### Implement strategic route exploration
 
 ```text
-Implement an original strategic route exploration feature from the clean-room behavior spec. Do not reference or copy any old GPL plan-extraction code, algorithms, table labels, file names, state names, tests, or UI layout. Design a new algorithm that samples continuations from a reference source, tracks piece and pawn route patterns, reports sample size and confidence, and renders optional temporary board overlays.
+Implement strategic route exploration from the behavior spec and any approved owner-authored reusable-delta bundle. Do not reference or copy any old GPL plan-extraction code, algorithms, table labels, file names, state names, tests, or UI layout. Use or adapt approved owner-owned plan-explorer code where provided; otherwise design a new algorithm that samples continuations from a reference source, tracks piece and pawn route patterns, reports sample size and confidence, and renders optional temporary board overlays.
 ```
 
 ### Implement repertoire gap scanning
 
 ```text
-Implement a clean-room repertoire gap scanner. Do not reference or copy any old GPL scanning code, priority formula, UI text, data structures, generated bindings, or tests. Use independently designed inputs, outputs, and ranking logic based on repertoire coverage, reference frequency, recency, results, and optional validation. Include progress, cancellation, duplicate handling, user overrides, and save-to-review behavior.
+Implement a repertoire gap scanner. Do not reference or copy any old GPL scanning code, priority formula, UI text, data structures, generated bindings, or tests. You may use approved owner-authored reusable-delta code for the scanner and ranking workflow. Use designed inputs, outputs, and ranking logic based on repertoire coverage, reference frequency, recency, results, and optional validation. Include progress, cancellation, duplicate handling, user overrides, and save-to-review behavior.
 ```
 
 ### Implement review decks and practice
 
 ```text
-Implement opening review decks and practice from the clean-room training specification. Do not reference or copy any old GPL review code, scheduler integration, UI wording, card schema, tests, or assets. Support deck creation, card editing, expected-move overrides, saved notes and board marks, due-card and full-deck practice modes, attempt logging, spaced-repetition scheduling, and post-attempt evidence.
+Implement opening review decks and practice from the training specification and any approved owner-authored reusable-delta bundle. Do not reference or copy any old GPL review code, scheduler integration, UI wording, card schema, tests, or assets. Support deck creation, card editing, expected-move overrides, saved notes and board marks, due-card and full-deck practice modes, attempt logging, spaced-repetition scheduling, and post-attempt evidence.
 ```
