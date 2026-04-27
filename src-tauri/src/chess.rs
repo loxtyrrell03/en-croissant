@@ -366,7 +366,7 @@ pub async fn get_best_moves(
 
     state.engine_processes.insert(key.clone(), process.clone());
 
-    let lim = RateLimiter::direct(Quota::per_second(nonzero!(5u32)));
+    let lim = RateLimiter::direct(Quota::per_second(nonzero!(2u32)));
 
     while let Some(line) = reader.next_line().await? {
         let mut proc = process.lock().await;

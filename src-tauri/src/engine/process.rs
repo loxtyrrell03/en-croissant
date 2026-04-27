@@ -16,8 +16,11 @@ use super::{normalize_uci_moves_for_fen, types::GoMode};
 
 #[cfg(target_os = "windows")]
 pub const CREATE_NO_WINDOW: u32 = 0x08000000;
+#[cfg(target_os = "windows")]
+pub const BELOW_NORMAL_PRIORITY_CLASS: u32 = 0x00004000;
 
 const ENGINE_STARTUP_TIMEOUT: Duration = Duration::from_secs(15);
+const MAX_ENGINE_LOGS: usize = 1000;
 
 #[derive(Debug, Clone, Serialize, Type)]
 #[serde(tag = "type", content = "value", rename_all = "camelCase")]
@@ -46,7 +49,7 @@ impl BaseEngine {
             .stderr(Stdio::piped());
 
         #[cfg(target_os = "windows")]
-        command.creation_flags(CREATE_NO_WINDOW);
+        command.creation_flags(CREATE_NO_WINDOW | BELOW_NORMAL_PRIORITY_CLASS);
 
         let mut child = command.spawn()?;
 
@@ -83,12 +86,19 @@ impl BaseEngine {
         self.logs.clone()
     }
 
+    fn push_log(&mut self, log: EngineLog) {
+        if self.logs.len() >= MAX_ENGINE_LOGS {
+            self.logs.remove(0);
+        }
+        self.logs.push(log);
+    }
+
     fn log_gui(&mut self, cmd: &str) {
-        self.logs.push(EngineLog::Gui(format!("{}\n", cmd)));
+        self.push_log(EngineLog::Gui(format!("{}\n", cmd)));
     }
 
     pub fn log_engine(&mut self, line: &str) {
-        self.logs.push(EngineLog::Engine(line.to_string()));
+        self.push_log(EngineLog::Engine(line.to_string()));
     }
 
     pub async fn init_uci(&mut self) -> Result<(), Error> {
@@ -117,7 +127,7 @@ impl BaseEngine {
             let Some(line) = line else {
                 return Err(Error::EngineDisconnected);
             };
-            self.logs.push(EngineLog::Engine(line.clone()));
+            self.log_engine(&line);
             if line.starts_with(expected) {
                 return Ok(());
             }
@@ -156,14 +166,19 @@ impl BaseEngine {
     }
 
     pub async fn wait_for_bestmove(&mut self) -> Result<String, Error> {
-        let reader = self.reader.as_mut().ok_or(Error::EngineDisconnected)?;
-        while let Some(line) = reader.next_line().await? {
-            self.logs.push(EngineLog::Engine(line.clone()));
+        loop {
+            let line = {
+                let reader = self.reader.as_mut().ok_or(Error::EngineDisconnected)?;
+                reader.next_line().await?
+            };
+            let Some(line) = line else {
+                return Err(Error::EngineDisconnected);
+            };
+            self.log_engine(&line);
             if let UciMessage::BestMove { best_move, .. } = vampirc_uci::parse_one(&line) {
                 return Ok(best_move.to_string());
             }
         }
-        Err(Error::EngineDisconnected)
     }
 
     pub fn kill_sync(&mut self) {
