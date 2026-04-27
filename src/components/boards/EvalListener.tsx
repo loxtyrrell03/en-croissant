@@ -29,6 +29,8 @@ import { getBestMoves as lichessGetBestMoves } from "@/utils/lichess/api";
 import { useThrottledEffect } from "@/utils/misc";
 import { TreeStateContext } from "../common/TreeStateContext";
 
+const LOCAL_ENGINE_CLOUD_TIMEOUT_MS = 1500;
+
 function EvalListener({ active }: { active: boolean }) {
   const [engines] = useAtom(enginesAtom);
   const threat = useAtomValue(currentThreatAtom);
@@ -225,7 +227,7 @@ function EngineListener({
         .with(
           "local",
           () => (tab: string, goMode: GoMode, options: EngineOptions) =>
-            localGetBestMoves(engine as LocalEngine, tab, goMode, options),
+            getLocalBestMovesWithLichessCloud(engine as LocalEngine, tab, goMode, options),
         )
         .with("chessdb", () => chessdbGetBestMoves)
         .with("lichess", () => lichessGetBestMoves)
@@ -305,6 +307,34 @@ function EngineListener({
     ],
   );
   return null;
+}
+
+async function getLocalBestMovesWithLichessCloud(
+  engine: LocalEngine,
+  tab: string,
+  goMode: GoMode,
+  options: EngineOptions,
+) {
+  const cloudMoves = await withTimeout(
+    lichessGetBestMoves(tab, goMode, options),
+    LOCAL_ENGINE_CLOUD_TIMEOUT_MS,
+  ).catch(() => null);
+
+  if (cloudMoves?.[1]?.length) {
+    await stopEngine(engine, tab).catch(() => undefined);
+    return cloudMoves;
+  }
+
+  return localGetBestMoves(engine, tab, goMode, options);
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      window.setTimeout(() => reject(new Error("Timed out waiting for Lichess Cloud")), timeoutMs);
+    }),
+  ]);
 }
 
 export default EvalListener;
