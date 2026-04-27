@@ -1284,7 +1284,12 @@ function Board({
   const topPlayer = orientation === "white" ? headers.black : headers.white;
   const bottomPlayer = orientation === "white" ? headers.white : headers.black;
   const mistakeReviewMetadata = trainerMistakeReviewPosition?.mistakeReview;
-  const mistakeReviewSeverity = (practiceState.mistakeReviewLabel ??
+  const mistakeReviewAttemptActive =
+    (practiceState.phase === "correct" || practiceState.phase === "incorrect") &&
+    sameBoardPosition(practiceState.currentFen, trainerMistakeReviewPosition?.fen);
+  const mistakeReviewSeverity = ((mistakeReviewAttemptActive
+    ? practiceState.mistakeReviewLabel
+    : undefined) ??
     mistakeReviewMetadata?.severity) as MistakeReviewAttemptLabel | undefined;
   const mistakeReviewPanelColor = mistakeReviewPanelReveal
     ? mistakeReviewPanelReveal.mode === "best"
@@ -1292,19 +1297,27 @@ function Board({
       : "red"
     : mistakeReviewColor(mistakeReviewSeverity);
   const mistakeReviewLoss =
-    practiceState.moveLossCp ??
+    (mistakeReviewAttemptActive ? practiceState.moveLossCp : undefined) ??
     mistakeReviewMetadata?.cpLoss ??
     trainerMistakeReviewPosition?.engine?.lossCp;
+  const mistakeReviewWinProbabilityDrop =
+    (mistakeReviewAttemptActive ? practiceState.winProbabilityDrop : undefined) ??
+    mistakeReviewMetadata?.winProbabilityDrop;
   const mistakeReviewBestMove =
+    (mistakeReviewAttemptActive ? practiceState.bestMove : undefined) ||
     mistakeReviewMetadata?.bestMoveSan ||
     trainerMistakeReviewPosition?.engine?.bestMoveSan ||
     trainerMistakeReviewPosition?.answer;
   const mistakeReviewBestMoveUci =
+    (mistakeReviewAttemptActive ? practiceState.bestMoveUci : undefined) ||
     mistakeReviewMetadata?.bestMoveUci ||
     trainerMistakeReviewPosition?.engine?.bestMoveUci ||
     trainerMistakeReviewPosition?.answerUci;
   const mistakeReviewPlayedMove =
-    practiceState.playedMove || mistakeReviewMetadata?.playedMoveSan || undefined;
+    (mistakeReviewAttemptActive ? practiceState.playedMove : undefined) ||
+    mistakeReviewMetadata?.playedMoveSan ||
+    undefined;
+  const mistakeReviewPlayedMoveLabel = mistakeReviewAttemptActive ? "Played" : "Mistake";
   const showMistakeReviewControls = isMistakeReviewTab && Boolean(mistakeReviewMetadata);
 
   return (
@@ -1680,13 +1693,15 @@ function Board({
                         )}
                       </Group>
                       <Text size="xs" c="dimmed">
-                        {mistakeReviewPlayedMove ? `Mistake: ${mistakeReviewPlayedMove}. ` : ""}
+                        {mistakeReviewPlayedMove
+                          ? `${mistakeReviewPlayedMoveLabel}: ${mistakeReviewPlayedMove}. `
+                          : ""}
                         Best: {mistakeReviewBestMove || "-"}
                         {mistakeReviewLoss !== undefined
                           ? `, ${Math.round(mistakeReviewLoss)} cp loss`
                           : ""}
-                        {mistakeReviewMetadata?.winProbabilityDrop !== undefined
-                          ? `, ${mistakeReviewMetadata.winProbabilityDrop.toFixed(1)}% win-prob drop`
+                        {mistakeReviewWinProbabilityDrop !== undefined
+                          ? `, ${mistakeReviewWinProbabilityDrop.toFixed(1)}% win-prob drop`
                           : ""}
                         {mistakeReviewRevealRemaining > 0
                           ? `, reveal in ${mistakeReviewRevealRemaining}s`
