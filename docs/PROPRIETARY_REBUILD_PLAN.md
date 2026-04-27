@@ -6,7 +6,7 @@ The goal is to build a proprietary chess workstation inspired by general chess-G
 
 The GPL base of the current application must not be reused, translated, restructured, or mechanically adapted. However, the owner has attested on 2026-04-27 that everything committed to this repository during the past week is the owner's own code and assets. That owner-authored contribution set may be copied into the proprietary rebuild after it is isolated from the GPL base. This permission applies to the owner-owned delta, new owner-created files, and owner-created assets from the listed commits; it does not grant permission to copy unmodified GPL base code or third-party material with unclear rights.
 
-Implementation agents should work from this plan, later specifications, and an owner-prepared reusable-delta bundle. They should not browse the old GPL repository as an implementation reference except for a controlled owner/provenance extraction pass.
+The rebuild must happen in a separate repository, not in this repository and not on top of this repository's git history. Implementation agents should work from the separate proprietary repository, this plan, later specifications, and an owner-prepared reusable-delta bundle. They should not browse the old GPL repository as an implementation reference except for a controlled owner/provenance extraction pass.
 
 This plan is not legal advice. Anything uncertain should be marked "needs manual/legal review" before commercial release.
 
@@ -14,7 +14,9 @@ This plan is not legal advice. Anything uncertain should be marked "needs manual
 
 ### Clean-Room Boundary
 
-- Build in a new repository with no copied source tree, no copied history, and no imported GPL base files.
+- Build in a separate new repository with no copied source tree, no copied git history, no shared remote, and no imported GPL base files.
+- Do not fork, clone-and-delete, rename, or continue development inside this repository for the proprietary rebuild.
+- Keep this repository as a read-only reference/archive after the controlled extraction step.
 - Copying is allowed only for the owner-attested reusable contribution set listed in this plan, preferably from an isolated export bundle rather than from the old repository.
 - New files created entirely by the owner during the past-week range may be copied wholesale if they do not contain GPL-derived/generated material.
 - For files that modify pre-existing GPL files, copy only the owner-authored hunks or re-express them in the new architecture; do not copy the surrounding GPL file wholesale.
@@ -75,6 +77,25 @@ Required controls:
 - Do not copy unchanged GPL files just because they were touched nearby.
 - Do not preserve old module paths, command names, schema names, or UI text unless they are generic or independently chosen.
 - When extraction is hard to reason about, reimplement the behavior from the neutral spec instead of copying code.
+
+### Separate Repository Isolation Workflow
+
+The proprietary rebuild should use a two-workspace process:
+
+1. **Extraction workspace:** this current GPL-derived repository, used only to identify and export owner-authored past-week material.
+2. **Implementation workspace:** a brand-new proprietary repository created independently, used for all product implementation.
+
+Required isolation rules:
+
+- The implementation workspace must be created with `git init` or an equivalent empty-repo setup, not by cloning or forking this repository.
+- The old repository must not be added as a submodule, subtree, remote, package dependency, workspace member, or path alias.
+- Do not copy `src`, `src-tauri`, `public`, `sound`, `.github`, build outputs, dependency folders, generated bindings, generated route trees, caches, or config files wholesale.
+- Do not copy `.git`, commit history, branches, tags, issue templates, CI files, lockfiles, generated artifacts, local build outputs, or app metadata from this repo into the new repo.
+- Put the approved reusable delta in a neutral transfer bundle, for example `approved-owner-delta/`, with a manifest describing provenance and reuse status for every included file or hunk.
+- The transfer bundle should contain only owner-authored items approved for reuse. It should not mirror the old directory tree unless the path is needed temporarily for provenance review.
+- Import the plan document into the new repo as a specification document, then treat the old repo as closed for implementation work.
+- Start future Codex sessions from the new repo root only. Do not include this GPL-derived repo as the active workspace or adjacent source reference.
+- If an implementation task needs additional detail from this repo, pause and create a small owner-reviewed spec or delta export; do not let the implementation agent freely inspect the old repository.
 
 ## 3. Feature Inventory
 
@@ -540,7 +561,9 @@ Design notes:
 
 ### Phase 0: Repo Setup and Licence Hygiene
 
-- Create a fresh repository with no copied GPL files or history.
+- Create a separate fresh repository with `git init` or an equivalent empty-repo process; do not fork, clone, or rename this repository.
+- Keep the GPL-derived repository outside the implementation workspace and treat it as read-only after owner-delta extraction.
+- Import only this plan and the approved owner-delta bundle into the new repository.
 - Add original README, licence, contribution policy, and clean-room notes.
 - Add dependency licence tracking.
 - Create original branding, icons, board theme, and placeholder assets.
@@ -605,6 +628,7 @@ Design notes:
 
 ### Licence Hygiene Acceptance Criteria
 
+- The proprietary rebuild lives in a separate git repository with independent history, independent remotes, and no relationship to this GPL-derived repository other than documented import of approved owner-owned material.
 - The new repository has no copied GPL base source, file structure, generated code, schemas, migrations, fixtures, UI copy, comments, documentation, assets, or build scripts.
 - Any copied material comes only from the owner-attested past-week reusable contribution set, from an audited delta bundle, with provenance notes.
 - New owner-created files from the past-week range are identified separately from owner-authored hunks inside modified GPL files.
@@ -621,6 +645,7 @@ Design notes:
 
 | Risk | Impact | Mitigation |
 | --- | --- | --- |
+| Rebuild accidentally occurs inside the GPL-derived repository | New proprietary work may inherit contaminated history, paths, configs, or accidental copies. | Use a physically separate `git init` repository; keep this repo read-only after extraction; never add it as a remote/submodule/dependency; run implementation sessions from the new repo root only. |
 | Accidental GPL contamination | Proprietary release may be compromised. | Start fresh repo; remove old repo from active workspace; forbid source-level reference; keep clean-room design log; review diffs before release. |
 | Over-reliance on old architecture | New app may be argued to be structurally derivative or inherit old limitations. | Use domain-first architecture in this plan; rename concepts where not generic; document independent alternatives considered. |
 | Hidden copied UI text or assets | Licence and branding risk. | Create original copy deck, icons, themes, sounds, piece assets, and screenshots; audit translations and resource folders. |
@@ -646,8 +671,11 @@ Before implementation starts:
 - [ ] Create a reusable-delta bundle from commits `42732755` through `6c9de0d8`, plus documentation commit `4c34803e` if needed.
 - [ ] Classify bundled items as new owner file, owner hunk from modified GPL file, owner asset, owner test, generated from owner-owned input, or needs manual/legal review.
 - [ ] For modified GPL files, extract only owner-authored hunks or rewrite from the behavioral spec.
+- [ ] Create a physically separate repository for the proprietary rebuild; do not fork, clone, or rename this repository.
+- [ ] Confirm the new repository has its own `.git` directory, independent first commit, independent remote, and no connection to this repository's history.
+- [ ] Copy only this plan and the approved owner-delta bundle into the new repository.
 - [ ] Remove the old GPL repository from the active implementation workspace after the controlled delta extraction is complete.
-- [ ] Create a fresh repository with no copied files and no copied git history.
+- [ ] Keep the old repository closed/read-only during implementation sessions unless a new owner-reviewed delta/spec export is needed.
 - [ ] Use only this plan, later clean-room specifications, public documentation, and the reviewed owner-delta bundle as implementation references.
 - [ ] Confirm implementation agents are instructed not to open, inspect, or copy the old GPL repository directly.
 - [ ] Choose a proprietary-compatible licence for the new application.
@@ -669,16 +697,22 @@ Before implementation starts:
 
 Use these prompts later in the fresh repository. Each prompt forbids open-ended reference to the old GPL repository. If a task should reuse your past-week work, provide Codex with a reviewed owner-authored reusable-delta bundle and explicitly say which files or hunks are approved to copy.
 
+### Create the separate proprietary repository
+
+```text
+Create a brand-new proprietary repository for the chess workstation rebuild. Do not fork, clone, rename, or continue from the old GPL-derived repository. Initialize independent git history, add only original project scaffolding, import this plan as a specification document, and leave the approved owner-delta bundle as a reviewed input directory. Do not copy old source trees, build configs, generated files, assets, lockfiles, CI files, or git history.
+```
+
 ### Import owner-owned reusable delta
 
 ```text
-Import the approved owner-authored reusable code bundle into this fresh proprietary repository. Do not open, inspect, or copy from the old GPL repository. Only use the files/hunks/assets/tests included in the approved bundle, which are owner-attested as created in the past-week commits. Preserve useful logic where it fits the new architecture, rename APIs and modules as needed for this new codebase, and do not import GPL base files, old folder structure, old UI text, old schemas, or generated files that were derived from GPL sources unless separately approved.
+Import the approved owner-authored reusable code bundle into this separate proprietary repository. Do not open, inspect, or copy from the old GPL repository. Only use the files/hunks/assets/tests included in the approved bundle, which are owner-attested as created in the past-week commits. Preserve useful logic where it fits the new architecture, rename APIs and modules as needed for this new codebase, and do not import GPL base files, old folder structure, old UI text, old schemas, or generated files that were derived from GPL sources unless separately approved.
 ```
 
 ### Create the initial app skeleton
 
 ```text
-Create the initial desktop app skeleton for a proprietary chess workstation in this fresh repository. Do not reference, inspect, or copy any old GPL repository, source files, folder structure, UI text, assets, schemas, generated code, tests, or implementation details. If an approved owner-authored reusable-delta bundle is provided, use only the approved items from that bundle. Use this repository's plan and public documentation for selected dependencies. Set up the app shell, front-end build, back-end service boundary, original placeholder branding, licence notes, and dependency licence tracking. Do not implement chess features yet.
+Create the initial desktop app skeleton for a proprietary chess workstation in this separate fresh repository. Do not reference, inspect, or copy any old GPL repository, source files, folder structure, UI text, assets, schemas, generated code, tests, or implementation details. If an approved owner-authored reusable-delta bundle is provided, use only the approved items from that bundle. Use this repository's plan and public documentation for selected dependencies. Set up the app shell, front-end build, back-end service boundary, original placeholder branding, licence notes, and dependency licence tracking. Do not implement chess features yet.
 ```
 
 ### Implement the chess domain model
