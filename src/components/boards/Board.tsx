@@ -1123,9 +1123,12 @@ function Board({
       const startY = event.clientY;
       const startSize = boardSize || maxBoardSize;
       const cursor = corner === "nw" || corner === "se" ? "nwse-resize" : "nesw-resize";
+      event.currentTarget.setPointerCapture?.(event.pointerId);
       document.body.style.cursor = cursor;
+      document.body.style.userSelect = "none";
 
       const onPointerMove = (moveEvent: PointerEvent) => {
+        moveEvent.preventDefault();
         const dx = corner.includes("e") ? moveEvent.clientX - startX : startX - moveEvent.clientX;
         const dy = corner.includes("s") ? moveEvent.clientY - startY : startY - moveEvent.clientY;
         const delta = Math.abs(dx) > Math.abs(dy) ? dx : dy;
@@ -1134,12 +1137,15 @@ function Board({
 
       const stop = () => {
         document.body.style.cursor = "";
+        document.body.style.userSelect = "";
         window.removeEventListener("pointermove", onPointerMove);
         window.removeEventListener("pointerup", stop);
+        window.removeEventListener("pointercancel", stop);
       };
 
       window.addEventListener("pointermove", onPointerMove);
       window.addEventListener("pointerup", stop, { once: true });
+      window.addEventListener("pointercancel", stop, { once: true });
     },
     [boardSize, maxBoardSize, minBoardSize, setManualBoardSize],
   );
@@ -1595,32 +1601,18 @@ function Board({
                     onPointerDown={(event) => startBoardResize(corner, event)}
                     style={{
                       position: "absolute",
-                      zIndex: 4,
-                      width: 18,
-                      height: 18,
-                      top: corner.includes("n") ? 4 : undefined,
-                      bottom: corner.includes("s") ? 4 : undefined,
-                      left: corner.includes("w") ? 4 : undefined,
-                      right: corner.includes("e") ? 4 : undefined,
+                      zIndex: 50,
+                      width: 32,
+                      height: 32,
+                      top: corner.includes("n") ? -8 : undefined,
+                      bottom: corner.includes("s") ? -8 : undefined,
+                      left: corner.includes("w") ? -8 : undefined,
+                      right: corner.includes("e") ? -8 : undefined,
                       cursor: corner === "nw" || corner === "se" ? "nwse-resize" : "nesw-resize",
-                      borderTop: corner.includes("n")
-                        ? "2px solid var(--mantine-primary-color-filled)"
-                        : undefined,
-                      borderBottom: corner.includes("s")
-                        ? "2px solid var(--mantine-primary-color-filled)"
-                        : undefined,
-                      borderLeft: corner.includes("w")
-                        ? "2px solid var(--mantine-primary-color-filled)"
-                        : undefined,
-                      borderRight: corner.includes("e")
-                        ? "2px solid var(--mantine-primary-color-filled)"
-                        : undefined,
-                      borderRadius: 2,
-                      opacity: 0.78,
-                      backgroundColor:
-                        "color-mix(in srgb, var(--mantine-color-body) 68%, transparent)",
-                      boxShadow:
-                        "0 0 0 1px color-mix(in srgb, var(--mantine-color-black) 12%, transparent)",
+                      touchAction: "none",
+                      userSelect: "none",
+                      pointerEvents: "auto",
+                      backgroundColor: "transparent",
                     }}
                   />
                 ))}
