@@ -6,6 +6,7 @@ use specta::Type;
 use tokio::{
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader, Lines},
     process::{Child, ChildStdin, ChildStdout, Command},
+    time::{timeout, Duration},
 };
 use vampirc_uci::UciMessage;
 
@@ -15,6 +16,8 @@ use super::{normalize_uci_moves_for_fen, types::GoMode};
 
 #[cfg(target_os = "windows")]
 pub const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+const ENGINE_STARTUP_TIMEOUT: Duration = Duration::from_secs(15);
 
 #[derive(Debug, Clone, Serialize, Type)]
 #[serde(tag = "type", content = "value", rename_all = "camelCase")]
@@ -107,7 +110,9 @@ impl BaseEngine {
         loop {
             let line = {
                 let reader = self.reader.as_mut().ok_or(Error::EngineDisconnected)?;
-                reader.next_line().await?
+                timeout(ENGINE_STARTUP_TIMEOUT, reader.next_line())
+                    .await
+                    .map_err(|_| Error::EngineStartupTimedOut(expected.to_string()))??
             };
             let Some(line) = line else {
                 return Err(Error::EngineDisconnected);

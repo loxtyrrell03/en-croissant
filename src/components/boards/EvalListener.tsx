@@ -224,13 +224,8 @@ function EngineListener({
       match(engine.type)
         .with(
           "local",
-          () => (fen: string, goMode: GoMode, options: EngineOptions) =>
-            getLocalBestMovesWithLichessCloud(
-              engine as LocalEngine,
-              fen,
-              goMode,
-              options,
-            ),
+          () => (tab: string, goMode: GoMode, options: EngineOptions) =>
+            localGetBestMoves(engine as LocalEngine, tab, goMode, options),
         )
         .with("chessdb", () => chessdbGetBestMoves)
         .with("lichess", () => lichessGetBestMoves)
@@ -255,24 +250,35 @@ function EngineListener({
             moves: searchingMoves,
             fen: searchingFen,
             extraOptions: options,
-          }).then((moves) => {
-            if (moves) {
-              const [progress, bestMoves] = moves;
-              setEngineVariation((prev) => {
-                const newMap = new Map(prev);
-                newMap.set(searchKey, bestMoves);
-                return newMap;
-              });
-              if (latestSearchKeyRef.current === searchKey) {
-                setProgress(progress);
-                const shouldSetScore =
-                  firstEngineWithLines === engine.id || firstEngineWithLines === null;
-                if (bestMoves.length > 0 && shouldSetScore) {
-                  setScore(bestMoves[0].score);
+          })
+            .then((moves) => {
+              if (moves) {
+                const [progress, bestMoves] = moves;
+                setEngineVariation((prev) => {
+                  const newMap = new Map(prev);
+                  newMap.set(searchKey, bestMoves);
+                  return newMap;
+                });
+                if (latestSearchKeyRef.current === searchKey) {
+                  setProgress(progress);
+                  const shouldSetScore =
+                    firstEngineWithLines === engine.id || firstEngineWithLines === null;
+                  if (bestMoves.length > 0 && shouldSetScore) {
+                    setScore(bestMoves[0].score);
+                  }
                 }
               }
-            }
-          });
+            })
+            .catch((error) => {
+              console.error(`Failed to start analysis for ${engine.name}`, error);
+              if (latestSearchKeyRef.current !== searchKey) return;
+              setEngineVariation((prev) => {
+                const newMap = new Map(prev);
+                newMap.set(searchKey, []);
+                return newMap;
+              });
+              setProgress(100);
+            });
         }
       } else {
         if (engine.type === "local") {
@@ -299,20 +305,6 @@ function EngineListener({
     ],
   );
   return null;
-}
-
-async function getLocalBestMovesWithLichessCloud(
-  engine: LocalEngine,
-  tab: string,
-  goMode: GoMode,
-  options: EngineOptions,
-) {
-  const cloudMoves = await lichessGetBestMoves(tab, goMode, options);
-  if (cloudMoves?.[1]?.length) {
-    await stopEngine(engine, tab).catch(() => undefined);
-    return cloudMoves;
-  }
-  return localGetBestMoves(engine, tab, goMode, options);
 }
 
 export default EvalListener;
