@@ -1766,8 +1766,6 @@ function OpeningReviewPanel({
           <ReviewStat label="Done" value={stats.practiced} color="blue" />
         </SimpleGrid>
 
-        {isMistakeReview && <MistakeReviewGameInfoPanel position={mistakeReviewInfoPosition} />}
-
         <OpeningReviewPrioritySummary
           positions={deck.positions}
           onOpenPositions={() => setPositionsOpen(true)}
@@ -1852,6 +1850,8 @@ function OpeningReviewPanel({
             </Button>
           </Stack>
         )}
+
+        {isMistakeReview && <MistakeReviewGameInfoPanel position={mistakeReviewInfoPosition} />}
 
         {practiceState.phase === "waiting" && (
           <Paper p="sm" withBorder>
