@@ -1851,8 +1851,6 @@ function OpeningReviewPanel({
           </Stack>
         )}
 
-        {isMistakeReview && <MistakeReviewGameInfoPanel position={mistakeReviewInfoPosition} />}
-
         {practiceState.phase === "waiting" && (
           <Paper p="sm" withBorder>
             {practiceState.currentFen && currentFen !== practiceState.currentFen ? (
@@ -2076,6 +2074,8 @@ function OpeningReviewPanel({
           <SessionBadge label="Incorrect" value={sessionStats.incorrect} color="red" />
           <SessionBadge label="Streak" value={sessionStats.streak} color="orange" />
         </Group>
+
+        {isMistakeReview && <MistakeReviewGameInfoPanel position={mistakeReviewInfoPosition} />}
       </Stack>
 
       {mistakeDailySettings && (
