@@ -21,6 +21,10 @@ const squarePattern = /^[a-h][1-8]$/;
 const centralFiles = new Set(["c", "d", "e", "f"]);
 const majorMinorRoles = new Set(["queen", "rook", "bishop", "knight"]);
 
+type AutoPlanLineOptions = {
+    minGames?: number;
+};
+
 function isSquareName(square: string): square is SquareName {
     return squarePattern.test(square);
 }
@@ -70,10 +74,14 @@ function topLineGames(piece: PlanExplorerPiece) {
     return topLine(piece)?.games ?? 0;
 }
 
-export function getAutoPlanLines(data: PlanExplorerData | null, limit = AUTO_PLAN_MAX_LINES) {
+export function getAutoPlanLines(
+    data: PlanExplorerData | null,
+    limit = AUTO_PLAN_MAX_LINES,
+    options: AutoPlanLineOptions = {},
+) {
     if (!data) return [];
 
-    const minGames = lineSignificanceFloor(data);
+    const minGames = Math.max(1, options.minGames ?? lineSignificanceFloor(data));
 
     const majorMinorLines = data.pieces
         .filter((piece) => majorMinorRoles.has(piece.role))

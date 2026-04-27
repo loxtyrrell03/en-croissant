@@ -992,7 +992,9 @@ function Board({
   ) {
     shapes = shapes.concat(
       planLinesToShapes(
-        getAutoPlanLines(activeEnginePlanExplorerData, planExplorerArrowLimit),
+        getAutoPlanLines(activeEnginePlanExplorerData, planExplorerArrowLimit, {
+          minGames: 1,
+        }),
         planExplorerArrowLimit,
       ),
     );

@@ -217,6 +217,27 @@ describe("Engine Plan Explorer", () => {
         ]);
     });
 
+    test("keeps single-PV engine plan arrows available for the board", () => {
+        const report = buildEnginePlanReport(
+            INITIAL_FEN,
+            [
+                pv(1, ["g1f3"], 30),
+                pv(2, ["b1c3"], 20),
+            ],
+            {
+                requestedMultipv: 2,
+                limitLabel: "Depth 12",
+            },
+        );
+        const data = engineReportToPlanExplorerData(report);
+
+        expect(getAutoPlanLines(data, 4)).toHaveLength(0);
+        expect(getAutoPlanLines(data, 4, { minGames: 1 }).map((line) => line.squares)).toEqual([
+            ["b1", "c3"],
+            ["g1", "f3"],
+        ]);
+    });
+
     test("balances rendered auto arrows even when one plan has multiple arrows", () => {
         const data: PlanExplorerData = {
             fen: INITIAL_FEN,
