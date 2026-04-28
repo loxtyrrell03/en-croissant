@@ -377,6 +377,7 @@ function Board({
     useState<MistakeReviewRevealState | null>(null);
   const [mistakeReviewLineBusy, setMistakeReviewLineBusy] = useState(false);
   const [mistakeReviewRevealRemaining, setMistakeReviewRevealRemaining] = useState(0);
+  const [mistakeReviewFreePlay, setMistakeReviewFreePlay] = useState(false);
   const [activeMistakeReviewPosition, setActiveMistakeReviewPosition] =
     useState<ReviewPosition | null>(null);
   const mistakeReviewLineTimers = useRef<number[]>([]);
@@ -440,12 +441,19 @@ function Board({
     currentMistakeReviewPosition,
     deck.positions,
   ]);
+  const currentPracticeCard = useMemo(
+    () => deck.positions.find((position) => sameBoardPosition(position.fen, currentNode.fen)),
+    [currentNode.fen, deck.positions],
+  );
+  const mistakeReviewFreePlayActive =
+    isMistakeReviewTab && mistakeReviewFreePlay && !!trainerMistakeReviewPosition;
 
   const returnToMistakeReviewPosition = useCallback(
     (options: { clearReveal?: boolean; resetPractice?: boolean } = {}) => {
       if (!trainerMistakeReviewPosition) return false;
       clearMistakeReviewLine();
       setMistakeReviewLineBusy(false);
+      setMistakeReviewFreePlay(false);
       if (options.clearReveal !== false) {
         setMistakeReviewRevealState(null);
       }
@@ -589,6 +597,7 @@ function Board({
       mode: "best",
       moveUci: bestMoveUci,
     });
+    setMistakeReviewFreePlay(true);
     if (mistakeReviewEngineOnReveal) {
       setAllEnginesEnabled(true);
     }
@@ -621,6 +630,7 @@ function Board({
       mode: "mistake",
       moveUci: playedMoveUci,
     });
+    setMistakeReviewFreePlay(true);
     if (mistakeReviewEngineOnReveal) {
       setAllEnginesEnabled(true);
     }
@@ -649,6 +659,8 @@ function Board({
   useEffect(() => {
     if (!isMistakeReviewTab || !trainerMistakeReviewKey) {
       setMistakeReviewRevealRemaining(0);
+      setMistakeReviewRevealState(null);
+      setMistakeReviewFreePlay(false);
       return;
     }
 
@@ -695,8 +707,23 @@ function Board({
     clearMistakeReviewLine();
     setMistakeReviewLineBusy(false);
     setMistakeReviewRevealState(null);
+    if (mistakeReviewFreePlayActive) {
+      storeMakeMove({
+        payload: move,
+        clock: pos.turn === "white" ? whiteTime : blackTime,
+      });
+      setPendingMove(null);
+      setPracticeState({
+        phase: "waiting",
+        currentFen: trainerMistakeReviewPosition.fen,
+        positionIndex: trainerMistakeReviewIndex >= 0 ? trainerMistakeReviewIndex : undefined,
+      });
+      onMove?.(uci, currentNode.fen, san);
+      return;
+    }
+
     if (practicing) {
-      const c = deck.positions.find((c) => c.fen === currentNode.fen);
+      const c = currentPracticeCard;
       if (!c) {
         return;
       }
@@ -1050,7 +1077,7 @@ function Board({
     !!headers.white_time_control ||
     !!headers.black_time_control;
 
-  const practiceLock = !!practicing && !deck.positions.find((c) => c.fen === currentNode.fen);
+  const practiceLock = !!practicing && !currentPracticeCard && !mistakeReviewFreePlayActive;
 
   const movableColor: "white" | "black" | "both" | undefined = useMemo(() => {
     return practiceLock
