@@ -11,6 +11,7 @@ import {
   ScrollArea,
   Space,
   Stack,
+  Switch,
   Text,
 } from "@mantine/core";
 import {
@@ -33,6 +34,7 @@ import {
   enableAllAtom,
   engineMovesFamily,
   enginesAtom,
+  showArrowsAtom,
 } from "@/state/atoms";
 import { getVariationLine } from "@/utils/chess";
 import { getPiecesCount, hasCaptures, isOp1, positionFromFen } from "@/utils/chessops";
@@ -76,6 +78,7 @@ export default function EnginePanelContent({ compact = false }: { compact?: bool
   const [, enable] = useAtom(enableAllAtom);
   const allEnabled = useAtomValue(allEnabledAtom);
   const [expanded, setExpanded] = useAtom(currentExpandedEnginesAtom);
+  const [showEngineArrows, setShowEngineArrows] = useAtom(showArrowsAtom);
   const [pos] = positionFromFen(currentNodeFen);
   const navigate = useNavigate();
 
@@ -87,6 +90,19 @@ export default function EnginePanelContent({ compact = false }: { compact?: bool
         onScrollPositionChange={() => document.dispatchEvent(new Event("analysis-panel-scroll"))}
       >
         <Stack gap={compact ? 6 : "sm"} p={compact ? 6 : 0}>
+          <Paper withBorder p={compact ? 6 : "xs"}>
+            <Group justify="space-between" gap="xs" wrap="nowrap">
+              <Text size="sm" fw={600}>
+                Engine arrows
+              </Text>
+              <Switch
+                size={compact ? "sm" : "md"}
+                checked={showEngineArrows}
+                onChange={(event) => setShowEngineArrows(event.currentTarget.checked)}
+                aria-label={showEngineArrows ? "Hide engine arrows" : "Show engine arrows"}
+              />
+            </Group>
+          </Paper>
           {pos &&
             (getPiecesCount(pos) <= 7 ||
               (getPiecesCount(pos) === 8 && (hasCaptures(pos) || isOp1(pos)))) && (

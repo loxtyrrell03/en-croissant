@@ -877,7 +877,7 @@ function Board({
   }
 
   let shapes: DrawShape[] = [];
-  if (showArrows && evalOpen && arrows.size > 0 && pos) {
+  if (showArrows && arrows.size > 0 && pos) {
     const entries = Array.from(arrows.entries()).sort((a, b) => a[0] - b[0]);
     for (const [i, moves] of entries) {
       if (i < 4) {
