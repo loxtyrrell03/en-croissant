@@ -380,7 +380,6 @@ function Board({
   const [activeMistakeReviewPosition, setActiveMistakeReviewPosition] =
     useState<ReviewPosition | null>(null);
   const mistakeReviewLineTimers = useRef<number[]>([]);
-  const autoRevealKeyRef = useRef<string | null>(null);
   const previousMistakeReviewIndexRef = useRef<number | null>(null);
 
   const clearMistakeReviewLine = useCallback(() => {
@@ -687,34 +686,6 @@ function Board({
     mistakeReviewEngineOffOnNavigation,
     setAllEnginesEnabled,
     trainerMistakeReviewIndex,
-  ]);
-
-  useEffect(() => {
-    if (
-      !mistakeReviewAutoRevealBest ||
-      !isMistakeReviewTab ||
-      !trainerMistakeReviewPosition ||
-      mistakeReviewRevealRemaining > 0 ||
-      (practiceState.phase !== "correct" && practiceState.phase !== "incorrect")
-    ) {
-      return;
-    }
-
-    const key = `${trainerMistakeReviewKey}|${practiceState.phase}|${
-      practiceState.playedMoveUci ?? ""
-    }`;
-    if (autoRevealKeyRef.current === key) return;
-    autoRevealKeyRef.current = key;
-    void revealMistakeReviewBest();
-  }, [
-    isMistakeReviewTab,
-    mistakeReviewAutoRevealBest,
-    mistakeReviewRevealRemaining,
-    practiceState.phase,
-    practiceState.playedMoveUci,
-    revealMistakeReviewBest,
-    trainerMistakeReviewKey,
-    trainerMistakeReviewPosition,
   ]);
 
   async function makeMove(move: NormalMove) {
@@ -1045,9 +1016,13 @@ function Board({
     (practiceState.phase === "incorrect" || practiceState.phase === "correct") &&
     !boardPreviewShapes?.displayFen
   ) {
+    const showPracticeBestShape =
+      currentTab?.gameOrigin.kind !== "mistake_review" || mistakeReviewAutoRevealBest;
     const bestShape = uciArrowShape(
-      practiceState.bestMoveUci ??
-        (practiceState.phase === "correct" ? practiceState.playedMoveUci : undefined),
+      showPracticeBestShape
+        ? (practiceState.bestMoveUci ??
+            (practiceState.phase === "correct" ? practiceState.playedMoveUci : undefined))
+        : undefined,
       "green",
     );
     const playedShape =
