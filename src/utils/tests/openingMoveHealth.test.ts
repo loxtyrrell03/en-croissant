@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { getOpeningMoveHealthMap } from "@/utils/openingMoveHealth";
+import { getOpeningMoveHealthMap, getOpeningMoveStrengthMap } from "@/utils/openingMoveHealth";
 
 describe("opening move health", () => {
     test("labels the same move from the selected side's perspective", () => {
@@ -29,5 +29,29 @@ describe("opening move health", () => {
         expect(health?.status).toBe("weak");
         expect(health?.referenceRank).toBeNull();
         expect(health?.popularityGap).toBeGreaterThan(0.8);
+    });
+
+    test("uses Lichess Cloud scores when provided for opening strength", () => {
+        const openings = [
+            { move: "e4", white: 8, draw: 1, black: 1 },
+            { move: "c4", white: 3, draw: 2, black: 5 },
+        ];
+
+        const strength = getOpeningMoveStrengthMap({
+            openings,
+            side: "white",
+            fen: "startpos",
+            cloudData: {
+                source: "lichess",
+                moves: [
+                    { san: "e4", scoreCpForWhite: 19, rank: 1, winrate: null },
+                    { san: "c4", scoreCpForWhite: 4, rank: 2, winrate: null },
+                ],
+            },
+        });
+
+        expect(strength.get("e4")?.source).toBe("lichess");
+        expect(strength.get("e4")?.engineScoreRank).toBe(1);
+        expect(strength.get("c4")?.engineScoreRank).toBe(2);
     });
 });

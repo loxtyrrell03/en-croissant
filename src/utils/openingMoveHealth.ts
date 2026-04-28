@@ -1,11 +1,10 @@
-import type { ChessDbCloudMove } from "@/utils/chessdb/api";
-
 export type OpeningMoveHealthSide = "white" | "black";
 
 export type OpeningMoveHealthSidePreference = OpeningMoveHealthSide | "sideToMove";
 
 export type OpeningMoveHealthStatus = "strong" | "ok" | "watch" | "weak" | "sample";
 export type OpeningMoveStrengthStatus = "strong" | "ok" | "weak";
+export type OpeningMoveCloudSource = "lichess" | "chessdb";
 
 export type OpeningMoveHealthInput = {
     move: string;
@@ -39,14 +38,26 @@ export type OpeningMoveHealth = {
 export type OpeningMoveStrength = Omit<OpeningMoveHealth, "label" | "reasons" | "status"> & {
     status: OpeningMoveStrengthStatus;
     label: "Strong" | "OK" | "Weak";
-    source: "chessdb" | "local";
+    source: OpeningMoveCloudSource | "local";
     pending: boolean;
     cpLoss: number | null;
-    chessDbRank: number | null;
-    chessDbScoreRank: number | null;
-    chessDbScoreCp: number | null;
-    chessDbWinrate: number | null;
+    engineRank: number | null;
+    engineScoreRank: number | null;
+    engineScoreCp: number | null;
+    engineWinrate: number | null;
     reasons: string[];
+};
+
+export type OpeningMoveCloudMove = {
+    san: string;
+    scoreCpForWhite: number | null;
+    rank: number | null;
+    winrate: number | null;
+};
+
+export type OpeningMoveCloudData = {
+    source: OpeningMoveCloudSource;
+    moves: OpeningMoveCloudMove[];
 };
 
 type ReferenceMoveHealth = OpeningMoveHealthInput & {
@@ -87,22 +98,22 @@ export function getOpeningMoveStrengthMap({
     openings,
     side,
     fen,
-    chessDbMoves,
+    cloudData,
     referenceOpenings,
 }: {
     openings: OpeningMoveHealthInput[];
     side: OpeningMoveHealthSide;
     fen: string;
-    chessDbMoves?: ChessDbCloudMove[] | null;
+    cloudData?: OpeningMoveCloudData | null;
     referenceOpenings?: OpeningMoveHealthInput[];
 }) {
     const fallback = getOpeningMoveHealthMap(openings, side, referenceOpenings);
-    const chessDb = getChessDbStrengthData(fen, side, chessDbMoves);
+    const cloud = getCloudStrengthData(fen, side, cloudData);
 
     return new Map(
         Array.from(fallback.entries()).map(([move, health]) => [
             move,
-            getOpeningMoveStrength(move, health, chessDb, chessDbMoves === undefined),
+            getOpeningMoveStrength(move, health, cloud, cloudData === undefined),
         ]),
     );
 }
@@ -341,49 +352,50 @@ function getHealthReasons({
 function getOpeningMoveStrength(
     move: string,
     health: OpeningMoveHealth,
-    chessDb: ReturnType<typeof getChessDbStrengthData>,
+    cloud: ReturnType<typeof getCloudStrengthData>,
     pending: boolean,
 ): OpeningMoveStrength {
-    const chessDbMove = chessDb.bySan.get(move) ?? null;
+    const cloudMove = cloud.bySan.get(move) ?? null;
     const fallbackStatus = healthToStrengthStatus(health.status);
+    const sourceLabel = cloud.source ? cloudSourceLabel(cloud.source) : "cloud analysis";
 
-    if (!pending && chessDb.covered && chessDb.bestScore !== null) {
-        if (!chessDbMove || chessDbMove.scoreForSide === null) {
+    if (!pending && cloud.covered && cloud.bestScore !== null && cloud.source) {
+        if (!cloudMove || cloudMove.scoreForSide === null) {
             return {
                 ...health,
                 status: "weak",
                 label: "Weak",
-                source: "chessdb",
+                source: cloud.source,
                 pending: false,
                 score: 18,
                 cpLoss: null,
-                chessDbRank: chessDbMove?.rank ?? null,
-                chessDbScoreRank: chessDbMove?.scoreRank ?? null,
-                chessDbScoreCp: chessDbMove?.scoreForSide ?? null,
-                chessDbWinrate: chessDbMove?.winrate ?? null,
+                engineRank: cloudMove?.rank ?? null,
+                engineScoreRank: cloudMove?.scoreRank ?? null,
+                engineScoreCp: cloudMove?.scoreForSide ?? null,
+                engineWinrate: cloudMove?.winrate ?? null,
                 reasons: [
-                    chessDbMove
-                        ? "ChessDB lists this move but has not published a usable score for it yet."
-                        : "ChessDB does not include this move among its preferred choices.",
+                    cloudMove
+                        ? `${sourceLabel} lists this move but has not published a usable score for it yet.`
+                        : `${sourceLabel} does not include this move among its preferred choices.`,
                 ],
             };
         }
 
-        const cpLoss = Math.max(0, chessDb.bestScore - chessDbMove.scoreForSide);
-        const status = chessDbStrengthStatus(cpLoss);
+        const cpLoss = Math.max(0, cloud.bestScore - cloudMove.scoreForSide);
+        const status = cloudStrengthStatus(cpLoss);
         return {
             ...health,
             status,
             label: strengthLabel(status),
-            source: "chessdb",
+            source: cloud.source,
             pending: false,
             score: strengthScore(status, cpLoss),
             cpLoss,
-            chessDbRank: chessDbMove.rank,
-            chessDbScoreRank: chessDbMove.scoreRank,
-            chessDbScoreCp: chessDbMove.scoreForSide,
-            chessDbWinrate: chessDbMove.winrate,
-            reasons: chessDbStrengthReasons(status, cpLoss, chessDbMove),
+            engineRank: cloudMove.rank,
+            engineScoreRank: cloudMove.scoreRank,
+            engineScoreCp: cloudMove.scoreForSide,
+            engineWinrate: cloudMove.winrate,
+            reasons: cloudStrengthReasons(status, cpLoss, cloudMove, cloud.source),
         };
     }
 
@@ -395,23 +407,23 @@ function getOpeningMoveStrength(
         pending,
         score: fallbackStrengthScore(fallbackStatus, health.score),
         cpLoss: null,
-        chessDbRank: null,
-        chessDbScoreRank: null,
-        chessDbScoreCp: null,
-        chessDbWinrate: null,
+        engineRank: null,
+        engineScoreRank: null,
+        engineScoreCp: null,
+        engineWinrate: null,
         reasons: [
             pending
-                ? "Checking ChessDB in the background."
-                : "ChessDB has no cloud move list for this position, so this uses local results for now.",
+                ? "Checking cloud analysis in the background."
+                : "No cloud move list was found for this position, so this uses local results for now.",
             ...health.reasons,
         ],
     };
 }
 
-function getChessDbStrengthData(
+function getCloudStrengthData(
     _fen: string,
     side: OpeningMoveHealthSide,
-    moves: ChessDbCloudMove[] | null | undefined,
+    data: OpeningMoveCloudData | null | undefined,
 ) {
     const bySan = new Map<
         string,
@@ -423,11 +435,14 @@ function getChessDbStrengthData(
         }
     >();
     const scored: number[] = [];
+    const source = data?.source ?? null;
+    const moves = data?.moves;
 
     if (!moves?.length) {
         return {
             covered: false,
             bestScore: null,
+            source,
             bySan,
         };
     }
@@ -472,11 +487,12 @@ function getChessDbStrengthData(
     return {
         covered: true,
         bestScore: scored.length > 0 ? Math.max(...scored) : null,
+        source,
         bySan,
     };
 }
 
-function chessDbStrengthStatus(cpLoss: number): OpeningMoveStrengthStatus {
+function cloudStrengthStatus(cpLoss: number): OpeningMoveStrengthStatus {
     if (cpLoss <= STRONG_CP_LOSS) return "strong";
     if (cpLoss <= WEAK_CP_LOSS) return "ok";
     return "weak";
@@ -528,20 +544,22 @@ function fallbackStrengthScore(status: OpeningMoveStrengthStatus, score: number)
     }
 }
 
-function chessDbStrengthReasons(
+function cloudStrengthReasons(
     status: OpeningMoveStrengthStatus,
     cpLoss: number,
     move: { scoreRank: number | null; winrate: number | null },
+    source: OpeningMoveCloudSource,
 ) {
+    const sourceLabel = cloudSourceLabel(source);
     const reasons = [
         cpLoss <= 0
-            ? "Tied for the best ChessDB score."
-            : `${Math.round(cpLoss)} cp behind the best ChessDB score.`,
+            ? `Tied for the best ${sourceLabel} score.`
+            : `${Math.round(cpLoss)} cp behind the best ${sourceLabel} score.`,
     ];
     if (move.scoreRank !== null) {
         reasons.push(`Engine ranking #${move.scoreRank}.`);
     }
-    if (move.winrate !== null) {
+    if (source === "chessdb" && move.winrate !== null) {
         reasons.push(`ChessDB win rate ${Math.round(move.winrate * 100)}%.`);
     }
     if (status === "strong") {
@@ -552,6 +570,10 @@ function chessDbStrengthReasons(
         reasons.push("Playable, but not as close to the best move.");
     }
     return reasons;
+}
+
+function cloudSourceLabel(source: OpeningMoveCloudSource) {
+    return source === "lichess" ? "Lichess Cloud" : "ChessDB";
 }
 
 function isPlayableOpening(opening: OpeningMoveHealthInput) {

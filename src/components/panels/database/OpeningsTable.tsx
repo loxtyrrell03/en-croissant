@@ -8,13 +8,16 @@ import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import { currentBoardPreviewShapesAtom, moveNotationTypeAtom } from "@/state/atoms";
 import { addPieceSymbol } from "@/utils/annotation";
-import { queryChessDbMoves, type ChessDbCloudMove } from "@/utils/chessdb/api";
+import { queryChessDbMoves } from "@/utils/chessdb/api";
 import { positionFromFen } from "@/utils/chessops";
 import type { Opening } from "@/utils/db";
 import { formatNumber } from "@/utils/format";
+import { queryLichessCloudMoves } from "@/utils/lichess/api";
 import {
   getOpeningMoveStrengthMap,
   resolveOpeningMoveHealthSide,
+  type OpeningMoveCloudData,
+  type OpeningMoveCloudSource,
   type OpeningMoveStrength,
   type OpeningMoveHealthSide,
   type OpeningMoveHealthSidePreference,
@@ -40,6 +43,7 @@ export type OpeningSort =
 
 type OpeningSortColumn = "move" | "health" | "strengthRank" | "total" | "results";
 export type OpeningTableDensity = "regular" | "compact" | "dense";
+const ENGINE_RANKING_MULTIPV = 10;
 
 export const openingSortOptions: { label: string; value: OpeningSort }[] = [
   { label: "Most played", value: "games" },
@@ -90,14 +94,14 @@ export function sortOpeningRows(
     }
 
     if (sortBy === "health" || sortBy === "chessDbStrength") {
-      const aStrength = getChessDbStrengthSortScore(healthByMove?.get(a.move));
-      const bStrength = getChessDbStrengthSortScore(healthByMove?.get(b.move));
+      const aStrength = getEngineStrengthSortScore(healthByMove?.get(a.move));
+      const bStrength = getEngineStrengthSortScore(healthByMove?.get(b.move));
       return bStrength - aStrength || bTotal - aTotal;
     }
 
     if (sortBy === "chessDbWeakness") {
-      const aStrength = getChessDbStrengthSortScore(healthByMove?.get(a.move));
-      const bStrength = getChessDbStrengthSortScore(healthByMove?.get(b.move));
+      const aStrength = getEngineStrengthSortScore(healthByMove?.get(a.move));
+      const bStrength = getEngineStrengthSortScore(healthByMove?.get(b.move));
       return aStrength - bStrength || bTotal - aTotal;
     }
 
@@ -149,7 +153,7 @@ function OpeningsTable({
   const currentFen = useStore(store, (s) => s.currentNode().fen);
   const [moveNotationType] = useAtom(moveNotationTypeAtom);
   const setBoardPreviewShapes = useSetAtom(currentBoardPreviewShapesAtom);
-  const [chessDbMoves, setChessDbMoves] = useState<ChessDbCloudMove[] | null | undefined>();
+  const [cloudData, setCloudData] = useState<OpeningMoveCloudData | null | undefined>();
   const [internalSortBy, setInternalSortBy] = useState(sortBy);
   const lastHeaderSortRef = useRef<OpeningSort | null>(null);
   const effectiveSortBy = onSortChange ? sortBy : internalSortBy;
@@ -217,6 +221,7 @@ function OpeningsTable({
     const [pos] = positionFromFen(currentFen);
     return resolveOpeningMoveHealthSide(healthSidePreference, pos?.turn ?? "white");
   }, [currentFen, healthSidePreference]);
+  const cloudMultipv = useMemo(() => getOpeningRankingMultipv(openings), [openings]);
 
   const healthByMove = useMemo(
     () =>
@@ -224,10 +229,10 @@ function OpeningsTable({
         openings,
         side: healthSide,
         fen: currentFen,
-        chessDbMoves,
+        cloudData,
         referenceOpenings,
       }),
-    [chessDbMoves, currentFen, healthSide, openings, referenceOpenings],
+    [cloudData, currentFen, healthSide, openings, referenceOpenings],
   );
 
   const updateSort = useCallback(
@@ -257,23 +262,23 @@ function OpeningsTable({
 
   useEffect(() => {
     let cancelled = false;
-    setChessDbMoves(undefined);
-    void queryChessDbMoves(currentFen)
-      .then((moves) => {
+    setCloudData(undefined);
+    void queryOpeningCloudData(currentFen, cloudMultipv)
+      .then((data) => {
         if (!cancelled) {
-          setChessDbMoves(moves);
+          setCloudData(data);
         }
       })
       .catch(() => {
         if (!cancelled) {
-          setChessDbMoves(null);
+          setCloudData(null);
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [currentFen]);
+  }, [cloudMultipv, currentFen]);
 
   const whiteTotal = openings?.reduce((acc, curr) => acc + curr.white, 0);
   const blackTotal = openings?.reduce((acc, curr) => acc + curr.black, 0);
@@ -353,22 +358,24 @@ function OpeningsTable({
                       {health.label} move
                     </Text>
                     <Text size="xs">
-                      {health.source === "chessdb"
-                        ? "Based on ChessDB cloud analysis."
+                      {health.source !== "local"
+                        ? `Based on ${cloudSourceLabel(health.source)} analysis.`
                         : health.pending
-                          ? "ChessDB is checking this position in the background."
-                          : "ChessDB has no cloud move list here, so this is a quick local estimate."}
+                          ? "Cloud analysis is checking this position in the background."
+                          : "No cloud move list was found here, so this is a quick local estimate."}
                     </Text>
                     {health.cpLoss !== null ? (
                       <Text size="xs">
-                        About {Math.round(health.cpLoss)} cp behind ChessDB's best move
+                        About {Math.round(health.cpLoss)} cp behind{" "}
+                        {health.source !== "local" ? `${cloudSourceLabel(health.source)}'s` : "the"}{" "}
+                        best move
                       </Text>
                     ) : null}
-                    {health.chessDbScoreRank ? (
-                      <Text size="xs">Engine ranking #{health.chessDbScoreRank}</Text>
+                    {health.engineScoreRank ? (
+                      <Text size="xs">Engine ranking #{health.engineScoreRank}</Text>
                     ) : null}
-                    {health.chessDbWinrate !== null ? (
-                      <Text size="xs">ChessDB win rate {formatPercent(health.chessDbWinrate)}</Text>
+                    {health.source === "chessdb" && health.engineWinrate !== null ? (
+                      <Text size="xs">ChessDB win rate {formatPercent(health.engineWinrate)}</Text>
                     ) : null}
                     {health.source === "local" && health.referenceRank ? (
                       <Text size="xs">
@@ -420,22 +427,27 @@ function OpeningsTable({
                 label={
                   <Stack gap={2}>
                     <Text size="xs" fw={700}>
-                      ChessDB strength rank
+                      {health.source !== "local"
+                        ? `${cloudSourceLabel(health.source)} strength rank`
+                        : "Cloud strength rank"}
                     </Text>
                     {health.pending ? (
-                      <Text size="xs">Checking ChessDB for this position.</Text>
-                    ) : health.source !== "chessdb" ? (
-                      <Text size="xs">No ChessDB score was found for this position.</Text>
-                    ) : health.chessDbScoreCp === null ? (
-                      <Text size="xs">ChessDB lists this move but has no usable score yet.</Text>
+                      <Text size="xs">Checking cloud analysis for this position.</Text>
+                    ) : health.source === "local" ? (
+                      <Text size="xs">No cloud score was found for this position.</Text>
+                    ) : health.engineScoreCp === null ? (
+                      <Text size="xs">
+                        {cloudSourceLabel(health.source)} lists this move but has no usable score
+                        yet.
+                      </Text>
                     ) : (
                       <>
                         <Text size="xs">
-                          Rank #{health.chessDbScoreRank ?? "-"} by centipawn score for{" "}
-                          {health.side}.
+                          Rank #{health.engineScoreRank ?? "-"} by centipawn score for {health.side}
+                          .
                         </Text>
                         <Text size="xs">
-                          Score {formatChessDbScore(health.chessDbScoreCp)}
+                          Score {formatCloudScore(health.engineScoreCp)}
                           {health.cpLoss !== null
                             ? `, ${Math.round(health.cpLoss)} cp behind the best move`
                             : ""}
@@ -447,11 +459,11 @@ function OpeningsTable({
               >
                 <Stack gap={0}>
                   <Text fz={textSize} fw={600} lh={1.2}>
-                    {formatChessDbRank(health)}
+                    {formatCloudRank(health)}
                   </Text>
-                  {!isCompact && health.chessDbScoreCp !== null ? (
+                  {!isCompact && health.engineScoreCp !== null ? (
                     <Text fz="xs" c="dimmed">
-                      {formatChessDbScore(health.chessDbScoreCp)}
+                      {formatCloudScore(health.engineScoreCp)}
                     </Text>
                   ) : null}
                 </Stack>
@@ -613,22 +625,60 @@ function getSideScore(opening: Opening, side: OpeningMoveHealthSide) {
   return (wins + opening.draw * 0.5) / total;
 }
 
-function getChessDbStrengthSortScore(health?: OpeningMoveStrength) {
+async function queryOpeningCloudData(
+  fen: string,
+  multipv: number,
+): Promise<OpeningMoveCloudData | null> {
+  const lichessMoves = await queryLichessCloudMoves(fen, multipv).catch(() => null);
+  if (lichessMoves?.length) {
+    return {
+      source: "lichess",
+      moves: lichessMoves.map((move, index) => ({
+        san: move.san,
+        scoreCpForWhite: move.scoreCpForWhite,
+        rank: index + 1,
+        winrate: null,
+      })),
+    };
+  }
+
+  const chessDbMoves = await queryChessDbMoves(fen).catch(() => null);
+  if (!chessDbMoves?.length) return null;
+
+  return {
+    source: "chessdb",
+    moves: chessDbMoves.map((move) => ({
+      san: move.san,
+      scoreCpForWhite: move.scoreCpForWhite,
+      rank: move.rank,
+      winrate: move.winrate,
+    })),
+  };
+}
+
+function getOpeningRankingMultipv(openings: Opening[]) {
+  const playableCount = openings.filter(
+    (opening) => opening.move !== "Total" && opening.move !== "*" && getOpeningTotal(opening) > 0,
+  ).length;
+  return Math.max(1, Math.min(ENGINE_RANKING_MULTIPV, playableCount));
+}
+
+function getEngineStrengthSortScore(health?: OpeningMoveStrength) {
   if (!health) return Number.NEGATIVE_INFINITY;
-  if (health.chessDbScoreCp !== null) return health.chessDbScoreCp;
-  if (health.source === "chessdb") return Number.NEGATIVE_INFINITY;
+  if (health.engineScoreCp !== null) return health.engineScoreCp;
+  if (health.source !== "local") return Number.NEGATIVE_INFINITY;
   return health.score - 50;
 }
 
-function formatChessDbRank(health: OpeningMoveStrength) {
+function formatCloudRank(health: OpeningMoveStrength) {
   if (health.pending) return "...";
-  if (health.source !== "chessdb") return "-";
-  if (health.chessDbScoreCp === null && health.chessDbRank !== null) return "Listed";
-  const rank = health.chessDbScoreRank;
+  if (health.source === "local") return "-";
+  if (health.engineScoreCp === null && health.engineRank !== null) return "Listed";
+  const rank = health.engineScoreRank;
   return rank ? `#${rank}` : "Out";
 }
 
-function formatChessDbScore(score: number) {
+function formatCloudScore(score: number) {
   if (Math.abs(score) > 250_00) {
     const mate = Math.floor((300_00 - Math.abs(score) + 1) / 2);
     return `${score > 0 ? "+" : "-"}M${mate}`;
@@ -652,4 +702,8 @@ function healthStatusColor(status: OpeningMoveStrengthStatus) {
 
 function formatPercent(value: number) {
   return `${(value * 100).toFixed(0)}%`;
+}
+
+function cloudSourceLabel(source: OpeningMoveCloudSource) {
+  return source === "lichess" ? "Lichess Cloud" : "ChessDB";
 }
