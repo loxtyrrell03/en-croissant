@@ -29,6 +29,7 @@ import { getBestMoves as lichessGetBestMoves } from "@/utils/lichess/api";
 import { useThrottledEffect } from "@/utils/misc";
 import { TreeStateContext } from "../common/TreeStateContext";
 
+const LOCAL_ENGINE_CLOUD_PRIORITY_MS = 300;
 const LOCAL_ENGINE_CLOUD_TIMEOUT_MS = 1500;
 
 function EvalListener({ active }: { active: boolean }) {
@@ -315,17 +316,30 @@ async function getLocalBestMovesWithLichessCloud(
   goMode: GoMode,
   options: EngineOptions,
 ) {
-  const cloudMoves = await withTimeout(
+  const cloudPromise = withTimeout(
     lichessGetBestMoves(tab, goMode, options),
     LOCAL_ENGINE_CLOUD_TIMEOUT_MS,
   ).catch(() => null);
 
+  const quickCloudMoves = await withTimeout(cloudPromise, LOCAL_ENGINE_CLOUD_PRIORITY_MS).catch(
+    () => null,
+  );
+
+  if (quickCloudMoves?.[1]?.length) {
+    await stopEngine(engine, tab).catch(() => undefined);
+    return quickCloudMoves;
+  }
+
+  const localPromise = localGetBestMoves(engine, tab, goMode, options);
+  const cloudMoves = await cloudPromise;
+
   if (cloudMoves?.[1]?.length) {
+    localPromise.catch(() => undefined);
     await stopEngine(engine, tab).catch(() => undefined);
     return cloudMoves;
   }
 
-  return localGetBestMoves(engine, tab, goMode, options);
+  return localPromise;
 }
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
