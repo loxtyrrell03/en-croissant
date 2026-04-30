@@ -41,6 +41,7 @@ import InfoPanel from "../panels/info/InfoPanel";
 import PlanExplorerPanel from "../panels/plan/PlanExplorerPanel";
 import PracticePanel from "../panels/practice/PracticePanel";
 import Board from "./Board";
+import { BoardWithAnnotationLayout } from "./BoardWithAnnotationLayout";
 import BoardControls from "./BoardControls";
 import EditingCard from "./EditingCard";
 import EngineDockedPanel from "./EngineDockedPanel";
@@ -216,24 +217,17 @@ function BoardAnalysis() {
       <EvalListener active />
       <EngineKeyboardShortcuts />
       <Portal target="#left" style={{ height: "100%" }}>
-        <Stack h="100%" gap="xs" style={{ minHeight: 0, overflow: "hidden" }}>
-          <Stack flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
+        <BoardWithAnnotationLayout
+          board={
             <Board
               practicing={practicing}
               editingMode={editingMode}
               boardRef={boardRef}
               selectedPiece={selectedPiece}
             />
-          </Stack>
-          <Paper
-            withBorder
-            h="15rem"
-            mah="35%"
-            style={{ minHeight: "10rem", overflow: "hidden", flexShrink: 0 }}
-          >
-            <AnnotationPanel />
-          </Paper>
-        </Stack>
+          }
+          annotation={<AnnotationPanel />}
+        />
       </Portal>
       <Portal target="#topRight" style={{ height: "100%" }}>
         <Paper

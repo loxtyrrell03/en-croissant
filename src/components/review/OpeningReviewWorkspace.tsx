@@ -59,6 +59,7 @@ import { useStore } from "zustand";
 import { commands } from "@/bindings";
 import { Chessground } from "@/chessground/Chessground";
 import Board from "@/components/boards/Board";
+import { BoardWithAnnotationLayout } from "@/components/boards/BoardWithAnnotationLayout";
 import EngineDockedPanel from "@/components/boards/EngineDockedPanel";
 import EngineKeyboardShortcuts from "@/components/boards/EngineKeyboardShortcuts";
 import EvalListener from "@/components/boards/EvalListener";
@@ -518,32 +519,27 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
       <EvalListener active />
       <EngineKeyboardShortcuts />
       <Portal target="#left" style={{ height: "100%" }}>
-        <Stack h="100%" gap="xs" style={{ minHeight: 0, overflow: "hidden" }}>
-          <Stack flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
+        <BoardWithAnnotationLayout
+          board={
             <Board
               practicing={practicing}
               editingMode={false}
               boardRef={boardRef}
               onMove={(uci, fen, san) => setBoardMoveCandidate({ fen, san, uci })}
             />
-          </Stack>
-          <OpeningReviewBoardNavigation
-            positionIndex={activeReviewIndex}
-            total={deck.positions.length}
-            canGoPrevious={canGoPrevious}
-            canGoNext={canGoNext}
-            onPrevious={goToPreviousReviewPosition}
-            onNext={goToNextReviewPosition}
-          />
-          <Paper
-            withBorder
-            h="15rem"
-            mah="35%"
-            style={{ minHeight: "10rem", overflow: "hidden", flexShrink: 0 }}
-          >
-            <AnnotationPanel />
-          </Paper>
-        </Stack>
+          }
+          controls={
+            <OpeningReviewBoardNavigation
+              positionIndex={activeReviewIndex}
+              total={deck.positions.length}
+              canGoPrevious={canGoPrevious}
+              canGoNext={canGoNext}
+              onPrevious={goToPreviousReviewPosition}
+              onNext={goToNextReviewPosition}
+            />
+          }
+          annotation={<AnnotationPanel />}
+        />
       </Portal>
       <Portal target="#topRight" style={{ height: "100%" }}>
         <Paper withBorder h="100%" pos="relative">

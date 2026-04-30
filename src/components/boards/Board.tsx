@@ -1116,6 +1116,22 @@ function Board({
       ? maxBoardSize
       : clampNumber(manualBoardSize, minBoardSize, maxBoardSize),
   );
+  const previousMaxBoardSizeRef = useRef(maxBoardSize);
+
+  useEffect(() => {
+    const previousMaxBoardSize = previousMaxBoardSizeRef.current;
+
+    if (
+      manualBoardSize !== null &&
+      previousMaxBoardSize > 0 &&
+      maxBoardSize > previousMaxBoardSize &&
+      manualBoardSize >= previousMaxBoardSize - 2
+    ) {
+      setManualBoardSize(maxBoardSize);
+    }
+
+    previousMaxBoardSizeRef.current = maxBoardSize;
+  }, [manualBoardSize, maxBoardSize, setManualBoardSize]);
 
   const startBoardResize = useCallback(
     (corner: BoardResizeCorner, event: ReactPointerEvent<HTMLDivElement>) => {
@@ -1293,8 +1309,7 @@ function Board({
     sameBoardPosition(practiceState.currentFen, trainerMistakeReviewPosition?.fen);
   const mistakeReviewSeverity = ((mistakeReviewAttemptActive
     ? practiceState.mistakeReviewLabel
-    : undefined) ??
-    mistakeReviewMetadata?.severity) as MistakeReviewAttemptLabel | undefined;
+    : undefined) ?? mistakeReviewMetadata?.severity) as MistakeReviewAttemptLabel | undefined;
   const mistakeReviewPanelColor = mistakeReviewPanelReveal
     ? mistakeReviewPanelReveal.mode === "best"
       ? "green"
