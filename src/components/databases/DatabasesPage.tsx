@@ -191,7 +191,7 @@ export default function DatabasesPage() {
         notifications.show({
           title: "Online database updated",
           message:
-            "Latest games were imported. Linked Opening Review decks will scan the new games automatically.",
+            "Latest games were imported. Linked review decks will scan the new games automatically.",
           color: "green",
         });
       } else {
@@ -1141,7 +1141,7 @@ function OnlineAccountLinks({
 
       notifications.show({
         title: "Online account linked",
-        message: `${getOnlineGameSourceLabel(source)} games for ${usernameTrimmed} were added to ${selectedDatabase.title}.`,
+        message: `${getOnlineGameSourceLabel(source)} games for ${usernameTrimmed} were added to ${selectedDatabase.title}. Linked review decks will scan them automatically.`,
         color: "green",
       });
       setUsername("");

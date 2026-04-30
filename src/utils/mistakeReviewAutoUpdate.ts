@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { warn } from "@tauri-apps/plugin-log";
 import { useAtomValue, useSetAtom } from "jotai";
 import { commands } from "@/bindings";
+import type { Position } from "@/components/files/opening";
 import {
     type MistakeReviewAutoUpdateState,
     type OnlineDatabaseUpdateRecord,
@@ -21,7 +22,9 @@ import {
     readMistakeReviewDeck,
     writeMistakeReviewDeck,
 } from "@/utils/mistakeReview";
+import { query_players } from "@/utils/db";
 import { getDocumentDir } from "@/utils/directories";
+import { getOnlineDatabaseUpdateAccounts } from "@/utils/onlineGameImport";
 
 type AutoUpdateJob = {
     path: string;
@@ -34,11 +37,17 @@ type SetMistakeReviewAutoUpdateState = (
     value: SetStateAction<MistakeReviewAutoUpdateState>,
 ) => void;
 
+type MistakeReviewScanTarget = {
+    playerId: number;
+    playerName?: string | null;
+};
+
 export function useMistakeReviewDeckAutoUpdater() {
     const records = useAtomValue(onlineDatabaseUpdatesAtom);
     const setState = useSetAtom(mistakeReviewAutoUpdateStateAtom);
     const runningRef = useRef(false);
     const recordsKeyRef = useRef("");
+    const recordsRef = useRef(records);
     const disposedRef = useRef(false);
 
     useEffect(
@@ -49,28 +58,41 @@ export function useMistakeReviewDeckAutoUpdater() {
     );
 
     useEffect(() => {
-        const recordsKey = getOnlineRecordsUpdateKey(records);
-        if (recordsKey === recordsKeyRef.current) return;
-        if (runningRef.current) return;
-        recordsKeyRef.current = recordsKey;
+        recordsRef.current = records;
+    }, [records]);
 
-        runningRef.current = true;
-        void runMistakeReviewAutoUpdates(records, setState, () => disposedRef.current)
-            .catch((error) => {
-                const message = error instanceof Error ? error.message : String(error);
-                warn(`Mistake Review auto-update failed: ${message}`);
-                setState((current) => ({
-                    ...current,
-                    running: false,
-                    completedAt: Date.now(),
-                    phase: "Stopped",
-                    error: message,
-                    revision: current.revision + 1,
-                }));
-            })
-            .finally(() => {
-                runningRef.current = false;
-            });
+    useEffect(() => {
+        if (runningRef.current) return;
+
+        const runLatest = () => {
+            if (disposedRef.current || runningRef.current) return;
+
+            const latestRecords = recordsRef.current;
+            const recordsKey = getOnlineRecordsUpdateKey(latestRecords);
+            if (recordsKey === recordsKeyRef.current) return;
+            recordsKeyRef.current = recordsKey;
+            runningRef.current = true;
+
+            void runMistakeReviewAutoUpdates(latestRecords, setState, () => disposedRef.current)
+                .catch((error) => {
+                    const message = error instanceof Error ? error.message : String(error);
+                    warn(`Mistake Review auto-update failed: ${message}`);
+                    setState((current) => ({
+                        ...current,
+                        running: false,
+                        completedAt: Date.now(),
+                        phase: "Stopped",
+                        error: message,
+                        revision: current.revision + 1,
+                    }));
+                })
+                .finally(() => {
+                    runningRef.current = false;
+                    runLatest();
+                });
+        };
+
+        runLatest();
     }, [records, setState]);
 }
 
@@ -175,9 +197,13 @@ async function collectMistakeReviewAutoUpdateJobs(
         const record = records[config.playerDb];
         if (!record) continue;
 
+        const recordUpdatedAt = record.lastUpdatedAt ?? 0;
         const recordGameCount = record.lastKnownGameCount ?? 0;
         const deckSawGameCount = config.lastKnownGameCount ?? 0;
-        if (recordGameCount <= deckSawGameCount) continue;
+        const deckSawDatabaseUpdate = config.lastUpdatedDatabaseAt ?? 0;
+        const hasMoreGames = recordGameCount > deckSawGameCount;
+        const hasNewDatabaseUpdate = recordUpdatedAt > deckSawDatabaseUpdate;
+        if (!recordUpdatedAt || (!hasMoreGames && !hasNewDatabaseUpdate)) continue;
 
         jobs.push({ path: summary.path, deck, config, record });
     }
@@ -188,23 +214,45 @@ async function collectMistakeReviewAutoUpdateJobs(
 async function updateMistakeReviewDeckFromOnlineDatabase(job: AutoUpdateJob) {
     const { config, deck, path, record } = job;
     const now = Date.now();
-    const result = await commands.scanMistakeReview(
-        mistakeReviewRequestFromSettings(config, {
-            requestId: `mistake-review-auto-${now}`,
-            sinceGameId: config.lastAnalyzedGameId ?? null,
-        }),
-    );
+    const targets = await getMistakeReviewAutoUpdateScanTargets(config, record);
+    const positions: Position[] = [];
+    let lastAnalyzedGameId = config.lastAnalyzedGameId ?? null;
 
-    if (result.status === "error") {
-        throw new Error(result.error);
+    for (const [index, target] of targets.entries()) {
+        const scanSettings = {
+            ...config,
+            playerId: target.playerId,
+            playerName: target.playerName ?? config.playerName,
+        };
+        const result = await commands.scanMistakeReview(
+            mistakeReviewRequestFromSettings(scanSettings, {
+                requestId: `mistake-review-auto-${now}-${index}`,
+                sinceGameId: config.lastAnalyzedGameId ?? null,
+            }),
+        );
+
+        if (result.status === "error") {
+            throw new Error(result.error);
+        }
+
+        positions.push(
+            ...result.data.mistakes.map((mistake) =>
+                createMistakeReviewPosition(mistake, scanSettings),
+            ),
+        );
+        if (result.data.lastAnalyzedGameId !== null) {
+            lastAnalyzedGameId =
+                lastAnalyzedGameId === null
+                    ? result.data.lastAnalyzedGameId
+                    : Math.max(lastAnalyzedGameId, result.data.lastAnalyzedGameId);
+        }
     }
 
-    const positions = result.data.mistakes.map((mistake) =>
-        createMistakeReviewPosition(mistake, config),
-    );
     const existingKeys = new Set(deck.positions.map(mistakeReviewPositionKey));
     const merged = mergeMistakeReviewPositions(deck, positions);
-    const added = positions.filter((position) => !existingKeys.has(mistakeReviewPositionKey(position))).length;
+    const added = positions.filter(
+        (position) => !existingKeys.has(mistakeReviewPositionKey(position)),
+    ).length;
 
     await writeMistakeReviewDeck(path, {
         ...merged,
@@ -213,7 +261,7 @@ async function updateMistakeReviewDeckFromOnlineDatabase(job: AutoUpdateJob) {
             lastRunAt: now,
             lastUpdatedDatabaseAt: record.lastUpdatedAt,
             lastKnownGameCount: record.lastKnownGameCount,
-            lastAnalyzedGameId: result.data.lastAnalyzedGameId ?? config.lastAnalyzedGameId ?? null,
+            lastAnalyzedGameId,
             lastAdded: added,
             lastError: null,
             updatedAt: now,
@@ -221,6 +269,76 @@ async function updateMistakeReviewDeckFromOnlineDatabase(job: AutoUpdateJob) {
     });
 
     return { added, total: positions.length };
+}
+
+async function getMistakeReviewAutoUpdateScanTargets(
+    config: MistakeReviewAutoUpdateConfig,
+    record: OnlineDatabaseUpdateRecord,
+): Promise<MistakeReviewScanTarget[]> {
+    const targets: MistakeReviewScanTarget[] = [];
+    const seen = new Set<number>();
+    const addTarget = (target: MistakeReviewScanTarget | null) => {
+        if (!target || seen.has(target.playerId)) return;
+        seen.add(target.playerId);
+        targets.push(target);
+    };
+
+    addTarget(await resolveMistakeReviewPlayerByName(config.playerDb, config.playerName));
+    addTarget({ playerId: config.playerId, playerName: config.playerName });
+
+    for (const playerName of getMistakeReviewAutoUpdatePlayerNameCandidates(config, record)) {
+        addTarget(await resolveMistakeReviewPlayerByName(config.playerDb, playerName));
+    }
+
+    return targets;
+}
+
+function getMistakeReviewAutoUpdatePlayerNameCandidates(
+    config: MistakeReviewAutoUpdateConfig,
+    record: OnlineDatabaseUpdateRecord,
+) {
+    const names: string[] = [];
+    const seen = new Set<string>();
+    const addName = (value: string | null | undefined) => {
+        const name = value?.trim();
+        const key = normalizeMistakeReviewPlayerName(name);
+        if (!name || !key || seen.has(key)) return;
+        seen.add(key);
+        names.push(name);
+    };
+
+    addName(config.playerName);
+    for (const account of getOnlineDatabaseUpdateAccounts(record)) {
+        addName(account.username);
+    }
+    addName(record.username);
+
+    return names;
+}
+
+async function resolveMistakeReviewPlayerByName(
+    playerDb: string,
+    playerName: string | null | undefined,
+): Promise<MistakeReviewScanTarget | null> {
+    if (!playerName?.trim()) return null;
+
+    const players = await query_players(playerDb, {
+        name: playerName,
+        range: null,
+        options: {
+            skipCount: true,
+            page: 1,
+            pageSize: 25,
+            sort: "name",
+            direction: "asc",
+        },
+    }).catch(() => null);
+    const normalizedTarget = normalizeMistakeReviewPlayerName(playerName);
+    const exact = players?.data.find(
+        (player) => normalizeMistakeReviewPlayerName(player.name) === normalizedTarget,
+    );
+
+    return exact ? { playerId: exact.id, playerName: exact.name ?? playerName } : null;
 }
 
 async function writeAutoUpdateError(job: AutoUpdateJob, message: string) {
@@ -238,8 +356,20 @@ function getOnlineRecordsUpdateKey(records: OnlineDatabaseUpdateRecords) {
     return Object.values(records)
         .map(
             (record) =>
-                `${record.dbPath}:${record.lastUpdatedAt ?? 0}:${record.lastKnownGameCount ?? 0}`,
+                `${record.dbPath}:${record.lastUpdatedAt ?? 0}:${record.lastKnownGameCount ?? 0}:${getOnlineDatabaseUpdateAccounts(
+                    record,
+                )
+                    .map(
+                        (account) =>
+                            `${account.source}:${account.username}:${account.lastUpdatedAt ?? 0}:${account.lastKnownGameCount ?? 0}`,
+                    )
+                    .sort()
+                    .join(",")}`,
         )
         .sort()
         .join("|");
+}
+
+function normalizeMistakeReviewPlayerName(value: string | null | undefined) {
+    return (value ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
 }
