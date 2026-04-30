@@ -21,7 +21,7 @@ import {
   Tooltip,
   UnstyledButton,
 } from "@mantine/core";
-import { useAtom, useSetAtom, useStore } from "jotai";
+import { useAtom, useAtomValue, useSetAtom, useStore } from "jotai";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   activeTabAtom,
@@ -32,6 +32,7 @@ import {
   onlineDatabaseUpdatesAtom,
   type RecentFile,
   recentFilesAtom,
+  sessionsAtom,
   tabFamily,
   tabsAtom,
 } from "@/state/atoms";
@@ -40,6 +41,7 @@ import type { Tab } from "@/utils/tabs";
 import { createTab } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
 import type { LocalEngine } from "@/utils/engines";
+import { parsePGN } from "@/utils/chess";
 import CreateRepertoireModal from "./CreateRepertoireModal";
 import ImportModal from "./ImportModal";
 import classes from "./NewTabHome.module.css";
@@ -47,6 +49,7 @@ import {
   IconChess,
   IconClock,
   IconBook,
+  IconCloudDownload,
   IconEye,
   IconExclamationCircle,
   IconFileImport,
@@ -107,6 +110,8 @@ import {
   type MistakeReviewSettings,
   writeMistakeReviewDeck,
 } from "@/utils/mistakeReview";
+import { getLatestOnlineGame, getLinkedOnlineGameProviders } from "@/utils/onlineLatestGame";
+import { getGameName } from "@/utils/treeReducer";
 
 dayjs.extend(relativeTime);
 
@@ -1675,6 +1680,7 @@ export default function NewTabHome({ id }: { id: string }) {
   const [mistakeDecks, setMistakeDecks] = useState<MistakeReviewDeckSummary[]>([]);
   const [reviewDecksLoading, setReviewDecksLoading] = useState(false);
   const [mistakeDecksLoading, setMistakeDecksLoading] = useState(false);
+  const [latestGameLoading, setLatestGameLoading] = useState(false);
   const [deletingReviewDeckPath, setDeletingReviewDeckPath] = useState<string | null>(null);
   const [deletingMistakeDeckPath, setDeletingMistakeDeckPath] = useState<string | null>(null);
   const [settingsReviewDeck, setSettingsReviewDeck] = useState<OpeningReviewDeckSummary | null>(
@@ -1686,6 +1692,7 @@ export default function NewTabHome({ id }: { id: string }) {
   const [engines] = useAtom(enginesAtom);
   const [, setTabs] = useAtom(tabsAtom);
   const setActiveTab = useSetAtom(activeTabAtom);
+  const sessions = useAtomValue(sessionsAtom);
 
   const [recentFiles, setRecentFiles] = useAtom(recentFilesAtom);
   const store = useStore();
@@ -1695,6 +1702,7 @@ export default function NewTabHome({ id }: { id: string }) {
     () => (engines ?? []).filter((engine): engine is LocalEngine => engine.type === "local"),
     [engines],
   );
+  const linkedOnlineProviders = useMemo(() => getLinkedOnlineGameProviders(sessions), [sessions]);
 
   useEffect(() => {
     const checkFiles = async () => {
@@ -1909,6 +1917,75 @@ export default function NewTabHome({ id }: { id: string }) {
     }
   }, [documentDir, navigate, setActiveTab, setTabs]);
 
+  const openLatestOnlineGame = useCallback(async () => {
+    if (latestGameLoading) return;
+
+    if (linkedOnlineProviders.length === 0) {
+      notifications.show({
+        title: "Link an online account",
+        message: "Add a Chess.com or Lichess account, then this will pull your newest game.",
+        color: "yellow",
+      });
+      navigate({ to: "/accounts" });
+      return;
+    }
+
+    setLatestGameLoading(true);
+    try {
+      const latestGame = await getLatestOnlineGame(sessions);
+      if (!latestGame) {
+        notifications.show({
+          title: "No recent games found",
+          message: "None of the linked online accounts returned an importable game.",
+          color: "yellow",
+        });
+        return;
+      }
+
+      const tree = await parsePGN(latestGame.pgn);
+      const gameName = getGameName(tree.headers);
+      const tabName =
+        gameName && gameName !== "Unknown" ? gameName : `${latestGame.sourceLabel} latest game`;
+      const tabId = await createTab({
+        tab: {
+          name: tabName,
+          type: "analysis",
+        },
+        setTabs,
+        setActiveTab,
+        pgn: latestGame.pgn,
+        gameOrigin: {
+          kind: "none",
+        },
+      });
+      store.set(tabFamily(tabId), "analysis");
+      navigate({ to: "/" });
+      notifications.show({
+        title: "Latest game loaded",
+        message: `${latestGame.sourceLabel} ${latestGame.username}${
+          latestGame.playedAt ? ` - ${dayjs(latestGame.playedAt).format("YYYY-MM-DD HH:mm")}` : ""
+        }`,
+        color: "green",
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Could not load latest game",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    } finally {
+      setLatestGameLoading(false);
+    }
+  }, [
+    latestGameLoading,
+    linkedOnlineProviders.length,
+    navigate,
+    sessions,
+    setActiveTab,
+    setTabs,
+    store,
+  ]);
+
   const deleteReviewDeck = useCallback(async (deck: OpeningReviewDeckSummary) => {
     const confirmed = window.confirm(
       `Delete "${deck.name}"?\n\nThis removes the review deck file and cannot be undone.`,
@@ -1991,6 +2068,17 @@ export default function NewTabHome({ id }: { id: string }) {
           return [...prev];
         });
       },
+    },
+    {
+      icon: <IconCloudDownload size={60} />,
+      title: "Analyse your last game",
+      description:
+        linkedOnlineProviders.length > 0
+          ? "Pull the newest linked Chess.com or Lichess game into the analysis board."
+          : "Link Chess.com or Lichess, then fetch your newest game.",
+      label: linkedOnlineProviders.length > 0 ? "Analyse latest" : "Link account",
+      loading: latestGameLoading,
+      onClick: openLatestOnlineGame,
     },
     {
       icon: <IconTargetArrow size={60} />,
@@ -2109,7 +2197,14 @@ export default function NewTabHome({ id }: { id: string }) {
                   </Text>
                 </Box>
 
-                <Button variant="light" fullWidth mt="md" radius="md" onClick={card.onClick}>
+                <Button
+                  variant="light"
+                  fullWidth
+                  mt="md"
+                  radius="md"
+                  loading={card.loading}
+                  onClick={card.onClick}
+                >
                   {card.label}
                 </Button>
               </Stack>

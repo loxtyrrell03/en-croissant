@@ -62,6 +62,19 @@ const ChessComGames = z.object({
     }),
   ),
 });
+type ChessComGame = z.infer<typeof ChessComGames>["games"][number];
+
+export type ChessComLatestGame = {
+  source: "chesscom";
+  username: string;
+  pgn: string;
+  playedAt: number;
+  url: string;
+};
+
+function hasPgn(game: ChessComGame): game is ChessComGame & { pgn: string } {
+  return typeof game.pgn === "string" && game.pgn.trim().length > 0;
+}
 
 export async function getChessComAccount(player: string): Promise<ChessComStats | null> {
   return getChessComAccountWithOptions(player);
@@ -144,6 +157,40 @@ export async function getChessComLatestGameTimestamp(player: string) {
 
   const latestTimestamp = Math.max(...games.data.games.map((game) => game.end_time));
   return Number.isFinite(latestTimestamp) ? latestTimestamp * 1000 : null;
+}
+
+export async function getLatestChessComGame(player: string): Promise<ChessComLatestGame | null> {
+  const archives = await getGameArchives(player);
+
+  for (const archive of archives.archives.slice().reverse()) {
+    const response = await fetch(archive, {
+      headers: apiHeaders(),
+      method: "GET",
+    });
+    if (!response.ok) {
+      error(`Failed to fetch latest Chess.com games: ${response.status} ${response.url}`);
+      continue;
+    }
+
+    const games = ChessComGames.safeParse(await response.json());
+    if (!games.success) {
+      error(`Invalid response for latest Chess.com games: ${response.status} ${response.url}`);
+      continue;
+    }
+
+    const latestGame = games.data.games.filter(hasPgn).sort((a, b) => b.end_time - a.end_time)[0];
+    if (latestGame) {
+      return {
+        source: "chesscom",
+        username: player,
+        pgn: latestGame.pgn,
+        playedAt: latestGame.end_time * 1000,
+        url: latestGame.url,
+      };
+    }
+  }
+
+  return null;
 }
 
 export async function downloadChessCom(player: string, timestamp: number | null) {

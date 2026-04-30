@@ -217,6 +217,21 @@ export type PositionData = {
   topGames?: PositionGames;
 };
 
+export type LichessLatestGame = {
+  source: "lichess";
+  username: string;
+  pgn: string;
+  playedAt: number;
+  url: string;
+};
+
+type LichessLatestGameJson = {
+  id?: string;
+  pgn?: string;
+  createdAt?: number;
+  lastMoveAt?: number;
+};
+
 export async function getLichessAccount({
   token,
   username,
@@ -504,6 +519,62 @@ export async function getLichessGame(gameId: string): Promise<string> {
     throw new Error(`Failed to load lichess game ${gameId} - ${response.statusText}`);
   }
   return await response.text();
+}
+
+export async function getLatestLichessGame(
+  player: string,
+  token?: string,
+): Promise<LichessLatestGame | null> {
+  const url = new URL(`${baseURL}/games/user/${encodeURIComponent(player)}`);
+  url.searchParams.set("max", "3");
+  url.searchParams.set("sort", "dateDesc");
+  url.searchParams.set("pgnInJson", "true");
+  url.searchParams.set("clocks", "true");
+  url.searchParams.set("evals", "true");
+  url.searchParams.set("accuracy", "true");
+  url.searchParams.set("perfType", "ultraBullet,bullet,blitz,rapid,classical,correspondence");
+
+  const response = await fetch(url.toString(), {
+    headers: apiHeaders({
+      Accept: "application/x-ndjson",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    }),
+  });
+  if (!response.ok) {
+    error(`Failed to fetch latest Lichess game: ${response.status} ${response.url}`);
+    throw new Error(`Failed to fetch latest Lichess game for ${player}`);
+  }
+
+  const body = await response.text();
+  const games = body
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      try {
+        return JSON.parse(line) as LichessLatestGameJson;
+      } catch {
+        return null;
+      }
+    })
+    .filter((game): game is LichessLatestGameJson => Boolean(game?.pgn));
+
+  const latestGame = games.sort(
+    (a, b) => (b.lastMoveAt ?? b.createdAt ?? 0) - (a.lastMoveAt ?? a.createdAt ?? 0),
+  )[0];
+
+  if (!latestGame?.pgn) {
+    return null;
+  }
+
+  const id = latestGame.id?.slice(0, 8) ?? "";
+  return {
+    source: "lichess",
+    username: player,
+    pgn: latestGame.pgn,
+    playedAt: latestGame.lastMoveAt ?? latestGame.createdAt ?? 0,
+    url: id ? `https://lichess.org/${id}` : `https://lichess.org/@/${player}`,
+  };
 }
 
 export async function getTablebaseInfo(fen: string): Promise<TablebaseData> {
