@@ -12,6 +12,7 @@ This file records the work saved during the Codex session on the `codex/en-crois
 ## Local Browser Verification
 
 - Prefer the Browser Use plugin for localhost UI checks. If its Node REPL bootstrap fails because the system Node is too old, use the Playwright browser tools as a fallback and note the reason.
+- If Browser Use reports `Node runtime too old for node_repl`, set the user environment variable `NODE_REPL_NODE_PATH` to the bundled Codex Node executable, usually `C:\Users\loxty\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`, then restart Codex Desktop so the MCP server inherits it.
 - The Vite dev server for this Tauri app normally serves at `http://localhost:1420`; `vite.config.ts` has `strictPort: true`, so check whether that port is already owned before starting a new server.
 - Opening the app directly in a regular browser is outside the Tauri shell, so the page needs minimal Tauri globals injected before navigation. Stub `window.__TAURI_OS_PLUGIN_INTERNALS__` and `window.__TAURI_INTERNALS__` with no-op `invoke`, event listener, metadata, and `convertFileSrc` handlers before loading `http://localhost:1420`.
 - For layout checks, inspect real DOM dimensions instead of relying only on screenshots. Useful measurements are `#left`, `.cg-wrap`, the eval bar element, and any nearby panel that may be limiting the board.
