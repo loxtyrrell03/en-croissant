@@ -1,4 +1,4 @@
-import { Paper, Portal, Stack, Tabs } from "@mantine/core";
+import { Paper, Portal, Stack, Tabs, Tooltip } from "@mantine/core";
 import { useHotkeys, useToggle } from "@mantine/hooks";
 import {
   IconBulb,
@@ -136,6 +136,15 @@ function BoardAnalysis() {
 
   const [currentTabSelected, setCurrentTabSelected] = useAtom(currentTabSelectedAtom);
   const practiceTabSelected = useAtomValue(currentPracticeTabAtom);
+  const tabLabels = {
+    practice: t("Board.Tabs.Practice"),
+    analysis: t("Board.Tabs.Analysis"),
+    database: t("Board.Tabs.Database"),
+    planExplorer: "Plan Explorer",
+    enginePlans: "Engine Plans",
+    compare: "Compare",
+    info: t("Board.Tabs.Info"),
+  };
   const isRepertoire = tabFile?.metadata.type === "repertoire";
   const showPracticeTab = isRepertoire || trainingDeck.positions.length > 0;
   const selectedPanel =
@@ -262,28 +271,42 @@ function BoardAnalysis() {
             >
               <Tabs.List grow>
                 {showPracticeTab && (
-                  <Tabs.Tab value="practice" leftSection={<IconTargetArrow size="1rem" />}>
-                    {t("Board.Tabs.Practice")}
-                  </Tabs.Tab>
+                  <Tooltip label={tabLabels.practice} position="bottom" withArrow withinPortal>
+                    <Tabs.Tab value="practice" leftSection={<IconTargetArrow size="1rem" />}>
+                      {tabLabels.practice}
+                    </Tabs.Tab>
+                  </Tooltip>
                 )}
-                <Tabs.Tab value="analysis" leftSection={<IconZoomCheck size="1rem" />}>
-                  {t("Board.Tabs.Analysis")}
-                </Tabs.Tab>
-                <Tabs.Tab value="database" leftSection={<IconDatabase size="1rem" />}>
-                  {t("Board.Tabs.Database")}
-                </Tabs.Tab>
-                <Tabs.Tab value="plan-explorer" leftSection={<IconRoute size="1rem" />}>
-                  Plan Explorer
-                </Tabs.Tab>
-                <Tabs.Tab value="engine-plans" leftSection={<IconBulb size="1rem" />}>
-                  Engine Plans
-                </Tabs.Tab>
-                <Tabs.Tab value="compare" leftSection={<IconGitCompare size="1rem" />}>
-                  Compare
-                </Tabs.Tab>
-                <Tabs.Tab value="info" leftSection={<IconInfoCircle size="1rem" />}>
-                  {t("Board.Tabs.Info")}
-                </Tabs.Tab>
+                <Tooltip label={tabLabels.analysis} position="bottom" withArrow withinPortal>
+                  <Tabs.Tab value="analysis" leftSection={<IconZoomCheck size="1rem" />}>
+                    {tabLabels.analysis}
+                  </Tabs.Tab>
+                </Tooltip>
+                <Tooltip label={tabLabels.database} position="bottom" withArrow withinPortal>
+                  <Tabs.Tab value="database" leftSection={<IconDatabase size="1rem" />}>
+                    {tabLabels.database}
+                  </Tabs.Tab>
+                </Tooltip>
+                <Tooltip label={tabLabels.planExplorer} position="bottom" withArrow withinPortal>
+                  <Tabs.Tab value="plan-explorer" leftSection={<IconRoute size="1rem" />}>
+                    {tabLabels.planExplorer}
+                  </Tabs.Tab>
+                </Tooltip>
+                <Tooltip label={tabLabels.enginePlans} position="bottom" withArrow withinPortal>
+                  <Tabs.Tab value="engine-plans" leftSection={<IconBulb size="1rem" />}>
+                    {tabLabels.enginePlans}
+                  </Tabs.Tab>
+                </Tooltip>
+                <Tooltip label={tabLabels.compare} position="bottom" withArrow withinPortal>
+                  <Tabs.Tab value="compare" leftSection={<IconGitCompare size="1rem" />}>
+                    {tabLabels.compare}
+                  </Tabs.Tab>
+                </Tooltip>
+                <Tooltip label={tabLabels.info} position="bottom" withArrow withinPortal>
+                  <Tabs.Tab value="info" leftSection={<IconInfoCircle size="1rem" />}>
+                    {tabLabels.info}
+                  </Tabs.Tab>
+                </Tooltip>
               </Tabs.List>
               {showPracticeTab && (
                 <Tabs.Panel value="practice" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
