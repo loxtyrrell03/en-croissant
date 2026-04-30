@@ -4,22 +4,58 @@ import { Markdown } from "@tiptap/markdown";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useAtomValue } from "jotai";
-import { useContext } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import { spellCheckAtom } from "@/state/atoms";
 import { getNodeAtPath } from "@/utils/treeReducer";
 
+const COMMENT_SAVE_DELAY_MS = 350;
+
 function AnnotationEditor() {
   const { t } = useTranslation();
 
   const store = useContext(TreeStateContext)!;
-  const root = useStore(store, (s) => s.root);
   const position = useStore(store, (s) => s.position);
-  const setComment = useStore(store, (s) => s.setComment);
+  const positionKey = useMemo(() => position.join(","), [position]);
+  const currentComment = useStore(store, (s) => getNodeAtPath(s.root, s.position).comment);
+  const setCommentAtPath = useStore(store, (s) => s.setCommentAtPath);
+  const pendingSaveRef = useRef<{ path: number[]; comment: string } | null>(null);
+  const saveTimeoutRef = useRef<number | null>(null);
 
-  const currentNode = getNodeAtPath(root, position);
+  const clearSaveTimeout = useCallback(() => {
+    if (saveTimeoutRef.current !== null) {
+      window.clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+  }, []);
+
+  const flushPendingComment = useCallback(() => {
+    clearSaveTimeout();
+    const pending = pendingSaveRef.current;
+    if (!pending) return;
+
+    pendingSaveRef.current = null;
+    setCommentAtPath(pending.path, pending.comment);
+  }, [clearSaveTimeout, setCommentAtPath]);
+
+  const scheduleCommentSave = useCallback(
+    (path: number[], comment: string) => {
+      pendingSaveRef.current = {
+        path: [...path],
+        comment,
+      };
+      clearSaveTimeout();
+      saveTimeoutRef.current = window.setTimeout(flushPendingComment, COMMENT_SAVE_DELAY_MS);
+    },
+    [clearSaveTimeout, flushPendingComment],
+  );
+
+  useEffect(() => {
+    return () => flushPendingComment();
+  }, [flushPendingComment, positionKey]);
+
   const spellCheck = useAtomValue(spellCheckAtom);
   const editor = useEditor(
     {
@@ -33,13 +69,14 @@ function AnnotationEditor() {
         Markdown,
         Placeholder.configure({ placeholder: t("Board.Annotate.WriteHere") }),
       ],
-      content: currentNode.comment || null,
+      content: currentComment || null,
       contentType: "markdown",
       onUpdate: ({ editor }) => {
-        setComment(editor.getMarkdown());
+        scheduleCommentSave(position, editor.getMarkdown());
       },
+      onBlur: flushPendingComment,
     },
-    [position.join(",")],
+    [positionKey],
   );
 
   return (

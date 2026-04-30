@@ -61,6 +61,7 @@ export interface TreeStoreState extends TreeState {
 
     setAnnotation: (payload: Annotation) => void;
     setComment: (payload: string) => void;
+    setCommentAtPath: (path: number[], payload: string) => void;
     setCurrentNodeMetadata: (payload: {
         annotations?: Annotation[];
         comment?: string;
@@ -436,9 +437,19 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
         setComment: (payload) =>
             set(
                 produce((state) => {
-                    state.dirty = true;
                     const node = getNodeAtPath(state.root, state.position);
-                    if (node) {
+                    if (node && node.comment !== payload) {
+                        state.dirty = true;
+                        node.comment = payload;
+                    }
+                }),
+            ),
+        setCommentAtPath: (path, payload) =>
+            set(
+                produce((state) => {
+                    const node = getNodeAtPath(state.root, path);
+                    if (node && node.comment !== payload) {
+                        state.dirty = true;
                         node.comment = payload;
                     }
                 }),

@@ -55,13 +55,14 @@ import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
-import { commands } from "@/bindings";
+import { commands, type Score } from "@/bindings";
 import { Chessground, type ChessgroundRef } from "@/chessground/Chessground";
 import {
   boardManualSizeAtom,
   autoPromoteAtom,
   bestMovesFamily,
   currentBoardPreviewShapesAtom,
+  currentLiveEvalAtom,
   currentEnginePlanExplorerDataAtom,
   currentEvalOpenAtom,
   currentPlanExplorerDataAtom,
@@ -199,6 +200,24 @@ type MistakeReviewRevealState = {
   moveUci?: string;
 };
 
+const BoardEvalBar = memo(function BoardEvalBar({
+  fallbackScore,
+  rootFen,
+  movesKey,
+  orientation,
+}: {
+  fallbackScore: Score | null;
+  rootFen: string;
+  movesKey: string;
+  orientation: "white" | "black";
+}) {
+  const liveEval = useAtomValue(currentLiveEvalAtom);
+  const score =
+    liveEval?.fen === rootFen && liveEval.movesKey === movesKey ? liveEval.score : fallbackScore;
+
+  return <EvalBar score={score} orientation={orientation} />;
+});
+
 function sameBoardPosition(a: string | undefined, b: string | undefined) {
   if (!a || !b) return false;
   return a.split(" ").slice(0, 4).join(" ") === b.split(" ").slice(0, 4).join(" ");
@@ -263,14 +282,29 @@ function Board({
 
   const store = useContext(TreeStateContext)!;
 
-  const root = useStore(store, (s) => s.root);
   const rootFen = useStore(store, (s) => s.root.fen);
   const moves = useStore(
     store,
     useShallow((s) => getVariationLine(s.root, s.position)),
   );
+  const movesKey = useMemo(() => moves.join(","), [moves]);
   const headers = useStore(store, (s) => s.headers);
-  const currentNode = useStore(store, (s) => s.currentNode());
+  const currentNode = useStore(
+    store,
+    useShallow((s) => {
+      const node = s.currentNode();
+      return {
+        annotations: node.annotations,
+        children: node.children,
+        fen: node.fen,
+        halfMoves: node.halfMoves,
+        move: node.move,
+        san: node.san,
+        score: node.score,
+        shapes: node.shapes,
+      };
+    }),
+  );
 
   const arrows = useAtomValue(
     bestMovesFamily({
@@ -335,7 +369,7 @@ function Board({
   const toggleOrientation = () =>
     setHeaders({
       ...headers,
-      fen: root.fen,
+      fen: rootFen,
       orientation: orientation === "black" ? "white" : "black",
     });
 
@@ -1184,7 +1218,7 @@ function Board({
         setFen(newFen);
       }
     },
-    [editingMode, currentNode, setFen],
+    [editingMode, currentNode.fen, setFen],
   );
 
   const drawPlanFromContextMenu = useCallback(
@@ -1446,7 +1480,12 @@ function Board({
                   </Center>
                 )}
                 {evalOpen && (
-                  <EvalBar score={currentNode.score || null} orientation={orientation} />
+                  <BoardEvalBar
+                    fallbackScore={currentNode.score || null}
+                    rootFen={rootFen}
+                    movesKey={movesKey}
+                    orientation={orientation}
+                  />
                 )}
               </Box>
               <Box
@@ -1676,7 +1715,7 @@ function Board({
               </Text>
             )}
 
-            {moveInput && <MoveInput currentNode={currentNode} />}
+            {moveInput && <MoveInput currentFen={currentNode.fen} />}
 
             <ShowMaterial fen={boardFen} color={orientation} mode={materialDisplay} />
             {hasClock && (

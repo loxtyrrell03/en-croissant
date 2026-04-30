@@ -15,7 +15,7 @@ import type {
 } from "jotai/vanilla/utils/atomWithStorage";
 import type { ReviewLog } from "ts-fsrs";
 import { z } from "zod";
-import type { BestMoves, GoMode, PlanExplorerData, RepertoireGapReport } from "@/bindings";
+import type { BestMoves, GoMode, PlanExplorerData, RepertoireGapReport, Score } from "@/bindings";
 import { DEFAULT_TIME_CONTROL, type OpponentSettings } from "@/components/boards/OpponentForm";
 import { type Position, positionSchema } from "@/components/files/opening";
 import type { LocalOptions } from "@/components/panels/database/DatabasePanel";
@@ -482,6 +482,15 @@ export const currentPuzzleTimerAtom = tabValue(puzzleTimerFamily);
 export const reportTypeAtom = atom<"CP" | "WDL">("CP");
 
 export const scoreTypeFamily = atomFamily((_engine: string) => atom<"cp" | "wdl">("cp"));
+
+export type LiveEvalState = {
+    fen: string;
+    movesKey: string;
+    score: Score;
+};
+
+const liveEvalFamily = atomFamily((_tab: string) => atom<LiveEvalState | null>(null));
+export const currentLiveEvalAtom = tabValue(liveEvalFamily);
 
 // Per tab settings
 

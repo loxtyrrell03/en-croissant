@@ -10,6 +10,7 @@ import { type EngineOptions, events, type GoMode } from "@/bindings";
 import {
   activeTabAtom,
   currentThreatAtom,
+  currentLiveEvalAtom,
   engineMovesFamily,
   engineProgressFamily,
   enginesAtom,
@@ -135,9 +136,8 @@ function EngineListener({
   moves: string[];
   threat: boolean;
 }) {
-  const store = useContext(TreeStateContext)!;
-  const setScore = useStore(store, (s) => s.setScore);
   const activeTab = useAtomValue(activeTabAtom);
+  const [, setLiveEval] = useAtom(currentLiveEvalAtom);
 
   const [, setProgress] = useAtom(engineProgressFamily({ engine: engine.id, tab: activeTab! }));
 
@@ -155,6 +155,7 @@ function EngineListener({
     () => `${searchingFen}:${searchingMovesKey}`,
     [searchingFen, searchingMovesKey],
   );
+  const displayedMovesKey = useMemo(() => moves.join(","), [moves]);
   const latestSearchKeyRef = useRef(searchKey);
   useEffect(() => {
     latestSearchKeyRef.current = searchKey;
@@ -194,8 +195,12 @@ function EngineListener({
           setProgress(payload.progress);
           const shouldSetScore =
             firstEngineWithLines === engine.id || firstEngineWithLines === null;
-          if (shouldSetScore) {
-            setScore(ev[0].score);
+          if (shouldSetScore && ev[0]) {
+            setLiveEval({
+              fen,
+              movesKey: displayedMovesKey,
+              score: ev[0].score,
+            });
           }
         });
       }
@@ -205,11 +210,12 @@ function EngineListener({
     };
   }, [
     activeTab,
-    setScore,
+    setLiveEval,
     settings.enabled,
     isGameOver,
     fen,
     moves,
+    displayedMovesKey,
     finalFen,
     threat,
     searchingFen,
@@ -267,7 +273,11 @@ function EngineListener({
                   const shouldSetScore =
                     firstEngineWithLines === engine.id || firstEngineWithLines === null;
                   if (bestMoves.length > 0 && shouldSetScore) {
-                    setScore(bestMoves[0].score);
+                    setLiveEval({
+                      fen,
+                      movesKey: displayedMovesKey,
+                      score: bestMoves[0].score,
+                    });
                   }
                 }
               }
@@ -300,11 +310,13 @@ function EngineListener({
       isGameOver,
       activeTab,
       getBestMoves,
-      setScore,
+      setLiveEval,
       setProgress,
       setEngineVariation,
       engine,
       firstEngineWithLines,
+      fen,
+      displayedMovesKey,
     ],
   );
   return null;

@@ -54,9 +54,7 @@ const EXTRA = ["N", "↑↑", "↑", "→", "⇆", "=∞", "⊕", "∆", "□", 
 
 function AnnotationPanel() {
   const store = useContext(TreeStateContext)!;
-  const root = useStore(store, (s) => s.root);
-  const position = useStore(store, (s) => s.position);
-  const currentNode = getNodeAtPath(root, position);
+  const currentAnnotations = useStore(store, (s) => getNodeAtPath(s.root, s.position).annotations);
   const [showMoreSymbols, setShowMoreSymbols] = useAtom(showMoreSymbolsAtom);
 
   return (
@@ -67,7 +65,7 @@ function AnnotationPanel() {
             return (
               <SymbolButton
                 key={annotation}
-                curAnnotations={currentNode.annotations}
+                curAnnotations={currentAnnotations}
                 annotation={annotation}
               />
             );
@@ -96,7 +94,7 @@ function AnnotationPanel() {
             {ADVANTAGE.map((annotation) => (
               <SymbolButton
                 key={annotation}
-                curAnnotations={currentNode.annotations}
+                curAnnotations={currentAnnotations}
                 annotation={annotation}
               />
             ))}
@@ -105,7 +103,7 @@ function AnnotationPanel() {
             {EXTRA.map((annotation) => (
               <SymbolButton
                 key={annotation}
-                curAnnotations={currentNode.annotations}
+                curAnnotations={currentAnnotations}
                 annotation={annotation}
               />
             ))}
