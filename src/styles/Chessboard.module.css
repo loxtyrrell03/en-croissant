@@ -6,6 +6,10 @@
   aspect-ratio: 1;
 }
 
+.chessboard > :global(.cg-wrap) :global(piece) {
+  will-change: transform;
+}
+
 [data-mantine-color-scheme="dark"]
   .chessboard
   > :global(.cg-wrap)

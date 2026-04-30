@@ -289,7 +289,7 @@ function Board({
   const setShapes = useStore(store, (s) => s.setShapes);
   const setFen = useStore(store, (s) => s.setFen);
 
-  const [pos, error] = positionFromFen(currentNode.fen);
+  const [pos, error] = useMemo(() => positionFromFen(currentNode.fen), [currentNode.fen]);
   const [whiteFideOpen, setWhiteFideOpen] = useState(false);
   const [blackFideOpen, setBlackFideOpen] = useState(false);
 
@@ -306,9 +306,11 @@ function Board({
   const materialDisplay = useAtomValue(materialDisplayAtom);
   const boardPreviewShapes = useAtomValue(currentBoardPreviewShapesAtom);
   const boardFen = boardPreviewShapes?.displayFen ?? currentNode.fen;
-  const [boardPreviewPos] = boardPreviewShapes?.displayFen
-    ? positionFromFen(boardPreviewShapes.displayFen)
-    : [null];
+  const boardPreviewPos = useMemo(() => {
+    if (!boardPreviewShapes?.displayFen) return null;
+    const [previewPos] = positionFromFen(boardPreviewShapes.displayFen);
+    return previewPos;
+  }, [boardPreviewShapes?.displayFen]);
   const planExplorerData = useAtomValue(currentPlanExplorerDataAtom);
   const enginePlanExplorerData = useAtomValue(currentEnginePlanExplorerDataAtom);
   const [planExplorerPreviewLine, setPlanExplorerPreviewLine] = useAtom(
@@ -320,10 +322,11 @@ function Board({
   const currentTabSelected = useAtomValue(currentTabSelectedAtom);
   const hoveredPlanSquareRef = useRef<SquareName | null>(null);
 
-  let dests: Map<SquareName, SquareName[]> = pos ? chessgroundDests(pos) : new Map();
-  if (forcedEP && pos) {
-    dests = forceEnPassant(dests, pos);
-  }
+  const dests = useMemo(() => {
+    if (!pos) return new Map<SquareName, SquareName[]>();
+    const nextDests = chessgroundDests(pos);
+    return forcedEP ? forceEnPassant(nextDests, pos) : nextDests;
+  }, [forcedEP, pos]);
 
   const [pendingMove, setPendingMove] = useState<NormalMove | null>(null);
 
@@ -903,119 +906,10 @@ function Board({
     }
   }
 
-  let shapes: DrawShape[] = [];
-  if (showArrows && arrows.size > 0 && pos) {
-    const entries = Array.from(arrows.entries()).sort((a, b) => a[0] - b[0]);
-    for (const [i, moves] of entries) {
-      if (i < 4) {
-        const bestWinChance = moves[0].winChance;
-        for (const [j, { pv, winChance }] of moves.entries()) {
-          const posClone = pos.clone();
-          let prevSquare = null;
-          for (const [ii, uci] of pv.entries()) {
-            const m = parseUci(uci)! as NormalMove;
-
-            posClone.play(m);
-            const from = makeSquare(m.from)!;
-            const to = makeSquare(m.to)!;
-            if (prevSquare === null) {
-              prevSquare = from;
-            }
-            const brushSize = match(bestWinChance - winChance)
-              .when(
-                (d) => d < 2.5,
-                () => LARGE_BRUSH,
-              )
-              .when(
-                (d) => d < 5,
-                () => MEDIUM_BRUSH,
-              )
-              .otherwise(() => SMALL_BRUSH);
-
-            if (ii === 0 || (showConsecutiveArrows && j === 0 && ii % 2 === 0)) {
-              if (
-                ii < 5 && // max 3 arrows
-                !shapes.find((s) => s.orig === from && s.dest === to) &&
-                prevSquare === from
-              ) {
-                shapes.push({
-                  orig: from,
-                  dest: to,
-                  brush: j === 0 ? arrowColors[i].strong : arrowColors[i].pale,
-                  modifiers: {
-                    lineWidth: brushSize,
-                  },
-                });
-                prevSquare = to;
-              } else {
-                break;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // Variation arrows: show all children moves when there are alternatives
-  if (showVariationArrows && currentNode.children.length > 1) {
-    for (const child of currentNode.children) {
-      if (child.move) {
-        const m = child.move as NormalMove;
-        const from = makeSquare(m.from);
-        const to = makeSquare(m.to);
-        if (from && to && !shapes.find((s) => s.orig === from && s.dest === to)) {
-          shapes.push({
-            orig: from,
-            dest: to,
-            brush: "variation",
-            modifiers: {
-              lineWidth: MEDIUM_BRUSH,
-            },
-          });
-        }
-      }
-    }
-  }
-
   const activePlanExplorerData =
     planExplorerData?.fen === currentNode.fen ? planExplorerData : null;
   const activeEnginePlanExplorerData =
     enginePlanExplorerData?.fen === currentNode.fen ? enginePlanExplorerData : null;
-
-  if (
-    showPlanExplorerArrows &&
-    currentTabSelected === "engine-plans" &&
-    activeEnginePlanExplorerData
-  ) {
-    shapes = shapes.concat(
-      planLinesToShapes(
-        getAutoPlanLines(activeEnginePlanExplorerData, planExplorerArrowLimit, {
-          minGames: 1,
-        }),
-        planExplorerArrowLimit,
-      ),
-    );
-  } else if (showPlanExplorerArrows && activePlanExplorerData) {
-    shapes = shapes.concat(
-      planLinesToShapes(
-        getAutoPlanLines(activePlanExplorerData, planExplorerArrowLimit),
-        planExplorerArrowLimit,
-      ),
-    );
-  }
-
-  if (planExplorerPreviewLine) {
-    shapes = shapes.concat(planLineToShapes(planExplorerPreviewLine));
-  }
-
-  if (boardPreviewShapes?.fen === boardFen) {
-    shapes = shapes.concat(boardPreviewShapes.shapes);
-  }
-
-  if (currentNode.shapes.length > 0) {
-    shapes = shapes.concat(currentNode.shapes);
-  }
 
   const mistakeReviewPanelReveal =
     mistakeReviewRevealState &&
@@ -1030,45 +924,177 @@ function Board({
       ? mistakeReviewPanelReveal
       : null;
 
-  if (activeMistakeReviewReveal) {
-    const revealShape = uciArrowShape(
-      activeMistakeReviewReveal.moveUci,
-      activeMistakeReviewReveal.mode === "best" ? "green" : "red",
-    );
-    if (revealShape) {
-      shapes.push(revealShape);
-    }
-  } else if (
-    practicing &&
-    (practiceState.phase === "incorrect" || practiceState.phase === "correct") &&
-    !boardPreviewShapes?.displayFen
-  ) {
-    const showPracticeBestShape =
-      currentTab?.gameOrigin.kind !== "mistake_review" || mistakeReviewAutoRevealBest;
-    const bestShape = uciArrowShape(
-      showPracticeBestShape
-        ? (practiceState.bestMoveUci ??
-            (practiceState.phase === "correct" ? practiceState.playedMoveUci : undefined))
-        : undefined,
-      "green",
-    );
-    const playedShape =
-      practiceState.phase === "incorrect" && practiceState.moveAssessment !== "best"
-        ? uciArrowShape(practiceState.playedMoveUci, "red")
-        : null;
-    const sameMove =
-      playedShape &&
-      bestShape &&
-      playedShape.orig === bestShape.orig &&
-      playedShape.dest === bestShape.dest;
+  const shapes = useMemo(() => {
+    let nextShapes: DrawShape[] = [];
 
-    if (playedShape && !sameMove) {
-      shapes.push(playedShape);
+    if (showArrows && arrows.size > 0 && pos) {
+      const entries = Array.from(arrows.entries()).sort((a, b) => a[0] - b[0]);
+      for (const [i, moves] of entries) {
+        if (i < 4) {
+          const bestWinChance = moves[0].winChance;
+          for (const [j, { pv, winChance }] of moves.entries()) {
+            let prevSquare = null;
+            for (const [ii, uci] of pv.entries()) {
+              const m = parseUci(uci)! as NormalMove;
+              const from = makeSquare(m.from)!;
+              const to = makeSquare(m.to)!;
+              if (prevSquare === null) {
+                prevSquare = from;
+              }
+              const brushSize = match(bestWinChance - winChance)
+                .when(
+                  (d) => d < 2.5,
+                  () => LARGE_BRUSH,
+                )
+                .when(
+                  (d) => d < 5,
+                  () => MEDIUM_BRUSH,
+                )
+                .otherwise(() => SMALL_BRUSH);
+
+              if (ii === 0 || (showConsecutiveArrows && j === 0 && ii % 2 === 0)) {
+                if (
+                  ii < 5 && // max 3 arrows
+                  !nextShapes.find((s) => s.orig === from && s.dest === to) &&
+                  prevSquare === from
+                ) {
+                  nextShapes.push({
+                    orig: from,
+                    dest: to,
+                    brush: j === 0 ? arrowColors[i].strong : arrowColors[i].pale,
+                    modifiers: {
+                      lineWidth: brushSize,
+                    },
+                  });
+                  prevSquare = to;
+                } else {
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
     }
-    if (bestShape) {
-      shapes.push(bestShape);
+
+    // Variation arrows: show all children moves when there are alternatives
+    if (showVariationArrows && currentNode.children.length > 1) {
+      for (const child of currentNode.children) {
+        if (child.move) {
+          const m = child.move as NormalMove;
+          const from = makeSquare(m.from);
+          const to = makeSquare(m.to);
+          if (from && to && !nextShapes.find((s) => s.orig === from && s.dest === to)) {
+            nextShapes.push({
+              orig: from,
+              dest: to,
+              brush: "variation",
+              modifiers: {
+                lineWidth: MEDIUM_BRUSH,
+              },
+            });
+          }
+        }
+      }
     }
-  }
+
+    if (
+      showPlanExplorerArrows &&
+      currentTabSelected === "engine-plans" &&
+      activeEnginePlanExplorerData
+    ) {
+      nextShapes = nextShapes.concat(
+        planLinesToShapes(
+          getAutoPlanLines(activeEnginePlanExplorerData, planExplorerArrowLimit, {
+            minGames: 1,
+          }),
+          planExplorerArrowLimit,
+        ),
+      );
+    } else if (showPlanExplorerArrows && activePlanExplorerData) {
+      nextShapes = nextShapes.concat(
+        planLinesToShapes(
+          getAutoPlanLines(activePlanExplorerData, planExplorerArrowLimit),
+          planExplorerArrowLimit,
+        ),
+      );
+    }
+
+    if (planExplorerPreviewLine) {
+      nextShapes = nextShapes.concat(planLineToShapes(planExplorerPreviewLine));
+    }
+
+    if (boardPreviewShapes?.fen === boardFen) {
+      nextShapes = nextShapes.concat(boardPreviewShapes.shapes);
+    }
+
+    if (currentNode.shapes.length > 0) {
+      nextShapes = nextShapes.concat(currentNode.shapes);
+    }
+
+    if (activeMistakeReviewReveal) {
+      const revealShape = uciArrowShape(
+        activeMistakeReviewReveal.moveUci,
+        activeMistakeReviewReveal.mode === "best" ? "green" : "red",
+      );
+      if (revealShape) {
+        nextShapes.push(revealShape);
+      }
+    } else if (
+      practicing &&
+      (practiceState.phase === "incorrect" || practiceState.phase === "correct") &&
+      !boardPreviewShapes?.displayFen
+    ) {
+      const showPracticeBestShape =
+        currentTab?.gameOrigin.kind !== "mistake_review" || mistakeReviewAutoRevealBest;
+      const bestShape = uciArrowShape(
+        showPracticeBestShape
+          ? (practiceState.bestMoveUci ??
+              (practiceState.phase === "correct" ? practiceState.playedMoveUci : undefined))
+          : undefined,
+        "green",
+      );
+      const playedShape =
+        practiceState.phase === "incorrect" && practiceState.moveAssessment !== "best"
+          ? uciArrowShape(practiceState.playedMoveUci, "red")
+          : null;
+      const sameMove =
+        playedShape &&
+        bestShape &&
+        playedShape.orig === bestShape.orig &&
+        playedShape.dest === bestShape.dest;
+
+      if (playedShape && !sameMove) {
+        nextShapes.push(playedShape);
+      }
+      if (bestShape) {
+        nextShapes.push(bestShape);
+      }
+    }
+
+    return nextShapes;
+  }, [
+    activeEnginePlanExplorerData,
+    activeMistakeReviewReveal,
+    activePlanExplorerData,
+    arrows,
+    boardFen,
+    boardPreviewShapes,
+    currentNode.children,
+    currentNode.shapes,
+    currentTab?.gameOrigin.kind,
+    currentTabSelected,
+    mistakeReviewAutoRevealBest,
+    planExplorerArrowLimit,
+    planExplorerPreviewLine,
+    pos,
+    practiceState,
+    practicing,
+    showArrows,
+    showConsecutiveArrows,
+    showPlanExplorerArrows,
+    showVariationArrows,
+  ]);
 
   const hasClock =
     !!whiteTime ||
@@ -1230,6 +1256,10 @@ function Board({
 
   const previewPlanFromPointer = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
+      if (event.buttons !== 0) {
+        return;
+      }
+
       if (
         currentTabSelected !== "plan-explorer" &&
         currentTabSelected !== "engine-plans" &&

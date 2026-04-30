@@ -2,8 +2,9 @@ import { Chessground as NativeChessground } from "@lichess-org/chessground";
 import type { Api } from "@lichess-org/chessground/api";
 import type { Config } from "@lichess-org/chessground/config";
 import { Box } from "@mantine/core";
+import equal from "fast-deep-equal/es6";
 import { useAtomValue } from "jotai";
-import { type Ref, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { type Ref, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import { boardImageAtom, moveMethodAtom } from "@/state/atoms";
 
 const BOARD_COORDINATE_COLORS: Record<string, { white: string; black: string }> = {
@@ -58,85 +59,206 @@ interface ChessgroundProps extends Config {
   ref?: Ref<ChessgroundRef>;
 }
 
-export function Chessground({ ref, ...props }: ChessgroundProps) {
-  const [api, setApi] = useState<Api | null>(null);
+type ManagedChessgroundConfig = Omit<ChessgroundProps, "ref" | "setBoardFen">;
+
+function buildManagedConfig(
+  props: ManagedChessgroundConfig,
+  setBoardFen: ChessgroundProps["setBoardFen"],
+  moveMethod: "drag" | "select" | "both",
+  boardElement: HTMLDivElement,
+  handlers: {
+    events: Required<NonNullable<Config["events"]>>;
+    movableEvents: Required<NonNullable<NonNullable<Config["movable"]>["events"]>>;
+    premovableEvents: Required<NonNullable<NonNullable<Config["premovable"]>["events"]>>;
+    predroppableEvents: Required<NonNullable<NonNullable<Config["predroppable"]>["events"]>>;
+    drawableOnChange: NonNullable<NonNullable<Config["drawable"]>["onChange"]>;
+  },
+): Config {
+  const shouldInstallEvents = !!setBoardFen || !!props.events;
+  const config: Config = {
+    ...props,
+    addDimensionsCssVarsTo: boardElement,
+    draggable: {
+      ...props.draggable,
+      enabled: moveMethod !== "select",
+    },
+    selectable: {
+      ...props.selectable,
+      enabled: moveMethod !== "drag",
+    },
+  };
+
+  if (shouldInstallEvents) {
+    config.events = {
+      ...props.events,
+      ...handlers.events,
+    };
+  }
+
+  if (props.movable) {
+    config.movable = {
+      ...props.movable,
+      events: {
+        ...props.movable.events,
+        ...handlers.movableEvents,
+      },
+    };
+  }
+
+  if (props.premovable) {
+    config.premovable = {
+      ...props.premovable,
+      events: {
+        ...props.premovable.events,
+        ...handlers.premovableEvents,
+      },
+    };
+  }
+
+  if (props.predroppable) {
+    config.predroppable = {
+      ...props.predroppable,
+      events: {
+        ...props.predroppable.events,
+        ...handlers.predroppableEvents,
+      },
+    };
+  }
+
+  if (props.drawable) {
+    config.drawable = {
+      ...props.drawable,
+      onChange: handlers.drawableOnChange,
+    };
+  }
+
+  return config;
+}
+
+export function Chessground({ ref, setBoardFen, ...props }: ChessgroundProps) {
+  const moveMethod = useAtomValue(moveMethodAtom);
+  const apiRef = useRef<Api | null>(null);
+  const appliedConfigRef = useRef<Config | null>(null);
+  const latestPropsRef = useRef<ManagedChessgroundConfig>(props);
+  const latestSetBoardFenRef = useRef<ChessgroundProps["setBoardFen"]>(setBoardFen);
+  const latestMoveMethodRef = useRef(moveMethod);
 
   const boardRef = useRef<HTMLDivElement>(null);
 
-  const moveMethod = useAtomValue(moveMethodAtom);
+  latestPropsRef.current = props;
+  latestSetBoardFenRef.current = setBoardFen;
+  latestMoveMethodRef.current = moveMethod;
+
+  const handlers = useMemo(() => {
+    const events: Required<NonNullable<Config["events"]>> = {
+      change: () => {
+        const api = apiRef.current;
+        const latestSetBoardFen = latestSetBoardFenRef.current;
+        if (latestSetBoardFen && api) {
+          latestSetBoardFen(api.getFen());
+        }
+        latestPropsRef.current.events?.change?.();
+      },
+      move: (orig, dest, capturedPiece) => {
+        latestPropsRef.current.events?.move?.(orig, dest, capturedPiece);
+      },
+      dropNewPiece: (piece, key) => {
+        latestPropsRef.current.events?.dropNewPiece?.(piece, key);
+      },
+      select: (key) => {
+        latestPropsRef.current.events?.select?.(key);
+      },
+      insert: (elements) => {
+        latestPropsRef.current.events?.insert?.(elements);
+      },
+    };
+
+    const movableEvents: Required<NonNullable<NonNullable<Config["movable"]>["events"]>> = {
+      after: (orig, dest, metadata) => {
+        latestPropsRef.current.movable?.events?.after?.(orig, dest, metadata);
+      },
+      afterNewPiece: (role, key, metadata) => {
+        latestPropsRef.current.movable?.events?.afterNewPiece?.(role, key, metadata);
+      },
+    };
+
+    const premovableEvents: Required<NonNullable<NonNullable<Config["premovable"]>["events"]>> = {
+      set: (orig, dest, metadata) => {
+        latestPropsRef.current.premovable?.events?.set?.(orig, dest, metadata);
+      },
+      unset: () => {
+        latestPropsRef.current.premovable?.events?.unset?.();
+      },
+    };
+
+    const predroppableEvents: Required<NonNullable<NonNullable<Config["predroppable"]>["events"]>> =
+      {
+        set: (role, key) => {
+          latestPropsRef.current.predroppable?.events?.set?.(role, key);
+        },
+        unset: () => {
+          latestPropsRef.current.predroppable?.events?.unset?.();
+        },
+      };
+
+    const drawableOnChange: NonNullable<NonNullable<Config["drawable"]>["onChange"]> = (shapes) => {
+      latestPropsRef.current.drawable?.onChange?.(shapes);
+    };
+
+    return {
+      events,
+      movableEvents,
+      premovableEvents,
+      predroppableEvents,
+      drawableOnChange,
+    };
+  }, []);
 
   useImperativeHandle(
     ref,
     () => ({
-      playPremove: () => api?.playPremove() ?? false,
-      cancelPremove: () => api?.cancelPremove(),
+      playPremove: () => apiRef.current?.playPremove() ?? false,
+      cancelPremove: () => apiRef.current?.cancelPremove(),
     }),
-    [api],
+    [],
   );
 
   useEffect(() => {
-    if (boardRef?.current == null) return;
-    if (api) {
-      api.set({
-        ...props,
-        events: {
-          ...props.events,
-          change: () => {
-            if (props.setBoardFen && api) {
-              props.setBoardFen(api.getFen());
-            }
-          },
-        },
-      });
-    } else {
-      const chessgroundApi = NativeChessground(boardRef.current, {
-        ...props,
-        addDimensionsCssVarsTo: boardRef.current,
-        events: {
-          ...props.events,
-          change: () => {
-            if (props.setBoardFen && chessgroundApi) {
-              props.setBoardFen(chessgroundApi.getFen());
-            }
-          },
-        },
-        draggable: {
-          ...props.draggable,
-          enabled: moveMethod !== "select",
-        },
-        selectable: {
-          ...props.selectable,
-          enabled: moveMethod !== "drag",
-        },
-      });
-      setApi(chessgroundApi);
-    }
-  }, [api, props, boardRef]);
+    if (boardRef.current == null || apiRef.current) return;
+
+    const config = buildManagedConfig(
+      latestPropsRef.current,
+      latestSetBoardFenRef.current,
+      latestMoveMethodRef.current,
+      boardRef.current,
+      handlers,
+    );
+    const chessgroundApi = NativeChessground(boardRef.current, config);
+    apiRef.current = chessgroundApi;
+    appliedConfigRef.current = config;
+
+    return () => {
+      chessgroundApi.destroy();
+      apiRef.current = null;
+      appliedConfigRef.current = null;
+    };
+  }, [handlers]);
 
   useEffect(() => {
-    api?.set({
-      ...props,
-      events: {
-        ...props.events,
-        change: () => {
-          if (props.setBoardFen && api) {
-            props.setBoardFen(api.getFen());
-          }
-        },
-      },
-      draggable: {
-        ...props.draggable,
-        enabled: moveMethod !== "select",
-      },
-      selectable: {
-        ...props.selectable,
-        enabled: moveMethod !== "drag",
-      },
-    });
-  }, [api, props, moveMethod]);
+    const api = apiRef.current;
+    if (!api || !boardRef.current) return;
+
+    const config = buildManagedConfig(props, setBoardFen, moveMethod, boardRef.current, handlers);
+    if (appliedConfigRef.current && equal(appliedConfigRef.current, config)) {
+      return;
+    }
+
+    api.set(config);
+    appliedConfigRef.current = config;
+  }, [handlers, moveMethod, props, setBoardFen]);
 
   const boardImage = useAtomValue(boardImageAtom);
-  const boardCoordColors = getBoardCoordinateColors(boardImage);
+  const boardCoordColors = useMemo(() => getBoardCoordinateColors(boardImage), [boardImage]);
 
   return (
     <Box
