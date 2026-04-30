@@ -613,6 +613,11 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                     mistakeDailySettings={
                       isMistakeReview ? (deckInfo as MistakeReviewDeck | null)?.daily : undefined
                     }
+                    mistakeAutoUpdateConfig={
+                      isMistakeReview
+                        ? (deckInfo as MistakeReviewDeck | null)?.autoUpdate
+                        : undefined
+                    }
                     onMistakeDailySettingsChange={setMistakeDailySettings}
                     boardMoveCandidate={boardMoveCandidate}
                     onClearBoardMoveCandidate={() => setBoardMoveCandidate(null)}
@@ -1049,6 +1054,7 @@ function OpeningReviewPanel({
   isMistakeReview = false,
   initialPractice,
   mistakeDailySettings,
+  mistakeAutoUpdateConfig,
   onMistakeDailySettingsChange,
   boardMoveCandidate,
   onClearBoardMoveCandidate,
@@ -1064,6 +1070,7 @@ function OpeningReviewPanel({
   isMistakeReview?: boolean;
   initialPractice?: OpeningReviewInitialPractice;
   mistakeDailySettings?: MistakeReviewDeck["daily"];
+  mistakeAutoUpdateConfig?: MistakeReviewDeck["autoUpdate"];
   onMistakeDailySettingsChange?: (daily: MistakeReviewDailySettings) => void;
   boardMoveCandidate: ReviewBoardMoveCandidate | null;
   onClearBoardMoveCandidate: () => void;
@@ -1702,12 +1709,14 @@ function OpeningReviewPanel({
 
   return (
     <>
-      <Stack h="100%" gap="sm">
+      <Stack h="100%" gap="xs">
         {panelModeControl}
         {!isMistakeReview && <OpeningReviewAutoUpdateBanner deckPath={deckPath} />}
-        <Group justify="space-between" align="flex-start">
-          <Stack gap={2}>
-            <Text fw={700}>{deckName}</Text>
+        <Group justify="space-between" align="center" gap="xs" wrap="nowrap">
+          <Stack gap={0} miw={0}>
+            <Text size="sm" fw={700} truncate>
+              {deckName}
+            </Text>
             <Text size="xs" c="dimmed">
               {deck.positions.length}{" "}
               {isMistakeReview
@@ -1724,6 +1733,9 @@ function OpeningReviewPanel({
             Positions
           </Button>
         </Group>
+        {isMistakeReview && (
+          <MistakeReviewDeckSyncStatus config={mistakeAutoUpdateConfig} deckPath={deckPath} />
+        )}
         {!isMistakeReview && (
           <OpeningReviewDeckAutoUpdateControl
             config={autoUpdateConfig}
@@ -1731,7 +1743,7 @@ function OpeningReviewPanel({
           />
         )}
 
-        <Stack gap={4}>
+        <Stack gap={3}>
           <Group justify="space-between">
             <Text size="xs" fw={600}>
               Review progress
@@ -1740,7 +1752,7 @@ function OpeningReviewPanel({
               {stats.total > 0 ? Math.round((stats.practiced / stats.total) * 100) : 0}%
             </Text>
           </Group>
-          <Progress.Root size="sm">
+          <Progress.Root size="xs">
             <Progress.Section
               value={stats.total ? (stats.practiced / stats.total) * 100 : 0}
               color="blue"
@@ -1756,7 +1768,7 @@ function OpeningReviewPanel({
           </Progress.Root>
         </Stack>
 
-        <SimpleGrid cols={3} spacing="xs">
+        <SimpleGrid cols={3} spacing={6}>
           <ReviewStat label="Due" value={stats.due} color="yellow" />
           <ReviewStat label="Unseen" value={stats.unseen} color="gray" />
           <ReviewStat label="Done" value={stats.practiced} color="blue" />
@@ -2097,13 +2109,64 @@ function OpeningReviewPanel({
 
 function ReviewStat({ label, value, color }: { label: string; value: number; color: string }) {
   return (
-    <Paper p="xs" withBorder radius="sm">
+    <Paper px="xs" py={6} withBorder radius="sm">
       <Text size="xs" c="dimmed" fw={600}>
         {label}
       </Text>
-      <Text size="lg" fw={700} c={color}>
+      <Text size="md" fw={700} c={color} lh={1.1}>
         {value}
       </Text>
+    </Paper>
+  );
+}
+
+function MistakeReviewDeckSyncStatus({
+  config,
+  deckPath,
+}: {
+  config?: MistakeReviewDeck["autoUpdate"];
+  deckPath: string;
+}) {
+  const state = useAtomValue(mistakeReviewAutoUpdateStateAtom);
+  const syncingThisDeck = state.running && state.deckPath === deckPath;
+  const lastRun = config?.lastRunAt ?? null;
+  const databaseUpdate = config?.lastUpdatedDatabaseAt ?? null;
+  const addedText = formatMistakeReviewSyncAdded(config?.lastAdded);
+
+  const badgeLabel = syncingThisDeck ? "Syncing" : config?.enabled ? "Auto sync" : "Sync off";
+  const badgeColor = config?.lastError ? "red" : syncingThisDeck ? "blue" : "gray";
+  const primary = config?.lastError
+    ? `Last sync failed: ${config.lastError}`
+    : syncingThisDeck
+      ? `Checking ${state.databaseTitle ?? "the database"} for new mistakes`
+      : lastRun
+        ? `Last synced ${formatMistakeReviewSyncTimestamp(lastRun)} - ${addedText}`
+        : config
+          ? "Database sync has not run yet"
+          : "No database sync is configured for this deck";
+  const secondary = databaseUpdate
+    ? `Database updated ${formatMistakeReviewSyncTimestamp(databaseUpdate)}`
+    : config
+      ? "Database update time unknown"
+      : null;
+
+  return (
+    <Paper px="xs" py={6} withBorder radius="sm">
+      <Group justify="space-between" gap="xs" wrap="nowrap">
+        <Group gap={6} wrap="nowrap" miw={0}>
+          <Badge size="xs" color={badgeColor} variant="light">
+            {badgeLabel}
+          </Badge>
+          <Text size="xs" c={config?.lastError ? "red" : "dimmed"} truncate>
+            {primary}
+          </Text>
+        </Group>
+        {secondary && (
+          <Text size="xs" c="dimmed" truncate style={{ flexShrink: 0, maxWidth: "42%" }}>
+            {secondary}
+          </Text>
+        )}
+      </Group>
     </Paper>
   );
 }
@@ -3466,12 +3529,13 @@ function MistakeReviewDailySettingsModal({
 }
 
 function MistakeReviewGameInfoPanel({ position }: { position: Position | null }) {
+  const [expanded, setExpanded] = useState(false);
   const mistake = position?.mistakeReview;
   if (!mistake) {
     return (
-      <Paper p="sm" withBorder>
-        <Stack gap={2}>
-          <Text size="sm" fw={700}>
+      <Paper px="xs" py={6} withBorder radius="sm">
+        <Stack gap={1}>
+          <Text size="xs" fw={700}>
             Game information
           </Text>
           <Text size="xs" c="dimmed">
@@ -3498,35 +3562,55 @@ function MistakeReviewGameInfoPanel({ position }: { position: Position | null })
   );
 
   return (
-    <Paper p="sm" withBorder>
-      <Stack gap="sm">
-        <Group justify="space-between" align="flex-start" gap="xs">
+    <Paper px="xs" py={6} withBorder radius="sm">
+      <Stack gap={expanded ? "xs" : 0}>
+        <Group justify="space-between" align="center" gap="xs" wrap="nowrap">
           <Stack gap={2} miw={0}>
-            <Text size="sm" fw={700}>
+            <Text size="xs" fw={700}>
               Game information
             </Text>
             <Text size="xs" c="dimmed" truncate>
               {playerName} vs {opponentName}
             </Text>
           </Stack>
-          <Badge variant="light">{mistakeReviewSeverityLabel(mistake.severity ?? "mistake")}</Badge>
+          <Group gap={4} wrap="nowrap">
+            <Badge size="xs" variant="light">
+              {mistakeReviewSeverityLabel(mistake.severity ?? "mistake")}
+            </Badge>
+            <Button
+              size="compact-xs"
+              variant="subtle"
+              leftSection={
+                expanded ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />
+              }
+              onClick={() => setExpanded((current) => !current)}
+              aria-expanded={expanded}
+            >
+              {expanded ? "Hide" : "Show"}
+            </Button>
+          </Group>
         </Group>
-        <SimpleGrid cols={2} spacing="xs">
-          <ReviewDetail label="Played" value={formatMistakeReviewGameDate(mistake.date)} />
-          <ReviewDetail label="Time control" value={formatMistakeReviewTimeControl(mistake)} />
-          <ReviewDetail label="Opponent" value={opponentName} />
-          <ReviewDetail label="Your side" value={formatMistakeReviewColor(playerColor)} />
-          <ReviewDetail label="Your rating" value={formatMistakeReviewRating(playerRating)} />
-          <ReviewDetail label="Opponent rating" value={formatMistakeReviewRating(opponentRating)} />
-          <ReviewDetail
-            label="Result"
-            value={formatMistakeReviewRelativeResult(mistake.gameResult, playerColor)}
-          />
-          <ReviewDetail
-            label="Move"
-            value={`${mistake.moveNumber ? `${mistake.moveNumber}. ` : ""}${mistake.playedMoveSan ?? "-"}`}
-          />
-        </SimpleGrid>
+        {expanded && (
+          <SimpleGrid cols={2} spacing="xs">
+            <ReviewDetail label="Played" value={formatMistakeReviewGameDate(mistake.date)} />
+            <ReviewDetail label="Time control" value={formatMistakeReviewTimeControl(mistake)} />
+            <ReviewDetail label="Opponent" value={opponentName} />
+            <ReviewDetail label="Your side" value={formatMistakeReviewColor(playerColor)} />
+            <ReviewDetail label="Your rating" value={formatMistakeReviewRating(playerRating)} />
+            <ReviewDetail
+              label="Opponent rating"
+              value={formatMistakeReviewRating(opponentRating)}
+            />
+            <ReviewDetail
+              label="Result"
+              value={formatMistakeReviewRelativeResult(mistake.gameResult, playerColor)}
+            />
+            <ReviewDetail
+              label="Move"
+              value={`${mistake.moveNumber ? `${mistake.moveNumber}. ` : ""}${mistake.playedMoveSan ?? "-"}`}
+            />
+          </SimpleGrid>
+        )}
       </Stack>
     </Paper>
   );
@@ -3628,11 +3712,11 @@ function OpeningReviewPrioritySummary({
   if (!hasRankingData || ranked.length === 0) return null;
 
   return (
-    <Paper p="sm" withBorder>
+    <Paper px="xs" py={6} withBorder radius="sm">
       <Stack gap="xs">
         <Group justify="space-between" gap="xs">
           <Stack gap={0}>
-            <Text size="sm" fw={700}>
+            <Text size="xs" fw={700}>
               Urgency ranking
             </Text>
             <Text size="xs" c="dimmed">
@@ -3844,6 +3928,16 @@ function ReviewDetail({ label, value }: { label: string; value: string }) {
       </Text>
     </Stack>
   );
+}
+
+function formatMistakeReviewSyncTimestamp(value: number) {
+  return dayjs(value).format("MMM D, YYYY HH:mm");
+}
+
+function formatMistakeReviewSyncAdded(value?: number | null) {
+  if (value === null || value === undefined) return "new mistake count unknown";
+  if (value === 0) return "no new mistakes added";
+  return `${value} new mistake${value === 1 ? "" : "s"} added`;
 }
 
 function normalizeMistakeReviewName(value?: string | null) {
