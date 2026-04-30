@@ -243,6 +243,11 @@ export async function getLastOnlineDatabaseGameDate(dbPath: string) {
     return null;
 }
 
+export function getPgnImportTimestamp(since: number | null) {
+    if (!since || !Number.isFinite(since)) return null;
+    return Math.floor(since / 1000);
+}
+
 export function resetDatabaseConversionState(setConversionState: SetDatabaseConversionState) {
     setConversionState((prev) => ({
         ...prev,
@@ -312,7 +317,7 @@ export async function importOnlineGamesToDatabase({
         await commands.convertPgn(
             pgnPath,
             dbPath,
-            since ? since / 1000 : null,
+            getPgnImportTimestamp(since),
             title,
             description ?? null,
         ),

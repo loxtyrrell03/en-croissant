@@ -577,7 +577,7 @@ impl Visitor for Importer {
 pub async fn convert_pgn(
     file: PathBuf,
     db_path: PathBuf,
-    timestamp: Option<i32>,
+    timestamp: Option<f64>,
     app: tauri::AppHandle,
     title: String,
     description: Option<String>,
@@ -624,7 +624,7 @@ pub async fn convert_pgn(
     // start counting time
     let start = Instant::now();
 
-    let mut importer = Importer::new(timestamp.map(|t| t as i64));
+    let mut importer = Importer::new(timestamp.map(|t| t.floor() as i64));
     db.transaction::<_, diesel::result::Error, _>(|db| {
         for (i, game) in BufferedReader::new(uncompressed)
             .into_iter(&mut importer)
