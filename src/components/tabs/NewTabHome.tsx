@@ -1175,7 +1175,7 @@ function MistakeReviewScanModal({
     candidateMoves: number;
   } | null>(null);
   const [savingPartialDeck, setSavingPartialDeck] = useState(false);
-  const [onlineDatabaseUpdates] = useAtom(onlineDatabaseUpdatesAtom);
+  const [onlineDatabaseUpdates, setOnlineDatabaseUpdates] = useAtom(onlineDatabaseUpdatesAtom);
   const setMistakeScanProgress = useSetAtom(mistakeReviewScanProgressAtom);
 
   const engineOptions = engines.map((engine) => ({
@@ -1394,20 +1394,21 @@ function MistakeReviewScanModal({
         return;
       }
 
+      const autoUpdateRecord = !wasStopped && autoUpdate ? selectedOnlineRecord : null;
       const deck = createMistakeReviewDeck({
         name,
         settings,
         positions,
-        autoUpdate: !wasStopped && autoUpdate && selectedOnlineRecord
+        autoUpdate: autoUpdateRecord
           ? {
               ...settings,
               enabled: true,
               createdAt: Date.now(),
               updatedAt: Date.now(),
               lastRunAt: Date.now(),
-              lastUpdatedDatabaseAt: selectedOnlineRecord.lastUpdatedAt,
+              lastUpdatedDatabaseAt: autoUpdateRecord.lastUpdatedAt,
               lastKnownGameCount:
-                selectedOnlineRecord.lastKnownGameCount ?? selectedDatabase?.game_count ?? null,
+                autoUpdateRecord.lastKnownGameCount ?? selectedDatabase?.game_count ?? null,
               lastAnalyzedGameId: report.lastAnalyzedGameId,
               lastAdded: positions.length,
               lastError: null,
@@ -1415,6 +1416,18 @@ function MistakeReviewScanModal({
           : undefined,
       });
       await writeMistakeReviewDeck(path, deck);
+      if (autoUpdateRecord && selectedDatabase) {
+        setOnlineDatabaseUpdates((records) =>
+          upsertOnlineDatabaseUpdateRecord(records, {
+            ...autoUpdateRecord,
+            autoUpdate: true,
+            title: selectedDatabase.title,
+            description: selectedDatabase.description,
+            lastKnownGameCount:
+              autoUpdateRecord.lastKnownGameCount ?? selectedDatabase.game_count ?? null,
+          }),
+        );
+      }
       setMistakeScanProgress((current) => ({
         ...current,
         requestId,

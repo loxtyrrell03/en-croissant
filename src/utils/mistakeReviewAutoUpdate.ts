@@ -2,7 +2,7 @@ import type { SetStateAction } from "react";
 import { useEffect, useRef } from "react";
 import { warn } from "@tauri-apps/plugin-log";
 import { useAtomValue, useSetAtom } from "jotai";
-import { commands } from "@/bindings";
+import { commands, type Player } from "@/bindings";
 import type { Position } from "@/components/files/opening";
 import {
     type MistakeReviewAutoUpdateState,
@@ -37,7 +37,7 @@ type SetMistakeReviewAutoUpdateState = (
     value: SetStateAction<MistakeReviewAutoUpdateState>,
 ) => void;
 
-type MistakeReviewScanTarget = {
+export type MistakeReviewScanTarget = {
     playerId: number;
     playerName?: string | null;
 };
@@ -283,17 +283,24 @@ async function getMistakeReviewAutoUpdateScanTargets(
         targets.push(target);
     };
 
-    addTarget(await resolveMistakeReviewPlayerByName(config.playerDb, config.playerName));
+    for (const target of await resolveMistakeReviewPlayersByName(
+        config.playerDb,
+        config.playerName,
+    )) {
+        addTarget(target);
+    }
     addTarget({ playerId: config.playerId, playerName: config.playerName });
 
     for (const playerName of getMistakeReviewAutoUpdatePlayerNameCandidates(config, record)) {
-        addTarget(await resolveMistakeReviewPlayerByName(config.playerDb, playerName));
+        for (const target of await resolveMistakeReviewPlayersByName(config.playerDb, playerName)) {
+            addTarget(target);
+        }
     }
 
     return targets;
 }
 
-function getMistakeReviewAutoUpdatePlayerNameCandidates(
+export function getMistakeReviewAutoUpdatePlayerNameCandidates(
     config: MistakeReviewAutoUpdateConfig,
     record: OnlineDatabaseUpdateRecord,
 ) {
@@ -316,11 +323,11 @@ function getMistakeReviewAutoUpdatePlayerNameCandidates(
     return names;
 }
 
-async function resolveMistakeReviewPlayerByName(
+async function resolveMistakeReviewPlayersByName(
     playerDb: string,
     playerName: string | null | undefined,
-): Promise<MistakeReviewScanTarget | null> {
-    if (!playerName?.trim()) return null;
+): Promise<MistakeReviewScanTarget[]> {
+    if (!playerName?.trim()) return [];
 
     const players = await query_players(playerDb, {
         name: playerName,
@@ -328,17 +335,28 @@ async function resolveMistakeReviewPlayerByName(
         options: {
             skipCount: true,
             page: 1,
-            pageSize: 25,
+            pageSize: 100,
             sort: "name",
             direction: "asc",
         },
     }).catch(() => null);
-    const normalizedTarget = normalizeMistakeReviewPlayerName(playerName);
-    const exact = players?.data.find(
-        (player) => normalizeMistakeReviewPlayerName(player.name) === normalizedTarget,
-    );
 
-    return exact ? { playerId: exact.id, playerName: exact.name ?? playerName } : null;
+    return selectMistakeReviewPlayerTargets(players?.data ?? [], playerName);
+}
+
+export function selectMistakeReviewPlayerTargets(
+    players: Pick<Player, "id" | "name">[],
+    playerName: string | null | undefined,
+): MistakeReviewScanTarget[] {
+    const normalizedTarget = normalizeMistakeReviewPlayerName(playerName);
+    if (!normalizedTarget) return [];
+
+    return players
+        .filter((player) => normalizeMistakeReviewPlayerName(player.name) === normalizedTarget)
+        .map((player) => ({
+            playerId: player.id,
+            playerName: player.name ?? playerName,
+        }));
 }
 
 async function writeAutoUpdateError(job: AutoUpdateJob, message: string) {
@@ -370,6 +388,6 @@ function getOnlineRecordsUpdateKey(records: OnlineDatabaseUpdateRecords) {
         .join("|");
 }
 
-function normalizeMistakeReviewPlayerName(value: string | null | undefined) {
+export function normalizeMistakeReviewPlayerName(value: string | null | undefined) {
     return (value ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
 }

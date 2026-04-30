@@ -227,7 +227,8 @@ export async function downloadChessCom(player: string, timestamp: number | null)
       return;
     }
 
-    await writeTextFile(file, games.data.games.map((g) => g.pgn).join("\n"), {
+    const pgnChunk = games.data.games.map((g) => g.pgn).join("\n");
+    await writeTextFile(file, pgnChunk ? `${pgnChunk}\n` : "", {
       append: true,
     });
     events.progressEvent.emit({

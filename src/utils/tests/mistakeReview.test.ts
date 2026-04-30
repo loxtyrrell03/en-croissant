@@ -11,6 +11,10 @@ import {
     mergeMistakeReviewPositions,
     type MistakeReviewDeck,
 } from "@/utils/mistakeReview";
+import {
+    getMistakeReviewAutoUpdatePlayerNameCandidates,
+    selectMistakeReviewPlayerTargets,
+} from "@/utils/mistakeReviewAutoUpdate";
 
 function position(overrides: Partial<Position> = {}): Position {
     return {
@@ -274,5 +278,48 @@ describe("mistake review helpers", () => {
 
         expect(formatMistakeReviewLastSeen(position())).toBe("Never");
         expect(formatMistakeReviewLastSeen(seenPosition)).toBe("2h ago");
+    });
+
+    test("auto-update scans every exact username variant", () => {
+        const targets = selectMistakeReviewPlayerTargets(
+            [
+                { id: 1, name: "Loxty" },
+                { id: 2, name: "loxty" },
+                { id: 3, name: "Loxty_Bot" },
+                { id: 4, name: "Other" },
+            ],
+            "loxty",
+        );
+
+        expect(targets).toEqual([
+            { playerId: 1, playerName: "Loxty" },
+            { playerId: 2, playerName: "loxty" },
+        ]);
+    });
+
+    test("auto-update dedupes configured and online account names", () => {
+        const names = getMistakeReviewAutoUpdatePlayerNameCandidates(
+            {
+                ...deck([]).settings,
+                enabled: true,
+                playerName: "Loxty",
+            },
+            {
+                source: "lichess",
+                username: "loxty",
+                accounts: [
+                    { source: "lichess", username: "loxty" },
+                    { source: "chesscom", username: "Loxty!" },
+                ],
+                dbPath: "games.db3",
+                title: "Online games",
+                autoUpdate: true,
+                lastCheckedAt: null,
+                lastUpdatedAt: 100,
+                lastKnownGameCount: 10,
+            },
+        );
+
+        expect(names).toEqual(["Loxty"]);
     });
 });
