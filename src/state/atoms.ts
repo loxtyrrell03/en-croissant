@@ -282,6 +282,10 @@ export const pieceSetAtom = atomWithStorage<string>("piece-set", "staunty");
 export const boardImageAtom = atomWithStorage<string>("board-image", "gray.svg");
 export const primaryColorAtom = atomWithStorage<MantineColor>("mantine-primary-color", "blue");
 export const sessionsAtom = atomWithStorage<Session[]>("sessions", []);
+export const latestOnlineGameAccountSelectionAtom = atomWithStorage<Record<string, boolean>>(
+    "latest-online-game-accounts",
+    {},
+);
 export const nativeBarAtom = atomWithStorage<boolean>("native-bar", false);
 export const telemetryEnabledAtom = atomWithStorage<boolean>("telemetry-enabled", true, undefined, {
     getOnInit: true,

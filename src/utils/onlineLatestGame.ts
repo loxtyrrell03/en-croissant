@@ -11,7 +11,9 @@ export type LatestOnlineGame = {
     url: string;
 };
 
-type OnlineGameProvider =
+export type LatestOnlineGameAccountSelection = Record<string, boolean>;
+
+export type OnlineGameProvider =
     | {
           source: "lichess";
           sourceLabel: "Lichess";
@@ -24,6 +26,12 @@ type OnlineGameProvider =
           username: string;
       };
 
+export function getOnlineGameProviderKey(
+    provider: Pick<OnlineGameProvider, "source" | "username">,
+) {
+    return `${provider.source}:${provider.username.trim().toLowerCase()}`;
+}
+
 export function getLinkedOnlineGameProviders(sessions: Session[]): OnlineGameProvider[] {
     const providers: OnlineGameProvider[] = [];
     const seen = new Set<string>();
@@ -31,7 +39,7 @@ export function getLinkedOnlineGameProviders(sessions: Session[]): OnlineGamePro
     for (const session of sessions) {
         if (session.lichess?.username) {
             const username = session.lichess.username.trim();
-            const key = `lichess:${username.toLowerCase()}`;
+            const key = getOnlineGameProviderKey({ source: "lichess", username });
             if (username && !seen.has(key)) {
                 seen.add(key);
                 providers.push({
@@ -45,7 +53,7 @@ export function getLinkedOnlineGameProviders(sessions: Session[]): OnlineGamePro
 
         if (session.chessCom?.username) {
             const username = session.chessCom.username.trim();
-            const key = `chesscom:${username.toLowerCase()}`;
+            const key = getOnlineGameProviderKey({ source: "chesscom", username });
             if (username && !seen.has(key)) {
                 seen.add(key);
                 providers.push({
@@ -60,8 +68,19 @@ export function getLinkedOnlineGameProviders(sessions: Session[]): OnlineGamePro
     return providers;
 }
 
-export async function getLatestOnlineGame(sessions: Session[]): Promise<LatestOnlineGame | null> {
+export function getSelectedOnlineGameProviders(
+    sessions: Session[],
+    selection: LatestOnlineGameAccountSelection,
+) {
     const providers = getLinkedOnlineGameProviders(sessions);
+    return providers.filter((provider) => selection[getOnlineGameProviderKey(provider)] !== false);
+}
+
+export async function getLatestOnlineGame(
+    sessions: Session[],
+    selection: LatestOnlineGameAccountSelection = {},
+): Promise<LatestOnlineGame | null> {
+    const providers = getSelectedOnlineGameProviders(sessions, selection);
     if (providers.length === 0) {
         return null;
     }

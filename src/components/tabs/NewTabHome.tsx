@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   Card,
+  Checkbox,
   Group,
   Modal,
   MultiSelect,
@@ -28,6 +29,7 @@ import {
   addRecentFileAtom,
   deckAtomFamily,
   enginesAtom,
+  latestOnlineGameAccountSelectionAtom,
   mistakeReviewScanProgressAtom,
   onlineDatabaseUpdatesAtom,
   type RecentFile,
@@ -110,7 +112,14 @@ import {
   type MistakeReviewSettings,
   writeMistakeReviewDeck,
 } from "@/utils/mistakeReview";
-import { getLatestOnlineGame, getLinkedOnlineGameProviders } from "@/utils/onlineLatestGame";
+import {
+  getLatestOnlineGame,
+  getLinkedOnlineGameProviders,
+  getOnlineGameProviderKey,
+  getSelectedOnlineGameProviders,
+  type LatestOnlineGameAccountSelection,
+  type OnlineGameProvider,
+} from "@/utils/onlineLatestGame";
 import { getGameName } from "@/utils/treeReducer";
 
 dayjs.extend(relativeTime);
@@ -1668,6 +1677,111 @@ function normalizeOpeningReviewPlayerName(value: string | null | undefined) {
   return (value ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
+function LatestGameAccountsModal({
+  opened,
+  providers,
+  selection,
+  onSelectionChange,
+  onClose,
+  onOpenAccounts,
+}: {
+  opened: boolean;
+  providers: OnlineGameProvider[];
+  selection: LatestOnlineGameAccountSelection;
+  onSelectionChange: (selection: LatestOnlineGameAccountSelection) => void;
+  onClose: () => void;
+  onOpenAccounts: () => void;
+}) {
+  const selectedCount = providers.filter(
+    (provider) => selection[getOnlineGameProviderKey(provider)] !== false,
+  ).length;
+
+  function setProviderChecked(provider: OnlineGameProvider, checked: boolean) {
+    onSelectionChange({
+      ...selection,
+      [getOnlineGameProviderKey(provider)]: checked,
+    });
+  }
+
+  function useAllAccounts() {
+    const nextSelection = { ...selection };
+    for (const provider of providers) {
+      nextSelection[getOnlineGameProviderKey(provider)] = true;
+    }
+    onSelectionChange(nextSelection);
+  }
+
+  return (
+    <Modal opened={opened} onClose={onClose} title={<b>Latest game accounts</b>} size="md">
+      <Stack gap="sm">
+        <Text size="sm" c="dimmed">
+          Choose which linked accounts are searched when loading your latest online game.
+        </Text>
+
+        {providers.length === 0 ? (
+          <Alert color="yellow" variant="light">
+            Link a Chess.com or Lichess account before choosing accounts for this shortcut.
+          </Alert>
+        ) : (
+          <Stack gap="xs">
+            {providers.map((provider) => {
+              const key = getOnlineGameProviderKey(provider);
+              return (
+                <Checkbox
+                  key={key}
+                  checked={selection[key] !== false}
+                  onChange={(event) => setProviderChecked(provider, event.currentTarget.checked)}
+                  label={
+                    <Group gap="xs" wrap="nowrap">
+                      <Text size="sm" fw={600}>
+                        {provider.username}
+                      </Text>
+                      <Badge
+                        size="xs"
+                        variant="light"
+                        color={provider.source === "lichess" ? "gray" : "green"}
+                      >
+                        {provider.sourceLabel}
+                      </Badge>
+                    </Group>
+                  }
+                />
+              );
+            })}
+          </Stack>
+        )}
+
+        {providers.length > 0 && selectedCount === 0 && (
+          <Alert color="yellow" variant="light">
+            Select at least one account to analyse your latest game.
+          </Alert>
+        )}
+
+        <Group justify="space-between">
+          <Button
+            variant="subtle"
+            size="xs"
+            disabled={providers.length === 0}
+            onClick={useAllAccounts}
+          >
+            Use all
+          </Button>
+          <Group gap="xs">
+            {providers.length === 0 && (
+              <Button variant="light" size="xs" onClick={onOpenAccounts}>
+                Add account
+              </Button>
+            )}
+            <Button variant="default" size="xs" onClick={onClose}>
+              Done
+            </Button>
+          </Group>
+        </Group>
+      </Stack>
+    </Modal>
+  );
+}
+
 export default function NewTabHome({ id }: { id: string }) {
   const { t } = useTranslation();
 
@@ -1676,6 +1790,7 @@ export default function NewTabHome({ id }: { id: string }) {
   const [openReviewModal, setOpenReviewModal] = useState(false);
   const [openMistakeReviewModal, setOpenMistakeReviewModal] = useState(false);
   const [openMistakeScanModal, setOpenMistakeScanModal] = useState(false);
+  const [openLatestGameSettingsModal, setOpenLatestGameSettingsModal] = useState(false);
   const [reviewDecks, setReviewDecks] = useState<OpeningReviewDeckSummary[]>([]);
   const [mistakeDecks, setMistakeDecks] = useState<MistakeReviewDeckSummary[]>([]);
   const [reviewDecksLoading, setReviewDecksLoading] = useState(false);
@@ -1691,6 +1806,9 @@ export default function NewTabHome({ id }: { id: string }) {
   );
   const [engines] = useAtom(enginesAtom);
   const [, setTabs] = useAtom(tabsAtom);
+  const [latestGameAccountSelection, setLatestGameAccountSelection] = useAtom(
+    latestOnlineGameAccountSelectionAtom,
+  );
   const setActiveTab = useSetAtom(activeTabAtom);
   const sessions = useAtomValue(sessionsAtom);
 
@@ -1703,6 +1821,10 @@ export default function NewTabHome({ id }: { id: string }) {
     [engines],
   );
   const linkedOnlineProviders = useMemo(() => getLinkedOnlineGameProviders(sessions), [sessions]);
+  const selectedOnlineProviders = useMemo(
+    () => getSelectedOnlineGameProviders(sessions, latestGameAccountSelection),
+    [latestGameAccountSelection, sessions],
+  );
 
   useEffect(() => {
     const checkFiles = async () => {
@@ -1930,9 +2052,19 @@ export default function NewTabHome({ id }: { id: string }) {
       return;
     }
 
+    if (selectedOnlineProviders.length === 0) {
+      notifications.show({
+        title: "Choose an account",
+        message: "Select at least one linked account for the latest-game shortcut.",
+        color: "yellow",
+      });
+      setOpenLatestGameSettingsModal(true);
+      return;
+    }
+
     setLatestGameLoading(true);
     try {
-      const latestGame = await getLatestOnlineGame(sessions);
+      const latestGame = await getLatestOnlineGame(sessions, latestGameAccountSelection);
       if (!latestGame) {
         notifications.show({
           title: "No recent games found",
@@ -1978,8 +2110,10 @@ export default function NewTabHome({ id }: { id: string }) {
     }
   }, [
     latestGameLoading,
+    latestGameAccountSelection,
     linkedOnlineProviders.length,
     navigate,
+    selectedOnlineProviders.length,
     sessions,
     setActiveTab,
     setTabs,
@@ -2038,6 +2172,15 @@ export default function NewTabHome({ id }: { id: string }) {
     }
   }, []);
 
+  const latestGameDescription =
+    linkedOnlineProviders.length === 0
+      ? "Link Chess.com or Lichess, then fetch your newest game."
+      : selectedOnlineProviders.length === 0
+        ? "Choose which linked accounts this shortcut should search."
+        : selectedOnlineProviders.length === linkedOnlineProviders.length
+          ? "Pull the newest linked Chess.com or Lichess game into the analysis board."
+          : `Search ${selectedOnlineProviders.length} of ${linkedOnlineProviders.length} linked accounts.`;
+
   const cards = [
     {
       icon: <IconChess size={60} />,
@@ -2072,13 +2215,17 @@ export default function NewTabHome({ id }: { id: string }) {
     {
       icon: <IconCloudDownload size={60} />,
       title: "Analyse your last game",
-      description:
-        linkedOnlineProviders.length > 0
-          ? "Pull the newest linked Chess.com or Lichess game into the analysis board."
-          : "Link Chess.com or Lichess, then fetch your newest game.",
-      label: linkedOnlineProviders.length > 0 ? "Analyse latest" : "Link account",
+      description: latestGameDescription,
+      label:
+        linkedOnlineProviders.length === 0
+          ? "Link account"
+          : selectedOnlineProviders.length === 0
+            ? "Choose account"
+            : "Analyse latest",
       loading: latestGameLoading,
       onClick: openLatestOnlineGame,
+      onSettings: () => setOpenLatestGameSettingsModal(true),
+      settingsLabel: "Choose accounts",
     },
     {
       icon: <IconTargetArrow size={60} />,
@@ -2183,6 +2330,17 @@ export default function NewTabHome({ id }: { id: string }) {
         onClose={() => setOpenMistakeScanModal(false)}
         onCreated={openCreatedMistakeDeck}
       />
+      <LatestGameAccountsModal
+        opened={openLatestGameSettingsModal}
+        providers={linkedOnlineProviders}
+        selection={latestGameAccountSelection}
+        onSelectionChange={setLatestGameAccountSelection}
+        onClose={() => setOpenLatestGameSettingsModal(false)}
+        onOpenAccounts={() => {
+          setOpenLatestGameSettingsModal(false);
+          navigate({ to: "/accounts" });
+        }}
+      />
       <Stack gap="lg" pt="sm">
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }}>
           {cards.map((card) => (
@@ -2197,16 +2355,41 @@ export default function NewTabHome({ id }: { id: string }) {
                   </Text>
                 </Box>
 
-                <Button
-                  variant="light"
-                  fullWidth
-                  mt="md"
-                  radius="md"
-                  loading={card.loading}
-                  onClick={card.onClick}
-                >
-                  {card.label}
-                </Button>
+                {card.onSettings ? (
+                  <Group w="100%" mt="md" gap="xs" wrap="nowrap">
+                    <Button
+                      variant="light"
+                      radius="md"
+                      loading={card.loading}
+                      onClick={card.onClick}
+                      style={{ flex: 1 }}
+                    >
+                      {card.label}
+                    </Button>
+                    <Tooltip label={card.settingsLabel}>
+                      <ActionIcon
+                        aria-label={card.settingsLabel}
+                        variant="light"
+                        radius="md"
+                        size={36}
+                        onClick={card.onSettings}
+                      >
+                        <IconSettings size="1.1rem" />
+                      </ActionIcon>
+                    </Tooltip>
+                  </Group>
+                ) : (
+                  <Button
+                    variant="light"
+                    fullWidth
+                    mt="md"
+                    radius="md"
+                    loading={card.loading}
+                    onClick={card.onClick}
+                  >
+                    {card.label}
+                  </Button>
+                )}
               </Stack>
             </Card>
           ))}
