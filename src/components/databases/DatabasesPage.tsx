@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Badge,
   Box,
   Button,
   Center,
@@ -7,11 +8,13 @@ import {
   Divider,
   Group,
   Input,
+  InputWrapper,
   Loader,
   Paper,
   Rating,
   RingProgress,
   ScrollArea,
+  SegmentedControl,
   SimpleGrid,
   Skeleton,
   Stack,
@@ -43,6 +46,8 @@ import { commands } from "@/bindings";
 import {
   type DatabaseConversionState,
   databaseConversionStateAtom,
+  type OnlineDatabaseUpdateAccount,
+  type OnlineDatabaseUpdateRecord,
   type OnlineDatabaseUpdateRecords,
   onlineDatabaseUpdatesAtom,
   referenceDbAtom,
@@ -54,11 +59,17 @@ import { getDatabases, query_games, type SuccessDatabaseInfo } from "@/utils/db"
 import { formatBytes, formatNumber } from "@/utils/format";
 import { updateOnlineDatabaseNow } from "@/utils/onlineDatabaseAutoUpdate";
 import {
+  getOnlineDatabaseUpdateAccounts,
+  getOnlineDatabaseUpdateLabel,
   getOnlineDatabaseUpdateRecord,
   getOnlineGameSourceLabel,
+  importOnlineGameAccountsToDatabase,
+  type OnlineGameAccount,
+  type OnlineGameSource,
   upsertOnlineDatabaseUpdateRecord,
 } from "@/utils/onlineGameImport";
 import { createRepertoireDatabaseFromGameBatches } from "@/utils/repertoireCopy";
+import type { Session } from "@/utils/session";
 import { unwrap } from "@/utils/unwrap";
 import ConfirmModal from "../common/ConfirmModal";
 import GenericCard from "../common/GenericCard";
@@ -364,9 +375,7 @@ export default function DatabasesPage() {
                               <Group gap={4} wrap="nowrap">
                                 {item.type === "success" && onlineRecord && (
                                   <Tooltip
-                                    label={`Update ${getOnlineGameSourceLabel(
-                                      onlineRecord.source,
-                                    )} games for ${onlineRecord.username}`}
+                                    label={`Update ${getOnlineDatabaseUpdateLabel(onlineRecord)}`}
                                   >
                                     <ActionIcon
                                       aria-label={`Update ${item.title}`}
@@ -513,6 +522,16 @@ export default function DatabasesPage() {
                           </Button>
                         )}
                       </Group>
+                      <OnlineAccountLinks
+                        selectedDatabase={selectedDatabase}
+                        record={selectedOnlineRecord}
+                        databaseDir={databaseDir}
+                        sessions={sessions}
+                        conversionState={conversionState}
+                        setConversionState={setConversionState}
+                        setRecords={setOnlineDatabaseUpdates}
+                        reload={mutate}
+                      />
 
                       <Divider variant="dashed" label={t("Common.Data")} />
                       <Group grow>
@@ -658,6 +677,14 @@ function getConversionProgress(conversionState: DatabaseConversionState) {
     return Math.max(0, Math.min(100, conversionState.progress));
   }
   return null;
+}
+
+function getLichessTokenFromSessions(sessions: Session[], username: string) {
+  return sessions.find(
+    (session) =>
+      session.lichess?.username.toLowerCase() === username.toLowerCase() &&
+      session.lichess.accessToken,
+  )?.lichess?.accessToken;
 }
 
 function DatabaseConversionCard({ conversionState }: { conversionState: DatabaseConversionState }) {
@@ -1003,6 +1030,183 @@ function IndexInput({
   );
 }
 
+function getDefaultNewOnlineSource(accounts: OnlineDatabaseUpdateAccount[]): OnlineGameSource {
+  return accounts.some((account) => account.source === "lichess") ? "chesscom" : "lichess";
+}
+
+function isSameOnlineAccount(a: OnlineGameAccount, b: OnlineGameAccount) {
+  return a.source === b.source && a.username.toLowerCase() === b.username.toLowerCase();
+}
+
+function getSuggestedOnlineUsername(sessions: Session[], source: OnlineGameSource) {
+  const session = sessions.find((candidate) =>
+    source === "lichess" ? candidate.lichess?.username : candidate.chessCom?.username,
+  );
+  return source === "lichess" ? session?.lichess?.username : session?.chessCom?.username;
+}
+
+function OnlineAccountLinks({
+  selectedDatabase,
+  record,
+  databaseDir,
+  sessions,
+  conversionState,
+  setConversionState,
+  setRecords,
+  reload,
+}: {
+  selectedDatabase: SuccessDatabaseInfo;
+  record: OnlineDatabaseUpdateRecord | null;
+  databaseDir: string;
+  sessions: Session[];
+  conversionState: DatabaseConversionState;
+  setConversionState: Dispatch<SetStateAction<DatabaseConversionState>>;
+  setRecords: Dispatch<SetStateAction<OnlineDatabaseUpdateRecords>>;
+  reload: () => unknown;
+}) {
+  const [source, setSource] = useState<OnlineGameSource>("lichess");
+  const [username, setUsername] = useState("");
+  const [loading, setLoading] = useState(false);
+  const accounts = record ? getOnlineDatabaseUpdateAccounts(record) : [];
+  const usernameTrimmed = username.trim();
+  const duplicate = accounts.some((account) =>
+    isSameOnlineAccount(account, { source, username: usernameTrimmed }),
+  );
+  const suggestedUsername = getSuggestedOnlineUsername(sessions, source);
+
+  useEffect(() => {
+    const nextAccounts = record ? getOnlineDatabaseUpdateAccounts(record) : [];
+    setSource(getDefaultNewOnlineSource(nextAccounts));
+    setUsername("");
+  }, [record, selectedDatabase.file]);
+
+  async function addOnlineAccount() {
+    if (!usernameTrimmed || duplicate || loading || conversionState.inProgress) return;
+
+    const account = {
+      source,
+      username: usernameTrimmed,
+      token:
+        source === "lichess" ? getLichessTokenFromSessions(sessions, usernameTrimmed) : undefined,
+    };
+    setLoading(true);
+    try {
+      const importedAccounts = await importOnlineGameAccountsToDatabase({
+        accounts: [account],
+        databaseDir,
+        dbPath: selectedDatabase.file,
+        title: selectedDatabase.title,
+        description: selectedDatabase.description,
+        setConversionState,
+      });
+      await commands.clearGames();
+      const nextDatabases = await getDatabases();
+      await reload();
+      const updatedDatabase =
+        nextDatabases.find(
+          (database): database is SuccessDatabaseInfo =>
+            database.type === "success" && database.file === selectedDatabase.file,
+        ) ?? selectedDatabase;
+
+      const importedAccount = importedAccounts[0]!;
+      const existingAccounts = record ? getOnlineDatabaseUpdateAccounts(record) : [];
+      const nextAccounts = [
+        ...existingAccounts.filter((candidate) => !isSameOnlineAccount(candidate, importedAccount)),
+        importedAccount,
+      ];
+      const primary = nextAccounts[0]!;
+      const now = Date.now();
+
+      setRecords((records) =>
+        upsertOnlineDatabaseUpdateRecord(records, {
+          ...(record ?? {
+            source: primary.source,
+            username: primary.username,
+            lastCheckedAt: null,
+            lastUpdatedAt: null,
+            lastKnownGameCount: null,
+          }),
+          source: primary.source,
+          username: primary.username,
+          accounts: nextAccounts,
+          dbPath: selectedDatabase.file,
+          title: selectedDatabase.title,
+          description: selectedDatabase.description,
+          autoUpdate: record?.autoUpdate ?? true,
+          lastCheckedAt: now,
+          lastUpdatedAt: now,
+          lastKnownGameCount: updatedDatabase.game_count,
+        }),
+      );
+
+      notifications.show({
+        title: "Online account linked",
+        message: `${getOnlineGameSourceLabel(source)} games for ${usernameTrimmed} were added to ${selectedDatabase.title}.`,
+        color: "green",
+      });
+      setUsername("");
+    } catch (error) {
+      notifications.show({
+        title: "Could not link online account",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    } finally {
+      setConversionState((prev) => ({
+        ...prev,
+        ...resetDatabaseConversionStateFields(),
+      }));
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Stack gap="xs">
+      <Text fz="sm" fw={600}>
+        Online accounts
+      </Text>
+      {accounts.length > 0 && (
+        <Group gap={6}>
+          {accounts.map((account) => (
+            <Badge key={`${account.source}:${account.username}`} variant="light">
+              {getOnlineGameSourceLabel(account.source)}: {account.username}
+            </Badge>
+          ))}
+        </Group>
+      )}
+      <Group align="flex-end" grow>
+        <InputWrapper label="Website">
+          <SegmentedControl
+            fullWidth
+            data={[
+              { label: "Lichess", value: "lichess" },
+              { label: "Chess.com", value: "chesscom" },
+            ]}
+            value={source}
+            onChange={(value) => setSource(value as OnlineGameSource)}
+          />
+        </InputWrapper>
+        <TextInput
+          label="Username"
+          value={username}
+          placeholder={suggestedUsername}
+          error={duplicate ? "This account is already linked" : undefined}
+          onChange={(event) => setUsername(event.currentTarget.value)}
+        />
+        <Button
+          variant="default"
+          leftSection={<IconPlus size="1rem" />}
+          loading={loading}
+          disabled={!usernameTrimmed || duplicate || loading || conversionState.inProgress}
+          onClick={() => void addOnlineAccount()}
+        >
+          Add account
+        </Button>
+      </Group>
+    </Stack>
+  );
+}
+
 function OnlineAutoUpdateInput({
   selectedDatabase,
   records,
@@ -1018,12 +1222,7 @@ function OnlineAutoUpdateInput({
   if (!record) return null;
 
   return (
-    <Tooltip
-      label={t("Databases.Online.AutoUpdate.WithSource", {
-        source: getOnlineGameSourceLabel(record.source),
-        username: record.username,
-      })}
-    >
+    <Tooltip label={`Check ${getOnlineDatabaseUpdateLabel(record)} for new games`}>
       <Checkbox
         label={t("Databases.Online.AutoUpdate")}
         checked={record.autoUpdate}

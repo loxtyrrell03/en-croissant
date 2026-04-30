@@ -7,22 +7,19 @@ import { commands } from "@/bindings";
 import {
     databaseConversionStateAtom,
     type DatabaseConversionState,
+    type OnlineDatabaseUpdateAccount,
     type OnlineDatabaseUpdateRecord,
     onlineDatabaseUpdatesAtom,
     type OnlineDatabaseUpdateRecords,
     sessionsAtom,
 } from "@/state/atoms";
-import {
-    getChessComAccountWithOptions,
-    getChessComGameCount,
-    getChessComLatestGameTimestamp,
-} from "@/utils/chess.com/api";
 import { getDatabases, type SuccessDatabaseInfo } from "@/utils/db";
 import { getDatabasesDir } from "@/utils/directories";
-import { getLichessAccount, getLichessDownloadGameCount } from "@/utils/lichess/api";
 import {
     getLastOnlineDatabaseGameDate,
+    getOnlineDatabaseUpdateAccounts,
     getOnlineDatabaseUpdateRecord,
+    getOnlineGameAccountStatus,
     importOnlineGamesToDatabase,
     resetDatabaseConversionState,
     upsertOnlineDatabaseUpdateRecord,
@@ -96,41 +93,57 @@ function getLichessToken(sessions: Session[], username: string) {
 }
 
 async function getRemoteGameStatus(
-    record: OnlineDatabaseUpdateRecord,
+    account: OnlineDatabaseUpdateAccount,
     sessions: Session[],
 ): Promise<RemoteGameStatus> {
-    if (record.source === "lichess") {
-        const account = await getLichessAccount({
-            username: record.username,
-            token: getLichessToken(sessions, record.username),
-            silent: true,
-        });
-        return {
-            gameCount: account ? getLichessDownloadGameCount(account) : null,
-            latestGameAt: null,
-        };
-    }
+    return getOnlineGameAccountStatus(
+        account,
+        account.source === "lichess" ? getLichessToken(sessions, account.username) : undefined,
+    );
+}
 
-    const stats = await getChessComAccountWithOptions(record.username, { silent: true });
+function getRecordWithAccount(
+    record: OnlineDatabaseUpdateRecord,
+    account: OnlineDatabaseUpdateAccount,
+    updates: Partial<OnlineDatabaseUpdateAccount>,
+) {
+    const accounts = getOnlineDatabaseUpdateAccounts(record).map((candidate) =>
+        candidate.source === account.source &&
+        candidate.username.toLowerCase() === account.username.toLowerCase()
+            ? { ...candidate, ...updates }
+            : candidate,
+    );
+    const checkedTimes = accounts
+        .map((candidate) => candidate.lastCheckedAt ?? null)
+        .filter((value): value is number => typeof value === "number");
+    const updatedTimes = accounts
+        .map((candidate) => candidate.lastUpdatedAt ?? null)
+        .filter((value): value is number => typeof value === "number");
+
     return {
-        gameCount: stats ? getChessComGameCount(stats) : null,
-        latestGameAt: await getChessComLatestGameTimestamp(record.username),
+        ...record,
+        accounts,
+        source: accounts[0]?.source ?? record.source,
+        username: accounts[0]?.username ?? record.username,
+        lastCheckedAt: checkedTimes.length > 0 ? Math.max(...checkedTimes) : record.lastCheckedAt,
+        lastUpdatedAt: updatedTimes.length > 0 ? Math.max(...updatedTimes) : record.lastUpdatedAt,
     };
 }
 
-function markRecordChecked(
+function markAccountChecked(
     setUpdateRecords: SetOnlineDatabaseUpdateRecords,
     record: OnlineDatabaseUpdateRecord,
+    account: OnlineDatabaseUpdateAccount,
     lastCheckedAt: number,
     lastKnownGameCount?: number | null,
 ) {
-    setUpdateRecords((records) =>
-        upsertOnlineDatabaseUpdateRecord(records, {
-            ...record,
-            lastCheckedAt,
-            lastKnownGameCount: lastKnownGameCount ?? record.lastKnownGameCount,
-        }),
-    );
+    const nextRecord = getRecordWithAccount(record, account, {
+        lastCheckedAt,
+        lastKnownGameCount:
+            lastKnownGameCount ?? account.lastKnownGameCount ?? record.lastKnownGameCount,
+    });
+    setUpdateRecords((records) => upsertOnlineDatabaseUpdateRecord(records, nextRecord));
+    return nextRecord;
 }
 
 async function maybeUpdateCandidate({
@@ -152,105 +165,142 @@ async function maybeUpdateCandidate({
 }): Promise<OnlineDatabaseManualUpdateResult> {
     const { database, record } = candidate;
     const now = Date.now();
-
-    if (
-        !skipRecentCheck &&
-        record.lastCheckedAt &&
-        now - record.lastCheckedAt < ONLINE_DATABASE_CHECK_INTERVAL_MS
-    ) {
-        return {
-            updated: false,
-            checkedAt: record.lastCheckedAt,
-            remoteGameCount: record.lastKnownGameCount,
-            latestGameAt: null,
-        };
-    }
-
     const lastGameDate = await getLastOnlineDatabaseGameDate(database.file);
-    const remoteStatus = await getRemoteGameStatus(record, sessions);
-    if (remoteStatus.gameCount === null && remoteStatus.latestGameAt === null) {
-        markRecordChecked(setUpdateRecords, record, now);
-        return {
-            updated: false,
-            checkedAt: now,
-            remoteGameCount: remoteStatus.gameCount,
-            latestGameAt: remoteStatus.latestGameAt,
-        };
-    }
-
-    const lastKnownRemoteCount = record.lastKnownGameCount ?? database.game_count;
-    const hasNewGamesByCount =
-        remoteStatus.gameCount !== null &&
-        remoteStatus.gameCount > Math.max(database.game_count, lastKnownRemoteCount);
-    const hasNewGamesByDate =
-        remoteStatus.latestGameAt !== null &&
-        (lastGameDate === null || remoteStatus.latestGameAt > lastGameDate);
-    const hasNewGames = hasNewGamesByCount || hasNewGamesByDate;
-    if (!hasNewGames) {
-        markRecordChecked(setUpdateRecords, record, now, remoteStatus.gameCount);
-        return {
-            updated: false,
-            checkedAt: now,
-            remoteGameCount: remoteStatus.gameCount,
-            latestGameAt: remoteStatus.latestGameAt,
-        };
-    }
-
-    markRecordChecked(setUpdateRecords, record, now);
-
-    if (isConversionInProgress()) {
-        return {
-            updated: false,
-            checkedAt: now,
-            remoteGameCount: remoteStatus.gameCount,
-            latestGameAt: remoteStatus.latestGameAt,
-        };
-    }
+    let currentRecord = record;
+    const accounts = getOnlineDatabaseUpdateAccounts(currentRecord);
+    let updated = false;
+    let latestCheckedAt = currentRecord.lastCheckedAt ?? now;
+    let remoteGameCount: number | null = null;
+    let latestGameAt: number | null = null;
 
     try {
-        await importOnlineGamesToDatabase({
-            source: record.source,
-            username: record.username,
-            databaseDir,
-            dbPath: database.file,
-            title: database.title,
-            description: database.description,
-            since: lastGameDate,
-            remainingGames:
-                remoteStatus.gameCount === null
-                    ? 0
-                    : Math.max(remoteStatus.gameCount - database.game_count, 0),
-            token:
-                record.source === "lichess"
-                    ? getLichessToken(sessions, record.username)
-                    : undefined,
-            setConversionState,
-        });
-        await commands.clearGames();
-        const updatedDatabase = successfulDatabases(await getDatabases()).find(
-            (nextDatabase) => nextDatabase.file === database.file,
-        );
-        const updatedGameCount = updatedDatabase?.game_count ?? database.game_count;
-        const importedNewGames = updatedGameCount > database.game_count;
-        const updatedAt = Date.now();
+        for (const account of accounts) {
+            const accountLastCheckedAt = account.lastCheckedAt ?? currentRecord.lastCheckedAt;
+            if (
+                !skipRecentCheck &&
+                accountLastCheckedAt &&
+                now - accountLastCheckedAt < ONLINE_DATABASE_CHECK_INTERVAL_MS
+            ) {
+                latestCheckedAt = Math.max(latestCheckedAt, accountLastCheckedAt);
+                continue;
+            }
 
-        setUpdateRecords((records) =>
-            upsertOnlineDatabaseUpdateRecord(records, {
-                ...record,
+            const remoteStatus = await getRemoteGameStatus(account, sessions);
+            if (remoteStatus.gameCount !== null) {
+                remoteGameCount = (remoteGameCount ?? 0) + remoteStatus.gameCount;
+            }
+            if (remoteStatus.latestGameAt !== null) {
+                latestGameAt =
+                    latestGameAt === null
+                        ? remoteStatus.latestGameAt
+                        : Math.max(latestGameAt, remoteStatus.latestGameAt);
+            }
+
+            if (remoteStatus.gameCount === null && remoteStatus.latestGameAt === null) {
+                currentRecord = markAccountChecked(setUpdateRecords, currentRecord, account, now);
+                latestCheckedAt = now;
+                continue;
+            }
+
+            const isLegacySingleAccount = !currentRecord.accounts?.length && accounts.length === 1;
+            const lastKnownRemoteCount =
+                account.lastKnownGameCount ??
+                (isLegacySingleAccount
+                    ? (currentRecord.lastKnownGameCount ?? database.game_count)
+                    : null);
+            const hasNewGamesByCount =
+                remoteStatus.gameCount !== null &&
+                lastKnownRemoteCount !== null &&
+                remoteStatus.gameCount > lastKnownRemoteCount;
+            const sourceLastImportedAt =
+                account.lastImportedAt ??
+                (isLegacySingleAccount ? lastGameDate : (account.lastUpdatedAt ?? null));
+            const hasNewGamesByDate =
+                remoteStatus.latestGameAt !== null &&
+                (sourceLastImportedAt === null || remoteStatus.latestGameAt > sourceLastImportedAt);
+            const hasNewGames = hasNewGamesByCount || hasNewGamesByDate;
+
+            if (!hasNewGames) {
+                currentRecord = markAccountChecked(
+                    setUpdateRecords,
+                    currentRecord,
+                    account,
+                    now,
+                    remoteStatus.gameCount,
+                );
+                latestCheckedAt = now;
+                continue;
+            }
+
+            currentRecord = markAccountChecked(setUpdateRecords, currentRecord, account, now);
+            latestCheckedAt = now;
+
+            if (isConversionInProgress()) {
+                continue;
+            }
+
+            const beforeUpdate = successfulDatabases(await getDatabases()).find(
+                (nextDatabase) => nextDatabase.file === database.file,
+            );
+            const beforeGameCount = beforeUpdate?.game_count ?? database.game_count;
+
+            await importOnlineGamesToDatabase({
+                source: account.source,
+                username: account.username,
+                databaseDir,
+                dbPath: database.file,
+                title: database.title,
+                description: database.description,
+                since: sourceLastImportedAt,
+                remainingGames:
+                    remoteStatus.gameCount === null || lastKnownRemoteCount === null
+                        ? 0
+                        : Math.max(remoteStatus.gameCount - lastKnownRemoteCount, 0),
+                token:
+                    account.source === "lichess"
+                        ? getLichessToken(sessions, account.username)
+                        : undefined,
+                setConversionState,
+            });
+            await commands.deleteDuplicatedGames(database.file);
+            await commands.clearGames();
+            const updatedDatabase = successfulDatabases(await getDatabases()).find(
+                (nextDatabase) => nextDatabase.file === database.file,
+            );
+            const updatedGameCount = updatedDatabase?.game_count ?? beforeGameCount;
+            const importedNewGames = updatedGameCount > beforeGameCount;
+            const updatedAt = Date.now();
+
+            const nextRecord = {
+                ...getRecordWithAccount(currentRecord, account, {
+                    lastCheckedAt: updatedAt,
+                    lastUpdatedAt: importedNewGames
+                        ? updatedAt
+                        : (account.lastUpdatedAt ?? currentRecord.lastUpdatedAt),
+                    lastKnownGameCount: remoteStatus.gameCount ?? lastKnownRemoteCount,
+                    lastImportedAt:
+                        remoteStatus.latestGameAt ??
+                        (importedNewGames ? updatedAt : (sourceLastImportedAt ?? updatedAt)),
+                }),
                 title: updatedDatabase?.title ?? database.title,
                 description: updatedDatabase?.description ?? database.description,
-                lastCheckedAt: updatedAt,
-                lastUpdatedAt: importedNewGames ? updatedAt : record.lastUpdatedAt,
-                lastKnownGameCount: importedNewGames
-                    ? updatedGameCount
-                    : (record.lastKnownGameCount ?? updatedGameCount),
-            }),
+                lastKnownGameCount: updatedGameCount,
+                lastUpdatedAt: importedNewGames ? updatedAt : currentRecord.lastUpdatedAt,
+            };
+
+            setUpdateRecords((records) => upsertOnlineDatabaseUpdateRecord(records, nextRecord));
+            currentRecord = nextRecord;
+            updated = updated || importedNewGames;
+        }
+
+        const latestDatabase = successfulDatabases(await getDatabases()).find(
+            (nextDatabase) => nextDatabase.file === database.file,
         );
         return {
-            updated: importedNewGames,
-            checkedAt: updatedAt,
-            remoteGameCount: updatedGameCount,
-            latestGameAt: remoteStatus.latestGameAt,
+            updated,
+            checkedAt: latestCheckedAt,
+            remoteGameCount: latestDatabase?.game_count ?? remoteGameCount,
+            latestGameAt,
         };
     } finally {
         resetDatabaseConversionState(setConversionState);

@@ -376,6 +376,7 @@ export const selectedDatabaseAtom = atomWithStorage<SuccessDatabaseInfo | null>(
 export type OnlineDatabaseUpdateRecord = {
     source: OnlineGameSource;
     username: string;
+    accounts?: OnlineDatabaseUpdateAccount[];
     dbPath: string;
     title: string;
     description?: string | null;
@@ -383,6 +384,15 @@ export type OnlineDatabaseUpdateRecord = {
     lastCheckedAt: number | null;
     lastUpdatedAt: number | null;
     lastKnownGameCount: number | null;
+};
+
+export type OnlineDatabaseUpdateAccount = {
+    source: OnlineGameSource;
+    username: string;
+    lastCheckedAt?: number | null;
+    lastUpdatedAt?: number | null;
+    lastKnownGameCount?: number | null;
+    lastImportedAt?: number | null;
 };
 
 export type OnlineDatabaseUpdateRecords = Record<string, OnlineDatabaseUpdateRecord>;

@@ -2,10 +2,20 @@ import type { SetStateAction } from "react";
 import { basename, resolve } from "@tauri-apps/api/path";
 import { commands, events } from "@/bindings";
 import type { DatabaseInfo } from "@/bindings";
-import { downloadChessCom } from "@/utils/chess.com/api";
-import { downloadLichess } from "@/utils/lichess/api";
+import {
+    downloadChessCom,
+    getChessComAccountWithOptions,
+    getChessComGameCount,
+    getChessComLatestGameTimestamp,
+} from "@/utils/chess.com/api";
+import {
+    downloadLichess,
+    getLichessAccount,
+    getLichessDownloadGameCount,
+} from "@/utils/lichess/api";
 import type {
     DatabaseConversionState,
+    OnlineDatabaseUpdateAccount,
     OnlineDatabaseUpdateRecord,
     OnlineDatabaseUpdateRecords,
 } from "@/state/atoms";
@@ -31,8 +41,49 @@ type ImportOnlineGamesOptions = {
     setConversionState: SetDatabaseConversionState;
 };
 
+type ImportOnlineGameAccountsOptions = {
+    accounts: (OnlineGameAccount & { token?: string })[];
+    databaseDir: string;
+    dbPath: string;
+    title: string;
+    description?: string | null;
+    setConversionState: SetDatabaseConversionState;
+};
+
+export type OnlineGameAccount = Pick<OnlineDatabaseUpdateAccount, "source" | "username">;
+
+export type OnlineGameAccountStatus = {
+    gameCount: number | null;
+    latestGameAt: number | null;
+};
+
 export function getOnlineGameSourceLabel(source: OnlineGameSource) {
     return source === "lichess" ? "Lichess" : "Chess.com";
+}
+
+export function getOnlineDatabaseUpdateAccounts(
+    record: OnlineDatabaseUpdateRecord,
+): OnlineDatabaseUpdateAccount[] {
+    if (record.accounts?.length) {
+        return record.accounts;
+    }
+
+    return [
+        {
+            source: record.source,
+            username: record.username,
+            lastCheckedAt: record.lastCheckedAt,
+            lastUpdatedAt: record.lastUpdatedAt,
+            lastKnownGameCount: record.lastKnownGameCount,
+            lastImportedAt: record.lastUpdatedAt,
+        },
+    ];
+}
+
+export function getOnlineDatabaseUpdateLabel(record: OnlineDatabaseUpdateRecord) {
+    return getOnlineDatabaseUpdateAccounts(record)
+        .map((account) => `${getOnlineGameSourceLabel(account.source)} ${account.username}`)
+        .join(" + ");
 }
 
 export function getOnlineGameImportId(source: OnlineGameSource, username: string) {
@@ -49,6 +100,14 @@ export function getOnlineGameDatabaseFilename(source: OnlineGameSource, username
 
 export function getDefaultOnlineGameDatabaseTitle(source: OnlineGameSource, username: string) {
     return `${username} ${getOnlineGameSourceLabel(source)}`;
+}
+
+export function getDefaultMergedOnlineGameDatabaseTitle(accounts: OnlineGameAccount[]) {
+    const usernames = Array.from(
+        new Set(accounts.map((account) => account.username.trim()).filter(Boolean)),
+    );
+    const name = usernames.length > 0 ? usernames.join(" + ") : "Merged";
+    return `${name} Online Games`;
 }
 
 export function getOnlineGameIdentityFromFilename(filename: string) {
@@ -113,10 +172,54 @@ export function upsertOnlineDatabaseUpdateRecord(
         [record.dbPath]: {
             ...previous,
             ...record,
+            accounts: record.accounts ?? previous?.accounts,
             lastCheckedAt: record.lastCheckedAt ?? previous?.lastCheckedAt ?? null,
             lastUpdatedAt: record.lastUpdatedAt ?? previous?.lastUpdatedAt ?? null,
             lastKnownGameCount: record.lastKnownGameCount ?? previous?.lastKnownGameCount ?? null,
         },
+    };
+}
+
+export async function getOnlineGameAccountStatus(
+    account: OnlineGameAccount,
+    token?: string,
+): Promise<OnlineGameAccountStatus> {
+    if (account.source === "lichess") {
+        const lichessAccount = await getLichessAccount({
+            username: account.username,
+            token,
+            silent: true,
+        });
+        return {
+            gameCount: lichessAccount ? getLichessDownloadGameCount(lichessAccount) : null,
+            latestGameAt: null,
+        };
+    }
+
+    const stats = await getChessComAccountWithOptions(account.username, { silent: true });
+    return {
+        gameCount: stats ? getChessComGameCount(stats) : null,
+        latestGameAt: await getChessComLatestGameTimestamp(account.username),
+    };
+}
+
+export async function createOnlineDatabaseUpdateAccount({
+    source,
+    username,
+    token,
+    importedAt = Date.now(),
+}: OnlineGameAccount & {
+    token?: string;
+    importedAt?: number;
+}): Promise<OnlineDatabaseUpdateAccount> {
+    const status = await getOnlineGameAccountStatus({ source, username }, token);
+    return {
+        source,
+        username,
+        lastCheckedAt: importedAt,
+        lastUpdatedAt: importedAt,
+        lastKnownGameCount: status.gameCount,
+        lastImportedAt: status.latestGameAt ?? importedAt,
     };
 }
 
@@ -219,4 +322,54 @@ export async function importOnlineGamesToDatabase({
         progress: 100,
         finished: true,
     });
+}
+
+export async function importOnlineGameAccountsToDatabase({
+    accounts,
+    databaseDir,
+    dbPath,
+    title,
+    description,
+    setConversionState,
+}: ImportOnlineGameAccountsOptions): Promise<OnlineDatabaseUpdateAccount[]> {
+    const importedAccounts: OnlineDatabaseUpdateAccount[] = [];
+
+    for (const account of accounts) {
+        await importOnlineGamesToDatabase({
+            source: account.source,
+            username: account.username,
+            databaseDir,
+            dbPath,
+            title,
+            description,
+            since: null,
+            token: account.token,
+            setConversionState,
+        });
+
+        const importedAt = Date.now();
+        try {
+            importedAccounts.push(
+                await createOnlineDatabaseUpdateAccount({
+                    source: account.source,
+                    username: account.username,
+                    token: account.token,
+                    importedAt,
+                }),
+            );
+        } catch {
+            importedAccounts.push({
+                source: account.source,
+                username: account.username,
+                lastCheckedAt: importedAt,
+                lastUpdatedAt: importedAt,
+                lastKnownGameCount: null,
+                lastImportedAt: importedAt,
+            });
+        }
+    }
+
+    await commands.deleteDuplicatedGames(dbPath);
+    await commands.deleteEmptyGames(dbPath);
+    return importedAccounts;
 }

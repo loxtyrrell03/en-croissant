@@ -36,10 +36,12 @@ import {
 import { getDatabases, type SuccessDatabaseInfo, useDefaultDatabases } from "@/utils/db";
 import { capitalize, formatBytes, formatNumber } from "@/utils/format";
 import {
+  getDefaultMergedOnlineGameDatabaseTitle,
   getDefaultOnlineGameDatabaseTitle,
   getOnlineGameSourceLabel,
-  importOnlineGamesToDatabase,
+  importOnlineGameAccountsToDatabase,
   resetDatabaseConversionState,
+  type OnlineGameAccount,
   type OnlineGameSource,
   upsertOnlineDatabaseUpdateRecord,
 } from "@/utils/onlineGameImport";
@@ -48,8 +50,10 @@ import FileInput from "../common/FileInput";
 import ProgressButton from "../common/ProgressButton";
 
 type OnlineDatabaseFormValues = {
-  source: OnlineGameSource;
+  source: OnlineGameSource | "merged";
   username: string;
+  lichessUsername: string;
+  chessComUsername: string;
   title: string;
   description: string;
   autoUpdate: boolean;
@@ -79,12 +83,26 @@ function AddDatabase({
 
   const { defaultDatabases, error, isLoading } = useDefaultDatabases(opened);
 
-  function getOnlineDatabaseTitle(values: OnlineDatabaseFormValues) {
-    const username = values.username.trim();
-    return (
-      values.title.trim() ||
-      (username ? getDefaultOnlineGameDatabaseTitle(values.source, username) : "")
+  function getOnlineDatabaseAccounts(values: OnlineDatabaseFormValues): OnlineGameAccount[] {
+    if (values.source === "merged") {
+      const accounts: OnlineGameAccount[] = [
+        { source: "lichess", username: values.lichessUsername.trim() },
+        { source: "chesscom", username: values.chessComUsername.trim() },
+      ];
+      return accounts.filter((account) => account.username);
+    }
+
+    return [{ source: values.source, username: values.username.trim() }].filter(
+      (account) => account.username,
     );
+  }
+
+  function getOnlineDatabaseTitle(values: OnlineDatabaseFormValues) {
+    const accounts = getOnlineDatabaseAccounts(values);
+    if (values.title.trim()) return values.title.trim();
+    if (accounts.length === 0) return "";
+    if (values.source === "merged") return getDefaultMergedOnlineGameDatabaseTitle(accounts);
+    return getDefaultOnlineGameDatabaseTitle(accounts[0]!.source, accounts[0]!.username);
   }
 
   function getLichessToken(username: string) {
@@ -93,6 +111,13 @@ function AddDatabase({
         session.lichess?.username.toLowerCase() === username.toLowerCase() &&
         session.lichess.accessToken,
     )?.lichess?.accessToken;
+  }
+
+  function withAccountTokens(accounts: OnlineGameAccount[]) {
+    return accounts.map((account) => ({
+      ...account,
+      token: account.source === "lichess" ? getLichessToken(account.username) : undefined,
+    }));
   }
 
   async function convertDB(path: string, title: string, description?: string) {
@@ -154,14 +179,22 @@ function AddDatabase({
     initialValues: {
       source: "lichess",
       username: "",
+      lichessUsername: "",
+      chessComUsername: "",
       title: "",
       description: "",
       autoUpdate: true,
     },
 
     validate: {
-      username: (value) => {
-        if (!value.trim()) return t("Home.Accounts.EnterUsername");
+      username: (value, values) => {
+        if (values.source !== "merged" && !value.trim()) return t("Home.Accounts.EnterUsername");
+      },
+      lichessUsername: (value, values) => {
+        if (values.source === "merged" && !value.trim()) return "Enter your Lichess username";
+      },
+      chessComUsername: (value, values) => {
+        if (values.source === "merged" && !value.trim()) return "Enter your Chess.com username";
       },
       title: (_value, values) => {
         const title = getOnlineDatabaseTitle(values);
@@ -177,13 +210,15 @@ function AddDatabase({
     },
   });
 
+  const onlineAccounts = getOnlineDatabaseAccounts(onlineForm.values);
   const onlineTitlePlaceholder =
-    onlineForm.values.username.trim() !== ""
-      ? getDefaultOnlineGameDatabaseTitle(
-          onlineForm.values.source,
-          onlineForm.values.username.trim(),
-        )
-      : getOnlineGameSourceLabel(onlineForm.values.source);
+    onlineAccounts.length > 0
+      ? onlineForm.values.source === "merged"
+        ? getDefaultMergedOnlineGameDatabaseTitle(onlineAccounts)
+        : getDefaultOnlineGameDatabaseTitle(onlineAccounts[0]!.source, onlineAccounts[0]!.username)
+      : onlineForm.values.source === "merged"
+        ? "Merged online games"
+        : getOnlineGameSourceLabel(onlineForm.values.source);
 
   return (
     <Modal
@@ -230,23 +265,21 @@ function AddDatabase({
             onSubmit={onlineForm.onSubmit(async (values) => {
               if (disableLocalConversion || onlineImporting) return;
 
-              const source = values.source;
-              const username = values.username.trim();
+              const accounts = getOnlineDatabaseAccounts(values);
+              if (accounts.length === 0) return;
               const title = getOnlineDatabaseTitle(values);
               const dbPath = await resolve(databaseDir, `${title}.db3`);
 
               setOnlineImporting(true);
               setOpened(false);
               try {
-                await importOnlineGamesToDatabase({
-                  source,
-                  username,
+                const description = values.description.trim() || null;
+                const importedAccounts = await importOnlineGameAccountsToDatabase({
+                  accounts: withAccountTokens(accounts),
                   databaseDir,
                   dbPath,
                   title,
-                  description: values.description.trim() || null,
-                  since: null,
-                  token: source === "lichess" ? getLichessToken(username) : undefined,
+                  description,
                   setConversionState,
                 });
                 const nextDatabases = await getDatabases();
@@ -256,11 +289,12 @@ function AddDatabase({
                 setDatabases(nextDatabases);
                 setOnlineDatabaseUpdates((records) =>
                   upsertOnlineDatabaseUpdateRecord(records, {
-                    source,
-                    username,
+                    source: importedAccounts[0]!.source,
+                    username: importedAccounts[0]!.username,
+                    accounts: importedAccounts,
                     dbPath,
                     title,
-                    description: values.description.trim() || null,
+                    description,
                     autoUpdate: values.autoUpdate,
                     lastCheckedAt: Date.now(),
                     lastUpdatedAt: Date.now(),
@@ -285,19 +319,35 @@ function AddDatabase({
                   data={[
                     { label: "Lichess", value: "lichess" },
                     { label: "Chess.com", value: "chesscom" },
+                    { label: "Merged", value: "merged" },
                   ]}
                   value={onlineForm.values.source}
                   onChange={(value) =>
-                    onlineForm.setFieldValue("source", value as OnlineGameSource)
+                    onlineForm.setFieldValue("source", value as OnlineGameSource | "merged")
                   }
                 />
               </InputWrapper>
 
-              <TextInput
-                label={t("Home.Accounts.Username")}
-                withAsterisk
-                {...onlineForm.getInputProps("username")}
-              />
+              {onlineForm.values.source === "merged" ? (
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                  <TextInput
+                    label="Lichess username"
+                    withAsterisk
+                    {...onlineForm.getInputProps("lichessUsername")}
+                  />
+                  <TextInput
+                    label="Chess.com username"
+                    withAsterisk
+                    {...onlineForm.getInputProps("chessComUsername")}
+                  />
+                </SimpleGrid>
+              ) : (
+                <TextInput
+                  label={t("Home.Accounts.Username")}
+                  withAsterisk
+                  {...onlineForm.getInputProps("username")}
+                />
+              )}
 
               <TextInput
                 label={t("Common.Name")}
