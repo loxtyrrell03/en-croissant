@@ -97,6 +97,7 @@ import {
   practiceAutoDifficultyAtom,
   practiceCardStartTimeAtom,
   practiceSessionStatsAtom,
+  type PracticeState,
   practiceStateAtom,
 } from "@/state/atoms";
 import type { TreeStore } from "@/state/store/tree";
@@ -1022,6 +1023,28 @@ function sameReviewPosition(a: string, b: string) {
   return a.split(" ").slice(0, 4).join(" ") === b.split(" ").slice(0, 4).join(" ");
 }
 
+function mistakeReviewAttemptColor(
+  label: NonNullable<PracticeState["mistakeReviewLabel"]> | undefined,
+  phase: PracticeState["phase"],
+) {
+  switch (label) {
+    case "best":
+      return "green";
+    case "good":
+      return "teal";
+    case "okay":
+      return "blue";
+    case "inaccuracy":
+      return "yellow";
+    case "mistake":
+      return "orange";
+    case "blunder":
+      return "red";
+    default:
+      return phase === "correct" ? "green" : "red";
+  }
+}
+
 function parseReviewCorrectMove(position: Position, value: string) {
   const input = value.trim();
   if (!input) return null;
@@ -1478,17 +1501,39 @@ function OpeningReviewPanel({
   }, [deck.positions.length, initialPractice, loaded, startDuePractice, startFullPractice]);
 
   function handleQualityRating(grade: 1 | 2 | 3 | 4) {
-    if (practiceState.phase !== "correct" || practiceState.positionIndex === undefined) return;
+    if (
+      (practiceState.phase !== "correct" &&
+        !(isMistakeReview && practiceState.phase === "incorrect")) ||
+      practiceState.positionIndex === undefined
+    ) {
+      return;
+    }
 
     const positionIndex = practiceState.positionIndex;
-    updateCardPerformance(setDeck, positionIndex, deck.positions[positionIndex].card, grade);
+    const position = deck.positions[positionIndex];
+    if (!position) return;
+
+    const remainingPositions =
+      sessionStats.remainingPositions.length > 0
+        ? sessionStats.remainingPositions.filter((index) => index !== positionIndex)
+        : sessionStats.remainingPositions;
+    const wasCorrect = practiceState.phase === "correct";
+
+    updateCardPerformance(setDeck, positionIndex, position.card, grade);
     setSessionStats((current) => ({
       ...current,
-      correct: current.correct + 1,
-      streak: current.streak + 1,
-      bestStreak: Math.max(current.bestStreak, current.streak + 1),
+      remainingPositions,
+      correct: wasCorrect ? current.correct + 1 : current.correct,
+      incorrect: wasCorrect ? current.incorrect : current.incorrect + 1,
+      streak: wasCorrect ? current.streak + 1 : 0,
+      bestStreak: wasCorrect
+        ? Math.max(current.bestStreak, current.streak + 1)
+        : current.bestStreak,
     }));
-    newPractice();
+    newPractice(
+      { mode: sessionStats.mode, remainingPositions },
+      sessionStats.remainingPositions.length > 0 ? { scopeIndices: remainingPositions } : undefined,
+    );
   }
 
   function skipCard() {
@@ -1557,6 +1602,10 @@ function OpeningReviewPanel({
     setSessionStats,
   ]);
 
+  const canRateAttempt =
+    sessionStats.mode !== "full" &&
+    (practiceState.phase === "correct" || (isMistakeReview && practiceState.phase === "incorrect"));
+
   useEffect(() => {
     if (isMistakeReview || practiceState.phase !== "correct") return undefined;
 
@@ -1599,20 +1648,22 @@ function OpeningReviewPanel({
   ]);
 
   useHotkeys("1", () => handleQualityRating(1), {
-    enabled: !isMistakeReview && practiceState.phase === "correct",
+    enabled: canRateAttempt,
   });
   useHotkeys("2", () => handleQualityRating(2), {
-    enabled: !isMistakeReview && practiceState.phase === "correct",
+    enabled: canRateAttempt,
   });
   useHotkeys("3", () => handleQualityRating(3), {
-    enabled: !isMistakeReview && practiceState.phase === "correct",
+    enabled: canRateAttempt,
   });
   useHotkeys("4", () => handleQualityRating(4), {
-    enabled: !isMistakeReview && practiceState.phase === "correct",
+    enabled: canRateAttempt,
   });
-  useHotkeys("space", () => skipCard(), { enabled: practiceState.phase === "incorrect" });
+  useHotkeys("space", () => skipCard(), {
+    enabled: practiceState.phase === "incorrect" && !canRateAttempt,
+  });
   useHotkeys("space", () => advanceMistakeReviewCorrect(), {
-    enabled: isMistakeReview && practiceState.phase === "correct",
+    enabled: isMistakeReview && practiceState.phase === "correct" && sessionStats.mode === "full",
   });
   useHotkeys("space", () => advanceFullPracticeCorrect(), {
     enabled: !isMistakeReview && practiceState.phase === "correct" && sessionStats.mode === "full",
@@ -1679,18 +1730,36 @@ function OpeningReviewPanel({
 
   const isBestAlternative = practiceState.moveAssessment === "best";
   const isOkAlternative = practiceState.moveAssessment === "ok";
-  const feedbackColor = isBestAlternative ? "green" : isOkAlternative ? "blue" : "red";
-  const correctFeedbackColor = !isMistakeReview && isOkAlternative ? "blue" : "green";
+  const mistakeFeedbackColor = mistakeReviewAttemptColor(
+    practiceState.mistakeReviewLabel,
+    practiceState.phase,
+  );
+  const feedbackColor = isMistakeReview
+    ? mistakeFeedbackColor
+    : isBestAlternative
+      ? "green"
+      : isOkAlternative
+        ? "blue"
+        : "red";
+  const correctFeedbackColor = isMistakeReview
+    ? mistakeFeedbackColor
+    : !isMistakeReview && isOkAlternative
+      ? "blue"
+      : "green";
   const correctFeedbackTitle =
-    !isMistakeReview && isOkAlternative && practiceState.playedMove
-      ? `${practiceState.playedMove} is good`
-      : !isMistakeReview && isBestAlternative && practiceState.playedMove
-        ? `${practiceState.playedMove} is best`
-        : "Correct";
+    isMistakeReview && practiceState.mistakeReviewLabel
+      ? mistakeReviewSeverityLabel(practiceState.mistakeReviewLabel)
+      : !isMistakeReview && isOkAlternative && practiceState.playedMove
+        ? `${practiceState.playedMove} is good`
+        : !isMistakeReview && isBestAlternative && practiceState.playedMove
+          ? `${practiceState.playedMove} is best`
+          : "Correct";
   const correctFeedbackDetail =
-    !isMistakeReview && isOkAlternative && practiceState.bestMove
-      ? `${practiceState.bestMove} is best.`
-      : undefined;
+    isMistakeReview && practiceState.bestMove
+      ? `Best move: ${practiceState.bestMove}`
+      : !isMistakeReview && isOkAlternative && practiceState.bestMove
+        ? `${practiceState.bestMove} is best.`
+        : undefined;
   const feedbackTitle = isMistakeReview
     ? practiceState.mistakeReviewLabel
       ? mistakeReviewSeverityLabel(practiceState.mistakeReviewLabel)
@@ -1702,6 +1771,24 @@ function OpeningReviewPanel({
         : "Incorrect";
   const roundedMoveLoss =
     practiceState.moveLossCp === undefined ? undefined : Math.round(practiceState.moveLossCp);
+  const isTraining = practiceState.phase !== "idle";
+  const sessionCompleted = sessionStats.correct + sessionStats.incorrect;
+  const sessionRemaining =
+    sessionStats.mode === "full" || sessionStats.remainingPositions.length > 0
+      ? sessionStats.remainingPositions.length
+      : Math.max(0, stats.due + stats.unseen);
+  const sessionTotal = sessionCompleted + sessionRemaining;
+  const sessionProgress = sessionTotal > 0 ? (sessionCompleted / sessionTotal) * 100 : 0;
+  const ratingPanelDetail =
+    isMistakeReview && practiceState.phase === "incorrect"
+      ? `Best move: ${practiceState.bestMove ?? practiceState.answer ?? "-"}`
+      : correctFeedbackDetail;
+  const ratingPanelIcon =
+    isMistakeReview && practiceState.phase === "incorrect"
+      ? "x"
+      : !isMistakeReview && isOkAlternative
+        ? "bulb"
+        : "check";
   const updateMistakeDailySettings = (partial: Partial<MistakeReviewDailySettings>) => {
     if (!mistakeDailySettings || !onMistakeDailySettingsChange) return;
     onMistakeDailySettingsChange({ ...mistakeDailySettings, ...partial });
@@ -1733,51 +1820,81 @@ function OpeningReviewPanel({
             Positions
           </Button>
         </Group>
-        {isMistakeReview && (
+        {isMistakeReview && !isTraining && (
           <MistakeReviewDeckSyncStatus config={mistakeAutoUpdateConfig} deckPath={deckPath} />
         )}
-        {!isMistakeReview && (
+        {!isMistakeReview && !isTraining && (
           <OpeningReviewDeckAutoUpdateControl
             config={autoUpdateConfig}
             onEnabledChange={onAutoUpdateEnabledChange}
           />
         )}
 
-        <Stack gap={3}>
-          <Group justify="space-between">
-            <Text size="xs" fw={600}>
-              Review progress
-            </Text>
-            <Text size="xs" c="dimmed">
-              {stats.total > 0 ? Math.round((stats.practiced / stats.total) * 100) : 0}%
-            </Text>
-          </Group>
-          <Progress.Root size="xs">
-            <Progress.Section
-              value={stats.total ? (stats.practiced / stats.total) * 100 : 0}
-              color="blue"
-            />
-            <Progress.Section
-              value={stats.total ? (stats.due / stats.total) * 100 : 0}
-              color="yellow"
-            />
-            <Progress.Section
-              value={stats.total ? (stats.unseen / stats.total) * 100 : 0}
-              color="gray"
-            />
-          </Progress.Root>
-        </Stack>
+        {isTraining ? (
+          <Paper p="xs" withBorder>
+            <Stack gap={6}>
+              <Group justify="space-between" gap="xs" wrap="nowrap">
+                <Text size="xs" fw={700}>
+                  Review session
+                </Text>
+                <Text size="xs" c="dimmed">
+                  {sessionCompleted}
+                  {sessionTotal > 0 ? ` / ${sessionTotal}` : ""} complete
+                </Text>
+              </Group>
+              <Progress value={sessionProgress} size="xs" />
+              <Group gap={6} grow>
+                <Badge variant="light" color="green">
+                  {sessionStats.correct} correct
+                </Badge>
+                <Badge variant="light" color="red">
+                  {sessionStats.incorrect} retry
+                </Badge>
+                <Badge variant="light" color="blue">
+                  {sessionRemaining} left
+                </Badge>
+              </Group>
+            </Stack>
+          </Paper>
+        ) : (
+          <>
+            <Stack gap={3}>
+              <Group justify="space-between">
+                <Text size="xs" fw={600}>
+                  Review progress
+                </Text>
+                <Text size="xs" c="dimmed">
+                  {stats.total > 0 ? Math.round((stats.practiced / stats.total) * 100) : 0}%
+                </Text>
+              </Group>
+              <Progress.Root size="xs">
+                <Progress.Section
+                  value={stats.total ? (stats.practiced / stats.total) * 100 : 0}
+                  color="blue"
+                />
+                <Progress.Section
+                  value={stats.total ? (stats.due / stats.total) * 100 : 0}
+                  color="yellow"
+                />
+                <Progress.Section
+                  value={stats.total ? (stats.unseen / stats.total) * 100 : 0}
+                  color="gray"
+                />
+              </Progress.Root>
+            </Stack>
 
-        <SimpleGrid cols={3} spacing={6}>
-          <ReviewStat label="Due" value={stats.due} color="yellow" />
-          <ReviewStat label="Unseen" value={stats.unseen} color="gray" />
-          <ReviewStat label="Done" value={stats.practiced} color="blue" />
-        </SimpleGrid>
+            <SimpleGrid cols={3} spacing={6}>
+              <ReviewStat label="Due" value={stats.due} color="yellow" />
+              <ReviewStat label="Unseen" value={stats.unseen} color="gray" />
+              <ReviewStat label="Done" value={stats.practiced} color="blue" />
+            </SimpleGrid>
 
-        <OpeningReviewPrioritySummary
-          positions={deck.positions}
-          onOpenPositions={() => setPositionsOpen(true)}
-        />
+            <OpeningReviewPrioritySummary
+              positions={deck.positions}
+              onOpenPositions={() => setPositionsOpen(true)}
+            />
+          </>
+        )}
 
         {practiceState.phase === "idle" && (
           <Stack gap="xs">
@@ -1916,13 +2033,13 @@ function OpeningReviewPanel({
           </Paper>
         )}
 
-        {!isMistakeReview && practiceState.phase === "correct" && sessionStats.mode !== "full" && (
+        {canRateAttempt && (
           <ReviewQualityPanel
             onRate={handleQualityRating}
             title={correctFeedbackTitle}
-            detail={correctFeedbackDetail}
+            detail={ratingPanelDetail}
             color={correctFeedbackColor}
-            icon={isOkAlternative ? "bulb" : "check"}
+            icon={ratingPanelIcon}
             card={
               practiceState.positionIndex !== undefined
                 ? deck.positions[practiceState.positionIndex].card
@@ -1932,7 +2049,7 @@ function OpeningReviewPanel({
           />
         )}
 
-        {practiceState.phase === "correct" && (isMistakeReview || sessionStats.mode === "full") && (
+        {practiceState.phase === "correct" && sessionStats.mode === "full" && (
           <Paper p="sm" withBorder>
             <Stack gap="xs" align="center">
               <Group gap="xs">
@@ -1954,7 +2071,7 @@ function OpeningReviewPanel({
           </Paper>
         )}
 
-        {practiceState.phase === "incorrect" && (
+        {practiceState.phase === "incorrect" && !canRateAttempt && (
           <Paper p="sm" withBorder>
             <Stack gap="xs" align="center">
               <Group gap="xs">
@@ -4469,8 +4586,8 @@ function ReviewQualityPanel({
   onRate: (grade: 1 | 2 | 3 | 4) => void;
   title?: string;
   detail?: string;
-  color?: "blue" | "green";
-  icon?: "bulb" | "check";
+  color?: "blue" | "green" | "orange" | "red" | "teal" | "yellow";
+  icon?: "bulb" | "check" | "x";
   card?: import("ts-fsrs").Card;
   timeTaken?: number;
 }) {
@@ -4482,7 +4599,13 @@ function ReviewQualityPanel({
       <Stack gap="sm" align="center">
         <Group gap="xs">
           <ThemeIcon size="md" color={feedbackColor} variant="light" radius="xl">
-            {icon === "bulb" ? <IconBulb size={16} /> : <IconCheck size={16} />}
+            {icon === "bulb" ? (
+              <IconBulb size={16} />
+            ) : icon === "x" ? (
+              <IconX size={16} />
+            ) : (
+              <IconCheck size={16} />
+            )}
           </ThemeIcon>
           <Text fw={600} c={feedbackColor}>
             {title ?? "Correct"}

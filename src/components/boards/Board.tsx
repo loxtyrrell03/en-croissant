@@ -750,9 +750,6 @@ function Board({
           const feedbackTitle =
             moveAssessment.label.charAt(0).toUpperCase() + moveAssessment.label.slice(1);
 
-          if (sessionStats.mode !== "full") {
-            updateCardPerformance(setDeck, i, c.card, moveAssessment.passed ? 3 : 1);
-          }
           setPracticeState({
             phase: moveAssessment.passed ? "correct" : "incorrect",
             currentFen: c.fen,
@@ -775,17 +772,8 @@ function Board({
             engineName: moveAssessment.engineName,
             positionIndex: i,
             timeTaken,
-            resultRecorded: moveAssessment.passed,
+            resultRecorded: false,
           });
-          setSessionStats((prev) => ({
-            ...prev,
-            correct: moveAssessment.passed ? prev.correct + 1 : prev.correct,
-            incorrect: moveAssessment.passed ? prev.incorrect : prev.incorrect + 1,
-            streak: moveAssessment.passed ? prev.streak + 1 : 0,
-            bestStreak: moveAssessment.passed
-              ? Math.max(prev.bestStreak, prev.streak + 1)
-              : prev.bestStreak,
-          }));
           notifications.show({
             title: feedbackTitle,
             message: `${moveAssessment.bestMoveSan} was the engine move to remember.`,
@@ -881,19 +869,8 @@ function Board({
           engineName: isMistakeReview ? c.mistakeReview?.engineName : undefined,
           positionIndex: i,
           timeTaken,
-          resultRecorded: isMistakeReview ? true : undefined,
+          resultRecorded: false,
         });
-        if (isMistakeReview) {
-          if (sessionStats.mode !== "full") {
-            updateCardPerformance(setDeck, i, c.card, 3);
-          }
-          setSessionStats((prev) => ({
-            ...prev,
-            correct: prev.correct + 1,
-            streak: prev.streak + 1,
-            bestStreak: Math.max(prev.bestStreak, prev.streak + 1),
-          }));
-        }
       }
     } else {
       storeMakeMove({
