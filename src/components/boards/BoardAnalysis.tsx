@@ -1,4 +1,4 @@
-import { Paper, Portal, Stack, Tabs, Tooltip } from "@mantine/core";
+import { Paper, Portal, Stack, Tabs } from "@mantine/core";
 import { useHotkeys, useToggle } from "@mantine/hooks";
 import {
   IconBulb,
@@ -13,7 +13,7 @@ import { useLoaderData } from "@tanstack/react-router";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
 import type { Piece } from "chessops";
 import { useAtom, useAtomValue } from "jotai";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import {
@@ -47,12 +47,36 @@ import EditingCard from "./EditingCard";
 import EngineDockedPanel from "./EngineDockedPanel";
 import EngineKeyboardShortcuts from "./EngineKeyboardShortcuts";
 import EvalListener from "./EvalListener";
+import classes from "./BoardAnalysis.module.css";
 
 const scrollablePanelStyle = {
   minHeight: 0,
   overflowX: "hidden",
   overflowY: "auto",
 } as const;
+
+function BoardAnalysisTab({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <Tabs.Tab
+      aria-label={label}
+      className={classes.boardTab}
+      data-tooltip-label={label}
+      leftSection={icon}
+      title={label}
+      value={value}
+    >
+      {label}
+    </Tabs.Tab>
+  );
+}
 
 function BoardAnalysis() {
   const { t } = useTranslation();
@@ -269,44 +293,44 @@ function BoardAnalysis() {
                 },
               }}
             >
-              <Tabs.List grow>
+              <Tabs.List className={classes.boardTabList} grow>
                 {showPracticeTab && (
-                  <Tooltip label={tabLabels.practice} position="bottom" withArrow withinPortal>
-                    <Tabs.Tab value="practice" leftSection={<IconTargetArrow size="1rem" />}>
-                      {tabLabels.practice}
-                    </Tabs.Tab>
-                  </Tooltip>
+                  <BoardAnalysisTab
+                    icon={<IconTargetArrow size="1rem" />}
+                    label={tabLabels.practice}
+                    value="practice"
+                  />
                 )}
-                <Tooltip label={tabLabels.analysis} position="bottom" withArrow withinPortal>
-                  <Tabs.Tab value="analysis" leftSection={<IconZoomCheck size="1rem" />}>
-                    {tabLabels.analysis}
-                  </Tabs.Tab>
-                </Tooltip>
-                <Tooltip label={tabLabels.database} position="bottom" withArrow withinPortal>
-                  <Tabs.Tab value="database" leftSection={<IconDatabase size="1rem" />}>
-                    {tabLabels.database}
-                  </Tabs.Tab>
-                </Tooltip>
-                <Tooltip label={tabLabels.planExplorer} position="bottom" withArrow withinPortal>
-                  <Tabs.Tab value="plan-explorer" leftSection={<IconRoute size="1rem" />}>
-                    {tabLabels.planExplorer}
-                  </Tabs.Tab>
-                </Tooltip>
-                <Tooltip label={tabLabels.enginePlans} position="bottom" withArrow withinPortal>
-                  <Tabs.Tab value="engine-plans" leftSection={<IconBulb size="1rem" />}>
-                    {tabLabels.enginePlans}
-                  </Tabs.Tab>
-                </Tooltip>
-                <Tooltip label={tabLabels.compare} position="bottom" withArrow withinPortal>
-                  <Tabs.Tab value="compare" leftSection={<IconGitCompare size="1rem" />}>
-                    {tabLabels.compare}
-                  </Tabs.Tab>
-                </Tooltip>
-                <Tooltip label={tabLabels.info} position="bottom" withArrow withinPortal>
-                  <Tabs.Tab value="info" leftSection={<IconInfoCircle size="1rem" />}>
-                    {tabLabels.info}
-                  </Tabs.Tab>
-                </Tooltip>
+                <BoardAnalysisTab
+                  icon={<IconZoomCheck size="1rem" />}
+                  label={tabLabels.analysis}
+                  value="analysis"
+                />
+                <BoardAnalysisTab
+                  icon={<IconDatabase size="1rem" />}
+                  label={tabLabels.database}
+                  value="database"
+                />
+                <BoardAnalysisTab
+                  icon={<IconRoute size="1rem" />}
+                  label={tabLabels.planExplorer}
+                  value="plan-explorer"
+                />
+                <BoardAnalysisTab
+                  icon={<IconBulb size="1rem" />}
+                  label={tabLabels.enginePlans}
+                  value="engine-plans"
+                />
+                <BoardAnalysisTab
+                  icon={<IconGitCompare size="1rem" />}
+                  label={tabLabels.compare}
+                  value="compare"
+                />
+                <BoardAnalysisTab
+                  icon={<IconInfoCircle size="1rem" />}
+                  label={tabLabels.info}
+                  value="info"
+                />
               </Tabs.List>
               {showPracticeTab && (
                 <Tabs.Panel value="practice" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
