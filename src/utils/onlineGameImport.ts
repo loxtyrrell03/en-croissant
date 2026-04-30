@@ -275,12 +275,13 @@ export async function importOnlineGamesToDatabase({
     const pgnPath = await resolve(databaseDir, getOnlineGamePgnFilename(source, username));
     const sourceFileName = await basename(pgnPath);
     const progressId = getOnlineGameImportId(source, username);
+    const hasExpectedDownloadSize = remainingGames > 0;
 
     setConversionState((prev) => ({
         ...prev,
         inProgress: true,
         phase: "downloading",
-        progress: 0,
+        progress: hasExpectedDownloadSize ? 0 : null,
         progressId,
         totalGames: 0,
         totalGamesExpected: null,
@@ -335,6 +336,13 @@ export async function importOnlineGameAccountsToDatabase({
     const importedAccounts: OnlineDatabaseUpdateAccount[] = [];
 
     for (const account of accounts) {
+        let status: OnlineGameAccountStatus | null = null;
+        try {
+            status = await getOnlineGameAccountStatus(account, account.token);
+        } catch {
+            status = null;
+        }
+
         await importOnlineGamesToDatabase({
             source: account.source,
             username: account.username,
@@ -343,30 +351,20 @@ export async function importOnlineGameAccountsToDatabase({
             title,
             description,
             since: null,
+            remainingGames: status?.gameCount ?? 0,
             token: account.token,
             setConversionState,
         });
 
         const importedAt = Date.now();
-        try {
-            importedAccounts.push(
-                await createOnlineDatabaseUpdateAccount({
-                    source: account.source,
-                    username: account.username,
-                    token: account.token,
-                    importedAt,
-                }),
-            );
-        } catch {
-            importedAccounts.push({
-                source: account.source,
-                username: account.username,
-                lastCheckedAt: importedAt,
-                lastUpdatedAt: importedAt,
-                lastKnownGameCount: null,
-                lastImportedAt: importedAt,
-            });
-        }
+        importedAccounts.push({
+            source: account.source,
+            username: account.username,
+            lastCheckedAt: importedAt,
+            lastUpdatedAt: importedAt,
+            lastKnownGameCount: status?.gameCount ?? null,
+            lastImportedAt: status?.latestGameAt ?? importedAt,
+        });
     }
 
     await commands.deleteDuplicatedGames(dbPath);

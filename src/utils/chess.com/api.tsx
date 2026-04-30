@@ -161,7 +161,7 @@ export async function downloadChessCom(player: string, timestamp: number | null)
     return archiveDate >= approximateDate;
   });
 
-  for (const archive of filteredArchives) {
+  for (const [index, archive] of filteredArchives.entries()) {
     info(`Fetching games for ${player} from ${archive}`);
     const response = await fetch(archive, {
       headers: apiHeaders(),
@@ -186,7 +186,7 @@ export async function downloadChessCom(player: string, timestamp: number | null)
     events.progressEvent.emit({
       finished: false,
       id: `chesscom_${player}`,
-      progress: (filteredArchives.indexOf(archive) / filteredArchives.length) * 100,
+      progress: ((index + 1) / filteredArchives.length) * 100,
     });
   }
   events.progressEvent.emit({

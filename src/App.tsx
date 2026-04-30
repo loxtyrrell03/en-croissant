@@ -444,7 +444,10 @@ export default function App() {
         return {
           ...prev,
           phase: "downloading",
-          progress: payload.progress,
+          progress:
+            prev.progress === null && payload.progress <= 0
+              ? null
+              : Math.max(prev.progress ?? 0, payload.progress),
         };
       });
     });

@@ -55,7 +55,7 @@ export function OpeningReviewAutoUpdateBanner({
             {detail}
           </Text>
         </Group>
-        {progress !== undefined && <Progress value={progress} size="xs" animated />}
+        <Progress value={progress ?? 100} size="xs" striped={progress === undefined} animated />
       </Stack>
     </Paper>
   );
