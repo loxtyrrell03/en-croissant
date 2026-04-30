@@ -645,6 +645,28 @@ function Board({
     [setDeck],
   );
 
+  const markOpeningReviewAttemptSeen = useCallback(
+    (positionIndex: number) => {
+      const attemptedAt = Date.now();
+      setDeck((current) => {
+        const position = current.positions[positionIndex];
+        if (!position) return current;
+
+        const positions = [...current.positions];
+        positions[positionIndex] = {
+          ...position,
+          openingReview: {
+            ...position.openingReview,
+            lastAttemptedAt: attemptedAt,
+            lastAttemptedCardReps: position.card.reps ?? 0,
+          },
+        };
+        return { ...current, positions };
+      });
+    },
+    [setDeck],
+  );
+
   const revealMistakeReviewBest = useCallback(async () => {
     if (mistakeReviewRevealRemaining > 0) return;
     const metadata = trainerMistakeReviewPosition?.mistakeReview;
@@ -800,6 +822,8 @@ function Board({
       onMove?.(uci, c.fen, san);
       if (isMistakeReview) {
         markMistakeReviewAttemptSeen(i);
+      } else if (isOpeningReview) {
+        markOpeningReviewAttemptSeen(i);
       }
 
       if (!isCorrect) {

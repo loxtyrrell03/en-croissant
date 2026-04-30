@@ -17,6 +17,33 @@ const openingHealthDateRangeSchema = z.enum([
 export const OPENING_REVIEW_EXTENSION = ".opening-review.json";
 export const OPENING_REVIEW_VERSION = 1;
 
+export type OpeningReviewGamePeriod =
+    | "all"
+    | "week"
+    | "2weeks"
+    | "month"
+    | "3months"
+    | "6months"
+    | "year";
+
+export type OpeningReviewDailySettings = {
+    reviewsPerDay: number;
+    newItemsPerDay: number;
+    gamePeriod: OpeningReviewGamePeriod;
+    minUrgency: number;
+    includeWhite: boolean;
+    includeBlack: boolean;
+};
+
+export const DEFAULT_OPENING_REVIEW_DAILY_SETTINGS: OpeningReviewDailySettings = {
+    reviewsPerDay: 40,
+    newItemsPerDay: 10,
+    gamePeriod: "all",
+    minUrgency: 0,
+    includeWhite: true,
+    includeBlack: true,
+};
+
 const openingReviewAutoUpdateConfigSchema = z.object({
     enabled: z.boolean().default(false),
     playerDb: z.string(),
@@ -49,6 +76,17 @@ const reviewLogSchema = z
     })
     .passthrough();
 
+const openingReviewDailySettingsSchema = z.object({
+    reviewsPerDay: z.number().default(DEFAULT_OPENING_REVIEW_DAILY_SETTINGS.reviewsPerDay),
+    newItemsPerDay: z.number().default(DEFAULT_OPENING_REVIEW_DAILY_SETTINGS.newItemsPerDay),
+    gamePeriod: z
+        .enum(["all", "week", "2weeks", "month", "3months", "6months", "year"])
+        .default(DEFAULT_OPENING_REVIEW_DAILY_SETTINGS.gamePeriod),
+    minUrgency: z.number().default(DEFAULT_OPENING_REVIEW_DAILY_SETTINGS.minUrgency),
+    includeWhite: z.boolean().default(DEFAULT_OPENING_REVIEW_DAILY_SETTINGS.includeWhite),
+    includeBlack: z.boolean().default(DEFAULT_OPENING_REVIEW_DAILY_SETTINGS.includeBlack),
+});
+
 const openingReviewDeckSchema = z.object({
     version: z.literal(OPENING_REVIEW_VERSION).optional(),
     name: z.string(),
@@ -57,6 +95,7 @@ const openingReviewDeckSchema = z.object({
     mode: z.enum(["self", "opponent"]).optional(),
     source: z.string().optional(),
     autoUpdate: openingReviewAutoUpdateConfigSchema.optional(),
+    daily: openingReviewDailySettingsSchema.default(DEFAULT_OPENING_REVIEW_DAILY_SETTINGS),
     positions: positionSchema.array(),
     logs: reviewLogSchema.array().default([]),
 });
@@ -71,8 +110,18 @@ export type OpeningReviewDeck = {
     mode?: "self" | "opponent";
     source?: string;
     autoUpdate?: OpeningReviewAutoUpdateConfig;
+    daily: OpeningReviewDailySettings;
     positions: Position[];
     logs: (ReviewLog & { fen: string })[];
+};
+
+export type OpeningReviewDailyProgress = {
+    dateKey: string;
+    target: number;
+    completed: number;
+    completedNew: number;
+    remaining: number;
+    newRemaining: number;
 };
 
 export type OpeningReviewDeckSummary = {
@@ -167,12 +216,14 @@ export function createOpeningReviewDeck({
     mode,
     source,
     autoUpdate,
+    daily,
     positions,
 }: {
     name: string;
     mode?: "self" | "opponent";
     source?: string;
     autoUpdate?: OpeningReviewAutoUpdateConfig;
+    daily?: Partial<OpeningReviewDailySettings>;
     positions: Position[];
 }): OpeningReviewDeck {
     const now = Date.now();
@@ -184,6 +235,10 @@ export function createOpeningReviewDeck({
         mode,
         source,
         autoUpdate,
+        daily: {
+            ...DEFAULT_OPENING_REVIEW_DAILY_SETTINGS,
+            ...daily,
+        },
         positions,
         logs: [],
     };
@@ -220,6 +275,7 @@ export function mergeOpeningReviewPositions(
                       annotations: previous.annotations,
                       shapes: previous.shapes,
                       reviewTree: previous.reviewTree,
+                      openingReview: mergeOpeningReviewAttemptMetadata(previous, position),
                       importedAt: previous.importedAt ?? position.importedAt,
                   }
                 : position,
@@ -241,6 +297,218 @@ export function mergeOpeningReviewPositions(
 
 export function reviewPositionKey(position: Position) {
     return position.reviewKey || `${position.fen}|${position.answerUci || position.answer}`;
+}
+
+export function getOpeningReviewDailyBatch(
+    positions: Position[],
+    settings: OpeningReviewDailySettings,
+    options: { now?: Date; extra?: boolean } = {},
+) {
+    const now = options.now ?? new Date();
+    const filtered = positions.filter((position) =>
+        isOpeningReviewDailyEligible(position, settings, now),
+    );
+    const progress = getOpeningReviewDailyProgress(filtered, settings, {
+        now,
+        prefiltered: true,
+    });
+    const unseenToday = filtered.filter(
+        (position) => !wasOpeningReviewAttemptedOnDay(position, now),
+    );
+    const due = unseenToday
+        .filter((position) => position.card.reps > 0 && new Date(position.card.due) <= now)
+        .sort((a, b) => sortOpeningReviewDueCards(a, b, now));
+    const fresh = unseenToday
+        .filter((position) => position.card.reps === 0)
+        .sort(sortOpeningReviewNewCards);
+
+    if (options.extra) {
+        return [...due, ...fresh];
+    }
+
+    const target = progress.remaining;
+    const selectedDue = due.slice(0, target);
+    const remaining = Math.max(0, target - selectedDue.length);
+    const selectedNew = fresh.slice(0, Math.min(progress.newRemaining, remaining));
+    return [...selectedDue, ...selectedNew];
+}
+
+export function getOpeningReviewDailyProgress(
+    positions: Position[],
+    settings: OpeningReviewDailySettings,
+    options: { now?: Date; prefiltered?: boolean } = {},
+): OpeningReviewDailyProgress {
+    const now = options.now ?? new Date();
+    const eligible = options.prefiltered
+        ? positions
+        : positions.filter((position) => isOpeningReviewDailyEligible(position, settings, now));
+    const attemptedToday = eligible.filter((position) =>
+        wasOpeningReviewAttemptedOnDay(position, now),
+    );
+    const completed = attemptedToday.length;
+    const completedNew = attemptedToday.filter(
+        (position) => getOpeningReviewAttemptedCardReps(position) === 0,
+    ).length;
+    const target = Math.max(0, settings.reviewsPerDay);
+    const newTarget = Math.max(0, settings.newItemsPerDay);
+
+    return {
+        dateKey: getOpeningReviewLocalDateKey(now),
+        target,
+        completed,
+        completedNew,
+        remaining: Math.max(0, target - completed),
+        newRemaining: Math.max(0, newTarget - completedNew),
+    };
+}
+
+function mergeOpeningReviewAttemptMetadata(
+    previous: Position,
+    incoming: Position,
+): Position["openingReview"] {
+    const previousAttemptedAt = previous.openingReview?.lastAttemptedAt ?? 0;
+    const incomingAttemptedAt = incoming.openingReview?.lastAttemptedAt ?? 0;
+    const latest = previousAttemptedAt >= incomingAttemptedAt ? previous : incoming;
+
+    return latest.openingReview ?? previous.openingReview ?? incoming.openingReview;
+}
+
+function wasOpeningReviewAttemptedOnDay(position: Position, day: Date) {
+    const attemptedAt = getOpeningReviewLastAttemptedAt(position);
+    return (
+        attemptedAt !== null &&
+        getOpeningReviewLocalDateKey(new Date(attemptedAt)) === getOpeningReviewLocalDateKey(day)
+    );
+}
+
+function getOpeningReviewLastAttemptedAt(position: Position) {
+    return (
+        position.openingReview?.lastAttemptedAt ??
+        parseOpeningReviewTimestamp(position.card.last_review)
+    );
+}
+
+function getOpeningReviewAttemptedCardReps(position: Position) {
+    const trackedReps = position.openingReview?.lastAttemptedCardReps;
+    if (trackedReps !== undefined) return trackedReps;
+
+    const attemptedAt = parseOpeningReviewTimestamp(position.card.last_review);
+    if (attemptedAt !== null && position.card.reps <= 1) return 0;
+    return position.card.reps;
+}
+
+function isOpeningReviewDailyEligible(
+    position: Position,
+    settings: OpeningReviewDailySettings,
+    now: Date,
+) {
+    if (getOpeningReviewPositionUrgency(position) < settings.minUrgency) return false;
+
+    const side = getOpeningReviewMoveSide(position);
+    if (side === "white" && !settings.includeWhite) return false;
+    if (side === "black" && !settings.includeBlack) return false;
+
+    if (settings.gamePeriod === "all") return true;
+
+    const lastPlayed = parseOpeningReviewDate(position.openingHealth?.lastPlayed);
+    if (!lastPlayed) return false;
+    const cutoff = getOpeningReviewPeriodCutoff(settings.gamePeriod, now);
+    return lastPlayed >= cutoff;
+}
+
+function sortOpeningReviewDueCards(a: Position, b: Position, now: Date) {
+    return (
+        getOpeningReviewPositionUrgency(b) - getOpeningReviewPositionUrgency(a) ||
+        now.getTime() -
+            new Date(b.card.due).getTime() -
+            (now.getTime() - new Date(a.card.due).getTime())
+    );
+}
+
+function sortOpeningReviewNewCards(a: Position, b: Position) {
+    return (
+        getOpeningReviewPositionUrgency(b) - getOpeningReviewPositionUrgency(a) ||
+        (parseOpeningReviewDate(b.openingHealth?.lastPlayed)?.getTime() ?? 0) -
+            (parseOpeningReviewDate(a.openingHealth?.lastPlayed)?.getTime() ?? 0) ||
+        (b.importedAt ?? 0) - (a.importedAt ?? 0)
+    );
+}
+
+function getOpeningReviewPositionUrgency(position: Position) {
+    const priority = position.priority ?? 0;
+    if (priority > 1) return clampOpeningReviewNumber(Math.round(priority), 0, 100);
+    return clampOpeningReviewNumber(Math.round(priority * 100), 0, 100);
+}
+
+function getOpeningReviewMoveSide(position: Position): "white" | "black" {
+    const rawSide =
+        position.openingHealth?.reviewSide ??
+        position.openingHealth?.sideToMove ??
+        position.sideToMove ??
+        (position.fen.split(/\s+/)[1] === "b" ? "black" : "white");
+    return rawSide === "black" ? "black" : "white";
+}
+
+function getOpeningReviewPeriodCutoff(period: OpeningReviewGamePeriod, now: Date) {
+    const cutoff = new Date(now);
+    switch (period) {
+        case "week":
+            cutoff.setDate(cutoff.getDate() - 7);
+            break;
+        case "2weeks":
+            cutoff.setDate(cutoff.getDate() - 14);
+            break;
+        case "month":
+            cutoff.setMonth(cutoff.getMonth() - 1);
+            break;
+        case "3months":
+            cutoff.setMonth(cutoff.getMonth() - 3);
+            break;
+        case "6months":
+            cutoff.setMonth(cutoff.getMonth() - 6);
+            break;
+        case "year":
+            cutoff.setFullYear(cutoff.getFullYear() - 1);
+            break;
+        case "all":
+            break;
+    }
+    return cutoff;
+}
+
+function getOpeningReviewLocalDateKey(date: Date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+function parseOpeningReviewTimestamp(value: unknown) {
+    if (!value) return null;
+    const timestamp =
+        value instanceof Date
+            ? value.getTime()
+            : typeof value === "number"
+              ? value
+              : Date.parse(String(value));
+    return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+function parseOpeningReviewDate(value?: string | null) {
+    const match = value?.match(/^(\d{4})[.-](\d{1,2})[.-](\d{1,2})$/);
+    if (!match) return null;
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    if (!year || !month || !day) return null;
+
+    const date = new Date(year, month - 1, day);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function clampOpeningReviewNumber(value: number, min: number, max: number) {
+    return Math.min(max, Math.max(min, value));
 }
 
 function sanitizeOpeningReviewFileName(name: string) {

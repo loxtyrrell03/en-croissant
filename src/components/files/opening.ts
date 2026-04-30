@@ -47,6 +47,12 @@ export const positionSchema = z.object({
     annotations: z.array(z.string()).optional(),
     shapes: z.array(z.object({}).passthrough()).optional(),
     reviewTree: reviewTreeNodeSchema.optional(),
+    openingReview: z
+        .object({
+            lastAttemptedAt: z.number().optional(),
+            lastAttemptedCardReps: z.number().optional(),
+        })
+        .optional(),
     openingHealth: z
         .object({
             mode: z.enum(["self", "opponent"]).optional(),
@@ -165,6 +171,10 @@ export type Position = {
     annotations?: Annotation[];
     shapes?: DrawShape[];
     reviewTree?: TreeNode;
+    openingReview?: {
+        lastAttemptedAt?: number;
+        lastAttemptedCardReps?: number;
+    };
     openingHealth?: {
         mode?: "self" | "opponent";
         sideToMove?: "white" | "black";

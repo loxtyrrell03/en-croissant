@@ -115,7 +115,10 @@ import {
 } from "@/utils/treeReducer";
 import {
   type OpeningReviewAutoUpdateConfig,
+  getOpeningReviewDailyBatch,
+  getOpeningReviewDailyProgress,
   readOpeningReviewDeck,
+  type OpeningReviewDailySettings,
   type OpeningReviewDeck,
   writeOpeningReviewDeck,
 } from "@/utils/openingReview";
@@ -157,7 +160,7 @@ const scrollablePanelStyle = {
 
 const OPENING_REVIEW_PREVIEW_BOARD_SIZE = 168;
 
-const MISTAKE_REVIEW_GAME_PERIOD_OPTIONS = [
+const DAILY_REVIEW_GAME_PERIOD_OPTIONS = [
   { value: "all", label: "All games" },
   { value: "week", label: "Last week" },
   { value: "2weeks", label: "Last 2 weeks" },
@@ -165,7 +168,7 @@ const MISTAKE_REVIEW_GAME_PERIOD_OPTIONS = [
   { value: "3months", label: "Last 3 months" },
   { value: "6months", label: "Last 6 months" },
   { value: "year", label: "Last year" },
-] satisfies { value: MistakeReviewDailySettings["gamePeriod"]; label: string }[];
+] satisfies { value: OpeningReviewDailySettings["gamePeriod"]; label: string }[];
 
 const reviewWorkspaceTabs = new Set([
   "review",
@@ -463,6 +466,18 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     [isMistakeReview],
   );
 
+  const setOpeningDailySettings = useCallback(
+    (daily: OpeningReviewDailySettings) => {
+      if (isMistakeReview) return;
+      setDeckInfo((current) =>
+        current
+          ? ({ ...(current as OpeningReviewDeck), daily } satisfies OpeningReviewDeck)
+          : current,
+      );
+    },
+    [isMistakeReview],
+  );
+
   const setMistakeDailySettings = useCallback(
     (daily: MistakeReviewDailySettings) => {
       if (!isMistakeReview) return;
@@ -613,6 +628,9 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                     }
                     isMistakeReview={isMistakeReview}
                     initialPractice={initialPractice}
+                    openingDailySettings={
+                      isMistakeReview ? undefined : (deckInfo as OpeningReviewDeck | null)?.daily
+                    }
                     mistakeDailySettings={
                       isMistakeReview ? (deckInfo as MistakeReviewDeck | null)?.daily : undefined
                     }
@@ -621,6 +639,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                         ? (deckInfo as MistakeReviewDeck | null)?.autoUpdate
                         : undefined
                     }
+                    onOpeningDailySettingsChange={setOpeningDailySettings}
                     onMistakeDailySettingsChange={setMistakeDailySettings}
                     boardMoveCandidate={boardMoveCandidate}
                     onClearBoardMoveCandidate={() => setBoardMoveCandidate(null)}
@@ -1078,8 +1097,10 @@ function OpeningReviewPanel({
   initialView,
   isMistakeReview = false,
   initialPractice,
+  openingDailySettings,
   mistakeDailySettings,
   mistakeAutoUpdateConfig,
+  onOpeningDailySettingsChange,
   onMistakeDailySettingsChange,
   boardMoveCandidate,
   onClearBoardMoveCandidate,
@@ -1094,8 +1115,10 @@ function OpeningReviewPanel({
   initialView: OpeningReviewPanelView;
   isMistakeReview?: boolean;
   initialPractice?: OpeningReviewInitialPractice;
+  openingDailySettings?: OpeningReviewDeck["daily"];
   mistakeDailySettings?: MistakeReviewDeck["daily"];
   mistakeAutoUpdateConfig?: MistakeReviewDeck["autoUpdate"];
+  onOpeningDailySettingsChange?: (daily: OpeningReviewDailySettings) => void;
   onMistakeDailySettingsChange?: (daily: MistakeReviewDailySettings) => void;
   boardMoveCandidate: ReviewBoardMoveCandidate | null;
   onClearBoardMoveCandidate: () => void;
@@ -1113,20 +1136,24 @@ function OpeningReviewPanel({
 
   const [deck, setDeck] = useAtom(deckAtomFamily({ file: deckPath, game: 0 }));
   const stats = getStats(deck.positions);
-  const dailyBatch = useMemo(
-    () =>
-      isMistakeReview && mistakeDailySettings
-        ? getMistakeReviewDailyBatch(deck.positions, mistakeDailySettings)
-        : [],
-    [deck.positions, isMistakeReview, mistakeDailySettings],
-  );
-  const dailyProgress = useMemo(
-    () =>
-      isMistakeReview && mistakeDailySettings
-        ? getMistakeReviewDailyProgress(deck.positions, mistakeDailySettings)
-        : null,
-    [deck.positions, isMistakeReview, mistakeDailySettings],
-  );
+  const dailyBatch = useMemo(() => {
+    if (isMistakeReview && mistakeDailySettings) {
+      return getMistakeReviewDailyBatch(deck.positions, mistakeDailySettings);
+    }
+    if (!isMistakeReview && openingDailySettings) {
+      return getOpeningReviewDailyBatch(deck.positions, openingDailySettings);
+    }
+    return [];
+  }, [deck.positions, isMistakeReview, mistakeDailySettings, openingDailySettings]);
+  const dailyProgress = useMemo(() => {
+    if (isMistakeReview && mistakeDailySettings) {
+      return getMistakeReviewDailyProgress(deck.positions, mistakeDailySettings);
+    }
+    if (!isMistakeReview && openingDailySettings) {
+      return getOpeningReviewDailyProgress(deck.positions, openingDailySettings);
+    }
+    return null;
+  }, [deck.positions, isMistakeReview, mistakeDailySettings, openingDailySettings]);
   const dailyScopeIndices = useMemo(
     () =>
       dailyBatch
@@ -1552,6 +1579,19 @@ function OpeningReviewPanel({
       newPractice({ remainingPositions, mode: "full" });
       return;
     }
+
+    if (sessionStats.remainingPositions.length > 0 && practiceState.positionIndex !== undefined) {
+      const remainingPositions = sessionStats.remainingPositions.filter(
+        (index) => index !== practiceState.positionIndex,
+      );
+      setSessionStats((current) => ({ ...current, remainingPositions }));
+      newPractice(
+        { remainingPositions, mode: sessionStats.mode },
+        { scopeIndices: remainingPositions },
+      );
+      return;
+    }
+
     newPractice();
   }
 
@@ -1625,6 +1665,10 @@ function OpeningReviewPanel({
     if (practiceAutoDifficulty !== "none" && practiceState.positionIndex !== undefined) {
       const positionIndex = practiceState.positionIndex;
       const timer = window.setTimeout(() => {
+        const remainingPositions =
+          sessionStats.remainingPositions.length > 0
+            ? sessionStats.remainingPositions.filter((index) => index !== positionIndex)
+            : sessionStats.remainingPositions;
         updateCardPerformance(
           setDeck,
           positionIndex,
@@ -1637,7 +1681,12 @@ function OpeningReviewPanel({
           streak: current.streak + 1,
           bestStreak: Math.max(current.bestStreak, current.streak + 1),
         }));
-        newPractice();
+        newPractice(
+          { mode: sessionStats.mode, remainingPositions },
+          sessionStats.remainingPositions.length > 0
+            ? { scopeIndices: remainingPositions }
+            : undefined,
+        );
       }, 300);
       return () => window.clearTimeout(timer);
     }
@@ -1802,6 +1851,13 @@ function OpeningReviewPanel({
     if (!mistakeDailySettings || !onMistakeDailySettingsChange) return;
     onMistakeDailySettingsChange({ ...mistakeDailySettings, ...partial });
   };
+  const updateOpeningDailySettings = (partial: Partial<OpeningReviewDailySettings>) => {
+    if (!openingDailySettings || !onOpeningDailySettingsChange) return;
+    onOpeningDailySettingsChange({ ...openingDailySettings, ...partial });
+  };
+  const dailyReviewScopeLabel = isMistakeReview
+    ? "today's mistake review"
+    : "today's opening review";
 
   return (
     <>
@@ -1907,13 +1963,13 @@ function OpeningReviewPanel({
 
         {practiceState.phase === "idle" && (
           <Stack gap="xs">
-            {isMistakeReview && (
+            {(isMistakeReview ? mistakeDailySettings : openingDailySettings) && (
               <Stack gap={4}>
                 <Group gap={0} wrap="nowrap" align="stretch">
                   <Button
                     variant="light"
                     leftSection={<IconTarget size={18} />}
-                    onClick={() => startDuePractice(dailyScopeIndices, "today's mistake review")}
+                    onClick={() => startDuePractice(dailyScopeIndices, dailyReviewScopeLabel)}
                     justify="space-between"
                     disabled={dailyScopeIndices.length === 0}
                     rightSection={<Badge variant="white">{dailyScopeIndices.length}</Badge>}
@@ -2220,7 +2276,17 @@ function OpeningReviewPanel({
         {isMistakeReview && <MistakeReviewGameInfoPanel position={mistakeReviewInfoPosition} />}
       </Stack>
 
-      {mistakeDailySettings && (
+      {!isMistakeReview && openingDailySettings && (
+        <OpeningReviewDailySettingsModal
+          opened={dailySettingsOpen}
+          onClose={() => setDailySettingsOpen(false)}
+          settings={openingDailySettings}
+          dailyCount={dailyScopeIndices.length}
+          onUpdate={updateOpeningDailySettings}
+        />
+      )}
+
+      {isMistakeReview && mistakeDailySettings && (
         <MistakeReviewDailySettingsModal
           opened={dailySettingsOpen}
           onClose={() => setDailySettingsOpen(false)}
@@ -3568,6 +3634,99 @@ function SessionBadge({ label, value, color }: { label: string; value: number; c
   );
 }
 
+function OpeningReviewDailySettingsModal({
+  opened,
+  onClose,
+  settings,
+  dailyCount,
+  onUpdate,
+}: {
+  opened: boolean;
+  onClose: () => void;
+  settings: OpeningReviewDailySettings;
+  dailyCount: number;
+  onUpdate: (partial: Partial<OpeningReviewDailySettings>) => void;
+}) {
+  return (
+    <Modal opened={opened} onClose={onClose} title="Daily review settings" centered>
+      <Stack gap="sm">
+        <Group justify="space-between" align="center">
+          <Text size="sm" c="dimmed">
+            Tune the batch without taking over the review panel.
+          </Text>
+          <Badge variant="light">{dailyCount} in today's batch</Badge>
+        </Group>
+        <SimpleGrid cols={2} spacing="sm">
+          <NumberInput
+            label="Reviews per day"
+            value={settings.reviewsPerDay}
+            min={0}
+            onChange={(value) =>
+              onUpdate({
+                reviewsPerDay: Math.max(0, Math.round(Number(value) || 0)),
+              })
+            }
+          />
+          <NumberInput
+            label="New per day"
+            value={settings.newItemsPerDay}
+            min={0}
+            onChange={(value) =>
+              onUpdate({
+                newItemsPerDay: Math.max(0, Math.round(Number(value) || 0)),
+              })
+            }
+          />
+          <Select
+            label="Last played"
+            data={DAILY_REVIEW_GAME_PERIOD_OPTIONS}
+            value={settings.gamePeriod}
+            onChange={(value) =>
+              value &&
+              onUpdate({
+                gamePeriod: value as OpeningReviewDailySettings["gamePeriod"],
+              })
+            }
+            allowDeselect={false}
+          />
+          <NumberInput
+            label="Min urgency"
+            suffix="/100"
+            value={settings.minUrgency}
+            min={0}
+            max={100}
+            onChange={(value) =>
+              onUpdate({
+                minUrgency: Math.max(0, Math.min(100, Math.round(Number(value) || 0))),
+              })
+            }
+          />
+        </SimpleGrid>
+        <Group grow>
+          <Switch
+            label="White"
+            checked={settings.includeWhite}
+            onChange={(event) =>
+              onUpdate({
+                includeWhite: event.currentTarget.checked,
+              })
+            }
+          />
+          <Switch
+            label="Black"
+            checked={settings.includeBlack}
+            onChange={(event) =>
+              onUpdate({
+                includeBlack: event.currentTarget.checked,
+              })
+            }
+          />
+        </Group>
+      </Stack>
+    </Modal>
+  );
+}
+
 function MistakeReviewDailySettingsModal({
   opened,
   onClose,
@@ -3613,7 +3772,7 @@ function MistakeReviewDailySettingsModal({
           />
           <Select
             label="Game period"
-            data={MISTAKE_REVIEW_GAME_PERIOD_OPTIONS}
+            data={DAILY_REVIEW_GAME_PERIOD_OPTIONS}
             value={settings.gamePeriod}
             onChange={(value) =>
               value &&
