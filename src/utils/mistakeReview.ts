@@ -211,6 +211,15 @@ export type MistakeReviewDeckSummary = {
     autoUpdate?: MistakeReviewAutoUpdateConfig;
 };
 
+export type MistakeReviewDailyProgress = {
+    dateKey: string;
+    target: number;
+    completed: number;
+    completedNew: number;
+    remaining: number;
+    newRemaining: number;
+};
+
 export async function readMistakeReviewDeck(path: string): Promise<MistakeReviewDeck> {
     const raw = await readTextFile(path);
     const parsed = mistakeReviewDeckSchema.parse(JSON.parse(raw));
@@ -469,10 +478,15 @@ export function getMistakeReviewDailyBatch(
     const filtered = positions.filter((position) =>
         isMistakeReviewDailyEligible(position, settings, now),
     );
+    const progress = getMistakeReviewDailyProgress(filtered, settings, { now, prefiltered: true });
+    const unseenToday = filtered.filter(
+        (position) => !wasMistakeReviewAttemptedOnDay(position, now),
+    );
     const due = filtered
+        .filter((position) => !wasMistakeReviewAttemptedOnDay(position, now))
         .filter((position) => position.card.reps > 0 && new Date(position.card.due) <= now)
         .sort((a, b) => sortMistakeReviewDueCards(a, b, now));
-    const fresh = filtered
+    const fresh = unseenToday
         .filter((position) => position.card.reps === 0)
         .sort(sortMistakeReviewNewCards);
 
@@ -480,11 +494,40 @@ export function getMistakeReviewDailyBatch(
         return [...due, ...fresh];
     }
 
-    const target = Math.max(0, settings.reviewsPerDay);
+    const target = progress.remaining;
     const selectedDue = due.slice(0, target);
     const remaining = Math.max(0, target - selectedDue.length);
-    const selectedNew = fresh.slice(0, Math.min(settings.newItemsPerDay, remaining));
+    const selectedNew = fresh.slice(0, Math.min(progress.newRemaining, remaining));
     return [...selectedDue, ...selectedNew];
+}
+
+export function getMistakeReviewDailyProgress(
+    positions: Position[],
+    settings: MistakeReviewDailySettings,
+    options: { now?: Date; prefiltered?: boolean } = {},
+): MistakeReviewDailyProgress {
+    const now = options.now ?? new Date();
+    const eligible = options.prefiltered
+        ? positions
+        : positions.filter((position) => isMistakeReviewDailyEligible(position, settings, now));
+    const attemptedToday = eligible.filter((position) =>
+        wasMistakeReviewAttemptedOnDay(position, now),
+    );
+    const completed = attemptedToday.length;
+    const completedNew = attemptedToday.filter(
+        (position) => (position.mistakeReview?.lastAttemptedCardReps ?? position.card.reps) === 0,
+    ).length;
+    const target = Math.max(0, settings.reviewsPerDay);
+    const newTarget = Math.max(0, settings.newItemsPerDay);
+
+    return {
+        dateKey: getMistakeReviewLocalDateKey(now),
+        target,
+        completed,
+        completedNew,
+        remaining: Math.max(0, target - completed),
+        newRemaining: Math.max(0, newTarget - completedNew),
+    };
 }
 
 export function classifyMistakeReviewAttempt(
@@ -571,7 +614,11 @@ function getMistakeReviewLastAttemptedAt(position?: Position | null) {
 function parseMistakeReviewTimestamp(value: unknown) {
     if (!value) return null;
     const timestamp =
-        value instanceof Date ? value.getTime() : typeof value === "number" ? value : Date.parse(String(value));
+        value instanceof Date
+            ? value.getTime()
+            : typeof value === "number"
+              ? value
+              : Date.parse(String(value));
     return Number.isFinite(timestamp) ? timestamp : null;
 }
 
@@ -597,12 +644,34 @@ function mergeMistakeReviewPosition(previous: Position, incoming: Position): Pos
             ...incoming.mistakeReview,
             gameIds,
             occurrenceCount,
-            lastAttemptedAt: Math.max(
-                previous.mistakeReview?.lastAttemptedAt ?? 0,
-                incoming.mistakeReview?.lastAttemptedAt ?? 0,
-            ) || undefined,
+            lastAttemptedAt:
+                Math.max(
+                    previous.mistakeReview?.lastAttemptedAt ?? 0,
+                    incoming.mistakeReview?.lastAttemptedAt ?? 0,
+                ) || undefined,
+            lastAttemptedCardReps:
+                previous.mistakeReview?.lastAttemptedAt &&
+                previous.mistakeReview?.lastAttemptedAt >=
+                    (incoming.mistakeReview?.lastAttemptedAt ?? 0)
+                    ? previous.mistakeReview?.lastAttemptedCardReps
+                    : incoming.mistakeReview?.lastAttemptedCardReps,
         },
     };
+}
+
+function wasMistakeReviewAttemptedOnDay(position: Position, day: Date) {
+    const attemptedAt = getMistakeReviewLastAttemptedAt(position);
+    return (
+        attemptedAt !== null &&
+        getMistakeReviewLocalDateKey(new Date(attemptedAt)) === getMistakeReviewLocalDateKey(day)
+    );
+}
+
+function getMistakeReviewLocalDateKey(date: Date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
 }
 
 function isMistakeReviewDailyEligible(

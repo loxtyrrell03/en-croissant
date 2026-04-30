@@ -636,6 +636,7 @@ function Board({
           mistakeReview: {
             ...position.mistakeReview,
             lastAttemptedAt: attemptedAt,
+            lastAttemptedCardReps: position.card.reps ?? 0,
           },
         };
         return { ...current, positions };

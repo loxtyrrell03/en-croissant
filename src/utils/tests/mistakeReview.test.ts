@@ -6,6 +6,7 @@ import {
     classifyMistakeReviewAttempt,
     formatMistakeReviewLastSeen,
     getMistakeReviewDailyBatch,
+    getMistakeReviewDailyProgress,
     isMistakeReviewPassingLabel,
     mergeMistakeReviewPositions,
     type MistakeReviewDeck,
@@ -84,12 +85,20 @@ describe("mistake review helpers", () => {
         const now = new Date("2026-04-26T12:00:00Z");
         const dueBlunder = position({
             reviewKey: "due-blunder",
-            card: { ...createEmptyCard(), reps: 2, due: new Date("2026-04-24T12:00:00Z") } as Position["card"],
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-24T12:00:00Z"),
+            } as Position["card"],
             mistakeReview: { ...position().mistakeReview!, severity: "blunder", gameIds: [1] },
         });
         const dueMistake = position({
             reviewKey: "due-mistake",
-            card: { ...createEmptyCard(), reps: 1, due: new Date("2026-04-23T12:00:00Z") } as Position["card"],
+            card: {
+                ...createEmptyCard(),
+                reps: 1,
+                due: new Date("2026-04-23T12:00:00Z"),
+            } as Position["card"],
             mistakeReview: { ...position().mistakeReview!, severity: "mistake", gameIds: [2] },
         });
         const freshOne = position({ reviewKey: "new-one" });
@@ -109,18 +118,125 @@ describe("mistake review helpers", () => {
             { now },
         );
 
-        expect(batch.map((item) => item.reviewKey)).toEqual(["due-blunder", "due-mistake", "new-one"]);
+        expect(batch.map((item) => item.reviewKey)).toEqual([
+            "due-blunder",
+            "due-mistake",
+            "new-one",
+        ]);
+    });
+
+    test("daily review subtracts positions already attempted today", () => {
+        const now = new Date("2026-04-26T12:00:00");
+        const attemptedAt = new Date("2026-04-26T09:00:00").getTime();
+        const dueDone = position({
+            reviewKey: "due-done",
+            card: {
+                ...createEmptyCard(),
+                reps: 3,
+                due: new Date("2026-04-24T12:00:00Z"),
+            } as Position["card"],
+            mistakeReview: {
+                ...position().mistakeReview!,
+                lastAttemptedAt: attemptedAt,
+                lastAttemptedCardReps: 3,
+            },
+        });
+        const dueOne = position({
+            reviewKey: "due-one",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-24T12:00:00Z"),
+            } as Position["card"],
+        });
+        const dueTwo = position({
+            reviewKey: "due-two",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-25T12:00:00Z"),
+            } as Position["card"],
+        });
+
+        const settings = {
+            reviewsPerDay: 2,
+            newItemsPerDay: 1,
+            gamePeriod: "all" as const,
+            minWinProbabilityDrop: 0,
+            includeInaccuracies: true,
+            includeMistakes: true,
+            includeBlunders: true,
+        };
+        const batch = getMistakeReviewDailyBatch([dueOne, dueDone, dueTwo], settings, { now });
+        const progress = getMistakeReviewDailyProgress([dueOne, dueDone, dueTwo], settings, {
+            now,
+        });
+
+        expect(progress.completed).toBe(1);
+        expect(progress.remaining).toBe(1);
+        expect(batch.map((item) => item.reviewKey)).toEqual(["due-one"]);
+    });
+
+    test("daily review remembers new cards already introduced today", () => {
+        const now = new Date("2026-04-26T12:00:00");
+        const attemptedAt = new Date("2026-04-26T09:00:00").getTime();
+        const completedNew = position({
+            reviewKey: "new-done",
+            card: {
+                ...createEmptyCard(),
+                reps: 1,
+                due: new Date("2026-04-30T12:00:00Z"),
+            } as Position["card"],
+            mistakeReview: {
+                ...position().mistakeReview!,
+                lastAttemptedAt: attemptedAt,
+                lastAttemptedCardReps: 0,
+            },
+        });
+        const freshOne = position({ reviewKey: "new-one" });
+        const freshTwo = position({ reviewKey: "new-two" });
+
+        const settings = {
+            reviewsPerDay: 3,
+            newItemsPerDay: 1,
+            gamePeriod: "all" as const,
+            minWinProbabilityDrop: 0,
+            includeInaccuracies: true,
+            includeMistakes: true,
+            includeBlunders: true,
+        };
+
+        const batch = getMistakeReviewDailyBatch([completedNew, freshOne, freshTwo], settings, {
+            now,
+        });
+        const progress = getMistakeReviewDailyProgress(
+            [completedNew, freshOne, freshTwo],
+            settings,
+            {
+                now,
+            },
+        );
+
+        expect(progress.completed).toBe(1);
+        expect(progress.completedNew).toBe(1);
+        expect(progress.newRemaining).toBe(0);
+        expect(batch).toEqual([]);
     });
 
     test("merge preserves SRS state while aggregating repeated evidence", () => {
         const previous = position({
-            card: { ...createEmptyCard(), reps: 4, due: new Date("2026-05-01T12:00:00Z") } as Position["card"],
+            card: {
+                ...createEmptyCard(),
+                reps: 4,
+                due: new Date("2026-05-01T12:00:00Z"),
+            } as Position["card"],
             comment: "keep this",
             mistakeReview: {
                 ...position().mistakeReview!,
                 gameIds: [1],
                 occurrenceCount: 1,
                 lastAttemptedAt: 1_000,
+                lastAttemptedCardReps: 0,
             },
         });
         const incoming = position({
@@ -131,6 +247,7 @@ describe("mistake review helpers", () => {
                 gameIds: [2, 3],
                 occurrenceCount: 2,
                 lastAttemptedAt: 500,
+                lastAttemptedCardReps: 1,
             },
         });
 
@@ -143,6 +260,7 @@ describe("mistake review helpers", () => {
         expect(merged.positions[0]!.mistakeReview?.gameIds).toEqual([1, 2, 3]);
         expect(merged.positions[0]!.mistakeReview?.occurrenceCount).toBe(3);
         expect(merged.positions[0]!.mistakeReview?.lastAttemptedAt).toBe(1_000);
+        expect(merged.positions[0]!.mistakeReview?.lastAttemptedCardReps).toBe(0);
     });
 
     test("formats mistake review last seen from attempt metadata", () => {

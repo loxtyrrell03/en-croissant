@@ -122,6 +122,7 @@ import {
 import {
   formatMistakeReviewLastSeen,
   getMistakeReviewDailyBatch,
+  getMistakeReviewDailyProgress,
   type MistakeReviewDailySettings,
   mistakeReviewSeverityLabel,
   readMistakeReviewDeck,
@@ -1119,6 +1120,13 @@ function OpeningReviewPanel({
         : [],
     [deck.positions, isMistakeReview, mistakeDailySettings],
   );
+  const dailyProgress = useMemo(
+    () =>
+      isMistakeReview && mistakeDailySettings
+        ? getMistakeReviewDailyProgress(deck.positions, mistakeDailySettings)
+        : null,
+    [deck.positions, isMistakeReview, mistakeDailySettings],
+  );
   const dailyScopeIndices = useMemo(
     () =>
       dailyBatch
@@ -1900,40 +1908,48 @@ function OpeningReviewPanel({
         {practiceState.phase === "idle" && (
           <Stack gap="xs">
             {isMistakeReview && (
-              <Group gap={0} wrap="nowrap" align="stretch">
-                <Button
-                  variant="light"
-                  leftSection={<IconTarget size={18} />}
-                  onClick={() => startDuePractice(dailyScopeIndices, "today's mistake review")}
-                  justify="space-between"
-                  disabled={dailyScopeIndices.length === 0}
-                  rightSection={<Badge variant="white">{dailyScopeIndices.length}</Badge>}
-                  style={{
-                    flex: 1,
-                    borderTopRightRadius: 0,
-                    borderBottomRightRadius: 0,
-                  }}
-                >
-                  Daily review
-                </Button>
-                <Tooltip label="Daily review settings">
-                  <ActionIcon
-                    aria-label="Daily review settings"
+              <Stack gap={4}>
+                <Group gap={0} wrap="nowrap" align="stretch">
+                  <Button
                     variant="light"
-                    color="blue"
-                    onClick={() => setDailySettingsOpen(true)}
+                    leftSection={<IconTarget size={18} />}
+                    onClick={() => startDuePractice(dailyScopeIndices, "today's mistake review")}
+                    justify="space-between"
+                    disabled={dailyScopeIndices.length === 0}
+                    rightSection={<Badge variant="white">{dailyScopeIndices.length}</Badge>}
                     style={{
-                      alignSelf: "stretch",
-                      height: "auto",
-                      minWidth: 42,
-                      borderTopLeftRadius: 0,
-                      borderBottomLeftRadius: 0,
+                      flex: 1,
+                      borderTopRightRadius: 0,
+                      borderBottomRightRadius: 0,
                     }}
                   >
-                    <IconSettings size={16} />
-                  </ActionIcon>
-                </Tooltip>
-              </Group>
+                    Daily review
+                  </Button>
+                  <Tooltip label="Daily review settings">
+                    <ActionIcon
+                      aria-label="Daily review settings"
+                      variant="light"
+                      color="blue"
+                      onClick={() => setDailySettingsOpen(true)}
+                      style={{
+                        alignSelf: "stretch",
+                        height: "auto",
+                        minWidth: 42,
+                        borderTopLeftRadius: 0,
+                        borderBottomLeftRadius: 0,
+                      }}
+                    >
+                      <IconSettings size={16} />
+                    </ActionIcon>
+                  </Tooltip>
+                </Group>
+                {dailyProgress && (
+                  <Text size="xs" c="dimmed">
+                    {Math.min(dailyProgress.completed, dailyProgress.target)} /{" "}
+                    {dailyProgress.target} done today
+                  </Text>
+                )}
+              </Stack>
             )}
             {stats.due === 0 && stats.unseen === 0 ? (
               <Paper p="sm" withBorder>
