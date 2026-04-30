@@ -9,6 +9,14 @@ This file records the work saved during the Codex session on the `codex/en-crois
 - Do not wait until the end of a long session to save progress unless the user explicitly asks for a single final commit.
 - Avoid committing broken, half-finished, or unverified work unless the user explicitly asks for a checkpoint commit.
 
+## Local Browser Verification
+
+- Prefer the Browser Use plugin for localhost UI checks. If its Node REPL bootstrap fails because the system Node is too old, use the Playwright browser tools as a fallback and note the reason.
+- The Vite dev server for this Tauri app normally serves at `http://localhost:1420`; `vite.config.ts` has `strictPort: true`, so check whether that port is already owned before starting a new server.
+- Opening the app directly in a regular browser is outside the Tauri shell, so the page needs minimal Tauri globals injected before navigation. Stub `window.__TAURI_OS_PLUGIN_INTERNALS__` and `window.__TAURI_INTERNALS__` with no-op `invoke`, event listener, metadata, and `convertFileSrc` handlers before loading `http://localhost:1420`.
+- For layout checks, inspect real DOM dimensions instead of relying only on screenshots. Useful measurements are `#left`, `.cg-wrap`, the eval bar element, and any nearby panel that may be limiting the board.
+- Temporary screenshots and `.playwright-mcp/page-*.yml` snapshots are local verification artifacts. Do not delete them unless the user explicitly confirms deletion.
+
 ## Base
 
 - The branch started from upstream commit `14ae9478` (`Updated French translation`).
