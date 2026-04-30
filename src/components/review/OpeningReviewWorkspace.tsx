@@ -120,6 +120,7 @@ import {
   writeOpeningReviewDeck,
 } from "@/utils/openingReview";
 import {
+  formatMistakeReviewLastSeen,
   getMistakeReviewDailyBatch,
   type MistakeReviewDailySettings,
   mistakeReviewSeverityLabel,
@@ -3726,6 +3727,7 @@ function MistakeReviewGameInfoPanel({ position }: { position: Position | null })
               label="Move"
               value={`${mistake.moveNumber ? `${mistake.moveNumber}. ` : ""}${mistake.playedMoveSan ?? "-"}`}
             />
+            <ReviewDetail label="Last seen" value={formatMistakeReviewLastSeen(position)} />
           </SimpleGrid>
         )}
       </Stack>
@@ -3919,10 +3921,11 @@ function OpeningReviewAttemptDetails({
               {mistakeReviewSeverityLabel(mistake.severity ?? "mistake")}
             </Badge>
           </Group>
-          <SimpleGrid cols={3} spacing="xs">
+          <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="xs">
             <ReviewDetail label="You played" value={playedMove || mistake.playedMoveSan || "-"} />
             <ReviewDetail label="Best move" value={mistake.bestMoveSan || position.answer} />
             <ReviewDetail label="Occurrences" value={`${mistake.occurrenceCount ?? 1}`} />
+            <ReviewDetail label="Last seen" value={formatMistakeReviewLastSeen(position)} />
           </SimpleGrid>
           <SimpleGrid cols={2} spacing="xs">
             <ReviewDetail

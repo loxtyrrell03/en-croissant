@@ -125,6 +125,7 @@ export const positionSchema = z.object({
             whiteElo: z.number().nullable().optional(),
             blackElo: z.number().nullable().optional(),
             gameResult: z.string().nullable().optional(),
+            lastAttemptedAt: z.number().optional(),
             thresholds: z
                 .object({
                     inaccuracy: z.number(),
@@ -235,6 +236,7 @@ export type Position = {
         whiteElo?: number | null;
         blackElo?: number | null;
         gameResult?: string | null;
+        lastAttemptedAt?: number;
         thresholds?: {
             inaccuracy: number;
             mistake: number;

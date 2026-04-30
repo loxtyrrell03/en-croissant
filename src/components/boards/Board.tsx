@@ -104,7 +104,11 @@ import { ANNOTATION_INFO, isBasicAnnotation } from "@/utils/annotation";
 import { getVariationLine } from "@/utils/chess";
 import { chessopsError, forceEnPassant, positionFromFen } from "@/utils/chessops";
 import { queryChessDbMoves } from "@/utils/chessdb/api";
-import { mistakeReviewSeverityLabel, type MistakeReviewAttemptLabel } from "@/utils/mistakeReview";
+import {
+  formatMistakeReviewLastSeen,
+  mistakeReviewSeverityLabel,
+  type MistakeReviewAttemptLabel,
+} from "@/utils/mistakeReview";
 import { assessMistakeReviewMoveWithEngine } from "@/utils/mistakeReviewPractice";
 import {
   assessOpeningReviewMove,
@@ -619,6 +623,27 @@ function Board({
     [mistakeReviewSampleLinePlies],
   );
 
+  const markMistakeReviewAttemptSeen = useCallback(
+    (positionIndex: number) => {
+      const attemptedAt = Date.now();
+      setDeck((current) => {
+        const position = current.positions[positionIndex];
+        if (!position?.mistakeReview) return current;
+
+        const positions = [...current.positions];
+        positions[positionIndex] = {
+          ...position,
+          mistakeReview: {
+            ...position.mistakeReview,
+            lastAttemptedAt: attemptedAt,
+          },
+        };
+        return { ...current, positions };
+      });
+    },
+    [setDeck],
+  );
+
   const revealMistakeReviewBest = useCallback(async () => {
     if (mistakeReviewRevealRemaining > 0) return;
     const metadata = trainerMistakeReviewPosition?.mistakeReview;
@@ -772,6 +797,9 @@ function Board({
       const isEngineCorrect = isOpeningReview && isOpeningReviewEngineMove(c, { san, uci });
       const isCorrect = isOpeningReviewSavedMove(c, { san, uci }) || isEngineCorrect;
       onMove?.(uci, c.fen, san);
+      if (isMistakeReview) {
+        markMistakeReviewAttemptSeen(i);
+      }
 
       if (!isCorrect) {
         storeMakeMove({
@@ -1378,6 +1406,7 @@ function Board({
     mistakeReviewMetadata?.playedMoveSan ||
     undefined;
   const mistakeReviewPlayedMoveLabel = mistakeReviewAttemptActive ? "Played" : "Mistake";
+  const mistakeReviewLastSeen = formatMistakeReviewLastSeen(trainerMistakeReviewPosition);
   const showMistakeReviewControls = isMistakeReviewTab && Boolean(mistakeReviewMetadata);
 
   return (
@@ -1772,6 +1801,9 @@ function Board({
                           ? `, reveal in ${mistakeReviewRevealRemaining}s`
                           : ""}
                         {mistakeReviewLineBusy ? ", playing engine line" : ""}
+                      </Text>
+                      <Text size="xs" c="dimmed">
+                        Last seen: {mistakeReviewLastSeen}
                       </Text>
                     </Stack>
                   </Group>

@@ -523,6 +523,31 @@ export function mistakeReviewSeverityLabel(
     }
 }
 
+export function formatMistakeReviewLastSeen(position?: Position | null) {
+    const attemptedAt = getMistakeReviewLastAttemptedAt(position);
+    if (!attemptedAt) return "Never";
+
+    const elapsedMs = Math.max(0, Date.now() - attemptedAt);
+    const elapsedMinutes = Math.floor(elapsedMs / 60000);
+    if (elapsedMinutes < 1) return "Just now";
+    if (elapsedMinutes < 60) return `${elapsedMinutes}m ago`;
+
+    const elapsedHours = Math.floor(elapsedMs / 3600000);
+    if (elapsedHours < 24) return `${elapsedHours}h ago`;
+
+    const elapsedDays = Math.floor(elapsedMs / 86400000);
+    if (elapsedDays < 7) return `${elapsedDays}d ago`;
+
+    const elapsedWeeks = Math.floor(elapsedDays / 7);
+    if (elapsedWeeks < 8) return `${elapsedWeeks}w ago`;
+
+    const elapsedMonths = Math.floor(elapsedDays / 30);
+    if (elapsedMonths < 12) return `${elapsedMonths}mo ago`;
+
+    const elapsedYears = Math.floor(elapsedDays / 365);
+    return `${elapsedYears}y ago`;
+}
+
 export function getMistakeReviewSeverityWeight(severity?: string) {
     switch (severity) {
         case "blunder":
@@ -534,6 +559,20 @@ export function getMistakeReviewSeverityWeight(severity?: string) {
         default:
             return 0;
     }
+}
+
+function getMistakeReviewLastAttemptedAt(position?: Position | null) {
+    return (
+        position?.mistakeReview?.lastAttemptedAt ??
+        parseMistakeReviewTimestamp(position?.card.last_review)
+    );
+}
+
+function parseMistakeReviewTimestamp(value: unknown) {
+    if (!value) return null;
+    const timestamp =
+        value instanceof Date ? value.getTime() : typeof value === "number" ? value : Date.parse(String(value));
+    return Number.isFinite(timestamp) ? timestamp : null;
 }
 
 function mergeMistakeReviewPosition(previous: Position, incoming: Position): Position {
@@ -558,6 +597,10 @@ function mergeMistakeReviewPosition(previous: Position, incoming: Position): Pos
             ...incoming.mistakeReview,
             gameIds,
             occurrenceCount,
+            lastAttemptedAt: Math.max(
+                previous.mistakeReview?.lastAttemptedAt ?? 0,
+                incoming.mistakeReview?.lastAttemptedAt ?? 0,
+            ) || undefined,
         },
     };
 }

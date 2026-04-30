@@ -4,6 +4,7 @@ import { describe, expect, test } from "vitest";
 import type { Position } from "@/components/files/opening";
 import {
     classifyMistakeReviewAttempt,
+    formatMistakeReviewLastSeen,
     getMistakeReviewDailyBatch,
     isMistakeReviewPassingLabel,
     mergeMistakeReviewPositions,
@@ -115,12 +116,22 @@ describe("mistake review helpers", () => {
         const previous = position({
             card: { ...createEmptyCard(), reps: 4, due: new Date("2026-05-01T12:00:00Z") } as Position["card"],
             comment: "keep this",
-            mistakeReview: { ...position().mistakeReview!, gameIds: [1], occurrenceCount: 1 },
+            mistakeReview: {
+                ...position().mistakeReview!,
+                gameIds: [1],
+                occurrenceCount: 1,
+                lastAttemptedAt: 1_000,
+            },
         });
         const incoming = position({
             answer: "d4",
             answerUci: "d2d4",
-            mistakeReview: { ...position().mistakeReview!, gameIds: [2, 3], occurrenceCount: 2 },
+            mistakeReview: {
+                ...position().mistakeReview!,
+                gameIds: [2, 3],
+                occurrenceCount: 2,
+                lastAttemptedAt: 500,
+            },
         });
 
         const merged = mergeMistakeReviewPositions(deck([previous]), [incoming]);
@@ -131,5 +142,19 @@ describe("mistake review helpers", () => {
         expect(merged.positions[0]!.comment).toBe("keep this");
         expect(merged.positions[0]!.mistakeReview?.gameIds).toEqual([1, 2, 3]);
         expect(merged.positions[0]!.mistakeReview?.occurrenceCount).toBe(3);
+        expect(merged.positions[0]!.mistakeReview?.lastAttemptedAt).toBe(1_000);
+    });
+
+    test("formats mistake review last seen from attempt metadata", () => {
+        const now = Date.now();
+        const seenPosition = position({
+            mistakeReview: {
+                ...position().mistakeReview!,
+                lastAttemptedAt: now - 2 * 3600000,
+            },
+        });
+
+        expect(formatMistakeReviewLastSeen(position())).toBe("Never");
+        expect(formatMistakeReviewLastSeen(seenPosition)).toBe("2h ago");
     });
 });
