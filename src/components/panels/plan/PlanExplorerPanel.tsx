@@ -1214,9 +1214,9 @@ function ResultBar({
 
   return (
     <Progress.Root size="sm">
-      <Progress.Section value={(first / total) * 100} color={perspective ? "green" : "gray.3"} />
+      <Progress.Section value={(first / total) * 100} color="gray.3" />
       <Progress.Section value={(line.draw / total) * 100} color="gray" />
-      <Progress.Section value={(third / total) * 100} color={perspective ? "red" : "dark"} />
+      <Progress.Section value={(third / total) * 100} color="dark" />
     </Progress.Root>
   );
 }

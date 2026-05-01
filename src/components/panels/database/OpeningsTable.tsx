@@ -514,10 +514,9 @@ function OpeningsTable({
               <Progress.Root size={isCompact ? "lg" : "xl"} className={resultClassName}>
                 <Progress.Section
                   value={firstPercent}
-                  color={resultPerspective ? "green" : undefined}
-                  className={resultPerspective ? undefined : classes.whiteResultsSection}
+                  className={classes.whiteResultsSection}
                 >
-                  <Progress.Label c={resultPerspective ? undefined : "black"}>
+                  <Progress.Label c="black">
                     {firstPercent > showLabelThreshold ? `${firstPercent.toFixed(1)}%` : ""}
                   </Progress.Label>
                 </Progress.Section>
@@ -526,7 +525,7 @@ function OpeningsTable({
                     {drawPercent > showLabelThreshold ? `${drawPercent.toFixed(1)}%` : ""}
                   </Progress.Label>
                 </Progress.Section>
-                <Progress.Section value={thirdPercent} color={resultPerspective ? "red" : "black"}>
+                <Progress.Section value={thirdPercent} color="black">
                   <Progress.Label>
                     {thirdPercent > showLabelThreshold ? `${thirdPercent.toFixed(1)}%` : ""}
                   </Progress.Label>
