@@ -947,6 +947,33 @@ pub async fn scan_mistake_review(
         false,
     )?;
 
+    if games_total == 0 {
+        update_progress(&state.progress_state, &app, request_id.clone(), 100.0, true)?;
+        emit_mistake_review_progress(
+            &app,
+            &request_id,
+            games_analyzed,
+            games_total,
+            positions_analyzed,
+            candidate_moves,
+            mistakes_by_key.len() as u32,
+            "Done",
+            false,
+            true,
+        )?;
+        state.analysis_cancel_flags.remove(&request_id);
+        state.analysis_pause_flags.remove(&request_id);
+
+        return Ok(MistakeReviewScanReport {
+            games_scanned: games_analyzed,
+            candidate_moves,
+            positions_analyzed,
+            last_analyzed_game_id,
+            stopped,
+            mistakes: Vec::new(),
+        });
+    }
+
     let (mut proc, mut reader) = EngineProcess::new(engine_path).await?;
 
     'games: for (game_index, game) in games.iter().enumerate() {

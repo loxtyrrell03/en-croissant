@@ -15,6 +15,7 @@ import {
     getMistakeReviewAutoUpdatePlayerNameCandidates,
     selectMistakeReviewPlayerTargets,
 } from "@/utils/mistakeReviewAutoUpdate";
+import { hasOnlineDatabaseNewLocalGames } from "@/utils/onlineGameImport";
 
 function position(overrides: Partial<Position> = {}): Position {
     return {
@@ -321,5 +322,26 @@ describe("mistake review helpers", () => {
         );
 
         expect(names).toEqual(["Loxty"]);
+    });
+
+    test("online database updates can be detected when count stays flat", () => {
+        expect(
+            hasOnlineDatabaseNewLocalGames(
+                { gameCount: 100, lastGameId: 200 },
+                { gameCount: 100, lastGameId: 205 },
+            ),
+        ).toBe(true);
+        expect(
+            hasOnlineDatabaseNewLocalGames(
+                { gameCount: 100, lastGameId: 200 },
+                { gameCount: 101, lastGameId: 200 },
+            ),
+        ).toBe(true);
+        expect(
+            hasOnlineDatabaseNewLocalGames(
+                { gameCount: 100, lastGameId: null },
+                { gameCount: 100, lastGameId: 205 },
+            ),
+        ).toBe(false);
     });
 });

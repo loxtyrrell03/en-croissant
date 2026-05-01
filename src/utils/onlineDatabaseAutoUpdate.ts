@@ -17,9 +17,11 @@ import { getDatabases, type SuccessDatabaseInfo } from "@/utils/db";
 import { getDatabasesDir } from "@/utils/directories";
 import {
     getLastOnlineDatabaseGameDate,
+    getLastOnlineDatabaseGameId,
     getOnlineDatabaseUpdateAccounts,
     getOnlineDatabaseUpdateRecord,
     getOnlineGameAccountStatus,
+    hasOnlineDatabaseNewLocalGames,
     importOnlineGamesToDatabase,
     resetDatabaseConversionState,
     upsertOnlineDatabaseUpdateRecord,
@@ -243,6 +245,9 @@ async function maybeUpdateCandidate({
                 (nextDatabase) => nextDatabase.file === database.file,
             );
             const beforeGameCount = beforeUpdate?.game_count ?? database.game_count;
+            const beforeLastGameId = await getLastOnlineDatabaseGameId(database.file).catch(
+                () => null,
+            );
 
             await importOnlineGamesToDatabase({
                 source: account.source,
@@ -268,7 +273,13 @@ async function maybeUpdateCandidate({
                 (nextDatabase) => nextDatabase.file === database.file,
             );
             const updatedGameCount = updatedDatabase?.game_count ?? beforeGameCount;
-            const importedNewGames = updatedGameCount > beforeGameCount;
+            const updatedLastGameId = await getLastOnlineDatabaseGameId(database.file).catch(
+                () => beforeLastGameId,
+            );
+            const importedNewGames = hasOnlineDatabaseNewLocalGames(
+                { gameCount: beforeGameCount, lastGameId: beforeLastGameId },
+                { gameCount: updatedGameCount, lastGameId: updatedLastGameId },
+            );
             const updatedAt = Date.now();
 
             const nextRecord = {

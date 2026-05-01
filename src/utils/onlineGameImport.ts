@@ -57,6 +57,11 @@ export type OnlineGameAccountStatus = {
     latestGameAt: number | null;
 };
 
+export type OnlineDatabaseLocalSnapshot = {
+    gameCount: number | null | undefined;
+    lastGameId: number | null | undefined;
+};
+
 export function getOnlineGameSourceLabel(source: OnlineGameSource) {
     return source === "lichess" ? "Lichess" : "Chess.com";
 }
@@ -241,6 +246,35 @@ export async function getLastOnlineDatabaseGameDate(dbPath: string) {
     }
 
     return null;
+}
+
+export async function getLastOnlineDatabaseGameId(dbPath: string) {
+    const games = await query_games(dbPath, {
+        options: {
+            page: 1,
+            pageSize: 1,
+            sort: "id",
+            direction: "desc",
+            skipCount: true,
+        },
+    });
+
+    return games.data[0]?.id ?? null;
+}
+
+export function hasOnlineDatabaseNewLocalGames(
+    before: OnlineDatabaseLocalSnapshot,
+    after: OnlineDatabaseLocalSnapshot,
+) {
+    const beforeGameCount = before.gameCount ?? 0;
+    const afterGameCount = after.gameCount ?? 0;
+    if (afterGameCount > beforeGameCount) return true;
+
+    const beforeLastGameId = typeof before.lastGameId === "number" ? before.lastGameId : null;
+    const afterLastGameId = typeof after.lastGameId === "number" ? after.lastGameId : null;
+    return (
+        beforeLastGameId !== null && afterLastGameId !== null && afterLastGameId > beforeLastGameId
+    );
 }
 
 export function getPgnImportTimestamp(since: number | null) {

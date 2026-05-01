@@ -25,7 +25,7 @@ import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { DatabaseInfo } from "@/bindings";
-import { events } from "@/bindings";
+import { commands, events } from "@/bindings";
 import {
   databaseConversionStateAtom,
   onlineDatabaseUpdatesAtom,
@@ -36,9 +36,11 @@ import { capitalize } from "@/utils/format";
 import {
   getDefaultOnlineGameDatabaseTitle,
   getLastOnlineDatabaseGameDate,
+  getLastOnlineDatabaseGameId,
   getOnlineDatabaseUpdateRecord,
   getOnlineGameDatabaseFilename,
   getOnlineGameImportId,
+  hasOnlineDatabaseNewLocalGames,
   importOnlineGamesToDatabase,
   resetDatabaseConversionState,
   upsertOnlineDatabaseUpdateRecord,
@@ -176,6 +178,11 @@ export function AccountCard({
                     database?.type === "success"
                       ? await getLastOnlineDatabaseGameDate(database.file)
                       : null;
+                  const beforeGameCount = database?.type === "success" ? database.game_count : 0;
+                  const beforeLastGameId =
+                    database?.type === "success"
+                      ? await getLastOnlineDatabaseGameId(database.file).catch(() => null)
+                      : null;
                   const dbPath = await resolve(
                     databaseDir,
                     getOnlineGameDatabaseFilename(type, title),
@@ -193,10 +200,25 @@ export function AccountCard({
                       setProgress,
                       setConversionState,
                     });
+                    await commands.deleteDuplicatedGames(dbPath);
+                    await commands.clearGames();
                     const nextDatabases = await getDatabases();
                     const updatedDatabase = nextDatabases.find(
                       (database) => database.type === "success" && database.file === dbPath,
                     );
+                    const updatedGameCount =
+                      updatedDatabase?.type === "success"
+                        ? updatedDatabase.game_count
+                        : beforeGameCount;
+                    const updatedLastGameId =
+                      updatedDatabase?.type === "success"
+                        ? await getLastOnlineDatabaseGameId(dbPath).catch(() => beforeLastGameId)
+                        : beforeLastGameId;
+                    const importedNewGames = hasOnlineDatabaseNewLocalGames(
+                      { gameCount: beforeGameCount, lastGameId: beforeLastGameId },
+                      { gameCount: updatedGameCount, lastGameId: updatedLastGameId },
+                    );
+                    const checkedAt = Date.now();
                     setDatabases(nextDatabases);
                     setOnlineDatabaseUpdates((records) =>
                       upsertOnlineDatabaseUpdateRecord(records, {
@@ -207,14 +229,12 @@ export function AccountCard({
                         description:
                           updatedDatabase?.type === "success" ? updatedDatabase.description : null,
                         autoUpdate: updateRecord?.autoUpdate ?? true,
-                        lastCheckedAt: Date.now(),
-                        lastUpdatedAt:
-                          updatedDatabase?.type === "success" &&
-                          updatedDatabase.game_count > downloadedGames
-                            ? Date.now()
-                            : (updateRecord?.lastUpdatedAt ?? null),
+                        lastCheckedAt: checkedAt,
+                        lastUpdatedAt: importedNewGames
+                          ? checkedAt
+                          : (updateRecord?.lastUpdatedAt ?? null),
                         lastKnownGameCount:
-                          updatedDatabase?.type === "success" ? updatedDatabase.game_count : null,
+                          updatedDatabase?.type === "success" ? updatedGameCount : null,
                       }),
                     );
                   } catch (e) {
