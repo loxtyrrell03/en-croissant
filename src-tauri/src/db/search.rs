@@ -185,12 +185,14 @@ fn is_contained(container: Bitboard, subset: Bitboard) -> bool {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Type)]
+#[serde(rename_all = "camelCase")]
 pub struct PositionStats {
     #[serde(rename = "move")]
     pub move_: String,
     pub white: i32,
     pub draw: i32,
     pub black: i32,
+    pub last_played: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, Type)]
@@ -1010,25 +1012,48 @@ fn add_opening_result(
     openings: &mut HashMap<String, PositionStats>,
     san: String,
     result: GameResult,
+    date: Option<&str>,
 ) {
     openings
         .entry(san)
-        .and_modify(|opening| match result {
-            GameResult::WhiteWin => opening.white += 1,
-            GameResult::BlackWin => opening.black += 1,
-            GameResult::Draw => opening.draw += 1,
-            GameResult::Other | GameResult::None => opening.draw += 1,
-        })
-        .or_insert_with(|| PositionStats {
-            black: i32::from(result == GameResult::BlackWin),
-            white: i32::from(result == GameResult::WhiteWin),
-            draw: i32::from(
-                result == GameResult::Draw
-                    || result == GameResult::Other
-                    || result == GameResult::None,
-            ),
-            move_: String::new(),
-        });
+        .and_modify(|opening| add_result_to_position_stats(opening, result, date))
+        .or_insert_with(|| position_stats_from_result(result, date));
+}
+
+fn position_stats_from_result(result: GameResult, date: Option<&str>) -> PositionStats {
+    PositionStats {
+        black: i32::from(result == GameResult::BlackWin),
+        white: i32::from(result == GameResult::WhiteWin),
+        draw: i32::from(
+            result == GameResult::Draw || result == GameResult::Other || result == GameResult::None,
+        ),
+        last_played: date.map(ToOwned::to_owned),
+        move_: String::new(),
+    }
+}
+
+fn add_result_to_position_stats(
+    opening: &mut PositionStats,
+    result: GameResult,
+    date: Option<&str>,
+) {
+    match result {
+        GameResult::WhiteWin => opening.white += 1,
+        GameResult::BlackWin => opening.black += 1,
+        GameResult::Draw => opening.draw += 1,
+        GameResult::Other | GameResult::None => opening.draw += 1,
+    }
+
+    if let Some(date) = date {
+        if opening
+            .last_played
+            .as_deref()
+            .map(|last_played| date > last_played)
+            .unwrap_or(true)
+        {
+            opening.last_played = Some(date.to_string());
+        }
+    }
 }
 
 fn emit_opening_health_progress(
@@ -1978,7 +2003,7 @@ fn search_position_from_occurrences(
             } else {
                 "*".to_string()
             };
-            add_opening_result(&mut openings, san, entry.result);
+            add_opening_result(&mut openings, san, entry.result, entry.date);
         }
     }
 
@@ -2764,21 +2789,11 @@ pub async fn search_position(
                     if include_openings {
                         openings
                             .entry(m)
-                            .and_modify(|opening| match entry.result {
-                                GameResult::WhiteWin => opening.white += 1,
-                                GameResult::BlackWin => opening.black += 1,
-                                GameResult::Draw => opening.draw += 1,
-                                GameResult::Other | GameResult::None => opening.draw += 1,
+                            .and_modify(|opening| {
+                                add_result_to_position_stats(opening, entry.result, entry.date)
                             })
-                            .or_insert_with(|| PositionStats {
-                                black: i32::from(entry.result == GameResult::BlackWin),
-                                white: i32::from(entry.result == GameResult::WhiteWin),
-                                draw: i32::from(
-                                    entry.result == GameResult::Draw
-                                        || entry.result == GameResult::Other
-                                        || entry.result == GameResult::None,
-                                ),
-                                move_: String::new(),
+                            .or_insert_with(|| {
+                                position_stats_from_result(entry.result, entry.date)
                             });
                     }
                 }
@@ -3264,6 +3279,36 @@ mod tests {
         assert_eq!(top_move.games, 2);
         assert_eq!(top_move.last_played.as_deref(), Some("2024.02.01"));
         assert!((top_score - 0.75).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn position_stats_tracks_most_recent_game_date() {
+        let mut openings = HashMap::new();
+
+        add_opening_result(
+            &mut openings,
+            "e4".to_string(),
+            GameResult::WhiteWin,
+            Some("2023.01.01"),
+        );
+        add_opening_result(
+            &mut openings,
+            "e4".to_string(),
+            GameResult::BlackWin,
+            Some("2024.02.03"),
+        );
+        add_opening_result(
+            &mut openings,
+            "e4".to_string(),
+            GameResult::Draw,
+            Some("2022.12.31"),
+        );
+
+        let stats = openings.get("e4").unwrap();
+        assert_eq!(stats.white, 1);
+        assert_eq!(stats.draw, 1);
+        assert_eq!(stats.black, 1);
+        assert_eq!(stats.last_played.as_deref(), Some("2024.02.03"));
     }
 
     #[test]

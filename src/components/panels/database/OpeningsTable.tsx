@@ -28,6 +28,8 @@ import classes from "./OpeningsTable.module.css";
 export type OpeningSort =
   | "games"
   | "gamesLow"
+  | "recent"
+  | "oldest"
   | "health"
   | "chessDbStrength"
   | "chessDbWeakness"
@@ -48,6 +50,8 @@ const ENGINE_RANKING_MULTIPV = 10;
 export const openingSortOptions: { label: string; value: OpeningSort }[] = [
   { label: "Most played", value: "games" },
   { label: "Fewest played", value: "gamesLow" },
+  { label: "Most recent", value: "recent" },
+  { label: "Oldest played", value: "oldest" },
   { label: "CP strength", value: "chessDbStrength" },
   { label: "CP weakness", value: "chessDbWeakness" },
   { label: "Highest win rate", value: "winRateHigh" },
@@ -91,6 +95,10 @@ export function sortOpeningRows(
 
     if (sortBy === "gamesLow") {
       return aTotal - bTotal;
+    }
+
+    if (sortBy === "recent" || sortBy === "oldest") {
+      return compareOpeningDate(a, b, sortBy) || bTotal - aTotal;
     }
 
     if (sortBy === "health" || sortBy === "chessDbStrength") {
@@ -512,10 +520,7 @@ function OpeningsTable({
             const showLabelThreshold = isDense ? 18 : 10;
             return (
               <Progress.Root size={isCompact ? "lg" : "xl"} className={resultClassName}>
-                <Progress.Section
-                  value={firstPercent}
-                  className={classes.whiteResultsSection}
-                >
+                <Progress.Section value={firstPercent} className={classes.whiteResultsSection}>
                   <Progress.Label c="black">
                     {firstPercent > showLabelThreshold ? `${firstPercent.toFixed(1)}%` : ""}
                   </Progress.Label>
@@ -554,6 +559,22 @@ function getOpeningTotal(opening: Opening) {
   return opening.white + opening.draw + opening.black;
 }
 
+function compareOpeningDate(a: Opening, b: Opening, sortBy: "recent" | "oldest") {
+  const aDate = getOpeningDateSortValue(a);
+  const bDate = getOpeningDateSortValue(b);
+  if (aDate === 0 && bDate === 0) return 0;
+  if (aDate === 0) return 1;
+  if (bDate === 0) return -1;
+
+  return sortBy === "recent" ? bDate - aDate : aDate - bDate;
+}
+
+function getOpeningDateSortValue(opening: Opening) {
+  const digits = opening.lastPlayed?.replace(/\D/g, "");
+  if (!digits) return 0;
+  return Number(digits.padEnd(8, "0"));
+}
+
 function getDisplayResultStats(
   opening: Pick<Opening, "white" | "draw" | "black">,
   perspective: DatabaseResultPerspective | null,
@@ -583,6 +604,13 @@ function openingSortToStatus(sortBy: OpeningSort): DataTableSortStatus<Opening> 
     return {
       columnAccessor: "total",
       direction: sortBy === "games" ? "desc" : "asc",
+    };
+  }
+
+  if (sortBy === "recent" || sortBy === "oldest") {
+    return {
+      columnAccessor: "total",
+      direction: sortBy === "recent" ? "desc" : "asc",
     };
   }
 

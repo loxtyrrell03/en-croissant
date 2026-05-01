@@ -153,6 +153,7 @@ export interface Opening {
     white: number;
     black: number;
     draw: number;
+    lastPlayed?: string | null;
 }
 
 export type SearchPositionMode = {
