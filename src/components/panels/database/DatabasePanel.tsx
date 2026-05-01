@@ -37,6 +37,7 @@ import {
 import {
   cancelDatabaseSearch,
   getDatabases,
+  getLocalResultPerspective,
   type Opening,
   query_players,
   searchPosition,
@@ -48,6 +49,7 @@ import type { OpeningMoveHealthSidePreference } from "@/utils/openingMoveHealth"
 import { unwrap } from "@/utils/unwrap";
 import { IconStar, IconStarFilled } from "@tabler/icons-react";
 import DatabaseLoader from "./DatabaseLoader";
+import { DatabasePerspectiveControls } from "./DatabasePerspectiveControls";
 import GamesTable from "./GamesTable";
 import NoDatabaseWarning from "./NoDatabaseWarning";
 import OpeningsTable, {
@@ -79,6 +81,7 @@ export type LocalOptions = {
   fen: string;
   type: "exact" | "partial";
   player: number | null;
+  playerName?: string;
   color: "white" | "black";
   start_date?: string;
   end_date?: string;
@@ -225,7 +228,7 @@ async function fetchOpening(
             ? MASTER_GAME_PLAYER_TEXT_LIMIT
             : MASTER_GAME_DEFAULT_LIMIT
           : undefined,
-        query: isMasterGamesView ? playerQuery : undefined,
+        query: isMasterGamesView && hasPlayerFilter ? playerQuery : undefined,
       });
       return {
         openings: sortOpenings(positionData[0]),
@@ -386,6 +389,7 @@ function DatabasePanel() {
         localOptions.path ?? "",
         localOptions.type,
         localOptions.player ?? "",
+        localOptions.playerName ?? "",
         localOptions.color,
         localOptions.start_date ?? "",
         localOptions.end_date ?? "",
@@ -438,6 +442,8 @@ function DatabasePanel() {
     (acc, curr) => acc + curr.black + curr.white + curr.draw,
     0,
   );
+  const resultPerspective =
+    dbType.type === "local" ? getLocalResultPerspective(localOptions) : null;
 
   const header = (
     <>
@@ -468,6 +474,20 @@ function DatabasePanel() {
               maw={dense ? 150 : 200}
               miw={dense ? 116 : 150}
               allowDeselect={false}
+            />
+          )}
+          {db === "local" && (
+            <DatabasePerspectiveControls
+              databasePath={referenceDatabase}
+              player={localOptions.player}
+              playerName={localOptions.playerName}
+              color={localOptions.color}
+              onPlayerChange={(player) => setLocalOptions((q) => ({ ...q, player }))}
+              onPlayerNameChange={(playerName) => setLocalOptions((q) => ({ ...q, playerName }))}
+              onColorChange={(color) => setLocalOptions((q) => ({ ...q, color }))}
+              size={controlSize}
+              playerWidth={dense ? 128 : 165}
+              colorWidth={dense ? 116 : 132}
             />
           )}
           <Tooltip
@@ -573,6 +593,7 @@ function DatabasePanel() {
             sortBy={openingSort}
             onSortChange={setOpeningSort}
             healthSidePreference={moveHealthSide}
+            resultPerspective={resultPerspective}
           />
         </PanelWithError>
         <PanelWithError

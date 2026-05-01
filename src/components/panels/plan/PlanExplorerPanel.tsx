@@ -89,7 +89,9 @@ import {
 } from "@/utils/engines";
 import {
   cancelDatabaseSearch,
+  type DatabaseResultPerspective,
   getDatabases,
+  getLocalResultPerspective,
   getPlanExplorer,
   type SuccessDatabaseInfo,
 } from "@/utils/db";
@@ -102,6 +104,7 @@ import {
   withPlanLineColor,
   type ColoredPlanExplorerLine,
 } from "@/utils/planExplorer";
+import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveControls";
 import NoDatabaseWarning from "../database/NoDatabaseWarning";
 
 type SideFilter = "all" | "white" | "black";
@@ -136,7 +139,7 @@ function PlanExplorerPanel() {
   const [source, setSource] = useAtom(planExplorerSourceAtom);
   const currentTab = useAtomValue(currentTabAtom);
   const engines = useAtomValue(enginesAtom);
-  const localOptions = useAtomValue(currentLocalOptionsAtom);
+  const [localOptions, setLocalOptions] = useAtom(currentLocalOptionsAtom);
   const lichessOptions = useAtomValue(lichessOptionsAtom);
   const masterOptions = useAtomValue(masterOptionsAtom);
   const sessions = useAtomValue(sessionsAtom);
@@ -170,10 +173,7 @@ function PlanExplorerPanel() {
   const clampedEngineDepth = clampNumber(engineStrengthDepth, 1, 40);
   const clampedEngineMultipv = clampNumber(engineStrengthMultipv, 1, 20);
   const localEngines = useMemo(
-    () =>
-      (engines ?? []).filter(
-        (engine): engine is LocalEngine => engine.type === "local",
-      ),
+    () => (engines ?? []).filter((engine): engine is LocalEngine => engine.type === "local"),
     [engines],
   );
   const selectedEngine = useMemo(
@@ -197,12 +197,7 @@ function PlanExplorerPanel() {
 
   const engineStrengthCacheKey = useMemo(() => {
     if (!selectedEngine) return "";
-    return [
-      debouncedFen,
-      selectedEngine.id,
-      clampedEngineDepth,
-      clampedEngineMultipv,
-    ].join("|");
+    return [debouncedFen, selectedEngine.id, clampedEngineDepth, clampedEngineMultipv].join("|");
   }, [clampedEngineDepth, clampedEngineMultipv, debouncedFen, selectedEngine]);
   const cachedEngineReport = engineStrengthCacheKey
     ? engineStrengthState.cache[engineStrengthCacheKey]
@@ -239,6 +234,7 @@ function PlanExplorerPanel() {
         debouncedFen,
         localOptions.type,
         localOptions.player ?? "",
+        localOptions.playerName ?? "",
         localOptions.color,
         localOptions.start_date ?? "",
         localOptions.end_date ?? "",
@@ -271,6 +267,7 @@ function PlanExplorerPanel() {
         debouncedFen,
         localOptions.type,
         localOptions.player ?? "",
+        localOptions.playerName ?? "",
         localOptions.color,
         localOptions.start_date ?? "",
         localOptions.end_date ?? "",
@@ -329,9 +326,14 @@ function PlanExplorerPanel() {
     if (!visiblePlanData) return null;
     return {
       ...visiblePlanData,
-      pieces: sortPlanPieces(visiblePlanData.pieces, sort, visibleEngineReport),
+      pieces: sortPlanPieces(
+        visiblePlanData.pieces,
+        sort,
+        visibleEngineReport,
+        isLocalSource ? getLocalResultPerspective(localOptions) : null,
+      ),
     };
-  }, [sort, visibleEngineReport, visiblePlanData]);
+  }, [isLocalSource, localOptions, sort, visibleEngineReport, visiblePlanData]);
 
   const handleEngineLines = useCallback(
     (active: PlanExplorerEngineRequest, bestLines: BestMoves[], nextProgress: number) => {
@@ -503,10 +505,7 @@ function PlanExplorerPanel() {
       return;
     }
     if (!selectedEngine || !planData || !engineStrengthCacheKey) return;
-    if (
-      visibleEngineReport ||
-      engineStrengthState.activeRequestKey === engineStrengthCacheKey
-    ) {
+    if (visibleEngineReport || engineStrengthState.activeRequestKey === engineStrengthCacheKey) {
       return;
     }
 
@@ -534,6 +533,9 @@ function PlanExplorerPanel() {
   }, [
     debouncedFen,
     lichessOptionsKey,
+    localOptions.color,
+    localOptions.player,
+    localOptions.playerName,
     masterOptionsKey,
     maxPlies,
     referenceDatabase,
@@ -625,6 +627,7 @@ function PlanExplorerPanel() {
                   engineStrengthEnabled={engineStrengthEnabled}
                   engineReport={visibleEngineReport}
                   engineRunning={engineStrengthState.running}
+                  resultPerspective={isLocalSource ? getLocalResultPerspective(localOptions) : null}
                 />
               ))
             )}
@@ -650,11 +653,25 @@ function PlanExplorerPanel() {
               ]}
             />
             {isLocalSource && (
-              <DatabaseSelector
-                data={dbSelectData}
-                value={referenceDatabase}
-                onChange={setReferenceDatabase}
-              />
+              <>
+                <DatabaseSelector
+                  data={dbSelectData}
+                  value={referenceDatabase}
+                  onChange={setReferenceDatabase}
+                />
+                <DatabasePerspectiveControls
+                  databasePath={referenceDatabase}
+                  player={localOptions.player}
+                  playerName={localOptions.playerName}
+                  color={localOptions.color}
+                  onPlayerChange={(player) => setLocalOptions((q) => ({ ...q, player }))}
+                  onPlayerNameChange={(playerName) =>
+                    setLocalOptions((q) => ({ ...q, playerName }))
+                  }
+                  onColorChange={(color) => setLocalOptions((q) => ({ ...q, color }))}
+                  size="sm"
+                />
+              </>
             )}
           </Group>
           <Group gap="xs" wrap="nowrap">
@@ -749,7 +766,11 @@ function PlanExplorerPanel() {
                 w={94}
                 prefix="PV "
               />
-              <Tooltip label={engineStrengthState.running ? "Stop engine strength" : "Refresh engine strength"}>
+              <Tooltip
+                label={
+                  engineStrengthState.running ? "Stop engine strength" : "Refresh engine strength"
+                }
+              >
                 <ActionIcon
                   size="lg"
                   variant="default"
@@ -766,9 +787,7 @@ function PlanExplorerPanel() {
                       return {
                         ...current,
                         report:
-                          current.reportCacheKey === engineStrengthCacheKey
-                            ? null
-                            : current.report,
+                          current.reportCacheKey === engineStrengthCacheKey ? null : current.report,
                         reportCacheKey:
                           current.reportCacheKey === engineStrengthCacheKey
                             ? null
@@ -960,6 +979,7 @@ function sortPlanPieces(
   pieces: PlanExplorerPiece[],
   sort: PlanSort,
   engineReport: EnginePlanReport | null,
+  resultPerspective: DatabaseResultPerspective | null,
 ) {
   const direction = sort.direction === "asc" ? 1 : -1;
 
@@ -979,13 +999,14 @@ function sortPlanPieces(
         diff = a.total - b.total;
         break;
       case "results":
-        diff = getPieceResultScore(a) - getPieceResultScore(b) || a.total - b.total;
+        diff =
+          getPieceResultScore(a, resultPerspective) - getPieceResultScore(b, resultPerspective) ||
+          a.total - b.total;
         break;
       case "engine":
         diff =
           getPieceEngineStrengthScore(a, engineReport) -
-            getPieceEngineStrengthScore(b, engineReport) ||
-          a.total - b.total;
+            getPieceEngineStrengthScore(b, engineReport) || a.total - b.total;
         break;
     }
 
@@ -997,11 +1018,14 @@ function defaultPlanSortDirection(key: PlanSortKey): SortDirection {
   return key === "piece" ? "asc" : "desc";
 }
 
-function getPieceResultScore(piece: PlanExplorerPiece) {
+function getPieceResultScore(
+  piece: PlanExplorerPiece,
+  resultPerspective: DatabaseResultPerspective | null,
+) {
   const topLine = piece.lines[0];
   if (!topLine) return 0;
 
-  return getLineResultScore(topLine, piece.color);
+  return getLineResultScore(topLine, resultPerspective ?? piece.color);
 }
 
 function getLineResultScore(line: PlanExplorerLine, color: string) {
@@ -1072,6 +1096,7 @@ function PieceRow({
   engineStrengthEnabled,
   engineReport,
   engineRunning,
+  resultPerspective,
 }: {
   piece: PlanExplorerPiece;
   drawLine: (line: ColoredPlanExplorerLine) => void;
@@ -1079,6 +1104,7 @@ function PieceRow({
   engineStrengthEnabled: boolean;
   engineReport: EnginePlanReport | null;
   engineRunning: boolean;
+  resultPerspective: DatabaseResultPerspective | null;
 }) {
   const topLine = piece.lines[0] ? withPlanLineColor(piece.lines[0], piece.color) : null;
   const engineMatch = useMemo(
@@ -1162,12 +1188,18 @@ function PieceRow({
       <Table.Td>
         <Badge variant="light">{formatNumber(piece.total)}</Badge>
       </Table.Td>
-      <Table.Td>{topLine && <ResultBar line={topLine} />}</Table.Td>
+      <Table.Td>{topLine && <ResultBar line={topLine} perspective={resultPerspective} />}</Table.Td>
     </Table.Tr>
   );
 }
 
-function ResultBar({ line }: { line: PlanExplorerLine }) {
+function ResultBar({
+  line,
+  perspective,
+}: {
+  line: PlanExplorerLine;
+  perspective: DatabaseResultPerspective | null;
+}) {
   const total = line.white + line.draw + line.black;
   if (total === 0) {
     return (
@@ -1177,11 +1209,14 @@ function ResultBar({ line }: { line: PlanExplorerLine }) {
     );
   }
 
+  const first = perspective === "black" ? line.black : line.white;
+  const third = perspective === "black" ? line.white : line.black;
+
   return (
     <Progress.Root size="sm">
-      <Progress.Section value={(line.white / total) * 100} color="gray.3" />
+      <Progress.Section value={(first / total) * 100} color={perspective ? "green" : "gray.3"} />
       <Progress.Section value={(line.draw / total) * 100} color="gray" />
-      <Progress.Section value={(line.black / total) * 100} color="dark" />
+      <Progress.Section value={(third / total) * 100} color={perspective ? "red" : "dark"} />
     </Progress.Root>
   );
 }

@@ -162,6 +162,8 @@ export type SearchPositionMode = {
     query?: Partial<GameQuery>;
 };
 
+export type DatabaseResultPerspective = "white" | "black";
+
 export async function getTournamentGames(file: string, id: number) {
     return await query_games(file, {
         options: {
@@ -180,9 +182,10 @@ export async function searchPosition(
 ) {
     const includeOpenings = mode.includeOpenings ?? true;
     const includeGames = mode.includeGames ?? true;
+    const resolvedPlayer = await resolveLocalOptionsPlayer(options);
+    const playerQuery = getLocalPlayerGameQuery(resolvedPlayer, options.color);
     const query: GameQuery = {
-        player1: options.color === "white" ? options.player : undefined,
-        player2: options.color === "black" ? options.player : undefined,
+        ...playerQuery,
         position: {
             fen: options.fen,
             type_: options.type,
@@ -204,11 +207,7 @@ export async function searchPosition(
         };
     }
 
-    const res = await commands.searchPosition(
-        options.path!,
-        query,
-        tab,
-    );
+    const res = await commands.searchPosition(options.path!, query, tab);
     if (res.status === "error") {
         if (res.error !== "Search stopped") {
             unwrap(res);
@@ -233,11 +232,11 @@ export async function getPlanExplorer(
     maxPlies: number,
     requestId = "plan-explorer",
 ): Promise<PlanExplorerData> {
+    const resolvedPlayer = await resolveLocalOptionsPlayer(options);
     const res = await commands.getPlanExplorer(
         options.path!,
         {
-            player1: options.color === "white" ? options.player : undefined,
-            player2: options.color === "black" ? options.player : undefined,
+            ...getLocalPlayerGameQuery(resolvedPlayer, options.color),
             position: {
                 fen: options.fen,
                 type_: options.type,
@@ -253,4 +252,104 @@ export async function getPlanExplorer(
         return Promise.reject();
     }
     return unwrap(res);
+}
+
+export function getLocalResultPerspective(
+    options: Pick<LocalOptions, "player" | "playerName" | "color">,
+): DatabaseResultPerspective | null {
+    return hasLocalPlayerPerspective(options) ? options.color : null;
+}
+
+export function hasLocalPlayerPerspective(options: Pick<LocalOptions, "player" | "playerName">) {
+    return !!options.player || !!options.playerName?.trim();
+}
+
+async function resolveLocalOptionsPlayer(
+    options: LocalOptions,
+): Promise<number | null | undefined> {
+    if (!options.path) return undefined;
+
+    const playerName = options.playerName?.trim();
+    if (!playerName) {
+        return options.player ?? undefined;
+    }
+
+    const player = await resolvePlayerByName(options.path, playerName);
+    return player?.id ?? null;
+}
+
+async function resolvePlayerByName(databasePath: string, searchText: string) {
+    const queries = getPlayerSearchQueries(searchText);
+    if (queries.length === 0) return null;
+
+    const players: Player[] = [];
+    const seen = new Set<number>();
+    for (const query of queries) {
+        const result = await query_players(databasePath, {
+            name: query,
+            options: {
+                page: 1,
+                pageSize: 12,
+                skipCount: true,
+                sort: "elo",
+                direction: "desc",
+            },
+        });
+        for (const player of result.data) {
+            if (!seen.has(player.id)) {
+                players.push(player);
+                seen.add(player.id);
+            }
+        }
+    }
+
+    const normalizedSearch = normalizePlayerText(searchText);
+    const tokens = normalizedSearch.split(" ").filter(Boolean);
+    const exact = players.find(
+        (player) => normalizePlayerText(player.name ?? "") === normalizedSearch,
+    );
+    if (exact) return exact;
+
+    return (
+        players.find((player) => {
+            const normalizedName = normalizePlayerText(player.name ?? "");
+            return tokens.length > 0 && tokens.every((token) => normalizedName.includes(token));
+        }) ?? null
+    );
+}
+
+function getLocalPlayerGameQuery(
+    playerId: number | null | undefined,
+    color: DatabaseResultPerspective,
+): Partial<GameQuery> {
+    if (playerId === undefined) return {};
+
+    return {
+        player1: playerId ?? -1,
+        sides: color === "white" ? "WhiteBlack" : "BlackWhite",
+    };
+}
+
+export function normalizePlayerText(value: string) {
+    return value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim()
+        .replace(/\s+/g, " ");
+}
+
+function getPlayerSearchQueries(searchText: string) {
+    const normalized = normalizePlayerText(searchText);
+    if (normalized.length < 3) return [];
+
+    const queries = new Set([searchText.trim()]);
+    const tokens = normalized.split(" ").filter(Boolean);
+    if (tokens.length === 2 && !searchText.includes(",")) {
+        queries.add(`${tokens[1]}, ${tokens[0]}`);
+    }
+    for (const token of tokens) {
+        if (token.length >= 3) queries.add(token);
+    }
+
+    return Array.from(queries).filter(Boolean);
 }

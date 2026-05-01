@@ -17,8 +17,8 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Chessground } from "@/chessground/Chessground";
 import PiecesGrid from "@/components/boards/PiecesGrid";
-import { PlayerSearchInput } from "@/components/databases/PlayerSearchInput";
 import { currentLocalOptionsAtom } from "@/state/atoms";
+import { DatabasePerspectiveControls } from "../DatabasePerspectiveControls";
 
 function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
   const { t } = useTranslation();
@@ -41,28 +41,19 @@ function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
       <SimpleGrid cols={2}>
         <Stack gap={4}>
           <Text fw="bold" fz="sm">
-            {t("Board.Database.Local.Player")}
+            Player perspective
           </Text>
-          {options.path && (
-            <PlayerSearchInput
-              label={t("Common.Search")}
-              value={options.player ?? undefined}
-              file={options.path}
-              setValue={(v) => setOptions((q) => ({ ...q, player: v || null }))}
-            />
-          )}
-        </Stack>
-        <Stack gap={4}>
-          <Text fw="bold" fz="sm">
-            {t("Board.Database.Local.Color")}
-          </Text>
-          <SegmentedControl
-            data={[
-              { value: "white", label: t("Fen.White") },
-              { value: "black", label: t("Fen.Black") },
-            ]}
-            value={options.color}
-            onChange={(v) => setOptions({ ...options, color: v as "white" | "black" })}
+          <DatabasePerspectiveControls
+            databasePath={options.path}
+            player={options.player}
+            playerName={options.playerName}
+            color={options.color}
+            onPlayerChange={(player) => setOptions((q) => ({ ...q, player }))}
+            onPlayerNameChange={(playerName) => setOptions((q) => ({ ...q, playerName }))}
+            onColorChange={(color) => setOptions((q) => ({ ...q, color }))}
+            size="sm"
+            playerWidth={220}
+            colorWidth={150}
           />
         </Stack>
 

@@ -10,7 +10,7 @@ import { currentBoardPreviewShapesAtom, moveNotationTypeAtom } from "@/state/ato
 import { addPieceSymbol } from "@/utils/annotation";
 import { queryChessDbMoves } from "@/utils/chessdb/api";
 import { positionFromFen } from "@/utils/chessops";
-import type { Opening } from "@/utils/db";
+import type { DatabaseResultPerspective, Opening } from "@/utils/db";
 import { formatNumber } from "@/utils/format";
 import { queryLichessCloudMoves } from "@/utils/lichess/api";
 import {
@@ -137,6 +137,7 @@ function OpeningsTable({
   compact = false,
   density,
   healthSidePreference = "sideToMove",
+  resultPerspective = null,
   referenceOpenings,
 }: {
   openings: Opening[];
@@ -146,6 +147,7 @@ function OpeningsTable({
   compact?: boolean;
   density?: OpeningTableDensity;
   healthSidePreference?: OpeningMoveHealthSidePreference;
+  resultPerspective?: DatabaseResultPerspective | null;
   referenceOpenings?: Opening[];
 }) {
   const store = useContext(TreeStateContext)!;
@@ -221,6 +223,7 @@ function OpeningsTable({
     const [pos] = positionFromFen(currentFen);
     return resolveOpeningMoveHealthSide(healthSidePreference, pos?.turn ?? "white");
   }, [currentFen, healthSidePreference]);
+  const resultSortSide = resultPerspective ?? healthSide;
   const cloudMultipv = useMemo(() => getOpeningRankingMultipv(openings), [openings]);
 
   const healthByMove = useMemo(
@@ -258,7 +261,7 @@ function OpeningsTable({
     setSortStatus(openingSortToStatus(effectiveSortBy));
   }, [effectiveSortBy]);
 
-  openings = sortOpeningRows(openings, effectiveSortBy, healthByMove, healthSide);
+  openings = sortOpeningRows(openings, effectiveSortBy, healthByMove, resultSortSide);
 
   useEffect(() => {
     let cancelled = false;
@@ -496,30 +499,36 @@ function OpeningsTable({
         },
         {
           accessor: "results",
-          title: isDense ? "W/D/L" : "Win rates",
+          title: resultPerspective ? "W/D/L" : isDense ? "W/D/B" : "White / draw / black",
           width: columnWidths.results,
           ellipsis: true,
           sortable: true,
           render: ({ black, white, draw }) => {
             const total = white + draw + black;
-            const whitePercent = (white / total) * 100;
-            const drawPercent = (draw / total) * 100;
-            const blackPercent = (black / total) * 100;
+            const resultStats = getDisplayResultStats({ white, draw, black }, resultPerspective);
+            const firstPercent = total > 0 ? (resultStats.first / total) * 100 : 0;
+            const drawPercent = total > 0 ? (draw / total) * 100 : 0;
+            const thirdPercent = total > 0 ? (resultStats.third / total) * 100 : 0;
+            const showLabelThreshold = isDense ? 18 : 10;
             return (
               <Progress.Root size={isCompact ? "lg" : "xl"} className={resultClassName}>
-                <Progress.Section value={whitePercent} className={classes.whiteResultsSection}>
-                  <Progress.Label c="black">
-                    {whitePercent > (isDense ? 18 : 10) ? `${whitePercent.toFixed(1)}%` : ""}
+                <Progress.Section
+                  value={firstPercent}
+                  color={resultPerspective ? "green" : undefined}
+                  className={resultPerspective ? undefined : classes.whiteResultsSection}
+                >
+                  <Progress.Label c={resultPerspective ? undefined : "black"}>
+                    {firstPercent > showLabelThreshold ? `${firstPercent.toFixed(1)}%` : ""}
                   </Progress.Label>
                 </Progress.Section>
                 <Progress.Section value={drawPercent} color="gray">
                   <Progress.Label>
-                    {drawPercent > (isDense ? 18 : 10) ? `${drawPercent.toFixed(1)}%` : ""}
+                    {drawPercent > showLabelThreshold ? `${drawPercent.toFixed(1)}%` : ""}
                   </Progress.Label>
                 </Progress.Section>
-                <Progress.Section value={blackPercent} color="black">
+                <Progress.Section value={thirdPercent} color={resultPerspective ? "red" : "black"}>
                   <Progress.Label>
-                    {blackPercent > (isDense ? 18 : 10) ? `${blackPercent.toFixed(1)}%` : ""}
+                    {thirdPercent > showLabelThreshold ? `${thirdPercent.toFixed(1)}%` : ""}
                   </Progress.Label>
                 </Progress.Section>
               </Progress.Root>
@@ -544,6 +553,23 @@ export default memo(OpeningsTable);
 
 function getOpeningTotal(opening: Opening) {
   return opening.white + opening.draw + opening.black;
+}
+
+function getDisplayResultStats(
+  opening: Pick<Opening, "white" | "draw" | "black">,
+  perspective: DatabaseResultPerspective | null,
+) {
+  if (!perspective) {
+    return {
+      first: opening.white,
+      third: opening.black,
+    };
+  }
+
+  return {
+    first: perspective === "white" ? opening.white : opening.black,
+    third: perspective === "white" ? opening.black : opening.white,
+  };
 }
 
 function openingSortToStatus(sortBy: OpeningSort): DataTableSortStatus<Opening> {

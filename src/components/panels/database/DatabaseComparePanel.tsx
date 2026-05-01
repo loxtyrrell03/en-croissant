@@ -21,6 +21,7 @@ import {
 import {
   cancelDatabaseSearch,
   getDatabases,
+  getLocalResultPerspective,
   type Opening,
   searchPosition,
   type SuccessDatabaseInfo,
@@ -30,6 +31,7 @@ import { getLichessGames, getMasterGames } from "@/utils/lichess/api";
 import type { LichessGamesOptions, MasterGamesOptions } from "@/utils/lichess/explorer";
 import type { OpeningMoveHealthSidePreference } from "@/utils/openingMoveHealth";
 import DatabaseLoader from "./DatabaseLoader";
+import { DatabasePerspectiveControls } from "./DatabasePerspectiveControls";
 import type { LocalOptions } from "./DatabasePanel";
 import OpeningsTable, {
   openingMoveHealthSideOptions,
@@ -63,7 +65,7 @@ function DatabaseComparePanel() {
   const [debouncedFen] = useDebouncedValue(fen, 50);
   const tab = useAtomValue(currentTabAtom);
   const referenceDatabase = useAtomValue(referenceDbAtom);
-  const localOptions = useAtomValue(currentLocalOptionsAtom);
+  const [localOptions, setLocalOptions] = useAtom(currentLocalOptionsAtom);
   const lichessOptions = useAtomValue(lichessOptionsAtom);
   const masterOptions = useAtomValue(masterOptionsAtom);
   const sessions = useAtomValue(sessionsAtom);
@@ -146,6 +148,8 @@ function DatabaseComparePanel() {
   const selectedSources = selectedPair.map(
     (sourceValue) => compareSources.find((item) => item.value === sourceValue) ?? null,
   );
+  const perspectiveDatabasePath =
+    selectedSources.find((source) => source?.type === "local")?.database.file ?? null;
   const searchIds = selectedSources.map((source) =>
     source
       ? getCompareSearchId(
@@ -185,18 +189,32 @@ function DatabaseComparePanel() {
         <Text fw={700} fz={tableDensity === "dense" ? "xs" : "sm"}>
           Database comparison
         </Text>
-        <Tooltip label="Evaluate move strength for this side">
-          <Select
-            data={openingMoveHealthSideOptions}
-            value={moveHealthSide}
-            onChange={(value) =>
-              setMoveHealthSide((value as OpeningMoveHealthSidePreference) ?? "sideToMove")
-            }
+        <Group gap={tableDensity === "dense" ? 4 : "xs"} wrap="wrap" justify="flex-end">
+          <DatabasePerspectiveControls
+            databasePath={perspectiveDatabasePath}
+            player={localOptions.player}
+            playerName={localOptions.playerName}
+            color={localOptions.color}
+            onPlayerChange={(player) => setLocalOptions((q) => ({ ...q, player }))}
+            onPlayerNameChange={(playerName) => setLocalOptions((q) => ({ ...q, playerName }))}
+            onColorChange={(color) => setLocalOptions((q) => ({ ...q, color }))}
             size="xs"
-            w={isStacked ? "100%" : sideMoveSelectWidth}
-            allowDeselect={false}
+            playerWidth={tableDensity === "dense" ? 126 : 160}
+            colorWidth={tableDensity === "dense" ? 112 : 126}
           />
-        </Tooltip>
+          <Tooltip label="Evaluate move strength for this side">
+            <Select
+              data={openingMoveHealthSideOptions}
+              value={moveHealthSide}
+              onChange={(value) =>
+                setMoveHealthSide((value as OpeningMoveHealthSidePreference) ?? "sideToMove")
+              }
+              size="xs"
+              w={isStacked ? "100%" : sideMoveSelectWidth}
+              allowDeselect={false}
+            />
+          </Tooltip>
+        </Group>
       </Group>
 
       {localDatabases.length === 0 && (
@@ -224,6 +242,11 @@ function DatabaseComparePanel() {
             masterOptions={masterOptions}
             explorerToken={explorerToken}
             moveHealthSide={moveHealthSide}
+            resultPerspective={
+              selectedSources[index]?.type === "local"
+                ? getLocalResultPerspective(localOptions)
+                : null
+            }
             density={tableDensity}
             searchId={searchIds[index]}
             referenceOpenings={
@@ -251,6 +274,7 @@ function CompareDatabaseTable({
   masterOptions,
   explorerToken,
   moveHealthSide,
+  resultPerspective,
   density,
   searchId,
   referenceOpenings,
@@ -267,6 +291,7 @@ function CompareDatabaseTable({
   masterOptions: MasterGamesOptions;
   explorerToken?: string;
   moveHealthSide: OpeningMoveHealthSidePreference;
+  resultPerspective: ReturnType<typeof getLocalResultPerspective>;
   density: OpeningTableDensity;
   searchId: string | null;
   referenceOpenings?: Opening[];
@@ -401,6 +426,7 @@ function CompareDatabaseTable({
             sortBy={openingSort}
             onSortChange={setOpeningSort}
             healthSidePreference={moveHealthSide}
+            resultPerspective={resultPerspective}
             referenceOpenings={referenceOpenings}
           />
         </Box>
@@ -439,6 +465,7 @@ function getCompareSearchId(
     fen,
     localOptions.type,
     localOptions.player ?? "",
+    localOptions.playerName ?? "",
     localOptions.color,
     localOptions.start_date ?? "",
     localOptions.end_date ?? "",

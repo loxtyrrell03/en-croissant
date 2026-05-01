@@ -525,6 +525,7 @@ const localOptionsFamily = atomFamily((_tab: string) =>
         type: "exact",
         fen: "",
         player: null,
+        playerName: "",
         color: "white",
         result: "any",
     }),
