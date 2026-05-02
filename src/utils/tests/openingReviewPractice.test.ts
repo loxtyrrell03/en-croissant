@@ -3,7 +3,11 @@ import { createEmptyCard } from "ts-fsrs";
 import { describe, expect, test } from "vitest";
 import type { Position } from "@/components/files/opening";
 import type { ChessDbCloudMove } from "@/utils/chessdb/api";
-import { assessOpeningReviewMove, isOpeningReviewSavedMove } from "@/utils/openingReviewPractice";
+import {
+    assessOpeningReviewMove,
+    findReviewPracticePositionForBoard,
+    isOpeningReviewSavedMove,
+} from "@/utils/openingReviewPractice";
 
 const BLACK_TO_MOVE_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";
 
@@ -34,6 +38,38 @@ function cloudMove(
 }
 
 describe("opening review practice move assessment", () => {
+    test("uses the scoped practice card when duplicate positions share a FEN", () => {
+        const first = position({
+            reviewKey: "first",
+            answer: "e4",
+            answerUci: "e2e4",
+        });
+        const scoped = position({
+            reviewKey: "scoped",
+            answer: "d4",
+            answerUci: "d2d4",
+        });
+
+        const entry = findReviewPracticePositionForBoard([first, scoped], INITIAL_FEN, 1);
+
+        expect(entry?.index).toBe(1);
+        expect(entry?.position.reviewKey).toBe("scoped");
+    });
+
+    test("does not fall back to another duplicate when the scoped card is not on the board", () => {
+        const first = position({ reviewKey: "first" });
+        const scoped = position({
+            reviewKey: "scoped",
+            fen: BLACK_TO_MOVE_FEN,
+            answer: "e5",
+            answerUci: "e7e5",
+        });
+
+        const entry = findReviewPracticePositionForBoard([first, scoped], INITIAL_FEN, 1);
+
+        expect(entry).toBeNull();
+    });
+
     test("keeps the saved answer as correct", () => {
         const assessment = assessOpeningReviewMove(position(), { san: "e4", uci: "e2e4" }, null);
 

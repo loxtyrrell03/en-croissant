@@ -112,6 +112,7 @@ import {
 import { assessMistakeReviewMoveWithEngine } from "@/utils/mistakeReviewPractice";
 import {
   assessOpeningReviewMove,
+  findReviewPracticePositionForBoard,
   isOpeningReviewEngineMove,
   isOpeningReviewSavedMove,
 } from "@/utils/openingReviewPractice";
@@ -482,10 +483,16 @@ function Board({
     currentMistakeReviewPosition,
     deck.positions,
   ]);
-  const currentPracticeCard = useMemo(
-    () => deck.positions.find((position) => sameBoardPosition(position.fen, currentNode.fen)),
-    [currentNode.fen, deck.positions],
+  const currentPracticeEntry = useMemo(
+    () =>
+      findReviewPracticePositionForBoard(
+        deck.positions,
+        currentNode.fen,
+        practicing ? practiceState.positionIndex : undefined,
+      ),
+    [currentNode.fen, deck.positions, practiceState.positionIndex, practicing],
   );
+  const currentPracticeCard = currentPracticeEntry?.position ?? null;
   const mistakeReviewFreePlayActive =
     isMistakeReviewTab && mistakeReviewFreePlay && !!trainerMistakeReviewPosition;
 
@@ -808,12 +815,12 @@ function Board({
     }
 
     if (practicing) {
-      const c = currentPracticeCard;
+      const c = currentPracticeEntry?.position;
       if (!c) {
         return;
       }
 
-      const i = deck.positions.indexOf(c);
+      const i = currentPracticeEntry.index;
       const timeTaken = Date.now() - cardStartTime;
       const isMistakeReview = currentTab?.gameOrigin.kind === "mistake_review";
       const isOpeningReview = currentTab?.gameOrigin.kind === "opening_review";

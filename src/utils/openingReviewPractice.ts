@@ -16,6 +16,29 @@ export type OpeningReviewMoveAssessment = {
 
 const OK_ALTERNATIVE_CP_LOSS = 80;
 
+export type ReviewPracticePositionEntry = {
+    position: Position;
+    index: number;
+};
+
+export function findReviewPracticePositionForBoard(
+    positions: Position[],
+    currentFen: string | undefined,
+    practicePositionIndex: number | undefined,
+): ReviewPracticePositionEntry | null {
+    if (practicePositionIndex !== undefined) {
+        const position = positions[practicePositionIndex];
+        return position && sameReviewBoardPosition(position.fen, currentFen)
+            ? { position, index: practicePositionIndex }
+            : null;
+    }
+
+    const index = positions.findIndex((position) =>
+        sameReviewBoardPosition(position.fen, currentFen),
+    );
+    return index === -1 ? null : { position: positions[index]!, index };
+}
+
 export function assessOpeningReviewMove(
     position: Position,
     playedMove: { san: string; uci: string },
@@ -172,4 +195,9 @@ function normalizeReviewSan(san: string) {
 function getScoreForSide(move: ChessDbCloudMove, side: "white" | "black") {
     if (move.scoreCpForWhite === null) return null;
     return side === "black" ? -move.scoreCpForWhite : move.scoreCpForWhite;
+}
+
+function sameReviewBoardPosition(a: string | undefined, b: string | undefined) {
+    if (!a || !b) return false;
+    return a.split(" ").slice(0, 4).join(" ") === b.split(" ").slice(0, 4).join(" ");
 }
