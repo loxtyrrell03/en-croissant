@@ -591,6 +591,7 @@ pub fn get_index_path(db_path: &Path) -> PathBuf {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::time::{Duration, Instant};
     use tempfile::tempdir;
 
     #[test]
@@ -749,6 +750,33 @@ mod tests {
         assert_eq!(samples[0].game_index, 0);
         assert_eq!(samples[1].game_index, 3);
         assert_eq!(samples[2].game_index, 7);
+    }
+
+    #[test]
+    fn test_index_up_to_date_tracks_database_mtime() {
+        let dir = tempdir().unwrap();
+        let db_path = dir.path().join("database.db3");
+        let index_path = get_index_path(&db_path);
+
+        std::fs::write(&db_path, b"initial").unwrap();
+        SearchIndex::new().write_to(&index_path).unwrap();
+
+        assert!(MmapSearchIndex::is_up_to_date(&db_path));
+
+        let start = Instant::now();
+        loop {
+            std::thread::sleep(Duration::from_millis(20));
+            std::fs::write(&db_path, format!("changed at {:?}", Instant::now())).unwrap();
+
+            if !MmapSearchIndex::is_up_to_date(&db_path) {
+                break;
+            }
+
+            assert!(
+                start.elapsed() < Duration::from_secs(2),
+                "database mtime did not advance past the search index mtime"
+            );
+        }
     }
 
     #[test]

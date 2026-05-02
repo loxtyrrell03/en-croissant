@@ -602,6 +602,8 @@ fn open_mmap_search_index(
     file: &Path,
     state: &tauri::State<'_, AppState>,
 ) -> Result<MmapSearchIndex, Error> {
+    super::ensure_search_index_current(file, state)?;
+
     {
         let cache = state.db_cache.lock().unwrap();
         if let Some((_, cached_index)) = cache
@@ -613,14 +615,6 @@ fn open_mmap_search_index(
     }
 
     let index_path = get_index_path(file);
-
-    if !MmapSearchIndex::is_valid(&index_path) {
-        info!(
-            "Search index not found for {:?}, generating automatically...",
-            file
-        );
-        super::generate_search_index(file, state)?;
-    }
 
     info!("Loading mmap search index for {:?}", file);
     let index = MmapSearchIndex::open(&index_path)?;
@@ -2591,6 +2585,8 @@ pub async fn search_position(
 
     let _guard = collision_lock.lock().await;
 
+    super::ensure_search_index_current(&file, &state)?;
+
     if let Some(pos) = state.line_cache.get(&(query.clone(), file.clone())) {
         finish_cancelable_db_request(&state, &tab_id, &cancel_flag);
         return Ok(pos.clone());
@@ -2884,6 +2880,8 @@ pub async fn get_plan_explorer(
     let cancel_flag = begin_cancelable_db_request(&state, &request_id);
     let cache_key = (query.clone(), file.clone(), max_plies);
 
+    super::ensure_search_index_current(&file, &state)?;
+
     if let Some(cached) = state.plan_explorer_cache.get(&cache_key) {
         finish_cancelable_db_request(&state, &request_id, &cancel_flag);
         return Ok(cached.clone());
@@ -3062,6 +3060,8 @@ pub async fn is_position_in_db(
 
     let _guard = collision_lock.lock().await;
 
+    super::ensure_search_index_current(&file, &state)?;
+
     if let Some(pos) = state.line_cache.get(&(query.clone(), file.clone())) {
         return Ok(!pos.0.is_empty());
     }
@@ -3114,6 +3114,7 @@ pub async fn is_position_in_db(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::db::encoding::encode_move;
 
     fn assert_partial_match(fen1: &str, fen2: &str) {
         let query = PositionQuery::partial_from_fen(fen1).unwrap();
@@ -3137,6 +3138,30 @@ mod tests {
             fen: None,
             moves: &[],
         }
+    }
+
+    fn encoded_e4_e5() -> Vec<u8> {
+        let mut chess = Chess::default();
+        let e4 = Move::Normal {
+            role: Role::Pawn,
+            from: Square::E2,
+            to: Square::E4,
+            capture: None,
+            promotion: None,
+        };
+        let mut game = vec![encode_move(&e4, &chess).unwrap()];
+        chess.play_unchecked(&e4);
+
+        let e5 = Move::Normal {
+            role: Role::Pawn,
+            from: Square::E7,
+            to: Square::E5,
+            capture: None,
+            promotion: None,
+        };
+        game.push(encode_move(&e5, &chess).unwrap());
+
+        game
     }
 
     #[test]
@@ -3447,28 +3472,31 @@ mod tests {
 
     #[test]
     fn get_move_after_exact_match_test() {
-        let game = vec![12, 12]; // 1. e4 e5
+        let game = encoded_e4_e5();
 
         let query =
             PositionQuery::exact_from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR").unwrap();
         let result = get_move_after_match(&game, &None, &query).unwrap();
         assert_eq!(result, Some("e4".to_string()));
 
-        let query =
-            PositionQuery::exact_from_fen("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR").unwrap();
+        let query = PositionQuery::exact_from_fen(
+            "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b - - 0 1",
+        )
+        .unwrap();
         let result = get_move_after_match(&game, &None, &query).unwrap();
         assert_eq!(result, Some("e5".to_string()));
 
-        let query =
-            PositionQuery::exact_from_fen("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR")
-                .unwrap();
+        let query = PositionQuery::exact_from_fen(
+            "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w - - 0 2",
+        )
+        .unwrap();
         let result = get_move_after_match(&game, &None, &query).unwrap();
         assert_eq!(result, Some("*".to_string()));
     }
 
     #[test]
     fn get_move_after_partial_match_test() {
-        let game = vec![12, 12]; // 1. e4 e5
+        let game = encoded_e4_e5();
 
         let query = PositionQuery::partial_from_fen("8/pppppppp/8/8/8/8/PPPPPPPP/8").unwrap();
         let result = get_move_after_match(&game, &None, &query).unwrap();

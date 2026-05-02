@@ -42,12 +42,12 @@ use std::{
     time::{Duration, Instant},
 };
 use std::{
-    io::{BufWriter, Write},
+    io::{self, BufWriter, Write},
     str::FromStr,
 };
 use tauri::{Emitter, State};
 
-use log::info;
+use log::{info, warn};
 use tauri_specta::Event as _;
 
 use self::encoding::{
@@ -137,6 +137,55 @@ pub(crate) fn position_index_key_from_fen_key(key: &str) -> Option<PositionIndex
         .or_else(PositionError::ignore_too_much_material)
         .ok()?;
     Some(position_index_key(&position))
+}
+
+pub(crate) fn clear_database_search_caches(state: &AppState, file: &Path) {
+    state.line_cache.retain(|key, _| key.1.as_path() != file);
+    state
+        .plan_explorer_cache
+        .retain(|key, _| key.1.as_path() != file);
+
+    let mut cache = state.db_cache.lock().unwrap();
+    cache.retain(|(cached_file, _)| cached_file.as_path() != file);
+}
+
+fn clear_all_database_search_caches(state: &AppState) {
+    state.line_cache.clear();
+    state.plan_explorer_cache.clear();
+
+    let mut cache = state.db_cache.lock().unwrap();
+    cache.clear();
+}
+
+fn invalidate_database_search_index(state: &AppState, file: &Path) {
+    clear_database_search_caches(state, file);
+
+    match remove_file(get_index_path(file)) {
+        Ok(()) => {}
+        Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+        Err(error) => {
+            warn!(
+                "Could not remove stale search index for {:?}; it will be refreshed by mtime checks: {}",
+                file, error
+            );
+        }
+    }
+}
+
+pub(crate) fn ensure_search_index_current(
+    file: &Path,
+    state: &State<'_, AppState>,
+) -> Result<(), Error> {
+    if MmapSearchIndex::is_up_to_date(file) {
+        return Ok(());
+    }
+
+    clear_database_search_caches(state, file);
+    info!(
+        "Search index missing or older than {:?}, generating automatically...",
+        file
+    );
+    generate_search_index(file, state)
 }
 
 fn starting_position_from_fen(fen: Option<&str>) -> Result<Chess, Error> {
@@ -667,6 +716,8 @@ pub async fn convert_pgn(
             .set(info::value.eq(c.1.to_string()))
             .execute(db)?;
     }
+
+    invalidate_database_search_index(&state, &db_path);
 
     Ok(())
 }
@@ -1692,6 +1743,7 @@ pub async fn delete_database(
     let pool = &state.connection_pool;
     let path_str = file.to_str().unwrap();
     pool.remove(path_str);
+    clear_database_search_caches(&state, &file);
 
     // delete file
     remove_file(path_str)?;
@@ -1752,6 +1804,7 @@ pub async fn delete_duplicated_games(
     let game_count: i64 = games::table.count().get_result(db)?;
     update_info_count(db, "GameCount", game_count)?;
     delete_orphaned_data(db)?;
+    invalidate_database_search_index(&state, &file);
 
     Ok(())
 }
@@ -1769,6 +1822,7 @@ pub async fn delete_empty_games(
     let game_count: i64 = games::table.count().get_result(db)?;
     update_info_count(db, "GameCount", game_count)?;
     delete_orphaned_data(db)?;
+    invalidate_database_search_index(&state, &file);
 
     Ok(())
 }
@@ -1936,6 +1990,7 @@ pub async fn delete_db_game(
     let game_count: i64 = games::table.count().get_result(db)?;
     update_info_count(db, "GameCount", game_count)?;
     delete_orphaned_data(db)?;
+    invalidate_database_search_index(&state, &file);
 
     Ok(())
 }
@@ -2011,6 +2066,8 @@ pub async fn write_db_game(
         return Err(Error::GameNotFound(game_id.to_string()));
     }
 
+    invalidate_database_search_index(&state, &file);
+
     Ok(())
 }
 
@@ -2047,6 +2104,7 @@ pub async fn merge_players(
 
     let player_count: i64 = players::table.count().get_result(db)?;
     update_info_count(db, "PlayerCount", player_count)?;
+    invalidate_database_search_index(&state, &file);
 
     Ok(())
 }
@@ -2054,9 +2112,7 @@ pub async fn merge_players(
 #[tauri::command]
 #[specta::specta]
 pub fn clear_games(state: tauri::State<'_, AppState>) {
-    let mut cache = state.db_cache.lock().unwrap();
-    cache.clear();
-    state.plan_explorer_cache.clear();
+    clear_all_database_search_caches(&state);
 }
 
 #[tauri::command]
@@ -2065,12 +2121,8 @@ pub async fn preload_reference_db(
     file: PathBuf,
     state: tauri::State<'_, AppState>,
 ) -> Result<(), Error> {
+    ensure_search_index_current(&file, &state)?;
     let index_path = get_index_path(&file);
-
-    if !MmapSearchIndex::is_valid(&index_path) {
-        info!("Search index not found for reference database, generating...");
-        generate_search_index(&file, &state)?;
-    }
 
     let mut cache = state.db_cache.lock().unwrap();
     if cache.iter().any(|(cached_file, _)| cached_file == &file) {
