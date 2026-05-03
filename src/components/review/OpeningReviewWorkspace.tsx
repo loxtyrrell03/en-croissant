@@ -139,6 +139,7 @@ import {
   parseOpeningReviewDate,
   rankOpeningReviewPositions,
 } from "@/utils/openingReviewAutoUpdate";
+import { getReviewPositionsForPath, sameReviewPosition } from "@/utils/openingReviewPersistence";
 import { getOpeningReviewStatsPerspectiveSide } from "@/utils/openingReviewOpenings";
 import {
   OPENING_HEALTH_DATE_RANGE_OPTIONS,
@@ -226,6 +227,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const [deckInfo, setDeckInfo] = useState<OpeningReviewDeck | MistakeReviewDeck | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadedReviewPositionIndex, setLoadedReviewPositionIndex] = useState<number | null>(null);
   const [boardMoveCandidate, setBoardMoveCandidate] = useState<ReviewBoardMoveCandidate | null>(
     null,
   );
@@ -255,10 +257,14 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const openingReviewDeckMode = isMistakeReview
     ? undefined
     : (deckInfo as OpeningReviewDeck | null)?.mode;
+  const scopedReviewPositionIndex =
+    practiceState.positionIndex !== undefined
+      ? practiceState.positionIndex
+      : loadedReviewPositionIndex;
 
   const activeReviewPositions = useMemo(
-    () => getReviewPositionsForPath(deck.positions, root, positionPath),
-    [deck.positions, positionPath, root],
+    () => getReviewPositionsForPath(deck.positions, root, positionPath, scopedReviewPositionIndex),
+    [deck.positions, positionPath, root, scopedReviewPositionIndex],
   );
   const activeReviewPosition = activeReviewPositions[activeReviewPositions.length - 1] ?? null;
   const activeReviewIndex = activeReviewPosition?.positionIndex ?? -1;
@@ -274,6 +280,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
       const position = deck.positions[positionIndex];
       if (!position) return;
 
+      setLoadedReviewPositionIndex(positionIndex);
       loadReviewPositionOnBoard({
         position,
         headers,
@@ -356,6 +363,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     let disposed = false;
     setLoaded(false);
     setLoadError(null);
+    setLoadedReviewPositionIndex(null);
     localStorage.removeItem(getDeckStorageKey(deckPath, 0));
 
     async function loadDeck() {
@@ -643,6 +651,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                     onMistakeDailySettingsChange={setMistakeDailySettings}
                     boardMoveCandidate={boardMoveCandidate}
                     onClearBoardMoveCandidate={() => setBoardMoveCandidate(null)}
+                    onLoadPosition={loadDeckPosition}
                     loadError={loadError}
                     loaded={loaded}
                   />
@@ -870,23 +879,6 @@ function getReviewPositionHeaders(
   };
 }
 
-function getReviewPositionsForPath(positions: Position[], root: TreeNode, path: number[]) {
-  const matches: { positionIndex: number; node: TreeNode; path: number[] }[] = [];
-
-  for (let depth = 0; depth <= path.length; depth += 1) {
-    const nodePath = path.slice(0, depth);
-    const node = getNodeAtPath(root, nodePath);
-    const positionIndex = positions.findIndex((position) =>
-      sameReviewPosition(position.fen, node.fen),
-    );
-    if (positionIndex !== -1) {
-      matches.push({ positionIndex, node, path: nodePath });
-    }
-  }
-
-  return matches;
-}
-
 function applyReviewPositionMetadata(store: TreeStore, position: Position) {
   const state = store.getState();
   const nextState = cloneTreeState(state);
@@ -1040,10 +1032,6 @@ function tokenizeReviewMoveSequence(moveSequence: string) {
     );
 }
 
-function sameReviewPosition(a: string, b: string) {
-  return a.split(" ").slice(0, 4).join(" ") === b.split(" ").slice(0, 4).join(" ");
-}
-
 function mistakeReviewAttemptColor(
   label: NonNullable<PracticeState["mistakeReviewLabel"]> | undefined,
   phase: PracticeState["phase"],
@@ -1104,6 +1092,7 @@ function OpeningReviewPanel({
   onMistakeDailySettingsChange,
   boardMoveCandidate,
   onClearBoardMoveCandidate,
+  onLoadPosition,
   loadError,
   loaded,
 }: {
@@ -1122,6 +1111,7 @@ function OpeningReviewPanel({
   onMistakeDailySettingsChange?: (daily: MistakeReviewDailySettings) => void;
   boardMoveCandidate: ReviewBoardMoveCandidate | null;
   onClearBoardMoveCandidate: () => void;
+  onLoadPosition: (positionIndex: number) => void;
   loadError: string | null;
   loaded: boolean;
 }) {
@@ -2302,6 +2292,7 @@ function OpeningReviewPanel({
         deckPath={deckPath}
         onTrainDue={startDuePractice}
         onTrainAll={startFullPractice}
+        onLoadPosition={onLoadPosition}
       />
     </>
   );
@@ -4839,21 +4830,16 @@ function OpeningReviewPositionsModal({
   deckPath,
   onTrainDue,
   onTrainAll,
+  onLoadPosition,
 }: {
   opened: boolean;
   onClose: () => void;
   deckPath: string;
   onTrainDue: (indices?: number[], label?: string) => void;
   onTrainAll: (indices?: number[], label?: string) => void;
+  onLoadPosition: (positionIndex: number) => void;
 }) {
   const [deck, setDeck] = useAtom(deckAtomFamily({ file: deckPath, game: 0 }));
-  const store = useContext(TreeStateContext)!;
-  const goToMove = useStore(store, (s) => s.goToMove);
-  const setHeaders = useStore(store, (s) => s.setHeaders);
-  const setPracticePath = useStore(store, (s) => s.setPracticePath);
-  const setState = useStore(store, (s) => s.setState);
-  const headers = useStore(store, (s) => s.headers);
-  const root = useStore(store, (s) => s.root);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [moveInput, setMoveInput] = useState("");
   const [sortBy, setSortBy] = useState<OpeningReviewPositionSort>("urgency");
@@ -5043,20 +5029,11 @@ function OpeningReviewPositionsModal({
   }, [opened, positionsScrollElement, rowVirtualizer, visibleRows.length]);
 
   const loadReviewPosition = useCallback(
-    (position: Position) => {
-      loadReviewPositionOnBoard({
-        position,
-        headers,
-        root,
-        store,
-        goToMove,
-        setHeaders,
-        setState,
-      });
-      setPracticePath(null);
+    (positionIndex: number) => {
+      onLoadPosition(positionIndex);
       onClose();
     },
-    [goToMove, headers, onClose, root, setHeaders, setPracticePath, setState, store],
+    [onClose, onLoadPosition],
   );
 
   const deleteReviewPosition = useCallback(
@@ -5269,7 +5246,7 @@ function OpeningReviewPositionsModal({
                   <Table.Td>
                     <OpeningReviewMiniBoard
                       position={position}
-                      onClick={() => loadReviewPosition(position)}
+                      onClick={() => loadReviewPosition(index)}
                     />
                   </Table.Td>
                   <Table.Td>
@@ -5340,7 +5317,7 @@ function OpeningReviewPositionsModal({
                           aria-label="Load position on board"
                           size="sm"
                           variant="subtle"
-                          onClick={() => loadReviewPosition(position)}
+                          onClick={() => loadReviewPosition(index)}
                         >
                           <IconTarget size="1rem" />
                         </ActionIcon>
