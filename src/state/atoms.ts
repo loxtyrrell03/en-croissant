@@ -501,6 +501,19 @@ export const lichessStudyDatabaseUpdatesAtom = atomWithStorage<LichessStudyDatab
     {},
 );
 
+export type AccountStatsLinkedDatabase = {
+    dbPath: string;
+    title: string;
+    source: OnlineGameSource;
+    username: string;
+    linkedAt: number;
+};
+
+export const accountStatsLinkedDatabaseAtom = atomWithStorage<AccountStatsLinkedDatabase | null>(
+    "account-stats-linked-database",
+    null,
+);
+
 // Game Settings
 
 export type GameInputColor = "white" | "random" | "black";

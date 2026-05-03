@@ -1,10 +1,17 @@
 import { ActionIcon, Box, Group, Stack, Tabs, Title } from "@mantine/core";
-import { IconArrowBackUp, IconChess, IconTrophy, IconUser } from "@tabler/icons-react";
+import {
+  IconArrowBackUp,
+  IconChartBar,
+  IconChess,
+  IconTrophy,
+  IconUser,
+} from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import GameTable from "@/components/databases/GameTable";
 import PlayerTable from "@/components/databases/PlayerTable";
 import { ResponsivePanel } from "@/components/common/ResponsivePanel";
+import AccountStatsPanel from "@/components/databases/AccountStatsPanel";
 import {
   activeDatabaseViewStore,
   type DatabaseViewStore,
@@ -57,6 +64,9 @@ function DatabaseView() {
                   <Tabs.Tab leftSection={<IconTrophy size="1rem" />} value="tournaments">
                     {t("Databases.Settings.Events")}
                   </Tabs.Tab>
+                  <Tabs.Tab leftSection={<IconChartBar size="1rem" />} value="stats">
+                    Stats
+                  </Tabs.Tab>
                 </Tabs.List>
                 <Tabs.Panel value="games" flex={1} style={{ overflow: "hidden" }} pt="md">
                   <GameTable />
@@ -66,6 +76,9 @@ function DatabaseView() {
                 </Tabs.Panel>
                 <Tabs.Panel value="tournaments" flex={1} style={{ overflow: "hidden" }} pt="md">
                   <TournamentTable />
+                </Tabs.Panel>
+                <Tabs.Panel value="stats" flex={1} style={{ overflow: "hidden" }} pt="md">
+                  <AccountStatsPanel />
                 </Tabs.Panel>
               </Tabs>
             </Stack>
