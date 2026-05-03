@@ -63,6 +63,21 @@ export type MistakeReviewDateRange =
     | "6months"
     | "year";
 
+export type MistakeReviewPhase = "opening" | "middlegame" | "endgame";
+
+export const MISTAKE_REVIEW_PHASES: readonly {
+    id: MistakeReviewPhase;
+    label: string;
+}[] = [
+    { id: "opening", label: "Opening" },
+    { id: "middlegame", label: "Middlegame" },
+    { id: "endgame", label: "Endgame" },
+] as const;
+
+const MISTAKE_REVIEW_OPENING_MAX_FULLMOVE = 10;
+const MISTAKE_REVIEW_ENDGAME_MIN_FULLMOVE = 31;
+const MISTAKE_REVIEW_ENDGAME_NON_PAWN_MAX = 6;
+
 export type MistakeReviewDailySettings = {
     reviewsPerDay: number;
     newItemsPerDay: number;
@@ -226,6 +241,14 @@ export type MistakeReviewDailyProgress = {
     remaining: number;
     newRemaining: number;
 };
+
+export type MistakeReviewPhaseCounts = Record<
+    MistakeReviewPhase,
+    {
+        total: number;
+        due: number;
+    }
+>;
 
 export async function readMistakeReviewDeck(path: string): Promise<MistakeReviewDeck> {
     const raw = await readTextFile(path);
@@ -419,6 +442,7 @@ export function createMistakeReviewPosition(
             dateRange: settings.dateRange,
             engineName: result.engineName,
             enginePath: settings.enginePath,
+            phase: classifyMistakeReviewPhaseFromFen(result.fen),
             gameId: result.gameId,
             lastGameId: result.lastGameId,
             ply: result.ply,
@@ -548,6 +572,67 @@ export function getMistakeReviewDailyProgress(
         remaining: Math.max(0, target - completed),
         newRemaining: Math.max(0, newTarget - completedNew),
     };
+}
+
+export function getMistakeReviewPhaseBatch(
+    positions: Position[],
+    phaseInput: MistakeReviewPhase,
+    options: { now?: Date } = {},
+) {
+    const phase = normalizeMistakeReviewPhase(phaseInput);
+    if (!phase) return [];
+
+    const now = options.now ?? new Date();
+    const phasePositions = positions.filter(
+        (position) => position.mistakeReview && getMistakeReviewPhase(position) === phase,
+    );
+    const repsFor = (position: Position) =>
+        Math.max(0, Math.trunc(Number(position.card.reps) || 0));
+    const due = phasePositions
+        .filter((position) => repsFor(position) > 0 && new Date(position.card.due) <= now)
+        .sort((a, b) => sortMistakeReviewPhaseDueCards(a, b));
+    const fresh = phasePositions
+        .filter((position) => repsFor(position) === 0)
+        .sort(sortMistakeReviewNewCards);
+    const scheduled = phasePositions
+        .filter((position) => repsFor(position) > 0 && new Date(position.card.due) > now)
+        .sort((a, b) => sortMistakeReviewPhaseScheduledCards(a, b));
+
+    return [...due, ...fresh, ...scheduled];
+}
+
+export function getMistakeReviewPhaseCounts(
+    positions: Position[],
+    options: { now?: Date } = {},
+): MistakeReviewPhaseCounts {
+    const now = options.now ?? new Date();
+    const counts = Object.fromEntries(
+        MISTAKE_REVIEW_PHASES.map((phase) => [phase.id, { total: 0, due: 0 }]),
+    ) as MistakeReviewPhaseCounts;
+
+    for (const position of positions) {
+        if (!position.mistakeReview) continue;
+        const phase = getMistakeReviewPhase(position);
+        const row = counts[phase];
+        row.total += 1;
+        if (position.card.reps > 0 && new Date(position.card.due) <= now) {
+            row.due += 1;
+        }
+    }
+
+    return counts;
+}
+
+export function getMistakeReviewPhase(position: Position): MistakeReviewPhase {
+    const metadata = position.mistakeReview;
+    const explicit = normalizeMistakeReviewPhase(
+        metadata?.phase ??
+            metadata?.gamePhase ??
+            metadata?.positionPhase ??
+            metadata?.summary?.phase,
+    );
+    if (explicit) return explicit;
+    return classifyMistakeReviewPhaseFromFen(position.fen);
 }
 
 export function classifyMistakeReviewAttempt(
@@ -776,6 +861,52 @@ function isMistakeReviewSeverityIncluded(
     }
 }
 
+function normalizeMistakeReviewPhase(value?: string | null): MistakeReviewPhase | null {
+    const raw = String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[\s_-]+/g, "");
+    if (raw === "opening") return "opening";
+    if (raw === "middlegame" || raw === "middle" || raw === "midgame") return "middlegame";
+    if (raw === "endgame") return "endgame";
+    return null;
+}
+
+function classifyMistakeReviewPhaseFromFen(fen: string): MistakeReviewPhase {
+    const fullmove = parseMistakeReviewFenFullmove(fen);
+    if (typeof fullmove === "number" && fullmove <= MISTAKE_REVIEW_OPENING_MAX_FULLMOVE) {
+        return "opening";
+    }
+
+    const nonPawnPieces = countMistakeReviewFenNonPawnPieces(fen);
+    if (
+        (typeof fullmove === "number" && fullmove >= MISTAKE_REVIEW_ENDGAME_MIN_FULLMOVE) ||
+        (typeof nonPawnPieces === "number" && nonPawnPieces <= MISTAKE_REVIEW_ENDGAME_NON_PAWN_MAX)
+    ) {
+        return "endgame";
+    }
+
+    return "middlegame";
+}
+
+function parseMistakeReviewFenFullmove(fen: string) {
+    const parts = String(fen || "")
+        .trim()
+        .split(/\s+/);
+    if (parts.length < 6) return null;
+    const fullmove = Number.parseInt(parts[5] ?? "", 10);
+    return Number.isFinite(fullmove) ? fullmove : null;
+}
+
+function countMistakeReviewFenNonPawnPieces(fen: string) {
+    const board = String(fen || "")
+        .trim()
+        .split(/\s+/)[0];
+    if (!board) return null;
+    const matches = board.match(/[nbrqNBRQ]/g);
+    return matches?.length ?? 0;
+}
+
 function sortMistakeReviewDueCards(a: Position, b: Position, now: Date) {
     return (
         getMistakeReviewSeverityWeight(b.mistakeReview?.severity) -
@@ -792,6 +923,22 @@ function sortMistakeReviewNewCards(a: Position, b: Position) {
             getMistakeReviewSeverityWeight(a.mistakeReview?.severity) ||
         (parseMistakeReviewDate(b.mistakeReview?.date)?.getTime() ?? 0) -
             (parseMistakeReviewDate(a.mistakeReview?.date)?.getTime() ?? 0)
+    );
+}
+
+function sortMistakeReviewPhaseDueCards(a: Position, b: Position) {
+    return (
+        new Date(a.card.due).getTime() - new Date(b.card.due).getTime() ||
+        getMistakeReviewSeverityWeight(b.mistakeReview?.severity) -
+            getMistakeReviewSeverityWeight(a.mistakeReview?.severity)
+    );
+}
+
+function sortMistakeReviewPhaseScheduledCards(a: Position, b: Position) {
+    return (
+        new Date(a.card.due).getTime() - new Date(b.card.due).getTime() ||
+        getMistakeReviewSeverityWeight(b.mistakeReview?.severity) -
+            getMistakeReviewSeverityWeight(a.mistakeReview?.severity)
     );
 }
 

@@ -1,6 +1,6 @@
 import type { DrawShape } from "@lichess-org/chessground/draw";
 import type { SetStateAction } from "react";
-import { type Card, createEmptyCard, fsrs, type Grade, generatorParameters } from "ts-fsrs";
+import { type Card, createEmptyCard, type Grade, type ReviewLog, State } from "ts-fsrs";
 import { z } from "zod";
 import type { RepertoireGap } from "@/bindings";
 import type { PracticeData } from "@/state/atoms";
@@ -8,9 +8,14 @@ import type { Annotation } from "@/utils/annotation";
 import { isPrefix } from "@/utils/misc";
 import { type TreeNode, treeIterator } from "@/utils/treeReducer";
 
-const params = generatorParameters({ enable_fuzz: true });
+const REVIEW_DAY_MS = 24 * 60 * 60 * 1000;
+const SM2_DEFAULT_EASE_FACTOR = 2.5;
+const SM2_MIN_EASE_FACTOR = 1.3;
 
-const f = fsrs(params);
+type Sm2CardFields = {
+    sm2EaseFactor?: number;
+    sm2IntervalDays?: number;
+};
 
 const reviewTreeNodeSchema: z.ZodType<TreeNode> = z.lazy(
     () =>
@@ -117,6 +122,15 @@ export const positionSchema = z.object({
                 .optional(),
             engineName: z.string().optional(),
             enginePath: z.string().optional(),
+            phase: z.enum(["opening", "middlegame", "endgame"]).optional(),
+            gamePhase: z.string().optional(),
+            positionPhase: z.string().optional(),
+            summary: z
+                .object({
+                    phase: z.string().optional(),
+                })
+                .passthrough()
+                .optional(),
             gameId: z.number().optional(),
             lastGameId: z.number().optional(),
             ply: z.number().optional(),
@@ -235,6 +249,13 @@ export type Position = {
         dateRange?: "all" | "week" | "2weeks" | "month" | "3months" | "6months" | "year";
         engineName?: string;
         enginePath?: string;
+        phase?: "opening" | "middlegame" | "endgame";
+        gamePhase?: string;
+        positionPhase?: string;
+        summary?: {
+            phase?: string;
+            [key: string]: unknown;
+        };
         gameId?: number;
         lastGameId?: number;
         ply?: number;
@@ -396,9 +417,7 @@ export function updateCardPerformance(
     card: Card,
     grade: 1 | 2 | 3 | 4,
 ) {
-    const schedulingCards = f.repeat(card, new Date());
-
-    const { card: newCard, log } = schedulingCards[grade];
+    const { card: newCard, log } = scheduleSm2Card(card, grade);
 
     setPositions((data) => {
         data.positions[i].card = newCard;
@@ -408,6 +427,78 @@ export function updateCardPerformance(
             logs: data.logs,
         };
     });
+}
+
+export function scheduleSm2Card(
+    card: Card,
+    grade: 1 | 2 | 3 | 4,
+    reviewedAt: Date = new Date(),
+): { card: Card; log: ReviewLog } {
+    const now = new Date(reviewedAt);
+    const q = sm2QualityFromGrade(grade);
+    const previousReps = Math.max(0, Math.trunc(Number(card.reps) || 0));
+    const previousLapses = Math.max(0, Math.trunc(Number(card.lapses) || 0));
+    const previousInterval = getSm2IntervalDays(card);
+    const previousEaseFactor = getSm2EaseFactor(card);
+    const easeFactor = Math.max(
+        SM2_MIN_EASE_FACTOR,
+        previousEaseFactor + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02)),
+    );
+
+    let reps: number;
+    let lapses = previousLapses;
+    let intervalDays: number;
+    let state: State;
+
+    if (q >= 4) {
+        reps = previousReps + 1;
+        if (reps === 1) {
+            intervalDays = 1;
+        } else if (reps === 2) {
+            intervalDays = 6;
+        } else {
+            intervalDays = Math.max(1, Math.round(previousInterval * easeFactor));
+        }
+        state = State.Review;
+    } else {
+        reps = 0;
+        lapses = previousLapses + 1;
+        intervalDays = 1;
+        state = previousReps > 0 ? State.Relearning : State.Learning;
+    }
+
+    const due = new Date(now.getTime() + intervalDays * REVIEW_DAY_MS);
+    const elapsedDays = getElapsedReviewDays(card.last_review, now);
+    const nextCard = {
+        ...card,
+        due,
+        stability: intervalDays,
+        difficulty: easeFactor,
+        elapsed_days: elapsedDays,
+        scheduled_days: intervalDays,
+        reps,
+        lapses,
+        state,
+        last_review: now,
+    } satisfies Card;
+    const sm2Card = nextCard as Card & Sm2CardFields;
+    sm2Card.sm2EaseFactor = easeFactor;
+    sm2Card.sm2IntervalDays = intervalDays;
+
+    return {
+        card: sm2Card,
+        log: {
+            rating: grade,
+            state,
+            due,
+            stability: intervalDays,
+            difficulty: easeFactor,
+            elapsed_days: elapsedDays,
+            last_elapsed_days: Math.max(0, Math.trunc(Number(card.elapsed_days) || 0)),
+            scheduled_days: intervalDays,
+            review: now,
+        },
+    };
 }
 
 export function syncDeck(
@@ -450,12 +541,11 @@ export function syncDeck(
 }
 
 export function getNextReviewTimes(card: Card): Record<Grade, Date> {
-    const schedulingCards = f.repeat(card, new Date());
     return {
-        1: schedulingCards[1].card.due,
-        2: schedulingCards[2].card.due,
-        3: schedulingCards[3].card.due,
-        4: schedulingCards[4].card.due,
+        1: scheduleSm2Card(card, 1).card.due,
+        2: scheduleSm2Card(card, 2).card.due,
+        3: scheduleSm2Card(card, 3).card.due,
+        4: scheduleSm2Card(card, 4).card.due,
     };
 }
 
@@ -471,4 +561,39 @@ export function formatReviewInterval(dueDate: Date): string {
     if (diffHrs < 24) return `${diffHrs}h`;
     if (diffDays < 30) return `${diffDays}d`;
     return `${Math.round(diffDays / 30)}mo`;
+}
+
+function sm2QualityFromGrade(grade: 1 | 2 | 3 | 4) {
+    switch (grade) {
+        case 4:
+            return 5;
+        case 3:
+            return 4;
+        case 2:
+            return 3;
+        case 1:
+            return 1;
+    }
+}
+
+function getSm2EaseFactor(card: Card) {
+    const sm2Card = card as Card & Sm2CardFields & { ef?: number };
+    const value = Number(sm2Card.sm2EaseFactor ?? sm2Card.ef ?? card.difficulty);
+    return Number.isFinite(value) && value >= SM2_MIN_EASE_FACTOR ? value : SM2_DEFAULT_EASE_FACTOR;
+}
+
+function getSm2IntervalDays(card: Card) {
+    const sm2Card = card as Card & Sm2CardFields & { interval?: number };
+    const value = Number(sm2Card.sm2IntervalDays ?? sm2Card.interval ?? card.scheduled_days);
+    return Number.isFinite(value) && value > 0 ? Math.max(1, Math.round(value)) : 1;
+}
+
+function getElapsedReviewDays(lastReview: Card["last_review"], reviewedAt: Date) {
+    if (!lastReview) return 0;
+    const lastReviewDate = new Date(lastReview);
+    if (Number.isNaN(lastReviewDate.getTime())) return 0;
+    return Math.max(
+        0,
+        Math.floor((reviewedAt.getTime() - lastReviewDate.getTime()) / REVIEW_DAY_MS),
+    );
 }

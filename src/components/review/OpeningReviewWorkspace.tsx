@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   Group,
+  Menu,
   Modal,
   MultiSelect,
   NumberInput,
@@ -126,8 +127,12 @@ import {
   formatMistakeReviewLastSeen,
   getMistakeReviewDailyBatch,
   getMistakeReviewDailyProgress,
+  getMistakeReviewPhaseBatch,
+  getMistakeReviewPhaseCounts,
+  MISTAKE_REVIEW_PHASES,
   type MistakeReviewDailySettings,
   mistakeReviewSeverityLabel,
+  type MistakeReviewPhase,
   readMistakeReviewDeck,
   type MistakeReviewDeck,
   writeMistakeReviewDeck,
@@ -1154,6 +1159,10 @@ function OpeningReviewPanel({
         .filter((positionIndex) => positionIndex >= 0),
     [dailyBatch, deck.positions],
   );
+  const mistakePhaseCounts = useMemo(
+    () => (isMistakeReview ? getMistakeReviewPhaseCounts(deck.positions) : null),
+    [deck.positions, isMistakeReview],
+  );
   const setInvisible = useSetAtom(currentInvisibleAtom);
   const setShowComments = useSetAtom(currentShowCommentsAtom);
   const setEvalOpen = useSetAtom(currentEvalOpenAtom);
@@ -1335,7 +1344,7 @@ function OpeningReviewPanel({
       const mode = nextStats?.mode ?? sessionStats.mode;
       const remaining = nextStats?.remainingPositions ?? sessionStats.remainingPositions;
       const positionIndex =
-        mode === "full"
+        mode === "full" || mode === "srs-list"
           ? (remaining[0] ?? -1)
           : getNextDueOpeningReviewPositionIndex(
               positions,
@@ -1506,6 +1515,47 @@ function OpeningReviewPanel({
       }
     },
     [deck.positions, newPractice, setSessionStats],
+  );
+
+  const startMistakePhasePractice = useCallback(
+    (phase: MistakeReviewPhase) => {
+      if (!isMistakeReview) return;
+
+      const label =
+        MISTAKE_REVIEW_PHASES.find((phaseOption) => phaseOption.id === phase)?.label ?? "Phase";
+      const phaseBatch = getMistakeReviewPhaseBatch(deck.positions, phase);
+      const remainingPositions = phaseBatch
+        .map((position) => deck.positions.indexOf(position))
+        .filter((positionIndex) => positionIndex >= 0);
+
+      if (remainingPositions.length === 0) {
+        notifications.show({
+          title: "No positions to train",
+          message: `No ${label.toLowerCase()} mistakes found in this set yet.`,
+          color: "yellow",
+        });
+        return;
+      }
+
+      const nextStats = {
+        mode: "srs-list" as const,
+        remainingPositions,
+        correct: 0,
+        incorrect: 0,
+        streak: 0,
+        bestStreak: 0,
+      };
+      setSessionStats((current) => ({ ...current, ...nextStats }));
+      newPractice(nextStats);
+      notifications.show({
+        title: "Train by phase started",
+        message: `Training ${remainingPositions.length} ${label.toLowerCase()} mistake${
+          remainingPositions.length === 1 ? "" : "s"
+        }.`,
+        color: "blue",
+      });
+    },
+    [deck.positions, isMistakeReview, newPractice, setSessionStats],
   );
 
   useEffect(() => {
@@ -1955,39 +2005,88 @@ function OpeningReviewPanel({
           <Stack gap="xs">
             {(isMistakeReview ? mistakeDailySettings : openingDailySettings) && (
               <Stack gap={4}>
-                <Group gap={0} wrap="nowrap" align="stretch">
-                  <Button
-                    variant="light"
-                    leftSection={<IconTarget size={18} />}
-                    onClick={() => startDuePractice(dailyScopeIndices, dailyReviewScopeLabel)}
-                    justify="space-between"
-                    disabled={dailyScopeIndices.length === 0}
-                    rightSection={<Badge variant="white">{dailyScopeIndices.length}</Badge>}
-                    style={{
-                      flex: 1,
-                      borderTopRightRadius: 0,
-                      borderBottomRightRadius: 0,
-                    }}
+                <Group gap={6} align="stretch">
+                  <Group
+                    gap={0}
+                    wrap="nowrap"
+                    align="stretch"
+                    style={{ flex: "1 1 190px", minWidth: 0 }}
                   >
-                    Daily review
-                  </Button>
-                  <Tooltip label="Daily review settings">
-                    <ActionIcon
-                      aria-label="Daily review settings"
+                    <Button
                       variant="light"
-                      color="blue"
-                      onClick={() => setDailySettingsOpen(true)}
+                      leftSection={<IconTarget size={18} />}
+                      onClick={() => startDuePractice(dailyScopeIndices, dailyReviewScopeLabel)}
+                      justify="space-between"
+                      disabled={dailyScopeIndices.length === 0}
+                      rightSection={<Badge variant="white">{dailyScopeIndices.length}</Badge>}
                       style={{
-                        alignSelf: "stretch",
-                        height: "auto",
-                        minWidth: 42,
-                        borderTopLeftRadius: 0,
-                        borderBottomLeftRadius: 0,
+                        flex: 1,
+                        borderTopRightRadius: 0,
+                        borderBottomRightRadius: 0,
                       }}
                     >
-                      <IconSettings size={16} />
-                    </ActionIcon>
-                  </Tooltip>
+                      Daily review
+                    </Button>
+                    <Tooltip label="Daily review settings">
+                      <ActionIcon
+                        aria-label="Daily review settings"
+                        variant="light"
+                        color="blue"
+                        onClick={() => setDailySettingsOpen(true)}
+                        style={{
+                          alignSelf: "stretch",
+                          height: "auto",
+                          minWidth: 42,
+                          borderTopLeftRadius: 0,
+                          borderBottomLeftRadius: 0,
+                        }}
+                      >
+                        <IconSettings size={16} />
+                      </ActionIcon>
+                    </Tooltip>
+                  </Group>
+                  {isMistakeReview && mistakePhaseCounts && (
+                    <Menu width={260} position="bottom-end" withinPortal>
+                      <Menu.Target>
+                        <Button
+                          variant="light"
+                          color="teal"
+                          leftSection={<IconTargetArrow size={18} />}
+                          rightSection={<IconChevronDown size={16} />}
+                          disabled={MISTAKE_REVIEW_PHASES.every(
+                            (phase) => mistakePhaseCounts[phase.id].total === 0,
+                          )}
+                          style={{ flex: "1 1 150px" }}
+                        >
+                          Train by phase
+                        </Button>
+                      </Menu.Target>
+                      <Menu.Dropdown>
+                        {MISTAKE_REVIEW_PHASES.map((phase) => {
+                          const count = mistakePhaseCounts[phase.id];
+                          return (
+                            <Menu.Item
+                              key={phase.id}
+                              disabled={count.total === 0}
+                              onClick={() => startMistakePhasePractice(phase.id)}
+                              rightSection={
+                                <Group gap={4} wrap="nowrap">
+                                  <Badge size="xs" variant="light" color="yellow">
+                                    {count.due} due
+                                  </Badge>
+                                  <Badge size="xs" variant="light" color="gray">
+                                    {count.total}
+                                  </Badge>
+                                </Group>
+                              }
+                            >
+                              {phase.label}
+                            </Menu.Item>
+                          );
+                        })}
+                      </Menu.Dropdown>
+                    </Menu>
+                  )}
                 </Group>
                 {dailyProgress && (
                   <Text size="xs" c="dimmed">

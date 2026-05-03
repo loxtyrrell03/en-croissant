@@ -1,12 +1,15 @@
 import { INITIAL_FEN } from "chessops/fen";
 import { createEmptyCard } from "ts-fsrs";
 import { describe, expect, test } from "vitest";
-import type { Position } from "@/components/files/opening";
+import { scheduleSm2Card, type Position } from "@/components/files/opening";
 import {
     classifyMistakeReviewAttempt,
     formatMistakeReviewLastSeen,
     getMistakeReviewDailyBatch,
     getMistakeReviewDailyProgress,
+    getMistakeReviewPhase,
+    getMistakeReviewPhaseBatch,
+    getMistakeReviewPhaseCounts,
     isMistakeReviewPassingLabel,
     mergeMistakeReviewPositions,
     type MistakeReviewDeck,
@@ -16,6 +19,11 @@ import {
     selectMistakeReviewPlayerTargets,
 } from "@/utils/mistakeReviewAutoUpdate";
 import { hasOnlineDatabaseNewLocalGames } from "@/utils/onlineGameImport";
+
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const OPENING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 5";
+const MIDDLEGAME_FEN = "r1bq1rk1/ppp2ppp/2n2n2/3pp3/3PP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 20";
+const ENDGAME_FEN = "8/8/8/8/8/8/4K3/4k3 w - - 0 40";
 
 function position(overrides: Partial<Position> = {}): Position {
     return {
@@ -226,6 +234,101 @@ describe("mistake review helpers", () => {
         expect(progress.completedNew).toBe(1);
         expect(progress.newRemaining).toBe(0);
         expect(batch).toEqual([]);
+    });
+
+    test("phase training groups opening, middlegame, and endgame cards", () => {
+        const now = new Date("2026-04-26T12:00:00Z");
+        const openingDue = position({
+            fen: OPENING_FEN,
+            reviewKey: "opening-due",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-24T12:00:00Z"),
+            } as Position["card"],
+        });
+        const openingFresh = position({
+            fen: OPENING_FEN,
+            reviewKey: "opening-fresh",
+            mistakeReview: {
+                ...position().mistakeReview!,
+                severity: "blunder",
+                date: "2026.04.25",
+            },
+        });
+        const openingScheduled = position({
+            fen: OPENING_FEN,
+            reviewKey: "opening-scheduled",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-30T12:00:00Z"),
+            } as Position["card"],
+        });
+        const middlegame = position({
+            fen: MIDDLEGAME_FEN,
+            reviewKey: "middlegame",
+        });
+        const endgame = position({
+            fen: ENDGAME_FEN,
+            reviewKey: "endgame",
+        });
+
+        const positions = [middlegame, openingScheduled, openingFresh, endgame, openingDue];
+        const counts = getMistakeReviewPhaseCounts(positions, { now });
+        const batch = getMistakeReviewPhaseBatch(positions, "opening", { now });
+
+        expect(getMistakeReviewPhase(openingDue)).toBe("opening");
+        expect(getMistakeReviewPhase(middlegame)).toBe("middlegame");
+        expect(getMistakeReviewPhase(endgame)).toBe("endgame");
+        expect(counts.opening).toEqual({ total: 3, due: 1 });
+        expect(counts.middlegame).toEqual({ total: 1, due: 0 });
+        expect(counts.endgame).toEqual({ total: 1, due: 0 });
+        expect(batch.map((item) => item.reviewKey)).toEqual([
+            "opening-due",
+            "opening-fresh",
+            "opening-scheduled",
+        ]);
+    });
+
+    test("phase metadata overrides FEN classification aliases", () => {
+        expect(
+            getMistakeReviewPhase(
+                position({
+                    fen: OPENING_FEN,
+                    mistakeReview: {
+                        ...position().mistakeReview!,
+                        gamePhase: "midgame",
+                    },
+                }),
+            ),
+        ).toBe("middlegame");
+    });
+
+    test("SM2 review schedule starts at one day and grows from there", () => {
+        const now = new Date("2026-04-26T12:00:00Z");
+        const again = scheduleSm2Card(createEmptyCard(), 1, now);
+        const firstGood = scheduleSm2Card(createEmptyCard(), 3, now);
+        const secondGood = scheduleSm2Card(firstGood.card, 3, new Date(now.getTime() + ONE_DAY_MS));
+        const thirdEasy = scheduleSm2Card(
+            secondGood.card,
+            4,
+            new Date(now.getTime() + 7 * ONE_DAY_MS),
+        );
+        const lapse = scheduleSm2Card(thirdEasy.card, 2, new Date(now.getTime() + 23 * ONE_DAY_MS));
+
+        expect(again.card.reps).toBe(0);
+        expect(again.card.scheduled_days).toBe(1);
+        expect(again.card.due.getTime()).toBe(now.getTime() + ONE_DAY_MS);
+        expect(firstGood.card.reps).toBe(1);
+        expect(firstGood.card.scheduled_days).toBe(1);
+        expect(secondGood.card.reps).toBe(2);
+        expect(secondGood.card.scheduled_days).toBe(6);
+        expect(thirdEasy.card.reps).toBe(3);
+        expect(thirdEasy.card.scheduled_days).toBeGreaterThan(6);
+        expect(lapse.card.reps).toBe(0);
+        expect(lapse.card.scheduled_days).toBe(1);
+        expect(lapse.card.lapses).toBe(1);
     });
 
     test("merge preserves SRS state while aggregating repeated evidence", () => {
