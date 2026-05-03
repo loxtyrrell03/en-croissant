@@ -12,6 +12,7 @@ import {
     getMistakeReviewPhase,
     getMistakeReviewPhaseBatch,
     getMistakeReviewPhaseCounts,
+    getMistakeReviewTimeManagementBatch,
     isMistakeReviewPassingLabel,
     mergeMistakeReviewPositions,
     type MistakeReviewDeck,
@@ -313,6 +314,39 @@ describe("mistake review helpers", () => {
                 }),
             ),
         ).toBe("middlegame");
+    });
+
+    test("time management batch keeps long-think mistakes first", () => {
+        const shortThink = position({
+            reviewKey: "short-think",
+            mistakeReview: {
+                ...position().mistakeReview!,
+                moveTimeSeconds: 12,
+                severity: "blunder",
+            },
+        });
+        const longThink = position({
+            reviewKey: "long-think",
+            mistakeReview: {
+                ...position().mistakeReview!,
+                moveTimeSeconds: 45,
+                severity: "mistake",
+            },
+        });
+        const longestThink = position({
+            reviewKey: "longest-think",
+            mistakeReview: {
+                ...position().mistakeReview!,
+                moveTimeSeconds: 90,
+                severity: "inaccuracy",
+            },
+        });
+
+        expect(
+            getMistakeReviewTimeManagementBatch([shortThink, longThink, longestThink], {
+                minMoveSeconds: 20,
+            }).map((item) => item.reviewKey),
+        ).toEqual(["longest-think", "long-think"]);
     });
 
     test("SM2 review schedule starts at one day and grows from there", () => {

@@ -653,6 +653,20 @@ export function getMistakeReviewPhaseBatch(
     return [...due, ...fresh, ...scheduled];
 }
 
+export function getMistakeReviewTimeManagementBatch(
+    positions: Position[],
+    options: { minMoveSeconds?: number } = {},
+) {
+    const minMoveSeconds =
+        typeof options.minMoveSeconds === "number" && Number.isFinite(options.minMoveSeconds)
+            ? Math.max(0, options.minMoveSeconds)
+            : DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds;
+
+    return positions
+        .filter((position) => isMistakeReviewTimeManagementPosition(position, minMoveSeconds))
+        .sort(sortMistakeReviewTimeManagementCards);
+}
+
 export function getMistakeReviewPhaseCounts(
     positions: Position[],
     options: { now?: Date } = {},
@@ -685,6 +699,18 @@ export function getMistakeReviewPhase(position: Position): MistakeReviewPhase {
     );
     if (explicit) return explicit;
     return classifyMistakeReviewPhaseFromFen(position.fen);
+}
+
+export function isMistakeReviewTimeManagementPosition(
+    position: Position,
+    minMoveSeconds = DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds,
+) {
+    const moveTime = position.mistakeReview?.moveTimeSeconds;
+    return (
+        typeof moveTime === "number" &&
+        Number.isFinite(moveTime) &&
+        moveTime >= Math.max(0, minMoveSeconds)
+    );
 }
 
 export function classifyMistakeReviewAttempt(
@@ -991,6 +1017,17 @@ function sortMistakeReviewPhaseScheduledCards(a: Position, b: Position) {
         new Date(a.card.due).getTime() - new Date(b.card.due).getTime() ||
         getMistakeReviewSeverityWeight(b.mistakeReview?.severity) -
             getMistakeReviewSeverityWeight(a.mistakeReview?.severity)
+    );
+}
+
+function sortMistakeReviewTimeManagementCards(a: Position, b: Position) {
+    return (
+        Number(b.mistakeReview?.moveTimeSeconds ?? 0) -
+            Number(a.mistakeReview?.moveTimeSeconds ?? 0) ||
+        getMistakeReviewSeverityWeight(b.mistakeReview?.severity) -
+            getMistakeReviewSeverityWeight(a.mistakeReview?.severity) ||
+        (b.mistakeReview?.winProbabilityDrop ?? 0) - (a.mistakeReview?.winProbabilityDrop ?? 0) ||
+        new Date(a.card.due).getTime() - new Date(b.card.due).getTime()
     );
 }
 

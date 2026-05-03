@@ -33,6 +33,7 @@ import {
   IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
+  IconClock,
   IconDatabase,
   IconGitCompare,
   IconEye,
@@ -126,12 +127,14 @@ import {
   writeOpeningReviewDeck,
 } from "@/utils/openingReview";
 import {
+  DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT,
   formatMistakeReviewMoveTime,
   formatMistakeReviewLastSeen,
   getMistakeReviewDailyBatch,
   getMistakeReviewDailyProgress,
   getMistakeReviewPhaseBatch,
   getMistakeReviewPhaseCounts,
+  getMistakeReviewTimeManagementBatch,
   MISTAKE_REVIEW_PHASES,
   type MistakeReviewDailySettings,
   mistakeReviewSeverityLabel,
@@ -674,6 +677,11 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                     mistakeDailySettings={
                       isMistakeReview ? (deckInfo as MistakeReviewDeck | null)?.daily : undefined
                     }
+                    mistakeTimeManagementSettings={
+                      isMistakeReview
+                        ? (deckInfo as MistakeReviewDeck | null)?.settings.timeManagement
+                        : undefined
+                    }
                     mistakeAutoUpdateConfig={
                       isMistakeReview
                         ? (deckInfo as MistakeReviewDeck | null)?.autoUpdate
@@ -1119,6 +1127,7 @@ function OpeningReviewPanel({
   initialPractice,
   openingDailySettings,
   mistakeDailySettings,
+  mistakeTimeManagementSettings,
   mistakeAutoUpdateConfig,
   onOpeningDailySettingsChange,
   onMistakeDailySettingsChange,
@@ -1138,6 +1147,7 @@ function OpeningReviewPanel({
   initialPractice?: OpeningReviewInitialPractice;
   openingDailySettings?: OpeningReviewDeck["daily"];
   mistakeDailySettings?: MistakeReviewDeck["daily"];
+  mistakeTimeManagementSettings?: MistakeReviewDeck["settings"]["timeManagement"];
   mistakeAutoUpdateConfig?: MistakeReviewDeck["autoUpdate"];
   onOpeningDailySettingsChange?: (daily: OpeningReviewDailySettings) => void;
   onMistakeDailySettingsChange?: (daily: MistakeReviewDailySettings) => void;
@@ -1187,6 +1197,19 @@ function OpeningReviewPanel({
     () => (isMistakeReview ? getMistakeReviewPhaseCounts(deck.positions) : null),
     [deck.positions, isMistakeReview],
   );
+  const timeManagementMinMoveSeconds =
+    mistakeTimeManagementSettings?.minMoveSeconds ??
+    DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds;
+  const timeManagementScopeIndices = useMemo(() => {
+    if (!isMistakeReview) return [];
+    const indexByPosition = new Map<Position, number>();
+    deck.positions.forEach((position, index) => indexByPosition.set(position, index));
+    return getMistakeReviewTimeManagementBatch(deck.positions, {
+      minMoveSeconds: timeManagementMinMoveSeconds,
+    })
+      .map((position) => indexByPosition.get(position) ?? -1)
+      .filter((positionIndex) => positionIndex >= 0);
+  }, [deck.positions, isMistakeReview, timeManagementMinMoveSeconds]);
   const setInvisible = useSetAtom(currentInvisibleAtom);
   const setShowComments = useSetAtom(currentShowCommentsAtom);
   const setEvalOpen = useSetAtom(currentEvalOpenAtom);
@@ -1582,6 +1605,38 @@ function OpeningReviewPanel({
     [deck.positions, isMistakeReview, newPractice, setSessionStats],
   );
 
+  const startMistakeTimeManagementPractice = useCallback(() => {
+    if (!isMistakeReview) return;
+
+    if (timeManagementScopeIndices.length === 0) {
+      notifications.show({
+        title: "No time-management cards yet",
+        message:
+          "This deck does not have long-think clock data yet. Create or update it from online games with clock comments.",
+        color: "yellow",
+      });
+      return;
+    }
+
+    const nextStats = {
+      mode: "srs-list" as const,
+      remainingPositions: timeManagementScopeIndices,
+      correct: 0,
+      incorrect: 0,
+      streak: 0,
+      bestStreak: 0,
+    };
+    setSessionStats((current) => ({ ...current, ...nextStats }));
+    newPractice(nextStats);
+    notifications.show({
+      title: "Time management training started",
+      message: `Training ${timeManagementScopeIndices.length} long-think mistake${
+        timeManagementScopeIndices.length === 1 ? "" : "s"
+      }.`,
+      color: "orange",
+    });
+  }, [isMistakeReview, newPractice, setSessionStats, timeManagementScopeIndices]);
+
   useEffect(() => {
     if (
       initialPracticeStartedRef.current ||
@@ -1924,6 +1979,8 @@ function OpeningReviewPanel({
   const dailyReviewScopeLabel = isMistakeReview
     ? "today's mistake review"
     : "today's opening review";
+  const timeManagementThresholdText =
+    formatMistakeReviewMoveTime(timeManagementMinMoveSeconds) ?? `${timeManagementMinMoveSeconds}s`;
 
   return (
     <>
@@ -2071,6 +2128,32 @@ function OpeningReviewPanel({
                       </ActionIcon>
                     </Tooltip>
                   </Group>
+                  {isMistakeReview && (
+                    <Tooltip
+                      label={
+                        timeManagementScopeIndices.length === 0
+                          ? "No long-think clock data in this deck yet"
+                          : `${timeManagementThresholdText}+ long-think mistakes`
+                      }
+                    >
+                      <Box style={{ flex: "1 1 180px", minWidth: 0 }}>
+                        <Button
+                          fullWidth
+                          variant="light"
+                          color="orange"
+                          leftSection={<IconClock size={18} />}
+                          onClick={startMistakeTimeManagementPractice}
+                          justify="space-between"
+                          disabled={timeManagementScopeIndices.length === 0}
+                          rightSection={
+                            <Badge variant="white">{timeManagementScopeIndices.length}</Badge>
+                          }
+                        >
+                          Train time management
+                        </Button>
+                      </Box>
+                    </Tooltip>
+                  )}
                   {isMistakeReview && mistakePhaseCounts && (
                     <Menu width={260} position="bottom-end" withinPortal>
                       <Menu.Target>
