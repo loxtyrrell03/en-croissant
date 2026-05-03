@@ -76,6 +76,7 @@ function AnalysisRow({
   useEffect(() => reset(), [open, reset]);
 
   const [evalDisplay, setEvalDisplay] = useAtom(scoreTypeFamily(engine));
+  const singleLine = compact && !open;
 
   return (
     <>
@@ -94,7 +95,7 @@ function AnalysisRow({
         <Table.Td style={compact ? { padding: "0.1rem 0.15rem" } : undefined}>
           <Flex
             direction="row"
-            wrap="wrap"
+            wrap={singleLine ? "nowrap" : "wrap"}
             style={{
               height: open ? "100%" : compact ? 25 : 35,
               overflow: "hidden",
@@ -102,6 +103,7 @@ function AnalysisRow({
               columnGap: compact ? 2 : undefined,
               fontSize: compact ? "0.78rem" : undefined,
               lineHeight: compact ? 1.15 : undefined,
+              whiteSpace: singleLine ? "nowrap" : undefined,
             }}
           >
             {moveInfo.map(({ san, fen, lastMove, isCheck }, index) => (
@@ -219,7 +221,16 @@ function BoardPopover({
       <Box
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
-        style={compact ? { fontSize: "0.72rem", lineHeight: 1.15 } : undefined}
+        style={
+          compact
+            ? {
+                flex: "0 0 auto",
+                fontSize: "0.72rem",
+                lineHeight: 1.15,
+                whiteSpace: "nowrap",
+              }
+            : undefined
+        }
       >
         {(index === 0 || is_white) && `${move_number.toString()}${is_white ? "." : "..."}`}
         <MoveCell
