@@ -75,7 +75,7 @@ function formatDelta(value: number | null, benchmark: number | null) {
   return delta > 0 ? `+${delta}` : `${delta}`;
 }
 
-function confidenceColor(confidence: "low" | "medium" | "high") {
+function sampleColor(confidence: "low" | "medium" | "high") {
   if (confidence === "high") return "green";
   if (confidence === "medium") return "yellow";
   return "gray";
@@ -351,13 +351,13 @@ export default function AccountStatsPanel() {
                           <Text size="sm" fw={600}>
                             {metric.label}
                           </Text>
-                          <Badge
-                            size="xs"
-                            color={confidenceColor(metric.confidence)}
-                            variant="light"
+                          <Tooltip
+                            label={`Sample size for this metric (${metric.sample}); this is not a skill rating.`}
                           >
-                            {metric.confidence}
-                          </Badge>
+                            <Badge size="xs" color={sampleColor(metric.confidence)} variant="light">
+                              n={metric.sample}
+                            </Badge>
+                          </Tooltip>
                         </Group>
                       </Table.Td>
                       <Table.Td ta="right" fw={700}>

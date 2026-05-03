@@ -101,14 +101,12 @@ type Accumulator = {
     speedCounts: Record<Exclude<AccountStatsSpeed, "all">, number>;
     phase: Record<Phase, PhaseBucket>;
     advantage: {
-        chances: number;
-        retained: number;
+        winningPositionMoves: number;
         convertedGames: number;
         totalGames: number;
     };
     resourcefulness: {
-        chances: number;
-        improved: number;
+        worsePositionMoves: number;
         savedGames: number;
         totalGames: number;
     };
@@ -141,6 +139,8 @@ type ClockSpec = {
 
 const PAGE_SIZE = 250;
 const RATING_BAND_SIZE = 200;
+const SIGNIFICANTLY_BETTER_WIN_CHANCE = 70;
+const SIGNIFICANTLY_WORSE_WIN_CHANCE = 30;
 
 const METRIC_LABELS: Record<AccountStatsMetricId, string> = {
     performance: "Performance",
@@ -230,14 +230,12 @@ function createAccumulator(): Accumulator {
             endgame: emptyPhaseBucket(),
         },
         advantage: {
-            chances: 0,
-            retained: 0,
+            winningPositionMoves: 0,
             convertedGames: 0,
             totalGames: 0,
         },
         resourcefulness: {
-            chances: 0,
-            improved: 0,
+            worsePositionMoves: 0,
             savedGames: 0,
             totalGames: 0,
         },
@@ -426,8 +424,6 @@ function evaluateGame(
             let prevScore = tree.root.score;
             let hadAdvantage = false;
             let hadResourceChance = false;
-            let retainedAdvantage = false;
-            let improvedResource = false;
 
             for (const node of nodes.slice(1)) {
                 const moveColor: Color = node.halfMoves % 2 === 1 ? "white" : "black";
@@ -455,6 +451,18 @@ function evaluateGame(
                     clocks[moveColor] = node.clock;
                 }
 
+                if (node.score) {
+                    const currentWin = winChanceFor(node.score, playerColor);
+                    if (currentWin >= SIGNIFICANTLY_BETTER_WIN_CHANCE) {
+                        acc.advantage.winningPositionMoves += 1;
+                        hadAdvantage = true;
+                    }
+                    if (currentWin <= SIGNIFICANTLY_WORSE_WIN_CHANCE) {
+                        acc.resourcefulness.worsePositionMoves += 1;
+                        hadResourceChance = true;
+                    }
+                }
+
                 if (prevScore && node.score) {
                     if (isPlayerMove) {
                         const cpLoss = getCPLoss(prevScore.value, node.score.value, playerColor);
@@ -469,25 +477,6 @@ function evaluateGame(
                             phaseBucket.mistakes += 1;
                         }
                         acc.evalMoves += 1;
-
-                        const beforeWin = winChanceFor(prevScore, playerColor);
-                        const afterWin = winChanceFor(node.score, playerColor);
-                        if (beforeWin >= 70) {
-                            acc.advantage.chances += 1;
-                            hadAdvantage = true;
-                            if (afterWin >= 60 && beforeWin - afterWin <= 12) {
-                                acc.advantage.retained += 1;
-                                retainedAdvantage = true;
-                            }
-                        }
-                        if (beforeWin <= 30) {
-                            acc.resourcefulness.chances += 1;
-                            hadResourceChance = true;
-                            if (afterWin - beforeWin >= 5 || afterWin >= 40) {
-                                acc.resourcefulness.improved += 1;
-                                improvedResource = true;
-                            }
-                        }
                     }
                     prevScore = node.score;
                 } else if (node.score) {
@@ -497,13 +486,13 @@ function evaluateGame(
 
             if (hadAdvantage) {
                 acc.advantage.totalGames += 1;
-                if (playerScore === 1 || (playerScore === 0.5 && retainedAdvantage)) {
+                if (playerScore === 1) {
                     acc.advantage.convertedGames += 1;
                 }
             }
             if (hadResourceChance) {
                 acc.resourcefulness.totalGames += 1;
-                if (playerScore >= 0.5 || improvedResource) {
+                if (playerScore >= 0.5) {
                     acc.resourcefulness.savedGames += 1;
                 }
             }
@@ -791,12 +780,10 @@ function buildMetrics(acc: Accumulator): AccountStatsMetric[] {
     const endgame = phaseScore(acc.phase.endgame);
     const playQuality = blend([opening, middlegame, endgame], [0.25, 0.5, 0.25]);
     const performance = blend([playQuality, resultPerformance], [0.65, 0.35]);
-    const retained = metricFromRatio(acc.advantage.retained, acc.advantage.chances);
     const converted = metricFromRatio(acc.advantage.convertedGames, acc.advantage.totalGames);
-    const advantageCapitalization = blend([retained, converted], [0.65, 0.35]);
-    const improved = metricFromRatio(acc.resourcefulness.improved, acc.resourcefulness.chances);
+    const advantageCapitalization = converted;
     const saved = metricFromRatio(acc.resourcefulness.savedGames, acc.resourcefulness.totalGames);
-    const resourcefulness = blend([improved, saved], [0.7, 0.3]);
+    const resourcefulness = saved;
     const timeManagement = timeScore(acc);
 
     return [
@@ -818,23 +805,23 @@ function buildMetrics(acc: Accumulator): AccountStatsMetric[] {
             id: "advantageCapitalization",
             label: METRIC_LABELS.advantageCapitalization,
             value: round(advantageCapitalization),
-            sample: acc.advantage.chances,
-            confidence: getConfidence(acc.advantage.chances),
+            sample: acc.advantage.totalGames,
+            confidence: getConfidence(acc.advantage.totalGames),
             evidence:
-                acc.advantage.chances > 0
-                    ? `${acc.advantage.retained}/${acc.advantage.chances} winning moves held; ${acc.advantage.convertedGames}/${acc.advantage.totalGames} games converted`
-                    : "Needs evals from winning positions",
+                acc.advantage.totalGames > 0
+                    ? `${acc.advantage.convertedGames}/${acc.advantage.totalGames} better games converted; ${acc.advantage.winningPositionMoves} winning-position moves`
+                    : `Needs evals from positions at or above ${SIGNIFICANTLY_BETTER_WIN_CHANCE}% win chance`,
         },
         {
             id: "resourcefulness",
             label: METRIC_LABELS.resourcefulness,
             value: round(resourcefulness),
-            sample: acc.resourcefulness.chances,
-            confidence: getConfidence(acc.resourcefulness.chances),
+            sample: acc.resourcefulness.totalGames,
+            confidence: getConfidence(acc.resourcefulness.totalGames),
             evidence:
-                acc.resourcefulness.chances > 0
-                    ? `${acc.resourcefulness.improved}/${acc.resourcefulness.chances} defensive moves improved; ${acc.resourcefulness.savedGames}/${acc.resourcefulness.totalGames} games saved`
-                    : "Needs evals from worse positions",
+                acc.resourcefulness.totalGames > 0
+                    ? `${acc.resourcefulness.savedGames}/${acc.resourcefulness.totalGames} worse games won or drawn; ${acc.resourcefulness.worsePositionMoves} worse-position moves`
+                    : `Needs evals from positions at or below ${SIGNIFICANTLY_WORSE_WIN_CHANCE}% win chance`,
         },
         {
             id: "timeManagement",
