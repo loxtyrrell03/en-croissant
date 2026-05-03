@@ -38,6 +38,7 @@ import {
   IconEye,
   IconInfoCircle,
   IconPencil,
+  IconRobot,
   IconRoute,
   IconSettings,
   IconTarget,
@@ -69,6 +70,7 @@ import GameNotation from "@/components/common/GameNotation";
 import MoveControls from "@/components/common/MoveControls";
 import { ResponsivePanel } from "@/components/common/ResponsivePanel";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
+import { usePracticeAgainstBot } from "@/hooks/usePracticeAgainstBot";
 import {
   formatReviewInterval,
   getNextReviewTimes,
@@ -259,6 +261,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const setInvisible = useSetAtom(currentInvisibleAtom);
   const setShowComments = useSetAtom(currentShowCommentsAtom);
   const setEvalOpen = useSetAtom(currentEvalOpenAtom);
+  const practiceAgainstBot = usePracticeAgainstBot();
   const autoUpdateRevisionRef = useRef(0);
   const initialPractice =
     tab.gameOrigin.kind === "opening_review" ? tab.gameOrigin.initialPractice : undefined;
@@ -563,14 +566,23 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
             />
           }
           controls={
-            <OpeningReviewBoardNavigation
-              positionIndex={activeReviewIndex}
-              total={deck.positions.length}
-              canGoPrevious={canGoPrevious}
-              canGoNext={canGoNext}
-              onPrevious={goToPreviousReviewPosition}
-              onNext={goToNextReviewPosition}
-            />
+            <Group gap="xs" wrap="nowrap">
+              <Box flex={1}>
+                <OpeningReviewBoardNavigation
+                  positionIndex={activeReviewIndex}
+                  total={deck.positions.length}
+                  canGoPrevious={canGoPrevious}
+                  canGoNext={canGoNext}
+                  onPrevious={goToPreviousReviewPosition}
+                  onNext={goToNextReviewPosition}
+                />
+              </Box>
+              <Tooltip label="Practice against bot">
+                <ActionIcon variant="default" onClick={practiceAgainstBot} mr="xs">
+                  <IconRobot size="1rem" />
+                </ActionIcon>
+              </Tooltip>
+            </Group>
           }
           annotation={<AnnotationPanel />}
         />

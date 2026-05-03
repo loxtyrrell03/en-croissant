@@ -1,20 +1,33 @@
 import {
   Center,
+  Checkbox,
   Divider,
   Group,
   InputWrapper,
+  NumberInput,
+  Select,
   SegmentedControl,
   Stack,
+  Text,
   TextInput,
 } from "@mantine/core";
-import { IconCpu, IconUser } from "@tabler/icons-react";
+import { IconCpu, IconRobot, IconUser } from "@tabler/icons-react";
+import { open } from "@tauri-apps/plugin-dialog";
 import { useTranslation } from "react-i18next";
 import type { GoMode } from "@/bindings";
+import FileInput from "@/components/common/FileInput";
 import GoModeInput from "@/components/common/GoModeInput";
 import TimeInput, { type TimeType } from "@/components/common/TimeInput";
 import EngineSettingsForm from "@/components/panels/analysis/EngineSettingsForm";
 import type { TimeControlField } from "@/utils/clock";
 import type { EngineSettings, LocalEngine } from "@/utils/engines";
+import {
+  createDefaultPracticeBotProfile,
+  fideToLichessClassical,
+  isLikelyLc0Engine,
+  nearestLegacyMaiaModel,
+  type PracticeBotProfile,
+} from "@/utils/practiceBot";
 import { EnginesSelect } from "./EnginesSelect";
 
 export type OpponentSettings =
@@ -31,6 +44,7 @@ export type OpponentSettings =
       engine: LocalEngine | null;
       go: GoMode;
       engineSettings?: EngineSettings;
+      botProfile?: PracticeBotProfile;
       timeUnit?: TimeType;
       incrementUnit?: TimeType;
     };
@@ -66,6 +80,40 @@ export function OpponentForm({
         type: "engine",
         engine: null,
         go: ("go" in prev && prev.go) || { t: "Depth", c: 24 },
+        botProfile:
+          "botProfile" in prev && prev.botProfile
+            ? prev.botProfile
+            : createDefaultPracticeBotProfile(null),
+      }));
+    }
+  }
+
+  function updateBotProfile(fn: (profile: PracticeBotProfile) => PracticeBotProfile) {
+    setOpponent((prev) => {
+      if (prev.type === "human") return prev;
+      const profile = prev.botProfile ?? createDefaultPracticeBotProfile(prev.engine);
+      return {
+        ...prev,
+        botProfile: fn(profile),
+      };
+    });
+  }
+
+  async function selectMaiaWeights() {
+    const selected = await open({
+      multiple: false,
+      filters: [
+        {
+          name: "Maia weights",
+          extensions: ["gz", "pb"],
+        },
+      ],
+    });
+
+    if (typeof selected === "string") {
+      updateBotProfile((profile) => ({
+        ...profile,
+        maiaWeightsPath: selected,
       }));
     }
   }
@@ -112,6 +160,23 @@ export function OpponentForm({
               ...prev,
               engine,
               engineSettings: engine?.settings || undefined,
+              botProfile:
+                prev.type === "engine" && prev.botProfile?.enabled
+                  ? {
+                      ...prev.botProfile,
+                      ...(prev.botProfile.kind === "maia" &&
+                      !prev.botProfile.maiaWeightsPath &&
+                      typeof engine?.settings?.find((o) => o.name === "WeightsFile")?.value ===
+                        "string"
+                        ? {
+                            maiaWeightsPath: engine.settings.find((o) => o.name === "WeightsFile")
+                              ?.value as string,
+                          }
+                        : {}),
+                    }
+                  : prev.type === "engine"
+                    ? prev.botProfile
+                    : undefined,
             }))
           }
         />
@@ -208,6 +273,96 @@ export function OpponentForm({
 
       {opponent.type === "engine" && (
         <Stack>
+          <Divider variant="dashed" label="Bot Trainer" />
+          <Checkbox
+            checked={opponent.botProfile?.enabled ?? false}
+            label={
+              <Group gap={6} wrap="nowrap">
+                <IconRobot size={16} />
+                <span>Trainer bot</span>
+              </Group>
+            }
+            onChange={(event) => {
+              const enabled = event.currentTarget.checked;
+              setOpponent((prev) => {
+                if (prev.type === "human") return prev;
+                return {
+                  ...prev,
+                  botProfile: {
+                    ...(prev.botProfile ?? createDefaultPracticeBotProfile(prev.engine)),
+                    enabled,
+                  },
+                };
+              });
+            }}
+          />
+
+          {opponent.botProfile?.enabled && (
+            <Stack gap="xs">
+              <SegmentedControl
+                value={opponent.botProfile.kind}
+                data={[
+                  { value: "maia", label: "Maia" },
+                  { value: "stockfish", label: "Stockfish" },
+                ]}
+                onChange={(value) =>
+                  updateBotProfile((profile) => ({
+                    ...profile,
+                    kind: value as "maia" | "stockfish",
+                  }))
+                }
+              />
+              <NumberInput
+                label="FIDE Elo"
+                min={800}
+                max={2600}
+                step={50}
+                value={opponent.botProfile.fideElo}
+                onChange={(value) =>
+                  updateBotProfile((profile) => ({
+                    ...profile,
+                    fideElo: typeof value === "number" ? value : profile.fideElo,
+                  }))
+                }
+              />
+              {opponent.botProfile.kind === "maia" && (
+                <Stack gap="xs">
+                  <Text size="xs" c="dimmed">
+                    Lichess target {fideToLichessClassical(opponent.botProfile.fideElo)}; nearest
+                    legacy Maia weights {nearestLegacyMaiaModel(opponent.botProfile.fideElo)}.
+                  </Text>
+                  <FileInput
+                    label="Maia weights (.pb.gz)"
+                    description="Select a Maia weights file for Lc0."
+                    filename={opponent.botProfile.maiaWeightsPath ?? null}
+                    onClick={selectMaiaWeights}
+                  />
+                  {!isLikelyLc0Engine(opponent.engine) && (
+                    <Text size="xs" c="orange">
+                      Select an Lc0 or Leela engine to use Maia weights.
+                    </Text>
+                  )}
+                  <Select
+                    label="Time use"
+                    allowDeselect={false}
+                    value={opponent.botProfile.timeUse ?? "balanced"}
+                    data={[
+                      { value: "fast", label: "Fast" },
+                      { value: "balanced", label: "Balanced" },
+                      { value: "slow", label: "Slow" },
+                    ]}
+                    onChange={(value) =>
+                      updateBotProfile((profile) => ({
+                        ...profile,
+                        timeUse: (value as "fast" | "balanced" | "slow" | null) ?? "balanced",
+                      }))
+                    }
+                  />
+                </Stack>
+              )}
+            </Stack>
+          )}
+
           {!opponent.timeControl && (
             <GoModeInput
               gameMode

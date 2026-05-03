@@ -6,6 +6,7 @@ import {
   IconEdit,
   IconEditOff,
   IconEraser,
+  IconRobot,
   IconSwitchVertical,
   IconTarget,
   IconZoomCheck,
@@ -26,6 +27,7 @@ import {
   eraseDrawablesOnClickAtom,
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
+import { usePracticeAgainstBot } from "@/hooks/usePracticeAgainstBot";
 
 interface BoardControlsProps {
   editingMode: boolean;
@@ -54,7 +56,9 @@ function BoardControls({
   const store = useContext(TreeStateContext)!;
   const headers = useStore(store, (s) => s.headers);
   const root = useStore(store, (s) => s.root);
+  const currentNode = useStore(store, (s) => s.currentNode());
   const setHeaders = useStore(store, (s) => s.setHeaders);
+  const setFen = useStore(store, (s) => s.setFen);
   const clearShapes = useStore(store, (s) => s.clearShapes);
 
   const keyMap = useAtomValue(keyMapAtom);
@@ -62,6 +66,7 @@ function BoardControls({
   const setGameState = useSetAtom(currentGameStateAtom);
   const autoSave = useAtomValue(autoSaveAtom);
   const eraseDrawablesOnClick = useAtomValue(eraseDrawablesOnClickAtom);
+  const practiceAgainstBot = usePracticeAgainstBot();
 
   const orientation = headers.orientation || "white";
   const toggleOrientation = () =>
@@ -72,10 +77,17 @@ function BoardControls({
     });
 
   function changeTabType() {
+    if (currentTab?.type === "analysis") {
+      setFen(currentNode.fen);
+      setHeaders({
+        ...headers,
+        fen: currentNode.fen,
+        result: "*",
+      });
+      setGameState("settingUp");
+    }
+
     setCurrentTab((t) => {
-      if (t.type === "analysis") {
-        setGameState("settingUp");
-      }
       return {
         ...t,
         type: t.type === "analysis" ? "play" : "analysis",
@@ -136,6 +148,13 @@ function BoardControls({
           )}
         </ActionIcon>
       </Tooltip>
+      {currentTab?.type !== "play" && (
+        <Tooltip position="right" label="Practice against bot">
+          <ActionIcon onClick={practiceAgainstBot}>
+            <IconRobot size="1.2rem" />
+          </ActionIcon>
+        </Tooltip>
+      )}
       {!eraseDrawablesOnClick && (
         <Tooltip position="right" label={t("Board.Action.ClearDrawings")}>
           <ActionIcon onClick={() => clearShapes()}>

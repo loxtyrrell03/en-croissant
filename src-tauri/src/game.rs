@@ -43,7 +43,25 @@ pub enum PlayerConfig {
         #[serde(default)]
         options: Vec<EngineOption>,
         go: Option<GoMode>,
+        #[serde(
+            default = "default_use_clock_time_management",
+            rename = "useClockTimeManagement"
+        )]
+        use_clock_time_management: bool,
+        #[serde(default, rename = "moveDelay")]
+        move_delay: Option<EngineMoveDelay>,
     },
+}
+
+fn default_use_clock_time_management() -> bool {
+    true
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct EngineMoveDelay {
+    pub min_ms: u32,
+    pub max_ms: u32,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Type)]
@@ -1365,6 +1383,30 @@ fn try_polyglot_book_move(controller: &GameController) -> Option<String> {
     Some(legal_moves[selected].0.clone())
 }
 
+fn choose_engine_move_delay(delay: &EngineMoveDelay, current_time: Option<u64>) -> Duration {
+    let min_ms = delay.min_ms.min(delay.max_ms);
+    let max_ms = delay.max_ms.max(delay.min_ms);
+    let mut rng = rand::thread_rng();
+    let selected = if min_ms == max_ms {
+        min_ms
+    } else {
+        rng.gen_range(min_ms..=max_ms)
+    };
+
+    let selected_ms = selected as u64;
+    let clamped = current_time
+        .map(|time| {
+            if time <= 750 {
+                0
+            } else {
+                selected_ms.min(time.saturating_sub(750))
+            }
+        })
+        .unwrap_or(selected_ms);
+
+    Duration::from_millis(clamped)
+}
+
 async fn request_engine_move(
     game_id: &str,
     controller: &Arc<RwLock<GameController>>,
@@ -1410,7 +1452,7 @@ async fn request_engine_move(
         }
     }
 
-    let (engine_arc, go_mode, initial_fen, moves, turn) = {
+    let (engine_arc, go_mode, move_delay, initial_fen, moves, turn) = {
         let ctrl = controller.read().await;
 
         if ctrl.status != GameStatus::Playing {
@@ -1429,8 +1471,13 @@ async fn request_engine_move(
             None => return Err(Error::EngineNotInitialized),
         };
 
-        let go = match player_config {
-            PlayerConfig::Engine { go, .. } => go,
+        let (go, use_clock_time_management, delay) = match player_config {
+            PlayerConfig::Engine {
+                go,
+                use_clock_time_management,
+                move_delay,
+                ..
+            } => (go, use_clock_time_management, move_delay),
             _ => return Err(Error::NotEngineTurn),
         };
 
@@ -1444,7 +1491,7 @@ async fn request_engine_move(
             black_time
         };
 
-        let go_mode = if current_time.is_some() {
+        let go_mode = if current_time.is_some() && use_clock_time_management {
             let (winc, binc) = ctrl
                 .clock
                 .as_ref()
@@ -1458,8 +1505,18 @@ async fn request_engine_move(
             go.unwrap_or(GoMode::Depth(20))
         };
 
-        (engine, go_mode, initial_fen, moves, turn)
+        let move_delay = delay
+            .as_ref()
+            .map(|delay| choose_engine_move_delay(delay, current_time));
+
+        (engine, go_mode, move_delay, initial_fen, moves, turn)
     };
+
+    if let Some(delay) = move_delay {
+        if !delay.is_zero() {
+            tokio::time::sleep(delay).await;
+        }
+    }
 
     let best_move = {
         let mut engine = engine_arc.lock().await;

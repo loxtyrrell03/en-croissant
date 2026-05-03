@@ -57,6 +57,14 @@ import {
 import { positionFromFen } from "@/utils/chessops";
 import type { GameHeaders } from "@/utils/treeReducer";
 import { unwrap } from "@/utils/unwrap";
+import {
+  buildPracticeBotOptions,
+  formatPracticeBotName,
+  getPracticeBotGoMode,
+  getPracticeBotMoveDelay,
+  isLikelyLc0Engine,
+  shouldUseClockTimeManagement,
+} from "@/utils/practiceBot";
 import EngineLogsView from "../common/EngineLogsView";
 import FileInput from "../common/FileInput";
 import GameInfo from "../common/GameInfo";
@@ -244,17 +252,16 @@ function BoardGame() {
         name: settings.name ?? "Player",
       };
     }
+    const botProfile = settings.botProfile?.enabled ? settings.botProfile : null;
+    const engineSettings = settings.engineSettings ?? settings.engine?.settings ?? [];
     return {
       type: "engine",
-      name: settings.engine?.name ?? "Engine",
+      name: botProfile ? formatPracticeBotName(botProfile) : (settings.engine?.name ?? "Engine"),
       path: settings.engine?.path ?? "",
-      options: (settings.engineSettings ?? settings.engine?.settings ?? [])
-        .filter((s) => s.name !== "MultiPV")
-        .map((s) => ({
-          name: s.name,
-          value: s.value?.toString() ?? "",
-        })),
-      go: settings.timeControl ? null : settings.go,
+      options: buildPracticeBotOptions(engineSettings, botProfile),
+      go: getPracticeBotGoMode(botProfile, settings.go),
+      useClockTimeManagement: shouldUseClockTimeManagement(botProfile),
+      moveDelay: getPracticeBotMoveDelay(botProfile, settings.timeControl),
     };
   }
 
@@ -272,6 +279,14 @@ function BoardGame() {
 
   async function startGame() {
     const playerSettings = getPlayers();
+    const missingEngine = [playerSettings.white, playerSettings.black].some(
+      (player) => player.type === "engine" && !player.engine?.path,
+    );
+    if (missingEngine) {
+      console.error("Cannot start game without an engine path");
+      return;
+    }
+
     setPlayers(playerSettings);
 
     const newGameId = `${activeTab}-game`;
@@ -526,6 +541,23 @@ function BoardGame() {
   const onePlayerIsEngine = players.white.type !== players.black.type;
   const isEngineVsEngine = players.white.type === "engine" && players.black.type === "engine";
 
+  const setupIssue = useMemo(() => {
+    const configuredPlayers = [player1Settings, player2Settings];
+    for (const player of configuredPlayers) {
+      if (player.type !== "engine") continue;
+      if (!player.engine?.path) return "Select an engine before starting.";
+      if (player.botProfile?.enabled && player.botProfile.kind === "maia") {
+        if (!isLikelyLc0Engine(player.engine)) {
+          return "Select an Lc0 or Leela engine for Maia.";
+        }
+        if (!player.botProfile.maiaWeightsPath) {
+          return "Select a Maia weights file before starting.";
+        }
+      }
+    }
+    return null;
+  }, [player1Settings, player2Settings]);
+
   function getResignationLosingColor(): "white" | "black" {
     if (isPlayerVsEngine) {
       return players.white.type === "human" ? "white" : "black";
@@ -713,7 +745,17 @@ function BoardGame() {
                     </ScrollArea>
 
                     <Divider pb="sm" />
-                    <Button onClick={startGame} fullWidth variant="light" disabled={error !== null}>
+                    {setupIssue && (
+                      <Text size="xs" c="red" ta="center" pb="xs">
+                        {setupIssue}
+                      </Text>
+                    )}
+                    <Button
+                      onClick={startGame}
+                      fullWidth
+                      variant="light"
+                      disabled={error !== null || setupIssue !== null}
+                    >
                       {t("Board.Opponent.StartGame")}
                     </Button>
                   </Stack>
