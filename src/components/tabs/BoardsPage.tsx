@@ -2,7 +2,7 @@ import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { ActionIcon, ScrollArea, Tabs } from "@mantine/core";
 import { useHotkeys, useToggle } from "@mantine/hooks";
 import { IconPlus } from "@tabler/icons-react";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useStore } from "jotai";
 import {
   startTransition,
   useCallback,
@@ -15,7 +15,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { commands } from "@/bindings";
-import { activeTabAtom, tabsAtom } from "@/state/atoms";
+import { activeTabAtom, tabFamily, tabsAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
 import { createTab, genID, isPersistentGameOrigin, type Tab } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
@@ -26,8 +26,8 @@ import Puzzles from "../puzzles/Puzzles";
 import OpeningReviewWorkspace from "../review/OpeningReviewWorkspace";
 import { BoardTab } from "./BoardTab";
 import ConfirmChangesModal from "./ConfirmChangesModal";
-import NewTabHome from "./NewTabHome";
 import { platform } from "@tauri-apps/plugin-os";
+import { useNavigate } from "@tanstack/react-router";
 import { atomWithStorage } from "jotai/utils";
 import classes from "./BoardsPage.module.css";
 
@@ -37,16 +37,42 @@ export default function BoardsPage() {
   const [tabs, setTabs] = useAtom(tabsAtom);
   const [activeTab, setActiveTab] = useAtom(activeTabAtom);
   const [saveModalOpened, toggleSaveModal] = useToggle();
+  const navigate = useNavigate();
+  const store = useStore();
 
   useEffect(() => {
-    if (tabs.length === 0) {
-      createTab({
-        tab: { name: t("Tab.NewTab"), type: "new" },
-        setTabs,
-        setActiveTab,
-      });
+    const workspaceTabs = tabs.filter((tab) => tab.type !== "new");
+
+    if (workspaceTabs.length !== tabs.length) {
+      setTabs(workspaceTabs);
+      if (!activeTab || !workspaceTabs.some((tab) => tab.value === activeTab)) {
+        setActiveTab(workspaceTabs[0]?.value ?? null);
+      }
+      return;
     }
-  }, [tabs, setActiveTab, setTabs, t]);
+
+    if (workspaceTabs.length === 0) {
+      setActiveTab(null);
+      navigate({ to: "/home" });
+      return;
+    }
+
+    if (!activeTab || !workspaceTabs.some((tab) => tab.value === activeTab)) {
+      setActiveTab(workspaceTabs[0].value);
+    }
+  }, [activeTab, navigate, setActiveTab, setTabs, tabs]);
+
+  const createAnalysisTab = useCallback(async () => {
+    const tabId = await createTab({
+      tab: {
+        name: t("Home.Card.AnalysisBoard.Title"),
+        type: "analysis",
+      },
+      setTabs,
+      setActiveTab,
+    });
+    store.set(tabFamily(tabId), "analysis");
+  }, [setActiveTab, setTabs, store, t]);
 
   const closeTab = useCallback(
     async (value: string | null, forced?: boolean) => {
@@ -67,6 +93,7 @@ export default function BoardsPage() {
             }
           } else {
             startTransition(() => setActiveTab(null));
+            navigate({ to: "/home" });
           }
         }
         setTabs((prev) => prev.filter((tab) => tab.value !== value));
@@ -74,7 +101,7 @@ export default function BoardsPage() {
         await commands.abortGame(`${value}-game`);
       }
     },
-    [tabs, activeTab, setTabs, toggleSaveModal, setActiveTab],
+    [tabs, activeTab, setTabs, toggleSaveModal, setActiveTab, navigate],
   );
 
   function selectTab(index: number) {
@@ -231,19 +258,10 @@ export default function BoardsPage() {
                 <ActionIcon
                   variant="default"
                   radius={0}
-                  onClick={() =>
-                    createTab({
-                      tab: {
-                        name: t("Tab.NewTab"),
-                        type: "new",
-                      },
-                      setTabs,
-                      setActiveTab,
-                    })
-                  }
                   classNames={{
                     root: classes.newTab,
                   }}
+                  onClick={() => void createAnalysisTab()}
                 >
                   <IconPlus />
                 </ActionIcon>
@@ -523,7 +541,7 @@ function TabSwitch({
   activeTab: string | null;
 }) {
   return match(tab.type)
-    .with("new", () => <NewTabHome id={tab.value} />)
+    .with("new", () => null)
     .with("play", () => (
       <TreeStateProvider id={tab.value}>
         <BoardWorkspaceLayout />

@@ -33,7 +33,7 @@ import {
     masterOptionsSchema,
 } from "@/utils/lichess/explorer";
 import { getWinChance, normalizeScore } from "@/utils/score";
-import { genID, type Tab, tabSchema } from "@/utils/tabs";
+import { type Tab, tabSchema } from "@/utils/tabs";
 import { getEnginesDir } from "../utils/directories";
 import type { Session } from "../utils/session";
 import { createAsyncZodStorage, createZodStorage } from "./utils";
@@ -51,24 +51,15 @@ const zodArray = <Input, Output>(itemSchema: z.ZodType<Output, z.ZodTypeDef, Inp
 
 // Tabs
 
-const firstTab: Tab = {
-    name: "New Tab",
-    value: genID(),
-    type: "new",
-    gameOrigin: {
-        kind: "none",
-    },
-};
-
 export const tabsAtom = atomWithStorage<Tab[]>(
     "tabs",
-    [firstTab],
+    [],
     createZodStorage(z.array(tabSchema), sessionStorage),
 );
 
 export const activeTabAtom = atomWithStorage<string | null>(
     "activeTab",
-    firstTab.value,
+    null,
     createJSONStorage(() => sessionStorage),
 );
 

@@ -20,7 +20,7 @@ export default function CreateRepertoireModal({
   const [name, setName] = useState("");
   const [color, setColor] = useState<"white" | "black">("white");
   const [error, setError] = useState("");
-  const { documentDir } = useLoaderData({ from: "/" });
+  const { documentDir } = useLoaderData({ from: "/home" });
 
   const [, setTabs] = useAtom(tabsAtom);
   const setActiveTab = useSetAtom(activeTabAtom);

@@ -9,7 +9,7 @@ import { ask, open } from "@tauri-apps/plugin-dialog";
 import { platform } from "@tauri-apps/plugin-os";
 import { exit } from "@tauri-apps/plugin-process";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useStore } from "jotai";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
@@ -19,7 +19,7 @@ import type { Dirs } from "@/App";
 import AboutModal from "@/components/About";
 import { SideBar } from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
-import { activeTabAtom, nativeBarAtom, tabsAtom } from "@/state/atoms";
+import { activeTabAtom, nativeBarAtom, tabFamily, tabsAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
 import { openFile } from "@/utils/files";
 import { createTab } from "@/utils/tabs";
@@ -90,6 +90,7 @@ function RootLayout() {
 
   const [, setTabs] = useAtom(tabsAtom);
   const [, setActiveTab] = useAtom(activeTabAtom);
+  const store = useStore();
 
   const { t } = useTranslation();
 
@@ -99,19 +100,21 @@ function RootLayout() {
       filters: [{ name: "PGN file", extensions: ["pgn"] }],
     });
     if (typeof selected === "string") {
+      await openFile(selected, setTabs, setActiveTab);
       navigate({ to: "/" });
-      openFile(selected, setTabs, setActiveTab);
     }
   }, [navigate, setActiveTab, setTabs]);
 
   const createNewTab = useCallback(() => {
-    navigate({ to: "/" });
-    createTab({
-      tab: { name: t("Tab.NewTab"), type: "new" },
+    void createTab({
+      tab: { name: t("Home.Card.AnalysisBoard.Title"), type: "analysis" },
       setTabs,
       setActiveTab,
+    }).then((tabId) => {
+      store.set(tabFamily(tabId), "analysis");
+      navigate({ to: "/" });
     });
-  }, [navigate, setActiveTab, setTabs, t]);
+  }, [navigate, setActiveTab, setTabs, store, t]);
 
   const openSettings = useCallback(async () => {
     navigate({ to: "/settings" });
@@ -125,74 +128,83 @@ function RootLayout() {
 
   const isMacOS = platform() === "macos";
 
-  const aboutOption = {
-    label: t("Menu.Help.About"),
-    id: "about",
-    action: () => setOpened(true),
-  };
+  const aboutOption = useMemo<MenuAction>(
+    () => ({
+      label: t("Menu.Help.About"),
+      id: "about",
+      action: () => setOpened(true),
+    }),
+    [t],
+  );
 
-  const appMenu: MenuGroup = {
-    label: "Application Menu",
-    options: [
-      {
-        label: t("Menu.Application.About", {
-          defaultValue: t("Menu.Help.About"),
-        }),
-        id: aboutOption.id,
-        action: aboutOption.action,
-      },
-      { label: "divider" },
-      {
-        label: t("SideBar.Settings") + "...",
-        id: "settings",
-        shortcut: "cmd+,",
-        action: openSettings,
-      },
-      {
-        label: t("Menu.Application.Hide"),
-        item: "Hide",
-      },
-      { label: "divider" },
-      {
-        label: t("Menu.Application.Quit", {
-          defaultValue: t("Menu.File.Exit"),
-        }),
-        item: "Quit",
-      },
-    ],
-  };
+  const appMenu = useMemo<MenuGroup>(
+    () => ({
+      label: "Application Menu",
+      options: [
+        {
+          label: t("Menu.Application.About", {
+            defaultValue: t("Menu.Help.About"),
+          }),
+          id: aboutOption.id,
+          action: aboutOption.action,
+        },
+        { label: "divider" },
+        {
+          label: t("SideBar.Settings") + "...",
+          id: "settings",
+          shortcut: "cmd+,",
+          action: openSettings,
+        },
+        {
+          label: t("Menu.Application.Hide"),
+          item: "Hide",
+        },
+        { label: "divider" },
+        {
+          label: t("Menu.Application.Quit", {
+            defaultValue: t("Menu.File.Exit"),
+          }),
+          item: "Quit",
+        },
+      ],
+    }),
+    [aboutOption, openSettings, t],
+  );
 
-  const macOSEditMenu: MenuGroup = {
-    label: t("Menu.Edit"),
-    options: [
-      {
-        label: t("Menu.Edit.Undo"),
-        item: "Undo",
-      },
-      {
-        label: t("Menu.Edit.Redo"),
-        item: "Redo",
-      },
-      { label: "divider" },
-      {
-        label: t("Menu.Edit.Copy"),
-        item: "Copy",
-      },
-      {
-        label: t("Menu.Edit.Cut"),
-        item: "Cut",
-      },
-      {
-        label: t("Menu.Edit.Paste"),
-        item: "Paste",
-      },
-      { label: "divider" },
-      {
-        label: t("Menu.Edit.SelectAll"),
-        item: "SelectAll",
-      },
-    ],
-  };
+  const macOSEditMenu = useMemo<MenuGroup>(
+    () => ({
+      label: t("Menu.Edit"),
+      options: [
+        {
+          label: t("Menu.Edit.Undo"),
+          item: "Undo",
+        },
+        {
+          label: t("Menu.Edit.Redo"),
+          item: "Redo",
+        },
+        { label: "divider" },
+        {
+          label: t("Menu.Edit.Copy"),
+          item: "Copy",
+        },
+        {
+          label: t("Menu.Edit.Cut"),
+          item: "Cut",
+        },
+        {
+          label: t("Menu.Edit.Paste"),
+          item: "Paste",
+        },
+        { label: "divider" },
+        {
+          label: t("Menu.Edit.SelectAll"),
+          item: "SelectAll",
+        },
+      ],
+    }),
+    [t],
+  );
 
   const menuActions: MenuGroup[] = useMemo(
     () => [
@@ -275,7 +287,7 @@ function RootLayout() {
         ],
       },
     ],
-    [t, createNewTab, keyMap, openNewFile],
+    [aboutOption, appMenu, createNewTab, isMacOS, keyMap, macOSEditMenu, openNewFile, t],
   );
 
   const { data: menu } = useSWRImmutable(["menu", menuActions], () => createMenu(menuActions));
@@ -301,10 +313,11 @@ function RootLayout() {
         const pgnFiles = payload.paths.filter((path) => path.toLowerCase().endsWith(".pgn"));
 
         if (pgnFiles.length > 0) {
-          navigate({ to: "/" });
-          for (const file of pgnFiles) {
-            openFile(file, setTabs, setActiveTab);
-          }
+          void Promise.all(pgnFiles.map((file) => openFile(file, setTabs, setActiveTab))).then(
+            () => {
+              navigate({ to: "/" });
+            },
+          );
         }
       }
     });

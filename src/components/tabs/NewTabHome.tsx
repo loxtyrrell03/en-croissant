@@ -39,7 +39,6 @@ import {
   tabsAtom,
 } from "@/state/atoms";
 import { getDatabases, query_players, type SuccessDatabaseInfo } from "@/utils/db";
-import type { Tab } from "@/utils/tabs";
 import { createTab } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
 import type { LocalEngine } from "@/utils/engines";
@@ -1816,7 +1815,7 @@ function LatestGameAccountsModal({
   );
 }
 
-export default function NewTabHome({ id }: { id: string }) {
+export default function NewTabHome() {
   const { t } = useTranslation();
 
   const [openModal, setOpenModal] = useState(false);
@@ -1849,7 +1848,7 @@ export default function NewTabHome({ id }: { id: string }) {
   const [recentFiles, setRecentFiles] = useAtom(recentFilesAtom);
   const store = useStore();
   const navigate = useNavigate();
-  const { documentDir } = useLoaderData({ from: "/" });
+  const { documentDir } = useLoaderData({ from: "/home" });
   const localEngines = useMemo(
     () => (engines ?? []).filter((engine): engine is LocalEngine => engine.type === "local"),
     [engines],
@@ -1858,6 +1857,30 @@ export default function NewTabHome({ id }: { id: string }) {
   const selectedOnlineProviders = useMemo(
     () => getSelectedOnlineGameProviders(sessions, latestGameAccountSelection),
     [latestGameAccountSelection, sessions],
+  );
+
+  const openBoardTab = useCallback(
+    async ({
+      name,
+      type,
+    }: {
+      name: string;
+      type: "analysis" | "play" | "puzzles";
+    }) => {
+      const tabId = await createTab({
+        tab: {
+          name,
+          type,
+        },
+        setTabs,
+        setActiveTab,
+      });
+      if (type === "analysis") {
+        store.set(tabFamily(tabId), "analysis");
+      }
+      navigate({ to: "/" });
+    },
+    [navigate, setActiveTab, setTabs, store],
   );
 
   useEffect(() => {
@@ -2222,12 +2245,9 @@ export default function NewTabHome({ id }: { id: string }) {
       description: t("Home.Card.PlayChess.Desc"),
       label: t("Home.Card.PlayChess.Button"),
       onClick: () => {
-        setTabs((prev: Tab[]) => {
-          const tab = prev.find((t) => t.value === id);
-          if (!tab) return prev;
-          tab.name = t("Home.NewGame");
-          tab.type = "play";
-          return [...prev];
+        void openBoardTab({
+          name: t("Home.NewGame"),
+          type: "play",
         });
       },
     },
@@ -2237,12 +2257,9 @@ export default function NewTabHome({ id }: { id: string }) {
       description: t("Home.Card.AnalysisBoard.Desc"),
       label: t("Home.Card.AnalysisBoard.Button"),
       onClick: () => {
-        setTabs((prev: Tab[]) => {
-          const tab = prev.find((t) => t.value === id);
-          if (!tab) return prev;
-          tab.name = t("Home.Card.AnalysisBoard.Title");
-          tab.type = "analysis";
-          return [...prev];
+        void openBoardTab({
+          name: t("Home.Card.AnalysisBoard.Title"),
+          type: "analysis",
         });
       },
     },
@@ -2303,12 +2320,9 @@ export default function NewTabHome({ id }: { id: string }) {
       description: t("Home.Card.Puzzle.Desc"),
       label: t("Home.Card.Puzzle.Button"),
       onClick: () => {
-        setTabs((prev) => {
-          const tab = prev.find((t) => t.value === id);
-          if (!tab) return prev;
-          tab.name = t("Home.PuzzleTraining");
-          tab.type = "puzzles";
-          return [...prev];
+        void openBoardTab({
+          name: t("Home.PuzzleTraining"),
+          type: "puzzles",
         });
       },
     },
@@ -2375,7 +2389,7 @@ export default function NewTabHome({ id }: { id: string }) {
           navigate({ to: "/accounts" });
         }}
       />
-      <Stack gap="lg" pt="sm">
+      <Stack gap="lg" p="md">
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }}>
           {cards.map((card) => (
             <Card shadow="sm" p="lg" radius="md" withBorder key={card.title}>

@@ -11,27 +11,23 @@ import {
   Textarea,
   TextInput,
 } from "@mantine/core";
-import { useLoaderData } from "@tanstack/react-router";
+import { useLoaderData, useNavigate } from "@tanstack/react-router";
 import { resolve, tempDir } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { makeFen, parseFen } from "chessops/fen";
-import { useAtom, useStore } from "jotai";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
-import { commands } from "@/bindings";
-import { addRecentFileAtom, currentTabAtom } from "@/state/atoms";
-import { parsePGN } from "@/utils/chess";
+import { headersToPGN, parsePGN } from "@/utils/chess";
 import { getChesscomGame } from "@/utils/chess.com/api";
 import { chessopsError } from "@/utils/chessops";
 import { createFile, openFile } from "@/utils/files";
 import { getLichessGame } from "@/utils/lichess/api";
-import { isInTempDir, type Tab } from "@/utils/tabs";
-import { defaultTree, getGameName } from "@/utils/treeReducer";
-import { unwrap } from "@/utils/unwrap";
+import { createTab, type Tab } from "@/utils/tabs";
+import { getGameName } from "@/utils/treeReducer";
 import GenericCard from "../common/GenericCard";
-import type { FileMetadata, FileType } from "../files/file";
+import type { FileType } from "../files/file";
 
 type ImportType = "PGN" | "Link" | "FEN";
 
@@ -62,25 +58,22 @@ export default function ImportModal({
   const [importType, setImportType] = useState<ImportType>("PGN");
   const [filetype, setFiletype] = useState<FileType>("game");
   const [loading, setLoading] = useState(false);
-  const [, setCurrentTab] = useAtom(currentTabAtom);
   const [fenError, setFenError] = useState("");
 
   const [save, setSave] = useState(false);
   const [filename, setFilename] = useState("");
   const [error, setError] = useState("");
-  const { documentDir } = useLoaderData({ from: "/" });
-  const store = useStore();
+  const { documentDir } = useLoaderData({ from: "/home" });
+  const navigate = useNavigate();
 
   async function handleSubmit() {
     setLoading(true);
+    let imported = false;
     if (importType === "PGN") {
       if (file || pgn) {
         if (file) {
-          let fileInfo: FileMetadata | undefined;
-          const count = unwrap(await commands.countPgnGames(file));
-          const fileContent = await readTextFile(file);
-          const input = unwrap(await commands.readGames(file, 0, 0))[0];
           if (save) {
+            const fileContent = await readTextFile(file);
             const newFile = await createFile({
               filename,
               filetype,
@@ -92,47 +85,16 @@ export default function ImportModal({
               setLoading(false);
               return;
             }
-            fileInfo = newFile.value;
+            await openFile(newFile.value, setTabs, setActiveTab);
           } else {
-            fileInfo = {
-              type: "file",
-              path: file,
-              numGames: count,
-              name: filename,
-              lastModified: Date.now(),
-              metadata: {
-                type: "game",
-                tags: [],
-              },
-            };
+            await openFile(file, setTabs, setActiveTab);
           }
-          const tree = await parsePGN(input);
-          const originKind = (await isInTempDir(fileInfo.path)) ? "temp_file" : "file";
-          setCurrentTab((prev) => {
-            sessionStorage.setItem(prev.value, JSON.stringify({ version: 0, state: tree }));
-            return {
-              ...prev,
-              name: getGameName(tree.headers),
-              gameOrigin: {
-                kind: originKind,
-                file: fileInfo,
-                gameNumber: 0,
-              },
-              type: "analysis",
-            };
-          });
-
-          if (fileInfo?.path) {
-            store.set(addRecentFileAtom, {
-              name: fileInfo.name,
-              path: fileInfo.path,
-              type: fileInfo.metadata.type,
-            });
-          }
+          imported = true;
         } else {
           const tempFile = await resolve(await tempDir(), `import_${Date.now()}.pgn`);
           await writeTextFile(tempFile, pgn);
           await openFile(tempFile, setTabs, setActiveTab);
+          imported = true;
         }
       }
     } else if (importType === "Link") {
@@ -161,17 +123,19 @@ export default function ImportModal({
       }
 
       const tree = await parsePGN(pgn);
-      setCurrentTab((prev) => {
-        sessionStorage.setItem(prev.value, JSON.stringify({ version: 0, state: tree }));
-        return {
-          ...prev,
+      await createTab({
+        tab: {
           name: getGameName(tree.headers),
-          gameOrigin: {
-            kind: "none",
-          },
           type: "analysis",
-        };
+        },
+        setTabs,
+        setActiveTab,
+        pgn,
+        gameOrigin: {
+          kind: "none",
+        },
       });
+      imported = true;
     } else if (importType === "FEN") {
       const res = parseFen(fen.trim());
       if (res.isErr) {
@@ -181,19 +145,33 @@ export default function ImportModal({
       }
       setFenError("");
       const parsedFen = makeFen(res.value);
-      setCurrentTab((prev) => {
-        const tree = defaultTree(parsedFen);
-        tree.headers.fen = parsedFen;
-        sessionStorage.setItem(prev.value, JSON.stringify({ version: 0, state: tree }));
-        return {
-          ...prev,
-          name: t("Home.Card.AnalysisBoard.Title"),
-          gameOrigin: {
-            kind: "none",
-          },
+      const name = t("Home.Card.AnalysisBoard.Title");
+      await createTab({
+        tab: {
+          name,
           type: "analysis",
-        };
+        },
+        setTabs,
+        setActiveTab,
+        pgn: headersToPGN({
+          id: 0,
+          fen: parsedFen,
+          black: "",
+          white: "",
+          result: "*",
+          event: name,
+          site: "",
+          orientation: "white",
+        }),
+        gameOrigin: {
+          kind: "none",
+        },
       });
+      imported = true;
+    }
+    if (imported) {
+      setOpenModal(false);
+      navigate({ to: "/" });
     }
     setLoading(false);
   }
