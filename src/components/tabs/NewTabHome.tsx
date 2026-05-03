@@ -52,9 +52,11 @@ import {
   IconClock,
   IconBook,
   IconCloudDownload,
+  IconDatabase,
   IconEye,
   IconExclamationCircle,
   IconFileImport,
+  IconPlayerPlay,
   IconPuzzle,
   IconSearch,
   IconSettings,
@@ -138,6 +140,37 @@ import { writeTextFile } from "@tauri-apps/plugin-fs";
 dayjs.extend(relativeTime);
 
 const OPENING_REVIEW_PREVIEW_BOARD_SIZE = 168;
+const MISTAKE_REVIEW_ANALYSIS_MODE_OPTIONS = [
+  { value: "single", label: "Single Stockfish pass" },
+  { value: "layered", label: "Fast + deep confirmation" },
+] as const;
+const MISTAKE_REVIEW_TIME_CONTROL_OPTIONS = [
+  { value: "bullet", label: "Bullet" },
+  { value: "blitz", label: "Blitz" },
+  { value: "rapid", label: "Rapid" },
+  { value: "classical", label: "Classical" },
+  { value: "correspondence", label: "Correspondence" },
+  { value: "unknown", label: "Unknown" },
+] as const;
+type OnlineMistakeReviewAnalysisSettings = Pick<
+  MistakeReviewSettings,
+  | "analysisMode"
+  | "fastDepth"
+  | "deepDepth"
+  | "multiPv"
+  | "thresholds"
+  | "includeSeverities"
+  | "minWinProbabilityDrop"
+>;
+const DEFAULT_ONLINE_MISTAKE_REVIEW_ANALYSIS_SETTINGS: OnlineMistakeReviewAnalysisSettings = {
+  analysisMode: "single",
+  fastDepth: 12,
+  deepDepth: 17,
+  multiPv: 3,
+  thresholds: DEFAULT_MISTAKE_REVIEW_THRESHOLDS,
+  includeSeverities: DEFAULT_MISTAKE_REVIEW_SEVERITIES,
+  minWinProbabilityDrop: 5,
+};
 
 function RecentFileDuePositions({ file }: { file: string }) {
   const [deck] = useAtom(
@@ -1087,7 +1120,11 @@ function MistakeReviewModal({
   onOpen,
   onDelete,
   onNewScan,
+  onNewLatestOnlineScan,
   onNewOnlineScan,
+  onOnlineSettings,
+  onlineSettingsSummary,
+  latestOnlineLoading,
 }: {
   opened: boolean;
   decks: MistakeReviewDeckSummary[];
@@ -1097,25 +1134,57 @@ function MistakeReviewModal({
   onOpen: (deck: MistakeReviewDeckSummary) => void;
   onDelete: (deck: MistakeReviewDeckSummary) => void;
   onNewScan: () => void;
+  onNewLatestOnlineScan: () => void;
   onNewOnlineScan: () => void;
+  onOnlineSettings: () => void;
+  onlineSettingsSummary: string;
+  latestOnlineLoading: boolean;
 }) {
   return (
     <Modal opened={opened} onClose={onClose} title={<b>Mistake Review</b>} size="lg">
       <Stack gap="sm">
-        <Group justify="space-between" align="center" gap="sm">
-          <Text size="sm" c="dimmed">
-            Scan your own games, create Stockfish-backed mistake cards, and review them daily.
-          </Text>
-          <Group gap="xs">
+        <Group justify="space-between" align="flex-start" gap="sm">
+          <Stack gap={2} style={{ flex: 1, minWidth: 240 }}>
+            <Text size="sm" c="dimmed">
+              Scan your own games, create Stockfish-backed mistake cards, and review them daily.
+            </Text>
+            <Text size="xs" c="dimmed">
+              Online scans: {onlineSettingsSummary}
+            </Text>
+          </Stack>
+          <Group gap="xs" justify="flex-end">
+            <Tooltip label="Online mistake scan settings">
+              <ActionIcon
+                aria-label="Online mistake scan settings"
+                variant="light"
+                onClick={onOnlineSettings}
+              >
+                <IconSettings size="1rem" />
+              </ActionIcon>
+            </Tooltip>
             <Button
               size="xs"
+              leftSection={<IconPlayerPlay size="0.9rem" />}
+              loading={latestOnlineLoading}
+              onClick={onNewLatestOnlineScan}
+            >
+              Latest game
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
               leftSection={<IconCloudDownload size="0.9rem" />}
               onClick={onNewOnlineScan}
             >
-              Online games
+              Choose games
             </Button>
-            <Button size="xs" leftSection={<IconSearch size="0.9rem" />} onClick={onNewScan}>
-              New scan
+            <Button
+              size="xs"
+              variant="light"
+              leftSection={<IconDatabase size="0.9rem" />}
+              onClick={onNewScan}
+            >
+              Local scan
             </Button>
           </Group>
         </Group>
@@ -1127,11 +1196,24 @@ function MistakeReviewModal({
               <IconExclamationCircle size={36} style={{ opacity: 0.35 }} />
               <Text fw={600}>No mistake decks yet</Text>
               <Text size="sm" c="dimmed" ta="center">
-                Start a scan from one of your local games databases.
+                Analyze your latest online game, choose recent online games, or scan a local
+                games database.
               </Text>
-              <Button size="xs" variant="light" onClick={onNewScan}>
-                Scan mistakes
-              </Button>
+              <Group gap="xs" justify="center">
+                <Button
+                  size="xs"
+                  loading={latestOnlineLoading}
+                  onClick={onNewLatestOnlineScan}
+                >
+                  Latest game
+                </Button>
+                <Button size="xs" variant="light" onClick={onNewOnlineScan}>
+                  Choose games
+                </Button>
+                <Button size="xs" variant="light" onClick={onNewScan}>
+                  Local scan
+                </Button>
+              </Group>
             </Stack>
           </Paper>
         ) : (
@@ -1559,22 +1641,12 @@ function MistakeReviewScanModal({
           <SegmentedControl
             value={analysisMode}
             onChange={(value) => setAnalysisMode(value as MistakeReviewSettings["analysisMode"])}
-            data={[
-              { value: "single", label: "Single Stockfish pass" },
-              { value: "layered", label: "Fast + deep confirmation" },
-            ]}
+            data={[...MISTAKE_REVIEW_ANALYSIS_MODE_OPTIONS]}
           />
           <MultiSelect
             label="Time controls"
             description="Leave empty to include every time control"
-            data={[
-              { value: "bullet", label: "Bullet" },
-              { value: "blitz", label: "Blitz" },
-              { value: "rapid", label: "Rapid" },
-              { value: "classical", label: "Classical" },
-              { value: "correspondence", label: "Correspondence" },
-              { value: "unknown", label: "Unknown" },
-            ]}
+            data={[...MISTAKE_REVIEW_TIME_CONTROL_OPTIONS]}
             value={timeControls}
             onChange={setTimeControls}
             clearable
@@ -1842,6 +1914,179 @@ function LatestGameAccountsModal({
   );
 }
 
+function OnlineMistakeReviewSettingsModal({
+  opened,
+  engines,
+  enginePath,
+  settings,
+  onClose,
+  onEnginePathChange,
+  onSettingsChange,
+}: {
+  opened: boolean;
+  engines: LocalEngine[];
+  enginePath: string | null;
+  settings: OnlineMistakeReviewAnalysisSettings;
+  onClose: () => void;
+  onEnginePathChange: (path: string | null) => void;
+  onSettingsChange: (settings: OnlineMistakeReviewAnalysisSettings) => void;
+}) {
+  const engineOptions = engines.map((engine) => ({
+    value: engine.path,
+    label: engine.version ? `${engine.name} ${engine.version}` : engine.name,
+  }));
+
+  function updateSettings(patch: Partial<OnlineMistakeReviewAnalysisSettings>) {
+    onSettingsChange({
+      ...settings,
+      ...patch,
+    });
+  }
+
+  function updateThreshold(
+    key: keyof OnlineMistakeReviewAnalysisSettings["thresholds"],
+    value: string | number,
+    fallback: number,
+  ) {
+    updateSettings({
+      thresholds: {
+        ...settings.thresholds,
+        [key]: Number(value) || fallback,
+      },
+    });
+  }
+
+  function updateSeverity(
+    key: keyof OnlineMistakeReviewAnalysisSettings["includeSeverities"],
+    checked: boolean,
+  ) {
+    updateSettings({
+      includeSeverities: {
+        ...settings.includeSeverities,
+        [key]: checked,
+      },
+    });
+  }
+
+  return (
+    <Modal opened={opened} onClose={onClose} title={<b>Online mistake settings</b>} size="lg">
+      <Stack gap="sm">
+        <Text size="sm" c="dimmed">
+          These settings are used when Mistake Review scans your latest online game or a chosen set
+          of recent online games.
+        </Text>
+        <Select
+          label="Local Stockfish engine"
+          data={engineOptions}
+          value={enginePath}
+          onChange={onEnginePathChange}
+          searchable
+          allowDeselect={false}
+        />
+        <SegmentedControl
+          value={settings.analysisMode}
+          onChange={(value) =>
+            updateSettings({ analysisMode: value as MistakeReviewSettings["analysisMode"] })
+          }
+          data={[...MISTAKE_REVIEW_ANALYSIS_MODE_OPTIONS]}
+        />
+        <Group grow>
+          {settings.analysisMode === "layered" && (
+            <NumberInput
+              label="Fast depth"
+              value={settings.fastDepth}
+              min={1}
+              onChange={(value) =>
+                updateSettings({ fastDepth: Math.max(1, Number(value) || 12) })
+              }
+            />
+          )}
+          <NumberInput
+            label={settings.analysisMode === "layered" ? "Deep depth" : "Analysis depth"}
+            value={settings.deepDepth}
+            min={1}
+            onChange={(value) =>
+              updateSettings({ deepDepth: Math.max(1, Number(value) || 17) })
+            }
+          />
+          <NumberInput
+            label="MultiPV"
+            value={settings.multiPv}
+            min={1}
+            max={10}
+            onChange={(value) =>
+              updateSettings({ multiPv: Math.min(10, Math.max(1, Number(value) || 3)) })
+            }
+          />
+        </Group>
+        <Group grow>
+          <NumberInput
+            label="Inaccuracy cp"
+            value={settings.thresholds.inaccuracy}
+            min={1}
+            onChange={(value) =>
+              updateThreshold("inaccuracy", value, DEFAULT_MISTAKE_REVIEW_THRESHOLDS.inaccuracy)
+            }
+          />
+          <NumberInput
+            label="Mistake cp"
+            value={settings.thresholds.mistake}
+            min={1}
+            onChange={(value) =>
+              updateThreshold("mistake", value, DEFAULT_MISTAKE_REVIEW_THRESHOLDS.mistake)
+            }
+          />
+          <NumberInput
+            label="Blunder cp"
+            value={settings.thresholds.blunder}
+            min={1}
+            onChange={(value) =>
+              updateThreshold("blunder", value, DEFAULT_MISTAKE_REVIEW_THRESHOLDS.blunder)
+            }
+          />
+        </Group>
+        <NumberInput
+          label="Minimum win-probability drop"
+          suffix="%"
+          value={settings.minWinProbabilityDrop}
+          min={0}
+          max={100}
+          onChange={(value) =>
+            updateSettings({
+              minWinProbabilityDrop: Math.min(100, Math.max(0, Number(value) || 0)),
+            })
+          }
+        />
+        <SimpleGrid cols={3}>
+          <Switch
+            label="Inaccuracies"
+            checked={settings.includeSeverities.inaccuracy}
+            onChange={(event) => updateSeverity("inaccuracy", event.currentTarget.checked)}
+          />
+          <Switch
+            label="Mistakes"
+            checked={settings.includeSeverities.mistake}
+            onChange={(event) => updateSeverity("mistake", event.currentTarget.checked)}
+          />
+          <Switch
+            label="Blunders"
+            checked={settings.includeSeverities.blunder}
+            onChange={(event) => updateSeverity("blunder", event.currentTarget.checked)}
+          />
+        </SimpleGrid>
+        {engineOptions.length === 0 && (
+          <Alert color="yellow" variant="light">
+            Add a local Stockfish engine in Settings before scanning online games for mistakes.
+          </Alert>
+        )}
+        <Group justify="flex-end">
+          <Button onClick={onClose}>Done</Button>
+        </Group>
+      </Stack>
+    </Modal>
+  );
+}
+
 type SelectedOnlineGameAccount = {
   source: RecentOnlineGame["source"];
   sourceLabel: string;
@@ -1975,6 +2220,31 @@ function clampNumber(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
+function formatOnlineMistakeSettingsSummary(
+  enginePath: string | null,
+  engines: LocalEngine[],
+  settings: OnlineMistakeReviewAnalysisSettings,
+) {
+  const engine = engines.find((item) => item.path === enginePath);
+  const engineLabel = engine
+    ? engine.version
+      ? `${engine.name} ${engine.version}`
+      : engine.name
+    : "No Stockfish selected";
+  const modeLabel =
+    settings.analysisMode === "layered"
+      ? `layered depth ${settings.fastDepth}/${settings.deepDepth}`
+      : `depth ${settings.deepDepth}`;
+  const severities = [
+    settings.includeSeverities.inaccuracy ? "inaccuracies" : null,
+    settings.includeSeverities.mistake ? "mistakes" : null,
+    settings.includeSeverities.blunder ? "blunders" : null,
+  ].filter(Boolean);
+  const severityLabel = severities.length > 0 ? severities.join(", ") : "no severities selected";
+
+  return `${engineLabel}; ${modeLabel}; MultiPV ${settings.multiPv}; ${severityLabel}`;
+}
+
 export default function NewTabHome() {
   const { t } = useTranslation();
 
@@ -1986,12 +2256,14 @@ export default function NewTabHome() {
   const [openLatestGameSettingsModal, setOpenLatestGameSettingsModal] = useState(false);
   const [openOnlineAnalysisPicker, setOpenOnlineAnalysisPicker] = useState(false);
   const [openOnlineMistakePicker, setOpenOnlineMistakePicker] = useState(false);
+  const [openOnlineMistakeSettingsModal, setOpenOnlineMistakeSettingsModal] = useState(false);
   const [openOnlineOpeningPicker, setOpenOnlineOpeningPicker] = useState(false);
   const [reviewDecks, setReviewDecks] = useState<OpeningReviewDeckSummary[]>([]);
   const [mistakeDecks, setMistakeDecks] = useState<MistakeReviewDeckSummary[]>([]);
   const [reviewDecksLoading, setReviewDecksLoading] = useState(false);
   const [mistakeDecksLoading, setMistakeDecksLoading] = useState(false);
   const [latestGameLoading, setLatestGameLoading] = useState(false);
+  const [latestMistakeReviewLoading, setLatestMistakeReviewLoading] = useState(false);
   const [onlineAnalysisLoading, setOnlineAnalysisLoading] = useState(false);
   const [onlineReviewLoading, setOnlineReviewLoading] = useState(false);
   const [onlineOpeningDatabases, setOnlineOpeningDatabases] = useState<SuccessDatabaseInfo[]>([]);
@@ -1999,6 +2271,10 @@ export default function NewTabHome() {
   const [onlineOpeningMaxPlies, setOnlineOpeningMaxPlies] = useState(30);
   const [onlineOpeningMinReferenceGames, setOnlineOpeningMinReferenceGames] = useState(20);
   const [onlineMistakeEnginePath, setOnlineMistakeEnginePath] = useState<string | null>(null);
+  const [onlineMistakeAnalysisSettings, setOnlineMistakeAnalysisSettings] =
+    useState<OnlineMistakeReviewAnalysisSettings>(
+      DEFAULT_ONLINE_MISTAKE_REVIEW_ANALYSIS_SETTINGS,
+    );
   const [deletingReviewDeckPath, setDeletingReviewDeckPath] = useState<string | null>(null);
   const [deletingMistakeDeckPath, setDeletingMistakeDeckPath] = useState<string | null>(null);
   const [settingsReviewDeck, setSettingsReviewDeck] = useState<OpeningReviewDeckSummary | null>(
@@ -2036,6 +2312,15 @@ export default function NewTabHome() {
   const selectedOnlineProviders = useMemo(
     () => getSelectedOnlineGameProviders(sessions, latestGameAccountSelection),
     [latestGameAccountSelection, sessions],
+  );
+  const onlineMistakeSettingsSummary = useMemo(
+    () =>
+      formatOnlineMistakeSettingsSummary(
+        onlineMistakeEnginePath,
+        localEngines,
+        onlineMistakeAnalysisSettings,
+      ),
+    [localEngines, onlineMistakeAnalysisSettings, onlineMistakeEnginePath],
   );
 
   useEffect(() => {
@@ -2446,8 +2731,25 @@ export default function NewTabHome() {
   );
 
   const createMistakeReviewFromOnlineGames = useCallback(
-    async (games: RecentOnlineGame[]) => {
+    async (
+      games: RecentOnlineGame[],
+      options?: {
+        databaseTitle?: string;
+        deckSuffix?: string;
+        progressName?: string;
+        sourceDescription?: string;
+        closePicker?: boolean;
+      },
+    ) => {
       if (onlineReviewLoading) return;
+      if (games.length === 0) {
+        notifications.show({
+          title: "Choose online games",
+          message: "Select at least one online game to scan for mistakes.",
+          color: "yellow",
+        });
+        return;
+      }
 
       const selectedEngine = localEngines.find((engine) => engine.path === onlineMistakeEnginePath);
       if (!selectedEngine || !onlineMistakeEnginePath) {
@@ -2456,15 +2758,17 @@ export default function NewTabHome() {
           message: "Add or select a local Stockfish engine before scanning selected games.",
           color: "yellow",
         });
+        setOpenOnlineMistakeSettingsModal(true);
         return;
       }
 
       setOnlineReviewLoading(true);
       const accounts = getSelectedOnlineGameAccounts(games);
+      const progressName = options?.progressName ?? "Selected online mistakes";
       try {
         const dbPath = await createSelectedOnlineGamesDatabase(
           games,
-          "Selected online mistake games",
+          options?.databaseTitle ?? "Selected online mistake games",
         );
         const allPositions: Position[] = [];
         let primarySettings: MistakeReviewSettings | null = null;
@@ -2484,15 +2788,15 @@ export default function NewTabHome() {
             engineName: selectedEngine.version
               ? `${selectedEngine.name} ${selectedEngine.version}`
               : selectedEngine.name,
-            analysisMode: "single",
-            fastDepth: 12,
-            deepDepth: 17,
-            multiPv: 3,
+            analysisMode: onlineMistakeAnalysisSettings.analysisMode,
+            fastDepth: onlineMistakeAnalysisSettings.fastDepth,
+            deepDepth: onlineMistakeAnalysisSettings.deepDepth,
+            multiPv: onlineMistakeAnalysisSettings.multiPv,
             timeControls: [],
             dateRange: "all",
-            thresholds: DEFAULT_MISTAKE_REVIEW_THRESHOLDS,
-            includeSeverities: DEFAULT_MISTAKE_REVIEW_SEVERITIES,
-            minWinProbabilityDrop: 5,
+            thresholds: { ...onlineMistakeAnalysisSettings.thresholds },
+            includeSeverities: { ...onlineMistakeAnalysisSettings.includeSeverities },
+            minWinProbabilityDrop: onlineMistakeAnalysisSettings.minWinProbabilityDrop,
           };
           primarySettings ??= settings;
           const requestId = `mistake-review-online-${Date.now()}-${index}`;
@@ -2501,7 +2805,7 @@ export default function NewTabHome() {
             requestId,
             running: true,
             progress: 0,
-            deckName: "Selected online mistakes",
+            deckName: progressName,
             phase: `Analyzing ${account.sourceLabel} ${account.username}`,
             paused: false,
             gamesAnalyzed: 0,
@@ -2544,7 +2848,7 @@ export default function NewTabHome() {
           accounts.length === 1
             ? `${accounts[0]!.sourceLabel} ${accounts[0]!.username}`
             : `${accounts.length} linked accounts`;
-        const name = `Mistake Review - ${accountLabel} selected games`;
+        const name = `Mistake Review - ${accountLabel} ${options?.deckSuffix ?? "selected games"}`;
         const path = await getAvailableMistakeReviewDeckPath(documentDir, name);
         const deck = createMistakeReviewDeck({
           name,
@@ -2566,10 +2870,17 @@ export default function NewTabHome() {
           mistakesFound: positions.length,
           completedAt: Date.now(),
         }));
-        setOpenOnlineMistakePicker(false);
+        if (options?.closePicker !== false) {
+          setOpenOnlineMistakePicker(false);
+        }
+        const sourceDescription =
+          options?.sourceDescription ??
+          `${games.length} selected game${games.length === 1 ? "" : "s"}`;
         notifications.show({
           title: "Mistake Review deck created",
-          message: `${positions.length} mistake card${positions.length === 1 ? "" : "s"} saved from ${games.length} selected game${games.length === 1 ? "" : "s"}.`,
+          message: `${positions.length} mistake card${
+            positions.length === 1 ? "" : "s"
+          } saved from ${sourceDescription}.`,
           color: "green",
         });
         await openCreatedMistakeDeck({ path, name });
@@ -2596,12 +2907,95 @@ export default function NewTabHome() {
     [
       documentDir,
       localEngines,
+      onlineMistakeAnalysisSettings,
       onlineMistakeEnginePath,
       onlineReviewLoading,
       openCreatedMistakeDeck,
       setMistakeScanProgress,
     ],
   );
+
+  const createMistakeReviewFromLatestOnlineGame = useCallback(async () => {
+    if (latestMistakeReviewLoading || onlineReviewLoading) return;
+
+    if (linkedOnlineProviders.length === 0) {
+      notifications.show({
+        title: "Link an online account",
+        message: "Add a Chess.com or Lichess account before scanning your latest game.",
+        color: "yellow",
+      });
+      navigate({ to: "/accounts" });
+      return;
+    }
+
+    if (selectedOnlineProviders.length === 0) {
+      notifications.show({
+        title: "Choose an account",
+        message: "Select at least one linked account for online-game shortcuts.",
+        color: "yellow",
+      });
+      setOpenLatestGameSettingsModal(true);
+      return;
+    }
+
+    const selectedEngine = localEngines.find((engine) => engine.path === onlineMistakeEnginePath);
+    if (!selectedEngine || !onlineMistakeEnginePath) {
+      notifications.show({
+        title: "Choose a Stockfish engine",
+        message: "Select a local Stockfish engine before scanning your latest game.",
+        color: "yellow",
+      });
+      setOpenOnlineMistakeSettingsModal(true);
+      return;
+    }
+
+    setLatestMistakeReviewLoading(true);
+    try {
+      const latestGame = await getLatestOnlineGame(sessions, latestGameAccountSelection);
+      if (!latestGame) {
+        notifications.show({
+          title: "No recent games found",
+          message: "None of the linked online accounts returned an importable game.",
+          color: "yellow",
+        });
+        return;
+      }
+
+      const providerKey = getOnlineGameProviderKey(latestGame);
+      const recentGame: RecentOnlineGame = {
+        ...latestGame,
+        id: `${providerKey}:${latestGame.url || latestGame.playedAt}`,
+        providerKey,
+      };
+
+      await createMistakeReviewFromOnlineGames([recentGame], {
+        databaseTitle: "Latest online mistake game",
+        deckSuffix: "latest game",
+        progressName: "Latest online mistakes",
+        sourceDescription: "your latest online game",
+        closePicker: false,
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Could not scan latest game",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    } finally {
+      setLatestMistakeReviewLoading(false);
+    }
+  }, [
+    createMistakeReviewFromOnlineGames,
+    latestGameAccountSelection,
+    latestMistakeReviewLoading,
+    linkedOnlineProviders.length,
+    localEngines,
+    navigate,
+    onlineMistakeEnginePath,
+    onlineReviewLoading,
+    selectedOnlineProviders.length,
+    sessions,
+  ]);
 
   const createOpeningReviewFromOnlineGames = useCallback(
     async (games: RecentOnlineGame[]) => {
@@ -2934,7 +3328,11 @@ export default function NewTabHome() {
         onOpen={openMistakeDeck}
         onDelete={deleteMistakeDeck}
         onNewScan={() => setOpenMistakeScanModal(true)}
+        onNewLatestOnlineScan={createMistakeReviewFromLatestOnlineGame}
         onNewOnlineScan={() => openOnlineGamePicker("mistake")}
+        onOnlineSettings={() => setOpenOnlineMistakeSettingsModal(true)}
+        onlineSettingsSummary={onlineMistakeSettingsSummary}
+        latestOnlineLoading={latestMistakeReviewLoading || onlineReviewLoading}
       />
       <MistakeReviewScanModal
         opened={openMistakeScanModal}
@@ -2942,6 +3340,15 @@ export default function NewTabHome() {
         engines={localEngines}
         onClose={() => setOpenMistakeScanModal(false)}
         onCreated={openCreatedMistakeDeck}
+      />
+      <OnlineMistakeReviewSettingsModal
+        opened={openOnlineMistakeSettingsModal}
+        engines={localEngines}
+        enginePath={onlineMistakeEnginePath}
+        settings={onlineMistakeAnalysisSettings}
+        onClose={() => setOpenOnlineMistakeSettingsModal(false)}
+        onEnginePathChange={setOnlineMistakeEnginePath}
+        onSettingsChange={setOnlineMistakeAnalysisSettings}
       />
       <OnlineGamePickerModal
         opened={openOnlineAnalysisPicker}
@@ -2978,14 +3385,30 @@ export default function NewTabHome() {
         }}
       >
         <Divider />
-        <Select
-          label="Local Stockfish engine"
-          data={onlineMistakeEngineOptions}
-          value={onlineMistakeEnginePath}
-          onChange={setOnlineMistakeEnginePath}
-          searchable
-          allowDeselect={false}
-        />
+        <Group align="flex-end" gap="xs" wrap="nowrap">
+          <Select
+            label="Local Stockfish engine"
+            data={onlineMistakeEngineOptions}
+            value={onlineMistakeEnginePath}
+            onChange={setOnlineMistakeEnginePath}
+            searchable
+            allowDeselect={false}
+            style={{ flex: 1 }}
+          />
+          <Tooltip label="Mistake scan settings">
+            <ActionIcon
+              aria-label="Mistake scan settings"
+              variant="light"
+              size={36}
+              onClick={() => setOpenOnlineMistakeSettingsModal(true)}
+            >
+              <IconSettings size="1rem" />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+        <Text size="xs" c="dimmed">
+          {onlineMistakeSettingsSummary}
+        </Text>
         {onlineMistakeEngineOptions.length === 0 && (
           <Alert color="yellow" variant="light">
             Add a local Stockfish engine in Settings before scanning selected games.
