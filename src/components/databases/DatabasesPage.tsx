@@ -46,6 +46,9 @@ import { commands } from "@/bindings";
 import {
   type DatabaseConversionState,
   databaseConversionStateAtom,
+  type LichessStudyDatabaseUpdateRecord,
+  type LichessStudyDatabaseUpdateRecords,
+  lichessStudyDatabaseUpdatesAtom,
   type OnlineDatabaseUpdateAccount,
   type OnlineDatabaseUpdateRecord,
   type OnlineDatabaseUpdateRecords,
@@ -58,6 +61,7 @@ import { useActiveDatabaseViewStore } from "@/state/store/database";
 import { getDatabases, query_games, type SuccessDatabaseInfo } from "@/utils/db";
 import { formatBytes, formatNumber } from "@/utils/format";
 import { updateOnlineDatabaseNow } from "@/utils/onlineDatabaseAutoUpdate";
+import { updateLichessStudyDatabaseNow } from "@/utils/lichessStudyDatabaseAutoUpdate";
 import {
   getOnlineDatabaseUpdateAccounts,
   getOnlineDatabaseUpdateLabel,
@@ -68,6 +72,11 @@ import {
   type OnlineGameSource,
   upsertOnlineDatabaseUpdateRecord,
 } from "@/utils/onlineGameImport";
+import {
+  getLichessStudyDatabaseUpdateLabel,
+  getLichessStudyDatabaseUpdateRecord,
+  upsertLichessStudyDatabaseUpdateRecord,
+} from "@/utils/lichess/study";
 import { createRepertoireDatabaseFromGameBatches } from "@/utils/repertoireCopy";
 import type { Session } from "@/utils/session";
 import { unwrap } from "@/utils/unwrap";
@@ -106,6 +115,9 @@ export default function DatabasesPage() {
   const [referenceDatabase, setReferenceDatabase] = useAtom(referenceDbAtom);
   const [conversionState, setConversionState] = useAtom(databaseConversionStateAtom);
   const [onlineDatabaseUpdates, setOnlineDatabaseUpdates] = useAtom(onlineDatabaseUpdatesAtom);
+  const [lichessStudyDatabaseUpdates, setLichessStudyDatabaseUpdates] = useAtom(
+    lichessStudyDatabaseUpdatesAtom,
+  );
   const sessions = useAtomValue(sessionsAtom);
   const [updatingOnlineDatabasePath, setUpdatingOnlineDatabasePath] = useState<string | null>(null);
   const selectedDatabase = useMemo(
@@ -118,6 +130,13 @@ export default function DatabasesPage() {
         ? getOnlineDatabaseUpdateRecord(selectedDatabase, onlineDatabaseUpdates)
         : null,
     [onlineDatabaseUpdates, selectedDatabase],
+  );
+  const selectedStudyRecord = useMemo(
+    () =>
+      selectedDatabase?.type === "success"
+        ? getLichessStudyDatabaseUpdateRecord(selectedDatabase, lichessStudyDatabaseUpdates)
+        : null,
+    [lichessStudyDatabaseUpdates, selectedDatabase],
   );
   const filteredDatabases = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -204,6 +223,48 @@ export default function DatabasesPage() {
     } catch (error) {
       notifications.show({
         title: "Could not update database",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    } finally {
+      setUpdatingOnlineDatabasePath(null);
+    }
+  }
+
+  async function updateLichessStudyDatabase(
+    database: SuccessDatabaseInfo,
+    record: LichessStudyDatabaseUpdateRecord,
+  ) {
+    if (updatingOnlineDatabasePath) return;
+
+    setUpdatingOnlineDatabasePath(database.file);
+    try {
+      const result = await updateLichessStudyDatabaseNow({
+        database,
+        record,
+        databaseDir,
+        setConversionState,
+        setUpdateRecords: setLichessStudyDatabaseUpdates,
+        isConversionInProgress: () => conversionState.inProgress,
+      });
+      await mutate();
+
+      if (result.updated) {
+        notifications.show({
+          title: "Lichess study updated",
+          message: `${database.title} was rebuilt from the latest study PGN.`,
+          color: "green",
+        });
+      } else {
+        notifications.show({
+          title: "No study changes",
+          message: `${database.title} is already up to date.`,
+          color: "blue",
+        });
+      }
+    } catch (error) {
+      notifications.show({
+        title: "Could not update Lichess study",
         message: error instanceof Error ? error.message : String(error),
         color: "red",
       });
@@ -338,6 +399,10 @@ export default function DatabasesPage() {
                         item.type === "success"
                           ? getOnlineDatabaseUpdateRecord(item, onlineDatabaseUpdates)
                           : null;
+                      const studyRecord =
+                        item.type === "success"
+                          ? getLichessStudyDatabaseUpdateRecord(item, lichessStudyDatabaseUpdates)
+                          : null;
                       const onlineUpdating =
                         item.type === "success" && updatingOnlineDatabasePath === item.file;
 
@@ -373,9 +438,13 @@ export default function DatabasesPage() {
                                 </Box>
                               </Group>
                               <Group gap={4} wrap="nowrap">
-                                {item.type === "success" && onlineRecord && (
+                                {item.type === "success" && (onlineRecord || studyRecord) && (
                                   <Tooltip
-                                    label={`Update ${getOnlineDatabaseUpdateLabel(onlineRecord)}`}
+                                    label={
+                                      onlineRecord
+                                        ? `Update ${getOnlineDatabaseUpdateLabel(onlineRecord)}`
+                                        : `Update ${getLichessStudyDatabaseUpdateLabel(studyRecord!)}`
+                                    }
                                   >
                                     <ActionIcon
                                       aria-label={`Update ${item.title}`}
@@ -387,7 +456,11 @@ export default function DatabasesPage() {
                                       }
                                       onClick={(event) => {
                                         event.stopPropagation();
-                                        void updateOnlineDatabase(item);
+                                        if (onlineRecord) {
+                                          void updateOnlineDatabase(item);
+                                        } else if (studyRecord) {
+                                          void updateLichessStudyDatabase(item, studyRecord);
+                                        }
                                       }}
                                     >
                                       <IconRefresh size="1rem" />
@@ -505,7 +578,12 @@ export default function DatabasesPage() {
                           records={onlineDatabaseUpdates}
                           setRecords={setOnlineDatabaseUpdates}
                         />
-                        {selectedOnlineRecord && (
+                        <LichessStudyAutoUpdateInput
+                          selectedDatabase={selectedDatabase}
+                          records={lichessStudyDatabaseUpdates}
+                          setRecords={setLichessStudyDatabaseUpdates}
+                        />
+                        {(selectedOnlineRecord || selectedStudyRecord) && (
                           <Button
                             size="xs"
                             variant="default"
@@ -516,22 +594,33 @@ export default function DatabasesPage() {
                               (!!updatingOnlineDatabasePath &&
                                 updatingOnlineDatabasePath !== selectedDatabase.file)
                             }
-                            onClick={() => void updateOnlineDatabase(selectedDatabase)}
+                            onClick={() => {
+                              if (selectedOnlineRecord) {
+                                void updateOnlineDatabase(selectedDatabase);
+                              } else if (selectedStudyRecord) {
+                                void updateLichessStudyDatabase(
+                                  selectedDatabase,
+                                  selectedStudyRecord,
+                                );
+                              }
+                            }}
                           >
                             Update now
                           </Button>
                         )}
                       </Group>
-                      <OnlineAccountLinks
-                        selectedDatabase={selectedDatabase}
-                        record={selectedOnlineRecord}
-                        databaseDir={databaseDir}
-                        sessions={sessions}
-                        conversionState={conversionState}
-                        setConversionState={setConversionState}
-                        setRecords={setOnlineDatabaseUpdates}
-                        reload={mutate}
-                      />
+                      {!selectedStudyRecord && (
+                        <OnlineAccountLinks
+                          selectedDatabase={selectedDatabase}
+                          record={selectedOnlineRecord}
+                          databaseDir={databaseDir}
+                          sessions={sessions}
+                          conversionState={conversionState}
+                          setConversionState={setConversionState}
+                          setRecords={setOnlineDatabaseUpdates}
+                          reload={mutate}
+                        />
+                      )}
 
                       <Divider variant="dashed" label={t("Common.Data")} />
                       <Group grow>
@@ -1229,6 +1318,42 @@ function OnlineAutoUpdateInput({
         onChange={(event) => {
           setRecords((records) =>
             upsertOnlineDatabaseUpdateRecord(records, {
+              ...record,
+              dbPath: selectedDatabase.file,
+              title: selectedDatabase.title,
+              description: selectedDatabase.description,
+              autoUpdate: event.currentTarget.checked,
+              lastKnownGameCount: selectedDatabase.game_count,
+            }),
+          );
+        }}
+      />
+    </Tooltip>
+  );
+}
+
+function LichessStudyAutoUpdateInput({
+  selectedDatabase,
+  records,
+  setRecords,
+}: {
+  selectedDatabase: SuccessDatabaseInfo;
+  records: LichessStudyDatabaseUpdateRecords;
+  setRecords: Dispatch<SetStateAction<LichessStudyDatabaseUpdateRecords>>;
+}) {
+  const { t } = useTranslation();
+  const record = getLichessStudyDatabaseUpdateRecord(selectedDatabase, records);
+
+  if (!record) return null;
+
+  return (
+    <Tooltip label="Check the Lichess study for new chapters and annotation changes">
+      <Checkbox
+        label={t("Databases.Online.AutoUpdate")}
+        checked={record.autoUpdate}
+        onChange={(event) => {
+          setRecords((records) =>
+            upsertLichessStudyDatabaseUpdateRecord(records, {
               ...record,
               dbPath: selectedDatabase.file,
               title: selectedDatabase.title,

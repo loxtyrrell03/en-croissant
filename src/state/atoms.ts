@@ -397,6 +397,28 @@ export const onlineDatabaseUpdatesAtom = atomWithStorage<OnlineDatabaseUpdateRec
     {},
 );
 
+export type LichessStudyDatabaseUpdateRecord = {
+    dbPath: string;
+    title: string;
+    description?: string | null;
+    studyId: string;
+    chapterId?: string | null;
+    studyUrl: string;
+    pgnUrl: string;
+    pgnHash: string;
+    autoUpdate: boolean;
+    lastCheckedAt: number | null;
+    lastUpdatedAt: number | null;
+    lastKnownGameCount: number | null;
+};
+
+export type LichessStudyDatabaseUpdateRecords = Record<string, LichessStudyDatabaseUpdateRecord>;
+
+export const lichessStudyDatabaseUpdatesAtom = atomWithStorage<LichessStudyDatabaseUpdateRecords>(
+    "lichess-study-database-updates",
+    {},
+);
+
 // Game Settings
 
 export type GameInputColor = "white" | "random" | "black";

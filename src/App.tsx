@@ -70,6 +70,7 @@ import ErrorComponent from "@/components/ErrorComponent";
 import { OpeningReviewAutoUpdateBanner } from "@/components/review/OpeningReviewAutoUpdateBanner";
 import { getDatabasesDir, getDocumentDir, getEnginesDir, getPuzzlesDir } from "@/utils/directories";
 import { initUserAgent } from "@/utils/http";
+import { useLichessStudyDatabaseAutoUpdater } from "@/utils/lichessStudyDatabaseAutoUpdate";
 import { useOnlineDatabaseAutoUpdater } from "@/utils/onlineDatabaseAutoUpdate";
 import { useMistakeReviewDeckAutoUpdater } from "@/utils/mistakeReviewAutoUpdate";
 import { useOpeningReviewDeckAutoUpdater } from "@/utils/openingReviewAutoUpdate";
@@ -402,6 +403,7 @@ export default function App() {
 
   useAppStartup();
   useOnlineDatabaseAutoUpdater();
+  useLichessStudyDatabaseAutoUpdater();
   useOpeningReviewDeckAutoUpdater();
   useMistakeReviewDeckAutoUpdater();
 

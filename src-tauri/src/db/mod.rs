@@ -36,10 +36,10 @@ use shakmaty::{
 };
 use specta::Type;
 use std::{
-    fs::{remove_file, File, OpenOptions},
+    fs::{remove_file, rename, File, OpenOptions},
     path::{Path, PathBuf},
     sync::atomic::{AtomicUsize, Ordering},
-    time::{Duration, Instant},
+    time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 use std::{
     io::{self, BufWriter, Write},
@@ -632,6 +632,18 @@ pub async fn convert_pgn(
     description: Option<String>,
     state: tauri::State<'_, AppState>,
 ) -> Result<(), Error> {
+    convert_pgn_inner(&file, &db_path, timestamp, &app, title, description, &state)
+}
+
+fn convert_pgn_inner(
+    file: &Path,
+    db_path: &Path,
+    timestamp: Option<f64>,
+    app: &tauri::AppHandle,
+    title: String,
+    description: Option<String>,
+    state: &tauri::State<'_, AppState>,
+) -> Result<(), Error> {
     let description = description.unwrap_or_default();
     let extension = file.extension();
 
@@ -717,9 +729,68 @@ pub async fn convert_pgn(
             .execute(db)?;
     }
 
+    invalidate_database_search_index(state, db_path);
+
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn replace_database_from_pgn(
+    file: PathBuf,
+    db_path: PathBuf,
+    app: tauri::AppHandle,
+    title: String,
+    description: Option<String>,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), Error> {
+    let temp_db_path = replacement_temp_database_path(&db_path);
+    remove_file_if_exists(&temp_db_path)?;
+    remove_file_if_exists(get_index_path(&temp_db_path))?;
+
+    if let Err(error) =
+        convert_pgn_inner(&file, &temp_db_path, None, &app, title, description, &state)
+    {
+        let _ = remove_file_if_exists(&temp_db_path);
+        let _ = remove_file_if_exists(get_index_path(&temp_db_path));
+        return Err(error);
+    }
+
+    if let Some(temp_path) = temp_db_path.to_str() {
+        state.connection_pool.remove(temp_path);
+    }
+    if let Some(path) = db_path.to_str() {
+        state.connection_pool.remove(path);
+    }
+    clear_database_search_caches(&state, &db_path);
+
+    remove_file_if_exists(get_index_path(&db_path))?;
+    remove_file_if_exists(&db_path)?;
+    rename(&temp_db_path, &db_path)?;
+    remove_file_if_exists(get_index_path(&temp_db_path))?;
     invalidate_database_search_index(&state, &db_path);
 
     Ok(())
+}
+
+fn replacement_temp_database_path(db_path: &Path) -> PathBuf {
+    let suffix = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_millis())
+        .unwrap_or_default();
+    let filename = db_path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("database.db3");
+    db_path.with_file_name(format!(".{filename}.{suffix}.tmp.db3"))
+}
+
+fn remove_file_if_exists(path: impl AsRef<Path>) -> Result<(), Error> {
+    match remove_file(path) {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(error.into()),
+    }
 }
 
 pub fn generate_search_index(

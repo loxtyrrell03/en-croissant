@@ -1,6 +1,11 @@
 import { resolve } from "@tauri-apps/api/path";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { fetch } from "@tauri-apps/plugin-http";
+import type {
+    LichessStudyDatabaseUpdateRecord,
+    LichessStudyDatabaseUpdateRecords,
+} from "@/state/atoms";
+import type { DatabaseInfo } from "@/bindings";
 import { apiHeaders } from "@/utils/http";
 
 const LICHESS_STUDY_ID_PATTERN = /^[A-Za-z0-9]{8}$/;
@@ -17,6 +22,7 @@ export type LichessStudyReference = {
 export type LichessStudyDownload = {
     reference: LichessStudyReference;
     pgn: string;
+    pgnHash: string;
     title: string;
 };
 
@@ -90,6 +96,7 @@ export async function downloadLichessStudyPgn(
     return {
         reference,
         pgn,
+        pgnHash: await hashText(pgn),
         title: extractLichessStudyName(pgn) ?? `Lichess Study ${reference.studyId}`,
     };
 }
@@ -125,6 +132,52 @@ export function extractLichessStudyName(pgn: string) {
     const match = pgn.match(/^\[StudyName\s+"((?:\\.|[^"\\])*)"\]/m);
     const studyName = match?.[1] ? unescapePgnTagValue(match[1]).trim() : "";
     return studyName || null;
+}
+
+export function getLichessStudyDatabaseUpdateRecord(
+    database: DatabaseInfo,
+    records: LichessStudyDatabaseUpdateRecords,
+): LichessStudyDatabaseUpdateRecord | null {
+    if (database.type !== "success") return null;
+    return records[database.file] ?? null;
+}
+
+export function upsertLichessStudyDatabaseUpdateRecord(
+    records: LichessStudyDatabaseUpdateRecords,
+    record: Omit<
+        LichessStudyDatabaseUpdateRecord,
+        "lastCheckedAt" | "lastUpdatedAt" | "lastKnownGameCount"
+    > &
+        Partial<
+            Pick<
+                LichessStudyDatabaseUpdateRecord,
+                "lastCheckedAt" | "lastUpdatedAt" | "lastKnownGameCount"
+            >
+        >,
+): LichessStudyDatabaseUpdateRecords {
+    const previous = records[record.dbPath];
+    return {
+        ...records,
+        [record.dbPath]: {
+            ...previous,
+            ...record,
+            lastCheckedAt: record.lastCheckedAt ?? previous?.lastCheckedAt ?? null,
+            lastUpdatedAt: record.lastUpdatedAt ?? previous?.lastUpdatedAt ?? null,
+            lastKnownGameCount: record.lastKnownGameCount ?? previous?.lastKnownGameCount ?? null,
+        },
+    };
+}
+
+export function getLichessStudyDatabaseUpdateLabel(record: LichessStudyDatabaseUpdateRecord) {
+    return `Lichess study ${record.title}`;
+}
+
+export async function hashText(value: string) {
+    const bytes = new TextEncoder().encode(value);
+    const digest = await crypto.subtle.digest("SHA-256", bytes);
+    return Array.from(new Uint8Array(digest))
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("");
 }
 
 export function sanitizeFileSegment(value: string) {

@@ -29,6 +29,7 @@ import type { KeyedMutator } from "swr";
 import { commands, type DatabaseInfo } from "@/bindings";
 import {
   databaseConversionStateAtom,
+  lichessStudyDatabaseUpdatesAtom,
   onlineDatabaseUpdatesAtom,
   sessionsAtom,
   storedDatabasesDirAtom,
@@ -51,6 +52,7 @@ import {
   getLichessStudyPgnFilename,
   parseLichessStudyLink,
   sanitizeFileSegment,
+  upsertLichessStudyDatabaseUpdateRecord,
 } from "@/utils/lichess/study";
 import { unwrap } from "@/utils/unwrap";
 import FileInput from "../common/FileInput";
@@ -70,6 +72,7 @@ type LichessStudyDatabaseFormValues = {
   link: string;
   title: string;
   description: string;
+  autoUpdate: boolean;
 };
 
 function AddDatabase({
@@ -90,6 +93,7 @@ function AddDatabase({
   const { t } = useTranslation();
   const [databaseDir] = useAtom(storedDatabasesDirAtom);
   const [, setOnlineDatabaseUpdates] = useAtom(onlineDatabaseUpdatesAtom);
+  const [, setLichessStudyDatabaseUpdates] = useAtom(lichessStudyDatabaseUpdatesAtom);
   const setConversionState = useSetAtom(databaseConversionStateAtom);
   const sessions = useAtomValue(sessionsAtom);
   const [onlineImporting, setOnlineImporting] = useState(false);
@@ -256,6 +260,7 @@ function AddDatabase({
       link: "",
       title: "",
       description: "",
+      autoUpdate: true,
     },
 
     validate: {
@@ -508,7 +513,30 @@ function AddDatabase({
                 }));
 
                 unwrap(await commands.convertPgn(download.path, dbPath, null, title, description));
-                setDatabases(await getDatabases());
+                const nextDatabases = await getDatabases();
+                const createdDatabase = nextDatabases.find(
+                  (database) => database.type === "success" && database.file === dbPath,
+                );
+                setDatabases(nextDatabases);
+                setLichessStudyDatabaseUpdates((records) =>
+                  upsertLichessStudyDatabaseUpdateRecord(records, {
+                    dbPath,
+                    title,
+                    description,
+                    studyId: download.reference.studyId,
+                    chapterId: download.reference.chapterId,
+                    studyUrl: download.reference.canonicalUrl,
+                    pgnUrl: download.reference.pgnUrl,
+                    pgnHash: download.pgnHash,
+                    autoUpdate: values.autoUpdate,
+                    lastCheckedAt: Date.now(),
+                    lastUpdatedAt: Date.now(),
+                    lastKnownGameCount:
+                      createdDatabase?.type === "success"
+                        ? createdDatabase.game_count
+                        : totalGamesExpected,
+                  }),
+                );
                 studyForm.reset();
               } catch (e) {
                 console.error(e);
@@ -537,6 +565,12 @@ function AddDatabase({
               <TextInput
                 label={t("Common.Description")}
                 {...studyForm.getInputProps("description")}
+              />
+
+              <Checkbox
+                label={t("Databases.Online.AutoUpdate")}
+                description="Check the study for new chapters or annotation changes."
+                {...studyForm.getInputProps("autoUpdate", { type: "checkbox" })}
               />
 
               <Button
