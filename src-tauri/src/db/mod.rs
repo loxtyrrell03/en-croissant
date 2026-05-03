@@ -1293,6 +1293,8 @@ fn normalize_games(games: Vec<(Game, Player, Player, Event, Site)>) -> Vec<Norma
 pub(crate) struct MistakeReviewGameRow {
     pub id: i32,
     pub date: Option<String>,
+    pub time: Option<String>,
+    pub opening_name: Option<String>,
     pub white_id: i32,
     pub black_id: i32,
     pub white_name: String,
@@ -1303,6 +1305,45 @@ pub(crate) struct MistakeReviewGameRow {
     pub time_control: Option<String>,
     pub fen: Option<String>,
     pub moves: Vec<u8>,
+}
+
+#[derive(Debug, Clone, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct MistakeReviewGameMetadata {
+    pub game_id: i32,
+    pub date: Option<String>,
+    pub time: Option<String>,
+    pub opening_name: Option<String>,
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn get_mistake_review_game_metadata(
+    file: PathBuf,
+    game_ids: Vec<i32>,
+    state: tauri::State<'_, AppState>,
+) -> Result<Vec<MistakeReviewGameMetadata>, Error> {
+    if game_ids.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let db = &mut get_db_or_create(&state, file.to_str().unwrap(), ConnectionOptions::default())?;
+    let mut metadata = Vec::new();
+
+    for chunk in game_ids.chunks(500) {
+        let games: Vec<Game> = games::table.filter(games::id.eq_any(chunk)).load(db)?;
+        metadata.extend(games.into_iter().map(|game| {
+            let opening_name = mistake_review_game_opening_name(game.fen.as_deref(), &game.moves);
+            MistakeReviewGameMetadata {
+                game_id: game.id,
+                date: game.date,
+                time: game.time,
+                opening_name,
+            }
+        }));
+    }
+
+    Ok(metadata)
 }
 
 pub(crate) fn load_mistake_review_games(
@@ -1350,8 +1391,10 @@ pub(crate) fn load_mistake_review_games(
     Ok(games
         .into_iter()
         .map(|(game, white, black)| MistakeReviewGameRow {
+            opening_name: mistake_review_game_opening_name(game.fen.as_deref(), &game.moves),
             id: game.id,
             date: game.date,
+            time: game.time,
             white_id: game.white_id,
             black_id: game.black_id,
             white_name: white.name.unwrap_or_default(),
@@ -1364,6 +1407,27 @@ pub(crate) fn load_mistake_review_games(
             moves: game.moves,
         })
         .collect())
+}
+
+fn mistake_review_game_opening_name(fen: Option<&str>, moves: &[u8]) -> Option<String> {
+    let mut chess = starting_position_from_fen(fen).ok()?;
+    let mut setups = Vec::new();
+
+    for (index, byte) in iter_mainline_move_bytes(moves).enumerate() {
+        if index > 54 {
+            break;
+        }
+        let Some(mv) = decode_move(byte, &chess) else {
+            break;
+        };
+        chess.play_unchecked(&mv);
+        setups.push(chess.clone().into_setup(EnPassantMode::Legal));
+    }
+
+    setups.reverse();
+    setups
+        .into_iter()
+        .find_map(|setup| get_opening_from_setup(setup).ok())
 }
 
 #[derive(Debug, Clone, Deserialize, Type)]

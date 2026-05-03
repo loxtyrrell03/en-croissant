@@ -4040,7 +4040,7 @@ function OpeningReviewPrioritySummary({
                   {openingReviewPositionExplanation(position)}
                 </Text>
                 <Text size="xs" c="dimmed">
-                  {formatOpeningReviewLastPlayed(position.openingHealth?.lastPlayed)}
+                  {formatReviewPositionLastPlayed(position)}
                 </Text>
                 <Text size="xs" c="dimmed">
                   Imported {formatImportedAt(position.importedAt)}
@@ -4486,6 +4486,44 @@ function formatOpeningReviewLastPlayedColumn(value: string | null | undefined) {
   return formatted.replace(/^Last played /, "");
 }
 
+function getReviewPositionLastPlayedDate(position: Position) {
+  return position.mistakeReview?.date ?? position.openingHealth?.lastPlayed;
+}
+
+function getReviewPositionLastPlayedTime(position: Position) {
+  const time = position.mistakeReview?.time?.trim();
+  return time || null;
+}
+
+function formatReviewPositionLastPlayed(position: Position) {
+  if (!position.mistakeReview) {
+    return formatOpeningReviewLastPlayedColumn(position.openingHealth?.lastPlayed);
+  }
+
+  const date = position.mistakeReview.date;
+  if (!date) return "Unknown";
+
+  const parsed = parseOpeningReviewDate(date);
+  const dateText = parsed ? dayjs(parsed).format("MMM D, YYYY") : date.replace(/\./g, "-");
+  const time = getReviewPositionLastPlayedTime(position);
+  return time ? `${dateText} ${time.slice(0, 5)}` : dateText;
+}
+
+function getReviewPositionLastPlayedSortTime(position: Position) {
+  const date = parseOpeningReviewDate(getReviewPositionLastPlayedDate(position));
+  if (!date) return 0;
+
+  const time = getReviewPositionLastPlayedTime(position);
+  if (!time) return date.getTime();
+
+  const [hours = 0, minutes = 0, seconds = 0] = time.split(":").map((part) => Number(part));
+  if (![hours, minutes, seconds].every(Number.isFinite)) return date.getTime();
+
+  const withTime = new Date(date);
+  withTime.setUTCHours(hours, minutes, seconds, 0);
+  return withTime.getTime();
+}
+
 function getOpeningReviewStatsSide(
   position: Position,
   deckMode?: "self" | "opponent",
@@ -4513,6 +4551,7 @@ function getOpeningReviewOpeningInfo(
   resolvedName?: string,
 ): OpeningReviewOpeningInfo {
   const rawName =
+    normalizeOpeningReviewResolvedOpeningName(position, position.mistakeReview?.openingName) ??
     normalizeOpeningReviewResolvedOpeningName(position, resolvedName) ??
     getOpeningReviewStoredOpeningName(position) ??
     inferOpeningReviewOpeningName(position);
@@ -4633,7 +4672,10 @@ function getOpeningReviewOpeningCacheKey(position: Position) {
 }
 
 function getOpeningReviewStoredOpeningName(position: Position) {
-  return normalizeOpeningReviewResolvedOpeningName(position, position.openingHealth?.openingName);
+  return (
+    normalizeOpeningReviewResolvedOpeningName(position, position.mistakeReview?.openingName) ??
+    normalizeOpeningReviewResolvedOpeningName(position, position.openingHealth?.openingName)
+  );
 }
 
 function applyOpeningReviewResolvedOpeningNames(
@@ -4740,7 +4782,7 @@ function openingReviewPositionSortValue(
     case "imported":
       return -(row.position.importedAt ?? 0);
     case "lastPlayed":
-      return -(parseOpeningReviewDate(row.position.openingHealth?.lastPlayed)?.getTime() ?? 0);
+      return -getReviewPositionLastPlayedSortTime(row.position);
     case "colour":
       return getOpeningReviewMoveSide(row.position) === "white" ? 0 : 1;
     case "opening":
@@ -4888,6 +4930,7 @@ function OpeningReviewPositionsModal({
   const [customEndDate, setCustomEndDate] = useState("");
   const [positionsScrollElement, setPositionsScrollElement] = useState<HTMLDivElement | null>(null);
   const [openingNamesByKey, setOpeningNamesByKey] = useState<Record<string, string>>({});
+  const mistakeReviewMetadataBackfillKeysRef = useRef<Set<string>>(new Set());
   const dateBounds = useMemo(
     () => getOpeningHealthDateBounds(dateRange, customStartDate, customEndDate),
     [customEndDate, customStartDate, dateRange],
@@ -4924,7 +4967,7 @@ function OpeningReviewPositionsModal({
       rowsWithOpenings.filter(
         ({ position }) =>
           (colourFilter === "any" || getOpeningReviewMoveSide(position) === colourFilter) &&
-          openingHealthDateMatches(position.openingHealth?.lastPlayed, dateBounds),
+          openingHealthDateMatches(getReviewPositionLastPlayedDate(position), dateBounds),
       ),
     [colourFilter, dateBounds, rowsWithOpenings],
   );
@@ -5052,6 +5095,94 @@ function OpeningReviewPositionsModal({
       disposed = true;
     };
   }, [deck.positions, opened]);
+
+  useEffect(() => {
+    if (!opened) return;
+
+    const requestsByDb = new Map<string, Set<number>>();
+    for (const position of deck.positions) {
+      const metadata = position.mistakeReview;
+      const playerDb = metadata?.playerDb;
+      const gameId = metadata?.lastGameId ?? metadata?.gameId;
+      if (!playerDb || !gameId) continue;
+      if (metadata.date && metadata.time && metadata.openingName) continue;
+
+      const key = `${playerDb}|${gameId}`;
+      if (mistakeReviewMetadataBackfillKeysRef.current.has(key)) continue;
+      mistakeReviewMetadataBackfillKeysRef.current.add(key);
+
+      const ids = requestsByDb.get(playerDb) ?? new Set<number>();
+      ids.add(gameId);
+      requestsByDb.set(playerDb, ids);
+    }
+
+    if (requestsByDb.size === 0) return;
+
+    let disposed = false;
+
+    async function backfillMistakeReviewMetadata() {
+      const metadataByKey = new Map<
+        string,
+        { date: string | null; time: string | null; openingName: string | null }
+      >();
+
+      for (const [playerDb, ids] of requestsByDb) {
+        const result = await commands.getMistakeReviewGameMetadata(playerDb, Array.from(ids));
+        if (disposed || result.status === "error") continue;
+
+        for (const item of result.data) {
+          metadataByKey.set(`${playerDb}|${item.gameId}`, {
+            date: item.date,
+            time: item.time,
+            openingName: item.openingName,
+          });
+        }
+      }
+
+      if (disposed || metadataByKey.size === 0) return;
+
+      setDeck((current) => {
+        let changed = false;
+        const positions = current.positions.map((position) => {
+          const metadata = position.mistakeReview;
+          const playerDb = metadata?.playerDb;
+          const gameId = metadata?.lastGameId ?? metadata?.gameId;
+          if (!metadata || !playerDb || !gameId) return position;
+
+          const gameMetadata = metadataByKey.get(`${playerDb}|${gameId}`);
+          if (!gameMetadata) return position;
+
+          const nextMetadata = {
+            ...metadata,
+            date: metadata.date ?? gameMetadata.date,
+            time: metadata.time ?? gameMetadata.time,
+            openingName: metadata.openingName ?? gameMetadata.openingName,
+          };
+          if (
+            nextMetadata.date === metadata.date &&
+            nextMetadata.time === metadata.time &&
+            nextMetadata.openingName === metadata.openingName
+          ) {
+            return position;
+          }
+
+          changed = true;
+          return {
+            ...position,
+            mistakeReview: nextMetadata,
+          };
+        });
+
+        return changed ? { ...current, positions } : current;
+      });
+    }
+
+    void backfillMistakeReviewMetadata();
+
+    return () => {
+      disposed = true;
+    };
+  }, [deck.positions, opened, setDeck]);
 
   useEffect(() => {
     const validValues = new Set(openingOptions.map((option) => option.value));
@@ -5325,7 +5456,7 @@ function OpeningReviewPositionsModal({
                   </Table.Td>
                   <Table.Td>
                     <Text size="sm" lineClamp={2}>
-                      {formatOpeningReviewLastPlayedColumn(position.openingHealth?.lastPlayed)}
+                      {formatReviewPositionLastPlayed(position)}
                     </Text>
                   </Table.Td>
                   <Table.Td>

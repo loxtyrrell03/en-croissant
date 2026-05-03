@@ -760,6 +760,8 @@ pub struct MistakeReviewScanResult {
     pub ply: u32,
     pub move_number: u32,
     pub date: Option<String>,
+    pub time: Option<String>,
+    pub opening_name: Option<String>,
     pub opponent: String,
     pub time_control: Option<String>,
     pub white_name: String,
@@ -1228,6 +1230,8 @@ pub async fn scan_mistake_review(
                         ply,
                         move_number: (ply / 2) + 1,
                         date: game.date.clone(),
+                        time: game.time.clone(),
+                        opening_name: game.opening_name.clone(),
                         opponent: opponent.clone(),
                         time_control: game.time_control.clone(),
                         white_name: game.white_name.clone(),
@@ -1764,6 +1768,8 @@ fn insert_mistake_review_result(
         (
             result.last_game_id,
             result.date.clone(),
+            result.time.clone(),
+            result.opening_name.clone(),
             result.opponent.clone(),
             result.time_control.clone(),
             result.white_name.clone(),
@@ -1776,6 +1782,8 @@ fn insert_mistake_review_result(
         (
             existing.last_game_id,
             existing.date.clone(),
+            existing.time.clone(),
+            existing.opening_name.clone(),
             existing.opponent.clone(),
             existing.time_control.clone(),
             existing.white_name.clone(),
@@ -1796,13 +1804,15 @@ fn insert_mistake_review_result(
     existing.game_ids = game_ids;
     existing.last_game_id = latest.0;
     existing.date = latest.1;
-    existing.opponent = latest.2;
-    existing.time_control = latest.3;
-    existing.white_name = latest.4;
-    existing.black_name = latest.5;
-    existing.white_elo = latest.6;
-    existing.black_elo = latest.7;
-    existing.game_result = latest.8;
+    existing.time = latest.2;
+    existing.opening_name = latest.3;
+    existing.opponent = latest.4;
+    existing.time_control = latest.5;
+    existing.white_name = latest.6;
+    existing.black_name = latest.7;
+    existing.white_elo = latest.8;
+    existing.black_elo = latest.9;
+    existing.game_result = latest.10;
 }
 
 #[cfg(test)]
@@ -1838,6 +1848,8 @@ mod mistake_review_tests {
             ply: 10,
             move_number: 6,
             date: Some(format!("2026.04.{game_id:02}")),
+            time: Some("12:00:00".to_string()),
+            opening_name: Some("Test Opening".to_string()),
             opponent: format!("Opponent {game_id}"),
             time_control: Some("600+0".to_string()),
             white_name: "Tyrell Lox".to_string(),

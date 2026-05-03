@@ -66,7 +66,11 @@ export function getOpeningReviewStatsPerspectiveSide(
     openingName?: string | null,
 ): "white" | "black" {
     if (deckMode === "opponent") {
-        const openingSide = inferOpeningReviewOpeningSide(openingName ?? position.openingHealth?.openingName);
+        const openingSide = inferOpeningReviewOpeningSide(
+            openingName ??
+                position.mistakeReview?.openingName ??
+                position.openingHealth?.openingName,
+        );
         if (openingSide) return oppositeOpeningReviewSide(openingSide);
     }
 
@@ -172,7 +176,10 @@ export function buildOpeningReviewRows(
 ): OpeningReviewPositionRow[] {
     const openingInfoByIndex = positions.map((position) => {
         const key = getOpeningReviewOpeningCacheKey(position);
-        return getOpeningReviewOpeningInfo(position, openingNamesByKey[key] ?? openingNameCache.get(key));
+        return getOpeningReviewOpeningInfo(
+            position,
+            openingNamesByKey[key] ?? openingNameCache.get(key),
+        );
     });
 
     return rankOpeningReviewPositions(positions).map((row) => ({
@@ -203,7 +210,8 @@ export function getOpeningReviewOpeningOptions(
     const familyCounts = new Map<string, number>();
     const lineCounts = new Map<string, number>();
     const colourRows = rows.filter(
-        ({ position }) => colourFilter === "any" || getOpeningReviewMoveSide(position) === colourFilter,
+        ({ position }) =>
+            colourFilter === "any" || getOpeningReviewMoveSide(position) === colourFilter,
     );
 
     for (const row of colourRows) {
@@ -283,7 +291,9 @@ function getOpeningReviewOpeningInfo(
     resolvedName?: string,
 ): OpeningReviewOpeningInfo {
     const rawName =
+        normalizeOpeningReviewResolvedOpeningName(position, position.mistakeReview?.openingName) ??
         normalizeOpeningReviewResolvedOpeningName(position, resolvedName) ??
+        normalizeOpeningReviewResolvedOpeningName(position, position.openingHealth?.openingName) ??
         inferOpeningReviewOpeningName(position);
     const family = getOpeningReviewOpeningFamily(rawName);
     const variation = getOpeningReviewOpeningVariation(rawName, family);

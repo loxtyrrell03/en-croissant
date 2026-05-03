@@ -45,9 +45,9 @@ use crate::chess::{
 use crate::db::{
     cancel_database_search, clear_games, convert_pgn, create_indexes, delete_database,
     delete_db_game, delete_empty_games, delete_indexes, export_to_pgn, find_repertoire_gaps,
-    get_opening_health_player_positions, get_plan_explorer, get_player, get_players_game_info,
-    get_tournaments, preload_reference_db, search_position, set_database_search_paused,
-    MmapSearchIndex,
+    get_mistake_review_game_metadata, get_opening_health_player_positions, get_plan_explorer,
+    get_player, get_players_game_info, get_tournaments, preload_reference_db, search_position,
+    set_database_search_paused, MmapSearchIndex,
 };
 use crate::game::{
     abort_game, get_game_engine_logs, get_game_state, make_game_move, resign_game, start_game,
@@ -121,6 +121,7 @@ fn main() {
             get_best_moves,
             analyze_game,
             scan_mistake_review,
+            get_mistake_review_game_metadata,
             score_mistake_review_move,
             get_mistake_review_sample_line,
             set_mistake_review_scan_paused,

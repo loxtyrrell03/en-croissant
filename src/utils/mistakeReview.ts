@@ -426,6 +426,8 @@ export function createMistakeReviewPosition(
             gameIds: result.gameIds,
             occurrenceCount: result.occurrenceCount,
             date: result.date,
+            time: result.time,
+            openingName: result.openingName,
             opponent: result.opponent,
             timeControl: result.timeControl,
             whiteName: result.whiteName,

@@ -124,6 +124,8 @@ export const positionSchema = z.object({
             gameIds: z.array(z.number()).optional(),
             occurrenceCount: z.number().optional(),
             date: z.string().nullable().optional(),
+            time: z.string().nullable().optional(),
+            openingName: z.string().nullable().optional(),
             opponent: z.string().optional(),
             timeControl: z.string().nullable().optional(),
             whiteName: z.string().optional(),
@@ -240,6 +242,8 @@ export type Position = {
         gameIds?: number[];
         occurrenceCount?: number;
         date?: string | null;
+        time?: string | null;
+        openingName?: string | null;
         opponent?: string;
         timeControl?: string | null;
         whiteName?: string;
