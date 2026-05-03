@@ -15,6 +15,7 @@ import { getStats, type Position, positionSchema } from "@/components/files/open
 export const MISTAKE_REVIEW_EXTENSION = ".mistake-review.json";
 export const MISTAKE_REVIEW_VERSION = 1;
 export const MISTAKE_REVIEW_SOURCE = "Mistake Review";
+const MISTAKE_REVIEW_IMPORTED_BATCH_WINDOW_MS = 5 * 60 * 1000;
 
 export const DEFAULT_MISTAKE_REVIEW_THRESHOLDS: MistakeReviewThresholds = {
     inaccuracy: 50,
@@ -170,6 +171,8 @@ const mistakeReviewDeckSchema = z.object({
     name: z.string(),
     createdAt: z.number(),
     updatedAt: z.number(),
+    lastAddedAt: z.number().nullable().optional(),
+    lastAddedCount: z.number().nullable().optional(),
     source: z.string().optional(),
     settings: mistakeReviewSettingsSchema,
     daily: mistakeReviewDailySettingsSchema.default({
@@ -191,6 +194,8 @@ export type MistakeReviewDeck = {
     name: string;
     createdAt: number;
     updatedAt: number;
+    lastAddedAt?: number | null;
+    lastAddedCount?: number | null;
     source?: string;
     settings: MistakeReviewSettings;
     daily: MistakeReviewDailySettings;
@@ -203,6 +208,8 @@ export type MistakeReviewDeckSummary = {
     path: string;
     name: string;
     updatedAt: number;
+    lastAddedAt?: number | null;
+    lastAddedCount?: number | null;
     total: number;
     due: number;
     unseen: number;
@@ -258,10 +265,13 @@ export async function listMistakeReviewDecks(
         try {
             const deck = await readMistakeReviewDeck(path);
             const stats = getStats(deck.positions);
+            const lastAdded = getMistakeReviewLastAdded(deck);
             decks.push({
                 path,
                 name: deck.name,
                 updatedAt: deck.updatedAt,
+                lastAddedAt: lastAdded?.at ?? null,
+                lastAddedCount: lastAdded?.count ?? null,
                 total: stats.total,
                 due: stats.due,
                 unseen: stats.unseen,
@@ -309,11 +319,14 @@ export function createMistakeReviewDeck({
     positions: Position[];
 }): MistakeReviewDeck {
     const now = Date.now();
+    const lastAddedCount = positions.length;
     return {
         version: MISTAKE_REVIEW_VERSION,
         name,
         createdAt: now,
         updatedAt: now,
+        lastAddedAt: lastAddedCount > 0 ? now : null,
+        lastAddedCount: lastAddedCount > 0 ? lastAddedCount : null,
         source: MISTAKE_REVIEW_SOURCE,
         settings,
         autoUpdate,
@@ -441,14 +454,17 @@ export function mergeMistakeReviewPositions(
     );
     const incomingKeys = new Set<string>();
     const merged: Position[] = [];
+    let addedCount = 0;
 
     for (const position of incoming) {
         const key = mistakeReviewPositionKey(position);
         incomingKeys.add(key);
         const previous = existingByKey.get(key);
+        if (!previous) addedCount += 1;
         merged.push(previous ? mergeMistakeReviewPosition(previous, position) : position);
     }
 
+    const now = Date.now();
     for (const position of existing.positions) {
         if (!incomingKeys.has(mistakeReviewPositionKey(position))) {
             merged.push(position);
@@ -458,7 +474,9 @@ export function mergeMistakeReviewPositions(
     return {
         ...existing,
         positions: merged,
-        updatedAt: Date.now(),
+        updatedAt: now,
+        lastAddedAt: addedCount > 0 ? now : existing.lastAddedAt,
+        lastAddedCount: addedCount > 0 ? addedCount : existing.lastAddedCount,
     };
 }
 
@@ -602,6 +620,55 @@ export function getMistakeReviewSeverityWeight(severity?: string) {
         default:
             return 0;
     }
+}
+
+function getMistakeReviewLastAdded(deck: MistakeReviewDeck) {
+    const explicitAt = parseMistakeReviewTimestamp(deck.lastAddedAt);
+    const explicitCount = parseMistakeReviewAddedCount(deck.lastAddedCount);
+    if (explicitAt !== null && explicitCount !== null) {
+        return { at: explicitAt, count: explicitCount };
+    }
+
+    const autoUpdateAt = parseMistakeReviewTimestamp(
+        deck.autoUpdate?.lastRunAt ?? deck.autoUpdate?.updatedAt,
+    );
+    const autoUpdateCount = parseMistakeReviewAddedCount(deck.autoUpdate?.lastAdded);
+    if (autoUpdateAt !== null && autoUpdateCount !== null) {
+        return { at: autoUpdateAt, count: autoUpdateCount };
+    }
+
+    return inferMistakeReviewLastAddedFromPositions(deck.positions);
+}
+
+function inferMistakeReviewLastAddedFromPositions(positions: Position[]) {
+    let latestImportedAt: number | null = null;
+
+    for (const position of positions) {
+        const importedAt = parseMistakeReviewTimestamp(position.importedAt);
+        if (importedAt === null) continue;
+        latestImportedAt =
+            latestImportedAt === null ? importedAt : Math.max(latestImportedAt, importedAt);
+    }
+
+    if (latestImportedAt === null) return null;
+
+    let count = 0;
+    for (const position of positions) {
+        const importedAt = parseMistakeReviewTimestamp(position.importedAt);
+        if (
+            importedAt !== null &&
+            latestImportedAt - importedAt <= MISTAKE_REVIEW_IMPORTED_BATCH_WINDOW_MS
+        ) {
+            count += 1;
+        }
+    }
+
+    return count > 0 ? { at: latestImportedAt, count } : null;
+}
+
+function parseMistakeReviewAddedCount(value: unknown) {
+    const count = typeof value === "number" ? value : Number(value);
+    return Number.isFinite(count) && count > 0 ? Math.trunc(count) : null;
 }
 
 function getMistakeReviewLastAttemptedAt(position?: Position | null) {

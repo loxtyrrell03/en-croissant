@@ -1049,6 +1049,16 @@ function OpeningReviewSettingsModal({
   );
 }
 
+function getMistakeReviewLastAddedText(deck: MistakeReviewDeckSummary) {
+  if (!deck.lastAddedAt || !deck.lastAddedCount) return null;
+
+  const addedAt = dayjs(deck.lastAddedAt);
+  if (!addedAt.isValid()) return null;
+
+  const mistakeLabel = deck.lastAddedCount === 1 ? "new mistake" : "new mistakes";
+  return `${deck.lastAddedCount} ${mistakeLabel}, added on ${addedAt.format("MMM D, YYYY")}`;
+}
+
 function MistakeReviewModal({
   opened,
   decks,
@@ -1096,34 +1106,43 @@ function MistakeReviewModal({
           </Paper>
         ) : (
           <Stack gap="xs">
-            {decks.map((deck) => (
-              <Group key={deck.path} justify="space-between" p="xs" wrap="nowrap">
-                <Stack gap={2} miw={0}>
-                  <Text fw={600} truncate>
-                    {deck.name}
-                  </Text>
-                  <Text size="xs" c="dimmed" truncate>
-                    {deck.total} cards, {deck.due} due, {deck.unseen} new
-                    {deck.playerName ? ` - ${deck.playerName}` : ""}
-                  </Text>
-                </Stack>
-                <Group gap="xs" wrap="nowrap">
-                  <Button size="xs" variant="light" onClick={() => onOpen(deck)}>
-                    Open
-                  </Button>
-                  <Tooltip label="Delete deck">
-                    <ActionIcon
-                      variant="subtle"
-                      color="red"
-                      loading={deletingPath === deck.path}
-                      onClick={() => onDelete(deck)}
-                    >
-                      <IconTrash size="1rem" />
-                    </ActionIcon>
-                  </Tooltip>
+            {decks.map((deck) => {
+              const lastAddedText = getMistakeReviewLastAddedText(deck);
+
+              return (
+                <Group key={deck.path} justify="space-between" p="xs" wrap="nowrap">
+                  <Stack gap={2} miw={0}>
+                    <Text fw={600} truncate>
+                      {deck.name}
+                    </Text>
+                    <Text size="xs" c="dimmed" truncate>
+                      {deck.total} cards, {deck.due} due, {deck.unseen} new
+                      {deck.playerName ? ` - ${deck.playerName}` : ""}
+                    </Text>
+                    {lastAddedText && (
+                      <Text size="xs" c="dimmed" truncate>
+                        {lastAddedText}
+                      </Text>
+                    )}
+                  </Stack>
+                  <Group gap="xs" wrap="nowrap">
+                    <Button size="xs" variant="light" onClick={() => onOpen(deck)}>
+                      Open
+                    </Button>
+                    <Tooltip label="Delete deck">
+                      <ActionIcon
+                        variant="subtle"
+                        color="red"
+                        loading={deletingPath === deck.path}
+                        onClick={() => onDelete(deck)}
+                      >
+                        <IconTrash size="1rem" />
+                      </ActionIcon>
+                    </Tooltip>
+                  </Group>
                 </Group>
-              </Group>
-            ))}
+              );
+            })}
           </Stack>
         )}
       </Stack>
