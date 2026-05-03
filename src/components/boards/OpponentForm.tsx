@@ -19,8 +19,7 @@ import type { TimeControlField } from "@/utils/clock";
 import type { EngineSettings, LocalEngine } from "@/utils/engines";
 import {
   createDefaultPracticeBotProfile,
-  fideToLichessClassical,
-  nearestLegacyMaiaModel,
+  describePracticeBotBackend,
   type PracticeBotProfile,
 } from "@/utils/practiceBot";
 import { EnginesSelect } from "./EnginesSelect";
@@ -191,8 +190,7 @@ export function OpponentForm({
             }
           />
           <Text size="xs" c="dimmed">
-            Maia {nearestLegacyMaiaModel(opponent.botProfile.fideElo)} - Lichess target{" "}
-            {fideToLichessClassical(opponent.botProfile.fideElo)}
+            {describePracticeBotBackend(opponent.botProfile)}
           </Text>
         </Stack>
       )}

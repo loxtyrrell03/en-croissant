@@ -2,12 +2,14 @@ import { expect, test } from "vitest";
 import {
     buildPracticeBotOptions,
     createDefaultPracticeBotOpponent,
+    describePracticeBotBackend,
     fideToLichessClassical,
     getPracticeBotMoveDelay,
     getPracticeBotGoMode,
     maiaWeightsFileName,
     maiaWeightsUrl,
     nearestLegacyMaiaModel,
+    practiceBotBackendKind,
     shouldUseClockTimeManagement,
     stockfishUciEloFromFide,
 } from "../practiceBot";
@@ -38,6 +40,33 @@ test("adds Stockfish strength options for trainer bot games", () => {
     });
 });
 
+test("uses calibrated Stockfish backend above legacy Maia range", () => {
+    const profile = {
+        enabled: true,
+        kind: "maia" as const,
+        fideElo: 2200,
+    };
+
+    expect(nearestLegacyMaiaModel(profile.fideElo)).toBe(1900);
+    expect(practiceBotBackendKind(profile)).toBe("stockfish");
+    expect(describePracticeBotBackend(profile)).toContain("Stockfish strength");
+
+    const options = buildPracticeBotOptions([], profile);
+    expect(options).toContainEqual({ name: "UCI_LimitStrength", value: "true" });
+    expect(options).toContainEqual({ name: "UCI_Elo", value: "2200" });
+});
+
+test("keeps Maia for ratings inside the managed Maia range", () => {
+    const profile = {
+        enabled: true,
+        kind: "maia" as const,
+        fideElo: 1600,
+    };
+
+    expect(practiceBotBackendKind(profile)).toBe("maia");
+    expect(describePracticeBotBackend(profile)).toContain("Maia 1800");
+});
+
 test("uses Maia policy-only search without UCI clock management", () => {
     const profile = {
         enabled: true,
@@ -65,7 +94,7 @@ test("passes rating and time control into the backend clock model", () => {
         {
             enabled: true,
             kind: "maia",
-            fideElo: 1800,
+            fideElo: 1600,
         },
         {
             seconds: 300_000,
@@ -74,7 +103,7 @@ test("passes rating and time control into the backend clock model", () => {
     );
 
     expect(moveDelay).toMatchObject({
-        fideElo: 1800,
+        fideElo: 1600,
         initialTimeMs: 300_000,
         incrementMs: 5_000,
         useAsMoveTime: false,

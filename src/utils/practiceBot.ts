@@ -32,7 +32,11 @@ const STOCKFISH_MIN_UCI_ELO = 1320;
 const STOCKFISH_MAX_UCI_ELO = 3190;
 const MANAGED_MAIA_LC0_VERSION = "0.32.1";
 const MANAGED_MAIA_ENGINE_ID = "managed-maia-lc0";
+const MANAGED_STOCKFISH_VERSION = "18";
+const MANAGED_STOCKFISH_ENGINE_ID = "managed-stockfish-trainer";
 const MANAGED_MAIA_DIR = "trainer-bot";
+const MAX_LEGACY_MAIA_TARGET = 1900;
+const MAX_LEGACY_MAIA_LICHESS_TARGET = 2000;
 
 export const DEFAULT_PRACTICE_BOT_ELO = 1600;
 
@@ -88,6 +92,25 @@ const MANAGED_LC0_PACKAGES: Partial<
     },
 };
 
+const MANAGED_STOCKFISH_PACKAGES: Partial<
+    Record<
+        Platform,
+        {
+            url: string;
+            directory: string;
+            executablePath: string[];
+            size: number;
+        }
+    >
+> = {
+    windows: {
+        url: "https://github.com/official-stockfish/Stockfish/releases/latest/download/stockfish-windows-x86-64-sse41-popcnt.zip",
+        directory: `stockfish-${MANAGED_STOCKFISH_VERSION}-windows-sse41`,
+        executablePath: ["stockfish", "stockfish-windows-x86-64-sse41-popcnt.exe"],
+        size: 65_413_257,
+    },
+};
+
 function clamp(value: number, min: number, max: number) {
     return Math.min(max, Math.max(min, value));
 }
@@ -128,6 +151,22 @@ export function nearestLegacyMaiaModel(fideElo: number) {
     );
 }
 
+export function practiceBotBackendKind(profile: PracticeBotProfile | null): PracticeBotKind {
+    if (!profile?.enabled) return "stockfish";
+    if (profile.kind === "stockfish") return "stockfish";
+    return fideToLichessClassical(profile.fideElo) <= MAX_LEGACY_MAIA_LICHESS_TARGET
+        ? "maia"
+        : "stockfish";
+}
+
+export function describePracticeBotBackend(profile: PracticeBotProfile) {
+    const lichessTarget = fideToLichessClassical(profile.fideElo);
+    if (practiceBotBackendKind(profile) === "maia") {
+        return `Maia ${nearestLegacyMaiaModel(profile.fideElo)} - Lichess target ${lichessTarget}`;
+    }
+    return `Stockfish strength - Maia capped at ${MAX_LEGACY_MAIA_TARGET} Lichess`;
+}
+
 export function stockfishUciEloFromFide(fideElo: number) {
     return Math.round(clamp(fideElo, STOCKFISH_MIN_UCI_ELO, STOCKFISH_MAX_UCI_ELO));
 }
@@ -137,10 +176,10 @@ export function stockfishSkillLevelFromFide(fideElo: number) {
 }
 
 export function formatPracticeBotName(profile: PracticeBotProfile) {
-    if (profile.kind === "maia") {
+    if (practiceBotBackendKind(profile) === "maia") {
         return `Maia ${profile.fideElo} FIDE`;
     }
-    return `Stockfish ${profile.fideElo} FIDE`;
+    return `Trainer ${profile.fideElo} FIDE`;
 }
 
 export function isLikelyLc0Engine(engine: LocalEngine | null | undefined) {
@@ -221,7 +260,7 @@ export function buildPracticeBotOptions(
         return options;
     }
 
-    if (profile.kind === "stockfish") {
+    if (practiceBotBackendKind(profile) === "stockfish") {
         options = upsertOption(options, "UCI_LimitStrength", "true");
         options = upsertOption(options, "UCI_Elo", stockfishUciEloFromFide(profile.fideElo));
         options = upsertOption(
@@ -240,7 +279,7 @@ export function buildPracticeBotOptions(
 }
 
 export function getPracticeBotGoMode(profile: PracticeBotProfile | null, fallback: GoMode): GoMode {
-    if (profile?.enabled && profile.kind === "maia") {
+    if (profile?.enabled && practiceBotBackendKind(profile) === "maia") {
         return { t: "Nodes", c: 1 };
     }
     return fallback;
@@ -285,7 +324,7 @@ export function getPracticeBotMoveDelay(
             fideElo: profile.fideElo,
             initialTimeMs,
             incrementMs,
-            useAsMoveTime: profile.kind === "stockfish",
+            useAsMoveTime: practiceBotBackendKind(profile) === "stockfish",
         };
     }
     if (profile.timeUse === "slow") {
@@ -295,7 +334,7 @@ export function getPracticeBotMoveDelay(
             fideElo: profile.fideElo,
             initialTimeMs,
             incrementMs,
-            useAsMoveTime: profile.kind === "stockfish",
+            useAsMoveTime: practiceBotBackendKind(profile) === "stockfish",
         };
     }
     return {
@@ -304,7 +343,7 @@ export function getPracticeBotMoveDelay(
         fideElo: profile.fideElo,
         initialTimeMs,
         incrementMs,
-        useAsMoveTime: profile.kind === "stockfish",
+        useAsMoveTime: practiceBotBackendKind(profile) === "stockfish",
     };
 }
 
@@ -359,6 +398,45 @@ async function ensureManagedLc0Engine(): Promise<LocalEngine> {
     };
 }
 
+async function ensureManagedStockfishEngine(): Promise<LocalEngine> {
+    const os = await platform();
+    const pkg = MANAGED_STOCKFISH_PACKAGES[os];
+    if (!pkg) {
+        throw new Error("Managed Stockfish trainer is currently packaged for Windows.");
+    }
+
+    const enginesDir = await getEnginesDir();
+    const trainerDir = await resolve(enginesDir, MANAGED_MAIA_DIR);
+    const stockfishDir = await resolve(trainerDir, pkg.directory);
+    const stockfishPath = await resolve(stockfishDir, ...pkg.executablePath);
+
+    if (!(await pathExists(stockfishPath))) {
+        await ensureDirectory(stockfishDir);
+        unwrap(
+            await commands.downloadFile(
+                "practice_bot_stockfish",
+                pkg.url,
+                stockfishDir,
+                null,
+                true,
+                pkg.size,
+            ),
+        );
+        unwrap(await commands.setFileAsExecutable(stockfishPath));
+    }
+
+    return {
+        type: "local",
+        id: MANAGED_STOCKFISH_ENGINE_ID,
+        name: "Stockfish Trainer",
+        version: MANAGED_STOCKFISH_VERSION,
+        path: stockfishPath,
+        loaded: true,
+        elo: STOCKFISH_MAX_UCI_ELO,
+        settings: [],
+    };
+}
+
 async function ensureManagedMaiaWeights(fideElo: number) {
     const model = nearestLegacyMaiaModel(fideElo);
     const enginesDir = await getEnginesDir();
@@ -396,8 +474,20 @@ export async function preparePracticeBotOpponent(
         kind: settings.botProfile.kind,
     };
 
-    if (profile.kind === "stockfish") {
-        return settings;
+    if (practiceBotBackendKind(profile) === "stockfish") {
+        const engine = isLikelyStockfishEngine(settings.engine)
+            ? settings.engine!
+            : await ensureManagedStockfishEngine();
+        return {
+            ...settings,
+            engine,
+            engineSettings: engine.settings || undefined,
+            go: { t: "Depth", c: 16 },
+            botProfile: {
+                ...profile,
+                kind: "stockfish",
+            },
+        };
     }
 
     const [engine, maiaWeightsPath] = await Promise.all([
