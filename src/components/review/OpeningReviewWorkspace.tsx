@@ -1737,20 +1737,17 @@ function OpeningReviewPanel({
   }
 
   const panelModeControl = isMistakeReview ? null : (
-    <Group justify="space-between" align="center" wrap="nowrap">
-      <SegmentedControl
-        value={panelView}
-        onChange={(value) => setPanelView(value as OpeningReviewPanelView)}
-        data={[
-          { value: "review", label: "Review positions" },
-          { value: "stats", label: "Stats" },
-          { value: "analyze", label: "Analyze repertoire" },
-        ]}
-      />
-      <Text size="xs" c="dimmed">
-        Analyze lines, save what matters, then train them here.
-      </Text>
-    </Group>
+    <SegmentedControl
+      size="xs"
+      fullWidth
+      value={panelView}
+      onChange={(value) => setPanelView(value as OpeningReviewPanelView)}
+      data={[
+        { value: "review", label: "Review positions" },
+        { value: "stats", label: "Stats" },
+        { value: "analyze", label: "Analyze repertoire" },
+      ]}
+    />
   );
 
   if (!isMistakeReview && panelView === "analyze") {
@@ -1851,7 +1848,7 @@ function OpeningReviewPanel({
 
   return (
     <>
-      <Stack h="100%" gap="xs">
+      <Stack h="100%" gap={8}>
         {panelModeControl}
         {!isMistakeReview && <OpeningReviewAutoUpdateBanner deckPath={deckPath} />}
         <Group justify="space-between" align="center" gap="xs" wrap="nowrap">
@@ -1886,8 +1883,8 @@ function OpeningReviewPanel({
         )}
 
         {isTraining ? (
-          <Paper p="xs" withBorder>
-            <Stack gap={6}>
+          <Paper px="xs" py={6} withBorder>
+            <Stack gap={4}>
               <Group justify="space-between" gap="xs" wrap="nowrap">
                 <Text size="xs" fw={700}>
                   Review session
@@ -1899,13 +1896,13 @@ function OpeningReviewPanel({
               </Group>
               <Progress value={sessionProgress} size="xs" />
               <Group gap={6} grow>
-                <Badge variant="light" color="green">
+                <Badge size="sm" variant="light" color="green">
                   {sessionStats.correct} correct
                 </Badge>
-                <Badge variant="light" color="red">
+                <Badge size="sm" variant="light" color="red">
                   {sessionStats.incorrect} retry
                 </Badge>
-                <Badge variant="light" color="blue">
+                <Badge size="sm" variant="light" color="blue">
                   {sessionRemaining} left
                 </Badge>
               </Group>
@@ -4071,8 +4068,8 @@ function OpeningReviewAttemptDetails({
     });
 
     return (
-      <Paper p="sm" withBorder>
-        <Stack gap="sm">
+      <Paper p="xs" withBorder>
+        <Stack gap="xs">
           <Group justify="space-between" align="flex-start">
             <Stack gap={2}>
               <Text size="sm" fw={700}>
@@ -4087,13 +4084,13 @@ function OpeningReviewAttemptDetails({
               {mistakeReviewSeverityLabel(mistake.severity ?? "mistake")}
             </Badge>
           </Group>
-          <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="xs">
+          <SimpleGrid cols={{ base: 2, sm: 4 }} spacing={6}>
             <ReviewDetail label="You played" value={playedMove || mistake.playedMoveSan || "-"} />
             <ReviewDetail label="Best move" value={mistake.bestMoveSan || position.answer} />
             <ReviewDetail label="Occurrences" value={`${mistake.occurrenceCount ?? 1}`} />
             <ReviewDetail label="Last seen" value={formatMistakeReviewLastSeen(position)} />
           </SimpleGrid>
-          <SimpleGrid cols={2} spacing="xs">
+          <SimpleGrid cols={2} spacing={6}>
             <ReviewDetail
               label="Centipawn loss"
               value={mistake.cpLoss === undefined ? "-" : `${Math.round(mistake.cpLoss)} cp`}
@@ -4128,8 +4125,8 @@ function OpeningReviewAttemptDetails({
     health?.strongBlack !== undefined;
 
   return (
-    <Paper p="sm" withBorder>
-      <Stack gap="sm">
+    <Paper p="xs" withBorder>
+      <Stack gap="xs">
         <Group justify="space-between" align="flex-start">
           <Stack gap={2}>
             <Text size="sm" fw={700}>
@@ -4142,7 +4139,7 @@ function OpeningReviewAttemptDetails({
           <Badge variant="light">{side === "white" ? "White to move" : "Black to move"}</Badge>
         </Group>
 
-        <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="xs">
+        <SimpleGrid cols={{ base: 2, sm: 4 }} spacing={6}>
           <ReviewDetail label="You played" value={playedMove || "-"} />
           <ReviewDetail label="Engine best move" value={formatReviewEngineBestMove(position)} />
           <ReviewDetail label="Database strong move" value={databaseMove || "-"} />
@@ -4179,7 +4176,7 @@ function OpeningReviewAttemptDetails({
                   : ""}
               </Text>
             )}
-            <SimpleGrid cols={{ base: 2, sm: 3 }} spacing="xs">
+            <SimpleGrid cols={{ base: 2, sm: 3 }} spacing={6}>
               <ReviewDetail
                 label="Last seen"
                 value={formatOpeningReviewLastPlayed(health.lastPlayed)}
@@ -4209,7 +4206,7 @@ function ReviewDetail({ label, value }: { label: string; value: string }) {
       <Text size="xs" c="dimmed">
         {label}
       </Text>
-      <Text size="sm" fw={700}>
+      <Text size="sm" fw={700} lh={1.25} lineClamp={2}>
         {value}
       </Text>
     </Stack>
@@ -4321,11 +4318,11 @@ function formatMistakeReviewRelativeResult(
 function formatReviewEngineBestMove(position: Position) {
   const engine = position.engine;
   if (engine?.bestMoveSan) {
-    return `${engine.bestMoveSan} (${formatReviewEngineSource(engine)})`;
+    return engine.bestMoveSan;
   }
 
   const health = position.openingHealth;
-  if (health?.topMoveSan) return `${health.topMoveSan} (database scan)`;
+  if (health?.topMoveSan) return health.topMoveSan;
 
   return "Not checked";
 }
@@ -4764,19 +4761,19 @@ function ReviewQualityPanel({
   const feedbackColor = color ?? "green";
 
   return (
-    <Paper p="sm" withBorder>
-      <Stack gap="sm" align="center">
+    <Paper p="xs" withBorder>
+      <Stack gap={8} align="center">
         <Group gap="xs">
-          <ThemeIcon size="md" color={feedbackColor} variant="light" radius="xl">
+          <ThemeIcon size="sm" color={feedbackColor} variant="light" radius="xl">
             {icon === "bulb" ? (
-              <IconBulb size={16} />
+              <IconBulb size={14} />
             ) : icon === "x" ? (
-              <IconX size={16} />
+              <IconX size={14} />
             ) : (
-              <IconCheck size={16} />
+              <IconCheck size={14} />
             )}
           </ThemeIcon>
-          <Text fw={600} c={feedbackColor}>
+          <Text size="sm" fw={700} c={feedbackColor}>
             {title ?? "Correct"}
           </Text>
           {timeTaken !== undefined && (
@@ -4790,7 +4787,7 @@ function ReviewQualityPanel({
             {detail}
           </Text>
         )}
-        <SimpleGrid cols={4} spacing="xs" w="100%">
+        <SimpleGrid cols={4} spacing={8} w="100%">
           {[
             { grade: 1 as const, label: "Again", color: "red" },
             { grade: 2 as const, label: "Hard", color: "orange" },
@@ -4801,9 +4798,9 @@ function ReviewQualityPanel({
               key={item.grade}
               color={item.color}
               variant="light"
-              size="compact-md"
+              size="compact-sm"
               onClick={() => onRate(item.grade)}
-              style={{ height: "auto", padding: "4px 0" }}
+              style={{ height: "auto", minHeight: 44, padding: "5px 0" }}
             >
               <Stack gap={0} align="center">
                 <Text size="xs" fw={600}>
@@ -4816,9 +4813,6 @@ function ReviewQualityPanel({
             </Button>
           ))}
         </SimpleGrid>
-        <Text size="xs" c="dimmed">
-          Use 1-4 to rate difficulty.
-        </Text>
       </Stack>
     </Paper>
   );

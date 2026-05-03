@@ -28,15 +28,15 @@ export default function EngineDockedPanel({
   }
 
   return (
-    <Stack h="100%" gap="xs" style={{ minHeight: 0, overflow: "hidden" }}>
+    <Stack h="100%" gap={6} style={{ minHeight: 0, overflow: "hidden" }}>
       <Box flex={1} p={contentPadding} style={dockedContentStyle}>
         {children}
       </Box>
       <Paper
         withBorder
-        h="15rem"
-        mah="42%"
-        style={{ minHeight: "10rem", overflow: "hidden", flexShrink: 0 }}
+        h="13rem"
+        mah="35%"
+        style={{ minHeight: "8.75rem", overflow: "hidden", flexShrink: 0 }}
       >
         <EnginePanelContent compact />
       </Paper>

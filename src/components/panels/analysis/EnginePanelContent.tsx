@@ -84,20 +84,20 @@ export default function EnginePanelContent({ compact = false }: { compact?: bool
   const navigate = useNavigate();
 
   return (
-    <Stack h="100%" gap={compact ? 6 : "sm"} style={{ minHeight: 0 }}>
+    <Stack h="100%" gap={compact ? 4 : "sm"} style={{ minHeight: 0 }}>
       <ScrollArea
         flex={1}
         offsetScrollbars
         onScrollPositionChange={() => document.dispatchEvent(new Event("analysis-panel-scroll"))}
       >
-        <Stack gap={compact ? 6 : "sm"} p={compact ? 6 : 0}>
-          <Paper withBorder p={compact ? 6 : "xs"}>
+        <Stack gap={compact ? 4 : "sm"} p={compact ? 4 : 0}>
+          <Paper withBorder={!compact} p={compact ? 2 : "xs"}>
             <Group justify="space-between" gap="xs" wrap="nowrap">
-              <Text size="sm" fw={600}>
+              <Text size={compact ? "xs" : "sm"} fw={600}>
                 Engine arrows
               </Text>
               <Switch
-                size={compact ? "sm" : "md"}
+                size={compact ? "xs" : "md"}
                 checked={showEngineArrows}
                 onChange={(event) => setShowEngineArrows(event.currentTarget.checked)}
                 aria-label={showEngineArrows ? "Hide engine arrows" : "Show engine arrows"}
@@ -137,10 +137,12 @@ export default function EnginePanelContent({ compact = false }: { compact?: bool
               </Group>
             </Paper>
           )}
-          <Text size="xs" c="dimmed" px={compact ? 2 : 0} style={{ lineHeight: 1.8 }}>
-            Press <Kbd>E</Kbd> to toggle engine. <Kbd>Space</Kbd> plays best move. Click moves to
-            explore.
-          </Text>
+          {!compact && (
+            <Text size="xs" c="dimmed" px={0} style={{ lineHeight: 1.8 }}>
+              Press <Kbd>E</Kbd> to toggle engine. <Kbd>Space</Kbd> plays best move. Click moves to
+              explore.
+            </Text>
+          )}
           <Accordion
             variant="separated"
             multiple

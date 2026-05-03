@@ -284,8 +284,8 @@ const MIN_LEFT_WIDTH = 360;
 const MIN_RIGHT_WIDTH = 420;
 const MIN_TOP_RIGHT_HEIGHT = 180;
 const MIN_BOTTOM_RIGHT_HEIGHT = 120;
-const DEFAULT_TOP_RIGHT_RATIO = 0.76;
-const DEFAULT_BOTTOM_RIGHT_RATIO = 0.3;
+const ROW_RESIZE_HANDLE_HEIGHT = 13;
+const DEFAULT_TOP_RIGHT_RATIO = 0.72;
 
 function BoardWorkspaceLayout() {
   const [layout, setLayout] = useAtom(workspaceLayoutAtom);
@@ -312,19 +312,10 @@ function BoardWorkspaceLayout() {
     return () => observer.disconnect();
   }, []);
 
-  const availableHeight = Math.max(containerSize.height - 10, 0);
-  const defaultTopHeight = Math.max(
-    MIN_TOP_RIGHT_HEIGHT,
-    Math.round(availableHeight * DEFAULT_TOP_RIGHT_RATIO),
-  );
-  const defaultBottomHeight = Math.max(
-    MIN_BOTTOM_RIGHT_HEIGHT,
-    Math.round(availableHeight * DEFAULT_BOTTOM_RIGHT_RATIO),
-  );
-  const topRightHeight = Math.max(MIN_TOP_RIGHT_HEIGHT, layout.topRightHeight ?? defaultTopHeight);
-  const bottomRightHeight = Math.max(
-    MIN_BOTTOM_RIGHT_HEIGHT,
-    layout.bottomRightHeight ?? defaultBottomHeight,
+  const splitAvailableHeight = Math.max(containerSize.height - ROW_RESIZE_HANDLE_HEIGHT, 0);
+  const { topRightHeight, bottomRightHeight } = resolveRightPaneHeights(
+    layout,
+    splitAvailableHeight,
   );
 
   const clampedRightWidthPercent = clampRightWidthPercent(
@@ -375,17 +366,20 @@ function BoardWorkspaceLayout() {
 
     const startY = event.clientY;
     const startTopHeight = topRightHeight;
-    const startBottomHeight = bottomRightHeight;
+    const availableHeight = splitAvailableHeight;
+
+    if (availableHeight <= 0) return;
 
     startDragCursor("row-resize");
 
     const onPointerMove = (moveEvent: PointerEvent) => {
       const deltaY = moveEvent.clientY - startY;
+      const nextTopHeight = clampTopRightHeight(startTopHeight + deltaY, availableHeight);
 
       setLayout((current) => ({
         ...current,
-        topRightHeight: Math.max(MIN_TOP_RIGHT_HEIGHT, startTopHeight + deltaY),
-        bottomRightHeight: Math.max(MIN_BOTTOM_RIGHT_HEIGHT, startBottomHeight - deltaY),
+        topRightHeight: nextTopHeight,
+        bottomRightHeight: Math.max(0, availableHeight - nextTopHeight),
       }));
     };
 
@@ -453,6 +447,37 @@ function BoardWorkspaceLayout() {
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
+}
+
+function resolveRightPaneHeights(layout: WorkspaceLayoutState, availableHeight: number) {
+  if (availableHeight <= 0) {
+    return {
+      topRightHeight: MIN_TOP_RIGHT_HEIGHT,
+      bottomRightHeight: MIN_BOTTOM_RIGHT_HEIGHT,
+    };
+  }
+
+  const defaultTopHeight = Math.round(availableHeight * DEFAULT_TOP_RIGHT_RATIO);
+  const desiredTopHeight = layout.topRightHeight ?? defaultTopHeight;
+  const desiredBottomHeight = layout.bottomRightHeight ?? availableHeight - defaultTopHeight;
+  const desiredTotal = Math.max(1, desiredTopHeight + desiredBottomHeight);
+  const proportionalTopHeight = Math.round((desiredTopHeight / desiredTotal) * availableHeight);
+  const topRightHeight = clampTopRightHeight(proportionalTopHeight, availableHeight);
+
+  return {
+    topRightHeight,
+    bottomRightHeight: Math.max(0, availableHeight - topRightHeight),
+  };
+}
+
+function clampTopRightHeight(height: number, availableHeight: number) {
+  const minimumTotalHeight = MIN_TOP_RIGHT_HEIGHT + MIN_BOTTOM_RIGHT_HEIGHT;
+
+  if (availableHeight <= minimumTotalHeight) {
+    return Math.round((availableHeight * MIN_TOP_RIGHT_HEIGHT) / minimumTotalHeight);
+  }
+
+  return clamp(height, MIN_TOP_RIGHT_HEIGHT, availableHeight - MIN_BOTTOM_RIGHT_HEIGHT);
 }
 
 function clampRightWidthPercent(percent: number, containerWidth: number) {
