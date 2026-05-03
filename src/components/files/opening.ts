@@ -147,6 +147,16 @@ export const positionSchema = z.object({
             whiteElo: z.number().nullable().optional(),
             blackElo: z.number().nullable().optional(),
             gameResult: z.string().nullable().optional(),
+            moveTimeSeconds: z.number().nullable().optional(),
+            clockBeforeSeconds: z.number().nullable().optional(),
+            clockAfterSeconds: z.number().nullable().optional(),
+            longThinkThresholdSeconds: z.number().nullable().optional(),
+            timeManagement: z
+                .object({
+                    enabled: z.boolean(),
+                    minMoveSeconds: z.number(),
+                })
+                .optional(),
             lastAttemptedAt: z.number().optional(),
             lastAttemptedCardReps: z.number().optional(),
             thresholds: z
@@ -272,6 +282,14 @@ export type Position = {
         whiteElo?: number | null;
         blackElo?: number | null;
         gameResult?: string | null;
+        moveTimeSeconds?: number | null;
+        clockBeforeSeconds?: number | null;
+        clockAfterSeconds?: number | null;
+        longThinkThresholdSeconds?: number | null;
+        timeManagement?: {
+            enabled: boolean;
+            minMoveSeconds: number;
+        };
         lastAttemptedAt?: number;
         lastAttemptedCardReps?: number;
         thresholds?: {

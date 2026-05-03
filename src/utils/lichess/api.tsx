@@ -496,6 +496,8 @@ export async function downloadLichess(
   token?: string,
 ) {
   let url = `${baseURL}/games/user/${player}?perfType=ultraBullet,bullet,blitz,rapid,classical,correspondence&sort=dateAsc`;
+  url += "&clocks=true";
+  url += "&evals=true&accuracy=true&opening=true&division=true";
   if (timestamp) {
     url += `&since=${timestamp}`;
   }

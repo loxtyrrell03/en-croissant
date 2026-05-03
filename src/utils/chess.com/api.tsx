@@ -234,6 +234,23 @@ export async function downloadChessCom(player: string, timestamp: number | null)
 
   for (const [index, archive] of filteredArchives.entries()) {
     info(`Fetching games for ${player} from ${archive}`);
+    const pgnResponse = await fetch(`${archive}/pgn`, {
+      headers: apiHeaders(),
+      method: "GET",
+    });
+    if (pgnResponse.ok) {
+      const pgnChunk = await pgnResponse.text();
+      await writeTextFile(file, pgnChunk.trim() ? `${pgnChunk.trim()}\n\n` : "", {
+        append: true,
+      });
+      events.progressEvent.emit({
+        finished: false,
+        id: `chesscom_${player}`,
+        progress: ((index + 1) / filteredArchives.length) * 100,
+      });
+      continue;
+    }
+
     const response = await fetch(archive, {
       headers: apiHeaders(),
       method: "GET",

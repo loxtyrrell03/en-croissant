@@ -4,6 +4,8 @@ import { describe, expect, test } from "vitest";
 import { scheduleSm2Card, type Position } from "@/components/files/opening";
 import {
     classifyMistakeReviewAttempt,
+    DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT,
+    formatMistakeReviewMoveTime,
     formatMistakeReviewLastSeen,
     getMistakeReviewDailyBatch,
     getMistakeReviewDailyProgress,
@@ -67,6 +69,7 @@ function deck(positions: Position[]): MistakeReviewDeck {
             thresholds: { inaccuracy: 50, mistake: 100, blunder: 200 },
             includeSeverities: { inaccuracy: true, mistake: true, blunder: true },
             minWinProbabilityDrop: 5,
+            timeManagement: DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT,
         },
         daily: {
             reviewsPerDay: 40,
@@ -92,6 +95,13 @@ describe("mistake review helpers", () => {
         expect(isMistakeReviewPassingLabel("best")).toBe(true);
         expect(isMistakeReviewPassingLabel("good")).toBe(true);
         expect(isMistakeReviewPassingLabel("okay")).toBe(false);
+    });
+
+    test("formats move think time compactly", () => {
+        expect(formatMistakeReviewMoveTime(9.6)).toBe("9.6s");
+        expect(formatMistakeReviewMoveTime(42.2)).toBe("42s");
+        expect(formatMistakeReviewMoveTime(125)).toBe("2:05");
+        expect(formatMistakeReviewMoveTime(null)).toBeNull();
     });
 
     test("daily review takes due cards first, then capped new cards", () => {

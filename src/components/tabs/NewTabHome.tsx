@@ -113,6 +113,7 @@ import {
   createMistakeReviewDeck,
   createMistakeReviewPosition,
   DEFAULT_MISTAKE_REVIEW_SEVERITIES,
+  DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT,
   DEFAULT_MISTAKE_REVIEW_THRESHOLDS,
   deleteMistakeReviewDeck,
   getAvailableMistakeReviewDeckPath,
@@ -162,6 +163,7 @@ type OnlineMistakeReviewAnalysisSettings = Pick<
   | "thresholds"
   | "includeSeverities"
   | "minWinProbabilityDrop"
+  | "timeManagement"
 >;
 const DEFAULT_ONLINE_MISTAKE_REVIEW_ANALYSIS_SETTINGS: OnlineMistakeReviewAnalysisSettings = {
   analysisMode: "single",
@@ -171,6 +173,7 @@ const DEFAULT_ONLINE_MISTAKE_REVIEW_ANALYSIS_SETTINGS: OnlineMistakeReviewAnalys
   thresholds: DEFAULT_MISTAKE_REVIEW_THRESHOLDS,
   includeSeverities: DEFAULT_MISTAKE_REVIEW_SEVERITIES,
   minWinProbabilityDrop: 5,
+  timeManagement: DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT,
 };
 
 function RecentFileDuePositions({ file }: { file: string }) {
@@ -1197,15 +1200,11 @@ function MistakeReviewModal({
               <IconExclamationCircle size={36} style={{ opacity: 0.35 }} />
               <Text fw={600}>No mistake decks yet</Text>
               <Text size="sm" c="dimmed" ta="center">
-                Analyze your latest online game, choose recent online games, or scan a local
-                games database.
+                Analyze your latest online game, choose recent online games, or scan a local games
+                database.
               </Text>
               <Group gap="xs" justify="center">
-                <Button
-                  size="xs"
-                  loading={latestOnlineLoading}
-                  onClick={onNewLatestOnlineScan}
-                >
+                <Button size="xs" loading={latestOnlineLoading} onClick={onNewLatestOnlineScan}>
                   Latest game
                 </Button>
                 <Button size="xs" variant="light" onClick={onNewOnlineScan}>
@@ -1295,6 +1294,12 @@ function MistakeReviewScanModal({
   const [includeInaccuracies, setIncludeInaccuracies] = useState(true);
   const [includeMistakes, setIncludeMistakes] = useState(true);
   const [includeBlunders, setIncludeBlunders] = useState(true);
+  const [timeManagementOnly, setTimeManagementOnly] = useState(
+    DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.enabled,
+  );
+  const [minMoveSeconds, setMinMoveSeconds] = useState(
+    DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds,
+  );
   const [autoUpdate, setAutoUpdate] = useState(true);
   const [scanning, setScanning] = useState(false);
   const [pendingPartialDeck, setPendingPartialDeck] = useState<{
@@ -1448,6 +1453,10 @@ function MistakeReviewScanModal({
         blunder: includeBlunders,
       },
       minWinProbabilityDrop,
+      timeManagement: {
+        enabled: timeManagementOnly,
+        minMoveSeconds,
+      },
     };
     const name = `Mistake Review - ${selectedPlayer.label}`;
     const path = await getAvailableMistakeReviewDeckPath(documentDir, name);
@@ -1718,6 +1727,30 @@ function MistakeReviewScanModal({
             max={100}
             onChange={(v) => setMinWinProbabilityDrop(Number(v) || 0)}
           />
+          <Paper p="sm" withBorder radius="sm">
+            <Stack gap="xs">
+              <Switch
+                label="Time management trainer"
+                description="Only keep mistakes where clock comments show a long think before the bad move."
+                checked={timeManagementOnly}
+                onChange={(event) => setTimeManagementOnly(event.currentTarget.checked)}
+              />
+              <NumberInput
+                label="Minimum think time"
+                suffix="s"
+                value={minMoveSeconds}
+                min={1}
+                max={900}
+                disabled={!timeManagementOnly}
+                onChange={(value) =>
+                  setMinMoveSeconds(Math.min(900, Math.max(1, Number(value) || 20)))
+                }
+              />
+              <Text size="xs" c="dimmed">
+                Uses PGN clock comments from Lichess and Chess.com when available.
+              </Text>
+            </Stack>
+          </Paper>
           <SimpleGrid cols={3}>
             <Switch
               label="Inaccuracies"
@@ -1969,6 +2002,17 @@ function OnlineMistakeReviewSettingsModal({
     });
   }
 
+  function updateTimeManagement(
+    patch: Partial<OnlineMistakeReviewAnalysisSettings["timeManagement"]>,
+  ) {
+    updateSettings({
+      timeManagement: {
+        ...settings.timeManagement,
+        ...patch,
+      },
+    });
+  }
+
   return (
     <Modal opened={opened} onClose={onClose} title={<b>Online mistake settings</b>} size="lg">
       <Stack gap="sm">
@@ -1997,18 +2041,14 @@ function OnlineMistakeReviewSettingsModal({
               label="Fast depth"
               value={settings.fastDepth}
               min={1}
-              onChange={(value) =>
-                updateSettings({ fastDepth: Math.max(1, Number(value) || 12) })
-              }
+              onChange={(value) => updateSettings({ fastDepth: Math.max(1, Number(value) || 12) })}
             />
           )}
           <NumberInput
             label={settings.analysisMode === "layered" ? "Deep depth" : "Analysis depth"}
             value={settings.deepDepth}
             min={1}
-            onChange={(value) =>
-              updateSettings({ deepDepth: Math.max(1, Number(value) || 17) })
-            }
+            onChange={(value) => updateSettings({ deepDepth: Math.max(1, Number(value) || 17) })}
           />
           <NumberInput
             label="MultiPV"
@@ -2058,6 +2098,33 @@ function OnlineMistakeReviewSettingsModal({
             })
           }
         />
+        <Paper p="sm" withBorder radius="sm">
+          <Stack gap="xs">
+            <Switch
+              label="Time management trainer"
+              description="Only keep mistakes where online PGNs include a long think before the bad move."
+              checked={settings.timeManagement.enabled}
+              onChange={(event) => updateTimeManagement({ enabled: event.currentTarget.checked })}
+            />
+            <NumberInput
+              label="Minimum think time"
+              suffix="s"
+              value={settings.timeManagement.minMoveSeconds}
+              min={1}
+              max={900}
+              disabled={!settings.timeManagement.enabled}
+              onChange={(value) =>
+                updateTimeManagement({
+                  minMoveSeconds: Math.min(900, Math.max(1, Number(value) || 20)),
+                })
+              }
+            />
+            <Text size="xs" c="dimmed">
+              Lichess exports clocks directly; Chess.com PGNs are scanned for timestamp comments
+              when present.
+            </Text>
+          </Stack>
+        </Paper>
         <SimpleGrid cols={3}>
           <Switch
             label="Inaccuracies"
@@ -2242,8 +2309,11 @@ function formatOnlineMistakeSettingsSummary(
     settings.includeSeverities.blunder ? "blunders" : null,
   ].filter(Boolean);
   const severityLabel = severities.length > 0 ? severities.join(", ") : "no severities selected";
+  const timeLabel = settings.timeManagement.enabled
+    ? `long-think only ${settings.timeManagement.minMoveSeconds}s+`
+    : "all mistake timings";
 
-  return `${engineLabel}; ${modeLabel}; MultiPV ${settings.multiPv}; ${severityLabel}`;
+  return `${engineLabel}; ${modeLabel}; MultiPV ${settings.multiPv}; ${severityLabel}; ${timeLabel}`;
 }
 
 export default function NewTabHome() {
@@ -2273,9 +2343,7 @@ export default function NewTabHome() {
   const [onlineOpeningMinReferenceGames, setOnlineOpeningMinReferenceGames] = useState(20);
   const [onlineMistakeEnginePath, setOnlineMistakeEnginePath] = useState<string | null>(null);
   const [onlineMistakeAnalysisSettings, setOnlineMistakeAnalysisSettings] =
-    useState<OnlineMistakeReviewAnalysisSettings>(
-      DEFAULT_ONLINE_MISTAKE_REVIEW_ANALYSIS_SETTINGS,
-    );
+    useState<OnlineMistakeReviewAnalysisSettings>(DEFAULT_ONLINE_MISTAKE_REVIEW_ANALYSIS_SETTINGS);
   const [deletingReviewDeckPath, setDeletingReviewDeckPath] = useState<string | null>(null);
   const [deletingMistakeDeckPath, setDeletingMistakeDeckPath] = useState<string | null>(null);
   const [settingsReviewDeck, setSettingsReviewDeck] = useState<OpeningReviewDeckSummary | null>(
@@ -2809,6 +2877,7 @@ export default function NewTabHome() {
             thresholds: { ...onlineMistakeAnalysisSettings.thresholds },
             includeSeverities: { ...onlineMistakeAnalysisSettings.includeSeverities },
             minWinProbabilityDrop: onlineMistakeAnalysisSettings.minWinProbabilityDrop,
+            timeManagement: { ...onlineMistakeAnalysisSettings.timeManagement },
           };
           primarySettings ??= settings;
           const requestId = `mistake-review-online-${Date.now()}-${index}`;

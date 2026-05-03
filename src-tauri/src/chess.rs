@@ -29,7 +29,9 @@ use vampirc_uci::{
 
 use crate::{
     db::{
-        encoding::{decode_move, iter_mainline_move_bytes},
+        encoding::{
+            decode_move, COMMENT_MARKER, NAG_MARKER, VARIATION_END_MARKER, VARIATION_START_MARKER,
+        },
         is_position_in_db, load_mistake_review_games, GameQuery, PositionQueryJs,
     },
     engine::{
@@ -715,11 +717,28 @@ pub struct MistakeReviewScanRequest {
     pub thresholds: Option<MistakeReviewThresholds>,
     pub include_severities: Option<MistakeReviewSeverityFilter>,
     pub min_win_probability_drop: Option<f64>,
+    pub time_management: Option<MistakeReviewTimeManagementSettings>,
     pub time_controls: Option<Vec<String>>,
     pub start_date: Option<String>,
     pub end_date: Option<String>,
     pub since_game_id: Option<i32>,
     pub max_games: Option<i32>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct MistakeReviewTimeManagementSettings {
+    pub enabled: bool,
+    pub min_move_seconds: f64,
+}
+
+impl Default for MistakeReviewTimeManagementSettings {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            min_move_seconds: 20.0,
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Type, PartialEq, Eq)]
@@ -769,6 +788,10 @@ pub struct MistakeReviewScanResult {
     pub white_elo: Option<i32>,
     pub black_elo: Option<i32>,
     pub game_result: Option<String>,
+    pub move_time_seconds: Option<f64>,
+    pub clock_before_seconds: Option<f64>,
+    pub clock_after_seconds: Option<f64>,
+    pub long_think_threshold_seconds: Option<f64>,
     pub occurrence_count: u32,
     pub game_ids: Vec<i32>,
 }
@@ -906,6 +929,8 @@ pub async fn scan_mistake_review(
     };
     let multi_pv = request.multi_pv.unwrap_or(3).max(1);
     let min_win_probability_drop = request.min_win_probability_drop.unwrap_or(5.0);
+    let time_management = request.time_management.unwrap_or_default();
+    let long_think_threshold = time_management.min_move_seconds.max(0.0);
     let time_controls = request
         .time_controls
         .unwrap_or_default()
@@ -1021,14 +1046,17 @@ pub async fn scan_mistake_review(
         };
 
         let mut chess = mistake_review_starting_position(game.fen.as_deref())?;
+        let mut clock_tracker = MistakeReviewClockTracker::new(game.time_control.as_deref());
+        let move_entries = collect_mainline_move_entries(&game.moves);
         let mut ply = 0u32;
 
-        for byte in iter_mainline_move_bytes(&game.moves) {
-            let Some(mv) = decode_move(byte, &chess) else {
+        for entry in move_entries {
+            let Some(mv) = decode_move(entry.byte, &chess) else {
                 break;
             };
 
             let side_to_move = chess.turn();
+            let move_timing = clock_tracker.record_move(side_to_move, &entry.comments);
             let fen_before = Fen::from_position(chess.clone(), EnPassantMode::Legal).to_string();
             let played_move_uci = UciMove::from_move(&mv, CastlingMode::Standard).to_string();
             let played_move_san = SanPlus::from_move(chess.clone(), &mv).to_string();
@@ -1037,6 +1065,17 @@ pub async fn scan_mistake_review(
             let fen_after = Fen::from_position(after.clone(), EnPassantMode::Legal).to_string();
 
             if side_to_move == player_color && !after.is_game_over() {
+                if time_management.enabled
+                    && move_timing
+                        .move_time_seconds
+                        .map(|seconds| seconds < long_think_threshold)
+                        .unwrap_or(true)
+                {
+                    chess = after;
+                    ply += 1;
+                    continue;
+                }
+
                 if let Err(error) = wait_for_mistake_review_resume(
                     &app,
                     &request_id,
@@ -1239,6 +1278,14 @@ pub async fn scan_mistake_review(
                         white_elo: game.white_elo,
                         black_elo: game.black_elo,
                         game_result: game.result.clone(),
+                        move_time_seconds: move_timing.move_time_seconds,
+                        clock_before_seconds: move_timing.clock_before_seconds,
+                        clock_after_seconds: move_timing.clock_after_seconds,
+                        long_think_threshold_seconds: if time_management.enabled {
+                            Some(long_think_threshold)
+                        } else {
+                            None
+                        },
                         occurrence_count: 1,
                         game_ids: vec![game.id],
                     };
@@ -1655,6 +1702,193 @@ fn centipawn_to_win_probability(cp: i32) -> f64 {
     50.0 + 50.0 * (2.0 / (1.0 + (-0.003_682_08 * cp as f64).exp()) - 1.0)
 }
 
+#[derive(Debug, Clone)]
+struct MainlineMoveEntry {
+    byte: u8,
+    comments: String,
+}
+
+fn collect_mainline_move_entries(bytes: &[u8]) -> Vec<MainlineMoveEntry> {
+    let mut entries: Vec<MainlineMoveEntry> = Vec::new();
+    let mut cursor = 0usize;
+    let mut variation_depth = 0usize;
+    let mut last_mainline_move: Option<usize> = None;
+
+    while cursor < bytes.len() {
+        let byte = bytes[cursor];
+        cursor += 1;
+
+        match byte {
+            VARIATION_START_MARKER => {
+                variation_depth = variation_depth.saturating_add(1);
+            }
+            VARIATION_END_MARKER => {
+                variation_depth = variation_depth.saturating_sub(1);
+            }
+            COMMENT_MARKER | NAG_MARKER => {
+                if cursor + 2 > bytes.len() {
+                    break;
+                }
+                let len = u16::from_le_bytes([bytes[cursor], bytes[cursor + 1]]) as usize;
+                cursor += 2;
+                if cursor + len > bytes.len() {
+                    break;
+                }
+
+                if byte == COMMENT_MARKER && variation_depth == 0 {
+                    if let Some(index) = last_mainline_move {
+                        let comment = String::from_utf8_lossy(&bytes[cursor..cursor + len]);
+                        if !entries[index].comments.is_empty() {
+                            entries[index].comments.push(' ');
+                        }
+                        entries[index].comments.push_str(&comment);
+                    }
+                }
+                cursor += len;
+            }
+            move_byte if variation_depth == 0 => {
+                entries.push(MainlineMoveEntry {
+                    byte: move_byte,
+                    comments: String::new(),
+                });
+                last_mainline_move = entries.len().checked_sub(1);
+            }
+            _ => {}
+        }
+    }
+
+    entries
+}
+
+#[derive(Default, Debug, Clone, Copy)]
+struct MistakeReviewMoveTiming {
+    move_time_seconds: Option<f64>,
+    clock_before_seconds: Option<f64>,
+    clock_after_seconds: Option<f64>,
+}
+
+#[derive(Debug, Clone)]
+struct MistakeReviewClockTracker {
+    initial_seconds: Option<f64>,
+    increment_seconds: f64,
+    white_clock_seconds: Option<f64>,
+    black_clock_seconds: Option<f64>,
+}
+
+impl MistakeReviewClockTracker {
+    fn new(time_control: Option<&str>) -> Self {
+        let parsed = parse_mistake_review_time_control(time_control);
+        Self {
+            initial_seconds: parsed.map(|(initial, _)| initial),
+            increment_seconds: parsed.map(|(_, increment)| increment).unwrap_or(0.0),
+            white_clock_seconds: None,
+            black_clock_seconds: None,
+        }
+    }
+
+    fn record_move(&mut self, color: Color, comment: &str) -> MistakeReviewMoveTiming {
+        let clock_after = parse_pgn_clock_seconds(comment);
+        let elapsed = parse_pgn_elapsed_move_seconds(comment);
+        let previous_clock = match color {
+            Color::White => self.white_clock_seconds.or(self.initial_seconds),
+            Color::Black => self.black_clock_seconds.or(self.initial_seconds),
+        };
+
+        let move_time = elapsed.or_else(|| {
+            let before = previous_clock?;
+            let after = clock_after?;
+            let spent = before + self.increment_seconds - after;
+            Some(spent.max(0.0))
+        });
+
+        let clock_before = if let (Some(after), Some(spent)) = (clock_after, move_time) {
+            Some((after + spent - self.increment_seconds).max(0.0))
+        } else {
+            previous_clock
+        };
+
+        if let Some(after) = clock_after {
+            match color {
+                Color::White => self.white_clock_seconds = Some(after),
+                Color::Black => self.black_clock_seconds = Some(after),
+            }
+        }
+
+        MistakeReviewMoveTiming {
+            move_time_seconds: move_time,
+            clock_before_seconds: clock_before,
+            clock_after_seconds: clock_after,
+        }
+    }
+}
+
+fn parse_mistake_review_time_control(time_control: Option<&str>) -> Option<(f64, f64)> {
+    let trimmed = time_control?.trim();
+    if trimmed.is_empty() || trimmed == "-" || trimmed.contains('/') {
+        return None;
+    }
+
+    let (initial, increment) = match trimmed.split_once('+') {
+        Some((initial, increment)) => (initial, increment),
+        None => (trimmed, "0"),
+    };
+    let initial = initial.parse::<f64>().ok()?;
+    let increment = increment
+        .split_whitespace()
+        .next()
+        .and_then(|value| value.parse::<f64>().ok())
+        .unwrap_or(0.0);
+
+    if initial <= 0.0 {
+        None
+    } else {
+        Some((initial, increment.max(0.0)))
+    }
+}
+
+fn parse_pgn_clock_seconds(comment: &str) -> Option<f64> {
+    parse_pgn_time_markup(comment, "[%clk").and_then(parse_pgn_time_value)
+}
+
+fn parse_pgn_elapsed_move_seconds(comment: &str) -> Option<f64> {
+    parse_pgn_time_markup(comment, "[%emt").and_then(parse_pgn_time_value)
+}
+
+fn parse_pgn_time_markup<'a>(comment: &'a str, marker: &str) -> Option<&'a str> {
+    let start = comment.find(marker)?;
+    let value_start = start + marker.len();
+    let value = comment[value_start..].trim_start();
+    let value_end = value
+        .find(|ch: char| ch == ']' || ch.is_whitespace())
+        .unwrap_or(value.len());
+    let value = value[..value_end].trim();
+
+    if value.is_empty() {
+        None
+    } else {
+        Some(value)
+    }
+}
+
+fn parse_pgn_time_value(value: &str) -> Option<f64> {
+    let parts = value.split(':').collect::<Vec<_>>();
+    match parts.as_slice() {
+        [seconds] => seconds.parse::<f64>().ok(),
+        [minutes, seconds] => {
+            let minutes = minutes.parse::<f64>().ok()?;
+            let seconds = seconds.parse::<f64>().ok()?;
+            Some(minutes * 60.0 + seconds)
+        }
+        [hours, minutes, seconds] => {
+            let hours = hours.parse::<f64>().ok()?;
+            let minutes = minutes.parse::<f64>().ok()?;
+            let seconds = seconds.parse::<f64>().ok()?;
+            Some(hours * 3600.0 + minutes * 60.0 + seconds)
+        }
+        _ => None,
+    }
+}
+
 fn mistake_review_time_control_bucket(time_control: &Option<String>) -> String {
     let Some(time_control) = time_control.as_deref() else {
         return "unknown".to_string();
@@ -1818,6 +2052,7 @@ fn insert_mistake_review_result(
 #[cfg(test)]
 mod mistake_review_tests {
     use super::*;
+    use crate::db::encoding::encode_comment;
 
     fn scan_result(review_key: &str, cp_loss: i32, game_id: i32) -> MistakeReviewScanResult {
         MistakeReviewScanResult {
@@ -1857,6 +2092,10 @@ mod mistake_review_tests {
             white_elo: Some(1900 + game_id),
             black_elo: Some(1800 + game_id),
             game_result: Some("0-1".to_string()),
+            move_time_seconds: Some(42.0),
+            clock_before_seconds: Some(420.0),
+            clock_after_seconds: Some(378.0),
+            long_think_threshold_seconds: Some(20.0),
             occurrence_count: 1,
             game_ids: vec![game_id],
         }
@@ -1945,6 +2184,53 @@ mod mistake_review_tests {
             mistake_review_time_control_bucket(&Some("1/3".to_string())),
             "correspondence"
         );
+    }
+
+    #[test]
+    fn clock_parser_reads_clk_and_emt_comments() {
+        assert_eq!(parse_pgn_clock_seconds("[%clk 0:09:58.5]").unwrap(), 598.5);
+        assert_eq!(
+            parse_pgn_clock_seconds("x [%clk 1:01:27] y").unwrap(),
+            3687.0
+        );
+        assert_eq!(
+            parse_pgn_elapsed_move_seconds("[%emt 12.25]").unwrap(),
+            12.25
+        );
+    }
+
+    #[test]
+    fn clock_tracker_calculates_spent_time_with_increment() {
+        let mut tracker = MistakeReviewClockTracker::new(Some("300+3"));
+
+        let first = tracker.record_move(Color::White, "[%clk 0:04:52]");
+        assert_eq!(first.clock_before_seconds, Some(300.0));
+        assert_eq!(first.clock_after_seconds, Some(292.0));
+        assert_eq!(first.move_time_seconds, Some(11.0));
+
+        let second = tracker.record_move(Color::White, "[%clk 0:04:10]");
+        assert_eq!(second.clock_before_seconds, Some(292.0));
+        assert_eq!(second.clock_after_seconds, Some(250.0));
+        assert_eq!(second.move_time_seconds, Some(45.0));
+    }
+
+    #[test]
+    fn mainline_entry_collector_attaches_comments_after_moves() {
+        let mut bytes = vec![0];
+        encode_comment("[%clk 0:09:58]", &mut bytes);
+        bytes.push(VARIATION_START_MARKER);
+        bytes.push(1);
+        encode_comment("ignored", &mut bytes);
+        bytes.push(VARIATION_END_MARKER);
+        bytes.push(2);
+        encode_comment("[%emt 3.5]", &mut bytes);
+
+        let entries = collect_mainline_move_entries(&bytes);
+        assert_eq!(entries.len(), 2);
+        assert_eq!(entries[0].byte, 0);
+        assert_eq!(entries[0].comments, "[%clk 0:09:58]");
+        assert_eq!(entries[1].byte, 2);
+        assert_eq!(entries[1].comments, "[%emt 3.5]");
     }
 
     #[test]

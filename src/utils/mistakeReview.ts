@@ -29,6 +29,11 @@ export const DEFAULT_MISTAKE_REVIEW_SEVERITIES: MistakeReviewSeverityFilter = {
     blunder: true,
 };
 
+export const DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT = {
+    enabled: false,
+    minMoveSeconds: 20,
+};
+
 export type MistakeReviewAttemptLabel =
     | "best"
     | "good"
@@ -64,6 +69,11 @@ export type MistakeReviewDateRange =
     | "year";
 
 export type MistakeReviewPhase = "opening" | "middlegame" | "endgame";
+
+export type MistakeReviewTimeManagementSettings = {
+    enabled: boolean;
+    minMoveSeconds: number;
+};
 
 export const MISTAKE_REVIEW_PHASES: readonly {
     id: MistakeReviewPhase;
@@ -103,6 +113,7 @@ export type MistakeReviewSettings = {
     thresholds: MistakeReviewThresholds;
     includeSeverities: MistakeReviewSeverityFilter;
     minWinProbabilityDrop: number;
+    timeManagement: MistakeReviewTimeManagementSettings;
 };
 
 export type MistakeReviewAutoUpdateConfig = MistakeReviewSettings & {
@@ -133,6 +144,11 @@ const mistakeReviewSeverityFilterSchema = z.object({
     inaccuracy: z.boolean().default(true),
     mistake: z.boolean().default(true),
     blunder: z.boolean().default(true),
+});
+
+const mistakeReviewTimeManagementSchema = z.object({
+    enabled: z.boolean().default(DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.enabled),
+    minMoveSeconds: z.number().default(DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds),
 });
 
 const mistakeReviewDailySettingsSchema = z.object({
@@ -167,6 +183,9 @@ const mistakeReviewSettingsSchema = z.object({
     thresholds: mistakeReviewThresholdSchema.default(DEFAULT_MISTAKE_REVIEW_THRESHOLDS),
     includeSeverities: mistakeReviewSeverityFilterSchema.default(DEFAULT_MISTAKE_REVIEW_SEVERITIES),
     minWinProbabilityDrop: z.number().default(5),
+    timeManagement: mistakeReviewTimeManagementSchema.default(
+        DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT,
+    ),
 });
 
 const mistakeReviewAutoUpdateConfigSchema = mistakeReviewSettingsSchema.extend({
@@ -390,6 +409,7 @@ export function mistakeReviewRequestFromSettings(
         thresholds: settings.thresholds,
         includeSeverities: settings.includeSeverities,
         minWinProbabilityDrop: settings.minWinProbabilityDrop,
+        timeManagement: settings.timeManagement,
         sinceGameId: options?.sinceGameId ?? null,
         maxGames: options?.maxGames ?? null,
     };
@@ -403,6 +423,11 @@ export function createMistakeReviewPosition(
     const dateText = result.date ? ` on ${result.date}` : "";
     const occurrenceText =
         result.occurrenceCount > 1 ? `${result.occurrenceCount} occurrences` : "1 occurrence";
+    const moveTimeText = formatMistakeReviewMoveTime(result.moveTimeSeconds);
+    const isLongThinkCard =
+        settings.timeManagement.enabled &&
+        typeof result.moveTimeSeconds === "number" &&
+        result.moveTimeSeconds >= settings.timeManagement.minMoveSeconds;
 
     return {
         fen: result.fen,
@@ -410,12 +435,23 @@ export function createMistakeReviewPosition(
         answerUci: result.bestMoveUci || undefined,
         card: createEmptyCard(),
         sideToMove: result.sideToMove === "black" ? "black" : "white",
-        tags: [severityLabel, MISTAKE_REVIEW_SOURCE],
+        tags: isLongThinkCard
+            ? [severityLabel, "Long think", MISTAKE_REVIEW_SOURCE]
+            : [severityLabel, MISTAKE_REVIEW_SOURCE],
         source: MISTAKE_REVIEW_SOURCE,
         reviewKey: result.reviewKey,
-        priority: getMistakeReviewSeverityWeight(result.severity) * 100_000 + result.cpLoss,
-        reason: `${severityLabel}: ${result.playedMoveSan} lost ${Math.round(result.cpLoss)} cp.`,
-        evidence: `${occurrenceText}; latest against ${result.opponent || "Unknown"}${dateText}.`,
+        priority:
+            getMistakeReviewSeverityWeight(result.severity) * 100_000 +
+            result.cpLoss +
+            Math.round(result.moveTimeSeconds ?? 0),
+        reason: isLongThinkCard
+            ? `Long-think ${severityLabel.toLowerCase()}: ${result.playedMoveSan} lost ${Math.round(
+                  result.cpLoss,
+              )} cp after ${moveTimeText}.`
+            : `${severityLabel}: ${result.playedMoveSan} lost ${Math.round(result.cpLoss)} cp.`,
+        evidence: `${moveTimeText ? `Spent ${moveTimeText}; ` : ""}${occurrenceText}; latest against ${
+            result.opponent || "Unknown"
+        }${dateText}.`,
         importedAt: Date.now(),
         mistakeReview: {
             playerDb: settings.playerDb,
@@ -459,6 +495,11 @@ export function createMistakeReviewPosition(
             whiteElo: result.whiteElo,
             blackElo: result.blackElo,
             gameResult: result.gameResult,
+            moveTimeSeconds: result.moveTimeSeconds,
+            clockBeforeSeconds: result.clockBeforeSeconds,
+            clockAfterSeconds: result.clockAfterSeconds,
+            longThinkThresholdSeconds: result.longThinkThresholdSeconds,
+            timeManagement: settings.timeManagement,
             thresholds: settings.thresholds,
         },
         engine: {
@@ -469,6 +510,17 @@ export function createMistakeReviewPosition(
             bestMoveUci: result.bestMoveUci,
         },
     };
+}
+
+export function formatMistakeReviewMoveTime(seconds: number | null | undefined) {
+    if (typeof seconds !== "number" || !Number.isFinite(seconds)) return null;
+    if (seconds < 60) {
+        const rounded = seconds >= 10 ? Math.round(seconds) : Math.round(seconds * 10) / 10;
+        return `${rounded}s`;
+    }
+    const minutes = Math.floor(seconds / 60);
+    const remaining = Math.round(seconds % 60);
+    return `${minutes}:${remaining.toString().padStart(2, "0")}`;
 }
 
 export function mergeMistakeReviewPositions(

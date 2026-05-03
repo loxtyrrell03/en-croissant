@@ -126,6 +126,7 @@ import {
   writeOpeningReviewDeck,
 } from "@/utils/openingReview";
 import {
+  formatMistakeReviewMoveTime,
   formatMistakeReviewLastSeen,
   getMistakeReviewDailyBatch,
   getMistakeReviewDailyProgress,
@@ -4017,6 +4018,7 @@ function MistakeReviewGameInfoPanel({ position }: { position: Position | null })
               label="Move"
               value={`${mistake.moveNumber ? `${mistake.moveNumber}. ` : ""}${mistake.playedMoveSan ?? "-"}`}
             />
+            <ReviewDetail label="Think time" value={formatMistakeReviewThinkTime(mistake)} />
             <ReviewDetail label="Last seen" value={formatMistakeReviewLastSeen(position)} />
           </SimpleGrid>
         )}
@@ -4230,6 +4232,11 @@ function OpeningReviewAttemptDetails({
                   : `${mistake.winProbabilityDrop.toFixed(1)}%`
               }
             />
+            <ReviewDetail label="Think time" value={formatMistakeReviewThinkTime(mistake)} />
+            <ReviewDetail
+              label="Clock after"
+              value={formatMistakeReviewClock(mistake.clockAfterSeconds)}
+            />
           </SimpleGrid>
           <ReviewDetail label="Stockfish source" value={depthText} />
         </Stack>
@@ -4394,6 +4401,27 @@ function formatMistakeReviewTimeControl(mistake: NonNullable<Position["mistakeRe
   const buckets = mistake.timeControls?.filter(Boolean) ?? [];
   if (buckets.length > 0) return buckets.map(formatMistakeReviewTimeBucket).join(", ");
   return "Unknown";
+}
+
+function formatMistakeReviewThinkTime(mistake: NonNullable<Position["mistakeReview"]>) {
+  const timeText = formatMistakeReviewMoveTime(mistake.moveTimeSeconds);
+  if (!timeText) return "Unknown";
+
+  const threshold = mistake.longThinkThresholdSeconds;
+  if (
+    mistake.timeManagement?.enabled &&
+    typeof threshold === "number" &&
+    Number.isFinite(threshold)
+  ) {
+    const thresholdText = formatMistakeReviewMoveTime(threshold);
+    return thresholdText ? `${timeText} (${thresholdText}+ target)` : timeText;
+  }
+
+  return timeText;
+}
+
+function formatMistakeReviewClock(seconds: number | null | undefined) {
+  return formatMistakeReviewMoveTime(seconds) ?? "Unknown";
 }
 
 function formatPgnTimeControl(value: string) {
