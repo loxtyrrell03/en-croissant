@@ -304,6 +304,52 @@ export const addRecentFileAtom = atom(null, (get, set, file: Omit<RecentFile, "l
     set(recentFilesAtom, updated);
 });
 
+// Daily Goals
+
+export type DailyGoalKind = "mistake-review" | "opening-review" | "prep" | "puzzles";
+
+export type DailyGoal = {
+    id: string;
+    kind: DailyGoalKind;
+    title: string;
+    enabled: boolean;
+    target: number;
+    deckPath?: string | null;
+    filePath?: string | null;
+    fileName?: string | null;
+    fileType?: RecentFile["type"];
+};
+
+export type DailyGoalHistoryEntry = {
+    counts: Record<string, number>;
+    completedAt?: number | null;
+};
+
+export type DailyGoalHistory = Record<string, DailyGoalHistoryEntry>;
+
+export const DEFAULT_DAILY_GOALS: DailyGoal[] = [
+    {
+        id: "daily-mistake-review",
+        kind: "mistake-review",
+        title: "Mistake review",
+        enabled: true,
+        target: 15,
+        deckPath: null,
+    },
+    {
+        id: "daily-opening-gaps",
+        kind: "opening-review",
+        title: "Opening gaps",
+        enabled: true,
+        target: 15,
+        deckPath: null,
+    },
+];
+
+export const dailyGoalsAtom = atomWithStorage<DailyGoal[]>("daily-goals", DEFAULT_DAILY_GOALS);
+
+export const dailyGoalHistoryAtom = atomWithStorage<DailyGoalHistory>("daily-goal-history", {});
+
 // Database
 
 export const referenceDbAtom = atomWithStorage<string | null>("reference-database", null);

@@ -136,6 +136,7 @@ import { getOpeningReviewGapReason } from "@/utils/openingReviewAutoUpdate";
 import { getGameName } from "@/utils/treeReducer";
 import { resolve, tempDir } from "@tauri-apps/api/path";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
+import DailyGoalsPanel from "./DailyGoalsPanel";
 
 dayjs.extend(relativeTime);
 
@@ -2401,6 +2402,11 @@ export default function NewTabHome() {
   }, [documentDir]);
 
   useEffect(() => {
+    void refreshReviewDecks();
+    void refreshMistakeDecks();
+  }, [refreshMistakeDecks, refreshReviewDecks]);
+
+  useEffect(() => {
     if (!openReviewModal) return;
 
     let disposed = false;
@@ -2502,7 +2508,12 @@ export default function NewTabHome() {
   );
 
   const openMistakeDeck = useCallback(
-    async (deck: MistakeReviewDeckSummary) => {
+    async (
+      deck: MistakeReviewDeckSummary,
+      options?: {
+        initialPractice?: { mode: "due" | "all"; indices: number[]; label?: string };
+      },
+    ) => {
       await createTab({
         tab: {
           name: deck.name,
@@ -2514,6 +2525,7 @@ export default function NewTabHome() {
           kind: "mistake_review",
           path: deck.path,
           name: deck.name,
+          ...(options?.initialPractice ? { initialPractice: options.initialPractice } : {}),
         },
       });
       setOpenMistakeReviewModal(false);
@@ -3479,6 +3491,24 @@ export default function NewTabHome() {
         }}
       />
       <Stack gap="lg" p="md">
+        <DailyGoalsPanel
+          openingDecks={reviewDecks}
+          mistakeDecks={mistakeDecks}
+          openingDecksLoading={reviewDecksLoading}
+          mistakeDecksLoading={mistakeDecksLoading}
+          recentFiles={recentFiles}
+          onOpenOpeningDeck={openReviewDeck}
+          onOpenMistakeDeck={openMistakeDeck}
+          onOpenOpeningReview={() => setOpenReviewModal(true)}
+          onOpenMistakeReview={() => setOpenMistakeReviewModal(true)}
+          onOpenPuzzles={() =>
+            void openBoardTab({
+              name: t("Home.PuzzleTraining"),
+              type: "puzzles",
+            })
+          }
+          onOpenPrepFile={openRecentFile}
+        />
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }}>
           {cards.map((card) => (
             <Card shadow="sm" p="lg" radius="md" withBorder key={card.title}>

@@ -11,6 +11,12 @@ import { type GameHeaders, getGameName } from "./treeReducer";
 
 const INVALID_FILENAME_CHARS = /[\\/:*?"<>|]+/g;
 
+const reviewInitialPracticeSchema = z.object({
+    mode: z.enum(["due", "all"]),
+    indices: z.number().array(),
+    label: z.string().optional(),
+});
+
 function getDefaultGameFilename(headers: GameHeaders) {
     const baseName = getGameName(headers).trim();
     const date = headers.date?.trim() || "";
@@ -58,19 +64,14 @@ const gameOriginSchema = z.discriminatedUnion("kind", [
         path: z.string(),
         name: z.string(),
         initialTab: z.string().optional(),
-        initialPractice: z
-            .object({
-                mode: z.enum(["due", "all"]),
-                indices: z.number().array(),
-                label: z.string().optional(),
-            })
-            .optional(),
+        initialPractice: reviewInitialPracticeSchema.optional(),
     }),
     z.object({
         kind: z.literal("mistake_review"),
         path: z.string(),
         name: z.string(),
         initialTab: z.string().optional(),
+        initialPractice: reviewInitialPracticeSchema.optional(),
     }),
 ]);
 

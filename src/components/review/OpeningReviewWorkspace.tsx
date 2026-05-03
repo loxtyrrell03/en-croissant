@@ -273,7 +273,9 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const practiceAgainstBot = usePracticeAgainstBot();
   const autoUpdateRevisionRef = useRef(0);
   const initialPractice =
-    tab.gameOrigin.kind === "opening_review" ? tab.gameOrigin.initialPractice : undefined;
+    tab.gameOrigin.kind === "opening_review" || tab.gameOrigin.kind === "mistake_review"
+      ? tab.gameOrigin.initialPractice
+      : undefined;
   const openingReviewDeckMode = isMistakeReview
     ? undefined
     : (deckInfo as OpeningReviewDeck | null)?.mode;
