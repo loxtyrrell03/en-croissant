@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   Checkbox,
+  Divider,
   Group,
   Modal,
   MultiSelect,
@@ -67,9 +68,15 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { useTranslation } from "react-i18next";
 import { commands } from "@/bindings";
+import type { RepertoireGap } from "@/bindings";
 import { Chessground } from "@/chessground/Chessground";
-import { getStats, type Position } from "@/components/files/opening";
+import {
+  createOpeningHealthTrainingItem,
+  getStats,
+  type Position,
+} from "@/components/files/opening";
 import Chessboard from "../icons/Chessboard";
+import OnlineGamePickerModal from "@/components/common/OnlineGamePickerModal";
 import { FileIcon } from "@/components/files/FileIcon";
 import {
   createOpeningReviewDeck,
@@ -77,6 +84,7 @@ import {
   getAvailableOpeningReviewDeckPath,
   listOpeningReviewDecks,
   readOpeningReviewDeck,
+  reviewPositionKey,
   type OpeningReviewAutoUpdateConfig,
   type OpeningReviewDeck,
   type OpeningReviewDeckSummary,
@@ -107,6 +115,7 @@ import {
   deleteMistakeReviewDeck,
   getAvailableMistakeReviewDeckPath,
   listMistakeReviewDecks,
+  mistakeReviewPositionKey,
   mistakeReviewRequestFromSettings,
   type MistakeReviewDeckSummary,
   type MistakeReviewSettings,
@@ -119,8 +128,12 @@ import {
   getSelectedOnlineGameProviders,
   type LatestOnlineGameAccountSelection,
   type OnlineGameProvider,
+  type RecentOnlineGame,
 } from "@/utils/onlineLatestGame";
+import { getOpeningReviewGapReason } from "@/utils/openingReviewAutoUpdate";
 import { getGameName } from "@/utils/treeReducer";
+import { resolve, tempDir } from "@tauri-apps/api/path";
+import { writeTextFile } from "@tauri-apps/plugin-fs";
 
 dayjs.extend(relativeTime);
 
@@ -194,6 +207,7 @@ function OpeningReviewModal({
   onDelete,
   onSettings,
   onAnalyze,
+  onAnalyzeOnline,
 }: {
   opened: boolean;
   decks: OpeningReviewDeckSummary[];
@@ -205,6 +219,7 @@ function OpeningReviewModal({
   onDelete: (deck: OpeningReviewDeckSummary) => void;
   onSettings: (deck: OpeningReviewDeckSummary) => void;
   onAnalyze: () => void;
+  onAnalyzeOnline: () => void;
 }) {
   return (
     <Modal opened={opened} onClose={onClose} title={<b>Opening Review</b>} size="lg">
@@ -213,9 +228,18 @@ function OpeningReviewModal({
           <Text size="sm" c="dimmed">
             Analyze your repertoire, save the important positions, then train them here.
           </Text>
-          <Button size="xs" leftSection={<IconSearch size="0.9rem" />} onClick={onAnalyze}>
-            Analyze repertoire
-          </Button>
+          <Group gap="xs">
+            <Button
+              size="xs"
+              leftSection={<IconCloudDownload size="0.9rem" />}
+              onClick={onAnalyzeOnline}
+            >
+              Online games
+            </Button>
+            <Button size="xs" leftSection={<IconSearch size="0.9rem" />} onClick={onAnalyze}>
+              Analyze repertoire
+            </Button>
+          </Group>
         </Group>
         {loading ? (
           <Text c="dimmed">Loading review decks...</Text>
@@ -318,11 +342,7 @@ function OpeningReviewModal({
   );
 }
 
-function OpeningReviewPositionPreviewBoard({
-  position,
-}: {
-  position: Position;
-}) {
+function OpeningReviewPositionPreviewBoard({ position }: { position: Position }) {
   const orientation = getOpeningReviewMoveSide(position);
 
   return (
@@ -566,11 +586,7 @@ function OpeningReviewDeckPositionsModal({
                   {visibleRows.slice(0, 200).map(({ position, index, opening }) => {
                     const due = new Date(position.card.due);
                     const status =
-                      position.card.reps === 0
-                        ? "Unseen"
-                        : due <= new Date()
-                          ? "Due"
-                          : "Scheduled";
+                      position.card.reps === 0 ? "Unseen" : due <= new Date() ? "Due" : "Scheduled";
                     const colour = getOpeningReviewMoveSide(position);
                     const moveSequence = getOpeningReviewMoveSequenceLabel(position);
                     const openingDetail =
@@ -738,8 +754,9 @@ function OpeningReviewSettingsModal({
           successDatabases.find((database) => database.file !== defaultPlayerDb)?.file ??
           successDatabases[0]?.file ??
           null;
-        const selectedRecord = onlineRows.find((item) => item.database.file === defaultPlayerDb)
-          ?.record;
+        const selectedRecord = onlineRows.find(
+          (item) => item.database.file === defaultPlayerDb,
+        )?.record;
 
         setLoadedDeck(nextDeck);
         setDatabases(successDatabases);
@@ -875,7 +892,8 @@ function OpeningReviewSettingsModal({
             lastRunAt: previousConfig?.lastRunAt ?? null,
             lastUpdatedDatabaseAt:
               previousConfig?.playerDb === playerDb
-                ? (previousConfig.lastUpdatedDatabaseAt ?? selectedOnlineDatabase!.record.lastUpdatedAt)
+                ? (previousConfig.lastUpdatedDatabaseAt ??
+                  selectedOnlineDatabase!.record.lastUpdatedAt)
                 : selectedOnlineDatabase!.record.lastUpdatedAt,
             lastKnownGameCount:
               previousConfig?.playerDb === playerDb
@@ -943,8 +961,8 @@ function OpeningReviewSettingsModal({
         <Stack gap="sm">
           <Text size="sm" c="dimmed">
             Link this deck to a self-updating online games database. When new games are imported,
-            Opening Review scans all games for the selected player, auto-detects your colour in
-            each game, and adds new gaps to this deck.
+            Opening Review scans all games for the selected player, auto-detects your colour in each
+            game, and adds new gaps to this deck.
           </Text>
           <Switch
             checked={enabled}
@@ -1069,6 +1087,7 @@ function MistakeReviewModal({
   onOpen,
   onDelete,
   onNewScan,
+  onNewOnlineScan,
 }: {
   opened: boolean;
   decks: MistakeReviewDeckSummary[];
@@ -1078,6 +1097,7 @@ function MistakeReviewModal({
   onOpen: (deck: MistakeReviewDeckSummary) => void;
   onDelete: (deck: MistakeReviewDeckSummary) => void;
   onNewScan: () => void;
+  onNewOnlineScan: () => void;
 }) {
   return (
     <Modal opened={opened} onClose={onClose} title={<b>Mistake Review</b>} size="lg">
@@ -1086,9 +1106,18 @@ function MistakeReviewModal({
           <Text size="sm" c="dimmed">
             Scan your own games, create Stockfish-backed mistake cards, and review them daily.
           </Text>
-          <Button size="xs" leftSection={<IconSearch size="0.9rem" />} onClick={onNewScan}>
-            New scan
-          </Button>
+          <Group gap="xs">
+            <Button
+              size="xs"
+              leftSection={<IconCloudDownload size="0.9rem" />}
+              onClick={onNewOnlineScan}
+            >
+              Online games
+            </Button>
+            <Button size="xs" leftSection={<IconSearch size="0.9rem" />} onClick={onNewScan}>
+              New scan
+            </Button>
+          </Group>
         </Group>
         {loading ? (
           <Text c="dimmed">Loading mistake decks...</Text>
@@ -1259,7 +1288,7 @@ function MistakeReviewScanModal({
         setPlayerId((current) =>
           current && options.some((option) => option.value === current)
             ? current
-            : options[0]?.value ?? null,
+            : (options[0]?.value ?? null),
         );
       })
       .finally(() => {
@@ -1800,11 +1829,9 @@ function LatestGameAccountsModal({
             Use all
           </Button>
           <Group gap="xs">
-            {providers.length === 0 && (
-              <Button variant="light" size="xs" onClick={onOpenAccounts}>
-                Add account
-              </Button>
-            )}
+            <Button variant="light" size="xs" onClick={onOpenAccounts}>
+              Manage accounts
+            </Button>
             <Button variant="default" size="xs" onClick={onClose}>
               Done
             </Button>
@@ -1813,6 +1840,139 @@ function LatestGameAccountsModal({
       </Stack>
     </Modal>
   );
+}
+
+type SelectedOnlineGameAccount = {
+  source: RecentOnlineGame["source"];
+  sourceLabel: string;
+  username: string;
+};
+
+function getSelectedOnlineGameAccounts(games: RecentOnlineGame[]) {
+  const accounts = new Map<string, SelectedOnlineGameAccount>();
+  for (const game of games) {
+    const key = `${game.source}:${game.username.trim().toLowerCase()}`;
+    if (!accounts.has(key)) {
+      accounts.set(key, {
+        source: game.source,
+        sourceLabel: game.sourceLabel,
+        username: game.username,
+      });
+    }
+  }
+  return [...accounts.values()];
+}
+
+async function createSelectedOnlineGamesDatabase(games: RecentOnlineGame[], title: string) {
+  const stamp = Date.now();
+  const dir = await tempDir();
+  const pgnPath = await resolve(dir, `selected-online-games-${stamp}.pgn`);
+  const dbPath = await resolve(dir, `selected-online-games-${stamp}.db3`);
+  const pgn = `${games
+    .map((game) => game.pgn.trim())
+    .filter(Boolean)
+    .join("\n\n")}\n`;
+
+  await writeTextFile(pgnPath, pgn);
+  unwrap(await commands.convertPgn(pgnPath, dbPath, null, title, "Selected online games"));
+  unwrap(await commands.deleteEmptyGames(dbPath));
+  return dbPath;
+}
+
+async function resolveSelectedOnlinePlayer(dbPath: string, username: string) {
+  const players = await query_players(dbPath, {
+    name: username,
+    range: null,
+    options: {
+      skipCount: true,
+      page: 1,
+      pageSize: 50,
+      sort: "name",
+      direction: "asc",
+    },
+  });
+  const normalizedUsername = normalizeOnlinePlayerName(username);
+  return (
+    players.data.find((player) => normalizeOnlinePlayerName(player.name) === normalizedUsername) ??
+    players.data[0] ??
+    null
+  );
+}
+
+function normalizeOnlinePlayerName(value: string | null | undefined) {
+  return (value ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function dedupePositions(positions: Position[], getKey: (position: Position) => string) {
+  const seen = new Set<string>();
+  return positions.filter((position) => {
+    const key = getKey(position);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function createSelectedOnlineOpeningReviewPosition(gap: RepertoireGap) {
+  const trainingMove = getSelectedOnlineOpeningTrainingMove(gap);
+  if (!trainingMove) return null;
+  const strongMoveResult = gap.topReferenceMoves.find((move) => move.uci === gap.playerMoveUci);
+  const topMove = gap.topReferenceMoves[0];
+  const sideToMove = gap.sideToMove === "black" ? "black" : "white";
+
+  return createOpeningHealthTrainingItem(gap, trainingMove, {
+    priority: selectedOnlineOpeningUrgency(gap),
+    importedAt: Date.now(),
+    reason: getOpeningReviewGapReason(gap, "self"),
+    evidence: `${gap.playerPositionGames} selected-game occurrence${
+      gap.playerPositionGames === 1 ? "" : "s"
+    }; result ${Math.round(gap.playerScore * 100)}%`,
+    openingHealth: {
+      mode: "self",
+      sideToMove,
+      reviewSide: sideToMove,
+      usualMoveSan: gap.playerMoveSan,
+      usualMoveUci: gap.playerMoveUci,
+      games: gap.playerPositionGames,
+      white: gap.playerWhite,
+      draw: gap.playerDraw,
+      black: gap.playerBlack,
+      score: gap.playerScore,
+      strongGames: gap.referenceGames,
+      strongWhite: strongMoveResult?.white ?? null,
+      strongDraw: strongMoveResult?.draw ?? null,
+      strongBlack: strongMoveResult?.black ?? null,
+      strongScore: strongMoveResult?.scoreForSide ?? gap.referenceScore,
+      topMoveSan: topMove?.san ?? null,
+      topMoveUci: topMove?.uci ?? null,
+      lastPlayed: gap.lastPlayed,
+      dateRange: "all",
+      startDate: null,
+      endDate: null,
+    },
+  });
+}
+
+function getSelectedOnlineOpeningTrainingMove(gap: RepertoireGap) {
+  if (gap.classification === "preparedUnderperforming") {
+    return { san: gap.playerMoveSan, uci: gap.playerMoveUci };
+  }
+
+  const differentMove = gap.topReferenceMoves.find((move) => move.uci !== gap.playerMoveUci);
+  const move = differentMove ?? gap.topReferenceMoves[0];
+  return move ? { san: move.san, uci: move.uci } : null;
+}
+
+function selectedOnlineOpeningUrgency(gap: RepertoireGap) {
+  const frequency = clampNumber(Math.log1p(gap.playerPositionGames) / Math.log1p(25), 0, 1);
+  const resultGap = clampNumber(gap.scoreGap / 0.3, 0, 1);
+  const poorScore = clampNumber((0.55 - gap.playerScore) / 0.4, 0, 1);
+  const unusualMove = clampNumber(gap.popularityGap, 0, 1);
+  return resultGap * 0.45 + poorScore * 0.25 + frequency * 0.2 + unusualMove * 0.1;
+}
+
+function clampNumber(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
 }
 
 export default function NewTabHome() {
@@ -1824,11 +1984,21 @@ export default function NewTabHome() {
   const [openMistakeReviewModal, setOpenMistakeReviewModal] = useState(false);
   const [openMistakeScanModal, setOpenMistakeScanModal] = useState(false);
   const [openLatestGameSettingsModal, setOpenLatestGameSettingsModal] = useState(false);
+  const [openOnlineAnalysisPicker, setOpenOnlineAnalysisPicker] = useState(false);
+  const [openOnlineMistakePicker, setOpenOnlineMistakePicker] = useState(false);
+  const [openOnlineOpeningPicker, setOpenOnlineOpeningPicker] = useState(false);
   const [reviewDecks, setReviewDecks] = useState<OpeningReviewDeckSummary[]>([]);
   const [mistakeDecks, setMistakeDecks] = useState<MistakeReviewDeckSummary[]>([]);
   const [reviewDecksLoading, setReviewDecksLoading] = useState(false);
   const [mistakeDecksLoading, setMistakeDecksLoading] = useState(false);
   const [latestGameLoading, setLatestGameLoading] = useState(false);
+  const [onlineAnalysisLoading, setOnlineAnalysisLoading] = useState(false);
+  const [onlineReviewLoading, setOnlineReviewLoading] = useState(false);
+  const [onlineOpeningDatabases, setOnlineOpeningDatabases] = useState<SuccessDatabaseInfo[]>([]);
+  const [onlineOpeningReferenceDb, setOnlineOpeningReferenceDb] = useState<string | null>(null);
+  const [onlineOpeningMaxPlies, setOnlineOpeningMaxPlies] = useState(30);
+  const [onlineOpeningMinReferenceGames, setOnlineOpeningMinReferenceGames] = useState(20);
+  const [onlineMistakeEnginePath, setOnlineMistakeEnginePath] = useState<string | null>(null);
   const [deletingReviewDeckPath, setDeletingReviewDeckPath] = useState<string | null>(null);
   const [deletingMistakeDeckPath, setDeletingMistakeDeckPath] = useState<string | null>(null);
   const [settingsReviewDeck, setSettingsReviewDeck] = useState<OpeningReviewDeckSummary | null>(
@@ -1843,6 +2013,7 @@ export default function NewTabHome() {
     latestOnlineGameAccountSelectionAtom,
   );
   const setActiveTab = useSetAtom(activeTabAtom);
+  const setMistakeScanProgress = useSetAtom(mistakeReviewScanProgressAtom);
   const sessions = useAtomValue(sessionsAtom);
 
   const [recentFiles, setRecentFiles] = useAtom(recentFilesAtom);
@@ -1853,20 +2024,44 @@ export default function NewTabHome() {
     () => (engines ?? []).filter((engine): engine is LocalEngine => engine.type === "local"),
     [engines],
   );
+  const onlineMistakeEngineOptions = localEngines.map((engine) => ({
+    value: engine.path,
+    label: engine.version ? `${engine.name} ${engine.version}` : engine.name,
+  }));
+  const onlineOpeningReferenceOptions = onlineOpeningDatabases.map((database) => ({
+    value: database.file,
+    label: database.title || database.filename,
+  }));
   const linkedOnlineProviders = useMemo(() => getLinkedOnlineGameProviders(sessions), [sessions]);
   const selectedOnlineProviders = useMemo(
     () => getSelectedOnlineGameProviders(sessions, latestGameAccountSelection),
     [latestGameAccountSelection, sessions],
   );
 
+  useEffect(() => {
+    setOnlineMistakeEnginePath((current) => current ?? localEngines[0]?.path ?? null);
+  }, [localEngines]);
+
+  useEffect(() => {
+    if (!openOnlineOpeningPicker) return;
+
+    let disposed = false;
+    getDatabases().then((databaseInfo) => {
+      if (disposed) return;
+      const successDatabases = databaseInfo.filter(
+        (database): database is SuccessDatabaseInfo => database.type === "success",
+      );
+      setOnlineOpeningDatabases(successDatabases);
+      setOnlineOpeningReferenceDb((current) => current ?? successDatabases[0]?.file ?? null);
+    });
+
+    return () => {
+      disposed = true;
+    };
+  }, [openOnlineOpeningPicker]);
+
   const openBoardTab = useCallback(
-    async ({
-      name,
-      type,
-    }: {
-      name: string;
-      type: "analysis" | "play" | "puzzles";
-    }) => {
+    async ({ name, type }: { name: string; type: "analysis" | "play" | "puzzles" }) => {
       const tabId = await createTab({
         tab: {
           name,
@@ -2177,6 +2372,354 @@ export default function NewTabHome() {
     store,
   ]);
 
+  const openOnlineGamePicker = useCallback(
+    (mode: "analysis" | "mistake" | "opening") => {
+      if (linkedOnlineProviders.length === 0) {
+        notifications.show({
+          title: "Link an online account",
+          message: "Add a Chess.com or Lichess account before choosing online games.",
+          color: "yellow",
+        });
+        navigate({ to: "/accounts" });
+        return;
+      }
+
+      if (selectedOnlineProviders.length === 0) {
+        notifications.show({
+          title: "Choose an account",
+          message: "Select at least one linked account for online-game shortcuts.",
+          color: "yellow",
+        });
+        setOpenLatestGameSettingsModal(true);
+        return;
+      }
+
+      if (mode === "analysis") setOpenOnlineAnalysisPicker(true);
+      if (mode === "mistake") setOpenOnlineMistakePicker(true);
+      if (mode === "opening") setOpenOnlineOpeningPicker(true);
+    },
+    [linkedOnlineProviders.length, navigate, selectedOnlineProviders.length],
+  );
+
+  const openSelectedOnlineGame = useCallback(
+    async (games: RecentOnlineGame[]) => {
+      const game = games[0];
+      if (!game || onlineAnalysisLoading) return;
+
+      setOnlineAnalysisLoading(true);
+      try {
+        const tree = await parsePGN(game.pgn);
+        const gameName = getGameName(tree.headers);
+        const tabName =
+          gameName && gameName !== "Unknown" ? gameName : `${game.sourceLabel} online game`;
+        const tabId = await createTab({
+          tab: {
+            name: tabName,
+            type: "analysis",
+          },
+          setTabs,
+          setActiveTab,
+          pgn: game.pgn,
+          gameOrigin: {
+            kind: "none",
+          },
+        });
+        store.set(tabFamily(tabId), "analysis");
+        setOpenOnlineAnalysisPicker(false);
+        navigate({ to: "/" });
+        notifications.show({
+          title: "Online game loaded",
+          message: `${game.sourceLabel} ${game.username}`,
+          color: "green",
+        });
+      } catch (error) {
+        notifications.show({
+          title: "Could not open online game",
+          message: error instanceof Error ? error.message : String(error),
+          color: "red",
+        });
+      } finally {
+        setOnlineAnalysisLoading(false);
+      }
+    },
+    [navigate, onlineAnalysisLoading, setActiveTab, setTabs, store],
+  );
+
+  const createMistakeReviewFromOnlineGames = useCallback(
+    async (games: RecentOnlineGame[]) => {
+      if (onlineReviewLoading) return;
+
+      const selectedEngine = localEngines.find((engine) => engine.path === onlineMistakeEnginePath);
+      if (!selectedEngine || !onlineMistakeEnginePath) {
+        notifications.show({
+          title: "Choose a Stockfish engine",
+          message: "Add or select a local Stockfish engine before scanning selected games.",
+          color: "yellow",
+        });
+        return;
+      }
+
+      setOnlineReviewLoading(true);
+      const accounts = getSelectedOnlineGameAccounts(games);
+      try {
+        const dbPath = await createSelectedOnlineGamesDatabase(
+          games,
+          "Selected online mistake games",
+        );
+        const allPositions: Position[] = [];
+        let primarySettings: MistakeReviewSettings | null = null;
+        let gamesScanned = 0;
+        let positionsAnalyzed = 0;
+        let candidateMoves = 0;
+
+        for (const [index, account] of accounts.entries()) {
+          const player = await resolveSelectedOnlinePlayer(dbPath, account.username);
+          if (!player) continue;
+
+          const settings: MistakeReviewSettings = {
+            playerDb: dbPath,
+            playerId: player.id,
+            playerName: player.name ?? account.username,
+            enginePath: onlineMistakeEnginePath,
+            engineName: selectedEngine.version
+              ? `${selectedEngine.name} ${selectedEngine.version}`
+              : selectedEngine.name,
+            analysisMode: "single",
+            fastDepth: 12,
+            deepDepth: 17,
+            multiPv: 3,
+            timeControls: [],
+            dateRange: "all",
+            thresholds: DEFAULT_MISTAKE_REVIEW_THRESHOLDS,
+            includeSeverities: DEFAULT_MISTAKE_REVIEW_SEVERITIES,
+            minWinProbabilityDrop: 5,
+          };
+          primarySettings ??= settings;
+          const requestId = `mistake-review-online-${Date.now()}-${index}`;
+
+          setMistakeScanProgress({
+            requestId,
+            running: true,
+            progress: 0,
+            deckName: "Selected online mistakes",
+            phase: `Analyzing ${account.sourceLabel} ${account.username}`,
+            paused: false,
+            gamesAnalyzed: 0,
+            gamesTotal: 0,
+            positionsAnalyzed,
+            candidateMoves,
+            mistakesFound: allPositions.length,
+            stopping: false,
+            error: null,
+            startedAt: Date.now(),
+            completedAt: null,
+          });
+
+          const report = unwrap(
+            await commands.scanMistakeReview(
+              mistakeReviewRequestFromSettings(settings, {
+                requestId,
+              }),
+            ),
+          );
+          gamesScanned += report.gamesScanned;
+          positionsAnalyzed += report.positionsAnalyzed;
+          candidateMoves += report.candidateMoves;
+          allPositions.push(
+            ...report.mistakes.map((result) => createMistakeReviewPosition(result, settings)),
+          );
+        }
+
+        if (!primarySettings) {
+          notifications.show({
+            title: "No matching player found",
+            message: "The selected PGNs did not contain any linked account usernames.",
+            color: "yellow",
+          });
+          return;
+        }
+
+        const positions = dedupePositions(allPositions, mistakeReviewPositionKey);
+        const accountLabel =
+          accounts.length === 1
+            ? `${accounts[0]!.sourceLabel} ${accounts[0]!.username}`
+            : `${accounts.length} linked accounts`;
+        const name = `Mistake Review - ${accountLabel} selected games`;
+        const path = await getAvailableMistakeReviewDeckPath(documentDir, name);
+        const deck = createMistakeReviewDeck({
+          name,
+          settings: primarySettings,
+          positions,
+        });
+        await writeMistakeReviewDeck(path, deck);
+        setMistakeScanProgress((current) => ({
+          ...current,
+          running: false,
+          progress: 100,
+          phase: "Done",
+          paused: false,
+          stopping: false,
+          gamesAnalyzed: gamesScanned,
+          gamesTotal: gamesScanned,
+          positionsAnalyzed,
+          candidateMoves,
+          mistakesFound: positions.length,
+          completedAt: Date.now(),
+        }));
+        setOpenOnlineMistakePicker(false);
+        notifications.show({
+          title: "Mistake Review deck created",
+          message: `${positions.length} mistake card${positions.length === 1 ? "" : "s"} saved from ${games.length} selected game${games.length === 1 ? "" : "s"}.`,
+          color: "green",
+        });
+        await openCreatedMistakeDeck({ path, name });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        setMistakeScanProgress((current) => ({
+          ...current,
+          running: false,
+          phase: "Failed",
+          paused: false,
+          stopping: false,
+          error: message,
+          completedAt: Date.now(),
+        }));
+        notifications.show({
+          title: "Online mistake scan failed",
+          message,
+          color: "red",
+        });
+      } finally {
+        setOnlineReviewLoading(false);
+      }
+    },
+    [
+      documentDir,
+      localEngines,
+      onlineMistakeEnginePath,
+      onlineReviewLoading,
+      openCreatedMistakeDeck,
+      setMistakeScanProgress,
+    ],
+  );
+
+  const createOpeningReviewFromOnlineGames = useCallback(
+    async (games: RecentOnlineGame[]) => {
+      if (onlineReviewLoading) return;
+      if (!onlineOpeningReferenceDb) {
+        notifications.show({
+          title: "Choose a strong-games source",
+          message: "Select a local reference database before scanning opening gaps.",
+          color: "yellow",
+        });
+        return;
+      }
+
+      setOnlineReviewLoading(true);
+      const accounts = getSelectedOnlineGameAccounts(games);
+      try {
+        const dbPath = await createSelectedOnlineGamesDatabase(
+          games,
+          "Selected online opening games",
+        );
+        const allGaps: RepertoireGap[] = [];
+
+        for (const [index, account] of accounts.entries()) {
+          const player = await resolveSelectedOnlinePlayer(dbPath, account.username);
+          if (!player) continue;
+
+          const result = await commands.findRepertoireGaps({
+            playerDb: dbPath,
+            referenceDb: onlineOpeningReferenceDb,
+            playerId: player.id,
+            color: "any",
+            maxPlies: onlineOpeningMaxPlies,
+            minPlayerGames: 1,
+            minReferenceGames: onlineOpeningMinReferenceGames,
+            topReferenceMoves: 3,
+            startDate: null,
+            endDate: null,
+            requestId: `opening-review-online-${Date.now()}-${index}`,
+          });
+
+          if (result.status === "error") {
+            throw new Error(result.error);
+          }
+
+          allGaps.push(...result.data.gaps);
+        }
+
+        const positions = dedupePositions(
+          allGaps
+            .sort(
+              (a, b) =>
+                selectedOnlineOpeningUrgency(b) - selectedOnlineOpeningUrgency(a) ||
+                b.playerPositionGames - a.playerPositionGames ||
+                a.ply - b.ply,
+            )
+            .map(createSelectedOnlineOpeningReviewPosition)
+            .filter((position): position is Position => Boolean(position)),
+          reviewPositionKey,
+        );
+
+        if (positions.length === 0) {
+          notifications.show({
+            title: "No opening gaps found",
+            message: "The selected games did not produce trainable opening-gap cards.",
+            color: "yellow",
+          });
+          return;
+        }
+
+        const accountLabel =
+          accounts.length === 1
+            ? `${accounts[0]!.sourceLabel} ${accounts[0]!.username}`
+            : `${accounts.length} linked accounts`;
+        const name = `Opening Review - ${accountLabel} selected games`;
+        const path = await getAvailableOpeningReviewDeckPath(documentDir, name);
+        const deck = createOpeningReviewDeck({
+          name,
+          mode: "self",
+          source: "Selected online games",
+          positions,
+        });
+        await writeOpeningReviewDeck(path, deck);
+        setOpenOnlineOpeningPicker(false);
+        notifications.show({
+          title: "Opening Review deck created",
+          message: `${positions.length} opening card${positions.length === 1 ? "" : "s"} saved from ${games.length} selected game${games.length === 1 ? "" : "s"}.`,
+          color: "green",
+        });
+        await openReviewDeck({
+          path,
+          name,
+          updatedAt: Date.now(),
+          total: positions.length,
+          due: positions.length,
+          unseen: positions.length,
+          mode: "self",
+          source: "Selected online games",
+        });
+      } catch (error) {
+        notifications.show({
+          title: "Online opening scan failed",
+          message: error instanceof Error ? error.message : String(error),
+          color: "red",
+        });
+      } finally {
+        setOnlineReviewLoading(false);
+      }
+    },
+    [
+      documentDir,
+      onlineOpeningMaxPlies,
+      onlineOpeningMinReferenceGames,
+      onlineOpeningReferenceDb,
+      onlineReviewLoading,
+      openReviewDeck,
+    ],
+  );
+
   const deleteReviewDeck = useCallback(async (deck: OpeningReviewDeckSummary) => {
     const confirmed = window.confirm(
       `Delete "${deck.name}"?\n\nThis removes the review deck file and cannot be undone.`,
@@ -2279,6 +2822,26 @@ export default function NewTabHome() {
       settingsLabel: "Choose accounts",
     },
     {
+      icon: <IconSearch size={60} />,
+      title: "Choose online game",
+      description:
+        linkedOnlineProviders.length === 0
+          ? "Link Chess.com or Lichess, then pick a recent game."
+          : selectedOnlineProviders.length === 0
+            ? "Choose which linked accounts should appear in the picker."
+            : "Pick one linked online game and open it in the analysis board.",
+      label:
+        linkedOnlineProviders.length === 0
+          ? "Link account"
+          : selectedOnlineProviders.length === 0
+            ? "Choose account"
+            : "Choose game",
+      loading: onlineAnalysisLoading,
+      onClick: () => openOnlineGamePicker("analysis"),
+      onSettings: () => setOpenLatestGameSettingsModal(true),
+      settingsLabel: "Online game accounts",
+    },
+    {
       icon: <IconTargetArrow size={60} />,
       title: t("Home.Card.NewRepertoire.Title"),
       description: t("Home.Card.NewRepertoire.Desc"),
@@ -2348,6 +2911,7 @@ export default function NewTabHome() {
         onDelete={deleteReviewDeck}
         onSettings={setSettingsReviewDeck}
         onAnalyze={openAnalyzeRepertoire}
+        onAnalyzeOnline={() => openOnlineGamePicker("opening")}
       />
       <OpeningReviewDeckPositionsModal
         opened={Boolean(positionsReviewDeck)}
@@ -2370,6 +2934,7 @@ export default function NewTabHome() {
         onOpen={openMistakeDeck}
         onDelete={deleteMistakeDeck}
         onNewScan={() => setOpenMistakeScanModal(true)}
+        onNewOnlineScan={() => openOnlineGamePicker("mistake")}
       />
       <MistakeReviewScanModal
         opened={openMistakeScanModal}
@@ -2378,6 +2943,107 @@ export default function NewTabHome() {
         onClose={() => setOpenMistakeScanModal(false)}
         onCreated={openCreatedMistakeDeck}
       />
+      <OnlineGamePickerModal
+        opened={openOnlineAnalysisPicker}
+        sessions={sessions}
+        selection={latestGameAccountSelection}
+        title="Choose game to analyse"
+        description="Pick one recent game from the same linked accounts used by Analyse your last game. The game opens directly on the analysis board."
+        confirmLabel="Open in Analysis"
+        loading={onlineAnalysisLoading}
+        onClose={() => setOpenOnlineAnalysisPicker(false)}
+        onConfirm={openSelectedOnlineGame}
+        onOpenAccountSettings={() => setOpenLatestGameSettingsModal(true)}
+        onOpenAccounts={() => {
+          setOpenOnlineAnalysisPicker(false);
+          navigate({ to: "/accounts" });
+        }}
+      />
+      <OnlineGamePickerModal
+        opened={openOnlineMistakePicker}
+        sessions={sessions}
+        selection={latestGameAccountSelection}
+        title="Train mistakes from online games"
+        description="Select one or more recent online games. Mistake Review will scan only those PGNs and save the results as normal spaced-repetition cards."
+        confirmLabel="Scan selected games"
+        multiple
+        loading={onlineReviewLoading}
+        canConfirm={Boolean(onlineMistakeEnginePath)}
+        onClose={() => setOpenOnlineMistakePicker(false)}
+        onConfirm={createMistakeReviewFromOnlineGames}
+        onOpenAccountSettings={() => setOpenLatestGameSettingsModal(true)}
+        onOpenAccounts={() => {
+          setOpenOnlineMistakePicker(false);
+          navigate({ to: "/accounts" });
+        }}
+      >
+        <Divider />
+        <Select
+          label="Local Stockfish engine"
+          data={onlineMistakeEngineOptions}
+          value={onlineMistakeEnginePath}
+          onChange={setOnlineMistakeEnginePath}
+          searchable
+          allowDeselect={false}
+        />
+        {onlineMistakeEngineOptions.length === 0 && (
+          <Alert color="yellow" variant="light">
+            Add a local Stockfish engine in Settings before scanning selected games.
+          </Alert>
+        )}
+      </OnlineGamePickerModal>
+      <OnlineGamePickerModal
+        opened={openOnlineOpeningPicker}
+        sessions={sessions}
+        selection={latestGameAccountSelection}
+        title="Train opening gaps from online games"
+        description="Select one or more recent online games. Opening Review will compare only those PGNs against a strong-games source and save trainable gap cards."
+        confirmLabel="Create Opening Review"
+        multiple
+        loading={onlineReviewLoading}
+        canConfirm={Boolean(onlineOpeningReferenceDb)}
+        onClose={() => setOpenOnlineOpeningPicker(false)}
+        onConfirm={createOpeningReviewFromOnlineGames}
+        onOpenAccountSettings={() => setOpenLatestGameSettingsModal(true)}
+        onOpenAccounts={() => {
+          setOpenOnlineOpeningPicker(false);
+          navigate({ to: "/accounts" });
+        }}
+      >
+        <Divider />
+        <Select
+          label="Strong-games source"
+          data={onlineOpeningReferenceOptions}
+          value={onlineOpeningReferenceDb}
+          onChange={setOnlineOpeningReferenceDb}
+          searchable
+          allowDeselect={false}
+        />
+        <Group grow>
+          <NumberInput
+            label="Opening ply"
+            value={onlineOpeningMaxPlies}
+            min={2}
+            max={80}
+            onChange={(value) =>
+              setOnlineOpeningMaxPlies(Math.min(80, Math.max(2, Number(value) || 30)))
+            }
+          />
+          <NumberInput
+            label="Minimum strong games"
+            value={onlineOpeningMinReferenceGames}
+            min={1}
+            onChange={(value) =>
+              setOnlineOpeningMinReferenceGames(Math.max(1, Number(value) || 20))
+            }
+          />
+        </Group>
+        {onlineOpeningReferenceOptions.length === 0 && (
+          <Alert color="yellow" variant="light">
+            Add or import a local reference database before scanning opening gaps.
+          </Alert>
+        )}
+      </OnlineGamePickerModal>
       <LatestGameAccountsModal
         opened={openLatestGameSettingsModal}
         providers={linkedOnlineProviders}

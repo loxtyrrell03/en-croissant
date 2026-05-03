@@ -525,8 +525,17 @@ export async function getLatestLichessGame(
   player: string,
   token?: string,
 ): Promise<LichessLatestGame | null> {
+  return (await getRecentLichessGames(player, 1, token))[0] ?? null;
+}
+
+export async function getRecentLichessGames(
+  player: string,
+  limit = 10,
+  token?: string,
+): Promise<LichessLatestGame[]> {
+  const boundedLimit = Math.min(30, Math.max(1, Math.round(limit)));
   const url = new URL(`${baseURL}/games/user/${encodeURIComponent(player)}`);
-  url.searchParams.set("max", "3");
+  url.searchParams.set("max", String(boundedLimit));
   url.searchParams.set("sort", "dateDesc");
   url.searchParams.set("pgnInJson", "true");
   url.searchParams.set("clocks", "true");
@@ -557,24 +566,24 @@ export async function getLatestLichessGame(
         return null;
       }
     })
-    .filter((game): game is LichessLatestGameJson => Boolean(game?.pgn));
+    .filter(
+      (game): game is LichessLatestGameJson & { pgn: string } =>
+        typeof game?.pgn === "string" && game.pgn.trim().length > 0,
+    );
 
-  const latestGame = games.sort(
-    (a, b) => (b.lastMoveAt ?? b.createdAt ?? 0) - (a.lastMoveAt ?? a.createdAt ?? 0),
-  )[0];
-
-  if (!latestGame?.pgn) {
-    return null;
-  }
-
-  const id = latestGame.id?.slice(0, 8) ?? "";
-  return {
-    source: "lichess",
-    username: player,
-    pgn: latestGame.pgn,
-    playedAt: latestGame.lastMoveAt ?? latestGame.createdAt ?? 0,
-    url: id ? `https://lichess.org/${id}` : `https://lichess.org/@/${player}`,
-  };
+  return games
+    .sort((a, b) => (b.lastMoveAt ?? b.createdAt ?? 0) - (a.lastMoveAt ?? a.createdAt ?? 0))
+    .slice(0, boundedLimit)
+    .map((game) => {
+      const id = game.id?.slice(0, 8) ?? "";
+      return {
+        source: "lichess",
+        username: player,
+        pgn: game.pgn,
+        playedAt: game.lastMoveAt ?? game.createdAt ?? 0,
+        url: id ? `https://lichess.org/${id}` : `https://lichess.org/@/${player}`,
+      };
+    });
 }
 
 export async function getTablebaseInfo(fen: string): Promise<TablebaseData> {

@@ -1,5 +1,5 @@
-import { getLatestChessComGame } from "@/utils/chess.com/api";
-import { getLatestLichessGame } from "@/utils/lichess/api";
+import { getRecentChessComGames } from "@/utils/chess.com/api";
+import { getRecentLichessGames } from "@/utils/lichess/api";
 import type { Session } from "@/utils/session";
 
 export type LatestOnlineGame = {
@@ -9,6 +9,16 @@ export type LatestOnlineGame = {
     pgn: string;
     playedAt: number;
     url: string;
+};
+
+export type RecentOnlineGame = LatestOnlineGame & {
+    id: string;
+    providerKey: string;
+};
+
+export type RecentOnlineGamesResult = {
+    games: RecentOnlineGame[];
+    failures: string[];
 };
 
 export type LatestOnlineGameAccountSelection = Record<string, boolean>;
@@ -80,42 +90,57 @@ export async function getLatestOnlineGame(
     sessions: Session[],
     selection: LatestOnlineGameAccountSelection = {},
 ): Promise<LatestOnlineGame | null> {
+    const result = await getRecentOnlineGames(sessions, selection, 1);
+    if (result.games.length === 0 && result.failures.length > 0) {
+        throw new Error(result.failures.join("; "));
+    }
+    return result.games[0] ?? null;
+}
+
+export async function getRecentOnlineGames(
+    sessions: Session[],
+    selection: LatestOnlineGameAccountSelection = {},
+    limitPerProvider = 10,
+): Promise<RecentOnlineGamesResult> {
     const providers = getSelectedOnlineGameProviders(sessions, selection);
     if (providers.length === 0) {
-        return null;
+        return { games: [], failures: [] };
     }
 
     const results = await Promise.allSettled(
-        providers.map(async (provider): Promise<LatestOnlineGame | null> => {
+        providers.map(async (provider): Promise<RecentOnlineGame[]> => {
+            const providerKey = getOnlineGameProviderKey(provider);
             if (provider.source === "lichess") {
-                const game = await getLatestLichessGame(provider.username, provider.token);
-                return game
-                    ? {
-                          ...game,
-                          sourceLabel: provider.sourceLabel,
-                      }
-                    : null;
+                const games = await getRecentLichessGames(
+                    provider.username,
+                    limitPerProvider,
+                    provider.token,
+                );
+                return games.map((game, index) => ({
+                    ...game,
+                    id: `${providerKey}:${game.url || game.playedAt || index}`,
+                    providerKey,
+                    sourceLabel: provider.sourceLabel,
+                }));
             }
 
-            const game = await getLatestChessComGame(provider.username);
-            return game
-                ? {
-                      ...game,
-                      sourceLabel: provider.sourceLabel,
-                  }
-                : null;
+            const games = await getRecentChessComGames(provider.username, limitPerProvider);
+            return games.map((game, index) => ({
+                ...game,
+                id: `${providerKey}:${game.url || game.playedAt || index}`,
+                providerKey,
+                sourceLabel: provider.sourceLabel,
+            }));
         }),
     );
 
-    const games: LatestOnlineGame[] = [];
+    const games: RecentOnlineGame[] = [];
     const failures: string[] = [];
 
     results.forEach((result, index) => {
         const provider = providers[index];
         if (result.status === "fulfilled") {
-            if (result.value) {
-                games.push(result.value);
-            }
+            games.push(...result.value);
             return;
         }
 
@@ -124,16 +149,13 @@ export async function getLatestOnlineGame(
         );
     });
 
-    if (games.length === 0 && failures.length > 0) {
-        throw new Error(failures.join("; "));
-    }
-
-    return (
-        games.sort((a, b) => {
+    return {
+        games: games.sort((a, b) => {
             if (b.playedAt !== a.playedAt) return b.playedAt - a.playedAt;
             return a.sourceLabel.localeCompare(b.sourceLabel);
-        })[0] ?? null
-    );
+        }),
+        failures,
+    };
 }
 
 function errorMessage(error: unknown) {

@@ -160,7 +160,16 @@ export async function getChessComLatestGameTimestamp(player: string) {
 }
 
 export async function getLatestChessComGame(player: string): Promise<ChessComLatestGame | null> {
+  return (await getRecentChessComGames(player, 1))[0] ?? null;
+}
+
+export async function getRecentChessComGames(
+  player: string,
+  limit = 10,
+): Promise<ChessComLatestGame[]> {
   const archives = await getGameArchives(player);
+  const recentGames: ChessComLatestGame[] = [];
+  const boundedLimit = Math.min(30, Math.max(1, Math.round(limit)));
 
   for (const archive of archives.archives.slice().reverse()) {
     const response = await fetch(archive, {
@@ -178,19 +187,34 @@ export async function getLatestChessComGame(player: string): Promise<ChessComLat
       continue;
     }
 
-    const latestGame = games.data.games.filter(hasPgn).sort((a, b) => b.end_time - a.end_time)[0];
-    if (latestGame) {
-      return {
-        source: "chesscom",
-        username: player,
-        pgn: latestGame.pgn,
-        playedAt: latestGame.end_time * 1000,
-        url: latestGame.url,
-      };
+    recentGames.push(
+      ...games.data.games
+        .filter(hasPgn)
+        .sort((a, b) => b.end_time - a.end_time)
+        .map((game) => ({
+          source: "chesscom" as const,
+          username: player,
+          pgn: game.pgn,
+          playedAt: game.end_time * 1000,
+          url: game.url,
+        })),
+    );
+
+    if (recentGames.length >= boundedLimit) {
+      break;
     }
   }
 
-  return null;
+  return recentGames
+    .sort((a, b) => b.playedAt - a.playedAt)
+    .slice(0, boundedLimit)
+    .map((game) => ({
+      source: "chesscom",
+      username: player,
+      pgn: game.pgn,
+      playedAt: game.playedAt,
+      url: game.url,
+    }));
 }
 
 export async function downloadChessCom(player: string, timestamp: number | null) {
