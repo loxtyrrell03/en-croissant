@@ -343,7 +343,7 @@ function Board({
   const forcedEP = useAtomValue(forcedEnPassantAtom);
   const showCoordinates = useAtomValue(showCoordinatesAtom);
   const materialDisplay = useAtomValue(materialDisplayAtom);
-  const boardPreviewShapes = useAtomValue(currentBoardPreviewShapesAtom);
+  const [boardPreviewShapes, setBoardPreviewShapes] = useAtom(currentBoardPreviewShapesAtom);
   const boardFen = boardPreviewShapes?.displayFen ?? currentNode.fen;
   const boardPreviewPos = useMemo(() => {
     if (!boardPreviewShapes?.displayFen) return null;
@@ -1408,6 +1408,20 @@ function Board({
     hoveredPlanSquareRef.current = null;
     setPlanExplorerPreviewLine(null);
   }, [setPlanExplorerPreviewLine]);
+  const clearBoardPositionPreview = useCallback(() => {
+    setBoardPreviewShapes((current) => (current?.displayFen ? null : current));
+  }, [setBoardPreviewShapes]);
+
+  useEffect(() => {
+    if (boardPreviewShapes?.displayFen && boardPreviewShapes.fen !== currentNode.fen) {
+      setBoardPreviewShapes(null);
+    }
+  }, [
+    boardPreviewShapes?.displayFen,
+    boardPreviewShapes?.fen,
+    currentNode.fen,
+    setBoardPreviewShapes,
+  ]);
 
   useHotkeys(keyMap.TOGGLE_EVAL_BAR.keys, () => setEvalOpen((e) => !e));
 
@@ -1591,6 +1605,8 @@ function Board({
                 w={boardSize || undefined}
                 h={boardSize || undefined}
                 onContextMenu={drawPlanFromContextMenu}
+                onMouseEnter={clearBoardPositionPreview}
+                onPointerDownCapture={clearBoardPositionPreview}
                 onClick={() => {
                   if (eraseDrawablesOnClick) {
                     clearShapes();
@@ -1760,13 +1776,21 @@ function Board({
                     style={{
                       position: "absolute",
                       zIndex: 50,
-                      width: 32,
-                      height: 32,
-                      top: corner.includes("n") ? -8 : undefined,
-                      bottom: corner.includes("s") ? -8 : undefined,
-                      left: corner.includes("w") ? -8 : undefined,
-                      right: corner.includes("e") ? -8 : undefined,
+                      width: 18,
+                      height: 18,
+                      top: corner.includes("n") ? -9 : undefined,
+                      bottom: corner.includes("s") ? -9 : undefined,
+                      left: corner.includes("w") ? -9 : undefined,
+                      right: corner.includes("e") ? -9 : undefined,
                       cursor: corner === "nw" || corner === "se" ? "nwse-resize" : "nesw-resize",
+                      clipPath:
+                        corner === "nw"
+                          ? "polygon(0 0, 100% 0, 0 100%)"
+                          : corner === "ne"
+                            ? "polygon(0 0, 100% 0, 100% 100%)"
+                            : corner === "sw"
+                              ? "polygon(0 0, 0 100%, 100% 100%)"
+                              : "polygon(100% 0, 0 100%, 100% 100%)",
                       touchAction: "none",
                       userSelect: "none",
                       pointerEvents: "auto",
