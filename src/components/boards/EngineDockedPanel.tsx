@@ -32,12 +32,7 @@ export default function EngineDockedPanel({
       <Box flex={1} p={contentPadding} style={dockedContentStyle}>
         {children}
       </Box>
-      <Paper
-        withBorder
-        h="14rem"
-        mah="38%"
-        style={{ minHeight: "9rem", overflow: "hidden", flexShrink: 0 }}
-      >
+      <Paper withBorder style={{ overflow: "hidden", flexShrink: 0 }}>
         <EnginePanelContent compact />
       </Paper>
     </Stack>

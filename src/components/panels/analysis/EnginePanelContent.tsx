@@ -232,21 +232,19 @@ export default function EnginePanelContent({ compact = false }: { compact?: bool
     </Stack>
   );
 
+  if (compact) {
+    return <Box style={{ overflow: "hidden" }}>{engineContent}</Box>;
+  }
+
   return (
-    <Stack h="100%" gap={compact ? 3 : "sm"} style={{ minHeight: 0 }}>
-      {compact ? (
-        <Box flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
-          {engineContent}
-        </Box>
-      ) : (
-        <ScrollArea
-          flex={1}
-          offsetScrollbars
-          onScrollPositionChange={() => document.dispatchEvent(new Event("analysis-panel-scroll"))}
-        >
-          {engineContent}
-        </ScrollArea>
-      )}
+    <Stack h="100%" gap="sm" style={{ minHeight: 0 }}>
+      <ScrollArea
+        flex={1}
+        offsetScrollbars
+        onScrollPositionChange={() => document.dispatchEvent(new Event("analysis-panel-scroll"))}
+      >
+        {engineContent}
+      </ScrollArea>
     </Stack>
   );
 }
