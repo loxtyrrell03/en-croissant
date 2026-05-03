@@ -1,114 +1,423 @@
-# Session Change Log
+# AGENTS.md
 
-This file records the work saved during the Codex session on the `codex/en-croissant-fork` branch.
+This file is the working product map for the En Croissant fork on the
+`codex/en-croissant-fork` branch. It records the major features added during
+the recent Codex session and gives future agents the design intent, navigation
+model, implementation map, and verification expectations for this app.
 
 ## Ongoing Workflow
 
-- Automatically create git commits as work progresses whenever an important, coherent milestone has been completed.
-- Keep each commit focused on the meaningful progress just made, with a concise message describing that milestone.
-- Do not wait until the end of a long session to save progress unless the user explicitly asks for a single final commit.
-- Avoid committing broken, half-finished, or unverified work unless the user explicitly asks for a checkpoint commit.
+- Automatically create git commits as work progresses whenever an important,
+  coherent milestone has been completed.
+- Keep each commit focused on the meaningful progress just made, with a concise
+  message describing that milestone.
+- Do not wait until the end of a long session to save progress unless the user
+  explicitly asks for a single final commit.
+- Avoid committing broken, half-finished, or unverified work unless the user
+  explicitly asks for a checkpoint commit.
+- The working tree may contain user changes or local verification artifacts.
+  Do not revert or delete them unless the user explicitly asks.
 
 ## Local Browser Verification
 
-- Prefer the Browser Use plugin for localhost UI checks. If its Node REPL bootstrap fails because the system Node is too old, use the Playwright browser tools as a fallback and note the reason.
-- If Browser Use reports `Node runtime too old for node_repl`, set the user environment variable `NODE_REPL_NODE_PATH` to the bundled Codex Node executable, usually `C:\Users\loxty\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`, then restart Codex Desktop so the MCP server inherits it.
-- The Vite dev server for this Tauri app normally serves at `http://localhost:1420`; `vite.config.ts` has `strictPort: true`, so check whether that port is already owned before starting a new server.
-- Opening the app directly in a regular browser is outside the Tauri shell, so the page needs minimal Tauri globals injected before navigation. Stub `window.__TAURI_OS_PLUGIN_INTERNALS__` and `window.__TAURI_INTERNALS__` with no-op `invoke`, event listener, metadata, and `convertFileSrc` handlers before loading `http://localhost:1420`.
-- For layout checks, inspect real DOM dimensions instead of relying only on screenshots. Useful measurements are `#left`, `.cg-wrap`, the eval bar element, and any nearby panel that may be limiting the board.
-- Temporary screenshots and `.playwright-mcp/page-*.yml` snapshots are local verification artifacts. Do not delete them unless the user explicitly confirms deletion.
+- Prefer the Browser Use plugin for localhost UI checks. If its Node REPL
+  bootstrap fails because the system Node is too old, use the Playwright browser
+  tools as a fallback and note the reason.
+- If Browser Use reports `Node runtime too old for node_repl`, set the user
+  environment variable `NODE_REPL_NODE_PATH` to the bundled Codex Node
+  executable, usually
+  `C:\Users\loxty\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`,
+  then restart Codex Desktop so the MCP server inherits it.
+- The Vite dev server for this Tauri app normally serves at
+  `http://localhost:1420`; `vite.config.ts` has `strictPort: true`, so check
+  whether that port is already owned before starting a new server.
+- Opening the app directly in a regular browser is outside the Tauri shell, so
+  the page needs minimal Tauri globals injected before navigation. Stub
+  `window.__TAURI_OS_PLUGIN_INTERNALS__` and `window.__TAURI_INTERNALS__` with
+  no-op `invoke`, event listener, metadata, and `convertFileSrc` handlers before
+  loading `http://localhost:1420`.
+- For layout checks, inspect real DOM dimensions instead of relying only on
+  screenshots. Useful measurements are `#left`, `.cg-wrap`, the eval bar
+  element, and any nearby panel that may be limiting the board.
+- Temporary screenshots and `.playwright-mcp/page-*.yml` snapshots are local
+  verification artifacts. Do not delete them unless the user explicitly confirms
+  deletion.
 
-## Base
+## Product Direction
 
-- The branch started from upstream commit `14ae9478` (`Updated French translation`).
-- The app was renamed locally as an En Croissant fork in `package.json`, `src-tauri/Cargo.toml`, and `src-tauri/tauri.conf.json`.
-- Safe local launch helpers were added under `scripts/`, including a data-backup dev launcher and fork icon asset.
+This fork is becoming a guided chess improvement workspace layered on top of
+the original En Croissant database, board, and engine tools. The product should
+stay powerful, but the default path should be task-led:
 
-## Database And Analysis Workspace
+- Prepare against an opponent.
+- Review opening gaps from a repertoire, online games, or a reference database.
+- Review mistakes from local or online games.
+- Analyze a single game quickly.
+- Explore opening plans and database move choices from the current board.
+- Maintain local databases, online game databases, and Lichess study imports.
 
-- Added a `Compare` tab to the analysis board.
-- Added side-by-side database comparison UI for local reference databases.
-- Added opening-table sorting, compact table rendering, and shared sorting helpers.
-- Added online Lichess All and Lichess Masters sources to database comparison.
-- Added saved default source controls for the Database tab and each Database Compare slot.
-- Added board arrow previews when hovering opening moves in the Database, Compare, and Analyze Repertoire tables, with click-to-load move behavior.
-- Added a `Gaps` tab for repertoire gap scanning, training, export, and engine verification workflows.
-- Added backend repertoire-gap search support and generated TypeScript bindings for it.
-- Added online game import into local databases from Lichess and Chess.com usernames, with progress reporting and account token reuse for Lichess when available.
-- Added online database auto-update support metadata and shared online game source helpers.
+The design principle is "guided depth": keep all expert controls available, but
+lead with the next useful action, the source of the evidence, and the safest
+default.
 
-## Analyze Repertoire And Review
+## Product Map
 
-- Reworked Analyze Repertoire into two user-oriented modes: prep against an opponent's repertoire and find gaps in the user's own repertoire.
-- Made the scan orientation-aware so positions are attributed to the side being prepared or reviewed rather than mixing games from the opposite color.
-- Replaced technical table copy with clearer priority, opening line, played move, next step, evidence, and result columns, plus hover info bubbles.
-- Added color filtering, frequency sorting, recency weighting, and an urgency score that emphasizes practical result gaps, frequency, recency, and only large engine drops.
-- Added cloud validation during the initial scan, preserving validation progress when leaving and returning to the Analyze Repertoire tab.
-- Changed validation to use ChessDB first for the bulk scan, Lichess Cloud only for the most urgent deep-validation rows, and local Stockfish fallback when enabled.
-- Cached Lichess Cloud hits and misses so repeated Analyze Repertoire scans do not re-query the same FEN.
-- Batched Analyze Repertoire validation updates and let the main scan finish after the bulk ChessDB pass, while slower Lichess and Stockfish upgrades continue without freezing the UI.
-- Added validation source and depth display in Analyze Repertoire rows, priority messages, saved review cards, and post-attempt review evidence.
-- Added parallel cloud validation queues so Lichess Cloud and ChessDB checks do not run one position at a time.
-- Added delete and edit controls for Analyze Repertoire rows, including direct correct-move overrides.
-- Added saved Opening Review decks from Analyze Repertoire positions, with merge support for existing decks.
-- Added a home-page Opening Review entry point and a full review workspace with Review, Analysis, Database, Plan Explorer, Compare, Analyze Repertoire, Info, notation, engine, and annotation tools.
-- Moved Analyze Repertoire out of the standard board tab strip and made it launch from the Opening Review area, including an empty-deck entry point when no review decks exist.
-- Added spaced-repetition opening review practice, full-deck practice, post-attempt evidence, saved comments/arrows/annotations, card deletion, card move editing, board-played move overrides, and whole-deck deletion.
-- Added backward compatibility for older saved review cards that used the previous generic cloud validation source.
+### App Shell
 
-## Plan Explorer
+- `/home` is now the task launcher. It opens recent files, imports games,
+  starts puzzles, opens the latest online game, launches the online game picker,
+  manages Opening Review decks, and manages Mistake Review decks.
+- `/files` remains the file and repertoire library. Recent work improved root
+  drag behavior, deselection, and file-preview safety when no board tab exists.
+- `/databases` manages local databases, online game databases, merged
+  Lichess/Chess.com databases, Lichess study imports, database conversion, and
+  auto-update metadata.
+- `/accounts` stores linked Lichess and Chess.com sessions. The sidebar shortcut
+  was removed, but account settings remain reachable from online-game flows.
+- `/engines` and `/settings` remain the local engine and global app settings
+  surfaces. Settings now include trainer bot, engine display, and board behavior
+  affordances.
+- Board tabs now represent active workspaces: analysis, play, puzzles,
+  Opening Review, and Mistake Review.
 
-- Added a ChessBase-style `Plan Explorer` tab next to the database tools.
-- Added backend plan extraction from the reference search index, tracking piece routes through sampled continuations.
-- Added generated TypeScript bindings and `getPlanExplorer` frontend utilities.
-- Added a Plan Explorer table grouped by piece, with route counts, result bars, side filters, ply-depth controls, and database selection.
-- Added hover previews so moving over a route shows its arrows on the board.
-- Hovering a Plan Explorer piece row now previews the piece's most common maneuver.
-- Added click-to-pin route arrows from the Plan Explorer table.
-- Added board support for plan arrows and a `Ctrl+right-click` piece shortcut to draw that piece's normal route.
-- When the Plan Explorer tab is selected, hovering over a piece on the chessboard previews that piece's most common maneuver.
-- Added automatic plan arrows with an on-panel `Auto arrows` switch and configurable arrow limit.
-- Plan Explorer now defaults to `8 ply` and `10` automatic arrows.
-- Automatic plan selection favors significant queen, rook, bishop, and knight maneuvers plus key pawn breaks or advanced pawn moves.
-- Added Lichess All and Lichess Masters as Plan Explorer sources alongside local reference databases.
+### Home Launcher
 
-## Performance And Cancellation
+`src/components/tabs/NewTabHome.tsx` is the primary product entry point.
 
-- Plan Explorer searches are owned by the Plan Explorer tab instead of the always-mounted board.
-- Local database searches now have cancellable request IDs.
-- Leaving or changing the Plan Explorer, Database, or Compare views cancels the relevant in-flight local database search.
-- The database progress listener now cleans itself up when the visible request changes or unmounts.
-- Engine analysis now runs only while the `Analysis` or `Compare` workspace is active, and local engines are stopped when leaving those views.
-- Added a serialized position-occurrence index to `.ecsi` search indexes so exact Database, Compare, and Plan Explorer lookups can jump directly to matching positions instead of replaying every game.
-- Updated reference-side repertoire gap scanning to use the occurrence index for candidate positions.
-- The mmap search-index cache now keeps several recent database indexes, so Compare can keep both selected databases warm instead of constantly replacing the cache entry.
-- Database search, Plan Explorer, replay, and index generation now tolerate Shakmaty's harmless "too much material" validation case, matching the import path and avoiding false errors for displayable positions.
-- Existing v4 `.ecsi` indexes now remain readable, and very large databases skip the synchronous occurrence table so Mega Database loads do not get trapped in a huge rebuild.
-- Plan Explorer now pushes its side filter into the board arrow data, caches repeated plan lookups, and stops the Mega Database fallback scan once it has enough sampled continuations for the displayed plans.
-- The Mega Database Plan Explorer fallback now uses a depth-aware sample cap and cancels the parallel scan as soon as enough continuations have been collected, avoiding the slowdown that returned after the first few opening moves.
+- "Analyse latest" pulls the newest linked Lichess or Chess.com game directly
+  into an analysis board.
+- The online game picker can select one recent game for analysis or multiple
+  recent games for review generation.
+- Opening Review opens saved decks, shows deck positions, supports focused
+  practice by opening or color, launches Analyze Repertoire, and can create
+  opening review decks from selected online games.
+- Mistake Review opens saved mistake decks, launches a local PGN/database scan,
+  and can create mistake decks from selected online games.
+- Empty states should always offer the next action: analyze repertoire, choose
+  online games, add an engine, add a reference database, or link accounts.
 
-## Board And Settings
+### Board Workspace
 
-- Added stored atoms for Plan Explorer data, hover preview, automatic-arrow visibility, automatic-arrow limit, and compare database selection.
-- Added a global board setting for Plan Explorer automatic arrows.
-- Added plan-arrow drawing brush support on the board.
-- Replaced the old board workspace split shell with a resizable board/right-side layout, including an independently scrollable right column and draggable right-side pane heights.
-- Moved the Annotate tools out of the right-side tab strip and made them permanently visible under the chessboard.
-- Added a transient board preview arrow brush for table and Plan Explorer hover interactions.
+`src/components/boards/BoardAnalysis.tsx` is the reusable analysis shell.
 
-## Generated And Supporting Files
+- The left side is the board plus always-visible annotation tools underneath.
+- The right side uses responsive, independently scrollable panels.
+- The top-right tabs are Practice, Analysis, Database, Plan Explorer, Engine
+  Plans, Compare, and Info. Practice appears for repertoires and review decks.
+- The bottom-right area contains detached eval, notation, board controls, and
+  move controls.
+- Engine output is docked into the active panel where possible and hidden when
+  disabled.
+- Board tab labels use icon-first compact tabs with hover tooltips.
+- Arrow keys move through notation unless a modifier is held.
 
-- Updated `src/bindings/generated.ts` for new backend commands and data types.
-- Updated route/generated state files as produced by the local app tooling.
-- Included local session artifacts and helper files that were untracked at save time because the user asked to commit everything currently uncommitted.
+### Analysis And Engine Surfaces
 
-## Verification
+- Analysis uses local engines, ChessDB, and Lichess Cloud where available.
+- Lichess Cloud evals are integrated into analysis and local-engine fallback.
+- Local Stockfish starts promptly while cloud checks run in parallel.
+- Engine output has been compacted so lines remain single-row and the dock fits
+  content.
+- Engine contention was reduced so analysis, annotation, and review UI remain
+  responsive.
+- Engine Plan Explorer can show plan-like continuations from engine analysis,
+  including automatic board arrows.
 
-- `cargo check` passed.
-- `pnpm build-vite` passed.
-- `pnpm exec oxlint` passed on the touched frontend files.
-- `cargo test search_index` passed.
-- `cargo test exact_matches` passed.
-- `cargo test exact_query_ignores_too_much_material_validation` passed.
-- Earlier full `cargo test` had unrelated existing failures in eval/search fixture expectations; those were not part of this save.
-- Latest frontend verification after Analyze Repertoire and Opening Review changes: `pnpm exec oxlint` passed on the touched frontend files and `pnpm build-vite` passed.
+### Databases And Sources
+
+Database work is centered in `src/components/databases/*`,
+`src/components/panels/database/*`, and `src-tauri/src/db/*`.
+
+- Local database search now has cancellable request IDs.
+- Database, Compare, and Plan Explorer cancel obsolete searches when users
+  leave the view or change the source.
+- Exact position lookup uses serialized occurrence indexes in `.ecsi` search
+  indexes where possible.
+- Existing v4 `.ecsi` indexes remain readable.
+- Very large databases skip the synchronous occurrence table path to avoid
+  blocking Mega Database loads.
+- The mmap search-index cache keeps several recent indexes warm so Compare can
+  keep both selected databases active.
+- Search, replay, index generation, Plan Explorer, and database panels tolerate
+  Shakmaty's harmless "too much material" validation case for displayable games.
+- Opening tables support compact rendering, sorting, recent move sorting,
+  player-perspective filters, cloud-enhanced move ranking, WDL perspective
+  styling, and board-arrow previews on hover.
+- Database Compare supports local sources, Lichess All, and Lichess Masters.
+- Database panels use saved default source controls.
+
+### Online Game And Study Data
+
+Online flows are in `src/utils/onlineGameImport.ts`,
+`src/utils/onlineLatestGame.ts`, `src/components/common/OnlineGamePickerModal.tsx`,
+and `src/utils/lichess/study.ts`.
+
+- Lichess and Chess.com usernames can be imported into local databases.
+- A merged online database can combine linked Lichess and Chess.com accounts.
+- Lichess account tokens are reused when available.
+- Online imports report progress and keep progress moving during long fetches.
+- Online mistake and opening review decks can auto-update when linked account
+  databases update.
+- The online game picker has provider tabs for Lichess and Chess.com, account
+  selection, recent-game previews, single-select analysis, and multi-select
+  review deck creation.
+- Lichess Study links can be imported as local databases.
+- Lichess Study databases support auto-update metadata and refresh tracking.
+- PGN import timestamp normalization was fixed so online-update ordering stays
+  reliable.
+
+### Opening Review
+
+Opening Review is implemented in `src/components/review/OpeningReviewWorkspace.tsx`
+with helpers under `src/utils/openingReview*.ts`.
+
+- Opening Review decks are saved files, not localStorage-only state.
+- Analyze Repertoire moved into the Opening Review area rather than the normal
+  board tab strip.
+- Analyze Repertoire has two user-oriented modes: prepare against an opponent's
+  repertoire and find gaps in the user's own repertoire.
+- The scan is orientation-aware and attributes positions to the side being
+  prepared or reviewed.
+- Opening health uses frequency, recency, practical result gaps, and only large
+  engine drops to prioritize cards.
+- Date filters can limit opening health to recent games.
+- Opening stats cache names, show summary bars, and respect white/black result
+  perspective.
+- Cloud validation uses ChessDB for bulk checks, Lichess Cloud for urgent deep
+  checks, and local Stockfish fallback when enabled.
+- Lichess Cloud hits and misses are cached so repeated scans avoid duplicate
+  requests.
+- Validation progress survives leaving and returning to the tab.
+- Validation updates are batched; the scan can finish after the bulk ChessDB
+  pass while slower validation continues.
+- Rows show source, depth, evidence, priority messages, and post-attempt review
+  evidence.
+- Rows can be edited, deleted, or assigned a direct correct-move override.
+- Saved review decks can merge new positions into existing decks.
+- Daily Review mode creates a due queue with daily progress.
+- Full-deck and focused practice remain available, including filtered practice
+  by opening, color, or date range.
+- Review cards preserve comments, arrows, annotations, board-played move
+  overrides, and post-attempt exploration.
+- Whole decks and individual cards can be deleted.
+- Older cards with generic cloud-validation source labels remain compatible.
+
+### Mistake Review
+
+Mistake Review reuses the Opening Review workspace shell with mistake-specific
+deck metadata and training logic in `src/utils/mistakeReview*.ts`.
+
+- Mistake Review scans games for mistakes and saves them as spaced-repetition
+  cards.
+- Local scans and online selected-game scans both create normal review decks.
+- Analysis settings include single Stockfish pass or layered fast/deep
+  confirmation, severity filters, win-probability drop thresholds, and time
+  control filters.
+- Mistake decks record source game metadata, player database information, last
+  seen text, and latest additions.
+- Daily progress is stabilized and synced after online auto-updates.
+- Phase training supports focused mistake categories and session progress.
+- Reveal controls, auto-reveal arrows, post-attempt summaries, and game context
+  were added to make training less opaque.
+- Mistake Review game info is anchored below the main action area so the board
+  and action controls stay primary.
+
+### Practice Bot Trainer
+
+Practice bot work is in `src/utils/practiceBot.ts`,
+`src/hooks/usePracticeAgainstBot.ts`, `src/components/boards/OpponentForm.tsx`,
+and `src-tauri/src/game.rs`.
+
+- Puzzles now have a bot-practice entry point.
+- The play setup can use a trainer bot profile instead of only a manually
+  selected engine.
+- Managed Maia trainer support installs or configures LC0/Maia where supported.
+- Trainer strength is configured by FIDE-style rating and mapped to Maia or
+  Stockfish as needed.
+- Stockfish is used above Maia's useful capped range.
+- Bot clock pacing and move delay were tuned so practice feels closer to a real
+  opponent.
+- Trainer settings include bot kind, rating, time usage, and time control.
+
+### Plan Explorer
+
+Plan Explorer lives in `src/components/panels/plan/PlanExplorerPanel.tsx`,
+`src/utils/planExplorer.ts`, and backend search code.
+
+- The tab is a ChessBase-style way to see piece routes and common plans from
+  the current position.
+- Sources include local reference databases, Lichess All, and Lichess Masters.
+- Rows are grouped by piece, route count, result bars, side filters, ply depth,
+  and selected database.
+- Hovering a route previews arrows on the board.
+- Hovering a piece row previews the piece's most common maneuver.
+- Clicking a route pins its arrows.
+- Ctrl+right-click on a board piece draws that piece's normal route.
+- Auto arrows can be enabled from the panel and globally from board settings.
+- Defaults are 8 ply and 10 automatic arrows.
+- Automatic plan selection favors significant queen, rook, bishop, and knight
+  maneuvers plus key pawn breaks or advanced pawn moves.
+- Fallback scans use depth-aware sample caps and cancel as soon as enough
+  continuations have been collected.
+- Repeated lookups are cached, and side filters are pushed into board arrow
+  data.
+
+### Layout, Interaction, And Polish
+
+- The old board workspace split shell was replaced with a resizable board and
+  right-side layout.
+- The board grows with a widened left pane, and responsive panel scaling keeps
+  dense database/review tables usable.
+- Resize handles are hidden unless needed visually.
+- Annotation tools stay visible under the board instead of living in a tab.
+- Board arrows are used for database moves, Compare rows, Analyze Repertoire,
+  Plan Explorer routes, engine plans, and review feedback.
+- Hover behavior should be discoverable through cursor changes, tooltips, icon
+  tabs, or visible row affordances.
+- The annotation editor should not steal focus from board or practice input.
+- Compact panels should use icons, small labels, and stable row heights rather
+  than large cards.
+- Result bars should match the player's perspective in database, plan, and
+  review contexts.
+
+## Design Guide
+
+- Keep the app board-first. The chessboard and current position should remain
+  the visual anchor for analysis, review, database research, and training.
+- Prefer task-first entry points over exposing raw tabs as the first decision.
+  Home should answer "what do you want to do now?"
+- Do not remove expert functionality to simplify the app. Layer it behind
+  sensible defaults, collapsible settings, focused modals, and saved choices.
+- Make evidence explicit. Rows that recommend a move, review card, plan, or
+  mistake should show source, sample size, depth, recency, result impact, or
+  validation source where relevant.
+- Treat cloud and engine work as background work. Show progress, allow users to
+  keep moving, cache results, and avoid UI freezes.
+- Make data provenance visible. Differentiate local database, Lichess All,
+  Lichess Masters, ChessDB, Lichess Cloud, Stockfish, Chess.com, Lichess, merged
+  online database, and Lichess Study sources.
+- Use compact, utilitarian chess-tool UI. This is a working analysis app, not a
+  marketing page. Prefer dense tables, clear sorting, restrained panels, and
+  predictable controls.
+- Keep text short and user-facing. Prefer "Review due", "Analyse latest",
+  "Train mistakes", and "Create Opening Review" over technical implementation
+  language.
+- Preserve confidence and safety around destructive actions. Deleting decks,
+  deleting cards, changing trained moves, and overwriting saved data should
+  require clear confirmation or obvious recovery affordances.
+- Responsive behavior matters. Check board size, right-panel scroll behavior,
+  tab labels, engine dock height, and table overflow on laptop and wide
+  viewports.
+- Use icons in compact tabs and action buttons, but provide hover labels or
+  `aria-label`s so the UI remains discoverable.
+- Do not add large explanatory cards inside already framed panels. Review,
+  database, and analysis surfaces should feel like workspaces.
+
+## Implementation Map
+
+- `src/components/tabs/NewTabHome.tsx`: home launcher, recent files, online game
+  picker entry points, Opening Review modal, Mistake Review modal, latest game
+  shortcuts.
+- `src/components/boards/BoardAnalysis.tsx`: main board workspace layout,
+  right-side analysis tabs, annotation layout, engine dock integration.
+- `src/components/boards/Board.tsx`: board input, review practice behavior,
+  arrows, hover previews, visibility toggles, and board-played move overrides.
+- `src/components/review/OpeningReviewWorkspace.tsx`: Opening Review and
+  Mistake Review workspace, review panels, daily/full/focused practice,
+  position list, stats, analyze view, auto-update banner integration.
+- `src/components/panels/gaps/RepertoireGapsPanel.tsx`: Analyze Repertoire and
+  opening health scanning UI.
+- `src/components/panels/database/*`: Database and Database Compare panels,
+  perspective controls, source options, games/openings tables.
+- `src/components/panels/plan/PlanExplorerPanel.tsx`: database-backed plan
+  explorer.
+- `src/components/panels/enginePlan/EnginePlanExplorerPanel.tsx`: engine-backed
+  plan explorer.
+- `src/components/panels/analysis/*`: local/cloud engine display and compact
+  best-move rows.
+- `src/components/common/OnlineGamePickerModal.tsx`: recent online game picker
+  shared by latest-game analysis, online Opening Review, and online Mistake
+  Review.
+- `src/components/databases/AddDatabase.tsx`: database import modal, online
+  account database import, merged database import, Lichess Study import.
+- `src/state/atoms.ts`: persisted source choices, auto-update state, review
+  deck state, practice state, Plan Explorer state, compare selection state.
+- `src/utils/tabs.ts`: tab types and game-origin routing for analysis, database
+  games, Opening Review, and Mistake Review.
+- `src/utils/openingReview*.ts`: review deck persistence, auto-update,
+  position ranking, practice logic, opening names, filters, and compatibility.
+- `src/utils/mistakeReview*.ts`: mistake deck creation, scanning, daily/phase
+  practice, auto-update, and metadata.
+- `src/utils/onlineGameImport.ts`: online database imports and update metadata.
+- `src/utils/onlineLatestGame.ts`: linked provider selection and recent/latest
+  game lookup.
+- `src/utils/lichess/study.ts`: Lichess Study import and update metadata.
+- `src/utils/practiceBot.ts` and `src/hooks/usePracticeAgainstBot.ts`: trainer
+  bot setup, managed Maia/Stockfish selection, and game integration.
+- `src-tauri/src/db/search.rs`: database search, occurrence lookup, repertoire
+  gap search, recent sorting, and perspective-aware result data.
+- `src-tauri/src/db/search_index.rs`: `.ecsi` index format and occurrence table
+  serialization.
+- `src-tauri/src/db/mod.rs`: database import, update, online/study metadata,
+  PGN timestamp normalization, and backend commands.
+- `src-tauri/src/chess.rs`: game metadata and review/mistake backend helpers.
+- `src-tauri/src/engine/process.rs`: local engine process startup and
+  contention fixes.
+- `src-tauri/src/game.rs`: play/trainer bot engine game behavior and clock
+  pacing.
+
+## Recent Feature Inventory
+
+This inventory covers the recent two-week session represented by git history
+from 2026-04-24 through 2026-05-03.
+
+- Analysis workspace: Compare, Database, Plan Explorer, Engine Plans, Info, and
+  Practice were shaped into a board-centered workspace with responsive panels
+  and docked engine output.
+- Plan Explorer: database-backed plan extraction, local and online sources,
+  route previews, pinned arrows, board piece hover shortcuts, auto arrows,
+  caching, and large-database fallback speedups were added.
+- Database search: exact position occurrence indexes, cancellable searches,
+  large-index responsiveness, cache warming, recent move sorting, player
+  perspective filters, and cloud-enhanced move rankings were added.
+- Online data: Lichess/Chess.com imports, merged online databases, online game
+  picker flows, latest-game analysis, selected-game review creation, and
+  Lichess Study database import/update support were added.
+- Opening Review: Analyze Repertoire was moved into review, opening health
+  scoring was added, cloud validation was layered in, review decks became
+  trainable files, and daily/full/focused spaced repetition workflows were
+  added.
+- Mistake Review: mistake scanning, mistake decks, daily progress, phase
+  training, reveal controls, engine dock support, online selected-game scans,
+  auto-updates, and game metadata were added.
+- Practice bot: puzzle/bot entry points, trainer settings, managed Maia,
+  Stockfish fallback, FIDE-style strength selection, and clock pacing were
+  added.
+- Board and layout: resizable board/right-side layout, under-board annotations,
+  tab tooltips, compact engine lines, annotation focus fixes, hover arrow
+  previews, and responsive panel scaling were added.
+- Persistence and compatibility: review deck file storage, old review-card
+  compatibility, no-tab preview safety, stale index refresh, and PGN timestamp
+  normalization were added.
+- Local process guidance: Browser Use/Tauri browser verification notes and the
+  Node runtime workaround were documented.
+
+## Verification Expectations
+
+Choose focused verification based on the touched surface.
+
+- Frontend type/build check: `pnpm build-vite`.
+- Frontend lint for touched files: `pnpm exec oxlint <files>`.
+- Practice/review utility tests: `pnpm vitest run <test-file>` when available.
+- Rust compile check: `cargo check` from `src-tauri` or the repo script used by
+  the project.
+- Database/search tests: `cargo test search_index`,
+  `cargo test exact_matches`, and
+  `cargo test exact_query_ignores_too_much_material_validation`.
+- UI/layout verification: run the Vite app at `http://localhost:1420`, inject
+  Tauri browser stubs if using a normal browser, and inspect real DOM dimensions
+  as well as screenshots.
+- Known historical note: an earlier full `cargo test` had unrelated existing
+  failures in eval/search fixture expectations. Treat broad failures as
+  suspicious, but verify whether they predate the current change before editing
+  unrelated code.
