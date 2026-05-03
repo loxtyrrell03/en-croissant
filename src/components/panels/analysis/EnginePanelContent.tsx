@@ -35,6 +35,7 @@ import {
   engineMovesFamily,
   enginesAtom,
   showArrowsAtom,
+  tabEngineSettingsFamily,
 } from "@/state/atoms";
 import { getVariationLine } from "@/utils/chess";
 import { getPiecesCount, hasCaptures, isOp1, positionFromFen } from "@/utils/chessops";
@@ -271,11 +272,19 @@ function EngineSummary({
 }) {
   const activeTab = useAtomValue(activeTabAtom);
   const [ev] = useAtom(engineMovesFamily({ engine: engine.id, tab: activeTab! }));
+  const settings = useAtomValue(
+    tabEngineSettingsFamily({
+      tab: activeTab!,
+      engineId: engine.id,
+      defaultSettings: engine.type === "local" ? engine.settings || [] : undefined,
+      defaultGo: engine.go ?? undefined,
+    }),
+  );
 
   const curEval = useDeferredValue(
     useMemo(() => ev.get(`${fen}:${moves.join(",")}`), [ev, fen, moves]),
   );
-  const score = curEval && curEval.length > 0 ? curEval[0].score : null;
+  const score = settings.enabled && curEval && curEval.length > 0 ? curEval[0].score : null;
 
   return (
     <Card withBorder c={arrowColors[i]?.strong} py={4} px="xs">

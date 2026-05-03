@@ -987,6 +987,16 @@ export const bestMovesFamily = atomFamily(
             const bestMoves = new Map<number, { pv: string[]; winChance: number }[]>();
             let n = 0;
             for (const engine of engines.filter((e) => e.loaded)) {
+                const settingsAtom = tabEngineSettingsFamily({
+                    tab,
+                    engineId: engine.id,
+                    defaultSettings: engine.type === "local" ? engine.settings || [] : undefined,
+                    defaultGo: engine.go ?? undefined,
+                });
+                if (!get(settingsAtom).enabled) {
+                    n++;
+                    continue;
+                }
                 const engineMoves = get(engineMovesFamily({ tab, engine: engine.id }));
                 const [pos] = positionFromFen(fen);
                 let finalFen = INITIAL_FEN;
@@ -1043,6 +1053,14 @@ export const firstEngineWithLinesFamily = atomFamily(
             }
 
             for (const engine of engines.filter((e) => e.loaded)) {
+                const settingsAtom = tabEngineSettingsFamily({
+                    tab,
+                    engineId: engine.id,
+                    defaultSettings: engine.type === "local" ? engine.settings || [] : undefined,
+                    defaultGo: engine.go ?? undefined,
+                });
+                if (!get(settingsAtom).enabled) continue;
+
                 const engineMoves = get(engineMovesFamily({ tab, engine: engine.id }));
                 const moves =
                     engineMoves.get(`${swapMove(finalFen)}:`) ||

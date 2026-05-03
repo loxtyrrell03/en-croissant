@@ -160,6 +160,7 @@ function BestMovesComponent({
       [ev, searchingFen, searchingMoves],
     ),
   );
+  const displayedEngineVariations = settings.enabled ? engineVariations : undefined;
 
   return (
     <>
@@ -180,7 +181,7 @@ function BestMovesComponent({
         <Accordion.Control>
           <EngineTop
             name={engine.name}
-            engineVariations={engineVariations}
+            engineVariations={displayedEngineVariations}
             isGameOver={isGameOver}
             enabled={settings.enabled}
             progress={progress}
@@ -283,7 +284,9 @@ function BestMovesComponent({
                 </Table.Td>
               </Table.Tr>
             )}
-            {engineVariations && engineVariations.length === 0 && !isGameOver && (
+            {displayedEngineVariations &&
+              displayedEngineVariations.length === 0 &&
+              !isGameOver && (
               <Table.Tr>
                 <Table.Td>
                   <Text ta="center" my="lg">
@@ -294,7 +297,7 @@ function BestMovesComponent({
             )}
             {!isGameOver &&
               !error &&
-              !engineVariations &&
+              !displayedEngineVariations &&
               (settings.enabled ? (
                 [...Array(settings.settings.find((s) => s.name === "MultiPV")?.value ?? 1)].map(
                   (_, i) => (
@@ -317,8 +320,8 @@ function BestMovesComponent({
             {!isGameOver &&
               !error &&
               finalFen &&
-              engineVariations &&
-              engineVariations.map((engineVariation, index) => {
+              displayedEngineVariations &&
+              displayedEngineVariations.map((engineVariation, index) => {
                 return (
                   <AnalysisRow
                     key={index}
