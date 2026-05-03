@@ -45,6 +45,13 @@ import {
   type OnlineGameSource,
   upsertOnlineDatabaseUpdateRecord,
 } from "@/utils/onlineGameImport";
+import {
+  downloadLichessStudyPgnToDatabaseDir,
+  getDefaultLichessStudyDatabaseTitle,
+  getLichessStudyPgnFilename,
+  parseLichessStudyLink,
+  sanitizeFileSegment,
+} from "@/utils/lichess/study";
 import { unwrap } from "@/utils/unwrap";
 import FileInput from "../common/FileInput";
 import ProgressButton from "../common/ProgressButton";
@@ -57,6 +64,12 @@ type OnlineDatabaseFormValues = {
   title: string;
   description: string;
   autoUpdate: boolean;
+};
+
+type LichessStudyDatabaseFormValues = {
+  link: string;
+  title: string;
+  description: string;
 };
 
 function AddDatabase({
@@ -80,6 +93,7 @@ function AddDatabase({
   const setConversionState = useSetAtom(databaseConversionStateAtom);
   const sessions = useAtomValue(sessionsAtom);
   const [onlineImporting, setOnlineImporting] = useState(false);
+  const [studyImporting, setStudyImporting] = useState(false);
 
   const { defaultDatabases, error, isLoading } = useDefaultDatabases(opened);
 
@@ -118,6 +132,33 @@ function AddDatabase({
       ...account,
       token: account.source === "lichess" ? getLichessToken(account.username) : undefined,
     }));
+  }
+
+  function getAnyLichessToken() {
+    return sessions.find((session) => session.lichess?.accessToken)?.lichess?.accessToken;
+  }
+
+  function getStudyDatabaseTitle(values: LichessStudyDatabaseFormValues) {
+    return values.title.trim() || getDefaultLichessStudyDatabaseTitle(values.link);
+  }
+
+  function databaseTitleExists(title: string) {
+    return databases.some(
+      (database) =>
+        database.type === "success" && database.title.toLowerCase() === title.toLowerCase(),
+    );
+  }
+
+  function getAvailableDatabaseTitle(title: string) {
+    const base = sanitizeFileSegment(title) || "Lichess Study";
+    if (!databaseTitleExists(base)) return base;
+
+    for (let index = 2; index < 1000; index += 1) {
+      const candidate = `${base} ${index}`;
+      if (!databaseTitleExists(candidate)) return candidate;
+    }
+
+    return `${base} ${Date.now()}`;
   }
 
   async function convertDB(path: string, title: string, description?: string) {
@@ -210,6 +251,27 @@ function AddDatabase({
     },
   });
 
+  const studyForm = useForm<LichessStudyDatabaseFormValues>({
+    initialValues: {
+      link: "",
+      title: "",
+      description: "",
+    },
+
+    validate: {
+      link: (value) => {
+        if (!value.trim()) return "Paste a Lichess study link";
+        if (!parseLichessStudyLink(value)) return "Paste a valid Lichess study link";
+      },
+      title: (_value, values) => {
+        const explicitTitle = values.title.trim();
+        if (explicitTitle && databaseTitleExists(explicitTitle)) {
+          return t("Common.NameAlreadyUsed");
+        }
+      },
+    },
+  });
+
   const onlineAccounts = getOnlineDatabaseAccounts(onlineForm.values);
   const onlineTitlePlaceholder =
     onlineAccounts.length > 0
@@ -219,6 +281,8 @@ function AddDatabase({
       : onlineForm.values.source === "merged"
         ? "Merged online games"
         : getOnlineGameSourceLabel(onlineForm.values.source);
+  const studyTitlePlaceholder =
+    getDefaultLichessStudyDatabaseTitle(studyForm.values.link) || "Lichess Study";
 
   return (
     <Modal
@@ -231,6 +295,7 @@ function AddDatabase({
         <Tabs.List>
           <Tabs.Tab value="web">{t("Databases.Add.Web")}</Tabs.Tab>
           <Tabs.Tab value="online">{t("Home.Accounts.DownloadGames")}</Tabs.Tab>
+          <Tabs.Tab value="study">Lichess Study</Tabs.Tab>
           <Tabs.Tab value="local">{t("Common.Local")}</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="web" pt="xs">
@@ -374,6 +439,114 @@ function AddDatabase({
                 disabled={disableLocalConversion || onlineImporting}
               >
                 {onlineImporting ? t("Import.Importing") : t("Home.Card.ImportGame.Button")}
+              </Button>
+            </Stack>
+          </form>
+        </Tabs.Panel>
+        <Tabs.Panel value="study" pt="xs">
+          <form
+            onSubmit={studyForm.onSubmit(async (values) => {
+              if (disableLocalConversion || studyImporting) return;
+
+              const reference = parseLichessStudyLink(values.link);
+              if (!reference) return;
+
+              const initialTitle = getStudyDatabaseTitle(values);
+              let title = initialTitle;
+              let dbPath = await resolve(databaseDir, `${title}.db3`);
+              const sourceFileName = getLichessStudyPgnFilename(reference.studyId);
+              let description =
+                values.description.trim() || `Imported from ${reference.canonicalUrl}`;
+
+              setStudyImporting(true);
+              setOpened(false);
+              setConversionState((prev) => ({
+                ...prev,
+                inProgress: true,
+                phase: "downloading",
+                progress: null,
+                progressId: null,
+                totalGames: 0,
+                totalGamesExpected: null,
+                elapsedSeconds: 0,
+                targetDatabasePath: dbPath,
+                targetDatabaseTitle: title,
+                sourceFileName,
+              }));
+
+              try {
+                const download = await downloadLichessStudyPgnToDatabaseDir({
+                  databaseDir,
+                  link: values.link,
+                  token: getAnyLichessToken(),
+                });
+                if (!values.title.trim()) {
+                  title = getAvailableDatabaseTitle(download.title);
+                  dbPath = await resolve(databaseDir, `${title}.db3`);
+                  description =
+                    values.description.trim() || `Imported from ${download.reference.canonicalUrl}`;
+                  setConversionState((prev) => ({
+                    ...prev,
+                    targetDatabasePath: dbPath,
+                    targetDatabaseTitle: title,
+                  }));
+                }
+                const totalGamesExpected = unwrap(await commands.countPgnGames(download.path));
+                if (totalGamesExpected === 0) {
+                  throw new Error("That study did not contain any PGN chapters.");
+                }
+
+                setConversionState((prev) => ({
+                  ...prev,
+                  phase: "converting",
+                  progress: totalGamesExpected > 0 ? 0 : null,
+                  progressId: null,
+                  totalGames: 0,
+                  totalGamesExpected,
+                  elapsedSeconds: 0,
+                  sourceFileName,
+                }));
+
+                unwrap(await commands.convertPgn(download.path, dbPath, null, title, description));
+                setDatabases(await getDatabases());
+                studyForm.reset();
+              } catch (e) {
+                console.error(e);
+                studyForm.setFieldError("link", e instanceof Error ? e.message : String(e));
+                setOpened(true);
+              } finally {
+                setStudyImporting(false);
+                resetDatabaseConversionState(setConversionState);
+              }
+            })}
+          >
+            <Stack gap="sm">
+              <TextInput
+                label="Study link"
+                withAsterisk
+                placeholder="https://lichess.org/study/..."
+                {...studyForm.getInputProps("link")}
+              />
+
+              <TextInput
+                label={t("Common.Name")}
+                placeholder={studyTitlePlaceholder}
+                {...studyForm.getInputProps("title")}
+              />
+
+              <TextInput
+                label={t("Common.Description")}
+                {...studyForm.getInputProps("description")}
+              />
+
+              <Button
+                fullWidth
+                mt="sm"
+                type="submit"
+                loading={studyImporting}
+                disabled={disableLocalConversion || studyImporting}
+              >
+                {studyImporting ? t("Import.Importing") : "Import study"}
               </Button>
             </Stack>
           </form>
