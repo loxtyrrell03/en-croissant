@@ -2,12 +2,15 @@ import { Alert, Box, Group, Paper, Select, SimpleGrid, Stack, Text, Tooltip } fr
 import { useDebouncedValue, useElementSize } from "@mantine/hooks";
 import { Link } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
-import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr/immutable";
+import equal from "fast-deep-equal";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import {
+  comparePanelSettingsByFileAtom,
+  type ComparePanelFileSettings,
   currentCompareDatabasesAtom,
   currentLocalOptionsAtom,
   currentTabAtom,
@@ -17,6 +20,7 @@ import {
   masterOptionsAtom,
   referenceDbAtom,
   sessionsAtom,
+  type StoredDatabaseLocalOptions,
 } from "@/state/atoms";
 import {
   cancelDatabaseSearch,
@@ -30,6 +34,7 @@ import { formatNumber } from "@/utils/format";
 import { getLichessGames, getMasterGames } from "@/utils/lichess/api";
 import type { LichessGamesOptions, MasterGamesOptions } from "@/utils/lichess/explorer";
 import type { OpeningMoveHealthSidePreference } from "@/utils/openingMoveHealth";
+import { getTabWorkspaceKey } from "@/utils/tabs";
 import DatabaseLoader from "./DatabaseLoader";
 import { DatabasePerspectiveControls } from "./DatabasePerspectiveControls";
 import type { LocalOptions } from "./DatabasePanel";
@@ -58,23 +63,72 @@ type CompareSource =
       label: string;
     };
 
+const DEFAULT_COMPARE_LOCAL_OPTIONS: StoredDatabaseLocalOptions = {
+  type: "exact",
+  player: null,
+  playerName: "",
+  color: "white",
+  result: "any",
+};
+
+function toStoredLocalOptions(options: LocalOptions): StoredDatabaseLocalOptions {
+  return {
+    type: options.type,
+    player: options.player,
+    playerName: options.playerName,
+    color: options.color,
+    start_date: options.start_date,
+    end_date: options.end_date,
+    result: options.result,
+  };
+}
+
+function getDefaultCompareSlotOptions(baseOptions: LocalOptions): StoredDatabaseLocalOptions {
+  return {
+    ...DEFAULT_COMPARE_LOCAL_OPTIONS,
+    ...toStoredLocalOptions(baseOptions),
+  };
+}
+
+function toSlotLocalOptions(
+  source: CompareSource | null,
+  fen: string,
+  options: StoredDatabaseLocalOptions,
+): LocalOptions {
+  return {
+    ...DEFAULT_COMPARE_LOCAL_OPTIONS,
+    ...options,
+    fen,
+    path: source?.type === "local" ? source.database.file : null,
+  };
+}
+
 function DatabaseComparePanel() {
   const { t } = useTranslation();
   const store = useContext(TreeStateContext)!;
   const fen = useStore(store, (s) => s.currentNode().fen);
   const [debouncedFen] = useDebouncedValue(fen, 50);
   const tab = useAtomValue(currentTabAtom);
+  const settingsKey = useMemo(() => getTabWorkspaceKey(tab), [tab]);
   const referenceDatabase = useAtomValue(referenceDbAtom);
-  const [localOptions, setLocalOptions] = useAtom(currentLocalOptionsAtom);
-  const lichessOptions = useAtomValue(lichessOptionsAtom);
-  const masterOptions = useAtomValue(masterOptionsAtom);
+  const baseLocalOptions = useAtomValue(currentLocalOptionsAtom);
+  const [lichessOptions, setLichessOptions] = useAtom(lichessOptionsAtom);
+  const [masterOptions, setMasterOptions] = useAtom(masterOptionsAtom);
   const sessions = useAtomValue(sessionsAtom);
   const [selectedDatabases, setSelectedDatabases] = useAtom(currentCompareDatabasesAtom);
   const [rememberedCompareDatabases, setRememberedCompareDatabases] = useAtom(
     rememberedCompareDatabasesAtom,
   );
+  const [compareSettingsByFile, setCompareSettingsByFile] = useAtom(comparePanelSettingsByFileAtom);
+  const savedCompareSettings = settingsKey ? compareSettingsByFile[settingsKey] : undefined;
   const [moveHealthSide, setMoveHealthSide] = useAtom(databaseMoveHealthSideAtom);
+  const [slotLocalOptions, setSlotLocalOptions] = useState<StoredDatabaseLocalOptions[]>(() => [
+    getDefaultCompareSlotOptions(baseLocalOptions),
+    getDefaultCompareSlotOptions(baseLocalOptions),
+  ]);
   const [openingsBySearchId, setOpeningsBySearchId] = useState<Record<string, Opening[]>>({});
+  const appliedSettingsKeyRef = useRef<string | null>(null);
+  const skipNextPersistKeyRef = useRef<string | null>(null);
   const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
     ?.accessToken;
   const { ref: panelRef, width: panelWidth } = useElementSize();
@@ -91,6 +145,7 @@ function DatabaseComparePanel() {
       }),
     [databases],
   );
+  const databasesLoaded = databases !== undefined;
   const compareSources = useMemo<CompareSource[]>(
     () => [
       ...localDatabases.map((database) => ({
@@ -114,29 +169,76 @@ function DatabaseComparePanel() {
   );
 
   useEffect(() => {
-    if (compareSources.length === 0) return;
+    const hydrationKey = settingsKey ?? "__default-compare-settings__";
+    if (appliedSettingsKeyRef.current === hydrationKey) return;
 
-    setSelectedDatabases((current) => {
-      const available = new Set(compareSources.map((source) => source.value));
-      const currentPair = current.slice(0, 2).filter((path) => available.has(path));
-      const defaults = [
-        ...rememberedCompareDatabases,
+    if (!savedCompareSettings && !databasesLoaded) return;
+    appliedSettingsKeyRef.current = hydrationKey;
+    if (settingsKey) skipNextPersistKeyRef.current = settingsKey;
+
+    const defaultSlotOptions = getDefaultCompareSlotOptions(baseLocalOptions);
+    if (savedCompareSettings) {
+      setSelectedDatabases(
+        savedCompareSettings.slots
+          .map((slot) => slot.sourceValue)
+          .filter((sourceValue): sourceValue is string => Boolean(sourceValue))
+          .slice(0, 2),
+      );
+      setSlotLocalOptions(
+        [0, 1].map((index) => ({
+          ...defaultSlotOptions,
+          ...savedCompareSettings.slots[index]?.localOptions,
+        })),
+      );
+      setLichessOptions(savedCompareSettings.lichessOptions);
+      setMasterOptions(savedCompareSettings.masterOptions);
+      setMoveHealthSide(savedCompareSettings.moveHealthSide);
+      return;
+    }
+
+    setSlotLocalOptions([defaultSlotOptions, defaultSlotOptions]);
+    setSelectedDatabases((current) =>
+      getFilledCompareSelection(
+        current,
+        compareSources,
+        rememberedCompareDatabases,
         referenceDatabase,
-        ...compareSources.map((source) => source.value),
-      ].filter((path): path is string => typeof path === "string" && available.has(path));
+      ),
+    );
+  }, [
+    baseLocalOptions,
+    compareSources,
+    databasesLoaded,
+    referenceDatabase,
+    rememberedCompareDatabases,
+    savedCompareSettings,
+    setLichessOptions,
+    setMasterOptions,
+    setMoveHealthSide,
+    setSelectedDatabases,
+    settingsKey,
+  ]);
 
-      const next: string[] = [];
-      for (const path of [...currentPair, ...defaults]) {
-        if (!next.includes(path)) next.push(path);
-        if (next.length === 2) break;
-      }
+  useEffect(() => {
+    if (!databasesLoaded || appliedSettingsKeyRef.current === null) return;
+    if (settingsKey && skipNextPersistKeyRef.current === settingsKey) return;
 
-      if (next.length === current.length && next.every((path, index) => path === current[index])) {
-        return current;
-      }
-      return next;
-    });
-  }, [compareSources, referenceDatabase, rememberedCompareDatabases, setSelectedDatabases]);
+    setSelectedDatabases((current) =>
+      getFilledCompareSelection(
+        current,
+        compareSources,
+        rememberedCompareDatabases,
+        referenceDatabase,
+      ),
+    );
+  }, [
+    compareSources,
+    databasesLoaded,
+    referenceDatabase,
+    rememberedCompareDatabases,
+    setSelectedDatabases,
+    settingsKey,
+  ]);
 
   const setDatabaseAt = (index: number, value: string | null) => {
     const next = getNextSelectedDatabases(selectedDatabases, index, value);
@@ -144,19 +246,39 @@ function DatabaseComparePanel() {
     setRememberedCompareDatabases(next);
   };
 
+  const setSlotLocalOptionsAt = (
+    index: number,
+    updater:
+      | StoredDatabaseLocalOptions
+      | ((current: StoredDatabaseLocalOptions) => StoredDatabaseLocalOptions),
+  ) => {
+    setSlotLocalOptions((current) => {
+      const fallback = getDefaultCompareSlotOptions(baseLocalOptions);
+      const next = [current[0] ?? fallback, current[1] ?? fallback];
+      const currentOptions = next[index] ?? fallback;
+      next[index] = typeof updater === "function" ? updater(currentOptions) : updater;
+      return next;
+    });
+  };
+
   const selectedPair = [selectedDatabases[0] ?? null, selectedDatabases[1] ?? null] as const;
   const selectedSources = selectedPair.map(
     (sourceValue) => compareSources.find((item) => item.value === sourceValue) ?? null,
   );
-  const perspectiveDatabasePath =
-    selectedSources.find((source) => source?.type === "local")?.database.file ?? null;
-  const searchIds = selectedSources.map((source) =>
+  const slotOptions = [0, 1].map((index) =>
+    toSlotLocalOptions(
+      selectedSources[index],
+      debouncedFen,
+      slotLocalOptions[index] ?? getDefaultCompareSlotOptions(baseLocalOptions),
+    ),
+  ) as [LocalOptions, LocalOptions];
+  const searchIds = selectedSources.map((source, index) =>
     source
       ? getCompareSearchId(
           source,
           tab?.value ?? "compare",
           debouncedFen,
-          localOptions,
+          slotOptions[index],
           lichessOptions,
           masterOptions,
         )
@@ -171,6 +293,42 @@ function DatabaseComparePanel() {
       };
     });
   }, []);
+
+  useEffect(() => {
+    if (!settingsKey || appliedSettingsKeyRef.current !== settingsKey) return;
+    if (skipNextPersistKeyRef.current === settingsKey) {
+      skipNextPersistKeyRef.current = null;
+      return;
+    }
+
+    const defaultSlotOptions = getDefaultCompareSlotOptions(baseLocalOptions);
+    const nextSettings: ComparePanelFileSettings = {
+      slots: [0, 1].map((index) => ({
+        sourceValue: selectedDatabases[index] ?? null,
+        localOptions: slotLocalOptions[index] ?? defaultSlotOptions,
+      })),
+      lichessOptions,
+      masterOptions,
+      moveHealthSide,
+    };
+
+    setCompareSettingsByFile((current) => {
+      if (equal(current[settingsKey], nextSettings)) return current;
+      return {
+        ...current,
+        [settingsKey]: nextSettings,
+      };
+    });
+  }, [
+    baseLocalOptions,
+    lichessOptions,
+    masterOptions,
+    moveHealthSide,
+    selectedDatabases,
+    setCompareSettingsByFile,
+    settingsKey,
+    slotLocalOptions,
+  ]);
 
   return (
     <Stack
@@ -190,18 +348,6 @@ function DatabaseComparePanel() {
           Database comparison
         </Text>
         <Group gap={tableDensity === "dense" ? 4 : "xs"} wrap="wrap" justify="flex-end">
-          <DatabasePerspectiveControls
-            databasePath={perspectiveDatabasePath}
-            player={localOptions.player}
-            playerName={localOptions.playerName}
-            color={localOptions.color}
-            onPlayerChange={(player) => setLocalOptions((q) => ({ ...q, player }))}
-            onPlayerNameChange={(playerName) => setLocalOptions((q) => ({ ...q, playerName }))}
-            onColorChange={(color) => setLocalOptions((q) => ({ ...q, color }))}
-            size="xs"
-            playerWidth={tableDensity === "dense" ? 126 : 160}
-            colorWidth={tableDensity === "dense" ? 112 : 126}
-          />
           <Tooltip label="Evaluate move strength for this side">
             <Select
               data={openingMoveHealthSideOptions}
@@ -237,14 +383,14 @@ function DatabaseComparePanel() {
             sources={compareSources}
             otherSourceValue={selectedPair[index === 0 ? 1 : 0]}
             fen={debouncedFen}
-            localOptions={localOptions}
+            localOptions={slotOptions[index]}
             lichessOptions={lichessOptions}
             masterOptions={masterOptions}
             explorerToken={explorerToken}
             moveHealthSide={moveHealthSide}
             resultPerspective={
               selectedSources[index]?.type === "local"
-                ? getLocalResultPerspective(localOptions)
+                ? getLocalResultPerspective(slotOptions[index])
                 : null
             }
             density={tableDensity}
@@ -255,6 +401,7 @@ function DatabaseComparePanel() {
                 : undefined
             }
             onChange={(value) => setDatabaseAt(index, value)}
+            onLocalOptionsChange={(updater) => setSlotLocalOptionsAt(index, updater)}
             onOpeningsLoaded={rememberOpenings}
           />
         ))}
@@ -279,6 +426,7 @@ function CompareDatabaseTable({
   searchId,
   referenceOpenings,
   onChange,
+  onLocalOptionsChange,
   onOpeningsLoaded,
 }: {
   label: string;
@@ -296,6 +444,11 @@ function CompareDatabaseTable({
   searchId: string | null;
   referenceOpenings?: Opening[];
   onChange: (value: string | null) => void;
+  onLocalOptionsChange: (
+    updater:
+      | StoredDatabaseLocalOptions
+      | ((current: StoredDatabaseLocalOptions) => StoredDatabaseLocalOptions),
+  ) => void;
   onOpeningsLoaded: (searchId: string, openings: Opening[]) => void;
 }) {
   const { t } = useTranslation();
@@ -397,6 +550,24 @@ function CompareDatabaseTable({
           {formatNumber(total)} matches
         </Text>
       </Group>
+      {source?.type === "local" && (
+        <Box mt={dense ? 4 : 6}>
+          <DatabasePerspectiveControls
+            databasePath={source.database.file}
+            player={localOptions.player}
+            playerName={localOptions.playerName}
+            color={localOptions.color}
+            onPlayerChange={(player) => onLocalOptionsChange((current) => ({ ...current, player }))}
+            onPlayerNameChange={(playerName) =>
+              onLocalOptionsChange((current) => ({ ...current, playerName }))
+            }
+            onColorChange={(color) => onLocalOptionsChange((current) => ({ ...current, color }))}
+            size="xs"
+            playerWidth={dense ? 132 : 170}
+            colorWidth={dense ? 112 : 126}
+          />
+        </Box>
+      )}
       <Select
         data={openingSortOptions}
         value={openingSort}
@@ -448,6 +619,32 @@ function getNextSelectedDatabases(current: string[], index: number, value: strin
   }
 
   return [...new Set(next.filter((path): path is string => Boolean(path)))];
+}
+
+function getFilledCompareSelection(
+  current: string[],
+  compareSources: CompareSource[],
+  rememberedCompareDatabases: (string | null)[],
+  referenceDatabase: string | null,
+) {
+  const available = new Set(compareSources.map((source) => source.value));
+  const currentPair = current.slice(0, 2).filter((path) => available.has(path));
+  const defaults = [
+    ...rememberedCompareDatabases,
+    referenceDatabase,
+    ...compareSources.map((source) => source.value),
+  ].filter((path): path is string => typeof path === "string" && available.has(path));
+
+  const next: string[] = [];
+  for (const path of [...currentPair, ...defaults]) {
+    if (!next.includes(path)) next.push(path);
+    if (next.length === 2) break;
+  }
+
+  if (next.length === current.length && next.every((path, index) => path === current[index])) {
+    return current;
+  }
+  return next;
 }
 
 function getCompareSearchId(

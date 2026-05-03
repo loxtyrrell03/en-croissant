@@ -327,6 +327,37 @@ export const defaultCompareDatabasesAtom = atomWithStorage<(string | null)[]>(
     [],
 );
 
+export type StoredDatabaseLocalOptions = Omit<LocalOptions, "fen" | "path">;
+
+export type DatabasePanelFileSettings = {
+    source: DatabaseSourcePreference;
+    localOptions: StoredDatabaseLocalOptions;
+    lichessOptions: LichessGamesOptions;
+    masterOptions: MasterGamesOptions;
+    moveHealthSide: OpeningMoveHealthSidePreference;
+    tabType: string;
+};
+
+export const databasePanelSettingsByFileAtom = atomWithStorage<
+    Record<string, DatabasePanelFileSettings>
+>("database-panel-settings-by-file", {});
+
+export type ComparePanelSlotSettings = {
+    sourceValue: string | null;
+    localOptions: StoredDatabaseLocalOptions;
+};
+
+export type ComparePanelFileSettings = {
+    slots: ComparePanelSlotSettings[];
+    lichessOptions: LichessGamesOptions;
+    masterOptions: MasterGamesOptions;
+    moveHealthSide: OpeningMoveHealthSidePreference;
+};
+
+export const comparePanelSettingsByFileAtom = atomWithStorage<
+    Record<string, ComparePanelFileSettings>
+>("database-compare-settings-by-file", {});
+
 export const databaseMoveHealthSideAtom = atomWithStorage<OpeningMoveHealthSidePreference>(
     "database-move-health-side",
     "sideToMove",

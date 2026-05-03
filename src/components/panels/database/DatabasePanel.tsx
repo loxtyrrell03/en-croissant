@@ -16,6 +16,7 @@ import { useAtom, useAtomValue } from "jotai";
 import { memo, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr/immutable";
+import equal from "fast-deep-equal";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { commands, type Player } from "@/bindings";
@@ -26,13 +27,16 @@ import {
   currentDbTypeAtom,
   currentLocalOptionsAtom,
   currentTabAtom,
+  databasePanelSettingsByFileAtom,
   databaseMoveHealthSideAtom,
   defaultDatabaseSourceAtom,
+  type DatabasePanelFileSettings,
   type DatabaseSourcePreference,
   lichessOptionsAtom,
   masterOptionsAtom,
   referenceDbAtom,
   sessionsAtom,
+  type StoredDatabaseLocalOptions,
 } from "@/state/atoms";
 import {
   cancelDatabaseSearch,
@@ -46,6 +50,7 @@ import { formatNumber } from "@/utils/format";
 import { convertToNormalized, getLichessGames, getMasterGames } from "@/utils/lichess/api";
 import type { LichessGamesOptions, MasterGamesOptions } from "@/utils/lichess/explorer";
 import type { OpeningMoveHealthSidePreference } from "@/utils/openingMoveHealth";
+import { getTabWorkspaceKey } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
 import { IconStar, IconStarFilled } from "@tabler/icons-react";
 import DatabaseLoader from "./DatabaseLoader";
@@ -172,6 +177,18 @@ function normalizePlayerText(value: string) {
     .replace(/\s+/g, " ");
 }
 
+function toStoredLocalOptions(options: LocalOptions): StoredDatabaseLocalOptions {
+  return {
+    type: options.type,
+    player: options.player,
+    playerName: options.playerName,
+    color: options.color,
+    start_date: options.start_date,
+    end_date: options.end_date,
+    result: options.result,
+  };
+}
+
 async function fetchOpening(
   db: DBType,
   tab: string,
@@ -250,6 +267,12 @@ function DatabasePanel() {
   const fen = useStore(store, (s) => s.currentNode().fen);
   const [referenceDatabase, setReferenceDatabase] = useAtom(referenceDbAtom);
   const [defaultDatabaseSource, setDefaultDatabaseSource] = useAtom(defaultDatabaseSourceAtom);
+  const [databasePanelSettingsByFile, setDatabasePanelSettingsByFile] = useAtom(
+    databasePanelSettingsByFileAtom,
+  );
+  const tab = useAtomValue(currentTabAtom);
+  const settingsKey = useMemo(() => getTabWorkspaceKey(tab), [tab]);
+  const savedPanelSettings = settingsKey ? databasePanelSettingsByFile[settingsKey] : undefined;
   const sessions = useAtomValue(sessionsAtom);
   const [debouncedFen] = useDebouncedValue(fen, 50);
   const [lichessOptions, setLichessOptions] = useAtom(lichessOptionsAtom);
@@ -345,24 +368,46 @@ function DatabasePanel() {
     }))
     .exhaustive();
 
-  const tab = useAtomValue(currentTabAtom);
   const [tabType, setTabType] = useAtom(currentDbTabAtom);
-  const appliedDefaultRef = useRef(false);
+  const appliedSettingsKeyRef = useRef<string | null>(null);
+  const skipNextPersistKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (appliedDefaultRef.current) return;
-    appliedDefaultRef.current = true;
+    const hydrationKey = settingsKey ?? "__default-database-settings__";
+    if (appliedSettingsKeyRef.current === hydrationKey) return;
+    appliedSettingsKeyRef.current = hydrationKey;
+    if (settingsKey) skipNextPersistKeyRef.current = settingsKey;
 
-    if (defaultDatabaseSource.type === "local") {
+    const source = savedPanelSettings?.source ?? defaultDatabaseSource;
+    if (source.type === "local") {
       setDb("local");
-      if (defaultDatabaseSource.value) {
-        setReferenceDatabase(defaultDatabaseSource.value);
-      }
-      return;
+      setReferenceDatabase(source.value ?? null);
+    } else {
+      setDb(source.type);
     }
 
-    setDb(defaultDatabaseSource.type);
-  }, [defaultDatabaseSource, setDb, setReferenceDatabase]);
+    if (savedPanelSettings) {
+      setLocalOptions((current) => ({
+        ...current,
+        ...savedPanelSettings.localOptions,
+      }));
+      setLichessOptions(savedPanelSettings.lichessOptions);
+      setMasterOptions(savedPanelSettings.masterOptions);
+      setMoveHealthSide(savedPanelSettings.moveHealthSide);
+      setTabType(savedPanelSettings.tabType);
+    }
+  }, [
+    defaultDatabaseSource,
+    savedPanelSettings,
+    setDb,
+    setLichessOptions,
+    setLocalOptions,
+    setMasterOptions,
+    setMoveHealthSide,
+    setReferenceDatabase,
+    setTabType,
+    settingsKey,
+  ]);
 
   const selectedDefaultSource = useMemo(() => {
     if (db === "local") {
@@ -379,6 +424,41 @@ function DatabasePanel() {
     defaultDatabaseSource,
   );
   const canSaveDefault = db !== "local" || !!referenceDatabase;
+
+  useEffect(() => {
+    if (!settingsKey || appliedSettingsKeyRef.current !== settingsKey) return;
+    if (skipNextPersistKeyRef.current === settingsKey) {
+      skipNextPersistKeyRef.current = null;
+      return;
+    }
+
+    const nextSettings: DatabasePanelFileSettings = {
+      source: selectedDefaultSource,
+      localOptions: toStoredLocalOptions(localOptions),
+      lichessOptions,
+      masterOptions,
+      moveHealthSide,
+      tabType,
+    };
+
+    setDatabasePanelSettingsByFile((current) => {
+      if (equal(current[settingsKey], nextSettings)) return current;
+      return {
+        ...current,
+        [settingsKey]: nextSettings,
+      };
+    });
+  }, [
+    lichessOptions,
+    localOptions,
+    masterOptions,
+    moveHealthSide,
+    selectedDefaultSource,
+    setDatabasePanelSettingsByFile,
+    settingsKey,
+    tabType,
+  ]);
+
   const databaseRequestId = useMemo(
     () =>
       [

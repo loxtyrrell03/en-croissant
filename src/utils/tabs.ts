@@ -111,6 +111,23 @@ export function getTabPracticeKey(tab?: Tab | null): string {
     return getTabFile(tab)?.path || "";
 }
 
+export function getTabWorkspaceKey(tab?: Tab | null): string | null {
+    if (!tab) return null;
+
+    switch (tab.gameOrigin.kind) {
+        case "file":
+        case "temp_file":
+            return tab.gameOrigin.file.path;
+        case "database":
+            return `database:${tab.gameOrigin.database}:${tab.gameOrigin.gameId}`;
+        case "opening_review":
+        case "mistake_review":
+            return tab.gameOrigin.path;
+        case "none":
+            return null;
+    }
+}
+
 export function isPersistentGameOrigin(tab?: Tab | null): boolean {
     if (!tab) return false;
     return (
