@@ -73,15 +73,17 @@ export const currentTabAtom = atom(
     (get) => {
         const tabs = get(tabsAtom);
         const activeTab = get(activeTabAtom);
-        return tabs.find((tab) => tab.value === activeTab);
+        return (
+            tabs.find((tab) => tab.value === activeTab) ?? tabs.find((tab) => tab.type !== "new")
+        );
     },
     (get, set, newValue: Tab | ((currentTab: Tab) => Tab)) => {
         const tabs = get(tabsAtom);
-        const activeTab = get(activeTabAtom);
-        const nextValue =
-            typeof newValue === "function" ? newValue(get(currentTabAtom)!) : newValue;
+        const currentTab = get(currentTabAtom);
+        if (!currentTab) return;
+        const nextValue = typeof newValue === "function" ? newValue(currentTab) : newValue;
         const newTabs = tabs.map((tab) => {
-            if (tab.value === activeTab) {
+            if (tab.value === currentTab.value) {
                 return nextValue;
             }
             return tab;
@@ -459,19 +461,18 @@ export const gameOpeningBookMaxPlyAtom = atomWithStorage<number>("game-opening-b
 function tabValue<T extends object | string | boolean | number | null | undefined>(
     family: AtomFamily<string, PrimitiveAtom<T>>,
 ) {
+    const fallbackTabValue = "__no-tab-selected__";
+
     return atom(
         (get) => {
             const tab = get(currentTabAtom);
-            if (!tab) throw new Error("No tab selected");
-            const atom = family(tab.value);
+            const atom = family(tab?.value ?? fallbackTabValue);
             return get(atom);
         },
         (get, set, newValue: T | ((currentValue: T) => T)) => {
             const tab = get(currentTabAtom);
-            if (!tab) throw new Error("No tab selected");
-            const nextValue =
-                typeof newValue === "function" ? newValue(get(tabValue(family))) : newValue;
-            const atom = family(tab.value);
+            const atom = family(tab?.value ?? fallbackTabValue);
+            const nextValue = typeof newValue === "function" ? newValue(get(atom)) : newValue;
             set(atom, nextValue);
         },
     );
