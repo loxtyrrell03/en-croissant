@@ -2,6 +2,7 @@ import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import {
   Accordion,
   ActionIcon,
+  Box,
   Button,
   Card,
   Group,
@@ -83,159 +84,169 @@ export default function EnginePanelContent({ compact = false }: { compact?: bool
   const [pos] = positionFromFen(currentNodeFen);
   const navigate = useNavigate();
 
-  return (
-    <Stack h="100%" gap={compact ? 4 : "sm"} style={{ minHeight: 0 }}>
-      <ScrollArea
-        flex={1}
-        offsetScrollbars
-        onScrollPositionChange={() => document.dispatchEvent(new Event("analysis-panel-scroll"))}
-      >
-        <Stack gap={compact ? 4 : "sm"} p={compact ? 4 : 0}>
-          <Paper withBorder={!compact} p={compact ? 2 : "xs"}>
-            <Group justify="space-between" gap="xs" wrap="nowrap">
-              <Text size={compact ? "xs" : "sm"} fw={600}>
-                Engine arrows
-              </Text>
-              <Switch
-                size={compact ? "xs" : "md"}
-                checked={showEngineArrows}
-                onChange={(event) => setShowEngineArrows(event.currentTarget.checked)}
-                aria-label={showEngineArrows ? "Hide engine arrows" : "Show engine arrows"}
-              />
-            </Group>
-          </Paper>
-          {pos &&
-            (getPiecesCount(pos) <= 7 ||
-              (getPiecesCount(pos) === 8 && (hasCaptures(pos) || isOp1(pos)))) && (
-              <>
-                <TablebaseInfo fen={currentNodeFen} turn={pos.turn} />
-                <Space h={compact ? 2 : "sm"} />
-              </>
-            )}
-          {loadedEngines.length > 1 && (
-            <Paper withBorder p="xs" flex={1}>
-              <Group w="100%" gap="xs" wrap="nowrap">
-                <ActionIcon size="lg" variant="default" onClick={() => enable(!allEnabled)}>
-                  {allEnabled ? (
-                    <IconPlayerPause size="1.25rem" />
-                  ) : (
-                    <IconChevronsRight size="1.25rem" />
-                  )}
-                </ActionIcon>
-                <Group grow flex={1} gap="xs">
-                  {loadedEngines.map((engine, i) => (
-                    <EngineSummary
-                      key={engine.name}
-                      engine={engine}
-                      fen={rootFen}
-                      moves={moves}
-                      shorten={loadedEngines.length > 3}
-                      i={i}
-                    />
-                  ))}
-                </Group>
-              </Group>
-            </Paper>
-          )}
-          {!compact && (
-            <Text size="xs" c="dimmed" px={0} style={{ lineHeight: 1.8 }}>
-              Press <Kbd>E</Kbd> to toggle engine. <Kbd>Space</Kbd> plays best move. Click moves to
-              explore.
+  const engineContent = (
+    <Stack gap={compact ? 3 : "sm"} p={compact ? 3 : 0}>
+      {!compact && (
+        <Paper withBorder p="xs">
+          <Group justify="space-between" gap="xs" wrap="nowrap">
+            <Text size="sm" fw={600}>
+              Engine arrows
             </Text>
-          )}
-          <Accordion
-            variant="separated"
-            multiple
-            chevronSize={0}
-            value={expanded ?? loadedEngines.map((e) => e.name)}
-            onChange={(v) => setExpanded(v)}
-            styles={{
-              label: {
-                paddingTop: 0,
-                paddingBottom: 0,
-              },
-              content: {
-                padding: "0.3rem",
-              },
-            }}
-          >
-            <DragDropContext
-              onDragEnd={({ destination, source }) => {
-                if (destination?.index === undefined) return;
-                startTransition(async () => {
-                  const reordered = reorderEngines(
-                    optimisticEngines,
-                    source.index,
-                    destination.index,
-                  );
-                  setOptimisticEngines(reordered);
-                  await setEngines(reordered);
-                });
-              }}
-            >
-              <Droppable
-                droppableId={compact ? "engine-dock-droppable" : "droppable"}
-                direction="vertical"
-              >
-                {(provided) => (
-                  <div ref={provided.innerRef} {...provided.droppableProps}>
-                    <Stack w="100%" gap="xs">
-                      {loadedEngines.map((engine, i) => (
-                        <Draggable
-                          key={engine.name + i.toString()}
-                          draggableId={engine.name}
-                          index={i}
-                        >
-                          {(provided) => (
-                            <div ref={provided.innerRef} {...provided.draggableProps}>
-                              <Accordion.Item value={engine.name}>
-                                <BestMoves
-                                  id={i}
-                                  engine={engine}
-                                  fen={rootFen}
-                                  moves={moves}
-                                  halfMoves={currentNodeHalfMoves}
-                                  dragHandleProps={provided.dragHandleProps}
-                                  orientation={headers.orientation || "white"}
-                                />
-                              </Accordion.Item>
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                    </Stack>
-
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </DragDropContext>
-          </Accordion>
-          <Group gap="xs">
-            <Button
-              flex={1}
-              variant="default"
-              onClick={() => {
-                navigate({ to: "/engines" });
-              }}
-              leftSection={<IconSettings size="0.875rem" />}
-            >
-              {t("Board.Analysis.ManageEngines")}
-            </Button>
-            <Popover width={250} position="top-end" shadow="md">
-              <Popover.Target>
-                <ActionIcon variant="default" size="lg">
-                  <IconSelector />
-                </ActionIcon>
-              </Popover.Target>
-
-              <Popover.Dropdown>
-                <EngineSelection />
-              </Popover.Dropdown>
-            </Popover>
+            <Switch
+              size="md"
+              checked={showEngineArrows}
+              onChange={(event) => setShowEngineArrows(event.currentTarget.checked)}
+              aria-label={showEngineArrows ? "Hide engine arrows" : "Show engine arrows"}
+            />
           </Group>
-        </Stack>
-      </ScrollArea>
+        </Paper>
+      )}
+      {!compact &&
+        pos &&
+        (getPiecesCount(pos) <= 7 ||
+          (getPiecesCount(pos) === 8 && (hasCaptures(pos) || isOp1(pos)))) && (
+          <>
+            <TablebaseInfo fen={currentNodeFen} turn={pos.turn} />
+            <Space h="sm" />
+          </>
+        )}
+      {!compact && loadedEngines.length > 1 && (
+        <Paper withBorder p="xs" flex={1}>
+          <Group w="100%" gap="xs" wrap="nowrap">
+            <ActionIcon size="lg" variant="default" onClick={() => enable(!allEnabled)}>
+              {allEnabled ? (
+                <IconPlayerPause size="1.25rem" />
+              ) : (
+                <IconChevronsRight size="1.25rem" />
+              )}
+            </ActionIcon>
+            <Group grow flex={1} gap="xs">
+              {loadedEngines.map((engine, i) => (
+                <EngineSummary
+                  key={engine.name}
+                  engine={engine}
+                  fen={rootFen}
+                  moves={moves}
+                  shorten={loadedEngines.length > 3}
+                  i={i}
+                />
+              ))}
+            </Group>
+          </Group>
+        </Paper>
+      )}
+      {!compact && (
+        <Text size="xs" c="dimmed" px={0} style={{ lineHeight: 1.8 }}>
+          Press <Kbd>E</Kbd> to toggle engine. <Kbd>Space</Kbd> plays best move. Click moves to
+          explore.
+        </Text>
+      )}
+      <Accordion
+        variant="separated"
+        multiple
+        chevronSize={0}
+        value={expanded ?? loadedEngines.map((e) => e.name)}
+        onChange={(v) => setExpanded(v)}
+        styles={{
+          control: compact ? { padding: 0 } : undefined,
+          item: compact ? { marginBottom: 3 } : undefined,
+          label: {
+            paddingTop: 0,
+            paddingBottom: 0,
+          },
+          content: {
+            padding: compact ? "0.1rem 0.15rem" : "0.3rem",
+          },
+        }}
+      >
+        <DragDropContext
+          onDragEnd={({ destination, source }) => {
+            if (destination?.index === undefined) return;
+            startTransition(async () => {
+              const reordered = reorderEngines(optimisticEngines, source.index, destination.index);
+              setOptimisticEngines(reordered);
+              await setEngines(reordered);
+            });
+          }}
+        >
+          <Droppable
+            droppableId={compact ? "engine-dock-droppable" : "droppable"}
+            direction="vertical"
+          >
+            {(provided) => (
+              <div ref={provided.innerRef} {...provided.droppableProps}>
+                <Stack w="100%" gap={compact ? 3 : "xs"}>
+                  {loadedEngines.map((engine, i) => (
+                    <Draggable key={engine.name + i.toString()} draggableId={engine.name} index={i}>
+                      {(provided) => (
+                        <div ref={provided.innerRef} {...provided.draggableProps}>
+                          <Accordion.Item value={engine.name}>
+                            <BestMoves
+                              id={i}
+                              engine={engine}
+                              fen={rootFen}
+                              moves={moves}
+                              halfMoves={currentNodeHalfMoves}
+                              dragHandleProps={provided.dragHandleProps}
+                              orientation={headers.orientation || "white"}
+                              compact={compact}
+                            />
+                          </Accordion.Item>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                </Stack>
+
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </Accordion>
+      {(!compact || loadedEngines.length === 0) && (
+        <Group gap="xs">
+          <Button
+            flex={1}
+            variant="default"
+            onClick={() => {
+              navigate({ to: "/engines" });
+            }}
+            leftSection={<IconSettings size="0.875rem" />}
+          >
+            {t("Board.Analysis.ManageEngines")}
+          </Button>
+          <Popover width={250} position="top-end" shadow="md">
+            <Popover.Target>
+              <ActionIcon variant="default" size="lg">
+                <IconSelector />
+              </ActionIcon>
+            </Popover.Target>
+
+            <Popover.Dropdown>
+              <EngineSelection />
+            </Popover.Dropdown>
+          </Popover>
+        </Group>
+      )}
+    </Stack>
+  );
+
+  return (
+    <Stack h="100%" gap={compact ? 3 : "sm"} style={{ minHeight: 0 }}>
+      {compact ? (
+        <Box flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
+          {engineContent}
+        </Box>
+      ) : (
+        <ScrollArea
+          flex={1}
+          offsetScrollbars
+          onScrollPositionChange={() => document.dispatchEvent(new Event("analysis-panel-scroll"))}
+        >
+          {engineContent}
+        </ScrollArea>
+      )}
     </Stack>
   );
 }

@@ -11,6 +11,12 @@
   max-width: 100%;
 }
 
+.cellCompact {
+  font-size: 0.78rem;
+  line-height: 1.15;
+  padding: 2px 4px;
+}
+
 [data-mantine-color-scheme="light"] .cell {
   color: var(--light-color);
   background-color: var(--light-bg);

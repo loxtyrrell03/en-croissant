@@ -66,6 +66,7 @@ interface BestMovesProps {
   halfMoves: number;
   dragHandleProps: any;
   orientation: "white" | "black";
+  compact?: boolean;
 }
 
 function BestMovesComponent({
@@ -76,6 +77,7 @@ function BestMovesComponent({
   halfMoves,
   dragHandleProps,
   orientation,
+  compact = false,
 }: BestMovesProps) {
   const { t } = useTranslation();
 
@@ -164,21 +166,31 @@ function BestMovesComponent({
 
   return (
     <>
-      <Box style={{ display: "flex" }}>
-        <Stack gap={0} py="1rem">
+      <Box
+        style={{
+          display: "flex",
+          alignItems: "center",
+          minHeight: compact ? "2.1rem" : undefined,
+        }}
+      >
+        <Stack gap={0} py={compact ? 3 : "1rem"}>
           <ActionIcon
-            size="md"
+            size={compact ? "sm" : "md"}
             variant={settings.enabled ? "filled" : "transparent"}
             color={id < 4 ? arrowColors[id].strong : theme.primaryColor}
             onClick={() => {
               setSettings((prev) => ({ ...prev, enabled: !prev.enabled }));
             }}
-            ml={12}
+            ml={compact ? 6 : 12}
           >
-            {settings.enabled ? <IconPlayerPause size="1rem" /> : <IconPlayerPlay size="1rem" />}
+            {settings.enabled ? (
+              <IconPlayerPause size={compact ? "0.8rem" : "1rem"} />
+            ) : (
+              <IconPlayerPlay size={compact ? "0.8rem" : "1rem"} />
+            )}
           </ActionIcon>
         </Stack>
-        <Accordion.Control>
+        <Accordion.Control style={compact ? { padding: "0.15rem 0.35rem" } : undefined}>
           <EngineTop
             name={engine.name}
             engineVariations={displayedEngineVariations}
@@ -186,24 +198,28 @@ function BestMovesComponent({
             enabled={settings.enabled}
             progress={progress}
             error={error}
+            compact={compact}
           />
         </Accordion.Control>
         <ActionIcon.Group>
           <Tooltip label="Check the opponent's threat">
             <ActionIcon
-              size="lg"
+              size={compact ? "sm" : "lg"}
               onClick={() => setThreat(!threat)}
               disabled={!settings.enabled}
               variant="transparent"
               mt="auto"
               mb="auto"
             >
-              <IconTargetArrow color={threat ? "red" : undefined} size="1rem" />
+              <IconTargetArrow
+                color={threat ? "red" : undefined}
+                size={compact ? "0.8rem" : "1rem"}
+              />
             </ActionIcon>
           </Tooltip>
           <Tooltip label={isDetached ? "Unpin from notation" : "Pin above notation"}>
             <ActionIcon
-              size="lg"
+              size={compact ? "sm" : "lg"}
               onClick={() =>
                 startTransition(() => {
                   setDetachedEngineId(isDetached ? null : engine.id);
@@ -213,12 +229,16 @@ function BestMovesComponent({
               mt="auto"
               mb="auto"
             >
-              {isDetached ? <IconPinnedOff size="1rem" /> : <IconPinned size="1rem" />}
+              {isDetached ? (
+                <IconPinnedOff size={compact ? "0.8rem" : "1rem"} />
+              ) : (
+                <IconPinned size={compact ? "0.8rem" : "1rem"} />
+              )}
             </ActionIcon>
           </Tooltip>
           <Tooltip label={showEngineArrows ? "Hide engine arrows" : "Show engine arrows"}>
             <ActionIcon
-              size="lg"
+              size={compact ? "sm" : "lg"}
               onClick={() => setShowEngineArrows((value) => !value)}
               variant={showEngineArrows ? "light" : "transparent"}
               color={id < 4 ? arrowColors[id].strong : theme.primaryColor}
@@ -226,15 +246,20 @@ function BestMovesComponent({
               mb="auto"
               aria-label={showEngineArrows ? "Hide engine arrows" : "Show engine arrows"}
             >
-              <IconArrowUpRight size="1rem" />
+              <IconArrowUpRight size={compact ? "0.8rem" : "1rem"} />
             </ActionIcon>
           </Tooltip>
-          <ActionIcon size="lg" onClick={() => toggleSettingsOn()} mt="auto" mb="auto">
-            <IconSettings size="1rem" />
+          <ActionIcon
+            size={compact ? "sm" : "lg"}
+            onClick={() => toggleSettingsOn()}
+            mt="auto"
+            mb="auto"
+          >
+            <IconSettings size={compact ? "0.8rem" : "1rem"} />
           </ActionIcon>
           <ActionIcon
-            size="lg"
-            mr={8}
+            size={compact ? "sm" : "lg"}
+            mr={compact ? 4 : 8}
             mt="auto"
             mb="auto"
             style={{
@@ -242,11 +267,11 @@ function BestMovesComponent({
             }}
             {...dragHandleProps}
           >
-            <IconGripVertical size="1rem" />
+            <IconGripVertical size={compact ? "0.8rem" : "1rem"} />
           </ActionIcon>
         </ActionIcon.Group>
       </Box>
-      <Collapse in={settingsOn} px={30} pb={15}>
+      <Collapse in={settingsOn} px={compact ? 10 : 30} pb={compact ? 6 : 15}>
         <EngineSettingsForm
           engine={engine}
           settings={settings}
@@ -264,7 +289,10 @@ function BestMovesComponent({
         color={id < 4 ? arrowColors[id].strong : theme.primaryColor}
       />
       <Accordion.Panel pos="relative">
-        <Table>
+        <Table
+          verticalSpacing={compact ? 0 : undefined}
+          horizontalSpacing={compact ? 0 : undefined}
+        >
           <Table.Tbody>
             {error && (
               <Table.Tr>
@@ -303,7 +331,7 @@ function BestMovesComponent({
                   (_, i) => (
                     <Table.Tr key={i}>
                       <Table.Td>
-                        <Skeleton height={35} radius="xl" p={5} />
+                        <Skeleton height={compact ? 24 : 35} radius="xl" p={compact ? 2 : 5} />
                       </Table.Td>
                     </Table.Tr>
                   ),
@@ -333,6 +361,7 @@ function BestMovesComponent({
                     threat={threat}
                     fen={threat ? swapMove(finalFen) : finalFen}
                     orientation={orientation}
+                    compact={compact}
                   />
                 );
               })}
@@ -350,6 +379,7 @@ function EngineTop({
   enabled,
   progress,
   error,
+  compact = false,
 }: {
   name: string;
   engineVariations: BestMoves[] | undefined;
@@ -357,6 +387,7 @@ function EngineTop({
   enabled: boolean;
   progress: number;
   error: any;
+  compact?: boolean;
 }) {
   const { t } = useTranslation();
   const isComputed = engineVariations && engineVariations.length > 0;
@@ -365,9 +396,9 @@ function EngineTop({
   const source = isComputed ? engineVariations[0].source : undefined;
 
   return (
-    <Group justify="space-between">
-      <Group align="center">
-        <Text fw="bold" fz="lg">
+    <Group justify="space-between" gap={compact ? 6 : "md"} wrap="nowrap">
+      <Group align="center" gap={compact ? 6 : "xs"} wrap="nowrap" miw={0}>
+        <Text fw="bold" fz={compact ? "sm" : "lg"} truncate>
           {name}
         </Text>
         {enabled && !isGameOver && !error && !engineVariations && (
@@ -388,22 +419,32 @@ function EngineTop({
             </Tooltip>
           )}
       </Group>
-      <Group gap="lg">
+      <Group gap={compact ? "xs" : "lg"} wrap="nowrap">
         {!isGameOver && engineVariations && engineVariations.length > 0 && (
           <>
             <Stack align="center" gap={0}>
-              <Text size="0.7rem" tt="uppercase" fw={700} className={classes.subtitle}>
+              <Text
+                size={compact ? "0.55rem" : "0.7rem"}
+                tt="uppercase"
+                fw={700}
+                className={classes.subtitle}
+              >
                 Eval
               </Text>
-              <Text fw="bold" fz="md">
+              <Text fw="bold" fz={compact ? "sm" : "md"} lh={1.05}>
                 {formatScore(engineVariations[0].score.value, 1) ?? 0}
               </Text>
             </Stack>
             <Stack align="center" gap={0}>
-              <Text size="0.7rem" tt="uppercase" fw={700} className={classes.subtitle}>
+              <Text
+                size={compact ? "0.55rem" : "0.7rem"}
+                tt="uppercase"
+                fw={700}
+                className={classes.subtitle}
+              >
                 Depth
               </Text>
-              <Text fw="bold" fz="md">
+              <Text fw="bold" fz={compact ? "sm" : "md"} lh={1.05}>
                 {depth}
               </Text>
             </Stack>

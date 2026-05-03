@@ -34,9 +34,9 @@ export default function EngineDockedPanel({
       </Box>
       <Paper
         withBorder
-        h="13rem"
-        mah="35%"
-        style={{ minHeight: "8.75rem", overflow: "hidden", flexShrink: 0 }}
+        h="14rem"
+        mah="38%"
+        style={{ minHeight: "9rem", overflow: "hidden", flexShrink: 0 }}
       >
         <EnginePanelContent compact />
       </Paper>

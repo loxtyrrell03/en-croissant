@@ -28,6 +28,7 @@ function AnalysisRow({
   threat,
   fen,
   orientation,
+  compact = false,
 }: {
   engine: string;
   score: Score;
@@ -37,6 +38,7 @@ function AnalysisRow({
   threat: boolean;
   fen: string;
   orientation: "white" | "black";
+  compact?: boolean;
 }) {
   const [open, setOpen] = useState<boolean>(false);
   const { t } = useTranslation();
@@ -78,22 +80,28 @@ function AnalysisRow({
   return (
     <>
       <Table.Tr style={{ verticalAlign: "top" }}>
-        <Table.Td width={70}>
+        <Table.Td
+          width={compact ? 48 : 70}
+          style={compact ? { padding: "0.15rem 0.2rem" } : undefined}
+        >
           <ScoreBubble
-            size="md"
+            size={compact ? "sm" : "md"}
             score={score}
             evalDisplay={evalDisplay}
             setEvalDisplay={setEvalDisplay}
           />
         </Table.Td>
-        <Table.Td>
+        <Table.Td style={compact ? { padding: "0.1rem 0.15rem" } : undefined}>
           <Flex
             direction="row"
             wrap="wrap"
             style={{
-              height: open ? "100%" : 35,
+              height: open ? "100%" : compact ? 25 : 35,
               overflow: "hidden",
               alignItems: "center",
+              columnGap: compact ? 2 : undefined,
+              fontSize: compact ? "0.78rem" : undefined,
+              lineHeight: compact ? 1.15 : undefined,
             }}
           >
             {moveInfo.map(({ san, fen, lastMove, isCheck }, index) => (
@@ -112,20 +120,31 @@ function AnalysisRow({
                 orientation={orientation}
                 lastMove={lastMove}
                 isCheck={isCheck}
+                compact={compact}
               />
             ))}
           </Flex>
         </Table.Td>
-        <Table.Th>
-          <Flex direction="column" align="center" gap={4}>
+        <Table.Th
+          style={
+            compact
+              ? {
+                  width: "1.8rem",
+                  padding: "0.1rem 0.15rem",
+                }
+              : undefined
+          }
+        >
+          <Flex direction="column" align="center" gap={compact ? 1 : 4}>
             <ActionIcon
+              size={compact ? "xs" : "md"}
               style={{
                 transition: "transform 200ms ease",
                 transform: open ? "rotate(180deg)" : "none",
               }}
               onClick={() => setOpen(!open)}
             >
-              <IconChevronDown size={16} />
+              <IconChevronDown size={compact ? 13 : 16} />
             </ActionIcon>
             {open && (
               <CopyButton value={engineOutput} timeout={2000}>
@@ -140,11 +159,12 @@ function AnalysisRow({
                       variant="subtle"
                       onClick={copy}
                       aria-label={copied ? t("Common.Copied") : t("Menu.Edit.Copy")}
+                      size={compact ? "xs" : "md"}
                     >
                       {copied ? (
-                        <IconCheck style={{ width: rem(16) }} />
+                        <IconCheck style={{ width: rem(compact ? 13 : 16) }} />
                       ) : (
-                        <IconCopy style={{ width: rem(16) }} />
+                        <IconCopy style={{ width: rem(compact ? 13 : 16) }} />
                       )}
                     </ActionIcon>
                   </Tooltip>
@@ -170,6 +190,7 @@ function BoardPopover({
   fen,
   orientation,
   position,
+  compact = false,
 }: {
   san: string;
   lastMove: Key[];
@@ -181,6 +202,7 @@ function BoardPopover({
   fen: string;
   orientation: "white" | "black";
   position: { left: number; top: number };
+  compact?: boolean;
 }) {
   const total_moves = halfMoves + index + 1 + (threat ? 1 : 0);
   const is_white = total_moves % 2 === 1;
@@ -194,10 +216,15 @@ function BoardPopover({
 
   return (
     <>
-      <Box onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)}>
+      <Box
+        onMouseEnter={() => setHovering(true)}
+        onMouseLeave={() => setHovering(false)}
+        style={compact ? { fontSize: "0.72rem", lineHeight: 1.15 } : undefined}
+      >
         {(index === 0 || is_white) && `${move_number.toString()}${is_white ? "." : "..."}`}
         <MoveCell
           move={san}
+          compact={compact}
           isCurrentVariation={false}
           annotations={[]}
           onContextMenu={() => undefined}

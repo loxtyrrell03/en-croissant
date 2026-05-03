@@ -13,6 +13,7 @@ interface MoveCellProps {
   move: string;
   onClick: () => void;
   onContextMenu: (e: React.MouseEvent) => void;
+  compact?: boolean;
   fullWidth?: boolean;
   rightAccessory?: ReactNode;
   ref?: RefObject<HTMLButtonElement>;
@@ -51,7 +52,9 @@ function MoveCell(props: MoveCellProps) {
     <Box
       ref={props.ref}
       component="button"
-      className={`${classes.cell} ${props.fullWidth ? classes.cellFullWidth : ""}`}
+      className={`${classes.cell} ${props.compact ? classes.cellCompact : ""} ${
+        props.fullWidth ? classes.cellFullWidth : ""
+      }`}
       style={{
         "--light-color": baseLight,
         "--light-hover-color": hoverLight,
