@@ -14,7 +14,8 @@ use polyglot_book_rs::PolyglotBook;
 use rand::{seq::IteratorRandom, Rng};
 use serde::{Deserialize, Serialize};
 use shakmaty::{
-    fen::Fen, san::SanPlus, uci::UciMove, CastlingMode, Chess, Color, EnPassantMode, Position,
+    fen::Fen, san::SanPlus, uci::UciMove, CastlingMode, Chess, Color, EnPassantMode, Move,
+    Position, Square,
 };
 use specta::Type;
 use tauri::AppHandle;
@@ -1395,41 +1396,131 @@ fn clamp_f64(value: f64, min: f64, max: f64) -> f64 {
     value.min(max).max(min)
 }
 
-fn expected_game_moves(initial_time_ms: u64) -> f64 {
-    match initial_time_ms {
-        0..=60_000 => 36.0,
-        60_001..=180_000 => 38.0,
-        180_001..=600_000 => 42.0,
-        600_001..=1_800_000 => 46.0,
-        _ => 50.0,
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum MoveTempo {
+    Book,
+    Opening,
+    Forced,
+    Recapture,
+    CheckEvasion,
+    Normal,
+}
+
+impl MoveTempo {
+    fn is_automatic(self) -> bool {
+        matches!(
+            self,
+            MoveTempo::Book | MoveTempo::Opening | MoveTempo::Forced | MoveTempo::Recapture
+        )
     }
 }
 
-fn time_control_reserve(initial_time_ms: u64) -> f64 {
-    let reserve = initial_time_ms as f64
-        * match initial_time_ms {
-            0..=60_000 => 0.035,
-            60_001..=180_000 => 0.045,
-            180_001..=600_000 => 0.055,
-            _ => 0.065,
-        };
-
-    clamp_f64(reserve, 700.0, 45_000.0)
+#[derive(Clone, Copy)]
+struct ClockShape {
+    expected_moves: f64,
+    reserve_fraction: f64,
+    quick_floor_ms: f64,
+    opening_cap_ms: f64,
+    recapture_cap_ms: f64,
+    forced_cap_ms: f64,
+    check_cap_ms: f64,
+    opening_weight: f64,
+    early_weight: f64,
+    middle_weight: f64,
+    late_weight: f64,
+    endgame_weight: f64,
+    opening_fast_moves: u32,
 }
 
-fn phase_time_multiplier(move_number: u32) -> f64 {
+fn clock_shape(initial_time_ms: u64, increment_ms: u64) -> ClockShape {
+    let estimated_total_ms = initial_time_ms + increment_ms.saturating_mul(40);
+
+    match estimated_total_ms {
+        0..=180_000 => ClockShape {
+            expected_moves: 34.0,
+            reserve_fraction: 0.035,
+            quick_floor_ms: 45.0,
+            opening_cap_ms: 450.0,
+            recapture_cap_ms: 300.0,
+            forced_cap_ms: 180.0,
+            check_cap_ms: 700.0,
+            opening_weight: 0.07,
+            early_weight: 0.18,
+            middle_weight: 0.68,
+            late_weight: 0.55,
+            endgame_weight: 0.42,
+            opening_fast_moves: 8,
+        },
+        180_001..=480_000 => ClockShape {
+            expected_moves: 40.0,
+            reserve_fraction: 0.045,
+            quick_floor_ms: 90.0,
+            opening_cap_ms: 1_100.0,
+            recapture_cap_ms: 650.0,
+            forced_cap_ms: 350.0,
+            check_cap_ms: 1_100.0,
+            opening_weight: 0.10,
+            early_weight: 0.25,
+            middle_weight: 0.82,
+            late_weight: 0.70,
+            endgame_weight: 0.55,
+            opening_fast_moves: 10,
+        },
+        480_001..=1_500_000 => ClockShape {
+            expected_moves: 44.0,
+            reserve_fraction: 0.055,
+            quick_floor_ms: 180.0,
+            opening_cap_ms: 2_500.0,
+            recapture_cap_ms: 1_300.0,
+            forced_cap_ms: 700.0,
+            check_cap_ms: 2_200.0,
+            opening_weight: 0.16,
+            early_weight: 0.42,
+            middle_weight: 1.0,
+            late_weight: 0.82,
+            endgame_weight: 0.68,
+            opening_fast_moves: 9,
+        },
+        _ => ClockShape {
+            expected_moves: 50.0,
+            reserve_fraction: 0.065,
+            quick_floor_ms: 300.0,
+            opening_cap_ms: 6_500.0,
+            recapture_cap_ms: 3_000.0,
+            forced_cap_ms: 1_200.0,
+            check_cap_ms: 4_500.0,
+            opening_weight: 0.22,
+            early_weight: 0.55,
+            middle_weight: 1.12,
+            late_weight: 0.92,
+            endgame_weight: 0.76,
+            opening_fast_moves: 8,
+        },
+    }
+}
+
+fn time_control_reserve(initial_time_ms: u64, shape: ClockShape) -> f64 {
+    let reserve = initial_time_ms as f64 * shape.reserve_fraction;
+    clamp_f64(reserve, shape.quick_floor_ms * 5.0, 45_000.0)
+}
+
+fn phase_time_multiplier(move_number: u32, shape: ClockShape) -> f64 {
     match move_number {
-        1..=4 => 0.34,
-        5..=10 => 0.58,
-        11..=30 => 1.12,
-        31..=45 => 0.98,
-        _ => 0.82,
+        1..=8 => shape.opening_weight,
+        9..=14 => shape.early_weight,
+        15..=32 => shape.middle_weight,
+        33..=50 => shape.late_weight,
+        _ => shape.endgame_weight,
     }
 }
 
-fn rating_time_multiplier(fide_elo: u32) -> f64 {
+fn rating_time_multiplier(fide_elo: u32, tempo: MoveTempo) -> f64 {
     let normalized = (fide_elo.saturating_sub(800) as f64 / 1800.0).min(1.0);
-    0.68 + normalized * 0.62
+    if tempo.is_automatic() {
+        1.15 - normalized * 0.42
+    } else {
+        0.78 + normalized * 0.48
+    }
 }
 
 fn pressure_time_multiplier(current_time: u64, initial_time_ms: u64, increment_ms: u64) -> f64 {
@@ -1447,11 +1538,84 @@ fn pressure_time_multiplier(current_time: u64, initial_time_ms: u64, increment_m
     }
 }
 
-fn complexity_time_multiplier(position: &Chess) -> f64 {
+fn complexity_time_multiplier(position: &Chess, tempo: MoveTempo) -> f64 {
+    if tempo.is_automatic() {
+        return 1.0;
+    }
+
     let legal_moves = position.legal_moves().len() as f64;
     let legal_factor = clamp_f64(0.72 + (legal_moves / 34.0), 0.7, 1.55);
     let check_factor = if position.is_check() { 1.35 } else { 1.0 };
     legal_factor * check_factor
+}
+
+fn move_to_square(mv: &Move) -> Option<Square> {
+    match mv {
+        Move::Normal { to, .. } | Move::EnPassant { to, .. } | Move::Put { to, .. } => Some(*to),
+        Move::Castle { .. } => None,
+    }
+}
+
+fn last_move_to_square(last_uci: Option<&str>) -> Option<Square> {
+    let last_uci = last_uci?;
+    let bytes = last_uci.as_bytes();
+    if bytes.len() < 4 {
+        return None;
+    }
+    Square::from_ascii(&bytes[2..4]).ok()
+}
+
+fn is_obvious_recapture(position: &Chess, last_uci: Option<&str>) -> bool {
+    let Some(target) = last_move_to_square(last_uci) else {
+        return false;
+    };
+
+    let recaptures = position
+        .legal_moves()
+        .iter()
+        .filter(|mv| mv.is_capture() && move_to_square(mv) == Some(target))
+        .count();
+
+    recaptures == 1
+}
+
+fn classify_move_tempo(
+    position: &Chess,
+    ply: usize,
+    last_uci: Option<&str>,
+    book_move: bool,
+    shape: ClockShape,
+) -> MoveTempo {
+    let legal_moves = position.legal_moves().len();
+    let move_number = (ply / 2 + 1) as u32;
+
+    if legal_moves <= 1 {
+        return MoveTempo::Forced;
+    }
+    if is_obvious_recapture(position, last_uci) {
+        return MoveTempo::Recapture;
+    }
+    if position.is_check() && legal_moves <= 5 {
+        return MoveTempo::CheckEvasion;
+    }
+    if book_move {
+        return MoveTempo::Book;
+    }
+    if move_number <= shape.opening_fast_moves {
+        return MoveTempo::Opening;
+    }
+
+    MoveTempo::Normal
+}
+
+fn tempo_cap_ms(tempo: MoveTempo, shape: ClockShape) -> Option<f64> {
+    match tempo {
+        MoveTempo::Book | MoveTempo::Opening => Some(shape.opening_cap_ms),
+        MoveTempo::Forced => Some(shape.forced_cap_ms),
+        MoveTempo::Recapture => Some(shape.recapture_cap_ms),
+        MoveTempo::CheckEvasion => Some(shape.check_cap_ms),
+        MoveTempo::Normal => None,
+    }
 }
 
 fn choose_engine_move_delay(
@@ -1459,6 +1623,8 @@ fn choose_engine_move_delay(
     current_time: Option<u64>,
     ply: usize,
     position: &Chess,
+    last_uci: Option<&str>,
+    book_move: bool,
 ) -> Duration {
     let min_ms = delay.min_ms.min(delay.max_ms);
     let max_ms = delay.max_ms.max(delay.min_ms);
@@ -1472,41 +1638,50 @@ fn choose_engine_move_delay(
             .max(1);
         let increment_ms = delay.increment_ms.unwrap_or(0) as u64;
         let current_time = current_time.unwrap_or(initial_time_ms);
+        let shape = clock_shape(initial_time_ms, increment_ms);
+        let tempo = classify_move_tempo(position, ply, last_uci, book_move, shape);
 
         if current_time <= 450 {
             return Duration::from_millis(0);
         }
 
-        let expected_moves = expected_game_moves(initial_time_ms);
+        let expected_moves = shape.expected_moves;
         let move_number = (ply / 2 + 1) as u32;
         let remaining_moves = (expected_moves - move_number as f64).max(8.0);
-        let reserve = time_control_reserve(initial_time_ms);
+        let reserve = time_control_reserve(initial_time_ms, shape);
         let usable_time = (current_time as f64 - reserve).max(0.0);
         let sustainable = usable_time / remaining_moves + increment_ms as f64 * 0.62;
         let average_budget =
             (initial_time_ms as f64 + increment_ms as f64 * expected_moves) / expected_moves;
 
-        let mut target = average_budget * 0.35 + sustainable * 0.65;
-        target *= phase_time_multiplier(move_number);
-        target *= complexity_time_multiplier(position);
-        target *= rating_time_multiplier(fide_elo.clamp(800, 2600));
+        let mut target = average_budget * 0.25 + sustainable * 0.75;
+        target *= phase_time_multiplier(move_number, shape);
+        target *= complexity_time_multiplier(position, tempo);
+        target *= rating_time_multiplier(fide_elo.clamp(800, 2600), tempo);
         target *= pressure_time_multiplier(current_time, initial_time_ms, increment_ms);
+
+        if tempo.is_automatic() {
+            target *= 0.72;
+        } else if tempo == MoveTempo::CheckEvasion {
+            target *= 0.86;
+        }
 
         let mut rng = rand::thread_rng();
         let sigma = 0.78 - ((fide_elo.saturating_sub(800) as f64 / 1800.0).min(1.0) * 0.32);
         let noise = (rng.gen_range(-1.0..=1.0_f64) * sigma).exp();
         target *= noise;
 
-        let complexity = complexity_time_multiplier(position);
+        let complexity = complexity_time_multiplier(position, tempo);
         let long_think_probability = clamp_f64((complexity - 0.85) * 0.12, 0.02, 0.16);
-        if move_number > 8
+        if tempo == MoveTempo::Normal
+            && move_number > shape.opening_fast_moves
             && current_time > initial_time_ms / 8
             && rng.gen_bool(long_think_probability)
         {
             target *= rng.gen_range(1.8..=3.8);
         }
 
-        if move_number <= 8 && rng.gen_bool(0.32) {
+        if matches!(tempo, MoveTempo::Book | MoveTempo::Opening) && rng.gen_bool(0.38) {
             target *= rng.gen_range(0.28..=0.62);
         }
 
@@ -1521,8 +1696,18 @@ fn choose_engine_move_delay(
         };
         let clock_cap = current_time.saturating_sub(safety_margin) as f64;
         let sustainable_cap = (sustainable * 4.5 + increment_ms as f64 * 0.8).max(min_ms as f64);
-        let max_spend = clock_cap.min(max_ms as f64).min(sustainable_cap).max(0.0);
-        let min_spend = (min_ms as f64).min(max_spend);
+        let tempo_cap = tempo_cap_ms(tempo, shape).unwrap_or(max_ms as f64);
+        let max_spend = clock_cap
+            .min(max_ms as f64)
+            .min(sustainable_cap)
+            .min(tempo_cap)
+            .max(0.0);
+        let min_spend = if tempo.is_automatic() {
+            shape.quick_floor_ms
+        } else {
+            min_ms as f64
+        }
+        .min(max_spend);
         let selected_ms = clamp_f64(target, min_spend, max_spend).round() as u64;
 
         return Duration::from_millis(selected_ms);
@@ -1568,7 +1753,14 @@ async fn request_engine_move(
         };
         let move_delay = match player_config {
             PlayerConfig::Engine { move_delay, .. } => move_delay.as_ref().map(|delay| {
-                choose_engine_move_delay(delay, current_time, ctrl.moves.len(), &ctrl.position)
+                choose_engine_move_delay(
+                    delay,
+                    current_time,
+                    ctrl.moves.len(),
+                    &ctrl.position,
+                    ctrl.moves.last().map(|mv| mv.uci.as_str()),
+                    book_move.is_some(),
+                )
             }),
             _ => None,
         };
@@ -1653,7 +1845,14 @@ async fn request_engine_move(
         };
 
         let selected_delay = delay.as_ref().map(|delay| {
-            choose_engine_move_delay(delay, current_time, moves.len(), &ctrl.position)
+            choose_engine_move_delay(
+                delay,
+                current_time,
+                moves.len(),
+                &ctrl.position,
+                moves.last().map(|mv| mv.as_str()),
+                false,
+            )
         });
         let use_delay_as_move_time = delay
             .as_ref()
@@ -1806,4 +2005,52 @@ pub async fn get_game_engine_logs(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Vec<EngineLog>, Error> {
     state.game_manager.get_engine_logs(&game_id, &color).await
+}
+
+#[cfg(test)]
+mod timing_tests {
+    use super::*;
+
+    fn pos(fen: &str) -> Chess {
+        parse_fen_to_position(fen).unwrap()
+    }
+
+    #[test]
+    fn classifies_early_known_positions_as_opening_tempo() {
+        let shape = clock_shape(180_000, 2_000);
+        let position = pos("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
+        assert_eq!(
+            classify_move_tempo(&position, 0, None, false, shape),
+            MoveTempo::Opening
+        );
+    }
+
+    #[test]
+    fn classifies_single_reply_capture_as_recapture_tempo() {
+        let shape = clock_shape(180_000, 2_000);
+        let position = pos("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2");
+
+        assert_eq!(
+            classify_move_tempo(&position, 2, Some("d7d5"), false, shape),
+            MoveTempo::Recapture
+        );
+    }
+
+    #[test]
+    fn blitz_opening_delay_stays_under_opening_cap() {
+        let delay = EngineMoveDelay {
+            min_ms: 90,
+            max_ms: 9_900,
+            fide_elo: Some(1600),
+            initial_time_ms: Some(180_000),
+            increment_ms: Some(2_000),
+            use_as_move_time: false,
+        };
+        let position = pos("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
+        let selected = choose_engine_move_delay(&delay, Some(180_000), 0, &position, None, false);
+
+        assert!(selected.as_millis() <= 1_100);
+    }
 }
