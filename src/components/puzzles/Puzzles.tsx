@@ -22,6 +22,7 @@ import {
   IconAlertTriangle,
   IconFlame,
   IconPlus,
+  IconRobot,
   IconSettings,
   IconTrash,
   IconX,
@@ -34,6 +35,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { commands, type PuzzleDatabaseInfo } from "@/bindings";
+import { usePracticeAgainstBot } from "@/hooks/usePracticeAgainstBot";
 import {
   activeTabAtom,
   currentPuzzleAtom,
@@ -70,6 +72,7 @@ function Puzzles({ id }: { id: string }) {
   const makeMove = useStore(store, (s) => s.makeMove);
   const setShapes = useStore(store, (s) => s.setShapes);
   const currentMove = useStore(store, (s) => s.currentNode().move);
+  const practiceAgainstBot = usePracticeAgainstBot();
   const [puzzles, setPuzzles] = useSessionStorage<Puzzle[]>({
     key: `${id}-puzzles`,
     defaultValue: [],
@@ -568,6 +571,11 @@ function Puzzles({ id }: { id: string }) {
                   }
                 >
                   <IconZoomCheck />
+                </ActionIcon>
+              </Tooltip>
+              <Tooltip label="Practice against bot">
+                <ActionIcon disabled={puzzles.length === 0} onClick={practiceAgainstBot}>
+                  <IconRobot />
                 </ActionIcon>
               </Tooltip>
               <Tooltip label={t("Puzzle.ClearSession")}>
