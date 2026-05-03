@@ -169,6 +169,15 @@ const scrollablePanelStyle = {
   overflowY: "auto",
 } as const;
 
+const openingReviewPanelModeControlStyle = {
+  position: "sticky",
+  top: 0,
+  zIndex: 3,
+  flexShrink: 0,
+  paddingBottom: "var(--mantine-spacing-xs)",
+  background: "var(--mantine-color-body)",
+} as const;
+
 const OPENING_REVIEW_PREVIEW_BOARD_SIZE = 168;
 
 const DAILY_REVIEW_GAME_PERIOD_OPTIONS = [
@@ -1802,17 +1811,19 @@ function OpeningReviewPanel({
   }
 
   const panelModeControl = isMistakeReview ? null : (
-    <SegmentedControl
-      size="xs"
-      fullWidth
-      value={panelView}
-      onChange={(value) => setPanelView(value as OpeningReviewPanelView)}
-      data={[
-        { value: "review", label: "Review positions" },
-        { value: "stats", label: "Stats" },
-        { value: "analyze", label: "Analyze repertoire" },
-      ]}
-    />
+    <Box style={openingReviewPanelModeControlStyle}>
+      <SegmentedControl
+        size="xs"
+        fullWidth
+        value={panelView}
+        onChange={(value) => setPanelView(value as OpeningReviewPanelView)}
+        data={[
+          { value: "review", label: "Review positions" },
+          { value: "stats", label: "Stats" },
+          { value: "analyze", label: "Analyze repertoire" },
+        ]}
+      />
+    </Box>
   );
 
   if (!isMistakeReview && panelView === "analyze") {
