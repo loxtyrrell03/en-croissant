@@ -13,6 +13,7 @@ import {
     PLAN_WHITE_BRUSH,
     planLineToShapes,
     planLinesToShapes,
+    summarizePlanPiece,
     type ColoredPlanExplorerLine,
 } from "@/utils/planExplorer";
 
@@ -294,6 +295,21 @@ describe("Engine Plan Explorer", () => {
         expect(match?.match).toBe("pawnBreak");
         expect(match?.plan.approval).toBe("Strong");
         expect(match?.plan.supportCount).toBe(2);
+    });
+
+    test("summarizes database plan groups with concise chess labels", () => {
+        expect(summarizePlanPiece(planPiece("white", "knight", "g1", 12, ["g1", "f3", "g5"]))).toBe(
+            "Minor piece reroute to kingside",
+        );
+        expect(summarizePlanPiece(planPiece("white", "pawn", "b2", 10, ["b2", "b4"]))).toBe(
+            "Queenside pawn break",
+        );
+        expect(summarizePlanPiece(planPiece("white", "rook", "h1", 8, ["h1", "h3"]))).toBe(
+            "Rook lift",
+        );
+        expect(summarizePlanPiece(planPiece("white", "pawn", "e2", 15, ["e2", "e4"]))).toBe(
+            "Central expansion",
+        );
     });
 });
 

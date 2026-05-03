@@ -20,6 +20,13 @@ export type ColoredPlanExplorerLine = PlanExplorerLine & {
 const squarePattern = /^[a-h][1-8]$/;
 const centralFiles = new Set(["c", "d", "e", "f"]);
 const majorMinorRoles = new Set(["queen", "rook", "bishop", "knight"]);
+const queensideFiles = new Set(["a", "b", "c"]);
+const kingsideFiles = new Set(["f", "g", "h"]);
+const homeRanks = new Set(["1", "8"]);
+const liftRanksByColor = {
+    white: new Set(["3", "4"]),
+    black: new Set(["5", "6"]),
+};
 
 type AutoPlanLineOptions = {
     minGames?: number;
@@ -169,6 +176,34 @@ export function formatPlanRoute(squares: string[]) {
     return squares.join(" -> ");
 }
 
+export function summarizePlanPiece(piece: PlanExplorerPiece) {
+    const line = piece.lines[0];
+    const squares = line?.squares.filter(isSquareName) ?? [];
+    if (squares.length < 2) return `${capitalize(piece.role)} route`;
+
+    const from = squares[0];
+    const to = squares[squares.length - 1];
+    const area = boardArea(to);
+
+    switch (piece.role) {
+        case "pawn":
+            return area === "center" ? "Central expansion" : `${capitalize(area)} pawn break`;
+        case "knight":
+        case "bishop":
+            return `Minor piece ${squares.length >= 3 ? "reroute" : "development"} to ${area}`;
+        case "rook":
+            return isRookLift(piece.color, from, to)
+                ? "Rook lift"
+                : `Rook swing to ${area}`;
+        case "queen":
+            return area === "center" ? "Queen centralization" : `Queen swing to ${area}`;
+        case "king":
+            return castlingSummary(from, to) ?? `King move to ${area}`;
+        default:
+            return `${capitalize(piece.role)} route to ${area}`;
+    }
+}
+
 function balancePlanLines(lines: ColoredPlanExplorerLine[], limit: number) {
     const cappedLimit = Math.max(0, limit);
     if (cappedLimit === 0) return [];
@@ -249,4 +284,32 @@ function consecutiveSegments(squares: SquareName[]): PlanExplorerSegment[] {
     }
 
     return segments;
+}
+
+function boardArea(square: SquareName) {
+    const file = square[0];
+    if (queensideFiles.has(file)) return "queenside";
+    if (kingsideFiles.has(file)) return "kingside";
+    return "center";
+}
+
+function isRookLift(color: string, from: SquareName, to: SquareName) {
+    const liftRanks = color === "black" ? liftRanksByColor.black : liftRanksByColor.white;
+
+    return from[0] === to[0] && homeRanks.has(from[1]) && liftRanks.has(to[1]);
+}
+
+function castlingSummary(from: SquareName, to: SquareName) {
+    if ((from === "e1" && to === "g1") || (from === "e8" && to === "g8")) {
+        return "Kingside castling";
+    }
+    if ((from === "e1" && to === "c1") || (from === "e8" && to === "c8")) {
+        return "Queenside castling";
+    }
+
+    return null;
+}
+
+function capitalize(value: string) {
+    return value.charAt(0).toUpperCase() + value.slice(1);
 }

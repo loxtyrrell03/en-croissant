@@ -101,6 +101,7 @@ import {
   formatPlanRoute,
   isPlanBrush,
   planLineToShapes,
+  summarizePlanPiece,
   withPlanLineColor,
   type ColoredPlanExplorerLine,
 } from "@/utils/planExplorer";
@@ -1107,6 +1108,7 @@ function PieceRow({
   resultPerspective: DatabaseResultPerspective | null;
 }) {
   const topLine = piece.lines[0] ? withPlanLineColor(piece.lines[0], piece.color) : null;
+  const summary = summarizePlanPiece(piece);
   const engineMatch = useMemo(
     () => getPieceEngineMatch(piece, engineReport),
     [engineReport, piece],
@@ -1130,6 +1132,9 @@ function PieceRow({
             </Text>
             <Text size="xs" c="dimmed">
               {piece.from}
+            </Text>
+            <Text size="xs" c="dimmed" lineClamp={2}>
+              {summary}
             </Text>
           </Box>
         </Group>
