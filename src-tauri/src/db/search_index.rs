@@ -12,7 +12,8 @@ use rkyv::{Archive, Deserialize, Serialize};
 const MAGIC: &[u8; 4] = b"ECSI";
 const LEGACY_VERSION: u32 = 4;
 const BOARD_TURN_POSITION_VERSION: u32 = 5;
-const VERSION: u32 = 6;
+const EXACT_POSITION_VERSION: u32 = 6;
+const VERSION: u32 = 7;
 const HEADER_SIZE: usize = 8;
 const NO_NEXT_MOVE: u16 = u16::MAX;
 
@@ -32,12 +33,20 @@ fn verify_header(header: &[u8]) -> io::Result<u32> {
     }
 
     let version = u32::from_le_bytes(header[4..8].try_into().unwrap());
-    if version != VERSION && version != BOARD_TURN_POSITION_VERSION && version != LEGACY_VERSION {
+    if version != VERSION
+        && version != EXACT_POSITION_VERSION
+        && version != BOARD_TURN_POSITION_VERSION
+        && version != LEGACY_VERSION
+    {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
             format!(
-                "Unsupported version: {} (expected {}, {}, or {})",
-                version, VERSION, BOARD_TURN_POSITION_VERSION, LEGACY_VERSION
+                "Unsupported version: {} (expected {}, {}, {}, or {})",
+                version,
+                VERSION,
+                EXACT_POSITION_VERSION,
+                BOARD_TURN_POSITION_VERSION,
+                LEGACY_VERSION
             ),
         ));
     }
@@ -404,7 +413,10 @@ impl MmapSearchIndex {
         match self.archived {
             SearchIndexArchive::Current {
                 version, archived, ..
-            } => version >= VERSION && !archived.positions.is_empty(),
+            } => {
+                (version == EXACT_POSITION_VERSION || version >= VERSION)
+                    && !archived.positions.is_empty()
+            }
             SearchIndexArchive::Legacy(_) => false,
         }
     }
@@ -413,7 +425,10 @@ impl MmapSearchIndex {
         match self.archived {
             SearchIndexArchive::Current {
                 version, archived, ..
-            } => version == BOARD_TURN_POSITION_VERSION && !archived.positions.is_empty(),
+            } => {
+                (version == BOARD_TURN_POSITION_VERSION || version >= VERSION)
+                    && !archived.positions.is_empty()
+            }
             SearchIndexArchive::Legacy(_) => false,
         }
     }
@@ -557,12 +572,24 @@ impl MmapSearchIndex {
         verify_header(&header).is_ok()
     }
 
+    fn version<P: AsRef<Path>>(path: P) -> io::Result<u32> {
+        let file = File::open(path)?;
+        let mut header = [0u8; HEADER_SIZE];
+        let mut reader = BufReader::new(file);
+        reader.read_exact(&mut header)?;
+        verify_header(&header)
+    }
+
     #[allow(dead_code)]
     pub fn is_up_to_date<P: AsRef<Path>>(db_path: P) -> bool {
         let db_path = db_path.as_ref();
         let index_path = get_index_path(db_path);
 
         if !Self::is_valid(&index_path) {
+            return false;
+        }
+
+        if !Self::version(&index_path).is_ok_and(|version| version == VERSION) {
             return false;
         }
 

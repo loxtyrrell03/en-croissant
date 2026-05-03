@@ -213,24 +213,37 @@ fn collect_position_occurrences_for_entry(
             break;
         };
 
-        occurrences.push(PositionOccurrence::new(
-            position_index_key(&position),
-            game_index,
-            ply,
-            Some(byte),
-        ));
+        push_position_occurrences(&mut occurrences, &position, game_index, ply, Some(byte));
         position.play_unchecked(&m);
         ply = ply.saturating_add(1);
     }
 
-    occurrences.push(PositionOccurrence::new(
-        position_index_key(&position),
-        game_index,
-        ply,
-        None,
-    ));
+    push_position_occurrences(&mut occurrences, &position, game_index, ply, None);
 
     Ok(occurrences)
+}
+
+fn push_position_occurrences(
+    occurrences: &mut Vec<PositionOccurrence>,
+    position: &Chess,
+    game_index: u32,
+    ply: u16,
+    next_move: Option<u8>,
+) {
+    let exact_key = position_index_key(position);
+    let board_turn_key = legacy_position_index_key(position);
+
+    occurrences.push(PositionOccurrence::new(
+        exact_key, game_index, ply, next_move,
+    ));
+    if board_turn_key != exact_key {
+        occurrences.push(PositionOccurrence::new(
+            board_turn_key,
+            game_index,
+            ply,
+            next_move,
+        ));
+    }
 }
 
 #[derive(Debug)]
@@ -2285,6 +2298,7 @@ pub async fn preload_reference_db(
 mod tests {
     use super::*;
     use pgn_reader::BufferedReader;
+    use shakmaty::{Move, Role, Square};
 
     #[test]
     fn home_row() {
@@ -2300,6 +2314,51 @@ mod tests {
 
         let pawn_home = get_pawn_home(&Board::from_ascii_board_fen(b"8/8/8/8/8/8/8/8").unwrap());
         assert_eq!(pawn_home, 0b0000000000000000);
+    }
+
+    #[test]
+    fn occurrence_collection_includes_board_turn_lookup_key() {
+        let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";
+        let position = starting_position_from_fen(Some(fen)).unwrap();
+        let next_move = Move::Normal {
+            role: Role::Pawn,
+            from: Square::E7,
+            to: Square::E5,
+            capture: None,
+            promotion: None,
+        };
+        let next_byte = encode_move(&next_move, &position).unwrap();
+        let material = get_material_count(position.board());
+        let entry = SearchGameEntry::from_game_data(
+            1,
+            10,
+            20,
+            None,
+            Some("*".to_string()),
+            vec![next_byte],
+            Some(fen.to_string()),
+            get_pawn_home(position.board()) as i32,
+            material.white as i32,
+            material.black as i32,
+            Some(2500),
+            Some(2500),
+        );
+
+        let occurrences = collect_position_occurrences_for_entry(0, &entry).unwrap();
+        let exact_key = position_index_key(&position);
+        let board_turn_key = legacy_position_index_key(&position);
+
+        assert_ne!(exact_key, board_turn_key);
+        assert!(occurrences.iter().any(|occurrence| {
+            occurrence.key_hi == exact_key.hi
+                && occurrence.key_lo == exact_key.lo
+                && occurrence.next_move == u16::from(next_byte)
+        }));
+        assert!(occurrences.iter().any(|occurrence| {
+            occurrence.key_hi == board_turn_key.hi
+                && occurrence.key_lo == board_turn_key.lo
+                && occurrence.next_move == u16::from(next_byte)
+        }));
     }
 
     #[test]

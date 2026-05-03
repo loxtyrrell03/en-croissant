@@ -661,14 +661,6 @@ fn uci_for_move(m: &Move) -> String {
     UciMove::from_move(m, CastlingMode::Standard).to_string()
 }
 
-fn indexed_position_key(index: &MmapSearchIndex, position: &Chess) -> PositionIndexKey {
-    if index.has_exact_position_index() {
-        position_index_key(position)
-    } else {
-        legacy_position_index_key(position)
-    }
-}
-
 fn score_for_side(white: i32, draw: i32, black: i32, side: Color) -> f64 {
     let total = white + draw + black;
     if total <= 0 {
@@ -1957,7 +1949,7 @@ fn search_position_from_occurrences(
     include_games: bool,
     max_samples: usize,
 ) -> Result<(Vec<PositionStats>, Vec<i32>), Error> {
-    let occurrences = index.position_occurrences(indexed_position_key(index, &exact.position));
+    let occurrences = index.position_occurrences(legacy_position_index_key(&exact.position));
     let mut openings: HashMap<String, PositionStats> = HashMap::new();
     let mut top_games = BinaryHeap::with_capacity(max_samples + 1);
     let mut seen_games = HashSet::new();
@@ -2083,7 +2075,7 @@ fn plan_explorer_from_occurrences(
     wanted_result: Option<GameResult>,
     cancel_flag: &AtomicBool,
 ) -> Result<(i32, i32, Vec<PlanExplorerPiece>), Error> {
-    let occurrences = index.position_occurrences(indexed_position_key(index, &exact.position));
+    let occurrences = index.position_occurrences(legacy_position_index_key(&exact.position));
     let mut lines: HashMap<PlanLineKey, LineStats> = HashMap::new();
     let mut seen_games = HashSet::new();
     let mut total_games = 0i32;
@@ -2652,7 +2644,7 @@ pub async fn search_position(
     });
 
     if let Some(PositionQuery::Exact(exact)) = &parsed_position_query {
-        if !mmap_index.has_position_index() {
+        if !mmap_index.has_board_turn_position_index() {
             info!("position occurrence index unavailable; using full scan on {tab_id}");
         } else {
             info!("start occurrence-index search on {tab_id}");
@@ -2898,9 +2890,9 @@ pub async fn get_plan_explorer(
     let permit = state.new_request.acquire().await.unwrap();
 
     let mmap_index = open_mmap_search_index(&file, &state)?;
-    let has_position_index = mmap_index.has_position_index();
+    let has_board_turn_position_index = mmap_index.has_board_turn_position_index();
     let uses_occurrence_index =
-        has_position_index && matches!(&parsed_position_query, PositionQuery::Exact(_));
+        has_board_turn_position_index && matches!(&parsed_position_query, PositionQuery::Exact(_));
     let max_plan_samples = plan_explorer_sample_limit(
         &position_query_js.fen,
         uses_occurrence_index,
@@ -2910,7 +2902,7 @@ pub async fn get_plan_explorer(
         !uses_occurrence_index && mmap_index.len() > PLAN_EXPLORER_FALLBACK_FULL_SAMPLE_MAX_GAMES;
 
     if let PositionQuery::Exact(exact) = &parsed_position_query {
-        if !has_position_index {
+        if !has_board_turn_position_index {
             info!(
                 "position occurrence index unavailable; using sampled plan explorer scan capped at {} games",
                 max_plan_samples
@@ -3115,6 +3107,8 @@ pub async fn is_position_in_db(
 mod tests {
     use super::*;
     use crate::db::encoding::encode_move;
+    use crate::db::search_index::{PositionOccurrence, SearchGameEntry, SearchIndex};
+    use tempfile::tempdir;
 
     fn assert_partial_match(fen1: &str, fen2: &str) {
         let query = PositionQuery::partial_from_fen(fen1).unwrap();
@@ -3492,6 +3486,68 @@ mod tests {
         .unwrap();
         let result = get_move_after_match(&game, &None, &query).unwrap();
         assert_eq!(result, Some("*".to_string()));
+    }
+
+    #[test]
+    fn occurrence_search_keeps_visible_position_semantics() {
+        let dir = tempdir().unwrap();
+        let index_path = dir.path().join("visible-position.ecsi");
+        let fen_with_castling = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";
+        let fen_without_castling = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b - - 0 1";
+        let fen = Some(fen_with_castling);
+        let position = starting_position(&fen).unwrap();
+        let next_move = Move::Normal {
+            role: Role::Pawn,
+            from: Square::E7,
+            to: Square::E5,
+            capture: None,
+            promotion: None,
+        };
+        let next_byte = encode_move(&next_move, &position).unwrap();
+        let entry = SearchGameEntry::from_game_data(
+            1,
+            10,
+            20,
+            None,
+            Some("*".to_string()),
+            vec![next_byte],
+            Some(fen_with_castling.to_string()),
+            0,
+            0,
+            0,
+            Some(2500),
+            Some(2500),
+        );
+        let mut search_index = SearchIndex::with_capacity(1);
+        search_index.push_occurrence(PositionOccurrence::new(
+            legacy_position_index_key(&position),
+            0,
+            0,
+            Some(next_byte),
+        ));
+        search_index.push(entry);
+        search_index.write_to(&index_path).unwrap();
+
+        let index = MmapSearchIndex::open(&index_path).unwrap();
+        let PositionQuery::Exact(exact) =
+            PositionQuery::exact_from_fen(fen_without_castling).unwrap()
+        else {
+            panic!("expected exact query");
+        };
+        let (openings, _) = search_position_from_occurrences(
+            &index,
+            &GameQuery::default(),
+            &exact,
+            None,
+            &AtomicBool::new(false),
+            true,
+            false,
+            10,
+        )
+        .unwrap();
+
+        assert_eq!(openings.len(), 1);
+        assert_eq!(openings[0].move_, "e5");
     }
 
     #[test]
