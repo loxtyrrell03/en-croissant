@@ -435,6 +435,7 @@ function Board({
   useEffect(() => clearMistakeReviewLine, [clearMistakeReviewLine]);
 
   const isMistakeReviewTab = currentTab?.gameOrigin.kind === "mistake_review";
+  const isOpeningReviewTab = currentTab?.gameOrigin.kind === "opening_review";
   const currentMistakeReviewIndex = useMemo(() => {
     if (!isMistakeReviewTab) return -1;
     if (practiceState.positionIndex !== undefined && deck.positions[practiceState.positionIndex]) {
@@ -495,6 +496,10 @@ function Board({
   const currentPracticeCard = currentPracticeEntry?.position ?? null;
   const mistakeReviewFreePlayActive =
     isMistakeReviewTab && mistakeReviewFreePlay && !!trainerMistakeReviewPosition;
+  const openingReviewPostAttemptFreePlayActive =
+    isOpeningReviewTab &&
+    !!practicing &&
+    (practiceState.phase === "correct" || practiceState.phase === "incorrect");
 
   const returnToMistakeReviewPosition = useCallback(
     (options: { clearReveal?: boolean; resetPractice?: boolean } = {}) => {
@@ -810,6 +815,16 @@ function Board({
         currentFen: trainerMistakeReviewPosition.fen,
         positionIndex: trainerMistakeReviewIndex >= 0 ? trainerMistakeReviewIndex : undefined,
       });
+      onMove?.(uci, currentNode.fen, san);
+      return;
+    }
+
+    if (openingReviewPostAttemptFreePlayActive) {
+      storeMakeMove({
+        payload: move,
+        clock: pos.turn === "white" ? whiteTime : blackTime,
+      });
+      setPendingMove(null);
       onMove?.(uci, currentNode.fen, san);
       return;
     }
@@ -1174,7 +1189,11 @@ function Board({
     !!headers.white_time_control ||
     !!headers.black_time_control;
 
-  const practiceLock = !!practicing && !currentPracticeCard && !mistakeReviewFreePlayActive;
+  const practiceLock =
+    !!practicing &&
+    !currentPracticeCard &&
+    !mistakeReviewFreePlayActive &&
+    !openingReviewPostAttemptFreePlayActive;
 
   const movableColor: "white" | "black" | "both" | undefined = useMemo(() => {
     return practiceLock
