@@ -20,6 +20,13 @@ export type OpeningReviewPositionRow = ReturnType<typeof rankOpeningReviewPositi
 };
 
 const openingNameCache = new Map<string, string>();
+const STARTING_POSITION_FEN_KEY = openingReviewFenKey(INITIAL_FEN);
+
+export function getOpeningReviewMoveSequenceLabel(position: Position) {
+    const moveSequence = position.moveSequence?.replace(/\s+/g, " ").trim();
+    if (moveSequence?.toLowerCase() === "starting position") return null;
+    return moveSequence || null;
+}
 
 export function getOpeningReviewPositionColour(
     position: Position,
@@ -234,7 +241,11 @@ export async function resolveOpeningReviewOpeningName(position: Position) {
     const fallback = inferOpeningReviewOpeningName(position);
     try {
         const result = await commands.getOpeningFromFens(getOpeningReviewPositionFenLine(position));
-        const name = result.status === "ok" ? result.data : fallback;
+        const name =
+            normalizeOpeningReviewResolvedOpeningName(
+                position,
+                result.status === "ok" ? result.data : null,
+            ) ?? fallback;
         openingNameCache.set(key, name);
         return name;
     } catch {
@@ -271,7 +282,9 @@ function getOpeningReviewOpeningInfo(
     position: Position,
     resolvedName?: string,
 ): OpeningReviewOpeningInfo {
-    const rawName = cleanOpeningReviewOpeningName(resolvedName) ?? inferOpeningReviewOpeningName(position);
+    const rawName =
+        normalizeOpeningReviewResolvedOpeningName(position, resolvedName) ??
+        inferOpeningReviewOpeningName(position);
     const family = getOpeningReviewOpeningFamily(rawName);
     const variation = getOpeningReviewOpeningVariation(rawName, family);
     const line = variation ? `${family}: ${variation}` : family;
@@ -290,9 +303,26 @@ function cleanOpeningReviewOpeningName(value: string | null | undefined) {
     return normalized || null;
 }
 
+function normalizeOpeningReviewResolvedOpeningName(
+    position: Position,
+    value: string | null | undefined,
+) {
+    const name = cleanOpeningReviewOpeningName(value);
+    if (
+        name?.toLowerCase() === "starting position" &&
+        !isOpeningReviewStartingPosition(position) &&
+        !getOpeningReviewMoveSequenceLabel(position)
+    ) {
+        return null;
+    }
+    return name;
+}
+
 function inferOpeningReviewOpeningName(position: Position) {
-    const moves = tokenizeReviewMoveSequence(position.moveSequence ?? "");
-    if (moves.length === 0) return "Starting position";
+    const moves = tokenizeReviewMoveSequence(getOpeningReviewMoveSequenceLabel(position) ?? "");
+    if (moves.length === 0) {
+        return isOpeningReviewStartingPosition(position) ? "Starting position" : "Unknown opening";
+    }
 
     const [first, second, third, fourth, fifth, sixth, seventh, eighth] = moves;
     if (first === "e4" && second === "c6") return "Caro-Kann Defense";
@@ -324,6 +354,14 @@ function inferOpeningReviewOpeningName(position: Position) {
     }
 
     return formatOpeningReviewMovePrefix(moves.slice(0, Math.min(4, moves.length)));
+}
+
+function isOpeningReviewStartingPosition(position: Position) {
+    return openingReviewFenKey(position.fen) === STARTING_POSITION_FEN_KEY;
+}
+
+function openingReviewFenKey(fen: string) {
+    return fen.split(" ").slice(0, 4).join(" ");
 }
 
 function getOpeningReviewOpeningFamily(openingName: string) {

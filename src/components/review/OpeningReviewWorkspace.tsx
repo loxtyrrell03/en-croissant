@@ -140,7 +140,10 @@ import {
   rankOpeningReviewPositions,
 } from "@/utils/openingReviewAutoUpdate";
 import { getReviewPositionsForPath, sameReviewPosition } from "@/utils/openingReviewPersistence";
-import { getOpeningReviewStatsPerspectiveSide } from "@/utils/openingReviewOpenings";
+import {
+  getOpeningReviewMoveSequenceLabel,
+  getOpeningReviewStatsPerspectiveSide,
+} from "@/utils/openingReviewOpenings";
 import {
   OPENING_HEALTH_DATE_RANGE_OPTIONS,
   formatOpeningHealthDateFilter,
@@ -3913,7 +3916,7 @@ function CurrentReviewPositionActions({
             Current position
           </Text>
           <Text size="sm" fw={700} truncate>
-            {position.answer} - {position.moveSequence || "Starting position"}
+            {formatOpeningReviewPositionAnswer(position)}
           </Text>
         </Stack>
         <Button
@@ -4031,7 +4034,7 @@ function OpeningReviewPrioritySummary({
               </Badge>
               <Stack gap={0} miw={0}>
                 <Text size="sm" fw={700} truncate>
-                  {position.answer} - {position.moveSequence || "Starting position"}
+                  {formatOpeningReviewPositionAnswer(position)}
                 </Text>
                 <Text size="xs" c="dimmed" lineClamp={2}>
                   {openingReviewPositionExplanation(position)}
@@ -4472,6 +4475,17 @@ function getOpeningReviewMoveSide(position: Position): "white" | "black" {
   );
 }
 
+function formatOpeningReviewPositionAnswer(position: Position) {
+  const moveSequence = getOpeningReviewMoveSequenceLabel(position);
+  return moveSequence ? `${position.answer} - ${moveSequence}` : position.answer;
+}
+
+function formatOpeningReviewLastPlayedColumn(value: string | null | undefined) {
+  const formatted = formatOpeningReviewLastPlayed(value);
+  if (formatted === "Last played unknown") return "Unknown";
+  return formatted.replace(/^Last played /, "");
+}
+
 function getOpeningReviewStatsSide(
   position: Position,
   deckMode?: "self" | "opponent",
@@ -4499,7 +4513,7 @@ function getOpeningReviewOpeningInfo(
   resolvedName?: string,
 ): OpeningReviewOpeningInfo {
   const rawName =
-    cleanOpeningReviewOpeningName(resolvedName) ??
+    normalizeOpeningReviewResolvedOpeningName(position, resolvedName) ??
     getOpeningReviewStoredOpeningName(position) ??
     inferOpeningReviewOpeningName(position);
   const family = getOpeningReviewOpeningFamily(rawName);
@@ -4520,9 +4534,26 @@ function cleanOpeningReviewOpeningName(value: string | null | undefined) {
   return normalized || null;
 }
 
+function normalizeOpeningReviewResolvedOpeningName(
+  position: Position,
+  value: string | null | undefined,
+) {
+  const name = cleanOpeningReviewOpeningName(value);
+  if (
+    name?.toLowerCase() === "starting position" &&
+    !isOpeningReviewStartingPosition(position) &&
+    !getOpeningReviewMoveSequenceLabel(position)
+  ) {
+    return null;
+  }
+  return name;
+}
+
 function inferOpeningReviewOpeningName(position: Position) {
-  const moves = tokenizeReviewMoveSequence(position.moveSequence ?? "");
-  if (moves.length === 0) return "Starting position";
+  const moves = tokenizeReviewMoveSequence(getOpeningReviewMoveSequenceLabel(position) ?? "");
+  if (moves.length === 0) {
+    return isOpeningReviewStartingPosition(position) ? "Starting position" : "Unknown opening";
+  }
 
   const [first, second, third, fourth, fifth, sixth, seventh, eighth] = moves;
   if (first === "e4" && second === "c6") return "Caro-Kann Defense";
@@ -4554,6 +4585,14 @@ function inferOpeningReviewOpeningName(position: Position) {
   }
 
   return formatOpeningReviewMovePrefix(moves.slice(0, Math.min(4, moves.length)));
+}
+
+function isOpeningReviewStartingPosition(position: Position) {
+  return openingReviewFenKey(position.fen) === openingReviewFenKey(INITIAL_FEN);
+}
+
+function openingReviewFenKey(fen: string) {
+  return fen.split(" ").slice(0, 4).join(" ");
 }
 
 function getOpeningReviewOpeningFamily(openingName: string) {
@@ -4594,7 +4633,7 @@ function getOpeningReviewOpeningCacheKey(position: Position) {
 }
 
 function getOpeningReviewStoredOpeningName(position: Position) {
-  return cleanOpeningReviewOpeningName(position.openingHealth?.openingName);
+  return normalizeOpeningReviewResolvedOpeningName(position, position.openingHealth?.openingName);
 }
 
 function applyOpeningReviewResolvedOpeningNames(
@@ -4646,7 +4685,12 @@ async function resolveOpeningReviewOpeningName(position: Position) {
 
   try {
     const result = await commands.getOpeningFromFens(getOpeningReviewPositionFenLine(position));
-    return result.status === "ok" ? result.data : fallback;
+    return (
+      normalizeOpeningReviewResolvedOpeningName(
+        position,
+        result.status === "ok" ? result.data : null,
+      ) ?? fallback
+    );
   } catch {
     return fallback;
   }
@@ -5230,6 +5274,7 @@ function OpeningReviewPositionsModal({
               const status =
                 position.card.reps === 0 ? "Unseen" : due <= new Date() ? "Due" : "Scheduled";
               const colour = getOpeningReviewMoveSide(position);
+              const moveSequence = getOpeningReviewMoveSequenceLabel(position);
               const openingDetail =
                 opening.variation ?? (opening.rawName !== opening.family ? opening.rawName : null);
               return (
@@ -5271,14 +5316,16 @@ function OpeningReviewPositionsModal({
                   <Table.Td>
                     <Stack gap={0}>
                       <Text fw={700}>{position.answer}</Text>
-                      <Text size="xs" c="dimmed" lineClamp={1}>
-                        {position.moveSequence || "Starting position"}
-                      </Text>
+                      {moveSequence && (
+                        <Text size="xs" c="dimmed" lineClamp={1}>
+                          {moveSequence}
+                        </Text>
+                      )}
                     </Stack>
                   </Table.Td>
                   <Table.Td>
                     <Text size="sm" lineClamp={2}>
-                      {formatOpeningReviewLastPlayed(position.openingHealth?.lastPlayed)}
+                      {formatOpeningReviewLastPlayedColumn(position.openingHealth?.lastPlayed)}
                     </Text>
                   </Table.Td>
                   <Table.Td>

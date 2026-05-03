@@ -86,6 +86,7 @@ import {
 import {
   buildOpeningReviewRows,
   filterOpeningReviewRows,
+  getOpeningReviewMoveSequenceLabel,
   getOpeningReviewOpeningCacheKey,
   getOpeningReviewOpeningOptions,
   getOpeningReviewPracticeLabel,
@@ -572,6 +573,7 @@ function OpeningReviewDeckPositionsModal({
                           ? "Due"
                           : "Scheduled";
                     const colour = getOpeningReviewMoveSide(position);
+                    const moveSequence = getOpeningReviewMoveSequenceLabel(position);
                     const openingDetail =
                       opening.variation ??
                       (opening.rawName !== opening.family ? opening.rawName : null);
@@ -603,15 +605,15 @@ function OpeningReviewDeckPositionsModal({
                         </Table.Td>
                         <Table.Td>
                           <Text fw={700}>{position.answer}</Text>
-                          <Text size="xs" c="dimmed" lineClamp={1}>
-                            {position.moveSequence || "Starting position"}
-                          </Text>
+                          {moveSequence && (
+                            <Text size="xs" c="dimmed" lineClamp={1}>
+                              {moveSequence}
+                            </Text>
+                          )}
                         </Table.Td>
                         <Table.Td>
                           <Text size="sm" lineClamp={2}>
-                            {position.openingHealth?.lastPlayed
-                              ? `Last played ${position.openingHealth.lastPlayed}`
-                              : "Unknown"}
+                            {position.openingHealth?.lastPlayed || "Unknown"}
                           </Text>
                         </Table.Td>
                         <Table.Td>
