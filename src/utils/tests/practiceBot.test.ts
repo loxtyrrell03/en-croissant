@@ -1,8 +1,12 @@
 import { expect, test } from "vitest";
 import {
     buildPracticeBotOptions,
+    createDefaultPracticeBotOpponent,
     fideToLichessClassical,
+    getPracticeBotMoveDelay,
     getPracticeBotGoMode,
+    maiaWeightsFileName,
+    maiaWeightsUrl,
     nearestLegacyMaiaModel,
     shouldUseClockTimeManagement,
     stockfishUciEloFromFide,
@@ -44,4 +48,42 @@ test("uses Maia policy-only search without UCI clock management", () => {
 
     expect(getPracticeBotGoMode(profile, { t: "Depth", c: 20 })).toEqual({ t: "Nodes", c: 1 });
     expect(shouldUseClockTimeManagement(profile)).toBe(false);
+});
+
+test("defaults trainer games to managed Maia without a user-selected engine", () => {
+    const opponent = createDefaultPracticeBotOpponent();
+
+    expect(opponent.type).toBe("engine");
+    if (opponent.type !== "engine") return;
+    expect(opponent.engine).toBeNull();
+    expect(opponent.botProfile?.enabled).toBe(true);
+    expect(opponent.botProfile?.kind).toBe("maia");
+});
+
+test("passes rating and time control into the backend clock model", () => {
+    const moveDelay = getPracticeBotMoveDelay(
+        {
+            enabled: true,
+            kind: "maia",
+            fideElo: 1800,
+        },
+        {
+            seconds: 300_000,
+            increment: 5_000,
+        },
+    );
+
+    expect(moveDelay).toMatchObject({
+        fideElo: 1800,
+        initialTimeMs: 300_000,
+        incrementMs: 5_000,
+        useAsMoveTime: false,
+    });
+});
+
+test("builds managed Maia weights filenames and URLs", () => {
+    expect(maiaWeightsFileName(1600)).toBe("maia-1600.pb.gz");
+    expect(maiaWeightsUrl(1600)).toBe(
+        "https://github.com/CSSLab/maia-chess/releases/download/v1.0/maia-1600.pb.gz",
+    );
 });

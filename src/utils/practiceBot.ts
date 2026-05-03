@@ -1,7 +1,13 @@
 import type { EngineOption, GoMode } from "@/bindings";
+import { commands } from "@/bindings";
 import type { OpponentSettings } from "@/components/boards/OpponentForm";
 import type { TimeControlField } from "@/utils/clock";
+import { getEnginesDir } from "@/utils/directories";
 import type { EngineSettings, LocalEngine } from "@/utils/engines";
+import { unwrap } from "@/utils/unwrap";
+import { resolve } from "@tauri-apps/api/path";
+import { exists, mkdir } from "@tauri-apps/plugin-fs";
+import { platform, type Platform } from "@tauri-apps/plugin-os";
 
 export type PracticeBotKind = "maia" | "stockfish";
 
@@ -16,10 +22,17 @@ export type PracticeBotProfile = {
 export type PracticeBotMoveDelay = {
     minMs: number;
     maxMs: number;
+    fideElo?: number;
+    initialTimeMs?: number;
+    incrementMs?: number;
+    useAsMoveTime?: boolean;
 };
 
 const STOCKFISH_MIN_UCI_ELO = 1320;
 const STOCKFISH_MAX_UCI_ELO = 3190;
+const MANAGED_MAIA_LC0_VERSION = "0.32.1";
+const MANAGED_MAIA_ENGINE_ID = "managed-maia-lc0";
+const MANAGED_MAIA_DIR = "trainer-bot";
 
 export const DEFAULT_PRACTICE_BOT_ELO = 1600;
 
@@ -30,7 +43,7 @@ export const PRACTICE_BOT_DEFAULT_TIME_CONTROL: TimeControlField = {
 
 export const DEFAULT_PRACTICE_BOT_PROFILE: PracticeBotProfile = {
     enabled: true,
-    kind: "stockfish",
+    kind: "maia",
     fideElo: DEFAULT_PRACTICE_BOT_ELO,
     timeUse: "balanced",
 };
@@ -55,6 +68,25 @@ const FIDE_TO_LICHESS_CLASSICAL_ANCHORS: [number, number][] = [
 ];
 
 const MAIA_LEGACY_MODELS = [1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900];
+
+const MANAGED_LC0_PACKAGES: Partial<
+    Record<
+        Platform,
+        {
+            url: string;
+            directory: string;
+            executable: string;
+            size: number;
+        }
+    >
+> = {
+    windows: {
+        url: `https://github.com/LeelaChessZero/lc0/releases/download/v${MANAGED_MAIA_LC0_VERSION}/lc0-v${MANAGED_MAIA_LC0_VERSION}-windows-cpu-openblas.zip`,
+        directory: `lc0-v${MANAGED_MAIA_LC0_VERSION}-windows-cpu-openblas`,
+        executable: "lc0.exe",
+        size: 23_818_982,
+    },
+};
 
 function clamp(value: number, min: number, max: number) {
     return Math.min(max, Math.max(min, value));
@@ -135,15 +167,17 @@ export function createDefaultPracticeBotProfile(engine?: LocalEngine | null): Pr
     return { ...DEFAULT_PRACTICE_BOT_PROFILE };
 }
 
-export function createDefaultPracticeBotOpponent(engine: LocalEngine | null): OpponentSettings {
+export function createDefaultPracticeBotOpponent(
+    engine: LocalEngine | null = null,
+): OpponentSettings {
     return {
         type: "engine",
-        engine,
-        go: { t: "Depth", c: 16 },
+        engine: isLikelyLc0Engine(engine) ? engine : null,
+        go: { t: "Nodes", c: 1 },
         timeControl: PRACTICE_BOT_DEFAULT_TIME_CONTROL,
         timeUnit: "m",
         incrementUnit: "s",
-        engineSettings: engine?.settings || undefined,
+        engineSettings: isLikelyLc0Engine(engine) ? engine?.settings || undefined : undefined,
         botProfile: createDefaultPracticeBotProfile(engine),
     };
 }
@@ -213,24 +247,172 @@ export function getPracticeBotGoMode(profile: PracticeBotProfile | null, fallbac
 }
 
 export function shouldUseClockTimeManagement(profile: PracticeBotProfile | null) {
-    return !(profile?.enabled && profile.kind === "maia");
+    return !profile?.enabled;
 }
 
 export function getPracticeBotMoveDelay(
     profile: PracticeBotProfile | null,
     timeControl?: TimeControlField,
 ): PracticeBotMoveDelay | null {
-    if (!profile?.enabled || profile.kind !== "maia") return null;
+    if (!profile?.enabled) return null;
 
     const initialSeconds =
         (timeControl?.seconds ?? PRACTICE_BOT_DEFAULT_TIME_CONTROL.seconds) / 1000;
-    const base = initialSeconds <= 180 ? 350 : initialSeconds <= 600 ? 650 : 1000;
+    const initialTimeMs = timeControl?.seconds ?? PRACTICE_BOT_DEFAULT_TIME_CONTROL.seconds;
+    const incrementMs = timeControl?.increment ?? 0;
+    const base =
+        initialSeconds <= 60
+            ? 120
+            : initialSeconds <= 180
+              ? 220
+              : initialSeconds <= 600
+                ? 420
+                : 750;
+    const max = Math.round(
+        initialSeconds <= 60
+            ? initialTimeMs * 0.08
+            : initialSeconds <= 180
+              ? initialTimeMs * 0.055
+              : initialSeconds <= 600
+                ? initialTimeMs * 0.04
+                : initialTimeMs * 0.025,
+    );
 
     if (profile.timeUse === "fast") {
-        return { minMs: Math.round(base * 0.35), maxMs: Math.round(base * 1.2) };
+        return {
+            minMs: Math.round(base * 0.35),
+            maxMs: Math.max(Math.round(base * 1.2), max),
+            fideElo: profile.fideElo,
+            initialTimeMs,
+            incrementMs,
+            useAsMoveTime: profile.kind === "stockfish",
+        };
     }
     if (profile.timeUse === "slow") {
-        return { minMs: Math.round(base * 0.9), maxMs: Math.round(base * 2.6) };
+        return {
+            minMs: Math.round(base * 0.9),
+            maxMs: Math.max(Math.round(base * 2.6), max),
+            fideElo: profile.fideElo,
+            initialTimeMs,
+            incrementMs,
+            useAsMoveTime: profile.kind === "stockfish",
+        };
     }
-    return { minMs: Math.round(base * 0.55), maxMs: Math.round(base * 1.8) };
+    return {
+        minMs: Math.round(base * 0.55),
+        maxMs: Math.max(Math.round(base * 1.8), max),
+        fideElo: profile.fideElo,
+        initialTimeMs,
+        incrementMs,
+        useAsMoveTime: profile.kind === "stockfish",
+    };
+}
+
+export function maiaWeightsFileName(model: number) {
+    return `maia-${model}.pb.gz`;
+}
+
+export function maiaWeightsUrl(model: number) {
+    return `https://github.com/CSSLab/maia-chess/releases/download/v1.0/${maiaWeightsFileName(model)}`;
+}
+
+async function ensureDirectory(path: string) {
+    if (!(await exists(path))) {
+        await mkdir(path, { recursive: true });
+    }
+}
+
+async function pathExists(path: string) {
+    const result = await commands.fileExists(path);
+    return result.status === "ok" && result.data;
+}
+
+async function ensureManagedLc0Engine(): Promise<LocalEngine> {
+    const os = await platform();
+    const pkg = MANAGED_LC0_PACKAGES[os];
+    if (!pkg) {
+        throw new Error("Managed Maia trainer is currently packaged for Windows.");
+    }
+
+    const enginesDir = await getEnginesDir();
+    const trainerDir = await resolve(enginesDir, MANAGED_MAIA_DIR);
+    const lc0Dir = await resolve(trainerDir, pkg.directory);
+    const lc0Path = await resolve(lc0Dir, pkg.executable);
+
+    if (!(await pathExists(lc0Path))) {
+        await ensureDirectory(lc0Dir);
+        unwrap(
+            await commands.downloadFile("practice_bot_lc0", pkg.url, lc0Dir, null, true, pkg.size),
+        );
+        unwrap(await commands.setFileAsExecutable(lc0Path));
+    }
+
+    return {
+        type: "local",
+        id: MANAGED_MAIA_ENGINE_ID,
+        name: "Maia Trainer",
+        version: MANAGED_MAIA_LC0_VERSION,
+        path: lc0Path,
+        loaded: true,
+        elo: 1900,
+        settings: [],
+    };
+}
+
+async function ensureManagedMaiaWeights(fideElo: number) {
+    const model = nearestLegacyMaiaModel(fideElo);
+    const enginesDir = await getEnginesDir();
+    const weightsDir = await resolve(enginesDir, MANAGED_MAIA_DIR, "maia-weights");
+    const weightsPath = await resolve(weightsDir, maiaWeightsFileName(model));
+
+    if (!(await pathExists(weightsPath))) {
+        await ensureDirectory(weightsDir);
+        unwrap(
+            await commands.downloadFile(
+                `practice_bot_maia_${model}`,
+                maiaWeightsUrl(model),
+                weightsPath,
+                null,
+                true,
+                null,
+            ),
+        );
+    }
+
+    return weightsPath;
+}
+
+export async function preparePracticeBotOpponent(
+    settings: OpponentSettings,
+): Promise<OpponentSettings> {
+    if (settings.type !== "engine" || !settings.botProfile?.enabled) {
+        return settings;
+    }
+
+    const profile = {
+        ...DEFAULT_PRACTICE_BOT_PROFILE,
+        ...settings.botProfile,
+        enabled: true,
+        kind: settings.botProfile.kind,
+    };
+
+    if (profile.kind === "stockfish") {
+        return settings;
+    }
+
+    const [engine, maiaWeightsPath] = await Promise.all([
+        ensureManagedLc0Engine(),
+        ensureManagedMaiaWeights(profile.fideElo),
+    ]);
+
+    return {
+        ...settings,
+        engine,
+        engineSettings: engine.settings || undefined,
+        go: { t: "Nodes", c: 1 },
+        botProfile: {
+            ...profile,
+            maiaWeightsPath,
+        },
+    };
 }

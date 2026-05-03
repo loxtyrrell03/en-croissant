@@ -14,6 +14,7 @@ import {
   Text,
 } from "@mantine/core";
 import { useToggle } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
 import {
   IconArrowsExchange,
   IconFileText,
@@ -62,7 +63,7 @@ import {
   formatPracticeBotName,
   getPracticeBotGoMode,
   getPracticeBotMoveDelay,
-  isLikelyLc0Engine,
+  preparePracticeBotOpponent,
   shouldUseClockTimeManagement,
 } from "@/utils/practiceBot";
 import EngineLogsView from "../common/EngineLogsView";
@@ -152,6 +153,7 @@ function BoardGame() {
   const [openingBookPath, setOpeningBookPath] = useAtom(gameOpeningBookPathAtom);
   const [openingBookEnabled, setOpeningBookEnabled] = useAtom(gameOpeningBookEnabledAtom);
   const [openingBookMaxPly, setOpeningBookMaxPly] = useAtom(gameOpeningBookMaxPlyAtom);
+  const [startingGame, setStartingGame] = useState(false);
 
   const hasEngine = players.white.type === "engine" || players.black.type === "engine";
 
@@ -278,46 +280,60 @@ function BoardGame() {
   }
 
   async function startGame() {
-    const playerSettings = getPlayers();
-    const missingEngine = [playerSettings.white, playerSettings.black].some(
-      (player) => player.type === "engine" && !player.engine?.path,
+    const selectedPlayers = getPlayers();
+    const missingEngine = [selectedPlayers.white, selectedPlayers.black].some(
+      (player) => player.type === "engine" && !player.botProfile?.enabled && !player.engine?.path,
     );
     if (missingEngine) {
       console.error("Cannot start game without an engine path");
       return;
     }
 
-    setPlayers(playerSettings);
-
-    const newGameId = `${activeTab}-game`;
-    setGameId(newGameId);
-
-    const initialMoves = getTreeMoves();
-
-    const config: GameConfig = {
-      white: toPlayerConfig(playerSettings.white),
-      black: toPlayerConfig(playerSettings.black),
-      whiteTimeControl: playerSettings.white.timeControl
-        ? {
-            initialTime: playerSettings.white.timeControl.seconds,
-            increment: playerSettings.white.timeControl.increment ?? 0,
-          }
-        : null,
-      blackTimeControl: playerSettings.black.timeControl
-        ? {
-            initialTime: playerSettings.black.timeControl.seconds,
-            increment: playerSettings.black.timeControl.increment ?? 0,
-          }
-        : null,
-      initialFen: root.fen === INITIAL_FEN ? null : root.fen,
-      initialMoves,
-      openingBook:
-        openingBookEnabled && openingBookPath
-          ? { path: openingBookPath, maxPly: Math.max(1, openingBookMaxPly) }
-          : null,
-    } as GameConfig;
-
+    setStartingGame(true);
     try {
+      const playerSettings = {
+        white: await preparePracticeBotOpponent(selectedPlayers.white),
+        black: await preparePracticeBotOpponent(selectedPlayers.black),
+      };
+
+      const missingPreparedEngine = [playerSettings.white, playerSettings.black].some(
+        (player) => player.type === "engine" && !player.engine?.path,
+      );
+      if (missingPreparedEngine) {
+        console.error("Cannot start game without an engine path");
+        return;
+      }
+
+      setPlayers(playerSettings);
+
+      const newGameId = `${activeTab}-game`;
+      setGameId(newGameId);
+
+      const initialMoves = getTreeMoves();
+
+      const config: GameConfig = {
+        white: toPlayerConfig(playerSettings.white),
+        black: toPlayerConfig(playerSettings.black),
+        whiteTimeControl: playerSettings.white.timeControl
+          ? {
+              initialTime: playerSettings.white.timeControl.seconds,
+              increment: playerSettings.white.timeControl.increment ?? 0,
+            }
+          : null,
+        blackTimeControl: playerSettings.black.timeControl
+          ? {
+              initialTime: playerSettings.black.timeControl.seconds,
+              increment: playerSettings.black.timeControl.increment ?? 0,
+            }
+          : null,
+        initialFen: root.fen === INITIAL_FEN ? null : root.fen,
+        initialMoves,
+        openingBook:
+          openingBookEnabled && openingBookPath
+            ? { path: openingBookPath, maxPly: Math.max(1, openingBookMaxPly) }
+            : null,
+      } as GameConfig;
+
       const result = await commands.startGame(newGameId, config);
       const state = unwrap(result);
 
@@ -397,6 +413,13 @@ function BoardGame() {
       );
     } catch (err) {
       console.error("Failed to start game:", err);
+      notifications.show({
+        color: "red",
+        title: "Could not start trainer",
+        message: err instanceof Error ? err.message : String(err),
+      });
+    } finally {
+      setStartingGame(false);
     }
   }
 
@@ -545,15 +568,10 @@ function BoardGame() {
     const configuredPlayers = [player1Settings, player2Settings];
     for (const player of configuredPlayers) {
       if (player.type !== "engine") continue;
-      if (!player.engine?.path) return "Select an engine before starting.";
       if (player.botProfile?.enabled && player.botProfile.kind === "maia") {
-        if (!isLikelyLc0Engine(player.engine)) {
-          return "Select an Lc0 or Leela engine for Maia.";
-        }
-        if (!player.botProfile.maiaWeightsPath) {
-          return "Select a Maia weights file before starting.";
-        }
+        continue;
       }
+      if (!player.engine?.path) return "Select an engine before starting.";
     }
     return null;
   }, [player1Settings, player2Settings]);
@@ -754,7 +772,8 @@ function BoardGame() {
                       onClick={startGame}
                       fullWidth
                       variant="light"
-                      disabled={error !== null || setupIssue !== null}
+                      loading={startingGame}
+                      disabled={error !== null || setupIssue !== null || startingGame}
                     >
                       {t("Board.Opponent.StartGame")}
                     </Button>

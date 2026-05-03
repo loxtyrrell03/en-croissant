@@ -16,7 +16,6 @@ import {
     createDefaultHumanOpponent,
     createDefaultPracticeBotOpponent,
     isLikelyLc0Engine,
-    isLikelyStockfishEngine,
 } from "@/utils/practiceBot";
 
 function activeColorFromFen(fen: string): "white" | "black" {
@@ -24,13 +23,7 @@ function activeColorFromFen(fen: string): "white" | "black" {
 }
 
 function selectPracticeEngine(engines: LocalEngine[]) {
-    return (
-        engines.find(isLikelyLc0Engine) ??
-        engines.find(isLikelyStockfishEngine) ??
-        engines.find((engine) => engine.loaded) ??
-        engines[0] ??
-        null
-    );
+    return engines.find(isLikelyLc0Engine) ?? null;
 }
 
 export function usePracticeAgainstBot() {

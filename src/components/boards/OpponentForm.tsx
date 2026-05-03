@@ -1,21 +1,17 @@
 import {
   Center,
-  Checkbox,
   Divider,
   Group,
   InputWrapper,
   NumberInput,
-  Select,
   SegmentedControl,
   Stack,
   Text,
   TextInput,
 } from "@mantine/core";
 import { IconCpu, IconRobot, IconUser } from "@tabler/icons-react";
-import { open } from "@tauri-apps/plugin-dialog";
 import { useTranslation } from "react-i18next";
 import type { GoMode } from "@/bindings";
-import FileInput from "@/components/common/FileInput";
 import GoModeInput from "@/components/common/GoModeInput";
 import TimeInput, { type TimeType } from "@/components/common/TimeInput";
 import EngineSettingsForm from "@/components/panels/analysis/EngineSettingsForm";
@@ -24,7 +20,6 @@ import type { EngineSettings, LocalEngine } from "@/utils/engines";
 import {
   createDefaultPracticeBotProfile,
   fideToLichessClassical,
-  isLikelyLc0Engine,
   nearestLegacyMaiaModel,
   type PracticeBotProfile,
 } from "@/utils/practiceBot";
@@ -67,12 +62,28 @@ export function OpponentForm({
 }) {
   const { t } = useTranslation();
 
-  function updateType(type: "engine" | "human") {
+  const opponentMode =
+    opponent.type === "human" ? "human" : opponent.botProfile?.enabled ? "trainer" : "engine";
+
+  function updateType(type: "engine" | "human" | "trainer") {
     if (type === "human") {
       setOpponent((prev) => ({
         ...prev,
         type: "human",
         name: "Player",
+      }));
+    } else if (type === "trainer") {
+      setOpponent((prev) => ({
+        ...prev,
+        type: "engine",
+        engine: null,
+        go: { t: "Nodes", c: 1 },
+        engineSettings: undefined,
+        botProfile: {
+          ...(("botProfile" in prev && prev.botProfile) || createDefaultPracticeBotProfile(null)),
+          enabled: true,
+          kind: "maia",
+        },
       }));
     } else {
       setOpponent((prev) => ({
@@ -80,10 +91,11 @@ export function OpponentForm({
         type: "engine",
         engine: null,
         go: ("go" in prev && prev.go) || { t: "Depth", c: 24 },
-        botProfile:
-          "botProfile" in prev && prev.botProfile
-            ? prev.botProfile
-            : createDefaultPracticeBotProfile(null),
+        engineSettings: undefined,
+        botProfile: {
+          ...(("botProfile" in prev && prev.botProfile) || createDefaultPracticeBotProfile(null)),
+          enabled: false,
+        },
       }));
     }
   }
@@ -97,25 +109,6 @@ export function OpponentForm({
         botProfile: fn(profile),
       };
     });
-  }
-
-  async function selectMaiaWeights() {
-    const selected = await open({
-      multiple: false,
-      filters: [
-        {
-          name: "Maia weights",
-          extensions: ["gz", "pb"],
-        },
-      ],
-    });
-
-    if (typeof selected === "string") {
-      updateBotProfile((profile) => ({
-        ...profile,
-        maiaWeightsPath: selected,
-      }));
-    }
   }
 
   return (
@@ -132,6 +125,15 @@ export function OpponentForm({
             ),
           },
           {
+            value: "trainer",
+            label: (
+              <Center style={{ gap: 10 }}>
+                <IconRobot size={16} />
+                <span>Trainer</span>
+              </Center>
+            ),
+          },
+          {
             value: "engine",
             label: (
               <Center style={{ gap: 10 }}>
@@ -141,8 +143,8 @@ export function OpponentForm({
             ),
           },
         ]}
-        value={opponent.type}
-        onChange={(v) => updateType(v as "human" | "engine")}
+        value={opponentMode}
+        onChange={(v) => updateType(v as "human" | "trainer" | "engine")}
       />
 
       {opponent.type === "human" && (
@@ -152,7 +154,7 @@ export function OpponentForm({
         />
       )}
 
-      {opponent.type === "engine" && (
+      {opponent.type === "engine" && !opponent.botProfile?.enabled && (
         <EnginesSelect
           engine={opponent.engine}
           setEngine={(engine) =>
@@ -161,25 +163,38 @@ export function OpponentForm({
               engine,
               engineSettings: engine?.settings || undefined,
               botProfile:
-                prev.type === "engine" && prev.botProfile?.enabled
+                prev.type === "engine"
                   ? {
-                      ...prev.botProfile,
-                      ...(prev.botProfile.kind === "maia" &&
-                      !prev.botProfile.maiaWeightsPath &&
-                      typeof engine?.settings?.find((o) => o.name === "WeightsFile")?.value ===
-                        "string"
-                        ? {
-                            maiaWeightsPath: engine.settings.find((o) => o.name === "WeightsFile")
-                              ?.value as string,
-                          }
-                        : {}),
+                      ...(prev.botProfile ?? createDefaultPracticeBotProfile(engine)),
+                      enabled: false,
                     }
-                  : prev.type === "engine"
-                    ? prev.botProfile
-                    : undefined,
+                  : undefined,
             }))
           }
         />
+      )}
+
+      {opponent.type === "engine" && opponent.botProfile?.enabled && (
+        <Stack>
+          <Divider variant="dashed" label="Trainer Bot" />
+          <NumberInput
+            label="FIDE Elo"
+            min={800}
+            max={2600}
+            step={50}
+            value={opponent.botProfile.fideElo}
+            onChange={(value) =>
+              updateBotProfile((profile) => ({
+                ...profile,
+                fideElo: typeof value === "number" ? value : profile.fideElo,
+              }))
+            }
+          />
+          <Text size="xs" c="dimmed">
+            Maia {nearestLegacyMaiaModel(opponent.botProfile.fideElo)} - Lichess target{" "}
+            {fideToLichessClassical(opponent.botProfile.fideElo)}
+          </Text>
+        </Stack>
       )}
 
       <Divider variant="dashed" label={t("Board.Opponent.TimeSettings")} />
@@ -271,98 +286,8 @@ export function OpponentForm({
         )}
       </Group>
 
-      {opponent.type === "engine" && (
+      {opponent.type === "engine" && !opponent.botProfile?.enabled && (
         <Stack>
-          <Divider variant="dashed" label="Bot Trainer" />
-          <Checkbox
-            checked={opponent.botProfile?.enabled ?? false}
-            label={
-              <Group gap={6} wrap="nowrap">
-                <IconRobot size={16} />
-                <span>Trainer bot</span>
-              </Group>
-            }
-            onChange={(event) => {
-              const enabled = event.currentTarget.checked;
-              setOpponent((prev) => {
-                if (prev.type === "human") return prev;
-                return {
-                  ...prev,
-                  botProfile: {
-                    ...(prev.botProfile ?? createDefaultPracticeBotProfile(prev.engine)),
-                    enabled,
-                  },
-                };
-              });
-            }}
-          />
-
-          {opponent.botProfile?.enabled && (
-            <Stack gap="xs">
-              <SegmentedControl
-                value={opponent.botProfile.kind}
-                data={[
-                  { value: "maia", label: "Maia" },
-                  { value: "stockfish", label: "Stockfish" },
-                ]}
-                onChange={(value) =>
-                  updateBotProfile((profile) => ({
-                    ...profile,
-                    kind: value as "maia" | "stockfish",
-                  }))
-                }
-              />
-              <NumberInput
-                label="FIDE Elo"
-                min={800}
-                max={2600}
-                step={50}
-                value={opponent.botProfile.fideElo}
-                onChange={(value) =>
-                  updateBotProfile((profile) => ({
-                    ...profile,
-                    fideElo: typeof value === "number" ? value : profile.fideElo,
-                  }))
-                }
-              />
-              {opponent.botProfile.kind === "maia" && (
-                <Stack gap="xs">
-                  <Text size="xs" c="dimmed">
-                    Lichess target {fideToLichessClassical(opponent.botProfile.fideElo)}; nearest
-                    legacy Maia weights {nearestLegacyMaiaModel(opponent.botProfile.fideElo)}.
-                  </Text>
-                  <FileInput
-                    label="Maia weights (.pb.gz)"
-                    description="Select a Maia weights file for Lc0."
-                    filename={opponent.botProfile.maiaWeightsPath ?? null}
-                    onClick={selectMaiaWeights}
-                  />
-                  {!isLikelyLc0Engine(opponent.engine) && (
-                    <Text size="xs" c="orange">
-                      Select an Lc0 or Leela engine to use Maia weights.
-                    </Text>
-                  )}
-                  <Select
-                    label="Time use"
-                    allowDeselect={false}
-                    value={opponent.botProfile.timeUse ?? "balanced"}
-                    data={[
-                      { value: "fast", label: "Fast" },
-                      { value: "balanced", label: "Balanced" },
-                      { value: "slow", label: "Slow" },
-                    ]}
-                    onChange={(value) =>
-                      updateBotProfile((profile) => ({
-                        ...profile,
-                        timeUse: (value as "fast" | "balanced" | "slow" | null) ?? "balanced",
-                      }))
-                    }
-                  />
-                </Stack>
-              )}
-            </Stack>
-          )}
-
           {!opponent.timeControl && (
             <GoModeInput
               gameMode

@@ -62,6 +62,14 @@ fn default_use_clock_time_management() -> bool {
 pub struct EngineMoveDelay {
     pub min_ms: u32,
     pub max_ms: u32,
+    #[serde(default)]
+    pub fide_elo: Option<u32>,
+    #[serde(default)]
+    pub initial_time_ms: Option<u32>,
+    #[serde(default)]
+    pub increment_ms: Option<u32>,
+    #[serde(default)]
+    pub use_as_move_time: bool,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Type)]
@@ -1383,9 +1391,143 @@ fn try_polyglot_book_move(controller: &GameController) -> Option<String> {
     Some(legal_moves[selected].0.clone())
 }
 
-fn choose_engine_move_delay(delay: &EngineMoveDelay, current_time: Option<u64>) -> Duration {
+fn clamp_f64(value: f64, min: f64, max: f64) -> f64 {
+    value.min(max).max(min)
+}
+
+fn expected_game_moves(initial_time_ms: u64) -> f64 {
+    match initial_time_ms {
+        0..=60_000 => 36.0,
+        60_001..=180_000 => 38.0,
+        180_001..=600_000 => 42.0,
+        600_001..=1_800_000 => 46.0,
+        _ => 50.0,
+    }
+}
+
+fn time_control_reserve(initial_time_ms: u64) -> f64 {
+    let reserve = initial_time_ms as f64
+        * match initial_time_ms {
+            0..=60_000 => 0.035,
+            60_001..=180_000 => 0.045,
+            180_001..=600_000 => 0.055,
+            _ => 0.065,
+        };
+
+    clamp_f64(reserve, 700.0, 45_000.0)
+}
+
+fn phase_time_multiplier(move_number: u32) -> f64 {
+    match move_number {
+        1..=4 => 0.34,
+        5..=10 => 0.58,
+        11..=30 => 1.12,
+        31..=45 => 0.98,
+        _ => 0.82,
+    }
+}
+
+fn rating_time_multiplier(fide_elo: u32) -> f64 {
+    let normalized = (fide_elo.saturating_sub(800) as f64 / 1800.0).min(1.0);
+    0.68 + normalized * 0.62
+}
+
+fn pressure_time_multiplier(current_time: u64, initial_time_ms: u64, increment_ms: u64) -> f64 {
+    let soft_floor = (12_000 + increment_ms.saturating_mul(8)).max(initial_time_ms / 35);
+    if current_time <= 2_500 {
+        0.12
+    } else if current_time <= soft_floor / 2 {
+        0.24
+    } else if current_time <= soft_floor {
+        0.42
+    } else if current_time <= initial_time_ms / 5 {
+        0.72
+    } else {
+        1.0
+    }
+}
+
+fn complexity_time_multiplier(position: &Chess) -> f64 {
+    let legal_moves = position.legal_moves().len() as f64;
+    let legal_factor = clamp_f64(0.72 + (legal_moves / 34.0), 0.7, 1.55);
+    let check_factor = if position.is_check() { 1.35 } else { 1.0 };
+    legal_factor * check_factor
+}
+
+fn choose_engine_move_delay(
+    delay: &EngineMoveDelay,
+    current_time: Option<u64>,
+    ply: usize,
+    position: &Chess,
+) -> Duration {
     let min_ms = delay.min_ms.min(delay.max_ms);
     let max_ms = delay.max_ms.max(delay.min_ms);
+
+    if let Some(fide_elo) = delay.fide_elo {
+        let initial_time_ms = delay
+            .initial_time_ms
+            .map(|time| time as u64)
+            .or(current_time)
+            .unwrap_or(180_000)
+            .max(1);
+        let increment_ms = delay.increment_ms.unwrap_or(0) as u64;
+        let current_time = current_time.unwrap_or(initial_time_ms);
+
+        if current_time <= 450 {
+            return Duration::from_millis(0);
+        }
+
+        let expected_moves = expected_game_moves(initial_time_ms);
+        let move_number = (ply / 2 + 1) as u32;
+        let remaining_moves = (expected_moves - move_number as f64).max(8.0);
+        let reserve = time_control_reserve(initial_time_ms);
+        let usable_time = (current_time as f64 - reserve).max(0.0);
+        let sustainable = usable_time / remaining_moves + increment_ms as f64 * 0.62;
+        let average_budget =
+            (initial_time_ms as f64 + increment_ms as f64 * expected_moves) / expected_moves;
+
+        let mut target = average_budget * 0.35 + sustainable * 0.65;
+        target *= phase_time_multiplier(move_number);
+        target *= complexity_time_multiplier(position);
+        target *= rating_time_multiplier(fide_elo.clamp(800, 2600));
+        target *= pressure_time_multiplier(current_time, initial_time_ms, increment_ms);
+
+        let mut rng = rand::thread_rng();
+        let sigma = 0.78 - ((fide_elo.saturating_sub(800) as f64 / 1800.0).min(1.0) * 0.32);
+        let noise = (rng.gen_range(-1.0..=1.0_f64) * sigma).exp();
+        target *= noise;
+
+        let complexity = complexity_time_multiplier(position);
+        let long_think_probability = clamp_f64((complexity - 0.85) * 0.12, 0.02, 0.16);
+        if move_number > 8
+            && current_time > initial_time_ms / 8
+            && rng.gen_bool(long_think_probability)
+        {
+            target *= rng.gen_range(1.8..=3.8);
+        }
+
+        if move_number <= 8 && rng.gen_bool(0.32) {
+            target *= rng.gen_range(0.28..=0.62);
+        }
+
+        let safety_margin = if current_time < 5_000 {
+            350
+        } else if initial_time_ms <= 180_000 {
+            900
+        } else if initial_time_ms <= 600_000 {
+            2_000
+        } else {
+            5_000
+        };
+        let clock_cap = current_time.saturating_sub(safety_margin) as f64;
+        let sustainable_cap = (sustainable * 4.5 + increment_ms as f64 * 0.8).max(min_ms as f64);
+        let max_spend = clock_cap.min(max_ms as f64).min(sustainable_cap).max(0.0);
+        let min_spend = (min_ms as f64).min(max_spend);
+        let selected_ms = clamp_f64(target, min_spend, max_spend).round() as u64;
+
+        return Duration::from_millis(selected_ms);
+    }
+
     let mut rng = rand::thread_rng();
     let selected = if min_ms == max_ms {
         min_ms
@@ -1417,9 +1559,28 @@ async fn request_engine_move(
         let ctrl = controller.read().await;
         let book_move = try_polyglot_book_move(&ctrl);
         let turn = ctrl.position.turn();
+        let player_config = ctrl.current_turn_player().clone();
+        let (white_time, black_time) = ctrl.get_current_times();
+        let current_time = if turn == Color::White {
+            white_time
+        } else {
+            black_time
+        };
+        let move_delay = match player_config {
+            PlayerConfig::Engine { move_delay, .. } => move_delay.as_ref().map(|delay| {
+                choose_engine_move_delay(delay, current_time, ctrl.moves.len(), &ctrl.position)
+            }),
+            _ => None,
+        };
         drop(ctrl);
 
         if let Some(book_uci) = book_move {
+            if let Some(delay) = move_delay {
+                if !delay.is_zero() {
+                    tokio::time::sleep(delay).await;
+                }
+            }
+
             let mut ctrl = controller.write().await;
             ctrl.engine_thinking = false;
 
@@ -1491,7 +1652,20 @@ async fn request_engine_move(
             black_time
         };
 
-        let go_mode = if current_time.is_some() && use_clock_time_management {
+        let selected_delay = delay.as_ref().map(|delay| {
+            choose_engine_move_delay(delay, current_time, moves.len(), &ctrl.position)
+        });
+        let use_delay_as_move_time = delay
+            .as_ref()
+            .map(|delay| delay.use_as_move_time)
+            .unwrap_or(false);
+
+        let go_mode = if use_delay_as_move_time {
+            let move_time = selected_delay
+                .map(|delay| delay.as_millis().clamp(1, u32::MAX as u128) as u32)
+                .unwrap_or(1);
+            GoMode::Time(move_time)
+        } else if current_time.is_some() && use_clock_time_management {
             let (winc, binc) = ctrl
                 .clock
                 .as_ref()
@@ -1505,9 +1679,11 @@ async fn request_engine_move(
             go.unwrap_or(GoMode::Depth(20))
         };
 
-        let move_delay = delay
-            .as_ref()
-            .map(|delay| choose_engine_move_delay(delay, current_time));
+        let move_delay = if use_delay_as_move_time {
+            None
+        } else {
+            selected_delay
+        };
 
         (engine, go_mode, move_delay, initial_fen, moves, turn)
     };
