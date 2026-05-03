@@ -6,6 +6,7 @@ import {
   Divider,
   Group,
   Modal,
+  MultiSelect,
   NumberInput,
   Paper,
   Progress,
@@ -132,8 +133,7 @@ export default function DailyGoalsPanel({
       uniqueStrings(
         goals
           .filter((goal) => goal.enabled && goal.kind === "opening-review")
-          .map((goal) => resolveOpeningGoalDeck(goal, openingDecks)?.path)
-          .filter((path): path is string => Boolean(path)),
+          .flatMap((goal) => resolveOpeningGoalDecks(goal, openingDecks).map((deck) => deck.path)),
       ),
     [goals, openingDecks],
   );
@@ -143,8 +143,7 @@ export default function DailyGoalsPanel({
       uniqueStrings(
         goals
           .filter((goal) => goal.enabled && goal.kind === "mistake-review")
-          .map((goal) => resolveMistakeGoalDeck(goal, mistakeDecks)?.path)
-          .filter((path): path is string => Boolean(path)),
+          .flatMap((goal) => resolveMistakeGoalDecks(goal, mistakeDecks).map((deck) => deck.path)),
       ),
     [goals, mistakeDecks],
   );
@@ -294,10 +293,6 @@ export default function DailyGoalsPanel({
 
   function addGoal(kind: DailyGoalKind) {
     const file = kind === "prep" ? recentFiles[0] : null;
-    const openingDeck =
-      kind === "opening-review" ? resolveOpeningGoalDeck({} as DailyGoal, openingDecks) : null;
-    const mistakeDeck =
-      kind === "mistake-review" ? resolveMistakeGoalDeck({} as DailyGoal, mistakeDecks) : null;
 
     setGoals((current) => [
       ...current,
@@ -307,7 +302,8 @@ export default function DailyGoalsPanel({
         title: getDefaultGoalTitle(kind),
         enabled: true,
         target: getDefaultGoalTarget(kind),
-        deckPath: openingDeck?.path ?? mistakeDeck?.path ?? null,
+        deckPaths: [],
+        deckPath: null,
         filePath: file?.path ?? null,
         fileName: file?.name ?? null,
         fileType: file?.type,
@@ -420,7 +416,12 @@ export default function DailyGoalsPanel({
                     {goalState.detail}
                   </Text>
                   <Progress
-                    value={goalState.target ? (goalState.progress / goalState.target) * 100 : 0}
+                    value={
+                      goalState.target
+                        ? (Math.min(goalState.progress, goalState.target) / goalState.target) *
+                          100
+                        : 0
+                    }
                     color={goalState.completed ? "blue" : goalState.color}
                     size="xs"
                     radius="xl"
@@ -548,23 +549,33 @@ function DailyGoalsSettingsModal({
                       }
                     />
                     {goal.kind === "opening-review" && (
-                      <Select
-                        label="Opening deck"
-                        placeholder="Auto-select"
+                      <MultiSelect
+                        label="Opening sets"
+                        placeholder="All opening sets"
                         data={openingOptions}
-                        value={goal.deckPath ?? null}
-                        onChange={(value) => onUpdateGoal(goal.id, { deckPath: value })}
+                        value={getConfiguredDeckPaths(goal)}
+                        onChange={(values) =>
+                          onUpdateGoal(goal.id, {
+                            deckPaths: values,
+                            deckPath: values[0] ?? null,
+                          })
+                        }
                         clearable
                         searchable
                       />
                     )}
                     {goal.kind === "mistake-review" && (
-                      <Select
-                        label="Mistake deck"
-                        placeholder="Auto-select"
+                      <MultiSelect
+                        label="Mistake sets"
+                        placeholder="All mistake sets"
                         data={mistakeOptions}
-                        value={goal.deckPath ?? null}
-                        onChange={(value) => onUpdateGoal(goal.id, { deckPath: value })}
+                        value={getConfiguredDeckPaths(goal)}
+                        onChange={(values) =>
+                          onUpdateGoal(goal.id, {
+                            deckPaths: values,
+                            deckPath: values[0] ?? null,
+                          })
+                        }
                         clearable
                         searchable
                       />
@@ -674,8 +685,8 @@ function resolveGoalState({
   const icon = getGoalIcon(goal.kind);
 
   if (goal.kind === "opening-review") {
-    const deck = resolveOpeningGoalDeck(goal, openingDecks);
-    if (!deck) {
+    const decks = resolveOpeningGoalDecks(goal, openingDecks);
+    if (decks.length === 0) {
       return {
         goal,
         target,
@@ -683,7 +694,7 @@ function resolveGoalState({
         completed: false,
         loading: openingDecksLoading,
         color: "teal",
-        detail: openingDecksLoading ? "Loading opening decks" : "No opening review deck linked",
+        detail: openingDecksLoading ? "Loading opening sets" : "No opening review set linked",
         startLabel: openingDecksLoading ? "Loading" : "Set up",
         startDisabled: openingDecksLoading,
         manual: false,
@@ -692,8 +703,7 @@ function resolveGoalState({
       };
     }
 
-    const deckDetail = openingDeckDetails[deck.path];
-    if (deckDetail === undefined) {
+    if (decks.some((deck) => openingDeckDetails[deck.path] === undefined)) {
       return {
         goal,
         target,
@@ -701,7 +711,7 @@ function resolveGoalState({
         completed: false,
         loading: true,
         color: "teal",
-        detail: deck.name,
+        detail: getDeckSelectionLabel(decks),
         startLabel: "Loading",
         startDisabled: true,
         manual: false,
@@ -710,7 +720,14 @@ function resolveGoalState({
       };
     }
 
-    if (deckDetail === null) {
+    const loadedDecks = decks
+      .map((deck) => ({ summary: deck, detail: openingDeckDetails[deck.path] }))
+      .filter(
+        (item): item is { summary: OpeningReviewDeckSummary; detail: OpeningReviewDeck } =>
+          item.detail !== null && item.detail !== undefined,
+      );
+
+    if (loadedDecks.length === 0) {
       return {
         goal,
         target,
@@ -718,49 +735,55 @@ function resolveGoalState({
         completed: false,
         loading: false,
         color: "teal",
-        detail: "Could not read linked opening deck",
+        detail: "Could not read linked opening sets",
         startLabel: "Open",
         startDisabled: false,
         manual: false,
         icon,
-        onStart: () => void onOpenOpeningDeck(deck),
+        onStart: () => void onOpenOpeningDeck(decks[0]),
       };
     }
 
-    const settings = { ...deckDetail.daily, reviewsPerDay: target };
-    const progress = getOpeningReviewDailyProgress(deckDetail.positions, settings);
-    const batch = getOpeningReviewDailyBatch(deckDetail.positions, settings);
-    const indices = getPositionIndices(deckDetail.positions, batch);
-    const completed =
-      progress.completed >= target || (progress.completed > 0 && indices.length === 0);
+    const deckStates = loadedDecks.map(({ summary, detail }) => {
+      const settings = { ...detail.daily, reviewsPerDay: target };
+      const progress = getOpeningReviewDailyProgress(detail.positions, settings);
+      const batch = getOpeningReviewDailyBatch(detail.positions, settings);
+      const indices = getPositionIndices(detail.positions, batch);
+      return { summary, progress: progress.completed, indices };
+    });
+    const progress = sumNumbers(deckStates.map((deckState) => deckState.progress));
+    const ready = sumNumbers(deckStates.map((deckState) => deckState.indices.length));
+    const displayTarget = getReviewDisplayTarget(target, progress, ready);
+    const completed = progress >= displayTarget;
+    const startDeckState = deckStates.find((deckState) => deckState.indices.length > 0);
 
     return {
       goal,
-      target,
-      progress: progress.completed,
+      target: displayTarget,
+      progress,
       completed,
       loading: false,
       color: "teal",
-      detail: `${deck.name} - ${indices.length} ready`,
-      startLabel: completed ? "Done" : indices.length > 0 ? "Start" : "Open",
+      detail: `${getDeckSelectionLabel(decks)} - ${ready} ready`,
+      startLabel: completed ? "Done" : ready > 0 ? "Start" : "Open",
       startDisabled: completed,
       manual: false,
       icon,
       onStart: () => {
-        if (indices.length === 0) {
-          void onOpenOpeningDeck(deck);
+        if (!startDeckState) {
+          void onOpenOpeningDeck(loadedDecks[0].summary);
           return;
         }
-        void onOpenOpeningDeck(deck, {
-          initialPractice: { mode: "due", indices, label: "Daily goals" },
+        void onOpenOpeningDeck(startDeckState.summary, {
+          initialPractice: { mode: "due", indices: startDeckState.indices, label: "Daily goals" },
         });
       },
     };
   }
 
   if (goal.kind === "mistake-review") {
-    const deck = resolveMistakeGoalDeck(goal, mistakeDecks);
-    if (!deck) {
+    const decks = resolveMistakeGoalDecks(goal, mistakeDecks);
+    if (decks.length === 0) {
       return {
         goal,
         target,
@@ -768,7 +791,7 @@ function resolveGoalState({
         completed: false,
         loading: mistakeDecksLoading,
         color: "orange",
-        detail: mistakeDecksLoading ? "Loading mistake decks" : "No mistake review deck linked",
+        detail: mistakeDecksLoading ? "Loading mistake sets" : "No mistake review set linked",
         startLabel: mistakeDecksLoading ? "Loading" : "Set up",
         startDisabled: mistakeDecksLoading,
         manual: false,
@@ -777,8 +800,7 @@ function resolveGoalState({
       };
     }
 
-    const deckDetail = mistakeDeckDetails[deck.path];
-    if (deckDetail === undefined) {
+    if (decks.some((deck) => mistakeDeckDetails[deck.path] === undefined)) {
       return {
         goal,
         target,
@@ -786,7 +808,7 @@ function resolveGoalState({
         completed: false,
         loading: true,
         color: "orange",
-        detail: deck.name,
+        detail: getDeckSelectionLabel(decks),
         startLabel: "Loading",
         startDisabled: true,
         manual: false,
@@ -795,7 +817,14 @@ function resolveGoalState({
       };
     }
 
-    if (deckDetail === null) {
+    const loadedDecks = decks
+      .map((deck) => ({ summary: deck, detail: mistakeDeckDetails[deck.path] }))
+      .filter(
+        (item): item is { summary: MistakeReviewDeckSummary; detail: MistakeReviewDeck } =>
+          item.detail !== null && item.detail !== undefined,
+      );
+
+    if (loadedDecks.length === 0) {
       return {
         goal,
         target,
@@ -803,41 +832,47 @@ function resolveGoalState({
         completed: false,
         loading: false,
         color: "orange",
-        detail: "Could not read linked mistake deck",
+        detail: "Could not read linked mistake sets",
         startLabel: "Open",
         startDisabled: false,
         manual: false,
         icon,
-        onStart: () => void onOpenMistakeDeck(deck),
+        onStart: () => void onOpenMistakeDeck(decks[0]),
       };
     }
 
-    const settings = { ...deckDetail.daily, reviewsPerDay: target };
-    const progress = getMistakeReviewDailyProgress(deckDetail.positions, settings);
-    const batch = getMistakeReviewDailyBatch(deckDetail.positions, settings);
-    const indices = getPositionIndices(deckDetail.positions, batch);
-    const completed =
-      progress.completed >= target || (progress.completed > 0 && indices.length === 0);
+    const deckStates = loadedDecks.map(({ summary, detail }) => {
+      const settings = { ...detail.daily, reviewsPerDay: target };
+      const progress = getMistakeReviewDailyProgress(detail.positions, settings);
+      const batch = getMistakeReviewDailyBatch(detail.positions, settings);
+      const indices = getPositionIndices(detail.positions, batch);
+      return { summary, progress: progress.completed, indices };
+    });
+    const progress = sumNumbers(deckStates.map((deckState) => deckState.progress));
+    const ready = sumNumbers(deckStates.map((deckState) => deckState.indices.length));
+    const displayTarget = getReviewDisplayTarget(target, progress, ready);
+    const completed = progress >= displayTarget;
+    const startDeckState = deckStates.find((deckState) => deckState.indices.length > 0);
 
     return {
       goal,
-      target,
-      progress: progress.completed,
+      target: displayTarget,
+      progress,
       completed,
       loading: false,
       color: "orange",
-      detail: `${deck.name} - ${indices.length} ready`,
-      startLabel: completed ? "Done" : indices.length > 0 ? "Start" : "Open",
+      detail: `${getDeckSelectionLabel(decks)} - ${ready} ready`,
+      startLabel: completed ? "Done" : ready > 0 ? "Start" : "Open",
       startDisabled: completed,
       manual: false,
       icon,
       onStart: () => {
-        if (indices.length === 0) {
-          void onOpenMistakeDeck(deck);
+        if (!startDeckState) {
+          void onOpenMistakeDeck(loadedDecks[0].summary);
           return;
         }
-        void onOpenMistakeDeck(deck, {
-          initialPractice: { mode: "due", indices, label: "Daily goals" },
+        void onOpenMistakeDeck(startDeckState.summary, {
+          initialPractice: { mode: "due", indices: startDeckState.indices, label: "Daily goals" },
         });
       },
     };
@@ -885,20 +920,52 @@ function resolveGoalState({
   };
 }
 
-function resolveOpeningGoalDeck(goal: DailyGoal, decks: OpeningReviewDeckSummary[]) {
-  if (goal.deckPath) {
-    const selected = decks.find((deck) => deck.path === goal.deckPath);
-    if (selected) return selected;
-  }
-  return decks.find((deck) => deck.due + deck.unseen > 0) ?? decks[0] ?? null;
+function resolveOpeningGoalDecks(goal: DailyGoal, decks: OpeningReviewDeckSummary[]) {
+  return resolveSelectedDecks(goal, decks);
 }
 
-function resolveMistakeGoalDeck(goal: DailyGoal, decks: MistakeReviewDeckSummary[]) {
-  if (goal.deckPath) {
-    const selected = decks.find((deck) => deck.path === goal.deckPath);
-    if (selected) return selected;
+function resolveMistakeGoalDecks(goal: DailyGoal, decks: MistakeReviewDeckSummary[]) {
+  return resolveSelectedDecks(goal, decks);
+}
+
+function resolveSelectedDecks<T extends { path: string; due: number; unseen: number; updatedAt: number }>(
+  goal: DailyGoal,
+  decks: T[],
+) {
+  const configuredPaths = getConfiguredDeckPaths(goal);
+  if (configuredPaths.length > 0) {
+    const deckByPath = new Map(decks.map((deck) => [deck.path, deck]));
+    return configuredPaths.map((path) => deckByPath.get(path)).filter((deck): deck is T => !!deck);
   }
-  return decks.find((deck) => deck.due + deck.unseen > 0) ?? decks[0] ?? null;
+
+  return [...decks].sort((a, b) => {
+    const aReady = a.due + a.unseen;
+    const bReady = b.due + b.unseen;
+    if (aReady !== bReady) return bReady - aReady;
+    return b.updatedAt - a.updatedAt;
+  });
+}
+
+function getConfiguredDeckPaths(goal: DailyGoal) {
+  if (goal.deckPaths && goal.deckPaths.length > 0) {
+    return uniqueStrings(goal.deckPaths);
+  }
+  return goal.deckPath ? [goal.deckPath] : [];
+}
+
+function getDeckSelectionLabel(decks: { name: string }[]) {
+  if (decks.length === 1) return decks[0].name;
+  return `${decks.length} sets`;
+}
+
+function getReviewDisplayTarget(target: number, completed: number, ready: number) {
+  const availableToday = completed + ready;
+  if (availableToday > 0) return Math.min(target, availableToday);
+  return target;
+}
+
+function sumNumbers(values: number[]) {
+  return values.reduce((sum, value) => sum + value, 0);
 }
 
 function resolvePrepFile(goal: DailyGoal, recentFiles: RecentFile[]): RecentFile | null {
@@ -922,7 +989,7 @@ function normalizeTarget(value: number) {
 }
 
 function uniqueStrings(values: string[]) {
-  return Array.from(new Set(values)).sort();
+  return Array.from(new Set(values));
 }
 
 function getLocalDateKey(date: Dayjs) {

@@ -314,6 +314,7 @@ export type DailyGoal = {
     title: string;
     enabled: boolean;
     target: number;
+    deckPaths?: string[];
     deckPath?: string | null;
     filePath?: string | null;
     fileName?: string | null;
@@ -334,6 +335,7 @@ export const DEFAULT_DAILY_GOALS: DailyGoal[] = [
         title: "Mistake review",
         enabled: true,
         target: 15,
+        deckPaths: [],
         deckPath: null,
     },
     {
@@ -342,6 +344,7 @@ export const DEFAULT_DAILY_GOALS: DailyGoal[] = [
         title: "Opening gaps",
         enabled: true,
         target: 15,
+        deckPaths: [],
         deckPath: null,
     },
 ];
