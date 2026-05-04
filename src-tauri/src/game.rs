@@ -1475,17 +1475,17 @@ fn clock_shape(initial_time_ms: u64, increment_ms: u64) -> ClockShape {
         120_001..=480_000 => ClockShape {
             expected_moves: 40.0,
             reserve_fraction: 0.045,
-            quick_floor_ms: 115.0,
-            opening_cap_ms: 1_800.0,
-            recapture_cap_ms: 650.0,
-            forced_cap_ms: 350.0,
-            check_cap_ms: 1_100.0,
-            opening_weight: 0.13,
-            early_weight: 0.25,
-            middle_weight: 0.82,
+            quick_floor_ms: 220.0,
+            opening_cap_ms: 4_200.0,
+            recapture_cap_ms: 950.0,
+            forced_cap_ms: 500.0,
+            check_cap_ms: 1_700.0,
+            opening_weight: 0.22,
+            early_weight: 0.36,
+            middle_weight: 0.88,
             late_weight: 0.70,
             endgame_weight: 0.55,
-            opening_fast_moves: 10,
+            opening_fast_moves: 8,
         },
         480_001..=1_500_000 => ClockShape {
             expected_moves: 44.0,
@@ -1775,17 +1775,17 @@ fn opening_floor_ms(shape: ClockShape) -> f64 {
 
 fn opening_cadence_multiplier(move_number: u32, rng: &mut impl Rng) -> f64 {
     let stage = match move_number {
-        1..=2 => 0.88,
-        3..=6 => 1.0,
-        _ => 1.12,
+        1..=2 => 0.95,
+        3..=6 => 1.08,
+        _ => 1.18,
     };
     let roll = rng.gen_range(0.0..1.0_f64);
-    let cadence = if roll < 0.14 {
-        rng.gen_range(1.75..=3.25)
-    } else if roll < 0.58 {
-        rng.gen_range(0.85..=1.55)
+    let cadence = if roll < 0.18 {
+        rng.gen_range(1.9..=3.8)
+    } else if roll < 0.7 {
+        rng.gen_range(0.95..=1.75)
     } else {
-        rng.gen_range(0.48..=0.9)
+        rng.gen_range(0.62..=1.05)
     };
     stage * cadence
 }
@@ -2247,16 +2247,16 @@ mod timing_tests {
 
         let selected = choose_engine_move_delay(&delay, Some(180_000), 0, &position, None, false);
 
-        assert!(selected.as_millis() <= 1_800);
-        assert!(selected.as_millis() >= 240);
+        assert!(selected.as_millis() <= 4_200);
+        assert!(selected.as_millis() >= 450);
     }
 
     #[test]
     fn three_zero_uses_blitz_opening_pacing() {
         let shape = clock_shape(180_000, 0);
 
-        assert_eq!(shape.opening_cap_ms, 1_800.0);
-        assert_eq!(shape.quick_floor_ms, 115.0);
+        assert_eq!(shape.opening_cap_ms, 4_200.0);
+        assert_eq!(shape.quick_floor_ms, 220.0);
     }
 
     #[test]
