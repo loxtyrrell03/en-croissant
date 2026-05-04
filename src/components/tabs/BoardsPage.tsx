@@ -4,6 +4,8 @@ import { useHotkeys, useToggle } from "@mantine/hooks";
 import { IconPlus } from "@tabler/icons-react";
 import { useAtom, useAtomValue, useStore } from "jotai";
 import {
+  lazy,
+  Suspense,
   startTransition,
   useCallback,
   useEffect,
@@ -19,17 +21,18 @@ import { activeTabAtom, tabFamily, tabsAtom } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
 import { createTab, genID, isPersistentGameOrigin, type Tab } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
-import BoardAnalysis from "../boards/BoardAnalysis";
-import BoardGame from "../boards/BoardGame";
 import { TreeStateProvider } from "../common/TreeStateContext";
-import Puzzles from "../puzzles/Puzzles";
-import OpeningReviewWorkspace from "../review/OpeningReviewWorkspace";
 import { BoardTab } from "./BoardTab";
 import ConfirmChangesModal from "./ConfirmChangesModal";
 import { platform } from "@tauri-apps/plugin-os";
 import { useNavigate } from "@tanstack/react-router";
 import { atomWithStorage } from "jotai/utils";
 import classes from "./BoardsPage.module.css";
+
+const BoardAnalysis = lazy(() => import("../boards/BoardAnalysis"));
+const BoardGame = lazy(() => import("../boards/BoardGame"));
+const Puzzles = lazy(() => import("../puzzles/Puzzles"));
+const OpeningReviewWorkspace = lazy(() => import("../review/OpeningReviewWorkspace"));
 
 export default function BoardsPage() {
   const { t } = useTranslation();
@@ -545,13 +548,17 @@ function TabSwitch({
     .with("play", () => (
       <TreeStateProvider id={tab.value}>
         <BoardWorkspaceLayout />
-        <BoardGame />
+        <Suspense fallback={null}>
+          <BoardGame />
+        </Suspense>
       </TreeStateProvider>
     ))
     .with("analysis", () => (
       <TreeStateProvider id={tab.value}>
         <BoardWorkspaceLayout />
-        <BoardAnalysis />
+        <Suspense fallback={null}>
+          <BoardAnalysis />
+        </Suspense>
         <ConfirmChangesModal
           opened={saveModalOpened}
           toggle={toggleSaveModal}
@@ -562,19 +569,25 @@ function TabSwitch({
     .with("puzzles", () => (
       <TreeStateProvider id={tab.value}>
         <BoardWorkspaceLayout />
-        <Puzzles id={tab.value} />
+        <Suspense fallback={null}>
+          <Puzzles id={tab.value} />
+        </Suspense>
       </TreeStateProvider>
     ))
     .with("opening-review", () => (
       <TreeStateProvider id={tab.value}>
         <BoardWorkspaceLayout />
-        <OpeningReviewWorkspace tab={tab} />
+        <Suspense fallback={null}>
+          <OpeningReviewWorkspace tab={tab} />
+        </Suspense>
       </TreeStateProvider>
     ))
     .with("mistake-review", () => (
       <TreeStateProvider id={tab.value}>
         <BoardWorkspaceLayout />
-        <OpeningReviewWorkspace tab={tab} />
+        <Suspense fallback={null}>
+          <OpeningReviewWorkspace tab={tab} />
+        </Suspense>
       </TreeStateProvider>
     ))
     .exhaustive();

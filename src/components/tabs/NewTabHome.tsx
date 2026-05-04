@@ -2719,6 +2719,7 @@ export default function NewTabHome() {
         setTabs,
         setActiveTab,
         pgn: latestGame.pgn,
+        initialState: tree,
         gameOrigin: {
           kind: "none",
         },
@@ -2801,6 +2802,7 @@ export default function NewTabHome() {
           setTabs,
           setActiveTab,
           pgn: game.pgn,
+          initialState: tree,
           gameOrigin: {
             kind: "none",
           },

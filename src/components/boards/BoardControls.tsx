@@ -14,7 +14,6 @@ import {
 import { useLoaderData } from "@tanstack/react-router";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeFile } from "@tauri-apps/plugin-fs";
-import domtoimage from "dom-to-image";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { memo, useContext } from "react";
 import { useTranslation } from "react-i18next";
@@ -99,6 +98,7 @@ function BoardControls({
     const snapshotTarget = document.querySelector(".cg-wrap") as HTMLElement | null;
     if (!snapshotTarget) return;
 
+    const { default: domtoimage } = await import("dom-to-image");
     domtoimage.toBlob(snapshotTarget).then(async (blob) => {
       if (blob == null) return;
 

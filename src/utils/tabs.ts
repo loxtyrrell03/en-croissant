@@ -7,7 +7,7 @@ import { commands } from "@/bindings";
 import { type FileMetadata, fileMetadataSchema } from "@/components/files/file";
 import type { TreeStoreState } from "@/state/store/tree";
 import { getPGN, parsePGN } from "./chess";
-import { type GameHeaders, getGameName } from "./treeReducer";
+import { type GameHeaders, getGameName, type TreeState } from "./treeReducer";
 
 const INVALID_FILENAME_CHARS = /[\\/:*?"<>|]+/g;
 
@@ -156,6 +156,7 @@ export async function createTab({
     headers,
     gameOrigin,
     position,
+    initialState,
 }: {
     tab: Omit<Tab, "value" | "gameOrigin">;
     setTabs: React.Dispatch<React.SetStateAction<Tab[]>>;
@@ -164,11 +165,12 @@ export async function createTab({
     headers?: GameHeaders;
     gameOrigin?: GameOrigin;
     position?: number[];
+    initialState?: TreeState;
 }) {
     const id = genID();
 
-    if (pgn !== undefined) {
-        const tree = await parsePGN(pgn, headers?.fen);
+    if (initialState !== undefined || pgn !== undefined) {
+        const tree = initialState ?? (await parsePGN(pgn ?? "", headers?.fen));
         if (headers) {
             tree.headers = headers;
             if (position) {

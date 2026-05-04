@@ -1,4 +1,4 @@
-import { Paper, Portal, Stack, Tabs } from "@mantine/core";
+import { Center, Loader, Paper, Portal, Stack, Tabs } from "@mantine/core";
 import { useHotkeys, useToggle } from "@mantine/hooks";
 import {
   IconBulb,
@@ -13,7 +13,16 @@ import { useLoaderData } from "@tanstack/react-router";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
 import type { Piece } from "chessops";
 import { useAtom, useAtomValue } from "jotai";
-import { useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import {
@@ -28,18 +37,8 @@ import { keyMapAtom } from "@/state/keybinds";
 import { defaultPGN } from "@/utils/chess";
 import { getTabFile, getTabGameNumber, getTabPracticeKey, saveToFile } from "@/utils/tabs";
 import DetachedEval from "../common/DetachedEval";
-import GameNotation from "../common/GameNotation";
-import MoveControls from "../common/MoveControls";
 import { ResponsivePanel } from "../common/ResponsivePanel";
 import { TreeStateContext } from "../common/TreeStateContext";
-import AnalysisPanel from "../panels/analysis/AnalysisPanel";
-import AnnotationPanel from "../panels/annotation/AnnotationPanel";
-import ComparePanel from "../panels/compare/ComparePanel";
-import DatabasePanel from "../panels/database/DatabasePanel";
-import EnginePlanExplorerPanel from "../panels/enginePlan/EnginePlanExplorerPanel";
-import InfoPanel from "../panels/info/InfoPanel";
-import PlanExplorerPanel from "../panels/plan/PlanExplorerPanel";
-import PracticePanel from "../panels/practice/PracticePanel";
 import Board from "./Board";
 import { BoardWithAnnotationLayout } from "./BoardWithAnnotationLayout";
 import BoardControls from "./BoardControls";
@@ -49,11 +48,38 @@ import EngineKeyboardShortcuts from "./EngineKeyboardShortcuts";
 import EvalListener from "./EvalListener";
 import classes from "./BoardAnalysis.module.css";
 
+const AnalysisPanel = lazy(() => import("../panels/analysis/AnalysisPanel"));
+const AnnotationPanel = lazy(() => import("../panels/annotation/AnnotationPanel"));
+const ComparePanel = lazy(() => import("../panels/compare/ComparePanel"));
+const DatabasePanel = lazy(() => import("../panels/database/DatabasePanel"));
+const EnginePlanExplorerPanel = lazy(() => import("../panels/enginePlan/EnginePlanExplorerPanel"));
+const GameNotation = lazy(() => import("../common/GameNotation"));
+const InfoPanel = lazy(() => import("../panels/info/InfoPanel"));
+const MoveControls = lazy(() => import("../common/MoveControls"));
+const PlanExplorerPanel = lazy(() => import("../panels/plan/PlanExplorerPanel"));
+const PracticePanel = lazy(() => import("../panels/practice/PracticePanel"));
+
 const scrollablePanelStyle = {
   minHeight: 0,
   overflowX: "hidden",
   overflowY: "auto",
 } as const;
+
+function PanelFallback() {
+  return (
+    <Center h="100%">
+      <Loader size="sm" />
+    </Center>
+  );
+}
+
+function DeferredPanel({ children }: { children: ReactNode }) {
+  return <Suspense fallback={<PanelFallback />}>{children}</Suspense>;
+}
+
+function NotationFallback() {
+  return <Paper withBorder flex={1} />;
+}
 
 function BoardAnalysisTab({
   icon,
@@ -259,7 +285,11 @@ function BoardAnalysis() {
               selectedPiece={selectedPiece}
             />
           }
-          annotation={<AnnotationPanel />}
+          annotation={
+            <Suspense fallback={null}>
+              <AnnotationPanel />
+            </Suspense>
+          }
         />
       </Portal>
       <Portal target="#topRight" style={{ height: "100%" }}>
@@ -335,18 +365,24 @@ function BoardAnalysis() {
               {showPracticeTab && (
                 <Tabs.Panel value="practice" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
                   <EngineDockedPanel>
-                    <PracticePanel />
+                    <DeferredPanel>
+                      <PracticePanel />
+                    </DeferredPanel>
                   </EngineDockedPanel>
                 </Tabs.Panel>
               )}
               <Tabs.Panel value="info" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
                 <EngineDockedPanel>
-                  <InfoPanel addGame={addGame} />
+                  <DeferredPanel>
+                    <InfoPanel addGame={addGame} />
+                  </DeferredPanel>
                 </EngineDockedPanel>
               </Tabs.Panel>
               <Tabs.Panel value="database" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
                 <EngineDockedPanel>
-                  <DatabasePanel />
+                  <DeferredPanel>
+                    <DatabasePanel />
+                  </DeferredPanel>
                 </EngineDockedPanel>
               </Tabs.Panel>
               <Tabs.Panel
@@ -355,7 +391,9 @@ function BoardAnalysis() {
                 style={{ minHeight: 0, overflow: "hidden" }}
               >
                 <EngineDockedPanel>
-                  <PlanExplorerPanel />
+                  <DeferredPanel>
+                    <PlanExplorerPanel />
+                  </DeferredPanel>
                 </EngineDockedPanel>
               </Tabs.Panel>
               <Tabs.Panel
@@ -364,14 +402,20 @@ function BoardAnalysis() {
                 style={{ minHeight: 0, overflow: "hidden" }}
               >
                 <EngineDockedPanel>
-                  <EnginePlanExplorerPanel />
+                  <DeferredPanel>
+                    <EnginePlanExplorerPanel />
+                  </DeferredPanel>
                 </EngineDockedPanel>
               </Tabs.Panel>
               <Tabs.Panel value="compare" flex={1} style={scrollablePanelStyle}>
-                <ComparePanel />
+                <DeferredPanel>
+                  <ComparePanel />
+                </DeferredPanel>
               </Tabs.Panel>
               <Tabs.Panel value="analysis" flex={1} style={scrollablePanelStyle}>
-                <AnalysisPanel />
+                <DeferredPanel>
+                  <AnalysisPanel />
+                </DeferredPanel>
               </Tabs.Panel>
             </Tabs>
           </ResponsivePanel>
@@ -388,18 +432,22 @@ function BoardAnalysis() {
         ) : (
           <Stack h="100%" gap="xs">
             <DetachedEval />
-            <GameNotation
-              topBar
-              controls={
-                <BoardControls
-                  editingMode={editingMode}
-                  toggleEditingMode={toggleEditingMode}
-                  dirty={dirty}
-                  saveFile={userSaveFile}
-                />
-              }
-            />
-            <MoveControls />
+            <Suspense fallback={<NotationFallback />}>
+              <GameNotation
+                topBar
+                controls={
+                  <BoardControls
+                    editingMode={editingMode}
+                    toggleEditingMode={toggleEditingMode}
+                    dirty={dirty}
+                    saveFile={userSaveFile}
+                  />
+                }
+              />
+            </Suspense>
+            <Suspense fallback={null}>
+              <MoveControls />
+            </Suspense>
           </Stack>
         )}
       </Portal>

@@ -205,6 +205,7 @@ function OpeningDetail({
             createTab({
               tab: { name: opening.name, type: "analysis" },
               pgn,
+              initialState: tree,
               headers,
               setTabs,
               setActiveTab,

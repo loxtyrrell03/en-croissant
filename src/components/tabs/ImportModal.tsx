@@ -131,6 +131,7 @@ export default function ImportModal({
         setTabs,
         setActiveTab,
         pgn,
+        initialState: tree,
         gameOrigin: {
           kind: "none",
         },

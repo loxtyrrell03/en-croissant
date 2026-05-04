@@ -11,7 +11,7 @@ import { addRecentFileAtom, tabFamily } from "@/state/atoms";
 import { unwrap } from "@/utils/unwrap";
 import { parsePGN } from "./chess";
 import { createTab, isInTempDir, type Tab } from "./tabs";
-import { getGameName } from "./treeReducer";
+import { getGameName, type TreeState } from "./treeReducer";
 
 export function usePlatform() {
     const r = useSWR("os", async () => {
@@ -36,6 +36,7 @@ export async function openFile(
     let pgn = options?.pgn;
     let tabName = "Untitled";
     let recentName = "Untitled";
+    let initialState: TreeState | undefined;
 
     if (typeof file === "string") {
         const count = unwrap(await commands.countPgnGames(file));
@@ -57,8 +58,8 @@ export async function openFile(
         };
 
         if (pgn) {
-            const tree = await parsePGN(pgn);
-            tabName = getGameName(tree.headers);
+            initialState = await parsePGN(pgn);
+            tabName = getGameName(initialState.headers);
             recentName = tabName;
         } else {
             tabName = file;
@@ -82,6 +83,7 @@ export async function openFile(
         setTabs,
         setActiveTab,
         pgn: pgn || "",
+        initialState,
         gameOrigin: {
             kind: isTempOrigin ? "temp_file" : "file",
             file: fileInfo,

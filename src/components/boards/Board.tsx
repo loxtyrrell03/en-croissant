@@ -41,6 +41,8 @@ import { makeSan } from "chessops/san";
 import { useAtom, useAtomValue } from "jotai";
 import {
   memo,
+  lazy,
+  Suspense,
   useCallback,
   useContext,
   useEffect,
@@ -131,7 +133,6 @@ import { getTabGameNumber, getTabPracticeKey } from "@/utils/tabs";
 import { findFen } from "@/utils/treeReducer";
 import ShowMaterial from "../common/ShowMaterial";
 import { TreeStateContext } from "../common/TreeStateContext";
-import FideInfo from "../databases/FideInfo";
 import { updateCardPerformance, type Position as ReviewPosition } from "../files/opening";
 import { arrowColors } from "../panels/analysis/BestMoves";
 import AnnotationHint from "./AnnotationHint";
@@ -151,6 +152,8 @@ const MIN_MANUAL_BOARD_SIZE = 280;
 const MISTAKE_REVIEW_PANEL_MIN_HEIGHT = 108;
 const OPENING_REVIEW_CLOUD_MULTIPV = 5;
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
+
+const FideInfo = lazy(() => import("../databases/FideInfo"));
 
 type BoardResizeCorner = "nw" | "ne" | "sw" | "se";
 
@@ -2120,8 +2123,12 @@ function Board({
           )}
         </Box>
       </Box>
-      <FideInfo opened={whiteFideOpen} setOpened={setWhiteFideOpen} name={headers.white} />
-      <FideInfo opened={blackFideOpen} setOpened={setBlackFideOpen} name={headers.black} />
+      {(whiteFideOpen || blackFideOpen) && (
+        <Suspense fallback={null}>
+          <FideInfo opened={whiteFideOpen} setOpened={setWhiteFideOpen} name={headers.white} />
+          <FideInfo opened={blackFideOpen} setOpened={setBlackFideOpen} name={headers.black} />
+        </Suspense>
+      )}
     </>
   );
 }

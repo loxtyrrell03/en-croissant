@@ -1,8 +1,9 @@
 import { Box, Paper, Stack, type MantineSpacing } from "@mantine/core";
 import { useAtomValue } from "jotai";
-import type { ReactNode } from "react";
-import EnginePanelContent from "@/components/panels/analysis/EnginePanelContent";
+import { lazy, Suspense, type ReactNode } from "react";
 import { showEngineDockAtom } from "@/state/atoms";
+
+const EnginePanelContent = lazy(() => import("@/components/panels/analysis/EnginePanelContent"));
 
 const dockedContentStyle = {
   minHeight: 0,
@@ -33,7 +34,9 @@ export default function EngineDockedPanel({
         {children}
       </Box>
       <Paper withBorder style={{ overflow: "hidden", flexShrink: 0 }}>
-        <EnginePanelContent compact />
+        <Suspense fallback={null}>
+          <EnginePanelContent compact />
+        </Suspense>
       </Paper>
     </Stack>
   );
