@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import { createTreeStore } from "@/state/store/tree";
 import {
     collectOpponentBranchPaths,
+    findFirstOpponentBranch,
     findLastOpponentBranch,
     getOpponentPrepMoveRows,
 } from "@/utils/opponentPrep";
@@ -43,6 +44,10 @@ describe("opponent prep helpers", () => {
         const latest = findLastOpponentBranch(state.root, [0, 0, 0], "white");
         expect(latest?.branchPath).toEqual([0, 0]);
         expect(latest?.san).toBe("Nf3");
+
+        const first = findFirstOpponentBranch(state.root, [0, 0, 0], "white");
+        expect(first?.branchPath).toEqual([]);
+        expect(first?.san).toBe("e4");
 
         const branchPaths = collectOpponentBranchPaths({
             root: state.root,

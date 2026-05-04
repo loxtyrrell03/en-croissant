@@ -127,6 +127,32 @@ export function findLastOpponentBranch(
     return null;
 }
 
+export function findFirstOpponentBranch(
+    root: TreeNode,
+    path: number[],
+    opponentColor: PrepColor,
+    rootPath: number[] = [],
+): OpponentPrepBranch | null {
+    for (let length = rootPath.length + 1; length <= path.length; length++) {
+        const branchPath = path.slice(0, length - 1);
+        const movePath = path.slice(0, length);
+        const parent = getNodeAtPath(root, branchPath);
+        const child = getNodeAtPath(root, movePath);
+        if (getFenTurn(parent.fen) !== opponentColor || !child.san) continue;
+
+        return {
+            branchPath,
+            movePath,
+            fen: parent.fen,
+            san: child.san,
+            uci: child.move ? getMoveUci(child.move) : getMoveUciFromSan(parent.fen, child.san),
+            key: getOpponentPrepBranchKey(parent.fen, child.san),
+        };
+    }
+
+    return null;
+}
+
 export function collectOpponentBranchPaths({
     root,
     path,

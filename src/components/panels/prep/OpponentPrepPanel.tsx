@@ -51,7 +51,7 @@ import {
 import { formatNumber } from "@/utils/format";
 import { isPrefix } from "@/utils/misc";
 import {
-  collectOpponentBranchPaths,
+  findFirstOpponentBranch,
   findLastOpponentBranch,
   getFenTurn,
   getLineSans,
@@ -410,12 +410,14 @@ function OpponentPrepPanel() {
       const state = store.getState();
       const safeRootPath = pathExists(state.root, prep.rootPath ?? []) ? (prep.rootPath ?? []) : [];
       const currentInsidePrep = isPrefix(safeRootPath, state.position);
-      const searchPath = currentInsidePrep ? state.position : safeRootPath;
-      const currentNode = state.currentNode();
-      const currentIsOpponentChoice = getFenTurn(currentNode.fen) === prep.color;
+      const startingNode = state.getNode(safeRootPath);
       const active = currentInsidePrep
-        ? findLastOpponentBranch(state.root, state.position, prep.color, safeRootPath)
+        ? findFirstOpponentBranch(state.root, state.position, prep.color, safeRootPath)
         : null;
+      const branchPath =
+        startingNode && getFenTurn(startingNode.fen) === prep.color
+          ? safeRootPath
+          : active?.branchPath;
       const completedBranches = {
         ...prep.completedBranches,
         ...(active ? { [active.key]: Date.now() } : {}),
@@ -432,40 +434,31 @@ function OpponentPrepPanel() {
         }));
       }
 
-      const fallbackBranchPaths = collectOpponentBranchPaths({
-        root: state.root,
-        path: searchPath,
-        rootPath: safeRootPath,
-        opponentColor: prep.color,
-        excludeCurrent: true,
-      }).reverse();
-      const primaryBranchPath =
-        currentInsidePrep && currentIsOpponentChoice ? state.position : active?.branchPath;
-      const branchPaths = [
-        ...(primaryBranchPath ? [primaryBranchPath] : []),
-        ...fallbackBranchPaths,
-      ].filter((path, index, paths) => {
-        const key = prepPathKey(path);
-        return paths.findIndex((candidate) => prepPathKey(candidate) === key) === index;
-      });
-
-      for (const branchPath of branchPaths) {
-        const branchNode = state.getNode(branchPath);
-        if (!branchNode) continue;
-
-        const openings = await loadOpeningsForFen(branchNode.fen);
-        const rows = getOpponentPrepMoveRows({
-          fen: branchNode.fen,
-          node: branchNode,
-          openings,
-          minGames: prep.minGames,
-          moveLimit: prep.moveLimit,
-          completedBranches,
-          skippedBranches: prep.skippedBranches,
+      if (!branchPath) {
+        notifications.show({
+          title: "Choose your reply first",
+          message: "Play your response from the starting position before cycling their replies.",
+          color: "yellow",
         });
-        const nextRow = rows.find((row) => row.status === "new" || row.status === "started");
-        if (!nextRow) continue;
+        return;
+      }
 
+      const branchNode = state.getNode(branchPath);
+      if (!branchNode) return;
+
+      const openings = await loadOpeningsForFen(branchNode.fen);
+      const rows = getOpponentPrepMoveRows({
+        fen: branchNode.fen,
+        node: branchNode,
+        openings,
+        minGames: prep.minGames,
+        moveLimit: prep.moveLimit,
+        completedBranches,
+        skippedBranches: prep.skippedBranches,
+      });
+      const nextRow = rows.find((row) => row.status === "new" || row.status === "started");
+
+      if (nextRow) {
         store.getState().goToMove(branchPath);
         store.getState().makeMove({ payload: nextRow.move });
         notifications.show({
@@ -476,6 +469,7 @@ function OpponentPrepPanel() {
         return;
       }
 
+      store.getState().goToMove(branchPath);
       notifications.show({
         title: "Prep branches covered",
         message: "No unprepared common opponent move was found from this starting position.",
@@ -656,7 +650,7 @@ function OpponentPrepPanel() {
               Common move
             </Button>
           </Tooltip>
-          <Tooltip label="Mark this line done and jump to the next common branch">
+          <Tooltip label="Mark this line done and play the next common move from the starting position">
             <Button
               variant="default"
               size={controlSize}
@@ -992,10 +986,6 @@ function omitKey<T>(record: Record<string, T>, key: string) {
   const next = { ...record };
   delete next[key];
   return next;
-}
-
-function prepPathKey(path: number[]) {
-  return path.join(".");
 }
 
 export default memo(OpponentPrepPanel);
