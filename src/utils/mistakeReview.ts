@@ -523,6 +523,34 @@ export function formatMistakeReviewMoveTime(seconds: number | null | undefined) 
     return `${minutes}:${remaining.toString().padStart(2, "0")}`;
 }
 
+export function formatMistakeReviewMoveTimeWords(seconds: number | null | undefined) {
+    if (typeof seconds !== "number" || !Number.isFinite(seconds)) return null;
+    if (seconds < 60) {
+        const rounded = seconds >= 10 ? Math.round(seconds) : Math.round(seconds * 10) / 10;
+        return `${rounded} second${rounded === 1 ? "" : "s"}`;
+    }
+
+    const totalSeconds = Math.max(0, Math.round(seconds));
+    const minutes = Math.floor(totalSeconds / 60);
+    const remainingSeconds = totalSeconds % 60;
+    const minuteText = `${minutes} minute${minutes === 1 ? "" : "s"}`;
+    if (remainingSeconds === 0) return minuteText;
+    return `${minuteText} ${remainingSeconds} second${remainingSeconds === 1 ? "" : "s"}`;
+}
+
+export function formatMistakeReviewTimeManagementFeedback(
+    mistake: Position["mistakeReview"] | null | undefined,
+) {
+    const timeText = formatMistakeReviewMoveTimeWords(mistake?.moveTimeSeconds);
+    const playedMove = mistake?.playedMoveSan?.trim();
+    const severity = mistake?.severity;
+    if (!timeText || !playedMove || !severity) return null;
+
+    return `In the game, you spent ${timeText} on this move and played ${playedMove}, which was ${formatMistakeReviewQualityPhrase(
+        severity,
+    )}.`;
+}
+
 export function mergeMistakeReviewPositions(
     existing: MistakeReviewDeck,
     incoming: Position[],
@@ -784,6 +812,23 @@ export function getMistakeReviewSeverityWeight(severity?: string) {
             return 1;
         default:
             return 0;
+    }
+}
+
+function formatMistakeReviewQualityPhrase(severity: MistakeReviewAttemptLabel) {
+    switch (severity) {
+        case "best":
+            return "best";
+        case "good":
+            return "good";
+        case "okay":
+            return "okay";
+        case "inaccuracy":
+            return "an inaccuracy";
+        case "mistake":
+            return "a mistake";
+        case "blunder":
+            return "a blunder";
     }
 }
 

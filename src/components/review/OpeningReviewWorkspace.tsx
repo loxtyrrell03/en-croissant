@@ -132,6 +132,7 @@ import {
 import {
   DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT,
   formatMistakeReviewMoveTime,
+  formatMistakeReviewTimeManagementFeedback,
   formatMistakeReviewLastSeen,
   getMistakeReviewDailyBatch,
   getMistakeReviewDailyProgress,
@@ -2121,12 +2122,21 @@ function OpeningReviewPanel({
         : !isMistakeReview && isBestAlternative && practiceState.playedMove
           ? `${practiceState.playedMove} is best`
           : "Correct";
-  const correctFeedbackDetail =
-    isMistakeReview && practiceState.bestMove
-      ? `Best move: ${practiceState.bestMove}`
-      : !isMistakeReview && isOkAlternative && practiceState.bestMove
-        ? `${practiceState.bestMove} is best.`
-        : undefined;
+  const mistakeTimeManagementFeedback = isMistakeReview
+    ? formatMistakeReviewTimeManagementFeedback(attemptPosition?.mistakeReview)
+    : null;
+  const mistakeBestMoveFeedback =
+    isMistakeReview && (practiceState.bestMove || practiceState.answer)
+      ? `Best move: ${practiceState.bestMove ?? practiceState.answer}`
+      : null;
+  const mistakeFeedbackDetail = [mistakeTimeManagementFeedback, mistakeBestMoveFeedback]
+    .filter(Boolean)
+    .join(" ");
+  const correctFeedbackDetail = isMistakeReview
+    ? mistakeFeedbackDetail || undefined
+    : !isMistakeReview && isOkAlternative && practiceState.bestMove
+      ? `${practiceState.bestMove} is best.`
+      : undefined;
   const feedbackTitle = isMistakeReview
     ? practiceState.mistakeReviewLabel
       ? mistakeReviewSeverityLabel(practiceState.mistakeReviewLabel)
@@ -2148,7 +2158,8 @@ function OpeningReviewPanel({
   const sessionProgress = sessionTotal > 0 ? (sessionCompleted / sessionTotal) * 100 : 0;
   const ratingPanelDetail =
     isMistakeReview && practiceState.phase === "incorrect"
-      ? `Best move: ${practiceState.bestMove ?? practiceState.answer ?? "-"}`
+      ? mistakeFeedbackDetail ||
+        `Best move: ${practiceState.bestMove ?? practiceState.answer ?? "-"}`
       : correctFeedbackDetail;
   const ratingPanelIcon =
     isMistakeReview && practiceState.phase === "incorrect"
@@ -2576,6 +2587,11 @@ function OpeningReviewPanel({
               {isMistakeReview && practiceState.playedMove && (
                 <Text size="sm" c="dimmed">
                   You played: {practiceState.playedMove}
+                </Text>
+              )}
+              {isMistakeReview && mistakeTimeManagementFeedback && (
+                <Text size="sm" c="dimmed" ta="center">
+                  {mistakeTimeManagementFeedback}
                 </Text>
               )}
               {isMistakeReview && (

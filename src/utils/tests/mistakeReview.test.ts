@@ -6,6 +6,8 @@ import {
     classifyMistakeReviewAttempt,
     DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT,
     formatMistakeReviewMoveTime,
+    formatMistakeReviewMoveTimeWords,
+    formatMistakeReviewTimeManagementFeedback,
     formatMistakeReviewLastSeen,
     getMistakeReviewDailyBatch,
     getMistakeReviewDailyProgress,
@@ -104,6 +106,31 @@ describe("mistake review helpers", () => {
         expect(formatMistakeReviewMoveTime(42.2)).toBe("42s");
         expect(formatMistakeReviewMoveTime(125)).toBe("2:05");
         expect(formatMistakeReviewMoveTime(null)).toBeNull();
+    });
+
+    test("formats time-management feedback for trainer cards", () => {
+        expect(formatMistakeReviewMoveTimeWords(20)).toBe("20 seconds");
+        expect(formatMistakeReviewMoveTimeWords(60)).toBe("1 minute");
+        expect(formatMistakeReviewMoveTimeWords(125)).toBe("2 minutes 5 seconds");
+        expect(
+            formatMistakeReviewTimeManagementFeedback({
+                ...position().mistakeReview!,
+                moveTimeSeconds: 20,
+                playedMoveSan: "Be3",
+                severity: "mistake",
+            }),
+        ).toBe(
+            "In the game, you spent 20 seconds on this move and played Be3, which was a mistake.",
+        );
+        expect(
+            formatMistakeReviewTimeManagementFeedback({
+                ...position().mistakeReview!,
+                moveTimeSeconds: 42,
+                playedMoveSan: "Qh5",
+                severity: "inaccuracy",
+            }),
+        ).toContain("which was an inaccuracy");
+        expect(formatMistakeReviewTimeManagementFeedback(position().mistakeReview)).toBeNull();
     });
 
     test("daily review takes due cards first, then capped new cards", () => {
