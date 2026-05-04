@@ -10,7 +10,10 @@ import {
     mergeOpeningReviewPositions,
     type OpeningReviewDailySettings,
 } from "@/utils/openingReview";
-import { getOpeningReviewGapTrainingType } from "@/utils/openingReviewAutoUpdate";
+import {
+    getOpeningReviewGapTrainingType,
+    getOpeningReviewPlanGapTrainingIndices,
+} from "@/utils/openingReviewAutoUpdate";
 
 function position(overrides: Partial<Position> = {}): Position {
     return {
@@ -244,5 +247,45 @@ describe("opening review helpers", () => {
                 }),
             ),
         ).toBe("planGap");
+    });
+
+    test("selects opening plan gaps in urgency order", () => {
+        const planLow = position({
+            answer: "Nc3",
+            answerUci: "b1c3",
+            reviewKey: "plan-low",
+            priority: 30,
+            openingHealth: {
+                classification: "preparedUnderperforming",
+                usualMoveSan: "Nc3",
+                usualMoveUci: "b1c3",
+            },
+        });
+        const openingGap = position({
+            answer: "e4",
+            answerUci: "e2e4",
+            reviewKey: "opening-gap",
+            priority: 100,
+            openingHealth: {
+                classification: "repertoireGap",
+                usualMoveSan: "Nc3",
+                usualMoveUci: "b1c3",
+            },
+        });
+        const planHigh = position({
+            answer: "d4",
+            answerUci: "d2d4",
+            reviewKey: "plan-high",
+            priority: 80,
+            openingHealth: {
+                classification: "preparedUnderperforming",
+                usualMoveSan: "d4",
+                usualMoveUci: "d2d4",
+            },
+        });
+
+        expect(getOpeningReviewPlanGapTrainingIndices([planLow, openingGap, planHigh])).toEqual([
+            2, 0,
+        ]);
     });
 });

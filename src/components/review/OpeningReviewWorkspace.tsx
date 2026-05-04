@@ -154,6 +154,7 @@ import { hydrateMistakeReviewClockData } from "@/utils/mistakeReviewClockHydrati
 import {
   formatOpeningReviewLastPlayed,
   getOpeningReviewGapTrainingType,
+  getOpeningReviewPlanGapTrainingIndices,
   openingReviewGapTrainingTypeColor,
   openingReviewGapTrainingTypeLabel,
   openingReviewGapTrainingTypePluralLabel,
@@ -1356,6 +1357,10 @@ function OpeningReviewPanel({
       .map((position) => indexByPosition.get(position) ?? -1)
       .filter((positionIndex) => positionIndex >= 0);
   }, [deck.positions, isMistakeReview, timeManagementMinMoveSeconds]);
+  const openingPlanGapScopeIndices = useMemo(
+    () => (isMistakeReview ? [] : getOpeningReviewPlanGapTrainingIndices(deck.positions)),
+    [deck.positions, isMistakeReview],
+  );
   const setInvisible = useSetAtom(currentInvisibleAtom);
   const setShowComments = useSetAtom(currentShowCommentsAtom);
   const setEvalOpen = useSetAtom(currentEvalOpenAtom);
@@ -1767,6 +1772,37 @@ function OpeningReviewPanel({
     },
     [deck.positions, newPractice, setSessionStats],
   );
+
+  const startOpeningPlanGapPractice = useCallback(() => {
+    if (isMistakeReview) return;
+
+    if (openingPlanGapScopeIndices.length === 0) {
+      notifications.show({
+        title: "No plan gaps to train",
+        message: "This review deck does not have any saved opening plan gaps yet.",
+        color: "yellow",
+      });
+      return;
+    }
+
+    const nextStats = {
+      mode: "srs-list" as const,
+      remainingPositions: openingPlanGapScopeIndices,
+      correct: 0,
+      incorrect: 0,
+      streak: 0,
+      bestStreak: 0,
+    };
+    setSessionStats((current) => ({ ...current, ...nextStats }));
+    newPractice(nextStats);
+    notifications.show({
+      title: "Plan gap training started",
+      message: `Training ${openingPlanGapScopeIndices.length} opening plan gap${
+        openingPlanGapScopeIndices.length === 1 ? "" : "s"
+      }.`,
+      color: "blue",
+    });
+  }, [isMistakeReview, newPractice, openingPlanGapScopeIndices, setSessionStats]);
 
   const startMistakePhasePractice = useCallback(
     (phase: MistakeReviewPhase) => {
@@ -2346,6 +2382,32 @@ function OpeningReviewPanel({
                       </ActionIcon>
                     </Tooltip>
                   </Group>
+                  {!isMistakeReview && (
+                    <Tooltip
+                      label={
+                        openingPlanGapScopeIndices.length === 0
+                          ? "No opening plan gaps saved in this deck yet"
+                          : "Train lines where your usual move is playable but results trail the reference"
+                      }
+                    >
+                      <Box style={{ flex: "1 1 170px", minWidth: 0 }}>
+                        <Button
+                          fullWidth
+                          variant="light"
+                          color="blue"
+                          leftSection={<IconRoute size={18} />}
+                          onClick={startOpeningPlanGapPractice}
+                          justify="space-between"
+                          disabled={openingPlanGapScopeIndices.length === 0}
+                          rightSection={
+                            <Badge variant="white">{openingPlanGapScopeIndices.length}</Badge>
+                          }
+                        >
+                          Train plan gaps
+                        </Button>
+                      </Box>
+                    </Tooltip>
+                  )}
                   {isMistakeReview && (
                     <Tooltip
                       label={

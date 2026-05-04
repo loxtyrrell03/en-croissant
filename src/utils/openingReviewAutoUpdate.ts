@@ -505,6 +505,12 @@ export function getOpeningReviewGapTrainingType(position: Position): OpeningRevi
     return "other";
 }
 
+export function getOpeningReviewPlanGapTrainingIndices(positions: Position[]) {
+    return rankOpeningReviewPositions(positions)
+        .filter(({ position }) => getOpeningReviewGapTrainingType(position) === "planGap")
+        .map(({ index }) => index);
+}
+
 export function openingReviewGapTrainingTypeLabel(type: OpeningReviewGapTrainingType) {
     switch (type) {
         case "openingGap":
