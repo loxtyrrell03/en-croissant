@@ -147,7 +147,22 @@ function repertoireMoveToPgn(
         .map(([name, value]) => `[${name} "${escapeTagValue(String(value))}"]`)
         .join("\n");
 
-    return `${header}\n\n${singleMoveText(parent.halfMoves, child.san!)} ${result}`;
+    return `${header}\n\n${repertoireLineMoveText(parent, child)} ${result}`;
+}
+
+export function repertoireLineMoveText(parent: TreeNode, child: TreeNode) {
+    const moves = [singleMoveText(parent.halfMoves, child.san!)];
+    const reply = child.children[0];
+
+    if (reply?.san) {
+        moves.push(replyMoveText(child.halfMoves, reply.san));
+    }
+
+    return moves.join(" ");
+}
+
+function replyMoveText(halfMovesBeforeMove: number, san: string) {
+    return halfMovesBeforeMove % 2 === 1 ? san : singleMoveText(halfMovesBeforeMove, san);
 }
 
 function singleMoveText(halfMovesBeforeMove: number, san: string) {
