@@ -10,6 +10,7 @@ import {
     mergeOpeningReviewPositions,
     type OpeningReviewDailySettings,
 } from "@/utils/openingReview";
+import { getOpeningReviewGapTrainingType } from "@/utils/openingReviewAutoUpdate";
 
 function position(overrides: Partial<Position> = {}): Position {
     return {
@@ -206,5 +207,42 @@ describe("opening review helpers", () => {
         expect(merged.positions[0]!.answer).toBe("Nf3");
         expect(merged.positions[0]!.openingReview?.lastAttemptedAt).toBe(1_000);
         expect(merged.positions[0]!.openingReview?.lastAttemptedCardReps).toBe(0);
+    });
+
+    test("classifies saved opening review cards by the trained move", () => {
+        const baseOpeningHealth = {
+            classification: "preparedUnderperforming" as const,
+            usualMoveSan: "Nc3",
+            usualMoveUci: "b1c3",
+            topMoveSan: "e4",
+            topMoveUci: "e2e4",
+        };
+
+        expect(
+            getOpeningReviewGapTrainingType(
+                position({
+                    answer: "Nc3",
+                    answerUci: "b1c3",
+                    openingHealth: baseOpeningHealth,
+                }),
+            ),
+        ).toBe("planGap");
+        expect(
+            getOpeningReviewGapTrainingType(
+                position({
+                    answer: "e4",
+                    answerUci: "e2e4",
+                    openingHealth: baseOpeningHealth,
+                }),
+            ),
+        ).toBe("openingGap");
+        expect(
+            getOpeningReviewGapTrainingType(
+                position({
+                    tags: ["Prepared but underperforming"],
+                    openingHealth: undefined,
+                }),
+            ),
+        ).toBe("planGap");
     });
 });

@@ -476,6 +476,68 @@ export function openingReviewUrgencyColor(urgency: number) {
     return "blue";
 }
 
+export type OpeningReviewGapTrainingType = "openingGap" | "planGap" | "other";
+
+export function getOpeningReviewGapTrainingType(position: Position): OpeningReviewGapTrainingType {
+    const health = position.openingHealth;
+    const hasUsualMove = Boolean(health?.usualMoveUci || health?.usualMoveSan);
+
+    if (hasUsualMove) {
+        return openingReviewSavedAnswerMatches(position, health?.usualMoveUci, health?.usualMoveSan)
+            ? "planGap"
+            : "openingGap";
+    }
+
+    if (health?.classification === "preparedUnderperforming") return "planGap";
+    if (health?.classification === "repertoireGap") return "openingGap";
+
+    const normalizedTags = (position.tags ?? []).map(normalizeOpeningReviewText);
+    if (
+        normalizedTags.includes("openingplangap") ||
+        normalizedTags.includes("preparedbutunderperforming")
+    ) {
+        return "planGap";
+    }
+    if (normalizedTags.includes("openinggap") || normalizedTags.includes("repertoiregap")) {
+        return "openingGap";
+    }
+
+    return "other";
+}
+
+export function openingReviewGapTrainingTypeLabel(type: OpeningReviewGapTrainingType) {
+    switch (type) {
+        case "openingGap":
+            return "Opening gap";
+        case "planGap":
+            return "Plan gap";
+        case "other":
+            return "Other";
+    }
+}
+
+export function openingReviewGapTrainingTypePluralLabel(type: OpeningReviewGapTrainingType) {
+    switch (type) {
+        case "openingGap":
+            return "opening gaps";
+        case "planGap":
+            return "plan gaps";
+        case "other":
+            return "other positions";
+    }
+}
+
+export function openingReviewGapTrainingTypeColor(type: OpeningReviewGapTrainingType) {
+    switch (type) {
+        case "openingGap":
+            return "orange";
+        case "planGap":
+            return "blue";
+        case "other":
+            return "gray";
+    }
+}
+
 export function openingReviewPositionExplanation(position: Position) {
     if (position.reason) return position.reason;
     if (position.openingHealth) {
@@ -493,6 +555,38 @@ export function openingReviewPositionExplanation(position: Position) {
         )} times; review the plans after ${position.answer}.`;
     }
     return position.evidence || "Saved for Opening Review.";
+}
+
+function openingReviewSavedAnswerMatches(
+    position: Position,
+    uci: string | null | undefined,
+    san: string | null | undefined,
+) {
+    return openingReviewMoveFieldsMatch(position.answerUci, position.answer, uci, san);
+}
+
+function openingReviewMoveFieldsMatch(
+    aUci: string | null | undefined,
+    aSan: string | null | undefined,
+    bUci: string | null | undefined,
+    bSan: string | null | undefined,
+) {
+    if (aUci && bUci && aUci.toLowerCase() === bUci.toLowerCase()) return true;
+
+    const normalizedA = normalizeOpeningReviewMove(aSan);
+    const normalizedB = normalizeOpeningReviewMove(bSan);
+    return Boolean(normalizedA && normalizedB && normalizedA === normalizedB);
+}
+
+function normalizeOpeningReviewMove(value: string | null | undefined) {
+    return (value ?? "")
+        .replace(/[+#?!\s]/g, "")
+        .replace(/e\.p\.$/i, "")
+        .toLowerCase();
+}
+
+function normalizeOpeningReviewText(value: string) {
+    return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
 export function formatOpeningReviewLastPlayed(value: string | null | undefined) {

@@ -60,6 +60,9 @@ export const positionSchema = z.object({
         .optional(),
     openingHealth: z
         .object({
+            classification: z
+                .enum(["repertoireGap", "preparedUnderperforming", "lowConfidence"])
+                .optional(),
             mode: z.enum(["self", "opponent"]).optional(),
             sideToMove: z.enum(["white", "black"]).optional(),
             reviewSide: z.enum(["white", "black"]).optional(),
@@ -202,6 +205,7 @@ export type Position = {
         lastAttemptedCardReps?: number;
     };
     openingHealth?: {
+        classification?: RepertoireGap["classification"];
         mode?: "self" | "opponent";
         sideToMove?: "white" | "black";
         reviewSide?: "white" | "black";
@@ -312,9 +316,9 @@ export const OPENING_HEALTH_SOURCE = "Analyze Repertoire";
 export function openingHealthClassificationLabel(classification: RepertoireGap["classification"]) {
     switch (classification) {
         case "repertoireGap":
-            return "Repertoire gap";
+            return "Opening gap";
         case "preparedUnderperforming":
-            return "Prepared but underperforming";
+            return "Opening plan gap";
         case "lowConfidence":
             return "Low confidence";
     }
@@ -351,7 +355,12 @@ export function createOpeningHealthTrainingItem(
         reason: options?.reason,
         evidence: options?.evidence,
         importedAt: options?.importedAt ?? Date.now(),
-        openingHealth: options?.openingHealth,
+        openingHealth: options?.openingHealth
+            ? {
+                  ...options.openingHealth,
+                  classification: options.openingHealth.classification ?? gap.classification,
+              }
+            : undefined,
         engine: options?.engine,
     };
 }

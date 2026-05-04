@@ -59,7 +59,7 @@ describe("Opening Health training items", () => {
         expect(item?.sideToMove).toBe("white");
         expect(item?.moveSequence).toBe("1. e4 c5 2. Nf3");
         expect(item?.source).toBe(OPENING_HEALTH_SOURCE);
-        expect(item?.tags).toContain("Prepared but underperforming");
+        expect(item?.tags).toContain("Opening plan gap");
         expect(item?.tags).toContain(OPENING_HEALTH_SOURCE);
         expect(item?.card).toBeTruthy();
     });

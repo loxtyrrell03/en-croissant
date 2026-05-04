@@ -147,10 +147,15 @@ import {
 } from "@/utils/mistakeReview";
 import {
   formatOpeningReviewLastPlayed,
+  getOpeningReviewGapTrainingType,
+  openingReviewGapTrainingTypeColor,
+  openingReviewGapTrainingTypeLabel,
+  openingReviewGapTrainingTypePluralLabel,
   openingReviewPositionExplanation,
   openingReviewUrgencyColor,
   parseOpeningReviewDate,
   rankOpeningReviewPositions,
+  type OpeningReviewGapTrainingType,
 } from "@/utils/openingReviewAutoUpdate";
 import { getReviewPositionsForPath, sameReviewPosition } from "@/utils/openingReviewPersistence";
 import {
@@ -222,6 +227,7 @@ type OpeningReviewPositionSort =
   | "due"
   | "move";
 type OpeningReviewColourFilter = "any" | "white" | "black";
+type OpeningReviewGapFilter = "all" | Exclude<OpeningReviewGapTrainingType, "other">;
 type OpeningReviewOpeningInfo = {
   rawName: string;
   family: string;
@@ -2612,6 +2618,7 @@ function OpeningReviewPanel({
         opened={positionsOpen}
         onClose={() => setPositionsOpen(false)}
         deckPath={deckPath}
+        isMistakeReview={isMistakeReview}
         onTrainDue={startDuePractice}
         onTrainAll={startFullPractice}
         onLoadPosition={onLoadPosition}
@@ -5257,6 +5264,7 @@ function OpeningReviewPositionsModal({
   opened,
   onClose,
   deckPath,
+  isMistakeReview,
   onTrainDue,
   onTrainAll,
   onLoadPosition,
@@ -5264,6 +5272,7 @@ function OpeningReviewPositionsModal({
   opened: boolean;
   onClose: () => void;
   deckPath: string;
+  isMistakeReview: boolean;
   onTrainDue: (indices?: number[], label?: string) => void;
   onTrainAll: (indices?: number[], label?: string) => void;
   onLoadPosition: (positionIndex: number) => void;
@@ -5272,6 +5281,7 @@ function OpeningReviewPositionsModal({
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [moveInput, setMoveInput] = useState("");
   const [sortBy, setSortBy] = useState<OpeningReviewPositionSort>("urgency");
+  const [gapFilter, setGapFilter] = useState<OpeningReviewGapFilter>("all");
   const [colourFilter, setColourFilter] = useState<OpeningReviewColourFilter>("any");
   const [openingFilters, setOpeningFilters] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<OpeningHealthDateRange>("all");
@@ -5320,11 +5330,45 @@ function OpeningReviewPositionsModal({
       ),
     [colourFilter, dateBounds, rowsWithOpenings],
   );
+  const gapTypeCounts = useMemo(
+    () =>
+      colourFilteredRows.reduce(
+        (counts, row) => {
+          const type = getOpeningReviewGapTrainingType(row.position);
+          counts[type] += 1;
+          return counts;
+        },
+        { openingGap: 0, planGap: 0, other: 0 } satisfies Record<
+          OpeningReviewGapTrainingType,
+          number
+        >,
+      ),
+    [colourFilteredRows],
+  );
+  const showGapFilter =
+    !isMistakeReview && (gapTypeCounts.openingGap > 0 || gapTypeCounts.planGap > 0);
+  const gapFilterOptions = useMemo(
+    () => [
+      { value: "all", label: `All gaps (${colourFilteredRows.length})` },
+      { value: "openingGap", label: `Opening gaps (${gapTypeCounts.openingGap})` },
+      { value: "planGap", label: `Plan gaps (${gapTypeCounts.planGap})` },
+    ],
+    [colourFilteredRows.length, gapTypeCounts.openingGap, gapTypeCounts.planGap],
+  );
+  const gapFilteredRows = useMemo(
+    () =>
+      !showGapFilter || gapFilter === "all"
+        ? colourFilteredRows
+        : colourFilteredRows.filter(
+            (row) => getOpeningReviewGapTrainingType(row.position) === gapFilter,
+          ),
+    [colourFilteredRows, gapFilter, showGapFilter],
+  );
   const openingOptions = useMemo(() => {
     const familyCounts = new Map<string, number>();
     const lineCounts = new Map<string, number>();
 
-    for (const row of colourFilteredRows) {
+    for (const row of gapFilteredRows) {
       familyCounts.set(row.opening.family, (familyCounts.get(row.opening.family) ?? 0) + 1);
       if (row.opening.isVariation) {
         lineCounts.set(row.opening.line, (lineCounts.get(row.opening.line) ?? 0) + 1);
@@ -5345,17 +5389,17 @@ function OpeningReviewPositionsModal({
       }));
 
     return [...familyOptions, ...variationOptions];
-  }, [colourFilteredRows]);
+  }, [gapFilteredRows]);
   const visibleRows = useMemo(
     () =>
-      colourFilteredRows
+      gapFilteredRows
         .filter(
           (row) =>
             openingFilters.length === 0 ||
             openingFilters.some((filter) => openingReviewFilterMatchesOpening(filter, row.opening)),
         )
         .sort((a, b) => compareOpeningReviewPositionRows(a, b, sortBy)),
-    [colourFilteredRows, openingFilters, sortBy],
+    [gapFilteredRows, openingFilters, sortBy],
   );
   const visibleIndices = useMemo(() => visibleRows.map((row) => row.index), [visibleRows]);
   const visibleDueCount = useMemo(() => {
@@ -5363,9 +5407,16 @@ function OpeningReviewPositionsModal({
     return visibleRows.filter(({ position }) => new Date(position.card.due) <= now).length;
   }, [visibleRows]);
   const dateFilterActive = openingHealthDateBoundsAreActive(dateBounds);
+  const activeGapFilterLabel =
+    showGapFilter && gapFilter !== "all"
+      ? openingReviewGapTrainingTypePluralLabel(gapFilter)
+      : null;
   const hasActivePositionFilter =
-    openingFilters.length > 0 || colourFilter !== "any" || dateFilterActive;
-  const baseTrainingScopeLabel =
+    openingFilters.length > 0 ||
+    colourFilter !== "any" ||
+    dateFilterActive ||
+    Boolean(activeGapFilterLabel);
+  const openingScopeLabel =
     openingFilters.length === 0
       ? colourFilter === "any"
         ? "all openings"
@@ -5373,9 +5424,20 @@ function OpeningReviewPositionsModal({
       : `${openingReviewFiltersDisplayName(openingFilters)}${
           colourFilter === "any" ? "" : `, ${colourFilter}`
         }`;
+  const baseTrainingScopeLabel = [activeGapFilterLabel, openingScopeLabel]
+    .filter(Boolean)
+    .join(", ");
   const trainingScopeLabel = dateFilterActive
     ? `${baseTrainingScopeLabel}, last played ${formatOpeningHealthDateFilter(dateBounds)}`
     : baseTrainingScopeLabel;
+  const reviewDueButtonLabel = activeGapFilterLabel
+    ? `Review due ${activeGapFilterLabel}`
+    : hasActivePositionFilter
+      ? "Review due matches"
+      : "Review due";
+  const reviewAllButtonLabel = activeGapFilterLabel
+    ? `Review ${activeGapFilterLabel}`
+    : "Review";
   const rowVirtualizer = useVirtualizer({
     count: visibleRows.length,
     getScrollElement: () => positionsScrollElement,
@@ -5542,6 +5604,15 @@ function OpeningReviewPositionsModal({
   }, [openingOptions]);
 
   useEffect(() => {
+    if (!showGapFilter && gapFilter !== "all") {
+      setGapFilter("all");
+      return;
+    }
+    if (gapFilter === "openingGap" && gapTypeCounts.openingGap === 0) setGapFilter("all");
+    if (gapFilter === "planGap" && gapTypeCounts.planGap === 0) setGapFilter("all");
+  }, [gapFilter, gapTypeCounts.openingGap, gapTypeCounts.planGap, showGapFilter]);
+
+  useEffect(() => {
     if (!opened || !positionsScrollElement) return;
     rowVirtualizer.measure();
   }, [opened, positionsScrollElement, rowVirtualizer, visibleRows.length]);
@@ -5641,6 +5712,16 @@ function OpeningReviewPositionsModal({
             w={300}
             maxDropdownHeight={320}
           />
+          {showGapFilter && (
+            <Select
+              label="Gap type"
+              value={gapFilter}
+              onChange={(value) => setGapFilter((value as OpeningReviewGapFilter) ?? "all")}
+              data={gapFilterOptions}
+              allowDeselect={false}
+              w={190}
+            />
+          )}
           <Stack gap={4}>
             <Text size="sm" fw={500}>
               Colour
@@ -5690,7 +5771,7 @@ function OpeningReviewPositionsModal({
               onClose();
             }}
           >
-            {hasActivePositionFilter ? "Review due matches" : "Review due"}
+            {reviewDueButtonLabel}
             <Badge variant="white" ml={6}>
               {visibleDueCount}
             </Badge>
@@ -5704,7 +5785,7 @@ function OpeningReviewPositionsModal({
               onClose();
             }}
           >
-            Review
+            {reviewAllButtonLabel}
             <Badge variant="light" ml={6}>
               {visibleIndices.length}
             </Badge>
@@ -5712,6 +5793,11 @@ function OpeningReviewPositionsModal({
         </Group>
         <Group gap="xs">
           <Badge variant="light">{visibleRows.length} shown</Badge>
+          {showGapFilter && gapFilter !== "all" && activeGapFilterLabel && (
+            <Badge variant="light" color={openingReviewGapTrainingTypeColor(gapFilter)}>
+              {activeGapFilterLabel}
+            </Badge>
+          )}
           {openingFilters.length > 0 && (
             <Badge variant="light">
               Openings: {openingReviewFiltersDisplayName(openingFilters)}
@@ -5754,6 +5840,7 @@ function OpeningReviewPositionsModal({
               const status =
                 position.card.reps === 0 ? "Unseen" : due <= new Date() ? "Due" : "Scheduled";
               const colour = getOpeningReviewMoveSide(position);
+              const gapType = showGapFilter ? getOpeningReviewGapTrainingType(position) : "other";
               const moveSequence = getOpeningReviewMoveSequenceLabel(position);
               const openingDetail =
                 opening.variation ?? (opening.rawName !== opening.family ? opening.rawName : null);
@@ -5776,6 +5863,15 @@ function OpeningReviewPositionsModal({
                       <Text size="xs" c="dimmed">
                         {urgency}/100
                       </Text>
+                      {gapType !== "other" && (
+                        <Badge
+                          size="xs"
+                          variant="light"
+                          color={openingReviewGapTrainingTypeColor(gapType)}
+                        >
+                          {openingReviewGapTrainingTypeLabel(gapType)}
+                        </Badge>
+                      )}
                     </Stack>
                   </Table.Td>
                   <Table.Td>
