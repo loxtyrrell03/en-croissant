@@ -30,6 +30,7 @@ import {
 
 const AUTO_UPDATE_TOP_REFERENCE_MOVES = 3;
 const UNSUPPORTED_ONLINE_REFERENCE_PREFIX = "online:";
+const OPENING_REVIEW_AUTO_UPDATE_INITIAL_DELAY_MS = 30 * 1000;
 
 type AutoUpdateJob = {
     path: string;
@@ -47,38 +48,64 @@ export function useOpeningReviewDeckAutoUpdater() {
     const setState = useSetAtom(openingReviewAutoUpdateStateAtom);
     const runningRef = useRef(false);
     const recordsKeyRef = useRef("");
+    const recordsRef = useRef(records);
     const disposedRef = useRef(false);
+    const initialDelayDoneRef = useRef(false);
+    const initialTimerRef = useRef<number | null>(null);
 
     useEffect(
         () => () => {
             disposedRef.current = true;
+            if (initialTimerRef.current !== null) {
+                window.clearTimeout(initialTimerRef.current);
+            }
         },
         [],
     );
 
     useEffect(() => {
-        const recordsKey = getOnlineRecordsUpdateKey(records);
-        if (recordsKey === recordsKeyRef.current) return;
-        if (runningRef.current) return;
-        recordsKeyRef.current = recordsKey;
+        recordsRef.current = records;
+    }, [records]);
 
-        runningRef.current = true;
-        void runOpeningReviewAutoUpdates(records, setState, () => disposedRef.current)
-            .catch((error) => {
-                const message = error instanceof Error ? error.message : String(error);
-                warn(`Opening Review auto-update failed: ${message}`);
-                setState((current) => ({
-                    ...current,
-                    running: false,
-                    completedAt: Date.now(),
-                    phase: "Stopped",
-                    error: message,
-                    revision: current.revision + 1,
-                }));
-            })
-            .finally(() => {
-                runningRef.current = false;
-            });
+    useEffect(() => {
+        const runLatest = () => {
+            const latestRecords = recordsRef.current;
+            const recordsKey = getOnlineRecordsUpdateKey(latestRecords);
+            if (recordsKey === recordsKeyRef.current) return;
+            if (runningRef.current) return;
+            recordsKeyRef.current = recordsKey;
+
+            runningRef.current = true;
+            void runOpeningReviewAutoUpdates(latestRecords, setState, () => disposedRef.current)
+                .catch((error) => {
+                    const message = error instanceof Error ? error.message : String(error);
+                    warn(`Opening Review auto-update failed: ${message}`);
+                    setState((current) => ({
+                        ...current,
+                        running: false,
+                        completedAt: Date.now(),
+                        phase: "Stopped",
+                        error: message,
+                        revision: current.revision + 1,
+                    }));
+                })
+                .finally(() => {
+                    runningRef.current = false;
+                });
+        };
+
+        if (!initialDelayDoneRef.current) {
+            if (initialTimerRef.current === null) {
+                initialTimerRef.current = window.setTimeout(() => {
+                    initialDelayDoneRef.current = true;
+                    initialTimerRef.current = null;
+                    runLatest();
+                }, OPENING_REVIEW_AUTO_UPDATE_INITIAL_DELAY_MS);
+            }
+            return;
+        }
+
+        runLatest();
     }, [records, setState]);
 }
 

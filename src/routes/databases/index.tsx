@@ -1,9 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import DatabasesPage from "@/components/databases/DatabasesPage";
+import { createFileRoute, lazyRouteComponent, redirect } from "@tanstack/react-router";
 import { activeDatabaseViewStore } from "@/state/store/database";
 
 export const Route = createFileRoute("/databases/")({
-  component: DatabasesPage,
+  component: lazyRouteComponent(() => import("@/components/databases/DatabasesPage")),
   beforeLoad: async () => {
     const db = activeDatabaseViewStore.getState().database;
 

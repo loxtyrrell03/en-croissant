@@ -63,7 +63,7 @@
     "windows": [
       {
         "title": "En Croissant Fork",
-        "visible": false,
+        "visible": true,
         "decorations": true
       }
     ],

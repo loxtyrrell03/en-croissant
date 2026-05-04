@@ -1,7 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import NewTabHome from "@/components/tabs/NewTabHome";
+import { createFileRoute, lazyRouteComponent } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/home")({
-  component: NewTabHome,
+  component: lazyRouteComponent(() => import("@/components/tabs/NewTabHome")),
   loader: ({ context: { loadDirs } }) => loadDirs(),
 });

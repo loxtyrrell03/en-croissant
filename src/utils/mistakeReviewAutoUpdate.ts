@@ -26,6 +26,8 @@ import { query_players } from "@/utils/db";
 import { getDocumentDir } from "@/utils/directories";
 import { getOnlineDatabaseUpdateAccounts } from "@/utils/onlineGameImport";
 
+const MISTAKE_REVIEW_AUTO_UPDATE_INITIAL_DELAY_MS = 30 * 1000;
+
 type AutoUpdateJob = {
     path: string;
     deck: MistakeReviewDeck;
@@ -49,10 +51,15 @@ export function useMistakeReviewDeckAutoUpdater() {
     const recordsKeyRef = useRef("");
     const recordsRef = useRef(records);
     const disposedRef = useRef(false);
+    const initialDelayDoneRef = useRef(false);
+    const initialTimerRef = useRef<number | null>(null);
 
     useEffect(
         () => () => {
             disposedRef.current = true;
+            if (initialTimerRef.current !== null) {
+                window.clearTimeout(initialTimerRef.current);
+            }
         },
         [],
     );
@@ -91,6 +98,17 @@ export function useMistakeReviewDeckAutoUpdater() {
                     runLatest();
                 });
         };
+
+        if (!initialDelayDoneRef.current) {
+            if (initialTimerRef.current === null) {
+                initialTimerRef.current = window.setTimeout(() => {
+                    initialDelayDoneRef.current = true;
+                    initialTimerRef.current = null;
+                    runLatest();
+                }, MISTAKE_REVIEW_AUTO_UPDATE_INITIAL_DELAY_MS);
+            }
+            return;
+        }
 
         runLatest();
     }, [records, setState]);

@@ -83,41 +83,45 @@ export type Dirs = {
   puzzlesDir: string;
 };
 
+async function loadDirs(): Promise<Dirs> {
+  const store = getDefaultStore();
+
+  const [documentDir, databasesDir, enginesDir, puzzlesDir] = await Promise.all([
+    getDocumentDir(),
+    getDatabasesDir(),
+    getEnginesDir(),
+    getPuzzlesDir(),
+  ]);
+
+  if (!store.get(storedDocumentDirAtom)) {
+    store.set(storedDocumentDirAtom, documentDir);
+  }
+
+  if (!store.get(storedDatabasesDirAtom)) {
+    store.set(storedDatabasesDirAtom, databasesDir);
+  }
+
+  if (!store.get(storedEnginesDirAtom)) {
+    store.set(storedEnginesDirAtom, enginesDir);
+  }
+
+  if (!store.get(storedPuzzlesDirAtom)) {
+    store.set(storedPuzzlesDirAtom, puzzlesDir);
+  }
+
+  return {
+    documentDir,
+    databasesDir,
+    enginesDir,
+    puzzlesDir,
+  };
+}
+
 const router = createRouter({
   routeTree,
   defaultErrorComponent: ErrorComponent,
   context: {
-    loadDirs: async () => {
-      const store = getDefaultStore();
-
-      const documentDir = await getDocumentDir();
-      const databasesDir = await getDatabasesDir();
-      const enginesDir = await getEnginesDir();
-      const puzzlesDir = await getPuzzlesDir();
-
-      if (!store.get(storedDocumentDirAtom)) {
-        store.set(storedDocumentDirAtom, documentDir);
-      }
-
-      if (!store.get(storedDatabasesDirAtom)) {
-        store.set(storedDatabasesDirAtom, databasesDir);
-      }
-
-      if (!store.get(storedEnginesDirAtom)) {
-        store.set(storedEnginesDirAtom, enginesDir);
-      }
-
-      if (!store.get(storedPuzzlesDirAtom)) {
-        store.set(storedPuzzlesDirAtom, puzzlesDir);
-      }
-
-      return {
-        documentDir,
-        databasesDir,
-        enginesDir,
-        puzzlesDir,
-      } as Dirs;
-    },
+    loadDirs,
   },
 });
 
@@ -349,6 +353,7 @@ function useAppStartup() {
       info("React app started successfully");
 
       checkForUpdates();
+      loadDirs().catch((e) => warn(`Failed to warm startup directories: ${e}`));
 
       const store = getDefaultStore();
       const telemetryEnabled = store.get(telemetryEnabledAtom);
