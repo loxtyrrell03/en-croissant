@@ -57,13 +57,16 @@ import {
   getFenTurn,
   getLineSans,
   getOpeningTotal,
+  getOpponentPrepBranchStats,
   getOpponentPrepMoveRows,
   oppositePrepColor,
   pathExists,
+  type OpponentPrepBranchStats,
   type OpponentPrepMoveRow,
 } from "@/utils/opponentPrep";
 import { getTabWorkspaceKey } from "@/utils/tabs";
 import { positionFromFen } from "@/utils/chessops";
+import { getTreeStructureHash } from "@/utils/treeReducer";
 import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveControls";
 
 const DEFAULT_PREP_MIN_GAMES = 2;
@@ -266,6 +269,43 @@ function OpponentPrepPanel() {
       prep.moveLimit,
       prep.skippedBranches,
     ],
+  );
+  const currentTreeHash = useMemo(() => getTreeStructureHash(currentNode), [currentNode]);
+  const branchStatsKey =
+    configReady && opponentToMove && currentRows.length > 0
+      ? [
+          "opponent-prep-branch-stats",
+          queryScope,
+          currentFen,
+          prep.minGames,
+          prep.moveLimit,
+          currentTreeHash,
+          JSON.stringify(prep.completedBranches),
+          JSON.stringify(prep.skippedBranches),
+          currentRows.map((row) => row.key).join("|"),
+        ]
+      : null;
+  const { data: branchStatsByKey, isLoading: branchStatsLoading } = useSWR(
+    branchStatsKey,
+    async () => {
+      const entries = await Promise.all(
+        currentRows.map(async (row) => {
+          const stats = await getOpponentPrepBranchStats({
+            parentNode: currentNode,
+            row,
+            opponentColor: prep.color,
+            loadOpenings: loadOpeningsForFen,
+            minGames: prep.minGames,
+            moveLimit: prep.moveLimit,
+            completedBranches: prep.completedBranches,
+            skippedBranches: prep.skippedBranches,
+          });
+          return [row.key, stats] as const;
+        }),
+      );
+
+      return Object.fromEntries(entries);
+    },
   );
   const activeBranch = useMemo(
     () =>
@@ -781,6 +821,8 @@ function OpponentPrepPanel() {
             onSkip={skipMove}
             onPreview={previewMove}
             onClearPreview={clearMovePreview}
+            branchStatsByKey={branchStatsByKey}
+            branchStatsLoading={branchStatsLoading}
           />
         ) : (
           <Alert color="blue" variant="light">
@@ -802,6 +844,8 @@ function OpponentPrepMoveTable({
   onSkip,
   onPreview,
   onClearPreview,
+  branchStatsByKey,
+  branchStatsLoading,
 }: {
   rows: OpponentPrepMoveRow[];
   loading: boolean;
@@ -811,6 +855,8 @@ function OpponentPrepMoveTable({
   onSkip: (row: OpponentPrepMoveRow) => void;
   onPreview: (move: string) => void;
   onClearPreview: () => void;
+  branchStatsByKey?: Record<string, OpponentPrepBranchStats>;
+  branchStatsLoading: boolean;
 }) {
   const textSize = dense ? "xs" : "sm";
 
@@ -846,6 +892,7 @@ function OpponentPrepMoveTable({
           <Table.Th style={{ width: dense ? 64 : 90 }}>Move</Table.Th>
           <Table.Th style={{ width: dense ? 78 : 110 }}>Games</Table.Th>
           <Table.Th>Results</Table.Th>
+          <Table.Th style={{ width: dense ? 110 : 150 }}>Prep</Table.Th>
           <Table.Th style={{ width: dense ? 76 : 98 }}>State</Table.Th>
           <Table.Th style={{ width: dense ? 96 : 120 }} />
         </Table.Tr>
@@ -877,6 +924,13 @@ function OpponentPrepMoveTable({
             </Table.Td>
             <Table.Td>
               <PrepResultBar row={row} />
+            </Table.Td>
+            <Table.Td>
+              <BranchStatsCell
+                stats={branchStatsByKey?.[row.key]}
+                loading={branchStatsLoading}
+                dense={dense}
+              />
             </Table.Td>
             <Table.Td>
               <Badge color={statusColor(row.status)} variant="light" size="sm">
@@ -930,6 +984,45 @@ function OpponentPrepMoveTable({
   );
 }
 
+function BranchStatsCell({
+  stats,
+  loading,
+  dense,
+}: {
+  stats?: OpponentPrepBranchStats;
+  loading: boolean;
+  dense: boolean;
+}) {
+  if (!stats) {
+    return (
+      <Text size="xs" c="dimmed">
+        {loading ? "Checking" : "-"}
+      </Text>
+    );
+  }
+
+  const color = branchStatsColor(stats.label);
+
+  return (
+    <Tooltip label={branchStatsTooltip(stats)} multiline w={290}>
+      <Stack gap={2} style={{ minWidth: 0 }}>
+        <Group gap={4} wrap="nowrap">
+          <Badge color={color} variant="light" size="sm">
+            {stats.label}
+          </Badge>
+          <Text size="xs" fw={700}>
+            {stats.score}%
+          </Text>
+        </Group>
+        <Progress value={stats.score} color={color} size={dense ? 3 : "xs"} />
+        <Text size="xs" c="dimmed" truncate>
+          {Math.round(stats.replyCoverage * 100)}% replies - {stats.depthPly} ply
+        </Text>
+      </Stack>
+    </Tooltip>
+  );
+}
+
 function PrepResultBar({ row }: { row: OpponentPrepMoveRow }) {
   const total = getOpeningTotal(row);
   const whitePercent = total > 0 ? (row.white / total) * 100 : 0;
@@ -951,6 +1044,24 @@ function PrepResultBar({ row }: { row: OpponentPrepMoveRow }) {
       </Progress.Section>
     </Progress.Root>
   );
+}
+
+function branchStatsTooltip(stats: OpponentPrepBranchStats) {
+  const lines = [
+    `${stats.label}: ${stats.score}%`,
+    stats.depthPly > 0 ? `Depth: ${stats.depthPly} ply` : "No saved response in this branch yet.",
+    stats.opponentPositions > 0
+      ? `Covered ${Math.round(stats.replyCoverage * 100)}% of their shown reply frequency across ${stats.opponentPositions} opponent choice${stats.opponentPositions === 1 ? "" : "s"}.`
+      : "Add more of your line to reach their next opponent choice.",
+    stats.commonReplies > 0
+      ? `${stats.preparedReplies}/${stats.commonReplies} shown replies prepared${stats.startedReplies > 0 ? `, ${stats.startedReplies} only started` : ""}.`
+      : "",
+    stats.missingImportantMoves.length > 0
+      ? `Important gaps: ${stats.missingImportantMoves.join(", ")}`
+      : "",
+  ];
+
+  return lines.filter(Boolean).join("\n");
 }
 
 function getInitialPrepSeed({
@@ -1047,6 +1158,21 @@ function statusLabel(status: OpponentPrepMoveRow["status"]) {
       return "Skipped";
     case "new":
       return "New";
+  }
+}
+
+function branchStatsColor(label: OpponentPrepBranchStats["label"]) {
+  switch (label) {
+    case "Good":
+      return "green";
+    case "Solid":
+      return "teal";
+    case "Needs work":
+      return "yellow";
+    case "Thin":
+      return "orange";
+    case "No line":
+      return "gray";
   }
 }
 

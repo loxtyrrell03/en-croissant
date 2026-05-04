@@ -5,6 +5,7 @@ import {
     findFirstOpponentBranch,
     findLastOpponentBranch,
     findOpponentPrepStart,
+    getOpponentPrepBranchStats,
     getOpponentPrepMoveRows,
 } from "@/utils/opponentPrep";
 
@@ -107,5 +108,85 @@ describe("opponent prep helpers", () => {
 
         expect(start?.branchPath).toEqual([0]);
         expect(start?.branch?.san).toBe("Nf6");
+    });
+
+    test("scores prep branches by weighted response coverage and depth", async () => {
+        const store = createTreeStore();
+        store.getState().makeMove({ payload: "e4" });
+        store.getState().makeMove({ payload: "c5" });
+        store.getState().makeMove({ payload: "Nf3" });
+        store.getState().makeMove({ payload: "d6" });
+        store.getState().goToMove([]);
+
+        const state = store.getState();
+        const [row] = getOpponentPrepMoveRows({
+            fen: state.root.fen,
+            node: state.root,
+            openings: [{ move: "e4", white: 20, draw: 0, black: 0 }],
+            minGames: 1,
+            moveLimit: 4,
+            completedBranches: {},
+            skippedBranches: {},
+        });
+        const opponentReplyFen = state.root.children[0].children[0].fen;
+        const stats = await getOpponentPrepBranchStats({
+            parentNode: state.root,
+            row,
+            opponentColor: "white",
+            loadOpenings: async (fen) =>
+                fen === opponentReplyFen
+                    ? [
+                          { move: "Nf3", white: 80, draw: 10, black: 0 },
+                          { move: "Nc3", white: 8, draw: 2, black: 0 },
+                      ]
+                    : [],
+            minGames: 1,
+            moveLimit: 4,
+            completedBranches: {},
+            skippedBranches: {},
+        });
+
+        expect(stats.replyCoverage).toBeGreaterThan(0.85);
+        expect(stats.score).toBeGreaterThan(70);
+        expect(stats.missingImportantMoves).toEqual([]);
+    });
+
+    test("keeps shallow branches with unanswered common replies marked as needing work", async () => {
+        const store = createTreeStore();
+        store.getState().makeMove({ payload: "e4" });
+        store.getState().makeMove({ payload: "c5" });
+        store.getState().goToMove([]);
+
+        const state = store.getState();
+        const [row] = getOpponentPrepMoveRows({
+            fen: state.root.fen,
+            node: state.root,
+            openings: [{ move: "e4", white: 20, draw: 0, black: 0 }],
+            minGames: 1,
+            moveLimit: 4,
+            completedBranches: {},
+            skippedBranches: {},
+        });
+        const opponentReplyFen = state.root.children[0].children[0].fen;
+        const stats = await getOpponentPrepBranchStats({
+            parentNode: state.root,
+            row,
+            opponentColor: "white",
+            loadOpenings: async (fen) =>
+                fen === opponentReplyFen
+                    ? [
+                          { move: "Nf3", white: 6, draw: 2, black: 2 },
+                          { move: "Nc3", white: 6, draw: 2, black: 2 },
+                      ]
+                    : [],
+            minGames: 1,
+            moveLimit: 4,
+            completedBranches: {},
+            skippedBranches: {},
+        });
+
+        expect(stats.replyCoverage).toBe(0);
+        expect(stats.score).toBeLessThan(40);
+        expect(stats.missingImportantMoves).toEqual(["Nc3", "Nf3"]);
     });
 });
