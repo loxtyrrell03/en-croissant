@@ -328,6 +328,10 @@ async function getLocalBestMovesWithLichessCloud(
   goMode: GoMode,
   options: EngineOptions,
 ) {
+  const localPromise = localGetBestMoves(engine, tab, goMode, options);
+  void localPromise.catch(() => undefined);
+  // Keep Stockfish running behind cloud hits. Cloud replies can arrive after navigation,
+  // and stopEngine is scoped to the whole tab/engine rather than this exact position.
   const cloudPromise = withTimeout(
     lichessGetBestMoves(tab, goMode, options),
     LOCAL_ENGINE_CLOUD_TIMEOUT_MS,
@@ -338,16 +342,12 @@ async function getLocalBestMovesWithLichessCloud(
   );
 
   if (quickCloudMoves?.[1]?.length) {
-    await stopEngine(engine, tab).catch(() => undefined);
     return quickCloudMoves;
   }
 
-  const localPromise = localGetBestMoves(engine, tab, goMode, options);
   const cloudMoves = await cloudPromise;
 
   if (cloudMoves?.[1]?.length) {
-    localPromise.catch(() => undefined);
-    await stopEngine(engine, tab).catch(() => undefined);
     return cloudMoves;
   }
 
