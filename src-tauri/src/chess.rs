@@ -32,8 +32,9 @@ use crate::{
         encoding::{
             decode_move, COMMENT_MARKER, NAG_MARKER, VARIATION_END_MARKER, VARIATION_START_MARKER,
         },
-        is_position_in_db, load_mistake_review_games, load_mistake_review_games_by_ids, GameQuery,
-        MistakeReviewGameRow, PositionQueryJs,
+        is_position_in_db, load_mistake_review_games, load_mistake_review_games_by_ids,
+        upsert_mistake_review_move_evals, GameQuery, MistakeReviewGameRow,
+        MistakeReviewMoveEvalEntry, PositionQueryJs,
     },
     engine::{
         parse_fen_and_apply_moves, BaseEngine, EngineLog, EngineOption, EngineReader, GoMode,
@@ -42,6 +43,8 @@ use crate::{
     progress::update_progress,
     AppState,
 };
+
+const MISTAKE_REVIEW_EVAL_CACHE_BATCH_SIZE: usize = 200;
 
 pub struct EngineProcess {
     base: BaseEngine,
@@ -985,6 +988,7 @@ pub async fn scan_mistake_review(
     let mut games_analyzed = 0u32;
     let mut last_analyzed_game_id = last_loaded_game_id;
     let mut stopped = false;
+    let mut move_eval_entries: Vec<MistakeReviewMoveEvalEntry> = Vec::new();
     emit_mistake_review_progress(
         &app,
         &request_id,
@@ -1148,6 +1152,33 @@ pub async fn scan_mistake_review(
                             fast_best.uci_moves.first().cloned().unwrap_or_default();
 
                         if fast_best_uci == played_move_uci {
+                            move_eval_entries.push(mistake_review_move_eval_entry(
+                                game,
+                                request.player_id,
+                                side_to_move,
+                                player_color,
+                                ply,
+                                &fen_before,
+                                &fen_after,
+                                &played_move_uci,
+                                &played_move_san,
+                                fast_best,
+                                None,
+                                fast_depth,
+                                &analysis_mode,
+                                "fast",
+                                fast_depth,
+                                multi_pv,
+                                &engine_name,
+                                &move_timing,
+                                Some(0),
+                                Some(0.0),
+                            ));
+                            flush_mistake_review_move_eval_entries_if_needed(
+                                &request.player_db,
+                                &state,
+                                &mut move_eval_entries,
+                            )?;
                             false
                         } else {
                             let fast_after = analyze_mistake_review_position(
@@ -1168,6 +1199,38 @@ pub async fn scan_mistake_review(
                                 score_to_white_cp(&fast_after_best.score),
                                 player_color,
                             );
+                            let fast_win_probability_drop = win_probability_drop_for_player(
+                                score_to_white_cp(&fast_best.score),
+                                score_to_white_cp(&fast_after_best.score),
+                                player_color,
+                            );
+                            move_eval_entries.push(mistake_review_move_eval_entry(
+                                game,
+                                request.player_id,
+                                side_to_move,
+                                player_color,
+                                ply,
+                                &fen_before,
+                                &fen_after,
+                                &played_move_uci,
+                                &played_move_san,
+                                fast_best,
+                                Some(fast_after_best),
+                                fast_depth,
+                                &analysis_mode,
+                                "fast",
+                                fast_depth,
+                                multi_pv,
+                                &engine_name,
+                                &move_timing,
+                                Some(fast_loss),
+                                Some(fast_win_probability_drop),
+                            ));
+                            flush_mistake_review_move_eval_entries_if_needed(
+                                &request.player_db,
+                                &state,
+                                &mut move_eval_entries,
+                            )?;
                             fast_loss >= thresholds.inaccuracy
                         }
                     }
@@ -1230,17 +1293,50 @@ pub async fn scan_mistake_review(
                     };
 
                     let best_move_uci = deep_best.uci_moves.first().cloned().unwrap_or_default();
+                    let cp_before = score_to_white_cp(&deep_best.score);
+                    let cp_after = score_to_white_cp(&deep_after_best.score);
+                    let cp_loss = cp_loss_for_player(cp_before, cp_after, player_color);
+                    let win_probability_drop =
+                        win_probability_drop_for_player(cp_before, cp_after, player_color);
+                    let reached_depth = deep_best.depth.min(deep_after_best.depth);
+                    move_eval_entries.push(mistake_review_move_eval_entry(
+                        game,
+                        request.player_id,
+                        side_to_move,
+                        player_color,
+                        ply,
+                        &fen_before,
+                        &fen_after,
+                        &played_move_uci,
+                        &played_move_san,
+                        deep_best,
+                        Some(deep_after_best),
+                        deep_depth,
+                        &analysis_mode,
+                        "deep",
+                        if analysis_mode == MistakeReviewAnalysisMode::Layered {
+                            fast_depth
+                        } else {
+                            0
+                        },
+                        multi_pv,
+                        &engine_name,
+                        &move_timing,
+                        Some(cp_loss),
+                        Some(win_probability_drop),
+                    ));
+                    flush_mistake_review_move_eval_entries_if_needed(
+                        &request.player_db,
+                        &state,
+                        &mut move_eval_entries,
+                    )?;
+
                     if best_move_uci == played_move_uci {
                         chess = after;
                         ply += 1;
                         continue;
                     }
 
-                    let cp_before = score_to_white_cp(&deep_best.score);
-                    let cp_after = score_to_white_cp(&deep_after_best.score);
-                    let cp_loss = cp_loss_for_player(cp_before, cp_after, player_color);
-                    let win_probability_drop =
-                        win_probability_drop_for_player(cp_before, cp_after, player_color);
                     let Some(severity) = mistake_review_severity(cp_loss, &thresholds) else {
                         chess = after;
                         ply += 1;
@@ -1256,7 +1352,6 @@ pub async fn scan_mistake_review(
 
                     let normalized_fen = normalize_mistake_review_fen(&fen_before);
                     let review_key = format!("{normalized_fen}|{played_move_uci}");
-                    let reached_depth = deep_best.depth.min(deep_after_best.depth);
                     let result = MistakeReviewScanResult {
                         review_key,
                         fen: fen_before.clone(),
@@ -1360,7 +1455,10 @@ pub async fn scan_mistake_review(
         )?;
     }
 
+    let eval_flush_result =
+        flush_mistake_review_move_eval_entries(&request.player_db, &state, &mut move_eval_entries);
     proc.kill().await?;
+    eval_flush_result?;
     let final_progress = if games_total == 0 {
         100.0
     } else {
@@ -1769,6 +1867,100 @@ fn win_probability_drop_for_player(
 
 fn centipawn_to_win_probability(cp: i32) -> f64 {
     50.0 + 50.0 * (2.0 / (1.0 + (-0.003_682_08 * cp as f64).exp()) - 1.0)
+}
+
+fn mistake_review_move_eval_entry(
+    game: &MistakeReviewGameRow,
+    player_id: i32,
+    side_to_move: Color,
+    player_color: Color,
+    ply: u32,
+    fen: &str,
+    fen_after: &str,
+    played_uci: &str,
+    played_san: &str,
+    best: &BestMoves,
+    after_best: Option<&BestMoves>,
+    requested_depth: u32,
+    analysis_mode: &MistakeReviewAnalysisMode,
+    analysis_stage: &str,
+    fast_depth: u32,
+    multi_pv: u16,
+    engine_name: &str,
+    move_timing: &MistakeReviewMoveTiming,
+    cp_loss: Option<i32>,
+    win_probability_drop: Option<f64>,
+) -> MistakeReviewMoveEvalEntry {
+    let cp_before = score_to_white_cp(&best.score);
+    let cp_after = after_best.map(|line| score_to_white_cp(&line.score));
+    let reached_depth = after_best
+        .map(|line| best.depth.min(line.depth))
+        .unwrap_or(best.depth);
+
+    MistakeReviewMoveEvalEntry {
+        game_id: game.id,
+        ply: ply as i32,
+        move_number: ((ply / 2) + 1) as i32,
+        player_id,
+        player_color: color_name(player_color).to_string(),
+        side_to_move: color_name(side_to_move).to_string(),
+        fen: fen.to_string(),
+        normalized_fen: normalize_mistake_review_fen(fen),
+        fen_after: fen_after.to_string(),
+        played_uci: played_uci.to_string(),
+        played_san: played_san.to_string(),
+        best_uci: best.uci_moves.first().cloned(),
+        best_san: best.san_moves.first().cloned(),
+        pv_uci: best.uci_moves.join(" "),
+        pv_san: best.san_moves.join(" "),
+        cp_before,
+        cp_after,
+        cp_loss,
+        win_probability_drop,
+        requested_depth: requested_depth as i32,
+        reached_depth: reached_depth as i32,
+        analysis_mode: mistake_review_analysis_mode_name(analysis_mode).to_string(),
+        analysis_stage: analysis_stage.to_string(),
+        fast_depth: fast_depth as i32,
+        multi_pv: multi_pv as i32,
+        engine_name: engine_name.to_string(),
+        move_time_seconds: move_timing.move_time_seconds,
+        clock_before_seconds: move_timing.clock_before_seconds,
+        clock_after_seconds: move_timing.clock_after_seconds,
+    }
+}
+
+fn mistake_review_analysis_mode_name(analysis_mode: &MistakeReviewAnalysisMode) -> &'static str {
+    match analysis_mode {
+        MistakeReviewAnalysisMode::Single => "single",
+        MistakeReviewAnalysisMode::Layered => "layered",
+    }
+}
+
+fn flush_mistake_review_move_eval_entries_if_needed(
+    file: &PathBuf,
+    state: &tauri::State<'_, AppState>,
+    entries: &mut Vec<MistakeReviewMoveEvalEntry>,
+) -> Result<(), Error> {
+    if entries.len() >= MISTAKE_REVIEW_EVAL_CACHE_BATCH_SIZE {
+        flush_mistake_review_move_eval_entries(file, state, entries)?;
+    }
+
+    Ok(())
+}
+
+fn flush_mistake_review_move_eval_entries(
+    file: &PathBuf,
+    state: &tauri::State<'_, AppState>,
+    entries: &mut Vec<MistakeReviewMoveEvalEntry>,
+) -> Result<(), Error> {
+    if entries.is_empty() {
+        return Ok(());
+    }
+
+    upsert_mistake_review_move_evals(file, entries, state)?;
+    entries.clear();
+    Ok(())
 }
 
 #[derive(Debug, Clone)]

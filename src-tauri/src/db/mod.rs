@@ -24,7 +24,7 @@ use diesel::{
     prelude::*,
     r2d2::{ConnectionManager, Pool},
     sql_query,
-    sql_types::Text,
+    sql_types::{BigInt, Double, Integer, Nullable, Text},
 };
 use pgn_reader::{BufferedReader, Nag, RawHeader, SanPlus, Skip, Visitor};
 use rayon::prelude::*;
@@ -988,6 +988,7 @@ pub async fn get_db_info(
 pub async fn create_indexes(file: PathBuf, state: tauri::State<'_, AppState>) -> Result<(), Error> {
     let db = &mut get_db_or_create(&state, file.to_str().unwrap(), ConnectionOptions::default())?;
 
+    ensure_mistake_review_move_evals_schema(db)?;
     db.batch_execute(INDEXES_SQL)?;
 
     Ok(())
@@ -1519,6 +1520,262 @@ fn mistake_review_game_row((game, white, black): (Game, Player, Player)) -> Mist
         fen: game.fen,
         moves: game.moves,
     }
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct MistakeReviewMoveEvalEntry {
+    pub game_id: i32,
+    pub ply: i32,
+    pub move_number: i32,
+    pub player_id: i32,
+    pub player_color: String,
+    pub side_to_move: String,
+    pub fen: String,
+    pub normalized_fen: String,
+    pub fen_after: String,
+    pub played_uci: String,
+    pub played_san: String,
+    pub best_uci: Option<String>,
+    pub best_san: Option<String>,
+    pub pv_uci: String,
+    pub pv_san: String,
+    pub cp_before: i32,
+    pub cp_after: Option<i32>,
+    pub cp_loss: Option<i32>,
+    pub win_probability_drop: Option<f64>,
+    pub requested_depth: i32,
+    pub reached_depth: i32,
+    pub analysis_mode: String,
+    pub analysis_stage: String,
+    pub fast_depth: i32,
+    pub multi_pv: i32,
+    pub engine_name: String,
+    pub move_time_seconds: Option<f64>,
+    pub clock_before_seconds: Option<f64>,
+    pub clock_after_seconds: Option<f64>,
+}
+
+pub(crate) fn upsert_mistake_review_move_evals(
+    file: &Path,
+    entries: &[MistakeReviewMoveEvalEntry],
+    state: &tauri::State<'_, AppState>,
+) -> Result<usize, Error> {
+    if entries.is_empty() {
+        return Ok(0);
+    }
+
+    let db = &mut get_db_or_create(state, file.to_str().unwrap(), ConnectionOptions::default())?;
+    Ok(upsert_mistake_review_move_evals_in_db(db, entries)?)
+}
+
+fn ensure_mistake_review_move_evals_schema(
+    db: &mut SqliteConnection,
+) -> Result<(), diesel::result::Error> {
+    db.batch_execute(
+        r#"
+        CREATE TABLE IF NOT EXISTS MistakeReviewMoveEvals (
+            ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            GameID INTEGER NOT NULL,
+            Ply INTEGER NOT NULL,
+            MoveNumber INTEGER NOT NULL,
+            PlayerID INTEGER NOT NULL,
+            PlayerColor TEXT NOT NULL,
+            SideToMove TEXT NOT NULL,
+            FEN TEXT NOT NULL,
+            NormalizedFEN TEXT NOT NULL,
+            FENAfter TEXT NOT NULL,
+            PlayedUCI TEXT NOT NULL,
+            PlayedSAN TEXT NOT NULL,
+            BestUCI TEXT,
+            BestSAN TEXT,
+            PVUCI TEXT NOT NULL DEFAULT '',
+            PVSAN TEXT NOT NULL DEFAULT '',
+            CpBefore INTEGER NOT NULL,
+            CpAfter INTEGER,
+            CpLoss INTEGER,
+            WinProbabilityDrop REAL,
+            RequestedDepth INTEGER NOT NULL,
+            ReachedDepth INTEGER NOT NULL,
+            AnalysisMode TEXT NOT NULL,
+            AnalysisStage TEXT NOT NULL,
+            FastDepth INTEGER NOT NULL DEFAULT 0,
+            MultiPV INTEGER NOT NULL DEFAULT 1,
+            EngineName TEXT NOT NULL,
+            MoveTimeSeconds REAL,
+            ClockBeforeSeconds REAL,
+            ClockAfterSeconds REAL,
+            CreatedAt INTEGER NOT NULL,
+            UpdatedAt INTEGER NOT NULL,
+            UNIQUE(GameID, Ply, PlayerID, AnalysisMode, AnalysisStage, RequestedDepth, EngineName),
+            FOREIGN KEY(GameID) REFERENCES Games(ID) ON DELETE CASCADE,
+            FOREIGN KEY(PlayerID) REFERENCES Players(ID) ON DELETE CASCADE
+        );
+        CREATE INDEX IF NOT EXISTS mistake_review_move_evals_game_idx
+            ON MistakeReviewMoveEvals(GameID);
+        CREATE INDEX IF NOT EXISTS mistake_review_move_evals_player_idx
+            ON MistakeReviewMoveEvals(PlayerID);
+        CREATE INDEX IF NOT EXISTS mistake_review_move_evals_fen_idx
+            ON MistakeReviewMoveEvals(NormalizedFEN);
+        CREATE INDEX IF NOT EXISTS mistake_review_move_evals_updated_idx
+            ON MistakeReviewMoveEvals(UpdatedAt);
+        "#,
+    )?;
+
+    Ok(())
+}
+
+fn upsert_mistake_review_move_evals_in_db(
+    db: &mut SqliteConnection,
+    entries: &[MistakeReviewMoveEvalEntry],
+) -> Result<usize, diesel::result::Error> {
+    if entries.is_empty() {
+        return Ok(0);
+    }
+
+    let now = current_timestamp_millis();
+    db.transaction(|db| {
+        ensure_mistake_review_move_evals_schema(db)?;
+
+        let mut affected = 0usize;
+        for entry in entries {
+            affected += sql_query(
+                r#"
+                INSERT INTO MistakeReviewMoveEvals (
+                    GameID,
+                    Ply,
+                    MoveNumber,
+                    PlayerID,
+                    PlayerColor,
+                    SideToMove,
+                    FEN,
+                    NormalizedFEN,
+                    FENAfter,
+                    PlayedUCI,
+                    PlayedSAN,
+                    BestUCI,
+                    BestSAN,
+                    PVUCI,
+                    PVSAN,
+                    CpBefore,
+                    CpAfter,
+                    CpLoss,
+                    WinProbabilityDrop,
+                    RequestedDepth,
+                    ReachedDepth,
+                    AnalysisMode,
+                    AnalysisStage,
+                    FastDepth,
+                    MultiPV,
+                    EngineName,
+                    MoveTimeSeconds,
+                    ClockBeforeSeconds,
+                    ClockAfterSeconds,
+                    CreatedAt,
+                    UpdatedAt
+                )
+                VALUES (
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?
+                )
+                ON CONFLICT(GameID, Ply, PlayerID, AnalysisMode, AnalysisStage, RequestedDepth, EngineName)
+                DO UPDATE SET
+                    MoveNumber = excluded.MoveNumber,
+                    PlayerColor = excluded.PlayerColor,
+                    SideToMove = excluded.SideToMove,
+                    FEN = excluded.FEN,
+                    NormalizedFEN = excluded.NormalizedFEN,
+                    FENAfter = excluded.FENAfter,
+                    PlayedUCI = excluded.PlayedUCI,
+                    PlayedSAN = excluded.PlayedSAN,
+                    BestUCI = excluded.BestUCI,
+                    BestSAN = excluded.BestSAN,
+                    PVUCI = excluded.PVUCI,
+                    PVSAN = excluded.PVSAN,
+                    CpBefore = excluded.CpBefore,
+                    CpAfter = excluded.CpAfter,
+                    CpLoss = excluded.CpLoss,
+                    WinProbabilityDrop = excluded.WinProbabilityDrop,
+                    ReachedDepth = excluded.ReachedDepth,
+                    FastDepth = excluded.FastDepth,
+                    MultiPV = excluded.MultiPV,
+                    MoveTimeSeconds = excluded.MoveTimeSeconds,
+                    ClockBeforeSeconds = excluded.ClockBeforeSeconds,
+                    ClockAfterSeconds = excluded.ClockAfterSeconds,
+                    UpdatedAt = excluded.UpdatedAt
+                "#,
+            )
+            .bind::<Integer, _>(entry.game_id)
+            .bind::<Integer, _>(entry.ply)
+            .bind::<Integer, _>(entry.move_number)
+            .bind::<Integer, _>(entry.player_id)
+            .bind::<Text, _>(&entry.player_color)
+            .bind::<Text, _>(&entry.side_to_move)
+            .bind::<Text, _>(&entry.fen)
+            .bind::<Text, _>(&entry.normalized_fen)
+            .bind::<Text, _>(&entry.fen_after)
+            .bind::<Text, _>(&entry.played_uci)
+            .bind::<Text, _>(&entry.played_san)
+            .bind::<Nullable<Text>, _>(entry.best_uci.clone())
+            .bind::<Nullable<Text>, _>(entry.best_san.clone())
+            .bind::<Text, _>(&entry.pv_uci)
+            .bind::<Text, _>(&entry.pv_san)
+            .bind::<Integer, _>(entry.cp_before)
+            .bind::<Nullable<Integer>, _>(entry.cp_after)
+            .bind::<Nullable<Integer>, _>(entry.cp_loss)
+            .bind::<Nullable<Double>, _>(entry.win_probability_drop)
+            .bind::<Integer, _>(entry.requested_depth)
+            .bind::<Integer, _>(entry.reached_depth)
+            .bind::<Text, _>(&entry.analysis_mode)
+            .bind::<Text, _>(&entry.analysis_stage)
+            .bind::<Integer, _>(entry.fast_depth)
+            .bind::<Integer, _>(entry.multi_pv)
+            .bind::<Text, _>(&entry.engine_name)
+            .bind::<Nullable<Double>, _>(entry.move_time_seconds)
+            .bind::<Nullable<Double>, _>(entry.clock_before_seconds)
+            .bind::<Nullable<Double>, _>(entry.clock_after_seconds)
+            .bind::<BigInt, _>(now)
+            .bind::<BigInt, _>(now)
+            .execute(db)?;
+        }
+
+        Ok(affected)
+    })
+}
+
+fn current_timestamp_millis() -> i64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_millis().min(i64::MAX as u128) as i64)
+        .unwrap_or_default()
 }
 
 fn mistake_review_game_opening_name(fen: Option<&str>, moves: &[u8]) -> Option<String> {
@@ -2681,6 +2938,112 @@ mod tests {
         assert_eq!(remaining.len(), 1);
         assert_eq!(remaining[0].id, original_ids[0]);
         assert_eq!(mainline_timing_comment_count(&remaining[0].moves), 2);
+    }
+
+    #[derive(QueryableByName)]
+    struct EvalCacheCount {
+        #[diesel(sql_type = BigInt, column_name = "row_count")]
+        row_count: i64,
+    }
+
+    #[derive(QueryableByName)]
+    struct EvalCacheProbe {
+        #[diesel(sql_type = Integer, column_name = "CpBefore")]
+        cp_before: i32,
+        #[diesel(sql_type = Nullable<Integer>, column_name = "CpLoss")]
+        cp_loss: Option<i32>,
+        #[diesel(sql_type = Nullable<Double>, column_name = "MoveTimeSeconds")]
+        move_time_seconds: Option<f64>,
+        #[diesel(sql_type = Text, column_name = "PVUCI")]
+        pv_uci: String,
+    }
+
+    #[test]
+    fn mistake_review_move_eval_upsert_creates_and_updates_cache_rows() {
+        let db = &mut setup_test_db();
+        let white = create_player(db, "White").unwrap();
+        let black = create_player(db, "Black").unwrap();
+        let event = create_event(db, "Cache Test").unwrap();
+        let site = create_site(db, "Local").unwrap();
+        let game = create_game(
+            db,
+            NewGame {
+                event_id: event.id,
+                site_id: site.id,
+                white_id: white.id,
+                black_id: black.id,
+                white_elo: None,
+                black_elo: None,
+                white_material: 0,
+                black_material: 0,
+                date: Some("2026.05.04"),
+                time: Some("12:00:00"),
+                round: None,
+                result: None,
+                time_control: Some("300+0"),
+                eco: None,
+                ply_count: 2,
+                fen: None,
+                moves: &[],
+                pawn_home: 0,
+            },
+        )
+        .unwrap();
+
+        let mut entry = MistakeReviewMoveEvalEntry {
+            game_id: game.id,
+            ply: 0,
+            move_number: 1,
+            player_id: white.id,
+            player_color: "white".to_string(),
+            side_to_move: "white".to_string(),
+            fen: Fen::default().to_string(),
+            normalized_fen: "startpos w KQkq -".to_string(),
+            fen_after: "after".to_string(),
+            played_uci: "e2e4".to_string(),
+            played_san: "e4".to_string(),
+            best_uci: Some("d2d4".to_string()),
+            best_san: Some("d4".to_string()),
+            pv_uci: "d2d4 d7d5".to_string(),
+            pv_san: "d4 d5".to_string(),
+            cp_before: 32,
+            cp_after: Some(-18),
+            cp_loss: Some(50),
+            win_probability_drop: Some(4.2),
+            requested_depth: 12,
+            reached_depth: 12,
+            analysis_mode: "single".to_string(),
+            analysis_stage: "deep".to_string(),
+            fast_depth: 0,
+            multi_pv: 3,
+            engine_name: "Stockfish".to_string(),
+            move_time_seconds: Some(8.0),
+            clock_before_seconds: Some(300.0),
+            clock_after_seconds: Some(292.0),
+        };
+
+        upsert_mistake_review_move_evals_in_db(db, &[entry.clone()]).unwrap();
+        entry.cp_before = 40;
+        entry.cp_loss = Some(58);
+        entry.move_time_seconds = Some(9.0);
+        entry.pv_uci = "d2d4 g8f6".to_string();
+        upsert_mistake_review_move_evals_in_db(db, &[entry]).unwrap();
+
+        let count: EvalCacheCount =
+            sql_query("SELECT COUNT(*) AS row_count FROM MistakeReviewMoveEvals")
+                .get_result(db)
+                .unwrap();
+        assert_eq!(count.row_count, 1);
+
+        let row: EvalCacheProbe = sql_query(
+            "SELECT CpBefore, CpLoss, MoveTimeSeconds, PVUCI FROM MistakeReviewMoveEvals",
+        )
+        .get_result(db)
+        .unwrap();
+        assert_eq!(row.cp_before, 40);
+        assert_eq!(row.cp_loss, Some(58));
+        assert_eq!(row.move_time_seconds, Some(9.0));
+        assert_eq!(row.pv_uci, "d2d4 g8f6");
     }
 
     fn setup_test_db() -> SqliteConnection {
