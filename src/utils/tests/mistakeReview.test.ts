@@ -21,6 +21,7 @@ import {
     getMistakeReviewAutoUpdatePlayerNameCandidates,
     selectMistakeReviewPlayerTargets,
 } from "@/utils/mistakeReviewAutoUpdate";
+import { applyMistakeReviewClockTimings } from "@/utils/mistakeReviewClockHydration";
 import { hasOnlineDatabaseNewLocalGames } from "@/utils/onlineGameImport";
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
@@ -413,6 +414,48 @@ describe("mistake review helpers", () => {
         expect(merged.positions[0]!.mistakeReview?.occurrenceCount).toBe(3);
         expect(merged.positions[0]!.mistakeReview?.lastAttemptedAt).toBe(1_000);
         expect(merged.positions[0]!.mistakeReview?.lastAttemptedCardReps).toBe(0);
+    });
+
+    test("clock hydration fills timing data without resetting SRS state", () => {
+        const previous = position({
+            reviewKey: "clock-card",
+            card: {
+                ...createEmptyCard(),
+                reps: 3,
+                due: new Date("2026-05-01T12:00:00Z"),
+            } as Position["card"],
+            evidence: "1 occurrence; latest against Opponent.",
+            mistakeReview: {
+                ...position().mistakeReview!,
+                gameId: 7,
+                gameIds: [7],
+                playedMoveUci: "g2g4",
+                moveTimeSeconds: null,
+                clockBeforeSeconds: null,
+                clockAfterSeconds: null,
+            },
+        });
+
+        const result = applyMistakeReviewClockTimings(deck([previous]), [
+            {
+                reviewKey: "clock-card",
+                gameId: 7,
+                ply: 12,
+                moveTimeSeconds: 42,
+                clockBeforeSeconds: 120,
+                clockAfterSeconds: 78,
+                date: "2026.04.30",
+                time: "18:00:00",
+                timeControl: "300+0",
+            },
+        ]);
+
+        expect(result.updatedCount).toBe(1);
+        expect(result.deck.positions[0]!.card.reps).toBe(3);
+        expect(result.deck.positions[0]!.mistakeReview?.moveTimeSeconds).toBe(42);
+        expect(result.deck.positions[0]!.mistakeReview?.clockAfterSeconds).toBe(78);
+        expect(result.deck.positions[0]!.tags).toContain("Long think");
+        expect(result.deck.positions[0]!.evidence).toContain("Spent 42s");
     });
 
     test("formats mistake review last seen from attempt metadata", () => {

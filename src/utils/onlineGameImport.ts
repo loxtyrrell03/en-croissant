@@ -62,6 +62,8 @@ export type OnlineDatabaseLocalSnapshot = {
     lastGameId: number | null | undefined;
 };
 
+export const ONLINE_DATABASE_CLOCK_REFRESH_VERSION = 1;
+
 export function getOnlineGameSourceLabel(source: OnlineGameSource) {
     return source === "lichess" ? "Lichess" : "Chess.com";
 }
@@ -81,6 +83,8 @@ export function getOnlineDatabaseUpdateAccounts(
             lastUpdatedAt: record.lastUpdatedAt,
             lastKnownGameCount: record.lastKnownGameCount,
             lastImportedAt: record.lastUpdatedAt,
+            clockDataRefreshedAt: record.clockDataRefreshedAt,
+            clockDataRefreshVersion: record.clockDataRefreshVersion,
         },
     ];
 }
@@ -155,6 +159,8 @@ export function getOnlineDatabaseUpdateRecord(
         lastCheckedAt: null,
         lastUpdatedAt: null,
         lastKnownGameCount: database.game_count,
+        clockDataRefreshedAt: null,
+        clockDataRefreshVersion: null,
     };
 }
 
@@ -181,6 +187,10 @@ export function upsertOnlineDatabaseUpdateRecord(
             lastCheckedAt: record.lastCheckedAt ?? previous?.lastCheckedAt ?? null,
             lastUpdatedAt: record.lastUpdatedAt ?? previous?.lastUpdatedAt ?? null,
             lastKnownGameCount: record.lastKnownGameCount ?? previous?.lastKnownGameCount ?? null,
+            clockDataRefreshedAt:
+                record.clockDataRefreshedAt ?? previous?.clockDataRefreshedAt ?? null,
+            clockDataRefreshVersion:
+                record.clockDataRefreshVersion ?? previous?.clockDataRefreshVersion ?? null,
         },
     };
 }
@@ -225,6 +235,8 @@ export async function createOnlineDatabaseUpdateAccount({
         lastUpdatedAt: importedAt,
         lastKnownGameCount: status.gameCount,
         lastImportedAt: status.latestGameAt ?? importedAt,
+        clockDataRefreshedAt: importedAt,
+        clockDataRefreshVersion: ONLINE_DATABASE_CLOCK_REFRESH_VERSION,
     };
 }
 
@@ -403,10 +415,12 @@ export async function importOnlineGameAccountsToDatabase({
             lastUpdatedAt: importedAt,
             lastKnownGameCount: status?.gameCount ?? null,
             lastImportedAt: status?.latestGameAt ?? importedAt,
+            clockDataRefreshedAt: importedAt,
+            clockDataRefreshVersion: ONLINE_DATABASE_CLOCK_REFRESH_VERSION,
         });
     }
 
-    await commands.deleteDuplicatedGames(dbPath);
+    unwrap(await commands.deleteDuplicatedGames(dbPath));
     await commands.deleteEmptyGames(dbPath);
     return importedAccounts;
 }

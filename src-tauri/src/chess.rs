@@ -32,7 +32,8 @@ use crate::{
         encoding::{
             decode_move, COMMENT_MARKER, NAG_MARKER, VARIATION_END_MARKER, VARIATION_START_MARKER,
         },
-        is_position_in_db, load_mistake_review_games, GameQuery, PositionQueryJs,
+        is_position_in_db, load_mistake_review_games, load_mistake_review_games_by_ids, GameQuery,
+        MistakeReviewGameRow, PositionQueryJs,
     },
     engine::{
         parse_fen_and_apply_moves, BaseEngine, EngineLog, EngineOption, EngineReader, GoMode,
@@ -807,6 +808,29 @@ pub struct MistakeReviewScanReport {
     pub mistakes: Vec<MistakeReviewScanResult>,
 }
 
+#[derive(Clone, Debug, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct MistakeReviewClockTimingRequest {
+    pub review_key: String,
+    pub fen: String,
+    pub played_move_uci: String,
+    pub game_ids: Vec<i32>,
+}
+
+#[derive(Clone, Debug, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct MistakeReviewClockTiming {
+    pub review_key: String,
+    pub game_id: i32,
+    pub ply: u32,
+    pub move_time_seconds: Option<f64>,
+    pub clock_before_seconds: Option<f64>,
+    pub clock_after_seconds: Option<f64>,
+    pub date: Option<String>,
+    pub time: Option<String>,
+    pub time_control: Option<String>,
+}
+
 #[derive(Clone, Debug, Serialize, Type, Event)]
 #[serde(rename_all = "camelCase")]
 pub struct MistakeReviewScanProgress {
@@ -1382,6 +1406,51 @@ pub async fn scan_mistake_review(
     })
 }
 
+#[tauri::command]
+#[specta::specta]
+pub async fn get_mistake_review_clock_timings(
+    file: PathBuf,
+    requests: Vec<MistakeReviewClockTimingRequest>,
+    state: tauri::State<'_, AppState>,
+) -> Result<Vec<MistakeReviewClockTiming>, Error> {
+    if requests.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let mut game_ids = requests
+        .iter()
+        .flat_map(|request| request.game_ids.iter().copied())
+        .collect::<Vec<_>>();
+    game_ids.sort_unstable();
+    game_ids.dedup();
+
+    let games = load_mistake_review_games_by_ids(file, &game_ids, &state)?;
+    let games_by_id = games
+        .into_iter()
+        .map(|game| (game.id, game))
+        .collect::<HashMap<_, _>>();
+    let mut timings = Vec::new();
+
+    for request in requests {
+        let mut request_game_ids = request.game_ids.clone();
+        request_game_ids.sort_unstable();
+        request_game_ids.dedup();
+
+        for game_id in request_game_ids {
+            let Some(game) = games_by_id.get(&game_id) else {
+                continue;
+            };
+            let Some(timing) = find_mistake_review_clock_timing(game, &request)? else {
+                continue;
+            };
+            timings.push(timing);
+            break;
+        }
+    }
+
+    Ok(timings)
+}
+
 fn emit_mistake_review_progress(
     app: &tauri::AppHandle,
     id: &str,
@@ -1758,6 +1827,60 @@ fn collect_mainline_move_entries(bytes: &[u8]) -> Vec<MainlineMoveEntry> {
     }
 
     entries
+}
+
+fn find_mistake_review_clock_timing(
+    game: &MistakeReviewGameRow,
+    request: &MistakeReviewClockTimingRequest,
+) -> Result<Option<MistakeReviewClockTiming>, Error> {
+    let target_fen = normalize_mistake_review_fen(&request.fen);
+    let target_uci = request.played_move_uci.trim();
+    if target_fen.is_empty() || target_uci.is_empty() {
+        return Ok(None);
+    }
+
+    let mut chess = mistake_review_starting_position(game.fen.as_deref())?;
+    let mut clock_tracker = MistakeReviewClockTracker::new(game.time_control.as_deref());
+
+    for (ply, entry) in collect_mainline_move_entries(&game.moves)
+        .into_iter()
+        .enumerate()
+    {
+        let Some(mv) = decode_move(entry.byte, &chess) else {
+            break;
+        };
+
+        let side_to_move = chess.turn();
+        let move_timing = clock_tracker.record_move(side_to_move, &entry.comments);
+        let fen_before = Fen::from_position(chess.clone(), EnPassantMode::Legal).to_string();
+        let played_move_uci = UciMove::from_move(&mv, CastlingMode::Standard).to_string();
+
+        if normalize_mistake_review_fen(&fen_before) == target_fen && played_move_uci == target_uci
+        {
+            if move_timing.move_time_seconds.is_none()
+                && move_timing.clock_before_seconds.is_none()
+                && move_timing.clock_after_seconds.is_none()
+            {
+                return Ok(None);
+            }
+
+            return Ok(Some(MistakeReviewClockTiming {
+                review_key: request.review_key.clone(),
+                game_id: game.id,
+                ply: ply as u32,
+                move_time_seconds: move_timing.move_time_seconds,
+                clock_before_seconds: move_timing.clock_before_seconds,
+                clock_after_seconds: move_timing.clock_after_seconds,
+                date: game.date.clone(),
+                time: game.time.clone(),
+                time_control: game.time_control.clone(),
+            }));
+        }
+
+        chess.play_unchecked(&mv);
+    }
+
+    Ok(None)
 }
 
 #[derive(Default, Debug, Clone, Copy)]

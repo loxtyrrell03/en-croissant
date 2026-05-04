@@ -473,6 +473,8 @@ export type OnlineDatabaseUpdateRecord = {
     lastCheckedAt: number | null;
     lastUpdatedAt: number | null;
     lastKnownGameCount: number | null;
+    clockDataRefreshedAt?: number | null;
+    clockDataRefreshVersion?: number | null;
 };
 
 export type OnlineDatabaseUpdateAccount = {
@@ -482,6 +484,8 @@ export type OnlineDatabaseUpdateAccount = {
     lastUpdatedAt?: number | null;
     lastKnownGameCount?: number | null;
     lastImportedAt?: number | null;
+    clockDataRefreshedAt?: number | null;
+    clockDataRefreshVersion?: number | null;
 };
 
 export type OnlineDatabaseUpdateRecords = Record<string, OnlineDatabaseUpdateRecord>;

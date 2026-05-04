@@ -36,6 +36,7 @@ use shakmaty::{
 };
 use specta::Type;
 use std::{
+    collections::HashMap,
     fs::{remove_file, rename, File, OpenOptions},
     path::{Path, PathBuf},
     sync::atomic::{AtomicUsize, Ordering},
@@ -1472,25 +1473,52 @@ pub(crate) fn load_mistake_review_games(
 
     let games: Vec<(Game, Player, Player)> = query.load(db)?;
 
-    Ok(games
-        .into_iter()
-        .map(|(game, white, black)| MistakeReviewGameRow {
-            opening_name: mistake_review_game_opening_name(game.fen.as_deref(), &game.moves),
-            id: game.id,
-            date: game.date,
-            time: game.time,
-            white_id: game.white_id,
-            black_id: game.black_id,
-            white_name: white.name.unwrap_or_default(),
-            white_elo: game.white_elo,
-            black_name: black.name.unwrap_or_default(),
-            black_elo: game.black_elo,
-            result: game.result,
-            time_control: game.time_control,
-            fen: game.fen,
-            moves: game.moves,
-        })
-        .collect())
+    Ok(games.into_iter().map(mistake_review_game_row).collect())
+}
+
+pub(crate) fn load_mistake_review_games_by_ids(
+    file: PathBuf,
+    game_ids: &[i32],
+    state: &tauri::State<'_, AppState>,
+) -> Result<Vec<MistakeReviewGameRow>, Error> {
+    if game_ids.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let db = &mut get_db_or_create(state, file.to_str().unwrap(), ConnectionOptions::default())?;
+    let (white_players, black_players) = diesel::alias!(players as white, players as black);
+    let mut rows = Vec::new();
+
+    for chunk in game_ids.chunks(500) {
+        let games: Vec<(Game, Player, Player)> = games::table
+            .inner_join(white_players.on(games::white_id.eq(white_players.field(players::id))))
+            .inner_join(black_players.on(games::black_id.eq(black_players.field(players::id))))
+            .filter(games::id.eq_any(chunk))
+            .order(games::id.asc())
+            .load(db)?;
+        rows.extend(games.into_iter().map(mistake_review_game_row));
+    }
+
+    Ok(rows)
+}
+
+fn mistake_review_game_row((game, white, black): (Game, Player, Player)) -> MistakeReviewGameRow {
+    MistakeReviewGameRow {
+        opening_name: mistake_review_game_opening_name(game.fen.as_deref(), &game.moves),
+        id: game.id,
+        date: game.date,
+        time: game.time,
+        white_id: game.white_id,
+        black_id: game.black_id,
+        white_name: white.name.unwrap_or_default(),
+        white_elo: game.white_elo,
+        black_name: black.name.unwrap_or_default(),
+        black_elo: game.black_elo,
+        result: game.result,
+        time_control: game.time_control,
+        fen: game.fen,
+        moves: game.moves,
+    }
 }
 
 fn mistake_review_game_opening_name(fen: Option<&str>, moves: &[u8]) -> Option<String> {
@@ -1931,30 +1959,225 @@ fn delete_orphaned_data(db: &mut SqliteConnection) -> Result<(), Error> {
 pub async fn delete_duplicated_games(
     file: PathBuf,
     state: tauri::State<'_, AppState>,
-) -> Result<(), Error> {
+) -> Result<DuplicateGameCleanupReport, Error> {
     let db = &mut get_db_or_create(&state, file.to_str().unwrap(), ConnectionOptions::default())?;
-
-    db.batch_execute(
-        "
-        DELETE FROM Games
-        WHERE ID IN (
-            SELECT ID
-            FROM (
-                SELECT ID,
-                    ROW_NUMBER() OVER (PARTITION BY EventID, SiteID, Round, WhiteID, BlackID, Moves, Date, UTCTime ORDER BY ID) AS RowNum
-                FROM Games
-            ) AS Subquery
-            WHERE RowNum > 1
-        );
-        ",
-    )?;
+    let report = delete_duplicated_games_in_db(db)?;
 
     let game_count: i64 = games::table.count().get_result(db)?;
     update_info_count(db, "GameCount", game_count)?;
     delete_orphaned_data(db)?;
     invalidate_database_search_index(&state, &file);
 
-    Ok(())
+    Ok(report)
+}
+
+#[derive(Debug, Clone, Default, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct DuplicateGameCleanupReport {
+    pub deleted_games: u32,
+    pub enriched_games: u32,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct DatabaseClockCoverage {
+    pub game_count: u32,
+    pub games_with_timing: u32,
+}
+
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+struct DuplicateGameKey {
+    event_id: i32,
+    site_id: i32,
+    date: Option<String>,
+    time: Option<String>,
+    round: Option<String>,
+    white_id: i32,
+    black_id: i32,
+    result: Option<String>,
+    fen: Option<String>,
+    mainline: Vec<u8>,
+}
+
+#[derive(Clone, Debug)]
+struct DuplicateGameCandidate {
+    id: i32,
+    moves: Vec<u8>,
+    timing_comments: usize,
+}
+
+type DuplicateGameRow = (
+    i32,
+    i32,
+    i32,
+    Option<String>,
+    Option<String>,
+    Option<String>,
+    i32,
+    i32,
+    Option<String>,
+    Option<String>,
+    Vec<u8>,
+);
+
+fn delete_duplicated_games_in_db(
+    db: &mut SqliteConnection,
+) -> Result<DuplicateGameCleanupReport, Error> {
+    let rows: Vec<DuplicateGameRow> = games::table
+        .select((
+            games::id,
+            games::event_id,
+            games::site_id,
+            games::date,
+            games::time,
+            games::round,
+            games::white_id,
+            games::black_id,
+            games::result,
+            games::fen,
+            games::moves,
+        ))
+        .load(db)?;
+
+    let mut groups: HashMap<DuplicateGameKey, Vec<DuplicateGameCandidate>> = HashMap::new();
+    for (id, event_id, site_id, date, time, round, white_id, black_id, result, fen, moves) in rows {
+        let key = DuplicateGameKey {
+            event_id,
+            site_id,
+            date,
+            time,
+            round,
+            white_id,
+            black_id,
+            result,
+            fen,
+            mainline: iter_mainline_move_bytes(&moves).collect(),
+        };
+        let timing_comments = mainline_timing_comment_count(&moves);
+        groups.entry(key).or_default().push(DuplicateGameCandidate {
+            id,
+            moves,
+            timing_comments,
+        });
+    }
+
+    let mut updates: Vec<(i32, Vec<u8>, bool)> = Vec::new();
+    let mut delete_ids = Vec::new();
+
+    for candidates in groups.values_mut() {
+        if candidates.len() <= 1 {
+            continue;
+        }
+
+        candidates.sort_by_key(|candidate| candidate.id);
+        let survivor = candidates[0].clone();
+        let best = candidates
+            .iter()
+            .max_by(|left, right| {
+                left.timing_comments
+                    .cmp(&right.timing_comments)
+                    .then_with(|| left.moves.len().cmp(&right.moves.len()))
+                    .then_with(|| right.id.cmp(&left.id))
+            })
+            .cloned()
+            .unwrap_or_else(|| survivor.clone());
+
+        if best.moves != survivor.moves {
+            updates.push((
+                survivor.id,
+                best.moves,
+                best.timing_comments > survivor.timing_comments,
+            ));
+        }
+
+        delete_ids.extend(candidates.iter().skip(1).map(|candidate| candidate.id));
+    }
+
+    db.transaction::<_, diesel::result::Error, _>(|db| {
+        for (id, moves, _) in &updates {
+            diesel::update(games::table.filter(games::id.eq(*id)))
+                .set(games::moves.eq(moves))
+                .execute(db)?;
+        }
+
+        for chunk in delete_ids.chunks(500) {
+            diesel::delete(games::table.filter(games::id.eq_any(chunk))).execute(db)?;
+        }
+
+        Ok(())
+    })?;
+
+    Ok(DuplicateGameCleanupReport {
+        deleted_games: delete_ids.len() as u32,
+        enriched_games: updates
+            .iter()
+            .filter(|(_, _, improved_timing)| *improved_timing)
+            .count() as u32,
+    })
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn get_database_clock_coverage(
+    file: PathBuf,
+    state: tauri::State<'_, AppState>,
+) -> Result<DatabaseClockCoverage, Error> {
+    let db = &mut get_db_or_create(&state, file.to_str().unwrap(), ConnectionOptions::default())?;
+    let moves: Vec<Vec<u8>> = games::table.select(games::moves).load(db)?;
+    Ok(DatabaseClockCoverage {
+        game_count: moves.len() as u32,
+        games_with_timing: moves
+            .iter()
+            .filter(|moves| mainline_timing_comment_count(moves) > 0)
+            .count() as u32,
+    })
+}
+
+fn mainline_timing_comment_count(bytes: &[u8]) -> usize {
+    let mut cursor = 0usize;
+    let mut variation_depth = 0usize;
+    let mut count = 0usize;
+
+    while cursor < bytes.len() {
+        let byte = bytes[cursor];
+        cursor += 1;
+
+        match byte {
+            VARIATION_START_MARKER => {
+                variation_depth = variation_depth.saturating_add(1);
+            }
+            VARIATION_END_MARKER => {
+                variation_depth = variation_depth.saturating_sub(1);
+            }
+            self::encoding::COMMENT_MARKER | self::encoding::NAG_MARKER => {
+                if cursor + 2 > bytes.len() {
+                    break;
+                }
+                let len = u16::from_le_bytes([bytes[cursor], bytes[cursor + 1]]) as usize;
+                cursor += 2;
+                if cursor + len > bytes.len() {
+                    break;
+                }
+
+                if byte == self::encoding::COMMENT_MARKER
+                    && variation_depth == 0
+                    && comment_has_timing_marker(&bytes[cursor..cursor + len])
+                {
+                    count += 1;
+                }
+                cursor += len;
+            }
+            _ => {}
+        }
+    }
+
+    count
+}
+
+fn comment_has_timing_marker(comment: &[u8]) -> bool {
+    let lower = comment.to_ascii_lowercase();
+    lower.windows(5).any(|window| window == b"[%clk")
+        || lower.windows(5).any(|window| window == b"[%emt")
 }
 
 #[tauri::command]
@@ -2412,11 +2635,69 @@ mod tests {
         assert_eq!(movetext, "1. e4! (1. d4?) 1... e5!");
     }
 
+    #[test]
+    fn duplicate_cleanup_enriches_earliest_game_with_clocked_movetext() {
+        let db = &mut setup_test_db();
+        let plain = import_single_game(
+            r#"[Event "Online"]
+[Site "https://lichess.org/testgame"]
+[Date "2026.02.27"]
+[UTCTime "12:00:00"]
+[White "W"]
+[Black "B"]
+[Result "*"]
+[TimeControl "300+0"]
+
+1. e4 e5 *
+"#,
+        );
+        let clocked = import_single_game(
+            r#"[Event "Online"]
+[Site "https://lichess.org/testgame"]
+[Date "2026.02.27"]
+[UTCTime "12:00:00"]
+[White "W"]
+[Black "B"]
+[Result "*"]
+[TimeControl "300+0"]
+
+1. e4 {[%clk 0:04:55]} e5 {[%clk 0:04:56]} *
+"#,
+        );
+
+        plain.insert_to_db(db).unwrap();
+        clocked.insert_to_db(db).unwrap();
+
+        let original_ids: Vec<i32> = games::table
+            .select(games::id)
+            .order(games::id.asc())
+            .load(db)
+            .unwrap();
+        let report = delete_duplicated_games_in_db(db).unwrap();
+        let remaining: Vec<Game> = games::table.order(games::id.asc()).load(db).unwrap();
+
+        assert_eq!(report.deleted_games, 1);
+        assert_eq!(report.enriched_games, 1);
+        assert_eq!(remaining.len(), 1);
+        assert_eq!(remaining[0].id, original_ids[0]);
+        assert_eq!(mainline_timing_comment_count(&remaining[0].moves), 2);
+    }
+
     fn setup_test_db() -> SqliteConnection {
         let mut conn = SqliteConnection::establish(":memory:").unwrap();
         conn.batch_execute("PRAGMA foreign_keys = ON;").unwrap();
         conn.batch_execute(CREATE_TABLES_SQL).unwrap();
         conn
+    }
+
+    fn import_single_game(pgn: &str) -> TempGame {
+        let mut importer = Importer::new(None);
+        BufferedReader::new(pgn.as_bytes())
+            .into_iter(&mut importer)
+            .flatten()
+            .flatten()
+            .next()
+            .unwrap()
     }
 
     #[test]

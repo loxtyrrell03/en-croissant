@@ -22,6 +22,7 @@ import {
     readMistakeReviewDeck,
     writeMistakeReviewDeck,
 } from "@/utils/mistakeReview";
+import { hydrateMistakeReviewClockData } from "@/utils/mistakeReviewClockHydration";
 import { query_players } from "@/utils/db";
 import { getDocumentDir } from "@/utils/directories";
 import { getOnlineDatabaseUpdateAccounts } from "@/utils/onlineGameImport";
@@ -235,6 +236,11 @@ async function updateMistakeReviewDeckFromOnlineDatabase(job: AutoUpdateJob) {
     const targets = await getMistakeReviewAutoUpdateScanTargets(config, record);
     const positions: Position[] = [];
     let lastAnalyzedGameId = config.lastAnalyzedGameId ?? null;
+    const clockHydration = await hydrateMistakeReviewClockData(deck).catch(() => ({
+        deck,
+        updatedCount: 0,
+    }));
+    const deckWithClockData = clockHydration.deck;
 
     for (const [index, target] of targets.entries()) {
         const scanSettings = {
@@ -266,8 +272,8 @@ async function updateMistakeReviewDeckFromOnlineDatabase(job: AutoUpdateJob) {
         }
     }
 
-    const existingKeys = new Set(deck.positions.map(mistakeReviewPositionKey));
-    const merged = mergeMistakeReviewPositions(deck, positions);
+    const existingKeys = new Set(deckWithClockData.positions.map(mistakeReviewPositionKey));
+    const merged = mergeMistakeReviewPositions(deckWithClockData, positions);
     const added = positions.filter(
         (position) => !existingKeys.has(mistakeReviewPositionKey(position)),
     ).length;

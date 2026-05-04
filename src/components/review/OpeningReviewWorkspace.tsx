@@ -97,6 +97,7 @@ import {
   dailyGoalDeckRevisionAtom,
   deckAtomFamily,
   getDeckStorageKey,
+  onlineDatabaseUpdatesAtom,
   openingReviewHideMovesDuringPracticeAtom,
   openingReviewAutoUpdateStateAtom,
   mistakeReviewAutoUpdateStateAtom,
@@ -145,6 +146,7 @@ import {
   type MistakeReviewDeck,
   writeMistakeReviewDeck,
 } from "@/utils/mistakeReview";
+import { hydrateMistakeReviewClockData } from "@/utils/mistakeReviewClockHydration";
 import {
   formatOpeningReviewLastPlayed,
   getOpeningReviewGapTrainingType,
@@ -277,6 +279,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const setDailyGoalDeckRevision = useSetAtom(dailyGoalDeckRevisionAtom);
   const openingAutoUpdateState = useAtomValue(openingReviewAutoUpdateStateAtom);
   const mistakeAutoUpdateState = useAtomValue(mistakeReviewAutoUpdateStateAtom);
+  const onlineDatabaseUpdates = useAtomValue(onlineDatabaseUpdatesAtom);
   const autoUpdateState = isMistakeReview ? mistakeAutoUpdateState : openingAutoUpdateState;
   const practicing = currentTabSelected === "review" && practiceState.phase !== "idle";
   const store = useContext(TreeStateContext)!;
@@ -295,6 +298,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const setEvalOpen = useSetAtom(currentEvalOpenAtom);
   const practiceAgainstBot = usePracticeAgainstBot();
   const autoUpdateRevisionRef = useRef(0);
+  const clockHydrationRef = useRef("");
   const latestReviewSaveRef = useRef<ReviewDeckSaveSnapshot | null>(null);
   const initialPractice =
     tab.gameOrigin.kind === "opening_review" || tab.gameOrigin.kind === "mistake_review"
@@ -320,6 +324,23 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     !loadError &&
     deck.positions.length > 0 &&
     activeReviewIndex < deck.positions.length - 1;
+  const missingMistakeClockCount = useMemo(
+    () =>
+      isMistakeReview
+        ? deck.positions.filter(
+            (position) =>
+              position.mistakeReview &&
+              (position.mistakeReview.moveTimeSeconds == null ||
+                position.mistakeReview.clockAfterSeconds == null),
+          ).length
+        : 0,
+    [deck.positions, isMistakeReview],
+  );
+  const mistakeDatabaseUpdatedAt =
+    isMistakeReview && deckInfo
+      ? (onlineDatabaseUpdates[(deckInfo as MistakeReviewDeck).settings.playerDb]?.lastUpdatedAt ??
+        0)
+      : 0;
 
   const loadDeckPosition = useCallback(
     (positionIndex: number) => {
@@ -414,9 +435,17 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
 
     async function loadDeck() {
       try {
-        const nextDeck = isMistakeReview
+        let nextDeck = isMistakeReview
           ? await readMistakeReviewDeck(deckPath)
           : await readOpeningReviewDeck(deckPath);
+        if (isMistakeReview) {
+          nextDeck = (
+            await hydrateMistakeReviewClockData(nextDeck as MistakeReviewDeck).catch(() => ({
+              deck: nextDeck as MistakeReviewDeck,
+              updatedCount: 0,
+            }))
+          ).deck;
+        }
         if (disposed) return;
         setDeckInfo(nextDeck);
         setDeck({ positions: nextDeck.positions, logs: nextDeck.logs });
@@ -433,6 +462,47 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
       disposed = true;
     };
   }, [deckPath, isMistakeReview, setDeck]);
+
+  useEffect(() => {
+    if (!isMistakeReview || !loaded || loadError || !deckInfo || missingMistakeClockCount === 0) {
+      return;
+    }
+
+    const hydrationKey = `${deckPath}:${mistakeDatabaseUpdatedAt}:${missingMistakeClockCount}`;
+    if (clockHydrationRef.current === hydrationKey) return;
+    clockHydrationRef.current = hydrationKey;
+    let disposed = false;
+    const currentDeck = {
+      ...(deckInfo as MistakeReviewDeck),
+      positions: deck.positions,
+      logs: deck.logs as MistakeReviewDeck["logs"],
+    };
+
+    hydrateMistakeReviewClockData(currentDeck)
+      .then((result) => {
+        if (disposed || result.updatedCount === 0) return;
+        setDeckInfo(result.deck);
+        setDeck({ positions: result.deck.positions, logs: result.deck.logs });
+      })
+      .catch(() => {
+        // Missing local databases should not block opening the deck.
+      });
+
+    return () => {
+      disposed = true;
+    };
+  }, [
+    deck.logs,
+    deck.positions,
+    deckInfo,
+    deckPath,
+    isMistakeReview,
+    loadError,
+    loaded,
+    missingMistakeClockCount,
+    mistakeDatabaseUpdatedAt,
+    setDeck,
+  ]);
 
   useEffect(() => {
     if (!loaded || !deckInfo || loadError) return undefined;
@@ -1767,13 +1837,11 @@ function OpeningReviewPanel({
     );
     if (initialPractice.mode === "due") {
       startDuePractice(indices, initialPractice.label, {
-        dailyGoalSession:
-          initialPractice.source === "daily-goals" ? initialPractice : undefined,
+        dailyGoalSession: initialPractice.source === "daily-goals" ? initialPractice : undefined,
       });
     } else {
       startFullPractice(indices, initialPractice.label, {
-        dailyGoalSession:
-          initialPractice.source === "daily-goals" ? initialPractice : undefined,
+        dailyGoalSession: initialPractice.source === "daily-goals" ? initialPractice : undefined,
       });
     }
   }, [deck.positions.length, initialPractice, loaded, startDuePractice, startFullPractice]);
@@ -5435,9 +5503,7 @@ function OpeningReviewPositionsModal({
     : hasActivePositionFilter
       ? "Review due matches"
       : "Review due";
-  const reviewAllButtonLabel = activeGapFilterLabel
-    ? `Review ${activeGapFilterLabel}`
-    : "Review";
+  const reviewAllButtonLabel = activeGapFilterLabel ? `Review ${activeGapFilterLabel}` : "Review";
   const rowVirtualizer = useVirtualizer({
     count: visibleRows.length,
     getScrollElement: () => positionsScrollElement,

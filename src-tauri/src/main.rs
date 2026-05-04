@@ -38,16 +38,17 @@ use tauri_plugin_log::{Target, TargetKind};
 
 use crate::chess::{
     analyze_game, cancel_analysis, get_engine_config, get_engine_logs,
-    get_mistake_review_sample_line, kill_engine, kill_engines, scan_mistake_review,
-    score_mistake_review_move, set_mistake_review_scan_paused, stop_engine,
+    get_mistake_review_clock_timings, get_mistake_review_sample_line, kill_engine, kill_engines,
+    scan_mistake_review, score_mistake_review_move, set_mistake_review_scan_paused, stop_engine,
     MistakeReviewScanProgress,
 };
 use crate::db::{
     cancel_database_search, clear_games, convert_pgn, create_indexes, delete_database,
     delete_db_game, delete_empty_games, delete_indexes, export_to_pgn, find_repertoire_gaps,
-    get_mistake_review_game_metadata, get_opening_health_player_positions, get_plan_explorer,
-    get_player, get_players_game_info, get_tournaments, preload_reference_db,
-    replace_database_from_pgn, search_position, set_database_search_paused, MmapSearchIndex,
+    get_database_clock_coverage, get_mistake_review_game_metadata,
+    get_opening_health_player_positions, get_plan_explorer, get_player, get_players_game_info,
+    get_tournaments, preload_reference_db, replace_database_from_pgn, search_position,
+    set_database_search_paused, MmapSearchIndex,
 };
 use crate::game::{
     abort_game, get_game_engine_logs, get_game_state, make_game_move, resign_game, start_game,
@@ -122,6 +123,7 @@ fn main() {
             analyze_game,
             scan_mistake_review,
             get_mistake_review_game_metadata,
+            get_mistake_review_clock_timings,
             score_mistake_review_move,
             get_mistake_review_sample_line,
             set_mistake_review_scan_paused,
@@ -150,6 +152,7 @@ fn main() {
             is_bmi2_compatible,
             delete_game,
             delete_duplicated_games,
+            get_database_clock_coverage,
             delete_empty_games,
             clear_games,
             set_file_as_executable,

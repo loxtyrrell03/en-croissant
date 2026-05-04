@@ -45,6 +45,14 @@ async getMistakeReviewGameMetadata(file: string, gameIds: number[]) : Promise<Re
     else return { status: "error", error: e  as any };
 }
 },
+async getMistakeReviewClockTimings(file: string, requests: MistakeReviewClockTimingRequest[]) : Promise<Result<MistakeReviewClockTiming[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_mistake_review_clock_timings", { file, requests }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async scoreMistakeReviewMove(request: MistakeReviewMoveScoreRequest) : Promise<Result<MistakeReviewMoveScore, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("score_mistake_review_move", { request }) };
@@ -251,9 +259,17 @@ async deleteGame(file: string, n: number) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
-async deleteDuplicatedGames(file: string) : Promise<Result<null, string>> {
+async deleteDuplicatedGames(file: string) : Promise<Result<DuplicateGameCleanupReport, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("delete_duplicated_games", { file }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async getDatabaseClockCoverage(file: string) : Promise<Result<DatabaseClockCoverage, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_database_clock_coverage", { file }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -571,9 +587,11 @@ export type AnalysisOptions = { fen: string; moves: string[]; annotateNovelties:
 export type BestMoves = { nodes: number; depth: number; score: Score; uciMoves: string[]; sanMoves: string[]; multipv: number; nps: number }
 export type BestMovesPayload = { bestLines: BestMoves[]; engine: string; tab: string; fen: string; moves: string[]; progress: number }
 export type ClockUpdateEvent = { gameId: string; whiteTime: bigint | null; blackTime: bigint | null }
+export type DatabaseClockCoverage = { gameCount: number; gamesWithTiming: number }
 export type DatabaseInfo = { title: string; description: string; player_count: number; event_count: number; game_count: number; storage_size: bigint; filename: string; indexed: boolean }
 export type DatabaseProgress = { id: string; progress: number }
 export type DrawReason = "stalemate" | "insufficientMaterial" | "threefoldRepetition" | "fiftyMoveRule" | "agreement"
+export type DuplicateGameCleanupReport = { deletedGames: number; enrichedGames: number }
 export type EngineConfig = { name: string; options: UciOptionConfig[] }
 export type EngineLog = { type: "gui"; value: string } | { type: "engine"; value: string }
 export type EngineMoveDelay = { minMs: number; maxMs: number; fideElo?: number | null; strengthElo?: number | null; initialTimeMs?: number | null; incrementMs?: number | null; useAsMoveTime?: boolean }
@@ -595,6 +613,8 @@ export type GameStatus = "playing" | { finished: { result: GameResult } }
 export type GoMode = { t: "PlayersTime"; c: PlayersTime } | { t: "Depth"; c: number } | { t: "Time"; c: number } | { t: "Nodes"; c: number } | { t: "Infinite" }
 export type MistakeReviewAnalysisMode = "single" | "layered"
 export type MistakeReviewAttemptLabel = "best" | "good" | "okay" | "inaccuracy" | "mistake" | "blunder"
+export type MistakeReviewClockTiming = { reviewKey: string; gameId: number; ply: number; moveTimeSeconds: number | null; clockBeforeSeconds: number | null; clockAfterSeconds: number | null; date: string | null; time: string | null; timeControl: string | null }
+export type MistakeReviewClockTimingRequest = { reviewKey: string; fen: string; playedMoveUci: string; gameIds: number[] }
 export type MistakeReviewGameMetadata = { gameId: number; date: string | null; time: string | null; openingName: string | null }
 export type MistakeReviewMoveScore = { label: MistakeReviewAttemptLabel; passed: boolean; bestMoveSan: string; bestMoveUci: string; playedMoveSan: string; playedMoveUci: string; cpLoss: number; winProbabilityDrop: number; cpBefore: number; cpAfter: number; requestedDepth: number; reachedDepth: number; engineName: string }
 export type MistakeReviewMoveScoreRequest = { fen: string; playedMoveUci: string; enginePath: string; engineName: string | null; depth: number | null; multiPv: number | null; thresholds: MistakeReviewThresholds | null }
