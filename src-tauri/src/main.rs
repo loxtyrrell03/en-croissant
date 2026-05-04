@@ -33,7 +33,7 @@ use oauth::AuthState;
 #[cfg(debug_assertions)]
 use specta_typescript::{BigIntExportBehavior, Typescript};
 use sysinfo::SystemExt;
-use tauri::{Manager, Window};
+use tauri::{AppHandle, Manager, Runtime, WebviewWindow, Window};
 use tauri_plugin_log::{Target, TargetKind};
 
 use crate::chess::{
@@ -107,12 +107,34 @@ pub struct AppState {
 #[tauri::command]
 #[specta::specta]
 async fn close_splashscreen(window: Window) -> Result<(), String> {
-    window
+    let main_window = window
         .get_webview_window("main")
-        .expect("no window labeled 'main' found")
-        .show()
-        .unwrap();
+        .ok_or_else(|| "no window labeled 'main' found".to_string())?;
+    reveal_window(&main_window);
     Ok(())
+}
+
+fn reveal_main_window<R: Runtime>(app: &AppHandle<R>) {
+    let Some(window) = app.get_webview_window("main") else {
+        log::warn!("Could not reveal main window because it was not found");
+        return;
+    };
+
+    reveal_window(&window);
+}
+
+fn reveal_window<R: Runtime>(window: &WebviewWindow<R>) {
+    if let Err(error) = window.show() {
+        log::warn!("Could not show main window: {error}");
+    }
+
+    if let Err(error) = window.unminimize() {
+        log::warn!("Could not unminimize main window: {error}");
+    }
+
+    if let Err(error) = window.set_focus() {
+        log::warn!("Could not focus main window: {error}");
+    }
 }
 
 fn main() {
@@ -222,6 +244,9 @@ fn main() {
     ];
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            reveal_main_window(app);
+        }))
         .plugin(tauri_plugin_window_state::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(
