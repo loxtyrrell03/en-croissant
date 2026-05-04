@@ -25,6 +25,11 @@ export type OpponentPrepBranch = {
     key: string;
 };
 
+export type OpponentPrepStart = {
+    branchPath: number[];
+    branch: OpponentPrepBranch | null;
+};
+
 export function getFenTurn(fen: string): PrepColor {
     return fen.trim().split(/\s+/)[1] === "b" ? "black" : "white";
 }
@@ -151,6 +156,28 @@ export function findFirstOpponentBranch(
     }
 
     return null;
+}
+
+export function findOpponentPrepStart(
+    root: TreeNode,
+    rootPath: number[],
+    opponentColor: PrepColor,
+): OpponentPrepStart | null {
+    const rootNode = getNodeAtPath(root, rootPath);
+    if (getFenTurn(rootNode.fen) === opponentColor) {
+        return {
+            branchPath: rootPath,
+            branch: null,
+        };
+    }
+
+    const branch = findLastOpponentBranch(root, rootPath, opponentColor);
+    if (!branch) return null;
+
+    return {
+        branchPath: branch.branchPath,
+        branch,
+    };
 }
 
 export function collectOpponentBranchPaths({

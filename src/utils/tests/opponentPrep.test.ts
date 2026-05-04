@@ -4,6 +4,7 @@ import {
     collectOpponentBranchPaths,
     findFirstOpponentBranch,
     findLastOpponentBranch,
+    findOpponentPrepStart,
     getOpponentPrepMoveRows,
 } from "@/utils/opponentPrep";
 
@@ -34,7 +35,7 @@ describe("opponent prep helpers", () => {
         ]);
     });
 
-    test("can find the next move beyond the visible move limit", () => {
+    test("keeps the next prep move inside the visible move limit", () => {
         const store = createTreeStore();
         store.getState().makeMove({ payload: "e4" });
         store.getState().makeMove({ payload: "c5" });
@@ -57,18 +58,18 @@ describe("opponent prep helpers", () => {
         });
         expect(visibleRows.map((row) => row.move)).toEqual(["e4"]);
 
-        const advanceRows = getOpponentPrepMoveRows({
+        const cappedRows = getOpponentPrepMoveRows({
             fen: state.root.fen,
             node: state.root,
             openings,
             minGames: 1,
-            moveLimit: openings.length,
+            moveLimit: 1,
             completedBranches: {
                 [visibleRows[0].key]: Date.now(),
             },
             skippedBranches: {},
         });
-        expect(advanceRows.find((row) => row.status === "new")?.move).toBe("d4");
+        expect(cappedRows.find((row) => row.status === "new")?.move).toBeUndefined();
     });
 
     test("finds the latest opponent branch and excludes current branch point when requested", () => {
@@ -93,5 +94,18 @@ describe("opponent prep helpers", () => {
             excludeCurrent: true,
         });
         expect(branchPaths).toEqual([[]]);
+    });
+
+    test("uses the opponent move in the saved start line as the prep branch point", () => {
+        const store = createTreeStore();
+        store.getState().makeMove({ payload: "d4" });
+        store.getState().makeMove({ payload: "Nf6" });
+        store.getState().makeMove({ payload: "c4" });
+
+        const state = store.getState();
+        const start = findOpponentPrepStart(state.root, [0, 0], "black");
+
+        expect(start?.branchPath).toEqual([0]);
+        expect(start?.branch?.san).toBe("Nf6");
     });
 });

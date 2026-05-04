@@ -53,6 +53,7 @@ import { isPrefix } from "@/utils/misc";
 import {
   findFirstOpponentBranch,
   findLastOpponentBranch,
+  findOpponentPrepStart,
   getFenTurn,
   getLineSans,
   getOpeningTotal,
@@ -84,6 +85,7 @@ function OpponentPrepPanel() {
   const compact = panelDensity !== "regular";
   const dense = panelDensity === "dense";
   const [advancing, setAdvancing] = useState(false);
+  const [commonMoving, setCommonMoving] = useState(false);
   const moveCacheRef = useRef(new Map<string, Opening[]>());
   const seededRef = useRef(false);
   const settingsKey = useMemo(() => getTabWorkspaceKey(currentTab), [currentTab]);
@@ -265,8 +267,6 @@ function OpponentPrepPanel() {
       prep.skippedBranches,
     ],
   );
-  const nextCommonMove =
-    currentRows.find((row) => row.status === "new" || row.status === "started") ?? currentRows[0];
   const activeBranch = useMemo(
     () =>
       isInsidePrepTree ? findLastOpponentBranch(root, currentPath, prep.color, rootPath) : null,
@@ -355,6 +355,74 @@ function OpponentPrepPanel() {
     [clearMovePreview, store],
   );
 
+  const playCommonMoveFromStart = useCallback(async () => {
+    if (!configReady || commonMoving) return;
+
+    setCommonMoving(true);
+    clearMovePreview();
+    try {
+      const state = store.getState();
+      const safeRootPath = pathExists(state.root, prep.rootPath ?? []) ? (prep.rootPath ?? []) : [];
+      const start = findOpponentPrepStart(state.root, safeRootPath, prep.color);
+
+      if (!start) {
+        notifications.show({
+          title: "Choose your move first",
+          message: "Play into the prep line before asking for the opponent's common move.",
+          color: "yellow",
+        });
+        return;
+      }
+
+      const branchNode = state.getNode(start.branchPath);
+      if (!branchNode) return;
+
+      const openings = await loadOpeningsForFen(branchNode.fen);
+      const rows = getOpponentPrepMoveRows({
+        fen: branchNode.fen,
+        node: branchNode,
+        openings,
+        minGames: prep.minGames,
+        moveLimit: prep.moveLimit,
+        completedBranches: prep.completedBranches,
+        skippedBranches: prep.skippedBranches,
+      });
+      const nextRow = rows.find((row) => row.status === "new" || row.status === "started");
+
+      store.getState().goToMove(start.branchPath);
+      if (!nextRow) {
+        notifications.show({
+          title: "Shown moves covered",
+          message: "No unprepared move is left in Show top. Increase Show top to include more.",
+          color: "green",
+        });
+        return;
+      }
+
+      store.getState().makeMove({ payload: nextRow.move });
+    } catch (error) {
+      notifications.show({
+        title: "Could not play the common move",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    } finally {
+      setCommonMoving(false);
+    }
+  }, [
+    clearMovePreview,
+    commonMoving,
+    configReady,
+    loadOpeningsForFen,
+    prep.color,
+    prep.completedBranches,
+    prep.minGames,
+    prep.moveLimit,
+    prep.rootPath,
+    prep.skippedBranches,
+    store,
+  ]);
+
   const markMoveDone = useCallback(
     (row: Pick<OpponentPrepMoveRow, "key">) => {
       setPrep((current) => ({
@@ -410,14 +478,13 @@ function OpponentPrepPanel() {
       const state = store.getState();
       const safeRootPath = pathExists(state.root, prep.rootPath ?? []) ? (prep.rootPath ?? []) : [];
       const currentInsidePrep = isPrefix(safeRootPath, state.position);
-      const startingNode = state.getNode(safeRootPath);
-      const active = currentInsidePrep
-        ? findFirstOpponentBranch(state.root, state.position, prep.color, safeRootPath)
-        : null;
-      const branchPath =
-        startingNode && getFenTurn(startingNode.fen) === prep.color
-          ? safeRootPath
-          : active?.branchPath;
+      const start = findOpponentPrepStart(state.root, safeRootPath, prep.color);
+      const active = start?.branch
+        ? start.branch
+        : currentInsidePrep && start
+          ? findFirstOpponentBranch(state.root, state.position, prep.color, start.branchPath)
+          : null;
+      const branchPath = start?.branchPath;
       const completedBranches = {
         ...prep.completedBranches,
         ...(active ? { [active.key]: Date.now() } : {}),
@@ -437,7 +504,7 @@ function OpponentPrepPanel() {
       if (!branchPath) {
         notifications.show({
           title: "Choose your reply first",
-          message: "Play your response from the starting position before cycling their replies.",
+          message: "Play into the prep line before cycling their replies.",
           color: "yellow",
         });
         return;
@@ -452,7 +519,7 @@ function OpponentPrepPanel() {
         node: branchNode,
         openings,
         minGames: prep.minGames,
-        moveLimit: Math.max(1, openings.length),
+        moveLimit: prep.moveLimit,
         completedBranches,
         skippedBranches: prep.skippedBranches,
       });
@@ -472,8 +539,7 @@ function OpponentPrepPanel() {
       store.getState().goToMove(branchPath);
       notifications.show({
         title: "Prep branches covered",
-        message:
-          "No unprepared common opponent move was found from this starting position with the current minimum games filter.",
+        message: "No unprepared move is left in Show top. Increase Show top to include more.",
         color: "green",
       });
     } catch (error) {
@@ -494,6 +560,7 @@ function OpponentPrepPanel() {
     prep.color,
     prep.completedBranches,
     prep.minGames,
+    prep.moveLimit,
     prep.rootPath,
     prep.skippedBranches,
     setPrep,
@@ -639,13 +706,14 @@ function OpponentPrepPanel() {
           </Text>
         </Stack>
         <Group gap={4} wrap="nowrap">
-          <Tooltip label="Play the next unprepared common opponent move from this position">
+          <Tooltip label="Play the first unprepared common move from the prep start">
             <Button
               variant="filled"
               size={controlSize}
               leftSection={<IconPlayerPlay size="0.95rem" />}
-              disabled={!configReady || !opponentToMove || !nextCommonMove}
-              onClick={() => nextCommonMove && playMove(nextCommonMove.move)}
+              disabled={!configReady}
+              loading={commonMoving}
+              onClick={() => void playCommonMoveFromStart()}
             >
               Common move
             </Button>
