@@ -34,6 +34,43 @@ describe("opponent prep helpers", () => {
         ]);
     });
 
+    test("can find the next move beyond the visible move limit", () => {
+        const store = createTreeStore();
+        store.getState().makeMove({ payload: "e4" });
+        store.getState().makeMove({ payload: "c5" });
+        store.getState().goToMove([]);
+
+        const state = store.getState();
+        const openings = [
+            { move: "e4", white: 12, draw: 4, black: 4 },
+            { move: "d4", white: 8, draw: 2, black: 2 },
+            { move: "c4", white: 5, draw: 1, black: 1 },
+        ];
+        const visibleRows = getOpponentPrepMoveRows({
+            fen: state.root.fen,
+            node: state.root,
+            openings,
+            minGames: 1,
+            moveLimit: 1,
+            completedBranches: {},
+            skippedBranches: {},
+        });
+        expect(visibleRows.map((row) => row.move)).toEqual(["e4"]);
+
+        const advanceRows = getOpponentPrepMoveRows({
+            fen: state.root.fen,
+            node: state.root,
+            openings,
+            minGames: 1,
+            moveLimit: openings.length,
+            completedBranches: {
+                [visibleRows[0].key]: Date.now(),
+            },
+            skippedBranches: {},
+        });
+        expect(advanceRows.find((row) => row.status === "new")?.move).toBe("d4");
+    });
+
     test("finds the latest opponent branch and excludes current branch point when requested", () => {
         const store = createTreeStore();
         store.getState().makeMove({ payload: "e4" });

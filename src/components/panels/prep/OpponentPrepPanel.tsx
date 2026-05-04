@@ -452,7 +452,7 @@ function OpponentPrepPanel() {
         node: branchNode,
         openings,
         minGames: prep.minGames,
-        moveLimit: prep.moveLimit,
+        moveLimit: Math.max(1, openings.length),
         completedBranches,
         skippedBranches: prep.skippedBranches,
       });
@@ -472,7 +472,8 @@ function OpponentPrepPanel() {
       store.getState().goToMove(branchPath);
       notifications.show({
         title: "Prep branches covered",
-        message: "No unprepared common opponent move was found from this starting position.",
+        message:
+          "No unprepared common opponent move was found from this starting position with the current minimum games filter.",
         color: "green",
       });
     } catch (error) {
@@ -493,7 +494,6 @@ function OpponentPrepPanel() {
     prep.color,
     prep.completedBranches,
     prep.minGames,
-    prep.moveLimit,
     prep.rootPath,
     prep.skippedBranches,
     setPrep,
