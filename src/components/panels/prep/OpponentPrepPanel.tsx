@@ -468,7 +468,7 @@ function OpponentPrepPanel() {
 
       notifications.show({
         title: "Prep branches covered",
-        message: "No unprepared common opponent move was found from this prep root.",
+        message: "No unprepared common opponent move was found from this starting position.",
         color: "green",
       });
     } catch (error) {
@@ -515,17 +515,17 @@ function OpponentPrepPanel() {
           ) : null}
         </Group>
         <Group gap={4} wrap="nowrap">
-          <Tooltip label="Set the current board position as the prep root">
+          <Tooltip label="Use the current board position as the start of this prep">
             <Button
               variant="default"
               size={controlSize}
               leftSection={<IconTarget size="0.95rem" />}
               onClick={setRootHere}
             >
-              Set root
+              Start here
             </Button>
           </Tooltip>
-          <Tooltip label="Return to the prep root">
+          <Tooltip label="Go back to the starting position">
             <ActionIcon variant="default" size={compact ? "sm" : "lg"} onClick={resetLine}>
               <IconArrowBackUp size="1rem" />
             </ActionIcon>
@@ -621,7 +621,7 @@ function OpponentPrepPanel() {
       <Group justify="space-between" gap="xs" wrap="wrap" style={{ flexShrink: 0 }}>
         <Stack gap={1} style={{ minWidth: 0, flex: 1 }}>
           <Text size="xs" c="dimmed" truncate>
-            Root: {rootSans.length > 0 ? rootSans.join(" ") : "current game start"}
+            Start: {rootSans.length > 0 ? rootSans.join(" ") : "game start"}
           </Text>
           <Text size="xs" c={opponentToMove ? undefined : "dimmed"} truncate>
             {opponentToMove
@@ -671,7 +671,8 @@ function OpponentPrepPanel() {
         </Alert>
       ) : !isInsidePrepTree ? (
         <Alert color="blue" variant="light">
-          The board is outside this prep root. Reset to the root, or set a new root here.
+          You are away from the starting position for this prep. Go back to start, or start from the
+          current board position.
         </Alert>
       ) : null}
 
