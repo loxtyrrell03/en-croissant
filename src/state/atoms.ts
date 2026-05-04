@@ -419,6 +419,41 @@ export const comparePanelSettingsByFileAtom = atomWithStorage<
     Record<string, ComparePanelFileSettings>
 >("database-compare-settings-by-file", {});
 
+export type OpponentPrepState = {
+    databasePath: string | null;
+    databaseLabel: string | null;
+    player: number | null;
+    playerName: string;
+    color: "white" | "black";
+    start_date?: string;
+    end_date?: string;
+    result: StoredDatabaseLocalOptions["result"];
+    minGames: number;
+    moveLimit: number;
+    rootPath: number[] | null;
+    completedBranches: Record<string, number>;
+    skippedBranches: Record<string, number>;
+};
+
+const defaultOpponentPrepState = (): OpponentPrepState => ({
+    databasePath: null,
+    databaseLabel: null,
+    player: null,
+    playerName: "",
+    color: "white",
+    result: "any",
+    minGames: 2,
+    moveLimit: 8,
+    rootPath: null,
+    completedBranches: {},
+    skippedBranches: {},
+});
+
+const opponentPrepFamily = atomFamily((_tab: string) =>
+    atom<OpponentPrepState>(defaultOpponentPrepState()),
+);
+export const currentOpponentPrepAtom = tabValue(opponentPrepFamily);
+
 export const databaseMoveHealthSideAtom = atomWithStorage<OpeningMoveHealthSidePreference>(
     "database-move-health-side",
     "sideToMove",

@@ -1,0 +1,982 @@
+import {
+  ActionIcon,
+  Alert,
+  Badge,
+  Box,
+  Button,
+  Group,
+  NumberInput,
+  Progress,
+  Select,
+  Stack,
+  Table,
+  Text,
+  Tooltip,
+} from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import {
+  IconArrowBackUp,
+  IconArrowRight,
+  IconCheck,
+  IconPlayerPlay,
+  IconRefresh,
+  IconTarget,
+  IconX,
+} from "@tabler/icons-react";
+import { isNormal, makeSquare } from "chessops";
+import { parseSan } from "chessops/san";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import useSWR from "swr/immutable";
+import { useStore } from "zustand";
+import { usePanelDensity } from "@/components/common/ResponsivePanel";
+import { TreeStateContext } from "@/components/common/TreeStateContext";
+import {
+  comparePanelSettingsByFileAtom,
+  currentBoardPreviewShapesAtom,
+  currentLocalOptionsAtom,
+  currentOpponentPrepAtom,
+  currentTabAtom,
+  referenceDbAtom,
+  type OpponentPrepState,
+  type StoredDatabaseLocalOptions,
+} from "@/state/atoms";
+import {
+  cancelDatabaseSearch,
+  getDatabases,
+  searchPosition,
+  type Opening,
+  type SuccessDatabaseInfo,
+} from "@/utils/db";
+import { formatNumber } from "@/utils/format";
+import { isPrefix } from "@/utils/misc";
+import {
+  collectOpponentBranchPaths,
+  findLastOpponentBranch,
+  getFenTurn,
+  getLineSans,
+  getOpeningTotal,
+  getOpponentPrepMoveRows,
+  oppositePrepColor,
+  pathExists,
+  type OpponentPrepMoveRow,
+} from "@/utils/opponentPrep";
+import { getTabWorkspaceKey } from "@/utils/tabs";
+import { positionFromFen } from "@/utils/chessops";
+import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveControls";
+
+const DEFAULT_PREP_MIN_GAMES = 2;
+const DEFAULT_PREP_MOVE_LIMIT = 8;
+
+function OpponentPrepPanel() {
+  const store = useContext(TreeStateContext)!;
+  const currentNode = useStore(store, (s) => s.currentNode());
+  const currentFen = currentNode.fen;
+  const currentPath = useStore(store, (s) => s.position);
+  const root = useStore(store, (s) => s.root);
+  const [prep, setPrep] = useAtom(currentOpponentPrepAtom);
+  const currentLocalOptions = useAtomValue(currentLocalOptionsAtom);
+  const compareSettingsByFile = useAtomValue(comparePanelSettingsByFileAtom);
+  const referenceDb = useAtomValue(referenceDbAtom);
+  const currentTab = useAtomValue(currentTabAtom);
+  const setBoardPreviewShapes = useSetAtom(currentBoardPreviewShapesAtom);
+  const panelDensity = usePanelDensity();
+  const compact = panelDensity !== "regular";
+  const dense = panelDensity === "dense";
+  const [advancing, setAdvancing] = useState(false);
+  const moveCacheRef = useRef(new Map<string, Opening[]>());
+  const seededRef = useRef(false);
+  const settingsKey = useMemo(() => getTabWorkspaceKey(currentTab), [currentTab]);
+  const savedCompareSettings = settingsKey ? compareSettingsByFile[settingsKey] : undefined;
+  const { data: databases } = useSWR("databases", () => getDatabases());
+  const localDatabases = useMemo(
+    () =>
+      (databases ?? []).filter(
+        (database): database is SuccessDatabaseInfo => database.type === "success",
+      ),
+    [databases],
+  );
+  const databaseOptions = useMemo(
+    () =>
+      localDatabases.map((database) => ({
+        value: database.file,
+        label: database.title || database.filename,
+      })),
+    [localDatabases],
+  );
+  const selectedDatabase = useMemo(
+    () => localDatabases.find((database) => database.file === prep.databasePath) ?? null,
+    [localDatabases, prep.databasePath],
+  );
+  const rootPath = useMemo(() => {
+    const candidate = prep.rootPath ?? [];
+    return pathExists(root, candidate) ? candidate : [];
+  }, [prep.rootPath, root]);
+  const isInsidePrepTree = isPrefix(rootPath, currentPath);
+  const opponentToMove = getFenTurn(currentFen) === prep.color;
+  const userColor = oppositePrepColor(prep.color);
+  const hasPlayer = Boolean(prep.player) || prep.playerName.trim().length >= 3;
+  const configReady = Boolean(prep.databasePath) && hasPlayer;
+  const queryScope = useMemo(
+    () =>
+      JSON.stringify({
+        databasePath: prep.databasePath,
+        player: prep.player,
+        playerName: prep.playerName.trim(),
+        color: prep.color,
+        startDate: prep.start_date ?? "",
+        endDate: prep.end_date ?? "",
+        result: prep.result,
+      }),
+    [
+      prep.color,
+      prep.databasePath,
+      prep.end_date,
+      prep.player,
+      prep.playerName,
+      prep.result,
+      prep.start_date,
+    ],
+  );
+  const currentSearchId =
+    configReady && opponentToMove ? getPrepSearchId(queryScope, currentFen) : null;
+
+  useEffect(() => {
+    moveCacheRef.current.clear();
+  }, [queryScope]);
+
+  useEffect(() => {
+    if (seededRef.current || prep.databasePath || localDatabases.length === 0) return;
+    const seed = getInitialPrepSeed({
+      currentLocalOptions,
+      localDatabases,
+      referenceDb,
+      savedCompareSettings,
+    });
+    if (!seed) return;
+
+    seededRef.current = true;
+    setPrep((current) => ({
+      ...current,
+      ...seed,
+      rootPath: current.rootPath ?? currentPath,
+    }));
+  }, [
+    currentLocalOptions,
+    currentPath,
+    localDatabases,
+    prep.databasePath,
+    referenceDb,
+    savedCompareSettings,
+    setPrep,
+  ]);
+
+  useEffect(() => {
+    if (!configReady || prep.rootPath !== null) return;
+    setPrep((current) =>
+      current.rootPath === null
+        ? {
+            ...current,
+            rootPath: currentPath,
+          }
+        : current,
+    );
+  }, [configReady, currentPath, prep.rootPath, setPrep]);
+
+  useEffect(() => {
+    if (!currentSearchId) return undefined;
+
+    return () => {
+      void cancelDatabaseSearch(currentSearchId);
+    };
+  }, [currentSearchId]);
+
+  const loadOpeningsForFen = useCallback(
+    async (fen: string) => {
+      if (!prep.databasePath) return [];
+
+      const cacheKey = `${queryScope}|${fen}`;
+      const cached = moveCacheRef.current.get(cacheKey);
+      if (cached) return cached;
+
+      const requestId = getPrepSearchId(queryScope, fen);
+      const [openings] = await searchPosition(
+        {
+          path: prep.databasePath,
+          fen,
+          type: "exact",
+          player: prep.player,
+          playerName: prep.playerName,
+          color: prep.color,
+          start_date: prep.start_date,
+          end_date: prep.end_date,
+          result: prep.result,
+        },
+        requestId,
+        {
+          includeGames: false,
+        },
+      );
+      moveCacheRef.current.set(cacheKey, openings);
+      return openings;
+    },
+    [
+      prep.color,
+      prep.databasePath,
+      prep.end_date,
+      prep.player,
+      prep.playerName,
+      prep.result,
+      prep.start_date,
+      queryScope,
+    ],
+  );
+
+  const {
+    data: currentOpenings,
+    isLoading,
+    error,
+  } = useSWR(
+    configReady && opponentToMove ? ["opponent-prep-openings", queryScope, currentFen] : null,
+    () => loadOpeningsForFen(currentFen),
+  );
+
+  const currentRows = useMemo(
+    () =>
+      opponentToMove
+        ? getOpponentPrepMoveRows({
+            fen: currentFen,
+            node: currentNode,
+            openings: currentOpenings ?? [],
+            minGames: prep.minGames,
+            moveLimit: prep.moveLimit,
+            completedBranches: prep.completedBranches,
+            skippedBranches: prep.skippedBranches,
+          })
+        : [],
+    [
+      currentFen,
+      currentNode,
+      currentOpenings,
+      opponentToMove,
+      prep.completedBranches,
+      prep.minGames,
+      prep.moveLimit,
+      prep.skippedBranches,
+    ],
+  );
+  const nextCommonMove =
+    currentRows.find((row) => row.status === "new" || row.status === "started") ?? currentRows[0];
+  const activeBranch = useMemo(
+    () =>
+      isInsidePrepTree ? findLastOpponentBranch(root, currentPath, prep.color, rootPath) : null,
+    [currentPath, isInsidePrepTree, prep.color, root, rootPath],
+  );
+  const lineSans = useMemo(
+    () => (isInsidePrepTree ? getLineSans(root, currentPath, rootPath) : []),
+    [currentPath, isInsidePrepTree, root, rootPath],
+  );
+  const rootSans = useMemo(() => getLineSans(root, rootPath), [root, rootPath]);
+  const preparedCount = currentRows.filter((row) => row.status === "prepared").length;
+  const startedCount = currentRows.filter((row) => row.status === "started").length;
+  const skippedCount = currentRows.filter((row) => row.status === "skipped").length;
+  const controlSize = compact ? "xs" : "sm";
+  const databaseLabel = selectedDatabase?.title || selectedDatabase?.filename || prep.databaseLabel;
+
+  const updateSettings = useCallback(
+    (
+      patch: Partial<
+        Pick<
+          OpponentPrepState,
+          | "databasePath"
+          | "databaseLabel"
+          | "player"
+          | "playerName"
+          | "color"
+          | "minGames"
+          | "moveLimit"
+        >
+      >,
+      resetProgress = true,
+    ) => {
+      setPrep((current) => ({
+        ...current,
+        ...patch,
+        rootPath: resetProgress ? currentPath : current.rootPath,
+        completedBranches: resetProgress ? {} : current.completedBranches,
+        skippedBranches: resetProgress ? {} : current.skippedBranches,
+      }));
+    },
+    [currentPath, setPrep],
+  );
+
+  const clearMovePreview = useCallback(() => {
+    setBoardPreviewShapes(null);
+  }, [setBoardPreviewShapes]);
+
+  const previewMove = useCallback(
+    (moveSan: string) => {
+      const [pos] = positionFromFen(currentFen);
+      if (!pos) {
+        clearMovePreview();
+        return;
+      }
+
+      const move = parseSan(pos, moveSan);
+      if (!move || !isNormal(move)) {
+        clearMovePreview();
+        return;
+      }
+
+      setBoardPreviewShapes({
+        fen: currentFen,
+        shapes: [
+          {
+            orig: makeSquare(move.from),
+            dest: makeSquare(move.to),
+            brush: "preview",
+            modifiers: {
+              lineWidth: 10,
+            },
+          },
+        ],
+      });
+    },
+    [clearMovePreview, currentFen, setBoardPreviewShapes],
+  );
+
+  useEffect(() => clearMovePreview, [clearMovePreview]);
+
+  const playMove = useCallback(
+    (moveSan: string) => {
+      clearMovePreview();
+      store.getState().makeMove({ payload: moveSan });
+    },
+    [clearMovePreview, store],
+  );
+
+  const markMoveDone = useCallback(
+    (row: Pick<OpponentPrepMoveRow, "key">) => {
+      setPrep((current) => ({
+        ...current,
+        completedBranches: {
+          ...current.completedBranches,
+          [row.key]: Date.now(),
+        },
+        skippedBranches: omitKey(current.skippedBranches, row.key),
+      }));
+    },
+    [setPrep],
+  );
+
+  const skipMove = useCallback(
+    (row: Pick<OpponentPrepMoveRow, "key">) => {
+      setPrep((current) => ({
+        ...current,
+        completedBranches: omitKey(current.completedBranches, row.key),
+        skippedBranches: {
+          ...current.skippedBranches,
+          [row.key]: Date.now(),
+        },
+      }));
+    },
+    [setPrep],
+  );
+
+  const setRootHere = useCallback(() => {
+    setPrep((current) => ({
+      ...current,
+      rootPath: currentPath,
+      completedBranches: {},
+      skippedBranches: {},
+    }));
+  }, [currentPath, setPrep]);
+
+  const resetLine = useCallback(() => {
+    store.getState().goToMove(rootPath);
+  }, [rootPath, store]);
+
+  const goToActiveChoice = useCallback(() => {
+    if (!activeBranch) return;
+    store.getState().goToMove(activeBranch.branchPath);
+  }, [activeBranch, store]);
+
+  const advanceToNextBranch = useCallback(async () => {
+    if (!configReady || advancing) return;
+
+    setAdvancing(true);
+    clearMovePreview();
+    try {
+      const state = store.getState();
+      const safeRootPath = pathExists(state.root, prep.rootPath ?? []) ? (prep.rootPath ?? []) : [];
+      const searchPath = isPrefix(safeRootPath, state.position) ? state.position : safeRootPath;
+      const currentNode = state.currentNode();
+      const excludeCurrent = getFenTurn(currentNode.fen) === prep.color;
+      const active = isPrefix(safeRootPath, state.position)
+        ? findLastOpponentBranch(state.root, state.position, prep.color, safeRootPath)
+        : null;
+      const completedBranches = {
+        ...prep.completedBranches,
+        ...(active ? { [active.key]: Date.now() } : {}),
+      };
+
+      if (active) {
+        setPrep((current) => ({
+          ...current,
+          completedBranches: {
+            ...current.completedBranches,
+            [active.key]: Date.now(),
+          },
+          skippedBranches: omitKey(current.skippedBranches, active.key),
+        }));
+      }
+
+      const branchPaths = collectOpponentBranchPaths({
+        root: state.root,
+        path: searchPath,
+        rootPath: safeRootPath,
+        opponentColor: prep.color,
+        excludeCurrent,
+      }).reverse();
+
+      for (const branchPath of branchPaths) {
+        const branchNode = state.getNode(branchPath);
+        if (!branchNode) continue;
+
+        const openings = await loadOpeningsForFen(branchNode.fen);
+        const rows = getOpponentPrepMoveRows({
+          fen: branchNode.fen,
+          node: branchNode,
+          openings,
+          minGames: prep.minGames,
+          moveLimit: prep.moveLimit,
+          completedBranches,
+          skippedBranches: prep.skippedBranches,
+        });
+        const nextRow = rows.find((row) => row.status === "new" || row.status === "started");
+        if (!nextRow) continue;
+
+        store.getState().goToMove(branchPath);
+        store.getState().makeMove({ payload: nextRow.move });
+        notifications.show({
+          title: "Next prep branch",
+          message: `${nextRow.move} is next in ${databaseLabel || "the selected database"}.`,
+          color: "blue",
+        });
+        return;
+      }
+
+      notifications.show({
+        title: "Prep branches covered",
+        message: "No unprepared common opponent move was found from this prep root.",
+        color: "green",
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Could not move to the next branch",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    } finally {
+      setAdvancing(false);
+    }
+  }, [
+    advancing,
+    clearMovePreview,
+    configReady,
+    databaseLabel,
+    loadOpeningsForFen,
+    prep.color,
+    prep.completedBranches,
+    prep.minGames,
+    prep.moveLimit,
+    prep.rootPath,
+    prep.skippedBranches,
+    setPrep,
+    store,
+  ]);
+
+  return (
+    <Stack h="100%" gap={dense ? 4 : "xs"} p={dense ? 4 : "xs"} style={{ overflow: "hidden" }}>
+      <Group justify="space-between" align="center" gap="xs" wrap="wrap" style={{ flexShrink: 0 }}>
+        <Group gap="xs" wrap="wrap">
+          <Text fw={700} fz={compact ? "sm" : "md"}>
+            Opponent prep
+          </Text>
+          {databaseLabel ? (
+            <Badge variant="light" size={compact ? "sm" : "md"}>
+              {databaseLabel}
+            </Badge>
+          ) : null}
+          {prep.playerName.trim() ? (
+            <Badge color="orange" variant="light" size={compact ? "sm" : "md"}>
+              {prep.playerName.trim()} as {prep.color}
+            </Badge>
+          ) : null}
+        </Group>
+        <Group gap={4} wrap="nowrap">
+          <Tooltip label="Set the current board position as the prep root">
+            <Button
+              variant="default"
+              size={controlSize}
+              leftSection={<IconTarget size="0.95rem" />}
+              onClick={setRootHere}
+            >
+              Set root
+            </Button>
+          </Tooltip>
+          <Tooltip label="Return to the prep root">
+            <ActionIcon variant="default" size={compact ? "sm" : "lg"} onClick={resetLine}>
+              <IconArrowBackUp size="1rem" />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="Clear manual done and skipped marks">
+            <ActionIcon
+              variant="default"
+              size={compact ? "sm" : "lg"}
+              onClick={() =>
+                setPrep((current) => ({
+                  ...current,
+                  completedBranches: {},
+                  skippedBranches: {},
+                }))
+              }
+            >
+              <IconRefresh size="1rem" />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+      </Group>
+
+      <Group gap={dense ? 4 : "xs"} wrap="wrap" style={{ flexShrink: 0 }}>
+        <Select
+          data={databaseOptions}
+          value={prep.databasePath}
+          onChange={(databasePath) => {
+            const database = localDatabases.find((item) => item.file === databasePath);
+            updateSettings({
+              databasePath,
+              databaseLabel: database ? database.title || database.filename : null,
+              player: null,
+              playerName: "",
+            });
+          }}
+          placeholder="Opponent database"
+          size={controlSize}
+          w={dense ? 180 : 230}
+          searchable
+          allowDeselect={false}
+          comboboxProps={{ withinPortal: true }}
+        />
+        <DatabasePerspectiveControls
+          databasePath={prep.databasePath}
+          player={prep.player}
+          playerName={prep.playerName}
+          color={prep.color}
+          onPlayerChange={(player) => updateSettings({ player }, false)}
+          onPlayerNameChange={(playerName) => updateSettings({ playerName }, false)}
+          onColorChange={(color) => updateSettings({ color }, true)}
+          size={controlSize}
+          playerWidth={dense ? 130 : 170}
+          colorWidth={dense ? 112 : 126}
+        />
+        <NumberInput
+          value={prep.minGames}
+          onChange={(value) =>
+            updateSettings(
+              {
+                minGames: Math.max(1, Number(value) || DEFAULT_PREP_MIN_GAMES),
+              },
+              false,
+            )
+          }
+          min={1}
+          max={999}
+          step={1}
+          size={controlSize}
+          w={dense ? 80 : 96}
+          placeholder="Min"
+          aria-label="Minimum games"
+        />
+        <NumberInput
+          value={prep.moveLimit}
+          onChange={(value) =>
+            updateSettings(
+              {
+                moveLimit: Math.max(1, Number(value) || DEFAULT_PREP_MOVE_LIMIT),
+              },
+              false,
+            )
+          }
+          min={1}
+          max={20}
+          step={1}
+          size={controlSize}
+          w={dense ? 82 : 100}
+          placeholder="Moves"
+          aria-label="Move limit"
+        />
+      </Group>
+
+      <Group justify="space-between" gap="xs" wrap="wrap" style={{ flexShrink: 0 }}>
+        <Stack gap={1} style={{ minWidth: 0, flex: 1 }}>
+          <Text size="xs" c="dimmed" truncate>
+            Root: {rootSans.length > 0 ? rootSans.join(" ") : "current game start"}
+          </Text>
+          <Text size="xs" c={opponentToMove ? undefined : "dimmed"} truncate>
+            {opponentToMove
+              ? `${prep.playerName.trim() || "Opponent"} to move`
+              : `Play your ${userColor} response on the board`}
+            {lineSans.length > 0 ? ` - ${lineSans.slice(-10).join(" ")}` : ""}
+          </Text>
+        </Stack>
+        <Group gap={4} wrap="nowrap">
+          <Tooltip label="Play the next unprepared common opponent move from this position">
+            <Button
+              variant="filled"
+              size={controlSize}
+              leftSection={<IconPlayerPlay size="0.95rem" />}
+              disabled={!configReady || !opponentToMove || !nextCommonMove}
+              onClick={() => nextCommonMove && playMove(nextCommonMove.move)}
+            >
+              Common move
+            </Button>
+          </Tooltip>
+          <Tooltip label="Mark this line done and jump to the next common branch">
+            <Button
+              variant="default"
+              size={controlSize}
+              leftSection={<IconArrowRight size="0.95rem" />}
+              disabled={!configReady}
+              loading={advancing}
+              onClick={() => void advanceToNextBranch()}
+            >
+              Done + next
+            </Button>
+          </Tooltip>
+          {activeBranch ? (
+            <Tooltip label="Return to the last opponent choice in this line">
+              <ActionIcon variant="default" size={compact ? "sm" : "lg"} onClick={goToActiveChoice}>
+                <IconArrowBackUp size="1rem" />
+              </ActionIcon>
+            </Tooltip>
+          ) : null}
+        </Group>
+      </Group>
+
+      {!configReady ? (
+        <Alert color="yellow" variant="light">
+          Choose a local database, opponent player, and the colour they play in the games you want
+          to prepare against.
+        </Alert>
+      ) : !isInsidePrepTree ? (
+        <Alert color="blue" variant="light">
+          The board is outside this prep root. Reset to the root, or set a new root here.
+        </Alert>
+      ) : null}
+
+      {configReady && opponentToMove && currentRows.length > 0 ? (
+        <Group gap="xs" wrap="wrap" style={{ flexShrink: 0 }}>
+          <Badge variant="light">{preparedCount} prepared</Badge>
+          {startedCount > 0 ? <Badge variant="light">{startedCount} started</Badge> : null}
+          {skippedCount > 0 ? (
+            <Badge color="gray" variant="light">
+              {skippedCount} skipped
+            </Badge>
+          ) : null}
+          <Text size="xs" c="dimmed">
+            {formatNumber(currentRows.reduce((sum, row) => sum + row.total, 0))} games in shown
+            moves
+          </Text>
+        </Group>
+      ) : null}
+
+      <Box flex={1} style={{ minHeight: 0, overflow: "auto" }}>
+        {error ? (
+          <Alert color="red">Could not search the opponent database from this position.</Alert>
+        ) : opponentToMove ? (
+          <OpponentPrepMoveTable
+            rows={currentRows}
+            loading={isLoading}
+            dense={dense}
+            onPlay={playMove}
+            onDone={markMoveDone}
+            onSkip={skipMove}
+            onPreview={previewMove}
+            onClearPreview={clearMovePreview}
+          />
+        ) : (
+          <Alert color="blue" variant="light">
+            Add your counter move, comments, and arrows on the board. When the opponent is to move
+            again, continue with their common move or mark the line done.
+          </Alert>
+        )}
+      </Box>
+    </Stack>
+  );
+}
+
+function OpponentPrepMoveTable({
+  rows,
+  loading,
+  dense,
+  onPlay,
+  onDone,
+  onSkip,
+  onPreview,
+  onClearPreview,
+}: {
+  rows: OpponentPrepMoveRow[];
+  loading: boolean;
+  dense: boolean;
+  onPlay: (move: string) => void;
+  onDone: (row: OpponentPrepMoveRow) => void;
+  onSkip: (row: OpponentPrepMoveRow) => void;
+  onPreview: (move: string) => void;
+  onClearPreview: () => void;
+}) {
+  const textSize = dense ? "xs" : "sm";
+
+  if (loading) {
+    return (
+      <Stack gap="xs" py="md" align="center">
+        <Progress value={100} animated w="min(18rem, 100%)" />
+        <Text size="xs" c="dimmed">
+          Checking opponent moves
+        </Text>
+      </Stack>
+    );
+  }
+
+  if (rows.length === 0) {
+    return (
+      <Alert color="gray" variant="light">
+        No common opponent moves met the current game threshold from this position.
+      </Alert>
+    );
+  }
+
+  return (
+    <Table
+      withTableBorder
+      stickyHeader
+      highlightOnHover
+      horizontalSpacing={dense ? 4 : "xs"}
+      verticalSpacing={dense ? 3 : "xs"}
+    >
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th style={{ width: dense ? 64 : 90 }}>Move</Table.Th>
+          <Table.Th style={{ width: dense ? 78 : 110 }}>Games</Table.Th>
+          <Table.Th>Results</Table.Th>
+          <Table.Th style={{ width: dense ? 76 : 98 }}>State</Table.Th>
+          <Table.Th style={{ width: dense ? 96 : 120 }} />
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>
+        {rows.map((row) => (
+          <Table.Tr
+            key={row.key}
+            style={{ cursor: "pointer" }}
+            onClick={() => onPlay(row.move)}
+            onMouseEnter={() => onPreview(row.move)}
+            onMouseLeave={onClearPreview}
+          >
+            <Table.Td>
+              <Text size={textSize} fw={700}>
+                {row.move}
+              </Text>
+              {row.lastPlayed ? (
+                <Text size="xs" c="dimmed">
+                  {row.lastPlayed}
+                </Text>
+              ) : null}
+            </Table.Td>
+            <Table.Td>
+              <Text size={textSize}>{formatNumber(row.total)}</Text>
+              <Text size="xs" c="dimmed">
+                {(row.share * 100).toFixed(0)}%
+              </Text>
+            </Table.Td>
+            <Table.Td>
+              <PrepResultBar row={row} />
+            </Table.Td>
+            <Table.Td>
+              <Badge color={statusColor(row.status)} variant="light" size="sm">
+                {statusLabel(row.status)}
+              </Badge>
+            </Table.Td>
+            <Table.Td>
+              <Group gap={2} wrap="nowrap" justify="flex-end">
+                <Tooltip label="Play this move">
+                  <ActionIcon
+                    variant="subtle"
+                    size="sm"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onPlay(row.move);
+                    }}
+                  >
+                    <IconPlayerPlay size="0.95rem" />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label="Mark this branch done">
+                  <ActionIcon
+                    variant="subtle"
+                    size="sm"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onDone(row);
+                    }}
+                  >
+                    <IconCheck size="0.95rem" />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label="Skip this branch">
+                  <ActionIcon
+                    variant="subtle"
+                    size="sm"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onSkip(row);
+                    }}
+                  >
+                    <IconX size="0.95rem" />
+                  </ActionIcon>
+                </Tooltip>
+              </Group>
+            </Table.Td>
+          </Table.Tr>
+        ))}
+      </Table.Tbody>
+    </Table>
+  );
+}
+
+function PrepResultBar({ row }: { row: OpponentPrepMoveRow }) {
+  const total = getOpeningTotal(row);
+  const whitePercent = total > 0 ? (row.white / total) * 100 : 0;
+  const drawPercent = total > 0 ? (row.draw / total) * 100 : 0;
+  const blackPercent = total > 0 ? (row.black / total) * 100 : 0;
+
+  return (
+    <Progress.Root size="lg">
+      <Progress.Section value={whitePercent} color="gray.2">
+        <Progress.Label c="black">
+          {whitePercent >= 18 ? `${whitePercent.toFixed(0)}%` : ""}
+        </Progress.Label>
+      </Progress.Section>
+      <Progress.Section value={drawPercent} color="gray">
+        <Progress.Label>{drawPercent >= 18 ? `${drawPercent.toFixed(0)}%` : ""}</Progress.Label>
+      </Progress.Section>
+      <Progress.Section value={blackPercent} color="dark">
+        <Progress.Label>{blackPercent >= 18 ? `${blackPercent.toFixed(0)}%` : ""}</Progress.Label>
+      </Progress.Section>
+    </Progress.Root>
+  );
+}
+
+function getInitialPrepSeed({
+  currentLocalOptions,
+  localDatabases,
+  referenceDb,
+  savedCompareSettings,
+}: {
+  currentLocalOptions: {
+    path: string | null;
+    player: number | null;
+    playerName?: string;
+    color: "white" | "black";
+    start_date?: string;
+    end_date?: string;
+    result: StoredDatabaseLocalOptions["result"];
+  };
+  localDatabases: SuccessDatabaseInfo[];
+  referenceDb: string | null;
+  savedCompareSettings?: {
+    slots: {
+      sourceValue: string | null;
+      localOptions: StoredDatabaseLocalOptions;
+    }[];
+  };
+}): Partial<OpponentPrepState> | null {
+  const localPaths = new Set(localDatabases.map((database) => database.file));
+  const compareSlot = savedCompareSettings?.slots.find(
+    (slot) =>
+      slot.sourceValue &&
+      localPaths.has(slot.sourceValue) &&
+      (slot.localOptions.player || slot.localOptions.playerName?.trim()),
+  );
+
+  if (compareSlot?.sourceValue) {
+    const database = localDatabases.find((item) => item.file === compareSlot.sourceValue);
+    return {
+      databasePath: compareSlot.sourceValue,
+      databaseLabel: database ? database.title || database.filename : null,
+      player: compareSlot.localOptions.player,
+      playerName: compareSlot.localOptions.playerName ?? "",
+      color: compareSlot.localOptions.color,
+      start_date: compareSlot.localOptions.start_date,
+      end_date: compareSlot.localOptions.end_date,
+      result: compareSlot.localOptions.result,
+    };
+  }
+
+  const databasePath =
+    currentLocalOptions.path && localPaths.has(currentLocalOptions.path)
+      ? currentLocalOptions.path
+      : referenceDb && localPaths.has(referenceDb)
+        ? referenceDb
+        : localDatabases[0]?.file;
+  if (!databasePath) return null;
+
+  const database = localDatabases.find((item) => item.file === databasePath);
+  return {
+    databasePath,
+    databaseLabel: database ? database.title || database.filename : null,
+    player: currentLocalOptions.player,
+    playerName: currentLocalOptions.playerName ?? "",
+    color: currentLocalOptions.color,
+    start_date: currentLocalOptions.start_date,
+    end_date: currentLocalOptions.end_date,
+    result: currentLocalOptions.result,
+  };
+}
+
+function getPrepSearchId(scope: string, fen: string) {
+  return `opponent-prep|${scope}|${fen}`;
+}
+
+function statusColor(status: OpponentPrepMoveRow["status"]) {
+  switch (status) {
+    case "prepared":
+      return "green";
+    case "started":
+      return "blue";
+    case "skipped":
+      return "gray";
+    case "new":
+      return "orange";
+  }
+}
+
+function statusLabel(status: OpponentPrepMoveRow["status"]) {
+  switch (status) {
+    case "prepared":
+      return "Done";
+    case "started":
+      return "Started";
+    case "skipped":
+      return "Skipped";
+    case "new":
+      return "New";
+  }
+}
+
+function omitKey<T>(record: Record<string, T>, key: string) {
+  const next = { ...record };
+  delete next[key];
+  return next;
+}
+
+export default memo(OpponentPrepPanel);

@@ -6,6 +6,7 @@ import {
   IconGitCompare,
   IconInfoCircle,
   IconRoute,
+  IconTarget,
   IconTargetArrow,
   IconZoomCheck,
 } from "@tabler/icons-react";
@@ -56,6 +57,7 @@ const EnginePlanExplorerPanel = lazy(() => import("../panels/enginePlan/EnginePl
 const GameNotation = lazy(() => import("../common/GameNotation"));
 const InfoPanel = lazy(() => import("../panels/info/InfoPanel"));
 const MoveControls = lazy(() => import("../common/MoveControls"));
+const OpponentPrepPanel = lazy(() => import("../panels/prep/OpponentPrepPanel"));
 const PlanExplorerPanel = lazy(() => import("../panels/plan/PlanExplorerPanel"));
 const PracticePanel = lazy(() => import("../panels/practice/PracticePanel"));
 
@@ -190,6 +192,7 @@ function BoardAnalysis() {
     practice: t("Board.Tabs.Practice"),
     analysis: t("Board.Tabs.Analysis"),
     database: t("Board.Tabs.Database"),
+    prep: "Prep",
     planExplorer: "Plan Explorer",
     enginePlans: "Engine Plans",
     compare: "Compare",
@@ -342,6 +345,11 @@ function BoardAnalysis() {
                   value="database"
                 />
                 <BoardAnalysisTab
+                  icon={<IconTarget size="1rem" />}
+                  label={tabLabels.prep}
+                  value="prep"
+                />
+                <BoardAnalysisTab
                   icon={<IconRoute size="1rem" />}
                   label={tabLabels.planExplorer}
                   value="plan-explorer"
@@ -382,6 +390,13 @@ function BoardAnalysis() {
                 <EngineDockedPanel>
                   <DeferredPanel>
                     <DatabasePanel />
+                  </DeferredPanel>
+                </EngineDockedPanel>
+              </Tabs.Panel>
+              <Tabs.Panel value="prep" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
+                <EngineDockedPanel>
+                  <DeferredPanel>
+                    <OpponentPrepPanel />
                   </DeferredPanel>
                 </EngineDockedPanel>
               </Tabs.Panel>

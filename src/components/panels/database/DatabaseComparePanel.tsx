@@ -1,7 +1,19 @@
-import { Alert, Box, Group, Paper, Select, SimpleGrid, Stack, Text, Tooltip } from "@mantine/core";
+import {
+  Alert,
+  Box,
+  Button,
+  Group,
+  Paper,
+  Select,
+  SimpleGrid,
+  Stack,
+  Text,
+  Tooltip,
+} from "@mantine/core";
+import { IconTarget } from "@tabler/icons-react";
 import { useDebouncedValue, useElementSize } from "@mantine/hooks";
 import { Link } from "@tanstack/react-router";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr/immutable";
@@ -13,6 +25,8 @@ import {
   type ComparePanelFileSettings,
   currentCompareDatabasesAtom,
   currentLocalOptionsAtom,
+  currentOpponentPrepAtom,
+  currentTabSelectedAtom,
   currentTabAtom,
   databaseMoveHealthSideAtom,
   defaultCompareDatabasesAtom as rememberedCompareDatabasesAtom,
@@ -107,6 +121,7 @@ function DatabaseComparePanel() {
   const { t } = useTranslation();
   const store = useContext(TreeStateContext)!;
   const fen = useStore(store, (s) => s.currentNode().fen);
+  const currentPath = useStore(store, (s) => s.position);
   const [debouncedFen] = useDebouncedValue(fen, 50);
   const tab = useAtomValue(currentTabAtom);
   const settingsKey = useMemo(() => getTabWorkspaceKey(tab), [tab]);
@@ -395,6 +410,7 @@ function DatabaseComparePanel() {
             }
             density={tableDensity}
             searchId={searchIds[index]}
+            currentPath={currentPath}
             referenceOpenings={
               searchIds[index === 0 ? 1 : 0]
                 ? openingsBySearchId[searchIds[index === 0 ? 1 : 0]!]
@@ -424,6 +440,7 @@ function CompareDatabaseTable({
   resultPerspective,
   density,
   searchId,
+  currentPath,
   referenceOpenings,
   onChange,
   onLocalOptionsChange,
@@ -442,6 +459,7 @@ function CompareDatabaseTable({
   resultPerspective: ReturnType<typeof getLocalResultPerspective>;
   density: OpeningTableDensity;
   searchId: string | null;
+  currentPath: number[];
   referenceOpenings?: Opening[];
   onChange: (value: string | null) => void;
   onLocalOptionsChange: (
@@ -452,6 +470,8 @@ function CompareDatabaseTable({
   onOpeningsLoaded: (searchId: string, openings: Opening[]) => void;
 }) {
   const { t } = useTranslation();
+  const setOpponentPrep = useSetAtom(currentOpponentPrepAtom);
+  const setCurrentTabSelected = useSetAtom(currentTabSelectedAtom);
   const [openingSort, setOpeningSort] = useState<OpeningSort>("games");
   const source = sources.find((item) => item.value === sourceValue) ?? null;
   const isOnlineSource = source?.type === "lch_all" || source?.type === "lch_master";
@@ -476,6 +496,28 @@ function CompareDatabaseTable({
   const cardPadding = dense ? 6 : "xs";
   const selectWidth = dense ? 118 : 150;
   const sourceSelectWidth = dense ? 220 : 320;
+  const canStartPrep =
+    source?.type === "local" && Boolean(localOptions.player || localOptions.playerName?.trim());
+
+  const startOpponentPrep = () => {
+    if (source?.type !== "local") return;
+
+    setOpponentPrep((current) => ({
+      ...current,
+      databasePath: source.database.file,
+      databaseLabel: source.label,
+      player: localOptions.player,
+      playerName: localOptions.playerName ?? "",
+      color: localOptions.color,
+      start_date: localOptions.start_date,
+      end_date: localOptions.end_date,
+      result: localOptions.result,
+      rootPath: [...currentPath],
+      completedBranches: {},
+      skippedBranches: {},
+    }));
+    setCurrentTabSelected("prep");
+  };
 
   const {
     data: openingData,
@@ -546,9 +588,30 @@ function CompareDatabaseTable({
             style={{ flex: `0 1 ${sourceSelectWidth}px` }}
           />
         </Tooltip>
-        <Text fz={dense ? "0.68rem" : "xs"} style={{ whiteSpace: "nowrap", flexShrink: 0 }}>
-          {formatNumber(total)} matches
-        </Text>
+        <Group gap={4} wrap="nowrap" style={{ flexShrink: 0 }}>
+          {source?.type === "local" ? (
+            <Tooltip
+              label={
+                canStartPrep
+                  ? "Build prep against this player and colour"
+                  : "Choose a player before starting prep"
+              }
+            >
+              <Button
+                variant="default"
+                size="xs"
+                leftSection={<IconTarget size="0.9rem" />}
+                disabled={!canStartPrep}
+                onClick={startOpponentPrep}
+              >
+                Prep
+              </Button>
+            </Tooltip>
+          ) : null}
+          <Text fz={dense ? "0.68rem" : "xs"} style={{ whiteSpace: "nowrap" }}>
+            {formatNumber(total)} matches
+          </Text>
+        </Group>
       </Group>
       {source?.type === "local" && (
         <Box mt={dense ? 4 : 6}>
