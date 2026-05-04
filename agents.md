@@ -20,14 +20,47 @@ model, implementation map, and verification expectations for this app.
 
 ## Local Browser Verification
 
-- Prefer the Browser Use plugin for localhost UI checks. If its Node REPL
-  bootstrap fails because the system Node is too old, use the Playwright browser
-  tools as a fallback and note the reason.
-- If Browser Use reports `Node runtime too old for node_repl`, set the user
-  environment variable `NODE_REPL_NODE_PATH` to the bundled Codex Node
-  executable, usually
-  `C:\Users\loxty\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`,
-  then restart Codex Desktop so the MCP server inherits it.
+- Use the Browser Use plugin for localhost UI checks and screenshots. Do not
+  use the standalone Playwright MCP browser tools for normal local verification;
+  only fall back to them when Browser Use is unavailable, blocked by its own
+  safety policy, or failing for reasons unrelated to the app under test. If you
+  fall back, note why.
+- Browser Use still exposes a Playwright-like API through `tab.playwright`.
+  That is the preferred browser-control surface after Browser Use setup; the
+  restriction above is about avoiding the separate `mcp__playwright__*` tools
+  as the default path.
+- Before the first Browser Use action in a turn, read the Browser Use skill and
+  bootstrap it through the Node REPL with the `iab` backend:
+  ```js
+  if (!globalThis.agent) {
+    const { setupAtlasRuntime } = await import(
+      "file:///C:/Users/loxty/.codex/plugins/cache/openai-bundled/browser-use/0.1.0-alpha1/scripts/browser-client.mjs"
+    );
+    await setupAtlasRuntime({ globals: globalThis, backend: "iab" });
+  }
+  await agent.browser.nameSession("Native browser verification");
+  if (typeof tab === "undefined" || !globalThis.tab) {
+    globalThis.tab =
+      (await agent.browser.tabs.selected()) ?? (await agent.browser.tabs.new());
+  }
+  ```
+- After setup, use `await tab.goto(url)`, `await tab.playwright.domSnapshot()`,
+  `await tab.playwright.screenshot({ fullPage: false })`, and real DOM
+  measurements through supported Browser Use APIs. Keep one `tab` binding and
+  reuse it across checks.
+- If Browser Use reports `Node runtime too old for node_repl`, confirm that the
+  user environment variable `NODE_REPL_NODE_PATH` points to the bundled Codex
+  Node executable, usually
+  `C:\Users\loxty\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`.
+  The system Node fallback must also be at least `v22.22.0`; if it is older,
+  update Node 22 with `winget upgrade --id OpenJS.NodeJS.22` after user
+  confirmation.
+- If Browser Use can bootstrap but navigation fails with `failed to start codex
+  app-server: The system cannot find the path specified`, check that
+  `C:\Users\loxty\AppData\Local\OpenAI\Codex\bin` exists. On this Windows
+  install it should be a junction to
+  `C:\Users\loxty\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\LocalCache\Local\OpenAI\Codex\bin`,
+  where the packaged `codex.exe`, `node_repl.exe`, and `node.exe` helpers live.
 - The Vite dev server for this Tauri app normally serves at
   `http://localhost:1420`; `vite.config.ts` has `strictPort: true`, so check
   whether that port is already owned before starting a new server.
@@ -39,9 +72,9 @@ model, implementation map, and verification expectations for this app.
 - For layout checks, inspect real DOM dimensions instead of relying only on
   screenshots. Useful measurements are `#left`, `.cg-wrap`, the eval bar
   element, and any nearby panel that may be limiting the board.
-- Temporary screenshots and `.playwright-mcp/page-*.yml` snapshots are local
-  verification artifacts. Do not delete them unless the user explicitly confirms
-  deletion.
+- Temporary Browser Use screenshots and older `.playwright-mcp/page-*.yml`
+  snapshots are local verification artifacts. Do not delete them unless the user
+  explicitly confirms deletion.
 
 ## Product Direction
 
@@ -414,9 +447,9 @@ Choose focused verification based on the touched surface.
 - Database/search tests: `cargo test search_index`,
   `cargo test exact_matches`, and
   `cargo test exact_query_ignores_too_much_material_validation`.
-- UI/layout verification: run the Vite app at `http://localhost:1420`, inject
-  Tauri browser stubs if using a normal browser, and inspect real DOM dimensions
-  as well as screenshots.
+- UI/layout verification: run the Vite app at `http://localhost:1420`, verify
+  with Browser Use, inspect real DOM dimensions as well as screenshots, and
+  inject Tauri browser stubs if the app is opened outside the Tauri shell.
 - Known historical note: an earlier full `cargo test` had unrelated existing
   failures in eval/search fixture expectations. Treat broad failures as
   suspicious, but verify whether they predate the current change before editing
