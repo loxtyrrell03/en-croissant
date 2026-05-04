@@ -409,10 +409,11 @@ function OpponentPrepPanel() {
     try {
       const state = store.getState();
       const safeRootPath = pathExists(state.root, prep.rootPath ?? []) ? (prep.rootPath ?? []) : [];
-      const searchPath = isPrefix(safeRootPath, state.position) ? state.position : safeRootPath;
+      const currentInsidePrep = isPrefix(safeRootPath, state.position);
+      const searchPath = currentInsidePrep ? state.position : safeRootPath;
       const currentNode = state.currentNode();
-      const excludeCurrent = getFenTurn(currentNode.fen) === prep.color;
-      const active = isPrefix(safeRootPath, state.position)
+      const currentIsOpponentChoice = getFenTurn(currentNode.fen) === prep.color;
+      const active = currentInsidePrep
         ? findLastOpponentBranch(state.root, state.position, prep.color, safeRootPath)
         : null;
       const completedBranches = {
@@ -431,13 +432,22 @@ function OpponentPrepPanel() {
         }));
       }
 
-      const branchPaths = collectOpponentBranchPaths({
+      const fallbackBranchPaths = collectOpponentBranchPaths({
         root: state.root,
         path: searchPath,
         rootPath: safeRootPath,
         opponentColor: prep.color,
-        excludeCurrent,
+        excludeCurrent: true,
       }).reverse();
+      const primaryBranchPath =
+        currentInsidePrep && currentIsOpponentChoice ? state.position : active?.branchPath;
+      const branchPaths = [
+        ...(primaryBranchPath ? [primaryBranchPath] : []),
+        ...fallbackBranchPaths,
+      ].filter((path, index, paths) => {
+        const key = prepPathKey(path);
+        return paths.findIndex((candidate) => prepPathKey(candidate) === key) === index;
+      });
 
       for (const branchPath of branchPaths) {
         const branchNode = state.getNode(branchPath);
@@ -978,6 +988,10 @@ function omitKey<T>(record: Record<string, T>, key: string) {
   const next = { ...record };
   delete next[key];
   return next;
+}
+
+function prepPathKey(path: number[]) {
+  return path.join(".");
 }
 
 export default memo(OpponentPrepPanel);
