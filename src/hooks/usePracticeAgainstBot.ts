@@ -15,7 +15,7 @@ import type { LocalEngine } from "@/utils/engines";
 import {
     createDefaultHumanOpponent,
     createDefaultPracticeBotOpponent,
-    isLikelyLc0Engine,
+    isLikelyPatriciaEngine,
 } from "@/utils/practiceBot";
 
 function activeColorFromFen(fen: string): "white" | "black" {
@@ -23,7 +23,7 @@ function activeColorFromFen(fen: string): "white" | "black" {
 }
 
 function selectPracticeEngine(engines: LocalEngine[]) {
-    return engines.find(isLikelyLc0Engine) ?? null;
+    return engines.find(isLikelyPatriciaEngine) ?? null;
 }
 
 export function usePracticeAgainstBot() {

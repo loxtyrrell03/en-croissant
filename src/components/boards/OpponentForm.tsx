@@ -76,12 +76,12 @@ export function OpponentForm({
         ...prev,
         type: "engine",
         engine: null,
-        go: { t: "Nodes", c: 1 },
+        go: { t: "Time", c: 500 },
         engineSettings: undefined,
         botProfile: {
           ...(("botProfile" in prev && prev.botProfile) || createDefaultPracticeBotProfile(null)),
           enabled: true,
-          kind: "maia",
+          kind: "patricia",
         },
       }));
     } else {
@@ -179,7 +179,7 @@ export function OpponentForm({
           <NumberInput
             label="FIDE Elo"
             min={800}
-            max={2600}
+            max={3000}
             step={50}
             value={opponent.botProfile.fideElo}
             onChange={(value) =>

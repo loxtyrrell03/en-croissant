@@ -9,7 +9,7 @@ import { resolve } from "@tauri-apps/api/path";
 import { exists, mkdir } from "@tauri-apps/plugin-fs";
 import { platform, type Platform } from "@tauri-apps/plugin-os";
 
-export type PracticeBotKind = "maia" | "stockfish";
+export type PracticeBotKind = "patricia" | "maia" | "stockfish";
 
 export type PracticeBotProfile = {
     enabled: boolean;
@@ -28,15 +28,11 @@ export type PracticeBotMoveDelay = {
     useAsMoveTime?: boolean;
 };
 
-const STOCKFISH_MIN_UCI_ELO = 1320;
-const STOCKFISH_MAX_UCI_ELO = 3190;
-const MANAGED_MAIA_LC0_VERSION = "0.32.1";
-const MANAGED_MAIA_ENGINE_ID = "managed-maia-lc0";
-const MANAGED_STOCKFISH_VERSION = "18";
-const MANAGED_STOCKFISH_ENGINE_ID = "managed-stockfish-trainer";
-const MANAGED_MAIA_DIR = "trainer-bot";
-const MAX_LEGACY_MAIA_TARGET = 1900;
-const MAX_LEGACY_MAIA_LICHESS_TARGET = 2000;
+const MANAGED_PATRICIA_VERSION = "5";
+const MANAGED_PATRICIA_ENGINE_ID = "managed-patricia-trainer";
+const MANAGED_TRAINER_DIR = "trainer-bot";
+const PATRICIA_MIN_FIDE_ELO = 800;
+const PATRICIA_MAX_FIDE_ELO = 3000;
 
 export const DEFAULT_PRACTICE_BOT_ELO = 1600;
 
@@ -47,33 +43,17 @@ export const PRACTICE_BOT_DEFAULT_TIME_CONTROL: TimeControlField = {
 
 export const DEFAULT_PRACTICE_BOT_PROFILE: PracticeBotProfile = {
     enabled: true,
-    kind: "maia",
+    kind: "patricia",
     fideElo: DEFAULT_PRACTICE_BOT_ELO,
     timeUse: "balanced",
 };
 
-const FIDE_TO_LICHESS_CLASSICAL_ANCHORS: [number, number][] = [
-    [1400, 1600],
-    [1450, 1665],
-    [1500, 1730],
-    [1550, 1795],
-    [1600, 1850],
-    [1650, 1910],
-    [1700, 1970],
-    [1750, 2030],
-    [1800, 2090],
-    [1850, 2150],
-    [1910, 2225],
-    [2000, 2310],
-    [2100, 2370],
-    [2200, 2410],
-    [2300, 2440],
-    [2400, 2470],
-];
+const PATRICIA_SKILL_LEVELS = [
+    500, 800, 1000, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100,
+    2200, 2300, 2400, 2500, 2650, 2800, 3000,
+] as const;
 
-const MAIA_LEGACY_MODELS = [1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900];
-
-const MANAGED_LC0_PACKAGES: Partial<
+const MANAGED_PATRICIA_PACKAGES: Partial<
     Record<
         Platform,
         {
@@ -85,29 +65,11 @@ const MANAGED_LC0_PACKAGES: Partial<
     >
 > = {
     windows: {
-        url: `https://github.com/LeelaChessZero/lc0/releases/download/v${MANAGED_MAIA_LC0_VERSION}/lc0-v${MANAGED_MAIA_LC0_VERSION}-windows-cpu-openblas.zip`,
-        directory: `lc0-v${MANAGED_MAIA_LC0_VERSION}-windows-cpu-openblas`,
-        executable: "lc0.exe",
-        size: 23_818_982,
-    },
-};
-
-const MANAGED_STOCKFISH_PACKAGES: Partial<
-    Record<
-        Platform,
-        {
-            url: string;
-            directory: string;
-            executablePath: string[];
-            size: number;
-        }
-    >
-> = {
-    windows: {
-        url: "https://github.com/official-stockfish/Stockfish/releases/latest/download/stockfish-windows-x86-64-sse41-popcnt.zip",
-        directory: `stockfish-${MANAGED_STOCKFISH_VERSION}-windows-sse41`,
-        executablePath: ["stockfish", "stockfish-windows-x86-64-sse41-popcnt.exe"],
-        size: 65_413_257,
+        // v2 is the wider-compatibility SSE build; v3 needs AVX2.
+        url: `https://github.com/Adam-Kulju/Patricia/releases/download/${MANAGED_PATRICIA_VERSION}/patricia_v2.exe`,
+        directory: `patricia-${MANAGED_PATRICIA_VERSION}`,
+        executable: "patricia_v2.exe",
+        size: 4_142_592,
     },
 };
 
@@ -115,95 +77,50 @@ function clamp(value: number, min: number, max: number) {
     return Math.min(max, Math.max(min, value));
 }
 
-function interpolateAnchors(value: number, anchors: [number, number][]) {
-    if (value <= anchors[0][0]) {
-        const [x1, y1] = anchors[0];
-        const [x2, y2] = anchors[1];
-        const slope = (y2 - y1) / (x2 - x1);
-        return y1 + (value - x1) * slope;
-    }
-
-    for (let i = 0; i < anchors.length - 1; i++) {
-        const [x1, y1] = anchors[i];
-        const [x2, y2] = anchors[i + 1];
-        if (value >= x1 && value <= x2) {
-            const ratio = (value - x1) / (x2 - x1);
-            return y1 + ratio * (y2 - y1);
-        }
-    }
-
-    const [x1, y1] = anchors[anchors.length - 2];
-    const [x2, y2] = anchors[anchors.length - 1];
-    const slope = (y2 - y1) / (x2 - x1);
-    return y2 + (value - x2) * slope;
+export function patriciaTrainerEloFromFide(fideElo: number) {
+    return Math.round(clamp(fideElo, PATRICIA_MIN_FIDE_ELO, PATRICIA_MAX_FIDE_ELO));
 }
 
-export function fideToLichessClassical(fideElo: number) {
-    return Math.round(
-        clamp(interpolateAnchors(fideElo, FIDE_TO_LICHESS_CLASSICAL_ANCHORS), 600, 2600),
-    );
+export function patriciaSkillLevelFromFide(fideElo: number) {
+    const target = patriciaTrainerEloFromFide(fideElo);
+    const index = PATRICIA_SKILL_LEVELS.reduce((bestIndex, elo, index) =>
+        Math.abs(elo - target) < Math.abs(PATRICIA_SKILL_LEVELS[bestIndex] - target)
+            ? index
+            : bestIndex,
+    0);
+    return index + 1;
 }
 
-export function nearestLegacyMaiaModel(fideElo: number) {
-    const lichessTarget = fideToLichessClassical(fideElo);
-    return MAIA_LEGACY_MODELS.reduce((best, model) =>
-        Math.abs(model - lichessTarget) < Math.abs(best - lichessTarget) ? model : best,
-    );
+export function patriciaSkillLevelElo(skillLevel: number) {
+    const index = clamp(Math.round(skillLevel), 1, PATRICIA_SKILL_LEVELS.length) - 1;
+    return PATRICIA_SKILL_LEVELS[index];
 }
 
 export function practiceBotBackendKind(profile: PracticeBotProfile | null): PracticeBotKind {
-    if (!profile?.enabled) return "stockfish";
-    if (profile.kind === "stockfish") return "stockfish";
-    return fideToLichessClassical(profile.fideElo) <= MAX_LEGACY_MAIA_LICHESS_TARGET
-        ? "maia"
-        : "stockfish";
+    if (!profile?.enabled) return "patricia";
+    return "patricia";
 }
 
 export function describePracticeBotBackend(profile: PracticeBotProfile) {
-    const lichessTarget = fideToLichessClassical(profile.fideElo);
-    if (practiceBotBackendKind(profile) === "maia") {
-        return `Maia ${nearestLegacyMaiaModel(profile.fideElo)} - Lichess target ${lichessTarget}`;
-    }
-    return `Stockfish strength - Maia capped at ${MAX_LEGACY_MAIA_TARGET} Lichess`;
-}
-
-export function stockfishUciEloFromFide(fideElo: number) {
-    return Math.round(clamp(fideElo, STOCKFISH_MIN_UCI_ELO, STOCKFISH_MAX_UCI_ELO));
-}
-
-export function stockfishSkillLevelFromFide(fideElo: number) {
-    return Math.round(clamp(((fideElo - 800) / 200) * 3, 0, 20));
+    const skillLevel = patriciaSkillLevelFromFide(profile.fideElo);
+    const targetElo = patriciaTrainerEloFromFide(profile.fideElo);
+    return `Patricia human mode - Skill ${skillLevel}, target ${targetElo} FIDE`;
 }
 
 export function formatPracticeBotName(profile: PracticeBotProfile) {
-    if (practiceBotBackendKind(profile) === "maia") {
-        return `Maia ${profile.fideElo} FIDE`;
-    }
-    return `Trainer ${profile.fideElo} FIDE`;
+    return `Patricia ${patriciaTrainerEloFromFide(profile.fideElo)} FIDE`;
 }
 
-export function isLikelyLc0Engine(engine: LocalEngine | null | undefined) {
+export function isLikelyPatriciaEngine(engine: LocalEngine | null | undefined) {
     if (!engine) return false;
-    return /(?:lc0|leela|maia)/i.test(`${engine.name} ${engine.path}`);
-}
-
-export function isLikelyStockfishEngine(engine: LocalEngine | null | undefined) {
-    if (!engine) return false;
-    return /stockfish/i.test(`${engine.name} ${engine.path}`);
+    return /patricia/i.test(`${engine.name} ${engine.path}`);
 }
 
 export function createDefaultPracticeBotProfile(engine?: LocalEngine | null): PracticeBotProfile {
-    if (isLikelyLc0Engine(engine)) {
-        const weightsPath = engine?.settings?.find(
-            (option) => option.name === "WeightsFile",
-        )?.value;
-        return {
-            ...DEFAULT_PRACTICE_BOT_PROFILE,
-            kind: "maia",
-            maiaWeightsPath: typeof weightsPath === "string" ? weightsPath : null,
-        };
-    }
-    return { ...DEFAULT_PRACTICE_BOT_PROFILE };
+    return {
+        ...DEFAULT_PRACTICE_BOT_PROFILE,
+        kind: isLikelyPatriciaEngine(engine) ? "patricia" : DEFAULT_PRACTICE_BOT_PROFILE.kind,
+    };
 }
 
 export function createDefaultPracticeBotOpponent(
@@ -211,12 +128,12 @@ export function createDefaultPracticeBotOpponent(
 ): OpponentSettings {
     return {
         type: "engine",
-        engine: isLikelyLc0Engine(engine) ? engine : null,
-        go: { t: "Nodes", c: 1 },
+        engine: isLikelyPatriciaEngine(engine) ? engine : null,
+        go: { t: "Time", c: 500 },
         timeControl: PRACTICE_BOT_DEFAULT_TIME_CONTROL,
         timeUnit: "m",
         incrementUnit: "s",
-        engineSettings: isLikelyLc0Engine(engine) ? engine?.settings || undefined : undefined,
+        engineSettings: isLikelyPatriciaEngine(engine) ? engine?.settings || undefined : undefined,
         botProfile: createDefaultPracticeBotProfile(engine),
     };
 }
@@ -260,27 +177,16 @@ export function buildPracticeBotOptions(
         return options;
     }
 
-    if (practiceBotBackendKind(profile) === "stockfish") {
-        options = upsertOption(options, "UCI_LimitStrength", "true");
-        options = upsertOption(options, "UCI_Elo", stockfishUciEloFromFide(profile.fideElo));
-        options = upsertOption(
-            options,
-            "Skill Level",
-            stockfishSkillLevelFromFide(profile.fideElo),
-        );
-        return options;
-    }
-
-    if (profile.maiaWeightsPath) {
-        options = upsertOption(options, "WeightsFile", profile.maiaWeightsPath);
-    }
-
+    const targetElo = patriciaTrainerEloFromFide(profile.fideElo);
+    options = upsertOption(options, "UCI_LimitStrength", "true");
+    options = upsertOption(options, "UCI_Elo", targetElo);
+    options = upsertOption(options, "Skill_Level", patriciaSkillLevelFromFide(profile.fideElo));
     return options;
 }
 
 export function getPracticeBotGoMode(profile: PracticeBotProfile | null, fallback: GoMode): GoMode {
-    if (profile?.enabled && practiceBotBackendKind(profile) === "maia") {
-        return { t: "Nodes", c: 1 };
+    if (profile?.enabled) {
+        return { t: "Time", c: 500 };
     }
     return fallback;
 }
@@ -324,7 +230,7 @@ export function getPracticeBotMoveDelay(
             fideElo: profile.fideElo,
             initialTimeMs,
             incrementMs,
-            useAsMoveTime: practiceBotBackendKind(profile) === "stockfish",
+            useAsMoveTime: true,
         };
     }
     if (profile.timeUse === "slow") {
@@ -334,7 +240,7 @@ export function getPracticeBotMoveDelay(
             fideElo: profile.fideElo,
             initialTimeMs,
             incrementMs,
-            useAsMoveTime: practiceBotBackendKind(profile) === "stockfish",
+            useAsMoveTime: true,
         };
     }
     return {
@@ -343,16 +249,8 @@ export function getPracticeBotMoveDelay(
         fideElo: profile.fideElo,
         initialTimeMs,
         incrementMs,
-        useAsMoveTime: practiceBotBackendKind(profile) === "stockfish",
+        useAsMoveTime: true,
     };
-}
-
-export function maiaWeightsFileName(model: number) {
-    return `maia-${model}.pb.gz`;
-}
-
-export function maiaWeightsUrl(model: number) {
-    return `https://github.com/CSSLab/maia-chess/releases/download/v1.0/${maiaWeightsFileName(model)}`;
 }
 
 async function ensureDirectory(path: string) {
@@ -366,98 +264,43 @@ async function pathExists(path: string) {
     return result.status === "ok" && result.data;
 }
 
-async function ensureManagedLc0Engine(): Promise<LocalEngine> {
+async function ensureManagedPatriciaEngine(): Promise<LocalEngine> {
     const os = await platform();
-    const pkg = MANAGED_LC0_PACKAGES[os];
+    const pkg = MANAGED_PATRICIA_PACKAGES[os];
     if (!pkg) {
-        throw new Error("Managed Maia trainer is currently packaged for Windows.");
+        throw new Error("Managed Patricia trainer is currently packaged for Windows.");
     }
 
     const enginesDir = await getEnginesDir();
-    const trainerDir = await resolve(enginesDir, MANAGED_MAIA_DIR);
-    const lc0Dir = await resolve(trainerDir, pkg.directory);
-    const lc0Path = await resolve(lc0Dir, pkg.executable);
+    const trainerDir = await resolve(enginesDir, MANAGED_TRAINER_DIR);
+    const patriciaDir = await resolve(trainerDir, pkg.directory);
+    const patriciaPath = await resolve(patriciaDir, pkg.executable);
 
-    if (!(await pathExists(lc0Path))) {
-        await ensureDirectory(lc0Dir);
-        unwrap(
-            await commands.downloadFile("practice_bot_lc0", pkg.url, lc0Dir, null, true, pkg.size),
-        );
-        unwrap(await commands.setFileAsExecutable(lc0Path));
-    }
-
-    return {
-        type: "local",
-        id: MANAGED_MAIA_ENGINE_ID,
-        name: "Maia Trainer",
-        version: MANAGED_MAIA_LC0_VERSION,
-        path: lc0Path,
-        loaded: true,
-        elo: 1900,
-        settings: [],
-    };
-}
-
-async function ensureManagedStockfishEngine(): Promise<LocalEngine> {
-    const os = await platform();
-    const pkg = MANAGED_STOCKFISH_PACKAGES[os];
-    if (!pkg) {
-        throw new Error("Managed Stockfish trainer is currently packaged for Windows.");
-    }
-
-    const enginesDir = await getEnginesDir();
-    const trainerDir = await resolve(enginesDir, MANAGED_MAIA_DIR);
-    const stockfishDir = await resolve(trainerDir, pkg.directory);
-    const stockfishPath = await resolve(stockfishDir, ...pkg.executablePath);
-
-    if (!(await pathExists(stockfishPath))) {
-        await ensureDirectory(stockfishDir);
+    if (!(await pathExists(patriciaPath))) {
+        await ensureDirectory(patriciaDir);
         unwrap(
             await commands.downloadFile(
-                "practice_bot_stockfish",
+                "practice_bot_patricia",
                 pkg.url,
-                stockfishDir,
+                patriciaPath,
                 null,
                 true,
                 pkg.size,
             ),
         );
-        unwrap(await commands.setFileAsExecutable(stockfishPath));
+        unwrap(await commands.setFileAsExecutable(patriciaPath));
     }
 
     return {
         type: "local",
-        id: MANAGED_STOCKFISH_ENGINE_ID,
-        name: "Stockfish Trainer",
-        version: MANAGED_STOCKFISH_VERSION,
-        path: stockfishPath,
+        id: MANAGED_PATRICIA_ENGINE_ID,
+        name: "Patricia Human Trainer",
+        version: MANAGED_PATRICIA_VERSION,
+        path: patriciaPath,
         loaded: true,
-        elo: STOCKFISH_MAX_UCI_ELO,
+        elo: PATRICIA_MAX_FIDE_ELO,
         settings: [],
     };
-}
-
-async function ensureManagedMaiaWeights(fideElo: number) {
-    const model = nearestLegacyMaiaModel(fideElo);
-    const enginesDir = await getEnginesDir();
-    const weightsDir = await resolve(enginesDir, MANAGED_MAIA_DIR, "maia-weights");
-    const weightsPath = await resolve(weightsDir, maiaWeightsFileName(model));
-
-    if (!(await pathExists(weightsPath))) {
-        await ensureDirectory(weightsDir);
-        unwrap(
-            await commands.downloadFile(
-                `practice_bot_maia_${model}`,
-                maiaWeightsUrl(model),
-                weightsPath,
-                null,
-                true,
-                null,
-            ),
-        );
-    }
-
-    return weightsPath;
 }
 
 export async function preparePracticeBotOpponent(
@@ -471,38 +314,18 @@ export async function preparePracticeBotOpponent(
         ...DEFAULT_PRACTICE_BOT_PROFILE,
         ...settings.botProfile,
         enabled: true,
-        kind: settings.botProfile.kind,
+        kind: "patricia" as const,
     };
 
-    if (practiceBotBackendKind(profile) === "stockfish") {
-        const engine = isLikelyStockfishEngine(settings.engine)
-            ? settings.engine!
-            : await ensureManagedStockfishEngine();
-        return {
-            ...settings,
-            engine,
-            engineSettings: engine.settings || undefined,
-            go: { t: "Depth", c: 16 },
-            botProfile: {
-                ...profile,
-                kind: "stockfish",
-            },
-        };
-    }
-
-    const [engine, maiaWeightsPath] = await Promise.all([
-        ensureManagedLc0Engine(),
-        ensureManagedMaiaWeights(profile.fideElo),
-    ]);
+    const engine = isLikelyPatriciaEngine(settings.engine)
+        ? settings.engine!
+        : await ensureManagedPatriciaEngine();
 
     return {
         ...settings,
         engine,
         engineSettings: engine.settings || undefined,
-        go: { t: "Nodes", c: 1 },
-        botProfile: {
-            ...profile,
-            maiaWeightsPath,
-        },
+        go: { t: "Time", c: 500 },
+        botProfile: profile,
     };
 }

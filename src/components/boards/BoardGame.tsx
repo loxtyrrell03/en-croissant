@@ -568,7 +568,7 @@ function BoardGame() {
     const configuredPlayers = [player1Settings, player2Settings];
     for (const player of configuredPlayers) {
       if (player.type !== "engine") continue;
-      if (player.botProfile?.enabled && player.botProfile.kind === "maia") {
+      if (player.botProfile?.enabled) {
         continue;
       }
       if (!player.engine?.path) return "Select an engine before starting.";
