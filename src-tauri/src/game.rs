@@ -32,6 +32,21 @@ use crate::{
 
 pub type GameId = String;
 
+const PATRICIA_MIN_FIDE_ELO: u32 = 800;
+const PATRICIA_MAX_FIDE_ELO: u32 = 3000;
+const PATRICIA_SKILL_LEVELS: [u32; 20] = [
+    500, 800, 1000, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300, 2400,
+    2500, 2650, 2800, 3000,
+];
+// Rating-equivalent move-quality handicap; keep in sync with src/utils/practiceBot.ts.
+const TRAINER_QUALITY_PENALTY_POINTS: [(f64, f64); 5] = [
+    (1.5, 700.0),
+    (3.0, 460.0),
+    (7.0, 225.0),
+    (20.0, 60.0),
+    (45.0, 0.0),
+];
+
 #[derive(Clone, Debug, Serialize, Deserialize, Type)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum PlayerConfig {
@@ -65,6 +80,8 @@ pub struct EngineMoveDelay {
     pub max_ms: u32,
     #[serde(default)]
     pub fide_elo: Option<u32>,
+    #[serde(default)]
+    pub strength_elo: Option<u32>,
     #[serde(default)]
     pub initial_time_ms: Option<u32>,
     #[serde(default)]
@@ -1542,6 +1559,132 @@ fn pressure_time_multiplier(current_time: u64, initial_time_ms: u64, increment_m
     }
 }
 
+fn trainer_estimated_seconds_per_move(initial_time_ms: u64, increment_ms: u64) -> f64 {
+    (initial_time_ms as f64 + increment_ms as f64 * 40.0) / 40_000.0
+}
+
+fn trainer_rating_quality_penalty_scale(fide_elo: u32) -> f64 {
+    let clamped = fide_elo.clamp(PATRICIA_MIN_FIDE_ELO, PATRICIA_MAX_FIDE_ELO);
+    if clamped <= 2200 {
+        0.72 + ((clamped - PATRICIA_MIN_FIDE_ELO) as f64 / 1400.0) * 0.28
+    } else {
+        1.0 + ((clamped - 2200) as f64 / 800.0) * 0.12
+    }
+}
+
+fn trainer_quality_penalty_for_seconds_per_move(seconds_per_move: f64, fide_elo: u32) -> u32 {
+    let seconds = seconds_per_move.max(0.1);
+    let mut raw_penalty = TRAINER_QUALITY_PENALTY_POINTS
+        .last()
+        .map(|(_, penalty)| *penalty)
+        .unwrap_or(0.0);
+
+    if seconds <= TRAINER_QUALITY_PENALTY_POINTS[0].0 {
+        raw_penalty = TRAINER_QUALITY_PENALTY_POINTS[0].1
+            + (TRAINER_QUALITY_PENALTY_POINTS[0].0 - seconds) * 90.0;
+    } else {
+        for pair in TRAINER_QUALITY_PENALTY_POINTS.windows(2) {
+            let (previous_seconds, previous_penalty) = pair[0];
+            let (next_seconds, next_penalty) = pair[1];
+            if seconds <= next_seconds {
+                let t = (seconds - previous_seconds) / (next_seconds - previous_seconds);
+                raw_penalty = previous_penalty + (next_penalty - previous_penalty) * t;
+                break;
+            }
+        }
+    }
+
+    clamp_f64(
+        raw_penalty * trainer_rating_quality_penalty_scale(fide_elo),
+        0.0,
+        850.0,
+    )
+    .round() as u32
+}
+
+fn trainer_time_control_quality_penalty(
+    fide_elo: u32,
+    initial_time_ms: u64,
+    increment_ms: u64,
+) -> u32 {
+    trainer_quality_penalty_for_seconds_per_move(
+        trainer_estimated_seconds_per_move(initial_time_ms, increment_ms),
+        fide_elo,
+    )
+}
+
+fn trainer_time_control_strength_elo(
+    fide_elo: u32,
+    initial_time_ms: u64,
+    increment_ms: u64,
+) -> u32 {
+    fide_elo
+        .saturating_sub(trainer_time_control_quality_penalty(
+            fide_elo,
+            initial_time_ms,
+            increment_ms,
+        ))
+        .clamp(PATRICIA_MIN_FIDE_ELO, PATRICIA_MAX_FIDE_ELO)
+}
+
+fn patricia_skill_level_from_elo(target_elo: u32) -> u32 {
+    let target = target_elo.clamp(PATRICIA_MIN_FIDE_ELO, PATRICIA_MAX_FIDE_ELO);
+    let mut best_index = 0;
+    let mut best_distance = u32::MAX;
+    for (index, elo) in PATRICIA_SKILL_LEVELS.iter().enumerate() {
+        let distance = elo.abs_diff(target);
+        if distance < best_distance {
+            best_index = index;
+            best_distance = distance;
+        }
+    }
+    (best_index + 1) as u32
+}
+
+fn trainer_pressure_adjusted_strength_elo(
+    delay: &EngineMoveDelay,
+    current_time: Option<u64>,
+    ply: usize,
+) -> Option<u32> {
+    let fide_elo = delay.fide_elo?;
+    let initial_time_ms = delay
+        .initial_time_ms
+        .map(|time| time as u64)
+        .or(current_time)
+        .unwrap_or(180_000)
+        .max(1);
+    let increment_ms = delay.increment_ms.unwrap_or(0) as u64;
+    let base_strength = delay.strength_elo.unwrap_or_else(|| {
+        trainer_time_control_strength_elo(fide_elo, initial_time_ms, increment_ms)
+    });
+    let current_time = current_time?;
+    let shape = clock_shape(initial_time_ms, increment_ms);
+    let move_number = (ply / 2 + 1) as f64;
+    let remaining_moves = (shape.expected_moves - move_number).max(8.0);
+    let current_seconds_per_move =
+        (current_time as f64 + increment_ms as f64 * remaining_moves) / 1000.0 / remaining_moves;
+    let initial_penalty =
+        trainer_time_control_quality_penalty(fide_elo, initial_time_ms, increment_ms);
+    let current_penalty =
+        trainer_quality_penalty_for_seconds_per_move(current_seconds_per_move, fide_elo);
+    let scramble_penalty = current_penalty.saturating_sub(initial_penalty)
+        + if current_time <= 2_500 {
+            180
+        } else if current_time <= 5_000 {
+            100
+        } else if current_seconds_per_move <= 2.0 {
+            70
+        } else {
+            0
+        };
+
+    Some(
+        base_strength
+            .saturating_sub(scramble_penalty)
+            .clamp(PATRICIA_MIN_FIDE_ELO, PATRICIA_MAX_FIDE_ELO),
+    )
+}
+
 fn complexity_time_multiplier(position: &Chess, tempo: MoveTempo) -> f64 {
     if tempo.is_automatic() {
         return 1.0;
@@ -1834,7 +1977,7 @@ async fn request_engine_move(
         }
     }
 
-    let (engine_arc, go_mode, move_delay, initial_fen, moves, turn) = {
+    let (engine_arc, go_mode, move_delay, dynamic_strength_elo, initial_fen, moves, turn) = {
         let ctrl = controller.read().await;
 
         if ctrl.status != GameStatus::Playing {
@@ -1887,6 +2030,9 @@ async fn request_engine_move(
             .as_ref()
             .map(|delay| delay.use_as_move_time)
             .unwrap_or(false);
+        let dynamic_strength_elo = delay.as_ref().and_then(|delay| {
+            trainer_pressure_adjusted_strength_elo(delay, current_time, moves.len())
+        });
 
         let go_mode = if use_delay_as_move_time {
             let move_time = selected_delay
@@ -1913,7 +2059,15 @@ async fn request_engine_move(
             selected_delay
         };
 
-        (engine, go_mode, move_delay, initial_fen, moves, turn)
+        (
+            engine,
+            go_mode,
+            move_delay,
+            dynamic_strength_elo,
+            initial_fen,
+            moves,
+            turn,
+        )
     };
 
     if let Some(delay) = move_delay {
@@ -1924,6 +2078,18 @@ async fn request_engine_move(
 
     let best_move = {
         let mut engine = engine_arc.lock().await;
+        if let Some(strength_elo) = dynamic_strength_elo {
+            engine.set_option("UCI_LimitStrength", "true").await?;
+            engine
+                .set_option("UCI_Elo", &strength_elo.to_string())
+                .await?;
+            engine
+                .set_option(
+                    "Skill_Level",
+                    &patricia_skill_level_from_elo(strength_elo).to_string(),
+                )
+                .await?;
+        }
         engine.set_position(&initial_fen, &moves).await?;
         engine.go(&go_mode).await?;
         engine.wait_for_bestmove().await?
@@ -2072,6 +2238,7 @@ mod timing_tests {
             min_ms: 90,
             max_ms: 9_900,
             fide_elo: Some(1600),
+            strength_elo: Some(1398),
             initial_time_ms: Some(180_000),
             increment_ms: Some(2_000),
             use_as_move_time: false,
@@ -2098,6 +2265,7 @@ mod timing_tests {
             min_ms: 42,
             max_ms: 4_800,
             fide_elo: Some(1800),
+            strength_elo: Some(1559),
             initial_time_ms: Some(60_000),
             increment_ms: Some(0),
             use_as_move_time: true,
@@ -2108,5 +2276,38 @@ mod timing_tests {
 
         assert!(selected.as_millis() <= 450);
         assert!(selected.as_millis() >= 90);
+    }
+
+    #[test]
+    fn trainer_strength_uses_time_control_quality_handicap() {
+        let blitz = trainer_time_control_strength_elo(2200, 180_000, 2_000);
+        let rapid = trainer_time_control_strength_elo(2200, 900_000, 10_000);
+        let classical = trainer_time_control_strength_elo(2200, 1_800_000, 20_000);
+
+        assert!(blitz < rapid);
+        assert!(rapid < classical);
+        assert_eq!(classical, 2200);
+        assert!((1940..=1985).contains(&blitz));
+    }
+
+    #[test]
+    fn trainer_strength_drops_again_in_time_scrambles() {
+        let delay = EngineMoveDelay {
+            min_ms: 90,
+            max_ms: 9_900,
+            fide_elo: Some(2200),
+            strength_elo: Some(trainer_time_control_strength_elo(2200, 180_000, 2_000)),
+            initial_time_ms: Some(180_000),
+            increment_ms: Some(2_000),
+            use_as_move_time: true,
+        };
+
+        let normal = trainer_pressure_adjusted_strength_elo(&delay, Some(120_000), 20).unwrap();
+        let scramble = trainer_pressure_adjusted_strength_elo(&delay, Some(8_000), 50).unwrap();
+        let panic = trainer_pressure_adjusted_strength_elo(&delay, Some(2_000), 50).unwrap();
+
+        assert!(normal >= delay.strength_elo.unwrap() - 25);
+        assert!(scramble < normal);
+        assert!(panic < scramble);
     }
 }

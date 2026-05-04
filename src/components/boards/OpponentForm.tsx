@@ -190,7 +190,7 @@ export function OpponentForm({
             }
           />
           <Text size="xs" c="dimmed">
-            {describePracticeBotBackend(opponent.botProfile)}
+            {describePracticeBotBackend(opponent.botProfile, opponent.timeControl)}
           </Text>
         </Stack>
       )}

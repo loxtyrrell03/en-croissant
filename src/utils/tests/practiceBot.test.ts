@@ -9,6 +9,10 @@ import {
     patriciaSkillLevelElo,
     patriciaSkillLevelFromFide,
     patriciaTrainerEloFromFide,
+    practiceBotEffectiveEloFromFide,
+    practiceBotEstimatedSecondsPerMove,
+    practiceBotTimeClass,
+    practiceBotTimeControlQualityPenalty,
     practiceBotBackendKind,
     shouldUseClockTimeManagement,
 } from "../practiceBot";
@@ -39,6 +43,40 @@ test("adds Patricia human-mode strength options for trainer games", () => {
     expect(options).toContainEqual({ name: "UCI_LimitStrength", value: "true" });
     expect(options).toContainEqual({ name: "UCI_Elo", value: "2200" });
     expect(options).toContainEqual({ name: "Skill_Level", value: "14" });
+});
+
+test("calibrates classical FIDE strength down by selected time control", () => {
+    const bullet = { seconds: 60_000, increment: 0 };
+    const blitz = { seconds: 180_000, increment: 2_000 };
+    const rapid = { seconds: 900_000, increment: 10_000 };
+    const classical = { seconds: 1_800_000, increment: 20_000 };
+
+    expect(practiceBotTimeClass(bullet)).toBe("bullet");
+    expect(practiceBotTimeClass(blitz)).toBe("blitz");
+    expect(practiceBotTimeClass(rapid)).toBe("rapid");
+    expect(practiceBotTimeClass(classical)).toBe("classical");
+    expect(practiceBotEstimatedSecondsPerMove(blitz)).toBe(6.5);
+    expect(practiceBotTimeControlQualityPenalty(2200, blitz)).toBeGreaterThan(200);
+    expect(practiceBotEffectiveEloFromFide(2200, blitz)).toBeLessThan(
+        practiceBotEffectiveEloFromFide(2200, rapid),
+    );
+    expect(practiceBotEffectiveEloFromFide(2200, classical)).toBe(2200);
+});
+
+test("passes time-control-calibrated strength options for trainer games", () => {
+    const options = buildPracticeBotOptions(
+        [{ name: "Threads", value: 2 }],
+        {
+            enabled: true,
+            kind: "patricia",
+            fideElo: 2200,
+        },
+        { seconds: 180_000, increment: 2_000 },
+    );
+
+    expect(options).toContainEqual({ name: "UCI_LimitStrength", value: "true" });
+    expect(options).toContainEqual({ name: "UCI_Elo", value: "1946" });
+    expect(options).toContainEqual({ name: "Skill_Level", value: "11" });
 });
 
 test("keeps legacy Maia and Stockfish profiles on the Patricia backend", () => {
@@ -94,6 +132,10 @@ test("passes rating and time control into the backend clock model", () => {
 
     expect(moveDelay).toMatchObject({
         fideElo: 1600,
+        strengthElo: practiceBotEffectiveEloFromFide(1600, {
+            seconds: 300_000,
+            increment: 5_000,
+        }),
         initialTimeMs: 300_000,
         incrementMs: 5_000,
         useAsMoveTime: true,

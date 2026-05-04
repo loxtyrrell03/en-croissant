@@ -258,9 +258,11 @@ function BoardGame() {
     const engineSettings = settings.engineSettings ?? settings.engine?.settings ?? [];
     return {
       type: "engine",
-      name: botProfile ? formatPracticeBotName(botProfile) : (settings.engine?.name ?? "Engine"),
+      name: botProfile
+        ? formatPracticeBotName(botProfile, settings.timeControl)
+        : (settings.engine?.name ?? "Engine"),
       path: settings.engine?.path ?? "",
-      options: buildPracticeBotOptions(engineSettings, botProfile),
+      options: buildPracticeBotOptions(engineSettings, botProfile, settings.timeControl),
       go: getPracticeBotGoMode(botProfile, settings.go),
       useClockTimeManagement: shouldUseClockTimeManagement(botProfile),
       moveDelay: getPracticeBotMoveDelay(botProfile, settings.timeControl),

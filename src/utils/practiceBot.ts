@@ -23,10 +23,13 @@ export type PracticeBotMoveDelay = {
     minMs: number;
     maxMs: number;
     fideElo?: number;
+    strengthElo?: number;
     initialTimeMs?: number;
     incrementMs?: number;
     useAsMoveTime?: boolean;
 };
+
+export type PracticeBotTimeClass = "bullet" | "blitz" | "rapid" | "classical";
 
 const MANAGED_PATRICIA_VERSION = "5";
 const MANAGED_PATRICIA_ENGINE_ID = "managed-patricia-trainer";
@@ -49,8 +52,17 @@ export const DEFAULT_PRACTICE_BOT_PROFILE: PracticeBotProfile = {
 };
 
 const PATRICIA_SKILL_LEVELS = [
-    500, 800, 1000, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100,
-    2200, 2300, 2400, 2500, 2650, 2800, 3000,
+    500, 800, 1000, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300, 2400,
+    2500, 2650, 2800, 3000,
+] as const;
+
+// Rating-equivalent move-quality handicap; keep in sync with src-tauri/src/game.rs.
+const TRAINER_QUALITY_PENALTY_POINTS = [
+    { secondsPerMove: 1.5, penalty: 700 },
+    { secondsPerMove: 3, penalty: 460 },
+    { secondsPerMove: 7, penalty: 225 },
+    { secondsPerMove: 20, penalty: 60 },
+    { secondsPerMove: 45, penalty: 0 },
 ] as const;
 
 const MANAGED_PATRICIA_PACKAGES: Partial<
@@ -77,17 +89,92 @@ function clamp(value: number, min: number, max: number) {
     return Math.min(max, Math.max(min, value));
 }
 
-export function patriciaTrainerEloFromFide(fideElo: number) {
-    return Math.round(clamp(fideElo, PATRICIA_MIN_FIDE_ELO, PATRICIA_MAX_FIDE_ELO));
+function estimatedGameSeconds(timeControl: TimeControlField) {
+    return (timeControl.seconds + (timeControl.increment ?? 0) * 40) / 1000;
 }
 
-export function patriciaSkillLevelFromFide(fideElo: number) {
-    const target = patriciaTrainerEloFromFide(fideElo);
-    const index = PATRICIA_SKILL_LEVELS.reduce((bestIndex, elo, index) =>
-        Math.abs(elo - target) < Math.abs(PATRICIA_SKILL_LEVELS[bestIndex] - target)
-            ? index
-            : bestIndex,
-    0);
+export function practiceBotTimeClass(
+    timeControl: TimeControlField = PRACTICE_BOT_DEFAULT_TIME_CONTROL,
+): PracticeBotTimeClass {
+    const totalSeconds = estimatedGameSeconds(timeControl);
+    if (totalSeconds <= 179) return "bullet";
+    if (totalSeconds <= 479) return "blitz";
+    if (totalSeconds <= 1499) return "rapid";
+    return "classical";
+}
+
+export function practiceBotEstimatedSecondsPerMove(
+    timeControl: TimeControlField = PRACTICE_BOT_DEFAULT_TIME_CONTROL,
+) {
+    return estimatedGameSeconds(timeControl) / 40;
+}
+
+function ratingQualityPenaltyScale(fideElo: number) {
+    const clamped = clamp(fideElo, PATRICIA_MIN_FIDE_ELO, PATRICIA_MAX_FIDE_ELO);
+    if (clamped <= 2200) {
+        return 0.72 + ((clamped - PATRICIA_MIN_FIDE_ELO) / 1400) * 0.28;
+    }
+    return 1 + ((clamped - 2200) / 800) * 0.12;
+}
+
+function qualityPenaltyForSecondsPerMove(secondsPerMove: number, fideElo: number) {
+    const seconds = Math.max(0.1, secondsPerMove);
+    const points = TRAINER_QUALITY_PENALTY_POINTS;
+    let rawPenalty = points[points.length - 1].penalty;
+
+    if (seconds <= points[0].secondsPerMove) {
+        rawPenalty = points[0].penalty + (points[0].secondsPerMove - seconds) * 90;
+    } else {
+        for (let i = 1; i < points.length; i++) {
+            const previous = points[i - 1];
+            const next = points[i];
+            if (seconds <= next.secondsPerMove) {
+                const t =
+                    (seconds - previous.secondsPerMove) /
+                    (next.secondsPerMove - previous.secondsPerMove);
+                rawPenalty = previous.penalty + (next.penalty - previous.penalty) * t;
+                break;
+            }
+        }
+    }
+
+    return Math.round(clamp(rawPenalty * ratingQualityPenaltyScale(fideElo), 0, 850));
+}
+
+export function practiceBotTimeControlQualityPenalty(
+    fideElo: number,
+    timeControl?: TimeControlField,
+) {
+    if (!timeControl) return 0;
+    return qualityPenaltyForSecondsPerMove(
+        practiceBotEstimatedSecondsPerMove(timeControl),
+        fideElo,
+    );
+}
+
+export function practiceBotEffectiveEloFromFide(fideElo: number, timeControl?: TimeControlField) {
+    return Math.round(
+        clamp(
+            fideElo - practiceBotTimeControlQualityPenalty(fideElo, timeControl),
+            PATRICIA_MIN_FIDE_ELO,
+            PATRICIA_MAX_FIDE_ELO,
+        ),
+    );
+}
+
+export function patriciaTrainerEloFromFide(fideElo: number, timeControl?: TimeControlField) {
+    return practiceBotEffectiveEloFromFide(fideElo, timeControl);
+}
+
+export function patriciaSkillLevelFromFide(fideElo: number, timeControl?: TimeControlField) {
+    const target = patriciaTrainerEloFromFide(fideElo, timeControl);
+    const index = PATRICIA_SKILL_LEVELS.reduce(
+        (bestIndex, elo, index) =>
+            Math.abs(elo - target) < Math.abs(PATRICIA_SKILL_LEVELS[bestIndex] - target)
+                ? index
+                : bestIndex,
+        0,
+    );
     return index + 1;
 }
 
@@ -101,14 +188,26 @@ export function practiceBotBackendKind(profile: PracticeBotProfile | null): Prac
     return "patricia";
 }
 
-export function describePracticeBotBackend(profile: PracticeBotProfile) {
-    const skillLevel = patriciaSkillLevelFromFide(profile.fideElo);
-    const targetElo = patriciaTrainerEloFromFide(profile.fideElo);
+export function describePracticeBotBackend(
+    profile: PracticeBotProfile,
+    timeControl?: TimeControlField,
+) {
+    const skillLevel = patriciaSkillLevelFromFide(profile.fideElo, timeControl);
+    const targetElo = patriciaTrainerEloFromFide(profile.fideElo, timeControl);
+    const penalty = practiceBotTimeControlQualityPenalty(profile.fideElo, timeControl);
+    if (timeControl && penalty > 0) {
+        return `Patricia human mode - Skill ${skillLevel}, ${profile.fideElo} FIDE classical -> ${targetElo} ${practiceBotTimeClass(timeControl)} quality`;
+    }
     return `Patricia human mode - Skill ${skillLevel}, target ${targetElo} FIDE`;
 }
 
-export function formatPracticeBotName(profile: PracticeBotProfile) {
-    return `Patricia ${patriciaTrainerEloFromFide(profile.fideElo)} FIDE`;
+export function formatPracticeBotName(profile: PracticeBotProfile, timeControl?: TimeControlField) {
+    const targetElo = patriciaTrainerEloFromFide(profile.fideElo, timeControl);
+    const penalty = practiceBotTimeControlQualityPenalty(profile.fideElo, timeControl);
+    if (timeControl && penalty > 0) {
+        return `Patricia ${profile.fideElo} FIDE (${targetElo} ${practiceBotTimeClass(timeControl)})`;
+    }
+    return `Patricia ${targetElo} FIDE`;
 }
 
 export function isLikelyPatriciaEngine(engine: LocalEngine | null | undefined) {
@@ -165,6 +264,7 @@ function upsertOption(options: EngineOption[], name: string, value: string | num
 export function buildPracticeBotOptions(
     engineSettings: EngineSettings | undefined,
     profile: PracticeBotProfile | null,
+    timeControl?: TimeControlField,
 ) {
     let options = (engineSettings ?? [])
         .filter((setting) => setting.name !== "MultiPV")
@@ -177,10 +277,14 @@ export function buildPracticeBotOptions(
         return options;
     }
 
-    const targetElo = patriciaTrainerEloFromFide(profile.fideElo);
+    const targetElo = patriciaTrainerEloFromFide(profile.fideElo, timeControl);
     options = upsertOption(options, "UCI_LimitStrength", "true");
     options = upsertOption(options, "UCI_Elo", targetElo);
-    options = upsertOption(options, "Skill_Level", patriciaSkillLevelFromFide(profile.fideElo));
+    options = upsertOption(
+        options,
+        "Skill_Level",
+        patriciaSkillLevelFromFide(profile.fideElo, timeControl),
+    );
     return options;
 }
 
@@ -205,6 +309,7 @@ export function getPracticeBotMoveDelay(
         (timeControl?.seconds ?? PRACTICE_BOT_DEFAULT_TIME_CONTROL.seconds) / 1000;
     const initialTimeMs = timeControl?.seconds ?? PRACTICE_BOT_DEFAULT_TIME_CONTROL.seconds;
     const incrementMs = timeControl?.increment ?? 0;
+    const strengthElo = patriciaTrainerEloFromFide(profile.fideElo, timeControl);
     const base =
         initialSeconds <= 60
             ? 120
@@ -228,6 +333,7 @@ export function getPracticeBotMoveDelay(
             minMs: Math.round(base * 0.35),
             maxMs: Math.max(Math.round(base * 1.2), max),
             fideElo: profile.fideElo,
+            strengthElo,
             initialTimeMs,
             incrementMs,
             useAsMoveTime: true,
@@ -238,6 +344,7 @@ export function getPracticeBotMoveDelay(
             minMs: Math.round(base * 0.9),
             maxMs: Math.max(Math.round(base * 2.6), max),
             fideElo: profile.fideElo,
+            strengthElo,
             initialTimeMs,
             incrementMs,
             useAsMoveTime: true,
@@ -247,6 +354,7 @@ export function getPracticeBotMoveDelay(
         minMs: Math.round(base * 0.55),
         maxMs: Math.max(Math.round(base * 1.8), max),
         fideElo: profile.fideElo,
+        strengthElo,
         initialTimeMs,
         incrementMs,
         useAsMoveTime: true,
