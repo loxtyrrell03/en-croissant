@@ -726,7 +726,13 @@ const compareDatabasesFamily = atomFamily((_tab: string) => atom<string[]>([]));
 export const currentCompareDatabasesAtom = tabValue(compareDatabasesFamily);
 
 const boardPreviewShapesFamily = atomFamily((_tab: string) =>
-    atom<{ fen: string; displayFen?: string; shapes: DrawShape[] } | null>(null),
+    atom<{
+        fen: string;
+        sourceFen?: string;
+        displayFen?: string;
+        stickyDisplay?: boolean;
+        shapes: DrawShape[];
+    } | null>(null),
 );
 export const currentBoardPreviewShapesAtom = tabValue(boardPreviewShapesFamily);
 

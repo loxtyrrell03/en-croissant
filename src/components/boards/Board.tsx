@@ -204,6 +204,25 @@ function uciArrowShape(uci: string | undefined, brush: string): DrawShape | null
   };
 }
 
+function practiceAttemptBoardPreview(sourceFen: string, displayFen: string, move: NormalMove) {
+  return {
+    fen: displayFen,
+    sourceFen,
+    displayFen,
+    stickyDisplay: true,
+    shapes: [
+      {
+        orig: makeSquare(move.from),
+        dest: makeSquare(move.to),
+        brush: "preview",
+        modifiers: {
+          lineWidth: LARGE_BRUSH,
+        },
+      },
+    ],
+  };
+}
+
 type MistakeReviewRevealState = {
   fen: string;
   mode: "best" | "mistake";
@@ -939,6 +958,10 @@ function Board({
       }
 
       setPendingMove(null);
+      const attemptPos = pos.clone();
+      attemptPos.play(move);
+      const attemptFen = makeFen(attemptPos.toSetup());
+      setBoardPreviewShapes(practiceAttemptBoardPreview(c.fen, attemptFen, move));
       const immediateAssessment = assessOpeningReviewMove(c, { san, uci }, null, null);
       const immediateState = openingReviewAssessmentToPracticeState({
         position: c,
@@ -1425,19 +1448,32 @@ function Board({
     setPlanExplorerPreviewLine(null);
   }, [setPlanExplorerPreviewLine]);
   const clearBoardPositionPreview = useCallback(() => {
-    setBoardPreviewShapes((current) => (current?.displayFen ? null : current));
+    setBoardPreviewShapes((current) =>
+      current?.displayFen && !current.stickyDisplay ? null : current,
+    );
   }, [setBoardPreviewShapes]);
 
   useEffect(() => {
-    if (boardPreviewShapes?.displayFen && boardPreviewShapes.fen !== currentNode.fen) {
+    const previewSourceFen = boardPreviewShapes?.sourceFen ?? boardPreviewShapes?.fen;
+    if (boardPreviewShapes?.displayFen && previewSourceFen !== currentNode.fen) {
       setBoardPreviewShapes(null);
     }
   }, [
     boardPreviewShapes?.displayFen,
     boardPreviewShapes?.fen,
+    boardPreviewShapes?.sourceFen,
     currentNode.fen,
     setBoardPreviewShapes,
   ]);
+
+  useEffect(() => {
+    if (
+      boardPreviewShapes?.stickyDisplay &&
+      (!practicing || practiceState.phase === "idle" || practiceState.phase === "waiting")
+    ) {
+      setBoardPreviewShapes(null);
+    }
+  }, [boardPreviewShapes?.stickyDisplay, practiceState.phase, practicing, setBoardPreviewShapes]);
 
   useHotkeys(keyMap.TOGGLE_EVAL_BAR.keys, () => setEvalOpen((e) => !e));
 
