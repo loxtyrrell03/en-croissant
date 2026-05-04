@@ -9,6 +9,7 @@
     "build": "tauri build --no-bundle",
     "dev": "tauri dev",
     "dev:safe": "powershell -ExecutionPolicy Bypass -File scripts/safe-dev.ps1",
+    "dev:safe:full": "powershell -ExecutionPolicy Bypass -File scripts/safe-dev.ps1 -FullBackup",
     "tauri": "tauri",
     "format": "oxfmt",
     "test": "vitest run",
