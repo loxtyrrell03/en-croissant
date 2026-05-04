@@ -27,6 +27,7 @@ import { applyMistakeReviewClockTimings } from "@/utils/mistakeReviewClockHydrat
 import { hasOnlineDatabaseNewLocalGames } from "@/utils/onlineGameImport";
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const ONE_MINUTE_MS = 60 * 1000;
 const OPENING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 5";
 const MIDDLEGAME_FEN = "r1bq1rk1/ppp2ppp/2n2n2/3pp3/3PP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 20";
 const ENDGAME_FEN = "8/8/8/8/8/8/4K3/4k3 w - - 0 40";
@@ -401,6 +402,29 @@ describe("mistake review helpers", () => {
         expect(lapse.card.reps).toBe(0);
         expect(lapse.card.scheduled_days).toBe(1);
         expect(lapse.card.lapses).toBe(1);
+    });
+
+    test("repertoire practice SM2 uses minute-scale first reviews without changing the default", () => {
+        const now = new Date("2026-04-26T12:00:00Z");
+        const defaultGood = scheduleSm2Card(createEmptyCard(), 3, now);
+        const again = scheduleSm2Card(createEmptyCard(), 1, now, { profile: "repertoire" });
+        const hard = scheduleSm2Card(createEmptyCard(), 2, now, { profile: "repertoire" });
+        const firstGood = scheduleSm2Card(createEmptyCard(), 3, now, { profile: "repertoire" });
+        const firstEasy = scheduleSm2Card(createEmptyCard(), 4, now, { profile: "repertoire" });
+        const secondGood = scheduleSm2Card(
+            firstGood.card,
+            3,
+            new Date(now.getTime() + 30 * ONE_MINUTE_MS),
+            { profile: "repertoire" },
+        );
+
+        expect(defaultGood.card.due.getTime()).toBe(now.getTime() + ONE_DAY_MS);
+        expect(again.card.due.getTime()).toBe(now.getTime() + 5 * ONE_MINUTE_MS);
+        expect(hard.card.due.getTime()).toBe(now.getTime() + 15 * ONE_MINUTE_MS);
+        expect(firstGood.card.due.getTime()).toBe(now.getTime() + 30 * ONE_MINUTE_MS);
+        expect(firstEasy.card.due.getTime()).toBe(now.getTime() + 2 * 60 * ONE_MINUTE_MS);
+        expect(secondGood.card.due.getTime()).toBe(now.getTime() + (30 + 4 * 60) * ONE_MINUTE_MS);
+        expect(firstGood.card.scheduled_days).toBeCloseTo(30 / (24 * 60));
     });
 
     test("merge preserves SRS state while aggregating repeated evidence", () => {

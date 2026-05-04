@@ -319,7 +319,7 @@ function PracticePanel() {
           const card = deck.positions[positionIndex].card;
           const grade = Number(practiceAutoDifficulty) as 1 | 2 | 3 | 4;
 
-          updateCardPerformance(setDeck, positionIndex, card, grade);
+          updateCardPerformance(setDeck, positionIndex, card, grade, { profile: "repertoire" });
           setSessionStats((prev) => ({
             ...prev,
             correct: prev.correct + 1,
@@ -368,7 +368,7 @@ function PracticePanel() {
     const card = deck.positions[positionIndex].card;
     const wasCorrect = practiceState.phase === "correct";
 
-    updateCardPerformance(setDeck, positionIndex, card, grade);
+    updateCardPerformance(setDeck, positionIndex, card, grade, { profile: "repertoire" });
     setSessionStats((prev) => ({
       ...prev,
       correct: wasCorrect ? prev.correct + 1 : prev.correct,
@@ -854,7 +854,7 @@ function QualityRatingPanel({
   timeTaken?: number;
 }) {
   const { t } = useTranslation();
-  const reviewTimes = card ? getNextReviewTimes(card) : null;
+  const reviewTimes = card ? getNextReviewTimes(card, { profile: "repertoire" }) : null;
   const feedbackColor = color ?? "green";
 
   return (

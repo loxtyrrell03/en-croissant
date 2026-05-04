@@ -9,12 +9,27 @@ import { isPrefix } from "@/utils/misc";
 import { type TreeNode, treeIterator } from "@/utils/treeReducer";
 
 const REVIEW_DAY_MS = 24 * 60 * 60 * 1000;
+const REVIEW_MINUTE_MS = 60 * 1000;
 const SM2_DEFAULT_EASE_FACTOR = 2.5;
 const SM2_MIN_EASE_FACTOR = 1.3;
+const REPERTOIRE_AGAIN_MINUTES = 5;
+const REPERTOIRE_HARD_MINUTES = 15;
+const REPERTOIRE_FIRST_GOOD_MINUTES = 30;
+const REPERTOIRE_SECOND_GOOD_MINUTES = 4 * 60;
+const REPERTOIRE_FIRST_EASY_MINUTES = 2 * 60;
+const REPERTOIRE_SECOND_EASY_MINUTES = 12 * 60;
 
 type Sm2CardFields = {
     sm2EaseFactor?: number;
     sm2IntervalDays?: number;
+    sm2IntervalMinutes?: number;
+    sm2ScheduleProfile?: ReviewScheduleProfile;
+};
+
+export type ReviewScheduleProfile = "daily" | "repertoire";
+
+export type ReviewScheduleOptions = {
+    profile?: ReviewScheduleProfile;
 };
 
 const reviewTreeNodeSchema: z.ZodType<TreeNode> = z.lazy(
@@ -443,8 +458,9 @@ export function updateCardPerformance(
     i: number,
     card: Card,
     grade: 1 | 2 | 3 | 4,
+    options: ReviewScheduleOptions = {},
 ) {
-    const { card: newCard, log } = scheduleSm2Card(card, grade);
+    const { card: newCard, log } = scheduleSm2Card(card, grade, new Date(), options);
 
     setPositions((data) => {
         data.positions[i].card = newCard;
@@ -460,7 +476,12 @@ export function scheduleSm2Card(
     card: Card,
     grade: 1 | 2 | 3 | 4,
     reviewedAt: Date = new Date(),
+    options: ReviewScheduleOptions = {},
 ): { card: Card; log: ReviewLog } {
+    if (options.profile === "repertoire") {
+        return scheduleRepertoireSm2Card(card, grade, reviewedAt);
+    }
+
     const now = new Date(reviewedAt);
     const q = sm2QualityFromGrade(grade);
     const previousReps = Math.max(0, Math.trunc(Number(card.reps) || 0));
@@ -528,6 +549,86 @@ export function scheduleSm2Card(
     };
 }
 
+function scheduleRepertoireSm2Card(
+    card: Card,
+    grade: 1 | 2 | 3 | 4,
+    reviewedAt: Date = new Date(),
+): { card: Card; log: ReviewLog } {
+    const now = new Date(reviewedAt);
+    const q = sm2QualityFromGrade(grade);
+    const previousReps = Math.max(0, Math.trunc(Number(card.reps) || 0));
+    const previousLapses = Math.max(0, Math.trunc(Number(card.lapses) || 0));
+    const previousIntervalMinutes = getSm2IntervalMinutes(card);
+    const hasRepertoireInterval = previousIntervalMinutes !== null;
+    const previousEaseFactor = getSm2EaseFactor(card);
+    const easeFactor = Math.max(
+        SM2_MIN_EASE_FACTOR,
+        previousEaseFactor + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02)),
+    );
+
+    let reps: number;
+    let lapses = previousLapses;
+    let intervalMinutes: number;
+    let state: State;
+
+    if (q >= 4) {
+        reps = previousReps + 1;
+        if (!hasRepertoireInterval || reps === 1) {
+            intervalMinutes =
+                grade === 4 ? REPERTOIRE_FIRST_EASY_MINUTES : REPERTOIRE_FIRST_GOOD_MINUTES;
+        } else if (reps === 2) {
+            intervalMinutes =
+                grade === 4 ? REPERTOIRE_SECOND_EASY_MINUTES : REPERTOIRE_SECOND_GOOD_MINUTES;
+        } else {
+            intervalMinutes = Math.max(
+                REPERTOIRE_AGAIN_MINUTES,
+                Math.round(previousIntervalMinutes * easeFactor),
+            );
+        }
+        state = State.Review;
+    } else {
+        reps = 0;
+        lapses = previousLapses + 1;
+        intervalMinutes = grade === 2 ? REPERTOIRE_HARD_MINUTES : REPERTOIRE_AGAIN_MINUTES;
+        state = previousReps > 0 ? State.Relearning : State.Learning;
+    }
+
+    const due = new Date(now.getTime() + intervalMinutes * REVIEW_MINUTE_MS);
+    const scheduledDays = intervalMinutes / (24 * 60);
+    const elapsedDays = getElapsedReviewDays(card.last_review, now);
+    const nextCard = {
+        ...card,
+        due,
+        stability: scheduledDays,
+        difficulty: easeFactor,
+        elapsed_days: elapsedDays,
+        scheduled_days: scheduledDays,
+        reps,
+        lapses,
+        state,
+        last_review: now,
+    } satisfies Card;
+    const sm2Card = nextCard as Card & Sm2CardFields;
+    sm2Card.sm2EaseFactor = easeFactor;
+    sm2Card.sm2IntervalMinutes = intervalMinutes;
+    sm2Card.sm2ScheduleProfile = "repertoire";
+
+    return {
+        card: sm2Card,
+        log: {
+            rating: grade,
+            state,
+            due,
+            stability: scheduledDays,
+            difficulty: easeFactor,
+            elapsed_days: elapsedDays,
+            last_elapsed_days: Math.max(0, Math.trunc(Number(card.elapsed_days) || 0)),
+            scheduled_days: scheduledDays,
+            review: now,
+        },
+    };
+}
+
 export function syncDeck(
     existing: Position[],
     tree: TreeNode,
@@ -567,12 +668,15 @@ export function syncDeck(
     return { positions: merged, added, removed };
 }
 
-export function getNextReviewTimes(card: Card): Record<Grade, Date> {
+export function getNextReviewTimes(
+    card: Card,
+    options: ReviewScheduleOptions = {},
+): Record<Grade, Date> {
     return {
-        1: scheduleSm2Card(card, 1).card.due,
-        2: scheduleSm2Card(card, 2).card.due,
-        3: scheduleSm2Card(card, 3).card.due,
-        4: scheduleSm2Card(card, 4).card.due,
+        1: scheduleSm2Card(card, 1, new Date(), options).card.due,
+        2: scheduleSm2Card(card, 2, new Date(), options).card.due,
+        3: scheduleSm2Card(card, 3, new Date(), options).card.due,
+        4: scheduleSm2Card(card, 4, new Date(), options).card.due,
     };
 }
 
@@ -613,6 +717,12 @@ function getSm2IntervalDays(card: Card) {
     const sm2Card = card as Card & Sm2CardFields & { interval?: number };
     const value = Number(sm2Card.sm2IntervalDays ?? sm2Card.interval ?? card.scheduled_days);
     return Number.isFinite(value) && value > 0 ? Math.max(1, Math.round(value)) : 1;
+}
+
+function getSm2IntervalMinutes(card: Card) {
+    const sm2Card = card as Card & Sm2CardFields;
+    const value = Number(sm2Card.sm2IntervalMinutes);
+    return Number.isFinite(value) && value > 0 ? Math.max(1, Math.round(value)) : null;
 }
 
 function getElapsedReviewDays(lastReview: Card["last_review"], reviewedAt: Date) {
