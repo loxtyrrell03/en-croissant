@@ -21,6 +21,7 @@ import {
   IconArrowBack,
   IconArrowRight,
   IconBook,
+  IconBulb,
   IconCheck,
   IconFlame,
   IconInfoCircle,
@@ -53,6 +54,7 @@ import {
   currentTabAtom,
   deckAtomFamily,
   type PracticeData,
+  type PracticeState,
   type PracticeSessionStats,
   practiceCardStartTimeAtom,
   practiceSessionStatsAtom,
@@ -60,8 +62,70 @@ import {
   practiceAutoDifficultyAtom,
 } from "@/state/atoms";
 import { getTabFile, getTabGameNumber, getTabPracticeKey } from "@/utils/tabs";
+import { mistakeReviewSeverityLabel } from "@/utils/mistakeReview";
+import { formatOpeningReviewMoveSource } from "@/utils/openingReviewPractice";
 import { findFen, getNodeAtPath } from "@/utils/treeReducer";
 import RepertoireInfo from "./RepertoireInfo";
+
+type PracticeMoveQualityLabel = NonNullable<PracticeState["moveQualityLabel"]>;
+
+function practiceMoveQualityColor(
+  label: PracticeMoveQualityLabel | undefined,
+  phase: PracticeState["phase"],
+) {
+  switch (label) {
+    case "best":
+      return "green";
+    case "good":
+      return "teal";
+    case "okay":
+      return "blue";
+    case "inaccuracy":
+      return "yellow";
+    case "mistake":
+      return "orange";
+    case "blunder":
+      return "red";
+    default:
+      return phase === "correct" ? "green" : "red";
+  }
+}
+
+function practiceMoveQualityIcon(
+  label: PracticeMoveQualityLabel | undefined,
+  phase: PracticeState["phase"],
+) {
+  if (phase === "incorrect" && label !== "okay" && label !== "inaccuracy") return "x";
+  if (label === "good" || label === "okay" || label === "inaccuracy") return "bulb";
+  return "check";
+}
+
+function practiceMoveQualityTitle(practiceState: PracticeState, fallback: string) {
+  return practiceState.moveQualityLabel
+    ? mistakeReviewSeverityLabel(practiceState.moveQualityLabel)
+    : fallback;
+}
+
+function practiceMoveQualityDetail(practiceState: PracticeState) {
+  const source = practiceState.bestMoveSource
+    ? formatOpeningReviewMoveSource(practiceState.bestMoveSource)
+    : "Saved answer";
+  const bestMove = practiceState.bestMove ?? practiceState.answer;
+  const parts: string[] = [];
+
+  if (practiceState.moveQualityLabel === "best" && practiceState.playedMove) {
+    parts.push(`${source} has ${practiceState.playedMove} as best.`);
+  } else if (bestMove) {
+    parts.push(`${source} has ${bestMove} as best.`);
+  }
+
+  if (practiceState.moveLossCp !== undefined && practiceState.moveQualityLabel !== "best") {
+    const rank = practiceState.chessDbRank ? `, rank ${practiceState.chessDbRank}` : "";
+    parts.push(`${Math.round(practiceState.moveLossCp)} cp behind${rank}.`);
+  }
+
+  return parts.join(" ");
+}
 
 function PracticePanel() {
   const { t } = useTranslation();
@@ -240,18 +304,38 @@ function PracticePanel() {
     setDeck,
   ]);
 
+  const canRateAttempt =
+    sessionStats.mode !== "full" &&
+    (practiceState.phase === "correct" ||
+      (practiceState.phase === "incorrect" && Boolean(practiceState.moveQualityLabel)));
+  const attemptFeedbackTitle = practiceMoveQualityTitle(
+    practiceState,
+    practiceState.phase === "correct" ? t("Board.Practice.Correct") : t("Common.Incorrect"),
+  );
+  const attemptFeedbackDetail = practiceMoveQualityDetail(practiceState);
+  const attemptFeedbackColor = practiceMoveQualityColor(
+    practiceState.moveQualityLabel,
+    practiceState.phase,
+  );
+  const attemptFeedbackIcon = practiceMoveQualityIcon(
+    practiceState.moveQualityLabel,
+    practiceState.phase,
+  );
+
   function handleQualityRating(grade: 1 | 2 | 3 | 4) {
-    if (practiceState.phase !== "correct" || practiceState.positionIndex === undefined) return;
+    if (!canRateAttempt || practiceState.positionIndex === undefined) return;
 
     const { positionIndex } = practiceState;
     const card = deck.positions[positionIndex].card;
+    const wasCorrect = practiceState.phase === "correct";
 
     updateCardPerformance(setDeck, positionIndex, card, grade);
     setSessionStats((prev) => ({
       ...prev,
-      correct: prev.correct + 1,
-      streak: prev.streak + 1,
-      bestStreak: Math.max(prev.bestStreak, prev.streak + 1),
+      correct: wasCorrect ? prev.correct + 1 : prev.correct,
+      incorrect: wasCorrect ? prev.incorrect : prev.incorrect + 1,
+      streak: wasCorrect ? prev.streak + 1 : 0,
+      bestStreak: wasCorrect ? Math.max(prev.bestStreak, prev.streak + 1) : prev.bestStreak,
     }));
     newPractice();
   }
@@ -284,29 +368,42 @@ function PracticePanel() {
   }
 
   function skipCard() {
+    const wasIncorrect = practiceState.phase === "incorrect";
     if (sessionStats.mode === "full" && sessionStats.remainingPositions.length > 0) {
       const remainingPositions = sessionStats.remainingPositions.slice(1);
-      setSessionStats((prev) => ({ ...prev, remainingPositions }));
+      setSessionStats((prev) => ({
+        ...prev,
+        remainingPositions,
+        incorrect: wasIncorrect ? prev.incorrect + 1 : prev.incorrect,
+        streak: wasIncorrect ? 0 : prev.streak,
+      }));
       newPractice({ remainingPositions });
     } else {
+      if (wasIncorrect) {
+        setSessionStats((prev) => ({
+          ...prev,
+          incorrect: prev.incorrect + 1,
+          streak: 0,
+        }));
+      }
       newPractice();
     }
   }
 
   useHotkeys("1", () => handleQualityRating(1), {
-    enabled: practiceState.phase === "correct",
+    enabled: canRateAttempt,
   });
   useHotkeys("2", () => handleQualityRating(2), {
-    enabled: practiceState.phase === "correct",
+    enabled: canRateAttempt,
   });
   useHotkeys("3", () => handleQualityRating(3), {
-    enabled: practiceState.phase === "correct",
+    enabled: canRateAttempt,
   });
   useHotkeys("4", () => handleQualityRating(4), {
-    enabled: practiceState.phase === "correct",
+    enabled: canRateAttempt,
   });
   useHotkeys("space", () => skipCard(), {
-    enabled: practiceState.phase === "incorrect",
+    enabled: practiceState.phase === "incorrect" && !canRateAttempt,
   });
 
   const [positionsOpen, setPositionsOpen] = useToggle();
@@ -581,9 +678,13 @@ function PracticePanel() {
                   </Paper>
                 )}
 
-                {practiceState.phase === "correct" && sessionStats.mode !== "full" && (
+                {canRateAttempt && (
                   <QualityRatingPanel
                     onRate={handleQualityRating}
+                    title={attemptFeedbackTitle}
+                    detail={attemptFeedbackDetail}
+                    color={attemptFeedbackColor}
+                    icon={attemptFeedbackIcon}
                     card={
                       practiceState.positionIndex !== undefined
                         ? deck.positions[practiceState.positionIndex].card
@@ -593,22 +694,44 @@ function PracticePanel() {
                   />
                 )}
 
-                {practiceState.phase === "incorrect" && (
+                {practiceState.phase === "incorrect" && !canRateAttempt && (
                   <Paper p="sm" withBorder>
                     <Stack gap="xs" align="center">
                       <Group gap="xs">
-                        <ThemeIcon size="md" color="red" variant="light" radius="xl">
-                          <IconX size={16} />
+                        <ThemeIcon
+                          size="md"
+                          color={attemptFeedbackColor}
+                          variant="light"
+                          radius="xl"
+                        >
+                          {attemptFeedbackIcon === "bulb" ? (
+                            <IconBulb size={16} />
+                          ) : attemptFeedbackIcon === "x" ? (
+                            <IconX size={16} />
+                          ) : (
+                            <IconCheck size={16} />
+                          )}
                         </ThemeIcon>
-                        <Text fw={500} c="red">
-                          {t("Common.Incorrect")}
+                        <Text fw={500} c={attemptFeedbackColor}>
+                          {attemptFeedbackTitle}
                         </Text>
                       </Group>
-                      <Text fz="sm" c="dimmed">
-                        {t("Board.Practice.CorrectMoveWas", {
-                          move: practiceState.answer,
-                        })}
-                      </Text>
+                      {attemptFeedbackDetail ? (
+                        <Text fz="sm" c="dimmed" ta="center">
+                          {attemptFeedbackDetail}
+                        </Text>
+                      ) : (
+                        <Text fz="sm" c="dimmed">
+                          {t("Board.Practice.CorrectMoveWas", {
+                            move: practiceState.answer,
+                          })}
+                        </Text>
+                      )}
+                      {practiceState.playedMove && (
+                        <Text fz="xs" c="dimmed">
+                          You played: {practiceState.playedMove}
+                        </Text>
+                      )}
                       <Button variant="light" size="sm" onClick={skipCard}>
                         {t("Board.Practice.NextPosition")}
                       </Button>
@@ -676,25 +799,40 @@ function PracticePanel() {
 
 function QualityRatingPanel({
   onRate,
+  title,
+  detail,
+  color,
+  icon,
   card,
   timeTaken,
 }: {
   onRate: (grade: 1 | 2 | 3 | 4) => void;
+  title?: string;
+  detail?: string;
+  color?: "blue" | "green" | "orange" | "red" | "teal" | "yellow";
+  icon?: "bulb" | "check" | "x";
   card?: import("ts-fsrs").Card;
   timeTaken?: number;
 }) {
   const { t } = useTranslation();
   const reviewTimes = card ? getNextReviewTimes(card) : null;
+  const feedbackColor = color ?? "green";
 
   return (
     <Paper p="sm" withBorder>
       <Stack gap="sm" align="center">
         <Group gap="xs">
-          <ThemeIcon size="md" color="green" variant="light" radius="xl">
-            <IconCheck size={16} />
+          <ThemeIcon size="md" color={feedbackColor} variant="light" radius="xl">
+            {icon === "bulb" ? (
+              <IconBulb size={16} />
+            ) : icon === "x" ? (
+              <IconX size={16} />
+            ) : (
+              <IconCheck size={16} />
+            )}
           </ThemeIcon>
-          <Text fw={500} c="green">
-            {t("Board.Practice.Correct")}
+          <Text fw={500} c={feedbackColor}>
+            {title ?? t("Board.Practice.Correct")}
           </Text>
           {timeTaken !== undefined && (
             <Text fz="xs" c="dimmed">
@@ -702,6 +840,11 @@ function QualityRatingPanel({
             </Text>
           )}
         </Group>
+        {detail && (
+          <Text fz="xs" c="dimmed" ta="center">
+            {detail}
+          </Text>
+        )}
         <Text fz="sm" c="dimmed">
           {t("Board.Practice.HowDifficult")}
         </Text>

@@ -4,11 +4,18 @@ import type { Position } from "@/components/files/opening";
 import type { ChessDbCloudMove } from "@/utils/chessdb/api";
 import { positionFromFen } from "@/utils/chessops";
 import type { LichessCloudMove } from "@/utils/lichess/api";
+import {
+    classifyMistakeReviewAttempt,
+    isMistakeReviewPassingLabel,
+    type MistakeReviewAttemptLabel,
+} from "@/utils/mistakeReview";
 
 export type OpeningReviewMoveAssessmentSource = "lichess" | "chessdb" | "engine" | "saved";
 
 export type OpeningReviewMoveAssessment = {
     quality: "correct" | "best" | "ok" | "incorrect";
+    label: MistakeReviewAttemptLabel;
+    passed: boolean;
     bestMoveSan: string;
     bestMoveUci?: string;
     bestMoveSource: OpeningReviewMoveAssessmentSource;
@@ -17,8 +24,6 @@ export type OpeningReviewMoveAssessment = {
     moveLossCp?: number;
     chessDbRank?: number | null;
 };
-
-const OK_ALTERNATIVE_CP_LOSS = 80;
 
 export type ReviewPracticePositionEntry = {
     position: Position;
@@ -59,6 +64,8 @@ export function assessOpeningReviewMove(
     ) {
         return {
             quality: "best",
+            label: "best",
+            passed: true,
             bestMoveSan: savedLichessBestMove.san,
             bestMoveUci: savedLichessBestMove.uci,
             bestMoveSource: "lichess",
@@ -79,6 +86,8 @@ export function assessOpeningReviewMove(
     if (isOpeningReviewEngineMove(position, playedMove)) {
         return {
             quality: "best",
+            label: "best",
+            passed: true,
             bestMoveSan: savedBestMove.san,
             bestMoveUci: savedBestMove.uci,
             bestMoveSource: getSavedBestMoveSource(position),
@@ -89,6 +98,8 @@ export function assessOpeningReviewMove(
     if (isOpeningReviewSavedMove(position, playedMove)) {
         return {
             quality: "correct",
+            label: "best",
+            passed: true,
             bestMoveSan: savedBestMove.san,
             bestMoveUci: savedBestMove.uci,
             bestMoveSource: getSavedBestMoveSource(position),
@@ -97,6 +108,8 @@ export function assessOpeningReviewMove(
 
     return {
         quality: "incorrect",
+        label: "mistake",
+        passed: false,
         bestMoveSan: savedBestMove.san,
         bestMoveUci: savedBestMove.uci,
         bestMoveSource: getSavedBestMoveSource(position),
@@ -155,6 +168,8 @@ function assessLichessCloudMove(
     if (!played) {
         return {
             quality: "incorrect",
+            label: "mistake",
+            passed: false,
             bestMoveSan: best.move.san,
             bestMoveUci: best.move.uci,
             bestMoveSource: "lichess",
@@ -162,15 +177,13 @@ function assessLichessCloudMove(
     }
 
     const moveLossCp = Math.max(0, best.scoreForSide - played.scoreForSide);
-    const quality =
-        played.rank === best.rank
-            ? "best"
-            : moveLossCp <= OK_ALTERNATIVE_CP_LOSS
-              ? "ok"
-              : "incorrect";
+    const exactBest = played.rank === best.rank;
+    const label = classifyOpeningReviewAttempt(moveLossCp, exactBest);
 
     return {
-        quality,
+        quality: openingReviewQualityFromLabel(label),
+        label,
+        passed: isMistakeReviewPassingLabel(label),
         bestMoveSan: best.move.san,
         bestMoveUci: best.move.uci,
         bestMoveSource: "lichess",
@@ -213,6 +226,8 @@ function assessChessDbMove(
     if (!chessDbBest || !played) {
         return {
             quality: "incorrect",
+            label: "mistake",
+            passed: false,
             bestMoveSan: authoritativeBestMove?.san ?? savedBestMove.san,
             bestMoveUci: authoritativeBestMove?.uci ?? savedBestMove.uci,
             bestMoveSource: authoritativeBestMove ? "lichess" : getSavedBestMoveSource(position),
@@ -221,15 +236,16 @@ function assessChessDbMove(
 
     const moveLossCp = Math.max(0, chessDbBest.scoreForSide - played.scoreForSide);
     const isChessDbBest = reviewMovesMatch(chessDbBest.move.uci, chessDbBest.move.san, playedMove);
-    const quality =
-        !authoritativeBestMove && isChessDbBest
-            ? "best"
-            : moveLossCp <= OK_ALTERNATIVE_CP_LOSS
-              ? "ok"
-              : "incorrect";
+    const rawLabel = classifyOpeningReviewAttempt(
+        moveLossCp,
+        !authoritativeBestMove && isChessDbBest,
+    );
+    const label = capAuthoritativeAlternativeLabel(rawLabel, authoritativeBestMove, playedMove);
 
     return {
-        quality,
+        quality: openingReviewQualityFromLabel(label),
+        label,
+        passed: isMistakeReviewPassingLabel(label),
         bestMoveSan: authoritativeBestMove?.san ?? chessDbBest.move.san ?? savedBestMove.san,
         bestMoveUci: authoritativeBestMove?.uci ?? chessDbBest.move.uci ?? savedBestMove.uci,
         bestMoveSource: authoritativeBestMove ? "lichess" : "chessdb",
@@ -238,6 +254,36 @@ function assessChessDbMove(
         moveLossCp,
         chessDbRank: played.move.rank,
     };
+}
+
+function classifyOpeningReviewAttempt(moveLossCp: number, exactBest: boolean) {
+    return classifyMistakeReviewAttempt(Math.round(moveLossCp), undefined, exactBest);
+}
+
+function openingReviewQualityFromLabel(label: MistakeReviewAttemptLabel) {
+    switch (label) {
+        case "best":
+            return "best";
+        case "good":
+        case "okay":
+            return "ok";
+        case "inaccuracy":
+        case "mistake":
+        case "blunder":
+            return "incorrect";
+    }
+}
+
+function capAuthoritativeAlternativeLabel(
+    label: MistakeReviewAttemptLabel,
+    authoritativeBestMove: { san: string; uci?: string } | null | undefined,
+    playedMove: { san: string; uci: string },
+) {
+    if (!authoritativeBestMove) return label;
+    if (reviewMovesMatch(authoritativeBestMove.uci, authoritativeBestMove.san, playedMove)) {
+        return label;
+    }
+    return label === "best" ? "good" : label;
 }
 
 export function isOpeningReviewSavedMove(

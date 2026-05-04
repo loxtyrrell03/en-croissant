@@ -1071,6 +1071,7 @@ export type PracticeState = {
     playedMove?: string;
     playedMoveUci?: string;
     moveAssessment?: "best" | "ok" | "incorrect";
+    moveQualityLabel?: "best" | "good" | "okay" | "inaccuracy" | "mistake" | "blunder";
     mistakeReviewLabel?: "best" | "good" | "okay" | "inaccuracy" | "mistake" | "blunder";
     bestMove?: string;
     bestMoveUci?: string;

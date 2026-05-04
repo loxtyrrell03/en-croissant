@@ -90,7 +90,6 @@ import {
   planExplorerArrowLimitAtom,
   planExplorerHoverEverywhereAtom,
   practiceCardStartTimeAtom,
-  practiceSessionStatsAtom,
   practiceStateAtom,
   showArrowsAtom,
   showConsecutiveArrowsAtom,
@@ -117,7 +116,7 @@ import {
   assessOpeningReviewMove,
   findReviewPracticePositionForBoard,
   formatOpeningReviewMoveSource,
-  isOpeningReviewSavedMove,
+  type OpeningReviewMoveAssessment,
 } from "@/utils/openingReviewPractice";
 import {
   getAutoPlanLines,
@@ -133,7 +132,7 @@ import { getTabGameNumber, getTabPracticeKey } from "@/utils/tabs";
 import { findFen } from "@/utils/treeReducer";
 import ShowMaterial from "../common/ShowMaterial";
 import { TreeStateContext } from "../common/TreeStateContext";
-import { updateCardPerformance, type Position as ReviewPosition } from "../files/opening";
+import { type Position as ReviewPosition } from "../files/opening";
 import { arrowColors } from "../panels/analysis/BestMoves";
 import AnnotationHint from "./AnnotationHint";
 import { BoardBar } from "./BoardBar";
@@ -252,6 +251,52 @@ function mistakeReviewColor(severity: MistakeReviewAttemptLabel | undefined) {
   }
 }
 
+function practiceMoveAssessmentFromLabel(label: MistakeReviewAttemptLabel | undefined) {
+  switch (label) {
+    case "best":
+      return "best";
+    case "good":
+    case "okay":
+      return "ok";
+    default:
+      return "incorrect";
+  }
+}
+
+function formatOpeningPracticeAssessmentMessage(
+  assessment: OpeningReviewMoveAssessment,
+  playedMoveSan: string,
+) {
+  const source = formatOpeningReviewMoveSource(assessment.bestMoveSource);
+  const bestMove = assessment.bestMoveSan;
+  const lossText =
+    assessment.moveLossCp !== undefined && assessment.label !== "best"
+      ? ` (${Math.round(assessment.moveLossCp)} cp behind${
+          assessment.chessDbRank ? `, rank ${assessment.chessDbRank}` : ""
+        })`
+      : "";
+
+  if (assessment.label === "best") {
+    return `${source} has ${playedMoveSan} as best.`;
+  }
+
+  return `${source} has ${bestMove} as best${lossText}.`;
+}
+
+async function assessOpeningPracticeMoveWithCloud(
+  position: ReviewPosition,
+  playedMove: { san: string; uci: string },
+) {
+  const lichessMoves = await queryLichessCloudMoves(
+    position.fen,
+    OPENING_REVIEW_CLOUD_MULTIPV,
+  ).catch(() => null);
+  const chessDbMoves = lichessMoves?.length
+    ? null
+    : await queryChessDbMoves(position.fen).catch(() => null);
+  return assessOpeningReviewMove(position, playedMove, chessDbMoves, lichessMoves);
+}
+
 function buildMistakeReviewLine(firstMove: string | undefined, pv?: string[]) {
   if (!firstMove) return [];
   if (!pv || pv.length === 0) return [firstMove];
@@ -289,7 +334,6 @@ function Board({
   enablePremoves = false,
 }: ChessboardProps) {
   const { t } = useTranslation();
-
   const store = useContext(TreeStateContext)!;
 
   const rootFen = useStore(store, (s) => s.root.fen);
@@ -396,7 +440,6 @@ function Board({
   );
 
   const [practiceState, setPracticeState] = useAtom(practiceStateAtom);
-  const [sessionStats, setSessionStats] = useAtom(practiceSessionStatsAtom);
   const cardStartTime = useAtomValue(practiceCardStartTimeAtom);
   const [mistakeReviewAutoPlayLine, setMistakeReviewAutoPlayLine] = useAtom(
     mistakeReviewAutoPlayLineAtom,
@@ -875,206 +918,87 @@ function Board({
       const timeTaken = Date.now() - cardStartTime;
       const isMistakeReview = currentTab?.gameOrigin.kind === "mistake_review";
       const isOpeningReview = currentTab?.gameOrigin.kind === "opening_review";
-      const isCorrect = !isOpeningReview && isOpeningReviewSavedMove(c, { san, uci });
       onMove?.(uci, c.fen, san);
       if (isMistakeReview) {
         markMistakeReviewAttemptSeen(i);
-      } else if (isOpeningReview) {
+      } else {
         markOpeningReviewAttemptSeen(i);
       }
 
-      if (isOpeningReview) {
-        storeMakeMove({
-          payload: move,
-        });
-        setPendingMove(null);
-        setOpeningReviewPendingAssessment(true);
+      storeMakeMove({
+        payload: move,
+      });
+      setPendingMove(null);
 
-        const lichessMoves = await queryLichessCloudMoves(
-          c.fen,
-          OPENING_REVIEW_CLOUD_MULTIPV,
-        ).catch(() => null);
-        const chessDbMoves = lichessMoves?.length
-          ? null
-          : await queryChessDbMoves(c.fen).catch(() => null);
-        const moveAssessment = assessOpeningReviewMove(c, { san, uci }, chessDbMoves, lichessMoves);
-        const isBestAlternative = moveAssessment.quality === "best";
-        const isOkAlternative = moveAssessment.quality === "ok";
-        const isIncorrect = moveAssessment.quality === "incorrect";
-        const isAcceptedMove = !isIncorrect;
-        const bestMove = moveAssessment.bestMoveSan || c.answer;
-        const bestSource = formatOpeningReviewMoveSource(moveAssessment.bestMoveSource);
-
+      if (isMistakeReview) {
+        const moveAssessment = await assessMistakeReviewMoveWithEngine(c, { san, uci });
         setPracticeState({
-          phase: isAcceptedMove ? "correct" : "incorrect",
+          phase: moveAssessment.passed ? "correct" : "incorrect",
           currentFen: c.fen,
-          answer: bestMove,
+          answer: moveAssessment.bestMoveSan,
           playedMove: san,
           playedMoveUci: uci,
-          moveAssessment: isBestAlternative
-            ? "best"
-            : isOkAlternative
-              ? "ok"
-              : isIncorrect
-                ? "incorrect"
-                : undefined,
-          bestMove,
+          moveAssessment: practiceMoveAssessmentFromLabel(moveAssessment.label),
+          moveQualityLabel: moveAssessment.label,
+          mistakeReviewLabel: moveAssessment.label,
+          bestMove: moveAssessment.bestMoveSan,
           bestMoveUci: moveAssessment.bestMoveUci,
-          bestMoveSource: moveAssessment.bestMoveSource,
           moveLossCp: moveAssessment.moveLossCp,
-          chessDbRank: moveAssessment.chessDbRank,
-          positionIndex: i,
-          timeTaken,
-        });
-        setOpeningReviewPendingAssessment(false);
-
-        if (isAcceptedMove) {
-          if (isBestAlternative || isOkAlternative) {
-            notifications.show({
-              title: isBestAlternative ? "Best move" : "OK move",
-              message: isBestAlternative
-                ? `${bestSource} has ${san} as best.`
-                : `${san} is OK; ${bestSource} has ${bestMove} as best.`,
-              color: isBestAlternative ? "green" : "blue",
-            });
-          }
-          return;
-        }
-
-        if (sessionStats.mode !== "full") {
-          updateCardPerformance(setDeck, i, c.card, 1);
-        }
-        setSessionStats((prev) => ({
-          ...prev,
-          incorrect: prev.incorrect + 1,
-          streak: 0,
-        }));
-        notifications.show({
-          title: t("Common.Incorrect"),
-          message: `${bestSource} has ${bestMove} as best.`,
-          color: "red",
-        });
-        return;
-      }
-
-      if (!isCorrect) {
-        storeMakeMove({
-          payload: move,
-        });
-        setPendingMove(null);
-
-        if (isMistakeReview) {
-          const moveAssessment = await assessMistakeReviewMoveWithEngine(c, { san, uci });
-          const feedbackTitle =
-            moveAssessment.label.charAt(0).toUpperCase() + moveAssessment.label.slice(1);
-
-          setPracticeState({
-            phase: moveAssessment.passed ? "correct" : "incorrect",
-            currentFen: c.fen,
-            answer: moveAssessment.bestMoveSan,
-            playedMove: san,
-            playedMoveUci: uci,
-            moveAssessment:
-              moveAssessment.label === "best"
-                ? "best"
-                : moveAssessment.label === "good"
-                  ? "ok"
-                  : "incorrect",
-            mistakeReviewLabel: moveAssessment.label,
-            bestMove: moveAssessment.bestMoveSan,
-            bestMoveUci: moveAssessment.bestMoveUci,
-            moveLossCp: moveAssessment.moveLossCp,
-            winProbabilityDrop: moveAssessment.winProbabilityDrop,
-            requestedDepth: moveAssessment.requestedDepth,
-            reachedDepth: moveAssessment.reachedDepth,
-            engineName: moveAssessment.engineName,
-            positionIndex: i,
-            timeTaken,
-            resultRecorded: false,
-          });
-          notifications.show({
-            title: feedbackTitle,
-            message: `${moveAssessment.bestMoveSan} was the engine move to remember.`,
-            color: moveAssessment.passed ? "green" : "red",
-          });
-          if (!moveAssessment.passed && !mistakeReviewAutoRevealBest) {
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            goToNext();
-          }
-          return;
-        }
-
-        const moveAssessment = assessOpeningReviewMove(c, { san, uci }, null);
-        const isBestAlternative = moveAssessment.quality === "best";
-        const isOkAlternative = moveAssessment.quality === "ok";
-        const isAcceptedAlternative = isBestAlternative || isOkAlternative;
-        const bestMove = moveAssessment.bestMoveSan || c.answer;
-        const bestSource = formatOpeningReviewMoveSource(moveAssessment.bestMoveSource);
-
-        setPracticeState({
-          phase: isAcceptedAlternative ? "correct" : "incorrect",
-          currentFen: c.fen,
-          answer: bestMove,
-          playedMove: san,
-          playedMoveUci: uci,
-          moveAssessment: isBestAlternative ? "best" : isOkAlternative ? "ok" : "incorrect",
-          bestMove,
-          bestMoveUci: moveAssessment.bestMoveUci,
-          bestMoveSource: moveAssessment.bestMoveSource,
-          moveLossCp: moveAssessment.moveLossCp,
-          chessDbRank: moveAssessment.chessDbRank,
-          positionIndex: i,
-          timeTaken,
-        });
-        if (isAcceptedAlternative) {
-          notifications.show({
-            title: isBestAlternative ? "Best move" : "OK move",
-            message: isBestAlternative
-              ? `${bestSource} has ${san} as best.`
-              : `${san} is OK; ${bestSource} has ${bestMove} as best.`,
-            color: isBestAlternative ? "green" : "blue",
-          });
-          return;
-        }
-
-        if (sessionStats.mode !== "full") {
-          updateCardPerformance(setDeck, i, c.card, 1);
-        }
-        setSessionStats((prev) => ({
-          ...prev,
-          incorrect: prev.incorrect + 1,
-          streak: 0,
-        }));
-        notifications.show({
-          title: t("Common.Incorrect"),
-          message: t("Board.Practice.CorrectMoveWas", { move: bestMove }),
-          color: "red",
-        });
-      } else {
-        storeMakeMove({
-          payload: move,
-        });
-        setPendingMove(null);
-        setPracticeState({
-          phase: "correct",
-          currentFen: c.fen,
-          answer: c.answer,
-          playedMove: san,
-          playedMoveUci: uci,
-          moveAssessment: isMistakeReview ? "best" : undefined,
-          mistakeReviewLabel: isMistakeReview ? "best" : undefined,
-          bestMove: isMistakeReview ? c.mistakeReview?.bestMoveSan || c.answer : undefined,
-          bestMoveUci: isMistakeReview ? c.mistakeReview?.bestMoveUci || c.answerUci : undefined,
-          moveLossCp: isMistakeReview ? 0 : undefined,
-          winProbabilityDrop: isMistakeReview ? 0 : undefined,
-          requestedDepth: isMistakeReview ? c.mistakeReview?.requestedDepth : undefined,
-          reachedDepth: isMistakeReview ? c.mistakeReview?.reachedDepth : undefined,
-          engineName: isMistakeReview ? c.mistakeReview?.engineName : undefined,
+          winProbabilityDrop: moveAssessment.winProbabilityDrop,
+          requestedDepth: moveAssessment.requestedDepth,
+          reachedDepth: moveAssessment.reachedDepth,
+          engineName: moveAssessment.engineName,
           positionIndex: i,
           timeTaken,
           resultRecorded: false,
         });
+        notifications.show({
+          title: mistakeReviewSeverityLabel(moveAssessment.label),
+          message: `${moveAssessment.bestMoveSan} was the engine move to remember.`,
+          color: mistakeReviewColor(moveAssessment.label),
+        });
+        if (!moveAssessment.passed && !mistakeReviewAutoRevealBest) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          goToNext();
+        }
+        return;
       }
+
+      if (isOpeningReview) {
+        setOpeningReviewPendingAssessment(true);
+      }
+      const moveAssessment = await assessOpeningPracticeMoveWithCloud(c, { san, uci }).finally(
+        () => {
+          if (isOpeningReview) {
+            setOpeningReviewPendingAssessment(false);
+          }
+        },
+      );
+      const bestMove = moveAssessment.bestMoveSan || c.answer;
+
+      setPracticeState({
+        phase: moveAssessment.passed ? "correct" : "incorrect",
+        currentFen: c.fen,
+        answer: bestMove,
+        playedMove: san,
+        playedMoveUci: uci,
+        moveAssessment: practiceMoveAssessmentFromLabel(moveAssessment.label),
+        moveQualityLabel: moveAssessment.label,
+        bestMove,
+        bestMoveUci: moveAssessment.bestMoveUci,
+        bestMoveSource: moveAssessment.bestMoveSource,
+        moveLossCp: moveAssessment.moveLossCp,
+        chessDbRank: moveAssessment.chessDbRank,
+        positionIndex: i,
+        timeTaken,
+        resultRecorded: false,
+      });
+      notifications.show({
+        title: mistakeReviewSeverityLabel(moveAssessment.label),
+        message: formatOpeningPracticeAssessmentMessage(moveAssessment, san),
+        color: mistakeReviewColor(moveAssessment.label),
+      });
+      return;
     } else {
       storeMakeMove({
         payload: move,

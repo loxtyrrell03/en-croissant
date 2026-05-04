@@ -90,6 +90,8 @@ describe("opening review practice move assessment", () => {
         const assessment = assessOpeningReviewMove(position(), { san: "e4", uci: "e2e4" }, null);
 
         expect(assessment.quality).toBe("correct");
+        expect(assessment.label).toBe("best");
+        expect(assessment.passed).toBe(true);
         expect(assessment.bestMoveSan).toBe("e4");
     });
 
@@ -101,15 +103,29 @@ describe("opening review practice move assessment", () => {
         expect(assessOpeningReviewMove(saved, playedMove, null).quality).toBe("correct");
     });
 
-    test("marks a close ChessDB alternative as OK, not correct", () => {
+    test("marks a good ChessDB alternative as passing, not exact", () => {
         const assessment = assessOpeningReviewMove(position(), { san: "d4", uci: "d2d4" }, [
             cloudMove("e4", "e2e4", 35, 1),
-            cloudMove("d4", "d2d4", -25, 2),
+            cloudMove("d4", "d2d4", 5, 2),
         ]);
 
         expect(assessment.quality).toBe("ok");
+        expect(assessment.label).toBe("good");
+        expect(assessment.passed).toBe(true);
         expect(assessment.bestMoveSan).toBe("e4");
-        expect(assessment.moveLossCp).toBe(60);
+        expect(assessment.moveLossCp).toBe(30);
+    });
+
+    test("labels an okay ChessDB alternative but keeps it due for review", () => {
+        const assessment = assessOpeningReviewMove(position(), { san: "d4", uci: "d2d4" }, [
+            cloudMove("e4", "e2e4", 35, 1),
+            cloudMove("d4", "d2d4", -10, 2),
+        ]);
+
+        expect(assessment.quality).toBe("ok");
+        expect(assessment.label).toBe("okay");
+        expect(assessment.passed).toBe(false);
+        expect(assessment.moveLossCp).toBe(45);
     });
 
     test("marks a ChessDB top alternative as best, not OK", () => {
@@ -119,6 +135,8 @@ describe("opening review practice move assessment", () => {
         ]);
 
         expect(assessment.quality).toBe("best");
+        expect(assessment.label).toBe("best");
+        expect(assessment.passed).toBe(true);
         expect(assessment.bestMoveSan).toBe("d4");
         expect(assessment.moveLossCp).toBe(0);
     });
@@ -135,6 +153,7 @@ describe("opening review practice move assessment", () => {
         expect(assessment.bestMoveSan).toBe("d4");
         expect(assessment.bestMoveUci).toBe("d2d4");
         expect(assessment.bestMoveSource).toBe("lichess");
+        expect(assessment.label).toBe("best");
         expect(assessment.moveLossCp).toBe(0);
     });
 
@@ -147,6 +166,7 @@ describe("opening review practice move assessment", () => {
         );
 
         expect(assessment.quality).toBe("best");
+        expect(assessment.label).toBe("best");
         expect(assessment.bestMoveSan).toBe("d4");
         expect(assessment.bestMoveSource).toBe("chessdb");
     });
@@ -167,6 +187,7 @@ describe("opening review practice move assessment", () => {
         );
 
         expect(assessment.quality).toBe("best");
+        expect(assessment.label).toBe("best");
         expect(assessment.bestMoveSan).toBe("Qc2");
         expect(assessment.bestMoveUci).toBe("d1c2");
         expect(assessment.moveLossCp).toBe(0);
@@ -187,10 +208,12 @@ describe("opening review practice move assessment", () => {
                 },
             }),
             { san: "Nf6", uci: "g8f6" },
-            [cloudMove("a6", "a7a6", -100, 1), cloudMove("Nf6", "g8f6", -40, 2)],
+            [cloudMove("a6", "a7a6", -100, 1), cloudMove("Nf6", "g8f6", -75, 2)],
         );
 
         expect(assessment.quality).toBe("ok");
+        expect(assessment.label).toBe("good");
+        expect(assessment.passed).toBe(true);
         expect(assessment.bestMoveSan).toBe("g6");
         expect(assessment.bestMoveUci).toBe("g7g6");
         expect(assessment.chessDbBestMoveSan).toBe("a6");
@@ -215,6 +238,7 @@ describe("opening review practice move assessment", () => {
         );
 
         expect(assessment.quality).toBe("ok");
+        expect(assessment.label).toBe("good");
         expect(assessment.bestMoveSan).toBe("g6");
         expect(assessment.moveLossCp).toBe(0);
     });
@@ -226,6 +250,8 @@ describe("opening review practice move assessment", () => {
         ]);
 
         expect(assessment.quality).toBe("incorrect");
+        expect(assessment.label).toBe("mistake");
+        expect(assessment.passed).toBe(false);
         expect(assessment.bestMoveSan).toBe("e4");
         expect(assessment.moveLossCp).toBe(130);
     });
@@ -234,11 +260,13 @@ describe("opening review practice move assessment", () => {
         const assessment = assessOpeningReviewMove(
             position({ fen: BLACK_TO_MOVE_FEN, answer: "e5", answerUci: "e7e5" }),
             { san: "c5", uci: "c7c5" },
-            [cloudMove("e5", "e7e5", -50, 1), cloudMove("c5", "c7c5", 10, 2)],
+            [cloudMove("e5", "e7e5", -50, 1), cloudMove("c5", "c7c5", -20, 2)],
         );
 
         expect(assessment.quality).toBe("ok");
+        expect(assessment.label).toBe("good");
+        expect(assessment.passed).toBe(true);
         expect(assessment.bestMoveSan).toBe("e5");
-        expect(assessment.moveLossCp).toBe(60);
+        expect(assessment.moveLossCp).toBe(30);
     });
 });

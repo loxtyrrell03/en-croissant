@@ -1223,7 +1223,9 @@ function tokenizeReviewMoveSequence(moveSequence: string) {
 }
 
 function mistakeReviewAttemptColor(
-  label: NonNullable<PracticeState["mistakeReviewLabel"]> | undefined,
+  label:
+    | NonNullable<PracticeState["mistakeReviewLabel"] | PracticeState["moveQualityLabel"]>
+    | undefined,
   phase: PracticeState["phase"],
 ) {
   switch (label) {
@@ -1906,9 +1908,11 @@ function OpeningReviewPanel({
   }, [deck.positions.length, initialPractice, loaded, startDuePractice, startFullPractice]);
 
   function handleQualityRating(grade: 1 | 2 | 3 | 4) {
+    const canRateIncorrect =
+      practiceState.phase === "incorrect" &&
+      (isMistakeReview || Boolean(practiceState.moveQualityLabel));
     if (
-      (practiceState.phase !== "correct" &&
-        !(isMistakeReview && practiceState.phase === "incorrect")) ||
+      (practiceState.phase !== "correct" && !canRateIncorrect) ||
       practiceState.positionIndex === undefined
     ) {
       return;
@@ -1942,9 +1946,15 @@ function OpeningReviewPanel({
   }
 
   function skipCard() {
+    const wasIncorrect = practiceState.phase === "incorrect";
     if (sessionStats.mode === "full" && sessionStats.remainingPositions.length > 0) {
       const remainingPositions = sessionStats.remainingPositions.slice(1);
-      setSessionStats((current) => ({ ...current, remainingPositions }));
+      setSessionStats((current) => ({
+        ...current,
+        remainingPositions,
+        incorrect: wasIncorrect ? current.incorrect + 1 : current.incorrect,
+        streak: wasIncorrect ? 0 : current.streak,
+      }));
       newPractice({ remainingPositions, mode: "full" });
       return;
     }
@@ -1953,7 +1963,12 @@ function OpeningReviewPanel({
       const remainingPositions = sessionStats.remainingPositions.filter(
         (index) => index !== practiceState.positionIndex,
       );
-      setSessionStats((current) => ({ ...current, remainingPositions }));
+      setSessionStats((current) => ({
+        ...current,
+        remainingPositions,
+        incorrect: wasIncorrect ? current.incorrect + 1 : current.incorrect,
+        streak: wasIncorrect ? 0 : current.streak,
+      }));
       newPractice(
         { remainingPositions, mode: sessionStats.mode },
         { scopeIndices: remainingPositions },
@@ -1961,6 +1976,13 @@ function OpeningReviewPanel({
       return;
     }
 
+    if (wasIncorrect) {
+      setSessionStats((current) => ({
+        ...current,
+        incorrect: current.incorrect + 1,
+        streak: 0,
+      }));
+    }
     newPractice();
   }
 
@@ -2022,7 +2044,9 @@ function OpeningReviewPanel({
 
   const canRateAttempt =
     sessionStats.mode !== "full" &&
-    (practiceState.phase === "correct" || (isMistakeReview && practiceState.phase === "incorrect"));
+    (practiceState.phase === "correct" ||
+      (practiceState.phase === "incorrect" &&
+        (isMistakeReview || Boolean(practiceState.moveQualityLabel))));
 
   useEffect(() => {
     if (isMistakeReview || practiceState.phase !== "correct") return undefined;
@@ -2156,30 +2180,19 @@ function OpeningReviewPanel({
 
   const isBestAlternative = practiceState.moveAssessment === "best";
   const isOkAlternative = practiceState.moveAssessment === "ok";
-  const mistakeFeedbackColor = mistakeReviewAttemptColor(
-    practiceState.mistakeReviewLabel,
-    practiceState.phase,
-  );
-  const feedbackColor = isMistakeReview
-    ? mistakeFeedbackColor
-    : isBestAlternative
-      ? "green"
-      : isOkAlternative
-        ? "blue"
-        : "red";
-  const correctFeedbackColor = isMistakeReview
-    ? mistakeFeedbackColor
-    : !isMistakeReview && isOkAlternative
-      ? "blue"
-      : "green";
+  const openingAttemptLabel = isMistakeReview ? undefined : practiceState.moveQualityLabel;
+  const activeAttemptLabel = isMistakeReview
+    ? practiceState.mistakeReviewLabel
+    : openingAttemptLabel;
+  const attemptFeedbackColor = mistakeReviewAttemptColor(activeAttemptLabel, practiceState.phase);
+  const feedbackColor = attemptFeedbackColor;
+  const correctFeedbackColor = attemptFeedbackColor;
   const correctFeedbackTitle =
     isMistakeReview && practiceState.mistakeReviewLabel
       ? mistakeReviewSeverityLabel(practiceState.mistakeReviewLabel)
-      : !isMistakeReview && isOkAlternative && practiceState.playedMove
-        ? `${practiceState.playedMove} is good`
-        : !isMistakeReview && isBestAlternative && practiceState.playedMove
-          ? `${practiceState.playedMove} is best`
-          : "Correct";
+      : !isMistakeReview && openingAttemptLabel
+        ? mistakeReviewSeverityLabel(openingAttemptLabel)
+        : "Correct";
   const mistakeTimeManagementFeedback = isMistakeReview
     ? formatMistakeReviewTimeManagementFeedback(attemptPosition?.mistakeReview)
     : null;
@@ -2193,20 +2206,36 @@ function OpeningReviewPanel({
   const openingBestMoveSource = !isMistakeReview
     ? formatOpeningReviewMoveSource(practiceState.bestMoveSource)
     : null;
+  const openingFeedbackDetail = !isMistakeReview
+    ? [
+        isBestAlternative && practiceState.playedMove
+          ? `${openingBestMoveSource} has ${practiceState.playedMove} as best.`
+          : practiceState.bestMove
+            ? `${openingBestMoveSource} has ${practiceState.bestMove} as best.`
+            : undefined,
+        practiceState.moveLossCp !== undefined && openingAttemptLabel !== "best"
+          ? `${Math.round(practiceState.moveLossCp)} cp behind${
+              practiceState.chessDbRank ? `, rank ${practiceState.chessDbRank}` : ""
+            }.`
+          : undefined,
+      ]
+        .filter(Boolean)
+        .join(" ")
+    : undefined;
   const correctFeedbackDetail = isMistakeReview
     ? mistakeFeedbackDetail || undefined
-    : !isMistakeReview && isOkAlternative && practiceState.bestMove
-      ? `${openingBestMoveSource} has ${practiceState.bestMove} as best.`
-      : undefined;
+    : openingFeedbackDetail;
   const feedbackTitle = isMistakeReview
     ? practiceState.mistakeReviewLabel
       ? mistakeReviewSeverityLabel(practiceState.mistakeReviewLabel)
       : "Incorrect"
-    : isBestAlternative
-      ? "Best"
-      : isOkAlternative
-        ? "OK"
-        : "Incorrect";
+    : openingAttemptLabel
+      ? mistakeReviewSeverityLabel(openingAttemptLabel)
+      : isBestAlternative
+        ? "Best"
+        : isOkAlternative
+          ? "Good"
+          : "Incorrect";
   const roundedMoveLoss =
     practiceState.moveLossCp === undefined ? undefined : Math.round(practiceState.moveLossCp);
   const isTraining = practiceState.phase !== "idle";
@@ -2223,9 +2252,11 @@ function OpeningReviewPanel({
         `Best move: ${practiceState.bestMove ?? practiceState.answer ?? "-"}`
       : correctFeedbackDetail;
   const ratingPanelIcon =
-    isMistakeReview && practiceState.phase === "incorrect"
+    practiceState.phase === "incorrect" &&
+    activeAttemptLabel !== "okay" &&
+    activeAttemptLabel !== "inaccuracy"
       ? "x"
-      : !isMistakeReview && isOkAlternative
+      : isOkAlternative || activeAttemptLabel === "inaccuracy"
         ? "bulb"
         : "check";
   const updateMistakeDailySettings = (partial: Partial<MistakeReviewDailySettings>) => {
@@ -2633,10 +2664,10 @@ function OpeningReviewPanel({
             <Stack gap="xs" align="center">
               <Group gap="xs">
                 <ThemeIcon size="md" color={feedbackColor} variant="light" radius="xl">
-                  {isBestAlternative ? (
-                    <IconCheck size={16} />
-                  ) : isOkAlternative ? (
+                  {ratingPanelIcon === "bulb" ? (
                     <IconBulb size={16} />
+                  ) : ratingPanelIcon === "check" ? (
+                    <IconCheck size={16} />
                   ) : (
                     <IconX size={16} />
                   )}
@@ -2649,28 +2680,20 @@ function OpeningReviewPanel({
                 <Text size="sm" c="dimmed" ta="center">
                   Best move: {practiceState.bestMove ?? practiceState.answer}
                 </Text>
-              ) : isBestAlternative && practiceState.playedMove ? (
+              ) : openingFeedbackDetail ? (
                 <Text size="sm" c="dimmed" ta="center">
-                  {openingBestMoveSource} has {practiceState.playedMove} as best.
-                </Text>
-              ) : isOkAlternative && practiceState.playedMove ? (
-                <Text size="sm" c="dimmed" ta="center">
-                  {practiceState.playedMove} is OK; {openingBestMoveSource} has{" "}
-                  {practiceState.bestMove ?? practiceState.answer} as best.
+                  {openingFeedbackDetail}
                 </Text>
               ) : (
                 <Text size="sm" c="dimmed">
                   {openingBestMoveSource}: {practiceState.answer}
                 </Text>
               )}
-              {!isMistakeReview &&
-                !isBestAlternative &&
-                !isOkAlternative &&
-                practiceState.playedMove && (
-                  <Text size="sm" c="dimmed">
-                    You played: {practiceState.playedMove}
-                  </Text>
-                )}
+              {!isMistakeReview && !openingFeedbackDetail && practiceState.playedMove && (
+                <Text size="sm" c="dimmed">
+                  You played: {practiceState.playedMove}
+                </Text>
+              )}
               {isMistakeReview && practiceState.playedMove && (
                 <Text size="sm" c="dimmed">
                   You played: {practiceState.playedMove}
@@ -2699,13 +2722,16 @@ function OpeningReviewPanel({
                   </Text>
                 </Stack>
               )}
-              {!isMistakeReview && isOkAlternative && roundedMoveLoss !== undefined && (
-                <Text size="xs" c="dimmed">
-                  {roundedMoveLoss > 0
-                    ? `ChessDB has it about ${roundedMoveLoss} cp behind.`
-                    : "ChessDB has it essentially level with the top move."}
-                </Text>
-              )}
+              {!isMistakeReview &&
+                !openingFeedbackDetail &&
+                isOkAlternative &&
+                roundedMoveLoss !== undefined && (
+                  <Text size="xs" c="dimmed">
+                    {roundedMoveLoss > 0
+                      ? `ChessDB has it about ${roundedMoveLoss} cp behind.`
+                      : "ChessDB has it essentially level with the top move."}
+                  </Text>
+                )}
               <Button variant="light" size="sm" onClick={skipCard}>
                 Next position
               </Button>
