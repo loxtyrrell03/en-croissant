@@ -15,6 +15,9 @@ const reviewInitialPracticeSchema = z.object({
     mode: z.enum(["due", "all"]),
     indices: z.number().array(),
     label: z.string().optional(),
+    source: z.literal("daily-goals").optional(),
+    goalId: z.string().optional(),
+    goalTitle: z.string().optional(),
 });
 
 function getDefaultGameFilename(headers: GameHeaders) {

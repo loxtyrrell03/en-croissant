@@ -32,10 +32,13 @@ import {
 } from "@tabler/icons-react";
 import clsx from "clsx";
 import dayjs, { type Dayjs } from "dayjs";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  dailyGoalAutoStartRequestAtom,
+  dailyGoalCompletionPromptAtom,
+  dailyGoalDeckRevisionAtom,
   dailyGoalHistoryAtom,
   dailyGoalsAtom,
   type DailyGoal,
@@ -63,6 +66,9 @@ type InitialPractice = {
   mode: "due" | "all";
   indices: number[];
   label?: string;
+  source?: "daily-goals";
+  goalId?: string;
+  goalTitle?: string;
 };
 
 type DailyGoalState = {
@@ -118,7 +124,11 @@ export default function DailyGoalsPanel({
 }: DailyGoalsPanelProps) {
   const [goals, setGoals] = useAtom(dailyGoalsAtom);
   const [history, setHistory] = useAtom(dailyGoalHistoryAtom);
+  const [autoStartRequest, setAutoStartRequest] = useAtom(dailyGoalAutoStartRequestAtom);
+  const [, setDailyGoalCompletionPrompt] = useAtom(dailyGoalCompletionPromptAtom);
+  const dailyGoalDeckRevision = useAtomValue(dailyGoalDeckRevisionAtom);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const handledAutoStartRequestRef = useRef<number | null>(null);
   const [openingDeckDetails, setOpeningDeckDetails] = useState<
     Record<string, OpeningReviewDeck | null>
   >({});
@@ -168,7 +178,7 @@ export default function DailyGoalsPanel({
     return () => {
       disposed = true;
     };
-  }, [resolvedOpeningPaths]);
+  }, [dailyGoalDeckRevision, resolvedOpeningPaths]);
 
   useEffect(() => {
     if (resolvedMistakePaths.length === 0) return;
@@ -190,7 +200,7 @@ export default function DailyGoalsPanel({
     return () => {
       disposed = true;
     };
-  }, [resolvedMistakePaths]);
+  }, [dailyGoalDeckRevision, resolvedMistakePaths]);
 
   const goalStates = useMemo(
     () =>
@@ -265,20 +275,30 @@ export default function DailyGoalsPanel({
 
   function incrementManualGoal(goal: DailyGoal) {
     const target = normalizeTarget(goal.target);
+    let completedNow = false;
     setHistory((current) => {
       const entry = current[todayKey] ?? { counts: {} };
       const currentCount = entry.counts[goal.id] ?? 0;
+      const nextCount = Math.min(target, currentCount + 1);
+      completedNow = currentCount < target && nextCount >= target;
       return {
         ...current,
         [todayKey]: {
           ...entry,
           counts: {
             ...entry.counts,
-            [goal.id]: Math.min(target, currentCount + 1),
+            [goal.id]: nextCount,
           },
         },
       };
     });
+    if (completedNow) {
+      setDailyGoalCompletionPrompt({
+        completedGoalTitle: goal.title,
+        completedGoalKind: goal.kind,
+        completedAt: Date.now(),
+      });
+    }
   }
 
   function updateGoal(goalId: string, patch: Partial<DailyGoal>) {
@@ -312,6 +332,25 @@ export default function DailyGoalsPanel({
   }
 
   const nextGoal = goalStates.find((goalState) => !goalState.completed && !goalState.loading);
+
+  useEffect(() => {
+    if (!autoStartRequest) return;
+    if (handledAutoStartRequestRef.current === autoStartRequest.createdAt) return;
+
+    const nextStartableGoal = goalStates.find(
+      (goalState) => !goalState.completed && !goalState.loading && !goalState.startDisabled,
+    );
+    if (!nextStartableGoal) {
+      if (goalStates.length > 0 && goalStates.every((goalState) => !goalState.loading)) {
+        setAutoStartRequest(null);
+      }
+      return;
+    }
+
+    handledAutoStartRequestRef.current = autoStartRequest.createdAt;
+    setAutoStartRequest(null);
+    nextStartableGoal.onStart();
+  }, [autoStartRequest, goalStates, setAutoStartRequest]);
 
   return (
     <>
@@ -775,7 +814,14 @@ function resolveGoalState({
           return;
         }
         void onOpenOpeningDeck(startDeckState.summary, {
-          initialPractice: { mode: "due", indices: startDeckState.indices, label: "Daily goals" },
+          initialPractice: {
+            mode: "due",
+            indices: startDeckState.indices,
+            label: "Daily goals",
+            source: "daily-goals",
+            goalId: goal.id,
+            goalTitle: goal.title,
+          },
         });
       },
     };
@@ -872,7 +918,14 @@ function resolveGoalState({
           return;
         }
         void onOpenMistakeDeck(startDeckState.summary, {
-          initialPractice: { mode: "due", indices: startDeckState.indices, label: "Daily goals" },
+          initialPractice: {
+            mode: "due",
+            indices: startDeckState.indices,
+            label: "Daily goals",
+            source: "daily-goals",
+            goalId: goal.id,
+            goalTitle: goal.title,
+          },
         });
       },
     };

@@ -93,6 +93,8 @@ import {
   currentEvalOpenAtom,
   currentInvisibleAtom,
   currentShowCommentsAtom,
+  dailyGoalCompletionPromptAtom,
+  dailyGoalDeckRevisionAtom,
   deckAtomFamily,
   getDeckStorageKey,
   openingReviewHideMovesDuringPracticeAtom,
@@ -235,6 +237,16 @@ type OpeningReviewInitialPractice = {
   mode: "due" | "all";
   indices: number[];
   label?: string;
+  source?: "daily-goals";
+  goalId?: string;
+  goalTitle?: string;
+};
+type ReviewDeckSaveSnapshot = {
+  deckInfo: OpeningReviewDeck | MistakeReviewDeck;
+  deckPath: string;
+  isMistakeReview: boolean;
+  positions: Position[];
+  logs: OpeningReviewDeck["logs"] | MistakeReviewDeck["logs"];
 };
 type OpeningReviewStatsResultFilter = "wins" | "draws" | "losses";
 type OpeningReviewStatsGroupBy = "family" | "line";
@@ -256,6 +268,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   );
   const [currentTabSelected, setCurrentTabSelected] = useAtom(currentTabSelectedAtom);
   const [practiceState, setPracticeState] = useAtom(practiceStateAtom);
+  const setDailyGoalDeckRevision = useSetAtom(dailyGoalDeckRevisionAtom);
   const openingAutoUpdateState = useAtomValue(openingReviewAutoUpdateStateAtom);
   const mistakeAutoUpdateState = useAtomValue(mistakeReviewAutoUpdateStateAtom);
   const autoUpdateState = isMistakeReview ? mistakeAutoUpdateState : openingAutoUpdateState;
@@ -276,6 +289,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const setEvalOpen = useSetAtom(currentEvalOpenAtom);
   const practiceAgainstBot = usePracticeAgainstBot();
   const autoUpdateRevisionRef = useRef(0);
+  const latestReviewSaveRef = useRef<ReviewDeckSaveSnapshot | null>(null);
   const initialPractice =
     tab.gameOrigin.kind === "opening_review" || tab.gameOrigin.kind === "mistake_review"
       ? tab.gameOrigin.initialPractice
@@ -417,6 +431,14 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   useEffect(() => {
     if (!loaded || !deckInfo || loadError) return undefined;
 
+    latestReviewSaveRef.current = {
+      deckInfo,
+      deckPath,
+      isMistakeReview,
+      positions: deck.positions,
+      logs: deck.logs,
+    };
+
     const timeout = window.setTimeout(() => {
       const nextDeck = {
         ...deckInfo,
@@ -426,17 +448,45 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
       const savePromise = isMistakeReview
         ? writeMistakeReviewDeck(deckPath, nextDeck as MistakeReviewDeck)
         : writeOpeningReviewDeck(deckPath, nextDeck as OpeningReviewDeck);
-      void savePromise.catch((error) => {
-        notifications.show({
-          title: "Could not save review progress",
-          message: error instanceof Error ? error.message : String(error),
-          color: "red",
+      void savePromise
+        .then(() => {
+          setDailyGoalDeckRevision((revision) => revision + 1);
+        })
+        .catch((error) => {
+          notifications.show({
+            title: "Could not save review progress",
+            message: error instanceof Error ? error.message : String(error),
+            color: "red",
+          });
         });
-      });
     }, 400);
 
     return () => window.clearTimeout(timeout);
-  }, [deck, deckInfo, deckPath, isMistakeReview, loadError, loaded]);
+  }, [deck, deckInfo, deckPath, isMistakeReview, loadError, loaded, setDailyGoalDeckRevision]);
+
+  useEffect(
+    () => () => {
+      const snapshot = latestReviewSaveRef.current;
+      if (!snapshot) return;
+
+      const nextDeck = {
+        ...snapshot.deckInfo,
+        positions: snapshot.positions,
+        logs: snapshot.logs,
+      };
+      const savePromise = snapshot.isMistakeReview
+        ? writeMistakeReviewDeck(snapshot.deckPath, nextDeck as MistakeReviewDeck)
+        : writeOpeningReviewDeck(snapshot.deckPath, nextDeck as OpeningReviewDeck);
+      void savePromise
+        .then(() => {
+          setDailyGoalDeckRevision((revision) => revision + 1);
+        })
+        .catch(() => {
+          // The normal debounced save path reports failures while the workspace is mounted.
+        });
+    },
+    [setDailyGoalDeckRevision],
+  );
 
   useEffect(() => {
     if (
@@ -1213,6 +1263,7 @@ function OpeningReviewPanel({
   const setInvisible = useSetAtom(currentInvisibleAtom);
   const setShowComments = useSetAtom(currentShowCommentsAtom);
   const setEvalOpen = useSetAtom(currentEvalOpenAtom);
+  const setDailyGoalCompletionPrompt = useSetAtom(dailyGoalCompletionPromptAtom);
   const [practiceState, setPracticeState] = useAtom(practiceStateAtom);
   const [sessionStats, setSessionStats] = useAtom(practiceSessionStatsAtom);
   const setCardStartTime = useSetAtom(practiceCardStartTimeAtom);
@@ -1222,6 +1273,8 @@ function OpeningReviewPanel({
   const [panelView, setPanelView] = useState<OpeningReviewPanelView>(initialView);
   const [dailySettingsOpen, setDailySettingsOpen] = useState(false);
   const initialPracticeStartedRef = useRef(false);
+  const activeDailyGoalSessionRef = useRef<OpeningReviewInitialPractice | null>(null);
+  const dailyGoalCompletionPromptTimerRef = useRef<number | null>(null);
   const persistOpeningNames = useCallback(
     (namesByKey: OpeningReviewResolvedOpeningNames) => {
       setDeck((current) => {
@@ -1368,6 +1421,7 @@ function OpeningReviewPanel({
     setShowComments(true);
     setEvalOpen(true);
     onClearBoardMoveCandidate();
+    activeDailyGoalSessionRef.current = null;
   }, [
     onClearBoardMoveCandidate,
     setEvalOpen,
@@ -1377,6 +1431,50 @@ function OpeningReviewPanel({
     setShowComments,
   ]);
 
+  const completePracticeSession = useCallback(() => {
+    const dailyGoalSession = activeDailyGoalSessionRef.current;
+    setPracticeState({ phase: "idle" });
+    setPracticePath(null);
+    setInvisible(false);
+    setShowComments(true);
+    setEvalOpen(true);
+    onClearBoardMoveCandidate();
+    activeDailyGoalSessionRef.current = null;
+
+    if (dailyGoalSession?.source === "daily-goals") {
+      if (dailyGoalCompletionPromptTimerRef.current !== null) {
+        window.clearTimeout(dailyGoalCompletionPromptTimerRef.current);
+      }
+      dailyGoalCompletionPromptTimerRef.current = window.setTimeout(() => {
+        setDailyGoalCompletionPrompt({
+          completedGoalTitle:
+            dailyGoalSession.goalTitle ?? (isMistakeReview ? "Mistake review" : "Opening gaps"),
+          completedGoalKind: isMistakeReview ? "mistake-review" : "opening-review",
+          completedAt: Date.now(),
+        });
+        dailyGoalCompletionPromptTimerRef.current = null;
+      }, 700);
+    }
+  }, [
+    isMistakeReview,
+    onClearBoardMoveCandidate,
+    setDailyGoalCompletionPrompt,
+    setEvalOpen,
+    setInvisible,
+    setPracticePath,
+    setPracticeState,
+    setShowComments,
+  ]);
+
+  useEffect(
+    () => () => {
+      if (dailyGoalCompletionPromptTimerRef.current !== null) {
+        window.clearTimeout(dailyGoalCompletionPromptTimerRef.current);
+      }
+    },
+    [],
+  );
+
   const newPractice = useCallback(
     (
       nextStats?: Partial<typeof sessionStats>,
@@ -1384,7 +1482,7 @@ function OpeningReviewPanel({
     ) => {
       const positions = options?.positions ?? deck.positions;
       if (positions.length === 0) {
-        stopPractice();
+        completePracticeSession();
         return;
       }
 
@@ -1400,7 +1498,7 @@ function OpeningReviewPanel({
       const position = positionIndex >= 0 ? (positions[positionIndex] ?? null) : null;
 
       if (!position) {
-        stopPractice();
+        completePracticeSession();
         return;
       }
       onClearBoardMoveCandidate();
@@ -1438,7 +1536,7 @@ function OpeningReviewPanel({
       setShowComments,
       store,
       onClearBoardMoveCandidate,
-      stopPractice,
+      completePracticeSession,
       hideMovesDuringPractice,
     ],
   );
@@ -1498,7 +1596,11 @@ function OpeningReviewPanel({
   ]);
 
   const startDuePractice = useCallback(
-    (scopeIndices?: number[], scopeLabel?: string) => {
+    (
+      scopeIndices?: number[],
+      scopeLabel?: string,
+      options?: { dailyGoalSession?: OpeningReviewInitialPractice },
+    ) => {
       if (scopeIndices && scopeIndices.length === 0) {
         notifications.show({
           title: "No due positions to train",
@@ -1508,6 +1610,7 @@ function OpeningReviewPanel({
         return;
       }
 
+      activeDailyGoalSessionRef.current = options?.dailyGoalSession ?? null;
       const nextStats = {
         mode: "anki" as const,
         remainingPositions: scopeIndices ?? [],
@@ -1530,7 +1633,11 @@ function OpeningReviewPanel({
   );
 
   const startFullPractice = useCallback(
-    (scopeIndices?: number[], scopeLabel?: string) => {
+    (
+      scopeIndices?: number[],
+      scopeLabel?: string,
+      options?: { dailyGoalSession?: OpeningReviewInitialPractice },
+    ) => {
       const remainingPositions = scopeIndices ?? deck.positions.map((_, index) => index);
       if (remainingPositions.length === 0) {
         notifications.show({
@@ -1541,6 +1648,7 @@ function OpeningReviewPanel({
         return;
       }
 
+      activeDailyGoalSessionRef.current = options?.dailyGoalSession ?? null;
       const nextStats = {
         mode: "full" as const,
         remainingPositions,
@@ -1652,9 +1760,15 @@ function OpeningReviewPanel({
       (index) => index >= 0 && index < deck.positions.length,
     );
     if (initialPractice.mode === "due") {
-      startDuePractice(indices, initialPractice.label);
+      startDuePractice(indices, initialPractice.label, {
+        dailyGoalSession:
+          initialPractice.source === "daily-goals" ? initialPractice : undefined,
+      });
     } else {
-      startFullPractice(indices, initialPractice.label);
+      startFullPractice(indices, initialPractice.label, {
+        dailyGoalSession:
+          initialPractice.source === "daily-goals" ? initialPractice : undefined,
+      });
     }
   }, [deck.positions.length, initialPractice, loaded, startDuePractice, startFullPractice]);
 

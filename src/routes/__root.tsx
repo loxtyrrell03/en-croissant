@@ -1,4 +1,4 @@
-import { AppShell } from "@mantine/core";
+import { AppShell, Button, Group, Modal, Stack, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { createRootRouteWithContext, Outlet, useNavigate } from "@tanstack/react-router";
 import { TauriEvent } from "@tauri-apps/api/event";
@@ -19,7 +19,14 @@ import type { Dirs } from "@/App";
 import AboutModal from "@/components/About";
 import { SideBar } from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
-import { activeTabAtom, nativeBarAtom, tabFamily, tabsAtom } from "@/state/atoms";
+import {
+  activeTabAtom,
+  dailyGoalAutoStartRequestAtom,
+  dailyGoalCompletionPromptAtom,
+  nativeBarAtom,
+  tabFamily,
+  tabsAtom,
+} from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
 import { openFile } from "@/utils/files";
 import { createTab } from "@/utils/tabs";
@@ -90,6 +97,8 @@ function RootLayout() {
 
   const [, setTabs] = useAtom(tabsAtom);
   const [, setActiveTab] = useAtom(activeTabAtom);
+  const [dailyGoalPrompt, setDailyGoalPrompt] = useAtom(dailyGoalCompletionPromptAtom);
+  const [, setDailyGoalAutoStartRequest] = useAtom(dailyGoalAutoStartRequestAtom);
   const store = useStore();
 
   const { t } = useTranslation();
@@ -349,6 +358,34 @@ function RootLayout() {
       }}
     >
       <AboutModal opened={opened} setOpened={setOpened} />
+      <Modal
+        opened={dailyGoalPrompt !== null}
+        onClose={() => setDailyGoalPrompt(null)}
+        title={<b>Daily goal complete</b>}
+        centered
+      >
+        <Stack gap="sm">
+          <Text size="sm">
+            {dailyGoalPrompt?.completedGoalTitle ?? "This daily goal"} is done for today.
+          </Text>
+          <Group justify="flex-end" gap="xs">
+            <Button variant="default" onClick={() => setDailyGoalPrompt(null)}>
+              Stay here
+            </Button>
+            <Button
+              onClick={() => {
+                setDailyGoalPrompt(null);
+                navigate({ to: "/home" });
+                window.setTimeout(() => {
+                  setDailyGoalAutoStartRequest({ createdAt: Date.now() });
+                }, 650);
+              }}
+            >
+              Continue daily goals
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
       {!isNative &&
         (import.meta.env.VITE_PLATFORM === "win32" ||
           import.meta.env.VITE_PLATFORM === "linux") && (

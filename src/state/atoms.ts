@@ -328,6 +328,12 @@ export type DailyGoalHistoryEntry = {
 
 export type DailyGoalHistory = Record<string, DailyGoalHistoryEntry>;
 
+export type DailyGoalCompletionPrompt = {
+    completedGoalTitle: string;
+    completedGoalKind: DailyGoalKind;
+    completedAt: number;
+};
+
 export const DEFAULT_DAILY_GOALS: DailyGoal[] = [
     {
         id: "daily-mistake-review",
@@ -352,6 +358,12 @@ export const DEFAULT_DAILY_GOALS: DailyGoal[] = [
 export const dailyGoalsAtom = atomWithStorage<DailyGoal[]>("daily-goals", DEFAULT_DAILY_GOALS);
 
 export const dailyGoalHistoryAtom = atomWithStorage<DailyGoalHistory>("daily-goal-history", {});
+
+export const dailyGoalDeckRevisionAtom = atom(0);
+
+export const dailyGoalCompletionPromptAtom = atom<DailyGoalCompletionPrompt | null>(null);
+
+export const dailyGoalAutoStartRequestAtom = atom<{ createdAt: number } | null>(null);
 
 // Database
 

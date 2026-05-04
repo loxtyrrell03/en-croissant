@@ -29,6 +29,7 @@ import {
   activeTabAtom,
   addRecentFileAtom,
   deckAtomFamily,
+  dailyGoalDeckRevisionAtom,
   enginesAtom,
   latestOnlineGameAccountSelectionAtom,
   mistakeReviewScanProgressAtom,
@@ -2331,6 +2332,7 @@ export default function NewTabHome() {
   const [openOnlineOpeningPicker, setOpenOnlineOpeningPicker] = useState(false);
   const [reviewDecks, setReviewDecks] = useState<OpeningReviewDeckSummary[]>([]);
   const [mistakeDecks, setMistakeDecks] = useState<MistakeReviewDeckSummary[]>([]);
+  const dailyGoalDeckRevision = useAtomValue(dailyGoalDeckRevisionAtom);
   const [reviewDecksLoading, setReviewDecksLoading] = useState(false);
   const [mistakeDecksLoading, setMistakeDecksLoading] = useState(false);
   const [latestGameLoading, setLatestGameLoading] = useState(false);
@@ -2472,7 +2474,7 @@ export default function NewTabHome() {
   useEffect(() => {
     void refreshReviewDecks();
     void refreshMistakeDecks();
-  }, [refreshMistakeDecks, refreshReviewDecks]);
+  }, [dailyGoalDeckRevision, refreshMistakeDecks, refreshReviewDecks]);
 
   useEffect(() => {
     if (!openReviewModal) return;
@@ -2551,7 +2553,14 @@ export default function NewTabHome() {
     async (
       deck: OpeningReviewDeckSummary,
       options?: {
-        initialPractice?: { mode: "due" | "all"; indices: number[]; label?: string };
+        initialPractice?: {
+          mode: "due" | "all";
+          indices: number[];
+          label?: string;
+          source?: "daily-goals";
+          goalId?: string;
+          goalTitle?: string;
+        };
       },
     ) => {
       await createTab({
@@ -2579,7 +2588,14 @@ export default function NewTabHome() {
     async (
       deck: MistakeReviewDeckSummary,
       options?: {
-        initialPractice?: { mode: "due" | "all"; indices: number[]; label?: string };
+        initialPractice?: {
+          mode: "due" | "all";
+          indices: number[];
+          label?: string;
+          source?: "daily-goals";
+          goalId?: string;
+          goalTitle?: string;
+        };
       },
     ) => {
       await createTab({
