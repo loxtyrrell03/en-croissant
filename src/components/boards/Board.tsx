@@ -420,6 +420,7 @@ function Board({
   const [mistakeReviewLineBusy, setMistakeReviewLineBusy] = useState(false);
   const [mistakeReviewRevealRemaining, setMistakeReviewRevealRemaining] = useState(0);
   const [mistakeReviewFreePlay, setMistakeReviewFreePlay] = useState(false);
+  const [openingReviewPendingAssessment, setOpeningReviewPendingAssessment] = useState(false);
   const [activeMistakeReviewPosition, setActiveMistakeReviewPosition] =
     useState<ReviewPosition | null>(null);
   const mistakeReviewLineTimers = useRef<number[]>([]);
@@ -496,10 +497,40 @@ function Board({
   const currentPracticeCard = currentPracticeEntry?.position ?? null;
   const mistakeReviewFreePlayActive =
     isMistakeReviewTab && mistakeReviewFreePlay && !!trainerMistakeReviewPosition;
+  const openingReviewPendingAssessmentFreePlayActive =
+    isOpeningReviewTab &&
+    !!practicing &&
+    openingReviewPendingAssessment &&
+    practiceState.phase === "waiting" &&
+    !!practiceState.currentFen &&
+    !sameBoardPosition(currentNode.fen, practiceState.currentFen);
   const openingReviewPostAttemptFreePlayActive =
     isOpeningReviewTab &&
     !!practicing &&
-    (practiceState.phase === "correct" || practiceState.phase === "incorrect");
+    (practiceState.phase === "correct" ||
+      practiceState.phase === "incorrect" ||
+      openingReviewPendingAssessmentFreePlayActive);
+
+  useEffect(() => {
+    if (!openingReviewPendingAssessment) return;
+
+    if (
+      !isOpeningReviewTab ||
+      !practicing ||
+      practiceState.phase !== "waiting" ||
+      !practiceState.currentFen ||
+      sameBoardPosition(currentNode.fen, practiceState.currentFen)
+    ) {
+      setOpeningReviewPendingAssessment(false);
+    }
+  }, [
+    currentNode.fen,
+    isOpeningReviewTab,
+    openingReviewPendingAssessment,
+    practiceState.currentFen,
+    practiceState.phase,
+    practicing,
+  ]);
 
   const returnToMistakeReviewPosition = useCallback(
     (options: { clearReveal?: boolean; resetPractice?: boolean } = {}) => {
@@ -895,6 +926,10 @@ function Board({
           return;
         }
 
+        if (isOpeningReview) {
+          setOpeningReviewPendingAssessment(true);
+        }
+
         const moveAssessment =
           currentTab?.gameOrigin.kind === "opening_review"
             ? assessOpeningReviewMove(
@@ -924,6 +959,7 @@ function Board({
           positionIndex: i,
           timeTaken,
         });
+        setOpeningReviewPendingAssessment(false);
         if (isAcceptedAlternative) {
           notifications.show({
             title: isBestAlternative ? "Best move" : "OK move",
