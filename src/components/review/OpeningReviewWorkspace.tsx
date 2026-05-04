@@ -136,10 +136,13 @@ import {
   formatMistakeReviewLastSeen,
   getMistakeReviewDailyBatch,
   getMistakeReviewDailyProgress,
+  getMistakeReviewPhase,
   getMistakeReviewPhaseBatch,
   getMistakeReviewPhaseCounts,
+  getMistakeReviewSeverityWeight,
   getMistakeReviewTimeManagementBatch,
   MISTAKE_REVIEW_PHASES,
+  type MistakeReviewAttemptLabel,
   type MistakeReviewDailySettings,
   mistakeReviewSeverityLabel,
   type MistakeReviewPhase,
@@ -228,9 +231,16 @@ type OpeningReviewPositionSort =
   | "colour"
   | "opening"
   | "due"
-  | "move";
+  | "move"
+  | "severity"
+  | "moveTime"
+  | "cpLoss"
+  | "winProbabilityDrop"
+  | "opponent";
 type OpeningReviewColourFilter = "any" | "white" | "black";
 type OpeningReviewGapFilter = "all" | Exclude<OpeningReviewGapTrainingType, "other">;
+type MistakeReviewPhaseFilter = "all" | MistakeReviewPhase;
+type MistakeReviewThinkTimeFilter = "all" | "known" | "long" | "missing";
 type OpeningReviewOpeningInfo = {
   rawName: string;
   family: string;
@@ -260,6 +270,15 @@ type ReviewDeckSaveSnapshot = {
 type OpeningReviewStatsResultFilter = "wins" | "draws" | "losses";
 type OpeningReviewStatsGroupBy = "family" | "line";
 type OpeningReviewStatsSort = "planGap" | "scoreDesc" | "scoreAsc" | "reviewDesc" | "gamesDesc";
+
+const MISTAKE_REVIEW_POSITION_SEVERITIES: MistakeReviewAttemptLabel[] = [
+  "blunder",
+  "mistake",
+  "inaccuracy",
+  "okay",
+  "good",
+  "best",
+];
 
 const openingReviewOpeningNameCache = new Map<string, string>();
 
@@ -4915,6 +4934,10 @@ function getOpeningReviewMoveSide(position: Position): "white" | "black" {
   );
 }
 
+function getReviewPositionFilterSide(position: Position): "white" | "black" {
+  return position.mistakeReview?.playerColor ?? getOpeningReviewMoveSide(position);
+}
+
 function formatOpeningReviewPositionAnswer(position: Position) {
   const moveSequence = getOpeningReviewMoveSequenceLabel(position);
   return moveSequence ? `${position.answer} - ${moveSequence}` : position.answer;
@@ -4962,6 +4985,28 @@ function getReviewPositionLastPlayedSortTime(position: Position) {
   const withTime = new Date(date);
   withTime.setUTCHours(hours, minutes, seconds, 0);
   return withTime.getTime();
+}
+
+function isMistakeReviewLongThinkPosition(position: Position) {
+  const metadata = position.mistakeReview;
+  const moveTime = metadata?.moveTimeSeconds;
+  if (typeof moveTime !== "number" || !Number.isFinite(moveTime)) return false;
+
+  const threshold =
+    metadata?.longThinkThresholdSeconds ??
+    metadata?.timeManagement?.minMoveSeconds ??
+    DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds;
+  return moveTime >= Math.max(0, threshold);
+}
+
+function getMistakeReviewTimeControlLabel(
+  metadata: NonNullable<Position["mistakeReview"]> | null | undefined,
+) {
+  return metadata ? formatMistakeReviewTimeControl(metadata) : "Unknown";
+}
+
+function getMistakeReviewOpponentLabel(position: Position) {
+  return normalizeMistakeReviewName(position.mistakeReview?.opponent) || "Unknown";
 }
 
 function getOpeningReviewStatsSide(
@@ -5224,14 +5269,28 @@ function openingReviewPositionSortValue(
     case "lastPlayed":
       return -getReviewPositionLastPlayedSortTime(row.position);
     case "colour":
-      return getOpeningReviewMoveSide(row.position) === "white" ? 0 : 1;
+      return getReviewPositionFilterSide(row.position) === "white" ? 0 : 1;
     case "opening":
       return row.opening.line;
     case "due":
       return new Date(row.position.card.due).getTime();
     case "move":
       return row.position.answer;
+    case "severity":
+      return -getMistakeReviewSeverityWeight(row.position.mistakeReview?.severity);
+    case "moveTime":
+      return sortNumberDescMissingLast(row.position.mistakeReview?.moveTimeSeconds);
+    case "cpLoss":
+      return sortNumberDescMissingLast(row.position.mistakeReview?.cpLoss);
+    case "winProbabilityDrop":
+      return sortNumberDescMissingLast(row.position.mistakeReview?.winProbabilityDrop);
+    case "opponent":
+      return getMistakeReviewOpponentLabel(row.position);
   }
+}
+
+function sortNumberDescMissingLast(value: number | null | undefined) {
+  return typeof value === "number" && Number.isFinite(value) ? -value : Number.POSITIVE_INFINITY;
 }
 
 function compareOpeningReviewPositionRows(
@@ -5368,6 +5427,13 @@ function OpeningReviewPositionsModal({
   const [gapFilter, setGapFilter] = useState<OpeningReviewGapFilter>("all");
   const [colourFilter, setColourFilter] = useState<OpeningReviewColourFilter>("any");
   const [openingFilters, setOpeningFilters] = useState<string[]>([]);
+  const [mistakeSeverityFilters, setMistakeSeverityFilters] = useState<MistakeReviewAttemptLabel[]>(
+    [],
+  );
+  const [mistakePhaseFilter, setMistakePhaseFilter] = useState<MistakeReviewPhaseFilter>("all");
+  const [mistakeThinkTimeFilter, setMistakeThinkTimeFilter] =
+    useState<MistakeReviewThinkTimeFilter>("all");
+  const [mistakeTimeControlFilter, setMistakeTimeControlFilter] = useState("all");
   const [dateRange, setDateRange] = useState<OpeningHealthDateRange>("all");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
@@ -5409,7 +5475,7 @@ function OpeningReviewPositionsModal({
     () =>
       rowsWithOpenings.filter(
         ({ position }) =>
-          (colourFilter === "any" || getOpeningReviewMoveSide(position) === colourFilter) &&
+          (colourFilter === "any" || getReviewPositionFilterSide(position) === colourFilter) &&
           openingHealthDateMatches(getReviewPositionLastPlayedDate(position), dateBounds),
       ),
     [colourFilter, dateBounds, rowsWithOpenings],
@@ -5448,11 +5514,100 @@ function OpeningReviewPositionsModal({
           ),
     [colourFilteredRows, gapFilter, showGapFilter],
   );
+  const mistakeSeverityOptions = useMemo(() => {
+    const counts = new Map<MistakeReviewAttemptLabel, number>();
+    for (const { position } of gapFilteredRows) {
+      const severity = position.mistakeReview?.severity;
+      if (!severity) continue;
+      counts.set(severity, (counts.get(severity) ?? 0) + 1);
+    }
+
+    return MISTAKE_REVIEW_POSITION_SEVERITIES.filter((severity) => counts.has(severity)).map(
+      (severity) => ({
+        value: severity,
+        label: `${mistakeReviewSeverityLabel(severity)} (${counts.get(severity) ?? 0})`,
+      }),
+    );
+  }, [gapFilteredRows]);
+  const mistakePhaseOptions = useMemo(() => {
+    const counts = new Map<MistakeReviewPhase, number>();
+    for (const { position } of gapFilteredRows) {
+      if (!position.mistakeReview) continue;
+      const phase = getMistakeReviewPhase(position);
+      counts.set(phase, (counts.get(phase) ?? 0) + 1);
+    }
+
+    return [
+      { value: "all", label: `All phases (${gapFilteredRows.length})` },
+      ...MISTAKE_REVIEW_PHASES.map((phase) => ({
+        value: phase.id,
+        label: `${phase.label} (${counts.get(phase.id) ?? 0})`,
+      })),
+    ];
+  }, [gapFilteredRows]);
+  const mistakeTimeControlOptions = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const { position } of gapFilteredRows) {
+      if (!position.mistakeReview) continue;
+      const label = getMistakeReviewTimeControlLabel(position.mistakeReview);
+      counts.set(label, (counts.get(label) ?? 0) + 1);
+    }
+
+    const options = Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([label, count]) => ({ value: label, label: `${label} (${count})` }));
+    return [{ value: "all", label: `All controls (${gapFilteredRows.length})` }, ...options];
+  }, [gapFilteredRows]);
+  const mistakeFilteredRows = useMemo(
+    () =>
+      !isMistakeReview
+        ? gapFilteredRows
+        : gapFilteredRows.filter(({ position }) => {
+            const metadata = position.mistakeReview;
+            if (!metadata) return false;
+            if (
+              mistakeSeverityFilters.length > 0 &&
+              (!metadata.severity || !mistakeSeverityFilters.includes(metadata.severity))
+            ) {
+              return false;
+            }
+            if (
+              mistakePhaseFilter !== "all" &&
+              getMistakeReviewPhase(position) !== mistakePhaseFilter
+            ) {
+              return false;
+            }
+            if (
+              mistakeTimeControlFilter !== "all" &&
+              getMistakeReviewTimeControlLabel(metadata) !== mistakeTimeControlFilter
+            ) {
+              return false;
+            }
+
+            const hasThinkTime =
+              typeof metadata.moveTimeSeconds === "number" &&
+              Number.isFinite(metadata.moveTimeSeconds);
+            if (mistakeThinkTimeFilter === "known" && !hasThinkTime) return false;
+            if (mistakeThinkTimeFilter === "missing" && hasThinkTime) return false;
+            if (mistakeThinkTimeFilter === "long" && !isMistakeReviewLongThinkPosition(position)) {
+              return false;
+            }
+            return true;
+          }),
+    [
+      gapFilteredRows,
+      isMistakeReview,
+      mistakePhaseFilter,
+      mistakeSeverityFilters,
+      mistakeThinkTimeFilter,
+      mistakeTimeControlFilter,
+    ],
+  );
   const openingOptions = useMemo(() => {
     const familyCounts = new Map<string, number>();
     const lineCounts = new Map<string, number>();
 
-    for (const row of gapFilteredRows) {
+    for (const row of mistakeFilteredRows) {
       familyCounts.set(row.opening.family, (familyCounts.get(row.opening.family) ?? 0) + 1);
       if (row.opening.isVariation) {
         lineCounts.set(row.opening.line, (lineCounts.get(row.opening.line) ?? 0) + 1);
@@ -5473,17 +5628,17 @@ function OpeningReviewPositionsModal({
       }));
 
     return [...familyOptions, ...variationOptions];
-  }, [gapFilteredRows]);
+  }, [mistakeFilteredRows]);
   const visibleRows = useMemo(
     () =>
-      gapFilteredRows
+      mistakeFilteredRows
         .filter(
           (row) =>
             openingFilters.length === 0 ||
             openingFilters.some((filter) => openingReviewFilterMatchesOpening(filter, row.opening)),
         )
         .sort((a, b) => compareOpeningReviewPositionRows(a, b, sortBy)),
-    [gapFilteredRows, openingFilters, sortBy],
+    [mistakeFilteredRows, openingFilters, sortBy],
   );
   const visibleIndices = useMemo(() => visibleRows.map((row) => row.index), [visibleRows]);
   const visibleDueCount = useMemo(() => {
@@ -5495,12 +5650,36 @@ function OpeningReviewPositionsModal({
     showGapFilter && gapFilter !== "all"
       ? openingReviewGapTrainingTypePluralLabel(gapFilter)
       : null;
+  const activeMistakeSeverityLabel =
+    isMistakeReview && mistakeSeverityFilters.length > 0
+      ? mistakeSeverityFilters.length === 1
+        ? mistakeReviewSeverityLabel(mistakeSeverityFilters[0]!)
+        : `${mistakeSeverityFilters.length} qualities`
+      : null;
+  const activeMistakePhaseLabel =
+    isMistakeReview && mistakePhaseFilter !== "all"
+      ? MISTAKE_REVIEW_PHASES.find((phase) => phase.id === mistakePhaseFilter)?.label
+      : null;
+  const activeMistakeThinkTimeLabel =
+    isMistakeReview && mistakeThinkTimeFilter !== "all"
+      ? mistakeThinkTimeFilter === "known"
+        ? "Clock data"
+        : mistakeThinkTimeFilter === "long"
+          ? "Long think"
+          : "Missing clock"
+      : null;
+  const activeMistakeTimeControlLabel =
+    isMistakeReview && mistakeTimeControlFilter !== "all" ? mistakeTimeControlFilter : null;
   const hasActivePositionFilter =
     openingFilters.length > 0 ||
     colourFilter !== "any" ||
     dateFilterActive ||
-    Boolean(activeGapFilterLabel);
-  const openingScopeLabel =
+    Boolean(activeGapFilterLabel) ||
+    Boolean(activeMistakeSeverityLabel) ||
+    Boolean(activeMistakePhaseLabel) ||
+    Boolean(activeMistakeThinkTimeLabel) ||
+    Boolean(activeMistakeTimeControlLabel);
+  const openingReviewScopeLabel =
     openingFilters.length === 0
       ? colourFilter === "any"
         ? "all openings"
@@ -5508,18 +5687,67 @@ function OpeningReviewPositionsModal({
       : `${openingReviewFiltersDisplayName(openingFilters)}${
           colourFilter === "any" ? "" : `, ${colourFilter}`
         }`;
-  const baseTrainingScopeLabel = [activeGapFilterLabel, openingScopeLabel]
-    .filter(Boolean)
-    .join(", ");
+  const mistakeOpeningScopeLabel =
+    isMistakeReview && openingFilters.length > 0
+      ? openingReviewFiltersDisplayName(openingFilters)
+      : null;
+  const mistakeColourScopeLabel =
+    isMistakeReview && colourFilter !== "any"
+      ? `${colourFilter === "white" ? "White" : "Black"} side`
+      : null;
+  const baseTrainingScopeLabel = isMistakeReview
+    ? [
+        activeMistakeSeverityLabel,
+        activeMistakePhaseLabel,
+        activeMistakeThinkTimeLabel,
+        activeMistakeTimeControlLabel,
+        mistakeOpeningScopeLabel,
+        mistakeColourScopeLabel,
+      ]
+        .filter(Boolean)
+        .join(", ") || "all mistakes"
+    : [activeGapFilterLabel, openingReviewScopeLabel].filter(Boolean).join(", ");
   const trainingScopeLabel = dateFilterActive
-    ? `${baseTrainingScopeLabel}, last played ${formatOpeningHealthDateFilter(dateBounds)}`
+    ? `${baseTrainingScopeLabel}, ${
+        isMistakeReview ? "played" : "last played"
+      } ${formatOpeningHealthDateFilter(dateBounds)}`
     : baseTrainingScopeLabel;
   const reviewDueButtonLabel = activeGapFilterLabel
     ? `Review due ${activeGapFilterLabel}`
     : hasActivePositionFilter
       ? "Review due matches"
       : "Review due";
-  const reviewAllButtonLabel = activeGapFilterLabel ? `Review ${activeGapFilterLabel}` : "Review";
+  const reviewAllButtonLabel = activeGapFilterLabel
+    ? `Review ${activeGapFilterLabel}`
+    : hasActivePositionFilter
+      ? "Review matches"
+      : "Review";
+  const positionSortOptions = useMemo(
+    () =>
+      isMistakeReview
+        ? [
+            { value: "lastPlayed", label: "Game date newest" },
+            { value: "moveTime", label: "Think time longest" },
+            { value: "severity", label: "Move quality" },
+            { value: "cpLoss", label: "Centipawn loss" },
+            { value: "winProbabilityDrop", label: "Win-prob drop" },
+            { value: "opponent", label: "Opponent" },
+            { value: "opening", label: "Opening" },
+            { value: "due", label: "Due date" },
+            { value: "imported", label: "Imported newest" },
+            { value: "move", label: "Best move" },
+          ]
+        : [
+            { value: "urgency", label: "Urgency" },
+            { value: "imported", label: "Imported newest" },
+            { value: "lastPlayed", label: "Last played newest" },
+            { value: "colour", label: "Colour" },
+            { value: "opening", label: "Opening" },
+            { value: "due", label: "Due date" },
+            { value: "move", label: "Correct move" },
+          ],
+    [isMistakeReview],
+  );
   const rowVirtualizer = useVirtualizer({
     count: visibleRows.length,
     getScrollElement: () => positionsScrollElement,
@@ -5537,6 +5765,11 @@ function OpeningReviewPositionsModal({
   useEffect(() => {
     setMoveInput(editingPosition?.answer ?? "");
   }, [editingPosition]);
+
+  useEffect(() => {
+    if (positionSortOptions.some((option) => option.value === sortBy)) return;
+    setSortBy(isMistakeReview ? "lastPlayed" : "urgency");
+  }, [isMistakeReview, positionSortOptions, sortBy]);
 
   useEffect(() => {
     if (!opened) return;
@@ -5686,6 +5919,23 @@ function OpeningReviewPositionsModal({
   }, [openingOptions]);
 
   useEffect(() => {
+    if (!isMistakeReview) return;
+    const validValues = new Set(mistakeSeverityOptions.map((option) => option.value));
+    setMistakeSeverityFilters((current) => {
+      const next = current.filter((filter) => validValues.has(filter));
+      return next.length === current.length ? current : next;
+    });
+  }, [isMistakeReview, mistakeSeverityOptions]);
+
+  useEffect(() => {
+    if (!isMistakeReview || mistakeTimeControlFilter === "all") return;
+    const validValues = new Set(mistakeTimeControlOptions.map((option) => option.value));
+    if (!validValues.has(mistakeTimeControlFilter)) {
+      setMistakeTimeControlFilter("all");
+    }
+  }, [isMistakeReview, mistakeTimeControlFilter, mistakeTimeControlOptions]);
+
+  useEffect(() => {
     if (!showGapFilter && gapFilter !== "all") {
       setGapFilter("all");
       return;
@@ -5770,30 +6020,78 @@ function OpeningReviewPositionsModal({
           <Select
             label="Sort"
             value={sortBy}
-            onChange={(value) => setSortBy((value as OpeningReviewPositionSort) ?? "urgency")}
-            data={[
-              { value: "urgency", label: "Urgency" },
-              { value: "imported", label: "Imported newest" },
-              { value: "lastPlayed", label: "Last played newest" },
-              { value: "colour", label: "Colour" },
-              { value: "opening", label: "Opening" },
-              { value: "due", label: "Due date" },
-              { value: "move", label: "Correct move" },
-            ]}
-            w={170}
+            onChange={(value) =>
+              setSortBy(
+                (value as OpeningReviewPositionSort) ??
+                  (isMistakeReview ? "lastPlayed" : "urgency"),
+              )
+            }
+            data={positionSortOptions}
+            w={isMistakeReview ? 190 : 170}
             allowDeselect={false}
           />
           <MultiSelect
-            label="Openings"
+            label={isMistakeReview ? "Opening" : "Openings"}
             value={openingFilters}
             onChange={setOpeningFilters}
             data={openingOptions}
             searchable
             clearable
-            placeholder="All openings"
-            w={300}
+            placeholder={isMistakeReview ? "Any opening" : "All openings"}
+            w={isMistakeReview ? 260 : 300}
             maxDropdownHeight={320}
           />
+          {isMistakeReview && (
+            <>
+              <MultiSelect
+                label="Quality"
+                value={mistakeSeverityFilters}
+                onChange={(value) =>
+                  setMistakeSeverityFilters(value as MistakeReviewAttemptLabel[])
+                }
+                data={mistakeSeverityOptions}
+                clearable
+                placeholder="All"
+                w={220}
+                maxDropdownHeight={260}
+              />
+              <Select
+                label="Phase"
+                value={mistakePhaseFilter}
+                onChange={(value) =>
+                  setMistakePhaseFilter((value as MistakeReviewPhaseFilter) ?? "all")
+                }
+                data={mistakePhaseOptions}
+                allowDeselect={false}
+                w={155}
+              />
+              <Select
+                label="Think time"
+                value={mistakeThinkTimeFilter}
+                onChange={(value) =>
+                  setMistakeThinkTimeFilter((value as MistakeReviewThinkTimeFilter) ?? "all")
+                }
+                data={[
+                  { value: "all", label: "All" },
+                  { value: "known", label: "Has clock" },
+                  { value: "long", label: "Long think" },
+                  { value: "missing", label: "Missing clock" },
+                ]}
+                allowDeselect={false}
+                w={145}
+              />
+              <Select
+                label="Time control"
+                value={mistakeTimeControlFilter}
+                onChange={(value) => setMistakeTimeControlFilter(value ?? "all")}
+                data={mistakeTimeControlOptions}
+                allowDeselect={false}
+                searchable
+                w={180}
+                maxDropdownHeight={260}
+              />
+            </>
+          )}
           {showGapFilter && (
             <Select
               label="Gap type"
@@ -5819,7 +6117,7 @@ function OpeningReviewPositionsModal({
             />
           </Stack>
           <Select
-            label="Last played"
+            label={isMistakeReview ? "Game date" : "Last played"}
             value={dateRange}
             onChange={(value) => setDateRange((value as OpeningHealthDateRange) ?? "all")}
             data={OPENING_HEALTH_DATE_RANGE_OPTIONS}
@@ -5885,11 +6183,30 @@ function OpeningReviewPositionsModal({
               Openings: {openingReviewFiltersDisplayName(openingFilters)}
             </Badge>
           )}
+          {activeMistakeSeverityLabel && (
+            <Badge variant="light">Quality: {activeMistakeSeverityLabel}</Badge>
+          )}
+          {activeMistakePhaseLabel && (
+            <Badge variant="light" color="teal">
+              Phase: {activeMistakePhaseLabel}
+            </Badge>
+          )}
+          {activeMistakeThinkTimeLabel && (
+            <Badge variant="light" color="orange">
+              {activeMistakeThinkTimeLabel}
+            </Badge>
+          )}
+          {activeMistakeTimeControlLabel && (
+            <Badge variant="light">Time control: {activeMistakeTimeControlLabel}</Badge>
+          )}
           {colourFilter !== "any" && (
             <Badge variant="light">{colourFilter === "white" ? "White" : "Black"} side</Badge>
           )}
           {dateFilterActive && (
-            <Badge variant="light">Last played: {formatOpeningHealthDateFilter(dateBounds)}</Badge>
+            <Badge variant="light">
+              {isMistakeReview ? "Game date" : "Last played"}:{" "}
+              {formatOpeningHealthDateFilter(dateBounds)}
+            </Badge>
           )}
         </Group>
       </Stack>
@@ -5898,12 +6215,12 @@ function OpeningReviewPositionsModal({
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Position</Table.Th>
-              <Table.Th>Urgency</Table.Th>
+              <Table.Th>{isMistakeReview ? "Quality" : "Urgency"}</Table.Th>
               <Table.Th>Opening</Table.Th>
-              <Table.Th>Correct move</Table.Th>
-              <Table.Th>Last played</Table.Th>
-              <Table.Th>Imported</Table.Th>
-              <Table.Th>Why</Table.Th>
+              <Table.Th>{isMistakeReview ? "Moves" : "Correct move"}</Table.Th>
+              <Table.Th>{isMistakeReview ? "Game date" : "Last played"}</Table.Th>
+              <Table.Th>{isMistakeReview ? "Think time" : "Imported"}</Table.Th>
+              <Table.Th>{isMistakeReview ? "Evidence" : "Why"}</Table.Th>
               <Table.Th>Status</Table.Th>
               <Table.Th>Actions</Table.Th>
             </Table.Tr>
@@ -5921,11 +6238,25 @@ function OpeningReviewPositionsModal({
               const due = new Date(position.card.due);
               const status =
                 position.card.reps === 0 ? "Unseen" : due <= new Date() ? "Due" : "Scheduled";
-              const colour = getOpeningReviewMoveSide(position);
+              const colour = getReviewPositionFilterSide(position);
               const gapType = showGapFilter ? getOpeningReviewGapTrainingType(position) : "other";
               const moveSequence = getOpeningReviewMoveSequenceLabel(position);
               const openingDetail =
                 opening.variation ?? (opening.rawName !== opening.family ? opening.rawName : null);
+              const mistake = position.mistakeReview;
+              const mistakeSeverity = mistake?.severity ?? "mistake";
+              const mistakePhase = mistake ? getMistakeReviewPhase(position) : null;
+              const mistakePhaseLabel = mistakePhase
+                ? MISTAKE_REVIEW_PHASES.find((phase) => phase.id === mistakePhase)?.label
+                : null;
+              const mistakeThinkTime = mistake ? formatMistakeReviewThinkTime(mistake) : "Unknown";
+              const mistakeTimeControl = getMistakeReviewTimeControlLabel(mistake);
+              const mistakeLossText =
+                mistake?.cpLoss === undefined ? null : `${Math.round(mistake.cpLoss)} cp`;
+              const mistakeDropText =
+                mistake?.winProbabilityDrop === undefined
+                  ? null
+                  : `${mistake.winProbabilityDrop.toFixed(1)}% win-prob`;
               return (
                 <Table.Tr
                   key={`${position.reviewKey ?? position.fen}-${index}`}
@@ -5939,20 +6270,43 @@ function OpeningReviewPositionsModal({
                   </Table.Td>
                   <Table.Td>
                     <Stack gap={2}>
-                      <Badge color={openingReviewUrgencyColor(urgency)} variant="light">
-                        #{rank}
-                      </Badge>
-                      <Text size="xs" c="dimmed">
-                        {urgency}/100
-                      </Text>
-                      {gapType !== "other" && (
-                        <Badge
-                          size="xs"
-                          variant="light"
-                          color={openingReviewGapTrainingTypeColor(gapType)}
-                        >
-                          {openingReviewGapTrainingTypeLabel(gapType)}
-                        </Badge>
+                      {isMistakeReview ? (
+                        <>
+                          <Badge
+                            color={mistakeReviewAttemptColor(mistakeSeverity, "incorrect")}
+                            variant="light"
+                          >
+                            {mistakeReviewSeverityLabel(mistakeSeverity)}
+                          </Badge>
+                          {mistakePhaseLabel && (
+                            <Text size="xs" c="dimmed">
+                              {mistakePhaseLabel}
+                            </Text>
+                          )}
+                          {isMistakeReviewLongThinkPosition(position) && (
+                            <Badge size="xs" variant="light" color="orange">
+                              Long think
+                            </Badge>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <Badge color={openingReviewUrgencyColor(urgency)} variant="light">
+                            #{rank}
+                          </Badge>
+                          <Text size="xs" c="dimmed">
+                            {urgency}/100
+                          </Text>
+                          {gapType !== "other" && (
+                            <Badge
+                              size="xs"
+                              variant="light"
+                              color={openingReviewGapTrainingTypeColor(gapType)}
+                            >
+                              {openingReviewGapTrainingTypeLabel(gapType)}
+                            </Badge>
+                          )}
+                        </>
                       )}
                     </Stack>
                   </Table.Td>
@@ -5973,11 +6327,22 @@ function OpeningReviewPositionsModal({
                   </Table.Td>
                   <Table.Td>
                     <Stack gap={0}>
-                      <Text fw={700}>{position.answer}</Text>
-                      {moveSequence && (
-                        <Text size="xs" c="dimmed" lineClamp={1}>
-                          {moveSequence}
-                        </Text>
+                      {isMistakeReview ? (
+                        <>
+                          <Text fw={700}>{mistake?.playedMoveSan ?? "-"}</Text>
+                          <Text size="xs" c="dimmed" lineClamp={1}>
+                            Best: {mistake?.bestMoveSan ?? position.answer}
+                          </Text>
+                        </>
+                      ) : (
+                        <>
+                          <Text fw={700}>{position.answer}</Text>
+                          {moveSequence && (
+                            <Text size="xs" c="dimmed" lineClamp={1}>
+                              {moveSequence}
+                            </Text>
+                          )}
+                        </>
                       )}
                     </Stack>
                   </Table.Td>
@@ -5987,18 +6352,47 @@ function OpeningReviewPositionsModal({
                     </Text>
                   </Table.Td>
                   <Table.Td>
-                    <Text size="sm" lineClamp={2}>
-                      {formatImportedAt(position.importedAt)}
-                    </Text>
+                    {isMistakeReview ? (
+                      <Stack gap={0}>
+                        <Text size="sm" fw={700} lineClamp={1}>
+                          {mistakeThinkTime}
+                        </Text>
+                        <Text size="xs" c="dimmed" lineClamp={1}>
+                          Clock after {formatMistakeReviewClock(mistake?.clockAfterSeconds)}
+                        </Text>
+                      </Stack>
+                    ) : (
+                      <Text size="sm" lineClamp={2}>
+                        {formatImportedAt(position.importedAt)}
+                      </Text>
+                    )}
                   </Table.Td>
                   <Table.Td>
-                    <Text size="sm" lineClamp={2}>
-                      {openingReviewPositionExplanation(position)}
-                    </Text>
-                    {position.evidence && (
-                      <Text size="xs" c="dimmed" lineClamp={1}>
-                        {position.evidence}
-                      </Text>
+                    {isMistakeReview ? (
+                      <Stack gap={1}>
+                        <Text size="sm" lineClamp={1}>
+                          {getMistakeReviewOpponentLabel(position)}
+                        </Text>
+                        <Text size="xs" c="dimmed" lineClamp={1}>
+                          {mistakeTimeControl}
+                        </Text>
+                        {(mistakeLossText || mistakeDropText) && (
+                          <Text size="xs" c="dimmed" lineClamp={1}>
+                            {[mistakeLossText, mistakeDropText].filter(Boolean).join(", ")}
+                          </Text>
+                        )}
+                      </Stack>
+                    ) : (
+                      <>
+                        <Text size="sm" lineClamp={2}>
+                          {openingReviewPositionExplanation(position)}
+                        </Text>
+                        {position.evidence && (
+                          <Text size="xs" c="dimmed" lineClamp={1}>
+                            {position.evidence}
+                          </Text>
+                        )}
+                      </>
                     )}
                   </Table.Td>
                   <Table.Td>
