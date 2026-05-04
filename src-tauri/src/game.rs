@@ -1413,6 +1413,10 @@ impl MoveTempo {
             MoveTempo::Book | MoveTempo::Opening | MoveTempo::Forced | MoveTempo::Recapture
         )
     }
+
+    fn is_opening_like(self) -> bool {
+        matches!(self, MoveTempo::Book | MoveTempo::Opening)
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -1436,7 +1440,7 @@ fn clock_shape(initial_time_ms: u64, increment_ms: u64) -> ClockShape {
     let estimated_total_ms = initial_time_ms + increment_ms.saturating_mul(40);
 
     match estimated_total_ms {
-        0..=180_000 => ClockShape {
+        0..=120_000 => ClockShape {
             expected_moves: 34.0,
             reserve_fraction: 0.035,
             quick_floor_ms: 45.0,
@@ -1451,15 +1455,15 @@ fn clock_shape(initial_time_ms: u64, increment_ms: u64) -> ClockShape {
             endgame_weight: 0.42,
             opening_fast_moves: 8,
         },
-        180_001..=480_000 => ClockShape {
+        120_001..=480_000 => ClockShape {
             expected_moves: 40.0,
             reserve_fraction: 0.045,
-            quick_floor_ms: 90.0,
-            opening_cap_ms: 1_100.0,
+            quick_floor_ms: 115.0,
+            opening_cap_ms: 1_800.0,
             recapture_cap_ms: 650.0,
             forced_cap_ms: 350.0,
             check_cap_ms: 1_100.0,
-            opening_weight: 0.10,
+            opening_weight: 0.13,
             early_weight: 0.25,
             middle_weight: 0.82,
             late_weight: 0.70,
@@ -1515,7 +1519,7 @@ fn phase_time_multiplier(move_number: u32, shape: ClockShape) -> f64 {
 }
 
 fn rating_time_multiplier(fide_elo: u32, tempo: MoveTempo) -> f64 {
-    let normalized = (fide_elo.saturating_sub(800) as f64 / 1800.0).min(1.0);
+    let normalized = (fide_elo.saturating_sub(800) as f64 / 2200.0).min(1.0);
     if tempo.is_automatic() {
         1.15 - normalized * 0.42
     } else {
@@ -1618,6 +1622,31 @@ fn tempo_cap_ms(tempo: MoveTempo, shape: ClockShape) -> Option<f64> {
     }
 }
 
+fn opening_floor_ms(shape: ClockShape) -> f64 {
+    clamp_f64(
+        shape.quick_floor_ms * 2.8,
+        shape.quick_floor_ms,
+        shape.opening_cap_ms * 0.55,
+    )
+}
+
+fn opening_cadence_multiplier(move_number: u32, rng: &mut impl Rng) -> f64 {
+    let stage = match move_number {
+        1..=2 => 0.88,
+        3..=6 => 1.0,
+        _ => 1.12,
+    };
+    let roll = rng.gen_range(0.0..1.0_f64);
+    let cadence = if roll < 0.14 {
+        rng.gen_range(1.75..=3.25)
+    } else if roll < 0.58 {
+        rng.gen_range(0.85..=1.55)
+    } else {
+        rng.gen_range(0.48..=0.9)
+    };
+    stage * cadence
+}
+
 fn choose_engine_move_delay(
     delay: &EngineMoveDelay,
     current_time: Option<u64>,
@@ -1653,21 +1682,23 @@ fn choose_engine_move_delay(
         let sustainable = usable_time / remaining_moves + increment_ms as f64 * 0.62;
         let average_budget =
             (initial_time_ms as f64 + increment_ms as f64 * expected_moves) / expected_moves;
+        let mut rng = rand::thread_rng();
 
         let mut target = average_budget * 0.25 + sustainable * 0.75;
         target *= phase_time_multiplier(move_number, shape);
         target *= complexity_time_multiplier(position, tempo);
-        target *= rating_time_multiplier(fide_elo.clamp(800, 2600), tempo);
+        target *= rating_time_multiplier(fide_elo.clamp(800, 3000), tempo);
         target *= pressure_time_multiplier(current_time, initial_time_ms, increment_ms);
 
-        if tempo.is_automatic() {
+        if tempo.is_opening_like() {
+            target *= opening_cadence_multiplier(move_number, &mut rng);
+        } else if tempo.is_automatic() {
             target *= 0.72;
         } else if tempo == MoveTempo::CheckEvasion {
             target *= 0.86;
         }
 
-        let mut rng = rand::thread_rng();
-        let sigma = 0.78 - ((fide_elo.saturating_sub(800) as f64 / 1800.0).min(1.0) * 0.32);
+        let sigma = 0.78 - ((fide_elo.saturating_sub(800) as f64 / 2200.0).min(1.0) * 0.32);
         let noise = (rng.gen_range(-1.0..=1.0_f64) * sigma).exp();
         target *= noise;
 
@@ -1679,10 +1710,6 @@ fn choose_engine_move_delay(
             && rng.gen_bool(long_think_probability)
         {
             target *= rng.gen_range(1.8..=3.8);
-        }
-
-        if matches!(tempo, MoveTempo::Book | MoveTempo::Opening) && rng.gen_bool(0.38) {
-            target *= rng.gen_range(0.28..=0.62);
         }
 
         let safety_margin = if current_time < 5_000 {
@@ -1702,8 +1729,10 @@ fn choose_engine_move_delay(
             .min(sustainable_cap)
             .min(tempo_cap)
             .max(0.0);
-        let min_spend = if tempo.is_automatic() {
-            shape.quick_floor_ms
+        let min_spend = if tempo.is_opening_like() {
+            opening_floor_ms(shape) * rng.gen_range(0.82..=1.28)
+        } else if tempo.is_automatic() {
+            shape.quick_floor_ms * rng.gen_range(0.82..=1.22)
         } else {
             min_ms as f64
         }
@@ -2051,6 +2080,33 @@ mod timing_tests {
 
         let selected = choose_engine_move_delay(&delay, Some(180_000), 0, &position, None, false);
 
-        assert!(selected.as_millis() <= 1_100);
+        assert!(selected.as_millis() <= 1_800);
+        assert!(selected.as_millis() >= 240);
+    }
+
+    #[test]
+    fn three_zero_uses_blitz_opening_pacing() {
+        let shape = clock_shape(180_000, 0);
+
+        assert_eq!(shape.opening_cap_ms, 1_800.0);
+        assert_eq!(shape.quick_floor_ms, 115.0);
+    }
+
+    #[test]
+    fn bullet_opening_delay_is_quick_but_not_instant() {
+        let delay = EngineMoveDelay {
+            min_ms: 42,
+            max_ms: 4_800,
+            fide_elo: Some(1800),
+            initial_time_ms: Some(60_000),
+            increment_ms: Some(0),
+            use_as_move_time: true,
+        };
+        let position = pos("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
+        let selected = choose_engine_move_delay(&delay, Some(60_000), 0, &position, None, false);
+
+        assert!(selected.as_millis() <= 450);
+        assert!(selected.as_millis() >= 90);
     }
 }
