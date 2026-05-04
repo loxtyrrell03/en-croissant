@@ -104,6 +104,7 @@ import { ANNOTATION_INFO, isBasicAnnotation } from "@/utils/annotation";
 import { getVariationLine } from "@/utils/chess";
 import { chessopsError, forceEnPassant, positionFromFen } from "@/utils/chessops";
 import { queryChessDbMoves } from "@/utils/chessdb/api";
+import { queryLichessCloudMoves } from "@/utils/lichess/api";
 import {
   formatMistakeReviewLastSeen,
   mistakeReviewSeverityLabel,
@@ -113,7 +114,7 @@ import { assessMistakeReviewMoveWithEngine } from "@/utils/mistakeReviewPractice
 import {
   assessOpeningReviewMove,
   findReviewPracticePositionForBoard,
-  isOpeningReviewEngineMove,
+  formatOpeningReviewMoveSource,
   isOpeningReviewSavedMove,
 } from "@/utils/openingReviewPractice";
 import {
@@ -148,6 +149,7 @@ const BOARD_SIDE_BAR_WIDTH = 25;
 const BOARD_ROW_GAP = 12;
 const MIN_MANUAL_BOARD_SIZE = 280;
 const MISTAKE_REVIEW_PANEL_MIN_HEIGHT = 108;
+const OPENING_REVIEW_CLOUD_MULTIPV = 5;
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
 
 type BoardResizeCorner = "nw" | "ne" | "sw" | "se";
@@ -870,13 +872,86 @@ function Board({
       const timeTaken = Date.now() - cardStartTime;
       const isMistakeReview = currentTab?.gameOrigin.kind === "mistake_review";
       const isOpeningReview = currentTab?.gameOrigin.kind === "opening_review";
-      const isEngineCorrect = isOpeningReview && isOpeningReviewEngineMove(c, { san, uci });
-      const isCorrect = isOpeningReviewSavedMove(c, { san, uci }) || isEngineCorrect;
+      const isCorrect = !isOpeningReview && isOpeningReviewSavedMove(c, { san, uci });
       onMove?.(uci, c.fen, san);
       if (isMistakeReview) {
         markMistakeReviewAttemptSeen(i);
       } else if (isOpeningReview) {
         markOpeningReviewAttemptSeen(i);
+      }
+
+      if (isOpeningReview) {
+        storeMakeMove({
+          payload: move,
+        });
+        setPendingMove(null);
+        setOpeningReviewPendingAssessment(true);
+
+        const lichessMoves = await queryLichessCloudMoves(
+          c.fen,
+          OPENING_REVIEW_CLOUD_MULTIPV,
+        ).catch(() => null);
+        const chessDbMoves = lichessMoves?.length
+          ? null
+          : await queryChessDbMoves(c.fen).catch(() => null);
+        const moveAssessment = assessOpeningReviewMove(c, { san, uci }, chessDbMoves, lichessMoves);
+        const isBestAlternative = moveAssessment.quality === "best";
+        const isOkAlternative = moveAssessment.quality === "ok";
+        const isIncorrect = moveAssessment.quality === "incorrect";
+        const isAcceptedMove = !isIncorrect;
+        const bestMove = moveAssessment.bestMoveSan || c.answer;
+        const bestSource = formatOpeningReviewMoveSource(moveAssessment.bestMoveSource);
+
+        setPracticeState({
+          phase: isAcceptedMove ? "correct" : "incorrect",
+          currentFen: c.fen,
+          answer: bestMove,
+          playedMove: san,
+          playedMoveUci: uci,
+          moveAssessment: isBestAlternative
+            ? "best"
+            : isOkAlternative
+              ? "ok"
+              : isIncorrect
+                ? "incorrect"
+                : undefined,
+          bestMove,
+          bestMoveUci: moveAssessment.bestMoveUci,
+          bestMoveSource: moveAssessment.bestMoveSource,
+          moveLossCp: moveAssessment.moveLossCp,
+          chessDbRank: moveAssessment.chessDbRank,
+          positionIndex: i,
+          timeTaken,
+        });
+        setOpeningReviewPendingAssessment(false);
+
+        if (isAcceptedMove) {
+          if (isBestAlternative || isOkAlternative) {
+            notifications.show({
+              title: isBestAlternative ? "Best move" : "OK move",
+              message: isBestAlternative
+                ? `${bestSource} has ${san} as best.`
+                : `${san} is OK; ${bestSource} has ${bestMove} as best.`,
+              color: isBestAlternative ? "green" : "blue",
+            });
+          }
+          return;
+        }
+
+        if (sessionStats.mode !== "full") {
+          updateCardPerformance(setDeck, i, c.card, 1);
+        }
+        setSessionStats((prev) => ({
+          ...prev,
+          incorrect: prev.incorrect + 1,
+          streak: 0,
+        }));
+        notifications.show({
+          title: t("Common.Incorrect"),
+          message: `${bestSource} has ${bestMove} as best.`,
+          color: "red",
+        });
+        return;
       }
 
       if (!isCorrect) {
@@ -926,24 +1001,12 @@ function Board({
           return;
         }
 
-        if (isOpeningReview) {
-          setOpeningReviewPendingAssessment(true);
-        }
-
-        const moveAssessment =
-          currentTab?.gameOrigin.kind === "opening_review"
-            ? assessOpeningReviewMove(
-                c,
-                { san, uci },
-                await queryChessDbMoves(c.fen).catch(() => null),
-              )
-            : assessOpeningReviewMove(c, { san, uci }, null);
+        const moveAssessment = assessOpeningReviewMove(c, { san, uci }, null);
         const isBestAlternative = moveAssessment.quality === "best";
         const isOkAlternative = moveAssessment.quality === "ok";
         const isAcceptedAlternative = isBestAlternative || isOkAlternative;
         const bestMove = moveAssessment.bestMoveSan || c.answer;
-        const bestSource =
-          c.engine?.bestMoveUci === uci || c.engine?.bestMoveSan === san ? "Engine" : "ChessDB";
+        const bestSource = formatOpeningReviewMoveSource(moveAssessment.bestMoveSource);
 
         setPracticeState({
           phase: isAcceptedAlternative ? "correct" : "incorrect",
@@ -954,18 +1017,18 @@ function Board({
           moveAssessment: isBestAlternative ? "best" : isOkAlternative ? "ok" : "incorrect",
           bestMove,
           bestMoveUci: moveAssessment.bestMoveUci,
+          bestMoveSource: moveAssessment.bestMoveSource,
           moveLossCp: moveAssessment.moveLossCp,
           chessDbRank: moveAssessment.chessDbRank,
           positionIndex: i,
           timeTaken,
         });
-        setOpeningReviewPendingAssessment(false);
         if (isAcceptedAlternative) {
           notifications.show({
             title: isBestAlternative ? "Best move" : "OK move",
             message: isBestAlternative
               ? `${bestSource} has ${san} as best.`
-              : `${san} is OK; ${bestMove} is best.`,
+              : `${san} is OK; ${bestSource} has ${bestMove} as best.`,
             color: isBestAlternative ? "green" : "blue",
           });
           return;
@@ -995,18 +1058,10 @@ function Board({
           answer: c.answer,
           playedMove: san,
           playedMoveUci: uci,
-          moveAssessment: isMistakeReview || isEngineCorrect ? "best" : undefined,
+          moveAssessment: isMistakeReview ? "best" : undefined,
           mistakeReviewLabel: isMistakeReview ? "best" : undefined,
-          bestMove: isMistakeReview
-            ? c.mistakeReview?.bestMoveSan || c.answer
-            : isEngineCorrect
-              ? c.engine?.bestMoveSan || c.answer
-              : undefined,
-          bestMoveUci: isMistakeReview
-            ? c.mistakeReview?.bestMoveUci || c.answerUci
-            : isEngineCorrect
-              ? c.engine?.bestMoveUci || c.answerUci
-              : undefined,
+          bestMove: isMistakeReview ? c.mistakeReview?.bestMoveSan || c.answer : undefined,
+          bestMoveUci: isMistakeReview ? c.mistakeReview?.bestMoveUci || c.answerUci : undefined,
           moveLossCp: isMistakeReview ? 0 : undefined,
           winProbabilityDrop: isMistakeReview ? 0 : undefined,
           requestedDepth: isMistakeReview ? c.mistakeReview?.requestedDepth : undefined,

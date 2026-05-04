@@ -178,7 +178,10 @@ import {
   openingHealthDateMatches,
   type OpeningHealthDateRange,
 } from "@/utils/openingHealthDateFilter";
-import { isOpeningReviewSavedMove } from "@/utils/openingReviewPractice";
+import {
+  formatOpeningReviewMoveSource,
+  isOpeningReviewSavedMove,
+} from "@/utils/openingReviewPractice";
 import resultClasses from "@/components/panels/database/OpeningsTable.module.css";
 
 const scrollablePanelStyle = {
@@ -2187,10 +2190,13 @@ function OpeningReviewPanel({
   const mistakeFeedbackDetail = [mistakeTimeManagementFeedback, mistakeBestMoveFeedback]
     .filter(Boolean)
     .join(" ");
+  const openingBestMoveSource = !isMistakeReview
+    ? formatOpeningReviewMoveSource(practiceState.bestMoveSource)
+    : null;
   const correctFeedbackDetail = isMistakeReview
     ? mistakeFeedbackDetail || undefined
     : !isMistakeReview && isOkAlternative && practiceState.bestMove
-      ? `${practiceState.bestMove} is best.`
+      ? `${openingBestMoveSource} has ${practiceState.bestMove} as best.`
       : undefined;
   const feedbackTitle = isMistakeReview
     ? practiceState.mistakeReviewLabel
@@ -2645,16 +2651,16 @@ function OpeningReviewPanel({
                 </Text>
               ) : isBestAlternative && practiceState.playedMove ? (
                 <Text size="sm" c="dimmed" ta="center">
-                  ChessDB has {practiceState.playedMove} as best.
+                  {openingBestMoveSource} has {practiceState.playedMove} as best.
                 </Text>
               ) : isOkAlternative && practiceState.playedMove ? (
                 <Text size="sm" c="dimmed" ta="center">
-                  {practiceState.playedMove} is OK; {practiceState.bestMove ?? practiceState.answer}{" "}
-                  is best.
+                  {practiceState.playedMove} is OK; {openingBestMoveSource} has{" "}
+                  {practiceState.bestMove ?? practiceState.answer} as best.
                 </Text>
               ) : (
                 <Text size="sm" c="dimmed">
-                  Correct move: {practiceState.answer}
+                  {openingBestMoveSource}: {practiceState.answer}
                 </Text>
               )}
               {!isMistakeReview &&

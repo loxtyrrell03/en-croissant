@@ -1045,6 +1045,7 @@ export type PracticeState = {
     reachedDepth?: number;
     engineName?: string;
     chessDbRank?: number | null;
+    bestMoveSource?: "lichess" | "chessdb" | "engine" | "saved";
     timeTaken?: number;
     positionIndex?: number;
     resultRecorded?: boolean;

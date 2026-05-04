@@ -3,6 +3,7 @@ import { createEmptyCard } from "ts-fsrs";
 import { describe, expect, test } from "vitest";
 import type { Position } from "@/components/files/opening";
 import type { ChessDbCloudMove } from "@/utils/chessdb/api";
+import type { LichessCloudMove } from "@/utils/lichess/api";
 import {
     assessOpeningReviewMove,
     findReviewPracticePositionForBoard,
@@ -34,6 +35,21 @@ function cloudMove(
         rank,
         note: null,
         winrate: null,
+    };
+}
+
+function lichessMove(
+    san: string,
+    uci: string,
+    scoreCpForWhite: number,
+    depth = 45,
+): LichessCloudMove {
+    return {
+        san,
+        uci,
+        scoreCpForWhite,
+        depth,
+        mate: null,
     };
 }
 
@@ -105,6 +121,34 @@ describe("opening review practice move assessment", () => {
         expect(assessment.quality).toBe("best");
         expect(assessment.bestMoveSan).toBe("d4");
         expect(assessment.moveLossCp).toBe(0);
+    });
+
+    test("uses Lichess Cloud ahead of saved and ChessDB moves during practice", () => {
+        const assessment = assessOpeningReviewMove(
+            position(),
+            { san: "d4", uci: "d2d4" },
+            [cloudMove("e4", "e2e4", 35, 1), cloudMove("d4", "d2d4", -25, 2)],
+            [lichessMove("d4", "d2d4", 80), lichessMove("e4", "e2e4", -40)],
+        );
+
+        expect(assessment.quality).toBe("best");
+        expect(assessment.bestMoveSan).toBe("d4");
+        expect(assessment.bestMoveUci).toBe("d2d4");
+        expect(assessment.bestMoveSource).toBe("lichess");
+        expect(assessment.moveLossCp).toBe(0);
+    });
+
+    test("falls back to ChessDB when Lichess Cloud has no move for the position", () => {
+        const assessment = assessOpeningReviewMove(
+            position(),
+            { san: "d4", uci: "d2d4" },
+            [cloudMove("d4", "d2d4", 45, 1), cloudMove("e4", "e2e4", 20, 2)],
+            null,
+        );
+
+        expect(assessment.quality).toBe("best");
+        expect(assessment.bestMoveSan).toBe("d4");
+        expect(assessment.bestMoveSource).toBe("chessdb");
     });
 
     test("accepts the saved engine best move before the database answer", () => {
