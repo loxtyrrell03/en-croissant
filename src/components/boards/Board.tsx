@@ -116,6 +116,7 @@ import {
   assessOpeningReviewMove,
   findReviewPracticePositionForBoard,
   formatOpeningReviewMoveSource,
+  openingReviewAssessmentToPracticeState,
   type OpeningReviewMoveAssessment,
 } from "@/utils/openingReviewPractice";
 import {
@@ -472,11 +473,11 @@ function Board({
   const [mistakeReviewLineBusy, setMistakeReviewLineBusy] = useState(false);
   const [mistakeReviewRevealRemaining, setMistakeReviewRevealRemaining] = useState(0);
   const [mistakeReviewFreePlay, setMistakeReviewFreePlay] = useState(false);
-  const [openingReviewPendingAssessment, setOpeningReviewPendingAssessment] = useState(false);
   const [activeMistakeReviewPosition, setActiveMistakeReviewPosition] =
     useState<ReviewPosition | null>(null);
   const mistakeReviewLineTimers = useRef<number[]>([]);
   const previousMistakeReviewIndexRef = useRef<number | null>(null);
+  const openingReviewAssessmentRequestRef = useRef(0);
 
   const clearMistakeReviewLine = useCallback(() => {
     for (const timer of mistakeReviewLineTimers.current) {
@@ -549,40 +550,10 @@ function Board({
   const currentPracticeCard = currentPracticeEntry?.position ?? null;
   const mistakeReviewFreePlayActive =
     isMistakeReviewTab && mistakeReviewFreePlay && !!trainerMistakeReviewPosition;
-  const openingReviewPendingAssessmentFreePlayActive =
-    isOpeningReviewTab &&
-    !!practicing &&
-    openingReviewPendingAssessment &&
-    practiceState.phase === "waiting" &&
-    !!practiceState.currentFen &&
-    !sameBoardPosition(currentNode.fen, practiceState.currentFen);
   const openingReviewPostAttemptFreePlayActive =
     isOpeningReviewTab &&
     !!practicing &&
-    (practiceState.phase === "correct" ||
-      practiceState.phase === "incorrect" ||
-      openingReviewPendingAssessmentFreePlayActive);
-
-  useEffect(() => {
-    if (!openingReviewPendingAssessment) return;
-
-    if (
-      !isOpeningReviewTab ||
-      !practicing ||
-      practiceState.phase !== "waiting" ||
-      !practiceState.currentFen ||
-      sameBoardPosition(currentNode.fen, practiceState.currentFen)
-    ) {
-      setOpeningReviewPendingAssessment(false);
-    }
-  }, [
-    currentNode.fen,
-    isOpeningReviewTab,
-    openingReviewPendingAssessment,
-    practiceState.currentFen,
-    practiceState.phase,
-    practicing,
-  ]);
+    (practiceState.phase === "correct" || practiceState.phase === "incorrect");
 
   const returnToMistakeReviewPosition = useCallback(
     (options: { clearReveal?: boolean; resetPractice?: boolean } = {}) => {
@@ -921,7 +892,6 @@ function Board({
       const i = currentPracticeEntry.index;
       const timeTaken = Date.now() - cardStartTime;
       const isMistakeReview = currentTab?.gameOrigin.kind === "mistake_review";
-      const isOpeningReview = currentTab?.gameOrigin.kind === "opening_review";
       onMove?.(uci, c.fen, san);
       if (isMistakeReview) {
         markMistakeReviewAttemptSeen(i);
@@ -929,12 +899,12 @@ function Board({
         markOpeningReviewAttemptSeen(i);
       }
 
-      storeMakeMove({
-        payload: move,
-      });
-      setPendingMove(null);
-
       if (isMistakeReview) {
+        storeMakeMove({
+          payload: move,
+        });
+        setPendingMove(null);
+
         const moveAssessment = await assessMistakeReviewMoveWithEngine(c, { san, uci });
         setPracticeState({
           phase: moveAssessment.passed ? "correct" : "incorrect",
@@ -968,41 +938,55 @@ function Board({
         return;
       }
 
-      if (isOpeningReview) {
-        setOpeningReviewPendingAssessment(true);
-      }
-      const moveAssessment = await assessOpeningPracticeMoveWithCloud(c, { san, uci }).finally(
-        () => {
-          if (isOpeningReview) {
-            setOpeningReviewPendingAssessment(false);
-          }
-        },
-      );
-      setPracticeState({
-        phase: moveAssessment.passed ? "correct" : "incorrect",
-        currentFen: c.fen,
-        answer: moveAssessment.repertoireMoveSan || c.answer,
-        repertoireMove: moveAssessment.repertoireMoveSan,
-        repertoireMoveUci: moveAssessment.repertoireMoveUci,
-        followedRepertoire: moveAssessment.followedRepertoire,
-        playedMove: san,
-        playedMoveUci: uci,
-        moveAssessment: practiceMoveAssessmentFromLabel(moveAssessment.label),
-        moveQualityLabel: moveAssessment.label,
-        bestMove: moveAssessment.bestMoveSan,
-        bestMoveUci: moveAssessment.bestMoveUci,
-        bestMoveSource: moveAssessment.bestMoveSource,
-        moveLossCp: moveAssessment.moveLossCp,
-        chessDbRank: moveAssessment.chessDbRank,
+      setPendingMove(null);
+      const immediateAssessment = assessOpeningReviewMove(c, { san, uci }, null, null);
+      const immediateState = openingReviewAssessmentToPracticeState({
+        position: c,
         positionIndex: i,
+        playedMove: { san, uci },
+        assessment: immediateAssessment,
         timeTaken,
-        resultRecorded: false,
       });
+      const requestId = openingReviewAssessmentRequestRef.current + 1;
+      openingReviewAssessmentRequestRef.current = requestId;
+
+      setPracticeState(immediateState);
       notifications.show({
-        title: mistakeReviewSeverityLabel(moveAssessment.label),
-        message: formatOpeningPracticeAssessmentMessage(moveAssessment, san),
-        color: mistakeReviewColor(moveAssessment.label),
+        title: mistakeReviewSeverityLabel(immediateAssessment.label),
+        message: formatOpeningPracticeAssessmentMessage(immediateAssessment, san),
+        color: mistakeReviewColor(immediateAssessment.label),
       });
+
+      void assessOpeningPracticeMoveWithCloud(c, { san, uci })
+        .then((moveAssessment) => {
+          setPracticeState((current) => {
+            if (
+              openingReviewAssessmentRequestRef.current !== requestId ||
+              current.positionIndex !== i ||
+              current.currentFen !== c.fen ||
+              current.playedMoveUci !== uci ||
+              current.playedMove !== san ||
+              current.repertoireMove !== immediateAssessment.repertoireMoveSan ||
+              (current.phase !== "correct" && current.phase !== "incorrect")
+            ) {
+              return current;
+            }
+
+            return {
+              ...current,
+              ...openingReviewAssessmentToPracticeState({
+                position: c,
+                positionIndex: i,
+                playedMove: { san, uci },
+                assessment: moveAssessment,
+                timeTaken: current.timeTaken ?? timeTaken,
+              }),
+              resultRecorded: current.resultRecorded,
+            };
+          });
+        })
+        .catch(() => {});
+
       return;
     } else {
       storeMakeMove({

@@ -8,6 +8,7 @@ import {
     assessOpeningReviewMove,
     findReviewPracticePositionForBoard,
     isOpeningReviewSavedMove,
+    openingReviewAssessmentToPracticeState,
 } from "@/utils/openingReviewPractice";
 
 const BLACK_TO_MOVE_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";
@@ -95,6 +96,28 @@ describe("opening review practice move assessment", () => {
         expect(assessment.bestMoveSan).toBe("e4");
         expect(assessment.repertoireMoveSan).toBe("e4");
         expect(assessment.followedRepertoire).toBe(true);
+    });
+
+    test("builds immediate practice feedback state without needing cloud data", () => {
+        const card = position();
+        const playedMove = { san: "e4", uci: "e2e4" };
+        const assessment = assessOpeningReviewMove(card, playedMove, null, null);
+
+        const state = openingReviewAssessmentToPracticeState({
+            position: card,
+            positionIndex: 3,
+            playedMove,
+            assessment,
+            timeTaken: 1200,
+        });
+
+        expect(state.phase).toBe("correct");
+        expect(state.currentFen).toBe(card.fen);
+        expect(state.positionIndex).toBe(3);
+        expect(state.playedMove).toBe("e4");
+        expect(state.repertoireMove).toBe("e4");
+        expect(state.followedRepertoire).toBe(true);
+        expect(state.resultRecorded).toBe(false);
     });
 
     test("normalizes a saved SAN answer before deciding it is different", () => {

@@ -1,6 +1,7 @@
 import { makeUci, parseUci } from "chessops";
 import { parseSan } from "chessops/san";
 import type { Position } from "@/components/files/opening";
+import type { PracticeState } from "@/state/atoms";
 import type { ChessDbCloudMove } from "@/utils/chessdb/api";
 import { positionFromFen } from "@/utils/chessops";
 import type { LichessCloudMove } from "@/utils/lichess/api";
@@ -32,6 +33,41 @@ export type ReviewPracticePositionEntry = {
     position: Position;
     index: number;
 };
+
+export function openingReviewAssessmentToPracticeState({
+    position,
+    positionIndex,
+    playedMove,
+    assessment,
+    timeTaken,
+}: {
+    position: Position;
+    positionIndex: number;
+    playedMove: { san: string; uci: string };
+    assessment: OpeningReviewMoveAssessment;
+    timeTaken: number;
+}): PracticeState {
+    return {
+        phase: assessment.passed ? "correct" : "incorrect",
+        currentFen: position.fen,
+        answer: assessment.repertoireMoveSan || position.answer,
+        repertoireMove: assessment.repertoireMoveSan,
+        repertoireMoveUci: assessment.repertoireMoveUci,
+        followedRepertoire: assessment.followedRepertoire,
+        playedMove: playedMove.san,
+        playedMoveUci: playedMove.uci,
+        moveAssessment: practiceMoveAssessmentFromLabel(assessment.label),
+        moveQualityLabel: assessment.label,
+        bestMove: assessment.bestMoveSan,
+        bestMoveUci: assessment.bestMoveUci,
+        bestMoveSource: assessment.bestMoveSource,
+        moveLossCp: assessment.moveLossCp,
+        chessDbRank: assessment.chessDbRank,
+        positionIndex,
+        timeTaken,
+        resultRecorded: false,
+    };
+}
 
 export function findReviewPracticePositionForBoard(
     positions: Position[],
@@ -281,6 +317,18 @@ function openingReviewQualityFromLabel(label: MistakeReviewAttemptLabel) {
         case "inaccuracy":
         case "mistake":
         case "blunder":
+            return "incorrect";
+    }
+}
+
+function practiceMoveAssessmentFromLabel(label: MistakeReviewAttemptLabel | undefined) {
+    switch (label) {
+        case "best":
+            return "best";
+        case "good":
+        case "okay":
+            return "ok";
+        default:
             return "incorrect";
     }
 }
