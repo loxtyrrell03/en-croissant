@@ -137,6 +137,10 @@ export function sortOpeningRows(
   });
 }
 
+export function isPlayableOpeningRow(opening: Opening) {
+  return opening.move !== "Total" && opening.move !== "*" && getOpeningTotal(opening) > 0;
+}
+
 function OpeningsTable({
   openings,
   loading,
@@ -232,18 +236,22 @@ function OpeningsTable({
     return resolveOpeningMoveHealthSide(healthSidePreference, pos?.turn ?? "white");
   }, [currentFen, healthSidePreference]);
   const resultSortSide = resultPerspective ?? healthSide;
-  const cloudMultipv = useMemo(() => getOpeningRankingMultipv(openings), [openings]);
+  const playableOpenings = useMemo(() => openings.filter(isPlayableOpeningRow), [openings]);
+  const cloudMultipv = useMemo(
+    () => getOpeningRankingMultipv(playableOpenings),
+    [playableOpenings],
+  );
 
   const healthByMove = useMemo(
     () =>
       getOpeningMoveStrengthMap({
-        openings,
+        openings: playableOpenings,
         side: healthSide,
         fen: currentFen,
         cloudData,
         referenceOpenings,
       }),
-    [cloudData, currentFen, healthSide, openings, referenceOpenings],
+    [cloudData, currentFen, healthSide, playableOpenings, referenceOpenings],
   );
 
   const updateSort = useCallback(
@@ -269,7 +277,12 @@ function OpeningsTable({
     setSortStatus(openingSortToStatus(effectiveSortBy));
   }, [effectiveSortBy]);
 
-  openings = sortOpeningRows(openings, effectiveSortBy, healthByMove, resultSortSide);
+  const sortedOpenings = sortOpeningRows(
+    playableOpenings,
+    effectiveSortBy,
+    healthByMove,
+    resultSortSide,
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -291,34 +304,34 @@ function OpeningsTable({
     };
   }, [cloudMultipv, currentFen]);
 
-  const whiteTotal = openings?.reduce((acc, curr) => acc + curr.white, 0);
-  const blackTotal = openings?.reduce((acc, curr) => acc + curr.black, 0);
-  const drawTotal = openings?.reduce((acc, curr) => acc + curr.draw, 0);
+  const whiteTotal = sortedOpenings.reduce((acc, curr) => acc + curr.white, 0);
+  const blackTotal = sortedOpenings.reduce((acc, curr) => acc + curr.black, 0);
+  const drawTotal = sortedOpenings.reduce((acc, curr) => acc + curr.draw, 0);
   const grandTotal = whiteTotal + blackTotal + drawTotal;
-
-  if (openings.length > 0) {
-    openings = [
-      ...openings,
-      {
-        move: "Total",
-        white: whiteTotal,
-        black: blackTotal,
-        draw: drawTotal,
-      },
-    ];
-  }
+  const tableOpenings =
+    sortedOpenings.length > 0
+      ? [
+          ...sortedOpenings,
+          {
+            move: "Total",
+            white: whiteTotal,
+            black: blackTotal,
+            draw: drawTotal,
+          },
+        ]
+      : sortedOpenings;
 
   return (
     <DataTable
       withTableBorder
       highlightOnHover
-      records={openings}
-      fetching={loading || openings === null}
+      records={tableOpenings}
+      fetching={loading}
       className={isDense ? classes.denseTable : undefined}
       horizontalSpacing={isDense ? 4 : isCompact ? 6 : "xs"}
       verticalSpacing={isDense ? 3 : isCompact ? 4 : "xs"}
       rowStyle={(game, i) => {
-        if (i === openings.length - 1)
+        if (i === tableOpenings.length - 1)
           return {
             fontWeight: 700,
             position: "sticky",
@@ -335,12 +348,6 @@ function OpeningsTable({
           ellipsis: true,
           sortable: true,
           render: ({ move }) => {
-            if (move === "*")
-              return (
-                <Text fz={textSize} fs="italic" lh={1.2}>
-                  Game end
-                </Text>
-              );
             return (
               <Text fz={textSize} lh={1.2} truncate>
                 {moveNotationType === "symbols" ? addPieceSymbol(move) : move}
@@ -543,8 +550,12 @@ function OpeningsTable({
       idAccessor="move"
       sortStatus={sortStatus}
       onSortStatusChange={updateSort}
-      emptyState={"No games found"}
-      onRowClick={({ record }) => makeMove({ payload: record.move })}
+      emptyState={"No continuations found"}
+      onRowClick={({ record }) => {
+        if (record.move !== "Total") {
+          makeMove({ payload: record.move });
+        }
+      }}
       customRowAttributes={(record) => ({
         onMouseEnter: () => previewMove(record.move),
         onMouseLeave: clearMovePreview,
