@@ -106,17 +106,56 @@ function practiceMoveQualityTitle(practiceState: PracticeState, fallback: string
     : fallback;
 }
 
+function normalizePracticeMoveSan(move: string | null | undefined) {
+  return (move ?? "")
+    .trim()
+    .replace(/^0-0-0/, "O-O-O")
+    .replace(/^0-0/, "O-O")
+    .replace(/[!?]+/g, "");
+}
+
+function practiceMovesSameSan(
+  firstMove: string | null | undefined,
+  secondMove: string | null | undefined,
+) {
+  const first = normalizePracticeMoveSan(firstMove);
+  const second = normalizePracticeMoveSan(secondMove);
+  return Boolean(first && second && first === second);
+}
+
 function practiceMoveQualityDetail(practiceState: PracticeState) {
   const source = practiceState.bestMoveSource
     ? formatOpeningReviewMoveSource(practiceState.bestMoveSource)
     : "Saved answer";
-  const bestMove = practiceState.bestMove ?? practiceState.answer;
+  const repertoireMove = practiceState.repertoireMove ?? practiceState.answer;
+  const bestMove = practiceState.bestMove;
   const parts: string[] = [];
 
-  if (practiceState.moveQualityLabel === "best" && practiceState.playedMove) {
-    parts.push(`${source} has ${practiceState.playedMove} as best.`);
-  } else if (bestMove) {
-    parts.push(`${source} has ${bestMove} as best.`);
+  if (repertoireMove) {
+    if (practiceState.followedRepertoire === false && practiceState.playedMove) {
+      parts.push(
+        `Repertoire move: ${repertoireMove}. You played ${practiceState.playedMove}, so this is a deviation.`,
+      );
+    } else if (practiceState.followedRepertoire === true) {
+      parts.push(`Repertoire move: ${repertoireMove}. You stayed in repertoire.`);
+    } else {
+      parts.push(`Repertoire move: ${repertoireMove}.`);
+    }
+  }
+
+  const shouldShowObjectiveBest =
+    bestMove && (source !== "Saved answer" || !practiceMovesSameSan(bestMove, repertoireMove));
+
+  if (shouldShowObjectiveBest) {
+    if (
+      practiceState.moveQualityLabel === "best" &&
+      practiceState.playedMove &&
+      practiceMovesSameSan(bestMove, practiceState.playedMove)
+    ) {
+      parts.push(`${source} ranks ${practiceState.playedMove} best.`);
+    } else {
+      parts.push(`${source} has ${bestMove} as best.`);
+    }
   }
 
   if (practiceState.moveLossCp !== undefined && practiceState.moveQualityLabel !== "best") {

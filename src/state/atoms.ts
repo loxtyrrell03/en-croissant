@@ -1068,6 +1068,9 @@ export type PracticeState = {
     phase: PracticePhase;
     currentFen?: string;
     answer?: string;
+    repertoireMove?: string;
+    repertoireMoveUci?: string;
+    followedRepertoire?: boolean;
     playedMove?: string;
     playedMoveUci?: string;
     moveAssessment?: "best" | "ok" | "incorrect";

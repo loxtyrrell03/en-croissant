@@ -16,6 +16,9 @@ export type OpeningReviewMoveAssessment = {
     quality: "correct" | "best" | "ok" | "incorrect";
     label: MistakeReviewAttemptLabel;
     passed: boolean;
+    repertoireMoveSan: string;
+    repertoireMoveUci?: string;
+    followedRepertoire: boolean;
     bestMoveSan: string;
     bestMoveUci?: string;
     bestMoveSource: OpeningReviewMoveAssessmentSource;
@@ -66,6 +69,7 @@ export function assessOpeningReviewMove(
             quality: "best",
             label: "best",
             passed: true,
+            ...getOpeningReviewRepertoireContext(position, playedMove),
             bestMoveSan: savedLichessBestMove.san,
             bestMoveUci: savedLichessBestMove.uci,
             bestMoveSource: "lichess",
@@ -88,6 +92,7 @@ export function assessOpeningReviewMove(
             quality: "best",
             label: "best",
             passed: true,
+            ...getOpeningReviewRepertoireContext(position, playedMove),
             bestMoveSan: savedBestMove.san,
             bestMoveUci: savedBestMove.uci,
             bestMoveSource: getSavedBestMoveSource(position),
@@ -100,6 +105,7 @@ export function assessOpeningReviewMove(
             quality: "correct",
             label: "best",
             passed: true,
+            ...getOpeningReviewRepertoireContext(position, playedMove),
             bestMoveSan: savedBestMove.san,
             bestMoveUci: savedBestMove.uci,
             bestMoveSource: getSavedBestMoveSource(position),
@@ -110,6 +116,7 @@ export function assessOpeningReviewMove(
         quality: "incorrect",
         label: "mistake",
         passed: false,
+        ...getOpeningReviewRepertoireContext(position, playedMove),
         bestMoveSan: savedBestMove.san,
         bestMoveUci: savedBestMove.uci,
         bestMoveSource: getSavedBestMoveSource(position),
@@ -170,6 +177,7 @@ function assessLichessCloudMove(
             quality: "incorrect",
             label: "mistake",
             passed: false,
+            ...getOpeningReviewRepertoireContext(position, playedMove),
             bestMoveSan: best.move.san,
             bestMoveUci: best.move.uci,
             bestMoveSource: "lichess",
@@ -184,6 +192,7 @@ function assessLichessCloudMove(
         quality: openingReviewQualityFromLabel(label),
         label,
         passed: isMistakeReviewPassingLabel(label),
+        ...getOpeningReviewRepertoireContext(position, playedMove),
         bestMoveSan: best.move.san,
         bestMoveUci: best.move.uci,
         bestMoveSource: "lichess",
@@ -228,6 +237,7 @@ function assessChessDbMove(
             quality: "incorrect",
             label: "mistake",
             passed: false,
+            ...getOpeningReviewRepertoireContext(position, playedMove),
             bestMoveSan: authoritativeBestMove?.san ?? savedBestMove.san,
             bestMoveUci: authoritativeBestMove?.uci ?? savedBestMove.uci,
             bestMoveSource: authoritativeBestMove ? "lichess" : getSavedBestMoveSource(position),
@@ -246,6 +256,7 @@ function assessChessDbMove(
         quality: openingReviewQualityFromLabel(label),
         label,
         passed: isMistakeReviewPassingLabel(label),
+        ...getOpeningReviewRepertoireContext(position, playedMove),
         bestMoveSan: authoritativeBestMove?.san ?? chessDbBest.move.san ?? savedBestMove.san,
         bestMoveUci: authoritativeBestMove?.uci ?? chessDbBest.move.uci ?? savedBestMove.uci,
         bestMoveSource: authoritativeBestMove ? "lichess" : "chessdb",
@@ -320,6 +331,26 @@ function getOpeningReviewBestMove(position: Position) {
     return {
         san: position.answer,
         uci: position.answerUci,
+    };
+}
+
+function getOpeningReviewRepertoireMove(position: Position) {
+    return {
+        san: position.answer,
+        uci: getOpeningReviewAnswerUci(position) ?? position.answerUci,
+    };
+}
+
+function getOpeningReviewRepertoireContext(
+    position: Position,
+    playedMove: { san: string; uci: string },
+) {
+    const repertoireMove = getOpeningReviewRepertoireMove(position);
+
+    return {
+        repertoireMoveSan: repertoireMove.san,
+        repertoireMoveUci: repertoireMove.uci,
+        followedRepertoire: isOpeningReviewSavedMove(position, playedMove),
     };
 }
 

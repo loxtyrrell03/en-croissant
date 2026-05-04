@@ -1246,6 +1246,71 @@ function mistakeReviewAttemptColor(
   }
 }
 
+function normalizeReviewPracticeMoveSan(move: string | null | undefined) {
+  return (move ?? "")
+    .trim()
+    .replace(/^0-0-0/, "O-O-O")
+    .replace(/^0-0/, "O-O")
+    .replace(/[!?]+/g, "");
+}
+
+function reviewPracticeMovesSameSan(
+  firstMove: string | null | undefined,
+  secondMove: string | null | undefined,
+) {
+  const first = normalizeReviewPracticeMoveSan(firstMove);
+  const second = normalizeReviewPracticeMoveSan(secondMove);
+  return Boolean(first && second && first === second);
+}
+
+function formatOpeningPracticeFeedbackDetail(
+  practiceState: PracticeState,
+  source: string | null,
+  attemptLabel: PracticeState["moveQualityLabel"],
+) {
+  const repertoireMove = practiceState.repertoireMove ?? practiceState.answer;
+  const bestMove = practiceState.bestMove;
+  const parts: string[] = [];
+
+  if (repertoireMove) {
+    if (practiceState.followedRepertoire === false && practiceState.playedMove) {
+      parts.push(
+        `Repertoire move: ${repertoireMove}. You played ${practiceState.playedMove}, so this is a deviation.`,
+      );
+    } else if (practiceState.followedRepertoire === true) {
+      parts.push(`Repertoire move: ${repertoireMove}. You stayed in repertoire.`);
+    } else {
+      parts.push(`Repertoire move: ${repertoireMove}.`);
+    }
+  }
+
+  const shouldShowObjectiveBest =
+    bestMove &&
+    (source !== "Saved answer" || !reviewPracticeMovesSameSan(bestMove, repertoireMove));
+
+  if (shouldShowObjectiveBest) {
+    if (
+      attemptLabel === "best" &&
+      practiceState.playedMove &&
+      reviewPracticeMovesSameSan(bestMove, practiceState.playedMove)
+    ) {
+      parts.push(`${source ?? "Engine"} ranks ${practiceState.playedMove} best.`);
+    } else {
+      parts.push(`${source ?? "Engine"} has ${bestMove} as best.`);
+    }
+  }
+
+  if (practiceState.moveLossCp !== undefined && attemptLabel !== "best") {
+    parts.push(
+      `${Math.round(practiceState.moveLossCp)} cp behind${
+        practiceState.chessDbRank ? `, rank ${practiceState.chessDbRank}` : ""
+      }.`,
+    );
+  }
+
+  return parts.join(" ");
+}
+
 function parseReviewCorrectMove(position: Position, value: string) {
   const input = value.trim();
   if (!input) return null;
@@ -2207,20 +2272,7 @@ function OpeningReviewPanel({
     ? formatOpeningReviewMoveSource(practiceState.bestMoveSource)
     : null;
   const openingFeedbackDetail = !isMistakeReview
-    ? [
-        isBestAlternative && practiceState.playedMove
-          ? `${openingBestMoveSource} has ${practiceState.playedMove} as best.`
-          : practiceState.bestMove
-            ? `${openingBestMoveSource} has ${practiceState.bestMove} as best.`
-            : undefined,
-        practiceState.moveLossCp !== undefined && openingAttemptLabel !== "best"
-          ? `${Math.round(practiceState.moveLossCp)} cp behind${
-              practiceState.chessDbRank ? `, rank ${practiceState.chessDbRank}` : ""
-            }.`
-          : undefined,
-      ]
-        .filter(Boolean)
-        .join(" ")
+    ? formatOpeningPracticeFeedbackDetail(practiceState, openingBestMoveSource, openingAttemptLabel)
     : undefined;
   const correctFeedbackDetail = isMistakeReview
     ? mistakeFeedbackDetail || undefined

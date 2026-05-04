@@ -269,6 +269,10 @@ function formatOpeningPracticeAssessmentMessage(
 ) {
   const source = formatOpeningReviewMoveSource(assessment.bestMoveSource);
   const bestMove = assessment.bestMoveSan;
+  const repertoireMove = assessment.repertoireMoveSan;
+  const repertoireText = assessment.followedRepertoire
+    ? `Repertoire move: ${repertoireMove}. You stayed in repertoire.`
+    : `Repertoire move: ${repertoireMove}. You played ${playedMoveSan}, so this is a deviation.`;
   const lossText =
     assessment.moveLossCp !== undefined && assessment.label !== "best"
       ? ` (${Math.round(assessment.moveLossCp)} cp behind${
@@ -277,10 +281,10 @@ function formatOpeningPracticeAssessmentMessage(
       : "";
 
   if (assessment.label === "best") {
-    return `${source} has ${playedMoveSan} as best.`;
+    return `${repertoireText} ${source} ranks ${playedMoveSan} as best.`;
   }
 
-  return `${source} has ${bestMove} as best${lossText}.`;
+  return `${repertoireText} ${source} has ${bestMove} as best${lossText}.`;
 }
 
 async function assessOpeningPracticeMoveWithCloud(
@@ -974,17 +978,18 @@ function Board({
           }
         },
       );
-      const bestMove = moveAssessment.bestMoveSan || c.answer;
-
       setPracticeState({
         phase: moveAssessment.passed ? "correct" : "incorrect",
         currentFen: c.fen,
-        answer: bestMove,
+        answer: moveAssessment.repertoireMoveSan || c.answer,
+        repertoireMove: moveAssessment.repertoireMoveSan,
+        repertoireMoveUci: moveAssessment.repertoireMoveUci,
+        followedRepertoire: moveAssessment.followedRepertoire,
         playedMove: san,
         playedMoveUci: uci,
         moveAssessment: practiceMoveAssessmentFromLabel(moveAssessment.label),
         moveQualityLabel: moveAssessment.label,
-        bestMove,
+        bestMove: moveAssessment.bestMoveSan,
         bestMoveUci: moveAssessment.bestMoveUci,
         bestMoveSource: moveAssessment.bestMoveSource,
         moveLossCp: moveAssessment.moveLossCp,
@@ -1151,17 +1156,26 @@ function Board({
     ) {
       const showPracticeBestShape =
         currentTab?.gameOrigin.kind !== "mistake_review" || mistakeReviewAutoRevealBest;
-      const bestShape = uciArrowShape(
-        showPracticeBestShape
+      const practiceGuideMoveUci =
+        currentTab?.gameOrigin.kind === "mistake_review"
           ? (practiceState.bestMoveUci ??
-              (practiceState.phase === "correct" ? practiceState.playedMoveUci : undefined))
-          : undefined,
+            (practiceState.phase === "correct" ? practiceState.playedMoveUci : undefined))
+          : (practiceState.repertoireMoveUci ??
+            practiceState.bestMoveUci ??
+            (practiceState.phase === "correct" ? practiceState.playedMoveUci : undefined));
+      const bestShape = uciArrowShape(
+        showPracticeBestShape ? practiceGuideMoveUci : undefined,
         "green",
       );
-      const playedShape =
-        practiceState.phase === "incorrect" && practiceState.moveAssessment !== "best"
-          ? uciArrowShape(practiceState.playedMoveUci, "red")
-          : null;
+      const deviatedFromRepertoire =
+        currentTab?.gameOrigin.kind !== "mistake_review" &&
+        practiceState.followedRepertoire === false;
+      const showPlayedPracticeShape =
+        deviatedFromRepertoire ||
+        (practiceState.phase === "incorrect" && practiceState.moveAssessment !== "best");
+      const playedShape = showPlayedPracticeShape
+        ? uciArrowShape(practiceState.playedMoveUci, deviatedFromRepertoire ? "yellow" : "red")
+        : null;
       const sameMove =
         playedShape &&
         bestShape &&

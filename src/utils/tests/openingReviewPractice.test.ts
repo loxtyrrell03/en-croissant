@@ -93,6 +93,8 @@ describe("opening review practice move assessment", () => {
         expect(assessment.label).toBe("best");
         expect(assessment.passed).toBe(true);
         expect(assessment.bestMoveSan).toBe("e4");
+        expect(assessment.repertoireMoveSan).toBe("e4");
+        expect(assessment.followedRepertoire).toBe(true);
     });
 
     test("normalizes a saved SAN answer before deciding it is different", () => {
@@ -114,6 +116,8 @@ describe("opening review practice move assessment", () => {
         expect(assessment.passed).toBe(true);
         expect(assessment.bestMoveSan).toBe("e4");
         expect(assessment.moveLossCp).toBe(30);
+        expect(assessment.repertoireMoveSan).toBe("e4");
+        expect(assessment.followedRepertoire).toBe(false);
     });
 
     test("labels an okay ChessDB alternative but keeps it due for review", () => {
@@ -139,6 +143,8 @@ describe("opening review practice move assessment", () => {
         expect(assessment.passed).toBe(true);
         expect(assessment.bestMoveSan).toBe("d4");
         expect(assessment.moveLossCp).toBe(0);
+        expect(assessment.repertoireMoveSan).toBe("e4");
+        expect(assessment.followedRepertoire).toBe(false);
     });
 
     test("uses Lichess Cloud ahead of saved and ChessDB moves during practice", () => {
@@ -191,6 +197,31 @@ describe("opening review practice move assessment", () => {
         expect(assessment.bestMoveSan).toBe("Qc2");
         expect(assessment.bestMoveUci).toBe("d1c2");
         expect(assessment.moveLossCp).toBe(0);
+        expect(assessment.repertoireMoveSan).toBe("Bd3");
+        expect(assessment.repertoireMoveUci).toBe("f1d3");
+        expect(assessment.followedRepertoire).toBe(false);
+    });
+
+    test("keeps the repertoire move visible when it differs from the saved engine best", () => {
+        const assessment = assessOpeningReviewMove(
+            position({
+                answer: "Bd3",
+                answerUci: "f1d3",
+                engine: {
+                    source: "chessdb",
+                    bestMoveSan: "Qc2",
+                    bestMoveUci: "d1c2",
+                },
+            }),
+            { san: "Bd3", uci: "f1d3" },
+            null,
+        );
+
+        expect(assessment.quality).toBe("correct");
+        expect(assessment.label).toBe("best");
+        expect(assessment.bestMoveSan).toBe("Qc2");
+        expect(assessment.repertoireMoveSan).toBe("Bd3");
+        expect(assessment.followedRepertoire).toBe(true);
     });
 
     test("keeps saved Lichess best move ahead of ChessDB best for good alternatives", () => {
