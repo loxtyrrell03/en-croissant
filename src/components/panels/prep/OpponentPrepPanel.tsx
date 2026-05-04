@@ -590,42 +590,46 @@ function OpponentPrepPanel() {
           playerWidth={dense ? 130 : 170}
           colorWidth={dense ? 112 : 126}
         />
-        <NumberInput
-          value={prep.minGames}
-          onChange={(value) =>
-            updateSettings(
-              {
-                minGames: Math.max(1, Number(value) || DEFAULT_PREP_MIN_GAMES),
-              },
-              false,
-            )
-          }
-          min={1}
-          max={999}
-          step={1}
-          size={controlSize}
-          w={dense ? 80 : 96}
-          placeholder="Min"
-          aria-label="Minimum games"
-        />
-        <NumberInput
-          value={prep.moveLimit}
-          onChange={(value) =>
-            updateSettings(
-              {
-                moveLimit: Math.max(1, Number(value) || DEFAULT_PREP_MOVE_LIMIT),
-              },
-              false,
-            )
-          }
-          min={1}
-          max={20}
-          step={1}
-          size={controlSize}
-          w={dense ? 82 : 100}
-          placeholder="Moves"
-          aria-label="Move limit"
-        />
+        <Tooltip label="Only show opponent moves they have played at least this many times">
+          <NumberInput
+            label="Min games"
+            value={prep.minGames}
+            onChange={(value) =>
+              updateSettings(
+                {
+                  minGames: Math.max(1, Number(value) || DEFAULT_PREP_MIN_GAMES),
+                },
+                false,
+              )
+            }
+            min={1}
+            max={999}
+            step={1}
+            size={controlSize}
+            w={dense ? 92 : 108}
+            aria-label="Minimum games"
+          />
+        </Tooltip>
+        <Tooltip label="How many of their most common moves to show at each position">
+          <NumberInput
+            label="Show top"
+            value={prep.moveLimit}
+            onChange={(value) =>
+              updateSettings(
+                {
+                  moveLimit: Math.max(1, Number(value) || DEFAULT_PREP_MOVE_LIMIT),
+                },
+                false,
+              )
+            }
+            min={1}
+            max={20}
+            step={1}
+            size={controlSize}
+            w={dense ? 92 : 108}
+            aria-label="Top opponent moves to show"
+          />
+        </Tooltip>
       </Group>
 
       <Group justify="space-between" gap="xs" wrap="wrap" style={{ flexShrink: 0 }}>
