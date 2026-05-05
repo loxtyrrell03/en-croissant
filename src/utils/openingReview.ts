@@ -312,15 +312,25 @@ export function getOpeningReviewDailyBatch(
         now,
         prefiltered: true,
     });
-    const unseenToday = filtered.filter(
-        (position) => !wasOpeningReviewAttemptedOnDay(position, now),
+    const attemptedTodayKeys = new Set(
+        filtered
+            .filter((position) => wasOpeningReviewAttemptedOnDay(position, now))
+            .map(openingReviewDailyPositionKey),
     );
-    const due = unseenToday
-        .filter((position) => position.card.reps > 0 && new Date(position.card.due) <= now)
-        .sort((a, b) => sortOpeningReviewDueCards(a, b, now));
-    const fresh = unseenToday
-        .filter((position) => position.card.reps === 0)
-        .sort(sortOpeningReviewNewCards);
+    const unseenToday = filtered.filter(
+        (position) =>
+            !wasOpeningReviewAttemptedOnDay(position, now) &&
+            !attemptedTodayKeys.has(openingReviewDailyPositionKey(position)),
+    );
+    const due = uniqueOpeningReviewDailyPositions(
+        unseenToday
+            .filter((position) => position.card.reps > 0 && new Date(position.card.due) <= now)
+            .sort((a, b) => sortOpeningReviewDueCards(a, b, now)),
+    );
+    const fresh = uniqueOpeningReviewDailyPositions(
+        unseenToday.filter((position) => position.card.reps === 0).sort(sortOpeningReviewNewCards),
+        new Set(due.map(openingReviewDailyPositionKey)),
+    );
 
     if (options.extra) {
         return [...due, ...fresh];
@@ -333,6 +343,21 @@ export function getOpeningReviewDailyBatch(
     return [...selectedDue, ...selectedNew];
 }
 
+function uniqueOpeningReviewDailyPositions(positions: Position[], seen = new Set<string>()) {
+    const unique: Position[] = [];
+    for (const position of positions) {
+        const key = openingReviewDailyPositionKey(position);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        unique.push(position);
+    }
+    return unique;
+}
+
+function openingReviewDailyPositionKey(position: Position) {
+    return position.fen.split(/\s+/).slice(0, 4).join(" ");
+}
+
 export function getOpeningReviewDailyProgress(
     positions: Position[],
     settings: OpeningReviewDailySettings,
@@ -342,13 +367,18 @@ export function getOpeningReviewDailyProgress(
     const eligible = options.prefiltered
         ? positions
         : positions.filter((position) => isOpeningReviewDailyEligible(position, settings, now));
-    const attemptedToday = eligible.filter((position) =>
-        wasOpeningReviewAttemptedOnDay(position, now),
-    );
-    const completed = attemptedToday.length;
-    const completedNew = attemptedToday.filter(
-        (position) => getOpeningReviewAttemptedCardReps(position) === 0,
-    ).length;
+    const completedKeys = new Set<string>();
+    const completedNewKeys = new Set<string>();
+    for (const position of eligible) {
+        if (!wasOpeningReviewAttemptedOnDay(position, now)) continue;
+        const key = openingReviewDailyPositionKey(position);
+        completedKeys.add(key);
+        if (getOpeningReviewAttemptedCardReps(position) === 0) {
+            completedNewKeys.add(key);
+        }
+    }
+    const completed = completedKeys.size;
+    const completedNew = completedNewKeys.size;
     const target = Math.max(0, settings.reviewsPerDay);
     const newTarget = Math.max(0, settings.newItemsPerDay);
 

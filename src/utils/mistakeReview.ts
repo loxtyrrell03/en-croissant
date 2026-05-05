@@ -603,16 +603,25 @@ export function getMistakeReviewDailyBatch(
         isMistakeReviewDailyEligible(position, settings, now),
     );
     const progress = getMistakeReviewDailyProgress(filtered, settings, { now, prefiltered: true });
-    const unseenToday = filtered.filter(
-        (position) => !wasMistakeReviewAttemptedOnDay(position, now),
+    const attemptedTodayKeys = new Set(
+        filtered
+            .filter((position) => wasMistakeReviewAttemptedOnDay(position, now))
+            .map(mistakeReviewDailyPositionKey),
     );
-    const due = filtered
-        .filter((position) => !wasMistakeReviewAttemptedOnDay(position, now))
-        .filter((position) => position.card.reps > 0 && new Date(position.card.due) <= now)
-        .sort((a, b) => sortMistakeReviewDueCards(a, b, now));
-    const fresh = unseenToday
-        .filter((position) => position.card.reps === 0)
-        .sort(sortMistakeReviewNewCards);
+    const unseenToday = filtered.filter(
+        (position) =>
+            !wasMistakeReviewAttemptedOnDay(position, now) &&
+            !attemptedTodayKeys.has(mistakeReviewDailyPositionKey(position)),
+    );
+    const due = uniqueMistakeReviewDailyPositions(
+        unseenToday
+            .filter((position) => position.card.reps > 0 && new Date(position.card.due) <= now)
+            .sort((a, b) => sortMistakeReviewDueCards(a, b, now)),
+    );
+    const fresh = uniqueMistakeReviewDailyPositions(
+        unseenToday.filter((position) => position.card.reps === 0).sort(sortMistakeReviewNewCards),
+        new Set(due.map(mistakeReviewDailyPositionKey)),
+    );
 
     if (options.extra) {
         return [...due, ...fresh];
@@ -625,6 +634,21 @@ export function getMistakeReviewDailyBatch(
     return [...selectedDue, ...selectedNew];
 }
 
+function uniqueMistakeReviewDailyPositions(positions: Position[], seen = new Set<string>()) {
+    const unique: Position[] = [];
+    for (const position of positions) {
+        const key = mistakeReviewDailyPositionKey(position);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        unique.push(position);
+    }
+    return unique;
+}
+
+function mistakeReviewDailyPositionKey(position: Position) {
+    return normalizeFenKey(position.fen);
+}
+
 export function getMistakeReviewDailyProgress(
     positions: Position[],
     settings: MistakeReviewDailySettings,
@@ -634,13 +658,18 @@ export function getMistakeReviewDailyProgress(
     const eligible = options.prefiltered
         ? positions
         : positions.filter((position) => isMistakeReviewDailyEligible(position, settings, now));
-    const attemptedToday = eligible.filter((position) =>
-        wasMistakeReviewAttemptedOnDay(position, now),
-    );
-    const completed = attemptedToday.length;
-    const completedNew = attemptedToday.filter(
-        (position) => (position.mistakeReview?.lastAttemptedCardReps ?? position.card.reps) === 0,
-    ).length;
+    const completedKeys = new Set<string>();
+    const completedNewKeys = new Set<string>();
+    for (const position of eligible) {
+        if (!wasMistakeReviewAttemptedOnDay(position, now)) continue;
+        const key = mistakeReviewDailyPositionKey(position);
+        completedKeys.add(key);
+        if ((position.mistakeReview?.lastAttemptedCardReps ?? position.card.reps) === 0) {
+            completedNewKeys.add(key);
+        }
+    }
+    const completed = completedKeys.size;
+    const completedNew = completedNewKeys.size;
     const target = Math.max(0, settings.reviewsPerDay);
     const newTarget = Math.max(0, settings.newItemsPerDay);
 

@@ -15,6 +15,11 @@ import {
     getOpeningReviewPlanGapTrainingIndices,
 } from "@/utils/openingReviewAutoUpdate";
 
+const BLACK_TO_MOVE_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";
+const AFTER_E4_FEN = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
+const AFTER_D4_FEN = "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1";
+const AFTER_C4_FEN = "rnbqkbnr/pppppppp/8/8/2P5/8/PP1PPPPP/RNBQKBNR b KQkq - 0 1";
+
 function position(overrides: Partial<Position> = {}): Position {
     return {
         fen: INITIAL_FEN,
@@ -53,6 +58,7 @@ describe("opening review helpers", () => {
             } as Position["card"],
         });
         const dueLow = position({
+            fen: AFTER_E4_FEN,
             reviewKey: "due-low",
             priority: 40,
             card: {
@@ -61,11 +67,15 @@ describe("opening review helpers", () => {
                 due: new Date("2026-04-23T12:00:00"),
             } as Position["card"],
         });
-        const freshHigh = position({ reviewKey: "fresh-high", priority: 90 });
-        const freshLow = position({ reviewKey: "fresh-low", priority: 30 });
+        const freshLow = position({ fen: AFTER_D4_FEN, reviewKey: "fresh-low", priority: 30 });
+        const freshHighUnique = position({
+            fen: AFTER_C4_FEN,
+            reviewKey: "fresh-high",
+            priority: 90,
+        });
 
         const batch = getOpeningReviewDailyBatch(
-            [freshLow, dueLow, freshHigh, dueHigh],
+            [freshLow, dueLow, freshHighUnique, dueHigh],
             dailySettings({ reviewsPerDay: 3, newItemsPerDay: 1 }),
             { now },
         );
@@ -73,10 +83,57 @@ describe("opening review helpers", () => {
         expect(batch.map((item) => item.reviewKey)).toEqual(["due-high", "due-low", "fresh-high"]);
     });
 
+    test("daily review keeps one card per board position", () => {
+        const now = new Date("2026-04-26T12:00:00");
+        const dueHigh = position({
+            reviewKey: "due-high",
+            priority: 80,
+            answer: "e4",
+            answerUci: "e2e4",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-24T12:00:00"),
+            } as Position["card"],
+        });
+        const dueSameBoard = position({
+            reviewKey: "due-same-board",
+            priority: 40,
+            answer: "d4",
+            answerUci: "d2d4",
+            card: {
+                ...createEmptyCard(),
+                reps: 1,
+                due: new Date("2026-04-23T12:00:00"),
+            } as Position["card"],
+        });
+        const freshSameBoard = position({
+            reviewKey: "fresh-same-board",
+            priority: 90,
+            answer: "c4",
+            answerUci: "c2c4",
+        });
+        const freshOtherBoard = position({
+            fen: BLACK_TO_MOVE_FEN,
+            reviewKey: "fresh-other-board",
+            answer: "e5",
+            answerUci: "e7e5",
+        });
+
+        const batch = getOpeningReviewDailyBatch(
+            [freshSameBoard, dueSameBoard, freshOtherBoard, dueHigh],
+            dailySettings({ reviewsPerDay: 4, newItemsPerDay: 2 }),
+            { now },
+        );
+
+        expect(batch.map((item) => item.reviewKey)).toEqual(["due-high", "fresh-other-board"]);
+    });
+
     test("daily review subtracts positions already attempted today", () => {
         const now = new Date("2026-04-26T12:00:00");
         const attemptedAt = new Date("2026-04-26T09:00:00").getTime();
         const dueDone = position({
+            fen: AFTER_C4_FEN,
             reviewKey: "due-done",
             card: {
                 ...createEmptyCard(),
@@ -98,6 +155,7 @@ describe("opening review helpers", () => {
             } as Position["card"],
         });
         const dueTwo = position({
+            fen: AFTER_E4_FEN,
             reviewKey: "due-two",
             priority: 60,
             card: {
@@ -116,6 +174,50 @@ describe("opening review helpers", () => {
         expect(progress.completed).toBe(1);
         expect(progress.remaining).toBe(1);
         expect(batch.map((item) => item.reviewKey)).toEqual(["due-one"]);
+    });
+
+    test("daily review treats duplicate boards attempted today as covered", () => {
+        const now = new Date("2026-04-26T12:00:00");
+        const attemptedAt = new Date("2026-04-26T09:00:00").getTime();
+        const done = position({
+            reviewKey: "done-board",
+            card: {
+                ...createEmptyCard(),
+                reps: 3,
+                due: new Date("2026-04-24T12:00:00"),
+            } as Position["card"],
+            openingReview: {
+                lastAttemptedAt: attemptedAt,
+                lastAttemptedCardReps: 3,
+            },
+        });
+        const duplicateSameBoard = position({
+            reviewKey: "duplicate-same-board",
+            answer: "d4",
+            answerUci: "d2d4",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-24T12:00:00"),
+            } as Position["card"],
+        });
+        const otherBoard = position({
+            fen: AFTER_E4_FEN,
+            reviewKey: "other-board",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-24T12:00:00"),
+            } as Position["card"],
+        });
+
+        const settings = dailySettings({ reviewsPerDay: 3, newItemsPerDay: 1 });
+        const positions = [duplicateSameBoard, otherBoard, done];
+        const batch = getOpeningReviewDailyBatch(positions, settings, { now });
+        const progress = getOpeningReviewDailyProgress(positions, settings, { now });
+
+        expect(progress.completed).toBe(1);
+        expect(batch.map((item) => item.reviewKey)).toEqual(["other-board"]);
     });
 
     test("daily review remembers new cards already introduced today", () => {

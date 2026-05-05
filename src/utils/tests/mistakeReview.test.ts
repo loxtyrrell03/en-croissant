@@ -137,6 +137,7 @@ describe("mistake review helpers", () => {
     test("daily review takes due cards first, then capped new cards", () => {
         const now = new Date("2026-04-26T12:00:00Z");
         const dueBlunder = position({
+            fen: OPENING_FEN,
             reviewKey: "due-blunder",
             card: {
                 ...createEmptyCard(),
@@ -146,6 +147,7 @@ describe("mistake review helpers", () => {
             mistakeReview: { ...position().mistakeReview!, severity: "blunder", gameIds: [1] },
         });
         const dueMistake = position({
+            fen: MIDDLEGAME_FEN,
             reviewKey: "due-mistake",
             card: {
                 ...createEmptyCard(),
@@ -154,8 +156,11 @@ describe("mistake review helpers", () => {
             } as Position["card"],
             mistakeReview: { ...position().mistakeReview!, severity: "mistake", gameIds: [2] },
         });
-        const freshOne = position({ reviewKey: "new-one" });
-        const freshTwo = position({ reviewKey: "new-two" });
+        const freshOne = position({ fen: ENDGAME_FEN, reviewKey: "new-one" });
+        const freshTwo = position({
+            fen: "8/8/8/8/8/8/3K4/3k4 w - - 0 41",
+            reviewKey: "new-two",
+        });
 
         const batch = getMistakeReviewDailyBatch(
             [freshOne, dueMistake, freshTwo, dueBlunder],
@@ -178,10 +183,77 @@ describe("mistake review helpers", () => {
         ]);
     });
 
+    test("daily review keeps one card per board position", () => {
+        const now = new Date("2026-04-26T12:00:00Z");
+        const dueBlunder = position({
+            fen: OPENING_FEN,
+            reviewKey: "due-blunder",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-24T12:00:00Z"),
+            } as Position["card"],
+            mistakeReview: {
+                ...position().mistakeReview!,
+                severity: "blunder",
+                cpLoss: 250,
+                gameIds: [1],
+            },
+        });
+        const dueSameBoard = position({
+            fen: OPENING_FEN,
+            reviewKey: "due-same-board",
+            card: {
+                ...createEmptyCard(),
+                reps: 1,
+                due: new Date("2026-04-23T12:00:00Z"),
+            } as Position["card"],
+            mistakeReview: {
+                ...position().mistakeReview!,
+                severity: "mistake",
+                playedMoveSan: "d4",
+                playedMoveUci: "d2d4",
+                gameIds: [2],
+            },
+        });
+        const freshSameBoard = position({
+            fen: OPENING_FEN,
+            reviewKey: "new-same-board",
+            mistakeReview: {
+                ...position().mistakeReview!,
+                severity: "blunder",
+                playedMoveSan: "c4",
+                playedMoveUci: "c2c4",
+                gameIds: [3],
+            },
+        });
+        const freshOtherBoard = position({
+            fen: MIDDLEGAME_FEN,
+            reviewKey: "new-other-board",
+        });
+
+        const batch = getMistakeReviewDailyBatch(
+            [freshSameBoard, dueSameBoard, freshOtherBoard, dueBlunder],
+            {
+                reviewsPerDay: 4,
+                newItemsPerDay: 2,
+                gamePeriod: "all",
+                minWinProbabilityDrop: 0,
+                includeInaccuracies: true,
+                includeMistakes: true,
+                includeBlunders: true,
+            },
+            { now },
+        );
+
+        expect(batch.map((item) => item.reviewKey)).toEqual(["due-blunder", "new-other-board"]);
+    });
+
     test("daily review subtracts positions already attempted today", () => {
         const now = new Date("2026-04-26T12:00:00");
         const attemptedAt = new Date("2026-04-26T09:00:00").getTime();
         const dueDone = position({
+            fen: ENDGAME_FEN,
             reviewKey: "due-done",
             card: {
                 ...createEmptyCard(),
@@ -203,6 +275,7 @@ describe("mistake review helpers", () => {
             } as Position["card"],
         });
         const dueTwo = position({
+            fen: MIDDLEGAME_FEN,
             reviewKey: "due-two",
             card: {
                 ...createEmptyCard(),
@@ -228,6 +301,64 @@ describe("mistake review helpers", () => {
         expect(progress.completed).toBe(1);
         expect(progress.remaining).toBe(1);
         expect(batch.map((item) => item.reviewKey)).toEqual(["due-one"]);
+    });
+
+    test("daily review treats duplicate boards attempted today as covered", () => {
+        const now = new Date("2026-04-26T12:00:00");
+        const attemptedAt = new Date("2026-04-26T09:00:00").getTime();
+        const done = position({
+            fen: OPENING_FEN,
+            reviewKey: "done-board",
+            card: {
+                ...createEmptyCard(),
+                reps: 3,
+                due: new Date("2026-04-24T12:00:00Z"),
+            } as Position["card"],
+            mistakeReview: {
+                ...position().mistakeReview!,
+                lastAttemptedAt: attemptedAt,
+                lastAttemptedCardReps: 3,
+            },
+        });
+        const duplicateSameBoard = position({
+            fen: OPENING_FEN,
+            reviewKey: "duplicate-same-board",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-24T12:00:00Z"),
+            } as Position["card"],
+            mistakeReview: {
+                ...position().mistakeReview!,
+                playedMoveSan: "d4",
+                playedMoveUci: "d2d4",
+            },
+        });
+        const otherBoard = position({
+            fen: MIDDLEGAME_FEN,
+            reviewKey: "other-board",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-24T12:00:00Z"),
+            } as Position["card"],
+        });
+
+        const settings = {
+            reviewsPerDay: 3,
+            newItemsPerDay: 1,
+            gamePeriod: "all" as const,
+            minWinProbabilityDrop: 0,
+            includeInaccuracies: true,
+            includeMistakes: true,
+            includeBlunders: true,
+        };
+        const positions = [duplicateSameBoard, otherBoard, done];
+        const batch = getMistakeReviewDailyBatch(positions, settings, { now });
+        const progress = getMistakeReviewDailyProgress(positions, settings, { now });
+
+        expect(progress.completed).toBe(1);
+        expect(batch.map((item) => item.reviewKey)).toEqual(["other-board"]);
     });
 
     test("daily review remembers new cards already introduced today", () => {
