@@ -62,10 +62,12 @@ import {
   getFenTurn,
   getLineSans,
   getOpeningTotal,
+  getOpponentPrepBranchKey,
   getOpponentPrepBranchStats,
   getOpponentPrepMoveRows,
   oppositePrepColor,
   pathExists,
+  sortOpponentPrepOpenings,
   type OpponentPrepBranchStats,
   type OpponentPrepMoveRow,
 } from "@/utils/opponentPrep";
@@ -78,6 +80,34 @@ const DEFAULT_PREP_MIN_GAMES = 2;
 const DEFAULT_PREP_MOVE_LIMIT = 8;
 const LICHESS_ALL_SOURCE = "online:lichess-all";
 const LICHESS_MASTER_SOURCE = "online:lichess-master";
+
+type PrepCandidateMoveRow = Opening & {
+  key: string;
+  total: number;
+  share: number;
+};
+
+function getPrepCandidateRows({
+  fen,
+  openings,
+  minGames,
+  moveLimit,
+}: {
+  fen: string;
+  openings: Opening[];
+  minGames: number;
+  moveLimit: number;
+}): PrepCandidateMoveRow[] {
+  const sorted = sortOpponentPrepOpenings(openings, minGames, moveLimit);
+  const totalGames = sorted.reduce((sum, opening) => sum + getOpeningTotal(opening), 0);
+
+  return sorted.map((opening) => ({
+    ...opening,
+    key: getOpponentPrepBranchKey(fen, opening.move),
+    total: getOpeningTotal(opening),
+    share: totalGames > 0 ? getOpeningTotal(opening) / totalGames : 0,
+  }));
+}
 
 function OpponentPrepPanel() {
   const store = useContext(TreeStateContext)!;
@@ -200,9 +230,7 @@ function OpponentPrepPanel() {
     ],
   );
   const currentSearchId =
-    configReady && opponentToMove && prepSource === "local"
-      ? getPrepSearchId(queryScope, currentFen)
-      : null;
+    configReady && prepSource === "local" ? getPrepSearchId(queryScope, currentFen) : null;
 
   useEffect(() => {
     moveCacheRef.current.clear();
@@ -340,9 +368,8 @@ function OpponentPrepPanel() {
     data: currentOpenings,
     isLoading,
     error,
-  } = useSWR(
-    configReady && opponentToMove ? ["opponent-prep-openings", queryScope, currentFen] : null,
-    () => loadOpeningsForFen(currentFen),
+  } = useSWR(configReady ? ["opponent-prep-openings", queryScope, currentFen] : null, () =>
+    loadOpeningsForFen(currentFen),
   );
 
   const currentRows = useMemo(
@@ -368,6 +395,18 @@ function OpponentPrepPanel() {
       prep.moveLimit,
       prep.skippedBranches,
     ],
+  );
+  const candidateRows = useMemo(
+    () =>
+      !opponentToMove
+        ? getPrepCandidateRows({
+            fen: currentFen,
+            openings: currentOpenings ?? [],
+            minGames: prep.minGames,
+            moveLimit: prep.moveLimit,
+          })
+        : [],
+    [currentFen, currentOpenings, opponentToMove, prep.minGames, prep.moveLimit],
   );
   const currentTreeHash = useMemo(() => getTreeStructureHash(currentNode), [currentNode]);
   const branchStatsKey =
@@ -1065,11 +1104,16 @@ function OpponentPrepPanel() {
             branchStatsLoading={branchStatsLoading}
           />
         ) : (
-          <Alert color="blue" variant="light">
-            {prepMode === "general"
-              ? "Add your move, comments, and arrows on the board. When the other side is to move again, continue with the common database move or mark the line done."
-              : "Add your counter move, comments, and arrows on the board. When the opponent is to move again, continue with their common move or mark the line done."}
-          </Alert>
+          <PrepCandidateMoveTable
+            rows={candidateRows}
+            loading={isLoading}
+            dense={dense}
+            general={prepMode === "general"}
+            userColor={userColor}
+            onPlay={playMove}
+            onPreview={previewMove}
+            onClearPreview={clearMovePreview}
+          />
         )}
       </Box>
     </Stack>
@@ -1229,6 +1273,124 @@ function OpponentPrepMoveTable({
   );
 }
 
+function PrepCandidateMoveTable({
+  rows,
+  loading,
+  dense,
+  general,
+  userColor,
+  onPlay,
+  onPreview,
+  onClearPreview,
+}: {
+  rows: PrepCandidateMoveRow[];
+  loading: boolean;
+  dense: boolean;
+  general: boolean;
+  userColor: "white" | "black";
+  onPlay: (move: string) => void;
+  onPreview: (move: string) => void;
+  onClearPreview: () => void;
+}) {
+  const textSize = dense ? "xs" : "sm";
+  const colorLabel = userColor === "white" ? "White" : "Black";
+
+  if (loading) {
+    return (
+      <Stack gap="xs" py="md" align="center">
+        <Progress value={100} animated w="min(18rem, 100%)" />
+        <Text size="xs" c="dimmed">
+          Checking candidate moves
+        </Text>
+      </Stack>
+    );
+  }
+
+  if (rows.length === 0) {
+    return (
+      <Alert color="gray" variant="light">
+        No candidate moves met the current game threshold from this position.
+      </Alert>
+    );
+  }
+
+  return (
+    <Stack gap={dense ? 4 : "xs"}>
+      <Group gap="xs" wrap="wrap" style={{ flexShrink: 0 }}>
+        <Badge color="blue" variant="light">
+          {colorLabel} candidates
+        </Badge>
+        <Text size="xs" c="dimmed">
+          {formatNumber(rows.reduce((sum, row) => sum + row.total, 0))} games in shown moves
+        </Text>
+      </Group>
+      <Table
+        withTableBorder
+        stickyHeader
+        highlightOnHover
+        horizontalSpacing={dense ? 4 : "xs"}
+        verticalSpacing={dense ? 3 : "xs"}
+      >
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th style={{ width: dense ? 64 : 90 }}>Move</Table.Th>
+            <Table.Th style={{ width: dense ? 78 : 110 }}>Games</Table.Th>
+            <Table.Th>WDL</Table.Th>
+            <Table.Th style={{ width: dense ? 64 : 82 }} />
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {rows.map((row) => (
+            <Table.Tr
+              key={row.key}
+              style={{ cursor: "pointer" }}
+              onClick={() => onPlay(row.move)}
+              onMouseEnter={() => onPreview(row.move)}
+              onMouseLeave={onClearPreview}
+            >
+              <Table.Td>
+                <Text size={textSize} fw={700}>
+                  {row.move}
+                </Text>
+                {row.lastPlayed ? (
+                  <Text size="xs" c="dimmed">
+                    {row.lastPlayed}
+                  </Text>
+                ) : null}
+              </Table.Td>
+              <Table.Td>
+                <Text size={textSize}>{formatNumber(row.total)}</Text>
+                <Text size="xs" c="dimmed">
+                  {(row.share * 100).toFixed(0)}%
+                </Text>
+              </Table.Td>
+              <Table.Td>
+                <PrepResultBar row={row} />
+              </Table.Td>
+              <Table.Td>
+                <Group gap={2} wrap="nowrap" justify="flex-end">
+                  <Tooltip label={general ? "Play this database move" : "Play this reply"}>
+                    <ActionIcon
+                      variant="subtle"
+                      size="sm"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onPlay(row.move);
+                      }}
+                    >
+                      <IconPlayerPlay size="0.95rem" />
+                    </ActionIcon>
+                  </Tooltip>
+                </Group>
+              </Table.Td>
+            </Table.Tr>
+          ))}
+        </Table.Tbody>
+      </Table>
+    </Stack>
+  );
+}
+
 function BranchStatsCell({
   stats,
   loading,
@@ -1268,7 +1430,7 @@ function BranchStatsCell({
   );
 }
 
-function PrepResultBar({ row }: { row: OpponentPrepMoveRow }) {
+function PrepResultBar({ row }: { row: Pick<Opening, "white" | "draw" | "black"> }) {
   const total = getOpeningTotal(row);
   const whitePercent = total > 0 ? (row.white / total) * 100 : 0;
   const drawPercent = total > 0 ? (row.draw / total) * 100 : 0;
