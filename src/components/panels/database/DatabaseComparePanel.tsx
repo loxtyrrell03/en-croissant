@@ -504,6 +504,8 @@ function CompareDatabaseTable({
 
     setOpponentPrep((current) => ({
       ...current,
+      mode: "player",
+      source: "local",
       databasePath: source.database.file,
       databaseLabel: source.label,
       player: localOptions.player,

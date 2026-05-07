@@ -420,6 +420,8 @@ export const comparePanelSettingsByFileAtom = atomWithStorage<
 >("database-compare-settings-by-file", {});
 
 export type OpponentPrepState = {
+    mode: "player" | "general";
+    source: "local" | "lch_all" | "lch_master";
     databasePath: string | null;
     databaseLabel: string | null;
     player: number | null;
@@ -436,6 +438,8 @@ export type OpponentPrepState = {
 };
 
 const defaultOpponentPrepState = (): OpponentPrepState => ({
+    mode: "player",
+    source: "local",
     databasePath: null,
     databaseLabel: null,
     player: null,

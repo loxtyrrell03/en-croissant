@@ -8,6 +8,7 @@ import {
   NumberInput,
   Progress,
   Select,
+  SegmentedControl,
   Stack,
   Table,
   Text,
@@ -37,7 +38,10 @@ import {
   currentLocalOptionsAtom,
   currentOpponentPrepAtom,
   currentTabAtom,
+  lichessOptionsAtom,
+  masterOptionsAtom,
   referenceDbAtom,
+  sessionsAtom,
   type OpponentPrepState,
   type StoredDatabaseLocalOptions,
 } from "@/state/atoms";
@@ -49,6 +53,7 @@ import {
   type SuccessDatabaseInfo,
 } from "@/utils/db";
 import { formatNumber } from "@/utils/format";
+import { getLichessGames, getMasterGames } from "@/utils/lichess/api";
 import { isPrefix } from "@/utils/misc";
 import {
   findFirstOpponentBranch,
@@ -71,6 +76,8 @@ import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveCont
 
 const DEFAULT_PREP_MIN_GAMES = 2;
 const DEFAULT_PREP_MOVE_LIMIT = 8;
+const LICHESS_ALL_SOURCE = "online:lichess-all";
+const LICHESS_MASTER_SOURCE = "online:lichess-master";
 
 function OpponentPrepPanel() {
   const store = useContext(TreeStateContext)!;
@@ -80,8 +87,11 @@ function OpponentPrepPanel() {
   const root = useStore(store, (s) => s.root);
   const [prep, setPrep] = useAtom(currentOpponentPrepAtom);
   const currentLocalOptions = useAtomValue(currentLocalOptionsAtom);
+  const lichessOptions = useAtomValue(lichessOptionsAtom);
+  const masterOptions = useAtomValue(masterOptionsAtom);
   const compareSettingsByFile = useAtomValue(comparePanelSettingsByFileAtom);
   const referenceDb = useAtomValue(referenceDbAtom);
+  const sessions = useAtomValue(sessionsAtom);
   const currentTab = useAtomValue(currentTabAtom);
   const setBoardPreviewShapes = useSetAtom(currentBoardPreviewShapesAtom);
   const panelDensity = usePanelDensity();
@@ -93,6 +103,10 @@ function OpponentPrepPanel() {
   const seededRef = useRef(false);
   const settingsKey = useMemo(() => getTabWorkspaceKey(currentTab), [currentTab]);
   const savedCompareSettings = settingsKey ? compareSettingsByFile[settingsKey] : undefined;
+  const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
+    ?.accessToken;
+  const prepMode = prep.mode ?? "player";
+  const prepSource = prep.source ?? "local";
   const { data: databases } = useSWR("databases", () => getDatabases());
   const localDatabases = useMemo(
     () =>
@@ -101,12 +115,21 @@ function OpponentPrepPanel() {
       ),
     [databases],
   );
-  const databaseOptions = useMemo(
-    () =>
-      localDatabases.map((database) => ({
+  const sourceOptions = useMemo(
+    () => [
+      ...localDatabases.map((database) => ({
         value: database.file,
         label: database.title || database.filename,
       })),
+      {
+        value: LICHESS_ALL_SOURCE,
+        label: "Lichess All",
+      },
+      {
+        value: LICHESS_MASTER_SOURCE,
+        label: "Lichess Masters",
+      },
+    ],
     [localDatabases],
   );
   const selectedDatabase = useMemo(
@@ -121,37 +144,79 @@ function OpponentPrepPanel() {
   const opponentToMove = getFenTurn(currentFen) === prep.color;
   const userColor = oppositePrepColor(prep.color);
   const hasPlayer = Boolean(prep.player) || prep.playerName.trim().length >= 3;
-  const configReady = Boolean(prep.databasePath) && hasPlayer;
+  const missingExplorerToken = prepSource !== "local" && !explorerToken;
+  const sourceReady = prepSource === "local" ? Boolean(prep.databasePath) : !missingExplorerToken;
+  const targetReady = prepMode === "general" || hasPlayer;
+  const configReady = sourceReady && targetReady;
+  const sourceValue =
+    prepSource === "lch_all"
+      ? LICHESS_ALL_SOURCE
+      : prepSource === "lch_master"
+        ? LICHESS_MASTER_SOURCE
+        : prep.databasePath;
   const queryScope = useMemo(
     () =>
       JSON.stringify({
+        mode: prepMode,
+        source: prepSource,
         databasePath: prep.databasePath,
-        player: prep.player,
-        playerName: prep.playerName.trim(),
+        player: prepMode === "player" ? prep.player : null,
+        playerName: prepMode === "player" ? prep.playerName.trim() : "",
         color: prep.color,
         startDate: prep.start_date ?? "",
         endDate: prep.end_date ?? "",
         result: prep.result,
+        lichessOptions:
+          prepSource === "lch_all"
+            ? {
+                ...lichessOptions,
+                player: undefined,
+                moves: Math.max(12, prep.moveLimit),
+              }
+            : null,
+        masterOptions:
+          prepSource === "lch_master"
+            ? {
+                ...masterOptions,
+                moves: Math.max(12, prep.moveLimit),
+              }
+            : null,
+        auth: prepSource === "local" ? "local" : explorerToken ? "auth" : "no-auth",
       }),
     [
+      explorerToken,
+      lichessOptions,
+      masterOptions,
       prep.color,
       prep.databasePath,
       prep.end_date,
+      prep.moveLimit,
       prep.player,
       prep.playerName,
       prep.result,
+      prepMode,
+      prepSource,
       prep.start_date,
     ],
   );
   const currentSearchId =
-    configReady && opponentToMove ? getPrepSearchId(queryScope, currentFen) : null;
+    configReady && opponentToMove && prepSource === "local"
+      ? getPrepSearchId(queryScope, currentFen)
+      : null;
 
   useEffect(() => {
     moveCacheRef.current.clear();
   }, [queryScope]);
 
   useEffect(() => {
-    if (seededRef.current || prep.databasePath || localDatabases.length === 0) return;
+    if (
+      seededRef.current ||
+      prepSource !== "local" ||
+      prep.databasePath ||
+      localDatabases.length === 0
+    ) {
+      return;
+    }
     const seed = getInitialPrepSeed({
       currentLocalOptions,
       localDatabases,
@@ -171,6 +236,7 @@ function OpponentPrepPanel() {
     currentPath,
     localDatabases,
     prep.databasePath,
+    prepSource,
     referenceDb,
     savedCompareSettings,
     setPrep,
@@ -198,41 +264,74 @@ function OpponentPrepPanel() {
 
   const loadOpeningsForFen = useCallback(
     async (fen: string) => {
-      if (!prep.databasePath) return [];
+      if (prepSource === "local" && !prep.databasePath) return [];
+      if (prepSource !== "local" && !explorerToken) return [];
 
       const cacheKey = `${queryScope}|${fen}`;
       const cached = moveCacheRef.current.get(cacheKey);
       if (cached) return cached;
 
-      const requestId = getPrepSearchId(queryScope, fen);
-      const [openings] = await searchPosition(
-        {
-          path: prep.databasePath,
+      let openings: Opening[];
+      if (prepSource === "lch_all") {
+        const data = await getLichessGames(
           fen,
-          type: "exact",
-          player: prep.player,
-          playerName: prep.playerName,
-          color: prep.color,
-          start_date: prep.start_date,
-          end_date: prep.end_date,
-          result: prep.result,
-        },
-        requestId,
-        {
-          includeGames: false,
-        },
-      );
+          {
+            ...lichessOptions,
+            player: undefined,
+            moves: Math.max(12, prep.moveLimit),
+          },
+          explorerToken,
+        );
+        openings = lichessMovesToOpenings(data.moves);
+      } else if (prepSource === "lch_master") {
+        const data = await getMasterGames(
+          fen,
+          {
+            ...masterOptions,
+            moves: Math.max(12, prep.moveLimit),
+          },
+          explorerToken,
+        );
+        openings = lichessMovesToOpenings(data.moves);
+      } else {
+        const requestId = getPrepSearchId(queryScope, fen);
+        const [localOpenings] = await searchPosition(
+          {
+            path: prep.databasePath,
+            fen,
+            type: "exact",
+            player: prepMode === "player" ? prep.player : null,
+            playerName: prepMode === "player" ? prep.playerName : "",
+            color: prep.color,
+            start_date: prep.start_date,
+            end_date: prep.end_date,
+            result: prep.result,
+          },
+          requestId,
+          {
+            includeGames: false,
+          },
+        );
+        openings = localOpenings;
+      }
+
       moveCacheRef.current.set(cacheKey, openings);
       return openings;
     },
     [
+      explorerToken,
+      lichessOptions,
+      masterOptions,
       prep.color,
       prep.databasePath,
       prep.end_date,
+      prep.moveLimit,
       prep.player,
       prep.playerName,
       prep.result,
       prep.start_date,
+      prepMode,
+      prepSource,
       queryScope,
     ],
   );
@@ -328,6 +427,8 @@ function OpponentPrepPanel() {
       patch: Partial<
         Pick<
           OpponentPrepState,
+          | "mode"
+          | "source"
           | "databasePath"
           | "databaseLabel"
           | "player"
@@ -348,6 +449,100 @@ function OpponentPrepPanel() {
       }));
     },
     [currentPath, setPrep],
+  );
+
+  const changePrepMode = useCallback(
+    (mode: "player" | "general") => {
+      if (mode === "general") {
+        updateSettings(
+          {
+            mode,
+            color: "black",
+            player: null,
+            playerName: "",
+          },
+          true,
+        );
+        return;
+      }
+
+      if (prepSource === "local") {
+        updateSettings({ mode }, true);
+        return;
+      }
+
+      const database = localDatabases[0] ?? null;
+      updateSettings(
+        {
+          mode,
+          source: "local",
+          databasePath: database?.file ?? null,
+          databaseLabel: database ? database.title || database.filename : null,
+          player: null,
+          playerName: "",
+        },
+        true,
+      );
+    },
+    [localDatabases, prepSource, updateSettings],
+  );
+
+  const changePrepSource = useCallback(
+    (value: string | null) => {
+      if (!value) return;
+
+      if (value === LICHESS_ALL_SOURCE) {
+        updateSettings(
+          {
+            mode: "general",
+            source: "lch_all",
+            databasePath: null,
+            databaseLabel: "Lichess All",
+            color: prepMode === "general" ? prep.color : "black",
+            player: null,
+            playerName: "",
+          },
+          true,
+        );
+        return;
+      }
+
+      if (value === LICHESS_MASTER_SOURCE) {
+        updateSettings(
+          {
+            mode: "general",
+            source: "lch_master",
+            databasePath: null,
+            databaseLabel: "Lichess Masters",
+            color: prepMode === "general" ? prep.color : "black",
+            player: null,
+            playerName: "",
+          },
+          true,
+        );
+        return;
+      }
+
+      const database = localDatabases.find((item) => item.file === value);
+      updateSettings(
+        {
+          source: "local",
+          databasePath: value,
+          databaseLabel: database ? database.title || database.filename : null,
+          player: null,
+          playerName: "",
+        },
+        true,
+      );
+    },
+    [localDatabases, prep.color, prepMode, updateSettings],
+  );
+
+  const changeGeneralUserColor = useCallback(
+    (color: "white" | "black") => {
+      updateSettings({ color: oppositePrepColor(color) }, true);
+    },
+    [updateSettings],
   );
 
   const clearMovePreview = useCallback(() => {
@@ -612,14 +807,18 @@ function OpponentPrepPanel() {
       <Group justify="space-between" align="center" gap="xs" wrap="wrap" style={{ flexShrink: 0 }}>
         <Group gap="xs" wrap="wrap">
           <Text fw={700} fz={compact ? "sm" : "md"}>
-            Opponent prep
+            {prepMode === "general" ? "Opening prep" : "Opponent prep"}
           </Text>
           {databaseLabel ? (
             <Badge variant="light" size={compact ? "sm" : "md"}>
               {databaseLabel}
             </Badge>
           ) : null}
-          {prep.playerName.trim() ? (
+          {prepMode === "general" ? (
+            <Badge color="teal" variant="light" size={compact ? "sm" : "md"}>
+              You as {userColor}
+            </Badge>
+          ) : prep.playerName.trim() ? (
             <Badge color="orange" variant="light" size={compact ? "sm" : "md"}>
               {prep.playerName.trim()} as {prep.color}
             </Badge>
@@ -660,38 +859,64 @@ function OpponentPrepPanel() {
       </Group>
 
       <Group gap={dense ? 4 : "xs"} wrap="wrap" style={{ flexShrink: 0 }}>
+        <Tooltip label="Choose whether to target one player or a general opening source">
+          <SegmentedControl
+            aria-label="Prep target"
+            data={[
+              { value: "player", label: "Player" },
+              { value: "general", label: "General" },
+            ]}
+            value={prepMode}
+            onChange={(value) => changePrepMode(value as "player" | "general")}
+            size={controlSize}
+          />
+        </Tooltip>
         <Select
-          data={databaseOptions}
-          value={prep.databasePath}
-          onChange={(databasePath) => {
-            const database = localDatabases.find((item) => item.file === databasePath);
-            updateSettings({
-              databasePath,
-              databaseLabel: database ? database.title || database.filename : null,
-              player: null,
-              playerName: "",
-            });
-          }}
-          placeholder="Opponent database"
+          data={sourceOptions}
+          value={sourceValue}
+          onChange={changePrepSource}
+          placeholder="Prep source"
           size={controlSize}
           w={dense ? 180 : 230}
           searchable
           allowDeselect={false}
           comboboxProps={{ withinPortal: true }}
         />
-        <DatabasePerspectiveControls
-          databasePath={prep.databasePath}
-          player={prep.player}
-          playerName={prep.playerName}
-          color={prep.color}
-          onPlayerChange={(player) => updateSettings({ player }, false)}
-          onPlayerNameChange={(playerName) => updateSettings({ playerName }, false)}
-          onColorChange={(color) => updateSettings({ color }, true)}
-          size={controlSize}
-          playerWidth={dense ? 130 : 170}
-          colorWidth={dense ? 112 : 126}
-        />
-        <Tooltip label="Only show opponent moves they have played at least this many times">
+        {prepMode === "player" ? (
+          <DatabasePerspectiveControls
+            databasePath={prepSource === "local" ? prep.databasePath : null}
+            player={prep.player}
+            playerName={prep.playerName}
+            color={prep.color}
+            onPlayerChange={(player) => updateSettings({ player }, false)}
+            onPlayerNameChange={(playerName) => updateSettings({ playerName }, false)}
+            onColorChange={(color) => updateSettings({ color }, true)}
+            size={controlSize}
+            playerWidth={dense ? 130 : 170}
+            colorWidth={dense ? 112 : 126}
+          />
+        ) : (
+          <Tooltip label="The side you are preparing to play">
+            <SegmentedControl
+              aria-label="Your prep side"
+              data={[
+                { value: "white", label: "White" },
+                { value: "black", label: "Black" },
+              ]}
+              value={userColor}
+              onChange={(value) => changeGeneralUserColor(value as "white" | "black")}
+              size={controlSize}
+              w={dense ? 112 : 126}
+            />
+          </Tooltip>
+        )}
+        <Tooltip
+          label={
+            prepMode === "general"
+              ? "Only show database moves that appear at least this many times"
+              : "Only show opponent moves they have played at least this many times"
+          }
+        >
           <NumberInput
             label="Min games"
             value={prep.minGames}
@@ -711,7 +936,13 @@ function OpponentPrepPanel() {
             aria-label="Minimum games"
           />
         </Tooltip>
-        <Tooltip label="How many of their most common moves to show at each position">
+        <Tooltip
+          label={
+            prepMode === "general"
+              ? "How many common database moves to show at each position"
+              : "How many of their most common moves to show at each position"
+          }
+        >
           <NumberInput
             label="Show top"
             value={prep.moveLimit}
@@ -740,8 +971,10 @@ function OpponentPrepPanel() {
           </Text>
           <Text size="xs" c={opponentToMove ? undefined : "dimmed"} truncate>
             {opponentToMove
-              ? `${prep.playerName.trim() || "Opponent"} to move`
-              : `Play your ${userColor} response on the board`}
+              ? prepMode === "general"
+                ? `${prep.color === "white" ? "White" : "Black"} to move`
+                : `${prep.playerName.trim() || "Opponent"} to move`
+              : `Play your ${userColor} ${prepMode === "general" ? "move" : "response"} on the board`}
             {lineSans.length > 0 ? ` - ${lineSans.slice(-10).join(" ")}` : ""}
           </Text>
         </Stack>
@@ -780,10 +1013,16 @@ function OpponentPrepPanel() {
         </Group>
       </Group>
 
-      {!configReady ? (
+      {!sourceReady ? (
         <Alert color="yellow" variant="light">
-          Choose a local database, opponent player, and the colour they play in the games you want
-          to prepare against.
+          {missingExplorerToken
+            ? "Link a Lichess account to use Lichess All or Lichess Masters in prep."
+            : "Choose a prep source before starting."}
+        </Alert>
+      ) : !targetReady ? (
+        <Alert color="yellow" variant="light">
+          Choose the opponent player and the colour they play in the games you want to prepare
+          against.
         </Alert>
       ) : !isInsidePrepTree ? (
         <Alert color="blue" variant="light">
@@ -810,12 +1049,13 @@ function OpponentPrepPanel() {
 
       <Box flex={1} style={{ minHeight: 0, overflow: "auto" }}>
         {error ? (
-          <Alert color="red">Could not search the opponent database from this position.</Alert>
-        ) : opponentToMove ? (
+          <Alert color="red">Could not search the prep source from this position.</Alert>
+        ) : !configReady ? null : opponentToMove ? (
           <OpponentPrepMoveTable
             rows={currentRows}
             loading={isLoading}
             dense={dense}
+            general={prepMode === "general"}
             onPlay={playMove}
             onDone={markMoveDone}
             onSkip={skipMove}
@@ -826,8 +1066,9 @@ function OpponentPrepPanel() {
           />
         ) : (
           <Alert color="blue" variant="light">
-            Add your counter move, comments, and arrows on the board. When the opponent is to move
-            again, continue with their common move or mark the line done.
+            {prepMode === "general"
+              ? "Add your move, comments, and arrows on the board. When the other side is to move again, continue with the common database move or mark the line done."
+              : "Add your counter move, comments, and arrows on the board. When the opponent is to move again, continue with their common move or mark the line done."}
           </Alert>
         )}
       </Box>
@@ -839,6 +1080,7 @@ function OpponentPrepMoveTable({
   rows,
   loading,
   dense,
+  general,
   onPlay,
   onDone,
   onSkip,
@@ -850,6 +1092,7 @@ function OpponentPrepMoveTable({
   rows: OpponentPrepMoveRow[];
   loading: boolean;
   dense: boolean;
+  general: boolean;
   onPlay: (move: string) => void;
   onDone: (row: OpponentPrepMoveRow) => void;
   onSkip: (row: OpponentPrepMoveRow) => void;
@@ -865,7 +1108,7 @@ function OpponentPrepMoveTable({
       <Stack gap="xs" py="md" align="center">
         <Progress value={100} animated w="min(18rem, 100%)" />
         <Text size="xs" c="dimmed">
-          Checking opponent moves
+          {general ? "Checking database moves" : "Checking opponent moves"}
         </Text>
       </Stack>
     );
@@ -874,7 +1117,9 @@ function OpponentPrepMoveTable({
   if (rows.length === 0) {
     return (
       <Alert color="gray" variant="light">
-        No common opponent moves met the current game threshold from this position.
+        {general
+          ? "No common database moves met the current game threshold from this position."
+          : "No common opponent moves met the current game threshold from this position."}
       </Alert>
     );
   }
@@ -1064,6 +1309,22 @@ function branchStatsTooltip(stats: OpponentPrepBranchStats) {
   return lines.filter(Boolean).join("\n");
 }
 
+function lichessMovesToOpenings(
+  moves: {
+    san: string;
+    white: number;
+    black: number;
+    draws: number;
+  }[],
+): Opening[] {
+  return moves.map((move) => ({
+    move: move.san,
+    white: move.white,
+    black: move.black,
+    draw: move.draws,
+  }));
+}
+
 function getInitialPrepSeed({
   currentLocalOptions,
   localDatabases,
@@ -1099,6 +1360,8 @@ function getInitialPrepSeed({
   if (compareSlot?.sourceValue) {
     const database = localDatabases.find((item) => item.file === compareSlot.sourceValue);
     return {
+      mode: "player",
+      source: "local",
       databasePath: compareSlot.sourceValue,
       databaseLabel: database ? database.title || database.filename : null,
       player: compareSlot.localOptions.player,
@@ -1120,6 +1383,7 @@ function getInitialPrepSeed({
 
   const database = localDatabases.find((item) => item.file === databasePath);
   return {
+    source: "local",
     databasePath,
     databaseLabel: database ? database.title || database.filename : null,
     player: currentLocalOptions.player,
