@@ -93,10 +93,23 @@ export function assessOpeningReviewMove(
     chessDbMoves?: ChessDbCloudMove[] | null,
     lichessMoves?: LichessCloudMove[] | null,
 ): OpeningReviewMoveAssessment {
+    const savedLichessBestMove = getSavedLichessBestMove(position);
+    const savedBestMove = getOpeningReviewBestMove(position);
+
+    if (isOpeningReviewSavedMove(position, playedMove)) {
+        return assessOpeningReviewSavedMove(
+            position,
+            playedMove,
+            chessDbMoves,
+            lichessMoves,
+            savedLichessBestMove,
+            savedBestMove,
+        );
+    }
+
     const lichessAssessment = assessLichessCloudMove(position, playedMove, lichessMoves);
     if (lichessAssessment) return lichessAssessment;
 
-    const savedLichessBestMove = getSavedLichessBestMove(position);
     if (
         savedLichessBestMove &&
         reviewMovesMatch(savedLichessBestMove.uci, savedLichessBestMove.san, playedMove)
@@ -120,8 +133,6 @@ export function assessOpeningReviewMove(
         savedLichessBestMove,
     );
     if (chessDbAssessment) return chessDbAssessment;
-
-    const savedBestMove = getOpeningReviewBestMove(position);
 
     if (isOpeningReviewEngineMove(position, playedMove)) {
         return {
@@ -181,25 +192,7 @@ function assessLichessCloudMove(
     playedMove: { san: string; uci: string },
     lichessMoves?: LichessCloudMove[] | null,
 ): OpeningReviewMoveAssessment | null {
-    if (!lichessMoves?.length) return null;
-
-    const sideToMove = position.fen.split(" ")[1] === "b" ? "black" : "white";
-    const scoredMoves = lichessMoves
-        .map((move, index) => ({
-            move,
-            rank: index + 1,
-            scoreForSide: getScoreForSide(move, sideToMove),
-        }))
-        .filter(
-            (entry): entry is { move: LichessCloudMove; rank: number; scoreForSide: number } =>
-                entry.scoreForSide !== null,
-        )
-        .sort(
-            (a, b) =>
-                b.scoreForSide - a.scoreForSide ||
-                a.rank - b.rank ||
-                a.move.san.localeCompare(b.move.san),
-        );
+    const scoredMoves = rankLichessCloudMoves(position, lichessMoves);
 
     const best = scoredMoves[0];
     if (!best) return null;
@@ -242,33 +235,17 @@ function assessChessDbMove(
     chessDbMoves?: ChessDbCloudMove[] | null,
     authoritativeBestMove?: { san: string; uci?: string } | null,
 ): OpeningReviewMoveAssessment | null {
-    if (!chessDbMoves?.length) return null;
-
     const savedBestMove = getOpeningReviewBestMove(position);
-    const sideToMove = position.fen.split(" ")[1] === "b" ? "black" : "white";
-    const scoredMoves = (chessDbMoves ?? [])
-        .map((move) => ({
-            move,
-            scoreForSide: getScoreForSide(move, sideToMove),
-        }))
-        .filter(
-            (entry): entry is { move: ChessDbCloudMove; scoreForSide: number } =>
-                entry.scoreForSide !== null,
-        )
-        .sort(
-            (a, b) =>
-                b.scoreForSide - a.scoreForSide ||
-                (a.move.rank ?? Number.MAX_SAFE_INTEGER) -
-                    (b.move.rank ?? Number.MAX_SAFE_INTEGER) ||
-                a.move.san.localeCompare(b.move.san),
-        );
+    const scoredMoves = rankChessDbCloudMoves(position, chessDbMoves);
 
     const chessDbBest = scoredMoves[0];
+    if (!chessDbBest) return null;
+
     const played = scoredMoves.find((entry) =>
         reviewMovesMatch(entry.move.uci, entry.move.san, playedMove),
     );
 
-    if (!chessDbBest || !played) {
+    if (!played) {
         return {
             quality: "incorrect",
             label: "mistake",
@@ -301,6 +278,143 @@ function assessChessDbMove(
         moveLossCp,
         chessDbRank: played.move.rank,
     };
+}
+
+function assessOpeningReviewSavedMove(
+    position: Position,
+    playedMove: { san: string; uci: string },
+    chessDbMoves: ChessDbCloudMove[] | null | undefined,
+    lichessMoves: LichessCloudMove[] | null | undefined,
+    savedLichessBestMove: { san: string; uci?: string } | null,
+    savedBestMove: { san: string; uci?: string },
+): OpeningReviewMoveAssessment {
+    const repertoireContext = getOpeningReviewRepertoireContext(position, playedMove);
+    const lichessScoredMoves = rankLichessCloudMoves(position, lichessMoves);
+    const lichessBest = lichessScoredMoves[0];
+
+    if (lichessBest) {
+        const played = lichessScoredMoves.find((entry) =>
+            reviewMovesMatch(entry.move.uci, entry.move.san, playedMove),
+        );
+        const moveLossCp = played
+            ? Math.max(0, lichessBest.scoreForSide - played.scoreForSide)
+            : undefined;
+        const exactBest = reviewMovesMatch(lichessBest.move.uci, lichessBest.move.san, playedMove);
+
+        return {
+            quality: exactBest ? "best" : "correct",
+            label: "best",
+            passed: true,
+            ...repertoireContext,
+            bestMoveSan: lichessBest.move.san,
+            bestMoveUci: lichessBest.move.uci,
+            bestMoveSource: "lichess",
+            moveLossCp,
+        };
+    }
+
+    if (savedLichessBestMove) {
+        const exactBest = reviewMovesMatch(
+            savedLichessBestMove.uci,
+            savedLichessBestMove.san,
+            playedMove,
+        );
+
+        return {
+            quality: exactBest ? "best" : "correct",
+            label: "best",
+            passed: true,
+            ...repertoireContext,
+            bestMoveSan: savedLichessBestMove.san,
+            bestMoveUci: savedLichessBestMove.uci,
+            bestMoveSource: "lichess",
+            moveLossCp: exactBest ? 0 : undefined,
+        };
+    }
+
+    const chessDbScoredMoves = rankChessDbCloudMoves(position, chessDbMoves);
+    const chessDbBest = chessDbScoredMoves[0];
+
+    if (chessDbBest) {
+        const played = chessDbScoredMoves.find((entry) =>
+            reviewMovesMatch(entry.move.uci, entry.move.san, playedMove),
+        );
+        const moveLossCp = played
+            ? Math.max(0, chessDbBest.scoreForSide - played.scoreForSide)
+            : undefined;
+        const exactBest = reviewMovesMatch(chessDbBest.move.uci, chessDbBest.move.san, playedMove);
+
+        return {
+            quality: exactBest ? "best" : "correct",
+            label: "best",
+            passed: true,
+            ...repertoireContext,
+            bestMoveSan: chessDbBest.move.san,
+            bestMoveUci: chessDbBest.move.uci,
+            bestMoveSource: "chessdb",
+            chessDbBestMoveSan: chessDbBest.move.san,
+            chessDbBestMoveUci: chessDbBest.move.uci,
+            moveLossCp,
+            chessDbRank: played?.move.rank ?? null,
+        };
+    }
+
+    const exactSavedBest = isOpeningReviewEngineMove(position, playedMove);
+
+    return {
+        quality: exactSavedBest ? "best" : "correct",
+        label: "best",
+        passed: true,
+        ...repertoireContext,
+        bestMoveSan: savedBestMove.san,
+        bestMoveUci: savedBestMove.uci,
+        bestMoveSource: getSavedBestMoveSource(position),
+        moveLossCp: exactSavedBest ? 0 : undefined,
+    };
+}
+
+function rankLichessCloudMoves(position: Position, lichessMoves?: LichessCloudMove[] | null) {
+    if (!lichessMoves?.length) return [];
+
+    const sideToMove = getOpeningReviewSideToMove(position);
+    return lichessMoves
+        .map((move, index) => ({
+            move,
+            rank: index + 1,
+            scoreForSide: getScoreForSide(move, sideToMove),
+        }))
+        .filter(
+            (entry): entry is { move: LichessCloudMove; rank: number; scoreForSide: number } =>
+                entry.scoreForSide !== null,
+        )
+        .sort(
+            (a, b) =>
+                b.scoreForSide - a.scoreForSide ||
+                a.rank - b.rank ||
+                a.move.san.localeCompare(b.move.san),
+        );
+}
+
+function rankChessDbCloudMoves(position: Position, chessDbMoves?: ChessDbCloudMove[] | null) {
+    if (!chessDbMoves?.length) return [];
+
+    const sideToMove = getOpeningReviewSideToMove(position);
+    return chessDbMoves
+        .map((move) => ({
+            move,
+            scoreForSide: getScoreForSide(move, sideToMove),
+        }))
+        .filter(
+            (entry): entry is { move: ChessDbCloudMove; scoreForSide: number } =>
+                entry.scoreForSide !== null,
+        )
+        .sort(
+            (a, b) =>
+                b.scoreForSide - a.scoreForSide ||
+                (a.move.rank ?? Number.MAX_SAFE_INTEGER) -
+                    (b.move.rank ?? Number.MAX_SAFE_INTEGER) ||
+                a.move.san.localeCompare(b.move.san),
+        );
 }
 
 function classifyOpeningReviewAttempt(moveLossCp: number, exactBest: boolean) {
@@ -465,6 +579,10 @@ function normalizeReviewSan(san: string) {
 function getScoreForSide(move: ChessDbCloudMove | LichessCloudMove, side: "white" | "black") {
     if (move.scoreCpForWhite === null) return null;
     return side === "black" ? -move.scoreCpForWhite : move.scoreCpForWhite;
+}
+
+function getOpeningReviewSideToMove(position: Position): "white" | "black" {
+    return position.fen.split(" ")[1] === "b" ? "black" : "white";
 }
 
 function sameReviewBoardPosition(a: string | undefined, b: string | undefined) {

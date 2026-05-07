@@ -283,25 +283,69 @@ function practiceMoveAssessmentFromLabel(label: MistakeReviewAttemptLabel | unde
   }
 }
 
+function normalizeOpeningPracticeSan(move: string | null | undefined) {
+  return (move ?? "")
+    .trim()
+    .replace(/^0-0-0/, "O-O-O")
+    .replace(/^0-0/, "O-O")
+    .replace(/[!?]+/g, "");
+}
+
+function openingPracticeMovesSameSan(
+  firstMove: string | null | undefined,
+  secondMove: string | null | undefined,
+) {
+  const first = normalizeOpeningPracticeSan(firstMove);
+  const second = normalizeOpeningPracticeSan(secondMove);
+  return Boolean(first && second && first === second);
+}
+
+function formatOpeningPracticeAssessmentTitle(assessment: OpeningReviewMoveAssessment) {
+  if (assessment.label === "good" && !assessment.followedRepertoire) {
+    return "Good move, not best";
+  }
+
+  if (assessment.label === "okay" && !assessment.followedRepertoire) {
+    return "Okay move, not best";
+  }
+
+  if (assessment.label === "best" && assessment.followedRepertoire) {
+    return "Correct repertoire move";
+  }
+
+  return mistakeReviewSeverityLabel(assessment.label);
+}
+
 function formatOpeningPracticeAssessmentMessage(
   assessment: OpeningReviewMoveAssessment,
-  playedMoveSan: string,
+  playedMove: { san: string; uci: string },
 ) {
   const source = formatOpeningReviewMoveSource(assessment.bestMoveSource);
   const bestMove = assessment.bestMoveSan;
   const repertoireMove = assessment.repertoireMoveSan;
   const repertoireText = assessment.followedRepertoire
     ? `Repertoire move: ${repertoireMove}. You stayed in repertoire.`
-    : `Repertoire move: ${repertoireMove}. You played ${playedMoveSan}, so this is a deviation.`;
+    : `Repertoire move: ${repertoireMove}. You played ${playedMove.san}, so this is a deviation.`;
   const lossText =
     assessment.moveLossCp !== undefined && assessment.label !== "best"
       ? ` (${Math.round(assessment.moveLossCp)} cp behind${
           assessment.chessDbRank ? `, rank ${assessment.chessDbRank}` : ""
         })`
       : "";
+  const playedIsBest =
+    (assessment.bestMoveUci && assessment.bestMoveUci === playedMove.uci) ||
+    openingPracticeMovesSameSan(bestMove, playedMove.san);
 
-  if (assessment.label === "best") {
-    return `${repertoireText} ${source} ranks ${playedMoveSan} as best.`;
+  if (assessment.label === "best" && playedIsBest) {
+    return `${repertoireText} ${source} ranks ${playedMove.san} as best.`;
+  }
+
+  if (
+    (assessment.label === "good" || assessment.label === "okay") &&
+    !assessment.followedRepertoire
+  ) {
+    const movePhrase = assessment.label === "good" ? "Good move" : "Playable move";
+    return `${repertoireText} ${movePhrase}: ${playedMove.san}, but ${source} has ${bestMove} as best${lossText}.`;
   }
 
   return `${repertoireText} ${source} has ${bestMove} as best${lossText}.`;
@@ -975,8 +1019,8 @@ function Board({
 
       setPracticeState(immediateState);
       notifications.show({
-        title: mistakeReviewSeverityLabel(immediateAssessment.label),
-        message: formatOpeningPracticeAssessmentMessage(immediateAssessment, san),
+        title: formatOpeningPracticeAssessmentTitle(immediateAssessment),
+        message: formatOpeningPracticeAssessmentMessage(immediateAssessment, { san, uci }),
         color: mistakeReviewColor(immediateAssessment.label),
       });
 

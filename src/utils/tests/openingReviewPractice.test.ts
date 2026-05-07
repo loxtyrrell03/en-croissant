@@ -143,6 +143,41 @@ describe("opening review practice move assessment", () => {
         expect(assessment.followedRepertoire).toBe(false);
     });
 
+    test("keeps a saved repertoire move correct even when ChessDB prefers another move", () => {
+        const assessment = assessOpeningReviewMove(
+            position({ answer: "d4", answerUci: "d2d4" }),
+            { san: "d4", uci: "d2d4" },
+            [cloudMove("e4", "e2e4", 35, 1), cloudMove("d4", "d2d4", 5, 2)],
+        );
+
+        expect(assessment.quality).toBe("correct");
+        expect(assessment.label).toBe("best");
+        expect(assessment.passed).toBe(true);
+        expect(assessment.bestMoveSan).toBe("e4");
+        expect(assessment.bestMoveSource).toBe("chessdb");
+        expect(assessment.moveLossCp).toBe(30);
+        expect(assessment.repertoireMoveSan).toBe("d4");
+        expect(assessment.followedRepertoire).toBe(true);
+    });
+
+    test("keeps a saved repertoire move correct even when Lichess Cloud prefers another move", () => {
+        const assessment = assessOpeningReviewMove(
+            position({ answer: "d4", answerUci: "d2d4" }),
+            { san: "d4", uci: "d2d4" },
+            null,
+            [lichessMove("e4", "e2e4", 35), lichessMove("d4", "d2d4", 5)],
+        );
+
+        expect(assessment.quality).toBe("correct");
+        expect(assessment.label).toBe("best");
+        expect(assessment.passed).toBe(true);
+        expect(assessment.bestMoveSan).toBe("e4");
+        expect(assessment.bestMoveSource).toBe("lichess");
+        expect(assessment.moveLossCp).toBe(30);
+        expect(assessment.repertoireMoveSan).toBe("d4");
+        expect(assessment.followedRepertoire).toBe(true);
+    });
+
     test("labels an okay ChessDB alternative but keeps it due for review", () => {
         const assessment = assessOpeningReviewMove(position(), { san: "d4", uci: "d2d4" }, [
             cloudMove("e4", "e2e4", 35, 1),

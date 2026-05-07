@@ -1263,6 +1263,28 @@ function reviewPracticeMovesSameSan(
   return Boolean(first && second && first === second);
 }
 
+function formatOpeningPracticeFeedbackTitle(
+  practiceState: PracticeState,
+  attemptLabel: PracticeState["moveQualityLabel"],
+  fallback: string,
+) {
+  if (!attemptLabel) return fallback;
+
+  if (attemptLabel === "good" && practiceState.followedRepertoire === false) {
+    return "Good move, not best";
+  }
+
+  if (attemptLabel === "okay" && practiceState.followedRepertoire === false) {
+    return "Okay move, not best";
+  }
+
+  if (attemptLabel === "best" && practiceState.followedRepertoire === true) {
+    return "Correct repertoire move";
+  }
+
+  return mistakeReviewSeverityLabel(attemptLabel);
+}
+
 function formatOpeningPracticeFeedbackDetail(
   practiceState: PracticeState,
   source: string | null,
@@ -1295,6 +1317,15 @@ function formatOpeningPracticeFeedbackDetail(
       reviewPracticeMovesSameSan(bestMove, practiceState.playedMove)
     ) {
       parts.push(`${source ?? "Engine"} ranks ${practiceState.playedMove} best.`);
+    } else if (
+      (attemptLabel === "good" || attemptLabel === "okay") &&
+      practiceState.followedRepertoire === false &&
+      practiceState.playedMove
+    ) {
+      const movePhrase = attemptLabel === "good" ? "Good move" : "Playable move";
+      parts.push(
+        `${movePhrase}: ${practiceState.playedMove}, but ${source ?? "Engine"} has ${bestMove} as best.`,
+      );
     } else {
       parts.push(`${source ?? "Engine"} has ${bestMove} as best.`);
     }
@@ -2252,11 +2283,18 @@ function OpeningReviewPanel({
   const attemptFeedbackColor = mistakeReviewAttemptColor(activeAttemptLabel, practiceState.phase);
   const feedbackColor = attemptFeedbackColor;
   const correctFeedbackColor = attemptFeedbackColor;
+  const openingFeedbackTitle = !isMistakeReview
+    ? formatOpeningPracticeFeedbackTitle(
+        practiceState,
+        openingAttemptLabel,
+        isBestAlternative ? "Best" : isOkAlternative ? "Good move, not best" : "Incorrect",
+      )
+    : undefined;
   const correctFeedbackTitle =
     isMistakeReview && practiceState.mistakeReviewLabel
       ? mistakeReviewSeverityLabel(practiceState.mistakeReviewLabel)
-      : !isMistakeReview && openingAttemptLabel
-        ? mistakeReviewSeverityLabel(openingAttemptLabel)
+      : !isMistakeReview
+        ? (openingFeedbackTitle ?? "Correct")
         : "Correct";
   const mistakeTimeManagementFeedback = isMistakeReview
     ? formatMistakeReviewTimeManagementFeedback(attemptPosition?.mistakeReview)
@@ -2281,13 +2319,8 @@ function OpeningReviewPanel({
     ? practiceState.mistakeReviewLabel
       ? mistakeReviewSeverityLabel(practiceState.mistakeReviewLabel)
       : "Incorrect"
-    : openingAttemptLabel
-      ? mistakeReviewSeverityLabel(openingAttemptLabel)
-      : isBestAlternative
-        ? "Best"
-        : isOkAlternative
-          ? "Good"
-          : "Incorrect";
+    : (openingFeedbackTitle ??
+      (isBestAlternative ? "Best" : isOkAlternative ? "Good move, not best" : "Incorrect"));
   const roundedMoveLoss =
     practiceState.moveLossCp === undefined ? undefined : Math.round(practiceState.moveLossCp);
   const isTraining = practiceState.phase !== "idle";
@@ -2693,13 +2726,24 @@ function OpeningReviewPanel({
           <Paper p="sm" withBorder>
             <Stack gap="xs" align="center">
               <Group gap="xs">
-                <ThemeIcon size="md" color="green" variant="light" radius="xl">
-                  <IconCheck size={16} />
+                <ThemeIcon size="md" color={correctFeedbackColor} variant="light" radius="xl">
+                  {ratingPanelIcon === "bulb" ? (
+                    <IconBulb size={16} />
+                  ) : ratingPanelIcon === "x" ? (
+                    <IconX size={16} />
+                  ) : (
+                    <IconCheck size={16} />
+                  )}
                 </ThemeIcon>
-                <Text fw={600} c="green">
-                  Correct
+                <Text fw={600} c={correctFeedbackColor}>
+                  {correctFeedbackTitle}
                 </Text>
               </Group>
+              {ratingPanelDetail && (
+                <Text size="sm" c="dimmed" ta="center">
+                  {ratingPanelDetail}
+                </Text>
+              )}
               <Button
                 variant="light"
                 size="sm"
