@@ -6,7 +6,7 @@ import { startTransition, useContext, useEffect, useMemo, useRef } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
-import { type EngineOptions, events, type GoMode } from "@/bindings";
+import { type BestMoves, type EngineOptions, events, type GoMode } from "@/bindings";
 import {
   activeTabAtom,
   currentThreatAtom,
@@ -328,8 +328,7 @@ async function getLocalBestMovesWithLichessCloud(
   goMode: GoMode,
   options: EngineOptions,
 ) {
-  const localPromise = localGetBestMoves(engine, tab, goMode, options);
-  void localPromise.catch(() => undefined);
+  const localStart = startLocalBestMoves(engine, tab, goMode, options);
   // Keep Stockfish running behind cloud hits. Cloud replies can arrive after navigation,
   // and stopEngine is scoped to the whole tab/engine rather than this exact position.
   const cloudPromise = withTimeout(
@@ -337,21 +336,81 @@ async function getLocalBestMovesWithLichessCloud(
     LOCAL_ENGINE_CLOUD_TIMEOUT_MS,
   ).catch(() => null);
 
-  const quickCloudMoves = await withTimeout(cloudPromise, LOCAL_ENGINE_CLOUD_PRIORITY_MS).catch(
-    () => null,
-  );
+  try {
+    const quickCloudMoves = await withTimeout(cloudPromise, LOCAL_ENGINE_CLOUD_PRIORITY_MS).catch(
+      () => null,
+    );
 
-  if (quickCloudMoves?.[1]?.length) {
-    return quickCloudMoves;
+    if (quickCloudMoves?.[1]?.length) {
+      return quickCloudMoves;
+    }
+
+    const firstMoves = await Promise.race([
+      cloudPromise.then((cloudMoves) => (cloudMoves?.[1]?.length ? cloudMoves : null)),
+      localStart.promise,
+    ]);
+
+    if (firstMoves?.[1]?.length) {
+      return firstMoves;
+    }
+
+    return await localStart.promise;
+  } finally {
+    localStart.cleanup();
   }
+}
 
-  const cloudMoves = await cloudPromise;
+function startLocalBestMoves(
+  engine: LocalEngine,
+  tab: string,
+  goMode: GoMode,
+  options: EngineOptions,
+): { promise: Promise<[number, BestMoves[]] | null>; cleanup: () => void } {
+  let unlisten: (() => void) | null = null;
+  let resolveEvent: ((value: [number, BestMoves[]] | null) => void) | null = null;
+  let disposed = false;
 
-  if (cloudMoves?.[1]?.length) {
-    return cloudMoves;
-  }
+  const eventPromise = new Promise<[number, BestMoves[]] | null>((resolve) => {
+    resolveEvent = resolve;
+  });
 
-  return localPromise;
+  const promise = (async () => {
+    try {
+      unlisten = await events.bestMovesPayload.listen(({ payload }) => {
+        if (
+          payload.engine === engine.id &&
+          payload.tab === tab &&
+          payload.fen === options.fen &&
+          equal(payload.moves, options.moves) &&
+          payload.bestLines.length > 0
+        ) {
+          resolveEvent?.([payload.progress, payload.bestLines]);
+        }
+      });
+
+      if (disposed) {
+        return null;
+      }
+
+      return await Promise.race([
+        localGetBestMoves(engine, tab, goMode, options).then((moves) =>
+          moves?.[1]?.length ? moves : eventPromise,
+        ),
+        eventPromise,
+      ]);
+    } finally {
+      unlisten?.();
+    }
+  })();
+
+  return {
+    promise,
+    cleanup: () => {
+      disposed = true;
+      unlisten?.();
+      resolveEvent?.(null);
+    },
+  };
 }
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
