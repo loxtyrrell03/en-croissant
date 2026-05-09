@@ -977,8 +977,11 @@ pub async fn scan_mistake_review(
     let games = loaded_games
         .into_iter()
         .filter(|game| {
-            time_controls.is_empty()
-                || time_controls.contains(&mistake_review_time_control_bucket(&game.time_control))
+            mistake_review_game_matches_time_filters(
+                &game.time_control,
+                &time_controls,
+                time_management.enabled,
+            )
         })
         .collect::<Vec<_>>();
     let games_total = games.len() as u32;
@@ -2209,10 +2212,14 @@ fn mistake_review_time_control_bucket(time_control: &Option<String>) -> String {
         return "unknown".to_string();
     };
     let trimmed = time_control.trim();
-    if trimmed.is_empty() || trimmed == "-" || trimmed == "?" {
+    if trimmed.is_empty() || trimmed == "?" {
         return "unknown".to_string();
     }
-    if trimmed.eq_ignore_ascii_case("correspondence") || trimmed.contains('/') {
+    if trimmed == "-"
+        || trimmed.eq_ignore_ascii_case("correspondence")
+        || trimmed.eq_ignore_ascii_case("daily")
+        || trimmed.contains('/')
+    {
         return "correspondence".to_string();
     }
 
@@ -2233,6 +2240,19 @@ fn mistake_review_time_control_bucket(time_control: &Option<String>) -> String {
     } else {
         "classical".to_string()
     }
+}
+
+fn mistake_review_game_matches_time_filters(
+    time_control: &Option<String>,
+    time_controls: &[String],
+    exclude_correspondence: bool,
+) -> bool {
+    let bucket = mistake_review_time_control_bucket(time_control);
+    if exclude_correspondence && bucket == "correspondence" {
+        return false;
+    }
+
+    time_controls.is_empty() || time_controls.contains(&bucket)
 }
 
 fn mistake_review_severity(
@@ -2499,6 +2519,38 @@ mod mistake_review_tests {
             mistake_review_time_control_bucket(&Some("1/3".to_string())),
             "correspondence"
         );
+        assert_eq!(
+            mistake_review_time_control_bucket(&Some("1/259200".to_string())),
+            "correspondence"
+        );
+        assert_eq!(
+            mistake_review_time_control_bucket(&Some("daily".to_string())),
+            "correspondence"
+        );
+        assert_eq!(
+            mistake_review_time_control_bucket(&Some("-".to_string())),
+            "correspondence"
+        );
+    }
+
+    #[test]
+    fn time_management_filters_out_correspondence_games() {
+        let daily = Some("1/259200".to_string());
+        let blitz = Some("300+3".to_string());
+        let correspondence = vec!["correspondence".to_string()];
+
+        assert!(!mistake_review_game_matches_time_filters(&daily, &[], true));
+        assert!(!mistake_review_game_matches_time_filters(
+            &daily,
+            &correspondence,
+            true
+        ));
+        assert!(mistake_review_game_matches_time_filters(
+            &daily,
+            &correspondence,
+            false
+        ));
+        assert!(mistake_review_game_matches_time_filters(&blitz, &[], true));
     }
 
     #[test]

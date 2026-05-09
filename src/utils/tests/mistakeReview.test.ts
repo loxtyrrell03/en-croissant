@@ -501,11 +501,32 @@ describe("mistake review helpers", () => {
                 severity: "inaccuracy",
             },
         });
+        const dailyThink = position({
+            reviewKey: "daily-think",
+            mistakeReview: {
+                ...position().mistakeReview!,
+                moveTimeSeconds: 259200,
+                severity: "blunder",
+                timeControl: "1/259200",
+            },
+        });
+        const savedCorrespondenceBucket = position({
+            reviewKey: "correspondence-bucket",
+            mistakeReview: {
+                ...position().mistakeReview!,
+                moveTimeSeconds: 180,
+                severity: "mistake",
+                timeControls: ["correspondence"],
+            },
+        });
 
         expect(
-            getMistakeReviewTimeManagementBatch([shortThink, longThink, longestThink], {
-                minMoveSeconds: 20,
-            }).map((item) => item.reviewKey),
+            getMistakeReviewTimeManagementBatch(
+                [shortThink, dailyThink, longThink, savedCorrespondenceBucket, longestThink],
+                {
+                    minMoveSeconds: 20,
+                },
+            ).map((item) => item.reviewKey),
         ).toEqual(["longest-think", "long-think"]);
     });
 

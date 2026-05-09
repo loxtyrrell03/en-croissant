@@ -426,6 +426,7 @@ export function createMistakeReviewPosition(
     const moveTimeText = formatMistakeReviewMoveTime(result.moveTimeSeconds);
     const isLongThinkCard =
         settings.timeManagement.enabled &&
+        !isMistakeReviewCorrespondenceTimeControl(result.timeControl) &&
         typeof result.moveTimeSeconds === "number" &&
         result.moveTimeSeconds >= settings.timeManagement.minMoveSeconds;
 
@@ -724,6 +725,16 @@ export function getMistakeReviewTimeManagementBatch(
         .sort(sortMistakeReviewTimeManagementCards);
 }
 
+export function isMistakeReviewCorrespondenceTimeControl(value: string | null | undefined) {
+    const normalized = value?.trim().toLowerCase();
+    return (
+        normalized === "-" ||
+        normalized === "daily" ||
+        normalized === "correspondence" ||
+        Boolean(normalized?.includes("/"))
+    );
+}
+
 export function getMistakeReviewPhaseCounts(
     positions: Position[],
     options: { now?: Date } = {},
@@ -762,7 +773,15 @@ export function isMistakeReviewTimeManagementPosition(
     position: Position,
     minMoveSeconds = DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds,
 ) {
+    const metadata = position.mistakeReview;
     const moveTime = position.mistakeReview?.moveTimeSeconds;
+    if (
+        isMistakeReviewCorrespondenceTimeControl(metadata?.timeControl) ||
+        metadata?.timeControls?.some(isMistakeReviewCorrespondenceTimeControl)
+    ) {
+        return false;
+    }
+
     return (
         typeof moveTime === "number" &&
         Number.isFinite(moveTime) &&

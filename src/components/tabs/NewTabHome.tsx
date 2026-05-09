@@ -1732,7 +1732,7 @@ function MistakeReviewScanModal({
             <Stack gap="xs">
               <Switch
                 label="Time management trainer"
-                description="Only keep mistakes where clock comments show a long think before the bad move."
+                description="Only keep real-time games where clock comments show a long think before the bad move."
                 checked={timeManagementOnly}
                 onChange={(event) => setTimeManagementOnly(event.currentTarget.checked)}
               />
@@ -1748,7 +1748,8 @@ function MistakeReviewScanModal({
                 }
               />
               <Text size="xs" c="dimmed">
-                Uses PGN clock comments from Lichess and Chess.com when available.
+                Uses PGN clock comments from Lichess and Chess.com when available. Daily games are
+                ignored.
               </Text>
             </Stack>
           </Paper>
@@ -2103,7 +2104,7 @@ function OnlineMistakeReviewSettingsModal({
           <Stack gap="xs">
             <Switch
               label="Time management trainer"
-              description="Only keep mistakes where online PGNs include a long think before the bad move."
+              description="Only keep real-time games where online PGNs include a long think before the bad move."
               checked={settings.timeManagement.enabled}
               onChange={(event) => updateTimeManagement({ enabled: event.currentTarget.checked })}
             />
@@ -2122,7 +2123,7 @@ function OnlineMistakeReviewSettingsModal({
             />
             <Text size="xs" c="dimmed">
               Lichess exports clocks directly; Chess.com PGNs are scanned for timestamp comments
-              when present.
+              when present. Daily games are ignored.
             </Text>
           </Stack>
         </Paper>
