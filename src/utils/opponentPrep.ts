@@ -68,10 +68,10 @@ export type PrepBuilderEngineMove = {
 export type PrepBuilderMoveChoice = {
     move: string;
     score: number;
-    annotation: "!" | "!?";
     engineRank: number | null;
     engineCpLoss: number | null;
     engineSource: PrepBuilderEngineMove["source"] | null;
+    databaseRank: number | null;
     opponentGames: number;
     opponentShare: number;
     opponentScore: number | null;
@@ -87,12 +87,12 @@ const DEFAULT_STATS_MAX_POSITIONS = 12;
 export const DEFAULT_PREP_BUILDER_SETTINGS: PrepBuilderSettings = {
     mode: "smart",
     size: "balanced",
-    maxMoves: 18,
-    maxPly: 12,
-    opponentMoveLimit: 4,
+    maxMoves: 80,
+    maxPly: 22,
+    opponentMoveLimit: 8,
     minOpponentGames: 2,
-    minOpponentMoveShare: 10,
-    minBranchShare: 4,
+    minOpponentMoveShare: 5,
+    minBranchShare: 0.25,
     breadthBias: 100,
     engineWeight: 55,
     maxEngineCpLoss: 70,
@@ -123,12 +123,12 @@ export function normalizePrepBuilderSettings(
     return {
         mode,
         size,
-        maxMoves: clampInteger(settings?.maxMoves, 4, 80, sizePreset.maxMoves),
-        maxPly: clampInteger(settings?.maxPly, 2, 32, sizePreset.maxPly),
+        maxMoves: clampInteger(settings?.maxMoves, 4, 240, sizePreset.maxMoves),
+        maxPly: clampInteger(settings?.maxPly, 2, 60, sizePreset.maxPly),
         opponentMoveLimit: clampInteger(
             settings?.opponentMoveLimit,
             1,
-            10,
+            20,
             sizePreset.opponentMoveLimit,
         ),
         minOpponentGames: clampInteger(
@@ -481,6 +481,10 @@ export function choosePrepBuilderMove({
         scoredEngineMoves.length > 0
             ? Math.max(...scoredEngineMoves.map((move) => move.scoreCpForSide!))
             : null;
+    const databaseRanks = getPrepBuilderDatabaseRanks(
+        playableOpponent.length > 0 ? playableOpponent : playableReference,
+        userColor,
+    );
     const moves = new Set<string>();
 
     for (const opening of playableOpponent) {
@@ -585,25 +589,19 @@ export function choosePrepBuilderMove({
             const opponentScore = sideScore === null ? null : 1 - sideScore;
             const referenceOpponentScore =
                 referenceSideScore === null ? null : 1 - referenceSideScore;
+            const databaseRank = databaseRanks.get(moveKey) ?? null;
             const reasons = getPrepBuilderMoveReasons({
                 engine,
-                engineCpLoss,
-                opponentGames,
-                opponentScore,
-                referenceOpponentScore,
-                opponentReferenceDelta: referenceDelta === null ? null : -referenceDelta,
-                opponentShare,
-                referenceGames,
-                referenceShare,
+                databaseRank,
             });
 
             return {
                 move,
                 score,
-                annotation: score >= 72 ? "!" : "!?",
                 engineRank: engine?.rank ?? null,
                 engineCpLoss,
                 engineSource: engine?.source ?? null,
+                databaseRank,
                 opponentGames,
                 opponentShare,
                 opponentScore,
@@ -757,21 +755,21 @@ function getPrepBuilderSizePreset(size: PrepBuilderSettings["size"]) {
     switch (size) {
         case "quick":
             return {
-                maxMoves: 10,
+                maxMoves: 16,
                 maxPly: 8,
                 opponentMoveLimit: 3,
                 minOpponentGames: 2,
                 minOpponentMoveShare: 15,
-                minBranchShare: 8,
+                minBranchShare: 5,
             };
         case "deep":
             return {
-                maxMoves: 28,
-                maxPly: 16,
-                opponentMoveLimit: 5,
+                maxMoves: 180,
+                maxPly: 40,
+                opponentMoveLimit: 14,
                 minOpponentGames: 2,
-                minOpponentMoveShare: 10,
-                minBranchShare: 2,
+                minOpponentMoveShare: 1,
+                minBranchShare: 0.02,
             };
         case "balanced":
             return {
@@ -821,6 +819,25 @@ function getWeightedSideScore(openings: Opening[], side: PrepColor) {
     );
 }
 
+function getPrepBuilderDatabaseRanks(openings: Opening[], side: PrepColor) {
+    const ranked = openings
+        .filter((opening) => getOpeningTotal(opening) > 0)
+        .map((opening) => ({
+            key: normalizeSanForPrep(opening.move),
+            sideScore: getSideScoreForOpening(opening, side),
+            total: getOpeningTotal(opening),
+            move: opening.move,
+        }))
+        .sort(
+            (a, b) =>
+                b.sideScore - a.sideScore ||
+                b.total - a.total ||
+                a.move.localeCompare(b.move),
+        );
+
+    return new Map(ranked.map((opening, index) => [opening.key, index + 1]));
+}
+
 function getSideScoreForOpening(opening: Pick<Opening, "white" | "draw" | "black">, side: PrepColor) {
     const total = getOpeningTotal(opening);
     if (total <= 0) return 0.5;
@@ -831,68 +848,48 @@ function getSideScoreForOpening(opening: Pick<Opening, "white" | "draw" | "black
 
 function getPrepBuilderMoveReasons({
     engine,
-    engineCpLoss,
-    opponentGames,
-    opponentScore,
-    referenceOpponentScore,
-    opponentReferenceDelta,
-    opponentShare,
-    referenceGames,
-    referenceShare,
+    databaseRank,
 }: {
     engine: PrepBuilderEngineMove | null;
-    engineCpLoss: number | null;
-    opponentGames: number;
-    opponentScore: number | null;
-    referenceOpponentScore: number | null;
-    opponentReferenceDelta: number | null;
-    opponentShare: number;
-    referenceGames: number;
-    referenceShare: number;
+    databaseRank: number | null;
 }) {
     const reasons: string[] = [];
 
     if (engine) {
-        const source = engine.source === "lichess" ? "Lichess Cloud" : "ChessDB";
-        if ((engine.rank ?? 1) === 1 && (engineCpLoss ?? 0) <= 5) {
-            reasons.push(`${source} top move`);
-        } else if (engine.rank !== null) {
-            reasons.push(
-                `${source} #${engine.rank}${engineCpLoss !== null ? `, ${Math.round(engineCpLoss)} cp behind top` : ""}`,
-            );
-        } else {
-            reasons.push(`${source} candidate`);
-        }
-    }
-
-    if (opponentGames > 0 && opponentScore !== null) {
         reasons.push(
-            `Opponent scores ${Math.round(opponentScore * 100)}% in ${opponentGames} game${opponentGames === 1 ? "" : "s"}`,
+            `Engine: ${
+                engine.rank !== null
+                    ? `${formatOrdinal(engine.rank)} best`
+                    : "rank unavailable"
+            }`,
         );
-        if (opponentReferenceDelta !== null && referenceOpponentScore !== null) {
-            const delta = Math.round(Math.abs(opponentReferenceDelta) * 100);
-            if (opponentReferenceDelta >= 0.04) {
-                reasons.push(`They outperform Lichess All by ${delta}% here`);
-            } else if (opponentReferenceDelta <= -0.04) {
-                reasons.push(`They score ${delta}% worse than Lichess All here`);
-            }
-        }
-        if (opponentShare >= 0.1) {
-            reasons.push(`${Math.round(opponentShare * 100)}% of their games from here`);
-        }
+    } else {
+        reasons.push("Engine: unavailable");
     }
 
-    if (referenceGames > 0) {
-        reasons.push(
-            `Lichess All support: ${Math.round(referenceShare * 100)}% share in ${referenceGames} game${referenceGames === 1 ? "" : "s"}`,
-        );
+    if (databaseRank !== null) {
+        reasons.push(`Database: ${formatOrdinal(databaseRank)} best WDL`);
+    } else {
+        reasons.push("Database: unranked");
     }
 
-    if (reasons.length === 0) {
-        reasons.push("Best available balance of engine and database evidence");
-    }
+    return reasons;
+}
 
-    return reasons.slice(0, 4);
+function formatOrdinal(value: number) {
+    const mod100 = value % 100;
+    if (mod100 >= 11 && mod100 <= 13) return `${value}th`;
+
+    switch (value % 10) {
+        case 1:
+            return `${value}st`;
+        case 2:
+            return `${value}nd`;
+        case 3:
+            return `${value}rd`;
+        default:
+            return `${value}th`;
+    }
 }
 
 function createBranchStats({

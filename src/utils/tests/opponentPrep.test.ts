@@ -212,9 +212,9 @@ describe("opponent prep helpers", () => {
         });
 
         expect(choice?.move).toBe("c5");
-        expect(choice?.reasons.some((reason) => reason.includes("worse than Lichess All"))).toBe(
-            true,
-        );
+        expect(choice?.engineRank).toBe(2);
+        expect(choice?.databaseRank).toBe(1);
+        expect(choice?.reasons).toEqual(["Engine: 2nd best", "Database: 1st best WDL"]);
     });
 
     test("engine prep builder keeps the top engine move when mode asks for it", () => {
@@ -245,5 +245,8 @@ describe("opponent prep helpers", () => {
 
         expect(quick.maxMoves).toBeLessThan(deep.maxMoves);
         expect(quick.minOpponentMoveShare).toBeGreaterThan(deep.minOpponentMoveShare);
+        expect(deep.maxMoves).toBeGreaterThan(100);
+        expect(deep.opponentMoveLimit).toBeGreaterThan(quick.opponentMoveLimit);
+        expect(deep.minOpponentMoveShare).toBeLessThan(3);
     });
 });

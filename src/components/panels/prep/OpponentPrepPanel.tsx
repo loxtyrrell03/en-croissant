@@ -84,7 +84,6 @@ import {
   type OpponentPrepMoveRow,
 } from "@/utils/opponentPrep";
 import { getTabWorkspaceKey, saveToFile } from "@/utils/tabs";
-import type { Annotation } from "@/utils/annotation";
 import { positionFromFen } from "@/utils/chessops";
 import { getTreeStructureHash } from "@/utils/treeReducer";
 import { queryChessDbMoves } from "@/utils/chessdb/api";
@@ -165,6 +164,7 @@ function OpponentPrepPanel() {
   const [builderStatus, setBuilderStatus] = useState<PrepBuilderStatus | null>(null);
   const moveCacheRef = useRef(new Map<string, Opening[]>());
   const builderReferenceCacheRef = useRef(new Map<string, Opening[]>());
+  const builderCancelRef = useRef(false);
   const seededRef = useRef(false);
   const settingsKey = useMemo(() => getTabWorkspaceKey(currentTab), [currentTab]);
   const savedCompareSettings = settingsKey ? compareSettingsByFile[settingsKey] : undefined;
@@ -973,6 +973,7 @@ function OpponentPrepPanel() {
 
     const settings = normalizePrepBuilderSettings(prep.builder);
     const userSide = oppositePrepColor(prep.color);
+    builderCancelRef.current = false;
     setBuilderRunning(true);
     setBuilderNeedsSave(false);
     clearMovePreview();
@@ -1001,7 +1002,6 @@ function OpponentPrepPanel() {
       path: number[],
       moveSan: string,
       comment: string,
-      annotation?: PrepBuilderMoveChoice["annotation"],
     ) => {
       const state = store.getState();
       if (!pathExists(state.root, path)) return null;
@@ -1022,16 +1022,6 @@ function OpponentPrepPanel() {
       const nextComment = mergePrepBuilderComment(node.comment, comment);
       store.getState().setCommentAtPath(nextPath, nextComment);
 
-      if (annotation) {
-        store.getState().goToMove(nextPath);
-        const latest = store.getState().currentNode();
-        store.getState().setCurrentNodeMetadata({
-          annotations: mergePrepBuilderAnnotation(latest.annotations, annotation),
-          comment: nextComment,
-          shapes: latest.shapes,
-        });
-      }
-
       return {
         path: nextPath,
         created: existingIndex === -1,
@@ -1049,13 +1039,14 @@ function OpponentPrepPanel() {
         },
       ];
 
-      while (queue.length > 0 && addedMoves < settings.maxMoves) {
+      while (queue.length > 0 && addedMoves < settings.maxMoves && !builderCancelRef.current) {
         queue.sort(
           (a, b) =>
             getPrepBuilderTaskPriority({ ...b, settings }) -
             getPrepBuilderTaskPriority({ ...a, settings }),
         );
         const task = queue.shift()!;
+        if (builderCancelRef.current) break;
         const currentState = store.getState();
         if (!pathExists(currentState.root, task.path)) continue;
 
@@ -1078,6 +1069,7 @@ function OpponentPrepPanel() {
         if (turn === prep.color) {
           updateStatus(prepMode === "general" ? "Adding common replies" : "Adding their replies");
           const openings = await loadOpeningsForFen(node.fen);
+          if (builderCancelRef.current) break;
           const rows = getOpponentPrepMoveRows({
             fen: node.fen,
             node,
@@ -1100,7 +1092,7 @@ function OpponentPrepPanel() {
           }
 
           for (const row of rows.slice(0, settings.opponentMoveLimit)) {
-            if (addedMoves >= settings.maxMoves) break;
+            if (addedMoves >= settings.maxMoves || builderCancelRef.current) break;
 
             const child = addMoveWithComment(
               task.path,
@@ -1128,6 +1120,7 @@ function OpponentPrepPanel() {
             loadLichessAllOpeningsForFen(node.fen, settings).catch(() => []),
             loadPrepBuilderEngineMoves(node.fen, userSide, settings).catch(() => []),
           ]);
+          if (builderCancelRef.current) break;
           const availableGames = opponentOpenings.reduce(
             (sum, opening) => sum + getOpeningTotal(opening),
             0,
@@ -1163,7 +1156,6 @@ function OpponentPrepPanel() {
             task.path,
             choice.move,
             formatPrepBuilderChoiceComment(choice),
-            choice.annotation,
           );
           if (!child) {
             stoppedLines += 1;
@@ -1182,12 +1174,14 @@ function OpponentPrepPanel() {
       }
 
       store.getState().goToMove(safeRootPath);
-      updateStatus(queue.length > 0 ? "Move budget reached" : "Prep built");
+      updateStatus(
+        builderCancelRef.current ? "Stopped" : queue.length > 0 ? "Move budget reached" : "Done",
+      );
       setBuilderNeedsSave(touchedTree);
       notifications.show({
-        title: "Prep builder finished",
-        message: `${addedMoves} move${addedMoves === 1 ? "" : "s"} added across ${visitedPositions} position${visitedPositions === 1 ? "" : "s"}.`,
-        color: "green",
+        title: builderCancelRef.current ? "Prep builder stopped" : "Prep builder done",
+        message: `${addedMoves} move${addedMoves === 1 ? "" : "s"} added.`,
+        color: builderCancelRef.current ? "yellow" : "green",
       });
     } catch (error) {
       notifications.show({
@@ -1213,6 +1207,18 @@ function OpponentPrepPanel() {
     prepMode,
     store,
   ]);
+
+  const stopPrepBuilder = useCallback(() => {
+    builderCancelRef.current = true;
+    setBuilderStatus((current) =>
+      current
+        ? {
+            ...current,
+            phase: "Stopping",
+          }
+        : current,
+    );
+  }, []);
 
   const saveBuilderResult = useCallback(
     async (mode: "new" | "overwrite") => {
@@ -1428,6 +1434,19 @@ function OpponentPrepPanel() {
                 Build prep
               </Button>
             </Tooltip>
+            {builderRunning ? (
+              <Tooltip label="Stop after the current lookup finishes">
+                <Button
+                  color="red"
+                  variant="default"
+                  size={controlSize}
+                  leftSection={<IconX size="0.95rem" />}
+                  onClick={stopPrepBuilder}
+                >
+                  Stop
+                </Button>
+              </Tooltip>
+            ) : null}
             <Tooltip label="Tune how the prep builder balances engine moves, WDL results, breadth, and depth">
               <Button
                 variant="default"
@@ -2020,10 +2039,7 @@ function prepBuilderEngineSourceRank(source: PrepBuilderEngineMove["source"]) {
 }
 
 function formatPrepBuilderChoiceComment(choice: PrepBuilderMoveChoice) {
-  return [
-    `Chosen by Prep Builder (${choice.score}/100).`,
-    ...choice.reasons.map((reason) => `${reason}.`),
-  ].join(" ");
+  return choice.reasons.map((reason) => `${reason}.`).join(" ");
 }
 
 function formatPrepBuilderOpponentComment({
@@ -2038,7 +2054,7 @@ function formatPrepBuilderOpponentComment({
   const actor = general ? "Common reply" : "Opponent reply";
   return `${actor}: ${row.total} game${row.total === 1 ? "" : "s"}, ${Math.round(
     row.share * 100,
-  )}% from this position. Line weight ${Math.round(branchShare * 100)}%.`;
+  )}%, line ${Math.max(1, Math.round(branchShare * 100))}%.`;
 }
 
 const PREP_BUILDER_COMMENT_PREFIX = "Prep Builder:";
@@ -2049,14 +2065,6 @@ function mergePrepBuilderComment(existing: string, comment: string) {
     .map((part) => part.trim())
     .filter((part) => part && !part.startsWith(PREP_BUILDER_COMMENT_PREFIX));
   return [...kept, `${PREP_BUILDER_COMMENT_PREFIX} ${comment}`].join("\n\n");
-}
-
-function mergePrepBuilderAnnotation(
-  annotations: Annotation[],
-  annotation: PrepBuilderMoveChoice["annotation"],
-): Annotation[] {
-  const basic = new Set(["!", "!!", "?", "??", "!?", "?!"]);
-  return [...annotations.filter((item) => !basic.has(item)), annotation];
 }
 
 function normalizePrepBuilderSan(value: string) {
