@@ -72,8 +72,10 @@ import {
   getOpponentPrepBranchStats,
   getOpponentPrepMoveRows,
   getPrepBuilderBranchValue,
+  getPrepBuilderEvidenceMinGames,
   getPrepBuilderReplyPolicy,
   getPrepBuilderStopReason,
+  getPrepBuilderTaskPriority,
   getPrepBuilderUserResponseChildIndex,
   hasPrepBuilderDatabaseCandidates,
   normalizePrepBuilderSettings,
@@ -474,7 +476,7 @@ function OpponentPrepPanel() {
                   : userColor === "black"
                     ? -move.scoreCpForWhite
                     : move.scoreCpForWhite,
-              rank: move.rank ?? index + 1,
+              rank: move.rank && move.rank > 0 ? move.rank : index + 1,
               source: "chessdb",
             }))
           : [];
@@ -999,6 +1001,7 @@ function OpponentPrepPanel() {
     let currentPhase = "Starting";
     let lastPublishedAt = 0;
     let lastYieldWork = 0;
+    let rootDatabaseGames: number | null = null;
 
     const updateStatus = (phase: string, force = false) => {
       currentPhase = phase;
@@ -1020,6 +1023,27 @@ function OpponentPrepPanel() {
       updateStatus(currentPhase, true);
       await new Promise<void>((resolve) => setTimeout(resolve, 0));
     };
+
+    const getPlayableGames = (openings: Opening[]) =>
+      openings.reduce(
+        (sum, opening) =>
+          opening.move === "*" || opening.move === "Total"
+            ? sum
+            : sum + getOpeningTotal(opening),
+        0,
+      );
+
+    const rememberRootDatabaseGames = (openings: Opening[]) => {
+      if (rootDatabaseGames !== null) return;
+      rootDatabaseGames = getPlayableGames(openings);
+    };
+
+    const getEvidenceMinGames = (ply: number) =>
+      getPrepBuilderEvidenceMinGames({
+        settings,
+        rootGames: rootDatabaseGames,
+        ply,
+      });
 
     const addMoveWithComment = (
       path: number[],
@@ -1093,19 +1117,19 @@ function OpponentPrepPanel() {
       ]);
       if (builderCancelRef.current) return null;
 
-      const availableGames = opponentOpenings.reduce(
-        (sum, opening) => sum + getOpeningTotal(opening),
-        0,
-      );
+      rememberRootDatabaseGames(opponentOpenings);
+      const evidenceMinGames = getEvidenceMinGames(task.ply);
+      const availableGames = getPlayableGames(opponentOpenings);
       const hasDatabaseCandidate = hasPrepBuilderDatabaseCandidates(
         opponentOpenings,
-        settings.minOpponentGames,
+        evidenceMinGames,
       );
       const availabilityStop = getPrepBuilderStopReason({
         branchShare: task.branchShare,
         depthShare: task.depthShare,
         ply: task.ply,
         availableGames,
+        minGames: evidenceMinGames,
         settings,
       });
 
@@ -1127,6 +1151,7 @@ function OpponentPrepPanel() {
         engineMoves,
         userColor: userSide,
         settings,
+        minGames: evidenceMinGames,
       });
 
       if (!choice) {
@@ -1169,6 +1194,26 @@ function OpponentPrepPanel() {
           ply: 0,
         },
       ];
+      const enqueueTasks = (tasks: PrepBuilderQueueItem[]) => {
+        queue.push(...tasks);
+        queue.sort(
+          (a, b) =>
+            a.ply - b.ply ||
+            getPrepBuilderTaskPriority({
+              branchShare: b.branchShare,
+              branchValue: b.branchValue,
+              ply: b.ply,
+              settings,
+            }) -
+              getPrepBuilderTaskPriority({
+                branchShare: a.branchShare,
+                branchValue: a.branchValue,
+                ply: a.ply,
+                settings,
+              }) ||
+            b.depthShare - a.depthShare,
+        );
+      };
 
       while (
         queue.length > 0 &&
@@ -1208,18 +1253,35 @@ function OpponentPrepPanel() {
             getPrepBuilderBranchSearchMoveLimit(settings),
           );
           if (builderCancelRef.current) break;
+          rememberRootDatabaseGames(openings);
+          const replyMinGames = getEvidenceMinGames(task.ply + 1);
+          const availableGames = getPlayableGames(openings);
+          const availabilityStop = getPrepBuilderStopReason({
+            branchShare: task.branchShare,
+            depthShare: task.depthShare,
+            ply: task.ply,
+            availableGames,
+            minGames: replyMinGames,
+            settings,
+          });
+          if (availabilityStop) {
+            stoppedLines += 1;
+            updateStatus(availabilityStop);
+            continue;
+          }
+
           const rows = getOpponentPrepMoveRows({
             fen: node.fen,
             node,
             openings,
-            minGames: settings.minOpponentGames,
+            minGames: replyMinGames,
             moveLimit: replyPolicy.moveLimit,
             completedBranches: prep.completedBranches,
             skippedBranches: prep.skippedBranches,
           }).filter(
             (row) =>
               row.status !== "skipped" &&
-              row.total >= settings.minOpponentGames &&
+              row.total >= replyMinGames &&
               row.share * 100 >= replyPolicy.minMoveShare,
           );
 
@@ -1283,10 +1345,10 @@ function OpponentPrepPanel() {
             nextTasks.push(responseChild);
             await yieldToBuilderUi();
           }
-          queue.unshift(...nextTasks);
+          enqueueTasks(nextTasks);
         } else {
           const responseChild = await addUserResponseAtPath(task);
-          if (responseChild) queue.unshift(responseChild);
+          if (responseChild) enqueueTasks([responseChild]);
         }
         await yieldToBuilderUi();
       }

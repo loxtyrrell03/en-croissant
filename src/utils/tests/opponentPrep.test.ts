@@ -10,6 +10,7 @@ import {
     getOpponentPrepMoveRows,
     getPrepBuilderBranchValue,
     getPrepBuilderEffectiveMaxPly,
+    getPrepBuilderEvidenceMinGames,
     getPrepBuilderReplyPolicy,
     getPrepBuilderStopReason,
     getPrepBuilderTaskPriority,
@@ -298,6 +299,27 @@ describe("opponent prep helpers", () => {
         ).toBe(false);
     });
 
+    test("prep builder ignores source moves below the active evidence floor", () => {
+        const settings = normalizePrepBuilderSettings({ mode: "practical" });
+        const choice = choosePrepBuilderMove({
+            userColor: "black",
+            settings,
+            minGames: 20,
+            opponentOpenings: [
+                { move: "c5", white: 8, draw: 1, black: 1 },
+                { move: "e5", white: 30, draw: 20, black: 50 },
+            ],
+            referenceOpenings: [],
+            engineMoves: [
+                { san: "c5", scoreCpForSide: 90, rank: 1, source: "lichess" },
+                { san: "e5", scoreCpForSide: 40, rank: 2, source: "lichess" },
+            ],
+        });
+
+        expect(choice?.move).toBe("e5");
+        expect(choice?.databaseRank).toBe(1);
+    });
+
     test("practical prep builder prioritizes database WDL over engine rank", () => {
         const settings = normalizePrepBuilderSettings({ mode: "practical" });
         const choice = choosePrepBuilderMove({
@@ -432,6 +454,33 @@ describe("opponent prep helpers", () => {
         expect(getPrepBuilderEffectiveMaxPly({ branchShare: 0.006, settings })).toBeLessThan(10);
         expect(commonPolicy.moveLimit).toBeGreaterThan(rarePolicy.moveLimit);
         expect(commonPolicy.minMoveShare).toBeLessThan(rarePolicy.minMoveShare);
+    });
+
+    test("prep builder raises the evidence floor for huge reference databases", () => {
+        const deep = normalizePrepBuilderSettings({ mode: "smart", size: "deep" });
+        const smallSourceFloor = getPrepBuilderEvidenceMinGames({
+            settings: deep,
+            rootGames: 500,
+            ply: 20,
+        });
+        const lichessFloor = getPrepBuilderEvidenceMinGames({
+            settings: deep,
+            rootGames: 60_000_000,
+            ply: 20,
+        });
+
+        expect(smallSourceFloor).toBe(deep.minOpponentGames);
+        expect(lichessFloor).toBeGreaterThan(25);
+        expect(
+            getPrepBuilderStopReason({
+                branchShare: 0.12,
+                depthShare: 0.35,
+                ply: 20,
+                availableGames: 14,
+                minGames: lichessFloor,
+                settings: deep,
+            }),
+        ).toBe("Not enough games left");
     });
 
     test("prep builder keeps depth for lines made from common local replies", () => {

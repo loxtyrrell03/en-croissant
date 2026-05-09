@@ -118,6 +118,41 @@ export function hasPrepBuilderDatabaseCandidates(openings: Opening[], minGames: 
     return getPlayableOpenings(openings).some((opening) => getOpeningTotal(opening) >= minGames);
 }
 
+export function getPrepBuilderEvidenceMinGames({
+    settings,
+    rootGames,
+    ply,
+}: {
+    settings: PrepBuilderSettings;
+    rootGames: number | null | undefined;
+    ply: number;
+}) {
+    const base = Math.max(1, settings.minOpponentGames);
+    if (!rootGames || rootGames < 10_000) return base;
+
+    const sourceFloor =
+        rootGames >= 1_000_000
+            ? settings.size === "deep"
+                ? 25
+                : settings.size === "quick"
+                  ? 80
+                  : 50
+            : rootGames >= 100_000
+              ? settings.size === "deep"
+                  ? 10
+                  : settings.size === "quick"
+                    ? 30
+                    : 20
+              : settings.size === "deep"
+                ? 4
+                : settings.size === "quick"
+                  ? 10
+                  : 6;
+    const depthMultiplier = ply >= 18 ? 1.35 : ply >= 12 ? 1.15 : 1;
+
+    return Math.max(base, Math.ceil(sourceFloor * depthMultiplier));
+}
+
 export function normalizePrepBuilderSettings(
     settings: Partial<PrepBuilderSettings> | null | undefined,
 ): PrepBuilderSettings {
@@ -500,12 +535,14 @@ export function getPrepBuilderStopReason({
     depthShare = branchShare,
     ply,
     availableGames,
+    minGames,
     settings,
 }: {
     branchShare: number;
     depthShare?: number;
     ply: number;
     availableGames?: number | null;
+    minGames?: number;
     settings: PrepBuilderSettings;
 }) {
     if (ply >= getPrepBuilderEffectiveMaxPly({ branchShare: depthShare, settings })) {
@@ -513,7 +550,9 @@ export function getPrepBuilderStopReason({
     }
     if (depthShare * 100 < settings.minBranchShare) return "Line became too rare";
     if (availableGames !== undefined && availableGames !== null) {
-        if (availableGames < settings.minOpponentGames) return "Not enough games left";
+        if (availableGames < Math.max(1, minGames ?? settings.minOpponentGames)) {
+            return "Not enough games left";
+        }
     }
     return null;
 }
@@ -542,15 +581,21 @@ export function choosePrepBuilderMove({
     engineMoves = [],
     userColor,
     settings,
+    minGames,
 }: {
     opponentOpenings: Opening[];
     referenceOpenings?: Opening[];
     engineMoves?: PrepBuilderEngineMove[];
     userColor: PrepColor;
     settings: PrepBuilderSettings;
+    minGames?: number;
 }): PrepBuilderMoveChoice | null {
+    const requiredGames = Math.max(1, minGames ?? settings.minOpponentGames);
     const playableOpponent = getPlayableOpenings(opponentOpenings);
     const playableReference = getPlayableOpenings(referenceOpenings);
+    const eligibleOpponent = playableOpponent.filter(
+        (opening) => getOpeningTotal(opening) >= requiredGames,
+    );
     const opponentTotal = playableOpponent.reduce((sum, opening) => sum + getOpeningTotal(opening), 0);
     const referenceTotal = playableReference.reduce(
         (sum, opening) => sum + getOpeningTotal(opening),
@@ -573,15 +618,13 @@ export function choosePrepBuilderMove({
             ? Math.max(...scoredEngineMoves.map((move) => move.scoreCpForSide!))
             : null;
     const engineSafetyLimit = getPrepBuilderEngineSafetyLimit(scoredEngineMoves, settings);
-    if (!hasPrepBuilderDatabaseCandidates(playableOpponent, settings.minOpponentGames)) return null;
+    if (eligibleOpponent.length === 0) return null;
 
-    const databaseRanks = getPrepBuilderDatabaseRanks(playableOpponent, userColor);
+    const databaseRanks = getPrepBuilderDatabaseRanks(eligibleOpponent, userColor);
     const moves = new Set<string>();
 
-    for (const opening of playableOpponent) {
-        if (getOpeningTotal(opening) >= settings.minOpponentGames) {
-            moves.add(normalizeSanForPrep(opening.move));
-        }
+    for (const opening of eligibleOpponent) {
+        moves.add(normalizeSanForPrep(opening.move));
     }
 
     const scoredChoices = Array.from(moves)
@@ -1181,7 +1224,7 @@ function getPrepBuilderMoveReasons({
     if (engine) {
         reasons.push(
             `Engine: ${
-                engine.rank !== null
+                engine.rank !== null && engine.rank > 0
                     ? `${formatOrdinal(engine.rank)} best`
                     : "rank unavailable"
             }`,
