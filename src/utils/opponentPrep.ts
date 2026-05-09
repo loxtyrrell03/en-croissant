@@ -45,7 +45,6 @@ export type OpponentPrepBranchStats = {
 export type PrepBuilderSettings = {
     mode: "smart" | "engine" | "practical";
     size: "quick" | "balanced" | "deep";
-    maxMoves: number;
     maxPly: number;
     opponentMoveLimit: number;
     minOpponentGames: number;
@@ -87,9 +86,8 @@ const DEFAULT_STATS_MAX_POSITIONS = 12;
 export const DEFAULT_PREP_BUILDER_SETTINGS: PrepBuilderSettings = {
     mode: "smart",
     size: "balanced",
-    maxMoves: 80,
     maxPly: 22,
-    opponentMoveLimit: 8,
+    opponentMoveLimit: 24,
     minOpponentGames: 2,
     minOpponentMoveShare: 5,
     minBranchShare: 0.25,
@@ -123,12 +121,11 @@ export function normalizePrepBuilderSettings(
     return {
         mode,
         size,
-        maxMoves: clampInteger(settings?.maxMoves, 4, 240, sizePreset.maxMoves),
         maxPly: clampInteger(settings?.maxPly, 2, 60, sizePreset.maxPly),
         opponentMoveLimit: clampInteger(
             settings?.opponentMoveLimit,
             1,
-            20,
+            120,
             sizePreset.opponentMoveLimit,
         ),
         minOpponentGames: clampInteger(
@@ -755,25 +752,22 @@ function getPrepBuilderSizePreset(size: PrepBuilderSettings["size"]) {
     switch (size) {
         case "quick":
             return {
-                maxMoves: 16,
                 maxPly: 8,
-                opponentMoveLimit: 3,
+                opponentMoveLimit: 8,
                 minOpponentGames: 2,
                 minOpponentMoveShare: 15,
                 minBranchShare: 5,
             };
         case "deep":
             return {
-                maxMoves: 180,
                 maxPly: 40,
-                opponentMoveLimit: 14,
+                opponentMoveLimit: 100,
                 minOpponentGames: 2,
                 minOpponentMoveShare: 1,
                 minBranchShare: 0.02,
             };
         case "balanced":
             return {
-                maxMoves: DEFAULT_PREP_BUILDER_SETTINGS.maxMoves,
                 maxPly: DEFAULT_PREP_BUILDER_SETTINGS.maxPly,
                 opponentMoveLimit: DEFAULT_PREP_BUILDER_SETTINGS.opponentMoveLimit,
                 minOpponentGames: DEFAULT_PREP_BUILDER_SETTINGS.minOpponentGames,

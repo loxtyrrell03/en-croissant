@@ -243,9 +243,8 @@ describe("opponent prep helpers", () => {
         const quick = normalizePrepBuilderSettings({ size: "quick" });
         const deep = normalizePrepBuilderSettings({ size: "deep" });
 
-        expect(quick.maxMoves).toBeLessThan(deep.maxMoves);
+        expect("maxMoves" in quick).toBe(false);
         expect(quick.minOpponentMoveShare).toBeGreaterThan(deep.minOpponentMoveShare);
-        expect(deep.maxMoves).toBeGreaterThan(100);
         expect(deep.opponentMoveLimit).toBeGreaterThan(quick.opponentMoveLimit);
         expect(deep.minOpponentMoveShare).toBeLessThan(3);
     });

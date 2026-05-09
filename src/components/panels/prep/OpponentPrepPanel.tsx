@@ -331,11 +331,12 @@ function OpponentPrepPanel() {
   }, [currentSearchId]);
 
   const loadOpeningsForFen = useCallback(
-    async (fen: string) => {
+    async (fen: string, moveLimitOverride?: number) => {
       if (prepSource === "local" && !prep.databasePath) return [];
       if (prepSource !== "local" && !explorerToken) return [];
 
-      const cacheKey = `${queryScope}|${fen}`;
+      const moveLimit = moveLimitOverride ?? prep.moveLimit;
+      const cacheKey = `${queryScope}|${moveLimit}|${fen}`;
       const cached = moveCacheRef.current.get(cacheKey);
       if (cached) return cached;
 
@@ -346,7 +347,7 @@ function OpponentPrepPanel() {
           {
             ...lichessOptions,
             player: undefined,
-            moves: Math.max(12, prep.moveLimit),
+            moves: getPrepBuilderExplorerMoveLimit(moveLimit),
           },
           explorerToken,
         );
@@ -356,7 +357,7 @@ function OpponentPrepPanel() {
           fen,
           {
             ...masterOptions,
-            moves: Math.max(12, prep.moveLimit),
+            moves: getPrepBuilderExplorerMoveLimit(moveLimit),
           },
           explorerToken,
         );
@@ -407,11 +408,12 @@ function OpponentPrepPanel() {
   const loadLichessAllOpeningsForFen = useCallback(
     async (fen: string, settings: PrepBuilderSettings) => {
       if (!settings.useLichessAll) return [];
+      const moveLimit = getPrepBuilderReferenceMoveLimit(settings.opponentMoveLimit);
 
       const cacheKey = JSON.stringify({
         source: "builder-lichess-all",
         fen,
-        moves: Math.max(12, settings.opponentMoveLimit * 3),
+        moves: moveLimit,
         lichessOptions,
         auth: explorerToken ? "auth" : "public",
       });
@@ -423,7 +425,7 @@ function OpponentPrepPanel() {
         {
           ...lichessOptions,
           player: undefined,
-          moves: Math.max(12, settings.opponentMoveLimit * 3),
+          moves: moveLimit,
         },
         explorerToken,
       );
@@ -973,6 +975,7 @@ function OpponentPrepPanel() {
 
     const settings = normalizePrepBuilderSettings(prep.builder);
     const userSide = oppositePrepColor(prep.color);
+    const safetyPositionLimit = getPrepBuilderSafetyPositionLimit(settings.size);
     builderCancelRef.current = false;
     setBuilderRunning(true);
     setBuilderNeedsSave(false);
@@ -1028,6 +1031,89 @@ function OpponentPrepPanel() {
       };
     };
 
+    const addUserResponseAtPath = async (
+      task: PrepBuilderQueueItem,
+      countVisit: boolean,
+    ): Promise<PrepBuilderQueueItem | null> => {
+      if (builderCancelRef.current) return null;
+
+      const currentState = store.getState();
+      if (!pathExists(currentState.root, task.path)) return null;
+
+      const node = currentState.getNode(task.path);
+      if (!node) return null;
+
+      const stopReason = getPrepBuilderStopReason({
+        branchShare: task.branchShare,
+        ply: task.ply,
+        settings,
+      });
+      if (stopReason) {
+        stoppedLines += 1;
+        updateStatus(stopReason);
+        return null;
+      }
+
+      if (countVisit) visitedPositions += 1;
+      updateStatus("Choosing your move");
+      const [opponentOpenings, referenceOpenings, engineMoves] = await Promise.all([
+        loadOpeningsForFen(node.fen, settings.opponentMoveLimit).catch(() => []),
+        loadLichessAllOpeningsForFen(node.fen, settings).catch(() => []),
+        loadPrepBuilderEngineMoves(node.fen, userSide, settings).catch(() => []),
+      ]);
+      if (builderCancelRef.current) return null;
+
+      const availableGames = opponentOpenings.reduce(
+        (sum, opening) => sum + getOpeningTotal(opening),
+        0,
+      );
+      const availabilityStop = getPrepBuilderStopReason({
+        branchShare: task.branchShare,
+        ply: task.ply,
+        availableGames,
+        settings,
+      });
+
+      if (availabilityStop && referenceOpenings.length === 0 && engineMoves.length === 0) {
+        stoppedLines += 1;
+        updateStatus(availabilityStop);
+        return null;
+      }
+
+      const choice = choosePrepBuilderMove({
+        opponentOpenings,
+        referenceOpenings,
+        engineMoves,
+        userColor: userSide,
+        settings,
+      });
+
+      if (!choice) {
+        stoppedLines += 1;
+        updateStatus("No supported move found");
+        return null;
+      }
+
+      const child = addMoveWithComment(
+        task.path,
+        choice.move,
+        formatPrepBuilderChoiceComment(choice),
+      );
+      if (!child) {
+        stoppedLines += 1;
+        updateStatus("Could not add chosen move");
+        return null;
+      }
+      touchedTree = true;
+      if (child.created) addedMoves += 1;
+
+      return {
+        path: child.path,
+        branchShare: task.branchShare,
+        ply: task.ply + 1,
+      };
+    };
+
     try {
       const state = store.getState();
       const safeRootPath = pathExists(state.root, prep.rootPath ?? []) ? (prep.rootPath ?? []) : [];
@@ -1039,7 +1125,11 @@ function OpponentPrepPanel() {
         },
       ];
 
-      while (queue.length > 0 && addedMoves < settings.maxMoves && !builderCancelRef.current) {
+      while (
+        queue.length > 0 &&
+        visitedPositions < safetyPositionLimit &&
+        !builderCancelRef.current
+      ) {
         queue.sort(
           (a, b) =>
             getPrepBuilderTaskPriority({ ...b, settings }) -
@@ -1068,7 +1158,7 @@ function OpponentPrepPanel() {
 
         if (turn === prep.color) {
           updateStatus(prepMode === "general" ? "Adding common replies" : "Adding their replies");
-          const openings = await loadOpeningsForFen(node.fen);
+          const openings = await loadOpeningsForFen(node.fen, settings.opponentMoveLimit);
           if (builderCancelRef.current) break;
           const rows = getOpponentPrepMoveRows({
             fen: node.fen,
@@ -1092,14 +1182,27 @@ function OpponentPrepPanel() {
           }
 
           for (const row of rows.slice(0, settings.opponentMoveLimit)) {
-            if (addedMoves >= settings.maxMoves || builderCancelRef.current) break;
+            if (builderCancelRef.current) break;
+
+            const nextBranchShare = task.branchShare * row.share;
+            const nextPly = task.ply + 1;
+            const branchStopReason = getPrepBuilderStopReason({
+              branchShare: nextBranchShare,
+              ply: nextPly,
+              settings,
+            });
+            if (branchStopReason) {
+              stoppedLines += 1;
+              updateStatus(branchStopReason);
+              continue;
+            }
 
             const child = addMoveWithComment(
               task.path,
               row.move,
               formatPrepBuilderOpponentComment({
                 row,
-                branchShare: task.branchShare * row.share,
+                branchShare: nextBranchShare,
                 general: prepMode === "general",
               }),
             );
@@ -1107,75 +1210,26 @@ function OpponentPrepPanel() {
             touchedTree = true;
             if (child.created) addedMoves += 1;
 
-            queue.push({
+            const responseChild = await addUserResponseAtPath({
               path: child.path,
-              branchShare: task.branchShare * row.share,
-              ply: task.ply + 1,
-            });
+              branchShare: nextBranchShare,
+              ply: nextPly,
+            }, true);
+            if (responseChild) queue.push(responseChild);
           }
         } else {
-          updateStatus("Choosing your move");
-          const [opponentOpenings, referenceOpenings, engineMoves] = await Promise.all([
-            loadOpeningsForFen(node.fen).catch(() => []),
-            loadLichessAllOpeningsForFen(node.fen, settings).catch(() => []),
-            loadPrepBuilderEngineMoves(node.fen, userSide, settings).catch(() => []),
-          ]);
-          if (builderCancelRef.current) break;
-          const availableGames = opponentOpenings.reduce(
-            (sum, opening) => sum + getOpeningTotal(opening),
-            0,
-          );
-          const availabilityStop = getPrepBuilderStopReason({
-            branchShare: task.branchShare,
-            ply: task.ply,
-            availableGames,
-            settings,
-          });
-
-          if (availabilityStop && referenceOpenings.length === 0 && engineMoves.length === 0) {
-            stoppedLines += 1;
-            updateStatus(availabilityStop);
-            continue;
-          }
-
-          const choice = choosePrepBuilderMove({
-            opponentOpenings,
-            referenceOpenings,
-            engineMoves,
-            userColor: userSide,
-            settings,
-          });
-
-          if (!choice) {
-            stoppedLines += 1;
-            updateStatus("No supported move found");
-            continue;
-          }
-
-          const child = addMoveWithComment(
-            task.path,
-            choice.move,
-            formatPrepBuilderChoiceComment(choice),
-          );
-          if (!child) {
-            stoppedLines += 1;
-            updateStatus("Could not add chosen move");
-            continue;
-          }
-          touchedTree = true;
-          if (child.created) addedMoves += 1;
-
-          queue.push({
-            path: child.path,
-            branchShare: task.branchShare,
-            ply: task.ply + 1,
-          });
+          const responseChild = await addUserResponseAtPath(task, false);
+          if (responseChild) queue.push(responseChild);
         }
       }
 
       store.getState().goToMove(safeRootPath);
       updateStatus(
-        builderCancelRef.current ? "Stopped" : queue.length > 0 ? "Move budget reached" : "Done",
+        builderCancelRef.current
+          ? "Stopped"
+          : queue.length > 0 && visitedPositions >= safetyPositionLimit
+            ? "Safety stop"
+            : "Done",
       );
       setBuilderNeedsSave(touchedTree);
       notifications.show({
@@ -2067,6 +2121,25 @@ function mergePrepBuilderComment(existing: string, comment: string) {
   return [...kept, `${PREP_BUILDER_COMMENT_PREFIX} ${comment}`].join("\n\n");
 }
 
+function getPrepBuilderSafetyPositionLimit(size: PrepBuilderSettings["size"]) {
+  switch (size) {
+    case "quick":
+      return 300;
+    case "deep":
+      return 2500;
+    case "balanced":
+      return 1200;
+  }
+}
+
+function getPrepBuilderExplorerMoveLimit(moveLimit: number) {
+  return Math.max(12, Math.min(100, moveLimit));
+}
+
+function getPrepBuilderReferenceMoveLimit(moveLimit: number) {
+  return Math.max(20, Math.min(100, moveLimit * 2));
+}
+
 function normalizePrepBuilderSan(value: string) {
   return value
     .trim()
@@ -2091,7 +2164,6 @@ function getPrepBuilderSettingsPatch(
   }
 
   if (patch.size) {
-    delete next.maxMoves;
     delete next.maxPly;
     delete next.opponentMoveLimit;
     delete next.minOpponentGames;
