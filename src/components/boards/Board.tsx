@@ -302,11 +302,11 @@ function openingPracticeMovesSameSan(
 
 function formatOpeningPracticeAssessmentTitle(assessment: OpeningReviewMoveAssessment) {
   if (assessment.label === "good" && !assessment.followedRepertoire) {
-    return "Good move, not best";
+    return "Good move, not repertoire";
   }
 
   if (assessment.label === "okay" && !assessment.followedRepertoire) {
-    return "Okay move, not best";
+    return "Okay move, not repertoire";
   }
 
   if (assessment.label === "best" && assessment.followedRepertoire) {

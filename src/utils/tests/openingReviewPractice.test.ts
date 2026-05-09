@@ -143,6 +143,20 @@ describe("opening review practice move assessment", () => {
         expect(assessment.followedRepertoire).toBe(false);
     });
 
+    test("does not call a near-best repertoire deviation best", () => {
+        const assessment = assessOpeningReviewMove(position(), { san: "d4", uci: "d2d4" }, [
+            cloudMove("e4", "e2e4", 35, 1),
+            cloudMove("d4", "d2d4", 25, 2),
+        ]);
+
+        expect(assessment.quality).toBe("ok");
+        expect(assessment.label).toBe("good");
+        expect(assessment.passed).toBe(true);
+        expect(assessment.bestMoveSan).toBe("e4");
+        expect(assessment.moveLossCp).toBe(10);
+        expect(assessment.followedRepertoire).toBe(false);
+    });
+
     test("keeps a saved repertoire move correct even when ChessDB prefers another move", () => {
         const assessment = assessOpeningReviewMove(
             position({ answer: "d4", answerUci: "d2d4" }),

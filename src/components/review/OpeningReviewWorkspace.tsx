@@ -1271,11 +1271,11 @@ function formatOpeningPracticeFeedbackTitle(
   if (!attemptLabel) return fallback;
 
   if (attemptLabel === "good" && practiceState.followedRepertoire === false) {
-    return "Good move, not best";
+    return "Good move, not repertoire";
   }
 
   if (attemptLabel === "okay" && practiceState.followedRepertoire === false) {
-    return "Okay move, not best";
+    return "Okay move, not repertoire";
   }
 
   if (attemptLabel === "best" && practiceState.followedRepertoire === true) {
@@ -2287,7 +2287,7 @@ function OpeningReviewPanel({
     ? formatOpeningPracticeFeedbackTitle(
         practiceState,
         openingAttemptLabel,
-        isBestAlternative ? "Best" : isOkAlternative ? "Good move, not best" : "Incorrect",
+        isBestAlternative ? "Best" : isOkAlternative ? "Good move, not repertoire" : "Incorrect",
       )
     : undefined;
   const correctFeedbackTitle =
@@ -2320,7 +2320,7 @@ function OpeningReviewPanel({
       ? mistakeReviewSeverityLabel(practiceState.mistakeReviewLabel)
       : "Incorrect"
     : (openingFeedbackTitle ??
-      (isBestAlternative ? "Best" : isOkAlternative ? "Good move, not best" : "Incorrect"));
+      (isBestAlternative ? "Best" : isOkAlternative ? "Good move, not repertoire" : "Incorrect"));
   const roundedMoveLoss =
     practiceState.moveLossCp === undefined ? undefined : Math.round(practiceState.moveLossCp);
   const isTraining = practiceState.phase !== "idle";

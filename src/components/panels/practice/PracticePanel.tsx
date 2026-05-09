@@ -101,6 +101,18 @@ function practiceMoveQualityIcon(
 }
 
 function practiceMoveQualityTitle(practiceState: PracticeState, fallback: string) {
+  if (practiceState.moveQualityLabel === "good" && practiceState.followedRepertoire === false) {
+    return "Good move, not repertoire";
+  }
+
+  if (practiceState.moveQualityLabel === "okay" && practiceState.followedRepertoire === false) {
+    return "Okay move, not repertoire";
+  }
+
+  if (practiceState.moveQualityLabel === "best" && practiceState.followedRepertoire === true) {
+    return "Correct repertoire move";
+  }
+
   return practiceState.moveQualityLabel
     ? mistakeReviewSeverityLabel(practiceState.moveQualityLabel)
     : fallback;

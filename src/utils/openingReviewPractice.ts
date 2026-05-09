@@ -418,7 +418,8 @@ function rankChessDbCloudMoves(position: Position, chessDbMoves?: ChessDbCloudMo
 }
 
 function classifyOpeningReviewAttempt(moveLossCp: number, exactBest: boolean) {
-    return classifyMistakeReviewAttempt(Math.round(moveLossCp), undefined, exactBest);
+    const label = classifyMistakeReviewAttempt(Math.round(moveLossCp), undefined, exactBest);
+    return !exactBest && label === "best" ? "good" : label;
 }
 
 function openingReviewQualityFromLabel(label: MistakeReviewAttemptLabel) {
