@@ -507,7 +507,7 @@ export function getPrepBuilderStopReason({
     if (ply >= getPrepBuilderEffectiveMaxPly({ branchShare: depthShare, settings })) {
         return "Depth cap reached";
     }
-    if (branchShare * 100 < settings.minBranchShare) return "Line became too rare";
+    if (depthShare * 100 < settings.minBranchShare) return "Line became too rare";
     if (availableGames !== undefined && availableGames !== null) {
         if (availableGames < settings.minOpponentGames) return "Not enough games left";
     }

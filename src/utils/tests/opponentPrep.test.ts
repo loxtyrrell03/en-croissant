@@ -371,7 +371,7 @@ describe("opponent prep helpers", () => {
 
         expect(
             getPrepBuilderStopReason({
-                branchShare: 0.01,
+                branchShare: 0.0001,
                 depthShare: 0.35,
                 ply: 20,
                 settings,
@@ -379,11 +379,11 @@ describe("opponent prep helpers", () => {
         ).toBeNull();
         expect(
             getPrepBuilderStopReason({
-                branchShare: 0.01,
-                ply: 20,
+                branchShare: 0.0001,
+                ply: 2,
                 settings,
             }),
-        ).toBe("Depth cap reached");
+        ).toBe("Line became too rare");
     });
 
     test("prep builder treats existing user replies as one forced repertoire move", () => {
