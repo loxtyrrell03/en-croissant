@@ -425,9 +425,65 @@ export function getPrepBuilderTaskPriority({
     ply: number;
     settings: PrepBuilderSettings;
 }) {
-    const shallowBoost = 1 + Math.max(0, 1 - ply / Math.max(1, settings.maxPly)) * 0.35;
+    const commonness = clamp(branchShare / 0.15, 0, 1);
+    const shallowBoost =
+        1 + (1 - commonness) * Math.max(0, 1 - ply / Math.max(1, settings.maxPly)) * 0.35;
+    const depthMomentum = 1 + commonness * clamp(ply / Math.max(1, settings.maxPly), 0, 1) * 0.25;
     const breadthExponent = clamp(settings.breadthBias / 100, 0.2, 1);
-    return Math.pow(branchShare, breadthExponent) * shallowBoost * branchValue;
+    return Math.pow(branchShare, breadthExponent) * shallowBoost * depthMomentum * branchValue;
+}
+
+export function getPrepBuilderEffectiveMaxPly({
+    branchShare,
+    settings,
+}: {
+    branchShare: number;
+    settings: PrepBuilderSettings;
+}) {
+    const percent = branchShare * 100;
+    if (percent >= 15) return settings.maxPly;
+    if (percent >= 6) return Math.max(8, Math.round(settings.maxPly * 0.75));
+    if (percent >= 2) return Math.max(6, Math.round(settings.maxPly * 0.45));
+
+    const rareDepth = settings.size === "deep" ? 6 : settings.size === "quick" ? 3 : 4;
+    return Math.min(settings.maxPly, rareDepth);
+}
+
+export function getPrepBuilderReplyPolicy({
+    branchShare,
+    settings,
+}: {
+    branchShare: number;
+    settings: PrepBuilderSettings;
+}) {
+    const percent = branchShare * 100;
+    const fullLimit = Math.max(1, settings.opponentMoveLimit);
+
+    if (percent >= 15) {
+        return {
+            moveLimit: fullLimit,
+            minMoveShare: settings.minOpponentMoveShare,
+        };
+    }
+
+    if (percent >= 6) {
+        return {
+            moveLimit: Math.max(6, Math.ceil(fullLimit * 0.55)),
+            minMoveShare: Math.max(settings.minOpponentMoveShare, settings.size === "deep" ? 2 : 5),
+        };
+    }
+
+    if (percent >= 2) {
+        return {
+            moveLimit: Math.max(4, Math.ceil(fullLimit * 0.25)),
+            minMoveShare: Math.max(settings.minOpponentMoveShare, settings.size === "deep" ? 5 : 10),
+        };
+    }
+
+    return {
+        moveLimit: Math.max(2, Math.ceil(fullLimit * 0.08)),
+        minMoveShare: Math.max(settings.minOpponentMoveShare, settings.size === "deep" ? 10 : 15),
+    };
 }
 
 export function getPrepBuilderStopReason({
@@ -441,7 +497,9 @@ export function getPrepBuilderStopReason({
     availableGames?: number | null;
     settings: PrepBuilderSettings;
 }) {
-    if (ply >= settings.maxPly) return "Depth cap reached";
+    if (ply >= getPrepBuilderEffectiveMaxPly({ branchShare, settings })) {
+        return "Depth cap reached";
+    }
     if (branchShare * 100 < settings.minBranchShare) return "Line became too rare";
     if (availableGames !== undefined && availableGames !== null) {
         if (availableGames < settings.minOpponentGames) return "Not enough games left";

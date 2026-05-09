@@ -9,6 +9,8 @@ import {
     getOpponentPrepBranchStats,
     getOpponentPrepMoveRows,
     getPrepBuilderBranchValue,
+    getPrepBuilderEffectiveMaxPly,
+    getPrepBuilderReplyPolicy,
     getPrepBuilderTaskPriority,
     normalizePrepBuilderSettings,
 } from "@/utils/opponentPrep";
@@ -314,6 +316,19 @@ describe("opponent prep helpers", () => {
                 settings,
             }),
         );
+    });
+
+    test("prep builder gives common lines more depth and reply breadth than rare lines", () => {
+        const settings = normalizePrepBuilderSettings({ mode: "smart", size: "deep" });
+        const commonPolicy = getPrepBuilderReplyPolicy({ branchShare: 0.22, settings });
+        const rarePolicy = getPrepBuilderReplyPolicy({ branchShare: 0.006, settings });
+
+        expect(getPrepBuilderEffectiveMaxPly({ branchShare: 0.22, settings })).toBe(
+            settings.maxPly,
+        );
+        expect(getPrepBuilderEffectiveMaxPly({ branchShare: 0.006, settings })).toBeLessThan(10);
+        expect(commonPolicy.moveLimit).toBeGreaterThan(rarePolicy.moveLimit);
+        expect(commonPolicy.minMoveShare).toBeLessThan(rarePolicy.minMoveShare);
     });
 
     test("prep builder size presets hide depth thresholds behind simple choices", () => {

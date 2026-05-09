@@ -72,6 +72,7 @@ import {
   getOpponentPrepBranchStats,
   getOpponentPrepMoveRows,
   getPrepBuilderBranchValue,
+  getPrepBuilderReplyPolicy,
   getPrepBuilderStopReason,
   getPrepBuilderTaskPriority,
   normalizePrepBuilderSettings,
@@ -993,14 +994,29 @@ function OpponentPrepPanel() {
     let visitedPositions = 0;
     let stoppedLines = 0;
     let touchedTree = false;
+    let currentPhase = "Starting";
+    let lastPublishedAt = 0;
+    let lastYieldWork = 0;
 
-    const updateStatus = (phase: string) => {
+    const updateStatus = (phase: string, force = false) => {
+      currentPhase = phase;
+      const now = Date.now();
+      if (!force && now - lastPublishedAt < 120) return;
+      lastPublishedAt = now;
       setBuilderStatus({
         phase,
         addedMoves,
         visitedPositions,
         stoppedLines,
       });
+    };
+
+    const yieldToBuilderUi = async (force = false) => {
+      const work = addedMoves + visitedPositions + stoppedLines;
+      if (!force && work - lastYieldWork < 6) return;
+      lastYieldWork = work;
+      updateStatus(currentPhase, true);
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
     };
 
     const addMoveWithComment = (
@@ -1108,6 +1124,7 @@ function OpponentPrepPanel() {
       }
       touchedTree = true;
       if (child.created) addedMoves += 1;
+      await yieldToBuilderUi();
 
       return {
         path: child.path,
@@ -1161,21 +1178,25 @@ function OpponentPrepPanel() {
 
         if (turn === prep.color) {
           updateStatus(prepMode === "general" ? "Adding common replies" : "Adding their replies");
-          const openings = await loadOpeningsForFen(node.fen, settings.opponentMoveLimit);
+          const replyPolicy = getPrepBuilderReplyPolicy({
+            branchShare: task.branchShare,
+            settings,
+          });
+          const openings = await loadOpeningsForFen(node.fen, replyPolicy.moveLimit);
           if (builderCancelRef.current) break;
           const rows = getOpponentPrepMoveRows({
             fen: node.fen,
             node,
             openings,
             minGames: settings.minOpponentGames,
-            moveLimit: Math.max(settings.opponentMoveLimit, 1),
+            moveLimit: replyPolicy.moveLimit,
             completedBranches: prep.completedBranches,
             skippedBranches: prep.skippedBranches,
           }).filter(
             (row) =>
               row.status !== "skipped" &&
               row.total >= settings.minOpponentGames &&
-              row.share * 100 >= settings.minOpponentMoveShare,
+              row.share * 100 >= replyPolicy.minMoveShare,
           );
 
           if (rows.length === 0) {
@@ -1184,7 +1205,7 @@ function OpponentPrepPanel() {
             continue;
           }
 
-          for (const row of rows.slice(0, settings.opponentMoveLimit)) {
+          for (const row of rows.slice(0, replyPolicy.moveLimit)) {
             if (builderCancelRef.current) break;
 
             const nextBranchShare = task.branchShare * row.share;
@@ -1225,11 +1246,13 @@ function OpponentPrepPanel() {
               ply: nextPly,
             }, true);
             if (responseChild) queue.push(responseChild);
+            await yieldToBuilderUi();
           }
         } else {
           const responseChild = await addUserResponseAtPath(task, false);
           if (responseChild) queue.push(responseChild);
         }
+        await yieldToBuilderUi();
       }
 
       store.getState().goToMove(safeRootPath);
@@ -1239,6 +1262,7 @@ function OpponentPrepPanel() {
           : queue.length > 0 && visitedPositions >= safetyPositionLimit
             ? "Safety stop"
             : "Done",
+        true,
       );
       setBuilderNeedsSave(touchedTree);
       notifications.show({
