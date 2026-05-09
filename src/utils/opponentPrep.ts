@@ -486,6 +486,10 @@ export function getPrepBuilderReplyPolicy({
     };
 }
 
+export function getPrepBuilderUserResponseChildIndex(node: TreeNode) {
+    return node.children.length > 0 ? 0 : null;
+}
+
 export function getPrepBuilderStopReason({
     branchShare,
     ply,

@@ -12,6 +12,7 @@ import {
     getPrepBuilderEffectiveMaxPly,
     getPrepBuilderReplyPolicy,
     getPrepBuilderTaskPriority,
+    getPrepBuilderUserResponseChildIndex,
     normalizePrepBuilderSettings,
 } from "@/utils/opponentPrep";
 
@@ -329,6 +330,16 @@ describe("opponent prep helpers", () => {
         expect(getPrepBuilderEffectiveMaxPly({ branchShare: 0.006, settings })).toBeLessThan(10);
         expect(commonPolicy.moveLimit).toBeGreaterThan(rarePolicy.moveLimit);
         expect(commonPolicy.minMoveShare).toBeLessThan(rarePolicy.minMoveShare);
+    });
+
+    test("prep builder treats existing user replies as one forced repertoire move", () => {
+        const store = createTreeStore();
+        store.getState().makeMove({ payload: "e4" });
+        store.getState().goToMove([]);
+        store.getState().makeMove({ payload: "d4" });
+
+        expect(store.getState().root.children.map((child) => child.san)).toEqual(["e4", "d4"]);
+        expect(getPrepBuilderUserResponseChildIndex(store.getState().root)).toBe(0);
     });
 
     test("prep builder size presets hide depth thresholds behind simple choices", () => {

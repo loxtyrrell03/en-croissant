@@ -75,6 +75,7 @@ import {
   getPrepBuilderReplyPolicy,
   getPrepBuilderStopReason,
   getPrepBuilderTaskPriority,
+  getPrepBuilderUserResponseChildIndex,
   normalizePrepBuilderSettings,
   oppositePrepColor,
   pathExists,
@@ -1051,7 +1052,6 @@ function OpponentPrepPanel() {
 
     const addUserResponseAtPath = async (
       task: PrepBuilderQueueItem,
-      countVisit: boolean,
     ): Promise<PrepBuilderQueueItem | null> => {
       if (builderCancelRef.current) return null;
 
@@ -1072,7 +1072,16 @@ function OpponentPrepPanel() {
         return null;
       }
 
-      if (countVisit) visitedPositions += 1;
+      const existingResponseIndex = getPrepBuilderUserResponseChildIndex(node);
+      if (existingResponseIndex !== null) {
+        return {
+          path: [...task.path, existingResponseIndex],
+          branchShare: task.branchShare,
+          branchValue: task.branchValue,
+          ply: task.ply + 1,
+        };
+      }
+
       updateStatus("Choosing your move");
       const [opponentOpenings, referenceOpenings, engineMoves] = await Promise.all([
         loadOpeningsForFen(node.fen, settings.opponentMoveLimit).catch(() => []),
@@ -1173,10 +1182,10 @@ function OpponentPrepPanel() {
           continue;
         }
 
-        visitedPositions += 1;
         const turn = getFenTurn(node.fen);
 
         if (turn === prep.color) {
+          visitedPositions += 1;
           updateStatus(prepMode === "general" ? "Adding common replies" : "Adding their replies");
           const replyPolicy = getPrepBuilderReplyPolicy({
             branchShare: task.branchShare,
@@ -1244,12 +1253,12 @@ function OpponentPrepPanel() {
               branchShare: nextBranchShare,
               branchValue: nextBranchValue,
               ply: nextPly,
-            }, true);
+            });
             if (responseChild) queue.push(responseChild);
             await yieldToBuilderUi();
           }
         } else {
-          const responseChild = await addUserResponseAtPath(task, false);
+          const responseChild = await addUserResponseAtPath(task);
           if (responseChild) queue.push(responseChild);
         }
         await yieldToBuilderUi();
