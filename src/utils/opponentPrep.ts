@@ -140,7 +140,7 @@ export function normalizePrepBuilderSettings(
         ),
         minOpponentMoveShare: clampNumber(
             settings?.minOpponentMoveShare,
-            1,
+            0,
             80,
             sizePreset.minOpponentMoveShare,
         ),
@@ -164,9 +164,7 @@ export function normalizePrepBuilderSettings(
 }
 
 export function sortOpponentPrepOpenings(openings: Opening[], minGames: number, limit: number) {
-    return [...openings]
-        .filter((opening) => opening.move !== "*" && opening.move !== "Total")
-        .filter((opening) => getOpeningTotal(opening) >= Math.max(1, minGames))
+    return getOpponentPrepEligibleOpenings(openings, minGames)
         .sort(
             (a, b) =>
                 getOpeningTotal(b) - getOpeningTotal(a) ||
@@ -194,7 +192,10 @@ export function getOpponentPrepMoveRows({
     skippedBranches: Record<string, number>;
 }): OpponentPrepMoveRow[] {
     const sorted = sortOpponentPrepOpenings(openings, minGames, moveLimit);
-    const totalGames = sorted.reduce((sum, opening) => sum + getOpeningTotal(opening), 0);
+    const totalGames = getOpponentPrepEligibleOpenings(openings, minGames).reduce(
+        (sum, opening) => sum + getOpeningTotal(opening),
+        0,
+    );
 
     return sorted.map((opening) => {
         const key = getOpponentPrepBranchKey(fen, opening.move);
@@ -863,6 +864,12 @@ function getBranchReplyCredit(status: OpponentPrepBranchStatus) {
 
 function getPlayableOpenings(openings: Opening[]) {
     return openings.filter((opening) => opening.move !== "*" && opening.move !== "Total");
+}
+
+function getOpponentPrepEligibleOpenings(openings: Opening[], minGames: number) {
+    return getPlayableOpenings(openings).filter(
+        (opening) => getOpeningTotal(opening) >= Math.max(1, minGames),
+    );
 }
 
 function isPrepBuilderMode(value: unknown): value is PrepBuilderSettings["mode"] {

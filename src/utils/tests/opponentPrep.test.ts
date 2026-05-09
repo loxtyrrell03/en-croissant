@@ -80,6 +80,39 @@ describe("opponent prep helpers", () => {
         expect(cappedRows.find((row) => row.status === "new")?.move).toBeUndefined();
     });
 
+    test("uses the full source play rate when filtering builder branches", () => {
+        const store = createTreeStore();
+        const state = store.getState();
+        const openings = [
+            { move: "e4", white: 70, draw: 0, black: 0 },
+            { move: "d4", white: 20, draw: 0, black: 0 },
+            { move: "c4", white: 5, draw: 0, black: 0 },
+            { move: "Nf3", white: 5, draw: 0, black: 0 },
+        ];
+
+        const visibleRows = getOpponentPrepMoveRows({
+            fen: state.root.fen,
+            node: state.root,
+            openings,
+            minGames: 1,
+            moveLimit: 1,
+            completedBranches: {},
+            skippedBranches: {},
+        });
+        const thresholdRows = getOpponentPrepMoveRows({
+            fen: state.root.fen,
+            node: state.root,
+            openings,
+            minGames: 1,
+            moveLimit: 4,
+            completedBranches: {},
+            skippedBranches: {},
+        }).filter((row) => row.share * 100 >= 10);
+
+        expect(visibleRows[0].share).toBeCloseTo(0.7);
+        expect(thresholdRows.map((row) => row.move)).toEqual(["e4", "d4"]);
+    });
+
     test("finds the latest opponent branch and excludes current branch point when requested", () => {
         const store = createTreeStore();
         store.getState().makeMove({ payload: "e4" });

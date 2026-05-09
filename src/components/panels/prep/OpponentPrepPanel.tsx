@@ -1590,7 +1590,24 @@ function OpponentPrepPanel() {
                 }
                 size={controlSize}
               />
-              <Badge variant="light">{builderSettings.minOpponentMoveShare}%+ replies</Badge>
+              <Tooltip label="Opponent moves below this play rate are ignored by the builder">
+                <NumberInput
+                  label="Min play rate"
+                  suffix="%"
+                  value={builderSettings.minOpponentMoveShare}
+                  onChange={(value) =>
+                    updateBuilderSettings({
+                      minOpponentMoveShare: Math.max(0, Number(value) || 0),
+                    })
+                  }
+                  min={0}
+                  max={80}
+                  step={1}
+                  size={controlSize}
+                  w={dense ? 104 : 128}
+                  aria-label="Minimum opponent play rate"
+                />
+              </Tooltip>
               <Badge variant="light">Lichess All reference</Badge>
               <Badge variant="light">Cloud engine</Badge>
             </Group>
