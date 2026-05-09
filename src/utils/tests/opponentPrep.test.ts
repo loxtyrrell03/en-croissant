@@ -2,11 +2,13 @@ import { describe, expect, test } from "vitest";
 import { createTreeStore } from "@/state/store/tree";
 import {
     collectOpponentBranchPaths,
+    choosePrepBuilderMove,
     findFirstOpponentBranch,
     findLastOpponentBranch,
     findOpponentPrepStart,
     getOpponentPrepBranchStats,
     getOpponentPrepMoveRows,
+    normalizePrepBuilderSettings,
 } from "@/utils/opponentPrep";
 
 describe("opponent prep helpers", () => {
@@ -188,5 +190,60 @@ describe("opponent prep helpers", () => {
         expect(stats.replyCoverage).toBe(0);
         expect(stats.score).toBeLessThan(40);
         expect(stats.missingImportantMoves).toEqual(["Nc3", "Nf3"]);
+    });
+
+    test("smart prep builder prefers a good move where the opponent underperforms reference", () => {
+        const settings = normalizePrepBuilderSettings({ mode: "smart" });
+        const choice = choosePrepBuilderMove({
+            userColor: "black",
+            settings,
+            opponentOpenings: [
+                { move: "e5", white: 18, draw: 2, black: 5 },
+                { move: "c5", white: 8, draw: 4, black: 18 },
+            ],
+            referenceOpenings: [
+                { move: "e5", white: 45, draw: 20, black: 35 },
+                { move: "c5", white: 42, draw: 20, black: 38 },
+            ],
+            engineMoves: [
+                { san: "e5", scoreCpForSide: 25, rank: 1, source: "lichess" },
+                { san: "c5", scoreCpForSide: 5, rank: 2, source: "lichess" },
+            ],
+        });
+
+        expect(choice?.move).toBe("c5");
+        expect(choice?.reasons.some((reason) => reason.includes("worse than Lichess All"))).toBe(
+            true,
+        );
+    });
+
+    test("engine prep builder keeps the top engine move when mode asks for it", () => {
+        const settings = normalizePrepBuilderSettings({ mode: "engine" });
+        const choice = choosePrepBuilderMove({
+            userColor: "black",
+            settings,
+            opponentOpenings: [
+                { move: "e5", white: 18, draw: 2, black: 5 },
+                { move: "c5", white: 8, draw: 4, black: 18 },
+            ],
+            referenceOpenings: [
+                { move: "e5", white: 45, draw: 20, black: 35 },
+                { move: "c5", white: 42, draw: 20, black: 38 },
+            ],
+            engineMoves: [
+                { san: "e5", scoreCpForSide: 25, rank: 1, source: "lichess" },
+                { san: "c5", scoreCpForSide: 5, rank: 2, source: "lichess" },
+            ],
+        });
+
+        expect(choice?.move).toBe("e5");
+    });
+
+    test("prep builder size presets hide depth thresholds behind simple choices", () => {
+        const quick = normalizePrepBuilderSettings({ size: "quick" });
+        const deep = normalizePrepBuilderSettings({ size: "deep" });
+
+        expect(quick.maxMoves).toBeLessThan(deep.maxMoves);
+        expect(quick.minOpponentMoveShare).toBeGreaterThan(deep.minOpponentMoveShare);
     });
 });

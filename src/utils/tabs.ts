@@ -210,12 +210,14 @@ export async function saveToFile({
     setCurrentTab,
     store,
     isUserSave,
+    forceSaveAs,
 }: {
     dir: string;
     tab: Tab | undefined;
     setCurrentTab: React.Dispatch<React.SetStateAction<Tab>>;
     store: StoreApi<TreeStoreState>;
     isUserSave?: boolean;
+    forceSaveAs?: boolean;
 }) {
     let filePath: string;
     const currentOrigin = tab?.gameOrigin;
@@ -233,13 +235,13 @@ export async function saveToFile({
         variations: true,
     })}\n\n`;
 
-    if (databaseOrigin) {
+    if (databaseOrigin && !forceSaveAs) {
         await commands.writeDbGame(databaseOrigin.database, databaseOrigin.gameId, pgn);
         store.getState().save();
-        return;
+        return true;
     }
 
-    if (fileOrigin && !(isTempFile && isUserSave)) {
+    if (fileOrigin && !forceSaveAs && !(isTempFile && isUserSave)) {
         filePath = fileOrigin.file.path;
     } else {
         const headers = store.getState().headers;
@@ -255,7 +257,7 @@ export async function saveToFile({
             ],
         });
         if (userChoice === null) {
-            return;
+            return false;
         }
         if (userChoice.endsWith(".pgn")) {
             filePath = userChoice;
@@ -269,8 +271,8 @@ export async function saveToFile({
             await copyFile(fileOrigin.file.path, filePath);
         }
 
-        const numGames = isTempFile && fileOrigin ? fileOrigin.file.numGames : 1;
-        const gameNumber = fileOrigin?.gameNumber ?? 0;
+        const numGames = forceSaveAs ? 1 : isTempFile && fileOrigin ? fileOrigin.file.numGames : 1;
+        const gameNumber = forceSaveAs ? 0 : (fileOrigin?.gameNumber ?? 0);
         setCurrentTab((prev) => {
             return {
                 ...prev,
@@ -282,7 +284,7 @@ export async function saveToFile({
                         name: filePath,
                         path: filePath,
                         numGames,
-                        metadata: {
+                        metadata: fileOrigin?.file.metadata ?? {
                             tags: [],
                             type: "game",
                         },
@@ -292,6 +294,7 @@ export async function saveToFile({
             };
         });
     }
-    await commands.writeGame(filePath, fileOrigin?.gameNumber ?? 0, pgn);
+    await commands.writeGame(filePath, forceSaveAs ? 0 : (fileOrigin?.gameNumber ?? 0), pgn);
     store.getState().save();
+    return true;
 }

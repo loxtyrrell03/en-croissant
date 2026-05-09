@@ -42,8 +42,63 @@ export type OpponentPrepBranchStats = {
     missingImportantMoves: string[];
 };
 
+export type PrepBuilderSettings = {
+    mode: "smart" | "engine" | "practical";
+    size: "quick" | "balanced" | "deep";
+    maxMoves: number;
+    maxPly: number;
+    opponentMoveLimit: number;
+    minOpponentGames: number;
+    minOpponentMoveShare: number;
+    minBranchShare: number;
+    breadthBias: number;
+    engineWeight: number;
+    maxEngineCpLoss: number;
+    useCloudEngine: boolean;
+    useLichessAll: boolean;
+};
+
+export type PrepBuilderEngineMove = {
+    san: string;
+    scoreCpForSide: number | null;
+    rank: number | null;
+    source: "lichess" | "chessdb";
+};
+
+export type PrepBuilderMoveChoice = {
+    move: string;
+    score: number;
+    annotation: "!" | "!?";
+    engineRank: number | null;
+    engineCpLoss: number | null;
+    engineSource: PrepBuilderEngineMove["source"] | null;
+    opponentGames: number;
+    opponentShare: number;
+    opponentScore: number | null;
+    referenceOpponentScore: number | null;
+    opponentReferenceDelta: number | null;
+    referenceGames: number;
+    referenceShare: number;
+    reasons: string[];
+};
+
 const DEFAULT_STATS_MAX_PLY = 10;
 const DEFAULT_STATS_MAX_POSITIONS = 12;
+export const DEFAULT_PREP_BUILDER_SETTINGS: PrepBuilderSettings = {
+    mode: "smart",
+    size: "balanced",
+    maxMoves: 18,
+    maxPly: 12,
+    opponentMoveLimit: 4,
+    minOpponentGames: 2,
+    minOpponentMoveShare: 10,
+    minBranchShare: 4,
+    breadthBias: 100,
+    engineWeight: 55,
+    maxEngineCpLoss: 70,
+    useCloudEngine: true,
+    useLichessAll: true,
+};
 
 export function getFenTurn(fen: string): PrepColor {
     return fen.trim().split(/\s+/)[1] === "b" ? "black" : "white";
@@ -55,6 +110,56 @@ export function oppositePrepColor(color: PrepColor): PrepColor {
 
 export function getOpeningTotal(opening: Pick<Opening, "white" | "draw" | "black">) {
     return opening.white + opening.draw + opening.black;
+}
+
+export function normalizePrepBuilderSettings(
+    settings: Partial<PrepBuilderSettings> | null | undefined,
+): PrepBuilderSettings {
+    const mode = isPrepBuilderMode(settings?.mode) ? settings.mode : "smart";
+    const size = isPrepBuilderSize(settings?.size) ? settings.size : "balanced";
+    const sizePreset = getPrepBuilderSizePreset(size);
+    const modePreset = getPrepBuilderModePreset(mode);
+
+    return {
+        mode,
+        size,
+        maxMoves: clampInteger(settings?.maxMoves, 4, 80, sizePreset.maxMoves),
+        maxPly: clampInteger(settings?.maxPly, 2, 32, sizePreset.maxPly),
+        opponentMoveLimit: clampInteger(
+            settings?.opponentMoveLimit,
+            1,
+            10,
+            sizePreset.opponentMoveLimit,
+        ),
+        minOpponentGames: clampInteger(
+            settings?.minOpponentGames,
+            1,
+            100,
+            sizePreset.minOpponentGames,
+        ),
+        minOpponentMoveShare: clampNumber(
+            settings?.minOpponentMoveShare,
+            1,
+            80,
+            sizePreset.minOpponentMoveShare,
+        ),
+        minBranchShare: clampNumber(
+            settings?.minBranchShare,
+            0,
+            50,
+            sizePreset.minBranchShare,
+        ),
+        breadthBias: clampNumber(settings?.breadthBias, 0, 100, modePreset.breadthBias),
+        engineWeight: clampNumber(settings?.engineWeight, 0, 100, modePreset.engineWeight),
+        maxEngineCpLoss: clampInteger(
+            settings?.maxEngineCpLoss,
+            0,
+            300,
+            modePreset.maxEngineCpLoss,
+        ),
+        useCloudEngine: settings?.useCloudEngine ?? DEFAULT_PREP_BUILDER_SETTINGS.useCloudEngine,
+        useLichessAll: settings?.useLichessAll ?? DEFAULT_PREP_BUILDER_SETTINGS.useLichessAll,
+    };
 }
 
 export function sortOpponentPrepOpenings(openings: Opening[], minGames: number, limit: number) {
@@ -305,7 +410,220 @@ export async function getOpponentPrepBranchStats({
         startedReplies,
         replyCoverage: coverageWeight > 0 ? weightedCoverage / coverageWeight : 0,
         missingImportantMoves,
-    });
+        });
+}
+
+export function getPrepBuilderTaskPriority({
+    branchShare,
+    ply,
+    settings,
+}: {
+    branchShare: number;
+    ply: number;
+    settings: PrepBuilderSettings;
+}) {
+    const shallowBoost = 1 + Math.max(0, 1 - ply / Math.max(1, settings.maxPly)) * 0.35;
+    return branchShare * shallowBoost;
+}
+
+export function getPrepBuilderStopReason({
+    branchShare,
+    ply,
+    availableGames,
+    settings,
+}: {
+    branchShare: number;
+    ply: number;
+    availableGames?: number | null;
+    settings: PrepBuilderSettings;
+}) {
+    if (ply >= settings.maxPly) return "Depth cap reached";
+    if (branchShare * 100 < settings.minBranchShare) return "Line became too rare";
+    if (availableGames !== undefined && availableGames !== null) {
+        if (availableGames < settings.minOpponentGames) return "Not enough games left";
+    }
+    return null;
+}
+
+export function choosePrepBuilderMove({
+    opponentOpenings,
+    referenceOpenings = [],
+    engineMoves = [],
+    userColor,
+    settings,
+}: {
+    opponentOpenings: Opening[];
+    referenceOpenings?: Opening[];
+    engineMoves?: PrepBuilderEngineMove[];
+    userColor: PrepColor;
+    settings: PrepBuilderSettings;
+}): PrepBuilderMoveChoice | null {
+    const playableOpponent = getPlayableOpenings(opponentOpenings);
+    const playableReference = getPlayableOpenings(referenceOpenings);
+    const opponentTotal = playableOpponent.reduce((sum, opening) => sum + getOpeningTotal(opening), 0);
+    const referenceTotal = playableReference.reduce(
+        (sum, opening) => sum + getOpeningTotal(opening),
+        0,
+    );
+    const opponentBaseline = getWeightedSideScore(playableOpponent, userColor);
+    const referenceBaseline = getWeightedSideScore(playableReference, userColor);
+    const opponentByMove = new Map(
+        playableOpponent.map((opening) => [normalizeSanForPrep(opening.move), opening]),
+    );
+    const referenceByMove = new Map(
+        playableReference.map((opening) => [normalizeSanForPrep(opening.move), opening]),
+    );
+    const engineByMove = new Map(
+        engineMoves.map((move) => [normalizeSanForPrep(move.san), move]),
+    );
+    const scoredEngineMoves = engineMoves.filter((move) => move.scoreCpForSide !== null);
+    const bestEngineScore =
+        scoredEngineMoves.length > 0
+            ? Math.max(...scoredEngineMoves.map((move) => move.scoreCpForSide!))
+            : null;
+    const moves = new Set<string>();
+
+    for (const opening of playableOpponent) {
+        if (getOpeningTotal(opening) >= settings.minOpponentGames) {
+            moves.add(normalizeSanForPrep(opening.move));
+        }
+    }
+    if (settings.useLichessAll) {
+        for (const opening of playableReference.slice(0, Math.max(8, settings.opponentMoveLimit))) {
+            moves.add(normalizeSanForPrep(opening.move));
+        }
+    }
+    if (settings.useCloudEngine) {
+        for (const move of engineMoves.slice(0, Math.max(5, settings.opponentMoveLimit))) {
+            moves.add(normalizeSanForPrep(move.san));
+        }
+    }
+
+    const choices = Array.from(moves)
+        .map<PrepBuilderMoveChoice | null>((moveKey) => {
+            const opponent = opponentByMove.get(moveKey) ?? null;
+            const reference = referenceByMove.get(moveKey) ?? null;
+            const engine = engineByMove.get(moveKey) ?? null;
+            const move = opponent?.move ?? reference?.move ?? engine?.san;
+            if (!move) return null;
+
+            const opponentGames = opponent ? getOpeningTotal(opponent) : 0;
+            const referenceGames = reference ? getOpeningTotal(reference) : 0;
+            const opponentShare = opponentTotal > 0 ? opponentGames / opponentTotal : 0;
+            const referenceShare = referenceTotal > 0 ? referenceGames / referenceTotal : 0;
+            const sideScore = opponent
+                ? getSideScoreForOpening(opponent, userColor)
+                : reference
+                  ? getSideScoreForOpening(reference, userColor)
+                  : null;
+            const referenceSideScore = reference
+                ? getSideScoreForOpening(reference, userColor)
+                : null;
+            const practicalBaseline =
+                opponentTotal > 0
+                    ? opponentBaseline
+                    : referenceTotal > 0
+                      ? referenceBaseline
+                      : 0.5;
+            const resultLift = sideScore === null ? 0 : sideScore - practicalBaseline;
+            const referenceDelta =
+                sideScore !== null && referenceSideScore !== null
+                    ? sideScore - referenceSideScore
+                    : null;
+            const sampleConfidence = clamp(
+                opponentGames / Math.max(settings.minOpponentGames * 4, 1),
+                0,
+                1,
+            );
+            const shareScore = clamp(opponentShare / 0.35, 0, 1);
+            const referenceComparisonScore =
+                referenceDelta === null ? 0.5 : clamp(0.5 + referenceDelta * 2.2, 0, 1);
+            const practicalScore =
+                sideScore === null
+                    ? 0.42
+                    : clamp(0.5 + resultLift * 2.4, 0, 1) * 0.38 +
+                      referenceComparisonScore * 0.34 +
+                      sampleConfidence * 0.16 +
+                      shareScore * 0.12;
+
+            const engineCpLoss =
+                engine?.scoreCpForSide !== null &&
+                engine?.scoreCpForSide !== undefined &&
+                bestEngineScore !== null
+                    ? Math.max(0, bestEngineScore - engine.scoreCpForSide)
+                    : null;
+            const rankScore =
+                engine?.rank !== null && engine?.rank !== undefined
+                    ? clamp(1 - (engine.rank - 1) * 0.14, 0.2, 1)
+                    : engine
+                      ? 0.72
+                      : 0.36;
+            const lossScore =
+                engineCpLoss === null
+                    ? engine
+                        ? 0.72
+                        : 0.36
+                    : settings.maxEngineCpLoss <= 0
+                      ? engineCpLoss <= 0
+                          ? 1
+                          : 0
+                      : clamp(1 - engineCpLoss / Math.max(settings.maxEngineCpLoss, 1), 0, 1);
+            const engineScore = rankScore * 0.35 + lossScore * 0.65;
+            const referenceScore =
+                referenceTotal > 0 && reference
+                    ? clamp(referenceShare / 0.25, 0, 1) * 0.55 +
+                      clamp(0.5 + (getSideScoreForOpening(reference, userColor) - referenceBaseline) * 1.5, 0, 1) *
+                          0.45
+                    : 0.45;
+            const engineWeight = settings.useCloudEngine ? settings.engineWeight / 100 : 0;
+            const practicalWeight = 1 - engineWeight;
+            const blended =
+                engineScore * engineWeight +
+                practicalScore * practicalWeight +
+                (settings.useLichessAll && reference ? (referenceScore - 0.5) * 0.14 : 0);
+            const score = Math.round(clamp(blended, 0, 1) * 100);
+            const opponentScore = sideScore === null ? null : 1 - sideScore;
+            const referenceOpponentScore =
+                referenceSideScore === null ? null : 1 - referenceSideScore;
+            const reasons = getPrepBuilderMoveReasons({
+                engine,
+                engineCpLoss,
+                opponentGames,
+                opponentScore,
+                referenceOpponentScore,
+                opponentReferenceDelta: referenceDelta === null ? null : -referenceDelta,
+                opponentShare,
+                referenceGames,
+                referenceShare,
+            });
+
+            return {
+                move,
+                score,
+                annotation: score >= 72 ? "!" : "!?",
+                engineRank: engine?.rank ?? null,
+                engineCpLoss,
+                engineSource: engine?.source ?? null,
+                opponentGames,
+                opponentShare,
+                opponentScore,
+                referenceOpponentScore,
+                opponentReferenceDelta: referenceDelta === null ? null : -referenceDelta,
+                referenceGames,
+                referenceShare,
+                reasons,
+            };
+        })
+        .filter((choice): choice is PrepBuilderMoveChoice => choice !== null)
+        .sort(
+            (a, b) =>
+                b.score - a.score ||
+                (a.engineRank ?? 99) - (b.engineRank ?? 99) ||
+                b.opponentGames - a.opponentGames ||
+                a.move.localeCompare(b.move),
+        );
+
+    return choices[0] ?? null;
 }
 
 export function collectOpponentBranchPaths({
@@ -423,6 +741,160 @@ function getBranchReplyCredit(status: OpponentPrepBranchStatus) {
     }
 }
 
+function getPlayableOpenings(openings: Opening[]) {
+    return openings.filter((opening) => opening.move !== "*" && opening.move !== "Total");
+}
+
+function isPrepBuilderMode(value: unknown): value is PrepBuilderSettings["mode"] {
+    return value === "smart" || value === "engine" || value === "practical";
+}
+
+function isPrepBuilderSize(value: unknown): value is PrepBuilderSettings["size"] {
+    return value === "quick" || value === "balanced" || value === "deep";
+}
+
+function getPrepBuilderSizePreset(size: PrepBuilderSettings["size"]) {
+    switch (size) {
+        case "quick":
+            return {
+                maxMoves: 10,
+                maxPly: 8,
+                opponentMoveLimit: 3,
+                minOpponentGames: 2,
+                minOpponentMoveShare: 15,
+                minBranchShare: 8,
+            };
+        case "deep":
+            return {
+                maxMoves: 28,
+                maxPly: 16,
+                opponentMoveLimit: 5,
+                minOpponentGames: 2,
+                minOpponentMoveShare: 10,
+                minBranchShare: 2,
+            };
+        case "balanced":
+            return {
+                maxMoves: DEFAULT_PREP_BUILDER_SETTINGS.maxMoves,
+                maxPly: DEFAULT_PREP_BUILDER_SETTINGS.maxPly,
+                opponentMoveLimit: DEFAULT_PREP_BUILDER_SETTINGS.opponentMoveLimit,
+                minOpponentGames: DEFAULT_PREP_BUILDER_SETTINGS.minOpponentGames,
+                minOpponentMoveShare: DEFAULT_PREP_BUILDER_SETTINGS.minOpponentMoveShare,
+                minBranchShare: DEFAULT_PREP_BUILDER_SETTINGS.minBranchShare,
+            };
+    }
+}
+
+function getPrepBuilderModePreset(mode: PrepBuilderSettings["mode"]) {
+    switch (mode) {
+        case "engine":
+            return {
+                engineWeight: 82,
+                breadthBias: 100,
+                maxEngineCpLoss: 45,
+            };
+        case "practical":
+            return {
+                engineWeight: 32,
+                breadthBias: 100,
+                maxEngineCpLoss: 100,
+            };
+        case "smart":
+            return {
+                engineWeight: DEFAULT_PREP_BUILDER_SETTINGS.engineWeight,
+                breadthBias: DEFAULT_PREP_BUILDER_SETTINGS.breadthBias,
+                maxEngineCpLoss: DEFAULT_PREP_BUILDER_SETTINGS.maxEngineCpLoss,
+            };
+    }
+}
+
+function getWeightedSideScore(openings: Opening[], side: PrepColor) {
+    const total = openings.reduce((sum, opening) => sum + getOpeningTotal(opening), 0);
+    if (total <= 0) return 0.5;
+
+    return (
+        openings.reduce(
+            (sum, opening) =>
+                sum + getSideScoreForOpening(opening, side) * getOpeningTotal(opening),
+            0,
+        ) / total
+    );
+}
+
+function getSideScoreForOpening(opening: Pick<Opening, "white" | "draw" | "black">, side: PrepColor) {
+    const total = getOpeningTotal(opening);
+    if (total <= 0) return 0.5;
+
+    const wins = side === "white" ? opening.white : opening.black;
+    return (wins + opening.draw * 0.5) / total;
+}
+
+function getPrepBuilderMoveReasons({
+    engine,
+    engineCpLoss,
+    opponentGames,
+    opponentScore,
+    referenceOpponentScore,
+    opponentReferenceDelta,
+    opponentShare,
+    referenceGames,
+    referenceShare,
+}: {
+    engine: PrepBuilderEngineMove | null;
+    engineCpLoss: number | null;
+    opponentGames: number;
+    opponentScore: number | null;
+    referenceOpponentScore: number | null;
+    opponentReferenceDelta: number | null;
+    opponentShare: number;
+    referenceGames: number;
+    referenceShare: number;
+}) {
+    const reasons: string[] = [];
+
+    if (engine) {
+        const source = engine.source === "lichess" ? "Lichess Cloud" : "ChessDB";
+        if ((engine.rank ?? 1) === 1 && (engineCpLoss ?? 0) <= 5) {
+            reasons.push(`${source} top move`);
+        } else if (engine.rank !== null) {
+            reasons.push(
+                `${source} #${engine.rank}${engineCpLoss !== null ? `, ${Math.round(engineCpLoss)} cp behind top` : ""}`,
+            );
+        } else {
+            reasons.push(`${source} candidate`);
+        }
+    }
+
+    if (opponentGames > 0 && opponentScore !== null) {
+        reasons.push(
+            `Opponent scores ${Math.round(opponentScore * 100)}% in ${opponentGames} game${opponentGames === 1 ? "" : "s"}`,
+        );
+        if (opponentReferenceDelta !== null && referenceOpponentScore !== null) {
+            const delta = Math.round(Math.abs(opponentReferenceDelta) * 100);
+            if (opponentReferenceDelta >= 0.04) {
+                reasons.push(`They outperform Lichess All by ${delta}% here`);
+            } else if (opponentReferenceDelta <= -0.04) {
+                reasons.push(`They score ${delta}% worse than Lichess All here`);
+            }
+        }
+        if (opponentShare >= 0.1) {
+            reasons.push(`${Math.round(opponentShare * 100)}% of their games from here`);
+        }
+    }
+
+    if (referenceGames > 0) {
+        reasons.push(
+            `Lichess All support: ${Math.round(referenceShare * 100)}% share in ${referenceGames} game${referenceGames === 1 ? "" : "s"}`,
+        );
+    }
+
+    if (reasons.length === 0) {
+        reasons.push("Best available balance of engine and database evidence");
+    }
+
+    return reasons.slice(0, 4);
+}
+
 function createBranchStats({
     branchResponseScore,
     depthPly,
@@ -503,4 +975,26 @@ function normalizeSanForPrep(value: string | null | undefined) {
 function getOpeningDateSortValue(opening: Opening) {
     const digits = opening.lastPlayed?.replace(/\D/g, "");
     return digits ? Number(digits.padEnd(8, "0")) : 0;
+}
+
+function clamp(value: number, min: number, max: number) {
+    return Math.min(max, Math.max(min, value));
+}
+
+function clampNumber(
+    value: number | null | undefined,
+    min: number,
+    max: number,
+    fallback: number,
+) {
+    return Number.isFinite(value) ? clamp(Number(value), min, max) : fallback;
+}
+
+function clampInteger(
+    value: number | null | undefined,
+    min: number,
+    max: number,
+    fallback: number,
+) {
+    return Math.round(clampNumber(value, min, max, fallback));
 }

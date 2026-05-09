@@ -25,6 +25,7 @@ import { type Engine, type EngineSettings, engineSchema } from "@/utils/engines"
 import type { EnginePlanReport } from "@/utils/enginePlanExplorer";
 import type { OpeningMoveHealthSidePreference } from "@/utils/openingMoveHealth";
 import type { OnlineGameSource } from "@/utils/onlineGameSource";
+import type { PrepBuilderSettings } from "@/utils/opponentPrep";
 import type { ColoredPlanExplorerLine } from "@/utils/planExplorer";
 import {
     type LichessGamesOptions,
@@ -435,6 +436,7 @@ export type OpponentPrepState = {
     rootPath: number[] | null;
     completedBranches: Record<string, number>;
     skippedBranches: Record<string, number>;
+    builder?: Partial<PrepBuilderSettings>;
 };
 
 const defaultOpponentPrepState = (): OpponentPrepState => ({

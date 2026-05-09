@@ -4,6 +4,8 @@ import {
   Badge,
   Box,
   Button,
+  Collapse,
+  Divider,
   Group,
   NumberInput,
   Progress,
@@ -21,9 +23,12 @@ import {
   IconCheck,
   IconPlayerPlay,
   IconRefresh,
+  IconSettings,
+  IconSparkles,
   IconTarget,
   IconX,
 } from "@tabler/icons-react";
+import { useLoaderData } from "@tanstack/react-router";
 import { isNormal, makeSquare } from "chessops";
 import { parseSan } from "chessops/san";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
@@ -59,21 +64,31 @@ import {
   findFirstOpponentBranch,
   findLastOpponentBranch,
   findOpponentPrepStart,
+  choosePrepBuilderMove,
   getFenTurn,
   getLineSans,
   getOpeningTotal,
   getOpponentPrepBranchKey,
   getOpponentPrepBranchStats,
   getOpponentPrepMoveRows,
+  getPrepBuilderStopReason,
+  getPrepBuilderTaskPriority,
+  normalizePrepBuilderSettings,
   oppositePrepColor,
   pathExists,
   sortOpponentPrepOpenings,
+  type PrepBuilderEngineMove,
+  type PrepBuilderMoveChoice,
+  type PrepBuilderSettings,
   type OpponentPrepBranchStats,
   type OpponentPrepMoveRow,
 } from "@/utils/opponentPrep";
-import { getTabWorkspaceKey } from "@/utils/tabs";
+import { getTabWorkspaceKey, saveToFile } from "@/utils/tabs";
+import type { Annotation } from "@/utils/annotation";
 import { positionFromFen } from "@/utils/chessops";
 import { getTreeStructureHash } from "@/utils/treeReducer";
+import { queryChessDbMoves } from "@/utils/chessdb/api";
+import { queryLichessCloudMoves } from "@/utils/lichess/api";
 import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveControls";
 
 const DEFAULT_PREP_MIN_GAMES = 2;
@@ -85,6 +100,19 @@ type PrepCandidateMoveRow = Opening & {
   key: string;
   total: number;
   share: number;
+};
+
+type PrepBuilderStatus = {
+  phase: string;
+  addedMoves: number;
+  visitedPositions: number;
+  stoppedLines: number;
+};
+
+type PrepBuilderQueueItem = {
+  path: number[];
+  branchShare: number;
+  ply: number;
 };
 
 function getPrepCandidateRows({
@@ -122,14 +150,21 @@ function OpponentPrepPanel() {
   const compareSettingsByFile = useAtomValue(comparePanelSettingsByFileAtom);
   const referenceDb = useAtomValue(referenceDbAtom);
   const sessions = useAtomValue(sessionsAtom);
-  const currentTab = useAtomValue(currentTabAtom);
+  const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
+  const { documentDir } = useLoaderData({ from: "/" });
   const setBoardPreviewShapes = useSetAtom(currentBoardPreviewShapesAtom);
   const panelDensity = usePanelDensity();
   const compact = panelDensity !== "regular";
   const dense = panelDensity === "dense";
   const [advancing, setAdvancing] = useState(false);
   const [commonMoving, setCommonMoving] = useState(false);
+  const [builderOpen, setBuilderOpen] = useState(false);
+  const [builderRunning, setBuilderRunning] = useState(false);
+  const [builderNeedsSave, setBuilderNeedsSave] = useState(false);
+  const [savingBuilderResult, setSavingBuilderResult] = useState<"new" | "overwrite" | null>(null);
+  const [builderStatus, setBuilderStatus] = useState<PrepBuilderStatus | null>(null);
   const moveCacheRef = useRef(new Map<string, Opening[]>());
+  const builderReferenceCacheRef = useRef(new Map<string, Opening[]>());
   const seededRef = useRef(false);
   const settingsKey = useMemo(() => getTabWorkspaceKey(currentTab), [currentTab]);
   const savedCompareSettings = settingsKey ? compareSettingsByFile[settingsKey] : undefined;
@@ -137,6 +172,7 @@ function OpponentPrepPanel() {
     ?.accessToken;
   const prepMode = prep.mode ?? "player";
   const prepSource = prep.source ?? "local";
+  const builderSettings = useMemo(() => normalizePrepBuilderSettings(prep.builder), [prep.builder]);
   const { data: databases } = useSWR("databases", () => getDatabases());
   const localDatabases = useMemo(
     () =>
@@ -235,6 +271,10 @@ function OpponentPrepPanel() {
   useEffect(() => {
     moveCacheRef.current.clear();
   }, [queryScope]);
+
+  useEffect(() => {
+    builderReferenceCacheRef.current.clear();
+  }, [lichessOptions]);
 
   useEffect(() => {
     if (
@@ -364,6 +404,79 @@ function OpponentPrepPanel() {
     ],
   );
 
+  const loadLichessAllOpeningsForFen = useCallback(
+    async (fen: string, settings: PrepBuilderSettings) => {
+      if (!settings.useLichessAll) return [];
+
+      const cacheKey = JSON.stringify({
+        source: "builder-lichess-all",
+        fen,
+        moves: Math.max(12, settings.opponentMoveLimit * 3),
+        lichessOptions,
+        auth: explorerToken ? "auth" : "public",
+      });
+      const cached = builderReferenceCacheRef.current.get(cacheKey);
+      if (cached) return cached;
+
+      const data = await getLichessGames(
+        fen,
+        {
+          ...lichessOptions,
+          player: undefined,
+          moves: Math.max(12, settings.opponentMoveLimit * 3),
+        },
+        explorerToken,
+      );
+      const openings = lichessMovesToOpenings(data.moves);
+      builderReferenceCacheRef.current.set(cacheKey, openings);
+      return openings;
+    },
+    [explorerToken, lichessOptions],
+  );
+
+  const loadPrepBuilderEngineMoves = useCallback(
+    async (fen: string, userColor: "white" | "black", settings: PrepBuilderSettings) => {
+      if (!settings.useCloudEngine) return [];
+
+      const multipv = Math.max(3, Math.min(8, settings.opponentMoveLimit + 3));
+      const [lichessResult, chessDbResult] = await Promise.allSettled([
+        queryLichessCloudMoves(fen, multipv),
+        queryChessDbMoves(fen),
+      ]);
+      const lichessMoves =
+        lichessResult.status === "fulfilled" && lichessResult.value
+          ? lichessResult.value.map<PrepBuilderEngineMove>((move, index) => ({
+              san: move.san,
+              scoreCpForSide:
+                move.scoreCpForWhite === null
+                  ? null
+                  : userColor === "black"
+                    ? -move.scoreCpForWhite
+                    : move.scoreCpForWhite,
+              rank: index + 1,
+              source: "lichess",
+            }))
+          : [];
+      const chessDbMoves =
+        chessDbResult.status === "fulfilled" && chessDbResult.value
+          ? chessDbResult.value.map<PrepBuilderEngineMove>((move, index) => ({
+              san: move.san,
+              scoreCpForSide:
+                move.scoreCpForWhite === null
+                  ? null
+                  : userColor === "black"
+                    ? -move.scoreCpForWhite
+                    : move.scoreCpForWhite,
+              rank: move.rank ?? index + 1,
+              source: "chessdb",
+            }))
+          : [];
+
+      return mergePrepBuilderEngineMoves([...lichessMoves, ...chessDbMoves]).slice(0, multipv);
+    },
+    [],
+  );
+
   const {
     data: currentOpenings,
     isLoading,
@@ -460,6 +573,10 @@ function OpponentPrepPanel() {
   const skippedCount = currentRows.filter((row) => row.status === "skipped").length;
   const controlSize = compact ? "xs" : "sm";
   const databaseLabel = selectedDatabase?.title || selectedDatabase?.filename || prep.databaseLabel;
+  const canOverwriteCurrent =
+    currentTab?.gameOrigin.kind === "file" ||
+    currentTab?.gameOrigin.kind === "temp_file" ||
+    currentTab?.gameOrigin.kind === "database";
 
   const updateSettings = useCallback(
     (
@@ -488,6 +605,16 @@ function OpponentPrepPanel() {
       }));
     },
     [currentPath, setPrep],
+  );
+
+  const updateBuilderSettings = useCallback(
+    (patch: Partial<PrepBuilderSettings>) => {
+      setPrep((current) => ({
+        ...current,
+        builder: normalizePrepBuilderSettings(getPrepBuilderSettingsPatch(current.builder, patch)),
+      }));
+    },
+    [setPrep],
   );
 
   const changePrepMode = useCallback(
@@ -841,6 +968,289 @@ function OpponentPrepPanel() {
     store,
   ]);
 
+  const runPrepBuilder = useCallback(async () => {
+    if (!configReady || builderRunning) return;
+
+    const settings = normalizePrepBuilderSettings(prep.builder);
+    const userSide = oppositePrepColor(prep.color);
+    setBuilderRunning(true);
+    setBuilderNeedsSave(false);
+    clearMovePreview();
+    setBuilderStatus({
+      phase: "Starting",
+      addedMoves: 0,
+      visitedPositions: 0,
+      stoppedLines: 0,
+    });
+
+    let addedMoves = 0;
+    let visitedPositions = 0;
+    let stoppedLines = 0;
+    let touchedTree = false;
+
+    const updateStatus = (phase: string) => {
+      setBuilderStatus({
+        phase,
+        addedMoves,
+        visitedPositions,
+        stoppedLines,
+      });
+    };
+
+    const addMoveWithComment = (
+      path: number[],
+      moveSan: string,
+      comment: string,
+      annotation?: PrepBuilderMoveChoice["annotation"],
+    ) => {
+      const state = store.getState();
+      if (!pathExists(state.root, path)) return null;
+
+      const parent = state.getNode(path);
+      if (!parent) return null;
+      const existingIndex = parent.children.findIndex((child) => child.san === moveSan);
+      state.goToMove(path);
+      state.makeMove({ payload: moveSan, changeHeaders: false });
+
+      const nextPath = store.getState().position;
+      if (!isPrefix(path, nextPath) || nextPath.length !== path.length + 1) {
+        return null;
+      }
+
+      const node = store.getState().getNode(nextPath);
+      if (!node) return null;
+      const nextComment = mergePrepBuilderComment(node.comment, comment);
+      store.getState().setCommentAtPath(nextPath, nextComment);
+
+      if (annotation) {
+        store.getState().goToMove(nextPath);
+        const latest = store.getState().currentNode();
+        store.getState().setCurrentNodeMetadata({
+          annotations: mergePrepBuilderAnnotation(latest.annotations, annotation),
+          comment: nextComment,
+          shapes: latest.shapes,
+        });
+      }
+
+      return {
+        path: nextPath,
+        created: existingIndex === -1,
+      };
+    };
+
+    try {
+      const state = store.getState();
+      const safeRootPath = pathExists(state.root, prep.rootPath ?? []) ? (prep.rootPath ?? []) : [];
+      const queue: PrepBuilderQueueItem[] = [
+        {
+          path: safeRootPath,
+          branchShare: 1,
+          ply: 0,
+        },
+      ];
+
+      while (queue.length > 0 && addedMoves < settings.maxMoves) {
+        queue.sort(
+          (a, b) =>
+            getPrepBuilderTaskPriority({ ...b, settings }) -
+            getPrepBuilderTaskPriority({ ...a, settings }),
+        );
+        const task = queue.shift()!;
+        const currentState = store.getState();
+        if (!pathExists(currentState.root, task.path)) continue;
+
+        const node = currentState.getNode(task.path);
+        if (!node) continue;
+        const stopReason = getPrepBuilderStopReason({
+          branchShare: task.branchShare,
+          ply: task.ply,
+          settings,
+        });
+        if (stopReason) {
+          stoppedLines += 1;
+          updateStatus(stopReason);
+          continue;
+        }
+
+        visitedPositions += 1;
+        const turn = getFenTurn(node.fen);
+
+        if (turn === prep.color) {
+          updateStatus(prepMode === "general" ? "Adding common replies" : "Adding their replies");
+          const openings = await loadOpeningsForFen(node.fen);
+          const rows = getOpponentPrepMoveRows({
+            fen: node.fen,
+            node,
+            openings,
+            minGames: settings.minOpponentGames,
+            moveLimit: Math.max(settings.opponentMoveLimit, 1),
+            completedBranches: prep.completedBranches,
+            skippedBranches: prep.skippedBranches,
+          }).filter(
+            (row) =>
+              row.status !== "skipped" &&
+              row.total >= settings.minOpponentGames &&
+              row.share * 100 >= settings.minOpponentMoveShare,
+          );
+
+          if (rows.length === 0) {
+            stoppedLines += 1;
+            updateStatus("No common reply above threshold");
+            continue;
+          }
+
+          for (const row of rows.slice(0, settings.opponentMoveLimit)) {
+            if (addedMoves >= settings.maxMoves) break;
+
+            const child = addMoveWithComment(
+              task.path,
+              row.move,
+              formatPrepBuilderOpponentComment({
+                row,
+                branchShare: task.branchShare * row.share,
+                general: prepMode === "general",
+              }),
+            );
+            if (!child) continue;
+            touchedTree = true;
+            if (child.created) addedMoves += 1;
+
+            queue.push({
+              path: child.path,
+              branchShare: task.branchShare * row.share,
+              ply: task.ply + 1,
+            });
+          }
+        } else {
+          updateStatus("Choosing your move");
+          const [opponentOpenings, referenceOpenings, engineMoves] = await Promise.all([
+            loadOpeningsForFen(node.fen).catch(() => []),
+            loadLichessAllOpeningsForFen(node.fen, settings).catch(() => []),
+            loadPrepBuilderEngineMoves(node.fen, userSide, settings).catch(() => []),
+          ]);
+          const availableGames = opponentOpenings.reduce(
+            (sum, opening) => sum + getOpeningTotal(opening),
+            0,
+          );
+          const availabilityStop = getPrepBuilderStopReason({
+            branchShare: task.branchShare,
+            ply: task.ply,
+            availableGames,
+            settings,
+          });
+
+          if (availabilityStop && referenceOpenings.length === 0 && engineMoves.length === 0) {
+            stoppedLines += 1;
+            updateStatus(availabilityStop);
+            continue;
+          }
+
+          const choice = choosePrepBuilderMove({
+            opponentOpenings,
+            referenceOpenings,
+            engineMoves,
+            userColor: userSide,
+            settings,
+          });
+
+          if (!choice) {
+            stoppedLines += 1;
+            updateStatus("No supported move found");
+            continue;
+          }
+
+          const child = addMoveWithComment(
+            task.path,
+            choice.move,
+            formatPrepBuilderChoiceComment(choice),
+            choice.annotation,
+          );
+          if (!child) {
+            stoppedLines += 1;
+            updateStatus("Could not add chosen move");
+            continue;
+          }
+          touchedTree = true;
+          if (child.created) addedMoves += 1;
+
+          queue.push({
+            path: child.path,
+            branchShare: task.branchShare,
+            ply: task.ply + 1,
+          });
+        }
+      }
+
+      store.getState().goToMove(safeRootPath);
+      updateStatus(queue.length > 0 ? "Move budget reached" : "Prep built");
+      setBuilderNeedsSave(touchedTree);
+      notifications.show({
+        title: "Prep builder finished",
+        message: `${addedMoves} move${addedMoves === 1 ? "" : "s"} added across ${visitedPositions} position${visitedPositions === 1 ? "" : "s"}.`,
+        color: "green",
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Prep builder failed",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    } finally {
+      setBuilderRunning(false);
+    }
+  }, [
+    builderRunning,
+    clearMovePreview,
+    configReady,
+    loadLichessAllOpeningsForFen,
+    loadOpeningsForFen,
+    loadPrepBuilderEngineMoves,
+    prep.builder,
+    prep.color,
+    prep.completedBranches,
+    prep.rootPath,
+    prep.skippedBranches,
+    prepMode,
+    store,
+  ]);
+
+  const saveBuilderResult = useCallback(
+    async (mode: "new" | "overwrite") => {
+      if (savingBuilderResult) return;
+
+      setSavingBuilderResult(mode);
+      try {
+        const saved = await saveToFile({
+          dir: documentDir,
+          tab: currentTab,
+          setCurrentTab,
+          store,
+          forceSaveAs: mode === "new",
+        });
+        if (!saved) return;
+
+        setBuilderNeedsSave(false);
+        notifications.show({
+          title: mode === "new" ? "Prep saved to new file" : "Prep saved",
+          message:
+            mode === "new"
+              ? "The generated prep has been saved as a separate PGN."
+              : "The generated prep has been written to the current file.",
+          color: "green",
+        });
+      } catch (error) {
+        notifications.show({
+          title: "Could not save prep",
+          message: error instanceof Error ? error.message : String(error),
+          color: "red",
+        });
+      } finally {
+        setSavingBuilderResult(null);
+      }
+    },
+    [currentTab, documentDir, savingBuilderResult, setCurrentTab, store],
+  );
+
   return (
     <Stack h="100%" gap={dense ? 4 : "xs"} p={dense ? 4 : "xs"} style={{ overflow: "hidden" }}>
       <Group justify="space-between" align="center" gap="xs" wrap="wrap" style={{ flexShrink: 0 }}>
@@ -864,7 +1274,7 @@ function OpponentPrepPanel() {
           ) : null}
         </Group>
         <Group gap={4} wrap="nowrap">
-          <Tooltip label="Use the current board position as the start of this prep">
+          <Tooltip label="Use the current board position as the start for prep and the builder">
             <Button
               variant="default"
               size={controlSize}
@@ -1002,6 +1412,101 @@ function OpponentPrepPanel() {
           />
         </Tooltip>
       </Group>
+
+      <Box style={{ flexShrink: 0 }}>
+        <Group justify="space-between" gap="xs" wrap="wrap">
+          <Group gap={4} wrap="wrap">
+            <Tooltip label="Automatically add repertoire lines from the current prep start">
+              <Button
+                variant="filled"
+                size={controlSize}
+                leftSection={<IconSparkles size="0.95rem" />}
+                disabled={!configReady}
+                loading={builderRunning}
+                onClick={() => void runPrepBuilder()}
+              >
+                Build prep
+              </Button>
+            </Tooltip>
+            <Tooltip label="Tune how the prep builder balances engine moves, WDL results, breadth, and depth">
+              <Button
+                variant="default"
+                size={controlSize}
+                leftSection={<IconSettings size="0.95rem" />}
+                onClick={() => setBuilderOpen((open) => !open)}
+              >
+                Builder settings
+              </Button>
+            </Tooltip>
+          </Group>
+          {builderStatus ? (
+            <Text size="xs" c={builderRunning ? "blue" : "dimmed"}>
+              {builderStatus.phase} - {builderStatus.addedMoves} added,{" "}
+              {builderStatus.visitedPositions} checked
+            </Text>
+          ) : null}
+        </Group>
+        <Collapse in={builderOpen}>
+          <Stack gap={dense ? 4 : "xs"} pt="xs">
+            <Group gap={dense ? 4 : "xs"} wrap="wrap">
+              <SegmentedControl
+                aria-label="Prep builder mode"
+                data={[
+                  { value: "smart", label: "Smart" },
+                  { value: "engine", label: "Engine" },
+                  { value: "practical", label: "Practical" },
+                ]}
+                value={builderSettings.mode}
+                onChange={(value) =>
+                  updateBuilderSettings({ mode: value as PrepBuilderSettings["mode"] })
+                }
+                size={controlSize}
+              />
+              <SegmentedControl
+                aria-label="Prep builder depth"
+                data={[
+                  { value: "quick", label: "Short" },
+                  { value: "balanced", label: "Normal" },
+                  { value: "deep", label: "Deep" },
+                ]}
+                value={builderSettings.size}
+                onChange={(value) =>
+                  updateBuilderSettings({ size: value as PrepBuilderSettings["size"] })
+                }
+                size={controlSize}
+              />
+              <Badge variant="light">{builderSettings.minOpponentMoveShare}%+ replies</Badge>
+              <Badge variant="light">Lichess All reference</Badge>
+              <Badge variant="light">Cloud engine</Badge>
+            </Group>
+          </Stack>
+          <Divider my={dense ? 4 : "xs"} />
+        </Collapse>
+        {builderNeedsSave ? (
+          <Group gap={4} mt={dense ? 4 : "xs"} wrap="wrap">
+            <Text size="xs" c="dimmed">
+              Builder output is ready to save.
+            </Text>
+            <Button
+              variant="default"
+              size={controlSize}
+              loading={savingBuilderResult === "new"}
+              onClick={() => void saveBuilderResult("new")}
+            >
+              Save new file
+            </Button>
+            <Button
+              variant="default"
+              size={controlSize}
+              disabled={!canOverwriteCurrent}
+              loading={savingBuilderResult === "overwrite"}
+              onClick={() => void saveBuilderResult("overwrite")}
+            >
+              Overwrite current
+            </Button>
+          </Group>
+        ) : null}
+      </Box>
 
       <Group justify="space-between" gap="xs" wrap="wrap" style={{ flexShrink: 0 }}>
         <Stack gap={1} style={{ minWidth: 0, flex: 1 }}>
@@ -1485,6 +1990,108 @@ function lichessMovesToOpenings(
     black: move.black,
     draw: move.draws,
   }));
+}
+
+function mergePrepBuilderEngineMoves(moves: PrepBuilderEngineMove[]) {
+  const bySan = new Map<string, PrepBuilderEngineMove>();
+
+  for (const move of moves) {
+    const key = normalizePrepBuilderSan(move.san);
+    const existing = bySan.get(key);
+    if (
+      !existing ||
+      prepBuilderEngineSourceRank(move.source) < prepBuilderEngineSourceRank(existing.source) ||
+      ((move.rank ?? 99) < (existing.rank ?? 99) && move.source === existing.source)
+    ) {
+      bySan.set(key, move);
+    }
+  }
+
+  return Array.from(bySan.values()).sort(
+    (a, b) =>
+      prepBuilderEngineSourceRank(a.source) - prepBuilderEngineSourceRank(b.source) ||
+      (a.rank ?? 99) - (b.rank ?? 99) ||
+      a.san.localeCompare(b.san),
+  );
+}
+
+function prepBuilderEngineSourceRank(source: PrepBuilderEngineMove["source"]) {
+  return source === "lichess" ? 0 : 1;
+}
+
+function formatPrepBuilderChoiceComment(choice: PrepBuilderMoveChoice) {
+  return [
+    `Chosen by Prep Builder (${choice.score}/100).`,
+    ...choice.reasons.map((reason) => `${reason}.`),
+  ].join(" ");
+}
+
+function formatPrepBuilderOpponentComment({
+  row,
+  branchShare,
+  general,
+}: {
+  row: OpponentPrepMoveRow;
+  branchShare: number;
+  general: boolean;
+}) {
+  const actor = general ? "Common reply" : "Opponent reply";
+  return `${actor}: ${row.total} game${row.total === 1 ? "" : "s"}, ${Math.round(
+    row.share * 100,
+  )}% from this position. Line weight ${Math.round(branchShare * 100)}%.`;
+}
+
+const PREP_BUILDER_COMMENT_PREFIX = "Prep Builder:";
+
+function mergePrepBuilderComment(existing: string, comment: string) {
+  const kept = existing
+    .split(/\n{2,}/)
+    .map((part) => part.trim())
+    .filter((part) => part && !part.startsWith(PREP_BUILDER_COMMENT_PREFIX));
+  return [...kept, `${PREP_BUILDER_COMMENT_PREFIX} ${comment}`].join("\n\n");
+}
+
+function mergePrepBuilderAnnotation(
+  annotations: Annotation[],
+  annotation: PrepBuilderMoveChoice["annotation"],
+): Annotation[] {
+  const basic = new Set(["!", "!!", "?", "??", "!?", "?!"]);
+  return [...annotations.filter((item) => !basic.has(item)), annotation];
+}
+
+function normalizePrepBuilderSan(value: string) {
+  return value
+    .trim()
+    .replace(/^0-0-0/, "O-O-O")
+    .replace(/^0-0/, "O-O")
+    .replace(/[+#?!]+$/g, "");
+}
+
+function getPrepBuilderSettingsPatch(
+  current: Partial<PrepBuilderSettings> | undefined,
+  patch: Partial<PrepBuilderSettings>,
+) {
+  const next = {
+    ...current,
+    ...patch,
+  };
+
+  if (patch.mode) {
+    delete next.engineWeight;
+    delete next.breadthBias;
+    delete next.maxEngineCpLoss;
+  }
+
+  if (patch.size) {
+    delete next.maxMoves;
+    delete next.maxPly;
+    delete next.opponentMoveLimit;
+    delete next.minOpponentGames;
+    delete next.minOpponentMoveShare;
+    delete next.minBranchShare;
+  }
+
+  return next;
 }
 
 function getInitialPrepSeed({
