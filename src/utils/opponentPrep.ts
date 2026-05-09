@@ -620,7 +620,11 @@ export function choosePrepBuilderMove({
     const engineSafetyLimit = getPrepBuilderEngineSafetyLimit(scoredEngineMoves, settings);
     if (eligibleOpponent.length === 0) return null;
 
-    const databaseRanks = getPrepBuilderDatabaseRanks(eligibleOpponent, userColor);
+    const databaseRanks = getPrepBuilderDatabaseRanks(
+        eligibleOpponent,
+        userColor,
+        settings.mode === "practical" ? "winRate" : "score",
+    );
     const moves = new Set<string>();
 
     for (const opening of eligibleOpponent) {
@@ -1185,12 +1189,19 @@ function getWeightedSideScore(openings: Opening[], side: PrepColor) {
     );
 }
 
-function getPrepBuilderDatabaseRanks(openings: Opening[], side: PrepColor) {
+function getPrepBuilderDatabaseRanks(
+    openings: Opening[],
+    side: PrepColor,
+    metric: "score" | "winRate" = "score",
+) {
     const ranked = openings
         .filter((opening) => getOpeningTotal(opening) > 0)
         .map((opening) => ({
             key: normalizeSanForPrep(opening.move),
-            sideScore: getSideScoreForOpening(opening, side),
+            sideScore:
+                metric === "winRate"
+                    ? getSideWinRateForOpening(opening, side)
+                    : getSideScoreForOpening(opening, side),
             total: getOpeningTotal(opening),
             move: opening.move,
         }))
@@ -1210,6 +1221,16 @@ function getSideScoreForOpening(opening: Pick<Opening, "white" | "draw" | "black
 
     const wins = side === "white" ? opening.white : opening.black;
     return (wins + opening.draw * 0.5) / total;
+}
+
+function getSideWinRateForOpening(
+    opening: Pick<Opening, "white" | "draw" | "black">,
+    side: PrepColor,
+) {
+    const total = getOpeningTotal(opening);
+    if (total <= 0) return 0;
+
+    return (side === "white" ? opening.white : opening.black) / total;
 }
 
 function getPrepBuilderMoveReasons({

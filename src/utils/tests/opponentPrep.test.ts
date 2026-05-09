@@ -348,6 +348,41 @@ describe("opponent prep helpers", () => {
         expect(choice?.databaseRank).toBe(1);
     });
 
+    test("practical prep builder ranks the selected side's wins above draw-heavy scores", () => {
+        const settings = normalizePrepBuilderSettings({ mode: "practical" });
+        const blackChoice = choosePrepBuilderMove({
+            userColor: "black",
+            settings,
+            opponentOpenings: [
+                { move: "a6", white: 0, draw: 98, black: 2 },
+                { move: "c5", white: 50, draw: 0, black: 50 },
+            ],
+            referenceOpenings: [],
+            engineMoves: [
+                { san: "a6", scoreCpForSide: 20, rank: 1, source: "lichess" },
+                { san: "c5", scoreCpForSide: 10, rank: 2, source: "lichess" },
+            ],
+        });
+        const whiteChoice = choosePrepBuilderMove({
+            userColor: "white",
+            settings,
+            opponentOpenings: [
+                { move: "a3", white: 2, draw: 98, black: 0 },
+                { move: "e4", white: 50, draw: 0, black: 50 },
+            ],
+            referenceOpenings: [],
+            engineMoves: [
+                { san: "a3", scoreCpForSide: 20, rank: 1, source: "lichess" },
+                { san: "e4", scoreCpForSide: 10, rank: 2, source: "lichess" },
+            ],
+        });
+
+        expect(blackChoice?.move).toBe("c5");
+        expect(blackChoice?.databaseRank).toBe(1);
+        expect(whiteChoice?.move).toBe("e4");
+        expect(whiteChoice?.databaseRank).toBe(1);
+    });
+
     test("practical prep builder still rejects database moves that are too weak", () => {
         const settings = normalizePrepBuilderSettings({ mode: "practical" });
         const choice = choosePrepBuilderMove({
