@@ -493,16 +493,18 @@ export function getPrepBuilderUserResponseChildIndex(node: TreeNode) {
 
 export function getPrepBuilderStopReason({
     branchShare,
+    depthShare = branchShare,
     ply,
     availableGames,
     settings,
 }: {
     branchShare: number;
+    depthShare?: number;
     ply: number;
     availableGames?: number | null;
     settings: PrepBuilderSettings;
 }) {
-    if (ply >= getPrepBuilderEffectiveMaxPly({ branchShare, settings })) {
+    if (ply >= getPrepBuilderEffectiveMaxPly({ branchShare: depthShare, settings })) {
         return "Depth cap reached";
     }
     if (branchShare * 100 < settings.minBranchShare) return "Line became too rare";

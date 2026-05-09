@@ -74,7 +74,6 @@ import {
   getPrepBuilderBranchValue,
   getPrepBuilderReplyPolicy,
   getPrepBuilderStopReason,
-  getPrepBuilderTaskPriority,
   getPrepBuilderUserResponseChildIndex,
   normalizePrepBuilderSettings,
   oppositePrepColor,
@@ -114,6 +113,7 @@ type PrepBuilderStatus = {
 type PrepBuilderQueueItem = {
   path: number[];
   branchShare: number;
+  depthShare: number;
   branchValue?: number;
   ply: number;
 };
@@ -1063,6 +1063,7 @@ function OpponentPrepPanel() {
 
       const stopReason = getPrepBuilderStopReason({
         branchShare: task.branchShare,
+        depthShare: task.depthShare,
         ply: task.ply,
         settings,
       });
@@ -1077,6 +1078,7 @@ function OpponentPrepPanel() {
         return {
           path: [...task.path, existingResponseIndex],
           branchShare: task.branchShare,
+          depthShare: task.depthShare,
           branchValue: task.branchValue,
           ply: task.ply + 1,
         };
@@ -1096,6 +1098,7 @@ function OpponentPrepPanel() {
       );
       const availabilityStop = getPrepBuilderStopReason({
         branchShare: task.branchShare,
+        depthShare: task.depthShare,
         ply: task.ply,
         availableGames,
         settings,
@@ -1138,6 +1141,7 @@ function OpponentPrepPanel() {
       return {
         path: child.path,
         branchShare: task.branchShare,
+        depthShare: task.depthShare,
         branchValue: task.branchValue,
         ply: task.ply + 1,
       };
@@ -1150,6 +1154,7 @@ function OpponentPrepPanel() {
         {
           path: safeRootPath,
           branchShare: 1,
+          depthShare: 1,
           ply: 0,
         },
       ];
@@ -1159,11 +1164,6 @@ function OpponentPrepPanel() {
         visitedPositions < safetyPositionLimit &&
         !builderCancelRef.current
       ) {
-        queue.sort(
-          (a, b) =>
-            getPrepBuilderTaskPriority({ ...b, settings }) -
-            getPrepBuilderTaskPriority({ ...a, settings }),
-        );
         const task = queue.shift()!;
         if (builderCancelRef.current) break;
         const currentState = store.getState();
@@ -1173,6 +1173,7 @@ function OpponentPrepPanel() {
         if (!node) continue;
         const stopReason = getPrepBuilderStopReason({
           branchShare: task.branchShare,
+          depthShare: task.depthShare,
           ply: task.ply,
           settings,
         });
@@ -1188,10 +1189,13 @@ function OpponentPrepPanel() {
           visitedPositions += 1;
           updateStatus(prepMode === "general" ? "Adding common replies" : "Adding their replies");
           const replyPolicy = getPrepBuilderReplyPolicy({
-            branchShare: task.branchShare,
+            branchShare: task.depthShare,
             settings,
           });
-          const openings = await loadOpeningsForFen(node.fen, replyPolicy.moveLimit);
+          const openings = await loadOpeningsForFen(
+            node.fen,
+            getPrepBuilderBranchSearchMoveLimit(settings),
+          );
           if (builderCancelRef.current) break;
           const rows = getOpponentPrepMoveRows({
             fen: node.fen,
@@ -1214,10 +1218,12 @@ function OpponentPrepPanel() {
             continue;
           }
 
+          const nextTasks: PrepBuilderQueueItem[] = [];
           for (const row of rows.slice(0, replyPolicy.moveLimit)) {
             if (builderCancelRef.current) break;
 
             const nextBranchShare = task.branchShare * row.share;
+            const nextDepthShare = Math.min(task.depthShare, row.share);
             const nextBranchValue = getPrepBuilderBranchValue({
               opening: row,
               userColor: userSide,
@@ -1226,6 +1232,7 @@ function OpponentPrepPanel() {
             const nextPly = task.ply + 1;
             const branchStopReason = getPrepBuilderStopReason({
               branchShare: nextBranchShare,
+              depthShare: nextDepthShare,
               ply: nextPly,
               settings,
             });
@@ -1251,15 +1258,17 @@ function OpponentPrepPanel() {
             const responseChild = await addUserResponseAtPath({
               path: child.path,
               branchShare: nextBranchShare,
+              depthShare: nextDepthShare,
               branchValue: nextBranchValue,
               ply: nextPly,
             });
-            if (responseChild) queue.push(responseChild);
+            if (responseChild) nextTasks.push(responseChild);
             await yieldToBuilderUi();
           }
+          queue.unshift(...nextTasks);
         } else {
           const responseChild = await addUserResponseAtPath(task);
-          if (responseChild) queue.push(responseChild);
+          if (responseChild) queue.unshift(responseChild);
         }
         await yieldToBuilderUi();
       }
@@ -2165,9 +2174,9 @@ function formatPrepBuilderOpponentComment({
   general: boolean;
 }) {
   const actor = general ? "Common reply" : "Opponent reply";
-  return `${actor}: ${row.total} game${row.total === 1 ? "" : "s"}, ${Math.round(
+  return `${actor}: ${row.total} game${row.total === 1 ? "" : "s"}, move ${formatPrepBuilderPercent(
     row.share * 100,
-  )}%, line ${Math.max(1, Math.round(branchShare * 100))}%.`;
+  )}%, line ${formatPrepBuilderPercent(branchShare * 100)}%.`;
 }
 
 const PREP_BUILDER_COMMENT_PREFIX = "Prep Builder:";
@@ -2195,8 +2204,17 @@ function getPrepBuilderExplorerMoveLimit(moveLimit: number) {
   return Math.max(12, Math.min(100, moveLimit));
 }
 
+function getPrepBuilderBranchSearchMoveLimit(settings: PrepBuilderSettings) {
+  return Math.max(100, settings.opponentMoveLimit);
+}
+
 function getPrepBuilderReferenceMoveLimit(moveLimit: number) {
   return Math.max(20, Math.min(100, moveLimit * 2));
+}
+
+function formatPrepBuilderPercent(percent: number) {
+  if (percent >= 10) return Math.round(percent).toString();
+  return percent.toFixed(1).replace(/\.0$/, "");
 }
 
 function normalizePrepBuilderSan(value: string) {

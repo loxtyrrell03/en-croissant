@@ -11,6 +11,7 @@ import {
     getPrepBuilderBranchValue,
     getPrepBuilderEffectiveMaxPly,
     getPrepBuilderReplyPolicy,
+    getPrepBuilderStopReason,
     getPrepBuilderTaskPriority,
     getPrepBuilderUserResponseChildIndex,
     normalizePrepBuilderSettings,
@@ -363,6 +364,26 @@ describe("opponent prep helpers", () => {
         expect(getPrepBuilderEffectiveMaxPly({ branchShare: 0.006, settings })).toBeLessThan(10);
         expect(commonPolicy.moveLimit).toBeGreaterThan(rarePolicy.moveLimit);
         expect(commonPolicy.minMoveShare).toBeLessThan(rarePolicy.minMoveShare);
+    });
+
+    test("prep builder keeps depth for lines made from common local replies", () => {
+        const settings = normalizePrepBuilderSettings({ mode: "smart", size: "deep" });
+
+        expect(
+            getPrepBuilderStopReason({
+                branchShare: 0.01,
+                depthShare: 0.35,
+                ply: 20,
+                settings,
+            }),
+        ).toBeNull();
+        expect(
+            getPrepBuilderStopReason({
+                branchShare: 0.01,
+                ply: 20,
+                settings,
+            }),
+        ).toBe("Depth cap reached");
     });
 
     test("prep builder treats existing user replies as one forced repertoire move", () => {
