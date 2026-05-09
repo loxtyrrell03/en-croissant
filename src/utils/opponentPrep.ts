@@ -737,14 +737,11 @@ export function choosePrepBuilderMove({
         })
         .filter((choice): choice is ScoredPrepBuilderMoveChoice => choice !== null);
     const safeChoices = scoredChoices.filter((choice) => !choice.engineUnsafe);
-    const choices = (safeChoices.length > 0 ? safeChoices : scoredChoices)
-        .sort(
-            (a, b) =>
-                b.score - a.score ||
-                (a.engineRank ?? 99) - (b.engineRank ?? 99) ||
-                b.opponentGames - a.opponentGames ||
-                a.move.localeCompare(b.move),
-        );
+    const choices = (safeChoices.length > 0 ? safeChoices : scoredChoices).sort(
+        settings.mode === "practical"
+            ? comparePracticalPrepBuilderChoices
+            : comparePrepBuilderChoices,
+    );
 
     return choices[0] ?? null;
 }
@@ -959,6 +956,37 @@ function getPrepBuilderEngineSafetyLimit(
     return Math.max(15, limit);
 }
 
+function comparePrepBuilderChoices(
+    a: ScoredPrepBuilderMoveChoice,
+    b: ScoredPrepBuilderMoveChoice,
+) {
+    return (
+        b.score - a.score ||
+        (a.engineRank ?? 99) - (b.engineRank ?? 99) ||
+        b.opponentGames - a.opponentGames ||
+        a.move.localeCompare(b.move)
+    );
+}
+
+function comparePracticalPrepBuilderChoices(
+    a: ScoredPrepBuilderMoveChoice,
+    b: ScoredPrepBuilderMoveChoice,
+) {
+    return (
+        (a.databaseRank ?? 999) - (b.databaseRank ?? 999) ||
+        getPracticalEngineSortValue(a) - getPracticalEngineSortValue(b) ||
+        b.score - a.score ||
+        b.opponentGames - a.opponentGames ||
+        a.move.localeCompare(b.move)
+    );
+}
+
+function getPracticalEngineSortValue(choice: PrepBuilderMoveChoice) {
+    if (choice.engineCpLoss !== null) return choice.engineCpLoss;
+    if (choice.engineRank !== null) return (choice.engineRank - 1) * 18;
+    return 45;
+}
+
 function getPrepBuilderReferencePriorGames(
     referenceGames: number,
     settings: PrepBuilderSettings,
@@ -1052,10 +1080,10 @@ function isPrepBuilderEngineUnsafe({
     engineSafetyLimit: number;
     settings: PrepBuilderSettings;
 }) {
-    if (!settings.useCloudEngine || settings.mode === "practical" || engineMoves.length === 0) {
+    if (!settings.useCloudEngine || engineMoves.length === 0) {
         return false;
     }
-    if (!engine) return true;
+    if (!engine) return settings.mode !== "practical";
     if (engineCpLoss === null) return false;
 
     return engineCpLoss > engineSafetyLimit;

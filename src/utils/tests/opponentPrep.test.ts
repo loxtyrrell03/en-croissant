@@ -278,6 +278,54 @@ describe("opponent prep helpers", () => {
         expect(choice?.move).toBe("e5");
     });
 
+    test("practical prep builder prioritizes database WDL over engine rank", () => {
+        const settings = normalizePrepBuilderSettings({ mode: "practical" });
+        const choice = choosePrepBuilderMove({
+            userColor: "black",
+            settings,
+            opponentOpenings: [
+                { move: "c5", white: 10, draw: 20, black: 70 },
+                { move: "d5", white: 20, draw: 20, black: 60 },
+                { move: "Nf6", white: 25, draw: 20, black: 55 },
+                { move: "g6", white: 30, draw: 20, black: 50 },
+                { move: "c6", white: 35, draw: 20, black: 45 },
+                { move: "e6", white: 40, draw: 20, black: 40 },
+                { move: "b6", white: 45, draw: 20, black: 35 },
+                { move: "a6", white: 50, draw: 20, black: 30 },
+                { move: "e5", white: 70, draw: 20, black: 10 },
+            ],
+            referenceOpenings: [],
+            engineMoves: [
+                { san: "e5", scoreCpForSide: 80, rank: 1, source: "lichess" },
+                { san: "c5", scoreCpForSide: 20, rank: 2, source: "lichess" },
+            ],
+        });
+
+        expect(choice?.move).toBe("c5");
+        expect(choice?.engineRank).toBe(2);
+        expect(choice?.databaseRank).toBe(1);
+    });
+
+    test("practical prep builder still rejects database moves that are too weak", () => {
+        const settings = normalizePrepBuilderSettings({ mode: "practical" });
+        const choice = choosePrepBuilderMove({
+            userColor: "black",
+            settings,
+            opponentOpenings: [
+                { move: "h6", white: 0, draw: 0, black: 30 },
+                { move: "e5", white: 10, draw: 10, black: 20 },
+            ],
+            referenceOpenings: [],
+            engineMoves: [
+                { san: "e5", scoreCpForSide: 80, rank: 1, source: "lichess" },
+                { san: "h6", scoreCpForSide: -80, rank: 5, source: "lichess" },
+            ],
+        });
+
+        expect(choice?.move).toBe("e5");
+        expect(choice?.databaseRank).toBe(2);
+    });
+
     test("smart prep builder rejects practically tempting moves that fail the engine gate", () => {
         const settings = normalizePrepBuilderSettings({ mode: "smart" });
         const choice = choosePrepBuilderMove({
