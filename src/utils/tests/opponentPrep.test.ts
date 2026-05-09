@@ -14,6 +14,7 @@ import {
     getPrepBuilderStopReason,
     getPrepBuilderTaskPriority,
     getPrepBuilderUserResponseChildIndex,
+    hasPrepBuilderDatabaseCandidates,
     normalizePrepBuilderSettings,
 } from "@/utils/opponentPrep";
 
@@ -276,6 +277,25 @@ describe("opponent prep helpers", () => {
         });
 
         expect(choice?.move).toBe("e5");
+    });
+
+    test("prep builder stops when the source database has no candidate move", () => {
+        const settings = normalizePrepBuilderSettings({ mode: "practical" });
+        const choice = choosePrepBuilderMove({
+            userColor: "black",
+            settings,
+            opponentOpenings: [],
+            referenceOpenings: [{ move: "c5", white: 30, draw: 20, black: 50 }],
+            engineMoves: [{ san: "c5", scoreCpForSide: 80, rank: 1, source: "lichess" }],
+        });
+
+        expect(choice).toBeNull();
+        expect(
+            hasPrepBuilderDatabaseCandidates(
+                [{ move: "c5", white: 0, draw: 0, black: 1 }],
+                2,
+            ),
+        ).toBe(false);
     });
 
     test("practical prep builder prioritizes database WDL over engine rank", () => {

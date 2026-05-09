@@ -114,6 +114,10 @@ export function getOpeningTotal(opening: Pick<Opening, "white" | "draw" | "black
     return opening.white + opening.draw + opening.black;
 }
 
+export function hasPrepBuilderDatabaseCandidates(openings: Opening[], minGames: number) {
+    return getPlayableOpenings(openings).some((opening) => getOpeningTotal(opening) >= minGames);
+}
+
 export function normalizePrepBuilderSettings(
     settings: Partial<PrepBuilderSettings> | null | undefined,
 ): PrepBuilderSettings {
@@ -569,25 +573,14 @@ export function choosePrepBuilderMove({
             ? Math.max(...scoredEngineMoves.map((move) => move.scoreCpForSide!))
             : null;
     const engineSafetyLimit = getPrepBuilderEngineSafetyLimit(scoredEngineMoves, settings);
-    const databaseRanks = getPrepBuilderDatabaseRanks(
-        playableOpponent.length > 0 ? playableOpponent : playableReference,
-        userColor,
-    );
+    if (!hasPrepBuilderDatabaseCandidates(playableOpponent, settings.minOpponentGames)) return null;
+
+    const databaseRanks = getPrepBuilderDatabaseRanks(playableOpponent, userColor);
     const moves = new Set<string>();
 
     for (const opening of playableOpponent) {
         if (getOpeningTotal(opening) >= settings.minOpponentGames) {
             moves.add(normalizeSanForPrep(opening.move));
-        }
-    }
-    if (settings.useLichessAll) {
-        for (const opening of playableReference.slice(0, Math.max(8, settings.opponentMoveLimit))) {
-            moves.add(normalizeSanForPrep(opening.move));
-        }
-    }
-    if (settings.useCloudEngine) {
-        for (const move of engineMoves.slice(0, Math.max(5, settings.opponentMoveLimit))) {
-            moves.add(normalizeSanForPrep(move.san));
         }
     }
 

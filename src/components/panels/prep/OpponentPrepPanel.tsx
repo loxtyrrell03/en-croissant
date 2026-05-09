@@ -75,6 +75,7 @@ import {
   getPrepBuilderReplyPolicy,
   getPrepBuilderStopReason,
   getPrepBuilderUserResponseChildIndex,
+  hasPrepBuilderDatabaseCandidates,
   normalizePrepBuilderSettings,
   oppositePrepColor,
   pathExists,
@@ -1096,6 +1097,10 @@ function OpponentPrepPanel() {
         (sum, opening) => sum + getOpeningTotal(opening),
         0,
       );
+      const hasDatabaseCandidate = hasPrepBuilderDatabaseCandidates(
+        opponentOpenings,
+        settings.minOpponentGames,
+      );
       const availabilityStop = getPrepBuilderStopReason({
         branchShare: task.branchShare,
         depthShare: task.depthShare,
@@ -1110,6 +1115,12 @@ function OpponentPrepPanel() {
         return null;
       }
 
+      if (!hasDatabaseCandidate) {
+        stoppedLines += 1;
+        updateStatus("No database result");
+        return null;
+      }
+
       const choice = choosePrepBuilderMove({
         opponentOpenings,
         referenceOpenings,
@@ -1120,7 +1131,7 @@ function OpponentPrepPanel() {
 
       if (!choice) {
         stoppedLines += 1;
-        updateStatus("No supported move found");
+        updateStatus("No supported database move");
         return null;
       }
 
@@ -1252,8 +1263,6 @@ function OpponentPrepPanel() {
               }),
             );
             if (!child) continue;
-            touchedTree = true;
-            if (child.created) addedMoves += 1;
 
             const responseChild = await addUserResponseAtPath({
               path: child.path,
@@ -1262,7 +1271,16 @@ function OpponentPrepPanel() {
               branchValue: nextBranchValue,
               ply: nextPly,
             });
-            if (responseChild) nextTasks.push(responseChild);
+            if (!responseChild) {
+              if (child.created) {
+                store.getState().deleteMove(child.path);
+              }
+              continue;
+            }
+
+            touchedTree = true;
+            if (child.created) addedMoves += 1;
+            nextTasks.push(responseChild);
             await yieldToBuilderUi();
           }
           queue.unshift(...nextTasks);
