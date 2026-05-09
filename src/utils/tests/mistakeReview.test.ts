@@ -183,6 +183,46 @@ describe("mistake review helpers", () => {
         ]);
     });
 
+    test("daily review prefers recent due mistakes without skipping older SRS cards", () => {
+        const now = new Date("2026-04-26T12:00:00Z");
+        const oldDue = position({
+            fen: OPENING_FEN,
+            reviewKey: "old-due",
+            card: {
+                ...createEmptyCard(),
+                reps: 3,
+                due: new Date("2026-04-20T12:00:00Z"),
+            } as Position["card"],
+            mistakeReview: { ...position().mistakeReview!, date: "2025.01.15" },
+        });
+        const recentDue = position({
+            fen: MIDDLEGAME_FEN,
+            reviewKey: "recent-due",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-24T12:00:00Z"),
+            } as Position["card"],
+            mistakeReview: { ...position().mistakeReview!, date: "2026.04.25" },
+        });
+
+        const batch = getMistakeReviewDailyBatch(
+            [oldDue, recentDue],
+            {
+                reviewsPerDay: 2,
+                newItemsPerDay: 0,
+                gamePeriod: "all",
+                minWinProbabilityDrop: 0,
+                includeInaccuracies: true,
+                includeMistakes: true,
+                includeBlunders: true,
+            },
+            { now },
+        );
+
+        expect(batch.map((item) => item.reviewKey)).toEqual(["recent-due", "old-due"]);
+    });
+
     test("daily review keeps one card per board position", () => {
         const now = new Date("2026-04-26T12:00:00Z");
         const dueBlunder = position({

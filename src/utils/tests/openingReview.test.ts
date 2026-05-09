@@ -83,6 +83,39 @@ describe("opening review helpers", () => {
         expect(batch.map((item) => item.reviewKey)).toEqual(["due-high", "due-low", "fresh-high"]);
     });
 
+    test("daily review prefers recent due gaps without skipping older SRS cards", () => {
+        const now = new Date("2026-04-26T12:00:00");
+        const oldDue = position({
+            reviewKey: "old-due",
+            priority: 70,
+            openingHealth: { lastPlayed: "2025.01.15", reviewSide: "white" },
+            card: {
+                ...createEmptyCard(),
+                reps: 3,
+                due: new Date("2026-04-20T12:00:00"),
+            } as Position["card"],
+        });
+        const recentDue = position({
+            fen: AFTER_E4_FEN,
+            reviewKey: "recent-due",
+            priority: 70,
+            openingHealth: { lastPlayed: "2026.04.25", reviewSide: "white" },
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-24T12:00:00"),
+            } as Position["card"],
+        });
+
+        const batch = getOpeningReviewDailyBatch(
+            [oldDue, recentDue],
+            dailySettings({ reviewsPerDay: 2, newItemsPerDay: 0 }),
+            { now },
+        );
+
+        expect(batch.map((item) => item.reviewKey)).toEqual(["recent-due", "old-due"]);
+    });
+
     test("daily review keeps one card per board position", () => {
         const now = new Date("2026-04-26T12:00:00");
         const dueHigh = position({

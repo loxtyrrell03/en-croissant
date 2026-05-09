@@ -617,7 +617,7 @@ export function getMistakeReviewDailyBatch(
     const due = uniqueMistakeReviewDailyPositions(
         unseenToday
             .filter((position) => position.card.reps > 0 && new Date(position.card.due) <= now)
-            .sort((a, b) => sortMistakeReviewDueCards(a, b, now)),
+            .sort(sortMistakeReviewDueCards),
     );
     const fresh = uniqueMistakeReviewDailyPositions(
         unseenToday.filter((position) => position.card.reps === 0).sort(sortMistakeReviewNewCards),
@@ -1078,13 +1078,12 @@ function countMistakeReviewFenNonPawnPieces(fen: string) {
     return matches?.length ?? 0;
 }
 
-function sortMistakeReviewDueCards(a: Position, b: Position, now: Date) {
+function sortMistakeReviewDueCards(a: Position, b: Position) {
     return (
         getMistakeReviewSeverityWeight(b.mistakeReview?.severity) -
             getMistakeReviewSeverityWeight(a.mistakeReview?.severity) ||
-        now.getTime() -
-            new Date(b.card.due).getTime() -
-            (now.getTime() - new Date(a.card.due).getTime())
+        getMistakeReviewPlayedAtTime(b) - getMistakeReviewPlayedAtTime(a) ||
+        new Date(a.card.due).getTime() - new Date(b.card.due).getTime()
     );
 }
 
@@ -1092,9 +1091,12 @@ function sortMistakeReviewNewCards(a: Position, b: Position) {
     return (
         getMistakeReviewSeverityWeight(b.mistakeReview?.severity) -
             getMistakeReviewSeverityWeight(a.mistakeReview?.severity) ||
-        (parseMistakeReviewDate(b.mistakeReview?.date)?.getTime() ?? 0) -
-            (parseMistakeReviewDate(a.mistakeReview?.date)?.getTime() ?? 0)
+        getMistakeReviewPlayedAtTime(b) - getMistakeReviewPlayedAtTime(a)
     );
+}
+
+function getMistakeReviewPlayedAtTime(position: Position) {
+    return parseMistakeReviewDate(position.mistakeReview?.date)?.getTime() ?? 0;
 }
 
 function sortMistakeReviewPhaseDueCards(a: Position, b: Position) {

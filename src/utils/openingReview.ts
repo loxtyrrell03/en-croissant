@@ -325,7 +325,7 @@ export function getOpeningReviewDailyBatch(
     const due = uniqueOpeningReviewDailyPositions(
         unseenToday
             .filter((position) => position.card.reps > 0 && new Date(position.card.due) <= now)
-            .sort((a, b) => sortOpeningReviewDueCards(a, b, now)),
+            .sort(sortOpeningReviewDueCards),
     );
     const fresh = uniqueOpeningReviewDailyPositions(
         unseenToday.filter((position) => position.card.reps === 0).sort(sortOpeningReviewNewCards),
@@ -446,22 +446,24 @@ function isOpeningReviewDailyEligible(
     return lastPlayed >= cutoff;
 }
 
-function sortOpeningReviewDueCards(a: Position, b: Position, now: Date) {
+function sortOpeningReviewDueCards(a: Position, b: Position) {
     return (
         getOpeningReviewPositionUrgency(b) - getOpeningReviewPositionUrgency(a) ||
-        now.getTime() -
-            new Date(b.card.due).getTime() -
-            (now.getTime() - new Date(a.card.due).getTime())
+        getOpeningReviewLastPlayedTime(b) - getOpeningReviewLastPlayedTime(a) ||
+        new Date(a.card.due).getTime() - new Date(b.card.due).getTime()
     );
 }
 
 function sortOpeningReviewNewCards(a: Position, b: Position) {
     return (
         getOpeningReviewPositionUrgency(b) - getOpeningReviewPositionUrgency(a) ||
-        (parseOpeningReviewDate(b.openingHealth?.lastPlayed)?.getTime() ?? 0) -
-            (parseOpeningReviewDate(a.openingHealth?.lastPlayed)?.getTime() ?? 0) ||
+        getOpeningReviewLastPlayedTime(b) - getOpeningReviewLastPlayedTime(a) ||
         (b.importedAt ?? 0) - (a.importedAt ?? 0)
     );
+}
+
+function getOpeningReviewLastPlayedTime(position: Position) {
+    return parseOpeningReviewDate(position.openingHealth?.lastPlayed)?.getTime() ?? 0;
 }
 
 function getOpeningReviewPositionUrgency(position: Position) {
