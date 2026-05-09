@@ -12,11 +12,14 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { useColorScheme } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
 import {
   IconArrowRight,
   IconArrowsSplit,
   IconArticle,
   IconArticleOff,
+  IconCheck,
+  IconCopy,
   IconEye,
   IconEyeOff,
   IconLayoutList,
@@ -37,10 +40,14 @@ import {
   currentInvisibleAtom,
   currentShowCommentsAtom,
   currentShowVariationsAtom,
+  currentTabAtom,
   tableViewAtom,
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
+import { commands } from "@/bindings";
+import { getPGN } from "@/utils/chess";
 import { formatScore } from "@/utils/score";
+import { getTabFile, getTabGameNumber } from "@/utils/tabs";
 import { getNodeAtPath, type TreeNode } from "@/utils/treeReducer";
 import CompleteMoveCell from "./CompleteMoveCell";
 import styles from "./GameNotation.module.css";
@@ -75,9 +82,8 @@ function GameNotation({ topBar, controls }: { topBar?: boolean; controls?: React
 
   const [invisibleValue, setInvisible] = useAtom(currentInvisibleAtom);
   const invisible = topBar && invisibleValue;
-  const showVariations = useAtomValue(currentShowVariationsAtom);
   const showComments = useAtomValue(currentShowCommentsAtom);
-  const [tableView, setTableView] = useAtom(tableViewAtom);
+  const tableView = useAtomValue(tableViewAtom);
   const colorScheme = useColorScheme();
 
   const keyMap = useAtomValue(keyMapAtom);
@@ -145,15 +151,87 @@ function GameNotation({ topBar, controls }: { topBar?: boolean; controls?: React
 
 function NotationHeader() {
   const { t } = useTranslation();
+  const store = useContext(TreeStateContext)!;
+  const root = useStore(store, (s) => s.root);
+  const headers = useStore(store, (s) => s.headers);
+  const dirty = useStore(store, (s) => s.dirty);
+  const currentTab = useAtomValue(currentTabAtom);
   const [invisible, setInvisible] = useAtom(currentInvisibleAtom);
   const [showComments, setShowComments] = useAtom(currentShowCommentsAtom);
   const [showVariations, setShowVariations] = useAtom(currentShowVariationsAtom);
   const [tableView, setTableView] = useAtom(tableViewAtom);
+  const [copying, setCopying] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copiedTimeout = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimeout.current !== null) {
+        window.clearTimeout(copiedTimeout.current);
+      }
+    };
+  }, []);
+
+  async function getCompletePgn() {
+    const tabFile = getTabFile(currentTab);
+    const gameNumber = getTabGameNumber(currentTab);
+
+    if (tabFile && !dirty) {
+      try {
+        const result = await commands.readGames(tabFile.path, gameNumber, gameNumber);
+        if (result.status === "ok" && result.data[0]) {
+          return result.data[0];
+        }
+      } catch {
+        // Fall back to the parsed tree below so copy still works outside the Tauri file backend.
+      }
+    }
+
+    return getPGN(root, {
+      headers,
+      glyphs: true,
+      comments: true,
+      variations: true,
+      extraMarkups: true,
+    });
+  }
+
+  async function copyCompletePgn() {
+    try {
+      setCopying(true);
+      await navigator.clipboard.writeText(await getCompletePgn());
+      setCopied(true);
+      if (copiedTimeout.current !== null) {
+        window.clearTimeout(copiedTimeout.current);
+      }
+      copiedTimeout.current = window.setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      notifications.show({
+        title: "Could not copy PGN",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    } finally {
+      setCopying(false);
+    }
+  }
+
+  const copyPgnLabel = copied ? t("Common.Copied") : `${t("Menu.Edit.Copy") || "Copy"} PGN`;
+
   return (
     <Stack gap="xs" pt="xs">
       <Group justify="space-between" px="sm">
         <OpeningName />
         <Group gap="sm">
+          <Tooltip label={copyPgnLabel}>
+            <ActionIcon
+              aria-label={copyPgnLabel}
+              loading={copying}
+              onClick={() => void copyCompletePgn()}
+            >
+              {copied ? <IconCheck size="1rem" /> : <IconCopy size="1rem" />}
+            </ActionIcon>
+          </Tooltip>
           <Tooltip label={invisible ? t("Notation.ShowMoves") : t("Notation.HideMoves")}>
             <ActionIcon onClick={() => setInvisible((v) => !v)}>
               {invisible ? <IconEyeOff size="1rem" /> : <IconEye size="1rem" />}
