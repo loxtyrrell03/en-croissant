@@ -81,6 +81,10 @@ export type PrepBuilderMoveChoice = {
     reasons: string[];
 };
 
+type ScoredPrepBuilderMoveChoice = PrepBuilderMoveChoice & {
+    engineUnsafe: boolean;
+};
+
 const DEFAULT_STATS_MAX_PLY = 10;
 const DEFAULT_STATS_MAX_POSITIONS = 12;
 export const DEFAULT_PREP_BUILDER_SETTINGS: PrepBuilderSettings = {
@@ -412,15 +416,18 @@ export async function getOpponentPrepBranchStats({
 
 export function getPrepBuilderTaskPriority({
     branchShare,
+    branchValue = 1,
     ply,
     settings,
 }: {
     branchShare: number;
+    branchValue?: number;
     ply: number;
     settings: PrepBuilderSettings;
 }) {
     const shallowBoost = 1 + Math.max(0, 1 - ply / Math.max(1, settings.maxPly)) * 0.35;
-    return branchShare * shallowBoost;
+    const breadthExponent = clamp(settings.breadthBias / 100, 0.2, 1);
+    return Math.pow(branchShare, breadthExponent) * shallowBoost * branchValue;
 }
 
 export function getPrepBuilderStopReason({
@@ -440,6 +447,24 @@ export function getPrepBuilderStopReason({
         if (availableGames < settings.minOpponentGames) return "Not enough games left";
     }
     return null;
+}
+
+export function getPrepBuilderBranchValue({
+    opening,
+    userColor,
+    settings,
+}: {
+    opening: Pick<Opening, "white" | "draw" | "black">;
+    userColor: PrepColor;
+    settings: PrepBuilderSettings;
+}) {
+    const games = getOpeningTotal(opening);
+    const userScore = getSideScoreForOpening(opening, userColor);
+    const practicalRisk = 1 - userScore;
+    const sampleConfidence = clamp(games / Math.max(settings.minOpponentGames * 12, 1), 0, 1);
+    const uncertainty = 1 - sampleConfidence * 0.65;
+
+    return clamp(0.55 + practicalRisk * 0.75 + uncertainty * 0.3, 0.45, 1.65);
 }
 
 export function choosePrepBuilderMove({
@@ -478,6 +503,7 @@ export function choosePrepBuilderMove({
         scoredEngineMoves.length > 0
             ? Math.max(...scoredEngineMoves.map((move) => move.scoreCpForSide!))
             : null;
+    const engineSafetyLimit = getPrepBuilderEngineSafetyLimit(scoredEngineMoves, settings);
     const databaseRanks = getPrepBuilderDatabaseRanks(
         playableOpponent.length > 0 ? playableOpponent : playableReference,
         userColor,
@@ -500,8 +526,8 @@ export function choosePrepBuilderMove({
         }
     }
 
-    const choices = Array.from(moves)
-        .map<PrepBuilderMoveChoice | null>((moveKey) => {
+    const scoredChoices = Array.from(moves)
+        .map<ScoredPrepBuilderMoveChoice | null>((moveKey) => {
             const opponent = opponentByMove.get(moveKey) ?? null;
             const reference = referenceByMove.get(moveKey) ?? null;
             const engine = engineByMove.get(moveKey) ?? null;
@@ -512,40 +538,57 @@ export function choosePrepBuilderMove({
             const referenceGames = reference ? getOpeningTotal(reference) : 0;
             const opponentShare = opponentTotal > 0 ? opponentGames / opponentTotal : 0;
             const referenceShare = referenceTotal > 0 ? referenceGames / referenceTotal : 0;
-            const sideScore = opponent
+            const opponentSideScore = opponent
                 ? getSideScoreForOpening(opponent, userColor)
-                : reference
-                  ? getSideScoreForOpening(reference, userColor)
-                  : null;
+                : null;
             const referenceSideScore = reference
                 ? getSideScoreForOpening(reference, userColor)
                 : null;
+            const sideScore = opponentSideScore ?? referenceSideScore;
             const practicalBaseline =
                 opponentTotal > 0
                     ? opponentBaseline
                     : referenceTotal > 0
                       ? referenceBaseline
                       : 0.5;
-            const resultLift = sideScore === null ? 0 : sideScore - practicalBaseline;
             const referenceDelta =
-                sideScore !== null && referenceSideScore !== null
-                    ? sideScore - referenceSideScore
+                opponentSideScore !== null && referenceSideScore !== null
+                    ? opponentSideScore - referenceSideScore
                     : null;
-            const sampleConfidence = clamp(
-                opponentGames / Math.max(settings.minOpponentGames * 4, 1),
+            const referencePriorGames = getPrepBuilderReferencePriorGames(
+                referenceGames,
+                settings,
+            );
+            const posteriorSideScore = getPrepBuilderPosteriorSideScore({
+                opponentScore: opponentSideScore,
+                opponentGames,
+                referenceScore:
+                    referenceSideScore ??
+                    (referenceTotal > 0 ? referenceBaseline : practicalBaseline),
+                referencePriorGames,
+            });
+            const sampleConfidence = getPrepBuilderSampleConfidence(
+                opponentGames,
+                referencePriorGames,
+            );
+            const frequency = opponentTotal > 0 ? opponentShare : referenceShare;
+            const frequencyScore = clamp(Math.sqrt(frequency / 0.35), 0, 1);
+            const posteriorScore = clamp(
+                0.5 + (posteriorSideScore - practicalBaseline) * 2.3,
                 0,
                 1,
             );
-            const shareScore = clamp(opponentShare / 0.35, 0, 1);
-            const referenceComparisonScore =
-                referenceDelta === null ? 0.5 : clamp(0.5 + referenceDelta * 2.2, 0, 1);
+            const exploitScore =
+                referenceDelta === null ? 0.5 : clamp(0.5 + referenceDelta * 2.7, 0, 1);
+            const evidenceScore = Math.max(
+                sampleConfidence,
+                referenceGames > 0 ? 0.45 : 0,
+            );
             const practicalScore =
-                sideScore === null
-                    ? 0.42
-                    : clamp(0.5 + resultLift * 2.4, 0, 1) * 0.38 +
-                      referenceComparisonScore * 0.34 +
-                      sampleConfidence * 0.16 +
-                      shareScore * 0.12;
+                posteriorScore * 0.42 +
+                exploitScore * 0.24 +
+                evidenceScore * 0.14 +
+                frequencyScore * 0.2;
 
             const engineCpLoss =
                 engine?.scoreCpForSide !== null &&
@@ -553,35 +596,52 @@ export function choosePrepBuilderMove({
                 bestEngineScore !== null
                     ? Math.max(0, bestEngineScore - engine.scoreCpForSide)
                     : null;
-            const rankScore =
-                engine?.rank !== null && engine?.rank !== undefined
-                    ? clamp(1 - (engine.rank - 1) * 0.14, 0.2, 1)
-                    : engine
-                      ? 0.72
-                      : 0.36;
-            const lossScore =
-                engineCpLoss === null
-                    ? engine
-                        ? 0.72
-                        : 0.36
-                    : settings.maxEngineCpLoss <= 0
-                      ? engineCpLoss <= 0
-                          ? 1
-                          : 0
-                      : clamp(1 - engineCpLoss / Math.max(settings.maxEngineCpLoss, 1), 0, 1);
-            const engineScore = rankScore * 0.35 + lossScore * 0.65;
+            const engineScore = getPrepBuilderEngineScore({
+                engine,
+                engineCpLoss,
+                engineSafetyLimit,
+            });
             const referenceScore =
                 referenceTotal > 0 && reference
                     ? clamp(referenceShare / 0.25, 0, 1) * 0.55 +
                       clamp(0.5 + (getSideScoreForOpening(reference, userColor) - referenceBaseline) * 1.5, 0, 1) *
                           0.45
                     : 0.45;
-            const engineWeight = settings.useCloudEngine ? settings.engineWeight / 100 : 0;
+            const engineWeight = settings.useCloudEngine
+                ? getPrepBuilderEngineWeight({
+                      settings,
+                      sampleConfidence,
+                      opponentExploit: Math.max(0, referenceDelta ?? 0),
+                      engine,
+                  })
+                : 0;
             const practicalWeight = 1 - engineWeight;
+            const engineUnsafe = isPrepBuilderEngineUnsafe({
+                engine,
+                engineMoves,
+                engineCpLoss,
+                engineSafetyLimit,
+                settings,
+            });
+            const penalties =
+                getPrepBuilderEnginePenalty({
+                    engine,
+                    engineMoves,
+                    engineCpLoss,
+                    engineSafetyLimit,
+                    settings,
+                }) +
+                getPrepBuilderDataPenalty({
+                    opening: opponent ?? reference,
+                    opponentGames,
+                    referenceDelta,
+                    settings,
+                });
             const blended =
                 engineScore * engineWeight +
                 practicalScore * practicalWeight +
-                (settings.useLichessAll && reference ? (referenceScore - 0.5) * 0.14 : 0);
+                (settings.useLichessAll && reference ? (referenceScore - 0.5) * 0.1 : 0) -
+                penalties;
             const score = Math.round(clamp(blended, 0, 1) * 100);
             const opponentScore = sideScore === null ? null : 1 - sideScore;
             const referenceOpponentScore =
@@ -607,9 +667,12 @@ export function choosePrepBuilderMove({
                 referenceGames,
                 referenceShare,
                 reasons,
+                engineUnsafe,
             };
         })
-        .filter((choice): choice is PrepBuilderMoveChoice => choice !== null)
+        .filter((choice): choice is ScoredPrepBuilderMoveChoice => choice !== null);
+    const safeChoices = scoredChoices.filter((choice) => !choice.engineUnsafe);
+    const choices = (safeChoices.length > 0 ? safeChoices : scoredChoices)
         .sort(
             (a, b) =>
                 b.score - a.score ||
@@ -798,6 +861,180 @@ function getPrepBuilderModePreset(mode: PrepBuilderSettings["mode"]) {
                 maxEngineCpLoss: DEFAULT_PREP_BUILDER_SETTINGS.maxEngineCpLoss,
             };
     }
+}
+
+function getPrepBuilderEngineSafetyLimit(
+    scoredEngineMoves: PrepBuilderEngineMove[],
+    settings: PrepBuilderSettings,
+) {
+    const sortedScores = scoredEngineMoves
+        .map((move) => move.scoreCpForSide)
+        .filter((score): score is number => score !== null)
+        .sort((a, b) => b - a);
+    const topGap =
+        sortedScores.length >= 2 ? Math.max(0, sortedScores[0] - sortedScores[1]) : 0;
+    let limit = settings.maxEngineCpLoss;
+
+    if (settings.mode === "engine") {
+        limit = Math.min(limit, 45);
+    } else if (settings.mode === "practical") {
+        limit = Math.max(limit, 120);
+    } else if (topGap >= 90) {
+        limit = Math.min(limit, 45);
+    } else if (topGap <= 25) {
+        limit = Math.max(limit, 95);
+    }
+
+    return Math.max(15, limit);
+}
+
+function getPrepBuilderReferencePriorGames(
+    referenceGames: number,
+    settings: PrepBuilderSettings,
+) {
+    const base =
+        settings.mode === "engine" ? 22 : settings.mode === "practical" ? 10 : 16;
+    if (referenceGames <= 0) return base;
+
+    const max = settings.mode === "engine" ? 44 : settings.mode === "practical" ? 24 : 36;
+    return clamp(Math.sqrt(referenceGames) * 1.5, base, max);
+}
+
+function getPrepBuilderPosteriorSideScore({
+    opponentScore,
+    opponentGames,
+    referenceScore,
+    referencePriorGames,
+}: {
+    opponentScore: number | null;
+    opponentGames: number;
+    referenceScore: number;
+    referencePriorGames: number;
+}) {
+    if (opponentScore === null || opponentGames <= 0) return referenceScore;
+
+    return (
+        (opponentScore * opponentGames + referenceScore * referencePriorGames) /
+        (opponentGames + referencePriorGames)
+    );
+}
+
+function getPrepBuilderSampleConfidence(opponentGames: number, referencePriorGames: number) {
+    if (opponentGames <= 0) return 0;
+    return opponentGames / (opponentGames + referencePriorGames);
+}
+
+function getPrepBuilderEngineScore({
+    engine,
+    engineCpLoss,
+    engineSafetyLimit,
+}: {
+    engine: PrepBuilderEngineMove | null;
+    engineCpLoss: number | null;
+    engineSafetyLimit: number;
+}) {
+    const rankScore =
+        engine?.rank !== null && engine?.rank !== undefined
+            ? clamp(1 - (engine.rank - 1) * 0.14, 0.2, 1)
+            : engine
+              ? 0.7
+              : 0.28;
+    const lossScore =
+        engineCpLoss === null
+            ? engine
+                ? 0.7
+                : 0.28
+            : clamp(1 - engineCpLoss / Math.max(engineSafetyLimit, 1), 0, 1);
+
+    return rankScore * 0.35 + lossScore * 0.65;
+}
+
+function getPrepBuilderEngineWeight({
+    settings,
+    sampleConfidence,
+    opponentExploit,
+    engine,
+}: {
+    settings: PrepBuilderSettings;
+    sampleConfidence: number;
+    opponentExploit: number;
+    engine: PrepBuilderEngineMove | null;
+}) {
+    const base = settings.engineWeight / 100;
+    if (settings.mode === "engine") return clamp(base, 0.76, 0.9);
+    if (settings.mode === "practical") return clamp(base, 0.18, 0.42);
+    if (!engine) return clamp(base * 0.55, 0.22, 0.45);
+
+    return clamp(base + (1 - sampleConfidence) * 0.18 - opponentExploit * 0.18, 0.35, 0.75);
+}
+
+function isPrepBuilderEngineUnsafe({
+    engine,
+    engineMoves,
+    engineCpLoss,
+    engineSafetyLimit,
+    settings,
+}: {
+    engine: PrepBuilderEngineMove | null;
+    engineMoves: PrepBuilderEngineMove[];
+    engineCpLoss: number | null;
+    engineSafetyLimit: number;
+    settings: PrepBuilderSettings;
+}) {
+    if (!settings.useCloudEngine || settings.mode === "practical" || engineMoves.length === 0) {
+        return false;
+    }
+    if (!engine) return true;
+    if (engineCpLoss === null) return false;
+
+    return engineCpLoss > engineSafetyLimit;
+}
+
+function getPrepBuilderEnginePenalty({
+    engine,
+    engineMoves,
+    engineCpLoss,
+    engineSafetyLimit,
+    settings,
+}: {
+    engine: PrepBuilderEngineMove | null;
+    engineMoves: PrepBuilderEngineMove[];
+    engineCpLoss: number | null;
+    engineSafetyLimit: number;
+    settings: PrepBuilderSettings;
+}) {
+    if (!settings.useCloudEngine) return 0;
+
+    const missingPenalty = engineMoves.length > 0 && !engine ? 0.14 : 0;
+    const lossPenalty =
+        engineCpLoss === null
+            ? 0
+            : clamp((engineCpLoss - engineSafetyLimit) / 220, 0, 0.28);
+
+    return missingPenalty + lossPenalty;
+}
+
+function getPrepBuilderDataPenalty({
+    opening,
+    opponentGames,
+    referenceDelta,
+    settings,
+}: {
+    opening: Pick<Opening, "white" | "draw" | "black"> | null | undefined;
+    opponentGames: number;
+    referenceDelta: number | null;
+    settings: PrepBuilderSettings;
+}) {
+    const drawShare = opening ? opening.draw / Math.max(getOpeningTotal(opening), 1) : 0;
+    const drawPenalty = clamp((drawShare - 0.55) * 0.22, 0, 0.09);
+    const tinySamplePenalty =
+        opponentGames > 0 && opponentGames < settings.minOpponentGames * 2 ? 0.08 : 0;
+    const referenceDisagreementPenalty =
+        referenceDelta !== null && referenceDelta < -0.08
+            ? clamp(Math.abs(referenceDelta) * 0.45, 0, 0.16)
+            : 0;
+
+    return drawPenalty + tinySamplePenalty + referenceDisagreementPenalty;
 }
 
 function getWeightedSideScore(openings: Opening[], side: PrepColor) {

@@ -71,6 +71,7 @@ import {
   getOpponentPrepBranchKey,
   getOpponentPrepBranchStats,
   getOpponentPrepMoveRows,
+  getPrepBuilderBranchValue,
   getPrepBuilderStopReason,
   getPrepBuilderTaskPriority,
   normalizePrepBuilderSettings,
@@ -111,6 +112,7 @@ type PrepBuilderStatus = {
 type PrepBuilderQueueItem = {
   path: number[];
   branchShare: number;
+  branchValue?: number;
   ply: number;
 };
 
@@ -1110,6 +1112,7 @@ function OpponentPrepPanel() {
       return {
         path: child.path,
         branchShare: task.branchShare,
+        branchValue: task.branchValue,
         ply: task.ply + 1,
       };
     };
@@ -1185,6 +1188,11 @@ function OpponentPrepPanel() {
             if (builderCancelRef.current) break;
 
             const nextBranchShare = task.branchShare * row.share;
+            const nextBranchValue = getPrepBuilderBranchValue({
+              opening: row,
+              userColor: userSide,
+              settings,
+            });
             const nextPly = task.ply + 1;
             const branchStopReason = getPrepBuilderStopReason({
               branchShare: nextBranchShare,
@@ -1213,6 +1221,7 @@ function OpponentPrepPanel() {
             const responseChild = await addUserResponseAtPath({
               path: child.path,
               branchShare: nextBranchShare,
+              branchValue: nextBranchValue,
               ply: nextPly,
             }, true);
             if (responseChild) queue.push(responseChild);

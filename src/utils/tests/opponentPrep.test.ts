@@ -8,6 +8,8 @@ import {
     findOpponentPrepStart,
     getOpponentPrepBranchStats,
     getOpponentPrepMoveRows,
+    getPrepBuilderBranchValue,
+    getPrepBuilderTaskPriority,
     normalizePrepBuilderSettings,
 } from "@/utils/opponentPrep";
 
@@ -237,6 +239,81 @@ describe("opponent prep helpers", () => {
         });
 
         expect(choice?.move).toBe("e5");
+    });
+
+    test("smart prep builder rejects practically tempting moves that fail the engine gate", () => {
+        const settings = normalizePrepBuilderSettings({ mode: "smart" });
+        const choice = choosePrepBuilderMove({
+            userColor: "black",
+            settings,
+            opponentOpenings: [
+                { move: "h6", white: 0, draw: 0, black: 20 },
+                { move: "e5", white: 25, draw: 20, black: 35 },
+            ],
+            referenceOpenings: [
+                { move: "h6", white: 70, draw: 20, black: 10 },
+                { move: "e5", white: 35, draw: 30, black: 35 },
+            ],
+            engineMoves: [
+                { san: "e5", scoreCpForSide: 80, rank: 1, source: "lichess" },
+                { san: "h6", scoreCpForSide: -110, rank: 5, source: "lichess" },
+            ],
+        });
+
+        expect(choice?.move).toBe("e5");
+    });
+
+    test("smart prep builder shrinks tiny opponent samples toward reference WDL", () => {
+        const settings = normalizePrepBuilderSettings({ mode: "smart" });
+        const choice = choosePrepBuilderMove({
+            userColor: "black",
+            settings,
+            opponentOpenings: [
+                { move: "c5", white: 0, draw: 0, black: 2 },
+                { move: "e5", white: 10, draw: 10, black: 20 },
+            ],
+            referenceOpenings: [
+                { move: "c5", white: 70, draw: 20, black: 10 },
+                { move: "e5", white: 40, draw: 20, black: 40 },
+            ],
+            engineMoves: [
+                { san: "e5", scoreCpForSide: 25, rank: 1, source: "lichess" },
+                { san: "c5", scoreCpForSide: 15, rank: 2, source: "lichess" },
+            ],
+        });
+
+        expect(choice?.move).toBe("e5");
+    });
+
+    test("prep builder branch priority accounts for practical danger", () => {
+        const settings = normalizePrepBuilderSettings({ mode: "smart" });
+        const riskyBranch = getPrepBuilderBranchValue({
+            opening: { white: 18, draw: 2, black: 0 },
+            userColor: "black",
+            settings,
+        });
+        const solidBranch = getPrepBuilderBranchValue({
+            opening: { white: 0, draw: 2, black: 18 },
+            userColor: "black",
+            settings,
+        });
+
+        expect(riskyBranch).toBeGreaterThan(solidBranch);
+        expect(
+            getPrepBuilderTaskPriority({
+                branchShare: 0.12,
+                branchValue: riskyBranch,
+                ply: 2,
+                settings,
+            }),
+        ).toBeGreaterThan(
+            getPrepBuilderTaskPriority({
+                branchShare: 0.12,
+                branchValue: solidBranch,
+                ply: 2,
+                settings,
+            }),
+        );
     });
 
     test("prep builder size presets hide depth thresholds behind simple choices", () => {
