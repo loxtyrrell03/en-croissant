@@ -308,8 +308,9 @@ const MIN_BOTTOM_RIGHT_HEIGHT = 120;
 const ROW_RESIZE_HANDLE_HEIGHT = 13;
 const DEFAULT_TOP_RIGHT_RATIO = 0.72;
 
-function BoardWorkspaceLayout() {
+function BoardWorkspaceLayout({ tab }: { tab: Tab }) {
   const [layout, setLayout] = useAtom(workspaceLayoutAtom);
+  const selectedBoardPanel = useAtomValue(tabFamily(tab.value));
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
@@ -334,10 +335,12 @@ function BoardWorkspaceLayout() {
   }, []);
 
   const splitAvailableHeight = Math.max(containerSize.height - ROW_RESIZE_HANDLE_HEIGHT, 0);
-  const { topRightHeight, bottomRightHeight } = resolveRightPaneHeights(
-    layout,
-    splitAvailableHeight,
-  );
+  const resolvedRightPaneHeights = resolveRightPaneHeights(layout, splitAvailableHeight);
+  const comparePanelSelected = selectedBoardPanel === "compare";
+  const topRightHeight = comparePanelSelected
+    ? containerSize.height
+    : resolvedRightPaneHeights.topRightHeight;
+  const bottomRightHeight = comparePanelSelected ? 0 : resolvedRightPaneHeights.bottomRightHeight;
 
   const clampedRightWidthPercent = clampRightWidthPercent(
     layout.rightWidthPercent,
@@ -452,6 +455,9 @@ function BoardWorkspaceLayout() {
             aria-orientation="horizontal"
             aria-label="Resize right side panels"
             onPointerDown={startRightPaneResize}
+            style={{
+              display: comparePanelSelected ? "none" : undefined,
+            }}
           />
           <div
             id="bottomRight"
@@ -547,7 +553,7 @@ function TabSwitch({
     .with("new", () => null)
     .with("play", () => (
       <TreeStateProvider id={tab.value}>
-        <BoardWorkspaceLayout />
+        <BoardWorkspaceLayout tab={tab} />
         <Suspense fallback={null}>
           <BoardGame />
         </Suspense>
@@ -555,7 +561,7 @@ function TabSwitch({
     ))
     .with("analysis", () => (
       <TreeStateProvider id={tab.value}>
-        <BoardWorkspaceLayout />
+        <BoardWorkspaceLayout tab={tab} />
         <Suspense fallback={null}>
           <BoardAnalysis />
         </Suspense>
@@ -568,7 +574,7 @@ function TabSwitch({
     ))
     .with("puzzles", () => (
       <TreeStateProvider id={tab.value}>
-        <BoardWorkspaceLayout />
+        <BoardWorkspaceLayout tab={tab} />
         <Suspense fallback={null}>
           <Puzzles id={tab.value} />
         </Suspense>
@@ -576,7 +582,7 @@ function TabSwitch({
     ))
     .with("opening-review", () => (
       <TreeStateProvider id={tab.value}>
-        <BoardWorkspaceLayout />
+        <BoardWorkspaceLayout tab={tab} />
         <Suspense fallback={null}>
           <OpeningReviewWorkspace tab={tab} />
         </Suspense>
@@ -584,7 +590,7 @@ function TabSwitch({
     ))
     .with("mistake-review", () => (
       <TreeStateProvider id={tab.value}>
-        <BoardWorkspaceLayout />
+        <BoardWorkspaceLayout tab={tab} />
         <Suspense fallback={null}>
           <OpeningReviewWorkspace tab={tab} />
         </Suspense>

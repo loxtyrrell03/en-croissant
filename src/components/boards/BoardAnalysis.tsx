@@ -422,7 +422,7 @@ function BoardAnalysis() {
                   </DeferredPanel>
                 </EngineDockedPanel>
               </Tabs.Panel>
-              <Tabs.Panel value="compare" flex={1} style={scrollablePanelStyle}>
+              <Tabs.Panel value="compare" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
                 <DeferredPanel>
                   <ComparePanel />
                 </DeferredPanel>

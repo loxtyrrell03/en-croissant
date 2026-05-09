@@ -87,19 +87,24 @@ export default function EnginePanelContent({ compact = false }: { compact?: bool
   const engineContent = (
     <Stack gap={compact ? 3 : "sm"} p={compact ? 3 : 0}>
       {!compact && (
-        <Paper withBorder p="xs">
-          <Group justify="space-between" gap="xs" wrap="nowrap">
-            <Text size="sm" fw={600}>
-              Engine arrows
-            </Text>
-            <Switch
-              size="md"
-              checked={showEngineArrows}
-              onChange={(event) => setShowEngineArrows(event.currentTarget.checked)}
-              aria-label={showEngineArrows ? "Hide engine arrows" : "Show engine arrows"}
-            />
-          </Group>
-        </Paper>
+        <Group justify="space-between" gap="xs" wrap="nowrap" px={2}>
+          <Text size="xs" c="dimmed" truncate style={{ lineHeight: 1.6, minWidth: 0 }}>
+            Press <Kbd>E</Kbd> to toggle engine. <Kbd>Space</Kbd> plays best move. Click moves to
+            explore.
+          </Text>
+          <Switch
+            size="sm"
+            label="Arrows"
+            labelPosition="left"
+            checked={showEngineArrows}
+            onChange={(event) => setShowEngineArrows(event.currentTarget.checked)}
+            aria-label={showEngineArrows ? "Hide engine arrows" : "Show engine arrows"}
+            styles={{
+              root: { flexShrink: 0 },
+              label: { fontSize: "var(--mantine-font-size-xs)", fontWeight: 600 },
+            }}
+          />
+        </Group>
       )}
       {!compact &&
         pos &&
@@ -134,12 +139,6 @@ export default function EnginePanelContent({ compact = false }: { compact?: bool
             </Group>
           </Group>
         </Paper>
-      )}
-      {!compact && (
-        <Text size="xs" c="dimmed" px={0} style={{ lineHeight: 1.8 }}>
-          Press <Kbd>E</Kbd> to toggle engine. <Kbd>Space</Kbd> plays best move. Click moves to
-          explore.
-        </Text>
       )}
       <Accordion
         variant="separated"

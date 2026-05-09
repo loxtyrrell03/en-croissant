@@ -873,7 +873,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                   <EnginePlanExplorerPanel />
                 </EngineDockedPanel>
               </Tabs.Panel>
-              <Tabs.Panel value="compare" flex={1} style={scrollablePanelStyle}>
+              <Tabs.Panel value="compare" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
                 <ComparePanel />
               </Tabs.Panel>
               <Tabs.Panel value="info" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>

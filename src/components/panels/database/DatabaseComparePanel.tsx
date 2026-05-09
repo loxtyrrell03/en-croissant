@@ -61,8 +61,8 @@ import OpeningsTable, {
 
 const LICHESS_ALL_SOURCE = "online:lichess-all";
 const LICHESS_MASTER_SOURCE = "online:lichess-master";
-const STACKED_COMPARE_WIDTH = 760;
-const DENSE_COMPARE_WIDTH = 960;
+const STACKED_COMPARE_WIDTH = 640;
+const DENSE_COMPARE_WIDTH = 900;
 
 type CompareSource =
   | {
