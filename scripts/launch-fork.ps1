@@ -8,6 +8,18 @@ $port = 1420
 
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 
+if (-not ([System.Management.Automation.PSTypeName]"NativeErrorMode").Type) {
+  Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+
+public static class NativeErrorMode {
+  [DllImport("kernel32.dll")]
+  public static extern UInt32 SetErrorMode(UInt32 uMode);
+}
+"@
+}
+
 function Write-LaunchLog {
   param([string]$Message)
 
@@ -114,6 +126,52 @@ function Start-SafeDevFallback {
     )
 }
 
+function Format-ExitCode {
+  param([int]$ExitCode)
+
+  return "0x{0:X8}" -f ([uint32]$ExitCode)
+}
+
+function Remove-DebugBinary {
+  $debugFiles = @(
+    $debugExe,
+    (Join-Path $srcTauri "target\debug\en-croissant-fork.d"),
+    (Join-Path $srcTauri "target\debug\en_croissant_fork.pdb")
+  )
+
+  foreach ($path in $debugFiles) {
+    if (Test-Path $path) {
+      Remove-Item -LiteralPath $path -Force
+      Write-LaunchLog "Removed stale debug artifact $path."
+    }
+  }
+}
+
+function Start-ForkBinary {
+  Write-LaunchLog "Starting fork binary $debugExe."
+
+  # Inherit a quiet error mode so loader failures become exit codes that the
+  # launcher can repair instead of raw Windows Application Error popups.
+  $previousErrorMode = [NativeErrorMode]::SetErrorMode(0x8003)
+
+  try {
+    $process = Start-Process -FilePath $debugExe -WorkingDirectory $srcTauri -PassThru
+  }
+  finally {
+    [NativeErrorMode]::SetErrorMode($previousErrorMode) | Out-Null
+  }
+
+  Start-Sleep -Seconds 4
+  $process.Refresh()
+
+  if ($process.HasExited) {
+    $exitCode = Format-ExitCode $process.ExitCode
+    throw "Fork binary exited during startup with code $exitCode."
+  }
+
+  Write-LaunchLog "Fork process $($process.Id) is running."
+}
+
 $runningFork = Get-Process -Name "en-croissant-fork" -ErrorAction SilentlyContinue | Select-Object -First 1
 
 if ($runningFork) {
@@ -126,8 +184,14 @@ if ($runningFork) {
 try {
   if (Test-DebugBinaryFresh) {
     Start-DevServer
-    Write-LaunchLog "Starting fork binary $debugExe."
-    Start-Process -FilePath $debugExe -WorkingDirectory $srcTauri
+    try {
+      Start-ForkBinary
+    }
+    catch {
+      Write-LaunchLog "Prebuilt debug binary launch failed: $($_.Exception.Message)"
+      Remove-DebugBinary
+      Start-SafeDevFallback
+    }
     exit 0
   }
 
