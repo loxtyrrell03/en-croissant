@@ -25,6 +25,7 @@ import {
   type LocalEngine,
   getBestMoves as localGetBestMoves,
   stopEngine,
+  stopMatchingEngine,
 } from "@/utils/engines";
 import { getBestMoves as lichessGetBestMoves } from "@/utils/lichess/api";
 import { useThrottledEffect } from "@/utils/misc";
@@ -334,8 +335,9 @@ async function getLocalBestMovesWithLichessCloud(
   options: EngineOptions,
 ) {
   const localStart = startLocalBestMoves(engine, tab, goMode, options);
+  let cloudCoveredLocalSearch = false;
   // Keep Stockfish running behind cloud hits. Cloud replies can arrive after navigation,
-  // and stopEngine is scoped to the whole tab/engine rather than this exact position.
+  // so only stop the speculative local search if it still matches this exact request.
   const cloudPromise = withTimeout(
     lichessGetBestMoves(tab, goMode, options),
     LOCAL_ENGINE_CLOUD_TIMEOUT_MS,
@@ -347,17 +349,19 @@ async function getLocalBestMovesWithLichessCloud(
     );
 
     if (quickCloudMoves?.[1]?.length) {
+      cloudCoveredLocalSearch = true;
       return quickCloudMoves;
     }
 
     const cloudMoves = await cloudPromise;
     if (cloudMoves?.[1]?.length) {
+      cloudCoveredLocalSearch = true;
       return cloudMoves;
     }
 
     return await localStart.promise;
   } finally {
-    localStart.cleanup();
+    localStart.cleanup(cloudCoveredLocalSearch);
   }
 }
 
@@ -366,7 +370,7 @@ function startLocalBestMoves(
   tab: string,
   goMode: GoMode,
   options: EngineOptions,
-): { promise: Promise<[number, BestMoves[]] | null>; cleanup: () => void } {
+): { promise: Promise<[number, BestMoves[]] | null>; cleanup: (stopSearch: boolean) => void } {
   let unlisten: (() => void) | null = null;
   let resolveEvent: ((value: [number, BestMoves[]] | null) => void) | null = null;
   let disposed = false;
@@ -406,10 +410,15 @@ function startLocalBestMoves(
 
   return {
     promise,
-    cleanup: () => {
+    cleanup: (stopSearch: boolean) => {
       disposed = true;
       unlisten?.();
       resolveEvent?.(null);
+      if (stopSearch) {
+        void stopMatchingEngine(engine, tab, goMode, options).catch((error) => {
+          console.error(`Failed to stop covered local analysis for ${engine.name}`, error);
+        });
+      }
     },
   };
 }

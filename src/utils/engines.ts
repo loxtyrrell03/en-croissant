@@ -75,6 +75,17 @@ export function stopEngine(engine: LocalEngine, tab: string): Promise<void> {
     });
 }
 
+export function stopMatchingEngine(
+    engine: LocalEngine,
+    tab: string,
+    goMode: GoMode,
+    options: EngineOptions,
+): Promise<void> {
+    return commands.stopMatchingEngine(engine.id, tab, goMode, options).then((r) => {
+        unwrap(r);
+    });
+}
+
 export function killEngine(engine: LocalEngine, tab: string): Promise<void> {
     return commands.killEngine(engine.id, tab).then((r) => {
         unwrap(r);

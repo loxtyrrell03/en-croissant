@@ -19,6 +19,7 @@ use shakmaty::{
     FromSetup, Position, PositionError, Role,
 };
 use specta::Type;
+use tauri::{AppHandle, Manager};
 use tauri_specta::Event;
 use tokio::sync::Mutex;
 use vampirc_uci::{
@@ -45,6 +46,7 @@ use crate::{
 };
 
 const MISTAKE_REVIEW_EVAL_CACHE_BATCH_SIZE: usize = 200;
+const ENGINE_IDLE_SHUTDOWN_AFTER: Duration = Duration::from_secs(20);
 
 pub struct EngineProcess {
     base: BaseEngine,
@@ -55,6 +57,7 @@ pub struct EngineProcess {
     options: EngineOptions,
     go_mode: GoMode,
     running: bool,
+    idle_generation: u64,
     real_multipv: u16,
     start: Instant,
 }
@@ -76,6 +79,7 @@ impl EngineProcess {
                 real_multipv: 0,
                 go_mode: GoMode::Infinite,
                 running: false,
+                idle_generation: 0,
                 start: Instant::now(),
             },
             reader,
@@ -140,19 +144,30 @@ impl EngineProcess {
         self.go_mode = mode.clone();
         self.base.go(mode).await?;
         self.running = true;
+        self.idle_generation = self.idle_generation.wrapping_add(1);
         self.start = Instant::now();
         Ok(())
     }
 
-    async fn stop(&mut self) -> Result<(), Error> {
-        self.base.stop().await?;
+    async fn stop(&mut self) -> Result<u64, Error> {
+        if self.running {
+            self.base.stop().await?;
+        }
         self.running = false;
-        Ok(())
+        self.idle_generation = self.idle_generation.wrapping_add(1);
+        Ok(self.idle_generation)
+    }
+
+    fn mark_finished(&mut self) -> u64 {
+        self.running = false;
+        self.idle_generation = self.idle_generation.wrapping_add(1);
+        self.idle_generation
     }
 
     async fn kill(&mut self) -> Result<(), Error> {
         self.base.quit().await?;
         self.running = false;
+        self.idle_generation = self.idle_generation.wrapping_add(1);
         Ok(())
     }
 
@@ -288,24 +303,55 @@ pub async fn kill_engine(
     tab: String,
     state: tauri::State<'_, AppState>,
 ) -> Result<(), Error> {
-    let key = (tab, engine);
-    if let Some(process) = state.engine_processes.get(&key) {
+    let key = (tab.clone(), engine.clone());
+    if let Some(process_entry) = state.engine_processes.get(&key) {
+        let process = process_entry.value().clone();
+        drop(process_entry);
         let mut process = process.lock().await;
         process.kill().await?;
     }
+    state.engine_processes.remove(&key);
     Ok(())
 }
+
 #[tauri::command]
 #[specta::specta]
 pub async fn stop_engine(
     engine: String,
     tab: String,
+    app: tauri::AppHandle,
     state: tauri::State<'_, AppState>,
 ) -> Result<(), Error> {
-    let key = (tab, engine);
-    if let Some(process) = state.engine_processes.get(&key) {
+    let key = (tab.clone(), engine.clone());
+    if let Some(process_entry) = state.engine_processes.get(&key) {
+        let process = process_entry.value().clone();
+        drop(process_entry);
         let mut process = process.lock().await;
-        process.stop().await?;
+        let generation = process.stop().await?;
+        schedule_idle_engine_shutdown(&app, key, generation);
+    }
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn stop_matching_engine(
+    engine: String,
+    tab: String,
+    go_mode: GoMode,
+    options: EngineOptions,
+    app: tauri::AppHandle,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), Error> {
+    let key = (tab.clone(), engine.clone());
+    if let Some(process_entry) = state.engine_processes.get(&key) {
+        let process = process_entry.value().clone();
+        drop(process_entry);
+        let mut process = process.lock().await;
+        if process.go_mode == go_mode && process.options == options {
+            let generation = process.stop().await?;
+            schedule_idle_engine_shutdown(&app, key, generation);
+        }
     }
     Ok(())
 }
@@ -342,6 +388,7 @@ pub async fn get_best_moves(
     let key = (tab.clone(), id.clone());
 
     if state.engine_processes.contains_key(&key) {
+        let mut wait_for_stop = false;
         {
             let process = state.engine_processes.get_mut(&key).unwrap();
             let mut process = process.lock().await;
@@ -351,10 +398,15 @@ pub async fn get_best_moves(
                     process.last_best_moves.clone(),
                 )));
             }
-            process.stop().await?;
+            if process.running {
+                process.stop().await?;
+                wait_for_stop = true;
+            }
         }
-        // give time for engine to stop and process previous lines
-        tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+        if wait_for_stop {
+            // Give the reader task time to consume the engine's bestmove before reusing it.
+            tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+        }
         {
             let process = state.engine_processes.get_mut(&key).unwrap();
             let mut process = process.lock().await;
@@ -375,6 +427,7 @@ pub async fn get_best_moves(
     let lim = RateLimiter::direct(Quota::per_second(nonzero!(2u32)));
 
     while let Some(line) = reader.next_line().await? {
+        let mut idle_generation = None;
         let mut proc = process.lock().await;
         match parse_one(&line) {
             UciMessage::Info(attrs) => {
@@ -445,10 +498,16 @@ pub async fn get_best_moves(
                 }
                 .emit(&app)?;
                 proc.last_progress = 100.0;
+                idle_generation = Some(proc.mark_finished());
             }
             _ => {}
         }
         proc.base.log_engine(&line);
+        drop(proc);
+
+        if let Some(generation) = idle_generation {
+            schedule_idle_engine_shutdown(&app, key.clone(), generation);
+        }
     }
     info!("Engine process finished: tab: {}, engine: {}", tab, engine);
     state.engine_processes.remove(&key);
@@ -2240,6 +2299,34 @@ fn mistake_review_time_control_bucket(time_control: &Option<String>) -> String {
     } else {
         "classical".to_string()
     }
+}
+
+fn schedule_idle_engine_shutdown(app: &AppHandle, key: (String, String), generation: u64) {
+    let app = app.clone();
+    tauri::async_runtime::spawn(async move {
+        tokio::time::sleep(ENGINE_IDLE_SHUTDOWN_AFTER).await;
+
+        let state = app.state::<AppState>();
+        let Some(process_entry) = state.engine_processes.get(&key) else {
+            return;
+        };
+        let process = process_entry.value().clone();
+        drop(process_entry);
+
+        let mut process = process.lock().await;
+        if process.running || process.idle_generation != generation {
+            return;
+        }
+
+        if let Err(error) = process.kill().await {
+            warn!(
+                "Failed to shut down idle engine process for tab: {}, engine: {}: {:?}",
+                key.0, key.1, error
+            );
+            return;
+        }
+        state.engine_processes.remove(&key);
+    });
 }
 
 fn mistake_review_game_matches_time_filters(

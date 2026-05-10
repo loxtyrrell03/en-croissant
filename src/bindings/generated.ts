@@ -93,6 +93,14 @@ async stopEngine(engine: string, tab: string) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+async stopMatchingEngine(engine: string, tab: string, goMode: GoMode, options: EngineOptions) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("stop_matching_engine", { engine, tab, goMode, options }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async killEngine(engine: string, tab: string) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("kill_engine", { engine, tab }) };
