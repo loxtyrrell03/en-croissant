@@ -1,7 +1,7 @@
 import { Box, Stack } from "@mantine/core";
 import type { ReactNode } from "react";
 
-const UNDER_BOARD_HEIGHT = "clamp(12rem, 28%, 18rem)";
+const UNDER_BOARD_HEIGHT = "clamp(17rem, 35%, 24rem)";
 
 export function BoardWithAnnotationLayout({
   board,
@@ -30,10 +30,11 @@ export function BoardWithAnnotationLayout({
       </Stack>
       {underBoard && (
         <Box
+          data-testid="under-board-panel"
           style={{
             flex: `0 0 ${UNDER_BOARD_HEIGHT}`,
             minWidth: 0,
-            minHeight: "12rem",
+            minHeight: "17rem",
             overflow: "hidden",
           }}
         >

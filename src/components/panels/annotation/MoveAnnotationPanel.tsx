@@ -32,9 +32,10 @@ function MoveAnnotationPanel({ path, onClose }: { path: number[]; onClose: () =>
 
   return (
     <Box
-      mt={6}
-      mb="xs"
-      p="xs"
+      data-testid="move-annotation-panel"
+      mt={4}
+      mb={4}
+      p={5}
       style={{
         border: "1px solid var(--mantine-color-default-border)",
         borderRadius: "var(--mantine-radius-sm)",
@@ -43,9 +44,9 @@ function MoveAnnotationPanel({ path, onClose }: { path: number[]; onClose: () =>
       onClick={(event) => event.stopPropagation()}
       onContextMenu={(event) => event.stopPropagation()}
     >
-      <Stack gap="xs">
-        <Group gap="xs" wrap="nowrap">
-          <Group gap={4} wrap="wrap" style={{ flex: 1, minWidth: 0 }}>
+      <Stack gap={3}>
+        <Group gap={3} wrap="nowrap">
+          <Group gap={3} wrap="wrap" style={{ flex: 1, minWidth: 0 }}>
             {BASIC.map((annotation) => (
               <SymbolButton
                 key={annotation}
@@ -59,7 +60,7 @@ function MoveAnnotationPanel({ path, onClose }: { path: number[]; onClose: () =>
               label={showMoreSymbols ? "Hide annotation symbols" : "More annotation symbols"}
             >
               <ActionIcon
-                size="sm"
+                size={22}
                 variant="default"
                 onClick={() => setShowMoreSymbols((value) => !value)}
                 style={{
@@ -67,19 +68,19 @@ function MoveAnnotationPanel({ path, onClose }: { path: number[]; onClose: () =>
                   transform: showMoreSymbols ? "rotate(180deg)" : "rotate(0deg)",
                 }}
               >
-                <IconChevronDown size="0.875rem" />
+                <IconChevronDown size="0.75rem" />
               </ActionIcon>
             </Tooltip>
           </Group>
           <Tooltip label="Close annotations">
-            <ActionIcon size="sm" variant="default" onClick={onClose}>
-              <IconX size="0.875rem" />
+            <ActionIcon size={22} variant="default" onClick={onClose}>
+              <IconX size="0.75rem" />
             </ActionIcon>
           </Tooltip>
         </Group>
         <Collapse in={showMoreSymbols}>
-          <Stack gap={6}>
-            <Group gap={4} wrap="wrap">
+          <Stack gap={3}>
+            <Group gap={3} wrap="wrap">
               {ADVANTAGE.map((annotation) => (
                 <SymbolButton
                   key={annotation}
@@ -89,7 +90,7 @@ function MoveAnnotationPanel({ path, onClose }: { path: number[]; onClose: () =>
                 />
               ))}
             </Group>
-            <Group gap={4} wrap="wrap">
+            <Group gap={3} wrap="wrap">
               {EXTRA.map((annotation) => (
                 <SymbolButton
                   key={annotation}
@@ -101,7 +102,7 @@ function MoveAnnotationPanel({ path, onClose }: { path: number[]; onClose: () =>
             </Group>
           </Stack>
         </Collapse>
-        <AnnotationEditor path={path} />
+        <AnnotationEditor path={path} compact />
       </Stack>
     </Box>
   );
@@ -126,12 +127,14 @@ const SymbolButton = memo(function SymbolButton({
   return (
     <Tooltip label={translationKey ? t(`Annotate.${translationKey}`) : name} position="bottom">
       <ActionIcon
-        size="sm"
+        size={22}
         onClick={() => setAnnotationAtPath(path, annotation)}
         variant={isActive ? "filled" : "default"}
         color={isBasicAnnotation(annotation) ? color : theme.primaryColor}
       >
-        <Text fz="xs">{annotation}</Text>
+        <Text fz={10} lh={1}>
+          {annotation}
+        </Text>
       </ActionIcon>
     </Tooltip>
   );

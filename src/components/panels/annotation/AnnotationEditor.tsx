@@ -10,10 +10,11 @@ import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import { spellCheckAtom } from "@/state/atoms";
 import { getNodeAtPath } from "@/utils/treeReducer";
+import classes from "./AnnotationEditor.module.css";
 
 const COMMENT_SAVE_DELAY_MS = 350;
 
-function AnnotationEditor({ path }: { path?: number[] }) {
+function AnnotationEditor({ path, compact = false }: { path?: number[]; compact?: boolean }) {
   const { t } = useTranslation();
 
   const store = useContext(TreeStateContext)!;
@@ -83,6 +84,7 @@ function AnnotationEditor({ path }: { path?: number[] }) {
   return (
     <RichTextEditor
       editor={editor}
+      className={compact ? classes.compactEditor : undefined}
       spellCheck={spellCheck}
       labels={{
         boldControlLabel: t("RichText.Bold"),

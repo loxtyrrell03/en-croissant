@@ -90,8 +90,13 @@ function GameNotation({ topBar, controls }: { topBar?: boolean; controls?: React
   useHotkeys(keyMap.TOGGLE_BLUR.keys, () => setInvisible((v) => !v));
 
   return (
-    <Paper withBorder flex={1} style={{ position: "relative", overflow: "hidden" }}>
-      <Group h="100%" wrap="nowrap" align="stretch" gap={0}>
+    <Paper
+      data-testid="game-notation"
+      withBorder
+      flex={1}
+      style={{ position: "relative", overflow: "hidden", minHeight: 0 }}
+    >
+      <Group h="100%" wrap="nowrap" align="stretch" gap={0} style={{ minHeight: 0 }}>
         {controls && (
           <>
             <ScrollArea type="never" py="md" mx="xs" style={{ flexShrink: 0 }}>
@@ -100,9 +105,15 @@ function GameNotation({ topBar, controls }: { topBar?: boolean; controls?: React
             <Divider orientation="vertical" />
           </>
         )}
-        <Stack h="100%" gap={0} style={{ flex: 1, minWidth: 0 }}>
+        <Stack h="100%" gap={0} style={{ flex: 1, minWidth: 0, minHeight: 0 }}>
           {topBar && <NotationHeader />}
-          <ScrollArea flex={1} offsetScrollbars scrollbars="y" viewportRef={viewport}>
+          <ScrollArea
+            flex={1}
+            offsetScrollbars
+            scrollbars="y"
+            viewportRef={viewport}
+            style={{ minHeight: 0 }}
+          >
             <Stack gap="xs">
               <Box>
                 {invisible && (
