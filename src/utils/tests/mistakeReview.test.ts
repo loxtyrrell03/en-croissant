@@ -3,6 +3,7 @@ import { createEmptyCard } from "ts-fsrs";
 import { describe, expect, test } from "vitest";
 import { scheduleSm2Card, type Position } from "@/components/files/opening";
 import {
+    classifyMistakeReviewNature,
     classifyMistakeReviewAttempt,
     DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT,
     formatMistakeReviewMoveTime,
@@ -11,6 +12,9 @@ import {
     formatMistakeReviewLastSeen,
     getMistakeReviewDailyBatch,
     getMistakeReviewDailyProgress,
+    getMistakeReviewNature,
+    getMistakeReviewNatureBatch,
+    getMistakeReviewNatureCounts,
     getMistakeReviewPhase,
     getMistakeReviewPhaseBatch,
     getMistakeReviewPhaseCounts,
@@ -31,6 +35,8 @@ const ONE_MINUTE_MS = 60 * 1000;
 const OPENING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 5";
 const MIDDLEGAME_FEN = "r1bq1rk1/ppp2ppp/2n2n2/3pp3/3PP3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 20";
 const ENDGAME_FEN = "8/8/8/8/8/8/4K3/4k3 w - - 0 40";
+const HANGING_KNIGHT_FEN = "4k3/8/7p/8/8/5N2/8/4K3 w - - 0 1";
+const FORK_BLUNDER_FEN = "4k3/8/8/8/1n6/8/8/R3K2R w KQ - 0 1";
 
 function position(overrides: Partial<Position> = {}): Position {
     return {
@@ -514,6 +520,149 @@ describe("mistake review helpers", () => {
                 }),
             ),
         ).toBe("middlegame");
+    });
+
+    test("classifies tactical and positional mistake nature from engine line shape", () => {
+        const tactical = classifyMistakeReviewNature({
+            bestMoveSan: "Nxe5+",
+            bestMoveUci: "f3e5",
+            playedMoveSan: "h3",
+            pvSan: ["Nxe5+", "dxe5", "Qh5"],
+            pvUci: ["f3e5", "d6e5", "d1h5"],
+            cpLoss: 220,
+            winProbabilityDrop: 18,
+        });
+        const positional = classifyMistakeReviewNature({
+            bestMoveSan: "Re1",
+            playedMoveSan: "a3",
+            pvSan: ["Re1", "Qc7", "Bb3", "Rad8"],
+            cpLoss: 95,
+            winProbabilityDrop: 5,
+        });
+
+        expect(tactical.nature).toBe("tactical");
+        expect(tactical.aspect).toBe("missed");
+        expect(tactical.confidence).toBe("high");
+        expect(tactical.reason).toContain("Nxe5+");
+        expect(positional.nature).toBe("positional");
+        expect(positional.confidence).toBe("high");
+    });
+
+    test("classifies immediate material hangs as tactical even with quiet engine text", () => {
+        const hangingPiece = classifyMistakeReviewNature({
+            fen: HANGING_KNIGHT_FEN,
+            playedMoveSan: "Ng5",
+            playedMoveUci: "f3g5",
+            bestMoveSan: "Kd2",
+            bestMoveUci: "e1d2",
+            pvSan: ["Kd2", "Kd7", "Ke3"],
+            pvUci: ["e1d2", "e8d7", "d2e3"],
+            cpLoss: 120,
+            winProbabilityDrop: 6,
+        });
+
+        expect(hangingPiece.nature).toBe("tactical");
+        expect(hangingPiece.aspect).toBe("allowed");
+        expect(hangingPiece.confidence).toBe("high");
+        expect(hangingPiece.reason).toContain("capturable by a pawn");
+    });
+
+    test("classifies short fork threats after the blunder as tactical", () => {
+        const fork = classifyMistakeReviewNature({
+            fen: FORK_BLUNDER_FEN,
+            playedMoveSan: "Rh3",
+            playedMoveUci: "h1h3",
+            bestMoveSan: "Kd1",
+            bestMoveUci: "e1d1",
+            pvSan: ["Kd1", "Nc2", "Kc1"],
+            pvUci: ["e1d1", "b4c2", "d1c1"],
+            cpLoss: 130,
+            winProbabilityDrop: 7,
+        });
+
+        expect(fork.nature).toBe("tactical");
+        expect(fork.confidence).toBe("high");
+        expect(fork.reason).toContain("fork");
+    });
+
+    test("distinguishes allowed and missed tactical resources", () => {
+        const allowed = classifyMistakeReviewNature({
+            fen: FORK_BLUNDER_FEN,
+            playedMoveSan: "Rh3",
+            playedMoveUci: "h1h3",
+            bestMoveSan: "Kd1",
+            bestMoveUci: "e1d1",
+            pvSan: ["Kd1", "Nxa2"],
+            pvUci: ["e1d1", "b4a2"],
+            refutationSan: ["Nc2+"],
+            refutationUci: ["b4c2"],
+            cpLoss: 130,
+            winProbabilityDrop: 7,
+        });
+        const missed = classifyMistakeReviewNature({
+            fen: "4k3/8/8/8/1n6/8/8/R3K2R b KQ - 0 1",
+            bestMoveSan: "Nc2+",
+            bestMoveUci: "b4c2",
+            pvSan: ["Nc2+"],
+            pvUci: ["b4c2"],
+            playedMoveSan: "Kd7",
+            playedMoveUci: "e8d7",
+            cpLoss: 130,
+            winProbabilityDrop: 7,
+        });
+
+        expect(allowed.nature).toBe("tactical");
+        expect(allowed.aspect).toBe("allowed");
+        expect(allowed.allowedNature).toBe("tactical");
+        expect(allowed.missedNature).toBe("positional");
+        expect(missed.nature).toBe("tactical");
+        expect(missed.aspect).toBe("missed");
+        expect(missed.missedNature).toBe("tactical");
+    });
+
+    test("nature training batches tactical and positional cards", () => {
+        const now = new Date("2026-04-26T12:00:00Z");
+        const tacticalDue = position({
+            reviewKey: "tactical-due",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-24T12:00:00Z"),
+            } as Position["card"],
+            mistakeReview: {
+                ...position().mistakeReview!,
+                nature: "tactical",
+                severity: "blunder",
+            },
+        });
+        const tacticalFresh = position({
+            reviewKey: "tactical-fresh",
+            mistakeReview: {
+                ...position().mistakeReview!,
+                bestMoveSan: "Bxh7+",
+                pvSan: ["Bxh7+", "Kxh7", "Ng5+"],
+            },
+        });
+        const positional = position({
+            reviewKey: "positional",
+            mistakeReview: {
+                ...position().mistakeReview!,
+                nature: "positional",
+            },
+        });
+
+        const positions = [positional, tacticalFresh, tacticalDue];
+        const counts = getMistakeReviewNatureCounts(positions, { now });
+        const tacticalBatch = getMistakeReviewNatureBatch(positions, "tactical", { now });
+
+        expect(getMistakeReviewNature(tacticalFresh)).toBe("tactical");
+        expect(getMistakeReviewNature(positional)).toBe("positional");
+        expect(counts.tactical).toEqual({ total: 2, due: 1 });
+        expect(counts.positional).toEqual({ total: 1, due: 0 });
+        expect(tacticalBatch.map((item) => item.reviewKey)).toEqual([
+            "tactical-due",
+            "tactical-fresh",
+        ]);
     });
 
     test("time management batch keeps long-think mistakes first", () => {

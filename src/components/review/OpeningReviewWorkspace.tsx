@@ -140,15 +140,26 @@ import {
   formatMistakeReviewLastSeen,
   getMistakeReviewDailyBatch,
   getMistakeReviewDailyProgress,
+  getMistakeReviewNature,
+  getMistakeReviewNatureAspect,
+  getMistakeReviewNatureBatch,
+  getMistakeReviewNatureConfidence,
+  getMistakeReviewNatureCounts,
+  getMistakeReviewNatureReason,
   getMistakeReviewPhase,
   getMistakeReviewPhaseBatch,
   getMistakeReviewPhaseCounts,
   getMistakeReviewSeverityWeight,
   getMistakeReviewTimeManagementBatch,
+  mistakeReviewNatureAspectLabel,
+  mistakeReviewNatureColor,
+  mistakeReviewNatureLabel,
+  MISTAKE_REVIEW_NATURES,
   MISTAKE_REVIEW_PHASES,
   type MistakeReviewAttemptLabel,
   type MistakeReviewDailySettings,
   mistakeReviewSeverityLabel,
+  type MistakeReviewNature,
   type MistakeReviewPhase,
   readMistakeReviewDeck,
   type MistakeReviewDeck,
@@ -272,6 +283,7 @@ type OpeningReviewPositionSort =
 type OpeningReviewColourFilter = "any" | "white" | "black";
 type OpeningReviewGapFilter = "all" | Exclude<OpeningReviewGapTrainingType, "other">;
 type MistakeReviewPhaseFilter = "all" | MistakeReviewPhase;
+type MistakeReviewNatureFilter = "all" | MistakeReviewNature;
 type MistakeReviewThinkTimeFilter = "all" | "known" | "long" | "missing";
 type OpeningReviewOpeningInfo = {
   rawName: string;
@@ -1506,6 +1518,10 @@ function OpeningReviewPanel({
     () => (isMistakeReview ? getMistakeReviewPhaseCounts(deck.positions) : null),
     [deck.positions, isMistakeReview],
   );
+  const mistakeNatureCounts = useMemo(
+    () => (isMistakeReview ? getMistakeReviewNatureCounts(deck.positions) : null),
+    [deck.positions, isMistakeReview],
+  );
   const timeManagementMinMoveSeconds =
     mistakeTimeManagementSettings?.minMoveSeconds ??
     DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds;
@@ -1885,12 +1901,14 @@ function OpeningReviewPanel({
       if (scopeIndices) {
         notifications.show({
           title: "Focused review started",
-          message: `Training due gaps in ${scopeLabel ?? "the selected filter"}.`,
+          message: `Training due ${
+            isMistakeReview ? "mistakes" : "gaps"
+          } in ${scopeLabel ?? "the selected filter"}.`,
           color: "blue",
         });
       }
     },
-    [newPractice, setSessionStats],
+    [isMistakeReview, newPractice, setSessionStats],
   );
 
   const startFullPractice = useCallback(
@@ -1923,14 +1941,14 @@ function OpeningReviewPanel({
       if (scopeIndices) {
         notifications.show({
           title: "Focused review started",
-          message: `Training ${remainingPositions.length} gap${
+          message: `Training ${remainingPositions.length} ${isMistakeReview ? "mistake" : "gap"}${
             remainingPositions.length === 1 ? "" : "s"
           } in ${scopeLabel ?? "the selected filter"}.`,
           color: "blue",
         });
       }
     },
-    [deck.positions, newPractice, setSessionStats],
+    [deck.positions, isMistakeReview, newPractice, setSessionStats],
   );
 
   const startOpeningPlanGapPractice = useCallback(() => {
@@ -2000,6 +2018,48 @@ function OpeningReviewPanel({
           remainingPositions.length === 1 ? "" : "s"
         }.`,
         color: "blue",
+      });
+    },
+    [deck.positions, isMistakeReview, newPractice, setSessionStats],
+  );
+
+  const startMistakeNaturePractice = useCallback(
+    (nature: MistakeReviewNature) => {
+      if (!isMistakeReview) return;
+
+      const label =
+        MISTAKE_REVIEW_NATURES.find((natureOption) => natureOption.id === nature)?.label ??
+        "Mistake type";
+      const natureBatch = getMistakeReviewNatureBatch(deck.positions, nature);
+      const remainingPositions = natureBatch
+        .map((position) => deck.positions.indexOf(position))
+        .filter((positionIndex) => positionIndex >= 0);
+
+      if (remainingPositions.length === 0) {
+        notifications.show({
+          title: "No positions to train",
+          message: `No ${label.toLowerCase()} mistakes found in this set yet.`,
+          color: "yellow",
+        });
+        return;
+      }
+
+      const nextStats = {
+        mode: "srs-list" as const,
+        remainingPositions,
+        correct: 0,
+        incorrect: 0,
+        streak: 0,
+        bestStreak: 0,
+      };
+      setSessionStats((current) => ({ ...current, ...nextStats }));
+      newPractice(nextStats);
+      notifications.show({
+        title: "Train by type started",
+        message: `Training ${remainingPositions.length} ${label.toLowerCase()} mistake${
+          remainingPositions.length === 1 ? "" : "s"
+        }.`,
+        color: mistakeReviewNatureColor(nature),
       });
     },
     [deck.positions, isMistakeReview, newPractice, setSessionStats],
@@ -2616,6 +2676,53 @@ function OpeningReviewPanel({
                         </Button>
                       </Box>
                     </Tooltip>
+                  )}
+                  {isMistakeReview && mistakeNatureCounts && (
+                    <Menu width={280} position="bottom-end" withinPortal>
+                      <Menu.Target>
+                        <Button
+                          variant="light"
+                          color="red"
+                          leftSection={<IconTargetArrow size={18} />}
+                          rightSection={<IconChevronDown size={16} />}
+                          disabled={MISTAKE_REVIEW_NATURES.every(
+                            (nature) => mistakeNatureCounts[nature.id].total === 0,
+                          )}
+                          style={{ flex: "1 1 150px" }}
+                        >
+                          Train by type
+                        </Button>
+                      </Menu.Target>
+                      <Menu.Dropdown>
+                        {MISTAKE_REVIEW_NATURES.map((nature) => {
+                          const count = mistakeNatureCounts[nature.id];
+                          return (
+                            <Menu.Item
+                              key={nature.id}
+                              disabled={count.total === 0}
+                              onClick={() => startMistakeNaturePractice(nature.id)}
+                              rightSection={
+                                <Group gap={4} wrap="nowrap">
+                                  <Badge size="xs" variant="light" color="yellow">
+                                    {count.due} due
+                                  </Badge>
+                                  <Badge size="xs" variant="light" color="gray">
+                                    {count.total}
+                                  </Badge>
+                                </Group>
+                              }
+                            >
+                              <Stack gap={0}>
+                                <Text size="sm">{nature.label}</Text>
+                                <Text size="xs" c="dimmed" lineClamp={1}>
+                                  {nature.description}
+                                </Text>
+                              </Stack>
+                            </Menu.Item>
+                          );
+                        })}
+                      </Menu.Dropdown>
+                    </Menu>
                   )}
                   {isMistakeReview && mistakePhaseCounts && (
                     <Menu width={260} position="bottom-end" withinPortal>
@@ -4580,6 +4687,11 @@ function MistakeReviewGameInfoPanel({ position }: { position: Position | null })
     mistake,
     playerColor === "white" ? "black" : "white",
   );
+  const nature = getMistakeReviewNature(position);
+  const natureLabel = mistakeReviewNatureLabel(nature);
+  const natureConfidence = getMistakeReviewNatureConfidence(position);
+  const natureAspect = getMistakeReviewNatureAspect(position);
+  const natureAspectLabel = mistakeReviewNatureAspectLabel(natureAspect);
 
   return (
     <Paper px="xs" py={6} withBorder radius="sm">
@@ -4594,6 +4706,13 @@ function MistakeReviewGameInfoPanel({ position }: { position: Position | null })
             </Text>
           </Stack>
           <Group gap={4} wrap="nowrap">
+            <Tooltip
+              label={`${natureAspectLabel} ${natureLabel.toLowerCase()}, ${natureConfidence} confidence`}
+            >
+              <Badge size="xs" color={mistakeReviewNatureColor(nature)} variant="light">
+                {natureLabel}
+              </Badge>
+            </Tooltip>
             <Badge size="xs" variant="light">
               {mistakeReviewSeverityLabel(mistake.severity ?? "mistake")}
             </Badge>
@@ -4630,7 +4749,10 @@ function MistakeReviewGameInfoPanel({ position }: { position: Position | null })
               value={`${mistake.moveNumber ? `${mistake.moveNumber}. ` : ""}${mistake.playedMoveSan ?? "-"}`}
             />
             <ReviewDetail label="Think time" value={formatMistakeReviewThinkTime(mistake)} />
+            <ReviewDetail label="Mistake type" value={`${natureLabel} (${natureConfidence})`} />
+            <ReviewDetail label="Resource" value={natureAspectLabel} />
             <ReviewDetail label="Last seen" value={formatMistakeReviewLastSeen(position)} />
+            <ReviewDetail label="Type reason" value={getMistakeReviewNatureReason(position)} />
           </SimpleGrid>
         )}
       </Stack>
@@ -4810,6 +4932,11 @@ function OpeningReviewAttemptDetails({
       reachedDepth: mistake.reachedDepth,
       engineName: mistake.engineName,
     });
+    const nature = getMistakeReviewNature(position);
+    const natureLabel = mistakeReviewNatureLabel(nature);
+    const natureConfidence = getMistakeReviewNatureConfidence(position);
+    const natureAspect = getMistakeReviewNatureAspect(position);
+    const natureAspectLabel = mistakeReviewNatureAspectLabel(natureAspect);
 
     return (
       <Paper p="xs" withBorder>
@@ -4831,6 +4958,8 @@ function OpeningReviewAttemptDetails({
           <SimpleGrid cols={{ base: 2, sm: 4 }} spacing={6}>
             <ReviewDetail label="You played" value={playedMove || mistake.playedMoveSan || "-"} />
             <ReviewDetail label="Best move" value={mistake.bestMoveSan || position.answer} />
+            <ReviewDetail label="Type" value={`${natureLabel} (${natureConfidence})`} />
+            <ReviewDetail label="Resource" value={natureAspectLabel} />
             <ReviewDetail label="Occurrences" value={`${mistake.occurrenceCount ?? 1}`} />
             <ReviewDetail label="Last seen" value={formatMistakeReviewLastSeen(position)} />
           </SimpleGrid>
@@ -4853,6 +4982,7 @@ function OpeningReviewAttemptDetails({
               value={formatMistakeReviewClock(mistake.clockAfterSeconds)}
             />
           </SimpleGrid>
+          <ReviewDetail label="Type reason" value={getMistakeReviewNatureReason(position)} />
           <ReviewDetail label="Stockfish source" value={depthText} />
         </Stack>
       </Paper>
@@ -5753,6 +5883,7 @@ function OpeningReviewPositionsModal({
     [],
   );
   const [mistakePhaseFilter, setMistakePhaseFilter] = useState<MistakeReviewPhaseFilter>("all");
+  const [mistakeNatureFilter, setMistakeNatureFilter] = useState<MistakeReviewNatureFilter>("all");
   const [mistakeThinkTimeFilter, setMistakeThinkTimeFilter] =
     useState<MistakeReviewThinkTimeFilter>("all");
   const [mistakeTimeControlFilter, setMistakeTimeControlFilter] = useState("all");
@@ -5867,6 +5998,22 @@ function OpeningReviewPositionsModal({
       })),
     ];
   }, [gapFilteredRows]);
+  const mistakeNatureOptions = useMemo(() => {
+    const counts = new Map<MistakeReviewNature, number>();
+    for (const { position } of gapFilteredRows) {
+      if (!position.mistakeReview) continue;
+      const nature = getMistakeReviewNature(position);
+      counts.set(nature, (counts.get(nature) ?? 0) + 1);
+    }
+
+    return [
+      { value: "all", label: `All types (${gapFilteredRows.length})` },
+      ...MISTAKE_REVIEW_NATURES.map((nature) => ({
+        value: nature.id,
+        label: `${nature.label} (${counts.get(nature.id) ?? 0})`,
+      })),
+    ];
+  }, [gapFilteredRows]);
   const mistakeTimeControlOptions = useMemo(() => {
     const counts = new Map<string, number>();
     for (const { position } of gapFilteredRows) {
@@ -5900,6 +6047,12 @@ function OpeningReviewPositionsModal({
               return false;
             }
             if (
+              mistakeNatureFilter !== "all" &&
+              getMistakeReviewNature(position) !== mistakeNatureFilter
+            ) {
+              return false;
+            }
+            if (
               mistakeTimeControlFilter !== "all" &&
               getMistakeReviewTimeControlLabel(metadata) !== mistakeTimeControlFilter
             ) {
@@ -5919,6 +6072,7 @@ function OpeningReviewPositionsModal({
     [
       gapFilteredRows,
       isMistakeReview,
+      mistakeNatureFilter,
       mistakePhaseFilter,
       mistakeSeverityFilters,
       mistakeThinkTimeFilter,
@@ -5982,6 +6136,10 @@ function OpeningReviewPositionsModal({
     isMistakeReview && mistakePhaseFilter !== "all"
       ? MISTAKE_REVIEW_PHASES.find((phase) => phase.id === mistakePhaseFilter)?.label
       : null;
+  const activeMistakeNatureLabel =
+    isMistakeReview && mistakeNatureFilter !== "all"
+      ? MISTAKE_REVIEW_NATURES.find((nature) => nature.id === mistakeNatureFilter)?.label
+      : null;
   const activeMistakeThinkTimeLabel =
     isMistakeReview && mistakeThinkTimeFilter !== "all"
       ? mistakeThinkTimeFilter === "known"
@@ -5999,6 +6157,7 @@ function OpeningReviewPositionsModal({
     Boolean(activeGapFilterLabel) ||
     Boolean(activeMistakeSeverityLabel) ||
     Boolean(activeMistakePhaseLabel) ||
+    Boolean(activeMistakeNatureLabel) ||
     Boolean(activeMistakeThinkTimeLabel) ||
     Boolean(activeMistakeTimeControlLabel);
   const openingReviewScopeLabel =
@@ -6020,6 +6179,7 @@ function OpeningReviewPositionsModal({
   const baseTrainingScopeLabel = isMistakeReview
     ? [
         activeMistakeSeverityLabel,
+        activeMistakeNatureLabel,
         activeMistakePhaseLabel,
         activeMistakeThinkTimeLabel,
         activeMistakeTimeControlLabel,
@@ -6378,6 +6538,16 @@ function OpeningReviewPositionsModal({
                 maxDropdownHeight={260}
               />
               <Select
+                label="Type"
+                value={mistakeNatureFilter}
+                onChange={(value) =>
+                  setMistakeNatureFilter((value as MistakeReviewNatureFilter) ?? "all")
+                }
+                data={mistakeNatureOptions}
+                allowDeselect={false}
+                w={150}
+              />
+              <Select
                 label="Phase"
                 value={mistakePhaseFilter}
                 onChange={(value) =>
@@ -6513,6 +6683,14 @@ function OpeningReviewPositionsModal({
               Phase: {activeMistakePhaseLabel}
             </Badge>
           )}
+          {activeMistakeNatureLabel && (
+            <Badge
+              variant="light"
+              color={mistakeReviewNatureColor(mistakeNatureFilter as MistakeReviewNature)}
+            >
+              Type: {activeMistakeNatureLabel}
+            </Badge>
+          )}
           {activeMistakeThinkTimeLabel && (
             <Badge variant="light" color="orange">
               {activeMistakeThinkTimeLabel}
@@ -6571,6 +6749,14 @@ function OpeningReviewPositionsModal({
               const mistakePhaseLabel = mistakePhase
                 ? MISTAKE_REVIEW_PHASES.find((phase) => phase.id === mistakePhase)?.label
                 : null;
+              const mistakeNature = mistake ? getMistakeReviewNature(position) : null;
+              const mistakeNatureLabel = mistakeNature
+                ? mistakeReviewNatureLabel(mistakeNature)
+                : null;
+              const mistakeNatureReason = mistake ? getMistakeReviewNatureReason(position) : null;
+              const mistakeNatureConfidence = mistake
+                ? getMistakeReviewNatureConfidence(position)
+                : null;
               const mistakeThinkTime = mistake ? formatMistakeReviewThinkTime(mistake) : "Unknown";
               const mistakeTimeControl = getMistakeReviewTimeControlLabel(mistake);
               const mistakeLossText =
@@ -6604,6 +6790,23 @@ function OpeningReviewPositionsModal({
                             <Text size="xs" c="dimmed">
                               {mistakePhaseLabel}
                             </Text>
+                          )}
+                          {mistakeNature && mistakeNatureLabel && (
+                            <Tooltip
+                              label={`${mistakeNatureLabel}, ${mistakeNatureConfidence} confidence: ${
+                                mistakeNatureReason ?? "No classification reason saved."
+                              }`}
+                              multiline
+                              maw={300}
+                            >
+                              <Badge
+                                size="xs"
+                                variant="light"
+                                color={mistakeReviewNatureColor(mistakeNature)}
+                              >
+                                {mistakeNatureLabel}
+                              </Badge>
+                            </Tooltip>
                           )}
                           {isMistakeReviewLongThinkPosition(position) && (
                             <Badge size="xs" variant="light" color="orange">

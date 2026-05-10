@@ -118,6 +118,8 @@ export const positionSchema = z.object({
             bestMoveUci: z.string().optional(),
             pvSan: z.array(z.string()).optional(),
             pvUci: z.array(z.string()).optional(),
+            refutationSan: z.array(z.string()).optional(),
+            refutationUci: z.array(z.string()).optional(),
             severity: z
                 .enum(["best", "good", "okay", "inaccuracy", "mistake", "blunder"])
                 .optional(),
@@ -141,11 +143,26 @@ export const positionSchema = z.object({
             engineName: z.string().optional(),
             enginePath: z.string().optional(),
             phase: z.enum(["opening", "middlegame", "endgame"]).optional(),
+            nature: z.enum(["tactical", "positional"]).optional(),
+            mistakeNature: z.enum(["tactical", "positional"]).optional(),
+            category: z.string().optional(),
+            natureConfidence: z.enum(["high", "medium", "low"]).optional(),
+            natureReason: z.string().optional(),
+            tacticalSignals: z.array(z.string()).optional(),
+            natureAspect: z.enum(["allowed", "missed", "both"]).optional(),
+            allowedNature: z.enum(["tactical", "positional"]).optional(),
+            allowedNatureReason: z.string().optional(),
+            missedNature: z.enum(["tactical", "positional"]).optional(),
+            missedNatureReason: z.string().optional(),
+            natureClassifierVersion: z.number().optional(),
             gamePhase: z.string().optional(),
             positionPhase: z.string().optional(),
             summary: z
                 .object({
                     phase: z.string().optional(),
+                    nature: z.string().optional(),
+                    mistakeNature: z.string().optional(),
+                    natureConfidence: z.string().optional(),
                 })
                 .passthrough()
                 .optional(),
@@ -257,6 +274,8 @@ export type Position = {
         bestMoveUci?: string;
         pvSan?: string[];
         pvUci?: string[];
+        refutationSan?: string[];
+        refutationUci?: string[];
         severity?: "best" | "good" | "okay" | "inaccuracy" | "mistake" | "blunder";
         cpLoss?: number;
         winProbabilityDrop?: number;
@@ -279,10 +298,25 @@ export type Position = {
         engineName?: string;
         enginePath?: string;
         phase?: "opening" | "middlegame" | "endgame";
+        nature?: "tactical" | "positional";
+        mistakeNature?: "tactical" | "positional";
+        category?: string;
+        natureConfidence?: "high" | "medium" | "low";
+        natureReason?: string;
+        tacticalSignals?: string[];
+        natureAspect?: "allowed" | "missed" | "both";
+        allowedNature?: "tactical" | "positional";
+        allowedNatureReason?: string;
+        missedNature?: "tactical" | "positional";
+        missedNatureReason?: string;
+        natureClassifierVersion?: number;
         gamePhase?: string;
         positionPhase?: string;
         summary?: {
             phase?: string;
+            nature?: string;
+            mistakeNature?: string;
+            natureConfidence?: string;
             [key: string]: unknown;
         };
         gameId?: number;

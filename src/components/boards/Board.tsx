@@ -108,6 +108,10 @@ import { queryChessDbMoves } from "@/utils/chessdb/api";
 import { queryLichessCloudMoves } from "@/utils/lichess/api";
 import {
   formatMistakeReviewLastSeen,
+  getMistakeReviewNature,
+  getMistakeReviewNatureConfidence,
+  mistakeReviewNatureColor,
+  mistakeReviewNatureLabel,
   mistakeReviewSeverityLabel,
   type MistakeReviewAttemptLabel,
 } from "@/utils/mistakeReview";
@@ -206,9 +210,7 @@ function uciArrowShape(uci: string | undefined, brush: string): DrawShape | null
 
 function isGreenBoardArrowShape(shape: DrawShape) {
   return Boolean(
-    shape.dest &&
-      typeof shape.brush === "string" &&
-      shape.brush.toLowerCase().includes("green"),
+    shape.dest && typeof shape.brush === "string" && shape.brush.toLowerCase().includes("green"),
   );
 }
 
@@ -1584,6 +1586,12 @@ function Board({
     mistakeReviewMetadata?.playedMoveSan ||
     undefined;
   const mistakeReviewPlayedMoveLabel = mistakeReviewAttemptActive ? "Played" : "Mistake";
+  const mistakeReviewNature = trainerMistakeReviewPosition?.mistakeReview
+    ? getMistakeReviewNature(trainerMistakeReviewPosition)
+    : null;
+  const mistakeReviewNatureConfidence = trainerMistakeReviewPosition?.mistakeReview
+    ? getMistakeReviewNatureConfidence(trainerMistakeReviewPosition)
+    : null;
   const mistakeReviewLastSeen = formatMistakeReviewLastSeen(trainerMistakeReviewPosition);
   const showMistakeReviewControls = isMistakeReviewTab && Boolean(mistakeReviewMetadata);
 
@@ -1971,6 +1979,17 @@ function Board({
                         {mistakeReviewSeverity && (
                           <Badge color={mistakeReviewColor(mistakeReviewSeverity)} variant="light">
                             {mistakeReviewSeverityLabel(mistakeReviewSeverity)}
+                          </Badge>
+                        )}
+                        {mistakeReviewNature && (
+                          <Badge
+                            color={mistakeReviewNatureColor(mistakeReviewNature)}
+                            variant="light"
+                            title={`${mistakeReviewNatureLabel(mistakeReviewNature)}, ${
+                              mistakeReviewNatureConfidence ?? "unknown"
+                            } confidence`}
+                          >
+                            {mistakeReviewNatureLabel(mistakeReviewNature)}
                           </Badge>
                         )}
                       </Group>
