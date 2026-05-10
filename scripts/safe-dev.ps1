@@ -14,9 +14,62 @@ $backupRoot = Join-Path ([Environment]::GetFolderPath("MyDocuments")) "EnCroissa
 $backupPrefix = "org.encroissant.app-before-fork-dev-"
 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $backupPath = Join-Path $backupRoot "$backupPrefix$timestamp"
+$devPort = 1420
 
-if (-not (Test-Path $sharedData)) {
+if (-not $SkipBackup -and -not (Test-Path $sharedData)) {
   throw "Could not find En Croissant data at $sharedData"
+}
+
+function Get-RepoViteProcesses {
+  try {
+    $listeners = Get-NetTCPConnection -LocalPort $devPort -State Listen -ErrorAction SilentlyContinue
+  }
+  catch {
+    return @()
+  }
+
+  $processes = @()
+  foreach ($ownerId in ($listeners | Select-Object -ExpandProperty OwningProcess -Unique)) {
+    $process = Get-CimInstance Win32_Process -Filter "ProcessId=$ownerId" -ErrorAction SilentlyContinue
+    if (-not $process) {
+      continue
+    }
+
+    $commandLine = [string]$process.CommandLine
+    $isRepoCommand = $commandLine.IndexOf($repoRoot, [StringComparison]::OrdinalIgnoreCase) -ge 0
+    $isViteCommand = $commandLine.IndexOf("vite", [StringComparison]::OrdinalIgnoreCase) -ge 0
+
+    if ($process.Name -eq "node.exe" -and $isRepoCommand -and $isViteCommand) {
+      $processes += $process
+    }
+  }
+
+  return $processes
+}
+
+function Stop-RepoViteProcesses {
+  param([string]$Reason)
+
+  foreach ($process in Get-RepoViteProcesses) {
+    Write-Host "$Reason Vite process $($process.ProcessId) on port $devPort."
+    Stop-Process -Id $process.ProcessId -Force -ErrorAction SilentlyContinue
+  }
+}
+
+function Assert-DevPortAvailable {
+  try {
+    $listeners = Get-NetTCPConnection -LocalPort $devPort -State Listen -ErrorAction SilentlyContinue
+  }
+  catch {
+    return
+  }
+
+  foreach ($ownerId in ($listeners | Select-Object -ExpandProperty OwningProcess -Unique)) {
+    $process = Get-CimInstance Win32_Process -Filter "ProcessId=$ownerId" -ErrorAction SilentlyContinue
+    if ($process) {
+      throw "Port $devPort is already in use by $($process.Name) ($ownerId): $($process.CommandLine)"
+    }
+  }
 }
 
 function Invoke-RobocopyChecked {
@@ -160,4 +213,16 @@ if (-not $SkipBackup) {
 }
 
 Set-Location $repoRoot
-pnpm dev
+Stop-RepoViteProcesses "Stopping stale"
+Assert-DevPortAvailable
+
+$devExitCode = 0
+try {
+  pnpm dev:tauri
+  $devExitCode = $LASTEXITCODE
+}
+finally {
+  Stop-RepoViteProcesses "Cleaning up"
+}
+
+exit $devExitCode

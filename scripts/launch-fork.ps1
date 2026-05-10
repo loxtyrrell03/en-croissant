@@ -50,6 +50,58 @@ function Test-DevServerListening {
   }
 }
 
+function Get-RepoViteProcesses {
+  try {
+    $listeners = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
+  }
+  catch {
+    return @()
+  }
+
+  $processes = @()
+  foreach ($ownerId in ($listeners | Select-Object -ExpandProperty OwningProcess -Unique)) {
+    $process = Get-CimInstance Win32_Process -Filter "ProcessId=$ownerId" -ErrorAction SilentlyContinue
+    if (-not $process) {
+      continue
+    }
+
+    $commandLine = [string]$process.CommandLine
+    $isRepoCommand = $commandLine.IndexOf($repoRoot, [StringComparison]::OrdinalIgnoreCase) -ge 0
+    $isViteCommand = $commandLine.IndexOf("vite", [StringComparison]::OrdinalIgnoreCase) -ge 0
+
+    if ($process.Name -eq "node.exe" -and $isRepoCommand -and $isViteCommand) {
+      $processes += $process
+    }
+  }
+
+  return $processes
+}
+
+function Stop-RepoViteProcesses {
+  param([string]$Reason)
+
+  foreach ($process in Get-RepoViteProcesses) {
+    Write-LaunchLog "$Reason Vite process $($process.ProcessId) on port $port."
+    Stop-Process -Id $process.ProcessId -Force -ErrorAction SilentlyContinue
+  }
+}
+
+function Assert-DevPortAvailable {
+  try {
+    $listeners = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
+  }
+  catch {
+    return
+  }
+
+  foreach ($ownerId in ($listeners | Select-Object -ExpandProperty OwningProcess -Unique)) {
+    $process = Get-CimInstance Win32_Process -Filter "ProcessId=$ownerId" -ErrorAction SilentlyContinue
+    if ($process) {
+      throw "Port $port is already in use by $($process.Name) ($ownerId): $($process.CommandLine)"
+    }
+  }
+}
+
 function Test-DebugBinaryFresh {
   if (-not (Test-Path $debugExe)) {
     return $false
@@ -77,9 +129,12 @@ function Test-DebugBinaryFresh {
 }
 
 function Start-DevServer {
+  Stop-RepoViteProcesses "Stopping stale"
+  Assert-DevPortAvailable
+
   if (Test-DevServerListening) {
     Write-LaunchLog "Vite dev server is already listening on port $port."
-    return
+    return $null
   }
 
   $pnpm = Get-PnpmCommand
@@ -88,7 +143,7 @@ function Start-DevServer {
   $stderr = Join-Path $logDir "vite-$timestamp.err.log"
 
   Write-LaunchLog "Starting Vite dev server with $pnpm."
-  Start-Process -FilePath "cmd.exe" `
+  $process = Start-Process -FilePath "cmd.exe" `
     -WorkingDirectory $repoRoot `
     -WindowStyle Minimized `
     -RedirectStandardOutput $stdout `
@@ -98,13 +153,14 @@ function Start-DevServer {
       "/s",
       "/c",
       "`"$pnpm`" start-vite"
-    ) | Out-Null
+    ) `
+    -PassThru
 
   $deadline = (Get-Date).AddSeconds(45)
   while ((Get-Date) -lt $deadline) {
     if (Test-DevServerListening) {
       Write-LaunchLog "Vite dev server is ready."
-      return
+      return $process
     }
     Start-Sleep -Milliseconds 500
   }
@@ -170,6 +226,7 @@ function Start-ForkBinary {
   }
 
   Write-LaunchLog "Fork process $($process.Id) is running."
+  return $process
 }
 
 $runningFork = Get-Process -Name "en-croissant-fork" -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -183,14 +240,26 @@ if ($runningFork) {
 
 try {
   if (Test-DebugBinaryFresh) {
-    Start-DevServer
+    $devServerProcess = Start-DevServer
     try {
-      Start-ForkBinary
+      $forkProcess = Start-ForkBinary
     }
     catch {
       Write-LaunchLog "Prebuilt debug binary launch failed: $($_.Exception.Message)"
+      Stop-RepoViteProcesses "Cleaning up after failed fork launch"
       Remove-DebugBinary
       Start-SafeDevFallback
+      exit 0
+    }
+
+    try {
+      Wait-Process -Id $forkProcess.Id
+    }
+    finally {
+      Stop-RepoViteProcesses "Cleaning up after fork exit"
+      if ($devServerProcess -and -not $devServerProcess.HasExited) {
+        Stop-Process -Id $devServerProcess.Id -Force -ErrorAction SilentlyContinue
+      }
     }
     exit 0
   }
