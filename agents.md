@@ -11,6 +11,9 @@ model, implementation map, and verification expectations for this app.
   coherent milestone has been completed.
 - Keep each commit focused on the meaningful progress just made, with a concise
   message describing that milestone.
+- After each meaningful change or feature, update this `AGENTS.md` product map
+  with a short note explaining what was added and why, so future agents inherit
+  the current design intent instead of only the code diff.
 - Do not wait until the end of a long session to save progress unless the user
   explicitly asks for a single final commit.
 - Avoid committing broken, half-finished, or unverified work unless the user
