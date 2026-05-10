@@ -141,6 +141,8 @@ const MISTAKE_REVIEW_ENDGAME_MIN_FULLMOVE = 31;
 const MISTAKE_REVIEW_ENDGAME_NON_PAWN_MAX = 6;
 const MISTAKE_REVIEW_NATURE_PV_PLIES = 4;
 const MISTAKE_REVIEW_NATURE_CLASSIFIER_VERSION = 2;
+const MISTAKE_REVIEW_NATURE_CACHE_LIMIT = 5000;
+const mistakeReviewNatureClassificationCache = new Map<string, MistakeReviewNatureClassification>();
 
 export type MistakeReviewDailySettings = {
     reviewsPerDay: number;
@@ -1035,6 +1037,37 @@ export function classifyMistakeReviewNature(
               winProbabilityDrop?: number | null;
           },
 ): MistakeReviewNatureClassification {
+    const cacheKey = getMistakeReviewNatureClassificationCacheKey(input);
+    const cached = mistakeReviewNatureClassificationCache.get(cacheKey);
+    if (cached) return cached;
+
+    const classification = computeMistakeReviewNature(input);
+    mistakeReviewNatureClassificationCache.set(cacheKey, classification);
+    if (mistakeReviewNatureClassificationCache.size > MISTAKE_REVIEW_NATURE_CACHE_LIMIT) {
+        const oldestKey = mistakeReviewNatureClassificationCache.keys().next().value;
+        if (oldestKey) mistakeReviewNatureClassificationCache.delete(oldestKey);
+    }
+    return classification;
+}
+
+function computeMistakeReviewNature(
+    input:
+        | MistakeReviewScanResult
+        | Position
+        | {
+              bestMoveSan?: string | null;
+              bestMoveUci?: string | null;
+              playedMoveSan?: string | null;
+              playedMoveUci?: string | null;
+              fen?: string | null;
+              pvSan?: string[] | null;
+              pvUci?: string[] | null;
+              refutationSan?: string[] | null;
+              refutationUci?: string[] | null;
+              cpLoss?: number | null;
+              winProbabilityDrop?: number | null;
+          },
+): MistakeReviewNatureClassification {
     const metadata = "mistakeReview" in input ? input.mistakeReview : undefined;
     const bestMoveSan =
         ("bestMoveSan" in input ? input.bestMoveSan : undefined) ??
@@ -1247,6 +1280,44 @@ export function classifyMistakeReviewNature(
         missedNature: "positional",
         missedReason,
     };
+}
+
+function getMistakeReviewNatureClassificationCacheKey(
+    input:
+        | MistakeReviewScanResult
+        | Position
+        | {
+              bestMoveSan?: string | null;
+              bestMoveUci?: string | null;
+              playedMoveSan?: string | null;
+              playedMoveUci?: string | null;
+              fen?: string | null;
+              pvSan?: string[] | null;
+              pvUci?: string[] | null;
+              refutationSan?: string[] | null;
+              refutationUci?: string[] | null;
+              cpLoss?: number | null;
+              winProbabilityDrop?: number | null;
+          },
+) {
+    const metadata = "mistakeReview" in input ? input.mistakeReview : undefined;
+    const field = <K extends string>(key: K) =>
+        key in input ? (input as Record<K, unknown>)[key] : undefined;
+    const list = (value: unknown) => (Array.isArray(value) ? value.join(" ") : "");
+    return JSON.stringify([
+        MISTAKE_REVIEW_NATURE_CLASSIFIER_VERSION,
+        field("fen") ?? "",
+        field("bestMoveSan") ?? metadata?.bestMoveSan ?? field("answer") ?? "",
+        field("bestMoveUci") ?? metadata?.bestMoveUci ?? field("answerUci") ?? "",
+        field("playedMoveSan") ?? metadata?.playedMoveSan ?? "",
+        field("playedMoveUci") ?? metadata?.playedMoveUci ?? "",
+        list(field("pvSan") ?? metadata?.pvSan),
+        list(field("pvUci") ?? metadata?.pvUci),
+        list(field("refutationSan") ?? metadata?.refutationSan),
+        list(field("refutationUci") ?? metadata?.refutationUci),
+        field("cpLoss") ?? metadata?.cpLoss ?? "",
+        field("winProbabilityDrop") ?? metadata?.winProbabilityDrop ?? "",
+    ]);
 }
 
 export function formatMistakeReviewLastSeen(position?: Position | null) {

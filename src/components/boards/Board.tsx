@@ -769,16 +769,12 @@ function Board({
         const position = current.positions[positionIndex];
         if (!position?.mistakeReview) return current;
 
-        const positions = [...current.positions];
-        positions[positionIndex] = {
-          ...position,
-          mistakeReview: {
-            ...position.mistakeReview,
-            lastAttemptedAt: attemptedAt,
-            lastAttemptedCardReps: position.card.reps ?? 0,
-          },
+        position.mistakeReview = {
+          ...position.mistakeReview,
+          lastAttemptedAt: attemptedAt,
+          lastAttemptedCardReps: position.card.reps ?? 0,
         };
-        return { ...current, positions };
+        return { positions: current.positions, logs: current.logs };
       });
     },
     [setDeck],
@@ -791,16 +787,12 @@ function Board({
         const position = current.positions[positionIndex];
         if (!position) return current;
 
-        const positions = [...current.positions];
-        positions[positionIndex] = {
-          ...position,
-          openingReview: {
-            ...position.openingReview,
-            lastAttemptedAt: attemptedAt,
-            lastAttemptedCardReps: position.card.reps ?? 0,
-          },
+        position.openingReview = {
+          ...position.openingReview,
+          lastAttemptedAt: attemptedAt,
+          lastAttemptedCardReps: position.card.reps ?? 0,
         };
-        return { ...current, positions };
+        return { positions: current.positions, logs: current.logs };
       });
     },
     [setDeck],
