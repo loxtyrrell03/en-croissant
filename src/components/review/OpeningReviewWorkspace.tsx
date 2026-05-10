@@ -141,11 +141,9 @@ import {
   getMistakeReviewDailyBatch,
   getMistakeReviewDailyProgress,
   getMistakeReviewNature,
-  getMistakeReviewNatureAspect,
   getMistakeReviewNatureBatch,
   getMistakeReviewNatureConfidence,
   getMistakeReviewNatureCounts,
-  getMistakeReviewNatureReason,
   getMistakeReviewPhase,
   getMistakeReviewPhaseBatch,
   getMistakeReviewPhaseCounts,
@@ -154,7 +152,6 @@ import {
   migrateMistakeReviewDeckNatureClassifications,
   mistakeReviewPositionKey,
   needsMistakeReviewDeckNatureMigration,
-  mistakeReviewNatureAspectLabel,
   mistakeReviewNatureColor,
   mistakeReviewNatureLabel,
   MISTAKE_REVIEW_NATURES,
@@ -4762,8 +4759,6 @@ function MistakeReviewGameInfoPanel({ position }: { position: Position | null })
   const nature = getMistakeReviewNature(position);
   const natureLabel = mistakeReviewNatureLabel(nature);
   const natureConfidence = getMistakeReviewNatureConfidence(position);
-  const natureAspect = getMistakeReviewNatureAspect(position);
-  const natureAspectLabel = mistakeReviewNatureAspectLabel(natureAspect);
 
   return (
     <Paper px="xs" py={6} withBorder radius="sm">
@@ -4778,9 +4773,7 @@ function MistakeReviewGameInfoPanel({ position }: { position: Position | null })
             </Text>
           </Stack>
           <Group gap={4} wrap="nowrap">
-            <Tooltip
-              label={`${natureAspectLabel} ${natureLabel.toLowerCase()}, ${natureConfidence} confidence`}
-            >
+            <Tooltip label={`${natureLabel}, ${natureConfidence} confidence`}>
               <Badge size="xs" color={mistakeReviewNatureColor(nature)} variant="light">
                 {natureLabel}
               </Badge>
@@ -4822,9 +4815,7 @@ function MistakeReviewGameInfoPanel({ position }: { position: Position | null })
             />
             <ReviewDetail label="Think time" value={formatMistakeReviewThinkTime(mistake)} />
             <ReviewDetail label="Mistake type" value={`${natureLabel} (${natureConfidence})`} />
-            <ReviewDetail label="Resource" value={natureAspectLabel} />
             <ReviewDetail label="Last seen" value={formatMistakeReviewLastSeen(position)} />
-            <ReviewDetail label="Type reason" value={getMistakeReviewNatureReason(position)} />
           </SimpleGrid>
         )}
       </Stack>
@@ -5007,8 +4998,6 @@ function OpeningReviewAttemptDetails({
     const nature = getMistakeReviewNature(position);
     const natureLabel = mistakeReviewNatureLabel(nature);
     const natureConfidence = getMistakeReviewNatureConfidence(position);
-    const natureAspect = getMistakeReviewNatureAspect(position);
-    const natureAspectLabel = mistakeReviewNatureAspectLabel(natureAspect);
 
     return (
       <Paper p="xs" withBorder>
@@ -5031,7 +5020,6 @@ function OpeningReviewAttemptDetails({
             <ReviewDetail label="You played" value={playedMove || mistake.playedMoveSan || "-"} />
             <ReviewDetail label="Best move" value={mistake.bestMoveSan || position.answer} />
             <ReviewDetail label="Type" value={`${natureLabel} (${natureConfidence})`} />
-            <ReviewDetail label="Resource" value={natureAspectLabel} />
             <ReviewDetail label="Occurrences" value={`${mistake.occurrenceCount ?? 1}`} />
             <ReviewDetail label="Last seen" value={formatMistakeReviewLastSeen(position)} />
           </SimpleGrid>
@@ -5054,7 +5042,6 @@ function OpeningReviewAttemptDetails({
               value={formatMistakeReviewClock(mistake.clockAfterSeconds)}
             />
           </SimpleGrid>
-          <ReviewDetail label="Type reason" value={getMistakeReviewNatureReason(position)} />
           <ReviewDetail label="Stockfish source" value={depthText} />
         </Stack>
       </Paper>
@@ -6825,7 +6812,6 @@ function OpeningReviewPositionsModal({
               const mistakeNatureLabel = mistakeNature
                 ? mistakeReviewNatureLabel(mistakeNature)
                 : null;
-              const mistakeNatureReason = mistake ? getMistakeReviewNatureReason(position) : null;
               const mistakeNatureConfidence = mistake
                 ? getMistakeReviewNatureConfidence(position)
                 : null;
@@ -6865,11 +6851,7 @@ function OpeningReviewPositionsModal({
                           )}
                           {mistakeNature && mistakeNatureLabel && (
                             <Tooltip
-                              label={`${mistakeNatureLabel}, ${mistakeNatureConfidence} confidence: ${
-                                mistakeNatureReason ?? "No classification reason saved."
-                              }`}
-                              multiline
-                              maw={300}
+                              label={`${mistakeNatureLabel}, ${mistakeNatureConfidence} confidence`}
                             >
                               <Badge
                                 size="xs"
