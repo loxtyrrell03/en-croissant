@@ -4,7 +4,15 @@ import type { Config } from "@lichess-org/chessground/config";
 import { Box } from "@mantine/core";
 import equal from "fast-deep-equal/es6";
 import { useAtomValue } from "jotai";
-import { type Ref, useEffect, useImperativeHandle, useMemo, useRef } from "react";
+import {
+  type Ref,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 import { boardImageAtom, moveMethodAtom } from "@/state/atoms";
 
 const BOARD_COORDINATE_COLORS: Record<string, { white: string; black: string }> = {
@@ -149,6 +157,10 @@ export function Chessground({ ref, setBoardFen, ...props }: ChessgroundProps) {
   latestSetBoardFenRef.current = setBoardFen;
   latestMoveMethodRef.current = moveMethod;
 
+  const clearCachedBounds = useCallback(() => {
+    apiRef.current?.state.dom.bounds.clear();
+  }, []);
+
   const handlers = useMemo(() => {
     const events: Required<NonNullable<Config["events"]>> = {
       change: () => {
@@ -257,6 +269,10 @@ export function Chessground({ ref, setBoardFen, ...props }: ChessgroundProps) {
     appliedConfigRef.current = config;
   }, [handlers, moveMethod, props, setBoardFen]);
 
+  useLayoutEffect(() => {
+    clearCachedBounds();
+  });
+
   const boardImage = useAtomValue(boardImageAtom);
   const boardCoordColors = useMemo(() => getBoardCoordinateColors(boardImage), [boardImage]);
 
@@ -270,6 +286,9 @@ export function Chessground({ ref, setBoardFen, ...props }: ChessgroundProps) {
         "--board-coord-color-black": boardCoordColors.black,
       }}
       ref={boardRef}
+      onMouseDownCapture={clearCachedBounds}
+      onTouchStartCapture={clearCachedBounds}
+      onContextMenuCapture={clearCachedBounds}
     />
   );
 }
