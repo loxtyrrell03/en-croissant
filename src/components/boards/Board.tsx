@@ -204,6 +204,14 @@ function uciArrowShape(uci: string | undefined, brush: string): DrawShape | null
   };
 }
 
+function isGreenBoardArrowShape(shape: DrawShape) {
+  return Boolean(
+    shape.dest &&
+      typeof shape.brush === "string" &&
+      shape.brush.toLowerCase().includes("green"),
+  );
+}
+
 function practiceAttemptBoardPreview(sourceFen: string, displayFen: string, move: NormalMove) {
   return {
     fen: displayFen,
@@ -1083,6 +1091,12 @@ function Board({
     !boardPreviewShapes?.displayFen
       ? mistakeReviewPanelReveal
       : null;
+  const mistakeReviewAttemptMadeForCurrentPosition =
+    isMistakeReviewTab &&
+    (practiceState.phase === "correct" || practiceState.phase === "incorrect") &&
+    sameBoardPosition(practiceState.currentFen, trainerMistakeReviewPosition?.fen);
+  const hideMistakeReviewPreAttemptGreenArrows =
+    isMistakeReviewTab && !mistakeReviewAttemptMadeForCurrentPosition;
 
   const shapes = useMemo(() => {
     let nextShapes: DrawShape[] = [];
@@ -1241,7 +1255,9 @@ function Board({
       }
     }
 
-    return nextShapes;
+    return hideMistakeReviewPreAttemptGreenArrows
+      ? nextShapes.filter((shape) => !isGreenBoardArrowShape(shape))
+      : nextShapes;
   }, [
     activeEnginePlanExplorerData,
     activeMistakeReviewReveal,
@@ -1253,6 +1269,7 @@ function Board({
     currentNode.shapes,
     currentTab?.gameOrigin.kind,
     currentTabSelected,
+    hideMistakeReviewPreAttemptGreenArrows,
     mistakeReviewAutoRevealBest,
     planExplorerArrowLimit,
     planExplorerPreviewLine,
