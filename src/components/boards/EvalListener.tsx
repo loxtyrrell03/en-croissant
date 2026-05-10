@@ -157,6 +157,7 @@ function EngineListener({
   );
   const displayedMovesKey = useMemo(() => moves.join(","), [moves]);
   const latestSearchKeyRef = useRef(searchKey);
+  const cloudCoveredSearchKeysRef = useRef(new Set<string>());
   useEffect(() => {
     latestSearchKeyRef.current = searchKey;
   }, [searchKey]);
@@ -179,7 +180,8 @@ function EngineListener({
         payload.fen === searchingFen &&
         equal(payload.moves, searchingMoves) &&
         settings.enabled &&
-        !isGameOver
+        !isGameOver &&
+        !cloudCoveredSearchKeysRef.current.has(searchKey)
       ) {
         startTransition(() => {
           setEngineVariation((prev) => {
@@ -263,6 +265,9 @@ function EngineListener({
             .then((moves) => {
               if (moves) {
                 const [progress, bestMoves] = moves;
+                if (bestMoves.some((move) => move.source === "lichess")) {
+                  cloudCoveredSearchKeysRef.current.add(searchKey);
+                }
                 setEngineVariation((prev) => {
                   const newMap = new Map(prev);
                   newMap.set(searchKey, bestMoves);
@@ -345,13 +350,9 @@ async function getLocalBestMovesWithLichessCloud(
       return quickCloudMoves;
     }
 
-    const firstMoves = await Promise.race([
-      cloudPromise.then((cloudMoves) => (cloudMoves?.[1]?.length ? cloudMoves : null)),
-      localStart.promise,
-    ]);
-
-    if (firstMoves?.[1]?.length) {
-      return firstMoves;
+    const cloudMoves = await cloudPromise;
+    if (cloudMoves?.[1]?.length) {
+      return cloudMoves;
     }
 
     return await localStart.promise;
