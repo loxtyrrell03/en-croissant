@@ -232,7 +232,11 @@ export default function EnginePanelContent({ compact = false }: { compact?: bool
   );
 
   if (compact) {
-    return <Box style={{ overflow: "hidden" }}>{engineContent}</Box>;
+    return (
+      <Box h="100%" style={{ overflowX: "hidden", overflowY: "auto" }}>
+        {engineContent}
+      </Box>
+    );
   }
 
   return (

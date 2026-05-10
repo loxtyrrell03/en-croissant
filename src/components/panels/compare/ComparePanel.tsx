@@ -4,8 +4,8 @@ import { memo } from "react";
 import EnginePanelContent from "../analysis/EnginePanelContent";
 import DatabaseComparePanel from "../database/DatabaseComparePanel";
 
-const ENGINE_DOCK_HEIGHT = 132;
-const COMPACT_ENGINE_DOCK_HEIGHT = 116;
+const ENGINE_DOCK_HEIGHT = "clamp(11rem, 18vh, 12.25rem)";
+const COMPACT_ENGINE_DOCK_HEIGHT = "clamp(10.5rem, 18vh, 12rem)";
 const COMPACT_COMPARE_WIDTH = 700;
 
 function ComparePanel() {
