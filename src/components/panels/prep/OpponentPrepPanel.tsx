@@ -93,12 +93,15 @@ import { positionFromFen } from "@/utils/chessops";
 import { getTreeStructureHash } from "@/utils/treeReducer";
 import { queryChessDbMoves } from "@/utils/chessdb/api";
 import { queryLichessCloudMoves } from "@/utils/lichess/api";
+import { BoundedMap } from "@/utils/boundedCache";
 import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveControls";
 
 const DEFAULT_PREP_MIN_GAMES = 2;
 const DEFAULT_PREP_MOVE_LIMIT = 8;
 const LICHESS_ALL_SOURCE = "online:lichess-all";
 const LICHESS_MASTER_SOURCE = "online:lichess-master";
+const MAX_PREP_MOVE_CACHE_ENTRIES = 80;
+const MAX_PREP_BUILDER_REFERENCE_CACHE_ENTRIES = 120;
 
 type PrepCandidateMoveRow = Opening & {
   key: string;
@@ -169,8 +172,10 @@ function OpponentPrepPanel() {
   const [builderNeedsSave, setBuilderNeedsSave] = useState(false);
   const [savingBuilderResult, setSavingBuilderResult] = useState<"new" | "overwrite" | null>(null);
   const [builderStatus, setBuilderStatus] = useState<PrepBuilderStatus | null>(null);
-  const moveCacheRef = useRef(new Map<string, Opening[]>());
-  const builderReferenceCacheRef = useRef(new Map<string, Opening[]>());
+  const moveCacheRef = useRef(new BoundedMap<string, Opening[]>(MAX_PREP_MOVE_CACHE_ENTRIES));
+  const builderReferenceCacheRef = useRef(
+    new BoundedMap<string, Opening[]>(MAX_PREP_BUILDER_REFERENCE_CACHE_ENTRIES),
+  );
   const builderCancelRef = useRef(false);
   const seededRef = useRef(false);
   const settingsKey = useMemo(() => getTabWorkspaceKey(currentTab), [currentTab]);
@@ -1027,9 +1032,7 @@ function OpponentPrepPanel() {
     const getPlayableGames = (openings: Opening[]) =>
       openings.reduce(
         (sum, opening) =>
-          opening.move === "*" || opening.move === "Total"
-            ? sum
-            : sum + getOpeningTotal(opening),
+          opening.move === "*" || opening.move === "Total" ? sum : sum + getOpeningTotal(opening),
         0,
       );
 
@@ -1045,11 +1048,7 @@ function OpponentPrepPanel() {
         ply,
       });
 
-    const addMoveWithComment = (
-      path: number[],
-      moveSan: string,
-      comment: string,
-    ) => {
+    const addMoveWithComment = (path: number[], moveSan: string, comment: string) => {
       const state = store.getState();
       if (!pathExists(state.root, path)) return null;
 

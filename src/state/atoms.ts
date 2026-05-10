@@ -34,7 +34,7 @@ import {
     masterOptionsSchema,
 } from "@/utils/lichess/explorer";
 import { getWinChance, normalizeScore } from "@/utils/score";
-import { type Tab, tabSchema } from "@/utils/tabs";
+import { getTabGameNumber, getTabPracticeKey, type Tab, tabSchema } from "@/utils/tabs";
 import { getEnginesDir } from "../utils/directories";
 import type { Session } from "../utils/session";
 import { createAsyncZodStorage, createZodStorage } from "./utils";
@@ -1310,3 +1310,72 @@ export const enableAllAtom = atom(null, (get, set, value: boolean) => {
         set(atom, { ...get(atom), enabled: value });
     }
 });
+
+const TRANSIENT_POSITION_ATOM_TTL_MS = 5 * 60 * 1000;
+const shouldRemoveTransientPositionAtom = (createdAt: number) =>
+    Date.now() - createdAt > TRANSIENT_POSITION_ATOM_TTL_MS;
+
+bestMovesFamily.setShouldRemove(shouldRemoveTransientPositionAtom);
+firstEngineWithLinesFamily.setShouldRemove(shouldRemoveTransientPositionAtom);
+
+export function cleanupClosedTabAtomState(
+    closedTab: Tab,
+    remainingTabs: Tab[],
+    engines: Engine[] | null | undefined,
+) {
+    const tab = closedTab.value;
+
+    opponentPrepFamily.remove(tab);
+    puzzleTimerFamily.remove(tab);
+    liveEvalFamily.remove(tab);
+    threatFamily.remove(tab);
+    evalOpenFamily.remove(tab);
+    evalBarDisplayFamily.remove(tab);
+    invisibleFamily.remove(tab);
+    showCommentsFamily.remove(tab);
+    showVariationsFamily.remove(tab);
+    tabFamily.remove(tab);
+    localOptionsFamily.remove(tab);
+    dbTypeFamily.remove(tab);
+    dbTabFamily.remove(tab);
+    compareDatabasesFamily.remove(tab);
+    boardPreviewShapesFamily.remove(tab);
+    planExplorerDataFamily.remove(tab);
+    planExplorerEngineStrengthFamily.remove(tab);
+    enginePlanExplorerDataFamily.remove(tab);
+    enginePlanReportFamily.remove(tab);
+    planExplorerPreviewLineFamily.remove(tab);
+    analysisTabFamily.remove(tab);
+    practiceTabFamily.remove(tab);
+    expandedEnginesFamily.remove(tab);
+    pgnOptionsFamily.remove(tab);
+    currentPuzzleFamily.remove(tab);
+    gameStateFamily.remove(tab);
+    playersFamily.remove(tab);
+    gameIdFamily.remove(tab);
+    practiceStateFamily.remove(tab);
+    practiceSessionStatsFamily.remove(tab);
+    practiceCardStartTimeFamily.remove(tab);
+
+    for (const engine of engines ?? []) {
+        engineMovesFamily.remove({ tab, engine: engine.id });
+        engineProgressFamily.remove({ tab, engine: engine.id });
+        tabEngineSettingsFamily.remove({
+            tab,
+            engineId: engine.id,
+        });
+    }
+
+    const deckKey = getTabPracticeKey(closedTab);
+    const deckGame = getTabGameNumber(closedTab);
+    if (
+        deckKey &&
+        !remainingTabs.some(
+            (candidate) =>
+                getTabPracticeKey(candidate) === deckKey &&
+                getTabGameNumber(candidate) === deckGame,
+        )
+    ) {
+        deckAtomFamily.remove({ file: deckKey, game: deckGame });
+    }
+}

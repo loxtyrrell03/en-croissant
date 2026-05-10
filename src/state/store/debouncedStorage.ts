@@ -72,3 +72,8 @@ export function createDebouncedSessionStorage<S>(delay = DEBOUNCE_MS): PersistSt
         },
     };
 }
+
+export function removeDebouncedSessionStorageItem(name: string) {
+    pendingWrites.delete(name);
+    sessionStorage.removeItem(name);
+}

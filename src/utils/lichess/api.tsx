@@ -26,6 +26,7 @@ import {
 } from "@/utils/lichess/explorer";
 import { countMainPly } from "@/utils/treeReducer";
 import { unwrap } from "@/utils/unwrap";
+import { BoundedMap, BoundedSet } from "../boundedCache";
 import { getDatabasesDir } from "../directories";
 
 const baseURL = "https://lichess.org/api";
@@ -323,8 +324,8 @@ export async function getBestMoves(
   ];
 }
 
-const cache = new Map<string, LichessCloudData>();
-const missingCache = new Set<string>();
+const cache = new BoundedMap<string, LichessCloudData>(500);
+const missingCache = new BoundedSet<string>(2000);
 
 type LichessCloudData = {
   fen: string;

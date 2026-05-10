@@ -2,6 +2,7 @@ import { INITIAL_FEN, makeFen } from "chessops/fen";
 import { parseSan } from "chessops/san";
 import { commands } from "@/bindings";
 import type { Position } from "@/components/files/opening";
+import { BoundedMap } from "@/utils/boundedCache";
 import { positionFromFen } from "@/utils/chessops";
 import { rankOpeningReviewPositions } from "@/utils/openingReviewAutoUpdate";
 
@@ -19,7 +20,7 @@ export type OpeningReviewPositionRow = ReturnType<typeof rankOpeningReviewPositi
     opening: OpeningReviewOpeningInfo;
 };
 
-const openingNameCache = new Map<string, string>();
+const openingNameCache = new BoundedMap<string, string>(2000);
 const STARTING_POSITION_FEN_KEY = openingReviewFenKey(INITIAL_FEN);
 
 export function getOpeningReviewMoveSequenceLabel(position: Position) {

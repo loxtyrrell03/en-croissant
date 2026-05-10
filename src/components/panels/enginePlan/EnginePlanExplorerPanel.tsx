@@ -81,7 +81,10 @@ import {
   type ColoredPlanExplorerLine,
   type PlanExplorerSegment,
 } from "@/utils/planExplorer";
+import { withLimitedRecordEntry } from "@/utils/boundedCache";
 import { positionFromFen } from "@/utils/chessops";
+
+const MAX_ENGINE_PLAN_REPORT_CACHE_ENTRIES = 24;
 
 type ActiveRequest = {
   token: number;
@@ -140,10 +143,7 @@ function EnginePlanExplorerPanel() {
   }, []);
 
   const localEngines = useMemo(
-    () =>
-      (engines ?? []).filter(
-        (engine): engine is LocalEngine => engine.type === "local",
-      ),
+    () => (engines ?? []).filter((engine): engine is LocalEngine => engine.type === "local"),
     [engines],
   );
 
@@ -285,10 +285,12 @@ function EnginePlanExplorerPanel() {
         ...current,
         report: nextReport,
         reportCacheKey: active.cacheKey,
-        cache: {
-          ...current.cache,
-          [active.cacheKey]: nextReport,
-        },
+        cache: withLimitedRecordEntry(
+          current.cache,
+          active.cacheKey,
+          nextReport,
+          MAX_ENGINE_PLAN_REPORT_CACHE_ENTRIES,
+        ),
         progress: nextClampedProgress,
         running: nextClampedProgress < 100,
         error: null,
@@ -303,120 +305,123 @@ function EnginePlanExplorerPanel() {
     [cleanupListener, setPlanState],
   );
 
-  const runAnalysis = useCallback(async (forceRefresh = false) => {
-    if (!selectedEngine || !analysisCacheKey) return;
+  const runAnalysis = useCallback(
+    async (forceRefresh = false) => {
+      if (!selectedEngine || !analysisCacheKey) return;
 
-    const tab = `engine-plans:${activeTab ?? "tab"}`;
-    const goMode: GoMode =
-      limitMode === "depth" ? { t: "Depth", c: clampedDepth } : { t: "Time", c: clampedTimeMs };
-    const cached = forceRefresh ? null : planState.cache[analysisCacheKey];
-    if (cached) {
-      setPlanState((current) => ({
-        ...current,
-        report: cached,
-        reportCacheKey: analysisCacheKey,
-        progress: 100,
-        running: false,
-        error: null,
-        activeRequestKey: null,
-      }));
-      return;
-    }
-
-    const previous = requestRef.current;
-    if (previous) {
-      void stopEngine(previous.engine, previous.tab);
-    }
-    cleanupListener();
-
-    const active: ActiveRequest = {
-      token: tokenRef.current + 1,
-      engine: selectedEngine,
-      tab,
-      fen,
-      cacheKey: analysisCacheKey,
-      requestedMultipv: analysisMultipv,
-      limitLabel,
-    };
-    tokenRef.current = active.token;
-    requestRef.current = active;
-    setPlanState((current) => ({
-      ...current,
-      report: null,
-      reportCacheKey: analysisCacheKey,
-      error: null,
-      progress: 0,
-      running: true,
-      activeRequestKey: analysisCacheKey,
-    }));
-
-    let unlisten: () => void;
-    try {
-      unlisten = await events.bestMovesPayload.listen(({ payload }) => {
-        const current = requestRef.current;
-        if (!current || current.token !== active.token) return;
-        if (payload.engine !== current.engine.id || payload.tab !== current.tab) return;
-        if (payload.fen !== current.fen || payload.moves.length !== 0) return;
-
-        handleLines(current, payload.bestLines, payload.progress);
-      });
-    } catch (caught) {
-      if (requestRef.current?.token === active.token) {
+      const tab = `engine-plans:${activeTab ?? "tab"}`;
+      const goMode: GoMode =
+        limitMode === "depth" ? { t: "Depth", c: clampedDepth } : { t: "Time", c: clampedTimeMs };
+      const cached = forceRefresh ? null : planState.cache[analysisCacheKey];
+      if (cached) {
         setPlanState((current) => ({
           ...current,
-          error: caught instanceof Error ? caught.message : String(caught),
+          report: cached,
+          reportCacheKey: analysisCacheKey,
+          progress: 100,
           running: false,
+          error: null,
           activeRequestKey: null,
         }));
-        requestRef.current = null;
+        return;
       }
-      return;
-    }
 
-    if (requestRef.current?.token === active.token) {
-      unlistenRef.current = unlisten;
-    } else {
-      unlisten();
-      return;
-    }
+      const previous = requestRef.current;
+      if (previous) {
+        void stopEngine(previous.engine, previous.tab);
+      }
+      cleanupListener();
 
-    void getLocalBestMoves(selectedEngine, tab, goMode, {
-      fen,
-      moves: [],
-      extraOptions: buildEngineOptions(selectedEngine.settings, analysisMultipv),
-    })
-      .then((result) => {
-        const current = requestRef.current;
-        if (!result || !current || current.token !== active.token) return;
-        handleLines(current, result[1], result[0]);
+      const active: ActiveRequest = {
+        token: tokenRef.current + 1,
+        engine: selectedEngine,
+        tab,
+        fen,
+        cacheKey: analysisCacheKey,
+        requestedMultipv: analysisMultipv,
+        limitLabel,
+      };
+      tokenRef.current = active.token;
+      requestRef.current = active;
+      setPlanState((current) => ({
+        ...current,
+        report: null,
+        reportCacheKey: analysisCacheKey,
+        error: null,
+        progress: 0,
+        running: true,
+        activeRequestKey: analysisCacheKey,
+      }));
+
+      let unlisten: () => void;
+      try {
+        unlisten = await events.bestMovesPayload.listen(({ payload }) => {
+          const current = requestRef.current;
+          if (!current || current.token !== active.token) return;
+          if (payload.engine !== current.engine.id || payload.tab !== current.tab) return;
+          if (payload.fen !== current.fen || payload.moves.length !== 0) return;
+
+          handleLines(current, payload.bestLines, payload.progress);
+        });
+      } catch (caught) {
+        if (requestRef.current?.token === active.token) {
+          setPlanState((current) => ({
+            ...current,
+            error: caught instanceof Error ? caught.message : String(caught),
+            running: false,
+            activeRequestKey: null,
+          }));
+          requestRef.current = null;
+        }
+        return;
+      }
+
+      if (requestRef.current?.token === active.token) {
+        unlistenRef.current = unlisten;
+      } else {
+        unlisten();
+        return;
+      }
+
+      void getLocalBestMoves(selectedEngine, tab, goMode, {
+        fen,
+        moves: [],
+        extraOptions: buildEngineOptions(selectedEngine.settings, analysisMultipv),
       })
-      .catch((caught) => {
-        const current = requestRef.current;
-        if (!current || current.token !== active.token) return;
-        setPlanState((state) => ({
-          ...state,
-          error: caught instanceof Error ? caught.message : String(caught),
-          running: false,
-          activeRequestKey: null,
-        }));
-        requestRef.current = null;
-        cleanupListener();
-      });
-  }, [
-    activeTab,
-    analysisCacheKey,
-    analysisMultipv,
-    clampedDepth,
-    clampedTimeMs,
-    cleanupListener,
-    fen,
-    handleLines,
-    limitLabel,
-    limitMode,
-    planState.cache,
-    selectedEngine,
-    setPlanState,
-  ]);
+        .then((result) => {
+          const current = requestRef.current;
+          if (!result || !current || current.token !== active.token) return;
+          handleLines(current, result[1], result[0]);
+        })
+        .catch((caught) => {
+          const current = requestRef.current;
+          if (!current || current.token !== active.token) return;
+          setPlanState((state) => ({
+            ...state,
+            error: caught instanceof Error ? caught.message : String(caught),
+            running: false,
+            activeRequestKey: null,
+          }));
+          requestRef.current = null;
+          cleanupListener();
+        });
+    },
+    [
+      activeTab,
+      analysisCacheKey,
+      analysisMultipv,
+      clampedDepth,
+      clampedTimeMs,
+      cleanupListener,
+      fen,
+      handleLines,
+      limitLabel,
+      limitMode,
+      planState.cache,
+      selectedEngine,
+      setPlanState,
+    ],
+  );
 
   const stopAnalysis = useCallback(() => {
     const active = requestRef.current;
@@ -677,12 +682,9 @@ function EnginePlanExplorerPanel() {
                     delete nextCache[analysisCacheKey];
                     return {
                       ...current,
-                      report:
-                        current.reportCacheKey === analysisCacheKey ? null : current.report,
+                      report: current.reportCacheKey === analysisCacheKey ? null : current.report,
                       reportCacheKey:
-                        current.reportCacheKey === analysisCacheKey
-                          ? null
-                          : current.reportCacheKey,
+                        current.reportCacheKey === analysisCacheKey ? null : current.reportCacheKey,
                       cache: nextCache,
                     };
                   });
@@ -741,20 +743,10 @@ function PlansTable({
           <SortableEngineTh sortKey="plan" sort={sort} setSort={setSort}>
             Plan
           </SortableEngineTh>
-          <SortableEngineTh
-            sortKey="strength"
-            sort={sort}
-            setSort={setSort}
-            style={{ width: 118 }}
-          >
+          <SortableEngineTh sortKey="strength" sort={sort} setSort={setSort} style={{ width: 118 }}>
             Strength
           </SortableEngineTh>
-          <SortableEngineTh
-            sortKey="support"
-            sort={sort}
-            setSort={setSort}
-            style={{ width: 110 }}
-          >
+          <SortableEngineTh sortKey="support" sort={sort} setSort={setSort} style={{ width: 110 }}>
             Support
           </SortableEngineTh>
           <SortableEngineTh sortKey="eval" sort={sort} setSort={setSort} style={{ width: 96 }}>
@@ -1158,8 +1150,9 @@ function planToLine(plan: EnginePlan): ColoredPlanExplorerLine | null {
 function toPlanLineSegments(segments: [string, string][] | undefined) {
   return (
     segments
-      ?.filter((segment): segment is PlanExplorerSegment =>
-        isSquareName(segment[0]) && isSquareName(segment[1]),
+      ?.filter(
+        (segment): segment is PlanExplorerSegment =>
+          isSquareName(segment[0]) && isSquareName(segment[1]),
       )
       .map(([from, to]) => [from, to] as PlanExplorerSegment) ?? []
   );

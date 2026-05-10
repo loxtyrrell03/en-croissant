@@ -2,6 +2,7 @@ import { fetch } from "@tauri-apps/plugin-http";
 import { parseUci } from "chessops";
 import { makeFen } from "chessops/fen";
 import type { BestMoves, EngineOptions, GoMode, ScoreValue } from "@/bindings";
+import { BoundedMap } from "../boundedCache";
 import { positionFromFen } from "../chessops";
 
 const endpoint = "https://www.chessdb.cn/cdb.php";
@@ -109,8 +110,8 @@ type CachedResult = {
     winrate?: string;
 };
 
-const cache = new Map<string, CachedResult[]>();
-const cloudMoveCache = new Map<string, ChessDbCloudMove[] | null>();
+const cache = new BoundedMap<string, CachedResult[]>(500);
+const cloudMoveCache = new BoundedMap<string, ChessDbCloudMove[] | null>(1000);
 const cloudMoveInFlightCache = new Map<string, Promise<ChessDbCloudMove[] | null>>();
 
 async function queryPosition(fen: string) {

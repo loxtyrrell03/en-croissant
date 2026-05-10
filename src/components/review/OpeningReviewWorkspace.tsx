@@ -186,6 +186,7 @@ import {
   formatOpeningReviewMoveSource,
   isOpeningReviewSavedMove,
 } from "@/utils/openingReviewPractice";
+import { BoundedMap } from "@/utils/boundedCache";
 import resultClasses from "@/components/panels/database/OpeningsTable.module.css";
 
 const AnalysisPanel = lazy(() => import("@/components/panels/analysis/AnalysisPanel"));
@@ -310,7 +311,7 @@ const MISTAKE_REVIEW_POSITION_SEVERITIES: MistakeReviewAttemptLabel[] = [
   "best",
 ];
 
-const openingReviewOpeningNameCache = new Map<string, string>();
+const openingReviewOpeningNameCache = new BoundedMap<string, string>(2000);
 
 export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const boardRef = useRef(null);

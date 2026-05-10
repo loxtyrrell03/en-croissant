@@ -105,8 +105,11 @@ import {
   withPlanLineColor,
   type ColoredPlanExplorerLine,
 } from "@/utils/planExplorer";
+import { withLimitedRecordEntry } from "@/utils/boundedCache";
 import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveControls";
 import NoDatabaseWarning from "../database/NoDatabaseWarning";
+
+const MAX_ENGINE_STRENGTH_REPORT_CACHE_ENTRIES = 24;
 
 type SideFilter = "all" | "white" | "black";
 type PlanExplorerSource = "local" | OnlinePlanExplorerSource;
@@ -350,10 +353,12 @@ function PlanExplorerPanel() {
         ...current,
         report: nextReport,
         reportCacheKey: active.cacheKey,
-        cache: {
-          ...current.cache,
-          [active.cacheKey]: nextReport,
-        },
+        cache: withLimitedRecordEntry(
+          current.cache,
+          active.cacheKey,
+          nextReport,
+          MAX_ENGINE_STRENGTH_REPORT_CACHE_ENTRIES,
+        ),
         progress: nextClampedProgress,
         running: nextClampedProgress < 100,
         error: null,

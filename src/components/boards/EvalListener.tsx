@@ -28,11 +28,13 @@ import {
   stopMatchingEngine,
 } from "@/utils/engines";
 import { getBestMoves as lichessGetBestMoves } from "@/utils/lichess/api";
+import { BoundedSet, withLimitedMapEntry } from "@/utils/boundedCache";
 import { useThrottledEffect } from "@/utils/misc";
 import { TreeStateContext } from "../common/TreeStateContext";
 
 const LOCAL_ENGINE_CLOUD_PRIORITY_MS = 300;
 const LOCAL_ENGINE_CLOUD_TIMEOUT_MS = 1500;
+const MAX_ENGINE_RESULT_CACHE_ENTRIES = 80;
 
 function EvalListener({ active }: { active: boolean }) {
   const [engines] = useAtom(enginesAtom);
@@ -158,7 +160,7 @@ function EngineListener({
   );
   const displayedMovesKey = useMemo(() => moves.join(","), [moves]);
   const latestSearchKeyRef = useRef(searchKey);
-  const cloudCoveredSearchKeysRef = useRef(new Set<string>());
+  const cloudCoveredSearchKeysRef = useRef(new BoundedSet<string>(MAX_ENGINE_RESULT_CACHE_ENTRIES));
   useEffect(() => {
     latestSearchKeyRef.current = searchKey;
   }, [searchKey]);
@@ -186,14 +188,18 @@ function EngineListener({
       ) {
         startTransition(() => {
           setEngineVariation((prev) => {
-            const newMap = new Map(prev);
-            newMap.set(searchKey, ev);
-            if (threat) {
-              newMap.delete(`${fen}:${moves.join(",")}`);
-            } else if (finalFen) {
-              newMap.delete(`${swapMove(finalFen)}:`);
-            }
-            return newMap;
+            const staleKeys = threat
+              ? [`${fen}:${displayedMovesKey}`]
+              : finalFen
+                ? [`${swapMove(finalFen)}:`]
+                : [];
+            return withLimitedMapEntry(
+              prev,
+              searchKey,
+              ev,
+              MAX_ENGINE_RESULT_CACHE_ENTRIES,
+              staleKeys,
+            );
           });
           setProgress(payload.progress);
           const shouldSetScore =
@@ -270,9 +276,12 @@ function EngineListener({
                   cloudCoveredSearchKeysRef.current.add(searchKey);
                 }
                 setEngineVariation((prev) => {
-                  const newMap = new Map(prev);
-                  newMap.set(searchKey, bestMoves);
-                  return newMap;
+                  return withLimitedMapEntry(
+                    prev,
+                    searchKey,
+                    bestMoves,
+                    MAX_ENGINE_RESULT_CACHE_ENTRIES,
+                  );
                 });
                 if (latestSearchKeyRef.current === searchKey) {
                   setProgress(progress);
@@ -292,9 +301,7 @@ function EngineListener({
               console.error(`Failed to start analysis for ${engine.name}`, error);
               if (latestSearchKeyRef.current !== searchKey) return;
               setEngineVariation((prev) => {
-                const newMap = new Map(prev);
-                newMap.set(searchKey, []);
-                return newMap;
+                return withLimitedMapEntry(prev, searchKey, [], MAX_ENGINE_RESULT_CACHE_ENTRIES);
               });
               setProgress(100);
             });

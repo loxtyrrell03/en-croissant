@@ -17,8 +17,15 @@ import {
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import { commands } from "@/bindings";
-import { activeTabAtom, tabFamily, tabsAtom } from "@/state/atoms";
+import {
+  activeTabAtom,
+  cleanupClosedTabAtomState,
+  enginesAtom,
+  tabFamily,
+  tabsAtom,
+} from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
+import { removeDebouncedSessionStorageItem } from "@/state/store/debouncedStorage";
 import { createTab, genID, isPersistentGameOrigin, type Tab } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
 import { TreeStateProvider } from "../common/TreeStateContext";
@@ -99,12 +106,17 @@ export default function BoardsPage() {
             navigate({ to: "/home" });
           }
         }
-        setTabs((prev) => prev.filter((tab) => tab.value !== value));
+        const remainingTabs = tabs.filter((tab) => tab.value !== value);
+        setTabs(remainingTabs);
+        removeDebouncedSessionStorageItem(value);
+        if (closedTab) {
+          cleanupClosedTabAtomState(closedTab, remainingTabs, store.get(enginesAtom));
+        }
         unwrap(await commands.killEngines(value));
         await commands.abortGame(`${value}-game`);
       }
     },
-    [tabs, activeTab, setTabs, toggleSaveModal, setActiveTab, navigate],
+    [tabs, activeTab, setTabs, toggleSaveModal, setActiveTab, navigate, store],
   );
 
   function selectTab(index: number) {
