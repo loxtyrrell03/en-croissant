@@ -115,7 +115,11 @@ import {
   mistakeReviewSeverityLabel,
   type MistakeReviewAttemptLabel,
 } from "@/utils/mistakeReview";
-import { assessMistakeReviewMoveWithEngine } from "@/utils/mistakeReviewPractice";
+import {
+  assessMistakeReviewMove,
+  assessMistakeReviewMoveWithEngine,
+  type MistakeReviewMoveAssessment,
+} from "@/utils/mistakeReviewPractice";
 import {
   assessOpeningReviewMove,
   findReviewPracticePositionForBoard,
@@ -281,7 +285,9 @@ function mistakeReviewColor(severity: MistakeReviewAttemptLabel | undefined) {
   }
 }
 
-function practiceMoveAssessmentFromLabel(label: MistakeReviewAttemptLabel | undefined) {
+function practiceMoveAssessmentFromLabel(
+  label: MistakeReviewAttemptLabel | undefined,
+): "best" | "ok" | "incorrect" {
   switch (label) {
     case "best":
       return "best";
@@ -291,6 +297,41 @@ function practiceMoveAssessmentFromLabel(label: MistakeReviewAttemptLabel | unde
     default:
       return "incorrect";
   }
+}
+
+function mistakeReviewAssessmentToPracticeState({
+  position,
+  positionIndex,
+  assessment,
+  playedMove,
+  timeTaken,
+}: {
+  position: ReviewPosition;
+  positionIndex: number;
+  assessment: MistakeReviewMoveAssessment;
+  playedMove: { san: string; uci: string };
+  timeTaken: number;
+}) {
+  return {
+    phase: assessment.passed ? ("correct" as const) : ("incorrect" as const),
+    currentFen: position.fen,
+    answer: assessment.bestMoveSan,
+    playedMove: playedMove.san,
+    playedMoveUci: playedMove.uci,
+    moveAssessment: practiceMoveAssessmentFromLabel(assessment.label),
+    moveQualityLabel: assessment.label,
+    mistakeReviewLabel: assessment.label,
+    bestMove: assessment.bestMoveSan,
+    bestMoveUci: assessment.bestMoveUci,
+    moveLossCp: assessment.moveLossCp,
+    winProbabilityDrop: assessment.winProbabilityDrop,
+    requestedDepth: assessment.requestedDepth,
+    reachedDepth: assessment.reachedDepth,
+    engineName: assessment.engineName,
+    positionIndex,
+    timeTaken,
+    resultRecorded: false,
+  };
 }
 
 function normalizeOpeningPracticeSan(move: string | null | undefined) {
@@ -518,6 +559,7 @@ function Board({
   );
 
   const [practiceState, setPracticeState] = useAtom(practiceStateAtom);
+  const latestPracticeStateRef = useRef(practiceState);
   const cardStartTime = useAtomValue(practiceCardStartTimeAtom);
   const [mistakeReviewAutoPlayLine, setMistakeReviewAutoPlayLine] = useAtom(
     mistakeReviewAutoPlayLineAtom,
@@ -550,7 +592,12 @@ function Board({
     useState<ReviewPosition | null>(null);
   const mistakeReviewLineTimers = useRef<number[]>([]);
   const previousMistakeReviewIndexRef = useRef<number | null>(null);
+  const mistakeReviewAssessmentRequestRef = useRef(0);
   const openingReviewAssessmentRequestRef = useRef(0);
+
+  useEffect(() => {
+    latestPracticeStateRef.current = practiceState;
+  }, [practiceState]);
 
   const clearMistakeReviewLine = useCallback(() => {
     for (const timer of mistakeReviewLineTimers.current) {
@@ -970,36 +1017,70 @@ function Board({
         });
         setPendingMove(null);
 
-        const moveAssessment = await assessMistakeReviewMoveWithEngine(c, { san, uci });
-        setPracticeState({
-          phase: moveAssessment.passed ? "correct" : "incorrect",
-          currentFen: c.fen,
-          answer: moveAssessment.bestMoveSan,
-          playedMove: san,
-          playedMoveUci: uci,
-          moveAssessment: practiceMoveAssessmentFromLabel(moveAssessment.label),
-          moveQualityLabel: moveAssessment.label,
-          mistakeReviewLabel: moveAssessment.label,
-          bestMove: moveAssessment.bestMoveSan,
-          bestMoveUci: moveAssessment.bestMoveUci,
-          moveLossCp: moveAssessment.moveLossCp,
-          winProbabilityDrop: moveAssessment.winProbabilityDrop,
-          requestedDepth: moveAssessment.requestedDepth,
-          reachedDepth: moveAssessment.reachedDepth,
-          engineName: moveAssessment.engineName,
-          positionIndex: i,
-          timeTaken,
-          resultRecorded: false,
-        });
+        const playedMove = { san, uci };
+        const immediateAssessment = assessMistakeReviewMove(c, playedMove);
+        const requestId = mistakeReviewAssessmentRequestRef.current + 1;
+        mistakeReviewAssessmentRequestRef.current = requestId;
+
+        setPracticeState(
+          mistakeReviewAssessmentToPracticeState({
+            position: c,
+            positionIndex: i,
+            assessment: immediateAssessment,
+            playedMove,
+            timeTaken,
+          }),
+        );
         notifications.show({
-          title: mistakeReviewSeverityLabel(moveAssessment.label),
-          message: `${moveAssessment.bestMoveSan} was the engine move to remember.`,
-          color: mistakeReviewColor(moveAssessment.label),
+          title: mistakeReviewSeverityLabel(immediateAssessment.label),
+          message: `${immediateAssessment.bestMoveSan} was the engine move to remember.`,
+          color: mistakeReviewColor(immediateAssessment.label),
         });
-        if (!moveAssessment.passed && !mistakeReviewAutoRevealBest) {
-          await new Promise((resolve) => setTimeout(resolve, 500));
-          goToNext();
-        }
+
+        void assessMistakeReviewMoveWithEngine(c, playedMove)
+          .then((moveAssessment) => {
+            setPracticeState((current) => {
+              if (
+                mistakeReviewAssessmentRequestRef.current !== requestId ||
+                current.positionIndex !== i ||
+                current.currentFen !== c.fen ||
+                current.playedMoveUci !== uci ||
+                current.playedMove !== san ||
+                (current.phase !== "correct" && current.phase !== "incorrect")
+              ) {
+                return current;
+              }
+
+              return {
+                ...current,
+                ...mistakeReviewAssessmentToPracticeState({
+                  position: c,
+                  positionIndex: i,
+                  assessment: moveAssessment,
+                  playedMove,
+                  timeTaken: current.timeTaken ?? timeTaken,
+                }),
+                resultRecorded: current.resultRecorded,
+              };
+            });
+
+            if (!moveAssessment.passed && !mistakeReviewAutoRevealBest) {
+              window.setTimeout(() => {
+                const latestPracticeState = latestPracticeStateRef.current;
+                if (
+                  mistakeReviewAssessmentRequestRef.current === requestId &&
+                  latestPracticeState.positionIndex === i &&
+                  latestPracticeState.currentFen === c.fen &&
+                  latestPracticeState.playedMoveUci === uci &&
+                  latestPracticeState.playedMove === san &&
+                  latestPracticeState.phase === "incorrect"
+                ) {
+                  goToNext();
+                }
+              }, 500);
+            }
+          })
+          .catch(() => {});
         return;
       }
 

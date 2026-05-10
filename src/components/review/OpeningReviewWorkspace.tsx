@@ -2327,7 +2327,7 @@ function OpeningReviewPanel({
   ]);
 
   const canRateAttempt =
-    sessionStats.mode !== "full" &&
+    (isMistakeReview || sessionStats.mode !== "full") &&
     (practiceState.phase === "correct" ||
       (practiceState.phase === "incorrect" &&
         (isMistakeReview || Boolean(practiceState.moveQualityLabel))));
@@ -2398,7 +2398,11 @@ function OpeningReviewPanel({
     enabled: practiceState.phase === "incorrect" && !canRateAttempt,
   });
   useHotkeys("space", () => advanceMistakeReviewCorrect(), {
-    enabled: isMistakeReview && practiceState.phase === "correct" && sessionStats.mode === "full",
+    enabled:
+      isMistakeReview &&
+      practiceState.phase === "correct" &&
+      sessionStats.mode === "full" &&
+      !canRateAttempt,
   });
   useHotkeys("space", () => advanceFullPracticeCorrect(), {
     enabled: !isMistakeReview && practiceState.phase === "correct" && sessionStats.mode === "full",
@@ -2966,7 +2970,7 @@ function OpeningReviewPanel({
           />
         )}
 
-        {practiceState.phase === "correct" && sessionStats.mode === "full" && (
+        {!isMistakeReview && practiceState.phase === "correct" && sessionStats.mode === "full" && (
           <Paper p="sm" withBorder>
             <Stack gap="xs" align="center">
               <Group gap="xs">
