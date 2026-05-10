@@ -20,6 +20,7 @@ import {
     getMistakeReviewPhaseCounts,
     getMistakeReviewTimeManagementBatch,
     isMistakeReviewPassingLabel,
+    migrateMistakeReviewDeckNatureClassifications,
     mergeMistakeReviewPositions,
     type MistakeReviewDeck,
 } from "@/utils/mistakeReview";
@@ -663,6 +664,34 @@ describe("mistake review helpers", () => {
             "tactical-due",
             "tactical-fresh",
         ]);
+    });
+
+    test("nature migration classifies old cards once and stores metadata", async () => {
+        const oldTactical = position({
+            reviewKey: "old-tactical",
+            answer: "Bxh7+",
+            mistakeReview: {
+                ...position().mistakeReview!,
+                bestMoveSan: "Bxh7+",
+                pvSan: ["Bxh7+", "Kxh7", "Ng5+"],
+            },
+        });
+        const sourceDeck = deck([oldTactical]);
+
+        const firstMigration = await migrateMistakeReviewDeckNatureClassifications(sourceDeck, {
+            chunkSize: 1,
+        });
+        const migrated = firstMigration.deck.positions[0].mistakeReview!;
+
+        expect(firstMigration.updatedCount).toBe(1);
+        expect(migrated.nature).toBe("tactical");
+        expect(migrated.natureClassifierVersion).toBeDefined();
+
+        const secondMigration = await migrateMistakeReviewDeckNatureClassifications(
+            firstMigration.deck,
+            { chunkSize: 1 },
+        );
+        expect(secondMigration.updatedCount).toBe(0);
     });
 
     test("time management batch keeps long-think mistakes first", () => {

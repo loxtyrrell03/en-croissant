@@ -14,6 +14,7 @@ import {
 import {
     createMistakeReviewPosition,
     listMistakeReviewDecks,
+    migrateMistakeReviewDeckNatureClassifications,
     mergeMistakeReviewPositions,
     mistakeReviewPositionKey,
     mistakeReviewRequestFromSettings,
@@ -240,7 +241,10 @@ async function updateMistakeReviewDeckFromOnlineDatabase(job: AutoUpdateJob) {
         deck,
         updatedCount: 0,
     }));
-    const deckWithClockData = clockHydration.deck;
+    const natureMigration = await migrateMistakeReviewDeckNatureClassifications(
+        clockHydration.deck,
+    );
+    const deckWithPreparedMetadata = natureMigration.deck;
 
     for (const [index, target] of targets.entries()) {
         const scanSettings = {
@@ -272,8 +276,8 @@ async function updateMistakeReviewDeckFromOnlineDatabase(job: AutoUpdateJob) {
         }
     }
 
-    const existingKeys = new Set(deckWithClockData.positions.map(mistakeReviewPositionKey));
-    const merged = mergeMistakeReviewPositions(deckWithClockData, positions);
+    const existingKeys = new Set(deckWithPreparedMetadata.positions.map(mistakeReviewPositionKey));
+    const merged = mergeMistakeReviewPositions(deckWithPreparedMetadata, positions);
     const added = positions.filter(
         (position) => !existingKeys.has(mistakeReviewPositionKey(position)),
     ).length;

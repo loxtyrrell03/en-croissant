@@ -151,6 +151,9 @@ import {
   getMistakeReviewPhaseCounts,
   getMistakeReviewSeverityWeight,
   getMistakeReviewTimeManagementBatch,
+  migrateMistakeReviewDeckNatureClassifications,
+  mistakeReviewPositionKey,
+  needsMistakeReviewDeckNatureMigration,
   mistakeReviewNatureAspectLabel,
   mistakeReviewNatureColor,
   mistakeReviewNatureLabel,
@@ -363,6 +366,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const practiceAgainstBot = usePracticeAgainstBot();
   const autoUpdateRevisionRef = useRef(0);
   const clockHydrationRef = useRef("");
+  const natureMigrationRef = useRef("");
   const latestReviewSaveRef = useRef<ReviewDeckSaveSnapshot | null>(null);
   const reviewSaveReadyRef = useRef(false);
   const initialPractice =
@@ -521,6 +525,74 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
       disposed = true;
     };
   }, [deckPath, isMistakeReview, setDeck]);
+
+  useEffect(() => {
+    if (!isMistakeReview || !loaded || loadError || !deckInfo) return;
+
+    const currentDeck: MistakeReviewDeck = {
+      ...(deckInfo as MistakeReviewDeck),
+      positions: deck.positions,
+      logs: deck.logs as MistakeReviewDeck["logs"],
+    };
+    if (!needsMistakeReviewDeckNatureMigration(currentDeck)) return;
+
+    const migrationKey = `${deckPath}:${currentDeck.positions.length}:${currentDeck.updatedAt}`;
+    if (natureMigrationRef.current === migrationKey) return;
+    natureMigrationRef.current = migrationKey;
+
+    let disposed = false;
+    const timer = window.setTimeout(() => {
+      void migrateMistakeReviewDeckNatureClassifications(currentDeck, { chunkSize: 4 })
+        .then((result) => {
+          if (disposed || result.updatedCount === 0) return;
+
+          const migratedByKey = new Map(
+            result.deck.positions.map((position) => [mistakeReviewPositionKey(position), position]),
+          );
+          setDeck((current) => ({
+            positions: current.positions.map((position) => {
+              const migrated = migratedByKey.get(mistakeReviewPositionKey(position));
+              const migratedMistake = migrated?.mistakeReview;
+              if (!migratedMistake || !position.mistakeReview) return position;
+              if (
+                position.mistakeReview.natureClassifierVersion ===
+                migratedMistake.natureClassifierVersion
+              ) {
+                return position;
+              }
+
+              return {
+                ...position,
+                tags: migrated.tags,
+                evidence: migrated.evidence,
+                mistakeReview: {
+                  ...position.mistakeReview,
+                  nature: migratedMistake.nature,
+                  natureConfidence: migratedMistake.natureConfidence,
+                  natureReason: migratedMistake.natureReason,
+                  tacticalSignals: migratedMistake.tacticalSignals,
+                  natureAspect: migratedMistake.natureAspect,
+                  allowedNature: migratedMistake.allowedNature,
+                  allowedNatureReason: migratedMistake.allowedNatureReason,
+                  missedNature: migratedMistake.missedNature,
+                  missedNatureReason: migratedMistake.missedNatureReason,
+                  natureClassifierVersion: migratedMistake.natureClassifierVersion,
+                },
+              };
+            }),
+            logs: current.logs,
+          }));
+        })
+        .catch(() => {
+          // Classification migration is best-effort; new scans still save fresh metadata.
+        });
+    }, 300);
+
+    return () => {
+      disposed = true;
+      window.clearTimeout(timer);
+    };
+  }, [deck.logs, deck.positions, deckInfo, deckPath, isMistakeReview, loadError, loaded, setDeck]);
 
   useEffect(() => {
     if (!isMistakeReview || !loaded || loadError || !deckInfo || missingMistakeClockCount === 0) {

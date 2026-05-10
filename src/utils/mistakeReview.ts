@@ -143,6 +143,7 @@ const MISTAKE_REVIEW_NATURE_PV_PLIES = 4;
 const MISTAKE_REVIEW_NATURE_CLASSIFIER_VERSION = 2;
 const MISTAKE_REVIEW_NATURE_CACHE_LIMIT = 5000;
 const mistakeReviewNatureClassificationCache = new Map<string, MistakeReviewNatureClassification>();
+const mistakeReviewNatureDisplayCache = new WeakMap<Position, MistakeReviewNatureClassification>();
 
 export type MistakeReviewDailySettings = {
     reviewsPerDay: number;
@@ -357,6 +358,38 @@ export async function writeMistakeReviewDeck(path: string, deck: MistakeReviewDe
     };
     await writeTextFile(path, `${JSON.stringify(updatedDeck, null, 2)}\n`);
     return updatedDeck;
+}
+
+export function needsMistakeReviewDeckNatureMigration(deck: MistakeReviewDeck) {
+    return deck.positions.some(shouldMigrateMistakeReviewNatureClassification);
+}
+
+export async function migrateMistakeReviewDeckNatureClassifications(
+    deck: MistakeReviewDeck,
+    options: { chunkSize?: number } = {},
+) {
+    const chunkSize = Math.max(1, Math.trunc(options.chunkSize ?? 8));
+    let positions = deck.positions;
+    let updatedCount = 0;
+
+    for (let index = 0; index < deck.positions.length; index += 1) {
+        const position = deck.positions[index];
+        if (!shouldMigrateMistakeReviewNatureClassification(position)) continue;
+
+        const classification = classifyMistakeReviewNature(position);
+        if (positions === deck.positions) positions = [...deck.positions];
+        positions[index] = applyMistakeReviewNatureClassification(position, classification);
+        updatedCount += 1;
+
+        if (updatedCount % chunkSize === 0) {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+    }
+
+    return {
+        deck: updatedCount > 0 ? { ...deck, positions } : deck,
+        updatedCount,
+    };
 }
 
 export async function deleteMistakeReviewDeck(path: string) {
@@ -904,44 +937,244 @@ export function getMistakeReviewPhase(position: Position): MistakeReviewPhase {
 }
 
 export function getMistakeReviewNature(position: Position): MistakeReviewNature {
+    return getMistakeReviewNatureDisplayClassification(position).nature;
+}
+
+export function getMistakeReviewNatureConfidence(
+    position: Position,
+): MistakeReviewNatureConfidence {
+    return getMistakeReviewNatureDisplayClassification(position).confidence;
+}
+
+export function getMistakeReviewNatureReason(position: Position) {
+    return getMistakeReviewNatureDisplayClassification(position).reason;
+}
+
+export function getMistakeReviewNatureAspect(position: Position): MistakeReviewNatureAspect {
+    return getMistakeReviewNatureDisplayClassification(position).aspect;
+}
+
+function getMistakeReviewNatureDisplayClassification(position: Position) {
+    const cached = mistakeReviewNatureDisplayCache.get(position);
+    if (cached) return cached;
+
     const metadata = position.mistakeReview;
-    const explicit = normalizeMistakeReviewNature(
+    const explicitNature = normalizeMistakeReviewNature(
         metadata?.nature ??
             metadata?.mistakeNature ??
             metadata?.category ??
             metadata?.summary?.nature ??
             metadata?.summary?.mistakeNature,
     );
-    if (explicit && !shouldReclassifyMistakeReviewNature(metadata)) return explicit;
-    return classifyMistakeReviewNature(position).nature;
-}
-
-export function getMistakeReviewNatureConfidence(
-    position: Position,
-): MistakeReviewNatureConfidence {
-    const metadata = position.mistakeReview;
-    const explicit = normalizeMistakeReviewNatureConfidence(
+    const explicitConfidence = normalizeMistakeReviewNatureConfidence(
         metadata?.natureConfidence ?? metadata?.summary?.natureConfidence,
     );
-    if (explicit && !shouldReclassifyMistakeReviewNature(metadata)) return explicit;
-    return classifyMistakeReviewNature(position).confidence;
+    const explicitAspect = normalizeMistakeReviewNatureAspect(metadata?.natureAspect);
+    let fallback: MistakeReviewNatureClassification | null = null;
+    const getFallback = () => {
+        fallback ??= classifyMistakeReviewNatureFromText(position);
+        return fallback;
+    };
+
+    const nature = explicitNature ?? getFallback().nature;
+    const allowedNature = normalizeMistakeReviewNature(metadata?.allowedNature);
+    const missedNature = normalizeMistakeReviewNature(metadata?.missedNature);
+    const aspect =
+        explicitAspect ??
+        inferMistakeReviewNatureAspect(allowedNature, missedNature, getFallback().aspect, nature);
+
+    const classification: MistakeReviewNatureClassification = {
+        nature,
+        confidence: explicitConfidence ?? getFallback().confidence,
+        reason: metadata?.natureReason ?? getFallback().reason,
+        tacticalSignals: metadata?.tacticalSignals ?? getFallback().tacticalSignals,
+        aspect,
+        allowedNature: allowedNature ?? getFallback().allowedNature,
+        allowedReason: metadata?.allowedNatureReason ?? getFallback().allowedReason,
+        missedNature: missedNature ?? getFallback().missedNature,
+        missedReason: metadata?.missedNatureReason ?? getFallback().missedReason,
+    };
+
+    mistakeReviewNatureDisplayCache.set(position, classification);
+    return classification;
 }
 
-export function getMistakeReviewNatureReason(position: Position) {
+function shouldMigrateMistakeReviewNatureClassification(position: Position) {
     const metadata = position.mistakeReview;
-    if (shouldReclassifyMistakeReviewNature(metadata)) {
-        return classifyMistakeReviewNature(position).reason;
+    return Boolean(
+        metadata && metadata.natureClassifierVersion !== MISTAKE_REVIEW_NATURE_CLASSIFIER_VERSION,
+    );
+}
+
+function applyMistakeReviewNatureClassification(
+    position: Position,
+    classification: MistakeReviewNatureClassification,
+): Position {
+    if (!position.mistakeReview) return position;
+
+    return {
+        ...position,
+        tags: upsertMistakeReviewNatureTag(position.tags, classification.nature),
+        evidence: updateMistakeReviewEvidenceNature(position.evidence, classification),
+        mistakeReview: {
+            ...position.mistakeReview,
+            nature: classification.nature,
+            natureConfidence: classification.confidence,
+            natureReason: classification.reason,
+            tacticalSignals: classification.tacticalSignals,
+            natureAspect: classification.aspect,
+            allowedNature: classification.allowedNature,
+            allowedNatureReason: classification.allowedReason,
+            missedNature: classification.missedNature,
+            missedNatureReason: classification.missedReason,
+            natureClassifierVersion: MISTAKE_REVIEW_NATURE_CLASSIFIER_VERSION,
+        },
+    };
+}
+
+function upsertMistakeReviewNatureTag(tags: string[] | undefined, nature: MistakeReviewNature) {
+    const label = mistakeReviewNatureLabel(nature);
+    const existingTags = tags ?? [];
+    const filtered = existingTags.filter((tag) => !normalizeMistakeReviewNature(tag));
+    const sourceIndex = filtered.findIndex((tag) => tag === MISTAKE_REVIEW_SOURCE);
+    if (sourceIndex < 0) return [...filtered, label];
+
+    return [...filtered.slice(0, sourceIndex), label, ...filtered.slice(sourceIndex)];
+}
+
+function updateMistakeReviewEvidenceNature(
+    evidence: string | undefined,
+    classification: MistakeReviewNatureClassification,
+) {
+    if (!evidence) return evidence;
+
+    const natureText = `${mistakeReviewNatureLabel(classification.nature)}, ${
+        classification.confidence
+    } confidence: ${classification.reason}`;
+    return evidence.replace(
+        /(Tactical|Positional), (high|medium|low) confidence: .*$/i,
+        natureText,
+    );
+}
+
+function classifyMistakeReviewNatureFromText(
+    position: Position,
+): MistakeReviewNatureClassification {
+    const metadata = position.mistakeReview;
+    const bestMoveSan = metadata?.bestMoveSan ?? position.answer ?? "";
+    const playedMoveSan = metadata?.playedMoveSan ?? "";
+    const pvSan = normalizeMistakeReviewMoveList(metadata?.pvSan);
+    const refutationSan = normalizeMistakeReviewMoveList(metadata?.refutationSan);
+    const cpLoss = metadata?.cpLoss ?? position.engine?.lossCp;
+    const winProbabilityDrop = metadata?.winProbabilityDrop;
+    const firstPvSan = pvSan[0] ?? "";
+    const correctionSan = bestMoveSan || firstPvSan;
+    const bestIsForcing = isMistakeReviewForcingSan(correctionSan);
+    const firstPvIsForcing = isMistakeReviewForcingSan(firstPvSan);
+    const playedIsForcing = isMistakeReviewForcingSan(playedMoveSan);
+    const forcingPvMoves = pvSan
+        .slice(0, MISTAKE_REVIEW_NATURE_PV_PLIES)
+        .filter(isMistakeReviewForcingSan);
+    const forcingRefutationMoves = refutationSan
+        .slice(0, MISTAKE_REVIEW_NATURE_PV_PLIES)
+        .filter(isMistakeReviewForcingSan);
+    const hasMateSignal = [
+        correctionSan,
+        playedMoveSan,
+        ...pvSan.slice(0, MISTAKE_REVIEW_NATURE_PV_PLIES),
+        ...refutationSan.slice(0, MISTAKE_REVIEW_NATURE_PV_PLIES),
+    ].some((move) => /#/.test(move));
+    const largeLoss = typeof cpLoss === "number" && cpLoss >= 180;
+    const sharpWinDrop = typeof winProbabilityDrop === "number" && winProbabilityDrop >= 12;
+    const missedScore =
+        (bestIsForcing ? 3 : 0) +
+        (!bestIsForcing && firstPvIsForcing ? 2 : 0) +
+        (forcingPvMoves.length >= 2 ? 2 : 0) +
+        (hasMateSignal && pvSan.some((move) => /#/.test(move)) ? 3 : 0) +
+        ((largeLoss || sharpWinDrop) && forcingPvMoves.length > 0 ? 1 : 0) +
+        (playedIsForcing && bestIsForcing ? 1 : 0);
+    const allowedScore =
+        (forcingRefutationMoves.length >= 1 && (largeLoss || sharpWinDrop) ? 2 : 0) +
+        (forcingRefutationMoves.length >= 2 ? 2 : 0) +
+        (hasMateSignal && refutationSan.some((move) => /#/.test(move)) ? 3 : 0);
+    const missedTactical = missedScore >= 4 || (missedScore >= 3 && (largeLoss || sharpWinDrop));
+    const allowedTactical = allowedScore >= 4 || (allowedScore >= 3 && (largeLoss || sharpWinDrop));
+    const allowedReason = forcingRefutationMoves.length
+        ? `opponent refutation has ${forcingRefutationMoves.length} forcing move${
+              forcingRefutationMoves.length === 1 ? "" : "s"
+          } early`
+        : "opponent refutation is not immediately forcing";
+    const missedReason =
+        bestIsForcing && correctionSan
+            ? `best move ${correctionSan} is forcing`
+            : forcingPvMoves.length
+              ? `best line has ${forcingPvMoves.length} forcing move${
+                    forcingPvMoves.length === 1 ? "" : "s"
+                } early`
+              : `${correctionSan ? `best move ${correctionSan}` : "best line"} is quiet`;
+
+    if (allowedTactical || missedTactical) {
+        const aspect =
+            allowedTactical && missedTactical ? "both" : allowedTactical ? "allowed" : "missed";
+        return {
+            nature: "tactical",
+            confidence: Math.max(allowedScore, missedScore) >= 5 ? "high" : "medium",
+            reason:
+                aspect === "allowed"
+                    ? `Allowed tactical resource: ${allowedReason}`
+                    : aspect === "missed"
+                      ? `Missed tactical resource: ${missedReason}`
+                      : `Allowed and missed tactical resources: ${allowedReason}`,
+            tacticalSignals: [
+                ...(allowedTactical ? [`Allowed: ${allowedReason}`] : []),
+                ...(missedTactical ? [`Missed: ${missedReason}`] : []),
+            ],
+            aspect,
+            allowedNature: allowedTactical ? "tactical" : "positional",
+            allowedReason,
+            missedNature: missedTactical ? "tactical" : "positional",
+            missedReason,
+        };
     }
 
-    return metadata?.natureReason ?? classifyMistakeReviewNature(position).reason;
+    const quietCorrectionText = correctionSan
+        ? `best move ${correctionSan} is quiet`
+        : "engine correction is quiet";
+    return {
+        nature: "positional",
+        confidence: forcingPvMoves.length === 0 && !largeLoss && !sharpWinDrop ? "high" : "medium",
+        reason:
+            forcingPvMoves.length === 0
+                ? `${quietCorrectionText}; early PV has no checks, captures, or promotions.`
+                : `${quietCorrectionText}; only ${forcingPvMoves.length} forcing move${
+                      forcingPvMoves.length === 1 ? "" : "s"
+                  } appears early in the PV.`,
+        tacticalSignals: [],
+        aspect: refutationSan.length ? "both" : "missed",
+        allowedNature: "positional",
+        allowedReason,
+        missedNature: "positional",
+        missedReason,
+    };
 }
 
-export function getMistakeReviewNatureAspect(position: Position): MistakeReviewNatureAspect {
-    const metadata = position.mistakeReview;
-    const explicit = normalizeMistakeReviewNatureAspect(metadata?.natureAspect);
-    if (explicit && !shouldReclassifyMistakeReviewNature(metadata)) return explicit;
+function inferMistakeReviewNatureAspect(
+    allowedNature: MistakeReviewNature | null,
+    missedNature: MistakeReviewNature | null,
+    fallback: MistakeReviewNatureAspect,
+    nature: MistakeReviewNature,
+) {
+    if (allowedNature === "tactical" && missedNature === "tactical") return "both";
+    if (allowedNature === "tactical") return "allowed";
+    if (missedNature === "tactical") return "missed";
+    if (nature === "tactical") return fallback;
+    return fallback;
+}
 
-    return classifyMistakeReviewNature(position).aspect;
+function normalizeMistakeReviewMoveList(value?: string[] | null) {
+    return (value ?? []).filter(
+        (move): move is string => typeof move === "string" && move.trim().length > 0,
+    );
 }
 
 export function isMistakeReviewTimeManagementPosition(
@@ -1525,19 +1758,6 @@ function isMistakeReviewSeverityIncluded(
         default:
             return false;
     }
-}
-
-function shouldReclassifyMistakeReviewNature(metadata?: Position["mistakeReview"]) {
-    if (!metadata) return false;
-    if (metadata.natureClassifierVersion === MISTAKE_REVIEW_NATURE_CLASSIFIER_VERSION) return false;
-
-    return Boolean(
-        metadata.natureReason ||
-        metadata.natureConfidence ||
-        metadata.tacticalSignals?.length ||
-        metadata.allowedNature ||
-        metadata.missedNature,
-    );
 }
 
 function normalizeMistakeReviewPhase(value?: string | null): MistakeReviewPhase | null {
