@@ -336,11 +336,13 @@ function BoardWorkspaceLayout({ tab }: { tab: Tab }) {
 
   const splitAvailableHeight = Math.max(containerSize.height - ROW_RESIZE_HANDLE_HEIGHT, 0);
   const resolvedRightPaneHeights = resolveRightPaneHeights(layout, splitAvailableHeight);
-  const comparePanelSelected = selectedBoardPanel === "compare";
-  const topRightHeight = comparePanelSelected
+  const usesUnderBoardNotation =
+    tab.type === "analysis" || tab.type === "opening-review" || tab.type === "mistake-review";
+  const bottomRightHidden = usesUnderBoardNotation || selectedBoardPanel === "compare";
+  const topRightHeight = bottomRightHidden
     ? containerSize.height
     : resolvedRightPaneHeights.topRightHeight;
-  const bottomRightHeight = comparePanelSelected ? 0 : resolvedRightPaneHeights.bottomRightHeight;
+  const bottomRightHeight = bottomRightHidden ? 0 : resolvedRightPaneHeights.bottomRightHeight;
 
   const clampedRightWidthPercent = clampRightWidthPercent(
     layout.rightWidthPercent,
@@ -456,7 +458,7 @@ function BoardWorkspaceLayout({ tab }: { tab: Tab }) {
             aria-label="Resize right side panels"
             onPointerDown={startRightPaneResize}
             style={{
-              display: comparePanelSelected ? "none" : undefined,
+              display: bottomRightHidden ? "none" : undefined,
             }}
           />
           <div

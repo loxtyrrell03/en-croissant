@@ -60,6 +60,7 @@ export interface TreeStoreState extends TreeState {
     setStart: (start: number[]) => void;
 
     setAnnotation: (payload: Annotation) => void;
+    setAnnotationAtPath: (path: number[], payload: Annotation) => void;
     setComment: (payload: string) => void;
     setCommentAtPath: (path: number[], payload: string) => void;
     setCurrentNodeMetadata: (payload: {
@@ -418,20 +419,16 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
                 produce((state) => {
                     state.dirty = true;
                     const node = getNodeAtPath(state.root, state.position);
-                    if (node) {
-                        if (node.annotations.includes(payload)) {
-                            node.annotations = node.annotations.filter((a) => a !== payload);
-                        } else {
-                            const newAnnotations = node.annotations.filter(
-                                (a) =>
-                                    !ANNOTATION_INFO[a].group ||
-                                    ANNOTATION_INFO[a].group !== ANNOTATION_INFO[payload].group,
-                            );
-                            node.annotations = [...newAnnotations, payload].sort((a, b) =>
-                                ANNOTATION_INFO[a].nag > ANNOTATION_INFO[b].nag ? 1 : -1,
-                            );
-                        }
-                    }
+                    toggleAnnotation(node, payload);
+                }),
+            ),
+        setAnnotationAtPath: (path, payload) =>
+            set(
+                produce((state) => {
+                    const node = getNodeAtPath(state.root, path);
+                    if (!node) return;
+                    state.dirty = true;
+                    toggleAnnotation(node, payload);
                 }),
             ),
         setComment: (payload) =>
@@ -645,6 +642,24 @@ function isThreeFoldRepetition(state: TreeState, fen: string): boolean {
     }
 
     return false;
+}
+
+function toggleAnnotation(node: TreeNode | null, payload: Annotation) {
+    if (!node) return;
+
+    if (node.annotations.includes(payload)) {
+        node.annotations = node.annotations.filter((a) => a !== payload);
+        return;
+    }
+
+    const newAnnotations = node.annotations.filter(
+        (a) =>
+            !ANNOTATION_INFO[a].group ||
+            ANNOTATION_INFO[a].group !== ANNOTATION_INFO[payload].group,
+    );
+    node.annotations = [...newAnnotations, payload].sort((a, b) =>
+        ANNOTATION_INFO[a].nag > ANNOTATION_INFO[b].nag ? 1 : -1,
+    );
 }
 
 function is50MoveRule(fen: string) {

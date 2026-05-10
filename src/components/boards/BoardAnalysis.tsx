@@ -50,7 +50,6 @@ import EvalListener from "./EvalListener";
 import classes from "./BoardAnalysis.module.css";
 
 const AnalysisPanel = lazy(() => import("../panels/analysis/AnalysisPanel"));
-const AnnotationPanel = lazy(() => import("../panels/annotation/AnnotationPanel"));
 const ComparePanel = lazy(() => import("../panels/compare/ComparePanel"));
 const DatabasePanel = lazy(() => import("../panels/database/DatabasePanel"));
 const EnginePlanExplorerPanel = lazy(() => import("../panels/enginePlan/EnginePlanExplorerPanel"));
@@ -288,10 +287,35 @@ function BoardAnalysis() {
               selectedPiece={selectedPiece}
             />
           }
-          annotation={
-            <Suspense fallback={null}>
-              <AnnotationPanel />
-            </Suspense>
+          underBoard={
+            editingMode ? (
+              <EditingCard
+                boardRef={boardRef}
+                setEditingMode={toggleEditingMode}
+                selectedPiece={selectedPiece}
+                setSelectedPiece={setSelectedPiece}
+              />
+            ) : (
+              <Stack h="100%" gap="xs">
+                <DetachedEval />
+                <Suspense fallback={<NotationFallback />}>
+                  <GameNotation
+                    topBar
+                    controls={
+                      <BoardControls
+                        editingMode={editingMode}
+                        toggleEditingMode={toggleEditingMode}
+                        dirty={dirty}
+                        saveFile={userSaveFile}
+                      />
+                    }
+                  />
+                </Suspense>
+                <Suspense fallback={null}>
+                  <MoveControls />
+                </Suspense>
+              </Stack>
+            )
           }
         />
       </Portal>
@@ -435,36 +459,6 @@ function BoardAnalysis() {
             </Tabs>
           </ResponsivePanel>
         </Paper>
-      </Portal>
-      <Portal target="#bottomRight" style={{ height: "100%" }}>
-        {editingMode ? (
-          <EditingCard
-            boardRef={boardRef}
-            setEditingMode={toggleEditingMode}
-            selectedPiece={selectedPiece}
-            setSelectedPiece={setSelectedPiece}
-          />
-        ) : (
-          <Stack h="100%" gap="xs">
-            <DetachedEval />
-            <Suspense fallback={<NotationFallback />}>
-              <GameNotation
-                topBar
-                controls={
-                  <BoardControls
-                    editingMode={editingMode}
-                    toggleEditingMode={toggleEditingMode}
-                    dirty={dirty}
-                    saveFile={userSaveFile}
-                  />
-                }
-              />
-            </Suspense>
-            <Suspense fallback={null}>
-              <MoveControls />
-            </Suspense>
-          </Stack>
-        )}
       </Portal>
     </>
   );

@@ -13,13 +13,14 @@ import { getNodeAtPath } from "@/utils/treeReducer";
 
 const COMMENT_SAVE_DELAY_MS = 350;
 
-function AnnotationEditor() {
+function AnnotationEditor({ path }: { path?: number[] }) {
   const { t } = useTranslation();
 
   const store = useContext(TreeStateContext)!;
   const position = useStore(store, (s) => s.position);
-  const positionKey = useMemo(() => position.join(","), [position]);
-  const currentComment = useStore(store, (s) => getNodeAtPath(s.root, s.position).comment);
+  const editorPath = path ?? position;
+  const positionKey = useMemo(() => editorPath.join(","), [editorPath]);
+  const currentComment = useStore(store, (s) => getNodeAtPath(s.root, editorPath)?.comment ?? "");
   const setCommentAtPath = useStore(store, (s) => s.setCommentAtPath);
   const pendingSaveRef = useRef<{ path: number[]; comment: string } | null>(null);
   const saveTimeoutRef = useRef<number | null>(null);
@@ -72,7 +73,7 @@ function AnnotationEditor() {
       content: currentComment || null,
       contentType: "markdown",
       onUpdate: ({ editor }) => {
-        scheduleCommentSave(position, editor.getMarkdown());
+        scheduleCommentSave(editorPath, editor.getMarkdown());
       },
       onBlur: flushPendingComment,
     },

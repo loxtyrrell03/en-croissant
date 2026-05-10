@@ -6,6 +6,7 @@ import {
   IconChevronUp,
   IconCopy,
   IconFlag,
+  IconPencil,
   IconX,
 } from "@tabler/icons-react";
 import equal from "fast-deep-equal";
@@ -15,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { useStoreWithEqualityFn } from "zustand/traditional";
 import Comment from "@/components/common/Comment";
+import MoveAnnotationPanel from "@/components/panels/annotation/MoveAnnotationPanel";
 import { currentTabAtom } from "@/state/atoms";
 import type { Annotation } from "@/utils/annotation";
 import { hasMorePriority, stripClock } from "@/utils/chess";
@@ -104,6 +106,7 @@ function CompleteMoveCell({
     setOpen(false);
   });
   const [open, setOpen] = useState(false);
+  const [annotating, setAnnotating] = useState(false);
   const currentTab = useAtomValue(currentTabAtom);
   const tabFile = getTabFile(currentTab);
 
@@ -158,6 +161,16 @@ function CompleteMoveCell({
                   </Menu.Item>
                 )}
                 <Menu.Item
+                  leftSection={<IconPencil size="0.875rem" />}
+                  onClick={() => {
+                    goToMove(movePath);
+                    setAnnotating(true);
+                    setOpen(false);
+                  }}
+                >
+                  {t("Board.Tabs.Annotate")}
+                </Menu.Item>
+                <Menu.Item
                   leftSection={<IconChevronsUp size="0.875rem" />}
                   onClick={() => promoteToMainline(movePath)}
                 >
@@ -197,6 +210,9 @@ function CompleteMoveCell({
           </Tooltip>
         )}
       </Box>
+      {annotating && move && (
+        <MoveAnnotationPanel path={movePath} onClose={() => setAnnotating(false)} />
+      )}
       {showComments && !tableLayout && comment && <Comment comment={comment} />}
     </>
   );

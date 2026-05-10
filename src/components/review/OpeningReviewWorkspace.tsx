@@ -80,7 +80,6 @@ import {
   updateCardPerformance,
 } from "@/components/files/opening";
 import AnalysisPanel from "@/components/panels/analysis/AnalysisPanel";
-import AnnotationPanel from "@/components/panels/annotation/AnnotationPanel";
 import ComparePanel from "@/components/panels/compare/ComparePanel";
 import DatabasePanel from "@/components/panels/database/DatabasePanel";
 import EnginePlanExplorerPanel from "@/components/panels/enginePlan/EnginePlanExplorerPanel";
@@ -749,7 +748,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
               </Tooltip>
             </Group>
           }
-          annotation={<AnnotationPanel />}
+          underBoard={!isMistakeReview && <ReviewMovesBox />}
         />
       </Portal>
       <Portal target="#topRight" style={{ height: "100%" }}>
@@ -885,14 +884,25 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
           </ResponsivePanel>
         </Paper>
       </Portal>
-      <Portal target="#bottomRight" style={{ height: "100%" }}>
-        <Stack h="100%" gap="xs">
-          <DetachedEval />
-          <GameNotation topBar />
-          <MoveControls />
-        </Stack>
-      </Portal>
     </>
+  );
+}
+
+function ReviewMovesBox({ rightPanel = false }: { rightPanel?: boolean }) {
+  return (
+    <Stack
+      h={rightPanel ? undefined : "100%"}
+      gap="xs"
+      style={{
+        minHeight: rightPanel ? "17rem" : 0,
+        height: rightPanel ? "clamp(17rem, 36vh, 24rem)" : undefined,
+        flexShrink: 0,
+      }}
+    >
+      <DetachedEval />
+      <GameNotation topBar />
+      <MoveControls />
+    </Stack>
   );
 }
 
@@ -2884,7 +2894,12 @@ function OpeningReviewPanel({
           <SessionBadge label="Streak" value={sessionStats.streak} color="orange" />
         </Group>
 
-        {isMistakeReview && <MistakeReviewGameInfoPanel position={mistakeReviewInfoPosition} />}
+        {isMistakeReview && (
+          <>
+            <MistakeReviewGameInfoPanel position={mistakeReviewInfoPosition} />
+            <ReviewMovesBox rightPanel />
+          </>
+        )}
       </Stack>
 
       {!isMistakeReview && openingDailySettings && (
