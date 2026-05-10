@@ -4,7 +4,9 @@ import {
   Badge,
   Box,
   Button,
+  Center,
   Group,
+  Loader,
   Menu,
   Modal,
   MultiSelect,
@@ -55,7 +57,17 @@ import { INITIAL_FEN, makeFen } from "chessops/fen";
 import { makeSan, parseSan } from "chessops/san";
 import dayjs from "dayjs";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { createEmptyCard, formatDate } from "ts-fsrs";
 import { useStore } from "zustand";
@@ -79,14 +91,7 @@ import {
   type Position,
   updateCardPerformance,
 } from "@/components/files/opening";
-import AnalysisPanel from "@/components/panels/analysis/AnalysisPanel";
-import ComparePanel from "@/components/panels/compare/ComparePanel";
-import DatabasePanel from "@/components/panels/database/DatabasePanel";
-import EnginePlanExplorerPanel from "@/components/panels/enginePlan/EnginePlanExplorerPanel";
-import RepertoireGapsPanel from "@/components/panels/gaps/RepertoireGapsPanel";
-import InfoPanel from "@/components/panels/info/InfoPanel";
 import { OpeningReviewAutoUpdateBanner } from "@/components/review/OpeningReviewAutoUpdateBanner";
-import PlanExplorerPanel from "@/components/panels/plan/PlanExplorerPanel";
 import {
   currentTabSelectedAtom,
   currentEvalOpenAtom,
@@ -183,11 +188,33 @@ import {
 } from "@/utils/openingReviewPractice";
 import resultClasses from "@/components/panels/database/OpeningsTable.module.css";
 
+const AnalysisPanel = lazy(() => import("@/components/panels/analysis/AnalysisPanel"));
+const ComparePanel = lazy(() => import("@/components/panels/compare/ComparePanel"));
+const DatabasePanel = lazy(() => import("@/components/panels/database/DatabasePanel"));
+const EnginePlanExplorerPanel = lazy(
+  () => import("@/components/panels/enginePlan/EnginePlanExplorerPanel"),
+);
+const InfoPanel = lazy(() => import("@/components/panels/info/InfoPanel"));
+const PlanExplorerPanel = lazy(() => import("@/components/panels/plan/PlanExplorerPanel"));
+const RepertoireGapsPanel = lazy(() => import("@/components/panels/gaps/RepertoireGapsPanel"));
+
 const scrollablePanelStyle = {
   minHeight: 0,
   overflowX: "hidden",
   overflowY: "auto",
 } as const;
+
+function PanelFallback() {
+  return (
+    <Center h="100%">
+      <Loader size="sm" />
+    </Center>
+  );
+}
+
+function DeferredPanel({ children }: { children: ReactNode }) {
+  return <Suspense fallback={<PanelFallback />}>{children}</Suspense>;
+}
 
 const openingReviewPanelModeControlStyle = {
   position: "sticky",
@@ -323,6 +350,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const autoUpdateRevisionRef = useRef(0);
   const clockHydrationRef = useRef("");
   const latestReviewSaveRef = useRef<ReviewDeckSaveSnapshot | null>(null);
+  const reviewSaveReadyRef = useRef(false);
   const initialPractice =
     tab.gameOrigin.kind === "opening_review" || tab.gameOrigin.kind === "mistake_review"
       ? tab.gameOrigin.initialPractice
@@ -451,6 +479,8 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
 
   useEffect(() => {
     let disposed = false;
+    reviewSaveReadyRef.current = false;
+    latestReviewSaveRef.current = null;
     setLoaded(false);
     setLoadError(null);
     setLoadedReviewPositionIndex(null);
@@ -458,17 +488,9 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
 
     async function loadDeck() {
       try {
-        let nextDeck = isMistakeReview
+        const nextDeck = isMistakeReview
           ? await readMistakeReviewDeck(deckPath)
           : await readOpeningReviewDeck(deckPath);
-        if (isMistakeReview) {
-          nextDeck = (
-            await hydrateMistakeReviewClockData(nextDeck as MistakeReviewDeck).catch(() => ({
-              deck: nextDeck as MistakeReviewDeck,
-              updatedCount: 0,
-            }))
-          ).deck;
-        }
         if (disposed) return;
         setDeckInfo(nextDeck);
         setDeck({ positions: nextDeck.positions, logs: nextDeck.logs });
@@ -495,24 +517,29 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     if (clockHydrationRef.current === hydrationKey) return;
     clockHydrationRef.current = hydrationKey;
     let disposed = false;
-    const currentDeck = {
-      ...(deckInfo as MistakeReviewDeck),
-      positions: deck.positions,
-      logs: deck.logs as MistakeReviewDeck["logs"],
-    };
 
-    hydrateMistakeReviewClockData(currentDeck)
-      .then((result) => {
-        if (disposed || result.updatedCount === 0) return;
-        setDeckInfo(result.deck);
-        setDeck({ positions: result.deck.positions, logs: result.deck.logs });
-      })
-      .catch(() => {
-        // Missing local databases should not block opening the deck.
-      });
+    const timer = window.setTimeout(() => {
+      if (disposed) return;
+      const currentDeck = {
+        ...(deckInfo as MistakeReviewDeck),
+        positions: deck.positions,
+        logs: deck.logs as MistakeReviewDeck["logs"],
+      };
+
+      hydrateMistakeReviewClockData(currentDeck)
+        .then((result) => {
+          if (disposed || result.updatedCount === 0) return;
+          setDeckInfo(result.deck);
+          setDeck({ positions: result.deck.positions, logs: result.deck.logs });
+        })
+        .catch(() => {
+          // Missing local databases should not block opening the deck.
+        });
+    }, 1500);
 
     return () => {
       disposed = true;
+      window.clearTimeout(timer);
     };
   }, [
     deck.logs,
@@ -537,6 +564,11 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
       positions: deck.positions,
       logs: deck.logs,
     };
+
+    if (!reviewSaveReadyRef.current) {
+      reviewSaveReadyRef.current = true;
+      return undefined;
+    }
 
     const timeout = window.setTimeout(() => {
       const nextDeck = {
@@ -847,11 +879,15 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                 </EngineDockedPanel>
               </Tabs.Panel>
               <Tabs.Panel value="analysis" flex={1} style={scrollablePanelStyle}>
-                <AnalysisPanel />
+                <DeferredPanel>
+                  <AnalysisPanel />
+                </DeferredPanel>
               </Tabs.Panel>
               <Tabs.Panel value="database" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
                 <EngineDockedPanel>
-                  <DatabasePanel />
+                  <DeferredPanel>
+                    <DatabasePanel />
+                  </DeferredPanel>
                 </EngineDockedPanel>
               </Tabs.Panel>
               <Tabs.Panel
@@ -860,7 +896,9 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                 style={{ minHeight: 0, overflow: "hidden" }}
               >
                 <EngineDockedPanel>
-                  <PlanExplorerPanel />
+                  <DeferredPanel>
+                    <PlanExplorerPanel />
+                  </DeferredPanel>
                 </EngineDockedPanel>
               </Tabs.Panel>
               <Tabs.Panel
@@ -869,15 +907,21 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                 style={{ minHeight: 0, overflow: "hidden" }}
               >
                 <EngineDockedPanel>
-                  <EnginePlanExplorerPanel />
+                  <DeferredPanel>
+                    <EnginePlanExplorerPanel />
+                  </DeferredPanel>
                 </EngineDockedPanel>
               </Tabs.Panel>
               <Tabs.Panel value="compare" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
-                <ComparePanel />
+                <DeferredPanel>
+                  <ComparePanel />
+                </DeferredPanel>
               </Tabs.Panel>
               <Tabs.Panel value="info" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
                 <EngineDockedPanel>
-                  <InfoPanel />
+                  <DeferredPanel>
+                    <InfoPanel />
+                  </DeferredPanel>
                 </EngineDockedPanel>
               </Tabs.Panel>
             </Tabs>
@@ -1425,7 +1469,12 @@ function OpeningReviewPanel({
   const currentFen = useStore(store, (s) => s.currentNode().fen);
 
   const [deck, setDeck] = useAtom(deckAtomFamily({ file: deckPath, game: 0 }));
-  const stats = getStats(deck.positions);
+  const stats = useMemo(() => getStats(deck.positions), [deck.positions]);
+  const positionIndexByReference = useMemo(() => {
+    const indexes = new Map<Position, number>();
+    deck.positions.forEach((position, index) => indexes.set(position, index));
+    return indexes;
+  }, [deck.positions]);
   const dailyBatch = useMemo(() => {
     if (isMistakeReview && mistakeDailySettings) {
       return getMistakeReviewDailyBatch(deck.positions, mistakeDailySettings);
@@ -1447,9 +1496,9 @@ function OpeningReviewPanel({
   const dailyScopeIndices = useMemo(
     () =>
       dailyBatch
-        .map((position) => deck.positions.indexOf(position))
+        .map((position) => positionIndexByReference.get(position) ?? -1)
         .filter((positionIndex) => positionIndex >= 0),
-    [dailyBatch, deck.positions],
+    [dailyBatch, positionIndexByReference],
   );
   const mistakePhaseCounts = useMemo(
     () => (isMistakeReview ? getMistakeReviewPhaseCounts(deck.positions) : null),
@@ -1460,14 +1509,12 @@ function OpeningReviewPanel({
     DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds;
   const timeManagementScopeIndices = useMemo(() => {
     if (!isMistakeReview) return [];
-    const indexByPosition = new Map<Position, number>();
-    deck.positions.forEach((position, index) => indexByPosition.set(position, index));
     return getMistakeReviewTimeManagementBatch(deck.positions, {
       minMoveSeconds: timeManagementMinMoveSeconds,
     })
-      .map((position) => indexByPosition.get(position) ?? -1)
+      .map((position) => positionIndexByReference.get(position) ?? -1)
       .filter((positionIndex) => positionIndex >= 0);
-  }, [deck.positions, isMistakeReview, timeManagementMinMoveSeconds]);
+  }, [deck.positions, isMistakeReview, positionIndexByReference, timeManagementMinMoveSeconds]);
   const openingPlanGapScopeIndices = useMemo(
     () => (isMistakeReview ? [] : getOpeningReviewPlanGapTrainingIndices(deck.positions)),
     [deck.positions, isMistakeReview],
@@ -2265,7 +2312,9 @@ function OpeningReviewPanel({
     return (
       <Stack h="100%" gap="sm">
         {panelModeControl}
-        <RepertoireGapsPanel />
+        <DeferredPanel>
+          <RepertoireGapsPanel />
+        </DeferredPanel>
       </Stack>
     );
   }
@@ -2922,15 +2971,17 @@ function OpeningReviewPanel({
         />
       )}
 
-      <OpeningReviewPositionsModal
-        opened={positionsOpen}
-        onClose={() => setPositionsOpen(false)}
-        deckPath={deckPath}
-        isMistakeReview={isMistakeReview}
-        onTrainDue={startDuePractice}
-        onTrainAll={startFullPractice}
-        onLoadPosition={onLoadPosition}
-      />
+      {positionsOpen && (
+        <OpeningReviewPositionsModal
+          opened={positionsOpen}
+          onClose={() => setPositionsOpen(false)}
+          deckPath={deckPath}
+          isMistakeReview={isMistakeReview}
+          onTrainDue={startDuePractice}
+          onTrainAll={startFullPractice}
+          onLoadPosition={onLoadPosition}
+        />
+      )}
     </>
   );
 }
@@ -4628,11 +4679,15 @@ function OpeningReviewPrioritySummary({
   onOpenPositions: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const ranked = useMemo(() => rankOpeningReviewPositions(positions), [positions]);
-  const hasRankingData = positions.some(
-    (position) => position.priority !== undefined || position.openingHealth,
+  const hasRankingData = useMemo(
+    () => positions.some((position) => position.priority !== undefined || position.openingHealth),
+    [positions],
   );
-  if (!hasRankingData || ranked.length === 0) return null;
+  const ranked = useMemo(
+    () => (expanded && hasRankingData ? rankOpeningReviewPositions(positions) : []),
+    [expanded, hasRankingData, positions],
+  );
+  if (!hasRankingData || positions.length === 0) return null;
 
   return (
     <Paper px="xs" py={6} withBorder radius="sm">
@@ -4643,7 +4698,7 @@ function OpeningReviewPrioritySummary({
               Urgency ranking
             </Text>
             <Text size="xs" c="dimmed">
-              {ranked.length} ranked position{ranked.length === 1 ? "" : "s"}
+              {positions.length} ranked position{positions.length === 1 ? "" : "s"}
             </Text>
           </Stack>
           <Group gap={4}>

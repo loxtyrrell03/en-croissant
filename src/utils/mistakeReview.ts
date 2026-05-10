@@ -10,7 +10,7 @@ import type {
     MistakeReviewSeverityFilter,
     MistakeReviewThresholds,
 } from "@/bindings";
-import { getStats, type Position, positionSchema } from "@/components/files/opening";
+import { getStats, type Position } from "@/components/files/opening";
 
 export const MISTAKE_REVIEW_EXTENSION = ".mistake-review.json";
 export const MISTAKE_REVIEW_VERSION = 1;
@@ -128,11 +128,16 @@ export type MistakeReviewAutoUpdateConfig = MistakeReviewSettings & {
     lastError?: string | null;
 };
 
-const reviewLogSchema = z
-    .object({
-        fen: z.string(),
-    })
-    .passthrough();
+const savedReviewPositionsSchema = z.custom<Position[]>((value) => Array.isArray(value), {
+    message: "Expected review positions array",
+});
+
+const savedReviewLogsSchema = z
+    .custom<(ReviewLog & { fen: string })[] | undefined>(
+        (value) => value === undefined || Array.isArray(value),
+        { message: "Expected review logs array" },
+    )
+    .transform((value) => value ?? []);
 
 const mistakeReviewThresholdSchema = z.object({
     inaccuracy: z.number().default(DEFAULT_MISTAKE_REVIEW_THRESHOLDS.inaccuracy),
@@ -219,8 +224,8 @@ const mistakeReviewDeckSchema = z.object({
         includeBlunders: true,
     }),
     autoUpdate: mistakeReviewAutoUpdateConfigSchema.optional(),
-    positions: positionSchema.array(),
-    logs: reviewLogSchema.array().default([]),
+    positions: savedReviewPositionsSchema,
+    logs: savedReviewLogsSchema,
 });
 
 export type MistakeReviewDeck = {

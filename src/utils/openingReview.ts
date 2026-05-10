@@ -2,7 +2,7 @@ import { basename, resolve } from "@tauri-apps/api/path";
 import { exists, readDir, readTextFile, remove, writeTextFile } from "@tauri-apps/plugin-fs";
 import type { ReviewLog } from "ts-fsrs";
 import { z } from "zod";
-import { getStats, type Position, positionSchema } from "@/components/files/opening";
+import { getStats, type Position } from "@/components/files/opening";
 
 const openingHealthDateRangeSchema = z.enum([
     "all",
@@ -70,11 +70,16 @@ const openingReviewAutoUpdateConfigSchema = z.object({
     lastError: z.string().nullable().optional(),
 });
 
-const reviewLogSchema = z
-    .object({
-        fen: z.string(),
-    })
-    .passthrough();
+const savedReviewPositionsSchema = z.custom<Position[]>((value) => Array.isArray(value), {
+    message: "Expected review positions array",
+});
+
+const savedReviewLogsSchema = z
+    .custom<(ReviewLog & { fen: string })[] | undefined>(
+        (value) => value === undefined || Array.isArray(value),
+        { message: "Expected review logs array" },
+    )
+    .transform((value) => value ?? []);
 
 const openingReviewDailySettingsSchema = z.object({
     reviewsPerDay: z.number().default(DEFAULT_OPENING_REVIEW_DAILY_SETTINGS.reviewsPerDay),
@@ -96,8 +101,8 @@ const openingReviewDeckSchema = z.object({
     source: z.string().optional(),
     autoUpdate: openingReviewAutoUpdateConfigSchema.optional(),
     daily: openingReviewDailySettingsSchema.default(DEFAULT_OPENING_REVIEW_DAILY_SETTINGS),
-    positions: positionSchema.array(),
-    logs: reviewLogSchema.array().default([]),
+    positions: savedReviewPositionsSchema,
+    logs: savedReviewLogsSchema,
 });
 
 export type OpeningReviewAutoUpdateConfig = z.infer<typeof openingReviewAutoUpdateConfigSchema>;
