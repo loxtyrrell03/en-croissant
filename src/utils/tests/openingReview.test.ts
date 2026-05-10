@@ -13,6 +13,9 @@ import {
 import {
     getOpeningReviewGapTrainingType,
     getOpeningReviewPlanGapTrainingIndices,
+    openingReviewGapTrainingTypeDescription,
+    openingReviewGapTrainingTypeLabel,
+    openingReviewPositionExplanation,
 } from "@/utils/openingReviewAutoUpdate";
 
 const BLACK_TO_MOVE_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";
@@ -382,6 +385,48 @@ describe("opening review helpers", () => {
                 }),
             ),
         ).toBe("planGap");
+    });
+
+    test("labels bad move gaps and plan gaps explicitly", () => {
+        const badMoveGap = position({
+            answer: "e4",
+            answerUci: "e2e4",
+            openingHealth: {
+                classification: "repertoireGap",
+                usualMoveSan: "Nc3",
+                usualMoveUci: "b1c3",
+                topMoveSan: "e4",
+                topMoveUci: "e2e4",
+            },
+        });
+        const planGap = position({
+            answer: "Nc3",
+            answerUci: "b1c3",
+            openingHealth: {
+                classification: "preparedUnderperforming",
+                usualMoveSan: "Nc3",
+                usualMoveUci: "b1c3",
+            },
+        });
+
+        expect(openingReviewGapTrainingTypeLabel("openingGap")).toBe("Bad move gap");
+        expect(openingReviewGapTrainingTypeDescription("openingGap", badMoveGap)).toContain(
+            "Replace Nc3 with e4",
+        );
+        expect(
+            openingReviewGapTrainingTypeDescription("openingGap", badMoveGap, {
+                revealMoves: false,
+            }),
+        ).not.toContain("e4");
+        expect(openingReviewPositionExplanation(badMoveGap)).toMatch(/^Bad move gap:/);
+        expect(openingReviewGapTrainingTypeLabel("planGap")).toBe("Plan gap");
+        expect(openingReviewGapTrainingTypeDescription("planGap", planGap)).toContain(
+            "Nc3 is still the move",
+        );
+        expect(
+            openingReviewGapTrainingTypeDescription("planGap", planGap, { revealMoves: false }),
+        ).not.toContain("Nc3");
+        expect(openingReviewPositionExplanation(planGap)).toMatch(/^Plan gap:/);
     });
 
     test("selects opening plan gaps in urgency order", () => {

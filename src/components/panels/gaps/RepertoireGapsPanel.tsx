@@ -3265,7 +3265,7 @@ function openingHealthPriority(
     const source = verificationSourceLabel(effectiveVerification);
     const depthText = effectiveVerification.depth ? ` at depth ${effectiveVerification.depth}` : "";
     return {
-      label: "Bad move",
+      label: "Bad move gap",
       color: "red",
       description: `${source}${depthText} prefers ${effectiveVerification.bestMoveSan ?? "another move"} by about ${Math.round(effectiveVerification.lossCp)} cp.`,
     };
@@ -3274,7 +3274,7 @@ function openingHealthPriority(
     const source = verificationSourceLabel(effectiveVerification);
     const depthText = effectiveVerification.depth ? ` at depth ${effectiveVerification.depth}` : "";
     return {
-      label: "Engine concern",
+      label: "Bad move gap",
       color: "orange",
       description: `${source}${depthText} shows about ${Math.round(effectiveVerification.lossCp)} cp of drift from the best move.`,
     };
@@ -3282,24 +3282,31 @@ function openingHealthPriority(
   if (effectiveVerification?.status === "ok") {
     const source = verificationSourceLabel(effectiveVerification);
     const depthText = effectiveVerification.depth ? ` depth ${effectiveVerification.depth}` : "";
+    if (gap.classification === "preparedUnderperforming") {
+      return {
+        label: "Plan gap",
+        color: "blue",
+        description: `${source}${depthText} says the move is playable; train the plans after it.`,
+      };
+    }
     return {
-      label: "Practical issue",
+      label: "Bad move gap",
       color: "yellow",
-      description: `${source}${depthText} says the move is playable; the flag comes from score, frequency, and recency.`,
+      description: `${source}${depthText} says the move is playable, but the saved card trains a different move choice.`,
     };
   }
 
   switch (gap.classification) {
     case "repertoireGap":
       return {
-        label: "Rare move",
+        label: "Bad move gap",
         color: "orange",
-        description: `${ownerPossessive} move is unusual in strong games and comes up enough to matter.`,
+        description: `${ownerPossessive} move is unusual in strong games; train a stronger replacement.`,
       };
     case "preparedUnderperforming":
       return {
-        label: "Good move, bad score",
-        color: "orange",
+        label: "Plan gap",
+        color: "blue",
         description: `${ownerPossessive} move is normal, but the score here is ${formatPercent(gap.playerScore)}; study the plans after it.`,
       };
     case "lowConfidence":
@@ -3342,7 +3349,7 @@ function openingHealthNextStep(
   if (gap.classification === "repertoireGap" && differentSuggestedMove) {
     return {
       title: differentSuggestedMove.san,
-      detail: `Common in ${formatPercent(differentSuggestedMove.share)} of strong games`,
+      detail: `Bad move gap: replace the usual move; common in ${formatPercent(differentSuggestedMove.share)} of strong games`,
       trainingMove: differentSuggestedMove,
     };
   }
@@ -3352,8 +3359,8 @@ function openingHealthNextStep(
       title: gap.playerMoveSan,
       detail:
         mode === "self"
-          ? "Good move, bad results: study the plans after it."
-          : "Normal move, bad results: prepare the follow-up plans.",
+          ? "Plan gap: keep this move and study the plans after it."
+          : "Plan gap: their move is normal, so prepare the follow-up plans.",
       trainingMove: {
         san: gap.playerMoveSan,
         uci: gap.playerMoveUci,
@@ -3806,7 +3813,7 @@ function classificationColor(classification: RepertoireGap["classification"]) {
     case "repertoireGap":
       return "red";
     case "preparedUnderperforming":
-      return "orange";
+      return "blue";
     case "lowConfidence":
       return "yellow";
   }

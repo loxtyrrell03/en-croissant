@@ -160,6 +160,7 @@ import {
   getOpeningReviewGapTrainingType,
   getOpeningReviewPlanGapTrainingIndices,
   openingReviewGapTrainingTypeColor,
+  openingReviewGapTrainingTypeDescription,
   openingReviewGapTrainingTypeLabel,
   openingReviewGapTrainingTypePluralLabel,
   openingReviewPositionExplanation,
@@ -2709,6 +2710,13 @@ function OpeningReviewPanel({
           </Stack>
         )}
 
+        {isTraining && !isMistakeReview && currentPracticePosition && (
+          <OpeningReviewGapTypeCallout
+            position={currentPracticePosition}
+            revealMoves={practiceState.phase !== "waiting"}
+          />
+        )}
+
         {practiceState.phase === "waiting" && (
           <Paper p="sm" withBorder>
             {practiceState.currentFen && currentFen !== practiceState.currentFen ? (
@@ -2996,6 +3004,45 @@ function ReviewStat({ label, value, color }: { label: string; value: number; col
       <Text size="md" fw={700} c={color} lh={1.1}>
         {value}
       </Text>
+    </Paper>
+  );
+}
+
+function OpeningReviewGapTypeCallout({
+  position,
+  revealMoves = true,
+}: {
+  position: Position;
+  revealMoves?: boolean;
+}) {
+  const gapType = getOpeningReviewGapTrainingType(position);
+  if (gapType === "other" || position.mistakeReview) return null;
+
+  const color = openingReviewGapTrainingTypeColor(gapType);
+  const Icon = gapType === "planGap" ? IconRoute : IconTargetArrow;
+
+  return (
+    <Paper px="xs" py={6} withBorder radius="sm">
+      <Group gap="xs" align="flex-start" wrap="nowrap">
+        <ThemeIcon size="md" radius="xl" color={color} variant="light">
+          <Icon size={16} />
+        </ThemeIcon>
+        <Stack gap={1} miw={0}>
+          <Group gap={6} wrap="nowrap">
+            <Badge color={color} variant="filled">
+              {openingReviewGapTrainingTypeLabel(gapType)}
+            </Badge>
+            <Text size="xs" fw={700} truncate>
+              {gapType === "planGap"
+                ? "Same move, learn the plan"
+                : "Different move, fix the choice"}
+            </Text>
+          </Group>
+          <Text size="xs" c="dimmed">
+            {openingReviewGapTrainingTypeDescription(gapType, position, { revealMoves })}
+          </Text>
+        </Stack>
+      </Group>
     </Paper>
   );
 }
@@ -4825,6 +4872,7 @@ function OpeningReviewAttemptDetails({
     health?.strongDraw !== undefined &&
     health?.strongBlack !== null &&
     health?.strongBlack !== undefined;
+  const gapType = getOpeningReviewGapTrainingType(position);
 
   return (
     <Paper p="xs" withBorder>
@@ -4838,8 +4886,21 @@ function OpeningReviewAttemptDetails({
               {position.moveSequence || "Starting position"}
             </Text>
           </Stack>
-          <Badge variant="light">{side === "white" ? "White to move" : "Black to move"}</Badge>
+          <Group gap={4} justify="flex-end">
+            {gapType !== "other" && (
+              <Badge color={openingReviewGapTrainingTypeColor(gapType)} variant="filled">
+                {openingReviewGapTrainingTypeLabel(gapType)}
+              </Badge>
+            )}
+            <Badge variant="light">{side === "white" ? "White to move" : "Black to move"}</Badge>
+          </Group>
         </Group>
+
+        {gapType !== "other" && (
+          <Text size="xs" c="dimmed">
+            {openingReviewGapTrainingTypeDescription(gapType, position)}
+          </Text>
+        )}
 
         <SimpleGrid cols={{ base: 2, sm: 4 }} spacing={6}>
           <ReviewDetail label="You played" value={playedMove || "-"} />
@@ -5761,7 +5822,7 @@ function OpeningReviewPositionsModal({
   const gapFilterOptions = useMemo(
     () => [
       { value: "all", label: `All gaps (${colourFilteredRows.length})` },
-      { value: "openingGap", label: `Opening gaps (${gapTypeCounts.openingGap})` },
+      { value: "openingGap", label: `Bad move gaps (${gapTypeCounts.openingGap})` },
       { value: "planGap", label: `Plan gaps (${gapTypeCounts.planGap})` },
     ],
     [colourFilteredRows.length, gapTypeCounts.openingGap, gapTypeCounts.planGap],

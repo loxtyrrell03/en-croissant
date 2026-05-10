@@ -427,7 +427,7 @@ export function getOpeningReviewGapReason(gap: RepertoireGap, mode: "self" | "op
     const topMove = gap.topReferenceMoves[0];
 
     if (gap.classification === "preparedUnderperforming") {
-        return `${owner} made a normal move, but ${possessive} score here is ${formatReviewPercent(
+        return `Plan gap: ${owner} made a normal move, but ${possessive} score here is ${formatReviewPercent(
             gap.playerScore,
         )} across ${formatReviewNumber(
             gap.playerPositionGames,
@@ -435,7 +435,7 @@ export function getOpeningReviewGapReason(gap: RepertoireGap, mode: "self" | "op
     }
 
     if (gap.classification === "repertoireGap") {
-        return `${owner} played ${gap.playerMoveSan}, which is rare in strong games.${
+        return `Bad move gap: ${owner} played ${gap.playerMoveSan}, which is rare in strong games.${
             topMove ? ` The main reference move is ${topMove.san}.` : ""
         }`;
     }
@@ -498,7 +498,11 @@ export function getOpeningReviewGapTrainingType(position: Position): OpeningRevi
     ) {
         return "planGap";
     }
-    if (normalizedTags.includes("openinggap") || normalizedTags.includes("repertoiregap")) {
+    if (
+        normalizedTags.includes("badmovegap") ||
+        normalizedTags.includes("openinggap") ||
+        normalizedTags.includes("repertoiregap")
+    ) {
         return "openingGap";
     }
 
@@ -514,7 +518,7 @@ export function getOpeningReviewPlanGapTrainingIndices(positions: Position[]) {
 export function openingReviewGapTrainingTypeLabel(type: OpeningReviewGapTrainingType) {
     switch (type) {
         case "openingGap":
-            return "Opening gap";
+            return "Bad move gap";
         case "planGap":
             return "Plan gap";
         case "other":
@@ -525,7 +529,7 @@ export function openingReviewGapTrainingTypeLabel(type: OpeningReviewGapTraining
 export function openingReviewGapTrainingTypePluralLabel(type: OpeningReviewGapTrainingType) {
     switch (type) {
         case "openingGap":
-            return "opening gaps";
+            return "bad move gaps";
         case "planGap":
             return "plan gaps";
         case "other":
@@ -544,8 +548,34 @@ export function openingReviewGapTrainingTypeColor(type: OpeningReviewGapTraining
     }
 }
 
+export function openingReviewGapTrainingTypeDescription(
+    type: OpeningReviewGapTrainingType,
+    position?: Position,
+    options?: { revealMoves?: boolean },
+) {
+    const health = position?.openingHealth;
+    const usualMove = health?.usualMoveSan;
+    const savedMove = position?.answer;
+    const revealMoves = options?.revealMoves ?? true;
+
+    switch (type) {
+        case "openingGap":
+            if (revealMoves && usualMove && savedMove) {
+                return `Replace ${usualMove} with ${savedMove}; this card is about the move choice, not the follow-up plan.`;
+            }
+            return "This is a move-choice gap: find the better move, not a follow-up plan.";
+        case "planGap":
+            if (revealMoves && savedMove) {
+                return `${savedMove} is still the move to know; this card is about the follow-up plan.`;
+            }
+            return "This is a plan gap: the move choice is acceptable, then the follow-up plan matters.";
+        case "other":
+            return "Saved for review.";
+    }
+}
+
 export function openingReviewPositionExplanation(position: Position) {
-    if (position.reason) return position.reason;
+    if (position.reason) return prefixOpeningReviewGapType(position, position.reason);
     if (position.openingHealth) {
         const health = position.openingHealth;
         const owner = health.mode === "opponent" ? "They" : "You";
@@ -554,13 +584,30 @@ export function openingReviewPositionExplanation(position: Position) {
             health.usualMoveUci &&
             health.topMoveUci !== health.usualMoveUci
         ) {
-            return `${owner} usually played ${health.usualMoveSan ?? "this move"}, while strong games prefer ${health.topMoveSan ?? "another move"}.`;
+            return prefixOpeningReviewGapType(
+                position,
+                `${owner} usually played ${health.usualMoveSan ?? "this move"}, while strong games prefer ${health.topMoveSan ?? "another move"}.`,
+            );
         }
-        return `${owner} reached this position ${formatReviewNumber(
-            health.games ?? 0,
-        )} times; review the plans after ${position.answer}.`;
+        return prefixOpeningReviewGapType(
+            position,
+            `${owner} reached this position ${formatReviewNumber(
+                health.games ?? 0,
+            )} times; review the plans after ${position.answer}.`,
+        );
     }
     return position.evidence || "Saved for Opening Review.";
+}
+
+function prefixOpeningReviewGapType(position: Position, text: string) {
+    const type = getOpeningReviewGapTrainingType(position);
+    if (type === "other") return text;
+
+    const label = openingReviewGapTrainingTypeLabel(type);
+    if (normalizeOpeningReviewText(text).startsWith(normalizeOpeningReviewText(label))) {
+        return text;
+    }
+    return `${label}: ${text}`;
 }
 
 function openingReviewSavedAnswerMatches(

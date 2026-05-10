@@ -331,7 +331,7 @@ export const OPENING_HEALTH_SOURCE = "Analyze Repertoire";
 export function openingHealthClassificationLabel(classification: RepertoireGap["classification"]) {
     switch (classification) {
         case "repertoireGap":
-            return "Opening gap";
+            return "Bad move gap";
         case "preparedUnderperforming":
             return "Opening plan gap";
         case "lowConfidence":
