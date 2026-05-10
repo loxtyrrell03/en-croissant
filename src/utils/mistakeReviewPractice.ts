@@ -70,8 +70,13 @@ export async function assessMistakeReviewMoveWithEngine(
     playedMove: { san: string; uci: string },
 ): Promise<MistakeReviewMoveAssessment> {
     const metadata = position.mistakeReview;
+    const savedAssessment = assessMistakeReviewMove(position, playedMove);
+    if (savedAssessment.label === "best") {
+        return savedAssessment;
+    }
+
     if (!metadata?.enginePath) {
-        return assessMistakeReviewMove(position, playedMove);
+        return savedAssessment;
     }
 
     try {
@@ -90,8 +95,8 @@ export async function assessMistakeReviewMoveWithEngine(
         return {
             label: score.label,
             passed: score.passed,
-            bestMoveSan: score.bestMoveSan,
-            bestMoveUci: score.bestMoveUci,
+            bestMoveSan: savedAssessment.bestMoveSan || score.bestMoveSan,
+            bestMoveUci: savedAssessment.bestMoveUci || score.bestMoveUci,
             moveLossCp: score.cpLoss,
             winProbabilityDrop: score.winProbabilityDrop,
             requestedDepth: score.requestedDepth,
@@ -99,6 +104,6 @@ export async function assessMistakeReviewMoveWithEngine(
             engineName: score.engineName,
         };
     } catch {
-        return assessMistakeReviewMove(position, playedMove);
+        return savedAssessment;
     }
 }
