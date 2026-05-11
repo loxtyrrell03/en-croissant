@@ -5,6 +5,12 @@ $srcTauri = Join-Path $repoRoot "src-tauri"
 $debugExe = Join-Path $srcTauri "target\debug\en-croissant-fork.exe"
 $logDir = Join-Path $PSScriptRoot "logs"
 $port = 1420
+$launchMutexName = "Local\EnCroissantForkLaunch"
+$devSessionMutexName = "Local\EnCroissantForkDevSession"
+$launchMutex = $null
+$launchMutexAcquired = $false
+$devSessionMutex = $null
+$devSessionMutexAcquired = $false
 
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 
@@ -25,6 +31,38 @@ function Write-LaunchLog {
 
   $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
   Add-Content -Path (Join-Path $logDir "launch-fork.log") -Value "[$timestamp] $Message"
+}
+
+function Release-LaunchMutex {
+  if ($script:launchMutexAcquired -and $script:launchMutex) {
+    try {
+      $script:launchMutex.ReleaseMutex() | Out-Null
+    }
+    catch {
+    }
+    $script:launchMutexAcquired = $false
+  }
+
+  if ($script:launchMutex) {
+    $script:launchMutex.Dispose()
+    $script:launchMutex = $null
+  }
+}
+
+function Release-DevSessionMutex {
+  if ($script:devSessionMutexAcquired -and $script:devSessionMutex) {
+    try {
+      $script:devSessionMutex.ReleaseMutex() | Out-Null
+    }
+    catch {
+    }
+    $script:devSessionMutexAcquired = $false
+  }
+
+  if ($script:devSessionMutex) {
+    $script:devSessionMutex.Dispose()
+    $script:devSessionMutex = $null
+  }
 }
 
 function Get-PnpmCommand {
@@ -222,6 +260,10 @@ function Start-ForkBinary {
 
   if ($process.HasExited) {
     $exitCode = Format-ExitCode $process.ExitCode
+    if ($process.ExitCode -eq 0) {
+      Write-LaunchLog "Fork binary exited during startup with code $exitCode; another instance probably handled activation."
+      return $null
+    }
     throw "Fork binary exited during startup with code $exitCode."
   }
 
@@ -229,17 +271,39 @@ function Start-ForkBinary {
   return $process
 }
 
-$runningFork = Get-Process -Name "en-croissant-fork" -ErrorAction SilentlyContinue | Select-Object -First 1
-
-if ($runningFork) {
-  $shell = New-Object -ComObject WScript.Shell
-  $null = $shell.AppActivate($runningFork.Id)
-  Write-LaunchLog "Activated existing fork process $($runningFork.Id)."
-  exit 0
-}
-
 try {
+  $launchMutex = New-Object System.Threading.Mutex($false, $launchMutexName)
+  $launchMutexAcquired = $launchMutex.WaitOne([TimeSpan]::FromSeconds(60))
+  if (-not $launchMutexAcquired) {
+    throw "Another En Croissant Fork launch is still starting. Please try again in a moment."
+  }
+
+  $runningFork = Get-Process -Name "en-croissant-fork" -ErrorAction SilentlyContinue | Select-Object -First 1
+
+  if ($runningFork) {
+    $shell = New-Object -ComObject WScript.Shell
+    $null = $shell.AppActivate($runningFork.Id)
+    Write-LaunchLog "Activated existing fork process $($runningFork.Id)."
+    Release-LaunchMutex
+    exit 0
+  }
+
   if (Test-DebugBinaryFresh) {
+    $devSessionMutex = New-Object System.Threading.Mutex($false, $devSessionMutexName)
+    $devSessionMutexAcquired = $devSessionMutex.WaitOne(0)
+    if (-not $devSessionMutexAcquired) {
+      $runningFork = Get-Process -Name "en-croissant-fork" -ErrorAction SilentlyContinue | Select-Object -First 1
+      if ($runningFork) {
+        $shell = New-Object -ComObject WScript.Shell
+        $null = $shell.AppActivate($runningFork.Id)
+        Write-LaunchLog "Activated existing fork process $($runningFork.Id) while a dev session was already active."
+        Release-LaunchMutex
+        exit 0
+      }
+
+      throw "Another En Croissant Fork dev session is already starting or running."
+    }
+
     $devServerProcess = Start-DevServer
     try {
       $forkProcess = Start-ForkBinary
@@ -247,8 +311,36 @@ try {
     catch {
       Write-LaunchLog "Prebuilt debug binary launch failed: $($_.Exception.Message)"
       Stop-RepoViteProcesses "Cleaning up after failed fork launch"
+      Release-DevSessionMutex
       Remove-DebugBinary
       Start-SafeDevFallback
+      Release-LaunchMutex
+      exit 0
+    }
+
+    Release-LaunchMutex
+
+    if (-not $forkProcess) {
+      $runningFork = Get-Process -Name "en-croissant-fork" -ErrorAction SilentlyContinue | Select-Object -First 1
+      if ($runningFork) {
+        try {
+          Wait-Process -Id $runningFork.Id
+        }
+        finally {
+          Stop-RepoViteProcesses "Cleaning up after activated fork exit"
+          if ($devServerProcess -and -not $devServerProcess.HasExited) {
+            Stop-Process -Id $devServerProcess.Id -Force -ErrorAction SilentlyContinue
+          }
+          Release-DevSessionMutex
+        }
+      }
+      else {
+        Stop-RepoViteProcesses "Cleaning up after clean fork startup exit"
+        if ($devServerProcess -and -not $devServerProcess.HasExited) {
+          Stop-Process -Id $devServerProcess.Id -Force -ErrorAction SilentlyContinue
+        }
+        Release-DevSessionMutex
+      }
       exit 0
     }
 
@@ -260,14 +352,18 @@ try {
       if ($devServerProcess -and -not $devServerProcess.HasExited) {
         Stop-Process -Id $devServerProcess.Id -Force -ErrorAction SilentlyContinue
       }
+      Release-DevSessionMutex
     }
     exit 0
   }
 
   Start-SafeDevFallback
+  Release-LaunchMutex
 }
 catch {
   Write-LaunchLog "Launch failed: $($_.Exception.Message)"
+  Release-LaunchMutex
+  Release-DevSessionMutex
 
   Add-Type -AssemblyName PresentationFramework
   [System.Windows.MessageBox]::Show(

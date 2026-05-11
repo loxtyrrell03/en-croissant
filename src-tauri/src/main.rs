@@ -29,7 +29,6 @@ use game::GameManager;
 use progress::{clear_progress, get_progress, ProgressEvent, ProgressStore};
 
 use log::LevelFilter;
-use oauth::AuthState;
 #[cfg(debug_assertions)]
 use specta_typescript::{BigIntExportBehavior, Typescript};
 use sysinfo::SystemExt;
@@ -99,7 +98,6 @@ pub struct AppState {
     engine_processes: DashMap<(String, String), Arc<tokio::sync::Mutex<EngineProcess>>>,
     analysis_cancel_flags: DashMap<String, Arc<AtomicBool>>,
     analysis_pause_flags: DashMap<String, Arc<AtomicBool>>,
-    auth: AuthState,
     game_manager: GameManager,
     progress_state: ProgressStore,
 }

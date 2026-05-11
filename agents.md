@@ -400,6 +400,14 @@ from 2026-04-24 through 2026-05-03.
   normalization were added.
 - Local process guidance: Playwright/Tauri browser verification notes were
   documented.
+- Launch reliability: the Windows fork launcher and `pnpm dev` fallback now
+  serialize dev-session startup so repeated launches do not stop the Vite dev
+  server while the Tauri WebView is still loading `localhost:1420`; clean
+  single-instance exits are treated as an activation handoff instead of a broken
+  binary.
+- Lichess login reliability: the OAuth callback server now binds a fresh
+  localhost listener before opening the browser, then shuts it down after the
+  callback, avoiding stale or racing localhost redirects.
 
 ## Verification Expectations
 

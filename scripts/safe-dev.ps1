@@ -15,9 +15,28 @@ $backupPrefix = "org.encroissant.app-before-fork-dev-"
 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $backupPath = Join-Path $backupRoot "$backupPrefix$timestamp"
 $devPort = 1420
+$devSessionMutexName = "Local\EnCroissantForkDevSession"
+$devSessionMutex = $null
+$devSessionMutexAcquired = $false
 
 if (-not $SkipBackup -and -not (Test-Path $sharedData)) {
   throw "Could not find En Croissant data at $sharedData"
+}
+
+function Release-DevSessionMutex {
+  if ($script:devSessionMutexAcquired -and $script:devSessionMutex) {
+    try {
+      $script:devSessionMutex.ReleaseMutex() | Out-Null
+    }
+    catch {
+    }
+    $script:devSessionMutexAcquired = $false
+  }
+
+  if ($script:devSessionMutex) {
+    $script:devSessionMutex.Dispose()
+    $script:devSessionMutex = $null
+  }
 }
 
 function Get-RepoViteProcesses {
@@ -152,6 +171,13 @@ function Remove-OldBackups {
   }
 }
 
+$devSessionMutex = New-Object System.Threading.Mutex($false, $devSessionMutexName)
+$devSessionMutexAcquired = $devSessionMutex.WaitOne(0)
+if (-not $devSessionMutexAcquired) {
+  Write-Host "An En Croissant Fork dev session is already starting or running. Use the existing app window."
+  exit 0
+}
+
 if (-not $SkipBackup) {
   New-Item -ItemType Directory -Force -Path $backupPath | Out-Null
 
@@ -223,6 +249,7 @@ try {
 }
 finally {
   Stop-RepoViteProcesses "Cleaning up"
+  Release-DevSessionMutex
 }
 
 exit $devExitCode
