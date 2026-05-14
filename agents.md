@@ -398,6 +398,8 @@ from 2026-04-24 through 2026-05-03.
   online databases are marked for clock-data enrichment during refresh. Direct
   Chess.com game-link imports also translate callback move timestamps into PGN
   clock comments so existing display and save paths keep the timing data.
+  Move controls include live replay, which advances through timed games using
+  the recorded think time for each next move with a compact progress indicator.
 - Opening Review: Analyze Repertoire was moved into review, opening health
   scoring was added, cloud validation was layered in, review decks became
   trainable files, and daily/full/focused spaced repetition workflows were
