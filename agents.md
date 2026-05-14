@@ -423,6 +423,10 @@ from 2026-04-24 through 2026-05-03.
   analysis requests from updating React, cancels superseded local searches, and
   avoids recomputing full move lines for engine arrows when the current board
   position is already known.
+- Review transition responsiveness: mistake/opening review now prewarms nearby
+  card board states, defers SRS card writes until after the next card paints,
+  and lets move-drop visuals paint before post-attempt feedback and cloud/engine
+  assessment work begins.
 - Launch reliability: the Windows fork launcher and `pnpm dev` fallback now
   serialize dev-session startup so repeated launches do not stop the Vite dev
   server while the Tauri WebView is still loading `localhost:1420`; clean

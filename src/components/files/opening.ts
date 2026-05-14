@@ -30,6 +30,7 @@ export type ReviewScheduleProfile = "daily" | "repertoire";
 
 export type ReviewScheduleOptions = {
     profile?: ReviewScheduleProfile;
+    expectedFen?: string;
 };
 
 const reviewTreeNodeSchema: z.ZodType<TreeNode> = z.lazy(
@@ -499,6 +500,7 @@ export function updateCardPerformance(
     setPositions((data) => {
         const position = data.positions[i];
         if (!position) return data;
+        if (options.expectedFen && position.fen !== options.expectedFen) return data;
 
         const positions = [...data.positions];
         positions[i] = { ...position, card: newCard };

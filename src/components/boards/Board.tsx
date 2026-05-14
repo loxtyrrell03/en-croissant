@@ -43,6 +43,7 @@ import {
   memo,
   lazy,
   Suspense,
+  startTransition,
   useCallback,
   useContext,
   useEffect,
@@ -168,6 +169,17 @@ type BoardResizeCorner = "nw" | "ne" | "sw" | "se";
 function clampNumber(value: number, min: number, max: number) {
   if (!Number.isFinite(value)) return min;
   return Math.min(max, Math.max(min, value));
+}
+
+function scheduleAfterBoardPaint(callback: () => void) {
+  if ("requestAnimationFrame" in window) {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(callback);
+    });
+    return;
+  }
+
+  globalThis.setTimeout(callback, 0);
 }
 
 function squareFromPointer(
@@ -993,6 +1005,7 @@ function Board({
     if (!pos) return;
     const san = makeSan(pos, move);
     const uci = makeUci(move);
+    const sourceFen = currentNode.fen;
     clearMistakeReviewLine();
     setMistakeReviewLineBusy(false);
     setMistakeReviewRevealState(null);
@@ -1002,7 +1015,7 @@ function Board({
         clock: pos.turn === "white" ? whiteTime : blackTime,
       });
       setPendingMove(null);
-      onMove?.(uci, currentNode.fen, san);
+      scheduleAfterBoardPaint(() => onMove?.(uci, sourceFen, san));
       return;
     }
 
@@ -1017,7 +1030,7 @@ function Board({
         currentFen: trainerMistakeReviewPosition.fen,
         positionIndex: trainerMistakeReviewIndex >= 0 ? trainerMistakeReviewIndex : undefined,
       });
-      onMove?.(uci, currentNode.fen, san);
+      scheduleAfterBoardPaint(() => onMove?.(uci, sourceFen, san));
       return;
     }
 
@@ -1027,7 +1040,7 @@ function Board({
         clock: pos.turn === "white" ? whiteTime : blackTime,
       });
       setPendingMove(null);
-      onMove?.(uci, currentNode.fen, san);
+      scheduleAfterBoardPaint(() => onMove?.(uci, sourceFen, san));
       return;
     }
 
@@ -1040,12 +1053,6 @@ function Board({
       const i = currentPracticeEntry.index;
       const timeTaken = Date.now() - cardStartTime;
       const isMistakeReview = currentTab?.gameOrigin.kind === "mistake_review";
-      onMove?.(uci, c.fen, san);
-      if (isMistakeReview) {
-        markMistakeReviewAttemptSeen(i);
-      } else {
-        markOpeningReviewAttemptSeen(i);
-      }
 
       if (isMistakeReview) {
         storeMakeMove({
@@ -1054,69 +1061,80 @@ function Board({
         setPendingMove(null);
 
         const playedMove = { san, uci };
-        const immediateAssessment = assessMistakeReviewMove(c, playedMove);
         const requestId = mistakeReviewAssessmentRequestRef.current + 1;
         mistakeReviewAssessmentRequestRef.current = requestId;
 
-        setPracticeState(
-          mistakeReviewAssessmentToPracticeState({
-            position: c,
-            positionIndex: i,
-            assessment: immediateAssessment,
-            playedMove,
-            timeTaken,
-          }),
-        );
-        notifications.show({
-          title: mistakeReviewSeverityLabel(immediateAssessment.label),
-          message: `${immediateAssessment.bestMoveSan} was the engine move to remember.`,
-          color: mistakeReviewColor(immediateAssessment.label),
-        });
+        scheduleAfterBoardPaint(() => {
+          if (mistakeReviewAssessmentRequestRef.current !== requestId) return;
 
-        void assessMistakeReviewMoveWithEngine(c, playedMove)
-          .then((moveAssessment) => {
-            setPracticeState((current) => {
-              if (
-                mistakeReviewAssessmentRequestRef.current !== requestId ||
-                current.positionIndex !== i ||
-                current.currentFen !== c.fen ||
-                current.playedMoveUci !== uci ||
-                current.playedMove !== san ||
-                (current.phase !== "correct" && current.phase !== "incorrect")
-              ) {
-                return current;
+          onMove?.(uci, c.fen, san);
+          markMistakeReviewAttemptSeen(i);
+
+          const immediateAssessment = assessMistakeReviewMove(c, playedMove);
+          startTransition(() => {
+            setPracticeState(
+              mistakeReviewAssessmentToPracticeState({
+                position: c,
+                positionIndex: i,
+                assessment: immediateAssessment,
+                playedMove,
+                timeTaken,
+              }),
+            );
+          });
+          notifications.show({
+            title: mistakeReviewSeverityLabel(immediateAssessment.label),
+            message: `${immediateAssessment.bestMoveSan} was the engine move to remember.`,
+            color: mistakeReviewColor(immediateAssessment.label),
+          });
+
+          void assessMistakeReviewMoveWithEngine(c, playedMove)
+            .then((moveAssessment) => {
+              startTransition(() => {
+                setPracticeState((current) => {
+                  if (
+                    mistakeReviewAssessmentRequestRef.current !== requestId ||
+                    current.positionIndex !== i ||
+                    current.currentFen !== c.fen ||
+                    current.playedMoveUci !== uci ||
+                    current.playedMove !== san ||
+                    (current.phase !== "correct" && current.phase !== "incorrect")
+                  ) {
+                    return current;
+                  }
+
+                  return {
+                    ...current,
+                    ...mistakeReviewAssessmentToPracticeState({
+                      position: c,
+                      positionIndex: i,
+                      assessment: moveAssessment,
+                      playedMove,
+                      timeTaken: current.timeTaken ?? timeTaken,
+                    }),
+                    resultRecorded: current.resultRecorded,
+                  };
+                });
+              });
+
+              if (!moveAssessment.passed && !mistakeReviewAutoRevealBest) {
+                window.setTimeout(() => {
+                  const latestPracticeState = latestPracticeStateRef.current;
+                  if (
+                    mistakeReviewAssessmentRequestRef.current === requestId &&
+                    latestPracticeState.positionIndex === i &&
+                    latestPracticeState.currentFen === c.fen &&
+                    latestPracticeState.playedMoveUci === uci &&
+                    latestPracticeState.playedMove === san &&
+                    latestPracticeState.phase === "incorrect"
+                  ) {
+                    goToNext();
+                  }
+                }, 500);
               }
-
-              return {
-                ...current,
-                ...mistakeReviewAssessmentToPracticeState({
-                  position: c,
-                  positionIndex: i,
-                  assessment: moveAssessment,
-                  playedMove,
-                  timeTaken: current.timeTaken ?? timeTaken,
-                }),
-                resultRecorded: current.resultRecorded,
-              };
-            });
-
-            if (!moveAssessment.passed && !mistakeReviewAutoRevealBest) {
-              window.setTimeout(() => {
-                const latestPracticeState = latestPracticeStateRef.current;
-                if (
-                  mistakeReviewAssessmentRequestRef.current === requestId &&
-                  latestPracticeState.positionIndex === i &&
-                  latestPracticeState.currentFen === c.fen &&
-                  latestPracticeState.playedMoveUci === uci &&
-                  latestPracticeState.playedMove === san &&
-                  latestPracticeState.phase === "incorrect"
-                ) {
-                  goToNext();
-                }
-              }, 500);
-            }
-          })
-          .catch(() => {});
+            })
+            .catch(() => {});
+        });
         return;
       }
 
@@ -1125,53 +1143,65 @@ function Board({
       attemptPos.play(move);
       const attemptFen = makeFen(attemptPos.toSetup());
       setBoardPreviewShapes(practiceAttemptBoardPreview(c.fen, attemptFen, move));
-      const immediateAssessment = assessOpeningReviewMove(c, { san, uci }, null, null);
-      const immediateState = openingReviewAssessmentToPracticeState({
-        position: c,
-        positionIndex: i,
-        playedMove: { san, uci },
-        assessment: immediateAssessment,
-        timeTaken,
-      });
       const requestId = openingReviewAssessmentRequestRef.current + 1;
       openingReviewAssessmentRequestRef.current = requestId;
 
-      setPracticeState(immediateState);
-      notifications.show({
-        title: formatOpeningPracticeAssessmentTitle(immediateAssessment),
-        message: formatOpeningPracticeAssessmentMessage(immediateAssessment, { san, uci }),
-        color: mistakeReviewColor(immediateAssessment.label),
+      scheduleAfterBoardPaint(() => {
+        if (openingReviewAssessmentRequestRef.current !== requestId) return;
+
+        onMove?.(uci, c.fen, san);
+        markOpeningReviewAttemptSeen(i);
+
+        const immediateAssessment = assessOpeningReviewMove(c, { san, uci }, null, null);
+        const immediateState = openingReviewAssessmentToPracticeState({
+          position: c,
+          positionIndex: i,
+          playedMove: { san, uci },
+          assessment: immediateAssessment,
+          timeTaken,
+        });
+
+        startTransition(() => {
+          setPracticeState(immediateState);
+        });
+        notifications.show({
+          title: formatOpeningPracticeAssessmentTitle(immediateAssessment),
+          message: formatOpeningPracticeAssessmentMessage(immediateAssessment, { san, uci }),
+          color: mistakeReviewColor(immediateAssessment.label),
+        });
+
+        void assessOpeningPracticeMoveWithCloud(c, { san, uci })
+          .then((moveAssessment) => {
+            startTransition(() => {
+              setPracticeState((current) => {
+                if (
+                  openingReviewAssessmentRequestRef.current !== requestId ||
+                  current.positionIndex !== i ||
+                  current.currentFen !== c.fen ||
+                  current.playedMoveUci !== uci ||
+                  current.playedMove !== san ||
+                  current.repertoireMove !== immediateAssessment.repertoireMoveSan ||
+                  (current.phase !== "correct" && current.phase !== "incorrect")
+                ) {
+                  return current;
+                }
+
+                return {
+                  ...current,
+                  ...openingReviewAssessmentToPracticeState({
+                    position: c,
+                    positionIndex: i,
+                    playedMove: { san, uci },
+                    assessment: moveAssessment,
+                    timeTaken: current.timeTaken ?? timeTaken,
+                  }),
+                  resultRecorded: current.resultRecorded,
+                };
+              });
+            });
+          })
+          .catch(() => {});
       });
-
-      void assessOpeningPracticeMoveWithCloud(c, { san, uci })
-        .then((moveAssessment) => {
-          setPracticeState((current) => {
-            if (
-              openingReviewAssessmentRequestRef.current !== requestId ||
-              current.positionIndex !== i ||
-              current.currentFen !== c.fen ||
-              current.playedMoveUci !== uci ||
-              current.playedMove !== san ||
-              current.repertoireMove !== immediateAssessment.repertoireMoveSan ||
-              (current.phase !== "correct" && current.phase !== "incorrect")
-            ) {
-              return current;
-            }
-
-            return {
-              ...current,
-              ...openingReviewAssessmentToPracticeState({
-                position: c,
-                positionIndex: i,
-                playedMove: { san, uci },
-                assessment: moveAssessment,
-                timeTaken: current.timeTaken ?? timeTaken,
-              }),
-              resultRecorded: current.resultRecorded,
-            };
-          });
-        })
-        .catch(() => {});
 
       return;
     } else {
@@ -1181,7 +1211,7 @@ function Board({
       });
       setPendingMove(null);
 
-      onMove?.(uci, currentNode.fen, san);
+      scheduleAfterBoardPaint(() => onMove?.(uci, sourceFen, san));
     }
   }
 

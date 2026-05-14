@@ -67,7 +67,9 @@ import {
   useMemo,
   useRef,
   useState,
+  type Dispatch,
   type ReactNode,
+  type SetStateAction,
 } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { createEmptyCard, formatDate } from "ts-fsrs";
@@ -109,6 +111,7 @@ import {
   practiceAutoDifficultyAtom,
   practiceCardStartTimeAtom,
   practiceSessionStatsAtom,
+  type PracticeData,
   type PracticeState,
   practiceStateAtom,
 } from "@/state/atoms";
@@ -327,7 +330,12 @@ const MISTAKE_REVIEW_POSITION_SEVERITIES: MistakeReviewAttemptLabel[] = [
 ];
 
 const openingReviewOpeningNameCache = new BoundedMap<string, string>(2000);
+const reviewPositionLineStateCache = new WeakMap<
+  Position,
+  { headersKey: string; path: number[]; state: TreeState }
+>();
 const REVIEW_DECK_SAVE_DEBOUNCE_MS = 1200;
+const REVIEW_POSITION_PREWARM_LIMIT = 3;
 
 function scheduleReviewDeckSave(callback: () => void) {
   let idleId: number | null = null;
@@ -349,6 +357,40 @@ function scheduleReviewDeckSave(callback: () => void) {
       globalThis.clearTimeout(idleId);
     }
   };
+}
+
+function scheduleReviewPositionPrewarm(callback: () => void) {
+  if ("requestIdleCallback" in window) {
+    const idleId = window.requestIdleCallback(callback, { timeout: 1800 });
+    return () => window.cancelIdleCallback(idleId);
+  }
+
+  const timeoutId = globalThis.setTimeout(callback, 80);
+  return () => globalThis.clearTimeout(timeoutId);
+}
+
+function scheduleAfterReviewTransition(callback: () => void) {
+  if ("requestAnimationFrame" in window) {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(callback);
+    });
+    return;
+  }
+
+  globalThis.setTimeout(callback, 0);
+}
+
+function scheduleReviewCardPerformanceUpdate(
+  setDeck: Dispatch<SetStateAction<PracticeData>>,
+  positionIndex: number,
+  position: Position,
+  grade: 1 | 2 | 3 | 4,
+) {
+  scheduleAfterReviewTransition(() => {
+    updateCardPerformance(setDeck, positionIndex, position.card, grade, {
+      expectedFen: position.fen,
+    });
+  });
 }
 
 export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
@@ -1192,7 +1234,7 @@ function loadReviewPositionOnBoard({
   setHeaders: (headers: GameHeaders) => void;
   setState: (state: TreeState) => void;
 }) {
-  const reviewLine = createReviewPositionLineState(position, headers);
+  const reviewLine = getReviewPositionLineState(position, headers);
   if (reviewLine) {
     setState(reviewLine.state);
     return reviewLine.path;
@@ -1209,6 +1251,43 @@ function loadReviewPositionOnBoard({
   setHeaders(getReviewPositionHeaders(position, headers, headers.fen));
   applyReviewPositionMetadata(store, position);
   return path;
+}
+
+function getReviewPositionLineState(position: Position, headers: GameHeaders) {
+  const headersKey = reviewLineHeadersCacheKey(headers);
+  const cached = reviewPositionLineStateCache.get(position);
+  if (cached?.headersKey === headersKey) {
+    return {
+      path: [...cached.path],
+      state: cloneTreeState(cached.state),
+    };
+  }
+
+  const reviewLine = createReviewPositionLineState(position, headers);
+  if (!reviewLine) return null;
+
+  reviewPositionLineStateCache.set(position, {
+    headersKey,
+    path: [...reviewLine.path],
+    state: cloneTreeState(reviewLine.state),
+  });
+
+  return {
+    path: [...reviewLine.path],
+    state: reviewLine.state,
+  };
+}
+
+function reviewLineHeadersCacheKey(headers: GameHeaders) {
+  return [
+    headers.fen,
+    headers.orientation ?? "",
+    headers.white,
+    headers.black,
+    headers.result,
+    headers.date ?? "",
+    headers.time_control ?? "",
+  ].join("|");
 }
 
 function getReviewPositionHeaders(
@@ -1743,6 +1822,32 @@ function OpeningReviewPanel({
     practiceState.phase !== "idle" && currentPracticePositionIndex >= 0
       ? (deck.positions[currentPracticePositionIndex] ?? null)
       : null;
+  useEffect(() => {
+    if (!loaded || practiceState.phase === "idle" || deck.positions.length === 0) return;
+
+    const indices = getReviewPrewarmPositionIndices(
+      deck.positions,
+      sessionStats,
+      currentPracticePositionIndex,
+    );
+    if (indices.length === 0) return;
+
+    return scheduleReviewPositionPrewarm(() => {
+      for (const index of indices) {
+        const position = deck.positions[index];
+        if (position) {
+          getReviewPositionLineState(position, headers);
+        }
+      }
+    });
+  }, [
+    currentPracticePositionIndex,
+    deck.positions,
+    headers,
+    loaded,
+    practiceState.phase,
+    sessionStats,
+  ]);
   const attemptPosition =
     (practiceState.phase === "correct" || practiceState.phase === "incorrect") &&
     practiceState.positionIndex !== undefined
@@ -1877,7 +1982,7 @@ function OpeningReviewPanel({
   const newPractice = useCallback(
     (
       nextStats?: Partial<typeof sessionStats>,
-      options?: { positions?: Position[]; scopeIndices?: number[] },
+      options?: { positions?: Position[]; scopeIndices?: number[]; excludePositionIndex?: number },
     ) => {
       const positions = options?.positions ?? deck.positions;
       if (positions.length === 0) {
@@ -1887,12 +1992,14 @@ function OpeningReviewPanel({
 
       const mode = nextStats?.mode ?? sessionStats.mode;
       const remaining = nextStats?.remainingPositions ?? sessionStats.remainingPositions;
+      const excludePositionIndex = options?.excludePositionIndex;
       const positionIndex =
         mode === "full" || mode === "srs-list"
-          ? (remaining[0] ?? -1)
+          ? (remaining.find((index) => index !== excludePositionIndex) ?? -1)
           : getNextDueOpeningReviewPositionIndex(
               positions,
               remaining.length > 0 ? remaining : options?.scopeIndices,
+              excludePositionIndex,
             );
       const position = positionIndex >= 0 ? (positions[positionIndex] ?? null) : null;
 
@@ -2265,7 +2372,7 @@ function OpeningReviewPanel({
         : sessionStats.remainingPositions;
     const wasCorrect = practiceState.phase === "correct";
 
-    updateCardPerformance(setDeck, positionIndex, position.card, grade);
+    scheduleReviewCardPerformanceUpdate(setDeck, positionIndex, position, grade);
     setSessionStats((current) => ({
       ...current,
       remainingPositions,
@@ -2278,7 +2385,12 @@ function OpeningReviewPanel({
     }));
     newPractice(
       { mode: sessionStats.mode, remainingPositions },
-      sessionStats.remainingPositions.length > 0 ? { scopeIndices: remainingPositions } : undefined,
+      {
+        excludePositionIndex: positionIndex,
+        ...(sessionStats.remainingPositions.length > 0
+          ? { scopeIndices: remainingPositions }
+          : {}),
+      },
     );
   }
 
@@ -2320,7 +2432,9 @@ function OpeningReviewPanel({
         streak: 0,
       }));
     }
-    newPractice();
+    newPractice(undefined, {
+      excludePositionIndex: practiceState.positionIndex,
+    });
   }
 
   const advanceFullPracticeCorrect = useCallback(() => {
@@ -2345,7 +2459,7 @@ function OpeningReviewPanel({
       const position = deck.positions[positionIndex];
       if (position) {
         if (sessionStats.mode !== "full") {
-          updateCardPerformance(setDeck, positionIndex, position.card, 3);
+          scheduleReviewCardPerformanceUpdate(setDeck, positionIndex, position, 3);
         }
         setSessionStats((current) => ({
           ...current,
@@ -2366,7 +2480,9 @@ function OpeningReviewPanel({
       return;
     }
 
-    newPractice();
+    newPractice(undefined, {
+      excludePositionIndex: practiceState.positionIndex,
+    });
   }, [
     deck.positions,
     newPractice,
@@ -2399,10 +2515,12 @@ function OpeningReviewPanel({
           sessionStats.remainingPositions.length > 0
             ? sessionStats.remainingPositions.filter((index) => index !== positionIndex)
             : sessionStats.remainingPositions;
-        updateCardPerformance(
+        const position = deck.positions[positionIndex];
+        if (!position) return;
+        scheduleReviewCardPerformanceUpdate(
           setDeck,
           positionIndex,
-          deck.positions[positionIndex].card,
+          position,
           Number(practiceAutoDifficulty) as 1 | 2 | 3 | 4,
         );
         setSessionStats((current) => ({
@@ -2413,9 +2531,12 @@ function OpeningReviewPanel({
         }));
         newPractice(
           { mode: sessionStats.mode, remainingPositions },
-          sessionStats.remainingPositions.length > 0
-            ? { scopeIndices: remainingPositions }
-            : undefined,
+          {
+            excludePositionIndex: positionIndex,
+            ...(sessionStats.remainingPositions.length > 0
+              ? { scopeIndices: remainingPositions }
+              : {}),
+          },
         );
       }, 300);
       return () => window.clearTimeout(timer);
@@ -5509,16 +5630,45 @@ function formatImportedAt(value: number | null | undefined) {
   return value ? dayjs(value).format("MMM D, YYYY HH:mm") : "Unknown";
 }
 
-function getNextDueOpeningReviewPositionIndex(positions: Position[], scopeIndices?: number[]) {
+function getNextDueOpeningReviewPositionIndex(
+  positions: Position[],
+  scopeIndices?: number[],
+  excludePositionIndex?: number,
+) {
   const now = new Date();
   const indices = scopeIndices ?? positions.map((_, index) => index);
 
   return (
     indices.find((index) => {
+      if (index === excludePositionIndex) return false;
       const position = positions[index];
       return position ? new Date(position.card.due) <= now : false;
     }) ?? -1
   );
+}
+
+function getReviewPrewarmPositionIndices(
+  positions: Position[],
+  sessionStats: { mode: "anki" | "full" | "srs-list"; remainingPositions: number[] },
+  currentPositionIndex: number,
+) {
+  if (positions.length === 0) return [];
+
+  if (sessionStats.remainingPositions.length > 0) {
+    return sessionStats.remainingPositions
+      .filter((index) => index !== currentPositionIndex && positions[index])
+      .slice(0, REVIEW_POSITION_PREWARM_LIMIT);
+  }
+
+  const now = new Date();
+  return positions
+    .map((position, index) => ({ position, index }))
+    .filter(
+      ({ position, index }) =>
+        index !== currentPositionIndex && new Date(position.card.due) <= now,
+    )
+    .slice(0, REVIEW_POSITION_PREWARM_LIMIT)
+    .map(({ index }) => index);
 }
 
 function getOpeningReviewPositionColour(
