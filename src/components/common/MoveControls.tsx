@@ -1,4 +1,4 @@
-import { ActionIcon, Group, Progress, Stack, Tooltip } from "@mantine/core";
+import { ActionIcon, Button, Group, Progress, Stack, Tooltip } from "@mantine/core";
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -67,6 +67,7 @@ function MoveControls({ readOnly }: { readOnly?: boolean }) {
     : liveStep
       ? `Watch at game pace - next move in ${formatMoveThinkTime(liveStep.moveTimeSeconds)}`
       : "Live replay needs timed moves";
+  const liveLabel = liveReplay ? "Pause" : "Live replay";
 
   const wrapManualNavigation = useCallback(
     (action: () => void) => {
@@ -178,19 +179,35 @@ function MoveControls({ readOnly }: { readOnly?: boolean }) {
           </ActionIcon>
         </Tooltip>
         <Tooltip label={liveTooltip} openDelay={350}>
-          <ActionIcon
+          <Button
             variant={liveReplay ? "filled" : "default"}
             color={liveReplay ? "blue" : undefined}
             size="lg"
+            px="xs"
             onClick={() => {
               if (!liveStep && !liveReplay) return;
               setLiveReplay((playing) => !playing);
             }}
             aria-label={liveReplay ? "Pause live replay" : "Watch at game pace"}
             disabled={!liveReplay && !liveStep}
+            leftSection={
+              liveReplay ? <IconPlayerPause size={18} /> : <IconPlayerPlay size={18} />
+            }
+            styles={{
+              root: {
+                minWidth: 0,
+              },
+              label: {
+                whiteSpace: "normal",
+                lineHeight: 1.05,
+              },
+              section: {
+                marginInlineEnd: 6,
+              },
+            }}
           >
-            {liveReplay ? <IconPlayerPause /> : <IconPlayerPlay />}
-          </ActionIcon>
+            {liveLabel}
+          </Button>
         </Tooltip>
         <Tooltip label="Next move" openDelay={350}>
           <ActionIcon variant="default" size="lg" onClick={handleNext} aria-label="Next move">
