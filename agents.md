@@ -222,6 +222,8 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
   were added to make training less opaque.
 - Post-attempt board play stays enabled in the Review tab, so users can explore
   continuations while keeping the mistake feedback visible.
+- Starting a new Mistake Review card clears stale reveal/free-play state so the
+  answer move is scored and the SRS panel appears instead of a return prompt.
 - Mistake Review game info is anchored below the main action area so the board
   and action controls stay primary.
 

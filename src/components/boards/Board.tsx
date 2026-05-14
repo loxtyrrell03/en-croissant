@@ -929,6 +929,21 @@ function Board({
     : null;
 
   useEffect(() => {
+    if (!isMistakeReviewTab || practiceState.phase !== "waiting") return;
+
+    clearMistakeReviewLine();
+    setMistakeReviewLineBusy(false);
+    setMistakeReviewRevealState(null);
+    setMistakeReviewFreePlay(false);
+  }, [
+    clearMistakeReviewLine,
+    isMistakeReviewTab,
+    practiceState.currentFen,
+    practiceState.phase,
+    practiceState.positionIndex,
+  ]);
+
+  useEffect(() => {
     if (!isMistakeReviewTab || !trainerMistakeReviewKey) {
       setMistakeReviewRevealRemaining(0);
       setMistakeReviewRevealState(null);
