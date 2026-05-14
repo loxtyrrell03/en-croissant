@@ -45,6 +45,15 @@ export const makeClk = (seconds: number): string => {
     })}`;
 };
 
+function parsePgnTimestampSeconds(comment: string): number | undefined {
+    const match = comment.match(/\[%timestamp\s+(\d+(?:\.\d+)?)\]/i);
+    if (!match) return undefined;
+
+    const value = Number(match[1]);
+    if (!Number.isFinite(value)) return undefined;
+    return value > 10_000_000_000 ? value / 1000 : value;
+}
+
 export function getMoveText(
     tree: TreeNode,
     opt: {
@@ -91,6 +100,9 @@ export function getMoveText(
             }
             if (tree.clock !== undefined) {
                 content += `[%clk ${makeClk(tree.clock)}] `;
+            }
+            if (tree.timestamp !== undefined) {
+                content += `[%timestamp ${Math.round(tree.timestamp)}] `;
             }
         }
 
@@ -396,12 +408,19 @@ function innerParsePGN(tokens: Token[], fen: string = INITIAL_FEN, halfMoves = 0
                 root.shapes.push(...shapes);
             }
 
-            if (comment.clock) {
+            if (comment.clock !== undefined) {
                 root.clock = comment.clock;
             }
 
+            const timestamp = parsePgnTimestampSeconds(token.value);
+            if (timestamp !== undefined) {
+                root.timestamp = timestamp;
+            }
+
             // Strip [%timestamp N] annotations (chess.com export format) from comment text
-            root.comment = comment.text.replace(/\s?\[%timestamp\s+\d+\]\s?/g, " ").trim();
+            root.comment = comment.text
+                .replace(/\s?\[%timestamp\s+\d+(?:\.\d+)?\]\s?/gi, " ")
+                .trim();
         } else if (token.type === "ParenOpen") {
             const variation = [];
             let subvariations = 0;
@@ -493,6 +512,9 @@ function getPgnHeaders(tokens: Token[]): GameHeaders {
         BlackElo,
         WhiteElo,
         Date,
+        Time,
+        UTCDate,
+        UTCTime,
         Site,
         Event,
         Result,
@@ -522,7 +544,8 @@ function getPgnHeaders(tokens: Token[]): GameHeaders {
         round: Round ?? "?",
         black_elo: BlackElo === "-" ? 0 : BlackElo ? Number.parseInt(BlackElo) : undefined,
         white_elo: WhiteElo === "-" ? 0 : WhiteElo ? Number.parseInt(WhiteElo) : undefined,
-        date: Date ?? "",
+        date: Date ?? UTCDate ?? "",
+        time: Time ?? UTCTime ?? "",
         site: Site ?? "",
         event: Event ?? "",
         start: JSON.parse(Start ?? "[]"),

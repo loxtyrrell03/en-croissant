@@ -62,7 +62,7 @@ export type OnlineDatabaseLocalSnapshot = {
     lastGameId: number | null | undefined;
 };
 
-export const ONLINE_DATABASE_CLOCK_REFRESH_VERSION = 1;
+export const ONLINE_DATABASE_CLOCK_REFRESH_VERSION = 2;
 
 export function getOnlineGameSourceLabel(source: OnlineGameSource) {
     return source === "lichess" ? "Lichess" : "Chess.com";

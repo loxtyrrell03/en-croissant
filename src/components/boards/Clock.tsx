@@ -3,7 +3,7 @@ import { useContext } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { positionFromFen } from "@/utils/chessops";
-import { getClockInfo } from "@/utils/clock";
+import { formatClockTime, getClockInfo } from "@/utils/clock";
 import { TreeStateContext } from "../common/TreeStateContext";
 import classes from "./Clock.module.css";
 
@@ -23,7 +23,7 @@ function Clock({
   const position = useStore(store, (s) => s.position);
   const headers = useStore(store, (s) => s.headers);
   const currentNode = useStore(store, (s) => s.currentNode());
-  const [pos, error] = positionFromFen(currentNode.fen);
+  const [pos] = positionFromFen(currentNode.fen);
 
   const { white, black } = getClockInfo({
     headers,
@@ -46,17 +46,17 @@ function Clock({
 
   return (
     <Paper
-      className={color === "black" ? classes.blackClock : classes.whiteClock}
+      className={`${classes.clock} ${color === "black" ? classes.blackClock : classes.whiteClock}`}
       styles={{
         root: {
           opacity: turn !== color ? 0.5 : 1,
-          visibility: clock ? "visible" : "hidden",
+          visibility: clock !== undefined ? "visible" : "hidden",
           transition: "opacity 0.15s",
         },
       }}
     >
-      <Text fz="lg" fw="bold" px="xs">
-        {clock ? formatClock(clock) : "0:00"}
+      <Text className={classes.clockText} fz="sm" fw={800} px="xs">
+        {clock !== undefined ? formatClockTime(clock) : "0:00"}
       </Text>
       <Progress
         size="xs"
@@ -71,24 +71,6 @@ function Clock({
       />
     </Paper>
   );
-}
-
-function formatClock(seconds: number) {
-  let s = Math.max(0, seconds);
-  const hours = Math.floor(s / 3600);
-  const minutes = Math.floor((s % 3600) / 60);
-  s = (s % 3600) % 60;
-
-  let timeString = `${minutes.toString().padStart(2, "0")}`;
-  if (hours > 0) {
-    timeString = `${hours}:${timeString}`;
-  }
-  if (seconds < 60) {
-    timeString += `:${s.toFixed(1).padStart(4, "0")}`;
-  } else {
-    timeString += `:${Math.floor(s).toString().padStart(2, "0")}`;
-  }
-  return timeString;
 }
 
 export default Clock;

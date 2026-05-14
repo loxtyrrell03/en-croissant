@@ -388,6 +388,10 @@ from 2026-04-24 through 2026-05-03.
 - Online data: Lichess/Chess.com imports, merged online databases, online game
   picker flows, latest-game analysis, selected-game review creation, and
   Lichess Study database import/update support were added.
+- Online game clocks: imported online games now surface simple per-move think
+  times in notation from clock or timestamp comments, board clocks sit with the
+  player strips at the top-left and bottom-left of the board area, and older
+  online databases are marked for clock-data enrichment during refresh.
 - Opening Review: Analyze Repertoire was moved into review, opening health
   scoring was added, cloud validation was layered in, review decks became
   trainable files, and daily/full/focused spaced repetition workflows were

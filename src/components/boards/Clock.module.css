@@ -1,3 +1,16 @@
+.clock {
+  min-width: 74px;
+  overflow: hidden;
+  border-radius: 5px;
+  border: 1px solid rgba(128, 128, 128, 0.25);
+}
+
+.clockText {
+  line-height: 1.35;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
 .whiteClock {
   color: var(--mantine-color-black);
   background-color: var(--mantine-color-gray-2);

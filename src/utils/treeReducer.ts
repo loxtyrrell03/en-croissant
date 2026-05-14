@@ -25,6 +25,7 @@ export interface TreeNode {
     annotations: Annotation[];
     comment: string;
     clock?: number;
+    timestamp?: number;
 }
 
 export type ListNode = {
@@ -113,18 +114,21 @@ export function createNode({
     san,
     halfMoves,
     clock,
+    timestamp,
 }: {
     move: Move;
     san: string;
     fen: string;
     halfMoves: number;
     clock?: number;
+    timestamp?: number;
 }): TreeNode {
     return {
         fen,
         move,
         san,
-        clock: clock ? clock / 1000 : undefined,
+        clock: clock !== undefined ? clock / 1000 : undefined,
+        timestamp,
         children: [],
         score: null,
         depth: null,

@@ -21,9 +21,11 @@ import { currentTabAtom } from "@/state/atoms";
 import type { TreeStore } from "@/state/store/tree";
 import type { Annotation } from "@/utils/annotation";
 import { hasMorePriority, stripClock } from "@/utils/chess";
+import { formatMoveThinkTime, getMoveThinkTime } from "@/utils/clock";
 import { getTabFile } from "@/utils/tabs";
 import { type TreeNode, treeIterator } from "@/utils/treeReducer";
 import MoveCell from "./MoveCell";
+import moveCellStyles from "./MoveCell.module.css";
 import { TreeStateContext } from "./TreeStateContext";
 
 const transpositionCache = new WeakMap<
@@ -120,6 +122,31 @@ function CompleteMoveCell({
   const [annotating, setAnnotating] = useState(false);
   const currentTab = useAtomValue(currentTabAtom);
   const tabFile = getTabFile(currentTab);
+  const moveTiming = useStoreWithEqualityFn(
+    store,
+    (s) => getMoveThinkTime({ headers: s.headers, root: s.root, movePath }),
+    equal,
+  );
+  const moveThinkTime = moveTiming ? formatMoveThinkTime(moveTiming.moveTimeSeconds) : null;
+  const rightAccessory =
+    scoreText || moveThinkTime ? (
+      <>
+        {scoreText && (
+          <Text component="span" size="xs" c="dimmed">
+            {scoreText}
+          </Text>
+        )}
+        {moveThinkTime && (
+          <Text
+            component="span"
+            className={moveCellStyles.thinkTime}
+            title={`Spent ${moveThinkTime} on this move`}
+          >
+            {moveThinkTime}
+          </Text>
+        )}
+      </>
+    ) : undefined;
 
   const { t } = useTranslation();
 
@@ -151,13 +178,7 @@ function CompleteMoveCell({
                   e.preventDefault();
                 }}
                 fullWidth={tableLayout}
-                rightAccessory={
-                  tableLayout && scoreText ? (
-                    <Text component="span" size="xs" c="dimmed">
-                      {scoreText}
-                    </Text>
-                  ) : undefined
-                }
+                rightAccessory={rightAccessory}
               />
             </Menu.Target>
 

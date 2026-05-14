@@ -481,6 +481,7 @@ function Board({
       return {
         annotations: node.annotations,
         children: node.children,
+        clock: node.clock,
         fen: node.fen,
         halfMoves: node.halfMoves,
         move: node.move,
@@ -1424,8 +1425,9 @@ function Board({
   ]);
 
   const hasClock =
-    !!whiteTime ||
-    !!blackTime ||
+    whiteTime !== undefined ||
+    blackTime !== undefined ||
+    currentNode.clock !== undefined ||
     !!headers.time_control ||
     !!headers.white_time_control ||
     !!headers.black_time_control;
@@ -1692,6 +1694,8 @@ function Board({
 
   const topPlayer = orientation === "white" ? headers.black : headers.white;
   const bottomPlayer = orientation === "white" ? headers.white : headers.black;
+  const topClockColor = orientation === "white" ? "black" : "white";
+  const bottomClockColor = orientation;
   const mistakeReviewMetadata = trainerMistakeReviewPosition?.mistakeReview;
   const mistakeReviewAttemptActive =
     (practiceState.phase === "correct" || practiceState.phase === "incorrect") &&
@@ -1753,6 +1757,16 @@ function Board({
           <BoardBar
             name={topPlayer}
             rating={orientation === "white" ? headers.black_elo : headers.white_elo}
+            leftSection={
+              hasClock ? (
+                <Clock
+                  color={topClockColor}
+                  turn={turn}
+                  whiteTime={whiteTime}
+                  blackTime={blackTime}
+                />
+              ) : undefined
+            }
             onNameClick={() => {
               if (orientation === "white") {
                 setBlackFideOpen(true);
@@ -1767,14 +1781,6 @@ function Board({
               color={orientation === "white" ? "black" : "white"}
               mode={materialDisplay}
             />
-            {hasClock && (
-              <Clock
-                color={orientation === "black" ? "white" : "black"}
-                turn={turn}
-                whiteTime={whiteTime}
-                blackTime={blackTime}
-              />
-            )}
           </BoardBar>
           <Box
             ref={boardAreaRef}
@@ -2065,6 +2071,16 @@ function Board({
           <BoardBar
             name={bottomPlayer}
             rating={orientation === "white" ? headers.white_elo : headers.black_elo}
+            leftSection={
+              hasClock ? (
+                <Clock
+                  color={bottomClockColor}
+                  turn={turn}
+                  whiteTime={whiteTime}
+                  blackTime={blackTime}
+                />
+              ) : undefined
+            }
             onNameClick={() => {
               if (orientation === "white") {
                 setWhiteFideOpen(true);
@@ -2083,9 +2099,6 @@ function Board({
             {moveInput && <MoveInput currentFen={currentNode.fen} />}
 
             <ShowMaterial fen={boardFen} color={orientation} mode={materialDisplay} />
-            {hasClock && (
-              <Clock color={orientation} turn={turn} whiteTime={whiteTime} blackTime={blackTime} />
-            )}
           </BoardBar>
           {showMistakeReviewControls && (
             <Paper
