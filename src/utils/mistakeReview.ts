@@ -721,7 +721,7 @@ export function getMistakeReviewDailyBatch(
     const filtered = positions.filter((position) =>
         isMistakeReviewDailyEligible(position, settings, now),
     );
-    const progress = getMistakeReviewDailyProgress(filtered, settings, { now, prefiltered: true });
+    const progress = getMistakeReviewDailyProgress(positions, settings, { now });
     const attemptedTodayKeys = new Set(
         filtered
             .filter((position) => wasMistakeReviewAttemptedOnDay(position, now))
@@ -774,12 +774,9 @@ export function getMistakeReviewDailyProgress(
     options: { now?: Date; prefiltered?: boolean } = {},
 ): MistakeReviewDailyProgress {
     const now = options.now ?? new Date();
-    const eligible = options.prefiltered
-        ? positions
-        : positions.filter((position) => isMistakeReviewDailyEligible(position, settings, now));
     const completedKeys = new Set<string>();
     const completedNewKeys = new Set<string>();
-    for (const position of eligible) {
+    for (const position of positions) {
         if (!wasMistakeReviewAttemptedOnDay(position, now)) continue;
         const key = mistakeReviewDailyPositionKey(position);
         completedKeys.add(key);

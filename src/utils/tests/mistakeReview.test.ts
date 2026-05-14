@@ -454,6 +454,72 @@ describe("mistake review helpers", () => {
         expect(batch).toEqual([]);
     });
 
+    test("daily progress counts long-think cards reviewed from trainer mode", () => {
+        const now = new Date("2026-04-26T12:00:00Z");
+        const attemptedAt = new Date("2026-04-26T09:00:00Z").getTime();
+        const reviewedLongThink = position({
+            fen: ENDGAME_FEN,
+            reviewKey: "reviewed-long-think",
+            card: {
+                ...createEmptyCard(),
+                reps: 3,
+                due: new Date("2026-04-24T12:00:00Z"),
+            } as Position["card"],
+            mistakeReview: {
+                ...position().mistakeReview!,
+                severity: "blunder",
+                moveTimeSeconds: 90,
+                date: "2026.04.24",
+                lastAttemptedAt: attemptedAt,
+                lastAttemptedCardReps: 3,
+            },
+        });
+        const dailyOne = position({
+            fen: OPENING_FEN,
+            reviewKey: "daily-one",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-24T12:00:00Z"),
+            } as Position["card"],
+            mistakeReview: {
+                ...position().mistakeReview!,
+                severity: "mistake",
+                date: "2026.04.24",
+            },
+        });
+        const dailyTwo = position({
+            fen: MIDDLEGAME_FEN,
+            reviewKey: "daily-two",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-24T12:00:00Z"),
+            } as Position["card"],
+            mistakeReview: {
+                ...position().mistakeReview!,
+                severity: "mistake",
+                date: "2026.04.23",
+            },
+        });
+        const settings = {
+            reviewsPerDay: 2,
+            newItemsPerDay: 1,
+            gamePeriod: "all" as const,
+            minWinProbabilityDrop: 0,
+            includeInaccuracies: true,
+            includeMistakes: true,
+            includeBlunders: false,
+        };
+        const positions = [reviewedLongThink, dailyOne, dailyTwo];
+        const batch = getMistakeReviewDailyBatch(positions, settings, { now });
+        const progress = getMistakeReviewDailyProgress(positions, settings, { now });
+
+        expect(progress.completed).toBe(1);
+        expect(progress.remaining).toBe(1);
+        expect(batch.map((item) => item.reviewKey)).toEqual(["daily-one"]);
+    });
+
     test("phase training groups opening, middlegame, and endgame cards", () => {
         const now = new Date("2026-04-26T12:00:00Z");
         const openingDue = position({

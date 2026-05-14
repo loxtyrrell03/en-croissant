@@ -92,6 +92,8 @@ default.
   opening review decks from selected online games.
 - Mistake Review opens saved mistake decks, launches a local PGN/database scan,
   and can create mistake decks from selected online games.
+- Daily goals count completed Opening Review and Mistake Review trainer cards
+  from any trainer entry point, including focused and long-think sessions.
 - Empty states should always offer the next action: analyze repertoire, choose
   online games, add an engine, add a reference database, or link accounts.
 

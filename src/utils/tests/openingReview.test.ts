@@ -326,6 +326,53 @@ describe("opening review helpers", () => {
         expect(batch.map((item) => item.reviewKey)).toEqual(["recent-white"]);
     });
 
+    test("daily progress counts opening cards reviewed from other trainer modes", () => {
+        const now = new Date("2026-04-26T12:00:00");
+        const attemptedAt = new Date("2026-04-26T09:00:00").getTime();
+        const trainedOutsideDailyScope = position({
+            fen: AFTER_D4_FEN,
+            reviewKey: "trained-outside-daily-scope",
+            priority: 90,
+            openingHealth: { lastPlayed: "2024.04.24", reviewSide: "black" },
+            card: {
+                ...createEmptyCard(),
+                reps: 3,
+                due: new Date("2026-04-24T12:00:00"),
+            } as Position["card"],
+            openingReview: {
+                lastAttemptedAt: attemptedAt,
+                lastAttemptedCardReps: 3,
+            },
+        });
+        const dailyOne = position({
+            fen: AFTER_E4_FEN,
+            reviewKey: "daily-one",
+            priority: 70,
+            openingHealth: { lastPlayed: "2026.04.24", reviewSide: "white" },
+        });
+        const dailyTwo = position({
+            fen: AFTER_C4_FEN,
+            reviewKey: "daily-two",
+            priority: 60,
+            openingHealth: { lastPlayed: "2026.04.24", reviewSide: "white" },
+        });
+        const settings = dailySettings({
+            reviewsPerDay: 2,
+            newItemsPerDay: 2,
+            gamePeriod: "week",
+            minUrgency: 50,
+            includeBlack: false,
+        });
+
+        const positions = [trainedOutsideDailyScope, dailyOne, dailyTwo];
+        const progress = getOpeningReviewDailyProgress(positions, settings, { now });
+        const batch = getOpeningReviewDailyBatch(positions, settings, { now });
+
+        expect(progress.completed).toBe(1);
+        expect(progress.remaining).toBe(1);
+        expect(batch.map((item) => item.reviewKey)).toEqual(["daily-one"]);
+    });
+
     test("merge preserves daily attempt metadata", () => {
         const previous = position({
             answer: "d4",

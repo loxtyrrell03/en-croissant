@@ -313,10 +313,7 @@ export function getOpeningReviewDailyBatch(
     const filtered = positions.filter((position) =>
         isOpeningReviewDailyEligible(position, settings, now),
     );
-    const progress = getOpeningReviewDailyProgress(filtered, settings, {
-        now,
-        prefiltered: true,
-    });
+    const progress = getOpeningReviewDailyProgress(positions, settings, { now });
     const attemptedTodayKeys = new Set(
         filtered
             .filter((position) => wasOpeningReviewAttemptedOnDay(position, now))
@@ -369,12 +366,9 @@ export function getOpeningReviewDailyProgress(
     options: { now?: Date; prefiltered?: boolean } = {},
 ): OpeningReviewDailyProgress {
     const now = options.now ?? new Date();
-    const eligible = options.prefiltered
-        ? positions
-        : positions.filter((position) => isOpeningReviewDailyEligible(position, settings, now));
     const completedKeys = new Set<string>();
     const completedNewKeys = new Set<string>();
-    for (const position of eligible) {
+    for (const position of positions) {
         if (!wasOpeningReviewAttemptedOnDay(position, now)) continue;
         const key = openingReviewDailyPositionKey(position);
         completedKeys.add(key);
