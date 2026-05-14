@@ -879,7 +879,7 @@ export function getMistakeReviewDailyProgress(
 export function getMistakeReviewPhaseBatch(
     positions: Position[],
     phaseInput: MistakeReviewPhase,
-    options: { now?: Date } = {},
+    options: { now?: Date; includeScheduled?: boolean } = {},
 ) {
     const phase = normalizeMistakeReviewPhase(phaseInput);
     if (!phase) return [];
@@ -891,13 +891,26 @@ export function getMistakeReviewPhaseBatch(
     const repsFor = (position: Position) =>
         Math.max(0, Math.trunc(Number(position.card.reps) || 0));
     const due = phasePositions
-        .filter((position) => repsFor(position) > 0 && new Date(position.card.due) <= now)
+        .filter(
+            (position) =>
+                repsFor(position) > 0 &&
+                isMistakeReviewSrsPracticeReady(position, now),
+        )
         .sort((a, b) => sortMistakeReviewPhaseDueCards(a, b));
     const fresh = phasePositions
-        .filter((position) => repsFor(position) === 0)
+        .filter(
+            (position) =>
+                repsFor(position) === 0 &&
+                isMistakeReviewSrsPracticeReady(position, now, options.includeScheduled),
+        )
         .sort(sortMistakeReviewNewCards);
     const scheduled = phasePositions
-        .filter((position) => repsFor(position) > 0 && new Date(position.card.due) > now)
+        .filter(
+            (position) =>
+                options.includeScheduled &&
+                repsFor(position) > 0 &&
+                !isMistakeReviewSrsPracticeReady(position, now),
+        )
         .sort((a, b) => sortMistakeReviewPhaseScheduledCards(a, b));
 
     return [...due, ...fresh, ...scheduled];
@@ -905,22 +918,27 @@ export function getMistakeReviewPhaseBatch(
 
 export function getMistakeReviewTimeManagementBatch(
     positions: Position[],
-    options: { minMoveSeconds?: number } = {},
+    options: { minMoveSeconds?: number; now?: Date; includeScheduled?: boolean } = {},
 ) {
     const minMoveSeconds =
         typeof options.minMoveSeconds === "number" && Number.isFinite(options.minMoveSeconds)
             ? Math.max(0, options.minMoveSeconds)
             : DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds;
+    const now = options.now ?? new Date();
 
     return positions
-        .filter((position) => isMistakeReviewTimeManagementPosition(position, minMoveSeconds))
+        .filter(
+            (position) =>
+                isMistakeReviewTimeManagementPosition(position, minMoveSeconds) &&
+                isMistakeReviewSrsPracticeReady(position, now, options.includeScheduled),
+        )
         .sort(sortMistakeReviewTimeManagementCards);
 }
 
 export function getMistakeReviewNatureBatch(
     positions: Position[],
     natureInput: MistakeReviewNature,
-    options: { now?: Date } = {},
+    options: { now?: Date; includeScheduled?: boolean } = {},
 ) {
     const nature = normalizeMistakeReviewNature(natureInput);
     if (!nature) return [];
@@ -932,16 +950,43 @@ export function getMistakeReviewNatureBatch(
     const repsFor = (position: Position) =>
         Math.max(0, Math.trunc(Number(position.card.reps) || 0));
     const due = naturePositions
-        .filter((position) => repsFor(position) > 0 && new Date(position.card.due) <= now)
+        .filter(
+            (position) =>
+                repsFor(position) > 0 &&
+                isMistakeReviewSrsPracticeReady(position, now),
+        )
         .sort((a, b) => sortMistakeReviewPhaseDueCards(a, b));
     const fresh = naturePositions
-        .filter((position) => repsFor(position) === 0)
+        .filter(
+            (position) =>
+                repsFor(position) === 0 &&
+                isMistakeReviewSrsPracticeReady(position, now, options.includeScheduled),
+        )
         .sort(sortMistakeReviewNewCards);
     const scheduled = naturePositions
-        .filter((position) => repsFor(position) > 0 && new Date(position.card.due) > now)
+        .filter(
+            (position) =>
+                options.includeScheduled &&
+                repsFor(position) > 0 &&
+                !isMistakeReviewSrsPracticeReady(position, now),
+        )
         .sort((a, b) => sortMistakeReviewPhaseScheduledCards(a, b));
 
     return [...due, ...fresh, ...scheduled];
+}
+
+function isMistakeReviewSrsPracticeReady(
+    position: Position,
+    now: Date,
+    includeScheduled = false,
+) {
+    if (includeScheduled) return true;
+
+    const dueAt = new Date(position.card.due).getTime();
+    if (Number.isFinite(dueAt) && dueAt <= now.getTime()) return true;
+
+    const reps = Math.max(0, Math.trunc(Number(position.card.reps) || 0));
+    return reps === 0 && getMistakeReviewLastAttemptedAt(position) === null;
 }
 
 export function isMistakeReviewCorrespondenceTimeControl(value: string | null | undefined) {

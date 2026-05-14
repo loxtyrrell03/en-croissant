@@ -1,7 +1,7 @@
 import { INITIAL_FEN } from "chessops/fen";
 import { createEmptyCard } from "ts-fsrs";
 import { describe, expect, test } from "vitest";
-import { scheduleSm2Card, type Position } from "@/components/files/opening";
+import { getStats, scheduleSm2Card, type Position } from "@/components/files/opening";
 import {
     classifyMistakeReviewNature,
     classifyMistakeReviewAttempt,
@@ -561,6 +561,10 @@ describe("mistake review helpers", () => {
         const positions = [middlegame, openingScheduled, openingFresh, endgame, openingDue];
         const counts = getMistakeReviewPhaseCounts(positions, { now });
         const batch = getMistakeReviewPhaseBatch(positions, "opening", { now });
+        const fullBatch = getMistakeReviewPhaseBatch(positions, "opening", {
+            now,
+            includeScheduled: true,
+        });
 
         expect(getMistakeReviewPhase(openingDue)).toBe("opening");
         expect(getMistakeReviewPhase(middlegame)).toBe("middlegame");
@@ -568,7 +572,8 @@ describe("mistake review helpers", () => {
         expect(counts.opening).toEqual({ total: 3, due: 1 });
         expect(counts.middlegame).toEqual({ total: 1, due: 0 });
         expect(counts.endgame).toEqual({ total: 1, due: 0 });
-        expect(batch.map((item) => item.reviewKey)).toEqual([
+        expect(batch.map((item) => item.reviewKey)).toEqual(["opening-due", "opening-fresh"]);
+        expect(fullBatch.map((item) => item.reviewKey)).toEqual([
             "opening-due",
             "opening-fresh",
             "opening-scheduled",
@@ -710,6 +715,18 @@ describe("mistake review helpers", () => {
                 pvSan: ["Bxh7+", "Kxh7", "Ng5+"],
             },
         });
+        const tacticalScheduled = position({
+            reviewKey: "tactical-scheduled",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-30T12:00:00Z"),
+            } as Position["card"],
+            mistakeReview: {
+                ...position().mistakeReview!,
+                nature: "tactical",
+            },
+        });
         const positional = position({
             reviewKey: "positional",
             mistakeReview: {
@@ -718,17 +735,26 @@ describe("mistake review helpers", () => {
             },
         });
 
-        const positions = [positional, tacticalFresh, tacticalDue];
+        const positions = [positional, tacticalScheduled, tacticalFresh, tacticalDue];
         const counts = getMistakeReviewNatureCounts(positions, { now });
         const tacticalBatch = getMistakeReviewNatureBatch(positions, "tactical", { now });
+        const tacticalFullBatch = getMistakeReviewNatureBatch(positions, "tactical", {
+            now,
+            includeScheduled: true,
+        });
 
         expect(getMistakeReviewNature(tacticalFresh)).toBe("tactical");
         expect(getMistakeReviewNature(positional)).toBe("positional");
-        expect(counts.tactical).toEqual({ total: 2, due: 1 });
+        expect(counts.tactical).toEqual({ total: 3, due: 1 });
         expect(counts.positional).toEqual({ total: 1, due: 0 });
         expect(tacticalBatch.map((item) => item.reviewKey)).toEqual([
             "tactical-due",
             "tactical-fresh",
+        ]);
+        expect(tacticalFullBatch.map((item) => item.reviewKey)).toEqual([
+            "tactical-due",
+            "tactical-fresh",
+            "tactical-scheduled",
         ]);
     });
 
@@ -760,7 +786,8 @@ describe("mistake review helpers", () => {
         expect(secondMigration.updatedCount).toBe(0);
     });
 
-    test("time management batch keeps long-think mistakes first", () => {
+    test("time management batch keeps ready long-think mistakes first", () => {
+        const now = new Date("2026-04-26T12:00:00Z");
         const shortThink = position({
             reviewKey: "short-think",
             mistakeReview: {
@@ -771,10 +798,44 @@ describe("mistake review helpers", () => {
         });
         const longThink = position({
             reviewKey: "long-think",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-24T12:00:00Z"),
+            } as Position["card"],
             mistakeReview: {
                 ...position().mistakeReview!,
                 moveTimeSeconds: 45,
                 severity: "mistake",
+            },
+        });
+        const scheduledLongThink = position({
+            reviewKey: "scheduled-long-think",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-30T12:00:00Z"),
+            } as Position["card"],
+            mistakeReview: {
+                ...position().mistakeReview!,
+                moveTimeSeconds: 80,
+                severity: "blunder",
+            },
+        });
+        const reviewedTodayAgain = position({
+            reviewKey: "reviewed-today-again",
+            card: {
+                ...createEmptyCard(),
+                reps: 0,
+                last_review: new Date("2026-04-26T09:00:00Z"),
+                due: new Date("2026-04-27T09:00:00Z"),
+            } as Position["card"],
+            mistakeReview: {
+                ...position().mistakeReview!,
+                moveTimeSeconds: 95,
+                severity: "blunder",
+                lastAttemptedAt: new Date("2026-04-26T09:00:00Z").getTime(),
+                lastAttemptedCardReps: 2,
             },
         });
         const longestThink = position({
@@ -806,21 +867,50 @@ describe("mistake review helpers", () => {
 
         expect(
             getMistakeReviewTimeManagementBatch(
-                [shortThink, dailyThink, longThink, savedCorrespondenceBucket, longestThink],
+                [
+                    shortThink,
+                    dailyThink,
+                    longThink,
+                    savedCorrespondenceBucket,
+                    longestThink,
+                    scheduledLongThink,
+                    reviewedTodayAgain,
+                ],
                 {
                     minMoveSeconds: 20,
+                    now,
                 },
             ).map((item) => item.reviewKey),
         ).toEqual(["longest-think", "long-think"]);
 
         expect(
             getMistakeReviewTimeManagementBatch(
-                [shortThink, dailyThink, longThink, savedCorrespondenceBucket, longestThink],
+                [
+                    shortThink,
+                    dailyThink,
+                    longThink,
+                    savedCorrespondenceBucket,
+                    longestThink,
+                    scheduledLongThink,
+                    reviewedTodayAgain,
+                ],
                 {
                     minMoveSeconds: 60,
+                    now,
                 },
             ).map((item) => item.reviewKey),
         ).toEqual(["longest-think"]);
+
+        expect(
+            getMistakeReviewTimeManagementBatch(
+                [scheduledLongThink, reviewedTodayAgain, longThink],
+                {
+                    minMoveSeconds: 20,
+                    now,
+                    includeScheduled: true,
+                },
+            ).map((item) => item.reviewKey),
+        ).toEqual(["reviewed-today-again", "scheduled-long-think", "long-think"]);
     });
 
     test("SM2 review schedule starts at one day and grows from there", () => {
@@ -847,6 +937,15 @@ describe("mistake review helpers", () => {
         expect(lapse.card.reps).toBe(0);
         expect(lapse.card.scheduled_days).toBe(1);
         expect(lapse.card.lapses).toBe(1);
+    });
+
+    test("review stats do not count relearning cards as unseen before their due date", () => {
+        const again = scheduleSm2Card(createEmptyCard(), 1, new Date());
+        const stats = getStats([position({ card: again.card })]);
+
+        expect(stats.unseen).toBe(0);
+        expect(stats.due).toBe(0);
+        expect(stats.practiced).toBe(1);
     });
 
     test("repertoire practice SM2 uses minute-scale first reviews without changing the default", () => {

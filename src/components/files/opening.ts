@@ -460,7 +460,7 @@ export function getStats(positions: Position[]) {
     const now = new Date();
     for (const card of positions) {
         const dueDate = new Date(card.card.due);
-        if (card.card.reps === 0) {
+        if (card.card.reps === 0 && !card.card.last_review) {
             stats.unseen++;
         } else if (dueDate <= now) {
             stats.due++;

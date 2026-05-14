@@ -91,8 +91,8 @@ import {
   formatReviewInterval,
   getNextReviewTimes,
   getStats,
+  scheduleSm2Card,
   type Position,
-  updateCardPerformance,
 } from "@/components/files/opening";
 import { OpeningReviewAutoUpdateBanner } from "@/components/review/OpeningReviewAutoUpdateBanner";
 import {
@@ -389,10 +389,56 @@ function scheduleReviewCardPerformanceUpdate(
   grade: 1 | 2 | 3 | 4,
 ) {
   scheduleAfterReviewTransition(() => {
-    updateCardPerformance(setDeck, positionIndex, position.card, grade, {
-      expectedFen: position.fen,
+    setDeck((data) => {
+      const currentPosition = data.positions[positionIndex];
+      if (!currentPosition || currentPosition.fen !== position.fen) return data;
+
+      const reviewedAt = new Date();
+      const previousReps = getReviewCardReps(currentPosition);
+      const { card: newCard, log } = scheduleSm2Card(currentPosition.card, grade, reviewedAt);
+      const positions = [...data.positions];
+      positions[positionIndex] = markReviewPositionAttempt(
+        { ...currentPosition, card: newCard },
+        reviewedAt.getTime(),
+        previousReps,
+      );
+
+      return {
+        positions,
+        logs: [...data.logs, { ...log, fen: currentPosition.fen }],
+      };
     });
   });
+}
+
+function getReviewCardReps(position: Position) {
+  return Math.max(0, Math.trunc(Number(position.card.reps) || 0));
+}
+
+function markReviewPositionAttempt(
+  position: Position,
+  attemptedAt: number,
+  attemptedCardReps: number,
+): Position {
+  if (position.mistakeReview) {
+    return {
+      ...position,
+      mistakeReview: {
+        ...position.mistakeReview,
+        lastAttemptedAt: attemptedAt,
+        lastAttemptedCardReps: attemptedCardReps,
+      },
+    };
+  }
+
+  return {
+    ...position,
+    openingReview: {
+      ...position.openingReview,
+      lastAttemptedAt: attemptedAt,
+      lastAttemptedCardReps: attemptedCardReps,
+    },
+  };
 }
 
 export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
@@ -2277,9 +2323,14 @@ function OpeningReviewPanel({
         .filter((positionIndex) => positionIndex >= 0);
 
       if (remainingPositions.length === 0) {
+        const hasPhasePositions = deck.positions.some(
+          (position) => position.mistakeReview && getMistakeReviewPhase(position) === phase,
+        );
         notifications.show({
-          title: "No positions to train",
-          message: `No ${label.toLowerCase()} mistakes found in this set yet.`,
+          title: hasPhasePositions ? "Nothing ready to train" : "No positions to train",
+          message: hasPhasePositions
+            ? `No due or new ${label.toLowerCase()} mistakes are ready right now.`
+            : `No ${label.toLowerCase()} mistakes found in this set yet.`,
           color: "yellow",
         });
         return;
@@ -2319,9 +2370,14 @@ function OpeningReviewPanel({
         .filter((positionIndex) => positionIndex >= 0);
 
       if (remainingPositions.length === 0) {
+        const hasNaturePositions = deck.positions.some(
+          (position) => position.mistakeReview && getMistakeReviewNature(position) === nature,
+        );
         notifications.show({
-          title: "No positions to train",
-          message: `No ${label.toLowerCase()} mistakes found in this set yet.`,
+          title: hasNaturePositions ? "Nothing ready to train" : "No positions to train",
+          message: hasNaturePositions
+            ? `No due or new ${label.toLowerCase()} mistakes are ready right now.`
+            : `No ${label.toLowerCase()} mistakes found in this set yet.`,
           color: "yellow",
         });
         return;
@@ -2357,7 +2413,7 @@ function OpeningReviewPanel({
         message:
           timeManagementClockDataCount === 0
             ? "This deck does not have long-think clock data yet. Create or update it from online games with clock comments."
-            : `No mistake clocks reach ${timeManagementThresholdText} yet. Lower the long-think setting to include shorter thinks.`,
+            : `No due or new long-think mistakes at ${timeManagementThresholdText}+ are ready right now.`,
         color: "yellow",
       });
       return;
@@ -2375,7 +2431,7 @@ function OpeningReviewPanel({
     newPractice(nextStats);
     notifications.show({
       title: "Time management training started",
-      message: `Training ${timeManagementScopeIndices.length} long-think mistake${
+      message: `Training ${timeManagementScopeIndices.length} due or new long-think mistake${
         timeManagementScopeIndices.length === 1 ? "" : "s"
       }.`,
       color: "orange",
@@ -2986,9 +3042,9 @@ function OpeningReviewPanel({
                           timeManagementScopeIndices.length === 0
                             ? timeManagementClockDataCount === 0
                               ? "No long-think clock data in this deck yet"
-                              : `No mistakes at ${timeManagementThresholdText}+ yet`
-                            : `${timeManagementThresholdText}+ long-think mistakes`
-                          }
+                              : `No due or new long-think mistakes at ${timeManagementThresholdText}+ yet`
+                            : `${timeManagementScopeIndices.length} due or new ${timeManagementThresholdText}+ long-think mistakes`
+                        }
                       >
                         <Box style={{ flex: 1, minWidth: 0, display: "flex" }}>
                           <Button

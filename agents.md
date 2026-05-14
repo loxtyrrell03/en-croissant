@@ -234,6 +234,9 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
 - Time-management training has a per-deck long-think threshold setting on the
   trainer button; trainer counts, position filters, and future auto-updates use
   the current threshold while preserving clock-data safety.
+- Focused Mistake Review trainers now respect SRS readiness: long-think, phase,
+  and type batches include unseen or due cards by default and do not resurface
+  cards scheduled for a future day after they have just been reviewed.
 
 ### Practice Bot Trainer
 
