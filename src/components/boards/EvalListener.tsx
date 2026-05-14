@@ -24,6 +24,7 @@ import {
   type Engine,
   type LocalEngine,
   getBestMoves as localGetBestMoves,
+  killEngine,
   stopEngine,
   stopMatchingEngine,
 } from "@/utils/engines";
@@ -34,6 +35,7 @@ import { TreeStateContext } from "../common/TreeStateContext";
 
 const LOCAL_ENGINE_CLOUD_PRIORITY_MS = 300;
 const LOCAL_ENGINE_CLOUD_TIMEOUT_MS = 1500;
+const LOCAL_ENGINE_OUTPUT_TIMEOUT_MS = 12000;
 const MAX_ENGINE_RESULT_CACHE_ENTRIES = 80;
 
 function EvalListener({ active }: { active: boolean }) {
@@ -312,7 +314,7 @@ function EngineListener({
         }
       }
     },
-    50,
+    120,
     [
       settings.enabled,
       JSON.stringify(settings.settings),
@@ -409,7 +411,16 @@ function startLocalBestMoves(
           moves?.[1]?.length ? moves : eventPromise,
         ),
         eventPromise,
+        rejectAfter<[number, BestMoves[]] | null>(
+          LOCAL_ENGINE_OUTPUT_TIMEOUT_MS,
+          `Timed out waiting for ${engine.name} to return analysis`,
+        ),
       ]);
+    } catch (error) {
+      void killEngine(engine, tab).catch((killError) => {
+        console.error(`Failed to restart stalled analysis for ${engine.name}`, killError);
+      });
+      throw error;
     } finally {
       unlisten?.();
     }
@@ -433,10 +444,14 @@ function startLocalBestMoves(
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   return Promise.race([
     promise,
-    new Promise<T>((_, reject) => {
-      window.setTimeout(() => reject(new Error("Timed out waiting for Lichess Cloud")), timeoutMs);
-    }),
+    rejectAfter<T>(timeoutMs, "Timed out waiting for Lichess Cloud"),
   ]);
+}
+
+function rejectAfter<T>(timeoutMs: number, message: string): Promise<T> {
+  return new Promise<T>((_, reject) => {
+    window.setTimeout(() => reject(new Error(message)), timeoutMs);
+  });
 }
 
 export default EvalListener;

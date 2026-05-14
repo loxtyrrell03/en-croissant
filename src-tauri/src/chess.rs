@@ -46,7 +46,7 @@ use crate::{
 };
 
 const MISTAKE_REVIEW_EVAL_CACHE_BATCH_SIZE: usize = 200;
-const ENGINE_IDLE_SHUTDOWN_AFTER: Duration = Duration::from_secs(20);
+const ENGINE_IDLE_SHUTDOWN_AFTER: Duration = Duration::from_secs(180);
 
 pub struct EngineProcess {
     base: BaseEngine,

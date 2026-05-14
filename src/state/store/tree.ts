@@ -24,6 +24,8 @@ import {
 } from "@/utils/treeReducer";
 
 export interface TreeStoreState extends TreeState {
+    structureVersion: number;
+    commentVersion: number;
     currentNode: () => TreeNode;
     getNode: (path: number[]) => TreeNode | null;
 
@@ -101,6 +103,8 @@ export type TreeStore = ReturnType<typeof createTreeStore>;
 export const createTreeStore = (id?: string, initialTree?: TreeState) => {
     const stateCreator: StateCreator<TreeStoreState> = (set, get) => ({
         ...(initialTree ?? defaultTree()),
+        structureVersion: 0,
+        commentVersion: 0,
 
         currentNode: () => getNodeAtPath(get().root, get().position),
         getNode: (path: number[]) => getNodeAtPath(get().root, path),
@@ -109,13 +113,19 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
         setPracticePath: (path) => set({ practicePath: path }),
 
         setState: (state) => {
-            set(() => state);
+            set((current) => ({
+                ...state,
+                structureVersion: current.structureVersion + 1,
+                commentVersion: current.commentVersion + 1,
+            }));
         },
 
         reset: () =>
-            set(() => {
-                return defaultTree();
-            }),
+            set((current) => ({
+                ...defaultTree(),
+                structureVersion: current.structureVersion + 1,
+                commentVersion: current.commentVersion + 1,
+            })),
 
         save: () => {
             set((state) => ({
@@ -130,6 +140,8 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
                     state.dirty = true;
                     state.root = defaultTree(fen).root;
                     state.position = [];
+                    state.structureVersion += 1;
+                    state.commentVersion += 1;
                 }),
             ),
 
@@ -201,7 +213,7 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
                         if (!move) return;
                         payload = move;
                     }
-                    makeMove({
+                    if (makeMove({
                         state,
                         move: payload,
                         last: false,
@@ -209,7 +221,9 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
                         changeHeaders,
                         mainline,
                         clock,
-                    });
+                    })) {
+                        state.structureVersion += 1;
+                    }
                 }),
             );
         },
@@ -217,7 +231,9 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
         appendMove: ({ payload, clock }) =>
             set(
                 produce((state) => {
-                    makeMove({ state, move: payload, last: true, clock });
+                    if (makeMove({ state, move: payload, last: true, clock })) {
+                        state.structureVersion += 1;
+                    }
                 }),
             ),
 
@@ -228,18 +244,23 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
                     const node = getNodeAtPath(state.root, state.position);
                     const [pos] = positionFromFen(node.fen);
                     if (!pos) return;
+                    let changedStructure = false;
                     for (const [i, move] of payload.entries()) {
                         const m = parseSanOrUci(pos, move);
                         if (!m) return;
                         pos.play(m);
-                        makeMove({
-                            state,
-                            move: m,
-                            last: false,
-                            mainline,
-                            sound: i === payload.length - 1,
-                            changeHeaders,
-                        });
+                        changedStructure =
+                            makeMove({
+                                state,
+                                move: m,
+                                last: false,
+                                mainline,
+                                sound: i === payload.length - 1,
+                                changeHeaders,
+                            }) || changedStructure;
+                    }
+                    if (changedStructure) {
+                        state.structureVersion += 1;
                     }
                 }),
             ),
@@ -375,6 +396,8 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
                 produce((state) => {
                     state.dirty = true;
                     deleteMove(state, path ?? state.position);
+                    state.structureVersion += 1;
+                    state.commentVersion += 1;
                 }),
             ),
         promoteVariation: (path) =>
@@ -382,6 +405,7 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
                 produce((state) => {
                     state.dirty = true;
                     promoteVariation(state, path);
+                    state.structureVersion += 1;
                 }),
             ),
         promoteToMainline: (path) =>
@@ -389,9 +413,14 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
                 produce((state) => {
                     state.dirty = true;
                     let p = path;
+                    let changedStructure = false;
                     while (p.some((v) => v !== 0)) {
                         promoteVariation(state, p);
+                        changedStructure = true;
                         p = state.position;
+                    }
+                    if (changedStructure) {
+                        state.structureVersion += 1;
                     }
                 }),
             ),
@@ -438,6 +467,7 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
                     if (node && node.comment !== payload) {
                         state.dirty = true;
                         node.comment = payload;
+                        state.commentVersion += 1;
                     }
                 }),
             ),
@@ -448,6 +478,7 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
                     if (node && node.comment !== payload) {
                         state.dirty = true;
                         node.comment = payload;
+                        state.commentVersion += 1;
                     }
                 }),
             ),
@@ -456,8 +487,12 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
                 produce((state) => {
                     const node = getNodeAtPath(state.root, state.position);
                     if (node) {
+                        const nextComment = payload.comment ?? "";
+                        if (node.comment !== nextComment) {
+                            state.commentVersion += 1;
+                        }
                         node.annotations = payload.annotations ?? [];
-                        node.comment = payload.comment ?? "";
+                        node.comment = nextComment;
                         node.shapes = payload.shapes ?? [];
                     }
                 }),
@@ -470,6 +505,8 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
                     if (headers.fen && headers.fen !== state.root.fen) {
                         state.root = defaultTree(headers.fen).root;
                         state.position = [];
+                        state.structureVersion += 1;
+                        state.commentVersion += 1;
                     }
                 }),
             ),
@@ -502,6 +539,8 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
                 produce((state) => {
                     state.dirty = true;
                     addAnalysis(state, analysis, options);
+                    state.structureVersion += 1;
+                    state.commentVersion += 1;
                 }),
             ),
 
@@ -555,15 +594,15 @@ function makeMove({
     mainline?: boolean;
     clock?: number;
     sound?: boolean;
-}) {
+}): boolean {
     const mainLine = Array.from(treeIteratorMainLine(state.root));
     const position = last ? mainLine[mainLine.length - 1].position : state.position;
     const moveNode = getNodeAtPath(state.root, position);
-    if (!moveNode) return;
+    if (!moveNode) return false;
     const [pos] = positionFromFen(moveNode.fen);
-    if (!pos) return;
+    if (!pos) return false;
     const san = makeSan(pos, move);
-    if (san === "--") return; // invalid move
+    if (san === "--") return false; // invalid move
     pos.play(move);
     if (sound) {
         playSound(san.includes("x"), san.includes("+"));
@@ -592,6 +631,7 @@ function makeMove({
                 state.position = [...position, i];
             }
         }
+        return false;
     } else {
         state.dirty = true;
         const newMoveNode = createNode({
@@ -617,6 +657,7 @@ function makeMove({
                 state.position = [...position, moveNode.children.length - 1];
             }
         }
+        return true;
     }
 }
 

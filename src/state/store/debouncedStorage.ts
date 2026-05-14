@@ -1,10 +1,28 @@
 import { type PersistStorage, type StorageValue } from "zustand/middleware";
 
-const DEBOUNCE_MS = 300;
+const DEBOUNCE_MS = 1200;
 const pendingWrites = new Map<string, StorageValue<unknown>>();
 
 let flushTimeout: ReturnType<typeof setTimeout> | null = null;
+let idleFlushId: number | null = null;
 let flushHandlersBound = false;
+
+function requestIdleFlush(callback: () => void) {
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+        return window.requestIdleCallback(callback, { timeout: 3000 });
+    }
+
+    return globalThis.setTimeout(callback, 0) as unknown as number;
+}
+
+function cancelIdleFlush(id: number) {
+    if (typeof window !== "undefined" && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(id);
+        return;
+    }
+
+    globalThis.clearTimeout(id);
+}
 
 function flush() {
     if (pendingWrites.size === 0) {
@@ -22,10 +40,17 @@ function scheduleFlush(delay: number) {
     if (flushTimeout) {
         clearTimeout(flushTimeout);
     }
+    if (idleFlushId !== null) {
+        cancelIdleFlush(idleFlushId);
+        idleFlushId = null;
+    }
 
     flushTimeout = setTimeout(() => {
         flushTimeout = null;
-        flush();
+        idleFlushId = requestIdleFlush(() => {
+            idleFlushId = null;
+            flush();
+        });
     }, delay);
 }
 
@@ -38,6 +63,10 @@ function bindFlushHandlers() {
         if (flushTimeout) {
             clearTimeout(flushTimeout);
             flushTimeout = null;
+        }
+        if (idleFlushId !== null) {
+            cancelIdleFlush(idleFlushId);
+            idleFlushId = null;
         }
 
         flush();

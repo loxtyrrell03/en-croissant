@@ -2,6 +2,7 @@ import { basename, resolve } from "@tauri-apps/api/path";
 import { exists, readDir, readTextFile, remove, writeTextFile } from "@tauri-apps/plugin-fs";
 import type { ReviewLog } from "ts-fsrs";
 import { z } from "zod";
+import { commands } from "@/bindings";
 import { getStats, type Position } from "@/components/files/opening";
 
 const openingHealthDateRangeSchema = z.enum([
@@ -141,6 +142,79 @@ export type OpeningReviewDeckSummary = {
     autoUpdate?: OpeningReviewAutoUpdateConfig;
 };
 
+type CachedOpeningReviewDeckSummary = OpeningReviewDeckSummary & {
+    cacheVersion: 1;
+    lastModified: number | null;
+};
+
+const OPENING_REVIEW_SUMMARY_CACHE_PREFIX = "opening-review-summary-v1:";
+const LARGE_REVIEW_DECK_COMPACT_THRESHOLD = 500;
+
+async function getReviewDeckLastModified(path: string) {
+    try {
+        const result = await commands.getFileMetadata(path);
+        return result.status === "ok" ? result.data.last_modified : null;
+    } catch {
+        return null;
+    }
+}
+
+function getOpeningReviewSummaryCacheKey(path: string) {
+    return `${OPENING_REVIEW_SUMMARY_CACHE_PREFIX}${path}`;
+}
+
+function readCachedOpeningReviewSummary(path: string, lastModified: number | null) {
+    if (typeof localStorage === "undefined") return null;
+
+    try {
+        const raw = localStorage.getItem(getOpeningReviewSummaryCacheKey(path));
+        if (!raw) return null;
+        const cached = JSON.parse(raw) as CachedOpeningReviewDeckSummary;
+        if (cached.cacheVersion !== 1 || cached.lastModified !== lastModified) return null;
+        const { cacheVersion: _cacheVersion, lastModified: _lastModified, ...summary } = cached;
+        return summary;
+    } catch {
+        return null;
+    }
+}
+
+async function writeCachedOpeningReviewSummary(path: string, summary: OpeningReviewDeckSummary) {
+    if (typeof localStorage === "undefined") return;
+
+    const cached: CachedOpeningReviewDeckSummary = {
+        ...summary,
+        cacheVersion: 1,
+        lastModified: await getReviewDeckLastModified(path),
+    };
+
+    try {
+        localStorage.setItem(getOpeningReviewSummaryCacheKey(path), JSON.stringify(cached));
+    } catch {
+        // Summary caching is an optimization only.
+    }
+}
+
+function getOpeningReviewDeckSummary(path: string, deck: OpeningReviewDeck): OpeningReviewDeckSummary {
+    const stats = getStats(deck.positions);
+    return {
+        path,
+        name: deck.name,
+        updatedAt: deck.updatedAt,
+        total: stats.total,
+        due: stats.due,
+        unseen: stats.unseen,
+        mode: deck.mode,
+        source: deck.source,
+        autoUpdate: deck.autoUpdate,
+    };
+}
+
+function stringifyReviewDeck(deck: { positions: unknown[] }) {
+    return deck.positions.length >= LARGE_REVIEW_DECK_COMPACT_THRESHOLD
+        ? `${JSON.stringify(deck)}\n`
+        : `${JSON.stringify(deck, null, 2)}\n`;
+}
+
 export async function readOpeningReviewDeck(path: string): Promise<OpeningReviewDeck> {
     const raw = await readTextFile(path);
     const parsed = openingReviewDeckSchema.parse(JSON.parse(raw));
@@ -158,7 +232,8 @@ export async function writeOpeningReviewDeck(path: string, deck: OpeningReviewDe
         version: OPENING_REVIEW_VERSION,
         updatedAt: Date.now(),
     };
-    await writeTextFile(path, `${JSON.stringify(updatedDeck, null, 2)}\n`);
+    await writeTextFile(path, stringifyReviewDeck(updatedDeck));
+    await writeCachedOpeningReviewSummary(path, getOpeningReviewDeckSummary(path, updatedDeck));
     return updatedDeck;
 }
 
@@ -172,27 +247,29 @@ export async function listOpeningReviewDecks(
     const entries = await readDir(directory).catch(() => []);
     const decks: OpeningReviewDeckSummary[] = [];
 
-    for (const entry of entries) {
-        if (!entry.isFile || !entry.name.endsWith(OPENING_REVIEW_EXTENSION)) continue;
+    const summaries = await Promise.all(entries.map(async (entry) => {
+        if (!entry.isFile || !entry.name.endsWith(OPENING_REVIEW_EXTENSION)) return null;
 
         const path = await resolve(directory, entry.name);
         try {
+            const lastModified = await getReviewDeckLastModified(path);
+            const cached = readCachedOpeningReviewSummary(path, lastModified);
+            if (cached) {
+                return cached;
+            }
+
             const deck = await readOpeningReviewDeck(path);
-            const stats = getStats(deck.positions);
-            decks.push({
-                path,
-                name: deck.name,
-                updatedAt: deck.updatedAt,
-                total: stats.total,
-                due: stats.due,
-                unseen: stats.unseen,
-                mode: deck.mode,
-                source: deck.source,
-                autoUpdate: deck.autoUpdate,
-            });
+            const summary = getOpeningReviewDeckSummary(path, deck);
+            await writeCachedOpeningReviewSummary(path, summary);
+            return summary;
         } catch {
             // Ignore malformed review files so one broken deck does not hide the rest.
+            return null;
         }
+    }));
+
+    for (const summary of summaries) {
+        if (summary) decks.push(summary);
     }
 
     return decks.sort((a, b) => b.updatedAt - a.updatedAt);

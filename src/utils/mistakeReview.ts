@@ -29,6 +29,7 @@ import type {
     MistakeReviewSeverityFilter,
     MistakeReviewThresholds,
 } from "@/bindings";
+import { commands } from "@/bindings";
 import { getStats, type Position } from "@/components/files/opening";
 import { positionFromFen } from "@/utils/chessops";
 
@@ -314,6 +315,82 @@ export type MistakeReviewDeckSummary = {
     autoUpdate?: MistakeReviewAutoUpdateConfig;
 };
 
+type CachedMistakeReviewDeckSummary = MistakeReviewDeckSummary & {
+    cacheVersion: 1;
+    lastModified: number | null;
+};
+
+const MISTAKE_REVIEW_SUMMARY_CACHE_PREFIX = "mistake-review-summary-v1:";
+const LARGE_REVIEW_DECK_COMPACT_THRESHOLD = 500;
+
+async function getReviewDeckLastModified(path: string) {
+    try {
+        const result = await commands.getFileMetadata(path);
+        return result.status === "ok" ? result.data.last_modified : null;
+    } catch {
+        return null;
+    }
+}
+
+function getMistakeReviewSummaryCacheKey(path: string) {
+    return `${MISTAKE_REVIEW_SUMMARY_CACHE_PREFIX}${path}`;
+}
+
+function readCachedMistakeReviewSummary(path: string, lastModified: number | null) {
+    if (typeof localStorage === "undefined") return null;
+
+    try {
+        const raw = localStorage.getItem(getMistakeReviewSummaryCacheKey(path));
+        if (!raw) return null;
+        const cached = JSON.parse(raw) as CachedMistakeReviewDeckSummary;
+        if (cached.cacheVersion !== 1 || cached.lastModified !== lastModified) return null;
+        const { cacheVersion: _cacheVersion, lastModified: _lastModified, ...summary } = cached;
+        return summary;
+    } catch {
+        return null;
+    }
+}
+
+async function writeCachedMistakeReviewSummary(path: string, summary: MistakeReviewDeckSummary) {
+    if (typeof localStorage === "undefined") return;
+
+    const cached: CachedMistakeReviewDeckSummary = {
+        ...summary,
+        cacheVersion: 1,
+        lastModified: await getReviewDeckLastModified(path),
+    };
+
+    try {
+        localStorage.setItem(getMistakeReviewSummaryCacheKey(path), JSON.stringify(cached));
+    } catch {
+        // Summary caching is an optimization only.
+    }
+}
+
+function getMistakeReviewDeckSummary(path: string, deck: MistakeReviewDeck): MistakeReviewDeckSummary {
+    const stats = getStats(deck.positions);
+    const lastAdded = getMistakeReviewLastAdded(deck);
+    return {
+        path,
+        name: deck.name,
+        updatedAt: deck.updatedAt,
+        lastAddedAt: lastAdded?.at ?? null,
+        lastAddedCount: lastAdded?.count ?? null,
+        total: stats.total,
+        due: stats.due,
+        unseen: stats.unseen,
+        playerName: deck.settings.playerName,
+        engineName: deck.settings.engineName,
+        autoUpdate: deck.autoUpdate,
+    };
+}
+
+function stringifyReviewDeck(deck: { positions: unknown[] }) {
+    return deck.positions.length >= LARGE_REVIEW_DECK_COMPACT_THRESHOLD
+        ? `${JSON.stringify(deck)}\n`
+        : `${JSON.stringify(deck, null, 2)}\n`;
+}
+
 export type MistakeReviewDailyProgress = {
     dateKey: string;
     target: number;
@@ -356,7 +433,8 @@ export async function writeMistakeReviewDeck(path: string, deck: MistakeReviewDe
         version: MISTAKE_REVIEW_VERSION,
         updatedAt: Date.now(),
     };
-    await writeTextFile(path, `${JSON.stringify(updatedDeck, null, 2)}\n`);
+    await writeTextFile(path, stringifyReviewDeck(updatedDeck));
+    await writeCachedMistakeReviewSummary(path, getMistakeReviewDeckSummary(path, updatedDeck));
     return updatedDeck;
 }
 
@@ -402,30 +480,29 @@ export async function listMistakeReviewDecks(
     const entries = await readDir(directory).catch(() => []);
     const decks: MistakeReviewDeckSummary[] = [];
 
-    for (const entry of entries) {
-        if (!entry.isFile || !entry.name.endsWith(MISTAKE_REVIEW_EXTENSION)) continue;
+    const summaries = await Promise.all(entries.map(async (entry) => {
+        if (!entry.isFile || !entry.name.endsWith(MISTAKE_REVIEW_EXTENSION)) return null;
 
         const path = await resolve(directory, entry.name);
         try {
+            const lastModified = await getReviewDeckLastModified(path);
+            const cached = readCachedMistakeReviewSummary(path, lastModified);
+            if (cached) {
+                return cached;
+            }
+
             const deck = await readMistakeReviewDeck(path);
-            const stats = getStats(deck.positions);
-            const lastAdded = getMistakeReviewLastAdded(deck);
-            decks.push({
-                path,
-                name: deck.name,
-                updatedAt: deck.updatedAt,
-                lastAddedAt: lastAdded?.at ?? null,
-                lastAddedCount: lastAdded?.count ?? null,
-                total: stats.total,
-                due: stats.due,
-                unseen: stats.unseen,
-                playerName: deck.settings.playerName,
-                engineName: deck.settings.engineName,
-                autoUpdate: deck.autoUpdate,
-            });
+            const summary = getMistakeReviewDeckSummary(path, deck);
+            await writeCachedMistakeReviewSummary(path, summary);
+            return summary;
         } catch {
             // Ignore malformed mistake decks so one broken file does not hide the rest.
+            return null;
         }
+    }));
+
+    for (const summary of summaries) {
+        if (summary) decks.push(summary);
     }
 
     return decks.sort((a, b) => b.updatedAt - a.updatedAt);

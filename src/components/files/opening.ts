@@ -497,11 +497,14 @@ export function updateCardPerformance(
     const { card: newCard, log } = scheduleSm2Card(card, grade, new Date(), options);
 
     setPositions((data) => {
-        data.positions[i].card = newCard;
-        data.logs.push({ ...log, fen: data.positions[i].fen });
+        const position = data.positions[i];
+        if (!position) return data;
+
+        const positions = [...data.positions];
+        positions[i] = { ...position, card: newCard };
         return {
-            positions: data.positions,
-            logs: data.logs,
+            positions,
+            logs: [...data.logs, { ...log, fen: position.fen }],
         };
     });
 }

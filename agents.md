@@ -220,6 +220,8 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
 - Phase training supports focused mistake categories and session progress.
 - Reveal controls, auto-reveal arrows, post-attempt summaries, and game context
   were added to make training less opaque.
+- Post-attempt board play stays enabled in the Review tab, so users can explore
+  continuations while keeping the mistake feedback visible.
 - Mistake Review game info is anchored below the main action area so the board
   and action controls stay primary.
 
@@ -402,6 +404,11 @@ from 2026-04-24 through 2026-05-03.
   normalization were added.
 - Local process guidance: Playwright/Tauri browser verification notes were
   documented.
+- Performance pass: annotation changes now reuse notation/transposition derived
+  data unless the move tree structure changes, review deck saves are delayed to
+  idle time, large review files save more compactly, review deck summaries are
+  cached by file mtime, and local engines stay warm longer with a startup
+  watchdog.
 - Launch reliability: the Windows fork launcher and `pnpm dev` fallback now
   serialize dev-session startup so repeated launches do not stop the Vite dev
   server while the Tauri WebView is still loading `localhost:1420`; clean

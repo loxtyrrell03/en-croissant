@@ -670,10 +670,11 @@ function Board({
   const currentPracticeCard = currentPracticeEntry?.position ?? null;
   const mistakeReviewFreePlayActive =
     isMistakeReviewTab && mistakeReviewFreePlay && !!trainerMistakeReviewPosition;
+  const reviewPostAttemptActive =
+    !!practicing && (practiceState.phase === "correct" || practiceState.phase === "incorrect");
+  const mistakeReviewPostAttemptFreePlayActive = isMistakeReviewTab && reviewPostAttemptActive;
   const openingReviewPostAttemptFreePlayActive =
-    isOpeningReviewTab &&
-    !!practicing &&
-    (practiceState.phase === "correct" || practiceState.phase === "incorrect");
+    isOpeningReviewTab && reviewPostAttemptActive;
 
   const returnToMistakeReviewPosition = useCallback(
     (options: { clearReveal?: boolean; resetPractice?: boolean } = {}) => {
@@ -816,12 +817,16 @@ function Board({
         const position = current.positions[positionIndex];
         if (!position?.mistakeReview) return current;
 
-        position.mistakeReview = {
-          ...position.mistakeReview,
-          lastAttemptedAt: attemptedAt,
-          lastAttemptedCardReps: position.card.reps ?? 0,
+        const positions = [...current.positions];
+        positions[positionIndex] = {
+          ...position,
+          mistakeReview: {
+            ...position.mistakeReview,
+            lastAttemptedAt: attemptedAt,
+            lastAttemptedCardReps: position.card.reps ?? 0,
+          },
         };
-        return { positions: current.positions, logs: current.logs };
+        return { positions, logs: current.logs };
       });
     },
     [setDeck],
@@ -834,12 +839,16 @@ function Board({
         const position = current.positions[positionIndex];
         if (!position) return current;
 
-        position.openingReview = {
-          ...position.openingReview,
-          lastAttemptedAt: attemptedAt,
-          lastAttemptedCardReps: position.card.reps ?? 0,
+        const positions = [...current.positions];
+        positions[positionIndex] = {
+          ...position,
+          openingReview: {
+            ...position.openingReview,
+            lastAttemptedAt: attemptedAt,
+            lastAttemptedCardReps: position.card.reps ?? 0,
+          },
         };
-        return { positions: current.positions, logs: current.logs };
+        return { positions, logs: current.logs };
       });
     },
     [setDeck],
@@ -970,6 +979,16 @@ function Board({
     clearMistakeReviewLine();
     setMistakeReviewLineBusy(false);
     setMistakeReviewRevealState(null);
+    if (mistakeReviewPostAttemptFreePlayActive) {
+      storeMakeMove({
+        payload: move,
+        clock: pos.turn === "white" ? whiteTime : blackTime,
+      });
+      setPendingMove(null);
+      onMove?.(uci, currentNode.fen, san);
+      return;
+    }
+
     if (mistakeReviewFreePlayActive) {
       storeMakeMove({
         payload: move,
@@ -1368,6 +1387,7 @@ function Board({
     !!practicing &&
     !currentPracticeCard &&
     !mistakeReviewFreePlayActive &&
+    !mistakeReviewPostAttemptFreePlayActive &&
     !openingReviewPostAttemptFreePlayActive;
 
   const movableColor: "white" | "black" | "both" | undefined = useMemo(() => {

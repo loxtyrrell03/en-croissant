@@ -200,6 +200,7 @@ import {
 } from "@/utils/openingReviewPractice";
 import { BoundedMap } from "@/utils/boundedCache";
 import resultClasses from "@/components/panels/database/OpeningsTable.module.css";
+import classes from "./OpeningReviewWorkspace.module.css";
 
 const AnalysisPanel = lazy(() => import("@/components/panels/analysis/AnalysisPanel"));
 const ComparePanel = lazy(() => import("@/components/panels/compare/ComparePanel"));
@@ -325,6 +326,29 @@ const MISTAKE_REVIEW_POSITION_SEVERITIES: MistakeReviewAttemptLabel[] = [
 ];
 
 const openingReviewOpeningNameCache = new BoundedMap<string, string>(2000);
+const REVIEW_DECK_SAVE_DEBOUNCE_MS = 1200;
+
+function scheduleReviewDeckSave(callback: () => void) {
+  let idleId: number | null = null;
+  const timeoutId = window.setTimeout(() => {
+    if ("requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(callback, { timeout: 3000 });
+    } else {
+      idleId = globalThis.setTimeout(callback, 0) as unknown as number;
+    }
+  }, REVIEW_DECK_SAVE_DEBOUNCE_MS);
+
+  return () => {
+    window.clearTimeout(timeoutId);
+    if (idleId === null) return;
+
+    if ("cancelIdleCallback" in window) {
+      window.cancelIdleCallback(idleId);
+    } else {
+      globalThis.clearTimeout(idleId);
+    }
+  };
+}
 
 export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const boardRef = useRef(null);
@@ -653,7 +677,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
       return undefined;
     }
 
-    const timeout = window.setTimeout(() => {
+    return scheduleReviewDeckSave(() => {
       const nextDeck = {
         ...deckInfo,
         positions: deck.positions,
@@ -673,9 +697,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
             color: "red",
           });
         });
-    }, 400);
-
-    return () => window.clearTimeout(timeout);
+    });
   }, [deck, deckInfo, deckPath, isMistakeReview, loadError, loaded, setDailyGoalDeckRevision]);
 
   useEffect(
@@ -892,25 +914,49 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
               }}
             >
               <Tabs.List grow>
-                <Tabs.Tab value="review" leftSection={<IconTargetArrow size="1rem" />}>
+                <Tabs.Tab
+                  value="review"
+                  leftSection={<IconTargetArrow size="1rem" />}
+                  title="Review"
+                >
                   Review
                 </Tabs.Tab>
-                <Tabs.Tab value="analysis" leftSection={<IconZoomCheck size="1rem" />}>
+                <Tabs.Tab
+                  value="analysis"
+                  leftSection={<IconZoomCheck size="1rem" />}
+                  title="Analysis"
+                >
                   Analysis
                 </Tabs.Tab>
-                <Tabs.Tab value="database" leftSection={<IconDatabase size="1rem" />}>
-                  Database
+                <Tabs.Tab
+                  value="database"
+                  leftSection={<IconDatabase size="1rem" />}
+                  title="Database"
+                >
+                  DB
                 </Tabs.Tab>
-                <Tabs.Tab value="plan-explorer" leftSection={<IconRoute size="1rem" />}>
-                  Plan Explorer
+                <Tabs.Tab
+                  value="plan-explorer"
+                  leftSection={<IconRoute size="1rem" />}
+                  title="Plan Explorer"
+                >
+                  Plans
                 </Tabs.Tab>
-                <Tabs.Tab value="engine-plans" leftSection={<IconBulb size="1rem" />}>
-                  Engine Plans
+                <Tabs.Tab
+                  value="engine-plans"
+                  leftSection={<IconBulb size="1rem" />}
+                  title="Engine Plans"
+                >
+                  Engine
                 </Tabs.Tab>
-                <Tabs.Tab value="compare" leftSection={<IconGitCompare size="1rem" />}>
+                <Tabs.Tab
+                  value="compare"
+                  leftSection={<IconGitCompare size="1rem" />}
+                  title="Compare"
+                >
                   Compare
                 </Tabs.Tab>
-                <Tabs.Tab value="info" leftSection={<IconInfoCircle size="1rem" />}>
+                <Tabs.Tab value="info" leftSection={<IconInfoCircle size="1rem" />} title="Info">
                   Info
                 </Tabs.Tab>
               </Tabs.List>
@@ -1021,8 +1067,8 @@ function ReviewMovesBox({ rightPanel = false }: { rightPanel?: boolean }) {
       h={rightPanel ? undefined : "100%"}
       gap="xs"
       style={{
-        minHeight: rightPanel ? "17rem" : 0,
-        height: rightPanel ? "clamp(17rem, 36vh, 24rem)" : undefined,
+        minHeight: rightPanel ? "10rem" : 0,
+        height: rightPanel ? "clamp(10rem, 22vh, 14rem)" : undefined,
         flexShrink: 0,
       }}
     >
@@ -2554,10 +2600,10 @@ function OpeningReviewPanel({
 
   return (
     <>
-      <Stack h="100%" gap={8}>
+      <Stack h="100%" gap="sm" className={classes.reviewPanelRoot}>
         {panelModeControl}
         {!isMistakeReview && <OpeningReviewAutoUpdateBanner deckPath={deckPath} />}
-        <Group justify="space-between" align="center" gap="xs" wrap="nowrap">
+        <Group justify="space-between" align="flex-start" gap="xs" wrap="nowrap">
           <Stack gap={0} miw={0}>
             <Text size="sm" fw={700} truncate>
               {deckName}
@@ -2589,7 +2635,7 @@ function OpeningReviewPanel({
         )}
 
         {isTraining ? (
-          <Paper px="xs" py={6} withBorder>
+          <Paper px="sm" py="xs" withBorder className={classes.reviewSection}>
             <Stack gap={4}>
               <Group justify="space-between" gap="xs" wrap="nowrap">
                 <Text size="xs" fw={700}>
@@ -2658,14 +2704,15 @@ function OpeningReviewPanel({
           <Stack gap="xs">
             {(isMistakeReview ? mistakeDailySettings : openingDailySettings) && (
               <Stack gap={4}>
-                <Group gap={6} align="stretch">
+                <Box className={classes.reviewActionGrid}>
                   <Group
                     gap={0}
                     wrap="nowrap"
                     align="stretch"
-                    style={{ flex: "1 1 190px", minWidth: 0 }}
+                    className={classes.reviewSplitButton}
                   >
                     <Button
+                      className={classes.reviewActionButton}
                       variant="light"
                       leftSection={<IconTarget size={18} />}
                       onClick={() => startDuePractice(dailyScopeIndices, dailyReviewScopeLabel)}
@@ -2706,8 +2753,9 @@ function OpeningReviewPanel({
                           : "Train lines where your usual move is playable but results trail the reference"
                       }
                     >
-                      <Box style={{ flex: "1 1 170px", minWidth: 0 }}>
+                      <Box style={{ minWidth: 0 }}>
                         <Button
+                          className={classes.reviewActionButton}
                           fullWidth
                           variant="light"
                           color="blue"
@@ -2732,8 +2780,9 @@ function OpeningReviewPanel({
                           : `${timeManagementThresholdText}+ long-think mistakes`
                       }
                     >
-                      <Box style={{ flex: "1 1 180px", minWidth: 0 }}>
+                      <Box style={{ minWidth: 0 }}>
                         <Button
+                          className={classes.reviewActionButton}
                           fullWidth
                           variant="light"
                           color="orange"
@@ -2754,6 +2803,8 @@ function OpeningReviewPanel({
                     <Menu width={280} position="bottom-end" withinPortal>
                       <Menu.Target>
                         <Button
+                          className={classes.reviewActionButton}
+                          fullWidth
                           variant="light"
                           color="red"
                           leftSection={<IconTargetArrow size={18} />}
@@ -2761,7 +2812,6 @@ function OpeningReviewPanel({
                           disabled={MISTAKE_REVIEW_NATURES.every(
                             (nature) => mistakeNatureCounts[nature.id].total === 0,
                           )}
-                          style={{ flex: "1 1 150px" }}
                         >
                           Train by type
                         </Button>
@@ -2801,6 +2851,8 @@ function OpeningReviewPanel({
                     <Menu width={260} position="bottom-end" withinPortal>
                       <Menu.Target>
                         <Button
+                          className={classes.reviewActionButton}
+                          fullWidth
                           variant="light"
                           color="teal"
                           leftSection={<IconTargetArrow size={18} />}
@@ -2808,7 +2860,6 @@ function OpeningReviewPanel({
                           disabled={MISTAKE_REVIEW_PHASES.every(
                             (phase) => mistakePhaseCounts[phase.id].total === 0,
                           )}
-                          style={{ flex: "1 1 150px" }}
                         >
                           Train by phase
                         </Button>
@@ -2839,7 +2890,7 @@ function OpeningReviewPanel({
                       </Menu.Dropdown>
                     </Menu>
                   )}
-                </Group>
+                </Box>
                 {dailyProgress && (
                   <Text size="xs" c="dimmed">
                     {Math.min(dailyProgress.completed, dailyProgress.target)} /{" "}
@@ -2866,6 +2917,7 @@ function OpeningReviewPanel({
               </Paper>
             ) : (
               <Button
+                className={classes.reviewActionButton}
                 fullWidth
                 variant="light"
                 leftSection={<IconTarget size={18} />}
@@ -2877,6 +2929,7 @@ function OpeningReviewPanel({
               </Button>
             )}
             <Button
+              className={classes.reviewActionButton}
               fullWidth
               variant="light"
               color="gray"
@@ -3177,7 +3230,7 @@ function OpeningReviewPanel({
 
 function ReviewStat({ label, value, color }: { label: string; value: number; color: string }) {
   return (
-    <Paper px="xs" py={6} withBorder radius="sm">
+    <Paper px="sm" py="xs" withBorder radius="sm" className={classes.reviewSection}>
       <Text size="xs" c="dimmed" fw={600}>
         {label}
       </Text>
@@ -3202,7 +3255,7 @@ function OpeningReviewGapTypeCallout({
   const Icon = gapType === "planGap" ? IconRoute : IconTargetArrow;
 
   return (
-    <Paper px="xs" py={6} withBorder radius="sm">
+    <Paper px="sm" py="xs" withBorder radius="sm" className={classes.reviewSection}>
       <Group gap="xs" align="flex-start" wrap="nowrap">
         <ThemeIcon size="md" radius="xl" color={color} variant="light">
           <Icon size={16} />
@@ -4733,7 +4786,7 @@ function MistakeReviewGameInfoPanel({ position }: { position: Position | null })
   const mistake = position?.mistakeReview;
   if (!mistake) {
     return (
-      <Paper px="xs" py={6} withBorder radius="sm">
+      <Paper px="sm" py="xs" withBorder radius="sm" className={classes.reviewSection}>
         <Stack gap={1}>
           <Text size="xs" fw={700}>
             Game information
@@ -4765,18 +4818,18 @@ function MistakeReviewGameInfoPanel({ position }: { position: Position | null })
   const natureConfidence = getMistakeReviewNatureConfidence(position);
 
   return (
-    <Paper px="xs" py={6} withBorder radius="sm">
-      <Stack gap={expanded ? "xs" : 0}>
-        <Group justify="space-between" align="center" gap="xs" wrap="nowrap">
+    <Paper px="sm" py="xs" withBorder radius="sm" className={classes.reviewSection}>
+      <Stack gap={expanded ? "xs" : 6}>
+        <Group justify="space-between" align="flex-start" gap="xs" wrap="nowrap">
           <Stack gap={2} miw={0}>
             <Text size="xs" fw={700}>
               Game information
             </Text>
-            <Text size="xs" c="dimmed" truncate>
+            <Text size="sm" c="dimmed" lineClamp={2} className={classes.reviewDetailValue}>
               {playerName} vs {opponentName}
             </Text>
           </Stack>
-          <Group gap={4} wrap="nowrap">
+          <Group gap={4} wrap="wrap" justify="flex-end" className={classes.reviewBadgeGroup}>
             <Tooltip label={`${natureLabel}, ${natureConfidence} confidence`}>
               <Badge size="xs" color={mistakeReviewNatureColor(nature)} variant="light">
                 {natureLabel}
@@ -4785,19 +4838,26 @@ function MistakeReviewGameInfoPanel({ position }: { position: Position | null })
             <Badge size="xs" variant="light">
               {mistakeReviewSeverityLabel(mistake.severity ?? "mistake")}
             </Badge>
-            <Button
-              size="compact-xs"
-              variant="subtle"
-              leftSection={
-                expanded ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />
-              }
-              onClick={() => setExpanded((current) => !current)}
-              aria-expanded={expanded}
-            >
-              {expanded ? "Hide" : "Show"}
-            </Button>
+            <Tooltip label={expanded ? "Hide game details" : "Show game details"}>
+              <ActionIcon
+                size="sm"
+                variant="subtle"
+                onClick={() => setExpanded((current) => !current)}
+                aria-label={expanded ? "Hide game details" : "Show game details"}
+                aria-expanded={expanded}
+              >
+                {expanded ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}
+              </ActionIcon>
+            </Tooltip>
           </Group>
         </Group>
+        {!expanded && (
+          <SimpleGrid cols={3} spacing={6}>
+            <ReviewDetail label="Played" value={formatMistakeReviewGameDate(mistake.date)} />
+            <ReviewDetail label="Time control" value={formatMistakeReviewTimeControl(mistake)} />
+            <ReviewDetail label="Best move" value={mistake.bestMoveSan || position.answer} />
+          </SimpleGrid>
+        )}
         {expanded && (
           <SimpleGrid cols={2} spacing="xs">
             <ReviewDetail label="Played" value={formatMistakeReviewGameDate(mistake.date)} />
@@ -4835,7 +4895,7 @@ function CurrentReviewPositionActions({
   onDelete: () => void;
 }) {
   return (
-    <Paper p="xs" withBorder>
+    <Paper p="xs" withBorder className={classes.reviewSection}>
       <Group justify="space-between" gap="sm" wrap="nowrap" align="center">
         <Stack gap={0} miw={0}>
           <Text size="xs" c="dimmed" fw={600}>
@@ -4878,7 +4938,7 @@ function OpeningReviewDeckAutoUpdateControl({
   const maxPositions = config.maxPositions ?? config.limit ?? 0;
 
   return (
-    <Paper p="xs" withBorder>
+    <Paper p="xs" withBorder className={classes.reviewSection}>
       <Stack gap="xs">
         <Group justify="space-between" gap="sm" wrap="nowrap" align="center">
           <Stack gap={2} miw={0}>
@@ -4927,7 +4987,7 @@ function OpeningReviewPrioritySummary({
   if (!hasRankingData || positions.length === 0) return null;
 
   return (
-    <Paper px="xs" py={6} withBorder radius="sm">
+    <Paper px="sm" py="xs" withBorder radius="sm" className={classes.reviewSection}>
       <Stack gap="xs">
         <Group justify="space-between" gap="xs">
           <Stack gap={0}>
@@ -5004,7 +5064,7 @@ function OpeningReviewAttemptDetails({
     const natureConfidence = getMistakeReviewNatureConfidence(position);
 
     return (
-      <Paper p="xs" withBorder>
+      <Paper p="xs" withBorder className={classes.reviewSection}>
         <Stack gap="xs">
           <Group justify="space-between" align="flex-start">
             <Stack gap={2}>
@@ -5068,7 +5128,7 @@ function OpeningReviewAttemptDetails({
   const gapType = getOpeningReviewGapTrainingType(position);
 
   return (
-    <Paper p="xs" withBorder>
+    <Paper p="xs" withBorder className={classes.reviewSection}>
       <Stack gap="xs">
         <Group justify="space-between" align="flex-start">
           <Stack gap={2}>
@@ -5162,7 +5222,7 @@ function ReviewDetail({ label, value }: { label: string; value: string }) {
       <Text size="xs" c="dimmed">
         {label}
       </Text>
-      <Text size="sm" fw={700} lh={1.25} lineClamp={2}>
+      <Text size="sm" fw={700} lh={1.25} className={classes.reviewDetailValue}>
         {value}
       </Text>
     </Stack>

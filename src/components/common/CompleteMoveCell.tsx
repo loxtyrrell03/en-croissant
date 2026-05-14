@@ -18,6 +18,7 @@ import { useStoreWithEqualityFn } from "zustand/traditional";
 import Comment from "@/components/common/Comment";
 import MoveAnnotationPanel from "@/components/panels/annotation/MoveAnnotationPanel";
 import { currentTabAtom } from "@/state/atoms";
+import type { TreeStore } from "@/state/store/tree";
 import type { Annotation } from "@/utils/annotation";
 import { hasMorePriority, stripClock } from "@/utils/chess";
 import { getTabFile } from "@/utils/tabs";
@@ -25,11 +26,15 @@ import { type TreeNode, treeIterator } from "@/utils/treeReducer";
 import MoveCell from "./MoveCell";
 import { TreeStateContext } from "./TreeStateContext";
 
-const transpositionCache = new WeakMap<TreeNode, Map<string, number[][]>>();
+const transpositionCache = new WeakMap<
+  TreeStore,
+  { structureVersion: number; map: Map<string, number[][]> }
+>();
 
-function getTranspositionMap(root: TreeNode) {
-  if (transpositionCache.has(root)) {
-    return transpositionCache.get(root)!;
+function getTranspositionMap(root: TreeNode, structureVersion: number, store: TreeStore) {
+  const cached = transpositionCache.get(store);
+  if (cached?.structureVersion === structureVersion) {
+    return cached.map;
   }
 
   const map = new Map<string, number[][]>();
@@ -43,14 +48,20 @@ function getTranspositionMap(root: TreeNode) {
     map.get(strippedFen)!.push(item.position);
   }
 
-  transpositionCache.set(root, map);
+  transpositionCache.set(store, { structureVersion, map });
   return map;
 }
 
-function getTranspositions(fen: string, position: number[], root: TreeNode) {
+function getTranspositions(
+  fen: string,
+  position: number[],
+  root: TreeNode,
+  structureVersion: number,
+  store: TreeStore,
+) {
   if (position.length === 0 || position.every((v) => v === 0)) return [];
 
-  const map = getTranspositionMap(root);
+  const map = getTranspositionMap(root, structureVersion, store);
   const strippedFen = stripClock(fen);
 
   const matchingPositions = map.get(strippedFen) || [];
@@ -89,7 +100,7 @@ function CompleteMoveCell({
   const isCurrentVariation = useStore(store, (s) => equal(s.position, movePath));
   const transpositions = useStoreWithEqualityFn(
     store,
-    (s) => (fen ? getTranspositions(fen, movePath, s.root) : []),
+    (s) => (fen ? getTranspositions(fen, movePath, s.root, s.structureVersion ?? 0, store) : []),
     (a, b) => equal(a, b),
   );
   const goToMove = useStore(store, (s) => s.goToMove);
