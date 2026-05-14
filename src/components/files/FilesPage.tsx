@@ -24,9 +24,11 @@ import {
 import { useLoaderData } from "@tanstack/react-router";
 import { readDir, remove } from "@tauri-apps/plugin-fs";
 import clsx from "clsx";
+import { useSetAtom } from "jotai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
+import { recentFilesAtom, tabsAtom } from "@/state/atoms";
 import { capitalize } from "@/utils/format";
 import ConfirmModal from "../common/ConfirmModal";
 import OpenFolderButton from "../common/OpenFolderButton";
@@ -40,7 +42,13 @@ import {
   type FileType,
   processEntriesRecursively,
 } from "./file";
-import { CreateDirectoryModal, CreateModal, EditModal } from "./Modals";
+import {
+  CreateDirectoryModal,
+  CreateModal,
+  EditModal,
+  RenameModal,
+  type RenameResult,
+} from "./Modals";
 
 const FILE_TYPES: FileType[] = ["game", "repertoire", "tournament", "puzzle", "other"];
 type Entry = FileMetadata | Directory;
@@ -66,6 +74,22 @@ function isDescendantPath(path: string, parent: string) {
   return path.startsWith(parent + "/") || path.startsWith(parent + "\\");
 }
 
+function isSameOrDescendantPath(path: string, parent: string) {
+  return path === parent || isDescendantPath(path, parent);
+}
+
+function replacePathPrefix(path: string, oldPath: string, newPath: string) {
+  if (path === oldPath) {
+    return newPath;
+  }
+
+  if (isDescendantPath(path, oldPath)) {
+    return `${newPath}${path.slice(oldPath.length)}`;
+  }
+
+  return path;
+}
+
 const useFileDirectory = (dir: string) => {
   const { data, error, isLoading, mutate } = useSWR<Entry[]>(["file-directory", dir], async () => {
     const entries = await readDir(dir);
@@ -86,9 +110,12 @@ function FilesPage() {
 
   const { documentDir } = useLoaderData({ from: "/files" });
   const { files, isLoading, error, mutate } = useFileDirectory(documentDir);
+  const setTabs = useSetAtom(tabsAtom);
+  const setRecentFiles = useSetAtom(recentFilesAtom);
 
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Entry | null>(null);
+  const [renameTarget, setRenameTarget] = useState<Entry | null>(null);
   const [games, setGames] = useState<Map<number, string>>(new Map());
   const [filter, setFilter] = useState<FileType | null>(null);
 
@@ -96,6 +123,7 @@ function FilesPage() {
   const [createModal, toggleCreateModal] = useToggle();
   const [createDirModal, toggleCreateDirModal] = useToggle();
   const [editModal, toggleEditModal] = useToggle();
+  const [renameModal, toggleRenameModal] = useToggle();
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -217,6 +245,88 @@ function FilesPage() {
     [deleteModal, toggleDeleteModal],
   );
 
+  const requestRename = useCallback(
+    (entry: Entry) => {
+      setSelected(entry);
+      setRenameTarget(entry);
+      toggleRenameModal(true);
+    },
+    [toggleRenameModal],
+  );
+
+  const closeRenameModal = useCallback(
+    (opened: boolean) => {
+      toggleRenameModal(opened);
+      if (!opened) {
+        setRenameTarget(null);
+      }
+    },
+    [toggleRenameModal],
+  );
+
+  const handleRenamed = useCallback(
+    ({ oldPath, newPath, oldEntry, newEntry }: RenameResult) => {
+      setTabs((currentTabs) =>
+        currentTabs.map((tab) => {
+          if (tab.gameOrigin.kind !== "file" && tab.gameOrigin.kind !== "temp_file") {
+            return tab;
+          }
+
+          const file = tab.gameOrigin.file;
+          const isAffected =
+            oldEntry.type === "directory"
+              ? isSameOrDescendantPath(file.path, oldPath)
+              : file.path === oldPath;
+
+          if (!isAffected) {
+            return tab;
+          }
+
+          const isRenamedFile = oldEntry.type === "file" && file.path === oldPath;
+          const nextFile = {
+            ...file,
+            path: replacePathPrefix(file.path, oldPath, newPath),
+            name: isRenamedFile && newEntry.type === "file" ? newEntry.name : file.name,
+          };
+
+          return {
+            ...tab,
+            name:
+              isRenamedFile && newEntry.type === "file" && tab.name === file.name
+                ? newEntry.name
+                : tab.name,
+            gameOrigin: {
+              ...tab.gameOrigin,
+              file: nextFile,
+            },
+          };
+        }),
+      );
+
+      setRecentFiles((recentFiles) =>
+        recentFiles.map((file) => {
+          const isAffected =
+            oldEntry.type === "directory"
+              ? isSameOrDescendantPath(file.path, oldPath)
+              : file.path === oldPath;
+
+          if (!isAffected) {
+            return file;
+          }
+
+          const isRenamedFile = oldEntry.type === "file" && file.path === oldPath;
+
+          return {
+            ...file,
+            path: replacePathPrefix(file.path, oldPath, newPath),
+            name: isRenamedFile && newEntry.type === "file" ? newEntry.name : file.name,
+          };
+        }),
+      );
+    },
+    [setRecentFiles, setTabs],
+  );
+
   const refreshDirectory = useCallback(() => mutate(), [mutate]);
 
   const handleConfirmDelete = useCallback(async () => {
@@ -269,6 +379,14 @@ function FilesPage() {
         setOpened={toggleCreateDirModal}
         mutate={mutate}
         selected={selected}
+      />
+      <RenameModal
+        opened={renameModal}
+        setOpened={closeRenameModal}
+        entry={renameTarget}
+        mutate={mutate}
+        setSelected={setSelected}
+        onRenamed={handleRenamed}
       />
       {selected && files && selected.type === "file" && (
         <EditModal
@@ -363,6 +481,7 @@ function FilesPage() {
                     selectedFile={selected}
                     setSelectedFile={setSelected}
                     onRequestDelete={requestDelete}
+                    onRequestRename={requestRename}
                     search={search}
                     filter={filter || ""}
                   />

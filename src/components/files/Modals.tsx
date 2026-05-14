@@ -2,7 +2,7 @@ import { Button, Modal, SimpleGrid, Stack, Text, Textarea, TextInput } from "@ma
 import { useLoaderData } from "@tanstack/react-router";
 import { resolve, dirname } from "@tauri-apps/api/path";
 import { exists, mkdir, rename, writeTextFile } from "@tauri-apps/plugin-fs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createFile } from "@/utils/files";
 import GenericCard from "../common/GenericCard";
@@ -15,6 +15,70 @@ const FILE_TYPES = [
   { label: "Puzzle", value: "puzzle" },
   { label: "Other", value: "other" },
 ] as const;
+
+type Entry = FileMetadata | Directory;
+
+const INVALID_RENAME_CHARS = /[\\/:*?"<>|]/;
+
+function removePgnExtension(name: string) {
+  return name.toLowerCase().endsWith(".pgn") ? name.slice(0, -4) : name;
+}
+
+function getInfoPath(path: string) {
+  return path.replace(/\.pgn$/i, ".info");
+}
+
+function replacePathPrefix(path: string, oldPath: string, newPath: string) {
+  if (path === oldPath) {
+    return newPath;
+  }
+
+  if (path.startsWith(`${oldPath}/`) || path.startsWith(`${oldPath}\\`)) {
+    return `${newPath}${path.slice(oldPath.length)}`;
+  }
+
+  return path;
+}
+
+function withRenamedEntryPaths(entry: Entry, oldPath: string, newPath: string, name: string): Entry {
+  if (entry.type === "file") {
+    return {
+      ...entry,
+      name,
+      path: newPath,
+      lastModified: Date.now(),
+    };
+  }
+
+  return {
+    ...entry,
+    name,
+    path: newPath,
+    children: entry.children.map((child) => withUpdatedPathPrefix(child, oldPath, newPath)),
+  };
+}
+
+function withUpdatedPathPrefix(entry: Entry, oldPath: string, newPath: string): Entry {
+  if (entry.type === "file") {
+    return {
+      ...entry,
+      path: replacePathPrefix(entry.path, oldPath, newPath),
+    };
+  }
+
+  return {
+    ...entry,
+    path: replacePathPrefix(entry.path, oldPath, newPath),
+    children: entry.children.map((child) => withUpdatedPathPrefix(child, oldPath, newPath)),
+  };
+}
+
+export type RenameResult = {
+  oldPath: string;
+  newPath: string;
+  oldEntry: Entry;
+  newEntry: Entry;
+};
 
 export function CreateModal({
   opened,
@@ -119,6 +183,118 @@ export function CreateModal({
 
           <Button style={{ marginTop: "1rem" }} type="submit">
             {t("Common.Create")}
+          </Button>
+        </Stack>
+      </form>
+    </Modal>
+  );
+}
+
+export function RenameModal({
+  opened,
+  setOpened,
+  entry,
+  mutate,
+  setSelected,
+  onRenamed,
+}: {
+  opened: boolean;
+  setOpened: (opened: boolean) => void;
+  entry: Entry | null;
+  mutate: () => Promise<unknown> | unknown;
+  setSelected: React.Dispatch<React.SetStateAction<Entry | null>>;
+  onRenamed: (result: RenameResult) => void;
+}) {
+  const { t } = useTranslation();
+
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!opened || !entry) return;
+    setName(entry.name);
+    setError("");
+  }, [opened, entry]);
+
+  async function renameEntry() {
+    if (!entry) return;
+
+    const rawName = name.trim();
+    const nextName = entry.type === "file" ? removePgnExtension(rawName).trim() : rawName;
+
+    if (!nextName) {
+      setError(t("Common.RequireName"));
+      return;
+    }
+
+    if (nextName === "." || nextName === ".." || INVALID_RENAME_CHARS.test(nextName)) {
+      setError("Name cannot contain path separators or reserved filename characters.");
+      return;
+    }
+
+    if (nextName === entry.name) {
+      setOpened(false);
+      return;
+    }
+
+    const parentDir = await dirname(entry.path);
+    const newPath = await resolve(
+      parentDir,
+      entry.type === "file" ? `${nextName}.pgn` : nextName,
+    );
+
+    if (newPath !== entry.path && (await exists(newPath))) {
+      setError(t("Common.NameAlreadyUsed"));
+      return;
+    }
+
+    try {
+      await rename(entry.path, newPath);
+
+      if (entry.type === "file") {
+        await rename(getInfoPath(entry.path), getInfoPath(newPath)).catch(() => {});
+      }
+
+      const newEntry = withRenamedEntryPaths(entry, entry.path, newPath, nextName);
+      onRenamed({
+        oldPath: entry.path,
+        newPath,
+        oldEntry: entry,
+        newEntry,
+      });
+      await mutate();
+      setSelected(newEntry);
+      setError("");
+      setOpened(false);
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  return (
+    <Modal opened={opened && !!entry} onClose={() => setOpened(false)} title="Rename">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          void renameEntry();
+        }}
+      >
+        <Stack>
+          <TextInput
+            label={t("Common.Name")}
+            placeholder={t("Common.EnterFileName")}
+            required
+            value={name}
+            onChange={(e) => {
+              setName(e.currentTarget.value);
+              if (error) setError("");
+            }}
+            error={error}
+            data-autofocus
+          />
+
+          <Button style={{ marginTop: "1rem" }} type="submit">
+            Rename
           </Button>
         </Stack>
       </form>

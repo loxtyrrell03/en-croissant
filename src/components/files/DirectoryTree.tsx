@@ -1,6 +1,7 @@
 import { Badge, Box } from "@mantine/core";
 import {
   IconChevronRight,
+  IconEdit,
   IconEye,
   IconFolder,
   IconFolderOpen,
@@ -118,6 +119,7 @@ export default function DirectoryTree({
   selectedFile,
   setSelectedFile,
   onRequestDelete,
+  onRequestRename,
   search,
   filter,
 }: {
@@ -126,6 +128,7 @@ export default function DirectoryTree({
   selectedFile: Entry | null;
   setSelectedFile: (file: Entry | null) => void;
   onRequestDelete: (file: Entry) => void;
+  onRequestRename: (file: Entry) => void;
   search: string;
   filter: string;
 }) {
@@ -162,6 +165,7 @@ export default function DirectoryTree({
         selected={selectedFile}
         setSelectedFile={setSelectedFile}
         onRequestDelete={onRequestDelete}
+        onRequestRename={onRequestRename}
         expandedByDefault={!!(search || filter)}
       />
     </Box>
@@ -175,6 +179,7 @@ function Tree({
   selected,
   setSelectedFile,
   onRequestDelete,
+  onRequestRename,
   expandedByDefault,
 }: {
   files: Entry[];
@@ -183,6 +188,7 @@ function Tree({
   selected: Entry | null;
   setSelectedFile: (file: Entry | null) => void;
   onRequestDelete: (file: Entry) => void;
+  onRequestRename: (file: Entry) => void;
   expandedByDefault?: boolean;
 }) {
   const [expandedIds, setExpandedIds] = useAtom(expandedDirectoriesAtom);
@@ -232,6 +238,7 @@ function Tree({
             setSelectedFile={setSelectedFile}
             handleOpenFile={handleOpenFile}
             onRequestDelete={onRequestDelete}
+            onRequestRename={onRequestRename}
             refreshDirectory={refreshDirectory}
             showContextMenu={showContextMenu}
           >
@@ -243,6 +250,7 @@ function Tree({
                 selected={selected}
                 setSelectedFile={setSelectedFile}
                 onRequestDelete={onRequestDelete}
+                onRequestRename={onRequestRename}
                 expandedByDefault={expandedByDefault}
               />
             )}
@@ -264,6 +272,7 @@ function DirectoryNode({
   setSelectedFile,
   handleOpenFile,
   onRequestDelete,
+  onRequestRename,
   refreshDirectory,
   showContextMenu,
   children,
@@ -278,6 +287,7 @@ function DirectoryNode({
   setSelectedFile: (file: Entry | null) => void;
   handleOpenFile: (file: FileMetadata) => Promise<void>;
   onRequestDelete: (file: Entry) => void;
+  onRequestRename: (file: Entry) => void;
   refreshDirectory: () => Promise<unknown>;
   showContextMenu: ShowContextMenu;
   children?: React.ReactNode;
@@ -409,6 +419,36 @@ function DirectoryNode({
     !node.path.startsWith(dragContext?.draggingPath + "/") &&
     !node.path.startsWith(dragContext?.draggingPath + "\\");
 
+  const contextMenuHandler = showContextMenu([
+    {
+      key: "open-file",
+      icon: <IconEye size={16} />,
+      title: "Open",
+      disabled: node.type === "directory",
+      onClick: () => {
+        if (node.type === "directory") return;
+        void handleOpenFile(node);
+      },
+    },
+    {
+      key: "rename-file",
+      icon: <IconEdit size={16} />,
+      title: "Rename",
+      onClick: () => {
+        onRequestRename(node);
+      },
+    },
+    {
+      key: "delete-file",
+      icon: <IconTrash size={16} />,
+      title: "Delete",
+      color: "red",
+      onClick: () => {
+        onRequestDelete(node);
+      },
+    },
+  ]);
+
   return (
     <>
       <Draggable
@@ -451,26 +491,10 @@ function DirectoryNode({
               void handleOpenFile(node);
             }
           }}
-          onContextMenu={showContextMenu([
-            {
-              key: "open-file",
-              icon: <IconEye size={16} />,
-              disabled: node.type === "directory",
-              onClick: () => {
-                if (node.type === "directory") return;
-                void handleOpenFile(node);
-              },
-            },
-            {
-              key: "delete-file",
-              icon: <IconTrash size={16} />,
-              title: "Delete",
-              color: "red",
-              onClick: () => {
-                onRequestDelete(node);
-              },
-            },
-          ])}
+          onContextMenu={(event) => {
+            setSelectedFile(node);
+            contextMenuHandler(event);
+          }}
         >
           {depth > 0 && (
             <div

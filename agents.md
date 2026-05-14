@@ -67,7 +67,8 @@ default.
   starts puzzles, opens the latest online game, launches the online game picker,
   manages Opening Review decks, and manages Mistake Review decks.
 - `/files` remains the file and repertoire library. Recent work improved root
-  drag behavior, deselection, and file-preview safety when no board tab exists.
+  drag behavior, deselection, file-preview safety when no board tab exists, and
+  right-click rename actions for files and folders in the tree.
 - `/databases` manages local databases, online game databases, merged
   Lichess/Chess.com databases, Lichess study imports, database conversion, and
   auto-update metadata.
