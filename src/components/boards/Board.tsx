@@ -230,25 +230,6 @@ function isGreenBoardArrowShape(shape: DrawShape) {
   );
 }
 
-function practiceAttemptBoardPreview(sourceFen: string, displayFen: string, move: NormalMove) {
-  return {
-    fen: displayFen,
-    sourceFen,
-    displayFen,
-    stickyDisplay: true,
-    shapes: [
-      {
-        orig: makeSquare(move.from),
-        dest: makeSquare(move.to),
-        brush: "preview",
-        modifiers: {
-          lineWidth: LARGE_BRUSH,
-        },
-      },
-    ],
-  };
-}
-
 type MistakeReviewRevealState = {
   fen: string;
   mode: "best" | "mistake";
@@ -688,8 +669,7 @@ function Board({
   const reviewPostAttemptActive =
     !!practicing && (practiceState.phase === "correct" || practiceState.phase === "incorrect");
   const mistakeReviewPostAttemptFreePlayActive = isMistakeReviewTab && reviewPostAttemptActive;
-  const openingReviewPostAttemptFreePlayActive =
-    isOpeningReviewTab && reviewPostAttemptActive;
+  const openingReviewPostAttemptFreePlayActive = isOpeningReviewTab && reviewPostAttemptActive;
 
   const returnToMistakeReviewPosition = useCallback(
     (options: { clearReveal?: boolean; resetPractice?: boolean } = {}) => {
@@ -1140,10 +1120,10 @@ function Board({
       }
 
       setPendingMove(null);
-      const attemptPos = pos.clone();
-      attemptPos.play(move);
-      const attemptFen = makeFen(attemptPos.toSetup());
-      setBoardPreviewShapes(practiceAttemptBoardPreview(c.fen, attemptFen, move));
+      setBoardPreviewShapes(null);
+      storeMakeMove({
+        payload: move,
+      });
       const requestId = openingReviewAssessmentRequestRef.current + 1;
       openingReviewAssessmentRequestRef.current = requestId;
 

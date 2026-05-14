@@ -203,7 +203,8 @@ with helpers under `src/utils/openingReview*.ts`.
 - Full-deck and focused practice remain available, including filtered practice
   by opening, color, or date range.
 - Review cards preserve comments, arrows, annotations, board-played move
-  overrides, and post-attempt exploration.
+  overrides, trainer attempts, and post-attempt exploration as saved review-tree
+  data.
 - Whole decks and individual cards can be deleted.
 - Older cards with generic cloud-validation source labels remain compatible.
 
@@ -445,6 +446,10 @@ from 2026-04-24 through 2026-05-03.
   card board states, defers SRS card writes until after the next card paints,
   and lets move-drop visuals paint before post-attempt feedback and cloud/engine
   assessment work begins.
+- Opening trainer persistence: Opening Review attempts now become real board
+  moves instead of temporary preview positions, so the attempted move stays on
+  the board and annotations/variations created during gap training save back to
+  the deck.
 - Launch reliability: the Windows fork launcher and `pnpm dev` fallback now
   serialize dev-session startup so repeated launches do not stop the Vite dev
   server while the Tauri WebView is still loading `localhost:1420`; clean
