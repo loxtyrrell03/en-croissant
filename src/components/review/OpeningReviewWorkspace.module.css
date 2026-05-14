@@ -1,0 +1,66 @@
+.reviewPanelRoot {
+  container-type: inline-size;
+  min-width: 0;
+  min-height: 0;
+}
+
+.reviewPanelRoot :global(.mantine-Button-label),
+.reviewPanelRoot :global(.mantine-Badge-label) {
+  min-width: 0;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.reviewSection {
+  background: color-mix(in srgb, var(--mantine-color-body) 92%, var(--mantine-color-gray-7));
+}
+
+.reviewSectionInset {
+  border: 1px solid var(--mantine-color-dark-4);
+  border-radius: var(--mantine-radius-sm);
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+}
+
+.reviewActionGrid {
+  display: grid;
+  gap: 0.45rem;
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  min-width: 0;
+}
+
+.reviewSplitButton {
+  min-width: 0;
+}
+
+.reviewActionButton {
+  min-height: 2.25rem;
+}
+
+.reviewActionButton :global(.mantine-Button-inner) {
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.reviewActionButton :global(.mantine-Button-label) {
+  line-height: 1.2;
+}
+
+.reviewBadgeGroup {
+  max-width: 45%;
+}
+
+.reviewDetailValue {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+@container (max-width: 26rem) {
+  .reviewActionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .reviewBadgeGroup {
+    max-width: 52%;
+  }
+}

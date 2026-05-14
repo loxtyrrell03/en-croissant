@@ -905,12 +905,12 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
               }}
               styles={{
                 tabLabel: {
-                  flex: 0,
+                  flex: "0 1 auto",
                 },
                 tab: {
                   display: "flex",
                   justifyContent: "center",
-                  gap: "0.3rem",
+                  gap: "0.25rem",
                 },
               }}
             >
@@ -920,14 +920,14 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                   leftSection={<IconTargetArrow size="1rem" />}
                   title="Review"
                 >
-                  Review
+                  Rev
                 </Tabs.Tab>
                 <Tabs.Tab
                   value="analysis"
                   leftSection={<IconZoomCheck size="1rem" />}
                   title="Analysis"
                 >
-                  Analysis
+                  Eval
                 </Tabs.Tab>
                 <Tabs.Tab
                   value="database"
@@ -941,21 +941,21 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                   leftSection={<IconRoute size="1rem" />}
                   title="Plan Explorer"
                 >
-                  Plans
+                  Plan
                 </Tabs.Tab>
                 <Tabs.Tab
                   value="engine-plans"
                   leftSection={<IconBulb size="1rem" />}
                   title="Engine Plans"
                 >
-                  Engine
+                  Eng
                 </Tabs.Tab>
                 <Tabs.Tab
                   value="compare"
                   leftSection={<IconGitCompare size="1rem" />}
                   title="Compare"
                 >
-                  Compare
+                  Vs
                 </Tabs.Tab>
                 <Tabs.Tab value="info" leftSection={<IconInfoCircle size="1rem" />} title="Info">
                   Info
@@ -1068,8 +1068,8 @@ function ReviewMovesBox({ rightPanel = false }: { rightPanel?: boolean }) {
       h={rightPanel ? undefined : "100%"}
       gap="xs"
       style={{
-        minHeight: rightPanel ? "10rem" : 0,
-        height: rightPanel ? "clamp(10rem, 22vh, 14rem)" : undefined,
+        minHeight: rightPanel ? "8rem" : 0,
+        height: rightPanel ? "clamp(8rem, 16vh, 11rem)" : undefined,
         flexShrink: 0,
       }}
     >
@@ -1667,6 +1667,7 @@ function OpeningReviewPanel({
   const [positionsOpen, setPositionsOpen] = useToggle();
   const [panelView, setPanelView] = useState<OpeningReviewPanelView>(initialView);
   const [dailySettingsOpen, setDailySettingsOpen] = useState(false);
+  const [mistakeMovesOpen, setMistakeMovesOpen] = useState(false);
   const initialPracticeStartedRef = useRef(false);
   const activeDailyGoalSessionRef = useRef<OpeningReviewInitialPractice | null>(null);
   const dailyGoalCompletionPromptTimerRef = useRef<number | null>(null);
@@ -2603,7 +2604,7 @@ function OpeningReviewPanel({
 
   return (
     <>
-      <Stack h="100%" gap="sm" className={classes.reviewPanelRoot}>
+      <Stack h="100%" gap={6} className={classes.reviewPanelRoot}>
         {panelModeControl}
         {!isMistakeReview && <OpeningReviewAutoUpdateBanner deckPath={deckPath} />}
         <Group justify="space-between" align="flex-start" gap="xs" wrap="nowrap">
@@ -3191,7 +3192,44 @@ function OpeningReviewPanel({
         {isMistakeReview && (
           <>
             <MistakeReviewGameInfoPanel position={mistakeReviewInfoPosition} />
-            <ReviewMovesBox rightPanel />
+            {mistakeMovesOpen ? (
+              <Stack gap={4} className={classes.reviewSectionInset}>
+                <Group justify="space-between" gap="xs" wrap="nowrap">
+                  <Stack gap={0}>
+                    <Text size="xs" fw={700}>
+                      Moves
+                    </Text>
+                  </Stack>
+                  <Button
+                    size="compact-xs"
+                    variant="subtle"
+                    leftSection={<IconChevronDown size={14} />}
+                    onClick={() => setMistakeMovesOpen(false)}
+                  >
+                    Hide
+                  </Button>
+                </Group>
+                <ReviewMovesBox rightPanel />
+              </Stack>
+            ) : (
+              <Paper px="sm" py="xs" withBorder radius="sm" className={classes.reviewSection}>
+                <Group justify="space-between" gap="xs" wrap="nowrap">
+                  <Stack gap={0}>
+                    <Text size="xs" fw={700}>
+                      Moves
+                    </Text>
+                  </Stack>
+                  <Button
+                    size="compact-xs"
+                    variant="subtle"
+                    leftSection={<IconChevronRight size={14} />}
+                    onClick={() => setMistakeMovesOpen(true)}
+                  >
+                    Show
+                  </Button>
+                </Group>
+              </Paper>
+            )}
           </>
         )}
       </Stack>
@@ -3314,22 +3352,22 @@ function MistakeReviewDeckSyncStatus({
       : null;
 
   return (
-    <Paper px="xs" py={6} withBorder radius="sm">
-      <Group justify="space-between" gap="xs" wrap="nowrap">
+    <Paper px="sm" py="xs" withBorder radius="sm" className={classes.reviewSection}>
+      <Stack gap={3}>
         <Group gap={6} wrap="nowrap" miw={0}>
           <Badge size="xs" color={badgeColor} variant="light">
             {badgeLabel}
           </Badge>
-          <Text size="xs" c={config?.lastError ? "red" : "dimmed"} truncate>
+          <Text size="xs" c={config?.lastError ? "red" : "dimmed"}>
             {primary}
           </Text>
         </Group>
         {secondary && (
-          <Text size="xs" c="dimmed" truncate style={{ flexShrink: 0, maxWidth: "42%" }}>
+          <Text size="xs" c="dimmed">
             {secondary}
           </Text>
         )}
-      </Group>
+      </Stack>
     </Paper>
   );
 }

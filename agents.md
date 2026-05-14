@@ -399,6 +399,10 @@ from 2026-04-24 through 2026-05-03.
 - Board and layout: resizable board/right-side layout, under-board annotations,
   tab tooltips, compact engine lines, annotation focus fixes, hover arrow
   previews, and responsive panel scaling were added.
+- Review panel readability: Opening Review and Mistake Review right-side panels
+  were tightened so primary actions, progress, sync status, and game evidence
+  fit default laptop-height panels, with shorter visible tab labels, wrapping
+  action text, and compact mistake-game moves access.
 - Persistence and compatibility: review deck file storage, old review-card
   compatibility, no-tab preview safety, stale index refresh, and PGN timestamp
   normalization were added.
