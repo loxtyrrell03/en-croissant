@@ -79,7 +79,7 @@ describe("opening review position colour", () => {
         ).toBe("black");
     });
 
-    test("uses the opposite of a white-side opening for opponent deck stats", () => {
+    test("uses the played move side for opponent deck stats", () => {
         expect(
             getOpeningReviewStatsPerspectiveSide(
                 position({
@@ -90,24 +90,42 @@ describe("opening review position colour", () => {
                     },
                 }),
                 "opponent",
-                "Rapport-Jobava System",
+                "King's Gambit Accepted",
             ),
         ).toBe("black");
     });
 
-    test("uses the opposite of a black-side defense for opponent deck stats", () => {
+    test("keeps white move-side defenses in white stats", () => {
         expect(
             getOpeningReviewStatsPerspectiveSide(
                 position({
-                    sideToMove: "black",
+                    sideToMove: "white",
+                    fen: "rnbqkb1r/pp2pp1p/5np1/3p4/3P4/2N2N2/PP2PPPP/R1BQKB1R w KQkq - 0 6",
                     openingHealth: {
                         mode: "opponent",
-                        sideToMove: "black",
+                        sideToMove: "white",
+                        reviewSide: "black",
                     },
                 }),
                 "opponent",
                 "Grünfeld Defense",
             ),
         ).toBe("white");
+    });
+
+    test("falls back to the opening side when no move side is saved", () => {
+        expect(
+            getOpeningReviewStatsPerspectiveSide(
+                position({
+                    fen: "invalid",
+                    openingHealth: {
+                        mode: "opponent",
+                        reviewSide: "white",
+                    },
+                }),
+                "opponent",
+                "GrÃ¼nfeld Defense",
+            ),
+        ).toBe("black");
     });
 });

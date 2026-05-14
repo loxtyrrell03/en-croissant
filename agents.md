@@ -450,6 +450,9 @@ from 2026-04-24 through 2026-05-03.
   moves instead of temporary preview positions, so the attempted move stays on
   the board and annotations/variations created during gap training save back to
   the deck.
+- Opening stats colour grouping now uses the source player's actual move side
+  from the saved game position, so opponent-prep review-side inversions do not
+  misclassify openings such as King's Gambit under the wrong colour.
 - Launch reliability: the Windows fork launcher and `pnpm dev` fallback now
   serialize dev-session startup so repeated launches do not stop the Vite dev
   server while the Tauri WebView is still loading `localhost:1420`; clean

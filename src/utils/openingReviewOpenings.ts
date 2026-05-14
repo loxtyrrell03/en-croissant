@@ -63,19 +63,23 @@ export function getOpeningReviewMoveSide(position: Position): "white" | "black" 
 
 export function getOpeningReviewStatsPerspectiveSide(
     position: Position,
-    deckMode?: "self" | "opponent",
+    _deckMode?: "self" | "opponent",
     openingName?: string | null,
 ): "white" | "black" {
-    if (deckMode === "opponent") {
-        const openingSide = inferOpeningReviewOpeningSide(
-            openingName ??
-                position.mistakeReview?.openingName ??
-                position.openingHealth?.openingName,
-        );
-        if (openingSide) return oppositeOpeningReviewSide(openingSide);
-    }
+    // Stats answer which colour the source player had in the sampled games.
+    // Opponent-prep review cards can invert `reviewSide` so the user trains from
+    // the prep side, but result grouping should stay anchored to the played move.
+    const moveSide = normalizeOpeningReviewSide(
+        position.openingHealth?.sideToMove ?? position.sideToMove ?? position.fen.split(" ")[1],
+    );
+    if (moveSide) return moveSide;
 
-    return getOpeningReviewPositionColour(position, deckMode);
+    const openingSide = inferOpeningReviewOpeningSide(
+        openingName ?? position.mistakeReview?.openingName ?? position.openingHealth?.openingName,
+    );
+    if (openingSide) return openingSide;
+
+    return normalizeOpeningReviewSide(position.openingHealth?.reviewSide) ?? "white";
 }
 
 export function inferOpeningReviewOpeningSide(openingName: string | null | undefined) {
