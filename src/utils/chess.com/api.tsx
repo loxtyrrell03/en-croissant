@@ -11,6 +11,8 @@ import { z } from "zod";
 import { events } from "@/bindings";
 import { apiHeaders } from "@/utils/http";
 import { getDatabasesDir } from "../directories";
+import { makeChessComClockComment, parseChessComMoveClocks } from "./clocks";
+import { parseChessComGameUrl } from "./links";
 import { decodeTCN } from "./tcn";
 
 const baseURL = "https://api.chess.com";
@@ -288,53 +290,70 @@ export async function downloadChessCom(player: string, timestamp: number | null)
 const chessComGameSchema = z.object({
   game: z.object({
     moveList: z.string(),
+    moveTimestamps: z.string().nullish(),
     pgnHeaders: z.record(z.string(), z.union([z.string(), z.number()])),
   }),
 });
 
-export async function getChesscomGame(gameURL: string) {
-  const regex = /.*\/game\/(live|daily)\/(\d+)/;
-  const match = gameURL.match(regex);
+export async function getChesscomGame(
+  gameURL: string,
+  { silent = false }: { silent?: boolean } = {},
+) {
+  const parsedUrl = parseChessComGameUrl(gameURL);
 
-  if (!match) {
+  if (!parsedUrl) {
     const eventRegex = /chess.com\/events/;
     if (gameURL.match(eventRegex)) {
       error(`Event URLs are not supported: ${gameURL}`);
-      notifications.show({
-        title: "Event URLs not supported",
-        message: "Event URLs cannot be imported directly. Please import the PGN instead.",
-        color: "red",
-        icon: <IconX />,
-      });
+      if (!silent) {
+        notifications.show({
+          title: "Event URLs not supported",
+          message: "Event URLs cannot be imported directly. Please import the PGN instead.",
+          color: "red",
+          icon: <IconX />,
+        });
+      }
       return null;
     }
     error(`Unsupported Chess.com URL format: ${gameURL}`);
-    notifications.show({
-      title: "Unsupported URL format",
-      message:
-        "The URL format is not recognized. Please use a direct game link like https://www.chess.com/game/live/12345",
-      color: "red",
-      icon: <IconX />,
-    });
+    if (!silent) {
+      notifications.show({
+        title: "Unsupported URL format",
+        message:
+          "The URL format is not recognized. Please use a direct game link like https://www.chess.com/game/12345",
+        color: "red",
+        icon: <IconX />,
+      });
+    }
     return null;
   }
 
-  const gameType = match[1];
-  const gameId = match[2];
+  let response: Awaited<ReturnType<typeof fetch>> | null = null;
+  for (const gameType of parsedUrl.gameTypes) {
+    const candidate = await fetch(
+      `https://www.chess.com/callback/${gameType}/game/${parsedUrl.gameId}`,
+      {
+        headers: apiHeaders(),
+        method: "GET",
+      },
+    );
+    if (candidate.ok) {
+      response = candidate;
+      break;
+    }
+    response = candidate;
+  }
 
-  const response = await fetch(`https://www.chess.com/callback/${gameType}/game/${gameId}`, {
-    headers: apiHeaders(),
-    method: "GET",
-  });
-
-  if (!response.ok) {
-    error(`Failed to fetch Chess.com game: ${response.status} ${response.url}`);
-    notifications.show({
-      title: "Failed to fetch Chess.com game",
-      message: `Could not find game "${gameURL}" on chess.com`,
-      color: "red",
-      icon: <IconX />,
-    });
+  if (!response?.ok) {
+    error(`Failed to fetch Chess.com game: ${response?.status ?? "unknown"} ${response?.url}`);
+    if (!silent) {
+      notifications.show({
+        title: "Failed to fetch Chess.com game",
+        message: `Could not find game "${gameURL}" on chess.com`,
+        color: "red",
+        icon: <IconX />,
+      });
+    }
     return null;
   }
 
@@ -344,16 +363,19 @@ export async function getChesscomGame(gameURL: string) {
     error(
       `Invalid response for Chess.com game: ${response.status} ${response.url}\n${gameData.error}`,
     );
-    notifications.show({
-      title: "Failed to fetch Chess.com game",
-      message: `Invalid response for "${gameURL}" on chess.com`,
-      color: "red",
-      icon: <IconX />,
-    });
+    if (!silent) {
+      notifications.show({
+        title: "Failed to fetch Chess.com game",
+        message: `Invalid response for "${gameURL}" on chess.com`,
+        color: "red",
+        icon: <IconX />,
+      });
+    }
     return null;
   }
 
   const moveList = gameData.data.game.moveList;
+  const moveClocks = parseChessComMoveClocks(gameData.data.game.moveTimestamps);
   const pgnHeaders = gameData.data.game.pgnHeaders;
   const moves = moveList.match(/.{1,2}/g);
   if (!moves) {
@@ -365,11 +387,13 @@ export async function getChesscomGame(gameURL: string) {
   const chess = Chess.default();
 
   let lastNode = game.moves;
-  for (const move of moves) {
+  for (const [index, move] of moves.entries()) {
     const m = decodeTCN(move);
+    const clockComment = makeChessComClockComment(moveClocks[index]);
     lastNode.children.push(
       new ChildNode({
         san: makeSan(chess, m),
+        comments: clockComment ? [clockComment] : undefined,
       }),
     );
     chess.play(m);

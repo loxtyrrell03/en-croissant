@@ -391,7 +391,9 @@ from 2026-04-24 through 2026-05-03.
 - Online game clocks: imported online games now surface simple per-move think
   times in notation from clock or timestamp comments, board clocks sit with the
   player strips at the top-left and bottom-left of the board area, and older
-  online databases are marked for clock-data enrichment during refresh.
+  online databases are marked for clock-data enrichment during refresh. Direct
+  Chess.com game-link imports also translate callback move timestamps into PGN
+  clock comments so existing display and save paths keep the timing data.
 - Opening Review: Analyze Repertoire was moved into review, opening health
   scoring was added, cloud validation was layered in, review decks became
   trainable files, and daily/full/focused spaced repetition workflows were

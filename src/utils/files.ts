@@ -1,6 +1,7 @@
 import { Result } from "@badrap/result";
 import { resolve } from "@tauri-apps/api/path";
 import { exists, writeTextFile } from "@tauri-apps/plugin-fs";
+import { warn } from "@tauri-apps/plugin-log";
 import { platform } from "@tauri-apps/plugin-os";
 import { defaultGame, makePgn } from "chessops/pgn";
 import { getDefaultStore } from "jotai";
@@ -10,6 +11,7 @@ import type { FileMetadata } from "@/components/files/file";
 import { addRecentFileAtom, tabFamily } from "@/state/atoms";
 import { unwrap } from "@/utils/unwrap";
 import { parsePGN } from "./chess";
+import { hydrateOnlinePgnClocks } from "./onlinePgnClocks";
 import { createTab, isInTempDir, type Tab } from "./tabs";
 import { getGameName, type TreeState } from "./treeReducer";
 
@@ -38,11 +40,27 @@ export async function openFile(
     let recentName = "Untitled";
     let initialState: TreeState | undefined;
 
+    async function hydrateFilePgn(filePath: string, gameIndex: number, rawPgn: string) {
+        try {
+            const hydrated = await hydrateOnlinePgnClocks(rawPgn);
+            if (hydrated !== rawPgn) {
+                await commands.writeGame(filePath, gameIndex, hydrated);
+            }
+            return hydrated;
+        } catch (error) {
+            warn(`Could not hydrate online PGN clocks: ${error}`);
+            return rawPgn;
+        }
+    }
+
     if (typeof file === "string") {
         const count = unwrap(await commands.countPgnGames(file));
         isTempOrigin = await isInTempDir(file);
         if (pgn === undefined) {
             pgn = unwrap(await commands.readGames(file, gameNumber, gameNumber))[0];
+        }
+        if (pgn) {
+            pgn = await hydrateFilePgn(file, gameNumber, pgn);
         }
 
         fileInfo = {
@@ -70,6 +88,9 @@ export async function openFile(
         isTempOrigin = await isInTempDir(file.path);
         if (pgn === undefined) {
             pgn = unwrap(await commands.readGames(file.path, gameNumber, gameNumber))[0];
+        }
+        if (pgn) {
+            pgn = await hydrateFilePgn(file.path, gameNumber, pgn);
         }
         tabName = file.name || "Untitled";
         recentName = tabName;

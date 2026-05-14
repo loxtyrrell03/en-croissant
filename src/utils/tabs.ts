@@ -7,6 +7,7 @@ import { commands } from "@/bindings";
 import { type FileMetadata, fileMetadataSchema } from "@/components/files/file";
 import type { TreeStoreState } from "@/state/store/tree";
 import { getPGN, parsePGN } from "./chess";
+import { hydrateOnlinePgnClocks } from "./onlinePgnClocks";
 import { type GameHeaders, getGameName, type TreeState } from "./treeReducer";
 
 const INVALID_FILENAME_CHARS = /[\\/:*?"<>|]+/g;
@@ -170,7 +171,11 @@ export async function createTab({
     const id = genID();
 
     if (initialState !== undefined || pgn !== undefined) {
-        const tree = initialState ?? (await parsePGN(pgn ?? "", headers?.fen));
+        const hydratedPgn =
+            initialState === undefined && pgn !== undefined
+                ? await hydrateOnlinePgnClocks(pgn)
+                : pgn;
+        const tree = initialState ?? (await parsePGN(hydratedPgn ?? "", headers?.fen));
         if (headers) {
             tree.headers = headers;
             if (position) {
