@@ -1063,13 +1063,16 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
 }
 
 function ReviewMovesBox({ rightPanel = false }: { rightPanel?: boolean }) {
+  if (rightPanel) {
+    return <GameNotation topBar compact grow={false} className={classes.reviewMovesPanel} />;
+  }
+
   return (
     <Stack
-      h={rightPanel ? undefined : "100%"}
+      h="100%"
       gap="xs"
       style={{
-        minHeight: rightPanel ? "8rem" : 0,
-        height: rightPanel ? "clamp(8rem, 16vh, 11rem)" : undefined,
+        minHeight: 0,
         flexShrink: 0,
       }}
     >
@@ -3193,13 +3196,11 @@ function OpeningReviewPanel({
           <>
             <MistakeReviewGameInfoPanel position={mistakeReviewInfoPosition} />
             {mistakeMovesOpen ? (
-              <Stack gap={4} className={classes.reviewSectionInset}>
+              <Stack gap={4} className={classes.reviewMovesExpanded}>
                 <Group justify="space-between" gap="xs" wrap="nowrap">
-                  <Stack gap={0}>
-                    <Text size="xs" fw={700}>
-                      Moves
-                    </Text>
-                  </Stack>
+                  <Text size="xs" fw={700}>
+                    Moves
+                  </Text>
                   <Button
                     size="compact-xs"
                     variant="subtle"

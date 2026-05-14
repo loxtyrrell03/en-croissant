@@ -405,6 +405,9 @@ from 2026-04-24 through 2026-05-03.
   were tightened so primary actions, progress, sync status, and game evidence
   fit default laptop-height panels, with shorter visible tab labels, wrapping
   action text, and compact mistake-game moves access.
+- Mistake Review moves panel: the expanded right-panel moves area now uses one
+  larger notation rectangle with its PGN and display controls in the header,
+  removing the detached eval strip and separate arrow navigation row.
 - Persistence and compatibility: review deck file storage, old review-card
   compatibility, no-tab preview safety, stale index refresh, and PGN timestamp
   normalization were added.

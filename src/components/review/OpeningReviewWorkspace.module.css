@@ -16,12 +16,6 @@
   background: color-mix(in srgb, var(--mantine-color-body) 92%, var(--mantine-color-gray-7));
 }
 
-.reviewSectionInset {
-  border: 1px solid var(--mantine-color-dark-4);
-  border-radius: var(--mantine-radius-sm);
-  padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
-}
-
 .reviewActionGrid {
   display: grid;
   gap: 0.45rem;
@@ -55,6 +49,22 @@
   word-break: normal;
 }
 
+.reviewMovesExpanded {
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.reviewMovesPanel {
+  flex: 0 0 auto;
+  height: clamp(13rem, 30vh, 18rem);
+  min-height: 13rem;
+  background: var(--mantine-color-body);
+}
+
+.reviewMovesPanel :global(.mantine-ScrollArea-viewport) {
+  font-size: var(--mantine-font-size-sm);
+}
+
 @container (max-width: 26rem) {
   .reviewActionGrid {
     grid-template-columns: 1fr;
@@ -62,5 +72,10 @@
 
   .reviewBadgeGroup {
     max-width: 52%;
+  }
+
+  .reviewMovesPanel {
+    height: clamp(12rem, 28vh, 15rem);
+    min-height: 12rem;
   }
 }

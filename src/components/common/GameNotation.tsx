@@ -55,7 +55,19 @@ import CompleteMoveCell from "./CompleteMoveCell";
 import styles from "./GameNotation.module.css";
 import OpeningName from "./OpeningName";
 
-function GameNotation({ topBar, controls }: { topBar?: boolean; controls?: React.ReactNode }) {
+function GameNotation({
+  topBar,
+  controls,
+  className,
+  compact = false,
+  grow = true,
+}: {
+  topBar?: boolean;
+  controls?: React.ReactNode;
+  className?: string;
+  compact?: boolean;
+  grow?: boolean;
+}) {
   const store = useContext(TreeStateContext)!;
   const currentFen = useStore(store, (s) => s.currentNode().fen);
   const headers = useStore(store, (s) => s.headers);
@@ -95,7 +107,8 @@ function GameNotation({ topBar, controls }: { topBar?: boolean; controls?: React
     <Paper
       data-testid="game-notation"
       withBorder
-      flex={1}
+      flex={grow ? 1 : undefined}
+      className={className}
       style={{ position: "relative", overflow: "hidden", minHeight: 0 }}
     >
       <Group h="100%" wrap="nowrap" align="stretch" gap={0} style={{ minHeight: 0 }}>
@@ -108,7 +121,7 @@ function GameNotation({ topBar, controls }: { topBar?: boolean; controls?: React
           </>
         )}
         <Stack h="100%" gap={0} style={{ flex: 1, minWidth: 0, minHeight: 0 }}>
-          {topBar && <NotationHeader />}
+          {topBar && <NotationHeader compact={compact} />}
           <ScrollArea
             flex={1}
             offsetScrollbars
@@ -134,12 +147,12 @@ function GameNotation({ topBar, controls }: { topBar?: boolean; controls?: React
                 {tableView ? (
                   <TableNotation targetRef={targetRef} />
                 ) : (
-                  <Box pt="md" px="sm">
+                  <Box pt={compact ? 6 : "md"} px="sm">
                     <RenderVariationTree targetRef={targetRef} nodePath={[]} depth={0} first />
                   </Box>
                 )}
               </Box>
-              <Box pb="md">
+              <Box pb={compact ? 6 : "md"}>
                 {headers.result !== "*" && (
                   <Text ta="center">
                     {headers.result}
@@ -162,7 +175,7 @@ function GameNotation({ topBar, controls }: { topBar?: boolean; controls?: React
   );
 }
 
-function NotationHeader() {
+function NotationHeader({ compact = false }: { compact?: boolean }) {
   const { t } = useTranslation();
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (s) => s.root);
@@ -232,7 +245,7 @@ function NotationHeader() {
   const copyPgnLabel = copied ? t("Common.Copied") : `${t("Menu.Edit.Copy") || "Copy"} PGN`;
 
   return (
-    <Stack gap="xs" pt="xs">
+    <Stack gap={compact ? 4 : "xs"} pt={compact ? 5 : "xs"}>
       <Group justify="space-between" px="sm">
         <OpeningName />
         <Group gap="sm">
