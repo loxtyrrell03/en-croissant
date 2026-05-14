@@ -153,6 +153,7 @@ import {
   getMistakeReviewPhaseCounts,
   getMistakeReviewSeverityWeight,
   getMistakeReviewTimeManagementBatch,
+  isMistakeReviewTimeManagementPosition,
   migrateMistakeReviewDeckNatureClassifications,
   mistakeReviewPositionKey,
   needsMistakeReviewDeckNatureMigration,
@@ -162,6 +163,7 @@ import {
   MISTAKE_REVIEW_PHASES,
   type MistakeReviewAttemptLabel,
   type MistakeReviewDailySettings,
+  type MistakeReviewTimeManagementSettings,
   mistakeReviewSeverityLabel,
   type MistakeReviewNature,
   type MistakeReviewPhase,
@@ -853,6 +855,47 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     [isMistakeReview],
   );
 
+  const setMistakeTimeManagementSettings = useCallback(
+    (timeManagement: MistakeReviewTimeManagementSettings) => {
+      if (!isMistakeReview) return;
+      setDeckInfo((current) => {
+        if (!current) return current;
+
+        const mistakeDeck = current as MistakeReviewDeck;
+        const minMoveSeconds = Math.max(
+          1,
+          Math.min(3600, Math.round(timeManagement.minMoveSeconds)),
+        );
+        const nextTimeManagement = {
+          ...mistakeDeck.settings.timeManagement,
+          ...timeManagement,
+          minMoveSeconds,
+        };
+        const updatedAt = Date.now();
+
+        return {
+          ...mistakeDeck,
+          updatedAt,
+          settings: {
+            ...mistakeDeck.settings,
+            timeManagement: nextTimeManagement,
+          },
+          autoUpdate: mistakeDeck.autoUpdate
+            ? {
+                ...mistakeDeck.autoUpdate,
+                updatedAt,
+                timeManagement: {
+                  ...mistakeDeck.autoUpdate.timeManagement,
+                  ...nextTimeManagement,
+                },
+              }
+            : mistakeDeck.autoUpdate,
+        } satisfies MistakeReviewDeck;
+      });
+    },
+    [isMistakeReview],
+  );
+
   const selectedToolTab = reviewWorkspaceTabs.has(currentTabSelected)
     ? currentTabSelected
     : "review";
@@ -1042,6 +1085,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                     }
                     onOpeningDailySettingsChange={setOpeningDailySettings}
                     onMistakeDailySettingsChange={setMistakeDailySettings}
+                    onMistakeTimeManagementSettingsChange={setMistakeTimeManagementSettings}
                     boardMoveCandidate={boardMoveCandidate}
                     onClearBoardMoveCandidate={() => setBoardMoveCandidate(null)}
                     onLoadPosition={loadDeckPosition}
@@ -1645,6 +1689,7 @@ function OpeningReviewPanel({
   mistakeAutoUpdateConfig,
   onOpeningDailySettingsChange,
   onMistakeDailySettingsChange,
+  onMistakeTimeManagementSettingsChange,
   boardMoveCandidate,
   onClearBoardMoveCandidate,
   onLoadPosition,
@@ -1665,6 +1710,7 @@ function OpeningReviewPanel({
   mistakeAutoUpdateConfig?: MistakeReviewDeck["autoUpdate"];
   onOpeningDailySettingsChange?: (daily: OpeningReviewDailySettings) => void;
   onMistakeDailySettingsChange?: (daily: MistakeReviewDailySettings) => void;
+  onMistakeTimeManagementSettingsChange?: (settings: MistakeReviewTimeManagementSettings) => void;
   boardMoveCandidate: ReviewBoardMoveCandidate | null;
   onClearBoardMoveCandidate: () => void;
   onLoadPosition: (positionIndex: number) => void;
@@ -1725,6 +1771,8 @@ function OpeningReviewPanel({
   const timeManagementMinMoveSeconds =
     mistakeTimeManagementSettings?.minMoveSeconds ??
     DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds;
+  const timeManagementThresholdText =
+    formatMistakeReviewMoveTime(timeManagementMinMoveSeconds) ?? `${timeManagementMinMoveSeconds}s`;
   const timeManagementScopeIndices = useMemo(() => {
     if (!isMistakeReview) return [];
     return getMistakeReviewTimeManagementBatch(summaryPositions, {
@@ -1733,6 +1781,11 @@ function OpeningReviewPanel({
       .map((position) => positionIndexByReference.get(position) ?? -1)
       .filter((positionIndex) => positionIndex >= 0);
   }, [summaryPositions, isMistakeReview, positionIndexByReference, timeManagementMinMoveSeconds]);
+  const timeManagementClockDataCount = useMemo(() => {
+    if (!isMistakeReview) return 0;
+    return summaryPositions.filter((position) => isMistakeReviewTimeManagementPosition(position, 0))
+      .length;
+  }, [summaryPositions, isMistakeReview]);
   const openingPlanGapScopeIndices = useMemo(
     () => (isMistakeReview ? [] : getOpeningReviewPlanGapTrainingIndices(summaryPositions)),
     [summaryPositions, isMistakeReview],
@@ -1749,6 +1802,7 @@ function OpeningReviewPanel({
   const [positionsOpen, setPositionsOpen] = useToggle();
   const [panelView, setPanelView] = useState<OpeningReviewPanelView>(initialView);
   const [dailySettingsOpen, setDailySettingsOpen] = useState(false);
+  const [timeManagementSettingsOpen, setTimeManagementSettingsOpen] = useState(false);
   const [mistakeMovesOpen, setMistakeMovesOpen] = useState(false);
   const initialPracticeStartedRef = useRef(false);
   const activeDailyGoalSessionRef = useRef<OpeningReviewInitialPractice | null>(null);
@@ -2301,7 +2355,9 @@ function OpeningReviewPanel({
       notifications.show({
         title: "No time-management cards yet",
         message:
-          "This deck does not have long-think clock data yet. Create or update it from online games with clock comments.",
+          timeManagementClockDataCount === 0
+            ? "This deck does not have long-think clock data yet. Create or update it from online games with clock comments."
+            : `No mistake clocks reach ${timeManagementThresholdText} yet. Lower the long-think setting to include shorter thinks.`,
         color: "yellow",
       });
       return;
@@ -2324,7 +2380,14 @@ function OpeningReviewPanel({
       }.`,
       color: "orange",
     });
-  }, [isMistakeReview, newPractice, setSessionStats, timeManagementScopeIndices]);
+  }, [
+    isMistakeReview,
+    newPractice,
+    setSessionStats,
+    timeManagementClockDataCount,
+    timeManagementScopeIndices,
+    timeManagementThresholdText,
+  ]);
 
   useEffect(() => {
     if (
@@ -2716,6 +2779,20 @@ function OpeningReviewPanel({
     if (!mistakeDailySettings || !onMistakeDailySettingsChange) return;
     onMistakeDailySettingsChange({ ...mistakeDailySettings, ...partial });
   };
+  const updateMistakeTimeManagementSettings = (
+    partial: Partial<MistakeReviewTimeManagementSettings>,
+  ) => {
+    if (!mistakeTimeManagementSettings || !onMistakeTimeManagementSettingsChange) return;
+    const minMoveSeconds =
+      typeof partial.minMoveSeconds === "number" && Number.isFinite(partial.minMoveSeconds)
+        ? Math.max(1, Math.min(3600, Math.round(partial.minMoveSeconds)))
+        : mistakeTimeManagementSettings.minMoveSeconds;
+    onMistakeTimeManagementSettingsChange({
+      ...mistakeTimeManagementSettings,
+      ...partial,
+      minMoveSeconds,
+    });
+  };
   const updateOpeningDailySettings = (partial: Partial<OpeningReviewDailySettings>) => {
     if (!openingDailySettings || !onOpeningDailySettingsChange) return;
     onOpeningDailySettingsChange({ ...openingDailySettings, ...partial });
@@ -2723,9 +2800,6 @@ function OpeningReviewPanel({
   const dailyReviewScopeLabel = isMistakeReview
     ? "today's mistake review"
     : "today's opening review";
-  const timeManagementThresholdText =
-    formatMistakeReviewMoveTime(timeManagementMinMoveSeconds) ?? `${timeManagementMinMoveSeconds}s`;
-
   return (
     <>
       <Stack h="100%" gap={6} className={classes.reviewPanelRoot}>
@@ -2901,31 +2975,62 @@ function OpeningReviewPanel({
                     </Tooltip>
                   )}
                   {isMistakeReview && (
-                    <Tooltip
-                      label={
-                        timeManagementScopeIndices.length === 0
-                          ? "No long-think clock data in this deck yet"
-                          : `${timeManagementThresholdText}+ long-think mistakes`
-                      }
+                    <Group
+                      gap={0}
+                      wrap="nowrap"
+                      align="stretch"
+                      className={classes.reviewSplitButton}
                     >
-                      <Box style={{ minWidth: 0 }}>
-                        <Button
-                          className={classes.reviewActionButton}
-                          fullWidth
+                      <Tooltip
+                        label={
+                          timeManagementScopeIndices.length === 0
+                            ? timeManagementClockDataCount === 0
+                              ? "No long-think clock data in this deck yet"
+                              : `No mistakes at ${timeManagementThresholdText}+ yet`
+                            : `${timeManagementThresholdText}+ long-think mistakes`
+                          }
+                      >
+                        <Box style={{ flex: 1, minWidth: 0, display: "flex" }}>
+                          <Button
+                            className={classes.reviewActionButton}
+                            fullWidth
+                            variant="light"
+                            color="orange"
+                            leftSection={<IconClock size={18} />}
+                            onClick={startMistakeTimeManagementPractice}
+                            justify="space-between"
+                            disabled={timeManagementScopeIndices.length === 0}
+                            rightSection={
+                              <Badge variant="white">{timeManagementScopeIndices.length}</Badge>
+                            }
+                            style={{
+                              flex: 1,
+                              borderTopRightRadius: 0,
+                              borderBottomRightRadius: 0,
+                            }}
+                          >
+                            Train time management
+                          </Button>
+                        </Box>
+                      </Tooltip>
+                      <Tooltip label="Long-think settings">
+                        <ActionIcon
+                          aria-label="Long-think settings"
                           variant="light"
                           color="orange"
-                          leftSection={<IconClock size={18} />}
-                          onClick={startMistakeTimeManagementPractice}
-                          justify="space-between"
-                          disabled={timeManagementScopeIndices.length === 0}
-                          rightSection={
-                            <Badge variant="white">{timeManagementScopeIndices.length}</Badge>
-                          }
+                          onClick={() => setTimeManagementSettingsOpen(true)}
+                          style={{
+                            alignSelf: "stretch",
+                            height: "auto",
+                            minWidth: 42,
+                            borderTopLeftRadius: 0,
+                            borderBottomLeftRadius: 0,
+                          }}
                         >
-                          Train time management
-                        </Button>
-                      </Box>
-                    </Tooltip>
+                          <IconSettings size={16} />
+                        </ActionIcon>
+                      </Tooltip>
+                    </Group>
                   )}
                   {isMistakeReview && mistakeNatureCounts && (
                     <Menu width={280} position="bottom-end" withinPortal>
@@ -3376,12 +3481,25 @@ function OpeningReviewPanel({
         />
       )}
 
+      {isMistakeReview && mistakeTimeManagementSettings && (
+        <MistakeReviewTimeManagementSettingsModal
+          opened={timeManagementSettingsOpen}
+          onClose={() => setTimeManagementSettingsOpen(false)}
+          settings={mistakeTimeManagementSettings}
+          thresholdText={timeManagementThresholdText}
+          matchCount={timeManagementScopeIndices.length}
+          clockDataCount={timeManagementClockDataCount}
+          onUpdate={updateMistakeTimeManagementSettings}
+        />
+      )}
+
       {positionsOpen && (
         <OpeningReviewPositionsModal
           opened={positionsOpen}
           onClose={() => setPositionsOpen(false)}
           deckPath={deckPath}
           isMistakeReview={isMistakeReview}
+          mistakeLongThinkMinSeconds={timeManagementMinMoveSeconds}
           onTrainDue={startDuePractice}
           onTrainAll={startFullPractice}
           onLoadPosition={onLoadPosition}
@@ -4944,6 +5062,69 @@ function MistakeReviewDailySettingsModal({
   );
 }
 
+function MistakeReviewTimeManagementSettingsModal({
+  opened,
+  onClose,
+  settings,
+  thresholdText,
+  matchCount,
+  clockDataCount,
+  onUpdate,
+}: {
+  opened: boolean;
+  onClose: () => void;
+  settings: MistakeReviewTimeManagementSettings;
+  thresholdText: string;
+  matchCount: number;
+  clockDataCount: number;
+  onUpdate: (partial: Partial<MistakeReviewTimeManagementSettings>) => void;
+}) {
+  const totalSeconds = Math.max(1, Math.min(3600, Math.round(settings.minMoveSeconds)));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  const updateThreshold = (nextMinutes: number, nextSeconds: number) => {
+    const normalizedMinutes = Math.max(0, Math.min(60, Math.round(nextMinutes || 0)));
+    const normalizedSeconds = Math.max(0, Math.min(59, Math.round(nextSeconds || 0)));
+    onUpdate({
+      minMoveSeconds: Math.max(1, normalizedMinutes * 60 + normalizedSeconds),
+    });
+  };
+
+  return (
+    <Modal opened={opened} onClose={onClose} title="Long-think settings" centered>
+      <Stack gap="sm">
+        <Group justify="space-between" align="center">
+          <Text size="sm" c="dimmed">
+            Train time-management cards from moves that reached this think time.
+          </Text>
+          <Badge variant="light" color="orange">
+            {matchCount} of {clockDataCount}
+          </Badge>
+        </Group>
+        <SimpleGrid cols={2} spacing="sm">
+          <NumberInput
+            label="Minutes"
+            value={minutes}
+            min={0}
+            max={60}
+            onChange={(value) => updateThreshold(Number(value) || 0, seconds)}
+          />
+          <NumberInput
+            label="Seconds"
+            value={seconds}
+            min={0}
+            max={59}
+            onChange={(value) => updateThreshold(minutes, Number(value) || 0)}
+          />
+        </SimpleGrid>
+        <Text size="xs" c="dimmed">
+          Current threshold: {thresholdText}. Correspondence games stay out of this trainer.
+        </Text>
+      </Stack>
+    </Modal>
+  );
+}
+
 function MistakeReviewGameInfoPanel({ position }: { position: Position | null }) {
   const [expanded, setExpanded] = useState(false);
   const mistake = position?.mistakeReview;
@@ -5448,18 +5629,26 @@ function formatMistakeReviewTimeControl(mistake: NonNullable<Position["mistakeRe
   return "Unknown";
 }
 
-function formatMistakeReviewThinkTime(mistake: NonNullable<Position["mistakeReview"]>) {
+function formatMistakeReviewThinkTime(
+  mistake: NonNullable<Position["mistakeReview"]>,
+  activeLongThinkSeconds?: number,
+) {
   const timeText = formatMistakeReviewMoveTime(mistake.moveTimeSeconds);
   if (!timeText) return "Unknown";
 
-  const threshold = mistake.longThinkThresholdSeconds;
-  if (
-    mistake.timeManagement?.enabled &&
-    typeof threshold === "number" &&
-    Number.isFinite(threshold)
-  ) {
+  const threshold =
+    typeof activeLongThinkSeconds === "number" && Number.isFinite(activeLongThinkSeconds)
+      ? activeLongThinkSeconds
+      : mistake.longThinkThresholdSeconds;
+  if (typeof threshold === "number" && Number.isFinite(threshold)) {
     const thresholdText = formatMistakeReviewMoveTime(threshold);
-    return thresholdText ? `${timeText} (${thresholdText}+ target)` : timeText;
+    const moveTime = mistake.moveTimeSeconds;
+    return thresholdText &&
+      typeof moveTime === "number" &&
+      Number.isFinite(moveTime) &&
+      moveTime >= threshold
+      ? `${timeText} (${thresholdText}+ target)`
+      : timeText;
   }
 
   return timeText;
@@ -5754,16 +5943,15 @@ function getReviewPositionLastPlayedSortTime(position: Position) {
   return withTime.getTime();
 }
 
-function isMistakeReviewLongThinkPosition(position: Position) {
+function isMistakeReviewLongThinkPosition(position: Position, minMoveSeconds?: number) {
   const metadata = position.mistakeReview;
-  const moveTime = metadata?.moveTimeSeconds;
-  if (typeof moveTime !== "number" || !Number.isFinite(moveTime)) return false;
-
   const threshold =
-    metadata?.longThinkThresholdSeconds ??
-    metadata?.timeManagement?.minMoveSeconds ??
-    DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds;
-  return moveTime >= Math.max(0, threshold);
+    typeof minMoveSeconds === "number" && Number.isFinite(minMoveSeconds)
+      ? minMoveSeconds
+      : (metadata?.longThinkThresholdSeconds ??
+        metadata?.timeManagement?.minMoveSeconds ??
+        DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds);
+  return isMistakeReviewTimeManagementPosition(position, threshold);
 }
 
 function getMistakeReviewTimeControlLabel(
@@ -6175,6 +6363,7 @@ function OpeningReviewPositionsModal({
   onClose,
   deckPath,
   isMistakeReview,
+  mistakeLongThinkMinSeconds,
   onTrainDue,
   onTrainAll,
   onLoadPosition,
@@ -6183,6 +6372,7 @@ function OpeningReviewPositionsModal({
   onClose: () => void;
   deckPath: string;
   isMistakeReview: boolean;
+  mistakeLongThinkMinSeconds?: number;
   onTrainDue: (indices?: number[], label?: string) => void;
   onTrainAll: (indices?: number[], label?: string) => void;
   onLoadPosition: (positionIndex: number) => void;
@@ -6212,6 +6402,13 @@ function OpeningReviewPositionsModal({
     () => getOpeningHealthDateBounds(dateRange, customStartDate, customEndDate),
     [customEndDate, customStartDate, dateRange],
   );
+  const mistakeLongThinkThresholdSeconds =
+    typeof mistakeLongThinkMinSeconds === "number" && Number.isFinite(mistakeLongThinkMinSeconds)
+      ? mistakeLongThinkMinSeconds
+      : DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds;
+  const mistakeLongThinkThresholdText =
+    formatMistakeReviewMoveTime(mistakeLongThinkThresholdSeconds) ??
+    `${mistakeLongThinkThresholdSeconds}s`;
   const editingPosition = useMemo(
     () => (editingIndex === null ? null : (deck.positions[editingIndex] ?? null)),
     [deck.positions, editingIndex],
@@ -6379,7 +6576,10 @@ function OpeningReviewPositionsModal({
               Number.isFinite(metadata.moveTimeSeconds);
             if (mistakeThinkTimeFilter === "known" && !hasThinkTime) return false;
             if (mistakeThinkTimeFilter === "missing" && hasThinkTime) return false;
-            if (mistakeThinkTimeFilter === "long" && !isMistakeReviewLongThinkPosition(position)) {
+            if (
+              mistakeThinkTimeFilter === "long" &&
+              !isMistakeReviewLongThinkPosition(position, mistakeLongThinkThresholdSeconds)
+            ) {
               return false;
             }
             return true;
@@ -6389,6 +6589,7 @@ function OpeningReviewPositionsModal({
       isMistakeReview,
       mistakeNatureFilter,
       mistakePhaseFilter,
+      mistakeLongThinkThresholdSeconds,
       mistakeSeverityFilters,
       mistakeThinkTimeFilter,
       mistakeTimeControlFilter,
@@ -6460,7 +6661,7 @@ function OpeningReviewPositionsModal({
       ? mistakeThinkTimeFilter === "known"
         ? "Clock data"
         : mistakeThinkTimeFilter === "long"
-          ? "Long think"
+          ? `Long think (${mistakeLongThinkThresholdText}+)`
           : "Missing clock"
       : null;
   const activeMistakeTimeControlLabel =
@@ -6881,7 +7082,7 @@ function OpeningReviewPositionsModal({
                 data={[
                   { value: "all", label: "All" },
                   { value: "known", label: "Has clock" },
-                  { value: "long", label: "Long think" },
+                  { value: "long", label: `Long think (${mistakeLongThinkThresholdText}+)` },
                   { value: "missing", label: "Missing clock" },
                 ]}
                 allowDeselect={false}
@@ -7071,7 +7272,9 @@ function OpeningReviewPositionsModal({
               const mistakeNatureConfidence = mistake
                 ? getMistakeReviewNatureConfidence(position)
                 : null;
-              const mistakeThinkTime = mistake ? formatMistakeReviewThinkTime(mistake) : "Unknown";
+              const mistakeThinkTime = mistake
+                ? formatMistakeReviewThinkTime(mistake, mistakeLongThinkThresholdSeconds)
+                : "Unknown";
               const mistakeTimeControl = getMistakeReviewTimeControlLabel(mistake);
               const mistakeLossText =
                 mistake?.cpLoss === undefined ? null : `${Math.round(mistake.cpLoss)} cp`;
@@ -7118,7 +7321,10 @@ function OpeningReviewPositionsModal({
                               </Badge>
                             </Tooltip>
                           )}
-                          {isMistakeReviewLongThinkPosition(position) && (
+                          {isMistakeReviewLongThinkPosition(
+                            position,
+                            mistakeLongThinkThresholdSeconds,
+                          ) && (
                             <Badge size="xs" variant="light" color="orange">
                               Long think
                             </Badge>

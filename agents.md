@@ -227,6 +227,9 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
   answer move is scored and the SRS panel appears instead of a return prompt.
 - Mistake Review game info is anchored below the main action area so the board
   and action controls stay primary.
+- Time-management training has a per-deck long-think threshold setting on the
+  trainer button; trainer counts, position filters, and future auto-updates use
+  the current threshold while preserving clock-data safety.
 
 ### Practice Bot Trainer
 

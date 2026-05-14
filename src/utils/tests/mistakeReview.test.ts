@@ -812,6 +812,15 @@ describe("mistake review helpers", () => {
                 },
             ).map((item) => item.reviewKey),
         ).toEqual(["longest-think", "long-think"]);
+
+        expect(
+            getMistakeReviewTimeManagementBatch(
+                [shortThink, dailyThink, longThink, savedCorrespondenceBucket, longestThink],
+                {
+                    minMoveSeconds: 60,
+                },
+            ).map((item) => item.reviewKey),
+        ).toEqual(["longest-think"]);
     });
 
     test("SM2 review schedule starts at one day and grows from there", () => {
