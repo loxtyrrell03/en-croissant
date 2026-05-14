@@ -65,6 +65,45 @@
   font-size: var(--mantine-font-size-sm);
 }
 
+.openingStatsPanel {
+  container-type: inline-size;
+  min-width: 0;
+}
+
+.openingStatsFilterChips {
+  min-width: 0;
+}
+
+.openingStatsHoverLabel {
+  cursor: help;
+  width: fit-content;
+}
+
+.openingStatsOpeningList {
+  border-top: 1px solid var(--mantine-color-default-border);
+}
+
+.openingStatsOpeningRow {
+  justify-content: space-between;
+  min-width: 0;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+.openingStatsOpeningMain {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.openingStatsOpeningText {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.openingStatsOpeningActions {
+  flex: 0 0 auto;
+}
+
 @container (max-width: 26rem) {
   .reviewActionGrid {
     grid-template-columns: 1fr;
@@ -77,5 +116,14 @@
   .reviewMovesPanel {
     height: clamp(12rem, 28vh, 15rem);
     min-height: 12rem;
+  }
+
+  .openingStatsOpeningRow {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .openingStatsOpeningActions {
+    margin-left: calc(92px + var(--mantine-spacing-xs));
   }
 }

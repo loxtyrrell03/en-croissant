@@ -246,6 +246,8 @@ const openingReviewPanelModeControlStyle = {
 } as const;
 
 const OPENING_REVIEW_PREVIEW_BOARD_SIZE = 168;
+const OPENING_REVIEW_STATS_LIST_BOARD_SIZE = 92;
+const OPENING_REVIEW_STATS_TABLE_BOARD_SIZE = 116;
 
 const DAILY_REVIEW_GAME_PERIOD_OPTIONS = [
   { value: "all", label: "All games" },
@@ -2506,9 +2508,7 @@ function OpeningReviewPanel({
       { mode: sessionStats.mode, remainingPositions },
       {
         excludePositionIndex: positionIndex,
-        ...(sessionStats.remainingPositions.length > 0
-          ? { scopeIndices: remainingPositions }
-          : {}),
+        ...(sessionStats.remainingPositions.length > 0 ? { scopeIndices: remainingPositions } : {}),
       },
     );
   }
@@ -2755,7 +2755,10 @@ function OpeningReviewPanel({
           positions={deck.positions}
           deckMode={deckMode}
           onOpeningNamesResolved={persistOpeningNames}
-          onReviewOpening={(indices, label) => startFullPractice(indices, label)}
+          onReviewOpening={(indices, label) => {
+            startFullPractice(indices, label);
+            setPanelView("review");
+          }}
         />
       </Stack>
     );
@@ -3926,15 +3929,31 @@ function OpeningReviewStatsPage({
   }
 
   return (
-    <Stack gap="sm" style={scrollablePanelStyle}>
+    <Stack gap="sm" style={scrollablePanelStyle} className={classes.openingStatsPanel}>
       <Paper p="xs" withBorder>
         <Stack gap="xs">
           <Group justify="space-between" align="center">
-            <Stack gap={0}>
-              <Text fw={700}>Opening stats</Text>
-            </Stack>
-            <Badge variant="light">{filteredRows.length} positions</Badge>
+            <OpeningReviewStatsSectionHeader
+              title="Filters"
+              detail="Every section below uses these filters. Min games only affects the opening lists and table."
+            />
+            <Group gap={6} wrap="nowrap">
+              <Badge variant="light">
+                {formatReviewNumber(filteredRows.length)} / {formatReviewNumber(positions.length)}{" "}
+                cards
+              </Badge>
+              <Badge variant="light">{formatReviewNumber(sampleRows.length)} groups shown</Badge>
+            </Group>
           </Group>
+          <OpeningReviewStatsFilterSummary
+            colourFilter={colourFilter}
+            resultFilters={resultFilters}
+            timeControlFilter={timeControlFilter}
+            dateBounds={dateBounds}
+            groupBy={groupBy}
+            sortBy={sortBy}
+            minGames={minGames}
+          />
           <Stack gap="xs">
             <SegmentedControl
               value={colourFilter}
@@ -4030,103 +4049,122 @@ function OpeningReviewStatsPage({
 
       <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="xs">
         <OpeningReviewStatsMetric
-          label="Opening groups"
-          value={formatReviewNumber(statsRows.length)}
-          detail={`${formatReviewNumber(summary.positions)} review cards after filters`}
+          label="Cards"
+          value={formatReviewNumber(filteredRows.length)}
+          detail={`${formatReviewNumber(positions.length)} in deck`}
+          tooltip="Review cards after the filter controls above."
+        />
+        <OpeningReviewStatsMetric
+          label="Groups"
+          value={formatReviewNumber(sampleRows.length)}
+          detail={`${formatReviewNumber(statsRows.length)} filtered`}
+          tooltip={`Opening groups after Min games (${formatReviewNumber(minGames)}), plus any group with review attempts.`}
         />
         <OpeningReviewStatsMetric
           label="Game score"
           value={formatNullableReviewPercent(summary.score)}
-          detail={`${formatReviewRecord(summary)}; win=1, draw=0.5, loss=0`}
+          detail={formatReviewRecord(summary)}
+          tooltip="Score from your filtered games: win = 1, draw = 0.5, loss = 0."
         />
         <OpeningReviewStatsMetric
-          label="Win rate"
-          value={formatNullableReviewPercent(summary.winRate)}
-          detail={`${formatReviewNumber(summary.wins)} wins from ${formatReviewNumber(
-            summary.games,
-          )} games`}
-        />
-        <OpeningReviewStatsMetric
-          label="Review recall"
+          label="Recall"
           value={formatNullableReviewPercent(summary.reviewScore)}
           detail={formatOpeningReviewStatsReviewDetail(summary.attempts, summary.lapses)}
+          tooltip="Review recall from trained cards in the filtered set."
         />
       </SimpleGrid>
 
       <OpeningReviewStatsList
         title="Plan gaps"
+        description="Filtered groups where recall is decent but game results trail reference results."
         rows={planGapRows}
         empty="No obvious plan gaps with these filters."
         mode="gap"
+        onTrainOpening={onReviewOpening}
       />
 
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
         <OpeningReviewStatsList
-          title="Best openings"
+          title="Best shown"
+          description="Highest game score after the filters above."
           rows={bestRows}
           empty="No result data yet."
           mode="score"
+          onTrainOpening={onReviewOpening}
         />
         <OpeningReviewStatsList
-          title="Worst openings"
+          title="Worst shown"
+          description="Lowest game score after the filters above."
           rows={worstRows}
           empty="No result data yet."
           mode="score"
+          onTrainOpening={onReviewOpening}
         />
       </SimpleGrid>
 
       <Paper p="xs" withBorder>
         <Stack gap="xs">
           <Group justify="space-between" align="center">
-            <Text fw={700}>Opening performance</Text>
+            <OpeningReviewStatsSectionHeader
+              title="All shown"
+              detail="Filtered opening groups, sorted by the Sort control. This is the full table behind the summary lists."
+            />
             <Badge variant="light">{rankedRows.length} shown</Badge>
           </Group>
           <Box style={{ overflowX: "auto" }}>
-            <Table miw={1320}>
+            <Table miw={1040}>
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th>Position</Table.Th>
                   <Table.Th>Opening</Table.Th>
                   <Table.Th>
                     <OpeningReviewStatsColumnHeader
-                      label="Your games"
-                      detail="Win/draw/loss after reaching this opening"
+                      label="Your WDL"
+                      detail="Your win/draw/loss after reaching this opening."
                     />
                   </Table.Th>
                   <Table.Th>
                     <OpeningReviewStatsColumnHeader
-                      label="Reference games"
-                      detail="Normal result from the reference database"
+                      label="Reference"
+                      detail="Reference win/draw/loss from saved strong-game data, or the filtered average when reference data is unavailable."
                     />
                   </Table.Th>
                   <Table.Th>
                     <OpeningReviewStatsColumnHeader
-                      label="Review recall"
-                      detail="Remembered / attempts"
+                      label="Recall"
+                      detail="Remembered review attempts divided by total attempts."
                     />
                   </Table.Th>
-                  <Table.Th>What it means</Table.Th>
-                  <Table.Th>Action</Table.Th>
+                  <Table.Th>Signal</Table.Th>
+                  <Table.Th>Train</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
                 {rankedRows.slice(0, 40).map((row) => (
                   <Table.Tr key={row.key}>
                     <Table.Td>
-                      <OpeningReviewStatsBoard position={row.previewPosition} side={row.side} />
+                      <OpeningReviewStatsBoard
+                        position={row.previewPosition}
+                        side={row.side}
+                        size={OPENING_REVIEW_STATS_TABLE_BOARD_SIZE}
+                      />
                     </Table.Td>
                     <Table.Td>
                       <Stack gap={2}>
                         <Text size="sm" fw={700} lineClamp={2}>
                           {row.name}
                         </Text>
-                        <Text size="xs" c="dimmed">
-                          {formatReviewRecord(row)} from {formatReviewNumber(row.games)} games
-                        </Text>
-                        <Text size="xs" c="dimmed">
-                          {row.positions} review card
-                          {row.positions === 1 ? "" : "s"}
-                        </Text>
+                        <Group gap={4}>
+                          <Badge size="xs" variant="light">
+                            {formatReviewNumber(row.games)} games
+                          </Badge>
+                          <Badge size="xs" variant="light">
+                            {formatReviewRecord(row)}
+                          </Badge>
+                          <Badge size="xs" variant="light">
+                            {formatReviewNumber(row.positions)} cards
+                          </Badge>
+                        </Group>
                       </Stack>
                     </Table.Td>
                     <Table.Td>
@@ -4163,13 +4201,7 @@ function OpeningReviewStatsPage({
                       <OpeningReviewStatsSignal row={row} />
                     </Table.Td>
                     <Table.Td>
-                      <Button
-                        size="compact-xs"
-                        variant="light"
-                        onClick={() => onReviewOpening(row.indices, row.name)}
-                      >
-                        Review
-                      </Button>
+                      <OpeningReviewStatsTrainButton row={row} onTrainOpening={onReviewOpening} />
                     </Table.Td>
                   </Table.Tr>
                 ))}
@@ -4191,20 +4223,113 @@ function OpeningReviewStatsPage({
   );
 }
 
+function OpeningReviewStatsSectionHeader({ title, detail }: { title: string; detail: string }) {
+  return (
+    <Group gap={6} wrap="nowrap" miw={0}>
+      <Text fw={700} truncate>
+        {title}
+      </Text>
+      <Tooltip label={detail} withArrow multiline w={260}>
+        <ThemeIcon size="xs" variant="subtle" color="gray" aria-label={`${title} details`}>
+          <IconInfoCircle size={14} />
+        </ThemeIcon>
+      </Tooltip>
+    </Group>
+  );
+}
+
+function OpeningReviewStatsFilterSummary({
+  colourFilter,
+  resultFilters,
+  timeControlFilter,
+  dateBounds,
+  groupBy,
+  sortBy,
+  minGames,
+}: {
+  colourFilter: OpeningReviewColourFilter;
+  resultFilters: OpeningReviewStatsResultFilter[];
+  timeControlFilter: string;
+  dateBounds: ReturnType<typeof getOpeningHealthDateBounds>;
+  groupBy: OpeningReviewStatsGroupBy;
+  sortBy: OpeningReviewStatsSort;
+  minGames: number;
+}) {
+  const chips = [
+    {
+      label: "Colour",
+      value: formatOpeningReviewStatsColourFilter(colourFilter),
+      active: colourFilter !== "any",
+    },
+    {
+      label: "Results",
+      value:
+        resultFilters.length === 0
+          ? "All"
+          : resultFilters.map(formatOpeningReviewStatsResultFilter).join(", "),
+      active: resultFilters.length > 0,
+    },
+    {
+      label: "Time",
+      value: timeControlFilter === "all" ? "All" : timeControlFilter,
+      active: timeControlFilter !== "all",
+    },
+    {
+      label: "Played",
+      value: formatOpeningHealthDateFilter(dateBounds),
+      active: openingHealthDateBoundsAreActive(dateBounds),
+    },
+    {
+      label: "Group",
+      value: formatOpeningReviewStatsGroupBy(groupBy),
+      active: groupBy !== "family",
+    },
+    {
+      label: "Min games",
+      value: formatReviewNumber(minGames),
+      active: minGames > 0,
+    },
+    {
+      label: "Sort",
+      value: formatOpeningReviewStatsSort(sortBy),
+      active: sortBy !== "planGap",
+    },
+  ];
+
+  return (
+    <Group gap={6} className={classes.openingStatsFilterChips}>
+      {chips.map((chip) => (
+        <Badge
+          key={chip.label}
+          size="sm"
+          variant={chip.active ? "light" : "outline"}
+          color={chip.active ? "blue" : "gray"}
+        >
+          {chip.label}: {chip.value}
+        </Badge>
+      ))}
+    </Group>
+  );
+}
+
 function OpeningReviewStatsMetric({
   label,
   value,
   detail,
+  tooltip,
 }: {
   label: string;
   value: string;
   detail: string;
+  tooltip: string;
 }) {
   return (
     <Paper p="xs" withBorder radius="sm">
-      <Text size="xs" c="dimmed" fw={600}>
-        {label}
-      </Text>
+      <Tooltip label={tooltip} withArrow multiline w={240}>
+        <Text size="xs" c="dimmed" fw={600} className={classes.openingStatsHoverLabel}>
+          {label}
+        </Text>
+      </Tooltip>
       <Text fw={800}>{value}</Text>
       <Text size="xs" c="dimmed">
         {detail}
@@ -4215,29 +4340,33 @@ function OpeningReviewStatsMetric({
 
 function OpeningReviewStatsColumnHeader({ label, detail }: { label: string; detail: string }) {
   return (
-    <Stack gap={0}>
+    <Group gap={4} wrap="nowrap">
       <Text size="sm" fw={700}>
         {label}
       </Text>
-      <Text size="xs" c="dimmed" fw={400}>
-        {detail}
-      </Text>
-    </Stack>
+      <Tooltip label={detail} withArrow multiline w={240}>
+        <ThemeIcon size="xs" variant="subtle" color="gray" aria-label={`${label} details`}>
+          <IconInfoCircle size={13} />
+        </ThemeIcon>
+      </Tooltip>
+    </Group>
   );
 }
 
 function OpeningReviewStatsBoard({
   position,
   side,
+  size = OPENING_REVIEW_PREVIEW_BOARD_SIZE,
 }: {
   position: Position;
   side: "white" | "black";
+  size?: number;
 }) {
   return (
     <Tooltip label="Representative review position" withArrow>
       <Box
-        w={OPENING_REVIEW_PREVIEW_BOARD_SIZE}
-        miw={OPENING_REVIEW_PREVIEW_BOARD_SIZE}
+        w={size}
+        miw={size}
         style={{
           borderRadius: 4,
           overflow: "hidden",
@@ -4258,113 +4387,129 @@ function OpeningReviewStatsBoard({
 
 function OpeningReviewStatsList({
   title,
+  description,
   rows,
   empty,
   mode,
+  onTrainOpening,
 }: {
   title: string;
+  description: string;
   rows: OpeningReviewStatsGroup[];
   empty: string;
   mode: "score" | "gap";
+  onTrainOpening: (indices: number[], label: string) => void;
 }) {
   return (
     <Paper p="xs" withBorder>
       <Stack gap="xs">
-        <Text fw={700}>{title}</Text>
+        <Group justify="space-between" gap="xs" wrap="nowrap">
+          <OpeningReviewStatsSectionHeader title={title} detail={description} />
+          <Badge variant="light">{formatReviewNumber(rows.length)} shown</Badge>
+        </Group>
         {rows.length === 0 ? (
           <Text size="sm" c="dimmed">
             {empty}
           </Text>
         ) : (
-          <Stack gap="xs">
+          <Stack gap={0} className={classes.openingStatsOpeningList}>
             {rows.map((row) => {
               const metric =
                 mode === "gap"
-                  ? formatSignedReviewPercent(row.winRateGap ?? row.scoreGap)
+                  ? formatSignedReviewPoints(row.winRateGap ?? row.scoreGap)
                   : formatNullableReviewPercent(row.score);
-              const detail =
-                mode === "gap"
-                  ? `Your win rate ${formatNullableReviewPercent(
-                      row.winRate,
-                    )}; reference win rate ${formatNullableReviewPercent(row.normalWinRate)}`
-                  : `Game score ${formatNullableReviewPercent(row.score)} from ${formatReviewRecord(
-                      row,
-                    )}`;
 
               return (
-                <Group key={row.key} justify="space-between" gap="xs" wrap="nowrap" align="center">
-                  <Group gap="xs" wrap="nowrap" style={{ minWidth: 0 }}>
-                    <OpeningReviewStatsBoard position={row.previewPosition} side={row.side} />
-                    <Stack gap={2} style={{ minWidth: 0 }}>
-                      <Text size="sm" fw={600} lineClamp={2}>
-                        {row.name}
-                      </Text>
-                      <Text size="xs" c="dimmed">
-                        {detail}
-                      </Text>
-                      <Text size="xs" c="dimmed">
-                        {mode === "gap"
-                          ? `${formatSignedReviewPercent(
-                              row.winRateGap ?? row.scoreGap,
-                            )} win-rate gap; ${formatOpeningReviewStatsReviewDetail(
-                              row.attempts,
-                              row.lapses,
-                            )}`
-                          : `${formatNullableReviewPercent(row.winRate)} win rate; ${formatReviewNumber(
-                              row.games,
-                            )} games`}
-                      </Text>
-                      {mode === "gap" && (
-                        <Stack gap={6} mt={4} w="100%">
-                          <OpeningReviewWdlBar
-                            label="Your games"
-                            wins={row.wins}
-                            draws={row.draws}
-                            losses={row.losses}
-                            score={row.score}
-                            winRate={row.winRate}
-                            side={row.side}
-                            empty="No saved games."
-                          />
-                          <OpeningReviewWdlBar
-                            label="Reference games"
-                            wins={row.referenceWins}
-                            draws={row.referenceDraws}
-                            losses={row.referenceLosses}
-                            score={row.referenceScore}
-                            winRate={row.referenceWinRate}
-                            side={row.side}
-                            empty="No reference games."
-                          />
-                        </Stack>
-                      )}
-                      {mode === "score" && (
-                        <Stack gap={6} mt={4} w="100%">
-                          <OpeningReviewWdlBar
-                            label="Your games"
-                            wins={row.wins}
-                            draws={row.draws}
-                            losses={row.losses}
-                            score={row.score}
-                            winRate={row.winRate}
-                            side={row.side}
-                            empty="No saved games."
-                            compact
-                          />
-                        </Stack>
-                      )}
+                <Group
+                  key={row.key}
+                  gap="xs"
+                  wrap="nowrap"
+                  className={classes.openingStatsOpeningRow}
+                >
+                  <Group gap="xs" wrap="nowrap" className={classes.openingStatsOpeningMain}>
+                    <OpeningReviewStatsBoard
+                      position={row.previewPosition}
+                      side={row.side}
+                      size={OPENING_REVIEW_STATS_LIST_BOARD_SIZE}
+                    />
+                    <Stack gap={4} className={classes.openingStatsOpeningText}>
+                      <Group gap={4} wrap="nowrap" miw={0}>
+                        <Text
+                          size="sm"
+                          fw={700}
+                          lineClamp={1}
+                          className={classes.reviewDetailValue}
+                        >
+                          {row.name}
+                        </Text>
+                        <Badge
+                          size="xs"
+                          variant="light"
+                          color={row.side === "white" ? "gray" : "dark"}
+                        >
+                          {row.side === "white" ? "White" : "Black"}
+                        </Badge>
+                      </Group>
+                      <Group gap={4}>
+                        <Badge size="xs" variant="light">
+                          {formatReviewNumber(row.games)} games
+                        </Badge>
+                        <Badge size="xs" variant="light">
+                          {formatReviewRecord(row)}
+                        </Badge>
+                        <Badge size="xs" variant="light">
+                          {formatReviewNumber(row.positions)} cards
+                        </Badge>
+                        {row.due > 0 && (
+                          <Badge size="xs" variant="light" color="orange">
+                            {formatReviewNumber(row.due)} due
+                          </Badge>
+                        )}
+                      </Group>
+                      <Group gap={4}>
+                        {mode === "gap" ? (
+                          <>
+                            <Badge size="xs" variant="outline">
+                              You {formatNullableReviewPercent(row.winRate)}
+                            </Badge>
+                            <Badge size="xs" variant="outline">
+                              Ref {formatNullableReviewPercent(row.normalWinRate)}
+                            </Badge>
+                            <Badge size="xs" variant="outline">
+                              Recall {formatNullableReviewPercent(row.reviewScore)}
+                            </Badge>
+                          </>
+                        ) : (
+                          <>
+                            <Badge size="xs" variant="outline">
+                              Score {formatNullableReviewPercent(row.score)}
+                            </Badge>
+                            <Badge size="xs" variant="outline">
+                              Win {formatNullableReviewPercent(row.winRate)}
+                            </Badge>
+                            <Badge size="xs" variant="outline">
+                              Recall {formatNullableReviewPercent(row.reviewScore)}
+                            </Badge>
+                          </>
+                        )}
+                      </Group>
                     </Stack>
                   </Group>
-                  <Stack gap={2} align="flex-end">
-                    <Badge
-                      color={mode === "gap" ? "orange" : openingReviewStatsScoreColor(row.score)}
+                  <Group gap={6} wrap="nowrap" className={classes.openingStatsOpeningActions}>
+                    <Tooltip
+                      label={<OpeningReviewStatsRowTooltip row={row} mode={mode} />}
+                      withArrow
+                      multiline
+                      w={300}
                     >
-                      {metric}
-                    </Badge>
-                    <Text size="xs" c="dimmed" ta="right">
-                      {mode === "gap" ? "gap" : "score"}
-                    </Text>
-                  </Stack>
+                      <Badge
+                        color={mode === "gap" ? "orange" : openingReviewStatsScoreColor(row.score)}
+                      >
+                        {metric}
+                      </Badge>
+                    </Tooltip>
+                    <OpeningReviewStatsTrainButton row={row} onTrainOpening={onTrainOpening} />
+                  </Group>
                 </Group>
               );
             })}
@@ -4375,23 +4520,85 @@ function OpeningReviewStatsList({
   );
 }
 
+function OpeningReviewStatsRowTooltip({
+  row,
+  mode,
+}: {
+  row: OpeningReviewStatsGroup;
+  mode: "score" | "gap";
+}) {
+  const gap = row.winRateGap ?? row.scoreGap;
+  const referenceRecord = formatReviewRecord({
+    wins: row.referenceWins,
+    draws: row.referenceDraws,
+    losses: row.referenceLosses,
+  });
+  return (
+    <Stack gap={2}>
+      <Text size="xs" fw={700}>
+        {row.name}
+      </Text>
+      <Text size="xs">
+        Your games: {formatReviewRecord(row)}, score {formatNullableReviewPercent(row.score)}, win{" "}
+        {formatNullableReviewPercent(row.winRate)}.
+      </Text>
+      <Text size="xs">
+        Reference: {referenceRecord}, win {formatNullableReviewPercent(row.normalWinRate)}.
+      </Text>
+      <Text size="xs">
+        Review: {formatOpeningReviewStatsReviewDetail(row.attempts, row.lapses)}{" "}
+        {formatReviewNumber(row.due)} due.
+      </Text>
+      {mode === "gap" && gap !== null && (
+        <Text size="xs">Gap: {formatSignedReviewPercent(gap)} below reference/normal.</Text>
+      )}
+      {row.timeControls.length > 0 && (
+        <Text size="xs">Time controls: {row.timeControls.join(", ")}.</Text>
+      )}
+    </Stack>
+  );
+}
+
+function OpeningReviewStatsTrainButton({
+  row,
+  onTrainOpening,
+}: {
+  row: OpeningReviewStatsGroup;
+  onTrainOpening: (indices: number[], label: string) => void;
+}) {
+  return (
+    <Tooltip
+      label={`Train ${formatReviewNumber(row.positions)} card${
+        row.positions === 1 ? "" : "s"
+      } from this opening${row.due > 0 ? `, ${formatReviewNumber(row.due)} due` : ""}.`}
+      withArrow
+    >
+      <Button
+        size="compact-xs"
+        variant="light"
+        leftSection={<IconTargetArrow size={13} />}
+        onClick={() => onTrainOpening(row.indices, row.name)}
+      >
+        Train
+      </Button>
+    </Tooltip>
+  );
+}
+
 function OpeningReviewScoreMeter({ value, detail }: { value: number | null; detail: string }) {
   if (value === null) {
     return (
-      <Stack gap={2}>
+      <Tooltip label={detail} withArrow>
         <Text size="sm" c="dimmed">
           No data
         </Text>
-        <Text size="xs" c="dimmed">
-          {detail}
-        </Text>
-      </Stack>
+      </Tooltip>
     );
   }
 
   const percent = clamp(Math.round(value * 100), 0, 100);
   return (
-    <Stack gap={2}>
+    <Tooltip label={detail} withArrow>
       <Group gap="xs" wrap="nowrap">
         <Progress.Root w={70} size="sm">
           <Progress.Section value={percent} color={openingReviewStatsScoreColor(value)} />
@@ -4400,10 +4607,7 @@ function OpeningReviewScoreMeter({ value, detail }: { value: number | null; deta
           {percent}%
         </Text>
       </Group>
-      <Text size="xs" c="dimmed">
-        {detail}
-      </Text>
-    </Stack>
+    </Tooltip>
   );
 }
 
@@ -4411,62 +4615,56 @@ function OpeningReviewStatsSignal({ row }: { row: OpeningReviewStatsGroup }) {
   const gap = row.winRateGap ?? row.scoreGap;
   if (row.games === 0 || row.score === null) {
     return (
-      <Stack gap={2}>
+      <Tooltip label="This opening has review cards but no saved game results." withArrow>
         <Badge variant="light">No game data</Badge>
-        <Text size="xs" c="dimmed">
-          This opening has review cards but no saved results.
-        </Text>
-      </Stack>
+      </Tooltip>
     );
   }
 
   if ((row.reviewScore ?? 0) >= 0.7 && gap !== null && gap >= 0.06) {
     return (
-      <Stack gap={2}>
+      <Tooltip
+        label={`Your win rate is ${formatOpeningReviewStatsGapBelow(
+          gap,
+        )} reference/normal while recall is ${formatNullableReviewPercent(row.reviewScore)}.`}
+        withArrow
+        multiline
+        w={260}
+      >
         <Badge color="orange" variant="light">
           Plan gap
         </Badge>
-        <Text size="xs" c="dimmed">
-          Your win rate is {formatOpeningReviewStatsGapBelow(gap)} reference/normal while review
-          recall is {formatNullableReviewPercent(row.reviewScore)}.
-        </Text>
-      </Stack>
+      </Tooltip>
     );
   }
 
   if (row.score >= 0.55) {
     return (
-      <Stack gap={2}>
+      <Tooltip label="Game score is above 55%." withArrow>
         <Badge color="green" variant="light">
-          Performing well
+          Strong
         </Badge>
-        <Text size="xs" c="dimmed">
-          Game score is above 55%.
-        </Text>
-      </Stack>
+      </Tooltip>
     );
   }
 
   if (row.score <= 0.45) {
     return (
-      <Stack gap={2}>
+      <Tooltip
+        label={`Game score is 45% or lower from ${formatReviewNumber(row.games)} games.`}
+        withArrow
+      >
         <Badge color="red" variant="light">
           Needs work
         </Badge>
-        <Text size="xs" c="dimmed">
-          Game score is 45% or lower from {formatReviewNumber(row.games)} games.
-        </Text>
-      </Stack>
+      </Tooltip>
     );
   }
 
   return (
-    <Stack gap={2}>
+    <Tooltip label="Game score is near the middle." withArrow>
       <Badge variant="light">Neutral</Badge>
-      <Text size="xs" c="dimmed">
-        Game score is near the middle.
-      </Text>
-    </Stack>
+    </Tooltip>
   );
 }
 
@@ -4518,13 +4716,13 @@ function OpeningReviewWdlBar({
   )} draw${draws === 1 ? "" : "s"}, ${formatReviewNumber(losses)} loss${losses === 1 ? "" : "es"}`;
 
   return (
-    <Stack gap={4} miw={compact ? 0 : 260} w="100%">
+    <Stack gap={4} miw={compact ? 0 : 180} w="100%">
       <Group justify="space-between" gap="xs" wrap="nowrap">
         <Text size="xs" c="dimmed">
           {label}
         </Text>
-        <Text size="xs" fw={700}>
-          {winRateText}
+        <Text size="xs" fw={700} ta="right">
+          {formatReviewRecord({ wins, draws, losses })} · {scoreText}
         </Text>
       </Group>
       <Tooltip withArrow label={`${recordText}. ${winRateText}. ${scoreText}.`}>
@@ -4547,9 +4745,6 @@ function OpeningReviewWdlBar({
           </Progress.Section>
         </Progress.Root>
       </Tooltip>
-      <Text size="xs" c="dimmed">
-        {recordText}. {scoreText}.
-      </Text>
     </Stack>
   );
 }
@@ -4877,8 +5072,60 @@ function normalizeOpeningReviewStatsTimeControl(value: string | null | undefined
   return raw;
 }
 
+function formatOpeningReviewStatsColourFilter(value: OpeningReviewColourFilter) {
+  switch (value) {
+    case "white":
+      return "White";
+    case "black":
+      return "Black";
+    case "any":
+      return "All";
+  }
+}
+
+function formatOpeningReviewStatsResultFilter(value: OpeningReviewStatsResultFilter) {
+  switch (value) {
+    case "wins":
+      return "Wins";
+    case "draws":
+      return "Draws";
+    case "losses":
+      return "Losses";
+  }
+}
+
+function formatOpeningReviewStatsGroupBy(value: OpeningReviewStatsGroupBy) {
+  switch (value) {
+    case "family":
+      return "Family";
+    case "line":
+      return "Exact line";
+  }
+}
+
+function formatOpeningReviewStatsSort(value: OpeningReviewStatsSort) {
+  switch (value) {
+    case "planGap":
+      return "Plan gaps";
+    case "scoreAsc":
+      return "Worst score";
+    case "scoreDesc":
+      return "Best score";
+    case "reviewDesc":
+      return "Best recall";
+    case "gamesDesc":
+      return "Most games";
+  }
+}
+
 function formatNullableReviewPercent(value: number | null) {
   return value === null ? "Unknown" : formatReviewPercent(value);
+}
+
+function formatSignedReviewPoints(value: number | null) {
+  if (value === null) return "Unknown";
+  const rounded = Math.round(value * 100);
+  return `${rounded > 0 ? "+" : ""}${rounded}pp`;
 }
 
 function formatSignedReviewPercent(value: number | null) {
@@ -5909,8 +6156,7 @@ function getReviewPrewarmPositionIndices(
   return positions
     .map((position, index) => ({ position, index }))
     .filter(
-      ({ position, index }) =>
-        index !== currentPositionIndex && new Date(position.card.due) <= now,
+      ({ position, index }) => index !== currentPositionIndex && new Date(position.card.due) <= now,
     )
     .slice(0, REVIEW_POSITION_PREWARM_LIMIT)
     .map(({ index }) => index);

@@ -205,6 +205,9 @@ with helpers under `src/utils/openingReview*.ts`.
 - Review cards preserve comments, arrows, annotations, board-played move
   overrides, trainer attempts, and post-attempt exploration as saved review-tree
   data.
+- Opening stats now make the active filter scope explicit, use compact
+  hover-detail rows for plan gaps and best/worst openings, and provide a Train
+  button on each opening group so users can practice only that opening's cards.
 - Whole decks and individual cards can be deleted.
 - Older cards with generic cloud-validation source labels remain compatible.
 
