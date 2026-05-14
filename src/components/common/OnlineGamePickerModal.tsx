@@ -78,6 +78,7 @@ type OnlineGameRowDetails = {
   title: string;
   event: string;
   result: string;
+  timeControl: string;
 };
 
 const ONLINE_PROVIDERS: { value: OnlineProvider; label: string }[] = [
@@ -555,6 +556,9 @@ function OnlineGameRow({
               <Text size="xs" c="dimmed">
                 {dayjs(game.playedAt).format("YYYY-MM-DD HH:mm")}
               </Text>
+              <Text size="xs" c="dimmed" title="Time control">
+                {details.timeControl}
+              </Text>
               {details.result && (
                 <Text size="xs" c="dimmed">
                   {details.result}
@@ -707,13 +711,77 @@ function getOnlineGameDisplay(game: RecentOnlineGame) {
   const black = getPgnHeader(game.pgn, "Black");
   const event = getPgnHeader(game.pgn, "Event") || game.url;
   const result = getPgnHeader(game.pgn, "Result");
+  const timeControl = getOnlineGameTimeControl(game.pgn);
   const title = white && black ? `${white} vs ${black}` : event || `${game.sourceLabel} game`;
 
   return {
     title,
     event,
     result,
+    timeControl,
   };
+}
+
+function getOnlineGameTimeControl(pgn: string) {
+  const sharedTimeControl = getPgnHeader(pgn, "TimeControl");
+  const whiteTimeControl = getPgnHeader(pgn, "WhiteTimeControl");
+  const blackTimeControl = getPgnHeader(pgn, "BlackTimeControl");
+
+  if (sharedTimeControl) return formatOnlineGameTimeControl(sharedTimeControl);
+  if (whiteTimeControl && blackTimeControl) {
+    const whiteLabel = formatOnlineGameTimeControl(whiteTimeControl);
+    const blackLabel = formatOnlineGameTimeControl(blackTimeControl);
+    return whiteLabel === blackLabel ? whiteLabel : `W ${whiteLabel} / B ${blackLabel}`;
+  }
+
+  const sideTimeControl = whiteTimeControl || blackTimeControl;
+  return sideTimeControl ? formatOnlineGameTimeControl(sideTimeControl) : "Unknown time control";
+}
+
+function formatOnlineGameTimeControl(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === "?") return "Unknown time control";
+  if (trimmed === "-") return "Correspondence";
+
+  const formattedFields = trimmed.split(":").map(formatOnlineGameTimeControlField).filter(Boolean);
+  return formattedFields.length > 0 ? formattedFields.join(" / ") : trimmed;
+}
+
+function formatOnlineGameTimeControlField(value: string) {
+  const field = value.trim();
+  if (!field) return "";
+
+  const stagedMatch = field.match(/^(\d+)\/(\d+)$/);
+  if (stagedMatch) {
+    const moves = Number(stagedMatch[1]);
+    const seconds = Number(stagedMatch[2]);
+    if (!Number.isFinite(moves) || !Number.isFinite(seconds)) return field;
+    if (moves === 1 && seconds >= 24 * 60 * 60) {
+      const days = seconds / (24 * 60 * 60);
+      return Number.isInteger(days) ? `${days} day${days === 1 ? "" : "s"}/move` : "Correspondence";
+    }
+    return `${moves}/${formatOnlineGameBaseTime(seconds)}`;
+  }
+
+  const match = field.match(/^(\d+)(?:\+(\d+))?$/);
+  if (!match) return field;
+
+  const initialSeconds = Number(match[1]);
+  const incrementSeconds = Number(match[2] ?? 0);
+  if (!Number.isFinite(initialSeconds)) return field;
+
+  const initialDisplay = formatOnlineGameBaseTime(initialSeconds);
+  if (!Number.isFinite(incrementSeconds) || incrementSeconds <= 0) return initialDisplay;
+  const compactInitial =
+    initialSeconds >= 60 && initialSeconds % 60 === 0 ? `${initialSeconds / 60}` : initialDisplay;
+  return `${compactInitial}+${incrementSeconds}`;
+}
+
+function formatOnlineGameBaseTime(seconds: number) {
+  if (seconds >= 60 && seconds % 60 === 0) {
+    return `${seconds / 60} min`;
+  }
+  return `${seconds}s`;
 }
 
 function getProviderEmptyMessage(provider: OnlineProvider, linked: boolean, selected: boolean) {

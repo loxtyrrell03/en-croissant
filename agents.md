@@ -163,6 +163,9 @@ and `src/utils/lichess/study.ts`.
 - The online game picker has provider tabs for Lichess and Chess.com, account
   selection, recent-game previews, single-select analysis, and multi-select
   review deck creation.
+- Recent-game picker rows show the formatted time control next to the account,
+  date, and result so online analysis/review choices can be filtered by pace at
+  a glance.
 - Lichess Study links can be imported as local databases.
 - Lichess Study databases support auto-update metadata and refresh tracking.
 - PGN import timestamp normalization was fixed so online-update ordering stays
