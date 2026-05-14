@@ -62,6 +62,7 @@ import {
   Suspense,
   useCallback,
   useContext,
+  useDeferredValue,
   useEffect,
   useMemo,
   useRef,
@@ -1598,30 +1599,32 @@ function OpeningReviewPanel({
   const currentFen = useStore(store, (s) => s.currentNode().fen);
 
   const [deck, setDeck] = useAtom(deckAtomFamily({ file: deckPath, game: 0 }));
-  const stats = useMemo(() => getStats(deck.positions), [deck.positions]);
+  const deferredDeckPositions = useDeferredValue(deck.positions);
+  const summaryPositions = loaded ? deferredDeckPositions : deck.positions;
+  const stats = useMemo(() => getStats(summaryPositions), [summaryPositions]);
   const positionIndexByReference = useMemo(() => {
     const indexes = new Map<Position, number>();
-    deck.positions.forEach((position, index) => indexes.set(position, index));
+    summaryPositions.forEach((position, index) => indexes.set(position, index));
     return indexes;
-  }, [deck.positions]);
+  }, [summaryPositions]);
   const dailyBatch = useMemo(() => {
     if (isMistakeReview && mistakeDailySettings) {
-      return getMistakeReviewDailyBatch(deck.positions, mistakeDailySettings);
+      return getMistakeReviewDailyBatch(summaryPositions, mistakeDailySettings);
     }
     if (!isMistakeReview && openingDailySettings) {
-      return getOpeningReviewDailyBatch(deck.positions, openingDailySettings);
+      return getOpeningReviewDailyBatch(summaryPositions, openingDailySettings);
     }
     return [];
-  }, [deck.positions, isMistakeReview, mistakeDailySettings, openingDailySettings]);
+  }, [summaryPositions, isMistakeReview, mistakeDailySettings, openingDailySettings]);
   const dailyProgress = useMemo(() => {
     if (isMistakeReview && mistakeDailySettings) {
-      return getMistakeReviewDailyProgress(deck.positions, mistakeDailySettings);
+      return getMistakeReviewDailyProgress(summaryPositions, mistakeDailySettings);
     }
     if (!isMistakeReview && openingDailySettings) {
-      return getOpeningReviewDailyProgress(deck.positions, openingDailySettings);
+      return getOpeningReviewDailyProgress(summaryPositions, openingDailySettings);
     }
     return null;
-  }, [deck.positions, isMistakeReview, mistakeDailySettings, openingDailySettings]);
+  }, [summaryPositions, isMistakeReview, mistakeDailySettings, openingDailySettings]);
   const dailyScopeIndices = useMemo(
     () =>
       dailyBatch
@@ -1630,27 +1633,27 @@ function OpeningReviewPanel({
     [dailyBatch, positionIndexByReference],
   );
   const mistakePhaseCounts = useMemo(
-    () => (isMistakeReview ? getMistakeReviewPhaseCounts(deck.positions) : null),
-    [deck.positions, isMistakeReview],
+    () => (isMistakeReview ? getMistakeReviewPhaseCounts(summaryPositions) : null),
+    [summaryPositions, isMistakeReview],
   );
   const mistakeNatureCounts = useMemo(
-    () => (isMistakeReview ? getMistakeReviewNatureCounts(deck.positions) : null),
-    [deck.positions, isMistakeReview],
+    () => (isMistakeReview ? getMistakeReviewNatureCounts(summaryPositions) : null),
+    [summaryPositions, isMistakeReview],
   );
   const timeManagementMinMoveSeconds =
     mistakeTimeManagementSettings?.minMoveSeconds ??
     DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds;
   const timeManagementScopeIndices = useMemo(() => {
     if (!isMistakeReview) return [];
-    return getMistakeReviewTimeManagementBatch(deck.positions, {
+    return getMistakeReviewTimeManagementBatch(summaryPositions, {
       minMoveSeconds: timeManagementMinMoveSeconds,
     })
       .map((position) => positionIndexByReference.get(position) ?? -1)
       .filter((positionIndex) => positionIndex >= 0);
-  }, [deck.positions, isMistakeReview, positionIndexByReference, timeManagementMinMoveSeconds]);
+  }, [summaryPositions, isMistakeReview, positionIndexByReference, timeManagementMinMoveSeconds]);
   const openingPlanGapScopeIndices = useMemo(
-    () => (isMistakeReview ? [] : getOpeningReviewPlanGapTrainingIndices(deck.positions)),
-    [deck.positions, isMistakeReview],
+    () => (isMistakeReview ? [] : getOpeningReviewPlanGapTrainingIndices(summaryPositions)),
+    [summaryPositions, isMistakeReview],
   );
   const setInvisible = useSetAtom(currentInvisibleAtom);
   const setShowComments = useSetAtom(currentShowCommentsAtom);

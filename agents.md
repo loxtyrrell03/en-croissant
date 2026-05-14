@@ -407,8 +407,9 @@ from 2026-04-24 through 2026-05-03.
 - Performance pass: annotation changes now reuse notation/transposition derived
   data unless the move tree structure changes, review deck saves are delayed to
   idle time, large review files save more compactly, review deck summaries are
-  cached by file mtime, and local engines stay warm longer with a startup
-  watchdog.
+  cached by file mtime, trainer summary counts defer full-deck passes so the
+  board and primary controls can paint first, and local engines stay warm
+  longer with a startup watchdog.
 - Launch reliability: the Windows fork launcher and `pnpm dev` fallback now
   serialize dev-session startup so repeated launches do not stop the Vite dev
   server while the Tauri WebView is still loading `localhost:1420`; clean
