@@ -1,7 +1,9 @@
-import { Paper, Progress, Text } from "@mantine/core";
+import { Paper, Text } from "@mantine/core";
+import { useAtomValue } from "jotai";
 import { useContext } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
+import { liveReplayClockAtom } from "@/state/liveReplay";
 import { positionFromFen } from "@/utils/chessops";
 import { formatClockTime, getClockInfo } from "@/utils/clock";
 import { TreeStateContext } from "../common/TreeStateContext";
@@ -23,6 +25,7 @@ function Clock({
   const position = useStore(store, (s) => s.position);
   const headers = useStore(store, (s) => s.headers);
   const currentNode = useStore(store, (s) => s.currentNode());
+  const liveReplayClock = useAtomValue(liveReplayClockAtom);
   const [pos] = positionFromFen(currentNode.fen);
 
   const { white, black } = getClockInfo({
@@ -39,38 +42,41 @@ function Clock({
     .with("white", () => white.value)
     .with("black", () => black.value)
     .otherwise(() => undefined);
-  const progress = match(color)
-    .with("white", () => white.progress)
-    .with("black", () => black.progress)
-    .otherwise(() => 0);
-
+  const visibleClock =
+    liveReplayClock?.color === color
+      ? getInterpolatedClock(liveReplayClock)
+      : clock;
   return (
     <Paper
       className={`${classes.clock} ${color === "black" ? classes.blackClock : classes.whiteClock}`}
       styles={{
         root: {
           opacity: turn !== color ? 0.5 : 1,
-          visibility: clock !== undefined ? "visible" : "hidden",
+          visibility: visibleClock !== undefined ? "visible" : "hidden",
           transition: "opacity 0.15s",
         },
       }}
     >
       <Text className={classes.clockText} fz="sm" fw={800} px="xs">
-        {clock !== undefined ? formatClockTime(clock) : "0:00"}
+        {visibleClock !== undefined ? formatClockTime(visibleClock) : "0:00"}
       </Text>
-      <Progress
-        size="xs"
-        w="100%"
-        value={progress * 100}
-        animated={turn === color}
-        styles={{
-          section: {
-            animationDirection: "reverse",
-          },
-        }}
-      />
     </Paper>
   );
+}
+
+function getInterpolatedClock({
+  startSeconds,
+  endSeconds,
+  remainingMs,
+  totalMs,
+}: {
+  startSeconds: number;
+  endSeconds: number;
+  remainingMs: number;
+  totalMs: number;
+}) {
+  const progress = totalMs > 0 ? (totalMs - remainingMs) / totalMs : 1;
+  return startSeconds - (startSeconds - endSeconds) * Math.min(1, Math.max(0, progress));
 }
 
 export default Clock;

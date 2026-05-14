@@ -95,9 +95,12 @@ describe("move timing", () => {
         ).toBe(12);
     });
 
-    test("formats move time as simple human text", () => {
-        expect(formatMoveThinkTime(8.4)).toBe("8s");
-        expect(formatMoveThinkTime(84)).toBe("1m 24s");
-        expect(formatMoveThinkTime(3600)).toBe("1h");
+    test("formats move time to tenths of a second", () => {
+        expect(formatMoveThinkTime(8.4)).toBe("8.4s");
+        expect(formatMoveThinkTime(8.44)).toBe("8.4s");
+        expect(formatMoveThinkTime(8.45)).toBe("8.5s");
+        expect(formatMoveThinkTime(0.04)).toBe("<0.1s");
+        expect(formatMoveThinkTime(84.3)).toBe("1m 24.3s");
+        expect(formatMoveThinkTime(3600.2)).toBe("1h 00m 00.2s");
     });
 });

@@ -1,4 +1,4 @@
-import { ActionIcon, Button, Group, Progress, Stack, Tooltip } from "@mantine/core";
+import { ActionIcon, Button, Group, Progress, Stack, Text, Tooltip } from "@mantine/core";
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -7,13 +7,14 @@ import {
   IconPlayerPause,
   IconPlayerPlay,
 } from "@tabler/icons-react";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useStore } from "zustand";
 import { keyMapAtom } from "@/state/keybinds";
+import { liveReplayClockAtom } from "@/state/liveReplay";
 import { formatMoveThinkTime } from "@/utils/clock";
-import { getLiveReplayStep } from "@/utils/liveReplay";
+import { getLiveReplayProgress, getLiveReplayStep } from "@/utils/liveReplay";
 import { TreeStateContext } from "./TreeStateContext";
 
 function MoveControls({ readOnly }: { readOnly?: boolean }) {
@@ -37,6 +38,7 @@ function MoveControls({ readOnly }: { readOnly?: boolean }) {
   const [remainingMs, setRemainingMs] = useState<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
   const tickRef = useRef<number | null>(null);
+  const setLiveReplayClock = useSetAtom(liveReplayClockAtom);
 
   const clearLiveTimers = useCallback(() => {
     if (timeoutRef.current !== null) {
@@ -51,23 +53,39 @@ function MoveControls({ readOnly }: { readOnly?: boolean }) {
 
   const stopLiveReplay = useCallback(() => {
     clearLiveTimers();
+    setLiveReplayClock(null);
     setLiveReplay(false);
-  }, [clearLiveTimers]);
+  }, [clearLiveTimers, setLiveReplayClock]);
 
   const liveStep = useMemo(
     () => getLiveReplayStep({ headers, root, position, practicePath }),
     [headers, position, practicePath, root],
   );
-  const liveProgress =
-    liveReplay && liveStep && remainingMs !== null && liveStep.delayMs > 0
-      ? Math.min(100, Math.max(0, ((liveStep.delayMs - remainingMs) / liveStep.delayMs) * 100))
-      : 0;
   const liveTooltip = liveReplay
     ? `Pause live replay${remainingMs !== null ? ` - next move in ${formatMoveThinkTime(remainingMs / 1000)}` : ""}`
     : liveStep
       ? `Watch at game pace - next move in ${formatMoveThinkTime(liveStep.moveTimeSeconds)}`
       : "Live replay needs timed moves";
   const liveLabel = liveReplay ? "Pause" : "Live replay";
+  const currentMoveElapsedMs =
+    liveReplay && liveStep && remainingMs !== null ? liveStep.delayMs - remainingMs : 0;
+  const liveProgress = useMemo(
+    () =>
+      getLiveReplayProgress({
+        headers,
+        root,
+        position,
+        practicePath,
+        currentMoveElapsedMs,
+      }),
+    [currentMoveElapsedMs, headers, position, practicePath, root],
+  );
+  const gameTimeLeftLabel =
+    liveProgress && liveProgress.remainingMs <= 50
+      ? "0.0s"
+      : liveProgress
+        ? formatMoveThinkTime(liveProgress.remainingMs / 1000)
+        : "";
 
   const wrapManualNavigation = useCallback(
     (action: () => void) => {
@@ -118,11 +136,13 @@ function MoveControls({ readOnly }: { readOnly?: boolean }) {
   useEffect(() => {
     if (!liveReplay) {
       clearLiveTimers();
+      setLiveReplayClock(null);
       setRemainingMs(null);
       return;
     }
 
     if (!liveStep) {
+      setLiveReplayClock(null);
       setLiveReplay(false);
       return;
     }
@@ -131,21 +151,54 @@ function MoveControls({ readOnly }: { readOnly?: boolean }) {
     const startedAt = window.performance.now();
     const deadline = startedAt + liveStep.delayMs;
     setRemainingMs(liveStep.delayMs);
+    if (
+      liveStep.clockColor &&
+      liveStep.clockStartSeconds !== undefined &&
+      liveStep.clockEndSeconds !== undefined
+    ) {
+      setLiveReplayClock({
+        color: liveStep.clockColor,
+        startSeconds: liveStep.clockStartSeconds,
+        endSeconds: liveStep.clockEndSeconds,
+        remainingMs: liveStep.delayMs,
+        totalMs: liveStep.delayMs,
+      });
+    } else {
+      setLiveReplayClock(null);
+    }
     tickRef.current = window.setInterval(() => {
-      setRemainingMs(Math.max(0, deadline - window.performance.now()));
-    }, 200);
+      const nextRemainingMs = Math.max(0, deadline - window.performance.now());
+      setRemainingMs(nextRemainingMs);
+      if (
+        liveStep.clockColor &&
+        liveStep.clockStartSeconds !== undefined &&
+        liveStep.clockEndSeconds !== undefined
+      ) {
+        setLiveReplayClock({
+          color: liveStep.clockColor,
+          startSeconds: liveStep.clockStartSeconds,
+          endSeconds: liveStep.clockEndSeconds,
+          remainingMs: nextRemainingMs,
+          totalMs: liveStep.delayMs,
+        });
+      }
+    }, 100);
     timeoutRef.current = window.setTimeout(() => {
       clearLiveTimers();
-      setRemainingMs(null);
+      setLiveReplayClock(null);
+      setRemainingMs(0);
       next();
     }, liveStep.delayMs);
 
     return clearLiveTimers;
-  }, [clearLiveTimers, liveReplay, liveStep, next]);
+  }, [clearLiveTimers, liveReplay, liveStep, next, setLiveReplayClock]);
 
   useEffect(() => {
-    return clearLiveTimers;
-  }, [clearLiveTimers]);
+    return () => {
+      clearLiveTimers();
+      setLiveReplayClock(null);
+    };
+  }, [clearLiveTimers, setLiveReplayClock]);
 
   const keyMap = useAtomValue(keyMapAtom);
   useHotkeys(keyMap.PREVIOUS_MOVE.keys, handlePrevious);
@@ -220,16 +273,25 @@ function MoveControls({ readOnly }: { readOnly?: boolean }) {
           </ActionIcon>
         </Tooltip>
       </Group>
-      <Progress
-        value={liveProgress}
-        size={3}
-        radius="xs"
-        aria-label="Live replay progress"
-        style={{
-          opacity: liveReplay ? 1 : 0,
-          transition: "opacity 120ms ease",
-        }}
-      />
+      {liveProgress ? (
+        <Stack gap={3}>
+          <Group justify="space-between" gap="xs" wrap="nowrap">
+            <Text size="xs" c="dimmed" fw={600}>
+              Game replay
+            </Text>
+            <Text size="xs" c="dimmed" fw={600} style={{ fontVariantNumeric: "tabular-nums" }}>
+              {gameTimeLeftLabel} left
+            </Text>
+          </Group>
+          <Progress
+            value={liveProgress.value}
+            color="blue"
+            size={4}
+            radius="xs"
+            aria-label="Live replay game progress"
+          />
+        </Stack>
+      ) : null}
     </Stack>
   );
 }

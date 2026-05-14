@@ -170,23 +170,22 @@ export function getMoveThinkTime({
 }
 
 export function formatMoveThinkTime(seconds: number) {
-    const rounded = Math.max(0, Math.round(seconds));
-    if (rounded < 1) return "<1s";
-    if (rounded < 60) return `${rounded}s`;
+    const roundedTenths = Math.max(0, Math.round(seconds * 10) / 10);
+    if (roundedTenths < 0.1) return "<0.1s";
+    if (roundedTenths < 60) return `${roundedTenths.toFixed(1)}s`;
 
-    const minutes = Math.floor(rounded / 60);
-    const remainingSeconds = rounded % 60;
+    const minutes = Math.floor(roundedTenths / 60);
+    const remainingSeconds = roundedTenths - minutes * 60;
     if (minutes < 60) {
-        return remainingSeconds === 0
-            ? `${minutes}m`
-            : `${minutes}m ${remainingSeconds.toString().padStart(2, "0")}s`;
+        return `${minutes}m ${remainingSeconds.toFixed(1).padStart(4, "0")}s`;
     }
 
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
-    return remainingMinutes === 0
-        ? `${hours}h`
-        : `${hours}h ${remainingMinutes.toString().padStart(2, "0")}m`;
+    const remainingHourSeconds = roundedTenths - hours * 3600 - remainingMinutes * 60;
+    return `${hours}h ${remainingMinutes.toString().padStart(2, "0")}m ${remainingHourSeconds
+        .toFixed(1)
+        .padStart(4, "0")}s`;
 }
 
 export function formatClockTime(seconds: number) {

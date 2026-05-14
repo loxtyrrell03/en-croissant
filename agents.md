@@ -397,9 +397,12 @@ from 2026-04-24 through 2026-05-03.
   player strips at the top-left and bottom-left of the board area, and older
   online databases are marked for clock-data enrichment during refresh. Direct
   Chess.com game-link imports also translate callback move timestamps into PGN
-  clock comments so existing display and save paths keep the timing data.
+  clock comments so existing display and save paths keep the timing data. Move
+  list think-time chips show tenths of a second when the source provides them.
   Move controls include live replay, which advances through timed games using
-  the recorded think time for each next move with a compact progress indicator.
+  the recorded think time for each next move from a labelled play/pause control,
+  animates the active side's board clock during each replayed move, and shows a
+  blue full-game progress bar with remaining replay time.
 - Opening Review: Analyze Repertoire was moved into review, opening health
   scoring was added, cloud validation was layered in, review decks became
   trainable files, and daily/full/focused spaced repetition workflows were
