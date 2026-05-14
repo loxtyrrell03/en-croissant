@@ -240,6 +240,10 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
 - Focused Mistake Review trainers now respect SRS readiness: long-think, phase,
   and type batches include unseen or due cards by default and do not resurface
   cards scheduled for a future day after they have just been reviewed.
+- Mistake Review no longer shows the saved answer in the pre-attempt review UI:
+  the old "Current position" answer panel was removed, deletion moved into the
+  session header, and board/game info summaries hide best-move text until an
+  attempt or explicit reveal.
 
 ### Practice Bot Trainer
 

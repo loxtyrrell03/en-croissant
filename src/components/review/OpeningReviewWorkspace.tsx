@@ -1909,6 +1909,7 @@ function OpeningReviewPanel({
       playedOverrideCandidate.san === practiceState.bestMove ||
       playedOverrideCandidate.san === playedOverridePosition.engine?.bestMoveSan);
   const canOverridePlayedMove =
+    practiceState.phase !== "waiting" &&
     playedOverrideCandidate &&
     playedOverridePosition &&
     !playedMoveMatchesBestValidatedMove &&
@@ -1924,6 +1925,7 @@ function OpeningReviewPanel({
     practiceState.phase !== "idle" && currentPracticePositionIndex >= 0
       ? (deck.positions[currentPracticePositionIndex] ?? null)
       : null;
+  const revealCurrentPracticeAnswer = practiceState.phase !== "waiting";
   useEffect(() => {
     if (!loaded || practiceState.phase === "idle" || deck.positions.length === 0) return;
 
@@ -2902,10 +2904,23 @@ function OpeningReviewPanel({
                 <Text size="xs" fw={700}>
                   Review session
                 </Text>
-                <Text size="xs" c="dimmed">
-                  {sessionCompleted}
-                  {sessionTotal > 0 ? ` / ${sessionTotal}` : ""} complete
-                </Text>
+                <Group gap={6} wrap="nowrap">
+                  <Text size="xs" c="dimmed">
+                    {sessionCompleted}
+                    {sessionTotal > 0 ? ` / ${sessionTotal}` : ""} complete
+                  </Text>
+                  {currentPracticePosition && (
+                    <Button
+                      size="compact-xs"
+                      variant="subtle"
+                      color="red"
+                      leftSection={<IconTrash size={13} />}
+                      onClick={deleteCurrentReviewPosition}
+                    >
+                      Delete card
+                    </Button>
+                  )}
+                </Group>
               </Group>
               <Progress value={sessionProgress} size="xs" />
               <Group gap={6} grow>
@@ -3428,13 +3443,6 @@ function OpeningReviewPanel({
           </Paper>
         )}
 
-        {currentPracticePosition && (
-          <CurrentReviewPositionActions
-            position={currentPracticePosition}
-            onDelete={deleteCurrentReviewPosition}
-          />
-        )}
-
         {canOverridePlayedMove && playedOverrideCandidate && (
           <Paper p="sm" withBorder>
             <Group justify="space-between" gap="sm" align="center">
@@ -3479,7 +3487,10 @@ function OpeningReviewPanel({
 
         {isMistakeReview && (
           <>
-            <MistakeReviewGameInfoPanel position={mistakeReviewInfoPosition} />
+            <MistakeReviewGameInfoPanel
+              position={mistakeReviewInfoPosition}
+              revealAnswer={revealCurrentPracticeAnswer}
+            />
             {mistakeMovesOpen ? (
               <Stack gap={4} className={classes.reviewMovesExpanded}>
                 <Group justify="space-between" gap="xs" wrap="nowrap">
@@ -5428,7 +5439,13 @@ function MistakeReviewTimeManagementSettingsModal({
   );
 }
 
-function MistakeReviewGameInfoPanel({ position }: { position: Position | null }) {
+function MistakeReviewGameInfoPanel({
+  position,
+  revealAnswer,
+}: {
+  position: Position | null;
+  revealAnswer: boolean;
+}) {
   const [expanded, setExpanded] = useState(false);
   const mistake = position?.mistakeReview;
   if (!mistake) {
@@ -5502,7 +5519,10 @@ function MistakeReviewGameInfoPanel({ position }: { position: Position | null })
           <SimpleGrid cols={3} spacing={6}>
             <ReviewDetail label="Played" value={formatMistakeReviewGameDate(mistake.date)} />
             <ReviewDetail label="Time control" value={formatMistakeReviewTimeControl(mistake)} />
-            <ReviewDetail label="Best move" value={mistake.bestMoveSan || position.answer} />
+            <ReviewDetail
+              label="Best move"
+              value={revealAnswer ? mistake.bestMoveSan || position.answer : "Hidden"}
+            />
           </SimpleGrid>
         )}
         {expanded && (
@@ -5522,7 +5542,11 @@ function MistakeReviewGameInfoPanel({ position }: { position: Position | null })
             />
             <ReviewDetail
               label="Move"
-              value={`${mistake.moveNumber ? `${mistake.moveNumber}. ` : ""}${mistake.playedMoveSan ?? "-"}`}
+              value={
+                revealAnswer
+                  ? `${mistake.moveNumber ? `${mistake.moveNumber}. ` : ""}${mistake.playedMoveSan ?? "-"}`
+                  : "Hidden"
+              }
             />
             <ReviewDetail label="Think time" value={formatMistakeReviewThinkTime(mistake)} />
             <ReviewDetail label="Mistake type" value={`${natureLabel} (${natureConfidence})`} />
@@ -5530,39 +5554,6 @@ function MistakeReviewGameInfoPanel({ position }: { position: Position | null })
           </SimpleGrid>
         )}
       </Stack>
-    </Paper>
-  );
-}
-
-function CurrentReviewPositionActions({
-  position,
-  onDelete,
-}: {
-  position: Position;
-  onDelete: () => void;
-}) {
-  return (
-    <Paper p="xs" withBorder className={classes.reviewSection}>
-      <Group justify="space-between" gap="sm" wrap="nowrap" align="center">
-        <Stack gap={0} miw={0}>
-          <Text size="xs" c="dimmed" fw={600}>
-            Current position
-          </Text>
-          <Text size="sm" fw={700} truncate>
-            {formatOpeningReviewPositionAnswer(position)}
-          </Text>
-        </Stack>
-        <Button
-          size="xs"
-          variant="light"
-          color="red"
-          leftSection={<IconTrash size={14} />}
-          onClick={onDelete}
-          style={{ flexShrink: 0 }}
-        >
-          Delete
-        </Button>
-      </Group>
     </Paper>
   );
 }

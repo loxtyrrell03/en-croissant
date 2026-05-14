@@ -1710,6 +1710,22 @@ function Board({
     mistakeReviewMetadata?.playedMoveSan ||
     undefined;
   const mistakeReviewPlayedMoveLabel = mistakeReviewAttemptActive ? "Played" : "Mistake";
+  const showMistakeReviewPlayedMove =
+    mistakeReviewAttemptActive || mistakeReviewPanelReveal?.mode === "mistake";
+  const showMistakeReviewBestMove =
+    mistakeReviewAttemptActive || mistakeReviewPanelReveal?.mode === "best";
+  const mistakeReviewSummaryParts = [
+    showMistakeReviewPlayedMove && mistakeReviewPlayedMove
+      ? `${mistakeReviewPlayedMoveLabel}: ${mistakeReviewPlayedMove}`
+      : null,
+    showMistakeReviewBestMove ? `Best: ${mistakeReviewBestMove || "-"}` : null,
+    mistakeReviewLoss !== undefined ? `${Math.round(mistakeReviewLoss)} cp loss` : null,
+    mistakeReviewWinProbabilityDrop !== undefined
+      ? `${mistakeReviewWinProbabilityDrop.toFixed(1)}% win-prob drop`
+      : null,
+    mistakeReviewRevealRemaining > 0 ? `reveal in ${mistakeReviewRevealRemaining}s` : null,
+    mistakeReviewLineBusy ? "playing engine line" : null,
+  ].filter(Boolean);
   const mistakeReviewNature = trainerMistakeReviewPosition?.mistakeReview
     ? getMistakeReviewNature(trainerMistakeReviewPosition)
     : null;
@@ -2127,20 +2143,9 @@ function Board({
                         )}
                       </Group>
                       <Text size="xs" c="dimmed">
-                        {mistakeReviewPlayedMove
-                          ? `${mistakeReviewPlayedMoveLabel}: ${mistakeReviewPlayedMove}. `
-                          : ""}
-                        Best: {mistakeReviewBestMove || "-"}
-                        {mistakeReviewLoss !== undefined
-                          ? `, ${Math.round(mistakeReviewLoss)} cp loss`
-                          : ""}
-                        {mistakeReviewWinProbabilityDrop !== undefined
-                          ? `, ${mistakeReviewWinProbabilityDrop.toFixed(1)}% win-prob drop`
-                          : ""}
-                        {mistakeReviewRevealRemaining > 0
-                          ? `, reveal in ${mistakeReviewRevealRemaining}s`
-                          : ""}
-                        {mistakeReviewLineBusy ? ", playing engine line" : ""}
+                        {mistakeReviewSummaryParts.length > 0
+                          ? mistakeReviewSummaryParts.join(", ")
+                          : "Find the best move from this position."}
                       </Text>
                       <Text size="xs" c="dimmed">
                         Last seen: {mistakeReviewLastSeen}
