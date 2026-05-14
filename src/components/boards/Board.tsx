@@ -479,13 +479,6 @@ function Board({
     }),
   );
 
-  const arrows = useAtomValue(
-    bestMovesFamily({
-      fen: rootFen,
-      gameMoves: moves,
-    }),
-  );
-
   const goToNext = useStore(store, (s) => s.goToNext);
   const goToPrevious = useStore(store, (s) => s.goToPrevious);
   const goToMove = useStore(store, (s) => s.goToMove);
@@ -504,6 +497,15 @@ function Board({
   const showDests = useAtomValue(showDestsAtom);
   const moveHighlight = useAtomValue(moveHighlightAtom);
   const showArrows = useAtomValue(showArrowsAtom);
+  const arrows = useAtomValue(
+    bestMovesFamily({
+      fen: rootFen,
+      gameMoves: moves,
+      gameMovesKey: movesKey,
+      finalFen: currentNode.fen,
+      enabled: showArrows,
+    }),
+  );
   const showVariationArrows = useAtomValue(showVariationArrowsAtom);
   const showConsecutiveArrows = useAtomValue(showConsecutiveArrowsAtom);
   const eraseDrawablesOnClick = useAtomValue(eraseDrawablesOnClickAtom);

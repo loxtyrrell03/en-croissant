@@ -4,7 +4,6 @@ import { resolve } from "@tauri-apps/api/path";
 import { exists, mkdir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { parseUci } from "chessops";
 import { INITIAL_FEN, makeFen } from "chessops/fen";
-import equal from "fast-deep-equal";
 import { atom, type PrimitiveAtom } from "jotai";
 import { atomFamily, atomWithStorage, createJSONStorage, unwrap } from "jotai/utils";
 import type { AtomFamily } from "jotai/vanilla/utils/atomFamily";
@@ -1151,15 +1150,49 @@ export const engineProgressFamily = atomFamily(
     (a, b) => a.tab === b.tab && a.engine === b.engine,
 );
 
+const emptyBestMovesByEngine = new Map<number, { pv: string[]; winChance: number }[]>();
+
 // returns the best moves of each engine for the current position
 export const bestMovesFamily = atomFamily(
-    ({ fen, gameMoves }: { fen: string; gameMoves: string[] }) =>
+    ({
+        fen,
+        gameMoves,
+        enabled = true,
+        finalFen,
+        gameMovesKey,
+    }: {
+        fen: string;
+        gameMoves: string[];
+        enabled?: boolean;
+        finalFen?: string | null;
+        gameMovesKey?: string;
+    }) =>
         atom<Map<number, { pv: string[]; winChance: number }[]>>((get) => {
+            if (!enabled) return emptyBestMovesByEngine;
             const tab = get(activeTabAtom);
-            if (!tab) return new Map();
+            if (!tab) return emptyBestMovesByEngine;
             const engines = get(enginesAtom);
-            if (!engines) return new Map();
+            if (!engines) return emptyBestMovesByEngine;
             const bestMoves = new Map<number, { pv: string[]; winChance: number }[]>();
+            const resolvedGameMovesKey = gameMovesKey ?? gameMoves.join(",");
+            let resolvedFinalFen = finalFen ?? null;
+            let turn: "white" | "black" = "white";
+            if (resolvedFinalFen) {
+                const [finalPos] = positionFromFen(resolvedFinalFen);
+                turn = finalPos?.turn ?? "white";
+            } else {
+                const [pos] = positionFromFen(fen);
+                if (pos) {
+                    for (const move of gameMoves) {
+                        const m = parseUci(move);
+                        if (m) pos.play(m);
+                    }
+                    resolvedFinalFen = makeFen(pos.toSetup());
+                    turn = pos.turn;
+                } else {
+                    resolvedFinalFen = INITIAL_FEN;
+                }
+            }
             let n = 0;
             for (const engine of engines.filter((e) => e.loaded)) {
                 const settingsAtom = tabEngineSettingsFamily({
@@ -1173,27 +1206,18 @@ export const bestMovesFamily = atomFamily(
                     continue;
                 }
                 const engineMoves = get(engineMovesFamily({ tab, engine: engine.id }));
-                const [pos] = positionFromFen(fen);
-                let finalFen = INITIAL_FEN;
-                if (pos) {
-                    for (const move of gameMoves) {
-                        const m = parseUci(move);
-                        pos.play(m!);
-                    }
-                    finalFen = makeFen(pos.toSetup());
-                }
                 const moves =
-                    engineMoves.get(`${swapMove(finalFen)}:`) ||
-                    engineMoves.get(`${fen}:${gameMoves.join(",")}`);
+                    engineMoves.get(`${swapMove(resolvedFinalFen)}:`) ||
+                    engineMoves.get(`${fen}:${resolvedGameMovesKey}`);
                 if (moves && moves.length > 0) {
                     const bestWinChange = getWinChance(
-                        normalizeScore(moves[0].score.value, pos?.turn || "white"),
+                        normalizeScore(moves[0].score.value, turn),
                     );
                     bestMoves.set(
                         n,
                         moves.reduce<{ pv: string[]; winChance: number }[]>((acc, m) => {
                             const winChance = getWinChance(
-                                normalizeScore(m.score.value, pos?.turn || "white"),
+                                normalizeScore(m.score.value, turn),
                             );
                             if (bestWinChange - winChance < 10) {
                                 acc.push({ pv: m.uciMoves, winChance });
@@ -1206,25 +1230,46 @@ export const bestMovesFamily = atomFamily(
             }
             return bestMoves;
         }),
-    (a, b) => a.fen === b.fen && equal(a.gameMoves, b.gameMoves),
+    (a, b) =>
+        (a.enabled === false && b.enabled === false) ||
+        (a.fen === b.fen &&
+            a.enabled === b.enabled &&
+            a.finalFen === b.finalFen &&
+            (a.gameMovesKey ?? a.gameMoves.join(",")) ===
+                (b.gameMovesKey ?? b.gameMoves.join(","))),
 );
 
 export const firstEngineWithLinesFamily = atomFamily(
-    ({ fen, gameMoves }: { fen: string; gameMoves: string[] }) =>
+    ({
+        fen,
+        gameMoves,
+        finalFen,
+        gameMovesKey,
+    }: {
+        fen: string;
+        gameMoves: string[];
+        finalFen?: string | null;
+        gameMovesKey?: string;
+    }) =>
         atom<string | null>((get) => {
             const tab = get(activeTabAtom);
             if (!tab) return null;
             const engines = get(enginesAtom);
             if (!engines) return null;
 
-            const [pos] = positionFromFen(fen);
-            let finalFen = INITIAL_FEN;
-            if (pos) {
-                for (const move of gameMoves) {
-                    const m = parseUci(move);
-                    if (m) pos.play(m);
+            const resolvedGameMovesKey = gameMovesKey ?? gameMoves.join(",");
+            let resolvedFinalFen = finalFen ?? null;
+            if (!resolvedFinalFen) {
+                const [pos] = positionFromFen(fen);
+                if (pos) {
+                    for (const move of gameMoves) {
+                        const m = parseUci(move);
+                        if (m) pos.play(m);
+                    }
+                    resolvedFinalFen = makeFen(pos.toSetup());
+                } else {
+                    resolvedFinalFen = INITIAL_FEN;
                 }
-                finalFen = makeFen(pos.toSetup());
             }
 
             for (const engine of engines.filter((e) => e.loaded)) {
@@ -1238,8 +1283,8 @@ export const firstEngineWithLinesFamily = atomFamily(
 
                 const engineMoves = get(engineMovesFamily({ tab, engine: engine.id }));
                 const moves =
-                    engineMoves.get(`${swapMove(finalFen)}:`) ||
-                    engineMoves.get(`${fen}:${gameMoves.join(",")}`);
+                    engineMoves.get(`${swapMove(resolvedFinalFen)}:`) ||
+                    engineMoves.get(`${fen}:${resolvedGameMovesKey}`);
 
                 if (moves && moves.length > 0) {
                     return engine.id;
@@ -1247,7 +1292,10 @@ export const firstEngineWithLinesFamily = atomFamily(
             }
             return null;
         }),
-    (a, b) => a.fen === b.fen && equal(a.gameMoves, b.gameMoves),
+    (a, b) =>
+        a.fen === b.fen &&
+        a.finalFen === b.finalFen &&
+        (a.gameMovesKey ?? a.gameMoves.join(",")) === (b.gameMovesKey ?? b.gameMoves.join(",")),
 );
 
 export const tabEngineSettingsFamily = atomFamily(

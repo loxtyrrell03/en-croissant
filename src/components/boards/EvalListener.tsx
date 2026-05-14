@@ -30,12 +30,14 @@ import {
 } from "@/utils/engines";
 import { getBestMoves as lichessGetBestMoves } from "@/utils/lichess/api";
 import { BoundedSet, withLimitedMapEntry } from "@/utils/boundedCache";
-import { useThrottledEffect } from "@/utils/misc";
 import { TreeStateContext } from "../common/TreeStateContext";
 
 const LOCAL_ENGINE_CLOUD_PRIORITY_MS = 300;
 const LOCAL_ENGINE_CLOUD_TIMEOUT_MS = 1500;
 const LOCAL_ENGINE_OUTPUT_TIMEOUT_MS = 12000;
+const LOCAL_ENGINE_SEARCH_DELAY_MS = 260;
+const REMOTE_ENGINE_SEARCH_DELAY_MS = 120;
+const LOCAL_ENGINE_UI_UPDATE_INTERVAL_MS = 700;
 const MAX_ENGINE_RESULT_CACHE_ENTRIES = 80;
 
 function EvalListener({ active }: { active: boolean }) {
@@ -50,7 +52,29 @@ function EvalListener({ active }: { active: boolean }) {
     useShallow((s) => getVariationLine(s.root, s.position)),
   );
 
-  const [pos] = positionFromFen(fen);
+  const analysedPosition = useMemo(() => {
+    const [pos] = positionFromFen(fen);
+    if (!pos) {
+      return {
+        finalFen: null,
+        isGameOver: false,
+      };
+    }
+
+    for (const uci of moves) {
+      const move = parseUci(uci);
+      if (!move) {
+        console.log("Invalid move", uci);
+        break;
+      }
+      pos.play(move);
+    }
+
+    return {
+      finalFen: makeFen(pos.toSetup()),
+      isGameOver: pos.isEnd(),
+    };
+  }, [fen, moves]);
 
   useEffect(() => {
     if (active || !activeTab) return;
@@ -62,19 +86,7 @@ function EvalListener({ active }: { active: boolean }) {
     }
   }, [active, activeTab, engines]);
 
-  if (pos) {
-    for (const uci of moves) {
-      const move = parseUci(uci);
-      if (!move) {
-        console.log("Invalid move", uci);
-        break;
-      }
-      pos.play(move);
-    }
-  }
-
-  const isGameOver = pos?.isEnd() ?? false;
-  const finalFen = useMemo(() => (pos ? makeFen(pos.toSetup()) : null), [pos]);
+  const { finalFen, isGameOver } = analysedPosition;
 
   const { searchingFen, searchingMoves } = useMemo(
     () =>
@@ -90,11 +102,15 @@ function EvalListener({ active }: { active: boolean }) {
         .exhaustive(),
     [fen, moves, threat, finalFen],
   );
+  const searchingMovesKey = useMemo(() => searchingMoves.join(","), [searchingMoves]);
+  const searchingFinalFen = threat ? searchingFen : finalFen || INITIAL_FEN;
 
   const firstEngineWithLines = useAtomValue(
     firstEngineWithLinesFamily({
       fen: searchingFen,
       gameMoves: searchingMoves,
+      finalFen: searchingFinalFen,
+      gameMovesKey: searchingMovesKey,
     }),
   );
 
@@ -162,10 +178,16 @@ function EngineListener({
   );
   const displayedMovesKey = useMemo(() => moves.join(","), [moves]);
   const latestSearchKeyRef = useRef(searchKey);
+  const requestSequenceRef = useRef(0);
+  const lastPayloadUiUpdateRef = useRef(0);
+  const firstEngineWithLinesRef = useRef(firstEngineWithLines);
   const cloudCoveredSearchKeysRef = useRef(new BoundedSet<string>(MAX_ENGINE_RESULT_CACHE_ENTRIES));
   useEffect(() => {
     latestSearchKeyRef.current = searchKey;
   }, [searchKey]);
+  useEffect(() => {
+    firstEngineWithLinesRef.current = firstEngineWithLines;
+  }, [firstEngineWithLines]);
 
   useEffect(() => {
     return () => {
@@ -186,8 +208,20 @@ function EngineListener({
         equal(payload.moves, searchingMoves) &&
         settings.enabled &&
         !isGameOver &&
+        latestSearchKeyRef.current === searchKey &&
         !cloudCoveredSearchKeysRef.current.has(searchKey)
       ) {
+        const now = performance.now();
+        const isFinalPayload = payload.progress >= 100;
+        if (
+          engine.type === "local" &&
+          !isFinalPayload &&
+          now - lastPayloadUiUpdateRef.current < LOCAL_ENGINE_UI_UPDATE_INTERVAL_MS
+        ) {
+          return;
+        }
+        lastPayloadUiUpdateRef.current = now;
+
         startTransition(() => {
           setEngineVariation((prev) => {
             const staleKeys = threat
@@ -204,8 +238,9 @@ function EngineListener({
             );
           });
           setProgress(payload.progress);
+          const currentFirstEngineWithLines = firstEngineWithLinesRef.current;
           const shouldSetScore =
-            firstEngineWithLines === engine.id || firstEngineWithLines === null;
+            currentFirstEngineWithLines === engine.id || currentFirstEngineWithLines === null;
           if (shouldSetScore && ev[0]) {
             setLiveEval({
               fen,
@@ -234,9 +269,9 @@ function EngineListener({
     searchingMovesKey,
     searchKey,
     engine.id,
+    engine.type,
     setEngineVariation,
     setProgress,
-    firstEngineWithLines,
   ]);
 
   const getBestMoves = useMemo(
@@ -253,87 +288,148 @@ function EngineListener({
     [engine],
   );
 
-  useThrottledEffect(
-    () => {
-      if (settings.enabled) {
-        if (isGameOver) {
-          if (engine.type === "local") {
-            stopEngine(engine, activeTab!);
-          }
-        } else {
-          const options =
-            settings.settings?.map((s) => ({
-              name: s.name,
-              value: s.value?.toString() || "",
-            })) ?? [];
-          getBestMoves(activeTab!, settings.go, {
-            moves: searchingMoves,
-            fen: searchingFen,
-            extraOptions: options,
-          })
-            .then((moves) => {
-              if (moves) {
-                const [progress, bestMoves] = moves;
-                if (bestMoves.some((move) => move.source === "lichess")) {
-                  cloudCoveredSearchKeysRef.current.add(searchKey);
-                }
-                setEngineVariation((prev) => {
-                  return withLimitedMapEntry(
-                    prev,
-                    searchKey,
-                    bestMoves,
-                    MAX_ENGINE_RESULT_CACHE_ENTRIES,
-                  );
-                });
-                if (latestSearchKeyRef.current === searchKey) {
-                  setProgress(progress);
-                  const shouldSetScore =
-                    firstEngineWithLines === engine.id || firstEngineWithLines === null;
-                  if (bestMoves.length > 0 && shouldSetScore) {
-                    setLiveEval({
-                      fen,
-                      movesKey: displayedMovesKey,
-                      score: bestMoves[0].score,
-                    });
-                  }
-                }
-              }
-            })
-            .catch((error) => {
-              console.error(`Failed to start analysis for ${engine.name}`, error);
-              if (latestSearchKeyRef.current !== searchKey) return;
-              setEngineVariation((prev) => {
-                return withLimitedMapEntry(prev, searchKey, [], MAX_ENGINE_RESULT_CACHE_ENTRIES);
-              });
-              setProgress(100);
-            });
-        }
-      } else {
-        if (engine.type === "local") {
-          stopEngine(engine, activeTab!);
-        }
-      }
-    },
-    120,
-    [
-      settings.enabled,
-      JSON.stringify(settings.settings),
-      settings.go,
-      searchingFen,
-      searchingMovesKey,
-      searchKey,
-      isGameOver,
-      activeTab,
-      getBestMoves,
-      setLiveEval,
-      setProgress,
-      setEngineVariation,
-      engine,
-      firstEngineWithLines,
-      fen,
-      displayedMovesKey,
-    ],
+  const settingsOptionsKey = useMemo(() => JSON.stringify(settings.settings ?? []), [
+    settings.settings,
+  ]);
+  const engineExtraOptions = useMemo<EngineOptions["extraOptions"]>(() => {
+    const settingsList = JSON.parse(settingsOptionsKey) as {
+      name: string;
+      value?: string | number | boolean | null;
+    }[];
+    return settingsList.map((s) => ({
+      name: s.name,
+      value: s.value?.toString() || "",
+    }));
+  }, [settingsOptionsKey]);
+  const engineOptions = useMemo<EngineOptions>(
+    () => ({
+      moves: searchingMoves,
+      fen: searchingFen,
+      extraOptions: engineExtraOptions,
+    }),
+    [engineExtraOptions, searchingFen, searchingMoves],
   );
+
+  useEffect(() => {
+    if (!activeTab) return;
+
+    const tab = activeTab;
+    const requestId = ++requestSequenceRef.current;
+    const searchDelay =
+      engine.type === "local" ? LOCAL_ENGINE_SEARCH_DELAY_MS : REMOTE_ENGINE_SEARCH_DELAY_MS;
+    let cancelled = false;
+    let startedLocalSearch = false;
+
+    if (!settings.enabled) {
+      if (engine.type === "local") {
+        void stopEngine(engine, tab);
+      }
+      return;
+    }
+
+    if (isGameOver) {
+      if (engine.type === "local") {
+        void stopEngine(engine, tab);
+      }
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      if (cancelled || requestSequenceRef.current !== requestId) return;
+
+      startedLocalSearch = engine.type === "local";
+      getBestMoves(tab, settings.go, engineOptions)
+        .then((moves) => {
+          if (
+            cancelled ||
+            requestSequenceRef.current !== requestId ||
+            latestSearchKeyRef.current !== searchKey ||
+            !moves
+          ) {
+            return;
+          }
+
+          const [progress, bestMoves] = moves;
+          const cloudCovered = bestMoves.some(
+            (move) => (move as BestMoves & { source?: string }).source === "lichess",
+          );
+          if (cloudCovered) {
+            cloudCoveredSearchKeysRef.current.add(searchKey);
+          }
+
+          // Local engine payloads are already applied by the event listener. Avoid
+          // duplicating the same update from the request promise while users move.
+          if (engine.type === "local" && !cloudCovered) {
+            return;
+          }
+
+          startTransition(() => {
+            setEngineVariation((prev) => {
+              return withLimitedMapEntry(
+                prev,
+                searchKey,
+                bestMoves,
+                MAX_ENGINE_RESULT_CACHE_ENTRIES,
+              );
+            });
+            setProgress(progress);
+            const currentFirstEngineWithLines = firstEngineWithLinesRef.current;
+            const shouldSetScore =
+              currentFirstEngineWithLines === engine.id || currentFirstEngineWithLines === null;
+            if (bestMoves.length > 0 && shouldSetScore) {
+              setLiveEval({
+                fen,
+                movesKey: displayedMovesKey,
+                score: bestMoves[0].score,
+              });
+            }
+          });
+        })
+        .catch((error) => {
+          if (
+            cancelled ||
+            requestSequenceRef.current !== requestId ||
+            latestSearchKeyRef.current !== searchKey
+          ) {
+            return;
+          }
+          console.error(`Failed to start analysis for ${engine.name}`, error);
+          startTransition(() => {
+            setEngineVariation((prev) => {
+              return withLimitedMapEntry(prev, searchKey, [], MAX_ENGINE_RESULT_CACHE_ENTRIES);
+            });
+            setProgress(100);
+          });
+        });
+    }, searchDelay);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      if (startedLocalSearch && engine.type === "local") {
+        void stopMatchingEngine(engine, tab, settings.go, engineOptions).catch((error) => {
+          console.error(`Failed to cancel stale analysis for ${engine.name}`, error);
+        });
+      }
+    };
+  }, [
+    activeTab,
+    displayedMovesKey,
+    engine,
+    engineOptions,
+    fen,
+    getBestMoves,
+    isGameOver,
+    searchKey,
+    searchingFen,
+    searchingMovesKey,
+    setEngineVariation,
+    setLiveEval,
+    setProgress,
+    settings.enabled,
+    settings.go,
+    settingsOptionsKey,
+  ]);
   return null;
 }
 

@@ -416,6 +416,10 @@ from 2026-04-24 through 2026-05-03.
   cached by file mtime, trainer summary counts defer full-deck passes so the
   board and primary controls can paint first, and local engines stay warm
   longer with a startup watchdog.
+- Engine responsiveness: board play with Stockfish enabled now keeps stale
+  analysis requests from updating React, cancels superseded local searches, and
+  avoids recomputing full move lines for engine arrows when the current board
+  position is already known.
 - Launch reliability: the Windows fork launcher and `pnpm dev` fallback now
   serialize dev-session startup so repeated launches do not stop the Vite dev
   server while the Tauri WebView is still loading `localhost:1420`; clean
