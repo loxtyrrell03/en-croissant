@@ -323,6 +323,10 @@ and `src/utils/pawnStructureTrajectory.ts` using
   structure: the primary c-pawn is gone and the opposing e-pawn is gone. If the
   primary c-pawn remains on c4, use the appropriate symmetric Benoni/KID/Benko
   sibling instead of forcing Asymmetric Benoni.
+- French Type I and III are calibrated around the d/e French centre while
+  allowing c-pawns to remain home or advance: Type I is d4 versus d5/e6 with no
+  primary e-pawn and no opposing f-pawn; Type III is d4/e5 versus d5/e6. Panov
+  accepts the opposing e-pawn on e7 or e6, since c5/d4 versus d5 is the anchor.
 - The 3-3 vs 4-2 endgame-majority template allows file mirroring, so it detects
   both queenside and kingside versions of the four-pawn majority while still
   requiring simplified/central-liquidated evidence. It is strict about pawn

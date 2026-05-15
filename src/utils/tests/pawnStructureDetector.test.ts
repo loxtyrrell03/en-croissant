@@ -153,6 +153,59 @@ describe("pawn structure detector", () => {
         expect(detection?.structureId).not.toBe("asymmetric_benoni");
     });
 
+    test.each([
+        [
+            "french_type_i",
+            "4k3/ppp3pp/4p3/3p4/3P4/8/PPP2PPP/4K3 w - - 0 1",
+        ],
+        [
+            "french_type_ii",
+            "4k3/pp3ppp/4p3/3pP3/8/2P5/PP3PPP/4K3 w - - 0 1",
+        ],
+        [
+            "french_type_iii",
+            "4k3/ppp2ppp/4p3/3pP3/3P4/8/PPP2PPP/4K3 w - - 0 1",
+        ],
+        [
+            "scheveningen_structure",
+            "4k3/pp3ppp/3pp3/8/4P3/8/PPP2PPP/4K3 w - - 0 1",
+        ],
+        [
+            "dragon_formation",
+            "4k3/pp2pp1p/3p2p1/8/4P3/8/PPP2PPP/4K3 w - - 0 1",
+        ],
+        [
+            "hedgehog",
+            "4k3/5ppp/pp1pp3/8/2P1P3/8/PP3PPP/4K3 w - - 0 1",
+        ],
+        [
+            "maroczy",
+            "4k3/pp2pp1p/3p2p1/8/2P1P3/8/PP3PPP/4K3 w - - 0 1",
+        ],
+        [
+            "grunfeld_centre",
+            "4k3/pp2pppp/8/2p5/3PP3/2P5/P4PPP/4K3 w - - 0 1",
+        ],
+        [
+            "kid_complex",
+            "4k3/pp3ppp/2pp4/4p3/2PPP3/8/PP3PPP/4K3 w - - 0 1",
+        ],
+        [
+            "caro_kann_formation",
+            "4k3/pp3ppp/2p1p3/8/3P4/2P5/PP3PPP/4K3 w - - 0 1",
+        ],
+        [
+            "slav_formation",
+            "4k3/pp3ppp/2p1p3/8/3P4/4P3/PP3PPP/4K3 w - - 0 1",
+        ],
+        [
+            "panov_structure",
+            "4k3/pp2pppp/8/2Pp4/3P4/8/PP3PPP/4K3 w - - 0 1",
+        ],
+    ] as const)("detects user supplied %s reference skeleton", (structureId, fen) => {
+        expect(detectPawnStructure(fen)?.structureId).toBe(structureId);
+    });
+
     test("detects file-mirrored 3-3 vs 4-2 majority structure", () => {
         const detection = detectPawnStructure(
             "4k3/pp3ppp/4p3/8/8/2P5/PP3PPP/4K3 w - - 0 1",

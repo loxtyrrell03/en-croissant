@@ -2281,14 +2281,15 @@
       "aliases": [
         "French I",
         "French no-e-pawn structure",
-        "French d4/c3 versus c5/d5/e6"
+        "French d4 without e-pawn",
+        "French d4 versus d5/e6"
       ],
       "openingFamilies": [
         "French Defence",
         "Sicilian French structures",
         "Caro-Kann/French transpositions"
       ],
-      "descriptionShort": "A French-family d4/c3 centre lacks the primary e-pawn while the opposing f-pawn is also absent, leaving a partly opened e/f-file complex around d4/d5.",
+      "descriptionShort": "A French-family d4 centre lacks the primary e-pawn while the opposing f-pawn is also absent, leaving a partly opened e/f-file complex around d4/d5.",
       "stability": "stable",
       "sideRoles": {
         "primarySideRole": "side_with_french_space_after_e_pawn_trade",
@@ -2296,31 +2297,32 @@
       },
       "canonicalPawnFeatures": {
         "required": [
-          "pawn:primary:c3",
           "pawn:primary:d4",
           "noPawnOnFile:primary:e-file",
-          "pawn:opposing:c5",
           "pawn:opposing:d5",
           "pawn:opposing:e6",
           "noPawnOnFile:opposing:f-file"
         ],
         "optional": [
+          "pawn:primary:c2|c3",
+          "pawn:opposing:c7|c5",
           "semiOpenFile:primary:e-file",
           "semiOpenFile:opposing:f-file",
           "breakCandidate:primary:c3-c4",
+          "breakCandidate:opposing:c7-c5",
           "breakCandidate:opposing:c5xd4"
         ],
         "forbidden": [
           "pawn:primary:e5",
           "pawn:opposing:f7",
-          "noPawn:opposing:c5",
           "noPawn:opposing:d5"
         ]
       },
       "templateLogic": {
         "corePawnSkeleton": [
-          "Primary c3/d4 with no primary e-pawn.",
-          "Opponent c5/d5/e6 with no opposing f-pawn."
+          "Primary d4 with no primary e-pawn.",
+          "Opponent d5/e6 with no opposing f-pawn.",
+          "c-pawns may still be home or may already have advanced to c3/c5."
         ],
         "filePatterns": [
           "e-file and f-file asymmetries are important due to missing pawns.",
@@ -2361,7 +2363,7 @@
       },
       "confidenceRules": {
         "strongSignals": [
-          "Primary c3/d4/no e-pawn plus opponent c5/d5/e6/no f-pawn.",
+          "Primary d4/no e-pawn plus opponent d5/e6/no f-pawn.",
           "d4/d5 French contact is still present.",
           "No primary e5 pawn exists."
         ],
@@ -2385,10 +2387,10 @@
       ],
       "syntheticFenExamples": [
         {
-          "fen": "6k1/pp4pp/4p3/2pp4/3P4/2P5/PP3PPP/6K1 w - - 0 1",
+          "fen": "4k3/ppp3pp/4p3/3p4/3P4/8/PPP2PPP/4K3 w - - 0 1",
           "expectedRole": "white",
           "expectedDetection": "french_type_i",
-          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+          "notes": "Synthetic pawn-only skeleton: d4 versus d5/e6, no primary e-pawn, no opposing f-pawn, c-pawns still home."
         }
       ],
       "antiExamples": [
@@ -2528,7 +2530,8 @@
       "aliases": [
         "French III",
         "French Advance chain",
-        "e5 pawn-chain structure"
+        "e5 pawn-chain structure",
+        "French d4/e5 chain"
       ],
       "openingFamilies": [
         "French Defence Advance",
@@ -2536,7 +2539,7 @@
         "Sicilian French structures",
         "Caro-Kann Advance transpositions"
       ],
-      "descriptionShort": "A full French e5-chain uses primary c3/d4/e5 against opposing c5/d5/e6, producing fixed central space and flank-break races.",
+      "descriptionShort": "A full French e5-chain uses primary d4/e5 against opposing d5/e6, producing fixed central space and flank-break races whether the c-pawns are still home or have advanced.",
       "stability": "stable",
       "sideRoles": {
         "primarySideRole": "side_with_e5_chain_space",
@@ -2544,29 +2547,30 @@
       },
       "canonicalPawnFeatures": {
         "required": [
-          "pawn:primary:c3",
           "pawn:primary:d4",
           "pawn:primary:e5",
-          "pawn:opposing:c5",
           "pawn:opposing:d5",
           "pawn:opposing:e6"
         ],
         "optional": [
+          "pawn:primary:c2|c3",
+          "pawn:opposing:c7|c5",
           "breakCandidate:primary:f2-f4-f5",
           "breakCandidate:primary:c3-c4",
+          "breakCandidate:opposing:c7-c5",
           "breakCandidate:opposing:c5xd4",
           "breakCandidate:opposing:f7-f6"
         ],
         "forbidden": [
           "noPawn:primary:e5",
-          "noPawn:primary:d4",
-          "noPawn:opposing:c5"
+          "noPawn:primary:d4"
         ]
       },
       "templateLogic": {
         "corePawnSkeleton": [
-          "Primary c3/d4/e5 chain.",
-          "Opponent c5/d5/e6 counter-chain."
+          "Primary d4/e5 chain.",
+          "Opponent d5/e6 counter-chain.",
+          "c-pawns may still be home or may already have advanced to c3/c5."
         ],
         "filePatterns": [
           "c-file/d-file tension around the d4 base is central.",
@@ -2576,8 +2580,8 @@
           "Primary e5 on fifth rank is the space anchor; d4 is the chain base."
         ],
         "centralTensionRules": [
-          "The base d4 is under c5 pressure; reward c5xd4 tension.",
-          "Reject if d4 or c5 has disappeared; then Type II or open French is more precise."
+          "The base d4 is central; c5 pressure may be immediate or still latent from c7-c5.",
+          "Reject if d4 has disappeared; then Type II or open French is more precise."
         ],
         "openOrSemiOpenFileRules": [
           "Reward semi-open c/d files only after the chain starts dissolving.",
@@ -2608,8 +2612,8 @@
       },
       "confidenceRules": {
         "strongSignals": [
-          "Full c3/d4/e5 versus c5/d5/e6 French chain exists.",
-          "d4 base and c5 attacker are both present.",
+          "Full d4/e5 versus d5/e6 French chain exists.",
+          "d4 base and e5 space pawn are both present.",
           "The centre remains locked rather than dissolved."
         ],
         "mediumSignals": [
@@ -2632,10 +2636,10 @@
       ],
       "syntheticFenExamples": [
         {
-          "fen": "6k1/pp3ppp/4p3/2ppP3/3P4/2P5/PP3PPP/6K1 w - - 0 1",
+          "fen": "4k3/ppp2ppp/4p3/3pP3/3P4/8/PPP2PPP/4K3 w - - 0 1",
           "expectedRole": "white",
           "expectedDetection": "french_type_iii",
-          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+          "notes": "Synthetic pawn-only skeleton: d4/e5 versus d5/e6, with c-pawns still home."
         }
       ],
       "antiExamples": [
@@ -2791,7 +2795,7 @@
         "Queen’s Gambit transpositions",
         "Caro-Kann Advance/Exchange transpositions"
       ],
-      "descriptionShort": "The primary side has c5 and d4 pawns against opposing d5/e6, creating queenside space and a d4 base that may become isolated or overextended.",
+      "descriptionShort": "The primary side has c5 and d4 pawns against opposing d5 with the opposing e-pawn still on e7 or already on e6, creating queenside space and a d4 base that may become isolated or overextended.",
       "stability": "stable",
       "sideRoles": {
         "primarySideRole": "side_with_c5_d4_panov_space",
@@ -2802,13 +2806,14 @@
           "pawn:primary:c5",
           "pawn:primary:d4",
           "pawn:opposing:d5",
-          "pawn:opposing:e6",
+          "pawn:opposing:e7|e6",
           "noPawnOnFile:opposing:c-file"
         ],
         "optional": [
           "noPawnOnFile:primary:e-file",
           "breakCandidate:primary:c5-c6",
           "breakCandidate:primary:d4-d5",
+          "breakCandidate:opposing:e7-e6",
           "breakCandidate:opposing:e6-e5"
         ],
         "forbidden": [
@@ -2821,7 +2826,7 @@
       "templateLogic": {
         "corePawnSkeleton": [
           "Primary c5/d4 pawns.",
-          "Opponent d5/e6 with no opposing c-pawn."
+          "Opponent d5 plus e7/e6 with no opposing c-pawn."
         ],
         "filePatterns": [
           "c-file is often semi-open behind the advanced c-pawn.",
@@ -2862,7 +2867,7 @@
       },
       "confidenceRules": {
         "strongSignals": [
-          "Primary c5+d4 against opponent d5/e6.",
+          "Primary c5+d4 against opponent d5 with the opposing e-pawn still present on e7/e6.",
           "Opponent c-pawn is absent.",
           "d4/d5 contact and c5 advanced space both exist."
         ],
@@ -2886,10 +2891,10 @@
       ],
       "syntheticFenExamples": [
         {
-          "fen": "6k1/pp3ppp/4p3/2Pp4/3P4/8/PP3PPP/6K1 w - - 0 1",
+          "fen": "4k3/pp2pppp/8/2Pp4/3P4/8/PP3PPP/4K3 w - - 0 1",
           "expectedRole": "white",
           "expectedDetection": "panov_structure",
-          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+          "notes": "Synthetic pawn-only skeleton: c5/d4 against d5 with the opposing e-pawn still on e7."
         }
       ],
       "antiExamples": [
