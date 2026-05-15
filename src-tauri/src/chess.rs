@@ -820,6 +820,7 @@ pub struct MistakeReviewScanResult {
     pub normalized_fen: String,
     pub side_to_move: String,
     pub player_color: String,
+    pub move_sequence: String,
     pub played_move_san: String,
     pub played_move_uci: String,
     pub best_move_san: String,
@@ -887,6 +888,7 @@ pub struct MistakeReviewClockTiming {
     pub review_key: String,
     pub game_id: i32,
     pub ply: u32,
+    pub move_sequence: String,
     pub move_time_seconds: Option<f64>,
     pub clock_before_seconds: Option<f64>,
     pub clock_after_seconds: Option<f64>,
@@ -1140,6 +1142,7 @@ pub async fn scan_mistake_review(
         let mut chess = mistake_review_starting_position(game.fen.as_deref())?;
         let mut clock_tracker = MistakeReviewClockTracker::new(game.time_control.as_deref());
         let move_entries = collect_mainline_move_entries(&game.moves);
+        let move_sans = collect_mistake_review_move_sans(game.fen.as_deref(), &move_entries)?;
         let mut ply = 0u32;
 
         for entry in move_entries {
@@ -1422,6 +1425,7 @@ pub async fn scan_mistake_review(
                         normalized_fen,
                         side_to_move: color_name(side_to_move).to_string(),
                         player_color: color_name(player_color).to_string(),
+                        move_sequence: mistake_review_move_sequence_before(&move_sans, ply),
                         played_move_san,
                         played_move_uci,
                         best_move_san: deep_best
@@ -2087,6 +2091,30 @@ fn collect_mainline_move_entries(bytes: &[u8]) -> Vec<MainlineMoveEntry> {
     entries
 }
 
+fn collect_mistake_review_move_sans(
+    fen: Option<&str>,
+    entries: &[MainlineMoveEntry],
+) -> Result<Vec<String>, Error> {
+    let mut chess = mistake_review_starting_position(fen)?;
+    let mut moves = Vec::with_capacity(entries.len());
+
+    for entry in entries {
+        let Some(mv) = decode_move(entry.byte, &chess) else {
+            break;
+        };
+        let san = SanPlus::from_move(chess.clone(), &mv).to_string();
+        moves.push(san);
+        chess.play_unchecked(&mv);
+    }
+
+    Ok(moves)
+}
+
+fn mistake_review_move_sequence_before(move_sans: &[String], ply: u32) -> String {
+    let end = (ply as usize).min(move_sans.len());
+    move_sans[..end].join(" ")
+}
+
 fn find_mistake_review_clock_timing(
     game: &MistakeReviewGameRow,
     request: &MistakeReviewClockTimingRequest,
@@ -2099,6 +2127,7 @@ fn find_mistake_review_clock_timing(
 
     let mut chess = mistake_review_starting_position(game.fen.as_deref())?;
     let mut clock_tracker = MistakeReviewClockTracker::new(game.time_control.as_deref());
+    let mut move_sequence: Vec<String> = Vec::new();
 
     for (ply, entry) in collect_mainline_move_entries(&game.moves)
         .into_iter()
@@ -2112,12 +2141,15 @@ fn find_mistake_review_clock_timing(
         let move_timing = clock_tracker.record_move(side_to_move, &entry.comments);
         let fen_before = Fen::from_position(chess.clone(), EnPassantMode::Legal).to_string();
         let played_move_uci = UciMove::from_move(&mv, CastlingMode::Standard).to_string();
+        let played_move_san = SanPlus::from_move(chess.clone(), &mv).to_string();
 
         if normalize_mistake_review_fen(&fen_before) == target_fen && played_move_uci == target_uci
         {
+            let move_sequence = move_sequence.join(" ");
             if move_timing.move_time_seconds.is_none()
                 && move_timing.clock_before_seconds.is_none()
                 && move_timing.clock_after_seconds.is_none()
+                && move_sequence.is_empty()
             {
                 return Ok(None);
             }
@@ -2126,6 +2158,7 @@ fn find_mistake_review_clock_timing(
                 review_key: request.review_key.clone(),
                 game_id: game.id,
                 ply: ply as u32,
+                move_sequence,
                 move_time_seconds: move_timing.move_time_seconds,
                 clock_before_seconds: move_timing.clock_before_seconds,
                 clock_after_seconds: move_timing.clock_after_seconds,
@@ -2135,6 +2168,7 @@ fn find_mistake_review_clock_timing(
             }));
         }
 
+        move_sequence.push(played_move_san);
         chess.play_unchecked(&mv);
     }
 
@@ -2487,6 +2521,7 @@ mod mistake_review_tests {
             normalized_fen: "8/8/8/8/8/8/8/8 w - -".to_string(),
             side_to_move: "white".to_string(),
             player_color: "white".to_string(),
+            move_sequence: "e4 e5 Nf3".to_string(),
             played_move_san: "a4".to_string(),
             played_move_uci: "a2a4".to_string(),
             best_move_san: "Nf3".to_string(),

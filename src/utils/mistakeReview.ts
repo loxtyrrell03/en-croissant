@@ -617,6 +617,7 @@ export function createMistakeReviewPosition(
         answerUci: result.bestMoveUci || undefined,
         card: createEmptyCard(),
         sideToMove: result.sideToMove === "black" ? "black" : "white",
+        moveSequence: result.moveSequence || undefined,
         tags: isLongThinkCard
             ? [severityLabel, natureLabel, "Long think", MISTAKE_REVIEW_SOURCE]
             : [severityLabel, natureLabel, MISTAKE_REVIEW_SOURCE],
@@ -1811,6 +1812,7 @@ function mergeMistakeReviewPosition(previous: Position, incoming: Position): Pos
         annotations: previous.annotations,
         shapes: previous.shapes,
         reviewTree: previous.reviewTree,
+        moveSequence: incoming.moveSequence || previous.moveSequence,
         importedAt: previous.importedAt ?? incoming.importedAt,
         mistakeReview: {
             ...incoming.mistakeReview,

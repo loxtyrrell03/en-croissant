@@ -80,7 +80,10 @@ function needsClockHydration(position: Position) {
     if (!metadata) return false;
     if (!metadata.playedMoveUci) return false;
     if (getMistakeReviewGameIds(position).length === 0) return false;
-    return metadata.moveTimeSeconds == null || metadata.clockAfterSeconds == null;
+    const needsMoveSequence = !position.moveSequence?.trim() && metadata.ply !== 0;
+    return (
+        needsMoveSequence || metadata.moveTimeSeconds == null || metadata.clockAfterSeconds == null
+    );
 }
 
 function getMistakeReviewGameIds(position: Position) {
@@ -99,6 +102,7 @@ function clockTimingScore(timing: MistakeReviewClockTiming) {
         (timing.moveTimeSeconds != null ? 4 : 0) +
         (timing.clockBeforeSeconds != null ? 2 : 0) +
         (timing.clockAfterSeconds != null ? 2 : 0) +
+        (timing.moveSequence ? 1 : 0) +
         (timing.timeControl ? 1 : 0)
     );
 }
@@ -107,9 +111,12 @@ function clockTimingChangesPosition(position: Position, timing: MistakeReviewClo
     const metadata = position.mistakeReview;
     if (!metadata) return false;
     return (
-        metadata.moveTimeSeconds !== timing.moveTimeSeconds ||
-        metadata.clockBeforeSeconds !== timing.clockBeforeSeconds ||
-        metadata.clockAfterSeconds !== timing.clockAfterSeconds ||
+        (timing.moveSequence && position.moveSequence !== timing.moveSequence) ||
+        (timing.moveTimeSeconds != null && metadata.moveTimeSeconds !== timing.moveTimeSeconds) ||
+        (timing.clockBeforeSeconds != null &&
+            metadata.clockBeforeSeconds !== timing.clockBeforeSeconds) ||
+        (timing.clockAfterSeconds != null &&
+            metadata.clockAfterSeconds !== timing.clockAfterSeconds) ||
         (timing.timeControl != null && metadata.timeControl !== timing.timeControl)
     );
 }
@@ -119,29 +126,33 @@ function applyMistakeReviewClockTiming(
     timing: MistakeReviewClockTiming,
 ): Position {
     const metadata = position.mistakeReview!;
+    const moveTimeSeconds = timing.moveTimeSeconds ?? metadata.moveTimeSeconds;
+    const clockBeforeSeconds = timing.clockBeforeSeconds ?? metadata.clockBeforeSeconds;
+    const clockAfterSeconds = timing.clockAfterSeconds ?? metadata.clockAfterSeconds;
     const minMoveSeconds =
         metadata.timeManagement?.minMoveSeconds ??
         DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds;
     const isLongThink =
-        typeof timing.moveTimeSeconds === "number" &&
-        Number.isFinite(timing.moveTimeSeconds) &&
-        timing.moveTimeSeconds >= minMoveSeconds;
+        typeof moveTimeSeconds === "number" &&
+        Number.isFinite(moveTimeSeconds) &&
+        moveTimeSeconds >= minMoveSeconds;
     const tags = isLongThink
         ? Array.from(new Set([...(position.tags ?? []), "Long think"]))
         : position.tags;
-    const moveTimeText = formatMistakeReviewMoveTime(timing.moveTimeSeconds);
+    const moveTimeText = formatMistakeReviewMoveTime(moveTimeSeconds);
 
     return {
         ...position,
+        moveSequence: timing.moveSequence || position.moveSequence,
         tags,
         evidence: moveTimeText
             ? withSpentTimeEvidence(position.evidence, moveTimeText)
             : position.evidence,
         mistakeReview: {
             ...metadata,
-            moveTimeSeconds: timing.moveTimeSeconds,
-            clockBeforeSeconds: timing.clockBeforeSeconds,
-            clockAfterSeconds: timing.clockAfterSeconds,
+            moveTimeSeconds,
+            clockBeforeSeconds,
+            clockAfterSeconds,
             date: timing.date ?? metadata.date,
             time: timing.time ?? metadata.time,
             timeControl: timing.timeControl ?? metadata.timeControl,

@@ -247,6 +247,10 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
   the old "Current position" answer panel was removed, deletion moved into the
   session header, and board/game info summaries hide best-move text until an
   attempt or explicit reveal.
+- Mistake Review and long-think review cards now preserve and hydrate the
+  source-game move line up to the mistake position, show that line in the
+  right-panel moves list, and use the shared move controls so back/forward
+  navigation behaves like normal analysis once the answer is visible.
 
 ### Practice Bot Trainer
 

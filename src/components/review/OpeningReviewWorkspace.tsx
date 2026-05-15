@@ -507,13 +507,14 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     !loadError &&
     deck.positions.length > 0 &&
     activeReviewIndex < deck.positions.length - 1;
-  const missingMistakeClockCount = useMemo(
+  const missingMistakeLineDataCount = useMemo(
     () =>
       isMistakeReview
         ? deck.positions.filter(
             (position) =>
               position.mistakeReview &&
-              (position.mistakeReview.moveTimeSeconds == null ||
+              ((!position.moveSequence?.trim() && position.mistakeReview.ply !== 0) ||
+                position.mistakeReview.moveTimeSeconds == null ||
                 position.mistakeReview.clockAfterSeconds == null),
           ).length
         : 0,
@@ -709,11 +710,17 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   }, [deck.logs, deck.positions, deckInfo, deckPath, isMistakeReview, loadError, loaded, setDeck]);
 
   useEffect(() => {
-    if (!isMistakeReview || !loaded || loadError || !deckInfo || missingMistakeClockCount === 0) {
+    if (
+      !isMistakeReview ||
+      !loaded ||
+      loadError ||
+      !deckInfo ||
+      missingMistakeLineDataCount === 0
+    ) {
       return;
     }
 
-    const hydrationKey = `${deckPath}:${mistakeDatabaseUpdatedAt}:${missingMistakeClockCount}`;
+    const hydrationKey = `${deckPath}:${mistakeDatabaseUpdatedAt}:${missingMistakeLineDataCount}`;
     if (clockHydrationRef.current === hydrationKey) return;
     clockHydrationRef.current = hydrationKey;
     let disposed = false;
@@ -749,7 +756,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     isMistakeReview,
     loadError,
     loaded,
-    missingMistakeClockCount,
+    missingMistakeLineDataCount,
     mistakeDatabaseUpdatedAt,
     setDeck,
   ]);
@@ -986,6 +993,55 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     });
   }, [activeReviewPositions, loadError, loaded, setDeck, treeDirty]);
 
+  useEffect(() => {
+    if (!isMistakeReview || practiceState.phase === "idle" || practiceState.phase === "waiting") {
+      return;
+    }
+
+    setPracticePath(null);
+  }, [isMistakeReview, practiceState.phase, setPracticePath]);
+
+  useEffect(() => {
+    if (!isMistakeReview || !loaded || loadError || treeDirty) return;
+
+    const positionIndex = scopedReviewPositionIndex;
+    const position =
+      positionIndex !== undefined && positionIndex !== null && positionIndex >= 0
+        ? deck.positions[positionIndex]
+        : null;
+    if (!position?.moveSequence?.trim()) return;
+    if (!sameReviewPosition(root.fen, position.fen) || root.children.length > 0) return;
+
+    const path = loadReviewPositionOnBoard({
+      position,
+      headers,
+      root,
+      store,
+      goToMove,
+      setHeaders,
+      setState,
+    });
+
+    if (practiceState.currentFen && sameReviewPosition(practiceState.currentFen, position.fen)) {
+      setPracticePath(path);
+    }
+  }, [
+    deck.positions,
+    goToMove,
+    headers,
+    isMistakeReview,
+    loadError,
+    loaded,
+    practiceState.currentFen,
+    root,
+    scopedReviewPositionIndex,
+    setHeaders,
+    setPracticePath,
+    setState,
+    store,
+    treeDirty,
+  ]);
+
   return (
     <>
       <EvalListener active />
@@ -1198,7 +1254,12 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
 
 function ReviewMovesBox({ rightPanel = false }: { rightPanel?: boolean }) {
   if (rightPanel) {
-    return <GameNotation topBar compact grow={false} className={classes.reviewMovesPanel} />;
+    return (
+      <Stack gap={4}>
+        <GameNotation topBar compact grow={false} className={classes.reviewMovesPanel} />
+        <MoveControls readOnly />
+      </Stack>
+    );
   }
 
   return (

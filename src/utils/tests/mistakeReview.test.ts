@@ -1036,6 +1036,7 @@ describe("mistake review helpers", () => {
                 reviewKey: "clock-card",
                 gameId: 7,
                 ply: 12,
+                moveSequence: "e4 e5 Nf3 Nc6",
                 moveTimeSeconds: 42,
                 clockBeforeSeconds: 120,
                 clockAfterSeconds: 78,
@@ -1049,8 +1050,42 @@ describe("mistake review helpers", () => {
         expect(result.deck.positions[0]!.card.reps).toBe(3);
         expect(result.deck.positions[0]!.mistakeReview?.moveTimeSeconds).toBe(42);
         expect(result.deck.positions[0]!.mistakeReview?.clockAfterSeconds).toBe(78);
+        expect(result.deck.positions[0]!.moveSequence).toBe("e4 e5 Nf3 Nc6");
         expect(result.deck.positions[0]!.tags).toContain("Long think");
         expect(result.deck.positions[0]!.evidence).toContain("Spent 42s");
+    });
+
+    test("line hydration fills mistake move sequence without clock data", () => {
+        const previous = position({
+            reviewKey: "line-card",
+            moveSequence: undefined,
+            mistakeReview: {
+                ...position().mistakeReview!,
+                playedMoveUci: "g2g4",
+                moveTimeSeconds: 42,
+                clockBeforeSeconds: 120,
+                clockAfterSeconds: 78,
+            },
+        });
+
+        const result = applyMistakeReviewClockTimings(deck([previous]), [
+            {
+                reviewKey: "line-card",
+                gameId: 7,
+                ply: 4,
+                moveSequence: "d4 Nf6 c4 e6",
+                moveTimeSeconds: null,
+                clockBeforeSeconds: null,
+                clockAfterSeconds: null,
+                date: null,
+                time: null,
+                timeControl: null,
+            },
+        ]);
+
+        expect(result.updatedCount).toBe(1);
+        expect(result.deck.positions[0]!.moveSequence).toBe("d4 Nf6 c4 e6");
+        expect(result.deck.positions[0]!.mistakeReview?.moveTimeSeconds).toBe(42);
     });
 
     test("formats mistake review last seen from attempt metadata", () => {
