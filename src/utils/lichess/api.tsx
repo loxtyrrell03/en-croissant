@@ -535,6 +535,7 @@ export async function getRecentLichessGames(
   player: string,
   limit = 10,
   token?: string,
+  before?: number | null,
 ): Promise<LichessLatestGame[]> {
   const boundedLimit = Math.min(30, Math.max(1, Math.round(limit)));
   const url = new URL(`${baseURL}/games/user/${encodeURIComponent(player)}`);
@@ -545,6 +546,9 @@ export async function getRecentLichessGames(
   url.searchParams.set("evals", "true");
   url.searchParams.set("accuracy", "true");
   url.searchParams.set("perfType", "ultraBullet,bullet,blitz,rapid,classical,correspondence");
+  if (typeof before === "number" && Number.isFinite(before)) {
+    url.searchParams.set("until", String(Math.max(0, Math.floor(before) - 1)));
+  }
 
   const response = await fetch(url.toString(), {
     headers: apiHeaders({

@@ -163,6 +163,9 @@ and `src/utils/lichess/study.ts`.
 - The online game picker has provider tabs for Lichess and Chess.com, account
   selection, recent-game previews, single-select analysis, and multi-select
   review deck creation.
+- The online game picker now has Newer/Older paging so analysis and review
+  creation can reach beyond the first recent-game slice without importing a
+  full account database.
 - Recent-game picker rows show the formatted time control next to the account,
   date, and result so online analysis/review choices can be filtered by pace at
   a glance.

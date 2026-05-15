@@ -19,9 +19,16 @@ export type RecentOnlineGame = LatestOnlineGame & {
 export type RecentOnlineGamesResult = {
     games: RecentOnlineGame[];
     failures: string[];
+    nextBeforeByProviderKey: Record<string, number>;
+    hasOlderByProviderKey: Record<string, boolean>;
 };
 
 export type LatestOnlineGameAccountSelection = Record<string, boolean>;
+
+export type RecentOnlineGamesOptions = {
+    limitPerProvider?: number;
+    beforeByProviderKey?: Record<string, number | null | undefined>;
+};
 
 export type OnlineGameProvider =
     | {
@@ -100,47 +107,84 @@ export async function getLatestOnlineGame(
 export async function getRecentOnlineGames(
     sessions: Session[],
     selection: LatestOnlineGameAccountSelection = {},
-    limitPerProvider = 10,
+    options: RecentOnlineGamesOptions | number = {},
 ): Promise<RecentOnlineGamesResult> {
     const providers = getSelectedOnlineGameProviders(sessions, selection);
     if (providers.length === 0) {
-        return { games: [], failures: [] };
+        return {
+            games: [],
+            failures: [],
+            nextBeforeByProviderKey: {},
+            hasOlderByProviderKey: {},
+        };
     }
 
-    const results = await Promise.allSettled(
-        providers.map(async (provider): Promise<RecentOnlineGame[]> => {
-            const providerKey = getOnlineGameProviderKey(provider);
-            if (provider.source === "lichess") {
-                const games = await getRecentLichessGames(
-                    provider.username,
-                    limitPerProvider,
-                    provider.token,
-                );
-                return games.map((game, index) => ({
-                    ...game,
-                    id: `${providerKey}:${game.url || game.playedAt || index}`,
-                    providerKey,
-                    sourceLabel: provider.sourceLabel,
-                }));
-            }
+    const { limitPerProvider, beforeByProviderKey } = normalizeRecentOnlineGamesOptions(options);
+    const fetchLimit = limitPerProvider + 1;
 
-            const games = await getRecentChessComGames(provider.username, limitPerProvider);
-            return games.map((game, index) => ({
-                ...game,
-                id: `${providerKey}:${game.url || game.playedAt || index}`,
-                providerKey,
-                sourceLabel: provider.sourceLabel,
-            }));
-        }),
+    const results = await Promise.allSettled(
+        providers.map(
+            async (
+                provider,
+            ): Promise<{
+                games: RecentOnlineGame[];
+                hasOlder: boolean;
+                nextBefore: number | null;
+                providerKey: string;
+            }> => {
+                const providerKey = getOnlineGameProviderKey(provider);
+                const before = beforeByProviderKey[providerKey] ?? null;
+                if (provider.source === "lichess") {
+                    const games = await getRecentLichessGames(
+                        provider.username,
+                        fetchLimit,
+                        provider.token,
+                        before,
+                    );
+                    const pageGames = games.slice(0, limitPerProvider);
+                    return {
+                        games: pageGames.map((game, index) => ({
+                            ...game,
+                            id: `${providerKey}:${game.url || game.playedAt || index}`,
+                            providerKey,
+                            sourceLabel: provider.sourceLabel,
+                        })),
+                        hasOlder: games.length > limitPerProvider,
+                        nextBefore: getOldestPlayedAt(pageGames),
+                        providerKey,
+                    };
+                }
+
+                const games = await getRecentChessComGames(provider.username, fetchLimit, before);
+                const pageGames = games.slice(0, limitPerProvider);
+                return {
+                    games: pageGames.map((game, index) => ({
+                        ...game,
+                        id: `${providerKey}:${game.url || game.playedAt || index}`,
+                        providerKey,
+                        sourceLabel: provider.sourceLabel,
+                    })),
+                    hasOlder: games.length > limitPerProvider,
+                    nextBefore: getOldestPlayedAt(pageGames),
+                    providerKey,
+                };
+            },
+        ),
     );
 
     const games: RecentOnlineGame[] = [];
     const failures: string[] = [];
+    const nextBeforeByProviderKey: Record<string, number> = {};
+    const hasOlderByProviderKey: Record<string, boolean> = {};
 
     results.forEach((result, index) => {
         const provider = providers[index];
         if (result.status === "fulfilled") {
-            games.push(...result.value);
+            games.push(...result.value.games);
+            hasOlderByProviderKey[result.value.providerKey] = result.value.hasOlder;
+            if (result.value.nextBefore !== null) {
+                nextBeforeByProviderKey[result.value.providerKey] = result.value.nextBefore;
+            }
             return;
         }
 
@@ -155,7 +199,30 @@ export async function getRecentOnlineGames(
             return a.sourceLabel.localeCompare(b.sourceLabel);
         }),
         failures,
+        nextBeforeByProviderKey,
+        hasOlderByProviderKey,
     };
+}
+
+function normalizeRecentOnlineGamesOptions(
+    options: RecentOnlineGamesOptions | number,
+): Required<RecentOnlineGamesOptions> {
+    if (typeof options === "number") {
+        return {
+            limitPerProvider: Math.max(1, Math.round(options)),
+            beforeByProviderKey: {},
+        };
+    }
+
+    return {
+        limitPerProvider: Math.max(1, Math.round(options.limitPerProvider ?? 10)),
+        beforeByProviderKey: options.beforeByProviderKey ?? {},
+    };
+}
+
+function getOldestPlayedAt(games: Pick<RecentOnlineGame, "playedAt">[]) {
+    if (games.length === 0) return null;
+    return Math.min(...games.map((game) => game.playedAt));
 }
 
 function errorMessage(error: unknown) {

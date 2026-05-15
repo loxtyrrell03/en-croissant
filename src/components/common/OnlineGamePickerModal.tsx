@@ -17,7 +17,13 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { IconChevronDown, IconChevronRight, IconRefresh, IconSettings } from "@tabler/icons-react";
+import {
+  IconChevronDown,
+  IconChevronLeft,
+  IconChevronRight,
+  IconRefresh,
+  IconSettings,
+} from "@tabler/icons-react";
 import dayjs from "dayjs";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Chessground } from "@/chessground/Chessground";
@@ -81,6 +87,8 @@ type OnlineGameRowDetails = {
   timeControl: string;
 };
 
+type OnlineGamePageCursors = Record<string, number>;
+
 const ONLINE_PROVIDERS: { value: OnlineProvider; label: string }[] = [
   { value: "lichess", label: "Lichess" },
   { value: "chesscom", label: "Chess.com" },
@@ -112,16 +120,26 @@ export default function OnlineGamePickerModal({
   const [failures, setFailures] = useState<string[]>([]);
   const [fetching, setFetching] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [selectedGameById, setSelectedGameById] = useState<Record<string, RecentOnlineGame>>({});
   const [activeProvider, setActiveProvider] = useState<OnlineProvider>("lichess");
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageCursorsByIndex, setPageCursorsByIndex] = useState<
+    Record<number, OnlineGamePageCursors>
+  >({ 0: {} });
+  const [hasOlderByProviderKey, setHasOlderByProviderKey] = useState<Record<string, boolean>>({});
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
   const [previewByGameId, setPreviewByGameId] = useState<Record<string, OnlineGamePreviewState>>(
     {},
   );
   const [previewPlyByGameId, setPreviewPlyByGameId] = useState<Record<string, number>>({});
 
+  const gameById = useMemo(() => new Map(games.map((game) => [game.id, game])), [games]);
   const selectedGames = useMemo(
-    () => games.filter((game) => selectedIds.has(game.id)),
-    [games, selectedIds],
+    () =>
+      [...selectedIds]
+        .map((id) => selectedGameById[id] ?? gameById.get(id))
+        .filter((game): game is RecentOnlineGame => Boolean(game)),
+    [gameById, selectedGameById, selectedIds],
   );
   const gamesByProvider = useMemo(
     () => ({
@@ -145,61 +163,94 @@ export default function OnlineGamePickerModal({
 
     return labels;
   }, [selectedProviders]);
+  const hasOlderGames = useMemo(
+    () =>
+      selectedProviders.some(
+        (provider) => hasOlderByProviderKey[getOnlineGameProviderKey(provider)],
+      ),
+    [hasOlderByProviderKey, selectedProviders],
+  );
 
-  const loadGames = useCallback(async () => {
-    if (!opened || selectedProviders.length === 0) return;
+  const loadGamesPage = useCallback(
+    async (targetPage: number, beforeByProviderKey: OnlineGamePageCursors = {}) => {
+      if (!opened || selectedProviders.length === 0) return;
 
-    setFetching(true);
-    setFailures([]);
-    try {
-      const result = await getRecentOnlineGames(sessions, selection, maxGamesPerProvider);
-      setGames(result.games);
-      setFailures(result.failures);
-      setSelectedIds((current) => {
-        const validIds = new Set(result.games.map((game) => game.id));
-        const kept = new Set([...current].filter((id) => validIds.has(id)));
-        return kept.size === current.size ? current : kept;
-      });
-      setExpandedIds((current) => {
-        const validIds = new Set(result.games.map((game) => game.id));
-        const kept = new Set([...current].filter((id) => validIds.has(id)));
-        return kept.size === current.size ? current : kept;
-      });
-      setPreviewByGameId((current) => {
-        const validIds = new Set(result.games.map((game) => game.id));
-        return Object.fromEntries(Object.entries(current).filter(([id]) => validIds.has(id)));
-      });
-      setPreviewPlyByGameId((current) => {
-        const validIds = new Set(result.games.map((game) => game.id));
-        return Object.fromEntries(Object.entries(current).filter(([id]) => validIds.has(id)));
-      });
-    } catch (error) {
-      notifications.show({
-        title: "Could not load online games",
-        message: error instanceof Error ? error.message : String(error),
-        color: "red",
-      });
-    } finally {
-      setFetching(false);
-    }
-  }, [maxGamesPerProvider, opened, selectedProviders.length, selection, sessions]);
+      setFetching(true);
+      setFailures([]);
+      try {
+        const result = await getRecentOnlineGames(sessions, selection, {
+          limitPerProvider: maxGamesPerProvider,
+          beforeByProviderKey,
+        });
+        setGames(result.games);
+        setFailures(result.failures);
+        setPageIndex(targetPage);
+        setHasOlderByProviderKey(result.hasOlderByProviderKey);
+        setPageCursorsByIndex((current) => {
+          const next = {
+            ...current,
+            [targetPage]: beforeByProviderKey,
+          };
+          if (Object.keys(result.nextBeforeByProviderKey).length > 0) {
+            next[targetPage + 1] = result.nextBeforeByProviderKey;
+          }
+          return next;
+        });
+        setExpandedIds((current) => {
+          const validIds = new Set(result.games.map((game) => game.id));
+          const kept = new Set([...current].filter((id) => validIds.has(id)));
+          return kept.size === current.size ? current : kept;
+        });
+        setPreviewByGameId((current) => {
+          const validIds = new Set(result.games.map((game) => game.id));
+          return Object.fromEntries(Object.entries(current).filter(([id]) => validIds.has(id)));
+        });
+        setPreviewPlyByGameId((current) => {
+          const validIds = new Set(result.games.map((game) => game.id));
+          return Object.fromEntries(Object.entries(current).filter(([id]) => validIds.has(id)));
+        });
+      } catch (error) {
+        notifications.show({
+          title: "Could not load online games",
+          message: error instanceof Error ? error.message : String(error),
+          color: "red",
+        });
+      } finally {
+        setFetching(false);
+      }
+    },
+    [maxGamesPerProvider, opened, selectedProviders.length, selection, sessions],
+  );
 
   useEffect(() => {
     if (!opened) {
       setSelectedIds(new Set());
+      setSelectedGameById({});
       setExpandedIds(new Set());
       setPreviewByGameId({});
       setPreviewPlyByGameId({});
+      setPageIndex(0);
+      setPageCursorsByIndex({ 0: {} });
+      setHasOlderByProviderKey({});
       return;
     }
 
+    setSelectedIds(new Set());
+    setSelectedGameById({});
+    setExpandedIds(new Set());
+    setPreviewByGameId({});
+    setPreviewPlyByGameId({});
+    setPageIndex(0);
+    setPageCursorsByIndex({ 0: {} });
+    setHasOlderByProviderKey({});
+
     if (selectedProviders.length > 0) {
-      void loadGames();
+      void loadGamesPage(0, {});
     } else {
       setGames([]);
       setFailures([]);
     }
-  }, [loadGames, opened, selectedProviders.length]);
+  }, [loadGamesPage, opened, selectedProviderKey, selectedProviders.length]);
 
   useEffect(() => {
     if (!opened) return;
@@ -279,6 +330,26 @@ export default function OnlineGamePickerModal({
       else next.delete(game.id);
       return next;
     });
+    setSelectedGameById((current) => {
+      if (!multiple) return checked ? { [game.id]: game } : {};
+
+      if (checked) {
+        return {
+          ...current,
+          [game.id]: game,
+        };
+      }
+
+      const next = { ...current };
+      delete next[game.id];
+      return next;
+    });
+  }
+
+  function loadPage(targetPage: number) {
+    const beforeByProviderKey = targetPage === 0 ? {} : pageCursorsByIndex[targetPage];
+    if (!beforeByProviderKey) return;
+    void loadGamesPage(targetPage, beforeByProviderKey);
   }
 
   function toggleExpanded(game: RecentOnlineGame) {
@@ -331,7 +402,7 @@ export default function OnlineGamePickerModal({
                 variant="light"
                 disabled={selectedProviders.length === 0}
                 loading={fetching}
-                onClick={() => void loadGames()}
+                onClick={() => loadPage(pageIndex)}
               >
                 <IconRefresh size="1rem" />
               </ActionIcon>
@@ -371,6 +442,34 @@ export default function OnlineGamePickerModal({
           <Alert color="yellow" variant="light">
             {failures.slice(0, 3).join("; ")}
           </Alert>
+        )}
+
+        {selectedProviders.length > 0 && (
+          <Group justify="space-between" gap="xs">
+            <Text size="xs" c="dimmed">
+              Page {pageIndex + 1}
+            </Text>
+            <Group gap={4}>
+              <Button
+                size="compact-xs"
+                variant="light"
+                leftSection={<IconChevronLeft size="0.9rem" />}
+                disabled={fetching || pageIndex === 0}
+                onClick={() => loadPage(pageIndex - 1)}
+              >
+                Newer
+              </Button>
+              <Button
+                size="compact-xs"
+                variant="light"
+                rightSection={<IconChevronRight size="0.9rem" />}
+                disabled={fetching || !hasOlderGames}
+                onClick={() => loadPage(pageIndex + 1)}
+              >
+                Older
+              </Button>
+            </Group>
+          </Group>
         )}
 
         <Tabs

@@ -168,10 +168,13 @@ export async function getLatestChessComGame(player: string): Promise<ChessComLat
 export async function getRecentChessComGames(
   player: string,
   limit = 10,
+  before?: number | null,
 ): Promise<ChessComLatestGame[]> {
   const archives = await getGameArchives(player);
   const recentGames: ChessComLatestGame[] = [];
   const boundedLimit = Math.min(30, Math.max(1, Math.round(limit)));
+  const beforeTimestamp =
+    typeof before === "number" && Number.isFinite(before) ? Math.floor(before) : null;
 
   for (const archive of archives.archives.slice().reverse()) {
     const response = await fetch(archive, {
@@ -199,7 +202,8 @@ export async function getRecentChessComGames(
           pgn: game.pgn,
           playedAt: game.end_time * 1000,
           url: game.url,
-        })),
+        }))
+        .filter((game) => beforeTimestamp === null || game.playedAt < beforeTimestamp),
     );
 
     if (recentGames.length >= boundedLimit) {
