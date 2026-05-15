@@ -63,6 +63,34 @@ describe("pawn structure detector", () => {
         expect(detection?.fileMirrored).toBe(true);
     });
 
+    test("detects the Open KID after ...exd4 leaves the d6 residue", () => {
+        const detection = detectPawnStructure(
+            "4k3/ppp2ppp/3p4/8/2P1P3/8/PP3PPP/4K3 w - - 0 1",
+        );
+
+        expect(detection?.structureId).toBe("open_kid");
+        expect(detection?.sideRoles.primarySide).toBe("white");
+        expect(detection?.confidence ?? 0).toBeGreaterThanOrEqual(0.72);
+        expect(detection?.evidence.join(" ")).toContain("d6");
+    });
+
+    test("detects colour-reversed Open KID after the central exchange", () => {
+        const detection = detectPawnStructure(
+            colourReverseFen("4k3/ppp2ppp/3p4/8/2P1P3/8/PP3PPP/4K3 w - - 0 1"),
+        );
+
+        expect(detection?.structureId).toBe("open_kid");
+        expect(detection?.sideRoles.primarySide).toBe("black");
+    });
+
+    test("does not pull a Maroczy/Sicilian shell into Open KID without the KID c-pawn context", () => {
+        const detection = detectPawnStructure(
+            "6k1/pp3ppp/3p4/8/2P1P3/8/PP3PPP/6K1 w - - 0 1",
+        );
+
+        expect(detection?.structureId).not.toBe("open_kid");
+    });
+
     test("keeps ambiguous or messy positions unknown", () => {
         const detection = detectPawnStructure(
             "6k1/pppppppp/8/8/8/8/PPPPPPPP/6K1 w - - 0 1",

@@ -1296,6 +1296,7 @@
         "forbidden": [
           "pawn:primary:d4",
           "pawn:primary:d5",
+          "pawn:opposing:c-file",
           "pawn:opposing:c5"
         ]
       },
@@ -2000,57 +2001,65 @@
       "aliases": [
         "Open King’s Indian",
         "KID open centre",
-        "open e4/e5 KID"
+        "open e4/e5 KID",
+        "open KID after ...exd4"
       ],
       "openingFamilies": [
         "King’s Indian Defence",
         "Pirc/Modern transpositions",
         "Old Indian"
       ],
-      "descriptionShort": "The King’s Indian central lock has dissolved into an e4/e5 opposition with both d-pawns absent, making open-file and piece activity more important than chain play.",
+      "descriptionShort": "The King’s Indian central tension has opened after a d-pawn or e-pawn exchange, leaving the primary c4/e4 centre against an opposing d6- or e5-based KID residue rather than a fixed d5 chain.",
       "stability": "transitional",
       "sideRoles": {
-        "primarySideRole": "side_with_e4_pawn_in_open_kid",
-        "opposingSideRole": "side_with_e5_pawn_in_open_kid"
+        "primarySideRole": "side_with_c4_e4_open_kid_centre",
+        "opposingSideRole": "kid_side_after_central_exchange"
       },
       "canonicalPawnFeatures": {
         "required": [
+          "pawn:primary:c4",
           "pawn:primary:e4",
-          "pawn:opposing:e5",
           "noPawnOnFile:primary:d-file",
-          "noPawnOnFile:opposing:d-file"
+          "pawn:opposing:d6|e5",
+          "pawn:opposing:c6|c7|c5"
         ],
         "optional": [
-          "pawn:primary:c4",
-          "pawn:opposing:c6|c7|c5",
+          "noPawnOnFile:opposing:d-file|e-file",
           "openFile:d-file",
+          "openOrSemiOpenFile:primary:d-file",
+          "openOrSemiOpenFile:opposing:e-file",
           "breakCandidate:primary:f2-f4",
+          "breakCandidate:primary:c4-c5",
           "breakCandidate:opposing:f7-f5"
         ],
         "forbidden": [
           "pawn:primary:d5",
-          "pawn:opposing:d6",
-          "pawn:primary:d4"
+          "pawn:primary:d4",
+          "pawn:opposing:d6+e5"
         ]
       },
       "templateLogic": {
         "corePawnSkeleton": [
-          "Primary e4 versus opponent e5.",
-          "Both d-file pawns absent."
+          "Primary c4/e4 centre with the primary d-pawn gone.",
+          "Opponent retains either the d6 KID pawn after ...exd4, or the e5 KID pawn after dxe5/dxe5 liquidation.",
+          "Opponent c-pawn remains on c7/c6/c5, keeping this distinct from Maroczy and generic Sicilian open centres."
         ],
         "filePatterns": [
-          "Open or semi-open d-file is a strong signal.",
+          "The d-file is open or semi-open for the primary side after the d-pawn leaves.",
+          "The opposing e-file is often semi-open in the ...exd4 subtype.",
           "f-file can open after f-pawn breaks."
         ],
         "rankPatterns": [
-          "No fixed d-pawn chain remains."
+          "No primary d-pawn chain remains; d5 is a piece square or break square rather than an occupied chain base."
         ],
         "centralTensionRules": [
-          "Reject if either side still has a central d-pawn participating in a chain.",
+          "Reject if the primary d-pawn still participates in the centre.",
+          "Reject if the opponent has both d6 and e5, because that is still unresolved KID tension rather than the open form.",
           "Do not classify generic e4/e5 openings as Open KID without supporting c/g/KID-history evidence."
         ],
         "openOrSemiOpenFileRules": [
-          "Reward open d-file.",
+          "Reward open or semi-open d-file access for the primary side.",
+          "Reward semi-open e-file access for the opposing side in the ...exd4 subtype.",
           "Reward history from a prior KID Complex/Type I/II/III segment."
         ],
         "weakSquareRules": [
@@ -2064,6 +2073,7 @@
           "opposing:c7-c6/c5 depending on skeleton"
         ],
         "typicalTransformations": [
+          "kid_complex->open_kid after ...exd4 removes the primary d-pawn and opposing e-pawn",
           "kid_type_i|kid_type_ii|kid_type_iii->open_kid after d-pawn exchanges",
           "open_kid->generic_open_centre if c/g/KID contextual signals vanish",
           "open_kid->endgame_file_play after major piece trades"
@@ -2077,17 +2087,18 @@
       },
       "confidenceRules": {
         "strongSignals": [
-          "e4/e5 opposition with both d-pawns gone.",
+          "Primary c4/e4 with no primary d-pawn after central liquidation.",
+          "Opponent has either the d6 KID residue with no e-pawn, or the e5 KID residue with no d-pawn.",
           "Position previously matched a KID-family structure or has c/g-pawn support consistent with KID play.",
-          "Open d-file exists."
+          "Opponent c-pawn remains on c7/c6/c5, separating this from Maroczy/Sicilian shells."
         ],
         "mediumSignals": [
-          "Primary c4 and opponent c6/c7/c5 give KID context.",
+          "Open or semi-open d-file/e-file play is available after the central exchange.",
           "Both sides still have enough pieces for open-file play.",
           "f-pawn breaks are structurally relevant."
         ],
         "weakSignals": [
-          "Generic Ruy Lopez/Petroff e4/e5 structures without KID history should not match strongly."
+          "Generic Ruy Lopez/Petroff e4/e5 structures without c4 and KID c-pawn context should not match strongly."
         ],
         "penalties": [
           "Subtract 0.15 if a forbidden pawn feature is present.",
@@ -2104,7 +2115,13 @@
           "fen": "6k1/pp3ppp/2p5/4p3/2P1P3/8/PP3PPP/6K1 w - - 0 1",
           "expectedRole": "white",
           "expectedDetection": "open_kid",
-          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+          "notes": "Synthetic pawn-only skeleton for the dxe5/dxe5 subtype: primary c4/e4 against opposing e5 with the d-file clear."
+        },
+        {
+          "fen": "4k3/ppp2ppp/3p4/8/2P1P3/8/PP3PPP/4K3 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "open_kid",
+          "notes": "Synthetic pawn-only skeleton for the ...exd4 subtype: primary c4/e4, no primary d-pawn, opposing d6, and opposing c-pawn still at c7."
         }
       ],
       "antiExamples": [

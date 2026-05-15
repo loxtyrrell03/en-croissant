@@ -306,6 +306,9 @@ and `src/utils/pawnStructureTrajectory.ts` using
   conservative.
 - Every detection returns confidence, side roles, evidence, and typical
   pawn-break plans where available.
+- Open KID detection covers both common central-exchange subtypes: dxe5/dxe5
+  e4/e5 liquidation and ...exd4 structures with primary c4/e4, no primary
+  d-pawn, opposing d6, and the opposing c-pawn still providing KID context.
 - Main-line trajectory analysis groups consecutive structures, suppresses
   one-ply flicker, identifies transitions, picks primary and secondary
   structures, and writes a compact structural story.

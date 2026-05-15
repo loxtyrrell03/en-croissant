@@ -329,6 +329,7 @@ function formatPrimaryRole(role?: string) {
         side_with_broad_centre: "has the broad centre",
         side_with_closed_spanish_space: "has the closed Spanish space",
         side_with_mobile_spanish_centre: "has the mobile Spanish centre",
+        side_with_c4_e4_open_kid_centre: "has the open KID centre",
     };
     if (labels[role]) return labels[role];
     if (role.startsWith("side_with_")) {
