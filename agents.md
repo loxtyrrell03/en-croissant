@@ -319,6 +319,9 @@ and `src/utils/pawnStructureTrajectory.ts` using
   primary side has d5/e4 with no c-pawn against opposing c5/d6, but still
   requires missing opposing a/b-pawn or open-file evidence so ordinary Benonis
   do not get absorbed.
+- The 3-3 vs 4-2 endgame-majority template allows file mirroring, so it detects
+  both queenside and kingside versions of the four-pawn majority while still
+  requiring simplified/central-liquidated evidence.
 - Main-line trajectory analysis groups consecutive structures, suppresses
   one-ply flicker, identifies transitions, picks primary and secondary
   structures, and writes a compact structural story.

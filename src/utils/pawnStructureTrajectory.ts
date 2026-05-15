@@ -322,6 +322,7 @@ function formatPrimaryRole(role?: string) {
     const labels: Record<string, string> = {
         side_with_iqp: "has the IQP",
         side_with_hanging_pawns: "has the hanging pawns",
+        side_with_three_three_split: "has the 3-3 split",
         side_with_maroczy_bind: "has the Maroczy bind",
         side_playing_against_dragon_shell: "plays against the Dragon shell",
         side_attacking_scheveningen_centre: "attacks the Scheveningen centre",

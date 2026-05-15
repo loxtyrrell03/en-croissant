@@ -2677,7 +2677,7 @@
       "templateLogic": {
         "corePawnSkeleton": [
           "Primary has three queenside pawns and three kingside pawns.",
-          "Opponent has four queenside pawns and two kingside pawns in canonical orientation."
+          "Opponent has four pawns on one wing and two on the other; canonical orientation puts the four-pawn majority on the queenside, but the endgame structure may be file-mirrored."
         ],
         "filePatterns": [
           "Central files are often open or simplified; wing files determine pawn-majority play.",
@@ -2711,9 +2711,9 @@
       },
       "colourAndMirrorHandling": {
         "allowColourReverse": true,
-        "allowFileMirror": false,
+        "allowFileMirror": true,
         "allowRankMirror": false,
-        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is allowed for this endgame-sensitive majority template because 3+3 versus 4+2 remains the same conversion story when the four-pawn majority is on the opposite wing. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
       },
       "confidenceRules": {
         "strongSignals": [
@@ -2745,6 +2745,12 @@
           "expectedRole": "white",
           "expectedDetection": "three_three_vs_four_two",
           "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        },
+        {
+          "fen": "4k3/pp3ppp/4p3/8/8/2P5/PP3PPP/4K3 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "three_three_vs_four_two",
+          "notes": "File-mirrored 3+3 versus 4+2 skeleton: primary has a/b/c and f/g/h, while the opponent has a 2+4 split."
         }
       ],
       "antiExamples": [

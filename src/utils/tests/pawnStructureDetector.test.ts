@@ -135,6 +135,25 @@ describe("pawn structure detector", () => {
         expect(detectPawnStructure(fen)?.structureId).toBe(structureId);
     });
 
+    test("detects file-mirrored 3-3 vs 4-2 majority structure", () => {
+        const detection = detectPawnStructure(
+            "4k3/pp3ppp/4p3/8/8/2P5/PP3PPP/4K3 w - - 0 1",
+        );
+
+        expect(detection?.structureId).toBe("three_three_vs_four_two");
+        expect(detection?.sideRoles.primarySide).toBe("white");
+        expect(detection?.fileMirrored).toBe(true);
+    });
+
+    test("detects colour-reversed file-mirrored 3-3 vs 4-2 majority structure", () => {
+        const detection = detectPawnStructure(
+            colourReverseFen("4k3/pp3ppp/4p3/8/8/2P5/PP3PPP/4K3 w - - 0 1"),
+        );
+
+        expect(detection?.structureId).toBe("three_three_vs_four_two");
+        expect(detection?.sideRoles.primarySide).toBe("black");
+    });
+
     test("keeps ambiguous or messy positions unknown", () => {
         const detection = detectPawnStructure(
             "6k1/pppppppp/8/8/8/8/PPPPPPPP/6K1 w - - 0 1",
