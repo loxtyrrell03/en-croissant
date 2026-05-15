@@ -3136,27 +3136,31 @@
       "aliases": [
         "Benko Gambit structure",
         "Volga structure",
-        "Benko accepted pawn skeleton"
+        "Benko accepted pawn skeleton",
+        "Benko post-c-pawn exchange"
       ],
       "openingFamilies": [
         "Benko Gambit",
         "Benoni-Benko transpositions"
       ],
-      "descriptionShort": "A Benoni-like d5/c4 versus c5/d6 centre is combined with missing or advanced a/b-pawns, making open queenside files and a queenside pawn hook the defining feature.",
+      "descriptionShort": "A Benoni-like d5 centre against c5/d6 is combined with missing or advanced a/b-pawns, making open queenside files and a queenside pawn hook the defining feature even when the primary c-pawn has already disappeared.",
       "stability": "stable",
       "sideRoles": {
-        "primarySideRole": "side_with_extra_or_advanced_queenside_pawn",
+        "primarySideRole": "side_with_benko_centre",
         "opposingSideRole": "benko_side_with_open_a_b_file_pressure"
       },
       "canonicalPawnFeatures": {
         "required": [
-          "pawn:primary:c4",
           "pawn:primary:d5",
+          "pawn:primary:c4|e4",
           "pawn:opposing:c5",
           "pawn:opposing:d6",
           "noPawnOnFile:opposing:b-file"
         ],
         "optional": [
+          "pawn:primary:c4",
+          "pawn:primary:e4",
+          "noPawnOnFile:primary:c-file",
           "pawn:primary:a6|b5",
           "noPawnOnFile:opposing:a-file",
           "openOrSemiOpenFile:opposing:a-file",
@@ -3172,19 +3176,21 @@
       },
       "templateLogic": {
         "corePawnSkeleton": [
-          "Primary c4/d5 versus opponent c5/d6.",
+          "Primary d5 with either a c4 pawn still present or an e4/post-c-pawn-exchange centre.",
+          "Opponent c5/d6 remain from the Benoni base.",
           "Opponent b-pawn is absent and a/b-file openness or an advanced primary queenside pawn is present."
         ],
         "filePatterns": [
           "Open or semi-open a- and b-files are essential support signals.",
-          "c-file/d-file Benoni centre supplies the base context."
+          "c-file/d-file Benoni centre supplies the base context; the primary c-pawn may already have traded off."
         ],
         "rankPatterns": [
           "An advanced primary a- or b-pawn may remain from the accepted gambit but is not mandatory if files encode the history."
         ],
         "centralTensionRules": [
           "Reject if opponent e5 creates KID Type II.",
-          "Benko requires queenside file/pawn evidence beyond generic Benoni."
+          "Benko requires queenside file/pawn evidence beyond generic Benoni.",
+          "Allow the primary c-pawn to be absent when e4/d5 and queenside file evidence preserve the accepted Benko identity."
         ],
         "openOrSemiOpenFileRules": [
           "Reward opponent access to open/semi-open a- and b-files.",
@@ -3214,11 +3220,12 @@
       },
       "confidenceRules": {
         "strongSignals": [
-          "Benoni c4/d5 versus c5/d6 centre plus missing opposing b-pawn or open a/b files.",
+          "Benoni d5 versus c5/d6 centre plus missing opposing b-pawn or open a/b files.",
           "Queenside a/b-file abnormality is present.",
           "Opponent e5 is absent."
         ],
         "mediumSignals": [
+          "Primary c4 remains, or the primary c-pawn has disappeared after accepted-gambit exchanges.",
           "Primary has advanced a6 or b5 pawn from accepted gambit history.",
           "Opponent a-file or b-file is semi-open.",
           "Move history includes ...b5 and a-pawn captures, used only as structural evidence."
@@ -3242,6 +3249,12 @@
           "expectedRole": "white",
           "expectedDetection": "benko_structure",
           "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        },
+        {
+          "fen": "4k3/4pp1p/3p2p1/2pP4/4P3/8/PP3PPP/4K3 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "benko_structure",
+          "notes": "Accepted/post-c-pawn-exchange Benko skeleton: primary d5/e4, no primary c-pawn, opposing c5/d6, and missing opposing a/b-pawns."
         }
       ],
       "antiExamples": [

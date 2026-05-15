@@ -118,6 +118,23 @@ describe("pawn structure detector", () => {
         expect(detection?.structureId).not.toBe("kid_type_i");
     });
 
+    test.each([
+        [
+            "symmetric_benoni",
+            "4k3/pp3ppp/3p4/2pP4/2P5/8/PP3PPP/4K3 w - - 0 1",
+        ],
+        [
+            "kid_complex",
+            "4k3/pp3ppp/2pp4/4p3/2PPP3/8/PP3PPP/4K3 w - - 0 1",
+        ],
+        [
+            "benko_structure",
+            "4k3/4pp1p/3p2p1/2pP4/4P3/8/PP3PPP/4K3 w - - 0 1",
+        ],
+    ] as const)("detects calibrated %s skeleton", (structureId, fen) => {
+        expect(detectPawnStructure(fen)?.structureId).toBe(structureId);
+    });
+
     test("keeps ambiguous or messy positions unknown", () => {
         const detection = detectPawnStructure(
             "6k1/pppppppp/8/8/8/8/PPPPPPPP/6K1 w - - 0 1",

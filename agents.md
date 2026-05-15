@@ -315,6 +315,10 @@ and `src/utils/pawnStructureTrajectory.ts` using
 - KID Type I is calibrated as the post ...cxd5/cxd5 structure with d5/e4
   versus d6/e5 and both c-pawns gone; a position where Black has only played
   ...c6 remains pre-exchange and should not be labelled Type I.
+- Benko detection includes the accepted/post-c-pawn-exchange shape where the
+  primary side has d5/e4 with no c-pawn against opposing c5/d6, but still
+  requires missing opposing a/b-pawn or open-file evidence so ordinary Benonis
+  do not get absorbed.
 - Main-line trajectory analysis groups consecutive structures, suppresses
   one-ply flicker, identifies transitions, picks primary and secondary
   structures, and writes a compact structural story.
