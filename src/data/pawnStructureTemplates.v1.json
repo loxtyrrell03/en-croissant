@@ -1,0 +1,3485 @@
+{
+  "schemaVersion": "1.0.0",
+  "schemaName": "pawn_structure_templates",
+  "copyrightPolicy": "Original technical template definitions based on public structure names/categories and general chess logic. Do not import copyrighted book/course prose, annotations, quiz material, or proprietary examples into this file.",
+  "scope": "Pawn-skeleton templates for detecting and narrating structure trajectory from FEN/PGN positions. Opening family names are metadata only and must not be required for matching.",
+  "normalizationConventions": {
+    "canonicalSide": "primary side is represented as White in template coordinates; opposing side is represented as Black",
+    "colourReverse": "To match a Black-primary instance, invert colors and map ranks 1<->8 while preserving files, then swap side roles.",
+    "fileMirror": "Apply a<->h, b<->g, c<->f, d<->e only when allowFileMirror is true and only after colour normalization. Do not merge strategically distinct d-chain/e-chain families by default.",
+    "rankMirror": "Always false for these templates because pawn direction is strategic information.",
+    "matchingBasis": "Use pawns and derived features: pawn presence/absence by square/file, adjacent-file isolation, open/semi-open files, wing pawn counts, locked contacts, and candidate breaks. Piece placement may improve confidence but must not define a structure.",
+    "unknownPolicy": "Return null/unknown when top candidate confidence is below threshold, when sibling candidates are too close, or when central pawn count is too low for the label to remain meaningful."
+  },
+  "featureDsl": {
+    "pawn:side:square": "A pawn for side exists on square in canonical coordinates.",
+    "noPawnOnFile:side:file": "Side has no pawn anywhere on that file.",
+    "pawn:side:file": "Side has at least one pawn on that file; mainly used in forbidden rules.",
+    "pawn:a|b": "Vertical bar denotes alternatives; implementation should parse as OR.",
+    "locked:a-vs-b": "Pawns are fixed by mutual blockage/contact.",
+    "tension:a-vs-b": "Pawns can capture or force central resolution.",
+    "breakCandidate:side:move": "Pawn break that is legal or strategically plausible from the skeleton.",
+    "hole:side:square": "Square cannot be challenged by that side’s own pawn and is usable by opponent pieces.",
+    "openFile:file": "No pawns of either colour remain on that file.",
+    "semiOpenFile:side:file": "Side has no pawn on file while opponent has one.",
+    "pawnCountByWing": "Counts queenside files a-d and kingside files e-h unless app config uses a/b/c vs f/g/h plus central-file override; use one convention consistently."
+  },
+  "structures": [
+    {
+      "id": "isolani",
+      "canonicalName": "The Isolani",
+      "bookSectionOrFamily": "Family One – d4 and ...d5",
+      "aliases": [
+        "IQP",
+        "isolated queen pawn",
+        "isolated d-pawn"
+      ],
+      "openingFamilies": [
+        "Queen’s Gambit",
+        "Tarrasch Defence",
+        "Panov-Botvinnik Attack",
+        "French Defence",
+        "Sicilian Alapin",
+        "Ruy Lopez"
+      ],
+      "descriptionShort": "A side owns an isolated central d-pawn whose value depends on activity, breaks, and whether the opponent can blockade the square directly in front of it.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_iqp",
+        "opposingSideRole": "blockader_or_side_against_iqp"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:d4",
+          "noPawnOnFile:primary:c-file",
+          "noPawnOnFile:primary:e-file"
+        ],
+        "optional": [
+          "semiOpenFile:primary:c-file",
+          "semiOpenFile:primary:e-file",
+          "blockadeSquare:opposing:d5",
+          "pawn:opposing:c6|e6|d5"
+        ],
+        "forbidden": [
+          "pawn:primary:c-file",
+          "pawn:primary:e-file",
+          "adjacentPawnPair:primary:c4+d4",
+          "adjacentPawnPair:primary:d4+e4"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary pawn on d4 with no friendly c- or e-file pawn.",
+          "Opposing side has access to d5 as the natural blockade square."
+        ],
+        "filePatterns": [
+          "c- and e-files are open or semi-open for the primary side more often than not.",
+          "The d-file may contain pressure against or from the isolated pawn."
+        ],
+        "rankPatterns": [
+          "The pawn is normally on the fourth rank for the primary side; d5 creates a different passed/advanced-pawn state."
+        ],
+        "centralTensionRules": [
+          "Do not require a pawn directly facing d4; the defining feature is isolation, not contact.",
+          "If a friendly c- or e-pawn reappears through promotion metadata, reject the template."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward piece-accessible c/e files adjacent to the isolated pawn.",
+          "Reward an opponent semi-open d-file aimed at the isolani."
+        ],
+        "weakSquareRules": [
+          "The square d5 is a high-value opponent outpost/blockade square.",
+          "The square d3 may become a rear weakness after exchanges but is secondary."
+        ],
+        "typicalPawnBreaks": [
+          "primary:d4-d5",
+          "primary:f2-f4/f4-f5 when kingside play is available",
+          "opposing:minority_or_piece_pressure_until_d4_falls"
+        ],
+        "typicalTransformations": [
+          "isolani->hanging_pawns if a neighbouring pawn pair is created by recapture",
+          "isolani->passed_d_pawn after d4-d5 and exchanges",
+          "isolani->endgame_liability after major piece trades"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": true,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is allowed only as a geometric equivalence after colour normalization; do not use it to merge strategically different d-file and e-file chains. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Primary has exactly one central d-pawn and no friendly pawns on adjacent files.",
+          "Opponent can occupy or contest the square directly in front of the isolani.",
+          "No locked pawn-chain template matches the same centre."
+        ],
+        "mediumSignals": [
+          "Open or semi-open c/e files adjacent to the pawn.",
+          "Move history shows the pawn became isolated by c/e-pawn exchanges.",
+          "The pawn is still on d4/d5-equivalent rather than a late endgame passer."
+        ],
+        "weakSignals": [
+          "Opening name suggests Tarrasch/Panov but adjacent pawns are still present."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected The Isolani: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp3ppp/2p1p3/8/3P4/8/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "isolani",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/4p3/8/2PP4/8/P4PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "isolani",
+          "reason": "The test FEN contains a c4+d4 pawn pair, so the d-pawn is not isolated."
+        }
+      ]
+    },
+    {
+      "id": "hanging_pawns",
+      "canonicalName": "Hanging Pawns",
+      "bookSectionOrFamily": "Family One – d4 and ...d5",
+      "aliases": [
+        "hanging pawns",
+        "hanging c- and d-pawns",
+        "hanging centre"
+      ],
+      "openingFamilies": [
+        "Queen’s Gambit",
+        "Nimzo-Indian",
+        "Queen’s Indian",
+        "Tarrasch Defence",
+        "Caro-Kann Panov"
+      ],
+      "descriptionShort": "A side has adjacent c- and d-pawns separated from neighbouring friendly pawns, giving dynamic central space but potential targets after one pawn advances or trades.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_hanging_pawns",
+        "opposingSideRole": "blockader_or_side_targeting_hanging_pawns"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:c4",
+          "pawn:primary:d4",
+          "noPawnOnFile:primary:b-file",
+          "noPawnOnFile:primary:e-file"
+        ],
+        "optional": [
+          "pawn:opposing:e6",
+          "semiOpenFile:opposing:c-file|d-file",
+          "outpost:opposing:d5",
+          "outpost:opposing:c5"
+        ],
+        "forbidden": [
+          "pawn:primary:b-file",
+          "pawn:primary:e-file",
+          "onlyPawn:primary:d4 without c4"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary adjacent pawns on c4 and d4.",
+          "No friendly b- or e-file pawn supports the pawn pair from the side."
+        ],
+        "filePatterns": [
+          "Opponent often has semi-open files against c4 or d4.",
+          "Primary often has space but fewer stable pawn anchors around the pair."
+        ],
+        "rankPatterns": [
+          "The pair is most characteristic on the fourth rank; c5/d5 advances are transformations, not the base template."
+        ],
+        "centralTensionRules": [
+          "Reward positions where neither pawn is immediately forced to recapture.",
+          "If c4 or d4 has already advanced, lower confidence unless the pair remains adjacent."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward opponent pressure down c- or d-files.",
+          "Reward primary rook access behind the mobile pair only as a weak signal."
+        ],
+        "weakSquareRules": [
+          "d5 and c5 are key blockade squares for the opponent.",
+          "After c4-c5, d5 can become a protected outpost for the primary side or a fixed weakness."
+        ],
+        "typicalPawnBreaks": [
+          "primary:c4-c5",
+          "primary:d4-d5",
+          "opposing:b7-b6 or e7-e6/e6-e5 depending on colour-normalized skeleton"
+        ],
+        "typicalTransformations": [
+          "hanging_pawns->isolani after one pawn is exchanged",
+          "hanging_pawns->passed_pawn after c4-c5/d4-d5 and liquidation",
+          "hanging_pawns->weak_fixed_pair if blockaded without piece activity"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": true,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is allowed only as a geometric equivalence after colour normalization; do not use it to merge strategically different d-file and e-file chains. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Adjacent primary c4+d4 pawns exist and are both unsupported by friendly b/e-file pawns.",
+          "The pair is central rather than a random flank duo.",
+          "Opponent has plausible blockade squares on c5/d5."
+        ],
+        "mediumSignals": [
+          "Opponent has semi-open pressure on one of the pawn files.",
+          "Move history shows creation by b/e-pawn exchange or recapture.",
+          "The pawn pair survived for at least three plies."
+        ],
+        "weakSignals": [
+          "A generic c+d pair with friendly b/e support is not hanging."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected Hanging Pawns: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp3ppp/4p3/8/2PP4/8/P4PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "hanging_pawns",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/2p1p3/8/3P4/8/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "hanging_pawns",
+          "reason": "The test FEN has only an isolated d-pawn, not an adjacent c+d hanging pair."
+        }
+      ]
+    },
+    {
+      "id": "caro_kann_formation",
+      "canonicalName": "Caro-Kann Formation",
+      "bookSectionOrFamily": "Family One – d4 and ...d5",
+      "aliases": [
+        "Caro formation",
+        "Caro-Kann type centre",
+        "Caro/Slav light-square centre"
+      ],
+      "openingFamilies": [
+        "Caro-Kann Defence",
+        "Queen’s Gambit Declined",
+        "Slav/Caro transpositions",
+        "London System"
+      ],
+      "descriptionShort": "A d4-centred structure faces an opposing c6/e6 shell with the opposing d-pawn absent, creating a restrained centre with c- and e-break tension.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_d4_space",
+        "opposingSideRole": "side_with_c6_e6_restraining_shell"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:d4",
+          "pawn:opposing:c6",
+          "pawn:opposing:e6",
+          "noPawnOnFile:opposing:d-file",
+          "noPawnOnFile:primary:e-file"
+        ],
+        "optional": [
+          "pawn:primary:c2|c3",
+          "pawn:opposing:f7",
+          "semiOpenFile:opposing:d-file",
+          "breakCandidate:opposing:c6-c5"
+        ],
+        "forbidden": [
+          "pawn:opposing:d5",
+          "pawn:primary:e4",
+          "pawn:primary:d5"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary d4 pawn with no primary e-pawn.",
+          "Opponent has c6 and e6 pawns but no d-pawn."
+        ],
+        "filePatterns": [
+          "The d-file is often semi-open for the opponent after the d-pawn exchange.",
+          "The c-file may become relevant after ...c5/cxd4 transformations."
+        ],
+        "rankPatterns": [
+          "Primary d4 normally stays on the fourth rank until the structure transforms."
+        ],
+        "centralTensionRules": [
+          "Reward absence of a black/opp d-pawn; a present d5 pawn usually means Carlsbad or French-family instead.",
+          "If primary has e4 as well, prefer Grünfeld Centre or KID Complex as appropriate."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Opponent semi-open d-file is a medium signal.",
+          "Primary c-file pressure is a weak signal only."
+        ],
+        "weakSquareRules": [
+          "d5 can become a blockading square if the d4 pawn is isolated.",
+          "c5/e5 breaks decide whether the centre remains restrained or opens."
+        ],
+        "typicalPawnBreaks": [
+          "primary:c2-c4",
+          "primary:e2-e4 when legal in normalized history",
+          "opposing:c6-c5",
+          "opposing:e6-e5"
+        ],
+        "typicalTransformations": [
+          "caro_kann_formation->isolani after c/e-pawn exchanges leave d4 alone",
+          "caro_kann_formation->three_three_vs_four_two after central liquidation",
+          "caro_kann_formation->panov_structure if primary reaches c5+d4 vs d5/e6"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Opponent has exactly the c6/e6 restraining shell and no d-file pawn.",
+          "Primary d4 exists while primary e-pawn is absent.",
+          "No opposing d5 pawn is present."
+        ],
+        "mediumSignals": [
+          "Opponent can challenge with c6-c5 or e6-e5.",
+          "Primary c-pawn is present on c2/c3 and can support or challenge d4.",
+          "Detected after a Caro/Slav-like exchange sequence, but opening tags are not required."
+        ],
+        "weakSignals": [
+          "If both sides have d-pawns locked on d4/d5, prefer Carlsbad/French/Stonewall."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected Caro-Kann Formation: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp3ppp/2p1p3/8/3P4/8/PPP2PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "caro_kann_formation",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/2p5/3p4/3P4/4P3/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "caro_kann_formation",
+          "reason": "The test FEN has an opposing d5 pawn and no opposing e-pawn, which is Carlsbad-like rather than a c6/e6 Caro-Kann shell."
+        }
+      ]
+    },
+    {
+      "id": "slav_formation",
+      "canonicalName": "Slav Formation",
+      "bookSectionOrFamily": "Family One – d4 and ...d5",
+      "aliases": [
+        "Slav type structure",
+        "Slav/QGD formation"
+      ],
+      "openingFamilies": [
+        "Slav Defence",
+        "Semi-Slav",
+        "Queen’s Gambit Declined",
+        "Catalan transpositions"
+      ],
+      "descriptionShort": "A primary d4/e3 centre faces an opposing c6/e6 shell after the opposing d-pawn has disappeared, leaving a solid but semi-open central complex.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_d4_e3_centre",
+        "opposingSideRole": "side_with_slav_shell"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:d4",
+          "pawn:primary:e3",
+          "pawn:opposing:c6",
+          "pawn:opposing:e6",
+          "noPawnOnFile:opposing:d-file"
+        ],
+        "optional": [
+          "noPawnOnFile:primary:c-file",
+          "semiOpenFile:opposing:d-file",
+          "breakCandidate:primary:e3-e4",
+          "breakCandidate:opposing:c6-c5"
+        ],
+        "forbidden": [
+          "pawn:opposing:d5",
+          "pawn:primary:e4 with no central tension resolved",
+          "pawn:primary:c4+d4 hanging pair"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary pawns on d4 and e3.",
+          "Opponent pawns on c6 and e6, with no opposing d-pawn."
+        ],
+        "filePatterns": [
+          "The d-file is commonly semi-open for the opposing side.",
+          "c-file play becomes important if the primary c-pawn has been exchanged."
+        ],
+        "rankPatterns": [
+          "Primary e3 marks a restrained centre; e4 is a transformation or break."
+        ],
+        "centralTensionRules": [
+          "Reject if an opposing d5 pawn is present; that changes the family to Carlsbad/French/Stonewall.",
+          "Do not require a primary c-pawn; its absence often sharpens the Slav character."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward semi-open d-file pressure from the opponent.",
+          "Reward primary e-file potential after e3-e4 only as a transformation signal."
+        ],
+        "weakSquareRules": [
+          "d4 can become isolated after c/e-file liquidation.",
+          "c5/e5 are potential outpost or break squares depending on pawn breaks."
+        ],
+        "typicalPawnBreaks": [
+          "primary:e3-e4",
+          "primary:d4-d5 in favourable cases",
+          "opposing:c6-c5",
+          "opposing:e6-e5"
+        ],
+        "typicalTransformations": [
+          "slav_formation->isolani after e- or c-pawn exchanges leave d4 isolated",
+          "slav_formation->hanging_pawns if primary obtains c4+d4 without b/e support",
+          "slav_formation->three_three_vs_four_two after mass central liquidation"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Primary d4/e3 and opponent c6/e6 shell are all present.",
+          "Opponent has no d-file pawn.",
+          "The centre is restrained rather than locked by ...d5."
+        ],
+        "mediumSignals": [
+          "Primary c-pawn is absent or exchanged.",
+          "Opponent has semi-open d-file pressure.",
+          "e3-e4 and c6-c5 are the natural break candidates."
+        ],
+        "weakSignals": [
+          "If primary already has c4+d4 with no b/e support, Hanging Pawns may be more precise."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected Slav Formation: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp3ppp/2p1p3/8/3P4/4P3/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "slav_formation",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/ppp3pp/4p3/3p1p2/3P1P2/2P1P3/PP4PP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "slav_formation",
+          "reason": "The test FEN contains a locked d4/d5 centre and f-pawn advances, so it is not a Slav c6/e6 shell."
+        }
+      ]
+    },
+    {
+      "id": "carlsbad_formation",
+      "canonicalName": "The Carlsbad Formation",
+      "bookSectionOrFamily": "Family One – d4 and ...d5",
+      "aliases": [
+        "Carlsbad",
+        "QGD Exchange structure",
+        "minority-attack structure"
+      ],
+      "openingFamilies": [
+        "Queen’s Gambit Declined Exchange",
+        "Caro-Kann Exchange transpositions",
+        "London System transpositions"
+      ],
+      "descriptionShort": "A d4/e3 centre faces c6/d5 with the primary c-pawn and opposing e-pawn gone, producing the classic minority-attack and central-break landscape.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_attacking_minority_or_central_break",
+        "opposingSideRole": "side_defending_queenside_and_seeking_kingside_or_central_play"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:d4",
+          "pawn:primary:e3",
+          "pawn:opposing:c6",
+          "pawn:opposing:d5",
+          "noPawnOnFile:primary:c-file",
+          "noPawnOnFile:opposing:e-file"
+        ],
+        "optional": [
+          "pawn:primary:a2",
+          "pawn:primary:b2",
+          "pawn:opposing:a7",
+          "pawn:opposing:b7",
+          "queensideMajority:opposing:3v2_or_3v3_with_target_c6",
+          "breakCandidate:primary:b2-b4-b5"
+        ],
+        "forbidden": [
+          "pawn:opposing:e6",
+          "pawn:primary:c4",
+          "pawn:primary:e4",
+          "noPawn:opposing:d5"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary d4/e3 vs opposing c6/d5.",
+          "Primary c-pawn absent; opposing e-pawn absent."
+        ],
+        "filePatterns": [
+          "c-file and b-file activity often decide the queenside.",
+          "The e-file can become useful after e3-e4 or piece exchanges."
+        ],
+        "rankPatterns": [
+          "The central d4/d5 pawn contact is fixed until a central break occurs."
+        ],
+        "centralTensionRules": [
+          "The structure is locked by d4 vs d5; if d-pawns disappear, stop calling it Carlsbad.",
+          "Primary e3-e4 is a planned transformation, not part of the base skeleton."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward semi-open c-file or targetable c6 pawn.",
+          "Reward primary b-file pressure after b4-b5 as a trajectory event."
+        ],
+        "weakSquareRules": [
+          "c6 can become a hook for minority play.",
+          "e4/e5 squares are influenced by the absence of the opposing e-pawn and primary e-pawn position."
+        ],
+        "typicalPawnBreaks": [
+          "primary:b2-b4-b5 minority attack",
+          "primary:e3-e4 central break",
+          "opposing:c6-c5",
+          "opposing:f7-f5/f5-f4 in colour-reversed attacking plans"
+        ],
+        "typicalTransformations": [
+          "carlsbad_formation->isolani after d-pawn exchanges leave d4 isolated",
+          "carlsbad_formation->french_type_ii by colour-reversed e5-chain transformation",
+          "carlsbad_formation->open_centre when d4/d5 tension dissolves"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Primary d4/e3 and opposing c6/d5 are present.",
+          "Primary c-pawn and opposing e-pawn are absent.",
+          "The d4/d5 contact is still fixed."
+        ],
+        "mediumSignals": [
+          "Queenside pawn-count asymmetry supports minority-attack interpretation.",
+          "Primary has a/b pawns available to create a b-file/c6 hook.",
+          "Move history shows cxd5/exd5 or equivalent exchange."
+        ],
+        "weakSignals": [
+          "If the primary c-pawn is still on c4, prefer Benoni, KID, or Hanging Pawns depending on the centre."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected The Carlsbad Formation: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp3ppp/2p5/3p4/3P4/4P3/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "carlsbad_formation",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/2p1p3/8/3P4/8/PPP2PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "carlsbad_formation",
+          "reason": "The test FEN has an opposing c6/e6 shell with no opposing d-pawn, not the c6/d5 Carlsbad lock."
+        }
+      ]
+    },
+    {
+      "id": "stonewall",
+      "canonicalName": "Stonewall",
+      "bookSectionOrFamily": "Family One – d4 and ...d5",
+      "aliases": [
+        "Stonewall formation",
+        "Dutch Stonewall",
+        "Stonewall Attack"
+      ],
+      "openingFamilies": [
+        "Dutch Defence",
+        "Stonewall Attack",
+        "Queen’s Gambit transpositions",
+        "Bird Opening"
+      ],
+      "descriptionShort": "A side fixes pawns on c3/d4/e3/f4 or the colour-reversed equivalent, gaining a protected outpost while conceding a durable central hole.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_stonewall_chain",
+        "opposingSideRole": "side_targeting_holes_and_light_or_dark_square_complex"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:c3",
+          "pawn:primary:d4",
+          "pawn:primary:e3",
+          "pawn:primary:f4"
+        ],
+        "optional": [
+          "pawn:opposing:d5",
+          "pawn:opposing:e6",
+          "pawn:opposing:f5",
+          "outpost:primary:e5",
+          "hole:primary:e4"
+        ],
+        "forbidden": [
+          "pawn:primary:e4",
+          "pawn:primary:c4",
+          "noPawn:primary:d4",
+          "noPawn:primary:f4"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary pawns on c3, d4, e3, and f4 form the stonewall frame.",
+          "The primary e4 square is unavailable to a pawn and often becomes a hole."
+        ],
+        "filePatterns": [
+          "The e-file/f-file can open after f4-f5 or e-file exchanges.",
+          "c-file pressure may matter if the opponent attacks the base of the chain."
+        ],
+        "rankPatterns": [
+          "The structure is rank-specific: c3/e3 bases and d4/f4 spearheads for the primary side."
+        ],
+        "centralTensionRules": [
+          "Reject if the primary e-pawn has advanced to e4; the stonewall has transformed.",
+          "An opposing d5 pawn strengthens the classification but is not mandatory."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward half-open e-file/f-file play only as secondary evidence.",
+          "Do not require open files; this is primarily a closed-space skeleton."
+        ],
+        "weakSquareRules": [
+          "Primary e4 is the main self-created hole.",
+          "Primary e5 is often the protected outpost square.",
+          "Opponent c4/e4/d5 equivalents should be evaluated after colour reversal."
+        ],
+        "typicalPawnBreaks": [
+          "primary:f4-f5",
+          "primary:e3-e4 as a major transformation",
+          "opposing:c7-c5 or e7-e5 against the centre"
+        ],
+        "typicalTransformations": [
+          "stonewall->open_centre after e3-e4 or f4-f5 exchanges",
+          "stonewall->french_like_chain if e-pawn advances and locks",
+          "stonewall->endgame_holes if pieces trade without pawn breaks"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": true,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is allowed only as a geometric equivalence after colour normalization; do not use it to merge strategically different d-file and e-file chains. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Primary c3/d4/e3/f4 frame exists.",
+          "Primary e4 is empty and cannot be occupied by a friendly pawn without a break.",
+          "The structure persists for multiple plies rather than being a one-move f-pawn advance."
+        ],
+        "mediumSignals": [
+          "Opponent has a d5/e6/f5 counter-chain or pressure on e4.",
+          "Primary has a protected e5 outpost.",
+          "Opening tags indicate Stonewall/Dutch, used only as a weak historical hint."
+        ],
+        "weakSignals": [
+          "A generic d4/e3/f4 setup without c3 is only a weak match."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected Stonewall: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/ppp3pp/4p3/3p1p2/3P1P2/2P1P3/PP4PP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "stonewall",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/2p1p3/8/3P4/4P3/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "stonewall",
+          "reason": "The test FEN has d4/e3 against c6/e6 with no f-pawn spearhead, so it is a Slav shell rather than Stonewall."
+        }
+      ]
+    },
+    {
+      "id": "grunfeld_centre",
+      "canonicalName": "Grünfeld Centre",
+      "bookSectionOrFamily": "Family One – d4 and ...d5",
+      "aliases": [
+        "Grunfeld Centre",
+        "Grünfeld pawn centre",
+        "broad d4/e4/c3 centre"
+      ],
+      "openingFamilies": [
+        "Grünfeld Defence",
+        "Neo-Grünfeld",
+        "King’s Indian transpositions",
+        "English Opening reversed"
+      ],
+      "descriptionShort": "A broad primary c3/d4/e4 centre is challenged by an opposing c-pawn and piece pressure after the opposing d-pawn has disappeared.",
+      "stability": "transitional",
+      "sideRoles": {
+        "primarySideRole": "side_with_broad_centre",
+        "opposingSideRole": "side_undermining_centre"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:c3",
+          "pawn:primary:d4",
+          "pawn:primary:e4",
+          "pawn:opposing:c5",
+          "noPawnOnFile:opposing:d-file"
+        ],
+        "optional": [
+          "pawn:opposing:g6",
+          "pawn:opposing:e7|e6",
+          "semiOpenFile:opposing:d-file",
+          "pressureTarget:primary:d4"
+        ],
+        "forbidden": [
+          "pawn:opposing:d6|d5",
+          "noPawn:primary:e4",
+          "noPawn:primary:c3"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary c3/d4/e4 pawn trio.",
+          "Opponent c5 pawn and no opposing d-pawn."
+        ],
+        "filePatterns": [
+          "Opponent often uses semi-open d-file or c-file pressure against d4/c3.",
+          "Primary may use the e- and d-pawns as mobile central mass."
+        ],
+        "rankPatterns": [
+          "Primary central pawns on the fourth rank are the base; d5/e5 advances are transformations."
+        ],
+        "centralTensionRules": [
+          "Reward c5xd4 tension and pressure on the d4 pawn.",
+          "Reject if the opponent has d6/e5 KID pawns; that is KID Complex/Open KID territory."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward opponent semi-open d-file after d-pawn exchange.",
+          "Reward primary c-file recapture history if available."
+        ],
+        "weakSquareRules": [
+          "d4 is the central pressure point.",
+          "c4/d5/e5 may become available after advances, but no single hole defines the base."
+        ],
+        "typicalPawnBreaks": [
+          "primary:d4-d5",
+          "primary:e4-e5",
+          "opposing:c5xd4",
+          "opposing:e7-e5 or e7-e6 depending on setup"
+        ],
+        "typicalTransformations": [
+          "grunfeld_centre->isolani after c/e-pawn liquidation",
+          "grunfeld_centre->open_centre after cxd4/exd4 exchanges",
+          "grunfeld_centre->kid_complex if opponent establishes d6/e5 before central resolution"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Primary c3/d4/e4 trio exists.",
+          "Opponent has c5 and no d-file pawn.",
+          "The broad centre is still mobile or under tension, not fully locked."
+        ],
+        "mediumSignals": [
+          "Opponent g-pawn fianchetto skeleton appears as g6.",
+          "d4 is attacked or structurally exposed.",
+          "Move history shows cxd4/cxd4 creation."
+        ],
+        "weakSignals": [
+          "If primary lacks c3, this may instead be KID/Benoni/open Sicilian."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected Grünfeld Centre: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp2pppp/8/2p5/3PP3/2P5/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "grunfeld_centre",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/ppp2ppp/3p4/4p3/2PPP3/8/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "grunfeld_centre",
+          "reason": "The test FEN has opposing d6/e5 KID tension, not a Grünfeld c5/no-d-pawn centre."
+        }
+      ]
+    },
+    {
+      "id": "najdorf_type_i",
+      "canonicalName": "Najdorf Type I",
+      "bookSectionOrFamily": "Family Two – Open Sicilian",
+      "aliases": [
+        "Boleslavsky-type Sicilian with d5 pawn",
+        "Najdorf I",
+        "Sicilian d5-pawn structure"
+      ],
+      "openingFamilies": [
+        "Sicilian Najdorf",
+        "Sicilian Scheveningen transpositions",
+        "English reversed Sicilian"
+      ],
+      "descriptionShort": "The primary side has advanced into d5 while lacking an e-pawn, against an opposing d6/e5 Sicilian centre with the opposing c-pawn gone.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_advanced_d5_pawn",
+        "opposingSideRole": "side_with_d6_e5_sicilian_chain"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:d5",
+          "noPawnOnFile:primary:e-file",
+          "pawn:opposing:d6",
+          "pawn:opposing:e5",
+          "noPawnOnFile:opposing:c-file"
+        ],
+        "optional": [
+          "pawn:primary:c4",
+          "breakCandidate:primary:c4-c5",
+          "breakCandidate:opposing:f7-f5",
+          "breakCandidate:opposing:b7-b5"
+        ],
+        "forbidden": [
+          "pawn:primary:e4",
+          "pawn:primary:d4",
+          "pawn:opposing:c5"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary d5 pawn with no primary e-pawn.",
+          "Opponent d6/e5 pawns and no opposing c-pawn."
+        ],
+        "filePatterns": [
+          "c-file is typically open or semi-open after the Sicilian c-pawn exchange.",
+          "d-file is partly fixed by d5/d6 contact."
+        ],
+        "rankPatterns": [
+          "Primary pawn on d5 is the defining advanced rank feature."
+        ],
+        "centralTensionRules": [
+          "Do not classify if primary still has e4 and no d5 pawn; that is closer to Najdorf Type II or Scheveningen.",
+          "d5/d6 contact must be fixed or strategically stable."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward open c-file and pressure on c-file squares.",
+          "Reward opponent semi-open e- or c-file only as secondary evidence."
+        ],
+        "weakSquareRules": [
+          "c6/e6 squares around the d5 pawn can become outposts.",
+          "Opponent d6 may be backward but only if not protected by c/e structures."
+        ],
+        "typicalPawnBreaks": [
+          "primary:c4-c5",
+          "primary:f2-f4-f5",
+          "opposing:f7-f5",
+          "opposing:b7-b5"
+        ],
+        "typicalTransformations": [
+          "najdorf_type_i->open_centre if d5/d6 resolves",
+          "najdorf_type_i->benoni_like after c4/c5 changes",
+          "najdorf_type_ii->najdorf_type_i after primary e4xd5 or d-pawn advance sequence creates d5/no-e-pawn"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Primary d5 pawn and no primary e-pawn.",
+          "Opponent d6/e5 pair and no c-pawn.",
+          "Open Sicilian-style c-file absence supports the role assignment."
+        ],
+        "mediumSignals": [
+          "Primary c4 pawn supports c5 break.",
+          "Opponent has b- and f-pawns available for counterplay.",
+          "Move history shows e-pawn exchanged while a d-pawn reached d5."
+        ],
+        "weakSignals": [
+          "If primary still has e4 and no d5 pawn, do not overfit to Type I."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected Najdorf Type I: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp3ppp/3p4/3Pp3/2P5/8/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "najdorf_type_i",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/3p4/4p3/4P3/8/PPP2PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "najdorf_type_i",
+          "reason": "The test FEN has a primary e4 pawn and no primary d5 pawn, fitting Najdorf Type II rather than Type I."
+        }
+      ]
+    },
+    {
+      "id": "najdorf_type_ii",
+      "canonicalName": "Najdorf Type II",
+      "bookSectionOrFamily": "Family Two – Open Sicilian",
+      "aliases": [
+        "Boleslavsky hole",
+        "Najdorf II",
+        "Sicilian d5-hole structure"
+      ],
+      "openingFamilies": [
+        "Sicilian Najdorf",
+        "Sicilian Scheveningen",
+        "Classical Sicilian",
+        "English reversed Sicilian"
+      ],
+      "descriptionShort": "The primary side keeps an e4 pawn but has no d-pawn, while the opponent has d6/e5 and no c-pawn, making d5 the strategic hole.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_playing_against_d5_hole",
+        "opposingSideRole": "side_with_boleslavsky_d6_e5_centre"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:e4",
+          "noPawnOnFile:primary:d-file",
+          "pawn:opposing:d6",
+          "pawn:opposing:e5",
+          "noPawnOnFile:opposing:c-file"
+        ],
+        "optional": [
+          "hole:opposing:d5",
+          "pawn:primary:c2|c4",
+          "breakCandidate:primary:f2-f4",
+          "breakCandidate:opposing:d6-d5"
+        ],
+        "forbidden": [
+          "pawn:primary:d5",
+          "pawn:primary:d4",
+          "pawn:opposing:c5"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary e4 pawn with no primary d-pawn.",
+          "Opponent d6/e5 and no opposing c-pawn."
+        ],
+        "filePatterns": [
+          "c-file openness from the Sicilian exchange is a recurring support signal.",
+          "d-file may be semi-open but the d5 square is the main feature."
+        ],
+        "rankPatterns": [
+          "The d5 square, not a pawn on d5, defines this type."
+        ],
+        "centralTensionRules": [
+          "Reject if primary has a pawn on d5; then Type I is more specific.",
+          "Reject if opponent lacks either d6 or e5."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward open c-file as Sicilian skeleton evidence.",
+          "Reward d-file access only if it increases d5 pressure."
+        ],
+        "weakSquareRules": [
+          "d5 is the primary hole/outpost for the primary side.",
+          "d6 may become a backward target if the opponent cannot play d6-d5."
+        ],
+        "typicalPawnBreaks": [
+          "primary:f2-f4",
+          "primary:c2-c4-c5",
+          "opposing:d6-d5",
+          "opposing:b7-b5"
+        ],
+        "typicalTransformations": [
+          "najdorf_type_ii->najdorf_type_i if a primary pawn occupies d5 and the e-pawn disappears",
+          "najdorf_type_ii->scheveningen_structure if opponent e-pawn remains on e6 rather than e5",
+          "najdorf_type_ii->open_centre after d6-d5 liquidation"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Primary e4/no d-pawn plus opponent d6/e5/no c-pawn.",
+          "d5 is a true hole or contested outpost.",
+          "No primary pawn already occupies d5."
+        ],
+        "mediumSignals": [
+          "Open c-file from the missing opposing c-pawn.",
+          "Primary c-pawn can support a bind or c5 break.",
+          "Opponent d6-d5 is structurally important."
+        ],
+        "weakSignals": [
+          "If opponent pawn is on e6, prefer Scheveningen."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected Najdorf Type II: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp3ppp/3p4/4p3/4P3/8/PPP2PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "najdorf_type_ii",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/3pp3/8/4P3/8/PPP2PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "najdorf_type_ii",
+          "reason": "The test FEN has opponent e6 rather than e5, which is Scheveningen-like rather than Boleslavsky/Najdorf Type II."
+        }
+      ]
+    },
+    {
+      "id": "hedgehog",
+      "canonicalName": "The Hedgehog",
+      "bookSectionOrFamily": "Family Two – Open Sicilian",
+      "aliases": [
+        "Hedgehog structure",
+        "Sicilian Hedgehog",
+        "English Hedgehog"
+      ],
+      "openingFamilies": [
+        "Sicilian Kan",
+        "Sicilian Taimanov",
+        "English Opening",
+        "Queen’s Indian transpositions"
+      ],
+      "descriptionShort": "The opposing side adopts a compact a6/b6/d6/e6 shell against primary c4/e4 space, keeping latent ...b5 and ...d5 breaks.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_space_against_hedgehog",
+        "opposingSideRole": "hedgehog_side"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:c4",
+          "pawn:primary:e4",
+          "pawn:opposing:a6",
+          "pawn:opposing:b6",
+          "pawn:opposing:d6",
+          "pawn:opposing:e6",
+          "noPawnOnFile:opposing:c-file"
+        ],
+        "optional": [
+          "pawn:primary:a2|b2|f2|g2",
+          "breakCandidate:opposing:b6-b5",
+          "breakCandidate:opposing:d6-d5",
+          "breakCandidate:primary:e4-e5"
+        ],
+        "forbidden": [
+          "pawn:opposing:c5",
+          "pawn:opposing:e5",
+          "pawn:primary:d5"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary c4/e4 space pawns.",
+          "Opponent a6/b6/d6/e6 compact shell with no c-pawn."
+        ],
+        "filePatterns": [
+          "c-file is often open or semi-open.",
+          "b-file/a-file hooks appear after ...b5 or a-pawn exchanges."
+        ],
+        "rankPatterns": [
+          "Opponent pawns sit mostly on the sixth rank from White’s perspective in canonical form."
+        ],
+        "centralTensionRules": [
+          "The centre is restrained until ...d5 or primary e5/c5 changes it.",
+          "Reject if opponent has already established e5 or c5 as a Benoni/KID structure."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward open c-file from missing opposing c-pawn.",
+          "Reward b-file activity only after ...b5 appears in history."
+        ],
+        "weakSquareRules": [
+          "d5 is important but less fixed than in Najdorf Type II.",
+          "b6/d6 can become targets if the breaks fail."
+        ],
+        "typicalPawnBreaks": [
+          "opposing:b6-b5",
+          "opposing:d6-d5",
+          "primary:e4-e5",
+          "primary:c4-c5"
+        ],
+        "typicalTransformations": [
+          "hedgehog->open_sicilian_centre after d6-d5",
+          "hedgehog->maroczy if a6/b6 shell is absent or less developed but c4/e4 bind remains",
+          "hedgehog->benoni_like after c/e pawn advances and exchanges"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Opponent a6/b6/d6/e6 shell with missing c-pawn.",
+          "Primary c4/e4 bind exists.",
+          "No opponent e5/c5 pawn has transformed the shell."
+        ],
+        "mediumSignals": [
+          "Open c-file supports Sicilian/English Hedgehog identity.",
+          "Both ...b5 and ...d5 remain plausible breaks.",
+          "Primary has not already locked the centre with d5."
+        ],
+        "weakSignals": [
+          "A Maroczy bind without a6/b6 should not be called Hedgehog unless the shell is actually present."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected The Hedgehog: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/5ppp/pp1pp3/8/2P1P3/8/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "hedgehog",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp2pp1p/3p2p1/8/2P1P3/8/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "hedgehog",
+          "reason": "The test FEN has a c4/e4 bind but lacks the a6/b6/d6/e6 Hedgehog shell."
+        }
+      ]
+    },
+    {
+      "id": "maroczy",
+      "canonicalName": "The Maroczy",
+      "bookSectionOrFamily": "Family Two – Open Sicilian",
+      "aliases": [
+        "Maroczy Bind",
+        "Maróczy Bind",
+        "c4/e4 bind"
+      ],
+      "openingFamilies": [
+        "Accelerated Dragon",
+        "Sicilian Kan",
+        "Sicilian Taimanov",
+        "English Opening reversed"
+      ],
+      "descriptionShort": "The primary side uses c4 and e4 pawns, normally with the d-pawn gone, to restrict the opposing d5 break after the opposing c-pawn has disappeared.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_maroczy_bind",
+        "opposingSideRole": "side_restricted_by_bind"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:c4",
+          "pawn:primary:e4",
+          "noPawnOnFile:primary:d-file",
+          "pawn:opposing:d6",
+          "noPawnOnFile:opposing:c-file"
+        ],
+        "optional": [
+          "pawn:opposing:g6|e6|e7",
+          "breakCandidate:opposing:d6-d5",
+          "breakCandidate:opposing:b7-b5",
+          "breakCandidate:primary:c4-c5"
+        ],
+        "forbidden": [
+          "pawn:primary:d4",
+          "pawn:primary:d5",
+          "pawn:opposing:c5"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary c4/e4 bind with no primary d-pawn.",
+          "Opponent d6 and no opposing c-pawn."
+        ],
+        "filePatterns": [
+          "Open c-file is a strong context signal.",
+          "d-file pressure often surrounds the d6 pawn and d5 break."
+        ],
+        "rankPatterns": [
+          "Primary c/e pawns on fourth rank bind the fifth-rank central squares."
+        ],
+        "centralTensionRules": [
+          "Reject if primary d-pawn exists; that is not the clean Open Sicilian bind.",
+          "Do not require opponent e-pawn placement; several Maroczy families exist."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward open c-file.",
+          "Reward semi-open d-file pressure on d6."
+        ],
+        "weakSquareRules": [
+          "d5 is the key restrained break square for the opponent.",
+          "c5/e5 can become primary space-gaining squares."
+        ],
+        "typicalPawnBreaks": [
+          "primary:c4-c5",
+          "primary:e4-e5",
+          "opposing:d6-d5",
+          "opposing:b7-b5"
+        ],
+        "typicalTransformations": [
+          "maroczy->hedgehog if opponent establishes a6/b6/e6 shell",
+          "maroczy->dragon_formation if opponent g6 shell dominates and c4 is absent",
+          "maroczy->open_centre after d6-d5 break"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Primary c4/e4 bind and no primary d-pawn.",
+          "Opponent has d6 and no c-pawn.",
+          "d5 break is structurally restrained."
+        ],
+        "mediumSignals": [
+          "Opponent g6/e6/e7 indicates a known Sicilian subfamily.",
+          "Open c-file exists.",
+          "Primary c4-c5 or e4-e5 are plausible space breaks."
+        ],
+        "weakSignals": [
+          "If opponent a6/b6/d6/e6 shell exists, Hedgehog may be more specific."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected The Maroczy: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp2pp1p/3p2p1/8/2P1P3/8/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "maroczy",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/5ppp/pp1pp3/8/2P1P3/8/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "maroczy",
+          "reason": "The test FEN includes the full a6/b6/d6/e6 Hedgehog shell, which is a more specific template."
+        }
+      ]
+    },
+    {
+      "id": "asymmetric_benoni",
+      "canonicalName": "Asymmetric Benoni",
+      "bookSectionOrFamily": "Family Three – Benoni",
+      "aliases": [
+        "Modern Benoni structure",
+        "Benoni asymmetric centre"
+      ],
+      "openingFamilies": [
+        "Modern Benoni",
+        "King’s Indian Defence",
+        "Benoni transpositions",
+        "Ruy Lopez reversed Benoni"
+      ],
+      "descriptionShort": "A primary d5/e4 space centre faces opposing c5/d6, creating an unbalanced centre with primary central majority versus opposing queenside counterplay.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_d5_e4_centre",
+        "opposingSideRole": "benoni_side_with_c5_d6_counterplay"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:d5",
+          "pawn:primary:e4",
+          "pawn:opposing:c5",
+          "pawn:opposing:d6"
+        ],
+        "optional": [
+          "pawn:primary:c4",
+          "noPawnOnFile:opposing:e-file",
+          "breakCandidate:primary:e4-e5",
+          "breakCandidate:opposing:b7-b5"
+        ],
+        "forbidden": [
+          "pawn:opposing:e5",
+          "noPawn:primary:e4",
+          "pawn:opposing:c6"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary d5/e4 pawns.",
+          "Opponent c5/d6 pawns."
+        ],
+        "filePatterns": [
+          "e-file and c-file can open after central or queenside breaks.",
+          "Opponent often uses queenside files after ...b5."
+        ],
+        "rankPatterns": [
+          "Primary d5 fixes the centre; e4 gives central majority character."
+        ],
+        "centralTensionRules": [
+          "Reject if opponent has e5 locking d5/e4 as a KID chain.",
+          "Presence of primary c4 supports but does not define the structure."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward opponent semi-open e-file if the e-pawn is absent.",
+          "Reward queenside file play after ...b5 or c-pawn exchanges."
+        ],
+        "weakSquareRules": [
+          "d6 is a natural target for the primary side.",
+          "e5 is a contested square controlled by both sides."
+        ],
+        "typicalPawnBreaks": [
+          "primary:e4-e5",
+          "primary:c4-c5",
+          "opposing:b7-b5",
+          "opposing:f7-f5",
+          "opposing:c5-c4"
+        ],
+        "typicalTransformations": [
+          "asymmetric_benoni->kid_type_ii if opponent establishes e5 with c5/d6",
+          "asymmetric_benoni->symmetric_benoni if e-pawns disappear",
+          "asymmetric_benoni->open_centre after e4-e5 or ...f5 exchanges"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Primary d5/e4 and opposing c5/d6 skeleton.",
+          "Opponent lacks an e5 pawn, separating it from KID Type II.",
+          "The centre is asymmetric: primary central majority versus opposing queenside pawn majority."
+        ],
+        "mediumSignals": [
+          "Primary c4 pawn exists.",
+          "Opponent can plausibly play ...b5 or ...f5.",
+          "d6 is backward or targetable."
+        ],
+        "weakSignals": [
+          "If primary e-pawn is absent, prefer Symmetric Benoni."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected Asymmetric Benoni: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp3ppp/3p4/2pP4/2P1P3/8/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "asymmetric_benoni",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/3p4/2pPp3/2P1P3/8/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "asymmetric_benoni",
+          "reason": "The test FEN includes opponent e5 in addition to c5/d6, producing a KID Type II chain rather than a Benoni centre."
+        }
+      ]
+    },
+    {
+      "id": "symmetric_benoni",
+      "canonicalName": "Symmetric Benoni",
+      "bookSectionOrFamily": "Family Three – Benoni",
+      "aliases": [
+        "Benoni symmetric centre",
+        "c4/d5 versus c5/d6 structure"
+      ],
+      "openingFamilies": [
+        "Old Benoni",
+        "Symmetrical English transpositions",
+        "Benoni systems"
+      ],
+      "descriptionShort": "Both sides’ e-pawns are absent or strategically irrelevant around a c4/d5 versus c5/d6 centre, reducing central asymmetry and increasing manoeuvring around the c- and d-files.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_c4_d5_space",
+        "opposingSideRole": "side_with_c5_d6_counterspace"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:c4",
+          "pawn:primary:d5",
+          "pawn:opposing:c5",
+          "pawn:opposing:d6",
+          "noPawnOnFile:primary:e-file",
+          "noPawnOnFile:opposing:e-file"
+        ],
+        "optional": [
+          "breakCandidate:primary:b2-b4",
+          "breakCandidate:primary:f2-f4",
+          "breakCandidate:opposing:b7-b5",
+          "breakCandidate:opposing:f7-f5"
+        ],
+        "forbidden": [
+          "pawn:primary:e4",
+          "pawn:opposing:e5",
+          "pawn:opposing:c6"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary c4/d5 vs opponent c5/d6.",
+          "Both e-file pawns absent in the canonical version."
+        ],
+        "filePatterns": [
+          "c- and d-files are the main structural files.",
+          "Side files become important after b- or f-pawn breaks."
+        ],
+        "rankPatterns": [
+          "d5/d6 contact is fixed while c4/c5 may remain tense or locked."
+        ],
+        "centralTensionRules": [
+          "Reject if primary e4 exists; Asymmetric Benoni is more specific.",
+          "Reject if opponent e5 exists; KID Type II is more specific."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward open e-file only as a consequence, not as defining evidence.",
+          "Reward c-file pressure when c4/c5 tension resolves."
+        ],
+        "weakSquareRules": [
+          "d6 and d5 bases can be targets depending on piece access.",
+          "e4/e5 squares are less pawn-controlled because e-pawns are absent."
+        ],
+        "typicalPawnBreaks": [
+          "primary:b2-b4",
+          "primary:f2-f4",
+          "opposing:b7-b5",
+          "opposing:f7-f5"
+        ],
+        "typicalTransformations": [
+          "symmetric_benoni->asymmetric_benoni if a primary e-pawn is present or created in normalized history",
+          "symmetric_benoni->open_centre after c/d-pawn liquidation",
+          "symmetric_benoni->endgame_majorities when central pawns trade down"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "c4/d5 versus c5/d6 skeleton with both e-pawns absent.",
+          "No opponent e5 or primary e4 pawn converts it into KID/Asymmetric Benoni.",
+          "The central contact remains meaningful."
+        ],
+        "mediumSignals": [
+          "c-file/d-file manoeuvring is available.",
+          "b- and f-pawn breaks are structurally plausible.",
+          "Piece count remains high enough for middlegame plans."
+        ],
+        "weakSignals": [
+          "A single missing e-pawn is not enough; both e-pawns must be absent or clearly irrelevant."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected Symmetric Benoni: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp3ppp/3p4/2pP4/2P5/8/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "symmetric_benoni",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/3p4/2pP4/2P1P3/8/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "symmetric_benoni",
+          "reason": "The test FEN includes a primary e4 pawn, making it the asymmetric Benoni rather than the symmetric version."
+        }
+      ]
+    },
+    {
+      "id": "kid_type_i",
+      "canonicalName": "KID Type I",
+      "bookSectionOrFamily": "Family Four – King’s Indian",
+      "aliases": [
+        "King’s Indian Type I",
+        "KID c6 chain",
+        "d5 chain with ...c6"
+      ],
+      "openingFamilies": [
+        "King’s Indian Defence",
+        "Old Indian",
+        "Ruy Lopez transpositions"
+      ],
+      "descriptionShort": "A closed d5/e4 versus d6/e5 King’s Indian chain includes opposing c6, giving the opposing side a different queenside lever than the ...c5 version.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_space_in_d5_chain",
+        "opposingSideRole": "kid_side_with_c6_support"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:d5",
+          "pawn:primary:e4",
+          "pawn:opposing:d6",
+          "pawn:opposing:e5",
+          "pawn:opposing:c6"
+        ],
+        "optional": [
+          "pawn:primary:c4",
+          "breakCandidate:primary:c4-c5",
+          "breakCandidate:opposing:f7-f5",
+          "breakCandidate:opposing:c6-c5"
+        ],
+        "forbidden": [
+          "pawn:opposing:c5",
+          "noPawn:opposing:c6",
+          "noPawn:primary:d5"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary d5/e4 versus opponent d6/e5.",
+          "Opponent c6 pawn is present."
+        ],
+        "filePatterns": [
+          "c-file and queenside files become important after c4-c5 or ...c6-c5.",
+          "f-file/kingside files may open after ...f5."
+        ],
+        "rankPatterns": [
+          "Closed d5/e5 chain is fixed until pawn breaks."
+        ],
+        "centralTensionRules": [
+          "Reject if opponent c-pawn is on c5; that is Type II.",
+          "Reject if opponent c-pawn is on c7 and no c6/c5 break occurred; that is Type III."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward closed centre with potential flank file openings.",
+          "Do not require open central files."
+        ],
+        "weakSquareRules": [
+          "d6 can be a target if c6/e5 do not support it sufficiently.",
+          "c5 is a key break square for both sides."
+        ],
+        "typicalPawnBreaks": [
+          "primary:c4-c5",
+          "primary:g2-g4/f2-f4 depending on setup",
+          "opposing:f7-f5",
+          "opposing:c6-c5"
+        ],
+        "typicalTransformations": [
+          "kid_type_i->open_kid after d/e-pawn liquidation",
+          "kid_type_i->kid_type_ii if ...c6-c5 creates the c5 chain",
+          "kid_complex->kid_type_i after d4-d5 with opponent c6"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Closed d5/e4 versus d6/e5 chain plus opponent c6.",
+          "Primary d5 pawn is already fixed.",
+          "Opponent c-pawn placement distinguishes Type I from Type II/III."
+        ],
+        "mediumSignals": [
+          "Primary c4 pawn gives c5 break context.",
+          "Opponent ...f5 is structurally available.",
+          "The centre remains closed for at least several plies."
+        ],
+        "weakSignals": [
+          "If c-pawn is on c5 or c7, do not guess Type I."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected KID Type I: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp3ppp/2pp4/3Pp3/2P1P3/8/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "kid_type_i",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/3p4/2pPp3/2P1P3/8/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "kid_type_i",
+          "reason": "The test FEN has the opposing c-pawn on c5, so it is KID Type II rather than Type I."
+        }
+      ]
+    },
+    {
+      "id": "kid_type_ii",
+      "canonicalName": "KID Type II",
+      "bookSectionOrFamily": "Family Four – King’s Indian",
+      "aliases": [
+        "King’s Indian Type II",
+        "KID c5 chain",
+        "d5 chain with ...c5"
+      ],
+      "openingFamilies": [
+        "King’s Indian Defence",
+        "Benoni-KID transpositions",
+        "Closed Ruy Lopez related structures"
+      ],
+      "descriptionShort": "A closed d5/e4 versus c5/d6/e5 chain gives the primary side space while the opposing side has fixed queenside contact and kingside counterplay.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_space_against_c5_kid_chain",
+        "opposingSideRole": "kid_side_with_c5_chain"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:c4",
+          "pawn:primary:d5",
+          "pawn:primary:e4",
+          "pawn:opposing:c5",
+          "pawn:opposing:d6",
+          "pawn:opposing:e5"
+        ],
+        "optional": [
+          "breakCandidate:primary:b2-b4",
+          "breakCandidate:primary:c4-c5",
+          "breakCandidate:opposing:f7-f5",
+          "breakCandidate:opposing:b7-b5"
+        ],
+        "forbidden": [
+          "pawn:opposing:c6",
+          "pawn:opposing:c7 with no c5 pawn",
+          "noPawn:primary:d5"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary c4/d5/e4 pawns.",
+          "Opponent c5/d6/e5 pawns."
+        ],
+        "filePatterns": [
+          "Closed central files; flank files open after b/f/g-pawn breaks.",
+          "c-file can open after c4-c5/cxd6 transformations."
+        ],
+        "rankPatterns": [
+          "d5/e5 locked chain plus c4/c5 contact."
+        ],
+        "centralTensionRules": [
+          "Reject if opponent c-pawn sits on c6 or c7 instead of c5.",
+          "Reject if opponent e-pawn absent; then Benoni is more precise."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward closed centre and potential kingside/queenside file openings.",
+          "Do not reward open central files as primary evidence."
+        ],
+        "weakSquareRules": [
+          "d6 is a common target for primary c5xd6 ideas.",
+          "f5/e4 complex matters after opponent kingside break."
+        ],
+        "typicalPawnBreaks": [
+          "primary:b2-b4",
+          "primary:c4-c5",
+          "primary:g2-g4/f2-f4",
+          "opposing:f7-f5",
+          "opposing:b7-b5"
+        ],
+        "typicalTransformations": [
+          "kid_type_ii->open_kid after central pawn exchanges",
+          "kid_type_ii->asymmetric_benoni if opponent e5 disappears",
+          "kid_complex->kid_type_ii after d4-d5 with opponent c5"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Primary c4/d5/e4 and opponent c5/d6/e5 are all present.",
+          "Centre is locked on both d/e and c-files.",
+          "Opponent e5 distinguishes it from Benoni."
+        ],
+        "mediumSignals": [
+          "Both flank plans are structurally plausible.",
+          "d6 can be attacked by c5xd6.",
+          "The position has not simplified into an endgame majority race."
+        ],
+        "weakSignals": [
+          "Closed Ruy Lopez after d5 may resemble this but primary c3 instead of c4 should prefer Closed Ruy Lopez."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected KID Type II: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp3ppp/3p4/2pPp3/2P1P3/8/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "kid_type_ii",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/3p4/2pPp3/4P3/2P5/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "kid_type_ii",
+          "reason": "The test FEN has the primary pawn on c3 rather than c4; that Ruy Lopez-specific version should not be labelled KID Type II."
+        }
+      ]
+    },
+    {
+      "id": "kid_type_iii",
+      "canonicalName": "KID Type III",
+      "bookSectionOrFamily": "Family Four – King’s Indian",
+      "aliases": [
+        "King’s Indian Type III",
+        "KID c7 chain",
+        "d5 chain with ...c7"
+      ],
+      "openingFamilies": [
+        "King’s Indian Defence",
+        "Old Indian",
+        "Pirc/Modern transpositions"
+      ],
+      "descriptionShort": "A closed d5/e4 versus d6/e5 chain leaves the opposing c-pawn back on c7, delaying queenside contact and changing the timing of c- and f-file breaks.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_space_against_delayed_c_pawn",
+        "opposingSideRole": "kid_side_with_c7_reserve"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:d5",
+          "pawn:primary:e4",
+          "pawn:opposing:c7",
+          "pawn:opposing:d6",
+          "pawn:opposing:e5"
+        ],
+        "optional": [
+          "pawn:primary:c4|c2",
+          "breakCandidate:primary:c4-c5",
+          "breakCandidate:opposing:c7-c6",
+          "breakCandidate:opposing:f7-f5"
+        ],
+        "forbidden": [
+          "pawn:opposing:c5",
+          "pawn:opposing:c6",
+          "noPawn:primary:d5"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary d5/e4 versus opponent d6/e5.",
+          "Opponent c-pawn remains on c7."
+        ],
+        "filePatterns": [
+          "Central files remain closed until d/e breaks; queenside files open only after c-pawn movement.",
+          "Kingside files often matter after ...f5 or primary g/f-pawn play."
+        ],
+        "rankPatterns": [
+          "The d5/e5 lock is fixed; the c-file has not yet locked."
+        ],
+        "centralTensionRules": [
+          "Reject if opponent c-pawn has already moved to c6 or c5; use Type I/II.",
+          "Primary c-pawn may be on c4 or still on c2; both can occur."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Do not require open c-file; the c-pawn reserve is defining.",
+          "Reward closed central files."
+        ],
+        "weakSquareRules": [
+          "c6 and c5 squares are future break/outpost squares.",
+          "d6 is a central base target after c-pawn breaks."
+        ],
+        "typicalPawnBreaks": [
+          "primary:c4-c5 or c2-c4-c5",
+          "primary:g2-g4/f2-f4",
+          "opposing:c7-c6",
+          "opposing:f7-f5"
+        ],
+        "typicalTransformations": [
+          "kid_type_iii->kid_type_i after ...c7-c6",
+          "kid_type_iii->kid_type_ii after ...c7-c5",
+          "kid_type_iii->open_kid after d/e-pawn liquidation"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Closed d5/e4 versus d6/e5 chain with opponent c7 still home.",
+          "No opponent c6/c5 pawn is present.",
+          "Primary d5 exists; this is not just KID tension."
+        ],
+        "mediumSignals": [
+          "Primary c-pawn can support a delayed c5 plan.",
+          "Opponent ...f5 remains a main counter-break.",
+          "The c-pawn placement persists long enough to matter."
+        ],
+        "weakSignals": [
+          "If the c-pawn placement is unavailable due to missing c-pawn, lower confidence heavily."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected KID Type III: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/ppp2ppp/3p4/3Pp3/2P1P3/8/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "kid_type_iii",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/2pp4/3Pp3/2P1P3/8/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "kid_type_iii",
+          "reason": "The test FEN has the opposing c-pawn on c6, which is KID Type I, not Type III."
+        }
+      ]
+    },
+    {
+      "id": "open_kid",
+      "canonicalName": "Open KID",
+      "bookSectionOrFamily": "Family Four – King’s Indian",
+      "aliases": [
+        "Open King’s Indian",
+        "KID open centre",
+        "open e4/e5 KID"
+      ],
+      "openingFamilies": [
+        "King’s Indian Defence",
+        "Pirc/Modern transpositions",
+        "Old Indian"
+      ],
+      "descriptionShort": "The King’s Indian central lock has dissolved into an e4/e5 opposition with both d-pawns absent, making open-file and piece activity more important than chain play.",
+      "stability": "transitional",
+      "sideRoles": {
+        "primarySideRole": "side_with_e4_pawn_in_open_kid",
+        "opposingSideRole": "side_with_e5_pawn_in_open_kid"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:e4",
+          "pawn:opposing:e5",
+          "noPawnOnFile:primary:d-file",
+          "noPawnOnFile:opposing:d-file"
+        ],
+        "optional": [
+          "pawn:primary:c4",
+          "pawn:opposing:c6|c7|c5",
+          "openFile:d-file",
+          "breakCandidate:primary:f2-f4",
+          "breakCandidate:opposing:f7-f5"
+        ],
+        "forbidden": [
+          "pawn:primary:d5",
+          "pawn:opposing:d6",
+          "pawn:primary:d4"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary e4 versus opponent e5.",
+          "Both d-file pawns absent."
+        ],
+        "filePatterns": [
+          "Open or semi-open d-file is a strong signal.",
+          "f-file can open after f-pawn breaks."
+        ],
+        "rankPatterns": [
+          "No fixed d-pawn chain remains."
+        ],
+        "centralTensionRules": [
+          "Reject if either side still has a central d-pawn participating in a chain.",
+          "Do not classify generic e4/e5 openings as Open KID without supporting c/g/KID-history evidence."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward open d-file.",
+          "Reward history from a prior KID Complex/Type I/II/III segment."
+        ],
+        "weakSquareRules": [
+          "d4/d5 squares become piece outposts rather than pawn-chain bases.",
+          "f4/f5 squares matter after flank breaks."
+        ],
+        "typicalPawnBreaks": [
+          "primary:f2-f4",
+          "primary:c4-c5 if c-pawn exists",
+          "opposing:f7-f5",
+          "opposing:c7-c6/c5 depending on skeleton"
+        ],
+        "typicalTransformations": [
+          "kid_type_i|kid_type_ii|kid_type_iii->open_kid after d-pawn exchanges",
+          "open_kid->generic_open_centre if c/g/KID contextual signals vanish",
+          "open_kid->endgame_file_play after major piece trades"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "e4/e5 opposition with both d-pawns gone.",
+          "Position previously matched a KID-family structure or has c/g-pawn support consistent with KID play.",
+          "Open d-file exists."
+        ],
+        "mediumSignals": [
+          "Primary c4 and opponent c6/c7/c5 give KID context.",
+          "Both sides still have enough pieces for open-file play.",
+          "f-pawn breaks are structurally relevant."
+        ],
+        "weakSignals": [
+          "Generic Ruy Lopez/Petroff e4/e5 structures without KID history should not match strongly."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.72
+      },
+      "evidenceExamples": [
+        "Detected Open KID: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp3ppp/2p5/4p3/2P1P3/8/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "open_kid",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/ppp2ppp/3p4/4p3/2PPP3/8/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "open_kid",
+          "reason": "The test FEN still contains both central d-pawns/tension, so the KID has not become open."
+        }
+      ]
+    },
+    {
+      "id": "kid_complex",
+      "canonicalName": "KID Complex",
+      "bookSectionOrFamily": "Family Four – King’s Indian",
+      "aliases": [
+        "King’s Indian complex",
+        "KID unresolved centre",
+        "King’s Indian tension"
+      ],
+      "openingFamilies": [
+        "King’s Indian Defence",
+        "Old Indian",
+        "Pirc/Modern transpositions",
+        "Ruy Lopez related structures"
+      ],
+      "descriptionShort": "A broad King’s Indian tension state exists before the centre resolves into a specific d5-chain, open KID, or Benoni-like structure.",
+      "stability": "broad_family",
+      "sideRoles": {
+        "primarySideRole": "side_with_unresolved_centre_and_space_potential",
+        "opposingSideRole": "kid_side_applying_e5_d6_tension"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:d4",
+          "pawn:primary:e4",
+          "pawn:opposing:d6",
+          "pawn:opposing:e5"
+        ],
+        "optional": [
+          "pawn:primary:c4",
+          "pawn:opposing:c7|c6|c5",
+          "pawn:opposing:g6",
+          "tension:primary:d4-vs-opposing:e5",
+          "breakCandidate:primary:d4-d5"
+        ],
+        "forbidden": [
+          "pawn:primary:d5",
+          "noPawnOnFile:primary:d-file",
+          "noPawnOnFile:opposing:d-file"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary d4/e4 pawns with opponent d6/e5.",
+          "The central d-pawn has not yet advanced to d5 or disappeared."
+        ],
+        "filePatterns": [
+          "Files are usually not open yet; upcoming captures decide the trajectory.",
+          "c-file classification depends on opponent c-pawn placement after resolution."
+        ],
+        "rankPatterns": [
+          "Primary d-pawn on d4 marks an unresolved centre."
+        ],
+        "centralTensionRules": [
+          "This is a parent/broad template: if a child KID Type I/II/III or Open KID matches above threshold, prefer the child.",
+          "Reject once d4-d5 creates a locked chain or d-pawns are exchanged."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Open files are weak evidence; this structure is about pending central decision.",
+          "Reward move-history windows immediately before d4-d5, exd4, or dxe5."
+        ],
+        "weakSquareRules": [
+          "d5 and e4/e5 complexes are latent rather than fixed.",
+          "c5/c6 future squares depend on opponent c-pawn placement."
+        ],
+        "typicalPawnBreaks": [
+          "primary:d4-d5",
+          "primary:d4xe5",
+          "opposing:e5xd4",
+          "opposing:c7-c6/c7-c5",
+          "opposing:f7-f5"
+        ],
+        "typicalTransformations": [
+          "kid_complex->kid_type_i after d4-d5 with opponent c6",
+          "kid_complex->kid_type_ii after d4-d5 with opponent c5",
+          "kid_complex->kid_type_iii after d4-d5 with opponent c7",
+          "kid_complex->open_kid after d-pawn exchanges"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Primary d4/e4 and opponent d6/e5 are all present.",
+          "Primary d-pawn has not advanced to d5 or disappeared.",
+          "A specific child KID structure does not already match."
+        ],
+        "mediumSignals": [
+          "Opponent g6 or c-pawn placement supports KID context.",
+          "Move history is in opening/middlegame before central resolution.",
+          "The next structural move is likely d5, dxe5, or exd4."
+        ],
+        "weakSignals": [
+          "As a broad family, it should lose tie-breaks to a stable child template."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.65
+      },
+      "evidenceExamples": [
+        "Detected KID Complex: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/ppp2ppp/3p4/4p3/2PPP3/8/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "kid_complex",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/ppp2ppp/3p4/3Pp3/2P1P3/8/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "kid_complex",
+          "reason": "The test FEN already has a locked d5/e5 chain with c7, so the specific KID Type III child should be used."
+        }
+      ]
+    },
+    {
+      "id": "french_type_i",
+      "canonicalName": "French Type I",
+      "bookSectionOrFamily": "Family Five – French",
+      "aliases": [
+        "French I",
+        "French no-e-pawn structure",
+        "French d4/c3 versus c5/d5/e6"
+      ],
+      "openingFamilies": [
+        "French Defence",
+        "Sicilian French structures",
+        "Caro-Kann/French transpositions"
+      ],
+      "descriptionShort": "A French-family d4/c3 centre lacks the primary e-pawn while the opposing f-pawn is also absent, leaving a partly opened e/f-file complex around d4/d5.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_french_space_after_e_pawn_trade",
+        "opposingSideRole": "french_side_without_f_pawn_counterpart"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:c3",
+          "pawn:primary:d4",
+          "noPawnOnFile:primary:e-file",
+          "pawn:opposing:c5",
+          "pawn:opposing:d5",
+          "pawn:opposing:e6",
+          "noPawnOnFile:opposing:f-file"
+        ],
+        "optional": [
+          "semiOpenFile:primary:e-file",
+          "semiOpenFile:opposing:f-file",
+          "breakCandidate:primary:c3-c4",
+          "breakCandidate:opposing:c5xd4"
+        ],
+        "forbidden": [
+          "pawn:primary:e5",
+          "pawn:opposing:f7",
+          "noPawn:opposing:c5",
+          "noPawn:opposing:d5"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary c3/d4 with no primary e-pawn.",
+          "Opponent c5/d5/e6 with no opposing f-pawn."
+        ],
+        "filePatterns": [
+          "e-file and f-file asymmetries are important due to missing pawns.",
+          "c-file/d-file pressure remains tied to the French centre."
+        ],
+        "rankPatterns": [
+          "d4/d5 contact remains fixed; no primary e5 pawn chain exists."
+        ],
+        "centralTensionRules": [
+          "Reject if primary has e5; use French Type II/III.",
+          "Reject if opposing f-pawn is present and active; the Type I signature is weakened."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward semi-open e-file for primary or f-file for opposing side.",
+          "Reward central file pressure only after cxd4/exd4 transformations."
+        ],
+        "weakSquareRules": [
+          "e5 may be a square rather than a pawn anchor.",
+          "d4 can become isolated after c-pawn exchanges."
+        ],
+        "typicalPawnBreaks": [
+          "primary:c3-c4",
+          "primary:g2-g4 or f2-f4 when kingside space exists",
+          "opposing:c5xd4",
+          "opposing:e6-e5 if legal"
+        ],
+        "typicalTransformations": [
+          "french_type_i->isolani after central exchanges leave d4 isolated",
+          "french_type_i->open_french after c/d-pawn liquidation",
+          "french_type_i->french_type_iii if an e5 pawn-chain is later established via history/promotion metadata"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Primary c3/d4/no e-pawn plus opponent c5/d5/e6/no f-pawn.",
+          "d4/d5 French contact is still present.",
+          "No primary e5 pawn exists."
+        ],
+        "mediumSignals": [
+          "Semi-open e/f files reflect the missing-pawn asymmetry.",
+          "Primary can challenge with c4.",
+          "Opponent can pressure d4 with cxd4."
+        ],
+        "weakSignals": [
+          "If primary has an e5 pawn, prefer French Type II/III."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected French Type I: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp4pp/4p3/2pp4/3P4/2P5/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "french_type_i",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/4p3/2ppP3/3P4/2P5/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "french_type_i",
+          "reason": "The test FEN has a primary e5 pawn in a full French chain, so it is not French Type I."
+        }
+      ]
+    },
+    {
+      "id": "french_type_ii",
+      "canonicalName": "French Type II",
+      "bookSectionOrFamily": "Family Five – French",
+      "aliases": [
+        "French II",
+        "French e5-chain without d-pawn",
+        "advanced French with exchanged d/c pawns"
+      ],
+      "openingFamilies": [
+        "French Defence",
+        "Caro-Kann Advance transpositions",
+        "Sicilian French structures"
+      ],
+      "descriptionShort": "The primary side has an e5 pawn but no d-pawn, while the opposing side has d5/e6 and no c-pawn, creating an e5-chain remnant with open c/d-file consequences.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_e5_space_without_d_pawn",
+        "opposingSideRole": "french_side_against_e5_chain_remnant"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:e5",
+          "noPawnOnFile:primary:d-file",
+          "pawn:opposing:d5",
+          "pawn:opposing:e6",
+          "noPawnOnFile:opposing:c-file"
+        ],
+        "optional": [
+          "pawn:primary:c3",
+          "breakCandidate:primary:f2-f4-f5",
+          "breakCandidate:primary:c3-c4",
+          "breakCandidate:opposing:f7-f6"
+        ],
+        "forbidden": [
+          "pawn:primary:d4",
+          "pawn:opposing:c5",
+          "noPawn:primary:e5"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary e5 pawn with no primary d-pawn.",
+          "Opponent d5/e6 with no opposing c-pawn."
+        ],
+        "filePatterns": [
+          "c- and d-files are often open/semi-open due to exchanged pawns.",
+          "kingside files may open after f-pawn breaks."
+        ],
+        "rankPatterns": [
+          "Primary e5 is the fixed space marker."
+        ],
+        "centralTensionRules": [
+          "Reject if primary d4 exists with e5; use French Type III.",
+          "Reject if opponent c5 exists; Type III or Type I may be better."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward open/semi-open c-file for opponent and d-file for primary/opponent pressure.",
+          "Reward f-file changes only after f-pawn breaks."
+        ],
+        "weakSquareRules": [
+          "d4/d5 and f4/f5 complexes are sensitive because the d-pawn is gone.",
+          "e5 can become overextended if unsupported."
+        ],
+        "typicalPawnBreaks": [
+          "primary:f2-f4-f5",
+          "primary:c3-c4",
+          "opposing:f7-f6",
+          "opposing:d5-d4 in some endings"
+        ],
+        "typicalTransformations": [
+          "french_type_ii->open_french after e5/d5 liquidation",
+          "french_type_ii->carlsbad_formation in colour-reversed transformations when e5-chain dissolves",
+          "french_type_ii->endgame_space_pawn if piece count collapses"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Primary e5/no d-pawn and opponent d5/e6/no c-pawn.",
+          "No primary d4 pawn remains.",
+          "The e5 pawn is still structurally relevant."
+        ],
+        "mediumSignals": [
+          "Primary c3 supports c4 or the e5 chain indirectly.",
+          "Opponent f7-f6 break is available.",
+          "Open/semi-open c/d files match the exchanged-pawn skeleton."
+        ],
+        "weakSignals": [
+          "If opponent c5 and primary d4 are present, prefer French Type III."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected French Type II: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp3ppp/4p3/3pP3/8/2P5/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "french_type_ii",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp4pp/4p3/2pp4/3P4/2P5/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "french_type_ii",
+          "reason": "The test FEN lacks a primary e5 pawn and has no opposing f-pawn, which is French Type I rather than Type II."
+        }
+      ]
+    },
+    {
+      "id": "french_type_iii",
+      "canonicalName": "French Type III",
+      "bookSectionOrFamily": "Family Five – French",
+      "aliases": [
+        "French III",
+        "French Advance chain",
+        "e5 pawn-chain structure"
+      ],
+      "openingFamilies": [
+        "French Defence Advance",
+        "French Tarrasch transpositions",
+        "Sicilian French structures",
+        "Caro-Kann Advance transpositions"
+      ],
+      "descriptionShort": "A full French e5-chain uses primary c3/d4/e5 against opposing c5/d5/e6, producing fixed central space and flank-break races.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_e5_chain_space",
+        "opposingSideRole": "french_side_attacking_chain_base"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:c3",
+          "pawn:primary:d4",
+          "pawn:primary:e5",
+          "pawn:opposing:c5",
+          "pawn:opposing:d5",
+          "pawn:opposing:e6"
+        ],
+        "optional": [
+          "breakCandidate:primary:f2-f4-f5",
+          "breakCandidate:primary:c3-c4",
+          "breakCandidate:opposing:c5xd4",
+          "breakCandidate:opposing:f7-f6"
+        ],
+        "forbidden": [
+          "noPawn:primary:e5",
+          "noPawn:primary:d4",
+          "noPawn:opposing:c5"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary c3/d4/e5 chain.",
+          "Opponent c5/d5/e6 counter-chain."
+        ],
+        "filePatterns": [
+          "c-file/d-file tension around the d4 base is central.",
+          "f-file/e-file can open after kingside pawn breaks."
+        ],
+        "rankPatterns": [
+          "Primary e5 on fifth rank is the space anchor; d4 is the chain base."
+        ],
+        "centralTensionRules": [
+          "The base d4 is under c5 pressure; reward c5xd4 tension.",
+          "Reject if d4 or c5 has disappeared; then Type II or open French is more precise."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward semi-open c/d files only after the chain starts dissolving.",
+          "Do not require open files for the base structure."
+        ],
+        "weakSquareRules": [
+          "d4 is the primary chain base target.",
+          "f4/f5 and c4/c5 squares drive breaks.",
+          "e5 grants space but can become a target after ...f6."
+        ],
+        "typicalPawnBreaks": [
+          "primary:f2-f4-f5",
+          "primary:c3-c4",
+          "opposing:c5xd4",
+          "opposing:f7-f6"
+        ],
+        "typicalTransformations": [
+          "french_type_iii->french_type_ii after d4/c5 exchanges leave e5 without d-pawn",
+          "french_type_iii->french_type_i after e-pawn liquidation with d4/c3 remaining",
+          "french_type_iii->open_french after c/d/e central liquidation"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Full c3/d4/e5 versus c5/d5/e6 French chain exists.",
+          "d4 base and c5 attacker are both present.",
+          "The centre remains locked rather than dissolved."
+        ],
+        "mediumSignals": [
+          "Both f-pawn breaks are available or historically relevant.",
+          "The chain persists for at least several plies.",
+          "Opening tags may say French/Advance but are not required."
+        ],
+        "weakSignals": [
+          "If one of d4/e5/c5 is absent, use Type I/II or unknown rather than forcing Type III."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected French Type III: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp3ppp/4p3/2ppP3/3P4/2P5/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "french_type_iii",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/4p3/3pP3/8/2P5/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "french_type_iii",
+          "reason": "The test FEN lacks primary d4 and opposing c5, so it is the Type II remnant rather than the full Type III chain."
+        }
+      ]
+    },
+    {
+      "id": "three_three_vs_four_two",
+      "canonicalName": "The 3–3 vs. 4–2 Structure",
+      "bookSectionOrFamily": "Miscellaneous / Various Structures",
+      "aliases": [
+        "3-3 vs 4-2",
+        "three-three versus four-two",
+        "opposed wing majorities"
+      ],
+      "openingFamilies": [
+        "Caro-Kann",
+        "Slav Defence",
+        "Queen’s Gambit endgames",
+        "Exchange-structure endgames"
+      ],
+      "descriptionShort": "One side has a 3+3 pawn split while the other has a 4+2 split, making wing-majority conversion more important than a fixed central pawn chain.",
+      "stability": "endgame_sensitive",
+      "sideRoles": {
+        "primarySideRole": "side_with_three_three_split",
+        "opposingSideRole": "side_with_four_two_split"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawnCountByWing:primary:queenside=3",
+          "pawnCountByWing:primary:kingside=3",
+          "pawnCountByWing:opposing:queenside=4",
+          "pawnCountByWing:opposing:kingside=2"
+        ],
+        "optional": [
+          "fewCentralPawns:true",
+          "pieceCount:low_or_simplified",
+          "openCentralFiles:true",
+          "candidatePassedPawnRace:true"
+        ],
+        "forbidden": [
+          "lockedChain:french_or_kid",
+          "pawnCountByWing:both:equal_majorities",
+          "moreThanThreeCentralPawnsLocked:true"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary has three queenside pawns and three kingside pawns.",
+          "Opponent has four queenside pawns and two kingside pawns in canonical orientation."
+        ],
+        "filePatterns": [
+          "Central files are often open or simplified; wing files determine pawn-majority play.",
+          "The extra opponent queenside pawn and extra primary kingside pawn are the main objects."
+        ],
+        "rankPatterns": [
+          "Rank placement is less important than wing distribution, unless passed pawns are already created."
+        ],
+        "centralTensionRules": [
+          "Reject if a locked middlegame pawn chain is still the dominant feature.",
+          "Prefer this label in simplified positions after central pawn trades."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward open central files and low central pawn count.",
+          "Do not require any single open file."
+        ],
+        "weakSquareRules": [
+          "Weak squares are local to passed-pawn creation and should not dominate classification.",
+          "Endgame opposition/path squares can be evaluated separately by endgame module."
+        ],
+        "typicalPawnBreaks": [
+          "primary:kingside_majority_advance",
+          "opposing:queenside_majority_advance",
+          "both:create_passed_pawn_before_opponent_majority"
+        ],
+        "typicalTransformations": [
+          "caro_kann_formation->three_three_vs_four_two after central liquidation",
+          "slav_formation->three_three_vs_four_two after d/c/e-pawn trades",
+          "three_three_vs_four_two->specific_endgame_majority once passed pawns appear"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Wing pawn counts exactly or approximately match 3+3 versus 4+2.",
+          "Central pawn skeleton is dissolved enough that majority play is the dominant story.",
+          "Piece count or move phase makes endgame/late middlegame conversion plausible."
+        ],
+        "mediumSignals": [
+          "Open central files and absence of locked chains.",
+          "Move history shows transition from Caro/Slav/QGD structures.",
+          "A passer is not yet so advanced that a generic structure label is irrelevant."
+        ],
+        "weakSignals": [
+          "Do not show in rich middlegames where a locked French/KID/Benoni chain still dictates play."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.75
+      },
+      "evidenceExamples": [
+        "Detected The 3–3 vs. 4–2 Structure: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/ppp3pp/3p4/8/8/8/PPP2PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "three_three_vs_four_two",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/4p3/2ppP3/3P4/2P5/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "three_three_vs_four_two",
+          "reason": "The test FEN has a rich locked French chain, so wing-majority counting is not the primary structure."
+        }
+      ]
+    },
+    {
+      "id": "panov_structure",
+      "canonicalName": "The Panov Structure",
+      "bookSectionOrFamily": "Miscellaneous / Various Structures",
+      "aliases": [
+        "Panov structure",
+        "Panov-Botvinnik c5/d4 structure",
+        "Caro-Kann Panov"
+      ],
+      "openingFamilies": [
+        "Caro-Kann Panov-Botvinnik Attack",
+        "Queen’s Gambit transpositions",
+        "Caro-Kann Advance/Exchange transpositions"
+      ],
+      "descriptionShort": "The primary side has c5 and d4 pawns against opposing d5/e6, creating queenside space and a d4 base that may become isolated or overextended.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_c5_d4_panov_space",
+        "opposingSideRole": "side_attacking_d4_and_c5_chain"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:c5",
+          "pawn:primary:d4",
+          "pawn:opposing:d5",
+          "pawn:opposing:e6",
+          "noPawnOnFile:opposing:c-file"
+        ],
+        "optional": [
+          "noPawnOnFile:primary:e-file",
+          "breakCandidate:primary:c5-c6",
+          "breakCandidate:primary:d4-d5",
+          "breakCandidate:opposing:e6-e5"
+        ],
+        "forbidden": [
+          "pawn:primary:c4",
+          "noPawn:primary:c5",
+          "noPawn:opposing:d5",
+          "pawn:opposing:c6"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary c5/d4 pawns.",
+          "Opponent d5/e6 with no opposing c-pawn."
+        ],
+        "filePatterns": [
+          "c-file is often semi-open behind the advanced c-pawn.",
+          "d-file pressure targets the d4 base."
+        ],
+        "rankPatterns": [
+          "c5 is the advanced marker; d4 is the base."
+        ],
+        "centralTensionRules": [
+          "Reject if the pawn is still on c4; that may be Hanging Pawns/Benoni.",
+          "Reward fixed d4/d5 contact with advanced c5."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward semi-open c-file from the missing opposing c-pawn.",
+          "Reward pressure on d4 along d-file or diagonals as a weak signal."
+        ],
+        "weakSquareRules": [
+          "d4 is the base target.",
+          "c6/d6 can become outposts or passer squares for the primary side."
+        ],
+        "typicalPawnBreaks": [
+          "primary:c5-c6",
+          "primary:d4-d5",
+          "opposing:e6-e5",
+          "opposing:b7-b6"
+        ],
+        "typicalTransformations": [
+          "panov_structure->isolani if c5 disappears leaving d4 isolated",
+          "panov_structure->passed_c_pawn after c5-c6",
+          "caro_kann_formation->panov_structure after c-pawn advances and central contact forms"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Primary c5+d4 against opponent d5/e6.",
+          "Opponent c-pawn is absent.",
+          "d4/d5 contact and c5 advanced space both exist."
+        ],
+        "mediumSignals": [
+          "Primary e-pawn absent supports Panov/Caro context.",
+          "c5-c6 and d4-d5 are plausible breaks.",
+          "The c-pawn has not become a pure endgame passer yet."
+        ],
+        "weakSignals": [
+          "A c4+d4 pair is Hanging Pawns, not Panov."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected The Panov Structure: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp3ppp/4p3/2Pp4/3P4/8/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "panov_structure",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/4p3/8/2PP4/8/P4PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "panov_structure",
+          "reason": "The test FEN has c4+d4 hanging pawns, not an advanced c5 Panov structure."
+        }
+      ]
+    },
+    {
+      "id": "dragon_formation",
+      "canonicalName": "The Dragon Formation",
+      "bookSectionOrFamily": "Miscellaneous / Various Structures",
+      "aliases": [
+        "Dragon structure",
+        "Sicilian Dragon formation",
+        "Accelerated Dragon structure"
+      ],
+      "openingFamilies": [
+        "Sicilian Dragon",
+        "Accelerated Dragon",
+        "English Opening reversed",
+        "Sicilian Maroczy transpositions"
+      ],
+      "descriptionShort": "The opposing side has a Sicilian d6/g6 shell with the c-pawn gone, while the primary side usually has e4 and no d-pawn, making d5 and kingside pawn-race themes central.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_playing_against_dragon_shell",
+        "opposingSideRole": "dragon_side_with_g6_d6_shell"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:e4",
+          "noPawnOnFile:primary:d-file",
+          "pawn:opposing:d6",
+          "pawn:opposing:g6",
+          "noPawnOnFile:opposing:c-file"
+        ],
+        "optional": [
+          "pawn:opposing:e7",
+          "pawn:primary:c2|c4",
+          "breakCandidate:primary:h2-h4-h5",
+          "breakCandidate:primary:f2-f4",
+          "breakCandidate:opposing:d6-d5"
+        ],
+        "forbidden": [
+          "pawn:opposing:e6 without g6",
+          "pawn:opposing:e5",
+          "pawn:primary:d4"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary e4 with no primary d-pawn.",
+          "Opponent d6/g6 and no opposing c-pawn."
+        ],
+        "filePatterns": [
+          "c-file openness is common from the Sicilian exchange.",
+          "Kingside files can open after h- or f-pawn storms."
+        ],
+        "rankPatterns": [
+          "Opponent g6 is the key flank-rank marker; d6 anchors the centre."
+        ],
+        "centralTensionRules": [
+          "Reject if opponent e6 without g6 dominates; Scheveningen is more precise.",
+          "Reject if opponent e5 creates Najdorf Type II."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward open c-file.",
+          "Reward h-file/f-file opening only after pawn-race moves occur."
+        ],
+        "weakSquareRules": [
+          "d5 is the primary central hole/break square.",
+          "h6/f6 dark-square complex becomes relevant after g6."
+        ],
+        "typicalPawnBreaks": [
+          "primary:h2-h4-h5",
+          "primary:f2-f4-f5",
+          "primary:c2-c4",
+          "opposing:d6-d5",
+          "opposing:b7-b5"
+        ],
+        "typicalTransformations": [
+          "dragon_formation->maroczy if primary establishes c4/e4 bind",
+          "dragon_formation->scheveningen_structure if g-pawn shell is absent and e6 dominates",
+          "dragon_formation->open_sicilian after d6-d5 liquidation"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Opponent d6/g6 and no c-pawn, primary e4/no d-pawn.",
+          "The g6 pawn is a structural, not incidental, feature.",
+          "Opponent has not advanced e-pawn to e5."
+        ],
+        "mediumSignals": [
+          "Open c-file exists.",
+          "Primary h/f-pawn breaks are plausible.",
+          "English reversed version detected by colour reversal, not by opening name."
+        ],
+        "weakSignals": [
+          "If primary c4/e4 bind is the main feature, Maroczy may be primary and Dragon secondary."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected The Dragon Formation: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp2pp1p/3p2p1/8/4P3/8/PPP2PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "dragon_formation",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/3pp3/8/4P3/8/PPP2PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "dragon_formation",
+          "reason": "The test FEN has opponent e6 and no g6 shell, so Scheveningen is the better label."
+        }
+      ]
+    },
+    {
+      "id": "scheveningen_structure",
+      "canonicalName": "The Scheveningen Structure",
+      "bookSectionOrFamily": "Miscellaneous / Various Structures",
+      "aliases": [
+        "Scheveningen",
+        "Sicilian d6/e6 structure",
+        "little centre"
+      ],
+      "openingFamilies": [
+        "Sicilian Scheveningen",
+        "Sicilian Najdorf",
+        "Sicilian Kan",
+        "English reversed Sicilian"
+      ],
+      "descriptionShort": "The opposing side has d6/e6 with the c-pawn gone against a primary e4/no-d-pawn Sicilian centre, keeping both ...d5 and ...e5-related breaks in reserve.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_attacking_scheveningen_centre",
+        "opposingSideRole": "scheveningen_side_with_d6_e6_centre"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:e4",
+          "noPawnOnFile:primary:d-file",
+          "pawn:opposing:d6",
+          "pawn:opposing:e6",
+          "noPawnOnFile:opposing:c-file"
+        ],
+        "optional": [
+          "pawn:primary:f4|c4",
+          "pawn:opposing:a6",
+          "breakCandidate:primary:f4-f5",
+          "breakCandidate:opposing:d6-d5",
+          "breakCandidate:opposing:e6-e5"
+        ],
+        "forbidden": [
+          "pawn:opposing:e5",
+          "pawn:opposing:g6 with no e6 emphasis",
+          "pawn:primary:d4"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary e4 with no primary d-pawn.",
+          "Opponent d6/e6 and no opposing c-pawn."
+        ],
+        "filePatterns": [
+          "Open c-file is a common Sicilian signal.",
+          "d-file pressure on d6 and e-file breaks matter."
+        ],
+        "rankPatterns": [
+          "Opponent d6/e6 compact centre remains flexible."
+        ],
+        "centralTensionRules": [
+          "Reject if opponent e-pawn is already on e5; Najdorf Type II is more precise.",
+          "Reject if g6 shell is dominant and e6 absent; Dragon is more precise."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward open c-file and semi-open d-file pressure.",
+          "Do not require open central files."
+        ],
+        "weakSquareRules": [
+          "d5 is the principal outpost/break square.",
+          "e5/f5 squares drive attacking transformations."
+        ],
+        "typicalPawnBreaks": [
+          "primary:f4-f5",
+          "primary:g2-g4-g5",
+          "primary:c2-c4-c5",
+          "opposing:d6-d5",
+          "opposing:e6-e5",
+          "opposing:b7-b5"
+        ],
+        "typicalTransformations": [
+          "scheveningen_structure->najdorf_type_ii after ...e6-e5",
+          "scheveningen_structure->dragon_formation if ...g6 shell becomes primary and e6 no longer defines the centre",
+          "scheveningen_structure->open_sicilian after ...d5 liquidation"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Opponent d6/e6/no c-pawn plus primary e4/no d-pawn.",
+          "Opponent e-pawn is on e6, not e5.",
+          "Open Sicilian c-file absence supports the skeleton."
+        ],
+        "mediumSignals": [
+          "Opponent a6 is a useful but non-defining signal.",
+          "Primary f4/g4/c4 breaks are plausible.",
+          "d5 hole/break remains central."
+        ],
+        "weakSignals": [
+          "If opponent g6 is present but e6 also present, score both and choose by central role, not opening name."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected The Scheveningen Structure: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp3ppp/3pp3/8/4P3/8/PPP2PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "scheveningen_structure",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/3p4/4p3/4P3/8/PPP2PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "scheveningen_structure",
+          "reason": "The test FEN has opponent e5, so it is Najdorf Type II/Boleslavsky rather than Scheveningen."
+        }
+      ]
+    },
+    {
+      "id": "benko_structure",
+      "canonicalName": "The Benko Structure",
+      "bookSectionOrFamily": "Miscellaneous / Various Structures",
+      "aliases": [
+        "Benko Gambit structure",
+        "Volga structure",
+        "Benko accepted pawn skeleton"
+      ],
+      "openingFamilies": [
+        "Benko Gambit",
+        "Benoni-Benko transpositions"
+      ],
+      "descriptionShort": "A Benoni-like d5/c4 versus c5/d6 centre is combined with missing or advanced a/b-pawns, making open queenside files and a queenside pawn hook the defining feature.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_extra_or_advanced_queenside_pawn",
+        "opposingSideRole": "benko_side_with_open_a_b_file_pressure"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:c4",
+          "pawn:primary:d5",
+          "pawn:opposing:c5",
+          "pawn:opposing:d6",
+          "noPawnOnFile:opposing:b-file"
+        ],
+        "optional": [
+          "pawn:primary:a6|b5",
+          "noPawnOnFile:opposing:a-file",
+          "openOrSemiOpenFile:opposing:a-file",
+          "openOrSemiOpenFile:opposing:b-file",
+          "noPawnOnFile:opposing:e-file"
+        ],
+        "forbidden": [
+          "pawn:opposing:e5",
+          "pawn:opposing:b7",
+          "noPawn:primary:d5",
+          "noPawn:opposing:c5"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary c4/d5 versus opponent c5/d6.",
+          "Opponent b-pawn is absent and a/b-file openness or an advanced primary queenside pawn is present."
+        ],
+        "filePatterns": [
+          "Open or semi-open a- and b-files are essential support signals.",
+          "c-file/d-file Benoni centre supplies the base context."
+        ],
+        "rankPatterns": [
+          "An advanced primary a- or b-pawn may remain from the accepted gambit but is not mandatory if files encode the history."
+        ],
+        "centralTensionRules": [
+          "Reject if opponent e5 creates KID Type II.",
+          "Benko requires queenside file/pawn evidence beyond generic Benoni."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Reward opponent access to open/semi-open a- and b-files.",
+          "Require at least one a/b-file structural abnormality to avoid false positives."
+        ],
+        "weakSquareRules": [
+          "d6 remains a central target, but queenside hooks are more diagnostic.",
+          "b5/a6 passer or hook squares define the Benko flavour."
+        ],
+        "typicalPawnBreaks": [
+          "opposing:a6-a5 or b-file pressure rather than a simple pawn break",
+          "opposing:e7-e6 or g7-g6 depending on setup",
+          "primary:b2-b3 or a-pawn consolidation",
+          "primary:e4-e5 if e-pawn exists"
+        ],
+        "typicalTransformations": [
+          "benko_structure->asymmetric_benoni if queenside file evidence disappears",
+          "benko_structure->endgame_queenside_passer if accepted pawn survives",
+          "benko_structure->open_queenside after further a/b-pawn trades"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Benoni c4/d5 versus c5/d6 centre plus missing opposing b-pawn or open a/b files.",
+          "Queenside a/b-file abnormality is present.",
+          "Opponent e5 is absent."
+        ],
+        "mediumSignals": [
+          "Primary has advanced a6 or b5 pawn from accepted gambit history.",
+          "Opponent a-file or b-file is semi-open.",
+          "Move history includes ...b5 and a-pawn captures, used only as structural evidence."
+        ],
+        "weakSignals": [
+          "Generic Modern Benoni without a/b-file evidence should not be Benko."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected The Benko Structure: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/5ppp/P2p4/2pP4/2P1P3/8/1P3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "benko_structure",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/3p4/2pP4/2P1P3/8/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "benko_structure",
+          "reason": "The test FEN has a normal Benoni centre but no missing b-pawn/open a-b-file evidence."
+        }
+      ]
+    },
+    {
+      "id": "closed_ruy_lopez",
+      "canonicalName": "The Closed Ruy Lopez",
+      "bookSectionOrFamily": "Miscellaneous / Various Structures",
+      "aliases": [
+        "Closed Spanish structure",
+        "Closed Ruy Lopez d5 structure",
+        "Ruy Lopez closed centre"
+      ],
+      "openingFamilies": [
+        "Ruy Lopez",
+        "Spanish Game",
+        "Italian/Ruy transpositions"
+      ],
+      "descriptionShort": "A Ruy Lopez c3/e4/d5 centre locks against c5/d6/e5, resembling a KID chain but with c3 rather than c4, which changes queenside space and break timing.",
+      "stability": "stable",
+      "sideRoles": {
+        "primarySideRole": "side_with_closed_spanish_space",
+        "opposingSideRole": "side_against_closed_spanish_centre"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:c3",
+          "pawn:primary:d5",
+          "pawn:primary:e4",
+          "pawn:opposing:c5",
+          "pawn:opposing:d6",
+          "pawn:opposing:e5"
+        ],
+        "optional": [
+          "breakCandidate:primary:f2-f4",
+          "breakCandidate:primary:a2-a4",
+          "breakCandidate:opposing:f7-f5",
+          "breakCandidate:opposing:c5-c4"
+        ],
+        "forbidden": [
+          "pawn:primary:c4",
+          "pawn:primary:d4 without d5",
+          "noPawn:opposing:c5",
+          "noPawn:primary:e4"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary c3/d5/e4.",
+          "Opponent c5/d6/e5."
+        ],
+        "filePatterns": [
+          "Central files are closed; kingside files open after f-pawn breaks.",
+          "Queenside files may open after a- or c-pawn play but c3 reduces primary queenside space compared with KID Type II."
+        ],
+        "rankPatterns": [
+          "Primary d5 locks the centre; primary c-pawn remains on c3."
+        ],
+        "centralTensionRules": [
+          "Reject if primary c-pawn is on c4; use KID Type II.",
+          "Reject if primary d-pawn remains on d4; use Lopez Formation."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Do not require open central files.",
+          "Reward f-file/h-file opening only as transition evidence."
+        ],
+        "weakSquareRules": [
+          "d6 can be attacked but primary lacks c4-c5 lever.",
+          "f5/e4 complex is central to kingside transformations."
+        ],
+        "typicalPawnBreaks": [
+          "primary:f2-f4",
+          "primary:a2-a4",
+          "opposing:f7-f5",
+          "opposing:c5-c4"
+        ],
+        "typicalTransformations": [
+          "lopez_formation->closed_ruy_lopez after d4-d5",
+          "closed_ruy_lopez->open_kid_like after d/e-pawn liquidation",
+          "closed_ruy_lopez->kingside_attack_structure after f-pawn exchanges"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Primary c3/d5/e4 and opponent c5/d6/e5.",
+          "Primary c-pawn on c3 distinguishes it from KID Type II.",
+          "The centre is closed by d5/e5 contact."
+        ],
+        "mediumSignals": [
+          "Move history shows d4-d5 from a Lopez Formation.",
+          "Both sides have f-pawn breaks available.",
+          "Piece count remains sufficient for closed-centre manoeuvring."
+        ],
+        "weakSignals": [
+          "If primary d-pawn is still on d4, the structure is Lopez Formation, not Closed Ruy Lopez."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.7
+      },
+      "evidenceExamples": [
+        "Detected The Closed Ruy Lopez: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp3ppp/3p4/2pPp3/4P3/2P5/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "closed_ruy_lopez",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/3p4/2p1p3/3PP3/2P5/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "closed_ruy_lopez",
+          "reason": "The test FEN keeps the primary pawn on d4, so the centre is still the Lopez Formation rather than the closed d5 structure."
+        }
+      ]
+    },
+    {
+      "id": "lopez_formation",
+      "canonicalName": "The Lopez Formation",
+      "bookSectionOrFamily": "Miscellaneous / Various Structures",
+      "aliases": [
+        "Ruy Lopez Formation",
+        "Lopez mobile centre",
+        "Spanish c3/d4/e4 versus c5/d6/e5"
+      ],
+      "openingFamilies": [
+        "Ruy Lopez",
+        "Spanish Game",
+        "Anti-Marshall/Closed Spanish lines",
+        "Italian transpositions"
+      ],
+      "descriptionShort": "A mobile Ruy Lopez centre has primary c3/d4/e4 against opposing c5/d6/e5, and is best treated as a transition hub that can close, open, or transpose into KID-like structures.",
+      "stability": "transitional",
+      "sideRoles": {
+        "primarySideRole": "side_with_mobile_spanish_centre",
+        "opposingSideRole": "side_challenging_spanish_centre"
+      },
+      "canonicalPawnFeatures": {
+        "required": [
+          "pawn:primary:c3",
+          "pawn:primary:d4",
+          "pawn:primary:e4",
+          "pawn:opposing:c5",
+          "pawn:opposing:d6",
+          "pawn:opposing:e5"
+        ],
+        "optional": [
+          "tension:primary:d4-vs-opposing:c5",
+          "tension:primary:d4-vs-opposing:e5",
+          "breakCandidate:primary:d4-d5",
+          "captureCandidate:opposing:c5xd4"
+        ],
+        "forbidden": [
+          "pawn:primary:d5",
+          "pawn:primary:c4",
+          "noPawn:primary:e4",
+          "noPawn:opposing:c5"
+        ]
+      },
+      "templateLogic": {
+        "corePawnSkeleton": [
+          "Primary c3/d4/e4.",
+          "Opponent c5/d6/e5."
+        ],
+        "filePatterns": [
+          "Files are not yet structurally settled; c- and d-file status will be decided by captures.",
+          "If cxd4/cxd4 occurs and d5 follows, a KID Type I-like child may emerge."
+        ],
+        "rankPatterns": [
+          "Primary d-pawn on d4, not d5, defines the mobile formation."
+        ],
+        "centralTensionRules": [
+          "This is a transition hub: d4-d5 creates Closed Ruy Lopez; ...cxd4/cxd4 plus d5 can create KID-like structures; exd4/dxe5 can open the centre.",
+          "Reject once d4 moves to d5 or disappears."
+        ],
+        "openOrSemiOpenFileRules": [
+          "Open files are future evidence, not base evidence.",
+          "Reward c/d tension before resolution."
+        ],
+        "weakSquareRules": [
+          "d5 is the main closing square for the primary side.",
+          "d4 can become a target if the opponent captures on d4."
+        ],
+        "typicalPawnBreaks": [
+          "primary:d4-d5",
+          "primary:f2-f4",
+          "opposing:c5xd4",
+          "opposing:e5xd4",
+          "opposing:f7-f5"
+        ],
+        "typicalTransformations": [
+          "lopez_formation->closed_ruy_lopez after d4-d5",
+          "lopez_formation->kid_type_i_like after cxd4/cxd4 and d4-d5 with opponent c6/c-file context",
+          "lopez_formation->open_centre after exd4/dxe5 liquidation",
+          "lopez_formation->asymmetric_benoni_like after d5 with changed c-pawn structure"
+        ]
+      },
+      "colourAndMirrorHandling": {
+        "allowColourReverse": true,
+        "allowFileMirror": false,
+        "allowRankMirror": false,
+        "notes": "Canonical rules describe the primary side as White and the opposing side as Black. A colour-reversed match must invert colours and ranks, then swap primary/opposing roles while preserving the same role names. File mirroring is not applied by default because left/right wing identity is strategically meaningful for this template. Rank mirroring is disabled because it creates non-chess-equivalent pawn directionality."
+      },
+      "confidenceRules": {
+        "strongSignals": [
+          "Primary c3/d4/e4 and opponent c5/d6/e5.",
+          "Primary d-pawn is still on d4 and central tension remains unresolved.",
+          "No more specific closed/open child structure already matches."
+        ],
+        "mediumSignals": [
+          "Move history or current legality shows d4-d5 and ...cxd4 are both meaningful options.",
+          "The c3 pawn distinguishes it from KID Complex with c4.",
+          "Structure persists beyond a single opening move but before resolution."
+        ],
+        "weakSignals": [
+          "If d4-d5 has been played, use Closed Ruy Lopez. If c3 is actually c4, consider KID/Benoni."
+        ],
+        "penalties": [
+          "Subtract 0.15 if a forbidden pawn feature is present.",
+          "Subtract 0.10 if fewer than five non-king pieces remain for each side and the structure is not explicitly endgame-sensitive.",
+          "Subtract 0.10 if another sibling template matches the same central skeleton with higher specificity."
+        ],
+        "minimumConfidenceToShow": 0.68
+      },
+      "evidenceExamples": [
+        "Detected The Lopez Formation: central pawn skeleton and role-specific pawn absences match the template."
+      ],
+      "syntheticFenExamples": [
+        {
+          "fen": "6k1/pp3ppp/3p4/2p1p3/3PP3/2P5/PP3PPP/6K1 w - - 0 1",
+          "expectedRole": "white",
+          "expectedDetection": "lopez_formation",
+          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+        }
+      ],
+      "antiExamples": [
+        {
+          "fen": "6k1/pp3ppp/3p4/2pPp3/4P3/2P5/PP3PPP/6K1 w - - 0 1",
+          "shouldNotDetectAs": "lopez_formation",
+          "reason": "The test FEN has d5 and a closed centre, so it has already transformed out of the Lopez Formation."
+        }
+      ]
+    }
+  ]
+}

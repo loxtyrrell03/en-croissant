@@ -292,6 +292,24 @@ Plan Explorer lives in `src/components/panels/plan/PlanExplorerPanel.tsx`,
 - Repeated lookups are cached, and side filters are pushed into board arrow
   data.
 
+### Pawn Structure Trajectory
+
+Pawn Structure Trajectory is implemented in `src/utils/pawnStructureDetector.ts`
+and `src/utils/pawnStructureTrajectory.ts` using
+`src/data/pawnStructureTemplates.v1.json` as the source of truth.
+
+- All 28 Flores/Rios structure templates are first-class detector targets.
+- Detection is pawn-skeleton based, supports colour reversal for every template,
+  and supports file mirroring only where the template allows it.
+- Required template features are weighted confidence signals rather than exact
+  equality gates, while anchor pawns and forbidden conflicts keep matches
+  conservative.
+- Every detection returns confidence, side roles, evidence, and typical
+  pawn-break plans where available.
+- Main-line trajectory analysis groups consecutive structures, suppresses
+  one-ply flicker, identifies transitions, picks primary and secondary
+  structures, and writes a compact structural story.
+
 ### Layout, Interaction, And Polish
 
 - The old board workspace split shell was replaced with a resizable board and
@@ -363,6 +381,12 @@ Plan Explorer lives in `src/components/panels/plan/PlanExplorerPanel.tsx`,
   explorer.
 - `src/components/panels/enginePlan/EnginePlanExplorerPanel.tsx`: engine-backed
   plan explorer.
+- `src/utils/pawnStructureDetector.ts`: all-28 pawn-skeleton detector,
+  confidence scoring, colour reversal, file mirroring, evidence, and sibling
+  disambiguation.
+- `src/utils/pawnStructureTrajectory.ts`: main-line structure sampling,
+  segment smoothing, primary/secondary scoring, transitions, and story
+  generation.
 - `src/components/panels/analysis/*`: local/cloud engine display and compact
   best-move rows.
 - `src/components/common/OnlineGamePickerModal.tsx`: recent online game picker
