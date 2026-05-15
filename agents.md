@@ -321,7 +321,9 @@ and `src/utils/pawnStructureTrajectory.ts` using
   do not get absorbed.
 - The 3-3 vs 4-2 endgame-majority template allows file mirroring, so it detects
   both queenside and kingside versions of the four-pawn majority while still
-  requiring simplified/central-liquidated evidence.
+  requiring simplified/central-liquidated evidence. It is strict about pawn
+  files rather than ranks: primary a/b/c/f/g/h versus opposing a/b/c/d/g/h, or
+  the file-mirrored equivalent.
 - Main-line trajectory analysis groups consecutive structures, suppresses
   one-ply flicker, identifies transitions, picks primary and secondary
   structures, and writes a compact structural story.

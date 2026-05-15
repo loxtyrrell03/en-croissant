@@ -457,6 +457,13 @@ function evaluateFeature(feature: string, board: NormalizedPawnBoard): FeatureEv
     if (kind === "pawnCountByWing") {
         return featureResult(normalizedFeature, evaluateWingCount(side, descriptor, board), board);
     }
+    if (kind === "pawnFiles") {
+        return featureResult(
+            normalizedFeature,
+            evaluatePawnFileSet(side as PawnStructureTemplateSide, descriptor, board),
+            board,
+        );
+    }
     if (kind === "fewCentralPawns") {
         return featureResult(normalizedFeature, centralPawnCount(board) <= 4, board);
     }
@@ -497,6 +504,7 @@ function requiredFeatureWeight(feature: string) {
     if (kind === "pawn" && /^[a-h][1-8](\|[a-h][1-8])*$/.test(descriptorPart)) return 1.15;
     if (kind === "pawn" && descriptorPart.includes("+")) return 1.2;
     if (kind === "noPawnOnFile") return 0.85;
+    if (kind === "pawnFiles") return 1.25;
     if (kind === "pawnCountByWing") return 0.9;
     return 1;
 }
@@ -717,6 +725,19 @@ function evaluateWingCount(
     return wingCount(side, match[1] as "queenside" | "kingside", board) === Number(match[2]);
 }
 
+function evaluatePawnFileSet(
+    side: PawnStructureTemplateSide,
+    descriptor: string,
+    board: NormalizedPawnBoard,
+) {
+    return descriptor.split("|").some((alternative) => {
+        const expectedFiles = parseFileSet(alternative);
+        if (!expectedFiles) return false;
+        const actualFiles = board.files[side];
+        return expectedFiles.size === actualFiles.size && [...expectedFiles].every((file) => actualFiles.has(file));
+    });
+}
+
 function centralPawnCount(board: NormalizedPawnBoard) {
     let count = 0;
     for (const role of ["primary", "opposing"] as const) {
@@ -797,6 +818,9 @@ function describeFeature(feature: string, board: NormalizedPawnBoard) {
     if (kind === "pawnCountByWing") {
         return `${sideName} wing pawn count matches ${descriptor}`;
     }
+    if (kind === "pawnFiles") {
+        return `${sideName} pawn files are ${actualFileSetLabel(descriptor, board)}`;
+    }
     if (kind === "breakCandidate" || kind === "captureCandidate") {
         return `${sideName} has structural ${descriptor.replaceAll("-", "-")}`;
     }
@@ -828,6 +852,17 @@ function actualDescriptorLabel(
         return actualSquareLabel(descriptor, role, board);
     }
     return descriptor;
+}
+
+function actualFileSetLabel(descriptor: string, board: NormalizedPawnBoard) {
+    return descriptor
+        .split("|")
+        .map((alternative) => {
+            const parsed = parseFileSet(alternative);
+            if (!parsed) return alternative;
+            return [...parsed].map((file) => actualFile(file, board)).join("/");
+        })
+        .join(" or ");
 }
 
 function actualSquareLabel(
@@ -903,6 +938,16 @@ function oppositeRole(side: PawnStructureTemplateSide): PawnStructureTemplateSid
 function parseFile(value: string): FileName | null {
     const file = value.trim()[0] as FileName | undefined;
     return file && files.includes(file) ? file : null;
+}
+
+function parseFileSet(value: string): Set<FileName> | null {
+    const parsedFiles = value
+        .split(/[,/\s]+/)
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .map((part) => parseFile(part));
+    if (parsedFiles.length === 0 || parsedFiles.some((file) => !file)) return null;
+    return new Set(parsedFiles as FileName[]);
 }
 
 function parseSquare(value: string): { file: FileName; rank: number } | null {

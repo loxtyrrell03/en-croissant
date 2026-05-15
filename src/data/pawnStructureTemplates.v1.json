@@ -15,6 +15,7 @@
     "pawn:side:square": "A pawn for side exists on square in canonical coordinates.",
     "noPawnOnFile:side:file": "Side has no pawn anywhere on that file.",
     "pawn:side:file": "Side has at least one pawn on that file; mainly used in forbidden rules.",
+    "pawnFiles:side:a,b,c": "Side has pawns exactly on this set of files, ignoring rank. Use for file-structure templates where vertical height is less important than horizontal arrangement.",
     "pawn:a|b": "Vertical bar denotes alternatives; implementation should parse as OR.",
     "locked:a-vs-b": "Pawns are fixed by mutual blockage/contact.",
     "tension:a-vs-b": "Pawns can capture or force central resolution.",
@@ -2657,10 +2658,8 @@
       },
       "canonicalPawnFeatures": {
         "required": [
-          "pawnCountByWing:primary:queenside=3",
-          "pawnCountByWing:primary:kingside=3",
-          "pawnCountByWing:opposing:queenside=4",
-          "pawnCountByWing:opposing:kingside=2"
+          "pawnFiles:primary:a,b,c,f,g,h",
+          "pawnFiles:opposing:a,b,c,d,g,h"
         ],
         "optional": [
           "fewCentralPawns:true",
@@ -2676,15 +2675,16 @@
       },
       "templateLogic": {
         "corePawnSkeleton": [
-          "Primary has three queenside pawns and three kingside pawns.",
-          "Opponent has four pawns on one wing and two on the other; canonical orientation puts the four-pawn majority on the queenside, but the endgame structure may be file-mirrored."
+          "Primary has pawns on the a/b/c files and f/g/h files, with ranks allowed to vary.",
+          "Opponent has the 4+2 file arrangement a/b/c/d plus g/h in canonical orientation; file mirroring gives a/b plus e/f/g/h.",
+          "Do not classify arbitrary 3+3 versus 4+2 wing counts if the exact file pattern is different."
         ],
         "filePatterns": [
           "Central files are often open or simplified; wing files determine pawn-majority play.",
           "The extra opponent queenside pawn and extra primary kingside pawn are the main objects."
         ],
         "rankPatterns": [
-          "Rank placement is less important than wing distribution, unless passed pawns are already created."
+          "Rank placement is less important than file distribution, unless passed pawns are already created."
         ],
         "centralTensionRules": [
           "Reject if a locked middlegame pawn chain is still the dominant feature.",
@@ -2717,7 +2717,7 @@
       },
       "confidenceRules": {
         "strongSignals": [
-          "Wing pawn counts exactly or approximately match 3+3 versus 4+2.",
+          "Pawn files exactly match the 3+3 versus 4+2 file pattern, allowing a horizontal mirror.",
           "Central pawn skeleton is dissolved enough that majority play is the dominant story.",
           "Piece count or move phase makes endgame/late middlegame conversion plausible."
         ],
@@ -2754,6 +2754,11 @@
         }
       ],
       "antiExamples": [
+        {
+          "fen": "2rkr2r/4pp2/R2p2pp/1p2n3/1P5B/2P5/P4PPP/R2R2K1 w - - 0 1",
+          "shouldNotDetectAs": "three_three_vs_four_two",
+          "reason": "The wing counts are 3+3 versus mirrored 2+4, but Black's files are b/d/e/f/g/h rather than the correct a/b/e/f/g/h pattern."
+        },
         {
           "fen": "6k1/pp3ppp/4p3/2ppP3/3P4/2P5/PP3PPP/6K1 w - - 0 1",
           "shouldNotDetectAs": "three_three_vs_four_two",

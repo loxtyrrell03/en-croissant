@@ -154,6 +154,14 @@ describe("pawn structure detector", () => {
         expect(detection?.sideRoles.primarySide).toBe("black");
     });
 
+    test("rejects 3-3 vs 4-2 wing counts when the file pattern is wrong", () => {
+        const detection = detectPawnStructure(
+            "2rkr2r/4pp2/R2p2pp/1p2n3/1P5B/2P5/P4PPP/R2R2K1 w - - 0 1",
+        );
+
+        expect(detection?.structureId).not.toBe("three_three_vs_four_two");
+    });
+
     test("keeps ambiguous or messy positions unknown", () => {
         const detection = detectPawnStructure(
             "6k1/pppppppp/8/8/8/8/PPPPPPPP/6K1 w - - 0 1",
