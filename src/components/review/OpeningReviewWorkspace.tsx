@@ -1851,7 +1851,7 @@ function OpeningReviewPanel({
   const [panelView, setPanelView] = useState<OpeningReviewPanelView>(initialView);
   const [dailySettingsOpen, setDailySettingsOpen] = useState(false);
   const [timeManagementSettingsOpen, setTimeManagementSettingsOpen] = useState(false);
-  const [mistakeMovesOpen, setMistakeMovesOpen] = useState(false);
+  const [mistakeMovesOpen, setMistakeMovesOpen] = useState(true);
   const initialPracticeStartedRef = useRef(false);
   const activeDailyGoalSessionRef = useRef<OpeningReviewInitialPractice | null>(null);
   const dailyGoalCompletionPromptTimerRef = useRef<number | null>(null);

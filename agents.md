@@ -440,6 +440,9 @@ from 2026-04-24 through 2026-05-03.
 - Mistake Review moves panel: the expanded right-panel moves area now uses one
   larger notation rectangle with its PGN and display controls in the header,
   removing the detached eval strip and separate arrow navigation row.
+- Mistake Review now opens the right-panel moves area by default so the game
+  line remains visible during review; users can still collapse it when they
+  need the extra vertical room.
 - Persistence and compatibility: review deck file storage, old review-card
   compatibility, no-tab preview safety, stale index refresh, and PGN timestamp
   normalization were added.
