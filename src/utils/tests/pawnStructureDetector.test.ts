@@ -135,6 +135,24 @@ describe("pawn structure detector", () => {
         expect(detectPawnStructure(fen)?.structureId).toBe(structureId);
     });
 
+    test("detects the c-pawn-exchanged Asymmetric Benoni skeleton", () => {
+        const detection = detectPawnStructure(
+            "4k3/pp3ppp/3p4/2pP4/4P3/8/PP3PPP/4K3 w - - 0 1",
+        );
+
+        expect(detection?.structureId).toBe("asymmetric_benoni");
+        expect(detection?.sideRoles.primarySide).toBe("white");
+        expect(detection?.evidence.join(" ")).toContain("c-file");
+    });
+
+    test("does not call the c4 Benoni skeleton Asymmetric Benoni", () => {
+        const detection = detectPawnStructure(
+            "4k3/pp3ppp/3p4/2pP4/2P1P3/8/PP3PPP/4K3 w - - 0 1",
+        );
+
+        expect(detection?.structureId).not.toBe("asymmetric_benoni");
+    });
+
     test("detects file-mirrored 3-3 vs 4-2 majority structure", () => {
         const detection = detectPawnStructure(
             "4k3/pp3ppp/4p3/8/8/2P5/PP3PPP/4K3 w - - 0 1",

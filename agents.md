@@ -319,6 +319,10 @@ and `src/utils/pawnStructureTrajectory.ts` using
   primary side has d5/e4 with no c-pawn against opposing c5/d6, but still
   requires missing opposing a/b-pawn or open-file evidence so ordinary Benonis
   do not get absorbed.
+- Asymmetric Benoni is calibrated as the c-pawn-exchanged d5/e4 versus c5/d6
+  structure: the primary c-pawn is gone and the opposing e-pawn is gone. If the
+  primary c-pawn remains on c4, use the appropriate symmetric Benoni/KID/Benko
+  sibling instead of forcing Asymmetric Benoni.
 - The 3-3 vs 4-2 endgame-majority template allows file mirroring, so it detects
   both queenside and kingside versions of the four-pawn majority while still
   requiring simplified/central-liquidated evidence. It is strict about pawn

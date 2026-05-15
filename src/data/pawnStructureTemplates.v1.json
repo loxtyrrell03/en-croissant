@@ -1389,7 +1389,8 @@
       "bookSectionOrFamily": "Family Three – Benoni",
       "aliases": [
         "Modern Benoni structure",
-        "Benoni asymmetric centre"
+        "Benoni asymmetric centre",
+        "Benoni c-pawn-exchanged centre"
       ],
       "openingFamilies": [
         "Modern Benoni",
@@ -1397,7 +1398,7 @@
         "Benoni transpositions",
         "Ruy Lopez reversed Benoni"
       ],
-      "descriptionShort": "A primary d5/e4 space centre faces opposing c5/d6, creating an unbalanced centre with primary central majority versus opposing queenside counterplay.",
+      "descriptionShort": "A primary d5/e4 space centre with the primary c-pawn gone faces opposing c5/d6 with the opposing e-pawn gone, creating an unbalanced Benoni centre and queenside counterplay.",
       "stability": "stable",
       "sideRoles": {
         "primarySideRole": "side_with_d5_e4_centre",
@@ -1408,15 +1409,19 @@
           "pawn:primary:d5",
           "pawn:primary:e4",
           "pawn:opposing:c5",
-          "pawn:opposing:d6"
+          "pawn:opposing:d6",
+          "noPawnOnFile:primary:c-file",
+          "noPawnOnFile:opposing:e-file"
         ],
         "optional": [
-          "pawn:primary:c4",
-          "noPawnOnFile:opposing:e-file",
           "breakCandidate:primary:e4-e5",
-          "breakCandidate:opposing:b7-b5"
+          "breakCandidate:opposing:b7-b5",
+          "pressureTarget:opposing:d6",
+          "openOrSemiOpenFile:primary:c-file"
         ],
         "forbidden": [
+          "pawn:primary:c-file",
+          "pawn:opposing:e-file",
           "pawn:opposing:e5",
           "noPawn:primary:e4",
           "pawn:opposing:c6"
@@ -1424,8 +1429,8 @@
       },
       "templateLogic": {
         "corePawnSkeleton": [
-          "Primary d5/e4 pawns.",
-          "Opponent c5/d6 pawns."
+          "Primary d5/e4 pawns with no primary c-pawn.",
+          "Opponent c5/d6 pawns with no opposing e-pawn."
         ],
         "filePatterns": [
           "e-file and c-file can open after central or queenside breaks.",
@@ -1436,7 +1441,7 @@
         ],
         "centralTensionRules": [
           "Reject if opponent has e5 locking d5/e4 as a KID chain.",
-          "Presence of primary c4 supports but does not define the structure."
+          "Reject if the primary c-pawn is still present; that is a different Benoni/KID/Benko branch depending on e-pawns and queenside files."
         ],
         "openOrSemiOpenFileRules": [
           "Reward opponent semi-open e-file if the e-pawn is absent.",
@@ -1467,12 +1472,13 @@
       },
       "confidenceRules": {
         "strongSignals": [
-          "Primary d5/e4 and opposing c5/d6 skeleton.",
+          "Primary d5/e4 and opposing c5/d6 skeleton with the primary c-pawn gone.",
+          "Opponent e-pawn is absent, separating it from KID structures.",
           "Opponent lacks an e5 pawn, separating it from KID Type II.",
           "The centre is asymmetric: primary central majority versus opposing queenside pawn majority."
         ],
         "mediumSignals": [
-          "Primary c4 pawn exists.",
+          "Primary has a semi-open c-file after the c-pawn exchange.",
           "Opponent can plausibly play ...b5 or ...f5.",
           "d6 is backward or targetable."
         ],
@@ -1491,13 +1497,18 @@
       ],
       "syntheticFenExamples": [
         {
-          "fen": "6k1/pp3ppp/3p4/2pP4/2P1P3/8/PP3PPP/6K1 w - - 0 1",
+          "fen": "4k3/pp3ppp/3p4/2pP4/4P3/8/PP3PPP/4K3 w - - 0 1",
           "expectedRole": "white",
           "expectedDetection": "asymmetric_benoni",
-          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+          "notes": "Synthetic pawn-only skeleton: primary d5/e4 with no c-pawn, opposing c5/d6 with no e-pawn."
         }
       ],
       "antiExamples": [
+        {
+          "fen": "4k3/pp3ppp/3p4/2pP4/2P1P3/8/PP3PPP/4K3 w - - 0 1",
+          "shouldNotDetectAs": "asymmetric_benoni",
+          "reason": "The primary c-pawn is still on c4, so this is not the c-pawn-exchanged Asymmetric Benoni skeleton."
+        },
         {
           "fen": "6k1/pp3ppp/3p4/2pPp3/2P1P3/8/PP3PPP/6K1 w - - 0 1",
           "shouldNotDetectAs": "asymmetric_benoni",
