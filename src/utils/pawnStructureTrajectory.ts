@@ -9,10 +9,6 @@ import type {
 } from "./pawnStructureTypes";
 import type { TreeNode, TreeState } from "./treeReducer";
 
-type MutableSegment = StructureSegment & {
-    sampleIndexes: number[];
-};
-
 type SegmentScore = {
     segment: StructureSegment;
     score: number;
@@ -316,12 +312,35 @@ function buildTrajectoryStory(
 export function formatStructureRole(detection: PawnStructureDetection | null) {
     if (!detection?.sideRoles.primarySide) return "The structural roles are unclear";
     const side = detection.sideRoles.primarySide === "white" ? "White" : "Black";
-    const role = detection.sideRoles.primaryRole
-        ?.replace(/^side_with_/, "has ")
-        .replace(/^side_/, "")
-        .replaceAll("_", " ");
+    const role = formatPrimaryRole(detection.sideRoles.primaryRole);
     if (!role) return `${side} has the primary structural role`;
     return `${side} ${role}`;
+}
+
+function formatPrimaryRole(role?: string) {
+    if (!role) return "";
+    const labels: Record<string, string> = {
+        side_with_iqp: "has the IQP",
+        side_with_hanging_pawns: "has the hanging pawns",
+        side_with_maroczy_bind: "has the Maroczy bind",
+        side_playing_against_dragon_shell: "plays against the Dragon shell",
+        side_attacking_scheveningen_centre: "attacks the Scheveningen centre",
+        side_with_stonewall_chain: "has the Stonewall chain",
+        side_with_broad_centre: "has the broad centre",
+        side_with_closed_spanish_space: "has the closed Spanish space",
+        side_with_mobile_spanish_centre: "has the mobile Spanish centre",
+    };
+    if (labels[role]) return labels[role];
+    if (role.startsWith("side_with_")) {
+        return `has the ${role.slice("side_with_".length).replaceAll("_", " ")}`;
+    }
+    if (role.startsWith("side_playing_")) {
+        return role.slice("side_playing_".length).replaceAll("_", " ").replace(/^/, "plays ");
+    }
+    if (role.startsWith("side_attacking_")) {
+        return `attacks the ${role.slice("side_attacking_".length).replaceAll("_", " ")}`;
+    }
+    return role.replace(/^side_/, "").replaceAll("_", " ");
 }
 
 function buildSegmentStory(

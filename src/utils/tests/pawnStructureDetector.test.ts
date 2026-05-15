@@ -28,7 +28,7 @@ describe("pawn structure detector", () => {
         "detects canonical %s skeleton",
         (_id, structure) => {
             const example = structure.syntheticFenExamples?.[0];
-            expect(example, `${structure.id} should have a synthetic example`).toBeTruthy();
+            expect(example).toBeTruthy();
 
             const detection = detectPawnStructure(example!.fen);
             expect(detection?.structureId).toBe(structure.id);

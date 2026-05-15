@@ -8,6 +8,7 @@ import {
   IconRoute,
   IconTarget,
   IconTargetArrow,
+  IconTimeline,
   IconZoomCheck,
 } from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
@@ -59,6 +60,7 @@ const MoveControls = lazy(() => import("../common/MoveControls"));
 const OpponentPrepPanel = lazy(() => import("../panels/prep/OpponentPrepPanel"));
 const PlanExplorerPanel = lazy(() => import("../panels/plan/PlanExplorerPanel"));
 const PracticePanel = lazy(() => import("../panels/practice/PracticePanel"));
+const PawnStructurePanel = lazy(() => import("../panels/structure/PawnStructurePanel"));
 
 const scrollablePanelStyle = {
   minHeight: 0,
@@ -192,6 +194,7 @@ function BoardAnalysis() {
     analysis: t("Board.Tabs.Analysis"),
     database: t("Board.Tabs.Database"),
     prep: "Prep",
+    structures: "Structures",
     planExplorer: "Plan Explorer",
     enginePlans: "Engine Plans",
     compare: "Compare",
@@ -374,6 +377,11 @@ function BoardAnalysis() {
                   value="prep"
                 />
                 <BoardAnalysisTab
+                  icon={<IconTimeline size="1rem" />}
+                  label={tabLabels.structures}
+                  value="structures"
+                />
+                <BoardAnalysisTab
                   icon={<IconRoute size="1rem" />}
                   label={tabLabels.planExplorer}
                   value="plan-explorer"
@@ -421,6 +429,13 @@ function BoardAnalysis() {
                 <EngineDockedPanel>
                   <DeferredPanel>
                     <OpponentPrepPanel />
+                  </DeferredPanel>
+                </EngineDockedPanel>
+              </Tabs.Panel>
+              <Tabs.Panel value="structures" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
+                <EngineDockedPanel>
+                  <DeferredPanel>
+                    <PawnStructurePanel />
                   </DeferredPanel>
                 </EngineDockedPanel>
               </Tabs.Panel>

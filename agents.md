@@ -309,6 +309,10 @@ and `src/utils/pawnStructureTrajectory.ts` using
 - Main-line trajectory analysis groups consecutive structures, suppresses
   one-ply flicker, identifies transitions, picks primary and secondary
   structures, and writes a compact structural story.
+- The board workspace has a compact Structures tab showing the current
+  position label, confidence, role text, evidence, primary/secondary game
+  structures, segment timeline, and transition moves. Clicking a segment jumps
+  to the first move of that structural phase.
 
 ### Layout, Interaction, And Polish
 
@@ -381,6 +385,8 @@ and `src/utils/pawnStructureTrajectory.ts` using
   explorer.
 - `src/components/panels/enginePlan/EnginePlanExplorerPanel.tsx`: engine-backed
   plan explorer.
+- `src/components/panels/structure/PawnStructurePanel.tsx`: current-position
+  pawn structure card and full-game structure trajectory panel.
 - `src/utils/pawnStructureDetector.ts`: all-28 pawn-skeleton detector,
   confidence scoring, colour reversal, file mirroring, evidence, and sibling
   disambiguation.
