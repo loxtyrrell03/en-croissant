@@ -9,6 +9,7 @@ import {
     type LichessStudyDatabaseUpdateRecord,
     lichessStudyDatabaseUpdatesAtom,
     type LichessStudyDatabaseUpdateRecords,
+    sessionsAtom,
 } from "@/state/atoms";
 import { getDatabases, type SuccessDatabaseInfo } from "@/utils/db";
 import { getDatabasesDir } from "@/utils/directories";
@@ -17,6 +18,7 @@ import {
     getLichessStudyPgnFilename,
     upsertLichessStudyDatabaseUpdateRecord,
 } from "@/utils/lichess/study";
+import type { Session } from "@/utils/session";
 import { unwrap } from "@/utils/unwrap";
 
 const STUDY_DATABASE_CHECK_INTERVAL_MS = 30 * 60 * 1000;
@@ -61,6 +63,7 @@ function collectStudyUpdateCandidates(
 async function maybeUpdateStudyCandidate({
     candidate,
     databaseDir,
+    token,
     setConversionState,
     setUpdateRecords,
     isConversionInProgress,
@@ -68,6 +71,7 @@ async function maybeUpdateStudyCandidate({
 }: {
     candidate: StudyUpdateCandidate;
     databaseDir: string;
+    token?: string;
     setConversionState: SetDatabaseConversionState;
     setUpdateRecords: SetStudyDatabaseUpdateRecords;
     isConversionInProgress: () => boolean;
@@ -115,6 +119,7 @@ async function maybeUpdateStudyCandidate({
         const download = await downloadLichessStudyPgnToDatabaseDir({
             databaseDir,
             link: record.studyUrl,
+            token,
         });
         const checkedAt = Date.now();
 
@@ -195,6 +200,7 @@ export async function updateLichessStudyDatabaseNow({
     database,
     record,
     databaseDir,
+    token,
     setConversionState,
     setUpdateRecords,
     isConversionInProgress,
@@ -202,6 +208,7 @@ export async function updateLichessStudyDatabaseNow({
     database: SuccessDatabaseInfo;
     record: LichessStudyDatabaseUpdateRecord;
     databaseDir: string;
+    token?: string;
     setConversionState: SetDatabaseConversionState;
     setUpdateRecords: SetStudyDatabaseUpdateRecords;
     isConversionInProgress: () => boolean;
@@ -221,6 +228,7 @@ export async function updateLichessStudyDatabaseNow({
             },
         },
         databaseDir,
+        token,
         setConversionState,
         setUpdateRecords,
         isConversionInProgress,
@@ -230,11 +238,13 @@ export async function updateLichessStudyDatabaseNow({
 
 async function checkStudyDatabases({
     records,
+    sessions,
     setConversionState,
     setUpdateRecords,
     isConversionInProgress,
 }: {
     records: LichessStudyDatabaseUpdateRecords;
+    sessions: Session[];
     setConversionState: SetDatabaseConversionState;
     setUpdateRecords: SetStudyDatabaseUpdateRecords;
     isConversionInProgress: () => boolean;
@@ -250,6 +260,7 @@ async function checkStudyDatabases({
             await maybeUpdateStudyCandidate({
                 candidate,
                 databaseDir,
+                token: getAnyLichessTokenFromSessions(sessions),
                 setConversionState,
                 setUpdateRecords,
                 isConversionInProgress,
@@ -265,9 +276,11 @@ async function checkStudyDatabases({
 export function useLichessStudyDatabaseAutoUpdater() {
     const [records, setRecords] = useAtom(lichessStudyDatabaseUpdatesAtom);
     const [conversionState, setConversionState] = useAtom(databaseConversionStateAtom);
+    const [sessions] = useAtom(sessionsAtom);
     const runningRef = useRef(false);
     const recordsRef = useRef(records);
     const conversionStateRef = useRef(conversionState);
+    const sessionsRef = useRef(sessions);
 
     useEffect(() => {
         recordsRef.current = records;
@@ -276,6 +289,10 @@ export function useLichessStudyDatabaseAutoUpdater() {
     useEffect(() => {
         conversionStateRef.current = conversionState;
     }, [conversionState]);
+
+    useEffect(() => {
+        sessionsRef.current = sessions;
+    }, [sessions]);
 
     useEffect(() => {
         let disposed = false;
@@ -289,6 +306,7 @@ export function useLichessStudyDatabaseAutoUpdater() {
             try {
                 await checkStudyDatabases({
                     records: recordsRef.current,
+                    sessions: sessionsRef.current,
                     setConversionState,
                     setUpdateRecords: setRecords,
                     isConversionInProgress: () => conversionStateRef.current.inProgress,
@@ -312,6 +330,10 @@ export function useLichessStudyDatabaseAutoUpdater() {
             window.clearInterval(interval);
         };
     }, [setConversionState, setRecords]);
+}
+
+function getAnyLichessTokenFromSessions(sessions: Session[]) {
+    return sessions.find((session) => session.lichess?.accessToken)?.lichess?.accessToken;
 }
 
 function resetStudyDatabaseConversionState(setConversionState: SetDatabaseConversionState) {

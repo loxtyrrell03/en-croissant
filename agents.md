@@ -168,6 +168,9 @@ and `src/utils/lichess/study.ts`.
   a glance.
 - Lichess Study links can be imported as local databases.
 - Lichess Study databases support auto-update metadata and refresh tracking.
+- Lichess Study databases expose a database-manager reload control that
+  re-fetches the latest PGN, rebuilding games, comments, variations, and clock
+  annotations; the same panel includes an update-automatically checkbox.
 - PGN import timestamp normalization was fixed so online-update ordering stays
   reliable.
 

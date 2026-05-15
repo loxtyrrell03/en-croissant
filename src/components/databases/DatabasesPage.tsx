@@ -243,6 +243,7 @@ export default function DatabasesPage() {
         database,
         record,
         databaseDir,
+        token: getAnyLichessTokenFromSessions(sessions),
         setConversionState,
         setUpdateRecords: setLichessStudyDatabaseUpdates,
         isConversionInProgress: () => conversionState.inProgress,
@@ -405,6 +406,12 @@ export default function DatabasesPage() {
                           : null;
                       const onlineUpdating =
                         item.type === "success" && updatingOnlineDatabasePath === item.file;
+                      const updateActionLabel =
+                        item.type === "success" && studyRecord
+                          ? `Reload ${getLichessStudyDatabaseUpdateLabel(studyRecord)}`
+                          : item.type === "success" && onlineRecord
+                            ? `Update ${getOnlineDatabaseUpdateLabel(onlineRecord)}`
+                            : null;
 
                       return (
                         <GenericCard
@@ -438,16 +445,10 @@ export default function DatabasesPage() {
                                 </Box>
                               </Group>
                               <Group gap={4} wrap="nowrap">
-                                {item.type === "success" && (onlineRecord || studyRecord) && (
-                                  <Tooltip
-                                    label={
-                                      onlineRecord
-                                        ? `Update ${getOnlineDatabaseUpdateLabel(onlineRecord)}`
-                                        : `Update ${getLichessStudyDatabaseUpdateLabel(studyRecord!)}`
-                                    }
-                                  >
+                                {item.type === "success" && updateActionLabel && (
+                                  <Tooltip label={updateActionLabel}>
                                     <ActionIcon
-                                      aria-label={`Update ${item.title}`}
+                                      aria-label={updateActionLabel}
                                       variant="subtle"
                                       loading={onlineUpdating}
                                       disabled={
@@ -456,10 +457,10 @@ export default function DatabasesPage() {
                                       }
                                       onClick={(event) => {
                                         event.stopPropagation();
-                                        if (onlineRecord) {
-                                          void updateOnlineDatabase(item);
-                                        } else if (studyRecord) {
+                                        if (studyRecord) {
                                           void updateLichessStudyDatabase(item, studyRecord);
+                                        } else if (onlineRecord) {
+                                          void updateOnlineDatabase(item);
                                         }
                                       }}
                                     >
@@ -572,43 +573,48 @@ export default function DatabasesPage() {
                         file={selectedDatabase.file}
                         setDatabases={mutate}
                       />
-                      <Group justify="space-between" align="center">
-                        <OnlineAutoUpdateInput
+                      {selectedStudyRecord ? (
+                        <LichessStudySyncControls
                           selectedDatabase={selectedDatabase}
-                          records={onlineDatabaseUpdates}
-                          setRecords={setOnlineDatabaseUpdates}
-                        />
-                        <LichessStudyAutoUpdateInput
-                          selectedDatabase={selectedDatabase}
-                          records={lichessStudyDatabaseUpdates}
+                          record={selectedStudyRecord}
                           setRecords={setLichessStudyDatabaseUpdates}
+                          loading={updatingOnlineDatabasePath === selectedDatabase.file}
+                          disabled={
+                            conversionState.inProgress ||
+                            (!!updatingOnlineDatabasePath &&
+                              updatingOnlineDatabasePath !== selectedDatabase.file)
+                          }
+                          onReload={() => {
+                            void updateLichessStudyDatabase(selectedDatabase, selectedStudyRecord);
+                          }}
                         />
-                        {(selectedOnlineRecord || selectedStudyRecord) && (
-                          <Button
-                            size="xs"
-                            variant="default"
-                            leftSection={<IconRefresh size="1rem" />}
-                            loading={updatingOnlineDatabasePath === selectedDatabase.file}
-                            disabled={
-                              conversionState.inProgress ||
-                              (!!updatingOnlineDatabasePath &&
-                                updatingOnlineDatabasePath !== selectedDatabase.file)
-                            }
-                            onClick={() => {
-                              if (selectedOnlineRecord) {
-                                void updateOnlineDatabase(selectedDatabase);
-                              } else if (selectedStudyRecord) {
-                                void updateLichessStudyDatabase(
-                                  selectedDatabase,
-                                  selectedStudyRecord,
-                                );
+                      ) : (
+                        <Group justify="space-between" align="center">
+                          <OnlineAutoUpdateInput
+                            selectedDatabase={selectedDatabase}
+                            records={onlineDatabaseUpdates}
+                            setRecords={setOnlineDatabaseUpdates}
+                          />
+                          {selectedOnlineRecord && (
+                            <Button
+                              size="xs"
+                              variant="default"
+                              leftSection={<IconRefresh size="1rem" />}
+                              loading={updatingOnlineDatabasePath === selectedDatabase.file}
+                              disabled={
+                                conversionState.inProgress ||
+                                (!!updatingOnlineDatabasePath &&
+                                  updatingOnlineDatabasePath !== selectedDatabase.file)
                               }
-                            }}
-                          >
-                            Update now
-                          </Button>
-                        )}
-                      </Group>
+                              onClick={() => {
+                                void updateOnlineDatabase(selectedDatabase);
+                              }}
+                            >
+                              Update now
+                            </Button>
+                          )}
+                        </Group>
+                      )}
                       {!selectedStudyRecord && (
                         <OnlineAccountLinks
                           selectedDatabase={selectedDatabase}
@@ -774,6 +780,10 @@ function getLichessTokenFromSessions(sessions: Session[], username: string) {
       session.lichess?.username.toLowerCase() === username.toLowerCase() &&
       session.lichess.accessToken,
   )?.lichess?.accessToken;
+}
+
+function getAnyLichessTokenFromSessions(sessions: Session[]) {
+  return sessions.find((session) => session.lichess?.accessToken)?.lichess?.accessToken;
 }
 
 function DatabaseConversionCard({ conversionState }: { conversionState: DatabaseConversionState }) {
@@ -1332,38 +1342,81 @@ function OnlineAutoUpdateInput({
   );
 }
 
-function LichessStudyAutoUpdateInput({
+function LichessStudySyncControls({
   selectedDatabase,
-  records,
+  record,
   setRecords,
+  loading,
+  disabled,
+  onReload,
 }: {
   selectedDatabase: SuccessDatabaseInfo;
-  records: LichessStudyDatabaseUpdateRecords;
+  record: LichessStudyDatabaseUpdateRecord;
   setRecords: Dispatch<SetStateAction<LichessStudyDatabaseUpdateRecords>>;
+  loading: boolean;
+  disabled: boolean;
+  onReload: () => void;
 }) {
   const { t } = useTranslation();
-  const record = getLichessStudyDatabaseUpdateRecord(selectedDatabase, records);
-
-  if (!record) return null;
+  const gameCount = record.lastKnownGameCount ?? selectedDatabase.game_count;
 
   return (
-    <Tooltip label="Check the Lichess study for new chapters and annotation changes">
-      <Checkbox
-        label={t("Databases.Online.AutoUpdate")}
-        checked={record.autoUpdate}
-        onChange={(event) => {
-          setRecords((records) =>
-            upsertLichessStudyDatabaseUpdateRecord(records, {
-              ...record,
-              dbPath: selectedDatabase.file,
-              title: selectedDatabase.title,
-              description: selectedDatabase.description,
-              autoUpdate: event.currentTarget.checked,
-              lastKnownGameCount: selectedDatabase.game_count,
-            }),
-          );
-        }}
-      />
-    </Tooltip>
+    <Stack gap={6}>
+      <Group justify="space-between" align="flex-start" wrap="nowrap">
+        <Box miw={0}>
+          <Group gap={6} align="center">
+            <Text fz="sm" fw={600}>
+              Lichess Study
+            </Text>
+            <Badge size="xs" variant="light">
+              {formatNumber(gameCount)} games
+            </Badge>
+          </Group>
+          <Text size="xs" c="dimmed" style={{ overflowWrap: "anywhere" }}>
+            {record.studyUrl.replace(/^https?:\/\//, "")}
+          </Text>
+          <Text size="xs" c="dimmed">
+            Last checked {formatStudySyncTimestamp(record.lastCheckedAt)}
+          </Text>
+        </Box>
+        <Button
+          size="xs"
+          variant="default"
+          leftSection={<IconRefresh size="1rem" />}
+          loading={loading}
+          disabled={disabled}
+          aria-label={`Reload ${selectedDatabase.title} from Lichess study`}
+          onClick={onReload}
+        >
+          Reload study
+        </Button>
+      </Group>
+      <Tooltip label="Check the Lichess study for new chapters and annotation changes">
+        <Checkbox
+          label={t("Databases.Online.AutoUpdate")}
+          checked={record.autoUpdate}
+          onChange={(event) => {
+            setRecords((records) =>
+              upsertLichessStudyDatabaseUpdateRecord(records, {
+                ...record,
+                dbPath: selectedDatabase.file,
+                title: selectedDatabase.title,
+                description: selectedDatabase.description,
+                autoUpdate: event.currentTarget.checked,
+                lastKnownGameCount: selectedDatabase.game_count,
+              }),
+            );
+          }}
+        />
+      </Tooltip>
+    </Stack>
   );
+}
+
+function formatStudySyncTimestamp(value: number | null) {
+  if (!value) return "never";
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
 }
