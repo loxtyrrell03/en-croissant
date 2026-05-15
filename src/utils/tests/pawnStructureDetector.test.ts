@@ -91,6 +91,33 @@ describe("pawn structure detector", () => {
         expect(detection?.structureId).not.toBe("open_kid");
     });
 
+    test("detects KID Type I only after the c-file exchange has happened", () => {
+        const detection = detectPawnStructure(
+            "4k3/pp3ppp/3p4/3Pp3/4P3/8/PP3PPP/4K3 w - - 0 1",
+        );
+
+        expect(detection?.structureId).toBe("kid_type_i");
+        expect(detection?.sideRoles.primarySide).toBe("white");
+        expect(detection?.evidence.join(" ")).toContain("c-file");
+    });
+
+    test("detects colour-reversed KID Type I after the c-file exchange", () => {
+        const detection = detectPawnStructure(
+            colourReverseFen("4k3/pp3ppp/3p4/3Pp3/4P3/8/PP3PPP/4K3 w - - 0 1"),
+        );
+
+        expect(detection?.structureId).toBe("kid_type_i");
+        expect(detection?.sideRoles.primarySide).toBe("black");
+    });
+
+    test("does not call the pre-exchange ...c6 KID position Type I", () => {
+        const detection = detectPawnStructure(
+            "4k3/pp3ppp/2pp4/3Pp3/2P1P3/8/PP3PPP/4K3 w - - 0 1",
+        );
+
+        expect(detection?.structureId).not.toBe("kid_type_i");
+    });
+
     test("keeps ambiguous or messy positions unknown", () => {
         const detection = detectPawnStructure(
             "6k1/pppppppp/8/8/8/8/PPPPPPPP/6K1 w - - 0 1",

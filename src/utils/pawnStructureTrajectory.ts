@@ -327,6 +327,7 @@ function formatPrimaryRole(role?: string) {
         side_attacking_scheveningen_centre: "attacks the Scheveningen centre",
         side_with_stonewall_chain: "has the Stonewall chain",
         side_with_broad_centre: "has the broad centre",
+        side_with_space_after_c_file_exchange: "has the KID Type I space",
         side_with_closed_spanish_space: "has the closed Spanish space",
         side_with_mobile_spanish_centre: "has the mobile Spanish centre",
         side_with_c4_e4_open_kid_centre: "has the open KID centre",

@@ -1632,19 +1632,19 @@
       "bookSectionOrFamily": "Family Four – King’s Indian",
       "aliases": [
         "King’s Indian Type I",
-        "KID c6 chain",
-        "d5 chain with ...c6"
+        "KID c-file exchange chain",
+        "d5 chain after ...cxd5 cxd5"
       ],
       "openingFamilies": [
         "King’s Indian Defence",
         "Old Indian",
         "Ruy Lopez transpositions"
       ],
-      "descriptionShort": "A closed d5/e4 versus d6/e5 King’s Indian chain includes opposing c6, giving the opposing side a different queenside lever than the ...c5 version.",
+      "descriptionShort": "A closed d5/e4 versus d6/e5 King’s Indian chain after the c-file exchange has removed both c-pawns, leaving the d5 pawn fixed and the c-file no longer defined by a c4/c6/c5 pawn lever.",
       "stability": "stable",
       "sideRoles": {
-        "primarySideRole": "side_with_space_in_d5_chain",
-        "opposingSideRole": "kid_side_with_c6_support"
+        "primarySideRole": "side_with_space_after_c_file_exchange",
+        "opposingSideRole": "kid_side_after_c_file_exchange"
       },
       "canonicalPawnFeatures": {
         "required": [
@@ -1652,54 +1652,54 @@
           "pawn:primary:e4",
           "pawn:opposing:d6",
           "pawn:opposing:e5",
-          "pawn:opposing:c6"
+          "noPawnOnFile:primary:c-file",
+          "noPawnOnFile:opposing:c-file"
         ],
         "optional": [
-          "pawn:primary:c4",
-          "breakCandidate:primary:c4-c5",
+          "openFile:c-file",
           "breakCandidate:opposing:f7-f5",
-          "breakCandidate:opposing:c6-c5"
+          "pressureTarget:opposing:d6",
+          "outpost:primary:c6"
         ],
         "forbidden": [
+          "pawn:primary:c-file",
+          "pawn:opposing:c-file",
           "pawn:opposing:c5",
-          "noPawn:opposing:c6",
           "noPawn:primary:d5"
         ]
       },
       "templateLogic": {
         "corePawnSkeleton": [
           "Primary d5/e4 versus opponent d6/e5.",
-          "Opponent c6 pawn is present."
+          "Both c-pawns have disappeared after the ...cxd5/cxd5 exchange sequence."
         ],
         "filePatterns": [
-          "c-file and queenside files become important after c4-c5 or ...c6-c5.",
+          "The c-file is open after the c-pawn exchange.",
           "f-file/kingside files may open after ...f5."
         ],
         "rankPatterns": [
           "Closed d5/e5 chain is fixed until pawn breaks."
         ],
         "centralTensionRules": [
-          "Reject if opponent c-pawn is on c5; that is Type II.",
-          "Reject if opponent c-pawn is on c7 and no c6/c5 break occurred; that is Type III."
+          "Reject if the primary c-pawn is still on c4; the c-file exchange has not happened.",
+          "Reject if the opponent c-pawn is still on c7/c6/c5; do not treat the mere move ...c6 as Type I."
         ],
         "openOrSemiOpenFileRules": [
           "Reward closed centre with potential flank file openings.",
           "Do not require open central files."
         ],
         "weakSquareRules": [
-          "d6 can be a target if c6/e5 do not support it sufficiently.",
-          "c5 is a key break square for both sides."
+          "d6 can be a target once c-pawn support has disappeared.",
+          "c6 and c5 become piece squares or file-access squares after the c-pawns disappear."
         ],
         "typicalPawnBreaks": [
-          "primary:c4-c5",
           "primary:g2-g4/f2-f4 depending on setup",
-          "opposing:f7-f5",
-          "opposing:c6-c5"
+          "opposing:f7-f5"
         ],
         "typicalTransformations": [
           "kid_type_i->open_kid after d/e-pawn liquidation",
-          "kid_type_i->kid_type_ii if ...c6-c5 creates the c5 chain",
-          "kid_complex->kid_type_i after d4-d5 with opponent c6"
+          "kid_type_iii->kid_type_i after ...cxd5 and cxd5 clear the c-file",
+          "kid_complex->kid_type_i after d4-d5 and the c-file exchange resolves"
         ]
       },
       "colourAndMirrorHandling": {
@@ -1710,17 +1710,17 @@
       },
       "confidenceRules": {
         "strongSignals": [
-          "Closed d5/e4 versus d6/e5 chain plus opponent c6.",
+          "Closed d5/e4 versus d6/e5 chain with both c-pawns gone.",
           "Primary d5 pawn is already fixed.",
-          "Opponent c-pawn placement distinguishes Type I from Type II/III."
+          "The missing c-pawns show that the c-file exchange has actually happened."
         ],
         "mediumSignals": [
-          "Primary c4 pawn gives c5 break context.",
+          "The c-file is open or no longer governed by c-pawn contact.",
           "Opponent ...f5 is structurally available.",
           "The centre remains closed for at least several plies."
         ],
         "weakSignals": [
-          "If c-pawn is on c5 or c7, do not guess Type I."
+          "If either c-pawn still exists, do not guess Type I from a pending c-file break."
         ],
         "penalties": [
           "Subtract 0.15 if a forbidden pawn feature is present.",
@@ -1734,13 +1734,18 @@
       ],
       "syntheticFenExamples": [
         {
-          "fen": "6k1/pp3ppp/2pp4/3Pp3/2P1P3/8/PP3PPP/6K1 w - - 0 1",
+          "fen": "4k3/pp3ppp/3p4/3Pp3/4P3/8/PP3PPP/4K3 w - - 0 1",
           "expectedRole": "white",
           "expectedDetection": "kid_type_i",
-          "notes": "Synthetic pawn-only skeleton containing the canonical required features for this template."
+          "notes": "Post ...cxd5/cxd5 KID Type I skeleton: d5/e4 versus d6/e5 with both c-pawns gone."
         }
       ],
       "antiExamples": [
+        {
+          "fen": "4k3/pp3ppp/2pp4/3Pp3/2P1P3/8/PP3PPP/4K3 w - - 0 1",
+          "shouldNotDetectAs": "kid_type_i",
+          "reason": "Black has only played ...c6; the c-file exchange has not happened, so this should not be labelled KID Type I."
+        },
         {
           "fen": "6k1/pp3ppp/3p4/2pPp3/2P1P3/8/PP3PPP/6K1 w - - 0 1",
           "shouldNotDetectAs": "kid_type_i",
@@ -1943,7 +1948,7 @@
           "opposing:f7-f5"
         ],
         "typicalTransformations": [
-          "kid_type_iii->kid_type_i after ...c7-c6",
+          "kid_type_iii->kid_type_i after ...cxd5 and cxd5 clear the c-file",
           "kid_type_iii->kid_type_ii after ...c7-c5",
           "kid_type_iii->open_kid after d/e-pawn liquidation"
         ]
@@ -1990,7 +1995,7 @@
         {
           "fen": "6k1/pp3ppp/2pp4/3Pp3/2P1P3/8/PP3PPP/6K1 w - - 0 1",
           "shouldNotDetectAs": "kid_type_iii",
-          "reason": "The test FEN has the opposing c-pawn on c6, which is KID Type I, not Type III."
+          "reason": "The test FEN has the opposing c-pawn on c6, so it is a pending c-file break state rather than the c7-reserve Type III."
         }
       ]
     },
@@ -2205,7 +2210,7 @@
           "opposing:f7-f5"
         ],
         "typicalTransformations": [
-          "kid_complex->kid_type_i after d4-d5 with opponent c6",
+          "kid_complex->kid_type_i after d4-d5 plus ...cxd5/cxd5 clears the c-file",
           "kid_complex->kid_type_ii after d4-d5 with opponent c5",
           "kid_complex->kid_type_iii after d4-d5 with opponent c7",
           "kid_complex->open_kid after d-pawn exchanges"

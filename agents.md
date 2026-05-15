@@ -312,6 +312,9 @@ and `src/utils/pawnStructureTrajectory.ts` using
 - Open KID detection covers both common central-exchange subtypes: dxe5/dxe5
   e4/e5 liquidation and ...exd4 structures with primary c4/e4, no primary
   d-pawn, opposing d6, and the opposing c-pawn still providing KID context.
+- KID Type I is calibrated as the post ...cxd5/cxd5 structure with d5/e4
+  versus d6/e5 and both c-pawns gone; a position where Black has only played
+  ...c6 remains pre-exchange and should not be labelled Type I.
 - Main-line trajectory analysis groups consecutive structures, suppresses
   one-ply flicker, identifies transitions, picks primary and secondary
   structures, and writes a compact structural story.
