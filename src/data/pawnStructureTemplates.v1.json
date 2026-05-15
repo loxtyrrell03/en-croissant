@@ -925,8 +925,7 @@
         ],
         "forbidden": [
           "pawn:primary:e4",
-          "pawn:primary:d4",
-          "pawn:opposing:c5"
+          "pawn:primary:d4"
         ]
       },
       "templateLogic": {
@@ -983,7 +982,8 @@
           "Move history shows e-pawn exchanged while a d-pawn reached d5."
         ],
         "weakSignals": [
-          "If primary still has e4 and no d5 pawn, do not overfit to Type I."
+          "If primary still has e4 and no d5 pawn, do not overfit to Type I.",
+          "If the opposing c-pawn is still present, keep the match only as a lower-confidence Sicilian shell."
         ],
         "penalties": [
           "Subtract 0.15 if a forbidden pawn feature is present.",
@@ -1048,8 +1048,7 @@
         ],
         "forbidden": [
           "pawn:primary:d5",
-          "pawn:primary:d4",
-          "pawn:opposing:c5"
+          "pawn:primary:d4"
         ]
       },
       "templateLogic": {
@@ -1106,7 +1105,8 @@
           "Opponent d6-d5 is structurally important."
         ],
         "weakSignals": [
-          "If opponent pawn is on e6, prefer Scheveningen."
+          "If opponent pawn is on e6, prefer Scheveningen.",
+          "If the opposing c-pawn is still present, keep the match only as a lower-confidence Sicilian shell."
         ],
         "penalties": [
           "Subtract 0.15 if a forbidden pawn feature is present.",
@@ -3002,7 +3002,8 @@
           "English reversed version detected by colour reversal, not by opening name."
         ],
         "weakSignals": [
-          "If primary c4/e4 bind is the main feature, Maroczy may be primary and Dragon secondary."
+          "If primary c4/e4 bind is the main feature, Maroczy may be primary and Dragon secondary.",
+          "If the opposing c-pawn is still present, keep the match only as a lower-confidence Sicilian shell."
         ],
         "penalties": [
           "Subtract 0.15 if a forbidden pawn feature is present.",
@@ -3128,7 +3129,8 @@
           "d5 hole/break remains central."
         ],
         "weakSignals": [
-          "If opponent g6 is present but e6 also present, score both and choose by central role, not opening name."
+          "If opponent g6 is present but e6 also present, score both and choose by central role, not opening name.",
+          "If the opposing c-pawn is still present, keep the match only as a lower-confidence Sicilian shell."
         ],
         "penalties": [
           "Subtract 0.15 if a forbidden pawn feature is present.",

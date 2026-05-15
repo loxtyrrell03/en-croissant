@@ -206,6 +206,48 @@ describe("pawn structure detector", () => {
         expect(detectPawnStructure(fen)?.structureId).toBe(structureId);
     });
 
+    test.each([
+        [
+            "najdorf_type_i",
+            "6k1/pp3ppp/3p4/3Pp3/2P5/8/PP3PPP/6K1 w - - 0 1",
+            "6k1/ppp2ppp/3p4/3Pp3/2P5/8/PP3PPP/6K1 w - - 0 1",
+            "6k1/pp3ppp/3p4/2pPp3/2P5/8/PP3PPP/6K1 w - - 0 1",
+        ],
+        [
+            "najdorf_type_ii",
+            "6k1/pp3ppp/3p4/4p3/4P3/8/PPP2PPP/6K1 w - - 0 1",
+            "6k1/ppp2ppp/3p4/4p3/4P3/8/PPP2PPP/6K1 w - - 0 1",
+            "6k1/pp3ppp/3p4/2p1p3/4P3/8/PPP2PPP/6K1 w - - 0 1",
+        ],
+        [
+            "dragon_formation",
+            "4k3/pp2pp1p/3p2p1/8/4P3/8/PPP2PPP/4K3 w - - 0 1",
+            "4k3/ppp1pp1p/3p2p1/8/4P3/8/PPP2PPP/4K3 w - - 0 1",
+            "4k3/pp2pp1p/3p2p1/2p5/4P3/8/PPP2PPP/4K3 w - - 0 1",
+        ],
+        [
+            "scheveningen_structure",
+            "4k3/pp3ppp/3pp3/8/4P3/8/PPP2PPP/4K3 w - - 0 1",
+            "4k3/ppp2ppp/3pp3/8/4P3/8/PPP2PPP/4K3 w - - 0 1",
+            "4k3/pp3ppp/3pp3/2p5/4P3/8/PPP2PPP/4K3 w - - 0 1",
+        ],
+    ] as const)(
+        "keeps %s with a lower-confidence opposing c-pawn present",
+        (structureId, canonicalFen, cHomeFen, cAdvancedFen) => {
+            const canonical = detectPawnStructure(canonicalFen);
+            const cHome = detectPawnStructure(cHomeFen);
+            const cAdvanced = detectPawnStructure(cAdvancedFen);
+
+            expect(canonical?.structureId).toBe(structureId);
+            expect(cHome?.structureId).toBe(structureId);
+            expect(cAdvanced?.structureId).toBe(structureId);
+            expect(cHome?.confidence ?? 0).toBeLessThan(canonical?.confidence ?? 0);
+            expect(cAdvanced?.confidence ?? 0).toBeLessThan(canonical?.confidence ?? 0);
+            expect(cHome?.evidence.join(" ")).toContain("no pawn on the c-file");
+            expect(cAdvanced?.evidence.join(" ")).toContain("no pawn on the c-file");
+        },
+    );
+
     test("detects file-mirrored 3-3 vs 4-2 majority structure", () => {
         const detection = detectPawnStructure(
             "4k3/pp3ppp/4p3/8/8/2P5/PP3PPP/4K3 w - - 0 1",

@@ -65,6 +65,8 @@ const disambiguationPriority = new Map(
         "kid_type_ii",
         "kid_type_i",
         "kid_type_iii",
+        "najdorf_type_i",
+        "najdorf_type_ii",
         "scheveningen_structure",
         "maroczy",
         "dragon_formation",
@@ -329,8 +331,8 @@ function evaluateTemplate(
         },
         evidence: uniqueStrings([
             ...requiredEvidence,
-            ...optionalEvidence,
             ...missingRequiredEvidence.slice(0, 2),
+            ...optionalEvidence,
         ]).slice(0, 7),
         typicalPlans: template.templateLogic?.typicalPawnBreaks?.slice(0, 5),
         matchedTemplate: template.id,
