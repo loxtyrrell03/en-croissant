@@ -248,6 +248,14 @@ async readGames(file: string, start: number, end: number) : Promise<Result<strin
     else return { status: "error", error: e  as any };
 }
 },
+async splitPgnToFiles(file: string, targetDir: string, fileType: string) : Promise<Result<PgnSplitReport, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("split_pgn_to_files", { file, targetDir, fileType }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async lexPgn(pgn: string) : Promise<Result<Token[], string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("lex_pgn", { pgn }) };
@@ -644,6 +652,7 @@ export type OpeningHealthPlayerPositionsReport = { playerGames: number; candidat
 export type OpeningHealthPlayerPositionsRequest = { playerDb: string; playerId: number | null; color: string; maxPlies: number; startDate: string | null; endDate: string | null; requestId: string }
 export type OutOpening = { name: string; fen: string }
 export type Outcome = "1-0" | "0-1" | "1/2-1/2" | "*"
+export type PgnSplitReport = { created: number; targetDir: string }
 export type PlanExplorerData = { fen: string; total_games: number; sampled_games: number; max_plies: number; pieces: PlanExplorerPiece[] }
 export type PlanExplorerLine = { squares: string[]; san: string[]; uci: string[]; games: number; white: number; draw: number; black: number }
 export type PlanExplorerPiece = { color: string; role: string; from: string; total: number; lines: PlanExplorerLine[] }

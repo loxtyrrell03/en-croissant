@@ -16,6 +16,7 @@ import {
 import { useHotkeys, useToggle } from "@mantine/hooks";
 import {
   IconFileDescription,
+  IconFileImport,
   IconFilePlus,
   IconFolderPlus,
   IconSearch,
@@ -46,6 +47,7 @@ import {
   CreateDirectoryModal,
   CreateModal,
   EditModal,
+  ImportDatabaseFolderModal,
   RenameModal,
   type RenameResult,
 } from "./Modals";
@@ -122,6 +124,7 @@ function FilesPage() {
   const [deleteModal, toggleDeleteModal] = useToggle();
   const [createModal, toggleCreateModal] = useToggle();
   const [createDirModal, toggleCreateDirModal] = useToggle();
+  const [importDatabaseModal, toggleImportDatabaseModal] = useToggle();
   const [editModal, toggleEditModal] = useToggle();
   const [renameModal, toggleRenameModal] = useToggle();
 
@@ -380,6 +383,13 @@ function FilesPage() {
         mutate={mutate}
         selected={selected}
       />
+      <ImportDatabaseFolderModal
+        opened={importDatabaseModal}
+        setOpened={toggleImportDatabaseModal}
+        mutate={mutate}
+        selected={selected}
+        setSelected={setSelected}
+      />
       <RenameModal
         opened={renameModal}
         setOpened={closeRenameModal}
@@ -433,6 +443,16 @@ function FilesPage() {
               <Tooltip label={t("Files.CreateDirectory.Title")}>
                 <ActionIcon variant="default" size="lg" onClick={() => toggleCreateDirModal()}>
                   <IconFolderPlus size="1rem" />
+                </ActionIcon>
+              </Tooltip>
+              <Tooltip label="Import database as files">
+                <ActionIcon
+                  aria-label="Import database as files"
+                  variant="default"
+                  size="lg"
+                  onClick={() => toggleImportDatabaseModal()}
+                >
+                  <IconFileImport size="1rem" />
                 </ActionIcon>
               </Tooltip>
             </Group>

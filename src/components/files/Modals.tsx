@@ -1,10 +1,15 @@
 import { Button, Modal, SimpleGrid, Stack, Text, Textarea, TextInput } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import { useLoaderData } from "@tanstack/react-router";
-import { resolve, dirname } from "@tauri-apps/api/path";
-import { exists, mkdir, rename, writeTextFile } from "@tauri-apps/plugin-fs";
+import { resolve, dirname, basename, tempDir } from "@tauri-apps/api/path";
+import { open } from "@tauri-apps/plugin-dialog";
+import { exists, mkdir, remove, rename, writeTextFile } from "@tauri-apps/plugin-fs";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { commands } from "@/bindings";
 import { createFile } from "@/utils/files";
+import { unwrap } from "@/utils/unwrap";
+import PathFileInput from "../common/FileInput";
 import GenericCard from "../common/GenericCard";
 import type { Directory, FileMetadata, FileType } from "./file";
 
@@ -26,6 +31,26 @@ function removePgnExtension(name: string) {
 
 function getInfoPath(path: string) {
   return path.replace(/\.pgn$/i, ".info");
+}
+
+function removeDatabaseExtension(name: string) {
+  return name
+    .replace(/\.pgn\.(zst|bz2)$/i, "")
+    .replace(/\.(pgn|db3|zst|bz2)$/i, "");
+}
+
+function isSqliteDatabase(path: string) {
+  return path.toLowerCase().endsWith(".db3");
+}
+
+function getTargetLabel(selected: Entry | null) {
+  if (!selected) return "Files root";
+  if (selected.type === "directory") return selected.name;
+  return `${selected.name}'s folder`;
+}
+
+function getImportCountText(count: number) {
+  return count === 1 ? "1 game file" : `${count} game files`;
 }
 
 function replacePathPrefix(path: string, oldPath: string, newPath: string) {
@@ -79,6 +104,177 @@ export type RenameResult = {
   oldEntry: Entry;
   newEntry: Entry;
 };
+
+export function ImportDatabaseFolderModal({
+  opened,
+  setOpened,
+  mutate,
+  selected,
+  setSelected,
+}: {
+  opened: boolean;
+  setOpened: (opened: boolean) => void;
+  mutate: () => Promise<unknown> | unknown;
+  selected: Entry | null;
+  setSelected: React.Dispatch<React.SetStateAction<Entry | null>>;
+}) {
+  const [sourcePath, setSourcePath] = useState("");
+  const [sourceName, setSourceName] = useState("");
+  const [folderName, setFolderName] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { documentDir } = useLoaderData({ from: "/files" });
+
+  useEffect(() => {
+    if (!opened) {
+      setError("");
+    }
+  }, [opened]);
+
+  function reset() {
+    setSourcePath("");
+    setSourceName("");
+    setFolderName("");
+    setError("");
+  }
+
+  async function getTargetParent() {
+    if (!selected) return documentDir;
+    if (selected.type === "directory") return selected.path;
+    return await dirname(selected.path);
+  }
+
+  async function chooseSource() {
+    const selectedFile = await open({
+      multiple: false,
+      filters: [
+        {
+          name: "Chess database or PGN",
+          extensions: ["pgn", "zst", "bz2", "db3"],
+        },
+      ],
+    });
+    if (!selectedFile || typeof selectedFile !== "string") return;
+
+    const name = await basename(selectedFile);
+    setSourcePath(selectedFile);
+    setSourceName(name);
+    setError("");
+    if (!folderName.trim()) {
+      setFolderName(removeDatabaseExtension(name));
+    }
+  }
+
+  async function importDatabase() {
+    if (!sourcePath) {
+      setError("Choose a PGN or database file first.");
+      return;
+    }
+
+    const trimmedFolderName = folderName.trim();
+    if (!trimmedFolderName) {
+      setError("Folder name is required.");
+      return;
+    }
+
+    if (
+      trimmedFolderName === "." ||
+      trimmedFolderName === ".." ||
+      INVALID_RENAME_CHARS.test(trimmedFolderName)
+    ) {
+      setError("Folder name cannot contain path separators or reserved filename characters.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    let splitSourcePath = sourcePath;
+    let temporaryExportPath: string | null = null;
+
+    try {
+      const targetParent = await getTargetParent();
+      const targetDir = await resolve(targetParent, trimmedFolderName);
+
+      if (isSqliteDatabase(sourcePath)) {
+        temporaryExportPath = await resolve(
+          await tempDir(),
+          `split_database_${Date.now()}.pgn`,
+        );
+        unwrap(await commands.exportToPgn(sourcePath, temporaryExportPath));
+        splitSourcePath = temporaryExportPath;
+      }
+
+      const report = unwrap(await commands.splitPgnToFiles(splitSourcePath, targetDir, "game"));
+      await mutate();
+      setSelected({
+        type: "directory",
+        name: trimmedFolderName,
+        path: report.targetDir,
+        children: [],
+      });
+      notifications.show({
+        title: "Imported database",
+        message: `Created ${getImportCountText(report.created)} in ${trimmedFolderName}.`,
+        color: "green",
+      });
+      reset();
+      setOpened(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      if (temporaryExportPath) {
+        await remove(temporaryExportPath).catch(() => {});
+      }
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Modal
+      opened={opened}
+      onClose={() => setOpened(false)}
+      title="Import database as files"
+    >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          void importDatabase();
+        }}
+      >
+        <Stack>
+          <Text c="dimmed" size="sm">
+            Choose a PGN, compressed PGN, or En Croissant database. The named folder will be
+            created or reused under {getTargetLabel(selected)}, with one game file per game.
+          </Text>
+
+          <PathFileInput
+            label="Source database"
+            description="PGN, PGN.ZST, PGN.BZ2, or DB3"
+            filename={sourceName || null}
+            onClick={chooseSource}
+            withAsterisk
+          />
+
+          <TextInput
+            label="Folder name"
+            description="Each imported game will be saved as a separate PGN file in this folder."
+            value={folderName}
+            onChange={(e) => {
+              setFolderName(e.currentTarget.value);
+              if (error) setError("");
+            }}
+            error={error}
+          />
+
+          <Button type="submit" loading={loading}>
+            {loading ? "Importing..." : "Import games"}
+          </Button>
+        </Stack>
+      </form>
+    </Modal>
+  );
+}
 
 export function CreateModal({
   opened,

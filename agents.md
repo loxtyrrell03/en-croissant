@@ -67,8 +67,9 @@ default.
   starts puzzles, opens the latest online game, launches the online game picker,
   manages Opening Review decks, and manages Mistake Review decks.
 - `/files` remains the file and repertoire library. Recent work improved root
-  drag behavior, deselection, file-preview safety when no board tab exists, and
-  right-click rename actions for files and folders in the tree.
+  drag behavior, deselection, file-preview safety when no board tab exists,
+  right-click rename actions for files and folders in the tree, and a folder
+  import flow that splits a PGN or `.db3` database into one game file per game.
 - `/databases` manages local databases, online game databases, merged
   Lichess/Chess.com databases, Lichess study imports, database conversion, and
   auto-update metadata.
@@ -542,6 +543,10 @@ from 2026-04-24 through 2026-05-03.
 - Lichess login reliability: the OAuth callback server now binds a fresh
   localhost listener before opening the browser, then shuts it down after the
   callback, avoiding stale or racing localhost redirects.
+- Files import ergonomics: the Files page now has an "Import database as files"
+  action that accepts PGN, compressed PGN, or `.db3` sources, creates a named
+  folder under the selected location, and writes each game as its own PGN plus
+  the normal `.info` metadata sidecar.
 
 ## Verification Expectations
 
