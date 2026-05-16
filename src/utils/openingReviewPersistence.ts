@@ -34,7 +34,11 @@ export function getReviewPositionsForPath(
 
 export function sameReviewPosition(a: string | undefined | null, b: string | undefined | null) {
     if (!a || !b) return false;
-    return a.split(" ").slice(0, 4).join(" ") === b.split(" ").slice(0, 4).join(" ");
+    return reviewPositionFenKey(a) === reviewPositionFenKey(b);
+}
+
+function reviewPositionFenKey(fen: string) {
+    return fen.split(" ", 4).join(" ");
 }
 
 function findReviewPositionIndexForNode(
@@ -49,5 +53,6 @@ function findReviewPositionIndexForNode(
         }
     }
 
-    return positions.findIndex((position) => sameReviewPosition(position.fen, fen));
+    const targetKey = reviewPositionFenKey(fen);
+    return positions.findIndex((position) => reviewPositionFenKey(position.fen) === targetKey);
 }

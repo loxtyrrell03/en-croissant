@@ -10,6 +10,7 @@ import {
     type OnlineDatabaseUpdateRecords,
     mistakeReviewAutoUpdateStateAtom,
     onlineDatabaseUpdatesAtom,
+    practiceStateAtom,
 } from "@/state/atoms";
 import {
     createMistakeReviewPosition,
@@ -48,6 +49,7 @@ export type MistakeReviewScanTarget = {
 
 export function useMistakeReviewDeckAutoUpdater() {
     const records = useAtomValue(onlineDatabaseUpdatesAtom);
+    const practiceState = useAtomValue(practiceStateAtom);
     const setState = useSetAtom(mistakeReviewAutoUpdateStateAtom);
     const runningRef = useRef(false);
     const recordsKeyRef = useRef("");
@@ -72,9 +74,11 @@ export function useMistakeReviewDeckAutoUpdater() {
 
     useEffect(() => {
         if (runningRef.current) return;
+        if (practiceState.phase !== "idle") return;
 
         const runLatest = () => {
             if (disposedRef.current || runningRef.current) return;
+            if (practiceState.phase !== "idle") return;
 
             const latestRecords = recordsRef.current;
             const recordsKey = getOnlineRecordsUpdateKey(latestRecords);
@@ -113,7 +117,7 @@ export function useMistakeReviewDeckAutoUpdater() {
         }
 
         runLatest();
-    }, [records, setState]);
+    }, [practiceState.phase, records, setState]);
 }
 
 export async function runMistakeReviewAutoUpdates(

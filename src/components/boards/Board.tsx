@@ -159,6 +159,7 @@ const BOARD_SIDE_BAR_WIDTH = 25;
 const BOARD_ROW_GAP = 12;
 const MIN_MANUAL_BOARD_SIZE = 280;
 const MISTAKE_REVIEW_PANEL_MIN_HEIGHT = 108;
+const MISTAKE_REVIEW_ENGINE_CONFIRMATION_DELAY_MS = 900;
 const OPENING_REVIEW_CLOUD_MULTIPV = 5;
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
 
@@ -587,6 +588,7 @@ function Board({
   const [activeMistakeReviewPosition, setActiveMistakeReviewPosition] =
     useState<ReviewPosition | null>(null);
   const mistakeReviewLineTimers = useRef<number[]>([]);
+  const mistakeReviewAssessmentTimerRef = useRef<number | null>(null);
   const previousMistakeReviewIndexRef = useRef<number | null>(null);
   const mistakeReviewAssessmentRequestRef = useRef(0);
   const openingReviewAssessmentRequestRef = useRef(0);
@@ -603,6 +605,15 @@ function Board({
   }, []);
 
   useEffect(() => clearMistakeReviewLine, [clearMistakeReviewLine]);
+
+  useEffect(
+    () => () => {
+      if (mistakeReviewAssessmentTimerRef.current !== null) {
+        window.clearTimeout(mistakeReviewAssessmentTimerRef.current);
+      }
+    },
+    [],
+  );
 
   const isMistakeReviewTab = currentTab?.gameOrigin.kind === "mistake_review";
   const isOpeningReviewTab = currentTab?.gameOrigin.kind === "opening_review";
@@ -784,6 +795,7 @@ function Board({
       if (metadata?.enginePath) {
         try {
           const result = await commands.getMistakeReviewSampleLine({
+            requestId: `mistake-review-line-${crypto.randomUUID()}`,
             fen: position.fen,
             firstMoveUci,
             enginePath: metadata.enginePath,
@@ -806,23 +818,33 @@ function Board({
   );
 
   const markMistakeReviewAttemptSeen = useCallback(
-    (positionIndex: number) => {
+    (positionIndex: number, expectedFen: string, attemptedCardReps: number) => {
       const attemptedAt = Date.now();
-      setDeck((current) => {
-        const position = current.positions[positionIndex];
-        if (!position?.mistakeReview) return current;
+      const updateDeck = () => {
+        startTransition(() => {
+          setDeck((current) => {
+            const position = current.positions[positionIndex];
+            if (!position?.mistakeReview || position.fen !== expectedFen) return current;
 
-        const positions = [...current.positions];
-        positions[positionIndex] = {
-          ...position,
-          mistakeReview: {
-            ...position.mistakeReview,
-            lastAttemptedAt: attemptedAt,
-            lastAttemptedCardReps: position.card.reps ?? 0,
-          },
-        };
-        return { positions, logs: current.logs };
-      });
+            const positions = [...current.positions];
+            positions[positionIndex] = {
+              ...position,
+              mistakeReview: {
+                ...position.mistakeReview,
+                lastAttemptedAt: attemptedAt,
+                lastAttemptedCardReps: attemptedCardReps,
+              },
+            };
+            return { positions, logs: current.logs };
+          });
+        });
+      };
+
+      if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(updateDeck, { timeout: 1600 });
+      } else {
+        globalThis.setTimeout(updateDeck, 80);
+      }
     },
     [setDeck],
   );
@@ -1049,7 +1071,7 @@ function Board({
           if (mistakeReviewAssessmentRequestRef.current !== requestId) return;
 
           onMove?.(uci, c.fen, san);
-          markMistakeReviewAttemptSeen(i);
+          markMistakeReviewAttemptSeen(i, c.fen, c.card.reps ?? 0);
 
           const immediateAssessment = assessMistakeReviewMove(c, playedMove);
           startTransition(() => {
@@ -1069,52 +1091,73 @@ function Board({
             color: mistakeReviewColor(immediateAssessment.label),
           });
 
-          void assessMistakeReviewMoveWithEngine(c, playedMove)
-            .then((moveAssessment) => {
-              startTransition(() => {
-                setPracticeState((current) => {
-                  if (
-                    mistakeReviewAssessmentRequestRef.current !== requestId ||
-                    current.positionIndex !== i ||
-                    current.currentFen !== c.fen ||
-                    current.playedMoveUci !== uci ||
-                    current.playedMove !== san ||
-                    (current.phase !== "correct" && current.phase !== "incorrect")
-                  ) {
-                    return current;
-                  }
+          if (mistakeReviewAssessmentTimerRef.current !== null) {
+            window.clearTimeout(mistakeReviewAssessmentTimerRef.current);
+          }
+          mistakeReviewAssessmentTimerRef.current = window.setTimeout(() => {
+            mistakeReviewAssessmentTimerRef.current = null;
+            const latestPracticeState = latestPracticeStateRef.current;
+            if (
+              document.visibilityState === "hidden" ||
+              mistakeReviewAssessmentRequestRef.current !== requestId ||
+              latestPracticeState.positionIndex !== i ||
+              latestPracticeState.currentFen !== c.fen ||
+              latestPracticeState.playedMoveUci !== uci ||
+              latestPracticeState.playedMove !== san ||
+              (latestPracticeState.phase !== "correct" && latestPracticeState.phase !== "incorrect")
+            ) {
+              return;
+            }
 
-                  return {
-                    ...current,
-                    ...mistakeReviewAssessmentToPracticeState({
-                      position: c,
-                      positionIndex: i,
-                      assessment: moveAssessment,
-                      playedMove,
-                      timeTaken: current.timeTaken ?? timeTaken,
-                    }),
-                    resultRecorded: current.resultRecorded,
-                  };
-                });
-              });
-
-              if (!moveAssessment.passed && !mistakeReviewAutoRevealBest) {
-                window.setTimeout(() => {
-                  const latestPracticeState = latestPracticeStateRef.current;
-                  if (
-                    mistakeReviewAssessmentRequestRef.current === requestId &&
-                    latestPracticeState.positionIndex === i &&
-                    latestPracticeState.currentFen === c.fen &&
-                    latestPracticeState.playedMoveUci === uci &&
-                    latestPracticeState.playedMove === san &&
-                    latestPracticeState.phase === "incorrect"
-                  ) {
-                    goToNext();
-                  }
-                }, 500);
-              }
+            void assessMistakeReviewMoveWithEngine(c, playedMove, {
+              requestId: `mistake-review-score-${requestId}`,
             })
-            .catch(() => {});
+              .then((moveAssessment) => {
+                startTransition(() => {
+                  setPracticeState((current) => {
+                    if (
+                      mistakeReviewAssessmentRequestRef.current !== requestId ||
+                      current.positionIndex !== i ||
+                      current.currentFen !== c.fen ||
+                      current.playedMoveUci !== uci ||
+                      current.playedMove !== san ||
+                      (current.phase !== "correct" && current.phase !== "incorrect")
+                    ) {
+                      return current;
+                    }
+
+                    return {
+                      ...current,
+                      ...mistakeReviewAssessmentToPracticeState({
+                        position: c,
+                        positionIndex: i,
+                        assessment: moveAssessment,
+                        playedMove,
+                        timeTaken: current.timeTaken ?? timeTaken,
+                      }),
+                      resultRecorded: current.resultRecorded,
+                    };
+                  });
+                });
+
+                if (!moveAssessment.passed && !mistakeReviewAutoRevealBest) {
+                  window.setTimeout(() => {
+                    const latestPracticeState = latestPracticeStateRef.current;
+                    if (
+                      mistakeReviewAssessmentRequestRef.current === requestId &&
+                      latestPracticeState.positionIndex === i &&
+                      latestPracticeState.currentFen === c.fen &&
+                      latestPracticeState.playedMoveUci === uci &&
+                      latestPracticeState.playedMove === san &&
+                      latestPracticeState.phase === "incorrect"
+                    ) {
+                      goToNext();
+                    }
+                  }, 500);
+                }
+              })
+              .catch(() => {});
+          }, MISTAKE_REVIEW_ENGINE_CONFIRMATION_DELAY_MS);
         });
         return;
       }

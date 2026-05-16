@@ -398,6 +398,36 @@ function useAppStartup() {
   }, [setTabs, setActiveTab]);
 }
 
+function useStopInteractiveEnginesWhenInactive() {
+  const lastStopRef = useRef(0);
+
+  useEffect(() => {
+    const stopInteractiveEngines = () => {
+      const now = Date.now();
+      if (now - lastStopRef.current < 1000) return;
+      lastStopRef.current = now;
+
+      void commands.stopInteractiveEngines().catch((error) => {
+        warn(`Could not stop interactive engines after app focus changed: ${error}`);
+      });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        stopInteractiveEngines();
+      }
+    };
+
+    window.addEventListener("blur", stopInteractiveEngines);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("blur", stopInteractiveEngines);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+}
+
 export default function App() {
   const primaryColor = useAtomValue(primaryColorAtom);
   const pieceSet = useAtomValue(pieceSetAtom);
@@ -407,6 +437,7 @@ export default function App() {
   const setMistakeScanProgress = useSetAtom(mistakeReviewScanProgressAtom);
 
   useAppStartup();
+  useStopInteractiveEnginesWhenInactive();
   useOnlineDatabaseAutoUpdater();
   useLichessStudyDatabaseAutoUpdater();
   useOpeningReviewDeckAutoUpdater();

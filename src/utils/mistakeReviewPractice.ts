@@ -68,6 +68,7 @@ export function assessMistakeReviewMove(
 export async function assessMistakeReviewMoveWithEngine(
     position: Position,
     playedMove: { san: string; uci: string },
+    options: { requestId?: string | null } = {},
 ): Promise<MistakeReviewMoveAssessment> {
     const metadata = position.mistakeReview;
     const savedAssessment = assessMistakeReviewMove(position, playedMove);
@@ -82,6 +83,7 @@ export async function assessMistakeReviewMoveWithEngine(
     try {
         const score = unwrap(
             await commands.scoreMistakeReviewMove({
+                requestId: options.requestId ?? null,
                 fen: position.fen,
                 playedMoveUci: playedMove.uci,
                 enginePath: metadata.enginePath,

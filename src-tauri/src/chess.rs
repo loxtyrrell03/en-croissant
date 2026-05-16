@@ -47,6 +47,7 @@ use crate::{
 
 const MISTAKE_REVIEW_EVAL_CACHE_BATCH_SIZE: usize = 200;
 const ENGINE_IDLE_SHUTDOWN_AFTER: Duration = Duration::from_secs(180);
+const KEEP_RUNNING_ON_INACTIVE_ENGINE_TAB_MARKERS: &[&str] = &["opening-health-verify"];
 
 pub struct EngineProcess {
     base: BaseEngine,
@@ -294,6 +295,50 @@ pub async fn kill_engines(tab: String, state: tauri::State<'_, AppState>) -> Res
         }
     }
     Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn stop_interactive_engines(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, AppState>,
+) -> Result<u32, Error> {
+    for flag in state.ui_engine_cancel_flags.iter() {
+        flag.value().store(true, Ordering::SeqCst);
+    }
+
+    let keys: Vec<_> = state
+        .engine_processes
+        .iter()
+        .map(|entry| entry.key().clone())
+        .filter(|(tab, _)| !keep_engine_running_on_app_inactive(tab))
+        .collect();
+    let mut stopped = 0;
+
+    for key in keys {
+        let Some(process_entry) = state.engine_processes.get(&key) else {
+            continue;
+        };
+        let process = process_entry.value().clone();
+        drop(process_entry);
+
+        let mut process = process.lock().await;
+        if !process.running {
+            continue;
+        }
+
+        let generation = process.stop().await?;
+        schedule_idle_engine_shutdown(&app, key, generation);
+        stopped += 1;
+    }
+
+    Ok(stopped)
+}
+
+fn keep_engine_running_on_app_inactive(tab: &str) -> bool {
+    KEEP_RUNNING_ON_INACTIVE_ENGINE_TAB_MARKERS
+        .iter()
+        .any(|marker| tab.contains(marker))
 }
 
 #[tauri::command]
@@ -915,6 +960,7 @@ pub struct MistakeReviewScanProgress {
 #[derive(Clone, Debug, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct MistakeReviewMoveScoreRequest {
+    pub request_id: Option<String>,
     pub fen: String,
     pub played_move_uci: String,
     pub engine_path: String,
@@ -956,6 +1002,7 @@ pub struct MistakeReviewMoveScore {
 #[derive(Clone, Debug, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct MistakeReviewSampleLineRequest {
+    pub request_id: Option<String>,
     pub fen: String,
     pub first_move_uci: String,
     pub engine_path: String,
@@ -1202,14 +1249,23 @@ pub async fn scan_mistake_review(
                 let should_run_deep = match &analysis_mode {
                     MistakeReviewAnalysisMode::Single => true,
                     MistakeReviewAnalysisMode::Layered => {
-                        let fast_before = analyze_mistake_review_position(
+                        let fast_before = match analyze_mistake_review_position(
                             &mut proc,
                             &mut reader,
                             &fen_before,
                             fast_depth,
                             multi_pv,
+                            Some(&cancel_flag),
                         )
-                        .await?;
+                        .await
+                        {
+                            Ok(result) => result,
+                            Err(error) if matches!(error, Error::AnalysisCancelled) => {
+                                stopped = true;
+                                break 'games;
+                            }
+                            Err(error) => return Err(error),
+                        };
                         let Some(fast_best) = fast_before.first() else {
                             chess = after;
                             ply += 1;
@@ -1248,14 +1304,23 @@ pub async fn scan_mistake_review(
                             )?;
                             false
                         } else {
-                            let fast_after = analyze_mistake_review_position(
+                            let fast_after = match analyze_mistake_review_position(
                                 &mut proc,
                                 &mut reader,
                                 &fen_after,
                                 fast_depth,
                                 1,
+                                Some(&cancel_flag),
                             )
-                            .await?;
+                            .await
+                            {
+                                Ok(result) => result,
+                                Err(error) if matches!(error, Error::AnalysisCancelled) => {
+                                    stopped = true;
+                                    break 'games;
+                                }
+                                Err(error) => return Err(error),
+                            };
                             let Some(fast_after_best) = fast_after.first() else {
                                 chess = after;
                                 ply += 1;
@@ -1318,22 +1383,40 @@ pub async fn scan_mistake_review(
                         false,
                     )?;
 
-                    let deep_before = analyze_mistake_review_position(
+                    let deep_before = match analyze_mistake_review_position(
                         &mut proc,
                         &mut reader,
                         &fen_before,
                         deep_depth,
                         multi_pv,
+                        Some(&cancel_flag),
                     )
-                    .await?;
-                    let deep_after = analyze_mistake_review_position(
+                    .await
+                    {
+                        Ok(result) => result,
+                        Err(error) if matches!(error, Error::AnalysisCancelled) => {
+                            stopped = true;
+                            break 'games;
+                        }
+                        Err(error) => return Err(error),
+                    };
+                    let deep_after = match analyze_mistake_review_position(
                         &mut proc,
                         &mut reader,
                         &fen_after,
                         deep_depth,
                         1,
+                        Some(&cancel_flag),
                     )
-                    .await?;
+                    .await
+                    {
+                        Ok(result) => result,
+                        Err(error) if matches!(error, Error::AnalysisCancelled) => {
+                            stopped = true;
+                            break 'games;
+                        }
+                        Err(error) => return Err(error),
+                    };
                     positions_analyzed += 1;
                     emit_mistake_review_progress(
                         &app,
@@ -1527,7 +1610,11 @@ pub async fn scan_mistake_review(
 
     let eval_flush_result =
         flush_mistake_review_move_eval_entries(&request.player_db, &state, &mut move_eval_entries);
-    proc.kill().await?;
+    if let Err(error) = proc.kill().await {
+        if !stopped {
+            return Err(error);
+        }
+    }
     eval_flush_result?;
     let final_progress = if games_total == 0 {
         100.0
@@ -1711,6 +1798,29 @@ async fn wait_for_mistake_review_resume(
 #[specta::specta]
 pub async fn score_mistake_review_move(
     request: MistakeReviewMoveScoreRequest,
+    state: tauri::State<'_, AppState>,
+) -> Result<MistakeReviewMoveScore, Error> {
+    let request_id = request.request_id.clone();
+    let cancel_flag = request_id.as_ref().map(|id| {
+        let flag = Arc::new(AtomicBool::new(false));
+        state
+            .ui_engine_cancel_flags
+            .insert(id.clone(), flag.clone());
+        flag
+    });
+
+    let result = score_mistake_review_move_inner(request, cancel_flag.as_ref()).await;
+
+    if let Some(id) = request_id {
+        state.ui_engine_cancel_flags.remove(&id);
+    }
+
+    result
+}
+
+async fn score_mistake_review_move_inner(
+    request: MistakeReviewMoveScoreRequest,
+    cancel_flag: Option<&Arc<AtomicBool>>,
 ) -> Result<MistakeReviewMoveScore, Error> {
     let thresholds = request.thresholds.unwrap_or_default();
     let depth = request.depth.unwrap_or(17).max(1);
@@ -1733,11 +1843,18 @@ pub async fn score_mistake_review_move(
     let fen_after = Fen::from_position(position, EnPassantMode::Legal).to_string();
 
     let (mut proc, mut reader) = EngineProcess::new(engine_path).await?;
-    let before =
-        analyze_mistake_review_position(&mut proc, &mut reader, &request.fen, depth, multi_pv)
-            .await?;
+    let before = analyze_mistake_review_position(
+        &mut proc,
+        &mut reader,
+        &request.fen,
+        depth,
+        multi_pv,
+        cancel_flag,
+    )
+    .await?;
     let after =
-        analyze_mistake_review_position(&mut proc, &mut reader, &fen_after, depth, 1).await?;
+        analyze_mistake_review_position(&mut proc, &mut reader, &fen_after, depth, 1, cancel_flag)
+            .await?;
     proc.kill().await?;
 
     let best = before.first().ok_or(Error::NoMovesFound)?;
@@ -1776,6 +1893,29 @@ pub async fn score_mistake_review_move(
 #[specta::specta]
 pub async fn get_mistake_review_sample_line(
     request: MistakeReviewSampleLineRequest,
+    state: tauri::State<'_, AppState>,
+) -> Result<MistakeReviewSampleLine, Error> {
+    let request_id = request.request_id.clone();
+    let cancel_flag = request_id.as_ref().map(|id| {
+        let flag = Arc::new(AtomicBool::new(false));
+        state
+            .ui_engine_cancel_flags
+            .insert(id.clone(), flag.clone());
+        flag
+    });
+
+    let result = get_mistake_review_sample_line_inner(request, cancel_flag.as_ref()).await;
+
+    if let Some(id) = request_id {
+        state.ui_engine_cancel_flags.remove(&id);
+    }
+
+    result
+}
+
+async fn get_mistake_review_sample_line_inner(
+    request: MistakeReviewSampleLineRequest,
+    cancel_flag: Option<&Arc<AtomicBool>>,
 ) -> Result<MistakeReviewSampleLine, Error> {
     let max_plies = request.max_plies.unwrap_or(6).min(20) as usize;
     let depth = request.depth.unwrap_or(12).max(1);
@@ -1805,8 +1945,15 @@ pub async fn get_mistake_review_sample_line(
     let fen_after_first = Fen::from_position(position, EnPassantMode::Legal).to_string();
 
     let (mut proc, mut reader) = EngineProcess::new(engine_path).await?;
-    let continuation =
-        analyze_mistake_review_position(&mut proc, &mut reader, &fen_after_first, depth, 1).await?;
+    let continuation = analyze_mistake_review_position(
+        &mut proc,
+        &mut reader,
+        &fen_after_first,
+        depth,
+        1,
+        cancel_flag,
+    )
+    .await?;
     proc.kill().await?;
 
     let continuation_best = continuation.first();
@@ -1830,7 +1977,12 @@ async fn analyze_mistake_review_position(
     fen: &str,
     depth: u32,
     multi_pv: u16,
+    cancel_flag: Option<&Arc<AtomicBool>>,
 ) -> Result<Vec<BestMoves>, Error> {
+    if ui_engine_task_cancelled(cancel_flag) {
+        return Err(Error::AnalysisCancelled);
+    }
+
     proc.set_options(EngineOptions {
         fen: fen.to_string(),
         moves: Vec::new(),
@@ -1844,6 +1996,11 @@ async fn analyze_mistake_review_position(
 
     let fen = fen.parse()?;
     while let Some(line) = reader.next_line().await? {
+        if ui_engine_task_cancelled(cancel_flag) {
+            let _ = proc.kill().await;
+            return Err(Error::AnalysisCancelled);
+        }
+
         match parse_one(&line) {
             UciMessage::Info(attrs) => match parse_uci_attrs(attrs, &fen, &[]) {
                 Ok(best_moves) => {
@@ -1886,6 +2043,12 @@ async fn analyze_mistake_review_position(
     }
 
     Ok(proc.last_best_moves.clone())
+}
+
+fn ui_engine_task_cancelled(cancel_flag: Option<&Arc<AtomicBool>>) -> bool {
+    cancel_flag
+        .map(|flag| flag.load(Ordering::SeqCst))
+        .unwrap_or(false)
 }
 
 fn mistake_review_starting_position(fen: Option<&str>) -> Result<Chess, Error> {
@@ -2842,6 +3005,27 @@ mod tests {
     #[test]
     fn eval_start_pos() {
         assert_eq!(naive_eval(&Chess::default()), 0);
+    }
+
+    #[test]
+    fn inactive_app_keeps_opening_health_batch_engines_running() {
+        assert!(keep_engine_running_on_app_inactive(
+            "analysis-tab:opening-health-verify"
+        ));
+        assert!(keep_engine_running_on_app_inactive(
+            "analysis-tab:scan-id:opening-health-verify"
+        ));
+    }
+
+    #[test]
+    fn inactive_app_stops_interactive_analysis_engines() {
+        assert!(!keep_engine_running_on_app_inactive("analysis-tab"));
+        assert!(!keep_engine_running_on_app_inactive(
+            "engine-plans:analysis-tab"
+        ));
+        assert!(!keep_engine_running_on_app_inactive(
+            "plan-explorer-engine:analysis-tab"
+        ));
     }
 
     #[test]

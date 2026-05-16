@@ -260,6 +260,13 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
   source-game move line up to the mistake position, show that line in the
   right-panel moves list, and use the shared move controls so back/forward
   navigation behaves like normal analysis once the answer is visible.
+- Mistake Review trainer responsiveness was hardened for large decks: attempt
+  bookkeeping and SRS writes are deferred out of the card-transition path,
+  due-review sessions precompute their queue instead of rescanning the whole
+  deck after every card, source-game line hydration is cached by stable card
+  data instead of object identity, and whole-deck maintenance such as nature
+  migration, clock hydration, and online mistake-deck auto-updates stay out of
+  active practice.
 
 ### Practice Bot Trainer
 
@@ -531,6 +538,10 @@ from 2026-04-24 through 2026-05-03.
   analysis requests from updating React, cancels superseded local searches, and
   avoids recomputing full move lines for engine arrows when the current board
   position is already known.
+- Engine focus policy: when the app loses focus or becomes hidden, interactive
+  board/plan/review engines are stopped and pending UI engine probes are
+  cancelled, while intentional batch work such as Mistake Review scans,
+  analysis reports, and opening-health engine verification keeps running.
 - Review transition responsiveness: mistake/opening review now prewarms nearby
   card board states, defers SRS card writes until after the next card paints,
   and lets move-drop visuals paint before post-attempt feedback and cloud/engine

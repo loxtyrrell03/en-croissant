@@ -60,6 +60,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   lazy,
   Suspense,
+  startTransition,
   useCallback,
   useContext,
   useDeferredValue,
@@ -334,11 +335,11 @@ const MISTAKE_REVIEW_POSITION_SEVERITIES: MistakeReviewAttemptLabel[] = [
 ];
 
 const openingReviewOpeningNameCache = new BoundedMap<string, string>(2000);
-const reviewPositionLineStateCache = new WeakMap<
-  Position,
-  { headersKey: string; path: number[]; state: TreeState }
->();
+const reviewPositionLineStateCache = new BoundedMap<string, { path: number[]; state: TreeState }>(
+  600,
+);
 const REVIEW_DECK_SAVE_DEBOUNCE_MS = 1200;
+const REVIEW_CARD_UPDATE_IDLE_TIMEOUT_MS = 1800;
 const REVIEW_POSITION_PREWARM_LIMIT = 3;
 
 function scheduleReviewDeckSave(callback: () => void) {
@@ -391,25 +392,35 @@ function scheduleReviewCardPerformanceUpdate(
   grade: 1 | 2 | 3 | 4,
 ) {
   scheduleAfterReviewTransition(() => {
-    setDeck((data) => {
-      const currentPosition = data.positions[positionIndex];
-      if (!currentPosition || currentPosition.fen !== position.fen) return data;
+    const updateDeck = () => {
+      startTransition(() => {
+        setDeck((data) => {
+          const currentPosition = data.positions[positionIndex];
+          if (!currentPosition || currentPosition.fen !== position.fen) return data;
 
-      const reviewedAt = new Date();
-      const previousReps = getReviewCardReps(currentPosition);
-      const { card: newCard, log } = scheduleSm2Card(currentPosition.card, grade, reviewedAt);
-      const positions = [...data.positions];
-      positions[positionIndex] = markReviewPositionAttempt(
-        { ...currentPosition, card: newCard },
-        reviewedAt.getTime(),
-        previousReps,
-      );
+          const reviewedAt = new Date();
+          const previousReps = getReviewCardReps(currentPosition);
+          const { card: newCard, log } = scheduleSm2Card(currentPosition.card, grade, reviewedAt);
+          const positions = [...data.positions];
+          positions[positionIndex] = markReviewPositionAttempt(
+            { ...currentPosition, card: newCard },
+            reviewedAt.getTime(),
+            previousReps,
+          );
 
-      return {
-        positions,
-        logs: [...data.logs, { ...log, fen: currentPosition.fen }],
-      };
-    });
+          return {
+            positions,
+            logs: [...data.logs, { ...log, fen: currentPosition.fen }],
+          };
+        });
+      });
+    };
+
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(updateDeck, { timeout: REVIEW_CARD_UPDATE_IDLE_TIMEOUT_MS });
+    } else {
+      globalThis.setTimeout(updateDeck, 80);
+    }
   });
 }
 
@@ -494,6 +505,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     practiceState.positionIndex !== undefined
       ? practiceState.positionIndex
       : loadedReviewPositionIndex;
+  const deferredBackgroundPositions = useDeferredValue(deck.positions);
 
   const activeReviewPositions = useMemo(
     () => getReviewPositionsForPath(deck.positions, root, positionPath, scopedReviewPositionIndex),
@@ -510,7 +522,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const missingMistakeLineDataCount = useMemo(
     () =>
       isMistakeReview
-        ? deck.positions.filter(
+        ? deferredBackgroundPositions.filter(
             (position) =>
               position.mistakeReview &&
               ((!position.moveSequence?.trim() && position.mistakeReview.ply !== 0) ||
@@ -518,7 +530,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                 position.mistakeReview.clockAfterSeconds == null),
           ).length
         : 0,
-    [deck.positions, isMistakeReview],
+    [deferredBackgroundPositions, isMistakeReview],
   );
   const mistakeDatabaseUpdatedAt =
     isMistakeReview && deckInfo
@@ -642,21 +654,24 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   }, [deckPath, isMistakeReview, setDeck]);
 
   useEffect(() => {
-    if (!isMistakeReview || !loaded || loadError || !deckInfo) return;
+    if (!isMistakeReview || !loaded || loadError || !deckInfo || practicing) return;
 
     const currentDeck: MistakeReviewDeck = {
       ...(deckInfo as MistakeReviewDeck),
-      positions: deck.positions,
+      positions: deferredBackgroundPositions,
       logs: deck.logs as MistakeReviewDeck["logs"],
     };
-    if (!needsMistakeReviewDeckNatureMigration(currentDeck)) return;
 
     const migrationKey = `${deckPath}:${currentDeck.positions.length}:${currentDeck.updatedAt}`;
     if (natureMigrationRef.current === migrationKey) return;
     natureMigrationRef.current = migrationKey;
 
     let disposed = false;
+    let migrationStarted = false;
     const timer = window.setTimeout(() => {
+      migrationStarted = true;
+      if (!needsMistakeReviewDeckNatureMigration(currentDeck)) return;
+
       void migrateMistakeReviewDeckNatureClassifications(currentDeck, { chunkSize: 4 })
         .then((result) => {
           if (disposed || result.updatedCount === 0) return;
@@ -664,39 +679,41 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
           const migratedByKey = new Map(
             result.deck.positions.map((position) => [mistakeReviewPositionKey(position), position]),
           );
-          setDeck((current) => ({
-            positions: current.positions.map((position) => {
-              const migrated = migratedByKey.get(mistakeReviewPositionKey(position));
-              const migratedMistake = migrated?.mistakeReview;
-              if (!migratedMistake || !position.mistakeReview) return position;
-              if (
-                position.mistakeReview.natureClassifierVersion ===
-                migratedMistake.natureClassifierVersion
-              ) {
-                return position;
-              }
+          startTransition(() => {
+            setDeck((current) => ({
+              positions: current.positions.map((position) => {
+                const migrated = migratedByKey.get(mistakeReviewPositionKey(position));
+                const migratedMistake = migrated?.mistakeReview;
+                if (!migratedMistake || !position.mistakeReview) return position;
+                if (
+                  position.mistakeReview.natureClassifierVersion ===
+                  migratedMistake.natureClassifierVersion
+                ) {
+                  return position;
+                }
 
-              return {
-                ...position,
-                tags: migrated.tags,
-                evidence: migrated.evidence,
-                mistakeReview: {
-                  ...position.mistakeReview,
-                  nature: migratedMistake.nature,
-                  natureConfidence: migratedMistake.natureConfidence,
-                  natureReason: migratedMistake.natureReason,
-                  tacticalSignals: migratedMistake.tacticalSignals,
-                  natureAspect: migratedMistake.natureAspect,
-                  allowedNature: migratedMistake.allowedNature,
-                  allowedNatureReason: migratedMistake.allowedNatureReason,
-                  missedNature: migratedMistake.missedNature,
-                  missedNatureReason: migratedMistake.missedNatureReason,
-                  natureClassifierVersion: migratedMistake.natureClassifierVersion,
-                },
-              };
-            }),
-            logs: current.logs,
-          }));
+                return {
+                  ...position,
+                  tags: migrated.tags,
+                  evidence: migrated.evidence,
+                  mistakeReview: {
+                    ...position.mistakeReview,
+                    nature: migratedMistake.nature,
+                    natureConfidence: migratedMistake.natureConfidence,
+                    natureReason: migratedMistake.natureReason,
+                    tacticalSignals: migratedMistake.tacticalSignals,
+                    natureAspect: migratedMistake.natureAspect,
+                    allowedNature: migratedMistake.allowedNature,
+                    allowedNatureReason: migratedMistake.allowedNatureReason,
+                    missedNature: migratedMistake.missedNature,
+                    missedNatureReason: migratedMistake.missedNatureReason,
+                    natureClassifierVersion: migratedMistake.natureClassifierVersion,
+                  },
+                };
+              }),
+              logs: current.logs,
+            }));
+          });
         })
         .catch(() => {
           // Classification migration is best-effort; new scans still save fresh metadata.
@@ -705,9 +722,22 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
 
     return () => {
       disposed = true;
+      if (!migrationStarted && natureMigrationRef.current === migrationKey) {
+        natureMigrationRef.current = "";
+      }
       window.clearTimeout(timer);
     };
-  }, [deck.logs, deck.positions, deckInfo, deckPath, isMistakeReview, loadError, loaded, setDeck]);
+  }, [
+    deck.logs,
+    deferredBackgroundPositions,
+    deckInfo,
+    deckPath,
+    isMistakeReview,
+    loadError,
+    loaded,
+    practicing,
+    setDeck,
+  ]);
 
   useEffect(() => {
     if (
@@ -715,6 +745,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
       !loaded ||
       loadError ||
       !deckInfo ||
+      practicing ||
       missingMistakeLineDataCount === 0
     ) {
       return;
@@ -724,20 +755,24 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     if (clockHydrationRef.current === hydrationKey) return;
     clockHydrationRef.current = hydrationKey;
     let disposed = false;
+    let hydrationStarted = false;
 
     const timer = window.setTimeout(() => {
+      hydrationStarted = true;
       if (disposed) return;
       const currentDeck = {
         ...(deckInfo as MistakeReviewDeck),
-        positions: deck.positions,
+        positions: deferredBackgroundPositions,
         logs: deck.logs as MistakeReviewDeck["logs"],
       };
 
       hydrateMistakeReviewClockData(currentDeck)
         .then((result) => {
           if (disposed || result.updatedCount === 0) return;
-          setDeckInfo(result.deck);
-          setDeck({ positions: result.deck.positions, logs: result.deck.logs });
+          startTransition(() => {
+            setDeckInfo(result.deck);
+            setDeck({ positions: result.deck.positions, logs: result.deck.logs });
+          });
         })
         .catch(() => {
           // Missing local databases should not block opening the deck.
@@ -746,11 +781,14 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
 
     return () => {
       disposed = true;
+      if (!hydrationStarted && clockHydrationRef.current === hydrationKey) {
+        clockHydrationRef.current = "";
+      }
       window.clearTimeout(timer);
     };
   }, [
     deck.logs,
-    deck.positions,
+    deferredBackgroundPositions,
     deckInfo,
     deckPath,
     isMistakeReview,
@@ -758,6 +796,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     loaded,
     missingMistakeLineDataCount,
     mistakeDatabaseUpdatedAt,
+    practicing,
     setDeck,
   ]);
 
@@ -954,6 +993,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const selectedToolTab = reviewWorkspaceTabs.has(currentTabSelected)
     ? currentTabSelected
     : "review";
+  const evalListenerActive = !practicing || selectedToolTab === "analysis";
 
   useEffect(() => {
     if (selectedToolTab !== currentTabSelected) {
@@ -1044,7 +1084,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
 
   return (
     <>
-      <EvalListener active />
+      <EvalListener active={evalListenerActive} />
       <EngineKeyboardShortcuts />
       <Portal target="#left" style={{ height: "100%" }}>
         <BoardWithAnnotationLayout
@@ -1408,8 +1448,9 @@ function loadReviewPositionOnBoard({
 
 function getReviewPositionLineState(position: Position, headers: GameHeaders) {
   const headersKey = reviewLineHeadersCacheKey(headers);
-  const cached = reviewPositionLineStateCache.get(position);
-  if (cached?.headersKey === headersKey) {
+  const cacheKey = reviewLineStateCacheKey(position, headersKey);
+  const cached = reviewPositionLineStateCache.get(cacheKey);
+  if (cached) {
     return {
       path: [...cached.path],
       state: cloneTreeState(cached.state),
@@ -1419,8 +1460,7 @@ function getReviewPositionLineState(position: Position, headers: GameHeaders) {
   const reviewLine = createReviewPositionLineState(position, headers);
   if (!reviewLine) return null;
 
-  reviewPositionLineStateCache.set(position, {
-    headersKey,
+  reviewPositionLineStateCache.set(cacheKey, {
     path: [...reviewLine.path],
     state: cloneTreeState(reviewLine.state),
   });
@@ -1429,6 +1469,33 @@ function getReviewPositionLineState(position: Position, headers: GameHeaders) {
     path: [...reviewLine.path],
     state: reviewLine.state,
   };
+}
+
+function reviewLineStateCacheKey(position: Position, headersKey: string) {
+  return [
+    headersKey,
+    position.reviewKey ?? "",
+    position.fen,
+    position.moveSequence ?? "",
+    position.answerUci ?? "",
+    position.answer ?? "",
+    position.comment ?? "",
+    JSON.stringify(position.annotations ?? []),
+    JSON.stringify(position.shapes ?? []),
+    position.reviewTree ? reviewTreeLineCacheKey(position.reviewTree) : "",
+  ].join("\u001f");
+}
+
+function reviewTreeLineCacheKey(node: TreeNode): string {
+  return [
+    node.fen,
+    node.san ?? "",
+    node.comment ?? "",
+    JSON.stringify(node.annotations ?? []),
+    JSON.stringify(node.shapes ?? []),
+    node.score ? JSON.stringify(node.score) : "",
+    node.children.map(reviewTreeLineCacheKey).join("\u001e"),
+  ].join("\u001d");
 }
 
 function reviewLineHeadersCacheKey(headers: GameHeaders) {
@@ -2272,10 +2339,13 @@ function OpeningReviewPanel({
       scopeLabel?: string,
       options?: { dailyGoalSession?: OpeningReviewInitialPractice },
     ) => {
-      if (scopeIndices && scopeIndices.length === 0) {
+      const remainingPositions = scopeIndices ?? getDueReviewPositionIndices(deck.positions);
+      if (remainingPositions.length === 0) {
         notifications.show({
           title: "No due positions to train",
-          message: "The selected opening and colour filters do not have any due positions.",
+          message: scopeIndices
+            ? "The selected opening and colour filters do not have any due positions."
+            : "This deck does not have any due positions right now.",
           color: "yellow",
         });
         return;
@@ -2284,14 +2354,14 @@ function OpeningReviewPanel({
       activeDailyGoalSessionRef.current = options?.dailyGoalSession ?? null;
       const nextStats = {
         mode: "anki" as const,
-        remainingPositions: scopeIndices ?? [],
+        remainingPositions,
         correct: 0,
         incorrect: 0,
         streak: 0,
         bestStreak: 0,
       };
       setSessionStats((current) => ({ ...current, ...nextStats }));
-      newPractice(nextStats, scopeIndices ? { scopeIndices } : undefined);
+      newPractice(nextStats, { scopeIndices: remainingPositions });
       if (scopeIndices) {
         notifications.show({
           title: "Focused review started",
@@ -2302,7 +2372,7 @@ function OpeningReviewPanel({
         });
       }
     },
-    [isMistakeReview, newPractice, setSessionStats],
+    [deck.positions, isMistakeReview, newPractice, setSessionStats],
   );
 
   const startFullPractice = useCallback(
@@ -2383,9 +2453,7 @@ function OpeningReviewPanel({
       const label =
         MISTAKE_REVIEW_PHASES.find((phaseOption) => phaseOption.id === phase)?.label ?? "Phase";
       const phaseBatch = getMistakeReviewPhaseBatch(deck.positions, phase);
-      const remainingPositions = phaseBatch
-        .map((position) => deck.positions.indexOf(position))
-        .filter((positionIndex) => positionIndex >= 0);
+      const remainingPositions = getPositionIndicesByReference(deck.positions, phaseBatch);
 
       if (remainingPositions.length === 0) {
         const hasPhasePositions = deck.positions.some(
@@ -2430,9 +2498,7 @@ function OpeningReviewPanel({
         MISTAKE_REVIEW_NATURES.find((natureOption) => natureOption.id === nature)?.label ??
         "Mistake type";
       const natureBatch = getMistakeReviewNatureBatch(deck.positions, nature);
-      const remainingPositions = natureBatch
-        .map((position) => deck.positions.indexOf(position))
-        .filter((positionIndex) => positionIndex >= 0);
+      const remainingPositions = getPositionIndicesByReference(deck.positions, natureBatch);
 
       if (remainingPositions.length === 0) {
         const hasNaturePositions = deck.positions.some(
@@ -6180,15 +6246,42 @@ function getNextDueOpeningReviewPositionIndex(
   excludePositionIndex?: number,
 ) {
   const now = new Date();
-  const indices = scopeIndices ?? positions.map((_, index) => index);
+  if (!scopeIndices) {
+    for (let index = 0; index < positions.length; index += 1) {
+      if (index === excludePositionIndex) continue;
+      const position = positions[index];
+      if (position && new Date(position.card.due) <= now) return index;
+    }
+    return -1;
+  }
 
   return (
-    indices.find((index) => {
+    scopeIndices.find((index) => {
       if (index === excludePositionIndex) return false;
       const position = positions[index];
       return position ? new Date(position.card.due) <= now : false;
     }) ?? -1
   );
+}
+
+function getDueReviewPositionIndices(positions: Position[]) {
+  const now = new Date();
+  const indices: number[] = [];
+  for (let index = 0; index < positions.length; index += 1) {
+    const position = positions[index];
+    if (position && new Date(position.card.due) <= now) {
+      indices.push(index);
+    }
+  }
+  return indices;
+}
+
+function getPositionIndicesByReference(positions: Position[], selected: Position[]) {
+  const indexByPosition = new Map<Position, number>();
+  positions.forEach((position, index) => indexByPosition.set(position, index));
+  return selected
+    .map((position) => indexByPosition.get(position) ?? -1)
+    .filter((positionIndex) => positionIndex >= 0);
 }
 
 function getReviewPrewarmPositionIndices(
@@ -6205,13 +6298,15 @@ function getReviewPrewarmPositionIndices(
   }
 
   const now = new Date();
-  return positions
-    .map((position, index) => ({ position, index }))
-    .filter(
-      ({ position, index }) => index !== currentPositionIndex && new Date(position.card.due) <= now,
-    )
-    .slice(0, REVIEW_POSITION_PREWARM_LIMIT)
-    .map(({ index }) => index);
+  const indices: number[] = [];
+  for (let index = 0; index < positions.length; index += 1) {
+    if (index === currentPositionIndex) continue;
+    const position = positions[index];
+    if (!position || new Date(position.card.due) > now) continue;
+    indices.push(index);
+    if (indices.length >= REVIEW_POSITION_PREWARM_LIMIT) break;
+  }
+  return indices;
 }
 
 function getOpeningReviewPositionColour(

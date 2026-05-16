@@ -39,7 +39,7 @@ use crate::chess::{
     analyze_game, cancel_analysis, get_engine_config, get_engine_logs,
     get_mistake_review_clock_timings, get_mistake_review_sample_line, kill_engine, kill_engines,
     scan_mistake_review, score_mistake_review_move, set_mistake_review_scan_paused, stop_engine,
-    stop_matching_engine, MistakeReviewScanProgress,
+    stop_interactive_engines, stop_matching_engine, MistakeReviewScanProgress,
 };
 use crate::db::{
     cancel_database_search, clear_games, convert_pgn, create_indexes, delete_database,
@@ -98,6 +98,7 @@ pub struct AppState {
     engine_processes: DashMap<(String, String), Arc<tokio::sync::Mutex<EngineProcess>>>,
     analysis_cancel_flags: DashMap<String, Arc<AtomicBool>>,
     analysis_pause_flags: DashMap<String, Arc<AtomicBool>>,
+    ui_engine_cancel_flags: DashMap<String, Arc<AtomicBool>>,
     game_manager: GameManager,
     progress_state: ProgressStore,
 }
@@ -148,6 +149,7 @@ fn main() {
             get_mistake_review_sample_line,
             set_mistake_review_scan_paused,
             cancel_analysis,
+            stop_interactive_engines,
             stop_engine,
             stop_matching_engine,
             kill_engine,
