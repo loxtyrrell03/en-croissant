@@ -348,6 +348,10 @@ and `src/utils/pawnStructureTrajectory.ts` using
   c-pawn is still on the c-file, including c5, the detector may still classify
   the central shell but should show lower confidence and missing-c-file
   evidence.
+- Central c/d/e pawn coordinates carry extra weight in Sicilian/KID/French
+  overlap. In Open Sicilian shells, primary c4+e4 with no d-pawn and the
+  opposing c-pawn gone is treated as a Maroczy Bind rather than Najdorf Type II,
+  even if the opponent also has a d6/e5 Boleslavsky-style centre.
 - The 3-3 vs 4-2 endgame-majority template allows file mirroring, so it detects
   both queenside and kingside versions of the four-pawn majority while still
   requiring simplified/central-liquidated evidence. It is strict about pawn

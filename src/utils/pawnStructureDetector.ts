@@ -285,11 +285,19 @@ function evaluateTemplate(
     const optional = template.canonicalPawnFeatures.optional.map((feature) =>
         evaluateFeature(feature, board),
     );
+    const optionalWeights = template.canonicalPawnFeatures.optional.map(optionalFeatureWeight);
     const matchedOptional = optional.filter((feature) => feature.matched);
+    const optionalWeightSum = optionalWeights.reduce((sum, weight) => sum + weight, 0);
+    const matchedOptionalWeight = optional.reduce(
+        (sum, feature, index) => sum + (feature.matched ? optionalWeights[index] : 0),
+        0,
+    );
 
     const requiredScore = 0.24 + requiredRatio * 0.48 + Math.min(0.06, required.length * 0.008);
     const optionalScore =
-        optional.length === 0 ? 0.06 : Math.min(0.2, (matchedOptional.length / optional.length) * 0.2);
+        optionalWeightSum === 0
+            ? 0.06
+            : Math.min(0.2, (matchedOptionalWeight / optionalWeightSum) * 0.2);
     const stabilityScore = stabilityBonus(template.stability);
     const statusScore =
         implementationStatus === "full" ? 0.03 : implementationStatus === "partial" ? -0.02 : -0.08;
@@ -505,10 +513,19 @@ function requiredFeatureWeight(feature: string) {
     const { kind, descriptorPart } = splitFeature(feature);
     if (kind === "pawn" && /^[a-h][1-8](\|[a-h][1-8])*$/.test(descriptorPart)) return 1.15;
     if (kind === "pawn" && descriptorPart.includes("+")) return 1.2;
-    if (kind === "noPawnOnFile") return 0.85;
+    if (kind === "noPawnOnFile") return featureTouchesCentralFile(feature) ? 1 : 0.85;
     if (kind === "pawnFiles") return 1.25;
     if (kind === "pawnCountByWing") return 0.9;
     return 1;
+}
+
+function optionalFeatureWeight(feature: string) {
+    return featureTouchesCentralFile(feature) ? 1.25 : 1;
+}
+
+function featureTouchesCentralFile(feature: string) {
+    const { sidePart, descriptorPart } = splitFeature(feature);
+    return /\b[cde](?:-file|[1-8])\b/.test(`${sidePart}:${descriptorPart}`);
 }
 
 function minimumRequiredRatio(template: PawnStructureTemplate) {

@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import templateData from "@/data/pawnStructureTemplates.v1.json";
 import {
     detectPawnStructure,
+    detectPawnStructureCandidates,
     extractPawnStructureFeatures,
     getPawnStructureImplementationStatus,
 } from "@/utils/pawnStructureDetector";
@@ -204,6 +205,29 @@ describe("pawn structure detector", () => {
         ],
     ] as const)("detects user supplied %s reference skeleton", (structureId, fen) => {
         expect(detectPawnStructure(fen)?.structureId).toBe(structureId);
+    });
+
+    test("prefers Maroczy over Najdorf Type II when the c4/e4 bind is established", () => {
+        const fen = "6k1/pp3ppp/3p4/4p3/2P1P3/8/PP3PPP/6K1 w - - 0 1";
+        const detection = detectPawnStructure(fen);
+        const candidates = detectPawnStructureCandidates(fen);
+
+        expect(detection?.structureId).toBe("maroczy");
+        expect(detection?.sideRoles.primarySide).toBe("white");
+        expect(candidates.some((candidate) => candidate.structureId === "najdorf_type_ii")).toBe(
+            false,
+        );
+        expect(detection?.evidence.join(" ")).toContain("c4");
+        expect(detection?.evidence.join(" ")).toContain("e4");
+    });
+
+    test("prefers colour-reversed Maroczy over Najdorf Type II after the c4/e4 bind", () => {
+        const detection = detectPawnStructure(
+            colourReverseFen("6k1/pp3ppp/3p4/4p3/2P1P3/8/PP3PPP/6K1 w - - 0 1"),
+        );
+
+        expect(detection?.structureId).toBe("maroczy");
+        expect(detection?.sideRoles.primarySide).toBe("black");
     });
 
     test.each([

@@ -1026,7 +1026,7 @@
         "Classical Sicilian",
         "English reversed Sicilian"
       ],
-      "descriptionShort": "The primary side keeps an e4 pawn but has no d-pawn, while the opponent has d6/e5 and no c-pawn, making d5 the strategic hole.",
+      "descriptionShort": "The primary side keeps an e4 pawn but has no d-pawn and has not established a c4/e4 bind, while the opponent has d6/e5 and no c-pawn, making d5 the strategic hole.",
       "stability": "stable",
       "sideRoles": {
         "primarySideRole": "side_playing_against_d5_hole",
@@ -1042,13 +1042,14 @@
         ],
         "optional": [
           "hole:opposing:d5",
-          "pawn:primary:c2|c4",
+          "pawn:primary:c2",
           "breakCandidate:primary:f2-f4",
           "breakCandidate:opposing:d6-d5"
         ],
         "forbidden": [
           "pawn:primary:d5",
-          "pawn:primary:d4"
+          "pawn:primary:d4",
+          "pawn:primary:c4"
         ]
       },
       "templateLogic": {
@@ -1065,6 +1066,7 @@
         ],
         "centralTensionRules": [
           "Reject if primary has a pawn on d5; then Type I is more specific.",
+          "Reject if primary has c4/e4 with no d-pawn and the opposing c-pawn is gone; that is a Maroczy Bind.",
           "Reject if opponent lacks either d6 or e5."
         ],
         "openOrSemiOpenFileRules": [
@@ -1082,6 +1084,7 @@
           "opposing:b7-b5"
         ],
         "typicalTransformations": [
+          "najdorf_type_ii->maroczy if primary establishes the c4/e4 bind",
           "najdorf_type_ii->najdorf_type_i if a primary pawn occupies d5 and the e-pawn disappears",
           "najdorf_type_ii->scheveningen_structure if opponent e-pawn remains on e6 rather than e5",
           "najdorf_type_ii->open_centre after d6-d5 liquidation"
@@ -1101,11 +1104,12 @@
         ],
         "mediumSignals": [
           "Open c-file from the missing opposing c-pawn.",
-          "Primary c-pawn can support a bind or c5 break.",
+          "Primary c-pawn still on c2 can support a later c4/c5 break.",
           "Opponent d6-d5 is structurally important."
         ],
         "weakSignals": [
           "If opponent pawn is on e6, prefer Scheveningen.",
+          "If primary c-pawn has already reached c4 beside e4, prefer Maroczy.",
           "If the opposing c-pawn is still present, keep the match only as a lower-confidence Sicilian shell."
         ],
         "penalties": [
