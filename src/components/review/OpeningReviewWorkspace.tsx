@@ -473,7 +473,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const mistakeAutoUpdateState = useAtomValue(mistakeReviewAutoUpdateStateAtom);
   const onlineDatabaseUpdates = useAtomValue(onlineDatabaseUpdatesAtom);
   const autoUpdateState = isMistakeReview ? mistakeAutoUpdateState : openingAutoUpdateState;
-  const practicing = currentTabSelected === "review" && practiceState.phase !== "idle";
+  const practicing = practiceState.phase !== "idle";
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (s) => s.root);
   const headers = useStore(store, (s) => s.headers);

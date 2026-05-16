@@ -267,6 +267,9 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
   data instead of object identity, and whole-deck maintenance such as nature
   migration, clock hydration, and online mistake-deck auto-updates stay out of
   active practice.
+- Mistake Review board attempts are keyed to the active practice session rather
+  than the currently selected right-panel tab, so a user can still play and
+  score the answer move after checking analysis, moves, or other review panels.
 
 ### Practice Bot Trainer
 
