@@ -1,7 +1,18 @@
 .boardTabList {
+  flex: 1 1 auto;
+  min-width: 0;
   overflow: visible;
   position: relative;
   z-index: 2;
+}
+
+.boardTabsHeader {
+  border-bottom: 1px solid var(--mantine-color-default-border);
+  padding-right: 0.25rem;
+}
+
+.saveGameButton {
+  flex: 0 0 auto;
 }
 
 .boardTab {

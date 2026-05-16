@@ -10,6 +10,7 @@ import {
   Input,
   InputWrapper,
   Loader,
+  Modal,
   Paper,
   Rating,
   RingProgress,
@@ -30,12 +31,14 @@ import { notifications } from "@mantine/notifications";
 import {
   IconArrowRight,
   IconDatabase,
+  IconFileExport,
+  IconFolderDown,
   IconPlus,
   IconRefresh,
   IconSearch,
 } from "@tabler/icons-react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { basename } from "@tauri-apps/api/path";
+import { basename, resolve } from "@tauri-apps/api/path";
 import { open as openDialog, save } from "@tauri-apps/plugin-dialog";
 import { useAtom, useAtomValue } from "jotai";
 import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
@@ -56,9 +59,17 @@ import {
   referenceDbAtom,
   sessionsAtom,
   storedDatabasesDirAtom,
+  storedDocumentDirAtom,
 } from "@/state/atoms";
 import { useActiveDatabaseViewStore } from "@/state/store/database";
+import {
+  getDefaultDatabaseFolderName,
+  getGameFileCountText,
+  splitGameSourceToFiles,
+  validateDatabaseFilesFolderName,
+} from "@/utils/databaseFileExport";
 import { getDatabases, query_games, type SuccessDatabaseInfo } from "@/utils/db";
+import { getDocumentDir } from "@/utils/directories";
 import { formatBytes, formatNumber } from "@/utils/format";
 import { updateOnlineDatabaseNow } from "@/utils/onlineDatabaseAutoUpdate";
 import { updateLichessStudyDatabaseNow } from "@/utils/lichessStudyDatabaseAutoUpdate";
@@ -179,6 +190,8 @@ export default function DatabasesPage() {
 
   const [deleteModal, toggleDeleteModal] = useToggle();
   const [exportLoading, setExportLoading] = useState(false);
+  const [exportFilesOpened, setExportFilesOpened] = useState(false);
+  const documentDir = useAtomValue(storedDocumentDirAtom);
 
   function changeReferenceDatabase(file: string) {
     commands.clearGames();
@@ -313,6 +326,15 @@ export default function DatabasesPage() {
         disableLocalConversion={conversionState.inProgress}
         setDatabases={mutate}
       />
+
+      {selectedDatabase?.type === "success" && (
+        <DatabaseFilesExportModal
+          opened={exportFilesOpened}
+          setOpened={setExportFilesOpened}
+          selectedDatabase={selectedDatabase}
+          documentDir={documentDir}
+        />
+      )}
 
       <Group align="baseline" pl="lg" py={compact ? 6 : "sm"}>
         <Title order={compact ? 2 : 1}>{t("Databases.Title")}</Title>
@@ -741,6 +763,13 @@ export default function DatabasesPage() {
                         >
                           {t("Databases.Settings.ExportPGN")}
                         </Button>
+                        <Button
+                          rightSection={<IconFolderDown size="1rem" />}
+                          variant="default"
+                          onClick={() => setExportFilesOpened(true)}
+                        >
+                          Export to files
+                        </Button>
                       </Group>
                     )}
                     <Button onClick={() => toggleDeleteModal()} color="red">
@@ -837,6 +866,95 @@ function DatabaseConversionCard({ conversionState }: { conversionState: Database
         />
       </Group>
     </Paper>
+  );
+}
+
+function DatabaseFilesExportModal({
+  opened,
+  setOpened,
+  selectedDatabase,
+  documentDir,
+}: {
+  opened: boolean;
+  setOpened: (opened: boolean) => void;
+  selectedDatabase: SuccessDatabaseInfo;
+  documentDir: string;
+}) {
+  const [folderName, setFolderName] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!opened) return;
+    setFolderName(
+      getDefaultDatabaseFolderName(selectedDatabase.title || selectedDatabase.filename),
+    );
+    setError("");
+  }, [opened, selectedDatabase.filename, selectedDatabase.title]);
+
+  async function exportDatabaseFiles() {
+    const trimmedFolderName = folderName.trim();
+    const folderNameError = validateDatabaseFilesFolderName(trimmedFolderName);
+    if (folderNameError) {
+      setError(folderNameError);
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const filesRoot = documentDir || (await getDocumentDir());
+      const targetDir = await resolve(filesRoot, trimmedFolderName);
+      const report = await splitGameSourceToFiles({
+        sourcePath: selectedDatabase.file,
+        targetDir,
+        fileType: "game",
+      });
+
+      notifications.show({
+        title: "Exported database to Files",
+        message: `Created ${getGameFileCountText(report.created)} in ${trimmedFolderName}.`,
+        color: "green",
+      });
+      setOpened(false);
+    } catch (exportError) {
+      setError(exportError instanceof Error ? exportError.message : String(exportError));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Modal opened={opened} onClose={() => setOpened(false)} title="Export database to files">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          void exportDatabaseFiles();
+        }}
+      >
+        <Stack>
+          <Text size="sm" c="dimmed">
+            Create one PGN file per game under the Files root. Existing folders are reused, and
+            duplicate game names get numbered automatically.
+          </Text>
+          <TextInput
+            label="Folder name"
+            description={`${formatNumber(selectedDatabase.game_count)} games will be saved as individual files.`}
+            value={folderName}
+            onChange={(event) => {
+              setFolderName(event.currentTarget.value);
+              if (error) setError("");
+            }}
+            error={error}
+            data-autofocus
+          />
+          <Button type="submit" loading={loading} leftSection={<IconFileExport size="1rem" />}>
+            {loading ? "Exporting..." : "Export games"}
+          </Button>
+        </Stack>
+      </form>
+    </Modal>
   );
 }
 

@@ -1,8 +1,20 @@
-import { Center, Loader, Paper, Portal, Stack, Tabs } from "@mantine/core";
+import {
+  ActionIcon,
+  Center,
+  Group,
+  Loader,
+  Paper,
+  Portal,
+  Stack,
+  Tabs,
+  Tooltip,
+} from "@mantine/core";
 import { useHotkeys, useToggle } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
 import {
   IconBulb,
   IconDatabase,
+  IconDeviceFloppy,
   IconGitCompare,
   IconInfoCircle,
   IconRoute,
@@ -111,6 +123,7 @@ function BoardAnalysis() {
   const { t } = useTranslation();
 
   const [editingMode, toggleEditingMode] = useToggle();
+  const [savingCopy, setSavingCopy] = useState(false);
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
   const tabFile = getTabFile(currentTab);
@@ -155,6 +168,35 @@ function BoardAnalysis() {
       isUserSave: true,
     });
   }, [setCurrentTab, currentTab, documentDir, store]);
+  const saveGameCopy = useCallback(async () => {
+    if (savingCopy) return;
+    setSavingCopy(true);
+    try {
+      const saved = await saveToFile({
+        dir: documentDir,
+        setCurrentTab,
+        tab: currentTab,
+        store,
+        isUserSave: true,
+        forceSaveAs: true,
+      });
+      if (saved) {
+        notifications.show({
+          title: "Game saved",
+          message: "A PGN copy was saved to your files.",
+          color: "green",
+        });
+      }
+    } catch (error) {
+      notifications.show({
+        title: "Could not save game",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    } finally {
+      setSavingCopy(false);
+    }
+  }, [currentTab, documentDir, savingCopy, setCurrentTab, store]);
   useEffect(() => {
     if (hasPersistentOrigin && autoSave && dirty) {
       saveFile();
@@ -353,55 +395,68 @@ function BoardAnalysis() {
                 },
               }}
             >
-              <Tabs.List className={classes.boardTabList} grow>
-                {showPracticeTab && (
+              <Group className={classes.boardTabsHeader} gap={4} wrap="nowrap">
+                <Tabs.List className={classes.boardTabList} grow>
+                  {showPracticeTab && (
+                    <BoardAnalysisTab
+                      icon={<IconTargetArrow size="1rem" />}
+                      label={tabLabels.practice}
+                      value="practice"
+                    />
+                  )}
                   <BoardAnalysisTab
-                    icon={<IconTargetArrow size="1rem" />}
-                    label={tabLabels.practice}
-                    value="practice"
+                    icon={<IconZoomCheck size="1rem" />}
+                    label={tabLabels.analysis}
+                    value="analysis"
                   />
-                )}
-                <BoardAnalysisTab
-                  icon={<IconZoomCheck size="1rem" />}
-                  label={tabLabels.analysis}
-                  value="analysis"
-                />
-                <BoardAnalysisTab
-                  icon={<IconDatabase size="1rem" />}
-                  label={tabLabels.database}
-                  value="database"
-                />
-                <BoardAnalysisTab
-                  icon={<IconTarget size="1rem" />}
-                  label={tabLabels.prep}
-                  value="prep"
-                />
-                <BoardAnalysisTab
-                  icon={<IconTimeline size="1rem" />}
-                  label={tabLabels.structures}
-                  value="structures"
-                />
-                <BoardAnalysisTab
-                  icon={<IconRoute size="1rem" />}
-                  label={tabLabels.planExplorer}
-                  value="plan-explorer"
-                />
-                <BoardAnalysisTab
-                  icon={<IconBulb size="1rem" />}
-                  label={tabLabels.enginePlans}
-                  value="engine-plans"
-                />
-                <BoardAnalysisTab
-                  icon={<IconGitCompare size="1rem" />}
-                  label={tabLabels.compare}
-                  value="compare"
-                />
-                <BoardAnalysisTab
-                  icon={<IconInfoCircle size="1rem" />}
-                  label={tabLabels.info}
-                  value="info"
-                />
-              </Tabs.List>
+                  <BoardAnalysisTab
+                    icon={<IconDatabase size="1rem" />}
+                    label={tabLabels.database}
+                    value="database"
+                  />
+                  <BoardAnalysisTab
+                    icon={<IconTarget size="1rem" />}
+                    label={tabLabels.prep}
+                    value="prep"
+                  />
+                  <BoardAnalysisTab
+                    icon={<IconTimeline size="1rem" />}
+                    label={tabLabels.structures}
+                    value="structures"
+                  />
+                  <BoardAnalysisTab
+                    icon={<IconRoute size="1rem" />}
+                    label={tabLabels.planExplorer}
+                    value="plan-explorer"
+                  />
+                  <BoardAnalysisTab
+                    icon={<IconBulb size="1rem" />}
+                    label={tabLabels.enginePlans}
+                    value="engine-plans"
+                  />
+                  <BoardAnalysisTab
+                    icon={<IconGitCompare size="1rem" />}
+                    label={tabLabels.compare}
+                    value="compare"
+                  />
+                  <BoardAnalysisTab
+                    icon={<IconInfoCircle size="1rem" />}
+                    label={tabLabels.info}
+                    value="info"
+                  />
+                </Tabs.List>
+                <Tooltip label="Save game to files">
+                  <ActionIcon
+                    aria-label="Save game to files"
+                    className={classes.saveGameButton}
+                    loading={savingCopy}
+                    variant="default"
+                    onClick={() => void saveGameCopy()}
+                  >
+                    <IconDeviceFloppy size="1rem" />
+                  </ActionIcon>
+                </Tooltip>
+              </Group>
               {showPracticeTab && (
                 <Tabs.Panel value="practice" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
                   <EngineDockedPanel>

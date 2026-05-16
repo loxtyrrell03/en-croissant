@@ -1,14 +1,18 @@
 import { Button, Modal, SimpleGrid, Stack, Text, Textarea, TextInput } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useLoaderData } from "@tanstack/react-router";
-import { resolve, dirname, basename, tempDir } from "@tauri-apps/api/path";
+import { resolve, dirname, basename } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-dialog";
-import { exists, mkdir, remove, rename, writeTextFile } from "@tauri-apps/plugin-fs";
+import { exists, mkdir, rename, writeTextFile } from "@tauri-apps/plugin-fs";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { commands } from "@/bindings";
+import {
+  getDefaultDatabaseFolderName,
+  getGameFileCountText,
+  splitGameSourceToFiles,
+  validateDatabaseFilesFolderName,
+} from "@/utils/databaseFileExport";
 import { createFile } from "@/utils/files";
-import { unwrap } from "@/utils/unwrap";
 import PathFileInput from "../common/FileInput";
 import GenericCard from "../common/GenericCard";
 import type { Directory, FileMetadata, FileType } from "./file";
@@ -33,24 +37,10 @@ function getInfoPath(path: string) {
   return path.replace(/\.pgn$/i, ".info");
 }
 
-function removeDatabaseExtension(name: string) {
-  return name
-    .replace(/\.pgn\.(zst|bz2)$/i, "")
-    .replace(/\.(pgn|db3|zst|bz2)$/i, "");
-}
-
-function isSqliteDatabase(path: string) {
-  return path.toLowerCase().endsWith(".db3");
-}
-
 function getTargetLabel(selected: Entry | null) {
   if (!selected) return "Files root";
   if (selected.type === "directory") return selected.name;
   return `${selected.name}'s folder`;
-}
-
-function getImportCountText(count: number) {
-  return count === 1 ? "1 game file" : `${count} game files`;
 }
 
 function replacePathPrefix(path: string, oldPath: string, newPath: string) {
@@ -65,7 +55,12 @@ function replacePathPrefix(path: string, oldPath: string, newPath: string) {
   return path;
 }
 
-function withRenamedEntryPaths(entry: Entry, oldPath: string, newPath: string, name: string): Entry {
+function withRenamedEntryPaths(
+  entry: Entry,
+  oldPath: string,
+  newPath: string,
+  name: string,
+): Entry {
   if (entry.type === "file") {
     return {
       ...entry,
@@ -161,7 +156,7 @@ export function ImportDatabaseFolderModal({
     setSourceName(name);
     setError("");
     if (!folderName.trim()) {
-      setFolderName(removeDatabaseExtension(name));
+      setFolderName(getDefaultDatabaseFolderName(name));
     }
   }
 
@@ -177,35 +172,20 @@ export function ImportDatabaseFolderModal({
       return;
     }
 
-    if (
-      trimmedFolderName === "." ||
-      trimmedFolderName === ".." ||
-      INVALID_RENAME_CHARS.test(trimmedFolderName)
-    ) {
-      setError("Folder name cannot contain path separators or reserved filename characters.");
+    const folderNameError = validateDatabaseFilesFolderName(trimmedFolderName);
+    if (folderNameError) {
+      setError(folderNameError);
       return;
     }
 
     setLoading(true);
     setError("");
 
-    let splitSourcePath = sourcePath;
-    let temporaryExportPath: string | null = null;
-
     try {
       const targetParent = await getTargetParent();
       const targetDir = await resolve(targetParent, trimmedFolderName);
 
-      if (isSqliteDatabase(sourcePath)) {
-        temporaryExportPath = await resolve(
-          await tempDir(),
-          `split_database_${Date.now()}.pgn`,
-        );
-        unwrap(await commands.exportToPgn(sourcePath, temporaryExportPath));
-        splitSourcePath = temporaryExportPath;
-      }
-
-      const report = unwrap(await commands.splitPgnToFiles(splitSourcePath, targetDir, "game"));
+      const report = await splitGameSourceToFiles({ sourcePath, targetDir, fileType: "game" });
       await mutate();
       setSelected({
         type: "directory",
@@ -215,7 +195,7 @@ export function ImportDatabaseFolderModal({
       });
       notifications.show({
         title: "Imported database",
-        message: `Created ${getImportCountText(report.created)} in ${trimmedFolderName}.`,
+        message: `Created ${getGameFileCountText(report.created)} in ${trimmedFolderName}.`,
         color: "green",
       });
       reset();
@@ -223,19 +203,12 @@ export function ImportDatabaseFolderModal({
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
-      if (temporaryExportPath) {
-        await remove(temporaryExportPath).catch(() => {});
-      }
       setLoading(false);
     }
   }
 
   return (
-    <Modal
-      opened={opened}
-      onClose={() => setOpened(false)}
-      title="Import database as files"
-    >
+    <Modal opened={opened} onClose={() => setOpened(false)} title="Import database as files">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -244,8 +217,8 @@ export function ImportDatabaseFolderModal({
       >
         <Stack>
           <Text c="dimmed" size="sm">
-            Choose a PGN, compressed PGN, or En Croissant database. The named folder will be
-            created or reused under {getTargetLabel(selected)}, with one game file per game.
+            Choose a PGN, compressed PGN, or En Croissant database. The named folder will be created
+            or reused under {getTargetLabel(selected)}, with one game file per game.
           </Text>
 
           <PathFileInput
@@ -434,10 +407,7 @@ export function RenameModal({
     }
 
     const parentDir = await dirname(entry.path);
-    const newPath = await resolve(
-      parentDir,
-      entry.type === "file" ? `${nextName}.pgn` : nextName,
-    );
+    const newPath = await resolve(parentDir, entry.type === "file" ? `${nextName}.pgn` : nextName);
 
     if (newPath !== entry.path && (await exists(newPath))) {
       setError(t("Common.NameAlreadyUsed"));

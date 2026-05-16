@@ -1,6 +1,6 @@
 import { resolve, tempDir } from "@tauri-apps/api/path";
 import { save } from "@tauri-apps/plugin-dialog";
-import { copyFile } from "@tauri-apps/plugin-fs";
+import { copyFile, exists, writeTextFile } from "@tauri-apps/plugin-fs";
 import { z } from "zod";
 import type { StoreApi } from "zustand";
 import { commands } from "@/bindings";
@@ -11,6 +11,10 @@ import { hydrateOnlinePgnClocks } from "./onlinePgnClocks";
 import { type GameHeaders, getGameName, type TreeState } from "./treeReducer";
 
 const INVALID_FILENAME_CHARS = /[\\/:*?"<>|]+/g;
+const DEFAULT_GAME_FILE_METADATA = JSON.stringify({
+    type: "game",
+    tags: [],
+});
 
 const reviewInitialPracticeSchema = z.object({
     mode: z.enum(["due", "all"]),
@@ -209,6 +213,14 @@ export async function isInTempDir(filePath: string): Promise<boolean> {
     return normalize(filePath).startsWith(normalize(tmp));
 }
 
+async function ensureGameInfoSidecar(filePath: string) {
+    const metadataPath = filePath.replace(/\.pgn$/i, ".info");
+    if (metadataPath === filePath || (await exists(metadataPath))) {
+        return;
+    }
+    await writeTextFile(metadataPath, DEFAULT_GAME_FILE_METADATA);
+}
+
 export async function saveToFile({
     dir,
     tab,
@@ -272,7 +284,7 @@ export async function saveToFile({
             filePath = userChoice.concat(".pgn");
         }
 
-        if (isTempFile && fileOrigin) {
+        if (isTempFile && fileOrigin && !forceSaveAs) {
             await copyFile(fileOrigin.file.path, filePath);
         }
 
@@ -300,6 +312,7 @@ export async function saveToFile({
         });
     }
     await commands.writeGame(filePath, forceSaveAs ? 0 : (fileOrigin?.gameNumber ?? 0), pgn);
+    await ensureGameInfoSidecar(filePath);
     store.getState().save();
     return true;
 }

@@ -69,10 +69,12 @@ default.
 - `/files` remains the file and repertoire library. Recent work improved root
   drag behavior, deselection, file-preview safety when no board tab exists,
   right-click rename actions for files and folders in the tree, and a folder
-  import flow that splits a PGN or `.db3` database into one game file per game.
+  import/export flow that splits a PGN or `.db3` database into one game file per
+  game.
 - `/databases` manages local databases, online game databases, merged
   Lichess/Chess.com databases, Lichess study imports, database conversion, and
-  auto-update metadata.
+  auto-update metadata. Database settings can export a whole database into the
+  Files root as a folder of per-game PGNs.
 - `/accounts` stores linked Lichess and Chess.com sessions. The sidebar shortcut
   was removed, but account settings remain reachable from online-game flows.
 - `/engines` and `/settings` remain the local engine and global app settings
@@ -80,6 +82,9 @@ default.
   affordances.
 - Board tabs now represent active workspaces: analysis, play, puzzles,
   Opening Review, and Mistake Review.
+- Analysis workspaces have a top-right Save game to files button that always
+  saves the currently analysed game as a PGN copy, including games opened from
+  online imports or database rows.
 
 ### Home Launcher
 
@@ -432,6 +437,8 @@ and `src/utils/pawnStructureTrajectory.ts` using
   Review.
 - `src/components/databases/AddDatabase.tsx`: database import modal, online
   account database import, merged database import, Lichess Study import.
+- `src/utils/databaseFileExport.ts`: shared helpers for exporting PGN or `.db3`
+  sources into Files folders with one game PGN plus metadata sidecar per game.
 - `src/state/atoms.ts`: persisted source choices, auto-update state, review
   deck state, practice state, Plan Explorer state, compare selection state.
 - `src/utils/tabs.ts`: tab types and game-origin routing for analysis, database
@@ -547,6 +554,10 @@ from 2026-04-24 through 2026-05-03.
   action that accepts PGN, compressed PGN, or `.db3` sources, creates a named
   folder under the selected location, and writes each game as its own PGN plus
   the normal `.info` metadata sidecar.
+- Analysis/database export ergonomics: analysis tabs now expose a top-right Save
+  game to files action that saves a PGN copy from any analysis origin, and
+  database settings can export an entire database into the Files root as a
+  folder of individual game files.
 
 ## Verification Expectations
 
