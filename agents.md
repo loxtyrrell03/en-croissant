@@ -82,7 +82,7 @@ default.
   affordances.
 - Board tabs now represent active workspaces: analysis, play, puzzles,
   Opening Review, and Mistake Review.
-- Analysis workspaces have a top-right Save game to files button that always
+- Analysis workspaces have a top-left Save game to files button that always
   saves the currently analysed game as a PGN copy, including games opened from
   online imports or database rows.
 
@@ -554,7 +554,7 @@ from 2026-04-24 through 2026-05-03.
   action that accepts PGN, compressed PGN, or `.db3` sources, creates a named
   folder under the selected location, and writes each game as its own PGN plus
   the normal `.info` metadata sidecar.
-- Analysis/database export ergonomics: analysis tabs now expose a top-right Save
+- Analysis/database export ergonomics: analysis tabs now expose a top-left Save
   game to files action that saves a PGN copy from any analysis origin, and
   database settings can export an entire database into the Files root as a
   folder of individual game files.

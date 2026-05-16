@@ -396,6 +396,17 @@ function BoardAnalysis() {
               }}
             >
               <Group className={classes.boardTabsHeader} gap={4} wrap="nowrap">
+                <Tooltip label="Save game to files">
+                  <ActionIcon
+                    aria-label="Save game to files"
+                    className={classes.saveGameButton}
+                    loading={savingCopy}
+                    variant="default"
+                    onClick={() => void saveGameCopy()}
+                  >
+                    <IconDeviceFloppy size="1rem" />
+                  </ActionIcon>
+                </Tooltip>
                 <Tabs.List className={classes.boardTabList} grow>
                   {showPracticeTab && (
                     <BoardAnalysisTab
@@ -445,17 +456,6 @@ function BoardAnalysis() {
                     value="info"
                   />
                 </Tabs.List>
-                <Tooltip label="Save game to files">
-                  <ActionIcon
-                    aria-label="Save game to files"
-                    className={classes.saveGameButton}
-                    loading={savingCopy}
-                    variant="default"
-                    onClick={() => void saveGameCopy()}
-                  >
-                    <IconDeviceFloppy size="1rem" />
-                  </ActionIcon>
-                </Tooltip>
               </Group>
               {showPracticeTab && (
                 <Tabs.Panel value="practice" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
