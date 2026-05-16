@@ -2,6 +2,17 @@
   transition: background-color 100ms ease;
 }
 
+.analysisActions {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  margin-inline: 0.125rem;
+}
+
+.analysisActions:empty {
+  display: none;
+}
+
 .icon:hover {
   background-color: var(--mantine-color-dark-5);
 }

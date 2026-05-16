@@ -1,7 +1,7 @@
 import { Box, Button, Center, Group, Image, Menu, Text } from "@mantine/core";
 import { useColorScheme } from "@mantine/hooks";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import classes from "./TopBar.module.css";
 
 const appWindow = getCurrentWebviewWindow();
@@ -106,56 +106,60 @@ function TopBar({ menuActions }: { menuActions: MenuGroup[] }) {
             <Image src="/logo.png" fit="fill" />
           </Box>
           <Group gap={0}>
-            {menuActions.map((action) => (
-              <Menu
-                key={action.label}
-                offset={2}
-                shadow="md"
-                width={200}
-                position="bottom-start"
-                transitionProps={{ duration: 0 }}
-              >
-                <Menu.Target>
-                  <Button
-                    styles={{
-                      root: {
-                        transform: "none",
-                      },
-                      label: {
-                        fontWeight: "normal",
-                      },
-                    }}
-                    fz="0.8rem"
-                    variant="subtle"
-                    color={colorScheme === "dark" ? "gray" : "dark"}
-                    size="compact-xs"
-                  >
-                    {action.label}
-                  </Button>
-                </Menu.Target>
-                <Menu.Dropdown>
-                  {action.options.map((option, i) =>
-                    option.label === "divider" ? (
-                      <Menu.Divider key={i} />
-                    ) : (
-                      <Menu.Item
-                        fz="0.8rem"
-                        key={option.label}
-                        rightSection={
-                          option.shortcut && (
-                            <Text size="xs" c="dimmed">
-                              {option.shortcut}
-                            </Text>
-                          )
-                        }
-                        onClick={option.action}
-                      >
-                        {option.label}
-                      </Menu.Item>
-                    ),
-                  )}
-                </Menu.Dropdown>
-              </Menu>
+            {menuActions.map((action, index) => (
+              <Fragment key={action.label}>
+                <Menu
+                  offset={2}
+                  shadow="md"
+                  width={200}
+                  position="bottom-start"
+                  transitionProps={{ duration: 0 }}
+                >
+                  <Menu.Target>
+                    <Button
+                      styles={{
+                        root: {
+                          transform: "none",
+                        },
+                        label: {
+                          fontWeight: "normal",
+                        },
+                      }}
+                      fz="0.8rem"
+                      variant="subtle"
+                      color={colorScheme === "dark" ? "gray" : "dark"}
+                      size="compact-xs"
+                    >
+                      {action.label}
+                    </Button>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    {action.options.map((option, i) =>
+                      option.label === "divider" ? (
+                        <Menu.Divider key={i} />
+                      ) : (
+                        <Menu.Item
+                          fz="0.8rem"
+                          key={option.label}
+                          rightSection={
+                            option.shortcut && (
+                              <Text size="xs" c="dimmed">
+                                {option.shortcut}
+                              </Text>
+                            )
+                          }
+                          onClick={option.action}
+                        >
+                          {option.label}
+                        </Menu.Item>
+                      ),
+                    )}
+                  </Menu.Dropdown>
+                </Menu>
+                {index === 0 && (
+                  <Box id="analysisTopLeftActions" className={classes.analysisActions} />
+                )}
+              </Fragment>
             ))}
           </Group>
         </Group>
