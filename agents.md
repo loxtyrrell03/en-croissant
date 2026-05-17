@@ -180,6 +180,9 @@ and `src/utils/lichess/study.ts`.
 - Lichess Study databases expose a database-manager reload control that
   re-fetches the latest PGN, rebuilding games, comments, variations, and clock
   annotations; the same panel includes an update-automatically checkbox.
+- Lichess Study update state now carries source/activity metadata, uses a
+  study-specific banner label, times out stalled PGN downloads, and clears stale
+  conversion banners left behind by interrupted sessions.
 - PGN import timestamp normalization was fixed so online-update ordering stays
   reliable.
 
@@ -270,6 +273,10 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
 - Mistake Review board attempts are keyed to the active practice session rather
   than the currently selected right-panel tab, so a user can still play and
   score the answer move after checking analysis, moves, or other review panels.
+- Mistake Review large-deck daily practice avoids full-deck sorting and eager
+  nature classification for the default trainer controls; daily queues use
+  bounded ranked indices and time-management counts stay cheap until training
+  actually starts.
 
 ### Practice Bot Trainer
 

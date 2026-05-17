@@ -143,6 +143,7 @@ const MISTAKE_REVIEW_ENDGAME_NON_PAWN_MAX = 6;
 const MISTAKE_REVIEW_NATURE_PV_PLIES = 4;
 const MISTAKE_REVIEW_NATURE_CLASSIFIER_VERSION = 2;
 const MISTAKE_REVIEW_NATURE_CACHE_LIMIT = 5000;
+const MISTAKE_REVIEW_NATURE_COUNT_CLASSIFY_LIMIT = 1000;
 const mistakeReviewNatureClassificationCache = new Map<string, MistakeReviewNatureClassification>();
 const mistakeReviewNatureDisplayCache = new WeakMap<Position, MistakeReviewNatureClassification>();
 
@@ -415,6 +416,11 @@ export type MistakeReviewNatureCounts = Record<
         due: number;
     }
 >;
+
+export type MistakeReviewTimeManagementSummary = {
+    readyCount: number;
+    clockDataCount: number;
+};
 
 export async function readMistakeReviewDeck(path: string): Promise<MistakeReviewDeck> {
     const raw = await readTextFile(path);
@@ -795,51 +801,143 @@ export function getMistakeReviewDailyBatch(
     settings: MistakeReviewDailySettings,
     options: { now?: Date; extra?: boolean } = {},
 ) {
+    return getMistakeReviewDailyBatchEntries(positions, settings, options).map(
+        (entry) => entry.position,
+    );
+}
+
+export function getMistakeReviewDailyBatchIndices(
+    positions: Position[],
+    settings: MistakeReviewDailySettings,
+    options: { now?: Date; extra?: boolean } = {},
+) {
+    return getMistakeReviewDailyBatchEntries(positions, settings, options).map(
+        (entry) => entry.index,
+    );
+}
+
+function getMistakeReviewDailyBatchEntries(
+    positions: Position[],
+    settings: MistakeReviewDailySettings,
+    options: { now?: Date; extra?: boolean } = {},
+) {
     const now = options.now ?? new Date();
-    const filtered = positions.filter((position) =>
-        isMistakeReviewDailyEligible(position, settings, now),
-    );
     const progress = getMistakeReviewDailyProgress(positions, settings, { now });
-    const attemptedTodayKeys = new Set(
-        filtered
-            .filter((position) => wasMistakeReviewAttemptedOnDay(position, now))
-            .map(mistakeReviewDailyPositionKey),
-    );
-    const unseenToday = filtered.filter(
-        (position) =>
-            !wasMistakeReviewAttemptedOnDay(position, now) &&
-            !attemptedTodayKeys.has(mistakeReviewDailyPositionKey(position)),
-    );
-    const due = uniqueMistakeReviewDailyPositions(
-        unseenToday
-            .filter((position) => position.card.reps > 0 && new Date(position.card.due) <= now)
-            .sort(sortMistakeReviewDueCards),
-    );
-    const fresh = uniqueMistakeReviewDailyPositions(
-        unseenToday.filter((position) => position.card.reps === 0).sort(sortMistakeReviewNewCards),
-        new Set(due.map(mistakeReviewDailyPositionKey)),
-    );
+    const target = options.extra ? Number.POSITIVE_INFINITY : progress.remaining;
+    if (!options.extra && target <= 0) return [];
+
+    const attemptedTodayKeys = new Set<string>();
+    for (const position of positions) {
+        if (
+            isMistakeReviewDailyEligible(position, settings, now) &&
+            wasMistakeReviewAttemptedOnDay(position, now)
+        ) {
+            attemptedTodayKeys.add(mistakeReviewDailyPositionKey(position));
+        }
+    }
+
+    const dueByKey = new Map<string, { position: Position; index: number }>();
+
+    positions.forEach((position, index) => {
+        if (!isMistakeReviewDailyEligible(position, settings, now)) return;
+        const key = mistakeReviewDailyPositionKey(position);
+        if (attemptedTodayKeys.has(key) || wasMistakeReviewAttemptedOnDay(position, now)) return;
+        if (position.card.reps <= 0 || new Date(position.card.due) > now) return;
+
+        const entry = { position, index };
+        const previous = dueByKey.get(key);
+        if (!previous || sortMistakeReviewDueCards(position, previous.position) < 0) {
+            dueByKey.set(key, entry);
+        }
+    });
+
+    const dueSeen = new Set([...attemptedTodayKeys, ...dueByKey.keys()]);
+    const due: { position: Position; index: number }[] = [];
+    const dueLimit = options.extra ? Number.POSITIVE_INFINITY : target;
+    for (const entry of dueByKey.values()) {
+        addSortedMistakeReviewDailyEntry(
+            due,
+            entry,
+            (left, right) => sortMistakeReviewDueCards(left.position, right.position),
+            dueLimit,
+        );
+    }
+
+    const freshSeen = new Set(attemptedTodayKeys);
+    const freshByKey = new Map<string, { position: Position; index: number }>();
+
+    positions.forEach((position, index) => {
+        if (!isMistakeReviewDailyEligible(position, settings, now)) return;
+        const key = mistakeReviewDailyPositionKey(position);
+        if (
+            dueSeen.has(key) ||
+            freshSeen.has(key) ||
+            wasMistakeReviewAttemptedOnDay(position, now) ||
+            position.card.reps !== 0
+        ) {
+            return;
+        }
+
+        freshSeen.add(key);
+        const entry = { position, index };
+        const previous = freshByKey.get(key);
+        if (!previous || sortMistakeReviewNewCards(position, previous.position) < 0) {
+            freshByKey.set(key, entry);
+        }
+    });
+
+    const fresh: { position: Position; index: number }[] = [];
+    const freshLimit = options.extra
+        ? Number.POSITIVE_INFINITY
+        : Math.min(progress.newRemaining, target);
+    for (const entry of freshByKey.values()) {
+        addSortedMistakeReviewDailyEntry(
+            fresh,
+            entry,
+            (left, right) => sortMistakeReviewNewCards(left.position, right.position),
+            freshLimit,
+        );
+    }
 
     if (options.extra) {
         return [...due, ...fresh];
     }
 
-    const target = progress.remaining;
     const selectedDue = due.slice(0, target);
     const remaining = Math.max(0, target - selectedDue.length);
     const selectedNew = fresh.slice(0, Math.min(progress.newRemaining, remaining));
     return [...selectedDue, ...selectedNew];
 }
 
-function uniqueMistakeReviewDailyPositions(positions: Position[], seen = new Set<string>()) {
-    const unique: Position[] = [];
-    for (const position of positions) {
-        const key = mistakeReviewDailyPositionKey(position);
-        if (seen.has(key)) continue;
-        seen.add(key);
-        unique.push(position);
+function addSortedMistakeReviewDailyEntry<T>(
+    entries: T[],
+    entry: T,
+    compare: (left: T, right: T) => number,
+    limit: number,
+) {
+    const cappedLimit = Math.max(0, Math.trunc(limit));
+    if (cappedLimit <= 0) return;
+
+    if (!Number.isFinite(limit)) {
+        entries.push(entry);
+        entries.sort(compare);
+        return;
     }
-    return unique;
+
+    if (entries.length >= cappedLimit && compare(entry, entries[entries.length - 1]!) >= 0) {
+        return;
+    }
+
+    const insertAt = entries.findIndex((candidate) => compare(entry, candidate) < 0);
+    if (insertAt === -1) {
+        entries.push(entry);
+    } else {
+        entries.splice(insertAt, 0, entry);
+    }
+
+    if (entries.length > cappedLimit) {
+        entries.length = cappedLimit;
+    }
 }
 
 function mistakeReviewDailyPositionKey(position: Position) {
@@ -936,6 +1034,44 @@ export function getMistakeReviewTimeManagementBatch(
         .sort(sortMistakeReviewTimeManagementCards);
 }
 
+export function getMistakeReviewTimeManagementBatchIndices(
+    positions: Position[],
+    options: { minMoveSeconds?: number; now?: Date; includeScheduled?: boolean } = {},
+) {
+    const indexByPosition = new Map<Position, number>();
+    positions.forEach((position, index) => indexByPosition.set(position, index));
+    return getMistakeReviewTimeManagementBatch(positions, options)
+        .map((position) => indexByPosition.get(position) ?? -1)
+        .filter((index) => index >= 0);
+}
+
+export function getMistakeReviewTimeManagementSummary(
+    positions: Position[],
+    options: { minMoveSeconds?: number; now?: Date; includeScheduled?: boolean } = {},
+): MistakeReviewTimeManagementSummary {
+    const minMoveSeconds =
+        typeof options.minMoveSeconds === "number" && Number.isFinite(options.minMoveSeconds)
+            ? Math.max(0, options.minMoveSeconds)
+            : DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds;
+    const now = options.now ?? new Date();
+    let readyCount = 0;
+    let clockDataCount = 0;
+
+    for (const position of positions) {
+        if (isMistakeReviewTimeManagementPosition(position, 0)) {
+            clockDataCount += 1;
+        }
+        if (
+            isMistakeReviewTimeManagementPosition(position, minMoveSeconds) &&
+            isMistakeReviewSrsPracticeReady(position, now, options.includeScheduled)
+        ) {
+            readyCount += 1;
+        }
+    }
+
+    return { readyCount, clockDataCount };
+}
+
 export function getMistakeReviewNatureBatch(
     positions: Position[],
     natureInput: MistakeReviewNature,
@@ -1027,13 +1163,17 @@ export function getMistakeReviewNatureCounts(
     options: { now?: Date } = {},
 ): MistakeReviewNatureCounts {
     const now = options.now ?? new Date();
+    const classifyMissingNature = positions.length <= MISTAKE_REVIEW_NATURE_COUNT_CLASSIFY_LIMIT;
     const counts = Object.fromEntries(
         MISTAKE_REVIEW_NATURES.map((nature) => [nature.id, { total: 0, due: 0 }]),
     ) as MistakeReviewNatureCounts;
 
     for (const position of positions) {
         if (!position.mistakeReview) continue;
-        const nature = getMistakeReviewNature(position);
+        const nature =
+            getStoredMistakeReviewNature(position) ??
+            (classifyMissingNature ? getMistakeReviewNature(position) : null);
+        if (!nature) continue;
         const row = counts[nature];
         row.total += 1;
         if (position.card.reps > 0 && new Date(position.card.due) <= now) {
@@ -1042,6 +1182,17 @@ export function getMistakeReviewNatureCounts(
     }
 
     return counts;
+}
+
+function getStoredMistakeReviewNature(position: Position): MistakeReviewNature | null {
+    const metadata = position.mistakeReview;
+    return normalizeMistakeReviewNature(
+        metadata?.nature ??
+            metadata?.mistakeNature ??
+            metadata?.category ??
+            metadata?.summary?.nature ??
+            null,
+    );
 }
 
 export function getMistakeReviewPhase(position: Position): MistakeReviewPhase {

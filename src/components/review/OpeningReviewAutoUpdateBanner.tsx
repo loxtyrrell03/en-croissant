@@ -26,7 +26,9 @@ export function OpeningReviewAutoUpdateBanner({
     : conversionState.progress === null
       ? undefined
       : Math.max(0, Math.min(100, conversionState.progress));
-  const title = showingReviewUpdate ? "Updating Opening Review" : "Updating online games";
+  const title = showingReviewUpdate
+    ? "Updating Opening Review"
+    : getDatabaseUpdateTitle(conversionState);
   const phase = showingReviewUpdate
     ? state.phase
     : conversionState.phase === "downloading"
@@ -77,4 +79,22 @@ export function OpeningReviewAutoUpdateBanner({
       <Box style={{ pointerEvents: "auto" }}>{content}</Box>
     </Box>
   );
+}
+
+function getDatabaseUpdateTitle(conversionState: {
+  sourceKind?: string | null;
+  sourceFileName?: string | null;
+}) {
+  if (
+    conversionState.sourceKind === "lichess-study" ||
+    conversionState.sourceFileName?.startsWith("lichess_study_")
+  ) {
+    return "Updating Lichess Study";
+  }
+
+  if (conversionState.sourceKind === "local-import") {
+    return "Importing database";
+  }
+
+  return "Updating online games";
 }

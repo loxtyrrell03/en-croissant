@@ -471,6 +471,9 @@ export type DatabaseConversionState = {
     phase: "downloading" | "converting" | null;
     progress: number | null;
     progressId: string | null;
+    sourceKind?: "online-games" | "lichess-study" | "local-import" | null;
+    startedAt?: number | null;
+    updatedAt?: number | null;
     totalGames: number;
     totalGamesExpected: number | null;
     elapsedSeconds: number;
@@ -486,6 +489,9 @@ export const databaseConversionStateAtom = atomWithStorage<DatabaseConversionSta
         phase: null,
         progress: null,
         progressId: null,
+        sourceKind: null,
+        startedAt: null,
+        updatedAt: null,
         totalGames: 0,
         totalGamesExpected: null,
         elapsedSeconds: 0,

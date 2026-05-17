@@ -169,12 +169,16 @@ function AddDatabase({
     setLoading(true);
     const dbPath = await resolve(databaseDir, `${title}.db3`);
     const sourceFileName = await basename(path);
+    const startedAt = Date.now();
     setConversionState((prev) => ({
       ...prev,
       inProgress: true,
       phase: "converting",
       progress: null,
       progressId: null,
+      sourceKind: "local-import",
+      startedAt,
+      updatedAt: startedAt,
       totalGames: 0,
       totalGamesExpected: null,
       elapsedSeconds: 0,
@@ -190,7 +194,14 @@ function AddDatabase({
       setConversionState((prev) => ({
         ...prev,
         inProgress: false,
+        phase: null,
+        progress: null,
+        progressId: null,
+        sourceKind: null,
+        startedAt: null,
+        updatedAt: Date.now(),
         totalGames: 0,
+        totalGamesExpected: null,
         elapsedSeconds: 0,
         targetDatabasePath: null,
         targetDatabaseTitle: null,
@@ -462,6 +473,7 @@ function AddDatabase({
               const sourceFileName = getLichessStudyPgnFilename(reference.studyId);
               let description =
                 values.description.trim() || `Imported from ${reference.canonicalUrl}`;
+              const startedAt = Date.now();
 
               setStudyImporting(true);
               setOpened(false);
@@ -471,6 +483,9 @@ function AddDatabase({
                 phase: "downloading",
                 progress: null,
                 progressId: null,
+                sourceKind: "lichess-study",
+                startedAt,
+                updatedAt: startedAt,
                 totalGames: 0,
                 totalGamesExpected: null,
                 elapsedSeconds: 0,
@@ -494,6 +509,7 @@ function AddDatabase({
                     ...prev,
                     targetDatabasePath: dbPath,
                     targetDatabaseTitle: title,
+                    updatedAt: Date.now(),
                   }));
                 }
                 const totalGamesExpected = unwrap(await commands.countPgnGames(download.path));
@@ -506,6 +522,7 @@ function AddDatabase({
                   phase: "converting",
                   progress: totalGamesExpected > 0 ? 0 : null,
                   progressId: null,
+                  updatedAt: Date.now(),
                   totalGames: 0,
                   totalGamesExpected,
                   elapsedSeconds: 0,

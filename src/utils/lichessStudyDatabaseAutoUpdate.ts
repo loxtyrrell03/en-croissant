@@ -101,12 +101,16 @@ async function maybeUpdateStudyCandidate({
     }
 
     const sourceFileName = getLichessStudyPgnFilename(record.studyId);
+    const startedAt = Date.now();
     setConversionState((prev) => ({
         ...prev,
         inProgress: true,
         phase: "downloading",
         progress: null,
         progressId: null,
+        sourceKind: "lichess-study",
+        startedAt,
+        updatedAt: startedAt,
         totalGames: 0,
         totalGamesExpected: null,
         elapsedSeconds: 0,
@@ -150,6 +154,7 @@ async function maybeUpdateStudyCandidate({
             phase: "converting",
             progress: totalGamesExpected > 0 ? 0 : null,
             progressId: null,
+            updatedAt: Date.now(),
             totalGames: 0,
             totalGamesExpected,
             elapsedSeconds: 0,
@@ -343,6 +348,9 @@ function resetStudyDatabaseConversionState(setConversionState: SetDatabaseConver
         phase: null,
         progress: null,
         progressId: null,
+        sourceKind: null,
+        startedAt: null,
+        updatedAt: Date.now(),
         totalGames: 0,
         totalGamesExpected: null,
         elapsedSeconds: 0,

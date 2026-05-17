@@ -9,6 +9,7 @@ import type { DatabaseInfo } from "@/bindings";
 import { apiHeaders } from "@/utils/http";
 
 const LICHESS_STUDY_ID_PATTERN = /^[A-Za-z0-9]{8}$/;
+const LICHESS_STUDY_DOWNLOAD_TIMEOUT_MS = 60_000;
 const INVALID_FILENAME_CHARS = /[\\/:*?"<>|]+/g;
 const RESERVED_WINDOWS_FILENAME = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
 
@@ -79,16 +80,16 @@ export async function downloadLichessStudyPgn(
         throw new Error("Paste a valid Lichess study link.");
     }
 
-    let response = await fetchLichessStudyPgn(reference, token);
+    let response = await fetchLichessStudyPgnText(reference, token);
     if (token && (response.status === 401 || response.status === 403)) {
-        response = await fetchLichessStudyPgn(reference);
+        response = await fetchLichessStudyPgnText(reference);
     }
 
     if (!response.ok) {
         throw new Error(`Lichess study download failed: ${response.status} ${response.statusText}`);
     }
 
-    const pgn = await response.text();
+    const pgn = response.text ?? "";
     if (!pgn.trim().startsWith("[")) {
         throw new Error("Lichess did not return a PGN for that study.");
     }
@@ -101,13 +102,35 @@ export async function downloadLichessStudyPgn(
     };
 }
 
-function fetchLichessStudyPgn(reference: LichessStudyReference, token?: string) {
-    return fetch(reference.pgnUrl, {
-        headers: apiHeaders({
-            Accept: "application/x-chess-pgn",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        }),
-    });
+async function fetchLichessStudyPgnText(reference: LichessStudyReference, token?: string) {
+    const controller = new AbortController();
+    const timeoutId = globalThis.setTimeout(
+        () => controller.abort(),
+        LICHESS_STUDY_DOWNLOAD_TIMEOUT_MS,
+    );
+
+    try {
+        const response = await fetch(reference.pgnUrl, {
+            signal: controller.signal,
+            headers: apiHeaders({
+                Accept: "application/x-chess-pgn",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            }),
+        });
+        return {
+            ok: response.ok,
+            status: response.status,
+            statusText: response.statusText,
+            text: response.ok ? await response.text() : null,
+        };
+    } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+            throw new Error("Lichess study download timed out. Try reloading the study later.");
+        }
+        throw error;
+    } finally {
+        globalThis.clearTimeout(timeoutId);
+    }
 }
 
 export async function downloadLichessStudyPgnToDatabaseDir({

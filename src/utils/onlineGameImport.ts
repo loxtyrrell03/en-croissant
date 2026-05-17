@@ -301,6 +301,9 @@ export function resetDatabaseConversionState(setConversionState: SetDatabaseConv
         phase: null,
         progress: null,
         progressId: null,
+        sourceKind: null,
+        startedAt: null,
+        updatedAt: Date.now(),
         totalGames: 0,
         totalGamesExpected: null,
         elapsedSeconds: 0,
@@ -327,6 +330,7 @@ export async function importOnlineGamesToDatabase({
     const sourceFileName = await basename(pgnPath);
     const progressId = getOnlineGameImportId(source, username);
     const hasExpectedDownloadSize = remainingGames > 0;
+    const startedAt = Date.now();
 
     setConversionState((prev) => ({
         ...prev,
@@ -334,6 +338,9 @@ export async function importOnlineGamesToDatabase({
         phase: "downloading",
         progress: hasExpectedDownloadSize ? 0 : null,
         progressId,
+        sourceKind: "online-games",
+        startedAt,
+        updatedAt: startedAt,
         totalGames: 0,
         totalGamesExpected: null,
         elapsedSeconds: 0,
@@ -354,6 +361,7 @@ export async function importOnlineGamesToDatabase({
         phase: "converting",
         progress: totalGamesExpected > 0 ? 0 : null,
         progressId: null,
+        updatedAt: Date.now(),
         totalGames: 0,
         totalGamesExpected,
         elapsedSeconds: 0,

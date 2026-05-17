@@ -143,7 +143,7 @@ import {
   formatMistakeReviewMoveTime,
   formatMistakeReviewTimeManagementFeedback,
   formatMistakeReviewLastSeen,
-  getMistakeReviewDailyBatch,
+  getMistakeReviewDailyBatchIndices,
   getMistakeReviewDailyProgress,
   getMistakeReviewNature,
   getMistakeReviewNatureBatch,
@@ -153,7 +153,8 @@ import {
   getMistakeReviewPhaseBatch,
   getMistakeReviewPhaseCounts,
   getMistakeReviewSeverityWeight,
-  getMistakeReviewTimeManagementBatch,
+  getMistakeReviewTimeManagementBatchIndices,
+  getMistakeReviewTimeManagementSummary,
   isMistakeReviewTimeManagementPosition,
   migrateMistakeReviewDeckNatureClassifications,
   mistakeReviewPositionKey,
@@ -1906,20 +1907,6 @@ function OpeningReviewPanel({
   const deferredDeckPositions = useDeferredValue(deck.positions);
   const summaryPositions = loaded ? deferredDeckPositions : deck.positions;
   const stats = useMemo(() => getStats(summaryPositions), [summaryPositions]);
-  const positionIndexByReference = useMemo(() => {
-    const indexes = new Map<Position, number>();
-    summaryPositions.forEach((position, index) => indexes.set(position, index));
-    return indexes;
-  }, [summaryPositions]);
-  const dailyBatch = useMemo(() => {
-    if (isMistakeReview && mistakeDailySettings) {
-      return getMistakeReviewDailyBatch(summaryPositions, mistakeDailySettings);
-    }
-    if (!isMistakeReview && openingDailySettings) {
-      return getOpeningReviewDailyBatch(summaryPositions, openingDailySettings);
-    }
-    return [];
-  }, [summaryPositions, isMistakeReview, mistakeDailySettings, openingDailySettings]);
   const dailyProgress = useMemo(() => {
     if (isMistakeReview && mistakeDailySettings) {
       return getMistakeReviewDailyProgress(summaryPositions, mistakeDailySettings);
@@ -1929,13 +1916,18 @@ function OpeningReviewPanel({
     }
     return null;
   }, [summaryPositions, isMistakeReview, mistakeDailySettings, openingDailySettings]);
-  const dailyScopeIndices = useMemo(
-    () =>
-      dailyBatch
-        .map((position) => positionIndexByReference.get(position) ?? -1)
-        .filter((positionIndex) => positionIndex >= 0),
-    [dailyBatch, positionIndexByReference],
-  );
+  const dailyScopeIndices = useMemo(() => {
+    if (isMistakeReview && mistakeDailySettings) {
+      return getMistakeReviewDailyBatchIndices(summaryPositions, mistakeDailySettings);
+    }
+    if (!isMistakeReview && openingDailySettings) {
+      return getPositionIndicesByReference(
+        summaryPositions,
+        getOpeningReviewDailyBatch(summaryPositions, openingDailySettings),
+      );
+    }
+    return [];
+  }, [summaryPositions, isMistakeReview, mistakeDailySettings, openingDailySettings]);
   const mistakePhaseCounts = useMemo(
     () => (isMistakeReview ? getMistakeReviewPhaseCounts(summaryPositions) : null),
     [summaryPositions, isMistakeReview],
@@ -1949,19 +1941,17 @@ function OpeningReviewPanel({
     DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds;
   const timeManagementThresholdText =
     formatMistakeReviewMoveTime(timeManagementMinMoveSeconds) ?? `${timeManagementMinMoveSeconds}s`;
-  const timeManagementScopeIndices = useMemo(() => {
-    if (!isMistakeReview) return [];
-    return getMistakeReviewTimeManagementBatch(summaryPositions, {
-      minMoveSeconds: timeManagementMinMoveSeconds,
-    })
-      .map((position) => positionIndexByReference.get(position) ?? -1)
-      .filter((positionIndex) => positionIndex >= 0);
-  }, [summaryPositions, isMistakeReview, positionIndexByReference, timeManagementMinMoveSeconds]);
-  const timeManagementClockDataCount = useMemo(() => {
-    if (!isMistakeReview) return 0;
-    return summaryPositions.filter((position) => isMistakeReviewTimeManagementPosition(position, 0))
-      .length;
-  }, [summaryPositions, isMistakeReview]);
+  const timeManagementSummary = useMemo(
+    () =>
+      isMistakeReview
+        ? getMistakeReviewTimeManagementSummary(summaryPositions, {
+            minMoveSeconds: timeManagementMinMoveSeconds,
+          })
+        : { readyCount: 0, clockDataCount: 0 },
+    [summaryPositions, isMistakeReview, timeManagementMinMoveSeconds],
+  );
+  const timeManagementScopeCount = timeManagementSummary.readyCount;
+  const timeManagementClockDataCount = timeManagementSummary.clockDataCount;
   const openingPlanGapScopeIndices = useMemo(
     () => (isMistakeReview ? [] : getOpeningReviewPlanGapTrainingIndices(summaryPositions)),
     [summaryPositions, isMistakeReview],
@@ -2538,7 +2528,11 @@ function OpeningReviewPanel({
   const startMistakeTimeManagementPractice = useCallback(() => {
     if (!isMistakeReview) return;
 
-    if (timeManagementScopeIndices.length === 0) {
+    const remainingPositions = getMistakeReviewTimeManagementBatchIndices(deck.positions, {
+      minMoveSeconds: timeManagementMinMoveSeconds,
+    });
+
+    if (remainingPositions.length === 0) {
       notifications.show({
         title: "No time-management cards yet",
         message:
@@ -2552,7 +2546,7 @@ function OpeningReviewPanel({
 
     const nextStats = {
       mode: "srs-list" as const,
-      remainingPositions: timeManagementScopeIndices,
+      remainingPositions,
       correct: 0,
       incorrect: 0,
       streak: 0,
@@ -2562,17 +2556,18 @@ function OpeningReviewPanel({
     newPractice(nextStats);
     notifications.show({
       title: "Time management training started",
-      message: `Training ${timeManagementScopeIndices.length} due or new long-think mistake${
-        timeManagementScopeIndices.length === 1 ? "" : "s"
+      message: `Training ${remainingPositions.length} due or new long-think mistake${
+        remainingPositions.length === 1 ? "" : "s"
       }.`,
       color: "orange",
     });
   }, [
+    deck.positions,
     isMistakeReview,
     newPractice,
     setSessionStats,
     timeManagementClockDataCount,
-    timeManagementScopeIndices,
+    timeManagementMinMoveSeconds,
     timeManagementThresholdText,
   ]);
 
@@ -3184,11 +3179,11 @@ function OpeningReviewPanel({
                     >
                       <Tooltip
                         label={
-                          timeManagementScopeIndices.length === 0
+                          timeManagementScopeCount === 0
                             ? timeManagementClockDataCount === 0
                               ? "No long-think clock data in this deck yet"
                               : `No due or new long-think mistakes at ${timeManagementThresholdText}+ yet`
-                            : `${timeManagementScopeIndices.length} due or new ${timeManagementThresholdText}+ long-think mistakes`
+                            : `${timeManagementScopeCount} due or new ${timeManagementThresholdText}+ long-think mistakes`
                         }
                       >
                         <Box style={{ flex: 1, minWidth: 0, display: "flex" }}>
@@ -3200,9 +3195,9 @@ function OpeningReviewPanel({
                             leftSection={<IconClock size={18} />}
                             onClick={startMistakeTimeManagementPractice}
                             justify="space-between"
-                            disabled={timeManagementScopeIndices.length === 0}
+                            disabled={timeManagementScopeCount === 0}
                             rightSection={
-                              <Badge variant="white">{timeManagementScopeIndices.length}</Badge>
+                              <Badge variant="white">{timeManagementScopeCount}</Badge>
                             }
                             style={{
                               flex: 1,
@@ -3684,7 +3679,7 @@ function OpeningReviewPanel({
           onClose={() => setTimeManagementSettingsOpen(false)}
           settings={mistakeTimeManagementSettings}
           thresholdText={timeManagementThresholdText}
-          matchCount={timeManagementScopeIndices.length}
+          matchCount={timeManagementScopeCount}
           clockDataCount={timeManagementClockDataCount}
           onUpdate={updateMistakeTimeManagementSettings}
         />

@@ -106,6 +106,9 @@ function resetDatabaseConversionStateFields() {
     phase: null,
     progress: null,
     progressId: null,
+    sourceKind: null,
+    startedAt: null,
+    updatedAt: Date.now(),
     totalGames: 0,
     totalGamesExpected: null,
     elapsedSeconds: 0,
@@ -715,12 +718,16 @@ export default function DatabasesPage() {
                             });
                             if (!file || typeof file !== "string") return;
                             const sourceFileName = await basename(file);
+                            const startedAt = Date.now();
                             setConversionState((prev) => ({
                               ...prev,
                               inProgress: true,
                               phase: "converting",
                               progress: null,
                               progressId: null,
+                              sourceKind: "local-import",
+                              startedAt,
+                              updatedAt: startedAt,
                               totalGames: 0,
                               totalGamesExpected: null,
                               elapsedSeconds: 0,

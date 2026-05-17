@@ -58,6 +58,9 @@ import "@/styles/global.css";
 import { commands, events } from "./bindings";
 import { openFile } from "./utils/files";
 
+const STALE_DOWNLOAD_CONVERSION_MS = 2 * 60 * 1000;
+const STALE_DATABASE_CONVERSION_MS = 20 * 60 * 1000;
+
 const colorSchemeManager = localStorageColorSchemeManager({
   key: "mantine-color-scheme",
 });
@@ -433,7 +436,7 @@ export default function App() {
   const pieceSet = useAtomValue(pieceSetAtom);
   const fontSize = useAtomValue(fontSizeAtom);
   const spellCheck = useAtomValue(spellCheckAtom);
-  const setDatabaseConversionState = useSetAtom(databaseConversionStateAtom);
+  const [databaseConversionState, setDatabaseConversionState] = useAtom(databaseConversionStateAtom);
   const setMistakeScanProgress = useSetAtom(mistakeReviewScanProgressAtom);
 
   useAppStartup();
@@ -448,6 +451,75 @@ export default function App() {
   }, [fontSize]);
 
   useEffect(() => {
+    setDatabaseConversionState((prev) =>
+      prev.inProgress && !prev.startedAt
+        ? {
+            ...prev,
+            inProgress: false,
+            phase: null,
+            progress: null,
+            progressId: null,
+            sourceKind: null,
+            startedAt: null,
+            updatedAt: Date.now(),
+            totalGames: 0,
+            totalGamesExpected: null,
+            elapsedSeconds: 0,
+            targetDatabasePath: null,
+            targetDatabaseTitle: null,
+            sourceFileName: null,
+          }
+        : prev,
+    );
+  }, [setDatabaseConversionState]);
+
+  useEffect(() => {
+    if (!databaseConversionState.inProgress || !databaseConversionState.startedAt) return undefined;
+
+    const staleAfter =
+      databaseConversionState.phase === "downloading"
+        ? STALE_DOWNLOAD_CONVERSION_MS
+        : STALE_DATABASE_CONVERSION_MS;
+    const lastActivity = databaseConversionState.updatedAt ?? databaseConversionState.startedAt;
+    const delay = lastActivity + staleAfter - Date.now();
+
+    const clearStaleConversion = () => {
+      setDatabaseConversionState((prev) => {
+        if (!prev.inProgress) return prev;
+        const latestActivity = prev.updatedAt ?? prev.startedAt ?? 0;
+        const latestStaleAfter =
+          prev.phase === "downloading" ? STALE_DOWNLOAD_CONVERSION_MS : STALE_DATABASE_CONVERSION_MS;
+        if (Date.now() - latestActivity < latestStaleAfter) return prev;
+
+        return {
+          ...prev,
+          inProgress: false,
+          phase: null,
+          progress: null,
+          progressId: null,
+          sourceKind: null,
+          startedAt: null,
+          updatedAt: Date.now(),
+          totalGames: 0,
+          totalGamesExpected: null,
+          elapsedSeconds: 0,
+          targetDatabasePath: null,
+          targetDatabaseTitle: null,
+          sourceFileName: null,
+        };
+      });
+    };
+
+    if (delay <= 0) {
+      clearStaleConversion();
+      return undefined;
+    }
+
+    const timer = window.setTimeout(clearStaleConversion, delay);
+    return () => window.clearTimeout(timer);
+  }, [databaseConversionState, setDatabaseConversionState]);
+
+  useEffect(() => {
     let unlisten: (() => void) | undefined;
 
     void listen<number[]>("convert_progress", (event) => {
@@ -458,6 +530,7 @@ export default function App() {
         totalGames,
         elapsedSeconds: elapsedMs / 1000,
         phase: prev.phase ?? "converting",
+        updatedAt: Date.now(),
         progress:
           prev.totalGamesExpected && prev.totalGamesExpected > 0
             ? Math.min(99, (totalGames / prev.totalGamesExpected) * 100)
@@ -482,6 +555,7 @@ export default function App() {
         return {
           ...prev,
           phase: "downloading",
+          updatedAt: Date.now(),
           progress:
             prev.progress === null && payload.progress <= 0
               ? null
