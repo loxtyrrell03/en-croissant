@@ -277,6 +277,10 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
   nature classification for the default trainer controls; daily queues use
   bounded ranked indices and time-management counts stay cheap until training
   actually starts.
+- Mistake Review keeps the interactive engine listener alive on right-side
+  panels that render engine controls, including the Review page, so reveal-time
+  engine enabling and dock controls work without forcing users into the Eval
+  tab.
 
 ### Practice Bot Trainer
 

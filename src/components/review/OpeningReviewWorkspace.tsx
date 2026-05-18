@@ -994,7 +994,10 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const selectedToolTab = reviewWorkspaceTabs.has(currentTabSelected)
     ? currentTabSelected
     : "review";
-  const evalListenerActive = !practicing || selectedToolTab === "analysis";
+  const selectedToolTabSupportsEngineOutput = selectedToolTab !== "compare";
+  // Keep analysis requests alive anywhere the review workspace can show engine controls.
+  // During practice, engines still stay idle until the user enables them or reveal settings do.
+  const evalListenerActive = !practicing || selectedToolTabSupportsEngineOutput;
 
   useEffect(() => {
     if (selectedToolTab !== currentTabSelected) {
@@ -3196,9 +3199,7 @@ function OpeningReviewPanel({
                             onClick={startMistakeTimeManagementPractice}
                             justify="space-between"
                             disabled={timeManagementScopeCount === 0}
-                            rightSection={
-                              <Badge variant="white">{timeManagementScopeCount}</Badge>
-                            }
+                            rightSection={<Badge variant="white">{timeManagementScopeCount}</Badge>}
                             style={{
                               flex: 1,
                               borderTopRightRadius: 0,
