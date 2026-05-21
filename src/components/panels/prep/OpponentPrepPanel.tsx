@@ -733,6 +733,9 @@ function OpponentPrepPanel() {
         updateSettings(
           {
             mode,
+            source: "lch_all",
+            databasePath: null,
+            databaseLabel: "Lichess All",
             color: "black",
             player: null,
             playerName: "",

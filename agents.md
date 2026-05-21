@@ -576,6 +576,9 @@ from 2026-04-24 through 2026-05-03.
   so single-player prep databases open ready to build without manual player
   search while still preserving manual edits and matching database-title casing
   where it refers to the same player.
+- Opponent prep General mode now defaults to Lichess All when the user switches
+  from player-specific prep, while still allowing another source to be chosen
+  manually afterward.
 - Launch reliability: the Windows fork launcher and `pnpm dev` fallback now
   serialize dev-session startup so repeated launches do not stop the Vite dev
   server while the Tauri WebView is still loading `localhost:1420`; clean
