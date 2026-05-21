@@ -1833,6 +1833,57 @@ pub async fn get_player(
     Ok(player)
 }
 
+#[derive(Debug, QueryableByName)]
+struct CommonPlayerRow {
+    #[diesel(sql_type = Integer)]
+    id: i32,
+    #[diesel(sql_type = Nullable<Text>)]
+    name: Option<String>,
+    #[diesel(sql_type = Nullable<Integer>)]
+    elo: Option<i32>,
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn get_most_common_player(
+    file: PathBuf,
+    state: tauri::State<'_, AppState>,
+) -> Result<Option<Player>, Error> {
+    let db = &mut get_db_or_create(&state, file.to_str().unwrap(), ConnectionOptions::default())?;
+
+    let row = sql_query(
+        r#"
+        SELECT players.id, players.name, players.elo
+        FROM players
+        INNER JOIN (
+            SELECT player_id, SUM(game_count) AS game_count
+            FROM (
+                SELECT white_id AS player_id, COUNT(*) AS game_count
+                FROM games
+                GROUP BY white_id
+                UNION ALL
+                SELECT black_id AS player_id, COUNT(*) AS game_count
+                FROM games
+                GROUP BY black_id
+            )
+            GROUP BY player_id
+        ) AS player_counts ON player_counts.player_id = players.id
+        WHERE players.name IS NOT NULL AND players.name != 'Unknown'
+        ORDER BY player_counts.game_count DESC, players.name ASC
+        LIMIT 1
+        "#,
+    )
+    .load::<CommonPlayerRow>(db)?
+    .into_iter()
+    .next();
+
+    Ok(row.map(|row| Player {
+        id: row.id,
+        name: row.name,
+        elo: row.elo,
+    }))
+}
+
 #[tauri::command]
 #[specta::specta]
 pub async fn get_players(

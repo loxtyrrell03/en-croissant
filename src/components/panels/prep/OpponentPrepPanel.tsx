@@ -53,6 +53,7 @@ import {
 import {
   cancelDatabaseSearch,
   getDatabases,
+  getMostCommonPlayer,
   searchPosition,
   type Opening,
   type SuccessDatabaseInfo,
@@ -178,6 +179,7 @@ function OpponentPrepPanel() {
   );
   const builderCancelRef = useRef(false);
   const seededRef = useRef(false);
+  const seededDefaultPlayerDatabaseRef = useRef<string | null>(null);
   const settingsKey = useMemo(() => getTabWorkspaceKey(currentTab), [currentTab]);
   const savedCompareSettings = settingsKey ? compareSettingsByFile[settingsKey] : undefined;
   const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
@@ -213,6 +215,19 @@ function OpponentPrepPanel() {
   const selectedDatabase = useMemo(
     () => localDatabases.find((database) => database.file === prep.databasePath) ?? null,
     [localDatabases, prep.databasePath],
+  );
+  const shouldLoadDefaultPlayer =
+    prepMode === "player" &&
+    prepSource === "local" &&
+    Boolean(prep.databasePath) &&
+    !prep.player &&
+    prep.playerName.trim().length === 0 &&
+    seededDefaultPlayerDatabaseRef.current !== prep.databasePath;
+  const { data: defaultPlayer } = useSWR(
+    shouldLoadDefaultPlayer && prep.databasePath
+      ? ["opponent-prep-default-player", prep.databasePath]
+      : null,
+    () => getMostCommonPlayer(prep.databasePath!),
   );
   const rootPath = useMemo(() => {
     const candidate = prep.rootPath ?? [];
@@ -620,6 +635,31 @@ function OpponentPrepPanel() {
     },
     [currentPath, setPrep],
   );
+
+  useEffect(() => {
+    if (!shouldLoadDefaultPlayer || defaultPlayer === undefined || !prep.databasePath) return;
+
+    seededDefaultPlayerDatabaseRef.current = prep.databasePath;
+    if (!defaultPlayer?.name) return;
+
+    setPrep((current) => {
+      if (
+        (current.mode ?? "player") !== "player" ||
+        (current.source ?? "local") !== "local" ||
+        current.databasePath !== prep.databasePath ||
+        current.player ||
+        current.playerName.trim().length > 0
+      ) {
+        return current;
+      }
+
+      return {
+        ...current,
+        player: defaultPlayer.id,
+        playerName: defaultPlayer.name ?? "",
+      };
+    });
+  }, [defaultPlayer, prep.databasePath, setPrep, shouldLoadDefaultPlayer]);
 
   const updateBuilderSettings = useCallback(
     (patch: Partial<PrepBuilderSettings>) => {

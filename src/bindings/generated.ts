@@ -240,6 +240,14 @@ async getPlayer(file: string, id: number) : Promise<Result<Player | null, string
     else return { status: "error", error: e  as any };
 }
 },
+async getMostCommonPlayer(file: string) : Promise<Result<Player | null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_most_common_player", { file }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async countPgnGames(file: string) : Promise<Result<number, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("count_pgn_games", { file }) };

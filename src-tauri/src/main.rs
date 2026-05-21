@@ -45,9 +45,9 @@ use crate::db::{
     cancel_database_search, clear_games, convert_pgn, create_indexes, delete_database,
     delete_db_game, delete_empty_games, delete_indexes, export_to_pgn, find_repertoire_gaps,
     get_database_clock_coverage, get_mistake_review_game_metadata,
-    get_opening_health_player_positions, get_plan_explorer, get_player, get_players_game_info,
-    get_tournaments, preload_reference_db, replace_database_from_pgn, search_position,
-    set_database_search_paused, MmapSearchIndex,
+    get_most_common_player, get_opening_health_player_positions, get_plan_explorer, get_player,
+    get_players_game_info, get_tournaments, preload_reference_db, replace_database_from_pgn,
+    search_position, set_database_search_paused, MmapSearchIndex,
 };
 use crate::game::{
     abort_game, get_game_engine_logs, get_game_state, make_game_move, resign_game, start_game,
@@ -169,6 +169,7 @@ fn main() {
             convert_pgn,
             replace_database_from_pgn,
             get_player,
+            get_most_common_player,
             count_pgn_games,
             read_games,
             split_pgn_to_files,

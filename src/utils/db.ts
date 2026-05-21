@@ -88,6 +88,10 @@ export async function query_players(
     );
 }
 
+export async function getMostCommonPlayer(db: string): Promise<Player | null> {
+    return unwrap(await commands.getMostCommonPlayer(db));
+}
+
 export async function getDatabases(): Promise<DatabaseInfo[]> {
     const dbDir = await getDatabasesDir();
     const files = await readDir(dbDir);
