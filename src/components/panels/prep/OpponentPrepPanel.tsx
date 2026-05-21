@@ -103,6 +103,7 @@ const LICHESS_ALL_SOURCE = "online:lichess-all";
 const LICHESS_MASTER_SOURCE = "online:lichess-master";
 const MAX_PREP_MOVE_CACHE_ENTRIES = 80;
 const MAX_PREP_BUILDER_REFERENCE_CACHE_ENTRIES = 120;
+const DEFAULT_PLAYER_LOOKUP_VERSION = "game-count-v2";
 
 type PrepCandidateMoveRow = Opening & {
   key: string;
@@ -133,7 +134,7 @@ function getDatabaseTitlePlayerName(databaseLabel: string | null | undefined, pl
   const label = databaseLabel?.trim();
   if (!label) return null;
 
-  const candidate = label.replace(/\s+(?:Chess\.com|Lichess)$/i, "").trim();
+  const candidate = getDatabaseLabelPlayerCandidate(label);
   if (!candidate || normalizePrepPlayerName(candidate) !== normalizePrepPlayerName(playerName)) {
     return null;
   }
@@ -141,12 +142,28 @@ function getDatabaseTitlePlayerName(databaseLabel: string | null | undefined, pl
   return candidate;
 }
 
-function getOnlineDatabaseTitlePlayerName(databaseLabel: string | null | undefined) {
-  const label = databaseLabel?.trim();
-  if (!label) return null;
+function getDatabaseLabelPlayerCandidate(databaseLabel: string) {
+  let candidate = databaseLabel.replace(/\.db3$/i, "").trim();
+  const suffixes = [
+    /(?:[_\s-]+online\s+games)$/i,
+    /(?:[_\s-]+chess\.com)$/i,
+    /(?:[_\s-]+chesscom)$/i,
+    /(?:[_\s-]+lichess)$/i,
+  ];
 
-  const candidate = label.replace(/\s+(?:Chess\.com|Lichess)$/i, "").trim();
-  return candidate === label || candidate.length === 0 ? null : candidate;
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const suffix of suffixes) {
+      const next = candidate.replace(suffix, "").trim();
+      if (next !== candidate) {
+        candidate = next;
+        changed = true;
+      }
+    }
+  }
+
+  return candidate;
 }
 
 function getPrepCandidateRows({
@@ -241,17 +258,19 @@ function OpponentPrepPanel() {
     [localDatabases, prep.databasePath],
   );
   const selectedDatabaseLabel = selectedDatabase?.title || selectedDatabase?.filename || prep.databaseLabel;
-  const titleDefaultPlayerName = getOnlineDatabaseTitlePlayerName(selectedDatabaseLabel);
+  const defaultPlayerLookupKey = prep.databasePath
+    ? `${DEFAULT_PLAYER_LOOKUP_VERSION}:${prep.databasePath}`
+    : null;
   const shouldLoadDefaultPlayer =
     prepMode === "player" &&
     prepSource === "local" &&
     Boolean(prep.databasePath) &&
     !prep.player &&
     prep.playerName.trim().length === 0 &&
-    seededDefaultPlayerDatabaseRef.current !== prep.databasePath;
+    seededDefaultPlayerDatabaseRef.current !== defaultPlayerLookupKey;
   const { data: defaultPlayer } = useSWR(
-    shouldLoadDefaultPlayer && !titleDefaultPlayerName && prep.databasePath
-      ? ["opponent-prep-default-player", prep.databasePath]
+    shouldLoadDefaultPlayer && prep.databasePath
+      ? ["opponent-prep-default-player", DEFAULT_PLAYER_LOOKUP_VERSION, prep.databasePath]
       : null,
     () => getMostCommonPlayer(prep.databasePath!),
   );
@@ -663,31 +682,16 @@ function OpponentPrepPanel() {
   );
 
   useEffect(() => {
-    if (!shouldLoadDefaultPlayer || !titleDefaultPlayerName || !prep.databasePath) return;
+    if (
+      !shouldLoadDefaultPlayer ||
+      defaultPlayer === undefined ||
+      !prep.databasePath ||
+      !defaultPlayerLookupKey
+    ) {
+      return;
+    }
 
-    seededDefaultPlayerDatabaseRef.current = prep.databasePath;
-    setPrep((current) => {
-      if (
-        (current.mode ?? "player") !== "player" ||
-        (current.source ?? "local") !== "local" ||
-        current.databasePath !== prep.databasePath ||
-        current.player ||
-        current.playerName.trim().length > 0
-      ) {
-        return current;
-      }
-
-      return {
-        ...current,
-        playerName: titleDefaultPlayerName,
-      };
-    });
-  }, [prep.databasePath, setPrep, shouldLoadDefaultPlayer, titleDefaultPlayerName]);
-
-  useEffect(() => {
-    if (!shouldLoadDefaultPlayer || defaultPlayer === undefined || !prep.databasePath) return;
-
-    seededDefaultPlayerDatabaseRef.current = prep.databasePath;
+    seededDefaultPlayerDatabaseRef.current = defaultPlayerLookupKey;
     if (!defaultPlayer?.name) return;
 
     const defaultPlayerName = defaultPlayer.name;
@@ -711,7 +715,7 @@ function OpponentPrepPanel() {
         playerName,
       };
     });
-  }, [defaultPlayer, prep.databasePath, setPrep, shouldLoadDefaultPlayer]);
+  }, [defaultPlayer, defaultPlayerLookupKey, prep.databasePath, setPrep, shouldLoadDefaultPlayer]);
 
   const updateBuilderSettings = useCallback(
     (patch: Partial<PrepBuilderSettings>) => {

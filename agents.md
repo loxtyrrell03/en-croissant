@@ -572,8 +572,10 @@ from 2026-04-24 through 2026-05-03.
   from the saved game position, so opponent-prep review-side inversions do not
   misclassify openings such as King's Gambit under the wrong colour.
 - Opponent prep now seeds the player username field from the most common player
-  in the selected local database, so single-player prep databases open ready to
-  build without manual player search while still preserving manual edits.
+  counted across white/black game appearances in the selected local database,
+  so single-player prep databases open ready to build without manual player
+  search while still preserving manual edits and matching database-title casing
+  where it refers to the same player.
 - Launch reliability: the Windows fork launcher and `pnpm dev` fallback now
   serialize dev-session startup so repeated launches do not stop the Vite dev
   server while the Tauri WebView is still loading `localhost:1420`; clean

@@ -89,12 +89,84 @@ export async function query_players(
 }
 
 export async function getMostCommonPlayer(db: string): Promise<Player | null> {
-    const res = await commands.getMostCommonPlayer(db);
+    let res;
+    try {
+        res = await commands.getMostCommonPlayer(db);
+    } catch (error) {
+        console.warn(error);
+        return getMostCommonPlayerFromGames(db);
+    }
+
     if (res.status === "error") {
         console.warn(res.error);
-        return null;
+        return getMostCommonPlayerFromGames(db);
     }
-    return res.data;
+    return res.data ?? getMostCommonPlayerFromGames(db);
+}
+
+async function getMostCommonPlayerFromGames(db: string): Promise<Player | null> {
+    const pageSize = 1000;
+    const counts = new Map<number, { player: Player; games: number }>();
+    let page = 1;
+    let total: number | null = null;
+
+    do {
+        const response = await query_games(db, {
+            options: {
+                page,
+                pageSize,
+                skipCount: page !== 1,
+                sort: "id",
+                direction: "desc",
+            },
+        });
+        total ??= response.count ?? response.data.length;
+
+        for (const game of response.data) {
+            addCommonPlayerCandidate(counts, {
+                id: game.white_id,
+                name: game.white,
+                elo: game.white_elo ?? null,
+            });
+            addCommonPlayerCandidate(counts, {
+                id: game.black_id,
+                name: game.black,
+                elo: game.black_elo ?? null,
+            });
+        }
+
+        if (response.data.length === 0) break;
+        page += 1;
+    } while ((page - 1) * pageSize < total);
+
+    return getTopCommonPlayerCandidate(counts);
+}
+
+function addCommonPlayerCandidate(
+    counts: Map<number, { player: Player; games: number }>,
+    player: Player,
+) {
+    if (!player.id || !player.name || player.name === "Unknown") return;
+
+    const current = counts.get(player.id);
+    if (current) {
+        current.games += 1;
+        return;
+    }
+
+    counts.set(player.id, { player, games: 1 });
+}
+
+function getTopCommonPlayerCandidate(counts: Map<number, { player: Player; games: number }>) {
+    return (
+        Array.from(counts.values()).sort(
+            (a, b) =>
+                b.games - a.games ||
+                (a.player.name ?? "").localeCompare(b.player.name ?? "", undefined, {
+                    sensitivity: "base",
+                }),
+        )[0]?.player ?? null
+    );
 }
 
 export async function getDatabases(): Promise<DatabaseInfo[]> {
