@@ -79,6 +79,50 @@ function Get-PnpmCommand {
   throw "Could not find pnpm on PATH."
 }
 
+function Test-FrontendDependenciesPresent {
+  $modulesFile = Join-Path $repoRoot "node_modules\.modules.yaml"
+  $viteCmd = Join-Path $repoRoot "node_modules\.bin\vite.cmd"
+  $tauriCmd = Join-Path $repoRoot "node_modules\.bin\tauri.cmd"
+
+  return (Test-Path $modulesFile) -and (Test-Path $viteCmd) -and (Test-Path $tauriCmd)
+}
+
+function Ensure-FrontendDependencies {
+  if (Test-FrontendDependenciesPresent) {
+    return
+  }
+
+  $pnpm = Get-PnpmCommand
+  $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+  $stdout = Join-Path $logDir "pnpm-install-$timestamp.out.log"
+  $stderr = Join-Path $logDir "pnpm-install-$timestamp.err.log"
+
+  Write-LaunchLog "Frontend dependencies are missing; running pnpm install --frozen-lockfile."
+  $process = Start-Process -FilePath "cmd.exe" `
+    -WorkingDirectory $repoRoot `
+    -WindowStyle Minimized `
+    -RedirectStandardOutput $stdout `
+    -RedirectStandardError $stderr `
+    -ArgumentList @(
+      "/d",
+      "/s",
+      "/c",
+      "`"$pnpm`" install --frozen-lockfile"
+    ) `
+    -PassThru `
+    -Wait
+
+  if ($process.ExitCode -ne 0) {
+    throw "pnpm install failed with exit code $(Format-ExitCode $process.ExitCode). See $stdout and $stderr."
+  }
+
+  if (-not (Test-FrontendDependenciesPresent)) {
+    throw "pnpm install completed, but required frontend tools are still missing. See $stdout and $stderr."
+  }
+
+  Write-LaunchLog "Frontend dependencies are ready."
+}
+
 function Test-DevServerListening {
   try {
     return [bool](Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue)
@@ -287,6 +331,8 @@ try {
     Release-LaunchMutex
     exit 0
   }
+
+  Ensure-FrontendDependencies
 
   if (Test-DebugBinaryFresh) {
     $devSessionMutex = New-Object System.Threading.Mutex($false, $devSessionMutexName)

@@ -575,7 +575,9 @@ from 2026-04-24 through 2026-05-03.
   serialize dev-session startup so repeated launches do not stop the Vite dev
   server while the Tauri WebView is still loading `localhost:1420`; clean
   single-instance exits are treated as an activation handoff instead of a broken
-  binary.
+  binary. The launcher also self-heals missing `node_modules` by running
+  `pnpm install --frozen-lockfile` before starting Vite or Tauri, so restored
+  repo copies and moved worktrees can still launch from pinned shortcuts.
 - Lichess login reliability: the OAuth callback server now binds a fresh
   localhost listener before opening the browser, then shuts it down after the
   callback, avoiding stale or racing localhost redirects.
