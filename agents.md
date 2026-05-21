@@ -577,7 +577,10 @@ from 2026-04-24 through 2026-05-03.
   single-instance exits are treated as an activation handoff instead of a broken
   binary. The launcher also self-heals missing `node_modules` by running
   `pnpm install --frozen-lockfile` before starting Vite or Tauri, so restored
-  repo copies and moved worktrees can still launch from pinned shortcuts.
+  repo copies and moved worktrees can still launch from pinned shortcuts. The
+  frontend updater package is explicitly declared so restored installs resolve
+  the startup update-check import instead of opening Vite's missing-import
+  overlay.
 - Lichess login reliability: the OAuth callback server now binds a fresh
   localhost listener before opening the browser, then shuts it down after the
   callback, avoiding stale or racing localhost redirects.
