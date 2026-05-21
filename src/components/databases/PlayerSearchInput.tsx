@@ -44,12 +44,12 @@ export function PlayerSearchInput({
     if (value !== undefined) {
       commands.getPlayer(file, value).then((res) => {
         const player = unwrap(res);
-        if (player?.name) {
+        if (player?.name && (textValue === undefined || textValue.trim().length === 0)) {
           setDisplayedValue(player.name);
         }
       });
     }
-  }, [file, setDisplayedValue, value]);
+  }, [file, setDisplayedValue, textValue, value]);
 
   async function handleChange(val: string) {
     setDisplayedValue(val);

@@ -125,6 +125,22 @@ type PrepBuilderQueueItem = {
   ply: number;
 };
 
+function normalizePrepPlayerName(name: string) {
+  return name.trim().toLowerCase();
+}
+
+function getDatabaseTitlePlayerName(databaseLabel: string | null | undefined, playerName: string) {
+  const label = databaseLabel?.trim();
+  if (!label) return null;
+
+  const candidate = label.replace(/\s+(?:Chess\.com|Lichess)$/i, "").trim();
+  if (!candidate || normalizePrepPlayerName(candidate) !== normalizePrepPlayerName(playerName)) {
+    return null;
+  }
+
+  return candidate;
+}
+
 function getPrepCandidateRows({
   fen,
   openings,
@@ -642,6 +658,7 @@ function OpponentPrepPanel() {
     seededDefaultPlayerDatabaseRef.current = prep.databasePath;
     if (!defaultPlayer?.name) return;
 
+    const defaultPlayerName = defaultPlayer.name;
     setPrep((current) => {
       if (
         (current.mode ?? "player") !== "player" ||
@@ -653,10 +670,13 @@ function OpponentPrepPanel() {
         return current;
       }
 
+      const playerName =
+        getDatabaseTitlePlayerName(current.databaseLabel, defaultPlayerName) ?? defaultPlayerName;
+
       return {
         ...current,
         player: defaultPlayer.id,
-        playerName: defaultPlayer.name ?? "",
+        playerName,
       };
     });
   }, [defaultPlayer, prep.databasePath, setPrep, shouldLoadDefaultPlayer]);

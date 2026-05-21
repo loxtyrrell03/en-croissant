@@ -1853,23 +1853,23 @@ pub async fn get_most_common_player(
 
     let row = sql_query(
         r#"
-        SELECT players.id, players.name, players.elo
-        FROM players
+        SELECT Players.ID AS id, Players.Name AS name, Players.Elo AS elo
+        FROM Players
         INNER JOIN (
-            SELECT player_id, SUM(game_count) AS game_count
+            SELECT PlayerID, SUM(GameCount) AS GameCount
             FROM (
-                SELECT white_id AS player_id, COUNT(*) AS game_count
-                FROM games
-                GROUP BY white_id
+                SELECT WhiteID AS PlayerID, COUNT(*) AS GameCount
+                FROM Games
+                GROUP BY WhiteID
                 UNION ALL
-                SELECT black_id AS player_id, COUNT(*) AS game_count
-                FROM games
-                GROUP BY black_id
+                SELECT BlackID AS PlayerID, COUNT(*) AS GameCount
+                FROM Games
+                GROUP BY BlackID
             )
-            GROUP BY player_id
-        ) AS player_counts ON player_counts.player_id = players.id
-        WHERE players.name IS NOT NULL AND players.name != 'Unknown'
-        ORDER BY player_counts.game_count DESC, players.name ASC
+            GROUP BY PlayerID
+        ) AS PlayerCounts ON PlayerCounts.PlayerID = Players.ID
+        WHERE Players.Name IS NOT NULL AND Players.Name != 'Unknown'
+        ORDER BY PlayerCounts.GameCount DESC, Players.Name ASC
         LIMIT 1
         "#,
     )
