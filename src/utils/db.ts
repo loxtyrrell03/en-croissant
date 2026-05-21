@@ -89,7 +89,12 @@ export async function query_players(
 }
 
 export async function getMostCommonPlayer(db: string): Promise<Player | null> {
-    return unwrap(await commands.getMostCommonPlayer(db));
+    const res = await commands.getMostCommonPlayer(db);
+    if (res.status === "error") {
+        console.warn(res.error);
+        return null;
+    }
+    return res.data;
 }
 
 export async function getDatabases(): Promise<DatabaseInfo[]> {

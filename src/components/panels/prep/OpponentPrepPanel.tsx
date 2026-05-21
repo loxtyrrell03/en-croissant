@@ -141,6 +141,14 @@ function getDatabaseTitlePlayerName(databaseLabel: string | null | undefined, pl
   return candidate;
 }
 
+function getOnlineDatabaseTitlePlayerName(databaseLabel: string | null | undefined) {
+  const label = databaseLabel?.trim();
+  if (!label) return null;
+
+  const candidate = label.replace(/\s+(?:Chess\.com|Lichess)$/i, "").trim();
+  return candidate === label || candidate.length === 0 ? null : candidate;
+}
+
 function getPrepCandidateRows({
   fen,
   openings,
@@ -232,6 +240,8 @@ function OpponentPrepPanel() {
     () => localDatabases.find((database) => database.file === prep.databasePath) ?? null,
     [localDatabases, prep.databasePath],
   );
+  const selectedDatabaseLabel = selectedDatabase?.title || selectedDatabase?.filename || prep.databaseLabel;
+  const titleDefaultPlayerName = getOnlineDatabaseTitlePlayerName(selectedDatabaseLabel);
   const shouldLoadDefaultPlayer =
     prepMode === "player" &&
     prepSource === "local" &&
@@ -240,7 +250,7 @@ function OpponentPrepPanel() {
     prep.playerName.trim().length === 0 &&
     seededDefaultPlayerDatabaseRef.current !== prep.databasePath;
   const { data: defaultPlayer } = useSWR(
-    shouldLoadDefaultPlayer && prep.databasePath
+    shouldLoadDefaultPlayer && !titleDefaultPlayerName && prep.databasePath
       ? ["opponent-prep-default-player", prep.databasePath]
       : null,
     () => getMostCommonPlayer(prep.databasePath!),
@@ -617,7 +627,7 @@ function OpponentPrepPanel() {
   const startedCount = currentRows.filter((row) => row.status === "started").length;
   const skippedCount = currentRows.filter((row) => row.status === "skipped").length;
   const controlSize = compact ? "xs" : "sm";
-  const databaseLabel = selectedDatabase?.title || selectedDatabase?.filename || prep.databaseLabel;
+  const databaseLabel = selectedDatabaseLabel;
   const canOverwriteCurrent =
     currentTab?.gameOrigin.kind === "file" ||
     currentTab?.gameOrigin.kind === "temp_file" ||
@@ -651,6 +661,28 @@ function OpponentPrepPanel() {
     },
     [currentPath, setPrep],
   );
+
+  useEffect(() => {
+    if (!shouldLoadDefaultPlayer || !titleDefaultPlayerName || !prep.databasePath) return;
+
+    seededDefaultPlayerDatabaseRef.current = prep.databasePath;
+    setPrep((current) => {
+      if (
+        (current.mode ?? "player") !== "player" ||
+        (current.source ?? "local") !== "local" ||
+        current.databasePath !== prep.databasePath ||
+        current.player ||
+        current.playerName.trim().length > 0
+      ) {
+        return current;
+      }
+
+      return {
+        ...current,
+        playerName: titleDefaultPlayerName,
+      };
+    });
+  }, [prep.databasePath, setPrep, shouldLoadDefaultPlayer, titleDefaultPlayerName]);
 
   useEffect(() => {
     if (!shouldLoadDefaultPlayer || defaultPlayer === undefined || !prep.databasePath) return;
