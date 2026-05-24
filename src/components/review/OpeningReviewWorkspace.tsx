@@ -2037,6 +2037,14 @@ function OpeningReviewPanel({
   const [deck, setDeck] = useAtom(deckAtomFamily({ file: deckPath, game: 0 }));
   const [practiceState, setPracticeState] = useAtom(practiceStateAtom);
   const [sessionStats, setSessionStats] = useAtom(practiceSessionStatsAtom);
+  const setSessionStatsInTransition = useCallback<typeof setSessionStats>(
+    (value) => {
+      startTransition(() => {
+        setSessionStats(value);
+      });
+    },
+    [setSessionStats],
+  );
   const practicing = practiceState.phase !== "idle";
   const [summaryPositionsSnapshot, setSummaryPositionsSnapshot] = useState(deck.positions);
   useEffect(() => {
@@ -2265,7 +2273,7 @@ function OpeningReviewPanel({
       });
 
       if (practiceState.phase === "incorrect" && practiceState.positionIndex === positionIndex) {
-        setSessionStats((current) => ({
+        setSessionStatsInTransition((current) => ({
           ...current,
           incorrect: Math.max(0, current.incorrect - 1),
         }));
@@ -2293,7 +2301,7 @@ function OpeningReviewPanel({
       practiceState.positionIndex,
       setDeck,
       setPracticeState,
-      setSessionStats,
+      setSessionStatsInTransition,
     ],
   );
 
@@ -2456,7 +2464,7 @@ function OpeningReviewPanel({
     }));
 
     if (sessionStats.mode === "full" || hasScopedRemainingPositions) {
-      setSessionStats((current) => ({
+      setSessionStatsInTransition((current) => ({
         ...current,
         remainingPositions: nextRemainingPositions,
       }));
@@ -2484,7 +2492,7 @@ function OpeningReviewPanel({
     sessionStats.mode,
     sessionStats.remainingPositions,
     setDeck,
-    setSessionStats,
+    setSessionStatsInTransition,
   ]);
 
   const startDuePractice = useCallback(
@@ -2514,7 +2522,7 @@ function OpeningReviewPanel({
         streak: 0,
         bestStreak: 0,
       };
-      setSessionStats((current) => ({ ...current, ...nextStats }));
+      setSessionStatsInTransition((current) => ({ ...current, ...nextStats }));
       newPractice(nextStats, { scopeIndices: remainingPositions });
       if (scopeIndices) {
         notifications.show({
@@ -2526,7 +2534,7 @@ function OpeningReviewPanel({
         });
       }
     },
-    [deck.positions, isMistakeReview, newPractice, setSessionStats],
+    [deck.positions, isMistakeReview, newPractice, setSessionStatsInTransition],
   );
 
   const startFullPractice = useCallback(
@@ -2554,7 +2562,7 @@ function OpeningReviewPanel({
         streak: 0,
         bestStreak: 0,
       };
-      setSessionStats((current) => ({ ...current, ...nextStats }));
+      setSessionStatsInTransition((current) => ({ ...current, ...nextStats }));
       newPractice(nextStats);
       if (scopeIndices) {
         notifications.show({
@@ -2566,7 +2574,7 @@ function OpeningReviewPanel({
         });
       }
     },
-    [deck.positions, isMistakeReview, newPractice, setSessionStats],
+    [deck.positions, isMistakeReview, newPractice, setSessionStatsInTransition],
   );
 
   const startOpeningPlanGapPractice = useCallback(() => {
@@ -2589,7 +2597,7 @@ function OpeningReviewPanel({
       streak: 0,
       bestStreak: 0,
     };
-    setSessionStats((current) => ({ ...current, ...nextStats }));
+    setSessionStatsInTransition((current) => ({ ...current, ...nextStats }));
     newPractice(nextStats);
     notifications.show({
       title: "Plan gap training started",
@@ -2598,7 +2606,7 @@ function OpeningReviewPanel({
       }.`,
       color: "blue",
     });
-  }, [isMistakeReview, newPractice, openingPlanGapScopeIndices, setSessionStats]);
+  }, [isMistakeReview, newPractice, openingPlanGapScopeIndices, setSessionStatsInTransition]);
 
   const startMistakePhasePractice = useCallback(
     (phase: MistakeReviewPhase) => {
@@ -2631,7 +2639,7 @@ function OpeningReviewPanel({
         streak: 0,
         bestStreak: 0,
       };
-      setSessionStats((current) => ({ ...current, ...nextStats }));
+      setSessionStatsInTransition((current) => ({ ...current, ...nextStats }));
       newPractice(nextStats);
       notifications.show({
         title: "Train by phase started",
@@ -2641,7 +2649,7 @@ function OpeningReviewPanel({
         color: "blue",
       });
     },
-    [deck.positions, isMistakeReview, newPractice, setSessionStats],
+    [deck.positions, isMistakeReview, newPractice, setSessionStatsInTransition],
   );
 
   const startMistakeNaturePractice = useCallback(
@@ -2676,7 +2684,7 @@ function OpeningReviewPanel({
         streak: 0,
         bestStreak: 0,
       };
-      setSessionStats((current) => ({ ...current, ...nextStats }));
+      setSessionStatsInTransition((current) => ({ ...current, ...nextStats }));
       newPractice(nextStats);
       notifications.show({
         title: "Train by type started",
@@ -2686,7 +2694,7 @@ function OpeningReviewPanel({
         color: mistakeReviewNatureColor(nature),
       });
     },
-    [deck.positions, isMistakeReview, newPractice, setSessionStats],
+    [deck.positions, isMistakeReview, newPractice, setSessionStatsInTransition],
   );
 
   const startMistakeTimeManagementPractice = useCallback(() => {
@@ -2716,7 +2724,7 @@ function OpeningReviewPanel({
       streak: 0,
       bestStreak: 0,
     };
-    setSessionStats((current) => ({ ...current, ...nextStats }));
+    setSessionStatsInTransition((current) => ({ ...current, ...nextStats }));
     newPractice(nextStats);
     notifications.show({
       title: "Time management training started",
@@ -2729,7 +2737,7 @@ function OpeningReviewPanel({
     deck.positions,
     isMistakeReview,
     newPractice,
-    setSessionStats,
+    setSessionStatsInTransition,
     timeManagementClockDataCount,
     timeManagementMinMoveSeconds,
     timeManagementThresholdText,
@@ -2782,7 +2790,7 @@ function OpeningReviewPanel({
     const wasCorrect = practiceState.phase === "correct";
 
     onQueueCardPerformanceUpdate(positionIndex, position, grade);
-    setSessionStats((current) => ({
+    setSessionStatsInTransition((current) => ({
       ...current,
       remainingPositions,
       correct: wasCorrect ? current.correct + 1 : current.correct,
@@ -2805,7 +2813,7 @@ function OpeningReviewPanel({
     const wasIncorrect = practiceState.phase === "incorrect";
     if (sessionStats.mode === "full" && sessionStats.remainingPositions.length > 0) {
       const remainingPositions = sessionStats.remainingPositions.slice(1);
-      setSessionStats((current) => ({
+      setSessionStatsInTransition((current) => ({
         ...current,
         remainingPositions,
         incorrect: wasIncorrect ? current.incorrect + 1 : current.incorrect,
@@ -2819,7 +2827,7 @@ function OpeningReviewPanel({
       const remainingPositions = sessionStats.remainingPositions.filter(
         (index) => index !== practiceState.positionIndex,
       );
-      setSessionStats((current) => ({
+      setSessionStatsInTransition((current) => ({
         ...current,
         remainingPositions,
         incorrect: wasIncorrect ? current.incorrect + 1 : current.incorrect,
@@ -2833,7 +2841,7 @@ function OpeningReviewPanel({
     }
 
     if (wasIncorrect) {
-      setSessionStats((current) => ({
+      setSessionStatsInTransition((current) => ({
         ...current,
         incorrect: current.incorrect + 1,
         streak: 0,
@@ -2846,7 +2854,7 @@ function OpeningReviewPanel({
 
   const advanceFullPracticeCorrect = useCallback(() => {
     const remainingPositions = sessionStats.remainingPositions.slice(1);
-    setSessionStats((current) => ({
+    setSessionStatsInTransition((current) => ({
       ...current,
       remainingPositions,
       correct: current.correct + 1,
@@ -2854,7 +2862,7 @@ function OpeningReviewPanel({
       bestStreak: Math.max(current.bestStreak, current.streak + 1),
     }));
     newPractice({ remainingPositions, mode: "full" });
-  }, [newPractice, sessionStats.remainingPositions, setSessionStats]);
+  }, [newPractice, sessionStats.remainingPositions, setSessionStatsInTransition]);
 
   const advanceMistakeReviewCorrect = useCallback(() => {
     if (
@@ -2868,7 +2876,7 @@ function OpeningReviewPanel({
         if (sessionStats.mode !== "full") {
           onQueueCardPerformanceUpdate(positionIndex, position, 3);
         }
-        setSessionStats((current) => ({
+        setSessionStatsInTransition((current) => ({
           ...current,
           correct: current.correct + 1,
           streak: current.streak + 1,
@@ -2879,7 +2887,7 @@ function OpeningReviewPanel({
 
     if (sessionStats.mode === "full") {
       const remainingPositions = sessionStats.remainingPositions.slice(1);
-      setSessionStats((current) => ({
+      setSessionStatsInTransition((current) => ({
         ...current,
         remainingPositions,
       }));
@@ -2899,7 +2907,7 @@ function OpeningReviewPanel({
     practiceState.resultRecorded,
     sessionStats.mode,
     sessionStats.remainingPositions,
-    setSessionStats,
+    setSessionStatsInTransition,
   ]);
 
   const canRateAttempt =
@@ -2929,7 +2937,7 @@ function OpeningReviewPanel({
           position,
           Number(practiceAutoDifficulty) as 1 | 2 | 3 | 4,
         );
-        setSessionStats((current) => ({
+        setSessionStatsInTransition((current) => ({
           ...current,
           correct: current.correct + 1,
           streak: current.streak + 1,
@@ -2959,7 +2967,7 @@ function OpeningReviewPanel({
     practiceState.positionIndex,
     sessionStats.mode,
     sessionStats.remainingPositions,
-    setSessionStats,
+    setSessionStatsInTransition,
   ]);
 
   useHotkeys("1", () => handleQualityRating(1), {

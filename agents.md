@@ -289,6 +289,10 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
   source-game move-line hydration until the hidden-answer phase is over; idle
   prewarming should not parse full saved move sequences while the user is
   actively solving a hidden card.
+- Opening Review and Mistake Review session progress bookkeeping is scheduled
+  as transition work during practice starts and card advances, keeping the board
+  position swap and practice-state reset higher priority than counters and
+  remaining-queue UI updates.
 
 ### Practice Bot Trainer
 
