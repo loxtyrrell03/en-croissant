@@ -28,7 +28,7 @@ function GameAnalysisReport({ isAnalysing }: { isAnalysing: boolean }) {
         />
         <Stack gap={0} className={classes.statsPanel}>
           <PlayerStats color="white" stats={report.white} />
-          <Divider my="sm" />
+          <Divider my={4} />
           <PlayerStats color="black" stats={report.black} />
         </Stack>
       </Box>
@@ -135,7 +135,7 @@ function PlayerStats({ color, stats }: { color: "white" | "black"; stats: GameAn
     <Group align="flex-start" wrap="nowrap" gap="sm" className={classes.playerStats}>
       <span className={color === "white" ? classes.whiteDisc : classes.blackDisc} />
       <Stack gap={1} className={classes.playerValues}>
-        <Text fw={700} className={classes.playerName}>
+        <Text fw={700} size="xs" className={classes.playerName}>
           {stats.name}
         </Text>
         <ReportStat value={stats.inaccuracies} label="Inaccuracies" tone="inaccuracy" />
@@ -150,12 +150,14 @@ function PlayerStats({ color, stats }: { color: "white" | "black"; stats: GameAn
           label="Average centipawn loss"
         />
         <Group gap={5} wrap="nowrap" className={classes.statRow}>
-          <Text span fw={700} className={classes.statValue}>
+          <Text span fw={700} size="xs" className={classes.statValue}>
             {stats.accuracy === null ? "-" : `${Math.round(stats.accuracy)}%`}
           </Text>
-          <Text span>Accuracy</Text>
+          <Text span size="xs" className={classes.statLabel}>
+            Accuracy
+          </Text>
           <Tooltip label="Lichess-style game accuracy: a blend of volatility-weighted mean and harmonic mean over move accuracies.">
-            <IconInfoCircle size={16} className={classes.infoIcon} />
+            <IconInfoCircle size={13} className={classes.infoIcon} />
           </Tooltip>
         </Group>
       </Stack>
@@ -174,10 +176,10 @@ function ReportStat({
 }) {
   return (
     <Group gap={8} wrap="nowrap" className={classes.statRow}>
-      <Text span fw={700} className={`${classes.statValue} ${tone ? classes[tone] : ""}`}>
+      <Text span fw={700} size="xs" className={`${classes.statValue} ${tone ? classes[tone] : ""}`}>
         {value}
       </Text>
-      <Text span className={tone ? classes[tone] : undefined}>
+      <Text span size="xs" className={`${classes.statLabel} ${tone ? classes[tone] : ""}`}>
         {label}
       </Text>
     </Group>

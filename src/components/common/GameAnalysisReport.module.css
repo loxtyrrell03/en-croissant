@@ -1,20 +1,21 @@
 .report {
   height: 100%;
   min-height: 0;
-  padding: 8px;
+  padding: 5px 6px;
 }
 
 .reportGrid {
   display: grid;
-  grid-template-columns: minmax(240px, 1.35fr) minmax(180px, 0.85fr);
-  gap: 12px;
+  grid-template-columns: minmax(220px, 1.4fr) minmax(164px, 0.7fr);
+  gap: 8px;
   align-items: stretch;
-  min-height: 176px;
+  min-height: 0;
 }
 
 .chartFrame {
   position: relative;
-  min-height: 176px;
+  min-height: 136px;
+  height: 100%;
   border: 1px solid var(--mantine-color-default-border);
   border-radius: 6px;
   overflow: hidden;
@@ -66,10 +67,10 @@
 
 .phaseLabel {
   position: absolute;
-  top: 4px;
+  top: 3px;
   z-index: 2;
   color: var(--mantine-color-dimmed);
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   font-weight: 600;
   writing-mode: vertical-rl;
   text-orientation: mixed;
@@ -89,24 +90,26 @@
 .statsPanel {
   min-width: 0;
   justify-content: center;
-  padding: 2px 4px;
+  padding: 0 2px;
+  overflow: hidden;
 }
 
 .playerStats {
   min-width: 0;
+  gap: 6px;
 }
 
 .whiteDisc,
 .blackDisc {
-  width: 20px;
-  height: 20px;
-  margin-top: 5px;
+  width: 14px;
+  height: 14px;
+  margin-top: 3px;
   border-radius: 50%;
   flex: 0 0 auto;
 }
 
 .whiteDisc {
-  border: 3px solid var(--mantine-color-gray-6);
+  border: 2px solid var(--mantine-color-gray-6);
   background: var(--mantine-color-body);
 }
 
@@ -119,18 +122,30 @@
 }
 
 .playerName {
-  line-height: 1.15;
+  max-width: 100%;
+  overflow: hidden;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .statRow {
-  min-height: 22px;
-  line-height: 1.15;
+  min-height: 15px;
+  line-height: 1.05;
 }
 
 .statValue {
-  min-width: 34px;
+  min-width: 28px;
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+.statLabel {
+  min-width: 0;
+  overflow: hidden;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .inaccuracy {
@@ -148,6 +163,8 @@
 .infoIcon {
   color: var(--mantine-color-blue-6);
   flex: 0 0 auto;
+  width: 13px;
+  height: 13px;
 }
 
 .inaccuracyDot {
@@ -174,6 +191,6 @@
   }
 
   .chartFrame {
-    min-height: 150px;
+    min-height: 126px;
   }
 }

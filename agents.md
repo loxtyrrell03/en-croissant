@@ -651,6 +651,10 @@ from 2026-04-24 through 2026-05-03.
   Lichess-compatible accuracy, and saves the annotated PGN back to file or
   database origins so reopening an analysed game can rebuild the report without
   rerunning the engine.
+- Move-list game report density was tightened so the chart and both players'
+  accuracy rows fit the notation panel without routine vertical scrolling:
+  smaller player markers, shorter stat rows, non-wrapping labels, and a shorter
+  chart minimum keep the report readable in the board workspace.
 - Review large-deck responsiveness: Opening Review and Mistake Review now use
   a prebuilt FEN index for active-position lookup, object-keyed cached board
   line states instead of recursive review-tree cache-key serialization, and
