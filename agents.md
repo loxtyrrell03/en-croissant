@@ -311,6 +311,9 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
   remaining-position queues stable while advancing by cursor offset, avoiding
   per-card array copies through React state on large Opening Review and Mistake
   Review decks.
+- Engine enable/disable-all updates are idempotent, so Mistake Review's
+  optional engine-off-on-navigation behavior does not rewrite engine settings
+  or wake engine subscribers when engines are already in the requested state.
 
 ### Practice Bot Trainer
 

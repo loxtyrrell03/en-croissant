@@ -1362,7 +1362,10 @@ export const enableAllAtom = atom(null, (get, set, value: boolean) => {
             defaultSettings: engine.type === "local" ? engine.settings || [] : undefined,
             defaultGo: engine.go ?? undefined,
         });
-        set(atom, { ...get(atom), enabled: value });
+        const current = get(atom);
+        if (current.enabled !== value) {
+            set(atom, { ...current, enabled: value });
+        }
     }
 });
 
