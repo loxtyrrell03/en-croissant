@@ -1105,8 +1105,12 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     : "review";
   const selectedToolTabSupportsEngineOutput = selectedToolTab !== "compare";
   // Keep analysis requests alive anywhere the review workspace can show engine controls.
-  // During practice, engines still stay idle until the user enables them or reveal settings do.
-  const evalListenerActive = !practicing || selectedToolTabSupportsEngineOutput;
+  // While a new hidden-answer card is waiting on the Review tab, avoid starting
+  // interactive analysis that can contend with the next-card paint on large decks.
+  const waitingOnHiddenReviewCard =
+    practicing && selectedToolTab === "review" && practiceState.phase === "waiting";
+  const evalListenerActive =
+    !waitingOnHiddenReviewCard && (!practicing || selectedToolTabSupportsEngineOutput);
 
   useEffect(() => {
     if (selectedToolTab !== currentTabSelected) {

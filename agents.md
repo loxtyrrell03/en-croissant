@@ -630,6 +630,10 @@ from 2026-04-24 through 2026-05-03.
   the whole deck a couple seconds after every card. Nearby-card prewarming also
   stops after the first few queued indices instead of filtering the full
   remaining deck.
+- Review engine quieting: the review workspace now keeps interactive engine
+  analysis paused while a hidden-answer card is waiting on the Review tab, then
+  re-enables it after reveal or when users open analysis-capable panels, so
+  engine startup/search does not compete with next-card rendering.
 
 ## Verification Expectations
 
