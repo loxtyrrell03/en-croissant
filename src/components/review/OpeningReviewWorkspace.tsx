@@ -1160,6 +1160,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
 
   useEffect(() => {
     if (!isMistakeReview || !loaded || loadError || treeDirty) return;
+    if (practiceState.phase === "waiting") return;
 
     const positionIndex = scopedReviewPositionIndex;
     const position =
@@ -1169,19 +1170,29 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     if (!position?.moveSequence?.trim()) return;
     if (!sameReviewPosition(root.fen, position.fen) || root.children.length > 0) return;
 
-    const path = loadReviewPositionOnBoard({
-      position,
-      headers,
-      root,
-      store,
-      goToMove,
-      setHeaders,
-      setState,
-    });
+    return scheduleReviewPositionPrewarm(() => {
+      const currentState = store.getState();
+      if (
+        !sameReviewPosition(currentState.root.fen, position.fen) ||
+        currentState.root.children.length > 0
+      ) {
+        return;
+      }
 
-    if (practiceState.currentFen && sameReviewPosition(practiceState.currentFen, position.fen)) {
-      setPracticePath(path);
-    }
+      const path = loadReviewPositionOnBoard({
+        position,
+        headers,
+        root: currentState.root,
+        store,
+        goToMove,
+        setHeaders,
+        setState,
+      });
+
+      if (practiceState.currentFen && sameReviewPosition(practiceState.currentFen, position.fen)) {
+        setPracticePath(path);
+      }
+    });
   }, [
     deck.positions,
     goToMove,
@@ -1190,6 +1201,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     loadError,
     loaded,
     practiceState.currentFen,
+    practiceState.phase,
     root,
     scopedReviewPositionIndex,
     setHeaders,
@@ -1538,6 +1550,7 @@ function loadReviewPositionOnBoard({
   goToMove,
   setHeaders,
   setState,
+  deferMoveSequence = false,
 }: {
   position: Position;
   headers: GameHeaders;
@@ -1546,7 +1559,14 @@ function loadReviewPositionOnBoard({
   goToMove: (move: number[]) => void;
   setHeaders: (headers: GameHeaders) => void;
   setState: (state: TreeState) => void;
+  deferMoveSequence?: boolean;
 }) {
+  if (deferMoveSequence && position.moveSequence?.trim()) {
+    const reviewPosition = createReviewPositionFenState(position, headers);
+    setState(reviewPosition.state);
+    return reviewPosition.path;
+  }
+
   const reviewLine = getReviewPositionLineState(position, headers);
   if (reviewLine) {
     setState(reviewLine.state);
@@ -1664,11 +1684,7 @@ function applyReviewPositionMetadata(store: TreeStore, position: Position) {
 function createReviewPositionLineState(position: Position, headers: GameHeaders) {
   const moveSequence = position.moveSequence?.trim();
   if (!moveSequence) {
-    const tree = defaultTree(position.fen);
-    tree.headers = getReviewPositionHeaders(position, headers, tree.root.fen);
-    tree.dirty = false;
-    applyReviewPositionToNode(tree.root, position);
-    return { state: tree, path: [] };
+    return createReviewPositionFenState(position, headers);
   }
 
   const tree = defaultTree();
@@ -1702,6 +1718,14 @@ function createReviewPositionLineState(position: Position, headers: GameHeaders)
   applyReviewPositionToNode(currentNode, position);
   tree.position = path;
   return { state: tree, path };
+}
+
+function createReviewPositionFenState(position: Position, headers: GameHeaders) {
+  const tree = defaultTree(position.fen);
+  tree.headers = getReviewPositionHeaders(position, headers, tree.root.fen);
+  tree.dirty = false;
+  applyReviewPositionToNode(tree.root, position);
+  return { state: tree, path: [] };
 }
 
 function applyReviewPositionToNode(node: TreeNode, position: Position) {
@@ -2183,7 +2207,7 @@ function OpeningReviewPanel({
     return scheduleReviewPositionPrewarm(() => {
       for (const index of indices) {
         const position = deck.positions[index];
-        if (position) {
+        if (position && (practiceState.phase !== "waiting" || !position.moveSequence?.trim())) {
           getReviewPositionLineState(position, headers);
         }
       }
@@ -2376,6 +2400,7 @@ function OpeningReviewPanel({
         goToMove,
         setHeaders,
         setState,
+        deferMoveSequence: true,
       });
       setPracticePath(path);
       setInvisible(hideMovesDuringPractice);
@@ -3540,6 +3565,7 @@ function OpeningReviewPanel({
                         goToMove,
                         setHeaders,
                         setState,
+                        deferMoveSequence: true,
                       });
                       setPracticePath(path);
                     } else if (
