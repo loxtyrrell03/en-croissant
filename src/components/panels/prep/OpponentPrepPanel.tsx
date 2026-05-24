@@ -1954,91 +1954,96 @@ function OpponentPrepPanel() {
             Import games
           </Button>
         </Tooltip>
-        {prepMode === "player" ? (
-          <DatabasePerspectiveControls
-            databasePath={prepSource === "local" ? prep.databasePath : null}
-            player={prep.player}
-            playerName={prep.playerName}
-            color={prep.color}
-            onPlayerChange={(player) => updateSettings({ player }, false)}
-            onPlayerNameChange={(playerName) => updateSettings({ playerName }, false)}
-            onColorChange={(color) => updateSettings({ color }, true)}
-            size={controlSize}
-            playerWidth={dense ? 130 : 170}
-            colorWidth={dense ? 112 : 126}
-          />
-        ) : (
-          <Tooltip label="The side you are preparing to play">
-            <SegmentedControl
-              aria-label="Your prep side"
-              data={[
-                { value: "white", label: "White" },
-                { value: "black", label: "Black" },
-              ]}
-              value={userColor}
-              onChange={(value) => changeGeneralUserColor(value as "white" | "black")}
-              size={controlSize}
-              w={dense ? 112 : 126}
-            />
-          </Tooltip>
-        )}
-        <Tooltip
-          label={
-            prepMode === "general"
-              ? "Only show database moves that appear at least this many times"
-              : "Only show opponent moves they have played at least this many times"
-          }
-        >
-          <NumberInput
-            label="Min games"
-            value={prep.minGames}
-            onChange={(value) =>
-              updateSettings(
-                {
-                  minGames: Math.max(1, Number(value) || DEFAULT_PREP_MIN_GAMES),
-                },
-                false,
-              )
-            }
-            min={1}
-            max={999}
-            step={1}
-            size={controlSize}
-            w={dense ? 92 : 108}
-            aria-label="Minimum games"
-          />
-        </Tooltip>
-        <Tooltip
-          label={
-            prepMode === "general"
-              ? "How many common database moves to show at each position"
-              : "How many of their most common moves to show at each position"
-          }
-        >
-          <NumberInput
-            label="Show top"
-            value={prep.moveLimit}
-            onChange={(value) =>
-              updateSettings(
-                {
-                  moveLimit: Math.max(1, Number(value) || DEFAULT_PREP_MOVE_LIMIT),
-                },
-                false,
-              )
-            }
-            min={1}
-            max={20}
-            step={1}
-            size={controlSize}
-            w={dense ? 92 : 108}
-            aria-label="Top opponent moves to show"
-          />
-        </Tooltip>
       </Group>
 
-      <Collapse in={onlineImportOpen}>
-        <Stack gap={dense ? 4 : "xs"} py={dense ? 4 : "xs"}>
-          <Group gap={dense ? 4 : "xs"} wrap="wrap" align="flex-end">
+      <Collapse in={!onlineImportOpen} style={{ flexShrink: 0 }}>
+        <Group gap={dense ? 4 : "xs"} wrap="wrap">
+          {prepMode === "player" ? (
+            <DatabasePerspectiveControls
+              databasePath={prepSource === "local" ? prep.databasePath : null}
+              player={prep.player}
+              playerName={prep.playerName}
+              color={prep.color}
+              onPlayerChange={(player) => updateSettings({ player }, false)}
+              onPlayerNameChange={(playerName) => updateSettings({ playerName }, false)}
+              onColorChange={(color) => updateSettings({ color }, true)}
+              size={controlSize}
+              playerWidth={dense ? 130 : 170}
+              colorWidth={dense ? 112 : 126}
+            />
+          ) : (
+            <Tooltip label="The side you are preparing to play">
+              <SegmentedControl
+                aria-label="Your prep side"
+                data={[
+                  { value: "white", label: "White" },
+                  { value: "black", label: "Black" },
+                ]}
+                value={userColor}
+                onChange={(value) => changeGeneralUserColor(value as "white" | "black")}
+                size={controlSize}
+                w={dense ? 112 : 126}
+              />
+            </Tooltip>
+          )}
+          <Tooltip
+            label={
+              prepMode === "general"
+                ? "Only show database moves that appear at least this many times"
+                : "Only show opponent moves they have played at least this many times"
+            }
+          >
+            <NumberInput
+              label="Min games"
+              value={prep.minGames}
+              onChange={(value) =>
+                updateSettings(
+                  {
+                    minGames: Math.max(1, Number(value) || DEFAULT_PREP_MIN_GAMES),
+                  },
+                  false,
+                )
+              }
+              min={1}
+              max={999}
+              step={1}
+              size={controlSize}
+              w={dense ? 92 : 108}
+              aria-label="Minimum games"
+            />
+          </Tooltip>
+          <Tooltip
+            label={
+              prepMode === "general"
+                ? "How many common database moves to show at each position"
+                : "How many of their most common moves to show at each position"
+            }
+          >
+            <NumberInput
+              label="Show top"
+              value={prep.moveLimit}
+              onChange={(value) =>
+                updateSettings(
+                  {
+                    moveLimit: Math.max(1, Number(value) || DEFAULT_PREP_MOVE_LIMIT),
+                  },
+                  false,
+                )
+              }
+              min={1}
+              max={20}
+              step={1}
+              size={controlSize}
+              w={dense ? 92 : 108}
+              aria-label="Top opponent moves to show"
+            />
+          </Tooltip>
+        </Group>
+      </Collapse>
+
+      <Collapse in={onlineImportOpen} style={{ flexShrink: 0 }}>
+        <Stack gap={dense ? 3 : 6} pt={dense ? 2 : 4} pb={dense ? 4 : 6}>
+          <Group gap={dense ? 4 : 6} wrap="wrap" align="flex-end">
             <SegmentedControl
               aria-label="Online prep source"
               data={[
@@ -2097,6 +2102,8 @@ function OpponentPrepPanel() {
                 comboboxProps={{ withinPortal: true }}
               />
             )}
+          </Group>
+          <Group gap={dense ? 4 : "xs"} wrap="wrap" align="center">
             <Checkbox
               label="Save database"
               checked={onlineImportSaveDatabase}
@@ -2104,6 +2111,22 @@ function OpponentPrepPanel() {
               size={controlSize}
               styles={{ body: { alignItems: "center" } }}
             />
+            {onlineImportMode === "count" ? (
+              <Button
+                variant="default"
+                size={controlSize}
+                disabled={!onlineImportUsernameTrimmed}
+                loading={onlineImportPreviewLoading}
+                onClick={() => void previewOnlineImportCount()}
+              >
+                Check range
+              </Button>
+            ) : (
+              <Badge variant="light">{onlineImportRangeLabel}</Badge>
+            )}
+            <Text size="xs" c="dimmed" style={{ flex: "1 1 18rem", minWidth: 0 }}>
+              {onlineImportPreviewText}
+            </Text>
             <Button
               variant="filled"
               size={controlSize}
@@ -2114,28 +2137,8 @@ function OpponentPrepPanel() {
             >
               Import + use
             </Button>
-          </Group>
-          <Group justify="space-between" gap="xs" wrap="wrap">
-            <Group gap="xs" wrap="wrap">
-              {onlineImportMode === "count" ? (
-                <Button
-                  variant="default"
-                  size={controlSize}
-                  disabled={!onlineImportUsernameTrimmed}
-                  loading={onlineImportPreviewLoading}
-                  onClick={() => void previewOnlineImportCount()}
-                >
-                  Check range
-                </Button>
-              ) : (
-                <Badge variant="light">{onlineImportRangeLabel}</Badge>
-              )}
-              <Text size="xs" c="dimmed">
-                {onlineImportPreviewText}
-              </Text>
-            </Group>
             {onlineImportProgress !== null ? (
-              <Group gap={6} wrap="nowrap" style={{ minWidth: dense ? 120 : 160 }}>
+              <Group gap={6} wrap="nowrap" style={{ flex: `0 0 ${dense ? 120 : 160}px` }}>
                 <Progress value={onlineImportProgress} size="xs" style={{ flex: 1 }} />
                 <Text size="xs" c="dimmed">
                   {Math.round(onlineImportProgress)}%
@@ -2144,7 +2147,7 @@ function OpponentPrepPanel() {
             ) : null}
           </Group>
         </Stack>
-        <Divider my={dense ? 4 : "xs"} />
+        <Divider my={dense ? 2 : 4} />
       </Collapse>
 
       <Box style={{ flexShrink: 0 }}>

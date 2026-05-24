@@ -179,6 +179,8 @@ and `src/utils/lichess/study.ts`.
   active opponent-prep source. Imports can use a most-recent game count with a
   preview of the oldest included game, or an uncapped date range such as last 3
   months or last year, and can optionally be saved as a normal database.
+  Opening the import drawer collapses the normal prep filters so the online
+  source, range, save, preview, and import controls remain compact.
 - Lichess Study links can be imported as local databases.
 - Lichess Study databases support auto-update metadata and refresh tracking.
 - Lichess Study databases expose a database-manager reload control that
