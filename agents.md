@@ -639,6 +639,9 @@ from 2026-04-24 through 2026-05-03.
   flows through the buffered SRS update path. The active Mistake Review card is
   also retained in a ref instead of React state, removing an extra settling
   render on every card load.
+- Mistake Review reveal countdowns now update at most once per displayed second
+  and skip unchanged values, instead of waking the full board every 250ms during
+  the common 2-3 second hidden-answer delay.
 
 ## Verification Expectations
 

@@ -912,10 +912,11 @@ function Board({
 
     const revealAt = Date.now() + delaySeconds * 1000;
     const updateRemaining = () => {
-      setMistakeReviewRevealRemaining(Math.max(0, Math.ceil((revealAt - Date.now()) / 1000)));
+      const remaining = Math.max(0, Math.ceil((revealAt - Date.now()) / 1000));
+      setMistakeReviewRevealRemaining((current) => (current === remaining ? current : remaining));
     };
     updateRemaining();
-    const timer = window.setInterval(updateRemaining, 250);
+    const timer = window.setInterval(updateRemaining, 1000);
     return () => window.clearInterval(timer);
   }, [isMistakeReviewTab, mistakeReviewRevealDelay, trainerMistakeReviewKey]);
 
