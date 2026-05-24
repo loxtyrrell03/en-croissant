@@ -1,5 +1,12 @@
 import { expect, test } from "vitest";
-import { formatScore, getAccuracy, getAnnotation, getCPLoss, getWinChance } from "../score";
+import {
+    formatScore,
+    getAccuracy,
+    getAnnotation,
+    getCPLoss,
+    getLichessGameAccuracy,
+    getWinChance,
+} from "../score";
 
 test("should format a positive cp score correctly", () => {
     expect(formatScore({ type: "cp", value: 50 })).toBe("+0.50");
@@ -25,6 +32,23 @@ test("should calculate the accuracy correctly", () => {
     expect(getAccuracy({ type: "cp", value: 0 }, { type: "cp", value: -500 }, "white")).toBeCloseTo(
         19.07,
     );
+});
+
+test("should calculate lichess-style game accuracy", () => {
+    expect(getLichessGameAccuracy([], "white")).toBeNull();
+    expect(getLichessGameAccuracy([15, 15], "white")?.white).toBeCloseTo(100, 0);
+    const whiteBlunderAccuracy = getLichessGameAccuracy([-900, -900], "white")?.white;
+    const blackBlunderAccuracy = getLichessGameAccuracy([15, 900], "white")?.black;
+    expect(whiteBlunderAccuracy).toBeGreaterThan(5);
+    expect(whiteBlunderAccuracy).toBeLessThan(15);
+    expect(blackBlunderAccuracy).toBeGreaterThan(5);
+    expect(blackBlunderAccuracy).toBeLessThan(15);
+    const mediocreAccuracy = getLichessGameAccuracy(
+        Array.from({ length: 50 }, () => [-135, 15]).flat(),
+        "white",
+    )?.white;
+    expect(mediocreAccuracy).toBeGreaterThan(46);
+    expect(mediocreAccuracy).toBeLessThan(62);
 });
 
 test("should calculate the cp loss correctly", () => {

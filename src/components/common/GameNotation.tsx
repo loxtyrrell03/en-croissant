@@ -18,6 +18,7 @@ import {
   IconArrowsSplit,
   IconArticle,
   IconArticleOff,
+  IconChartBar,
   IconCheck,
   IconCopy,
   IconEye,
@@ -27,6 +28,7 @@ import {
   IconMinus,
   IconPlus,
 } from "@tabler/icons-react";
+import { useLoaderData } from "@tanstack/react-router";
 import { INITIAL_FEN } from "chessops/fen";
 import equal from "fast-deep-equal";
 import { useAtom, useAtomValue } from "jotai";
@@ -35,20 +37,24 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { useStoreWithEqualityFn } from "zustand/traditional";
+import { commands, type GoMode } from "@/bindings";
 import Comment from "@/components/common/Comment";
+import GameAnalysisReport from "@/components/common/GameAnalysisReport";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import {
   currentInvisibleAtom,
   currentShowCommentsAtom,
   currentShowVariationsAtom,
   currentTabAtom,
+  enginesAtom,
   tableViewAtom,
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
-import { commands } from "@/bindings";
-import { getPGN } from "@/utils/chess";
+import { getMainLine, getPGN } from "@/utils/chess";
+import type { Engine, LocalEngine } from "@/utils/engines";
+import { hasCompleteGameAnalysis } from "@/utils/gameAnalysisReport";
 import { formatScore } from "@/utils/score";
-import { getTabFile, getTabGameNumber } from "@/utils/tabs";
+import { getTabFile, getTabGameNumber, saveToFile } from "@/utils/tabs";
 import { getNodeAtPath, type TreeNode } from "@/utils/treeReducer";
 import type { TreeStore } from "@/state/store/tree";
 import CompleteMoveCell from "./CompleteMoveCell";
@@ -72,6 +78,8 @@ function GameNotation({
   const currentFen = useStore(store, (s) => s.currentNode().fen);
   const headers = useStore(store, (s) => s.headers);
   const rootComment = useStore(store, (s) => s.root.comment);
+  const reportInProgress = useStore(store, (s) => s.report.inProgress);
+  const [reportVisible, setReportVisible] = useState(false);
 
   const viewport = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLSpanElement>(null);
@@ -121,7 +129,13 @@ function GameNotation({
           </>
         )}
         <Stack h="100%" gap={0} style={{ flex: 1, minWidth: 0, minHeight: 0 }}>
-          {topBar && <NotationHeader compact={compact} />}
+          {topBar && (
+            <NotationHeader
+              compact={compact}
+              reportVisible={reportVisible}
+              setReportVisible={setReportVisible}
+            />
+          )}
           <ScrollArea
             flex={1}
             offsetScrollbars
@@ -130,43 +144,49 @@ function GameNotation({
             style={{ minHeight: 0 }}
           >
             <Stack gap="xs">
-              <Box>
-                {invisible && (
-                  <Overlay
-                    backgroundOpacity={0.6}
-                    color={colorScheme === "dark" ? "#1a1b1e" : undefined}
-                    blur={8}
-                    zIndex={2}
-                  />
-                )}
-                {showComments && rootComment && (
-                  <Box p="sm" fz="sm">
-                    <Comment comment={rootComment} />
+              {reportVisible ? (
+                <GameAnalysisReport isAnalysing={reportInProgress} />
+              ) : (
+                <>
+                  <Box>
+                    {invisible && (
+                      <Overlay
+                        backgroundOpacity={0.6}
+                        color={colorScheme === "dark" ? "#1a1b1e" : undefined}
+                        blur={8}
+                        zIndex={2}
+                      />
+                    )}
+                    {showComments && rootComment && (
+                      <Box p="sm" fz="sm">
+                        <Comment comment={rootComment} />
+                      </Box>
+                    )}
+                    {tableView ? (
+                      <TableNotation targetRef={targetRef} />
+                    ) : (
+                      <Box pt={compact ? 6 : "md"} px="sm">
+                        <RenderVariationTree targetRef={targetRef} nodePath={[]} depth={0} first />
+                      </Box>
+                    )}
                   </Box>
-                )}
-                {tableView ? (
-                  <TableNotation targetRef={targetRef} />
-                ) : (
-                  <Box pt={compact ? 6 : "md"} px="sm">
-                    <RenderVariationTree targetRef={targetRef} nodePath={[]} depth={0} first />
+                  <Box pb={compact ? 6 : "md"}>
+                    {headers.result !== "*" && (
+                      <Text ta="center">
+                        {headers.result}
+                        <br />
+                        <Text span fs="italic">
+                          {headers.result === "1/2-1/2"
+                            ? "Draw"
+                            : headers.result === "1-0"
+                              ? "White wins"
+                              : "Black wins"}
+                        </Text>
+                      </Text>
+                    )}
                   </Box>
-                )}
-              </Box>
-              <Box pb={compact ? 6 : "md"}>
-                {headers.result !== "*" && (
-                  <Text ta="center">
-                    {headers.result}
-                    <br />
-                    <Text span fs="italic">
-                      {headers.result === "1/2-1/2"
-                        ? "Draw"
-                        : headers.result === "1-0"
-                          ? "White wins"
-                          : "Black wins"}
-                    </Text>
-                  </Text>
-                )}
-              </Box>
+                </>
+              )}
             </Stack>
           </ScrollArea>
         </Stack>
@@ -175,13 +195,26 @@ function GameNotation({
   );
 }
 
-function NotationHeader({ compact = false }: { compact?: boolean }) {
+function NotationHeader({
+  compact = false,
+  reportVisible,
+  setReportVisible,
+}: {
+  compact?: boolean;
+  reportVisible: boolean;
+  setReportVisible: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const { t } = useTranslation();
+  const { documentDir } = useLoaderData({ from: "/" });
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (s) => s.root);
   const headers = useStore(store, (s) => s.headers);
   const dirty = useStore(store, (s) => s.dirty);
-  const currentTab = useAtomValue(currentTabAtom);
+  const addAnalysis = useStore(store, (s) => s.addAnalysis);
+  const reportInProgress = useStore(store, (s) => s.report.inProgress);
+  const setReportInProgress = useStore(store, (s) => s.setReportInProgress);
+  const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
+  const engines = useAtomValue(enginesAtom);
   const [invisible, setInvisible] = useAtom(currentInvisibleAtom);
   const [showComments, setShowComments] = useAtom(currentShowCommentsAtom);
   const [showVariations, setShowVariations] = useAtom(currentShowVariationsAtom);
@@ -242,7 +275,97 @@ function NotationHeader({ compact = false }: { compact?: boolean }) {
     }
   }
 
+  async function analyzeGame() {
+    if (reportVisible) {
+      setReportVisible(false);
+      return;
+    }
+
+    if (hasCompleteGameAnalysis(root)) {
+      setReportVisible(true);
+      return;
+    }
+
+    const engine = selectStockfishEngine(engines ?? []);
+    if (!engine) {
+      notifications.show({
+        title: "Choose a Stockfish engine",
+        message: "Add or load a local Stockfish engine before analyzing this game.",
+        color: "yellow",
+      });
+      return;
+    }
+
+    setReportInProgress(true);
+    try {
+      const analysis = await commands.analyzeGame(
+        `report_${currentTab?.value ?? "notation"}`,
+        engine.path,
+        getReportGoMode(engine),
+        {
+          annotateNovelties: false,
+          fen: root.fen,
+          referenceDb: null,
+          reversed: true,
+          moves: getMainLine(root),
+        },
+        (engine.settings ?? []).map((setting) => ({
+          name: setting.name,
+          value: setting.value?.toString() ?? "",
+        })),
+      );
+
+      if (analysis.status === "ok") {
+        addAnalysis(analysis.data, { showVariations: true });
+        await saveAnalysisIfPersistent();
+        setReportVisible(true);
+      } else {
+        notifications.show({
+          title: "Could not analyze game",
+          message: analysis.error,
+          color: "red",
+        });
+      }
+    } catch (error) {
+      notifications.show({
+        title: "Could not analyze game",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    } finally {
+      setReportInProgress(false);
+    }
+  }
+
+  async function saveAnalysisIfPersistent() {
+    const origin = currentTab?.gameOrigin;
+    if (!origin || (origin.kind !== "file" && origin.kind !== "database")) return;
+
+    try {
+      await saveToFile({
+        dir: documentDir,
+        setCurrentTab,
+        tab: currentTab,
+        store,
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Analysis was not saved",
+        message:
+          error instanceof Error
+            ? error.message
+            : "The report is available now, but it could not be written to the source game.",
+        color: "yellow",
+      });
+    }
+  }
+
   const copyPgnLabel = copied ? t("Common.Copied") : `${t("Menu.Edit.Copy") || "Copy"} PGN`;
+  const analyzeLabel = reportVisible
+    ? "Show moves"
+    : hasCompleteGameAnalysis(root)
+      ? "Show game report"
+      : "Analyze game with Stockfish";
 
   return (
     <Stack gap={compact ? 4 : "xs"} pt={compact ? 5 : "xs"}>
@@ -256,6 +379,16 @@ function NotationHeader({ compact = false }: { compact?: boolean }) {
               onClick={() => void copyCompletePgn()}
             >
               {copied ? <IconCheck size="1rem" /> : <IconCopy size="1rem" />}
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label={analyzeLabel}>
+            <ActionIcon
+              aria-label={analyzeLabel}
+              loading={reportInProgress}
+              disabled={root.children.length === 0}
+              onClick={() => void analyzeGame()}
+            >
+              {reportVisible ? <IconList size="1rem" /> : <IconChartBar size="1rem" />}
             </ActionIcon>
           </Tooltip>
           <Tooltip label={invisible ? t("Notation.ShowMoves") : t("Notation.HideMoves")}>
@@ -285,6 +418,23 @@ function NotationHeader({ compact = false }: { compact?: boolean }) {
       <Divider />
     </Stack>
   );
+}
+
+function selectStockfishEngine(engines: Engine[]): LocalEngine | null {
+  const loadedLocal = engines.filter(
+    (engine): engine is LocalEngine => engine.type === "local" && Boolean(engine.loaded),
+  );
+  return (
+    loadedLocal.find((engine) => engine.name.toLowerCase().includes("stockfish")) ??
+    loadedLocal[0] ??
+    null
+  );
+}
+
+function getReportGoMode(engine: LocalEngine): Exclude<GoMode, { t: "Infinite" | "PlayersTime" }> {
+  const go = engine.go;
+  if (go?.t === "Depth" || go?.t === "Time" || go?.t === "Nodes") return go;
+  return { t: "Time", c: 500 };
 }
 
 const RenderVariationTree = memo(
@@ -705,17 +855,9 @@ function RowSegment({
   const store = useContext(TreeStateContext)!;
   const showComments = useAtomValue(currentShowCommentsAtom);
   const whitePath = useMemo(() => parsePathStr(whitePathStr), [whitePathStr]);
-  const white = useStoreWithEqualityFn(
-    store,
-    (s) => selectMoveNodeView(s.root, whitePath),
-    equal,
-  );
+  const white = useStoreWithEqualityFn(store, (s) => selectMoveNodeView(s.root, whitePath), equal);
   const blackPath = useMemo(() => parsePathStr(blackPathStr), [blackPathStr]);
-  const black = useStoreWithEqualityFn(
-    store,
-    (s) => selectMoveNodeView(s.root, blackPath),
-    equal,
-  );
+  const black = useStoreWithEqualityFn(store, (s) => selectMoveNodeView(s.root, blackPath), equal);
   return (
     <Table.Tr>
       <Table.Td className={styles.moveTableMoveNumber}>{moveNumber}</Table.Td>

@@ -8,7 +8,14 @@ import { commands, type Outcome, type Score, type Token } from "@/bindings";
 import { ANNOTATION_INFO, isBasicAnnotation, NAG_INFO } from "./annotation";
 import { parseSanOrUci, positionFromFen } from "./chessops";
 import { harmonicMean, isPrefix, mean } from "./misc";
-import { formatScore, getAccuracy, getCPLoss, INITIAL_SCORE } from "./score";
+import {
+    formatScore,
+    getAccuracy,
+    getCPLoss,
+    getLichessGameAccuracy,
+    INITIAL_SCORE,
+    scoreValueToCentipawns,
+} from "./score";
 import {
     createNode,
     defaultTree,
@@ -592,6 +599,7 @@ export function getGameStats(root: TreeNode) {
     }
 
     let prevScore: Score = root.score ?? INITIAL_SCORE;
+    const centipawns: (number | null)[] = [];
     const cplosses: ColorMap<number[]> = {
         white: [],
         black: [],
@@ -614,15 +622,22 @@ export function getGameStats(root: TreeNode) {
         }
         const color = node.halfMoves % 2 === 1 ? "white" : "black";
         if (node.score) {
+            centipawns.push(scoreValueToCentipawns(node.score.value));
             cplosses[color].push(getCPLoss(prevScore.value, node.score.value, color));
             accuracies[color].push(getAccuracy(prevScore.value, node.score.value, color));
             prevScore = node.score;
+        } else {
+            centipawns.push(null);
         }
     }
     const whiteCPL = mean(cplosses.white);
     const blackCPL = mean(cplosses.black);
-    const whiteAccuracy = harmonicMean(accuracies.white);
-    const blackAccuracy = harmonicMean(accuracies.black);
+    const lichessAccuracy = getLichessGameAccuracy(
+        centipawns,
+        root.halfMoves % 2 === 0 ? "white" : "black",
+    );
+    const whiteAccuracy = lichessAccuracy?.white ?? harmonicMean(accuracies.white);
+    const blackAccuracy = lichessAccuracy?.black ?? harmonicMean(accuracies.black);
 
     return {
         whiteCPL,

@@ -612,6 +612,13 @@ from 2026-04-24 through 2026-05-03.
   blank panes, and common feature chunks are warmed after first paint or
   sidebar hover so opening board, home, files, databases, engines, and settings
   feels much more immediate without blocking the app's initial open.
+- Move-list game reports: the notation header now has an Analyse game action
+  next to Copy PGN. It runs the selected local Stockfish on the main line,
+  switches the move-list panel into a Lichess-style report with eval chart,
+  phase markers, inaccuracies/mistakes/blunders, average centipawn loss, and
+  Lichess-compatible accuracy, and saves the annotated PGN back to file or
+  database origins so reopening an analysed game can rebuild the report without
+  rerunning the engine.
 
 ## Verification Expectations
 
