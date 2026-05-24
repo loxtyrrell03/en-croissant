@@ -1115,6 +1115,7 @@ export const practiceStateAtom = tabValue(practiceStateFamily);
 export type PracticeSessionStats = {
     mode: "anki" | "full" | "srs-list";
     remainingPositions: number[];
+    queueOffset?: number;
     correct: number;
     incorrect: number;
     streak: number;

@@ -307,6 +307,9 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
 - Hidden-answer mistake cards use only already-stored mistake-type metadata in
   board and game-info panels; fresh tactical/positional classification is
   deferred until answer feedback is visible.
+- Full-deck and scoped review trainers keep their large remaining-position
+  queues stable while advancing by cursor offset, avoiding per-card array
+  copies through React state on large Opening Review and Mistake Review decks.
 
 ### Practice Bot Trainer
 

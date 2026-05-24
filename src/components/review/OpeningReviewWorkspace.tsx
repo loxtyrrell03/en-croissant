@@ -2439,10 +2439,14 @@ function OpeningReviewPanel({
 
       const mode = nextStats?.mode ?? sessionStats.mode;
       const remaining = nextStats?.remainingPositions ?? sessionStats.remainingPositions;
+      const queueOffset = clampReviewQueueOffset(
+        nextStats?.queueOffset ?? sessionStats.queueOffset,
+        remaining.length,
+      );
       const excludePositionIndex = options?.excludePositionIndex;
       const positionIndex =
         mode === "full" || mode === "srs-list"
-          ? (remaining.find((index) => index !== excludePositionIndex) ?? -1)
+          ? getNextQueuedReviewPositionIndex(remaining, queueOffset, excludePositionIndex)
           : getNextDueOpeningReviewPositionIndex(
               positions,
               remaining.length > 0 ? remaining : options?.scopeIndices,
@@ -2479,6 +2483,7 @@ function OpeningReviewPanel({
       headers,
       root,
       sessionStats.mode,
+      sessionStats.queueOffset,
       sessionStats.remainingPositions,
       setCardStartTime,
       setEvalOpen,
@@ -2511,6 +2516,10 @@ function OpeningReviewPanel({
               positionIndex > currentPracticePositionIndex ? positionIndex - 1 : positionIndex,
             )
         : sessionStats.remainingPositions;
+    const nextQueueOffset =
+      sessionStats.mode === "full" || sessionStats.mode === "srs-list"
+        ? clampReviewQueueOffset(sessionStats.queueOffset, nextRemainingPositions.length)
+        : sessionStats.queueOffset;
 
     setDeck((current) => ({
       ...current,
@@ -2523,6 +2532,7 @@ function OpeningReviewPanel({
       setSessionStatsInTransition((current) => ({
         ...current,
         remainingPositions: nextRemainingPositions,
+        queueOffset: nextQueueOffset,
       }));
     }
 
@@ -2534,7 +2544,11 @@ function OpeningReviewPanel({
     onClearBoardMoveCandidate();
     newPractice(
       sessionStats.mode === "full" || hasScopedRemainingPositions
-        ? { mode: sessionStats.mode, remainingPositions: nextRemainingPositions }
+        ? {
+            mode: sessionStats.mode,
+            remainingPositions: nextRemainingPositions,
+            queueOffset: nextQueueOffset,
+          }
         : undefined,
       { positions: nextPositions },
     );
@@ -2546,6 +2560,7 @@ function OpeningReviewPanel({
     onClearBoardMoveCandidate,
     onFlushCardPerformanceUpdates,
     sessionStats.mode,
+    sessionStats.queueOffset,
     sessionStats.remainingPositions,
     setDeck,
     setSessionStatsInTransition,
@@ -2573,6 +2588,7 @@ function OpeningReviewPanel({
       const nextStats = {
         mode: "anki" as const,
         remainingPositions,
+        queueOffset: 0,
         correct: 0,
         incorrect: 0,
         streak: 0,
@@ -2613,6 +2629,7 @@ function OpeningReviewPanel({
       const nextStats = {
         mode: "full" as const,
         remainingPositions,
+        queueOffset: 0,
         correct: 0,
         incorrect: 0,
         streak: 0,
@@ -2648,6 +2665,7 @@ function OpeningReviewPanel({
     const nextStats = {
       mode: "srs-list" as const,
       remainingPositions: openingPlanGapScopeIndices,
+      queueOffset: 0,
       correct: 0,
       incorrect: 0,
       streak: 0,
@@ -2690,6 +2708,7 @@ function OpeningReviewPanel({
       const nextStats = {
         mode: "srs-list" as const,
         remainingPositions,
+        queueOffset: 0,
         correct: 0,
         incorrect: 0,
         streak: 0,
@@ -2735,6 +2754,7 @@ function OpeningReviewPanel({
       const nextStats = {
         mode: "srs-list" as const,
         remainingPositions,
+        queueOffset: 0,
         correct: 0,
         incorrect: 0,
         streak: 0,
@@ -2775,6 +2795,7 @@ function OpeningReviewPanel({
     const nextStats = {
       mode: "srs-list" as const,
       remainingPositions,
+      queueOffset: 0,
       correct: 0,
       incorrect: 0,
       streak: 0,
@@ -2839,8 +2860,13 @@ function OpeningReviewPanel({
     const position = deck.positions[positionIndex];
     if (!position) return;
 
-    const remainingPositions =
-      sessionStats.remainingPositions.length > 0
+    const advancesStableQueue = sessionStats.mode === "full" || sessionStats.mode === "srs-list";
+    const nextQueueOffset = advancesStableQueue
+      ? clampReviewQueueOffset(sessionStats.queueOffset, sessionStats.remainingPositions.length) + 1
+      : sessionStats.queueOffset;
+    const remainingPositions = advancesStableQueue
+      ? sessionStats.remainingPositions
+      : sessionStats.remainingPositions.length > 0
         ? sessionStats.remainingPositions.filter((index) => index !== positionIndex)
         : sessionStats.remainingPositions;
     const wasCorrect = practiceState.phase === "correct";
@@ -2849,6 +2875,7 @@ function OpeningReviewPanel({
     setSessionStatsInTransition((current) => ({
       ...current,
       remainingPositions,
+      queueOffset: nextQueueOffset,
       correct: wasCorrect ? current.correct + 1 : current.correct,
       incorrect: wasCorrect ? current.incorrect : current.incorrect + 1,
       streak: wasCorrect ? current.streak + 1 : 0,
@@ -2857,25 +2884,36 @@ function OpeningReviewPanel({
         : current.bestStreak,
     }));
     newPractice(
-      { mode: sessionStats.mode, remainingPositions },
+      { mode: sessionStats.mode, remainingPositions, queueOffset: nextQueueOffset },
       {
         excludePositionIndex: positionIndex,
-        ...(sessionStats.remainingPositions.length > 0 ? { scopeIndices: remainingPositions } : {}),
+        ...(!advancesStableQueue && sessionStats.remainingPositions.length > 0
+          ? { scopeIndices: remainingPositions }
+          : {}),
       },
     );
   }
 
   function skipCard() {
     const wasIncorrect = practiceState.phase === "incorrect";
-    if (sessionStats.mode === "full" && sessionStats.remainingPositions.length > 0) {
-      const remainingPositions = sessionStats.remainingPositions.slice(1);
+    if (
+      (sessionStats.mode === "full" || sessionStats.mode === "srs-list") &&
+      sessionStats.remainingPositions.length > 0
+    ) {
+      const nextQueueOffset =
+        clampReviewQueueOffset(sessionStats.queueOffset, sessionStats.remainingPositions.length) +
+        1;
       setSessionStatsInTransition((current) => ({
         ...current,
-        remainingPositions,
+        queueOffset: nextQueueOffset,
         incorrect: wasIncorrect ? current.incorrect + 1 : current.incorrect,
         streak: wasIncorrect ? 0 : current.streak,
       }));
-      newPractice({ remainingPositions, mode: "full" });
+      newPractice({
+        remainingPositions: sessionStats.remainingPositions,
+        mode: sessionStats.mode,
+        queueOffset: nextQueueOffset,
+      });
       return;
     }
 
@@ -2909,16 +2947,26 @@ function OpeningReviewPanel({
   }
 
   const advanceFullPracticeCorrect = useCallback(() => {
-    const remainingPositions = sessionStats.remainingPositions.slice(1);
+    const nextQueueOffset =
+      clampReviewQueueOffset(sessionStats.queueOffset, sessionStats.remainingPositions.length) + 1;
     setSessionStatsInTransition((current) => ({
       ...current,
-      remainingPositions,
+      queueOffset: nextQueueOffset,
       correct: current.correct + 1,
       streak: current.streak + 1,
       bestStreak: Math.max(current.bestStreak, current.streak + 1),
     }));
-    newPractice({ remainingPositions, mode: "full" });
-  }, [newPractice, sessionStats.remainingPositions, setSessionStatsInTransition]);
+    newPractice({
+      remainingPositions: sessionStats.remainingPositions,
+      mode: "full",
+      queueOffset: nextQueueOffset,
+    });
+  }, [
+    newPractice,
+    sessionStats.queueOffset,
+    sessionStats.remainingPositions,
+    setSessionStatsInTransition,
+  ]);
 
   const advanceMistakeReviewCorrect = useCallback(() => {
     if (
@@ -2942,12 +2990,18 @@ function OpeningReviewPanel({
     }
 
     if (sessionStats.mode === "full") {
-      const remainingPositions = sessionStats.remainingPositions.slice(1);
+      const nextQueueOffset =
+        clampReviewQueueOffset(sessionStats.queueOffset, sessionStats.remainingPositions.length) +
+        1;
       setSessionStatsInTransition((current) => ({
         ...current,
-        remainingPositions,
+        queueOffset: nextQueueOffset,
       }));
-      newPractice({ remainingPositions, mode: "full" });
+      newPractice({
+        remainingPositions: sessionStats.remainingPositions,
+        mode: "full",
+        queueOffset: nextQueueOffset,
+      });
       return;
     }
 
@@ -2962,6 +3016,7 @@ function OpeningReviewPanel({
     practiceState.positionIndex,
     practiceState.resultRecorded,
     sessionStats.mode,
+    sessionStats.queueOffset,
     sessionStats.remainingPositions,
     setSessionStatsInTransition,
   ]);
@@ -2982,8 +3037,17 @@ function OpeningReviewPanel({
     if (practiceAutoDifficulty !== "none" && practiceState.positionIndex !== undefined) {
       const positionIndex = practiceState.positionIndex;
       const timer = window.setTimeout(() => {
-        const remainingPositions =
-          sessionStats.remainingPositions.length > 0
+        const advancesStableQueue =
+          sessionStats.mode === "full" || sessionStats.mode === "srs-list";
+        const nextQueueOffset = advancesStableQueue
+          ? clampReviewQueueOffset(
+              sessionStats.queueOffset,
+              sessionStats.remainingPositions.length,
+            ) + 1
+          : sessionStats.queueOffset;
+        const remainingPositions = advancesStableQueue
+          ? sessionStats.remainingPositions
+          : sessionStats.remainingPositions.length > 0
             ? sessionStats.remainingPositions.filter((index) => index !== positionIndex)
             : sessionStats.remainingPositions;
         const position = deck.positions[positionIndex];
@@ -2995,15 +3059,16 @@ function OpeningReviewPanel({
         );
         setSessionStatsInTransition((current) => ({
           ...current,
+          queueOffset: nextQueueOffset,
           correct: current.correct + 1,
           streak: current.streak + 1,
           bestStreak: Math.max(current.bestStreak, current.streak + 1),
         }));
         newPractice(
-          { mode: sessionStats.mode, remainingPositions },
+          { mode: sessionStats.mode, remainingPositions, queueOffset: nextQueueOffset },
           {
             excludePositionIndex: positionIndex,
-            ...(sessionStats.remainingPositions.length > 0
+            ...(!advancesStableQueue && sessionStats.remainingPositions.length > 0
               ? { scopeIndices: remainingPositions }
               : {}),
           },
@@ -3022,6 +3087,7 @@ function OpeningReviewPanel({
     practiceState.phase,
     practiceState.positionIndex,
     sessionStats.mode,
+    sessionStats.queueOffset,
     sessionStats.remainingPositions,
     setSessionStatsInTransition,
   ]);
@@ -3167,9 +3233,11 @@ function OpeningReviewPanel({
   const isTraining = practiceState.phase !== "idle";
   const sessionCompleted = sessionStats.correct + sessionStats.incorrect;
   const sessionRemaining =
-    sessionStats.mode === "full" || sessionStats.remainingPositions.length > 0
-      ? sessionStats.remainingPositions.length
-      : Math.max(0, stats.due + stats.unseen);
+    sessionStats.mode === "full" || sessionStats.mode === "srs-list"
+      ? getRemainingReviewQueueLength(sessionStats)
+      : sessionStats.remainingPositions.length > 0
+        ? sessionStats.remainingPositions.length
+        : Math.max(0, stats.due + stats.unseen);
   const sessionTotal = sessionCompleted + sessionRemaining;
   const sessionProgress = sessionTotal > 0 ? (sessionCompleted / sessionTotal) * 100 : 0;
   const ratingPanelDetail =
@@ -6531,16 +6599,59 @@ function getPositionIndicesByReference(positions: Position[], selected: Position
     .filter((positionIndex) => positionIndex >= 0);
 }
 
+function clampReviewQueueOffset(value: number | null | undefined, queueLength: number) {
+  const offset = Math.max(0, Math.trunc(Number(value) || 0));
+  return Math.min(offset, Math.max(0, queueLength));
+}
+
+function getNextQueuedReviewPositionIndex(
+  remainingPositions: number[],
+  queueOffset: number,
+  excludePositionIndex?: number,
+) {
+  for (let index = queueOffset; index < remainingPositions.length; index += 1) {
+    const positionIndex = remainingPositions[index];
+    if (positionIndex !== excludePositionIndex) return positionIndex ?? -1;
+  }
+  return -1;
+}
+
+function getRemainingReviewQueueLength(sessionStats: {
+  mode: "anki" | "full" | "srs-list";
+  remainingPositions: number[];
+  queueOffset?: number;
+}) {
+  return Math.max(
+    0,
+    sessionStats.remainingPositions.length -
+      clampReviewQueueOffset(sessionStats.queueOffset, sessionStats.remainingPositions.length),
+  );
+}
+
 function getReviewPrewarmPositionIndices(
   positions: Position[],
-  sessionStats: { mode: "anki" | "full" | "srs-list"; remainingPositions: number[] },
+  sessionStats: {
+    mode: "anki" | "full" | "srs-list";
+    remainingPositions: number[];
+    queueOffset?: number;
+  },
   currentPositionIndex: number,
 ) {
   if (positions.length === 0) return [];
 
   if (sessionStats.remainingPositions.length > 0) {
+    const queueOffset =
+      sessionStats.mode === "full" || sessionStats.mode === "srs-list"
+        ? clampReviewQueueOffset(sessionStats.queueOffset, sessionStats.remainingPositions.length)
+        : 0;
     const indices: number[] = [];
-    for (const index of sessionStats.remainingPositions) {
+    for (
+      let queueIndex = queueOffset;
+      queueIndex < sessionStats.remainingPositions.length;
+      queueIndex += 1
+    ) {
+      const index = sessionStats.remainingPositions[queueIndex];
+      if (index === undefined) continue;
       if (index === currentPositionIndex || !positions[index]) continue;
       indices.push(index);
       if (indices.length >= REVIEW_POSITION_PREWARM_LIMIT) break;
