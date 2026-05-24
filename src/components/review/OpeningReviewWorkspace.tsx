@@ -5825,9 +5825,12 @@ function MistakeReviewGameInfoPanel({
     mistake,
     playerColor === "white" ? "black" : "white",
   );
-  const nature = getMistakeReviewNature(position);
-  const natureLabel = mistakeReviewNatureLabel(nature);
-  const natureConfidence = getMistakeReviewNatureConfidence(position);
+  const storedNature = getStoredMistakeReviewNature(position);
+  const nature = revealAnswer ? getMistakeReviewNature(position) : storedNature;
+  const natureLabel = nature ? mistakeReviewNatureLabel(nature) : null;
+  const natureConfidence = revealAnswer
+    ? getMistakeReviewNatureConfidence(position)
+    : getStoredMistakeReviewNatureConfidence(position);
 
   return (
     <Paper px="sm" py="xs" withBorder radius="sm" className={classes.reviewSection}>
@@ -5842,11 +5845,13 @@ function MistakeReviewGameInfoPanel({
             </Text>
           </Stack>
           <Group gap={4} wrap="wrap" justify="flex-end" className={classes.reviewBadgeGroup}>
-            <Tooltip label={`${natureLabel}, ${natureConfidence} confidence`}>
-              <Badge size="xs" color={mistakeReviewNatureColor(nature)} variant="light">
-                {natureLabel}
-              </Badge>
-            </Tooltip>
+            {nature && natureLabel && (
+              <Tooltip label={`${natureLabel}, ${natureConfidence ?? "unknown"} confidence`}>
+                <Badge size="xs" color={mistakeReviewNatureColor(nature)} variant="light">
+                  {natureLabel}
+                </Badge>
+              </Tooltip>
+            )}
             <Badge size="xs" variant="light">
               {mistakeReviewSeverityLabel(mistake.severity ?? "mistake")}
             </Badge>
@@ -5897,7 +5902,16 @@ function MistakeReviewGameInfoPanel({
               }
             />
             <ReviewDetail label="Think time" value={formatMistakeReviewThinkTime(mistake)} />
-            <ReviewDetail label="Mistake type" value={`${natureLabel} (${natureConfidence})`} />
+            <ReviewDetail
+              label="Mistake type"
+              value={
+                natureLabel
+                  ? `${natureLabel} (${natureConfidence ?? "unknown"})`
+                  : revealAnswer
+                    ? "Unknown"
+                    : "Hidden"
+              }
+            />
             <ReviewDetail label="Last seen" value={formatMistakeReviewLastSeen(position)} />
           </SimpleGrid>
         )}
@@ -6229,6 +6243,18 @@ function normalizeMistakeReviewName(value?: string | null) {
   const name = value?.trim();
   if (!name || name === "?" || name === "-") return "";
   return name;
+}
+
+function getStoredMistakeReviewNature(position: Position | null | undefined) {
+  const metadata = position?.mistakeReview;
+  const candidate = metadata?.nature ?? metadata?.mistakeNature ?? metadata?.summary?.nature;
+  return candidate === "tactical" || candidate === "positional" ? candidate : null;
+}
+
+function getStoredMistakeReviewNatureConfidence(position: Position | null | undefined) {
+  const metadata = position?.mistakeReview;
+  const candidate = metadata?.natureConfidence ?? metadata?.summary?.natureConfidence;
+  return candidate === "high" || candidate === "medium" || candidate === "low" ? candidate : null;
 }
 
 function normalizeMistakeReviewRating(value?: number | null) {

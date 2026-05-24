@@ -304,6 +304,9 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
   unmounted and suppress engine-arrow derivation until feedback is visible, so
   the next-card paint is not competing with notation controls or stale analysis
   arrow processing.
+- Hidden-answer mistake cards use only already-stored mistake-type metadata in
+  board and game-info panels; fresh tactical/positional classification is
+  deferred until answer feedback is visible.
 
 ### Practice Bot Trainer
 
