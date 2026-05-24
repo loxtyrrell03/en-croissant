@@ -634,6 +634,11 @@ from 2026-04-24 through 2026-05-03.
   analysis paused while a hidden-answer card is waiting on the Review tab, then
   re-enables it after reveal or when users open analysis-capable panels, so
   engine startup/search does not compete with next-card rendering.
+- Board review attempt smoothness: the board no longer mutates the review deck
+  just to mark a card seen immediately after an attempted move; durable progress
+  flows through the buffered SRS update path. The active Mistake Review card is
+  also retained in a ref instead of React state, removing an extra settling
+  render on every card load.
 
 ## Verification Expectations
 

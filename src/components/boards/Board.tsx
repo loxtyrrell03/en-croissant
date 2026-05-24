@@ -548,7 +548,7 @@ function Board({
   const currentTab = useAtomValue(currentTabAtom);
   const [evalOpen, setEvalOpen] = useAtom(currentEvalOpenAtom);
 
-  const [deck, setDeck] = useAtom(
+  const deck = useAtomValue(
     deckAtomFamily({
       file: getTabPracticeKey(currentTab),
       game: getTabGameNumber(currentTab),
@@ -585,8 +585,7 @@ function Board({
   const [mistakeReviewLineBusy, setMistakeReviewLineBusy] = useState(false);
   const [mistakeReviewRevealRemaining, setMistakeReviewRevealRemaining] = useState(0);
   const [mistakeReviewFreePlay, setMistakeReviewFreePlay] = useState(false);
-  const [activeMistakeReviewPosition, setActiveMistakeReviewPosition] =
-    useState<ReviewPosition | null>(null);
+  const activeMistakeReviewPositionRef = useRef<ReviewPosition | null>(null);
   const mistakeReviewLineTimers = useRef<number[]>([]);
   const mistakeReviewAssessmentTimerRef = useRef<number | null>(null);
   const previousMistakeReviewIndexRef = useRef<number | null>(null);
@@ -638,33 +637,24 @@ function Board({
   ]);
   const currentMistakeReviewPosition =
     currentMistakeReviewIndex >= 0 ? deck.positions[currentMistakeReviewIndex] : null;
-  useEffect(() => {
-    if (!isMistakeReviewTab) {
-      setActiveMistakeReviewPosition(null);
-      previousMistakeReviewIndexRef.current = null;
-      return;
-    }
-
-    if (currentMistakeReviewPosition?.mistakeReview) {
-      setActiveMistakeReviewPosition(currentMistakeReviewPosition);
-    }
-  }, [currentMistakeReviewPosition, isMistakeReviewTab]);
+  if (!isMistakeReviewTab) {
+    activeMistakeReviewPositionRef.current = null;
+    previousMistakeReviewIndexRef.current = null;
+  } else if (currentMistakeReviewPosition?.mistakeReview) {
+    activeMistakeReviewPositionRef.current = currentMistakeReviewPosition;
+  }
 
   const trainerMistakeReviewPosition = currentMistakeReviewPosition?.mistakeReview
     ? currentMistakeReviewPosition
-    : activeMistakeReviewPosition;
+    : activeMistakeReviewPositionRef.current;
   const trainerMistakeReviewIndex = useMemo(() => {
     if (currentMistakeReviewPosition?.mistakeReview) return currentMistakeReviewIndex;
+    const activeMistakeReviewPosition = activeMistakeReviewPositionRef.current;
     if (!activeMistakeReviewPosition) return -1;
     return deck.positions.findIndex((position) =>
       sameBoardPosition(position.fen, activeMistakeReviewPosition.fen),
     );
-  }, [
-    activeMistakeReviewPosition,
-    currentMistakeReviewIndex,
-    currentMistakeReviewPosition,
-    deck.positions,
-  ]);
+  }, [currentMistakeReviewIndex, currentMistakeReviewPosition, deck.positions]);
   const currentPracticeEntry = useMemo(
     () =>
       findReviewPracticePositionForBoard(
@@ -815,60 +805,6 @@ function Board({
       return buildMistakeReviewLine(firstMoveUci, fallbackPv).slice(0, maxPlies);
     },
     [mistakeReviewSampleLinePlies],
-  );
-
-  const markMistakeReviewAttemptSeen = useCallback(
-    (positionIndex: number, expectedFen: string, attemptedCardReps: number) => {
-      const attemptedAt = Date.now();
-      const updateDeck = () => {
-        startTransition(() => {
-          setDeck((current) => {
-            const position = current.positions[positionIndex];
-            if (!position?.mistakeReview || position.fen !== expectedFen) return current;
-
-            const positions = [...current.positions];
-            positions[positionIndex] = {
-              ...position,
-              mistakeReview: {
-                ...position.mistakeReview,
-                lastAttemptedAt: attemptedAt,
-                lastAttemptedCardReps: attemptedCardReps,
-              },
-            };
-            return { positions, logs: current.logs };
-          });
-        });
-      };
-
-      if ("requestIdleCallback" in window) {
-        window.requestIdleCallback(updateDeck, { timeout: 1600 });
-      } else {
-        globalThis.setTimeout(updateDeck, 80);
-      }
-    },
-    [setDeck],
-  );
-
-  const markOpeningReviewAttemptSeen = useCallback(
-    (positionIndex: number) => {
-      const attemptedAt = Date.now();
-      setDeck((current) => {
-        const position = current.positions[positionIndex];
-        if (!position) return current;
-
-        const positions = [...current.positions];
-        positions[positionIndex] = {
-          ...position,
-          openingReview: {
-            ...position.openingReview,
-            lastAttemptedAt: attemptedAt,
-            lastAttemptedCardReps: position.card.reps ?? 0,
-          },
-        };
-        return { positions, logs: current.logs };
-      });
-    },
-    [setDeck],
   );
 
   const revealMistakeReviewBest = useCallback(async () => {
@@ -1071,7 +1007,6 @@ function Board({
           if (mistakeReviewAssessmentRequestRef.current !== requestId) return;
 
           onMove?.(uci, c.fen, san);
-          markMistakeReviewAttemptSeen(i, c.fen, c.card.reps ?? 0);
 
           const immediateAssessment = assessMistakeReviewMove(c, playedMove);
           startTransition(() => {
@@ -1174,7 +1109,6 @@ function Board({
         if (openingReviewAssessmentRequestRef.current !== requestId) return;
 
         onMove?.(uci, c.fen, san);
-        markOpeningReviewAttemptSeen(i);
 
         const immediateAssessment = assessOpeningReviewMove(c, { san, uci }, null, null);
         const immediateState = openingReviewAssessmentToPracticeState({
