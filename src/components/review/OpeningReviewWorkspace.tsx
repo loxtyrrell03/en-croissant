@@ -1278,7 +1278,9 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
               </Tooltip>
             </Group>
           }
-          underBoard={!isMistakeReview && <ReviewMovesBox />}
+          underBoard={
+            !isMistakeReview && practiceState.phase !== "waiting" ? <ReviewMovesBox /> : null
+          }
         />
       </Portal>
       <Portal target="#topRight" style={{ height: "100%" }}>
@@ -3837,7 +3839,7 @@ function OpeningReviewPanel({
               position={mistakeReviewInfoPosition}
               revealAnswer={revealCurrentPracticeAnswer}
             />
-            {mistakeMovesOpen ? (
+            {mistakeMovesOpen && revealCurrentPracticeAnswer ? (
               <Stack gap={4} className={classes.reviewMovesExpanded}>
                 <Group justify="space-between" gap="xs" wrap="nowrap">
                   <Text size="xs" fw={700}>
@@ -3854,7 +3856,7 @@ function OpeningReviewPanel({
                 </Group>
                 <ReviewMovesBox rightPanel />
               </Stack>
-            ) : (
+            ) : revealCurrentPracticeAnswer ? (
               <Paper px="sm" py="xs" withBorder radius="sm" className={classes.reviewSection}>
                 <Group justify="space-between" gap="xs" wrap="nowrap">
                   <Stack gap={0}>
@@ -3872,7 +3874,7 @@ function OpeningReviewPanel({
                   </Button>
                 </Group>
               </Paper>
-            )}
+            ) : null}
           </>
         )}
       </Stack>

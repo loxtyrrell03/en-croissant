@@ -491,18 +491,21 @@ function Board({
   const [pos, error] = useMemo(() => positionFromFen(currentNode.fen), [currentNode.fen]);
   const [whiteFideOpen, setWhiteFideOpen] = useState(false);
   const [blackFideOpen, setBlackFideOpen] = useState(false);
+  const [practiceState, setPracticeState] = useAtom(practiceStateAtom);
 
   const moveInput = useAtomValue(moveInputAtom);
   const showDests = useAtomValue(showDestsAtom);
   const moveHighlight = useAtomValue(moveHighlightAtom);
   const showArrows = useAtomValue(showArrowsAtom);
+  const hiddenReviewPractice = practicing && practiceState.phase === "waiting";
+  const engineArrowsEnabled = showArrows && !hiddenReviewPractice;
   const arrows = useAtomValue(
     bestMovesFamily({
       fen: rootFen,
       gameMoves: moves,
       gameMovesKey: movesKey,
       finalFen: currentNode.fen,
-      enabled: showArrows,
+      enabled: engineArrowsEnabled,
     }),
   );
   const showVariationArrows = useAtomValue(showVariationArrowsAtom);
@@ -563,7 +566,6 @@ function Board({
     [deck.positions],
   );
 
-  const [practiceState, setPracticeState] = useAtom(practiceStateAtom);
   const latestPracticeStateRef = useRef(practiceState);
   const cardStartTime = useAtomValue(practiceCardStartTimeAtom);
   const [mistakeReviewAutoPlayLine, setMistakeReviewAutoPlayLine] = useAtom(
@@ -1233,7 +1235,7 @@ function Board({
   const shapes = useMemo(() => {
     let nextShapes: DrawShape[] = [];
 
-    if (showArrows && arrows.size > 0 && pos) {
+    if (engineArrowsEnabled && arrows.size > 0 && pos) {
       const entries = Array.from(arrows.entries()).sort((a, b) => a[0] - b[0]);
       for (const [i, moves] of entries) {
         if (i < 4) {
@@ -1408,10 +1410,10 @@ function Board({
     pos,
     practiceState,
     practicing,
-    showArrows,
     showConsecutiveArrows,
     showPlanExplorerArrows,
     showVariationArrows,
+    engineArrowsEnabled,
   ]);
 
   const hasClock =

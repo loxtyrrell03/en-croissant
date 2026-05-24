@@ -300,6 +300,10 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
   next-card path.
 - Board-side review-card lookups use the shared review FEN index instead of
   scanning the whole deck when resolving the current practice or mistake card.
+- Hidden-answer review cards keep move-list and move-control subscribers
+  unmounted and suppress engine-arrow derivation until feedback is visible, so
+  the next-card paint is not competing with notation controls or stale analysis
+  arrow processing.
 
 ### Practice Bot Trainer
 
