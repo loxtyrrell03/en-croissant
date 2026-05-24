@@ -3,7 +3,12 @@ import { parseUci } from "chessops";
 import { createEmptyCard } from "ts-fsrs";
 import { describe, expect, test } from "vitest";
 import type { Position } from "@/components/files/opening";
-import { getReviewPositionsForPath, sameReviewPosition } from "@/utils/openingReviewPersistence";
+import {
+    createReviewPositionFenIndex,
+    findReviewPositionIndexForFen,
+    getReviewPositionsForPath,
+    sameReviewPosition,
+} from "@/utils/openingReviewPersistence";
 import { createNode, defaultTree } from "@/utils/treeReducer";
 
 const BLACK_TO_MOVE_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";
@@ -76,6 +81,35 @@ describe("opening review persistence matching", () => {
         expect(matches).toHaveLength(1);
         expect(matches[0]!.positionIndex).toBe(1);
         expect(matches[0]!.path).toEqual([]);
+    });
+
+    test("can reuse a FEN index for large review decks without changing duplicate behavior", () => {
+        const tree = defaultTree(INITIAL_FEN);
+        const positions = [
+            position({ reviewKey: "first", answer: "e4", answerUci: "e2e4" }),
+            ...Array.from({ length: 100 }, (_, index) =>
+                position({
+                    fen: `${BLACK_TO_MOVE_FEN.split(" ").slice(0, 4).join(" ")} 0 ${index + 1}`,
+                    reviewKey: `filler-${index}`,
+                }),
+            ),
+            position({ reviewKey: "loaded", answer: "d4", answerUci: "d2d4" }),
+        ];
+        const fenIndex = createReviewPositionFenIndex(positions);
+
+        const matches = getReviewPositionsForPath(
+            positions,
+            tree.root,
+            [],
+            positions.length - 1,
+            fenIndex,
+        );
+
+        expect(matches).toHaveLength(1);
+        expect(matches[0]!.positionIndex).toBe(positions.length - 1);
+        expect(
+            findReviewPositionIndexForFen(positions, BLACK_TO_MOVE_FEN, undefined, fenIndex),
+        ).toBe(1);
     });
 
     test("compares positions using the board state fields only", () => {

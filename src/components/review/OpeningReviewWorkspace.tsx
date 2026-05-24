@@ -188,7 +188,12 @@ import {
   rankOpeningReviewPositions,
   type OpeningReviewGapTrainingType,
 } from "@/utils/openingReviewAutoUpdate";
-import { getReviewPositionsForPath, sameReviewPosition } from "@/utils/openingReviewPersistence";
+import {
+  createReviewPositionFenIndex,
+  findReviewPositionIndexForFen,
+  getReviewPositionsForPath,
+  sameReviewPosition,
+} from "@/utils/openingReviewPersistence";
 import {
   getOpeningReviewMoveSequenceLabel,
   getOpeningReviewStatsPerspectiveSide,
@@ -336,12 +341,14 @@ const MISTAKE_REVIEW_POSITION_SEVERITIES: MistakeReviewAttemptLabel[] = [
 ];
 
 const openingReviewOpeningNameCache = new BoundedMap<string, string>(2000);
-const reviewPositionLineStateCache = new BoundedMap<string, { path: number[]; state: TreeState }>(
-  600,
-);
+const reviewPositionLineStateCache = new WeakMap<
+  Position,
+  Map<string, { path: number[]; state: TreeState }>
+>();
 const REVIEW_DECK_SAVE_DEBOUNCE_MS = 1200;
 const REVIEW_CARD_UPDATE_IDLE_TIMEOUT_MS = 1800;
 const REVIEW_POSITION_PREWARM_LIMIT = 3;
+const REVIEW_SUMMARY_PRACTICE_REFRESH_MS = 2500;
 
 function scheduleReviewDeckSave(callback: () => void) {
   let idleId: number | null = null;
@@ -373,6 +380,26 @@ function scheduleReviewPositionPrewarm(callback: () => void) {
 
   const timeoutId = globalThis.setTimeout(callback, 80);
   return () => globalThis.clearTimeout(timeoutId);
+}
+
+function scheduleReviewSummaryRefresh(callback: () => void) {
+  const timeoutId = window.setTimeout(() => {
+    if ("requestIdleCallback" in window) {
+      const idleId = window.requestIdleCallback(callback, { timeout: 3500 });
+      callbackCleanup.idleId = idleId;
+    } else {
+      callback();
+    }
+  }, REVIEW_SUMMARY_PRACTICE_REFRESH_MS);
+  const callbackCleanup: { idleId: number | null } = { idleId: null };
+
+  return () => {
+    window.clearTimeout(timeoutId);
+    if (callbackCleanup.idleId === null) return;
+    if ("cancelIdleCallback" in window) {
+      window.cancelIdleCallback(callbackCleanup.idleId);
+    }
+  };
 }
 
 function scheduleAfterReviewTransition(callback: () => void) {
@@ -507,10 +534,21 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
       ? practiceState.positionIndex
       : loadedReviewPositionIndex;
   const deferredBackgroundPositions = useDeferredValue(deck.positions);
+  const reviewPositionFenIndex = useMemo(
+    () => createReviewPositionFenIndex(deck.positions),
+    [deck.positions],
+  );
 
   const activeReviewPositions = useMemo(
-    () => getReviewPositionsForPath(deck.positions, root, positionPath, scopedReviewPositionIndex),
-    [deck.positions, positionPath, root, scopedReviewPositionIndex],
+    () =>
+      getReviewPositionsForPath(
+        deck.positions,
+        root,
+        positionPath,
+        scopedReviewPositionIndex,
+        reviewPositionFenIndex,
+      ),
+    [deck.positions, positionPath, reviewPositionFenIndex, root, scopedReviewPositionIndex],
   );
   const activeReviewPosition = activeReviewPositions[activeReviewPositions.length - 1] ?? null;
   const activeReviewIndex = activeReviewPosition?.positionIndex ?? -1;
@@ -1237,6 +1275,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                     boardMoveCandidate={boardMoveCandidate}
                     onClearBoardMoveCandidate={() => setBoardMoveCandidate(null)}
                     onLoadPosition={loadDeckPosition}
+                    reviewPositionFenIndex={reviewPositionFenIndex}
                     loadError={loadError}
                     loaded={loaded}
                   />
@@ -1452,8 +1491,13 @@ function loadReviewPositionOnBoard({
 
 function getReviewPositionLineState(position: Position, headers: GameHeaders) {
   const headersKey = reviewLineHeadersCacheKey(headers);
-  const cacheKey = reviewLineStateCacheKey(position, headersKey);
-  const cached = reviewPositionLineStateCache.get(cacheKey);
+  let positionCache = reviewPositionLineStateCache.get(position);
+  if (!positionCache) {
+    positionCache = new Map();
+    reviewPositionLineStateCache.set(position, positionCache);
+  }
+
+  const cached = positionCache.get(headersKey);
   if (cached) {
     return {
       path: [...cached.path],
@@ -1464,7 +1508,7 @@ function getReviewPositionLineState(position: Position, headers: GameHeaders) {
   const reviewLine = createReviewPositionLineState(position, headers);
   if (!reviewLine) return null;
 
-  reviewPositionLineStateCache.set(cacheKey, {
+  positionCache.set(headersKey, {
     path: [...reviewLine.path],
     state: cloneTreeState(reviewLine.state),
   });
@@ -1473,33 +1517,6 @@ function getReviewPositionLineState(position: Position, headers: GameHeaders) {
     path: [...reviewLine.path],
     state: reviewLine.state,
   };
-}
-
-function reviewLineStateCacheKey(position: Position, headersKey: string) {
-  return [
-    headersKey,
-    position.reviewKey ?? "",
-    position.fen,
-    position.moveSequence ?? "",
-    position.answerUci ?? "",
-    position.answer ?? "",
-    position.comment ?? "",
-    JSON.stringify(position.annotations ?? []),
-    JSON.stringify(position.shapes ?? []),
-    position.reviewTree ? reviewTreeLineCacheKey(position.reviewTree) : "",
-  ].join("\u001f");
-}
-
-function reviewTreeLineCacheKey(node: TreeNode): string {
-  return [
-    node.fen,
-    node.san ?? "",
-    node.comment ?? "",
-    JSON.stringify(node.annotations ?? []),
-    JSON.stringify(node.shapes ?? []),
-    node.score ? JSON.stringify(node.score) : "",
-    node.children.map(reviewTreeLineCacheKey).join("\u001e"),
-  ].join("\u001d");
 }
 
 function reviewLineHeadersCacheKey(headers: GameHeaders) {
@@ -1873,6 +1890,7 @@ function OpeningReviewPanel({
   boardMoveCandidate,
   onClearBoardMoveCandidate,
   onLoadPosition,
+  reviewPositionFenIndex,
   loadError,
   loaded,
 }: {
@@ -1894,6 +1912,7 @@ function OpeningReviewPanel({
   boardMoveCandidate: ReviewBoardMoveCandidate | null;
   onClearBoardMoveCandidate: () => void;
   onLoadPosition: (positionIndex: number) => void;
+  reviewPositionFenIndex: ReturnType<typeof createReviewPositionFenIndex>;
   loadError: string | null;
   loaded: boolean;
 }) {
@@ -1907,8 +1926,22 @@ function OpeningReviewPanel({
   const currentFen = useStore(store, (s) => s.currentNode().fen);
 
   const [deck, setDeck] = useAtom(deckAtomFamily({ file: deckPath, game: 0 }));
-  const deferredDeckPositions = useDeferredValue(deck.positions);
-  const summaryPositions = loaded ? deferredDeckPositions : deck.positions;
+  const [practiceState, setPracticeState] = useAtom(practiceStateAtom);
+  const [sessionStats, setSessionStats] = useAtom(practiceSessionStatsAtom);
+  const practicing = practiceState.phase !== "idle";
+  const [summaryPositionsSnapshot, setSummaryPositionsSnapshot] = useState(deck.positions);
+  useEffect(() => {
+    if (!loaded || !practicing) {
+      setSummaryPositionsSnapshot(deck.positions);
+      return undefined;
+    }
+
+    return scheduleReviewSummaryRefresh(() => {
+      startTransition(() => setSummaryPositionsSnapshot(deck.positions));
+    });
+  }, [deck.positions, loaded, practicing]);
+  const deferredSummaryPositions = useDeferredValue(summaryPositionsSnapshot);
+  const summaryPositions = loaded ? deferredSummaryPositions : deck.positions;
   const stats = useMemo(() => getStats(summaryPositions), [summaryPositions]);
   const dailyProgress = useMemo(() => {
     if (isMistakeReview && mistakeDailySettings) {
@@ -1963,8 +1996,6 @@ function OpeningReviewPanel({
   const setShowComments = useSetAtom(currentShowCommentsAtom);
   const setEvalOpen = useSetAtom(currentEvalOpenAtom);
   const setDailyGoalCompletionPrompt = useSetAtom(dailyGoalCompletionPromptAtom);
-  const [practiceState, setPracticeState] = useAtom(practiceStateAtom);
-  const [sessionStats, setSessionStats] = useAtom(practiceSessionStatsAtom);
   const setCardStartTime = useSetAtom(practiceCardStartTimeAtom);
   const practiceAutoDifficulty = useAtomValue(practiceAutoDifficultyAtom);
   const hideMovesDuringPractice = useAtomValue(openingReviewHideMovesDuringPracticeAtom);
@@ -2001,8 +2032,11 @@ function OpeningReviewPanel({
     }
 
     if (!boardMoveCandidate) return null;
-    const positionIndex = deck.positions.findIndex(
-      (position) => position.fen === boardMoveCandidate.fen,
+    const positionIndex = findReviewPositionIndexForFen(
+      deck.positions,
+      boardMoveCandidate.fen,
+      undefined,
+      reviewPositionFenIndex,
     );
     if (positionIndex === -1) return null;
 
@@ -2017,6 +2051,7 @@ function OpeningReviewPanel({
     practiceState.playedMove,
     practiceState.playedMoveUci,
     practiceState.positionIndex,
+    reviewPositionFenIndex,
   ]);
   const playedOverridePosition =
     playedOverrideCandidate && deck.positions[playedOverrideCandidate.positionIndex]
@@ -2038,8 +2073,11 @@ function OpeningReviewPanel({
   const currentPracticePositionIndex =
     practiceState.positionIndex ??
     (practiceState.currentFen
-      ? deck.positions.findIndex((position) =>
-          sameReviewPosition(position.fen, practiceState.currentFen ?? ""),
+      ? findReviewPositionIndexForFen(
+          deck.positions,
+          practiceState.currentFen,
+          undefined,
+          reviewPositionFenIndex,
         )
       : -1);
   const currentPracticePosition =
@@ -2079,10 +2117,15 @@ function OpeningReviewPanel({
       ? (deck.positions[practiceState.positionIndex] ?? null)
       : null;
   const attemptPlayedMove = practiceState.playedMove ?? null;
-  const currentBoardPosition = useMemo(
-    () => deck.positions.find((position) => sameReviewPosition(position.fen, currentFen)) ?? null,
-    [currentFen, deck.positions],
-  );
+  const currentBoardPosition = useMemo(() => {
+    const positionIndex = findReviewPositionIndexForFen(
+      deck.positions,
+      currentFen,
+      undefined,
+      reviewPositionFenIndex,
+    );
+    return positionIndex >= 0 ? (deck.positions[positionIndex] ?? null) : null;
+  }, [currentFen, deck.positions, reviewPositionFenIndex]);
   const mistakeReviewInfoPosition = isMistakeReview
     ? (attemptPosition ??
       currentPracticePosition ??
