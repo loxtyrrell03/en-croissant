@@ -602,6 +602,12 @@ from 2026-04-24 through 2026-05-03.
   into the Files root as a folder of individual game files.
 - Opponent prep defaults: new Prep tabs now start with Min games set to 1 so
   even one-game opponent branches are visible by default.
+- Startup responsiveness: cached directory paths now let common route loaders
+  paint immediately while the real paths refresh in the background. Major
+  route and board workspace chunk loads show progress fallbacks instead of
+  blank panes, and common feature chunks are warmed after first paint or
+  sidebar hover so opening board, home, files, databases, engines, and settings
+  feels much more immediate without blocking the app's initial open.
 
 ## Verification Expectations
 

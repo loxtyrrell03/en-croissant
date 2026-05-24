@@ -28,6 +28,7 @@ import { keyMapAtom } from "@/state/keybinds";
 import { removeDebouncedSessionStorageItem } from "@/state/store/debouncedStorage";
 import { createTab, genID, isPersistentGameOrigin, type Tab } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
+import { BoardStartupFallback } from "../common/StartupProgress";
 import { TreeStateProvider } from "../common/TreeStateContext";
 import { BoardTab } from "./BoardTab";
 import ConfirmChangesModal from "./ConfirmChangesModal";
@@ -287,7 +288,15 @@ export default function BoardsPage() {
         </DragDropContext>
       </ScrollArea>
       {tabs.map((tab) => (
-        <Tabs.Panel key={tab.value} value={tab.value} h="100%" w="100%" pb="sm" px="xs">
+        <Tabs.Panel
+          key={tab.value}
+          value={tab.value}
+          h="100%"
+          w="100%"
+          pb="sm"
+          px="xs"
+          className={classes.tabPanel}
+        >
           <TabSwitch
             tab={tab}
             saveModalOpened={saveModalOpened}
@@ -568,7 +577,7 @@ function TabSwitch({
     .with("play", () => (
       <TreeStateProvider id={tab.value}>
         <BoardWorkspaceLayout tab={tab} />
-        <Suspense fallback={null}>
+        <Suspense fallback={<WorkspaceStartupFallback tab={tab} />}>
           <BoardGame />
         </Suspense>
       </TreeStateProvider>
@@ -576,7 +585,7 @@ function TabSwitch({
     .with("analysis", () => (
       <TreeStateProvider id={tab.value}>
         <BoardWorkspaceLayout tab={tab} />
-        <Suspense fallback={null}>
+        <Suspense fallback={<WorkspaceStartupFallback tab={tab} />}>
           <BoardAnalysis />
         </Suspense>
         <ConfirmChangesModal
@@ -589,7 +598,7 @@ function TabSwitch({
     .with("puzzles", () => (
       <TreeStateProvider id={tab.value}>
         <BoardWorkspaceLayout tab={tab} />
-        <Suspense fallback={null}>
+        <Suspense fallback={<WorkspaceStartupFallback tab={tab} />}>
           <Puzzles id={tab.value} />
         </Suspense>
       </TreeStateProvider>
@@ -597,7 +606,7 @@ function TabSwitch({
     .with("opening-review", () => (
       <TreeStateProvider id={tab.value}>
         <BoardWorkspaceLayout tab={tab} />
-        <Suspense fallback={null}>
+        <Suspense fallback={<WorkspaceStartupFallback tab={tab} />}>
           <OpeningReviewWorkspace tab={tab} />
         </Suspense>
       </TreeStateProvider>
@@ -605,10 +614,24 @@ function TabSwitch({
     .with("mistake-review", () => (
       <TreeStateProvider id={tab.value}>
         <BoardWorkspaceLayout tab={tab} />
-        <Suspense fallback={null}>
+        <Suspense fallback={<WorkspaceStartupFallback tab={tab} />}>
           <OpeningReviewWorkspace tab={tab} />
         </Suspense>
       </TreeStateProvider>
     ))
     .exhaustive();
+}
+
+function WorkspaceStartupFallback({ tab }: { tab: Tab }) {
+  const labels: Record<Tab["type"], { label: string; detail: string }> = {
+    new: { label: "Opening workspace", detail: "Preparing tab" },
+    play: { label: "Opening play board", detail: "Starting game controls" },
+    analysis: { label: "Opening analysis board", detail: "Preparing notation and tools" },
+    puzzles: { label: "Opening puzzles", detail: "Loading puzzle board" },
+    "opening-review": { label: "Opening Review", detail: "Loading review deck" },
+    "mistake-review": { label: "Mistake Review", detail: "Loading training board" },
+  };
+  const copy = labels[tab.type];
+
+  return <BoardStartupFallback label={copy.label} detail={copy.detail} />;
 }

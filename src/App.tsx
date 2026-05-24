@@ -60,6 +60,7 @@ import { openFile } from "./utils/files";
 
 const STALE_DOWNLOAD_CONVERSION_MS = 2 * 60 * 1000;
 const STALE_DATABASE_CONVERSION_MS = 20 * 60 * 1000;
+const FEATURE_PRELOAD_DELAY_MS = 700;
 
 const colorSchemeManager = localStorageColorSchemeManager({
   key: "mantine-color-scheme",
@@ -70,6 +71,7 @@ import { ask } from "@tauri-apps/plugin-dialog";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { check } from "@tauri-apps/plugin-updater";
 import ErrorComponent from "@/components/ErrorComponent";
+import { RouteStartupFallback } from "@/components/common/StartupProgress";
 import { OpeningReviewAutoUpdateBanner } from "@/components/review/OpeningReviewAutoUpdateBanner";
 import { getDatabasesDir, getDocumentDir, getEnginesDir, getPuzzlesDir } from "@/utils/directories";
 import { initUserAgent } from "@/utils/http";
@@ -86,31 +88,27 @@ export type Dirs = {
   puzzlesDir: string;
 };
 
-async function loadDirs(): Promise<Dirs> {
-  const store = getDefaultStore();
+let cachedDirs: Dirs | null = readStoredDirs();
+let dirsRefreshPromise: Promise<Dirs> | null = null;
 
-  const [documentDir, databasesDir, enginesDir, puzzlesDir] = await Promise.all([
-    getDocumentDir(),
-    getDatabasesDir(),
-    getEnginesDir(),
-    getPuzzlesDir(),
-  ]);
+function readStoredDir(key: string): string | null {
+  if (typeof localStorage === "undefined") return null;
 
-  if (!store.get(storedDocumentDirAtom)) {
-    store.set(storedDocumentDirAtom, documentDir);
+  try {
+    const value = JSON.parse(localStorage.getItem(key) ?? "null");
+    return typeof value === "string" && value.length > 0 ? value : null;
+  } catch {
+    return null;
   }
+}
 
-  if (!store.get(storedDatabasesDirAtom)) {
-    store.set(storedDatabasesDirAtom, databasesDir);
-  }
+function readStoredDirs(): Dirs | null {
+  const documentDir = readStoredDir("document-dir");
+  const databasesDir = readStoredDir("databases-dir");
+  const enginesDir = readStoredDir("engines-dir");
+  const puzzlesDir = readStoredDir("puzzles-dir");
 
-  if (!store.get(storedEnginesDirAtom)) {
-    store.set(storedEnginesDirAtom, enginesDir);
-  }
-
-  if (!store.get(storedPuzzlesDirAtom)) {
-    store.set(storedPuzzlesDirAtom, puzzlesDir);
-  }
+  if (!documentDir || !databasesDir || !enginesDir || !puzzlesDir) return null;
 
   return {
     documentDir,
@@ -120,9 +118,59 @@ async function loadDirs(): Promise<Dirs> {
   };
 }
 
+function commitDirs(dirs: Dirs) {
+  const store = getDefaultStore();
+
+  cachedDirs = dirs;
+
+  store.set(storedDocumentDirAtom, dirs.documentDir);
+  store.set(storedDatabasesDirAtom, dirs.databasesDir);
+  store.set(storedEnginesDirAtom, dirs.enginesDir);
+  store.set(storedPuzzlesDirAtom, dirs.puzzlesDir);
+}
+
+async function refreshDirs(): Promise<Dirs> {
+  if (dirsRefreshPromise) return dirsRefreshPromise;
+
+  dirsRefreshPromise = (async () => {
+    const [documentDir, databasesDir, enginesDir, puzzlesDir] = await Promise.all([
+      getDocumentDir(),
+      getDatabasesDir(),
+      getEnginesDir(),
+      getPuzzlesDir(),
+    ]);
+
+    const dirs = {
+      documentDir,
+      databasesDir,
+      enginesDir,
+      puzzlesDir,
+    };
+
+    commitDirs(dirs);
+    return dirs;
+  })().finally(() => {
+    dirsRefreshPromise = null;
+  });
+
+  return dirsRefreshPromise;
+}
+
+async function loadDirs(): Promise<Dirs> {
+  if (cachedDirs) {
+    void refreshDirs().catch((e) => warn(`Failed to refresh startup directories: ${e}`));
+    return cachedDirs;
+  }
+
+  return refreshDirs();
+}
+
 const router = createRouter({
   routeTree,
   defaultErrorComponent: ErrorComponent,
+  defaultPendingComponent: RouteStartupFallback,
+  defaultPendingMs: 0,
+  defaultPendingMinMs: 250,
   context: {
     loadDirs,
   },
@@ -339,6 +387,38 @@ const preloadReferenceDb = async (store: ReturnType<typeof getDefaultStore>) => 
   }
 };
 
+function scheduleIdleTask(callback: () => void, timeout = 2000) {
+  if ("requestIdleCallback" in window) {
+    const id = window.requestIdleCallback(callback, { timeout });
+    return () => window.cancelIdleCallback(id);
+  }
+
+  const id = globalThis.setTimeout(callback, 0);
+  return () => globalThis.clearTimeout(id);
+}
+
+function preloadAppFeatureChunks() {
+  const preloads = [
+    () => import("@/components/tabs/BoardsPage"),
+    () => import("@/components/boards/BoardAnalysis"),
+    () => import("@/components/tabs/NewTabHome"),
+    () => import("@/components/files/FilesPage"),
+    () => import("@/components/databases/DatabasesPage"),
+    () => import("@/components/engines/EnginesPage"),
+    () => import("@/components/settings/SettingsPage"),
+  ];
+
+  preloads.forEach((preload, index) => {
+    window.setTimeout(
+      () =>
+        scheduleIdleTask(() => {
+          void preload().catch((error) => warn(`Failed to preload feature chunk: ${error}`));
+        }),
+      FEATURE_PRELOAD_DELAY_MS + index * 350,
+    );
+  });
+}
+
 function useAppStartup() {
   const initialized = useRef(false);
   const [, setTabs] = useAtom(tabsAtom);
@@ -356,7 +436,8 @@ function useAppStartup() {
       info("React app started successfully");
 
       checkForUpdates();
-      loadDirs().catch((e) => warn(`Failed to warm startup directories: ${e}`));
+      refreshDirs().catch((e) => warn(`Failed to warm startup directories: ${e}`));
+      window.setTimeout(preloadAppFeatureChunks, FEATURE_PRELOAD_DELAY_MS);
 
       const store = getDefaultStore();
       const telemetryEnabled = store.get(telemetryEnabledAtom);
@@ -385,7 +466,7 @@ function useAppStartup() {
         warn(`Failed to parse CLI args: ${e}`);
       }
 
-      await preloadReferenceDb(store);
+      window.setTimeout(() => void preloadReferenceDb(store), 3000);
 
       return detach;
     };
@@ -436,7 +517,9 @@ export default function App() {
   const pieceSet = useAtomValue(pieceSetAtom);
   const fontSize = useAtomValue(fontSizeAtom);
   const spellCheck = useAtomValue(spellCheckAtom);
-  const [databaseConversionState, setDatabaseConversionState] = useAtom(databaseConversionStateAtom);
+  const [databaseConversionState, setDatabaseConversionState] = useAtom(
+    databaseConversionStateAtom,
+  );
   const setMistakeScanProgress = useSetAtom(mistakeReviewScanProgressAtom);
 
   useAppStartup();
@@ -488,7 +571,9 @@ export default function App() {
         if (!prev.inProgress) return prev;
         const latestActivity = prev.updatedAt ?? prev.startedAt ?? 0;
         const latestStaleAfter =
-          prev.phase === "downloading" ? STALE_DOWNLOAD_CONVERSION_MS : STALE_DATABASE_CONVERSION_MS;
+          prev.phase === "downloading"
+            ? STALE_DOWNLOAD_CONVERSION_MS
+            : STALE_DATABASE_CONVERSION_MS;
         if (Date.now() - latestActivity < latestStaleAfter) return prev;
 
         return {

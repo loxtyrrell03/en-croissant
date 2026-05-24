@@ -46,6 +46,11 @@
   flex-grow: 1;
 }
 
+.tabPanel {
+  position: relative;
+  overflow: hidden;
+}
+
 .workspaceLayout {
   display: flex;
   width: 100%;

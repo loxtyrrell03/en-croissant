@@ -24,9 +24,10 @@ interface NavbarLinkProps {
   url: string;
   active?: boolean;
   onClick?: MouseEventHandler<HTMLAnchorElement>;
+  onMouseEnter?: MouseEventHandler<HTMLAnchorElement>;
 }
 
-function NavbarLink({ url, icon: Icon, label, onClick }: NavbarLinkProps) {
+function NavbarLink({ url, icon: Icon, label, onClick, onMouseEnter }: NavbarLinkProps) {
   const match = useMatchRoute();
   const active =
     match({
@@ -42,6 +43,8 @@ function NavbarLink({ url, icon: Icon, label, onClick }: NavbarLinkProps) {
           [classes.active]: active,
         })}
         onClick={onClick}
+        onMouseEnter={onMouseEnter}
+        preload="intent"
       >
         <Icon size="1.5rem" stroke={1.5} />
       </Link>
@@ -60,6 +63,19 @@ const linksdata: Pick<NavbarLinkProps, "icon" | "label" | "url">[] = [
   },
   { icon: IconCpu, label: "Engines", url: "/engines" },
 ];
+
+const routePreloads: Record<string, () => Promise<unknown>> = {
+  "/": () => import("@/components/tabs/BoardsPage"),
+  "/home": () => import("@/components/tabs/NewTabHome"),
+  "/files": () => import("@/components/files/FilesPage"),
+  "/databases": () => import("@/components/databases/DatabasesPage"),
+  "/engines": () => import("@/components/engines/EnginesPage"),
+  "/settings": () => import("@/components/settings/SettingsPage"),
+};
+
+function preloadRoute(url: string) {
+  void routePreloads[url]?.();
+}
 
 export function SideBar() {
   const { t } = useTranslation();
@@ -92,6 +108,7 @@ export function SideBar() {
       label={t(`SideBar.${link.label}`, { defaultValue: link.label })}
       key={link.label}
       onClick={link.url === "/" ? openBoard : undefined}
+      onMouseEnter={() => preloadRoute(link.url)}
     />
   ));
 
@@ -104,7 +121,12 @@ export function SideBar() {
       </AppShellSection>
       <AppShellSection>
         <Stack justify="center" gap={0}>
-          <NavbarLink icon={IconSettings} label={t("SideBar.Settings")} url="/settings" />
+          <NavbarLink
+            icon={IconSettings}
+            label={t("SideBar.Settings")}
+            url="/settings"
+            onMouseEnter={() => preloadRoute("/settings")}
+          />
         </Stack>
       </AppShellSection>
     </>
