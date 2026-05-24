@@ -285,9 +285,10 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
   panels that render engine controls, including the Review page, so reveal-time
   engine enabling and dock controls work without forcing users into the Eval
   tab.
-- Mistake Review practice transitions load the target FEN first and defer
-  source-game move-line hydration until the hidden-answer phase is over; idle
-  prewarming should not parse full saved move sequences while the user is
+- Opening Review and Mistake Review practice transitions load the target FEN
+  first and defer source-game move-line hydration plus saved review-tree child
+  cloning until the hidden-answer phase is over; idle prewarming should not
+  parse full saved move sequences or clone saved child lines while the user is
   actively solving a hidden card.
 - Opening Review and Mistake Review session progress bookkeeping is scheduled
   as transition work during practice starts and card advances, keeping the board

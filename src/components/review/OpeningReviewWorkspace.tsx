@@ -1159,7 +1159,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   }, [isMistakeReview, practiceState.phase, setPracticePath]);
 
   useEffect(() => {
-    if (!isMistakeReview || !loaded || loadError || treeDirty) return;
+    if (!loaded || loadError || treeDirty) return;
     if (practiceState.phase === "waiting") return;
 
     const positionIndex = scopedReviewPositionIndex;
@@ -1167,7 +1167,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
       positionIndex !== undefined && positionIndex !== null && positionIndex >= 0
         ? deck.positions[positionIndex]
         : null;
-    if (!position?.moveSequence?.trim()) return;
+    if (!position || !hasReviewPositionDeferredBoardDetails(position)) return;
     if (!sameReviewPosition(root.fen, position.fen) || root.children.length > 0) return;
 
     return scheduleReviewPositionPrewarm(() => {
@@ -1197,7 +1197,6 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     deck.positions,
     goToMove,
     headers,
-    isMistakeReview,
     loadError,
     loaded,
     practiceState.currentFen,
@@ -1550,7 +1549,7 @@ function loadReviewPositionOnBoard({
   goToMove,
   setHeaders,
   setState,
-  deferMoveSequence = false,
+  deferBoardDetails = false,
 }: {
   position: Position;
   headers: GameHeaders;
@@ -1559,10 +1558,12 @@ function loadReviewPositionOnBoard({
   goToMove: (move: number[]) => void;
   setHeaders: (headers: GameHeaders) => void;
   setState: (state: TreeState) => void;
-  deferMoveSequence?: boolean;
+  deferBoardDetails?: boolean;
 }) {
-  if (deferMoveSequence && position.moveSequence?.trim()) {
-    const reviewPosition = createReviewPositionFenState(position, headers);
+  if (deferBoardDetails && hasReviewPositionDeferredBoardDetails(position)) {
+    const reviewPosition = createReviewPositionFenState(position, headers, {
+      includeReviewTree: false,
+    });
     setState(reviewPosition.state);
     return reviewPosition.path;
   }
@@ -1720,16 +1721,31 @@ function createReviewPositionLineState(position: Position, headers: GameHeaders)
   return { state: tree, path };
 }
 
-function createReviewPositionFenState(position: Position, headers: GameHeaders) {
+function hasReviewPositionDeferredBoardDetails(position: Position) {
+  return Boolean(position.moveSequence?.trim() || position.reviewTree);
+}
+
+function createReviewPositionFenState(
+  position: Position,
+  headers: GameHeaders,
+  options: { includeReviewTree?: boolean } = {},
+) {
   const tree = defaultTree(position.fen);
   tree.headers = getReviewPositionHeaders(position, headers, tree.root.fen);
   tree.dirty = false;
-  applyReviewPositionToNode(tree.root, position);
+  applyReviewPositionToNode(tree.root, position, options);
   return { state: tree, path: [] };
 }
 
-function applyReviewPositionToNode(node: TreeNode, position: Position) {
-  const reviewTree = position.reviewTree ? cloneReviewTreeNode(position.reviewTree) : null;
+function applyReviewPositionToNode(
+  node: TreeNode,
+  position: Position,
+  options: { includeReviewTree?: boolean } = {},
+) {
+  const reviewTree =
+    options.includeReviewTree !== false && position.reviewTree
+      ? cloneReviewTreeNode(position.reviewTree)
+      : null;
   if (reviewTree) {
     node.children = reviewTree.children;
     node.score = reviewTree.score;
@@ -2215,7 +2231,10 @@ function OpeningReviewPanel({
     return scheduleReviewPositionPrewarm(() => {
       for (const index of indices) {
         const position = deck.positions[index];
-        if (position && (practiceState.phase !== "waiting" || !position.moveSequence?.trim())) {
+        if (
+          position &&
+          (practiceState.phase !== "waiting" || !hasReviewPositionDeferredBoardDetails(position))
+        ) {
           getReviewPositionLineState(position, headers);
         }
       }
@@ -2408,7 +2427,7 @@ function OpeningReviewPanel({
         goToMove,
         setHeaders,
         setState,
-        deferMoveSequence: true,
+        deferBoardDetails: true,
       });
       setPracticePath(path);
       setInvisible(hideMovesDuringPractice);
@@ -3573,7 +3592,7 @@ function OpeningReviewPanel({
                         goToMove,
                         setHeaders,
                         setState,
-                        deferMoveSequence: true,
+                        deferBoardDetails: true,
                       });
                       setPracticePath(path);
                     } else if (
