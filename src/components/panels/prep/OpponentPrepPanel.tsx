@@ -4,6 +4,7 @@ import {
   Badge,
   Box,
   Button,
+  Checkbox,
   Collapse,
   Divider,
   Group,
@@ -14,6 +15,7 @@ import {
   Stack,
   Table,
   Text,
+  TextInput,
   Tooltip,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
@@ -21,6 +23,7 @@ import {
   IconArrowBackUp,
   IconArrowRight,
   IconCheck,
+  IconCloudDownload,
   IconPlayerPlay,
   IconRefresh,
   IconSettings,
@@ -29,12 +32,17 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
+import { resolve, tempDir } from "@tauri-apps/api/path";
+import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { isNormal, makeSquare } from "chessops";
 import { parseSan } from "chessops/san";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { mutate } from "swr";
 import useSWR from "swr/immutable";
 import { useStore } from "zustand";
+import dayjs from "dayjs";
+import { commands } from "@/bindings";
 import { usePanelDensity } from "@/components/common/ResponsivePanel";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import {
@@ -43,24 +51,37 @@ import {
   currentLocalOptionsAtom,
   currentOpponentPrepAtom,
   currentTabAtom,
+  databaseConversionStateAtom,
   lichessOptionsAtom,
   masterOptionsAtom,
+  onlineDatabaseUpdatesAtom,
   referenceDbAtom,
   sessionsAtom,
+  storedDatabasesDirAtom,
   type OpponentPrepState,
   type StoredDatabaseLocalOptions,
 } from "@/state/atoms";
+import { getRecentChessComGames } from "@/utils/chess.com/api";
 import {
   cancelDatabaseSearch,
   getDatabases,
   getMostCommonPlayer,
+  query_players,
   searchPosition,
   type Opening,
   type SuccessDatabaseInfo,
 } from "@/utils/db";
+import { getDatabasesDir } from "@/utils/directories";
 import { formatNumber } from "@/utils/format";
-import { getLichessGames, getMasterGames } from "@/utils/lichess/api";
+import { getLichessGames, getMasterGames, getRecentLichessGames } from "@/utils/lichess/api";
 import { isPrefix } from "@/utils/misc";
+import {
+  getOnlineGameSourceLabel,
+  importOnlineGamesToDatabase,
+  resetDatabaseConversionState,
+  upsertOnlineDatabaseUpdateRecord,
+  type OnlineGameSource,
+} from "@/utils/onlineGameImport";
 import {
   findFirstOpponentBranch,
   findLastOpponentBranch,
@@ -94,6 +115,7 @@ import { positionFromFen } from "@/utils/chessops";
 import { getTreeStructureHash } from "@/utils/treeReducer";
 import { queryChessDbMoves } from "@/utils/chessdb/api";
 import { queryLichessCloudMoves } from "@/utils/lichess/api";
+import { unwrap } from "@/utils/unwrap";
 import { BoundedMap } from "@/utils/boundedCache";
 import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveControls";
 
@@ -104,6 +126,34 @@ const LICHESS_MASTER_SOURCE = "online:lichess-master";
 const MAX_PREP_MOVE_CACHE_ENTRIES = 80;
 const MAX_PREP_BUILDER_REFERENCE_CACHE_ENTRIES = 120;
 const DEFAULT_PLAYER_LOOKUP_VERSION = "game-count-v2";
+const DEFAULT_ONLINE_IMPORT_GAMES = 100;
+const MAX_ONLINE_IMPORT_GAMES = 2000;
+
+type PrepOnlineImportMode = "count" | "range";
+type PrepOnlineRangePreset = "3m" | "6m" | "1y" | "2y" | "all";
+
+type PrepOnlineImportedGame = {
+  source: OnlineGameSource;
+  username: string;
+  pgn: string;
+  playedAt: number;
+  url: string;
+};
+
+type PrepOnlineCountPreview = {
+  requestedGames: number;
+  foundGames: number;
+  oldestPlayedAt: number | null;
+  newestPlayedAt: number | null;
+};
+
+const PREP_ONLINE_RANGE_OPTIONS: { value: PrepOnlineRangePreset; label: string }[] = [
+  { value: "3m", label: "Last 3 months" },
+  { value: "6m", label: "Last 6 months" },
+  { value: "1y", label: "Last year" },
+  { value: "2y", label: "Last 2 years" },
+  { value: "all", label: "All games" },
+];
 
 type PrepCandidateMoveRow = Opening & {
   key: string;
@@ -201,6 +251,9 @@ function OpponentPrepPanel() {
   const compareSettingsByFile = useAtomValue(comparePanelSettingsByFileAtom);
   const referenceDb = useAtomValue(referenceDbAtom);
   const sessions = useAtomValue(sessionsAtom);
+  const [databaseDir] = useAtom(storedDatabasesDirAtom);
+  const [, setConversionState] = useAtom(databaseConversionStateAtom);
+  const [, setOnlineDatabaseUpdates] = useAtom(onlineDatabaseUpdatesAtom);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
   const { documentDir } = useLoaderData({ from: "/" });
   const setBoardPreviewShapes = useSetAtom(currentBoardPreviewShapesAtom);
@@ -214,6 +267,19 @@ function OpponentPrepPanel() {
   const [builderNeedsSave, setBuilderNeedsSave] = useState(false);
   const [savingBuilderResult, setSavingBuilderResult] = useState<"new" | "overwrite" | null>(null);
   const [builderStatus, setBuilderStatus] = useState<PrepBuilderStatus | null>(null);
+  const [onlineImportOpen, setOnlineImportOpen] = useState(false);
+  const [onlineImportSource, setOnlineImportSource] = useState<OnlineGameSource>("lichess");
+  const [onlineImportUsername, setOnlineImportUsername] = useState("");
+  const [onlineImportMode, setOnlineImportMode] = useState<PrepOnlineImportMode>("count");
+  const [onlineImportGameCount, setOnlineImportGameCount] = useState(DEFAULT_ONLINE_IMPORT_GAMES);
+  const [onlineImportRange, setOnlineImportRange] = useState<PrepOnlineRangePreset>("3m");
+  const [onlineImportSaveDatabase, setOnlineImportSaveDatabase] = useState(true);
+  const [onlineImporting, setOnlineImporting] = useState(false);
+  const [onlineImportProgress, setOnlineImportProgress] = useState<number | null>(null);
+  const [onlineImportPreviewLoading, setOnlineImportPreviewLoading] = useState(false);
+  const [onlineImportPreview, setOnlineImportPreview] = useState<PrepOnlineCountPreview | null>(
+    null,
+  );
   const moveCacheRef = useRef(new BoundedMap<string, Opening[]>(MAX_PREP_MOVE_CACHE_ENTRIES));
   const builderReferenceCacheRef = useRef(
     new BoundedMap<string, Opening[]>(MAX_PREP_BUILDER_REFERENCE_CACHE_ENTRIES),
@@ -236,12 +302,25 @@ function OpponentPrepPanel() {
       ),
     [databases],
   );
-  const sourceOptions = useMemo(
-    () => [
-      ...localDatabases.map((database) => ({
-        value: database.file,
-        label: database.title || database.filename,
-      })),
+  const sourceOptions = useMemo(() => {
+    const options = localDatabases.map((database) => ({
+      value: database.file,
+      label: database.title || database.filename,
+    }));
+
+    if (
+      prepSource === "local" &&
+      prep.databasePath &&
+      !localDatabases.some((database) => database.file === prep.databasePath)
+    ) {
+      options.unshift({
+        value: prep.databasePath,
+        label: prep.databaseLabel || "Imported prep games",
+      });
+    }
+
+    return [
+      ...options,
       {
         value: LICHESS_ALL_SOURCE,
         label: "Lichess All",
@@ -250,14 +329,14 @@ function OpponentPrepPanel() {
         value: LICHESS_MASTER_SOURCE,
         label: "Lichess Masters",
       },
-    ],
-    [localDatabases],
-  );
+    ];
+  }, [localDatabases, prep.databaseLabel, prep.databasePath, prepSource]);
   const selectedDatabase = useMemo(
     () => localDatabases.find((database) => database.file === prep.databasePath) ?? null,
     [localDatabases, prep.databasePath],
   );
-  const selectedDatabaseLabel = selectedDatabase?.title || selectedDatabase?.filename || prep.databaseLabel;
+  const selectedDatabaseLabel =
+    selectedDatabase?.title || selectedDatabase?.filename || prep.databaseLabel;
   const defaultPlayerLookupKey = prep.databasePath
     ? `${DEFAULT_PLAYER_LOOKUP_VERSION}:${prep.databasePath}`
     : null;
@@ -347,6 +426,17 @@ function OpponentPrepPanel() {
   useEffect(() => {
     builderReferenceCacheRef.current.clear();
   }, [lichessOptions]);
+
+  useEffect(() => {
+    if (!onlineImportOpen || onlineImportUsername.trim()) return;
+    if (prep.playerName.trim()) {
+      setOnlineImportUsername(prep.playerName.trim());
+    }
+  }, [onlineImportOpen, onlineImportUsername, prep.playerName]);
+
+  useEffect(() => {
+    setOnlineImportPreview(null);
+  }, [onlineImportGameCount, onlineImportSource, onlineImportUsername]);
 
   useEffect(() => {
     if (
@@ -651,6 +741,24 @@ function OpponentPrepPanel() {
     currentTab?.gameOrigin.kind === "file" ||
     currentTab?.gameOrigin.kind === "temp_file" ||
     currentTab?.gameOrigin.kind === "database";
+  const onlineImportUsernameTrimmed = onlineImportUsername.trim();
+  const onlineImportToken =
+    onlineImportSource === "lichess"
+      ? sessions.find(
+          (session) =>
+            session.lichess?.username &&
+            normalizePrepPlayerName(session.lichess.username) ===
+              normalizePrepPlayerName(onlineImportUsernameTrimmed),
+        )?.lichess?.accessToken
+      : undefined;
+  const onlineImportRangeSince = getPrepOnlineRangeSince(onlineImportRange);
+  const onlineImportRangeLabel = getPrepOnlineRangeLabel(onlineImportRange);
+  const onlineImportPreviewText = getPrepOnlineImportPreviewText({
+    mode: onlineImportMode,
+    range: onlineImportRange,
+    preview: onlineImportPreview,
+    requestedGames: onlineImportGameCount,
+  });
 
   const updateSettings = useCallback(
     (
@@ -823,6 +931,222 @@ function OpponentPrepPanel() {
     },
     [updateSettings],
   );
+
+  const previewOnlineImportCount = useCallback(async () => {
+    if (!onlineImportUsernameTrimmed || onlineImportPreviewLoading) return;
+
+    setOnlineImportPreviewLoading(true);
+    try {
+      const games = await fetchPrepOnlineRecentGames({
+        source: onlineImportSource,
+        username: onlineImportUsernameTrimmed,
+        count: onlineImportGameCount,
+        token: onlineImportToken,
+      });
+      setOnlineImportPreview(createPrepOnlineCountPreview(games, onlineImportGameCount));
+      if (games.length === 0) {
+        notifications.show({
+          title: "No games found",
+          message: `${getOnlineGameSourceLabel(
+            onlineImportSource,
+          )} did not return public PGNs for ${onlineImportUsernameTrimmed}.`,
+          color: "yellow",
+        });
+      }
+    } catch (error) {
+      notifications.show({
+        title: "Could not check online games",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    } finally {
+      setOnlineImportPreviewLoading(false);
+    }
+  }, [
+    onlineImportGameCount,
+    onlineImportPreviewLoading,
+    onlineImportSource,
+    onlineImportToken,
+    onlineImportUsernameTrimmed,
+  ]);
+
+  const importOnlineGamesForPrep = useCallback(async () => {
+    if (!onlineImportUsernameTrimmed || onlineImporting) return;
+
+    setOnlineImporting(true);
+    setOnlineImportProgress(null);
+    try {
+      const baseDatabaseDir = databaseDir || (await getDatabasesDir());
+      const titleBase = getPrepOnlineImportTitle({
+        source: onlineImportSource,
+        username: onlineImportUsernameTrimmed,
+        mode: onlineImportMode,
+        games: onlineImportGameCount,
+        range: onlineImportRange,
+      });
+      const title = onlineImportSaveDatabase
+        ? getUniquePrepOnlineImportTitle(titleBase, localDatabases)
+        : titleBase;
+      const dbDir = onlineImportSaveDatabase ? baseDatabaseDir : await tempDir();
+      const dbPath = await resolve(dbDir, `${sanitizePrepImportFilename(title)}.db3`);
+      const description = getPrepOnlineImportDescription({
+        source: onlineImportSource,
+        username: onlineImportUsernameTrimmed,
+        mode: onlineImportMode,
+        games: onlineImportGameCount,
+        range: onlineImportRange,
+      });
+      let importedGames: PrepOnlineImportedGame[] | null = null;
+
+      if (onlineImportMode === "count") {
+        setConversionState((current) => ({
+          ...current,
+          inProgress: true,
+          phase: "downloading",
+          progress: 0,
+          progressId: null,
+          sourceKind: "online-games",
+          startedAt: Date.now(),
+          updatedAt: Date.now(),
+          totalGames: 0,
+          totalGamesExpected: onlineImportGameCount,
+          elapsedSeconds: 0,
+          targetDatabasePath: dbPath,
+          targetDatabaseTitle: title,
+          sourceFileName: null,
+        }));
+        const recentGames = await fetchPrepOnlineRecentGames({
+          source: onlineImportSource,
+          username: onlineImportUsernameTrimmed,
+          count: onlineImportGameCount,
+          token: onlineImportToken,
+          onProgress: (loaded, total) => {
+            const progress = total > 0 ? Math.min(100, (loaded / total) * 100) : null;
+            setOnlineImportProgress(progress);
+            setConversionState((current) => ({
+              ...current,
+              progress,
+              totalGames: loaded,
+              updatedAt: Date.now(),
+            }));
+          },
+        });
+        importedGames = recentGames;
+        if (recentGames.length === 0) {
+          throw new Error("No public PGNs were found for that player.");
+        }
+        setConversionState((current) => ({
+          ...current,
+          phase: "converting",
+          progress: recentGames.length > 0 ? 0 : null,
+          totalGames: 0,
+          totalGamesExpected: recentGames.length,
+          updatedAt: Date.now(),
+        }));
+        await createPrepOnlineGamesDatabase({
+          games: recentGames,
+          dbPath,
+          title,
+          description,
+        });
+        setOnlineImportPreview(createPrepOnlineCountPreview(recentGames, onlineImportGameCount));
+      } else {
+        await importOnlineGamesToDatabase({
+          source: onlineImportSource,
+          username: onlineImportUsernameTrimmed,
+          databaseDir: baseDatabaseDir,
+          dbPath,
+          title,
+          description,
+          since: onlineImportRangeSince,
+          remainingGames: 0,
+          token: onlineImportToken,
+          setProgress: setOnlineImportProgress,
+          setConversionState,
+        });
+        unwrap(await commands.deleteDuplicatedGames(dbPath));
+        unwrap(await commands.deleteEmptyGames(dbPath));
+      }
+
+      await commands.clearGames();
+      const nextDatabases = onlineImportSaveDatabase ? await getDatabases() : localDatabases;
+      if (onlineImportSaveDatabase) {
+        await mutate("databases", nextDatabases, { revalidate: false });
+      }
+      const importedDatabase =
+        nextDatabases.find(
+          (database): database is SuccessDatabaseInfo =>
+            database.type === "success" && database.file === dbPath,
+        ) ?? null;
+      const player = await resolvePrepOnlineImportPlayer(dbPath, onlineImportUsernameTrimmed);
+      const importedAt = Date.now();
+
+      if (onlineImportSaveDatabase) {
+        setOnlineDatabaseUpdates((records) =>
+          upsertOnlineDatabaseUpdateRecord(records, {
+            source: onlineImportSource,
+            username: onlineImportUsernameTrimmed,
+            dbPath,
+            title,
+            description,
+            autoUpdate: false,
+            lastCheckedAt: importedAt,
+            lastUpdatedAt: importedAt,
+            lastKnownGameCount:
+              importedDatabase?.game_count ?? importedGames?.length ?? onlineImportGameCount,
+          }),
+        );
+      }
+
+      setPrep((current) => ({
+        ...current,
+        mode: "player",
+        source: "local",
+        databasePath: dbPath,
+        databaseLabel:
+          importedDatabase?.title || (onlineImportSaveDatabase ? title : `${title} (temporary)`),
+        player: player?.id ?? null,
+        playerName: player?.name ?? onlineImportUsernameTrimmed,
+        rootPath: currentPath,
+        completedBranches: {},
+        skippedBranches: {},
+      }));
+      notifications.show({
+        title: "Prep games imported",
+        message: `${importedDatabase?.game_count ?? importedGames?.length ?? "Online"} game${
+          (importedDatabase?.game_count ?? importedGames?.length ?? 2) === 1 ? "" : "s"
+        } ready for opponent prep.`,
+        color: "green",
+      });
+      setOnlineImportOpen(false);
+    } catch (error) {
+      notifications.show({
+        title: "Could not import prep games",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    } finally {
+      resetDatabaseConversionState(setConversionState);
+      setOnlineImportProgress(null);
+      setOnlineImporting(false);
+    }
+  }, [
+    currentPath,
+    databaseDir,
+    localDatabases,
+    onlineImportGameCount,
+    onlineImporting,
+    onlineImportMode,
+    onlineImportRange,
+    onlineImportRangeSince,
+    onlineImportSaveDatabase,
+    onlineImportSource,
+    onlineImportToken,
+    onlineImportUsernameTrimmed,
+    setConversionState,
+    setOnlineDatabaseUpdates,
+    setPrep,
+  ]);
 
   const clearMovePreview = useCallback(() => {
     setBoardPreviewShapes(null);
@@ -1620,6 +1944,16 @@ function OpponentPrepPanel() {
           allowDeselect={false}
           comboboxProps={{ withinPortal: true }}
         />
+        <Tooltip label="Import a player's online games and use them as this prep source">
+          <Button
+            variant="default"
+            size={controlSize}
+            leftSection={<IconCloudDownload size="0.95rem" />}
+            onClick={() => setOnlineImportOpen((open) => !open)}
+          >
+            Import games
+          </Button>
+        </Tooltip>
         {prepMode === "player" ? (
           <DatabasePerspectiveControls
             databasePath={prepSource === "local" ? prep.databasePath : null}
@@ -1701,6 +2035,117 @@ function OpponentPrepPanel() {
           />
         </Tooltip>
       </Group>
+
+      <Collapse in={onlineImportOpen}>
+        <Stack gap={dense ? 4 : "xs"} py={dense ? 4 : "xs"}>
+          <Group gap={dense ? 4 : "xs"} wrap="wrap" align="flex-end">
+            <SegmentedControl
+              aria-label="Online prep source"
+              data={[
+                { value: "lichess", label: "Lichess" },
+                { value: "chesscom", label: "Chess.com" },
+              ]}
+              value={onlineImportSource}
+              onChange={(value) => setOnlineImportSource(value as OnlineGameSource)}
+              size={controlSize}
+            />
+            <TextInput
+              label="Player"
+              value={onlineImportUsername}
+              onChange={(event) => setOnlineImportUsername(event.currentTarget.value)}
+              placeholder="Username"
+              size={controlSize}
+              w={dense ? 130 : 170}
+            />
+            <SegmentedControl
+              aria-label="Online import scope"
+              data={[
+                { value: "count", label: "Most recent" },
+                { value: "range", label: "Date range" },
+              ]}
+              value={onlineImportMode}
+              onChange={(value) => setOnlineImportMode(value as PrepOnlineImportMode)}
+              size={controlSize}
+            />
+            {onlineImportMode === "count" ? (
+              <NumberInput
+                label="Games"
+                value={onlineImportGameCount}
+                onChange={(value) =>
+                  setOnlineImportGameCount(
+                    Math.max(1, Math.min(MAX_ONLINE_IMPORT_GAMES, Number(value) || 1)),
+                  )
+                }
+                min={1}
+                max={MAX_ONLINE_IMPORT_GAMES}
+                step={25}
+                size={controlSize}
+                w={dense ? 92 : 112}
+                aria-label="Most recent online games"
+              />
+            ) : (
+              <Select
+                label="Range"
+                data={PREP_ONLINE_RANGE_OPTIONS}
+                value={onlineImportRange}
+                onChange={(value) =>
+                  setOnlineImportRange((value as PrepOnlineRangePreset | null) ?? "3m")
+                }
+                size={controlSize}
+                w={dense ? 132 : 156}
+                allowDeselect={false}
+                comboboxProps={{ withinPortal: true }}
+              />
+            )}
+            <Checkbox
+              label="Save database"
+              checked={onlineImportSaveDatabase}
+              onChange={(event) => setOnlineImportSaveDatabase(event.currentTarget.checked)}
+              size={controlSize}
+              styles={{ body: { alignItems: "center" } }}
+            />
+            <Button
+              variant="filled"
+              size={controlSize}
+              leftSection={<IconCloudDownload size="0.95rem" />}
+              disabled={!onlineImportUsernameTrimmed}
+              loading={onlineImporting}
+              onClick={() => void importOnlineGamesForPrep()}
+            >
+              Import + use
+            </Button>
+          </Group>
+          <Group justify="space-between" gap="xs" wrap="wrap">
+            <Group gap="xs" wrap="wrap">
+              {onlineImportMode === "count" ? (
+                <Button
+                  variant="default"
+                  size={controlSize}
+                  disabled={!onlineImportUsernameTrimmed}
+                  loading={onlineImportPreviewLoading}
+                  onClick={() => void previewOnlineImportCount()}
+                >
+                  Check range
+                </Button>
+              ) : (
+                <Badge variant="light">{onlineImportRangeLabel}</Badge>
+              )}
+              <Text size="xs" c="dimmed">
+                {onlineImportPreviewText}
+              </Text>
+            </Group>
+            {onlineImportProgress !== null ? (
+              <Group gap={6} wrap="nowrap" style={{ minWidth: dense ? 120 : 160 }}>
+                <Progress value={onlineImportProgress} size="xs" style={{ flex: 1 }} />
+                <Text size="xs" c="dimmed">
+                  {Math.round(onlineImportProgress)}%
+                </Text>
+              </Group>
+            ) : null}
+          </Group>
+        </Stack>
+        <Divider my={dense ? 4 : "xs"} />
+      </Collapse>
 
       <Box style={{ flexShrink: 0 }}>
         <Group justify="space-between" gap="xs" wrap="wrap">
@@ -2275,6 +2720,260 @@ function PrepResultBar({ row }: { row: Pick<Opening, "white" | "draw" | "black">
       </Progress.Section>
     </Progress.Root>
   );
+}
+
+async function fetchPrepOnlineRecentGames({
+  source,
+  username,
+  count,
+  token,
+  onProgress,
+}: {
+  source: OnlineGameSource;
+  username: string;
+  count: number;
+  token?: string;
+  onProgress?: (loaded: number, total: number) => void;
+}) {
+  const target = Math.max(1, Math.min(MAX_ONLINE_IMPORT_GAMES, Math.round(count)));
+  const games: PrepOnlineImportedGame[] = [];
+  const seen = new Set<string>();
+  let before: number | null = null;
+
+  while (games.length < target) {
+    const pageSize = Math.min(30, target - games.length);
+    const page =
+      source === "lichess"
+        ? await getRecentLichessGames(username, pageSize, token, before)
+        : await getRecentChessComGames(username, pageSize, before);
+    if (page.length === 0) break;
+
+    for (const game of page) {
+      const key = game.url || `${game.playedAt}:${game.pgn.length}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      games.push(game);
+      if (games.length >= target) break;
+    }
+
+    onProgress?.(games.length, target);
+    const oldest = getOldestPrepOnlineGameDate(page);
+    if (oldest === null || oldest === before || page.length < pageSize) break;
+    before = oldest;
+  }
+
+  return games.sort((a, b) => b.playedAt - a.playedAt).slice(0, target);
+}
+
+async function createPrepOnlineGamesDatabase({
+  games,
+  dbPath,
+  title,
+  description,
+}: {
+  games: PrepOnlineImportedGame[];
+  dbPath: string;
+  title: string;
+  description: string;
+}) {
+  const dir = await tempDir();
+  const pgnPath = await resolve(dir, `prep-online-games-${Date.now()}.pgn`);
+  const pgn = `${games
+    .map((game) => game.pgn.trim())
+    .filter(Boolean)
+    .join("\n\n")}\n`;
+
+  await writeTextFile(pgnPath, pgn);
+  unwrap(await commands.convertPgn(pgnPath, dbPath, null, title, description));
+  unwrap(await commands.deleteEmptyGames(dbPath));
+  unwrap(await commands.deleteDuplicatedGames(dbPath));
+}
+
+async function resolvePrepOnlineImportPlayer(dbPath: string, username: string) {
+  const players = await query_players(dbPath, {
+    name: username,
+    range: null,
+    options: {
+      skipCount: true,
+      page: 1,
+      pageSize: 50,
+      sort: "name",
+      direction: "asc",
+    },
+  });
+  const normalizedUsername = normalizePrepOnlinePlayerName(username);
+  return (
+    players.data.find(
+      (player) => normalizePrepOnlinePlayerName(player.name) === normalizedUsername,
+    ) ??
+    players.data[0] ??
+    (await getMostCommonPlayer(dbPath))
+  );
+}
+
+function createPrepOnlineCountPreview(
+  games: PrepOnlineImportedGame[],
+  requestedGames: number,
+): PrepOnlineCountPreview {
+  return {
+    requestedGames,
+    foundGames: games.length,
+    newestPlayedAt: getNewestPrepOnlineGameDate(games),
+    oldestPlayedAt: getOldestPrepOnlineGameDate(games),
+  };
+}
+
+function getPrepOnlineImportPreviewText({
+  mode,
+  range,
+  preview,
+  requestedGames,
+}: {
+  mode: PrepOnlineImportMode;
+  range: PrepOnlineRangePreset;
+  preview: PrepOnlineCountPreview | null;
+  requestedGames: number;
+}) {
+  if (mode === "range") {
+    const since = getPrepOnlineRangeSince(range);
+    if (since === null) {
+      return "Imports every public PGN for this player; game count is not capped.";
+    }
+    return `Imports every public PGN since ${formatPrepOnlineDate(
+      since,
+    )}; game count is not capped.`;
+  }
+
+  if (!preview) {
+    return `Check range to see how far the latest ${formatNumber(requestedGames)} games go back.`;
+  }
+
+  if (preview.foundGames === 0) {
+    return "No public PGNs found for that player.";
+  }
+
+  const foundText =
+    preview.foundGames < preview.requestedGames
+      ? `Only ${formatNumber(preview.foundGames)} found`
+      : `${formatNumber(preview.foundGames)} games`;
+  const oldestText = preview.oldestPlayedAt
+    ? `go back to ${formatPrepOnlineDate(preview.oldestPlayedAt)}`
+    : "have no game dates";
+  return `${foundText} ${oldestText}.`;
+}
+
+function getPrepOnlineImportTitle({
+  source,
+  username,
+  mode,
+  games,
+  range,
+}: {
+  source: OnlineGameSource;
+  username: string;
+  mode: PrepOnlineImportMode;
+  games: number;
+  range: PrepOnlineRangePreset;
+}) {
+  const sourceLabel = getOnlineGameSourceLabel(source);
+  if (mode === "count") {
+    return `${username} ${sourceLabel} prep ${formatNumber(games)} games`;
+  }
+  return `${username} ${sourceLabel} prep ${getPrepOnlineRangeLabel(range).toLowerCase()}`;
+}
+
+function getPrepOnlineImportDescription({
+  source,
+  username,
+  mode,
+  games,
+  range,
+}: {
+  source: OnlineGameSource;
+  username: string;
+  mode: PrepOnlineImportMode;
+  games: number;
+  range: PrepOnlineRangePreset;
+}) {
+  const sourceLabel = getOnlineGameSourceLabel(source);
+  if (mode === "count") {
+    return `Opponent prep import from ${sourceLabel} ${username}: latest ${games} games.`;
+  }
+
+  const since = getPrepOnlineRangeSince(range);
+  const scope =
+    since === null
+      ? "all games"
+      : `${getPrepOnlineRangeLabel(range).toLowerCase()} since ${formatPrepOnlineDate(since)}`;
+  return `Opponent prep import from ${sourceLabel} ${username}: ${scope}.`;
+}
+
+function getPrepOnlineRangeLabel(range: PrepOnlineRangePreset) {
+  return (
+    PREP_ONLINE_RANGE_OPTIONS.find((option) => option.value === range)?.label ?? "Last 3 months"
+  );
+}
+
+function getPrepOnlineRangeSince(range: PrepOnlineRangePreset) {
+  switch (range) {
+    case "3m":
+      return dayjs().subtract(3, "month").valueOf();
+    case "6m":
+      return dayjs().subtract(6, "month").valueOf();
+    case "1y":
+      return dayjs().subtract(1, "year").valueOf();
+    case "2y":
+      return dayjs().subtract(2, "year").valueOf();
+    case "all":
+      return null;
+  }
+}
+
+function getUniquePrepOnlineImportTitle(baseTitle: string, databases: SuccessDatabaseInfo[]) {
+  const existing = new Set(databases.map((database) => database.title.trim().toLowerCase()));
+  let title = baseTitle;
+  let index = 2;
+
+  while (existing.has(title.trim().toLowerCase())) {
+    title = `${baseTitle} ${index}`;
+    index += 1;
+  }
+
+  return title;
+}
+
+function sanitizePrepImportFilename(title: string) {
+  const sanitized = title
+    .replace(/[<>:"/\\|?*]+/g, "_")
+    .split("")
+    .map((char) => (char.charCodeAt(0) < 32 ? "_" : char))
+    .join("")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 120);
+  return sanitized || `online-prep-${Date.now()}`;
+}
+
+function getOldestPrepOnlineGameDate(games: Pick<PrepOnlineImportedGame, "playedAt">[]) {
+  const dates = games
+    .map((game) => game.playedAt)
+    .filter((date) => Number.isFinite(date) && date > 0);
+  return dates.length > 0 ? Math.min(...dates) : null;
+}
+
+function getNewestPrepOnlineGameDate(games: Pick<PrepOnlineImportedGame, "playedAt">[]) {
+  const dates = games
+    .map((game) => game.playedAt)
+    .filter((date) => Number.isFinite(date) && date > 0);
+  return dates.length > 0 ? Math.max(...dates) : null;
+}
+
+function formatPrepOnlineDate(value: number) {
+  return dayjs(value).format("D MMM YYYY");
+}
+
+function normalizePrepOnlinePlayerName(value: string | null | undefined) {
+  return (value ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
 function branchStatsTooltip(stats: OpponentPrepBranchStats) {
