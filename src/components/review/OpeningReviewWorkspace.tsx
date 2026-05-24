@@ -352,7 +352,6 @@ const reviewPositionLineStateCache = new WeakMap<
 >();
 const REVIEW_DECK_SAVE_DEBOUNCE_MS = 1200;
 const REVIEW_POSITION_PREWARM_LIMIT = 3;
-const REVIEW_SUMMARY_PRACTICE_REFRESH_MS = 2500;
 
 type ReviewPositionTreeUpdate = ReviewPositionTreeMatch & { reviewTree: TreeNode };
 
@@ -395,26 +394,6 @@ function scheduleReviewTreePersistence(callback: () => void) {
   }
 
   globalThis.setTimeout(callback, 80);
-}
-
-function scheduleReviewSummaryRefresh(callback: () => void) {
-  const timeoutId = window.setTimeout(() => {
-    if ("requestIdleCallback" in window) {
-      const idleId = window.requestIdleCallback(callback, { timeout: 3500 });
-      callbackCleanup.idleId = idleId;
-    } else {
-      callback();
-    }
-  }, REVIEW_SUMMARY_PRACTICE_REFRESH_MS);
-  const callbackCleanup: { idleId: number | null } = { idleId: null };
-
-  return () => {
-    window.clearTimeout(timeoutId);
-    if (callbackCleanup.idleId === null) return;
-    if ("cancelIdleCallback" in window) {
-      window.cancelIdleCallback(callbackCleanup.idleId);
-    }
-  };
 }
 
 function createReviewCardPerformanceUpdate(
@@ -2103,12 +2082,7 @@ function OpeningReviewPanel({
   useEffect(() => {
     if (!loaded || !practicing) {
       setSummaryPositionsSnapshot(deck.positions);
-      return undefined;
     }
-
-    return scheduleReviewSummaryRefresh(() => {
-      startTransition(() => setSummaryPositionsSnapshot(deck.positions));
-    });
   }, [deck.positions, loaded, practicing]);
   const deferredSummaryPositions = useDeferredValue(summaryPositionsSnapshot);
   const summaryPositions = loaded ? deferredSummaryPositions : deck.positions;

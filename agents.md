@@ -314,6 +314,9 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
 - Engine enable/disable-all updates are idempotent, so Mistake Review's
   optional engine-off-on-navigation behavior does not rewrite engine settings
   or wake engine subscribers when engines are already in the requested state.
+- Review summary snapshots stay frozen while a practice session is active and
+  refresh when practice returns idle, avoiding the old delayed 2.5-second
+  whole-deck stats refresh during card transitions on large decks.
 
 ### Practice Bot Trainer
 
