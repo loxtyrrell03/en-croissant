@@ -68,9 +68,7 @@ import {
   useMemo,
   useRef,
   useState,
-  type Dispatch,
   type ReactNode,
-  type SetStateAction,
 } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { createEmptyCard, formatDate } from "ts-fsrs";
@@ -327,6 +325,12 @@ type ReviewDeckSaveSnapshot = {
   positions: Position[];
   logs: OpeningReviewDeck["logs"] | MistakeReviewDeck["logs"];
 };
+type ReviewCardPerformanceUpdate = {
+  positionIndex: number;
+  fen: string;
+  grade: 1 | 2 | 3 | 4;
+  reviewedAt: Date;
+};
 type OpeningReviewStatsResultFilter = "wins" | "draws" | "losses";
 type OpeningReviewStatsGroupBy = "family" | "line";
 type OpeningReviewStatsSort = "planGap" | "scoreDesc" | "scoreAsc" | "reviewDesc" | "gamesDesc";
@@ -346,7 +350,6 @@ const reviewPositionLineStateCache = new WeakMap<
   Map<string, { path: number[]; state: TreeState }>
 >();
 const REVIEW_DECK_SAVE_DEBOUNCE_MS = 1200;
-const REVIEW_CARD_UPDATE_IDLE_TIMEOUT_MS = 1800;
 const REVIEW_POSITION_PREWARM_LIMIT = 3;
 const REVIEW_SUMMARY_PRACTICE_REFRESH_MS = 2500;
 
@@ -402,54 +405,53 @@ function scheduleReviewSummaryRefresh(callback: () => void) {
   };
 }
 
-function scheduleAfterReviewTransition(callback: () => void) {
-  if ("requestAnimationFrame" in window) {
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(callback);
-    });
-    return;
-  }
-
-  globalThis.setTimeout(callback, 0);
-}
-
-function scheduleReviewCardPerformanceUpdate(
-  setDeck: Dispatch<SetStateAction<PracticeData>>,
+function createReviewCardPerformanceUpdate(
   positionIndex: number,
   position: Position,
   grade: 1 | 2 | 3 | 4,
-) {
-  scheduleAfterReviewTransition(() => {
-    const updateDeck = () => {
-      startTransition(() => {
-        setDeck((data) => {
-          const currentPosition = data.positions[positionIndex];
-          if (!currentPosition || currentPosition.fen !== position.fen) return data;
+): ReviewCardPerformanceUpdate {
+  return {
+    positionIndex,
+    fen: position.fen,
+    grade,
+    reviewedAt: new Date(),
+  };
+}
 
-          const reviewedAt = new Date();
-          const previousReps = getReviewCardReps(currentPosition);
-          const { card: newCard, log } = scheduleSm2Card(currentPosition.card, grade, reviewedAt);
-          const positions = [...data.positions];
-          positions[positionIndex] = markReviewPositionAttempt(
-            { ...currentPosition, card: newCard },
-            reviewedAt.getTime(),
-            previousReps,
-          );
+function applyReviewCardPerformanceUpdates(
+  data: PracticeData,
+  updates: readonly ReviewCardPerformanceUpdate[],
+): PracticeData {
+  if (updates.length === 0) return data;
 
-          return {
-            positions,
-            logs: [...data.logs, { ...log, fen: currentPosition.fen }],
-          };
-        });
-      });
-    };
+  let positions = data.positions;
+  let logs = data.logs;
+  let changed = false;
 
-    if ("requestIdleCallback" in window) {
-      window.requestIdleCallback(updateDeck, { timeout: REVIEW_CARD_UPDATE_IDLE_TIMEOUT_MS });
-    } else {
-      globalThis.setTimeout(updateDeck, 80);
+  for (const update of updates) {
+    const currentPosition = positions[update.positionIndex];
+    if (!currentPosition || currentPosition.fen !== update.fen) continue;
+
+    const previousReps = getReviewCardReps(currentPosition);
+    const { card: newCard, log } = scheduleSm2Card(
+      currentPosition.card,
+      update.grade,
+      update.reviewedAt,
+    );
+    if (!changed) {
+      positions = [...positions];
+      logs = [...logs];
+      changed = true;
     }
-  });
+    positions[update.positionIndex] = markReviewPositionAttempt(
+      { ...currentPosition, card: newCard },
+      update.reviewedAt.getTime(),
+      previousReps,
+    );
+    logs.push({ ...log, fen: currentPosition.fen });
+  }
+
+  return changed ? { positions, logs } : data;
 }
 
 function getReviewCardReps(position: Position) {
@@ -522,6 +524,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const natureMigrationRef = useRef("");
   const latestReviewSaveRef = useRef<ReviewDeckSaveSnapshot | null>(null);
   const reviewSaveReadyRef = useRef(false);
+  const pendingReviewCardUpdatesRef = useRef<ReviewCardPerformanceUpdate[]>([]);
   const initialPractice =
     tab.gameOrigin.kind === "opening_review" || tab.gameOrigin.kind === "mistake_review"
       ? tab.gameOrigin.initialPractice
@@ -576,6 +579,67 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
       ? (onlineDatabaseUpdates[(deckInfo as MistakeReviewDeck).settings.playerDb]?.lastUpdatedAt ??
         0)
       : 0;
+
+  const queueReviewCardPerformanceUpdate = useCallback(
+    (positionIndex: number, position: Position, grade: 1 | 2 | 3 | 4) => {
+      pendingReviewCardUpdatesRef.current.push(
+        createReviewCardPerformanceUpdate(positionIndex, position, grade),
+      );
+    },
+    [],
+  );
+
+  const flushPendingReviewCardUpdates = useCallback(
+    (options: { transition?: boolean } = {}) => {
+      const updates = pendingReviewCardUpdatesRef.current;
+      if (updates.length === 0) return false;
+
+      pendingReviewCardUpdatesRef.current = [];
+      const snapshot = latestReviewSaveRef.current;
+      if (snapshot) {
+        const reviewData = applyReviewCardPerformanceUpdates(
+          { positions: snapshot.positions, logs: snapshot.logs },
+          updates,
+        );
+        latestReviewSaveRef.current = {
+          ...snapshot,
+          positions: reviewData.positions,
+          logs: reviewData.logs,
+        };
+      }
+
+      const applyUpdates = () => {
+        setDeck((current) => applyReviewCardPerformanceUpdates(current, updates));
+      };
+
+      if (options.transition === false) {
+        applyUpdates();
+      } else {
+        startTransition(applyUpdates);
+      }
+
+      return true;
+    },
+    [setDeck],
+  );
+
+  useEffect(() => {
+    const flushForPageLifecycle = () => {
+      flushPendingReviewCardUpdates({ transition: false });
+    };
+    const flushWhenHidden = () => {
+      if (document.visibilityState === "hidden") {
+        flushForPageLifecycle();
+      }
+    };
+
+    document.addEventListener("visibilitychange", flushWhenHidden);
+    window.addEventListener("beforeunload", flushForPageLifecycle);
+    return () => {
+      document.removeEventListener("visibilitychange", flushWhenHidden);
+      window.removeEventListener("beforeunload", flushForPageLifecycle);
+    };
+  }, [flushPendingReviewCardUpdates]);
 
   const loadDeckPosition = useCallback(
     (positionIndex: number) => {
@@ -665,6 +729,7 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     let disposed = false;
     reviewSaveReadyRef.current = false;
     latestReviewSaveRef.current = null;
+    pendingReviewCardUpdatesRef.current = [];
     setLoaded(false);
     setLoadError(null);
     setLoadedReviewPositionIndex(null);
@@ -882,11 +947,17 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
     () => () => {
       const snapshot = latestReviewSaveRef.current;
       if (!snapshot) return;
+      const pendingUpdates = pendingReviewCardUpdatesRef.current;
+      pendingReviewCardUpdatesRef.current = [];
+      const reviewData = applyReviewCardPerformanceUpdates(
+        { positions: snapshot.positions, logs: snapshot.logs },
+        pendingUpdates,
+      );
 
       const nextDeck = {
         ...snapshot.deckInfo,
-        positions: snapshot.positions,
-        logs: snapshot.logs,
+        positions: reviewData.positions,
+        logs: reviewData.logs,
       };
       const savePromise = snapshot.isMistakeReview
         ? writeMistakeReviewDeck(snapshot.deckPath, nextDeck as MistakeReviewDeck)
@@ -1275,6 +1346,8 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
                     boardMoveCandidate={boardMoveCandidate}
                     onClearBoardMoveCandidate={() => setBoardMoveCandidate(null)}
                     onLoadPosition={loadDeckPosition}
+                    onQueueCardPerformanceUpdate={queueReviewCardPerformanceUpdate}
+                    onFlushCardPerformanceUpdates={flushPendingReviewCardUpdates}
                     reviewPositionFenIndex={reviewPositionFenIndex}
                     loadError={loadError}
                     loaded={loaded}
@@ -1890,6 +1963,8 @@ function OpeningReviewPanel({
   boardMoveCandidate,
   onClearBoardMoveCandidate,
   onLoadPosition,
+  onQueueCardPerformanceUpdate,
+  onFlushCardPerformanceUpdates,
   reviewPositionFenIndex,
   loadError,
   loaded,
@@ -1912,6 +1987,12 @@ function OpeningReviewPanel({
   boardMoveCandidate: ReviewBoardMoveCandidate | null;
   onClearBoardMoveCandidate: () => void;
   onLoadPosition: (positionIndex: number) => void;
+  onQueueCardPerformanceUpdate: (
+    positionIndex: number,
+    position: Position,
+    grade: 1 | 2 | 3 | 4,
+  ) => void;
+  onFlushCardPerformanceUpdates: (options?: { transition?: boolean }) => boolean;
   reviewPositionFenIndex: ReturnType<typeof createReviewPositionFenIndex>;
   loadError: string | null;
   loaded: boolean;
@@ -2136,6 +2217,7 @@ function OpeningReviewPanel({
 
   const updateCorrectMove = useCallback(
     (positionIndex: number, move: { san: string; uci: string }) => {
+      onFlushCardPerformanceUpdates({ transition: false });
       setDeck((current) => {
         const position = current.positions[positionIndex];
         if (!position) return current;
@@ -2178,6 +2260,7 @@ function OpeningReviewPanel({
     },
     [
       onClearBoardMoveCandidate,
+      onFlushCardPerformanceUpdates,
       practiceState.phase,
       practiceState.positionIndex,
       setDeck,
@@ -2187,6 +2270,7 @@ function OpeningReviewPanel({
   );
 
   const stopPractice = useCallback(() => {
+    onFlushCardPerformanceUpdates({ transition: false });
     setPracticeState({ phase: "idle" });
     setPracticePath(null);
     setInvisible(false);
@@ -2195,6 +2279,7 @@ function OpeningReviewPanel({
     onClearBoardMoveCandidate();
     activeDailyGoalSessionRef.current = null;
   }, [
+    onFlushCardPerformanceUpdates,
     onClearBoardMoveCandidate,
     setEvalOpen,
     setInvisible,
@@ -2205,6 +2290,7 @@ function OpeningReviewPanel({
 
   const completePracticeSession = useCallback(() => {
     const dailyGoalSession = activeDailyGoalSessionRef.current;
+    onFlushCardPerformanceUpdates({ transition: false });
     setPracticeState({ phase: "idle" });
     setPracticePath(null);
     setInvisible(false);
@@ -2229,6 +2315,7 @@ function OpeningReviewPanel({
     }
   }, [
     isMistakeReview,
+    onFlushCardPerformanceUpdates,
     onClearBoardMoveCandidate,
     setDailyGoalCompletionPrompt,
     setEvalOpen,
@@ -2318,6 +2405,7 @@ function OpeningReviewPanel({
   const deleteCurrentReviewPosition = useCallback(() => {
     if (!currentPracticePosition || currentPracticePositionIndex < 0) return;
 
+    onFlushCardPerformanceUpdates({ transition: false });
     const nextPositions = deck.positions.filter(
       (_, positionIndex) => positionIndex !== currentPracticePositionIndex,
     );
@@ -2363,6 +2451,7 @@ function OpeningReviewPanel({
     deck.positions,
     newPractice,
     onClearBoardMoveCandidate,
+    onFlushCardPerformanceUpdates,
     sessionStats.mode,
     sessionStats.remainingPositions,
     setDeck,
@@ -2663,7 +2752,7 @@ function OpeningReviewPanel({
         : sessionStats.remainingPositions;
     const wasCorrect = practiceState.phase === "correct";
 
-    scheduleReviewCardPerformanceUpdate(setDeck, positionIndex, position, grade);
+    onQueueCardPerformanceUpdate(positionIndex, position, grade);
     setSessionStats((current) => ({
       ...current,
       remainingPositions,
@@ -2748,7 +2837,7 @@ function OpeningReviewPanel({
       const position = deck.positions[positionIndex];
       if (position) {
         if (sessionStats.mode !== "full") {
-          scheduleReviewCardPerformanceUpdate(setDeck, positionIndex, position, 3);
+          onQueueCardPerformanceUpdate(positionIndex, position, 3);
         }
         setSessionStats((current) => ({
           ...current,
@@ -2775,12 +2864,12 @@ function OpeningReviewPanel({
   }, [
     deck.positions,
     newPractice,
+    onQueueCardPerformanceUpdate,
     practiceState.phase,
     practiceState.positionIndex,
     practiceState.resultRecorded,
     sessionStats.mode,
     sessionStats.remainingPositions,
-    setDeck,
     setSessionStats,
   ]);
 
@@ -2806,8 +2895,7 @@ function OpeningReviewPanel({
             : sessionStats.remainingPositions;
         const position = deck.positions[positionIndex];
         if (!position) return;
-        scheduleReviewCardPerformanceUpdate(
-          setDeck,
+        onQueueCardPerformanceUpdate(
           positionIndex,
           position,
           Number(practiceAutoDifficulty) as 1 | 2 | 3 | 4,
@@ -2836,12 +2924,12 @@ function OpeningReviewPanel({
     deck.positions,
     isMistakeReview,
     newPractice,
+    onQueueCardPerformanceUpdate,
     practiceAutoDifficulty,
     practiceState.phase,
     practiceState.positionIndex,
     sessionStats.mode,
     sessionStats.remainingPositions,
-    setDeck,
     setSessionStats,
   ]);
 
@@ -6331,9 +6419,13 @@ function getReviewPrewarmPositionIndices(
   if (positions.length === 0) return [];
 
   if (sessionStats.remainingPositions.length > 0) {
-    return sessionStats.remainingPositions
-      .filter((index) => index !== currentPositionIndex && positions[index])
-      .slice(0, REVIEW_POSITION_PREWARM_LIMIT);
+    const indices: number[] = [];
+    for (const index of sessionStats.remainingPositions) {
+      if (index === currentPositionIndex || !positions[index]) continue;
+      indices.push(index);
+      if (indices.length >= REVIEW_POSITION_PREWARM_LIMIT) break;
+    }
+    return indices;
   }
 
   const now = new Date();

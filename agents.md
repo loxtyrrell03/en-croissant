@@ -624,6 +624,12 @@ from 2026-04-24 through 2026-05-03.
   line states instead of recursive review-tree cache-key serialization, and
   deferred right-panel summary refreshes while practice is active so next-card
   transitions stay responsive on large decks.
+- Review practice write buffering: per-card SRS updates are queued during an
+  active Opening Review or Mistake Review session and flushed at stop,
+  completion, lifecycle, or unmount boundaries instead of copying and saving
+  the whole deck a couple seconds after every card. Nearby-card prewarming also
+  stops after the first few queued indices instead of filtering the full
+  remaining deck.
 
 ## Verification Expectations
 
