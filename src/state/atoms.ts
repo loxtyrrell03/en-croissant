@@ -447,7 +447,7 @@ const defaultOpponentPrepState = (): OpponentPrepState => ({
     playerName: "",
     color: "white",
     result: "any",
-    minGames: 2,
+    minGames: 1,
     moveLimit: 8,
     rootPath: null,
     completedBranches: {},

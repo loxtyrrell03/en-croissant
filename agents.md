@@ -600,6 +600,8 @@ from 2026-04-24 through 2026-05-03.
   app-bar Save game to files action near the File menu that saves a PGN copy
   from any analysis origin, and database settings can export an entire database
   into the Files root as a folder of individual game files.
+- Opponent prep defaults: new Prep tabs now start with Min games set to 1 so
+  even one-game opponent branches are visible by default.
 
 ## Verification Expectations
 
