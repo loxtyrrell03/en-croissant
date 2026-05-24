@@ -191,6 +191,7 @@ import {
   findReviewPositionIndexForFen,
   getReviewPositionsForPath,
   sameReviewPosition,
+  type ReviewPositionTreeMatch,
 } from "@/utils/openingReviewPersistence";
 import {
   getOpeningReviewMoveSequenceLabel,
@@ -353,6 +354,8 @@ const REVIEW_DECK_SAVE_DEBOUNCE_MS = 1200;
 const REVIEW_POSITION_PREWARM_LIMIT = 3;
 const REVIEW_SUMMARY_PRACTICE_REFRESH_MS = 2500;
 
+type ReviewPositionTreeUpdate = ReviewPositionTreeMatch & { reviewTree: TreeNode };
+
 function scheduleReviewDeckSave(callback: () => void) {
   let idleId: number | null = null;
   const timeoutId = window.setTimeout(() => {
@@ -383,6 +386,15 @@ function scheduleReviewPositionPrewarm(callback: () => void) {
 
   const timeoutId = globalThis.setTimeout(callback, 80);
   return () => globalThis.clearTimeout(timeoutId);
+}
+
+function scheduleReviewTreePersistence(callback: () => void) {
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(callback, { timeout: 1600 });
+    return;
+  }
+
+  globalThis.setTimeout(callback, 80);
 }
 
 function scheduleReviewSummaryRefresh(callback: () => void) {
@@ -525,6 +537,8 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   const latestReviewSaveRef = useRef<ReviewDeckSaveSnapshot | null>(null);
   const reviewSaveReadyRef = useRef(false);
   const pendingReviewCardUpdatesRef = useRef<ReviewCardPerformanceUpdate[]>([]);
+  const pendingReviewTreePersistenceRef = useRef<Map<number, ReviewPositionTreeMatch>>(new Map());
+  const reviewTreePersistenceScheduledRef = useRef(false);
   const initialPractice =
     tab.gameOrigin.kind === "opening_review" || tab.gameOrigin.kind === "mistake_review"
       ? tab.gameOrigin.initialPractice
@@ -1121,34 +1135,55 @@ export default function OpeningReviewWorkspace({ tab }: { tab: Tab }) {
   useEffect(() => {
     if (!loaded || loadError || !treeDirty || activeReviewPositions.length === 0) return;
 
+    const persistReviewTrees =
+      (nextReviewTrees: ReviewPositionTreeUpdate[]) => (current: PracticeData) => {
+        let positions = current.positions;
+        let changed = false;
+
+        for (const reviewPosition of nextReviewTrees) {
+          const position = positions[reviewPosition.positionIndex];
+          if (!position || !sameReviewPosition(position.fen, reviewPosition.node.fen)) {
+            continue;
+          }
+
+          const nextPosition = withReviewTree(position, reviewPosition.reviewTree);
+          if (sameReviewPersistence(position, nextPosition)) continue;
+
+          if (!changed) {
+            positions = [...positions];
+            changed = true;
+          }
+          positions[reviewPosition.positionIndex] = nextPosition;
+        }
+
+        return changed ? { ...current, positions } : current;
+      };
+
+    if (practicing) {
+      for (const reviewPosition of activeReviewPositions) {
+        pendingReviewTreePersistenceRef.current.set(reviewPosition.positionIndex, reviewPosition);
+      }
+      if (reviewTreePersistenceScheduledRef.current) return;
+      reviewTreePersistenceScheduledRef.current = true;
+      scheduleReviewTreePersistence(() => {
+        const pendingReviewPositions = Array.from(pendingReviewTreePersistenceRef.current.values());
+        pendingReviewTreePersistenceRef.current.clear();
+        reviewTreePersistenceScheduledRef.current = false;
+        const nextReviewTrees = pendingReviewPositions.map((reviewPosition) => ({
+          ...reviewPosition,
+          reviewTree: cloneReviewTreeNode(reviewPosition.node),
+        }));
+        startTransition(() => setDeck(persistReviewTrees(nextReviewTrees)));
+      });
+      return;
+    }
+
     const nextReviewTrees = activeReviewPositions.map((reviewPosition) => ({
       ...reviewPosition,
       reviewTree: cloneReviewTreeNode(reviewPosition.node),
     }));
-
-    setDeck((current) => {
-      let positions = current.positions;
-      let changed = false;
-
-      for (const reviewPosition of nextReviewTrees) {
-        const position = positions[reviewPosition.positionIndex];
-        if (!position || !sameReviewPosition(position.fen, reviewPosition.node.fen)) {
-          continue;
-        }
-
-        const nextPosition = withReviewTree(position, reviewPosition.reviewTree);
-        if (sameReviewPersistence(position, nextPosition)) continue;
-
-        if (!changed) {
-          positions = [...positions];
-          changed = true;
-        }
-        positions[reviewPosition.positionIndex] = nextPosition;
-      }
-
-      return changed ? { ...current, positions } : current;
-    });
-  }, [activeReviewPositions, loadError, loaded, setDeck, treeDirty]);
+    setDeck(persistReviewTrees(nextReviewTrees));
+  }, [activeReviewPositions, loadError, loaded, practicing, setDeck, treeDirty]);
 
   useEffect(() => {
     if (!isMistakeReview || practiceState.phase === "idle" || practiceState.phase === "waiting") {

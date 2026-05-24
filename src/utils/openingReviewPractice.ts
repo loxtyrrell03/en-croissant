@@ -10,6 +10,10 @@ import {
     isMistakeReviewPassingLabel,
     type MistakeReviewAttemptLabel,
 } from "@/utils/mistakeReview";
+import {
+    findReviewPositionIndexForFen,
+    type ReviewPositionFenIndex,
+} from "@/utils/openingReviewPersistence";
 
 export type OpeningReviewMoveAssessmentSource = "lichess" | "chessdb" | "engine" | "saved";
 
@@ -73,6 +77,7 @@ export function findReviewPracticePositionForBoard(
     positions: Position[],
     currentFen: string | undefined,
     practicePositionIndex: number | undefined,
+    fenIndex?: ReviewPositionFenIndex,
 ): ReviewPracticePositionEntry | null {
     if (practicePositionIndex !== undefined) {
         const position = positions[practicePositionIndex];
@@ -81,9 +86,9 @@ export function findReviewPracticePositionForBoard(
             : null;
     }
 
-    const index = positions.findIndex((position) =>
-        sameReviewBoardPosition(position.fen, currentFen),
-    );
+    if (!currentFen) return null;
+
+    const index = findReviewPositionIndexForFen(positions, currentFen, undefined, fenIndex);
     return index === -1 ? null : { position: positions[index]!, index };
 }
 

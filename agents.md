@@ -294,6 +294,12 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
   as transition work during practice starts and card advances, keeping the board
   position swap and practice-state reset higher priority than counters and
   remaining-queue UI updates.
+- Opening Review and Mistake Review practice tree persistence is coalesced and
+  idle-scheduled while training, so attempted moves and annotations still save
+  back to the deck without forcing immediate large-deck atom updates during the
+  next-card path.
+- Board-side review-card lookups use the shared review FEN index instead of
+  scanning the whole deck when resolving the current practice or mistake card.
 
 ### Practice Bot Trainer
 

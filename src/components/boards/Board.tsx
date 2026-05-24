@@ -129,6 +129,10 @@ import {
   type OpeningReviewMoveAssessment,
 } from "@/utils/openingReviewPractice";
 import {
+  createReviewPositionFenIndex,
+  findReviewPositionIndexForFen,
+} from "@/utils/openingReviewPersistence";
+import {
   getAutoPlanLines,
   getPlanLineForSquare,
   isPlanBrush,
@@ -554,6 +558,10 @@ function Board({
       game: getTabGameNumber(currentTab),
     }),
   );
+  const reviewPositionFenIndex = useMemo(
+    () => createReviewPositionFenIndex(deck.positions),
+    [deck.positions],
+  );
 
   const [practiceState, setPracticeState] = useAtom(practiceStateAtom);
   const latestPracticeStateRef = useRef(practiceState);
@@ -622,18 +630,27 @@ function Board({
       return practiceState.positionIndex;
     }
     if (practiceState.currentFen) {
-      const index = deck.positions.findIndex((position) =>
-        sameBoardPosition(position.fen, practiceState.currentFen),
+      const index = findReviewPositionIndexForFen(
+        deck.positions,
+        practiceState.currentFen,
+        undefined,
+        reviewPositionFenIndex,
       );
       if (index !== -1) return index;
     }
-    return deck.positions.findIndex((position) => sameBoardPosition(position.fen, currentNode.fen));
+    return findReviewPositionIndexForFen(
+      deck.positions,
+      currentNode.fen,
+      undefined,
+      reviewPositionFenIndex,
+    );
   }, [
     currentNode.fen,
     deck.positions,
     isMistakeReviewTab,
     practiceState.currentFen,
     practiceState.positionIndex,
+    reviewPositionFenIndex,
   ]);
   const currentMistakeReviewPosition =
     currentMistakeReviewIndex >= 0 ? deck.positions[currentMistakeReviewIndex] : null;
@@ -651,18 +668,33 @@ function Board({
     if (currentMistakeReviewPosition?.mistakeReview) return currentMistakeReviewIndex;
     const activeMistakeReviewPosition = activeMistakeReviewPositionRef.current;
     if (!activeMistakeReviewPosition) return -1;
-    return deck.positions.findIndex((position) =>
-      sameBoardPosition(position.fen, activeMistakeReviewPosition.fen),
+    return findReviewPositionIndexForFen(
+      deck.positions,
+      activeMistakeReviewPosition.fen,
+      undefined,
+      reviewPositionFenIndex,
     );
-  }, [currentMistakeReviewIndex, currentMistakeReviewPosition, deck.positions]);
+  }, [
+    currentMistakeReviewIndex,
+    currentMistakeReviewPosition,
+    deck.positions,
+    reviewPositionFenIndex,
+  ]);
   const currentPracticeEntry = useMemo(
     () =>
       findReviewPracticePositionForBoard(
         deck.positions,
         currentNode.fen,
         practicing ? practiceState.positionIndex : undefined,
+        reviewPositionFenIndex,
       ),
-    [currentNode.fen, deck.positions, practiceState.positionIndex, practicing],
+    [
+      currentNode.fen,
+      deck.positions,
+      practiceState.positionIndex,
+      practicing,
+      reviewPositionFenIndex,
+    ],
   );
   const currentPracticeCard = currentPracticeEntry?.position ?? null;
   const mistakeReviewFreePlayActive =
