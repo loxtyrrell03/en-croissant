@@ -222,6 +222,9 @@ and `src/utils/lichess/study.ts`.
   blended practical strength model. The shared table shows a separate blended
   strength column and sort, with a settings button in Database and Compare
   panels for Smart/Engine/Practical mode, engine blend, and maximum CP drop.
+- In Prep player mode, the color filter labels use the selected player name
+  directly, such as "IfanRJ as white" and "IfanRJ as black", so the side filter
+  reads as that player's game color instead of a generic board color.
 - Lichess Study links can be imported as local databases.
 - Lichess Study databases support auto-update metadata and refresh tracking.
 - Lichess Study databases expose a database-manager reload control that

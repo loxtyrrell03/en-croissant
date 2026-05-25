@@ -2173,7 +2173,8 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
                   onColorChange={(color) => updateSettings({ color }, true)}
                   size={controlSize}
                   playerWidth={dense ? 130 : 170}
-                  colorWidth={dense ? 112 : 126}
+                  colorWidth={dense ? 184 : 224}
+                  colorLabelPlayerName={prep.playerName}
                 />
               ) : (
                 <Tooltip label="The side you are preparing to play">

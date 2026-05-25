@@ -14,6 +14,7 @@ export function DatabasePerspectiveControls({
   size = "xs",
   playerWidth = 170,
   colorWidth = 132,
+  colorLabelPlayerName,
 }: {
   databasePath: string | null | undefined;
   player: number | null;
@@ -25,8 +26,20 @@ export function DatabasePerspectiveControls({
   size?: "xs" | "sm";
   playerWidth?: number;
   colorWidth?: number;
+  colorLabelPlayerName?: string;
 }) {
   if (!databasePath) return null;
+
+  const colorLabelName = colorLabelPlayerName?.trim();
+  const colorOptions = colorLabelName
+    ? [
+        { value: "white", label: `${colorLabelName} as white` },
+        { value: "black", label: `${colorLabelName} as black` },
+      ]
+    : [
+        { value: "white", label: "White" },
+        { value: "black", label: "Black" },
+      ];
 
   return (
     <Group gap={4} wrap="nowrap">
@@ -43,14 +56,17 @@ export function DatabasePerspectiveControls({
           />
         </div>
       </Tooltip>
-      <Tooltip label="Only games where that player had this color">
+      <Tooltip
+        label={
+          colorLabelName
+            ? `Only games where ${colorLabelName} had this color`
+            : "Only games where that player had this color"
+        }
+      >
         <SegmentedControl
           aria-label="Database player color"
           size={size}
-          data={[
-            { value: "white", label: "White" },
-            { value: "black", label: "Black" },
-          ]}
+          data={colorOptions}
           value={color}
           onChange={(value) => onColorChange(value as DatabasePerspectiveColor)}
           w={colorWidth}
