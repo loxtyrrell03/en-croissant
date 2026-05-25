@@ -720,6 +720,10 @@ from 2026-04-24 through 2026-05-03.
 - Mistake Review reveal countdowns now update at most once per displayed second
   and skip unchanged values, instead of waking the full board every 250ms during
   the common 2-3 second hidden-answer delay.
+- Opponent prep move tables keep the user's clicked sort category while moving
+  through a prep line. Initial defaults are side-specific: opponent/source moves
+  sort by Usage, while user candidate moves sort by Smart strength; both
+  defaults are tuneable from the prep settings controls.
 
 ## Verification Expectations
 

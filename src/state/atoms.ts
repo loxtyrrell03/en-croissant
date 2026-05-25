@@ -436,6 +436,10 @@ export type OpponentPrepState = {
     completedBranches: Record<string, number>;
     skippedBranches: Record<string, number>;
     builder?: Partial<PrepBuilderSettings>;
+    sortDefaults?: {
+        opponent?: "move" | "strength" | "games" | "results" | "prep" | "state";
+        candidate?: "move" | "strength" | "games" | "results";
+    };
 };
 
 const defaultOpponentPrepState = (): OpponentPrepState => ({

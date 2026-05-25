@@ -183,6 +183,33 @@ type PrepSortState<TColumn extends string> = {
   column: TColumn;
   direction: PrepSortDirection;
 };
+type PrepMoveTableSortState = {
+  opponent: PrepSortState<OpponentPrepSortColumn>;
+  candidate: PrepSortState<CandidatePrepSortColumn>;
+};
+type PrepMoveSortDefaults = {
+  opponent: OpponentPrepSortColumn;
+  candidate: CandidatePrepSortColumn;
+};
+
+const DEFAULT_PREP_MOVE_SORT_DEFAULTS: PrepMoveSortDefaults = {
+  opponent: "games",
+  candidate: "strength",
+};
+const PREP_OPPONENT_SORT_OPTIONS: { value: OpponentPrepSortColumn; label: string }[] = [
+  { value: "games", label: "Usage" },
+  { value: "strength", label: "Smart strength" },
+  { value: "results", label: "Results" },
+  { value: "prep", label: "Prep coverage" },
+  { value: "state", label: "State" },
+  { value: "move", label: "Move" },
+];
+const PREP_CANDIDATE_SORT_OPTIONS: { value: CandidatePrepSortColumn; label: string }[] = [
+  { value: "strength", label: "Smart strength" },
+  { value: "games", label: "Usage" },
+  { value: "results", label: "WDL" },
+  { value: "move", label: "Move" },
+];
 
 type PrepBuilderStatus = {
   phase: string;
@@ -304,6 +331,9 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
     null,
   );
   const [underBoardStage, setUnderBoardStage] = useState<"setup" | "train">("setup");
+  const [moveTableSort, setMoveTableSort] = useState<PrepMoveTableSortState>(() =>
+    getDefaultPrepMoveTableSortState(prep.sortDefaults),
+  );
   const moveCacheRef = useRef(new BoundedMap<string, Opening[]>(MAX_PREP_MOVE_CACHE_ENTRIES));
   const builderReferenceCacheRef = useRef(
     new BoundedMap<string, Opening[]>(MAX_PREP_BUILDER_REFERENCE_CACHE_ENTRIES),
@@ -318,6 +348,14 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
   const prepMode = prep.mode ?? "player";
   const prepSource = prep.source ?? "local";
   const builderSettings = useMemo(() => normalizePrepBuilderSettings(prep.builder), [prep.builder]);
+  const prepSortDefaults = useMemo(
+    () => normalizePrepMoveSortDefaults(prep.sortDefaults),
+    [prep.sortDefaults],
+  );
+
+  useEffect(() => {
+    setMoveTableSort(getDefaultPrepMoveTableSortState(prep.sortDefaults));
+  }, [prep.sortDefaults]);
   const { data: databases } = useSWR("databases", () => getDatabases());
   const localDatabases = useMemo(
     () =>
@@ -801,6 +839,34 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
   const preparedCount = currentRows.filter((row) => row.status === "prepared").length;
   const startedCount = currentRows.filter((row) => row.status === "started").length;
   const skippedCount = currentRows.filter((row) => row.status === "skipped").length;
+
+  const setOpponentMoveSortColumn = useCallback((column: OpponentPrepSortColumn) => {
+    setMoveTableSort((current) => {
+      const opponent = getNextPrepSort(current.opponent, column);
+      return {
+        opponent,
+        candidate: isCandidatePrepSortColumn(opponent.column)
+          ? {
+              column: opponent.column,
+              direction: opponent.direction,
+            }
+          : current.candidate,
+      };
+    });
+  }, []);
+
+  const setCandidateMoveSortColumn = useCallback((column: CandidatePrepSortColumn) => {
+    setMoveTableSort((current) => {
+      const candidate = getNextPrepSort(current.candidate, column);
+      return {
+        candidate,
+        opponent: {
+          column: candidate.column,
+          direction: candidate.direction,
+        },
+      };
+    });
+  }, []);
   const controlSize = compact ? "xs" : "sm";
   const databaseLabel = selectedDatabaseLabel;
   const canOverwriteCurrent =
@@ -896,6 +962,42 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
       setPrep((current) => ({
         ...current,
         builder: normalizePrepBuilderSettings(getPrepBuilderSettingsPatch(current.builder, patch)),
+      }));
+    },
+    [setPrep],
+  );
+
+  const updateOpponentSortDefault = useCallback(
+    (column: OpponentPrepSortColumn) => {
+      const sort = getDefaultPrepSortState(column);
+      setMoveTableSort((current) => ({
+        ...current,
+        opponent: sort,
+      }));
+      setPrep((current) => ({
+        ...current,
+        sortDefaults: {
+          ...normalizePrepMoveSortDefaults(current.sortDefaults),
+          opponent: column,
+        },
+      }));
+    },
+    [setPrep],
+  );
+
+  const updateCandidateSortDefault = useCallback(
+    (column: CandidatePrepSortColumn) => {
+      const sort = getDefaultPrepSortState(column);
+      setMoveTableSort((current) => ({
+        ...current,
+        candidate: sort,
+      }));
+      setPrep((current) => ({
+        ...current,
+        sortDefaults: {
+          ...normalizePrepMoveSortDefaults(current.sortDefaults),
+          candidate: column,
+        },
       }));
     },
     [setPrep],
@@ -2157,6 +2259,30 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
                 }
                 size={controlSize}
               />
+              <Select
+                label={prepMode === "general" ? "Source move sort" : "Their move sort"}
+                value={prepSortDefaults.opponent}
+                data={PREP_OPPONENT_SORT_OPTIONS}
+                onChange={(value) => {
+                  if (isOpponentPrepSortColumn(value)) updateOpponentSortDefault(value);
+                }}
+                size={controlSize}
+                w={dense ? 130 : 158}
+                allowDeselect={false}
+                comboboxProps={{ withinPortal: true }}
+              />
+              <Select
+                label="Your move sort"
+                value={prepSortDefaults.candidate}
+                data={PREP_CANDIDATE_SORT_OPTIONS}
+                onChange={(value) => {
+                  if (isCandidatePrepSortColumn(value)) updateCandidateSortDefault(value);
+                }}
+                size={controlSize}
+                w={dense ? 130 : 158}
+                allowDeselect={false}
+                comboboxProps={{ withinPortal: true }}
+              />
               <Tooltip label="Smart mode blend: 0 is database WDL only, 100 is cloud engine only">
                 <NumberInput
                   label="Engine blend"
@@ -2369,6 +2495,30 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
                     updateBuilderSettings({ mode: value as PrepBuilderSettings["mode"] })
                   }
                   size={controlSize}
+                />
+                <Select
+                  label={prepMode === "general" ? "Source move sort" : "Their move sort"}
+                  value={prepSortDefaults.opponent}
+                  data={PREP_OPPONENT_SORT_OPTIONS}
+                  onChange={(value) => {
+                    if (isOpponentPrepSortColumn(value)) updateOpponentSortDefault(value);
+                  }}
+                  size={controlSize}
+                  w={dense ? 130 : 158}
+                  allowDeselect={false}
+                  comboboxProps={{ withinPortal: true }}
+                />
+                <Select
+                  label="Your move sort"
+                  value={prepSortDefaults.candidate}
+                  data={PREP_CANDIDATE_SORT_OPTIONS}
+                  onChange={(value) => {
+                    if (isCandidatePrepSortColumn(value)) updateCandidateSortDefault(value);
+                  }}
+                  size={controlSize}
+                  w={dense ? 130 : 158}
+                  allowDeselect={false}
+                  comboboxProps={{ withinPortal: true }}
                 />
                 <SegmentedControl
                   aria-label="Prep builder depth"
@@ -2591,6 +2741,8 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
               branchStatsLoading={branchStatsLoading}
               strengthByMove={strengthByMove}
               strengthLoading={strengthLoading}
+              sort={moveTableSort.opponent}
+              onSort={setOpponentMoveSortColumn}
             />
           ) : (
             <PrepCandidateMoveTable
@@ -2604,6 +2756,8 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
               onClearPreview={clearMovePreview}
               strengthByMove={strengthByMove}
               strengthLoading={strengthLoading}
+              sort={moveTableSort.candidate}
+              onSort={setCandidateMoveSortColumn}
             />
           )}
         </Box>
@@ -2627,6 +2781,8 @@ function OpponentPrepMoveTable({
   branchStatsLoading,
   strengthByMove,
   strengthLoading,
+  sort,
+  onSort,
 }: {
   rows: OpponentPrepMoveRow[];
   loading: boolean;
@@ -2642,19 +2798,14 @@ function OpponentPrepMoveTable({
   branchStatsLoading: boolean;
   strengthByMove: Map<string, PrepMoveStrength>;
   strengthLoading: boolean;
+  sort: PrepSortState<OpponentPrepSortColumn>;
+  onSort: (column: OpponentPrepSortColumn) => void;
 }) {
   const textSize = dense ? "xs" : "sm";
-  const [sort, setSort] = useState<PrepSortState<OpponentPrepSortColumn>>({
-    column: "games",
-    direction: "desc",
-  });
   const sortedRows = useMemo(
     () => sortOpponentPrepTableRows(rows, sort, branchStatsByKey, resultSide, strengthByMove),
     [branchStatsByKey, resultSide, rows, sort, strengthByMove],
   );
-  const setSortColumn = useCallback((column: OpponentPrepSortColumn) => {
-    setSort((current) => getNextPrepSort(current, column));
-  }, []);
 
   if (loading) {
     return (
@@ -2691,36 +2842,36 @@ function OpponentPrepMoveTable({
             label="Move"
             column="move"
             sort={sort}
-            onSort={setSortColumn}
+            onSort={onSort}
             style={{ width: dense ? 64 : 90 }}
           />
           <SortablePrepTh
             label="Strength"
             column="strength"
             sort={sort}
-            onSort={setSortColumn}
+            onSort={onSort}
             style={{ width: dense ? 80 : 104 }}
           />
           <SortablePrepTh
             label="Games"
             column="games"
             sort={sort}
-            onSort={setSortColumn}
+            onSort={onSort}
             style={{ width: dense ? 78 : 110 }}
           />
-          <SortablePrepTh label="Results" column="results" sort={sort} onSort={setSortColumn} />
+          <SortablePrepTh label="Results" column="results" sort={sort} onSort={onSort} />
           <SortablePrepTh
             label="Prep"
             column="prep"
             sort={sort}
-            onSort={setSortColumn}
+            onSort={onSort}
             style={{ width: dense ? 110 : 150 }}
           />
           <SortablePrepTh
             label="State"
             column="state"
             sort={sort}
-            onSort={setSortColumn}
+            onSort={onSort}
             style={{ width: dense ? 76 : 98 }}
           />
           <Table.Th style={{ width: dense ? 96 : 120 }} />
@@ -2826,6 +2977,8 @@ function PrepCandidateMoveTable({
   onClearPreview,
   strengthByMove,
   strengthLoading,
+  sort,
+  onSort,
 }: {
   rows: PrepCandidateMoveRow[];
   loading: boolean;
@@ -2837,20 +2990,15 @@ function PrepCandidateMoveTable({
   onClearPreview: () => void;
   strengthByMove: Map<string, PrepMoveStrength>;
   strengthLoading: boolean;
+  sort: PrepSortState<CandidatePrepSortColumn>;
+  onSort: (column: CandidatePrepSortColumn) => void;
 }) {
   const textSize = dense ? "xs" : "sm";
   const colorLabel = userColor === "white" ? "White" : "Black";
-  const [sort, setSort] = useState<PrepSortState<CandidatePrepSortColumn>>({
-    column: "games",
-    direction: "desc",
-  });
   const sortedRows = useMemo(
     () => sortCandidatePrepTableRows(rows, sort, userColor, strengthByMove),
     [rows, sort, userColor, strengthByMove],
   );
-  const setSortColumn = useCallback((column: CandidatePrepSortColumn) => {
-    setSort((current) => getNextPrepSort(current, column));
-  }, []);
 
   if (loading) {
     return (
@@ -2894,24 +3042,24 @@ function PrepCandidateMoveTable({
               label="Move"
               column="move"
               sort={sort}
-              onSort={setSortColumn}
+              onSort={onSort}
               style={{ width: dense ? 64 : 90 }}
             />
             <SortablePrepTh
               label="Strength"
               column="strength"
               sort={sort}
-              onSort={setSortColumn}
+              onSort={onSort}
               style={{ width: dense ? 80 : 104 }}
             />
             <SortablePrepTh
               label="Games"
               column="games"
               sort={sort}
-              onSort={setSortColumn}
+              onSort={onSort}
               style={{ width: dense ? 78 : 110 }}
             />
-            <SortablePrepTh label="WDL" column="results" sort={sort} onSort={setSortColumn} />
+            <SortablePrepTh label="WDL" column="results" sort={sort} onSort={onSort} />
             <Table.Th style={{ width: dense ? 64 : 82 }} />
           </Table.Tr>
         </Table.Thead>
@@ -3050,6 +3198,53 @@ function getNextPrepSort<TColumn extends string>(
     column,
     direction: column === "move" ? "asc" : "desc",
   };
+}
+
+function getDefaultPrepMoveTableSortState(
+  sortDefaults: OpponentPrepState["sortDefaults"],
+): PrepMoveTableSortState {
+  const defaults = normalizePrepMoveSortDefaults(sortDefaults);
+  return {
+    opponent: getDefaultPrepSortState(defaults.opponent),
+    candidate: getDefaultPrepSortState(defaults.candidate),
+  };
+}
+
+function getDefaultPrepSortState<TColumn extends OpponentPrepSortColumn | CandidatePrepSortColumn>(
+  column: TColumn,
+): PrepSortState<TColumn> {
+  return {
+    column,
+    direction: column === "move" ? "asc" : "desc",
+  };
+}
+
+function normalizePrepMoveSortDefaults(
+  sortDefaults: OpponentPrepState["sortDefaults"],
+): PrepMoveSortDefaults {
+  return {
+    opponent: isOpponentPrepSortColumn(sortDefaults?.opponent)
+      ? sortDefaults.opponent
+      : DEFAULT_PREP_MOVE_SORT_DEFAULTS.opponent,
+    candidate: isCandidatePrepSortColumn(sortDefaults?.candidate)
+      ? sortDefaults.candidate
+      : DEFAULT_PREP_MOVE_SORT_DEFAULTS.candidate,
+  };
+}
+
+function isOpponentPrepSortColumn(value: unknown): value is OpponentPrepSortColumn {
+  return (
+    value === "move" ||
+    value === "strength" ||
+    value === "games" ||
+    value === "results" ||
+    value === "prep" ||
+    value === "state"
+  );
+}
+
+function isCandidatePrepSortColumn(value: unknown): value is CandidatePrepSortColumn {
+  return value === "move" || value === "strength" || value === "games" || value === "results";
 }
 
 function sortOpponentPrepTableRows(
