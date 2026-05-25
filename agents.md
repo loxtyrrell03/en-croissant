@@ -123,6 +123,10 @@ default.
   Plans, Compare, and Info. Practice appears for repertoires and review decks.
 - The bottom-right area contains detached eval, notation, board controls, and
   move controls.
+- The under-board move-list area has a compact Moves / Database / Prep switch.
+  Database and Prep reuse the existing right-panel implementations under the
+  board so analysis can keep another feature open on the right; move controls
+  stay visible only in Moves mode to give those panels the full lower workspace.
 - Engine output is docked into the active panel where possible and hidden when
   disabled.
 - Board tab labels use icon-first compact tabs with hover tooltips.

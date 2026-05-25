@@ -64,12 +64,14 @@ import OpeningName from "./OpeningName";
 function GameNotation({
   topBar,
   controls,
+  headerActions,
   className,
   compact = false,
   grow = true,
 }: {
   topBar?: boolean;
   controls?: React.ReactNode;
+  headerActions?: React.ReactNode;
   className?: string;
   compact?: boolean;
   grow?: boolean;
@@ -132,6 +134,7 @@ function GameNotation({
           {topBar && (
             <NotationHeader
               compact={compact}
+              headerActions={headerActions}
               reportVisible={reportVisible}
               setReportVisible={setReportVisible}
             />
@@ -197,10 +200,12 @@ function GameNotation({
 
 function NotationHeader({
   compact = false,
+  headerActions,
   reportVisible,
   setReportVisible,
 }: {
   compact?: boolean;
+  headerActions?: React.ReactNode;
   reportVisible: boolean;
   setReportVisible: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
@@ -372,6 +377,7 @@ function NotationHeader({
       <Group justify="space-between" px="sm">
         <OpeningName />
         <Group gap="sm">
+          {headerActions}
           <Tooltip label={copyPgnLabel}>
             <ActionIcon
               aria-label={copyPgnLabel}

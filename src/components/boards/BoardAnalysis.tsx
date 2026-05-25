@@ -1,4 +1,19 @@
-import { ActionIcon, Center, Loader, Paper, Portal, Stack, Tabs, Tooltip } from "@mantine/core";
+import {
+  ActionIcon,
+  Box,
+  Center,
+  Divider,
+  Group,
+  Loader,
+  Paper,
+  Portal,
+  ScrollArea,
+  SegmentedControl,
+  Stack,
+  Tabs,
+  Text,
+  Tooltip,
+} from "@mantine/core";
 import { useHotkeys, useToggle } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import {
@@ -70,6 +85,8 @@ const scrollablePanelStyle = {
   overflowY: "auto",
 } as const;
 
+type UnderBoardMode = "moves" | "database" | "prep";
+
 function PanelFallback() {
   return (
     <Center h="100%">
@@ -84,6 +101,66 @@ function DeferredPanel({ children }: { children: ReactNode }) {
 
 function NotationFallback() {
   return <Paper withBorder flex={1} />;
+}
+
+function UnderBoardModeSwitch({
+  value,
+  onChange,
+}: {
+  value: UnderBoardMode;
+  onChange: (value: UnderBoardMode) => void;
+}) {
+  return (
+    <SegmentedControl
+      aria-label="Under-board panel"
+      size="xs"
+      data={[
+        { value: "moves", label: "Moves" },
+        { value: "database", label: "Database" },
+        { value: "prep", label: "Prep" },
+      ]}
+      value={value}
+      onChange={(next) => onChange(next as UnderBoardMode)}
+    />
+  );
+}
+
+function UnderBoardFeaturePanel({
+  controls,
+  mode,
+  modeSwitch,
+  children,
+}: {
+  controls: ReactNode;
+  mode: Exclude<UnderBoardMode, "moves">;
+  modeSwitch: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <Paper withBorder flex={1} style={{ position: "relative", overflow: "hidden", minHeight: 0 }}>
+      <Group h="100%" wrap="nowrap" align="stretch" gap={0} style={{ minHeight: 0 }}>
+        <ScrollArea type="never" py="md" mx="xs" style={{ flexShrink: 0 }}>
+          {controls}
+        </ScrollArea>
+        <Divider orientation="vertical" />
+        <Stack h="100%" gap={0} style={{ flex: 1, minWidth: 0, minHeight: 0 }}>
+          <Group justify="space-between" px="sm" py={6} wrap="nowrap" style={{ flexShrink: 0 }}>
+            <Group gap={6} wrap="nowrap" style={{ minWidth: 0 }}>
+              {mode === "database" ? <IconDatabase size="1rem" /> : <IconTarget size="1rem" />}
+              <Text fw={700} fz="sm" truncate>
+                {mode === "database" ? "Database" : "Prep"}
+              </Text>
+            </Group>
+            {modeSwitch}
+          </Group>
+          <Divider />
+          <Box flex={1} style={{ minWidth: 0, minHeight: 0, overflow: "hidden" }}>
+            <ResponsivePanel>{children}</ResponsivePanel>
+          </Box>
+        </Stack>
+      </Group>
+    </Paper>
+  );
 }
 
 function BoardAnalysisTab({
@@ -113,6 +190,7 @@ function BoardAnalysis() {
   const { t } = useTranslation();
 
   const [editingMode, toggleEditingMode] = useToggle();
+  const [underBoardMode, setUnderBoardMode] = useState<UnderBoardMode>("moves");
   const [savingCopy, setSavingCopy] = useState(false);
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
   const [topBarActionsTarget, setTopBarActionsTarget] = useState<HTMLElement | null>(null);
@@ -249,6 +327,17 @@ function BoardAnalysis() {
     showPracticeTab && selectedPanel === "practice" && practiceTabSelected === "train";
   const practiceState = useAtomValue(practiceStateAtom);
   const isPracticeRating = practicing && practiceState.phase === "correct";
+  const boardControls = (
+    <BoardControls
+      editingMode={editingMode}
+      toggleEditingMode={toggleEditingMode}
+      dirty={dirty}
+      saveFile={userSaveFile}
+    />
+  );
+  const underBoardModeSwitch = (
+    <UnderBoardModeSwitch value={underBoardMode} onChange={setUnderBoardMode} />
+  );
 
   const setPracticePath = useStore(store, (s) => s.setPracticePath);
   useEffect(() => {
@@ -354,21 +443,29 @@ function BoardAnalysis() {
               <Stack h="100%" gap="xs">
                 <DetachedEval />
                 <Suspense fallback={<NotationFallback />}>
-                  <GameNotation
-                    topBar
-                    controls={
-                      <BoardControls
-                        editingMode={editingMode}
-                        toggleEditingMode={toggleEditingMode}
-                        dirty={dirty}
-                        saveFile={userSaveFile}
-                      />
-                    }
-                  />
+                  {underBoardMode === "moves" ? (
+                    <GameNotation
+                      topBar
+                      controls={boardControls}
+                      headerActions={underBoardModeSwitch}
+                    />
+                  ) : (
+                    <UnderBoardFeaturePanel
+                      controls={boardControls}
+                      mode={underBoardMode}
+                      modeSwitch={underBoardModeSwitch}
+                    >
+                      <DeferredPanel>
+                        {underBoardMode === "database" ? <DatabasePanel /> : <OpponentPrepPanel />}
+                      </DeferredPanel>
+                    </UnderBoardFeaturePanel>
+                  )}
                 </Suspense>
-                <Suspense fallback={null}>
-                  <MoveControls />
-                </Suspense>
+                {underBoardMode === "moves" && (
+                  <Suspense fallback={null}>
+                    <MoveControls />
+                  </Suspense>
+                )}
               </Stack>
             )
           }
