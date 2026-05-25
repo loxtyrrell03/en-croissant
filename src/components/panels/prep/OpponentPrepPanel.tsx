@@ -112,6 +112,7 @@ import {
   getPrepBuilderStopReason,
   getPrepBuilderTaskPriority,
   getPrepBuilderUserResponseChildIndex,
+  getPrepMoveStrengthMap,
   hasPrepBuilderDatabaseCandidates,
   normalizePrepBuilderSettings,
   oppositePrepColor,
@@ -120,6 +121,7 @@ import {
   type PrepBuilderEngineMove,
   type PrepBuilderMoveChoice,
   type PrepBuilderSettings,
+  type PrepMoveStrength,
   type OpponentPrepBranchStats,
   type OpponentPrepMoveRow,
 } from "@/utils/opponentPrep";
@@ -175,8 +177,8 @@ type PrepCandidateMoveRow = Opening & {
 };
 
 type PrepSortDirection = "asc" | "desc";
-type OpponentPrepSortColumn = "move" | "games" | "results" | "prep" | "state";
-type CandidatePrepSortColumn = "move" | "games" | "results";
+type OpponentPrepSortColumn = "move" | "strength" | "games" | "results" | "prep" | "state";
+type CandidatePrepSortColumn = "move" | "strength" | "games" | "results";
 type PrepSortState<TColumn extends string> = {
   column: TColumn;
   direction: PrepSortDirection;
@@ -721,6 +723,33 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
           })
         : [],
     [currentFen, currentOpenings, opponentToMove, prep.minGames, prep.moveLimit],
+  );
+  const strengthRows = opponentToMove ? currentRows : candidateRows;
+  const strengthSide = opponentToMove ? prep.color : userColor;
+  const strengthEngineKey =
+    showTrainingStage && configReady && builderSettings.useCloudEngine && strengthRows.length > 0
+      ? [
+          "opponent-prep-strength-engine",
+          currentFen,
+          strengthSide,
+          builderSettings.mode,
+          builderSettings.engineWeight,
+          builderSettings.maxEngineCpLoss,
+          builderSettings.opponentMoveLimit,
+        ]
+      : null;
+  const { data: strengthEngineMoves, isLoading: strengthLoading } = useSWR(strengthEngineKey, () =>
+    loadPrepBuilderEngineMoves(currentFen, strengthSide, builderSettings),
+  );
+  const strengthByMove = useMemo(
+    () =>
+      getPrepMoveStrengthMap({
+        openings: strengthRows,
+        engineMoves: strengthEngineMoves ?? [],
+        side: strengthSide,
+        settings: builderSettings,
+      }),
+    [builderSettings, strengthEngineMoves, strengthRows, strengthSide],
   );
   const currentTreeHash = useMemo(() => getTreeStructureHash(currentNode), [currentNode]);
   const branchStatsKey =
@@ -2015,6 +2044,18 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
                 Import games
               </Button>
             </Tooltip>
+            {underBoard ? (
+              <Tooltip label="Tune strength sorting and prep builder move choice">
+                <Button
+                  variant="default"
+                  size={controlSize}
+                  leftSection={<IconSettings size="0.95rem" />}
+                  onClick={() => setBuilderOpen((open) => !open)}
+                >
+                  Strength
+                </Button>
+              </Tooltip>
+            ) : null}
           </Group>
 
           <Collapse in={!onlineImportOpen} style={{ flexShrink: 0 }}>
@@ -2097,6 +2138,59 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
                   size={controlSize}
                   w={dense ? 92 : 108}
                   aria-label="Top opponent moves to show"
+                />
+              </Tooltip>
+            </Group>
+          </Collapse>
+          <Collapse in={underBoard && builderOpen} style={{ flexShrink: 0 }}>
+            <Group gap={dense ? 4 : "xs"} wrap="wrap" pt={dense ? 2 : 4}>
+              <SegmentedControl
+                aria-label="Prep strength mode"
+                data={[
+                  { value: "smart", label: "Smart" },
+                  { value: "engine", label: "Engine" },
+                  { value: "practical", label: "Practical" },
+                ]}
+                value={builderSettings.mode}
+                onChange={(value) =>
+                  updateBuilderSettings({ mode: value as PrepBuilderSettings["mode"] })
+                }
+                size={controlSize}
+              />
+              <Tooltip label="Smart mode blend: 0 is database WDL only, 100 is cloud engine only">
+                <NumberInput
+                  label="Engine blend"
+                  suffix="%"
+                  value={builderSettings.engineWeight}
+                  onChange={(value) =>
+                    updateBuilderSettings({
+                      engineWeight: Math.max(0, Math.min(100, Number(value) || 0)),
+                    })
+                  }
+                  min={0}
+                  max={100}
+                  step={5}
+                  size={controlSize}
+                  w={dense ? 104 : 128}
+                  aria-label="Smart mode engine blend"
+                />
+              </Tooltip>
+              <Tooltip label="Moves worse than this cloud-engine drop are treated as unsafe when cloud evals are available">
+                <NumberInput
+                  label="Max CP drop"
+                  suffix=" cp"
+                  value={builderSettings.maxEngineCpLoss}
+                  onChange={(value) =>
+                    updateBuilderSettings({
+                      maxEngineCpLoss: Math.max(0, Math.min(300, Number(value) || 0)),
+                    })
+                  }
+                  min={0}
+                  max={300}
+                  step={5}
+                  size={controlSize}
+                  w={dense ? 104 : 128}
+                  aria-label="Maximum engine centipawn drop"
                 />
               </Tooltip>
             </Group>
@@ -2307,6 +2401,42 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
                     aria-label="Minimum opponent play rate"
                   />
                 </Tooltip>
+                <Tooltip label="Smart mode blend: 0 is database WDL only, 100 is cloud engine only">
+                  <NumberInput
+                    label="Engine blend"
+                    suffix="%"
+                    value={builderSettings.engineWeight}
+                    onChange={(value) =>
+                      updateBuilderSettings({
+                        engineWeight: Math.max(0, Math.min(100, Number(value) || 0)),
+                      })
+                    }
+                    min={0}
+                    max={100}
+                    step={5}
+                    size={controlSize}
+                    w={dense ? 104 : 128}
+                    aria-label="Smart mode engine blend"
+                  />
+                </Tooltip>
+                <Tooltip label="Moves worse than this cloud-engine drop are treated as unsafe when cloud evals are available">
+                  <NumberInput
+                    label="Max CP drop"
+                    suffix=" cp"
+                    value={builderSettings.maxEngineCpLoss}
+                    onChange={(value) =>
+                      updateBuilderSettings({
+                        maxEngineCpLoss: Math.max(0, Math.min(300, Number(value) || 0)),
+                      })
+                    }
+                    min={0}
+                    max={300}
+                    step={5}
+                    size={controlSize}
+                    w={dense ? 104 : 128}
+                    aria-label="Maximum engine centipawn drop"
+                  />
+                </Tooltip>
                 <Badge variant="light">Lichess All reference</Badge>
                 <Badge variant="light">Cloud engine</Badge>
               </Group>
@@ -2459,6 +2589,8 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
               onClearPreview={clearMovePreview}
               branchStatsByKey={branchStatsByKey}
               branchStatsLoading={branchStatsLoading}
+              strengthByMove={strengthByMove}
+              strengthLoading={strengthLoading}
             />
           ) : (
             <PrepCandidateMoveTable
@@ -2470,6 +2602,8 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
               onPlay={playMove}
               onPreview={previewMove}
               onClearPreview={clearMovePreview}
+              strengthByMove={strengthByMove}
+              strengthLoading={strengthLoading}
             />
           )}
         </Box>
@@ -2491,6 +2625,8 @@ function OpponentPrepMoveTable({
   onClearPreview,
   branchStatsByKey,
   branchStatsLoading,
+  strengthByMove,
+  strengthLoading,
 }: {
   rows: OpponentPrepMoveRow[];
   loading: boolean;
@@ -2504,6 +2640,8 @@ function OpponentPrepMoveTable({
   onClearPreview: () => void;
   branchStatsByKey?: Record<string, OpponentPrepBranchStats>;
   branchStatsLoading: boolean;
+  strengthByMove: Map<string, PrepMoveStrength>;
+  strengthLoading: boolean;
 }) {
   const textSize = dense ? "xs" : "sm";
   const [sort, setSort] = useState<PrepSortState<OpponentPrepSortColumn>>({
@@ -2511,8 +2649,8 @@ function OpponentPrepMoveTable({
     direction: "desc",
   });
   const sortedRows = useMemo(
-    () => sortOpponentPrepTableRows(rows, sort, branchStatsByKey, resultSide),
-    [branchStatsByKey, resultSide, rows, sort],
+    () => sortOpponentPrepTableRows(rows, sort, branchStatsByKey, resultSide, strengthByMove),
+    [branchStatsByKey, resultSide, rows, sort, strengthByMove],
   );
   const setSortColumn = useCallback((column: OpponentPrepSortColumn) => {
     setSort((current) => getNextPrepSort(current, column));
@@ -2557,6 +2695,13 @@ function OpponentPrepMoveTable({
             style={{ width: dense ? 64 : 90 }}
           />
           <SortablePrepTh
+            label="Strength"
+            column="strength"
+            sort={sort}
+            onSort={setSortColumn}
+            style={{ width: dense ? 80 : 104 }}
+          />
+          <SortablePrepTh
             label="Games"
             column="games"
             sort={sort}
@@ -2595,6 +2740,12 @@ function OpponentPrepMoveTable({
                 {row.move}
               </Text>
               <PrepLastPlayedText value={row.lastPlayed} />
+            </Table.Td>
+            <Table.Td>
+              <PrepStrengthCell
+                strength={strengthByMove.get(normalizePrepBuilderSan(row.move))}
+                loading={strengthLoading}
+              />
             </Table.Td>
             <Table.Td>
               <Text size={textSize}>{formatNumber(row.total)}</Text>
@@ -2673,6 +2824,8 @@ function PrepCandidateMoveTable({
   onPlay,
   onPreview,
   onClearPreview,
+  strengthByMove,
+  strengthLoading,
 }: {
   rows: PrepCandidateMoveRow[];
   loading: boolean;
@@ -2682,6 +2835,8 @@ function PrepCandidateMoveTable({
   onPlay: (move: string) => void;
   onPreview: (move: string) => void;
   onClearPreview: () => void;
+  strengthByMove: Map<string, PrepMoveStrength>;
+  strengthLoading: boolean;
 }) {
   const textSize = dense ? "xs" : "sm";
   const colorLabel = userColor === "white" ? "White" : "Black";
@@ -2690,8 +2845,8 @@ function PrepCandidateMoveTable({
     direction: "desc",
   });
   const sortedRows = useMemo(
-    () => sortCandidatePrepTableRows(rows, sort, userColor),
-    [rows, sort, userColor],
+    () => sortCandidatePrepTableRows(rows, sort, userColor, strengthByMove),
+    [rows, sort, userColor, strengthByMove],
   );
   const setSortColumn = useCallback((column: CandidatePrepSortColumn) => {
     setSort((current) => getNextPrepSort(current, column));
@@ -2743,6 +2898,13 @@ function PrepCandidateMoveTable({
               style={{ width: dense ? 64 : 90 }}
             />
             <SortablePrepTh
+              label="Strength"
+              column="strength"
+              sort={sort}
+              onSort={setSortColumn}
+              style={{ width: dense ? 80 : 104 }}
+            />
+            <SortablePrepTh
               label="Games"
               column="games"
               sort={sort}
@@ -2767,6 +2929,12 @@ function PrepCandidateMoveTable({
                   {row.move}
                 </Text>
                 <PrepLastPlayedText value={row.lastPlayed} />
+              </Table.Td>
+              <Table.Td>
+                <PrepStrengthCell
+                  strength={strengthByMove.get(normalizePrepBuilderSan(row.move))}
+                  loading={strengthLoading}
+                />
               </Table.Td>
               <Table.Td>
                 <Text size={textSize}>{formatNumber(row.total)}</Text>
@@ -2889,9 +3057,17 @@ function sortOpponentPrepTableRows(
   sort: PrepSortState<OpponentPrepSortColumn>,
   branchStatsByKey: Record<string, OpponentPrepBranchStats> | undefined,
   resultSide: "white" | "black",
+  strengthByMove: Map<string, PrepMoveStrength>,
 ) {
   return [...rows].sort((a, b) => {
-    const diff = compareOpponentPrepRows(a, b, sort.column, branchStatsByKey, resultSide);
+    const diff = compareOpponentPrepRows(
+      a,
+      b,
+      sort.column,
+      branchStatsByKey,
+      resultSide,
+      strengthByMove,
+    );
     return withPrepSortDirection(diff, sort.direction) || comparePrepRowsDefault(a, b);
   });
 }
@@ -2900,9 +3076,10 @@ function sortCandidatePrepTableRows(
   rows: PrepCandidateMoveRow[],
   sort: PrepSortState<CandidatePrepSortColumn>,
   resultSide: "white" | "black",
+  strengthByMove: Map<string, PrepMoveStrength>,
 ) {
   return [...rows].sort((a, b) => {
-    const diff = compareCandidatePrepRows(a, b, sort.column, resultSide);
+    const diff = compareCandidatePrepRows(a, b, sort.column, resultSide, strengthByMove);
     return withPrepSortDirection(diff, sort.direction) || comparePrepRowsDefault(a, b);
   });
 }
@@ -2913,6 +3090,7 @@ function compareOpponentPrepRows(
   column: OpponentPrepSortColumn,
   branchStatsByKey: Record<string, OpponentPrepBranchStats> | undefined,
   resultSide: "white" | "black",
+  strengthByMove: Map<string, PrepMoveStrength>,
 ) {
   if (column === "prep") {
     return (
@@ -2925,7 +3103,7 @@ function compareOpponentPrepRows(
     return getPrepStatusSortScore(a.status) - getPrepStatusSortScore(b.status);
   }
 
-  return compareCandidatePrepRows(a, b, column, resultSide);
+  return compareCandidatePrepRows(a, b, column, resultSide, strengthByMove);
 }
 
 function compareCandidatePrepRows(
@@ -2933,9 +3111,17 @@ function compareCandidatePrepRows(
   b: Pick<Opening, "move" | "white" | "draw" | "black"> & { total: number },
   column: CandidatePrepSortColumn | Exclude<OpponentPrepSortColumn, "prep" | "state">,
   resultSide: "white" | "black",
+  strengthByMove: Map<string, PrepMoveStrength>,
 ) {
   if (column === "move") {
     return a.move.localeCompare(b.move);
+  }
+
+  if (column === "strength") {
+    return (
+      getPrepStrengthSortScore(a.move, strengthByMove) -
+      getPrepStrengthSortScore(b.move, strengthByMove)
+    );
   }
 
   if (column === "results") {
@@ -2943,6 +3129,10 @@ function compareCandidatePrepRows(
   }
 
   return a.total - b.total;
+}
+
+function getPrepStrengthSortScore(move: string, strengthByMove: Map<string, PrepMoveStrength>) {
+  return strengthByMove.get(normalizePrepBuilderSan(move))?.score ?? -1;
 }
 
 function withPrepSortDirection(diff: number, direction: PrepSortDirection) {
@@ -2980,6 +3170,44 @@ function getPrepResultScore(
   if (total <= 0) return 0;
   const wins = side === "white" ? row.white : row.black;
   return (wins + row.draw * 0.5) / total;
+}
+
+function PrepStrengthCell({
+  strength,
+  loading,
+}: {
+  strength?: PrepMoveStrength;
+  loading: boolean;
+}) {
+  if (!strength) {
+    return (
+      <Text size="xs" c="dimmed">
+        {loading ? "Checking" : "-"}
+      </Text>
+    );
+  }
+
+  return (
+    <Tooltip label={strength.detail} multiline w={260}>
+      <Stack gap={2} style={{ minWidth: 0 }}>
+        <Group gap={4} wrap="nowrap">
+          <Badge color={strength.engineUnsafe ? "yellow" : "teal"} variant="light" size="sm">
+            {strength.label}
+          </Badge>
+          {loading ? (
+            <Text size="xs" c="dimmed">
+              ...
+            </Text>
+          ) : null}
+        </Group>
+        <Progress
+          value={strength.score}
+          color={strength.engineUnsafe ? "yellow" : "teal"}
+          size={3}
+        />
+      </Stack>
+    </Tooltip>
+  );
 }
 
 function BranchStatsCell({
@@ -3434,9 +3662,7 @@ function getPrepBuilderSettingsPatch(
   };
 
   if (patch.mode) {
-    delete next.engineWeight;
     delete next.breadthBias;
-    delete next.maxEngineCpLoss;
   }
 
   if (patch.size) {

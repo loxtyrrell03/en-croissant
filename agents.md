@@ -212,6 +212,12 @@ and `src/utils/lichess/study.ts`.
   months or last year, and can optionally be saved as a normal database.
   Opening the import drawer collapses the normal prep filters so the online
   source, range, save, preview, and import controls remain compact.
+- Prep move choice now uses a strength model based on raw cloud-engine
+  centipawn loss and raw practical WDL loss instead of ordinal rankings. Prep
+  tables can sort by Strength, and Prep settings expose Engine, Practical, and
+  Smart modes plus a Smart engine/database blend and maximum safe CP drop, so a
+  practical database move can beat a slightly better engine move while large
+  engine drops are filtered out.
 - Lichess Study links can be imported as local databases.
 - Lichess Study databases support auto-update metadata and refresh tracking.
 - Lichess Study databases expose a database-manager reload control that

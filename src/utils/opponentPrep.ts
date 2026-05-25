@@ -71,6 +71,8 @@ export type PrepBuilderMoveChoice = {
     engineCpLoss: number | null;
     engineSource: PrepBuilderEngineMove["source"] | null;
     databaseRank: number | null;
+    databaseScore: number | null;
+    databaseWdlLoss: number | null;
     opponentGames: number;
     opponentShare: number;
     opponentScore: number | null;
@@ -83,6 +85,31 @@ export type PrepBuilderMoveChoice = {
 
 type ScoredPrepBuilderMoveChoice = PrepBuilderMoveChoice & {
     engineUnsafe: boolean;
+    strengthLoss: number;
+};
+
+export type PrepMoveStrength = {
+    move: string;
+    score: number;
+    engineCp: number | null;
+    engineCpLoss: number | null;
+    engineSource: PrepBuilderEngineMove["source"] | null;
+    databaseScore: number | null;
+    databaseWdlLoss: number | null;
+    engineUnsafe: boolean;
+    label: string;
+    detail: string;
+};
+
+type PrepStrengthCandidate = {
+    move: string;
+    total: number;
+    databaseScore: number | null;
+};
+
+type EvaluatedPrepStrengthCandidate = PrepMoveStrength & {
+    engineRank: number | null;
+    strengthLoss: number;
 };
 
 const DEFAULT_STATS_MAX_PLY = 10;
@@ -101,6 +128,8 @@ export const DEFAULT_PREP_BUILDER_SETTINGS: PrepBuilderSettings = {
     useCloudEngine: true,
     useLichessAll: true,
 };
+
+const DATABASE_STRENGTH_FULL_STEP = 0.18;
 
 export function getFenTurn(fen: string): PrepColor {
     return fen.trim().split(/\s+/)[1] === "b" ? "black" : "white";
@@ -183,12 +212,7 @@ export function normalizePrepBuilderSettings(
             80,
             sizePreset.minOpponentMoveShare,
         ),
-        minBranchShare: clampNumber(
-            settings?.minBranchShare,
-            0,
-            50,
-            sizePreset.minBranchShare,
-        ),
+        minBranchShare: clampNumber(settings?.minBranchShare, 0, 50, sizePreset.minBranchShare),
         breadthBias: clampNumber(settings?.breadthBias, 0, 100, modePreset.breadthBias),
         engineWeight: clampNumber(settings?.engineWeight, 0, 100, modePreset.engineWeight),
         maxEngineCpLoss: clampInteger(
@@ -261,6 +285,32 @@ export function getOpponentPrepMoveRows({
             status,
         };
     });
+}
+
+export function getPrepMoveStrengthMap({
+    openings,
+    engineMoves = [],
+    side,
+    settings,
+}: {
+    openings: Opening[];
+    engineMoves?: PrepBuilderEngineMove[];
+    side: PrepColor;
+    settings: PrepBuilderSettings;
+}) {
+    const candidates = getPlayableOpenings(openings).map((opening) => ({
+        move: opening.move,
+        total: getOpeningTotal(opening),
+        databaseScore: getSidePracticalWdlRateForOpening(opening, side),
+    }));
+
+    return new Map(
+        evaluatePrepStrengthCandidates({
+            candidates,
+            engineMoves,
+            settings,
+        }).map((candidate) => [normalizeSanForPrep(candidate.move), candidate]),
+    );
 }
 
 export function getOpponentPrepBranchKey(fen: string, san: string) {
@@ -451,7 +501,7 @@ export async function getOpponentPrepBranchStats({
         startedReplies,
         replyCoverage: coverageWeight > 0 ? weightedCoverage / coverageWeight : 0,
         missingImportantMoves,
-        });
+    });
 }
 
 export function getPrepBuilderTaskPriority({
@@ -516,7 +566,10 @@ export function getPrepBuilderReplyPolicy({
     if (percent >= 2) {
         return {
             moveLimit: Math.max(4, Math.ceil(fullLimit * 0.25)),
-            minMoveShare: Math.max(settings.minOpponentMoveShare, settings.size === "deep" ? 5 : 10),
+            minMoveShare: Math.max(
+                settings.minOpponentMoveShare,
+                settings.size === "deep" ? 5 : 10,
+            ),
         };
     }
 
@@ -596,47 +649,48 @@ export function choosePrepBuilderMove({
     const eligibleOpponent = playableOpponent.filter(
         (opening) => getOpeningTotal(opening) >= requiredGames,
     );
-    const opponentTotal = playableOpponent.reduce((sum, opening) => sum + getOpeningTotal(opening), 0);
+    const opponentTotal = playableOpponent.reduce(
+        (sum, opening) => sum + getOpeningTotal(opening),
+        0,
+    );
     const referenceTotal = playableReference.reduce(
         (sum, opening) => sum + getOpeningTotal(opening),
         0,
     );
-    const opponentBaseline = getWeightedSideScore(playableOpponent, userColor);
-    const referenceBaseline = getWeightedSideScore(playableReference, userColor);
+    const opponentBaseline = getWeightedSidePracticalWdlRate(playableOpponent, userColor);
+    const referenceBaseline = getWeightedSidePracticalWdlRate(playableReference, userColor);
     const opponentByMove = new Map(
         playableOpponent.map((opening) => [normalizeSanForPrep(opening.move), opening]),
     );
     const referenceByMove = new Map(
         playableReference.map((opening) => [normalizeSanForPrep(opening.move), opening]),
     );
-    const engineByMove = new Map(
-        engineMoves.map((move) => [normalizeSanForPrep(move.san), move]),
-    );
-    const scoredEngineMoves = engineMoves.filter((move) => move.scoreCpForSide !== null);
-    const bestEngineScore =
-        scoredEngineMoves.length > 0
-            ? Math.max(...scoredEngineMoves.map((move) => move.scoreCpForSide!))
-            : null;
-    const engineSafetyLimit = getPrepBuilderEngineSafetyLimit(scoredEngineMoves, settings);
     if (eligibleOpponent.length === 0) return null;
 
-    const databaseRanks = getPrepBuilderDatabaseRanks(
-        eligibleOpponent,
-        userColor,
-        settings.mode === "practical" ? "winRate" : "score",
-    );
     const moves = new Set<string>();
 
     for (const opening of eligibleOpponent) {
         moves.add(normalizeSanForPrep(opening.move));
     }
 
-    const scoredChoices = Array.from(moves)
-        .map<ScoredPrepBuilderMoveChoice | null>((moveKey) => {
+    const strengthCandidates = Array.from(moves)
+        .map<{
+            moveKey: string;
+            move: string;
+            opponent: Opening | null;
+            reference: Opening | null;
+            opponentGames: number;
+            referenceGames: number;
+            opponentShare: number;
+            referenceShare: number;
+            opponentSideScore: number | null;
+            referenceSideScore: number | null;
+            posteriorSideScore: number;
+            referenceDelta: number | null;
+        } | null>((moveKey) => {
             const opponent = opponentByMove.get(moveKey) ?? null;
             const reference = referenceByMove.get(moveKey) ?? null;
-            const engine = engineByMove.get(moveKey) ?? null;
-            const move = opponent?.move ?? reference?.move ?? engine?.san;
+            const move = opponent?.move ?? reference?.move;
             if (!move) return null;
 
             const opponentGames = opponent ? getOpeningTotal(opponent) : 0;
@@ -644,26 +698,18 @@ export function choosePrepBuilderMove({
             const opponentShare = opponentTotal > 0 ? opponentGames / opponentTotal : 0;
             const referenceShare = referenceTotal > 0 ? referenceGames / referenceTotal : 0;
             const opponentSideScore = opponent
-                ? getSideScoreForOpening(opponent, userColor)
+                ? getSidePracticalWdlRateForOpening(opponent, userColor)
                 : null;
             const referenceSideScore = reference
-                ? getSideScoreForOpening(reference, userColor)
+                ? getSidePracticalWdlRateForOpening(reference, userColor)
                 : null;
-            const sideScore = opponentSideScore ?? referenceSideScore;
             const practicalBaseline =
-                opponentTotal > 0
-                    ? opponentBaseline
-                    : referenceTotal > 0
-                      ? referenceBaseline
-                      : 0.5;
+                opponentTotal > 0 ? opponentBaseline : referenceTotal > 0 ? referenceBaseline : 0.5;
             const referenceDelta =
                 opponentSideScore !== null && referenceSideScore !== null
                     ? opponentSideScore - referenceSideScore
                     : null;
-            const referencePriorGames = getPrepBuilderReferencePriorGames(
-                referenceGames,
-                settings,
-            );
+            const referencePriorGames = getPrepBuilderReferencePriorGames(referenceGames, settings);
             const posteriorSideScore = getPrepBuilderPosteriorSideScore({
                 opponentScore: opponentSideScore,
                 opponentGames,
@@ -672,115 +718,75 @@ export function choosePrepBuilderMove({
                     (referenceTotal > 0 ? referenceBaseline : practicalBaseline),
                 referencePriorGames,
             });
-            const sampleConfidence = getPrepBuilderSampleConfidence(
-                opponentGames,
-                referencePriorGames,
-            );
-            const frequency = opponentTotal > 0 ? opponentShare : referenceShare;
-            const frequencyScore = clamp(Math.sqrt(frequency / 0.35), 0, 1);
-            const posteriorScore = clamp(
-                0.5 + (posteriorSideScore - practicalBaseline) * 2.3,
-                0,
-                1,
-            );
-            const exploitScore =
-                referenceDelta === null ? 0.5 : clamp(0.5 + referenceDelta * 2.7, 0, 1);
-            const evidenceScore = Math.max(
-                sampleConfidence,
-                referenceGames > 0 ? 0.45 : 0,
-            );
-            const practicalScore =
-                posteriorScore * 0.42 +
-                exploitScore * 0.24 +
-                evidenceScore * 0.14 +
-                frequencyScore * 0.2;
-
-            const engineCpLoss =
-                engine?.scoreCpForSide !== null &&
-                engine?.scoreCpForSide !== undefined &&
-                bestEngineScore !== null
-                    ? Math.max(0, bestEngineScore - engine.scoreCpForSide)
-                    : null;
-            const engineScore = getPrepBuilderEngineScore({
-                engine,
-                engineCpLoss,
-                engineSafetyLimit,
-            });
-            const referenceScore =
-                referenceTotal > 0 && reference
-                    ? clamp(referenceShare / 0.25, 0, 1) * 0.55 +
-                      clamp(0.5 + (getSideScoreForOpening(reference, userColor) - referenceBaseline) * 1.5, 0, 1) *
-                          0.45
-                    : 0.45;
-            const engineWeight = settings.useCloudEngine
-                ? getPrepBuilderEngineWeight({
-                      settings,
-                      sampleConfidence,
-                      opponentExploit: Math.max(0, referenceDelta ?? 0),
-                      engine,
-                  })
-                : 0;
-            const practicalWeight = 1 - engineWeight;
-            const engineUnsafe = isPrepBuilderEngineUnsafe({
-                engine,
-                engineMoves,
-                engineCpLoss,
-                engineSafetyLimit,
-                settings,
-            });
-            const penalties =
-                getPrepBuilderEnginePenalty({
-                    engine,
-                    engineMoves,
-                    engineCpLoss,
-                    engineSafetyLimit,
-                    settings,
-                }) +
-                getPrepBuilderDataPenalty({
-                    opening: opponent ?? reference,
-                    opponentGames,
-                    referenceDelta,
-                    settings,
-                });
-            const blended =
-                engineScore * engineWeight +
-                practicalScore * practicalWeight +
-                (settings.useLichessAll && reference ? (referenceScore - 0.5) * 0.1 : 0) -
-                penalties;
-            const score = Math.round(clamp(blended, 0, 1) * 100);
-            const opponentScore = sideScore === null ? null : 1 - sideScore;
-            const referenceOpponentScore =
-                referenceSideScore === null ? null : 1 - referenceSideScore;
-            const databaseRank = databaseRanks.get(moveKey) ?? null;
-            const reasons = getPrepBuilderMoveReasons({
-                engine,
-                databaseRank,
-            });
 
             return {
+                moveKey,
                 move,
-                score,
-                engineRank: engine?.rank ?? null,
-                engineCpLoss,
-                engineSource: engine?.source ?? null,
-                databaseRank,
+                opponent,
+                reference,
                 opponentGames,
-                opponentShare,
-                opponentScore,
-                referenceOpponentScore,
-                opponentReferenceDelta: referenceDelta === null ? null : -referenceDelta,
                 referenceGames,
+                opponentShare,
                 referenceShare,
-                reasons,
-                engineUnsafe,
+                opponentSideScore,
+                referenceSideScore,
+                posteriorSideScore,
+                referenceDelta,
             };
         })
-        .filter((choice): choice is ScoredPrepBuilderMoveChoice => choice !== null);
+        .filter((choice): choice is NonNullable<typeof choice> => choice !== null);
+    const databaseRanks = getPrepBuilderDatabaseRanksFromScores(
+        strengthCandidates.map((candidate) => ({
+            key: candidate.moveKey,
+            move: candidate.move,
+            total: candidate.opponentGames,
+            databaseScore: candidate.posteriorSideScore,
+        })),
+    );
+    const strengthByMove = new Map(
+        evaluatePrepStrengthCandidates({
+            candidates: strengthCandidates.map((candidate) => ({
+                move: candidate.move,
+                total: candidate.opponentGames,
+                databaseScore: candidate.posteriorSideScore,
+            })),
+            engineMoves,
+            settings,
+        }).map((candidate) => [normalizeSanForPrep(candidate.move), candidate]),
+    );
+    const scoredChoices = strengthCandidates.map<ScoredPrepBuilderMoveChoice>((candidate) => {
+        const strength = strengthByMove.get(candidate.moveKey)!;
+        const opponentScore =
+            candidate.opponentSideScore === null ? null : 1 - candidate.opponentSideScore;
+        const referenceOpponentScore =
+            candidate.referenceSideScore === null ? null : 1 - candidate.referenceSideScore;
+        const databaseRank = databaseRanks.get(candidate.moveKey) ?? null;
+
+        return {
+            move: candidate.move,
+            score: strength.score,
+            engineRank: strength.engineRank,
+            engineCpLoss: strength.engineCpLoss,
+            engineSource: strength.engineSource,
+            databaseRank,
+            databaseScore: strength.databaseScore,
+            databaseWdlLoss: strength.databaseWdlLoss,
+            opponentGames: candidate.opponentGames,
+            opponentShare: candidate.opponentShare,
+            opponentScore,
+            referenceOpponentScore,
+            opponentReferenceDelta:
+                candidate.referenceDelta === null ? null : -candidate.referenceDelta,
+            referenceGames: candidate.referenceGames,
+            referenceShare: candidate.referenceShare,
+            reasons: getPrepBuilderMoveReasons({ strength }),
+            engineUnsafe: strength.engineUnsafe,
+            strengthLoss: strength.strengthLoss,
+        };
+    });
     const safeChoices = scoredChoices.filter((choice) => !choice.engineUnsafe);
     const choices = (safeChoices.length > 0 ? safeChoices : scoredChoices).sort(
-        settings.mode === "practical"
-            ? comparePracticalPrepBuilderChoices
-            : comparePrepBuilderChoices,
+        comparePrepBuilderChoices,
     );
 
     return choices[0] ?? null;
@@ -971,68 +977,17 @@ function getPrepBuilderModePreset(mode: PrepBuilderSettings["mode"]) {
     }
 }
 
-function getPrepBuilderEngineSafetyLimit(
-    scoredEngineMoves: PrepBuilderEngineMove[],
-    settings: PrepBuilderSettings,
-) {
-    const sortedScores = scoredEngineMoves
-        .map((move) => move.scoreCpForSide)
-        .filter((score): score is number => score !== null)
-        .sort((a, b) => b - a);
-    const topGap =
-        sortedScores.length >= 2 ? Math.max(0, sortedScores[0] - sortedScores[1]) : 0;
-    let limit = settings.maxEngineCpLoss;
-
-    if (settings.mode === "engine") {
-        limit = Math.min(limit, 45);
-    } else if (settings.mode === "practical") {
-        limit = Math.max(limit, 120);
-    } else if (topGap >= 90) {
-        limit = Math.min(limit, 45);
-    } else if (topGap <= 25) {
-        limit = Math.max(limit, 95);
-    }
-
-    return Math.max(15, limit);
-}
-
-function comparePrepBuilderChoices(
-    a: ScoredPrepBuilderMoveChoice,
-    b: ScoredPrepBuilderMoveChoice,
-) {
+function comparePrepBuilderChoices(a: ScoredPrepBuilderMoveChoice, b: ScoredPrepBuilderMoveChoice) {
     return (
-        b.score - a.score ||
+        a.strengthLoss - b.strengthLoss ||
         (a.engineRank ?? 99) - (b.engineRank ?? 99) ||
         b.opponentGames - a.opponentGames ||
         a.move.localeCompare(b.move)
     );
 }
 
-function comparePracticalPrepBuilderChoices(
-    a: ScoredPrepBuilderMoveChoice,
-    b: ScoredPrepBuilderMoveChoice,
-) {
-    return (
-        (a.databaseRank ?? 999) - (b.databaseRank ?? 999) ||
-        getPracticalEngineSortValue(a) - getPracticalEngineSortValue(b) ||
-        b.score - a.score ||
-        b.opponentGames - a.opponentGames ||
-        a.move.localeCompare(b.move)
-    );
-}
-
-function getPracticalEngineSortValue(choice: PrepBuilderMoveChoice) {
-    if (choice.engineCpLoss !== null) return choice.engineCpLoss;
-    if (choice.engineRank !== null) return (choice.engineRank - 1) * 18;
-    return 45;
-}
-
-function getPrepBuilderReferencePriorGames(
-    referenceGames: number,
-    settings: PrepBuilderSettings,
-) {
-    const base =
-        settings.mode === "engine" ? 22 : settings.mode === "practical" ? 10 : 16;
+function getPrepBuilderReferencePriorGames(referenceGames: number, settings: PrepBuilderSettings) {
+    const base = settings.mode === "engine" ? 22 : settings.mode === "practical" ? 10 : 16;
     if (referenceGames <= 0) return base;
 
     const max = settings.mode === "engine" ? 44 : settings.mode === "practical" ? 24 : 36;
@@ -1058,164 +1013,151 @@ function getPrepBuilderPosteriorSideScore({
     );
 }
 
-function getPrepBuilderSampleConfidence(opponentGames: number, referencePriorGames: number) {
-    if (opponentGames <= 0) return 0;
-    return opponentGames / (opponentGames + referencePriorGames);
-}
-
-function getPrepBuilderEngineScore({
-    engine,
-    engineCpLoss,
-    engineSafetyLimit,
-}: {
-    engine: PrepBuilderEngineMove | null;
-    engineCpLoss: number | null;
-    engineSafetyLimit: number;
-}) {
-    const rankScore =
-        engine?.rank !== null && engine?.rank !== undefined
-            ? clamp(1 - (engine.rank - 1) * 0.14, 0.2, 1)
-            : engine
-              ? 0.7
-              : 0.28;
-    const lossScore =
-        engineCpLoss === null
-            ? engine
-                ? 0.7
-                : 0.28
-            : clamp(1 - engineCpLoss / Math.max(engineSafetyLimit, 1), 0, 1);
-
-    return rankScore * 0.35 + lossScore * 0.65;
-}
-
-function getPrepBuilderEngineWeight({
-    settings,
-    sampleConfidence,
-    opponentExploit,
-    engine,
-}: {
-    settings: PrepBuilderSettings;
-    sampleConfidence: number;
-    opponentExploit: number;
-    engine: PrepBuilderEngineMove | null;
-}) {
-    const base = settings.engineWeight / 100;
-    if (settings.mode === "engine") return clamp(base, 0.76, 0.9);
-    if (settings.mode === "practical") return clamp(base, 0.18, 0.42);
-    if (!engine) return clamp(base * 0.55, 0.22, 0.45);
-
-    return clamp(base + (1 - sampleConfidence) * 0.18 - opponentExploit * 0.18, 0.35, 0.75);
-}
-
-function isPrepBuilderEngineUnsafe({
-    engine,
+function evaluatePrepStrengthCandidates({
+    candidates,
     engineMoves,
-    engineCpLoss,
-    engineSafetyLimit,
     settings,
 }: {
-    engine: PrepBuilderEngineMove | null;
+    candidates: PrepStrengthCandidate[];
     engineMoves: PrepBuilderEngineMove[];
-    engineCpLoss: number | null;
-    engineSafetyLimit: number;
     settings: PrepBuilderSettings;
+}): EvaluatedPrepStrengthCandidate[] {
+    const playable = candidates.filter((candidate) => candidate.total > 0);
+    const scoredEngineMoves = settings.useCloudEngine
+        ? engineMoves.filter((move) => move.scoreCpForSide !== null)
+        : [];
+    const bestEngineScore =
+        scoredEngineMoves.length > 0
+            ? Math.max(...scoredEngineMoves.map((move) => move.scoreCpForSide!))
+            : null;
+    const bestDatabaseScore =
+        playable.length > 0
+            ? Math.max(
+                  ...playable.map((candidate) =>
+                      candidate.databaseScore === null ? 0 : candidate.databaseScore,
+                  ),
+              )
+            : null;
+    const engineByMove = new Map(engineMoves.map((move) => [normalizeSanForPrep(move.san), move]));
+    const maxEngineCpLoss = Math.max(1, settings.maxEngineCpLoss);
+    const smartEngineWeight = clamp(settings.engineWeight / 100, 0, 1);
+
+    return playable.map((candidate) => {
+        const key = normalizeSanForPrep(candidate.move);
+        const engine = engineByMove.get(key) ?? null;
+        const engineCp = engine?.scoreCpForSide ?? null;
+        const engineCpLoss =
+            engineCp !== null && bestEngineScore !== null
+                ? Math.max(0, bestEngineScore - engineCp)
+                : null;
+        const databaseScore = candidate.databaseScore;
+        const databaseWdlLoss =
+            databaseScore !== null && bestDatabaseScore !== null
+                ? Math.max(0, bestDatabaseScore - databaseScore)
+                : null;
+        const hasEngineCloud = settings.useCloudEngine && engineMoves.length > 0;
+        const engineUnsafe =
+            hasEngineCloud &&
+            (engineCpLoss === null
+                ? settings.mode !== "practical"
+                : engineCpLoss > maxEngineCpLoss);
+        const engineLossNorm =
+            !settings.useCloudEngine || engineMoves.length === 0
+                ? 0
+                : engineCpLoss === null
+                  ? settings.mode === "practical"
+                      ? 0.55
+                      : 1.25
+                  : clamp(engineCpLoss / maxEngineCpLoss, 0, 1.5);
+        const databaseLossNorm =
+            databaseWdlLoss === null
+                ? 0.75
+                : clamp(databaseWdlLoss / DATABASE_STRENGTH_FULL_STEP, 0, 1.5);
+        const strengthLoss = getPrepStrengthLoss({
+            settings,
+            engineLossNorm,
+            databaseLossNorm,
+            smartEngineWeight,
+        });
+        const score = Math.round((1 - clamp(strengthLoss, 0, 1)) * 100);
+
+        return {
+            move: candidate.move,
+            score,
+            engineCp,
+            engineCpLoss,
+            engineSource: engine?.source ?? null,
+            databaseScore,
+            databaseWdlLoss,
+            engineUnsafe,
+            label: score.toString(),
+            detail: formatPrepStrengthDetail({
+                engineCp,
+                engineCpLoss,
+                databaseScore,
+                databaseWdlLoss,
+                engineMoves,
+                settings,
+            }),
+            engineRank: engine?.rank ?? null,
+            strengthLoss,
+        };
+    });
+}
+
+function getPrepStrengthLoss({
+    settings,
+    engineLossNorm,
+    databaseLossNorm,
+    smartEngineWeight,
+}: {
+    settings: PrepBuilderSettings;
+    engineLossNorm: number;
+    databaseLossNorm: number;
+    smartEngineWeight: number;
 }) {
-    if (!settings.useCloudEngine || engineMoves.length === 0) {
-        return false;
+    if (settings.mode === "engine") {
+        return engineLossNorm + databaseLossNorm * 0.12;
     }
-    if (!engine) return settings.mode !== "practical";
-    if (engineCpLoss === null) return false;
+    if (settings.mode === "practical") {
+        return databaseLossNorm + engineLossNorm * 0.18;
+    }
 
-    return engineCpLoss > engineSafetyLimit;
+    return engineLossNorm * smartEngineWeight + databaseLossNorm * (1 - smartEngineWeight);
 }
 
-function getPrepBuilderEnginePenalty({
-    engine,
-    engineMoves,
-    engineCpLoss,
-    engineSafetyLimit,
-    settings,
-}: {
-    engine: PrepBuilderEngineMove | null;
-    engineMoves: PrepBuilderEngineMove[];
-    engineCpLoss: number | null;
-    engineSafetyLimit: number;
-    settings: PrepBuilderSettings;
-}) {
-    if (!settings.useCloudEngine) return 0;
-
-    const missingPenalty = engineMoves.length > 0 && !engine ? 0.14 : 0;
-    const lossPenalty =
-        engineCpLoss === null
-            ? 0
-            : clamp((engineCpLoss - engineSafetyLimit) / 220, 0, 0.28);
-
-    return missingPenalty + lossPenalty;
-}
-
-function getPrepBuilderDataPenalty({
-    opening,
-    opponentGames,
-    referenceDelta,
-    settings,
-}: {
-    opening: Pick<Opening, "white" | "draw" | "black"> | null | undefined;
-    opponentGames: number;
-    referenceDelta: number | null;
-    settings: PrepBuilderSettings;
-}) {
-    const drawShare = opening ? opening.draw / Math.max(getOpeningTotal(opening), 1) : 0;
-    const drawPenalty = clamp((drawShare - 0.55) * 0.22, 0, 0.09);
-    const tinySamplePenalty =
-        opponentGames > 0 && opponentGames < settings.minOpponentGames * 2 ? 0.08 : 0;
-    const referenceDisagreementPenalty =
-        referenceDelta !== null && referenceDelta < -0.08
-            ? clamp(Math.abs(referenceDelta) * 0.45, 0, 0.16)
-            : 0;
-
-    return drawPenalty + tinySamplePenalty + referenceDisagreementPenalty;
-}
-
-function getWeightedSideScore(openings: Opening[], side: PrepColor) {
+function getWeightedSidePracticalWdlRate(openings: Opening[], side: PrepColor) {
     const total = openings.reduce((sum, opening) => sum + getOpeningTotal(opening), 0);
     if (total <= 0) return 0.5;
 
     return (
         openings.reduce(
             (sum, opening) =>
-                sum + getSideScoreForOpening(opening, side) * getOpeningTotal(opening),
+                sum + getSidePracticalWdlRateForOpening(opening, side) * getOpeningTotal(opening),
             0,
         ) / total
     );
 }
 
-function getPrepBuilderDatabaseRanks(
-    openings: Opening[],
-    side: PrepColor,
-    metric: "score" | "winRate" = "score",
+function getPrepBuilderDatabaseRanksFromScores(
+    candidates: { key: string; move: string; total: number; databaseScore: number | null }[],
 ) {
-    const ranked = openings
-        .filter((opening) => getOpeningTotal(opening) > 0)
-        .map((opening) => ({
-            key: normalizeSanForPrep(opening.move),
-            sideScore:
-                metric === "winRate"
-                    ? getSideWinRateForOpening(opening, side)
-                    : getSideScoreForOpening(opening, side),
-            total: getOpeningTotal(opening),
-            move: opening.move,
-        }))
+    const ranked = candidates
+        .filter((candidate) => candidate.total > 0 && candidate.databaseScore !== null)
         .sort(
             (a, b) =>
-                b.sideScore - a.sideScore ||
+                b.databaseScore! - a.databaseScore! ||
                 b.total - a.total ||
                 a.move.localeCompare(b.move),
         );
 
-    return new Map(ranked.map((opening, index) => [opening.key, index + 1]));
+    return new Map(ranked.map((candidate, index) => [candidate.key, index + 1]));
 }
 
-function getSideScoreForOpening(opening: Pick<Opening, "white" | "draw" | "black">, side: PrepColor) {
+function getSideScoreForOpening(
+    opening: Pick<Opening, "white" | "draw" | "black">,
+    side: PrepColor,
+) {
     const total = getOpeningTotal(opening);
     if (total <= 0) return 0.5;
 
@@ -1223,60 +1165,90 @@ function getSideScoreForOpening(opening: Pick<Opening, "white" | "draw" | "black
     return (wins + opening.draw * 0.5) / total;
 }
 
-function getSideWinRateForOpening(
+function getSidePracticalWdlRateForOpening(
     opening: Pick<Opening, "white" | "draw" | "black">,
     side: PrepColor,
 ) {
     const total = getOpeningTotal(opening);
     if (total <= 0) return 0;
 
-    return (side === "white" ? opening.white : opening.black) / total;
+    const wins = side === "white" ? opening.white : opening.black;
+    return (wins + opening.draw * 0.35) / total;
 }
 
-function getPrepBuilderMoveReasons({
-    engine,
-    databaseRank,
-}: {
-    engine: PrepBuilderEngineMove | null;
-    databaseRank: number | null;
-}) {
+function getPrepBuilderMoveReasons({ strength }: { strength: EvaluatedPrepStrengthCandidate }) {
     const reasons: string[] = [];
 
-    if (engine) {
+    if (strength.engineCpLoss !== null) {
         reasons.push(
-            `Engine: ${
-                engine.rank !== null && engine.rank > 0
-                    ? `${formatOrdinal(engine.rank)} best`
-                    : "rank unavailable"
-            }`,
+            strength.engineCpLoss <= 0
+                ? "Engine: best cloud move"
+                : `Engine: -${Math.round(strength.engineCpLoss)} cp from best`,
         );
     } else {
         reasons.push("Engine: unavailable");
     }
 
-    if (databaseRank !== null) {
-        reasons.push(`Database: ${formatOrdinal(databaseRank)} best WDL`);
+    if (strength.databaseWdlLoss !== null) {
+        reasons.push(
+            strength.databaseWdlLoss <= 0
+                ? "Database: best WDL"
+                : `Database: -${formatPrepWdlPointLoss(strength.databaseWdlLoss)} pts`,
+        );
     } else {
-        reasons.push("Database: unranked");
+        reasons.push("Database: unavailable");
     }
 
     return reasons;
 }
 
-function formatOrdinal(value: number) {
-    const mod100 = value % 100;
-    if (mod100 >= 11 && mod100 <= 13) return `${value}th`;
+function formatPrepStrengthDetail({
+    engineCp,
+    engineCpLoss,
+    databaseScore,
+    databaseWdlLoss,
+    engineMoves,
+    settings,
+}: {
+    engineCp: number | null;
+    engineCpLoss: number | null;
+    databaseScore: number | null;
+    databaseWdlLoss: number | null;
+    engineMoves: PrepBuilderEngineMove[];
+    settings: PrepBuilderSettings;
+}) {
+    const parts: string[] = [];
 
-    switch (value % 10) {
-        case 1:
-            return `${value}st`;
-        case 2:
-            return `${value}nd`;
-        case 3:
-            return `${value}rd`;
-        default:
-            return `${value}th`;
+    if (!settings.useCloudEngine) {
+        parts.push("Engine off");
+    } else if (engineMoves.length === 0) {
+        parts.push("Engine unavailable");
+    } else if (engineCpLoss === null) {
+        parts.push("Engine not in cloud moves");
+    } else {
+        const cp =
+            engineCp === null ? "" : ` (${engineCp > 0 ? "+" : ""}${Math.round(engineCp)} cp)`;
+        parts.push(
+            engineCpLoss <= 0 ? `Engine best${cp}` : `Engine -${Math.round(engineCpLoss)} cp${cp}`,
+        );
     }
+
+    if (databaseScore === null) {
+        parts.push("WDL unavailable");
+    } else {
+        const scoreText = `${(databaseScore * 100).toFixed(1)}%`;
+        parts.push(
+            databaseWdlLoss === null || databaseWdlLoss <= 0
+                ? `WDL best ${scoreText}`
+                : `WDL -${formatPrepWdlPointLoss(databaseWdlLoss)} pts (${scoreText})`,
+        );
+    }
+
+    return parts.join("; ");
+}
+
+function formatPrepWdlPointLoss(value: number) {
+    return (value * 100).toFixed(value >= 0.1 ? 0 : 1).replace(/\.0$/, "");
 }
 
 function createBranchStats({
@@ -1365,12 +1337,7 @@ function clamp(value: number, min: number, max: number) {
     return Math.min(max, Math.max(min, value));
 }
 
-function clampNumber(
-    value: number | null | undefined,
-    min: number,
-    max: number,
-    fallback: number,
-) {
+function clampNumber(value: number | null | undefined, min: number, max: number, fallback: number) {
     return Number.isFinite(value) ? clamp(Number(value), min, max) : fallback;
 }
 
