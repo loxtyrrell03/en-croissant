@@ -68,10 +68,12 @@ import {
   lichessOptionsAtom,
   masterOptionsAtom,
   onlineDatabaseUpdatesAtom,
+  opponentPrepSettingsAtom,
   referenceDbAtom,
   sessionsAtom,
   storedDatabasesDirAtom,
   type OpponentPrepState,
+  type OpponentPrepStoredSettings,
   type StoredDatabaseLocalOptions,
 } from "@/state/atoms";
 import { getRecentChessComGames } from "@/utils/chess.com/api";
@@ -192,6 +194,7 @@ type PrepMoveSortDefaults = {
   opponent: OpponentPrepSortColumn;
   candidate: CandidatePrepSortColumn;
 };
+type PrepStoredSettingsPatch = Partial<OpponentPrepStoredSettings>;
 
 const DEFAULT_PREP_MOVE_SORT_DEFAULTS: PrepMoveSortDefaults = {
   opponent: "games",
@@ -296,6 +299,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
   const currentPath = useStore(store, (s) => s.position);
   const root = useStore(store, (s) => s.root);
   const [prep, setPrep] = useAtom(currentOpponentPrepAtom);
+  const [savedPrepSettings, setSavedPrepSettings] = useAtom(opponentPrepSettingsAtom);
   const currentLocalOptions = useAtomValue(currentLocalOptionsAtom);
   const lichessOptions = useAtomValue(lichessOptionsAtom);
   const masterOptions = useAtomValue(masterOptionsAtom);
@@ -341,6 +345,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
   );
   const builderCancelRef = useRef(false);
   const seededRef = useRef(false);
+  const savedSettingsAppliedRef = useRef(false);
   const seededDefaultPlayerDatabaseRef = useRef<string | null>(null);
   const settingsKey = useMemo(() => getTabWorkspaceKey(currentTab), [currentTab]);
   const savedCompareSettings = settingsKey ? compareSettingsByFile[settingsKey] : undefined;
@@ -2892,7 +2897,7 @@ function OpponentPrepMoveTable({
               <Text size={textSize} fw={700}>
                 {row.move}
               </Text>
-              <PrepLastPlayedText value={row.lastPlayed} />
+              <PrepLastPlayedText value={row.lastPlayed} kind="played" />
             </Table.Td>
             <Table.Td>
               <PrepStrengthCell
@@ -3078,7 +3083,10 @@ function PrepCandidateMoveTable({
                 <Text size={textSize} fw={700}>
                   {row.move}
                 </Text>
-                <PrepLastPlayedText value={row.lastPlayed} />
+                <PrepLastPlayedText
+                  value={row.lastPlayed}
+                  kind={general ? "played" : "faced"}
+                />
               </Table.Td>
               <Table.Td>
                 <PrepStrengthCell
@@ -3119,8 +3127,14 @@ function PrepCandidateMoveTable({
   );
 }
 
-function PrepLastPlayedText({ value }: { value: string | null | undefined }) {
-  const label = formatPrepLastPlayedRelative(value);
+function PrepLastPlayedText({
+  value,
+  kind,
+}: {
+  value: string | null | undefined;
+  kind: "played" | "faced";
+}) {
+  const label = formatPrepLastPlayedRelative(value, kind);
   if (!label) return null;
 
   const exactDate = formatPrepLastPlayedExactDate(value);
@@ -3133,7 +3147,7 @@ function PrepLastPlayedText({ value }: { value: string | null | undefined }) {
   if (!exactDate) return content;
 
   return (
-    <Tooltip label={`Last played ${exactDate}`} openDelay={350}>
+    <Tooltip label={`${getPrepLastPlayedPrefix(kind)} ${exactDate}`} openDelay={350}>
       {content}
     </Tooltip>
   );
@@ -4021,9 +4035,16 @@ function getPrepSearchId(scope: string, fen: string) {
   return `opponent-prep|${scope}|${fen}`;
 }
 
-function formatPrepLastPlayedRelative(value: string | null | undefined) {
+type PrepLastPlayedKind = "played" | "faced";
+
+function getPrepLastPlayedPrefix(kind: PrepLastPlayedKind) {
+  return kind === "faced" ? "Last played against" : "Last played";
+}
+
+function formatPrepLastPlayedRelative(value: string | null | undefined, kind: PrepLastPlayedKind) {
   const date = parsePrepLastPlayedDate(value);
-  if (!date) return value ? `Last played ${value}` : null;
+  const prefix = getPrepLastPlayedPrefix(kind);
+  if (!date) return value ? `${prefix} ${value}` : null;
 
   const today = new Date();
   const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -4033,12 +4054,12 @@ function formatPrepLastPlayedRelative(value: string | null | undefined) {
     Math.floor((todayStart.getTime() - playedStart.getTime()) / 86_400_000),
   );
 
-  if (ageDays === 0) return "Last played today";
-  if (ageDays === 1) return "Last played yesterday";
-  if (ageDays < 365) return `Last played ${ageDays} days ago`;
+  if (ageDays === 0) return `${prefix} today`;
+  if (ageDays === 1) return `${prefix} yesterday`;
+  if (ageDays < 365) return `${prefix} ${ageDays} days ago`;
 
   const years = Math.max(1, Math.floor(ageDays / 365));
-  return `Last played ${years} year${years === 1 ? "" : "s"} ago`;
+  return `${prefix} ${years} year${years === 1 ? "" : "s"} ago`;
 }
 
 function formatPrepLastPlayedExactDate(value: string | null | undefined) {

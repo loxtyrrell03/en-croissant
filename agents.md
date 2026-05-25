@@ -744,6 +744,10 @@ from 2026-04-24 through 2026-05-03.
   through a prep line. Initial defaults are side-specific: opponent/source moves
   sort by Usage, while user candidate moves sort by Smart strength; both
   defaults are tuneable from the prep settings controls.
+- Opponent prep recency wording is perspective-aware in player prep: when it is
+  the opponent's turn, rows say when that player last played the move; when it
+  is the user's turn, candidate replies say when the opponent last played
+  against that move.
 
 ## Verification Expectations
 
