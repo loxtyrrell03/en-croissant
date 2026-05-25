@@ -228,6 +228,9 @@ and `src/utils/lichess/study.ts`.
 - Smart strength now treats one- and two-game WDL spikes as evidence-poor:
   tiny samples are blended back toward the current position's practical baseline
   based on usage share before the engine/database blend is scored.
+- Prep settings now save through a persisted app setting record, including
+  source/player filters, min games/show top, move-sort defaults, and strength
+  builder settings, so changed controls survive leaving and reopening the app.
 - In Prep player mode, the color filter labels use the selected player name
   directly, such as "IfanRJ as white" and "IfanRJ as black", so the side filter
   reads as that player's game color instead of a generic board color.

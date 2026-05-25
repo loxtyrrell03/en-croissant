@@ -516,7 +516,34 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
   }, [onlineImportGameCount, onlineImportSource, onlineImportUsername]);
 
   useEffect(() => {
+    if (savedSettingsAppliedRef.current) return;
+    savedSettingsAppliedRef.current = true;
+    if (hasStoredPrepSourceSettings(savedPrepSettings)) {
+      seededRef.current = true;
+    }
+
+    setPrep((current) => {
+      if (!shouldApplyStoredPrepSettings(current)) return current;
+
+      return {
+        ...current,
+        ...savedPrepSettings,
+        rootPath: current.rootPath,
+        completedBranches: current.completedBranches,
+        skippedBranches: current.skippedBranches,
+        builder: savedPrepSettings.builder
+          ? normalizePrepBuilderSettings(savedPrepSettings.builder)
+          : current.builder,
+        sortDefaults: savedPrepSettings.sortDefaults
+          ? normalizePrepMoveSortDefaults(savedPrepSettings.sortDefaults)
+          : current.sortDefaults,
+      };
+    });
+  }, [savedPrepSettings, setPrep]);
+
+  useEffect(() => {
     if (
+      !savedSettingsAppliedRef.current ||
       seededRef.current ||
       prepSource !== "local" ||
       prep.databasePath ||
@@ -899,23 +926,11 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
   });
 
   const updateSettings = useCallback(
-    (
-      patch: Partial<
-        Pick<
-          OpponentPrepState,
-          | "mode"
-          | "source"
-          | "databasePath"
-          | "databaseLabel"
-          | "player"
-          | "playerName"
-          | "color"
-          | "minGames"
-          | "moveLimit"
-        >
-      >,
-      resetProgress = true,
-    ) => {
+    (patch: PrepStoredSettingsPatch, resetProgress = true) => {
+      setSavedPrepSettings((current) => ({
+        ...current,
+        ...patch,
+      }));
       setPrep((current) => ({
         ...current,
         ...patch,
@@ -924,7 +939,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
         skippedBranches: resetProgress ? {} : current.skippedBranches,
       }));
     },
-    [currentPath, setPrep],
+    [currentPath, setPrep, setSavedPrepSettings],
   );
 
   useEffect(() => {
@@ -941,6 +956,8 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
     if (!defaultPlayer?.name) return;
 
     const defaultPlayerName = defaultPlayer.name;
+    let appliedPlayerId: number | null = null;
+    let appliedPlayerName = "";
     setPrep((current) => {
       if (
         (current.mode ?? "player") !== "player" ||
@@ -954,6 +971,8 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
 
       const playerName =
         getDatabaseTitlePlayerName(current.databaseLabel, defaultPlayerName) ?? defaultPlayerName;
+      appliedPlayerId = defaultPlayer.id;
+      appliedPlayerName = playerName;
 
       return {
         ...current,
@@ -961,16 +980,34 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
         playerName,
       };
     });
-  }, [defaultPlayer, defaultPlayerLookupKey, prep.databasePath, setPrep, shouldLoadDefaultPlayer]);
+    if (appliedPlayerId !== null) {
+      setSavedPrepSettings((current) => ({
+        ...current,
+        player: appliedPlayerId,
+        playerName: appliedPlayerName,
+      }));
+    }
+  }, [
+    defaultPlayer,
+    defaultPlayerLookupKey,
+    prep.databasePath,
+    setPrep,
+    setSavedPrepSettings,
+    shouldLoadDefaultPlayer,
+  ]);
 
   const updateBuilderSettings = useCallback(
     (patch: Partial<PrepBuilderSettings>) => {
+      setSavedPrepSettings((current) => ({
+        ...current,
+        builder: normalizePrepBuilderSettings(getPrepBuilderSettingsPatch(current.builder, patch)),
+      }));
       setPrep((current) => ({
         ...current,
         builder: normalizePrepBuilderSettings(getPrepBuilderSettingsPatch(current.builder, patch)),
       }));
     },
-    [setPrep],
+    [setPrep, setSavedPrepSettings],
   );
 
   const updateOpponentSortDefault = useCallback(
@@ -980,6 +1017,13 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
         ...current,
         opponent: sort,
       }));
+      setSavedPrepSettings((current) => ({
+        ...current,
+        sortDefaults: {
+          ...normalizePrepMoveSortDefaults(current.sortDefaults),
+          opponent: column,
+        },
+      }));
       setPrep((current) => ({
         ...current,
         sortDefaults: {
@@ -988,7 +1032,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
         },
       }));
     },
-    [setPrep],
+    [setPrep, setSavedPrepSettings],
   );
 
   const updateCandidateSortDefault = useCallback(
@@ -998,6 +1042,13 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
         ...current,
         candidate: sort,
       }));
+      setSavedPrepSettings((current) => ({
+        ...current,
+        sortDefaults: {
+          ...normalizePrepMoveSortDefaults(current.sortDefaults),
+          candidate: column,
+        },
+      }));
       setPrep((current) => ({
         ...current,
         sortDefaults: {
@@ -1006,7 +1057,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
         },
       }));
     },
-    [setPrep],
+    [setPrep, setSavedPrepSettings],
   );
 
   const changePrepMode = useCallback(
@@ -1285,6 +1336,16 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
         completedBranches: {},
         skippedBranches: {},
       }));
+      setSavedPrepSettings((current) => ({
+        ...current,
+        mode: "player",
+        source: "local",
+        databasePath: dbPath,
+        databaseLabel:
+          importedDatabase?.title || (onlineImportSaveDatabase ? title : `${title} (temporary)`),
+        player: player?.id ?? null,
+        playerName: player?.name ?? onlineImportUsernameTrimmed,
+      }));
       notifications.show({
         title: "Prep games imported",
         message: `${importedDatabase?.game_count ?? importedGames?.length ?? "Online"} game${
@@ -1320,6 +1381,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
     setConversionState,
     setOnlineDatabaseUpdates,
     setPrep,
+    setSavedPrepSettings,
   ]);
 
   const clearMovePreview = useCallback(() => {
@@ -3246,6 +3308,28 @@ function normalizePrepMoveSortDefaults(
       ? sortDefaults.candidate
       : DEFAULT_PREP_MOVE_SORT_DEFAULTS.candidate,
   };
+}
+
+function shouldApplyStoredPrepSettings(current: OpponentPrepState) {
+  return (
+    current.rootPath === null &&
+    Object.keys(current.completedBranches).length === 0 &&
+    Object.keys(current.skippedBranches).length === 0 &&
+    current.databasePath === null &&
+    current.player === null &&
+    current.playerName.trim().length === 0 &&
+    current.builder === undefined &&
+    current.sortDefaults === undefined
+  );
+}
+
+function hasStoredPrepSourceSettings(settings: OpponentPrepStoredSettings) {
+  return (
+    settings.source !== "local" ||
+    Boolean(settings.databasePath) ||
+    settings.player !== null ||
+    settings.playerName.trim().length > 0
+  );
 }
 
 function isOpponentPrepSortColumn(value: unknown): value is OpponentPrepSortColumn {

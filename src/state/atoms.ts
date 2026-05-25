@@ -235,6 +235,8 @@ export const planExplorerEngineStrengthMultipvAtom = atomWithStorage<number>(
 export const moveStrengthSettingsAtom = atomWithStorage<MoveStrengthSettings>(
     "move-strength-settings",
     DEFAULT_MOVE_STRENGTH_SETTINGS,
+    undefined,
+    { getOnInit: true },
 );
 export const enginePlanMultipvAtom = atomWithStorage<number>("engine-plan-multipv", 5);
 export const enginePlanLimitModeAtom = atomWithStorage<"depth" | "time">(
@@ -447,6 +449,11 @@ export type OpponentPrepState = {
     };
 };
 
+export type OpponentPrepStoredSettings = Omit<
+    OpponentPrepState,
+    "rootPath" | "completedBranches" | "skippedBranches"
+>;
+
 const defaultOpponentPrepState = (): OpponentPrepState => ({
     mode: "player",
     source: "local",
@@ -462,6 +469,23 @@ const defaultOpponentPrepState = (): OpponentPrepState => ({
     completedBranches: {},
     skippedBranches: {},
 });
+
+const defaultOpponentPrepStoredSettings = (): OpponentPrepStoredSettings => {
+    const {
+        rootPath: _rootPath,
+        completedBranches: _completedBranches,
+        skippedBranches: _skippedBranches,
+        ...settings
+    } = defaultOpponentPrepState();
+    return settings;
+};
+
+export const opponentPrepSettingsAtom = atomWithStorage<OpponentPrepStoredSettings>(
+    "opponent-prep-settings",
+    defaultOpponentPrepStoredSettings(),
+    undefined,
+    { getOnInit: true },
+);
 
 const opponentPrepFamily = atomFamily((_tab: string) =>
     atom<OpponentPrepState>(defaultOpponentPrepState()),
