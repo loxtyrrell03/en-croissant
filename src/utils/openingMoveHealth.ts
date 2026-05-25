@@ -1,6 +1,7 @@
 import {
     DEFAULT_MOVE_STRENGTH_SETTINGS,
     evaluateMoveStrength,
+    getEngineScoreSpreadCp,
     getPracticalWdlRate,
     getUsageAwarePracticalWdlRate,
     normalizeMoveStrengthSettings,
@@ -438,6 +439,7 @@ function getOpeningMoveStrength({
                 engineCpLoss: null,
                 hasEngineMoves,
                 databaseWdlLoss,
+                engineScoreSpreadCp: cloud.scoreSpreadCp,
             });
             return {
                 ...health,
@@ -472,6 +474,7 @@ function getOpeningMoveStrength({
             engineCpLoss: cpLoss,
             hasEngineMoves,
             databaseWdlLoss,
+            engineScoreSpreadCp: cloud.scoreSpreadCp,
         });
         return {
             ...health,
@@ -500,6 +503,7 @@ function getOpeningMoveStrength({
         engineCpLoss: null,
         hasEngineMoves: false,
         databaseWdlLoss,
+        engineScoreSpreadCp: null,
     });
     return {
         ...health,
@@ -550,6 +554,7 @@ function getCloudStrengthData(
         return {
             covered: false,
             bestScore: null,
+            scoreSpreadCp: null,
             source,
             bySan,
         };
@@ -595,6 +600,7 @@ function getCloudStrengthData(
     return {
         covered: true,
         bestScore: scored.length > 0 ? Math.max(...scored) : null,
+        scoreSpreadCp: getEngineScoreSpreadCp(scored),
         source,
         bySan,
     };

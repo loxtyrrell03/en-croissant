@@ -322,13 +322,69 @@ describe("opponent prep helpers", () => {
             referenceOpenings: [],
             engineMoves: [
                 { san: "e5", scoreCpForSide: 80, rank: 1, source: "lichess" },
-                { san: "c5", scoreCpForSide: 60, rank: 2, source: "lichess" },
+                { san: "c5", scoreCpForSide: 50, rank: 2, source: "lichess" },
             ],
         });
 
         expect(choice?.move).toBe("e5");
         expect(choice?.databaseWdlLoss).toBe(0);
         expect(choice?.engineCpLoss).toBe(0);
+    });
+
+    test("smart strength leans practical when top engine moves are clustered", () => {
+        const settings = normalizePrepBuilderSettings({
+            mode: "smart",
+            engineWeight: 55,
+            maxEngineCpLoss: 70,
+        });
+        const choice = choosePrepBuilderMove({
+            userColor: "black",
+            settings,
+            opponentOpenings: [
+                { move: "e5", white: 44, draw: 0, black: 56 },
+                { move: "c5", white: 38, draw: 0, black: 62 },
+                { move: "d5", white: 42, draw: 0, black: 58 },
+                { move: "Nf6", white: 43, draw: 0, black: 57 },
+            ],
+            referenceOpenings: [],
+            engineMoves: [
+                { san: "e5", scoreCpForSide: 60, rank: 1, source: "lichess" },
+                { san: "Nf6", scoreCpForSide: 55, rank: 2, source: "lichess" },
+                { san: "d5", scoreCpForSide: 50, rank: 3, source: "lichess" },
+                { san: "c5", scoreCpForSide: 40, rank: 4, source: "lichess" },
+            ],
+        });
+
+        expect(choice?.move).toBe("c5");
+        expect(choice?.engineCpLoss).toBe(20);
+        expect(choice?.databaseWdlLoss).toBe(0);
+    });
+
+    test("smart strength keeps engine weight when top engine moves are clearly separated", () => {
+        const settings = normalizePrepBuilderSettings({
+            mode: "smart",
+            engineWeight: 55,
+            maxEngineCpLoss: 70,
+        });
+        const choice = choosePrepBuilderMove({
+            userColor: "black",
+            settings,
+            opponentOpenings: [
+                { move: "e5", white: 44, draw: 0, black: 56 },
+                { move: "c5", white: 38, draw: 0, black: 62 },
+                { move: "d5", white: 42, draw: 0, black: 58 },
+                { move: "Nf6", white: 43, draw: 0, black: 57 },
+            ],
+            referenceOpenings: [],
+            engineMoves: [
+                { san: "e5", scoreCpForSide: 95, rank: 1, source: "lichess" },
+                { san: "Nf6", scoreCpForSide: 45, rank: 2, source: "lichess" },
+                { san: "d5", scoreCpForSide: 25, rank: 3, source: "lichess" },
+                { san: "c5", scoreCpForSide: -5, rank: 4, source: "lichess" },
+            ],
+        });
+
+        expect(choice?.move).toBe("e5");
     });
 
     test("prep builder stops when the source database has no candidate move", () => {
@@ -510,7 +566,7 @@ describe("opponent prep helpers", () => {
             ],
             engineMoves: [
                 { san: "e5", scoreCpForSide: 80, rank: 1, source: "lichess" },
-                { san: "c5", scoreCpForSide: 60, rank: 2, source: "lichess" },
+                { san: "c5", scoreCpForSide: 50, rank: 2, source: "lichess" },
             ],
         });
 

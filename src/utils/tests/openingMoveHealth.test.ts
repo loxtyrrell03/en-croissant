@@ -70,13 +70,40 @@ describe("opening move health", () => {
                 source: "lichess",
                 moves: [
                     { san: "e5", scoreCpForWhite: -80, rank: 1, winrate: null },
-                    { san: "c5", scoreCpForWhite: -60, rank: 2, winrate: null },
+                    { san: "c5", scoreCpForWhite: -50, rank: 2, winrate: null },
                 ],
             },
         });
 
         expect(strength.get("e5")!.blendedStrengthScore).toBeGreaterThan(
             strength.get("c5")!.blendedStrengthScore,
+        );
+    });
+
+    test("smart blended strength leans practical when cloud evals are clustered", () => {
+        const strength = getOpeningMoveStrengthMap({
+            openings: [
+                { move: "e5", white: 44, draw: 0, black: 56 },
+                { move: "c5", white: 38, draw: 0, black: 62 },
+                { move: "d5", white: 42, draw: 0, black: 58 },
+                { move: "Nf6", white: 43, draw: 0, black: 57 },
+            ],
+            side: "black",
+            fen: "startpos",
+            strengthSettings: { mode: "smart", engineWeight: 55, maxEngineCpLoss: 70 },
+            cloudData: {
+                source: "lichess",
+                moves: [
+                    { san: "e5", scoreCpForWhite: -60, rank: 1, winrate: null },
+                    { san: "Nf6", scoreCpForWhite: -55, rank: 2, winrate: null },
+                    { san: "d5", scoreCpForWhite: -50, rank: 3, winrate: null },
+                    { san: "c5", scoreCpForWhite: -40, rank: 4, winrate: null },
+                ],
+            },
+        });
+
+        expect(strength.get("c5")!.blendedStrengthScore).toBeGreaterThan(
+            strength.get("e5")!.blendedStrengthScore,
         );
     });
 });

@@ -13,6 +13,7 @@ export const DEFAULT_MOVE_STRENGTH_SETTINGS: MoveStrengthSettings = {
 };
 
 export const DATABASE_STRENGTH_FULL_STEP = 0.18;
+export const ENGINE_CLUSTER_FULL_PRACTICAL_SPREAD_CP = 30;
 const TINY_SAMPLE_USAGE_SHARE = 0.08;
 
 export function normalizeMoveStrengthSettings(
@@ -57,8 +58,14 @@ export function getUsageAwarePracticalWdlRate({
     const lowUsage = 1 - clampNumber(safeShare / TINY_SAMPLE_USAGE_SHARE, 0, 1, 0);
     const basePriorGames = total === 1 ? 24 : 16;
     const priorGames = basePriorGames + lowUsage * 16;
+    const usageTrust = 1 - lowUsage;
+    const maxTinySampleEdge = usageTrust * 0.006;
+    const shrunkScore = (score * total + safeBaseline * priorGames) / (total + priorGames);
 
-    return (score * total + safeBaseline * priorGames) / (total + priorGames);
+    return (
+        safeBaseline +
+        clampNumber(shrunkScore - safeBaseline, -maxTinySampleEdge, maxTinySampleEdge, 0)
+    );
 }
 
 export function evaluateMoveStrength({
@@ -66,11 +73,13 @@ export function evaluateMoveStrength({
     engineCpLoss,
     hasEngineMoves,
     databaseWdlLoss,
+    engineScoreSpreadCp,
 }: {
     settings: MoveStrengthSettings;
     engineCpLoss: number | null;
     hasEngineMoves: boolean;
     databaseWdlLoss: number | null;
+    engineScoreSpreadCp?: number | null;
 }) {
     const normalized = normalizeMoveStrengthSettings(settings);
     const maxEngineCpLoss = Math.max(1, normalized.maxEngineCpLoss);
@@ -92,6 +101,7 @@ export function evaluateMoveStrength({
         settings: normalized,
         engineLossNorm,
         databaseLossNorm,
+        engineScoreSpreadCp,
     });
 
     return {
@@ -99,6 +109,16 @@ export function evaluateMoveStrength({
         loss: strengthLoss,
         engineUnsafe,
     };
+}
+
+export function getEngineScoreSpreadCp(scores: (number | null | undefined)[], topCount = 4) {
+    const sorted = scores
+        .filter((score): score is number => typeof score === "number" && Number.isFinite(score))
+        .sort((a, b) => b - a)
+        .slice(0, topCount);
+    if (sorted.length < 2) return null;
+
+    return Math.max(...sorted) - Math.min(...sorted);
 }
 
 export function getPracticalWdlRate(
@@ -116,10 +136,12 @@ function getMoveStrengthLoss({
     settings,
     engineLossNorm,
     databaseLossNorm,
+    engineScoreSpreadCp,
 }: {
     settings: MoveStrengthSettings;
     engineLossNorm: number;
     databaseLossNorm: number;
+    engineScoreSpreadCp?: number | null;
 }) {
     if (settings.mode === "engine") {
         return engineLossNorm + databaseLossNorm * 0.12;
@@ -128,8 +150,35 @@ function getMoveStrengthLoss({
         return databaseLossNorm + engineLossNorm * 0.18;
     }
 
-    const engineWeight = clampNumber(settings.engineWeight / 100, 0, 1, 0.55);
+    const engineWeight = getSmartMoveStrengthEngineWeight(settings, engineScoreSpreadCp);
     return engineLossNorm * engineWeight + databaseLossNorm * (1 - engineWeight);
+}
+
+export function getSmartMoveStrengthEngineWeight(
+    settings: MoveStrengthSettings,
+    engineScoreSpreadCp: number | null | undefined,
+) {
+    const baseWeight = clampNumber(settings.engineWeight / 100, 0, 1, 0.55);
+    if (
+        settings.mode !== "smart" ||
+        engineScoreSpreadCp === null ||
+        engineScoreSpreadCp === undefined
+    ) {
+        return baseWeight;
+    }
+
+    const fullPracticalSpread = ENGINE_CLUSTER_FULL_PRACTICAL_SPREAD_CP;
+    const normalSpread = Math.max(fullPracticalSpread + 1, settings.maxEngineCpLoss);
+    const practicalTilt =
+        1 -
+        clampNumber(
+            (engineScoreSpreadCp - fullPracticalSpread) / (normalSpread - fullPracticalSpread),
+            0,
+            1,
+            0,
+        );
+
+    return baseWeight * (1 - practicalTilt * 0.65);
 }
 
 function isMoveStrengthMode(value: unknown): value is MoveStrengthMode {

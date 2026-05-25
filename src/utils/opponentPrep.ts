@@ -2,7 +2,12 @@ import { isNormal, makeUci, type Move } from "chessops";
 import { parseSan } from "chessops/san";
 import type { Opening } from "@/utils/db";
 import { positionFromFen } from "@/utils/chessops";
-import { getUsageAwarePracticalWdlRate } from "@/utils/moveStrength";
+import {
+    ENGINE_CLUSTER_FULL_PRACTICAL_SPREAD_CP,
+    getEngineScoreSpreadCp,
+    getSmartMoveStrengthEngineWeight,
+    getUsageAwarePracticalWdlRate,
+} from "@/utils/moveStrength";
 import { getNodeAtPath, type TreeNode } from "@/utils/treeReducer";
 
 export type PrepColor = "white" | "black";
@@ -1039,6 +1044,9 @@ function evaluatePrepStrengthCandidates({
         scoredEngineMoves.length > 0
             ? Math.max(...scoredEngineMoves.map((move) => move.scoreCpForSide!))
             : null;
+    const engineScoreSpreadCp = getEngineScoreSpreadCp(
+        scoredEngineMoves.map((move) => move.scoreCpForSide),
+    );
     const databaseBaseline = getPrepStrengthDatabaseBaseline(playable);
     const bestDatabaseScore =
         playable.length > 0
@@ -1051,7 +1059,6 @@ function evaluatePrepStrengthCandidates({
             : null;
     const engineByMove = new Map(engineMoves.map((move) => [normalizeSanForPrep(move.san), move]));
     const maxEngineCpLoss = Math.max(1, settings.maxEngineCpLoss);
-    const smartEngineWeight = clamp(settings.engineWeight / 100, 0, 1);
 
     return playable.map((candidate) => {
         const key = normalizeSanForPrep(candidate.move);
@@ -1088,7 +1095,7 @@ function evaluatePrepStrengthCandidates({
             settings,
             engineLossNorm,
             databaseLossNorm,
-            smartEngineWeight,
+            engineScoreSpreadCp,
         });
         const score = Math.round((1 - clamp(strengthLoss, 0, 1)) * 100);
 
@@ -1108,6 +1115,7 @@ function evaluatePrepStrengthCandidates({
                 databaseScore,
                 databaseWdlLoss,
                 engineMoves,
+                engineScoreSpreadCp,
                 settings,
             }),
             engineRank: engine?.rank ?? null,
@@ -1147,12 +1155,12 @@ function getPrepStrengthLoss({
     settings,
     engineLossNorm,
     databaseLossNorm,
-    smartEngineWeight,
+    engineScoreSpreadCp,
 }: {
     settings: PrepBuilderSettings;
     engineLossNorm: number;
     databaseLossNorm: number;
-    smartEngineWeight: number;
+    engineScoreSpreadCp: number | null;
 }) {
     if (settings.mode === "engine") {
         return engineLossNorm + databaseLossNorm * 0.12;
@@ -1161,7 +1169,9 @@ function getPrepStrengthLoss({
         return databaseLossNorm + engineLossNorm * 0.18;
     }
 
-    return engineLossNorm * smartEngineWeight + databaseLossNorm * (1 - smartEngineWeight);
+    const effectiveEngineWeight = getSmartMoveStrengthEngineWeight(settings, engineScoreSpreadCp);
+
+    return engineLossNorm * effectiveEngineWeight + databaseLossNorm * (1 - effectiveEngineWeight);
 }
 
 function getWeightedSidePracticalWdlRate(openings: Opening[], side: PrepColor) {
@@ -1246,6 +1256,7 @@ function formatPrepStrengthDetail({
     databaseScore,
     databaseWdlLoss,
     engineMoves,
+    engineScoreSpreadCp,
     settings,
 }: {
     engineCp: number | null;
@@ -1253,6 +1264,7 @@ function formatPrepStrengthDetail({
     databaseScore: number | null;
     databaseWdlLoss: number | null;
     engineMoves: PrepBuilderEngineMove[];
+    engineScoreSpreadCp: number | null;
     settings: PrepBuilderSettings;
 }) {
     const parts: string[] = [];
@@ -1269,6 +1281,14 @@ function formatPrepStrengthDetail({
         parts.push(
             engineCpLoss <= 0 ? `Engine best${cp}` : `Engine -${Math.round(engineCpLoss)} cp${cp}`,
         );
+    }
+
+    if (
+        settings.mode === "smart" &&
+        engineScoreSpreadCp !== null &&
+        engineScoreSpreadCp <= ENGINE_CLUSTER_FULL_PRACTICAL_SPREAD_CP
+    ) {
+        parts.push("Engine cluster tight; leaning practical");
     }
 
     if (databaseScore === null) {

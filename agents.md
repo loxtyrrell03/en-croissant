@@ -231,6 +231,10 @@ and `src/utils/lichess/study.ts`.
 - Smart strength now treats one- and two-game WDL spikes as evidence-poor:
   tiny samples are blended back toward the current position's practical baseline
   based on usage share before the engine/database blend is scored.
+- Smart strength also detects clustered engine evaluations: when the top cloud
+  engine candidates are within roughly 30cp, the effective engine weight is
+  reduced so practical WDL evidence acts as the tie-breaker; clear engine
+  separation restores the configured blend.
 - Prep settings now save through a persisted app setting record, including
   source/player filters, min games/show top, move-sort defaults, and strength
   builder settings, so changed controls survive leaving and reopening the app.
