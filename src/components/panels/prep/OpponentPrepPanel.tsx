@@ -9,6 +9,7 @@ import {
   Divider,
   Group,
   NumberInput,
+  Popover,
   Progress,
   Select,
   SegmentedControl,
@@ -2147,16 +2148,11 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
               </Button>
             </Tooltip>
             {underBoard ? (
-              <Tooltip label="Tune strength sorting and prep builder move choice">
-                <Button
-                  variant="default"
-                  size={controlSize}
-                  leftSection={<IconSettings size="0.95rem" />}
-                  onClick={() => setBuilderOpen((open) => !open)}
-                >
-                  Strength
-                </Button>
-              </Tooltip>
+              <PrepStrengthSettingsButton
+                builderSettings={builderSettings}
+                updateBuilderSettings={updateBuilderSettings}
+                controlSize={controlSize}
+              />
             ) : null}
           </Group>
 
@@ -2473,6 +2469,11 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
                   Builder settings
                 </Button>
               </Tooltip>
+              <PrepStrengthSettingsButton
+                builderSettings={builderSettings}
+                updateBuilderSettings={updateBuilderSettings}
+                controlSize={controlSize}
+              />
             </Group>
             {builderStatus ? (
               <Text size="xs" c={builderRunning ? "blue" : "dimmed"}>
@@ -3403,6 +3404,80 @@ function PrepStrengthCell({
         />
       </Stack>
     </Tooltip>
+  );
+}
+
+function PrepStrengthSettingsButton({
+  builderSettings,
+  updateBuilderSettings,
+  controlSize,
+}: {
+  builderSettings: PrepBuilderSettings;
+  updateBuilderSettings: (patch: Partial<PrepBuilderSettings>) => void;
+  controlSize: "xs" | "sm";
+}) {
+  return (
+    <Popover width={270} position="bottom-start" shadow="md" withinPortal>
+      <Popover.Target>
+        <Button variant="default" size={controlSize} leftSection={<IconSettings size="0.95rem" />}>
+          Strength settings
+        </Button>
+      </Popover.Target>
+      <Popover.Dropdown>
+        <Stack gap="xs">
+          <Text size="sm" fw={700}>
+            Strength settings
+          </Text>
+          <SegmentedControl
+            aria-label="Prep strength mode"
+            data={[
+              { value: "smart", label: "Smart" },
+              { value: "engine", label: "Engine" },
+              { value: "practical", label: "Practical" },
+            ]}
+            value={builderSettings.mode}
+            onChange={(value) =>
+              updateBuilderSettings({ mode: value as PrepBuilderSettings["mode"] })
+            }
+            size="xs"
+          />
+          <Tooltip label="Smart mode blend: 0 is database WDL only, 100 is cloud engine only">
+            <NumberInput
+              label="Engine blend"
+              suffix="%"
+              value={builderSettings.engineWeight}
+              onChange={(value) =>
+                updateBuilderSettings({
+                  engineWeight: Math.max(0, Math.min(100, Number(value) || 0)),
+                })
+              }
+              min={0}
+              max={100}
+              step={5}
+              size="xs"
+              aria-label="Prep strength engine blend"
+            />
+          </Tooltip>
+          <Tooltip label="Moves worse than this cloud-engine drop are treated as unsafe when cloud evals are available">
+            <NumberInput
+              label="Max CP drop"
+              suffix=" cp"
+              value={builderSettings.maxEngineCpLoss}
+              onChange={(value) =>
+                updateBuilderSettings({
+                  maxEngineCpLoss: Math.max(0, Math.min(300, Number(value) || 0)),
+                })
+              }
+              min={0}
+              max={300}
+              step={5}
+              size="xs"
+              aria-label="Prep maximum engine centipawn drop"
+            />
+          </Tooltip>
+        </Stack>
+      </Popover.Dropdown>
+    </Popover>
   );
 }
 
