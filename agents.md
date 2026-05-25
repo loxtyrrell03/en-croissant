@@ -21,6 +21,15 @@ model, implementation map, and verification expectations for this app.
 - The working tree may contain user changes or local verification artifacts.
   Do not revert or delete them unless the user explicitly asks.
 
+## Agent Playbooks
+
+- Opponent preparation now has a dedicated future-agent playbook at
+  `docs/opponent-prep-agent-guide.md`. Use it when the user asks for chess prep
+  from an opponent, entrant list, congress, tournament, or rating threshold. It
+  records the required per-player folder/database workflow, source checklist,
+  Lichess broadcast PGN extraction pattern, Chess.com account-confidence
+  method, dedupe rules, and En Croissant verification steps.
+
 ## Local Browser Verification
 
 - Use the Playwright MCP browser tools directly for localhost UI checks,
