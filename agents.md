@@ -131,6 +131,10 @@ default.
   Prep uses a two-stage flow: setup first for source/opponent selection, then a
   training stage with the prep line, Common move, Done + next, and the move
   table so it fits the smaller space.
+- Prep move tables support clickable, keyboard-accessible column headers for
+  local sorting, matching the Database tab expectation: Move, Games, Results,
+  Prep, and State in opponent-move mode, and Move, Games, and WDL in candidate
+  reply mode.
 - Engine output is docked into the active panel where possible and hidden when
   disabled.
 - Board tab labels use icon-first compact tabs with hover tooltips.

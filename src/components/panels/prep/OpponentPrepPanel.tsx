@@ -23,6 +23,8 @@ import {
   IconArrowBackUp,
   IconArrowRight,
   IconCheck,
+  IconChevronDown,
+  IconChevronUp,
   IconCloudDownload,
   IconPlayerPlay,
   IconRefresh,
@@ -37,7 +39,16 @@ import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { isNormal, makeSquare } from "chessops";
 import { parseSan } from "chessops/san";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { mutate } from "swr";
 import useSWR from "swr/immutable";
 import { useStore } from "zustand";
@@ -161,6 +172,14 @@ type PrepCandidateMoveRow = Opening & {
   key: string;
   total: number;
   share: number;
+};
+
+type PrepSortDirection = "asc" | "desc";
+type OpponentPrepSortColumn = "move" | "games" | "results" | "prep" | "state";
+type CandidatePrepSortColumn = "move" | "games" | "results";
+type PrepSortState<TColumn extends string> = {
+  column: TColumn;
+  direction: PrepSortDirection;
 };
 
 type PrepBuilderStatus = {
@@ -2432,6 +2451,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
               loading={isLoading}
               dense={dense}
               general={prepMode === "general"}
+              resultSide={prep.color}
               onPlay={playMove}
               onDone={markMoveDone}
               onSkip={skipMove}
@@ -2463,6 +2483,7 @@ function OpponentPrepMoveTable({
   loading,
   dense,
   general,
+  resultSide,
   onPlay,
   onDone,
   onSkip,
@@ -2475,6 +2496,7 @@ function OpponentPrepMoveTable({
   loading: boolean;
   dense: boolean;
   general: boolean;
+  resultSide: "white" | "black";
   onPlay: (move: string) => void;
   onDone: (row: OpponentPrepMoveRow) => void;
   onSkip: (row: OpponentPrepMoveRow) => void;
@@ -2484,6 +2506,17 @@ function OpponentPrepMoveTable({
   branchStatsLoading: boolean;
 }) {
   const textSize = dense ? "xs" : "sm";
+  const [sort, setSort] = useState<PrepSortState<OpponentPrepSortColumn>>({
+    column: "games",
+    direction: "desc",
+  });
+  const sortedRows = useMemo(
+    () => sortOpponentPrepTableRows(rows, sort, branchStatsByKey, resultSide),
+    [branchStatsByKey, resultSide, rows, sort],
+  );
+  const setSortColumn = useCallback((column: OpponentPrepSortColumn) => {
+    setSort((current) => getNextPrepSort(current, column));
+  }, []);
 
   if (loading) {
     return (
@@ -2516,16 +2549,40 @@ function OpponentPrepMoveTable({
     >
       <Table.Thead>
         <Table.Tr>
-          <Table.Th style={{ width: dense ? 64 : 90 }}>Move</Table.Th>
-          <Table.Th style={{ width: dense ? 78 : 110 }}>Games</Table.Th>
-          <Table.Th>Results</Table.Th>
-          <Table.Th style={{ width: dense ? 110 : 150 }}>Prep</Table.Th>
-          <Table.Th style={{ width: dense ? 76 : 98 }}>State</Table.Th>
+          <SortablePrepTh
+            label="Move"
+            column="move"
+            sort={sort}
+            onSort={setSortColumn}
+            style={{ width: dense ? 64 : 90 }}
+          />
+          <SortablePrepTh
+            label="Games"
+            column="games"
+            sort={sort}
+            onSort={setSortColumn}
+            style={{ width: dense ? 78 : 110 }}
+          />
+          <SortablePrepTh label="Results" column="results" sort={sort} onSort={setSortColumn} />
+          <SortablePrepTh
+            label="Prep"
+            column="prep"
+            sort={sort}
+            onSort={setSortColumn}
+            style={{ width: dense ? 110 : 150 }}
+          />
+          <SortablePrepTh
+            label="State"
+            column="state"
+            sort={sort}
+            onSort={setSortColumn}
+            style={{ width: dense ? 76 : 98 }}
+          />
           <Table.Th style={{ width: dense ? 96 : 120 }} />
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>
-        {rows.map((row) => (
+        {sortedRows.map((row) => (
           <Table.Tr
             key={row.key}
             style={{ cursor: "pointer" }}
@@ -2628,6 +2685,17 @@ function PrepCandidateMoveTable({
 }) {
   const textSize = dense ? "xs" : "sm";
   const colorLabel = userColor === "white" ? "White" : "Black";
+  const [sort, setSort] = useState<PrepSortState<CandidatePrepSortColumn>>({
+    column: "games",
+    direction: "desc",
+  });
+  const sortedRows = useMemo(
+    () => sortCandidatePrepTableRows(rows, sort, userColor),
+    [rows, sort, userColor],
+  );
+  const setSortColumn = useCallback((column: CandidatePrepSortColumn) => {
+    setSort((current) => getNextPrepSort(current, column));
+  }, []);
 
   if (loading) {
     return (
@@ -2667,14 +2735,26 @@ function PrepCandidateMoveTable({
       >
         <Table.Thead>
           <Table.Tr>
-            <Table.Th style={{ width: dense ? 64 : 90 }}>Move</Table.Th>
-            <Table.Th style={{ width: dense ? 78 : 110 }}>Games</Table.Th>
-            <Table.Th>WDL</Table.Th>
+            <SortablePrepTh
+              label="Move"
+              column="move"
+              sort={sort}
+              onSort={setSortColumn}
+              style={{ width: dense ? 64 : 90 }}
+            />
+            <SortablePrepTh
+              label="Games"
+              column="games"
+              sort={sort}
+              onSort={setSortColumn}
+              style={{ width: dense ? 78 : 110 }}
+            />
+            <SortablePrepTh label="WDL" column="results" sort={sort} onSort={setSortColumn} />
             <Table.Th style={{ width: dense ? 64 : 82 }} />
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {rows.map((row) => (
+          {sortedRows.map((row) => (
             <Table.Tr
               key={row.key}
               style={{ cursor: "pointer" }}
@@ -2739,6 +2819,167 @@ function PrepLastPlayedText({ value }: { value: string | null | undefined }) {
       {content}
     </Tooltip>
   );
+}
+
+function SortablePrepTh<TColumn extends string>({
+  label,
+  column,
+  sort,
+  onSort,
+  style,
+}: {
+  label: string;
+  column: TColumn;
+  sort: PrepSortState<TColumn>;
+  onSort: (column: TColumn) => void;
+  style?: CSSProperties;
+}) {
+  const active = sort.column === column;
+  const directionLabel = sort.direction === "asc" ? "ascending" : "descending";
+
+  return (
+    <Table.Th
+      aria-sort={active ? directionLabel : "none"}
+      role="button"
+      tabIndex={0}
+      style={{ ...style, cursor: "pointer", userSelect: "none" }}
+      onClick={() => onSort(column)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSort(column);
+        }
+      }}
+    >
+      <Group gap={4} wrap="nowrap">
+        <Text span size="xs" fw={700}>
+          {label}
+        </Text>
+        {active ? (
+          sort.direction === "asc" ? (
+            <IconChevronUp size="0.75rem" />
+          ) : (
+            <IconChevronDown size="0.75rem" />
+          )
+        ) : null}
+      </Group>
+    </Table.Th>
+  );
+}
+
+function getNextPrepSort<TColumn extends string>(
+  current: PrepSortState<TColumn>,
+  column: TColumn,
+): PrepSortState<TColumn> {
+  if (current.column === column) {
+    return {
+      column,
+      direction: current.direction === "asc" ? "desc" : "asc",
+    };
+  }
+
+  return {
+    column,
+    direction: column === "move" ? "asc" : "desc",
+  };
+}
+
+function sortOpponentPrepTableRows(
+  rows: OpponentPrepMoveRow[],
+  sort: PrepSortState<OpponentPrepSortColumn>,
+  branchStatsByKey: Record<string, OpponentPrepBranchStats> | undefined,
+  resultSide: "white" | "black",
+) {
+  return [...rows].sort((a, b) => {
+    const diff = compareOpponentPrepRows(a, b, sort.column, branchStatsByKey, resultSide);
+    return withPrepSortDirection(diff, sort.direction) || comparePrepRowsDefault(a, b);
+  });
+}
+
+function sortCandidatePrepTableRows(
+  rows: PrepCandidateMoveRow[],
+  sort: PrepSortState<CandidatePrepSortColumn>,
+  resultSide: "white" | "black",
+) {
+  return [...rows].sort((a, b) => {
+    const diff = compareCandidatePrepRows(a, b, sort.column, resultSide);
+    return withPrepSortDirection(diff, sort.direction) || comparePrepRowsDefault(a, b);
+  });
+}
+
+function compareOpponentPrepRows(
+  a: OpponentPrepMoveRow,
+  b: OpponentPrepMoveRow,
+  column: OpponentPrepSortColumn,
+  branchStatsByKey: Record<string, OpponentPrepBranchStats> | undefined,
+  resultSide: "white" | "black",
+) {
+  if (column === "prep") {
+    return (
+      getPrepBranchStatsSortScore(a, branchStatsByKey) -
+      getPrepBranchStatsSortScore(b, branchStatsByKey)
+    );
+  }
+
+  if (column === "state") {
+    return getPrepStatusSortScore(a.status) - getPrepStatusSortScore(b.status);
+  }
+
+  return compareCandidatePrepRows(a, b, column, resultSide);
+}
+
+function compareCandidatePrepRows(
+  a: Pick<Opening, "move" | "white" | "draw" | "black"> & { total: number },
+  b: Pick<Opening, "move" | "white" | "draw" | "black"> & { total: number },
+  column: CandidatePrepSortColumn | Exclude<OpponentPrepSortColumn, "prep" | "state">,
+  resultSide: "white" | "black",
+) {
+  if (column === "move") {
+    return a.move.localeCompare(b.move);
+  }
+
+  if (column === "results") {
+    return getPrepResultScore(a, resultSide) - getPrepResultScore(b, resultSide);
+  }
+
+  return a.total - b.total;
+}
+
+function withPrepSortDirection(diff: number, direction: PrepSortDirection) {
+  return direction === "asc" ? diff : -diff;
+}
+
+function comparePrepRowsDefault(
+  a: { total: number; move: string },
+  b: { total: number; move: string },
+) {
+  return b.total - a.total || a.move.localeCompare(b.move);
+}
+
+function getPrepBranchStatsSortScore(
+  row: OpponentPrepMoveRow,
+  branchStatsByKey: Record<string, OpponentPrepBranchStats> | undefined,
+) {
+  const stats = branchStatsByKey?.[row.key];
+  if (!stats) return -1;
+  return stats.score;
+}
+
+function getPrepStatusSortScore(status: OpponentPrepMoveRow["status"]) {
+  if (status === "new") return 4;
+  if (status === "started") return 3;
+  if (status === "prepared") return 2;
+  return 1;
+}
+
+function getPrepResultScore(
+  row: Pick<Opening, "white" | "draw" | "black">,
+  side: "white" | "black",
+) {
+  const total = getOpeningTotal(row);
+  if (total <= 0) return 0;
+  const wins = side === "white" ? row.white : row.black;
+  return (wins + row.draw * 0.5) / total;
 }
 
 function BranchStatsCell({
