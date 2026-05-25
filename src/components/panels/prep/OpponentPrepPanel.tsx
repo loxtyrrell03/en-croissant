@@ -2471,11 +2471,7 @@ function OpponentPrepMoveTable({
               <Text size={textSize} fw={700}>
                 {row.move}
               </Text>
-              {row.lastPlayed ? (
-                <Text size="xs" c="dimmed">
-                  {row.lastPlayed}
-                </Text>
-              ) : null}
+              <PrepLastPlayedText value={row.lastPlayed} />
             </Table.Td>
             <Table.Td>
               <Text size={textSize}>{formatNumber(row.total)}</Text>
@@ -2624,11 +2620,7 @@ function PrepCandidateMoveTable({
                 <Text size={textSize} fw={700}>
                   {row.move}
                 </Text>
-                {row.lastPlayed ? (
-                  <Text size="xs" c="dimmed">
-                    {row.lastPlayed}
-                  </Text>
-                ) : null}
+                <PrepLastPlayedText value={row.lastPlayed} />
               </Table.Td>
               <Table.Td>
                 <Text size={textSize}>{formatNumber(row.total)}</Text>
@@ -2660,6 +2652,26 @@ function PrepCandidateMoveTable({
         </Table.Tbody>
       </Table>
     </Stack>
+  );
+}
+
+function PrepLastPlayedText({ value }: { value: string | null | undefined }) {
+  const label = formatPrepLastPlayedRelative(value);
+  if (!label) return null;
+
+  const exactDate = formatPrepLastPlayedExactDate(value);
+  const content = (
+    <Text size="xs" c="dimmed">
+      {label}
+    </Text>
+  );
+
+  if (!exactDate) return content;
+
+  return (
+    <Tooltip label={`Last played ${exactDate}`} openDelay={350}>
+      {content}
+    </Tooltip>
   );
 }
 
@@ -3203,6 +3215,56 @@ function getInitialPrepSeed({
 
 function getPrepSearchId(scope: string, fen: string) {
   return `opponent-prep|${scope}|${fen}`;
+}
+
+function formatPrepLastPlayedRelative(value: string | null | undefined) {
+  const date = parsePrepLastPlayedDate(value);
+  if (!date) return value ? `Last played ${value}` : null;
+
+  const today = new Date();
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const playedStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const ageDays = Math.max(
+    0,
+    Math.floor((todayStart.getTime() - playedStart.getTime()) / 86_400_000),
+  );
+
+  if (ageDays === 0) return "Last played today";
+  if (ageDays === 1) return "Last played yesterday";
+  if (ageDays < 365) return `Last played ${ageDays} days ago`;
+
+  const years = Math.max(1, Math.floor(ageDays / 365));
+  return `Last played ${years} year${years === 1 ? "" : "s"} ago`;
+}
+
+function formatPrepLastPlayedExactDate(value: string | null | undefined) {
+  const date = parsePrepLastPlayedDate(value);
+  if (!date) return value?.trim() || null;
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function parsePrepLastPlayedDate(value: string | null | undefined) {
+  const match = value?.trim().match(/^(\d{4})[.-](\d{1,2})[.-](\d{1,2})$/);
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return date;
 }
 
 function statusColor(status: OpponentPrepMoveRow["status"]) {

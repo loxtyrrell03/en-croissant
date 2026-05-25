@@ -640,6 +640,9 @@ from 2026-04-24 through 2026-05-03.
   into the Files root as a folder of individual game files.
 - Opponent prep defaults: new Prep tabs now start with Min games set to 1 so
   even one-game opponent branches are visible by default.
+- Opponent prep recency labels: Prep move rows now show relative last-played
+  text such as "Last played 49 days ago" instead of only a raw game date, with
+  the exact date still available on hover.
 - Startup responsiveness: cached directory paths now let common route loaders
   paint immediately while the real paths refresh in the background. Major
   route and board workspace chunk loads show progress fallbacks instead of
