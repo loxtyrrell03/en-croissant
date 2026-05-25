@@ -162,7 +162,26 @@ export function getLichessStudyDatabaseUpdateRecord(
     records: LichessStudyDatabaseUpdateRecords,
 ): LichessStudyDatabaseUpdateRecord | null {
     if (database.type !== "success") return null;
-    return records[database.file] ?? null;
+    const stored = records[database.file];
+    if (stored) return stored;
+
+    const moved = Object.values(records).find((record) => {
+        const filename = record.dbPath.split(/[\\/]/).pop();
+        return (
+            record.title === database.title ||
+            filename === database.filename ||
+            database.description.includes(record.studyUrl)
+        );
+    });
+    if (!moved) return null;
+
+    return {
+        ...moved,
+        dbPath: database.file,
+        title: database.title,
+        description: database.description,
+        lastKnownGameCount: moved.lastKnownGameCount ?? database.game_count,
+    };
 }
 
 export function upsertLichessStudyDatabaseUpdateRecord(

@@ -33,7 +33,7 @@ import classes from "./InfoPanel.module.css";
 import PgnInput from "./PgnInput";
 import { getStats } from "@/utils/repertoire";
 import useSWR from "swr";
-import { getDatabases } from "@/utils/db";
+import { getDatabaseFolderPath, getDatabases } from "@/utils/db";
 import { useNavigate } from "@tanstack/react-router";
 import { useActiveDatabaseViewStore } from "@/state/store/database";
 
@@ -119,7 +119,7 @@ function DatabaseInfo({ path, id: _id }: { path: string; id: number }) {
         </Text>
         <Text fw="bold">{dbInfo.title}</Text>
         <Text size="xs" c="dimmed">
-          {dbInfo.description}
+          {[getDatabaseFolderPath(dbInfo), dbInfo.description].filter(Boolean).join(" - ")}
         </Text>
       </Box>
       <Divider />

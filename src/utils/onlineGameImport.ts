@@ -147,6 +147,28 @@ export function getOnlineDatabaseUpdateRecord(
     const stored = records[database.file];
     if (stored) return stored;
 
+    const moved = Object.values(records).find((record) => {
+        const filename = record.dbPath.split(/[\\/]/).pop();
+        const previousIdentity = getOnlineGameIdentityFromFilename(filename ?? "");
+        const currentIdentity = getOnlineGameIdentityFromFilename(database.filename);
+        return (
+            record.title === database.title ||
+            filename === database.filename ||
+            (previousIdentity?.source === currentIdentity?.source &&
+                previousIdentity?.username.toLowerCase() ===
+                    currentIdentity?.username.toLowerCase())
+        );
+    });
+    if (moved) {
+        return {
+            ...moved,
+            dbPath: database.file,
+            title: database.title,
+            description: database.description,
+            lastKnownGameCount: moved.lastKnownGameCount ?? database.game_count,
+        };
+    }
+
     const inferred = getOnlineGameIdentityFromFilename(database.filename);
     if (!inferred) return null;
 

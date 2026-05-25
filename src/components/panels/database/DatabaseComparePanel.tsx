@@ -39,6 +39,8 @@ import {
 import {
   cancelDatabaseSearch,
   getDatabases,
+  getDatabaseFolderLabel,
+  getDatabaseFolderPath,
   getLocalResultPerspective,
   type Opening,
   searchPosition,
@@ -69,6 +71,7 @@ type CompareSource =
       type: "local";
       value: string;
       label: string;
+      folder: string;
       database: SuccessDatabaseInfo;
     }
   | {
@@ -167,6 +170,7 @@ function DatabaseComparePanel() {
         type: "local" as const,
         value: database.file,
         label: database.title || database.filename,
+        folder: getDatabaseFolderPath(database),
         database,
       })),
       {
@@ -486,11 +490,40 @@ function CompareDatabaseTable({
           },
         ] as const)
       : null;
-  const selectData = sources.map((item) => ({
-    value: item.value,
-    label: item.label,
-    disabled: item.value === otherSourceValue,
-  }));
+  const localGroups = new Map<string, CompareSource[]>();
+  for (const item of sources) {
+    if (item.type !== "local") continue;
+    const folder = item.folder;
+    localGroups.set(folder, [...(localGroups.get(folder) ?? []), item]);
+  }
+  const selectData = [
+    ...Array.from(localGroups.entries())
+      .sort(([a], [b]) => {
+        if (a === "" && b !== "") return -1;
+        if (a !== "" && b === "") return 1;
+        return a.localeCompare(b, undefined, { sensitivity: "base" });
+      })
+      .map(([folder, items]) => ({
+        group: getDatabaseFolderLabel(folder),
+        items: items
+          .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }))
+          .map((item) => ({
+            value: item.value,
+            label: item.label,
+            disabled: item.value === otherSourceValue,
+          })),
+      })),
+    {
+      group: "Online",
+      items: sources
+        .filter((item) => item.type !== "local")
+        .map((item) => ({
+          value: item.value,
+          label: item.label,
+          disabled: item.value === otherSourceValue,
+        })),
+    },
+  ];
   const dense = density === "dense";
   const controlGap = dense ? 4 : "xs";
   const cardPadding = dense ? 6 : "xs";

@@ -19,12 +19,18 @@ export type DatabaseInfo =
     | (DatabaseInfoT & {
           type: "success";
           file: string;
+          relativePath?: string;
+          folder?: string;
+          folderSegments?: string[];
           downloadLink?: string;
           filter?: GameQuery;
       })
     | {
           type: "error";
           file: string;
+          relativePath?: string;
+          folder?: string;
+          folderSegments?: string[];
           filename: string;
           error: string;
           indexed: boolean;

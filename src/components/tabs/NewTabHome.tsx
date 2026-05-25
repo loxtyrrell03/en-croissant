@@ -40,7 +40,12 @@ import {
   tabFamily,
   tabsAtom,
 } from "@/state/atoms";
-import { getDatabases, query_players, type SuccessDatabaseInfo } from "@/utils/db";
+import {
+  getDatabases,
+  getDatabaseSelectData,
+  query_players,
+  type SuccessDatabaseInfo,
+} from "@/utils/db";
 import { createTab } from "@/utils/tabs";
 import { unwrap } from "@/utils/unwrap";
 import type { LocalEngine } from "@/utils/engines";
@@ -107,7 +112,6 @@ import {
 } from "@/utils/openingReviewOpenings";
 import {
   getOnlineDatabaseUpdateRecord,
-  getOnlineGameSourceLabel,
   upsertOnlineDatabaseUpdateRecord,
 } from "@/utils/onlineGameImport";
 import {
@@ -751,14 +755,8 @@ function OpeningReviewSettingsModal({
     [databases, onlineDatabaseUpdates],
   );
   const selectedOnlineDatabase = onlineDatabases.find((item) => item.database.file === playerDb);
-  const databaseOptions = onlineDatabases.map(({ database, record }) => ({
-    value: database.file,
-    label: `${database.title || database.filename} (${getOnlineGameSourceLabel(record.source)})`,
-  }));
-  const referenceOptions = databases.map((database) => ({
-    value: database.file,
-    label: database.title || database.filename,
-  }));
+  const databaseOptions = getDatabaseSelectData(onlineDatabases.map(({ database }) => database));
+  const referenceOptions = getDatabaseSelectData(databases);
 
   useEffect(() => {
     if (!opened || !deck) return;
@@ -1320,10 +1318,7 @@ function MistakeReviewScanModal({
     value: engine.path,
     label: engine.version ? `${engine.name} ${engine.version}` : engine.name,
   }));
-  const databaseOptions = databases.map((item) => ({
-    value: item.file,
-    label: item.title || item.filename,
-  }));
+  const databaseOptions = getDatabaseSelectData(databases);
   const selectedDatabase = databases.find((item) => item.file === database);
   const selectedOnlineRecord = selectedDatabase
     ? getOnlineDatabaseUpdateRecord(selectedDatabase, onlineDatabaseUpdates)

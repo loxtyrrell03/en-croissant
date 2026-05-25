@@ -374,6 +374,14 @@ async deleteDatabase(file: string) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+async moveDatabase(file: string, newFile: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("move_database", { file, newFile }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async exportToPgn(file: string, destFile: string) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("export_to_pgn", { file, destFile }) };

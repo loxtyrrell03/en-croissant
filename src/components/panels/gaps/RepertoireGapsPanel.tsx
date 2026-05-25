@@ -77,6 +77,7 @@ import {
 import {
   cancelDatabaseSearch,
   getDatabases,
+  getDatabaseSelectData,
   query_players,
   setDatabaseSearchPaused,
   type SuccessDatabaseInfo,
@@ -205,19 +206,17 @@ function RepertoireGapsPanel() {
     [databases],
   );
 
-  const databaseOptions = useMemo(
-    () =>
-      localDatabases.map((database) => ({
-        value: database.file,
-        label: database.title || database.filename,
-      })),
-    [localDatabases],
-  );
+  const databaseOptions = useMemo(() => getDatabaseSelectData(localDatabases), [localDatabases]);
   const referenceOptions = useMemo(
     () => [
       ...databaseOptions,
-      { value: LICHESS_ALL_SOURCE, label: "Lichess All" },
-      { value: LICHESS_MASTER_SOURCE, label: "Lichess Masters" },
+      {
+        group: "Online",
+        items: [
+          { value: LICHESS_ALL_SOURCE, label: "Lichess All" },
+          { value: LICHESS_MASTER_SOURCE, label: "Lichess Masters" },
+        ],
+      },
     ],
     [databaseOptions],
   );
@@ -1232,9 +1231,8 @@ function RepertoireGapsPanel() {
       }
 
       await Promise.all(
-        Array.from(
-          { length: Math.min(CHESSDB_VERIFY_CONCURRENCY, fenGroups.length) },
-          () => checkChessDbGroups(),
+        Array.from({ length: Math.min(CHESSDB_VERIFY_CONCURRENCY, fenGroups.length) }, () =>
+          checkChessDbGroups(),
         ),
       );
       flushVerificationUpdates(true);
@@ -1335,7 +1333,11 @@ function RepertoireGapsPanel() {
             throw error;
           }
 
-          markVerification(gap, buildEngineVerification(gap, bestMoves, depth), !existingVerification);
+          markVerification(
+            gap,
+            buildEngineVerification(gap, bestMoves, depth),
+            !existingVerification,
+          );
           await commands.killEngine(engine.id, engineTab);
         }
       } else {
@@ -2056,7 +2058,8 @@ function countOpeningHealthReviewPositions(
   overrides: Record<string, OpeningHealthTrainingMove> = {},
 ) {
   return rows.filter(
-    (gap) => overrides[gapKey(gap)] || getOpeningHealthTrainingMove(gap, verifications[gapKey(gap)], mode),
+    (gap) =>
+      overrides[gapKey(gap)] || getOpeningHealthTrainingMove(gap, verifications[gapKey(gap)], mode),
   ).length;
 }
 
@@ -2581,14 +2584,13 @@ function buildOnlineGap(
     .sort(
       (a, b) => b.games - a.games || b.scoreForSide - a.scoreForSide || a.san.localeCompare(b.san),
     );
-  const referenceMoveIndex = referenceMoves.findIndex(
-    (move) =>
-      openingHealthMovesMatch(
-        move.uci,
-        move.san,
-        playerPosition.playerMoveUci,
-        playerPosition.playerMoveSan,
-      ),
+  const referenceMoveIndex = referenceMoves.findIndex((move) =>
+    openingHealthMovesMatch(
+      move.uci,
+      move.san,
+      playerPosition.playerMoveUci,
+      playerPosition.playerMoveSan,
+    ),
   );
   const referenceMoveRank = referenceMoveIndex >= 0 ? referenceMoveIndex + 1 : null;
   const referenceMoveShare =

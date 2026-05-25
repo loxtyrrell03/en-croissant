@@ -91,6 +91,7 @@ import {
   cancelDatabaseSearch,
   type DatabaseResultPerspective,
   getDatabases,
+  getDatabaseSelectData,
   getLocalResultPerspective,
   getPlanExplorer,
   type SuccessDatabaseInfo,
@@ -223,10 +224,7 @@ function PlanExplorerPanel() {
       }),
     [databases],
   );
-  const dbSelectData = localDatabases.map((database) => ({
-    value: database.file,
-    label: database.title || database.filename,
-  }));
+  const dbSelectData = getDatabaseSelectData(localDatabases);
 
   const requestId = useMemo(
     () =>
@@ -909,11 +907,13 @@ function DatabaseSelector({
   value,
   onChange,
 }: {
-  data: { value: string; label: string }[];
+  data: ReturnType<typeof getDatabaseSelectData>;
   value: string | null;
   onChange: (value: string | null) => void;
 }) {
-  const selectedLabel = data.find((item) => item.value === value)?.label ?? "Reference database";
+  const selectedLabel =
+    data.flatMap((group) => group.items).find((item) => item.value === value)?.label ??
+    "Reference database";
   const widthCh = Math.min(Math.max(selectedLabel.length + 4, 18), 34);
 
   return (

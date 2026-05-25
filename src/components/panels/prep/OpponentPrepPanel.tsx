@@ -65,6 +65,7 @@ import { getRecentChessComGames } from "@/utils/chess.com/api";
 import {
   cancelDatabaseSearch,
   getDatabases,
+  getDatabaseSelectData,
   getMostCommonPlayer,
   query_players,
   searchPosition,
@@ -303,32 +304,39 @@ function OpponentPrepPanel() {
     [databases],
   );
   const sourceOptions = useMemo(() => {
-    const options = localDatabases.map((database) => ({
-      value: database.file,
-      label: database.title || database.filename,
-    }));
+    const groupedOptions = getDatabaseSelectData(localDatabases);
 
     if (
       prepSource === "local" &&
       prep.databasePath &&
       !localDatabases.some((database) => database.file === prep.databasePath)
     ) {
-      options.unshift({
-        value: prep.databasePath,
-        label: prep.databaseLabel || "Imported prep games",
+      groupedOptions.unshift({
+        group: "Current",
+        items: [
+          {
+            value: prep.databasePath,
+            label: prep.databaseLabel || "Imported prep games",
+          },
+        ],
       });
     }
 
     return [
-      ...options,
       {
-        value: LICHESS_ALL_SOURCE,
-        label: "Lichess All",
+        group: "Online",
+        items: [
+          {
+            value: LICHESS_ALL_SOURCE,
+            label: "Lichess All",
+          },
+          {
+            value: LICHESS_MASTER_SOURCE,
+            label: "Lichess Masters",
+          },
+        ],
       },
-      {
-        value: LICHESS_MASTER_SOURCE,
-        label: "Lichess Masters",
-      },
+      ...groupedOptions,
     ];
   }, [localDatabases, prep.databaseLabel, prep.databasePath, prepSource]);
   const selectedDatabase = useMemo(
@@ -3256,11 +3264,7 @@ function parsePrepLastPlayedDate(value: string | null | undefined) {
   const day = Number(match[3]);
   const date = new Date(year, month - 1, day);
 
-  if (
-    date.getFullYear() !== year ||
-    date.getMonth() !== month - 1 ||
-    date.getDate() !== day
-  ) {
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
     return null;
   }
 

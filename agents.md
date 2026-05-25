@@ -166,6 +166,15 @@ Database work is centered in `src/components/databases/*`,
   styling, and board-arrow previews on hover.
 - Database Compare supports local sources, Lichess All, and Lichess Masters.
 - Database panels use saved default source controls.
+- The Databases area now treats database folders as first-class organization:
+  `.db3` files can live in nested folders under the database root, folders can
+  be created or renamed from the database manager, databases can be moved into
+  folders, and the Auto organize action groups common sources such as
+  repertoires, online games, reference databases, personal games, and opponent
+  prep databases. Folder moves preserve matching `.ecsi` search indexes.
+- Database selectors used by analysis, Compare, Plan Explorer, Analyze
+  Repertoire, opponent prep, and home review setup show local databases grouped
+  by folder so feature entry points match the database manager organization.
 
 ### Online Game And Study Data
 

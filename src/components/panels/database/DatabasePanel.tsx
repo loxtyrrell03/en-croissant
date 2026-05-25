@@ -41,6 +41,7 @@ import {
 import {
   cancelDatabaseSearch,
   getDatabases,
+  getDatabaseSelectData,
   getLocalResultPerspective,
   type Opening,
   query_players,
@@ -333,9 +334,7 @@ function DatabasePanel() {
         ? "black"
         : "any";
 
-  const dbSelectData = (databases ?? [])
-    .filter((d) => d.type === "success")
-    .map((d) => ({ value: d.file, label: d.title || d.filename }));
+  const dbSelectData = getDatabaseSelectData(databases ?? []);
 
   useEffect(() => {
     if (db === "local") {

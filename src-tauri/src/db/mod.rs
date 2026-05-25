@@ -37,7 +37,7 @@ use shakmaty::{
 use specta::Type;
 use std::{
     collections::HashMap,
-    fs::{remove_file, rename, File, OpenOptions},
+    fs::{create_dir_all, remove_file, rename, File, OpenOptions},
     path::{Path, PathBuf},
     sync::atomic::{AtomicUsize, Ordering},
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
@@ -2232,6 +2232,52 @@ pub async fn delete_database(
     // delete file
     remove_file(path_str)?;
     remove_file(get_index_path(&PathBuf::from(path_str)))?;
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn move_database(
+    file: PathBuf,
+    new_file: PathBuf,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), Error> {
+    if file == new_file {
+        return Ok(());
+    }
+
+    if new_file.exists() {
+        return Err(Error::from(io::Error::new(
+            io::ErrorKind::AlreadyExists,
+            format!("Database already exists at {}", new_file.display()),
+        )));
+    }
+
+    if let Some(parent) = new_file.parent() {
+        create_dir_all(parent)?;
+    }
+
+    let pool = &state.connection_pool;
+    if let Some(path) = file.to_str() {
+        pool.remove(path);
+    }
+    if let Some(path) = new_file.to_str() {
+        pool.remove(path);
+    }
+    clear_database_search_caches(&state, &file);
+    clear_database_search_caches(&state, &new_file);
+
+    rename(&file, &new_file)?;
+
+    let old_index = get_index_path(&file);
+    if old_index.exists() {
+        let new_index = get_index_path(&new_file);
+        if new_index.exists() {
+            remove_file(&new_index)?;
+        }
+        rename(old_index, new_index)?;
+    }
+
     Ok(())
 }
 

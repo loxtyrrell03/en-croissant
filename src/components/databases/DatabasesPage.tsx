@@ -10,12 +10,14 @@ import {
   Input,
   InputWrapper,
   Loader,
+  Menu,
   Modal,
   Paper,
   Rating,
   RingProgress,
   ScrollArea,
   SegmentedControl,
+  Select,
   SimpleGrid,
   Skeleton,
   Stack,
@@ -30,16 +32,23 @@ import { useDebouncedValue, useElementSize, useToggle } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import {
   IconArrowRight,
+  IconArrowsSort,
+  IconDots,
   IconDatabase,
+  IconEdit,
   IconFileExport,
+  IconFolder,
   IconFolderDown,
+  IconFolderPlus,
   IconPlus,
   IconRefresh,
   IconSearch,
+  IconWand,
 } from "@tabler/icons-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { basename, resolve } from "@tauri-apps/api/path";
 import { open as openDialog, save } from "@tauri-apps/plugin-dialog";
+import { exists, mkdir } from "@tauri-apps/plugin-fs";
 import { useAtom, useAtomValue } from "jotai";
 import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -68,8 +77,24 @@ import {
   splitGameSourceToFiles,
   validateDatabaseFilesFolderName,
 } from "@/utils/databaseFileExport";
-import { getDatabases, query_games, type SuccessDatabaseInfo } from "@/utils/db";
-import { getDocumentDir } from "@/utils/directories";
+import {
+  type DatabaseSortMode,
+  getDatabaseDisplayTitle,
+  getDatabaseFolderOptions,
+  getDatabaseFolderPath,
+  getDatabaseFolders,
+  getDatabaseMoveTarget,
+  getSuggestedDatabaseFolder,
+  groupDatabasesByFolder,
+  moveDatabaseFile,
+  normalizeDatabaseFolderPath,
+  query_games,
+  resolveDatabaseFolderPath,
+  getDatabases,
+  type SuccessDatabaseInfo,
+  validateDatabaseFolderPath,
+} from "@/utils/db";
+import { getDatabasesDir, getDocumentDir } from "@/utils/directories";
 import { formatBytes, formatNumber } from "@/utils/format";
 import { updateOnlineDatabaseNow } from "@/utils/onlineDatabaseAutoUpdate";
 import { updateLichessStudyDatabaseNow } from "@/utils/lichessStudyDatabaseAutoUpdate";
@@ -118,10 +143,34 @@ function resetDatabaseConversionStateFields() {
   };
 }
 
+type DatabaseFolderModalState =
+  | { mode: "create"; folder?: never }
+  | { mode: "rename"; folder: string };
+
+function rewriteDatabaseUpdateRecordPath<TRecord extends { dbPath: string }>(
+  records: Record<string, TRecord>,
+  previousPath: string,
+  nextPath: string,
+): Record<string, TRecord> {
+  const record = records[previousPath];
+  if (!record) return records;
+
+  const nextRecords: Record<string, TRecord> = { ...records };
+  delete nextRecords[previousPath];
+  nextRecords[nextPath] = {
+    ...record,
+    dbPath: nextPath,
+  };
+  return nextRecords;
+}
+
 export default function DatabasesPage() {
   const { t } = useTranslation();
 
   const { data: databases, isLoading, mutate } = useSWR("databases", () => getDatabases());
+  const { data: folders, mutate: mutateFolders } = useSWR("database-folders", () =>
+    getDatabaseFolders(),
+  );
 
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -194,7 +243,31 @@ export default function DatabasesPage() {
   const [deleteModal, toggleDeleteModal] = useToggle();
   const [exportLoading, setExportLoading] = useState(false);
   const [exportFilesOpened, setExportFilesOpened] = useState(false);
+  const [folderModal, setFolderModal] = useState<DatabaseFolderModalState | null>(null);
+  const [sortMode, setSortMode] = useState<DatabaseSortMode>("folder");
+  const [selectedFolderDraft, setSelectedFolderDraft] = useState("");
+  const [organizing, setOrganizing] = useState(false);
   const documentDir = useAtomValue(storedDocumentDirAtom);
+  const databaseFolderGroups = useMemo(() => {
+    const groups = groupDatabasesByFolder(filteredDatabases, sortMode);
+    const existing = new Set(groups.map((group) => group.path));
+    const emptyGroups = (folders ?? [])
+      .filter((folder) => !existing.has(folder))
+      .map((folder) => ({ path: folder, label: folder, databases: [] }));
+    return [...groups, ...emptyGroups].sort((a, b) => {
+      if (a.path === "" && b.path !== "") return -1;
+      if (a.path !== "" && b.path === "") return 1;
+      return a.label.localeCompare(b.label, undefined, { sensitivity: "base" });
+    });
+  }, [filteredDatabases, folders, sortMode]);
+  const databaseFolderOptions = useMemo(
+    () => Array.from(new Set([...getDatabaseFolderOptions(databases ?? []), ...(folders ?? [])])),
+    [databases, folders],
+  );
+
+  useEffect(() => {
+    setSelectedFolderDraft(selectedDatabase ? getDatabaseFolderPath(selectedDatabase) : "");
+  }, [selectedDatabase]);
 
   function changeReferenceDatabase(file: string) {
     commands.clearGames();
@@ -202,6 +275,100 @@ export default function DatabasesPage() {
       setReferenceDatabase(null);
     } else {
       setReferenceDatabase(file);
+    }
+  }
+
+  function rewriteMovedDatabasePath(previousPath: string, nextPath: string) {
+    setSelected((current) => (current === previousPath ? nextPath : current));
+    setReferenceDatabase((current) => (current === previousPath ? nextPath : current));
+    setOnlineDatabaseUpdates((records) =>
+      rewriteDatabaseUpdateRecordPath(records, previousPath, nextPath),
+    );
+    setLichessStudyDatabaseUpdates((records) =>
+      rewriteDatabaseUpdateRecordPath(records, previousPath, nextPath),
+    );
+  }
+
+  async function moveDatabaseToFolder(database: DatabaseInfo, folder: string) {
+    const normalizedFolder = normalizeDatabaseFolderPath(folder);
+    const folderError = normalizedFolder ? validateDatabaseFolderPath(normalizedFolder) : null;
+    if (folderError) throw new Error(folderError);
+    const resolvedDatabaseDir = databaseDir || (await getDatabasesDir());
+    const target = await getDatabaseMoveTarget(database, resolvedDatabaseDir, normalizedFolder);
+    if (target === database.file) return;
+
+    await moveDatabaseFile(database.file, target);
+    rewriteMovedDatabasePath(database.file, target);
+    await mutate();
+    await mutateFolders();
+  }
+
+  async function createDatabaseFolder(folder: string) {
+    const normalizedFolder = normalizeDatabaseFolderPath(folder);
+    const error = validateDatabaseFolderPath(normalizedFolder);
+    if (error) throw new Error(error);
+    const resolvedDatabaseDir = databaseDir || (await getDatabasesDir());
+    const target = await resolveDatabaseFolderPath(resolvedDatabaseDir, normalizedFolder);
+    if (await exists(target)) throw new Error("That folder already exists.");
+    await mkdir(target, { recursive: true });
+    await mutate();
+    await mutateFolders();
+  }
+
+  async function renameDatabaseFolder(previousFolder: string, nextFolder: string) {
+    const normalizedNextFolder = normalizeDatabaseFolderPath(nextFolder);
+    const error = validateDatabaseFolderPath(normalizedNextFolder);
+    if (error) throw new Error(error);
+    if (previousFolder === normalizedNextFolder) return;
+
+    const affected = (databases ?? []).filter((database) => {
+      const folder = getDatabaseFolderPath(database);
+      return folder === previousFolder || folder.startsWith(`${previousFolder}/`);
+    });
+
+    for (const database of affected) {
+      const folder = getDatabaseFolderPath(database);
+      const trailing = folder === previousFolder ? "" : folder.slice(previousFolder.length + 1);
+      const targetFolder = [normalizedNextFolder, trailing].filter(Boolean).join("/");
+      await moveDatabaseToFolder(database, targetFolder);
+    }
+    await mutate();
+    await mutateFolders();
+  }
+
+  async function autoOrganizeDatabases() {
+    const candidates = (databases ?? []).filter((database) => database.type === "success");
+    const moves = candidates.filter(
+      (database) => getDatabaseFolderPath(database) !== getSuggestedDatabaseFolder(database),
+    );
+    if (moves.length === 0) {
+      notifications.show({
+        title: "Databases already organized",
+        message: "Every database is already in its suggested folder.",
+        color: "blue",
+      });
+      return;
+    }
+
+    setOrganizing(true);
+    try {
+      for (const database of moves) {
+        await moveDatabaseToFolder(database, getSuggestedDatabaseFolder(database));
+      }
+      await mutate();
+      notifications.show({
+        title: "Databases organized",
+        message: `${moves.length} database${moves.length === 1 ? "" : "s"} moved into folders.`,
+        color: "green",
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Could not organize databases",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    } finally {
+      setOrganizing(false);
     }
   }
 
@@ -330,6 +497,31 @@ export default function DatabasesPage() {
         setDatabases={mutate}
       />
 
+      <DatabaseFolderModal
+        opened={folderModal !== null}
+        mode={folderModal?.mode ?? "create"}
+        initialFolder={folderModal?.folder ?? ""}
+        onClose={() => setFolderModal(null)}
+        onSubmit={async (folder) => {
+          if (folderModal?.mode === "rename" && folderModal.folder) {
+            await renameDatabaseFolder(folderModal.folder, folder);
+            notifications.show({
+              title: "Folder renamed",
+              message: `${folderModal.folder} is now ${normalizeDatabaseFolderPath(folder)}.`,
+              color: "green",
+            });
+          } else {
+            await createDatabaseFolder(folder);
+            notifications.show({
+              title: "Folder created",
+              message: `${normalizeDatabaseFolderPath(folder)} is ready for databases.`,
+              color: "green",
+            });
+          }
+          setFolderModal(null);
+        }}
+      />
+
       {selectedDatabase?.type === "success" && (
         <DatabaseFilesExportModal
           opened={exportFilesOpened}
@@ -372,6 +564,40 @@ export default function DatabasesPage() {
                   value={search}
                   onChange={(e) => setSearch(e.currentTarget.value)}
                 />
+                <Select
+                  size="sm"
+                  w={compact ? 128 : 160}
+                  aria-label="Sort databases"
+                  leftSection={<IconArrowsSort size="1rem" />}
+                  data={[
+                    { value: "folder", label: "Folder" },
+                    { value: "name", label: "Name" },
+                    { value: "games", label: "Games" },
+                    { value: "storage", label: "Storage" },
+                  ]}
+                  value={sortMode}
+                  onChange={(value) => setSortMode((value as DatabaseSortMode | null) ?? "folder")}
+                />
+                <Tooltip label="Create folder">
+                  <ActionIcon
+                    variant="default"
+                    size="lg"
+                    onClick={() => setFolderModal({ mode: "create" })}
+                  >
+                    <IconFolderPlus size="1rem" />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label="Auto organize databases">
+                  <ActionIcon
+                    variant="default"
+                    size="lg"
+                    loading={organizing}
+                    disabled={conversionState.inProgress}
+                    onClick={() => void autoOrganizeDatabases()}
+                  >
+                    <IconWand size="1rem" />
+                  </ActionIcon>
+                </Tooltip>
                 <Tooltip label={t("Common.AddNew")}>
                   <ActionIcon
                     variant="default"
@@ -408,119 +634,84 @@ export default function DatabasesPage() {
                 </>
               )}
               <ScrollArea flex={1}>
-                <SimpleGrid cols={listColumns} spacing={compact ? 6 : "sm"} p={compact ? 6 : "xs"}>
+                <Stack gap={compact ? 6 : "sm"} p={compact ? 6 : "xs"}>
                   {showFilteredConversionPlaceholder && (
                     <DatabaseConversionCard conversionState={conversionState} />
                   )}
                   {isLoading && (
-                    <>
+                    <SimpleGrid cols={listColumns} spacing={compact ? 6 : "sm"}>
                       <Skeleton h="8rem" />
                       <Skeleton h="8rem" />
                       <Skeleton h="8rem" />
-                    </>
+                    </SimpleGrid>
                   )}
                   {!isLoading &&
-                    filteredDatabases?.map((item) => {
-                      const onlineRecord =
-                        item.type === "success"
-                          ? getOnlineDatabaseUpdateRecord(item, onlineDatabaseUpdates)
-                          : null;
-                      const studyRecord =
-                        item.type === "success"
-                          ? getLichessStudyDatabaseUpdateRecord(item, lichessStudyDatabaseUpdates)
-                          : null;
-                      const onlineUpdating =
-                        item.type === "success" && updatingOnlineDatabasePath === item.file;
-                      const updateActionLabel =
-                        item.type === "success" && studyRecord
-                          ? `Reload ${getLichessStudyDatabaseUpdateLabel(studyRecord)}`
-                          : item.type === "success" && onlineRecord
-                            ? `Update ${getOnlineDatabaseUpdateLabel(onlineRecord)}`
-                            : null;
-
-                      return (
-                        <GenericCard
-                          id={item.file}
-                          key={item.filename}
-                          isSelected={selectedDatabase?.filename === item.filename}
-                          setSelected={setSelected}
-                          error={item.type === "error" ? item.error : ""}
-                          onDoubleClick={() => {
-                            if (item.type === "error") return;
-                            navigate({
-                              to: "/databases/$databaseId",
-                              params: {
-                                databaseId: item.title,
-                              },
-                            });
-                            setActiveDatabase(item);
-                            //setStorageSelected(item);
-                          }}
-                          Header={
-                            <Group wrap="nowrap" justify="space-between">
-                              <Group wrap="nowrap" miw={0}>
-                                <IconDatabase size="1.5rem" />
-                                <Box miw={0}>
-                                  <Text fw={500} fz="sm">
-                                    {item.type === "success" ? item.title : item.error}
-                                  </Text>
-                                  <Text size="xs" c="dimmed" style={{ wordWrap: "break-word" }}>
-                                    {item.type === "error" ? item.file : item.description}
-                                  </Text>
-                                </Box>
-                              </Group>
-                              <Group gap={4} wrap="nowrap">
-                                {item.type === "success" && updateActionLabel && (
-                                  <Tooltip label={updateActionLabel}>
-                                    <ActionIcon
-                                      aria-label={updateActionLabel}
-                                      variant="subtle"
-                                      loading={onlineUpdating}
-                                      disabled={
-                                        conversionState.inProgress ||
-                                        (!!updatingOnlineDatabasePath && !onlineUpdating)
-                                      }
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        if (studyRecord) {
-                                          void updateLichessStudyDatabase(item, studyRecord);
-                                        } else if (onlineRecord) {
-                                          void updateOnlineDatabase(item);
-                                        }
-                                      }}
-                                    >
-                                      <IconRefresh size="1rem" />
-                                    </ActionIcon>
-                                  </Tooltip>
-                                )}
-                                <Rating
-                                  value={referenceDatabase === item.file ? 1 : 0}
-                                  count={1}
-                                  onChange={() => {
-                                    changeReferenceDatabase(item.file);
-                                  }}
-                                />
-                              </Group>
-                            </Group>
-                          }
-                          stats={[
-                            {
-                              label: t("Databases.Card.Games"),
-                              value:
-                                item.type === "success" ? formatNumber(item.game_count) : "???",
-                            },
-                            {
-                              label: t("Databases.Card.Storage"),
-                              value:
-                                item.type === "success"
-                                  ? formatBytes(item.storage_size ?? 0)
-                                  : "???",
-                            },
-                          ]}
-                        />
-                      );
-                    })}
-                </SimpleGrid>
+                    databaseFolderGroups.map((folder) => (
+                      <Stack key={folder.path || "unfiled"} gap={6}>
+                        <Group justify="space-between" wrap="nowrap">
+                          <Group gap={6} wrap="nowrap" miw={0}>
+                            <IconFolder size="1rem" />
+                            <Text fw={700} size="xs" tt="uppercase" c="dimmed" truncate>
+                              {folder.label}
+                            </Text>
+                            <Badge size="xs" variant="light">
+                              {folder.databases.length}
+                            </Badge>
+                          </Group>
+                          {folder.path && (
+                            <Menu position="bottom-end" withinPortal>
+                              <Menu.Target>
+                                <ActionIcon
+                                  size="sm"
+                                  variant="subtle"
+                                  aria-label={`Folder actions for ${folder.label}`}
+                                >
+                                  <IconDots size="1rem" />
+                                </ActionIcon>
+                              </Menu.Target>
+                              <Menu.Dropdown>
+                                <Menu.Item
+                                  leftSection={<IconEdit size="1rem" />}
+                                  onClick={() =>
+                                    setFolderModal({ mode: "rename", folder: folder.path })
+                                  }
+                                >
+                                  Rename folder
+                                </Menu.Item>
+                              </Menu.Dropdown>
+                            </Menu>
+                          )}
+                        </Group>
+                        <SimpleGrid cols={listColumns} spacing={compact ? 6 : "sm"}>
+                          {folder.databases.map((item) => (
+                            <DatabaseListCard
+                              key={item.file}
+                              item={item}
+                              selectedDatabase={selectedDatabase}
+                              referenceDatabase={referenceDatabase}
+                              onlineDatabaseUpdates={onlineDatabaseUpdates}
+                              lichessStudyDatabaseUpdates={lichessStudyDatabaseUpdates}
+                              updatingOnlineDatabasePath={updatingOnlineDatabasePath}
+                              conversionInProgress={conversionState.inProgress}
+                              onSelect={setSelected}
+                              onOpen={(database) => {
+                                navigate({
+                                  to: "/databases/$databaseId",
+                                  params: {
+                                    databaseId: database.title,
+                                  },
+                                });
+                                setActiveDatabase(database);
+                              }}
+                              onChangeReference={changeReferenceDatabase}
+                              onUpdateOnline={updateOnlineDatabase}
+                              onUpdateStudy={updateLichessStudyDatabase}
+                            />
+                          ))}
+                        </SimpleGrid>
+                      </Stack>
+                    ))}
+                </Stack>
               </ScrollArea>
               {!isLoading && filteredDatabases.length === 0 && (
                 <Center h="100%">
@@ -586,6 +777,56 @@ export default function DatabasesPage() {
                         selectedDatabase={selectedDatabase}
                         mutate={mutate}
                       />
+                      <Stack gap={4}>
+                        <Text fw={600} fz="sm">
+                          Folder
+                        </Text>
+                        <Group align="flex-end" grow>
+                          <Select
+                            label="Existing folder"
+                            placeholder="Unfiled"
+                            clearable
+                            searchable
+                            data={databaseFolderOptions}
+                            value={selectedFolderDraft || null}
+                            onChange={(value) => setSelectedFolderDraft(value ?? "")}
+                          />
+                          <TextInput
+                            label="Move to folder"
+                            placeholder="Reference or Online Games/Chess.com"
+                            value={selectedFolderDraft}
+                            onChange={(event) => setSelectedFolderDraft(event.currentTarget.value)}
+                          />
+                          <Button
+                            variant="default"
+                            leftSection={<IconFolder size="1rem" />}
+                            disabled={
+                              normalizeDatabaseFolderPath(selectedFolderDraft) ===
+                              getDatabaseFolderPath(selectedDatabase)
+                            }
+                            onClick={async () => {
+                              try {
+                                await moveDatabaseToFolder(selectedDatabase, selectedFolderDraft);
+                                notifications.show({
+                                  title: "Database moved",
+                                  message: `${selectedDatabase.title} moved to ${
+                                    normalizeDatabaseFolderPath(selectedFolderDraft) || "Unfiled"
+                                  }.`,
+                                  color: "green",
+                                });
+                              } catch (error) {
+                                notifications.show({
+                                  title: "Could not move database",
+                                  message: error instanceof Error ? error.message : String(error),
+                                  color: "red",
+                                });
+                              }
+                            }}
+                          >
+                            Move
+                          </Button>
+                        </Group>
+                      </Stack>
                       <Checkbox
                         label={t("Databases.Settings.ReferenceDatabase")}
                         checked={isReference}
@@ -873,6 +1114,192 @@ function DatabaseConversionCard({ conversionState }: { conversionState: Database
         />
       </Group>
     </Paper>
+  );
+}
+
+function DatabaseListCard({
+  item,
+  selectedDatabase,
+  referenceDatabase,
+  onlineDatabaseUpdates,
+  lichessStudyDatabaseUpdates,
+  updatingOnlineDatabasePath,
+  conversionInProgress,
+  onSelect,
+  onOpen,
+  onChangeReference,
+  onUpdateOnline,
+  onUpdateStudy,
+}: {
+  item: DatabaseInfo;
+  selectedDatabase: DatabaseInfo | null;
+  referenceDatabase: string | null;
+  onlineDatabaseUpdates: OnlineDatabaseUpdateRecords;
+  lichessStudyDatabaseUpdates: LichessStudyDatabaseUpdateRecords;
+  updatingOnlineDatabasePath: string | null;
+  conversionInProgress: boolean;
+  onSelect: (value: string | null) => void;
+  onOpen: (database: SuccessDatabaseInfo) => void;
+  onChangeReference: (file: string) => void;
+  onUpdateOnline: (database: SuccessDatabaseInfo) => void;
+  onUpdateStudy: (database: SuccessDatabaseInfo, record: LichessStudyDatabaseUpdateRecord) => void;
+}) {
+  const { t } = useTranslation();
+  const onlineRecord =
+    item.type === "success" ? getOnlineDatabaseUpdateRecord(item, onlineDatabaseUpdates) : null;
+  const studyRecord =
+    item.type === "success"
+      ? getLichessStudyDatabaseUpdateRecord(item, lichessStudyDatabaseUpdates)
+      : null;
+  const onlineUpdating = item.type === "success" && updatingOnlineDatabasePath === item.file;
+  const updateActionLabel =
+    item.type === "success" && studyRecord
+      ? `Reload ${getLichessStudyDatabaseUpdateLabel(studyRecord)}`
+      : item.type === "success" && onlineRecord
+        ? `Update ${getOnlineDatabaseUpdateLabel(onlineRecord)}`
+        : null;
+
+  return (
+    <GenericCard
+      id={item.file}
+      isSelected={selectedDatabase?.file === item.file}
+      setSelected={onSelect}
+      error={item.type === "error" ? item.error : ""}
+      onDoubleClick={() => {
+        if (item.type === "success") onOpen(item);
+      }}
+      Header={
+        <Group wrap="nowrap" justify="space-between">
+          <Group wrap="nowrap" miw={0}>
+            <IconDatabase size="1.5rem" />
+            <Box miw={0}>
+              <Text fw={500} fz="sm">
+                {getDatabaseDisplayTitle(item)}
+              </Text>
+              <Text size="xs" c="dimmed" style={{ wordWrap: "break-word" }}>
+                {item.type === "error" ? item.file : item.description}
+              </Text>
+            </Box>
+          </Group>
+          <Group gap={4} wrap="nowrap">
+            {item.type === "success" && updateActionLabel && (
+              <Tooltip label={updateActionLabel}>
+                <ActionIcon
+                  aria-label={updateActionLabel}
+                  variant="subtle"
+                  loading={onlineUpdating}
+                  disabled={
+                    conversionInProgress || (!!updatingOnlineDatabasePath && !onlineUpdating)
+                  }
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    if (studyRecord) {
+                      onUpdateStudy(item, studyRecord);
+                    } else if (onlineRecord) {
+                      onUpdateOnline(item);
+                    }
+                  }}
+                >
+                  <IconRefresh size="1rem" />
+                </ActionIcon>
+              </Tooltip>
+            )}
+            <Rating
+              value={referenceDatabase === item.file ? 1 : 0}
+              count={1}
+              onChange={() => {
+                onChangeReference(item.file);
+              }}
+            />
+          </Group>
+        </Group>
+      }
+      stats={[
+        {
+          label: t("Databases.Card.Games"),
+          value: item.type === "success" ? formatNumber(item.game_count) : "???",
+        },
+        {
+          label: t("Databases.Card.Storage"),
+          value: item.type === "success" ? formatBytes(item.storage_size ?? 0) : "???",
+        },
+      ]}
+    />
+  );
+}
+
+function DatabaseFolderModal({
+  opened,
+  mode,
+  initialFolder,
+  onClose,
+  onSubmit,
+}: {
+  opened: boolean;
+  mode: "create" | "rename";
+  initialFolder: string;
+  onClose: () => void;
+  onSubmit: (folder: string) => Promise<void>;
+}) {
+  const [folder, setFolder] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!opened) return;
+    setFolder(initialFolder);
+    setError("");
+  }, [initialFolder, opened]);
+
+  async function submit() {
+    const normalized = normalizeDatabaseFolderPath(folder);
+    const validationError = validateDatabaseFolderPath(normalized);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await onSubmit(normalized);
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : String(submitError));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Modal
+      opened={opened}
+      onClose={onClose}
+      title={mode === "rename" ? "Rename database folder" : "Create database folder"}
+    >
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          void submit();
+        }}
+      >
+        <Stack>
+          <TextInput
+            label="Folder"
+            description="Use / for nested folders."
+            placeholder="Reference or Online Games/Chess.com"
+            value={folder}
+            error={error}
+            onChange={(event) => {
+              setFolder(event.currentTarget.value);
+              if (error) setError("");
+            }}
+            data-autofocus
+          />
+          <Button type="submit" loading={loading} leftSection={<IconFolderPlus size="1rem" />}>
+            {mode === "rename" ? "Rename folder" : "Create folder"}
+          </Button>
+        </Stack>
+      </form>
+    </Modal>
   );
 }
 
