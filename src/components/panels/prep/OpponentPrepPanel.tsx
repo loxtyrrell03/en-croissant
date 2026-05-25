@@ -2224,7 +2224,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
           </Group>
 
           <Collapse in={!onlineImportOpen} style={{ flexShrink: 0 }}>
-            <Group gap={dense ? 4 : "xs"} wrap="wrap">
+            <Group gap={dense ? 4 : "xs"} wrap="wrap" align="flex-end">
               {prepMode === "player" ? (
                 <DatabasePerspectiveControls
                   databasePath={prepSource === "local" ? prep.databasePath : null}
@@ -2235,8 +2235,8 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
                   onPlayerNameChange={(playerName) => updateSettings({ playerName }, false)}
                   onColorChange={(color) => updateSettings({ color }, true)}
                   size={controlSize}
-                  playerWidth={dense ? 130 : 170}
-                  colorWidth={dense ? 184 : 224}
+                  playerWidth={dense ? 170 : 210}
+                  colorWidth={dense ? 236 : 280}
                   colorLabelPlayerName={prep.playerName}
                 />
               ) : (

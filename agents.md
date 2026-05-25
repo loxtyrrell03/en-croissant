@@ -241,6 +241,9 @@ and `src/utils/lichess/study.ts`.
 - In Prep player mode, the color filter labels use the selected player name
   directly, such as "IfanRJ as white" and "IfanRJ as black", so the side filter
   reads as that player's game color instead of a generic board color.
+- Prep player-mode color labels stack the player name above "as white" or
+  "as black" and the surrounding filter row can wrap from the bottom edge, so
+  long names remain readable beside Min games and Show top.
 - In Prep general mode, the user-side selector says "I'm white" and "I'm black"
   so the control reads as the user's prep side rather than abstract colors; the
   segmented control is kept wide enough for both labels to render in full.

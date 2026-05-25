@@ -31,10 +31,11 @@ export function DatabasePerspectiveControls({
   if (!databasePath) return null;
 
   const colorLabelName = colorLabelPlayerName?.trim();
+  const hasNamedColorLabels = !!colorLabelName;
   const colorOptions = colorLabelName
     ? [
-        { value: "white", label: `${colorLabelName} as white` },
-        { value: "black", label: `${colorLabelName} as black` },
+        { value: "white", label: <PlayerColorLabel playerName={colorLabelName} color="white" /> },
+        { value: "black", label: <PlayerColorLabel playerName={colorLabelName} color="black" /> },
       ]
     : [
         { value: "white", label: "White" },
@@ -70,8 +71,66 @@ export function DatabasePerspectiveControls({
           value={color}
           onChange={(value) => onColorChange(value as DatabasePerspectiveColor)}
           w={colorWidth}
+          styles={
+            hasNamedColorLabels
+              ? {
+                  control: {
+                    minHeight: size === "sm" ? 42 : 38,
+                  },
+                  label: {
+                    alignItems: "center",
+                    display: "flex",
+                    height: "100%",
+                    justifyContent: "center",
+                    minHeight: size === "sm" ? 42 : 38,
+                    paddingInline: 4,
+                  },
+                  innerLabel: {
+                    minWidth: 0,
+                    width: "100%",
+                  },
+                }
+              : undefined
+          }
         />
       </Tooltip>
     </Group>
+  );
+}
+
+function PlayerColorLabel({
+  playerName,
+  color,
+}: {
+  playerName: string;
+  color: DatabasePerspectiveColor;
+}) {
+  return (
+    <span
+      style={{
+        alignItems: "center",
+        display: "flex",
+        flexDirection: "column",
+        gap: 1,
+        justifyContent: "center",
+        lineHeight: 1.05,
+        maxWidth: "100%",
+        minWidth: 0,
+        whiteSpace: "normal",
+      }}
+    >
+      <span
+        style={{
+          fontSize: "0.82em",
+          maxWidth: "100%",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {playerName}
+      </span>
+      <span style={{ fontSize: "0.78em", opacity: 0.9, whiteSpace: "nowrap" }}>as {color}</span>
+    </span>
   );
 }
