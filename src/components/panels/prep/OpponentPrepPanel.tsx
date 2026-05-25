@@ -2183,7 +2183,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
                     value={userColor}
                     onChange={(value) => changeGeneralUserColor(value as "white" | "black")}
                     size={controlSize}
-                    w={dense ? 112 : 126}
+                    w={dense ? 196 : 220}
                   />
                 </Tooltip>
               )}
