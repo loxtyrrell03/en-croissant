@@ -127,6 +127,10 @@ default.
   Database and Prep reuse the existing right-panel implementations under the
   board so analysis can keep another feature open on the right; move controls
   stay visible only in Moves mode to give those panels the full lower workspace.
+  The notation top bar stays stable while switching those modes. Under-board
+  Prep uses a two-stage flow: setup first for source/opponent selection, then a
+  training stage with the prep line, Common move, Done + next, and the move
+  table so it fits the smaller space.
 - Engine output is docked into the active panel where possible and hidden when
   disabled.
 - Board tab labels use icon-first compact tabs with hover tooltips.

@@ -240,7 +240,7 @@ function getPrepCandidateRows({
   }));
 }
 
-function OpponentPrepPanel() {
+function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
   const store = useContext(TreeStateContext)!;
   const currentNode = useStore(store, (s) => s.currentNode());
   const currentFen = currentNode.fen;
@@ -282,6 +282,7 @@ function OpponentPrepPanel() {
   const [onlineImportPreview, setOnlineImportPreview] = useState<PrepOnlineCountPreview | null>(
     null,
   );
+  const [underBoardStage, setUnderBoardStage] = useState<"setup" | "train">("setup");
   const moveCacheRef = useRef(new BoundedMap<string, Opening[]>(MAX_PREP_MOVE_CACHE_ENTRIES));
   const builderReferenceCacheRef = useRef(
     new BoundedMap<string, Opening[]>(MAX_PREP_BUILDER_REFERENCE_CACHE_ENTRIES),
@@ -374,6 +375,8 @@ function OpponentPrepPanel() {
   const sourceReady = prepSource === "local" ? Boolean(prep.databasePath) : !missingExplorerToken;
   const targetReady = prepMode === "general" || hasPlayer;
   const configReady = sourceReady && targetReady;
+  const showSetupStage = !underBoard || underBoardStage === "setup";
+  const showTrainingStage = !underBoard || underBoardStage === "train";
   const sourceValue =
     prepSource === "lch_all"
       ? LICHESS_ALL_SOURCE
@@ -492,6 +495,12 @@ function OpponentPrepPanel() {
         : current,
     );
   }, [configReady, currentPath, prep.rootPath, setPrep]);
+
+  useEffect(() => {
+    if (underBoard && !configReady) {
+      setUnderBoardStage("setup");
+    }
+  }, [configReady, underBoard]);
 
   useEffect(() => {
     if (!currentSearchId) return undefined;
@@ -1307,6 +1316,12 @@ function OpponentPrepPanel() {
     }));
   }, [currentPath, setPrep]);
 
+  const startUnderBoardPrep = useCallback(() => {
+    if (!configReady) return;
+    setRootHere();
+    setUnderBoardStage("train");
+  }, [configReady, setRootHere]);
+
   const resetLine = useCallback(() => {
     store.getState().goToMove(rootPath);
   }, [rootPath, store]);
@@ -1875,180 +1890,202 @@ function OpponentPrepPanel() {
 
   return (
     <Stack h="100%" gap={dense ? 4 : "xs"} p={dense ? 4 : "xs"} style={{ overflow: "hidden" }}>
-      <Group justify="space-between" align="center" gap="xs" wrap="wrap" style={{ flexShrink: 0 }}>
-        <Group gap="xs" wrap="wrap">
-          <Text fw={700} fz={compact ? "sm" : "md"}>
-            {prepMode === "general" ? "Opening prep" : "Opponent prep"}
-          </Text>
-          {databaseLabel ? (
-            <Badge variant="light" size={compact ? "sm" : "md"}>
-              {databaseLabel}
-            </Badge>
-          ) : null}
-          {prepMode === "general" ? (
-            <Badge color="teal" variant="light" size={compact ? "sm" : "md"}>
-              You as {userColor}
-            </Badge>
-          ) : prep.playerName.trim() ? (
-            <Badge color="orange" variant="light" size={compact ? "sm" : "md"}>
-              {prep.playerName.trim()} as {prep.color}
-            </Badge>
-          ) : null}
-        </Group>
-        <Group gap={4} wrap="nowrap">
-          <Tooltip label="Use the current board position as the start for prep and the builder">
-            <Button
-              variant="default"
-              size={controlSize}
-              leftSection={<IconTarget size="0.95rem" />}
-              onClick={setRootHere}
-            >
-              Start here
-            </Button>
-          </Tooltip>
-          <Tooltip label="Go back to the starting position">
-            <ActionIcon variant="default" size={compact ? "sm" : "lg"} onClick={resetLine}>
-              <IconArrowBackUp size="1rem" />
-            </ActionIcon>
-          </Tooltip>
-          <Tooltip label="Clear manual done and skipped marks">
-            <ActionIcon
-              variant="default"
-              size={compact ? "sm" : "lg"}
-              onClick={() =>
-                setPrep((current) => ({
-                  ...current,
-                  completedBranches: {},
-                  skippedBranches: {},
-                }))
-              }
-            >
-              <IconRefresh size="1rem" />
-            </ActionIcon>
-          </Tooltip>
-        </Group>
-      </Group>
-
-      <Group gap={dense ? 4 : "xs"} wrap="wrap" style={{ flexShrink: 0 }}>
-        <Tooltip label="Choose whether to target one player or a general opening source">
-          <SegmentedControl
-            aria-label="Prep target"
-            data={[
-              { value: "player", label: "Player" },
-              { value: "general", label: "General" },
-            ]}
-            value={prepMode}
-            onChange={(value) => changePrepMode(value as "player" | "general")}
-            size={controlSize}
-          />
-        </Tooltip>
-        <DatabaseFolderSelect
-          data={sourceOptions}
-          value={sourceValue}
-          onChange={changePrepSource}
-          placeholder="Prep source"
-          size={controlSize}
-          width={dense ? 180 : 230}
-          allowDeselect={false}
-        />
-        <Tooltip label="Import a player's online games and use them as this prep source">
-          <Button
-            variant="default"
-            size={controlSize}
-            leftSection={<IconCloudDownload size="0.95rem" />}
-            onClick={() => setOnlineImportOpen((open) => !open)}
+      {showSetupStage ? (
+        <>
+          <Group
+            justify="space-between"
+            align="center"
+            gap="xs"
+            wrap="wrap"
+            style={{ flexShrink: 0 }}
           >
-            Import games
-          </Button>
-        </Tooltip>
-      </Group>
-
-      <Collapse in={!onlineImportOpen} style={{ flexShrink: 0 }}>
-        <Group gap={dense ? 4 : "xs"} wrap="wrap">
-          {prepMode === "player" ? (
-            <DatabasePerspectiveControls
-              databasePath={prepSource === "local" ? prep.databasePath : null}
-              player={prep.player}
-              playerName={prep.playerName}
-              color={prep.color}
-              onPlayerChange={(player) => updateSettings({ player }, false)}
-              onPlayerNameChange={(playerName) => updateSettings({ playerName }, false)}
-              onColorChange={(color) => updateSettings({ color }, true)}
-              size={controlSize}
-              playerWidth={dense ? 130 : 170}
-              colorWidth={dense ? 112 : 126}
-            />
-          ) : (
-            <Tooltip label="The side you are preparing to play">
-              <SegmentedControl
-                aria-label="Your prep side"
-                data={[
-                  { value: "white", label: "White" },
-                  { value: "black", label: "Black" },
-                ]}
-                value={userColor}
-                onChange={(value) => changeGeneralUserColor(value as "white" | "black")}
+            <Group gap="xs" wrap="wrap">
+              <Text fw={700} fz={compact ? "sm" : "md"}>
+                {prepMode === "general" ? "Opening prep" : "Opponent prep"}
+              </Text>
+              {databaseLabel ? (
+                <Badge variant="light" size={compact ? "sm" : "md"}>
+                  {databaseLabel}
+                </Badge>
+              ) : null}
+              {prepMode === "general" ? (
+                <Badge color="teal" variant="light" size={compact ? "sm" : "md"}>
+                  You as {userColor}
+                </Badge>
+              ) : prep.playerName.trim() ? (
+                <Badge color="orange" variant="light" size={compact ? "sm" : "md"}>
+                  {prep.playerName.trim()} as {prep.color}
+                </Badge>
+              ) : null}
+            </Group>
+            {underBoard ? (
+              <Button
+                variant="filled"
                 size={controlSize}
-                w={dense ? 112 : 126}
+                leftSection={<IconPlayerPlay size="0.95rem" />}
+                disabled={!configReady}
+                onClick={startUnderBoardPrep}
+              >
+                Start prep
+              </Button>
+            ) : (
+              <Group gap={4} wrap="nowrap">
+                <Tooltip label="Use the current board position as the start for prep and the builder">
+                  <Button
+                    variant="default"
+                    size={controlSize}
+                    leftSection={<IconTarget size="0.95rem" />}
+                    onClick={setRootHere}
+                  >
+                    Start here
+                  </Button>
+                </Tooltip>
+                <Tooltip label="Go back to the starting position">
+                  <ActionIcon variant="default" size={compact ? "sm" : "lg"} onClick={resetLine}>
+                    <IconArrowBackUp size="1rem" />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label="Clear manual done and skipped marks">
+                  <ActionIcon
+                    variant="default"
+                    size={compact ? "sm" : "lg"}
+                    onClick={() =>
+                      setPrep((current) => ({
+                        ...current,
+                        completedBranches: {},
+                        skippedBranches: {},
+                      }))
+                    }
+                  >
+                    <IconRefresh size="1rem" />
+                  </ActionIcon>
+                </Tooltip>
+              </Group>
+            )}
+          </Group>
+
+          <Group gap={dense ? 4 : "xs"} wrap="wrap" style={{ flexShrink: 0 }}>
+            <Tooltip label="Choose whether to target one player or a general opening source">
+              <SegmentedControl
+                aria-label="Prep target"
+                data={[
+                  { value: "player", label: "Player" },
+                  { value: "general", label: "General" },
+                ]}
+                value={prepMode}
+                onChange={(value) => changePrepMode(value as "player" | "general")}
+                size={controlSize}
               />
             </Tooltip>
-          )}
-          <Tooltip
-            label={
-              prepMode === "general"
-                ? "Only show database moves that appear at least this many times"
-                : "Only show opponent moves they have played at least this many times"
-            }
-          >
-            <NumberInput
-              label="Min games"
-              value={prep.minGames}
-              onChange={(value) =>
-                updateSettings(
-                  {
-                    minGames: Math.max(1, Number(value) || DEFAULT_PREP_MIN_GAMES),
-                  },
-                  false,
-                )
-              }
-              min={1}
-              max={999}
-              step={1}
+            <DatabaseFolderSelect
+              data={sourceOptions}
+              value={sourceValue}
+              onChange={changePrepSource}
+              placeholder="Prep source"
               size={controlSize}
-              w={dense ? 92 : 108}
-              aria-label="Minimum games"
+              width={dense ? 180 : 230}
+              allowDeselect={false}
             />
-          </Tooltip>
-          <Tooltip
-            label={
-              prepMode === "general"
-                ? "How many common database moves to show at each position"
-                : "How many of their most common moves to show at each position"
-            }
-          >
-            <NumberInput
-              label="Show top"
-              value={prep.moveLimit}
-              onChange={(value) =>
-                updateSettings(
-                  {
-                    moveLimit: Math.max(1, Number(value) || DEFAULT_PREP_MOVE_LIMIT),
-                  },
-                  false,
-                )
-              }
-              min={1}
-              max={20}
-              step={1}
-              size={controlSize}
-              w={dense ? 92 : 108}
-              aria-label="Top opponent moves to show"
-            />
-          </Tooltip>
-        </Group>
-      </Collapse>
+            <Tooltip label="Import a player's online games and use them as this prep source">
+              <Button
+                variant="default"
+                size={controlSize}
+                leftSection={<IconCloudDownload size="0.95rem" />}
+                onClick={() => setOnlineImportOpen((open) => !open)}
+              >
+                Import games
+              </Button>
+            </Tooltip>
+          </Group>
 
-      <Collapse in={onlineImportOpen} style={{ flexShrink: 0 }}>
+          <Collapse in={!onlineImportOpen} style={{ flexShrink: 0 }}>
+            <Group gap={dense ? 4 : "xs"} wrap="wrap">
+              {prepMode === "player" ? (
+                <DatabasePerspectiveControls
+                  databasePath={prepSource === "local" ? prep.databasePath : null}
+                  player={prep.player}
+                  playerName={prep.playerName}
+                  color={prep.color}
+                  onPlayerChange={(player) => updateSettings({ player }, false)}
+                  onPlayerNameChange={(playerName) => updateSettings({ playerName }, false)}
+                  onColorChange={(color) => updateSettings({ color }, true)}
+                  size={controlSize}
+                  playerWidth={dense ? 130 : 170}
+                  colorWidth={dense ? 112 : 126}
+                />
+              ) : (
+                <Tooltip label="The side you are preparing to play">
+                  <SegmentedControl
+                    aria-label="Your prep side"
+                    data={[
+                      { value: "white", label: "White" },
+                      { value: "black", label: "Black" },
+                    ]}
+                    value={userColor}
+                    onChange={(value) => changeGeneralUserColor(value as "white" | "black")}
+                    size={controlSize}
+                    w={dense ? 112 : 126}
+                  />
+                </Tooltip>
+              )}
+              <Tooltip
+                label={
+                  prepMode === "general"
+                    ? "Only show database moves that appear at least this many times"
+                    : "Only show opponent moves they have played at least this many times"
+                }
+              >
+                <NumberInput
+                  label="Min games"
+                  value={prep.minGames}
+                  onChange={(value) =>
+                    updateSettings(
+                      {
+                        minGames: Math.max(1, Number(value) || DEFAULT_PREP_MIN_GAMES),
+                      },
+                      false,
+                    )
+                  }
+                  min={1}
+                  max={999}
+                  step={1}
+                  size={controlSize}
+                  w={dense ? 92 : 108}
+                  aria-label="Minimum games"
+                />
+              </Tooltip>
+              <Tooltip
+                label={
+                  prepMode === "general"
+                    ? "How many common database moves to show at each position"
+                    : "How many of their most common moves to show at each position"
+                }
+              >
+                <NumberInput
+                  label="Show top"
+                  value={prep.moveLimit}
+                  onChange={(value) =>
+                    updateSettings(
+                      {
+                        moveLimit: Math.max(1, Number(value) || DEFAULT_PREP_MOVE_LIMIT),
+                      },
+                      false,
+                    )
+                  }
+                  min={1}
+                  max={20}
+                  step={1}
+                  size={controlSize}
+                  w={dense ? 92 : 108}
+                  aria-label="Top opponent moves to show"
+                />
+              </Tooltip>
+            </Group>
+          </Collapse>
+        </>
+      ) : null}
+
+      <Collapse in={showSetupStage && onlineImportOpen} style={{ flexShrink: 0 }}>
         <Stack gap={dense ? 3 : 6} pt={dense ? 2 : 4} pb={dense ? 4 : 6}>
           <Group gap={dense ? 4 : 6} wrap="wrap" align="flex-end">
             <SegmentedControl
@@ -2157,179 +2194,199 @@ function OpponentPrepPanel() {
         <Divider my={dense ? 2 : 4} />
       </Collapse>
 
-      <Box style={{ flexShrink: 0 }}>
-        <Group justify="space-between" gap="xs" wrap="wrap">
-          <Group gap={4} wrap="wrap">
-            <Tooltip label="Automatically add repertoire lines from the current prep start">
-              <Button
-                variant="filled"
-                size={controlSize}
-                leftSection={<IconSparkles size="0.95rem" />}
-                disabled={!configReady}
-                loading={builderRunning}
-                onClick={() => void runPrepBuilder()}
-              >
-                Build prep
-              </Button>
-            </Tooltip>
-            {builderRunning ? (
-              <Tooltip label="Stop after the current lookup finishes">
+      {!underBoard ? (
+        <Box style={{ flexShrink: 0 }}>
+          <Group justify="space-between" gap="xs" wrap="wrap">
+            <Group gap={4} wrap="wrap">
+              <Tooltip label="Automatically add repertoire lines from the current prep start">
                 <Button
-                  color="red"
-                  variant="default"
+                  variant="filled"
                   size={controlSize}
-                  leftSection={<IconX size="0.95rem" />}
-                  onClick={stopPrepBuilder}
+                  leftSection={<IconSparkles size="0.95rem" />}
+                  disabled={!configReady}
+                  loading={builderRunning}
+                  onClick={() => void runPrepBuilder()}
                 >
-                  Stop
+                  Build prep
                 </Button>
               </Tooltip>
+              {builderRunning ? (
+                <Tooltip label="Stop after the current lookup finishes">
+                  <Button
+                    color="red"
+                    variant="default"
+                    size={controlSize}
+                    leftSection={<IconX size="0.95rem" />}
+                    onClick={stopPrepBuilder}
+                  >
+                    Stop
+                  </Button>
+                </Tooltip>
+              ) : null}
+              <Tooltip label="Tune how the prep builder balances engine moves, WDL results, breadth, and depth">
+                <Button
+                  variant="default"
+                  size={controlSize}
+                  leftSection={<IconSettings size="0.95rem" />}
+                  onClick={() => setBuilderOpen((open) => !open)}
+                >
+                  Builder settings
+                </Button>
+              </Tooltip>
+            </Group>
+            {builderStatus ? (
+              <Text size="xs" c={builderRunning ? "blue" : "dimmed"}>
+                {builderStatus.phase} - {builderStatus.addedMoves} added,{" "}
+                {builderStatus.visitedPositions} checked
+              </Text>
             ) : null}
-            <Tooltip label="Tune how the prep builder balances engine moves, WDL results, breadth, and depth">
+          </Group>
+          <Collapse in={builderOpen}>
+            <Stack gap={dense ? 4 : "xs"} pt="xs">
+              <Group gap={dense ? 4 : "xs"} wrap="wrap">
+                <SegmentedControl
+                  aria-label="Prep builder mode"
+                  data={[
+                    { value: "smart", label: "Smart" },
+                    { value: "engine", label: "Engine" },
+                    { value: "practical", label: "Practical" },
+                  ]}
+                  value={builderSettings.mode}
+                  onChange={(value) =>
+                    updateBuilderSettings({ mode: value as PrepBuilderSettings["mode"] })
+                  }
+                  size={controlSize}
+                />
+                <SegmentedControl
+                  aria-label="Prep builder depth"
+                  data={[
+                    { value: "quick", label: "Short" },
+                    { value: "balanced", label: "Normal" },
+                    { value: "deep", label: "Deep" },
+                  ]}
+                  value={builderSettings.size}
+                  onChange={(value) =>
+                    updateBuilderSettings({ size: value as PrepBuilderSettings["size"] })
+                  }
+                  size={controlSize}
+                />
+                <Tooltip label="Opponent moves below this play rate are ignored by the builder">
+                  <NumberInput
+                    label="Min play rate"
+                    suffix="%"
+                    value={builderSettings.minOpponentMoveShare}
+                    onChange={(value) =>
+                      updateBuilderSettings({
+                        minOpponentMoveShare: Math.max(0, Number(value) || 0),
+                      })
+                    }
+                    min={0}
+                    max={80}
+                    step={1}
+                    size={controlSize}
+                    w={dense ? 104 : 128}
+                    aria-label="Minimum opponent play rate"
+                  />
+                </Tooltip>
+                <Badge variant="light">Lichess All reference</Badge>
+                <Badge variant="light">Cloud engine</Badge>
+              </Group>
+            </Stack>
+            <Divider my={dense ? 4 : "xs"} />
+          </Collapse>
+          {builderNeedsSave ? (
+            <Group gap={4} mt={dense ? 4 : "xs"} wrap="wrap">
+              <Text size="xs" c="dimmed">
+                Builder output is ready to save.
+              </Text>
               <Button
                 variant="default"
                 size={controlSize}
-                leftSection={<IconSettings size="0.95rem" />}
-                onClick={() => setBuilderOpen((open) => !open)}
+                loading={savingBuilderResult === "new"}
+                onClick={() => void saveBuilderResult("new")}
               >
-                Builder settings
+                Save new file
+              </Button>
+              <Button
+                variant="default"
+                size={controlSize}
+                disabled={!canOverwriteCurrent}
+                loading={savingBuilderResult === "overwrite"}
+                onClick={() => void saveBuilderResult("overwrite")}
+              >
+                Overwrite current
+              </Button>
+            </Group>
+          ) : null}
+        </Box>
+      ) : null}
+
+      {showTrainingStage ? (
+        <Group justify="space-between" gap="xs" wrap="wrap" style={{ flexShrink: 0 }}>
+          <Stack gap={1} style={{ minWidth: 0, flex: 1 }}>
+            <Text size="xs" c="dimmed" truncate>
+              Start: {rootSans.length > 0 ? rootSans.join(" ") : "game start"}
+            </Text>
+            <Text size="xs" c={opponentToMove ? undefined : "dimmed"} truncate>
+              {opponentToMove
+                ? prepMode === "general"
+                  ? `${prep.color === "white" ? "White" : "Black"} to move`
+                  : `${prep.playerName.trim() || "Opponent"} to move`
+                : `Play your ${userColor} ${prepMode === "general" ? "move" : "response"} on the board`}
+              {lineSans.length > 0 ? ` - ${lineSans.slice(-10).join(" ")}` : ""}
+            </Text>
+          </Stack>
+          <Group gap={4} wrap="nowrap">
+            <Tooltip label="Play the first unprepared common move from the prep start">
+              <Button
+                variant="filled"
+                size={controlSize}
+                leftSection={<IconPlayerPlay size="0.95rem" />}
+                disabled={!configReady}
+                loading={commonMoving}
+                onClick={() => void playCommonMoveFromStart()}
+              >
+                Common move
               </Button>
             </Tooltip>
-          </Group>
-          {builderStatus ? (
-            <Text size="xs" c={builderRunning ? "blue" : "dimmed"}>
-              {builderStatus.phase} - {builderStatus.addedMoves} added,{" "}
-              {builderStatus.visitedPositions} checked
-            </Text>
-          ) : null}
-        </Group>
-        <Collapse in={builderOpen}>
-          <Stack gap={dense ? 4 : "xs"} pt="xs">
-            <Group gap={dense ? 4 : "xs"} wrap="wrap">
-              <SegmentedControl
-                aria-label="Prep builder mode"
-                data={[
-                  { value: "smart", label: "Smart" },
-                  { value: "engine", label: "Engine" },
-                  { value: "practical", label: "Practical" },
-                ]}
-                value={builderSettings.mode}
-                onChange={(value) =>
-                  updateBuilderSettings({ mode: value as PrepBuilderSettings["mode"] })
-                }
+            <Tooltip label="Mark this line done and play the next common move from the starting position">
+              <Button
+                variant="default"
                 size={controlSize}
-              />
-              <SegmentedControl
-                aria-label="Prep builder depth"
-                data={[
-                  { value: "quick", label: "Short" },
-                  { value: "balanced", label: "Normal" },
-                  { value: "deep", label: "Deep" },
-                ]}
-                value={builderSettings.size}
-                onChange={(value) =>
-                  updateBuilderSettings({ size: value as PrepBuilderSettings["size"] })
-                }
-                size={controlSize}
-              />
-              <Tooltip label="Opponent moves below this play rate are ignored by the builder">
-                <NumberInput
-                  label="Min play rate"
-                  suffix="%"
-                  value={builderSettings.minOpponentMoveShare}
-                  onChange={(value) =>
-                    updateBuilderSettings({
-                      minOpponentMoveShare: Math.max(0, Number(value) || 0),
-                    })
-                  }
-                  min={0}
-                  max={80}
-                  step={1}
-                  size={controlSize}
-                  w={dense ? 104 : 128}
-                  aria-label="Minimum opponent play rate"
-                />
-              </Tooltip>
-              <Badge variant="light">Lichess All reference</Badge>
-              <Badge variant="light">Cloud engine</Badge>
-            </Group>
-          </Stack>
-          <Divider my={dense ? 4 : "xs"} />
-        </Collapse>
-        {builderNeedsSave ? (
-          <Group gap={4} mt={dense ? 4 : "xs"} wrap="wrap">
-            <Text size="xs" c="dimmed">
-              Builder output is ready to save.
-            </Text>
-            <Button
-              variant="default"
-              size={controlSize}
-              loading={savingBuilderResult === "new"}
-              onClick={() => void saveBuilderResult("new")}
-            >
-              Save new file
-            </Button>
-            <Button
-              variant="default"
-              size={controlSize}
-              disabled={!canOverwriteCurrent}
-              loading={savingBuilderResult === "overwrite"}
-              onClick={() => void saveBuilderResult("overwrite")}
-            >
-              Overwrite current
-            </Button>
-          </Group>
-        ) : null}
-      </Box>
-
-      <Group justify="space-between" gap="xs" wrap="wrap" style={{ flexShrink: 0 }}>
-        <Stack gap={1} style={{ minWidth: 0, flex: 1 }}>
-          <Text size="xs" c="dimmed" truncate>
-            Start: {rootSans.length > 0 ? rootSans.join(" ") : "game start"}
-          </Text>
-          <Text size="xs" c={opponentToMove ? undefined : "dimmed"} truncate>
-            {opponentToMove
-              ? prepMode === "general"
-                ? `${prep.color === "white" ? "White" : "Black"} to move`
-                : `${prep.playerName.trim() || "Opponent"} to move`
-              : `Play your ${userColor} ${prepMode === "general" ? "move" : "response"} on the board`}
-            {lineSans.length > 0 ? ` - ${lineSans.slice(-10).join(" ")}` : ""}
-          </Text>
-        </Stack>
-        <Group gap={4} wrap="nowrap">
-          <Tooltip label="Play the first unprepared common move from the prep start">
-            <Button
-              variant="filled"
-              size={controlSize}
-              leftSection={<IconPlayerPlay size="0.95rem" />}
-              disabled={!configReady}
-              loading={commonMoving}
-              onClick={() => void playCommonMoveFromStart()}
-            >
-              Common move
-            </Button>
-          </Tooltip>
-          <Tooltip label="Mark this line done and play the next common move from the starting position">
-            <Button
-              variant="default"
-              size={controlSize}
-              leftSection={<IconArrowRight size="0.95rem" />}
-              disabled={!configReady}
-              loading={advancing}
-              onClick={() => void advanceToNextBranch()}
-            >
-              Done + next
-            </Button>
-          </Tooltip>
-          {activeBranch ? (
-            <Tooltip label="Return to the last opponent choice in this line">
-              <ActionIcon variant="default" size={compact ? "sm" : "lg"} onClick={goToActiveChoice}>
-                <IconArrowBackUp size="1rem" />
-              </ActionIcon>
+                leftSection={<IconArrowRight size="0.95rem" />}
+                disabled={!configReady}
+                loading={advancing}
+                onClick={() => void advanceToNextBranch()}
+              >
+                Done + next
+              </Button>
             </Tooltip>
-          ) : null}
+            {activeBranch ? (
+              <Tooltip label="Return to the last opponent choice in this line">
+                <ActionIcon
+                  variant="default"
+                  size={compact ? "sm" : "lg"}
+                  onClick={goToActiveChoice}
+                >
+                  <IconArrowBackUp size="1rem" />
+                </ActionIcon>
+              </Tooltip>
+            ) : null}
+            {underBoard ? (
+              <Tooltip label="Change prep source and target">
+                <ActionIcon
+                  aria-label="Change prep setup"
+                  variant="default"
+                  size={compact ? "sm" : "lg"}
+                  onClick={() => setUnderBoardStage("setup")}
+                >
+                  <IconSettings size="1rem" />
+                </ActionIcon>
+              </Tooltip>
+            ) : null}
+          </Group>
         </Group>
-      </Group>
+      ) : null}
 
       {!sourceReady ? (
         <Alert color="yellow" variant="light">
@@ -2349,7 +2406,7 @@ function OpponentPrepPanel() {
         </Alert>
       ) : null}
 
-      {configReady && opponentToMove && currentRows.length > 0 ? (
+      {showTrainingStage && configReady && opponentToMove && currentRows.length > 0 ? (
         <Group gap="xs" wrap="wrap" style={{ flexShrink: 0 }}>
           <Badge variant="light">{preparedCount} prepared</Badge>
           {startedCount > 0 ? <Badge variant="light">{startedCount} started</Badge> : null}
@@ -2365,36 +2422,38 @@ function OpponentPrepPanel() {
         </Group>
       ) : null}
 
-      <Box flex={1} style={{ minHeight: 0, overflow: "auto" }}>
-        {error ? (
-          <Alert color="red">Could not search the prep source from this position.</Alert>
-        ) : !configReady ? null : opponentToMove ? (
-          <OpponentPrepMoveTable
-            rows={currentRows}
-            loading={isLoading}
-            dense={dense}
-            general={prepMode === "general"}
-            onPlay={playMove}
-            onDone={markMoveDone}
-            onSkip={skipMove}
-            onPreview={previewMove}
-            onClearPreview={clearMovePreview}
-            branchStatsByKey={branchStatsByKey}
-            branchStatsLoading={branchStatsLoading}
-          />
-        ) : (
-          <PrepCandidateMoveTable
-            rows={candidateRows}
-            loading={isLoading}
-            dense={dense}
-            general={prepMode === "general"}
-            userColor={userColor}
-            onPlay={playMove}
-            onPreview={previewMove}
-            onClearPreview={clearMovePreview}
-          />
-        )}
-      </Box>
+      {showTrainingStage ? (
+        <Box flex={1} style={{ minHeight: 0, overflow: "auto" }}>
+          {error ? (
+            <Alert color="red">Could not search the prep source from this position.</Alert>
+          ) : !configReady ? null : opponentToMove ? (
+            <OpponentPrepMoveTable
+              rows={currentRows}
+              loading={isLoading}
+              dense={dense}
+              general={prepMode === "general"}
+              onPlay={playMove}
+              onDone={markMoveDone}
+              onSkip={skipMove}
+              onPreview={previewMove}
+              onClearPreview={clearMovePreview}
+              branchStatsByKey={branchStatsByKey}
+              branchStatsLoading={branchStatsLoading}
+            />
+          ) : (
+            <PrepCandidateMoveTable
+              rows={candidateRows}
+              loading={isLoading}
+              dense={dense}
+              general={prepMode === "general"}
+              userColor={userColor}
+              onPlay={playMove}
+              onPreview={previewMove}
+              onClearPreview={clearMovePreview}
+            />
+          )}
+        </Box>
+      ) : null}
     </Stack>
   );
 }

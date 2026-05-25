@@ -65,6 +65,7 @@ function GameNotation({
   topBar,
   controls,
   headerActions,
+  content,
   className,
   compact = false,
   grow = true,
@@ -72,6 +73,7 @@ function GameNotation({
   topBar?: boolean;
   controls?: React.ReactNode;
   headerActions?: React.ReactNode;
+  content?: React.ReactNode;
   className?: string;
   compact?: boolean;
   grow?: boolean;
@@ -139,59 +141,70 @@ function GameNotation({
               setReportVisible={setReportVisible}
             />
           )}
-          <ScrollArea
-            flex={1}
-            offsetScrollbars
-            scrollbars="y"
-            viewportRef={viewport}
-            style={{ minHeight: 0 }}
-          >
-            <Stack gap="xs">
-              {reportVisible ? (
-                <GameAnalysisReport isAnalysing={reportInProgress} />
-              ) : (
-                <>
-                  <Box>
-                    {invisible && (
-                      <Overlay
-                        backgroundOpacity={0.6}
-                        color={colorScheme === "dark" ? "#1a1b1e" : undefined}
-                        blur={8}
-                        zIndex={2}
-                      />
-                    )}
-                    {showComments && rootComment && (
-                      <Box p="sm" fz="sm">
-                        <Comment comment={rootComment} />
-                      </Box>
-                    )}
-                    {tableView ? (
-                      <TableNotation targetRef={targetRef} />
-                    ) : (
-                      <Box pt={compact ? 6 : "md"} px="sm">
-                        <RenderVariationTree targetRef={targetRef} nodePath={[]} depth={0} first />
-                      </Box>
-                    )}
-                  </Box>
-                  <Box pb={compact ? 6 : "md"}>
-                    {headers.result !== "*" && (
-                      <Text ta="center">
-                        {headers.result}
-                        <br />
-                        <Text span fs="italic">
-                          {headers.result === "1/2-1/2"
-                            ? "Draw"
-                            : headers.result === "1-0"
-                              ? "White wins"
-                              : "Black wins"}
+          {content ? (
+            <Box flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
+              {content}
+            </Box>
+          ) : (
+            <ScrollArea
+              flex={1}
+              offsetScrollbars
+              scrollbars="y"
+              viewportRef={viewport}
+              style={{ minHeight: 0 }}
+            >
+              <Stack gap="xs">
+                {reportVisible ? (
+                  <GameAnalysisReport isAnalysing={reportInProgress} />
+                ) : (
+                  <>
+                    <Box>
+                      {invisible && (
+                        <Overlay
+                          backgroundOpacity={0.6}
+                          color={colorScheme === "dark" ? "#1a1b1e" : undefined}
+                          blur={8}
+                          zIndex={2}
+                        />
+                      )}
+                      {showComments && rootComment && (
+                        <Box p="sm" fz="sm">
+                          <Comment comment={rootComment} />
+                        </Box>
+                      )}
+                      {tableView ? (
+                        <TableNotation targetRef={targetRef} />
+                      ) : (
+                        <Box pt={compact ? 6 : "md"} px="sm">
+                          <RenderVariationTree
+                            targetRef={targetRef}
+                            nodePath={[]}
+                            depth={0}
+                            first
+                          />
+                        </Box>
+                      )}
+                    </Box>
+                    <Box pb={compact ? 6 : "md"}>
+                      {headers.result !== "*" && (
+                        <Text ta="center">
+                          {headers.result}
+                          <br />
+                          <Text span fs="italic">
+                            {headers.result === "1/2-1/2"
+                              ? "Draw"
+                              : headers.result === "1-0"
+                                ? "White wins"
+                                : "Black wins"}
+                          </Text>
                         </Text>
-                      </Text>
-                    )}
-                  </Box>
-                </>
-              )}
-            </Stack>
-          </ScrollArea>
+                      )}
+                    </Box>
+                  </>
+                )}
+              </Stack>
+            </ScrollArea>
+          )}
         </Stack>
       </Group>
     </Paper>

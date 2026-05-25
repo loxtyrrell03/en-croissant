@@ -1,17 +1,12 @@
 import {
   ActionIcon,
-  Box,
   Center,
-  Divider,
-  Group,
   Loader,
   Paper,
   Portal,
-  ScrollArea,
   SegmentedControl,
   Stack,
   Tabs,
-  Text,
   Tooltip,
 } from "@mantine/core";
 import { useHotkeys, useToggle } from "@mantine/hooks";
@@ -122,44 +117,6 @@ function UnderBoardModeSwitch({
       value={value}
       onChange={(next) => onChange(next as UnderBoardMode)}
     />
-  );
-}
-
-function UnderBoardFeaturePanel({
-  controls,
-  mode,
-  modeSwitch,
-  children,
-}: {
-  controls: ReactNode;
-  mode: Exclude<UnderBoardMode, "moves">;
-  modeSwitch: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <Paper withBorder flex={1} style={{ position: "relative", overflow: "hidden", minHeight: 0 }}>
-      <Group h="100%" wrap="nowrap" align="stretch" gap={0} style={{ minHeight: 0 }}>
-        <ScrollArea type="never" py="md" mx="xs" style={{ flexShrink: 0 }}>
-          {controls}
-        </ScrollArea>
-        <Divider orientation="vertical" />
-        <Stack h="100%" gap={0} style={{ flex: 1, minWidth: 0, minHeight: 0 }}>
-          <Group justify="space-between" px="sm" py={6} wrap="nowrap" style={{ flexShrink: 0 }}>
-            <Group gap={6} wrap="nowrap" style={{ minWidth: 0 }}>
-              {mode === "database" ? <IconDatabase size="1rem" /> : <IconTarget size="1rem" />}
-              <Text fw={700} fz="sm" truncate>
-                {mode === "database" ? "Database" : "Prep"}
-              </Text>
-            </Group>
-            {modeSwitch}
-          </Group>
-          <Divider />
-          <Box flex={1} style={{ minWidth: 0, minHeight: 0, overflow: "hidden" }}>
-            <ResponsivePanel>{children}</ResponsivePanel>
-          </Box>
-        </Stack>
-      </Group>
-    </Paper>
   );
 }
 
@@ -443,23 +400,24 @@ function BoardAnalysis() {
               <Stack h="100%" gap="xs">
                 <DetachedEval />
                 <Suspense fallback={<NotationFallback />}>
-                  {underBoardMode === "moves" ? (
-                    <GameNotation
-                      topBar
-                      controls={boardControls}
-                      headerActions={underBoardModeSwitch}
-                    />
-                  ) : (
-                    <UnderBoardFeaturePanel
-                      controls={boardControls}
-                      mode={underBoardMode}
-                      modeSwitch={underBoardModeSwitch}
-                    >
-                      <DeferredPanel>
-                        {underBoardMode === "database" ? <DatabasePanel /> : <OpponentPrepPanel />}
-                      </DeferredPanel>
-                    </UnderBoardFeaturePanel>
-                  )}
+                  <GameNotation
+                    topBar
+                    controls={boardControls}
+                    headerActions={underBoardModeSwitch}
+                    content={
+                      underBoardMode === "moves" ? undefined : (
+                        <DeferredPanel>
+                          <ResponsivePanel>
+                            {underBoardMode === "database" ? (
+                              <DatabasePanel />
+                            ) : (
+                              <OpponentPrepPanel underBoard />
+                            )}
+                          </ResponsivePanel>
+                        </DeferredPanel>
+                      )
+                    }
+                  />
                 </Suspense>
                 {underBoardMode === "moves" && (
                   <Suspense fallback={null}>
