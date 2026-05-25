@@ -2,6 +2,7 @@ import { isNormal, makeUci, type Move } from "chessops";
 import { parseSan } from "chessops/san";
 import type { Opening } from "@/utils/db";
 import { positionFromFen } from "@/utils/chessops";
+import { getUsageAwarePracticalWdlRate } from "@/utils/moveStrength";
 import { getNodeAtPath, type TreeNode } from "@/utils/treeReducer";
 
 export type PrepColor = "white" | "black";
@@ -104,6 +105,7 @@ export type PrepMoveStrength = {
 type PrepStrengthCandidate = {
     move: string;
     total: number;
+    usageShare: number | null;
     databaseScore: number | null;
 };
 
@@ -298,9 +300,15 @@ export function getPrepMoveStrengthMap({
     side: PrepColor;
     settings: PrepBuilderSettings;
 }) {
-    const candidates = getPlayableOpenings(openings).map((opening) => ({
+    const playableOpenings = getPlayableOpenings(openings);
+    const positionGames = playableOpenings.reduce(
+        (sum, opening) => sum + getOpeningTotal(opening),
+        0,
+    );
+    const candidates = playableOpenings.map((opening) => ({
         move: opening.move,
         total: getOpeningTotal(opening),
+        usageShare: positionGames > 0 ? getOpeningTotal(opening) / positionGames : null,
         databaseScore: getSidePracticalWdlRateForOpening(opening, side),
     }));
 
@@ -748,6 +756,7 @@ export function choosePrepBuilderMove({
             candidates: strengthCandidates.map((candidate) => ({
                 move: candidate.move,
                 total: candidate.opponentGames,
+                usageShare: candidate.opponentShare,
                 databaseScore: candidate.posteriorSideScore,
             })),
             engineMoves,
@@ -1030,11 +1039,13 @@ function evaluatePrepStrengthCandidates({
         scoredEngineMoves.length > 0
             ? Math.max(...scoredEngineMoves.map((move) => move.scoreCpForSide!))
             : null;
+    const databaseBaseline = getPrepStrengthDatabaseBaseline(playable);
     const bestDatabaseScore =
         playable.length > 0
             ? Math.max(
-                  ...playable.map((candidate) =>
-                      candidate.databaseScore === null ? 0 : candidate.databaseScore,
+                  ...playable.map(
+                      (candidate) =>
+                          getPrepStrengthDatabaseScore(candidate, settings, databaseBaseline) ?? 0,
                   ),
               )
             : null;
@@ -1050,7 +1061,7 @@ function evaluatePrepStrengthCandidates({
             engineCp !== null && bestEngineScore !== null
                 ? Math.max(0, bestEngineScore - engineCp)
                 : null;
-        const databaseScore = candidate.databaseScore;
+        const databaseScore = getPrepStrengthDatabaseScore(candidate, settings, databaseBaseline);
         const databaseWdlLoss =
             databaseScore !== null && bestDatabaseScore !== null
                 ? Math.max(0, bestDatabaseScore - databaseScore)
@@ -1102,6 +1113,33 @@ function evaluatePrepStrengthCandidates({
             engineRank: engine?.rank ?? null,
             strengthLoss,
         };
+    });
+}
+
+function getPrepStrengthDatabaseBaseline(candidates: PrepStrengthCandidate[]) {
+    const scored = candidates.filter(
+        (candidate) => candidate.total > 0 && candidate.databaseScore !== null,
+    );
+    const total = scored.reduce((sum, candidate) => sum + candidate.total, 0);
+    if (total <= 0) return 0.5;
+
+    return (
+        scored.reduce((sum, candidate) => sum + candidate.databaseScore! * candidate.total, 0) /
+        total
+    );
+}
+
+function getPrepStrengthDatabaseScore(
+    candidate: PrepStrengthCandidate,
+    settings: PrepBuilderSettings,
+    baseline: number,
+) {
+    return getUsageAwarePracticalWdlRate({
+        score: candidate.databaseScore,
+        total: candidate.total,
+        usageShare: candidate.usageShare,
+        baseline,
+        mode: settings.mode,
     });
 }
 

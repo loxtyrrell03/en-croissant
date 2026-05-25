@@ -56,4 +56,27 @@ describe("opening move health", () => {
         expect(strength.get("c4")?.engineScoreCp).toBe(4);
         expect(strength.get("c4")?.engineScoreRank).toBe(2);
     });
+
+    test("smart blended strength dampens tiny practical samples", () => {
+        const strength = getOpeningMoveStrengthMap({
+            openings: [
+                { move: "c5", white: 0, draw: 0, black: 2 },
+                { move: "e5", white: 45, draw: 10, black: 45 },
+            ],
+            side: "black",
+            fen: "startpos",
+            strengthSettings: { mode: "smart", engineWeight: 55, maxEngineCpLoss: 70 },
+            cloudData: {
+                source: "lichess",
+                moves: [
+                    { san: "e5", scoreCpForWhite: -80, rank: 1, winrate: null },
+                    { san: "c5", scoreCpForWhite: -60, rank: 2, winrate: null },
+                ],
+            },
+        });
+
+        expect(strength.get("e5")!.blendedStrengthScore).toBeGreaterThan(
+            strength.get("c5")!.blendedStrengthScore,
+        );
+    });
 });

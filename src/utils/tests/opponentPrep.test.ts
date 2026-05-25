@@ -15,6 +15,7 @@ import {
     getPrepBuilderStopReason,
     getPrepBuilderTaskPriority,
     getPrepBuilderUserResponseChildIndex,
+    getPrepMoveStrengthMap,
     hasPrepBuilderDatabaseCandidates,
     normalizePrepBuilderSettings,
 } from "@/utils/opponentPrep";
@@ -492,6 +493,28 @@ describe("opponent prep helpers", () => {
         });
 
         expect(choice?.move).toBe("e5");
+    });
+
+    test("smart strength discounts one or two game practical spikes by usage", () => {
+        const settings = normalizePrepBuilderSettings({
+            mode: "smart",
+            engineWeight: 55,
+            maxEngineCpLoss: 70,
+        });
+        const strength = getPrepMoveStrengthMap({
+            side: "black",
+            settings,
+            openings: [
+                { move: "c5", white: 0, draw: 0, black: 2 },
+                { move: "e5", white: 45, draw: 10, black: 45 },
+            ],
+            engineMoves: [
+                { san: "e5", scoreCpForSide: 80, rank: 1, source: "lichess" },
+                { san: "c5", scoreCpForSide: 60, rank: 2, source: "lichess" },
+            ],
+        });
+
+        expect(strength.get("e5")!.score).toBeGreaterThan(strength.get("c5")!.score);
     });
 
     test("prep builder branch priority accounts for practical danger", () => {

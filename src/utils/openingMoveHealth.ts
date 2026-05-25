@@ -2,6 +2,7 @@ import {
     DEFAULT_MOVE_STRENGTH_SETTINGS,
     evaluateMoveStrength,
     getPracticalWdlRate,
+    getUsageAwarePracticalWdlRate,
     normalizeMoveStrengthSettings,
     type MoveStrengthSettings,
 } from "@/utils/moveStrength";
@@ -126,10 +127,34 @@ export function getOpeningMoveStrengthMap({
     const fallback = getOpeningMoveHealthMap(openings, side, referenceOpenings);
     const cloud = getCloudStrengthData(fen, side, cloudData);
     const settings = normalizeMoveStrengthSettings(strengthSettings);
+    const playableOpenings = openings.filter(isPlayableOpening);
+    const positionGames = playableOpenings.reduce(
+        (sum, opening) => sum + getOpeningTotal(opening),
+        0,
+    );
+    const positionBaseline =
+        positionGames > 0
+            ? playableOpenings.reduce(
+                  (sum, opening) =>
+                      sum + getPracticalWdlRate(opening, side) * getOpeningTotal(opening),
+                  0,
+              ) / positionGames
+            : 0.5;
     const databaseScores = new Map(
-        openings
-            .filter(isPlayableOpening)
-            .map((opening) => [opening.move, getPracticalWdlRate(opening, side)] as const),
+        playableOpenings.map(
+            (opening) =>
+                [
+                    opening.move,
+                    getUsageAwarePracticalWdlRate({
+                        score: getPracticalWdlRate(opening, side),
+                        total: getOpeningTotal(opening),
+                        usageShare:
+                            positionGames > 0 ? getOpeningTotal(opening) / positionGames : null,
+                        baseline: positionBaseline,
+                        mode: settings.mode,
+                    }) ?? 0,
+                ] as const,
+        ),
     );
     const bestDatabaseScore =
         databaseScores.size > 0 ? Math.max(...Array.from(databaseScores.values())) : null;
