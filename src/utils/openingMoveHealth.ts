@@ -556,9 +556,7 @@ function cloudStrengthReasons(
             ? `Tied for the best ${sourceLabel} score.`
             : `${Math.round(cpLoss)} cp behind the best ${sourceLabel} score.`,
     ];
-    if (move.scoreRank !== null) {
-        reasons.push(`Engine ranking #${move.scoreRank}.`);
-    }
+
     if (source === "chessdb" && move.winrate !== null) {
         reasons.push(`ChessDB win rate ${Math.round(move.winrate * 100)}%.`);
     }

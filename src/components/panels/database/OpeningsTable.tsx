@@ -45,7 +45,7 @@ export type OpeningSort =
 
 type OpeningSortColumn = "move" | "health" | "strengthRank" | "total" | "results";
 export type OpeningTableDensity = "regular" | "compact" | "dense";
-const ENGINE_RANKING_MULTIPV = 10;
+const ENGINE_EVAL_MULTIPV = 10;
 
 export const openingSortOptions: { label: string; value: OpeningSort }[] = [
   { label: "Most played", value: "games" },
@@ -238,7 +238,7 @@ function OpeningsTable({
   const resultSortSide = resultPerspective ?? healthSide;
   const playableOpenings = useMemo(() => openings.filter(isPlayableOpeningRow), [openings]);
   const cloudMultipv = useMemo(
-    () => getOpeningRankingMultipv(playableOpenings),
+    () => getOpeningEvalMultipv(playableOpenings),
     [playableOpenings],
   );
 
@@ -389,9 +389,7 @@ function OpeningsTable({
                         best move
                       </Text>
                     ) : null}
-                    {health.engineScoreRank ? (
-                      <Text size="xs">Engine ranking #{health.engineScoreRank}</Text>
-                    ) : null}
+
                     {health.source === "chessdb" && health.engineWinrate !== null ? (
                       <Text size="xs">ChessDB win rate {formatPercent(health.engineWinrate)}</Text>
                     ) : null}
@@ -429,7 +427,7 @@ function OpeningsTable({
         },
         {
           accessor: "strengthRank",
-          title: isDense ? "Rank" : isCompact ? "Engine" : "Engine ranking",
+          title: isDense ? "Eval" : isCompact ? "Engine" : "Engine eval",
           width: columnWidths.strengthRank,
           ellipsis: true,
           sortable: true,
@@ -446,8 +444,8 @@ function OpeningsTable({
                   <Stack gap={2}>
                     <Text size="xs" fw={700}>
                       {health.source !== "local"
-                        ? `${cloudSourceLabel(health.source)} strength rank`
-                        : "Cloud strength rank"}
+                        ? `${cloudSourceLabel(health.source)} engine eval`
+                        : "Cloud engine eval"}
                     </Text>
                     {health.pending ? (
                       <Text size="xs">Checking cloud analysis for this position.</Text>
@@ -461,14 +459,12 @@ function OpeningsTable({
                     ) : (
                       <>
                         <Text size="xs">
-                          Rank #{health.engineScoreRank ?? "-"} by centipawn score for {health.side}
-                          .
+                          Score {formatCloudScore(health.engineScoreCp)} for {health.side}.
                         </Text>
                         <Text size="xs">
-                          Score {formatCloudScore(health.engineScoreCp)}
                           {health.cpLoss !== null
-                            ? `, ${Math.round(health.cpLoss)} cp behind the best move`
-                            : ""}
+                            ? `${Math.round(health.cpLoss)} cp behind the best move`
+                            : "Best available cloud score for this side"}
                         </Text>
                       </>
                     )}
@@ -477,11 +473,11 @@ function OpeningsTable({
               >
                 <Stack gap={0}>
                   <Text fz={textSize} fw={600} lh={1.2}>
-                    {formatCloudRank(health)}
+                    {formatCloudEval(health)}
                   </Text>
-                  {!isCompact && health.engineScoreCp !== null ? (
+                  {!isCompact && health.cpLoss !== null ? (
                     <Text fz="xs" c="dimmed">
-                      {formatCloudScore(health.engineScoreCp)}
+                      {Math.round(health.cpLoss)} cp off
                     </Text>
                   ) : null}
                 </Stack>
@@ -720,11 +716,11 @@ async function queryOpeningCloudData(
   };
 }
 
-function getOpeningRankingMultipv(openings: Opening[]) {
+function getOpeningEvalMultipv(openings: Opening[]) {
   const playableCount = openings.filter(
     (opening) => opening.move !== "Total" && opening.move !== "*" && getOpeningTotal(opening) > 0,
   ).length;
-  return Math.max(1, Math.min(ENGINE_RANKING_MULTIPV, playableCount));
+  return Math.max(1, Math.min(ENGINE_EVAL_MULTIPV, playableCount));
 }
 
 function getEngineStrengthSortScore(health?: OpeningMoveStrength) {
@@ -734,12 +730,12 @@ function getEngineStrengthSortScore(health?: OpeningMoveStrength) {
   return health.score - 50;
 }
 
-function formatCloudRank(health: OpeningMoveStrength) {
+function formatCloudEval(health: OpeningMoveStrength) {
   if (health.pending) return "...";
   if (health.source === "local") return "-";
-  if (health.engineScoreCp === null && health.engineRank !== null) return "Listed";
-  const rank = health.engineScoreRank;
-  return rank ? `#${rank}` : "Out";
+  if (health.engineScoreCp !== null) return formatCloudScore(health.engineScoreCp);
+  if (health.engineRank !== null) return "No eval";
+  return "Out";
 }
 
 function formatCloudScore(score: number) {

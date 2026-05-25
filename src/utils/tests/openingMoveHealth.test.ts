@@ -51,7 +51,9 @@ describe("opening move health", () => {
         });
 
         expect(strength.get("e4")?.source).toBe("lichess");
+        expect(strength.get("e4")?.engineScoreCp).toBe(19);
         expect(strength.get("e4")?.engineScoreRank).toBe(1);
+        expect(strength.get("c4")?.engineScoreCp).toBe(4);
         expect(strength.get("c4")?.engineScoreRank).toBe(2);
     });
 });
