@@ -22,6 +22,7 @@ import { useStore } from "zustand";
 import { commands, type Player } from "@/bindings";
 import { usePanelDensity } from "@/components/common/ResponsivePanel";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
+import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import {
   currentDbTabAtom,
   currentDbTypeAtom,
@@ -540,7 +541,7 @@ function DatabasePanel() {
           />
 
           {db === "local" && (
-            <Select
+            <DatabaseFolderSelect
               data={dbSelectData}
               value={referenceDatabase}
               onChange={async (value) => {
@@ -550,8 +551,8 @@ function DatabasePanel() {
               placeholder={t("Board.Database.SelectReference")}
               size={controlSize}
               flex={1}
-              maw={dense ? 150 : 200}
-              miw={dense ? 116 : 150}
+              maxWidth={dense ? 150 : 200}
+              minWidth={dense ? 116 : 150}
               allowDeselect={false}
             />
           )}

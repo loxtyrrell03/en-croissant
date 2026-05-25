@@ -20,6 +20,7 @@ import useSWR from "swr/immutable";
 import equal from "fast-deep-equal";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
+import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import {
   comparePanelSettingsByFileAtom,
   type ComparePanelFileSettings,
@@ -608,18 +609,16 @@ function CompareDatabaseTable({
     >
       <Group justify="space-between" wrap="nowrap" align="flex-start" gap={controlGap}>
         <Tooltip label={source?.label || label}>
-          <Select
+          <DatabaseFolderSelect
             data={selectData}
             value={sourceValue}
             onChange={onChange}
             placeholder={label}
             size="xs"
-            w={sourceSelectWidth}
-            maw="100%"
-            miw={0}
+            width={sourceSelectWidth}
+            maxWidth="100%"
+            minWidth={0}
             allowDeselect={false}
-            searchable
-            comboboxProps={{ withinPortal: true }}
             style={{ flex: `0 1 ${sourceSelectWidth}px` }}
           />
         </Tooltip>

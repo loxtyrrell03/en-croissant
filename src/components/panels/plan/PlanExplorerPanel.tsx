@@ -54,6 +54,7 @@ import useSWR from "swr/immutable";
 import { useStore } from "zustand";
 import PieceComponent from "@/components/common/Piece";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
+import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import {
   currentLocalOptionsAtom,
   currentPlanExplorerDataAtom,
@@ -917,7 +918,7 @@ function DatabaseSelector({
   const widthCh = Math.min(Math.max(selectedLabel.length + 4, 18), 34);
 
   return (
-    <Select
+    <DatabaseFolderSelect
       data={data}
       value={value}
       onChange={async (next) => {
@@ -926,12 +927,10 @@ function DatabaseSelector({
       }}
       placeholder="Reference database"
       size="sm"
-      w={`${widthCh}ch`}
-      miw={180}
-      maw="100%"
-      searchable
+      width={`${widthCh}ch`}
+      minWidth={180}
+      maxWidth="100%"
       allowDeselect={false}
-      comboboxProps={{ withinPortal: true }}
     />
   );
 }

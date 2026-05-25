@@ -84,6 +84,7 @@ import {
   type Position,
 } from "@/components/files/opening";
 import Chessboard from "../icons/Chessboard";
+import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import OnlineGamePickerModal from "@/components/common/OnlineGamePickerModal";
 import { FileIcon } from "@/components/files/FileIcon";
 import {
@@ -1005,7 +1006,7 @@ function OpeningReviewSettingsModal({
             onChange={(event) => setEnabled(event.currentTarget.checked)}
             label="Automatically add new opening gaps"
           />
-          <Select
+          <DatabaseFolderSelect
             label="My online games database"
             data={databaseOptions}
             value={playerDb}
@@ -1016,7 +1017,6 @@ function OpeningReviewSettingsModal({
               setKeepDatabaseUpdated(record?.autoUpdate ?? true);
             }}
             placeholder="Choose a Chess.com or Lichess database"
-            searchable
             allowDeselect={false}
             disabled={!enabled}
           />
@@ -1036,12 +1036,11 @@ function OpeningReviewSettingsModal({
             allowDeselect={false}
             disabled={!enabled || !playerDb}
           />
-          <Select
+          <DatabaseFolderSelect
             label="Strong-games source"
             data={referenceOptions}
             value={referenceDb}
             onChange={setReferenceDb}
-            searchable
             allowDeselect={false}
             disabled={!enabled}
           />
@@ -1619,12 +1618,11 @@ function MistakeReviewScanModal({
             Mistake Review analyzes only moves made by the selected player, with colour detected per
             game.
           </Text>
-          <Select
+          <DatabaseFolderSelect
             label="Games database"
             data={databaseOptions}
             value={database}
             onChange={setDatabase}
-            searchable
             allowDeselect={false}
           />
           <Select

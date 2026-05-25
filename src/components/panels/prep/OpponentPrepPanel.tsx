@@ -45,6 +45,7 @@ import dayjs from "dayjs";
 import { commands } from "@/bindings";
 import { usePanelDensity } from "@/components/common/ResponsivePanel";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
+import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import {
   comparePanelSettingsByFileAtom,
   currentBoardPreviewShapesAtom,
@@ -1941,16 +1942,14 @@ function OpponentPrepPanel() {
             size={controlSize}
           />
         </Tooltip>
-        <Select
+        <DatabaseFolderSelect
           data={sourceOptions}
           value={sourceValue}
           onChange={changePrepSource}
           placeholder="Prep source"
           size={controlSize}
-          w={dense ? 180 : 230}
-          searchable
+          width={dense ? 180 : 230}
           allowDeselect={false}
-          comboboxProps={{ withinPortal: true }}
         />
         <Tooltip label="Import a player's online games and use them as this prep source">
           <Button

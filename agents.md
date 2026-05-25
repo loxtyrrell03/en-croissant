@@ -173,8 +173,9 @@ Database work is centered in `src/components/databases/*`,
   repertoires, online games, reference databases, personal games, and opponent
   prep databases. Folder moves preserve matching `.ecsi` search indexes.
 - Database selectors used by analysis, Compare, Plan Explorer, Analyze
-  Repertoire, opponent prep, and home review setup show local databases grouped
-  by folder so feature entry points match the database manager organization.
+  Repertoire, opponent prep, and home review setup use a two-step picker:
+  root-level databases remain directly selectable, while foldered databases are
+  reached by first choosing the folder and then the database inside it.
 
 ### Online Game And Study Data
 

@@ -52,6 +52,7 @@ import {
   type RepertoireGapReport,
 } from "@/bindings";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
+import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import { createOpeningHealthTrainingItem } from "@/components/files/opening";
 import {
   activeTabAtom,
@@ -1477,12 +1478,11 @@ function RepertoireGapsPanel() {
             </Group>
 
             <Group grow align="flex-end">
-              <Select
+              <DatabaseFolderSelect
                 label={modeCopy.personalDatabaseLabel}
                 data={databaseOptions}
                 value={personalDb}
                 onChange={setPersonalDb}
-                searchable
                 allowDeselect={false}
               />
               <Select
@@ -1496,12 +1496,11 @@ function RepertoireGapsPanel() {
                 searchable
                 allowDeselect={false}
               />
-              <Select
+              <DatabaseFolderSelect
                 label="Strong games source"
                 data={referenceOptions}
                 value={referenceDb}
                 onChange={setReferenceDb}
-                searchable
                 allowDeselect={false}
               />
             </Group>

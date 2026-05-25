@@ -26,6 +26,17 @@ export type DatabaseFolderGroup = {
     databases: DatabaseInfo[];
 };
 
+export type DatabaseSelectItem = {
+    value: string;
+    label: string;
+    disabled?: boolean;
+};
+
+export type DatabaseSelectGroup = {
+    group: string;
+    items: DatabaseSelectItem[];
+};
+
 export type Sides = "WhiteBlack" | "BlackWhite" | "Any";
 
 export interface CompleteGame {
@@ -334,7 +345,7 @@ export function getDatabaseFolderOptions(databases: DatabaseInfo[]) {
     ).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
 }
 
-export function getDatabaseSelectData(databases: DatabaseInfo[]) {
+export function getDatabaseSelectData(databases: DatabaseInfo[]): DatabaseSelectGroup[] {
     return groupDatabasesByFolder(databases, "name")
         .map((group) => ({
             group: group.label,
