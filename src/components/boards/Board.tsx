@@ -165,6 +165,7 @@ const MIN_MANUAL_BOARD_SIZE = 280;
 const MISTAKE_REVIEW_PANEL_MIN_HEIGHT = 108;
 const MISTAKE_REVIEW_ENGINE_CONFIRMATION_DELAY_MS = 900;
 const OPENING_REVIEW_CLOUD_MULTIPV = 5;
+const INACTIVE_REVIEW_DECK_KEY = "__inactive-board-review__.opening-review.json";
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
 
 const FideInfo = lazy(() => import("../databases/FideInfo"));
@@ -567,17 +568,21 @@ function Board({
   const keyMap = useAtomValue(keyMapAtom);
   useHotkeys(keyMap.SWAP_ORIENTATION.keys, () => toggleOrientation());
   const currentTab = useAtomValue(currentTabAtom);
+  const isMistakeReviewTab = currentTab?.gameOrigin.kind === "mistake_review";
+  const isOpeningReviewTab = currentTab?.gameOrigin.kind === "opening_review";
+  const needsReviewDeck = Boolean(practicing || isMistakeReviewTab || isOpeningReviewTab);
+  const reviewDeckFile = needsReviewDeck ? getTabPracticeKey(currentTab) : INACTIVE_REVIEW_DECK_KEY;
   const [evalOpen, setEvalOpen] = useAtom(currentEvalOpenAtom);
 
   const deck = useAtomValue(
     deckAtomFamily({
-      file: getTabPracticeKey(currentTab),
-      game: getTabGameNumber(currentTab),
+      file: reviewDeckFile,
+      game: needsReviewDeck ? getTabGameNumber(currentTab) : 0,
     }),
   );
   const reviewPositionFenIndex = useMemo(
-    () => createReviewPositionFenIndex(deck.positions),
-    [deck.positions],
+    () => (needsReviewDeck ? createReviewPositionFenIndex(deck.positions) : new Map()),
+    [deck.positions, needsReviewDeck],
   );
 
   const latestPracticeStateRef = useRef(practiceState);
@@ -638,8 +643,6 @@ function Board({
     [],
   );
 
-  const isMistakeReviewTab = currentTab?.gameOrigin.kind === "mistake_review";
-  const isOpeningReviewTab = currentTab?.gameOrigin.kind === "opening_review";
   const currentMistakeReviewIndex = useMemo(() => {
     if (!isMistakeReviewTab) return -1;
     if (practiceState.positionIndex !== undefined && deck.positions[practiceState.positionIndex]) {
@@ -697,16 +700,19 @@ function Board({
     reviewPositionFenIndex,
   ]);
   const currentPracticeEntry = useMemo(
-    () =>
-      findReviewPracticePositionForBoard(
+    () => {
+      if (!needsReviewDeck) return null;
+      return findReviewPracticePositionForBoard(
         deck.positions,
         currentNode.fen,
         practicing ? practiceState.positionIndex : undefined,
         reviewPositionFenIndex,
-      ),
+      );
+    },
     [
       currentNode.fen,
       deck.positions,
+      needsReviewDeck,
       practiceState.positionIndex,
       practicing,
       reviewPositionFenIndex,

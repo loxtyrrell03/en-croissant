@@ -81,6 +81,7 @@ const scrollablePanelStyle = {
 } as const;
 
 type UnderBoardMode = "moves" | "database" | "prep";
+const INACTIVE_REVIEW_DECK_KEY = "__inactive-board-analysis__.opening-review.json";
 
 function PanelFallback() {
   return (
@@ -153,9 +154,16 @@ function BoardAnalysis() {
   const [topBarActionsTarget, setTopBarActionsTarget] = useState<HTMLElement | null>(null);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
   const tabFile = getTabFile(currentTab);
+  const isReviewOrigin =
+    currentTab?.gameOrigin.kind === "opening_review" ||
+    currentTab?.gameOrigin.kind === "mistake_review";
+  const practiceDeckKey =
+    tabFile || isReviewOrigin
+      ? getTabPracticeKey(currentTab)
+      : INACTIVE_REVIEW_DECK_KEY;
   const trainingDeck = useAtomValue(
     deckAtomFamily({
-      file: getTabPracticeKey(currentTab),
+      file: practiceDeckKey,
       game: getTabGameNumber(currentTab),
     }),
   );

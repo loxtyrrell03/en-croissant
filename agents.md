@@ -362,6 +362,10 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
   unmounted and suppress engine-arrow derivation until feedback is visible, so
   the next-card paint is not competing with notation controls or stale analysis
   arrow processing.
+- Normal analysis boards now use an inert empty review-deck key unless a
+  review/practice session actually needs deck data. This keeps stale default
+  review storage and large FEN indexes from waking on every board move, so the
+  move list can update promptly while review tabs keep their indexed lookups.
 - Hidden-answer mistake cards use only already-stored mistake-type metadata in
   board and game-info panels; fresh tactical/positional classification is
   deferred until answer feedback is visible.
