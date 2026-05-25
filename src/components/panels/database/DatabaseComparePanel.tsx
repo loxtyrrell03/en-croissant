@@ -55,6 +55,7 @@ import { getTabWorkspaceKey } from "@/utils/tabs";
 import DatabaseLoader from "./DatabaseLoader";
 import { DatabasePerspectiveControls } from "./DatabasePerspectiveControls";
 import type { LocalOptions } from "./DatabasePanel";
+import { MoveStrengthSettingsButton } from "./MoveStrengthSettingsButton";
 import OpeningsTable, {
   openingMoveHealthSideOptions,
   type OpeningTableDensity,
@@ -380,6 +381,7 @@ function DatabaseComparePanel() {
               allowDeselect={false}
             />
           </Tooltip>
+          <MoveStrengthSettingsButton size="sm" />
         </Group>
       </Group>
 

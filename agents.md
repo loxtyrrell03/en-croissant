@@ -218,6 +218,10 @@ and `src/utils/lichess/study.ts`.
   Smart modes plus a Smart engine/database blend and maximum safe CP drop, so a
   practical database move can beat a slightly better engine move while large
   engine drops are filtered out.
+- Database opening tables now distinguish engine-only CP strength from the
+  blended practical strength model. The shared table shows a separate blended
+  strength column and sort, with a settings button in Database and Compare
+  panels for Smart/Engine/Practical mode, engine blend, and maximum CP drop.
 - Lichess Study links can be imported as local databases.
 - Lichess Study databases support auto-update metadata and refresh tracking.
 - Lichess Study databases expose a database-manager reload control that

@@ -58,6 +58,7 @@ import { IconStar, IconStarFilled } from "@tabler/icons-react";
 import DatabaseLoader from "./DatabaseLoader";
 import { DatabasePerspectiveControls } from "./DatabasePerspectiveControls";
 import GamesTable from "./GamesTable";
+import { MoveStrengthSettingsButton } from "./MoveStrengthSettingsButton";
 import NoDatabaseWarning from "./NoDatabaseWarning";
 import OpeningsTable, {
   openingMoveHealthSideOptions,
@@ -616,6 +617,7 @@ function DatabasePanel() {
                   w={dense ? 126 : 160}
                   allowDeselect={false}
                 />
+                <MoveStrengthSettingsButton size={compact ? "sm" : "lg"} />
               </>
             )}
             <Text fz={compact ? "xs" : "sm"} style={{ whiteSpace: "nowrap" }}>

@@ -22,6 +22,7 @@ import { positionFromFen, swapMove } from "@/utils/chessops";
 import type { SuccessDatabaseInfo } from "@/utils/db";
 import { type Engine, type EngineSettings, engineSchema } from "@/utils/engines";
 import type { EnginePlanReport } from "@/utils/enginePlanExplorer";
+import { DEFAULT_MOVE_STRENGTH_SETTINGS, type MoveStrengthSettings } from "@/utils/moveStrength";
 import type { OpeningMoveHealthSidePreference } from "@/utils/openingMoveHealth";
 import type { OnlineGameSource } from "@/utils/onlineGameSource";
 import type { PrepBuilderSettings } from "@/utils/opponentPrep";
@@ -230,6 +231,10 @@ export const planExplorerEngineStrengthDepthAtom = atomWithStorage<number>(
 export const planExplorerEngineStrengthMultipvAtom = atomWithStorage<number>(
     "plan-explorer-engine-strength-multipv",
     5,
+);
+export const moveStrengthSettingsAtom = atomWithStorage<MoveStrengthSettings>(
+    "move-strength-settings",
+    DEFAULT_MOVE_STRENGTH_SETTINGS,
 );
 export const enginePlanMultipvAtom = atomWithStorage<number>("engine-plan-multipv", 5);
 export const enginePlanLimitModeAtom = atomWithStorage<"depth" | "time">(

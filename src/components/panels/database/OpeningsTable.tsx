@@ -1,12 +1,16 @@
 import { Badge, Group, Progress, Stack, Text, Tooltip } from "@mantine/core";
 import { isNormal, makeSquare } from "chessops";
 import { parseSan } from "chessops/san";
-import { useAtom, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { DataTable, type DataTableSortStatus } from "mantine-datatable";
 import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
-import { currentBoardPreviewShapesAtom, moveNotationTypeAtom } from "@/state/atoms";
+import {
+  currentBoardPreviewShapesAtom,
+  moveNotationTypeAtom,
+  moveStrengthSettingsAtom,
+} from "@/state/atoms";
 import { addPieceSymbol } from "@/utils/annotation";
 import { queryChessDbMoves } from "@/utils/chessdb/api";
 import { positionFromFen } from "@/utils/chessops";
@@ -31,6 +35,8 @@ export type OpeningSort =
   | "recent"
   | "oldest"
   | "health"
+  | "blendedStrength"
+  | "blendedWeakness"
   | "chessDbStrength"
   | "chessDbWeakness"
   | "winRateHigh"
@@ -43,7 +49,7 @@ export type OpeningSort =
   | "move"
   | "moveDesc";
 
-type OpeningSortColumn = "move" | "health" | "strengthRank" | "total" | "results";
+type OpeningSortColumn = "move" | "blendStrength" | "health" | "strengthRank" | "total" | "results";
 export type OpeningTableDensity = "regular" | "compact" | "dense";
 const ENGINE_EVAL_MULTIPV = 10;
 
@@ -52,8 +58,10 @@ export const openingSortOptions: { label: string; value: OpeningSort }[] = [
   { label: "Fewest played", value: "gamesLow" },
   { label: "Most recent", value: "recent" },
   { label: "Oldest played", value: "oldest" },
-  { label: "CP strength", value: "chessDbStrength" },
-  { label: "CP weakness", value: "chessDbWeakness" },
+  { label: "Blended strength", value: "blendedStrength" },
+  { label: "Blended weakness", value: "blendedWeakness" },
+  { label: "Engine CP strength", value: "chessDbStrength" },
+  { label: "Engine CP weakness", value: "chessDbWeakness" },
   { label: "Highest win rate", value: "winRateHigh" },
   { label: "Lowest win rate", value: "winRateLow" },
   { label: "Highest score", value: "scoreHigh" },
@@ -99,6 +107,18 @@ export function sortOpeningRows(
 
     if (sortBy === "recent" || sortBy === "oldest") {
       return compareOpeningDate(a, b, sortBy) || bTotal - aTotal;
+    }
+
+    if (sortBy === "blendedStrength") {
+      const aStrength = getBlendedStrengthSortScore(healthByMove?.get(a.move));
+      const bStrength = getBlendedStrengthSortScore(healthByMove?.get(b.move));
+      return bStrength - aStrength || bTotal - aTotal;
+    }
+
+    if (sortBy === "blendedWeakness") {
+      const aStrength = getBlendedStrengthSortScore(healthByMove?.get(a.move));
+      const bStrength = getBlendedStrengthSortScore(healthByMove?.get(b.move));
+      return aStrength - bStrength || bTotal - aTotal;
     }
 
     if (sortBy === "health" || sortBy === "chessDbStrength") {
@@ -166,6 +186,7 @@ function OpeningsTable({
   const makeMove = useStore(store, (s) => s.makeMove);
   const currentFen = useStore(store, (s) => s.currentNode().fen);
   const [moveNotationType] = useAtom(moveNotationTypeAtom);
+  const moveStrengthSettings = useAtomValue(moveStrengthSettingsAtom);
   const setBoardPreviewShapes = useSetAtom(currentBoardPreviewShapesAtom);
   const [cloudData, setCloudData] = useState<OpeningMoveCloudData | null | undefined>();
   const [internalSortBy, setInternalSortBy] = useState(sortBy);
@@ -181,6 +202,7 @@ function OpeningsTable({
   const columnWidths = {
     move: isDense ? 52 : isCompact ? 64 : 100,
     health: isDense ? 58 : isCompact ? 72 : 106,
+    blendStrength: isDense ? 54 : isCompact ? 68 : 104,
     strengthRank: isDense ? 48 : isCompact ? 68 : 112,
     total: isDense ? 64 : isCompact ? 90 : 180,
     results: isDense ? 88 : isCompact ? 104 : undefined,
@@ -237,10 +259,7 @@ function OpeningsTable({
   }, [currentFen, healthSidePreference]);
   const resultSortSide = resultPerspective ?? healthSide;
   const playableOpenings = useMemo(() => openings.filter(isPlayableOpeningRow), [openings]);
-  const cloudMultipv = useMemo(
-    () => getOpeningEvalMultipv(playableOpenings),
-    [playableOpenings],
-  );
+  const cloudMultipv = useMemo(() => getOpeningEvalMultipv(playableOpenings), [playableOpenings]);
 
   const healthByMove = useMemo(
     () =>
@@ -250,8 +269,9 @@ function OpeningsTable({
         fen: currentFen,
         cloudData,
         referenceOpenings,
+        strengthSettings: moveStrengthSettings,
       }),
-    [cloudData, currentFen, healthSide, playableOpenings, referenceOpenings],
+    [cloudData, currentFen, healthSide, moveStrengthSettings, playableOpenings, referenceOpenings],
   );
 
   const updateSort = useCallback(
@@ -356,8 +376,75 @@ function OpeningsTable({
           },
         },
         {
+          accessor: "blendStrength",
+          title: isDense ? "Mix" : isCompact ? "Blend" : "Blended strength",
+          width: columnWidths.blendStrength,
+          ellipsis: true,
+          sortable: true,
+          render: ({ move }) => {
+            const health = healthByMove.get(move);
+            if (!health || move === "Total") return null;
+
+            return (
+              <Tooltip
+                withArrow
+                multiline
+                w={290}
+                label={
+                  <Stack gap={2}>
+                    <Text size="xs" fw={700}>
+                      Blended strength {health.blendedStrengthScore}
+                    </Text>
+                    <Text size="xs">
+                      {formatMoveStrengthMode(moveStrengthSettings.mode)} mode,{" "}
+                      {moveStrengthSettings.engineWeight}% engine blend, max{" "}
+                      {moveStrengthSettings.maxEngineCpLoss} cp drop.
+                    </Text>
+                    {health.cpLoss !== null ? (
+                      <Text size="xs">{Math.round(health.cpLoss)} cp behind the engine best.</Text>
+                    ) : health.pending ? (
+                      <Text size="xs">Checking cloud analysis for the engine side.</Text>
+                    ) : (
+                      <Text size="xs">No usable cloud CP score for this move.</Text>
+                    )}
+                    {health.databaseStrengthScore !== null ? (
+                      <Text size="xs">
+                        Practical WDL {formatPercent(health.databaseStrengthScore)}
+                        {health.databaseWdlLoss !== null && health.databaseWdlLoss > 0
+                          ? `, ${formatWdlPointLoss(health.databaseWdlLoss)} pts behind the best shown move`
+                          : ", best shown move"}
+                      </Text>
+                    ) : null}
+                    {health.engineUnsafeForBlend ? (
+                      <Text size="xs">Over the configured CP-drop limit.</Text>
+                    ) : null}
+                  </Stack>
+                }
+              >
+                <Stack gap={2}>
+                  <Badge
+                    color={health.engineUnsafeForBlend ? "yellow" : "teal"}
+                    variant="light"
+                    size={isCompact ? "xs" : "sm"}
+                    className={`${classes.healthBadge} ${isDense ? classes.denseHealthBadge : ""}`}
+                  >
+                    {health.blendedStrengthLabel}
+                  </Badge>
+                  {!isDense ? (
+                    <Progress
+                      value={health.blendedStrengthScore}
+                      color={health.engineUnsafeForBlend ? "yellow" : "teal"}
+                      size={3}
+                    />
+                  ) : null}
+                </Stack>
+              </Tooltip>
+            );
+          },
+        },
+        {
           accessor: "health",
-          title: isDense ? "Str." : "Strength",
+          title: isDense ? "CP" : isCompact ? "Engine" : "Engine CP",
           width: columnWidths.health,
           ellipsis: true,
           sortable: true,
@@ -389,7 +476,6 @@ function OpeningsTable({
                         best move
                       </Text>
                     ) : null}
-
                     {health.source === "chessdb" && health.engineWinrate !== null ? (
                       <Text size="xs">ChessDB win rate {formatPercent(health.engineWinrate)}</Text>
                     ) : null}
@@ -628,6 +714,13 @@ function openingSortToStatus(sortBy: OpeningSort): DataTableSortStatus<Opening> 
     };
   }
 
+  if (sortBy === "blendedWeakness") {
+    return {
+      columnAccessor: "blendStrength",
+      direction: "asc",
+    };
+  }
+
   if (sortBy === "winRateLow" || sortBy === "scoreLow") {
     return {
       columnAccessor: "results",
@@ -649,6 +742,13 @@ function openingSortToStatus(sortBy: OpeningSort): DataTableSortStatus<Opening> 
     };
   }
 
+  if (sortBy === "blendedStrength") {
+    return {
+      columnAccessor: "blendStrength",
+      direction: "desc",
+    };
+  }
+
   return {
     columnAccessor: "results",
     direction: "desc",
@@ -662,6 +762,8 @@ function statusToOpeningSort(status: DataTableSortStatus<Opening>): OpeningSort 
   switch (column) {
     case "move":
       return descending ? "moveDesc" : "move";
+    case "blendStrength":
+      return descending ? "blendedStrength" : "blendedWeakness";
     case "health":
     case "strengthRank":
       return descending ? "chessDbStrength" : "chessDbWeakness";
@@ -730,6 +832,10 @@ function getEngineStrengthSortScore(health?: OpeningMoveStrength) {
   return health.score - 50;
 }
 
+function getBlendedStrengthSortScore(health?: OpeningMoveStrength) {
+  return health?.blendedStrengthScore ?? Number.NEGATIVE_INFINITY;
+}
+
 function formatCloudEval(health: OpeningMoveStrength) {
   if (health.pending) return "...";
   if (health.source === "local") return "-";
@@ -762,6 +868,21 @@ function healthStatusColor(status: OpeningMoveStrengthStatus) {
 
 function formatPercent(value: number) {
   return `${(value * 100).toFixed(0)}%`;
+}
+
+function formatWdlPointLoss(value: number) {
+  return (value * 100).toFixed(value >= 0.1 ? 0 : 1).replace(/\.0$/, "");
+}
+
+function formatMoveStrengthMode(mode: "smart" | "engine" | "practical") {
+  switch (mode) {
+    case "engine":
+      return "Engine";
+    case "practical":
+      return "Practical";
+    case "smart":
+      return "Smart";
+  }
 }
 
 function cloudSourceLabel(source: OpeningMoveCloudSource) {

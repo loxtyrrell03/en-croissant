@@ -1,3 +1,11 @@
+import {
+    DEFAULT_MOVE_STRENGTH_SETTINGS,
+    evaluateMoveStrength,
+    getPracticalWdlRate,
+    normalizeMoveStrengthSettings,
+    type MoveStrengthSettings,
+} from "@/utils/moveStrength";
+
 export type OpeningMoveHealthSide = "white" | "black";
 
 export type OpeningMoveHealthSidePreference = OpeningMoveHealthSide | "sideToMove";
@@ -45,6 +53,12 @@ export type OpeningMoveStrength = Omit<OpeningMoveHealth, "label" | "reasons" | 
     engineScoreRank: number | null;
     engineScoreCp: number | null;
     engineWinrate: number | null;
+    blendedStrengthScore: number;
+    blendedStrengthLoss: number;
+    blendedStrengthLabel: string;
+    databaseStrengthScore: number | null;
+    databaseWdlLoss: number | null;
+    engineUnsafeForBlend: boolean;
     reasons: string[];
 };
 
@@ -100,20 +114,41 @@ export function getOpeningMoveStrengthMap({
     fen,
     cloudData,
     referenceOpenings,
+    strengthSettings,
 }: {
     openings: OpeningMoveHealthInput[];
     side: OpeningMoveHealthSide;
     fen: string;
     cloudData?: OpeningMoveCloudData | null;
     referenceOpenings?: OpeningMoveHealthInput[];
+    strengthSettings?: Partial<MoveStrengthSettings> | null;
 }) {
     const fallback = getOpeningMoveHealthMap(openings, side, referenceOpenings);
     const cloud = getCloudStrengthData(fen, side, cloudData);
+    const settings = normalizeMoveStrengthSettings(strengthSettings);
+    const databaseScores = new Map(
+        openings
+            .filter(isPlayableOpening)
+            .map((opening) => [opening.move, getPracticalWdlRate(opening, side)] as const),
+    );
+    const bestDatabaseScore =
+        databaseScores.size > 0 ? Math.max(...Array.from(databaseScores.values())) : null;
 
     return new Map(
         Array.from(fallback.entries()).map(([move, health]) => [
             move,
-            getOpeningMoveStrength(move, health, cloud, cloudData === undefined),
+            getOpeningMoveStrength({
+                move,
+                health,
+                cloud,
+                pending: cloudData === undefined,
+                databaseScore: databaseScores.get(move) ?? null,
+                databaseWdlLoss:
+                    bestDatabaseScore === null || !databaseScores.has(move)
+                        ? null
+                        : Math.max(0, bestDatabaseScore - databaseScores.get(move)!),
+                settings,
+            }),
         ]),
     );
 }
@@ -349,18 +384,36 @@ function getHealthReasons({
     return reasons;
 }
 
-function getOpeningMoveStrength(
-    move: string,
-    health: OpeningMoveHealth,
-    cloud: ReturnType<typeof getCloudStrengthData>,
-    pending: boolean,
-): OpeningMoveStrength {
+function getOpeningMoveStrength({
+    move,
+    health,
+    cloud,
+    pending,
+    databaseScore,
+    databaseWdlLoss,
+    settings,
+}: {
+    move: string;
+    health: OpeningMoveHealth;
+    cloud: ReturnType<typeof getCloudStrengthData>;
+    pending: boolean;
+    databaseScore: number | null;
+    databaseWdlLoss: number | null;
+    settings: MoveStrengthSettings;
+}): OpeningMoveStrength {
     const cloudMove = cloud.bySan.get(move) ?? null;
     const fallbackStatus = healthToStrengthStatus(health.status);
     const sourceLabel = cloud.source ? cloudSourceLabel(cloud.source) : "cloud analysis";
+    const hasEngineMoves = !pending && cloud.covered && cloud.bestScore !== null;
 
     if (!pending && cloud.covered && cloud.bestScore !== null && cloud.source) {
         if (!cloudMove || cloudMove.scoreForSide === null) {
+            const blended = evaluateMoveStrength({
+                settings,
+                engineCpLoss: null,
+                hasEngineMoves,
+                databaseWdlLoss,
+            });
             return {
                 ...health,
                 status: "weak",
@@ -373,6 +426,12 @@ function getOpeningMoveStrength(
                 engineScoreRank: cloudMove?.scoreRank ?? null,
                 engineScoreCp: cloudMove?.scoreForSide ?? null,
                 engineWinrate: cloudMove?.winrate ?? null,
+                blendedStrengthScore: blended.score,
+                blendedStrengthLoss: blended.loss,
+                blendedStrengthLabel: blended.score.toString(),
+                databaseStrengthScore: databaseScore,
+                databaseWdlLoss,
+                engineUnsafeForBlend: blended.engineUnsafe,
                 reasons: [
                     cloudMove
                         ? `${sourceLabel} lists this move but has not published a usable score for it yet.`
@@ -383,6 +442,12 @@ function getOpeningMoveStrength(
 
         const cpLoss = Math.max(0, cloud.bestScore - cloudMove.scoreForSide);
         const status = cloudStrengthStatus(cpLoss);
+        const blended = evaluateMoveStrength({
+            settings,
+            engineCpLoss: cpLoss,
+            hasEngineMoves,
+            databaseWdlLoss,
+        });
         return {
             ...health,
             status,
@@ -395,10 +460,22 @@ function getOpeningMoveStrength(
             engineScoreRank: cloudMove.scoreRank,
             engineScoreCp: cloudMove.scoreForSide,
             engineWinrate: cloudMove.winrate,
+            blendedStrengthScore: blended.score,
+            blendedStrengthLoss: blended.loss,
+            blendedStrengthLabel: blended.score.toString(),
+            databaseStrengthScore: databaseScore,
+            databaseWdlLoss,
+            engineUnsafeForBlend: blended.engineUnsafe,
             reasons: cloudStrengthReasons(status, cpLoss, cloudMove, cloud.source),
         };
     }
 
+    const blended = evaluateMoveStrength({
+        settings: settings ?? DEFAULT_MOVE_STRENGTH_SETTINGS,
+        engineCpLoss: null,
+        hasEngineMoves: false,
+        databaseWdlLoss,
+    });
     return {
         ...health,
         status: fallbackStatus,
@@ -411,6 +488,12 @@ function getOpeningMoveStrength(
         engineScoreRank: null,
         engineScoreCp: null,
         engineWinrate: null,
+        blendedStrengthScore: blended.score,
+        blendedStrengthLoss: blended.loss,
+        blendedStrengthLabel: blended.score.toString(),
+        databaseStrengthScore: databaseScore,
+        databaseWdlLoss,
+        engineUnsafeForBlend: blended.engineUnsafe,
         reasons: [
             pending
                 ? "Checking cloud analysis in the background."
@@ -556,7 +639,6 @@ function cloudStrengthReasons(
             ? `Tied for the best ${sourceLabel} score.`
             : `${Math.round(cpLoss)} cp behind the best ${sourceLabel} score.`,
     ];
-
     if (source === "chessdb" && move.winrate !== null) {
         reasons.push(`ChessDB win rate ${Math.round(move.winrate * 100)}%.`);
     }
