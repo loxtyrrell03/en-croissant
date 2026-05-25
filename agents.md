@@ -135,6 +135,9 @@ default.
   local sorting, matching the Database tab expectation: Move, Games, Results,
   Prep, and State in opponent-move mode, and Move, Games, and WDL in candidate
   reply mode.
+- Under-board Prep stays more compact than the right-side Prep panel: it forces
+  dense controls/tables and replaces the large off-start blue alert with a
+  one-line status so the move table remains the primary content.
 - Engine output is docked into the active panel where possible and hidden when
   disabled.
 - Board tab labels use icon-first compact tabs with hover tooltips.

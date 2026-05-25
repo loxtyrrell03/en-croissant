@@ -313,8 +313,8 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
   const { documentDir } = useLoaderData({ from: "/" });
   const setBoardPreviewShapes = useSetAtom(currentBoardPreviewShapesAtom);
   const panelDensity = usePanelDensity();
-  const compact = panelDensity !== "regular";
-  const dense = panelDensity === "dense";
+  const compact = underBoard || panelDensity !== "regular";
+  const dense = underBoard || panelDensity === "dense";
   const [advancing, setAdvancing] = useState(false);
   const [commonMoving, setCommonMoving] = useState(false);
   const [builderOpen, setBuilderOpen] = useState(false);
@@ -2695,12 +2695,18 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
             <Text size="xs" c="dimmed" truncate>
               Start: {rootSans.length > 0 ? rootSans.join(" ") : "game start"}
             </Text>
-            <Text size="xs" c={opponentToMove ? undefined : "dimmed"} truncate>
-              {opponentToMove
-                ? prepMode === "general"
-                  ? `${prep.color === "white" ? "White" : "Black"} to move`
-                  : `${prep.playerName.trim() || "Opponent"} to move`
-                : `Play your ${userColor} ${prepMode === "general" ? "move" : "response"} on the board`}
+            <Text
+              size="xs"
+              c={!isInsidePrepTree || !opponentToMove ? "dimmed" : undefined}
+              truncate
+            >
+              {!isInsidePrepTree
+                ? "Away from prep start"
+                : opponentToMove
+                  ? prepMode === "general"
+                    ? `${prep.color === "white" ? "White" : "Black"} to move`
+                    : `${prep.playerName.trim() || "Opponent"} to move`
+                  : `Play your ${userColor} ${prepMode === "general" ? "move" : "response"} on the board`}
               {lineSans.length > 0 ? ` - ${lineSans.slice(-10).join(" ")}` : ""}
             </Text>
           </Stack>
@@ -2767,7 +2773,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
           Choose the opponent player and the colour they play in the games you want to prepare
           against.
         </Alert>
-      ) : !isInsidePrepTree ? (
+      ) : !isInsidePrepTree && !underBoard ? (
         <Alert color="blue" variant="light">
           You are away from the starting position for this prep. Go back to start, or start from the
           current board position.
@@ -3145,10 +3151,7 @@ function PrepCandidateMoveTable({
                 <Text size={textSize} fw={700}>
                   {row.move}
                 </Text>
-                <PrepLastPlayedText
-                  value={row.lastPlayed}
-                  kind={general ? "played" : "faced"}
-                />
+                <PrepLastPlayedText value={row.lastPlayed} kind={general ? "played" : "faced"} />
               </Table.Td>
               <Table.Td>
                 <PrepStrengthCell
