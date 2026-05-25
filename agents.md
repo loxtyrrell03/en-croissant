@@ -228,6 +228,8 @@ and `src/utils/lichess/study.ts`.
 - In Prep player mode, the color filter labels use the selected player name
   directly, such as "IfanRJ as white" and "IfanRJ as black", so the side filter
   reads as that player's game color instead of a generic board color.
+- In Prep general mode, the user-side selector says "I'm white" and "I'm black"
+  so the control reads as the user's prep side rather than abstract colors.
 - Lichess Study links can be imported as local databases.
 - Lichess Study databases support auto-update metadata and refresh tracking.
 - Lichess Study databases expose a database-manager reload control that

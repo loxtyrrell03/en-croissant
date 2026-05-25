@@ -2177,8 +2177,8 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
                   <SegmentedControl
                     aria-label="Your prep side"
                     data={[
-                      { value: "white", label: "White" },
-                      { value: "black", label: "Black" },
+                      { value: "white", label: "I'm white" },
+                      { value: "black", label: "I'm black" },
                     ]}
                     value={userColor}
                     onChange={(value) => changeGeneralUserColor(value as "white" | "black")}
