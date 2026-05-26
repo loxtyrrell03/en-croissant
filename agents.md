@@ -187,6 +187,11 @@ Database work is centered in `src/components/databases/*`,
   Repertoire, opponent prep, and home review setup use a two-step picker:
   root-level databases remain directly selectable, while foldered databases are
   reached by first choosing the folder and then the database inside it.
+- PGN conversion now initializes the En Croissant schema based on actual tables
+  rather than only file existence, so zero-byte placeholder `.db3` files created
+  during interrupted folder organization or external prep workflows are repaired
+  on the next import instead of becoming permanent `no such table: Info`
+  database cards.
 
 ### Online Game And Study Data
 

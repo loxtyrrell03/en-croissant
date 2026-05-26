@@ -330,6 +330,70 @@ fn update_info_count(
     Ok(())
 }
 
+fn database_table_exists(db: &mut SqliteConnection, table_name: &str) -> Result<bool, Error> {
+    #[derive(QueryableByName)]
+    struct TableExists {
+        #[diesel(sql_type = BigInt, column_name = "count")]
+        count: i64,
+    }
+
+    let result: TableExists =
+        sql_query("SELECT COUNT(*) AS count FROM sqlite_master WHERE type = 'table' AND name = ?")
+            .bind::<Text, _>(table_name)
+            .get_result(db)?;
+
+    Ok(result.count > 0)
+}
+
+fn insert_database_metadata(
+    db: &mut SqliteConnection,
+    title: &str,
+    description: &str,
+) -> Result<(), Error> {
+    for (name, value) in [
+        ("Version", DATABASE_VERSION),
+        ("Title", title),
+        ("Description", description),
+    ] {
+        diesel::insert_into(info::table)
+            .values((info::name.eq(name), info::value.eq(value)))
+            .on_conflict(info::name)
+            .do_update()
+            .set(info::value.eq(value))
+            .execute(db)?;
+    }
+
+    Ok(())
+}
+
+fn ensure_database_schema_for_import(
+    db: &mut SqliteConnection,
+    title: &str,
+    description: &str,
+) -> Result<bool, Error> {
+    if database_table_exists(db, "Info")? {
+        return Ok(false);
+    }
+
+    let has_games = database_table_exists(db, "Games")?;
+    let has_players = database_table_exists(db, "Players")?;
+
+    if !has_games && !has_players {
+        db.batch_execute(CREATE_TABLES_SQL)?;
+        insert_database_metadata(db, title, description)?;
+        return Ok(true);
+    }
+
+    db.batch_execute(
+        "CREATE TABLE IF NOT EXISTS Info (
+            Name TEXT UNIQUE NOT NULL,
+            Value TEXT
+        );",
+    )?;
+    insert_database_metadata(db, title, description)?;
+    Ok(false)
+}
+
 #[derive(Debug)]
 pub struct MaterialColor {
     white: u8,
@@ -661,8 +725,6 @@ fn convert_pgn_inner(
     let description = description.unwrap_or_default();
     let extension = file.extension();
 
-    let db_exists = db_path.exists();
-
     // create the database file
     let db = &mut get_db_or_create(
         &state,
@@ -674,17 +736,7 @@ fn convert_pgn_inner(
         },
     )?;
 
-    if !db_exists {
-        db.batch_execute(CREATE_TABLES_SQL)?;
-        db.batch_execute(
-            format!(
-                "INSERT INTO Info (Name, Value) VALUES (\"Version\", \"{DATABASE_VERSION}\");
-                INSERT INTO Info (Name, Value) VALUES (\"Title\", \"{title}\");
-                INSERT INTO Info (Name, Value) VALUES (\"Description\", \"{description}\");"
-            )
-            .as_str(),
-        )?;
-    }
+    let schema_created = ensure_database_schema_for_import(db, &title, &description)?;
 
     let file = File::open(&file)?;
 
@@ -716,7 +768,7 @@ fn convert_pgn_inner(
         Ok(())
     })?;
 
-    if !db_exists {
+    if schema_created {
         // Create all the necessary indexes
         db.batch_execute(INDEXES_SQL)?;
     }
@@ -3148,6 +3200,25 @@ mod tests {
         conn.batch_execute("PRAGMA foreign_keys = ON;").unwrap();
         conn.batch_execute(CREATE_TABLES_SQL).unwrap();
         conn
+    }
+
+    #[test]
+    fn import_schema_initializes_empty_database_files() {
+        let db = &mut SqliteConnection::establish(":memory:").unwrap();
+
+        let schema_created =
+            ensure_database_schema_for_import(db, "Prep import", "Generated from PGN").unwrap();
+
+        assert!(schema_created);
+        assert!(database_table_exists(db, "Info").unwrap());
+        assert!(database_table_exists(db, "Games").unwrap());
+
+        let title: Option<String> = info::table
+            .filter(info::name.eq("Title"))
+            .select(info::value)
+            .first(db)
+            .unwrap();
+        assert_eq!(title.as_deref(), Some("Prep import"));
     }
 
     fn import_single_game(pgn: &str) -> TempGame {
