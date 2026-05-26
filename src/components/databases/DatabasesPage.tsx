@@ -40,9 +40,11 @@ import {
   IconFolder,
   IconFolderDown,
   IconFolderPlus,
+  IconLink,
   IconPlus,
   IconRefresh,
   IconSearch,
+  IconUnlink,
   IconWand,
 } from "@tabler/icons-react";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -58,8 +60,10 @@ import { commands } from "@/bindings";
 import {
   type DatabaseConversionState,
   databaseConversionStateAtom,
+  databaseLinkedFoldersAtom,
   type LichessStudyDatabaseUpdateRecord,
   type LichessStudyDatabaseUpdateRecords,
+  type DatabaseLinkedFolderRecord,
   lichessStudyDatabaseUpdatesAtom,
   type OnlineDatabaseUpdateAccount,
   type OnlineDatabaseUpdateRecord,
@@ -73,8 +77,12 @@ import {
 import { useActiveDatabaseViewStore } from "@/state/store/database";
 import {
   getDefaultDatabaseFolderName,
+  getDatabaseLinkedFolderRecord,
   getGameFileCountText,
+  removeDatabaseLinkedFolderRecord,
+  syncDatabaseLinkedFolder,
   splitGameSourceToFiles,
+  upsertDatabaseLinkedFolderRecord,
   validateDatabaseFilesFolderName,
 } from "@/utils/databaseFileExport";
 import {
@@ -181,8 +189,10 @@ export default function DatabasesPage() {
   const [lichessStudyDatabaseUpdates, setLichessStudyDatabaseUpdates] = useAtom(
     lichessStudyDatabaseUpdatesAtom,
   );
+  const [databaseLinkedFolders, setDatabaseLinkedFolders] = useAtom(databaseLinkedFoldersAtom);
   const sessions = useAtomValue(sessionsAtom);
   const [updatingOnlineDatabasePath, setUpdatingOnlineDatabasePath] = useState<string | null>(null);
+  const [syncingLinkedFolderPath, setSyncingLinkedFolderPath] = useState<string | null>(null);
   const selectedDatabase = useMemo(
     () => (databases ?? []).find((db) => db.file === selected) ?? null,
     [databases, selected],
@@ -200,6 +210,13 @@ export default function DatabasesPage() {
         ? getLichessStudyDatabaseUpdateRecord(selectedDatabase, lichessStudyDatabaseUpdates)
         : null,
     [lichessStudyDatabaseUpdates, selectedDatabase],
+  );
+  const selectedLinkedFolder = useMemo(
+    () =>
+      selectedDatabase?.type === "success"
+        ? getDatabaseLinkedFolderRecord(selectedDatabase.file, databaseLinkedFolders)
+        : null,
+    [databaseLinkedFolders, selectedDatabase],
   );
   const filteredDatabases = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -243,6 +260,7 @@ export default function DatabasesPage() {
   const [deleteModal, toggleDeleteModal] = useToggle();
   const [exportLoading, setExportLoading] = useState(false);
   const [exportFilesOpened, setExportFilesOpened] = useState(false);
+  const [exportFilesLinkDefault, setExportFilesLinkDefault] = useState(false);
   const [folderModal, setFolderModal] = useState<DatabaseFolderModalState | null>(null);
   const [sortMode, setSortMode] = useState<DatabaseSortMode>("folder");
   const [selectedFolderDraft, setSelectedFolderDraft] = useState("");
@@ -285,6 +303,9 @@ export default function DatabasesPage() {
       rewriteDatabaseUpdateRecordPath(records, previousPath, nextPath),
     );
     setLichessStudyDatabaseUpdates((records) =>
+      rewriteDatabaseUpdateRecordPath(records, previousPath, nextPath),
+    );
+    setDatabaseLinkedFolders((records) =>
       rewriteDatabaseUpdateRecordPath(records, previousPath, nextPath),
     );
   }
@@ -372,6 +393,31 @@ export default function DatabasesPage() {
     }
   }
 
+  async function syncLinkedFolder(database: SuccessDatabaseInfo) {
+    const record = getDatabaseLinkedFolderRecord(database.file, databaseLinkedFolders);
+    if (!record || syncingLinkedFolderPath) return null;
+
+    setSyncingLinkedFolderPath(database.file);
+    try {
+      const result = await syncDatabaseLinkedFolder({
+        sourcePath: database.file,
+        title: database.title,
+        gameCount: database.game_count,
+        record: {
+          ...record,
+          dbPath: database.file,
+          title: database.title,
+        },
+      });
+      setDatabaseLinkedFolders((records) =>
+        upsertDatabaseLinkedFolderRecord(records, result.record),
+      );
+      return result.report;
+    } finally {
+      setSyncingLinkedFolderPath(null);
+    }
+  }
+
   async function updateOnlineDatabase(database: SuccessDatabaseInfo) {
     const record = getOnlineDatabaseUpdateRecord(database, onlineDatabaseUpdates);
     if (!record || updatingOnlineDatabasePath) return;
@@ -387,13 +433,21 @@ export default function DatabasesPage() {
         setUpdateRecords: setOnlineDatabaseUpdates,
         isConversionInProgress: () => conversionState.inProgress,
       });
-      await mutate();
+      const latestDatabases = await mutate();
+      const latestDatabase =
+        latestDatabases?.find(
+          (item): item is SuccessDatabaseInfo =>
+            item.type === "success" && item.file === database.file,
+        ) ?? database;
 
       if (result.updated) {
+        const syncReport = await syncLinkedFolder(latestDatabase);
         notifications.show({
           title: "Online database updated",
           message:
-            "Latest games were imported. Linked review decks will scan the new games automatically.",
+            syncReport && syncReport.created > 0
+              ? `Latest games were imported and ${getGameFileCountText(syncReport.created)} were added to the linked Files folder.`
+              : "Latest games were imported. Linked review decks will scan the new games automatically.",
           color: "green",
         });
       } else {
@@ -431,12 +485,21 @@ export default function DatabasesPage() {
         setUpdateRecords: setLichessStudyDatabaseUpdates,
         isConversionInProgress: () => conversionState.inProgress,
       });
-      await mutate();
+      const latestDatabases = await mutate();
+      const latestDatabase =
+        latestDatabases?.find(
+          (item): item is SuccessDatabaseInfo =>
+            item.type === "success" && item.file === database.file,
+        ) ?? database;
 
       if (result.updated) {
+        const syncReport = await syncLinkedFolder(latestDatabase);
         notifications.show({
           title: "Lichess study updated",
-          message: `${database.title} was rebuilt from the latest study PGN.`,
+          message:
+            syncReport && syncReport.created > 0
+              ? `${database.title} was rebuilt and ${getGameFileCountText(syncReport.created)} were added to the linked Files folder.`
+              : `${database.title} was rebuilt from the latest study PGN.`,
           color: "green",
         });
       } else {
@@ -476,6 +539,9 @@ export default function DatabasesPage() {
           commands.deleteDatabase(selectedDatabase.file).then(() => {
             mutate();
             setSelected(null);
+            setDatabaseLinkedFolders((records) =>
+              removeDatabaseLinkedFolderRecord(records, selectedDatabase.file),
+            );
           });
           toggleDeleteModal();
         }}
@@ -528,6 +594,13 @@ export default function DatabasesPage() {
           setOpened={setExportFilesOpened}
           selectedDatabase={selectedDatabase}
           documentDir={documentDir}
+          linkByDefault={exportFilesLinkDefault}
+          linkedFolder={selectedLinkedFolder}
+          onLinked={(record) => {
+            setDatabaseLinkedFolders((records) =>
+              upsertDatabaseLinkedFolderRecord(records, record),
+            );
+          }}
         />
       )}
 
@@ -894,6 +967,88 @@ export default function DatabasesPage() {
                         />
                       )}
 
+                      <Divider variant="dashed" label="Files link" />
+                      <Group justify="space-between" align="center">
+                        <Box miw={0}>
+                          <Text fw={600} fz="sm">
+                            Linked folder
+                          </Text>
+                          <Text size="xs" c="dimmed" style={{ wordBreak: "break-word" }}>
+                            {selectedLinkedFolder
+                              ? `${selectedLinkedFolder.folderName} - ${
+                                  selectedLinkedFolder.lastSyncedAt
+                                    ? `Synced ${new Date(
+                                        selectedLinkedFolder.lastSyncedAt,
+                                      ).toLocaleString()}`
+                                    : "Not synced yet"
+                                }`
+                              : "Create a Files folder that receives new games when this database updates."}
+                          </Text>
+                        </Box>
+                        <Group gap="xs" wrap="nowrap">
+                          {selectedLinkedFolder ? (
+                            <>
+                              <OpenFolderButton folder={selectedLinkedFolder.folderPath} />
+                              <Button
+                                size="xs"
+                                variant="default"
+                                leftSection={<IconRefresh size="1rem" />}
+                                loading={syncingLinkedFolderPath === selectedDatabase.file}
+                                onClick={async () => {
+                                  try {
+                                    const report = await syncLinkedFolder(selectedDatabase);
+                                    notifications.show({
+                                      title: "Linked folder synced",
+                                      message: report
+                                        ? `Added ${getGameFileCountText(report.created)}.`
+                                        : "No linked folder found.",
+                                      color: "green",
+                                    });
+                                  } catch (error) {
+                                    notifications.show({
+                                      title: "Could not sync linked folder",
+                                      message:
+                                        error instanceof Error ? error.message : String(error),
+                                      color: "red",
+                                    });
+                                  }
+                                }}
+                              >
+                                Sync now
+                              </Button>
+                              <Button
+                                size="xs"
+                                variant="subtle"
+                                color="red"
+                                leftSection={<IconUnlink size="1rem" />}
+                                onClick={() => {
+                                  setDatabaseLinkedFolders((records) =>
+                                    removeDatabaseLinkedFolderRecord(
+                                      records,
+                                      selectedDatabase.file,
+                                    ),
+                                  );
+                                }}
+                              >
+                                Unlink
+                              </Button>
+                            </>
+                          ) : (
+                            <Button
+                              size="xs"
+                              variant="default"
+                              leftSection={<IconLink size="1rem" />}
+                              onClick={() => {
+                                setExportFilesLinkDefault(true);
+                                setExportFilesOpened(true);
+                              }}
+                            >
+                              Create linked folder
+                            </Button>
+                          )}
+                        </Group>
+                      </Group>
+
                       <Divider variant="dashed" label={t("Common.Data")} />
                       <Group grow>
                         <Stack gap={0} justify="center" ta="center">
@@ -984,7 +1139,13 @@ export default function DatabasesPage() {
                                 "",
                                 null,
                               );
-                              mutate();
+                              const latestDatabases = await mutate();
+                              const latestDatabase =
+                                latestDatabases?.find(
+                                  (item): item is SuccessDatabaseInfo =>
+                                    item.type === "success" && item.file === selectedDatabase.file,
+                                ) ?? selectedDatabase;
+                              await syncLinkedFolder(latestDatabase);
                             } finally {
                               setConversionState((prev) => ({
                                 ...prev,
@@ -1014,7 +1175,10 @@ export default function DatabasesPage() {
                         <Button
                           rightSection={<IconFolderDown size="1rem" />}
                           variant="default"
-                          onClick={() => setExportFilesOpened(true)}
+                          onClick={() => {
+                            setExportFilesLinkDefault(false);
+                            setExportFilesOpened(true);
+                          }}
                         >
                           Export to files
                         </Button>
@@ -1308,23 +1472,32 @@ function DatabaseFilesExportModal({
   setOpened,
   selectedDatabase,
   documentDir,
+  linkByDefault,
+  linkedFolder,
+  onLinked,
 }: {
   opened: boolean;
   setOpened: (opened: boolean) => void;
   selectedDatabase: SuccessDatabaseInfo;
   documentDir: string;
+  linkByDefault: boolean;
+  linkedFolder: DatabaseLinkedFolderRecord | null;
+  onLinked: (record: DatabaseLinkedFolderRecord) => void;
 }) {
   const [folderName, setFolderName] = useState("");
+  const [linkFolder, setLinkFolder] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!opened) return;
     setFolderName(
-      getDefaultDatabaseFolderName(selectedDatabase.title || selectedDatabase.filename),
+      linkedFolder?.folderName ??
+        getDefaultDatabaseFolderName(selectedDatabase.title || selectedDatabase.filename),
     );
+    setLinkFolder(linkByDefault || !!linkedFolder);
     setError("");
-  }, [opened, selectedDatabase.filename, selectedDatabase.title]);
+  }, [linkByDefault, linkedFolder, opened, selectedDatabase.filename, selectedDatabase.title]);
 
   async function exportDatabaseFiles() {
     const trimmedFolderName = folderName.trim();
@@ -1340,15 +1513,46 @@ function DatabaseFilesExportModal({
     try {
       const filesRoot = documentDir || (await getDocumentDir());
       const targetDir = await resolve(filesRoot, trimmedFolderName);
-      const report = await splitGameSourceToFiles({
-        sourcePath: selectedDatabase.file,
-        targetDir,
-        fileType: "game",
-      });
+      let created = 0;
+      if (linkFolder) {
+        const linkRecord = {
+          ...(linkedFolder ?? {
+            dbPath: selectedDatabase.file,
+            title: selectedDatabase.title,
+            folderName: trimmedFolderName,
+            folderPath: targetDir,
+            linkedAt: Date.now(),
+            lastSyncedAt: null,
+            lastCreated: 0,
+            lastKnownGameCount: null,
+          }),
+          dbPath: selectedDatabase.file,
+          title: selectedDatabase.title,
+          folderName: trimmedFolderName,
+          folderPath: targetDir,
+        };
+        const result = await syncDatabaseLinkedFolder({
+          sourcePath: selectedDatabase.file,
+          title: selectedDatabase.title,
+          gameCount: selectedDatabase.game_count,
+          record: linkRecord,
+        });
+        created = result.report.created;
+        onLinked(result.record);
+      } else {
+        const report = await splitGameSourceToFiles({
+          sourcePath: selectedDatabase.file,
+          targetDir,
+          fileType: "game",
+        });
+        created = report.created;
+      }
 
       notifications.show({
-        title: "Exported database to Files",
-        message: `Created ${getGameFileCountText(report.created)} in ${trimmedFolderName}.`,
+        title: linkFolder ? "Linked folder synced" : "Exported database to Files",
+        message: linkFolder
+          ? `Added ${getGameFileCountText(created)} in ${trimmedFolderName}.`
+          : `Created ${getGameFileCountText(created)} in ${trimmedFolderName}.`,
         color: "green",
       });
       setOpened(false);
@@ -1383,8 +1587,13 @@ function DatabaseFilesExportModal({
             error={error}
             data-autofocus
           />
+          <Checkbox
+            label="Link this folder to database updates"
+            checked={linkFolder}
+            onChange={(event) => setLinkFolder(event.currentTarget.checked)}
+          />
           <Button type="submit" loading={loading} leftSection={<IconFileExport size="1rem" />}>
-            {loading ? "Exporting..." : "Export games"}
+            {loading ? "Exporting..." : linkFolder ? "Export and link" : "Export games"}
           </Button>
         </Stack>
       </form>

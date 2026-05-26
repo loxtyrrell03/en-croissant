@@ -596,6 +596,26 @@ export const lichessStudyDatabaseUpdatesAtom = atomWithStorage<LichessStudyDatab
     {},
 );
 
+export type DatabaseLinkedFolderRecord = {
+    dbPath: string;
+    title: string;
+    folderName: string;
+    folderPath: string;
+    linkedAt: number;
+    lastSyncedAt: number | null;
+    lastCreated: number;
+    lastKnownGameCount: number | null;
+};
+
+export type DatabaseLinkedFolderRecords = Record<string, DatabaseLinkedFolderRecord>;
+
+export const databaseLinkedFoldersAtom = atomWithStorage<DatabaseLinkedFolderRecords>(
+    "database-linked-folders",
+    {},
+    undefined,
+    { getOnInit: true },
+);
+
 export type AccountStatsLinkedDatabase = {
     dbPath: string;
     title: string;

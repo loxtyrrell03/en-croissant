@@ -6,7 +6,9 @@ import type { DatabaseInfo } from "@/bindings";
 import { commands } from "@/bindings";
 import {
     databaseConversionStateAtom,
+    databaseLinkedFoldersAtom,
     type DatabaseConversionState,
+    type DatabaseLinkedFolderRecords,
     type OnlineDatabaseUpdateAccount,
     type OnlineDatabaseUpdateRecord,
     onlineDatabaseUpdatesAtom,
@@ -15,6 +17,11 @@ import {
 } from "@/state/atoms";
 import { getDatabases, type SuccessDatabaseInfo } from "@/utils/db";
 import { getDatabasesDir } from "@/utils/directories";
+import {
+    getDatabaseLinkedFolderRecord,
+    syncDatabaseLinkedFolder,
+    upsertDatabaseLinkedFolderRecord,
+} from "@/utils/databaseFileExport";
 import {
     getLastOnlineDatabaseGameDate,
     getLastOnlineDatabaseGameId,
@@ -35,6 +42,7 @@ const ONLINE_DATABASE_INITIAL_CHECK_DELAY_MS = 20 * 1000;
 
 type SetDatabaseConversionState = (value: SetStateAction<DatabaseConversionState>) => void;
 type SetOnlineDatabaseUpdateRecords = (value: SetStateAction<OnlineDatabaseUpdateRecords>) => void;
+type SetDatabaseLinkedFolderRecords = (value: SetStateAction<DatabaseLinkedFolderRecords>) => void;
 
 type UpdateCandidate = {
     database: SuccessDatabaseInfo;
@@ -431,14 +439,18 @@ export async function updateOnlineDatabaseNow({
 async function checkOnlineDatabases({
     sessions,
     records,
+    linkedFolders,
     setConversionState,
     setUpdateRecords,
+    setLinkedFolders,
     isConversionInProgress,
 }: {
     sessions: Session[];
     records: OnlineDatabaseUpdateRecords;
+    linkedFolders: DatabaseLinkedFolderRecords;
     setConversionState: SetDatabaseConversionState;
     setUpdateRecords: SetOnlineDatabaseUpdateRecords;
+    setLinkedFolders: SetDatabaseLinkedFolderRecords;
     isConversionInProgress: () => boolean;
 }) {
     const databaseDir = await getDatabasesDir();
@@ -451,7 +463,7 @@ async function checkOnlineDatabases({
         }
 
         try {
-            await maybeUpdateCandidate({
+            const result = await maybeUpdateCandidate({
                 candidate,
                 databaseDir,
                 sessions,
@@ -459,6 +471,13 @@ async function checkOnlineDatabases({
                 setUpdateRecords,
                 isConversionInProgress,
             });
+            if (result.updated) {
+                await syncLinkedFolderForUpdatedDatabase(
+                    candidate.database.file,
+                    linkedFolders,
+                    setLinkedFolders,
+                );
+            }
         } catch (e) {
             warn(
                 `Failed to auto-update ${candidate.record.source} database for ${candidate.record.username}: ${e}`,
@@ -470,15 +489,21 @@ async function checkOnlineDatabases({
 export function useOnlineDatabaseAutoUpdater() {
     const sessions = useAtomValue(sessionsAtom);
     const [records, setRecords] = useAtom(onlineDatabaseUpdatesAtom);
+    const [linkedFolders, setLinkedFolders] = useAtom(databaseLinkedFoldersAtom);
     const [conversionState, setConversionState] = useAtom(databaseConversionStateAtom);
     const runningRef = useRef(false);
     const recordsRef = useRef(records);
+    const linkedFoldersRef = useRef(linkedFolders);
     const sessionsRef = useRef(sessions);
     const conversionStateRef = useRef(conversionState);
 
     useEffect(() => {
         recordsRef.current = records;
     }, [records]);
+
+    useEffect(() => {
+        linkedFoldersRef.current = linkedFolders;
+    }, [linkedFolders]);
 
     useEffect(() => {
         sessionsRef.current = sessions;
@@ -501,8 +526,10 @@ export function useOnlineDatabaseAutoUpdater() {
                 await checkOnlineDatabases({
                     sessions: sessionsRef.current,
                     records: recordsRef.current,
+                    linkedFolders: linkedFoldersRef.current,
                     setConversionState,
                     setUpdateRecords: setRecords,
+                    setLinkedFolders,
                     isConversionInProgress: () => conversionStateRef.current.inProgress,
                 });
             } catch (e) {
@@ -523,5 +550,35 @@ export function useOnlineDatabaseAutoUpdater() {
             window.clearTimeout(initialTimer);
             window.clearInterval(interval);
         };
-    }, [setConversionState, setRecords]);
+    }, [setConversionState, setLinkedFolders, setRecords]);
+}
+
+async function syncLinkedFolderForUpdatedDatabase(
+    dbPath: string,
+    linkedFolders: DatabaseLinkedFolderRecords,
+    setLinkedFolders: SetDatabaseLinkedFolderRecords,
+) {
+    const record = getDatabaseLinkedFolderRecord(dbPath, linkedFolders);
+    if (!record) return;
+
+    const database = successfulDatabases(await getDatabases()).find(
+        (candidate) => candidate.file === dbPath,
+    );
+    if (!database) return;
+
+    try {
+        const { record: syncedRecord } = await syncDatabaseLinkedFolder({
+            sourcePath: database.file,
+            title: database.title,
+            gameCount: database.game_count,
+            record: {
+                ...record,
+                dbPath: database.file,
+                title: database.title,
+            },
+        });
+        setLinkedFolders((records) => upsertDatabaseLinkedFolderRecord(records, syncedRecord));
+    } catch (error) {
+        warn(`Failed to sync linked Files folder for ${database.title}: ${error}`);
+    }
 }

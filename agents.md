@@ -187,6 +187,11 @@ Database work is centered in `src/components/databases/*`,
   Repertoire, opponent prep, and home review setup use a two-step picker:
   root-level databases remain directly selectable, while foldered databases are
   reached by first choosing the folder and then the database inside it.
+- Databases can be linked to a Files folder that stores one PGN per game.
+  Creating the link is available from the database export flow, and linked
+  folders are incrementally synced after manual imports plus online and Lichess
+  Study auto-updates by adding only games whose PGN content is not already in
+  the folder.
 - PGN conversion now initializes the En Croissant schema based on actual tables
   rather than only file existence, so zero-byte placeholder `.db3` files created
   during interrupted folder organization or external prep workflows are repaired
@@ -576,9 +581,11 @@ and `src/utils/pawnStructureTrajectory.ts` using
 - `src/components/databases/AddDatabase.tsx`: database import modal, online
   account database import, merged database import, Lichess Study import.
 - `src/utils/databaseFileExport.ts`: shared helpers for exporting PGN or `.db3`
-  sources into Files folders with one game PGN plus metadata sidecar per game.
+  sources into Files folders with one game PGN plus metadata sidecar per game,
+  plus additive linked-folder sync for updating databases.
 - `src/state/atoms.ts`: persisted source choices, auto-update state, review
-  deck state, practice state, Plan Explorer state, compare selection state.
+  deck state, practice state, Plan Explorer state, compare selection state, and
+  database-to-Files-folder link records.
 - `src/utils/tabs.ts`: tab types and game-origin routing for analysis, database
   games, Opening Review, and Mistake Review.
 - `src/utils/openingReview*.ts`: review deck persistence, auto-update,

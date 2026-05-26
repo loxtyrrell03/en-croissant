@@ -5,12 +5,19 @@ import { useAtom } from "jotai";
 import { commands } from "@/bindings";
 import {
     databaseConversionStateAtom,
+    databaseLinkedFoldersAtom,
     type DatabaseConversionState,
+    type DatabaseLinkedFolderRecords,
     type LichessStudyDatabaseUpdateRecord,
     lichessStudyDatabaseUpdatesAtom,
     type LichessStudyDatabaseUpdateRecords,
     sessionsAtom,
 } from "@/state/atoms";
+import {
+    getDatabaseLinkedFolderRecord,
+    syncDatabaseLinkedFolder,
+    upsertDatabaseLinkedFolderRecord,
+} from "@/utils/databaseFileExport";
 import { getDatabases, type SuccessDatabaseInfo } from "@/utils/db";
 import { getDatabasesDir } from "@/utils/directories";
 import {
@@ -28,6 +35,7 @@ type SetDatabaseConversionState = (value: SetStateAction<DatabaseConversionState
 type SetStudyDatabaseUpdateRecords = (
     value: SetStateAction<LichessStudyDatabaseUpdateRecords>,
 ) => void;
+type SetDatabaseLinkedFolderRecords = (value: SetStateAction<DatabaseLinkedFolderRecords>) => void;
 
 type StudyUpdateCandidate = {
     database: SuccessDatabaseInfo;
@@ -243,15 +251,19 @@ export async function updateLichessStudyDatabaseNow({
 
 async function checkStudyDatabases({
     records,
+    linkedFolders,
     sessions,
     setConversionState,
     setUpdateRecords,
+    setLinkedFolders,
     isConversionInProgress,
 }: {
     records: LichessStudyDatabaseUpdateRecords;
+    linkedFolders: DatabaseLinkedFolderRecords;
     sessions: Session[];
     setConversionState: SetDatabaseConversionState;
     setUpdateRecords: SetStudyDatabaseUpdateRecords;
+    setLinkedFolders: SetDatabaseLinkedFolderRecords;
     isConversionInProgress: () => boolean;
 }) {
     const databaseDir = await getDatabasesDir();
@@ -262,7 +274,7 @@ async function checkStudyDatabases({
         if (isConversionInProgress()) return;
 
         try {
-            await maybeUpdateStudyCandidate({
+            const result = await maybeUpdateStudyCandidate({
                 candidate,
                 databaseDir,
                 token: getAnyLichessTokenFromSessions(sessions),
@@ -270,6 +282,13 @@ async function checkStudyDatabases({
                 setUpdateRecords,
                 isConversionInProgress,
             });
+            if (result.updated) {
+                await syncLinkedFolderForUpdatedStudy(
+                    candidate.database.file,
+                    linkedFolders,
+                    setLinkedFolders,
+                );
+            }
         } catch (error) {
             warn(
                 `Failed to auto-update Lichess study database ${candidate.record.title}: ${error}`,
@@ -280,16 +299,22 @@ async function checkStudyDatabases({
 
 export function useLichessStudyDatabaseAutoUpdater() {
     const [records, setRecords] = useAtom(lichessStudyDatabaseUpdatesAtom);
+    const [linkedFolders, setLinkedFolders] = useAtom(databaseLinkedFoldersAtom);
     const [conversionState, setConversionState] = useAtom(databaseConversionStateAtom);
     const [sessions] = useAtom(sessionsAtom);
     const runningRef = useRef(false);
     const recordsRef = useRef(records);
+    const linkedFoldersRef = useRef(linkedFolders);
     const conversionStateRef = useRef(conversionState);
     const sessionsRef = useRef(sessions);
 
     useEffect(() => {
         recordsRef.current = records;
     }, [records]);
+
+    useEffect(() => {
+        linkedFoldersRef.current = linkedFolders;
+    }, [linkedFolders]);
 
     useEffect(() => {
         conversionStateRef.current = conversionState;
@@ -311,9 +336,11 @@ export function useLichessStudyDatabaseAutoUpdater() {
             try {
                 await checkStudyDatabases({
                     records: recordsRef.current,
+                    linkedFolders: linkedFoldersRef.current,
                     sessions: sessionsRef.current,
                     setConversionState,
                     setUpdateRecords: setRecords,
+                    setLinkedFolders,
                     isConversionInProgress: () => conversionStateRef.current.inProgress,
                 });
             } catch (error) {
@@ -334,7 +361,37 @@ export function useLichessStudyDatabaseAutoUpdater() {
             window.clearTimeout(initialTimer);
             window.clearInterval(interval);
         };
-    }, [setConversionState, setRecords]);
+    }, [setConversionState, setLinkedFolders, setRecords]);
+}
+
+async function syncLinkedFolderForUpdatedStudy(
+    dbPath: string,
+    linkedFolders: DatabaseLinkedFolderRecords,
+    setLinkedFolders: SetDatabaseLinkedFolderRecords,
+) {
+    const record = getDatabaseLinkedFolderRecord(dbPath, linkedFolders);
+    if (!record) return;
+
+    const database = successfulDatabases(await getDatabases()).find(
+        (candidate) => candidate.file === dbPath,
+    );
+    if (!database) return;
+
+    try {
+        const { record: syncedRecord } = await syncDatabaseLinkedFolder({
+            sourcePath: database.file,
+            title: database.title,
+            gameCount: database.game_count,
+            record: {
+                ...record,
+                dbPath: database.file,
+                title: database.title,
+            },
+        });
+        setLinkedFolders((records) => upsertDatabaseLinkedFolderRecord(records, syncedRecord));
+    } catch (error) {
+        warn(`Failed to sync linked Files folder for ${database.title}: ${error}`);
+    }
 }
 
 function getAnyLichessTokenFromSessions(sessions: Session[]) {
