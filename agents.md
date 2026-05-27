@@ -80,6 +80,9 @@ default.
   right-click rename actions for files and folders in the tree, and a folder
   import/export flow that splits a PGN or `.db3` database into one game file per
   game.
+- Files directory scans load PGN metadata first and defer exact game counts
+  until a file is selected or opened, so large linked database folders do not
+  hold the whole file tree on "Loading files...".
 - `/databases` manages local databases, online game databases, merged
   Lichess/Chess.com databases, Lichess study imports, database conversion, and
   auto-update metadata. Database settings can export a whole database into the

@@ -20,6 +20,7 @@ export const fileMetadataSchema = z.object({
     name: z.string(),
     path: z.string(),
     numGames: z.number(),
+    numGamesKnown: z.boolean().optional(),
     metadata: fileInfoMetadataSchema,
     lastModified: z.number(),
 });
@@ -47,12 +48,14 @@ async function readFileMetadata(path: string): Promise<FileMetadata | null> {
         await writeTextFile(metadataPath, JSON.stringify(metadata));
     }
     const fileMetadata = unwrap(await commands.getFileMetadata(path));
-    const numGames = unwrap(await commands.countPgnGames(path));
     return {
         type: "file",
         path,
         name: (await basename(path)).replace(".pgn", ""),
-        numGames,
+        // Counting every PGN blocks the whole Files page for large linked folders.
+        // Resolve the exact count only when the user selects or opens the file.
+        numGames: 1,
+        numGamesKnown: false,
         metadata,
         lastModified: fileMetadata.last_modified,
     };

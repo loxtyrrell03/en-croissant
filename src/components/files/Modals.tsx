@@ -508,6 +508,7 @@ export function EditModal({
             name: filename,
             path: newPGNPath,
             numGames: metadata.numGames,
+            numGamesKnown: metadata.numGamesKnown,
             metadata: newMetadata,
           }
         : selected,

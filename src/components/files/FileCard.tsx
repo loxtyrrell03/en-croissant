@@ -32,10 +32,34 @@ function FileCard({
 
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const [page, setPage] = useState(0);
+  const [gameCount, setGameCount] = useState(selected.numGames);
 
   useEffect(() => {
     setPage(0);
+    setGameCount(selected.numGames);
   }, [selected]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadGameCount() {
+      if (selected.numGamesKnown !== false) {
+        setGameCount(selected.numGames);
+        return;
+      }
+
+      const count = unwrap(await commands.countPgnGames(selected.path));
+      if (!cancelled) {
+        setGameCount(count);
+      }
+    }
+
+    void loadGameCount();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selected.numGames, selected.numGamesKnown, selected.path]);
 
   useEffect(() => {
     async function loadGames() {
@@ -47,10 +71,15 @@ function FileCard({
   }, [selected, page]);
 
   async function openGame() {
-    await openFile(selected, setTabs, setActiveTab, {
-      gameNumber: page,
-      pgn: selectedGame || "",
-    });
+    await openFile(
+      { ...selected, numGames: gameCount, numGamesKnown: true },
+      setTabs,
+      setActiveTab,
+      {
+        gameNumber: page,
+        pgn: selectedGame || "",
+      },
+    );
     navigate({ to: "/" });
   }
 
@@ -78,7 +107,7 @@ function FileCard({
           </Tooltip>
         </Group>
         <Text ta="center" c="dimmed">
-          {selected?.numGames} {t("Common.Games")}
+          {gameCount} {t("Common.Games")}
         </Text>
         <div />
       </Group>
@@ -93,7 +122,7 @@ function FileCard({
               activePage={page}
               path={selected.path}
               setPage={setPage}
-              total={selected.numGames}
+              total={gameCount}
             />
             <Divider />
           </Box>

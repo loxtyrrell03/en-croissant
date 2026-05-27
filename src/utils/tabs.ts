@@ -301,6 +301,7 @@ export async function saveToFile({
                         name: filePath,
                         path: filePath,
                         numGames,
+                        numGamesKnown: true,
                         metadata: fileOrigin?.file.metadata ?? {
                             tags: [],
                             type: "game",

@@ -158,9 +158,7 @@ function BoardAnalysis() {
     currentTab?.gameOrigin.kind === "opening_review" ||
     currentTab?.gameOrigin.kind === "mistake_review";
   const practiceDeckKey =
-    tabFile || isReviewOrigin
-      ? getTabPracticeKey(currentTab)
-      : INACTIVE_REVIEW_DECK_KEY;
+    tabFile || isReviewOrigin ? getTabPracticeKey(currentTab) : INACTIVE_REVIEW_DECK_KEY;
   const trainingDeck = useAtomValue(
     deckAtomFamily({
       file: practiceDeckKey,
@@ -255,6 +253,7 @@ function BoardAnalysis() {
           file: {
             ...prev.gameOrigin.file,
             numGames: prev.gameOrigin.file.numGames + 1,
+            numGamesKnown: true,
           },
         },
       };

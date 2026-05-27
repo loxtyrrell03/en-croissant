@@ -47,6 +47,7 @@ function FileInfo({
                         file: {
                           ...prev.gameOrigin.file,
                           numGames: unwrap(v),
+                          numGamesKnown: true,
                         },
                       },
                     };

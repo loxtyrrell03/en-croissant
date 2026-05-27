@@ -84,7 +84,15 @@ export async function openFile(
             recentName = file;
         }
     } else {
-        fileInfo = file;
+        const count =
+            file.numGamesKnown === false
+                ? unwrap(await commands.countPgnGames(file.path))
+                : file.numGames;
+        fileInfo = {
+            ...file,
+            numGames: count,
+            numGamesKnown: true,
+        };
         isTempOrigin = await isInTempDir(file.path);
         if (pgn === undefined) {
             pgn = unwrap(await commands.readGames(file.path, gameNumber, gameNumber))[0];
@@ -152,6 +160,7 @@ export async function createFile({
         name: filename,
         path: file,
         numGames,
+        numGamesKnown: true,
         metadata,
         lastModified: new Date().getUTCSeconds(),
     });

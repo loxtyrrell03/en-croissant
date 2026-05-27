@@ -207,6 +207,7 @@ function GameSelectorAccordion({
           file: {
             ...prev.gameOrigin.file,
             numGames: prev.gameOrigin.file.numGames - 1,
+            numGamesKnown: true,
           },
         },
       };
