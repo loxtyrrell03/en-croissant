@@ -822,6 +822,9 @@ from 2026-04-24 through 2026-05-03.
   the opponent's turn, rows say when that player last played the move; when it
   is the user's turn, candidate replies say when the opponent last played
   against that move.
+- The chess.com-inspired board style uses checkerboard parity that matches
+  normal chess coordinates in the White orientation: a1 is dark and a8 is
+  light. Keep this invariant when adjusting the CSS gradient or square colors.
 
 ## Verification Expectations
 
