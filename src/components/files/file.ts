@@ -1,4 +1,4 @@
-import { BaseDirectory, basename, join } from "@tauri-apps/api/path";
+import { basename, join } from "@tauri-apps/api/path";
 import { type DirEntry, exists, readDir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { z } from "zod";
 import { commands } from "@/bindings";
@@ -64,11 +64,14 @@ async function readFileMetadata(path: string): Promise<FileMetadata | null> {
 export type Directory = {
     type: "directory";
     children: (FileMetadata | Directory)[];
+    childrenLoaded?: boolean;
     path: string;
     name: string;
 };
 
-export async function processEntriesRecursively(parent: string, entries: DirEntry[]) {
+export type Entry = FileMetadata | Directory;
+
+async function processEntries(parent: string, entries: DirEntry[], recursive: boolean) {
     const processedEntries = await Promise.all(
         entries.map(async (entry) => {
             if (entry.isFile) {
@@ -76,15 +79,15 @@ export async function processEntriesRecursively(parent: string, entries: DirEntr
             }
             if (entry.isDirectory) {
                 const dir = await join(parent, entry.name);
-                const newEntries = await processEntriesRecursively(
-                    dir,
-                    await readDir(dir, { baseDir: BaseDirectory.AppLocalData }),
-                );
+                const children = recursive
+                    ? await readDirectoryEntries(dir, { recursive: true })
+                    : [];
                 const directory: Directory = {
                     type: "directory",
                     name: entry.name,
                     path: dir,
-                    children: newEntries,
+                    children,
+                    childrenLoaded: recursive,
                 };
                 return directory;
             }
@@ -92,5 +95,17 @@ export async function processEntriesRecursively(parent: string, entries: DirEntr
         }),
     );
 
-    return processedEntries.filter((entry): entry is FileMetadata | Directory => entry !== null);
+    return processedEntries.filter((entry): entry is Entry => entry !== null);
+}
+
+export async function readDirectoryEntries(
+    dir: string,
+    options: { recursive?: boolean } = {},
+): Promise<Entry[]> {
+    const entries = await readDir(dir);
+    return processEntries(dir, entries, options.recursive ?? false);
+}
+
+export async function processEntriesRecursively(parent: string, entries: DirEntry[]) {
+    return processEntries(parent, entries, true);
 }

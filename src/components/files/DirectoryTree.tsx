@@ -1,4 +1,4 @@
-import { Badge, Box } from "@mantine/core";
+import { Badge, Box, Loader, Text } from "@mantine/core";
 import {
   IconChevronRight,
   IconEdit,
@@ -116,6 +116,9 @@ function recursiveSort(files: Entry[], pruneEmpty = false): Entry[] {
 export default function DirectoryTree({
   files,
   refreshDirectory,
+  loadDirectory,
+  loadingDirectories,
+  isDeepLoading,
   selectedFile,
   setSelectedFile,
   onRequestDelete,
@@ -125,6 +128,9 @@ export default function DirectoryTree({
 }: {
   files: Entry[] | undefined;
   refreshDirectory: () => Promise<unknown>;
+  loadDirectory: (path: string) => Promise<void>;
+  loadingDirectories: Set<string>;
+  isDeepLoading: boolean;
   selectedFile: Entry | null;
   setSelectedFile: (file: Entry | null) => void;
   onRequestDelete: (file: Entry) => void;
@@ -158,9 +164,18 @@ export default function DirectoryTree({
 
   return (
     <Box className={classes.tree}>
+      {isDeepLoading && (search || filter) && (
+        <Box px="xs" py={4}>
+          <Text size="xs" c="dimmed">
+            Loading folders for search...
+          </Text>
+        </Box>
+      )}
       <Tree
         files={filteredFiles}
         refreshDirectory={refreshDirectory}
+        loadDirectory={loadDirectory}
+        loadingDirectories={loadingDirectories}
         depth={0}
         selected={selectedFile}
         setSelectedFile={setSelectedFile}
@@ -176,6 +191,8 @@ function Tree({
   files,
   depth,
   refreshDirectory,
+  loadDirectory,
+  loadingDirectories,
   selected,
   setSelectedFile,
   onRequestDelete,
@@ -185,6 +202,8 @@ function Tree({
   files: Entry[];
   depth: number;
   refreshDirectory: () => Promise<unknown>;
+  loadDirectory: (path: string) => Promise<void>;
+  loadingDirectories: Set<string>;
   selected: Entry | null;
   setSelectedFile: (file: Entry | null) => void;
   onRequestDelete: (file: Entry) => void;
@@ -205,19 +224,41 @@ function Tree({
     [setActiveTab, setTabs, navigate],
   );
 
-  const toggleExpand = (path: string, event: React.MouseEvent) => {
+  const toggleExpand = (node: Entry, event: React.MouseEvent) => {
     event.stopPropagation();
+    const isCurrentlyExpanded = expandedIds.includes(node.path);
     setExpandedIds((prev) => {
       const next = [...prev];
-      const index = next.indexOf(path);
+      const index = next.indexOf(node.path);
       if (index >= 0) {
         next.splice(index, 1);
       } else {
-        next.push(path);
+        next.push(node.path);
       }
       return next;
     });
+
+    if (!isCurrentlyExpanded && node.type === "directory" && node.childrenLoaded !== true) {
+      void loadDirectory(node.path);
+    }
   };
+
+  useEffect(() => {
+    if (expandedByDefault) {
+      return;
+    }
+
+    for (const node of files) {
+      if (
+        node.type === "directory" &&
+        expandedIds.includes(node.path) &&
+        node.childrenLoaded !== true &&
+        !loadingDirectories.has(node.path)
+      ) {
+        void loadDirectory(node.path);
+      }
+    }
+  }, [expandedByDefault, expandedIds, files, loadDirectory, loadingDirectories]);
 
   return (
     <>
@@ -234,7 +275,7 @@ function Tree({
             selectedFile={selected}
             isExpanded={isExpanded}
             setExpandedIds={setExpandedIds}
-            toggleExpand={(e) => toggleExpand(node.path, e)}
+            toggleExpand={(e) => toggleExpand(node, e)}
             setSelectedFile={setSelectedFile}
             handleOpenFile={handleOpenFile}
             onRequestDelete={onRequestDelete}
@@ -242,22 +283,48 @@ function Tree({
             refreshDirectory={refreshDirectory}
             showContextMenu={showContextMenu}
           >
-            {node.type === "directory" && isExpanded && node.children.length > 0 && (
-              <Tree
-                files={node.children}
-                refreshDirectory={refreshDirectory}
-                depth={depth + 1}
-                selected={selected}
-                setSelectedFile={setSelectedFile}
-                onRequestDelete={onRequestDelete}
-                onRequestRename={onRequestRename}
-                expandedByDefault={expandedByDefault}
-              />
-            )}
+            {node.type === "directory" &&
+              isExpanded &&
+              (loadingDirectories.has(node.path) ? (
+                <LoadingDirectoryRow depth={depth + 1} />
+              ) : (
+                node.children.length > 0 && (
+                  <Tree
+                    files={node.children}
+                    refreshDirectory={refreshDirectory}
+                    loadDirectory={loadDirectory}
+                    loadingDirectories={loadingDirectories}
+                    depth={depth + 1}
+                    selected={selected}
+                    setSelectedFile={setSelectedFile}
+                    onRequestDelete={onRequestDelete}
+                    onRequestRename={onRequestRename}
+                    expandedByDefault={expandedByDefault}
+                  />
+                )
+              ))}
           </DirectoryNode>
         );
       })}
     </>
+  );
+}
+
+function LoadingDirectoryRow({ depth }: { depth: number }) {
+  return (
+    <div
+      className={classes.row}
+      style={{
+        paddingLeft: TREE_BASE_PADDING_PX + depth * TREE_INDENT_PX,
+      }}
+    >
+      <div className={classes.iconContainer}>
+        <Loader size={12} />
+      </div>
+      <Text component="span" size="xs" c="dimmed" className={classes.label}>
+        Loading...
+      </Text>
+    </div>
   );
 }
 

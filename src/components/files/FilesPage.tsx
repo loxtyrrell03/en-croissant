@@ -23,7 +23,7 @@ import {
   IconFolder,
 } from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
-import { readDir, remove } from "@tauri-apps/plugin-fs";
+import { remove } from "@tauri-apps/plugin-fs";
 import clsx from "clsx";
 import { useSetAtom } from "jotai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -39,9 +39,10 @@ import treeClasses from "./DirectoryTree.module.css";
 import FileCard from "./FileCard";
 import {
   type Directory,
+  type Entry,
   type FileMetadata,
   type FileType,
-  processEntriesRecursively,
+  readDirectoryEntries,
 } from "./file";
 import {
   CreateDirectoryModal,
@@ -53,7 +54,6 @@ import {
 } from "./Modals";
 
 const FILE_TYPES: FileType[] = ["game", "repertoire", "tournament", "puzzle", "other"];
-type Entry = FileMetadata | Directory;
 
 function findEntryByPath(entries: Entry[], path: string): Entry | null {
   for (const entry of entries) {
@@ -92,18 +92,94 @@ function replacePathPrefix(path: string, oldPath: string, newPath: string) {
   return path;
 }
 
-const useFileDirectory = (dir: string) => {
-  const { data, error, isLoading, mutate } = useSWR<Entry[]>(["file-directory", dir], async () => {
-    const entries = await readDir(dir);
-    const allEntries = processEntriesRecursively(dir, entries);
+function hasUnloadedDirectories(entries: Entry[]): boolean {
+  return entries.some((entry) => {
+    if (entry.type === "file") {
+      return false;
+    }
 
-    return allEntries;
+    return entry.childrenLoaded !== true || hasUnloadedDirectories(entry.children);
   });
+}
+
+function withDirectoryChildren(entries: Entry[], path: string, children: Entry[]): Entry[] {
+  return entries.map((entry) => {
+    if (entry.type === "file") {
+      return entry;
+    }
+
+    if (entry.path === path) {
+      return {
+        ...entry,
+        children,
+        childrenLoaded: true,
+      };
+    }
+
+    return {
+      ...entry,
+      children: withDirectoryChildren(entry.children, path, children),
+    };
+  });
+}
+
+const useFileDirectory = (dir: string) => {
+  const [loadingDirectories, setLoadingDirectories] = useState<Set<string>>(new Set());
+  const [isDeepLoading, setIsDeepLoading] = useState(false);
+  const { data, error, isLoading, mutate } = useSWR<Entry[]>(["file-directory", dir], async () =>
+    readDirectoryEntries(dir),
+  );
+
+  const loadDirectory = useCallback(
+    async (path: string) => {
+      const directory = data ? findEntryByPath(data, path) : null;
+      if (directory?.type !== "directory" || directory.childrenLoaded === true) {
+        return;
+      }
+
+      setLoadingDirectories((current) => new Set(current).add(path));
+      try {
+        const children = await readDirectoryEntries(path);
+        await mutate(
+          (current) => (current ? withDirectoryChildren(current, path, children) : current),
+          {
+            revalidate: false,
+          },
+        );
+      } finally {
+        setLoadingDirectories((current) => {
+          const next = new Set(current);
+          next.delete(path);
+          return next;
+        });
+      }
+    },
+    [data, mutate],
+  );
+
+  const loadAllDirectories = useCallback(async () => {
+    if (isDeepLoading || !data || !hasUnloadedDirectories(data)) {
+      return;
+    }
+
+    setIsDeepLoading(true);
+    try {
+      const allEntries = await readDirectoryEntries(dir, { recursive: true });
+      await mutate(allEntries, { revalidate: false });
+    } finally {
+      setIsDeepLoading(false);
+    }
+  }, [data, dir, isDeepLoading, mutate]);
+
   return {
     files: data,
     isLoading,
+    isDeepLoading,
+    loadingDirectories,
     error,
     mutate,
+    loadDirectory,
+    loadAllDirectories,
   };
 };
 
@@ -111,7 +187,16 @@ function FilesPage() {
   const { t } = useTranslation();
 
   const { documentDir } = useLoaderData({ from: "/files" });
-  const { files, isLoading, error, mutate } = useFileDirectory(documentDir);
+  const {
+    files,
+    isLoading,
+    isDeepLoading,
+    loadingDirectories,
+    error,
+    mutate,
+    loadDirectory,
+    loadAllDirectories,
+  } = useFileDirectory(documentDir);
   const setTabs = useSetAtom(tabsAtom);
   const setRecentFiles = useSetAtom(recentFilesAtom);
 
@@ -162,6 +247,14 @@ function FilesPage() {
       setSelected(canonicalSelection);
     }
   }, [files, selected]);
+
+  useEffect(() => {
+    if (!files || !(search || filter)) {
+      return;
+    }
+
+    void loadAllDirectories();
+  }, [files, filter, loadAllDirectories, search]);
 
   const [draggingPath, setDraggingPath] = useState<string | null>(null);
   const [hoverPath, setHoverPath] = useState<string | null>(null);
@@ -498,6 +591,9 @@ function FilesPage() {
                   <DirectoryTree
                     files={files}
                     refreshDirectory={refreshDirectory}
+                    loadDirectory={loadDirectory}
+                    loadingDirectories={loadingDirectories}
+                    isDeepLoading={isDeepLoading}
                     selectedFile={selected}
                     setSelectedFile={setSelected}
                     onRequestDelete={requestDelete}
@@ -542,9 +638,11 @@ function FilesPage() {
                       {selected.name}
                     </Text>
                     <Text c="dimmed" size="sm">
-                      {(selected as Directory).children.length === 1
-                        ? "1 item"
-                        : `${(selected as Directory).children.length} items`}
+                      {(selected as Directory).childrenLoaded !== true
+                        ? "Open folder to load items"
+                        : (selected as Directory).children.length === 1
+                          ? "1 item"
+                          : `${(selected as Directory).children.length} items`}
                     </Text>
                   </Stack>
                 </Center>

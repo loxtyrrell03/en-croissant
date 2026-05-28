@@ -83,6 +83,9 @@ default.
 - Files directory scans load PGN metadata first and defer exact game counts
   until a file is selected or opened, so large linked database folders do not
   hold the whole file tree on "Loading files...".
+- The Files tree now lazy-loads folder children: `/files` renders the root
+  first, each folder reads its children when expanded, and global search/filter
+  triggers a full background load only when that all-folder view is needed.
 - `/databases` manages local databases, online game databases, merged
   Lichess/Chess.com databases, Lichess study imports, database conversion, and
   auto-update metadata. Database settings can export a whole database into the
