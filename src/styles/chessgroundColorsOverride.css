@@ -6,10 +6,10 @@ cg-board {
 
 .cg-wrap[data-board-style="chess-com"] cg-board {
   background-image: conic-gradient(
-    var(--chess-com-light-square, #eeeed2) 25%,
-    var(--chess-com-dark-square, #769656) 0 50%,
-    var(--chess-com-light-square, #eeeed2) 0 75%,
-    var(--chess-com-dark-square, #769656) 0
+    var(--chess-com-dark-square, #769656) 25%,
+    var(--chess-com-light-square, #eeeed2) 0 50%,
+    var(--chess-com-dark-square, #769656) 0 75%,
+    var(--chess-com-light-square, #eeeed2) 0
   );
   background-size: 25% 25%;
   border-radius: 0;
