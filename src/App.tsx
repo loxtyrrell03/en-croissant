@@ -26,6 +26,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import {
   activeTabAtom,
+  boardStyleAtom,
   databaseConversionStateAtom,
   fontSizeAtom,
   mistakeReviewScanProgressAtom,
@@ -75,6 +76,7 @@ import { RouteStartupFallback } from "@/components/common/StartupProgress";
 import { OpeningReviewAutoUpdateBanner } from "@/components/review/OpeningReviewAutoUpdateBanner";
 import { getDatabasesDir, getDocumentDir, getEnginesDir, getPuzzlesDir } from "@/utils/directories";
 import { initUserAgent } from "@/utils/http";
+import { getEffectivePieceSet } from "@/utils/boardStyle";
 import { useLichessStudyDatabaseAutoUpdater } from "@/utils/lichessStudyDatabaseAutoUpdate";
 import { useOnlineDatabaseAutoUpdater } from "@/utils/onlineDatabaseAutoUpdate";
 import { useMistakeReviewDeckAutoUpdater } from "@/utils/mistakeReviewAutoUpdate";
@@ -515,6 +517,8 @@ function useStopInteractiveEnginesWhenInactive() {
 export default function App() {
   const primaryColor = useAtomValue(primaryColorAtom);
   const pieceSet = useAtomValue(pieceSetAtom);
+  const boardStyle = useAtomValue(boardStyleAtom);
+  const effectivePieceSet = getEffectivePieceSet(boardStyle, pieceSet);
   const fontSize = useAtomValue(fontSizeAtom);
   const spellCheck = useAtomValue(spellCheckAtom);
   const [databaseConversionState, setDatabaseConversionState] = useAtom(
@@ -718,7 +722,7 @@ export default function App() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <link rel="stylesheet" href={`/pieces/${pieceSet}.css`} />
+      <link rel="stylesheet" href={`/pieces/${effectivePieceSet}.css`} />
 
       <MantineProvider
         colorSchemeManager={colorSchemeManager}

@@ -13,7 +13,13 @@ import {
   useMemo,
   useRef,
 } from "react";
-import { boardImageAtom, moveMethodAtom } from "@/state/atoms";
+import { boardImageAtom, boardStyleAtom, moveMethodAtom } from "@/state/atoms";
+import {
+  CHESS_COM_BOARD_COORD_COLORS,
+  CHESS_COM_DRAW_BRUSHES,
+  isChessComBoardStyle,
+  type BoardStyle,
+} from "@/utils/boardStyle";
 
 const BOARD_COORDINATE_COLORS: Record<string, { white: string; black: string }> = {
   blue: { white: "#dee3e6", black: "#788a94" },
@@ -73,6 +79,7 @@ function buildManagedConfig(
   props: ManagedChessgroundConfig,
   setBoardFen: ChessgroundProps["setBoardFen"],
   moveMethod: "drag" | "select" | "both",
+  boardStyle: BoardStyle,
   boardElement: HTMLDivElement,
   handlers: {
     events: Required<NonNullable<Config["events"]>>;
@@ -136,6 +143,12 @@ function buildManagedConfig(
   if (props.drawable) {
     config.drawable = {
       ...props.drawable,
+      brushes: isChessComBoardStyle(boardStyle)
+        ? {
+            ...CHESS_COM_DRAW_BRUSHES,
+            ...props.drawable.brushes,
+          }
+        : props.drawable.brushes,
       onChange: handlers.drawableOnChange,
     };
   }
@@ -145,17 +158,20 @@ function buildManagedConfig(
 
 export function Chessground({ ref, setBoardFen, ...props }: ChessgroundProps) {
   const moveMethod = useAtomValue(moveMethodAtom);
+  const boardStyle = useAtomValue(boardStyleAtom);
   const apiRef = useRef<Api | null>(null);
   const appliedConfigRef = useRef<Config | null>(null);
   const latestPropsRef = useRef<ManagedChessgroundConfig>(props);
   const latestSetBoardFenRef = useRef<ChessgroundProps["setBoardFen"]>(setBoardFen);
   const latestMoveMethodRef = useRef(moveMethod);
+  const latestBoardStyleRef = useRef(boardStyle);
 
   const boardRef = useRef<HTMLDivElement>(null);
 
   latestPropsRef.current = props;
   latestSetBoardFenRef.current = setBoardFen;
   latestMoveMethodRef.current = moveMethod;
+  latestBoardStyleRef.current = boardStyle;
 
   const clearCachedBounds = useCallback(() => {
     apiRef.current?.state.dom.bounds.clear();
@@ -242,6 +258,7 @@ export function Chessground({ ref, setBoardFen, ...props }: ChessgroundProps) {
       latestPropsRef.current,
       latestSetBoardFenRef.current,
       latestMoveMethodRef.current,
+      latestBoardStyleRef.current,
       boardRef.current,
       handlers,
     );
@@ -260,21 +277,34 @@ export function Chessground({ ref, setBoardFen, ...props }: ChessgroundProps) {
     const api = apiRef.current;
     if (!api || !boardRef.current) return;
 
-    const config = buildManagedConfig(props, setBoardFen, moveMethod, boardRef.current, handlers);
+    const config = buildManagedConfig(
+      props,
+      setBoardFen,
+      moveMethod,
+      boardStyle,
+      boardRef.current,
+      handlers,
+    );
     if (appliedConfigRef.current && equal(appliedConfigRef.current, config)) {
       return;
     }
 
     api.set(config);
     appliedConfigRef.current = config;
-  }, [handlers, moveMethod, props, setBoardFen]);
+  }, [boardStyle, handlers, moveMethod, props, setBoardFen]);
 
   useLayoutEffect(() => {
     clearCachedBounds();
   });
 
   const boardImage = useAtomValue(boardImageAtom);
-  const boardCoordColors = useMemo(() => getBoardCoordinateColors(boardImage), [boardImage]);
+  const boardCoordColors = useMemo(
+    () =>
+      isChessComBoardStyle(boardStyle)
+        ? CHESS_COM_BOARD_COORD_COLORS
+        : getBoardCoordinateColors(boardImage),
+    [boardImage, boardStyle],
+  );
 
   return (
     <Box
@@ -282,9 +312,12 @@ export function Chessground({ ref, setBoardFen, ...props }: ChessgroundProps) {
         aspectRatio: 1,
         width: "100%",
         "--board-image": `url('/board/${boardImage}')`,
+        "--chess-com-light-square": "#eeeed2",
+        "--chess-com-dark-square": "#769656",
         "--board-coord-color-white": boardCoordColors.white,
         "--board-coord-color-black": boardCoordColors.black,
       }}
+      data-board-style={boardStyle}
       ref={boardRef}
       onMouseDownCapture={clearCachedBounds}
       onTouchStartCapture={clearCachedBounds}

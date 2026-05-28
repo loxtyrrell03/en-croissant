@@ -43,3 +43,30 @@
   > :global(square.current-premove) {
   background-color: rgba(20, 30, 85, 0.5) !important;
 }
+
+.boardSettingsButton {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  z-index: 70;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(28, 31, 28, 0.62);
+  color: white;
+  opacity: 0.78;
+  backdrop-filter: blur(8px);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease,
+    background 120ms ease;
+}
+
+.chessboard:hover .boardSettingsButton,
+.boardSettingsButton[data-active="true"],
+.boardSettingsButton:focus-visible {
+  opacity: 1;
+}
+
+.boardSettingsButton:hover {
+  transform: translateY(-1px);
+  background: rgba(28, 31, 28, 0.8);
+}

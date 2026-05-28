@@ -150,6 +150,7 @@ import { type Position as ReviewPosition } from "../files/opening";
 import { arrowColors } from "../panels/analysis/BestMoves";
 import AnnotationHint from "./AnnotationHint";
 import { BoardBar } from "./BoardBar";
+import BoardStyleSettingsButton from "./BoardStyleSettingsButton";
 import Clock from "./Clock";
 import EvalBar from "./EvalBar";
 import MoveInput from "./MoveInput";
@@ -1923,6 +1924,7 @@ function Board({
                   }
                 }}
               >
+                <BoardStyleSettingsButton />
                 <PromotionModal
                   pendingMove={pendingMove}
                   cancelMove={() => setPendingMove(null)}

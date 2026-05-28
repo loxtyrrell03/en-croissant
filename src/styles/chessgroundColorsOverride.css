@@ -4,6 +4,44 @@ cg-board {
   overflow: hidden;
 }
 
+.cg-wrap[data-board-style="chess-com"] cg-board {
+  background-image: conic-gradient(
+    var(--chess-com-light-square, #eeeed2) 25%,
+    var(--chess-com-dark-square, #769656) 0 50%,
+    var(--chess-com-light-square, #eeeed2) 0 75%,
+    var(--chess-com-dark-square, #769656) 0
+  );
+  background-size: 25% 25%;
+  border-radius: 0;
+}
+
+.cg-wrap[data-board-style="chess-com"] .cg-shapes,
+.cg-wrap[data-board-style="chess-com"] .cg-shapes-below {
+  opacity: 0.84;
+}
+
+.cg-wrap[data-board-style="chess-com"] cg-board square.selected,
+.cg-wrap[data-board-style="chess-com"] cg-board square.last-move {
+  background: rgba(255, 255, 51, 0.42) !important;
+}
+
+.cg-wrap[data-board-style="chess-com"] cg-board square.move-dest {
+  background: radial-gradient(rgba(20, 85, 30, 0.42) 19%, rgba(20, 85, 30, 0) 20%) !important;
+}
+
+.cg-wrap[data-board-style="chess-com"] cg-board square.move-dest:hover {
+  background: rgba(255, 255, 51, 0.34) !important;
+}
+
+.cg-wrap[data-board-style="chess-com"] cg-board square.oc.move-dest {
+  background: radial-gradient(transparent 0%, transparent 78%, rgba(20, 85, 30, 0.46) 80%) !important;
+  border: 0 !important;
+}
+
+.cg-wrap[data-board-style="chess-com"] cg-board square.oc.move-dest:hover {
+  background: rgba(255, 255, 51, 0.34) !important;
+}
+
 /** Interactive board square colors */
 cg-board square.premove-dest {
   background: radial-gradient(

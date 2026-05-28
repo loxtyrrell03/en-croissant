@@ -26,6 +26,7 @@ import { DEFAULT_MOVE_STRENGTH_SETTINGS, type MoveStrengthSettings } from "@/uti
 import type { OpeningMoveHealthSidePreference } from "@/utils/openingMoveHealth";
 import type { OnlineGameSource } from "@/utils/onlineGameSource";
 import type { PrepBuilderSettings } from "@/utils/opponentPrep";
+import { DEFAULT_BOARD_STYLE, type BoardStyle } from "@/utils/boardStyle";
 import type { ColoredPlanExplorerLine } from "@/utils/planExplorer";
 import {
     type LichessGamesOptions,
@@ -302,6 +303,14 @@ export const soundVolumeAtom = atomWithStorage<number>("sound-volume", 0.8, unde
 
 export const pieceSetAtom = atomWithStorage<string>("piece-set", "staunty");
 export const boardImageAtom = atomWithStorage<string>("board-image", "gray.svg");
+export const boardStyleAtom = atomWithStorage<BoardStyle>(
+    "board-style",
+    DEFAULT_BOARD_STYLE,
+    undefined,
+    {
+        getOnInit: true,
+    },
+);
 export const primaryColorAtom = atomWithStorage<MantineColor>("mantine-primary-color", "blue");
 export const sessionsAtom = atomWithStorage<Session[]>("sessions", []);
 export const latestOnlineGameAccountSelectionAtom = atomWithStorage<Record<string, boolean>>(

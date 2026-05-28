@@ -546,6 +546,12 @@ and `src/utils/pawnStructureTrajectory.ts` using
   than large cards.
 - Result bars should match the player's perspective in database, plan, and
   review contexts.
+- Board workspaces now have a small board-style settings button on the board.
+  The persisted style can stay on the user's default board/piece/sound setup or
+  switch to a chess.com-inspired package with green squares, Staunty pieces,
+  yellow selected/last-move squares, tuned arrow brushes, and matching
+  synthesized move/capture/check sounds. The mode is an override, so default
+  appearance settings remain intact when users switch back.
 
 ## Design Guide
 

@@ -74,6 +74,7 @@ import {
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
 import FileInput from "../common/FileInput";
+import BoardStyleControl from "../common/BoardStyleControl";
 import BoardSelect from "./BoardSelect";
 import ColorControl from "./ColorControl";
 import FontSizeSlider from "./FontSizeSlider";
@@ -226,6 +227,14 @@ export default function Page() {
   const settings: SettingItem[] = useMemo(
     () => [
       // Board settings
+      {
+        id: "board-style",
+        category: "board",
+        title: "Board style",
+        description: "Switch between your default board setup and a chess.com-style board package.",
+        keywords: ["board", "style", "chess.com", "pieces", "sounds", "arrows"],
+        render: () => <BoardStyleControl />,
+      },
       {
         id: "piece-dest",
         category: "board",
