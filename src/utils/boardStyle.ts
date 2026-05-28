@@ -4,7 +4,7 @@ export type BoardStyle = "default" | "chess-com";
 
 export const DEFAULT_BOARD_STYLE: BoardStyle = "default";
 export const CHESS_COM_BOARD_STYLE: BoardStyle = "chess-com";
-export const CHESS_COM_STYLE_PIECE_SET = "staunty";
+export const CHESS_COM_STYLE_PIECE_SET = "chesscom-neo";
 
 export const CHESS_COM_BOARD_COORD_COLORS = {
     white: "#eeeed2",
