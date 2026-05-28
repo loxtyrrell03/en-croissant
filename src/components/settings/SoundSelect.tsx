@@ -10,6 +10,7 @@ type Item = {
 };
 
 const soundCollections: Item[] = [
+  { label: "Chess.com", value: "chess-com" },
   { label: "Futuristic", value: "futuristic" },
   { label: "Lisp", value: "lisp" },
   { label: "NES", value: "nes" },

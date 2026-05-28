@@ -231,8 +231,9 @@ export default function Page() {
         id: "board-style",
         category: "board",
         title: "Board style",
-        description: "Switch between your default board setup and a chess.com-style board package.",
-        keywords: ["board", "style", "chess.com", "pieces", "arrows"],
+        description:
+          "Switch between your default board setup and a chess.com-style package for board, pieces, sounds, and arrows.",
+        keywords: ["board", "style", "chess.com", "pieces", "sound", "arrows"],
         render: () => <BoardStyleControl />,
       },
       {

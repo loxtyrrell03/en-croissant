@@ -3,7 +3,8 @@ import { resolveResource } from "@tauri-apps/api/path";
 import { platform } from "@tauri-apps/plugin-os";
 import { getDefaultStore } from "jotai";
 import { commands } from "@/bindings/generated";
-import { soundCollectionAtom, soundVolumeAtom } from "@/state/atoms";
+import { boardStyleAtom, soundCollectionAtom, soundVolumeAtom } from "@/state/atoms";
+import { getEffectiveSoundCollection } from "@/utils/boardStyle";
 
 const POOL_SIZE = 5;
 const DEFAULT_SOUND_COLLECTION = "standard";
@@ -44,16 +45,16 @@ export function playSound(capture: boolean, check: boolean) {
     lastTime = now;
 
     const store = getDefaultStore();
+    const boardStyle = store.get(boardStyleAtom);
     const selectedCollection = store.get(soundCollectionAtom);
-    const collection =
-        selectedCollection === "chess-com" ? DEFAULT_SOUND_COLLECTION : selectedCollection;
+    const collection = getEffectiveSoundCollection(boardStyle, selectedCollection);
     const volume = store.get(soundVolumeAtom);
 
     let type = "Move";
     if (capture) {
         type = "Capture";
     }
-    if (collection !== "standard" && check) {
+    if (collection !== DEFAULT_SOUND_COLLECTION && check) {
         type = "Check";
     }
 
