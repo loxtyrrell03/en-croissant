@@ -552,7 +552,9 @@ and `src/utils/pawnStructureTrajectory.ts` using
   switch to a chess.com-inspired package with green squares, Staunty pieces,
   yellow selected/last-move squares, tuned arrow brushes, and matching
   synthesized move/capture/check sounds. The mode is an override, so default
-  appearance settings remain intact when users switch back.
+  appearance settings remain intact when users switch back. Keep the chess.com
+  arrow/highlight SVG layers on `pointer-events: none`; otherwise they sit above
+  the board and block piece selection.
 
 ## Design Guide
 

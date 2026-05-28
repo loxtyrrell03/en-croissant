@@ -18,6 +18,12 @@ cg-board {
 .cg-wrap[data-board-style="chess-com"] .cg-shapes,
 .cg-wrap[data-board-style="chess-com"] .cg-shapes-below {
   opacity: 0.84;
+  pointer-events: none !important;
+}
+
+.cg-wrap[data-board-style="chess-com"] .cg-shapes *,
+.cg-wrap[data-board-style="chess-com"] .cg-shapes-below * {
+  pointer-events: none !important;
 }
 
 .cg-wrap[data-board-style="chess-com"] cg-board square.selected,
