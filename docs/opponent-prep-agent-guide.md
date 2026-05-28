@@ -31,6 +31,10 @@ database games, and tournament-site PGN downloads.
   the running fork before replacing databases, then restart it.
 - Keep the user's Files folder and the app database directory in sync. If you
   add new PGNs to a player folder, rebuild that player's `.db3`.
+- Search online PGN sources for every single target player, even when local
+  Mega/reference databases already found many games. Local database hits are
+  never a reason to skip Chessscope, Lichess broadcasts, TWIC, event PGNs, or
+  other online source checks for that player.
 - Re-check players with zero or suspiciously low game counts before finalizing.
   If the first pass finds few games, make a second targeted pass with alternate
   spellings, FIDE/national IDs, event leads, Chessscope, Lichess broadcasts,
@@ -122,7 +126,12 @@ Keep folder names short enough for Windows paths.
    - Do not assume local Mega is complete. It missed many recent Lichess
      broadcast games in the Muswell prep.
 
-5. Search online PGN sources player-by-player.
+5. Search online PGN sources player-by-player for every player.
+   - This step is mandatory for every target player, regardless of how many
+     games were already found in local/Mega/reference databases.
+   - Do not stop after local database matches. Recent Lichess broadcasts,
+     Chessscope-indexed games, TWIC files, and event PGNs can add important
+     games that Mega/local databases miss.
    - Use FIDE ID/name matching, not only visible names.
    - Prefer downloadable PGN endpoints over manually copied movetext.
    - Dedupe before writing files.

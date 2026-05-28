@@ -28,10 +28,11 @@ model, implementation map, and verification expectations for this app.
   for a player, opponent, event, congress, tournament, entrant list, or rating
   threshold, read and follow that guide as the workflow source of truth before
   gathering games or creating prep databases. It records the required
-  per-player folder/database workflow, source checklist, Lichess broadcast PGN
-  extraction pattern, Chess.com account-confidence method, low-count second-pass
-  checks, final-response count and most-recent-game reporting expectations,
-  dedupe rules, and En Croissant verification steps.
+  per-player folder/database workflow, mandatory online-source checks for every
+  player, Lichess broadcast PGN extraction pattern, Chess.com
+  account-confidence method, low-count second-pass checks, final-response count
+  and most-recent-game reporting expectations, dedupe rules, and En Croissant
+  verification steps.
 
 ## Local Browser Verification
 
