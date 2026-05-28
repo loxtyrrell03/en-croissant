@@ -112,7 +112,8 @@ Keep folder names short enough for Windows paths.
      the work. This is an internal tracking aid, not a required final
      deliverable.
    - Columns: player, rating, FIDE ID, national ID, club, federation,
-     Chess.com guess, confidence, OTB PGNs found, broadcast PGNs added, notes.
+     Chess.com guess, confidence, OTB PGNs found, broadcast PGNs added, most
+     recent game found, notes.
 
 4. Search local databases first.
    - Check the app database directory for Mega/Big/local reference databases.
@@ -153,8 +154,9 @@ Keep folder names short enough for Windows paths.
    - Do not create a separate `research-summary.md` unless the user explicitly
      asks for one.
    - Include exactly what sources were researched, which assets were created,
-     per-opponent game counts, account guesses where relevant, confidence
-     notes, and what could not be found.
+     per-opponent game counts, most recent game found for each opponent,
+     account guesses where relevant, confidence notes, and what could not be
+     found.
    - Explicitly list "no credible PGNs found" cases.
    - For every zero-game or low-count player, include the second-pass searches
      performed and the reason the remaining count should be treated as a known
@@ -550,6 +552,8 @@ for db in sorted(root.glob("muswell congress prep - *.db3")):
    - original/local games found
    - online/broadcast games added
    - current total per opponent
+   - most recent game found per opponent, including date, event/source if
+     known, opponent, color, and result when available
    - sources checked
    - no-PGN and low-count cases
    - Chess.com account guesses where relevant
@@ -563,7 +567,8 @@ Keep the final answer short but precise:
   broadcast/event/TWIC sources, federation/FIDE pages, and any online account
   checks that were actually used.
 - Give an honest per-opponent count table: player, local/reference PGNs,
-  online/broadcast PGNs added, final PGN/database count, and coverage notes.
+  online/broadcast PGNs added, final PGN/database count, most recent game found
+  with date/event/opponent/result where available, and coverage notes.
 - List players with zero PGNs or suspiciously low counts, including the
   second-pass sources checked for them.
 - Say where games may still be missing, such as inaccessible ChessBase exports,
