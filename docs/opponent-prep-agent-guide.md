@@ -35,6 +35,12 @@ database games, and tournament-site PGN downloads.
   Mega/reference databases already found many games. Local database hits are
   never a reason to skip Chessscope, Lichess broadcasts, TWIC, event PGNs, or
   other online source checks for that player.
+- When multi-agent tooling is available, spawn a small team of web-search
+  subagents to make the online pass faster and more complete. Give each
+  subagent explicit player identities, FIDE/national IDs, source targets, and
+  the requirement to search hard for both downloadable PGNs and credible
+  Chess.com account links. The lead agent still owns dedupe, database creation,
+  verification, and the final honesty check.
 - Do not do a shallow global pass and call it finished. Work player by player,
   and do not move on from a player until that player has completed the full
   exhaustive checklist: identity normalization, local/reference databases,
@@ -134,7 +140,28 @@ Keep folder names short enough for Windows paths.
      Chess.com guess, confidence, OTB PGNs found, broadcast PGNs added, most
      recent game found, notes.
 
-4. Complete the full search checklist for player 1 before player 2.
+4. If available, coordinate a web-search subagent team.
+   - Use subagents to speed up and broaden the online research pass, especially
+     for larger entrant lists or events with many possible sources.
+   - Assign work by player or by source family, for example Chessscope/Lichess
+     broadcasts, Chess-Results/TWIC/event PGNs, federation/FIDE/event leads,
+     public game databases, and Chess.com account research.
+   - Every subagent brief must include the player's normalized name variants,
+     FIDE ID, national ID, federation/club/event clues, and the expected output:
+     downloadable PGN links or files found, source pages checked, most recent
+     game found, candidate Chess.com accounts with confidence, and unresolved
+     gaps.
+   - Tell subagents to search hard, not just run one query. They should use
+     alternate spellings, initials, FIDE IDs, event names, club names, and
+     broadcast sources before returning "no games found" or "no credible
+     Chess.com account".
+   - The lead agent must merge subagent findings into the working manifest,
+     dedupe PGNs, verify counts, and resolve conflicts. Subagent reports are
+     evidence, not final truth.
+   - Do not use subagents as a reason to skip the required per-player checklist.
+     Each player must still have a complete online-source result recorded.
+
+5. Complete the full search checklist for player 1 before player 2.
    - This is the most important workflow rule. Do not batch a weak source pass
      across all players and then report the job as done.
    - For each player, finish the checklist below, import/dedupe any games,
@@ -145,7 +172,7 @@ Keep folder names short enough for Windows paths.
      FIDE IDs/name variants are included and per-player added/missed counts are
      recorded.
 
-5. Search local databases for the current player.
+6. Search local databases for the current player.
    - Check the app database directory for Mega/Big/local reference databases.
    - Search exact player names and known aliases.
    - Prefer exporting by exact internal player ID after resolving the player
@@ -155,12 +182,15 @@ Keep folder names short enough for Windows paths.
    - Do not assume local Mega is complete. It missed many recent Lichess
      broadcast games in the Muswell and Oxford prep.
 
-6. Search online PGN sources for the current player.
+7. Search online PGN sources for the current player.
    - This step is mandatory for every target player, regardless of how many
      games were already found in local/Mega/reference databases.
    - Do not stop after local database matches. Recent Lichess broadcasts,
      Chessscope-indexed games, TWIC files, and event PGNs can add important
      games that Mega/local databases miss.
+   - Use the subagent team for this step when available, but keep one lead
+     manifest row per player and verify every claimed source/link yourself
+     before importing or reporting it.
    - Query Chess-Results `partiesuche.aspx` by FIDE ID and download the result
      as PGN. This is not optional when a FIDE ID is known.
    - Check the Lichess FIDE player page for broadcast round links, then
@@ -177,7 +207,7 @@ Keep folder names short enough for Windows paths.
    - Dedupe before writing files.
    - Keep source tags in `.info` sidecars and the working manifest.
 
-7. Re-check the current player if they have no games or a low count.
+8. Re-check the current player if they have no games or a low count.
    - After the first source pass, sort the manifest by `OTB PGNs found` plus
      `broadcast PGNs added` and flag players with zero games or counts that are
      clearly low for their rating/activity.
@@ -191,7 +221,7 @@ Keep folder names short enough for Windows paths.
      specific second-pass sources checked in the working manifest so the final
      response can show that the gap was investigated rather than missed.
 
-8. Rebuild one database per player.
+9. Rebuild one database per player.
    - For every player folder with one or more PGNs, concatenate that player's
      PGNs into a temporary/source `.pgn`.
    - Convert it to `.db3` with `pgn_to_ec_db.exe`.
@@ -199,7 +229,7 @@ Keep folder names short enough for Windows paths.
    - Leave players with zero PGNs as folders only, with notes; do not create
      empty `.db3` files unless requested.
 
-9. Prepare the final response.
+10. Prepare the final response.
    - Do not create a separate `research-summary.md` unless the user explicitly
      asks for one.
    - Include exactly what sources were researched, which assets were created,
@@ -460,6 +490,13 @@ if mixed with OTB prep.
 ## Chess.com Account Research
 
 The goal is a best-guess account table, not false certainty.
+
+When using subagents, assign Chess.com account research explicitly. At least
+one subagent should search candidate usernames, profile metadata, public club
+membership, country/location/rating plausibility, activity recency, and any
+event or federation clues linking the account to the OTB player. Require a
+confidence label and the evidence for it; do not let a same-name account become
+an unqualified claim.
 
 Direct checks:
 
