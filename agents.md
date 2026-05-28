@@ -29,8 +29,8 @@ model, implementation map, and verification expectations for this app.
   threshold, read and follow that guide as the workflow source of truth before
   gathering games or creating prep databases. It records the required
   per-player folder/database workflow, source checklist, Lichess broadcast PGN
-  extraction pattern, Chess.com account-confidence method, dedupe rules, and En
-  Croissant verification steps.
+  extraction pattern, Chess.com account-confidence method, low-count second-pass
+  checks, dedupe rules, and En Croissant verification steps.
 
 ## Local Browser Verification
 

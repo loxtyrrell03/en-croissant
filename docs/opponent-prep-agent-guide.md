@@ -30,6 +30,10 @@ database games, and tournament-site PGN downloads.
   the running fork before replacing databases, then restart it.
 - Keep the user's Files folder and the app database directory in sync. If you
   add new PGNs to a player folder, rebuild that player's `.db3`.
+- Re-check players with zero or suspiciously low game counts before finalizing.
+  If the first pass finds few games, make a second targeted pass with alternate
+  spellings, FIDE/national IDs, event leads, Chessscope, Lichess broadcasts,
+  TWIC, and local/reference databases before reporting the count as final.
 - Public Chess.com account guesses are not game sources. Keep speculative
   online-account research separate from OTB/broadcast PGN imports unless the
   user asks to import online blitz/rapid games.
@@ -120,7 +124,21 @@ Keep folder names short enough for Windows paths.
    - Dedupe before writing files.
    - Keep source tags in `.info` sidecars or the research summary.
 
-6. Rebuild one database per player.
+6. Re-check players with no games or low game counts.
+   - After the first source pass, sort the manifest by `OTB PGNs found` plus
+     `broadcast PGNs added` and flag players with zero games or counts that are
+     clearly low for their rating/activity.
+   - Run a second targeted search for each flagged player before rebuilding
+     databases. Try alternate name orders, initials, diacritics/ASCII variants,
+     FIDE ID, national ID, club/event names, and likely recent tournaments.
+   - Revisit Chessscope, Lichess broadcast `.pgn` URLs, TWIC/event PGN zips,
+     ChessBase/Mega/local databases, FIDE event history, and national
+     federation pages for these flagged players.
+   - If a player still has no credible PGNs or only a small count, record the
+     specific second-pass sources checked in `research-summary.md` so the user
+     can tell the gap was investigated rather than missed.
+
+7. Rebuild one database per player.
    - For every player folder with one or more PGNs, concatenate that player's
      PGNs into a temporary/source `.pgn`.
    - Convert it to `.db3` with `pgn_to_ec_db.exe`.
@@ -128,10 +146,13 @@ Keep folder names short enough for Windows paths.
    - Leave players with zero PGNs as folders only, with notes; do not create
      empty `.db3` files unless requested.
 
-7. Write `research-summary.md`.
+8. Write `research-summary.md`.
    - Include the source list, per-player counts, account guesses, confidence
      notes, and what could not be found.
    - Explicitly list "no credible PGNs found" cases.
+   - For every zero-game or low-count player, include the second-pass searches
+     performed and the reason the remaining count should be treated as a known
+     source limitation.
 
 ## Must-Check Game Sources
 
