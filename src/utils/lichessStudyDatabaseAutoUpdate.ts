@@ -285,6 +285,7 @@ async function checkStudyDatabases({
             if (result.updated) {
                 await syncLinkedFolderForUpdatedStudy(
                     candidate.database.file,
+                    candidate.record.title,
                     linkedFolders,
                     setLinkedFolders,
                 );
@@ -366,6 +367,7 @@ export function useLichessStudyDatabaseAutoUpdater() {
 
 async function syncLinkedFolderForUpdatedStudy(
     dbPath: string,
+    studyTitle: string,
     linkedFolders: DatabaseLinkedFolderRecords,
     setLinkedFolders: SetDatabaseLinkedFolderRecords,
 ) {
@@ -382,6 +384,7 @@ async function syncLinkedFolderForUpdatedStudy(
             sourcePath: database.file,
             title: database.title,
             gameCount: database.game_count,
+            fileNamePrefix: studyTitle,
             record: {
                 ...record,
                 dbPath: database.file,

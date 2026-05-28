@@ -268,6 +268,9 @@ and `src/utils/lichess/study.ts`.
 - Lichess Study update state now carries source/activity metadata, uses a
   study-specific banner label, times out stalled PGN downloads, and clears stale
   conversion banners left behind by interrupted sessions.
+- Lichess Study imports preserve `StudyName`/`ChapterName` as the database
+  event, and linked Files folder sync prefixes per-game PGNs with the study
+  title so study chapters do not appear as only date plus player names.
 - PGN import timestamp normalization was fixed so online-update ordering stays
   reliable.
 

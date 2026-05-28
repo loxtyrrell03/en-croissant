@@ -396,6 +396,7 @@ export default function DatabasesPage() {
   async function syncLinkedFolder(database: SuccessDatabaseInfo) {
     const record = getDatabaseLinkedFolderRecord(database.file, databaseLinkedFolders);
     if (!record || syncingLinkedFolderPath) return null;
+    const studyRecord = getLichessStudyDatabaseUpdateRecord(database, lichessStudyDatabaseUpdates);
 
     setSyncingLinkedFolderPath(database.file);
     try {
@@ -403,6 +404,7 @@ export default function DatabasesPage() {
         sourcePath: database.file,
         title: database.title,
         gameCount: database.game_count,
+        fileNamePrefix: studyRecord?.title ?? null,
         record: {
           ...record,
           dbPath: database.file,
@@ -596,6 +598,7 @@ export default function DatabasesPage() {
           documentDir={documentDir}
           linkByDefault={exportFilesLinkDefault}
           linkedFolder={selectedLinkedFolder}
+          fileNamePrefix={selectedStudyRecord?.title ?? null}
           onLinked={(record) => {
             setDatabaseLinkedFolders((records) =>
               upsertDatabaseLinkedFolderRecord(records, record),
@@ -1474,6 +1477,7 @@ function DatabaseFilesExportModal({
   documentDir,
   linkByDefault,
   linkedFolder,
+  fileNamePrefix,
   onLinked,
 }: {
   opened: boolean;
@@ -1482,6 +1486,7 @@ function DatabaseFilesExportModal({
   documentDir: string;
   linkByDefault: boolean;
   linkedFolder: DatabaseLinkedFolderRecord | null;
+  fileNamePrefix?: string | null;
   onLinked: (record: DatabaseLinkedFolderRecord) => void;
 }) {
   const [folderName, setFolderName] = useState("");
@@ -1535,6 +1540,7 @@ function DatabaseFilesExportModal({
           sourcePath: selectedDatabase.file,
           title: selectedDatabase.title,
           gameCount: selectedDatabase.game_count,
+          fileNamePrefix,
           record: linkRecord,
         });
         created = result.report.created;

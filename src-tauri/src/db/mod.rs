@@ -413,6 +413,8 @@ impl Default for MaterialColor {
 pub struct TempGame {
     pub event_name: Option<String>,
     pub site_name: Option<String>,
+    pub study_name: Option<String>,
+    pub chapter_name: Option<String>,
     pub date: Option<String>,
     pub time: Option<String>,
     pub round: Option<String>,
@@ -430,6 +432,24 @@ pub struct TempGame {
 }
 
 impl TempGame {
+    fn apply_study_title_to_event(&mut self) {
+        let study_name = clean_import_header(self.study_name.as_deref());
+        let chapter_name = clean_import_header(self.chapter_name.as_deref());
+
+        let Some(study_name) = study_name else {
+            return;
+        };
+
+        let study_event = match chapter_name {
+            Some(chapter_name) if !same_text(&chapter_name, &study_name) => {
+                format!("{study_name} - {chapter_name}")
+            }
+            _ => study_name,
+        };
+
+        self.event_name = Some(study_event);
+    }
+
     pub fn insert_to_db(&self, db: &mut SqliteConnection) -> Result<(), diesel::result::Error> {
         let pawn_home = get_pawn_home(self.position.board());
 
@@ -486,6 +506,19 @@ impl TempGame {
         create_game(db, new_game)?;
         Ok(())
     }
+}
+
+fn clean_import_header(value: Option<&str>) -> Option<String> {
+    let value = value?.trim();
+    if value.is_empty() || value == "?" || value == "-" {
+        None
+    } else {
+        Some(value.to_string())
+    }
+}
+
+fn same_text(left: &str, right: &str) -> bool {
+    left.trim().eq_ignore_ascii_case(right.trim())
 }
 
 struct Importer {
@@ -560,6 +593,10 @@ impl Visitor for Importer {
             self.game.site_name = Some(String::from_utf8_lossy(value.as_bytes()).to_string());
         } else if key == b"Event" {
             self.game.event_name = Some(String::from_utf8_lossy(value.as_bytes()).to_string());
+        } else if key == b"StudyName" {
+            self.game.study_name = Some(String::from_utf8_lossy(value.as_bytes()).to_string());
+        } else if key == b"ChapterName" {
+            self.game.chapter_name = Some(String::from_utf8_lossy(value.as_bytes()).to_string());
         } else if key == b"Result" {
             self.game.result = Some(String::from_utf8_lossy(value.as_bytes()).to_string());
         } else if key == b"FEN" {
@@ -586,6 +623,8 @@ impl Visitor for Importer {
     }
 
     fn end_headers(&mut self) -> Skip {
+        self.game.apply_study_title_to_event();
+
         // Skip games with timestamp before
         let cur_timestamp = self.game.date.as_ref().and_then(|date| {
             let date = NaiveDate::parse_from_str(date, "%Y.%m.%d").ok()?;
@@ -3039,6 +3078,28 @@ mod tests {
         assert_eq!(games.len(), 1);
         let movetext = decode_game_to_movetext(&games[0].moves, Fen::default()).unwrap();
         assert_eq!(movetext, "1. e4! (1. d4?) 1... e5!");
+    }
+
+    #[test]
+    fn importer_uses_lichess_study_title_as_event() {
+        let game = import_single_game(
+            r#"[Event "?"]
+[StudyName "My classical games"]
+[ChapterName "Model game 7"]
+[Site "https://lichess.org/study/abcdefgh/ijklmnop"]
+[Date "2026.02.28"]
+[White "Unknown"]
+[Black "Unknown"]
+[Result "*"]
+
+1. e4 e5 *
+"#,
+        );
+
+        assert_eq!(
+            game.event_name.as_deref(),
+            Some("My classical games - Model game 7")
+        );
     }
 
     #[test]

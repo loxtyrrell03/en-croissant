@@ -6,6 +6,7 @@ import {
     readDir,
     readTextFile,
     remove,
+    rename,
     writeTextFile,
 } from "@tauri-apps/plugin-fs";
 import { commands } from "@/bindings";
@@ -13,6 +14,7 @@ import type { DatabaseLinkedFolderRecord, DatabaseLinkedFolderRecords } from "@/
 import { unwrap } from "./unwrap";
 
 const INVALID_FOLDER_CHARS = /[\\/:*?"<>|]/;
+const INVALID_FILENAME_CHARS = /[\\/:*?"<>|]+/g;
 const GAME_FILE_METADATA = '{"type":"game","tags":[]}';
 
 export function removeDatabaseExtension(name: string) {
@@ -117,11 +119,13 @@ export async function syncDatabaseLinkedFolder({
     title,
     gameCount,
     record,
+    fileNamePrefix,
 }: {
     sourcePath: string;
     title: string;
     gameCount: number | null;
     record: DatabaseLinkedFolderRecord;
+    fileNamePrefix?: string | null;
 }): Promise<{ report: LinkedFolderSyncReport; record: DatabaseLinkedFolderRecord }> {
     const targetDir = record.folderPath;
     const temporaryTargetDir = await resolve(
@@ -132,6 +136,8 @@ export async function syncDatabaseLinkedFolder({
     await mkdir(targetDir, { recursive: true });
 
     try {
+        await prefixExistingPgnFiles(targetDir, fileNamePrefix);
+
         await splitGameSourceToFiles({
             sourcePath,
             targetDir: temporaryTargetDir,
@@ -156,7 +162,10 @@ export async function syncDatabaseLinkedFolder({
                 continue;
             }
 
-            const targetGamePath = await getAvailablePgnPath(targetDir, entry.name);
+            const targetGamePath = await getAvailablePgnPath(
+                targetDir,
+                getPrefixedPgnFileName(entry.name, fileNamePrefix),
+            );
             await copyFile(sourceGamePath, targetGamePath);
 
             const sourceInfoPath = pgnInfoPath(sourceGamePath);
@@ -221,6 +230,50 @@ async function getAvailablePgnPath(targetDir: string, fileName: string) {
     }
 
     return await resolve(targetDir, `${stem} ${Date.now()}.pgn`);
+}
+
+async function prefixExistingPgnFiles(targetDir: string, prefix?: string | null) {
+    const cleanPrefix = sanitizeFileNameStem(prefix ?? "");
+    if (!cleanPrefix) return;
+
+    const entries = (await readDir(targetDir).catch(() => []))
+        .filter((entry) => entry.isFile && entry.name.toLowerCase().endsWith(".pgn"))
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+
+    for (const entry of entries) {
+        const targetName = getPrefixedPgnFileName(entry.name, cleanPrefix);
+        if (targetName === entry.name) continue;
+
+        const sourcePath = await resolve(targetDir, entry.name);
+        const targetPath = await getAvailablePgnPath(targetDir, targetName);
+        await rename(sourcePath, targetPath);
+
+        const sourceInfoPath = pgnInfoPath(sourcePath);
+        if (await exists(sourceInfoPath)) {
+            await rename(sourceInfoPath, pgnInfoPath(targetPath));
+        }
+    }
+}
+
+function getPrefixedPgnFileName(fileName: string, prefix?: string | null) {
+    const safeName = fileName.toLowerCase().endsWith(".pgn") ? fileName : `${fileName}.pgn`;
+    const cleanPrefix = sanitizeFileNameStem(prefix ?? "");
+    if (!cleanPrefix) return safeName;
+
+    const stem = safeName.slice(0, -".pgn".length).trim() || "Game";
+    if (stem.toLowerCase().includes(cleanPrefix.toLowerCase())) {
+        return safeName;
+    }
+
+    return `${cleanPrefix} ${stem}.pgn`;
+}
+
+function sanitizeFileNameStem(value: string) {
+    return value
+        .replace(INVALID_FILENAME_CHARS, " ")
+        .replace(/\s+/g, " ")
+        .replace(/[. ]+$/g, "")
+        .trim();
 }
 
 function pgnInfoPath(filePath: string) {

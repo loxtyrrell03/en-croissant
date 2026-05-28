@@ -448,11 +448,23 @@ fn game_file_stem(game: &str, index: usize) -> String {
     let white = clean_header(header_value(&headers, "White"));
     let black = clean_header(header_value(&headers, "Black"));
     let event = clean_header(header_value(&headers, "Event"));
+    let study_name = clean_header(header_value(&headers, "StudyName"));
+    let chapter_name = clean_header(header_value(&headers, "ChapterName"));
     let round = clean_header(header_value(&headers, "Round"));
+    let study_label = study_file_label(study_name.as_deref(), chapter_name.as_deref());
 
     let mut parts = Vec::new();
     if let Some(date) = date {
         parts.push(date);
+    }
+
+    if let Some(study_label) = study_label {
+        parts.push(study_label);
+    } else if let Some(event) = event
+        .as_ref()
+        .filter(|_| players_are_generic(&white, &black))
+    {
+        parts.push(event.clone());
     }
 
     match (white, black) {
@@ -477,6 +489,29 @@ fn game_file_stem(game: &str, index: usize) -> String {
     };
 
     sanitize_file_stem(&label)
+}
+
+fn study_file_label(study_name: Option<&str>, chapter_name: Option<&str>) -> Option<String> {
+    let study_name = study_name?;
+    match chapter_name {
+        Some(chapter_name) if !chapter_name.eq_ignore_ascii_case(study_name) => {
+            Some(format!("{study_name} - {chapter_name}"))
+        }
+        _ => Some(study_name.to_string()),
+    }
+}
+
+fn players_are_generic(white: &Option<String>, black: &Option<String>) -> bool {
+    let players = [white.as_deref(), black.as_deref()];
+    players.iter().any(|player| player.is_some())
+        && players.into_iter().flatten().all(is_generic_player_name)
+}
+
+fn is_generic_player_name(name: &str) -> bool {
+    matches!(
+        name.trim().to_ascii_lowercase().as_str(),
+        "unknown" | "anonymous" | "?"
+    )
 }
 
 fn parse_pgn_headers(game: &str) -> Vec<(String, String)> {
@@ -644,5 +679,24 @@ mod tests {
 "#;
 
         assert_eq!(game_file_stem(pgn, 1), "2026.05.15 Alice - Bob Round 3 4");
+    }
+
+    #[test]
+    fn game_file_stem_includes_lichess_study_titles() {
+        let pgn = r#"[Event "?"]
+[StudyName "My classical games"]
+[ChapterName "Model game 7"]
+[Date "2026.02.28"]
+[White "Unknown"]
+[Black "Unknown"]
+[Result "*"]
+
+1. e4 e5 *
+"#;
+
+        assert_eq!(
+            game_file_stem(pgn, 1),
+            "2026.02.28 My classical games - Model game 7 Unknown - Unknown"
+        );
     }
 }
