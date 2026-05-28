@@ -5,7 +5,6 @@ export type BoardStyle = "default" | "chess-com";
 export const DEFAULT_BOARD_STYLE: BoardStyle = "default";
 export const CHESS_COM_BOARD_STYLE: BoardStyle = "chess-com";
 export const CHESS_COM_STYLE_PIECE_SET = "staunty";
-export const CHESS_COM_STYLE_SOUND_COLLECTION = "chess-com";
 
 export const CHESS_COM_BOARD_COORD_COLORS = {
     white: "#eeeed2",
@@ -33,13 +32,4 @@ export function isChessComBoardStyle(style: BoardStyle) {
 
 export function getEffectivePieceSet(boardStyle: BoardStyle, selectedPieceSet: string) {
     return isChessComBoardStyle(boardStyle) ? CHESS_COM_STYLE_PIECE_SET : selectedPieceSet;
-}
-
-export function getEffectiveSoundCollection(
-    boardStyle: BoardStyle,
-    selectedSoundCollection: string,
-) {
-    return isChessComBoardStyle(boardStyle)
-        ? CHESS_COM_STYLE_SOUND_COLLECTION
-        : selectedSoundCollection;
 }

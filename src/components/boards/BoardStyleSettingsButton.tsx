@@ -32,7 +32,7 @@ export default function BoardStyleSettingsButton() {
               Board style
             </Text>
             <Text size="xs" c="dimmed">
-              Switch the board, pieces, arrows, highlights, and move sounds together.
+              Switch the board, pieces, arrows, and highlights together.
             </Text>
           </Stack>
           <BoardStyleControl fullWidth size="xs" />

@@ -548,10 +548,10 @@ and `src/utils/pawnStructureTrajectory.ts` using
   review contexts.
 - Board workspaces now have a small board-style settings button in a slim rail
   beside the board, outside the chessground interaction surface.
-  The persisted style can stay on the user's default board/piece/sound setup or
+  The persisted style can stay on the user's default board/piece setup or
   switch to a chess.com-inspired package with green squares, Staunty pieces,
-  yellow selected/last-move squares, tuned arrow brushes, and matching
-  synthesized move/capture/check sounds. The mode is an override, so default
+  yellow selected/last-move squares, and tuned arrow brushes. Sound effects stay
+  controlled by the normal sound setting. The mode is an override, so default
   appearance settings remain intact when users switch back. Keep the chess.com
   arrow/highlight SVG layers on `pointer-events: none`; otherwise they sit above
   the board and block piece selection.

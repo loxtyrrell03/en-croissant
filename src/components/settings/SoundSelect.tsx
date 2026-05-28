@@ -10,7 +10,6 @@ type Item = {
 };
 
 const soundCollections: Item[] = [
-  { label: "Chess.com style", value: "chess-com" },
   { label: "Futuristic", value: "futuristic" },
   { label: "Lisp", value: "lisp" },
   { label: "NES", value: "nes" },
@@ -45,7 +44,9 @@ export default function SoundSelect() {
     </Combobox.Option>
   ));
 
-  const selected = soundCollections.find((p) => p.value === soundCollection);
+  const selected =
+    soundCollections.find((p) => p.value === soundCollection) ??
+    soundCollections.find((p) => p.value === "standard");
 
   return (
     <Combobox
