@@ -162,6 +162,7 @@ const SMALL_BRUSH = 4;
 const BAR_HEIGHT = "1.9rem";
 const BOARD_SIDE_BAR_WIDTH = 25;
 const BOARD_ROW_GAP = 12;
+const BOARD_SETTINGS_RAIL_WIDTH = 34;
 const MIN_MANUAL_BOARD_SIZE = 280;
 const MISTAKE_REVIEW_PANEL_MIN_HEIGHT = 108;
 const MISTAKE_REVIEW_ENGINE_CONFIRMATION_DELAY_MS = 900;
@@ -1480,7 +1481,13 @@ function Board({
   const maxBoardSize = Math.max(
     0,
     Math.floor(
-      Math.min(boardAreaHeight, Math.max(0, boardAreaWidth - BOARD_SIDE_BAR_WIDTH - BOARD_ROW_GAP)),
+      Math.min(
+        boardAreaHeight,
+        Math.max(
+          0,
+          boardAreaWidth - BOARD_SIDE_BAR_WIDTH - BOARD_SETTINGS_RAIL_WIDTH - BOARD_ROW_GAP * 2,
+        ),
+      ),
     ),
   );
   const minBoardSize = Math.min(MIN_MANUAL_BOARD_SIZE, maxBoardSize);
@@ -1831,7 +1838,9 @@ function Board({
               style={{
                 position: "relative",
                 flexWrap: "nowrap",
-                width: boardSize ? boardSize + BOARD_SIDE_BAR_WIDTH + BOARD_ROW_GAP : "100%",
+                width: boardSize
+                  ? boardSize + BOARD_SIDE_BAR_WIDTH + BOARD_SETTINGS_RAIL_WIDTH + BOARD_ROW_GAP * 2
+                  : "100%",
                 height: boardSize || "100%",
                 minWidth: 0,
                 minHeight: 0,
@@ -1924,7 +1933,6 @@ function Board({
                   }
                 }}
               >
-                <BoardStyleSettingsButton />
                 <PromotionModal
                   pendingMove={pendingMove}
                   cancelMove={() => setPendingMove(null)}
@@ -2099,6 +2107,15 @@ function Board({
                     }}
                   />
                 ))}
+              </Box>
+              <Box
+                className={classes.boardSettingsRail}
+                h={boardSize || "100%"}
+                style={{
+                  flex: `0 0 ${BOARD_SETTINGS_RAIL_WIDTH}px`,
+                }}
+              >
+                <BoardStyleSettingsButton />
               </Box>
             </Group>
           </Box>

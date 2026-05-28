@@ -45,14 +45,10 @@
 }
 
 .boardSettingsButton {
-  position: absolute;
-  top: 0.35rem;
-  right: 0.35rem;
-  z-index: 70;
   border: 1px solid rgba(255, 255, 255, 0.28);
   background: rgba(28, 31, 28, 0.62);
   color: white;
-  opacity: 0.78;
+  opacity: 0.86;
   backdrop-filter: blur(8px);
   transition:
     opacity 120ms ease,
@@ -60,7 +56,19 @@
     background 120ms ease;
 }
 
-.chessboard:hover .boardSettingsButton,
+.boardSettingsRail {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 0;
+  padding-top: 0.1rem;
+  pointer-events: none;
+}
+
+.boardSettingsRail .boardSettingsButton {
+  pointer-events: auto;
+}
+
 .boardSettingsButton[data-active="true"],
 .boardSettingsButton:focus-visible {
   opacity: 1;
