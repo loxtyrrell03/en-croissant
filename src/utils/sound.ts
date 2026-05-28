@@ -14,6 +14,18 @@ let poolIndex = 0;
 let soundServerPort: number | null = null;
 const soundUrlCache = new Map<string, string>();
 
+function getDevServerSoundUrl(collection: string, type: string): string | null {
+    if (typeof window === "undefined") {
+        return null;
+    }
+
+    const { protocol, hostname } = window.location;
+    const isDevServer =
+        protocol === "http:" && (hostname === "localhost" || hostname === "127.0.0.1");
+
+    return isDevServer ? `/sound/${collection}/${type}.mp3` : null;
+}
+
 function isLinux(): boolean {
     try {
         return platform() === "linux";
@@ -79,12 +91,19 @@ export function playSound(capture: boolean, check: boolean) {
                 // fails if Tauri APIs are unavailable (e.g., in tests)
             });
     } else {
-        const path = `sound/${collection}/${type}.mp3`;
-
         if (soundUrlCache.has(cacheKey)) {
             playWithUrl(soundUrlCache.get(cacheKey)!);
             return;
         }
+
+        const devServerUrl = getDevServerSoundUrl(collection, type);
+        if (devServerUrl !== null) {
+            soundUrlCache.set(cacheKey, devServerUrl);
+            playWithUrl(devServerUrl);
+            return;
+        }
+
+        const path = `sound/${collection}/${type}.mp3`;
         resolveResource(path)
             .then((filePath) => {
                 const assetUrl = convertFileSrc(filePath);

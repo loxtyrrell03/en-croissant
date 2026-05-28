@@ -553,10 +553,12 @@ and `src/utils/pawnStructureTrajectory.ts` using
   Neo pieces vendored locally from the public theme PNGs, yellow
   selected/last-move squares, tuned arrow brushes, and the current Chess.com
   move/capture/check sounds vendored locally from the live web bundle. Volume
-  still follows the normal sound setting. The mode is an override, so default
-  appearance settings remain intact when users switch back. Keep the chess.com
-  arrow/highlight SVG layers on `pointer-events: none`; otherwise they sit above
-  the board and block piece selection.
+  still follows the normal sound setting. During Tauri dev runs, sound playback
+  should prefer the Vite-served `/sound/...` files so newly vendored collections
+  work before the Tauri resource directory is rebuilt. The mode is an override,
+  so default appearance settings remain intact when users switch back. Keep the
+  chess.com arrow/highlight SVG layers on `pointer-events: none`; otherwise they
+  sit above the board and block piece selection.
 
 ## Design Guide
 
