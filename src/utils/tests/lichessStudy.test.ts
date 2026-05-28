@@ -71,7 +71,7 @@ describe("Lichess study sync helpers", () => {
             "session has expired",
         );
         expect(getLichessStudyPushErrorMessage(403, "Forbidden", "moves")).toContain(
-            "study write access",
+            "database sync prompt",
         );
         expect(getLichessStudyPushErrorMessage(500, "Server Error", "tags")).toBe(
             "Lichess study tags push failed: 500 Server Error",

@@ -49,6 +49,7 @@ import {
 } from "@tabler/icons-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { basename, resolve } from "@tauri-apps/api/path";
+import { listen } from "@tauri-apps/api/event";
 import { open as openDialog, save } from "@tauri-apps/plugin-dialog";
 import { exists, mkdir } from "@tauri-apps/plugin-fs";
 import { useAtom, useAtomValue } from "jotai";
@@ -121,6 +122,7 @@ import {
   getLichessStudyDatabaseUpdateRecord,
   upsertLichessStudyDatabaseUpdateRecord,
 } from "@/utils/lichess/study";
+import { getLichessAccount } from "@/utils/lichess/api";
 import { createRepertoireDatabaseFromGameBatches } from "@/utils/repertoireCopy";
 import type { Session } from "@/utils/session";
 import { unwrap } from "@/utils/unwrap";
@@ -190,9 +192,102 @@ export default function DatabasesPage() {
     lichessStudyDatabaseUpdatesAtom,
   );
   const [databaseLinkedFolders, setDatabaseLinkedFolders] = useAtom(databaseLinkedFoldersAtom);
-  const sessions = useAtomValue(sessionsAtom);
+  const [sessions, setSessions] = useAtom(sessionsAtom);
   const [updatingOnlineDatabasePath, setUpdatingOnlineDatabasePath] = useState<string | null>(null);
   const [syncingLinkedFolderPath, setSyncingLinkedFolderPath] = useState<string | null>(null);
+  const [lichessLoginOpened, setLichessLoginOpened] = useState(false);
+  const [lichessLoginUsername, setLichessLoginUsername] = useState("");
+  const [lichessLoginWaiting, setLichessLoginWaiting] = useState(false);
+  const firstLichessUsername =
+    sessions.find((session) => session.lichess?.username)?.lichess?.username ?? "";
+
+  function openLichessLoginPrompt() {
+    setLichessLoginUsername((current) => current || firstLichessUsername);
+    setLichessLoginOpened(true);
+  }
+
+  async function beginLichessLogin() {
+    setLichessLoginWaiting(true);
+    try {
+      await commands.authenticate(lichessLoginUsername.trim());
+      notifications.show({
+        title: "Lichess login opened",
+        message: "Finish the Lichess authorization in your browser to continue study sync.",
+        color: "blue",
+      });
+    } catch (error) {
+      setLichessLoginWaiting(false);
+      notifications.show({
+        title: "Could not open Lichess login",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    }
+  }
+
+  useEffect(() => {
+    let mounted = true;
+    let unlisten: (() => void) | null = null;
+
+    void listen<string>("access_token", async (event) => {
+      if (!mounted) return;
+      const token = event.payload;
+      try {
+        const account = await getLichessAccount({ token });
+        if (!account) throw new Error("Could not read the authorized Lichess account.");
+
+        setSessions((current) => {
+          const existing = current.find(
+            (session) =>
+              session.lichess?.username.toLowerCase() === account.username.toLowerCase(),
+          );
+          const remaining = current.filter(
+            (session) =>
+              session.lichess?.username.toLowerCase() !== account.username.toLowerCase(),
+          );
+          return [
+            ...remaining,
+            {
+              lichess: {
+                accessToken: token,
+                username: account.username,
+                account,
+              },
+              player: existing?.player || account.username,
+              updatedAt: Date.now(),
+            },
+          ];
+        });
+
+        setLichessLoginOpened(false);
+        notifications.show({
+          title: "Lichess connected",
+          message: `${account.username} can now be used for Lichess study sync.`,
+          color: "green",
+        });
+      } catch (error) {
+        notifications.show({
+          title: "Could not finish Lichess login",
+          message: error instanceof Error ? error.message : String(error),
+          color: "red",
+        });
+      } finally {
+        if (mounted) setLichessLoginWaiting(false);
+      }
+    }).then((cleanup) => {
+      if (mounted) {
+        unlisten = cleanup;
+      } else {
+        cleanup();
+      }
+    });
+
+    return () => {
+      mounted = false;
+      unlisten?.();
+    };
+  }, [setSessions]);
+
   const selectedDatabase = useMemo(
     () => (databases ?? []).find((db) => db.file === selected) ?? null,
     [databases, selected],
@@ -521,6 +616,9 @@ export default function DatabasesPage() {
         });
       }
     } catch (error) {
+      if (isLichessStudyLoginError(error)) {
+        openLichessLoginPrompt();
+      }
       notifications.show({
         title: "Could not update Lichess study",
         message: error instanceof Error ? error.message : String(error),
@@ -540,6 +638,16 @@ export default function DatabasesPage() {
 
   return (
     <Stack h="100%">
+      <LichessStudyLoginModal
+        opened={lichessLoginOpened}
+        username={lichessLoginUsername}
+        waiting={lichessLoginWaiting}
+        onUsernameChange={setLichessLoginUsername}
+        onClose={() => setLichessLoginOpened(false)}
+        onLogin={() => {
+          void beginLichessLogin();
+        }}
+      />
       <ConfirmModal
         title={t("Databases.Delete.Title")}
         description={t("Databases.Delete.Message")}
@@ -938,6 +1046,7 @@ export default function DatabasesPage() {
                           onReload={() => {
                             void updateLichessStudyDatabase(selectedDatabase, selectedStudyRecord);
                           }}
+                          onRelink={openLichessLoginPrompt}
                         />
                       ) : (
                         <Group justify="space-between" align="center">
@@ -1237,6 +1346,14 @@ function getLichessTokenFromSessions(sessions: Session[], username: string) {
 
 function getAnyLichessTokenFromSessions(sessions: Session[]) {
   return sessions.find((session) => session.lichess?.accessToken)?.lichess?.accessToken;
+}
+
+function isLichessStudyLoginError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes("database sync prompt") ||
+    message.includes("Two-way Lichess study sync needs a linked Lichess account")
+  );
 }
 
 function DatabaseConversionCard({ conversionState }: { conversionState: DatabaseConversionState }) {
@@ -2118,6 +2235,56 @@ function OnlineAutoUpdateInput({
   );
 }
 
+function LichessStudyLoginModal({
+  opened,
+  username,
+  waiting,
+  onUsernameChange,
+  onClose,
+  onLogin,
+}: {
+  opened: boolean;
+  username: string;
+  waiting: boolean;
+  onUsernameChange: (username: string) => void;
+  onClose: () => void;
+  onLogin: () => void;
+}) {
+  return (
+    <Modal opened={opened} onClose={onClose} title="Connect Lichess for study sync" centered>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          onLogin();
+        }}
+      >
+        <Stack>
+          <Text size="sm" c="dimmed">
+            Two-way study sync needs Lichess permission to edit studies. Sign in again to grant
+            study write access, then retry the sync.
+          </Text>
+          <TextInput
+            label="Lichess username"
+            description="Optional, but helps Lichess choose the right account in your browser."
+            placeholder="Your Lichess username"
+            value={username}
+            onChange={(event) => onUsernameChange(event.currentTarget.value)}
+            disabled={waiting}
+          />
+          <Group justify="flex-end">
+            <Button variant="default" onClick={onClose} disabled={waiting}>
+              Cancel
+            </Button>
+            <Button type="submit" leftSection={<IconLink size="1rem" />} loading={waiting}>
+              Sign in with Lichess
+            </Button>
+          </Group>
+        </Stack>
+      </form>
+    </Modal>
+  );
+}
+
 function LichessStudySyncControls({
   selectedDatabase,
   record,
@@ -2125,6 +2292,7 @@ function LichessStudySyncControls({
   loading,
   disabled,
   onReload,
+  onRelink,
 }: {
   selectedDatabase: SuccessDatabaseInfo;
   record: LichessStudyDatabaseUpdateRecord;
@@ -2132,6 +2300,7 @@ function LichessStudySyncControls({
   loading: boolean;
   disabled: boolean;
   onReload: () => void;
+  onRelink: () => void;
 }) {
   const { t } = useTranslation();
   const gameCount = record.lastKnownGameCount ?? selectedDatabase.game_count;
@@ -2209,9 +2378,20 @@ function LichessStudySyncControls({
           <Text size="xs" c="dimmed">
             Last pushed {formatStudySyncTimestamp(record.lastPushedAt ?? null)}
           </Text>
-          <Text size="xs" c="dimmed">
-            Requires a Lichess account relinked from Accounts with permission to edit this study.
-          </Text>
+          <Group gap="xs" align="center">
+            <Text size="xs" c="dimmed">
+              Requires Lichess study write access and permission to edit this study.
+            </Text>
+            <Button
+              size="xs"
+              variant="subtle"
+              leftSection={<IconLink size="0.85rem" />}
+              onClick={onRelink}
+              disabled={disabled}
+            >
+              Sign in
+            </Button>
+          </Group>
         </Stack>
       )}
     </Stack>

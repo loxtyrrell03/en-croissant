@@ -237,10 +237,10 @@ export function getLichessStudyPushErrorMessage(
     errorLabel: string,
 ) {
     if (status === 401) {
-        return "Lichess rejected the study push because the linked account session has expired. Relink your Lichess account from Accounts and try again.";
+        return "Lichess rejected the study push because the linked account session has expired. Sign in to Lichess again from the database sync prompt and try again.";
     }
     if (status === 403) {
-        return "Lichess rejected the study push. Relink your Lichess account from Accounts so En Croissant gets study write access, and make sure that account can edit this study.";
+        return "Lichess rejected the study push. Sign in to Lichess again from the database sync prompt so En Croissant gets study write access, and make sure that account can edit this study.";
     }
     return `Lichess study ${errorLabel} push failed: ${status} ${statusText}`;
 }

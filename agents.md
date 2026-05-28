@@ -288,7 +288,9 @@ and `src/utils/lichess/study.ts`.
   the database and linked Files folder; users need to relink Lichess with
   `study:write` scope for pushes. Push permission failures are explained as
   stale/missing study-write account access or missing edit permission instead
-  of surfacing Lichess's raw 401/403 response.
+  of surfacing Lichess's raw 401/403 response, and the database settings prompt
+  users to sign in to Lichess directly instead of relying on a removed Accounts
+  page.
 - PGN import timestamp normalization was fixed so online-update ordering stays
   reliable.
 
