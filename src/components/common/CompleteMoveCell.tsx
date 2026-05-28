@@ -176,6 +176,7 @@ function CompleteMoveCell({
                 onContextMenu={(e: React.MouseEvent) => {
                   setOpen((v) => !v);
                   e.preventDefault();
+                  e.stopPropagation();
                 }}
                 fullWidth={tableLayout}
                 rightAccessory={rightAccessory}

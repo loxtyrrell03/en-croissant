@@ -828,6 +828,9 @@ from 2026-04-24 through 2026-05-03.
 - The chess.com-inspired board style uses checkerboard parity that matches
   normal chess coordinates in the White orientation: a1 is dark and a8 is
   light. Keep this invariant when adjusting the CSS gradient or square colors.
+- Empty move-list annotation: right-clicking blank notation space now exposes
+  an Annotate action that opens the starting-position comment editor, allowing
+  pre-move PGN comments without first making a move.
 
 ## Verification Expectations
 

@@ -3,6 +3,7 @@ import {
   Box,
   Divider,
   Group,
+  Menu,
   Overlay,
   Paper,
   ScrollArea,
@@ -26,7 +27,9 @@ import {
   IconLayoutList,
   IconList,
   IconMinus,
+  IconPencil,
   IconPlus,
+  IconX,
 } from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
 import { INITIAL_FEN } from "chessops/fen";
@@ -57,6 +60,7 @@ import { formatScore } from "@/utils/score";
 import { getTabFile, getTabGameNumber, saveToFile } from "@/utils/tabs";
 import { getNodeAtPath, type TreeNode } from "@/utils/treeReducer";
 import type { TreeStore } from "@/state/store/tree";
+import AnnotationEditor from "../panels/annotation/AnnotationEditor";
 import CompleteMoveCell from "./CompleteMoveCell";
 import styles from "./GameNotation.module.css";
 import OpeningName from "./OpeningName";
@@ -78,12 +82,18 @@ function GameNotation({
   compact?: boolean;
   grow?: boolean;
 }) {
+  const { t } = useTranslation();
   const store = useContext(TreeStateContext)!;
   const currentFen = useStore(store, (s) => s.currentNode().fen);
   const headers = useStore(store, (s) => s.headers);
   const rootComment = useStore(store, (s) => s.root.comment);
   const reportInProgress = useStore(store, (s) => s.report.inProgress);
   const [reportVisible, setReportVisible] = useState(false);
+  const [rootContextMenuPosition, setRootContextMenuPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [rootAnnotating, setRootAnnotating] = useState(false);
 
   const viewport = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLSpanElement>(null);
@@ -114,6 +124,12 @@ function GameNotation({
 
   const keyMap = useAtomValue(keyMapAtom);
   useHotkeys(keyMap.TOGGLE_BLUR.keys, () => setInvisible((v) => !v));
+
+  function handleNotationContextMenu(event: React.MouseEvent) {
+    if (reportVisible) return;
+    event.preventDefault();
+    setRootContextMenuPosition({ x: event.clientX, y: event.clientY });
+  }
 
   return (
     <Paper
@@ -158,7 +174,39 @@ function GameNotation({
                   <GameAnalysisReport isAnalysing={reportInProgress} />
                 ) : (
                   <>
-                    <Box>
+                    <Box onContextMenu={handleNotationContextMenu} style={{ minHeight: 80 }}>
+                      <Menu
+                        opened={rootContextMenuPosition !== null}
+                        onChange={(opened) => {
+                          if (!opened) setRootContextMenuPosition(null);
+                        }}
+                        width={200}
+                        shadow="md"
+                      >
+                        <Menu.Target>
+                          <Box
+                            style={{
+                              position: "fixed",
+                              left: rootContextMenuPosition?.x ?? -1000,
+                              top: rootContextMenuPosition?.y ?? -1000,
+                              width: 1,
+                              height: 1,
+                              pointerEvents: "none",
+                            }}
+                          />
+                        </Menu.Target>
+                        <Menu.Dropdown>
+                          <Menu.Item
+                            leftSection={<IconPencil size="0.875rem" />}
+                            onClick={() => {
+                              setRootAnnotating(true);
+                              setRootContextMenuPosition(null);
+                            }}
+                          >
+                            {t("Board.Tabs.Annotate")}
+                          </Menu.Item>
+                        </Menu.Dropdown>
+                      </Menu>
                       {invisible && (
                         <Overlay
                           backgroundOpacity={0.6}
@@ -166,6 +214,9 @@ function GameNotation({
                           blur={8}
                           zIndex={2}
                         />
+                      )}
+                      {rootAnnotating && (
+                        <RootAnnotationPanel onClose={() => setRootAnnotating(false)} />
                       )}
                       {showComments && rootComment && (
                         <Box p="sm" fz="sm">
@@ -208,6 +259,29 @@ function GameNotation({
         </Stack>
       </Group>
     </Paper>
+  );
+}
+
+function RootAnnotationPanel({ onClose }: { onClose: () => void }) {
+  return (
+    <Box
+      data-testid="root-annotation-panel"
+      p="sm"
+      onClick={(event) => event.stopPropagation()}
+      onContextMenu={(event) => event.stopPropagation()}
+    >
+      <Group justify="space-between" mb={6} wrap="nowrap">
+        <Text size="xs" fw={600} c="dimmed">
+          Starting position annotation
+        </Text>
+        <Tooltip label="Close annotations">
+          <ActionIcon size="sm" variant="subtle" onClick={onClose}>
+            <IconX size="0.875rem" />
+          </ActionIcon>
+        </Tooltip>
+      </Group>
+      <AnnotationEditor path={[]} compact />
+    </Box>
   );
 }
 
