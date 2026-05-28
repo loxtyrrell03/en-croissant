@@ -489,7 +489,9 @@ if mixed with OTB prep.
 
 ## Chess.com Account Research
 
-The goal is a best-guess account table, not false certainty.
+The goal is a best-guess account table, not false certainty. Search broadly
+before deciding there is no credible account, and verify hard before marking an
+account as high confidence.
 
 When using subagents, assign Chess.com account research explicitly. At least
 one subagent should search candidate usernames, profile metadata, public club
@@ -511,31 +513,84 @@ Generate candidates from:
 - first+last: `kishanpattni`
 - last+first: `pattnikishan`
 - initials: `kpattni`, `jdllewellyn`
+- first initial + surname, surname + first initial, initials + surname, and
+  surname + initials
+- forename variants, middle-name variants, shortened names, nicknames, and
+  common transliterations or ASCII versions of names with diacritics
+- surname-only or distinctive full-name fragments when the surname is uncommon
 - year suffixes: `kishanpattni84`
-- known handles from club pages or local context
+- federation, club, school, city, or event abbreviations combined with name
+  fragments
+- known handles from club pages, federation pages, event pages, social links,
+  Lichess profiles, old PGN tags, or local context
 
-Score confidence:
+Required search passes:
 
-- High: exact name or strong username, matching country/club/location, and
-  ratings plausible for OTB strength.
-- Medium: exact name or strong username, matching country, but weak/no rating
-  evidence.
-- Low: name/username fits but country, age, activity, or rating is suspicious.
-- None: same-name account is clearly wrong by country/rating, or no credible
-  account found.
+- Search the direct candidate profile/API URLs above.
+- Search web results for Chess.com member pages using full name, surname-first
+  name, initials, FIDE ID, ECF/national code, club, school, city, and known
+  event names.
+- Find the player's real-world club from ECF/FIDE/tournament pages where
+  possible, then search for that club on Chess.com.
+- If a likely Chess.com club exists, inspect the public members list if visible
+  and search within/around it for the player's real name, initials, aliases,
+  and candidate usernames.
+- Search public Chess.com club pages, news, forums, descriptions, and member
+  pages for the club plus player-name variants.
+- Cross-check candidate accounts against country flag/location, displayed
+  name, linked clubs, activity recency, online ratings, and time-control
+  ratings.
 
-Use club-member heuristics:
+Club-member heuristics:
 
 - Get clubs from ECF/FIDE/tournament pages.
 - Search Chess.com clubs by club name.
 - Look at public member lists if visible.
+- Try club abbreviations, old club names, school names, city names, and nearby
+  chess-center names.
+- Treat membership in the player's real-world club's Chess.com club as useful
+  evidence, especially when combined with plausible country/rating/activity.
 - Search:
 
 ```text
 site:chess.com/club "<club name>" "<player name>"
 site:chess.com/clubs/about "<club name>" "<username>"
 site:chess.com/member "<player name>" "<club name>"
+site:chess.com/member "<username>" "<club name>"
+site:chess.com/forum "<club name>" "<player name>"
+site:chess.com/news "<club name>" "<player name>"
 ```
+
+Rating and identity sanity checks:
+
+- Higher confidence requires the online rating to be broadly plausible for the
+  player's FIDE/national strength and time controls. It does not need to match
+  exactly, but the order of magnitude should make sense.
+- For example, a UK player rated around 1800 FIDE/ECF with an active Chess.com
+  account rated around 1700-2100 rapid/blitz is plausible; an active account
+  around 800 with no explanation is a major negative signal.
+- Very low online ratings can still be possible for new, inactive, or puzzle-only
+  accounts, but then confidence should stay low unless there is strong external
+  evidence linking the account.
+- Country flag/location should match or be explainable. A UK OTB player with a
+  UK flag, UK city, or membership in a UK club is stronger than a same-name
+  account with an unrelated country and no club/name/rating support.
+- Activity recency matters. A long-dormant account may belong to the player but
+  is less useful for prep; report it separately from active likely accounts.
+
+Score confidence:
+
+- High: strong username/name match plus multiple corroborating signals such as
+  matching country/location, real-world club or likely Chess.com club
+  membership, plausible online rating for FIDE/national strength, and recent or
+  historically relevant activity.
+- Medium: strong username/name match plus some corroboration, such as matching
+  country and plausible rating, but no club confirmation or weak activity
+  evidence.
+- Low: name/username fits but country, club, age, activity, or rating evidence
+  is weak, absent, or suspicious.
+- None: same-name account is clearly wrong by country/rating/identity, or no
+  credible account found after candidate, alias, and club-member searches.
 
 Do not overtrust an exact-name account. In Muswell prep, several exact-name
 accounts were discarded because they had US/KR/FR flags or 300-level ratings

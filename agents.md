@@ -30,7 +30,8 @@ model, implementation map, and verification expectations for this app.
   gathering games or creating prep databases. It records the required
   per-player folder/database workflow, mandatory online-source checks for every
   player, optional subagent team coordination for hard web searches and
-  Chess.com account-link research, Lichess broadcast PGN extraction pattern,
+  comprehensive Chess.com account-link research, including club-member and
+  rating-plausibility checks, Lichess broadcast PGN extraction pattern,
   mandatory full public Lichess broadcast database filtering, Chess-Results PGN
   search by FIDE ID, Chess.com account-confidence method, low-count second-pass
   checks, final-response count and most-recent-game reporting expectations,
