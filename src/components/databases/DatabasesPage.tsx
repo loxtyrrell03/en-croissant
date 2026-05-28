@@ -2205,9 +2205,14 @@ function LichessStudySyncControls({
         />
       </Tooltip>
       {record.twoWaySync && (
-        <Text size="xs" c="dimmed">
-          Last pushed {formatStudySyncTimestamp(record.lastPushedAt ?? null)}
-        </Text>
+        <Stack gap={2}>
+          <Text size="xs" c="dimmed">
+            Last pushed {formatStudySyncTimestamp(record.lastPushedAt ?? null)}
+          </Text>
+          <Text size="xs" c="dimmed">
+            Requires a Lichess account relinked from Accounts with permission to edit this study.
+          </Text>
+        </Stack>
       )}
     </Stack>
   );

@@ -231,6 +231,20 @@ export async function pushLichessStudyChapterPgn({
     });
 }
 
+export function getLichessStudyPushErrorMessage(
+    status: number,
+    statusText: string,
+    errorLabel: string,
+) {
+    if (status === 401) {
+        return "Lichess rejected the study push because the linked account session has expired. Relink your Lichess account from Accounts and try again.";
+    }
+    if (status === 403) {
+        return "Lichess rejected the study push. Relink your Lichess account from Accounts so En Croissant gets study write access, and make sure that account can edit this study.";
+    }
+    return `Lichess study ${errorLabel} push failed: ${status} ${statusText}`;
+}
+
 export function getLichessStudyDatabaseUpdateRecord(
     database: DatabaseInfo,
     records: LichessStudyDatabaseUpdateRecords,
@@ -397,7 +411,7 @@ async function postLichessStudyChapterPart({
     });
     if (!response.ok) {
         throw new Error(
-            `Lichess study ${errorLabel} push failed: ${response.status} ${response.statusText}`,
+            getLichessStudyPushErrorMessage(response.status, response.statusText, errorLabel),
         );
     }
 }

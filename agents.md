@@ -286,7 +286,9 @@ and `src/utils/lichess/study.ts`.
   local En Croissant PGN annotations, variations, tags, and new chapters are
   pushed back to the linked Lichess study before remote changes are pulled into
   the database and linked Files folder; users need to relink Lichess with
-  `study:write` scope for pushes.
+  `study:write` scope for pushes. Push permission failures are explained as
+  stale/missing study-write account access or missing edit permission instead
+  of surfacing Lichess's raw 401/403 response.
 - PGN import timestamp normalization was fixed so online-update ordering stays
   reliable.
 

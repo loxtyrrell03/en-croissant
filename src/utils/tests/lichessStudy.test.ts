@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
     extractLichessStudyChapterRefs,
+    getLichessStudyPushErrorMessage,
     normalizedGameToPgn,
 } from "@/utils/lichess/study";
 import type { NormalizedGame } from "@/bindings";
@@ -63,5 +64,17 @@ describe("Lichess study sync helpers", () => {
         expect(normalizedGameToPgn(game)).toContain(`[White "Lachlan Tyrrell"]`);
         expect(normalizedGameToPgn(game)).toContain(`[ECO "D15"]`);
         expect(normalizedGameToPgn(game)).toContain("1. d4 d5 {note} 1-0");
+    });
+
+    test("explains study push permission failures", () => {
+        expect(getLichessStudyPushErrorMessage(401, "Unauthorized", "moves")).toContain(
+            "session has expired",
+        );
+        expect(getLichessStudyPushErrorMessage(403, "Forbidden", "moves")).toContain(
+            "study write access",
+        );
+        expect(getLichessStudyPushErrorMessage(500, "Server Error", "tags")).toBe(
+            "Lichess study tags push failed: 500 Server Error",
+        );
     });
 });
