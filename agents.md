@@ -24,11 +24,13 @@ model, implementation map, and verification expectations for this app.
 ## Agent Playbooks
 
 - Opponent preparation now has a dedicated future-agent playbook at
-  `docs/opponent-prep-agent-guide.md`. Use it when the user asks for chess prep
-  from an opponent, entrant list, congress, tournament, or rating threshold. It
-  records the required per-player folder/database workflow, source checklist,
-  Lichess broadcast PGN extraction pattern, Chess.com account-confidence
-  method, dedupe rules, and En Croissant verification steps.
+  `docs/opponent-prep-agent-guide.md`. Whenever the user asks for chess prep
+  for a player, opponent, event, congress, tournament, entrant list, or rating
+  threshold, read and follow that guide as the workflow source of truth before
+  gathering games or creating prep databases. It records the required
+  per-player folder/database workflow, source checklist, Lichess broadcast PGN
+  extraction pattern, Chess.com account-confidence method, dedupe rules, and En
+  Croissant verification steps.
 
 ## Local Browser Verification
 
