@@ -368,7 +368,10 @@ async function writeCachedMistakeReviewSummary(path: string, summary: MistakeRev
     }
 }
 
-function getMistakeReviewDeckSummary(path: string, deck: MistakeReviewDeck): MistakeReviewDeckSummary {
+function getMistakeReviewDeckSummary(
+    path: string,
+    deck: MistakeReviewDeck,
+): MistakeReviewDeckSummary {
     const stats = getStats(deck.positions);
     const lastAdded = getMistakeReviewLastAdded(deck);
     return {
@@ -486,26 +489,28 @@ export async function listMistakeReviewDecks(
     const entries = await readDir(directory).catch(() => []);
     const decks: MistakeReviewDeckSummary[] = [];
 
-    const summaries = await Promise.all(entries.map(async (entry) => {
-        if (!entry.isFile || !entry.name.endsWith(MISTAKE_REVIEW_EXTENSION)) return null;
+    const summaries = await Promise.all(
+        entries.map(async (entry) => {
+            if (!entry.isFile || !entry.name.endsWith(MISTAKE_REVIEW_EXTENSION)) return null;
 
-        const path = await resolve(directory, entry.name);
-        try {
-            const lastModified = await getReviewDeckLastModified(path);
-            const cached = readCachedMistakeReviewSummary(path, lastModified);
-            if (cached) {
-                return cached;
+            const path = await resolve(directory, entry.name);
+            try {
+                const lastModified = await getReviewDeckLastModified(path);
+                const cached = readCachedMistakeReviewSummary(path, lastModified);
+                if (cached) {
+                    return cached;
+                }
+
+                const deck = await readMistakeReviewDeck(path);
+                const summary = getMistakeReviewDeckSummary(path, deck);
+                await writeCachedMistakeReviewSummary(path, summary);
+                return summary;
+            } catch {
+                // Ignore malformed mistake decks so one broken file does not hide the rest.
+                return null;
             }
-
-            const deck = await readMistakeReviewDeck(path);
-            const summary = getMistakeReviewDeckSummary(path, deck);
-            await writeCachedMistakeReviewSummary(path, summary);
-            return summary;
-        } catch {
-            // Ignore malformed mistake decks so one broken file does not hide the rest.
-            return null;
-        }
-    }));
+        }),
+    );
 
     for (const summary of summaries) {
         if (summary) decks.push(summary);
@@ -980,37 +985,58 @@ export function getMistakeReviewPhaseBatch(
     phaseInput: MistakeReviewPhase,
     options: { now?: Date; includeScheduled?: boolean } = {},
 ) {
+    return getMistakeReviewPhaseBatchEntries(positions, phaseInput, options).map(
+        (entry) => entry.position,
+    );
+}
+
+export function getMistakeReviewPhaseBatchIndices(
+    positions: Position[],
+    phaseInput: MistakeReviewPhase,
+    options: { now?: Date; includeScheduled?: boolean } = {},
+) {
+    return getMistakeReviewPhaseBatchEntries(positions, phaseInput, options).map(
+        (entry) => entry.index,
+    );
+}
+
+function getMistakeReviewPhaseBatchEntries(
+    positions: Position[],
+    phaseInput: MistakeReviewPhase,
+    options: { now?: Date; includeScheduled?: boolean } = {},
+) {
     const phase = normalizeMistakeReviewPhase(phaseInput);
     if (!phase) return [];
 
     const now = options.now ?? new Date();
-    const phasePositions = positions.filter(
-        (position) => position.mistakeReview && getMistakeReviewPhase(position) === phase,
-    );
-    const repsFor = (position: Position) =>
-        Math.max(0, Math.trunc(Number(position.card.reps) || 0));
+    const phasePositions = positions
+        .map((position, index) => ({ position, index }))
+        .filter(
+            (entry) =>
+                entry.position.mistakeReview && getMistakeReviewPhase(entry.position) === phase,
+        );
+    const repsFor = (entry: { position: Position }) =>
+        Math.max(0, Math.trunc(Number(entry.position.card.reps) || 0));
     const due = phasePositions
         .filter(
-            (position) =>
-                repsFor(position) > 0 &&
-                isMistakeReviewSrsPracticeReady(position, now),
+            (entry) => repsFor(entry) > 0 && isMistakeReviewSrsPracticeReady(entry.position, now),
         )
-        .sort((a, b) => sortMistakeReviewPhaseDueCards(a, b));
+        .sort((a, b) => sortMistakeReviewPhaseDueCards(a.position, b.position));
     const fresh = phasePositions
         .filter(
-            (position) =>
-                repsFor(position) === 0 &&
-                isMistakeReviewSrsPracticeReady(position, now, options.includeScheduled),
+            (entry) =>
+                repsFor(entry) === 0 &&
+                isMistakeReviewSrsPracticeReady(entry.position, now, options.includeScheduled),
         )
-        .sort(sortMistakeReviewNewCards);
+        .sort((a, b) => sortMistakeReviewNewCards(a.position, b.position));
     const scheduled = phasePositions
         .filter(
-            (position) =>
+            (entry) =>
                 options.includeScheduled &&
-                repsFor(position) > 0 &&
-                !isMistakeReviewSrsPracticeReady(position, now),
+                repsFor(entry) > 0 &&
+                !isMistakeReviewSrsPracticeReady(entry.position, now),
         )
-        .sort((a, b) => sortMistakeReviewPhaseScheduledCards(a, b));
+        .sort((a, b) => sortMistakeReviewPhaseScheduledCards(a.position, b.position));
 
     return [...due, ...fresh, ...scheduled];
 }
@@ -1038,11 +1064,21 @@ export function getMistakeReviewTimeManagementBatchIndices(
     positions: Position[],
     options: { minMoveSeconds?: number; now?: Date; includeScheduled?: boolean } = {},
 ) {
-    const indexByPosition = new Map<Position, number>();
-    positions.forEach((position, index) => indexByPosition.set(position, index));
-    return getMistakeReviewTimeManagementBatch(positions, options)
-        .map((position) => indexByPosition.get(position) ?? -1)
-        .filter((index) => index >= 0);
+    const minMoveSeconds =
+        typeof options.minMoveSeconds === "number" && Number.isFinite(options.minMoveSeconds)
+            ? Math.max(0, options.minMoveSeconds)
+            : DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds;
+    const now = options.now ?? new Date();
+
+    return positions
+        .map((position, index) => ({ position, index }))
+        .filter(
+            (entry) =>
+                isMistakeReviewTimeManagementPosition(entry.position, minMoveSeconds) &&
+                isMistakeReviewSrsPracticeReady(entry.position, now, options.includeScheduled),
+        )
+        .sort((a, b) => sortMistakeReviewTimeManagementCards(a.position, b.position))
+        .map((entry) => entry.index);
 }
 
 export function getMistakeReviewTimeManagementSummary(
@@ -1077,46 +1113,63 @@ export function getMistakeReviewNatureBatch(
     natureInput: MistakeReviewNature,
     options: { now?: Date; includeScheduled?: boolean } = {},
 ) {
+    return getMistakeReviewNatureBatchEntries(positions, natureInput, options).map(
+        (entry) => entry.position,
+    );
+}
+
+export function getMistakeReviewNatureBatchIndices(
+    positions: Position[],
+    natureInput: MistakeReviewNature,
+    options: { now?: Date; includeScheduled?: boolean } = {},
+) {
+    return getMistakeReviewNatureBatchEntries(positions, natureInput, options).map(
+        (entry) => entry.index,
+    );
+}
+
+function getMistakeReviewNatureBatchEntries(
+    positions: Position[],
+    natureInput: MistakeReviewNature,
+    options: { now?: Date; includeScheduled?: boolean } = {},
+) {
     const nature = normalizeMistakeReviewNature(natureInput);
     if (!nature) return [];
 
     const now = options.now ?? new Date();
-    const naturePositions = positions.filter(
-        (position) => position.mistakeReview && getMistakeReviewNature(position) === nature,
-    );
-    const repsFor = (position: Position) =>
-        Math.max(0, Math.trunc(Number(position.card.reps) || 0));
+    const naturePositions = positions
+        .map((position, index) => ({ position, index }))
+        .filter(
+            (entry) =>
+                entry.position.mistakeReview && getMistakeReviewNature(entry.position) === nature,
+        );
+    const repsFor = (entry: { position: Position }) =>
+        Math.max(0, Math.trunc(Number(entry.position.card.reps) || 0));
     const due = naturePositions
         .filter(
-            (position) =>
-                repsFor(position) > 0 &&
-                isMistakeReviewSrsPracticeReady(position, now),
+            (entry) => repsFor(entry) > 0 && isMistakeReviewSrsPracticeReady(entry.position, now),
         )
-        .sort((a, b) => sortMistakeReviewPhaseDueCards(a, b));
+        .sort((a, b) => sortMistakeReviewPhaseDueCards(a.position, b.position));
     const fresh = naturePositions
         .filter(
-            (position) =>
-                repsFor(position) === 0 &&
-                isMistakeReviewSrsPracticeReady(position, now, options.includeScheduled),
+            (entry) =>
+                repsFor(entry) === 0 &&
+                isMistakeReviewSrsPracticeReady(entry.position, now, options.includeScheduled),
         )
-        .sort(sortMistakeReviewNewCards);
+        .sort((a, b) => sortMistakeReviewNewCards(a.position, b.position));
     const scheduled = naturePositions
         .filter(
-            (position) =>
+            (entry) =>
                 options.includeScheduled &&
-                repsFor(position) > 0 &&
-                !isMistakeReviewSrsPracticeReady(position, now),
+                repsFor(entry) > 0 &&
+                !isMistakeReviewSrsPracticeReady(entry.position, now),
         )
-        .sort((a, b) => sortMistakeReviewPhaseScheduledCards(a, b));
+        .sort((a, b) => sortMistakeReviewPhaseScheduledCards(a.position, b.position));
 
     return [...due, ...fresh, ...scheduled];
 }
 
-function isMistakeReviewSrsPracticeReady(
-    position: Position,
-    now: Date,
-    includeScheduled = false,
-) {
+function isMistakeReviewSrsPracticeReady(position: Position, now: Date, includeScheduled = false) {
     if (includeScheduled) return true;
 
     const dueAt = new Date(position.card.due).getTime();

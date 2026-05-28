@@ -1212,6 +1212,7 @@ export type PracticeSessionStats = {
     mode: "anki" | "full" | "srs-list";
     remainingPositions: number[];
     queueOffset?: number;
+    queueKind?: "indices" | "all";
     correct: number;
     incorrect: number;
     streak: number;
@@ -1313,15 +1314,11 @@ export const bestMovesFamily = atomFamily(
                     engineMoves.get(`${swapMove(resolvedFinalFen)}:`) ||
                     engineMoves.get(`${fen}:${resolvedGameMovesKey}`);
                 if (moves && moves.length > 0) {
-                    const bestWinChange = getWinChance(
-                        normalizeScore(moves[0].score.value, turn),
-                    );
+                    const bestWinChange = getWinChance(normalizeScore(moves[0].score.value, turn));
                     bestMoves.set(
                         n,
                         moves.reduce<{ pv: string[]; winChance: number }[]>((acc, m) => {
-                            const winChance = getWinChance(
-                                normalizeScore(m.score.value, turn),
-                            );
+                            const winChance = getWinChance(normalizeScore(m.score.value, turn));
                             if (bestWinChange - winChance < 10) {
                                 acc.push({ pv: m.uciMoves, winChance });
                             }

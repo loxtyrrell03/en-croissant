@@ -194,7 +194,10 @@ async function writeCachedOpeningReviewSummary(path: string, summary: OpeningRev
     }
 }
 
-function getOpeningReviewDeckSummary(path: string, deck: OpeningReviewDeck): OpeningReviewDeckSummary {
+function getOpeningReviewDeckSummary(
+    path: string,
+    deck: OpeningReviewDeck,
+): OpeningReviewDeckSummary {
     const stats = getStats(deck.positions);
     return {
         path,
@@ -247,26 +250,28 @@ export async function listOpeningReviewDecks(
     const entries = await readDir(directory).catch(() => []);
     const decks: OpeningReviewDeckSummary[] = [];
 
-    const summaries = await Promise.all(entries.map(async (entry) => {
-        if (!entry.isFile || !entry.name.endsWith(OPENING_REVIEW_EXTENSION)) return null;
+    const summaries = await Promise.all(
+        entries.map(async (entry) => {
+            if (!entry.isFile || !entry.name.endsWith(OPENING_REVIEW_EXTENSION)) return null;
 
-        const path = await resolve(directory, entry.name);
-        try {
-            const lastModified = await getReviewDeckLastModified(path);
-            const cached = readCachedOpeningReviewSummary(path, lastModified);
-            if (cached) {
-                return cached;
+            const path = await resolve(directory, entry.name);
+            try {
+                const lastModified = await getReviewDeckLastModified(path);
+                const cached = readCachedOpeningReviewSummary(path, lastModified);
+                if (cached) {
+                    return cached;
+                }
+
+                const deck = await readOpeningReviewDeck(path);
+                const summary = getOpeningReviewDeckSummary(path, deck);
+                await writeCachedOpeningReviewSummary(path, summary);
+                return summary;
+            } catch {
+                // Ignore malformed review files so one broken deck does not hide the rest.
+                return null;
             }
-
-            const deck = await readOpeningReviewDeck(path);
-            const summary = getOpeningReviewDeckSummary(path, deck);
-            await writeCachedOpeningReviewSummary(path, summary);
-            return summary;
-        } catch {
-            // Ignore malformed review files so one broken deck does not hide the rest.
-            return null;
-        }
-    }));
+        }),
+    );
 
     for (const summary of summaries) {
         if (summary) decks.push(summary);
@@ -386,29 +391,53 @@ export function getOpeningReviewDailyBatch(
     settings: OpeningReviewDailySettings,
     options: { now?: Date; extra?: boolean } = {},
 ) {
-    const now = options.now ?? new Date();
-    const filtered = positions.filter((position) =>
-        isOpeningReviewDailyEligible(position, settings, now),
+    return getOpeningReviewDailyBatchEntries(positions, settings, options).map(
+        (entry) => entry.position,
     );
+}
+
+export function getOpeningReviewDailyBatchIndices(
+    positions: Position[],
+    settings: OpeningReviewDailySettings,
+    options: { now?: Date; extra?: boolean } = {},
+) {
+    return getOpeningReviewDailyBatchEntries(positions, settings, options).map(
+        (entry) => entry.index,
+    );
+}
+
+function getOpeningReviewDailyBatchEntries(
+    positions: Position[],
+    settings: OpeningReviewDailySettings,
+    options: { now?: Date; extra?: boolean } = {},
+) {
+    const now = options.now ?? new Date();
+    const filtered = positions
+        .map((position, index) => ({ position, index }))
+        .filter((entry) => isOpeningReviewDailyEligible(entry.position, settings, now));
     const progress = getOpeningReviewDailyProgress(positions, settings, { now });
     const attemptedTodayKeys = new Set(
         filtered
-            .filter((position) => wasOpeningReviewAttemptedOnDay(position, now))
-            .map(openingReviewDailyPositionKey),
+            .filter((entry) => wasOpeningReviewAttemptedOnDay(entry.position, now))
+            .map((entry) => openingReviewDailyPositionKey(entry.position)),
     );
     const unseenToday = filtered.filter(
-        (position) =>
-            !wasOpeningReviewAttemptedOnDay(position, now) &&
-            !attemptedTodayKeys.has(openingReviewDailyPositionKey(position)),
+        (entry) =>
+            !wasOpeningReviewAttemptedOnDay(entry.position, now) &&
+            !attemptedTodayKeys.has(openingReviewDailyPositionKey(entry.position)),
     );
     const due = uniqueOpeningReviewDailyPositions(
         unseenToday
-            .filter((position) => position.card.reps > 0 && new Date(position.card.due) <= now)
-            .sort(sortOpeningReviewDueCards),
+            .filter(
+                (entry) => entry.position.card.reps > 0 && new Date(entry.position.card.due) <= now,
+            )
+            .sort((a, b) => sortOpeningReviewDueCards(a.position, b.position)),
     );
     const fresh = uniqueOpeningReviewDailyPositions(
-        unseenToday.filter((position) => position.card.reps === 0).sort(sortOpeningReviewNewCards),
-        new Set(due.map(openingReviewDailyPositionKey)),
+        unseenToday
+            .filter((entry) => entry.position.card.reps === 0)
+            .sort((a, b) => sortOpeningReviewNewCards(a.position, b.position)),
+        new Set(due.map((entry) => openingReviewDailyPositionKey(entry.position))),
     );
 
     if (options.extra) {
@@ -422,13 +451,16 @@ export function getOpeningReviewDailyBatch(
     return [...selectedDue, ...selectedNew];
 }
 
-function uniqueOpeningReviewDailyPositions(positions: Position[], seen = new Set<string>()) {
-    const unique: Position[] = [];
-    for (const position of positions) {
-        const key = openingReviewDailyPositionKey(position);
+function uniqueOpeningReviewDailyPositions<T extends { position: Position }>(
+    entries: T[],
+    seen = new Set<string>(),
+) {
+    const unique: T[] = [];
+    for (const entry of entries) {
+        const key = openingReviewDailyPositionKey(entry.position);
         if (seen.has(key)) continue;
         seen.add(key);
-        unique.push(position);
+        unique.push(entry);
     }
     return unique;
 }

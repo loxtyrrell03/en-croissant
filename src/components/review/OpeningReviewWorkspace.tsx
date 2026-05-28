@@ -111,6 +111,7 @@ import {
   practiceCardStartTimeAtom,
   practiceSessionStatsAtom,
   type PracticeData,
+  type PracticeSessionStats,
   type PracticeState,
   practiceStateAtom,
 } from "@/state/atoms";
@@ -129,7 +130,7 @@ import {
 } from "@/utils/treeReducer";
 import {
   type OpeningReviewAutoUpdateConfig,
-  getOpeningReviewDailyBatch,
+  getOpeningReviewDailyBatchIndices,
   getOpeningReviewDailyProgress,
   readOpeningReviewDeck,
   type OpeningReviewDailySettings,
@@ -144,11 +145,11 @@ import {
   getMistakeReviewDailyBatchIndices,
   getMistakeReviewDailyProgress,
   getMistakeReviewNature,
-  getMistakeReviewNatureBatch,
+  getMistakeReviewNatureBatchIndices,
   getMistakeReviewNatureConfidence,
   getMistakeReviewNatureCounts,
   getMistakeReviewPhase,
-  getMistakeReviewPhaseBatch,
+  getMistakeReviewPhaseBatchIndices,
   getMistakeReviewPhaseCounts,
   getMistakeReviewSeverityWeight,
   getMistakeReviewTimeManagementBatchIndices,
@@ -2101,10 +2102,7 @@ function OpeningReviewPanel({
       return getMistakeReviewDailyBatchIndices(summaryPositions, mistakeDailySettings);
     }
     if (!isMistakeReview && openingDailySettings) {
-      return getPositionIndicesByReference(
-        summaryPositions,
-        getOpeningReviewDailyBatch(summaryPositions, openingDailySettings),
-      );
+      return getOpeningReviewDailyBatchIndices(summaryPositions, openingDailySettings);
     }
     return [];
   }, [summaryPositions, isMistakeReview, mistakeDailySettings, openingDailySettings]);
@@ -2411,20 +2409,31 @@ function OpeningReviewPanel({
         return;
       }
 
+      const queueKind = nextStats?.queueKind ?? sessionStats.queueKind;
+      const mode = nextStats?.mode ?? sessionStats.mode;
       const remaining = nextStats?.remainingPositions ?? sessionStats.remainingPositions;
+      const queueSession = { mode, remainingPositions: remaining, queueKind };
       const queueOffset = clampReviewQueueOffset(
         nextStats?.queueOffset ?? sessionStats.queueOffset,
-        remaining.length,
+        getReviewQueueLength(queueSession, positions.length),
       );
       const excludePositionIndex = options?.excludePositionIndex;
-      const positionIndex =
-        remaining.length > 0
-          ? getNextQueuedReviewPositionIndex(remaining, queueOffset, excludePositionIndex)
-          : getNextDueOpeningReviewPositionIndex(
-              positions,
-              options?.scopeIndices,
-              excludePositionIndex,
-            );
+      let positionIndex = -1;
+      if (isReviewAllPositionQueue(queueSession)) {
+        positionIndex = getNextAllReviewPositionIndex(positions, queueOffset, excludePositionIndex);
+      } else if (remaining.length > 0) {
+        positionIndex = getNextQueuedReviewPositionIndex(
+          remaining,
+          queueOffset,
+          excludePositionIndex,
+        );
+      } else {
+        positionIndex = getNextDueOpeningReviewPositionIndex(
+          positions,
+          options?.scopeIndices,
+          excludePositionIndex,
+        );
+      }
       const position = positionIndex >= 0 ? (positions[positionIndex] ?? null) : null;
 
       if (!position) {
@@ -2455,6 +2464,8 @@ function OpeningReviewPanel({
       goToMove,
       headers,
       root,
+      sessionStats.mode,
+      sessionStats.queueKind,
       sessionStats.queueOffset,
       sessionStats.remainingPositions,
       setCardStartTime,
@@ -2560,6 +2571,7 @@ function OpeningReviewPanel({
       const nextStats = {
         mode: "anki" as const,
         remainingPositions,
+        queueKind: "indices" as const,
         queueOffset: 0,
         correct: 0,
         incorrect: 0,
@@ -2587,8 +2599,10 @@ function OpeningReviewPanel({
       scopeLabel?: string,
       options?: { dailyGoalSession?: OpeningReviewInitialPractice },
     ) => {
-      const remainingPositions = scopeIndices ?? deck.positions.map((_, index) => index);
-      if (remainingPositions.length === 0) {
+      const allPositions = scopeIndices === undefined;
+      const remainingPositions = scopeIndices ?? [];
+      const positionCount = allPositions ? deck.positions.length : remainingPositions.length;
+      if (positionCount === 0) {
         notifications.show({
           title: "No positions to train",
           message: "The selected opening and colour filters do not match any positions.",
@@ -2601,6 +2615,7 @@ function OpeningReviewPanel({
       const nextStats = {
         mode: "full" as const,
         remainingPositions,
+        queueKind: allPositions ? ("all" as const) : ("indices" as const),
         queueOffset: 0,
         correct: 0,
         incorrect: 0,
@@ -2612,8 +2627,8 @@ function OpeningReviewPanel({
       if (scopeIndices) {
         notifications.show({
           title: "Focused review started",
-          message: `Training ${remainingPositions.length} ${isMistakeReview ? "mistake" : "gap"}${
-            remainingPositions.length === 1 ? "" : "s"
+          message: `Training ${positionCount} ${isMistakeReview ? "mistake" : "gap"}${
+            positionCount === 1 ? "" : "s"
           } in ${scopeLabel ?? "the selected filter"}.`,
           color: "blue",
         });
@@ -2637,6 +2652,7 @@ function OpeningReviewPanel({
     const nextStats = {
       mode: "srs-list" as const,
       remainingPositions: openingPlanGapScopeIndices,
+      queueKind: "indices" as const,
       queueOffset: 0,
       correct: 0,
       incorrect: 0,
@@ -2660,8 +2676,7 @@ function OpeningReviewPanel({
 
       const label =
         MISTAKE_REVIEW_PHASES.find((phaseOption) => phaseOption.id === phase)?.label ?? "Phase";
-      const phaseBatch = getMistakeReviewPhaseBatch(deck.positions, phase);
-      const remainingPositions = getPositionIndicesByReference(deck.positions, phaseBatch);
+      const remainingPositions = getMistakeReviewPhaseBatchIndices(deck.positions, phase);
 
       if (remainingPositions.length === 0) {
         const hasPhasePositions = deck.positions.some(
@@ -2680,6 +2695,7 @@ function OpeningReviewPanel({
       const nextStats = {
         mode: "srs-list" as const,
         remainingPositions,
+        queueKind: "indices" as const,
         queueOffset: 0,
         correct: 0,
         incorrect: 0,
@@ -2706,8 +2722,7 @@ function OpeningReviewPanel({
       const label =
         MISTAKE_REVIEW_NATURES.find((natureOption) => natureOption.id === nature)?.label ??
         "Mistake type";
-      const natureBatch = getMistakeReviewNatureBatch(deck.positions, nature);
-      const remainingPositions = getPositionIndicesByReference(deck.positions, natureBatch);
+      const remainingPositions = getMistakeReviewNatureBatchIndices(deck.positions, nature);
 
       if (remainingPositions.length === 0) {
         const hasNaturePositions = deck.positions.some(
@@ -2726,6 +2741,7 @@ function OpeningReviewPanel({
       const nextStats = {
         mode: "srs-list" as const,
         remainingPositions,
+        queueKind: "indices" as const,
         queueOffset: 0,
         correct: 0,
         incorrect: 0,
@@ -2767,6 +2783,7 @@ function OpeningReviewPanel({
     const nextStats = {
       mode: "srs-list" as const,
       remainingPositions,
+      queueKind: "indices" as const,
       queueOffset: 0,
       correct: 0,
       incorrect: 0,
@@ -2832,9 +2849,10 @@ function OpeningReviewPanel({
     const position = deck.positions[positionIndex];
     if (!position) return;
 
-    const advancesStableQueue = sessionStats.remainingPositions.length > 0;
+    const queueLength = getReviewQueueLength(sessionStats, deck.positions.length);
+    const advancesStableQueue = queueLength > 0;
     const nextQueueOffset = advancesStableQueue
-      ? clampReviewQueueOffset(sessionStats.queueOffset, sessionStats.remainingPositions.length) + 1
+      ? clampReviewQueueOffset(sessionStats.queueOffset, queueLength) + 1
       : sessionStats.queueOffset;
     const remainingPositions = sessionStats.remainingPositions;
     const wasCorrect = practiceState.phase === "correct";
@@ -2859,10 +2877,9 @@ function OpeningReviewPanel({
 
   function skipCard() {
     const wasIncorrect = practiceState.phase === "incorrect";
-    if (sessionStats.remainingPositions.length > 0) {
-      const nextQueueOffset =
-        clampReviewQueueOffset(sessionStats.queueOffset, sessionStats.remainingPositions.length) +
-        1;
+    const queueLength = getReviewQueueLength(sessionStats, deck.positions.length);
+    if (queueLength > 0) {
+      const nextQueueOffset = clampReviewQueueOffset(sessionStats.queueOffset, queueLength) + 1;
       setSessionStatsInTransition((current) => ({
         ...current,
         queueOffset: nextQueueOffset,
@@ -2890,8 +2907,8 @@ function OpeningReviewPanel({
   }
 
   const advanceFullPracticeCorrect = useCallback(() => {
-    const nextQueueOffset =
-      clampReviewQueueOffset(sessionStats.queueOffset, sessionStats.remainingPositions.length) + 1;
+    const queueLength = getReviewQueueLength(sessionStats, deck.positions.length);
+    const nextQueueOffset = clampReviewQueueOffset(sessionStats.queueOffset, queueLength) + 1;
     setSessionStatsInTransition((current) => ({
       ...current,
       queueOffset: nextQueueOffset,
@@ -2904,12 +2921,7 @@ function OpeningReviewPanel({
       mode: "full",
       queueOffset: nextQueueOffset,
     });
-  }, [
-    newPractice,
-    sessionStats.queueOffset,
-    sessionStats.remainingPositions,
-    setSessionStatsInTransition,
-  ]);
+  }, [deck.positions.length, newPractice, sessionStats, setSessionStatsInTransition]);
 
   const advanceMistakeReviewCorrect = useCallback(() => {
     if (
@@ -2933,9 +2945,8 @@ function OpeningReviewPanel({
     }
 
     if (sessionStats.mode === "full") {
-      const nextQueueOffset =
-        clampReviewQueueOffset(sessionStats.queueOffset, sessionStats.remainingPositions.length) +
-        1;
+      const queueLength = getReviewQueueLength(sessionStats, deck.positions.length);
+      const nextQueueOffset = clampReviewQueueOffset(sessionStats.queueOffset, queueLength) + 1;
       setSessionStatsInTransition((current) => ({
         ...current,
         queueOffset: nextQueueOffset,
@@ -2948,10 +2959,9 @@ function OpeningReviewPanel({
       return;
     }
 
-    if (sessionStats.remainingPositions.length > 0) {
-      const nextQueueOffset =
-        clampReviewQueueOffset(sessionStats.queueOffset, sessionStats.remainingPositions.length) +
-        1;
+    const queueLength = getReviewQueueLength(sessionStats, deck.positions.length);
+    if (queueLength > 0) {
+      const nextQueueOffset = clampReviewQueueOffset(sessionStats.queueOffset, queueLength) + 1;
       setSessionStatsInTransition((current) => ({
         ...current,
         queueOffset: nextQueueOffset,
@@ -2977,9 +2987,7 @@ function OpeningReviewPanel({
     practiceState.phase,
     practiceState.positionIndex,
     practiceState.resultRecorded,
-    sessionStats.mode,
-    sessionStats.queueOffset,
-    sessionStats.remainingPositions,
+    sessionStats,
     setSessionStatsInTransition,
   ]);
 
@@ -2999,12 +3007,10 @@ function OpeningReviewPanel({
     if (practiceAutoDifficulty !== "none" && practiceState.positionIndex !== undefined) {
       const positionIndex = practiceState.positionIndex;
       const timer = window.setTimeout(() => {
-        const advancesStableQueue = sessionStats.remainingPositions.length > 0;
+        const queueLength = getReviewQueueLength(sessionStats, deck.positions.length);
+        const advancesStableQueue = queueLength > 0;
         const nextQueueOffset = advancesStableQueue
-          ? clampReviewQueueOffset(
-              sessionStats.queueOffset,
-              sessionStats.remainingPositions.length,
-            ) + 1
+          ? clampReviewQueueOffset(sessionStats.queueOffset, queueLength) + 1
           : sessionStats.queueOffset;
         const remainingPositions = advancesStableQueue
           ? sessionStats.remainingPositions
@@ -3040,9 +3046,7 @@ function OpeningReviewPanel({
     practiceAutoDifficulty,
     practiceState.phase,
     practiceState.positionIndex,
-    sessionStats.mode,
-    sessionStats.queueOffset,
-    sessionStats.remainingPositions,
+    sessionStats,
     setSessionStatsInTransition,
   ]);
 
@@ -3188,9 +3192,9 @@ function OpeningReviewPanel({
   const sessionCompleted = sessionStats.correct + sessionStats.incorrect;
   const sessionRemaining =
     sessionStats.mode === "full" || sessionStats.mode === "srs-list"
-      ? getRemainingReviewQueueLength(sessionStats)
+      ? getRemainingReviewQueueLength(sessionStats, deck.positions.length)
       : sessionStats.remainingPositions.length > 0
-        ? getRemainingReviewQueueLength(sessionStats)
+        ? getRemainingReviewQueueLength(sessionStats, deck.positions.length)
         : Math.max(0, stats.due + stats.unseen);
   const sessionTotal = sessionCompleted + sessionRemaining;
   const sessionProgress = sessionTotal > 0 ? (sessionCompleted / sessionTotal) * 100 : 0;
@@ -6545,17 +6549,35 @@ function getDueReviewPositionIndices(positions: Position[]) {
   return indices;
 }
 
-function getPositionIndicesByReference(positions: Position[], selected: Position[]) {
-  const indexByPosition = new Map<Position, number>();
-  positions.forEach((position, index) => indexByPosition.set(position, index));
-  return selected
-    .map((position) => indexByPosition.get(position) ?? -1)
-    .filter((positionIndex) => positionIndex >= 0);
-}
-
 function clampReviewQueueOffset(value: number | null | undefined, queueLength: number) {
   const offset = Math.max(0, Math.trunc(Number(value) || 0));
   return Math.min(offset, Math.max(0, queueLength));
+}
+
+function isReviewAllPositionQueue(sessionStats: Pick<PracticeSessionStats, "mode" | "queueKind">) {
+  return sessionStats.mode === "full" && sessionStats.queueKind === "all";
+}
+
+function getReviewQueueLength(
+  sessionStats: Pick<PracticeSessionStats, "mode" | "remainingPositions" | "queueKind">,
+  positionsLength: number,
+) {
+  return isReviewAllPositionQueue(sessionStats)
+    ? positionsLength
+    : sessionStats.remainingPositions.length;
+}
+
+function getReviewQueueOffset(
+  sessionStats: Pick<
+    PracticeSessionStats,
+    "mode" | "remainingPositions" | "queueOffset" | "queueKind"
+  >,
+  positionsLength: number,
+) {
+  return clampReviewQueueOffset(
+    sessionStats.queueOffset,
+    getReviewQueueLength(sessionStats, positionsLength),
+  );
 }
 
 function getNextQueuedReviewPositionIndex(
@@ -6570,16 +6592,28 @@ function getNextQueuedReviewPositionIndex(
   return -1;
 }
 
-function getRemainingReviewQueueLength(sessionStats: {
-  mode: "anki" | "full" | "srs-list";
-  remainingPositions: number[];
-  queueOffset?: number;
-}) {
-  return Math.max(
-    0,
-    sessionStats.remainingPositions.length -
-      clampReviewQueueOffset(sessionStats.queueOffset, sessionStats.remainingPositions.length),
-  );
+function getNextAllReviewPositionIndex(
+  positions: Position[],
+  queueOffset: number,
+  excludePositionIndex?: number,
+) {
+  for (let index = queueOffset; index < positions.length; index += 1) {
+    if (index !== excludePositionIndex && positions[index]) return index;
+  }
+  return -1;
+}
+
+function getRemainingReviewQueueLength(
+  sessionStats: {
+    mode: "anki" | "full" | "srs-list";
+    remainingPositions: number[];
+    queueOffset?: number;
+    queueKind?: "indices" | "all";
+  },
+  positionsLength: number,
+) {
+  const queueLength = getReviewQueueLength(sessionStats, positionsLength);
+  return Math.max(0, queueLength - clampReviewQueueOffset(sessionStats.queueOffset, queueLength));
 }
 
 function getReviewPrewarmPositionIndices(
@@ -6588,10 +6622,22 @@ function getReviewPrewarmPositionIndices(
     mode: "anki" | "full" | "srs-list";
     remainingPositions: number[];
     queueOffset?: number;
+    queueKind?: "indices" | "all";
   },
   currentPositionIndex: number,
 ) {
   if (positions.length === 0) return [];
+
+  if (isReviewAllPositionQueue(sessionStats)) {
+    const queueOffset = getReviewQueueOffset(sessionStats, positions.length);
+    const indices: number[] = [];
+    for (let index = queueOffset; index < positions.length; index += 1) {
+      if (index === currentPositionIndex || !positions[index]) continue;
+      indices.push(index);
+      if (indices.length >= REVIEW_POSITION_PREWARM_LIMIT) break;
+    }
+    return indices;
+  }
 
   if (sessionStats.remainingPositions.length > 0) {
     const queueOffset = clampReviewQueueOffset(
