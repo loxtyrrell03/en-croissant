@@ -1045,22 +1045,31 @@ export function getMistakeReviewTimeManagementBatch(
     positions: Position[],
     options: { minMoveSeconds?: number; now?: Date; includeScheduled?: boolean } = {},
 ) {
-    const minMoveSeconds =
-        typeof options.minMoveSeconds === "number" && Number.isFinite(options.minMoveSeconds)
-            ? Math.max(0, options.minMoveSeconds)
-            : DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds;
-    const now = options.now ?? new Date();
-
-    return positions
-        .filter(
-            (position) =>
-                isMistakeReviewTimeManagementPosition(position, minMoveSeconds) &&
-                isMistakeReviewSrsPracticeReady(position, now, options.includeScheduled),
-        )
-        .sort(sortMistakeReviewTimeManagementCards);
+    return getMistakeReviewTimeManagementBatchEntries(positions, options).map(
+        (entry) => entry.position,
+    );
 }
 
 export function getMistakeReviewTimeManagementBatchIndices(
+    positions: Position[],
+    options: { minMoveSeconds?: number; now?: Date; includeScheduled?: boolean } = {},
+) {
+    return getMistakeReviewTimeManagementBatchEntries(positions, options).map(
+        (entry) => entry.index,
+    );
+}
+
+type MistakeReviewTimeManagementBatchEntry = { position: Position; index: number };
+
+type MistakeReviewTimeManagementBatchGroup = {
+    due: MistakeReviewTimeManagementBatchEntry | null;
+    fresh: MistakeReviewTimeManagementBatchEntry | null;
+    scheduled: MistakeReviewTimeManagementBatchEntry | null;
+    attemptedToday: boolean;
+    hasScheduledReview: boolean;
+};
+
+function getMistakeReviewTimeManagementBatchEntries(
     positions: Position[],
     options: { minMoveSeconds?: number; now?: Date; includeScheduled?: boolean } = {},
 ) {
@@ -1069,43 +1078,89 @@ export function getMistakeReviewTimeManagementBatchIndices(
             ? Math.max(0, options.minMoveSeconds)
             : DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds;
     const now = options.now ?? new Date();
+    const nowTime = now.getTime();
+    const groups = new Map<string, MistakeReviewTimeManagementBatchGroup>();
 
-    return positions
-        .map((position, index) => ({ position, index }))
-        .filter(
-            (entry) =>
-                isMistakeReviewTimeManagementPosition(entry.position, minMoveSeconds) &&
-                isMistakeReviewSrsPracticeReady(entry.position, now, options.includeScheduled),
-        )
-        .sort((a, b) => sortMistakeReviewTimeManagementCards(a.position, b.position))
-        .map((entry) => entry.index);
+    positions.forEach((position, index) => {
+        if (!isMistakeReviewTimeManagementPosition(position, minMoveSeconds)) return;
+
+        const key = normalizeFenKey(position.fen);
+        let group = groups.get(key);
+        if (!group) {
+            group = {
+                due: null,
+                fresh: null,
+                scheduled: null,
+                attemptedToday: false,
+                hasScheduledReview: false,
+            };
+            groups.set(key, group);
+        }
+
+        const entry = { position, index };
+        const reps = Math.max(0, Math.trunc(Number(position.card.reps) || 0));
+        const dueAt = new Date(position.card.due).getTime();
+        const lastAttemptedAt = getMistakeReviewLastAttemptedAt(position);
+        const isDue = reps > 0 && Number.isFinite(dueAt) && dueAt <= nowTime;
+        const isFresh = reps === 0 && lastAttemptedAt === null;
+
+        group.attemptedToday ||= wasMistakeReviewAttemptedOnDay(position, now);
+        group.hasScheduledReview ||= !isFresh;
+
+        if (isDue) {
+            if (
+                !group.due ||
+                sortMistakeReviewTimeManagementCards(position, group.due.position) < 0
+            ) {
+                group.due = entry;
+            }
+        } else if (isFresh) {
+            if (
+                !group.fresh ||
+                sortMistakeReviewTimeManagementCards(position, group.fresh.position) < 0
+            ) {
+                group.fresh = entry;
+            }
+        } else if (
+            !group.scheduled ||
+            sortMistakeReviewScheduledTimeManagementCards(position, group.scheduled.position) < 0
+        ) {
+            group.scheduled = entry;
+        }
+    });
+
+    const entries: MistakeReviewTimeManagementBatchEntry[] = [];
+    for (const group of groups.values()) {
+        if (!options.includeScheduled && group.attemptedToday) continue;
+
+        if (group.due) {
+            entries.push(group.due);
+        } else if (group.hasScheduledReview) {
+            if (options.includeScheduled && group.scheduled) {
+                entries.push(group.scheduled);
+            }
+        } else if (group.fresh) {
+            entries.push(group.fresh);
+        }
+    }
+
+    return entries.sort((a, b) => sortMistakeReviewTimeManagementCards(a.position, b.position));
 }
 
 export function getMistakeReviewTimeManagementSummary(
     positions: Position[],
     options: { minMoveSeconds?: number; now?: Date; includeScheduled?: boolean } = {},
 ): MistakeReviewTimeManagementSummary {
-    const minMoveSeconds =
-        typeof options.minMoveSeconds === "number" && Number.isFinite(options.minMoveSeconds)
-            ? Math.max(0, options.minMoveSeconds)
-            : DEFAULT_MISTAKE_REVIEW_TIME_MANAGEMENT.minMoveSeconds;
-    const now = options.now ?? new Date();
-    let readyCount = 0;
-    let clockDataCount = 0;
+    const readyCount = getMistakeReviewTimeManagementBatchEntries(positions, options).length;
+    const clockDataKeys = new Set<string>();
 
     for (const position of positions) {
         if (isMistakeReviewTimeManagementPosition(position, 0)) {
-            clockDataCount += 1;
-        }
-        if (
-            isMistakeReviewTimeManagementPosition(position, minMoveSeconds) &&
-            isMistakeReviewSrsPracticeReady(position, now, options.includeScheduled)
-        ) {
-            readyCount += 1;
+            clockDataKeys.add(normalizeFenKey(position.fen));
         }
     }
 
-    return { readyCount, clockDataCount };
+    return { readyCount, clockDataCount: clockDataKeys.size };
 }
 
 export function getMistakeReviewNatureBatch(
@@ -2753,6 +2808,13 @@ function sortMistakeReviewTimeManagementCards(a: Position, b: Position) {
             getMistakeReviewSeverityWeight(a.mistakeReview?.severity) ||
         (b.mistakeReview?.winProbabilityDrop ?? 0) - (a.mistakeReview?.winProbabilityDrop ?? 0) ||
         new Date(a.card.due).getTime() - new Date(b.card.due).getTime()
+    );
+}
+
+function sortMistakeReviewScheduledTimeManagementCards(a: Position, b: Position) {
+    return (
+        new Date(a.card.due).getTime() - new Date(b.card.due).getTime() ||
+        sortMistakeReviewTimeManagementCards(a, b)
     );
 }
 

@@ -19,6 +19,7 @@ import {
     getMistakeReviewPhaseBatch,
     getMistakeReviewPhaseCounts,
     getMistakeReviewTimeManagementBatch,
+    getMistakeReviewTimeManagementSummary,
     isMistakeReviewPassingLabel,
     migrateMistakeReviewDeckNatureClassifications,
     mergeMistakeReviewPositions,
@@ -797,6 +798,7 @@ describe("mistake review helpers", () => {
             },
         });
         const longThink = position({
+            fen: OPENING_FEN,
             reviewKey: "long-think",
             card: {
                 ...createEmptyCard(),
@@ -810,6 +812,7 @@ describe("mistake review helpers", () => {
             },
         });
         const scheduledLongThink = position({
+            fen: MIDDLEGAME_FEN,
             reviewKey: "scheduled-long-think",
             card: {
                 ...createEmptyCard(),
@@ -823,6 +826,7 @@ describe("mistake review helpers", () => {
             },
         });
         const reviewedTodayAgain = position({
+            fen: ENDGAME_FEN,
             reviewKey: "reviewed-today-again",
             card: {
                 ...createEmptyCard(),
@@ -839,6 +843,7 @@ describe("mistake review helpers", () => {
             },
         });
         const longestThink = position({
+            fen: HANGING_KNIGHT_FEN,
             reviewKey: "longest-think",
             mistakeReview: {
                 ...position().mistakeReview!,
@@ -911,6 +916,112 @@ describe("mistake review helpers", () => {
                 },
             ).map((item) => item.reviewKey),
         ).toEqual(["reviewed-today-again", "scheduled-long-think", "long-think"]);
+    });
+
+    test("time management batch spaces duplicate board positions together", () => {
+        const now = new Date("2026-04-27T12:00:00Z");
+        const scheduledBoard = position({
+            fen: OPENING_FEN,
+            reviewKey: "scheduled-board",
+            card: {
+                ...createEmptyCard(),
+                reps: 1,
+                due: new Date("2026-04-30T12:00:00Z"),
+            } as Position["card"],
+            mistakeReview: {
+                ...position().mistakeReview!,
+                moveTimeSeconds: 120,
+                lastAttemptedAt: new Date("2026-04-26T09:00:00Z").getTime(),
+                lastAttemptedCardReps: 0,
+            },
+        });
+        const freshSameScheduledBoard = position({
+            fen: OPENING_FEN,
+            reviewKey: "fresh-same-scheduled-board",
+            mistakeReview: {
+                ...position().mistakeReview!,
+                moveTimeSeconds: 150,
+                playedMoveSan: "d4",
+                playedMoveUci: "d2d4",
+            },
+        });
+        const dueBoard = position({
+            fen: MIDDLEGAME_FEN,
+            reviewKey: "due-board",
+            card: {
+                ...createEmptyCard(),
+                reps: 2,
+                due: new Date("2026-04-26T12:00:00Z"),
+            } as Position["card"],
+            mistakeReview: {
+                ...position().mistakeReview!,
+                moveTimeSeconds: 70,
+            },
+        });
+        const freshSameDueBoard = position({
+            fen: MIDDLEGAME_FEN,
+            reviewKey: "fresh-same-due-board",
+            mistakeReview: {
+                ...position().mistakeReview!,
+                moveTimeSeconds: 140,
+                playedMoveSan: "c4",
+                playedMoveUci: "c2c4",
+            },
+        });
+        const freshOtherBoard = position({
+            fen: ENDGAME_FEN,
+            reviewKey: "fresh-other-board",
+            mistakeReview: {
+                ...position().mistakeReview!,
+                moveTimeSeconds: 60,
+            },
+        });
+        const attemptedToday = position({
+            fen: HANGING_KNIGHT_FEN,
+            reviewKey: "attempted-today",
+            card: {
+                ...createEmptyCard(),
+                reps: 3,
+                due: new Date("2026-04-25T12:00:00Z"),
+            } as Position["card"],
+            mistakeReview: {
+                ...position().mistakeReview!,
+                moveTimeSeconds: 200,
+                lastAttemptedAt: new Date("2026-04-27T09:00:00Z").getTime(),
+                lastAttemptedCardReps: 3,
+            },
+        });
+        const freshSameAttemptedBoard = position({
+            fen: HANGING_KNIGHT_FEN,
+            reviewKey: "fresh-same-attempted-board",
+            mistakeReview: {
+                ...position().mistakeReview!,
+                moveTimeSeconds: 190,
+                playedMoveSan: "e4",
+                playedMoveUci: "e2e4",
+            },
+        });
+
+        const positions = [
+            freshSameScheduledBoard,
+            scheduledBoard,
+            freshSameDueBoard,
+            dueBoard,
+            freshOtherBoard,
+            attemptedToday,
+            freshSameAttemptedBoard,
+        ];
+        const batch = getMistakeReviewTimeManagementBatch(positions, {
+            minMoveSeconds: 20,
+            now,
+        });
+        const summary = getMistakeReviewTimeManagementSummary(positions, {
+            minMoveSeconds: 20,
+            now,
+        });
+
+        expect(batch.map((item) => item.reviewKey)).toEqual(["due-board", "fresh-other-board"]);
+        expect(summary).toEqual({ readyCount: 2, clockDataCount: 4 });
     });
 
     test("SM2 review schedule starts at one day and grows from there", () => {

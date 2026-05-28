@@ -440,6 +440,10 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
 - Review summary snapshots stay frozen while a practice session is active and
   refresh when practice returns idle, avoiding the old delayed 2.5-second
   whole-deck stats refresh during card transitions on large decks.
+- Time-management trainer batches now treat repeated long-think evidence for
+  the same FEN as one SRS item: a reviewed or scheduled copy suppresses fresh
+  duplicates until it is due, attempted-today duplicates are skipped, and the
+  ready count reflects the deduped board-position queue.
 
 ### Practice Bot Trainer
 
