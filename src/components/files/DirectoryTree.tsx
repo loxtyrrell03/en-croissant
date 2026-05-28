@@ -5,6 +5,8 @@ import {
   IconEye,
   IconFolder,
   IconFolderOpen,
+  IconPinned,
+  IconPinnedOff,
   IconTarget,
   IconTrash,
 } from "@tabler/icons-react";
@@ -25,7 +27,13 @@ import {
   createContext,
   useContext,
 } from "react";
-import { activeTabAtom, deckAtomFamily, tabsAtom, expandedDirectoriesAtom } from "@/state/atoms";
+import {
+  activeTabAtom,
+  deckAtomFamily,
+  tabsAtom,
+  expandedDirectoriesAtom,
+  pinnedFileEntriesAtom,
+} from "@/state/atoms";
 import { openFile } from "@/utils/files";
 import classes from "./DirectoryTree.module.css";
 import type { Directory, FileMetadata } from "./file";
@@ -81,35 +89,64 @@ function getEventPoint(event: DraggableEvent): { x: number; y: number } | null {
   return null;
 }
 
-function recursiveSort(files: Entry[], pruneEmpty = false): Entry[] {
+function getEntryTimestamp(entry: Entry): number {
+  if (entry.type === "file") {
+    return entry.lastModified;
+  }
+
+  return Math.max(0, ...entry.children.map(getEntryTimestamp));
+}
+
+function replacePathPrefix(path: string, oldPath: string, newPath: string) {
+  if (path === oldPath) {
+    return newPath;
+  }
+
+  if (path.startsWith(`${oldPath}/`) || path.startsWith(`${oldPath}\\`)) {
+    return `${newPath}${path.slice(oldPath.length)}`;
+  }
+
+  return path;
+}
+
+function recursiveSort(
+  files: Entry[],
+  pruneEmpty = false,
+  pinnedPaths: ReadonlySet<string> = new Set(),
+): Entry[] {
   return files
     .map((f) => {
       if (f.type === "file") return f;
       return {
         ...f,
-        children: recursiveSort(f.children, pruneEmpty),
+        children: recursiveSort(f.children, pruneEmpty, pinnedPaths),
       };
-    })
-    .sort((a, b) => {
-      return b.name.localeCompare(a.name, "en", { sensitivity: "base" });
     })
     .filter((f) => {
       return f.type === "file" || !pruneEmpty || f.children.length > 0;
     })
     .sort((a, b) => {
-      return a.name.localeCompare(b.name);
-    })
-    .sort((a, b) => {
+      const pinnedDifference = Number(pinnedPaths.has(b.path)) - Number(pinnedPaths.has(a.path));
+      if (pinnedDifference !== 0) {
+        return pinnedDifference;
+      }
+
+      const timestampDifference = getEntryTimestamp(b) - getEntryTimestamp(a);
+      if (timestampDifference !== 0) {
+        return timestampDifference;
+      }
+
       if (a.type === "directory" && b.type === "file") {
         return -1;
       }
-      if (a.type === "directory" && b.type === "directory") {
-        return 0;
+      if (a.type === "file" && b.type === "directory") {
+        return 1;
       }
-      if (a.type === "file" && b.type === "file") {
-        return 0;
-      }
-      return 1;
+
+      return b.name.localeCompare(a.name, "en", {
+        numeric: true,
+        sensitivity: "base",
+      });
     });
 }
 
@@ -138,6 +175,8 @@ export default function DirectoryTree({
   search: string;
   filter: string;
 }) {
+  const [pinnedPaths, setPinnedPaths] = useAtom(pinnedFileEntriesAtom);
+  const pinnedPathSet = useMemo(() => new Set(pinnedPaths), [pinnedPaths]);
   const flattedFiles = useMemo(() => flattenFiles(files ?? []), [files]);
   const fuse = useMemo(
     () =>
@@ -159,8 +198,8 @@ export default function DirectoryTree({
       next = filterTree(next, (file) => file.metadata.type === filter);
     }
 
-    return recursiveSort(next, !!(search || filter));
-  }, [files, search, filter, fuse]);
+    return recursiveSort(next, !!(search || filter), pinnedPathSet);
+  }, [files, search, filter, fuse, pinnedPathSet]);
 
   return (
     <Box className={classes.tree}>
@@ -181,6 +220,8 @@ export default function DirectoryTree({
         setSelectedFile={setSelectedFile}
         onRequestDelete={onRequestDelete}
         onRequestRename={onRequestRename}
+        pinnedPaths={pinnedPathSet}
+        setPinnedPaths={setPinnedPaths}
         expandedByDefault={!!(search || filter)}
       />
     </Box>
@@ -197,6 +238,8 @@ function Tree({
   setSelectedFile,
   onRequestDelete,
   onRequestRename,
+  pinnedPaths,
+  setPinnedPaths,
   expandedByDefault,
 }: {
   files: Entry[];
@@ -208,6 +251,8 @@ function Tree({
   setSelectedFile: (file: Entry | null) => void;
   onRequestDelete: (file: Entry) => void;
   onRequestRename: (file: Entry) => void;
+  pinnedPaths: ReadonlySet<string>;
+  setPinnedPaths: React.Dispatch<React.SetStateAction<string[]>>;
   expandedByDefault?: boolean;
 }) {
   const [expandedIds, setExpandedIds] = useAtom(expandedDirectoriesAtom);
@@ -280,6 +325,8 @@ function Tree({
             handleOpenFile={handleOpenFile}
             onRequestDelete={onRequestDelete}
             onRequestRename={onRequestRename}
+            pinnedPaths={pinnedPaths}
+            setPinnedPaths={setPinnedPaths}
             refreshDirectory={refreshDirectory}
             showContextMenu={showContextMenu}
           >
@@ -299,6 +346,8 @@ function Tree({
                     setSelectedFile={setSelectedFile}
                     onRequestDelete={onRequestDelete}
                     onRequestRename={onRequestRename}
+                    pinnedPaths={pinnedPaths}
+                    setPinnedPaths={setPinnedPaths}
                     expandedByDefault={expandedByDefault}
                   />
                 )
@@ -340,6 +389,8 @@ function DirectoryNode({
   handleOpenFile,
   onRequestDelete,
   onRequestRename,
+  pinnedPaths,
+  setPinnedPaths,
   refreshDirectory,
   showContextMenu,
   children,
@@ -355,6 +406,8 @@ function DirectoryNode({
   handleOpenFile: (file: FileMetadata) => Promise<void>;
   onRequestDelete: (file: Entry) => void;
   onRequestRename: (file: Entry) => void;
+  pinnedPaths: ReadonlySet<string>;
+  setPinnedPaths: React.Dispatch<React.SetStateAction<string[]>>;
   refreshDirectory: () => Promise<unknown>;
   showContextMenu: ShowContextMenu;
   children?: React.ReactNode;
@@ -366,6 +419,17 @@ function DirectoryNode({
   const dragContext = useContext(DragContext);
 
   const [isDraggingNode, setIsDraggingNode] = useState(false);
+  const isPinned = pinnedPaths.has(node.path);
+
+  const togglePin = useCallback(() => {
+    setPinnedPaths((current) => {
+      if (current.includes(node.path)) {
+        return current.filter((path) => path !== node.path);
+      }
+
+      return [...current, node.path];
+    });
+  }, [node.path, setPinnedPaths]);
 
   useEffect(() => {
     if (!dragContext || node.type !== "directory") {
@@ -455,6 +519,11 @@ function DirectoryNode({
           ).catch(() => {});
         }
         await refreshDirectory();
+        setPinnedPaths((current) =>
+          Array.from(
+            new Set(current.map((path) => replacePathPrefix(path, sourcePath, targetPath))),
+          ),
+        );
         if (targetId !== dragContext.documentDir) {
           setExpandedIds((prev) => (prev.includes(targetId) ? prev : [...prev, targetId]));
         }
@@ -487,6 +556,12 @@ function DirectoryNode({
     !node.path.startsWith(dragContext?.draggingPath + "\\");
 
   const contextMenuHandler = showContextMenu([
+    {
+      key: "pin-entry",
+      icon: isPinned ? <IconPinnedOff size={16} /> : <IconPinned size={16} />,
+      title: isPinned ? "Unpin" : "Pin",
+      onClick: togglePin,
+    },
     {
       key: "open-file",
       icon: <IconEye size={16} />,
@@ -599,9 +674,12 @@ function DirectoryNode({
             <FileIcon type={node.metadata.type} className={classes.typeIcon} />
           )}
           <span className={classes.label}>{node.name}</span>
-          {node.type === "file" && node.metadata.type === "repertoire" && (
+          {(isPinned || (node.type === "file" && node.metadata.type === "repertoire")) && (
             <div className={classes.badge}>
-              <DuePositions file={node.path} />
+              {isPinned && <IconPinned size={12} />}
+              {node.type === "file" && node.metadata.type === "repertoire" && (
+                <DuePositions file={node.path} />
+              )}
             </div>
           )}
         </div>

@@ -70,6 +70,12 @@ export const expandedDirectoriesAtom = atomWithStorage<string[]>(
     createZodStorage(z.array(z.string()), sessionStorage),
 );
 
+export const pinnedFileEntriesAtom = atomWithStorage<string[]>(
+    "pinned-file-entries",
+    [],
+    createZodStorage(z.array(z.string()), localStorage),
+);
+
 export const currentTabAtom = atom(
     (get) => {
         const tabs = get(tabsAtom);

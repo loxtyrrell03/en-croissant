@@ -29,7 +29,7 @@ import { useSetAtom } from "jotai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
-import { recentFilesAtom, tabsAtom } from "@/state/atoms";
+import { pinnedFileEntriesAtom, recentFilesAtom, tabsAtom } from "@/state/atoms";
 import { capitalize } from "@/utils/format";
 import ConfirmModal from "../common/ConfirmModal";
 import OpenFolderButton from "../common/OpenFolderButton";
@@ -199,6 +199,7 @@ function FilesPage() {
   } = useFileDirectory(documentDir);
   const setTabs = useSetAtom(tabsAtom);
   const setRecentFiles = useSetAtom(recentFilesAtom);
+  const setPinnedFiles = useSetAtom(pinnedFileEntriesAtom);
 
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Entry | null>(null);
@@ -419,8 +420,23 @@ function FilesPage() {
           };
         }),
       );
+
+      setPinnedFiles((pinnedFiles) =>
+        Array.from(
+          new Set(
+            pinnedFiles.map((path) => {
+              const isAffected =
+                oldEntry.type === "directory"
+                  ? isSameOrDescendantPath(path, oldPath)
+                  : path === oldPath;
+
+              return isAffected ? replacePathPrefix(path, oldPath, newPath) : path;
+            }),
+          ),
+        ),
+      );
     },
-    [setRecentFiles, setTabs],
+    [setPinnedFiles, setRecentFiles, setTabs],
   );
 
   const refreshDirectory = useCallback(() => mutate(), [mutate]);
@@ -439,8 +455,15 @@ function FilesPage() {
 
     await mutate();
     toggleDeleteModal();
+    setPinnedFiles((pinnedFiles) =>
+      pinnedFiles.filter((path) =>
+        selected.type === "directory"
+          ? !isSameOrDescendantPath(path, selected.path)
+          : path !== selected.path,
+      ),
+    );
     setSelected(null);
-  }, [selected, mutate, toggleDeleteModal]);
+  }, [selected, mutate, toggleDeleteModal, setPinnedFiles]);
 
   const dragContextValue = useMemo(
     () => ({

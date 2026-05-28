@@ -86,6 +86,11 @@ default.
 - The Files tree now lazy-loads folder children: `/files` renders the root
   first, each folder reads its children when expanded, and global search/filter
   triggers a full background load only when that all-folder view is needed.
+- Files tree rows sort newest-first by PGN modified time, with name as a stable
+  fallback when timestamps match, so newly added game files appear at the top.
+- Files and folders can be pinned from the Files tree context menu. Pinned
+  entries persist, show a pin marker, stay above normal newest-first rows, and
+  follow rename or move operations by path.
 - `/databases` manages local databases, online game databases, merged
   Lichess/Chess.com databases, Lichess study imports, database conversion, and
   auto-update metadata. Database settings can export a whole database into the
