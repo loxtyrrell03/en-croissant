@@ -70,6 +70,7 @@ pub async fn authenticate(username: String, app: tauri::AppHandle) -> Result<(),
     let (auth_url, _) = client
         .authorize_url(|| csrf_token)
         .add_scope(Scope::new("preference:read".to_string()))
+        .add_scope(Scope::new("study:write".to_string()))
         .add_extra_param("username", username)
         .set_pkce_challenge(pkce_code_challenge)
         .url();

@@ -545,6 +545,7 @@ function AddDatabase({
                     studyUrl: download.reference.canonicalUrl,
                     pgnUrl: download.reference.pgnUrl,
                     pgnHash: download.pgnHash,
+                    chapterRefs: download.chapterRefs,
                     autoUpdate: values.autoUpdate,
                     lastCheckedAt: Date.now(),
                     lastUpdatedAt: Date.now(),

@@ -2,16 +2,18 @@ import { resolve } from "@tauri-apps/api/path";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { fetch } from "@tauri-apps/plugin-http";
 import type {
+    LichessStudyChapterRef,
     LichessStudyDatabaseUpdateRecord,
     LichessStudyDatabaseUpdateRecords,
 } from "@/state/atoms";
-import type { DatabaseInfo } from "@/bindings";
+import type { DatabaseInfo, NormalizedGame } from "@/bindings";
 import { apiHeaders } from "@/utils/http";
 
 const LICHESS_STUDY_ID_PATTERN = /^[A-Za-z0-9]{8}$/;
 const LICHESS_STUDY_DOWNLOAD_TIMEOUT_MS = 60_000;
 const INVALID_FILENAME_CHARS = /[\\/:*?"<>|]+/g;
 const RESERVED_WINDOWS_FILENAME = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 export type LichessStudyReference = {
     studyId: string;
@@ -25,6 +27,7 @@ export type LichessStudyDownload = {
     pgn: string;
     pgnHash: string;
     title: string;
+    chapterRefs: LichessStudyChapterRef[];
 };
 
 export function parseLichessStudyLink(value: string): LichessStudyReference | null {
@@ -99,6 +102,7 @@ export async function downloadLichessStudyPgn(
         pgn,
         pgnHash: await hashText(pgn),
         title: extractLichessStudyName(pgn) ?? `Lichess Study ${reference.studyId}`,
+        chapterRefs: extractLichessStudyChapterRefs(pgn),
     };
 }
 
@@ -157,6 +161,76 @@ export function extractLichessStudyName(pgn: string) {
     return studyName || null;
 }
 
+export function extractLichessStudyChapterRefs(pgn: string): LichessStudyChapterRef[] {
+    return splitPgnGames(pgn).map((game) => {
+        const headers = parsePgnHeaders(game);
+        const chapterUrl = headers.ChapterURL ?? null;
+        const chapterId = chapterUrl ? parseLichessStudyLink(chapterUrl)?.chapterId : null;
+        return {
+            chapterId: chapterId ?? "",
+            chapterName: headers.ChapterName ?? null,
+            chapterUrl,
+            sourceSite: headers.Site ?? null,
+        };
+    });
+}
+
+export type LichessStudyLocalChapter = {
+    game: NormalizedGame;
+    pgn: string;
+};
+
+export function normalizedGameToPgn(game: NormalizedGame) {
+    const tags: Array<[string, string | number | null | undefined]> = [
+        ["Event", game.event || "?"],
+        ["Site", game.site || "?"],
+        ["Date", game.date || "????.??.??"],
+        ["Round", game.round || "?"],
+        ["White", game.white || "?"],
+        ["Black", game.black || "?"],
+        ["Result", game.result || "*"],
+        ["TimeControl", game.time_control],
+        ["ECO", game.eco],
+        ["WhiteElo", formatEloTag(game.white_elo)],
+        ["BlackElo", formatEloTag(game.black_elo)],
+    ];
+
+    if (game.fen && game.fen !== INITIAL_FEN) {
+        tags.push(["SetUp", "1"], ["FEN", game.fen]);
+    }
+
+    const headerText = tags
+        .filter(([, value]) => value !== null && value !== undefined && value !== "")
+        .map(([key, value]) => `[${key} "${escapePgnTagValue(String(value))}"]`)
+        .join("\n");
+    return `${headerText}\n\n${game.moves || game.result || "*"}\n`;
+}
+
+export async function pushLichessStudyChapterPgn({
+    studyId,
+    chapterId,
+    pgn,
+    token,
+}: {
+    studyId: string;
+    chapterId: string;
+    pgn: string;
+    token: string;
+}) {
+    await postLichessStudyChapterPart({
+        url: `https://lichess.org/api/study/${studyId}/${chapterId}/moves`,
+        pgn,
+        token,
+        errorLabel: "moves",
+    });
+    await postLichessStudyChapterPart({
+        url: `https://lichess.org/api/study/${studyId}/${chapterId}/tags`,
+        pgn,
+        token,
+        errorLabel: "tags",
+    });
+}
+
 export function getLichessStudyDatabaseUpdateRecord(
     database: DatabaseInfo,
     records: LichessStudyDatabaseUpdateRecords,
@@ -206,6 +280,17 @@ export function upsertLichessStudyDatabaseUpdateRecord(
             lastCheckedAt: record.lastCheckedAt ?? previous?.lastCheckedAt ?? null,
             lastUpdatedAt: record.lastUpdatedAt ?? previous?.lastUpdatedAt ?? null,
             lastKnownGameCount: record.lastKnownGameCount ?? previous?.lastKnownGameCount ?? null,
+            localPgnHash:
+                record.localPgnHash !== undefined
+                    ? record.localPgnHash
+                    : previous?.localPgnHash ?? null,
+            lastPushedAt:
+                record.lastPushedAt !== undefined
+                    ? record.lastPushedAt
+                    : previous?.lastPushedAt ?? null,
+            twoWaySync:
+                record.twoWaySync !== undefined ? record.twoWaySync : previous?.twoWaySync,
+            chapterRefs: record.chapterRefs ?? previous?.chapterRefs,
         },
     };
 }
@@ -262,4 +347,57 @@ function stripPgnExtension(value: string) {
 
 function unescapePgnTagValue(value: string) {
     return value.replace(/\\(["\\])/g, "$1");
+}
+
+function splitPgnGames(pgn: string) {
+    const normalized = pgn.replace(/\r\n/g, "\n").trim();
+    if (!normalized) return [];
+    return normalized.split(/\n{2,}(?=\[Event\s+")/g);
+}
+
+function parsePgnHeaders(pgn: string) {
+    const headers: Record<string, string> = {};
+    for (const line of pgn.split(/\r?\n/)) {
+        if (!line.startsWith("[")) break;
+        const match = line.match(/^\[([^ ]+)\s+"((?:\\.|[^"\\])*)"\]$/);
+        if (!match) continue;
+        headers[match[1]] = unescapePgnTagValue(match[2]);
+    }
+    return headers;
+}
+
+function formatEloTag(value: number | null | undefined) {
+    if (value === null || value === undefined) return null;
+    return value === 0 ? "-" : String(value);
+}
+
+function escapePgnTagValue(value: string) {
+    return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+async function postLichessStudyChapterPart({
+    url,
+    pgn,
+    token,
+    errorLabel,
+}: {
+    url: string;
+    pgn: string;
+    token: string;
+    errorLabel: string;
+}) {
+    const body = new URLSearchParams({ pgn });
+    const response = await fetch(url, {
+        method: "POST",
+        headers: apiHeaders({
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+        }),
+        body: body.toString(),
+    });
+    if (!response.ok) {
+        throw new Error(
+            `Lichess study ${errorLabel} push failed: ${response.status} ${response.statusText}`,
+        );
+    }
 }

@@ -497,11 +497,20 @@ export default function DatabasesPage() {
       if (result.updated) {
         const syncReport = await syncLinkedFolder(latestDatabase);
         notifications.show({
-          title: "Lichess study updated",
+          title: result.pushed ? "Lichess study synced" : "Lichess study updated",
           message:
             syncReport && syncReport.created > 0
               ? `${database.title} was rebuilt and ${getGameFileCountText(syncReport.created)} were added to the linked Files folder.`
-              : `${database.title} was rebuilt from the latest study PGN.`,
+              : result.pushed
+                ? `${database.title} was pushed to Lichess and rebuilt from the latest study PGN.`
+                : `${database.title} was rebuilt from the latest study PGN.`,
+          color: "green",
+        });
+      } else if (result.pushed) {
+        await syncLinkedFolder(latestDatabase);
+        notifications.show({
+          title: "Lichess study synced",
+          message: `${database.title} was pushed to Lichess.`,
           color: "green",
         });
       } else {
@@ -2176,6 +2185,30 @@ function LichessStudySyncControls({
           }}
         />
       </Tooltip>
+      <Tooltip label="Push local En Croissant annotations to Lichess before pulling remote study changes. Requires relinking Lichess with study write access.">
+        <Checkbox
+          label="Two-way sync"
+          checked={!!record.twoWaySync}
+          onChange={(event) => {
+            setRecords((records) =>
+              upsertLichessStudyDatabaseUpdateRecord(records, {
+                ...record,
+                dbPath: selectedDatabase.file,
+                title: selectedDatabase.title,
+                description: selectedDatabase.description,
+                twoWaySync: event.currentTarget.checked,
+                autoUpdate: event.currentTarget.checked ? true : record.autoUpdate,
+                lastKnownGameCount: selectedDatabase.game_count,
+              }),
+            );
+          }}
+        />
+      </Tooltip>
+      {record.twoWaySync && (
+        <Text size="xs" c="dimmed">
+          Last pushed {formatStudySyncTimestamp(record.lastPushedAt ?? null)}
+        </Text>
+      )}
     </Stack>
   );
 }

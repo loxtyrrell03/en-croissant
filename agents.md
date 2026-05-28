@@ -282,6 +282,11 @@ and `src/utils/lichess/study.ts`.
 - Lichess Study imports preserve `StudyName`/`ChapterName` as the database
   event, and linked Files folder sync prefixes per-game PGNs with the study
   title so study chapters do not appear as only date plus player names.
+- Lichess Study databases can opt into automatic two-way sync. When enabled,
+  local En Croissant PGN annotations, variations, tags, and new chapters are
+  pushed back to the linked Lichess study before remote changes are pulled into
+  the database and linked Files folder; users need to relink Lichess with
+  `study:write` scope for pushes.
 - PGN import timestamp normalization was fixed so online-update ordering stays
   reliable.
 

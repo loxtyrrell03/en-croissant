@@ -1,6 +1,7 @@
 import type { SetStateAction } from "react";
 import { useEffect, useRef } from "react";
 import { warn } from "@tauri-apps/plugin-log";
+import { fetch } from "@tauri-apps/plugin-http";
 import { useAtom } from "jotai";
 import { commands } from "@/bindings";
 import {
@@ -23,6 +24,9 @@ import { getDatabasesDir } from "@/utils/directories";
 import {
     downloadLichessStudyPgnToDatabaseDir,
     getLichessStudyPgnFilename,
+    hashText,
+    normalizedGameToPgn,
+    pushLichessStudyChapterPgn,
     upsertLichessStudyDatabaseUpdateRecord,
 } from "@/utils/lichess/study";
 import type { Session } from "@/utils/session";
@@ -44,6 +48,7 @@ type StudyUpdateCandidate = {
 
 export type LichessStudyDatabaseManualUpdateResult = {
     updated: boolean;
+    pushed: boolean;
     checkedAt: number;
     gameCount: number | null;
 };
@@ -95,6 +100,7 @@ async function maybeUpdateStudyCandidate({
     ) {
         return {
             updated: false,
+            pushed: false,
             checkedAt: record.lastCheckedAt,
             gameCount: record.lastKnownGameCount ?? database.game_count,
         };
@@ -103,6 +109,7 @@ async function maybeUpdateStudyCandidate({
     if (isConversionInProgress()) {
         return {
             updated: false,
+            pushed: false,
             checkedAt: record.lastCheckedAt ?? now,
             gameCount: record.lastKnownGameCount ?? database.game_count,
         };
@@ -128,14 +135,61 @@ async function maybeUpdateStudyCandidate({
     }));
 
     try {
-        const download = await downloadLichessStudyPgnToDatabaseDir({
+        let download = await downloadLichessStudyPgnToDatabaseDir({
             databaseDir,
             link: record.studyUrl,
             token,
         });
         const checkedAt = Date.now();
+        let pushed = false;
+        let nextLocalPgnHash = record.localPgnHash ?? null;
+        let nextChapterRefs = download.chapterRefs;
 
-        if (download.pgnHash === record.pgnHash) {
+        if (record.twoWaySync) {
+            if (!token) {
+                throw new Error("Two-way Lichess study sync needs a linked Lichess account.");
+            }
+
+            const localSnapshot = await getLocalStudyPgnSnapshot(database);
+            nextLocalPgnHash = localSnapshot.hash;
+            const remoteChanged = !!record.pgnHash && download.pgnHash !== record.pgnHash;
+            const localChanged = record.localPgnHash
+                ? localSnapshot.hash !== record.localPgnHash
+                : true;
+
+            if (remoteChanged && localChanged) {
+                throw new Error(
+                    "Both the local database and Lichess study changed. Reload or resolve one side before automatic two-way sync pushes annotations.",
+                );
+            }
+
+            if (localChanged) {
+                setConversionState((prev) => ({
+                    ...prev,
+                    phase: "converting",
+                    progress: null,
+                    progressId: null,
+                    updatedAt: Date.now(),
+                    sourceFileName: `Pushing ${database.title} to Lichess`,
+                }));
+                nextChapterRefs = await pushLocalChaptersToLichessStudy({
+                    studyId: record.studyId,
+                    token,
+                    chapters: localSnapshot.chapters,
+                    chapterRefs: nextChapterRefs.length > 0 ? nextChapterRefs : record.chapterRefs,
+                });
+                pushed = true;
+                const pushedDownload = await downloadLichessStudyPgnToDatabaseDir({
+                    databaseDir,
+                    link: record.studyUrl,
+                    token,
+                });
+                download = pushedDownload;
+                nextChapterRefs = pushedDownload.chapterRefs;
+            }
+        }
+
+        if (!pushed && download.pgnHash === record.pgnHash) {
             setUpdateRecords((records) =>
                 upsertLichessStudyDatabaseUpdateRecord(records, {
                     ...record,
@@ -143,10 +197,15 @@ async function maybeUpdateStudyCandidate({
                     description: database.description,
                     lastCheckedAt: checkedAt,
                     lastKnownGameCount: database.game_count,
+                    pgnHash: download.pgnHash,
+                    localPgnHash: nextLocalPgnHash,
+                    lastPushedAt: record.lastPushedAt,
+                    chapterRefs: nextChapterRefs,
                 }),
             );
             return {
                 updated: false,
+                pushed,
                 checkedAt,
                 gameCount: database.game_count,
             };
@@ -193,6 +252,11 @@ async function maybeUpdateStudyCandidate({
             studyUrl: download.reference.canonicalUrl,
             pgnUrl: download.reference.pgnUrl,
             pgnHash: download.pgnHash,
+            localPgnHash: record.twoWaySync
+                ? (await getLocalStudyPgnSnapshot(updatedDatabase)).hash
+                : nextLocalPgnHash,
+            lastPushedAt: pushed ? updatedAt : record.lastPushedAt,
+            chapterRefs: nextChapterRefs,
             lastCheckedAt: updatedAt,
             lastUpdatedAt: updatedAt,
             lastKnownGameCount: updatedDatabase.game_count,
@@ -201,6 +265,7 @@ async function maybeUpdateStudyCandidate({
         setUpdateRecords((records) => upsertLichessStudyDatabaseUpdateRecord(records, nextRecord));
         return {
             updated: true,
+            pushed,
             checkedAt: updatedAt,
             gameCount: updatedDatabase.game_count,
         };
@@ -282,7 +347,7 @@ async function checkStudyDatabases({
                 setUpdateRecords,
                 isConversionInProgress,
             });
-            if (result.updated) {
+            if (result.updated || result.pushed) {
                 await syncLinkedFolderForUpdatedStudy(
                     candidate.database.file,
                     candidate.record.title,
@@ -296,6 +361,114 @@ async function checkStudyDatabases({
             );
         }
     }
+}
+
+async function getLocalStudyPgnSnapshot(database: SuccessDatabaseInfo) {
+    const response = unwrap(
+        await commands.getGames(database.file, {
+            options: {
+                skipCount: true,
+                pageSize: database.game_count,
+                sort: "id",
+                direction: "asc",
+            },
+        }),
+    );
+    const chapters = response.data.map((game) => ({
+        game,
+        pgn: normalizedGameToPgn(game),
+    }));
+    return {
+        chapters,
+        hash: await hashText(chapters.map((chapter) => chapter.pgn.trim()).join("\n\n")),
+    };
+}
+
+async function pushLocalChaptersToLichessStudy({
+    studyId,
+    token,
+    chapters,
+    chapterRefs,
+}: {
+    studyId: string;
+    token: string;
+    chapters: Awaited<ReturnType<typeof getLocalStudyPgnSnapshot>>["chapters"];
+    chapterRefs: LichessStudyDatabaseUpdateRecord["chapterRefs"];
+}) {
+    const nextRefs = [...(chapterRefs ?? [])];
+
+    for (let index = 0; index < chapters.length; index += 1) {
+        const chapter = chapters[index];
+        const existingRef = nextRefs[index];
+        if (existingRef?.chapterId) {
+            await pushLichessStudyChapterPgn({
+                studyId,
+                chapterId: existingRef.chapterId,
+                pgn: chapter.pgn,
+                token,
+            });
+            nextRefs[index] = {
+                ...existingRef,
+                chapterName: existingRef.chapterName ?? chapter.game.event,
+                sourceSite: chapter.game.site || existingRef.sourceSite,
+                localGameId: chapter.game.id,
+            };
+        } else {
+            const created = await importLichessStudyChapter({
+                studyId,
+                token,
+                pgn: chapter.pgn,
+                name: chapter.game.event || `${chapter.game.white} - ${chapter.game.black}`,
+            });
+            nextRefs[index] = {
+                chapterId: created.chapterId,
+                chapterName: created.chapterName,
+                chapterUrl: `https://lichess.org/study/${studyId}/${created.chapterId}`,
+                sourceSite: chapter.game.site || null,
+                localGameId: chapter.game.id,
+            };
+        }
+    }
+
+    return nextRefs.slice(0, chapters.length);
+}
+
+async function importLichessStudyChapter({
+    studyId,
+    token,
+    pgn,
+    name,
+}: {
+    studyId: string;
+    token: string;
+    pgn: string;
+    name: string;
+}) {
+    const body = new URLSearchParams({ pgn, name: name.slice(0, 100) || "Imported chapter" });
+    const response = await fetch(`https://lichess.org/api/study/${studyId}/import-pgn`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: body.toString(),
+    });
+    if (!response.ok) {
+        throw new Error(
+            `Lichess study chapter import failed: ${response.status} ${response.statusText}`,
+        );
+    }
+    const payload = (await response.json()) as {
+        chapters?: Array<{ id?: string; name?: string | null }>;
+    };
+    const chapter = payload.chapters?.[0];
+    if (!chapter?.id) {
+        throw new Error("Lichess did not return the created study chapter id.");
+    }
+    return {
+        chapterId: chapter.id,
+        chapterName: chapter.name ?? name,
+    };
 }
 
 export function useLichessStudyDatabaseAutoUpdater() {

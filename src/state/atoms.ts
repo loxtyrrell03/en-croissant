@@ -606,9 +606,21 @@ export type LichessStudyDatabaseUpdateRecord = {
     pgnUrl: string;
     pgnHash: string;
     autoUpdate: boolean;
+    twoWaySync?: boolean;
+    localPgnHash?: string | null;
+    lastPushedAt?: number | null;
+    chapterRefs?: LichessStudyChapterRef[];
     lastCheckedAt: number | null;
     lastUpdatedAt: number | null;
     lastKnownGameCount: number | null;
+};
+
+export type LichessStudyChapterRef = {
+    chapterId: string;
+    chapterName: string | null;
+    chapterUrl: string | null;
+    sourceSite: string | null;
+    localGameId?: number | null;
 };
 
 export type LichessStudyDatabaseUpdateRecords = Record<string, LichessStudyDatabaseUpdateRecord>;
