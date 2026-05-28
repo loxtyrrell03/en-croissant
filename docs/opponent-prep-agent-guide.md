@@ -10,8 +10,9 @@ opponent-ready En Croissant assets:
 - One folder of PGN files per opponent in the user's En Croissant Files root.
 - One En Croissant `.db3` database per opponent in the active app database
   directory.
-- A `research-summary.md` in the prep folder with counts, sources, account
-  guesses, and unresolved gaps.
+- A final chat response that states exactly what was researched, what was
+  created, how many games were found for each opponent, and which players still
+  have missing or low-confidence game coverage.
 
 The goal is to avoid missing games that are online somewhere, especially
 Lichess broadcast PGNs, Chessscope-indexed broadcast games, ChessBase/Mega
@@ -107,7 +108,9 @@ Keep folder names short enough for Windows paths.
    - For UK players, check ECF rating pages for clubs and exact ECF code.
 
 3. Create a working manifest.
-   - Keep a local JSON/CSV/Markdown table with one row per target.
+   - Keep a local JSON/CSV/Markdown table with one row per target while doing
+     the work. This is an internal tracking aid, not a required final
+     deliverable.
    - Columns: player, rating, FIDE ID, national ID, club, federation,
      Chess.com guess, confidence, OTB PGNs found, broadcast PGNs added, notes.
 
@@ -122,7 +125,7 @@ Keep folder names short enough for Windows paths.
    - Use FIDE ID/name matching, not only visible names.
    - Prefer downloadable PGN endpoints over manually copied movetext.
    - Dedupe before writing files.
-   - Keep source tags in `.info` sidecars or the research summary.
+   - Keep source tags in `.info` sidecars and the working manifest.
 
 6. Re-check players with no games or low game counts.
    - After the first source pass, sort the manifest by `OTB PGNs found` plus
@@ -135,8 +138,8 @@ Keep folder names short enough for Windows paths.
      ChessBase/Mega/local databases, FIDE event history, and national
      federation pages for these flagged players.
    - If a player still has no credible PGNs or only a small count, record the
-     specific second-pass sources checked in `research-summary.md` so the user
-     can tell the gap was investigated rather than missed.
+     specific second-pass sources checked in the working manifest so the final
+     response can show that the gap was investigated rather than missed.
 
 7. Rebuild one database per player.
    - For every player folder with one or more PGNs, concatenate that player's
@@ -146,8 +149,11 @@ Keep folder names short enough for Windows paths.
    - Leave players with zero PGNs as folders only, with notes; do not create
      empty `.db3` files unless requested.
 
-8. Write `research-summary.md`.
-   - Include the source list, per-player counts, account guesses, confidence
+8. Prepare the final response.
+   - Do not create a separate `research-summary.md` unless the user explicitly
+     asks for one.
+   - Include exactly what sources were researched, which assets were created,
+     per-opponent game counts, account guesses where relevant, confidence
      notes, and what could not be found.
    - Explicitly list "no credible PGNs found" cases.
    - For every zero-game or low-count player, include the second-pass searches
@@ -540,21 +546,29 @@ for db in sorted(root.glob("muswell congress prep - *.db3")):
 4. Open/refresh En Croissant Databases page and verify the per-player databases
    appear.
 
-5. Update `research-summary.md` with:
-   - original games found
+5. Prepare final-response counts from the verified folder and database totals:
+   - original/local games found
    - online/broadcast games added
-   - current totals
+   - current total per opponent
    - sources checked
-   - no-PGN cases
-   - Chess.com account guesses
+   - no-PGN and low-count cases
+   - Chess.com account guesses where relevant
 
 ## Reporting To The User
 
 Keep the final answer short but precise:
 
 - Say how many databases were created.
-- Say total games and how many were added in online double-checks.
-- List players with zero PGNs.
+- Say exactly what was researched: entrant source, local/reference databases,
+  broadcast/event/TWIC sources, federation/FIDE pages, and any online account
+  checks that were actually used.
+- Give an honest per-opponent count table: player, local/reference PGNs,
+  online/broadcast PGNs added, final PGN/database count, and coverage notes.
+- List players with zero PGNs or suspiciously low counts, including the
+  second-pass sources checked for them.
+- Say where games may still be missing, such as inaccessible ChessBase exports,
+  events with no public PGN, Chessscope recent-slice limits, ambiguous player
+  identities, or unconfirmed online accounts.
 - Mention the folder and database paths.
 - Mention any source limitations, for example: Chessscope only exposed the
   accessible recent slice for very prolific players.
