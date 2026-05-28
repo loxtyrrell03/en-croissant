@@ -35,12 +35,14 @@ database games, and tournament-site PGN downloads.
   Mega/reference databases already found many games. Local database hits are
   never a reason to skip Chessscope, Lichess broadcasts, TWIC, event PGNs, or
   other online source checks for that player.
-- When multi-agent tooling is available, spawn a small team of web-search
-  subagents to make the online pass faster and more complete. Give each
-  subagent explicit player identities, FIDE/national IDs, source targets, and
-  the requirement to search hard for both downloadable PGNs and credible
-  Chess.com account links. The lead agent still owns dedupe, database creation,
-  verification, and the final honesty check.
+- For real web prep or account-finding work, attempt to spawn a small team of
+  web-search subagents by default. Use them to make the online pass faster and
+  more complete. Give each subagent explicit player identities, FIDE/national
+  IDs, source targets, and the requirement to search hard for both downloadable
+  PGNs and credible Chess.com account links. The lead agent still owns dedupe,
+  database creation, verification, and the final honesty check. If multi-agent
+  tooling is unavailable, say so in the final response and do the same source
+  checklist manually.
 - Do not do a shallow global pass and call it finished. Work player by player,
   and do not move on from a player until that player has completed the full
   exhaustive checklist: identity normalization, local/reference databases,
@@ -140,7 +142,12 @@ Keep folder names short enough for Windows paths.
      Chess.com guess, confidence, OTB PGNs found, broadcast PGNs added, most
      recent game found, notes.
 
-4. If available, coordinate a web-search subagent team.
+4. Coordinate a web-search subagent team by default.
+   - Before doing the online pass, try to use the available multi-agent tooling
+     to spawn subagents. For a single-player account-finding task, use at least
+     two focused searches when possible: one for identity/club/context and one
+     for Chess.com candidates/profile verification. For larger prep jobs, use a
+     broader team.
    - Use subagents to speed up and broaden the online research pass, especially
      for larger entrant lists or events with many possible sources.
    - Assign work by player or by source family, for example Chessscope/Lichess
@@ -160,6 +167,9 @@ Keep folder names short enough for Windows paths.
      evidence, not final truth.
    - Do not use subagents as a reason to skip the required per-player checklist.
      Each player must still have a complete online-source result recorded.
+   - If multi-agent tooling is unavailable or blocked, record that limitation
+     and continue manually with the same source checklist instead of silently
+     skipping the team-search expectation.
 
 5. Complete the full search checklist for player 1 before player 2.
    - This is the most important workflow rule. Do not batch a weak source pass
@@ -188,9 +198,10 @@ Keep folder names short enough for Windows paths.
    - Do not stop after local database matches. Recent Lichess broadcasts,
      Chessscope-indexed games, TWIC files, and event PGNs can add important
      games that Mega/local databases miss.
-   - Use the subagent team for this step when available, but keep one lead
-     manifest row per player and verify every claimed source/link yourself
-     before importing or reporting it.
+   - Use the subagent team for this step by default, but keep one lead manifest
+     row per player and verify every claimed source/link yourself before
+     importing or reporting it. If subagents cannot be used, explicitly note
+     that and complete the searches manually.
    - Query Chess-Results `partiesuche.aspx` by FIDE ID and download the result
      as PGN. This is not optional when a FIDE ID is known.
    - Check the Lichess FIDE player page for broadcast round links, then

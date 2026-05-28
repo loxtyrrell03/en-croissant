@@ -29,7 +29,7 @@ model, implementation map, and verification expectations for this app.
   threshold, read and follow that guide as the workflow source of truth before
   gathering games or creating prep databases. It records the required
   per-player folder/database workflow, mandatory online-source checks for every
-  player, optional subagent team coordination for hard web searches and
+  player, default subagent team coordination for hard web searches and
   comprehensive Chess.com account-link research, including club-member and
   rating-plausibility checks, Lichess broadcast PGN extraction pattern,
   mandatory full public Lichess broadcast database filtering, Chess-Results PGN
