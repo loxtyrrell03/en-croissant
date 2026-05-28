@@ -5,6 +5,7 @@ import {
   Divider,
   Group,
   Input,
+  Menu,
   Paper,
   ScrollArea,
   Stack,
@@ -21,15 +22,23 @@ import {
   IconFolderPlus,
   IconSearch,
   IconFolder,
+  IconArrowsSort,
+  IconCheck,
 } from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
 import { remove } from "@tauri-apps/plugin-fs";
 import clsx from "clsx";
-import { useSetAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
-import { pinnedFileEntriesAtom, recentFilesAtom, tabsAtom } from "@/state/atoms";
+import {
+  filesSortModeAtom,
+  pinnedFileEntriesAtom,
+  recentFilesAtom,
+  tabsAtom,
+  type FilesSortMode,
+} from "@/state/atoms";
 import { capitalize } from "@/utils/format";
 import ConfirmModal from "../common/ConfirmModal";
 import OpenFolderButton from "../common/OpenFolderButton";
@@ -54,6 +63,14 @@ import {
 } from "./Modals";
 
 const FILE_TYPES: FileType[] = ["game", "repertoire", "tournament", "puzzle", "other"];
+
+const SORT_OPTIONS: { value: FilesSortMode; label: string }[] = [
+  { value: "newest", label: "Newest first" },
+  { value: "oldest", label: "Oldest first" },
+  { value: "name-asc", label: "Name A-Z" },
+  { value: "name-desc", label: "Name Z-A" },
+  { value: "type", label: "Type" },
+];
 
 function findEntryByPath(entries: Entry[], path: string): Entry | null {
   for (const entry of entries) {
@@ -200,6 +217,9 @@ function FilesPage() {
   const setTabs = useSetAtom(tabsAtom);
   const setRecentFiles = useSetAtom(recentFilesAtom);
   const setPinnedFiles = useSetAtom(pinnedFileEntriesAtom);
+  const [sortMode, setSortMode] = useAtom(filesSortModeAtom);
+  const activeSortLabel =
+    SORT_OPTIONS.find((option) => option.value === sortMode)?.label ?? SORT_OPTIONS[0].label;
 
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Entry | null>(null);
@@ -551,6 +571,29 @@ function FilesPage() {
                   }
                 }}
               />
+              <Menu shadow="md" width={180} position="bottom-end">
+                <Menu.Target>
+                  <ActionIcon
+                    aria-label={`Sort files: ${activeSortLabel}`}
+                    variant="default"
+                    size="lg"
+                  >
+                    <IconArrowsSort size="1rem" />
+                  </ActionIcon>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Label>Sort files</Menu.Label>
+                  {SORT_OPTIONS.map((option) => (
+                    <Menu.Item
+                      key={option.value}
+                      leftSection={sortMode === option.value ? <IconCheck size={14} /> : null}
+                      onClick={() => setSortMode(option.value)}
+                    >
+                      {option.label}
+                    </Menu.Item>
+                  ))}
+                </Menu.Dropdown>
+              </Menu>
               <Tooltip label={t("Files.CreateFile.Title")}>
                 <ActionIcon variant="default" size="lg" onClick={() => toggleCreateModal()}>
                   <IconFilePlus size="1rem" />
@@ -623,6 +666,7 @@ function FilesPage() {
                     onRequestRename={requestRename}
                     search={search}
                     filter={filter || ""}
+                    sortMode={sortMode}
                   />
                 </DragContext.Provider>
               )}

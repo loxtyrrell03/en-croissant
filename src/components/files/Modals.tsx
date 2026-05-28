@@ -192,6 +192,7 @@ export function ImportDatabaseFolderModal({
         name: trimmedFolderName,
         path: report.targetDir,
         children: [],
+        lastModified: Date.now(),
       });
       notifications.show({
         title: "Imported database",

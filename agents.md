@@ -91,6 +91,9 @@ default.
 - Files and folders can be pinned from the Files tree context menu. Pinned
   entries persist, show a pin marker, stay above normal newest-first rows, and
   follow rename or move operations by path.
+- The Files toolbar includes a persistent sort menu for newest first, oldest
+  first, name A-Z/Z-A, and type; pinned entries remain grouped above the chosen
+  sort order.
 - `/databases` manages local databases, online game databases, merged
   Lichess/Chess.com databases, Lichess study imports, database conversion, and
   auto-update metadata. Database settings can export a whole database into the

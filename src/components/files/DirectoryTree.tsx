@@ -33,6 +33,7 @@ import {
   tabsAtom,
   expandedDirectoriesAtom,
   pinnedFileEntriesAtom,
+  type FilesSortMode,
 } from "@/state/atoms";
 import { openFile } from "@/utils/files";
 import classes from "./DirectoryTree.module.css";
@@ -90,11 +91,7 @@ function getEventPoint(event: DraggableEvent): { x: number; y: number } | null {
 }
 
 function getEntryTimestamp(entry: Entry): number {
-  if (entry.type === "file") {
-    return entry.lastModified;
-  }
-
-  return Math.max(0, ...entry.children.map(getEntryTimestamp));
+  return entry.lastModified;
 }
 
 function replacePathPrefix(path: string, oldPath: string, newPath: string) {
@@ -113,13 +110,14 @@ function recursiveSort(
   files: Entry[],
   pruneEmpty = false,
   pinnedPaths: ReadonlySet<string> = new Set(),
+  sortMode: FilesSortMode = "newest",
 ): Entry[] {
   return files
     .map((f) => {
       if (f.type === "file") return f;
       return {
         ...f,
-        children: recursiveSort(f.children, pruneEmpty, pinnedPaths),
+        children: recursiveSort(f.children, pruneEmpty, pinnedPaths, sortMode),
       };
     })
     .filter((f) => {
@@ -131,23 +129,48 @@ function recursiveSort(
         return pinnedDifference;
       }
 
-      const timestampDifference = getEntryTimestamp(b) - getEntryTimestamp(a);
-      if (timestampDifference !== 0) {
-        return timestampDifference;
+      const modeDifference = compareEntriesByMode(a, b, sortMode);
+
+      if (modeDifference !== 0) {
+        return modeDifference;
       }
 
-      if (a.type === "directory" && b.type === "file") {
-        return -1;
-      }
-      if (a.type === "file" && b.type === "directory") {
-        return 1;
-      }
+      return compareNames(a, b, "asc");
+    });
+}
 
-      return b.name.localeCompare(a.name, "en", {
+function compareEntriesByMode(a: Entry, b: Entry, sortMode: FilesSortMode): number {
+  switch (sortMode) {
+    case "oldest":
+      return getEntryTimestamp(a) - getEntryTimestamp(b);
+    case "name-asc":
+      return compareNames(a, b, "asc");
+    case "name-desc":
+      return compareNames(a, b, "desc");
+    case "type": {
+      const typeDifference = getEntryTypeLabel(a).localeCompare(getEntryTypeLabel(b), "en", {
         numeric: true,
         sensitivity: "base",
       });
-    });
+      return typeDifference || compareNames(a, b, "asc");
+    }
+    case "newest":
+    default:
+      return getEntryTimestamp(b) - getEntryTimestamp(a);
+  }
+}
+
+function compareNames(a: Entry, b: Entry, direction: "asc" | "desc") {
+  const result = a.name.localeCompare(b.name, "en", {
+    numeric: true,
+    sensitivity: "base",
+  });
+
+  return direction === "asc" ? result : -result;
+}
+
+function getEntryTypeLabel(entry: Entry) {
+  return entry.type === "directory" ? "folder" : entry.metadata.type;
 }
 
 export default function DirectoryTree({
@@ -162,6 +185,7 @@ export default function DirectoryTree({
   onRequestRename,
   search,
   filter,
+  sortMode,
 }: {
   files: Entry[] | undefined;
   refreshDirectory: () => Promise<unknown>;
@@ -174,6 +198,7 @@ export default function DirectoryTree({
   onRequestRename: (file: Entry) => void;
   search: string;
   filter: string;
+  sortMode: FilesSortMode;
 }) {
   const [pinnedPaths, setPinnedPaths] = useAtom(pinnedFileEntriesAtom);
   const pinnedPathSet = useMemo(() => new Set(pinnedPaths), [pinnedPaths]);
@@ -198,8 +223,8 @@ export default function DirectoryTree({
       next = filterTree(next, (file) => file.metadata.type === filter);
     }
 
-    return recursiveSort(next, !!(search || filter), pinnedPathSet);
-  }, [files, search, filter, fuse, pinnedPathSet]);
+    return recursiveSort(next, !!(search || filter), pinnedPathSet, sortMode);
+  }, [files, search, filter, fuse, pinnedPathSet, sortMode]);
 
   return (
     <Box className={classes.tree}>

@@ -67,6 +67,7 @@ export type Directory = {
     childrenLoaded?: boolean;
     path: string;
     name: string;
+    lastModified: number;
 };
 
 export type Entry = FileMetadata | Directory;
@@ -82,12 +83,14 @@ async function processEntries(parent: string, entries: DirEntry[], recursive: bo
                 const children = recursive
                     ? await readDirectoryEntries(dir, { recursive: true })
                     : [];
+                const metadata = unwrap(await commands.getFileMetadata(dir));
                 const directory: Directory = {
                     type: "directory",
                     name: entry.name,
                     path: dir,
                     children,
                     childrenLoaded: recursive,
+                    lastModified: metadata.last_modified,
                 };
                 return directory;
             }
