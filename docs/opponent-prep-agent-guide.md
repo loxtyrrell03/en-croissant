@@ -18,7 +18,7 @@ The goal is to avoid missing games that are online somewhere, especially
 Lichess broadcast PGNs, Chessscope-indexed broadcast games, ChessBase/Mega
 database games, and tournament-site PGN downloads.
 
-## Critical Lessons From The Muswell Prep Session
+## Critical Lessons From The Muswell And Oxford Prep Sessions
 
 - Create a separate database per player. Do not create only one combined
   database unless the user explicitly asks for it.
@@ -35,6 +35,21 @@ database games, and tournament-site PGN downloads.
   Mega/reference databases already found many games. Local database hits are
   never a reason to skip Chessscope, Lichess broadcasts, TWIC, event PGNs, or
   other online source checks for that player.
+- Do not do a shallow global pass and call it finished. Work player by player,
+  and do not move on from a player until that player has completed the full
+  exhaustive checklist: identity normalization, local/reference databases,
+  Chess-Results PGN search by FIDE ID, Lichess FIDE page, direct Lichess
+  broadcast rounds, the official Lichess broadcast database, Chessscope, TWIC,
+  event/tournament PGN sources, federation/event leads, public game databases,
+  and account research where relevant.
+- The Oxford U2300 prep proved that a "Mega + current Lichess FIDE page" pass
+  can miss hundreds of games. The full public Lichess broadcast database and
+  Chess-Results direct PGN search by FIDE ID added large numbers of games that
+  were not exposed by local Mega or current player-page links.
+- For every player, record both source PGN counts and converted database
+  counts. The converter can skip malformed games; a small difference between
+  source PGNs and `.db3` game count is possible and must be reported rather
+  than hidden.
 - Re-check players with zero or suspiciously low game counts before finalizing.
   If the first pass finds few games, make a second targeted pass with alternate
   spellings, FIDE/national IDs, event leads, Chessscope, Lichess broadcasts,
@@ -119,25 +134,50 @@ Keep folder names short enough for Windows paths.
      Chess.com guess, confidence, OTB PGNs found, broadcast PGNs added, most
      recent game found, notes.
 
-4. Search local databases first.
+4. Complete the full search checklist for player 1 before player 2.
+   - This is the most important workflow rule. Do not batch a weak source pass
+     across all players and then report the job as done.
+   - For each player, finish the checklist below, import/dedupe any games,
+     update that player's manifest row, and only then move to the next player.
+   - The only acceptable batching is mechanical download/filter work that still
+     records a complete per-player source result. For example, streaming the
+     full Lichess broadcast database once is fine if every target player's
+     FIDE IDs/name variants are included and per-player added/missed counts are
+     recorded.
+
+5. Search local databases for the current player.
    - Check the app database directory for Mega/Big/local reference databases.
    - Search exact player names and known aliases.
+   - Prefer exporting by exact internal player ID after resolving the player
+     table match. Name-only searches can pull the wrong player when names are
+     similar.
    - Export matching games to per-player PGNs.
    - Do not assume local Mega is complete. It missed many recent Lichess
-     broadcast games in the Muswell prep.
+     broadcast games in the Muswell and Oxford prep.
 
-5. Search online PGN sources player-by-player for every player.
+6. Search online PGN sources for the current player.
    - This step is mandatory for every target player, regardless of how many
      games were already found in local/Mega/reference databases.
    - Do not stop after local database matches. Recent Lichess broadcasts,
      Chessscope-indexed games, TWIC files, and event PGNs can add important
      games that Mega/local databases miss.
+   - Query Chess-Results `partiesuche.aspx` by FIDE ID and download the result
+     as PGN. This is not optional when a FIDE ID is known.
+   - Check the Lichess FIDE player page for broadcast round links, then
+     download each round PGN and filter by FIDE ID/name.
+   - Stream the official Lichess broadcast database from
+     `https://database.lichess.org/broadcast/list.txt` and filter every monthly
+     `.pgn.zst` file by the player's FIDE ID/name. Do this before declaring
+     Lichess broadcasts exhausted.
+   - Check Chessscope player slugs and follow linked broadcast rounds.
+   - Search TWIC, event pages, Chess-Results event pages, and public databases
+     for event PGN downloads.
    - Use FIDE ID/name matching, not only visible names.
    - Prefer downloadable PGN endpoints over manually copied movetext.
    - Dedupe before writing files.
    - Keep source tags in `.info` sidecars and the working manifest.
 
-6. Re-check players with no games or low game counts.
+7. Re-check the current player if they have no games or a low count.
    - After the first source pass, sort the manifest by `OTB PGNs found` plus
      `broadcast PGNs added` and flag players with zero games or counts that are
      clearly low for their rating/activity.
@@ -151,7 +191,7 @@ Keep folder names short enough for Windows paths.
      specific second-pass sources checked in the working manifest so the final
      response can show that the gap was investigated rather than missed.
 
-7. Rebuild one database per player.
+8. Rebuild one database per player.
    - For every player folder with one or more PGNs, concatenate that player's
      PGNs into a temporary/source `.pgn`.
    - Convert it to `.db3` with `pgn_to_ec_db.exe`.
@@ -159,7 +199,7 @@ Keep folder names short enough for Windows paths.
    - Leave players with zero PGNs as folders only, with notes; do not create
      empty `.db3` files unless requested.
 
-8. Prepare the final response.
+9. Prepare the final response.
    - Do not create a separate `research-summary.md` unless the user explicitly
      asks for one.
    - Include exactly what sources were researched, which assets were created,
@@ -241,6 +281,7 @@ Check:
 ```text
 https://lichess.org/broadcast
 https://database.lichess.org/#broadcasts
+https://database.lichess.org/broadcast/list.txt
 https://huggingface.co/datasets/Lichess/tournament-chess-games
 ```
 
@@ -254,6 +295,19 @@ site:lichess.org/broadcast "<player name>" "<FIDE ID>"
 
 For any broadcast round URL, try the `.pgn` suffix. Download the entire round
 and filter locally.
+
+The full public broadcast database is mandatory for an exhaustive pass. Stream
+every monthly `.pgn.zst` listed in:
+
+```text
+https://database.lichess.org/broadcast/list.txt
+```
+
+Filter by `WhiteFideId` / `BlackFideId` first, then exact normalized player
+names only when IDs are absent. Do not download the full archive permanently
+unless needed; stream/decompress/filter when possible. In the Oxford U2300
+prep, this source found hundreds of games missed by local Mega and current
+Lichess FIDE player-page links.
 
 ### ChessBase / Mega / Live Database
 
@@ -339,6 +393,17 @@ Useful queries:
 
 Some event pages publish a single PGN zip for all rounds. Download the full
 event PGN and filter locally.
+
+Chess-Results has a direct game search that can return PGN by FIDE ID:
+
+```text
+https://s1.chess-results.com/partiesuche.aspx?lan=1
+```
+
+Use the `Txt_FideID` field, choose enough rows, and submit
+`Download as PGN-File`. This source is mandatory when the target has a FIDE ID.
+In the Oxford U2300 prep, it turned zero-game and low-game players into usable
+prep databases and added many games beyond Mega/Lichess page links.
 
 ### Public Game Databases
 

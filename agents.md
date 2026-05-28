@@ -29,10 +29,13 @@ model, implementation map, and verification expectations for this app.
   threshold, read and follow that guide as the workflow source of truth before
   gathering games or creating prep databases. It records the required
   per-player folder/database workflow, mandatory online-source checks for every
-  player, Lichess broadcast PGN extraction pattern, Chess.com
-  account-confidence method, low-count second-pass checks, final-response count
-  and most-recent-game reporting expectations, dedupe rules, and En Croissant
-  verification steps.
+  player, Lichess broadcast PGN extraction pattern, mandatory full public
+  Lichess broadcast database filtering, Chess-Results PGN search by FIDE ID,
+  Chess.com account-confidence method, low-count second-pass checks,
+  final-response count and most-recent-game reporting expectations, dedupe
+  rules, and En Croissant verification steps. The Oxford U2300 prep showed why
+  agents must finish the full exhaustive source checklist for one player before
+  moving to the next instead of doing a shallow global pass.
 
 ## Local Browser Verification
 
