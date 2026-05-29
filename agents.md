@@ -484,6 +484,9 @@ Plan Explorer lives in `src/components/panels/plan/PlanExplorerPanel.tsx`,
 - Defaults are 8 ply and 10 automatic arrows.
 - Automatic plan selection favors significant queen, rook, bishop, and knight
   maneuvers plus key pawn breaks or advanced pawn moves.
+- Castling is treated as a first-class plan text case: local/online Plan
+  Explorer rows and Engine Plans should show kingside or queenside castling
+  rather than a king route through the rook square.
 - Fallback scans use depth-aware sample caps and cancel as soon as enough
   continuations have been collected.
 - Repeated lookups are cached, and side filters are pushed into board arrow

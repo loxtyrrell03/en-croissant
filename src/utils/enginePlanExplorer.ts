@@ -8,13 +8,15 @@ import {
     parseSquare,
     parseUci,
 } from "chessops";
+import { castlingSide } from "chessops/chess";
 import { makeFen } from "chessops/fen";
 import type { BestMoves, Score, ScoreValue } from "@/bindings";
 import type { PlanExplorerData, PlanExplorerLine, PlanExplorerPiece } from "@/bindings";
-import type { PlanExplorerSegment } from "./planExplorer";
+import { detectPlanCastling, type PlanExplorerSegment } from "./planExplorer";
 import { positionFromFen } from "./chessops";
 
 export type EnginePlanCategory =
+    | "castling"
     | "pieceRoute"
     | "pieceDestination"
     | "pawnBreak"
@@ -88,7 +90,7 @@ export type EnginePlanMovePreview = {
 
 export type PlanExplorerEnginePlanMatch = {
     plan: EnginePlan;
-    match: "route" | "routePrefix" | "destination" | "pawnBreak" | "expansion";
+    match: "route" | "routePrefix" | "destination" | "pawnBreak" | "expansion" | "castling";
 };
 
 type PieceState = {
@@ -100,6 +102,12 @@ type PieceState = {
 };
 type ExpansionSide = "queenside" | "kingside" | "central";
 type ExpansionSegmentMap = Record<Color, Record<ExpansionSide, [string, string][]>>;
+type EngineCastlingMove = {
+    side: "kingside" | "queenside";
+    kingTo: SquareName;
+    rookFrom: SquareName;
+    rookTo: SquareName;
+};
 
 const PV_WEIGHTS = [1, 0.8, 0.65, 0.5];
 const MIN_CLEAR_PVS = 3;
@@ -107,7 +115,22 @@ const MIN_STABLE_DEPTH = 6;
 const NEAR_BEST_CP = 80;
 const DECENT_CP = 150;
 const PAWN_BREAKS: Record<Color, Set<string>> = {
-    white: new Set(["b4", "b5", "c4", "c5", "d4", "d5", "e4", "e5", "f4", "f5", "g4", "g5", "h4", "h5"]),
+    white: new Set([
+        "b4",
+        "b5",
+        "c4",
+        "c5",
+        "d4",
+        "d5",
+        "e4",
+        "e5",
+        "f4",
+        "f5",
+        "g4",
+        "g5",
+        "h4",
+        "h5",
+    ]),
     black: new Set(["b5", "c5", "e5", "f5", "g5", "h5"]),
 };
 const CENTRAL_FILES = new Set(["c", "d", "e", "f"]);
@@ -197,6 +220,8 @@ export function extractPlansFromPv(fen: string, pv: Pick<EnginePlanPv, "uciMoves
         const piece = pos.board.get(move.from);
         if (!piece) break;
 
+        const castle = piece.role === "king" ? engineCastlingMove(pos, move, piece.color) : null;
+        const destination = castle?.kingTo ?? to;
         const pieceId = squareToPieceId.get(from) ?? makePieceId(piece.color, piece.role, from);
         let state = pieceStates.get(pieceId);
         if (!state) {
@@ -210,21 +235,45 @@ export function extractPlansFromPv(fen: string, pv: Pick<EnginePlanPv, "uciMoves
             pieceStates.set(pieceId, state);
         }
 
-        state.squares.push(to);
+        state.squares.push(destination);
         state.uciMoves.push(uci);
         if (move.promotion) {
             state.role = move.promotion;
         }
 
         if (piece.role === "pawn") {
-            recordPawnSignals(piece.color, from, to, pos, signals);
-            pawnMovementFiles[piece.color].add(to[0]);
-            recordPawnExpansionSegment(piece.color, from, to, pawnExpansionSegments);
+            recordPawnSignals(piece.color, from, destination, pos, signals);
+            pawnMovementFiles[piece.color].add(destination[0]);
+            recordPawnExpansionSegment(piece.color, from, destination, pawnExpansionSegments);
+        }
+
+        if (castle) {
+            addSignal(signals, {
+                signature: `castling:${piece.color}:${castle.side}`,
+                category: "castling",
+                label: `${capitalize(piece.color)} castles ${castle.side}`,
+                color: piece.color,
+                role: "king",
+                routeSquares: [from, castle.kingTo],
+            });
+            const rookId = squareToPieceId.get(castle.rookFrom);
+            moveTrackedCastlingRook(castle, uci, pieceStates, rookId);
+            squareToPieceId.delete(from);
+            squareToPieceId.delete(to);
+            squareToPieceId.delete(castle.kingTo);
+            squareToPieceId.delete(castle.rookFrom);
+            squareToPieceId.delete(castle.rookTo);
+            squareToPieceId.set(castle.kingTo, pieceId);
+            if (rookId) {
+                squareToPieceId.set(castle.rookTo, rookId);
+            }
+            pos.play(move);
+            continue;
         }
 
         squareToPieceId.delete(from);
         squareToPieceId.delete(to);
-        squareToPieceId.set(to, pieceId);
+        squareToPieceId.set(destination, pieceId);
         pos.play(move);
     }
 
@@ -279,6 +328,8 @@ export function extractPlansFromPv(fen: string, pv: Pick<EnginePlanPv, "uciMoves
 
 export function categoryLabel(category: EnginePlanCategory) {
     switch (category) {
+        case "castling":
+            return "Castling";
         case "pieceRoute":
             return "Piece route";
         case "pieceDestination":
@@ -441,6 +492,23 @@ export function getPlanExplorerLineEnginePlan(
         return { plan: prefixRoutePlan, match: "routePrefix" };
     }
 
+    if (role === "king") {
+        const lineCastling = detectPlanCastling(line, piece.color);
+        const castlingPlan = strongestPlan(
+            report.plans.filter(
+                (plan) =>
+                    plan.category === "castling" &&
+                    plan.color === color &&
+                    ((!!plan.routeSquares && startsWithRoute(plan.routeSquares, squares)) ||
+                        (!!lineCastling &&
+                            plan.signature === `castling:${color}:${lineCastling.side}`)),
+            ),
+        );
+        if (castlingPlan) {
+            return { plan: castlingPlan, match: "castling" };
+        }
+    }
+
     if (role === "pawn") {
         const pawnBreakPlan = report.plans.find(
             (plan) => plan.signature === `pawn_break:${color}:${lastSquare}`,
@@ -593,10 +661,7 @@ function scorePlan(
     };
 }
 
-function confidenceForPlan(
-    appearsInTopPv: boolean,
-    supportRatio: number,
-): EnginePlanConfidence {
+function confidenceForPlan(appearsInTopPv: boolean, supportRatio: number): EnginePlanConfidence {
     if (appearsInTopPv && supportRatio >= 0.5) return "High";
     if (appearsInTopPv || supportRatio >= 0.3) return "Medium";
     return "Low";
@@ -665,10 +730,7 @@ function approvalRank(approval: EngineApproval) {
     }
 }
 
-function weightedAverageCp(
-    evidence: EnginePlanEvidence[],
-    key: "evalCp" | "qualityCp",
-) {
+function weightedAverageCp(evidence: EnginePlanEvidence[], key: "evalCp" | "qualityCp") {
     let weighted = 0;
     let totalWeight = 0;
     for (const line of evidence) {
@@ -684,7 +746,9 @@ function weightedAverageCp(
 }
 
 function averageCp(evidence: EnginePlanEvidence[], key: "evalCp" | "qualityCp") {
-    const values = evidence.map((line) => line[key]).filter((value): value is number => value !== null);
+    const values = evidence
+        .map((line) => line[key])
+        .filter((value): value is number => value !== null);
     if (values.length === 0) return null;
     return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
@@ -696,7 +760,9 @@ function bestSupportingEvalCp(evidence: EnginePlanEvidence[]) {
 }
 
 function bestRootQuality(pvs: EnginePlanPv[]) {
-    const values = pvs.map((line) => line.qualityCp).filter((value): value is number => value !== null);
+    const values = pvs
+        .map((line) => line.qualityCp)
+        .filter((value): value is number => value !== null);
     if (values.length === 0) return null;
     return Math.max(...values);
 }
@@ -742,6 +808,50 @@ function makePieceId(color: Color, role: Role, square: string) {
 
 function isNormalMove(move: Move): move is Move & { from: Square; to: Square; promotion?: Role } {
     return "from" in move && "to" in move;
+}
+
+function engineCastlingMove(
+    pos: NonNullable<ReturnType<typeof positionFromFen>[0]>,
+    move: Move & { from: Square; to: Square },
+    color: Color,
+): EngineCastlingMove | null {
+    const side = castlingSide(pos, move);
+    if (!side) return null;
+
+    const rank = color === "white" ? "1" : "8";
+    const kingTo = toSquareName(`${side === "h" ? "g" : "c"}${rank}`);
+    const rookTo = toSquareName(`${side === "h" ? "f" : "d"}${rank}`);
+    const defaultRookFrom = toSquareName(`${side}${rank}`);
+    const moveTo = makeSquare(move.to);
+    const moveToPiece = pos.board.get(move.to);
+    const rookFrom =
+        moveTo && moveToPiece?.color === color && moveToPiece.role === "rook"
+            ? moveTo
+            : defaultRookFrom;
+
+    if (!kingTo || !rookTo || !rookFrom) return null;
+
+    return {
+        side: side === "h" ? "kingside" : "queenside",
+        kingTo,
+        rookFrom,
+        rookTo,
+    };
+}
+
+function moveTrackedCastlingRook(
+    castle: EngineCastlingMove,
+    uci: string,
+    pieceStates: Map<string, PieceState>,
+    rookId: string | undefined,
+) {
+    if (!rookId) return;
+
+    const rookState = pieceStates.get(rookId);
+    if (!rookState || rookState.squares[rookState.squares.length - 1] === castle.rookTo) return;
+
+    rookState.squares.push(castle.rookTo);
+    rookState.uciMoves.push(uci);
 }
 
 function recordPawnSignals(
@@ -892,7 +1002,9 @@ function toPlanSegments(segments: [string, string][] | undefined): PlanExplorerS
             ?.map(([from, to]) => {
                 const fromSquare = toSquareName(from);
                 const toSquare = toSquareName(to);
-                return fromSquare && toSquare ? ([fromSquare, toSquare] as PlanExplorerSegment) : null;
+                return fromSquare && toSquare
+                    ? ([fromSquare, toSquare] as PlanExplorerSegment)
+                    : null;
             })
             .filter((segment): segment is PlanExplorerSegment => !!segment) ?? []
     );
@@ -912,14 +1024,16 @@ function startsWithRoute(route: string[], prefix: string[]) {
 }
 
 function strongestPlan(plans: EnginePlan[]) {
-    return plans
-        .slice()
-        .sort(
-            (a, b) =>
-                enginePlanStrengthScore(b) - enginePlanStrengthScore(a) ||
-                b.supportCount - a.supportCount ||
-                a.label.localeCompare(b.label),
-        )[0] ?? null;
+    return (
+        plans
+            .slice()
+            .sort(
+                (a, b) =>
+                    enginePlanStrengthScore(b) - enginePlanStrengthScore(a) ||
+                    b.supportCount - a.supportCount ||
+                    a.label.localeCompare(b.label),
+            )[0] ?? null
+    );
 }
 
 function toColor(value: string): Color | null {

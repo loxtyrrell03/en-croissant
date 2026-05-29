@@ -100,7 +100,7 @@ import {
 import { formatNumber } from "@/utils/format";
 import { getOnlinePlanExplorer, type OnlinePlanExplorerSource } from "@/utils/lichess/planExplorer";
 import {
-  formatPlanRoute,
+  formatPlanPieceRoute,
   isPlanBrush,
   planLineToShapes,
   summarizePlanPiece,
@@ -1176,7 +1176,7 @@ function PieceRow({
                   </ActionIcon>
                 </Tooltip>
                 <Text size="sm" ff="monospace" truncate>
-                  {formatPlanRoute(line.squares)}
+                  {formatPlanPieceRoute(piece, line)}
                 </Text>
                 <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
                   {formatNumber(line.games)}

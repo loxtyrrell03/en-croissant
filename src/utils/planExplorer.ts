@@ -176,6 +176,18 @@ export function formatPlanRoute(squares: string[]) {
     return squares.join(" -> ");
 }
 
+export function formatPlanPieceRoute(
+    piece: Pick<PlanExplorerPiece, "color" | "role">,
+    line: PlanExplorerLine,
+) {
+    const castling = piece.role === "king" ? detectPlanCastling(line, piece.color) : null;
+    if (castling) {
+        return `${castling.notation} (${castling.from} -> ${castling.kingTo})`;
+    }
+
+    return formatPlanRoute(line.squares);
+}
+
 export function summarizePlanPiece(piece: PlanExplorerPiece) {
     const line = piece.lines[0];
     const squares = line?.squares.filter(isSquareName) ?? [];
@@ -192,13 +204,11 @@ export function summarizePlanPiece(piece: PlanExplorerPiece) {
         case "bishop":
             return `Minor piece ${squares.length >= 3 ? "reroute" : "development"} to ${area}`;
         case "rook":
-            return isRookLift(piece.color, from, to)
-                ? "Rook lift"
-                : `Rook swing to ${area}`;
+            return isRookLift(piece.color, from, to) ? "Rook lift" : `Rook swing to ${area}`;
         case "queen":
             return area === "center" ? "Queen centralization" : `Queen swing to ${area}`;
         case "king":
-            return castlingSummary(from, to) ?? `King move to ${area}`;
+            return castlingSummary(line, piece.color) ?? `King move to ${area}`;
         default:
             return `${capitalize(piece.role)} route to ${area}`;
     }
@@ -259,8 +269,7 @@ function balancePlanShapes(shapes: DrawShape[], limit: number) {
         white: 0,
         black: 0,
     };
-    let nextColor: "white" | "black" =
-        shapes[0]?.brush === PLAN_BLACK_BRUSH ? "black" : "white";
+    let nextColor: "white" | "black" = shapes[0]?.brush === PLAN_BLACK_BRUSH ? "black" : "white";
 
     while (result.length < cappedLimit) {
         const otherColor = nextColor === "white" ? "black" : "white";
@@ -299,12 +308,70 @@ function isRookLift(color: string, from: SquareName, to: SquareName) {
     return from[0] === to[0] && homeRanks.has(from[1]) && liftRanks.has(to[1]);
 }
 
-function castlingSummary(from: SquareName, to: SquareName) {
-    if ((from === "e1" && to === "g1") || (from === "e8" && to === "g8")) {
-        return "Kingside castling";
+export type PlanCastling = {
+    side: "kingside" | "queenside";
+    notation: "O-O" | "O-O-O";
+    from: SquareName;
+    kingTo: SquareName;
+};
+
+function castlingSummary(line: PlanExplorerLine, color: string) {
+    const castling = detectPlanCastling(line, color);
+    if (!castling) return null;
+
+    return castling.side === "kingside" ? "Kingside castling" : "Queenside castling";
+}
+
+export function detectPlanCastling(line: PlanExplorerLine, color: string): PlanCastling | null {
+    const squares = line.squares.filter(isSquareName);
+    if (squares.length < 2) return null;
+
+    const san = line.san.find((move) => /^O-O(?:-O)?/.test(move) || /^0-0(?:-0)?/.test(move));
+    const from = squares[0];
+    const inferredRank = color === "black" ? "8" : color === "white" ? "1" : from[1];
+    const kingsideKingTo = `g${inferredRank}` as SquareName;
+    const queensideKingTo = `c${inferredRank}` as SquareName;
+
+    if (san) {
+        if (/^(O-O-O|0-0-0)/.test(san)) {
+            return {
+                side: "queenside",
+                notation: "O-O-O",
+                from,
+                kingTo: queensideKingTo,
+            };
+        }
+
+        return {
+            side: "kingside",
+            notation: "O-O",
+            from,
+            kingTo: kingsideKingTo,
+        };
     }
-    if ((from === "e1" && to === "c1") || (from === "e8" && to === "c8")) {
-        return "Queenside castling";
+
+    const sameRank = squares.every((square) => square[1] === inferredRank);
+    if (!sameRank) return null;
+
+    const last = squares[squares.length - 1];
+    const hasKingsideRookSquare = squares.some((square) => square[0] === "h");
+    const hasQueensideRookSquare = squares.some((square) => square[0] === "a");
+
+    if (last === kingsideKingTo || (last[0] === "f" && hasKingsideRookSquare)) {
+        return {
+            side: "kingside",
+            notation: "O-O",
+            from,
+            kingTo: kingsideKingTo,
+        };
+    }
+    if (last === queensideKingTo || (last[0] === "d" && hasQueensideRookSquare)) {
+        return {
+            side: "queenside",
+            notation: "O-O-O",
+            from,
+            kingTo: queensideKingTo,
+        };
     }
 
     return null;

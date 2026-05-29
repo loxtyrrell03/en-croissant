@@ -8,6 +8,7 @@ import {
     getPvMovePreviews,
 } from "@/utils/enginePlanExplorer";
 import {
+    formatPlanPieceRoute,
     getAutoPlanLines,
     PLAN_BLACK_BRUSH,
     PLAN_WHITE_BRUSH,
@@ -19,6 +20,7 @@ import {
 
 const BREAK_FEN = "rnbqkbnr/ppp1pppp/8/3p4/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const H_FILE_BREAK_FEN = "rnbqkbnr/pppppp1p/8/6p1/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+const CASTLING_FEN = "r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1";
 
 function pv(rank: number, uciMoves: string[], cp: number, depth = 12): BestMoves {
     return {
@@ -125,11 +127,7 @@ describe("Engine Plan Explorer", () => {
     test("does not mark quiet pawn advances as pawn breaks", () => {
         const report = buildEnginePlanReport(
             INITIAL_FEN,
-            [
-                pv(1, ["e2e4"], 30),
-                pv(2, ["c2c4"], 20),
-                pv(3, ["h2h4"], 10),
-            ],
+            [pv(1, ["e2e4"], 30), pv(2, ["c2c4"], 20), pv(3, ["h2h4"], 10)],
             {
                 requestedMultipv: 3,
                 limitLabel: "Depth 12",
@@ -190,10 +188,49 @@ describe("Engine Plan Explorer", () => {
             ["b2", "b4"],
             ["c2", "c4"],
         ]);
-        expect(planLineToShapes(expansionLine ?? emptyLine()).map((shape) => [shape.orig, shape.dest])).toEqual([
+        expect(
+            planLineToShapes(expansionLine ?? emptyLine()).map((shape) => [shape.orig, shape.dest]),
+        ).toEqual([
             ["b2", "b4"],
             ["c2", "c4"],
         ]);
+    });
+
+    test("extracts and labels castling from standard and rook-square UCI", () => {
+        const report = buildEnginePlanReport(
+            CASTLING_FEN,
+            [pv(1, ["e8h8"], 30), pv(2, ["e8g8"], 20), pv(3, ["e8a8"], 10)],
+            {
+                requestedMultipv: 3,
+                limitLabel: "Depth 12",
+            },
+        );
+
+        const kingside = report.plans.find((plan) => plan.signature === "castling:black:kingside");
+        expect(kingside?.category).toBe("castling");
+        expect(kingside?.label).toBe("Black castles kingside");
+        expect(kingside?.supportCount).toBe(2);
+        expect(kingside?.routeSquares).toEqual(["e8", "g8"]);
+
+        const queenside = report.plans.find(
+            (plan) => plan.signature === "castling:black:queenside",
+        );
+        expect(queenside?.routeSquares).toEqual(["e8", "c8"]);
+
+        const planData = engineReportToPlanExplorerData(report);
+        const king = planData.pieces.find((piece) => piece.role === "king" && piece.from === "e8");
+        expect(king && summarizePlanPiece(king)).toBe("Kingside castling");
+
+        const legacyLineMatch = getPlanExplorerLineEnginePlan(
+            { color: "black", role: "king" },
+            {
+                ...emptyLine(),
+                squares: ["e8", "h8", "f8"],
+            },
+            report,
+        );
+        expect(legacyLineMatch?.match).toBe("castling");
+        expect(legacyLineMatch?.plan.signature).toBe("castling:black:kingside");
     });
 
     test("balances automatic plan arrows across both sides", () => {
@@ -221,10 +258,7 @@ describe("Engine Plan Explorer", () => {
     test("keeps single-PV engine plan arrows available for the board", () => {
         const report = buildEnginePlanReport(
             INITIAL_FEN,
-            [
-                pv(1, ["g1f3"], 30),
-                pv(2, ["b1c3"], 20),
-            ],
+            [pv(1, ["g1f3"], 30), pv(2, ["b1c3"], 20)],
             {
                 requestedMultipv: 2,
                 limitLabel: "Depth 12",
@@ -310,16 +344,22 @@ describe("Engine Plan Explorer", () => {
         expect(summarizePlanPiece(planPiece("white", "pawn", "e2", 15, ["e2", "e4"]))).toBe(
             "Central expansion",
         );
+        expect(summarizePlanPiece(planPiece("black", "king", "e8", 42, ["e8", "h8", "f8"]))).toBe(
+            "Kingside castling",
+        );
+        expect(
+            formatPlanPieceRoute(
+                { color: "black", role: "king" },
+                {
+                    ...emptyLine(),
+                    squares: ["e8", "h8", "f8"],
+                },
+            ),
+        ).toBe("O-O (e8 -> g8)");
     });
 });
 
-function planPiece(
-    color: string,
-    role: string,
-    from: string,
-    games: number,
-    squares: string[],
-) {
+function planPiece(color: string, role: string, from: string, games: number, squares: string[]) {
     return {
         color,
         role,

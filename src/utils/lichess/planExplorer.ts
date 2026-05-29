@@ -224,7 +224,7 @@ function recordTrackedMove(
     const san = makeSan(position, move);
     const castle = movingPiece.role === "king" ? castlingSide(position, move) : undefined;
     if (castle) {
-        recordCastlingMove(position.turn, castle, move, san, uci, locations, paths);
+        recordCastlingMove(position, castle, move, san, uci, locations, paths);
         return;
     }
 
@@ -239,7 +239,7 @@ function recordTrackedMove(
 }
 
 function recordCastlingMove(
-    color: Color,
+    position: Chess,
     side: "a" | "h",
     move: Extract<Move, { from: Square; to: Square }>,
     san: string,
@@ -247,13 +247,30 @@ function recordCastlingMove(
     locations: Map<Square, string>,
     paths: Map<string, TrackedPath>,
 ) {
+    const color = position.turn;
     const rank = color === "white" ? "1" : "8";
-    const rookFrom = parseSquare(`${side}${rank}` as SquareName);
+    const kingTo = parseSquare(`${side === "h" ? "g" : "c"}${rank}` as SquareName);
     const rookTo = parseSquare(`${side === "h" ? "f" : "d"}${rank}` as SquareName);
+    const defaultRookFrom = parseSquare(`${side}${rank}` as SquareName);
+    const moveToPiece = position.board.get(move.to);
+    const rookFrom =
+        moveToPiece?.color === color && moveToPiece.role === "rook" ? move.to : defaultRookFrom;
+    const kingKey = locations.get(move.from);
+    const rookKey = rookFrom !== undefined ? locations.get(rookFrom) : undefined;
 
-    moveTrackedPiece(move.from, move.to, san, uci, locations, paths);
-    if (rookFrom !== undefined && rookTo !== undefined) {
-        moveTrackedPiece(rookFrom, rookTo, san, uci, locations, paths);
+    locations.delete(move.from);
+    locations.delete(move.to);
+    if (kingTo !== undefined) locations.delete(kingTo);
+    if (rookFrom !== undefined) locations.delete(rookFrom);
+    if (rookTo !== undefined) locations.delete(rookTo);
+
+    if (kingKey && kingTo !== undefined) {
+        appendTrackedSquare(kingKey, makeSquare(kingTo), san, uci, paths);
+        locations.set(kingTo, kingKey);
+    }
+    if (rookKey && rookTo !== undefined) {
+        appendTrackedSquare(rookKey, makeSquare(rookTo), san, uci, paths);
+        locations.set(rookTo, rookKey);
     }
 }
 
@@ -318,8 +335,10 @@ function buildPiecesFromLeaves(leaves: BranchNode[]) {
         for (const path of leaf.paths.values()) {
             if (path.squares.length <= 1) continue;
 
-            const pieceMap = getOrInsert(grouped, pieceKey(path.color, path.role, path.from), () =>
-                new Map(),
+            const pieceMap = getOrInsert(
+                grouped,
+                pieceKey(path.color, path.role, path.from),
+                () => new Map(),
             );
             const lineKey = path.squares.join(",");
             const existing = pieceMap.get(lineKey);
