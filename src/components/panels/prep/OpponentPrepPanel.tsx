@@ -606,11 +606,10 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
     setPrep((current) => ({
       ...current,
       ...seed,
-      rootPath: current.rootPath ?? currentPath,
+      rootPath: current.rootPath ?? [],
     }));
   }, [
     currentLocalOptions,
-    currentPath,
     localDatabases,
     prep.databasePath,
     prepSource,
@@ -625,11 +624,11 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
       current.rootPath === null
         ? {
             ...current,
-            rootPath: currentPath,
+            rootPath: [],
           }
         : current,
     );
-  }, [configReady, currentPath, prep.rootPath, setPrep]);
+  }, [configReady, prep.rootPath, setPrep]);
 
   useEffect(() => {
     if (underBoard && !configReady) {
@@ -993,12 +992,12 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
       setPrep((current) => ({
         ...current,
         ...patch,
-        rootPath: resetProgress ? currentPath : current.rootPath,
+        rootPath: resetProgress ? (current.rootPath ?? []) : current.rootPath,
         completedBranches: resetProgress ? {} : current.completedBranches,
         skippedBranches: resetProgress ? {} : current.skippedBranches,
       }));
     },
-    [currentPath, setPrep, setSavedPrepSettings],
+    [setPrep, setSavedPrepSettings],
   );
 
   useEffect(() => {
@@ -1391,7 +1390,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
           importedDatabase?.title || (onlineImportSaveDatabase ? title : `${title} (temporary)`),
         player: player?.id ?? null,
         playerName: player?.name ?? onlineImportUsernameTrimmed,
-        rootPath: currentPath,
+        rootPath: [],
         completedBranches: {},
         skippedBranches: {},
       }));
@@ -1425,7 +1424,6 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
       setOnlineImporting(false);
     }
   }, [
-    currentPath,
     databaseDir,
     localDatabases,
     onlineImportGameCount,

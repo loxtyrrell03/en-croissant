@@ -307,6 +307,10 @@ and `src/utils/lichess/study.ts`.
   opponent move rows and the active branch controls expose Go to game, sampling
   the local prep database, finding the exact FEN plus opponent move occurrence,
   and opening an analysis tab with that move selected.
+- Player-mode Prep roots its branch search at the game start by default.
+  "Start here" is the explicit action for changing the prep root to the
+  currently selected board node; source/player/filter changes should not
+  silently move that root to the current board path.
 - Lichess Study links can be imported as local databases.
 - Lichess Study databases support auto-update metadata and refresh tracking.
 - Lichess Study databases expose a database-manager reload control that
