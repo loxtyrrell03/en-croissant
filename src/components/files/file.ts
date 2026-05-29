@@ -39,6 +39,7 @@ const HIDDEN_REPORT_ARTIFACT_DIRECTORIES = new Set([
     "report-render",
     "report-render-pdf",
     "report-print-pages",
+    "source-pgns",
 ]);
 
 function isHiddenReportArtifactDirectory(name: string) {

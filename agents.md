@@ -114,8 +114,9 @@ default.
   dragging onto the middle of a folder keeps the existing move-into-folder
   behavior.
 - Files directory scans hide generated `report-render`, `report-render-pdf`,
-  and `report-print-pages` artifact folders so report workspaces do not clutter
-  the library while the actual PDF report stays visible.
+  `report-print-pages`, and `source-pgns` artifact folders so report workspaces
+  and archived source PGNs do not clutter the library while the actual PDF
+  report and combined game PGNs stay visible.
 - `/databases` manages local databases, online game databases, merged
   Lichess/Chess.com databases, Lichess study imports, database conversion, and
   auto-update metadata. Database settings can export a whole database into the
