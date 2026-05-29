@@ -35,6 +35,16 @@ export type FileData = {
     games: string[];
 };
 
+const HIDDEN_REPORT_ARTIFACT_DIRECTORIES = new Set([
+    "report-render",
+    "report-render-pdf",
+    "report-print-pages",
+]);
+
+function isHiddenReportArtifactDirectory(name: string) {
+    return HIDDEN_REPORT_ARTIFACT_DIRECTORIES.has(name.toLowerCase());
+}
+
 async function readFileMetadata(path: string): Promise<FileMetadata | null> {
     const lowerPath = path.toLowerCase();
     const isPgn = lowerPath.endsWith(".pgn");
@@ -117,28 +127,30 @@ export type Entry = FileMetadata | Directory;
 
 async function processEntries(parent: string, entries: DirEntry[], recursive: boolean) {
     const processedEntries = await Promise.all(
-        entries.map(async (entry) => {
-            if (entry.isFile) {
-                return await readFileMetadata(await join(parent, entry.name));
-            }
-            if (entry.isDirectory) {
-                const dir = await join(parent, entry.name);
-                const children = recursive
-                    ? await readDirectoryEntries(dir, { recursive: true })
-                    : [];
-                const metadata = unwrap(await commands.getFileMetadata(dir));
-                const directory: Directory = {
-                    type: "directory",
-                    name: entry.name,
-                    path: dir,
-                    children,
-                    childrenLoaded: recursive,
-                    lastModified: metadata.last_modified,
-                };
-                return directory;
-            }
-            return null;
-        }),
+        entries
+            .filter((entry) => !entry.isDirectory || !isHiddenReportArtifactDirectory(entry.name))
+            .map(async (entry) => {
+                if (entry.isFile) {
+                    return await readFileMetadata(await join(parent, entry.name));
+                }
+                if (entry.isDirectory) {
+                    const dir = await join(parent, entry.name);
+                    const children = recursive
+                        ? await readDirectoryEntries(dir, { recursive: true })
+                        : [];
+                    const metadata = unwrap(await commands.getFileMetadata(dir));
+                    const directory: Directory = {
+                        type: "directory",
+                        name: entry.name,
+                        path: dir,
+                        children,
+                        childrenLoaded: recursive,
+                        lastModified: metadata.last_modified,
+                    };
+                    return directory;
+                }
+                return null;
+            }),
     );
 
     return processedEntries.filter((entry): entry is Entry => entry !== null);

@@ -107,6 +107,9 @@ default.
 - The Files toolbar includes a persistent sort menu for newest first, oldest
   first, name A-Z/Z-A, and type; pinned entries remain grouped above the chosen
   sort order.
+- Files directory scans hide generated `report-render`, `report-render-pdf`,
+  and `report-print-pages` artifact folders so report workspaces do not clutter
+  the library while the actual PDF report stays visible.
 - `/databases` manages local databases, online game databases, merged
   Lichess/Chess.com databases, Lichess study imports, database conversion, and
   auto-update metadata. Database settings can export a whole database into the
