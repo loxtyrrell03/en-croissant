@@ -854,6 +854,44 @@ export function getLineSans(root: TreeNode, path: number[], fromPath: number[] =
     return sans;
 }
 
+export function findOpponentPrepSourceMovePath({
+    root,
+    fen,
+    san,
+    uci,
+}: {
+    root: TreeNode;
+    fen: string;
+    san: string;
+    uci?: string | null;
+}) {
+    const targetFen = normalizeFenForPrep(fen);
+    const targetSan = normalizeSanForPrep(san);
+    const queue: { node: TreeNode; path: number[] }[] = [{ node: root, path: [] }];
+
+    while (queue.length > 0) {
+        const { node, path } = queue.shift()!;
+
+        if (normalizeFenForPrep(node.fen) === targetFen) {
+            for (let index = 0; index < node.children.length; index++) {
+                const child = node.children[index];
+                if (uci && getMoveUci(child.move) === uci) {
+                    return [...path, index];
+                }
+                if (normalizeSanForPrep(child.san) === targetSan) {
+                    return [...path, index];
+                }
+            }
+        }
+
+        node.children.forEach((child, index) =>
+            queue.push({ node: child, path: [...path, index] }),
+        );
+    }
+
+    return null;
+}
+
 function findMatchingChildIndex(node: TreeNode, fen: string, san: string) {
     const moveUci = getMoveUciFromSan(fen, san);
     if (moveUci) {

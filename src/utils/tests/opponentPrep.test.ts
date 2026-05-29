@@ -1,10 +1,11 @@
-import { describe, expect, test } from "vitest";
+import { beforeAll, describe, expect, test, vi } from "vitest";
 import { createTreeStore } from "@/state/store/tree";
 import {
     collectOpponentBranchPaths,
     choosePrepBuilderMove,
     findFirstOpponentBranch,
     findLastOpponentBranch,
+    findOpponentPrepSourceMovePath,
     findOpponentPrepStart,
     getOpponentPrepBranchStats,
     getOpponentPrepMoveRows,
@@ -21,6 +22,13 @@ import {
 } from "@/utils/opponentPrep";
 
 describe("opponent prep helpers", () => {
+    beforeAll(() => {
+        Object.defineProperty(HTMLMediaElement.prototype, "play", {
+            configurable: true,
+            value: vi.fn(() => Promise.resolve()),
+        });
+    });
+
     test("marks database moves as prepared when the tree has a response", () => {
         const store = createTreeStore();
         store.getState().makeMove({ payload: "e4" });
@@ -152,6 +160,31 @@ describe("opponent prep helpers", () => {
 
         expect(start?.branchPath).toEqual([0]);
         expect(start?.branch?.san).toBe("Nf6");
+    });
+
+    test("finds the matching source-game path for an opponent prep move", () => {
+        const store = createTreeStore();
+        store.getState().makeMove({ payload: "e4" });
+        store.getState().makeMove({ payload: "c5" });
+        store.getState().makeMove({ payload: "Nf3" });
+        store.getState().goToMove([]);
+
+        const state = store.getState();
+        expect(
+            findOpponentPrepSourceMovePath({
+                root: state.root,
+                fen: state.root.fen,
+                san: "e4?!",
+            }),
+        ).toEqual([0]);
+        expect(
+            findOpponentPrepSourceMovePath({
+                root: state.root,
+                fen: state.root.children[0].fen,
+                san: "c5",
+                uci: "c7c5",
+            }),
+        ).toEqual([0, 0]);
     });
 
     test("scores prep branches by weighted response coverage and depth", async () => {

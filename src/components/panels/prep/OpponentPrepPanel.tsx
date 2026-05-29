@@ -27,6 +27,7 @@ import {
   IconChevronDown,
   IconChevronUp,
   IconCloudDownload,
+  IconExternalLink,
   IconPlayerPlay,
   IconRefresh,
   IconSettings,
@@ -34,7 +35,7 @@ import {
   IconTarget,
   IconX,
 } from "@tabler/icons-react";
-import { useLoaderData } from "@tanstack/react-router";
+import { useLoaderData, useNavigate } from "@tanstack/react-router";
 import { resolve, tempDir } from "@tauri-apps/api/path";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { isNormal, makeSquare } from "chessops";
@@ -54,11 +55,12 @@ import { mutate } from "swr";
 import useSWR from "swr/immutable";
 import { useStore } from "zustand";
 import dayjs from "dayjs";
-import { commands } from "@/bindings";
+import { commands, type NormalizedGame } from "@/bindings";
 import { usePanelDensity } from "@/components/common/ResponsivePanel";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import {
+  activeTabAtom,
   comparePanelSettingsByFileAtom,
   currentBoardPreviewShapesAtom,
   currentLocalOptionsAtom,
@@ -72,6 +74,7 @@ import {
   referenceDbAtom,
   sessionsAtom,
   storedDatabasesDirAtom,
+  tabsAtom,
   type OpponentPrepState,
   type OpponentPrepStoredSettings,
   type StoredDatabaseLocalOptions,
@@ -101,6 +104,7 @@ import {
 import {
   findFirstOpponentBranch,
   findLastOpponentBranch,
+  findOpponentPrepSourceMovePath,
   findOpponentPrepStart,
   choosePrepBuilderMove,
   getFenTurn,
@@ -128,9 +132,10 @@ import {
   type OpponentPrepBranchStats,
   type OpponentPrepMoveRow,
 } from "@/utils/opponentPrep";
-import { getTabWorkspaceKey, saveToFile } from "@/utils/tabs";
+import { createTab, getTabWorkspaceKey, saveToFile } from "@/utils/tabs";
+import { parsePGN } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
-import { getTreeStructureHash } from "@/utils/treeReducer";
+import { getTreeStructureHash, type TreeState } from "@/utils/treeReducer";
 import { queryChessDbMoves } from "@/utils/chessdb/api";
 import { queryLichessCloudMoves } from "@/utils/lichess/api";
 import { unwrap } from "@/utils/unwrap";
@@ -146,6 +151,7 @@ const MAX_PREP_BUILDER_REFERENCE_CACHE_ENTRIES = 120;
 const DEFAULT_PLAYER_LOOKUP_VERSION = "game-count-v2";
 const DEFAULT_ONLINE_IMPORT_GAMES = 100;
 const MAX_ONLINE_IMPORT_GAMES = 2000;
+const PREP_SOURCE_GAME_SAMPLE_LIMIT = 5000;
 
 type PrepOnlineImportMode = "count" | "range";
 type PrepOnlineRangePreset = "3m" | "6m" | "1y" | "2y" | "all";
@@ -310,7 +316,10 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
   const [, setConversionState] = useAtom(databaseConversionStateAtom);
   const [, setOnlineDatabaseUpdates] = useAtom(onlineDatabaseUpdatesAtom);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
+  const [, setTabs] = useAtom(tabsAtom);
+  const setActiveTab = useSetAtom(activeTabAtom);
   const { documentDir } = useLoaderData({ from: "/" });
+  const navigate = useNavigate();
   const setBoardPreviewShapes = useSetAtom(currentBoardPreviewShapesAtom);
   const panelDensity = usePanelDensity();
   const compact = underBoard || panelDensity !== "regular";
@@ -335,6 +344,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
   const [onlineImportPreview, setOnlineImportPreview] = useState<PrepOnlineCountPreview | null>(
     null,
   );
+  const [openingSourceGameKey, setOpeningSourceGameKey] = useState<string | null>(null);
   const [underBoardStage, setUnderBoardStage] = useState<"setup" | "train">("setup");
   const [moveTableSort, setMoveTableSort] = useState<PrepMoveTableSortState>(() =>
     getDefaultPrepMoveTableSortState(prep.sortDefaults),
@@ -439,6 +449,8 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
   const missingExplorerToken = prepSource !== "local" && !explorerToken;
   const sourceReady = prepSource === "local" ? Boolean(prep.databasePath) : !missingExplorerToken;
   const targetReady = prepMode === "general" || hasPlayer;
+  const canOpenPrepSourceGames =
+    prepMode === "player" && prepSource === "local" && Boolean(prep.databasePath);
   const configReady = sourceReady && targetReady;
   const showSetupStage = !underBoard || underBoardStage === "setup";
   const showTrainingStage = !underBoard || underBoardStage === "train";
@@ -1427,6 +1439,105 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
       store.getState().makeMove({ payload: moveSan });
     },
     [clearMovePreview, store],
+  );
+
+  const openPrepSourceGame = useCallback(
+    async ({
+      key,
+      fen,
+      move,
+      uci,
+    }: {
+      key: string;
+      fen: string;
+      move: string;
+      uci?: string | null;
+    }) => {
+      if (!canOpenPrepSourceGames || !prep.databasePath || openingSourceGameKey) return;
+
+      setOpeningSourceGameKey(key);
+      clearMovePreview();
+      try {
+        const [, games] = await searchPosition(
+          {
+            path: prep.databasePath,
+            fen,
+            type: "exact",
+            player: prep.player,
+            playerName: prep.playerName,
+            color: prep.color,
+            start_date: prep.start_date,
+            end_date: prep.end_date,
+            result: prep.result,
+          },
+          getPrepSourceGameSearchId(queryScope, key),
+          {
+            includeOpenings: false,
+            includeGames: true,
+            gameLimit: PREP_SOURCE_GAME_SAMPLE_LIMIT,
+          },
+        );
+        const match = await findPrepSourceGameMatch(games, fen, move, uci);
+
+        if (!match) {
+          notifications.show({
+            title: "No source game found",
+            message: "No sampled game matched that exact prep move with the current filters.",
+            color: "yellow",
+          });
+          return;
+        }
+
+        match.tree.headers = match.game;
+        match.tree.position = match.path;
+        await createTab({
+          tab: {
+            name: `${match.game.white} - ${match.game.black}`,
+            type: "analysis",
+          },
+          setTabs,
+          setActiveTab,
+          initialState: match.tree,
+          headers: match.game,
+          position: match.path,
+          gameOrigin: {
+            kind: "database",
+            database: prep.databasePath,
+            gameId: match.game.id,
+          },
+        });
+        navigate({ to: "/" });
+        notifications.show({
+          title: "Game opened",
+          message: `${move} in ${match.game.white} - ${match.game.black}.`,
+          color: "green",
+        });
+      } catch (error) {
+        notifications.show({
+          title: "Could not open source game",
+          message: error instanceof Error ? error.message : String(error),
+          color: "red",
+        });
+      } finally {
+        setOpeningSourceGameKey((current) => (current === key ? null : current));
+      }
+    },
+    [
+      canOpenPrepSourceGames,
+      clearMovePreview,
+      navigate,
+      openingSourceGameKey,
+      prep.color,
+      prep.databasePath,
+      prep.end_date,
+      prep.player,
+      prep.playerName,
+      prep.result,
+      prep.start_date,
+      queryScope,
+      setActiveTab,
+      setTabs,
+    ],
   );
 
   const playCommonMoveFromStart = useCallback(async () => {
@@ -2736,6 +2847,29 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
               </Button>
             </Tooltip>
             {activeBranch ? (
+              canOpenPrepSourceGames ? (
+                <Tooltip label={`Open a source game at ${activeBranch.san}`}>
+                  <Button
+                    variant="default"
+                    size={controlSize}
+                    leftSection={<IconExternalLink size="0.95rem" />}
+                    loading={openingSourceGameKey === activeBranch.key}
+                    disabled={!configReady}
+                    onClick={() =>
+                      void openPrepSourceGame({
+                        key: activeBranch.key,
+                        fen: activeBranch.fen,
+                        move: activeBranch.san,
+                        uci: activeBranch.uci,
+                      })
+                    }
+                  >
+                    Go to game
+                  </Button>
+                </Tooltip>
+              ) : null
+            ) : null}
+            {activeBranch ? (
               <Tooltip label="Return to the last opponent choice in this line">
                 <ActionIcon
                   variant="default"
@@ -2808,6 +2942,18 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
               general={prepMode === "general"}
               resultSide={prep.color}
               onPlay={playMove}
+              onOpenGame={
+                canOpenPrepSourceGames
+                  ? (row) =>
+                      openPrepSourceGame({
+                        key: row.key,
+                        fen: currentFen,
+                        move: row.move,
+                        uci: row.uci,
+                      })
+                  : undefined
+              }
+              openingGameKey={openingSourceGameKey}
               onDone={markMoveDone}
               onSkip={skipMove}
               onPreview={previewMove}
@@ -2848,6 +2994,8 @@ function OpponentPrepMoveTable({
   general,
   resultSide,
   onPlay,
+  onOpenGame,
+  openingGameKey,
   onDone,
   onSkip,
   onPreview,
@@ -2865,6 +3013,8 @@ function OpponentPrepMoveTable({
   general: boolean;
   resultSide: "white" | "black";
   onPlay: (move: string) => void;
+  onOpenGame?: (row: OpponentPrepMoveRow) => void;
+  openingGameKey?: string | null;
   onDone: (row: OpponentPrepMoveRow) => void;
   onSkip: (row: OpponentPrepMoveRow) => void;
   onPreview: (move: string) => void;
@@ -2949,7 +3099,7 @@ function OpponentPrepMoveTable({
             onSort={onSort}
             style={{ width: dense ? 76 : 98 }}
           />
-          <Table.Th style={{ width: dense ? 96 : 120 }} />
+          <Table.Th style={{ width: dense ? (onOpenGame ? 118 : 96) : onOpenGame ? 148 : 120 }} />
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>
@@ -2996,6 +3146,22 @@ function OpponentPrepMoveTable({
             </Table.Td>
             <Table.Td>
               <Group gap={2} wrap="nowrap" justify="flex-end">
+                {onOpenGame ? (
+                  <Tooltip label="Go to game">
+                    <ActionIcon
+                      aria-label="Go to game"
+                      variant="subtle"
+                      size="sm"
+                      loading={openingGameKey === row.key}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onOpenGame(row);
+                      }}
+                    >
+                      <IconExternalLink size="0.95rem" />
+                    </ActionIcon>
+                  </Tooltip>
+                ) : null}
                 <Tooltip label="Play this move">
                   <ActionIcon
                     variant="subtle"
@@ -4022,6 +4188,50 @@ function normalizePrepBuilderSan(value: string) {
     .replace(/^0-0-0/, "O-O-O")
     .replace(/^0-0/, "O-O")
     .replace(/[+#?!]+$/g, "");
+}
+
+async function findPrepSourceGameMatch(
+  games: NormalizedGame[],
+  fen: string,
+  move: string,
+  uci?: string | null,
+): Promise<{ game: NormalizedGame; tree: TreeState; path: number[] } | null> {
+  const candidates = [...games].sort(comparePrepSourceGamesByDate);
+
+  for (const game of candidates) {
+    try {
+      const tree = await parsePGN(game.moves, game.fen);
+      const path = findOpponentPrepSourceMovePath({
+        root: tree.root,
+        fen,
+        san: move,
+        uci,
+      });
+      if (path) return { game, tree, path };
+    } catch (error) {
+      console.warn("Could not parse prep source game", error);
+    }
+  }
+
+  return null;
+}
+
+function comparePrepSourceGamesByDate(a: NormalizedGame, b: NormalizedGame) {
+  return (
+    getPrepSourceGameDateSortValue(b) - getPrepSourceGameDateSortValue(a) ||
+    b.id - a.id ||
+    `${a.white} ${a.black}`.localeCompare(`${b.white} ${b.black}`)
+  );
+}
+
+function getPrepSourceGameDateSortValue(game: NormalizedGame) {
+  const dateDigits = game.date?.replace(/\D/g, "") ?? "";
+  const timeDigits = game.time?.replace(/\D/g, "") ?? "";
+  return Number(`${dateDigits.padEnd(8, "0")}${timeDigits.padEnd(6, "0")}`) || 0;
+}
+
+function getPrepSourceGameSearchId(scope: string, key: string) {
+  return `opponent-prep-game|${scope}|${key}`;
 }
 
 function getPrepBuilderSettingsPatch(

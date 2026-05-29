@@ -280,6 +280,10 @@ and `src/utils/lichess/study.ts`.
 - In Prep general mode, the user-side selector says "I'm white" and "I'm black"
   so the control reads as the user's prep side rather than abstract colors; the
   segmented control is kept wide enough for both labels to render in full.
+- Player-mode Prep can jump from an opponent move back to source evidence:
+  opponent move rows and the active branch controls expose Go to game, sampling
+  the local prep database, finding the exact FEN plus opponent move occurrence,
+  and opening an analysis tab with that move selected.
 - Lichess Study links can be imported as local databases.
 - Lichess Study databases support auto-update metadata and refresh tracking.
 - Lichess Study databases expose a database-manager reload control that
