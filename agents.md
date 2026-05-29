@@ -41,21 +41,23 @@ model, implementation map, and verification expectations for this app.
 
 ## Local Browser Verification
 
-- Use the Playwright MCP browser tools directly for localhost UI checks,
-  screenshots, DOM snapshots, and layout measurements.
+- Do not run Playwright or other browser automation for local UI checks unless
+  the user explicitly asks for Playwright/browser verification in the prompt.
+  Default verification should be typecheck, lint, unit tests, focused Rust
+  tests, and code inspection.
 - The Vite dev server for this Tauri app normally serves at
   `http://localhost:1420`; `vite.config.ts` has `strictPort: true`, so check
-  whether that port is already owned before starting a new server.
-- Opening the app directly in a regular browser is outside the Tauri shell, so
-  the page needs minimal Tauri globals injected before navigation. With
-  Playwright, install these with `page.addInitScript` before loading the app.
-  Stub
-  `window.__TAURI_OS_PLUGIN_INTERNALS__` and `window.__TAURI_INTERNALS__` with
-  no-op `invoke`, event listener, metadata, and `convertFileSrc` handlers before
-  loading `http://localhost:1420`.
-- For layout checks, inspect real DOM dimensions instead of relying only on
-  screenshots. Useful measurements are `#left`, `.cg-wrap`, the eval bar
-  element, and any nearby panel that may be limiting the board.
+  whether that port is already owned before starting a new server, but do not
+  start it just for browser testing unless the user asked for that verification.
+- Do not open the Vite app directly in the Codex in-app browser and try to patch
+  in minimal Tauri globals. That path is brittle and previously failed because
+  browser-loaded Tauri modules read `window.__TAURI_INTERNALS__.metadata` before
+  the app had a real Tauri WebView environment, producing errors such as
+  `Cannot read properties of undefined (reading 'metadata')`.
+- If the user explicitly asks for Playwright/browser UI verification, document
+  the exact harness used. Prefer testing against the real Tauri shell when
+  possible; if using the Vite page outside Tauri, treat any stubbed Tauri API as
+  a limited smoke-test harness, not product-equivalent verification.
 - Temporary Playwright screenshots and `.playwright-mcp/page-*.yml` snapshots
   are local verification artifacts. Do not delete them unless the user
   explicitly confirms deletion.
@@ -741,8 +743,9 @@ from 2026-04-24 through 2026-05-03.
 - Persistence and compatibility: review deck file storage, old review-card
   compatibility, no-tab preview safety, stale index refresh, and PGN timestamp
   normalization were added.
-- Local process guidance: Playwright/Tauri browser verification notes were
-  documented.
+- Local process guidance: browser verification is opt-in only when the user
+  explicitly asks for Playwright/browser checks, and agents should not rely on
+  the old direct-browser minimal Tauri-global stub method.
 - Performance pass: annotation changes now reuse notation/transposition derived
   data unless the move tree structure changes, review deck saves are delayed to
   idle time, large review files save more compactly, review deck summaries are
@@ -876,9 +879,10 @@ Choose focused verification based on the touched surface.
 - Database/search tests: `cargo test search_index`,
   `cargo test exact_matches`, and
   `cargo test exact_query_ignores_too_much_material_validation`.
-- UI/layout verification: run the Vite app at `http://localhost:1420`, verify
-  with Playwright, inspect real DOM dimensions as well as screenshots, and
-  inject Tauri browser stubs if the app is opened outside the Tauri shell.
+- UI/layout verification: only perform Playwright/browser checks when the user
+  explicitly asks for them. Do not use the old direct-browser minimal Tauri
+  global-stub method; prefer non-browser verification by default, or a clearly
+  documented dedicated harness when browser verification is requested.
 - Known historical note: an earlier full `cargo test` had unrelated existing
   failures in eval/search fixture expectations. Treat broad failures as
   suspicious, but verify whether they predate the current change before editing
