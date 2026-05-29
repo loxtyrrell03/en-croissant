@@ -30,6 +30,7 @@ import {
   IconExternalLink,
   IconPlayerPlay,
   IconRefresh,
+  IconRoute,
   IconSettings,
   IconSparkles,
   IconTarget,
@@ -106,7 +107,9 @@ import {
   findLastOpponentBranch,
   findOpponentPrepSourceMovePath,
   findOpponentPrepStart,
+  applyPrepSanMove,
   choosePrepBuilderMove,
+  comparePrepStraightLineCandidates,
   getFenTurn,
   getLineSans,
   getOpeningTotal,
@@ -120,7 +123,9 @@ import {
   getPrepBuilderTaskPriority,
   getPrepBuilderUserResponseChildIndex,
   getPrepMoveStrengthMap,
+  getPrepStraightLineForcedMove,
   hasPrepBuilderDatabaseCandidates,
+  isPrepStraightLineBadForOpponent,
   normalizePrepBuilderSettings,
   oppositePrepColor,
   pathExists,
@@ -129,6 +134,8 @@ import {
   type PrepBuilderMoveChoice,
   type PrepBuilderSettings,
   type PrepMoveStrength,
+  type PrepStraightLineCandidate,
+  type PrepStraightLineStep,
   type OpponentPrepBranchStats,
   type OpponentPrepMoveRow,
 } from "@/utils/opponentPrep";
@@ -144,6 +151,12 @@ import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveCont
 
 const DEFAULT_PREP_MIN_GAMES = 2;
 const DEFAULT_PREP_MOVE_LIMIT = 8;
+const DEFAULT_STRAIGHT_LINE_MIN_SHARE = 90;
+const DEFAULT_STRAIGHT_LINE_MIN_CP = 80;
+const DEFAULT_STRAIGHT_LINE_MAX_PLY = 12;
+const STRAIGHT_LINE_USER_CANDIDATES = 4;
+const STRAIGHT_LINE_MAX_FRONTIER = 8;
+const STRAIGHT_LINE_MAX_POSITIONS = 48;
 const LICHESS_ALL_SOURCE = "online:lichess-all";
 const LICHESS_MASTER_SOURCE = "online:lichess-master";
 const MAX_PREP_MOVE_CACHE_ENTRIES = 80;
@@ -234,6 +247,26 @@ type PrepBuilderQueueItem = {
   depthShare: number;
   branchValue?: number;
   ply: number;
+};
+
+type PrepStraightLineStatus = {
+  phase: string;
+  checkedPositions: number;
+  candidates: number;
+  tone?: "running" | "empty" | "error";
+};
+
+type PrepStraightLineSearchNode = {
+  fen: string;
+  steps: PrepStraightLineStep[];
+  ply: number;
+  minOpponentShare: number;
+  opponentGamesFloor: number;
+  opponentMoveCount: number;
+};
+
+type PrepStraightLineSearchResult = PrepStraightLineCandidate & {
+  fromPath: number[];
 };
 
 function normalizePrepPlayerName(name: string) {
@@ -331,6 +364,14 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
   const [builderNeedsSave, setBuilderNeedsSave] = useState(false);
   const [savingBuilderResult, setSavingBuilderResult] = useState<"new" | "overwrite" | null>(null);
   const [builderStatus, setBuilderStatus] = useState<PrepBuilderStatus | null>(null);
+  const [straightLineRunning, setStraightLineRunning] = useState(false);
+  const [straightLineStatus, setStraightLineStatus] = useState<PrepStraightLineStatus | null>(null);
+  const [straightLineResult, setStraightLineResult] = useState<PrepStraightLineSearchResult | null>(
+    null,
+  );
+  const [straightLineMinShare, setStraightLineMinShare] = useState(DEFAULT_STRAIGHT_LINE_MIN_SHARE);
+  const [straightLineMinCp, setStraightLineMinCp] = useState(DEFAULT_STRAIGHT_LINE_MIN_CP);
+  const [straightLineMaxPly, setStraightLineMaxPly] = useState(DEFAULT_STRAIGHT_LINE_MAX_PLY);
   const [onlineImportOpen, setOnlineImportOpen] = useState(false);
   const [onlineImportSource, setOnlineImportSource] = useState<OnlineGameSource>("lichess");
   const [onlineImportUsername, setOnlineImportUsername] = useState("");
@@ -354,6 +395,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
     new BoundedMap<string, Opening[]>(MAX_PREP_BUILDER_REFERENCE_CACHE_ENTRIES),
   );
   const builderCancelRef = useRef(false);
+  const straightLineCancelRef = useRef(false);
   const seededRef = useRef(false);
   const savedSettingsAppliedRef = useRef(false);
   const seededDefaultPlayerDatabaseRef = useRef<string | null>(null);
@@ -442,6 +484,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
     const candidate = prep.rootPath ?? [];
     return pathExists(root, candidate) ? candidate : [];
   }, [prep.rootPath, root]);
+  const rootPathKey = rootPath.join("/");
   const isInsidePrepTree = isPrefix(rootPath, currentPath);
   const opponentToMove = getFenTurn(currentFen) === prep.color;
   const userColor = oppositePrepColor(prep.color);
@@ -613,6 +656,11 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
       void cancelDatabaseSearch(currentSearchId);
     };
   }, [currentSearchId]);
+
+  useEffect(() => {
+    setStraightLineResult(null);
+    setStraightLineStatus(null);
+  }, [queryScope, rootPathKey]);
 
   const loadOpeningsForFen = useCallback(
     async (fen: string, moveLimitOverride?: number) => {
@@ -936,6 +984,17 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
     preview: onlineImportPreview,
     requestedGames: onlineImportGameCount,
   });
+  const canRunStraightLine =
+    configReady &&
+    prepMode === "player" &&
+    prepSource === "local" &&
+    sourceReady &&
+    targetReady &&
+    Boolean(prep.databasePath);
+  const straightLineQualifies = isPrepStraightLineBadForOpponent(
+    straightLineResult,
+    straightLineMinCp,
+  );
 
   const updateSettings = useCallback(
     (patch: PrepStoredSettingsPatch, resetProgress = true) => {
@@ -1757,6 +1816,270 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
     setPrep,
     store,
   ]);
+
+  const runStraightLineSearch = useCallback(async () => {
+    if (!canRunStraightLine || straightLineRunning) return;
+
+    const settings = normalizePrepBuilderSettings({
+      ...prep.builder,
+      useCloudEngine: true,
+    });
+    const minShare = Math.max(1, Math.min(100, straightLineMinShare)) / 100;
+    const minGames = Math.max(1, prep.minGames);
+    const maxPly = Math.max(2, Math.min(30, straightLineMaxPly));
+    const engineCache = new Map<string, PrepBuilderEngineMove[]>();
+    const loadEngineMoves = async (fen: string) => {
+      const cached = engineCache.get(fen);
+      if (cached) return cached;
+
+      const moves = await loadPrepBuilderEngineMoves(fen, userColor, settings).catch(() => []);
+      engineCache.set(fen, moves);
+      return moves;
+    };
+    const getBestEngineMove = async (fen: string) => {
+      const moves = await loadEngineMoves(fen);
+      return moves
+        .filter((move) => move.scoreCpForSide !== null)
+        .sort(
+          (a, b) =>
+            (b.scoreCpForSide ?? -9999) - (a.scoreCpForSide ?? -9999) ||
+            (a.rank ?? 99) - (b.rank ?? 99) ||
+            a.san.localeCompare(b.san),
+        )[0];
+    };
+
+    straightLineCancelRef.current = false;
+    setStraightLineRunning(true);
+    setStraightLineResult(null);
+    setStraightLineStatus({
+      phase: "Starting straight-line search",
+      checkedPositions: 0,
+      candidates: 0,
+      tone: "running",
+    });
+
+    try {
+      const state = store.getState();
+      const startPath = pathExists(state.root, prep.rootPath ?? []) ? (prep.rootPath ?? []) : [];
+      const startNode = state.getNode(startPath);
+      if (!startNode) return;
+
+      let checkedPositions = 0;
+      const candidates: PrepStraightLineSearchResult[] = [];
+      let frontier: PrepStraightLineSearchNode[] = [
+        {
+          fen: startNode.fen,
+          steps: [],
+          ply: 0,
+          minOpponentShare: 1,
+          opponentGamesFloor: Number.MAX_SAFE_INTEGER,
+          opponentMoveCount: 0,
+        },
+      ];
+
+      while (
+        frontier.length > 0 &&
+        checkedPositions < STRAIGHT_LINE_MAX_POSITIONS &&
+        !straightLineCancelRef.current
+      ) {
+        const nextFrontier: PrepStraightLineSearchNode[] = [];
+
+        for (const node of frontier) {
+          if (straightLineCancelRef.current || checkedPositions >= STRAIGHT_LINE_MAX_POSITIONS) {
+            break;
+          }
+          if (node.ply >= maxPly) continue;
+
+          checkedPositions += 1;
+          const isOpponentTurn = getFenTurn(node.fen) === prep.color;
+          setStraightLineStatus({
+            phase: isOpponentTurn ? "Checking forced replies" : "Checking engine replies",
+            checkedPositions,
+            candidates: candidates.length,
+            tone: "running",
+          });
+
+          if (isOpponentTurn) {
+            const openings = await loadOpeningsForFen(node.fen, Math.max(prep.moveLimit, 40)).catch(
+              () => [],
+            );
+            const forced = getPrepStraightLineForcedMove({
+              fen: node.fen,
+              openings,
+              minGames,
+              minShare,
+            });
+            if (!forced) continue;
+
+            const nextFen = applyPrepSanMove(node.fen, forced.move);
+            if (!nextFen) continue;
+
+            const nextSteps: PrepStraightLineStep[] = [
+              ...node.steps,
+              {
+                actor: "opponent",
+                fen: node.fen,
+                move: forced.move,
+                uci: forced.uci,
+                total: forced.total,
+                share: forced.share,
+                secondMove: forced.secondMove,
+                secondShare: forced.secondShare,
+                engineCpForUser: null,
+              },
+            ];
+            const nextNode: PrepStraightLineSearchNode = {
+              fen: nextFen,
+              steps: nextSteps,
+              ply: node.ply + 1,
+              minOpponentShare: Math.min(node.minOpponentShare, forced.share),
+              opponentGamesFloor: Math.min(node.opponentGamesFloor, forced.total),
+              opponentMoveCount: node.opponentMoveCount + 1,
+            };
+            const leafEngine = await getBestEngineMove(nextFen);
+            candidates.push({
+              ...nextNode,
+              fromPath: startPath,
+              leafFen: nextFen,
+              leafBestMove: leafEngine?.san ?? null,
+              leafScoreCpForUser: leafEngine?.scoreCpForSide ?? null,
+              searchedPositions: checkedPositions,
+            });
+            nextFrontier.push(nextNode);
+            continue;
+          }
+
+          const engineMoves = await loadEngineMoves(node.fen);
+          const replies = engineMoves
+            .filter((move) => move.scoreCpForSide !== null)
+            .sort(
+              (a, b) =>
+                (b.scoreCpForSide ?? -9999) - (a.scoreCpForSide ?? -9999) ||
+                (a.rank ?? 99) - (b.rank ?? 99) ||
+                a.san.localeCompare(b.san),
+            )
+            .slice(0, STRAIGHT_LINE_USER_CANDIDATES);
+
+          for (const reply of replies) {
+            const nextFen = applyPrepSanMove(node.fen, reply.san);
+            if (!nextFen) continue;
+
+            nextFrontier.push({
+              ...node,
+              fen: nextFen,
+              steps: [
+                ...node.steps,
+                {
+                  actor: "user",
+                  fen: node.fen,
+                  move: reply.san,
+                  uci: null,
+                  total: null,
+                  share: null,
+                  secondMove: null,
+                  secondShare: null,
+                  engineCpForUser: reply.scoreCpForSide,
+                },
+              ],
+              ply: node.ply + 1,
+            });
+          }
+        }
+
+        frontier = nextFrontier
+          .sort((a, b) => getPrepStraightLineFrontierScore(b) - getPrepStraightLineFrontierScore(a))
+          .slice(0, STRAIGHT_LINE_MAX_FRONTIER);
+      }
+
+      const best = candidates.sort(comparePrepStraightLineCandidates)[0] ?? null;
+      if (best) {
+        const result = {
+          ...best,
+          searchedPositions: checkedPositions,
+        };
+        setStraightLineResult(result);
+        setStraightLineStatus({
+          phase: straightLineCancelRef.current
+            ? "Stopped with best line"
+            : "Straight-line search done",
+          checkedPositions,
+          candidates: candidates.length,
+          tone: "empty",
+        });
+        return;
+      }
+
+      setStraightLineStatus({
+        phase: straightLineCancelRef.current
+          ? "Straight-line search stopped"
+          : "No forced engine-target line found",
+        checkedPositions,
+        candidates: 0,
+        tone: straightLineCancelRef.current ? "empty" : "error",
+      });
+    } catch (error) {
+      setStraightLineStatus({
+        phase: error instanceof Error ? error.message : String(error),
+        checkedPositions: 0,
+        candidates: 0,
+        tone: "error",
+      });
+      notifications.show({
+        title: "Straight-line search failed",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    } finally {
+      straightLineCancelRef.current = false;
+      setStraightLineRunning(false);
+    }
+  }, [
+    canRunStraightLine,
+    loadOpeningsForFen,
+    loadPrepBuilderEngineMoves,
+    prep.builder,
+    prep.color,
+    prep.minGames,
+    prep.moveLimit,
+    prep.rootPath,
+    straightLineMaxPly,
+    straightLineMinShare,
+    straightLineRunning,
+    store,
+    userColor,
+  ]);
+
+  const stopStraightLineSearch = useCallback(() => {
+    straightLineCancelRef.current = true;
+    setStraightLineStatus((current) =>
+      current
+        ? {
+            ...current,
+            phase: "Stopping straight-line search",
+          }
+        : current,
+    );
+  }, []);
+
+  const playStraightLineResult = useCallback(() => {
+    if (!straightLineResult) return;
+
+    clearMovePreview();
+    const state = store.getState();
+    if (!pathExists(state.root, straightLineResult.fromPath)) {
+      notifications.show({
+        title: "Could not play line",
+        message: "The prep starting position changed. Run the straight-line search again.",
+        color: "yellow",
+      });
+      return;
+    }
+
+    state.goToMove(straightLineResult.fromPath);
+    for (const step of straightLineResult.steps) {
+      store.getState().makeMove({ payload: step.move });
+    }
+  }, [clearMovePreview, store, straightLineResult]);
 
   const runPrepBuilder = useCallback(async () => {
     if (!configReady || builderRunning) return;
@@ -2624,6 +2947,47 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
                   Build prep
                 </Button>
               </Tooltip>
+              <Tooltip
+                label={
+                  canRunStraightLine
+                    ? "Find a high-confidence line where this player keeps following forced moves into a bad engine position"
+                    : "Straight lines need Player mode with a local player source"
+                }
+              >
+                <Button
+                  variant={straightLineQualifies ? "light" : "default"}
+                  color={straightLineQualifies ? "red" : undefined}
+                  size={controlSize}
+                  leftSection={<IconRoute size="0.95rem" />}
+                  disabled={!canRunStraightLine}
+                  loading={straightLineRunning}
+                  onClick={() => void runStraightLineSearch()}
+                >
+                  Find line
+                </Button>
+              </Tooltip>
+              {straightLineRunning ? (
+                <Tooltip label="Stop after the current lookup finishes">
+                  <Button
+                    color="red"
+                    variant="default"
+                    size={controlSize}
+                    leftSection={<IconX size="0.95rem" />}
+                    onClick={stopStraightLineSearch}
+                  >
+                    Stop line
+                  </Button>
+                </Tooltip>
+              ) : null}
+              <PrepStraightLineSettingsButton
+                controlSize={controlSize}
+                minShare={straightLineMinShare}
+                minCp={straightLineMinCp}
+                maxPly={straightLineMaxPly}
+                onMinShareChange={setStraightLineMinShare}
+                onMinCpChange={setStraightLineMinCp}
+                onMaxPlyChange={setStraightLineMaxPly}
+              />
               {builderRunning ? (
                 <Tooltip label="Stop after the current lookup finishes">
                   <Button
@@ -2796,6 +3160,20 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
                 Overwrite current
               </Button>
             </Group>
+          ) : null}
+          {straightLineStatus || straightLineResult ? (
+            <PrepStraightLineResultPanel
+              result={straightLineResult}
+              status={straightLineStatus}
+              running={straightLineRunning}
+              qualifies={straightLineQualifies}
+              minCp={straightLineMinCp}
+              onPlay={playStraightLineResult}
+              onClear={() => {
+                setStraightLineResult(null);
+                setStraightLineStatus(null);
+              }}
+            />
           ) : null}
         </Box>
       ) : null}
@@ -3746,6 +4124,234 @@ function PrepStrengthSettingsButton({
       </Popover.Dropdown>
     </Popover>
   );
+}
+
+function PrepStraightLineSettingsButton({
+  controlSize,
+  minShare,
+  minCp,
+  maxPly,
+  onMinShareChange,
+  onMinCpChange,
+  onMaxPlyChange,
+}: {
+  controlSize: "xs" | "sm";
+  minShare: number;
+  minCp: number;
+  maxPly: number;
+  onMinShareChange: (value: number) => void;
+  onMinCpChange: (value: number) => void;
+  onMaxPlyChange: (value: number) => void;
+}) {
+  return (
+    <Popover width={270} position="bottom-start" shadow="md" withinPortal>
+      <Popover.Target>
+        <Button variant="default" size={controlSize} leftSection={<IconSettings size="0.95rem" />}>
+          Line settings
+        </Button>
+      </Popover.Target>
+      <Popover.Dropdown>
+        <Stack gap="xs">
+          <Text size="sm" fw={700}>
+            Straight line settings
+          </Text>
+          <Tooltip label="Opponent moves must reach this share of their games from each position">
+            <NumberInput
+              label="Forced rate"
+              suffix="%"
+              value={minShare}
+              onChange={(value) =>
+                onMinShareChange(
+                  Math.max(
+                    50,
+                    Math.min(100, getPrepNumberInputValue(value, DEFAULT_STRAIGHT_LINE_MIN_SHARE)),
+                  ),
+                )
+              }
+              min={50}
+              max={100}
+              step={1}
+              size="xs"
+              aria-label="Straight line forced play rate"
+            />
+          </Tooltip>
+          <Tooltip label="The final position must be at least this good for you to count as venomous">
+            <NumberInput
+              label="Bad for them"
+              suffix=" cp"
+              value={minCp}
+              onChange={(value) =>
+                onMinCpChange(
+                  Math.max(
+                    0,
+                    Math.min(500, getPrepNumberInputValue(value, DEFAULT_STRAIGHT_LINE_MIN_CP)),
+                  ),
+                )
+              }
+              min={0}
+              max={500}
+              step={10}
+              size="xs"
+              aria-label="Straight line minimum engine edge"
+            />
+          </Tooltip>
+          <Tooltip label="Maximum number of half-moves searched from the prep start">
+            <NumberInput
+              label="Max ply"
+              value={maxPly}
+              onChange={(value) =>
+                onMaxPlyChange(
+                  Math.max(
+                    2,
+                    Math.min(30, getPrepNumberInputValue(value, DEFAULT_STRAIGHT_LINE_MAX_PLY)),
+                  ),
+                )
+              }
+              min={2}
+              max={30}
+              step={2}
+              size="xs"
+              aria-label="Straight line maximum ply"
+            />
+          </Tooltip>
+        </Stack>
+      </Popover.Dropdown>
+    </Popover>
+  );
+}
+
+function PrepStraightLineResultPanel({
+  result,
+  status,
+  running,
+  qualifies,
+  minCp,
+  onPlay,
+  onClear,
+}: {
+  result: PrepStraightLineSearchResult | null;
+  status: PrepStraightLineStatus | null;
+  running: boolean;
+  qualifies: boolean;
+  minCp: number;
+  onPlay: () => void;
+  onClear: () => void;
+}) {
+  const opponentSteps = result?.steps.filter((step) => step.actor === "opponent") ?? [];
+  const alertColor = running ? "blue" : result ? (qualifies ? "red" : "yellow") : "gray";
+  const title = running
+    ? "Finding straight line"
+    : result
+      ? qualifies
+        ? "Straight line found"
+        : "Best straight line found"
+      : "Straight line search";
+
+  return (
+    <Alert color={alertColor} variant="light" mt="xs">
+      <Stack gap={6}>
+        <Group justify="space-between" gap="xs" wrap="wrap">
+          <Group gap={6} wrap="wrap">
+            <Text size="sm" fw={700}>
+              {title}
+            </Text>
+            {result ? (
+              <>
+                <Badge color={qualifies ? "red" : "yellow"} variant="light">
+                  {formatPrepStraightLineEval(result.leafScoreCpForUser)} for you
+                </Badge>
+                <Badge variant="light">
+                  {formatPrepStraightLineShare(result.minOpponentShare)} floor
+                </Badge>
+                <Badge variant="light">{result.opponentMoveCount} forced moves</Badge>
+              </>
+            ) : null}
+          </Group>
+          <Group gap={4} wrap="nowrap">
+            {result ? (
+              <Button
+                variant="default"
+                size="xs"
+                leftSection={<IconPlayerPlay size="0.85rem" />}
+                onClick={onPlay}
+              >
+                Play line
+              </Button>
+            ) : null}
+            <Tooltip label="Clear straight-line result">
+              <ActionIcon variant="subtle" size="sm" onClick={onClear}>
+                <IconX size="0.9rem" />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+        </Group>
+        {status ? (
+          <Text size="xs" c="dimmed">
+            {status.phase} - {status.checkedPositions} checked, {status.candidates} candidates
+          </Text>
+        ) : null}
+        {result ? (
+          <>
+            <Text size="sm" fw={600} style={{ wordBreak: "break-word" }}>
+              {result.steps.map((step) => step.move).join(" ")}
+            </Text>
+            <Text size="xs" c="dimmed">
+              {qualifies
+                ? `Engine target met: final edge is at least ${formatPrepStraightLineEval(minCp)}.`
+                : `Best line is below the ${formatPrepStraightLineEval(minCp)} target; try a lower forced rate, deeper search, or a later prep start.`}
+              {result.leafBestMove ? ` Best next move: ${result.leafBestMove}.` : ""}
+            </Text>
+            {opponentSteps.length > 0 ? (
+              <Group gap={4} wrap="wrap">
+                {opponentSteps.slice(0, 6).map((step, index) => (
+                  <Badge key={`${step.fen}-${step.move}-${index}`} variant="outline" color="orange">
+                    {step.move} {formatPrepStraightLineShare(step.share ?? 0)}
+                    {step.total !== null ? ` / ${formatNumber(step.total)}` : ""}
+                  </Badge>
+                ))}
+              </Group>
+            ) : null}
+          </>
+        ) : status && !running ? (
+          <Text size="xs" c={status.tone === "error" ? "yellow" : "dimmed"}>
+            No line matched the current forced-rate, depth, and engine-eval settings.
+          </Text>
+        ) : null}
+      </Stack>
+    </Alert>
+  );
+}
+
+function getPrepStraightLineFrontierScore(node: PrepStraightLineSearchNode) {
+  const lastUserScore =
+    [...node.steps].reverse().find((step) => step.actor === "user")?.engineCpForUser ?? 0;
+  const gamesFloor =
+    node.opponentGamesFloor === Number.MAX_SAFE_INTEGER ? 0 : node.opponentGamesFloor;
+
+  return (
+    lastUserScore +
+    node.minOpponentShare * 50 +
+    node.opponentMoveCount * 18 +
+    Math.log2(gamesFloor + 1) * 5
+  );
+}
+
+function formatPrepStraightLineEval(cp: number | null) {
+  if (cp === null) return "n/a";
+  const value = Math.abs(cp / 100).toFixed(2);
+  if (cp > 0) return `+${value}`;
+  if (cp < 0) return `-${value}`;
+  return "0.00";
+}
+
+function formatPrepStraightLineShare(share: number) {
+  const percent = Math.max(0, Math.min(1, share)) * 100;
+  return `${percent >= 99.95 ? percent.toFixed(0) : percent.toFixed(1)}%`;
+}
+
+function getPrepNumberInputValue(value: string | number, fallback: number) {
+  const numeric = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(numeric) ? numeric : fallback;
 }
 
 function BranchStatsCell({

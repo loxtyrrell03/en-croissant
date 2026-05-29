@@ -268,6 +268,11 @@ and `src/utils/lichess/study.ts`.
 - The Prep panel also has a directly visible Strength settings button, separate
   from Builder settings, so max CP drop and engine/database blend can be tuned
   without opening the larger builder settings section.
+- Player-mode Prep has a Straight Line finder for venom prep. From the current
+  prep start it searches engine-approved user replies, requires each opponent
+  move to meet a high forced-play-rate threshold, and surfaces lines where the
+  final engine eval is objectively bad for the opponent; the result can be
+  played onto the board for immediate analysis.
 - Smart strength now treats one- and two-game WDL spikes as evidence-poor:
   tiny samples are blended back toward the current position's practical baseline
   based on usage share before the engine/database blend is scored.

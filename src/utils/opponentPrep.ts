@@ -1,4 +1,5 @@
 import { isNormal, makeUci, type Move } from "chessops";
+import { makeFen } from "chessops/fen";
 import { parseSan } from "chessops/san";
 import type { Opening } from "@/utils/db";
 import { positionFromFen } from "@/utils/chessops";
@@ -105,6 +106,38 @@ export type PrepMoveStrength = {
     engineUnsafe: boolean;
     label: string;
     detail: string;
+};
+
+export type PrepStraightLineStep = {
+    actor: "user" | "opponent";
+    fen: string;
+    move: string;
+    uci: string | null;
+    total: number | null;
+    share: number | null;
+    secondMove: string | null;
+    secondShare: number | null;
+    engineCpForUser: number | null;
+};
+
+export type PrepStraightLineCandidate = {
+    steps: PrepStraightLineStep[];
+    leafFen: string;
+    leafBestMove: string | null;
+    leafScoreCpForUser: number | null;
+    minOpponentShare: number;
+    opponentGamesFloor: number;
+    opponentMoveCount: number;
+    searchedPositions: number;
+};
+
+export type PrepStraightLineForcedMove = {
+    move: string;
+    uci: string | null;
+    total: number;
+    share: number;
+    secondMove: string | null;
+    secondShare: number | null;
 };
 
 type PrepStrengthCandidate = {
@@ -324,6 +357,84 @@ export function getPrepMoveStrengthMap({
             settings,
         }).map((candidate) => [normalizeSanForPrep(candidate.move), candidate]),
     );
+}
+
+export function applyPrepSanMove(fen: string, san: string) {
+    const [pos] = positionFromFen(fen);
+    if (!pos) return null;
+
+    const move = parseSan(pos, san);
+    if (!move) return null;
+
+    pos.play(move);
+    return makeFen(pos.toSetup());
+}
+
+export function getPrepStraightLineForcedMove({
+    fen,
+    openings,
+    minGames,
+    minShare,
+}: {
+    fen: string;
+    openings: Opening[];
+    minGames: number;
+    minShare: number;
+}): PrepStraightLineForcedMove | null {
+    const playable = getPlayableOpenings(openings).sort(
+        (a, b) =>
+            getOpeningTotal(b) - getOpeningTotal(a) ||
+            getOpeningDateSortValue(b) - getOpeningDateSortValue(a) ||
+            a.move.localeCompare(b.move),
+    );
+    const totalGames = playable.reduce((sum, opening) => sum + getOpeningTotal(opening), 0);
+    const top = playable[0];
+    if (!top || totalGames <= 0) return null;
+
+    const topTotal = getOpeningTotal(top);
+    const share = topTotal / totalGames;
+    if (topTotal < minGames || share < minShare) return null;
+
+    const second = playable[1] ?? null;
+    const secondTotal = second ? getOpeningTotal(second) : 0;
+
+    return {
+        move: top.move,
+        uci: getMoveUciFromSan(fen, top.move),
+        total: topTotal,
+        share,
+        secondMove: second?.move ?? null,
+        secondShare: totalGames > 0 ? secondTotal / totalGames : null,
+    };
+}
+
+export function comparePrepStraightLineCandidates(
+    a: PrepStraightLineCandidate,
+    b: PrepStraightLineCandidate,
+) {
+    return (
+        getPrepStraightLineScore(b) - getPrepStraightLineScore(a) ||
+        (b.leafScoreCpForUser ?? -9999) - (a.leafScoreCpForUser ?? -9999) ||
+        b.opponentMoveCount - a.opponentMoveCount ||
+        b.minOpponentShare - a.minOpponentShare ||
+        b.opponentGamesFloor - a.opponentGamesFloor
+    );
+}
+
+export function isPrepStraightLineBadForOpponent(
+    candidate: PrepStraightLineCandidate | null | undefined,
+    minCpForUser: number,
+) {
+    return (candidate?.leafScoreCpForUser ?? -Infinity) >= minCpForUser;
+}
+
+function getPrepStraightLineScore(candidate: PrepStraightLineCandidate) {
+    const evalScore = candidate.leafScoreCpForUser ?? -300;
+    const forceBonus = Math.round(candidate.minOpponentShare * 60);
+    const depthBonus = Math.min(80, candidate.opponentMoveCount * 16);
+    const evidenceBonus = Math.min(40, Math.log2(candidate.opponentGamesFloor + 1) * 6);
+
+    return evalScore + forceBonus + depthBonus + evidenceBonus;
 }
 
 export function getOpponentPrepBranchKey(fen: string, san: string) {

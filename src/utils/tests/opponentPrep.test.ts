@@ -3,12 +3,15 @@ import { createTreeStore } from "@/state/store/tree";
 import {
     collectOpponentBranchPaths,
     choosePrepBuilderMove,
+    applyPrepSanMove,
+    comparePrepStraightLineCandidates,
     findFirstOpponentBranch,
     findLastOpponentBranch,
     findOpponentPrepSourceMovePath,
     findOpponentPrepStart,
     getOpponentPrepBranchStats,
     getOpponentPrepMoveRows,
+    getPrepStraightLineForcedMove,
     getPrepBuilderBranchValue,
     getPrepBuilderEffectiveMaxPly,
     getPrepBuilderEvidenceMinGames,
@@ -18,6 +21,7 @@ import {
     getPrepBuilderUserResponseChildIndex,
     getPrepMoveStrengthMap,
     hasPrepBuilderDatabaseCandidates,
+    isPrepStraightLineBadForOpponent,
     normalizePrepBuilderSettings,
 } from "@/utils/opponentPrep";
 
@@ -185,6 +189,65 @@ describe("opponent prep helpers", () => {
                 uci: "c7c5",
             }),
         ).toEqual([0, 0]);
+    });
+
+    test("identifies a forced straight-line opponent move by full play-rate share", () => {
+        const store = createTreeStore();
+        const state = store.getState();
+        const forced = getPrepStraightLineForcedMove({
+            fen: state.root.fen,
+            openings: [
+                { move: "e4", white: 18, draw: 0, black: 0 },
+                { move: "d4", white: 2, draw: 0, black: 0 },
+            ],
+            minGames: 2,
+            minShare: 0.9,
+        });
+
+        expect(forced?.move).toBe("e4");
+        expect(forced?.share).toBeCloseTo(0.9);
+        expect(forced?.secondMove).toBe("d4");
+
+        const notForced = getPrepStraightLineForcedMove({
+            fen: state.root.fen,
+            openings: [
+                { move: "e4", white: 8, draw: 0, black: 0 },
+                { move: "d4", white: 2, draw: 0, black: 0 },
+            ],
+            minGames: 2,
+            minShare: 0.9,
+        });
+        expect(notForced).toBeNull();
+    });
+
+    test("applies straight-line SAN moves and ranks engine-bad forced lines", () => {
+        const e4Fen = applyPrepSanMove(
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            "e4",
+        );
+        expect(e4Fen).toContain(" b ");
+
+        const venom = {
+            steps: [],
+            leafFen: "fen-a",
+            leafBestMove: "Nxf7",
+            leafScoreCpForUser: 140,
+            minOpponentShare: 0.93,
+            opponentGamesFloor: 12,
+            opponentMoveCount: 3,
+            searchedPositions: 9,
+        };
+        const harmless = {
+            ...venom,
+            leafFen: "fen-b",
+            leafScoreCpForUser: 35,
+            minOpponentShare: 1,
+            opponentGamesFloor: 40,
+        };
+
+        expect(comparePrepStraightLineCandidates(venom, harmless)).toBeLessThan(0);
+        expect(isPrepStraightLineBadForOpponent(venom, 80)).toBe(true);
+        expect(isPrepStraightLineBadForOpponent(harmless, 80)).toBe(false);
     });
 
     test("scores prep branches by weighted response coverage and depth", async () => {
