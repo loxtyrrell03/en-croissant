@@ -7,7 +7,7 @@ import { defaultGame, makePgn } from "chessops/pgn";
 import { getDefaultStore } from "jotai";
 import useSWR from "swr";
 import { commands } from "@/bindings";
-import type { FileMetadata } from "@/components/files/file";
+import type { FileMetadata, PgnFileType } from "@/components/files/file";
 import { addRecentFileAtom, tabFamily } from "@/state/atoms";
 import { unwrap } from "@/utils/unwrap";
 import { parsePGN } from "./chess";
@@ -71,6 +71,7 @@ export async function openFile(
             },
             name: file,
             path: file,
+            extension: "pgn",
             numGames: count,
             lastModified: new Date().getUTCSeconds(),
         };
@@ -124,11 +125,13 @@ export async function openFile(
         store.set(tabFamily(id), "practice");
     }
 
-    store.set(addRecentFileAtom, {
-        name: recentName,
-        path: fileInfo.path,
-        type: fileInfo.metadata.type,
-    });
+    if (fileInfo.metadata.type !== "pdf") {
+        store.set(addRecentFileAtom, {
+            name: recentName,
+            path: fileInfo.path,
+            type: fileInfo.metadata.type,
+        });
+    }
 
     return id;
 }
@@ -140,7 +143,7 @@ export async function createFile({
     dir,
 }: {
     filename: string;
-    filetype: "game" | "repertoire" | "tournament" | "puzzle" | "other";
+    filetype: PgnFileType;
     pgn?: string;
     dir: string;
 }): Promise<Result<FileMetadata>> {
@@ -159,6 +162,7 @@ export async function createFile({
         type: "file",
         name: filename,
         path: file,
+        extension: "pgn",
         numGames,
         numGamesKnown: true,
         metadata,

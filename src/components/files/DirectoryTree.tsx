@@ -37,6 +37,7 @@ import {
 } from "@/state/atoms";
 import { openFile } from "@/utils/files";
 import classes from "./DirectoryTree.module.css";
+import { getFileExtension, isPdfFile, isPgnFile, stripSupportedFileExtension } from "./file";
 import type { Directory, FileMetadata } from "./file";
 import { getStats } from "./opening";
 import { FileIcon } from "./FileIcon";
@@ -288,10 +289,15 @@ function Tree({
 
   const handleOpenFile = useCallback(
     async (record: FileMetadata) => {
+      if (isPdfFile(record)) {
+        setSelectedFile(record);
+        return;
+      }
+
       await openFile(record, setTabs, setActiveTab);
       void navigate({ to: "/" });
     },
-    [setActiveTab, setTabs, navigate],
+    [setActiveTab, setTabs, navigate, setSelectedFile],
   );
 
   const toggleExpand = (node: Entry, event: React.MouseEvent) => {
@@ -537,10 +543,10 @@ function DirectoryNode({
 
       try {
         await rename(sourcePath, targetPath);
-        if (node.type !== "directory" && sourcePath.endsWith(".pgn")) {
+        if (node.type !== "directory" && isPgnFile(node)) {
           await rename(
-            sourcePath.replace(".pgn", ".info"),
-            targetPath.replace(".pgn", ".info"),
+            sourcePath.replace(/\.pgn$/i, ".info"),
+            targetPath.replace(/\.pgn$/i, ".info"),
           ).catch(() => {});
         }
         await refreshDirectory();
@@ -555,10 +561,20 @@ function DirectoryNode({
 
         if (selectedFile) {
           if (selectedFile.path === sourcePath) {
-            const newName = sourceBasename.endsWith(".pgn")
-              ? sourceBasename.slice(0, -4)
-              : sourceBasename;
-            setSelectedFile({ ...selectedFile, path: targetPath, name: newName });
+            setSelectedFile(
+              selectedFile.type === "file"
+                ? {
+                    ...selectedFile,
+                    path: targetPath,
+                    name: stripSupportedFileExtension(sourceBasename),
+                    extension: getFileExtension(selectedFile),
+                  }
+                : {
+                    ...selectedFile,
+                    path: targetPath,
+                    name: sourceBasename,
+                  },
+            );
           } else if (selectedFile.path.startsWith(sourcePath + separator)) {
             const trailingPath = selectedFile.path.slice(sourcePath.length + separator.length);
             const newPath = await join(targetPath, trailingPath);

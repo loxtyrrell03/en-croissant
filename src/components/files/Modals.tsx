@@ -15,7 +15,8 @@ import {
 import { createFile } from "@/utils/files";
 import PathFileInput from "../common/FileInput";
 import GenericCard from "../common/GenericCard";
-import type { Directory, FileMetadata, FileType } from "./file";
+import { getFileExtension, isPgnFile, stripSupportedFileExtension } from "./file";
+import type { Directory, FileMetadata, PgnFileType } from "./file";
 
 const FILE_TYPES = [
   { label: "Game", value: "game" },
@@ -28,10 +29,6 @@ const FILE_TYPES = [
 type Entry = FileMetadata | Directory;
 
 const INVALID_RENAME_CHARS = /[\\/:*?"<>|]/;
-
-function removePgnExtension(name: string) {
-  return name.toLowerCase().endsWith(".pgn") ? name.slice(0, -4) : name;
-}
 
 function getInfoPath(path: string) {
   return path.replace(/\.pgn$/i, ".info");
@@ -268,7 +265,7 @@ export function CreateModal({
   const { t } = useTranslation();
 
   const [filename, setFilename] = useState("");
-  const [filetype, setFiletype] = useState<FileType>("game");
+  const [filetype, setFiletype] = useState<PgnFileType>("game");
   const [pgn, setPgn] = useState("");
   const [error, setError] = useState("");
   const { documentDir } = useLoaderData({ from: "/files" });
@@ -390,7 +387,7 @@ export function RenameModal({
     if (!entry) return;
 
     const rawName = name.trim();
-    const nextName = entry.type === "file" ? removePgnExtension(rawName).trim() : rawName;
+    const nextName = entry.type === "file" ? stripSupportedFileExtension(rawName).trim() : rawName;
 
     if (!nextName) {
       setError(t("Common.RequireName"));
@@ -408,7 +405,11 @@ export function RenameModal({
     }
 
     const parentDir = await dirname(entry.path);
-    const newPath = await resolve(parentDir, entry.type === "file" ? `${nextName}.pgn` : nextName);
+    const extension = entry.type === "file" ? getFileExtension(entry) : null;
+    const newPath = await resolve(
+      parentDir,
+      entry.type === "file" ? `${nextName}.${extension}` : nextName,
+    );
 
     if (newPath !== entry.path && (await exists(newPath))) {
       setError(t("Common.NameAlreadyUsed"));
@@ -418,7 +419,7 @@ export function RenameModal({
     try {
       await rename(entry.path, newPath);
 
-      if (entry.type === "file") {
+      if (entry.type === "file" && isPgnFile(entry)) {
         await rename(getInfoPath(entry.path), getInfoPath(newPath)).catch(() => {});
       }
 
@@ -485,21 +486,25 @@ export function EditModal({
   const { t } = useTranslation();
 
   const [filename, setFilename] = useState(metadata.name);
-  const [filetype, setFiletype] = useState<FileType>(metadata.metadata.type);
+  const [filetype, setFiletype] = useState<PgnFileType>(
+    isPgnFile(metadata) ? (metadata.metadata.type as PgnFileType) : "other",
+  );
   const [error, setError] = useState("");
 
   async function editFile() {
-    const metadataPath = metadata.path.replace(".pgn", ".info");
+    if (!isPgnFile(metadata)) return;
+
+    const metadataPath = getInfoPath(metadata.path);
     const newMetadata = {
       type: filetype,
       tags: [],
     };
     await writeTextFile(metadataPath, JSON.stringify(newMetadata));
 
-    const newPGNPath = metadata.path.replace(`${metadata.name}.pgn`, `${filename}.pgn`);
+    const newPGNPath = await resolve(await dirname(metadata.path), `${filename}.pgn`);
 
     await rename(metadata.path, newPGNPath);
-    await rename(metadataPath.replace(".pgn", ".info"), newPGNPath.replace(".pgn", ".info"));
+    await rename(metadataPath, getInfoPath(newPGNPath));
 
     mutate();
     setSelected((selected) =>
@@ -508,6 +513,7 @@ export function EditModal({
             ...metadata,
             name: filename,
             path: newPGNPath,
+            extension: "pgn",
             numGames: metadata.numGames,
             numGamesKnown: metadata.numGamesKnown,
             metadata: newMetadata,

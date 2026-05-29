@@ -27,7 +27,7 @@ import { getLichessGame } from "@/utils/lichess/api";
 import { createTab, type Tab } from "@/utils/tabs";
 import { getGameName } from "@/utils/treeReducer";
 import GenericCard from "../common/GenericCard";
-import type { FileType } from "../files/file";
+import type { PgnFileType } from "../files/file";
 
 type ImportType = "PGN" | "Link" | "FEN";
 
@@ -56,7 +56,7 @@ export default function ImportModal({
   const [file, setFile] = useState<string | null>(null);
   const [link, setLink] = useState("");
   const [importType, setImportType] = useState<ImportType>("PGN");
-  const [filetype, setFiletype] = useState<FileType>("game");
+  const [filetype, setFiletype] = useState<PgnFileType>("game");
   const [loading, setLoading] = useState(false);
   const [fenError, setFenError] = useState("");
 

@@ -1,8 +1,17 @@
-import { IconBook, IconChess, IconFile, IconPuzzle, IconTrophy } from "@tabler/icons-react";
+import {
+  IconBook,
+  IconChess,
+  IconFile,
+  IconFileTypePdf,
+  IconPuzzle,
+  IconTrophy,
+} from "@tabler/icons-react";
 import type { FileType } from "./file";
 
 function getFileIcon(type: FileType) {
   switch (type) {
+    case "pdf":
+      return IconFileTypePdf;
     case "repertoire":
       return IconBook;
     case "game":

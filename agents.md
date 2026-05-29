@@ -89,6 +89,10 @@ default.
   right-click rename actions for files and folders in the tree, and a folder
   import/export flow that splits a PGN or `.db3` database into one game file per
   game.
+- Files also treats `.pdf` prep reports as first-class folder entries: selecting
+  a PDF shows an in-app document preview with a system-viewer fallback, while
+  PGN-only metadata, sidecar `.info`, and game-opening actions stay scoped to
+  chess files.
 - Files directory scans load PGN metadata first and defer exact game counts
   until a file is selected or opened, so large linked database folders do not
   hold the whole file tree on "Loading files...".

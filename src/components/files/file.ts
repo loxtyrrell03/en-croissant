@@ -4,9 +4,11 @@ import { z } from "zod";
 import { commands } from "@/bindings";
 import { unwrap } from "@/utils/unwrap";
 
-const fileTypeSchema = z.enum(["repertoire", "game", "tournament", "puzzle", "other"]);
+const pgnFileTypeSchema = z.enum(["repertoire", "game", "tournament", "puzzle", "other"]);
+const fileTypeSchema = z.enum(["repertoire", "game", "tournament", "puzzle", "other", "pdf"]);
 
 export type FileType = z.infer<typeof fileTypeSchema>;
+export type PgnFileType = z.infer<typeof pgnFileTypeSchema>;
 
 const fileInfoMetadataSchema = z.object({
     type: fileTypeSchema,
@@ -19,6 +21,7 @@ export const fileMetadataSchema = z.object({
     type: z.literal("file"),
     name: z.string(),
     path: z.string(),
+    extension: z.enum(["pgn", "pdf"]).optional(),
     numGames: z.number(),
     numGamesKnown: z.boolean().optional(),
     metadata: fileInfoMetadataSchema,
@@ -33,9 +36,33 @@ export type FileData = {
 };
 
 async function readFileMetadata(path: string): Promise<FileMetadata | null> {
-    if (!path.endsWith(".pgn")) {
+    const lowerPath = path.toLowerCase();
+    const isPgn = lowerPath.endsWith(".pgn");
+    const isPdf = lowerPath.endsWith(".pdf");
+
+    if (!isPgn && !isPdf) {
         return null;
     }
+
+    const fileMetadata = unwrap(await commands.getFileMetadata(path));
+    const filename = await basename(path);
+
+    if (isPdf) {
+        return {
+            type: "file",
+            path,
+            extension: "pdf",
+            name: filename.replace(/\.pdf$/i, ""),
+            numGames: 0,
+            numGamesKnown: true,
+            metadata: {
+                type: "pdf",
+                tags: [],
+            },
+            lastModified: fileMetadata.last_modified,
+        };
+    }
+
     const metadataPath = path.replace(".pgn", ".info");
     let metadata: FileInfoMetadata;
     if (await exists(metadataPath)) {
@@ -47,11 +74,11 @@ async function readFileMetadata(path: string): Promise<FileMetadata | null> {
         };
         await writeTextFile(metadataPath, JSON.stringify(metadata));
     }
-    const fileMetadata = unwrap(await commands.getFileMetadata(path));
     return {
         type: "file",
         path,
-        name: (await basename(path)).replace(".pgn", ""),
+        extension: "pgn",
+        name: filename.replace(/\.pgn$/i, ""),
         // Counting every PGN blocks the whole Files page for large linked folders.
         // Resolve the exact count only when the user selects or opens the file.
         numGames: 1,
@@ -59,6 +86,22 @@ async function readFileMetadata(path: string): Promise<FileMetadata | null> {
         metadata,
         lastModified: fileMetadata.last_modified,
     };
+}
+
+export function isPdfFile(file: FileMetadata) {
+    return file.extension === "pdf" || file.path.toLowerCase().endsWith(".pdf");
+}
+
+export function isPgnFile(file: FileMetadata) {
+    return !isPdfFile(file);
+}
+
+export function getFileExtension(file: FileMetadata) {
+    return isPdfFile(file) ? "pdf" : "pgn";
+}
+
+export function stripSupportedFileExtension(name: string) {
+    return name.replace(/\.(pgn|pdf)$/i, "");
 }
 
 export type Directory = {

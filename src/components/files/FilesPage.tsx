@@ -51,6 +51,7 @@ import {
   type Entry,
   type FileMetadata,
   type FileType,
+  isPgnFile,
   readDirectoryEntries,
 } from "./file";
 import {
@@ -62,7 +63,7 @@ import {
   type RenameResult,
 } from "./Modals";
 
-const FILE_TYPES: FileType[] = ["game", "repertoire", "tournament", "puzzle", "other"];
+const FILE_TYPES: FileType[] = ["game", "repertoire", "tournament", "puzzle", "other", "pdf"];
 
 const SORT_OPTIONS: { value: FilesSortMode; label: string }[] = [
   { value: "newest", label: "Newest first" },
@@ -107,6 +108,10 @@ function replacePathPrefix(path: string, oldPath: string, newPath: string) {
   }
 
   return path;
+}
+
+function getFileTypeLabel(type: FileType, t: (key: string) => string) {
+  return type === "pdf" ? "PDF" : t(`Files.FileType.${capitalize(type)}`);
 }
 
 function hasUnloadedDirectories(entries: Entry[]): boolean {
@@ -470,7 +475,9 @@ function FilesPage() {
       await remove(selected.path, { recursive: true });
     } else {
       await remove(selected.path);
-      await remove(selected.path.replace(".pgn", ".info")).catch(() => {});
+      if (isPgnFile(selected)) {
+        await remove(selected.path.replace(/\.pgn$/i, ".info")).catch(() => {});
+      }
     }
 
     await mutate();
@@ -534,7 +541,7 @@ function FilesPage() {
         setSelected={setSelected}
         onRenamed={handleRenamed}
       />
-      {selected && files && selected.type === "file" && (
+      {selected && files && selected.type === "file" && isPgnFile(selected) && (
         <EditModal
           key={selected.name}
           opened={editModal}
@@ -625,7 +632,7 @@ function FilesPage() {
                   checked={filter === type}
                   onChange={(checked) => setFilter(checked ? type : null)}
                 >
-                  {t(`Files.FileType.${capitalize(type)}`)}
+                  {getFileTypeLabel(type, t)}
                 </Chip>
               ))}
             </Group>
