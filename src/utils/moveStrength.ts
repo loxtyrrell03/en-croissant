@@ -178,7 +178,7 @@ export function getSmartMoveStrengthEngineWeight(
             0,
         );
 
-    return baseWeight * (1 - practicalTilt * 0.65);
+    return baseWeight * (1 - practicalTilt * 0.15);
 }
 
 function isMoveStrengthMode(value: unknown): value is MoveStrengthMode {

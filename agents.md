@@ -834,6 +834,9 @@ from 2026-04-24 through 2026-05-03.
   centipawn/mate scores such as `+0.59` directly instead of presenting
   engine-order ranks as the useful value. Strength sorting can still use the
   same cloud score data, with CP-loss details in hover text.
+- Database blended strength weighting keeps engine-strong moves readable when
+  cloud evals are clustered: practical WDL still breaks close-eval ties, but it
+  should not collapse good engine moves to `0` in the Blend column.
 - Opponent prep move tables keep the user's clicked sort category while moving
   through a prep line. Initial defaults are side-specific: opponent/source moves
   sort by Usage, while user candidate moves sort by Smart strength; both

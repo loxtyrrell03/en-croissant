@@ -106,4 +106,29 @@ describe("opening move health", () => {
             strength.get("e5")!.blendedStrengthScore,
         );
     });
+
+    test("clustered evals do not crush engine-strong database moves to zero", () => {
+        const strength = getOpeningMoveStrengthMap({
+            openings: [
+                { move: "e5", white: 80, draw: 0, black: 20 },
+                { move: "c5", white: 20, draw: 0, black: 80 },
+            ],
+            side: "black",
+            fen: "startpos",
+            strengthSettings: { mode: "smart", engineWeight: 55, maxEngineCpLoss: 70 },
+            cloudData: {
+                source: "lichess",
+                moves: [
+                    { san: "e5", scoreCpForWhite: -60, rank: 1, winrate: null },
+                    { san: "c5", scoreCpForWhite: -40, rank: 2, winrate: null },
+                ],
+            },
+        });
+
+        expect(strength.get("e5")!.cpLoss).toBe(0);
+        expect(strength.get("e5")!.blendedStrengthScore).toBeGreaterThan(15);
+        expect(strength.get("c5")!.blendedStrengthScore).toBeGreaterThan(
+            strength.get("e5")!.blendedStrengthScore,
+        );
+    });
 });
