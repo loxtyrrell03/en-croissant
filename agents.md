@@ -38,6 +38,19 @@ model, implementation map, and verification expectations for this app.
   dedupe rules, and En Croissant verification steps. The Oxford U2300 prep
   showed why agents must finish the full exhaustive source checklist for one
   player before moving to the next instead of doing a shallow global pass.
+- Before declaring opponent prep finished, run a canonical player-name audit on
+  every prep target in both the per-player PGNs and the matching En Croissant
+  `.db3` databases. Check for split identities caused by the same player being
+  tagged in both `Surname, Firstname` and `Firstname Surname` order, including
+  combined PGNs, archived/source PGNs, app-side source PGNs, and `Players` rows
+  referenced by `Games.WhiteID`/`Games.BlackID`. If a split is found, normalize
+  the PGN `White`/`Black` tags and generated game titles to the folder/database
+  canonical form, merge duplicate database player rows into the canonical row,
+  clear any stale search indexes for the changed database, and re-run the audit
+  until there are zero remaining target-name splits. The Oxford U2300 cleanup
+  examples were `Josh Sharma` -> `Sharma, Josh`, `Peter G Large` ->
+  `Large, Peter G`, `Arya Cont` -> `Cont, Arya`, `Adam Sieczkowski` ->
+  `Sieczkowski, Adam`, and `Anum Sheikh` -> `Sheikh, Anum`.
 
 ## Local Browser Verification
 
