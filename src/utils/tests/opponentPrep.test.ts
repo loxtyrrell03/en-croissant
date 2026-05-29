@@ -5,6 +5,7 @@ import {
     choosePrepBuilderMove,
     applyPrepSanMove,
     comparePrepStraightLineCandidates,
+    findPrepStraightLineCandidates,
     findFirstOpponentBranch,
     findLastOpponentBranch,
     findOpponentPrepSourceMovePath,
@@ -248,6 +249,50 @@ describe("opponent prep helpers", () => {
         expect(comparePrepStraightLineCandidates(venom, harmless)).toBeLessThan(0);
         expect(isPrepStraightLineBadForOpponent(venom, 80)).toBe(true);
         expect(isPrepStraightLineBadForOpponent(harmless, 80)).toBe(false);
+    });
+
+    test("straight-line search falls back to database user moves before a forced black reply", async () => {
+        const startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        const afterE4 = applyPrepSanMove(startFen, "e4")!;
+        const afterE4C5 = applyPrepSanMove(afterE4, "c5")!;
+
+        const search = await findPrepStraightLineCandidates({
+            startFen,
+            opponentColor: "black",
+            minGames: 2,
+            minShare: 0.9,
+            maxPly: 4,
+            userCandidateLimit: 3,
+            maxFrontier: 4,
+            maxPositions: 12,
+            loadOpenings: async (fen) => {
+                if (fen === startFen) {
+                    return [
+                        { move: "e4", white: 7, draw: 1, black: 2 },
+                        { move: "d4", white: 2, draw: 0, black: 0 },
+                    ];
+                }
+                if (fen === afterE4) {
+                    return [{ move: "c5", white: 0, draw: 1, black: 9 }];
+                }
+                return [];
+            },
+            loadEngineMoves: async (fen) =>
+                fen === afterE4C5
+                    ? [
+                          {
+                              san: "Nf3",
+                              scoreCpForSide: 120,
+                              rank: 1,
+                              source: "chessdb",
+                          },
+                      ]
+                    : [],
+        });
+
+        expect(search.best?.steps.map((step) => step.move)).toEqual(["e4", "c5"]);
+        expect(search.best?.leafScoreCpForUser).toBe(120);
+        expect(search.userPositionsWithoutMoves).toBe(0);
     });
 
     test("scores prep branches by weighted response coverage and depth", async () => {

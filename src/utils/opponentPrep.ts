@@ -140,6 +140,22 @@ export type PrepStraightLineForcedMove = {
     secondShare: number | null;
 };
 
+export type PrepStraightLineSearchSummary = {
+    best: PrepStraightLineCandidate | null;
+    candidates: PrepStraightLineCandidate[];
+    checkedPositions: number;
+    userPositionsWithoutMoves: number;
+    opponentPositionsWithoutForcedMove: number;
+    leafPositionsWithoutEngine: number;
+    stopped: boolean;
+};
+
+export type PrepStraightLineSearchProgress = {
+    phase: string;
+    checkedPositions: number;
+    candidates: number;
+};
+
 type PrepStrengthCandidate = {
     move: string;
     total: number;
@@ -428,6 +444,185 @@ export function isPrepStraightLineBadForOpponent(
     return (candidate?.leafScoreCpForUser ?? -Infinity) >= minCpForUser;
 }
 
+export async function findPrepStraightLineCandidates({
+    startFen,
+    opponentColor,
+    minGames,
+    minShare,
+    maxPly,
+    userCandidateLimit,
+    maxFrontier,
+    maxPositions,
+    loadOpenings,
+    loadEngineMoves,
+    isCancelled = () => false,
+    onProgress,
+}: {
+    startFen: string;
+    opponentColor: PrepColor;
+    minGames: number;
+    minShare: number;
+    maxPly: number;
+    userCandidateLimit: number;
+    maxFrontier: number;
+    maxPositions: number;
+    loadOpenings: (fen: string) => Promise<Opening[]>;
+    loadEngineMoves: (fen: string) => Promise<PrepBuilderEngineMove[]>;
+    isCancelled?: () => boolean;
+    onProgress?: (progress: PrepStraightLineSearchProgress) => void;
+}): Promise<PrepStraightLineSearchSummary> {
+    type SearchNode = {
+        fen: string;
+        steps: PrepStraightLineStep[];
+        ply: number;
+        minOpponentShare: number;
+        opponentGamesFloor: number;
+        opponentMoveCount: number;
+    };
+
+    let checkedPositions = 0;
+    let userPositionsWithoutMoves = 0;
+    let opponentPositionsWithoutForcedMove = 0;
+    let leafPositionsWithoutEngine = 0;
+    const candidates: PrepStraightLineCandidate[] = [];
+    let frontier: SearchNode[] = [
+        {
+            fen: startFen,
+            steps: [],
+            ply: 0,
+            minOpponentShare: 1,
+            opponentGamesFloor: Number.MAX_SAFE_INTEGER,
+            opponentMoveCount: 0,
+        },
+    ];
+
+    const getBestEngineMove = async (fen: string) => {
+        const moves = await loadEngineMoves(fen);
+        return sortPrepStraightLineEngineMoves(moves)[0] ?? null;
+    };
+
+    while (frontier.length > 0 && checkedPositions < maxPositions && !isCancelled()) {
+        const nextFrontier: SearchNode[] = [];
+
+        for (const node of frontier) {
+            if (isCancelled() || checkedPositions >= maxPositions) break;
+            if (node.ply >= maxPly) continue;
+
+            checkedPositions += 1;
+            const isOpponentTurn = getFenTurn(node.fen) === opponentColor;
+            onProgress?.({
+                phase: isOpponentTurn ? "Checking forced replies" : "Checking candidate replies",
+                checkedPositions,
+                candidates: candidates.length,
+            });
+
+            if (isOpponentTurn) {
+                const openings = await loadOpenings(node.fen);
+                const forced = getPrepStraightLineForcedMove({
+                    fen: node.fen,
+                    openings,
+                    minGames,
+                    minShare,
+                });
+                if (!forced) {
+                    opponentPositionsWithoutForcedMove += 1;
+                    continue;
+                }
+
+                const nextFen = applyPrepSanMove(node.fen, forced.move);
+                if (!nextFen) continue;
+
+                const nextSteps: PrepStraightLineStep[] = [
+                    ...node.steps,
+                    {
+                        actor: "opponent",
+                        fen: node.fen,
+                        move: forced.move,
+                        uci: forced.uci,
+                        total: forced.total,
+                        share: forced.share,
+                        secondMove: forced.secondMove,
+                        secondShare: forced.secondShare,
+                        engineCpForUser: null,
+                    },
+                ];
+                const nextNode: SearchNode = {
+                    fen: nextFen,
+                    steps: nextSteps,
+                    ply: node.ply + 1,
+                    minOpponentShare: Math.min(node.minOpponentShare, forced.share),
+                    opponentGamesFloor: Math.min(node.opponentGamesFloor, forced.total),
+                    opponentMoveCount: node.opponentMoveCount + 1,
+                };
+                const leafEngine = await getBestEngineMove(nextFen);
+                if (!leafEngine) leafPositionsWithoutEngine += 1;
+                candidates.push({
+                    ...nextNode,
+                    leafFen: nextFen,
+                    leafBestMove: leafEngine?.san ?? null,
+                    leafScoreCpForUser: leafEngine?.scoreCpForSide ?? null,
+                    searchedPositions: checkedPositions,
+                });
+                nextFrontier.push(nextNode);
+                continue;
+            }
+
+            const userReplies = await getPrepStraightLineUserReplies({
+                fen: node.fen,
+                userCandidateLimit,
+                loadOpenings,
+                loadEngineMoves,
+            });
+            if (userReplies.length === 0) {
+                userPositionsWithoutMoves += 1;
+                continue;
+            }
+
+            for (const reply of userReplies) {
+                const nextFen = applyPrepSanMove(node.fen, reply.move);
+                if (!nextFen) continue;
+
+                nextFrontier.push({
+                    ...node,
+                    fen: nextFen,
+                    steps: [
+                        ...node.steps,
+                        {
+                            actor: "user",
+                            fen: node.fen,
+                            move: reply.move,
+                            uci: null,
+                            total: reply.total,
+                            share: reply.share,
+                            secondMove: null,
+                            secondShare: null,
+                            engineCpForUser: reply.engineCpForUser,
+                        },
+                    ],
+                    ply: node.ply + 1,
+                });
+            }
+        }
+
+        frontier = nextFrontier
+            .sort(
+                (a, b) => getPrepStraightLineFrontierScore(b) - getPrepStraightLineFrontierScore(a),
+            )
+            .slice(0, Math.max(1, maxFrontier));
+    }
+
+    const sortedCandidates = candidates.sort(comparePrepStraightLineCandidates);
+    return {
+        best: sortedCandidates[0] ?? null,
+        candidates: sortedCandidates,
+        checkedPositions,
+        userPositionsWithoutMoves,
+        opponentPositionsWithoutForcedMove,
+        leafPositionsWithoutEngine,
+        stopped: isCancelled(),
+    };
+}
+
 function getPrepStraightLineScore(candidate: PrepStraightLineCandidate) {
     const evalScore = candidate.leafScoreCpForUser ?? -300;
     const forceBonus = Math.round(candidate.minOpponentShare * 60);
@@ -435,6 +630,75 @@ function getPrepStraightLineScore(candidate: PrepStraightLineCandidate) {
     const evidenceBonus = Math.min(40, Math.log2(candidate.opponentGamesFloor + 1) * 6);
 
     return evalScore + forceBonus + depthBonus + evidenceBonus;
+}
+
+function getPrepStraightLineFrontierScore(node: {
+    steps: PrepStraightLineStep[];
+    minOpponentShare: number;
+    opponentMoveCount: number;
+    opponentGamesFloor: number;
+}) {
+    const lastUserScore =
+        [...node.steps].reverse().find((step) => step.actor === "user")?.engineCpForUser ?? 0;
+    const gamesFloor =
+        node.opponentGamesFloor === Number.MAX_SAFE_INTEGER ? 0 : node.opponentGamesFloor;
+
+    return (
+        lastUserScore +
+        node.minOpponentShare * 50 +
+        node.opponentMoveCount * 18 +
+        Math.log2(gamesFloor + 1) * 5
+    );
+}
+
+async function getPrepStraightLineUserReplies({
+    fen,
+    userCandidateLimit,
+    loadOpenings,
+    loadEngineMoves,
+}: {
+    fen: string;
+    userCandidateLimit: number;
+    loadOpenings: (fen: string) => Promise<Opening[]>;
+    loadEngineMoves: (fen: string) => Promise<PrepBuilderEngineMove[]>;
+}) {
+    const engineReplies = sortPrepStraightLineEngineMoves(await loadEngineMoves(fen));
+    if (engineReplies.length > 0) {
+        return engineReplies.slice(0, userCandidateLimit).map((move) => ({
+            move: move.san,
+            engineCpForUser: move.scoreCpForSide,
+            total: null,
+            share: null,
+        }));
+    }
+
+    const openings = getPlayableOpenings(await loadOpenings(fen));
+    const totalGames = openings.reduce((sum, opening) => sum + getOpeningTotal(opening), 0);
+    return openings
+        .sort(
+            (a, b) =>
+                getOpeningTotal(b) - getOpeningTotal(a) ||
+                getOpeningDateSortValue(b) - getOpeningDateSortValue(a) ||
+                a.move.localeCompare(b.move),
+        )
+        .slice(0, userCandidateLimit)
+        .map((opening) => ({
+            move: opening.move,
+            engineCpForUser: null,
+            total: getOpeningTotal(opening),
+            share: totalGames > 0 ? getOpeningTotal(opening) / totalGames : null,
+        }));
+}
+
+function sortPrepStraightLineEngineMoves(moves: PrepBuilderEngineMove[]) {
+    return moves
+        .filter((move) => move.scoreCpForSide !== null)
+        .sort(
+            (a, b) =>
+                (b.scoreCpForSide ?? -9999) - (a.scoreCpForSide ?? -9999) ||
+                (a.rank ?? 99) - (b.rank ?? 99) ||
+                a.san.localeCompare(b.san),
+        );
 }
 
 export function getOpponentPrepBranchKey(fen: string, san: string) {

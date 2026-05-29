@@ -107,9 +107,8 @@ import {
   findLastOpponentBranch,
   findOpponentPrepSourceMovePath,
   findOpponentPrepStart,
-  applyPrepSanMove,
   choosePrepBuilderMove,
-  comparePrepStraightLineCandidates,
+  findPrepStraightLineCandidates,
   getFenTurn,
   getLineSans,
   getOpeningTotal,
@@ -123,7 +122,6 @@ import {
   getPrepBuilderTaskPriority,
   getPrepBuilderUserResponseChildIndex,
   getPrepMoveStrengthMap,
-  getPrepStraightLineForcedMove,
   hasPrepBuilderDatabaseCandidates,
   isPrepStraightLineBadForOpponent,
   normalizePrepBuilderSettings,
@@ -135,7 +133,6 @@ import {
   type PrepBuilderSettings,
   type PrepMoveStrength,
   type PrepStraightLineCandidate,
-  type PrepStraightLineStep,
   type OpponentPrepBranchStats,
   type OpponentPrepMoveRow,
 } from "@/utils/opponentPrep";
@@ -254,15 +251,6 @@ type PrepStraightLineStatus = {
   checkedPositions: number;
   candidates: number;
   tone?: "running" | "empty" | "error";
-};
-
-type PrepStraightLineSearchNode = {
-  fen: string;
-  steps: PrepStraightLineStep[];
-  ply: number;
-  minOpponentShare: number;
-  opponentGamesFloor: number;
-  opponentMoveCount: number;
 };
 
 type PrepStraightLineSearchResult = PrepStraightLineCandidate & {
@@ -1836,17 +1824,6 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
       engineCache.set(fen, moves);
       return moves;
     };
-    const getBestEngineMove = async (fen: string) => {
-      const moves = await loadEngineMoves(fen);
-      return moves
-        .filter((move) => move.scoreCpForSide !== null)
-        .sort(
-          (a, b) =>
-            (b.scoreCpForSide ?? -9999) - (a.scoreCpForSide ?? -9999) ||
-            (a.rank ?? 99) - (b.rank ?? 99) ||
-            a.san.localeCompare(b.san),
-        )[0];
-    };
 
     straightLineCancelRef.current = false;
     setStraightLineRunning(true);
@@ -1864,158 +1841,49 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
       const startNode = state.getNode(startPath);
       if (!startNode) return;
 
-      let checkedPositions = 0;
-      const candidates: PrepStraightLineSearchResult[] = [];
-      let frontier: PrepStraightLineSearchNode[] = [
-        {
-          fen: startNode.fen,
-          steps: [],
-          ply: 0,
-          minOpponentShare: 1,
-          opponentGamesFloor: Number.MAX_SAFE_INTEGER,
-          opponentMoveCount: 0,
-        },
-      ];
-
-      while (
-        frontier.length > 0 &&
-        checkedPositions < STRAIGHT_LINE_MAX_POSITIONS &&
-        !straightLineCancelRef.current
-      ) {
-        const nextFrontier: PrepStraightLineSearchNode[] = [];
-
-        for (const node of frontier) {
-          if (straightLineCancelRef.current || checkedPositions >= STRAIGHT_LINE_MAX_POSITIONS) {
-            break;
-          }
-          if (node.ply >= maxPly) continue;
-
-          checkedPositions += 1;
-          const isOpponentTurn = getFenTurn(node.fen) === prep.color;
+      const search = await findPrepStraightLineCandidates({
+        startFen: startNode.fen,
+        opponentColor: prep.color,
+        minGames,
+        minShare,
+        maxPly,
+        userCandidateLimit: STRAIGHT_LINE_USER_CANDIDATES,
+        maxFrontier: STRAIGHT_LINE_MAX_FRONTIER,
+        maxPositions: STRAIGHT_LINE_MAX_POSITIONS,
+        loadOpenings: (fen) =>
+          loadOpeningsForFen(fen, Math.max(prep.moveLimit, 40)).catch(() => []),
+        loadEngineMoves,
+        isCancelled: () => straightLineCancelRef.current,
+        onProgress: (progress) =>
           setStraightLineStatus({
-            phase: isOpponentTurn ? "Checking forced replies" : "Checking engine replies",
-            checkedPositions,
-            candidates: candidates.length,
+            ...progress,
             tone: "running",
-          });
+          }),
+      });
 
-          if (isOpponentTurn) {
-            const openings = await loadOpeningsForFen(node.fen, Math.max(prep.moveLimit, 40)).catch(
-              () => [],
-            );
-            const forced = getPrepStraightLineForcedMove({
-              fen: node.fen,
-              openings,
-              minGames,
-              minShare,
-            });
-            if (!forced) continue;
-
-            const nextFen = applyPrepSanMove(node.fen, forced.move);
-            if (!nextFen) continue;
-
-            const nextSteps: PrepStraightLineStep[] = [
-              ...node.steps,
-              {
-                actor: "opponent",
-                fen: node.fen,
-                move: forced.move,
-                uci: forced.uci,
-                total: forced.total,
-                share: forced.share,
-                secondMove: forced.secondMove,
-                secondShare: forced.secondShare,
-                engineCpForUser: null,
-              },
-            ];
-            const nextNode: PrepStraightLineSearchNode = {
-              fen: nextFen,
-              steps: nextSteps,
-              ply: node.ply + 1,
-              minOpponentShare: Math.min(node.minOpponentShare, forced.share),
-              opponentGamesFloor: Math.min(node.opponentGamesFloor, forced.total),
-              opponentMoveCount: node.opponentMoveCount + 1,
-            };
-            const leafEngine = await getBestEngineMove(nextFen);
-            candidates.push({
-              ...nextNode,
-              fromPath: startPath,
-              leafFen: nextFen,
-              leafBestMove: leafEngine?.san ?? null,
-              leafScoreCpForUser: leafEngine?.scoreCpForSide ?? null,
-              searchedPositions: checkedPositions,
-            });
-            nextFrontier.push(nextNode);
-            continue;
-          }
-
-          const engineMoves = await loadEngineMoves(node.fen);
-          const replies = engineMoves
-            .filter((move) => move.scoreCpForSide !== null)
-            .sort(
-              (a, b) =>
-                (b.scoreCpForSide ?? -9999) - (a.scoreCpForSide ?? -9999) ||
-                (a.rank ?? 99) - (b.rank ?? 99) ||
-                a.san.localeCompare(b.san),
-            )
-            .slice(0, STRAIGHT_LINE_USER_CANDIDATES);
-
-          for (const reply of replies) {
-            const nextFen = applyPrepSanMove(node.fen, reply.san);
-            if (!nextFen) continue;
-
-            nextFrontier.push({
-              ...node,
-              fen: nextFen,
-              steps: [
-                ...node.steps,
-                {
-                  actor: "user",
-                  fen: node.fen,
-                  move: reply.san,
-                  uci: null,
-                  total: null,
-                  share: null,
-                  secondMove: null,
-                  secondShare: null,
-                  engineCpForUser: reply.scoreCpForSide,
-                },
-              ],
-              ply: node.ply + 1,
-            });
-          }
-        }
-
-        frontier = nextFrontier
-          .sort((a, b) => getPrepStraightLineFrontierScore(b) - getPrepStraightLineFrontierScore(a))
-          .slice(0, STRAIGHT_LINE_MAX_FRONTIER);
-      }
-
-      const best = candidates.sort(comparePrepStraightLineCandidates)[0] ?? null;
-      if (best) {
+      if (search.best) {
         const result = {
-          ...best,
-          searchedPositions: checkedPositions,
+          ...search.best,
+          fromPath: startPath,
+          searchedPositions: search.checkedPositions,
         };
         setStraightLineResult(result);
         setStraightLineStatus({
-          phase: straightLineCancelRef.current
-            ? "Stopped with best line"
-            : "Straight-line search done",
-          checkedPositions,
-          candidates: candidates.length,
+          phase: search.stopped ? "Stopped with best line" : "Straight-line search done",
+          checkedPositions: search.checkedPositions,
+          candidates: search.candidates.length,
           tone: "empty",
         });
         return;
       }
 
       setStraightLineStatus({
-        phase: straightLineCancelRef.current
+        phase: search.stopped
           ? "Straight-line search stopped"
-          : "No forced engine-target line found",
-        checkedPositions,
+          : getPrepStraightLineEmptyStatus(search),
+        checkedPositions: search.checkedPositions,
         candidates: 0,
-        tone: straightLineCancelRef.current ? "empty" : "error",
+        tone: search.stopped ? "empty" : "error",
       });
     } catch (error) {
       setStraightLineStatus({
@@ -4322,20 +4190,6 @@ function PrepStraightLineResultPanel({
   );
 }
 
-function getPrepStraightLineFrontierScore(node: PrepStraightLineSearchNode) {
-  const lastUserScore =
-    [...node.steps].reverse().find((step) => step.actor === "user")?.engineCpForUser ?? 0;
-  const gamesFloor =
-    node.opponentGamesFloor === Number.MAX_SAFE_INTEGER ? 0 : node.opponentGamesFloor;
-
-  return (
-    lastUserScore +
-    node.minOpponentShare * 50 +
-    node.opponentMoveCount * 18 +
-    Math.log2(gamesFloor + 1) * 5
-  );
-}
-
 function formatPrepStraightLineEval(cp: number | null) {
   if (cp === null) return "n/a";
   const value = Math.abs(cp / 100).toFixed(2);
@@ -4352,6 +4206,23 @@ function formatPrepStraightLineShare(share: number) {
 function getPrepNumberInputValue(value: string | number, fallback: number) {
   const numeric = typeof value === "number" ? value : Number(value);
   return Number.isFinite(numeric) ? numeric : fallback;
+}
+
+function getPrepStraightLineEmptyStatus(search: {
+  userPositionsWithoutMoves: number;
+  opponentPositionsWithoutForcedMove: number;
+  leafPositionsWithoutEngine: number;
+}) {
+  if (search.userPositionsWithoutMoves > 0) {
+    return "No candidate user moves were available from the searched positions";
+  }
+  if (search.opponentPositionsWithoutForcedMove > 0) {
+    return "No opponent move met the forced-rate and minimum-games settings";
+  }
+  if (search.leafPositionsWithoutEngine > 0) {
+    return "Forced lines were found, but no engine eval was available for their target positions";
+  }
+  return "No forced engine-target line found";
 }
 
 function BranchStatsCell({

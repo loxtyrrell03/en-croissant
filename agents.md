@@ -275,6 +275,11 @@ and `src/utils/lichess/study.ts`.
   move to meet a high forced-play-rate threshold, and surfaces lines where the
   final engine eval is objectively bad for the opponent; the result can be
   played onto the board for immediate analysis.
+- Straight Line search falls back to candidate user moves from the selected
+  opponent database when cloud/ChessDB does not return user replies, so prep
+  against an opponent as Black can still reach their first forced reply from
+  the starting position. Final "bad for them" scoring still depends on an
+  engine eval for the target position.
 - Smart strength now treats one- and two-game WDL spikes as evidence-poor:
   tiny samples are blended back toward the current position's practical baseline
   based on usage share before the engine/database blend is scored.
