@@ -425,7 +425,7 @@ export type DatabaseSourcePreference =
 
 export const defaultDatabaseSourceAtom = atomWithStorage<DatabaseSourcePreference>(
     "default-database-source",
-    { type: "local", value: null },
+    { type: "lch_all" },
 );
 
 export const defaultCompareDatabasesAtom = atomWithStorage<(string | null)[]>(
@@ -829,7 +829,7 @@ export const masterOptionsAtom = atomWithStorage<MasterGamesOptions>(
 );
 
 const dbTypeFamily = atomFamily((_tab: string) =>
-    atom<"local" | "lch_all" | "lch_master">("local"),
+    atom<"local" | "lch_all" | "lch_master">("lch_all"),
 );
 export const currentDbTypeAtom = tabValue(dbTypeFamily);
 

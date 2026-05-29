@@ -32,6 +32,9 @@ import { getDatabasesDir } from "../directories";
 const baseURL = "https://lichess.org/api";
 const explorerURL = "https://explorer.lichess.org";
 const tablebaseURL = "https://tablebase.lichess.org";
+const LICHESS_EXPLORER_TIMEOUT_MS = 20_000;
+const LICHESS_GAME_EXPORT_TIMEOUT_MS = 15_000;
+const LICHESS_CLOUD_TIMEOUT_MS = 12_000;
 
 export const MIN_DATE = new Date(1952, 0, 1);
 
@@ -80,6 +83,37 @@ type LichessPerf = {
   prog: number;
   prov: boolean;
 };
+
+async function fetchWithTimeout(
+  url: string,
+  init: Parameters<typeof fetch>[1] | undefined,
+  timeoutMs: number,
+  timeoutMessage: string,
+) {
+  const controller = new AbortController();
+  const timeoutId = globalThis.setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...(init ?? {}),
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (isAbortError(error)) {
+      throw new Error(timeoutMessage);
+    }
+    throw error;
+  } finally {
+    globalThis.clearTimeout(timeoutId);
+  }
+}
+
+function isAbortError(error: unknown) {
+  return (
+    (error instanceof DOMException && error.name === "AbortError") ||
+    (error instanceof Error && error.name === "AbortError")
+  );
+}
 
 export type LichessAccount = {
   id: string;
@@ -364,7 +398,12 @@ async function getCloudEvaluation(fen: string, multipv: number): Promise<Lichess
   url.searchParams.append("fen", fen);
   url.searchParams.append("multiPv", multipv.toString());
 
-  const response = await fetch(url.toString(), { headers: apiHeaders() });
+  const response = await fetchWithTimeout(
+    url.toString(),
+    { headers: apiHeaders() },
+    LICHESS_CLOUD_TIMEOUT_MS,
+    "Lichess cloud evaluation timed out. Try again in a moment.",
+  );
   if (response.status === 404) {
     missingCache.add(cacheKey);
     throw new Error("No Lichess cloud evaluation available.");
@@ -436,15 +475,20 @@ export async function getLichessGames(
       () => `${explorerURL}/lichess?${getLichessGamesQueryParams(fen, options, play)}`,
     )
     .otherwise(() => `${explorerURL}/player?${getLichessGamesQueryParams(fen, options, play)}`);
-  const res = await fetch(url, {
-    headers: apiHeaders(
-      token
-        ? {
-            Authorization: `Bearer ${token}`,
-          }
-        : undefined,
-    ),
-  });
+  const res = await fetchWithTimeout(
+    url,
+    {
+      headers: apiHeaders(
+        token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+      ),
+    },
+    LICHESS_EXPLORER_TIMEOUT_MS,
+    "Lichess All search timed out. Try again in a moment.",
+  );
   if (!res.ok) {
     throw new Error(`Failed to fetch Lichess games: ${res.status} ${res.statusText}`);
   }
@@ -458,15 +502,20 @@ export async function getMasterGames(
   play: string[] = [],
 ): Promise<PositionData> {
   const url = `${explorerURL}/masters?${getMasterGamesQueryParams(fen, options, play)}`;
-  const res = await fetch(url, {
-    headers: apiHeaders(
-      token
-        ? {
-            Authorization: `Bearer ${token}`,
-          }
-        : undefined,
-    ),
-  });
+  const res = await fetchWithTimeout(
+    url,
+    {
+      headers: apiHeaders(
+        token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+      ),
+    },
+    LICHESS_EXPLORER_TIMEOUT_MS,
+    "Lichess Masters search timed out. Try again in a moment.",
+  );
   if (!res.ok) {
     throw new Error(`Failed to fetch master games: ${res.status} ${res.statusText}`);
   }
@@ -474,15 +523,20 @@ export async function getMasterGames(
 }
 
 export async function getPlayerGames(fen: string, player: string, color: Color, token?: string) {
-  const res = await fetch(`${explorerURL}/player?fen=${fen}&player=${player}&color=${color}`, {
-    headers: apiHeaders(
-      token
-        ? {
-            Authorization: `Bearer ${token}`,
-          }
-        : undefined,
-    ),
-  });
+  const res = await fetchWithTimeout(
+    `${explorerURL}/player?fen=${fen}&player=${player}&color=${color}`,
+    {
+      headers: apiHeaders(
+        token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+      ),
+    },
+    LICHESS_EXPLORER_TIMEOUT_MS,
+    "Lichess player search timed out. Try again in a moment.",
+  );
   if (!res.ok) {
     throw new Error(`Failed to fetch player games: ${res.status} ${res.statusText}`);
   }
@@ -517,7 +571,12 @@ export async function downloadLichess(
 }
 
 export async function getLichessGame(gameId: string): Promise<string> {
-  const response = await fetch(`https://lichess.org/game/export/${gameId.slice(0, 8)}`);
+  const response = await fetchWithTimeout(
+    `https://lichess.org/game/export/${gameId.slice(0, 8)}`,
+    undefined,
+    LICHESS_GAME_EXPORT_TIMEOUT_MS,
+    `Lichess game ${gameId.slice(0, 8)} download timed out.`,
+  );
   if (!response.ok) {
     throw new Error(`Failed to load lichess game ${gameId} - ${response.statusText}`);
   }

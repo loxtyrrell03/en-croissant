@@ -227,6 +227,11 @@ Database work is centered in `src/components/databases/*`,
   styling, and board-arrow previews on hover.
 - Database Compare supports local sources, Lichess All, and Lichess Masters.
 - Database panels use saved default source controls.
+- Database panels now default to Lichess All when no explicit local reference
+  database default exists. Online stats searches avoid hydrating sample-game
+  PGNs, and Lichess explorer/game/cloud requests have explicit timeouts so the
+  Database tab exits loading with an error instead of spinning forever when the
+  remote service stalls.
 - The Databases area now treats database folders as first-class organization:
   `.db3` files can live in nested folders under the database root, folders can
   be created or renamed from the database manager, databases can be moved into

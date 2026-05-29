@@ -116,6 +116,33 @@ function isDatabaseSourcePreferenceEqual(a: DatabaseSourcePreference, b: Databas
   return true;
 }
 
+function effectiveDatabaseSourcePreference(source: DatabaseSourcePreference) {
+  if (source.type === "local" && !source.value) {
+    return { type: "lch_all" as const };
+  }
+  return source;
+}
+
+function getLichessOptionsForView(options: LichessGamesOptions, view: string) {
+  if (view !== "games") {
+    return { ...options, topGames: 0, recentGames: 0 };
+  }
+
+  if (options.topGames !== undefined || options.recentGames !== undefined) {
+    return options;
+  }
+
+  return { ...options, topGames: 4 };
+}
+
+function getMasterOptionsForView(options: MasterGamesOptions, view: string) {
+  if (view !== "games") {
+    return { ...options, topGames: 0 };
+  }
+
+  return { topGames: 15, ...options };
+}
+
 async function resolveMasterGameTextPlayer(databasePath: string, searchText: string) {
   const queries = getPlayerSearchQueries(searchText);
   if (queries.length === 0) return null;
@@ -201,7 +228,7 @@ async function fetchOpening(
 ) {
   return match(db)
     .with({ type: "lch_all" }, async ({ fen, options, token }) => {
-      const data = await getLichessGames(fen, options, token);
+      const data = await getLichessGames(fen, getLichessOptionsForView(options, view), token);
       return {
         openings: data.moves.map((move) => ({
           move: move.san,
@@ -209,11 +236,14 @@ async function fetchOpening(
           black: move.black,
           draw: move.draws,
         })),
-        games: await convertToNormalized(data.topGames || data.recentGames || []),
+        games:
+          view === "games"
+            ? await convertToNormalized(data.topGames || data.recentGames || [])
+            : [],
       };
     })
     .with({ type: "lch_master" }, async ({ fen, options, token }) => {
-      const data = await getMasterGames(fen, { topGames: 15, ...options }, token);
+      const data = await getMasterGames(fen, getMasterOptionsForView(options, view), token);
       return {
         openings: data.moves.map((move) => ({
           move: move.san,
@@ -221,7 +251,10 @@ async function fetchOpening(
           black: move.black,
           draw: move.draws,
         })),
-        games: await convertToNormalized(data.topGames || data.recentGames || []),
+        games:
+          view === "games"
+            ? await convertToNormalized(data.topGames || data.recentGames || [])
+            : [],
       };
     })
     .with({ type: "local" }, async ({ options }) => {
@@ -372,6 +405,10 @@ function DatabasePanel() {
   const [tabType, setTabType] = useAtom(currentDbTabAtom);
   const appliedSettingsKeyRef = useRef<string | null>(null);
   const skipNextPersistKeyRef = useRef<string | null>(null);
+  const effectiveDefaultDatabaseSource = useMemo(
+    () => effectiveDatabaseSourcePreference(defaultDatabaseSource),
+    [defaultDatabaseSource],
+  );
 
   useEffect(() => {
     const hydrationKey = settingsKey ?? "__default-database-settings__";
@@ -379,7 +416,9 @@ function DatabasePanel() {
     appliedSettingsKeyRef.current = hydrationKey;
     if (settingsKey) skipNextPersistKeyRef.current = settingsKey;
 
-    const source = savedPanelSettings?.source ?? defaultDatabaseSource;
+    const source = effectiveDatabaseSourcePreference(
+      savedPanelSettings?.source ?? effectiveDefaultDatabaseSource,
+    );
     if (source.type === "local") {
       setDb("local");
       setReferenceDatabase(source.value ?? null);
@@ -398,7 +437,7 @@ function DatabasePanel() {
       setTabType(savedPanelSettings.tabType);
     }
   }, [
-    defaultDatabaseSource,
+    effectiveDefaultDatabaseSource,
     savedPanelSettings,
     setDb,
     setLichessOptions,
@@ -422,7 +461,7 @@ function DatabasePanel() {
   }, [db, referenceDatabase]);
   const currentSelectionIsDefault = isDatabaseSourcePreferenceEqual(
     selectedDefaultSource,
-    defaultDatabaseSource,
+    effectiveDefaultDatabaseSource,
   );
   const canSaveDefault = db !== "local" || !!referenceDatabase;
 
