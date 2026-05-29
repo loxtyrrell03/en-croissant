@@ -133,6 +133,7 @@ import {
   type PrepBuilderSettings,
   type PrepMoveStrength,
   type PrepStraightLineCandidate,
+  type PrepStraightLineSearchMode,
   type OpponentPrepBranchStats,
   type OpponentPrepMoveRow,
 } from "@/utils/opponentPrep";
@@ -148,8 +149,13 @@ import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveCont
 
 const DEFAULT_PREP_MIN_GAMES = 2;
 const DEFAULT_PREP_MOVE_LIMIT = 8;
-const DEFAULT_STRAIGHT_LINE_MIN_SHARE = 90;
-const DEFAULT_STRAIGHT_LINE_MIN_CP = 80;
+const DEFAULT_STRAIGHT_LINE_MODE: PrepStraightLineSearchMode = "venom";
+const DEFAULT_VENOM_LINE_MIN_SHARE = 65;
+const DEFAULT_VENOM_LINE_MIN_CP = 40;
+const DEFAULT_STRICT_LINE_MIN_SHARE = 90;
+const DEFAULT_STRICT_LINE_MIN_CP = 80;
+const DEFAULT_STRAIGHT_LINE_MIN_SHARE = DEFAULT_VENOM_LINE_MIN_SHARE;
+const DEFAULT_STRAIGHT_LINE_MIN_CP = DEFAULT_VENOM_LINE_MIN_CP;
 const DEFAULT_STRAIGHT_LINE_MAX_PLY = 12;
 const STRAIGHT_LINE_USER_CANDIDATES = 4;
 const STRAIGHT_LINE_MAX_FRONTIER = 8;
@@ -356,6 +362,9 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
   const [straightLineStatus, setStraightLineStatus] = useState<PrepStraightLineStatus | null>(null);
   const [straightLineResult, setStraightLineResult] = useState<PrepStraightLineSearchResult | null>(
     null,
+  );
+  const [straightLineMode, setStraightLineMode] = useState<PrepStraightLineSearchMode>(
+    DEFAULT_STRAIGHT_LINE_MODE,
   );
   const [straightLineMinShare, setStraightLineMinShare] = useState(DEFAULT_STRAIGHT_LINE_MIN_SHARE);
   const [straightLineMinCp, setStraightLineMinCp] = useState(DEFAULT_STRAIGHT_LINE_MIN_CP);
@@ -1840,6 +1849,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
       if (!startNode) return;
 
       const search = await findPrepStraightLineCandidates({
+        mode: straightLineMode,
         startFen: startNode.fen,
         opponentColor: prep.color,
         minGames,
@@ -1909,6 +1919,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
     prep.moveLimit,
     prep.rootPath,
     straightLineMaxPly,
+    straightLineMode,
     straightLineMinShare,
     straightLineRunning,
     store,
@@ -2829,7 +2840,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
                   loading={straightLineRunning}
                   onClick={() => void runStraightLineSearch()}
                 >
-                  Find line
+                  {straightLineMode === "venom" ? "Find venom" : "Find line"}
                 </Button>
               </Tooltip>
               {straightLineRunning ? (
@@ -2847,9 +2858,21 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
               ) : null}
               <PrepStraightLineSettingsButton
                 controlSize={controlSize}
+                mode={straightLineMode}
                 minShare={straightLineMinShare}
                 minCp={straightLineMinCp}
                 maxPly={straightLineMaxPly}
+                onModeChange={(mode) => {
+                  setStraightLineMode(mode);
+                  setStraightLineMinShare(
+                    mode === "strict"
+                      ? DEFAULT_STRICT_LINE_MIN_SHARE
+                      : DEFAULT_VENOM_LINE_MIN_SHARE,
+                  );
+                  setStraightLineMinCp(
+                    mode === "strict" ? DEFAULT_STRICT_LINE_MIN_CP : DEFAULT_VENOM_LINE_MIN_CP,
+                  );
+                }}
                 onMinShareChange={setStraightLineMinShare}
                 onMinCpChange={setStraightLineMinCp}
                 onMaxPlyChange={setStraightLineMaxPly}
@@ -3033,6 +3056,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
               status={straightLineStatus}
               running={straightLineRunning}
               qualifies={straightLineQualifies}
+              mode={straightLineMode}
               minCp={straightLineMinCp}
               onPlay={playStraightLineResult}
               onClear={() => {
@@ -3994,17 +4018,21 @@ function PrepStrengthSettingsButton({
 
 function PrepStraightLineSettingsButton({
   controlSize,
+  mode,
   minShare,
   minCp,
   maxPly,
+  onModeChange,
   onMinShareChange,
   onMinCpChange,
   onMaxPlyChange,
 }: {
   controlSize: "xs" | "sm";
+  mode: PrepStraightLineSearchMode;
   minShare: number;
   minCp: number;
   maxPly: number;
+  onModeChange: (value: PrepStraightLineSearchMode) => void;
   onMinShareChange: (value: number) => void;
   onMinCpChange: (value: number) => void;
   onMaxPlyChange: (value: number) => void;
@@ -4021,9 +4049,22 @@ function PrepStraightLineSettingsButton({
           <Text size="sm" fw={700}>
             Straight line settings
           </Text>
+          <Tooltip label="Strict finds rare railroad lines; Venom finds repeated engine concessions">
+            <SegmentedControl
+              value={mode}
+              onChange={(value) => onModeChange(value as PrepStraightLineSearchMode)}
+              data={[
+                { value: "venom", label: "Venom" },
+                { value: "strict", label: "Strict" },
+              ]}
+              size="xs"
+              fullWidth
+              aria-label="Straight line search mode"
+            />
+          </Tooltip>
           <Tooltip label="Opponent moves must reach this share of their games from each position">
             <NumberInput
-              label="Forced rate"
+              label={mode === "venom" ? "Habit rate" : "Forced rate"}
               suffix="%"
               value={minShare}
               onChange={(value) =>
@@ -4041,9 +4082,9 @@ function PrepStraightLineSettingsButton({
               aria-label="Straight line forced play rate"
             />
           </Tooltip>
-          <Tooltip label="The final position must be at least this good for you to count as venomous">
+          <Tooltip label="Venom counts the opponent's engine concession; Strict also values the final edge">
             <NumberInput
-              label="Bad for them"
+              label={mode === "venom" ? "Min concession" : "Bad for them"}
               suffix=" cp"
               value={minCp}
               onChange={(value) =>
@@ -4091,6 +4132,7 @@ function PrepStraightLineResultPanel({
   status,
   running,
   qualifies,
+  mode,
   minCp,
   onPlay,
   onClear,
@@ -4099,19 +4141,29 @@ function PrepStraightLineResultPanel({
   status: PrepStraightLineStatus | null;
   running: boolean;
   qualifies: boolean;
+  mode: PrepStraightLineSearchMode;
   minCp: number;
   onPlay: () => void;
   onClear: () => void;
 }) {
   const opponentSteps = result?.steps.filter((step) => step.actor === "opponent") ?? [];
+  const resultCp = result?.bestOpportunityCpForUser ?? result?.leafScoreCpForUser ?? null;
   const alertColor = running ? "blue" : result ? (qualifies ? "red" : "yellow") : "gray";
   const title = running
-    ? "Finding straight line"
+    ? mode === "venom"
+      ? "Finding venom"
+      : "Finding straight line"
     : result
       ? qualifies
-        ? "Straight line found"
-        : "Best straight line found"
-      : "Straight line search";
+        ? mode === "venom"
+          ? "Prep venom found"
+          : "Straight line found"
+        : mode === "venom"
+          ? "Best habit found"
+          : "Best straight line found"
+      : mode === "venom"
+        ? "Venom search"
+        : "Straight line search";
 
   return (
     <Alert color={alertColor} variant="light" mt="xs">
@@ -4124,12 +4176,17 @@ function PrepStraightLineResultPanel({
             {result ? (
               <>
                 <Badge color={qualifies ? "red" : "yellow"} variant="light">
-                  {formatPrepStraightLineEval(result.leafScoreCpForUser)} for you
+                  {formatPrepStraightLineEval(resultCp)} for you
                 </Badge>
                 <Badge variant="light">
                   {formatPrepStraightLineShare(result.minOpponentShare)} floor
                 </Badge>
-                <Badge variant="light">{result.opponentMoveCount} forced moves</Badge>
+                <Badge variant="light">
+                  {formatPrepStraightLineShare(result.reachProbability)} reach
+                </Badge>
+                <Badge variant="light">
+                  {result.opponentMoveCount} {mode === "venom" ? "habit moves" : "forced moves"}
+                </Badge>
               </>
             ) : null}
           </Group>
@@ -4163,9 +4220,16 @@ function PrepStraightLineResultPanel({
             </Text>
             <Text size="xs" c="dimmed">
               {qualifies
-                ? `Engine target met: final edge is at least ${formatPrepStraightLineEval(minCp)}.`
-                : `Best line is below the ${formatPrepStraightLineEval(minCp)} target; try a lower forced rate, deeper search, or a later prep start.`}
+                ? mode === "venom"
+                  ? `Engine target met: habit concession or final edge is at least ${formatPrepStraightLineEval(minCp)}.`
+                  : `Engine target met: final edge is at least ${formatPrepStraightLineEval(minCp)}.`
+                : mode === "venom"
+                  ? `Best habit is below the ${formatPrepStraightLineEval(minCp)} target; try a lower habit rate, deeper search, or a later prep start.`
+                  : `Best line is below the ${formatPrepStraightLineEval(minCp)} target; try a lower forced rate, deeper search, or a later prep start.`}
               {result.leafBestMove ? ` Best next move: ${result.leafBestMove}.` : ""}
+              {result.targetMove && result.targetConcessionCpForUser !== null
+                ? ` Biggest concession: ${result.targetMove} gives up ${formatPrepStraightLineEval(result.targetConcessionCpForUser)} versus ${result.targetBestMoveForOpponent ?? "the engine's best move"}.`
+                : ""}
             </Text>
             {opponentSteps.length > 0 ? (
               <Group gap={4} wrap="wrap">
@@ -4173,6 +4237,9 @@ function PrepStraightLineResultPanel({
                   <Badge key={`${step.fen}-${step.move}-${index}`} variant="outline" color="orange">
                     {step.move} {formatPrepStraightLineShare(step.share ?? 0)}
                     {step.total !== null ? ` / ${formatNumber(step.total)}` : ""}
+                    {step.concessionCpForUser !== null
+                      ? `, drops ${formatPrepStraightLineEval(step.concessionCpForUser)}`
+                      : ""}
                   </Badge>
                 ))}
               </Group>
@@ -4180,7 +4247,7 @@ function PrepStraightLineResultPanel({
           </>
         ) : status && !running ? (
           <Text size="xs" c={status.tone === "error" ? "yellow" : "dimmed"}>
-            No line matched the current forced-rate, depth, and engine-eval settings.
+            No line matched the current habit-rate, depth, and engine-eval settings.
           </Text>
         ) : null}
       </Stack>
@@ -4215,12 +4282,12 @@ function getPrepStraightLineEmptyStatus(search: {
     return "No candidate user moves were available from the searched positions";
   }
   if (search.opponentPositionsWithoutForcedMove > 0) {
-    return "No opponent move met the forced-rate and minimum-games settings";
+    return "No opponent move met the habit-rate and minimum-games settings";
   }
   if (search.leafPositionsWithoutEngine > 0) {
-    return "Forced lines were found, but no engine eval was available for their target positions";
+    return "Habit lines were found, but no engine eval was available for their target positions";
   }
-  return "No forced engine-target line found";
+  return "No engine-target habit line found";
 }
 
 function BranchStatsCell({

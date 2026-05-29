@@ -312,6 +312,11 @@ and `src/utils/lichess/study.ts`.
   "Start here" is the explicit action for changing the prep root to the
   currently selected board node; source/player/filter changes should not
   silently move that root to the current board path.
+- Straight-line Prep now defaults to a stronger-player-friendly Venom mode:
+  it treats repeated opponent choices as habits, scores the reach probability,
+  and counts the engine concession of the habitual move versus the opponent's
+  best engine alternative, while keeping a Strict mode for high-threshold
+  railroad lines.
 - Lichess Study links can be imported as local databases.
 - Lichess Study databases support auto-update metadata and refresh tracking.
 - Lichess Study databases expose a database-manager reload control that

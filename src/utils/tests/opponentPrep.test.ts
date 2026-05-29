@@ -233,6 +233,12 @@ describe("opponent prep helpers", () => {
             leafFen: "fen-a",
             leafBestMove: "Nxf7",
             leafScoreCpForUser: 140,
+            bestOpportunityCpForUser: 140,
+            targetMove: null,
+            targetConcessionCpForUser: null,
+            targetBestMoveForOpponent: null,
+            reachProbability: 0.93,
+            opportunityScore: 210,
             minOpponentShare: 0.93,
             opponentGamesFloor: 12,
             opponentMoveCount: 3,
@@ -242,6 +248,8 @@ describe("opponent prep helpers", () => {
             ...venom,
             leafFen: "fen-b",
             leafScoreCpForUser: 35,
+            bestOpportunityCpForUser: 35,
+            opportunityScore: 80,
             minOpponentShare: 1,
             opponentGamesFloor: 40,
         };
@@ -293,6 +301,43 @@ describe("opponent prep helpers", () => {
         expect(search.best?.steps.map((step) => step.move)).toEqual(["e4", "c5"]);
         expect(search.best?.leafScoreCpForUser).toBe(120);
         expect(search.userPositionsWithoutMoves).toBe(0);
+    });
+
+    test("venom search scores habitual opponent engine concessions", async () => {
+        const normalStartFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        const afterE4 = applyPrepSanMove(normalStartFen, "e4")!;
+
+        const search = await findPrepStraightLineCandidates({
+            mode: "venom",
+            startFen: normalStartFen,
+            opponentColor: "white",
+            minGames: 2,
+            minShare: 0.65,
+            maxPly: 2,
+            userCandidateLimit: 3,
+            maxFrontier: 4,
+            maxPositions: 6,
+            loadOpenings: async (fen) =>
+                fen === normalStartFen ? [{ move: "e4", white: 8, draw: 0, black: 2 }] : [],
+            loadEngineMoves: async (fen) => {
+                if (fen === normalStartFen) {
+                    return [
+                        { san: "d4", scoreCpForSide: 0, rank: 1, source: "chessdb" },
+                        { san: "e4", scoreCpForSide: 70, rank: 2, source: "chessdb" },
+                    ];
+                }
+                if (fen === afterE4) {
+                    return [{ san: "c5", scoreCpForSide: 20, rank: 1, source: "chessdb" }];
+                }
+                return [];
+            },
+        });
+
+        expect(search.best?.targetMove).toBe("e4");
+        expect(search.best?.targetBestMoveForOpponent).toBe("d4");
+        expect(search.best?.targetConcessionCpForUser).toBe(70);
+        expect(search.best?.bestOpportunityCpForUser).toBe(70);
+        expect(isPrepStraightLineBadForOpponent(search.best, 40)).toBe(true);
     });
 
     test("scores prep branches by weighted response coverage and depth", async () => {
