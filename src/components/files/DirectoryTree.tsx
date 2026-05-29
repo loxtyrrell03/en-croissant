@@ -32,6 +32,7 @@ import {
   deckAtomFamily,
   tabsAtom,
   expandedDirectoriesAtom,
+  manualFileEntryOrderAtom,
   pinnedFileEntriesAtom,
   type FilesSortMode,
 } from "@/state/atoms";
@@ -45,11 +46,18 @@ import { FileIcon } from "./FileIcon";
 type DragContextType = {
   draggingPath: string | null;
   setDraggingPath: (path: string | null) => void;
-  hoverPath: string | null;
-  setHoverPath: (path: string | null) => void;
+  hoverTarget: DropTarget | null;
+  setHoverTarget: (target: DropTarget | null) => void;
   registerFolder: (path: string, ref: HTMLDivElement | null) => void;
-  getDropTarget: (clientX: number, clientY: number, draggingPath?: string | null) => string | null;
+  registerRow: (entry: DragRowRegistration, ref: HTMLDivElement | null) => void;
+  getDropTarget: (
+    clientX: number,
+    clientY: number,
+    draggingPath?: string | null,
+  ) => DropTarget | null;
   checkHover: (clientX: number, clientY: number, draggingPath?: string | null) => void;
+  reorderEntry: (sourcePath: string, targetPath: string, position: "before" | "after") => void;
+  replaceOrderedPathPrefix: (oldPath: string, newPath: string) => void;
   documentDir: string;
 };
 
@@ -60,6 +68,15 @@ const TREE_BASE_PADDING_PX = 8;
 const TREE_INDENT_PX = 16;
 type Entry = FileMetadata | Directory;
 type ShowContextMenu = ReturnType<typeof useContextMenu>["showContextMenu"];
+export type DropTarget =
+  | { kind: "into"; path: string }
+  | { kind: "before"; path: string }
+  | { kind: "after"; path: string };
+export type DragRowRegistration = {
+  path: string;
+  parentPath: string;
+  type: Entry["type"];
+};
 
 function flattenFiles(files: Entry[]): Entry[] {
   return files.flatMap((f) => (f.type === "directory" ? flattenFiles(f.children) : [f]));
@@ -112,13 +129,15 @@ function recursiveSort(
   pruneEmpty = false,
   pinnedPaths: ReadonlySet<string> = new Set(),
   sortMode: FilesSortMode = "newest",
+  manualOrder: Record<string, string[]> = {},
+  parentPath = "",
 ): Entry[] {
   return files
     .map((f) => {
       if (f.type === "file") return f;
       return {
         ...f,
-        children: recursiveSort(f.children, pruneEmpty, pinnedPaths, sortMode),
+        children: recursiveSort(f.children, pruneEmpty, pinnedPaths, sortMode, manualOrder, f.path),
       };
     })
     .filter((f) => {
@@ -130,7 +149,10 @@ function recursiveSort(
         return pinnedDifference;
       }
 
-      const modeDifference = compareEntriesByMode(a, b, sortMode);
+      const modeDifference =
+        sortMode === "manual"
+          ? compareEntriesByManualOrder(a, b, manualOrder[parentPath] ?? [])
+          : compareEntriesByMode(a, b, sortMode);
 
       if (modeDifference !== 0) {
         return modeDifference;
@@ -138,6 +160,25 @@ function recursiveSort(
 
       return compareNames(a, b, "asc");
     });
+}
+
+function compareEntriesByManualOrder(a: Entry, b: Entry, order: string[]) {
+  const aIndex = order.indexOf(a.path);
+  const bIndex = order.indexOf(b.path);
+
+  if (aIndex >= 0 && bIndex >= 0) {
+    return aIndex - bIndex;
+  }
+
+  if (aIndex >= 0) {
+    return -1;
+  }
+
+  if (bIndex >= 0) {
+    return 1;
+  }
+
+  return compareNames(a, b, "asc");
 }
 
 function compareEntriesByMode(a: Entry, b: Entry, sortMode: FilesSortMode): number {
@@ -187,6 +228,7 @@ export default function DirectoryTree({
   search,
   filter,
   sortMode,
+  documentDir,
 }: {
   files: Entry[] | undefined;
   refreshDirectory: () => Promise<unknown>;
@@ -200,8 +242,10 @@ export default function DirectoryTree({
   search: string;
   filter: string;
   sortMode: FilesSortMode;
+  documentDir: string;
 }) {
   const [pinnedPaths, setPinnedPaths] = useAtom(pinnedFileEntriesAtom);
+  const [manualOrder] = useAtom(manualFileEntryOrderAtom);
   const pinnedPathSet = useMemo(() => new Set(pinnedPaths), [pinnedPaths]);
   const flattedFiles = useMemo(() => flattenFiles(files ?? []), [files]);
   const fuse = useMemo(
@@ -224,8 +268,15 @@ export default function DirectoryTree({
       next = filterTree(next, (file) => file.metadata.type === filter);
     }
 
-    return recursiveSort(next, !!(search || filter), pinnedPathSet, sortMode);
-  }, [files, search, filter, fuse, pinnedPathSet, sortMode]);
+    return recursiveSort(
+      next,
+      !!(search || filter),
+      pinnedPathSet,
+      sortMode,
+      manualOrder,
+      documentDir,
+    );
+  }, [files, search, filter, fuse, pinnedPathSet, sortMode, manualOrder, documentDir]);
 
   return (
     <Box className={classes.tree}>
@@ -249,6 +300,7 @@ export default function DirectoryTree({
         pinnedPaths={pinnedPathSet}
         setPinnedPaths={setPinnedPaths}
         expandedByDefault={!!(search || filter)}
+        parentPath={documentDir}
       />
     </Box>
   );
@@ -267,6 +319,7 @@ function Tree({
   pinnedPaths,
   setPinnedPaths,
   expandedByDefault,
+  parentPath,
 }: {
   files: Entry[];
   depth: number;
@@ -280,6 +333,7 @@ function Tree({
   pinnedPaths: ReadonlySet<string>;
   setPinnedPaths: React.Dispatch<React.SetStateAction<string[]>>;
   expandedByDefault?: boolean;
+  parentPath: string;
 }) {
   const [expandedIds, setExpandedIds] = useAtom(expandedDirectoriesAtom);
   const navigate = useNavigate();
@@ -360,6 +414,7 @@ function Tree({
             setPinnedPaths={setPinnedPaths}
             refreshDirectory={refreshDirectory}
             showContextMenu={showContextMenu}
+            parentPath={parentPath}
           >
             {node.type === "directory" &&
               isExpanded &&
@@ -380,6 +435,7 @@ function Tree({
                     pinnedPaths={pinnedPaths}
                     setPinnedPaths={setPinnedPaths}
                     expandedByDefault={expandedByDefault}
+                    parentPath={node.path}
                   />
                 )
               ))}
@@ -424,6 +480,7 @@ function DirectoryNode({
   setPinnedPaths,
   refreshDirectory,
   showContextMenu,
+  parentPath,
   children,
 }: {
   node: Entry;
@@ -441,6 +498,7 @@ function DirectoryNode({
   setPinnedPaths: React.Dispatch<React.SetStateAction<string[]>>;
   refreshDirectory: () => Promise<unknown>;
   showContextMenu: ShowContextMenu;
+  parentPath: string;
   children?: React.ReactNode;
 }) {
   const rowRef = useRef<HTMLDivElement>(null);
@@ -463,16 +521,37 @@ function DirectoryNode({
   }, [node.path, setPinnedPaths]);
 
   useEffect(() => {
-    if (!dragContext || node.type !== "directory") {
+    if (!dragContext) {
       return;
     }
 
-    dragContext.registerFolder(node.path, rowRef.current);
+    dragContext.registerRow(
+      {
+        path: node.path,
+        parentPath,
+        type: node.type,
+      },
+      rowRef.current,
+    );
+
+    if (node.type === "directory") {
+      dragContext.registerFolder(node.path, rowRef.current);
+    }
 
     return () => {
-      dragContext.registerFolder(node.path, null);
+      dragContext.registerRow(
+        {
+          path: node.path,
+          parentPath,
+          type: node.type,
+        },
+        null,
+      );
+      if (node.type === "directory") {
+        dragContext.registerFolder(node.path, null);
+      }
     };
-  }, [node.path, node.type, dragContext]);
+  }, [node.path, node.type, parentPath, dragContext]);
 
   const onDragStart = (e: DraggableEvent) => {
     didDragRef.current = false;
@@ -522,22 +601,27 @@ function DirectoryNode({
 
     dragContext.setDraggingPath(null);
     const point = getEventPoint(e);
-    const targetId = point
+    const target = point
       ? dragContext.getDropTarget(point.x, point.y, node.path)
-      : dragContext.hoverPath;
-    dragContext.setHoverPath(null);
+      : dragContext.hoverTarget;
+    dragContext.setHoverTarget(null);
 
-    if (!wasDragging || !targetId) return;
+    if (!wasDragging || !target) return;
 
     const sourcePath = node.path;
-    if (sourcePath === targetId) return;
+    if (sourcePath === target.path) return;
+
+    if (target.kind !== "into") {
+      dragContext.reorderEntry(sourcePath, target.path, target.kind);
+      return;
+    }
 
     const handleDrop = async () => {
       const separator = sep();
-      if (targetId!.startsWith(sourcePath + separator)) return;
+      if (target.path.startsWith(sourcePath + separator)) return;
 
       const sourceBasename = await basename(sourcePath);
-      const targetPath = await join(targetId!, sourceBasename);
+      const targetPath = await join(target.path, sourceBasename);
 
       if (sourcePath === targetPath) return;
 
@@ -555,8 +639,9 @@ function DirectoryNode({
             new Set(current.map((path) => replacePathPrefix(path, sourcePath, targetPath))),
           ),
         );
-        if (targetId !== dragContext.documentDir) {
-          setExpandedIds((prev) => (prev.includes(targetId) ? prev : [...prev, targetId]));
+        dragContext.replaceOrderedPathPrefix(sourcePath, targetPath);
+        if (target.path !== dragContext.documentDir) {
+          setExpandedIds((prev) => (prev.includes(target.path) ? prev : [...prev, target.path]));
         }
 
         if (selectedFile) {
@@ -589,12 +674,17 @@ function DirectoryNode({
     void handleDrop();
   };
 
-  const isOver =
-    dragContext?.hoverPath === node.path &&
+  const isOverInto =
+    dragContext?.hoverTarget?.kind === "into" &&
+    dragContext.hoverTarget.path === node.path &&
     node.type === "directory" &&
     dragContext?.draggingPath !== node.path &&
     !node.path.startsWith(dragContext?.draggingPath + "/") &&
     !node.path.startsWith(dragContext?.draggingPath + "\\");
+  const isInsertBefore =
+    dragContext?.hoverTarget?.kind === "before" && dragContext.hoverTarget.path === node.path;
+  const isInsertAfter =
+    dragContext?.hoverTarget?.kind === "after" && dragContext.hoverTarget.path === node.path;
 
   const contextMenuHandler = showContextMenu([
     {
@@ -647,7 +737,9 @@ function DirectoryNode({
           data-files-tree-row="true"
           className={clsx(classes.row, {
             [classes.selected]: isSelected,
-            [classes.dragOver]: isOver,
+            [classes.dragOver]: isOverInto,
+            [classes.dragInsertBefore]: isInsertBefore,
+            [classes.dragInsertAfter]: isInsertAfter,
           })}
           style={{
             paddingLeft: TREE_BASE_PADDING_PX + depth * TREE_INDENT_PX,

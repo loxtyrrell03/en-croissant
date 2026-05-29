@@ -109,6 +109,10 @@ default.
 - The Files toolbar includes a persistent sort menu for newest first, oldest
   first, name A-Z/Z-A, and type; pinned entries remain grouped above the chosen
   sort order.
+- The Files toolbar also includes Manual order. Dragging a row near the top or
+  bottom edge of a sibling row saves a custom order for that folder, while
+  dragging onto the middle of a folder keeps the existing move-into-folder
+  behavior.
 - Files directory scans hide generated `report-render`, `report-render-pdf`,
   and `report-print-pages` artifact folders so report workspaces do not clutter
   the library while the actual PDF report stays visible.

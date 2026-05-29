@@ -34,6 +34,7 @@ import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import {
   filesSortModeAtom,
+  manualFileEntryOrderAtom,
   pinnedFileEntriesAtom,
   recentFilesAtom,
   tabsAtom,
@@ -43,7 +44,7 @@ import { capitalize } from "@/utils/format";
 import ConfirmModal from "../common/ConfirmModal";
 import OpenFolderButton from "../common/OpenFolderButton";
 import DirectoryTree from "./DirectoryTree";
-import { DragContext } from "./DirectoryTree";
+import { DragContext, type DragRowRegistration, type DropTarget } from "./DirectoryTree";
 import treeClasses from "./DirectoryTree.module.css";
 import FileCard from "./FileCard";
 import {
@@ -64,8 +65,10 @@ import {
 } from "./Modals";
 
 const FILE_TYPES: FileType[] = ["game", "repertoire", "tournament", "puzzle", "other", "pdf"];
+const ROW_REORDER_EDGE_RATIO = 0.32;
 
 const SORT_OPTIONS: { value: FilesSortMode; label: string }[] = [
+  { value: "manual", label: "Manual order" },
   { value: "newest", label: "Newest first" },
   { value: "oldest", label: "Oldest first" },
   { value: "name-asc", label: "Name A-Z" },
@@ -108,6 +111,35 @@ function replacePathPrefix(path: string, oldPath: string, newPath: string) {
   }
 
   return path;
+}
+
+function getParentPath(path: string) {
+  const normalized = path.replaceAll("\\", "/");
+  const index = normalized.lastIndexOf("/");
+  return index >= 0 ? path.slice(0, index) : "";
+}
+
+function findDirectoryChildren(entries: Entry[], parentPath: string, documentDir: string): Entry[] {
+  if (parentPath === documentDir) {
+    return entries;
+  }
+
+  for (const entry of entries) {
+    if (entry.type === "file") {
+      continue;
+    }
+
+    if (entry.path === parentPath) {
+      return entry.children;
+    }
+
+    const child = findDirectoryChildren(entry.children, parentPath, documentDir);
+    if (child.length > 0) {
+      return child;
+    }
+  }
+
+  return [];
 }
 
 function getFileTypeLabel(type: FileType, t: (key: string) => string) {
@@ -222,6 +254,7 @@ function FilesPage() {
   const setTabs = useSetAtom(tabsAtom);
   const setRecentFiles = useSetAtom(recentFilesAtom);
   const setPinnedFiles = useSetAtom(pinnedFileEntriesAtom);
+  const [manualOrder, setManualOrder] = useAtom(manualFileEntryOrderAtom);
   const [sortMode, setSortMode] = useAtom(filesSortModeAtom);
   const activeSortLabel =
     SORT_OPTIONS.find((option) => option.value === sortMode)?.label ?? SORT_OPTIONS[0].label;
@@ -283,8 +316,11 @@ function FilesPage() {
   }, [files, filter, loadAllDirectories, search]);
 
   const [draggingPath, setDraggingPath] = useState<string | null>(null);
-  const [hoverPath, setHoverPath] = useState<string | null>(null);
+  const [hoverTarget, setHoverTarget] = useState<DropTarget | null>(null);
   const folderRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const rowRefs = useRef<Map<string, { entry: DragRowRegistration; ref: HTMLDivElement }>>(
+    new Map(),
+  );
   const rootDropzoneRef = useRef<HTMLDivElement>(null);
 
   const registerFolder = useCallback((path: string, ref: HTMLDivElement | null) => {
@@ -295,16 +331,22 @@ function FilesPage() {
     }
   }, []);
 
+  const registerRow = useCallback((entry: DragRowRegistration, ref: HTMLDivElement | null) => {
+    if (ref) {
+      rowRefs.current.set(entry.path, { entry, ref });
+    } else {
+      rowRefs.current.delete(entry.path);
+    }
+  }, []);
+
   const getDropTarget = useCallback(
     (clientX: number, clientY: number, activeDraggingPath = draggingPath) => {
-      let hovered: string | null = null;
+      let hovered: DropTarget | null = null;
       let minArea = Infinity;
       let blockedByInvalidFolder = false;
+      const draggingRow = activeDraggingPath ? rowRefs.current.get(activeDraggingPath) : null;
 
-      // Check all folder row bounding rects
-      // Since child folders are visually inside their parent's bounding box sometimes depending
-      // on DOM flow, we want the most specific (smallest) matched box
-      for (const [path, ref] of folderRefs.current.entries()) {
+      for (const [path, { entry, ref }] of rowRefs.current.entries()) {
         const rect = ref.getBoundingClientRect();
         if (
           clientX >= rect.left &&
@@ -321,10 +363,26 @@ function FilesPage() {
             continue;
           }
 
+          const relativeY = rect.height > 0 ? (clientY - rect.top) / rect.height : 0.5;
+          const canReorder =
+            draggingRow &&
+            draggingRow.entry.parentPath === entry.parentPath &&
+            draggingRow.entry.parentPath !== "" &&
+            !search &&
+            !filter;
+
           const area = rect.width * rect.height;
           if (area < minArea) {
             minArea = area;
-            hovered = path;
+            if (canReorder && relativeY <= ROW_REORDER_EDGE_RATIO) {
+              hovered = { kind: "before", path };
+            } else if (canReorder && relativeY >= 1 - ROW_REORDER_EDGE_RATIO) {
+              hovered = { kind: "after", path };
+            } else if (entry.type === "directory") {
+              hovered = { kind: "into", path };
+            } else {
+              hovered = null;
+            }
           }
         }
       }
@@ -341,20 +399,79 @@ function FilesPage() {
           clientY >= rect.top &&
           clientY <= rect.bottom
         ) {
-          hovered = documentDir;
+          hovered = { kind: "into", path: documentDir };
         }
       }
 
       return hovered;
     },
-    [documentDir, draggingPath],
+    [documentDir, draggingPath, filter, search],
   );
 
   const checkHover = useCallback(
     (clientX: number, clientY: number, activeDraggingPath?: string | null) => {
-      setHoverPath(getDropTarget(clientX, clientY, activeDraggingPath));
+      setHoverTarget(getDropTarget(clientX, clientY, activeDraggingPath));
     },
     [getDropTarget],
+  );
+
+  const reorderEntry = useCallback(
+    (sourcePath: string, targetPath: string, position: "before" | "after") => {
+      if (!files || search || filter || sourcePath === targetPath) {
+        return;
+      }
+
+      const sourceParent = getParentPath(sourcePath);
+      const targetParent = getParentPath(targetPath);
+      if (sourceParent !== targetParent) {
+        return;
+      }
+
+      const visibleSiblingPaths = Array.from(rowRefs.current.values())
+        .filter(({ entry }) => entry.parentPath === sourceParent)
+        .sort((a, b) => a.ref.getBoundingClientRect().top - b.ref.getBoundingClientRect().top)
+        .map(({ entry }) => entry.path);
+      const directorySiblingPaths = findDirectoryChildren(files, sourceParent, documentDir).map(
+        (entry) => entry.path,
+      );
+      const knownSiblingPaths = Array.from(
+        new Set([
+          ...(manualOrder[sourceParent] ?? []),
+          ...visibleSiblingPaths,
+          ...directorySiblingPaths,
+        ]),
+      ).filter(
+        (path) => directorySiblingPaths.includes(path) || visibleSiblingPaths.includes(path),
+      );
+      const nextOrder = knownSiblingPaths.filter((path) => path !== sourcePath);
+      const targetIndex = nextOrder.indexOf(targetPath);
+
+      if (targetIndex < 0) {
+        return;
+      }
+
+      nextOrder.splice(position === "before" ? targetIndex : targetIndex + 1, 0, sourcePath);
+      setManualOrder((current) => ({
+        ...current,
+        [sourceParent]: nextOrder,
+      }));
+      setSortMode("manual");
+    },
+    [documentDir, files, filter, manualOrder, search, setManualOrder, setSortMode],
+  );
+
+  const replaceManualOrderPathPrefix = useCallback(
+    (oldPath: string, newPath: string) => {
+      setManualOrder((current) =>
+        Object.fromEntries(
+          Object.entries(current).map(([parent, order]) => [
+            replacePathPrefix(parent, oldPath, newPath),
+            Array.from(new Set(order.map((path) => replacePathPrefix(path, oldPath, newPath)))),
+          ]),
+        ),
+      );
+    },
+    [setManualOrder],
   );
 
   const requestDelete = useCallback(
@@ -460,8 +577,9 @@ function FilesPage() {
           ),
         ),
       );
+      replaceManualOrderPathPrefix(oldPath, newPath);
     },
-    [setPinnedFiles, setRecentFiles, setTabs],
+    [replaceManualOrderPathPrefix, setPinnedFiles, setRecentFiles, setTabs],
   );
 
   const refreshDirectory = useCallback(() => mutate(), [mutate]);
@@ -489,24 +607,56 @@ function FilesPage() {
           : path !== selected.path,
       ),
     );
+    setManualOrder((current) =>
+      Object.fromEntries(
+        Object.entries(current)
+          .filter(([parent]) =>
+            selected.type === "directory"
+              ? !isSameOrDescendantPath(parent, selected.path)
+              : parent !== selected.path,
+          )
+          .map(([parent, order]) => [
+            parent,
+            order.filter((path) =>
+              selected.type === "directory"
+                ? !isSameOrDescendantPath(path, selected.path)
+                : path !== selected.path,
+            ),
+          ]),
+      ),
+    );
     setSelected(null);
-  }, [selected, mutate, toggleDeleteModal, setPinnedFiles]);
+  }, [selected, mutate, toggleDeleteModal, setPinnedFiles, setManualOrder]);
 
   const dragContextValue = useMemo(
     () => ({
       draggingPath,
       setDraggingPath,
-      hoverPath,
-      setHoverPath,
+      hoverTarget,
+      setHoverTarget,
       registerFolder,
+      registerRow,
       getDropTarget,
       checkHover,
+      reorderEntry,
+      replaceOrderedPathPrefix: replaceManualOrderPathPrefix,
       documentDir,
     }),
-    [draggingPath, hoverPath, registerFolder, getDropTarget, checkHover, documentDir],
+    [
+      draggingPath,
+      hoverTarget,
+      registerFolder,
+      registerRow,
+      getDropTarget,
+      checkHover,
+      reorderEntry,
+      replaceManualOrderPathPrefix,
+      documentDir,
+    ],
   );
 
-  const isRootDropActive = draggingPath !== null && hoverPath === documentDir;
+  const isRootDropActive =
+    draggingPath !== null && hoverTarget?.kind === "into" && hoverTarget.path === documentDir;
 
   return (
     <Stack h="100%">
@@ -674,6 +824,7 @@ function FilesPage() {
                     search={search}
                     filter={filter || ""}
                     sortMode={sortMode}
+                    documentDir={documentDir}
                   />
                 </DragContext.Provider>
               )}

@@ -77,9 +77,10 @@ export const pinnedFileEntriesAtom = atomWithStorage<string[]>(
     createZodStorage(z.array(z.string()), localStorage),
 );
 
-export type FilesSortMode = "newest" | "oldest" | "name-asc" | "name-desc" | "type";
+export type FilesSortMode = "manual" | "newest" | "oldest" | "name-asc" | "name-desc" | "type";
 
 const filesSortModeSchema: z.ZodType<FilesSortMode> = z.enum([
+    "manual",
     "newest",
     "oldest",
     "name-asc",
@@ -91,6 +92,12 @@ export const filesSortModeAtom = atomWithStorage<FilesSortMode>(
     "files-sort-mode",
     "newest",
     createZodStorage(filesSortModeSchema, localStorage),
+);
+
+export const manualFileEntryOrderAtom = atomWithStorage<Record<string, string[]>>(
+    "manual-file-entry-order",
+    {},
+    createZodStorage(z.record(z.array(z.string())), localStorage),
 );
 
 export const currentTabAtom = atom(
