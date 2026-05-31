@@ -51,6 +51,14 @@ model, implementation map, and verification expectations for this app.
   examples were `Josh Sharma` -> `Sharma, Josh`, `Peter G Large` ->
   `Large, Peter G`, `Arya Cont` -> `Cont, Arya`, `Adam Sieczkowski` ->
   `Sieczkowski, Adam`, and `Anum Sheikh` -> `Sheikh, Anum`.
+- On 2026-05-31, a quick single-player prep refresh was completed for
+  `Mesropyan, Hayk` (FIDE 499455). The existing Oxford prep folder was reused,
+  TWIC and ChessArchive second-pass games were merged where they added unique
+  movetext, malformed ChessArchive scrape rows were pruned, and the app-side
+  database was rebuilt from the Files-side PGN. Final verification showed 241
+  source PGN games, 240 converted `.db3` games, latest known game date
+  `2026.05.09`, and a clean canonical target-name audit with only
+  `Mesropyan, Hayk` in both PGN tags and database player rows.
 
 ## Local Browser Verification
 
