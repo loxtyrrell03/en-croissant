@@ -1381,13 +1381,17 @@ fn get_themes_for_puzzle_rusqlite(
     conn: &RusqliteConnection,
     puzzle_id: i32,
 ) -> Result<Vec<String>, Error> {
-    let mut stmt = conn.prepare(
+    let mut stmt = match conn.prepare(
         "SELECT t.name
          FROM themes t
          INNER JOIN puzzle_themes pt ON pt.theme_id = t.id
          WHERE pt.puzzle_id = ?1
          ORDER BY t.name ASC",
-    )?;
+    ) {
+        Ok(stmt) => stmt,
+        Err(error) if error.to_string().contains("no such table") => return Ok(Vec::new()),
+        Err(error) => return Err(error.into()),
+    };
     let themes = stmt
         .query_map(params![puzzle_id], |row| row.get(0))?
         .collect::<Result<Vec<String>, _>>()?;
@@ -1466,8 +1470,8 @@ fn get_theme_rows(
         )?;
         let (due, mastered): (i64, i64) = conn.query_row(
             "SELECT
-                COALESCE(SUM(CASE WHEN c.mastered = 0 AND c.due_at <= ?2 THEN 1 ELSE 0 END), 0),
-                COALESCE(SUM(CASE WHEN c.mastered = 1 THEN 1 ELSE 0 END), 0)
+                COUNT(DISTINCT CASE WHEN c.mastered = 0 AND c.due_at <= ?2 THEN c.puzzle_id END),
+                COUNT(DISTINCT CASE WHEN c.mastered = 1 THEN c.puzzle_id END)
              FROM puzzle_cards c
              INNER JOIN puzzle_attempts a
                 ON a.db_key = c.db_key AND a.puzzle_id = c.puzzle_id

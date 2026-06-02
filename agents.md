@@ -523,9 +523,17 @@ and read puzzle progress, select Coach/SRS/theme/rating/random training
 puzzles, record rated attempts, update SRS cards and per-theme skill estimates,
 serve dashboard data, and reset/export progress. The Coach selector clears
 urgent due cards first, then ordinary due reviews, then weak-theme or
-rating-calibration puzzles. Puzzle progress is intentionally scoped per
-installed puzzle database snapshot so future database updates do not silently
-mix stats from different source data.
+  rating-calibration puzzles. Puzzle progress is intentionally scoped per
+  installed puzzle database snapshot so future database updates do not silently
+  mix stats from different source data.
+- The Puzzle tab UI now has Train, Stats, Themes, and SRS panels. Train shows
+  Puzzle Elo, database accuracy, due/mastered counts, selection reason, SRS
+  state, current puzzle themes, and the Elo delta after an attempt. Stats shows
+  Elo and volume/accuracy trends, Themes ranks per-theme skill and weakness,
+  and SRS exposes counts, the next review queue, reset, refresh, and progress
+  export controls. Completed puzzle attempts now increment existing puzzle
+  daily goals automatically instead of requiring the Home goal's manual
+  progress button.
 
 ### Practice Bot Trainer
 

@@ -14,7 +14,14 @@ import type {
 } from "jotai/vanilla/utils/atomWithStorage";
 import type { ReviewLog } from "ts-fsrs";
 import { z } from "zod";
-import type { BestMoves, GoMode, PlanExplorerData, RepertoireGapReport, Score } from "@/bindings";
+import type {
+    BestMoves,
+    GoMode,
+    PlanExplorerData,
+    PuzzleTrainingMode,
+    RepertoireGapReport,
+    Score,
+} from "@/bindings";
 import { DEFAULT_TIME_CONTROL, type OpponentSettings } from "@/components/boards/OpponentForm";
 import { type Position, positionSchema } from "@/components/files/opening";
 import type { LocalOptions } from "@/components/panels/database/DatabasePanel";
@@ -747,6 +754,10 @@ export const hidePuzzleRatingAtom = atomWithStorage<boolean>("hide-puzzle-rating
 export const progressivePuzzlesAtom = atomWithStorage<boolean>("progressive-puzzles", false);
 export const jumpToNextPuzzleAtom = atomWithStorage<boolean>("puzzle-jump-immediately", true);
 export const trackPuzzleTimeAtom = atomWithStorage<boolean>("track-puzzle-time", true);
+export const puzzleTrainingModeAtom = atomWithStorage<PuzzleTrainingMode>(
+    "puzzle-training-mode",
+    "coach",
+);
 export const puzzleRatingRangeAtom = atomWithStorage<[number, number]>(
     "puzzle-ratings",
     [1000, 1500],

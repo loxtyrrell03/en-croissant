@@ -1,6 +1,11 @@
 import { resolve } from "@tauri-apps/api/path";
 import { readDir } from "@tauri-apps/plugin-fs";
-import { commands, type PuzzleDatabaseInfo } from "@/bindings";
+import {
+    commands,
+    type PuzzleCardProgress,
+    type PuzzleDatabaseInfo,
+    type PuzzleTrainingMode,
+} from "@/bindings";
 import { getPuzzlesDir } from "@/utils/directories";
 import { unwrap } from "./unwrap";
 
@@ -17,6 +22,14 @@ export interface Puzzle {
     completion: Completion;
     timeSpent?: number;
     themes?: string[];
+    trainingMode?: PuzzleTrainingMode;
+    selectionReason?: string;
+    progress?: PuzzleCardProgress | null;
+    usedHint?: boolean;
+    viewedSolution?: boolean;
+    attemptRecorded?: boolean;
+    eloAfter?: number;
+    eloDelta?: number;
 }
 
 async function getPuzzleDatabase(name: string): Promise<PuzzleDatabaseInfo> {
