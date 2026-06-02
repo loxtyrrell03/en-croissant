@@ -420,13 +420,32 @@ function Puzzles({ id }: { id: string }) {
     completion: Completion,
     options: { usedHint?: boolean; viewedSolution?: boolean } = {},
   ) {
+    const puzzleIndex = currentPuzzle;
     const timeSpent = timerStart !== null ? Date.now() - timerStart : 0;
-    const puzzle = puzzles[currentPuzzle];
+    const puzzle = puzzles[puzzleIndex];
     if (!puzzle || puzzle.completion !== "incomplete") return;
 
     let attemptResult: PuzzleAttemptResult | null = null;
     const usedHint = Boolean(options.usedHint || puzzle.usedHint);
     const viewedSolution = Boolean(options.viewedSolution || puzzle.viewedSolution);
+
+    setTimerStart(null);
+    setPuzzles((puzzles) => {
+      const next = [...puzzles];
+      if (next[puzzleIndex]) {
+        next[puzzleIndex] = {
+          ...next[puzzleIndex],
+          completion,
+          timeSpent,
+          usedHint,
+          viewedSolution,
+          attemptRecorded: false,
+        };
+      }
+      return next;
+    });
+
+    incrementPuzzleDailyGoals();
 
     if (selectedDb && puzzle.id) {
       const res = await commands.recordPuzzleAttempt(selectedDb, {
@@ -448,25 +467,22 @@ function Puzzles({ id }: { id: string }) {
       }
     }
 
-    setPuzzles((puzzles) => {
-      const next = [...puzzles];
-      next[currentPuzzle] = {
-        ...next[currentPuzzle],
-        completion,
-        timeSpent,
-        usedHint,
-        viewedSolution,
-        attemptRecorded: Boolean(attemptResult),
-        themes: attemptResult?.themes ?? next[currentPuzzle].themes,
-        progress: attemptResult?.card ?? next[currentPuzzle].progress,
-        eloAfter: attemptResult?.eloAfter ?? next[currentPuzzle].eloAfter,
-        eloDelta: attemptResult?.eloDelta ?? next[currentPuzzle].eloDelta,
-      };
-      return next;
-    });
-    setTimerStart(null);
-
-    incrementPuzzleDailyGoals();
+    if (attemptResult) {
+      setPuzzles((puzzles) => {
+        const next = [...puzzles];
+        if (next[puzzleIndex]) {
+          next[puzzleIndex] = {
+            ...next[puzzleIndex],
+            attemptRecorded: true,
+            themes: attemptResult.themes,
+            progress: attemptResult.card,
+            eloAfter: attemptResult.eloAfter,
+            eloDelta: attemptResult.eloDelta,
+          };
+        }
+        return next;
+      });
+    }
 
     if (selectedDb) {
       void refreshPuzzleProgress(selectedDb);
@@ -1104,6 +1120,9 @@ function PuzzleTrainPanel({
               {trackTime && (
                 <Badge variant="outline">Time {formatTime(currentPuzzle.timeSpent ?? 0)}</Badge>
               )}
+              {currentPuzzle.attemptRecorded === false && selectedDb && (
+                <Badge variant="outline">Saving result</Badge>
+              )}
               {eloDelta !== undefined && (
                 <Badge color={eloDelta >= 0 ? "teal" : "orange"} variant="outline">
                   Elo {eloDelta >= 0 ? "+" : ""}
@@ -1117,7 +1136,7 @@ function PuzzleTrainPanel({
           </Stack>
         </Alert>
       )}
-      {currentPuzzle?.selectionReason && (
+      {currentPuzzle?.selectionReason && !isCompleted && (
         <Alert color="blue" variant="light" p="xs">
           <Group justify="space-between" gap="xs">
             <Text size="sm">{currentPuzzle.selectionReason}</Text>

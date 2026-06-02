@@ -549,7 +549,12 @@ urgent due cards first, then ordinary due reviews, then weak-theme or
   selected database, and uses a visible Start/Next puzzle button instead of a
   tiny plus icon. Completed puzzles now stay selected long enough to show
   feedback, freeze the solve timer, display the Elo/SRS result, and let the
-  user explicitly request the next trainer card.
+  user explicitly request the next trainer card. Completion feedback is
+  optimistic and local-first: the timer stops and the result panel appears
+  before the backend persists Elo/SRS progress, then the backend result is
+  merged in when available. Selection-reason banners such as "Rating
+  calibration" are hidden once a card is completed so they cannot mask the
+  solve feedback.
 
 ### Practice Bot Trainer
 
