@@ -137,6 +137,7 @@ function Puzzles({ id }: { id: string }) {
   const [addOpened, setAddOpened] = useState(false);
   const [deleteModalOpened, setDeleteModalOpened] = useState(false);
   const [isPlayingSolution, setIsPlayingSolution] = useState(false);
+  const progressRequestIdRef = useRef(0);
 
   useEffect(() => {
     getPuzzleDatabases().then((databases) => {
@@ -184,6 +185,17 @@ function Puzzles({ id }: { id: string }) {
     });
   }, [selectedDb]);
 
+  const applyProgressSummary = useCallback((summary: PuzzleProgressSummary) => {
+    setProgressSummary((previous) =>
+      isNewerPuzzleSummary(summary, previous) ? summary : previous,
+    );
+    setDashboard((previous) => {
+      if (!previous || previous.summary.dbKey !== summary.dbKey) return previous;
+      if (!isNewerPuzzleSummary(summary, previous.summary)) return previous;
+      return { ...previous, summary };
+    });
+  }, []);
+
   const refreshPuzzleProgress = useCallback(
     async (db = selectedDb) => {
       if (!db) {
@@ -193,6 +205,7 @@ function Puzzles({ id }: { id: string }) {
         return;
       }
 
+      const requestId = ++progressRequestIdRef.current;
       setProgressLoading(true);
       setProgressError(null);
       try {
@@ -200,22 +213,29 @@ function Puzzles({ id }: { id: string }) {
           commands.getPuzzleProgress(db),
           commands.getPuzzleDashboard(db, 90),
         ]);
+        if (requestId !== progressRequestIdRef.current) return;
         if (summary.status === "ok") {
-          setProgressSummary(summary.data);
+          applyProgressSummary(summary.data);
         } else {
           setProgressError(String(summary.error));
         }
         if (dashboard.status === "ok") {
-          setDashboard(dashboard.data);
-          setProgressSummary(dashboard.data.summary);
+          setDashboard((previous) =>
+            isNewerPuzzleSummary(dashboard.data.summary, previous?.summary)
+              ? dashboard.data
+              : previous,
+          );
+          applyProgressSummary(dashboard.data.summary);
         } else {
           setProgressError(String(dashboard.error));
         }
       } finally {
-        setProgressLoading(false);
+        if (requestId === progressRequestIdRef.current) {
+          setProgressLoading(false);
+        }
       }
     },
-    [selectedDb],
+    [applyProgressSummary, selectedDb],
   );
 
   useEffect(() => {
@@ -460,7 +480,7 @@ function Puzzles({ id }: { id: string }) {
       if (res.status === "ok") {
         attemptResult = res.data;
         setLastAttempt(res.data);
-        setProgressSummary(res.data.summary);
+        applyProgressSummary(res.data.summary);
         setProgressError(null);
       } else {
         setProgressError(String(res.error));
@@ -1490,7 +1510,7 @@ function toNumber(value: bigint | number | null | undefined) {
 
 function formatRating(value: number | null | undefined) {
   if (value === null || value === undefined || Number.isNaN(value)) return "-";
-  return Math.round(value).toString();
+  return value.toFixed(1);
 }
 
 function formatPercent(value: number) {
@@ -1525,6 +1545,20 @@ function getLocalDateKey(date = new Date()) {
   const month = `${date.getMonth() + 1}`.padStart(2, "0");
   const day = `${date.getDate()}`.padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function isNewerPuzzleSummary(
+  next: PuzzleProgressSummary,
+  previous: PuzzleProgressSummary | null | undefined,
+) {
+  if (!previous) return true;
+  if (next.dbKey !== previous.dbKey) return true;
+
+  const nextUpdatedAt = toNumber(next.updatedAt);
+  const previousUpdatedAt = toNumber(previous.updatedAt);
+  if (nextUpdatedAt !== previousUpdatedAt) return nextUpdatedAt > previousUpdatedAt;
+
+  return toNumber(next.totalAttempts) >= toNumber(previous.totalAttempts);
 }
 
 export default Puzzles;

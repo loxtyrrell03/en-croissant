@@ -47,7 +47,7 @@ export function rankPuzzleThemes<T extends PuzzleThemeRankable>(
 export function buildPuzzleTrendRows(points: readonly PuzzleTrendLike[]) {
     return points.map((point) => ({
         date: point.dateKey,
-        elo: Math.round(point.puzzleElo),
+        elo: Number(point.puzzleElo.toFixed(1)),
         attempts: puzzleNumber(point.attempts),
         accuracy: Math.round(point.accuracy * 100),
         mastered: puzzleNumber(point.mastered),

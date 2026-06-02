@@ -42,7 +42,7 @@ describe("puzzleTraining", () => {
 
         expect(rows[0]).toEqual({
             date: "2026-06-02",
-            elo: 1513,
+            elo: 1512.6,
             attempts: 7,
             accuracy: 71,
             mastered: 2,

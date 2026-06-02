@@ -555,6 +555,10 @@ urgent due cards first, then ordinary due reviews, then weak-theme or
   merged in when available. Selection-reason banners such as "Rating
   calibration" are hidden once a card is completed so they cannot mask the
   solve feedback.
+- Puzzle Elo display preserves one decimal place and ignores stale progress
+  refresh responses, so small review deltas remain visible and an older
+  dashboard request cannot overwrite the fresher summary returned by a just
+  recorded attempt.
 
 ### Practice Bot Trainer
 
