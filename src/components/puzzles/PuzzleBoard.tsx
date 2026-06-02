@@ -4,11 +4,11 @@ import { type Move, makeUci, type NormalMove, parseSquare } from "chessops";
 import { chessgroundDests, chessgroundMove } from "chessops/compat";
 import { parseFen } from "chessops/fen";
 import equal from "fast-deep-equal";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtomValue } from "jotai";
 import { useContext, useState } from "react";
 import { useStore } from "zustand";
 import { Chessground } from "@/chessground/Chessground";
-import { jumpToNextPuzzleAtom, moveHighlightAtom, showCoordinatesAtom } from "@/state/atoms";
+import { moveHighlightAtom, showCoordinatesAtom } from "@/state/atoms";
 import classes from "@/styles/Chessboard.module.css";
 import { positionFromFen } from "@/utils/chessops";
 import type { Completion, Puzzle } from "@/utils/puzzles";
@@ -20,14 +20,14 @@ function PuzzleBoard({
   puzzles,
   currentPuzzle,
   changeCompletion,
-  generatePuzzle,
-  db,
+  onSolvedPuzzle,
+  autoAdvanceOnSolve,
 }: {
   puzzles: Puzzle[];
   currentPuzzle: number;
   changeCompletion: (completion: Completion) => Promise<void>;
-  generatePuzzle: (db: string) => Promise<void>;
-  db: string | null;
+  onSolvedPuzzle: () => Promise<void>;
+  autoAdvanceOnSolve: boolean;
 }) {
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (s) => s.root);
@@ -37,7 +37,6 @@ function PuzzleBoard({
   const makeMove = useStore(store, (s) => s.makeMove);
   const makeMoves = useStore(store, (s) => s.makeMoves);
   const reset = useForceUpdate();
-  const [jumpToNextPuzzleImmediately] = useAtom(jumpToNextPuzzleAtom);
 
   const currentNode = getNodeAtPath(root, position);
 
@@ -87,8 +86,8 @@ function PuzzleBoard({
         }
         setEnded(false);
 
-        if (db && jumpToNextPuzzleImmediately) {
-          await generatePuzzle(db);
+        if (autoAdvanceOnSolve) {
+          await onSolvedPuzzle();
           reset();
           return;
         }

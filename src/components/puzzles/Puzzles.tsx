@@ -31,7 +31,7 @@ import {
   IconDownload,
   IconFlame,
   IconListCheck,
-  IconPlus,
+  IconPlayerPlay,
   IconRefresh,
   IconRobot,
   IconSettings,
@@ -132,14 +132,24 @@ function Puzzles({ id }: { id: string }) {
   const [progressSummary, setProgressSummary] = useState<PuzzleProgressSummary | null>(null);
   const [progressError, setProgressError] = useState<string | null>(null);
   const [progressLoading, setProgressLoading] = useState(false);
+  const [puzzleLoading, setPuzzleLoading] = useState(false);
   const [lastAttempt, setLastAttempt] = useState<PuzzleAttemptResult | null>(null);
   const [resetProgressModalOpened, setResetProgressModalOpened] = useState(false);
+  const [addOpened, setAddOpened] = useState(false);
+  const [deleteModalOpened, setDeleteModalOpened] = useState(false);
+  const [isPlayingSolution, setIsPlayingSolution] = useState(false);
 
   useEffect(() => {
     getPuzzleDatabases().then((databases) => {
       setPuzzleDbs(databases);
     });
   }, []);
+
+  useEffect(() => {
+    if (puzzleDbs.length === 0) return;
+    if (selectedDb && puzzleDbs.some((database) => database.path === selectedDb)) return;
+    setSelectedDb(puzzleDbs[0].path);
+  }, [puzzleDbs, selectedDb, setSelectedDb]);
 
   const [ratingRange, setRatingRange] = useAtom(puzzleRatingRangeAtom);
   const [trainingMode, setTrainingMode] = useAtom(puzzleTrainingModeAtom);
@@ -215,6 +225,17 @@ function Puzzles({ id }: { id: string }) {
 
   const [jumpToNextPuzzleImmediately, setJumpToNextPuzzleImmediately] =
     useAtom(jumpToNextPuzzleAtom);
+  const [progressive, setProgressive] = useAtom(progressivePuzzlesAtom);
+  const [hideRating, setHideRating] = useAtom(hidePuzzleRatingAtom);
+  const [trackTime, setTrackTime] = useAtom(trackPuzzleTimeAtom);
+
+  const [timerStart, setTimerStart] = useAtom(currentPuzzleTimerAtom);
+  const [, setTick] = useState(0);
+  const isPuzzleIncomplete = puzzles[currentPuzzle]?.completion === "incomplete";
+  const elapsedTime =
+    timerStart && isPuzzleIncomplete && trackTime
+      ? Date.now() - timerStart
+      : puzzles[currentPuzzle]?.timeSpent || 0;
 
   const wonPuzzles = puzzles.filter((p) => p.completion === "correct");
   const lostPuzzles = puzzles.filter((p) => p.completion === "incorrect");
@@ -275,63 +296,128 @@ function Puzzles({ id }: { id: string }) {
     }
   }, [dailyGoals, setDailyGoalCompletionPrompt, setDailyGoalHistory]);
 
-  function setPuzzle(puzzle: { fen: string; moves: string[] }) {
+  const setPuzzle = useCallback((puzzle: { fen: string; moves: string[] }) => {
     setFen(puzzle.fen);
     makeMove({ payload: parseUci(puzzle.moves[0])! });
-  }
+  }, [makeMove, setFen]);
 
   const solutionAbortRef = useRef<AbortController | null>(null);
+  const puzzleGenerationRef = useRef(false);
+  const autoStartKeyRef = useRef<string | null>(null);
 
-  async function generatePuzzle(db: string, force: boolean = false) {
-    let nextIndex = puzzles.findIndex((p, i) => i > currentPuzzle && p.completion === "incomplete");
-    if (nextIndex === -1) {
-      nextIndex = puzzles.findIndex((p, i) => i < currentPuzzle && p.completion === "incomplete");
-    }
+  const generatePuzzle = useCallback(
+    async (db: string, force: boolean = false) => {
+      if (puzzleGenerationRef.current) return;
 
-    if (nextIndex !== -1 && !force) {
-      solutionAbortRef.current?.abort();
-      setIsPlayingSolution(false);
-      setCurrentPuzzle(nextIndex);
-      setPuzzle(puzzles[nextIndex]);
-      if (trackTime) {
-        setTimerStart(Date.now() - (puzzles[nextIndex].timeSpent || 0));
+      puzzleGenerationRef.current = true;
+      setPuzzleLoading(true);
+      try {
+        let nextIndex = puzzles.findIndex(
+          (p, i) => i > currentPuzzle && p.completion === "incomplete",
+        );
+        if (nextIndex === -1) {
+          nextIndex = puzzles.findIndex(
+            (p, i) => i < currentPuzzle && p.completion === "incomplete",
+          );
+        }
+
+        if (nextIndex !== -1 && !force) {
+          solutionAbortRef.current?.abort();
+          setIsPlayingSolution(false);
+          setCurrentPuzzle(nextIndex);
+          setPuzzle(puzzles[nextIndex]);
+          if (trackTime) {
+            setTimerStart(Date.now() - (puzzles[nextIndex].timeSpent || 0));
+          }
+          setProgressError(null);
+          return;
+        }
+
+        solutionAbortRef.current?.abort();
+        setIsPlayingSolution(false);
+
+        let range = ratingRange;
+        if (progressive) {
+          const rating = puzzles[currentPuzzle]?.rating;
+          if (rating) {
+            range = [rating + 50, rating + 100];
+            setRatingRange([rating + 50, rating + 100]);
+          }
+        }
+        const mode: PuzzleTrainingMode = progressive ? "ratingLadder" : trainingMode;
+        const res = await commands.getTrainingPuzzle(
+          db,
+          mode,
+          range[0],
+          range[1],
+          effectiveSelectedTheme,
+        );
+        const candidate = unwrap(res);
+        const puzzle = candidate.puzzle;
+        const nextPuzzleIndex = puzzles.length;
+        const newPuzzle: Puzzle = {
+          ...puzzle,
+          moves: puzzle.moves.split(" "),
+          completion: "incomplete",
+          themes: candidate.themes,
+          trainingMode: candidate.mode,
+          selectionReason: candidate.reason,
+          progress: candidate.progress,
+        };
+        setPuzzles((puzzles) => [...puzzles, newPuzzle]);
+        setCurrentPuzzle(nextPuzzleIndex);
+        setPuzzle(newPuzzle);
+        setProgressError(null);
+        if (trackTime) {
+          setTimerStart(Date.now());
+        }
+      } catch (error) {
+        setProgressError(error instanceof Error ? error.message : String(error));
+      } finally {
+        puzzleGenerationRef.current = false;
+        setPuzzleLoading(false);
       }
-      return;
-    }
+    },
+    [
+      currentPuzzle,
+      effectiveSelectedTheme,
+      progressive,
+      puzzles,
+      ratingRange,
+      setCurrentPuzzle,
+      setPuzzles,
+      setPuzzle,
+      setRatingRange,
+      setTimerStart,
+      trackTime,
+      trainingMode,
+    ],
+  );
 
-    solutionAbortRef.current?.abort();
-    setIsPlayingSolution(false);
+  useEffect(() => {
+    if (!selectedDb || puzzles.length > 0 || puzzleLoading) return;
 
-    let range = ratingRange;
-    if (progressive) {
-      const rating = puzzles[currentPuzzle]?.rating;
-      if (rating) {
-        range = [rating + 50, rating + 100];
-        setRatingRange([rating + 50, rating + 100]);
-      }
-    }
-    const mode: PuzzleTrainingMode = progressive ? "ratingLadder" : trainingMode;
-    const res = await commands.getTrainingPuzzle(db, mode, range[0], range[1], effectiveSelectedTheme);
-    const candidate = unwrap(res);
-    const puzzle = candidate.puzzle;
-    const newPuzzle: Puzzle = {
-      ...puzzle,
-      moves: puzzle.moves.split(" "),
-      completion: "incomplete",
-      themes: candidate.themes,
-      trainingMode: candidate.mode,
-      selectionReason: candidate.reason,
-      progress: candidate.progress,
-    };
-    setPuzzles((puzzles) => {
-      return [...puzzles, newPuzzle];
-    });
-    setCurrentPuzzle(puzzles.length);
-    setPuzzle(newPuzzle);
-    if (trackTime) {
-      setTimerStart(Date.now());
-    }
-  }
+    const autoStartKey = [
+      selectedDb,
+      progressive ? "ratingLadder" : trainingMode,
+      ratingRange[0],
+      ratingRange[1],
+      effectiveSelectedTheme ?? "all",
+    ].join(":");
+    if (autoStartKeyRef.current === autoStartKey) return;
+
+    autoStartKeyRef.current = autoStartKey;
+    void generatePuzzle(selectedDb, true);
+  }, [
+    effectiveSelectedTheme,
+    generatePuzzle,
+    progressive,
+    puzzleLoading,
+    puzzles.length,
+    ratingRange,
+    selectedDb,
+    trainingMode,
+  ]);
 
   async function changeCompletion(
     completion: Completion,
@@ -390,22 +476,6 @@ function Puzzles({ id }: { id: string }) {
     }
   }
 
-  const [addOpened, setAddOpened] = useState(false);
-  const [deleteModalOpened, setDeleteModalOpened] = useState(false);
-  const [isPlayingSolution, setIsPlayingSolution] = useState(false);
-
-  const [progressive, setProgressive] = useAtom(progressivePuzzlesAtom);
-  const [hideRating, setHideRating] = useAtom(hidePuzzleRatingAtom);
-  const [trackTime, setTrackTime] = useAtom(trackPuzzleTimeAtom);
-
-  const [timerStart, setTimerStart] = useAtom(currentPuzzleTimerAtom);
-  const [, setTick] = useState(0);
-  const isPuzzleIncomplete = puzzles[currentPuzzle]?.completion === "incomplete";
-  const elapsedTime =
-    timerStart && isPuzzleIncomplete && trackTime
-      ? Date.now() - timerStart
-      : puzzles[currentPuzzle]?.timeSpent || 0;
-
   useEffect(() => {
     if (previousSelectedDbRef.current === undefined) {
       previousSelectedDbRef.current = selectedDb;
@@ -414,6 +484,7 @@ function Puzzles({ id }: { id: string }) {
     if (previousSelectedDbRef.current === selectedDb) return;
 
     previousSelectedDbRef.current = selectedDb;
+    autoStartKeyRef.current = null;
     solutionAbortRef.current?.abort();
     setPuzzles([]);
     setCurrentPuzzle(0);
@@ -487,8 +558,11 @@ function Puzzles({ id }: { id: string }) {
   };
 
   const currentSessionPuzzle = puzzles[currentPuzzle];
+  const autoAdvanceOnSolve =
+    currentSessionPuzzle?.trainingMode === "coach" || jumpToNextPuzzleImmediately;
 
   function clearSession() {
+    autoStartKeyRef.current = null;
     setPuzzles([]);
     reset();
     setTimerStart(null);
@@ -581,6 +655,7 @@ function Puzzles({ id }: { id: string }) {
       setProgressSummary(res.data);
       setDashboard(null);
       setLastAttempt(null);
+      autoStartKeyRef.current = null;
       setPuzzles([]);
       reset();
       setTimerStart(null);
@@ -611,8 +686,12 @@ function Puzzles({ id }: { id: string }) {
           puzzles={puzzles}
           currentPuzzle={currentPuzzle}
           changeCompletion={changeCompletion}
-          generatePuzzle={generatePuzzle}
-          db={selectedDb}
+          onSolvedPuzzle={async () => {
+            if (selectedDb) {
+              await generatePuzzle(selectedDb, true);
+            }
+          }}
+          autoAdvanceOnSolve={autoAdvanceOnSolve}
         />
       </Portal>
       <Portal target="#topRight" style={{ height: "100%" }}>
@@ -640,6 +719,7 @@ function Puzzles({ id }: { id: string }) {
                 await commands.deletePuzzleDatabase(selectedDb);
                 setPuzzleDbs((dbs) => dbs.filter((db) => db.path !== selectedDb));
                 setSelectedDb(null);
+                autoStartKeyRef.current = null;
                 setPuzzles([]);
                 reset();
                 setTimerStart(null);
@@ -807,6 +887,7 @@ function Puzzles({ id }: { id: string }) {
                   currentStreak={currentStreak}
                   avgTimeSeconds={avgTimeSeconds}
                   progressLoading={progressLoading}
+                  puzzleLoading={puzzleLoading}
                   hideRating={hideRating}
                   trackTime={trackTime}
                   elapsedTime={elapsedTime}
@@ -906,6 +987,7 @@ function PuzzleTrainPanel({
   currentStreak,
   avgTimeSeconds,
   progressLoading,
+  puzzleLoading,
   hideRating,
   trackTime,
   elapsedTime,
@@ -931,6 +1013,7 @@ function PuzzleTrainPanel({
   currentStreak: number;
   avgTimeSeconds: number;
   progressLoading: boolean;
+  puzzleLoading: boolean;
   hideRating: boolean;
   trackTime: boolean;
   elapsedTime: number;
@@ -955,6 +1038,11 @@ function PuzzleTrainPanel({
   const activeMode = progressive ? "ratingLadder" : trainingMode;
   const currentThemes = currentPuzzle?.themes ?? [];
   const eloDelta = currentPuzzle?.eloDelta ?? lastAttempt?.eloDelta;
+  const newPuzzleLabel = !currentPuzzle
+    ? "Start training"
+    : currentPuzzle.completion === "incomplete"
+      ? "New puzzle"
+      : "Next puzzle";
 
   return (
     <Stack gap="sm">
@@ -1046,11 +1134,15 @@ function PuzzleTrainPanel({
           {!turnToMove ? "" : turnToMove === "white" ? "Black to move" : "White to move"}
         </Text>
         <Group gap="xs">
-          <Tooltip label="New puzzle">
-            <ActionIcon disabled={!selectedDb} onClick={onNewPuzzle}>
-              <IconPlus />
-            </ActionIcon>
-          </Tooltip>
+          <Button
+            size="xs"
+            leftSection={<IconPlayerPlay size={16} />}
+            disabled={!selectedDb}
+            loading={puzzleLoading}
+            onClick={onNewPuzzle}
+          >
+            {newPuzzleLabel}
+          </Button>
           <Tooltip label="Analyze position">
             <ActionIcon disabled={!currentPuzzle} onClick={onAnalyze}>
               <IconZoomCheck />
