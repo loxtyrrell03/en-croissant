@@ -46,6 +46,8 @@ type StudyUpdateCandidate = {
     record: LichessStudyDatabaseUpdateRecord;
 };
 
+type StudyConflictResolution = "stop" | "prefer-remote";
+
 export type LichessStudyDatabaseManualUpdateResult = {
     updated: boolean;
     pushed: boolean;
@@ -81,6 +83,7 @@ async function maybeUpdateStudyCandidate({
     setUpdateRecords,
     isConversionInProgress,
     skipRecentCheck = false,
+    conflictResolution = "stop",
 }: {
     candidate: StudyUpdateCandidate;
     databaseDir: string;
@@ -89,6 +92,7 @@ async function maybeUpdateStudyCandidate({
     setUpdateRecords: SetStudyDatabaseUpdateRecords;
     isConversionInProgress: () => boolean;
     skipRecentCheck?: boolean;
+    conflictResolution?: StudyConflictResolution;
 }): Promise<LichessStudyDatabaseManualUpdateResult> {
     const { database, record } = candidate;
     const now = Date.now();
@@ -157,13 +161,16 @@ async function maybeUpdateStudyCandidate({
                 ? localSnapshot.hash !== record.localPgnHash
                 : true;
 
-            if (remoteChanged && localChanged) {
+            const shouldReloadRemoteConflict =
+                remoteChanged && localChanged && conflictResolution === "prefer-remote";
+
+            if (remoteChanged && localChanged && !shouldReloadRemoteConflict) {
                 throw new Error(
-                    "Both the local database and Lichess study changed. Reload or resolve one side before automatic two-way sync pushes annotations.",
+                    "Both the local database and Lichess study changed. Use Reload study to rebuild this database from Lichess, or resolve one side before automatic two-way sync pushes annotations.",
                 );
             }
 
-            if (localChanged) {
+            if (localChanged && !shouldReloadRemoteConflict) {
                 setConversionState((prev) => ({
                     ...prev,
                     phase: "converting",
@@ -311,6 +318,7 @@ export async function updateLichessStudyDatabaseNow({
         setUpdateRecords,
         isConversionInProgress,
         skipRecentCheck: true,
+        conflictResolution: "prefer-remote",
     });
 }
 

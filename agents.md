@@ -368,6 +368,11 @@ and `src/utils/lichess/study.ts`.
   of surfacing Lichess's raw 401/403 response, and the database settings prompt
   users to sign in to Lichess directly instead of relying on a removed Accounts
   page.
+- Manual Lichess Study reloads now resolve a two-way-sync conflict in favor of
+  the remote study PGN, rebuilding the local database and then syncing the
+  linked Files folder. Automatic background sync remains conservative: if both
+  the local database and remote study changed, it stops and asks the user to
+  reload or resolve one side before pushing local annotations.
 - PGN import timestamp normalization was fixed so online-update ordering stays
   reliable.
 
