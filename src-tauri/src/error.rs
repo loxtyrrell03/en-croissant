@@ -43,6 +43,9 @@ pub enum Error {
     Diesel(Box<diesel::result::Error>),
 
     #[error(transparent)]
+    Rusqlite(Box<rusqlite::Error>),
+
+    #[error(transparent)]
     R2d2(Box<diesel::r2d2::PoolError>),
 
     #[error(transparent)]
@@ -175,6 +178,12 @@ impl From<shakmaty::san::SanError> for Error {
 impl From<diesel::result::Error> for Error {
     fn from(value: diesel::result::Error) -> Self {
         Self::Diesel(Box::new(value))
+    }
+}
+
+impl From<rusqlite::Error> for Error {
+    fn from(value: rusqlite::Error) -> Self {
+        Self::Rusqlite(Box::new(value))
     }
 }
 

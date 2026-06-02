@@ -513,6 +513,20 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
   duplicates until it is due, attempted-today duplicates are skipped, and the
   ready count reflects the deduped board-position queue.
 
+### Puzzle Training
+
+Puzzle training is being upgraded from session-only random puzzle practice into
+a durable guided trainer. The downloaded Lichess puzzle `.db3` remains
+read-only; user progress is stored separately in an app-data SQLite database
+keyed by a stable puzzle database fingerprint. Backend commands now initialize
+and read puzzle progress, select Coach/SRS/theme/rating/random training
+puzzles, record rated attempts, update SRS cards and per-theme skill estimates,
+serve dashboard data, and reset/export progress. The Coach selector clears
+urgent due cards first, then ordinary due reviews, then weak-theme or
+rating-calibration puzzles. Puzzle progress is intentionally scoped per
+installed puzzle database snapshot so future database updates do not silently
+mix stats from different source data.
+
 ### Practice Bot Trainer
 
 Practice bot work is in `src/utils/practiceBot.ts`,

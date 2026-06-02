@@ -144,6 +144,54 @@ async getPuzzle(file: string, minRating: number, maxRating: number, theme: strin
     else return { status: "error", error: e  as any };
 }
 },
+async getPuzzleProgress(file: string) : Promise<Result<PuzzleProgressSummary, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_puzzle_progress", { file }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async getTrainingPuzzle(file: string, mode: PuzzleTrainingMode, minRating: number, maxRating: number, theme: string | null) : Promise<Result<PuzzleTrainingCandidate, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_training_puzzle", { file, mode, minRating, maxRating, theme }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async recordPuzzleAttempt(file: string, input: PuzzleAttemptInput) : Promise<Result<PuzzleAttemptResult, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("record_puzzle_attempt", { file, input }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async getPuzzleDashboard(file: string, days: number | null) : Promise<Result<PuzzleDashboard, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_puzzle_dashboard", { file, days }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async resetPuzzleProgress(file: string) : Promise<Result<PuzzleProgressSummary, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("reset_puzzle_progress", { file }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async exportPuzzleProgress(file: string, targetFile: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("export_puzzle_progress", { file, targetFile }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async searchOpeningName(query: string) : Promise<Result<OutOpening[], string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("search_opening_name", { query }) };
@@ -691,7 +739,21 @@ export type PositionStats = { move: string; white: number; draw: number; black: 
 export type ProgressEvent = { id: string; progress: number; finished: boolean }
 export type ProgressItem = { id: string; progress: number; finished: boolean }
 export type Puzzle = { id: number; fen: string; moves: string; rating: number; rating_deviation: number; popularity: number; nb_plays: number }
+export type PuzzleAttemptInput = { puzzleId: number; mode: PuzzleTrainingMode; outcome: PuzzleAttemptOutcome; timeSpentMs: bigint; usedHint: boolean; viewedSolution: boolean }
+export type PuzzleAttemptOutcome = "correct" | "incorrect"
+export type PuzzleAttemptResult = { summary: PuzzleProgressSummary; card: PuzzleCardProgress; themes: string[]; eloBefore: number; eloAfter: number; eloDelta: number; themeDeltas: PuzzleThemeDelta[] }
+export type PuzzleCardProgress = { puzzleId: number; dueAt: bigint; state: PuzzleSrsState; reps: bigint; lapses: bigint; intervalDays: number; ease: number; lastAttemptAt: bigint | null; totalAttempts: bigint; correctAttempts: bigint; mastered: boolean }
+export type PuzzleDashboard = { summary: PuzzleProgressSummary; themes: PuzzleThemeStatsRow[]; trends: PuzzleTrendPoint[]; srsCounts: PuzzleSrsCounts; dueCards: PuzzleSrsQueueRow[] }
 export type PuzzleDatabaseInfo = { title: string; description: string; puzzleCount: number; storageSize: bigint; path: string }
+export type PuzzleProgressSummary = { dbKey: string; puzzleElo: number; totalAttempts: bigint; correctAttempts: bigint; accuracy: number; due: bigint; learning: bigint; review: bigint; mastered: bigint; themesTracked: bigint; updatedAt: bigint }
+export type PuzzleSrsCounts = { learning: bigint; relearning: bigint; review: bigint; mastered: bigint; due: bigint }
+export type PuzzleSrsQueueRow = { puzzleId: number; rating: number; themes: string[]; dueAt: bigint; state: PuzzleSrsState; reps: bigint; lapses: bigint; intervalDays: number; totalAttempts: bigint; correctAttempts: bigint; mastered: boolean }
+export type PuzzleSrsState = "new" | "learning" | "relearning" | "review" | "mastered"
+export type PuzzleThemeDelta = { theme: string; skillBefore: number; skillAfter: number; skillDelta: number }
+export type PuzzleThemeStatsRow = { theme: string; attempts: bigint; correct: bigint; accuracy: number; averageTimeMs: number; skill: number; weaknessScore: number; recentAttempts: bigint; recentAccuracy: number; due: bigint; mastered: bigint; lastAttemptAt: bigint | null }
+export type PuzzleTrainingCandidate = { puzzle: Puzzle; themes: string[]; mode: PuzzleTrainingMode; reason: string; dbKey: string; progress: PuzzleCardProgress | null }
+export type PuzzleTrainingMode = "coach" | "srsReview" | "themeFocus" | "ratingLadder" | "random"
+export type PuzzleTrendPoint = { dateKey: string; puzzleElo: number; attempts: bigint; accuracy: number; solved: bigint; due: bigint; mastered: bigint }
 export type QueryOptions<SortT> = { skipCount: boolean; page?: number | null; pageSize?: number | null; sort: SortT; direction: SortDirection }
 export type QueryResponse<T> = { data: T; count: number | null }
 export type RepertoireGap = { fen: string; normalizedFen: string; ply: number; sideToMove: string; moveSequence: string; playerMoveSan: string; playerMoveUci: string; playerGames: number; playerPositionGames: number; playerWhite: number; playerDraw: number; playerBlack: number; playerScore: number; lastPlayed: string | null; referenceGames: number; referenceMoveRank: number | null; referenceMoveShare: number; referenceScore: number | null; topReferenceMoveScore: number | null; classification: RepertoireGapClassification; popularityGap: number; scoreGap: number; severity: number; sampleGameIds: number[]; topReferenceMoves: RepertoireGapReferenceMove[] }
