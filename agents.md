@@ -547,9 +547,9 @@ urgent due cards first, then ordinary due reviews, then weak-theme or
 - Puzzle training now auto-selects an available saved puzzle database when the
   previous selection is missing, auto-loads the first trainer card for the
   selected database, and uses a visible Start/Next puzzle button instead of a
-  tiny plus icon. Coach-mode solves advance through a guarded single-flight
-  loader so completing a rating-calibration puzzle cannot leave the workspace
-  parked on the old completed card.
+  tiny plus icon. Completed puzzles now stay selected long enough to show
+  feedback, freeze the solve timer, display the Elo/SRS result, and let the
+  user explicitly request the next trainer card.
 
 ### Practice Bot Trainer
 

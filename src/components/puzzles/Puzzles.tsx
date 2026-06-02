@@ -76,7 +76,6 @@ import {
   dailyGoalHistoryAtom,
   dailyGoalsAtom,
   hidePuzzleRatingAtom,
-  jumpToNextPuzzleAtom,
   progressivePuzzlesAtom,
   puzzleRatingRangeAtom,
   puzzleThemeAtom,
@@ -223,8 +222,6 @@ function Puzzles({ id }: { id: string }) {
     void refreshPuzzleProgress();
   }, [refreshPuzzleProgress]);
 
-  const [jumpToNextPuzzleImmediately, setJumpToNextPuzzleImmediately] =
-    useAtom(jumpToNextPuzzleAtom);
   const [progressive, setProgressive] = useAtom(progressivePuzzlesAtom);
   const [hideRating, setHideRating] = useAtom(hidePuzzleRatingAtom);
   const [trackTime, setTrackTime] = useAtom(trackPuzzleTimeAtom);
@@ -558,8 +555,6 @@ function Puzzles({ id }: { id: string }) {
   };
 
   const currentSessionPuzzle = puzzles[currentPuzzle];
-  const autoAdvanceOnSolve =
-    currentSessionPuzzle?.trainingMode === "coach" || jumpToNextPuzzleImmediately;
 
   function clearSession() {
     autoStartKeyRef.current = null;
@@ -686,12 +681,6 @@ function Puzzles({ id }: { id: string }) {
           puzzles={puzzles}
           currentPuzzle={currentPuzzle}
           changeCompletion={changeCompletion}
-          onSolvedPuzzle={async () => {
-            if (selectedDb) {
-              await generatePuzzle(selectedDb, true);
-            }
-          }}
-          autoAdvanceOnSolve={autoAdvanceOnSolve}
         />
       </Portal>
       <Portal target="#topRight" style={{ height: "100%" }}>
@@ -824,14 +813,6 @@ function Puzzles({ id }: { id: string }) {
                       description={t("Puzzle.HideRating.Desc")}
                       checked={hideRating}
                       onChange={(event) => setHideRating(event.currentTarget.checked)}
-                    />
-                    <Switch
-                      label={t("Puzzle.JumpToNextPuzzleImmediately")}
-                      description={t("Puzzle.JumpToNextPuzzleImmediately.Desc")}
-                      checked={jumpToNextPuzzleImmediately}
-                      onChange={(event) =>
-                        setJumpToNextPuzzleImmediately(event.currentTarget.checked)
-                      }
                     />
                     <Switch
                       label={t("Puzzle.TrackPuzzleTime")}
@@ -1038,6 +1019,7 @@ function PuzzleTrainPanel({
   const activeMode = progressive ? "ratingLadder" : trainingMode;
   const currentThemes = currentPuzzle?.themes ?? [];
   const eloDelta = currentPuzzle?.eloDelta ?? lastAttempt?.eloDelta;
+  const isCompleted = currentPuzzle !== undefined && currentPuzzle.completion !== "incomplete";
   const newPuzzleLabel = !currentPuzzle
     ? "Start training"
     : currentPuzzle.completion === "incomplete"
@@ -1103,6 +1085,38 @@ function PuzzleTrainPanel({
           Average correct solve time this session: {avgTimeSeconds.toFixed(1)}s
         </Text>
       )}
+      {isCompleted && (
+        <Alert
+          color={currentPuzzle.completion === "correct" ? "teal" : "orange"}
+          variant="light"
+          p="xs"
+        >
+          <Stack gap={4}>
+            <Group justify="space-between" gap="xs">
+              <Text size="sm" fw={700}>
+                {currentPuzzle.completion === "correct" ? "Solved" : "Review scheduled"}
+              </Text>
+              {currentPuzzle.progress && (
+                <Badge variant="light">{formatSrsState(currentPuzzle.progress.state)}</Badge>
+              )}
+            </Group>
+            <Group gap="xs">
+              {trackTime && (
+                <Badge variant="outline">Time {formatTime(currentPuzzle.timeSpent ?? 0)}</Badge>
+              )}
+              {eloDelta !== undefined && (
+                <Badge color={eloDelta >= 0 ? "teal" : "orange"} variant="outline">
+                  Elo {eloDelta >= 0 ? "+" : ""}
+                  {eloDelta.toFixed(1)}
+                </Badge>
+              )}
+              {currentPuzzle.eloAfter && (
+                <Badge variant="outline">Now {formatRating(currentPuzzle.eloAfter)}</Badge>
+              )}
+            </Group>
+          </Stack>
+        </Alert>
+      )}
       {currentPuzzle?.selectionReason && (
         <Alert color="blue" variant="light" p="xs">
           <Group justify="space-between" gap="xs">
@@ -1111,13 +1125,6 @@ function PuzzleTrainPanel({
               <Badge variant="light">{formatSrsState(currentPuzzle.progress.state)}</Badge>
             )}
           </Group>
-        </Alert>
-      )}
-      {eloDelta !== undefined && currentPuzzle?.completion !== "incomplete" && (
-        <Alert color={eloDelta >= 0 ? "teal" : "orange"} variant="light" p="xs">
-          Puzzle Elo {eloDelta >= 0 ? "+" : ""}
-          {eloDelta.toFixed(1)}
-          {currentPuzzle?.eloAfter ? ` -> ${formatRating(currentPuzzle.eloAfter)}` : ""}
         </Alert>
       )}
       {currentThemes.length > 0 && (

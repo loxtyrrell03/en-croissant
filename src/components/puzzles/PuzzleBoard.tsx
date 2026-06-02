@@ -20,14 +20,10 @@ function PuzzleBoard({
   puzzles,
   currentPuzzle,
   changeCompletion,
-  onSolvedPuzzle,
-  autoAdvanceOnSolve,
 }: {
   puzzles: Puzzle[];
   currentPuzzle: number;
   changeCompletion: (completion: Completion) => Promise<void>;
-  onSolvedPuzzle: () => Promise<void>;
-  autoAdvanceOnSolve: boolean;
 }) {
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (s) => s.root);
@@ -85,12 +81,6 @@ function PuzzleBoard({
           await changeCompletion("correct");
         }
         setEnded(false);
-
-        if (autoAdvanceOnSolve) {
-          await onSolvedPuzzle();
-          reset();
-          return;
-        }
       }
       const newMoves = puzzle.moves.slice(currentMove, currentMove + 2);
       makeMoves({
