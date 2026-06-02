@@ -33,6 +33,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import useSWR from "swr";
 import {
+  archivedFileEntriesAtom,
   filesSortModeAtom,
   manualFileEntryOrderAtom,
   pinnedFileEntriesAtom,
@@ -254,6 +255,7 @@ function FilesPage() {
   const setTabs = useSetAtom(tabsAtom);
   const setRecentFiles = useSetAtom(recentFilesAtom);
   const setPinnedFiles = useSetAtom(pinnedFileEntriesAtom);
+  const setArchivedFiles = useSetAtom(archivedFileEntriesAtom);
   const [manualOrder, setManualOrder] = useAtom(manualFileEntryOrderAtom);
   const [sortMode, setSortMode] = useAtom(filesSortModeAtom);
   const activeSortLabel =
@@ -264,6 +266,7 @@ function FilesPage() {
   const [renameTarget, setRenameTarget] = useState<Entry | null>(null);
   const [games, setGames] = useState<Map<number, string>>(new Map());
   const [filter, setFilter] = useState<FileType | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
 
   const [deleteModal, toggleDeleteModal] = useToggle();
   const [createModal, toggleCreateModal] = useToggle();
@@ -577,9 +580,23 @@ function FilesPage() {
           ),
         ),
       );
+      setArchivedFiles((archivedFiles) =>
+        Array.from(
+          new Set(
+            archivedFiles.map((path) => {
+              const isAffected =
+                oldEntry.type === "directory"
+                  ? isSameOrDescendantPath(path, oldPath)
+                  : path === oldPath;
+
+              return isAffected ? replacePathPrefix(path, oldPath, newPath) : path;
+            }),
+          ),
+        ),
+      );
       replaceManualOrderPathPrefix(oldPath, newPath);
     },
-    [replaceManualOrderPathPrefix, setPinnedFiles, setRecentFiles, setTabs],
+    [replaceManualOrderPathPrefix, setArchivedFiles, setPinnedFiles, setRecentFiles, setTabs],
   );
 
   const refreshDirectory = useCallback(() => mutate(), [mutate]);
@@ -607,6 +624,13 @@ function FilesPage() {
           : path !== selected.path,
       ),
     );
+    setArchivedFiles((archivedFiles) =>
+      archivedFiles.filter((path) =>
+        selected.type === "directory"
+          ? !isSameOrDescendantPath(path, selected.path)
+          : path !== selected.path,
+      ),
+    );
     setManualOrder((current) =>
       Object.fromEntries(
         Object.entries(current)
@@ -626,7 +650,7 @@ function FilesPage() {
       ),
     );
     setSelected(null);
-  }, [selected, mutate, toggleDeleteModal, setPinnedFiles, setManualOrder]);
+  }, [selected, mutate, toggleDeleteModal, setArchivedFiles, setPinnedFiles, setManualOrder]);
 
   const dragContextValue = useMemo(
     () => ({
@@ -780,11 +804,25 @@ function FilesPage() {
                   key={type}
                   size="sm"
                   checked={filter === type}
-                  onChange={(checked) => setFilter(checked ? type : null)}
+                  onChange={(checked) => {
+                    setFilter(checked ? type : null);
+                    if (checked) setShowArchived(false);
+                  }}
                 >
                   {getFileTypeLabel(type, t)}
                 </Chip>
               ))}
+              <Chip
+                variant="outline"
+                size="sm"
+                checked={showArchived}
+                onChange={(checked) => {
+                  setShowArchived(checked);
+                  if (checked) setFilter(null);
+                }}
+              >
+                Archived
+              </Chip>
             </Group>
             <Divider />
             <ScrollArea
@@ -823,6 +861,7 @@ function FilesPage() {
                     onRequestRename={requestRename}
                     search={search}
                     filter={filter || ""}
+                    showArchived={showArchived}
                     sortMode={sortMode}
                     documentDir={documentDir}
                   />

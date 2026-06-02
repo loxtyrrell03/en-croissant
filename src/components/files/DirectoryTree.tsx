@@ -1,5 +1,7 @@
 import { Badge, Box, Loader, Text } from "@mantine/core";
 import {
+  IconArchive,
+  IconArchiveOff,
   IconChevronRight,
   IconEdit,
   IconEye,
@@ -29,6 +31,7 @@ import {
 } from "react";
 import {
   activeTabAtom,
+  archivedFileEntriesAtom,
   deckAtomFamily,
   tabsAtom,
   expandedDirectoriesAtom,
@@ -95,6 +98,46 @@ function filterTree(files: Entry[], predicate: (file: FileMetadata) => boolean):
     .filter((file): file is Entry => file !== null);
 }
 
+function filterArchivedTree(
+  files: Entry[],
+  archivedPaths: ReadonlySet<string>,
+  showArchived: boolean,
+): Entry[] {
+  return files
+    .map((entry) => filterArchivedEntry(entry, archivedPaths, showArchived, false))
+    .filter((entry): entry is Entry => entry !== null);
+}
+
+function filterArchivedEntry(
+  entry: Entry,
+  archivedPaths: ReadonlySet<string>,
+  showArchived: boolean,
+  parentArchived: boolean,
+): Entry | null {
+  const archived = parentArchived || archivedPaths.has(entry.path);
+
+  if (entry.type === "file") {
+    return archived === showArchived ? entry : null;
+  }
+
+  if (!showArchived && archived) {
+    return null;
+  }
+
+  const children = entry.children
+    .map((child) => filterArchivedEntry(child, archivedPaths, showArchived, archived))
+    .filter((child): child is Entry => child !== null);
+
+  if (showArchived && !archived && children.length === 0) {
+    return null;
+  }
+
+  return {
+    ...entry,
+    children,
+  };
+}
+
 function getEventPoint(event: DraggableEvent): { x: number; y: number } | null {
   if ("clientX" in event && "clientY" in event) {
     return { x: event.clientX, y: event.clientY };
@@ -122,6 +165,10 @@ function replacePathPrefix(path: string, oldPath: string, newPath: string) {
   }
 
   return path;
+}
+
+function isSameOrDescendantPath(path: string, parent: string) {
+  return path === parent || path.startsWith(`${parent}/`) || path.startsWith(`${parent}\\`);
 }
 
 function recursiveSort(
@@ -227,6 +274,7 @@ export default function DirectoryTree({
   onRequestRename,
   search,
   filter,
+  showArchived,
   sortMode,
   documentDir,
 }: {
@@ -241,12 +289,15 @@ export default function DirectoryTree({
   onRequestRename: (file: Entry) => void;
   search: string;
   filter: string;
+  showArchived: boolean;
   sortMode: FilesSortMode;
   documentDir: string;
 }) {
   const [pinnedPaths, setPinnedPaths] = useAtom(pinnedFileEntriesAtom);
+  const [archivedPaths, setArchivedPaths] = useAtom(archivedFileEntriesAtom);
   const [manualOrder] = useAtom(manualFileEntryOrderAtom);
   const pinnedPathSet = useMemo(() => new Set(pinnedPaths), [pinnedPaths]);
+  const archivedPathSet = useMemo(() => new Set(archivedPaths), [archivedPaths]);
   const flattedFiles = useMemo(() => flattenFiles(files ?? []), [files]);
   const fuse = useMemo(
     () =>
@@ -268,6 +319,8 @@ export default function DirectoryTree({
       next = filterTree(next, (file) => file.metadata.type === filter);
     }
 
+    next = filterArchivedTree(next, archivedPathSet, showArchived);
+
     return recursiveSort(
       next,
       !!(search || filter),
@@ -276,7 +329,18 @@ export default function DirectoryTree({
       manualOrder,
       documentDir,
     );
-  }, [files, search, filter, fuse, pinnedPathSet, sortMode, manualOrder, documentDir]);
+  }, [
+    files,
+    search,
+    filter,
+    fuse,
+    archivedPathSet,
+    showArchived,
+    pinnedPathSet,
+    sortMode,
+    manualOrder,
+    documentDir,
+  ]);
 
   return (
     <Box className={classes.tree}>
@@ -299,6 +363,8 @@ export default function DirectoryTree({
         onRequestRename={onRequestRename}
         pinnedPaths={pinnedPathSet}
         setPinnedPaths={setPinnedPaths}
+        archivedPaths={archivedPathSet}
+        setArchivedPaths={setArchivedPaths}
         expandedByDefault={!!(search || filter)}
         parentPath={documentDir}
       />
@@ -318,6 +384,8 @@ function Tree({
   onRequestRename,
   pinnedPaths,
   setPinnedPaths,
+  archivedPaths,
+  setArchivedPaths,
   expandedByDefault,
   parentPath,
 }: {
@@ -332,6 +400,8 @@ function Tree({
   onRequestRename: (file: Entry) => void;
   pinnedPaths: ReadonlySet<string>;
   setPinnedPaths: React.Dispatch<React.SetStateAction<string[]>>;
+  archivedPaths: ReadonlySet<string>;
+  setArchivedPaths: React.Dispatch<React.SetStateAction<string[]>>;
   expandedByDefault?: boolean;
   parentPath: string;
 }) {
@@ -412,6 +482,8 @@ function Tree({
             onRequestRename={onRequestRename}
             pinnedPaths={pinnedPaths}
             setPinnedPaths={setPinnedPaths}
+            archivedPaths={archivedPaths}
+            setArchivedPaths={setArchivedPaths}
             refreshDirectory={refreshDirectory}
             showContextMenu={showContextMenu}
             parentPath={parentPath}
@@ -434,6 +506,8 @@ function Tree({
                     onRequestRename={onRequestRename}
                     pinnedPaths={pinnedPaths}
                     setPinnedPaths={setPinnedPaths}
+                    archivedPaths={archivedPaths}
+                    setArchivedPaths={setArchivedPaths}
                     expandedByDefault={expandedByDefault}
                     parentPath={node.path}
                   />
@@ -478,6 +552,8 @@ function DirectoryNode({
   onRequestRename,
   pinnedPaths,
   setPinnedPaths,
+  archivedPaths,
+  setArchivedPaths,
   refreshDirectory,
   showContextMenu,
   parentPath,
@@ -496,6 +572,8 @@ function DirectoryNode({
   onRequestRename: (file: Entry) => void;
   pinnedPaths: ReadonlySet<string>;
   setPinnedPaths: React.Dispatch<React.SetStateAction<string[]>>;
+  archivedPaths: ReadonlySet<string>;
+  setArchivedPaths: React.Dispatch<React.SetStateAction<string[]>>;
   refreshDirectory: () => Promise<unknown>;
   showContextMenu: ShowContextMenu;
   parentPath: string;
@@ -509,6 +587,11 @@ function DirectoryNode({
 
   const [isDraggingNode, setIsDraggingNode] = useState(false);
   const isPinned = pinnedPaths.has(node.path);
+  const directArchived = archivedPaths.has(node.path);
+  const archiveAncestor = Array.from(archivedPaths).find(
+    (path) => path !== node.path && isSameOrDescendantPath(node.path, path),
+  );
+  const isArchived = directArchived || !!archiveAncestor;
 
   const togglePin = useCallback(() => {
     setPinnedPaths((current) => {
@@ -519,6 +602,20 @@ function DirectoryNode({
       return [...current, node.path];
     });
   }, [node.path, setPinnedPaths]);
+
+  const toggleArchive = useCallback(() => {
+    setArchivedPaths((current) => {
+      if (current.includes(node.path)) {
+        return current.filter((path) => !isSameOrDescendantPath(path, node.path));
+      }
+
+      return [
+        ...current.filter((path) => !isSameOrDescendantPath(path, node.path)),
+        node.path,
+      ];
+    });
+    setSelectedFile(null);
+  }, [node.path, setArchivedPaths, setSelectedFile]);
 
   useEffect(() => {
     if (!dragContext) {
@@ -639,6 +736,11 @@ function DirectoryNode({
             new Set(current.map((path) => replacePathPrefix(path, sourcePath, targetPath))),
           ),
         );
+        setArchivedPaths((current) =>
+          Array.from(
+            new Set(current.map((path) => replacePathPrefix(path, sourcePath, targetPath))),
+          ),
+        );
         dragContext.replaceOrderedPathPrefix(sourcePath, targetPath);
         if (target.path !== dragContext.documentDir) {
           setExpandedIds((prev) => (prev.includes(target.path) ? prev : [...prev, target.path]));
@@ -710,6 +812,13 @@ function DirectoryNode({
       onClick: () => {
         onRequestRename(node);
       },
+    },
+    {
+      key: "archive-file",
+      icon: isArchived ? <IconArchiveOff size={16} /> : <IconArchive size={16} />,
+      title: directArchived ? "Unarchive" : archiveAncestor ? "Archived by parent" : "Archive",
+      disabled: !!archiveAncestor,
+      onClick: toggleArchive,
     },
     {
       key: "delete-file",
@@ -807,9 +916,10 @@ function DirectoryNode({
             <FileIcon type={node.metadata.type} className={classes.typeIcon} />
           )}
           <span className={classes.label}>{node.name}</span>
-          {(isPinned || (node.type === "file" && node.metadata.type === "repertoire")) && (
+          {(isPinned || isArchived || (node.type === "file" && node.metadata.type === "repertoire")) && (
             <div className={classes.badge}>
               {isPinned && <IconPinned size={12} />}
+              {isArchived && <IconArchive size={12} />}
               {node.type === "file" && node.metadata.type === "repertoire" && (
                 <DuePositions file={node.path} />
               )}

@@ -127,6 +127,11 @@ default.
 - Files and folders can be pinned from the Files tree context menu. Pinned
   entries persist, show a pin marker, stay above normal newest-first rows, and
   follow rename or move operations by path.
+- Files and folders can be archived from the Files tree context menu. Archiving
+  is stored as persisted path state rather than a filesystem move. Archived
+  entries are hidden from the normal file-type pills, the toolbar has an
+  Archived pill for reviewing them, and archived paths follow rename, delete,
+  and drag/move repairs like pinned entries.
 - The Files toolbar includes a persistent sort menu for newest first, oldest
   first, name A-Z/Z-A, and type; pinned entries remain grouped above the chosen
   sort order.

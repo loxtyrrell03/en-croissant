@@ -77,6 +77,12 @@ export const pinnedFileEntriesAtom = atomWithStorage<string[]>(
     createZodStorage(z.array(z.string()), localStorage),
 );
 
+export const archivedFileEntriesAtom = atomWithStorage<string[]>(
+    "archived-file-entries",
+    [],
+    createZodStorage(z.array(z.string()), localStorage),
+);
+
 export type FilesSortMode = "manual" | "newest" | "oldest" | "name-asc" | "name-desc" | "type";
 
 const filesSortModeSchema: z.ZodType<FilesSortMode> = z.enum([
