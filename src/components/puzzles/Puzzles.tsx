@@ -124,6 +124,7 @@ function Puzzles({ id }: { id: string }) {
 
   const [puzzleDbs, setPuzzleDbs] = useState<PuzzleDatabaseInfo[]>([]);
   const [selectedDb, setSelectedDb] = useAtom(selectedPuzzleDbAtom);
+  const previousSelectedDbRef = useRef<string | null | undefined>(undefined);
 
   const [settingsOpened, setSettingsOpened] = useState(false);
   const [panelView, setPanelView] = useState<string | null>("train");
@@ -404,6 +405,23 @@ function Puzzles({ id }: { id: string }) {
     timerStart && isPuzzleIncomplete && trackTime
       ? Date.now() - timerStart
       : puzzles[currentPuzzle]?.timeSpent || 0;
+
+  useEffect(() => {
+    if (previousSelectedDbRef.current === undefined) {
+      previousSelectedDbRef.current = selectedDb;
+      return;
+    }
+    if (previousSelectedDbRef.current === selectedDb) return;
+
+    previousSelectedDbRef.current = selectedDb;
+    solutionAbortRef.current?.abort();
+    setPuzzles([]);
+    setCurrentPuzzle(0);
+    reset();
+    setTimerStart(null);
+    setLastAttempt(null);
+    setIsPlayingSolution(false);
+  }, [reset, selectedDb, setCurrentPuzzle, setPuzzles, setTimerStart]);
 
   useEffect(() => {
     if (trackTime && isPuzzleIncomplete && timerStart === null) {

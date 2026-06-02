@@ -429,7 +429,7 @@ pub fn get_training_puzzle(
     let puzzle_conn = RusqliteConnection::open(&file)?;
     let elo = get_profile_elo(&progress_conn, &db_key)?;
 
-    let candidate = match mode {
+    let mut candidate = match mode {
         PuzzleTrainingMode::Coach => choose_coach_puzzle(
             &progress_conn,
             &puzzle_conn,
@@ -498,6 +498,18 @@ pub fn get_training_puzzle(
             "Random puzzle".to_string(),
         )?,
     };
+
+    if candidate.is_none() {
+        candidate = fallback_training_candidate(
+            &progress_conn,
+            &puzzle_conn,
+            &db_key,
+            min_rating,
+            max_rating,
+            theme.as_deref(),
+            mode,
+        )?;
+    }
 
     candidate.ok_or(Error::NoPuzzles)
 }
@@ -1317,6 +1329,55 @@ fn random_candidate(
     }
 }
 
+fn fallback_training_candidate(
+    progress_conn: &RusqliteConnection,
+    puzzle_conn: &RusqliteConnection,
+    db_key: &str,
+    min_rating: u16,
+    max_rating: u16,
+    theme: Option<&str>,
+    mode: PuzzleTrainingMode,
+) -> Result<Option<PuzzleTrainingCandidate>, Error> {
+    if theme.is_some() {
+        if let Some(candidate) = random_candidate(
+            progress_conn,
+            puzzle_conn,
+            db_key,
+            min_rating,
+            max_rating,
+            None,
+            mode.clone(),
+            "No puzzle matched that theme and range; using the rating range".to_string(),
+        )? {
+            return Ok(Some(candidate));
+        }
+
+        if let Some(candidate) = random_candidate(
+            progress_conn,
+            puzzle_conn,
+            db_key,
+            600,
+            3000,
+            theme,
+            mode.clone(),
+            "No puzzle matched that rating range; broadening the theme search".to_string(),
+        )? {
+            return Ok(Some(candidate));
+        }
+    }
+
+    random_candidate(
+        progress_conn,
+        puzzle_conn,
+        db_key,
+        600,
+        3000,
+        None,
+        mode,
+        "No puzzle matched the selected filters; using any available puzzle".to_string(),
+    )
+}
+
 fn load_random_puzzle(
     conn: &RusqliteConnection,
     min_rating: u16,
@@ -1326,7 +1387,7 @@ fn load_random_puzzle(
     let low = min_rating.min(max_rating) as i64;
     let high = min_rating.max(max_rating) as i64;
     if let Some(theme) = theme {
-        conn.query_row(
+        let result = conn.query_row(
             "SELECT p.id, p.fen, p.moves, p.rating, p.rating_deviation, p.popularity, p.nb_plays
              FROM puzzles p
              INNER JOIN puzzle_themes pt ON pt.puzzle_id = p.id
@@ -1336,8 +1397,12 @@ fn load_random_puzzle(
             params![theme, low, high],
             row_to_puzzle,
         )
-        .optional()
-        .map_err(Error::from)
+        .optional();
+        match result {
+            Ok(puzzle) => Ok(puzzle),
+            Err(error) if error.to_string().contains("no such table") => Ok(None),
+            Err(error) => Err(error.into()),
+        }
     } else {
         conn.query_row(
             "SELECT id, fen, moves, rating, rating_deviation, popularity, nb_plays
@@ -1705,5 +1770,55 @@ mod tests {
         let low_sample = calculate_theme_weakness(1, 0, 1, 1300.0, 1600.0);
         let enough_sample = calculate_theme_weakness(20, 8, 8, 1300.0, 1600.0);
         assert!(enough_sample > low_sample);
+    }
+
+    #[test]
+    fn fallback_broadens_empty_theme_rating_search() {
+        let progress_conn = RusqliteConnection::open_in_memory().unwrap();
+        init_progress_schema(&progress_conn).unwrap();
+        ensure_profile(&progress_conn, "test-db").unwrap();
+
+        let puzzle_conn = RusqliteConnection::open_in_memory().unwrap();
+        puzzle_conn
+            .execute_batch(
+                "
+                CREATE TABLE puzzles (
+                    id INTEGER PRIMARY KEY,
+                    fen TEXT NOT NULL,
+                    moves TEXT NOT NULL,
+                    rating INTEGER NOT NULL,
+                    rating_deviation INTEGER NOT NULL,
+                    popularity INTEGER NOT NULL,
+                    nb_plays INTEGER NOT NULL
+                );
+                CREATE TABLE themes (id INTEGER PRIMARY KEY, name TEXT NOT NULL);
+                CREATE TABLE puzzle_themes (puzzle_id INTEGER NOT NULL, theme_id INTEGER NOT NULL);
+                INSERT INTO puzzles
+                    (id, fen, moves, rating, rating_deviation, popularity, nb_plays)
+                VALUES
+                    (1, '8/8/8/8/8/8/8/8 w - - 0 1', 'a2a3', 1000, 75, 90, 10);
+                INSERT INTO themes (id, name) VALUES (1, 'fork');
+                INSERT INTO puzzle_themes (puzzle_id, theme_id) VALUES (1, 1);
+                ",
+            )
+            .unwrap();
+
+        let candidate = fallback_training_candidate(
+            &progress_conn,
+            &puzzle_conn,
+            "test-db",
+            2200,
+            2300,
+            Some("fork"),
+            PuzzleTrainingMode::ThemeFocus,
+        )
+        .unwrap()
+        .unwrap();
+
+        assert_eq!(candidate.puzzle.id, 1);
+        assert_eq!(
+            candidate.reason,
+            "No puzzle matched that rating range; broadening the theme search"
+        );
     }
 }

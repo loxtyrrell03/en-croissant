@@ -539,6 +539,11 @@ urgent due cards first, then ordinary due reviews, then weak-theme or
   export controls. Completed puzzle attempts now increment existing puzzle
   daily goals automatically instead of requiring the Home goal's manual
   progress button.
+- Puzzle selection now broadens empty filter combinations before surfacing an
+  error: if a theme/rating search has no match, it falls back through rating
+  only, broad theme, then any available puzzle. Switching puzzle databases
+  also clears the active session puzzle so stale puzzle IDs are not recorded
+  into the newly selected database.
 
 ### Practice Bot Trainer
 
