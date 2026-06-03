@@ -1,10 +1,10 @@
 /// <reference types="vitest/config" />
+import * as os from "node:os";
 import { resolve } from "node:path";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import babel from "@rolldown/plugin-babel";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import { defineConfig } from "vite";
-import * as os from "node:os";
 
 const isDebug = !!process.env.TAURI_ENV_DEBUG;
 const host = process.env.TAURI_DEV_HOST;

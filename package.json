@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "start-vite": "vite",
+    "web:library": "node scripts/build-web-library.mjs",
+    "build-web-library": "npm run web:library && npm run build-vite",
     "build-vite": "tsgo --noEmit && vite build",
     "build": "tauri build --no-bundle",
     "dev": "powershell -ExecutionPolicy Bypass -File scripts/safe-dev.ps1 -SkipBackup",

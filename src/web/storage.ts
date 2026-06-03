@@ -1,3 +1,4 @@
+import { INITIAL_FEN } from "chessops/fen";
 import type { WebCompanionState } from "./model";
 
 const DB_NAME = "en-croissant-web-companion";
@@ -14,6 +15,19 @@ export function createEmptyWebState(): WebCompanionState {
     gamesByDatabase: {},
     prepWorkspaces: [],
     activePrepId: null,
+    board: createEmptyWebBoardState(),
+  };
+}
+
+export function createEmptyWebBoardState(): WebCompanionState["board"] {
+  return {
+    orientation: "white",
+    startFen: INITIAL_FEN,
+    line: [],
+    cursor: 0,
+    sourceTitle: null,
+    sourceDatabaseId: null,
+    sourceGameId: null,
   };
 }
 
@@ -23,7 +37,7 @@ export async function loadWebState(): Promise<WebCompanionState> {
     database.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).get(STATE_KEY),
   );
 
-  return isValidState(value) ? value : createEmptyWebState();
+  return isValidState(value) ? normalizeWebState(value) : createEmptyWebState();
 }
 
 export async function saveWebState(state: WebCompanionState) {
@@ -68,4 +82,18 @@ function isValidState(value: unknown): value is WebCompanionState {
     candidate.gamesByDatabase !== null &&
     Array.isArray(candidate.prepWorkspaces)
   );
+}
+
+function normalizeWebState(state: WebCompanionState): WebCompanionState {
+  return {
+    ...state,
+    board: {
+      ...createEmptyWebBoardState(),
+      ...(state.board ?? {}),
+      cursor: Math.min(
+        Math.max(0, state.board?.cursor ?? state.board?.line?.length ?? 0),
+        state.board?.line?.length ?? 0,
+      ),
+    },
+  };
 }

@@ -10,6 +10,7 @@ import type {
   WebGame,
   WebImportResult,
   WebMove,
+  WebPrepLineMove,
   WebResult,
 } from "./model";
 
@@ -164,6 +165,16 @@ export function playUciMove(fen: string, uci: string) {
 
 export function currentWebFen(line: { fenAfter: string }[], startFen = INITIAL_FEN) {
   return line.at(-1)?.fenAfter ?? startFen;
+}
+
+export function webGameToLine(game: WebGame): WebPrepLineMove[] {
+  return game.moves.map((move) => ({
+    fenBefore: move.fenBefore,
+    fenAfter: move.fenAfter,
+    san: move.san,
+    uci: move.uci,
+    actor: move.color === "white" ? "user" : "opponent",
+  }));
 }
 
 function createDatabaseId(name: string, importedAt: number) {

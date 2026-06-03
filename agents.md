@@ -120,6 +120,22 @@ default.
   so static hosting builds can be installed as a lightweight PWA. Keep the
   browser entry free of eager `@tauri-apps/*` imports; browser deployment
   depends on the desktop app remaining behind the dynamic Tauri-runtime import.
+- Also on 2026-06-03, the phone web MVP was reshaped around a board-first
+  workspace. The primary phone screen is now a Chessground board with a compact
+  under-board `Moves / Database / Prep` segmented panel, matching the desktop
+  analysis under-board model rather than separate deck-style pages. Moves
+  navigates the active line, Database shows browser-indexed PGN move stats from
+  the current FEN, and Prep creates/selects opponent workspaces with notes,
+  prepared/open move state, and the same compact move table.
+- Anywhere phone file access should use a hosted static library rather than a
+  laptop-dependent bridge. `scripts/build-web-library.mjs` mirrors PGN/PDF files
+  from `Documents/EnCroissant` or `EN_CROISSANT_WEB_FILES_DIR` into ignored
+  `public/web-library` assets and writes a manifest consumed by
+  `src/web/hostedFiles.ts`. Running `npm run web:library` before a static
+  deployment lets the phone browse Hosted files and load PGNs/PDFs from the
+  published site while the laptop is off. Do not reintroduce a local
+  filesystem bridge as the phone product path; it makes phone access depend on
+  the laptop being awake and can expose local files on a development network.
 
 ### App Shell
 

@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+import { listHostedLibraryPath, type WebHostedLibrary } from "@/web/hostedFiles";
 import { getWebPrepMoveStats } from "@/web/prepIndex";
 import { parsePgnDatabase } from "@/web/pgn";
 
@@ -48,5 +49,45 @@ describe("web companion PGN prep index", () => {
       total: 1,
       sourceLabel: "opponent move",
     });
+  });
+
+  test("lists hosted web-library folders without requiring a laptop bridge", () => {
+    const library: WebHostedLibrary = {
+      available: true,
+      manifest: {
+        version: 1,
+        generatedAt: "2026-06-03T12:00:00.000Z",
+        sourceName: "EnCroissant",
+        files: [
+          {
+            type: "file",
+            name: "game one",
+            filename: "game one.pgn",
+            extension: "pgn",
+            path: "Prep/Opponent/game one.pgn",
+            url: "files/Prep/Opponent/game%20one.pgn",
+            lastModified: 1,
+            sizeBytes: 10,
+          },
+          {
+            type: "file",
+            name: "report",
+            filename: "report.pdf",
+            extension: "pdf",
+            path: "Prep/report.pdf",
+            url: "files/Prep/report.pdf",
+            lastModified: 2,
+            sizeBytes: 20,
+          },
+        ],
+      },
+    };
+
+    const root = listHostedLibraryPath(library, "");
+    const prep = listHostedLibraryPath(library, "Prep");
+
+    expect(root?.entries.map((entry) => entry.name)).toEqual(["Prep"]);
+    expect(prep?.entries.map((entry) => entry.name)).toEqual(["Opponent", "report"]);
+    expect(prep?.parentPath).toBe("");
   });
 });

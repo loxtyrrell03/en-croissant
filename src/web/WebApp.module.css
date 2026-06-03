@@ -43,6 +43,27 @@
   align-items: start;
 }
 
+.phoneBoard {
+  display: grid;
+  gap: var(--mantine-spacing-sm);
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.boardHeader {
+  display: flex;
+  gap: var(--mantine-spacing-sm);
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.truncateTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .panel {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
@@ -88,6 +109,72 @@
   border: 0 !important;
 }
 
+.underBoardPanel {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--mantine-color-dark-7) 88%, transparent);
+}
+
+.underBoardTop {
+  min-height: 3.4rem;
+  padding: 0.55rem 0.65rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.underBoardContent {
+  min-height: 11rem;
+  padding: 0.65rem;
+}
+
+.moveList {
+  min-height: 5.25rem;
+  max-height: 13rem;
+  overflow: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 0.32rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  font-variant-numeric: tabular-nums;
+}
+
+.movePill {
+  min-height: 1.85rem;
+  padding: 0.2rem 0.45rem;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.86rem;
+}
+
+.movePill[data-current="true"] {
+  border-color: color-mix(in srgb, var(--mantine-primary-color-5) 55%, transparent);
+  background: color-mix(in srgb, var(--mantine-primary-color-9) 34%, rgba(255, 255, 255, 0.06));
+}
+
+.compactTable {
+  font-size: 0.84rem;
+}
+
+.compactTable th,
+.compactTable td {
+  white-space: nowrap;
+}
+
+.underBoardEmpty {
+  min-height: 9.5rem;
+  display: grid;
+  place-items: center;
+  padding: var(--mantine-spacing-md);
+  color: var(--mantine-color-gray-4);
+}
+
 .line {
   min-height: 2.35rem;
   padding: 0.55rem 0.65rem;
@@ -100,6 +187,20 @@
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   gap: var(--mantine-spacing-md);
+}
+
+.filesWorkspace {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.86fr) minmax(0, 1.14fr);
+  gap: var(--mantine-spacing-md);
+  align-items: start;
+}
+
+.filesSplit {
+  display: grid;
+  grid-template-columns: minmax(210px, 0.82fr) minmax(0, 1.18fr);
+  gap: var(--mantine-spacing-md);
+  align-items: start;
 }
 
 .itemList {
@@ -164,7 +265,9 @@
   }
 
   .workspace,
-  .split {
+  .split,
+  .filesWorkspace,
+  .filesSplit {
     grid-template-columns: 1fr;
   }
 

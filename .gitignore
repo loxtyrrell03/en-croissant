@@ -11,6 +11,7 @@ node_modules
 coverage
 dist
 dist-ssr
+public/web-library/
 *.local
 .next
 tsconfig.tsbuildinfo

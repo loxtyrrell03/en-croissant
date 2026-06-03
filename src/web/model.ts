@@ -64,12 +64,23 @@ export type WebPrepWorkspace = {
   updatedAt: number;
 };
 
+export type WebBoardState = {
+  orientation: WebColor;
+  startFen: string;
+  line: WebPrepLineMove[];
+  cursor: number;
+  sourceTitle: string | null;
+  sourceDatabaseId: string | null;
+  sourceGameId: string | null;
+};
+
 export type WebCompanionState = {
   version: 1;
   databases: WebDatabase[];
   gamesByDatabase: Record<string, WebGame[]>;
   prepWorkspaces: WebPrepWorkspace[];
   activePrepId: string | null;
+  board: WebBoardState;
 };
 
 export type WebImportResult = {

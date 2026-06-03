@@ -15,7 +15,6 @@ import {
   Center,
   Checkbox,
   createTheme,
-  Divider,
   Group,
   Loader,
   MantineProvider,
@@ -29,24 +28,27 @@ import {
   Textarea,
   TextInput,
   Title,
-  Tooltip,
 } from "@mantine/core";
 import { notifications, Notifications } from "@mantine/notifications";
 import {
   IconArrowBackUp,
-  IconBook,
+  IconChevronLeft,
+  IconChevronRight,
+  IconChevronsLeft,
+  IconChevronsRight,
   IconChess,
   IconDatabase,
   IconDownload,
-  IconFolderOpen,
+  IconFileText,
+  IconFolder,
   IconPlus,
   IconRefresh,
   IconTrash,
   IconUpload,
 } from "@tabler/icons-react";
+import { isNormal, makeSquare, parseSquare, parseUci } from "chessops";
 import { chessgroundDests } from "chessops/compat";
 import { INITIAL_FEN } from "chessops/fen";
-import { isNormal, makeSquare, parseSquare, parseUci } from "chessops";
 import {
   useCallback,
   useEffect,
@@ -54,26 +56,37 @@ import {
   useRef,
   useState,
   type Dispatch,
+  type ReactNode,
   type SetStateAction,
 } from "react";
+import { positionFromFen } from "@/utils/chessops";
 import classes from "./WebApp.module.css";
+import {
+  getHostedRawFileUrl,
+  getHostedWebLibrary,
+  listHostedLibraryPath,
+  readHostedPgnFile,
+  type WebHostedFileEntry,
+  type WebHostedFileListResponse,
+  type WebHostedLibrary,
+} from "./hostedFiles";
 import type {
+  WebBoardState,
   WebColor,
   WebCompanionState,
   WebDatabase,
   WebGame,
   WebImportResult,
+  WebPrepLineMove,
   WebPrepWorkspace,
 } from "./model";
 import {
   collectGamesForSources,
-  getDatabasePlayerCounts,
   getKnownPlayers,
   getWebPrepMoveStats,
   type WebPrepMoveStat,
 } from "./prepIndex";
 import {
-  currentWebFen,
   formatWebDate,
   getFenColor,
   normalizeWebFen,
@@ -81,11 +94,12 @@ import {
   parsePgnDatabase,
   playSanMove,
   playUciMove,
+  webGameToLine,
 } from "./pgn";
-import { createEmptyWebState, loadWebState, saveWebState } from "./storage";
-import { positionFromFen } from "@/utils/chessops";
+import { createEmptyWebBoardState, createEmptyWebState, loadWebState, saveWebState } from "./storage";
 
-type ViewMode = "prep" | "files" | "databases";
+type ViewMode = "board" | "files";
+type BoardPanelMode = "moves" | "database" | "prep";
 
 const theme = createTheme({
   primaryColor: "blue",
@@ -108,7 +122,7 @@ const theme = createTheme({
 export default function WebApp() {
   const [state, setState] = useState<WebCompanionState>(() => createEmptyWebState());
   const [loaded, setLoaded] = useState(false);
-  const [view, setView] = useState<ViewMode>("prep");
+  const [view, setView] = useState<ViewMode>("board");
   const [importing, setImporting] = useState(false);
   const [selectedDatabaseId, setSelectedDatabaseId] = useState<string | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
@@ -155,7 +169,7 @@ export default function WebApp() {
 
   useEffect(() => {
     if (!("serviceWorker" in navigator) || !import.meta.env.PROD) return;
-    void navigator.serviceWorker.register("/web-sw.js").catch((error) => {
+    void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}web-sw.js`).catch((error) => {
       console.warn("Web companion service worker registration failed", error);
     });
   }, []);
@@ -172,6 +186,41 @@ export default function WebApp() {
   const selectedGame =
     activeDatabaseGames.find((game) => game.id === selectedGameId) ?? activeDatabaseGames[0] ?? null;
 
+  const loadGameOnBoard = useCallback((game: WebGame) => {
+    setState((current) => ({
+      ...current,
+      activePrepId: null,
+      board: {
+        orientation: "white",
+        startFen: INITIAL_FEN,
+        line: webGameToLine(game),
+        cursor: game.moves.length,
+        sourceTitle: `${game.white} - ${game.black}`,
+        sourceDatabaseId: game.databaseId,
+        sourceGameId: game.id,
+      },
+    }));
+    setSelectedDatabaseId(game.databaseId);
+    setSelectedGameId(game.id);
+    setView("board");
+  }, []);
+
+  const addImportedDatabases = useCallback((imported: WebImportResult[]) => {
+    setState((current) => {
+      const nextGames = { ...current.gamesByDatabase };
+      for (const result of imported) {
+        nextGames[result.database.id] = result.games;
+      }
+
+      return {
+        ...current,
+        databases: [...imported.map((result) => result.database), ...current.databases],
+        gamesByDatabase: nextGames,
+      };
+    });
+    setSelectedDatabaseId(imported[0]?.database.id ?? selectedDatabaseId);
+  }, [selectedDatabaseId]);
+
   const importFiles = useCallback(
     async (files: FileList | null) => {
       if (!files || files.length === 0) return;
@@ -184,20 +233,12 @@ export default function WebApp() {
           imported.push(parsePgnDatabase(file.name, text));
         }
 
-        setState((current) => {
-          const nextGames = { ...current.gamesByDatabase };
-          for (const result of imported) {
-            nextGames[result.database.id] = result.games;
-          }
+        addImportedDatabases(imported);
+        const firstGame = imported[0]?.games[0];
+        if (firstGame) {
+          window.setTimeout(() => loadGameOnBoard(firstGame), 0);
+        }
 
-          return {
-            ...current,
-            databases: [...imported.map((result) => result.database), ...current.databases],
-            gamesByDatabase: nextGames,
-          };
-        });
-
-        setSelectedDatabaseId(imported[0]?.database.id ?? selectedDatabaseId);
         notifications.show({
           title: "PGN imported",
           message: `${imported.reduce((sum, result) => sum + result.games.length, 0)} games indexed.`,
@@ -214,7 +255,36 @@ export default function WebApp() {
         setImporting(false);
       }
     },
-    [selectedDatabaseId],
+    [addImportedDatabases, loadGameOnBoard],
+  );
+
+  const importHostedPgn = useCallback(
+    async (entry: WebHostedFileEntry) => {
+      setImporting(true);
+      try {
+        const file = await readHostedPgnFile(entry);
+        const imported = parsePgnDatabase(file.filename, file.content);
+        addImportedDatabases([imported]);
+        if (imported.games[0]) {
+          window.setTimeout(() => loadGameOnBoard(imported.games[0]), 0);
+        }
+        notifications.show({
+          title: "Hosted file opened",
+          message: `${imported.games.length} games indexed from ${file.filename}.`,
+          color: "green",
+        });
+      } catch (error) {
+        console.error(error);
+        notifications.show({
+          title: "Could not open file",
+          message: error instanceof Error ? error.message : "The hosted file could not be read.",
+          color: "red",
+        });
+      } finally {
+        setImporting(false);
+      }
+    },
+    [addImportedDatabases, loadGameOnBoard],
   );
 
   const deleteDatabase = useCallback((database: WebDatabase) => {
@@ -230,6 +300,10 @@ export default function WebApp() {
           ...prep,
           sourceIds: prep.sourceIds.filter((id) => id !== database.id),
         })),
+        board:
+          current.board.sourceDatabaseId === database.id
+            ? createEmptyWebBoardState()
+            : current.board,
       };
     });
     setSelectedDatabaseId((current) => (current === database.id ? null : current));
@@ -249,7 +323,7 @@ export default function WebApp() {
                     En Croissant Web
                   </Title>
                   <Text size="xs" c="dimmed" truncate>
-                    Prep, files, and PGN databases
+                    Board, files, database, prep
                   </Text>
                 </Box>
               </Group>
@@ -260,9 +334,8 @@ export default function WebApp() {
                 value={view}
                 onChange={(value) => setView(value as ViewMode)}
                 data={[
-                  { value: "prep", label: "Prep" },
+                  { value: "board", label: "Board" },
                   { value: "files", label: "Files" },
-                  { value: "databases", label: "Databases" },
                 ]}
               />
               <Button
@@ -297,26 +370,25 @@ export default function WebApp() {
                 </Text>
               </Stack>
             </Center>
-          ) : state.databases.length === 0 ? (
-            <EmptyImportState importing={importing} importFiles={importFiles} />
-          ) : view === "prep" ? (
-            <PrepView state={state} setState={setState} activePrep={activePrep} />
-          ) : view === "files" ? (
-            <FilesView
+          ) : view === "board" ? (
+            <BoardWorkspace
+              state={state}
+              setState={setState}
+              activePrep={activePrep}
+            />
+          ) : (
+            <FilesWorkspace
               databases={state.databases}
               gamesByDatabase={state.gamesByDatabase}
               selectedDatabaseId={selectedDatabaseId}
               selectedGame={selectedGame}
+              importing={importing}
+              importFiles={importFiles}
+              importHostedPgn={importHostedPgn}
               setSelectedDatabaseId={setSelectedDatabaseId}
               setSelectedGameId={setSelectedGameId}
               deleteDatabase={deleteDatabase}
-            />
-          ) : (
-            <DatabasesView
-              databases={state.databases}
-              gamesByDatabase={state.gamesByDatabase}
-              selectedDatabaseId={selectedDatabaseId}
-              setSelectedDatabaseId={setSelectedDatabaseId}
+              loadGameOnBoard={loadGameOnBoard}
             />
           )}
         </main>
@@ -325,40 +397,7 @@ export default function WebApp() {
   );
 }
 
-function EmptyImportState({
-  importing,
-  importFiles,
-}: {
-  importing: boolean;
-  importFiles: (files: FileList | null) => Promise<void>;
-}) {
-  return (
-    <Box className={`${classes.panel} ${classes.empty}`}>
-      <Stack align="center" gap="sm">
-        <IconFolderOpen size={44} />
-        <Title order={2}>Import a PGN</Title>
-        <Text size="sm" c="dimmed" maw={430}>
-          Browser prep starts from PGN files saved on this device.
-        </Text>
-        <Button component="label" leftSection={<IconUpload size={16} />} loading={importing}>
-          Choose PGN files
-          <input
-            hidden
-            multiple
-            type="file"
-            accept=".pgn,application/x-chess-pgn,text/plain"
-            onChange={(event) => {
-              void importFiles(event.currentTarget.files);
-              event.currentTarget.value = "";
-            }}
-          />
-        </Button>
-      </Stack>
-    </Box>
-  );
-}
-
-function PrepView({
+function BoardWorkspace({
   state,
   setState,
   activePrep,
@@ -367,22 +406,317 @@ function PrepView({
   setState: Dispatch<SetStateAction<WebCompanionState>>;
   activePrep: WebPrepWorkspace | null;
 }) {
-  const [opponent, setOpponent] = useState("");
-  const [userColor, setUserColor] = useState<WebColor>("white");
-  const [sourceIds, setSourceIds] = useState<string[]>(() => state.databases.map((db) => db.id));
-  const currentFen = currentWebFen(activePrep?.line ?? [], activePrep?.startFen ?? INITIAL_FEN);
-  const games = useMemo(
+  const [panelMode, setPanelMode] = useState<BoardPanelMode>("moves");
+  const board = state.board ?? createEmptyWebBoardState();
+  const activeLine = activePrep?.line ?? board.line;
+  const startFen = activePrep?.startFen ?? board.startFen;
+  const cursor = clampCursor(board.cursor, activeLine.length);
+  const currentFen = fenAtCursor(activeLine, cursor, startFen);
+  const currentLine = activeLine.slice(0, cursor);
+  const allGames = useMemo(
+    () => Object.values(state.gamesByDatabase).flat(),
+    [state.gamesByDatabase],
+  );
+  const prepGames = useMemo(
     () =>
       collectGamesForSources(
         state.gamesByDatabase,
-        activePrep?.sourceIds.length ? activePrep.sourceIds : sourceIds,
+        activePrep?.sourceIds.length ? activePrep.sourceIds : state.databases.map((db) => db.id),
       ),
-    [activePrep?.sourceIds, sourceIds, state.gamesByDatabase],
+    [activePrep?.sourceIds, state.databases, state.gamesByDatabase],
   );
-  const stats = useMemo(
-    () => getWebPrepMoveStats({ games, prep: activePrep, fen: currentFen }),
-    [activePrep, currentFen, games],
+  const databaseStats = useMemo(
+    () => getWebPrepMoveStats({ games: allGames, prep: null, fen: currentFen }),
+    [allGames, currentFen],
   );
+  const prepStats = useMemo(
+    () => getWebPrepMoveStats({ games: prepGames, prep: activePrep, fen: currentFen }),
+    [activePrep, currentFen, prepGames],
+  );
+  const turnColor = getFenColor(currentFen);
+  const boardTitle =
+    activePrep?.name ?? board.sourceTitle ?? (state.databases.length > 0 ? "Analysis board" : "Board");
+
+  const updateBoard = (patch: Partial<WebBoardState>) => {
+    setState((current) => ({
+      ...current,
+      board: {
+        ...createEmptyWebBoardState(),
+        ...current.board,
+        ...patch,
+      },
+    }));
+  };
+
+  const setCursor = (nextCursor: number) => {
+    updateBoard({ cursor: clampCursor(nextCursor, activeLine.length) });
+  };
+
+  const updateActivePrep = (updater: (prep: WebPrepWorkspace) => WebPrepWorkspace) => {
+    if (!activePrep) return;
+    setState((current) => ({
+      ...current,
+      prepWorkspaces: current.prepWorkspaces.map((prep) =>
+        prep.id === activePrep.id ? updater(prep) : prep,
+      ),
+    }));
+  };
+
+  const appendMove = (san: string, uci: string | null, fenAfter: string) => {
+    const fenBefore = currentFen;
+    const actor =
+      activePrep && getFenColor(fenBefore) === activePrep.userColor ? "user" : "opponent";
+    const move: WebPrepLineMove = {
+      fenBefore,
+      fenAfter,
+      san,
+      uci,
+      actor,
+    };
+
+    if (activePrep) {
+      const nextLine = [...activeLine.slice(0, cursor), move];
+      updateActivePrep((prep) => ({
+        ...prep,
+        line: nextLine,
+        updatedAt: Date.now(),
+      }));
+      updateBoard({
+        cursor: nextLine.length,
+        sourceTitle: prepBoardTitle(activePrep),
+        sourceDatabaseId: null,
+        sourceGameId: null,
+      });
+      return;
+    }
+
+    const nextLine = [...activeLine.slice(0, cursor), move];
+    updateBoard({
+      line: nextLine,
+      cursor: nextLine.length,
+      sourceTitle: board.sourceTitle ?? "Analysis board",
+    });
+  };
+
+  const playMove = (stat: WebPrepMoveStat) => {
+    const played = playSanMove(currentFen, stat.move);
+    if (!played) return;
+    appendMove(played.san, played.uci, played.fenAfter);
+  };
+
+  const handleBoardMove = (uci: string) => {
+    const played = playUciMove(currentFen, uci);
+    if (!played) return;
+    appendMove(played.san, played.uci, played.fenAfter);
+  };
+
+  const activeLastMove = cursor > 0 ? activeLine[cursor - 1]?.uci ?? null : null;
+  const orientation = activePrep?.userColor ?? board.orientation;
+
+  return (
+    <Box className={classes.phoneBoard}>
+      <Box className={classes.boardHeader}>
+        <Box miw={0}>
+          <Text size="xs" c="dimmed">
+            {activePrep ? "Prep board" : "Board"}
+          </Text>
+          <Title order={3} className={classes.truncateTitle}>
+            {boardTitle}
+          </Title>
+        </Box>
+        <Badge color={turnColor === "white" ? "gray" : "dark"} variant="light">
+          {turnColor}
+        </Badge>
+      </Box>
+
+      <WebChessboard
+        fen={currentFen}
+        orientation={orientation}
+        lastMoveUci={activeLastMove}
+        onMove={handleBoardMove}
+      />
+
+      <Box className={classes.underBoardPanel}>
+        <Group className={classes.underBoardTop} justify="space-between" gap="xs" wrap="nowrap">
+          <Box miw={0}>
+            <Text size="sm" fw={700} truncate>
+              {panelMode === "moves" ? "Moves" : panelMode === "database" ? "Database" : "Prep"}
+            </Text>
+            <Text size="xs" c="dimmed" truncate>
+              {normalizeWebFen(currentFen)}
+            </Text>
+          </Box>
+          <SegmentedControl
+            aria-label="Under-board panel"
+            size="xs"
+            value={panelMode}
+            onChange={(value) => setPanelMode(value as BoardPanelMode)}
+            data={[
+              { value: "moves", label: "Moves" },
+              { value: "database", label: "Database" },
+              { value: "prep", label: "Prep" },
+            ]}
+          />
+        </Group>
+
+        <Box className={classes.underBoardContent}>
+          {panelMode === "moves" ? (
+            <MovesUnderBoardPanel
+              line={activeLine}
+              cursor={cursor}
+              setCursor={setCursor}
+              sourceTitle={boardTitle}
+            />
+          ) : panelMode === "database" ? (
+            <DatabaseUnderBoardPanel stats={databaseStats} games={allGames} onPlayMove={playMove} />
+          ) : (
+            <PrepUnderBoardPanel
+              state={state}
+              setState={setState}
+              activePrep={activePrep}
+              currentFen={currentFen}
+              stats={prepStats}
+              currentLine={currentLine}
+              onPlayMove={playMove}
+            />
+          )}
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
+function MovesUnderBoardPanel({
+  line,
+  cursor,
+  setCursor,
+  sourceTitle,
+}: {
+  line: WebPrepLineMove[];
+  cursor: number;
+  setCursor: (cursor: number) => void;
+  sourceTitle: string;
+}) {
+  return (
+    <Stack gap="xs">
+      <Group justify="space-between" gap="xs" wrap="nowrap">
+        <Text size="xs" c="dimmed" truncate>
+          {sourceTitle}
+        </Text>
+        <Group gap={2} wrap="nowrap">
+          <ActionIcon aria-label="Start" disabled={cursor === 0} onClick={() => setCursor(0)}>
+            <IconChevronsLeft size={16} />
+          </ActionIcon>
+          <ActionIcon
+            aria-label="Previous"
+            disabled={cursor === 0}
+            onClick={() => setCursor(cursor - 1)}
+          >
+            <IconChevronLeft size={16} />
+          </ActionIcon>
+          <ActionIcon
+            aria-label="Next"
+            disabled={cursor >= line.length}
+            onClick={() => setCursor(cursor + 1)}
+          >
+            <IconChevronRight size={16} />
+          </ActionIcon>
+          <ActionIcon
+            aria-label="End"
+            disabled={cursor >= line.length}
+            onClick={() => setCursor(line.length)}
+          >
+            <IconChevronsRight size={16} />
+          </ActionIcon>
+        </Group>
+      </Group>
+      <Box className={classes.moveList}>
+        {line.length === 0 ? (
+          <Text size="sm" c="dimmed">
+            Start
+          </Text>
+        ) : (
+          line.map((move, index) => {
+            const moveNumber = Math.floor(index / 2) + 1;
+            const isWhiteMove = index % 2 === 0;
+            return (
+              <button
+                key={`${index}-${move.san}-${move.fenAfter}`}
+                className={classes.movePill}
+                data-current={cursor === index + 1}
+                type="button"
+                onClick={() => setCursor(index + 1)}
+              >
+                {isWhiteMove ? `${moveNumber}. ` : ""}
+                {move.san}
+              </button>
+            );
+          })
+        )}
+      </Box>
+    </Stack>
+  );
+}
+
+function DatabaseUnderBoardPanel({
+  stats,
+  games,
+  onPlayMove,
+}: {
+  stats: WebPrepMoveStat[];
+  games: WebGame[];
+  onPlayMove: (stat: WebPrepMoveStat) => void;
+}) {
+  if (games.length === 0) {
+    return (
+      <UnderBoardEmpty
+        icon={<IconDatabase size={30} />}
+        title="No databases"
+        text="Open Files and import or load a PGN from the laptop."
+      />
+    );
+  }
+
+  if (stats.length === 0) {
+    return (
+      <UnderBoardEmpty
+        icon={<IconDatabase size={30} />}
+        title="No database games"
+        text="No indexed game reaches this board position."
+      />
+    );
+  }
+
+  return (
+    <CompactMoveTable
+      stats={stats}
+      showState={false}
+      emptyLabel="No database moves"
+      onPlayMove={onPlayMove}
+    />
+  );
+}
+
+function PrepUnderBoardPanel({
+  state,
+  setState,
+  activePrep,
+  currentFen,
+  stats,
+  currentLine,
+  onPlayMove,
+}: {
+  state: WebCompanionState;
+  setState: Dispatch<SetStateAction<WebCompanionState>>;
+  activePrep: WebPrepWorkspace | null;
+  currentFen: string;
+  stats: WebPrepMoveStat[];
+  currentLine: WebPrepLineMove[];
+  onPlayMove: (stat: WebPrepMoveStat) => void;
+}) {
+  const [opponent, setOpponent] = useState("");
+  const [userColor, setUserColor] = useState<WebColor>("white");
+  const [sourceIds, setSourceIds] = useState<string[]>(() => state.databases.map((db) => db.id));
   const players = useMemo(() => getKnownPlayers(state.gamesByDatabase), [state.gamesByDatabase]);
   const sourceOptions = state.databases.map((database) => ({
     value: database.id,
@@ -400,7 +734,7 @@ function PrepView({
       userColor,
       sourceIds: selectedSources,
       startFen: INITIAL_FEN,
-      line: [],
+      line: currentLine,
       notesByFen: {},
       preparedMoves: {},
       createdAt: now,
@@ -411,6 +745,13 @@ function PrepView({
       ...current,
       prepWorkspaces: [prep, ...current.prepWorkspaces],
       activePrepId: prep.id,
+      board: {
+        ...current.board,
+        cursor: currentLine.length,
+        sourceTitle: prepBoardTitle(prep),
+        sourceDatabaseId: null,
+        sourceGameId: null,
+      },
     }));
   };
 
@@ -422,38 +763,6 @@ function PrepView({
         prep.id === activePrep.id ? updater(prep) : prep,
       ),
     }));
-  };
-
-  const appendMove = (san: string, uci: string | null, fenAfter: string) => {
-    if (!activePrep) return;
-    const fenBefore = currentWebFen(activePrep.line, activePrep.startFen);
-    const actor = getFenColor(fenBefore) === activePrep.userColor ? "user" : "opponent";
-    updateActivePrep((prep) => ({
-      ...prep,
-      line: [
-        ...prep.line,
-        {
-          fenBefore,
-          fenAfter,
-          san,
-          uci,
-          actor,
-        },
-      ],
-      updatedAt: Date.now(),
-    }));
-  };
-
-  const playStatMove = (stat: WebPrepMoveStat) => {
-    const played = playSanMove(currentFen, stat.move);
-    if (!played) return;
-    appendMove(played.san, played.uci, played.fenAfter);
-  };
-
-  const handleBoardMove = (uci: string) => {
-    const played = playUciMove(currentFen, uci);
-    if (!played) return;
-    appendMove(played.san, played.uci, played.fenAfter);
   };
 
   const markMovePrepared = (stat: WebPrepMoveStat) => {
@@ -479,512 +788,471 @@ function PrepView({
     }));
   };
 
-  const note = activePrep?.notesByFen[normalizeWebFen(currentFen)] ?? "";
-  const turnColor = getFenColor(currentFen);
-  const actorLabel = activePrep
-    ? turnColor === oppositeWebColor(activePrep.userColor)
-      ? `${activePrep.opponent || "Opponent"} to move`
-      : "Your move"
-    : "Create prep";
-
   return (
-    <Stack gap="md">
-      <Box className={`${classes.panel} ${classes.panelBody}`}>
-        <Group justify="space-between" gap="sm" align="flex-start">
-          <Stack gap={4}>
-            <Title order={3}>Opponent prep</Title>
-            <Text size="sm" c="dimmed">
-              {activePrep
-                ? `${activePrep.name} from ${games.length} indexed games`
-                : `${state.databases.length} PGN databases indexed`}
-            </Text>
-          </Stack>
-          {state.prepWorkspaces.length > 0 && (
-            <Select
-              w={220}
-              size="xs"
-              value={state.activePrepId}
-              onChange={(value) => setState((current) => ({ ...current, activePrepId: value }))}
-              data={state.prepWorkspaces.map((prep) => ({ value: prep.id, label: prep.name }))}
-            />
-          )}
-        </Group>
-        <Divider my="sm" />
-        <Group align="flex-end" gap="xs">
-          <TextInput
-            label="Opponent"
-            placeholder="Player name"
-            value={opponent}
-            onChange={(event) => setOpponent(event.currentTarget.value)}
-            list="web-known-players"
-            style={{ flex: "1 1 12rem" }}
-          />
-          <datalist id="web-known-players">
-            {players.map((player) => (
-              <option key={player} value={player} />
-            ))}
-          </datalist>
+    <Stack gap="sm">
+      <Group align="flex-end" gap="xs">
+        {state.prepWorkspaces.length > 0 && (
           <Select
-            label="Side"
-            value={userColor}
-            onChange={(value) => setUserColor((value as WebColor | null) ?? "white")}
-            data={[
-              { value: "white", label: "I'm white" },
-              { value: "black", label: "I'm black" },
-            ]}
-            w={132}
+            label="Prep"
+            size="xs"
+            value={state.activePrepId}
+            onChange={(value) => {
+              const nextPrep = state.prepWorkspaces.find((prep) => prep.id === value);
+              setState((current) => ({
+                ...current,
+                activePrepId: value,
+                board: {
+                  ...current.board,
+                  cursor: nextPrep?.line.length ?? current.board.cursor,
+                  sourceTitle: nextPrep ? prepBoardTitle(nextPrep) : current.board.sourceTitle,
+                  sourceDatabaseId: null,
+                  sourceGameId: null,
+                },
+              }));
+            }}
+            data={state.prepWorkspaces.map((prep) => ({ value: prep.id, label: prep.name }))}
+            style={{ flex: "1 1 12rem" }}
+            clearable
           />
+        )}
+        {!activePrep && (
+          <>
+            <TextInput
+              label="Opponent"
+              size="xs"
+              placeholder="Player"
+              value={opponent}
+              onChange={(event) => setOpponent(event.currentTarget.value)}
+              list="web-known-players"
+              style={{ flex: "1 1 10rem" }}
+            />
+            <datalist id="web-known-players">
+              {players.map((player) => (
+                <option key={player} value={player} />
+              ))}
+            </datalist>
+            <Select
+              label="Side"
+              size="xs"
+              value={userColor}
+              onChange={(value) => setUserColor((value as WebColor | null) ?? "white")}
+              data={[
+                { value: "white", label: "I'm white" },
+                { value: "black", label: "I'm black" },
+              ]}
+              w={118}
+            />
+            <Button size="xs" leftSection={<IconPlus size={14} />} onClick={createPrep}>
+              New
+            </Button>
+          </>
+        )}
+      </Group>
+
+      {!activePrep ? (
+        <Stack gap="xs">
           <MultiSelect
             label="Sources"
+            size="xs"
             value={sourceIds}
             onChange={setSourceIds}
             data={sourceOptions}
-            placeholder="All databases"
-            style={{ flex: "1 1 16rem" }}
+            placeholder="All indexed PGNs"
           />
-          <Button leftSection={<IconPlus size={16} />} onClick={createPrep}>
-            New prep
-          </Button>
-        </Group>
-      </Box>
-
-      {activePrep ? (
-        <Box className={classes.workspace}>
-          <Box className={`${classes.panel} ${classes.boardPanel}`}>
-            <Stack gap="sm">
-              <Group justify="space-between" gap="xs">
-                <Badge color={turnColor === activePrep.userColor ? "blue" : "teal"} variant="light">
-                  {actorLabel}
-                </Badge>
-                <Group gap={4}>
-                  <Tooltip label="Back">
-                    <ActionIcon
-                      aria-label="Back"
-                      onClick={() =>
-                        updateActivePrep((prep) => ({
-                          ...prep,
-                          line: prep.line.slice(0, -1),
-                          updatedAt: Date.now(),
-                        }))
-                      }
-                      disabled={activePrep.line.length === 0}
-                    >
-                      <IconArrowBackUp size={17} />
-                    </ActionIcon>
-                  </Tooltip>
-                  <Tooltip label="Start">
-                    <ActionIcon
-                      aria-label="Start"
-                      onClick={() =>
-                        updateActivePrep((prep) => ({
-                          ...prep,
-                          line: [],
-                          updatedAt: Date.now(),
-                        }))
-                      }
-                      disabled={activePrep.line.length === 0}
-                    >
-                      <IconRefresh size={17} />
-                    </ActionIcon>
-                  </Tooltip>
-                </Group>
-              </Group>
-              <WebChessboard
-                fen={currentFen}
-                orientation={activePrep.userColor}
-                lastMoveUci={activePrep.line.at(-1)?.uci ?? null}
-                onMove={handleBoardMove}
-              />
-              <Text size="xs" c="dimmed">
-                {normalizeWebFen(currentFen)}
-              </Text>
-              <Box className={classes.line}>
-                <Text size="sm">{activePrep.line.map((move) => move.san).join(" ") || "Start"}</Text>
-              </Box>
-              <Textarea
-                label="Position notes"
-                autosize
-                minRows={3}
-                value={note}
-                onChange={(event) => updateNote(event.currentTarget.value)}
-              />
-            </Stack>
-          </Box>
-
-          <Box className={`${classes.panel} ${classes.panelBody}`}>
-            <PrepMoveTable
-              prep={activePrep}
-              stats={stats}
-              onPlayMove={playStatMove}
-              onTogglePrepared={markMovePrepared}
-            />
-          </Box>
-        </Box>
+          <Text size="xs" c="dimmed">
+            Create prep to track notes and prepared moves from this board position.
+          </Text>
+        </Stack>
       ) : (
-        <Box className={`${classes.panel} ${classes.empty}`}>
-          <Stack align="center" gap="sm">
-            <IconBook size={42} />
-            <Title order={3}>Create prep</Title>
-            <Text size="sm" c="dimmed">
-              Choose an opponent and side, then start from the indexed PGNs.
-            </Text>
-          </Stack>
-        </Box>
+        <>
+          <Group justify="space-between" gap="xs">
+            <Box miw={0}>
+              <Text size="sm" fw={700} truncate>
+                {activePrep.opponent || "General prep"}
+              </Text>
+              <Text size="xs" c="dimmed" truncate>
+                {getFenColor(currentFen) === oppositeWebColor(activePrep.userColor)
+                  ? `${activePrep.opponent || "Opponent"} to move`
+                  : "Your move"}
+              </Text>
+            </Box>
+            <Badge variant="light">{stats.reduce((sum, stat) => sum + stat.total, 0)} games</Badge>
+          </Group>
+          <Textarea
+            label="Position notes"
+            size="xs"
+            autosize
+            minRows={2}
+            value={activePrep.notesByFen[normalizeWebFen(currentFen)] ?? ""}
+            onChange={(event) => updateNote(event.currentTarget.value)}
+          />
+          <CompactMoveTable
+            stats={stats}
+            preparedMoves={activePrep.preparedMoves}
+            showState
+            emptyLabel="No prep moves"
+            onPlayMove={onPlayMove}
+            onTogglePrepared={markMovePrepared}
+          />
+        </>
       )}
     </Stack>
   );
 }
 
-function PrepMoveTable({
-  prep,
+function CompactMoveTable({
   stats,
+  showState,
+  preparedMoves,
+  emptyLabel,
   onPlayMove,
   onTogglePrepared,
 }: {
-  prep: WebPrepWorkspace;
   stats: WebPrepMoveStat[];
+  showState: boolean;
+  preparedMoves?: Record<string, number>;
+  emptyLabel: string;
   onPlayMove: (stat: WebPrepMoveStat) => void;
-  onTogglePrepared: (stat: WebPrepMoveStat) => void;
+  onTogglePrepared?: (stat: WebPrepMoveStat) => void;
 }) {
   if (stats.length === 0) {
     return (
-      <Box className={classes.empty} mih={260}>
-        <Stack align="center" gap="xs">
-          <IconDatabase size={34} />
-          <Text fw={700}>No games reach this position</Text>
-          <Text size="sm" c="dimmed">
-            Try a broader source or return to an earlier move.
-          </Text>
-        </Stack>
-      </Box>
+      <Text size="sm" c="dimmed">
+        {emptyLabel}
+      </Text>
     );
   }
 
   return (
-    <Stack gap="sm">
-      <Group justify="space-between">
-        <Box>
-          <Title order={4}>Moves</Title>
-          <Text size="xs" c="dimmed">
-            Sorted by usage from selected sources
-          </Text>
-        </Box>
-        <Badge variant="light">{stats.reduce((sum, stat) => sum + stat.total, 0)} games</Badge>
-      </Group>
-      <Table.ScrollContainer minWidth={620}>
-        <Table verticalSpacing="xs" highlightOnHover>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Move</Table.Th>
-              <Table.Th>Games</Table.Th>
-              <Table.Th>Score</Table.Th>
-              <Table.Th>Strength</Table.Th>
-              <Table.Th>Last</Table.Th>
-              <Table.Th>State</Table.Th>
-              <Table.Th />
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {stats.map((stat) => {
-              const prepared = Boolean(prep.preparedMoves[stat.key]);
-              return (
-                <Table.Tr key={stat.key}>
-                  <Table.Td>
-                    <Text fw={700}>{stat.move}</Text>
-                    <Text size="xs" c="dimmed">
-                      {stat.sourceLabel}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text>{stat.total}</Text>
-                    <Text size="xs" c="dimmed">
-                      {formatPercent(stat.share)}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td>{formatPercent(stat.scoreForUser)}</Table.Td>
-                  <Table.Td>
-                    {stat.strength ? (
-                      <Tooltip label={stat.strength.detail} multiline maw={280}>
-                        <Badge color={stat.strength.score >= 65 ? "green" : "gray"} variant="light">
-                          {stat.strength.label}
-                        </Badge>
-                      </Tooltip>
-                    ) : (
-                      <Text size="sm" c="dimmed">
-                        -
-                      </Text>
-                    )}
-                  </Table.Td>
-                  <Table.Td>{formatWebDate(stat.lastPlayed)}</Table.Td>
+    <Table.ScrollContainer minWidth={showState ? 560 : 440}>
+      <Table className={classes.compactTable} verticalSpacing={4} highlightOnHover>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>Move</Table.Th>
+            <Table.Th>Games</Table.Th>
+            <Table.Th>WDL</Table.Th>
+            <Table.Th>Last</Table.Th>
+            {showState && <Table.Th>State</Table.Th>}
+            <Table.Th />
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {stats.map((stat) => {
+            const prepared = Boolean(preparedMoves?.[stat.key]);
+            return (
+              <Table.Tr key={stat.key}>
+                <Table.Td>
+                  <Text size="sm" fw={700}>
+                    {stat.move}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {stat.strength?.label ? `Strength ${stat.strength.label}` : stat.sourceLabel}
+                  </Text>
+                </Table.Td>
+                <Table.Td>
+                  <Text size="sm">{stat.total}</Text>
+                  <Text size="xs" c="dimmed">
+                    {formatPercent(stat.share)}
+                  </Text>
+                </Table.Td>
+                <Table.Td>{formatPercent(stat.scoreForUser)}</Table.Td>
+                <Table.Td>{formatWebDate(stat.lastPlayed) || "-"}</Table.Td>
+                {showState && (
                   <Table.Td>
                     <Checkbox
+                      size="xs"
                       checked={prepared}
                       label={prepared ? "Done" : "Open"}
-                      onChange={() => onTogglePrepared(stat)}
+                      onChange={() => onTogglePrepared?.(stat)}
                     />
                   </Table.Td>
-                  <Table.Td ta="right">
-                    <Button
-                      size="compact-xs"
-                      variant="light"
-                      leftSection={<IconChess size={14} />}
-                      onClick={() => onPlayMove(stat)}
-                    >
-                      Play
-                    </Button>
-                  </Table.Td>
-                </Table.Tr>
-              );
-            })}
-          </Table.Tbody>
-        </Table>
-      </Table.ScrollContainer>
-    </Stack>
+                )}
+                <Table.Td ta="right">
+                  <Button size="compact-xs" variant="light" onClick={() => onPlayMove(stat)}>
+                    Play
+                  </Button>
+                </Table.Td>
+              </Table.Tr>
+            );
+          })}
+        </Table.Tbody>
+      </Table>
+    </Table.ScrollContainer>
   );
 }
 
-function FilesView({
+function FilesWorkspace({
   databases,
   gamesByDatabase,
   selectedDatabaseId,
   selectedGame,
+  importing,
+  importFiles,
+  importHostedPgn,
   setSelectedDatabaseId,
   setSelectedGameId,
   deleteDatabase,
+  loadGameOnBoard,
 }: {
   databases: WebDatabase[];
   gamesByDatabase: Record<string, WebGame[]>;
   selectedDatabaseId: string | null;
   selectedGame: WebGame | null;
+  importing: boolean;
+  importFiles: (files: FileList | null) => Promise<void>;
+  importHostedPgn: (entry: WebHostedFileEntry) => Promise<void>;
   setSelectedDatabaseId: (id: string | null) => void;
   setSelectedGameId: (id: string | null) => void;
   deleteDatabase: (database: WebDatabase) => void;
+  loadGameOnBoard: (game: WebGame) => void;
 }) {
   const activeGames = selectedDatabaseId ? gamesByDatabase[selectedDatabaseId] ?? [] : [];
 
   return (
-    <Box className={classes.split}>
-      <Box className={`${classes.panel} ${classes.panelBody}`}>
-        <Group justify="space-between" mb="sm">
-          <Title order={3}>Files</Title>
-          <Badge variant="light">{databases.length}</Badge>
-        </Group>
-        <Stack gap="xs">
-          {databases.map((database) => (
-            <button
-              key={database.id}
-              className={classes.listButton}
-              data-active={database.id === selectedDatabaseId}
-              onClick={() => {
-                setSelectedDatabaseId(database.id);
-                setSelectedGameId(null);
-              }}
-              type="button"
-            >
-              <Group justify="space-between" gap="xs" wrap="nowrap">
-                <Box miw={0}>
-                  <Text fw={700} truncate>
-                    {database.name}
-                  </Text>
-                  <Text size="xs" c="dimmed" truncate>
-                    {database.gameCount} games · {formatBytes(database.sizeBytes)}
-                  </Text>
-                </Box>
-                <ActionIcon
-                  aria-label="Delete database"
-                  color="red"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    deleteDatabase(database);
-                  }}
-                >
-                  <IconTrash size={16} />
-                </ActionIcon>
-              </Group>
-            </button>
-          ))}
-        </Stack>
-      </Box>
+    <Box className={classes.filesWorkspace}>
+      <HostedFilesPanel importHostedPgn={importHostedPgn} />
 
       <Box className={`${classes.panel} ${classes.panelBody}`}>
-        <Group justify="space-between" mb="sm">
-          <Title order={3}>Games</Title>
-          {selectedGame && (
-            <Button
-              size="xs"
-              variant="light"
-              leftSection={<IconDownload size={15} />}
-              onClick={() => downloadText(`${selectedGame.white}-${selectedGame.black}.pgn`, selectedGame.pgn)}
-            >
-              PGN
-            </Button>
-          )}
-        </Group>
-        <Box className={classes.split}>
-          <ScrollArea.Autosize mah={520}>
-            <Box className={classes.itemList}>
-              {activeGames.map((game) => (
-                <button
-                  key={game.id}
-                  className={classes.listButton}
-                  data-active={game.id === selectedGame?.id}
-                  onClick={() => setSelectedGameId(game.id)}
-                  type="button"
-                >
-                  <Text fw={700} truncate>
-                    {game.white} - {game.black}
-                  </Text>
-                  <Text size="xs" c="dimmed" truncate>
-                    {formatWebDate(game.date) || "undated"} · {game.result} · {game.moves.length} plies
-                  </Text>
-                </button>
-              ))}
-            </Box>
-          </ScrollArea.Autosize>
+        <Group justify="space-between" gap="xs" mb="sm">
           <Box>
-            {selectedGame ? (
-              <Stack gap="xs">
-                <Group gap="xs">
-                  <Badge color="blue" variant="light">
-                    {selectedGame.result}
-                  </Badge>
-                  <Text size="sm" c="dimmed">
-                    {selectedGame.event}
-                  </Text>
-                </Group>
-                <Box className={classes.gamePgn}>{selectedGame.pgn}</Box>
-              </Stack>
-            ) : (
-              <Text c="dimmed">Select a game.</Text>
-            )}
+            <Title order={3}>Indexed PGNs</Title>
+            <Text size="xs" c="dimmed">
+              Browser-side databases used by the board panels
+            </Text>
           </Box>
-        </Box>
+          <Button component="label" size="xs" leftSection={<IconUpload size={14} />} loading={importing}>
+            Import
+            <input
+              hidden
+              multiple
+              type="file"
+              accept=".pgn,application/x-chess-pgn,text/plain"
+              onChange={(event) => {
+                void importFiles(event.currentTarget.files);
+                event.currentTarget.value = "";
+              }}
+            />
+          </Button>
+        </Group>
+
+        {databases.length === 0 ? (
+          <UnderBoardEmpty
+            icon={<IconFileText size={30} />}
+            title="No indexed PGNs"
+            text="Import a PGN or open one from Hosted files."
+          />
+        ) : (
+          <Box className={classes.filesSplit}>
+            <ScrollArea.Autosize mah={520}>
+              <Box className={classes.itemList}>
+                {databases.map((database) => (
+                  <button
+                    key={database.id}
+                    className={classes.listButton}
+                    data-active={database.id === selectedDatabaseId}
+                    onClick={() => {
+                      setSelectedDatabaseId(database.id);
+                      setSelectedGameId(null);
+                    }}
+                    type="button"
+                  >
+                    <Group justify="space-between" gap="xs" wrap="nowrap">
+                      <Box miw={0}>
+                        <Text fw={700} truncate>
+                          {database.name}
+                        </Text>
+                        <Text size="xs" c="dimmed" truncate>
+                          {database.gameCount} games - {formatBytes(database.sizeBytes)}
+                        </Text>
+                      </Box>
+                      <ActionIcon
+                        aria-label="Delete database"
+                        color="red"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          deleteDatabase(database);
+                        }}
+                      >
+                        <IconTrash size={16} />
+                      </ActionIcon>
+                    </Group>
+                  </button>
+                ))}
+              </Box>
+            </ScrollArea.Autosize>
+
+            <Stack gap="xs" miw={0}>
+              <Group justify="space-between" gap="xs">
+                <Text size="sm" fw={700}>
+                  Games
+                </Text>
+                {selectedGame && (
+                  <Button
+                    size="compact-xs"
+                    variant="light"
+                    leftSection={<IconDownload size={14} />}
+                    onClick={() =>
+                      downloadText(`${selectedGame.white}-${selectedGame.black}.pgn`, selectedGame.pgn)
+                    }
+                  >
+                    PGN
+                  </Button>
+                )}
+              </Group>
+              <ScrollArea.Autosize mah={280}>
+                <Box className={classes.itemList}>
+                  {activeGames.map((game) => (
+                    <button
+                      key={game.id}
+                      className={classes.listButton}
+                      data-active={game.id === selectedGame?.id}
+                      onClick={() => setSelectedGameId(game.id)}
+                      type="button"
+                    >
+                      <Text fw={700} truncate>
+                        {game.white} - {game.black}
+                      </Text>
+                      <Text size="xs" c="dimmed" truncate>
+                        {formatWebDate(game.date) || "undated"} - {game.result} - {game.moves.length} plies
+                      </Text>
+                    </button>
+                  ))}
+                </Box>
+              </ScrollArea.Autosize>
+              {selectedGame && (
+                <Group gap="xs">
+                  <Button
+                    size="xs"
+                    leftSection={<IconChess size={14} />}
+                    onClick={() => loadGameOnBoard(selectedGame)}
+                  >
+                    Open on board
+                  </Button>
+                  <Badge variant="light">{selectedGame.result}</Badge>
+                </Group>
+              )}
+            </Stack>
+          </Box>
+        )}
       </Box>
     </Box>
   );
 }
 
-function DatabasesView({
-  databases,
-  gamesByDatabase,
-  selectedDatabaseId,
-  setSelectedDatabaseId,
+function HostedFilesPanel({
+  importHostedPgn,
 }: {
-  databases: WebDatabase[];
-  gamesByDatabase: Record<string, WebGame[]>;
-  selectedDatabaseId: string | null;
-  setSelectedDatabaseId: (id: string | null) => void;
+  importHostedPgn: (entry: WebHostedFileEntry) => Promise<void>;
 }) {
-  const activeDatabase = databases.find((database) => database.id === selectedDatabaseId) ?? databases[0];
-  const games = useMemo(
-    () => (activeDatabase ? gamesByDatabase[activeDatabase.id] ?? [] : []),
-    [activeDatabase, gamesByDatabase],
-  );
-  const players = useMemo(() => getDatabasePlayerCounts(games).slice(0, 24), [games]);
+  const [library, setLibrary] = useState<WebHostedLibrary | null>(null);
+  const [listing, setListing] = useState<WebHostedFileListResponse | null>(null);
+  const [path, setPath] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const load = useCallback(async (nextPath = path) => {
+    setLoading(true);
+    try {
+      const nextLibrary = await getHostedWebLibrary();
+      const nextListing = listHostedLibraryPath(nextLibrary, nextPath);
+      setLibrary(nextLibrary);
+      setListing(nextListing);
+      setPath(nextPath);
+    } catch (error) {
+      console.error(error);
+      setLibrary(null);
+      setListing(null);
+      notifications.show({
+        title: "Hosted files unavailable",
+        message: error instanceof Error ? error.message : "The published file library did not respond.",
+        color: "red",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [path]);
+
+  useEffect(() => {
+    void load("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <Stack gap="md">
-      <Box className={`${classes.panel} ${classes.panelBody}`}>
-        <Group justify="space-between" align="flex-start">
-          <Box>
-            <Title order={3}>Databases</Title>
-            <Text size="sm" c="dimmed">
-              Browser-indexed PGN sources
-            </Text>
-          </Box>
-          <Select
-            value={activeDatabase?.id ?? null}
-            onChange={setSelectedDatabaseId}
-            data={databases.map((database) => ({ value: database.id, label: database.name }))}
-            w={260}
-          />
-        </Group>
-      </Box>
-
-      {activeDatabase && (
-        <Box className={classes.workspace}>
-          <Box className={`${classes.panel} ${classes.panelBody}`}>
-            <Stack gap="md">
-              <Title order={4}>{activeDatabase.name}</Title>
-              <Box className={classes.statGrid}>
-                <Box className={classes.stat}>
-                  <Text size="xs" c="dimmed">
-                    Games
-                  </Text>
-                  <Text fw={700}>{activeDatabase.gameCount}</Text>
-                </Box>
-                <Box className={classes.stat}>
-                  <Text size="xs" c="dimmed">
-                    Size
-                  </Text>
-                  <Text fw={700}>{formatBytes(activeDatabase.sizeBytes)}</Text>
-                </Box>
-                <Box className={classes.stat}>
-                  <Text size="xs" c="dimmed">
-                    Latest
-                  </Text>
-                  <Text fw={700}>{formatWebDate(activeDatabase.latestDate) || "-"}</Text>
-                </Box>
-                <Box className={classes.stat}>
-                  <Text size="xs" c="dimmed">
-                    Players
-                  </Text>
-                  <Text fw={700}>{players.length}</Text>
-                </Box>
-              </Box>
-              <Divider />
-              <Stack gap={4}>
-                <Text size="sm" fw={700}>
-                  Top players
-                </Text>
-                {players.map((player) => (
-                  <Group key={player.name} justify="space-between" gap="xs">
-                    <Text size="sm" truncate>
-                      {player.name}
-                    </Text>
-                    <Text size="sm" c="dimmed">
-                      {player.games} · {formatPercent(player.score / player.games)}
-                    </Text>
-                  </Group>
-                ))}
-              </Stack>
-            </Stack>
-          </Box>
-
-          <Box className={`${classes.panel} ${classes.panelBody}`}>
-            <Title order={4} mb="sm">
-              Recent games
-            </Title>
-            <Table.ScrollContainer minWidth={520}>
-              <Table verticalSpacing="xs" highlightOnHover>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>White</Table.Th>
-                    <Table.Th>Black</Table.Th>
-                    <Table.Th>Result</Table.Th>
-                    <Table.Th>Date</Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {games
-                    .slice()
-                    .sort((a, b) => sortableDate(b.date) - sortableDate(a.date))
-                    .slice(0, 40)
-                    .map((game) => (
-                      <Table.Tr key={game.id}>
-                        <Table.Td>{game.white}</Table.Td>
-                        <Table.Td>{game.black}</Table.Td>
-                        <Table.Td>{game.result}</Table.Td>
-                        <Table.Td>{formatWebDate(game.date)}</Table.Td>
-                      </Table.Tr>
-                    ))}
-                </Table.Tbody>
-              </Table>
-            </Table.ScrollContainer>
-          </Box>
+    <Box className={`${classes.panel} ${classes.panelBody}`}>
+      <Group justify="space-between" gap="xs" mb="sm">
+        <Box miw={0}>
+          <Title order={3}>Hosted files</Title>
+          <Text size="xs" c="dimmed" truncate>
+            {library?.manifest
+              ? `${library.manifest.sourceName} - ${formatLibraryDate(library.manifest.generatedAt)}`
+              : "Published web library"}
+          </Text>
         </Box>
+        <ActionIcon aria-label="Refresh files" onClick={() => void load(path)} loading={loading}>
+          <IconRefresh size={16} />
+        </ActionIcon>
+      </Group>
+
+      {listing?.parentPath !== null && (
+        <Button
+          size="compact-xs"
+          variant="light"
+          leftSection={<IconArrowBackUp size={14} />}
+          mb="xs"
+          onClick={() => void load(listing?.parentPath ?? "")}
+        >
+          Up
+        </Button>
       )}
-    </Stack>
+
+      {library && !library.available && (
+        <Text size="sm" c="dimmed">
+          No hosted file library is published with this build.
+        </Text>
+      )}
+
+      {listing && (
+        <ScrollArea.Autosize mah={420}>
+          <Box className={classes.itemList}>
+            {listing.entries.map((entry) => (
+              <button
+                key={`${entry.type}-${entry.path}`}
+                className={classes.listButton}
+                type="button"
+                onClick={() => {
+                  if (entry.type === "directory") {
+                    void load(entry.path);
+                    return;
+                  }
+                  if (entry.extension === "pdf") {
+                    window.open(getHostedRawFileUrl(entry), "_blank", "noopener,noreferrer");
+                    return;
+                  }
+                  void importHostedPgn(entry);
+                }}
+              >
+                <Group gap="xs" wrap="nowrap">
+                  {entry.type === "directory" ? (
+                    <IconFolder size={18} />
+                  ) : (
+                    <IconFileText size={18} />
+                  )}
+                  <Box miw={0}>
+                    <Text fw={700} truncate>
+                      {entry.name}
+                    </Text>
+                    <Text size="xs" c="dimmed" truncate>
+                      {entry.type === "directory"
+                        ? "Folder"
+                        : `${entry.extension.toUpperCase()} - ${formatBytes(entry.sizeBytes)}`}
+                    </Text>
+                  </Box>
+                </Group>
+              </button>
+            ))}
+          </Box>
+        </ScrollArea.Autosize>
+      )}
+    </Box>
   );
 }
 
@@ -1055,6 +1323,28 @@ function WebChessboard({
   return <Box ref={boardRef} className={classes.boardMount} />;
 }
 
+function UnderBoardEmpty({
+  icon,
+  title,
+  text,
+}: {
+  icon: ReactNode;
+  title: string;
+  text: string;
+}) {
+  return (
+    <Box className={classes.underBoardEmpty}>
+      <Stack align="center" gap={6}>
+        {icon}
+        <Text fw={700}>{title}</Text>
+        <Text size="sm" c="dimmed" ta="center">
+          {text}
+        </Text>
+      </Stack>
+    </Box>
+  );
+}
+
 function makeBoardMoveUci(fen: string, orig: Key, dest: Key) {
   const [position] = positionFromFen(fen);
   if (!position || orig === "a0" || dest === "a0") return null;
@@ -1079,6 +1369,19 @@ function getLastMove(uci: string | null): Key[] | undefined {
   return [makeSquare(move.from) as Key, makeSquare(move.to) as Key];
 }
 
+function fenAtCursor(line: WebPrepLineMove[], cursor: number, startFen = INITIAL_FEN) {
+  if (cursor <= 0) return startFen;
+  return line[cursor - 1]?.fenAfter ?? startFen;
+}
+
+function clampCursor(cursor: number, lineLength: number) {
+  return Math.min(Math.max(0, Math.round(cursor || 0)), lineLength);
+}
+
+function prepBoardTitle(prep: WebPrepWorkspace) {
+  return prep.opponent ? `${prep.opponent} prep` : prep.name;
+}
+
 function downloadText(filename: string, text: string) {
   const url = URL.createObjectURL(new Blob([text], { type: "application/x-chess-pgn" }));
   const link = document.createElement("a");
@@ -1098,11 +1401,16 @@ function formatBytes(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-function formatPercent(value: number) {
-  return `${Math.round(value * 100)}%`;
+function formatLibraryDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return formatWebDate(value);
+  return date.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
-function sortableDate(value: string) {
-  const digits = value.replace(/\D/g, "");
-  return digits.length > 0 ? Number(digits.padEnd(8, "0")) : 0;
+function formatPercent(value: number) {
+  return `${Math.round(value * 100)}%`;
 }

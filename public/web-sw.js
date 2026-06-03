@@ -1,5 +1,6 @@
 const CACHE_NAME = "en-croissant-web-v1";
-const APP_SHELL = ["/", "/manifest.webmanifest", "/logo.png"];
+const APP_BASE = new URL(self.registration.scope).pathname;
+const APP_SHELL = [APP_BASE, `${APP_BASE}manifest.webmanifest`, `${APP_BASE}logo.png`];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -40,7 +41,7 @@ self.addEventListener("fetch", (event) => {
         })
         .catch(() => {
           if (request.mode === "navigate") {
-            return caches.match("/");
+            return caches.match(APP_BASE);
           }
           return cached;
         });
