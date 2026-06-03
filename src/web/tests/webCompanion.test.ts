@@ -58,6 +58,48 @@ describe("web companion PGN prep index", () => {
     });
   });
 
+  test("general prep mode uses the database position without player filtering", () => {
+    const imported = parsePgnDatabase(
+      "general.pgn",
+      `
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.01"]
+[Round "?"]
+[White "Me"]
+[Black "First Opponent"]
+[Result "1-0"]
+
+1. e4 c5 1-0
+
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.02"]
+[Round "?"]
+[White "Someone"]
+[Black "Second Opponent"]
+[Result "0-1"]
+
+1. e4 e5 0-1
+`,
+      1,
+    );
+
+    const afterE4 = imported.games[0].moves[0].fenAfter;
+    const stats = getWebPrepMoveStats({
+      games: imported.games,
+      fen: afterE4,
+      prep: {
+        mode: "general",
+        opponent: "First Opponent",
+        userColor: "white",
+        sourceIds: [imported.database.id],
+      },
+    });
+
+    expect(stats.map((stat) => stat.move)).toEqual(["c5", "e5"]);
+  });
+
   test("lists hosted web-library folders without requiring a laptop bridge", () => {
     const library: WebHostedLibrary = {
       available: true,

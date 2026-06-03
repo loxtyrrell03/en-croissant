@@ -192,6 +192,19 @@ default.
   parents such as `Databases` are browsed instead of accidentally imported. The
   Lichess token state is hoisted to the web app shell so OAuth completion and
   the token field share one persisted localStorage value.
+- A later 2026-06-03 Prep parity pass replaced the phone Prep setup with the
+  fork's visible setup model: header badges, Player/General target mode,
+  folder-aware `Prep source` picker with an Online group for Lichess All and
+  Lichess Masters, player/opponent colour controls, general `I'm white`/`I'm
+  black`, Min games, Show top, and the online import drawer's Save database,
+  Check range, range/count, and Import + use controls. Local prep stats now
+  respect Player versus General filtering plus Min games/Show top. Lichess
+  All/Masters prep sources use the persisted web Lichess token and the web
+  explorer helper. Remaining parity gap: the fork can uncheck Save database
+  while still creating a temporary prep-source database; the phone web model
+  currently still indexes online imports as browser databases, so a future pass
+  should add an ephemeral prep-source game store before treating that checkbox
+  as fully equivalent.
 
 ### App Shell
 

@@ -31,19 +31,20 @@ export function getWebPrepMoveStats({
   maxExamples = 4,
 }: {
   games: WebGame[];
-  prep: Pick<WebPrepWorkspace, "opponent" | "userColor" | "sourceIds"> | null;
+  prep: Pick<WebPrepWorkspace, "mode" | "opponent" | "userColor" | "sourceIds"> | null;
   fen: string;
   maxExamples?: number;
 }): WebPrepMoveStat[] {
   const key = normalizeWebFen(fen || INITIAL_FEN);
   const userColor = prep?.userColor ?? getFenColor(fen || INITIAL_FEN);
   const opponentColor = oppositeWebColor(userColor);
+  const prepMode = prep?.mode ?? "player";
   const opponent = prep?.opponent.trim().toLowerCase() ?? "";
   const bucket = new Map<string, MoveBucket>();
   let totalOccurrences = 0;
 
   for (const game of games) {
-    if (!gameMatchesOpponent(game, opponent, opponentColor)) continue;
+    if (prepMode === "player" && !gameMatchesOpponent(game, opponent, opponentColor)) continue;
 
     for (const move of game.moves) {
       if (normalizeWebFen(move.fenBefore) !== key) continue;

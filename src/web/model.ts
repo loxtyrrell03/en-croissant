@@ -52,12 +52,19 @@ export type WebPrepLineMove = {
   actor: "user" | "opponent";
 };
 
+export type WebPrepMode = "player" | "general";
+export type WebPrepSource = "local" | "lichess-all" | "lichess-masters";
+
 export type WebPrepWorkspace = {
   id: string;
   name: string;
+  mode?: WebPrepMode;
+  source?: WebPrepSource;
   opponent: string;
   userColor: WebColor;
   sourceIds: string[];
+  minGames?: number;
+  moveLimit?: number;
   startFen: string;
   line: WebPrepLineMove[];
   notesByFen: Record<string, string>;
