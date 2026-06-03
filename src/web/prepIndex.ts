@@ -37,6 +37,24 @@ export function getGamesForWebPrepSource({
   return [];
 }
 
+export function getFirstOpenPrepStat<T extends { key: string }>(
+  stats: T[],
+  preparedMoves: Record<string, number>,
+) {
+  return stats.find((stat) => !preparedMoves[stat.key]) ?? stats[0] ?? null;
+}
+
+export function getNextOpenPrepStat<T extends { key: string }>(
+  stats: T[],
+  preparedMoves: Record<string, number>,
+  currentKey: string | null,
+) {
+  if (stats.length === 0) return null;
+  const startIndex = currentKey ? stats.findIndex((stat) => stat.key === currentKey) : -1;
+  const ordered = startIndex >= 0 ? [...stats.slice(startIndex + 1), ...stats.slice(0, startIndex)] : stats;
+  return ordered.find((stat) => !preparedMoves[stat.key]) ?? null;
+}
+
 export function getWebPrepMoveStats({
   games,
   prep,

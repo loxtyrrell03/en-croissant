@@ -208,6 +208,12 @@ default.
   same folder-aware picker, feed the normal prep move table, and stay out of
   the browser database list. Save database on still creates a normal
   browser-side database and attaches that one source to Prep.
+- The same pass added phone active-prep workflow buttons matching the desktop
+  under-board training stage: `Common move` plays the first open common row
+  from the current prep table, while `Done + next` marks that row prepared and
+  advances to the next open shown move. These controls intentionally operate on
+  the currently selected single prep source and reuse the phone move table's
+  Min games/Show top filtering.
 
 ### App Shell
 

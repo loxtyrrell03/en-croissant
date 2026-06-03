@@ -111,8 +111,10 @@ import {
 } from "./lichessAuth";
 import {
   collectGamesForSources,
+  getFirstOpenPrepStat,
   getGamesForWebPrepSource,
   getKnownPlayers,
+  getNextOpenPrepStat,
   getWebPrepMoveStats,
   type WebPrepMoveStat,
 } from "./prepIndex";
@@ -1291,6 +1293,9 @@ function PrepUnderBoardPanel({
           .filter((stat) => stat.total >= selectedMinGames)
           .slice(0, selectedMoveLimit)
       : stats;
+  const commonOpenStat = activePrep
+    ? getFirstOpenPrepStat(displayedStats, activePrep.preparedMoves)
+    : null;
 
   useEffect(() => {
     setSourceId((current) => {
@@ -1417,6 +1422,51 @@ function PrepUnderBoardPanel({
       },
       updatedAt: Date.now(),
     }));
+  };
+
+  const playCommonMove = () => {
+    if (!commonOpenStat) {
+      notifications.show({
+        title: "No common move",
+        message: "This prep source has no move for the current board position.",
+        color: "yellow",
+      });
+      return;
+    }
+    onPlayMove(commonOpenStat);
+  };
+
+  const doneAndNext = () => {
+    if (!activePrep || !commonOpenStat) {
+      notifications.show({
+        title: "No open move",
+        message: "There is no open prep move at this board position.",
+        color: "yellow",
+      });
+      return;
+    }
+
+    const nextPreparedMoves = {
+      ...activePrep.preparedMoves,
+      [commonOpenStat.key]: activePrep.preparedMoves[commonOpenStat.key] || Date.now(),
+    };
+    if (!activePrep.preparedMoves[commonOpenStat.key]) {
+      updateActivePrepSettings({
+        preparedMoves: nextPreparedMoves,
+      });
+    }
+
+    const nextStat = getNextOpenPrepStat(displayedStats, nextPreparedMoves, commonOpenStat.key);
+    if (!nextStat) {
+      notifications.show({
+        title: "Prep line covered",
+        message: "No unprepared move is left in Show top.",
+        color: "green",
+      });
+      return;
+    }
+
+    window.setTimeout(() => onPlayMove(nextStat), 0);
   };
 
   const updateNote = (value: string) => {
@@ -1988,6 +2038,30 @@ function PrepUnderBoardPanel({
               {onlinePrepError}
             </Text>
           ) : null}
+          <Group gap="xs" wrap="wrap">
+            <Button
+              size="xs"
+              leftSection={<IconChevronRight size={14} />}
+              disabled={!commonOpenStat}
+              onClick={playCommonMove}
+            >
+              Common move
+            </Button>
+            <Button
+              size="xs"
+              variant="default"
+              leftSection={<IconChevronsRight size={14} />}
+              disabled={!commonOpenStat}
+              onClick={doneAndNext}
+            >
+              Done + next
+            </Button>
+            {commonOpenStat ? (
+              <Badge variant="light" size="sm">
+                {commonOpenStat.move} - {commonOpenStat.total} games
+              </Badge>
+            ) : null}
+          </Group>
           <Textarea
             label="Position notes"
             size="xs"

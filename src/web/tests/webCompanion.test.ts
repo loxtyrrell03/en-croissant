@@ -7,7 +7,12 @@ import {
   type WebHostedLibrary,
 } from "@/web/hostedFiles";
 import { getWebOnlineImportTitle, getWebOnlineRangeLabel } from "@/web/onlineImport";
-import { getGamesForWebPrepSource, getWebPrepMoveStats } from "@/web/prepIndex";
+import {
+  getFirstOpenPrepStat,
+  getGamesForWebPrepSource,
+  getNextOpenPrepStat,
+  getWebPrepMoveStats,
+} from "@/web/prepIndex";
 import { parsePgnDatabase } from "@/web/pgn";
 
 describe("web companion PGN prep index", () => {
@@ -145,6 +150,22 @@ describe("web companion PGN prep index", () => {
 
     expect(games).toHaveLength(1);
     expect(stats.map((stat) => stat.move)).toEqual(["c5"]);
+  });
+
+  test("selects common and next open prep rows from the shown source", () => {
+    const rows = [
+      { key: "fen:c5", move: "c5" },
+      { key: "fen:e5", move: "e5" },
+      { key: "fen:d5", move: "d5" },
+    ];
+
+    expect(getFirstOpenPrepStat(rows, { "fen:c5": 1 })?.move).toBe("e5");
+    expect(getNextOpenPrepStat(rows, { "fen:c5": 1, "fen:e5": 1 }, "fen:c5")?.move).toBe(
+      "d5",
+    );
+    expect(getNextOpenPrepStat(rows, { "fen:c5": 1, "fen:e5": 1, "fen:d5": 1 }, "fen:c5")).toBe(
+      null,
+    );
   });
 
   test("lists hosted web-library folders without requiring a laptop bridge", () => {
