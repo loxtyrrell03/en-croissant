@@ -1848,7 +1848,14 @@ function Board({
                 currentNode.annotations.length > 0 &&
                 currentNode.move &&
                 square !== undefined && (
-                  <Box pl="2.5rem" w="100%" h="100%" pos="absolute">
+                  <Box
+                    style={{
+                      paddingLeft: BOARD_SIDE_BAR_WIDTH + BOARD_ROW_GAP,
+                    }}
+                    w="100%"
+                    h="100%"
+                    pos="absolute"
+                  >
                     <Box pos="relative" w="100%" h="100%">
                       <AnnotationHint
                         orientation={orientation}
