@@ -3,6 +3,8 @@ param(
   [string]$PagesRepo = "",
   [string]$PagesRemote = "https://github.com/loxtyrrell03/loxtyrrell03.github.io.git",
   [string]$CommitMessage = "",
+  [int]$MaxDatabaseMB = 200,
+  [switch]$SkipDatabaseExports,
   [switch]$SkipBuild,
   [switch]$NoPush
 )
@@ -87,6 +89,11 @@ Write-Log "pages repo: $PagesRepo"
 
 if (-not $SkipBuild) {
   $env:EN_CROISSANT_WEB_FILES_DIR = $resolvedSource.Path
+  if ($SkipDatabaseExports) {
+    $env:EN_CROISSANT_WEB_EXPORT_DATABASES = "0"
+  } elseif ($MaxDatabaseMB -gt 0) {
+    $env:EN_CROISSANT_WEB_DB_MAX_MB = "$MaxDatabaseMB"
+  }
   Invoke-Logged "npm.cmd" @("run", "web:library") $repoRoot.Path
   Invoke-Logged "npm.cmd" @("run", "build-vite") $repoRoot.Path
 }

@@ -3,6 +3,8 @@ param(
   [string]$PagesRepo = "",
   [int]$DebounceSeconds = 90,
   [int]$PeriodicMinutes = 30,
+  [int]$MaxDatabaseMB = 200,
+  [switch]$SkipDatabaseExports,
   [switch]$RunInitial
 )
 
@@ -43,6 +45,8 @@ function Invoke-Publish {
     $arguments = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $publishScript)
     if ($script:SourceDir) { $arguments += @("-SourceDir", $script:SourceDir) }
     if ($script:PagesRepo) { $arguments += @("-PagesRepo", $script:PagesRepo) }
+    if ($script:MaxDatabaseMB -gt 0) { $arguments += @("-MaxDatabaseMB", $script:MaxDatabaseMB) }
+    if ($script:SkipDatabaseExports) { $arguments += "-SkipDatabaseExports" }
     & powershell.exe @arguments
     if ($LASTEXITCODE -ne 0) {
       throw "publish exited with code $LASTEXITCODE"

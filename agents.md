@@ -151,6 +151,19 @@ default.
   preserves its previous `generatedAt` value when file paths, sizes, mtimes, and
   URLs are unchanged, so periodic safety syncs remain no-op publishes instead of
   creating timestamp-only Pages commits.
+- Also on 2026-06-03, auto-sync began publishing eligible local `.db3`
+  databases as generated PGN chunk folders under Hosted files `Databases/...`.
+  `src-tauri/src/bin/export_db_to_pgn.rs` is a headless Rust exporter that
+  reuses the fork's move-blob decoder, while `scripts/build-web-library.mjs`
+  caches exports under `%LOCALAPPDATA%/EnCroissantWebSync/db-exports` and
+  includes cached chunks in the static web library. The publish/watch/install
+  scripts expose `-MaxDatabaseMB` (default 200 MB) plus
+  `-SkipDatabaseExports`; this keeps normal prep/account/repertoire databases
+  available on the phone while deliberately skipping huge reference databases
+  such as 2.7 GB Mega Database copies that are not practical for free static
+  hosting. Phone users can import a generated database by opening Hosted files,
+  browsing to `Databases/Fork/...` or `Databases/Desktop/...`, and importing
+  the database folder.
 - The web Prep panel now owns its database/import workflow instead of forcing a
   detour to Files. Its compact under-board Prep area has Databases, Hosted
   files, and Import games drawers: database source selection attaches indexed

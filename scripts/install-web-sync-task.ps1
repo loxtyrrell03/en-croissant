@@ -3,6 +3,8 @@ param(
   [string]$PagesRepo = "",
   [int]$DebounceSeconds = 90,
   [int]$PeriodicMinutes = 30,
+  [int]$MaxDatabaseMB = 200,
+  [switch]$SkipDatabaseExports,
   [switch]$NoInitialRun
 )
 
@@ -41,8 +43,13 @@ $arguments = @(
   "-SourceDir", "`"$SourceDir`"",
   "-PagesRepo", "`"$PagesRepo`"",
   "-DebounceSeconds", $DebounceSeconds,
-  "-PeriodicMinutes", $PeriodicMinutes
+  "-PeriodicMinutes", $PeriodicMinutes,
+  "-MaxDatabaseMB", $MaxDatabaseMB
 )
+
+if ($SkipDatabaseExports) {
+  $arguments += "-SkipDatabaseExports"
+}
 
 if (-not $NoInitialRun) {
   $arguments += "-RunInitial"
@@ -81,4 +88,5 @@ Start-ScheduledTask -TaskName $taskName -TaskPath $taskPath
 Write-Host "Installed and started $taskPath$taskName"
 Write-Host "Watching: $SourceDir"
 Write-Host "Pages checkout: $PagesRepo"
+Write-Host "Database export cap: $MaxDatabaseMB MB"
 Write-Host "Logs: $logRoot"
