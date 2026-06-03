@@ -379,7 +379,8 @@ pub async fn split_pgn_to_files(
     let mut created = 0usize;
 
     while let Some(game) = reader.read_game()? {
-        let stem = game_file_stem(&game, created + 1);
+        let ordered_filenames = file_type == "ordered-game";
+        let stem = game_file_stem(&game, created + 1, ordered_filenames);
         let game_path = unique_pgn_path(&target_dir, &stem);
         let mut game_file = OpenOptions::new()
             .write(true)
@@ -442,7 +443,7 @@ fn normalize_file_type(file_type: &str) -> &'static str {
     }
 }
 
-fn game_file_stem(game: &str, index: usize) -> String {
+fn game_file_stem(game: &str, index: usize, ordered_filename: bool) -> String {
     let headers = parse_pgn_headers(game);
     let date = clean_header(header_value(&headers, "Date"));
     let white = clean_header(header_value(&headers, "White"));
@@ -486,6 +487,12 @@ fn game_file_stem(game: &str, index: usize) -> String {
         format!("Game {index}")
     } else {
         parts.join(" ")
+    };
+
+    let label = if ordered_filename {
+        format!("{index:04} {label}")
+    } else {
+        label
     };
 
     sanitize_file_stem(&label)
@@ -678,7 +685,10 @@ mod tests {
 1. e4 e5 1-0
 "#;
 
-        assert_eq!(game_file_stem(pgn, 1), "2026.05.15 Alice - Bob Round 3 4");
+        assert_eq!(
+            game_file_stem(pgn, 1, false),
+            "2026.05.15 Alice - Bob Round 3 4"
+        );
     }
 
     #[test]
@@ -695,8 +705,27 @@ mod tests {
 "#;
 
         assert_eq!(
-            game_file_stem(pgn, 1),
+            game_file_stem(pgn, 1, false),
             "2026.02.28 My classical games - Model game 7 Unknown - Unknown"
+        );
+    }
+
+    #[test]
+    fn game_file_stem_can_prefix_source_order() {
+        let pgn = r#"[Event "?"]
+[StudyName "My classical games"]
+[ChapterName "Model game 7"]
+[Date "2026.02.28"]
+[White "Unknown"]
+[Black "Unknown"]
+[Result "*"]
+
+1. e4 e5 *
+"#;
+
+        assert_eq!(
+            game_file_stem(pgn, 7, true),
+            "0007 2026.02.28 My classical games - Model game 7 Unknown - Unknown"
         );
     }
 }

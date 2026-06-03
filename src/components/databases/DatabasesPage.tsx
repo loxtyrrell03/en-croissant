@@ -500,6 +500,7 @@ export default function DatabasesPage() {
         title: database.title,
         gameCount: database.game_count,
         fileNamePrefix: studyRecord?.title ?? null,
+        orderedFilenames: !!studyRecord,
         record: {
           ...record,
           dbPath: database.file,
@@ -894,7 +895,14 @@ export default function DatabasesPage() {
                                     databaseId: database.title,
                                   },
                                 });
-                                setActiveDatabase(database);
+                                setActiveDatabase(database, {
+                                  gameOrder: getLichessStudyDatabaseUpdateRecord(
+                                    database,
+                                    lichessStudyDatabaseUpdates,
+                                  )
+                                    ? "source"
+                                    : "recent",
+                                });
                               }}
                               onChangeReference={changeReferenceDatabase}
                               onUpdateOnline={updateOnlineDatabase}
@@ -1203,7 +1211,11 @@ export default function DatabasesPage() {
                           <Button
                             component={Link}
                             to={`/databases/${selectedDatabase.title}`}
-                            onClick={() => setActiveDatabase(selectedDatabase)}
+                            onClick={() =>
+                              setActiveDatabase(selectedDatabase, {
+                                gameOrder: selectedStudyRecord ? "source" : "recent",
+                              })
+                            }
                             fullWidth
                             variant="default"
                             size="lg"

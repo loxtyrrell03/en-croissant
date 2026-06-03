@@ -373,6 +373,12 @@ and `src/utils/lichess/study.ts`.
   linked Files folder. Automatic background sync remains conservative: if both
   the local database and remote study changed, it stops and asks the user to
   reload or resolve one side before pushing local annotations.
+- Lichess Study database ordering is treated as source order rather than normal
+  recent-game order. Opening a study database from Databases defaults the Games
+  tab to ascending database id order, database PGN export explicitly writes
+  games by id, and linked study folder sync uses numbered filenames while
+  renaming existing matching PGNs into that numbered order so the Files folder
+  can mirror the Lichess chapter sequence.
 - PGN import timestamp normalization was fixed so online-update ordering stays
   reliable.
 

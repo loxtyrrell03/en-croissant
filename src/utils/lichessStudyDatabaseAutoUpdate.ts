@@ -566,6 +566,7 @@ async function syncLinkedFolderForUpdatedStudy(
             title: database.title,
             gameCount: database.game_count,
             fileNamePrefix: studyTitle,
+            orderedFilenames: true,
             record: {
                 ...record,
                 dbPath: database.file,

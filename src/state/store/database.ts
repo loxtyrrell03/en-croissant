@@ -23,7 +23,10 @@ export interface DatabaseViewStore {
         activeTab: "games" | "leaderboard";
     };
 
-    setDatabase: (database: SuccessDatabaseInfo) => void;
+    setDatabase: (
+        database: SuccessDatabaseInfo,
+        options?: { gameOrder?: "recent" | "source" },
+    ) => void;
     clearDatabase: () => void;
     setActiveTab: (mode: DatabaseViewStore["activeTab"]) => void;
 
@@ -40,25 +43,29 @@ export interface DatabaseViewStore {
     setTournamentsActiveTab: (value: DatabaseViewStore["tournaments"]["activeTab"]) => void;
 }
 
-const defaultGamesState: DatabaseViewStore["games"] = {
-    isFilterExpanded: false,
-    selectedGame: undefined,
-    query: {
-        player1: undefined,
-        range1: [0, 3000],
-        player2: undefined,
-        range2: [0, 3000],
-        sides: "WhiteBlack",
-        outcome: undefined,
-        options: {
-            sort: "date",
-            direction: "desc",
-            pageSize: 25,
-            page: 1,
-            skipCount: false,
+function getDefaultGamesState(
+    gameOrder: "recent" | "source" = "recent",
+): DatabaseViewStore["games"] {
+    return {
+        isFilterExpanded: false,
+        selectedGame: undefined,
+        query: {
+            player1: undefined,
+            range1: [0, 3000],
+            player2: undefined,
+            range2: [0, 3000],
+            sides: "WhiteBlack",
+            outcome: undefined,
+            options: {
+                sort: gameOrder === "source" ? "id" : "date",
+                direction: gameOrder === "source" ? "asc" : "desc",
+                pageSize: 25,
+                page: 1,
+                skipCount: false,
+            },
         },
-    },
-};
+    };
+}
 
 const defaultPlayersState: DatabaseViewStore["players"] = {
     activeTab: "overview",
@@ -93,15 +100,15 @@ export const activeDatabaseViewStore = createStore<DatabaseViewStore>()(
     persist(
         (set) => ({
             activeTab: "games",
-            games: defaultGamesState,
+            games: getDefaultGamesState(),
             players: defaultPlayersState,
             tournaments: defaultTournamentState,
 
-            setDatabase: (database: SuccessDatabaseInfo) => {
+            setDatabase: (database: SuccessDatabaseInfo, options) => {
                 set(
                     produce((state: Draft<DatabaseViewStore>) => {
                         state.database = database;
-                        state.games = defaultGamesState;
+                        state.games = getDefaultGamesState(options?.gameOrder);
                         state.players = defaultPlayersState;
                         state.tournaments = defaultTournamentState;
                     }),
@@ -111,7 +118,7 @@ export const activeDatabaseViewStore = createStore<DatabaseViewStore>()(
                 set(
                     produce((state: Draft<DatabaseViewStore>) => {
                         state.database = undefined;
-                        state.games = defaultGamesState;
+                        state.games = getDefaultGamesState();
                         state.players = defaultPlayersState;
                         state.tournaments = defaultTournamentState;
                         state.activeTab = "games";

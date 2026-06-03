@@ -54,10 +54,12 @@ export async function splitGameSourceToFiles({
     sourcePath,
     targetDir,
     fileType = "game",
+    orderedFilenames = false,
 }: {
     sourcePath: string;
     targetDir: string;
     fileType?: string;
+    orderedFilenames?: boolean;
 }) {
     let splitSourcePath = sourcePath;
     let temporaryExportPath: string | null = null;
@@ -72,7 +74,13 @@ export async function splitGameSourceToFiles({
             splitSourcePath = temporaryExportPath;
         }
 
-        return unwrap(await commands.splitPgnToFiles(splitSourcePath, targetDir, fileType));
+        return unwrap(
+            await commands.splitPgnToFiles(
+                splitSourcePath,
+                targetDir,
+                orderedFilenames ? "ordered-game" : fileType,
+            ),
+        );
     } finally {
         if (temporaryExportPath) {
             await remove(temporaryExportPath).catch(() => {});
@@ -120,12 +128,14 @@ export async function syncDatabaseLinkedFolder({
     gameCount,
     record,
     fileNamePrefix,
+    orderedFilenames = false,
 }: {
     sourcePath: string;
     title: string;
     gameCount: number | null;
     record: DatabaseLinkedFolderRecord;
     fileNamePrefix?: string | null;
+    orderedFilenames?: boolean;
 }): Promise<{ report: LinkedFolderSyncReport; record: DatabaseLinkedFolderRecord }> {
     const targetDir = record.folderPath;
     const temporaryTargetDir = await resolve(
@@ -142,6 +152,7 @@ export async function syncDatabaseLinkedFolder({
             sourcePath,
             targetDir: temporaryTargetDir,
             fileType: "game",
+            orderedFilenames,
         });
 
         const existingHashes = await readPgnContentHashes(targetDir);
@@ -156,16 +167,23 @@ export async function syncDatabaseLinkedFolder({
             const sourceGamePath = await resolve(temporaryTargetDir, entry.name);
             const sourceGameText = await readTextFile(sourceGamePath);
             const hash = hashPgnContent(sourceGameText);
+            const targetFileName = getPrefixedPgnFileName(entry.name, fileNamePrefix);
+            const existingPath = existingHashes.get(hash);
 
-            if (existingHashes.has(hash)) {
+            if (existingPath) {
+                if (orderedFilenames) {
+                    const renamedPath = await renameExistingPgnToTargetName(
+                        existingPath,
+                        targetDir,
+                        targetFileName,
+                    );
+                    existingHashes.set(hash, renamedPath);
+                }
                 skipped += 1;
                 continue;
             }
 
-            const targetGamePath = await getAvailablePgnPath(
-                targetDir,
-                getPrefixedPgnFileName(entry.name, fileNamePrefix),
-            );
+            const targetGamePath = await getAvailablePgnPath(targetDir, targetFileName);
             await copyFile(sourceGamePath, targetGamePath);
 
             const sourceInfoPath = pgnInfoPath(sourceGamePath);
@@ -176,7 +194,7 @@ export async function syncDatabaseLinkedFolder({
                 await writeTextFile(targetInfoPath, GAME_FILE_METADATA);
             }
 
-            existingHashes.add(hash);
+            existingHashes.set(hash, targetGamePath);
             created += 1;
         }
 
@@ -203,19 +221,43 @@ export async function syncDatabaseLinkedFolder({
 
 async function readPgnContentHashes(targetDir: string) {
     const entries = await readDir(targetDir).catch(() => []);
-    const hashes = new Set<string>();
+    const hashes = new Map<string, string>();
 
     for (const entry of entries) {
         if (!entry.isFile || !entry.name.toLowerCase().endsWith(".pgn")) continue;
         try {
             const path = await resolve(targetDir, entry.name);
-            hashes.add(hashPgnContent(await readTextFile(path)));
+            hashes.set(hashPgnContent(await readTextFile(path)), path);
         } catch {
             // Ignore files that cannot be read so one broken sidecar does not block sync.
         }
     }
 
     return hashes;
+}
+
+async function renameExistingPgnToTargetName(
+    existingPath: string,
+    targetDir: string,
+    targetFileName: string,
+) {
+    if (getPathFileName(existingPath) === targetFileName) {
+        return existingPath;
+    }
+
+    const targetPath = await getAvailablePgnPath(targetDir, targetFileName);
+    if (targetPath === existingPath) {
+        return existingPath;
+    }
+
+    await rename(existingPath, targetPath);
+
+    const sourceInfoPath = pgnInfoPath(existingPath);
+    if (await exists(sourceInfoPath)) {
+        await rename(sourceInfoPath, pgnInfoPath(targetPath));
+    }
+
+    return targetPath;
 }
 
 async function getAvailablePgnPath(targetDir: string, fileName: string) {
@@ -278,6 +320,10 @@ function sanitizeFileNameStem(value: string) {
 
 function pgnInfoPath(filePath: string) {
     return `${filePath.slice(0, -".pgn".length)}.info`;
+}
+
+function getPathFileName(filePath: string) {
+    return filePath.split(/[\\/]/).pop() ?? filePath;
 }
 
 function hashPgnContent(input: string) {

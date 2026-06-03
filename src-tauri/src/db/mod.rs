@@ -2756,6 +2756,7 @@ pub async fn export_to_pgn(
         .inner_join(black_players.on(games::black_id.eq(black_players.field(players::id))))
         .inner_join(events::table.on(games::event_id.eq(events::id)))
         .inner_join(sites::table.on(games::site_id.eq(sites::id)))
+        .order(games::id.asc())
         .load_iter::<(Game, Player, Player, Event, Site), DefaultLoadingMode>(db)?
         .flatten()
         .map(|(game, white, black, event, site)| {
