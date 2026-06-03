@@ -17,11 +17,12 @@ import { useStore } from "zustand";
 import { useStoreWithEqualityFn } from "zustand/traditional";
 import Comment from "@/components/common/Comment";
 import MoveAnnotationPanel from "@/components/panels/annotation/MoveAnnotationPanel";
-import { currentTabAtom } from "@/state/atoms";
+import { currentShowMoveAnnotationsAtom, currentTabAtom } from "@/state/atoms";
 import type { TreeStore } from "@/state/store/tree";
 import type { Annotation } from "@/utils/annotation";
 import { hasMorePriority, stripClock } from "@/utils/chess";
 import { formatMoveThinkTime, getMoveThinkTime } from "@/utils/clock";
+import { hideMoveQualityComments } from "@/utils/commentAnnotations";
 import { getTabFile } from "@/utils/tabs";
 import { type TreeNode, treeIterator } from "@/utils/treeReducer";
 import MoveCell from "./MoveCell";
@@ -121,6 +122,7 @@ function CompleteMoveCell({
   const [open, setOpen] = useState(false);
   const [annotating, setAnnotating] = useState(false);
   const currentTab = useAtomValue(currentTabAtom);
+  const showMoveAnnotations = useAtomValue(currentShowMoveAnnotationsAtom);
   const tabFile = getTabFile(currentTab);
   const moveTiming = useStoreWithEqualityFn(
     store,
@@ -149,6 +151,7 @@ function CompleteMoveCell({
     ) : undefined;
 
   const { t } = useTranslation();
+  const displayComment = showMoveAnnotations ? comment : hideMoveQualityComments(comment);
 
   return (
     <>
@@ -246,7 +249,7 @@ function CompleteMoveCell({
       {annotating && move && (
         <MoveAnnotationPanel path={movePath} onClose={() => setAnnotating(false)} />
       )}
-      {showComments && !tableLayout && comment && <Comment comment={comment} />}
+      {showComments && !tableLayout && displayComment && <Comment comment={displayComment} />}
     </>
   );
 }

@@ -57,6 +57,7 @@ import {
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
 import { getMainLine, getPGN } from "@/utils/chess";
+import { hideMoveQualityComments } from "@/utils/commentAnnotations";
 import type { Engine, LocalEngine } from "@/utils/engines";
 import { hasCompleteGameAnalysis } from "@/utils/gameAnalysisReport";
 import { formatScore } from "@/utils/score";
@@ -463,15 +464,20 @@ function NotationHeader({
     : hasCompleteGameAnalysis(root)
       ? "Show game report"
       : "Analyze game with Stockfish";
-  const notationDetailsHidden = !evalOpen && !showComments && !showMoveAnnotations;
+  const notationDetailsHidden = !evalOpen || !showComments || !showMoveAnnotations;
   const focusNotationLabel = notationDetailsHidden
-    ? "Show eval bar and annotations"
-    : "Hide eval bar and annotations";
+    ? "Show eval bar and move-quality annotations"
+    : "Hide eval bar and move-quality annotations";
   const toggleNotationDetails = () => {
-    const hideDetails = evalOpen || showComments || showMoveAnnotations;
-    setEvalOpen(!hideDetails);
-    setShowComments(!hideDetails);
-    setShowMoveAnnotations(!hideDetails);
+    if (notationDetailsHidden) {
+      setEvalOpen(true);
+      setShowComments(true);
+      setShowMoveAnnotations(true);
+    } else {
+      setEvalOpen(false);
+      setShowComments(true);
+      setShowMoveAnnotations(false);
+    }
   };
 
   return (
@@ -661,6 +667,7 @@ function getTableNotationSegments({
   commentVersion,
   showVariations,
   showComments,
+  showMoveAnnotations,
 }: {
   store: TreeStore;
   root: TreeNode;
@@ -668,12 +675,14 @@ function getTableNotationSegments({
   commentVersion: number;
   showVariations: boolean;
   showComments: boolean;
+  showMoveAnnotations: boolean;
 }) {
   const key = [
     structureVersion,
     showComments ? commentVersion : 0,
     showVariations ? "vars" : "main",
     showComments ? "comments" : "quiet",
+    showMoveAnnotations ? "move-annotations" : "quiet-move-annotations",
   ].join(":");
   const cached = tableNotationSegmentCache.get(store);
   if (cached?.key === key) return cached.segments;
@@ -691,8 +700,11 @@ function getTableNotationSegments({
     const whiteVariationCount = Math.max(0, current.children.length - 1);
 
     if (isWhite) {
+      const whiteComment = showMoveAnnotations
+        ? child.comment
+        : hideMoveQualityComments(child.comment);
       const hasWhiteVars = showVariations && whiteVariationCount > 0;
-      const hasWhiteComment = showComments && !!child.comment;
+      const hasWhiteComment = showComments && !!whiteComment;
 
       let blackNode: TreeNode | null = null;
       let blackPath: number[] = [];
@@ -710,8 +722,13 @@ function getTableNotationSegments({
         }
       }
 
+      const blackComment = blackNode
+        ? showMoveAnnotations
+          ? blackNode.comment
+          : hideMoveQualityComments(blackNode.comment)
+        : "";
       const hasBlackVars = showVariations && blackVariationCount > 0;
-      const hasBlackComment = showComments && !!blackNode?.comment;
+      const hasBlackComment = showComments && !!blackComment;
       const splitWhite = hasWhiteVars || hasWhiteComment;
 
       if (splitWhite) {
@@ -723,7 +740,7 @@ function getTableNotationSegments({
           splitRow: !!blackNode,
         });
         if (hasWhiteComment) {
-          segments.push({ type: "comment", comment: child.comment });
+          segments.push({ type: "comment", comment: whiteComment });
         }
         if (hasWhiteVars) {
           segments.push({
@@ -741,7 +758,7 @@ function getTableNotationSegments({
               blackPathStr,
             });
             if (hasBlackComment) {
-              segments.push({ type: "comment", comment: blackNode.comment });
+              segments.push({ type: "comment", comment: blackComment });
             }
             if (hasBlackVars) {
               segments.push({
@@ -771,7 +788,7 @@ function getTableNotationSegments({
           blackPathStr,
         });
         if (hasBlackComment) {
-          segments.push({ type: "comment", comment: blackNode!.comment });
+          segments.push({ type: "comment", comment: blackComment });
         }
         if (hasBlackVars) {
           segments.push({
@@ -797,8 +814,11 @@ function getTableNotationSegments({
         }
       }
     } else {
+      const blackComment = showMoveAnnotations
+        ? child.comment
+        : hideMoveQualityComments(child.comment);
       const hasBlackVars = showVariations && whiteVariationCount > 0;
-      const hasBlackComment = showComments && !!child.comment;
+      const hasBlackComment = showComments && !!blackComment;
       segments.push({
         type: "row",
         moveNumber: moveNum,
@@ -806,7 +826,7 @@ function getTableNotationSegments({
         blackPathStr: childPathStr,
       });
       if (hasBlackComment) {
-        segments.push({ type: "comment", comment: child.comment });
+        segments.push({ type: "comment", comment: blackComment });
       }
       if (hasBlackVars) {
         segments.push({
@@ -831,6 +851,7 @@ const TableNotation = memo(function TableNotation({
   const store = useContext(TreeStateContext)!;
   const showVariations = useAtomValue(currentShowVariationsAtom);
   const showComments = useAtomValue(currentShowCommentsAtom);
+  const showMoveAnnotations = useAtomValue(currentShowMoveAnnotationsAtom);
   const segments = useStoreWithEqualityFn(
     store,
     (s) =>
@@ -841,6 +862,7 @@ const TableNotation = memo(function TableNotation({
         commentVersion: s.commentVersion ?? 0,
         showVariations,
         showComments,
+        showMoveAnnotations,
       }),
     Object.is,
   );
@@ -971,6 +993,7 @@ function RowSegment({
 }) {
   const store = useContext(TreeStateContext)!;
   const showComments = useAtomValue(currentShowCommentsAtom);
+  const showMoveAnnotations = useAtomValue(currentShowMoveAnnotationsAtom);
   const whitePath = useMemo(() => parsePathStr(whitePathStr), [whitePathStr]);
   const white = useStoreWithEqualityFn(store, (s) => selectMoveNodeView(s.root, whitePath), equal);
   const blackPath = useMemo(() => parsePathStr(blackPathStr), [blackPathStr]);
@@ -990,7 +1013,9 @@ function RowSegment({
             movePath={whitePath}
             showComments={showComments}
             tableLayout
-            scoreText={showComments && white.score ? formatScore(white.score.value, 1) : undefined}
+            scoreText={
+              showMoveAnnotations && white.score ? formatScore(white.score.value, 1) : undefined
+            }
           />
         ) : (
           <Text c="dimmed" style={{ padding: "5px 8px" }}>
@@ -1010,7 +1035,9 @@ function RowSegment({
             movePath={blackPath}
             showComments={showComments}
             tableLayout
-            scoreText={showComments && black.score ? formatScore(black.score.value, 1) : undefined}
+            scoreText={
+              showMoveAnnotations && black.score ? formatScore(black.score.value, 1) : undefined
+            }
           />
         ) : splitRow ? (
           <Text c="dimmed" style={{ padding: "5px 8px" }}>

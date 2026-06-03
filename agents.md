@@ -196,9 +196,10 @@ default.
   table so it fits the smaller space.
 - The under-board move-list top row has a compact focus toggle that hides or
   restores the board eval bar together with move-quality annotations such as
-  good moves, mistakes, and blunders plus textual comments. The existing
-  comments button still lets users bring written notes back separately after
-  using the broader focus toggle.
+  good moves, mistakes, blunders, eval scores, and short verdict comments like
+  "Bxf4 is a mistake" while preserving normal written comments. The existing
+  comments button remains the separate control for hiding or showing ordinary
+  notes.
 - Prep move tables support clickable, keyboard-accessible column headers for
   local sorting, matching the Database tab expectation: Move, Games, Results,
   Prep, and State in opponent-move mode, and Move, Games, and WDL in candidate
