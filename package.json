@@ -6,6 +6,9 @@
   "scripts": {
     "start-vite": "vite",
     "web:library": "node scripts/build-web-library.mjs",
+    "web:publish": "powershell -ExecutionPolicy Bypass -File scripts/publish-web-site.ps1",
+    "web:watch": "powershell -ExecutionPolicy Bypass -File scripts/watch-web-sync.ps1",
+    "web:install-sync": "powershell -ExecutionPolicy Bypass -File scripts/install-web-sync-task.ps1",
     "build-web-library": "npm run web:library && npm run build-vite",
     "build-vite": "tsgo --noEmit && vite build",
     "build": "tauri build --no-bundle",

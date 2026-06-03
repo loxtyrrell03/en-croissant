@@ -136,6 +136,18 @@ default.
   published site while the laptop is off. Do not reintroduce a local
   filesystem bridge as the phone product path; it makes phone access depend on
   the laptop being awake and can expose local files on a development network.
+- On 2026-06-03, local auto-sync was added for the phone site. `npm run
+  web:publish` runs `scripts/publish-web-site.ps1`, regenerating the hosted
+  library, building Vite, mirroring `dist` into the `loxtyrrell03.github.io`
+  Pages checkout under `%LOCALAPPDATA%/EnCroissantWebSync`, committing, and
+  pushing only when there are real staged changes. `npm run web:install-sync`
+  registers the per-user Windows task `\EnCroissant\EnCroissantWebAutoSync`,
+  which runs `scripts/watch-web-sync.ps1` at logon, watches
+  `Documents/EnCroissant` plus the app/fork database directories, debounces
+  PGN/PDF/DB changes, and performs periodic safety syncs. Logs live in
+  `%LOCALAPPDATA%/EnCroissantWebSync`. Raw `.db3` changes can trigger a sync,
+  but phone-usable database content still needs to be represented as linked or
+  exported PGN files in the hosted Files library.
 - The web Prep panel now owns its database/import workflow instead of forcing a
   detour to Files. Its compact under-board Prep area has Databases, Hosted
   files, and Import games drawers: database source selection attaches indexed
