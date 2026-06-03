@@ -44,6 +44,14 @@ export type WebHostedPgnFileResponse = {
   content: string;
 };
 
+export type WebHostedPgnFolderResponse = {
+  path: string;
+  name: string;
+  filename: string;
+  files: WebHostedFileEntry[];
+  content: string;
+};
+
 const WEB_LIBRARY_BASE = `${import.meta.env.BASE_URL}web-library/`;
 
 export async function getHostedWebLibrary(): Promise<WebHostedLibrary> {
@@ -122,6 +130,51 @@ export async function readHostedPgnFile(
     path: entry.path,
     filename: entry.filename,
     content: await response.text(),
+  };
+}
+
+export function getHostedPgnFilesInPath(library: WebHostedLibrary, path = "") {
+  if (!library.manifest) return [];
+
+  const normalizedPath = normalizeHostedPath(path);
+  const prefix = normalizedPath ? `${normalizedPath}/` : "";
+
+  return library.manifest.files
+    .filter((file) => {
+      if (file.extension !== "pgn") return false;
+      if (!normalizedPath) return true;
+      return file.path === normalizedPath || file.path.startsWith(prefix);
+    })
+    .sort((a, b) => a.path.localeCompare(b.path, undefined, { sensitivity: "base" }));
+}
+
+export async function readHostedPgnFolder(
+  library: WebHostedLibrary,
+  path = "",
+): Promise<WebHostedPgnFolderResponse> {
+  const normalizedPath = normalizeHostedPath(path);
+  const files = getHostedPgnFilesInPath(library, normalizedPath);
+  if (files.length === 0) {
+    throw new Error("This hosted folder does not contain PGN files.");
+  }
+
+  const chunks: string[] = [];
+  for (const file of files) {
+    const response = await readHostedPgnFile(file);
+    chunks.push(response.content.trim());
+  }
+
+  const name =
+    normalizedPath.split("/").filter(Boolean).at(-1) ??
+    library.manifest?.sourceName ??
+    "Hosted database";
+
+  return {
+    path: normalizedPath,
+    name,
+    filename: `${name}.pgn`,
+    files,
+    content: chunks.filter(Boolean).join("\n\n"),
   };
 }
 

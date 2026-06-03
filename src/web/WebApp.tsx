@@ -66,9 +66,15 @@ import {
 import { positionFromFen } from "@/utils/chessops";
 import classes from "./WebApp.module.css";
 import {
+  fetchWebExplorerMoveStats,
+  type WebDatabaseExplorerSource,
+} from "./explorer";
+import {
   getHostedRawFileUrl,
+  getHostedPgnFilesInPath,
   getHostedWebLibrary,
   listHostedLibraryPath,
+  readHostedPgnFolder,
   readHostedPgnFile,
   type WebHostedFileEntry,
   type WebHostedFileListResponse,
@@ -94,6 +100,11 @@ import {
   type WebOnlineSource,
 } from "./onlineImport";
 import {
+  completeWebLichessLoginIfPresent,
+  startWebLichessLogin,
+  WEB_LICHESS_TOKEN_STORAGE_KEY,
+} from "./lichessAuth";
+import {
   collectGamesForSources,
   getKnownPlayers,
   getWebPrepMoveStats,
@@ -114,6 +125,10 @@ import { createEmptyWebBoardState, createEmptyWebState, loadWebState, saveWebSta
 type ViewMode = "board" | "files";
 type BoardPanelMode = "moves" | "database" | "prep";
 type WebHostedPgnImportHandler = (entry: WebHostedFileEntry) => Promise<WebImportResult | null>;
+type WebHostedFolderImportHandler = (
+  library: WebHostedLibrary,
+  path: string,
+) => Promise<WebImportResult | null>;
 type WebOnlineImportHandler = (request: {
   source: WebOnlineSource;
   username: string;
@@ -194,6 +209,33 @@ export default function WebApp() {
     void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}web-sw.js`).catch((error) => {
       console.warn("Web companion service worker registration failed", error);
     });
+  }, []);
+
+  useEffect(() => {
+    void completeWebLichessLoginIfPresent()
+      .then((result) => {
+        if (result.status === "complete") {
+          notifications.show({
+            title: "Lichess connected",
+            message: "Lichess All and Lichess Masters are available on this phone.",
+            color: "green",
+          });
+        } else if (result.status === "error") {
+          notifications.show({
+            title: "Lichess login failed",
+            message: result.message,
+            color: "red",
+          });
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        notifications.show({
+          title: "Lichess login failed",
+          message: error instanceof Error ? error.message : "Could not finish Lichess login.",
+          color: "red",
+        });
+      });
   }, []);
 
   const activePrep = useMemo(
@@ -327,6 +369,34 @@ export default function WebApp() {
         notifications.show({
           title: "Could not open file",
           message: error instanceof Error ? error.message : "The hosted file could not be read.",
+          color: "red",
+        });
+      } finally {
+        setImporting(false);
+      }
+      return null;
+    },
+    [importPgnText],
+  );
+
+  const importHostedFolder = useCallback(
+    async (library: WebHostedLibrary, path: string) => {
+      setImporting(true);
+      try {
+        const folder = await readHostedPgnFolder(library, path);
+        const imported = await importPgnText({
+          name: folder.filename,
+          pgn: folder.content,
+          notificationTitle: "Hosted database opened",
+          notificationMessage: (imported) =>
+            `${imported.games.length} games indexed from ${folder.files.length} hosted PGNs.`,
+        });
+        return imported;
+      } catch (error) {
+        console.error(error);
+        notifications.show({
+          title: "Could not open folder",
+          message: error instanceof Error ? error.message : "The hosted folder could not be read.",
           color: "red",
         });
       } finally {
@@ -479,6 +549,7 @@ export default function WebApp() {
               setState={setState}
               activePrep={activePrep}
               importHostedPgn={importHostedPgn}
+              importHostedFolder={importHostedFolder}
               importOnlineGames={importOnlineGames}
             />
           ) : (
@@ -490,6 +561,7 @@ export default function WebApp() {
               importing={importing}
               importFiles={importFiles}
               importHostedPgn={importHostedPgn}
+              importHostedFolder={importHostedFolder}
               setSelectedDatabaseId={setSelectedDatabaseId}
               setSelectedGameId={setSelectedGameId}
               deleteDatabase={deleteDatabase}
@@ -507,12 +579,14 @@ function BoardWorkspace({
   setState,
   activePrep,
   importHostedPgn,
+  importHostedFolder,
   importOnlineGames,
 }: {
   state: WebCompanionState;
   setState: Dispatch<SetStateAction<WebCompanionState>>;
   activePrep: WebPrepWorkspace | null;
   importHostedPgn: WebHostedPgnImportHandler;
+  importHostedFolder: WebHostedFolderImportHandler;
   importOnlineGames: WebOnlineImportHandler;
 }) {
   const [panelMode, setPanelMode] = useState<BoardPanelMode>("moves");
@@ -522,10 +596,6 @@ function BoardWorkspace({
   const cursor = clampCursor(board.cursor, activeLine.length);
   const currentFen = fenAtCursor(activeLine, cursor, startFen);
   const currentLine = activeLine.slice(0, cursor);
-  const allGames = useMemo(
-    () => Object.values(state.gamesByDatabase).flat(),
-    [state.gamesByDatabase],
-  );
   const prepGames = useMemo(
     () =>
       collectGamesForSources(
@@ -533,10 +603,6 @@ function BoardWorkspace({
         activePrep?.sourceIds.length ? activePrep.sourceIds : state.databases.map((db) => db.id),
       ),
     [activePrep?.sourceIds, state.databases, state.gamesByDatabase],
-  );
-  const databaseStats = useMemo(
-    () => getWebPrepMoveStats({ games: allGames, prep: null, fen: currentFen }),
-    [allGames, currentFen],
   );
   const prepStats = useMemo(
     () => getWebPrepMoveStats({ games: prepGames, prep: activePrep, fen: currentFen }),
@@ -677,7 +743,14 @@ function BoardWorkspace({
               sourceTitle={boardTitle}
             />
           ) : panelMode === "database" ? (
-            <DatabaseUnderBoardPanel stats={databaseStats} games={allGames} onPlayMove={playMove} />
+            <DatabaseUnderBoardPanel
+              currentFen={currentFen}
+              databases={state.databases}
+              gamesByDatabase={state.gamesByDatabase}
+              importHostedPgn={importHostedPgn}
+              importHostedFolder={importHostedFolder}
+              onPlayMove={playMove}
+            />
           ) : (
             <PrepUnderBoardPanel
               state={state}
@@ -688,6 +761,7 @@ function BoardWorkspace({
               currentLine={currentLine}
               onPlayMove={playMove}
               importHostedPgn={importHostedPgn}
+              importHostedFolder={importHostedFolder}
               importOnlineGames={importOnlineGames}
             />
           )}
@@ -769,42 +843,224 @@ function MovesUnderBoardPanel({
   );
 }
 
+type WebDatabasePanelSource = "local" | WebDatabaseExplorerSource;
+
 function DatabaseUnderBoardPanel({
-  stats,
-  games,
+  currentFen,
+  databases,
+  gamesByDatabase,
+  importHostedPgn,
+  importHostedFolder,
   onPlayMove,
 }: {
-  stats: WebPrepMoveStat[];
-  games: WebGame[];
+  currentFen: string;
+  databases: WebDatabase[];
+  gamesByDatabase: Record<string, WebGame[]>;
+  importHostedPgn: WebHostedPgnImportHandler;
+  importHostedFolder: WebHostedFolderImportHandler;
   onPlayMove: (stat: WebPrepMoveStat) => void;
 }) {
-  if (games.length === 0) {
-    return (
-      <UnderBoardEmpty
-        icon={<IconDatabase size={30} />}
-        title="No databases"
-        text="Open Files and import or load a PGN from the laptop."
-      />
-    );
-  }
+  const [source, setSource] = useState<WebDatabasePanelSource>("local");
+  const [selectedLocalIds, setSelectedLocalIds] = useState<string[]>([]);
+  const [hostedOpen, setHostedOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [lichessToken, setLichessToken] = usePersistentString(
+    WEB_LICHESS_TOKEN_STORAGE_KEY,
+    "",
+  );
+  const [onlineStats, setOnlineStats] = useState<WebPrepMoveStat[]>([]);
+  const [onlineLoading, setOnlineLoading] = useState(false);
+  const [onlineError, setOnlineError] = useState<string | null>(null);
+  const sourceOptions = databases.map((database) => ({
+    value: database.id,
+    label: `${database.name} (${database.gameCount})`,
+  }));
+  const localGames = useMemo(
+    () => collectGamesForSources(gamesByDatabase, selectedLocalIds),
+    [gamesByDatabase, selectedLocalIds],
+  );
+  const localStats = useMemo(
+    () => getWebPrepMoveStats({ games: localGames, prep: null, fen: currentFen }),
+    [currentFen, localGames],
+  );
 
-  if (stats.length === 0) {
-    return (
-      <UnderBoardEmpty
-        icon={<IconDatabase size={30} />}
-        title="No database games"
-        text="No indexed game reaches this board position."
-      />
+  useEffect(() => {
+    setSelectedLocalIds((current) =>
+      current.filter((id) => databases.some((database) => database.id === id)),
     );
-  }
+  }, [databases]);
+
+  useEffect(() => {
+    if (source === "local") return;
+    if (!lichessToken.trim()) {
+      setOnlineStats([]);
+      setOnlineError(null);
+      setOnlineLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    let active = true;
+    setOnlineLoading(true);
+    setOnlineError(null);
+
+    void fetchWebExplorerMoveStats({
+      source,
+      fen: currentFen,
+      token: lichessToken,
+      signal: controller.signal,
+    })
+      .then((stats) => {
+        if (!active) return;
+        setOnlineStats(stats);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setOnlineStats([]);
+        setOnlineError(error instanceof Error ? error.message : "Could not query Lichess explorer.");
+      })
+      .finally(() => {
+        if (active) setOnlineLoading(false);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [currentFen, lichessToken, refreshKey, source]);
+
+  const importHostedPgnForDatabase = async (entry: WebHostedFileEntry) => {
+    const imported = await importHostedPgn(entry);
+    if (imported) setSelectedLocalIds([imported.database.id]);
+    return imported;
+  };
+
+  const importHostedFolderForDatabase = async (library: WebHostedLibrary, path: string) => {
+    const imported = await importHostedFolder(library, path);
+    if (imported) setSelectedLocalIds([imported.database.id]);
+    return imported;
+  };
+
+  const stats = source === "local" ? localStats : onlineStats;
+  const sourceLabel = source === "local" ? "Local databases" : getExplorerSourceLabel(source);
 
   return (
-    <CompactMoveTable
-      stats={stats}
-      showState={false}
-      emptyLabel="No database moves"
-      onPlayMove={onPlayMove}
-    />
+    <Stack gap="xs">
+      <Group gap="xs" align="flex-end" wrap="wrap">
+        <SegmentedControl
+          aria-label="Database source"
+          size="xs"
+          value={source}
+          onChange={(value) => setSource(value as WebDatabasePanelSource)}
+          data={[
+            { value: "local", label: "Local" },
+            { value: "lichess-all", label: "Lichess All" },
+            { value: "lichess-masters", label: "Lichess Masters" },
+          ]}
+        />
+        {source === "local" ? (
+          <>
+            <MultiSelect
+              label="Local databases"
+              size="xs"
+              value={selectedLocalIds}
+              onChange={setSelectedLocalIds}
+              data={sourceOptions}
+              placeholder={databases.length > 0 ? "All local databases" : "No local databases"}
+              style={{ flex: "1 1 13rem" }}
+            />
+            <Button
+              size="xs"
+              variant={hostedOpen ? "light" : "default"}
+              leftSection={<IconFolder size={14} />}
+              onClick={() => setHostedOpen((open) => !open)}
+            >
+              Hosted files
+            </Button>
+          </>
+        ) : (
+          <>
+            <TextInput
+              label="Lichess token"
+              size="xs"
+              type="password"
+              value={lichessToken}
+              onChange={(event) => setLichessToken(event.currentTarget.value)}
+              placeholder="Bearer token"
+              style={{ flex: "1 1 12rem" }}
+            />
+            <Button
+              size="xs"
+              variant="light"
+              leftSection={<IconCloudDownload size={14} />}
+              onClick={() => void startWebLichessLogin()}
+            >
+              Sign in
+            </Button>
+            <ActionIcon
+              aria-label="Refresh Lichess explorer"
+              onClick={() => setRefreshKey((key) => key + 1)}
+              disabled={!lichessToken.trim()}
+              loading={onlineLoading}
+            >
+              <IconRefresh size={16} />
+            </ActionIcon>
+          </>
+        )}
+      </Group>
+
+      {source === "local" && (
+        <Collapse in={hostedOpen}>
+          <HostedFilesPanel
+            importHostedPgn={importHostedPgnForDatabase}
+            importHostedFolder={importHostedFolderForDatabase}
+            embedded
+          />
+        </Collapse>
+      )}
+
+      {source !== "local" && !lichessToken.trim() ? (
+        <UnderBoardEmpty
+          icon={<IconDatabase size={30} />}
+          title={`${sourceLabel} locked`}
+          text="Sign in to Lichess or paste a token to query this source from the phone."
+        />
+      ) : onlineLoading && source !== "local" ? (
+        <Center h={150}>
+          <Stack align="center" gap="xs">
+            <Loader size="sm" />
+            <Text size="xs" c="dimmed">
+              Querying {sourceLabel}
+            </Text>
+          </Stack>
+        </Center>
+      ) : onlineError && source !== "local" ? (
+        <UnderBoardEmpty
+          icon={<IconDatabase size={30} />}
+          title="Explorer unavailable"
+          text={onlineError}
+        />
+      ) : source === "local" && databases.length === 0 ? (
+        <UnderBoardEmpty
+          icon={<IconDatabase size={30} />}
+          title="No local databases"
+          text="Import PGNs or load a hosted laptop folder as a database."
+        />
+      ) : stats.length === 0 ? (
+        <UnderBoardEmpty
+          icon={<IconDatabase size={30} />}
+          title="No database games"
+          text={`No ${sourceLabel} moves reach this board position.`}
+        />
+      ) : (
+        <CompactMoveTable
+          stats={stats}
+          showState={false}
+          emptyLabel="No database moves"
+          onPlayMove={onPlayMove}
+        />
+      )}
+    </Stack>
   );
 }
 
@@ -817,6 +1073,7 @@ function PrepUnderBoardPanel({
   currentLine,
   onPlayMove,
   importHostedPgn,
+  importHostedFolder,
   importOnlineGames,
 }: {
   state: WebCompanionState;
@@ -827,6 +1084,7 @@ function PrepUnderBoardPanel({
   currentLine: WebPrepLineMove[];
   onPlayMove: (stat: WebPrepMoveStat) => void;
   importHostedPgn: WebHostedPgnImportHandler;
+  importHostedFolder: WebHostedFolderImportHandler;
   importOnlineGames: WebOnlineImportHandler;
 }) {
   const [opponent, setOpponent] = useState("");
@@ -949,6 +1207,12 @@ function PrepUnderBoardPanel({
 
   const importHostedPgnForPrep = async (entry: WebHostedFileEntry) => {
     const imported = await importHostedPgn(entry);
+    if (imported) attachImportedDatabase(imported.database.id);
+    return imported;
+  };
+
+  const importHostedFolderForPrep = async (library: WebHostedLibrary, path: string) => {
+    const imported = await importHostedFolder(library, path);
     if (imported) attachImportedDatabase(imported.database.id);
     return imported;
   };
@@ -1090,7 +1354,11 @@ function PrepUnderBoardPanel({
       </Collapse>
 
       <Collapse in={hostedOpen}>
-        <HostedFilesPanel importHostedPgn={importHostedPgnForPrep} embedded />
+        <HostedFilesPanel
+          importHostedPgn={importHostedPgnForPrep}
+          importHostedFolder={importHostedFolderForPrep}
+          embedded
+        />
       </Collapse>
 
       <Collapse in={onlineOpen}>
@@ -1312,6 +1580,7 @@ function FilesWorkspace({
   importing,
   importFiles,
   importHostedPgn,
+  importHostedFolder,
   setSelectedDatabaseId,
   setSelectedGameId,
   deleteDatabase,
@@ -1324,6 +1593,7 @@ function FilesWorkspace({
   importing: boolean;
   importFiles: (files: FileList | null) => Promise<void>;
   importHostedPgn: WebHostedPgnImportHandler;
+  importHostedFolder: WebHostedFolderImportHandler;
   setSelectedDatabaseId: (id: string | null) => void;
   setSelectedGameId: (id: string | null) => void;
   deleteDatabase: (database: WebDatabase) => void;
@@ -1333,7 +1603,7 @@ function FilesWorkspace({
 
   return (
     <Box className={classes.filesWorkspace}>
-      <HostedFilesPanel importHostedPgn={importHostedPgn} />
+      <HostedFilesPanel importHostedPgn={importHostedPgn} importHostedFolder={importHostedFolder} />
 
       <Box className={`${classes.panel} ${classes.panelBody}`}>
         <Group justify="space-between" gap="xs" mb="sm">
@@ -1464,15 +1734,21 @@ function FilesWorkspace({
 
 function HostedFilesPanel({
   importHostedPgn,
+  importHostedFolder,
   embedded = false,
 }: {
   importHostedPgn: WebHostedPgnImportHandler;
+  importHostedFolder?: WebHostedFolderImportHandler;
   embedded?: boolean;
 }) {
   const [library, setLibrary] = useState<WebHostedLibrary | null>(null);
   const [listing, setListing] = useState<WebHostedFileListResponse | null>(null);
   const [path, setPath] = useState("");
   const [loading, setLoading] = useState(false);
+  const pgnFilesInPath = useMemo(
+    () => (library ? getHostedPgnFilesInPath(library, path) : []),
+    [library, path],
+  );
 
   const load = useCallback(async (nextPath = path) => {
     setLoading(true);
@@ -1518,14 +1794,37 @@ function HostedFilesPanel({
       </Group>
 
       {listing?.parentPath !== null && (
+        <Group gap="xs" mb="xs" wrap="wrap">
+          <Button
+            size="compact-xs"
+            variant="light"
+            leftSection={<IconArrowBackUp size={14} />}
+            onClick={() => void load(listing?.parentPath ?? "")}
+          >
+            Up
+          </Button>
+          {library && importHostedFolder && pgnFilesInPath.length > 0 && (
+            <Button
+              size="compact-xs"
+              leftSection={<IconDatabase size={14} />}
+              loading={loading}
+              onClick={() => void importHostedFolder(library, path)}
+            >
+              Import folder
+            </Button>
+          )}
+        </Group>
+      )}
+
+      {listing?.parentPath === null && library && importHostedFolder && pgnFilesInPath.length > 0 && (
         <Button
           size="compact-xs"
-          variant="light"
-          leftSection={<IconArrowBackUp size={14} />}
+          leftSection={<IconDatabase size={14} />}
           mb="xs"
-          onClick={() => void load(listing?.parentPath ?? "")}
+          loading={loading}
+          onClick={() => void importHostedFolder(library, path)}
         >
-          Up
+          Import all PGNs
         </Button>
       )}
 
@@ -1718,6 +2017,34 @@ function downloadText(filename: string, text: string) {
 
 function sanitizeFilename(filename: string) {
   return filename.replace(/[\\/:*?"<>|]+/g, "-");
+}
+
+function getExplorerSourceLabel(source: WebDatabaseExplorerSource) {
+  return source === "lichess-all" ? "Lichess All" : "Lichess Masters";
+}
+
+function usePersistentString(key: string, fallback: string) {
+  const [value, setValue] = useState(() => {
+    try {
+      return window.localStorage.getItem(key) ?? fallback;
+    } catch {
+      return fallback;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      if (value) {
+        window.localStorage.setItem(key, value);
+      } else {
+        window.localStorage.removeItem(key);
+      }
+    } catch {
+      // Browser storage is best-effort for this small preference.
+    }
+  }, [key, value]);
+
+  return [value, setValue] as const;
 }
 
 function formatBytes(bytes: number) {

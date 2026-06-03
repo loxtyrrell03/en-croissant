@@ -143,6 +143,16 @@ default.
   web library, and Import games fetches public Lichess or Chess.com games by
   username with most-recent and date-range modes. Imports created from Prep are
   immediately used as prep sources when the prep has an explicit source list.
+- The web Database panel now mirrors the fork's source model more closely:
+  Local, Lichess All, and Lichess Masters are explicit under-board sources.
+  Local uses browser-indexed databases and can import any hosted PGN folder as
+  a single local database from the published laptop library. Prep uses the same
+  hosted-folder import path, so exported local database folders can be selected
+  and attached without leaving Prep. Lichess All/Masters use a browser PKCE
+  Lichess sign-in flow and store the access token in phone localStorage; direct
+  anonymous explorer requests return 401, so do not remove authentication.
+  Desktop `.db3` move blobs are not decoded in the browser; publish linked
+  Files/PGN exports for phone-accessible local database functionality.
 
 ### App Shell
 

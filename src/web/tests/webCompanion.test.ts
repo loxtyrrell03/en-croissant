@@ -1,5 +1,9 @@
 import { describe, expect, test } from "vitest";
-import { listHostedLibraryPath, type WebHostedLibrary } from "@/web/hostedFiles";
+import {
+  getHostedPgnFilesInPath,
+  listHostedLibraryPath,
+  type WebHostedLibrary,
+} from "@/web/hostedFiles";
 import { getWebOnlineImportTitle, getWebOnlineRangeLabel } from "@/web/onlineImport";
 import { getWebPrepMoveStats } from "@/web/prepIndex";
 import { parsePgnDatabase } from "@/web/pgn";
@@ -90,6 +94,7 @@ describe("web companion PGN prep index", () => {
     expect(root?.entries.map((entry) => entry.name)).toEqual(["Prep"]);
     expect(prep?.entries.map((entry) => entry.name)).toEqual(["Opponent", "report"]);
     expect(prep?.parentPath).toBe("");
+    expect(getHostedPgnFilesInPath(library, "Prep")).toHaveLength(1);
   });
 
   test("labels web online imports like prep databases", () => {
