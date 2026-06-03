@@ -24,6 +24,7 @@ import {
   IconCopy,
   IconEye,
   IconEyeOff,
+  IconFocus,
   IconLayoutList,
   IconList,
   IconMinus,
@@ -45,8 +46,10 @@ import Comment from "@/components/common/Comment";
 import GameAnalysisReport from "@/components/common/GameAnalysisReport";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import {
+  currentEvalOpenAtom,
   currentInvisibleAtom,
   currentShowCommentsAtom,
+  currentShowMoveAnnotationsAtom,
   currentShowVariationsAtom,
   currentTabAtom,
   enginesAtom,
@@ -307,8 +310,10 @@ function NotationHeader({
   const setReportInProgress = useStore(store, (s) => s.setReportInProgress);
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
   const engines = useAtomValue(enginesAtom);
+  const [evalOpen, setEvalOpen] = useAtom(currentEvalOpenAtom);
   const [invisible, setInvisible] = useAtom(currentInvisibleAtom);
   const [showComments, setShowComments] = useAtom(currentShowCommentsAtom);
+  const [showMoveAnnotations, setShowMoveAnnotations] = useAtom(currentShowMoveAnnotationsAtom);
   const [showVariations, setShowVariations] = useAtom(currentShowVariationsAtom);
   const [tableView, setTableView] = useAtom(tableViewAtom);
   const [copying, setCopying] = useState(false);
@@ -458,6 +463,16 @@ function NotationHeader({
     : hasCompleteGameAnalysis(root)
       ? "Show game report"
       : "Analyze game with Stockfish";
+  const notationDetailsHidden = !evalOpen && !showComments && !showMoveAnnotations;
+  const focusNotationLabel = notationDetailsHidden
+    ? "Show eval bar and annotations"
+    : "Hide eval bar and annotations";
+  const toggleNotationDetails = () => {
+    const hideDetails = evalOpen || showComments || showMoveAnnotations;
+    setEvalOpen(!hideDetails);
+    setShowComments(!hideDetails);
+    setShowMoveAnnotations(!hideDetails);
+  };
 
   return (
     <Stack gap={compact ? 4 : "xs"} pt={compact ? 5 : "xs"}>
@@ -465,6 +480,15 @@ function NotationHeader({
         <OpeningName />
         <Group gap="sm">
           {headerActions}
+          <Tooltip label={focusNotationLabel}>
+            <ActionIcon
+              aria-label={focusNotationLabel}
+              variant={notationDetailsHidden ? "filled" : undefined}
+              onClick={toggleNotationDetails}
+            >
+              <IconFocus size="1rem" />
+            </ActionIcon>
+          </Tooltip>
           <Tooltip label={copyPgnLabel}>
             <ActionIcon
               aria-label={copyPgnLabel}

@@ -1,6 +1,12 @@
 import { createStore } from "jotai";
 import { beforeEach, expect, test } from "vitest";
-import { activeTabAtom, currentShowCommentsAtom, currentTabAtom, tabsAtom } from "@/state/atoms";
+import {
+    activeTabAtom,
+    currentShowCommentsAtom,
+    currentShowMoveAnnotationsAtom,
+    currentTabAtom,
+    tabsAtom,
+} from "@/state/atoms";
 import type { Tab } from "@/utils/tabs";
 
 function analysisTab(value: string): Tab {
@@ -24,6 +30,16 @@ test("per-tab atoms fall back when no tab is selected", () => {
     store.set(currentShowCommentsAtom, false);
 
     expect(store.get(currentShowCommentsAtom)).toBe(false);
+});
+
+test("move annotation visibility has independent per-tab fallback state", () => {
+    const store = createStore();
+
+    expect(store.get(currentShowMoveAnnotationsAtom)).toBe(true);
+
+    store.set(currentShowMoveAnnotationsAtom, false);
+
+    expect(store.get(currentShowMoveAnnotationsAtom)).toBe(false);
 });
 
 test("current tab falls back to the first workspace tab when active tab is stale", () => {

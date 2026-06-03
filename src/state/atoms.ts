@@ -802,6 +802,9 @@ export const currentInvisibleAtom = tabValue(invisibleFamily);
 const showCommentsFamily = atomFamily((_tab: string) => atom(true));
 export const currentShowCommentsAtom = tabValue(showCommentsFamily);
 
+const showMoveAnnotationsFamily = atomFamily((_tab: string) => atom(true));
+export const currentShowMoveAnnotationsAtom = tabValue(showMoveAnnotationsFamily);
+
 const showVariationsFamily = atomFamily((_tab: string) => atom(true));
 export const currentShowVariationsAtom = tabValue(showVariationsFamily);
 
@@ -1508,6 +1511,7 @@ export function cleanupClosedTabAtomState(
     evalBarDisplayFamily.remove(tab);
     invisibleFamily.remove(tab);
     showCommentsFamily.remove(tab);
+    showMoveAnnotationsFamily.remove(tab);
     showVariationsFamily.remove(tab);
     tabFamily.remove(tab);
     localOptionsFamily.remove(tab);

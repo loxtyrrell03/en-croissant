@@ -70,7 +70,7 @@ import {
   currentEvalOpenAtom,
   currentPlanExplorerDataAtom,
   currentPlanExplorerPreviewLineAtom,
-  currentShowCommentsAtom,
+  currentShowMoveAnnotationsAtom,
   currentTabAtom,
   currentTabSelectedAtom,
   deckAtomFamily,
@@ -701,25 +701,22 @@ function Board({
     deck.positions,
     reviewPositionFenIndex,
   ]);
-  const currentPracticeEntry = useMemo(
-    () => {
-      if (!needsReviewDeck) return null;
-      return findReviewPracticePositionForBoard(
-        deck.positions,
-        currentNode.fen,
-        practicing ? practiceState.positionIndex : undefined,
-        reviewPositionFenIndex,
-      );
-    },
-    [
-      currentNode.fen,
+  const currentPracticeEntry = useMemo(() => {
+    if (!needsReviewDeck) return null;
+    return findReviewPracticePositionForBoard(
       deck.positions,
-      needsReviewDeck,
-      practiceState.positionIndex,
-      practicing,
+      currentNode.fen,
+      practicing ? practiceState.positionIndex : undefined,
       reviewPositionFenIndex,
-    ],
-  );
+    );
+  }, [
+    currentNode.fen,
+    deck.positions,
+    needsReviewDeck,
+    practiceState.positionIndex,
+    practicing,
+    reviewPositionFenIndex,
+  ]);
   const currentPracticeCard = currentPracticeEntry?.position ?? null;
   const mistakeReviewFreePlayActive =
     isMistakeReviewTab && mistakeReviewFreePlay && !!trainerMistakeReviewPosition;
@@ -1474,8 +1471,8 @@ function Board({
 
   const [enableBoardScroll] = useAtom(enableBoardScrollAtom);
   const [snapArrows] = useAtom(snapArrowsAtom);
-  const showComments = useAtomValue(currentShowCommentsAtom);
-  const visualAnnotation = showComments ? currentNode.annotations[0] : "";
+  const showMoveAnnotations = useAtomValue(currentShowMoveAnnotationsAtom);
+  const visualAnnotation = showMoveAnnotations ? currentNode.annotations[0] : "";
   const { ref: boardAreaRef, width: boardAreaWidth, height: boardAreaHeight } = useElementSize();
   const [manualBoardSize, setManualBoardSize] = useAtom(boardManualSizeAtom);
   const maxBoardSize = Math.max(
@@ -1847,7 +1844,7 @@ function Board({
               }}
               gap={BOARD_ROW_GAP}
             >
-              {showComments &&
+              {showMoveAnnotations &&
                 currentNode.annotations.length > 0 &&
                 currentNode.move &&
                 square !== undefined && (
