@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { listHostedLibraryPath, type WebHostedLibrary } from "@/web/hostedFiles";
+import { getWebOnlineImportTitle, getWebOnlineRangeLabel } from "@/web/onlineImport";
 import { getWebPrepMoveStats } from "@/web/prepIndex";
 import { parsePgnDatabase } from "@/web/pgn";
 
@@ -89,5 +90,18 @@ describe("web companion PGN prep index", () => {
     expect(root?.entries.map((entry) => entry.name)).toEqual(["Prep"]);
     expect(prep?.entries.map((entry) => entry.name)).toEqual(["Opponent", "report"]);
     expect(prep?.parentPath).toBe("");
+  });
+
+  test("labels web online imports like prep databases", () => {
+    expect(
+      getWebOnlineImportTitle({
+        source: "chesscom",
+        username: "Opponent",
+        mode: "count",
+        count: 25,
+        range: "3m",
+      }),
+    ).toBe("Opponent Chess.com recent 25");
+    expect(getWebOnlineRangeLabel("1y")).toBe("Last year");
   });
 });

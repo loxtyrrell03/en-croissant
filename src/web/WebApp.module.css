@@ -175,6 +175,12 @@
   color: var(--mantine-color-gray-4);
 }
 
+.prepToolBox {
+  padding: 0.55rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
 .line {
   min-height: 2.35rem;
   padding: 0.55rem 0.65rem;

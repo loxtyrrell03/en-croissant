@@ -136,6 +136,13 @@ default.
   published site while the laptop is off. Do not reintroduce a local
   filesystem bridge as the phone product path; it makes phone access depend on
   the laptop being awake and can expose local files on a development network.
+- The web Prep panel now owns its database/import workflow instead of forcing a
+  detour to Files. Its compact under-board Prep area has Databases, Hosted
+  files, and Import games drawers: database source selection attaches indexed
+  PGNs to the active prep, Hosted files can load PGNs/PDFs from the published
+  web library, and Import games fetches public Lichess or Chess.com games by
+  username with most-recent and date-range modes. Imports created from Prep are
+  immediately used as prep sources when the prep has an explicit source list.
 
 ### App Shell
 

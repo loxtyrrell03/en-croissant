@@ -14,11 +14,14 @@ import {
   Button,
   Center,
   Checkbox,
+  Collapse,
   createTheme,
   Group,
   Loader,
   MantineProvider,
   MultiSelect,
+  NumberInput,
+  Progress,
   ScrollArea,
   SegmentedControl,
   Select,
@@ -37,6 +40,7 @@ import {
   IconChevronsLeft,
   IconChevronsRight,
   IconChess,
+  IconCloudDownload,
   IconDatabase,
   IconDownload,
   IconFileText,
@@ -81,6 +85,15 @@ import type {
   WebPrepWorkspace,
 } from "./model";
 import {
+  fetchWebOnlineGames,
+  getWebOnlineImportTitle,
+  getWebOnlineRangeLabel,
+  getWebOnlineSourceLabel,
+  type WebOnlineImportMode,
+  type WebOnlineRangePreset,
+  type WebOnlineSource,
+} from "./onlineImport";
+import {
   collectGamesForSources,
   getKnownPlayers,
   getWebPrepMoveStats,
@@ -100,6 +113,15 @@ import { createEmptyWebBoardState, createEmptyWebState, loadWebState, saveWebSta
 
 type ViewMode = "board" | "files";
 type BoardPanelMode = "moves" | "database" | "prep";
+type WebHostedPgnImportHandler = (entry: WebHostedFileEntry) => Promise<WebImportResult | null>;
+type WebOnlineImportHandler = (request: {
+  source: WebOnlineSource;
+  username: string;
+  mode: WebOnlineImportMode;
+  count: number;
+  range: WebOnlineRangePreset;
+  setProgress: (progress: number | null) => void;
+}) => Promise<WebImportResult | null>;
 
 const theme = createTheme({
   primaryColor: "blue",
@@ -221,6 +243,35 @@ export default function WebApp() {
     setSelectedDatabaseId(imported[0]?.database.id ?? selectedDatabaseId);
   }, [selectedDatabaseId]);
 
+  const importPgnText = useCallback(
+    async ({
+      name,
+      pgn,
+      notificationTitle,
+      notificationMessage,
+    }: {
+      name: string;
+      pgn: string;
+      notificationTitle: string;
+      notificationMessage?: (result: WebImportResult) => string;
+    }) => {
+      const imported = parsePgnDatabase(name, pgn);
+      addImportedDatabases([imported]);
+      if (imported.games[0]) {
+        window.setTimeout(() => loadGameOnBoard(imported.games[0]), 0);
+      }
+
+      notifications.show({
+        title: notificationTitle,
+        message: notificationMessage?.(imported) ?? `${imported.games.length} games indexed.`,
+        color: "green",
+      });
+
+      return imported;
+    },
+    [addImportedDatabases, loadGameOnBoard],
+  );
+
   const importFiles = useCallback(
     async (files: FileList | null) => {
       if (!files || files.length === 0) return;
@@ -263,16 +314,14 @@ export default function WebApp() {
       setImporting(true);
       try {
         const file = await readHostedPgnFile(entry);
-        const imported = parsePgnDatabase(file.filename, file.content);
-        addImportedDatabases([imported]);
-        if (imported.games[0]) {
-          window.setTimeout(() => loadGameOnBoard(imported.games[0]), 0);
-        }
-        notifications.show({
-          title: "Hosted file opened",
-          message: `${imported.games.length} games indexed from ${file.filename}.`,
-          color: "green",
+        const imported = await importPgnText({
+          name: file.filename,
+          pgn: file.content,
+          notificationTitle: "Hosted file opened",
+          notificationMessage: (imported) =>
+            `${imported.games.length} games indexed from ${file.filename}.`,
         });
+        return imported;
       } catch (error) {
         console.error(error);
         notifications.show({
@@ -283,8 +332,62 @@ export default function WebApp() {
       } finally {
         setImporting(false);
       }
+      return null;
     },
-    [addImportedDatabases, loadGameOnBoard],
+    [importPgnText],
+  );
+
+  const importOnlineGames = useCallback(
+    async ({
+      source,
+      username,
+      mode,
+      count,
+      range,
+      setProgress,
+    }: Parameters<WebOnlineImportHandler>[0]) => {
+      setImporting(true);
+      setProgress(0);
+      try {
+        const games = await fetchWebOnlineGames({
+          source,
+          username,
+          mode,
+          count,
+          range,
+          onProgress: (loaded, expected) => {
+            const denominator = expected && expected > 0 ? expected : count;
+            setProgress(Math.min(100, Math.round((loaded / denominator) * 100)));
+          },
+        });
+        if (games.length === 0) {
+          throw new Error(`${getWebOnlineSourceLabel(source)} did not return public PGNs for ${username}.`);
+        }
+
+        const title = getWebOnlineImportTitle({ source, username, mode, count, range });
+        const imported = await importPgnText({
+          name: `${title}.pgn`,
+          pgn: games.map((game) => game.pgn.trim()).join("\n\n"),
+          notificationTitle: "Online games imported",
+          notificationMessage: (imported) =>
+            `${imported.games.length} ${getWebOnlineSourceLabel(source)} games indexed for ${username}.`,
+        });
+        setProgress(100);
+        return imported;
+      } catch (error) {
+        console.error(error);
+        notifications.show({
+          title: "Online import failed",
+          message: error instanceof Error ? error.message : "Could not import public online games.",
+          color: "red",
+        });
+      } finally {
+        setImporting(false);
+        window.setTimeout(() => setProgress(null), 700);
+      }
+      return null;
+    },
+    [importPgnText],
   );
 
   const deleteDatabase = useCallback((database: WebDatabase) => {
@@ -375,6 +478,8 @@ export default function WebApp() {
               state={state}
               setState={setState}
               activePrep={activePrep}
+              importHostedPgn={importHostedPgn}
+              importOnlineGames={importOnlineGames}
             />
           ) : (
             <FilesWorkspace
@@ -401,10 +506,14 @@ function BoardWorkspace({
   state,
   setState,
   activePrep,
+  importHostedPgn,
+  importOnlineGames,
 }: {
   state: WebCompanionState;
   setState: Dispatch<SetStateAction<WebCompanionState>>;
   activePrep: WebPrepWorkspace | null;
+  importHostedPgn: WebHostedPgnImportHandler;
+  importOnlineGames: WebOnlineImportHandler;
 }) {
   const [panelMode, setPanelMode] = useState<BoardPanelMode>("moves");
   const board = state.board ?? createEmptyWebBoardState();
@@ -578,6 +687,8 @@ function BoardWorkspace({
               stats={prepStats}
               currentLine={currentLine}
               onPlayMove={playMove}
+              importHostedPgn={importHostedPgn}
+              importOnlineGames={importOnlineGames}
             />
           )}
         </Box>
@@ -705,6 +816,8 @@ function PrepUnderBoardPanel({
   stats,
   currentLine,
   onPlayMove,
+  importHostedPgn,
+  importOnlineGames,
 }: {
   state: WebCompanionState;
   setState: Dispatch<SetStateAction<WebCompanionState>>;
@@ -713,15 +826,37 @@ function PrepUnderBoardPanel({
   stats: WebPrepMoveStat[];
   currentLine: WebPrepLineMove[];
   onPlayMove: (stat: WebPrepMoveStat) => void;
+  importHostedPgn: WebHostedPgnImportHandler;
+  importOnlineGames: WebOnlineImportHandler;
 }) {
   const [opponent, setOpponent] = useState("");
   const [userColor, setUserColor] = useState<WebColor>("white");
   const [sourceIds, setSourceIds] = useState<string[]>(() => state.databases.map((db) => db.id));
+  const [sourcesOpen, setSourcesOpen] = useState(true);
+  const [hostedOpen, setHostedOpen] = useState(false);
+  const [onlineOpen, setOnlineOpen] = useState(false);
+  const [onlineSource, setOnlineSource] = useState<WebOnlineSource>("chesscom");
+  const [onlineUsername, setOnlineUsername] = useState("");
+  const [onlineMode, setOnlineMode] = useState<WebOnlineImportMode>("count");
+  const [onlineCount, setOnlineCount] = useState(50);
+  const [onlineRange, setOnlineRange] = useState<WebOnlineRangePreset>("3m");
+  const [onlineProgress, setOnlineProgress] = useState<number | null>(null);
   const players = useMemo(() => getKnownPlayers(state.gamesByDatabase), [state.gamesByDatabase]);
   const sourceOptions = state.databases.map((database) => ({
     value: database.id,
     label: `${database.name} (${database.gameCount})`,
   }));
+  const activePrepSourceIds = activePrep?.sourceIds.length
+    ? activePrep.sourceIds
+    : state.databases.map((database) => database.id);
+  const activePrepSourceDatabases = state.databases.filter((database) =>
+    activePrepSourceIds.includes(database.id),
+  );
+
+  useEffect(() => {
+    if (onlineUsername || !activePrep?.opponent) return;
+    setOnlineUsername(activePrep.opponent);
+  }, [activePrep?.opponent, onlineUsername]);
 
   const createPrep = () => {
     const now = Date.now();
@@ -788,6 +923,51 @@ function PrepUnderBoardPanel({
     }));
   };
 
+  const updateActivePrepSources = (nextSourceIds: string[]) => {
+    updateActivePrep((prep) => ({
+      ...prep,
+      sourceIds: nextSourceIds,
+      updatedAt: Date.now(),
+    }));
+  };
+
+  const attachImportedDatabase = (databaseId: string) => {
+    if (activePrep) {
+      updateActivePrep((prep) => {
+        if (prep.sourceIds.length === 0 || prep.sourceIds.includes(databaseId)) return prep;
+        return {
+          ...prep,
+          sourceIds: [...prep.sourceIds, databaseId],
+          updatedAt: Date.now(),
+        };
+      });
+      return;
+    }
+
+    setSourceIds((current) => (current.includes(databaseId) ? current : [...current, databaseId]));
+  };
+
+  const importHostedPgnForPrep = async (entry: WebHostedFileEntry) => {
+    const imported = await importHostedPgn(entry);
+    if (imported) attachImportedDatabase(imported.database.id);
+    return imported;
+  };
+
+  const runOnlineImport = () => {
+    const username = onlineUsername.trim();
+    if (!username) return;
+    void importOnlineGames({
+      source: onlineSource,
+      username,
+      mode: onlineMode,
+      count: onlineCount,
+      range: onlineRange,
+      setProgress: setOnlineProgress,
+    }).then((imported) => {
+      if (imported) attachImportedDatabase(imported.database.id);
+    });
+  };
+
   return (
     <Stack gap="sm">
       <Group align="flex-end" gap="xs">
@@ -849,16 +1029,159 @@ function PrepUnderBoardPanel({
         )}
       </Group>
 
+      <Group gap="xs" wrap="wrap">
+        <Button
+          size="compact-xs"
+          variant={sourcesOpen ? "light" : "default"}
+          leftSection={<IconDatabase size={14} />}
+          onClick={() => setSourcesOpen((open) => !open)}
+        >
+          Databases
+        </Button>
+        <Button
+          size="compact-xs"
+          variant={hostedOpen ? "light" : "default"}
+          leftSection={<IconFolder size={14} />}
+          onClick={() => setHostedOpen((open) => !open)}
+        >
+          Hosted files
+        </Button>
+        <Button
+          size="compact-xs"
+          variant={onlineOpen ? "light" : "default"}
+          leftSection={<IconCloudDownload size={14} />}
+          onClick={() => setOnlineOpen((open) => !open)}
+        >
+          Import games
+        </Button>
+      </Group>
+
+      <Collapse in={sourcesOpen}>
+        <Stack gap="xs" className={classes.prepToolBox}>
+          <MultiSelect
+            label="Prep databases"
+            size="xs"
+            value={activePrep ? activePrep.sourceIds : sourceIds}
+            onChange={activePrep ? updateActivePrepSources : setSourceIds}
+            data={sourceOptions}
+            placeholder={state.databases.length > 0 ? "All indexed databases" : "No databases yet"}
+          />
+          {activePrep ? (
+            <Group gap={4} wrap="wrap">
+              {(activePrepSourceDatabases.length > 0 ? activePrepSourceDatabases : state.databases)
+                .slice(0, 6)
+                .map((database) => (
+                  <Badge key={database.id} size="xs" variant="light">
+                    {database.name} - {database.gameCount}
+                  </Badge>
+                ))}
+              {state.databases.length === 0 && (
+                <Text size="xs" c="dimmed">
+                  Import hosted PGNs or public online games to create prep databases.
+                </Text>
+              )}
+            </Group>
+          ) : (
+            <Text size="xs" c="dimmed">
+              These sources will be attached to the next prep workspace you create.
+            </Text>
+          )}
+        </Stack>
+      </Collapse>
+
+      <Collapse in={hostedOpen}>
+        <HostedFilesPanel importHostedPgn={importHostedPgnForPrep} embedded />
+      </Collapse>
+
+      <Collapse in={onlineOpen}>
+        <Stack gap="xs" className={classes.prepToolBox}>
+          <Group gap="xs" align="flex-end" wrap="wrap">
+            <SegmentedControl
+              aria-label="Online prep source"
+              size="xs"
+              value={onlineSource}
+              onChange={(value) => setOnlineSource(value as WebOnlineSource)}
+              data={[
+                { value: "lichess", label: "Lichess" },
+                { value: "chesscom", label: "Chess.com" },
+              ]}
+            />
+            <TextInput
+              label="Player"
+              size="xs"
+              placeholder="Username"
+              value={onlineUsername}
+              onChange={(event) => setOnlineUsername(event.currentTarget.value)}
+              style={{ flex: "1 1 9rem" }}
+            />
+            <SegmentedControl
+              aria-label="Online import scope"
+              size="xs"
+              value={onlineMode}
+              onChange={(value) => setOnlineMode(value as WebOnlineImportMode)}
+              data={[
+                { value: "count", label: "Most recent" },
+                { value: "range", label: "Date range" },
+              ]}
+            />
+            {onlineMode === "count" ? (
+              <NumberInput
+                label="Games"
+                size="xs"
+                value={onlineCount}
+                min={1}
+                max={300}
+                step={25}
+                onChange={(value) =>
+                  setOnlineCount(Math.max(1, Math.min(300, Number(value) || 1)))
+                }
+                w={94}
+              />
+            ) : (
+              <Select
+                label="Range"
+                size="xs"
+                value={onlineRange}
+                onChange={(value) => setOnlineRange((value as WebOnlineRangePreset | null) ?? "3m")}
+                data={[
+                  { value: "3m", label: getWebOnlineRangeLabel("3m") },
+                  { value: "6m", label: getWebOnlineRangeLabel("6m") },
+                  { value: "1y", label: getWebOnlineRangeLabel("1y") },
+                  { value: "all", label: getWebOnlineRangeLabel("all") },
+                ]}
+                allowDeselect={false}
+                w={148}
+              />
+            )}
+            <Button
+              size="xs"
+              leftSection={<IconCloudDownload size={14} />}
+              disabled={!onlineUsername.trim()}
+              onClick={runOnlineImport}
+            >
+              Import + use
+            </Button>
+          </Group>
+          <Group gap="xs" wrap="nowrap">
+            {onlineProgress !== null && (
+              <>
+                <Progress value={onlineProgress} size="xs" style={{ flex: 1 }} />
+                <Text size="xs" c="dimmed">
+                  {Math.round(onlineProgress)}%
+                </Text>
+              </>
+            )}
+            {onlineProgress === null && (
+              <Text size="xs" c="dimmed">
+                Imports public PGNs from {getWebOnlineSourceLabel(onlineSource)} into the phone database list.
+              </Text>
+            )}
+          </Group>
+        </Stack>
+      </Collapse>
+
       {!activePrep ? (
         <Stack gap="xs">
-          <MultiSelect
-            label="Sources"
-            size="xs"
-            value={sourceIds}
-            onChange={setSourceIds}
-            data={sourceOptions}
-            placeholder="All indexed PGNs"
-          />
           <Text size="xs" c="dimmed">
             Create prep to track notes and prepared moves from this board position.
           </Text>
@@ -1000,7 +1323,7 @@ function FilesWorkspace({
   selectedGame: WebGame | null;
   importing: boolean;
   importFiles: (files: FileList | null) => Promise<void>;
-  importHostedPgn: (entry: WebHostedFileEntry) => Promise<void>;
+  importHostedPgn: WebHostedPgnImportHandler;
   setSelectedDatabaseId: (id: string | null) => void;
   setSelectedGameId: (id: string | null) => void;
   deleteDatabase: (database: WebDatabase) => void;
@@ -1141,8 +1464,10 @@ function FilesWorkspace({
 
 function HostedFilesPanel({
   importHostedPgn,
+  embedded = false,
 }: {
-  importHostedPgn: (entry: WebHostedFileEntry) => Promise<void>;
+  importHostedPgn: WebHostedPgnImportHandler;
+  embedded?: boolean;
 }) {
   const [library, setLibrary] = useState<WebHostedLibrary | null>(null);
   const [listing, setListing] = useState<WebHostedFileListResponse | null>(null);
@@ -1177,7 +1502,7 @@ function HostedFilesPanel({
   }, []);
 
   return (
-    <Box className={`${classes.panel} ${classes.panelBody}`}>
+    <Box className={embedded ? classes.prepToolBox : `${classes.panel} ${classes.panelBody}`}>
       <Group justify="space-between" gap="xs" mb="sm">
         <Box miw={0}>
           <Title order={3}>Hosted files</Title>
