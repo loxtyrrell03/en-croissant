@@ -1,0 +1,210 @@
+import { INITIAL_FEN } from "chessops/fen";
+import {
+  getPrepMoveStrengthMap,
+  normalizePrepBuilderSettings,
+  type PrepMoveStrength,
+} from "@/utils/opponentPrep";
+import type { Opening } from "@/utils/db";
+import type { WebColor, WebGame, WebPrepWorkspace, WebResult } from "./model";
+import { getFenColor, getResultScore, normalizeWebFen, oppositeWebColor } from "./pgn";
+
+export type WebPrepMoveStat = Opening & {
+  key: string;
+  uci: string | null;
+  total: number;
+  share: number;
+  scoreForUser: number;
+  sourceLabel: string;
+  examples: WebGame[];
+  strength: PrepMoveStrength | null;
+};
+
+export function collectGamesForSources(gamesByDatabase: Record<string, WebGame[]>, sourceIds: string[]) {
+  const selected = sourceIds.length > 0 ? sourceIds : Object.keys(gamesByDatabase);
+  return selected.flatMap((id) => gamesByDatabase[id] ?? []);
+}
+
+export function getWebPrepMoveStats({
+  games,
+  prep,
+  fen,
+  maxExamples = 4,
+}: {
+  games: WebGame[];
+  prep: Pick<WebPrepWorkspace, "opponent" | "userColor" | "sourceIds"> | null;
+  fen: string;
+  maxExamples?: number;
+}): WebPrepMoveStat[] {
+  const key = normalizeWebFen(fen || INITIAL_FEN);
+  const userColor = prep?.userColor ?? getFenColor(fen || INITIAL_FEN);
+  const opponentColor = oppositeWebColor(userColor);
+  const opponent = prep?.opponent.trim().toLowerCase() ?? "";
+  const bucket = new Map<string, MoveBucket>();
+  let totalOccurrences = 0;
+
+  for (const game of games) {
+    if (!gameMatchesOpponent(game, opponent, opponentColor)) continue;
+
+    for (const move of game.moves) {
+      if (normalizeWebFen(move.fenBefore) !== key) continue;
+
+      const entry = bucket.get(move.san) ?? createMoveBucket(move.san);
+      entry.uci ??= move.uci;
+      entry.total += 1;
+      entry.white += scoreResultCount(game.result, "white");
+      entry.draw += scoreDrawCount(game.result);
+      entry.black += scoreResultCount(game.result, "black");
+      entry.scoreForUser += getResultScore(game.result, userColor);
+      entry.lastPlayed = pickLatest(entry.lastPlayed, game.date);
+      if (entry.examples.length < maxExamples) {
+        entry.examples.push(game);
+      }
+      bucket.set(move.san, entry);
+      totalOccurrences += 1;
+    }
+  }
+
+  const openings: Opening[] = Array.from(bucket.values()).map((entry) => ({
+    move: entry.move,
+    white: entry.white,
+    draw: entry.draw,
+    black: entry.black,
+    lastPlayed: entry.lastPlayed,
+  }));
+  const strengthMap = getPrepMoveStrengthMap({
+    openings,
+    side: userColor,
+    settings: normalizePrepBuilderSettings({
+      mode: "practical",
+      useCloudEngine: false,
+    }),
+  });
+
+  return Array.from(bucket.values())
+    .map<WebPrepMoveStat>((entry) => ({
+      move: entry.move,
+      white: entry.white,
+      draw: entry.draw,
+      black: entry.black,
+      lastPlayed: entry.lastPlayed,
+      key: `${key}:${entry.move}`,
+      uci: entry.uci,
+      total: entry.total,
+      share: totalOccurrences > 0 ? entry.total / totalOccurrences : 0,
+      scoreForUser: entry.total > 0 ? entry.scoreForUser / entry.total : 0.5,
+      sourceLabel: getFenColor(fen) === opponentColor ? "opponent move" : "reply faced",
+      examples: entry.examples,
+      strength: strengthMap.get(normalizeSan(entry.move)) ?? null,
+    }))
+    .sort(
+      (a, b) =>
+        b.total - a.total ||
+        b.scoreForUser - a.scoreForUser ||
+        a.move.localeCompare(b.move, undefined, { sensitivity: "base" }),
+    );
+}
+
+export function getKnownPlayers(gamesByDatabase: Record<string, WebGame[]>) {
+  const players = new Map<string, number>();
+  for (const games of Object.values(gamesByDatabase)) {
+    for (const game of games) {
+      countPlayer(players, game.white);
+      countPlayer(players, game.black);
+    }
+  }
+  return Array.from(players.entries())
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], undefined, { sensitivity: "base" }))
+    .map(([player]) => player);
+}
+
+export function getDatabasePlayerCounts(games: WebGame[]) {
+  const players = new Map<string, { name: string; games: number; score: number }>();
+  for (const game of games) {
+    addPlayerResult(players, game.white, "white", game.result);
+    addPlayerResult(players, game.black, "black", game.result);
+  }
+  return Array.from(players.values()).sort(
+    (a, b) => b.games - a.games || a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+  );
+}
+
+type MoveBucket = {
+  move: string;
+  uci: string | null;
+  total: number;
+  white: number;
+  draw: number;
+  black: number;
+  scoreForUser: number;
+  lastPlayed: string | null;
+  examples: WebGame[];
+};
+
+function createMoveBucket(move: string): MoveBucket {
+  return {
+    move,
+    uci: null,
+    total: 0,
+    white: 0,
+    draw: 0,
+    black: 0,
+    scoreForUser: 0,
+    lastPlayed: null,
+    examples: [],
+  };
+}
+
+function gameMatchesOpponent(game: WebGame, opponent: string, opponentColor: WebColor) {
+  if (!opponent) return true;
+  const player = opponentColor === "white" ? game.white : game.black;
+  return player.toLowerCase() === opponent || player.toLowerCase().includes(opponent);
+}
+
+function scoreResultCount(result: WebResult, side: WebColor) {
+  if (result === "*") return 0;
+  if (result === "1-0" && side === "white") return 1;
+  if (result === "0-1" && side === "black") return 1;
+  return 0;
+}
+
+function scoreDrawCount(result: WebResult) {
+  return result === "1/2-1/2" || result === "*" ? 1 : 0;
+}
+
+function addPlayerResult(
+  players: Map<string, { name: string; games: number; score: number }>,
+  name: string,
+  side: WebColor,
+  result: WebResult,
+) {
+  if (!name || name === "?") return;
+  const current = players.get(name) ?? { name, games: 0, score: 0 };
+  current.games += 1;
+  current.score += getResultScore(result, side);
+  players.set(name, current);
+}
+
+function countPlayer(players: Map<string, number>, name: string) {
+  if (!name || name === "?") return;
+  players.set(name, (players.get(name) ?? 0) + 1);
+}
+
+function pickLatest(current: string | null, candidate: string) {
+  const candidateKey = sortableDate(candidate);
+  if (!candidateKey) return current;
+  const currentKey = sortableDate(current ?? "");
+  return !currentKey || candidateKey > currentKey ? candidate : current;
+}
+
+function sortableDate(value: string) {
+  const digits = value.replace(/\D/g, "");
+  return digits.length > 0 ? Number(digits.padEnd(8, "0")) : 0;
+}
+
+function normalizeSan(value: string) {
+  return value
+    .trim()
+    .replace(/^0-0-0/, "O-O-O")
+    .replace(/^0-0/, "O-O")
+    .replace(/[+#?!]+$/g, "");
+}

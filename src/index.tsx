@@ -3,7 +3,6 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import i18n from "i18next";
 import { createRoot } from "react-dom/client";
 import { initReactI18next } from "react-i18next";
-import App from "./App";
 
 import be_BY from "./translation/be-BY.json";
 import de_DE from "./translation/de-DE.json";
@@ -60,4 +59,18 @@ setAutoFreeze(false);
 
 const container = document.getElementById("app");
 const root = createRoot(container!);
-root.render(<App />);
+
+type TauriWindow = Window & {
+  __TAURI_INTERNALS__?: unknown;
+};
+
+async function renderRoot() {
+  const isTauriRuntime =
+    typeof window !== "undefined" && Boolean((window as TauriWindow).__TAURI_INTERNALS__);
+  const module = isTauriRuntime ? await import("./App") : await import("./web/WebApp");
+  const Root = module.default;
+
+  root.render(<Root />);
+}
+
+void renderRoot();

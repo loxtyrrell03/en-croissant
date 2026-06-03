@@ -102,6 +102,25 @@ default.
 
 ## Product Map
 
+### Web Companion
+
+- On 2026-06-03, a first browser/PWA MVP was added for phone access without
+  Tauri. `src/index.tsx` now runtime-splits startup: real Tauri WebViews load
+  the existing desktop app, while plain browsers load `src/web/WebApp.tsx`.
+  The web companion is intentionally prep-first and excludes Opening/Mistake
+  Review decks for now. It imports PGN files through the browser file picker,
+  stores indexed data in IndexedDB, treats those PGNs as browser-side
+  databases, provides Files and Databases views for browsing games/player
+  summaries/exporting PGNs, and creates saved opponent-prep workspaces with a
+  mobile Chessground board, notes, line navigation, practical move stats, and
+  prepared/open row state. It does not read desktop `.db3` files directly yet;
+  future phone sync should bridge desktop databases or linked Files PGNs into
+  this browser-side model rather than reintroducing Tauri-only imports.
+- The web MVP also adds `public/manifest.webmanifest` and `public/web-sw.js`
+  so static hosting builds can be installed as a lightweight PWA. Keep the
+  browser entry free of eager `@tauri-apps/*` imports; browser deployment
+  depends on the desktop app remaining behind the dynamic Tauri-runtime import.
+
 ### App Shell
 
 - `/home` is now the task launcher. It opens recent files, imports games,
