@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readdir, rm, stat, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import * as os from "node:os";
 
@@ -16,18 +16,26 @@ const sourceRoot = resolve(
 );
 const outputRoot = resolve(getCliValue("--output") || "public/web-library");
 const filesRoot = join(outputRoot, "files");
+const previousManifest = await readPreviousManifest(join(outputRoot, "manifest.json"));
 
 await rm(outputRoot, { recursive: true, force: true });
 await mkdir(filesRoot, { recursive: true });
 
 const files = [];
 await collectFiles(sourceRoot);
+const sortedFiles = files.sort((a, b) => a.path.localeCompare(b.path, undefined, { sensitivity: "base" }));
+const sourceName = basename(sourceRoot);
 
 const manifest = {
   version: 1,
-  generatedAt: new Date().toISOString(),
-  sourceName: basename(sourceRoot),
-  files: files.sort((a, b) => a.path.localeCompare(b.path, undefined, { sensitivity: "base" })),
+  generatedAt:
+    previousManifest &&
+    previousManifest.sourceName === sourceName &&
+    areFileManifestsEqual(previousManifest.files, sortedFiles)
+      ? previousManifest.generatedAt
+      : new Date().toISOString(),
+  sourceName,
+  files: sortedFiles,
 };
 
 await writeFile(join(outputRoot, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
@@ -87,4 +95,37 @@ function normalizePath(path) {
 
 function encodePath(path) {
   return path.split("/").map(encodeURIComponent).join("/");
+}
+
+async function readPreviousManifest(path) {
+  try {
+    const manifest = JSON.parse(await readFile(path, "utf8"));
+    if (!manifest || !Array.isArray(manifest.files) || typeof manifest.generatedAt !== "string") {
+      return null;
+    }
+    return manifest;
+  } catch {
+    return null;
+  }
+}
+
+function areFileManifestsEqual(a, b) {
+  if (!Array.isArray(a) || a.length !== b.length) return false;
+  for (let i = 0; i < b.length; i += 1) {
+    const left = a[i];
+    const right = b[i];
+    if (
+      left?.type !== right?.type ||
+      left?.name !== right?.name ||
+      left?.filename !== right?.filename ||
+      left?.extension !== right?.extension ||
+      left?.path !== right?.path ||
+      left?.url !== right?.url ||
+      Number(left?.lastModified) !== Number(right?.lastModified) ||
+      Number(left?.sizeBytes) !== Number(right?.sizeBytes)
+    ) {
+      return false;
+    }
+  }
+  return true;
 }

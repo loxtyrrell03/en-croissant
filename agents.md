@@ -147,7 +147,10 @@ default.
   PGN/PDF/DB changes, and performs periodic safety syncs. Logs live in
   `%LOCALAPPDATA%/EnCroissantWebSync`. Raw `.db3` changes can trigger a sync,
   but phone-usable database content still needs to be represented as linked or
-  exported PGN files in the hosted Files library.
+  exported PGN files in the hosted Files library. The hosted library manifest
+  preserves its previous `generatedAt` value when file paths, sizes, mtimes, and
+  URLs are unchanged, so periodic safety syncs remain no-op publishes instead of
+  creating timestamp-only Pages commits.
 - The web Prep panel now owns its database/import workflow instead of forcing a
   detour to Files. Its compact under-board Prep area has Databases, Hosted
   files, and Import games drawers: database source selection attaches indexed
