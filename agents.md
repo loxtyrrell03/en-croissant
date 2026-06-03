@@ -379,6 +379,13 @@ and `src/utils/lichess/study.ts`.
   games by id, and linked study folder sync uses numbered filenames while
   renaming existing matching PGNs into that numbered order so the Files folder
   can mirror the Lichess chapter sequence.
+- Linked Lichess Study folder sync dedupes by source mainline as well as exact
+  PGN text. This avoids creating a second file when the same game already
+  exists locally with different headers or richer comments/variations; the
+  local annotated PGN is kept and renamed into the ordered study slot. The
+  2026-06-03 cleanup of `My classical games` moved 40 duplicate PGN copies
+  into `Documents/EnCroissantDataBackups/my-classical-games-dedupe-*`, leaving
+  45 active unique mainline PGNs and preserving all moved copies.
 - PGN import timestamp normalization was fixed so online-update ordering stays
   reliable.
 

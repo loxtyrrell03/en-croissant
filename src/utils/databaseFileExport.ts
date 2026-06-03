@@ -17,6 +17,11 @@ const INVALID_FOLDER_CHARS = /[\\/:*?"<>|]/;
 const INVALID_FILENAME_CHARS = /[\\/:*?"<>|]+/g;
 const GAME_FILE_METADATA = '{"type":"game","tags":[]}';
 
+type ExistingPgnIndex = {
+    contentHashes: Map<string, string>;
+    mainlineHashes: Map<string, { path: string; annotationScore: number }>;
+};
+
 export function removeDatabaseExtension(name: string) {
     return name.replace(/\.pgn\.(zst|bz2)$/i, "").replace(/\.(pgn|db3|zst|bz2)$/i, "");
 }
@@ -155,7 +160,7 @@ export async function syncDatabaseLinkedFolder({
             orderedFilenames,
         });
 
-        const existingHashes = await readPgnContentHashes(targetDir);
+        const existingIndex = await readExistingPgnIndex(targetDir);
         const splitEntries = (await readDir(temporaryTargetDir))
             .filter((entry) => entry.isFile && entry.name.toLowerCase().endsWith(".pgn"))
             .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
@@ -167,8 +172,11 @@ export async function syncDatabaseLinkedFolder({
             const sourceGamePath = await resolve(temporaryTargetDir, entry.name);
             const sourceGameText = await readTextFile(sourceGamePath);
             const hash = hashPgnContent(sourceGameText);
+            const mainlineHash = orderedFilenames ? hashPgnMainline(sourceGameText) : null;
             const targetFileName = getPrefixedPgnFileName(entry.name, fileNamePrefix);
-            const existingPath = existingHashes.get(hash);
+            const existingPath =
+                existingIndex.contentHashes.get(hash) ??
+                (mainlineHash ? existingIndex.mainlineHashes.get(mainlineHash)?.path : undefined);
 
             if (existingPath) {
                 if (orderedFilenames) {
@@ -177,7 +185,13 @@ export async function syncDatabaseLinkedFolder({
                         targetDir,
                         targetFileName,
                     );
-                    existingHashes.set(hash, renamedPath);
+                    existingIndex.contentHashes.set(hash, renamedPath);
+                    if (mainlineHash) {
+                        existingIndex.mainlineHashes.set(mainlineHash, {
+                            path: renamedPath,
+                            annotationScore: getPgnAnnotationScore(sourceGameText),
+                        });
+                    }
                 }
                 skipped += 1;
                 continue;
@@ -194,7 +208,13 @@ export async function syncDatabaseLinkedFolder({
                 await writeTextFile(targetInfoPath, GAME_FILE_METADATA);
             }
 
-            existingHashes.set(hash, targetGamePath);
+            existingIndex.contentHashes.set(hash, targetGamePath);
+            if (mainlineHash) {
+                existingIndex.mainlineHashes.set(mainlineHash, {
+                    path: targetGamePath,
+                    annotationScore: getPgnAnnotationScore(sourceGameText),
+                });
+            }
             created += 1;
         }
 
@@ -219,21 +239,32 @@ export async function syncDatabaseLinkedFolder({
     }
 }
 
-async function readPgnContentHashes(targetDir: string) {
+async function readExistingPgnIndex(targetDir: string): Promise<ExistingPgnIndex> {
     const entries = await readDir(targetDir).catch(() => []);
-    const hashes = new Map<string, string>();
+    const index: ExistingPgnIndex = {
+        contentHashes: new Map(),
+        mainlineHashes: new Map(),
+    };
 
     for (const entry of entries) {
         if (!entry.isFile || !entry.name.toLowerCase().endsWith(".pgn")) continue;
         try {
             const path = await resolve(targetDir, entry.name);
-            hashes.set(hashPgnContent(await readTextFile(path)), path);
+            const text = await readTextFile(path);
+            index.contentHashes.set(hashPgnContent(text), path);
+
+            const mainlineHash = hashPgnMainline(text);
+            const annotationScore = getPgnAnnotationScore(text);
+            const existing = index.mainlineHashes.get(mainlineHash);
+            if (!existing || annotationScore > existing.annotationScore) {
+                index.mainlineHashes.set(mainlineHash, { path, annotationScore });
+            }
         } catch {
             // Ignore files that cannot be read so one broken sidecar does not block sync.
         }
     }
 
-    return hashes;
+    return index;
 }
 
 async function renameExistingPgnToTargetName(
@@ -333,4 +364,83 @@ function hashPgnContent(input: string) {
         hash = (hash * 33) ^ normalized.charCodeAt(index);
     }
     return `${normalized.length}:${hash >>> 0}`;
+}
+
+function hashPgnMainline(input: string) {
+    return hashPgnContent(stripPgnCommentsAndVariations(getPgnMovetext(input)));
+}
+
+function getPgnAnnotationScore(input: string) {
+    const movetext = getPgnMovetext(input);
+    const commentCount = (movetext.match(/\{/g) ?? []).length;
+    const variationCount = (movetext.match(/\(/g) ?? []).length;
+    const nagCount = (movetext.match(/\$\d+|[!?]/g) ?? []).length;
+    return commentCount * 100_000 + variationCount * 20_000 + nagCount * 1_000 + movetext.length;
+}
+
+function getPgnMovetext(input: string) {
+    const lines = input.replace(/\r\n/g, "\n").split("\n");
+    const movetext: string[] = [];
+    let inHeaders = true;
+
+    for (const line of lines) {
+        if (inHeaders && line.startsWith("[")) continue;
+        if (inHeaders && !line.trim()) {
+            inHeaders = false;
+            continue;
+        }
+
+        inHeaders = false;
+        movetext.push(line);
+    }
+
+    return movetext.join("\n").trim();
+}
+
+function stripPgnCommentsAndVariations(input: string) {
+    let output = "";
+    let braceDepth = 0;
+    let parenDepth = 0;
+    let inLineComment = false;
+
+    for (const char of input) {
+        if (inLineComment) {
+            if (char === "\n" || char === "\r") {
+                inLineComment = false;
+                output += " ";
+            }
+            continue;
+        }
+        if (braceDepth > 0) {
+            if (char === "}") braceDepth -= 1;
+            continue;
+        }
+        if (parenDepth > 0) {
+            if (char === "(") parenDepth += 1;
+            if (char === ")") parenDepth -= 1;
+            continue;
+        }
+
+        if (char === ";") {
+            inLineComment = true;
+            continue;
+        }
+        if (char === "{") {
+            braceDepth = 1;
+            continue;
+        }
+        if (char === "(") {
+            parenDepth = 1;
+            continue;
+        }
+
+        output += char;
+    }
+
+    return output
+        .replace(/\$\d+|[!?]+/g, " ")
+        .replace(/\b\d+\.(?:\.\.)?/g, " ")
+        .replace(/\b(?:1-0|0-1|1\/2-1\/2|\*)\b/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
 }
