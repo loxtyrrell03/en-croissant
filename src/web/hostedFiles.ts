@@ -15,6 +15,8 @@ export type WebHostedDirectoryEntry = {
   path: string;
   lastModified: number;
   sizeBytes: number;
+  pgnFileCount: number;
+  directPgnFileCount: number;
 };
 
 export type WebHostedEntry = WebHostedDirectoryEntry | WebHostedFileEntry;
@@ -52,7 +54,17 @@ export type WebHostedPgnFolderResponse = {
   content: string;
 };
 
+export type WebHostedDatabaseFolder = {
+  path: string;
+  name: string;
+  label: string;
+  fileCount: number;
+  sizeBytes: number;
+  lastModified: number;
+};
+
 const WEB_LIBRARY_BASE = `${import.meta.env.BASE_URL}web-library/`;
+const HOSTED_DATABASE_ROOT = "Databases";
 
 export async function getHostedWebLibrary(): Promise<WebHostedLibrary> {
   const response = await fetch(`${WEB_LIBRARY_BASE}manifest.json`);
@@ -100,6 +112,10 @@ export function listHostedLibraryPath(
         path: directoryPath,
         lastModified: Math.max(existing?.lastModified ?? 0, file.lastModified),
         sizeBytes: (existing?.sizeBytes ?? 0) + file.sizeBytes,
+        pgnFileCount: (existing?.pgnFileCount ?? 0) + (file.extension === "pgn" ? 1 : 0),
+        directPgnFileCount:
+          (existing?.directPgnFileCount ?? 0) +
+          (remaining.length === 1 && file.extension === "pgn" ? 1 : 0),
       });
       continue;
     }
@@ -146,6 +162,43 @@ export function getHostedPgnFilesInPath(library: WebHostedLibrary, path = "") {
       return file.path === normalizedPath || file.path.startsWith(prefix);
     })
     .sort((a, b) => a.path.localeCompare(b.path, undefined, { sensitivity: "base" }));
+}
+
+export function getHostedDirectPgnFilesInPath(library: WebHostedLibrary, path = "") {
+  if (!library.manifest) return [];
+
+  const normalizedPath = normalizeHostedPath(path);
+  return library.manifest.files
+    .filter((file) => {
+      if (file.extension !== "pgn") return false;
+      return getHostedDirectoryPath(file.path) === normalizedPath;
+    })
+    .sort((a, b) => a.path.localeCompare(b.path, undefined, { sensitivity: "base" }));
+}
+
+export function getHostedDatabaseFolders(library: WebHostedLibrary) {
+  if (!library.manifest) return [];
+
+  const folders = new Map<string, WebHostedDatabaseFolder>();
+  for (const file of library.manifest.files) {
+    if (file.extension !== "pgn") continue;
+    const directoryPath = getHostedDirectoryPath(file.path);
+    if (!directoryPath.startsWith(`${HOSTED_DATABASE_ROOT}/`)) continue;
+
+    const existing = folders.get(directoryPath);
+    folders.set(directoryPath, {
+      path: directoryPath,
+      name: getHostedFileName(directoryPath),
+      label: getHostedDatabaseLabel(directoryPath),
+      fileCount: (existing?.fileCount ?? 0) + 1,
+      sizeBytes: (existing?.sizeBytes ?? 0) + file.sizeBytes,
+      lastModified: Math.max(existing?.lastModified ?? 0, file.lastModified),
+    });
+  }
+
+  return Array.from(folders.values()).sort((a, b) =>
+    a.label.localeCompare(b.label, undefined, { sensitivity: "base", numeric: true }),
+  );
 }
 
 export async function readHostedPgnFolder(
@@ -217,9 +270,28 @@ function normalizeHostedPath(path: string) {
   return path.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
 }
 
+function getHostedDirectoryPath(path: string) {
+  const normalizedPath = normalizeHostedPath(path);
+  const parts = normalizedPath.split("/");
+  parts.pop();
+  return parts.join("/");
+}
+
 function getHostedParentPath(path: string) {
   if (!path) return null;
   const parts = path.split("/");
   parts.pop();
   return parts.join("/");
+}
+
+function getHostedFileName(path: string) {
+  return normalizeHostedPath(path).split("/").filter(Boolean).at(-1) ?? path;
+}
+
+function getHostedDatabaseLabel(path: string) {
+  return normalizeHostedPath(path)
+    .replace(/^Databases\//, "")
+    .split("/")
+    .filter(Boolean)
+    .join(" / ");
 }

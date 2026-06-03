@@ -19,7 +19,6 @@ import {
   Group,
   Loader,
   MantineProvider,
-  MultiSelect,
   NumberInput,
   Progress,
   ScrollArea,
@@ -71,7 +70,8 @@ import {
 } from "./explorer";
 import {
   getHostedRawFileUrl,
-  getHostedPgnFilesInPath,
+  getHostedDatabaseFolders,
+  getHostedDirectPgnFilesInPath,
   getHostedWebLibrary,
   listHostedLibraryPath,
   readHostedPgnFolder,
@@ -128,7 +128,11 @@ type WebHostedPgnImportHandler = (entry: WebHostedFileEntry) => Promise<WebImpor
 type WebHostedFolderImportHandler = (
   library: WebHostedLibrary,
   path: string,
+  options?: WebHostedFolderImportOptions,
 ) => Promise<WebImportResult | null>;
+type WebHostedFolderImportOptions = {
+  openFirstGame?: boolean;
+};
 type WebOnlineImportHandler = (request: {
   source: WebOnlineSource;
   username: string;
@@ -163,6 +167,10 @@ export default function WebApp() {
   const [importing, setImporting] = useState(false);
   const [selectedDatabaseId, setSelectedDatabaseId] = useState<string | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
+  const [lichessToken, setLichessToken] = usePersistentString(
+    WEB_LICHESS_TOKEN_STORAGE_KEY,
+    "",
+  );
   const saveReady = useRef(false);
 
   useEffect(() => {
@@ -215,6 +223,7 @@ export default function WebApp() {
     void completeWebLichessLoginIfPresent()
       .then((result) => {
         if (result.status === "complete") {
+          setLichessToken(result.token);
           notifications.show({
             title: "Lichess connected",
             message: "Lichess All and Lichess Masters are available on this phone.",
@@ -236,7 +245,7 @@ export default function WebApp() {
           color: "red",
         });
       });
-  }, []);
+  }, [setLichessToken]);
 
   const activePrep = useMemo(
     () => state.prepWorkspaces.find((prep) => prep.id === state.activePrepId) ?? null,
@@ -291,15 +300,26 @@ export default function WebApp() {
       pgn,
       notificationTitle,
       notificationMessage,
+      databasePatch,
+      openFirstGame = true,
     }: {
       name: string;
       pgn: string;
       notificationTitle: string;
       notificationMessage?: (result: WebImportResult) => string;
+      databasePatch?: Partial<WebDatabase>;
+      openFirstGame?: boolean;
     }) => {
-      const imported = parsePgnDatabase(name, pgn);
+      const parsed = parsePgnDatabase(name, pgn);
+      const imported: WebImportResult = {
+        ...parsed,
+        database: {
+          ...parsed.database,
+          ...databasePatch,
+        },
+      };
       addImportedDatabases([imported]);
-      if (imported.games[0]) {
+      if (openFirstGame && imported.games[0]) {
         window.setTimeout(() => loadGameOnBoard(imported.games[0]), 0);
       }
 
@@ -380,16 +400,40 @@ export default function WebApp() {
   );
 
   const importHostedFolder = useCallback(
-    async (library: WebHostedLibrary, path: string) => {
+    async (library: WebHostedLibrary, path: string, options: WebHostedFolderImportOptions = {}) => {
       setImporting(true);
       try {
         const folder = await readHostedPgnFolder(library, path);
+        const latestHostedUpdate = Math.max(...folder.files.map((file) => file.lastModified), 0);
+        const existingDatabase = state.databases.find(
+          (database) =>
+            database.hostedPath === folder.path &&
+            (database.hostedUpdatedAt ?? 0) >= latestHostedUpdate,
+        );
+        if (existingDatabase) {
+          notifications.show({
+            title: "Hosted database already loaded",
+            message: `${existingDatabase.name} is ready to use.`,
+            color: "blue",
+          });
+          return {
+            database: existingDatabase,
+            games: state.gamesByDatabase[existingDatabase.id] ?? [],
+            warnings: [],
+          };
+        }
+
         const imported = await importPgnText({
           name: folder.filename,
           pgn: folder.content,
           notificationTitle: "Hosted database opened",
           notificationMessage: (imported) =>
             `${imported.games.length} games indexed from ${folder.files.length} hosted PGNs.`,
+          databasePatch: {
+            hostedPath: folder.path,
+            hostedUpdatedAt: latestHostedUpdate,
+          },
+          openFirstGame: options.openFirstGame ?? true,
         });
         return imported;
       } catch (error) {
@@ -404,7 +448,7 @@ export default function WebApp() {
       }
       return null;
     },
-    [importPgnText],
+    [importPgnText, state.databases, state.gamesByDatabase],
   );
 
   const importOnlineGames = useCallback(
@@ -551,6 +595,8 @@ export default function WebApp() {
               importHostedPgn={importHostedPgn}
               importHostedFolder={importHostedFolder}
               importOnlineGames={importOnlineGames}
+              lichessToken={lichessToken}
+              setLichessToken={setLichessToken}
             />
           ) : (
             <FilesWorkspace
@@ -581,6 +627,8 @@ function BoardWorkspace({
   importHostedPgn,
   importHostedFolder,
   importOnlineGames,
+  lichessToken,
+  setLichessToken,
 }: {
   state: WebCompanionState;
   setState: Dispatch<SetStateAction<WebCompanionState>>;
@@ -588,6 +636,8 @@ function BoardWorkspace({
   importHostedPgn: WebHostedPgnImportHandler;
   importHostedFolder: WebHostedFolderImportHandler;
   importOnlineGames: WebOnlineImportHandler;
+  lichessToken: string;
+  setLichessToken: (value: string) => void;
 }) {
   const [panelMode, setPanelMode] = useState<BoardPanelMode>("moves");
   const board = state.board ?? createEmptyWebBoardState();
@@ -596,13 +646,13 @@ function BoardWorkspace({
   const cursor = clampCursor(board.cursor, activeLine.length);
   const currentFen = fenAtCursor(activeLine, cursor, startFen);
   const currentLine = activeLine.slice(0, cursor);
+  const activePrepSourceId = activePrep?.sourceIds[0] ?? state.databases[0]?.id ?? null;
   const prepGames = useMemo(
     () =>
-      collectGamesForSources(
-        state.gamesByDatabase,
-        activePrep?.sourceIds.length ? activePrep.sourceIds : state.databases.map((db) => db.id),
-      ),
-    [activePrep?.sourceIds, state.databases, state.gamesByDatabase],
+      activePrepSourceId
+        ? collectGamesForSources(state.gamesByDatabase, [activePrepSourceId])
+        : [],
+    [activePrepSourceId, state.gamesByDatabase],
   );
   const prepStats = useMemo(
     () => getWebPrepMoveStats({ games: prepGames, prep: activePrep, fen: currentFen }),
@@ -750,6 +800,8 @@ function BoardWorkspace({
               importHostedPgn={importHostedPgn}
               importHostedFolder={importHostedFolder}
               onPlayMove={playMove}
+              lichessToken={lichessToken}
+              setLichessToken={setLichessToken}
             />
           ) : (
             <PrepUnderBoardPanel
@@ -852,6 +904,8 @@ function DatabaseUnderBoardPanel({
   importHostedPgn,
   importHostedFolder,
   onPlayMove,
+  lichessToken,
+  setLichessToken,
 }: {
   currentFen: string;
   databases: WebDatabase[];
@@ -859,25 +913,41 @@ function DatabaseUnderBoardPanel({
   importHostedPgn: WebHostedPgnImportHandler;
   importHostedFolder: WebHostedFolderImportHandler;
   onPlayMove: (stat: WebPrepMoveStat) => void;
+  lichessToken: string;
+  setLichessToken: (value: string) => void;
 }) {
   const [source, setSource] = useState<WebDatabasePanelSource>("local");
-  const [selectedLocalIds, setSelectedLocalIds] = useState<string[]>([]);
+  const [selectedLocalId, setSelectedLocalId] = useState<string | null>(null);
   const [hostedOpen, setHostedOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [lichessToken, setLichessToken] = usePersistentString(
-    WEB_LICHESS_TOKEN_STORAGE_KEY,
-    "",
-  );
   const [onlineStats, setOnlineStats] = useState<WebPrepMoveStat[]>([]);
   const [onlineLoading, setOnlineLoading] = useState(false);
   const [onlineError, setOnlineError] = useState<string | null>(null);
-  const sourceOptions = databases.map((database) => ({
-    value: database.id,
-    label: `${database.name} (${database.gameCount})`,
-  }));
+  const hostedDatabases = useHostedDatabaseFolders();
+  const sourceOptions = useMemo(
+    () => [
+      ...databases.map((database) => ({
+        value: database.id,
+        label: `${database.name} (${database.gameCount})`,
+      })),
+      ...hostedDatabases.folders
+        .filter((folder) => !databases.some((database) => database.hostedPath === folder.path))
+        .map((folder) => ({
+          value: hostedDatabaseValue(folder.path),
+          label: `${folder.label} (${formatBytes(folder.sizeBytes)})`,
+        })),
+    ],
+    [databases, hostedDatabases.folders],
+  );
+  const hasLocalChoices = databases.length > 0 || hostedDatabases.folders.length > 0;
+  const selectedLocalDatabase = useMemo(
+    () => databases.find((database) => database.id === selectedLocalId) ?? null,
+    [databases, selectedLocalId],
+  );
   const localGames = useMemo(
-    () => collectGamesForSources(gamesByDatabase, selectedLocalIds),
-    [gamesByDatabase, selectedLocalIds],
+    () =>
+      selectedLocalId ? collectGamesForSources(gamesByDatabase, [selectedLocalId]) : [],
+    [gamesByDatabase, selectedLocalId],
   );
   const localStats = useMemo(
     () => getWebPrepMoveStats({ games: localGames, prep: null, fen: currentFen }),
@@ -885,10 +955,31 @@ function DatabaseUnderBoardPanel({
   );
 
   useEffect(() => {
-    setSelectedLocalIds((current) =>
-      current.filter((id) => databases.some((database) => database.id === id)),
-    );
+    setSelectedLocalId((current) => {
+      if (current && databases.some((database) => database.id === current)) return current;
+      return databases[0]?.id ?? null;
+    });
   }, [databases]);
+
+  const chooseLocalDatabase = async (value: string | null) => {
+    if (!value) {
+      setSelectedLocalId(null);
+      return;
+    }
+
+    if (!isHostedDatabaseValue(value)) {
+      setSelectedLocalId(value);
+      return;
+    }
+
+    const folderPath = hostedDatabasePathFromValue(value);
+    const folder = hostedDatabases.folders.find((candidate) => candidate.path === folderPath);
+    if (!folder || !hostedDatabases.library) return;
+    const imported = await importHostedFolder(hostedDatabases.library, folder.path, {
+      openFirstGame: false,
+    });
+    if (imported) setSelectedLocalId(imported.database.id);
+  };
 
   useEffect(() => {
     if (source === "local") return;
@@ -931,18 +1022,19 @@ function DatabaseUnderBoardPanel({
 
   const importHostedPgnForDatabase = async (entry: WebHostedFileEntry) => {
     const imported = await importHostedPgn(entry);
-    if (imported) setSelectedLocalIds([imported.database.id]);
+    if (imported) setSelectedLocalId(imported.database.id);
     return imported;
   };
 
   const importHostedFolderForDatabase = async (library: WebHostedLibrary, path: string) => {
-    const imported = await importHostedFolder(library, path);
-    if (imported) setSelectedLocalIds([imported.database.id]);
+    const imported = await importHostedFolder(library, path, { openFirstGame: false });
+    if (imported) setSelectedLocalId(imported.database.id);
     return imported;
   };
 
   const stats = source === "local" ? localStats : onlineStats;
-  const sourceLabel = source === "local" ? "Local databases" : getExplorerSourceLabel(source);
+  const sourceLabel =
+    source === "local" ? selectedLocalDatabase?.name ?? "Local database" : getExplorerSourceLabel(source);
 
   return (
     <Stack gap="xs">
@@ -960,13 +1052,14 @@ function DatabaseUnderBoardPanel({
         />
         {source === "local" ? (
           <>
-            <MultiSelect
-              label="Local databases"
+            <Select
+              label="Local database"
               size="xs"
-              value={selectedLocalIds}
-              onChange={setSelectedLocalIds}
+              value={selectedLocalId}
+              onChange={(value) => void chooseLocalDatabase(value)}
               data={sourceOptions}
-              placeholder={databases.length > 0 ? "All local databases" : "No local databases"}
+              placeholder={hasLocalChoices ? "Choose database" : "No local databases"}
+              allowDeselect={false}
               style={{ flex: "1 1 13rem" }}
             />
             <Button
@@ -975,7 +1068,7 @@ function DatabaseUnderBoardPanel({
               leftSection={<IconFolder size={14} />}
               onClick={() => setHostedOpen((open) => !open)}
             >
-              Hosted files
+              Browse
             </Button>
           </>
         ) : (
@@ -1014,6 +1107,7 @@ function DatabaseUnderBoardPanel({
           <HostedFilesPanel
             importHostedPgn={importHostedPgnForDatabase}
             importHostedFolder={importHostedFolderForDatabase}
+            preferFolderImport
             embedded
           />
         </Collapse>
@@ -1040,11 +1134,17 @@ function DatabaseUnderBoardPanel({
           title="Explorer unavailable"
           text={onlineError}
         />
-      ) : source === "local" && databases.length === 0 ? (
+      ) : source === "local" && !hasLocalChoices ? (
         <UnderBoardEmpty
           icon={<IconDatabase size={30} />}
           title="No local databases"
-          text="Import PGNs or load a hosted laptop folder as a database."
+          text={hostedDatabases.loading ? "Loading hosted database list." : "Import PGNs or wait for the phone-site sync."}
+        />
+      ) : source === "local" && !selectedLocalId ? (
+        <UnderBoardEmpty
+          icon={<IconDatabase size={30} />}
+          title="Choose a database"
+          text="Use Local database to pick one synced fork database."
         />
       ) : stats.length === 0 ? (
         <UnderBoardEmpty
@@ -1089,7 +1189,7 @@ function PrepUnderBoardPanel({
 }) {
   const [opponent, setOpponent] = useState("");
   const [userColor, setUserColor] = useState<WebColor>("white");
-  const [sourceIds, setSourceIds] = useState<string[]>(() => state.databases.map((db) => db.id));
+  const [sourceId, setSourceId] = useState<string | null>(() => state.databases[0]?.id ?? null);
   const [sourcesOpen, setSourcesOpen] = useState(true);
   const [hostedOpen, setHostedOpen] = useState(false);
   const [onlineOpen, setOnlineOpen] = useState(false);
@@ -1099,17 +1199,36 @@ function PrepUnderBoardPanel({
   const [onlineCount, setOnlineCount] = useState(50);
   const [onlineRange, setOnlineRange] = useState<WebOnlineRangePreset>("3m");
   const [onlineProgress, setOnlineProgress] = useState<number | null>(null);
+  const hostedDatabases = useHostedDatabaseFolders();
   const players = useMemo(() => getKnownPlayers(state.gamesByDatabase), [state.gamesByDatabase]);
-  const sourceOptions = state.databases.map((database) => ({
-    value: database.id,
-    label: `${database.name} (${database.gameCount})`,
-  }));
-  const activePrepSourceIds = activePrep?.sourceIds.length
-    ? activePrep.sourceIds
-    : state.databases.map((database) => database.id);
-  const activePrepSourceDatabases = state.databases.filter((database) =>
-    activePrepSourceIds.includes(database.id),
+  const sourceOptions = useMemo(
+    () => [
+      ...state.databases.map((database) => ({
+        value: database.id,
+        label: `${database.name} (${database.gameCount})`,
+      })),
+      ...hostedDatabases.folders
+        .filter((folder) => !state.databases.some((database) => database.hostedPath === folder.path))
+        .map((folder) => ({
+          value: hostedDatabaseValue(folder.path),
+          label: `${folder.label} (${formatBytes(folder.sizeBytes)})`,
+        })),
+    ],
+    [hostedDatabases.folders, state.databases],
   );
+  const selectedPrepSourceId = activePrep
+    ? activePrep.sourceIds[0] ?? state.databases[0]?.id ?? null
+    : sourceId;
+  const activePrepSourceId = selectedPrepSourceId ?? state.databases[0]?.id ?? null;
+  const activePrepSourceDatabase =
+    state.databases.find((database) => database.id === activePrepSourceId) ?? null;
+
+  useEffect(() => {
+    setSourceId((current) => {
+      if (current && state.databases.some((database) => database.id === current)) return current;
+      return state.databases[0]?.id ?? null;
+    });
+  }, [state.databases]);
 
   useEffect(() => {
     if (onlineUsername || !activePrep?.opponent) return;
@@ -1119,13 +1238,13 @@ function PrepUnderBoardPanel({
   const createPrep = () => {
     const now = Date.now();
     const trimmedOpponent = opponent.trim();
-    const selectedSources = sourceIds.length > 0 ? sourceIds : state.databases.map((db) => db.id);
+    const selectedSourceId = sourceId ?? state.databases[0]?.id ?? null;
     const prep: WebPrepWorkspace = {
       id: `prep-${now.toString(36)}`,
       name: `${trimmedOpponent || "General"} prep`,
       opponent: trimmedOpponent,
       userColor,
-      sourceIds: selectedSources,
+      sourceIds: selectedSourceId ? [selectedSourceId] : [],
       startFen: INITIAL_FEN,
       line: currentLine,
       notesByFen: {},
@@ -1181,28 +1300,43 @@ function PrepUnderBoardPanel({
     }));
   };
 
-  const updateActivePrepSources = (nextSourceIds: string[]) => {
+  const updateActivePrepSource = (nextSourceId: string | null) => {
     updateActivePrep((prep) => ({
       ...prep,
-      sourceIds: nextSourceIds,
+      sourceIds: nextSourceId ? [nextSourceId] : [],
       updatedAt: Date.now(),
     }));
   };
 
-  const attachImportedDatabase = (databaseId: string) => {
-    if (activePrep) {
-      updateActivePrep((prep) => {
-        if (prep.sourceIds.length === 0 || prep.sourceIds.includes(databaseId)) return prep;
-        return {
-          ...prep,
-          sourceIds: [...prep.sourceIds, databaseId],
-          updatedAt: Date.now(),
-        };
-      });
+  const choosePrepSource = async (value: string | null) => {
+    if (!value) {
+      if (activePrep) updateActivePrepSource(null);
+      else setSourceId(null);
       return;
     }
 
-    setSourceIds((current) => (current.includes(databaseId) ? current : [...current, databaseId]));
+    if (!isHostedDatabaseValue(value)) {
+      if (activePrep) updateActivePrepSource(value);
+      else setSourceId(value);
+      return;
+    }
+
+    const folderPath = hostedDatabasePathFromValue(value);
+    const folder = hostedDatabases.folders.find((candidate) => candidate.path === folderPath);
+    if (!folder || !hostedDatabases.library) return;
+    const imported = await importHostedFolder(hostedDatabases.library, folder.path, {
+      openFirstGame: false,
+    });
+    if (imported) attachImportedDatabase(imported.database.id);
+  };
+
+  const attachImportedDatabase = (databaseId: string) => {
+    if (activePrep) {
+      updateActivePrepSource(databaseId);
+      return;
+    }
+
+    setSourceId(databaseId);
   };
 
   const importHostedPgnForPrep = async (entry: WebHostedFileEntry) => {
@@ -1212,7 +1346,7 @@ function PrepUnderBoardPanel({
   };
 
   const importHostedFolderForPrep = async (library: WebHostedLibrary, path: string) => {
-    const imported = await importHostedFolder(library, path);
+    const imported = await importHostedFolder(library, path, { openFirstGame: false });
     if (imported) attachImportedDatabase(imported.database.id);
     return imported;
   };
@@ -1322,23 +1456,26 @@ function PrepUnderBoardPanel({
 
       <Collapse in={sourcesOpen}>
         <Stack gap="xs" className={classes.prepToolBox}>
-          <MultiSelect
-            label="Prep databases"
+          <Select
+            label="Prep database"
             size="xs"
-            value={activePrep ? activePrep.sourceIds : sourceIds}
-            onChange={activePrep ? updateActivePrepSources : setSourceIds}
+            value={selectedPrepSourceId}
+            onChange={(value) => void choosePrepSource(value)}
             data={sourceOptions}
-            placeholder={state.databases.length > 0 ? "All indexed databases" : "No databases yet"}
+            placeholder={
+              state.databases.length > 0 || hostedDatabases.folders.length > 0
+                ? "Choose database"
+                : "No databases yet"
+            }
+            allowDeselect={false}
           />
           {activePrep ? (
             <Group gap={4} wrap="wrap">
-              {(activePrepSourceDatabases.length > 0 ? activePrepSourceDatabases : state.databases)
-                .slice(0, 6)
-                .map((database) => (
-                  <Badge key={database.id} size="xs" variant="light">
-                    {database.name} - {database.gameCount}
-                  </Badge>
-                ))}
+              {activePrepSourceDatabase && (
+                <Badge key={activePrepSourceDatabase.id} size="xs" variant="light">
+                  {activePrepSourceDatabase.name} - {activePrepSourceDatabase.gameCount}
+                </Badge>
+              )}
               {state.databases.length === 0 && (
                 <Text size="xs" c="dimmed">
                   Import hosted PGNs or public online games to create prep databases.
@@ -1347,7 +1484,7 @@ function PrepUnderBoardPanel({
             </Group>
           ) : (
             <Text size="xs" c="dimmed">
-              These sources will be attached to the next prep workspace you create.
+              This database will be attached to the next prep workspace you create.
             </Text>
           )}
         </Stack>
@@ -1357,6 +1494,7 @@ function PrepUnderBoardPanel({
         <HostedFilesPanel
           importHostedPgn={importHostedPgnForPrep}
           importHostedFolder={importHostedFolderForPrep}
+          preferFolderImport
           embedded
         />
       </Collapse>
@@ -1735,18 +1873,20 @@ function FilesWorkspace({
 function HostedFilesPanel({
   importHostedPgn,
   importHostedFolder,
+  preferFolderImport = false,
   embedded = false,
 }: {
   importHostedPgn: WebHostedPgnImportHandler;
   importHostedFolder?: WebHostedFolderImportHandler;
+  preferFolderImport?: boolean;
   embedded?: boolean;
 }) {
   const [library, setLibrary] = useState<WebHostedLibrary | null>(null);
   const [listing, setListing] = useState<WebHostedFileListResponse | null>(null);
   const [path, setPath] = useState("");
   const [loading, setLoading] = useState(false);
-  const pgnFilesInPath = useMemo(
-    () => (library ? getHostedPgnFilesInPath(library, path) : []),
+  const directPgnFilesInPath = useMemo(
+    () => (library ? getHostedDirectPgnFilesInPath(library, path) : []),
     [library, path],
   );
 
@@ -1803,29 +1943,17 @@ function HostedFilesPanel({
           >
             Up
           </Button>
-          {library && importHostedFolder && pgnFilesInPath.length > 0 && (
+          {library && importHostedFolder && directPgnFilesInPath.length > 0 && (
             <Button
               size="compact-xs"
               leftSection={<IconDatabase size={14} />}
               loading={loading}
-              onClick={() => void importHostedFolder(library, path)}
+              onClick={() => void importHostedFolder(library, path, { openFirstGame: !preferFolderImport })}
             >
-              Import folder
+              Import database
             </Button>
           )}
         </Group>
-      )}
-
-      {listing?.parentPath === null && library && importHostedFolder && pgnFilesInPath.length > 0 && (
-        <Button
-          size="compact-xs"
-          leftSection={<IconDatabase size={14} />}
-          mb="xs"
-          loading={loading}
-          onClick={() => void importHostedFolder(library, path)}
-        >
-          Import all PGNs
-        </Button>
       )}
 
       {library && !library.available && (
@@ -1844,6 +1972,10 @@ function HostedFilesPanel({
                 type="button"
                 onClick={() => {
                   if (entry.type === "directory") {
+                    if (preferFolderImport && importHostedFolder && entry.directPgnFileCount > 0 && library) {
+                      void importHostedFolder(library, entry.path, { openFirstGame: false });
+                      return;
+                    }
                     void load(entry.path);
                     return;
                   }
@@ -1866,7 +1998,9 @@ function HostedFilesPanel({
                     </Text>
                     <Text size="xs" c="dimmed" truncate>
                       {entry.type === "directory"
-                        ? "Folder"
+                        ? entry.directPgnFileCount > 0
+                          ? `${entry.directPgnFileCount} PGN ${entry.directPgnFileCount === 1 ? "file" : "files"}`
+                          : `${entry.pgnFileCount} PGN ${entry.pgnFileCount === 1 ? "file" : "files"} inside`
                         : `${entry.extension.toUpperCase()} - ${formatBytes(entry.sizeBytes)}`}
                     </Text>
                   </Box>
@@ -2021,6 +2155,54 @@ function sanitizeFilename(filename: string) {
 
 function getExplorerSourceLabel(source: WebDatabaseExplorerSource) {
   return source === "lichess-all" ? "Lichess All" : "Lichess Masters";
+}
+
+function useHostedDatabaseFolders() {
+  const [library, setLibrary] = useState<WebHostedLibrary | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      setLibrary(await getHostedWebLibrary());
+    } catch (loadError) {
+      console.error(loadError);
+      setLibrary(null);
+      setError(
+        loadError instanceof Error ? loadError.message : "The hosted database list did not load.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const folders = useMemo(() => (library ? getHostedDatabaseFolders(library) : []), [library]);
+
+  return {
+    library,
+    folders,
+    loading,
+    error,
+    refresh: load,
+  };
+}
+
+function hostedDatabaseValue(path: string) {
+  return `hosted-db:${path}`;
+}
+
+function isHostedDatabaseValue(value: string) {
+  return value.startsWith("hosted-db:");
+}
+
+function hostedDatabasePathFromValue(value: string) {
+  return value.replace(/^hosted-db:/, "");
 }
 
 function usePersistentString(key: string, fallback: string) {

@@ -34,6 +34,8 @@ export type WebGame = {
 export type WebDatabase = {
   id: string;
   name: string;
+  hostedPath?: string;
+  hostedUpdatedAt?: number;
   importedAt: number;
   updatedAt: number;
   gameCount: number;

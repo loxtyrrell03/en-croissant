@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
+  getHostedDatabaseFolders,
+  getHostedDirectPgnFilesInPath,
   getHostedPgnFilesInPath,
   listHostedLibraryPath,
   type WebHostedLibrary,
@@ -95,6 +97,57 @@ describe("web companion PGN prep index", () => {
     expect(prep?.entries.map((entry) => entry.name)).toEqual(["Opponent", "report"]);
     expect(prep?.parentPath).toBe("");
     expect(getHostedPgnFilesInPath(library, "Prep")).toHaveLength(1);
+  });
+
+  test("identifies synced database folders without treating broad parents as direct databases", () => {
+    const library: WebHostedLibrary = {
+      available: true,
+      manifest: {
+        version: 1,
+        generatedAt: "2026-06-03T12:00:00.000Z",
+        sourceName: "EnCroissant",
+        files: [
+          {
+            type: "file",
+            name: "chunk-001",
+            filename: "chunk-001.pgn",
+            extension: "pgn",
+            path: "Databases/Fork/Online Games/Chess.com/loxty_chesscom/chunk-001.pgn",
+            url: "files/Databases/Fork/Online%20Games/Chess.com/loxty_chesscom/chunk-001.pgn",
+            lastModified: 3,
+            sizeBytes: 1024,
+          },
+          {
+            type: "file",
+            name: "chunk-002",
+            filename: "chunk-002.pgn",
+            extension: "pgn",
+            path: "Databases/Fork/Online Games/Chess.com/loxty_chesscom/chunk-002.pgn",
+            url: "files/Databases/Fork/Online%20Games/Chess.com/loxty_chesscom/chunk-002.pgn",
+            lastModified: 4,
+            sizeBytes: 2048,
+          },
+        ],
+      },
+    };
+
+    const root = listHostedLibraryPath(library, "Databases/Fork/Online Games/Chess.com");
+    const databaseFolders = getHostedDatabaseFolders(library);
+
+    expect(root?.entries[0]).toMatchObject({
+      name: "loxty_chesscom",
+      directPgnFileCount: 2,
+      pgnFileCount: 2,
+    });
+    expect(getHostedDirectPgnFilesInPath(library, "Databases/Fork")).toHaveLength(0);
+    expect(databaseFolders).toEqual([
+      expect.objectContaining({
+        path: "Databases/Fork/Online Games/Chess.com/loxty_chesscom",
+        label: "Fork / Online Games / Chess.com / loxty_chesscom",
+        fileCount: 2,
+        sizeBytes: 3072,
+      }),
+    ]);
   });
 
   test("labels web online imports like prep databases", () => {

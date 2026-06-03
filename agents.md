@@ -181,6 +181,17 @@ default.
   anonymous explorer requests return 401, so do not remove authentication.
   Desktop `.db3` move blobs are not decoded in the browser; publish linked
   Files/PGN exports for phone-accessible local database functionality.
+- A follow-up on 2026-06-03 made synced database folders first-class, single
+  choices in the phone Database and Prep source pickers. Generated hosted
+  database folders under `Databases/...` now appear beside already indexed
+  browser databases, import on selection without loading their first game onto
+  the board, and are de-duplicated by hosted path/update timestamp. These
+  pickers intentionally use one active database at a time, matching the fork's
+  database comparison model; do not turn them back into multi-select controls.
+  Hosted Files folder import is limited to folders with direct PGNs so broad
+  parents such as `Databases` are browsed instead of accidentally imported. The
+  Lichess token state is hoisted to the web app shell so OAuth completion and
+  the token field share one persisted localStorage value.
 
 ### App Shell
 
