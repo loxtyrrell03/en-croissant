@@ -214,6 +214,12 @@ default.
   advances to the next open shown move. These controls intentionally operate on
   the currently selected single prep source and reuse the phone move table's
   Min games/Show top filtering.
+- A 2026-06-04 follow-up made phone database source selection less confusing:
+  the under-board Database panel now persists its selected source and local
+  database in localStorage, and both Database and Prep show explicit loading
+  text while a generated hosted database folder is being imported from synced
+  files. This keeps the phone UI closer to the fork's remembered source model
+  and avoids the appearance that selecting a large hosted database did nothing.
 
 ### App Shell
 

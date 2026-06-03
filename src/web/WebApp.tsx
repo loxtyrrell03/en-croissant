@@ -154,6 +154,8 @@ type WebOnlineImportHandler = (request: {
 const WEB_LICHESS_ALL_SOURCE_VALUE = "web-source:lichess-all";
 const WEB_LICHESS_MASTERS_SOURCE_VALUE = "web-source:lichess-masters";
 const WEB_TEMPORARY_PREP_SOURCE_VALUE = "web-source:temporary-prep";
+const WEB_DATABASE_PANEL_SOURCE_STORAGE_KEY = "en-croissant-web-database-panel-source";
+const WEB_DATABASE_PANEL_LOCAL_STORAGE_KEY = "en-croissant-web-database-panel-local-source";
 const DEFAULT_WEB_PREP_MIN_GAMES = 1;
 const DEFAULT_WEB_PREP_MOVE_LIMIT = 12;
 
@@ -945,9 +947,18 @@ function DatabaseUnderBoardPanel({
   lichessToken: string;
   setLichessToken: (value: string) => void;
 }) {
-  const [source, setSource] = useState<WebDatabasePanelSource>("local");
-  const [selectedLocalId, setSelectedLocalId] = useState<string | null>(null);
+  const [storedSource, setStoredSource] = usePersistentString(
+    WEB_DATABASE_PANEL_SOURCE_STORAGE_KEY,
+    "local",
+  );
+  const source = isWebDatabasePanelSource(storedSource) ? storedSource : "local";
+  const [selectedLocalIdValue, setSelectedLocalIdValue] = usePersistentString(
+    WEB_DATABASE_PANEL_LOCAL_STORAGE_KEY,
+    "",
+  );
+  const selectedLocalId = selectedLocalIdValue || null;
   const [hostedOpen, setHostedOpen] = useState(false);
+  const [loadingLocalSource, setLoadingLocalSource] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [onlineStats, setOnlineStats] = useState<WebPrepMoveStat[]>([]);
   const [onlineLoading, setOnlineLoading] = useState(false);
@@ -977,11 +988,19 @@ function DatabaseUnderBoardPanel({
   );
 
   useEffect(() => {
-    setSelectedLocalId((current) => {
+    setSelectedLocalIdValue((current) => {
       if (current && databases.some((database) => database.id === current)) return current;
-      return databases[0]?.id ?? null;
+      return databases[0]?.id ?? "";
     });
-  }, [databases]);
+  }, [databases, setSelectedLocalIdValue]);
+
+  const setSource = (nextSource: WebDatabasePanelSource) => {
+    setStoredSource(nextSource);
+  };
+
+  const setSelectedLocalId = (nextSourceId: string | null) => {
+    setSelectedLocalIdValue(nextSourceId ?? "");
+  };
 
   const chooseLocalDatabase = async (value: string | null) => {
     if (!value) {
@@ -997,10 +1016,15 @@ function DatabaseUnderBoardPanel({
     const folderPath = hostedDatabasePathFromValue(value);
     const folder = hostedDatabases.folders.find((candidate) => candidate.path === folderPath);
     if (!folder || !hostedDatabases.library) return;
-    const imported = await importHostedFolder(hostedDatabases.library, folder.path, {
-      openFirstGame: false,
-    });
-    if (imported) setSelectedLocalId(imported.database.id);
+    setLoadingLocalSource(folder.label);
+    try {
+      const imported = await importHostedFolder(hostedDatabases.library, folder.path, {
+        openFirstGame: false,
+      });
+      if (imported) setSelectedLocalId(imported.database.id);
+    } finally {
+      setLoadingLocalSource(null);
+    }
   };
 
   useEffect(() => {
@@ -1049,9 +1073,15 @@ function DatabaseUnderBoardPanel({
   };
 
   const importHostedFolderForDatabase = async (library: WebHostedLibrary, path: string) => {
-    const imported = await importHostedFolder(library, path, { openFirstGame: false });
-    if (imported) setSelectedLocalId(imported.database.id);
-    return imported;
+    const label = getHostedDatabaseGroupLabel(path) || path;
+    setLoadingLocalSource(label);
+    try {
+      const imported = await importHostedFolder(library, path, { openFirstGame: false });
+      if (imported) setSelectedLocalId(imported.database.id);
+      return imported;
+    } finally {
+      setLoadingLocalSource(null);
+    }
   };
 
   const stats = source === "local" ? localStats : onlineStats;
@@ -1082,6 +1112,7 @@ function DatabaseUnderBoardPanel({
               data={sourceOptions}
               placeholder={hasLocalChoices ? "Choose database" : "No local databases"}
               allowDeselect={false}
+              disabled={Boolean(loadingLocalSource)}
               flex="1 1 13rem"
               minWidth="13rem"
             />
@@ -1125,6 +1156,15 @@ function DatabaseUnderBoardPanel({
         )}
       </Group>
 
+      {source === "local" && loadingLocalSource ? (
+        <Group gap="xs" wrap="nowrap">
+          <Loader size="xs" />
+          <Text size="xs" c="dimmed" truncate>
+            Loading {loadingLocalSource} from synced files
+          </Text>
+        </Group>
+      ) : null}
+
       {source === "local" && (
         <Collapse in={hostedOpen}>
           <HostedFilesPanel
@@ -1136,7 +1176,16 @@ function DatabaseUnderBoardPanel({
         </Collapse>
       )}
 
-      {source !== "local" && !lichessToken.trim() ? (
+      {source === "local" && loadingLocalSource ? (
+        <Center h={150}>
+          <Stack align="center" gap="xs">
+            <Loader size="sm" />
+            <Text size="xs" c="dimmed">
+              Importing hosted database
+            </Text>
+          </Stack>
+        </Center>
+      ) : source !== "local" && !lichessToken.trim() ? (
         <UnderBoardEmpty
           icon={<IconDatabase size={30} />}
           title={`${sourceLabel} locked`}
@@ -1225,6 +1274,7 @@ function PrepUnderBoardPanel({
     useState<WebPrepTemporarySource | null>(null);
   const [sourcesOpen] = useState(true);
   const [hostedOpen, setHostedOpen] = useState(false);
+  const [loadingPrepSource, setLoadingPrepSource] = useState<string | null>(null);
   const [onlineOpen, setOnlineOpen] = useState(false);
   const [onlineSource, setOnlineSource] = useState<WebOnlineSource>("chesscom");
   const [onlineUsername, setOnlineUsername] = useState("");
@@ -1570,10 +1620,15 @@ function PrepUnderBoardPanel({
     const folderPath = hostedDatabasePathFromValue(value);
     const folder = hostedDatabases.folders.find((candidate) => candidate.path === folderPath);
     if (!folder || !hostedDatabases.library) return;
-    const imported = await importHostedFolder(hostedDatabases.library, folder.path, {
-      openFirstGame: false,
-    });
-    if (imported) attachImportedDatabase(imported.database.id);
+    setLoadingPrepSource(folder.label);
+    try {
+      const imported = await importHostedFolder(hostedDatabases.library, folder.path, {
+        openFirstGame: false,
+      });
+      if (imported) attachImportedDatabase(imported.database.id);
+    } finally {
+      setLoadingPrepSource(null);
+    }
   };
 
   const attachImportedDatabase = (databaseId: string) => {
@@ -1619,9 +1674,15 @@ function PrepUnderBoardPanel({
   };
 
   const importHostedFolderForPrep = async (library: WebHostedLibrary, path: string) => {
-    const imported = await importHostedFolder(library, path, { openFirstGame: false });
-    if (imported) attachImportedDatabase(imported.database.id);
-    return imported;
+    const label = getHostedDatabaseGroupLabel(path) || path;
+    setLoadingPrepSource(label);
+    try {
+      const imported = await importHostedFolder(library, path, { openFirstGame: false });
+      if (imported) attachImportedDatabase(imported.database.id);
+      return imported;
+    } finally {
+      setLoadingPrepSource(null);
+    }
   };
 
   const previewOnlineImportCount = async () => {
@@ -1750,6 +1811,7 @@ function PrepUnderBoardPanel({
           flex="1 1 14rem"
           minWidth="14rem"
           allowDeselect={false}
+          disabled={Boolean(loadingPrepSource)}
         />
         <Button
           size="compact-xs"
@@ -1771,6 +1833,14 @@ function PrepUnderBoardPanel({
 
       <Collapse in={sourcesOpen}>
         <Stack gap="xs" className={classes.prepToolBox}>
+          {loadingPrepSource ? (
+            <Group gap="xs" wrap="nowrap">
+              <Loader size="xs" />
+              <Text size="xs" c="dimmed" truncate>
+                Loading {loadingPrepSource} from synced files
+              </Text>
+            </Group>
+          ) : null}
           <Group gap="xs" wrap="wrap" align="flex-end">
             {selectedPrepMode === "player" ? (
               <>
@@ -2610,6 +2680,10 @@ function sanitizeFilename(filename: string) {
 
 function getExplorerSourceLabel(source: WebDatabaseExplorerSource) {
   return source === "lichess-all" ? "Lichess All" : "Lichess Masters";
+}
+
+function isWebDatabasePanelSource(value: string): value is WebDatabasePanelSource {
+  return value === "local" || value === "lichess-all" || value === "lichess-masters";
 }
 
 function isOnlinePrepSource(source: WebPrepSource): source is WebDatabaseExplorerSource {
