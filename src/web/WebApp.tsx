@@ -92,6 +92,7 @@ import type {
   WebPrepLineMove,
   WebPrepMode,
   WebPrepSource,
+  WebPrepTemporarySource,
   WebPrepWorkspace,
 } from "./model";
 import {
@@ -110,6 +111,7 @@ import {
 } from "./lichessAuth";
 import {
   collectGamesForSources,
+  getGamesForWebPrepSource,
   getKnownPlayers,
   getWebPrepMoveStats,
   type WebPrepMoveStat,
@@ -143,11 +145,13 @@ type WebOnlineImportHandler = (request: {
   mode: WebOnlineImportMode;
   count: number;
   range: WebOnlineRangePreset;
+  saveDatabase?: boolean;
   setProgress: (progress: number | null) => void;
 }) => Promise<WebImportResult | null>;
 
 const WEB_LICHESS_ALL_SOURCE_VALUE = "web-source:lichess-all";
 const WEB_LICHESS_MASTERS_SOURCE_VALUE = "web-source:lichess-masters";
+const WEB_TEMPORARY_PREP_SOURCE_VALUE = "web-source:temporary-prep";
 const DEFAULT_WEB_PREP_MIN_GAMES = 1;
 const DEFAULT_WEB_PREP_MOVE_LIMIT = 12;
 
@@ -467,6 +471,7 @@ export default function WebApp() {
       mode,
       count,
       range,
+      saveDatabase = true,
       setProgress,
     }: Parameters<WebOnlineImportHandler>[0]) => {
       setImporting(true);
@@ -488,13 +493,23 @@ export default function WebApp() {
         }
 
         const title = getWebOnlineImportTitle({ source, username, mode, count, range });
-        const imported = await importPgnText({
-          name: `${title}.pgn`,
-          pgn: games.map((game) => game.pgn.trim()).join("\n\n"),
-          notificationTitle: "Online games imported",
-          notificationMessage: (imported) =>
-            `${imported.games.length} ${getWebOnlineSourceLabel(source)} games indexed for ${username}.`,
-        });
+        const pgn = games.map((game) => game.pgn.trim()).join("\n\n");
+        const imported = saveDatabase
+          ? await importPgnText({
+              name: `${title}.pgn`,
+              pgn,
+              notificationTitle: "Online games imported",
+              notificationMessage: (imported) =>
+                `${imported.games.length} ${getWebOnlineSourceLabel(source)} games indexed for ${username}.`,
+            })
+          : parsePgnDatabase(`${title}.pgn`, pgn);
+        if (!saveDatabase) {
+          notifications.show({
+            title: "Prep source ready",
+            message: `${imported.games.length} ${getWebOnlineSourceLabel(source)} games are available for this prep.`,
+            color: "green",
+          });
+        }
         setProgress(100);
         return imported;
       } catch (error) {
@@ -655,17 +670,11 @@ function BoardWorkspace({
   const cursor = clampCursor(board.cursor, activeLine.length);
   const currentFen = fenAtCursor(activeLine, cursor, startFen);
   const currentLine = activeLine.slice(0, cursor);
-  const activePrepSource = activePrep?.source ?? "local";
-  const activePrepSourceId =
-    activePrepSource === "local" ? activePrep?.sourceIds[0] ?? state.databases[0]?.id ?? null : null;
   const prepMinGames = activePrep?.minGames ?? DEFAULT_WEB_PREP_MIN_GAMES;
   const prepMoveLimit = activePrep?.moveLimit ?? DEFAULT_WEB_PREP_MOVE_LIMIT;
   const prepGames = useMemo(
-    () =>
-      activePrepSourceId
-        ? collectGamesForSources(state.gamesByDatabase, [activePrepSourceId])
-        : [],
-    [activePrepSourceId, state.gamesByDatabase],
+    () => getGamesForWebPrepSource({ gamesByDatabase: state.gamesByDatabase, prep: activePrep }),
+    [activePrep, state.gamesByDatabase],
   );
   const prepStats = useMemo(
     () =>
@@ -1210,6 +1219,8 @@ function PrepUnderBoardPanel({
   const [sourceId, setSourceId] = useState<string | null>(() => state.databases[0]?.id ?? null);
   const [minGames, setMinGames] = useState(DEFAULT_WEB_PREP_MIN_GAMES);
   const [moveLimit, setMoveLimit] = useState(DEFAULT_WEB_PREP_MOVE_LIMIT);
+  const [draftTemporarySource, setDraftTemporarySource] =
+    useState<WebPrepTemporarySource | null>(null);
   const [sourcesOpen] = useState(true);
   const [hostedOpen, setHostedOpen] = useState(false);
   const [onlineOpen, setOnlineOpen] = useState(false);
@@ -1233,11 +1244,13 @@ function PrepUnderBoardPanel({
         databases: state.databases,
         hostedFolders: hostedDatabases.folders,
         includeOnline: true,
+        temporarySource: activePrep?.temporarySource ?? draftTemporarySource,
       }),
-    [hostedDatabases.folders, state.databases],
+    [activePrep?.temporarySource, draftTemporarySource, hostedDatabases.folders, state.databases],
   );
   const selectedPrepMode = activePrep?.mode ?? prepMode;
   const selectedPrepSource = activePrep?.source ?? prepSource;
+  const selectedTemporarySource = activePrep?.temporarySource ?? draftTemporarySource;
   const selectedPrepSourceId =
     selectedPrepSource === "local"
       ? activePrep
@@ -1249,7 +1262,9 @@ function PrepUnderBoardPanel({
       ? WEB_LICHESS_ALL_SOURCE_VALUE
       : selectedPrepSource === "lichess-masters"
         ? WEB_LICHESS_MASTERS_SOURCE_VALUE
-        : selectedPrepSourceId;
+        : selectedPrepSource === "temporary"
+          ? WEB_TEMPORARY_PREP_SOURCE_VALUE
+          : selectedPrepSourceId;
   const activePrepSourceId = selectedPrepSourceId ?? state.databases[0]?.id ?? null;
   const activePrepSourceDatabase =
     state.databases.find((database) => database.id === activePrepSourceId) ?? null;
@@ -1257,17 +1272,21 @@ function PrepUnderBoardPanel({
   const selectedMoveLimit = activePrep?.moveLimit ?? moveLimit;
   const selectedPlayerColor = oppositeWebColor(activePrep?.userColor ?? userColor);
   const selectedSourceLabel =
-    selectedPrepSource === "lichess-all"
-      ? "Lichess All"
-      : selectedPrepSource === "lichess-masters"
-        ? "Lichess Masters"
-        : activePrepSourceDatabase
-          ? formatDatabasePickerLabel(activePrepSourceDatabase.name)
-          : sourceOptions
-              .flatMap((group) => group.items)
-              .find((item) => item.value === selectedPrepSourceValue)?.label ?? null;
+    selectedPrepSource === "temporary"
+      ? selectedTemporarySource
+        ? `${formatDatabasePickerLabel(selectedTemporarySource.name)} (unsaved)`
+        : "Unsaved prep source"
+      : selectedPrepSource === "lichess-all"
+        ? "Lichess All"
+        : selectedPrepSource === "lichess-masters"
+          ? "Lichess Masters"
+          : activePrepSourceDatabase
+            ? formatDatabasePickerLabel(activePrepSourceDatabase.name)
+            : sourceOptions
+                .flatMap((group) => group.items)
+                .find((item) => item.value === selectedPrepSourceValue)?.label ?? null;
   const displayedStats =
-    activePrep && selectedPrepSource !== "local"
+    activePrep && isOnlinePrepSource(selectedPrepSource)
       ? onlinePrepStats
           .filter((stat) => stat.total >= selectedMinGames)
           .slice(0, selectedMoveLimit)
@@ -1291,7 +1310,7 @@ function PrepUnderBoardPanel({
   }, [onlineMode, onlineRange]);
 
   useEffect(() => {
-    if (!activePrep || selectedPrepSource === "local") {
+    if (!activePrep || !isOnlinePrepSource(selectedPrepSource)) {
       setOnlinePrepStats([]);
       setOnlinePrepError(null);
       setOnlinePrepLoading(false);
@@ -1340,6 +1359,7 @@ function PrepUnderBoardPanel({
     const now = Date.now();
     const trimmedOpponent = opponent.trim();
     const selectedSourceId = prepSource === "local" ? sourceId ?? state.databases[0]?.id ?? null : null;
+    const selectedTemporarySource = prepSource === "temporary" ? draftTemporarySource : null;
     const prep: WebPrepWorkspace = {
       id: `prep-${now.toString(36)}`,
       name: `${trimmedOpponent || "General"} prep`,
@@ -1347,7 +1367,12 @@ function PrepUnderBoardPanel({
       source: prepSource,
       opponent: trimmedOpponent,
       userColor,
-      sourceIds: selectedSourceId ? [selectedSourceId] : [],
+      sourceIds: selectedSourceId
+        ? [selectedSourceId]
+        : selectedTemporarySource
+          ? [selectedTemporarySource.id]
+          : [],
+      temporarySource: selectedTemporarySource,
       minGames,
       moveLimit,
       startFen: INITIAL_FEN,
@@ -1370,6 +1395,7 @@ function PrepUnderBoardPanel({
         sourceGameId: null,
       },
     }));
+    setDraftTemporarySource(null);
   };
 
   const updateActivePrep = (updater: (prep: WebPrepWorkspace) => WebPrepWorkspace) => {
@@ -1446,7 +1472,12 @@ function PrepUnderBoardPanel({
   const updateActivePrepSource = (nextSource: WebPrepSource, nextSourceId: string | null) => {
     updateActivePrepSettings({
       source: nextSource,
-      sourceIds: nextSource === "local" && nextSourceId ? [nextSourceId] : [],
+      sourceIds:
+        nextSource === "local" && nextSourceId
+          ? [nextSourceId]
+          : nextSource === "temporary" && activePrep?.temporarySource
+            ? [activePrep.temporarySource.id]
+            : [],
     });
   };
 
@@ -1465,6 +1496,15 @@ function PrepUnderBoardPanel({
         value === WEB_LICHESS_ALL_SOURCE_VALUE ? "lichess-all" : "lichess-masters";
       if (activePrep) updateActivePrepSource(nextSource, null);
       else setPrepSource(nextSource);
+      return;
+    }
+
+    if (value === WEB_TEMPORARY_PREP_SOURCE_VALUE) {
+      if (activePrep?.temporarySource) updateActivePrepSource("temporary", activePrep.temporarySource.id);
+      else if (draftTemporarySource) {
+        setPrepSource("temporary");
+        setSourceId(null);
+      }
       return;
     }
 
@@ -1487,6 +1527,7 @@ function PrepUnderBoardPanel({
   };
 
   const attachImportedDatabase = (databaseId: string) => {
+    setDraftTemporarySource(null);
     if (activePrep) {
       updateActivePrepSource("local", databaseId);
       return;
@@ -1494,6 +1535,31 @@ function PrepUnderBoardPanel({
 
     setPrepSource("local");
     setSourceId(databaseId);
+  };
+
+  const attachTemporaryPrepSource = (imported: WebImportResult) => {
+    const now = Date.now();
+    const temporarySource: WebPrepTemporarySource = {
+      id: imported.database.id,
+      name: imported.database.name,
+      gameCount: imported.games.length,
+      importedAt: imported.database.importedAt,
+      updatedAt: now,
+      games: imported.games,
+    };
+
+    if (activePrep) {
+      updateActivePrepSettings({
+        source: "temporary",
+        sourceIds: [temporarySource.id],
+        temporarySource,
+      });
+      return;
+    }
+
+    setDraftTemporarySource(temporarySource);
+    setPrepSource("temporary");
+    setSourceId(null);
   };
 
   const importHostedPgnForPrep = async (entry: WebHostedFileEntry) => {
@@ -1551,9 +1617,12 @@ function PrepUnderBoardPanel({
       mode: onlineMode,
       count: onlineCount,
       range: onlineRange,
+      saveDatabase: onlineSaveDatabase,
       setProgress: setOnlineProgress,
     }).then((imported) => {
-      if (imported) attachImportedDatabase(imported.database.id);
+      if (!imported) return;
+      if (onlineSaveDatabase) attachImportedDatabase(imported.database.id);
+      else attachTemporaryPrepSource(imported);
     });
   };
 
@@ -1722,7 +1791,7 @@ function PrepUnderBoardPanel({
               aria-label="Top opponent moves to show"
             />
           </Group>
-          {selectedPrepSource !== "local" ? (
+          {isOnlinePrepSource(selectedPrepSource) ? (
             <Group gap="xs" align="flex-end" wrap="wrap">
               <TextInput
                 label="Lichess token"
@@ -1742,6 +1811,10 @@ function PrepUnderBoardPanel({
                 Sign in
               </Button>
             </Group>
+          ) : selectedPrepSource === "temporary" && selectedTemporarySource ? (
+            <Badge key={selectedTemporarySource.id} size="xs" variant="light" color="violet">
+              {formatDatabasePickerLabel(selectedTemporarySource.name)} - {selectedTemporarySource.gameCount} unsaved
+            </Badge>
           ) : activePrepSourceDatabase ? (
             <Badge key={activePrepSourceDatabase.id} size="xs" variant="light">
               {formatDatabasePickerLabel(activePrepSourceDatabase.name)} -{" "}
@@ -1902,7 +1975,7 @@ function PrepUnderBoardPanel({
               {displayedStats.reduce((sum, stat) => sum + stat.total, 0)} games
             </Badge>
           </Group>
-          {onlinePrepLoading && selectedPrepSource !== "local" ? (
+          {onlinePrepLoading && isOnlinePrepSource(selectedPrepSource) ? (
             <Group gap="xs">
               <Loader size="xs" />
               <Text size="xs" c="dimmed">
@@ -1910,7 +1983,7 @@ function PrepUnderBoardPanel({
               </Text>
             </Group>
           ) : null}
-          {onlinePrepError && selectedPrepSource !== "local" ? (
+          {onlinePrepError && isOnlinePrepSource(selectedPrepSource) ? (
             <Text size="xs" c="red">
               {onlinePrepError}
             </Text>
@@ -2465,6 +2538,10 @@ function getExplorerSourceLabel(source: WebDatabaseExplorerSource) {
   return source === "lichess-all" ? "Lichess All" : "Lichess Masters";
 }
 
+function isOnlinePrepSource(source: WebPrepSource): source is WebDatabaseExplorerSource {
+  return source === "lichess-all" || source === "lichess-masters";
+}
+
 type WebDatabaseSelectGroup = {
   group: string;
   items: {
@@ -2478,15 +2555,26 @@ function getWebDatabaseSelectData({
   databases,
   hostedFolders,
   includeOnline = false,
+  temporarySource = null,
 }: {
   databases: WebDatabase[];
   hostedFolders: WebHostedDatabaseFolder[];
   includeOnline?: boolean;
+  temporarySource?: WebPrepTemporarySource | null;
 }): WebDatabaseSelectGroup[] {
   const groups = new Map<string, WebDatabaseSelectGroup["items"]>();
   const addItem = (group: string, item: WebDatabaseSelectGroup["items"][number]) => {
     groups.set(group, [...(groups.get(group) ?? []), item]);
   };
+
+  if (temporarySource) {
+    groups.set("Current prep", [
+      {
+        value: WEB_TEMPORARY_PREP_SOURCE_VALUE,
+        label: `${formatDatabasePickerLabel(temporarySource.name)} (${temporarySource.gameCount} unsaved)`,
+      },
+    ]);
+  }
 
   if (includeOnline) {
     groups.set("Online", [
@@ -2520,6 +2608,8 @@ function getWebDatabaseSelectData({
       ),
     }))
     .sort((a, b) => {
+      if (a.group === "Current prep") return -1;
+      if (b.group === "Current prep") return 1;
       if (a.group === "Online") return -1;
       if (b.group === "Online") return 1;
       if (a.group === "Unfiled") return -1;

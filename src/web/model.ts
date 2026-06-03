@@ -53,7 +53,16 @@ export type WebPrepLineMove = {
 };
 
 export type WebPrepMode = "player" | "general";
-export type WebPrepSource = "local" | "lichess-all" | "lichess-masters";
+export type WebPrepSource = "local" | "temporary" | "lichess-all" | "lichess-masters";
+
+export type WebPrepTemporarySource = {
+  id: string;
+  name: string;
+  gameCount: number;
+  importedAt: number;
+  updatedAt: number;
+  games: WebGame[];
+};
 
 export type WebPrepWorkspace = {
   id: string;
@@ -63,6 +72,7 @@ export type WebPrepWorkspace = {
   opponent: string;
   userColor: WebColor;
   sourceIds: string[];
+  temporarySource?: WebPrepTemporarySource | null;
   minGames?: number;
   moveLimit?: number;
   startFen: string;

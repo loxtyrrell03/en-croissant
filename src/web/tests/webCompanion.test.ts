@@ -7,7 +7,7 @@ import {
   type WebHostedLibrary,
 } from "@/web/hostedFiles";
 import { getWebOnlineImportTitle, getWebOnlineRangeLabel } from "@/web/onlineImport";
-import { getWebPrepMoveStats } from "@/web/prepIndex";
+import { getGamesForWebPrepSource, getWebPrepMoveStats } from "@/web/prepIndex";
 import { parsePgnDatabase } from "@/web/pgn";
 
 describe("web companion PGN prep index", () => {
@@ -98,6 +98,53 @@ describe("web companion PGN prep index", () => {
     });
 
     expect(stats.map((stat) => stat.move)).toEqual(["c5", "e5"]);
+  });
+
+  test("unsaved prep imports are usable without joining the normal database list", () => {
+    const imported = parsePgnDatabase(
+      "temporary-prep.pgn",
+      `
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.03"]
+[Round "?"]
+[White "Me"]
+[Black "Opponent"]
+[Result "1-0"]
+
+1. e4 c5 2. Nf3 d6 1-0
+`,
+      1,
+    );
+
+    const prep = {
+      mode: "player" as const,
+      source: "temporary" as const,
+      opponent: "Opponent",
+      userColor: "white" as const,
+      sourceIds: [imported.database.id],
+      temporarySource: {
+        id: imported.database.id,
+        name: imported.database.name,
+        gameCount: imported.games.length,
+        importedAt: imported.database.importedAt,
+        updatedAt: imported.database.updatedAt,
+        games: imported.games,
+      },
+    };
+    const games = getGamesForWebPrepSource({
+      gamesByDatabase: {},
+      prep,
+    });
+    const afterE4 = imported.games[0].moves[0].fenAfter;
+    const stats = getWebPrepMoveStats({
+      games,
+      fen: afterE4,
+      prep,
+    });
+
+    expect(games).toHaveLength(1);
+    expect(stats.map((stat) => stat.move)).toEqual(["c5"]);
   });
 
   test("lists hosted web-library folders without requiring a laptop bridge", () => {

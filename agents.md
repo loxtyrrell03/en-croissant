@@ -200,11 +200,14 @@ default.
   Check range, range/count, and Import + use controls. Local prep stats now
   respect Player versus General filtering plus Min games/Show top. Lichess
   All/Masters prep sources use the persisted web Lichess token and the web
-  explorer helper. Remaining parity gap: the fork can uncheck Save database
-  while still creating a temporary prep-source database; the phone web model
-  currently still indexes online imports as browser databases, so a future pass
-  should add an ephemeral prep-source game store before treating that checkbox
-  as fully equivalent.
+  explorer helper.
+- On 2026-06-04, the phone Prep online import flow gained a prep-only
+  temporary source path for Save database off. Public Lichess/Chess.com games
+  imported from the Prep drawer can now be attached to the draft or active prep
+  as an unsaved `Current prep` source, remain a single selected source in the
+  same folder-aware picker, feed the normal prep move table, and stay out of
+  the browser database list. Save database on still creates a normal
+  browser-side database and attaches that one source to Prep.
 
 ### App Shell
 

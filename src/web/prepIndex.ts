@@ -24,6 +24,19 @@ export function collectGamesForSources(gamesByDatabase: Record<string, WebGame[]
   return selected.flatMap((id) => gamesByDatabase[id] ?? []);
 }
 
+export function getGamesForWebPrepSource({
+  gamesByDatabase,
+  prep,
+}: {
+  gamesByDatabase: Record<string, WebGame[]>;
+  prep: Pick<WebPrepWorkspace, "source" | "sourceIds" | "temporarySource"> | null;
+}) {
+  if (!prep) return [];
+  if (prep.source === "temporary") return prep.temporarySource?.games ?? [];
+  if (prep.source === "local" || !prep.source) return collectGamesForSources(gamesByDatabase, prep.sourceIds);
+  return [];
+}
+
 export function getWebPrepMoveStats({
   games,
   prep,
