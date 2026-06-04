@@ -27,6 +27,7 @@ import {
   getDatabasePlayerCounts,
   getWebDatabaseGamesForPosition,
   getWebDatabaseMoveStats,
+  getWebHostedPositionMoveStats,
   getWebDatabaseTitlePlayerName,
   getGamesForWebPrepSource,
   getNextOpenPrepStat,
@@ -1358,11 +1359,44 @@ describe("web companion PGN prep index", () => {
     ).toBe(true);
     expect(
       needsHostedDatabaseRefresh({
+        database: { ...imported.database, hostedUpdatedAt: 11, hostedLazy: true },
+        games: [],
+        hostedFolder,
+      }),
+    ).toBe(false);
+    expect(
+      needsHostedDatabaseRefresh({
         database: { ...imported.database, hostedUpdatedAt: 11 },
         games: imported.games,
         hostedFolder,
       }),
     ).toBe(false);
+  });
+
+  test("converts hosted position buckets into normal phone move stats", () => {
+    const stats = getWebHostedPositionMoveStats({
+      fen: "startpos",
+      side: "white",
+      moves: [
+        { move: "e4", uci: "e2e4", white: 2, draw: 1, black: 1, lastPlayed: "2026.06.01" },
+        { move: "d4", uci: "d2d4", white: 1, draw: 0, black: 0, lastPlayed: "2026.05.01" },
+      ],
+    });
+
+    expect(stats[0]).toMatchObject({
+      move: "e4",
+      uci: "e2e4",
+      total: 4,
+      share: 0.8,
+      scoreForUser: 0.625,
+      sourceLabel: "database move",
+    });
+    expect(stats[1]).toMatchObject({
+      move: "d4",
+      total: 1,
+      share: 0.2,
+      scoreForUser: 1,
+    });
   });
 
   test("matches desktop prep source flow when choosing Lichess explorer sources", () => {

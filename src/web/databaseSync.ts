@@ -59,6 +59,7 @@ export function needsHostedDatabaseRefresh({
 }) {
   if (!database?.hostedPath || !hostedFolder) return false;
   if ((database.hostedUpdatedAt ?? 0) < hostedFolder.lastModified) return true;
+  if (database.hostedLazy) return false;
   return database.gameCount > 0 && (games?.length ?? 0) === 0;
 }
 

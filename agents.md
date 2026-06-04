@@ -333,6 +333,17 @@ default.
   missing indexed databases run the hosted PGN import path, and those real
   imports now show `loaded / total PGNs` progress so large synced prep
   databases are visibly loading rather than appearing stuck.
+- A later 2026-06-04 hosted-database performance pass added static
+  per-position indexes for generated `.db3` web exports. The Rust
+  `export_db_to_pgn` helper now writes a `position-index` folder beside each
+  exported database, sharded by normalized FEN and capped by
+  `EN_CROISSANT_WEB_DB_INDEX_MAX_PLY` (default 80). The phone Database and Prep
+  panels create lightweight hosted database records from that manifest and
+  lazy-load only the current board position, including blended-strength cloud
+  enhancement, instead of downloading and parsing every PGN chunk into
+  IndexedDB. Lazy hosted sources intentionally do not expose full source-game
+  samples or whole-database player/date filters until a separate lazy sample
+  endpoint exists.
 - The next 2026-06-04 source-picker cleanup removed the extra under-board
   `Browse`/`Hosted files` database route from the phone Database and Prep
   panels. Those panels now mirror the desktop fork more closely: database

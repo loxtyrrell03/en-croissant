@@ -15,6 +15,7 @@ import type {
   WebPrepWorkspace,
   WebResult,
 } from "./model";
+import type { WebHostedPositionMove } from "./hostedDatabaseIndex";
 import { getFenColor, getResultScore, normalizeWebFen, oppositeWebColor } from "./pgn";
 
 export type WebPrepMoveStat = Opening & {
@@ -503,6 +504,59 @@ export function getWebDatabaseMoveStats({
     );
 }
 
+export function getWebHostedPositionMoveStats({
+  moves,
+  fen,
+  side,
+  sourceLabel = "database move",
+  strengthSettings,
+  engineMoves,
+}: {
+  moves: WebHostedPositionMove[];
+  fen: string;
+  side: WebColor;
+  sourceLabel?: string;
+  strengthSettings?: Partial<PrepBuilderSettings> | null;
+  engineMoves?: PrepBuilderEngineMove[];
+}): WebPrepMoveStat[] {
+  const key = normalizeWebFen(fen || INITIAL_FEN);
+  const totalOccurrences = moves.reduce((sum, move) => sum + getHostedPositionMoveTotal(move), 0);
+  const openings: Opening[] = moves.map((move) => ({
+    move: move.move,
+    white: move.white,
+    draw: move.draw,
+    black: move.black,
+    lastPlayed: move.lastPlayed ?? null,
+  }));
+  const strengthMap = getPrepMoveStrengthMap({
+    openings,
+    engineMoves,
+    side,
+    settings: getWebPrepStrengthSettings(strengthSettings),
+  });
+
+  return moves
+    .map<WebPrepMoveStat>((move) => {
+      const total = getHostedPositionMoveTotal(move);
+      return {
+        move: move.move,
+        white: move.white,
+        draw: move.draw,
+        black: move.black,
+        lastPlayed: move.lastPlayed ?? null,
+        key: getWebPrepMoveKey(key, move.move),
+        uci: move.uci ?? null,
+        total,
+        share: totalOccurrences > 0 ? total / totalOccurrences : 0,
+        scoreForUser: total > 0 ? getHostedPositionMoveScore(move, side) : 0.5,
+        sourceLabel,
+        examples: [],
+        strength: strengthMap.get(normalizeSan(move.move)) ?? null,
+      };
+    })
+    .sort(compareWebDatabaseStatsDefault);
+}
+
 export function getWebDatabaseGamesForPosition({
   games,
   fen,
@@ -628,6 +682,17 @@ function getWebDatabaseEngineSortScore(stat: WebPrepMoveStat) {
 
 function getWebDatabaseWdlSortScore(stat: WebPrepMoveStat) {
   return stat.strength?.databaseScore ?? Number.NEGATIVE_INFINITY;
+}
+
+function getHostedPositionMoveTotal(move: WebHostedPositionMove) {
+  return move.white + move.draw + move.black;
+}
+
+function getHostedPositionMoveScore(move: WebHostedPositionMove, side: WebColor) {
+  const total = getHostedPositionMoveTotal(move);
+  if (total <= 0) return 0.5;
+  const score = side === "white" ? move.white + move.draw * 0.5 : move.black + move.draw * 0.5;
+  return score / total;
 }
 
 export function getKnownPlayers(gamesByDatabase: Record<string, WebGame[]>) {

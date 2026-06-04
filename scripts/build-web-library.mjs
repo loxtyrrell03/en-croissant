@@ -107,6 +107,7 @@ async function collectDatabaseExports() {
 
   const maxDatabaseBytes = parseMegabytes("EN_CROISSANT_WEB_DB_MAX_MB", 200) * 1024 * 1024;
   const chunkMegabytes = parseMegabytes("EN_CROISSANT_WEB_DB_CHUNK_MB", 25);
+  const positionIndexMaxPly = parsePositiveInteger("EN_CROISSANT_WEB_DB_INDEX_MAX_PLY", 80);
   const cacheRoot = resolve(
     process.env.EN_CROISSANT_WEB_DB_EXPORT_CACHE ||
       join(getLocalAppDataDir(), "EnCroissantWebSync", "db-exports"),
@@ -132,6 +133,8 @@ async function collectDatabaseExports() {
       sizeBytes: sourceStat.size,
       lastModified: sourceStat.mtimeMs,
       chunkMegabytes,
+      positionIndexVersion: 1,
+      positionIndexMaxPly,
     };
 
     const cached = await readJsonFile(metadataPath);
@@ -147,6 +150,8 @@ async function collectDatabaseExports() {
           cacheDir,
           "--chunk-mb",
           String(chunkMegabytes),
+          "--index-max-ply",
+          String(positionIndexMaxPly),
         ],
         { cwd: repoRoot, encoding: "utf8" },
       );
@@ -309,7 +314,9 @@ function isDatabaseCacheFresh(cached, metadata) {
     cached?.sourcePath === metadata.sourcePath &&
     Number(cached?.sizeBytes) === Number(metadata.sizeBytes) &&
     Number(cached?.lastModified) === Number(metadata.lastModified) &&
-    Number(cached?.chunkMegabytes) === Number(metadata.chunkMegabytes)
+    Number(cached?.chunkMegabytes) === Number(metadata.chunkMegabytes) &&
+    Number(cached?.positionIndexVersion) === Number(metadata.positionIndexVersion) &&
+    Number(cached?.positionIndexMaxPly) === Number(metadata.positionIndexMaxPly)
   );
 }
 
@@ -318,6 +325,13 @@ function parseMegabytes(name, fallback) {
   if (!raw) return fallback;
   const parsed = Number(raw);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function parsePositiveInteger(name, fallback) {
+  const raw = process.env[name];
+  if (!raw) return fallback;
+  const parsed = Number(raw);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 function getRoamingAppDataDir() {

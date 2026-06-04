@@ -106,6 +106,11 @@ import {
   resolveWebDatabaseSourceId,
 } from "./databaseSync";
 import {
+  getHostedDatabasePositionIndexManifest,
+  fetchHostedDatabasePositionMoves,
+  type WebHostedPositionMove,
+} from "./hostedDatabaseIndex";
+import {
   getHostedRawFileUrl,
   getHostedDatabaseFolders,
   getHostedDirectPgnFilesInPath,
@@ -160,6 +165,7 @@ import {
   getFirstOpenPrepStat,
   getWebDatabaseGamesForPosition,
   getWebDatabaseMoveStats,
+  getWebHostedPositionMoveStats,
   getGamesForWebPrepSource,
   getDatabasePlayerCounts,
   filterWebGamesByLocalFilters,
@@ -602,6 +608,79 @@ export default function WebApp() {
     [importPgnText, state.databases, state.gamesByDatabase],
   );
 
+  const openHostedDatabaseSource = useCallback(
+    async (library: WebHostedLibrary, path: string, options: WebHostedFolderImportOptions = {}) => {
+      setImporting(true);
+      try {
+        const hostedFiles = getHostedPgnFilesInPath(library, path);
+        if (hostedFiles.length === 0) {
+          throw new Error("This hosted folder does not contain PGN files.");
+        }
+
+        const reusableImport = getReusableHostedDatabaseImport({
+          state,
+          hostedPath: path,
+          files: hostedFiles,
+        });
+        if (reusableImport) {
+          notifications.show({
+            title: "Hosted database already loaded",
+            message: `${reusableImport.database.name} is ready to use.`,
+            color: "blue",
+          });
+          return reusableImport;
+        }
+
+        const manifest = await getHostedDatabasePositionIndexManifest(path);
+        if (!manifest) {
+          return await importHostedFolder(library, path, options);
+        }
+
+        const normalizedPath = normalizeHostedDatabasePath(path);
+        const latestHostedUpdate = Math.max(...hostedFiles.map((file) => file.lastModified), 0);
+        const name = getHostedDatabaseLeafLabel(normalizedPath);
+        const now = Date.now();
+        const imported: WebImportResult = {
+          database: {
+            id: createHostedDatabaseId(normalizedPath),
+            name: `${name}.pgn`,
+            hostedPath: normalizedPath,
+            hostedLazy: true,
+            hostedUpdatedAt: latestHostedUpdate,
+            importedAt: now,
+            updatedAt: now,
+            gameCount: manifest.gameCount,
+            sizeBytes: hostedFiles.reduce((sum, file) => sum + file.sizeBytes, 0),
+            latestDate: manifest.latestDate ?? null,
+            playerNames: [],
+          },
+          games: [],
+          warnings: [],
+        };
+
+        addImportedDatabases([imported]);
+        notifications.show({
+          title: "Hosted database ready",
+          message: `${formatDatabasePickerLabel(imported.database.name)} will lazy-load one board position at a time.`,
+          color: "green",
+        });
+        return imported;
+      } catch (error) {
+        console.error(error);
+        notifications.show({
+          title: "Could not open database",
+          message: error instanceof Error ? error.message : "The hosted database could not be read.",
+          color: "red",
+        });
+      } finally {
+        options.onProgress?.(null);
+        setImporting(false);
+      }
+      return null;
+    },
+    [addImportedDatabases, importHostedFolder, state],
+  );
+
   const importOnlineGames = useCallback(
     async ({
       source,
@@ -754,7 +833,7 @@ export default function WebApp() {
               state={state}
               setState={setState}
               activePrep={activePrep}
-              importHostedFolder={importHostedFolder}
+              importHostedFolder={openHostedDatabaseSource}
               importOnlineGames={importOnlineGames}
               loadGameOnBoard={loadGameOnBoard}
               lichessToken={lichessToken}
@@ -1314,6 +1393,9 @@ function DatabaseUnderBoardPanel({
     () => selectableDatabases.find((database) => database.id === selectedLocalId) ?? null,
     [selectableDatabases, selectedLocalId],
   );
+  const isSelectedLocalLazy = Boolean(
+    selectedLocalDatabase?.hostedLazy && selectedLocalDatabase.hostedPath,
+  );
   const selectedLocalHostedPath = selectedLocalDatabase?.hostedPath ?? selectedLocalStoredHostedPath;
   const selectedLocalHostedFolder = useMemo(
     () =>
@@ -1330,8 +1412,10 @@ function DatabaseUnderBoardPanel({
         : selectedLocalId;
   const localGames = useMemo(
     () =>
-      selectedLocalId ? collectGamesForSources(gamesByDatabase, [selectedLocalId]) : [],
-    [gamesByDatabase, selectedLocalId],
+      selectedLocalId && !isSelectedLocalLazy
+        ? collectGamesForSources(gamesByDatabase, [selectedLocalId])
+        : [],
+    [gamesByDatabase, isSelectedLocalLazy, selectedLocalId],
   );
   const selectedDatabasePlayers = useMemo(() => getDatabasePlayerCounts(localGames), [localGames]);
   const trimmedLocalPlayerName = localPlayerName.trim();
@@ -1344,7 +1428,43 @@ function DatabaseUnderBoardPanel({
     [localEndDate, localResult, localStartDate],
   );
   const [localEngineMoves, setLocalEngineMoves] = useState<PrepBuilderEngineMove[]>([]);
-  const localStatsBase = useMemo(
+  const [localLazyMoves, setLocalLazyMoves] = useState<WebHostedPositionMove[]>([]);
+  const [localLazyLoading, setLocalLazyLoading] = useState(false);
+  const [localLazyError, setLocalLazyError] = useState<string | null>(null);
+  const localLazySide = trimmedLocalPlayerName ? localColor : getFenColor(currentFen);
+  const localLazyStatsBase = useMemo(
+    () =>
+      isSelectedLocalLazy
+        ? getWebHostedPositionMoveStats({
+            moves: localLazyMoves,
+            fen: currentFen,
+            side: localLazySide,
+            strengthSettings: databaseStrengthSettings,
+          })
+        : [],
+    [currentFen, databaseStrengthSettings, isSelectedLocalLazy, localLazyMoves, localLazySide],
+  );
+  const localLazyStats = useMemo(
+    () =>
+      isSelectedLocalLazy
+        ? getWebHostedPositionMoveStats({
+            moves: localLazyMoves,
+            fen: currentFen,
+            side: localLazySide,
+            strengthSettings: databaseStrengthSettings,
+            engineMoves: localEngineMoves,
+          })
+        : [],
+    [
+      currentFen,
+      databaseStrengthSettings,
+      isSelectedLocalLazy,
+      localEngineMoves,
+      localLazyMoves,
+      localLazySide,
+    ],
+  );
+  const eagerLocalStatsBase = useMemo(
     () =>
       getWebDatabaseMoveStats({
         games: localGames,
@@ -1367,7 +1487,7 @@ function DatabaseUnderBoardPanel({
       trimmedLocalPlayerName,
     ],
   );
-  const localStats = useMemo(
+  const eagerLocalStats = useMemo(
     () =>
       getWebDatabaseMoveStats({
         games: localGames,
@@ -1392,21 +1512,63 @@ function DatabaseUnderBoardPanel({
       trimmedLocalPlayerName,
     ],
   );
+  const localStatsBase = isSelectedLocalLazy ? localLazyStatsBase : eagerLocalStatsBase;
+  const localStats = isSelectedLocalLazy ? localLazyStats : eagerLocalStats;
   const localPositionGames = useMemo(
     () =>
-      getWebDatabaseGamesForPosition({
-        games: localGames,
-        fen: currentFen,
-        filters: localFilters,
-        perspective: trimmedLocalPlayerName
-          ? {
-              playerName: trimmedLocalPlayerName,
-              color: localColor,
-            }
-          : null,
-      }),
-    [currentFen, localColor, localFilters, localGames, trimmedLocalPlayerName],
+      isSelectedLocalLazy
+        ? []
+        : getWebDatabaseGamesForPosition({
+            games: localGames,
+            fen: currentFen,
+            filters: localFilters,
+            perspective: trimmedLocalPlayerName
+              ? {
+                  playerName: trimmedLocalPlayerName,
+                  color: localColor,
+                }
+              : null,
+          }),
+    [currentFen, isSelectedLocalLazy, localColor, localFilters, localGames, trimmedLocalPlayerName],
   );
+
+  useEffect(() => {
+    if (source !== "local" || !isSelectedLocalLazy || !selectedLocalDatabase?.hostedPath) {
+      setLocalLazyMoves([]);
+      setLocalLazyLoading(false);
+      setLocalLazyError(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    let active = true;
+    setLocalLazyLoading(true);
+    setLocalLazyError(null);
+
+    void fetchHostedDatabasePositionMoves({
+      hostedPath: selectedLocalDatabase.hostedPath,
+      fen: currentFen,
+      signal: controller.signal,
+    })
+      .then((moves) => {
+        if (active) setLocalLazyMoves(moves);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setLocalLazyMoves([]);
+        setLocalLazyError(
+          error instanceof Error ? error.message : "Could not load this database position.",
+        );
+      })
+      .finally(() => {
+        if (active) setLocalLazyLoading(false);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [currentFen, isSelectedLocalLazy, refreshKey, selectedLocalDatabase?.hostedPath, source]);
 
   useEffect(() => {
     setSelectedLocalIdValue((current) => {
@@ -1617,11 +1779,11 @@ function DatabaseUnderBoardPanel({
     [databaseStatsSort, stats],
   );
   const matchCount =
-    databaseView === "games" && source === "local"
+    databaseView === "games" && source === "local" && !isSelectedLocalLazy
       ? localPositionGames.length
       : stats.reduce((sum, stat) => sum + stat.total, 0);
   const localSourceLabel =
-    trimmedLocalPlayerName && selectedLocalDatabase
+    trimmedLocalPlayerName && selectedLocalDatabase && !isSelectedLocalLazy
       ? `${trimmedLocalPlayerName} as ${localColor} in ${selectedLocalDatabase.name}`
       : selectedLocalDatabase?.name ?? "Local database";
   const sourceLabel = source === "local" ? localSourceLabel : getExplorerSourceLabel(source);
@@ -1655,7 +1817,7 @@ function DatabaseUnderBoardPanel({
               flex="1 1 13rem"
               minWidth="13rem"
             />
-            {selectedLocalId ? (
+            {selectedLocalId && !isSelectedLocalLazy ? (
               <WebDatabasePerspectiveControls
                 playerName={localPlayerName}
                 playerOptions={selectedDatabasePlayers}
@@ -1738,6 +1900,13 @@ function DatabaseUnderBoardPanel({
             {formatHostedLoadProgress(loadingLocalSource, loadingLocalProgress)}
           </Text>
         </Group>
+      ) : source === "local" && isSelectedLocalLazy && localLazyLoading ? (
+        <Group gap="xs" wrap="nowrap">
+          <Loader size="xs" />
+          <Text size="xs" c="dimmed" truncate>
+            Loading {sourceLabel} position
+          </Text>
+        </Group>
       ) : null}
 
       {source === "local" && loadingLocalSource ? (
@@ -1749,6 +1918,21 @@ function DatabaseUnderBoardPanel({
             </Text>
           </Stack>
         </Center>
+      ) : source === "local" && isSelectedLocalLazy && localLazyLoading ? (
+        <Center h={150}>
+          <Stack align="center" gap="xs">
+            <Loader size="sm" />
+            <Text size="xs" c="dimmed">
+              Loading one position from {sourceLabel}
+            </Text>
+          </Stack>
+        </Center>
+      ) : source === "local" && isSelectedLocalLazy && localLazyError ? (
+        <UnderBoardEmpty
+          icon={<IconDatabase size={30} />}
+          title="Position index unavailable"
+          text={localLazyError}
+        />
       ) : source !== "local" && !lichessToken.trim() ? (
         <UnderBoardEmpty
           icon={<IconDatabase size={30} />}
@@ -1771,7 +1955,13 @@ function DatabaseUnderBoardPanel({
           text={onlineError}
         />
       ) : databaseView === "options" ? (
-        source === "local" && selectedLocalId ? (
+        source === "local" && selectedLocalId && isSelectedLocalLazy ? (
+          <UnderBoardEmpty
+            icon={<IconDatabase size={30} />}
+            title="Lazy synced source"
+            text="This database is queried one position at a time on phone, so player/date/result filters need a full PGN import."
+          />
+        ) : source === "local" && selectedLocalId ? (
           <WebDatabaseOptionsPanel
             sourceLabel={sourceLabel}
             startDate={localStartDate}
@@ -1791,7 +1981,13 @@ function DatabaseUnderBoardPanel({
           />
         ) : null
       ) : databaseView === "games" ? (
-        source === "local" && selectedLocalId ? (
+        source === "local" && selectedLocalId && isSelectedLocalLazy ? (
+          <UnderBoardEmpty
+            icon={<IconDatabase size={30} />}
+            title="No game samples"
+            text="This synced database is lazy-loaded for move stats. Open the PGN from Files if you need individual source games on phone."
+          />
+        ) : source === "local" && selectedLocalId ? (
           <WebDatabaseGamesList games={localPositionGames} onOpenGame={onOpenSourceGame} />
         ) : source !== "local" ? (
           <UnderBoardEmpty
@@ -1824,7 +2020,7 @@ function DatabaseUnderBoardPanel({
           showState={false}
           emptyLabel="No database moves"
           onPlayMove={onPlayMove}
-          onOpenSourceGame={source === "local" ? onOpenSourceGame : undefined}
+          onOpenSourceGame={source === "local" && !isSelectedLocalLazy ? onOpenSourceGame : undefined}
         />
       )}
     </Stack>
@@ -1916,6 +2112,13 @@ function PrepUnderBoardPanel({
   const [onlinePrepError, setOnlinePrepError] = useState<string | null>(null);
   const [onlineRootPrepStats, setOnlineRootPrepStats] = useState<WebPrepMoveStat[]>([]);
   const [onlineRootPrepLoading, setOnlineRootPrepLoading] = useState(false);
+  const [lazyPrepMoves, setLazyPrepMoves] = useState<WebHostedPositionMove[]>([]);
+  const [lazyRootPrepMoves, setLazyRootPrepMoves] = useState<WebHostedPositionMove[]>([]);
+  const [lazyPrepEngineMoves, setLazyPrepEngineMoves] = useState<PrepBuilderEngineMove[]>([]);
+  const [lazyRootPrepEngineMoves, setLazyRootPrepEngineMoves] = useState<PrepBuilderEngineMove[]>([]);
+  const [lazyPrepLoading, setLazyPrepLoading] = useState(false);
+  const [lazyRootPrepLoading, setLazyRootPrepLoading] = useState(false);
+  const [lazyPrepError, setLazyPrepError] = useState<string | null>(null);
   const [explorerOptionsOpen, setExplorerOptionsOpen] = useState(false);
   const [builderOpen, setBuilderOpen] = useState(false);
   const [prepSort, setPrepSort] = useState<WebPrepSortState>(
@@ -1973,6 +2176,11 @@ function PrepUnderBoardPanel({
   const activePrepSourceId = selectedPrepSource === "local" ? selectedPrepSourceId : null;
   const activePrepSourceDatabase =
     selectableDatabases.find((database) => database.id === activePrepSourceId) ?? null;
+  const selectedPrepSourceIsLazy = Boolean(
+    selectedPrepSource === "local" &&
+      activePrepSourceDatabase?.hostedLazy &&
+      activePrepSourceDatabase.hostedPath,
+  );
   const selectedPrepHostedPath =
     activePrepSourceDatabase?.hostedPath ?? draftPrepStoredHostedPath;
   const selectedPrepHostedFolder = useMemo(
@@ -1994,7 +2202,7 @@ function PrepUnderBoardPanel({
             : selectedPrepHostedFolder
               ? hostedDatabaseValue(selectedPrepHostedFolder.path)
               : selectedPrepSourceId;
-  const activePrepSourceGames = activePrepSourceDatabase
+  const activePrepSourceGames = activePrepSourceDatabase && !selectedPrepSourceIsLazy
     ? state.gamesByDatabase[activePrepSourceDatabase.id] ?? []
     : [];
   const selectedPrepSourceGames =
@@ -2058,17 +2266,85 @@ function PrepUnderBoardPanel({
             : sourceOptions
                 .flatMap((group) => group.items)
                 .find((item) => item.value === selectedPrepSourceValue)?.label ?? null;
+  const lazyPrepStatsBase = useMemo(
+    () =>
+      activePrep && selectedPrepSourceIsLazy
+        ? getWebHostedPositionMoveStats({
+            moves: lazyPrepMoves,
+            fen: currentFen,
+            side: activePrep.userColor,
+            sourceLabel: getWebPrepSourceLabelForFen(currentFen, activePrep.userColor),
+            strengthSettings: activePrep.builder,
+          })
+        : [],
+    [activePrep, currentFen, lazyPrepMoves, selectedPrepSourceIsLazy],
+  );
+  const lazyPrepStats = useMemo(
+    () =>
+      activePrep && selectedPrepSourceIsLazy
+        ? getWebHostedPositionMoveStats({
+            moves: lazyPrepMoves,
+            fen: currentFen,
+            side: activePrep.userColor,
+            sourceLabel: getWebPrepSourceLabelForFen(currentFen, activePrep.userColor),
+            strengthSettings: activePrep.builder,
+            engineMoves: lazyPrepEngineMoves,
+          })
+        : [],
+    [activePrep, currentFen, lazyPrepEngineMoves, lazyPrepMoves, selectedPrepSourceIsLazy],
+  );
+  const lazyRootPrepStatsBase = useMemo(
+    () =>
+      activePrep && selectedPrepSourceIsLazy && branchFen
+        ? getWebHostedPositionMoveStats({
+            moves: lazyRootPrepMoves,
+            fen: branchFen,
+            side: activePrep.userColor,
+            sourceLabel: getWebPrepSourceLabelForFen(branchFen, activePrep.userColor),
+            strengthSettings: activePrep.builder,
+          })
+        : [],
+    [activePrep, branchFen, lazyRootPrepMoves, selectedPrepSourceIsLazy],
+  );
+  const lazyRootPrepStats = useMemo(
+    () =>
+      activePrep && selectedPrepSourceIsLazy && branchFen
+        ? getWebHostedPositionMoveStats({
+            moves: lazyRootPrepMoves,
+            fen: branchFen,
+            side: activePrep.userColor,
+            sourceLabel: getWebPrepSourceLabelForFen(branchFen, activePrep.userColor),
+            strengthSettings: activePrep.builder,
+            engineMoves: lazyRootPrepEngineMoves,
+          })
+        : [],
+    [
+      activePrep,
+      branchFen,
+      lazyRootPrepEngineMoves,
+      lazyRootPrepMoves,
+      selectedPrepSourceIsLazy,
+    ],
+  );
   const displayedStats =
     activePrep && isOnlinePrepSource(selectedPrepSource)
       ? onlinePrepStats
           .filter((stat) => stat.total >= selectedMinGames)
           .slice(0, selectedMoveLimit)
+      : activePrep && selectedPrepSourceIsLazy
+        ? lazyPrepStats
+            .filter((stat) => stat.total >= selectedMinGames)
+            .slice(0, selectedMoveLimit)
       : stats;
   const displayedRootStats =
     activePrep && isOnlinePrepSource(selectedPrepSource)
       ? onlineRootPrepStats
           .filter((stat) => stat.total >= selectedMinGames)
           .slice(0, selectedMoveLimit)
+      : activePrep && selectedPrepSourceIsLazy
+        ? lazyRootPrepStats
+            .filter((stat) => stat.total >= selectedMinGames)
+            .slice(0, selectedMoveLimit)
       : rootStats;
   const activeBranch = useMemo(
     () =>
@@ -2079,7 +2355,7 @@ function PrepUnderBoardPanel({
     [activePrep, branchStart, currentLine],
   );
   const activeBranchSourceGame = useMemo(() => {
-    if (!activePrep || !activeBranch || isOnlinePrepSource(selectedPrepSource)) return null;
+    if (!activePrep || !activeBranch || isOnlinePrepSource(selectedPrepSource) || selectedPrepSourceIsLazy) return null;
     const branchMoveStats = getWebPrepMoveStats({
       games: selectedPrepSourceGames,
       prep: activePrep,
@@ -2087,7 +2363,7 @@ function PrepUnderBoardPanel({
       maxExamples: 1,
     });
     return branchMoveStats.find((stat) => stat.key === activeBranch.key)?.examples[0] ?? null;
-  }, [activeBranch, activePrep, selectedPrepSource, selectedPrepSourceGames]);
+  }, [activeBranch, activePrep, selectedPrepSource, selectedPrepSourceGames, selectedPrepSourceIsLazy]);
   const openRootStats = activePrep
     ? displayedRootStats.filter((stat) => !activePrep.skippedMoves?.[stat.key])
     : displayedRootStats;
@@ -2316,6 +2592,145 @@ function PrepUnderBoardPanel({
       controller.abort();
     };
   }, [activePrep, branchFen, currentFen, explorerOptions, lichessToken, selectedPrepSource]);
+
+  useEffect(() => {
+    if (!activePrep || !selectedPrepSourceIsLazy || !activePrepSourceDatabase?.hostedPath) {
+      setLazyPrepMoves([]);
+      setLazyRootPrepMoves([]);
+      setLazyPrepError(null);
+      setLazyPrepLoading(false);
+      setLazyRootPrepLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    let active = true;
+    setLazyPrepLoading(true);
+    setLazyRootPrepLoading(Boolean(branchFen));
+    setLazyPrepError(null);
+
+    const currentRequest = fetchHostedDatabasePositionMoves({
+      hostedPath: activePrepSourceDatabase.hostedPath,
+      fen: currentFen,
+      signal: controller.signal,
+    });
+    const rootRequest =
+      branchFen && normalizeWebFen(branchFen) === normalizeWebFen(currentFen)
+        ? currentRequest
+        : branchFen
+          ? fetchHostedDatabasePositionMoves({
+              hostedPath: activePrepSourceDatabase.hostedPath,
+              fen: branchFen,
+              signal: controller.signal,
+            })
+          : Promise.resolve<WebHostedPositionMove[]>([]);
+
+    void currentRequest
+      .then((moves) => {
+        if (active) setLazyPrepMoves(moves);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setLazyPrepMoves([]);
+        setLazyPrepError(
+          error instanceof Error ? error.message : "Could not load this prep position.",
+        );
+      })
+      .finally(() => {
+        if (active) setLazyPrepLoading(false);
+      });
+
+    void rootRequest
+      .then((moves) => {
+        if (active) setLazyRootPrepMoves(moves);
+      })
+      .catch(() => {
+        if (active) setLazyRootPrepMoves([]);
+      })
+      .finally(() => {
+        if (active) setLazyRootPrepLoading(false);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [
+    activePrep,
+    activePrepSourceDatabase?.hostedPath,
+    branchFen,
+    currentFen,
+    selectedPrepSourceIsLazy,
+  ]);
+
+  useEffect(() => {
+    const settings = normalizeWebPrepStrengthSettings(activePrep?.builder);
+    if (
+      !activePrep ||
+      !selectedPrepSourceIsLazy ||
+      !settings.useCloudEngine ||
+      lazyPrepStatsBase.length === 0
+    ) {
+      setLazyPrepEngineMoves([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    let active = true;
+    void queryWebLichessCloudEngineMoves({
+      fen: currentFen,
+      side: activePrep.userColor,
+      moves: lazyPrepStatsBase.map((stat) => stat.move),
+      multipv: lazyPrepStatsBase.length,
+      signal: controller.signal,
+    })
+      .then((moves) => {
+        if (active) setLazyPrepEngineMoves(moves);
+      })
+      .catch(() => {
+        if (active) setLazyPrepEngineMoves([]);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [activePrep, currentFen, lazyPrepStatsBase, selectedPrepSourceIsLazy]);
+
+  useEffect(() => {
+    const settings = normalizeWebPrepStrengthSettings(activePrep?.builder);
+    if (
+      !activePrep ||
+      !branchFen ||
+      !selectedPrepSourceIsLazy ||
+      !settings.useCloudEngine ||
+      lazyRootPrepStatsBase.length === 0
+    ) {
+      setLazyRootPrepEngineMoves([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    let active = true;
+    void queryWebLichessCloudEngineMoves({
+      fen: branchFen,
+      side: activePrep.userColor,
+      moves: lazyRootPrepStatsBase.map((stat) => stat.move),
+      multipv: lazyRootPrepStatsBase.length,
+      signal: controller.signal,
+    })
+      .then((moves) => {
+        if (active) setLazyRootPrepEngineMoves(moves);
+      })
+      .catch(() => {
+        if (active) setLazyRootPrepEngineMoves([]);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [activePrep, branchFen, lazyRootPrepStatsBase, selectedPrepSourceIsLazy]);
 
   const createPrep = () => {
     const now = Date.now();
@@ -3183,7 +3598,7 @@ function PrepUnderBoardPanel({
                   Choose a prep source or import public games.
                 </Text>
               )}
-              {selectedPrepSource === "local" && activePrepSourceId ? (
+              {selectedPrepSource === "local" && activePrepSourceId && !selectedPrepSourceIsLazy ? (
                 <WebLocalFiltersControls
                   startDate={selectedPrepStartDate}
                   endDate={selectedPrepEndDate}
@@ -3357,7 +3772,10 @@ function PrepUnderBoardPanel({
                 <Button
                   size="xs"
                   leftSection={<IconPlayerPlay size={14} />}
-                  loading={onlineRootPrepLoading && isOnlinePrepSource(selectedPrepSource)}
+                  loading={
+                    (onlineRootPrepLoading && isOnlinePrepSource(selectedPrepSource)) ||
+                    (lazyRootPrepLoading && selectedPrepSourceIsLazy)
+                  }
                   onClick={playCommonMove}
                 >
                   Common move
@@ -3368,7 +3786,10 @@ function PrepUnderBoardPanel({
                   size="xs"
                   variant="default"
                   leftSection={<IconChevronRight size={14} />}
-                  loading={onlineRootPrepLoading && isOnlinePrepSource(selectedPrepSource)}
+                  loading={
+                    (onlineRootPrepLoading && isOnlinePrepSource(selectedPrepSource)) ||
+                    (lazyRootPrepLoading && selectedPrepSourceIsLazy)
+                  }
                   onClick={doneAndNext}
                 >
                   Done + next
@@ -3417,6 +3838,19 @@ function PrepUnderBoardPanel({
               {onlinePrepError}
             </Text>
           ) : null}
+          {lazyPrepLoading && selectedPrepSourceIsLazy ? (
+            <Group gap="xs">
+              <Loader size="xs" />
+              <Text size="xs" c="dimmed">
+                Loading one position from {selectedSourceLabel}
+              </Text>
+            </Group>
+          ) : null}
+          {lazyPrepError && selectedPrepSourceIsLazy ? (
+            <Text size="xs" c="red">
+              {lazyPrepError}
+            </Text>
+          ) : null}
           <Group gap="xs" wrap="wrap">
             {opponentToMove ? (
               <>
@@ -3459,7 +3893,11 @@ function PrepUnderBoardPanel({
             showState={opponentToMove}
             emptyLabel="No prep moves"
             onPlayMove={onPlayMove}
-            onOpenSourceGame={isOnlinePrepSource(selectedPrepSource) ? undefined : onOpenSourceGame}
+            onOpenSourceGame={
+              isOnlinePrepSource(selectedPrepSource) || selectedPrepSourceIsLazy
+                ? undefined
+                : onOpenSourceGame
+            }
             onMarkDone={markMoveDone}
             onSkipMove={skipMove}
             sort={opponentToMove ? prepSort : prepCandidateSort}
@@ -5326,10 +5764,27 @@ function getHostedDatabaseGroupLabel(path: string) {
   return normalizeHostedDatabasePathParts(path).join(" / ");
 }
 
+function normalizeHostedDatabasePath(path: string) {
+  return path.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+}
+
+function createHostedDatabaseId(path: string) {
+  const normalized = normalizeHostedDatabasePath(path);
+  const slug =
+    normalized
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 56) || "database";
+  return `hosted-${slug}-${hashHostedDatabasePath(normalized)}`;
+}
+
+function getWebPrepSourceLabelForFen(fen: string, userColor: WebColor) {
+  return getFenColor(fen) === oppositeWebColor(userColor) ? "opponent move" : "reply faced";
+}
+
 function normalizeHostedDatabasePathParts(path: string) {
-  return path
-    .replace(/\\/g, "/")
-    .replace(/^\/+|\/+$/g, "")
+  return normalizeHostedDatabasePath(path)
     .replace(/^Databases\//, "")
     .split("/")
     .filter(Boolean);
@@ -5431,7 +5886,7 @@ function useHostedDatabaseFolders() {
 }
 
 function hostedDatabaseValue(path: string) {
-  return `hosted-db:${path}`;
+  return `hosted-db:${normalizeHostedDatabasePath(path)}`;
 }
 
 function isHostedDatabaseValue(value: string) {
@@ -5439,7 +5894,15 @@ function isHostedDatabaseValue(value: string) {
 }
 
 function hostedDatabasePathFromValue(value: string) {
-  return value.replace(/^hosted-db:/, "");
+  return normalizeHostedDatabasePath(value.replace(/^hosted-db:/, ""));
+}
+
+function hashHostedDatabasePath(path: string) {
+  let hash = 5381;
+  for (let index = 0; index < path.length; index += 1) {
+    hash = Math.imul(hash, 33) ^ path.charCodeAt(index);
+  }
+  return (hash >>> 0).toString(36);
 }
 
 function normalizeWebPrepStoredSetup(

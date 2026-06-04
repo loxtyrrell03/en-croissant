@@ -248,6 +248,17 @@ export function getHostedRawFileUrl(entry: WebHostedFileEntry) {
   return `${WEB_LIBRARY_BASE}${entry.url}`;
 }
 
+export function getHostedLibraryFileUrl(path: string) {
+  return `${WEB_LIBRARY_BASE}files/${encodePath(normalizeHostedPath(path))}`;
+}
+
+function encodePath(path: string) {
+  return path
+    .split("/")
+    .map((part) => encodeURIComponent(part))
+    .join("/");
+}
+
 function normalizeManifest(data: unknown): WebHostedLibraryManifest {
   const manifest = data as Partial<WebHostedLibraryManifest>;
   const files = Array.isArray(manifest.files)

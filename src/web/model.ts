@@ -43,6 +43,7 @@ export type WebDatabase = {
   id: string;
   name: string;
   hostedPath?: string;
+  hostedLazy?: boolean;
   hostedUpdatedAt?: number;
   importedAt: number;
   updatedAt: number;

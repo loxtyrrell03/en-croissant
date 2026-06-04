@@ -6,10 +6,17 @@ mod error {
 #[path = "../db/encoding.rs"]
 mod encoding;
 
-use encoding::decode_game_to_movetext;
+use encoding::{decode_game_to_movetext, decode_move, iter_mainline_move_bytes};
 use rusqlite::{Connection, OpenFlags};
-use shakmaty::fen::Fen;
+use serde::Serialize;
+use shakmaty::{
+    fen::Fen,
+    san::SanPlus,
+    uci::UciMove,
+    CastlingMode, Chess, EnPassantMode, FromSetup, Position, PositionError,
+};
 use std::{
+    collections::{BTreeMap, BTreeSet},
     env,
     fs::{create_dir_all, File},
     io::{self, BufWriter, Write},
@@ -17,11 +24,16 @@ use std::{
 };
 
 const DEFAULT_CHUNK_BYTES: u64 = 25 * 1024 * 1024;
+const DEFAULT_INDEX_MAX_PLY: usize = 80;
+const POSITION_INDEX_VERSION: u32 = 1;
+const POSITION_INDEX_DIR: &str = "position-index";
+const POSITION_INDEX_SHARDS_DIR: &str = "shards";
 
 struct Args {
     source: PathBuf,
     dest_dir: PathBuf,
     chunk_bytes: u64,
+    index_max_ply: usize,
 }
 
 struct ExportGame {
@@ -49,6 +61,46 @@ struct ChunkWriter {
     writer: Option<BufWriter<File>>,
 }
 
+#[derive(Default)]
+struct PositionIndexBuilder {
+    max_ply: usize,
+    game_count: usize,
+    positions: BTreeMap<String, BTreeMap<String, PositionMoveBucket>>,
+}
+
+#[derive(Clone, Default, Serialize)]
+struct PositionMoveBucket {
+    #[serde(rename = "move")]
+    san: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    uci: Option<String>,
+    white: u32,
+    draw: u32,
+    black: u32,
+    #[serde(rename = "lastPlayed", skip_serializing_if = "Option::is_none")]
+    last_played: Option<String>,
+}
+
+#[derive(Serialize)]
+struct PositionIndexManifest {
+    version: u32,
+    #[serde(rename = "maxPly")]
+    max_ply: usize,
+    #[serde(rename = "gameCount")]
+    game_count: usize,
+    #[serde(rename = "positionCount")]
+    position_count: usize,
+    #[serde(rename = "latestDate")]
+    latest_date: Option<String>,
+    shards: Vec<String>,
+}
+
+#[derive(Serialize)]
+struct PositionIndexShard<'a> {
+    version: u32,
+    positions: &'a BTreeMap<String, BTreeMap<String, PositionMoveBucket>>,
+}
+
 fn main() -> Result<(), error::Error> {
     let args = parse_args()?;
     let exported = export_database(&args)?;
@@ -65,6 +117,7 @@ fn parse_args() -> Result<Args, error::Error> {
     let mut source = None;
     let mut dest_dir = None;
     let mut chunk_bytes = DEFAULT_CHUNK_BYTES;
+    let mut index_max_ply = DEFAULT_INDEX_MAX_PLY;
     let mut args = env::args().skip(1);
 
     while let Some(arg) = args.next() {
@@ -76,9 +129,15 @@ fn parse_args() -> Result<Args, error::Error> {
                 let mb = value.parse::<u64>()?;
                 chunk_bytes = mb.max(1) * 1024 * 1024;
             }
+            "--index-max-ply" => {
+                let value = args
+                    .next()
+                    .ok_or_else(|| invalid_input("--index-max-ply needs a value"))?;
+                index_max_ply = value.parse::<usize>()?.max(1);
+            }
             "--help" | "-h" => {
                 println!(
-                    "Usage: export_db_to_pgn --source <database.db3> --dest-dir <folder> [--chunk-mb 25]"
+                    "Usage: export_db_to_pgn --source <database.db3> --dest-dir <folder> [--chunk-mb 25] [--index-max-ply 80]"
                 );
                 std::process::exit(0);
             }
@@ -90,6 +149,7 @@ fn parse_args() -> Result<Args, error::Error> {
         source: source.ok_or_else(|| invalid_input("--source is required"))?,
         dest_dir: dest_dir.ok_or_else(|| invalid_input("--dest-dir is required"))?,
         chunk_bytes,
+        index_max_ply,
     })
 }
 
@@ -129,6 +189,7 @@ fn export_database(args: &Args) -> Result<usize, error::Error> {
 
     let mut rows = statement.query([])?;
     let mut writer = ChunkWriter::new(args.dest_dir.clone(), args.chunk_bytes);
+    let mut position_index = PositionIndexBuilder::new(args.index_max_ply);
     let mut exported = 0usize;
 
     while let Some(row) = rows.next()? {
@@ -148,12 +209,14 @@ fn export_database(args: &Args) -> Result<usize, error::Error> {
             fen: row.get(12)?,
             moves: row.get(13)?,
         };
+        position_index.index_game(&game)?;
         let pgn = render_pgn_game(&game)?;
         writer.write_game(pgn.as_bytes())?;
         exported += 1;
     }
 
     writer.flush()?;
+    position_index.write_to(&args.dest_dir)?;
     Ok(exported)
 }
 
@@ -199,6 +262,157 @@ impl ChunkWriter {
         self.writer = None;
         Ok(())
     }
+}
+
+impl PositionIndexBuilder {
+    fn new(max_ply: usize) -> Self {
+        Self {
+            max_ply,
+            ..Self::default()
+        }
+    }
+
+    fn index_game(&mut self, game: &ExportGame) -> Result<(), error::Error> {
+        self.game_count += 1;
+        let mut position = starting_position_from_fen(game.fen.as_deref())?;
+
+        for (ply, byte) in iter_mainline_move_bytes(&game.moves).enumerate() {
+            if ply >= self.max_ply {
+                break;
+            }
+
+            let Some(m) = decode_move(byte, &position) else {
+                break;
+            };
+
+            let position_key = position_index_key(&position);
+            let san = SanPlus::from_move(position.clone(), &m).to_string();
+            let uci = UciMove::from_move(&m, CastlingMode::Standard).to_string();
+            let moves = self.positions.entry(position_key).or_default();
+            let bucket = moves
+                .entry(san.clone())
+                .or_insert_with(|| PositionMoveBucket::new(san.clone(), Some(uci.clone())));
+            bucket.uci.get_or_insert(uci);
+            bucket.add_result(game.result.as_deref(), game.date.as_deref());
+
+            position.play_unchecked(&m);
+        }
+
+        Ok(())
+    }
+
+    fn write_to(&self, dest_dir: &PathBuf) -> Result<(), error::Error> {
+        let index_dir = dest_dir.join(POSITION_INDEX_DIR);
+        let shards_dir = index_dir.join(POSITION_INDEX_SHARDS_DIR);
+        create_dir_all(&shards_dir)?;
+
+        let mut shards: BTreeMap<String, BTreeMap<String, BTreeMap<String, PositionMoveBucket>>> =
+            BTreeMap::new();
+        for (fen, moves) in &self.positions {
+            shards
+                .entry(position_index_shard_for_fen(fen))
+                .or_default()
+                .insert(fen.clone(), moves.clone());
+        }
+
+        let mut shard_names = BTreeSet::new();
+        for (shard, positions) in &shards {
+            let filename = format!("{shard}.json");
+            let path = shards_dir.join(&filename);
+            let writer = BufWriter::new(File::create(path)?);
+            serde_json::to_writer(
+                writer,
+                &PositionIndexShard {
+                    version: POSITION_INDEX_VERSION,
+                    positions,
+                },
+            )?;
+            shard_names.insert(filename);
+        }
+
+        let manifest = PositionIndexManifest {
+            version: POSITION_INDEX_VERSION,
+            max_ply: self.max_ply,
+            game_count: self.game_count,
+            position_count: self.positions.len(),
+            latest_date: self.latest_date(),
+            shards: shard_names.into_iter().collect(),
+        };
+        let writer = BufWriter::new(File::create(index_dir.join("index.json"))?);
+        serde_json::to_writer_pretty(writer, &manifest)?;
+
+        Ok(())
+    }
+
+    fn latest_date(&self) -> Option<String> {
+        self.positions
+            .values()
+            .flat_map(|moves| moves.values())
+            .filter_map(|bucket| bucket.last_played.as_ref())
+            .max()
+            .cloned()
+    }
+}
+
+impl PositionMoveBucket {
+    fn new(san: String, uci: Option<String>) -> Self {
+        Self {
+            san,
+            uci,
+            white: 0,
+            draw: 0,
+            black: 0,
+            last_played: None,
+        }
+    }
+
+    fn add_result(&mut self, result: Option<&str>, date: Option<&str>) {
+        match normalized_result(result) {
+            "1-0" => self.white = self.white.saturating_add(1),
+            "0-1" => self.black = self.black.saturating_add(1),
+            _ => self.draw = self.draw.saturating_add(1),
+        }
+
+        if let Some(date) = non_empty(date) {
+            if self
+                .last_played
+                .as_ref()
+                .map_or(true, |current| date > current.as_str())
+            {
+                self.last_played = Some(date.to_string());
+            }
+        }
+    }
+}
+
+fn starting_position_from_fen(fen: Option<&str>) -> Result<Chess, error::Error> {
+    if let Some(fen) = non_empty(fen) {
+        let fen = Fen::from_ascii(fen.as_bytes())?;
+        let setup = fen.into_setup();
+        let castling_mode = CastlingMode::detect(&setup);
+        Ok(Chess::from_setup(setup, castling_mode)
+            .or_else(PositionError::ignore_too_much_material)?)
+    } else {
+        Ok(Chess::default())
+    }
+}
+
+fn position_index_key(position: &Chess) -> String {
+    Fen::from_position(position.clone(), EnPassantMode::Legal)
+        .to_string()
+        .split_whitespace()
+        .take(4)
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn position_index_shard_for_fen(fen: &str) -> String {
+    let mut hash = 0x811c9dc5u32;
+    for byte in fen.as_bytes() {
+        hash ^= *byte as u32;
+        hash = hash.wrapping_mul(0x01000193);
+    }
+    format!("{:02x}", hash & 0xff)
 }
 
 fn render_pgn_game(game: &ExportGame) -> Result<String, error::Error> {
