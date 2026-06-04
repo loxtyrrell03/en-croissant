@@ -3356,34 +3356,6 @@ function PrepUnderBoardPanel({
       {showSetupStage ? (
         <>
           <Group align="flex-end" gap="xs" wrap="wrap">
-            {state.prepWorkspaces.length > 0 && (
-              <Select
-                label="Prep"
-                size="xs"
-                value={state.activePrepId}
-                onChange={(value) => {
-                  const nextPrep = state.prepWorkspaces.find((prep) => prep.id === value);
-                  setSetupOpen(!nextPrep);
-                  setState((current) => ({
-                    ...current,
-                    activePrepId: value,
-                    board: {
-                      ...current.board,
-                      cursor: nextPrep?.line.length ?? current.board.cursor,
-                      sourceTitle: nextPrep ? prepBoardTitle(nextPrep) : current.board.sourceTitle,
-                      sourceDatabaseId: null,
-                      sourceGameId: null,
-                    },
-                  }));
-                }}
-                data={state.prepWorkspaces.map((prep) => ({
-                  value: prep.id,
-                  label: prepBoardTitle(prep),
-                }))}
-                style={{ flex: "1 1 12rem" }}
-                clearable
-              />
-            )}
             <SegmentedControl
               aria-label="Prep target"
               data={[

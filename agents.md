@@ -375,6 +375,11 @@ default.
   falling through to an unrelated first database. Local Prep also treats an
   empty source list as no source instead of silently querying every indexed
   browser database.
+- On 2026-06-04, a phone-only saved-prep workspace selector was removed from
+  the Prep setup row because it did not exist in the fork's under-board Prep UI
+  and made source selection look like a second, useless database/prep picker.
+  Phone Prep setup should lead with the fork-style Player/General target,
+  single Prep source picker, import drawer, and strength/builder controls.
 - The 2026-06-04 phone Database/Prep parity pass added the fork's local
   date/result filters to both under-board panels. Database and Prep now search
   the selected local source through the same player/color, From, To, and Result
