@@ -345,6 +345,12 @@ default.
   opponent names so the new database can seed its own player, and saved Lichess
   access renders as `Lichess saved` with Relink/Forget controls instead of
   asking for sign-in on every Lichess All/Masters use.
+- A follow-up 2026-06-04 phone Database parity pass added the fork-style
+  `Stats / Games / Options` subview inside the under-board Database panel.
+  Local databases now expose source-game samples for the current FEN through
+  the same selected database, username/color, date, and result filters used by
+  move stats, while local filters live in Options and online explorer options
+  remain under the same subview.
 
 ### App Shell
 

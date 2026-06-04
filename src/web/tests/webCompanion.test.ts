@@ -22,6 +22,7 @@ import {
   filterWebGamesByLocalFilters,
   getFirstOpenPrepStat,
   getDatabasePlayerCounts,
+  getWebDatabaseGamesForPosition,
   getWebDatabaseMoveStats,
   getWebDatabaseTitlePlayerName,
   getGamesForWebPrepSource,
@@ -313,6 +314,69 @@ describe("web companion PGN prep index", () => {
 
     expect(stats.map((stat) => stat.move)).toEqual(["d4"]);
     expect(filterWebGamesByLocalFilters(imported.games, { endDate: "2026-05-31" })).toHaveLength(1);
+  });
+
+  test("lists filtered local database games that reach the current position", () => {
+    const imported = parsePgnDatabase(
+      "database-games.pgn",
+      `
+[Event "Older"]
+[Site "?"]
+[Date "2026.05.30"]
+[Round "?"]
+[White "Target"]
+[Black "Me"]
+[Result "1-0"]
+
+1. e4 c5 1-0
+
+[Event "Latest"]
+[Site "?"]
+[Date "2026.06.02"]
+[Round "?"]
+[White "Target"]
+[Black "Me"]
+[Result "0-1"]
+
+1. e4 e5 0-1
+
+[Event "Other player"]
+[Site "?"]
+[Date "2026.06.03"]
+[Round "?"]
+[White "Someone"]
+[Black "Me"]
+[Result "0-1"]
+
+1. e4 c6 0-1
+`,
+      1,
+    );
+
+    const afterE4 = imported.games[0].moves[0].fenAfter;
+    const matches = getWebDatabaseGamesForPosition({
+      games: imported.games,
+      fen: afterE4,
+      perspective: {
+        playerName: "Target",
+        color: "white",
+      },
+      filters: {
+        startDate: "2026-06-01",
+        result: "blackwon",
+      },
+    });
+
+    expect(matches).toHaveLength(1);
+    expect(matches[0]).toMatchObject({
+      ply: 1,
+      nextMove: "e5",
+      game: {
+        event: "Latest",
+        white: "Target",
+        black: "Me",
+      },
+    });
   });
 
   test("applies fork-style local date and result filters to prep stats", () => {

@@ -47,6 +47,12 @@ export type WebDatabaseMoveFilters = WebLocalGameFilters & {
   perspective?: WebDatabasePerspective | null;
 };
 
+export type WebDatabasePositionGame = {
+  game: WebGame;
+  ply: number;
+  nextMove: string | null;
+};
+
 export function collectGamesForSources(gamesByDatabase: Record<string, WebGame[]>, sourceIds: string[]) {
   const selected = sourceIds.length > 0 ? sourceIds : Object.keys(gamesByDatabase);
   return selected.flatMap((id) => gamesByDatabase[id] ?? []);
@@ -314,6 +320,57 @@ export function getWebDatabaseMoveStats({
         b.scoreForUser - a.scoreForUser ||
         a.move.localeCompare(b.move, undefined, { sensitivity: "base" }),
     );
+}
+
+export function getWebDatabaseGamesForPosition({
+  games,
+  fen,
+  perspective = null,
+  filters,
+  limit = 80,
+}: {
+  games: WebGame[];
+  fen: string;
+  perspective?: WebDatabasePerspective | null;
+  filters?: WebLocalGameFilters | null;
+  limit?: number;
+}): WebDatabasePositionGame[] {
+  const key = normalizeWebFen(fen || INITIAL_FEN);
+  const resultPerspective = perspective?.color ?? getFenColor(fen || INITIAL_FEN);
+  const playerName = perspective?.playerName.trim() ?? "";
+  const matches: WebDatabasePositionGame[] = [];
+
+  for (const game of games) {
+    if (!gameMatchesLocalFilters(game, filters)) continue;
+    if (playerName && !gameMatchesPlayerColor(game, playerName, resultPerspective)) continue;
+
+    const matchingMove = game.moves.find((move) => normalizeWebFen(move.fenBefore) === key);
+    if (matchingMove) {
+      matches.push({
+        game,
+        ply: matchingMove.ply - 1,
+        nextMove: matchingMove.san,
+      });
+      continue;
+    }
+
+    if (key === normalizeWebFen(INITIAL_FEN) && game.moves.length === 0) {
+      matches.push({
+        game,
+        ply: 0,
+        nextMove: null,
+      });
+    }
+  }
+
+  return matches
+    .sort(
+      (a, b) =>
+        sortableDate(b.game.date) - sortableDate(a.game.date) ||
+        b.game.importedAt - a.game.importedAt ||
+        a.game.index - b.game.index,
+    )
+    .slice(0, Math.max(1, Math.round(limit || 80)));
 }
 
 export function filterWebGamesByLocalFilters(

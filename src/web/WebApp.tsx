@@ -147,6 +147,7 @@ import {
   findFirstWebPrepOpponentBranch,
   findWebPrepBranchStart,
   getFirstOpenPrepStat,
+  getWebDatabaseGamesForPosition,
   getWebDatabaseMoveStats,
   getGamesForWebPrepSource,
   getDatabasePlayerCounts,
@@ -156,6 +157,7 @@ import {
   getWebPrepMoveKey,
   getWebPrepMoveStats,
   type WebPrepBranchStart,
+  type WebDatabasePositionGame,
   type WebPrepMoveStat,
 } from "./prepIndex";
 import {
@@ -217,6 +219,7 @@ const WEB_DATABASE_PANEL_COLOR_STORAGE_KEY = "en-croissant-web-database-panel-co
 const WEB_DATABASE_PANEL_START_DATE_STORAGE_KEY = "en-croissant-web-database-panel-start-date";
 const WEB_DATABASE_PANEL_END_DATE_STORAGE_KEY = "en-croissant-web-database-panel-end-date";
 const WEB_DATABASE_PANEL_RESULT_STORAGE_KEY = "en-croissant-web-database-panel-result";
+const WEB_DATABASE_PANEL_VIEW_STORAGE_KEY = "en-croissant-web-database-panel-view";
 const WEB_LICHESS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-lichess-explorer-options";
 const WEB_MASTERS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-masters-explorer-options";
 const WEB_PREP_SETUP_STORAGE_KEY = "en-croissant-web-prep-setup";
@@ -1068,6 +1071,7 @@ function MovesUnderBoardPanel({
 }
 
 type WebDatabasePanelSource = "local" | WebDatabaseExplorerSource;
+type WebDatabasePanelView = "stats" | "games" | "options";
 
 function DatabaseUnderBoardPanel({
   currentFen,
@@ -1093,6 +1097,11 @@ function DatabaseUnderBoardPanel({
     "local",
   );
   const source = isWebDatabasePanelSource(storedSource) ? storedSource : "local";
+  const [storedView, setStoredView] = usePersistentString(
+    WEB_DATABASE_PANEL_VIEW_STORAGE_KEY,
+    "stats",
+  );
+  const databaseView = isWebDatabasePanelView(storedView) ? storedView : "stats";
   const [selectedLocalIdValue, setSelectedLocalIdValue] = usePersistentString(
     WEB_DATABASE_PANEL_LOCAL_STORAGE_KEY,
     "",
@@ -1128,7 +1137,6 @@ function DatabaseUnderBoardPanel({
     useState<WebHostedFolderReadProgress | null>(null);
   const refreshingLocalPathRef = useRef<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [explorerOptionsOpen, setExplorerOptionsOpen] = useState(false);
   const [onlineStats, setOnlineStats] = useState<WebPrepMoveStat[]>([]);
   const [onlineLoading, setOnlineLoading] = useState(false);
   const [onlineError, setOnlineError] = useState<string | null>(null);
@@ -1179,6 +1187,21 @@ function DatabaseUnderBoardPanel({
   const localStats = useMemo(
     () =>
       getWebDatabaseMoveStats({
+        games: localGames,
+        fen: currentFen,
+        filters: localFilters,
+        perspective: trimmedLocalPlayerName
+          ? {
+              playerName: trimmedLocalPlayerName,
+              color: localColor,
+            }
+          : null,
+      }),
+    [currentFen, localColor, localFilters, localGames, trimmedLocalPlayerName],
+  );
+  const localPositionGames = useMemo(
+    () =>
+      getWebDatabaseGamesForPosition({
         games: localGames,
         fen: currentFen,
         filters: localFilters,
@@ -1401,17 +1424,21 @@ function DatabaseUnderBoardPanel({
             >
               <IconRefresh size={16} />
             </ActionIcon>
-            <Button
-              size="compact-xs"
-              variant={explorerOptionsOpen ? "light" : "default"}
-              leftSection={<IconSettings size={14} />}
-              onClick={() => setExplorerOptionsOpen((open) => !open)}
-            >
-              Filters
-            </Button>
           </>
         )}
       </Group>
+
+      <SegmentedControl
+        aria-label="Database view"
+        size="xs"
+        value={databaseView}
+        onChange={(value) => setStoredView(value as WebDatabasePanelView)}
+        data={[
+          { value: "stats", label: "Stats" },
+          { value: "games", label: "Games" },
+          { value: "options", label: "Options" },
+        ]}
+      />
 
       {source === "local" && loadingLocalSource ? (
         <Group gap="xs" wrap="nowrap">
@@ -1420,29 +1447,6 @@ function DatabaseUnderBoardPanel({
             {formatHostedLoadProgress(loadingLocalSource, loadingLocalProgress)}
           </Text>
         </Group>
-      ) : null}
-
-      {source === "local" && selectedLocalId ? (
-        <WebLocalFiltersControls
-          startDate={localStartDate}
-          endDate={localEndDate}
-          result={localResult}
-          onStartDateChange={setLocalStartDate}
-          onEndDateChange={setLocalEndDate}
-          onResultChange={(result) => setLocalResultValue(result)}
-        />
-      ) : null}
-
-      {source !== "local" ? (
-        <Collapse in={explorerOptionsOpen}>
-          <WebExplorerOptionsPanel
-            source={source}
-            lichessOptions={lichessOptions}
-            mastersOptions={mastersOptions}
-            onLichessOptionsChange={setLichessOptions}
-            onMastersOptionsChange={setMastersOptions}
-          />
-        </Collapse>
       ) : null}
 
       {source === "local" && loadingLocalSource ? (
@@ -1475,6 +1479,36 @@ function DatabaseUnderBoardPanel({
           title="Explorer unavailable"
           text={onlineError}
         />
+      ) : databaseView === "options" ? (
+        source === "local" && selectedLocalId ? (
+          <WebDatabaseOptionsPanel
+            sourceLabel={sourceLabel}
+            startDate={localStartDate}
+            endDate={localEndDate}
+            result={localResult}
+            onStartDateChange={setLocalStartDate}
+            onEndDateChange={setLocalEndDate}
+            onResultChange={(result) => setLocalResultValue(result)}
+          />
+        ) : source !== "local" ? (
+          <WebExplorerOptionsPanel
+            source={source}
+            lichessOptions={lichessOptions}
+            mastersOptions={mastersOptions}
+            onLichessOptionsChange={setLichessOptions}
+            onMastersOptionsChange={setMastersOptions}
+          />
+        ) : null
+      ) : databaseView === "games" ? (
+        source === "local" && selectedLocalId ? (
+          <WebDatabaseGamesList games={localPositionGames} onOpenGame={onOpenSourceGame} />
+        ) : source !== "local" ? (
+          <UnderBoardEmpty
+            icon={<IconDatabase size={30} />}
+            title="No game samples"
+            text={`${sourceLabel} move stats are available here; sample games are not downloaded on phone yet.`}
+          />
+        ) : null
       ) : source === "local" && !hasLocalChoices ? (
         <UnderBoardEmpty
           icon={<IconDatabase size={30} />}
@@ -3069,6 +3103,122 @@ function WebExplorerOptionsPanel({
   );
 }
 
+function WebDatabaseOptionsPanel({
+  sourceLabel,
+  startDate,
+  endDate,
+  result,
+  onStartDateChange,
+  onEndDateChange,
+  onResultChange,
+}: {
+  sourceLabel: string;
+  startDate: string;
+  endDate: string;
+  result: WebLocalResultFilter;
+  onStartDateChange: (value: string) => void;
+  onEndDateChange: (value: string) => void;
+  onResultChange: (value: WebLocalResultFilter) => void;
+}) {
+  return (
+    <Stack gap="xs" className={classes.prepToolBox}>
+      <Group justify="space-between" gap="xs" wrap="wrap">
+        <Text fw={700} size="sm">
+          Local options
+        </Text>
+        <Badge variant="light" size="sm">
+          {sourceLabel}
+        </Badge>
+      </Group>
+      <WebLocalFiltersControls
+        startDate={startDate}
+        endDate={endDate}
+        result={result}
+        onStartDateChange={onStartDateChange}
+        onEndDateChange={onEndDateChange}
+        onResultChange={onResultChange}
+      />
+    </Stack>
+  );
+}
+
+function WebDatabaseGamesList({
+  games,
+  onOpenGame,
+}: {
+  games: WebDatabasePositionGame[];
+  onOpenGame: (game: WebGame) => void;
+}) {
+  if (games.length === 0) {
+    return (
+      <UnderBoardEmpty
+        icon={<IconFileText size={30} />}
+        title="No matching games"
+        text="No filtered source games reach this board position."
+      />
+    );
+  }
+
+  return (
+    <Table.ScrollContainer minWidth={640}>
+      <Table className={classes.compactTable} verticalSpacing={4} highlightOnHover>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>Game</Table.Th>
+            <Table.Th>Result</Table.Th>
+            <Table.Th>Reached</Table.Th>
+            <Table.Th />
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {games.map(({ game, ply, nextMove }) => (
+            <Table.Tr
+              key={game.id}
+              style={{ cursor: "pointer" }}
+              onClick={() => onOpenGame(game)}
+            >
+              <Table.Td>
+                <Text size="sm" fw={700}>
+                  {game.white} - {game.black}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  {[formatWebDate(game.date), game.event].filter(Boolean).join(" - ") || game.databaseName}
+                </Text>
+              </Table.Td>
+              <Table.Td>
+                <Badge variant="light" size="sm">
+                  {game.result}
+                </Badge>
+              </Table.Td>
+              <Table.Td>
+                <Text size="sm">{nextMove ?? "Start"}</Text>
+                <Text size="xs" c="dimmed">
+                  Ply {ply}
+                </Text>
+              </Table.Td>
+              <Table.Td ta="right">
+                <Tooltip label="Open game">
+                  <ActionIcon
+                    aria-label="Open game"
+                    variant="subtle"
+                    size="sm"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onOpenGame(game);
+                    }}
+                  >
+                    <IconExternalLink size={15} />
+                  </ActionIcon>
+                </Tooltip>
+              </Table.Td>
+            </Table.Tr>
+          ))}
+        </Table.Tbody>
+      </Table>
+    </Table.ScrollContainer>
+  );
+}
+
 function WebLichessAccessControls({
   token,
   setToken,
@@ -4314,6 +4464,10 @@ function getExplorerSourceLabel(source: WebDatabaseExplorerSource) {
 
 function isWebDatabasePanelSource(value: string): value is WebDatabasePanelSource {
   return value === "local" || value === "lichess-all" || value === "lichess-masters";
+}
+
+function isWebDatabasePanelView(value: string): value is WebDatabasePanelView {
+  return value === "stats" || value === "games" || value === "options";
 }
 
 function isOnlinePrepSource(source: WebPrepSource): source is WebDatabaseExplorerSource {
