@@ -127,7 +127,9 @@ import {
   findFirstWebPrepOpponentBranch,
   findWebPrepBranchStart,
   getFirstOpenPrepStat,
+  getWebDatabaseMoveStats,
   getGamesForWebPrepSource,
+  getDatabasePlayerCounts,
   getKnownPlayers,
   getNextOpenPrepStat,
   getWebPrepMoveKey,
@@ -187,6 +189,8 @@ const WEB_LICHESS_MASTERS_SOURCE_VALUE = "web-source:lichess-masters";
 const WEB_TEMPORARY_PREP_SOURCE_VALUE = "web-source:temporary-prep";
 const WEB_DATABASE_PANEL_SOURCE_STORAGE_KEY = "en-croissant-web-database-panel-source";
 const WEB_DATABASE_PANEL_LOCAL_STORAGE_KEY = "en-croissant-web-database-panel-local-source";
+const WEB_DATABASE_PANEL_PLAYER_STORAGE_KEY = "en-croissant-web-database-panel-player";
+const WEB_DATABASE_PANEL_COLOR_STORAGE_KEY = "en-croissant-web-database-panel-color";
 const DEFAULT_WEB_PREP_MIN_GAMES = 1;
 const DEFAULT_WEB_PREP_MOVE_LIMIT = 12;
 const DEFAULT_WEB_PREP_SORT: WebPrepSortState = { column: "games", direction: "desc" };
@@ -1054,6 +1058,15 @@ function DatabaseUnderBoardPanel({
     "",
   );
   const selectedLocalId = selectedLocalIdValue || null;
+  const [localPlayerName, setLocalPlayerName] = usePersistentString(
+    WEB_DATABASE_PANEL_PLAYER_STORAGE_KEY,
+    "",
+  );
+  const [localColorValue, setLocalColorValue] = usePersistentString(
+    WEB_DATABASE_PANEL_COLOR_STORAGE_KEY,
+    "white",
+  );
+  const localColor: WebColor = localColorValue === "black" ? "black" : "white";
   const [hostedOpen, setHostedOpen] = useState(false);
   const [loadingLocalSource, setLoadingLocalSource] = useState<string | null>(null);
   const refreshingLocalPathRef = useRef<string | null>(null);
@@ -1088,9 +1101,21 @@ function DatabaseUnderBoardPanel({
       selectedLocalId ? collectGamesForSources(gamesByDatabase, [selectedLocalId]) : [],
     [gamesByDatabase, selectedLocalId],
   );
+  const selectedDatabasePlayers = useMemo(() => getDatabasePlayerCounts(localGames), [localGames]);
+  const trimmedLocalPlayerName = localPlayerName.trim();
   const localStats = useMemo(
-    () => getWebPrepMoveStats({ games: localGames, prep: null, fen: currentFen }),
-    [currentFen, localGames],
+    () =>
+      getWebDatabaseMoveStats({
+        games: localGames,
+        fen: currentFen,
+        perspective: trimmedLocalPlayerName
+          ? {
+              playerName: trimmedLocalPlayerName,
+              color: localColor,
+            }
+          : null,
+      }),
+    [currentFen, localColor, localGames, trimmedLocalPlayerName],
   );
 
   useEffect(() => {
@@ -1252,8 +1277,11 @@ function DatabaseUnderBoardPanel({
   };
 
   const stats = source === "local" ? localStats : onlineStats;
-  const sourceLabel =
-    source === "local" ? selectedLocalDatabase?.name ?? "Local database" : getExplorerSourceLabel(source);
+  const localSourceLabel =
+    trimmedLocalPlayerName && selectedLocalDatabase
+      ? `${trimmedLocalPlayerName} as ${localColor} in ${selectedLocalDatabase.name}`
+      : selectedLocalDatabase?.name ?? "Local database";
+  const sourceLabel = source === "local" ? localSourceLabel : getExplorerSourceLabel(source);
 
   return (
     <Stack gap="xs">
@@ -1292,6 +1320,35 @@ function DatabaseUnderBoardPanel({
             >
               Browse
             </Button>
+            {selectedLocalId ? (
+              <>
+                <TextInput
+                  label="Username"
+                  size="xs"
+                  placeholder="All players"
+                  value={localPlayerName}
+                  onChange={(event) => setLocalPlayerName(event.currentTarget.value)}
+                  list="web-database-local-players"
+                  style={{ flex: "1 1 10rem" }}
+                />
+                <datalist id="web-database-local-players">
+                  {selectedDatabasePlayers.slice(0, 80).map((player) => (
+                    <option key={player.name} value={player.name} />
+                  ))}
+                </datalist>
+                <SegmentedControl
+                  aria-label="Database player color"
+                  size="xs"
+                  value={localColor}
+                  onChange={(value) => setLocalColorValue(value)}
+                  data={[
+                    { value: "white", label: trimmedLocalPlayerName ? "As white" : "White" },
+                    { value: "black", label: trimmedLocalPlayerName ? "As black" : "Black" },
+                  ]}
+                  w={trimmedLocalPlayerName ? 168 : 126}
+                />
+              </>
+            ) : null}
           </>
         ) : (
           <>

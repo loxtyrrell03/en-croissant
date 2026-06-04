@@ -31,6 +31,11 @@ export type WebPrepBranchStart = {
   activeBranch: WebPrepBranchMove | null;
 };
 
+export type WebDatabasePerspective = {
+  playerName: string;
+  color: WebColor;
+};
+
 export function collectGamesForSources(gamesByDatabase: Record<string, WebGame[]>, sourceIds: string[]) {
   const selected = sourceIds.length > 0 ? sourceIds : Object.keys(gamesByDatabase);
   return selected.flatMap((id) => gamesByDatabase[id] ?? []);
@@ -217,6 +222,73 @@ export function getWebPrepMoveStats({
     );
 }
 
+export function getWebDatabaseMoveStats({
+  games,
+  fen,
+  perspective = null,
+  maxExamples = 4,
+}: {
+  games: WebGame[];
+  fen: string;
+  perspective?: WebDatabasePerspective | null;
+  maxExamples?: number;
+}): WebPrepMoveStat[] {
+  const key = normalizeWebFen(fen || INITIAL_FEN);
+  const resultPerspective = perspective?.color ?? getFenColor(fen || INITIAL_FEN);
+  const playerName = perspective?.playerName.trim() ?? "";
+  const bucket = new Map<string, MoveBucket>();
+  let totalOccurrences = 0;
+
+  for (const game of games) {
+    if (playerName && !gameMatchesPlayerColor(game, playerName, resultPerspective)) continue;
+
+    for (const move of game.moves) {
+      if (normalizeWebFen(move.fenBefore) !== key) continue;
+
+      const entry = bucket.get(move.san) ?? createMoveBucket(move.san);
+      entry.uci ??= move.uci;
+      entry.total += 1;
+      entry.white += scoreResultCount(game.result, "white");
+      entry.draw += scoreDrawCount(game.result);
+      entry.black += scoreResultCount(game.result, "black");
+      entry.scoreForUser += getResultScore(game.result, resultPerspective);
+      entry.lastPlayed = pickLatest(entry.lastPlayed, game.date);
+      if (entry.examples.length < maxExamples) {
+        entry.examples.push(game);
+      }
+      bucket.set(move.san, entry);
+      totalOccurrences += 1;
+    }
+  }
+
+  const sourceLabel = playerName
+    ? `${playerName} as ${resultPerspective}`
+    : "database move";
+
+  return Array.from(bucket.values())
+    .map<WebPrepMoveStat>((entry) => ({
+      move: entry.move,
+      white: entry.white,
+      draw: entry.draw,
+      black: entry.black,
+      lastPlayed: entry.lastPlayed,
+      key: `${key}:${entry.move}`,
+      uci: entry.uci,
+      total: entry.total,
+      share: totalOccurrences > 0 ? entry.total / totalOccurrences : 0,
+      scoreForUser: entry.total > 0 ? entry.scoreForUser / entry.total : 0.5,
+      sourceLabel,
+      examples: entry.examples,
+      strength: null,
+    }))
+    .sort(
+      (a, b) =>
+        b.total - a.total ||
+        b.scoreForUser - a.scoreForUser ||
+        a.move.localeCompare(b.move, undefined, { sensitivity: "base" }),
+    );
+}
+
 function getWebPrepStrengthSettings(settings?: Partial<PrepBuilderSettings> | null) {
   return normalizePrepBuilderSettings({
     ...settings,
@@ -280,6 +352,18 @@ function gameMatchesOpponent(game: WebGame, opponent: string, opponentColor: Web
   if (!opponent) return true;
   const player = opponentColor === "white" ? game.white : game.black;
   return player.toLowerCase() === opponent || player.toLowerCase().includes(opponent);
+}
+
+function gameMatchesPlayerColor(game: WebGame, playerName: string, color: WebColor) {
+  const player = color === "white" ? game.white : game.black;
+  return normalizedPlayerName(player).includes(normalizedPlayerName(playerName));
+}
+
+function normalizedPlayerName(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
 function scoreResultCount(result: WebResult, side: WebColor) {

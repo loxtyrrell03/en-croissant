@@ -15,6 +15,7 @@ import {
   findFirstWebPrepOpponentBranch,
   findWebPrepBranchStart,
   getFirstOpenPrepStat,
+  getWebDatabaseMoveStats,
   getGamesForWebPrepSource,
   getNextOpenPrepStat,
   getWebPrepMoveKey,
@@ -123,6 +124,94 @@ describe("web companion PGN prep index", () => {
     });
 
     expect(stats.map((stat) => stat.move)).toEqual(["c5", "e5"]);
+  });
+
+  test("filters phone database stats by local player colour like the desktop panel", () => {
+    const imported = parsePgnDatabase(
+      "database-filter.pgn",
+      `
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.01"]
+[Round "?"]
+[White "Target"]
+[Black "Me"]
+[Result "1-0"]
+
+1. e4 c5 1-0
+
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.02"]
+[Round "?"]
+[White "Me"]
+[Black "Target"]
+[Result "0-1"]
+
+1. d4 d5 0-1
+`,
+      1,
+    );
+
+    const targetAsWhite = getWebDatabaseMoveStats({
+      games: imported.games,
+      fen: imported.games[0].moves[0].fenBefore,
+      perspective: {
+        playerName: "Target",
+        color: "white",
+      },
+    });
+    const targetAsBlack = getWebDatabaseMoveStats({
+      games: imported.games,
+      fen: imported.games[0].moves[0].fenBefore,
+      perspective: {
+        playerName: "Target",
+        color: "black",
+      },
+    });
+
+    expect(targetAsWhite.map((stat) => stat.move)).toEqual(["e4"]);
+    expect(targetAsWhite[0].scoreForUser).toBe(1);
+    expect(targetAsWhite[0].sourceLabel).toBe("Target as white");
+    expect(targetAsBlack.map((stat) => stat.move)).toEqual(["d4"]);
+    expect(targetAsBlack[0].scoreForUser).toBe(1);
+    expect(targetAsBlack[0].sourceLabel).toBe("Target as black");
+  });
+
+  test("keeps phone database stats unfiltered when no local player is selected", () => {
+    const imported = parsePgnDatabase(
+      "database-all.pgn",
+      `
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.01"]
+[Round "?"]
+[White "Target"]
+[Black "Me"]
+[Result "1-0"]
+
+1. e4 c5 1-0
+
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.02"]
+[Round "?"]
+[White "Me"]
+[Black "Target"]
+[Result "0-1"]
+
+1. d4 d5 0-1
+`,
+      1,
+    );
+
+    const stats = getWebDatabaseMoveStats({
+      games: imported.games,
+      fen: imported.games[0].moves[0].fenBefore,
+    });
+
+    expect(stats.map((stat) => stat.move).sort()).toEqual(["d4", "e4"]);
+    expect(stats.every((stat) => stat.sourceLabel === "database move")).toBe(true);
   });
 
   test("unsaved prep imports are usable without joining the normal database list", () => {

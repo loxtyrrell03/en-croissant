@@ -275,6 +275,14 @@ default.
   but are now in Player/local mode render as `Opponent prep` or
   `<player> prep` in the board title and setup picker, keeping the phone header,
   active prep selector, Player/General segment, and one selected source in sync.
+- A later 2026-06-04 phone Database parity pass added the desktop-style local
+  perspective controls to the under-board Database panel. Local browser
+  databases now have a persisted Username field with White/Black, relabeled to
+  `As white`/`As black` when a player is entered, and move stats filter to that
+  single player's color instead of treating the selected database as an
+  unscoped all-games source. Empty states name the exact filtered source, such
+  as `lachlan1415 as black in lachlan1415_lichess.pgn`, so the phone UI stays
+  aligned with the fork's one-database, one-perspective model.
 
 ### App Shell
 
