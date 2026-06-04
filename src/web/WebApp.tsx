@@ -781,6 +781,7 @@ function BoardWorkspace({
         rootPly: prepRootPly,
         rootFen: prepRootFen,
         userColor: activePrep.userColor,
+        currentPly: cursor,
       })
     : null;
   const prepBranchPly = prepBranchStart?.branchPly ?? prepRootPly;
@@ -983,6 +984,7 @@ function BoardWorkspace({
               rootStats={prepRootStats}
               currentLine={currentLine}
               rootLine={prepRootLine}
+              isInsidePrepLine={!activePrep || cursor >= prepRootPly}
               onPlayMove={playMove}
               onPlayRootMove={playMoveFromPrepRoot}
               onOpenSourceGame={loadGameOnBoard}
@@ -1551,6 +1553,7 @@ function PrepUnderBoardPanel({
   rootStats,
   currentLine,
   rootLine,
+  isInsidePrepLine,
   onPlayMove,
   onPlayRootMove,
   onOpenSourceGame,
@@ -1569,6 +1572,7 @@ function PrepUnderBoardPanel({
   rootStats: WebPrepMoveStat[];
   currentLine: WebPrepLineMove[];
   rootLine: WebPrepLineMove[];
+  isInsidePrepLine: boolean;
   onPlayMove: (stat: WebPrepMoveStat) => void;
   onPlayRootMove: (stat: WebPrepMoveStat) => void;
   onOpenSourceGame: (game: WebGame) => void;
@@ -2847,10 +2851,16 @@ function PrepUnderBoardPanel({
               <Text size="xs" c="dimmed" truncate>
                 Start: {rootStartLabel}
               </Text>
-              <Text size="xs" c="dimmed" truncate>
-                {opponentToMove
-                  ? `${activePrep.opponent || "Opponent"} to move`
-                  : "Your move"}
+              <Text size="xs" c={!isInsidePrepLine || !opponentToMove ? "dimmed" : undefined} truncate>
+                {!isInsidePrepLine
+                  ? "Away from prep start"
+                  : opponentToMove
+                    ? selectedPrepMode === "general"
+                      ? `${oppositeWebColor(activePrep.userColor) === "white" ? "White" : "Black"} to move`
+                      : `${activePrep.opponent || "Opponent"} to move`
+                    : `Play your ${activePrep.userColor} ${
+                        selectedPrepMode === "general" ? "move" : "response"
+                      } on the board`}
                 {currentLine.length > 0 ? ` - ${currentLine.slice(-10).map((move) => move.san).join(" ")}` : ""}
               </Text>
             </Stack>

@@ -200,6 +200,13 @@ default.
   or game-start-only flow. The phone Prep source picker still remains a single
   database/explorer choice and includes local synced folders plus Online /
   Lichess All / Lichess Masters with saved-token reuse.
+- Also on 2026-06-04, phone Prep branch detection became cursor-aware, matching
+  the desktop under-board panel when the user is preparing as White from the
+  game start. After the user plays their first move, Common move now roots at
+  the opponent-to-move position, Done + next marks the actual opponent branch,
+  and the training header says `Away from prep start` when the board cursor is
+  before the saved prep root instead of silently treating that position as the
+  active prep branch.
 - Also on 2026-06-04, phone synced-database loading was hardened so hosted
   database folders behave more like desktop database files. Re-importing a
   hosted database now replaces the older phone IndexedDB copy with the same

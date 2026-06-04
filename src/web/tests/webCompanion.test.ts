@@ -606,6 +606,57 @@ describe("web companion PGN prep index", () => {
       });
   });
 
+  test("roots phone prep common-move controls after the user's first move", () => {
+    const imported = parsePgnDatabase(
+      "white-prep-branch-start.pgn",
+      `
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.04"]
+[Round "?"]
+[White "Me"]
+[Black "Opponent"]
+[Result "1-0"]
+
+1. e4 c5 2. Nf3 d6 1-0
+`,
+      1,
+    );
+    const line = imported.games[0].moves.map((move) => ({
+      fenBefore: move.fenBefore,
+      fenAfter: move.fenAfter,
+      san: move.san,
+      uci: move.uci,
+      actor: move.color === "white" ? "user" as const : "opponent" as const,
+    }));
+
+    const afterUserMove = findWebPrepBranchStart({
+      line,
+      rootPly: 0,
+      rootFen: line[0].fenBefore,
+      userColor: "white",
+      currentPly: 1,
+    });
+    expect(afterUserMove).toMatchObject({
+      branchPly: 1,
+      activeBranch: null,
+    });
+
+    const afterOpponentMove = findWebPrepBranchStart({
+      line,
+      rootPly: 0,
+      rootFen: line[0].fenBefore,
+      userColor: "white",
+      currentPly: 2,
+    });
+    expect(afterOpponentMove).toMatchObject({
+      branchPly: 1,
+      activeBranch: {
+        key: getWebPrepMoveKey(line[1].fenBefore, "c5"),
+      },
+    });
+  });
+
   test("lists hosted web-library folders without requiring a laptop bridge", () => {
     const library: WebHostedLibrary = {
       available: true,

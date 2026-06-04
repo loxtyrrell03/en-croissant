@@ -100,13 +100,18 @@ export function findWebPrepBranchStart({
   rootPly,
   rootFen,
   userColor,
+  currentPly = rootPly,
 }: {
   line: WebPrepLineMove[];
   rootPly: number;
   rootFen: string;
   userColor: WebColor;
+  currentPly?: number;
 }): WebPrepBranchStart | null {
   const safeRootPly = Math.max(0, Math.min(rootPly, line.length));
+  const safeCurrentPly = Math.max(0, Math.min(currentPly, line.length));
+  if (safeCurrentPly < safeRootPly) return null;
+
   const opponentColor = oppositeWebColor(userColor);
 
   if (getFenColor(rootFen) === opponentColor) {
@@ -116,8 +121,18 @@ export function findWebPrepBranchStart({
     };
   }
 
-  const activeBranch = findLastWebPrepOpponentBranch(line, safeRootPly, userColor);
-  if (!activeBranch) return null;
+  const activeBranch = findLastWebPrepOpponentBranch(line, safeCurrentPly, userColor);
+  if (!activeBranch) {
+    const currentFen =
+      safeCurrentPly > 0 ? line[safeCurrentPly - 1]?.fenAfter ?? rootFen : rootFen;
+    if (getFenColor(currentFen) === opponentColor) {
+      return {
+        branchPly: safeCurrentPly,
+        activeBranch: null,
+      };
+    }
+    return null;
+  }
 
   return {
     branchPly: activeBranch.ply,
