@@ -966,6 +966,7 @@ function BoardWorkspace({
           </Box>
           <SegmentedControl
             aria-label="Under-board panel"
+            className={classes.underBoardModeSwitch}
             size="xs"
             value={panelMode}
             onChange={(value) => setPanelMode(value as BoardPanelMode)}

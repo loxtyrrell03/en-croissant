@@ -386,6 +386,10 @@ default.
   Engine blend, and Max CP drop controls in setup, and resets the visible
   opponent/candidate prep tables from those defaults when the workspace or
   defaults change.
+- A 2026-06-04 phone layout fix made the under-board `Moves / Database / Prep`
+  switch responsive. On narrow phone widths the header now puts the switch on
+  its own full-width row with equal segments, so the `Prep` segment stays
+  visible and tappable instead of being clipped by the FEN/title text.
 
 ### App Shell
 
