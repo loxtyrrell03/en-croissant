@@ -2,6 +2,7 @@ import { INITIAL_FEN } from "chessops/fen";
 import {
   getPrepMoveStrengthMap,
   normalizePrepBuilderSettings,
+  type PrepBuilderSettings,
   type PrepMoveStrength,
 } from "@/utils/opponentPrep";
 import type { Opening } from "@/utils/db";
@@ -62,7 +63,7 @@ export function getWebPrepMoveStats({
   maxExamples = 4,
 }: {
   games: WebGame[];
-  prep: Pick<WebPrepWorkspace, "mode" | "opponent" | "userColor" | "sourceIds"> | null;
+  prep: Pick<WebPrepWorkspace, "mode" | "opponent" | "userColor" | "sourceIds" | "builder"> | null;
   fen: string;
   maxExamples?: number;
 }): WebPrepMoveStat[] {
@@ -106,10 +107,7 @@ export function getWebPrepMoveStats({
   const strengthMap = getPrepMoveStrengthMap({
     openings,
     side: userColor,
-    settings: normalizePrepBuilderSettings({
-      mode: "practical",
-      useCloudEngine: false,
-    }),
+    settings: getWebPrepStrengthSettings(prep?.builder),
   });
 
   return Array.from(bucket.values())
@@ -134,6 +132,15 @@ export function getWebPrepMoveStats({
         b.scoreForUser - a.scoreForUser ||
         a.move.localeCompare(b.move, undefined, { sensitivity: "base" }),
     );
+}
+
+function getWebPrepStrengthSettings(settings?: Partial<PrepBuilderSettings> | null) {
+  return normalizePrepBuilderSettings({
+    ...settings,
+    mode: settings?.mode ?? "practical",
+    useCloudEngine: false,
+    useLichessAll: false,
+  });
 }
 
 export function getKnownPlayers(gamesByDatabase: Record<string, WebGame[]>) {

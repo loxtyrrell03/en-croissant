@@ -1,4 +1,5 @@
 import type { Color } from "chessops";
+import type { PrepBuilderSettings } from "@/utils/opponentPrep";
 
 export type WebColor = Extract<Color, "white" | "black">;
 
@@ -75,6 +76,7 @@ export type WebPrepWorkspace = {
   temporarySource?: WebPrepTemporarySource | null;
   minGames?: number;
   moveLimit?: number;
+  builder?: Partial<PrepBuilderSettings>;
   startFen: string;
   line: WebPrepLineMove[];
   notesByFen: Record<string, string>;

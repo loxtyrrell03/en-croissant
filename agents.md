@@ -238,6 +238,12 @@ default.
   `Explorer - saved token reused`. Selecting a generated hosted database still
   imports exactly one synced database folder, then replaces the active local or
   prep source with that one database.
+- A subsequent 2026-06-04 phone Prep parity pass added the desktop under-board
+  `Strength settings` control to the phone setup row. Web prep workspaces now
+  persist a `builder` strength-settings slice, and browser-side prep move
+  strength uses that mode/engine-blend/max-CP-drop configuration while keeping
+  cloud engine disabled on the phone path until a browser-safe cloud-eval flow
+  is added.
 
 ### App Shell
 

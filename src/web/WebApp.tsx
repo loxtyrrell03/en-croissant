@@ -20,6 +20,7 @@ import {
   Loader,
   MantineProvider,
   NumberInput,
+  Popover,
   Progress,
   ScrollArea,
   SegmentedControl,
@@ -70,6 +71,7 @@ import {
   type SetStateAction,
 } from "react";
 import { positionFromFen } from "@/utils/chessops";
+import { normalizePrepBuilderSettings, type PrepBuilderSettings } from "@/utils/opponentPrep";
 import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import classes from "./WebApp.module.css";
 import {
@@ -1301,6 +1303,11 @@ function PrepUnderBoardPanel({
   const [sourceId, setSourceId] = useState<string | null>(() => state.databases[0]?.id ?? null);
   const [minGames, setMinGames] = useState(DEFAULT_WEB_PREP_MIN_GAMES);
   const [moveLimit, setMoveLimit] = useState(DEFAULT_WEB_PREP_MOVE_LIMIT);
+  const [draftBuilderSettings, setDraftBuilderSettings] = useState<Partial<PrepBuilderSettings>>({
+    mode: "practical",
+    useCloudEngine: false,
+    useLichessAll: false,
+  });
   const [draftTemporarySource, setDraftTemporarySource] =
     useState<WebPrepTemporarySource | null>(null);
   const [sourcesOpen] = useState(true);
@@ -1358,6 +1365,10 @@ function PrepUnderBoardPanel({
     state.databases.find((database) => database.id === activePrepSourceId) ?? null;
   const selectedMinGames = activePrep?.minGames ?? minGames;
   const selectedMoveLimit = activePrep?.moveLimit ?? moveLimit;
+  const selectedBuilderSettings = useMemo(
+    () => normalizeWebPrepStrengthSettings(activePrep?.builder ?? draftBuilderSettings),
+    [activePrep?.builder, draftBuilderSettings],
+  );
   const selectedPlayerColor = oppositeWebColor(activePrep?.userColor ?? userColor);
   const selectedSourceLabel =
     selectedPrepSource === "temporary"
@@ -1506,6 +1517,7 @@ function PrepUnderBoardPanel({
       temporarySource: selectedTemporarySource,
       minGames,
       moveLimit,
+      builder: getWebPrepStrengthSettingsPatch(selectedBuilderSettings, {}),
       startFen: INITIAL_FEN,
       line: currentLine,
       notesByFen: {},
@@ -1649,6 +1661,17 @@ function PrepUnderBoardPanel({
     const next = Math.max(1, Math.min(20, Math.round(value || DEFAULT_WEB_PREP_MOVE_LIMIT)));
     if (activePrep) updateActivePrepSettings({ moveLimit: next });
     else setMoveLimit(next);
+  };
+
+  const updatePrepBuilderSettings = (patch: Partial<PrepBuilderSettings>) => {
+    if (activePrep) {
+      updateActivePrepSettings({
+        builder: getWebPrepStrengthSettingsPatch(activePrep.builder, patch),
+      });
+      return;
+    }
+
+    setDraftBuilderSettings((current) => getWebPrepStrengthSettingsPatch(current, patch));
   };
 
   const updatePrepOpponent = (value: string) => {
@@ -1932,6 +1955,10 @@ function PrepUnderBoardPanel({
             >
               Hosted files
             </Button>
+            <WebPrepStrengthSettingsButton
+              builderSettings={selectedBuilderSettings}
+              updateBuilderSettings={updatePrepBuilderSettings}
+            />
           </Group>
 
           <Collapse in={sourcesOpen}>
@@ -2584,6 +2611,101 @@ function PrepStrengthCell({ strength }: { strength: WebPrepMoveStat["strength"] 
       </Stack>
     </Tooltip>
   );
+}
+
+function WebPrepStrengthSettingsButton({
+  builderSettings,
+  updateBuilderSettings,
+}: {
+  builderSettings: PrepBuilderSettings;
+  updateBuilderSettings: (patch: Partial<PrepBuilderSettings>) => void;
+}) {
+  return (
+    <Popover width={270} position="bottom-start" shadow="md" withinPortal>
+      <Popover.Target>
+        <Button variant="default" size="compact-xs" leftSection={<IconSettings size={14} />}>
+          Strength settings
+        </Button>
+      </Popover.Target>
+      <Popover.Dropdown>
+        <Stack gap="xs">
+          <Text size="sm" fw={700}>
+            Strength settings
+          </Text>
+          <SegmentedControl
+            aria-label="Prep strength mode"
+            data={[
+              { value: "smart", label: "Smart" },
+              { value: "engine", label: "Engine" },
+              { value: "practical", label: "Practical" },
+            ]}
+            value={builderSettings.mode}
+            onChange={(value) =>
+              updateBuilderSettings({ mode: value as PrepBuilderSettings["mode"] })
+            }
+            size="xs"
+          />
+          <Tooltip label="Smart mode blend: 0 is database WDL only, 100 is cloud engine only">
+            <NumberInput
+              label="Engine blend"
+              suffix="%"
+              value={builderSettings.engineWeight}
+              onChange={(value) =>
+                updateBuilderSettings({
+                  engineWeight: Math.max(0, Math.min(100, Number(value) || 0)),
+                })
+              }
+              min={0}
+              max={100}
+              step={5}
+              size="xs"
+              aria-label="Prep strength engine blend"
+            />
+          </Tooltip>
+          <Tooltip label="Moves worse than this cloud-engine drop are treated as unsafe when cloud evals are available">
+            <NumberInput
+              label="Max CP drop"
+              suffix=" cp"
+              value={builderSettings.maxEngineCpLoss}
+              onChange={(value) =>
+                updateBuilderSettings({
+                  maxEngineCpLoss: Math.max(0, Math.min(300, Number(value) || 0)),
+                })
+              }
+              min={0}
+              max={300}
+              step={5}
+              size="xs"
+              aria-label="Prep maximum engine centipawn drop"
+            />
+          </Tooltip>
+        </Stack>
+      </Popover.Dropdown>
+    </Popover>
+  );
+}
+
+function normalizeWebPrepStrengthSettings(settings?: Partial<PrepBuilderSettings> | null) {
+  return normalizePrepBuilderSettings({
+    ...settings,
+    mode: settings?.mode ?? "practical",
+    useCloudEngine: false,
+    useLichessAll: false,
+  });
+}
+
+function getWebPrepStrengthSettingsPatch(
+  current: Partial<PrepBuilderSettings> | undefined,
+  patch: Partial<PrepBuilderSettings>,
+): Partial<PrepBuilderSettings> {
+  const settings = normalizeWebPrepStrengthSettings({ ...current, ...patch });
+  return {
+    mode: settings.mode,
+    engineWeight: settings.engineWeight,
+    maxEngineCpLoss: settings.maxEngineCpLoss,
+    useCloudEngine: false,
+    useLichessAll: false,
+  };
 }
 
 function PrepResultBar({ stat }: { stat: Pick<WebPrepMoveStat, "white" | "draw" | "black"> }) {
