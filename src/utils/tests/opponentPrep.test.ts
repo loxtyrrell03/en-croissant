@@ -759,6 +759,35 @@ describe("opponent prep helpers", () => {
         expect(strength.get("e5")!.score).toBeGreaterThan(strength.get("c5")!.score);
     });
 
+    test("practical strength does not benchmark against one-game WDL spikes", () => {
+        const settings = normalizePrepBuilderSettings({
+            mode: "practical",
+            maxEngineCpLoss: 70,
+        });
+        const strength = getPrepMoveStrengthMap({
+            side: "white",
+            settings,
+            openings: [
+                { move: "a3", white: 1, draw: 0, black: 0 },
+                { move: "h3", white: 1, draw: 0, black: 0 },
+                { move: "c4", white: 290, draw: 0, black: 275 },
+                { move: "Nf3", white: 152, draw: 0, black: 153 },
+                { move: "Bf4", white: 47, draw: 0, black: 41 },
+            ],
+            engineMoves: [
+                { san: "Nf3", scoreCpForSide: 32, rank: 1, source: "lichess" },
+                { san: "c4", scoreCpForSide: 30, rank: 2, source: "lichess" },
+                { san: "Bf4", scoreCpForSide: 5, rank: 3, source: "lichess" },
+                { san: "a3", scoreCpForSide: 0, rank: 4, source: "lichess" },
+                { san: "h3", scoreCpForSide: 0, rank: 5, source: "lichess" },
+            ],
+        });
+
+        expect(strength.get("c4")?.databaseWdlLoss).toBeLessThan(0.03);
+        expect(strength.get("c4")?.score).toBeGreaterThan(80);
+        expect(strength.get("Nf3")?.score).toBeGreaterThan(70);
+    });
+
     test("prep builder branch priority accounts for practical danger", () => {
         const settings = normalizePrepBuilderSettings({ mode: "smart" });
         const riskyBranch = getPrepBuilderBranchValue({

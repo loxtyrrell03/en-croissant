@@ -196,6 +196,8 @@ export const DEFAULT_PREP_BUILDER_SETTINGS: PrepBuilderSettings = {
 };
 
 const DATABASE_STRENGTH_FULL_STEP = 0.18;
+const DATABASE_STRENGTH_BENCHMARK_MIN_GAMES = 3;
+const DATABASE_STRENGTH_BENCHMARK_MIN_SHARE = 0.08;
 
 export function getFenTurn(fen: string): PrepColor {
     return fen.trim().split(/\s+/)[1] === "b" ? "black" : "white";
@@ -1591,15 +1593,11 @@ function evaluatePrepStrengthCandidates({
         scoredEngineMoves.map((move) => move.scoreCpForSide),
     );
     const databaseBaseline = getPrepStrengthDatabaseBaseline(playable);
-    const bestDatabaseScore =
-        playable.length > 0
-            ? Math.max(
-                  ...playable.map(
-                      (candidate) =>
-                          getPrepStrengthDatabaseScore(candidate, settings, databaseBaseline) ?? 0,
-                  ),
-              )
-            : null;
+    const bestDatabaseScore = getPrepStrengthBestDatabaseScore(
+        playable,
+        settings,
+        databaseBaseline,
+    );
     const engineByMove = new Map(engineMoves.map((move) => [normalizeSanForPrep(move.san), move]));
     const maxEngineCpLoss = Math.max(1, settings.maxEngineCpLoss);
 
@@ -1692,6 +1690,25 @@ function getPrepStrengthDatabaseScore(
         baseline,
         mode: settings.mode,
     });
+}
+
+function getPrepStrengthBestDatabaseScore(
+    candidates: PrepStrengthCandidate[],
+    settings: PrepBuilderSettings,
+    baseline: number,
+) {
+    if (candidates.length === 0) return null;
+
+    const benchmarkCandidates = candidates.filter(
+        (candidate) =>
+            candidate.total >= DATABASE_STRENGTH_BENCHMARK_MIN_GAMES ||
+            (candidate.usageShare ?? 0) >= DATABASE_STRENGTH_BENCHMARK_MIN_SHARE,
+    );
+    const source = benchmarkCandidates.length > 0 ? benchmarkCandidates : candidates;
+
+    return Math.max(
+        ...source.map((candidate) => getPrepStrengthDatabaseScore(candidate, settings, baseline) ?? 0),
+    );
 }
 
 function getPrepStrengthLoss({

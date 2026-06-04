@@ -414,6 +414,10 @@ default.
   uses root MultiPV and then queries child positions for shown candidate moves
   not present in the root cloud lines, so common non-top moves no longer
   collapse to `Engine unavailable` when Lichess has cached analysis.
+- The practical/blended strength benchmark now ignores one- and two-game WDL
+  spikes unless they have meaningful position share. Tiny perfect-score rows
+  can still display their own result, but they no longer define the `best WDL`
+  baseline and crush common engine-good moves such as `c4`/`Nf3` to `0%`.
 
 ### App Shell
 
