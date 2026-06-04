@@ -136,6 +136,12 @@ import {
   type WebPrepMoveStat,
 } from "./prepIndex";
 import {
+  applyWebPrepModeChange,
+  applyWebPrepSourceChange,
+  getWebPrepWorkspacePatchFromSelection,
+  type WebPrepSetupSelection,
+} from "./prepSettings";
+import {
   formatWebDate,
   getFenColor,
   normalizeWebFen,
@@ -1584,6 +1590,16 @@ function PrepUnderBoardPanel({
   ).length;
   const shownGamesCount = displayedStats.reduce((sum, stat) => sum + stat.total, 0);
   const rootStartLabel = rootLine.length > 0 ? rootLine.map((move) => move.san).join(" ") : "game start";
+  const firstLocalSourceId = state.databases[0]?.id ?? null;
+  const currentPrepSetupSelection: WebPrepSetupSelection = {
+    mode: selectedPrepMode,
+    source: selectedPrepSource,
+    sourceId: selectedPrepSourceId,
+    temporarySource: selectedTemporarySource ?? null,
+    opponent: activePrep?.opponent ?? opponent,
+    userColor: activePrep?.userColor ?? userColor,
+    firstLocalSourceId,
+  };
 
   useEffect(() => {
     setSourceId((current) => {
@@ -1857,6 +1873,24 @@ function PrepUnderBoardPanel({
     }));
   };
 
+  const applyDraftPrepSetupSelection = (selection: WebPrepSetupSelection) => {
+    setPrepMode(selection.mode);
+    setPrepSource(selection.source);
+    setSourceId(selection.sourceId);
+    setDraftTemporarySource(selection.temporarySource);
+    setOpponent(selection.opponent);
+    setUserColor(selection.userColor);
+  };
+
+  const applyPrepSetupSelection = (selection: WebPrepSetupSelection) => {
+    if (activePrep) {
+      updateActivePrepSettings(getWebPrepWorkspacePatchFromSelection(activePrep, selection));
+      return;
+    }
+
+    applyDraftPrepSetupSelection(selection);
+  };
+
   const setActivePrepRootHere = () => {
     if (!activePrep) return;
     updateActivePrepSettings({
@@ -1867,11 +1901,7 @@ function PrepUnderBoardPanel({
   };
 
   const updatePrepMode = (mode: WebPrepMode) => {
-    if (activePrep) {
-      updateActivePrepSettings({ mode });
-    } else {
-      setPrepMode(mode);
-    }
+    applyPrepSetupSelection(applyWebPrepModeChange(currentPrepSetupSelection, mode));
   };
 
   const updatePrepMinGames = (value: number) => {
@@ -1908,26 +1938,15 @@ function PrepUnderBoardPanel({
   };
 
   const updateActivePrepSource = (nextSource: WebPrepSource, nextSourceId: string | null) => {
-    updateActivePrepSettings({
-      source: nextSource,
-      sourceIds:
-        nextSource === "local" && nextSourceId
-          ? [nextSourceId]
-          : nextSource === "temporary" && activePrep?.temporarySource
-            ? [activePrep.temporarySource.id]
-            : [],
-    });
+    applyPrepSetupSelection(
+      applyWebPrepSourceChange(currentPrepSetupSelection, nextSource, nextSourceId),
+    );
   };
 
   const attachImportedDatabase = (databaseId: string) => {
-    setDraftTemporarySource(null);
-    if (activePrep) {
-      updateActivePrepSource("local", databaseId);
-      return;
-    }
-
-    setPrepSource("local");
-    setSourceId(databaseId);
+    applyPrepSetupSelection(
+      applyWebPrepSourceChange(currentPrepSetupSelection, "local", databaseId),
+    );
   };
 
   const refreshHostedPrepDatabase = async (folder: WebHostedDatabaseFolder) => {
@@ -1957,16 +1976,16 @@ function PrepUnderBoardPanel({
     if (value === WEB_LICHESS_ALL_SOURCE_VALUE || value === WEB_LICHESS_MASTERS_SOURCE_VALUE) {
       const nextSource: WebPrepSource =
         value === WEB_LICHESS_ALL_SOURCE_VALUE ? "lichess-all" : "lichess-masters";
-      if (activePrep) updateActivePrepSource(nextSource, null);
-      else setPrepSource(nextSource);
+      updateActivePrepSource(nextSource, null);
       return;
     }
 
     if (value === WEB_TEMPORARY_PREP_SOURCE_VALUE) {
-      if (activePrep?.temporarySource) updateActivePrepSource("temporary", activePrep.temporarySource.id);
-      else if (draftTemporarySource) {
-        setPrepSource("temporary");
-        setSourceId(null);
+      const temporarySource = activePrep?.temporarySource ?? draftTemporarySource;
+      if (temporarySource) {
+        applyPrepSetupSelection(
+          applyWebPrepSourceChange(currentPrepSetupSelection, "temporary", null, temporarySource),
+        );
       }
       return;
     }
@@ -1988,11 +2007,7 @@ function PrepUnderBoardPanel({
         return;
       }
 
-      if (activePrep) updateActivePrepSource("local", value);
-      else {
-        setPrepSource("local");
-        setSourceId(value);
-      }
+      updateActivePrepSource("local", value);
       return;
     }
 
@@ -2049,17 +2064,15 @@ function PrepUnderBoardPanel({
     };
 
     if (activePrep) {
-      updateActivePrepSettings({
-        source: "temporary",
-        sourceIds: [temporarySource.id],
-        temporarySource,
-      });
+      applyPrepSetupSelection(
+        applyWebPrepSourceChange(currentPrepSetupSelection, "temporary", null, temporarySource),
+      );
       return;
     }
 
-    setDraftTemporarySource(temporarySource);
-    setPrepSource("temporary");
-    setSourceId(null);
+    applyDraftPrepSetupSelection(
+      applyWebPrepSourceChange(currentPrepSetupSelection, "temporary", null, temporarySource),
+    );
   };
 
   const importHostedPgnForPrep = async (entry: WebHostedFileEntry) => {

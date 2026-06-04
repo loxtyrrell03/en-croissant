@@ -261,6 +261,14 @@ default.
   strength uses that mode/engine-blend/max-CP-drop configuration while keeping
   cloud engine disabled on the phone path until a browser-safe cloud-eval flow
   is added.
+- A further 2026-06-04 phone Prep parity pass aligned the source/target state
+  machine with the desktop fork. Choosing Lichess All or Lichess Masters from
+  the phone `Prep source` picker now forces General/Opening prep, clears the
+  player-only target fields, and keeps the saved-token Lichess controls in
+  view. Switching back to Player mode from an online explorer source now
+  returns to one local synced database source, mirroring the desktop
+  under-board Prep panel instead of allowing a confusing `Player + Lichess`
+  combination.
 
 ### App Shell
 

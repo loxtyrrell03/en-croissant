@@ -20,6 +20,12 @@ import {
   getWebPrepMoveKey,
   getWebPrepMoveStats,
 } from "@/web/prepIndex";
+import {
+  applyWebPrepModeChange,
+  applyWebPrepSourceChange,
+  getWebPrepWorkspacePatchFromSelection,
+  type WebPrepSetupSelection,
+} from "@/web/prepSettings";
 import { parsePgnDatabase } from "@/web/pgn";
 import { createEmptyWebState } from "@/web/storage";
 
@@ -450,6 +456,96 @@ describe("web companion PGN prep index", () => {
         hostedFolder,
       }),
     ).toBe(false);
+  });
+
+  test("matches desktop prep source flow when choosing Lichess explorer sources", () => {
+    const selection: WebPrepSetupSelection = {
+      mode: "player",
+      source: "local",
+      sourceId: "local-db",
+      temporarySource: null,
+      opponent: "Opponent",
+      userColor: "black",
+      firstLocalSourceId: "local-db",
+    };
+
+    const next = applyWebPrepSourceChange(selection, "lichess-all", null);
+
+    expect(next).toMatchObject({
+      mode: "general",
+      source: "lichess-all",
+      sourceId: null,
+      temporarySource: null,
+      opponent: "",
+      userColor: "white",
+    });
+  });
+
+  test("matches desktop prep mode flow when returning from General to Player", () => {
+    const selection: WebPrepSetupSelection = {
+      mode: "general",
+      source: "lichess-masters",
+      sourceId: null,
+      temporarySource: null,
+      opponent: "",
+      userColor: "white",
+      firstLocalSourceId: "local-db",
+    };
+
+    const next = applyWebPrepModeChange(selection, "player");
+
+    expect(next).toMatchObject({
+      mode: "player",
+      source: "local",
+      sourceId: "local-db",
+      temporarySource: null,
+      opponent: "",
+      userColor: "white",
+    });
+  });
+
+  test("clears player-only workspace fields when an active prep switches online", () => {
+    const selection = applyWebPrepSourceChange(
+      {
+        mode: "player",
+        source: "local",
+        sourceId: "local-db",
+        temporarySource: null,
+        opponent: "Opponent",
+        userColor: "black",
+        firstLocalSourceId: "local-db",
+      },
+      "lichess-masters",
+      null,
+    );
+    const patch = getWebPrepWorkspacePatchFromSelection(
+      {
+        id: "prep",
+        name: "Opponent prep",
+        mode: "player",
+        source: "local",
+        opponent: "Opponent",
+        userColor: "black",
+        sourceIds: ["local-db"],
+        startFen: "start",
+        line: [],
+        notesByFen: {},
+        preparedMoves: {},
+        createdAt: 1,
+        updatedAt: 1,
+      },
+      selection,
+    );
+
+    expect(patch).toMatchObject({
+      name: "General prep",
+      mode: "general",
+      source: "lichess-masters",
+      sourceIds: [],
+      temporarySource: null,
+      opponent: "",
+      userColor: "white",
+    });
   });
 
   test("labels web online imports like prep databases", () => {
