@@ -120,6 +120,8 @@ import type {
   WebDatabase,
   WebGame,
   WebImportResult,
+  WebLocalGameFilters,
+  WebLocalResultFilter,
   WebPrepLineMove,
   WebPrepMode,
   WebPrepSource,
@@ -148,6 +150,7 @@ import {
   getWebDatabaseMoveStats,
   getGamesForWebPrepSource,
   getDatabasePlayerCounts,
+  filterWebGamesByLocalFilters,
   getWebDatabaseTitlePlayerName,
   getNextOpenPrepStat,
   getWebPrepMoveKey,
@@ -158,6 +161,7 @@ import {
 import {
   applyWebPrepModeChange,
   applyWebPrepSourceChange,
+  getWebPrepSelectedLocalSourceId,
   getWebPrepWorkspacePatchFromSelection,
   getWebPrepWorkspaceName,
   type WebPrepSetupSelection,
@@ -210,6 +214,9 @@ const WEB_DATABASE_PANEL_SOURCE_STORAGE_KEY = "en-croissant-web-database-panel-s
 const WEB_DATABASE_PANEL_LOCAL_STORAGE_KEY = "en-croissant-web-database-panel-local-source";
 const WEB_DATABASE_PANEL_PLAYER_STORAGE_KEY = "en-croissant-web-database-panel-player";
 const WEB_DATABASE_PANEL_COLOR_STORAGE_KEY = "en-croissant-web-database-panel-color";
+const WEB_DATABASE_PANEL_START_DATE_STORAGE_KEY = "en-croissant-web-database-panel-start-date";
+const WEB_DATABASE_PANEL_END_DATE_STORAGE_KEY = "en-croissant-web-database-panel-end-date";
+const WEB_DATABASE_PANEL_RESULT_STORAGE_KEY = "en-croissant-web-database-panel-result";
 const WEB_LICHESS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-lichess-explorer-options";
 const WEB_MASTERS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-masters-explorer-options";
 const WEB_PREP_SETUP_STORAGE_KEY = "en-croissant-web-prep-setup";
@@ -228,6 +235,9 @@ type WebPrepStoredSetup = {
   sourceRef?: string | null;
   opponent: string;
   userColor: WebColor;
+  startDate?: string;
+  endDate?: string;
+  result: WebLocalResultFilter;
   minGames: number;
   moveLimit: number;
   builder: Partial<PrepBuilderSettings>;
@@ -240,6 +250,7 @@ const DEFAULT_WEB_PREP_SETUP: WebPrepStoredSetup = {
   sourceRef: null,
   opponent: "",
   userColor: "white",
+  result: "any",
   minGames: DEFAULT_WEB_PREP_MIN_GAMES,
   moveLimit: DEFAULT_WEB_PREP_MOVE_LIMIT,
   builder: {
@@ -1099,6 +1110,19 @@ function DatabaseUnderBoardPanel({
     "white",
   );
   const localColor: WebColor = localColorValue === "black" ? "black" : "white";
+  const [localStartDate, setLocalStartDate] = usePersistentString(
+    WEB_DATABASE_PANEL_START_DATE_STORAGE_KEY,
+    "",
+  );
+  const [localEndDate, setLocalEndDate] = usePersistentString(
+    WEB_DATABASE_PANEL_END_DATE_STORAGE_KEY,
+    "",
+  );
+  const [localResultValue, setLocalResultValue] = usePersistentString(
+    WEB_DATABASE_PANEL_RESULT_STORAGE_KEY,
+    "any",
+  );
+  const localResult = normalizeWebLocalResultFilter(localResultValue);
   const [loadingLocalSource, setLoadingLocalSource] = useState<string | null>(null);
   const [loadingLocalProgress, setLoadingLocalProgress] =
     useState<WebHostedFolderReadProgress | null>(null);
@@ -1144,11 +1168,20 @@ function DatabaseUnderBoardPanel({
   );
   const selectedDatabasePlayers = useMemo(() => getDatabasePlayerCounts(localGames), [localGames]);
   const trimmedLocalPlayerName = localPlayerName.trim();
+  const localFilters = useMemo<WebLocalGameFilters>(
+    () => ({
+      startDate: localStartDate || undefined,
+      endDate: localEndDate || undefined,
+      result: localResult,
+    }),
+    [localEndDate, localResult, localStartDate],
+  );
   const localStats = useMemo(
     () =>
       getWebDatabaseMoveStats({
         games: localGames,
         fen: currentFen,
+        filters: localFilters,
         perspective: trimmedLocalPlayerName
           ? {
               playerName: trimmedLocalPlayerName,
@@ -1156,7 +1189,7 @@ function DatabaseUnderBoardPanel({
             }
           : null,
       }),
-    [currentFen, localColor, localGames, trimmedLocalPlayerName],
+    [currentFen, localColor, localFilters, localGames, trimmedLocalPlayerName],
   );
 
   useEffect(() => {
@@ -1355,23 +1388,11 @@ function DatabaseUnderBoardPanel({
           </>
         ) : (
           <>
-            <TextInput
-              label="Lichess token"
-              size="xs"
-              type="password"
-              value={lichessToken}
-              onChange={(event) => setLichessToken(event.currentTarget.value)}
-              placeholder="Bearer token"
-              style={{ flex: "1 1 12rem" }}
+            <WebLichessAccessControls
+              token={lichessToken}
+              setToken={setLichessToken}
+              signedInLabel="Lichess saved"
             />
-            <Button
-              size="xs"
-              variant="light"
-              leftSection={<IconCloudDownload size={14} />}
-              onClick={() => void startWebLichessLogin()}
-            >
-              Sign in
-            </Button>
             <ActionIcon
               aria-label="Refresh Lichess explorer"
               onClick={() => setRefreshKey((key) => key + 1)}
@@ -1399,6 +1420,17 @@ function DatabaseUnderBoardPanel({
             {formatHostedLoadProgress(loadingLocalSource, loadingLocalProgress)}
           </Text>
         </Group>
+      ) : null}
+
+      {source === "local" && selectedLocalId ? (
+        <WebLocalFiltersControls
+          startDate={localStartDate}
+          endDate={localEndDate}
+          result={localResult}
+          onStartDateChange={setLocalStartDate}
+          onEndDateChange={setLocalEndDate}
+          onResultChange={(result) => setLocalResultValue(result)}
+        />
       ) : null}
 
       {source !== "local" ? (
@@ -1520,6 +1552,9 @@ function PrepUnderBoardPanel({
   const [userColor, setUserColor] = useState<WebColor>(storedPrepSetup.userColor);
   const [prepMode, setPrepMode] = useState<WebPrepMode>(storedPrepSetup.mode);
   const [prepSource, setPrepSource] = useState<WebPrepSource>(storedPrepSetup.source);
+  const [prepStartDate, setPrepStartDate] = useState(storedPrepSetup.startDate ?? "");
+  const [prepEndDate, setPrepEndDate] = useState(storedPrepSetup.endDate ?? "");
+  const [prepResult, setPrepResult] = useState<WebLocalResultFilter>(storedPrepSetup.result);
   const [setupOpen, setSetupOpen] = useState(true);
   const [sourceId, setSourceId] = useState<string | null>(
     () =>
@@ -1581,12 +1616,11 @@ function PrepUnderBoardPanel({
   const selectedPrepMode = activePrep?.mode ?? prepMode;
   const selectedPrepSource = activePrep?.source ?? prepSource;
   const selectedTemporarySource = activePrep?.temporarySource ?? draftTemporarySource;
-  const selectedPrepSourceId =
-    selectedPrepSource === "local"
-      ? activePrep
-        ? activePrep.sourceIds[0] ?? state.databases[0]?.id ?? null
-        : sourceId
-      : null;
+  const selectedPrepSourceId = getWebPrepSelectedLocalSourceId({
+    activePrep,
+    selectedSource: selectedPrepSource,
+    draftSourceId: sourceId,
+  });
   const selectedPrepSourceValue =
     selectedPrepSource === "lichess-all"
       ? WEB_LICHESS_ALL_SOURCE_VALUE
@@ -1603,10 +1637,6 @@ function PrepUnderBoardPanel({
     : [];
   const selectedPrepSourceGames =
     selectedPrepSource === "temporary" ? selectedTemporarySource?.games ?? [] : activePrepSourceGames;
-  const selectedPrepDatabasePlayers = useMemo(
-    () => getDatabasePlayerCounts(selectedPrepSourceGames),
-    [selectedPrepSourceGames],
-  );
   const activePrepHostedFolder = useMemo(
     () =>
       activePrepSourceDatabase?.hostedPath
@@ -1617,6 +1647,28 @@ function PrepUnderBoardPanel({
   );
   const selectedMinGames = activePrep?.minGames ?? minGames;
   const selectedMoveLimit = activePrep?.moveLimit ?? moveLimit;
+  const selectedPrepStartDate = activePrep?.startDate ?? prepStartDate;
+  const selectedPrepEndDate = activePrep?.endDate ?? prepEndDate;
+  const selectedPrepResult = normalizeWebLocalResultFilter(activePrep?.result ?? prepResult);
+  const selectedPrepLocalFilters = useMemo<WebLocalGameFilters>(
+    () => ({
+      startDate: selectedPrepStartDate || undefined,
+      endDate: selectedPrepEndDate || undefined,
+      result: selectedPrepResult,
+    }),
+    [selectedPrepEndDate, selectedPrepResult, selectedPrepStartDate],
+  );
+  const selectedPrepFilteredSourceGames = useMemo(
+    () =>
+      selectedPrepSource === "local"
+        ? filterWebGamesByLocalFilters(selectedPrepSourceGames, selectedPrepLocalFilters)
+        : selectedPrepSourceGames,
+    [selectedPrepLocalFilters, selectedPrepSource, selectedPrepSourceGames],
+  );
+  const selectedPrepDatabasePlayers = useMemo(
+    () => getDatabasePlayerCounts(selectedPrepFilteredSourceGames),
+    [selectedPrepFilteredSourceGames],
+  );
   const selectedBuilderSettings = useMemo(
     () => normalizeWebPrepStrengthSettings(activePrep?.builder ?? draftBuilderSettings),
     [activePrep?.builder, draftBuilderSettings],
@@ -1851,6 +1903,9 @@ function PrepUnderBoardPanel({
           ? [selectedTemporarySource.id]
           : [],
       temporarySource: selectedTemporarySource,
+      startDate: prepStartDate || undefined,
+      endDate: prepEndDate || undefined,
+      result: prepResult,
       minGames,
       moveLimit,
       builder: getWebPrepStrengthSettingsPatch(selectedBuilderSettings, {}),
@@ -2065,6 +2120,27 @@ function PrepUnderBoardPanel({
     setStoredPrepSetup((current) => normalizeWebPrepStoredSetup({ ...current, moveLimit: next }));
     if (activePrep) updateActivePrepSettings({ moveLimit: next });
     else setMoveLimit(next);
+  };
+
+  const updatePrepStartDate = (value: string) => {
+    const next = normalizeWebDateFilter(value) ?? "";
+    setStoredPrepSetup((current) => normalizeWebPrepStoredSetup({ ...current, startDate: next }));
+    if (activePrep) updateActivePrepSettings({ startDate: next || undefined });
+    else setPrepStartDate(next);
+  };
+
+  const updatePrepEndDate = (value: string) => {
+    const next = normalizeWebDateFilter(value) ?? "";
+    setStoredPrepSetup((current) => normalizeWebPrepStoredSetup({ ...current, endDate: next }));
+    if (activePrep) updateActivePrepSettings({ endDate: next || undefined });
+    else setPrepEndDate(next);
+  };
+
+  const updatePrepResult = (value: WebLocalResultFilter) => {
+    const next = normalizeWebLocalResultFilter(value);
+    setStoredPrepSetup((current) => normalizeWebPrepStoredSetup({ ...current, result: next }));
+    if (activePrep) updateActivePrepSettings({ result: next });
+    else setPrepResult(next);
   };
 
   const updatePrepBuilderSettings = (patch: Partial<PrepBuilderSettings>) => {
@@ -2526,23 +2602,11 @@ function PrepUnderBoardPanel({
               </Group>
               {isOnlinePrepSource(selectedPrepSource) ? (
                 <Group gap="xs" align="flex-end" wrap="wrap">
-                  <TextInput
-                    label="Lichess token"
-                    size="xs"
-                    type="password"
-                    value={lichessToken}
-                    onChange={(event) => setLichessToken(event.currentTarget.value)}
-                    placeholder="Bearer token"
-                    style={{ flex: "1 1 12rem" }}
+                  <WebLichessAccessControls
+                    token={lichessToken}
+                    setToken={setLichessToken}
+                    signedInLabel="Lichess saved"
                   />
-                  <Button
-                    size="xs"
-                    variant="light"
-                    leftSection={<IconCloudDownload size={14} />}
-                    onClick={() => void startWebLichessLogin()}
-                  >
-                    Sign in
-                  </Button>
                   <Button
                     size="compact-xs"
                     variant={explorerOptionsOpen ? "light" : "default"}
@@ -2567,6 +2631,16 @@ function PrepUnderBoardPanel({
                   Choose a prep source or import public games.
                 </Text>
               )}
+              {selectedPrepSource === "local" && activePrepSourceId ? (
+                <WebLocalFiltersControls
+                  startDate={selectedPrepStartDate}
+                  endDate={selectedPrepEndDate}
+                  result={selectedPrepResult}
+                  onStartDateChange={updatePrepStartDate}
+                  onEndDateChange={updatePrepEndDate}
+                  onResultChange={updatePrepResult}
+                />
+              ) : null}
               {isOnlinePrepSource(selectedPrepSource) ? (
                 <Collapse in={explorerOptionsOpen}>
                   <WebExplorerOptionsPanel
@@ -2992,6 +3066,128 @@ function WebExplorerOptionsPanel({
         </Group>
       )}
     </Stack>
+  );
+}
+
+function WebLichessAccessControls({
+  token,
+  setToken,
+  signedInLabel,
+}: {
+  token: string;
+  setToken: (value: string) => void;
+  signedInLabel: string;
+}) {
+  const signedIn = Boolean(token.trim());
+
+  if (signedIn) {
+    return (
+      <Group gap={4} wrap="nowrap" style={{ flex: "1 1 12rem" }}>
+        <Badge color="green" variant="light">
+          {signedInLabel}
+        </Badge>
+        <Button
+          size="compact-xs"
+          variant="default"
+          leftSection={<IconCloudDownload size={14} />}
+          onClick={() => void startWebLichessLogin()}
+        >
+          Relink
+        </Button>
+        <Tooltip label="Forget saved Lichess token">
+          <ActionIcon aria-label="Forget Lichess token" variant="default" onClick={() => setToken("")}>
+            <IconX size={15} />
+          </ActionIcon>
+        </Tooltip>
+      </Group>
+    );
+  }
+
+  return (
+    <>
+      <TextInput
+        label="Lichess token"
+        size="xs"
+        type="password"
+        value={token}
+        onChange={(event) => setToken(event.currentTarget.value)}
+        placeholder="Bearer token"
+        style={{ flex: "1 1 12rem" }}
+      />
+      <Button
+        size="xs"
+        variant="light"
+        leftSection={<IconCloudDownload size={14} />}
+        onClick={() => void startWebLichessLogin()}
+      >
+        Sign in
+      </Button>
+    </>
+  );
+}
+
+function WebLocalFiltersControls({
+  startDate,
+  endDate,
+  result,
+  onStartDateChange,
+  onEndDateChange,
+  onResultChange,
+}: {
+  startDate: string;
+  endDate: string;
+  result: WebLocalResultFilter;
+  onStartDateChange: (value: string) => void;
+  onEndDateChange: (value: string) => void;
+  onResultChange: (value: WebLocalResultFilter) => void;
+}) {
+  const hasFilters = Boolean(startDate || endDate || result !== "any");
+
+  return (
+    <Group gap="xs" wrap="wrap" align="flex-end">
+      <TextInput
+        label="From"
+        size="xs"
+        type="date"
+        value={normalizeWebDateFilter(startDate) ?? ""}
+        onChange={(event) => onStartDateChange(event.currentTarget.value)}
+        style={{ flex: "1 1 8.5rem" }}
+      />
+      <TextInput
+        label="To"
+        size="xs"
+        type="date"
+        value={normalizeWebDateFilter(endDate) ?? ""}
+        onChange={(event) => onEndDateChange(event.currentTarget.value)}
+        style={{ flex: "1 1 8.5rem" }}
+      />
+      <Select
+        label="Result"
+        size="xs"
+        value={result}
+        onChange={(value) => onResultChange(normalizeWebLocalResultFilter(value))}
+        data={[
+          { value: "any", label: "Any result" },
+          { value: "whitewon", label: "White won" },
+          { value: "draw", label: "Draw" },
+          { value: "blackwon", label: "Black won" },
+        ]}
+        allowDeselect={false}
+        w={132}
+      />
+      <Button
+        size="compact-xs"
+        variant="default"
+        disabled={!hasFilters}
+        onClick={() => {
+          onStartDateChange("");
+          onEndDateChange("");
+          onResultChange("any");
+        }}
+      >
+        Reset filters
+      </Button>
+    </Group>
   );
 }
 
@@ -4379,6 +4575,7 @@ function normalizeWebPrepStoredSetup(
       : "local";
   const mode = value?.mode === "general" ? "general" : "player";
   const userColor: WebColor = value?.userColor === "black" ? "black" : "white";
+  const result = normalizeWebLocalResultFilter(value?.result);
   const minGames = Math.max(
     1,
     Math.min(999, Math.round(Number(value?.minGames) || DEFAULT_WEB_PREP_MIN_GAMES)),
@@ -4395,10 +4592,39 @@ function normalizeWebPrepStoredSetup(
     sourceRef: typeof value?.sourceRef === "string" && value.sourceRef ? value.sourceRef : null,
     opponent: typeof value?.opponent === "string" ? value.opponent : "",
     userColor,
+    startDate: normalizeWebDateFilter(value?.startDate),
+    endDate: normalizeWebDateFilter(value?.endDate),
+    result,
     minGames,
     moveLimit,
     builder: normalizeWebPrepStrengthSettings(value?.builder),
   };
+}
+
+function normalizeWebLocalResultFilter(value: unknown): WebLocalResultFilter {
+  return value === "whitewon" || value === "draw" || value === "blackwon" ? value : "any";
+}
+
+function normalizeWebDateFilter(value: unknown) {
+  if (typeof value !== "string") return "";
+  const match = value.trim().match(/^(\d{4})[.-](\d{1,2})[.-](\d{1,2})$/);
+  if (!match) return "";
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (
+    !Number.isInteger(year) ||
+    !Number.isInteger(month) ||
+    !Number.isInteger(day) ||
+    year < 1952 ||
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31
+  ) {
+    return "";
+  }
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
 function usePersistentJson<T>(

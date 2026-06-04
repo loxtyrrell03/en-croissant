@@ -16,6 +16,19 @@ export type WebPrepSetupSelection = {
   firstLocalSourceId: string | null;
 };
 
+export function getWebPrepSelectedLocalSourceId({
+  activePrep,
+  selectedSource,
+  draftSourceId,
+}: {
+  activePrep: Pick<WebPrepWorkspace, "sourceIds"> | null;
+  selectedSource: WebPrepSource;
+  draftSourceId: string | null;
+}) {
+  if (selectedSource !== "local") return null;
+  return activePrep ? activePrep.sourceIds[0] ?? null : draftSourceId;
+}
+
 export function isWebOnlinePrepSource(
   source: WebPrepSource,
 ): source is Extract<WebPrepSource, "lichess-all" | "lichess-masters"> {
@@ -91,11 +104,13 @@ export function applyWebPrepSourceChange(
     };
   }
 
+  const sourceId = nextSourceId ?? selection.firstLocalSourceId;
   return {
     ...selection,
     source: "local",
-    sourceId: nextSourceId ?? selection.firstLocalSourceId,
+    sourceId,
     temporarySource: null,
+    opponent: sourceId !== selection.sourceId ? "" : selection.opponent,
   };
 }
 

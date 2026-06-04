@@ -6,7 +6,14 @@ import {
   type PrepMoveStrength,
 } from "@/utils/opponentPrep";
 import type { Opening } from "@/utils/db";
-import type { WebColor, WebGame, WebPrepLineMove, WebPrepWorkspace, WebResult } from "./model";
+import type {
+  WebColor,
+  WebGame,
+  WebLocalGameFilters,
+  WebPrepLineMove,
+  WebPrepWorkspace,
+  WebResult,
+} from "./model";
 import { getFenColor, getResultScore, normalizeWebFen, oppositeWebColor } from "./pgn";
 
 export type WebPrepMoveStat = Opening & {
@@ -34,6 +41,10 @@ export type WebPrepBranchStart = {
 export type WebDatabasePerspective = {
   playerName: string;
   color: WebColor;
+};
+
+export type WebDatabaseMoveFilters = WebLocalGameFilters & {
+  perspective?: WebDatabasePerspective | null;
 };
 
 export function collectGamesForSources(gamesByDatabase: Record<string, WebGame[]>, sourceIds: string[]) {
@@ -153,7 +164,17 @@ export function getWebPrepMoveStats({
   maxExamples = 4,
 }: {
   games: WebGame[];
-  prep: Pick<WebPrepWorkspace, "mode" | "opponent" | "userColor" | "sourceIds" | "builder"> | null;
+  prep: Pick<
+    WebPrepWorkspace,
+    | "mode"
+    | "opponent"
+    | "userColor"
+    | "sourceIds"
+    | "builder"
+    | "startDate"
+    | "endDate"
+    | "result"
+  > | null;
   fen: string;
   maxExamples?: number;
 }): WebPrepMoveStat[] {
@@ -166,6 +187,7 @@ export function getWebPrepMoveStats({
   let totalOccurrences = 0;
 
   for (const game of games) {
+    if (!gameMatchesLocalFilters(game, prep)) continue;
     if (prepMode === "player" && !gameMatchesOpponent(game, opponent, opponentColor)) continue;
 
     for (const move of game.moves) {
@@ -228,11 +250,13 @@ export function getWebDatabaseMoveStats({
   games,
   fen,
   perspective = null,
+  filters,
   maxExamples = 4,
 }: {
   games: WebGame[];
   fen: string;
   perspective?: WebDatabasePerspective | null;
+  filters?: WebLocalGameFilters | null;
   maxExamples?: number;
 }): WebPrepMoveStat[] {
   const key = normalizeWebFen(fen || INITIAL_FEN);
@@ -242,6 +266,7 @@ export function getWebDatabaseMoveStats({
   let totalOccurrences = 0;
 
   for (const game of games) {
+    if (!gameMatchesLocalFilters(game, filters)) continue;
     if (playerName && !gameMatchesPlayerColor(game, playerName, resultPerspective)) continue;
 
     for (const move of game.moves) {
@@ -289,6 +314,13 @@ export function getWebDatabaseMoveStats({
         b.scoreForUser - a.scoreForUser ||
         a.move.localeCompare(b.move, undefined, { sensitivity: "base" }),
     );
+}
+
+export function filterWebGamesByLocalFilters(
+  games: WebGame[],
+  filters?: WebLocalGameFilters | null,
+) {
+  return games.filter((game) => gameMatchesLocalFilters(game, filters));
 }
 
 function getWebPrepStrengthSettings(settings?: Partial<PrepBuilderSettings> | null) {
@@ -374,6 +406,25 @@ function gameMatchesOpponent(game: WebGame, opponent: string, opponentColor: Web
 function gameMatchesPlayerColor(game: WebGame, playerName: string, color: WebColor) {
   const player = color === "white" ? game.white : game.black;
   return normalizedPlayerName(player).includes(normalizedPlayerName(playerName));
+}
+
+function gameMatchesLocalFilters(game: WebGame, filters?: WebLocalGameFilters | null) {
+  if (!filters) return true;
+
+  const result = filters.result ?? "any";
+  if (result !== "any") {
+    if (result === "whitewon" && game.result !== "1-0") return false;
+    if (result === "blackwon" && game.result !== "0-1") return false;
+    if (result === "draw" && game.result !== "1/2-1/2") return false;
+  }
+
+  const gameDate = sortableDate(game.date);
+  const startDate = sortableDate(filters.startDate ?? "");
+  const endDate = sortableDate(filters.endDate ?? "");
+  if (startDate && (!gameDate || gameDate < startDate)) return false;
+  if (endDate && (!gameDate || gameDate > endDate)) return false;
+
+  return true;
 }
 
 function normalizedPlayerName(value: string) {

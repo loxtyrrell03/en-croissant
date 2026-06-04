@@ -337,6 +337,14 @@ default.
   falling through to an unrelated first database. Local Prep also treats an
   empty source list as no source instead of silently querying every indexed
   browser database.
+- The 2026-06-04 phone Database/Prep parity pass added the fork's local
+  date/result filters to both under-board panels. Database and Prep now search
+  the selected local source through the same player/color, From, To, and Result
+  scope shown in the UI, active preps with an empty local source no longer fall
+  back to the first database, changing local prep databases clears stale
+  opponent names so the new database can seed its own player, and saved Lichess
+  access renders as `Lichess saved` with Relink/Forget controls instead of
+  asking for sign-in on every Lichess All/Masters use.
 
 ### App Shell
 

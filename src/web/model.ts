@@ -4,6 +4,13 @@ import type { PrepBuilderSettings } from "@/utils/opponentPrep";
 export type WebColor = Extract<Color, "white" | "black">;
 
 export type WebResult = "1-0" | "0-1" | "1/2-1/2" | "*";
+export type WebLocalResultFilter = "any" | "whitewon" | "draw" | "blackwon";
+
+export type WebLocalGameFilters = {
+  startDate?: string;
+  endDate?: string;
+  result?: WebLocalResultFilter;
+};
 
 export type WebMove = {
   ply: number;
@@ -74,6 +81,9 @@ export type WebPrepWorkspace = {
   userColor: WebColor;
   sourceIds: string[];
   temporarySource?: WebPrepTemporarySource | null;
+  startDate?: string;
+  endDate?: string;
+  result?: WebLocalResultFilter;
   minGames?: number;
   moveLimit?: number;
   builder?: Partial<PrepBuilderSettings>;

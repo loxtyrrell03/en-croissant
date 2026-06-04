@@ -19,6 +19,7 @@ import { getWebOnlineImportTitle, getWebOnlineRangeLabel } from "@/web/onlineImp
 import {
   findFirstWebPrepOpponentBranch,
   findWebPrepBranchStart,
+  filterWebGamesByLocalFilters,
   getFirstOpenPrepStat,
   getDatabasePlayerCounts,
   getWebDatabaseMoveStats,
@@ -31,6 +32,7 @@ import {
 import {
   applyWebPrepModeChange,
   applyWebPrepSourceChange,
+  getWebPrepSelectedLocalSourceId,
   getWebPrepWorkspacePatchFromSelection,
   getWebPrepWorkspaceName,
   type WebPrepSetupSelection,
@@ -271,6 +273,90 @@ describe("web companion PGN prep index", () => {
 
     expect(stats.map((stat) => stat.move).sort()).toEqual(["d4", "e4"]);
     expect(stats.every((stat) => stat.sourceLabel === "database move")).toBe(true);
+  });
+
+  test("applies fork-style local date and result filters to database stats", () => {
+    const imported = parsePgnDatabase(
+      "database-date-result.pgn",
+      `
+[Event "Training"]
+[Site "?"]
+[Date "2026.05.30"]
+[Round "?"]
+[White "Target"]
+[Black "Me"]
+[Result "1-0"]
+
+1. e4 c5 1-0
+
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.02"]
+[Round "?"]
+[White "Target"]
+[Black "Me"]
+[Result "0-1"]
+
+1. d4 d5 0-1
+`,
+      1,
+    );
+
+    const stats = getWebDatabaseMoveStats({
+      games: imported.games,
+      fen: imported.games[0].moves[0].fenBefore,
+      filters: {
+        startDate: "2026-06-01",
+        result: "blackwon",
+      },
+    });
+
+    expect(stats.map((stat) => stat.move)).toEqual(["d4"]);
+    expect(filterWebGamesByLocalFilters(imported.games, { endDate: "2026-05-31" })).toHaveLength(1);
+  });
+
+  test("applies fork-style local date and result filters to prep stats", () => {
+    const imported = parsePgnDatabase(
+      "prep-date-result.pgn",
+      `
+[Event "Training"]
+[Site "?"]
+[Date "2026.05.30"]
+[Round "?"]
+[White "Me"]
+[Black "Opponent"]
+[Result "1-0"]
+
+1. e4 c5 1-0
+
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.02"]
+[Round "?"]
+[White "Me"]
+[Black "Opponent"]
+[Result "0-1"]
+
+1. e4 e5 0-1
+`,
+      1,
+    );
+
+    const afterE4 = imported.games[0].moves[0].fenAfter;
+    const stats = getWebPrepMoveStats({
+      games: imported.games,
+      fen: afterE4,
+      prep: {
+        mode: "player",
+        opponent: "Opponent",
+        userColor: "white",
+        sourceIds: [imported.database.id],
+        startDate: "2026-06-01",
+        result: "blackwon",
+      },
+    });
+
+    expect(stats.map((stat) => stat.move)).toEqual(["e5"]);
   });
 
   test("derives fork-style prep player names from local database labels", () => {
@@ -894,6 +980,48 @@ describe("web companion PGN prep index", () => {
       temporarySource: null,
       opponent: "",
       userColor: "white",
+    });
+  });
+
+  test("does not fall back to the first database for an active prep with no local source", () => {
+    expect(
+      getWebPrepSelectedLocalSourceId({
+        selectedSource: "local",
+        draftSourceId: "first-db",
+        activePrep: {
+          sourceIds: [],
+        },
+      }),
+    ).toBeNull();
+    expect(
+      getWebPrepSelectedLocalSourceId({
+        selectedSource: "local",
+        draftSourceId: "first-db",
+        activePrep: null,
+      }),
+    ).toBe("first-db");
+  });
+
+  test("clears stale opponent names when changing the local prep database", () => {
+    const selection: WebPrepSetupSelection = {
+      mode: "player",
+      source: "local",
+      sourceId: "old-db",
+      temporarySource: null,
+      opponent: "Old Opponent",
+      userColor: "white",
+      firstLocalSourceId: "old-db",
+    };
+
+    expect(applyWebPrepSourceChange(selection, "local", "new-db")).toMatchObject({
+      source: "local",
+      sourceId: "new-db",
+      opponent: "",
+    });
+    expect(applyWebPrepSourceChange(selection, "local", "old-db")).toMatchObject({
+      source: "local",
+      sourceId: "old-db",
+      opponent: "Old Opponent",
     });
   });
 
