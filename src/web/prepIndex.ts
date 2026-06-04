@@ -67,6 +67,16 @@ export type WebDatabasePositionGame = {
   nextMove: string | null;
 };
 
+export type WebDatabaseStatsSort =
+  | "games"
+  | "gamesLow"
+  | "recent"
+  | "oldest"
+  | "scoreHigh"
+  | "scoreLow"
+  | "move"
+  | "moveDesc";
+
 export type WebPrepMoveStatsPrep = Pick<
   WebPrepWorkspace,
   | "mode"
@@ -517,6 +527,35 @@ export function getWebDatabaseGamesForPosition({
     .slice(0, Math.max(1, Math.round(limit || 80)));
 }
 
+export function sortWebDatabaseMoveStats(
+  stats: WebPrepMoveStat[],
+  sort: WebDatabaseStatsSort,
+) {
+  return [...stats].sort((a, b) => {
+    switch (sort) {
+      case "gamesLow":
+        return a.total - b.total || compareWebDatabaseStatsDefault(a, b);
+      case "recent":
+        return sortableDate(b.lastPlayed ?? "") - sortableDate(a.lastPlayed ?? "") ||
+          compareWebDatabaseStatsDefault(a, b);
+      case "oldest":
+        return sortableDate(a.lastPlayed ?? "") - sortableDate(b.lastPlayed ?? "") ||
+          compareWebDatabaseStatsDefault(a, b);
+      case "scoreHigh":
+        return b.scoreForUser - a.scoreForUser || compareWebDatabaseStatsDefault(a, b);
+      case "scoreLow":
+        return a.scoreForUser - b.scoreForUser || compareWebDatabaseStatsDefault(a, b);
+      case "move":
+        return a.move.localeCompare(b.move, undefined, { sensitivity: "base" });
+      case "moveDesc":
+        return b.move.localeCompare(a.move, undefined, { sensitivity: "base" });
+      case "games":
+      default:
+        return compareWebDatabaseStatsDefault(a, b);
+    }
+  });
+}
+
 export function filterWebGamesByLocalFilters(
   games: WebGame[],
   filters?: WebLocalGameFilters | null,
@@ -694,6 +733,14 @@ function addPlayerResult(
 function countPlayer(players: Map<string, number>, name: string) {
   if (!name || name === "?") return;
   players.set(name, (players.get(name) ?? 0) + 1);
+}
+
+function compareWebDatabaseStatsDefault(a: WebPrepMoveStat, b: WebPrepMoveStat) {
+  return (
+    b.total - a.total ||
+    b.scoreForUser - a.scoreForUser ||
+    a.move.localeCompare(b.move, undefined, { sensitivity: "base" })
+  );
 }
 
 function pickLatest(current: string | null, candidate: string) {

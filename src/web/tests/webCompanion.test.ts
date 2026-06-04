@@ -30,6 +30,7 @@ import {
   getWebPrepBranchCoverageStats,
   getWebPrepMoveKey,
   getWebPrepMoveStats,
+  sortWebDatabaseMoveStats,
 } from "@/web/prepIndex";
 import {
   applyWebPrepModeChange,
@@ -275,6 +276,62 @@ describe("web companion PGN prep index", () => {
 
     expect(stats.map((stat) => stat.move).sort()).toEqual(["d4", "e4"]);
     expect(stats.every((stat) => stat.sourceLabel === "database move")).toBe(true);
+  });
+
+  test("sorts phone database stats with the visible stats sort control", () => {
+    const imported = parsePgnDatabase(
+      "database-sort.pgn",
+      `
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.01"]
+[Round "?"]
+[White "Target"]
+[Black "Me"]
+[Result "1-0"]
+
+1. e4 c5 1-0
+
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.02"]
+[Round "?"]
+[White "Target"]
+[Black "Me"]
+[Result "1-0"]
+
+1. e4 e5 1-0
+
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.03"]
+[Round "?"]
+[White "Me"]
+[Black "Target"]
+[Result "0-1"]
+
+1. d4 d5 0-1
+`,
+      1,
+    );
+
+    const stats = getWebDatabaseMoveStats({
+      games: imported.games,
+      fen: imported.games[0].moves[0].fenBefore,
+    });
+
+    expect(sortWebDatabaseMoveStats(stats, "games").map((stat) => stat.move)).toEqual([
+      "e4",
+      "d4",
+    ]);
+    expect(sortWebDatabaseMoveStats(stats, "recent").map((stat) => stat.move)).toEqual([
+      "d4",
+      "e4",
+    ]);
+    expect(sortWebDatabaseMoveStats(stats, "move").map((stat) => stat.move)).toEqual([
+      "d4",
+      "e4",
+    ]);
   });
 
   test("applies fork-style local date and result filters to database stats", () => {

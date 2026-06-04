@@ -181,6 +181,11 @@ default.
   anonymous explorer requests return 401, so do not remove authentication.
   Desktop `.db3` move blobs are not decoded in the browser; publish linked
   Files/PGN exports for phone-accessible local database functionality.
+- On 2026-06-04, the phone Database under-board header gained the desktop-style
+  Stats sort menu plus a `Matches` count for Stats and Games views. The sort
+  choice persists in browser storage and orders browser-indexed local stats and
+  Lichess explorer stats by most/fewest played, recent/oldest, score, or move,
+  making it easier to tell which source actually loaded on the phone.
 - A follow-up on 2026-06-03 made synced database folders first-class, single
   choices in the phone Database and Prep source pickers. Generated hosted
   database folders under `Databases/...` now appear beside already indexed

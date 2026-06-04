@@ -157,8 +157,10 @@ import {
   getWebPrepBranchCoverageStats,
   getWebPrepMoveKey,
   getWebPrepMoveStats,
+  sortWebDatabaseMoveStats,
   type WebPrepBranchCoverageStats,
   type WebPrepBranchStart,
+  type WebDatabaseStatsSort,
   type WebDatabasePositionGame,
   type WebPrepMoveStat,
 } from "./prepIndex";
@@ -222,9 +224,20 @@ const WEB_DATABASE_PANEL_START_DATE_STORAGE_KEY = "en-croissant-web-database-pan
 const WEB_DATABASE_PANEL_END_DATE_STORAGE_KEY = "en-croissant-web-database-panel-end-date";
 const WEB_DATABASE_PANEL_RESULT_STORAGE_KEY = "en-croissant-web-database-panel-result";
 const WEB_DATABASE_PANEL_VIEW_STORAGE_KEY = "en-croissant-web-database-panel-view";
+const WEB_DATABASE_PANEL_SORT_STORAGE_KEY = "en-croissant-web-database-panel-sort";
 const WEB_LICHESS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-lichess-explorer-options";
 const WEB_MASTERS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-masters-explorer-options";
 const WEB_PREP_SETUP_STORAGE_KEY = "en-croissant-web-prep-setup";
+const WEB_DATABASE_STATS_SORT_OPTIONS: { label: string; value: WebDatabaseStatsSort }[] = [
+  { label: "Most played", value: "games" },
+  { label: "Fewest played", value: "gamesLow" },
+  { label: "Most recent", value: "recent" },
+  { label: "Oldest played", value: "oldest" },
+  { label: "Highest score", value: "scoreHigh" },
+  { label: "Lowest score", value: "scoreLow" },
+  { label: "Move", value: "move" },
+  { label: "Move descending", value: "moveDesc" },
+];
 const DEFAULT_WEB_PREP_MIN_GAMES = 1;
 const DEFAULT_WEB_PREP_MOVE_LIMIT = 12;
 const DEFAULT_WEB_PREP_SORT: WebPrepSortState = { column: "games", direction: "desc" };
@@ -1106,6 +1119,13 @@ function DatabaseUnderBoardPanel({
     "stats",
   );
   const databaseView = isWebDatabasePanelView(storedView) ? storedView : "stats";
+  const [storedStatsSort, setStoredStatsSort] = usePersistentString(
+    WEB_DATABASE_PANEL_SORT_STORAGE_KEY,
+    "games",
+  );
+  const databaseStatsSort = isWebDatabaseStatsSort(storedStatsSort)
+    ? storedStatsSort
+    : "games";
   const [selectedLocalIdValue, setSelectedLocalIdValue] = usePersistentString(
     WEB_DATABASE_PANEL_LOCAL_STORAGE_KEY,
     "",
@@ -1366,6 +1386,14 @@ function DatabaseUnderBoardPanel({
   }, [currentFen, explorerOptions, lichessToken, refreshKey, source]);
 
   const stats = source === "local" ? localStats : onlineStats;
+  const sortedStats = useMemo(
+    () => sortWebDatabaseMoveStats(stats, databaseStatsSort),
+    [databaseStatsSort, stats],
+  );
+  const matchCount =
+    databaseView === "games" && source === "local"
+      ? localPositionGames.length
+      : stats.reduce((sum, stat) => sum + stat.total, 0);
   const localSourceLabel =
     trimmedLocalPlayerName && selectedLocalDatabase
       ? `${trimmedLocalPlayerName} as ${localColor} in ${selectedLocalDatabase.name}`
@@ -1432,17 +1460,39 @@ function DatabaseUnderBoardPanel({
         )}
       </Group>
 
-      <SegmentedControl
-        aria-label="Database view"
-        size="xs"
-        value={databaseView}
-        onChange={(value) => setStoredView(value as WebDatabasePanelView)}
-        data={[
-          { value: "stats", label: "Stats" },
-          { value: "games", label: "Games" },
-          { value: "options", label: "Options" },
-        ]}
-      />
+      <Group justify="space-between" gap="xs" align="center" wrap="wrap">
+        <SegmentedControl
+          aria-label="Database view"
+          size="xs"
+          value={databaseView}
+          onChange={(value) => setStoredView(value as WebDatabasePanelView)}
+          data={[
+            { value: "stats", label: "Stats" },
+            { value: "games", label: "Games" },
+            { value: "options", label: "Options" },
+          ]}
+        />
+        {databaseView !== "options" ? (
+          <Group gap="xs" wrap="wrap" justify="flex-end">
+            {databaseView === "stats" ? (
+              <Select
+                aria-label="Database move sort"
+                size="xs"
+                value={databaseStatsSort}
+                data={WEB_DATABASE_STATS_SORT_OPTIONS}
+                onChange={(value) =>
+                  setStoredStatsSort((value as WebDatabaseStatsSort | null) ?? "games")
+                }
+                allowDeselect={false}
+                w={150}
+              />
+            ) : null}
+            <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+              Matches {formatCount(matchCount)}
+            </Text>
+          </Group>
+        ) : null}
+      </Group>
 
       {source === "local" && loadingLocalSource ? (
         <Group gap="xs" wrap="nowrap">
@@ -1533,7 +1583,7 @@ function DatabaseUnderBoardPanel({
         />
       ) : (
         <CompactMoveTable
-          stats={stats}
+          stats={sortedStats}
           showState={false}
           emptyLabel="No database moves"
           onPlayMove={onPlayMove}
@@ -4621,6 +4671,10 @@ function isWebDatabasePanelSource(value: string): value is WebDatabasePanelSourc
 
 function isWebDatabasePanelView(value: string): value is WebDatabasePanelView {
   return value === "stats" || value === "games" || value === "options";
+}
+
+function isWebDatabaseStatsSort(value: string): value is WebDatabaseStatsSort {
+  return WEB_DATABASE_STATS_SORT_OPTIONS.some((option) => option.value === value);
 }
 
 function isOnlinePrepSource(source: WebPrepSource): source is WebDatabaseExplorerSource {
