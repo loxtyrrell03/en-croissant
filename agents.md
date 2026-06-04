@@ -319,6 +319,11 @@ default.
   folder after the user previously drilled into another database group, which
   had made the selected source label and visible database list feel mismatched
   or improperly loaded.
+- The selected database's containing folder row in `DatabaseFolderSelect` now
+  reads `Open current folder` instead of `Selected folder`. This keeps the
+  shortcut to drill into the current database folder while avoiding the
+  misleading impression that a folder, rather than exactly one database, is the
+  active Database or Prep source.
 
 ### App Shell
 

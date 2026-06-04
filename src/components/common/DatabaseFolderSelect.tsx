@@ -204,7 +204,7 @@ export default function DatabaseFolderSelect({
               {selectedGroup && selectedGroup.group !== "Unfiled" && (
                 <FolderRow
                   label={selectedGroup.group}
-                  detail="Selected folder"
+                  detail="Open current folder"
                   onClick={() => setActiveGroup(selectedGroup.group)}
                 />
               )}
