@@ -27,6 +27,7 @@ import {
   getWebDatabaseTitlePlayerName,
   getGamesForWebPrepSource,
   getNextOpenPrepStat,
+  getWebPrepBranchCoverageStats,
   getWebPrepMoveKey,
   getWebPrepMoveStats,
 } from "@/web/prepIndex";
@@ -655,6 +656,82 @@ describe("web companion PGN prep index", () => {
         key: getWebPrepMoveKey(line[1].fenBefore, "c5"),
       },
     });
+  });
+
+  test("computes phone prep branch coverage like the desktop Prep column", () => {
+    const imported = parsePgnDatabase(
+      "branch-coverage.pgn",
+      `
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.04"]
+[Round "?"]
+[White "Me"]
+[Black "Opponent"]
+[Result "1-0"]
+
+1. e4 c5 2. Nf3 d6 1-0
+
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.05"]
+[Round "?"]
+[White "Me"]
+[Black "Opponent"]
+[Result "0-1"]
+
+1. e4 c5 2. Nf3 e6 0-1
+`,
+      1,
+    );
+    const line = imported.games[0].moves.slice(0, 3).map((move) => ({
+      fenBefore: move.fenBefore,
+      fenAfter: move.fenAfter,
+      san: move.san,
+      uci: move.uci,
+      actor: move.color === "white" ? "user" as const : "opponent" as const,
+    }));
+    const afterE4 = imported.games[0].moves[0].fenAfter;
+    const branchRows = getWebPrepMoveStats({
+      games: imported.games,
+      fen: afterE4,
+      prep: {
+        mode: "player",
+        opponent: "Opponent",
+        userColor: "white",
+        sourceIds: [imported.database.id],
+      },
+    });
+    const c5 = branchRows.find((row) => row.move === "c5");
+    expect(c5).toBeTruthy();
+
+    const d6Key = getWebPrepMoveKey(imported.games[0].moves[3].fenBefore, "d6");
+    const stats = getWebPrepBranchCoverageStats({
+      line,
+      branchPly: 1,
+      row: c5!,
+      games: imported.games,
+      prep: {
+        mode: "player",
+        opponent: "Opponent",
+        userColor: "white",
+        sourceIds: [imported.database.id],
+      },
+      minGames: 1,
+      moveLimit: 10,
+      preparedMoves: { [d6Key]: 1 },
+      startedMoveKeys: new Set(line.map((move) => getWebPrepMoveKey(move.fenBefore, move.san))),
+    });
+
+    expect(stats).toMatchObject({
+      depthPly: 2,
+      opponentPositions: 1,
+      commonReplies: 2,
+      preparedReplies: 1,
+      startedReplies: 0,
+    });
+    expect(stats.replyCoverage).toBeCloseTo(0.5);
+    expect(stats.label).not.toBe("No line");
   });
 
   test("lists hosted web-library folders without requiring a laptop bridge", () => {

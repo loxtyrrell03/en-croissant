@@ -154,8 +154,10 @@ import {
   filterWebGamesByLocalFilters,
   getWebDatabaseTitlePlayerName,
   getNextOpenPrepStat,
+  getWebPrepBranchCoverageStats,
   getWebPrepMoveKey,
   getWebPrepMoveStats,
+  type WebPrepBranchCoverageStats,
   type WebPrepBranchStart,
   type WebDatabasePositionGame,
   type WebPrepMoveStat,
@@ -1798,6 +1800,35 @@ function PrepUnderBoardPanel({
       "skipped",
   ).length;
   const shownGamesCount = displayedStats.reduce((sum, stat) => sum + stat.total, 0);
+  const branchStatsByKey = useMemo<Record<string, WebPrepBranchCoverageStats>>(() => {
+    if (!activePrep || !opponentToMove) return {};
+    return Object.fromEntries(
+      displayedStats.map((stat) => [
+        stat.key,
+        getWebPrepBranchCoverageStats({
+          line: activePrep.line,
+          branchPly: currentLine.length,
+          row: stat,
+          games: selectedPrepSourceGames,
+          prep: activePrep,
+          minGames: selectedMinGames,
+          moveLimit: selectedMoveLimit,
+          preparedMoves: activePrep.preparedMoves,
+          skippedMoves: activePrep.skippedMoves ?? {},
+          startedMoveKeys,
+        }),
+      ]),
+    );
+  }, [
+    activePrep,
+    currentLine.length,
+    displayedStats,
+    opponentToMove,
+    selectedMinGames,
+    selectedMoveLimit,
+    selectedPrepSourceGames,
+    startedMoveKeys,
+  ]);
   const rootStartLabel = rootLine.length > 0 ? rootLine.map((move) => move.san).join(" ") : "game start";
   const firstLocalSourceId = state.databases[0]?.id ?? null;
   const currentPrepSetupSelection: WebPrepSetupSelection = {
@@ -2967,6 +2998,7 @@ function PrepUnderBoardPanel({
             preparedMoves={activePrep.preparedMoves}
             skippedMoves={activePrep.skippedMoves ?? {}}
             startedMoveKeys={startedMoveKeys}
+            branchStatsByKey={branchStatsByKey}
             showState={opponentToMove}
             emptyLabel="No prep moves"
             onPlayMove={onPlayMove}
@@ -3534,6 +3566,7 @@ function CompactMoveTable({
   preparedMoves,
   skippedMoves,
   startedMoveKeys,
+  branchStatsByKey,
   emptyLabel,
   onPlayMove,
   onOpenSourceGame,
@@ -3547,6 +3580,7 @@ function CompactMoveTable({
   preparedMoves?: Record<string, number>;
   skippedMoves?: Record<string, number>;
   startedMoveKeys?: Set<string>;
+  branchStatsByKey?: Record<string, WebPrepBranchCoverageStats>;
   emptyLabel: string;
   onPlayMove: (stat: WebPrepMoveStat) => void;
   onOpenSourceGame?: (game: WebGame) => void;
@@ -3563,7 +3597,14 @@ function CompactMoveTable({
       : sort;
   const sortedStats =
     isPrepTable && effectiveSort
-      ? sortWebPrepMoveStats(stats, effectiveSort, preparedMoves, skippedMoves, startedMoveKeys)
+      ? sortWebPrepMoveStats(
+          stats,
+          effectiveSort,
+          preparedMoves,
+          skippedMoves,
+          startedMoveKeys,
+          branchStatsByKey,
+        )
       : stats;
 
   if (stats.length === 0) {
@@ -3638,7 +3679,7 @@ function CompactMoveTable({
                       <PrepResultBar stat={stat} />
                     </Table.Td>
                     <Table.Td>
-                      <PrepCoverageCell status={status} />
+                      <PrepBranchStatsCell stats={branchStatsByKey?.[stat.key]} />
                     </Table.Td>
                     <Table.Td>
                       <Badge color={webPrepStatusColor(status)} variant="light" size="sm">
@@ -3931,25 +3972,65 @@ function PrepResultBar({ stat }: { stat: Pick<WebPrepMoveStat, "white" | "draw" 
   );
 }
 
-function PrepCoverageCell({ status }: { status: WebPrepBranchStatus }) {
-  const value = status === "prepared" ? 100 : status === "started" ? 45 : 0;
-  const label = status === "prepared" ? "Done" : status === "started" ? "Started" : "-";
+function PrepBranchStatsCell({ stats }: { stats?: WebPrepBranchCoverageStats }) {
+  if (!stats) {
+    return (
+      <Text size="xs" c="dimmed">
+        -
+      </Text>
+    );
+  }
+
+  const color = webPrepBranchStatsColor(stats.label);
 
   return (
-    <Stack gap={2} style={{ minWidth: 0 }}>
-      <Group gap={4} wrap="nowrap">
-        <Badge color={status === "prepared" ? "green" : status === "started" ? "blue" : "gray"} variant="light" size="sm">
-          {label}
-        </Badge>
-        {value > 0 ? (
+    <Tooltip label={webPrepBranchStatsTooltip(stats)} multiline w={290}>
+      <Stack gap={2} style={{ minWidth: 0 }}>
+        <Group gap={4} wrap="nowrap">
+          <Badge color={color} variant="light" size="sm">
+            {stats.label}
+          </Badge>
           <Text size="xs" fw={700}>
-            {value}%
+            {stats.score}%
           </Text>
-        ) : null}
-      </Group>
-      <Progress value={value} color={status === "prepared" ? "green" : "blue"} size={3} />
-    </Stack>
+        </Group>
+        <Progress value={stats.score} color={color} size={3} />
+        <Text size="xs" c="dimmed" truncate>
+          {Math.round(stats.replyCoverage * 100)}% replies - {stats.depthPly} ply
+        </Text>
+      </Stack>
+    </Tooltip>
   );
+}
+
+function webPrepBranchStatsTooltip(stats: WebPrepBranchCoverageStats) {
+  if (stats.commonReplies <= 0) {
+    return stats.depthPly > 0
+      ? "Line started, but no common replies met the current threshold."
+      : "No saved continuation under this opponent move yet.";
+  }
+  const started =
+    stats.startedReplies > 0 ? `, ${stats.startedReplies} only started` : "";
+  const missing =
+    stats.missingImportantMoves.length > 0
+      ? ` Missing: ${stats.missingImportantMoves.join(", ")}.`
+      : "";
+  return `${stats.preparedReplies}/${stats.commonReplies} shown replies prepared${started}.${missing}`;
+}
+
+function webPrepBranchStatsColor(label: WebPrepBranchCoverageStats["label"]) {
+  switch (label) {
+    case "Good":
+      return "green";
+    case "Solid":
+      return "teal";
+    case "Needs work":
+      return "yellow";
+    case "Thin":
+      return "orange";
+    case "No line":
+      return "gray";
+  }
 }
 
 function getNextWebPrepSort(current: WebPrepSortState, column: WebPrepSortColumn): WebPrepSortState {
@@ -3972,9 +4053,18 @@ function sortWebPrepMoveStats(
   preparedMoves: Record<string, number> | undefined,
   skippedMoves: Record<string, number> | undefined,
   startedMoveKeys: Set<string> | undefined,
+  branchStatsByKey: Record<string, WebPrepBranchCoverageStats> | undefined,
 ) {
   return [...stats].sort((a, b) => {
-    const diff = compareWebPrepMoveStats(a, b, sort.column, preparedMoves, skippedMoves, startedMoveKeys);
+    const diff = compareWebPrepMoveStats(
+      a,
+      b,
+      sort.column,
+      preparedMoves,
+      skippedMoves,
+      startedMoveKeys,
+      branchStatsByKey,
+    );
     const directed = sort.direction === "asc" ? diff : -diff;
     return directed || b.total - a.total || a.move.localeCompare(b.move, undefined, { sensitivity: "base" });
   });
@@ -3987,6 +4077,7 @@ function compareWebPrepMoveStats(
   preparedMoves: Record<string, number> | undefined,
   skippedMoves: Record<string, number> | undefined,
   startedMoveKeys: Set<string> | undefined,
+  branchStatsByKey: Record<string, WebPrepBranchCoverageStats> | undefined,
 ) {
   if (column === "move") {
     return a.move.localeCompare(b.move, undefined, { sensitivity: "base" });
@@ -3999,8 +4090,8 @@ function compareWebPrepMoveStats(
   }
   if (column === "prep") {
     return (
-      getWebPrepCoverageSortScore(a, preparedMoves, skippedMoves, startedMoveKeys) -
-      getWebPrepCoverageSortScore(b, preparedMoves, skippedMoves, startedMoveKeys)
+      getWebPrepCoverageSortScore(a, branchStatsByKey, preparedMoves, skippedMoves, startedMoveKeys) -
+      getWebPrepCoverageSortScore(b, branchStatsByKey, preparedMoves, skippedMoves, startedMoveKeys)
     );
   }
   if (column === "state") {
@@ -4019,10 +4110,13 @@ function getWebPrepStrengthSortScore(stat: WebPrepMoveStat) {
 
 function getWebPrepCoverageSortScore(
   stat: WebPrepMoveStat,
+  branchStatsByKey: Record<string, WebPrepBranchCoverageStats> | undefined,
   preparedMoves: Record<string, number> | undefined,
   skippedMoves: Record<string, number> | undefined,
   startedMoveKeys: Set<string> | undefined,
 ) {
+  const branchStats = branchStatsByKey?.[stat.key];
+  if (branchStats) return branchStats.score;
   const status = getWebPrepBranchStatus(stat, preparedMoves, skippedMoves, startedMoveKeys);
   if (status === "prepared") return 100;
   if (status === "started") return 45;

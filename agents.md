@@ -207,6 +207,12 @@ default.
   and the training header says `Away from prep start` when the board cursor is
   before the saved prep root instead of silently treating that position as the
   active prep branch.
+- The phone Prep move table now uses desktop-style branch coverage in the
+  `Prep` column. For browser-indexed local or temporary prep sources it scores
+  the saved continuation below an opponent move, counts common replies from the
+  same prep database, and labels the branch as `No line`, `Thin`, `Needs work`,
+  `Solid`, or `Good`; online explorer sources still show saved-line depth but
+  cannot yet fan out async multi-position explorer coverage in the browser.
 - Also on 2026-06-04, phone synced-database loading was hardened so hosted
   database folders behave more like desktop database files. Re-importing a
   hosted database now replaces the older phone IndexedDB copy with the same

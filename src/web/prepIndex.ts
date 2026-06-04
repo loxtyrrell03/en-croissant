@@ -27,6 +27,20 @@ export type WebPrepMoveStat = Opening & {
   strength: PrepMoveStrength | null;
 };
 
+export type WebPrepBranchStatus = "new" | "started" | "prepared" | "skipped";
+
+export type WebPrepBranchCoverageStats = {
+  score: number;
+  label: "No line" | "Thin" | "Needs work" | "Solid" | "Good";
+  depthPly: number;
+  opponentPositions: number;
+  commonReplies: number;
+  preparedReplies: number;
+  startedReplies: number;
+  replyCoverage: number;
+  missingImportantMoves: string[];
+};
+
 export type WebPrepBranchMove = {
   ply: number;
   move: WebPrepLineMove;
@@ -52,6 +66,18 @@ export type WebDatabasePositionGame = {
   ply: number;
   nextMove: string | null;
 };
+
+export type WebPrepMoveStatsPrep = Pick<
+  WebPrepWorkspace,
+  | "mode"
+  | "opponent"
+  | "userColor"
+  | "sourceIds"
+  | "builder"
+  | "startDate"
+  | "endDate"
+  | "result"
+> | null;
 
 export function collectGamesForSources(gamesByDatabase: Record<string, WebGame[]>, sourceIds: string[]) {
   const selected = sourceIds.length > 0 ? sourceIds : Object.keys(gamesByDatabase);
@@ -185,17 +211,7 @@ export function getWebPrepMoveStats({
   maxExamples = 4,
 }: {
   games: WebGame[];
-  prep: Pick<
-    WebPrepWorkspace,
-    | "mode"
-    | "opponent"
-    | "userColor"
-    | "sourceIds"
-    | "builder"
-    | "startDate"
-    | "endDate"
-    | "result"
-  > | null;
+  prep: WebPrepMoveStatsPrep;
   fen: string;
   maxExamples?: number;
 }): WebPrepMoveStat[] {
@@ -265,6 +281,119 @@ export function getWebPrepMoveStats({
         b.scoreForUser - a.scoreForUser ||
         a.move.localeCompare(b.move, undefined, { sensitivity: "base" }),
     );
+}
+
+export function getWebPrepBranchCoverageStats({
+  line,
+  branchPly,
+  row,
+  games,
+  prep,
+  minGames,
+  moveLimit,
+  preparedMoves = {},
+  skippedMoves = {},
+  startedMoveKeys = new Set<string>(),
+  maxPly = 8,
+  maxOpponentPositions = 24,
+}: {
+  line: WebPrepLineMove[];
+  branchPly: number;
+  row: Pick<WebPrepMoveStat, "key">;
+  games: WebGame[];
+  prep: WebPrepMoveStatsPrep;
+  minGames: number;
+  moveLimit: number;
+  preparedMoves?: Record<string, number>;
+  skippedMoves?: Record<string, number>;
+  startedMoveKeys?: Set<string>;
+  maxPly?: number;
+  maxOpponentPositions?: number;
+}): WebPrepBranchCoverageStats {
+  const safeBranchPly = Math.max(0, Math.min(Math.round(branchPly || 0), line.length));
+  const rowStatus = getWebPrepStatStatus(row.key, preparedMoves, skippedMoves, startedMoveKeys);
+  const branchMove = line[safeBranchPly] ?? null;
+  const hasMatchingBranch =
+    branchMove && getWebPrepMoveKey(branchMove.fenBefore, branchMove.san) === row.key;
+  const hasUserResponse = hasMatchingBranch && line[safeBranchPly + 1]?.actor === "user";
+  const branchResponseScore = hasUserResponse ? 1 : rowStatus === "started" ? 0.25 : 0;
+
+  if (!hasMatchingBranch || !hasUserResponse) {
+    return createWebPrepBranchCoverageStats({
+      branchResponseScore,
+      depthPly: 0,
+      opponentPositions: 0,
+      commonReplies: 0,
+      preparedReplies: 0,
+      startedReplies: 0,
+      replyCoverage: 0,
+      missingImportantMoves: [],
+    });
+  }
+
+  const userColor = prep?.userColor ?? getFenColor(branchMove.fenBefore);
+  const opponentColor = oppositeWebColor(userColor);
+  const maxPositionPly = Math.min(line.length, safeBranchPly + Math.max(1, maxPly));
+  let coverageWeight = 0;
+  let weightedCoverage = 0;
+  let commonReplies = 0;
+  let preparedReplies = 0;
+  let startedReplies = 0;
+  let opponentPositions = 0;
+  const missingImportantMoves: string[] = [];
+
+  for (let ply = safeBranchPly + 1; ply <= maxPositionPly; ply += 1) {
+    const fen = line[ply - 1]?.fenAfter ?? "";
+    if (!fen || getFenColor(fen) !== opponentColor) continue;
+    if (opponentPositions >= maxOpponentPositions) break;
+
+    const rows = getWebPrepMoveStats({ games, prep, fen })
+      .filter((stat) => stat.total >= minGames)
+      .slice(0, moveLimit);
+    const total = rows.reduce((sum, stat) => sum + stat.total, 0);
+    if (rows.length === 0 || total <= 0) continue;
+
+    const replyCoverage =
+      rows.reduce(
+        (sum, stat) =>
+          sum +
+          stat.total *
+            getWebPrepReplyCredit(
+              getWebPrepStatStatus(stat.key, preparedMoves, skippedMoves, startedMoveKeys),
+            ),
+        0,
+      ) / total;
+    const depthWeight = 1 / (1 + Math.max(0, ply - safeBranchPly - 1) * 0.2);
+    coverageWeight += depthWeight;
+    weightedCoverage += replyCoverage * depthWeight;
+    commonReplies += rows.length;
+    preparedReplies += rows.filter(
+      (stat) =>
+        getWebPrepStatStatus(stat.key, preparedMoves, skippedMoves, startedMoveKeys) === "prepared",
+    ).length;
+    startedReplies += rows.filter(
+      (stat) =>
+        getWebPrepStatStatus(stat.key, preparedMoves, skippedMoves, startedMoveKeys) === "started",
+    ).length;
+    for (const stat of rows) {
+      if (stat.total / total < 0.2) continue;
+      const status = getWebPrepStatStatus(stat.key, preparedMoves, skippedMoves, startedMoveKeys);
+      if (status === "prepared") continue;
+      if (!missingImportantMoves.includes(stat.move)) missingImportantMoves.push(stat.move);
+    }
+    opponentPositions += 1;
+  }
+
+  return createWebPrepBranchCoverageStats({
+    branchResponseScore,
+    depthPly: Math.min(maxPly, Math.max(0, line.length - safeBranchPly)),
+    opponentPositions,
+    commonReplies,
+    preparedReplies,
+    startedReplies,
+    replyCoverage: coverageWeight > 0 ? weightedCoverage / coverageWeight : 0,
+    missingImportantMoves,
+  });
 }
 
 export function getWebDatabaseMoveStats({
@@ -572,6 +701,77 @@ function pickLatest(current: string | null, candidate: string) {
   if (!candidateKey) return current;
   const currentKey = sortableDate(current ?? "");
   return !currentKey || candidateKey > currentKey ? candidate : current;
+}
+
+function createWebPrepBranchCoverageStats({
+  branchResponseScore,
+  depthPly,
+  opponentPositions,
+  commonReplies,
+  preparedReplies,
+  startedReplies,
+  replyCoverage,
+  missingImportantMoves,
+}: {
+  branchResponseScore: number;
+  depthPly: number;
+  opponentPositions: number;
+  commonReplies: number;
+  preparedReplies: number;
+  startedReplies: number;
+  replyCoverage: number;
+  missingImportantMoves: string[];
+}): WebPrepBranchCoverageStats {
+  const depthScore = Math.min(1, depthPly / 8);
+  const breadthScore = Math.min(1, opponentPositions / 3);
+  const score = Math.round(
+    100 *
+      (0.2 * branchResponseScore +
+        0.45 * replyCoverage +
+        0.3 * depthScore +
+        0.05 * breadthScore),
+  );
+
+  return {
+    score,
+    label: getWebPrepBranchCoverageLabel(score, depthPly),
+    depthPly,
+    opponentPositions,
+    commonReplies,
+    preparedReplies,
+    startedReplies,
+    replyCoverage,
+    missingImportantMoves: missingImportantMoves.slice(0, 3),
+  };
+}
+
+function getWebPrepBranchCoverageLabel(
+  score: number,
+  depthPly: number,
+): WebPrepBranchCoverageStats["label"] {
+  if (depthPly === 0) return "No line";
+  if (score >= 80) return "Good";
+  if (score >= 60) return "Solid";
+  if (score >= 35) return "Needs work";
+  return "Thin";
+}
+
+function getWebPrepStatStatus(
+  key: string,
+  preparedMoves: Record<string, number>,
+  skippedMoves: Record<string, number>,
+  startedMoveKeys: Set<string>,
+): WebPrepBranchStatus {
+  if (preparedMoves[key]) return "prepared";
+  if (skippedMoves[key]) return "skipped";
+  if (startedMoveKeys.has(key)) return "started";
+  return "new";
+}
+
+function getWebPrepReplyCredit(status: WebPrepBranchStatus) {
+  if (status === "prepared") return 1;
+  if (status === "started") return 0.35;
+  return 0;
 }
 
 function sortableDate(value: string) {
