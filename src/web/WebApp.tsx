@@ -19,6 +19,7 @@ import {
   Group,
   Loader,
   MantineProvider,
+  MultiSelect,
   NumberInput,
   Popover,
   Progress,
@@ -76,8 +77,17 @@ import { normalizePrepBuilderSettings, type PrepBuilderSettings } from "@/utils/
 import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import classes from "./WebApp.module.css";
 import {
+  DEFAULT_WEB_LICHESS_EXPLORER_OPTIONS,
+  DEFAULT_WEB_MASTERS_EXPLORER_OPTIONS,
   fetchWebExplorerMoveStats,
+  normalizeWebLichessExplorerOptions,
+  normalizeWebMastersExplorerOptions,
+  WEB_LICHESS_EXPLORER_RATINGS,
+  WEB_LICHESS_EXPLORER_SPEEDS,
   type WebDatabaseExplorerSource,
+  type WebExplorerOptions,
+  type WebLichessExplorerOptions,
+  type WebMastersExplorerOptions,
 } from "./explorer";
 import {
   mergeImportedWebDatabases,
@@ -192,6 +202,8 @@ const WEB_DATABASE_PANEL_SOURCE_STORAGE_KEY = "en-croissant-web-database-panel-s
 const WEB_DATABASE_PANEL_LOCAL_STORAGE_KEY = "en-croissant-web-database-panel-local-source";
 const WEB_DATABASE_PANEL_PLAYER_STORAGE_KEY = "en-croissant-web-database-panel-player";
 const WEB_DATABASE_PANEL_COLOR_STORAGE_KEY = "en-croissant-web-database-panel-color";
+const WEB_LICHESS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-lichess-explorer-options";
+const WEB_MASTERS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-masters-explorer-options";
 const DEFAULT_WEB_PREP_MIN_GAMES = 1;
 const DEFAULT_WEB_PREP_MOVE_LIMIT = 12;
 const DEFAULT_WEB_PREP_SORT: WebPrepSortState = { column: "games", direction: "desc" };
@@ -1072,9 +1084,17 @@ function DatabaseUnderBoardPanel({
   const [loadingLocalSource, setLoadingLocalSource] = useState<string | null>(null);
   const refreshingLocalPathRef = useRef<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [explorerOptionsOpen, setExplorerOptionsOpen] = useState(false);
   const [onlineStats, setOnlineStats] = useState<WebPrepMoveStat[]>([]);
   const [onlineLoading, setOnlineLoading] = useState(false);
   const [onlineError, setOnlineError] = useState<string | null>(null);
+  const {
+    lichessOptions,
+    setLichessOptions,
+    mastersOptions,
+    setMastersOptions,
+    explorerOptions,
+  } = useWebExplorerOptions();
   const hostedDatabases = useHostedDatabaseFolders();
   const sourceOptions = useMemo(
     () =>
@@ -1238,6 +1258,7 @@ function DatabaseUnderBoardPanel({
       source,
       fen: currentFen,
       token: lichessToken,
+      options: explorerOptions,
       signal: controller.signal,
     })
       .then((stats) => {
@@ -1257,7 +1278,7 @@ function DatabaseUnderBoardPanel({
       active = false;
       controller.abort();
     };
-  }, [currentFen, lichessToken, refreshKey, source]);
+  }, [currentFen, explorerOptions, lichessToken, refreshKey, source]);
 
   const importHostedPgnForDatabase = async (entry: WebHostedFileEntry) => {
     const imported = await importHostedPgn(entry);
@@ -1378,6 +1399,14 @@ function DatabaseUnderBoardPanel({
             >
               <IconRefresh size={16} />
             </ActionIcon>
+            <Button
+              size="compact-xs"
+              variant={explorerOptionsOpen ? "light" : "default"}
+              leftSection={<IconSettings size={14} />}
+              onClick={() => setExplorerOptionsOpen((open) => !open)}
+            >
+              Filters
+            </Button>
           </>
         )}
       </Group>
@@ -1401,6 +1430,18 @@ function DatabaseUnderBoardPanel({
           />
         </Collapse>
       )}
+
+      {source !== "local" ? (
+        <Collapse in={explorerOptionsOpen}>
+          <WebExplorerOptionsPanel
+            source={source}
+            lichessOptions={lichessOptions}
+            mastersOptions={mastersOptions}
+            onLichessOptionsChange={setLichessOptions}
+            onMastersOptionsChange={setMastersOptions}
+          />
+        </Collapse>
+      ) : null}
 
       {source === "local" && loadingLocalSource ? (
         <Center h={150}>
@@ -1536,10 +1577,18 @@ function PrepUnderBoardPanel({
   const [onlinePrepError, setOnlinePrepError] = useState<string | null>(null);
   const [onlineRootPrepStats, setOnlineRootPrepStats] = useState<WebPrepMoveStat[]>([]);
   const [onlineRootPrepLoading, setOnlineRootPrepLoading] = useState(false);
+  const [explorerOptionsOpen, setExplorerOptionsOpen] = useState(false);
   const [prepSort, setPrepSort] = useState<WebPrepSortState>(DEFAULT_WEB_PREP_SORT);
   const [prepCandidateSort, setPrepCandidateSort] = useState<WebPrepSortState>(
     DEFAULT_WEB_PREP_CANDIDATE_SORT,
   );
+  const {
+    lichessOptions,
+    setLichessOptions,
+    mastersOptions,
+    setMastersOptions,
+    explorerOptions,
+  } = useWebExplorerOptions();
   const lastActivePrepIdRef = useRef<string | null>(null);
   const hostedDatabases = useHostedDatabaseFolders();
   const players = useMemo(() => getKnownPlayers(state.gamesByDatabase), [state.gamesByDatabase]);
@@ -1718,6 +1767,7 @@ function PrepUnderBoardPanel({
       source: selectedPrepSource,
       fen: currentFen,
       token: lichessToken,
+      options: explorerOptions,
       signal: controller.signal,
     });
     const rootRequest =
@@ -1728,6 +1778,7 @@ function PrepUnderBoardPanel({
               source: selectedPrepSource,
               fen: branchFen,
               token: lichessToken,
+              options: explorerOptions,
               signal: controller.signal,
             })
           : Promise.resolve<WebPrepMoveStat[]>([]);
@@ -1762,7 +1813,7 @@ function PrepUnderBoardPanel({
       active = false;
       controller.abort();
     };
-  }, [activePrep, branchFen, currentFen, lichessToken, selectedPrepSource]);
+  }, [activePrep, branchFen, currentFen, explorerOptions, lichessToken, selectedPrepSource]);
 
   const createPrep = () => {
     const now = Date.now();
@@ -2477,6 +2528,14 @@ function PrepUnderBoardPanel({
                   >
                     Sign in
                   </Button>
+                  <Button
+                    size="compact-xs"
+                    variant={explorerOptionsOpen ? "light" : "default"}
+                    leftSection={<IconSettings size={14} />}
+                    onClick={() => setExplorerOptionsOpen((open) => !open)}
+                  >
+                    Filters
+                  </Button>
                 </Group>
               ) : selectedPrepSource === "temporary" && selectedTemporarySource ? (
                 <Badge key={selectedTemporarySource.id} size="xs" variant="light" color="violet">
@@ -2493,6 +2552,17 @@ function PrepUnderBoardPanel({
                   Choose a prep source or import hosted/public games.
                 </Text>
               )}
+              {isOnlinePrepSource(selectedPrepSource) ? (
+                <Collapse in={explorerOptionsOpen}>
+                  <WebExplorerOptionsPanel
+                    source={selectedPrepSource}
+                    lichessOptions={lichessOptions}
+                    mastersOptions={mastersOptions}
+                    onLichessOptionsChange={setLichessOptions}
+                    onMastersOptionsChange={setMastersOptions}
+                  />
+                </Collapse>
+              ) : null}
             </Stack>
           </Collapse>
 
@@ -2741,6 +2811,180 @@ function PrepUnderBoardPanel({
           />
         </>
       ) : null}
+    </Stack>
+  );
+}
+
+function WebExplorerOptionsPanel({
+  source,
+  lichessOptions,
+  mastersOptions,
+  onLichessOptionsChange,
+  onMastersOptionsChange,
+}: {
+  source: WebDatabaseExplorerSource;
+  lichessOptions: WebLichessExplorerOptions;
+  mastersOptions: WebMastersExplorerOptions;
+  onLichessOptionsChange: Dispatch<SetStateAction<WebLichessExplorerOptions>>;
+  onMastersOptionsChange: Dispatch<SetStateAction<WebMastersExplorerOptions>>;
+}) {
+  const updateLichessOptions = (patch: Partial<WebLichessExplorerOptions>) => {
+    onLichessOptionsChange((current) => normalizeWebLichessExplorerOptions({ ...current, ...patch }));
+  };
+  const updateMastersOptions = (patch: Partial<WebMastersExplorerOptions>) => {
+    onMastersOptionsChange((current) => normalizeWebMastersExplorerOptions({ ...current, ...patch }));
+  };
+
+  return (
+    <Stack gap="xs" className={classes.prepToolBox}>
+      {source === "lichess-all" ? (
+        <>
+          <Group gap="xs" wrap="wrap" align="flex-end">
+            <MultiSelect
+              label="Time controls"
+              size="xs"
+              value={lichessOptions.speeds}
+              onChange={(values) => {
+                if (values.length > 0) {
+                  updateLichessOptions({ speeds: values as WebLichessExplorerOptions["speeds"] });
+                }
+              }}
+              data={WEB_LICHESS_EXPLORER_SPEEDS.map((speed) => ({
+                value: speed,
+                label: formatExplorerSpeed(speed),
+              }))}
+              clearable={false}
+              style={{ flex: "1 1 14rem" }}
+            />
+            <MultiSelect
+              label="Average rating"
+              size="xs"
+              value={lichessOptions.ratings.map(String)}
+              onChange={(values) => {
+                const ratings = values
+                  .map(Number)
+                  .filter((rating): rating is WebLichessExplorerOptions["ratings"][number] =>
+                    WEB_LICHESS_EXPLORER_RATINGS.includes(
+                      rating as WebLichessExplorerOptions["ratings"][number],
+                    ),
+                  );
+                if (ratings.length > 0) updateLichessOptions({ ratings });
+              }}
+              data={WEB_LICHESS_EXPLORER_RATINGS.map((rating) => ({
+                value: String(rating),
+                label: rating === 0 ? "400" : String(rating),
+              }))}
+              clearable={false}
+              style={{ flex: "1 1 12rem" }}
+            />
+          </Group>
+          <Group gap="xs" wrap="wrap" align="flex-end">
+            <TextInput
+              label="Since"
+              size="xs"
+              type="month"
+              value={lichessOptions.since ?? ""}
+              onChange={(event) => updateLichessOptions({ since: event.currentTarget.value })}
+              style={{ flex: "1 1 8.5rem" }}
+            />
+            <TextInput
+              label="Until"
+              size="xs"
+              type="month"
+              value={lichessOptions.until ?? ""}
+              onChange={(event) => updateLichessOptions({ until: event.currentTarget.value })}
+              style={{ flex: "1 1 8.5rem" }}
+            />
+            <NumberInput
+              label="Show moves"
+              size="xs"
+              min={1}
+              max={30}
+              step={1}
+              value={lichessOptions.moves}
+              onChange={(value) =>
+                updateLichessOptions({ moves: typeof value === "number" ? value : 12 })
+              }
+              w={104}
+            />
+          </Group>
+          <Group gap="xs" wrap="wrap" align="flex-end">
+            <TextInput
+              label="Player"
+              size="xs"
+              placeholder="Lichess username"
+              value={lichessOptions.player ?? ""}
+              onChange={(event) => updateLichessOptions({ player: event.currentTarget.value })}
+              style={{ flex: "1 1 10rem" }}
+            />
+            <Select
+              label="Color"
+              size="xs"
+              value={lichessOptions.color}
+              onChange={(value) => updateLichessOptions({ color: value === "black" ? "black" : "white" })}
+              data={[
+                { value: "white", label: "White" },
+                { value: "black", label: "Black" },
+              ]}
+              allowDeselect={false}
+              w={116}
+            />
+            <Button
+              size="compact-xs"
+              variant="default"
+              onClick={() => onLichessOptionsChange(DEFAULT_WEB_LICHESS_EXPLORER_OPTIONS)}
+            >
+              Reset
+            </Button>
+          </Group>
+        </>
+      ) : (
+        <Group gap="xs" wrap="wrap" align="flex-end">
+          <NumberInput
+            label="Since"
+            size="xs"
+            min={1952}
+            max={new Date().getFullYear()}
+            step={1}
+            value={mastersOptions.since ? Number(mastersOptions.since) : ""}
+            onChange={(value) =>
+              updateMastersOptions({ since: typeof value === "number" ? String(value) : undefined })
+            }
+            w={108}
+          />
+          <NumberInput
+            label="Until"
+            size="xs"
+            min={1952}
+            max={new Date().getFullYear()}
+            step={1}
+            value={mastersOptions.until ? Number(mastersOptions.until) : ""}
+            onChange={(value) =>
+              updateMastersOptions({ until: typeof value === "number" ? String(value) : undefined })
+            }
+            w={108}
+          />
+          <NumberInput
+            label="Show moves"
+            size="xs"
+            min={1}
+            max={30}
+            step={1}
+            value={mastersOptions.moves}
+            onChange={(value) =>
+              updateMastersOptions({ moves: typeof value === "number" ? value : 12 })
+            }
+            w={112}
+          />
+          <Button
+            size="compact-xs"
+            variant="default"
+            onClick={() => onMastersOptionsChange(DEFAULT_WEB_MASTERS_EXPLORER_OPTIONS)}
+          >
+            Reset
+          </Button>
+        </Group>
+      )}
     </Stack>
   );
 }
@@ -3887,6 +4131,51 @@ function formatDatabasePickerLabel(name: string) {
   return name.replace(/\.pgn$/i, "");
 }
 
+function formatExplorerSpeed(speed: WebLichessExplorerOptions["speeds"][number]) {
+  switch (speed) {
+    case "ultraBullet":
+      return "UltraBullet";
+    case "bullet":
+      return "Bullet";
+    case "blitz":
+      return "Blitz";
+    case "rapid":
+      return "Rapid";
+    case "classical":
+      return "Classical";
+    case "correspondence":
+      return "Correspondence";
+  }
+}
+
+function useWebExplorerOptions() {
+  const [lichessOptions, setLichessOptions] = usePersistentJson(
+    WEB_LICHESS_EXPLORER_OPTIONS_STORAGE_KEY,
+    DEFAULT_WEB_LICHESS_EXPLORER_OPTIONS,
+    normalizeWebLichessExplorerOptions,
+  );
+  const [mastersOptions, setMastersOptions] = usePersistentJson(
+    WEB_MASTERS_EXPLORER_OPTIONS_STORAGE_KEY,
+    DEFAULT_WEB_MASTERS_EXPLORER_OPTIONS,
+    normalizeWebMastersExplorerOptions,
+  );
+  const explorerOptions = useMemo<WebExplorerOptions>(
+    () => ({
+      lichess: lichessOptions,
+      masters: mastersOptions,
+    }),
+    [lichessOptions, mastersOptions],
+  );
+
+  return {
+    lichessOptions,
+    setLichessOptions,
+    mastersOptions,
+    setMastersOptions,
+    explorerOptions,
+  };
+}
+
 function useHostedDatabaseFolders() {
   const [library, setLibrary] = useState<WebHostedLibrary | null>(null);
   const [loading, setLoading] = useState(false);
@@ -3933,6 +4222,31 @@ function isHostedDatabaseValue(value: string) {
 
 function hostedDatabasePathFromValue(value: string) {
   return value.replace(/^hosted-db:/, "");
+}
+
+function usePersistentJson<T>(
+  key: string,
+  fallback: T,
+  normalize: (value: Partial<T> | null | undefined) => T,
+) {
+  const [value, setValue] = useState<T>(() => {
+    try {
+      const stored = window.localStorage.getItem(key);
+      return stored ? normalize(JSON.parse(stored) as Partial<T>) : normalize(fallback as Partial<T>);
+    } catch {
+      return normalize(fallback as Partial<T>);
+    }
+  });
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(key, JSON.stringify(value));
+    } catch {
+      // Browser storage is best-effort for these small source options.
+    }
+  }, [key, value]);
+
+  return [value, setValue] as const;
 }
 
 function usePersistentString(key: string, fallback: string) {

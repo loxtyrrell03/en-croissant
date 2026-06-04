@@ -3,6 +3,7 @@ import {
   mergeImportedWebDatabases,
   needsHostedDatabaseRefresh,
 } from "@/web/databaseSync";
+import { buildWebExplorerUrl } from "@/web/explorer";
 import {
   getHostedDatabaseFolders,
   getHostedDirectPgnFilesInPath,
@@ -32,6 +33,58 @@ import { parsePgnDatabase } from "@/web/pgn";
 import { createEmptyWebState } from "@/web/storage";
 
 describe("web companion PGN prep index", () => {
+  test("builds Lichess All explorer URLs with desktop-style filters", () => {
+    const url = new URL(
+      buildWebExplorerUrl({
+        source: "lichess-all",
+        fen: "startpos",
+        options: {
+          lichess: {
+            speeds: ["rapid"],
+            ratings: [2000],
+            since: "2026-01",
+            until: "2026-06",
+            player: "IfanRJ",
+            color: "black",
+            moves: 18,
+          },
+        },
+      }),
+    );
+
+    expect(url.pathname).toBe("/player");
+    expect(url.searchParams.get("fen")).toBe("startpos");
+    expect(url.searchParams.get("player")).toBe("IfanRJ");
+    expect(url.searchParams.get("color")).toBe("black");
+    expect(url.searchParams.get("speeds")).toBe("rapid");
+    expect(url.searchParams.get("ratings")).toBe("2000");
+    expect(url.searchParams.get("since")).toBe("2026-01");
+    expect(url.searchParams.get("until")).toBe("2026-06");
+    expect(url.searchParams.get("moves")).toBe("18");
+  });
+
+  test("builds Masters explorer URLs with saved date filters", () => {
+    const url = new URL(
+      buildWebExplorerUrl({
+        source: "lichess-masters",
+        fen: "startpos",
+        options: {
+          masters: {
+            since: "2018",
+            until: "2025",
+            moves: 16,
+          },
+        },
+      }),
+    );
+
+    expect(url.pathname).toBe("/masters");
+    expect(url.searchParams.get("fen")).toBe("startpos");
+    expect(url.searchParams.get("since")).toBe("2018");
+    expect(url.searchParams.get("until")).toBe("2025");
+    expect(url.searchParams.get("moves")).toBe("16");
+  });
+
   test("indexes PGN games and returns opponent prep moves from a reached FEN", () => {
     const imported = parsePgnDatabase(
       "opponent.pgn",

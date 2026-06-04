@@ -289,6 +289,15 @@ default.
   done/skipped controls. `Start prep` no longer silently moves the prep root to
   the current board position or clears marks; changing the root is only done by
   `Start here`, preserving the fork's explicit root workflow on mobile.
+- A later 2026-06-04 phone explorer parity pass added saved Lichess All and
+  Lichess Masters filter controls shared by the phone Database and Prep panels.
+  Lichess All now exposes time controls, average rating buckets, since/until
+  months, player username plus color, and move count; player filters query the
+  Lichess `/player` explorer endpoint just like the desktop fork instead of
+  the generic all-games endpoint. Lichess Masters exposes since/until years and
+  move count. These options persist in phone localStorage and are passed to
+  both Database and Prep explorer requests, so the same online source behaves
+  consistently across the phone app.
 
 ### App Shell
 

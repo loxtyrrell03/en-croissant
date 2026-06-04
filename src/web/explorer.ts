@@ -1,7 +1,37 @@
 import type { WebPrepMoveStat } from "./prepIndex";
 import { getFenColor } from "./pgn";
+import type { WebColor } from "./model";
 
 export type WebDatabaseExplorerSource = "lichess-all" | "lichess-masters";
+export type WebLichessExplorerSpeed =
+  | "ultraBullet"
+  | "bullet"
+  | "blitz"
+  | "rapid"
+  | "classical"
+  | "correspondence";
+export type WebLichessExplorerRating = 0 | 1000 | 1200 | 1400 | 1600 | 1800 | 2000 | 2200 | 2500;
+
+export type WebLichessExplorerOptions = {
+  speeds: WebLichessExplorerSpeed[];
+  ratings: WebLichessExplorerRating[];
+  since?: string;
+  until?: string;
+  player?: string;
+  color: WebColor;
+  moves: number;
+};
+
+export type WebMastersExplorerOptions = {
+  since?: string;
+  until?: string;
+  moves: number;
+};
+
+export type WebExplorerOptions = {
+  lichess: WebLichessExplorerOptions;
+  masters: WebMastersExplorerOptions;
+};
 
 type ExplorerMove = {
   uci: string;
@@ -21,16 +51,46 @@ type ExplorerResponse = {
 
 const EXPLORER_BASE_URL = "https://explorer.lichess.org";
 const EXPLORER_TIMEOUT_MS = 20_000;
+export const WEB_LICHESS_EXPLORER_SPEEDS: WebLichessExplorerSpeed[] = [
+  "ultraBullet",
+  "bullet",
+  "blitz",
+  "rapid",
+  "classical",
+  "correspondence",
+];
+export const WEB_LICHESS_EXPLORER_RATINGS: WebLichessExplorerRating[] = [
+  0,
+  1000,
+  1200,
+  1400,
+  1600,
+  1800,
+  2000,
+  2200,
+  2500,
+];
+export const DEFAULT_WEB_LICHESS_EXPLORER_OPTIONS: WebLichessExplorerOptions = {
+  speeds: ["bullet", "blitz", "rapid", "classical", "correspondence"],
+  ratings: [1000, 1200, 1400, 1600, 1800, 2000, 2200, 2500],
+  color: "white",
+  moves: 12,
+};
+export const DEFAULT_WEB_MASTERS_EXPLORER_OPTIONS: WebMastersExplorerOptions = {
+  moves: 12,
+};
 
 export async function fetchWebExplorerMoveStats({
   source,
   fen,
   token,
+  options,
   signal,
 }: {
   source: WebDatabaseExplorerSource;
   fen: string;
   token: string;
+  options?: Partial<WebExplorerOptions>;
   signal?: AbortSignal;
 }): Promise<WebPrepMoveStat[]> {
   const trimmedToken = token.trim();
@@ -38,20 +98,8 @@ export async function fetchWebExplorerMoveStats({
     throw new Error("Lichess token required.");
   }
 
-  const endpoint = source === "lichess-all" ? "lichess" : "masters";
-  const params = new URLSearchParams({
-    fen,
-    moves: "12",
-  });
-
-  if (source === "lichess-all") {
-    params.set("variant", "standard");
-    params.set("speeds", "bullet,blitz,rapid,classical,correspondence");
-    params.set("ratings", "1000,1200,1400,1600,1800,2000,2200,2500");
-  }
-
   const response = await fetchWithTimeout(
-    `${EXPLORER_BASE_URL}/${endpoint}?${params.toString()}`,
+    buildWebExplorerUrl({ source, fen, options }),
     {
       headers: {
         Authorization: `Bearer ${trimmedToken}`,
@@ -69,6 +117,79 @@ export async function fetchWebExplorerMoveStats({
   }
 
   return explorerMovesToStats(await response.json(), source, fen);
+}
+
+export function buildWebExplorerUrl({
+  source,
+  fen,
+  options,
+}: {
+  source: WebDatabaseExplorerSource;
+  fen: string;
+  options?: Partial<WebExplorerOptions>;
+}) {
+  const params = new URLSearchParams({
+    fen,
+  });
+
+  if (source === "lichess-all") {
+    const lichessOptions = normalizeWebLichessExplorerOptions(options?.lichess);
+    const player = lichessOptions.player?.trim();
+    params.set("moves", String(clampExplorerMoves(lichessOptions.moves)));
+    params.set("variant", "standard");
+    if (player) {
+      params.set("player", player);
+      params.set("color", lichessOptions.color);
+    }
+    if (lichessOptions.speeds.length > 0) params.set("speeds", lichessOptions.speeds.join(","));
+    if (lichessOptions.ratings.length > 0) {
+      params.set("ratings", lichessOptions.ratings.join(","));
+    }
+    appendMonthParam(params, "since", lichessOptions.since);
+    appendMonthParam(params, "until", lichessOptions.until);
+    return `${EXPLORER_BASE_URL}/${player ? "player" : "lichess"}?${params.toString()}`;
+  }
+
+  const masterOptions = normalizeWebMastersExplorerOptions(options?.masters);
+  params.set("moves", String(clampExplorerMoves(masterOptions.moves)));
+  appendYearParam(params, "since", masterOptions.since);
+  appendYearParam(params, "until", masterOptions.until);
+  return `${EXPLORER_BASE_URL}/masters?${params.toString()}`;
+}
+
+export function normalizeWebLichessExplorerOptions(
+  options?: Partial<WebLichessExplorerOptions> | null,
+): WebLichessExplorerOptions {
+  const speeds =
+    options?.speeds?.filter((speed): speed is WebLichessExplorerSpeed =>
+      WEB_LICHESS_EXPLORER_SPEEDS.includes(speed as WebLichessExplorerSpeed),
+    ) ?? DEFAULT_WEB_LICHESS_EXPLORER_OPTIONS.speeds;
+  const ratings =
+    options?.ratings?.filter((rating): rating is WebLichessExplorerRating =>
+      WEB_LICHESS_EXPLORER_RATINGS.includes(rating as WebLichessExplorerRating),
+    ) ?? DEFAULT_WEB_LICHESS_EXPLORER_OPTIONS.ratings;
+  return {
+    speeds: speeds.length > 0 ? Array.from(new Set(speeds)) : DEFAULT_WEB_LICHESS_EXPLORER_OPTIONS.speeds,
+    ratings:
+      ratings.length > 0
+        ? Array.from(new Set(ratings)).sort((a, b) => a - b)
+        : DEFAULT_WEB_LICHESS_EXPLORER_OPTIONS.ratings,
+    since: normalizeMonthString(options?.since),
+    until: normalizeMonthString(options?.until),
+    player: options?.player?.trim() || undefined,
+    color: options?.color === "black" ? "black" : "white",
+    moves: clampExplorerMoves(options?.moves),
+  };
+}
+
+export function normalizeWebMastersExplorerOptions(
+  options?: Partial<WebMastersExplorerOptions> | null,
+): WebMastersExplorerOptions {
+  return {
+    since: normalizeYearString(options?.since),
+    until: normalizeYearString(options?.until),
+    moves: clampExplorerMoves(options?.moves),
+  };
 }
 
 function explorerMovesToStats(
@@ -110,6 +231,40 @@ function explorerMovesToStats(
         b.scoreForUser - a.scoreForUser ||
         a.move.localeCompare(b.move, undefined, { sensitivity: "base" }),
     );
+}
+
+function clampExplorerMoves(value: unknown) {
+  const numberValue = typeof value === "number" ? value : DEFAULT_WEB_LICHESS_EXPLORER_OPTIONS.moves;
+  return Math.max(1, Math.min(30, Math.round(numberValue || 12)));
+}
+
+function normalizeMonthString(value: unknown) {
+  if (typeof value !== "string") return undefined;
+  const match = value.trim().match(/^(\d{4})-(\d{1,2})$/);
+  if (!match) return undefined;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  if (!Number.isFinite(year) || !Number.isFinite(month) || year < 1952 || month < 1 || month > 12) {
+    return undefined;
+  }
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
+function normalizeYearString(value: unknown) {
+  if (typeof value !== "string") return undefined;
+  const year = Number(value.trim());
+  if (!Number.isInteger(year) || year < 1952 || year > new Date().getFullYear()) return undefined;
+  return String(year);
+}
+
+function appendMonthParam(params: URLSearchParams, key: string, value: string | undefined) {
+  const normalized = normalizeMonthString(value);
+  if (normalized) params.set(key, normalized);
+}
+
+function appendYearParam(params: URLSearchParams, key: string, value: string | undefined) {
+  const normalized = normalizeYearString(value);
+  if (normalized) params.set(key, normalized);
 }
 
 async function fetchWithTimeout(
