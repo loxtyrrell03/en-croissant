@@ -97,6 +97,8 @@ import {
   type WebMastersExplorerOptions,
 } from "./explorer";
 import {
+  filterWebDatabasesByHostedAvailability,
+  getWebDatabaseHostedPathFromSourceStorageValue,
   getWebDatabaseSourceStorageValue,
   getReusableHostedDatabaseImport,
   mergeImportedWebDatabases,
@@ -1243,9 +1245,9 @@ function DatabaseUnderBoardPanel({
     WEB_DATABASE_PANEL_LOCAL_STORAGE_KEY,
     "",
   );
-  const selectedLocalId = useMemo(
-    () => resolveWebDatabaseSourceId(selectedLocalIdValue, databases),
-    [databases, selectedLocalIdValue],
+  const selectedLocalStoredHostedPath = useMemo(
+    () => getWebDatabaseHostedPathFromSourceStorageValue(selectedLocalIdValue),
+    [selectedLocalIdValue],
   );
   const [localPlayerName, setLocalPlayerName] = usePersistentString(
     WEB_DATABASE_PANEL_PLAYER_STORAGE_KEY,
@@ -1285,27 +1287,47 @@ function DatabaseUnderBoardPanel({
     explorerOptions,
   } = useWebExplorerOptions();
   const hostedDatabases = useHostedDatabaseFolders();
+  const hostedDatabaseLibraryReady = Boolean(hostedDatabases.library?.manifest);
+  const selectableDatabases = useMemo(
+    () =>
+      filterWebDatabasesByHostedAvailability({
+        databases,
+        hostedFolders: hostedDatabases.folders,
+        hostedLibraryReady: hostedDatabaseLibraryReady,
+      }),
+    [databases, hostedDatabaseLibraryReady, hostedDatabases.folders],
+  );
+  const selectedLocalId = useMemo(
+    () => resolveWebDatabaseSourceId(selectedLocalIdValue, selectableDatabases),
+    [selectableDatabases, selectedLocalIdValue],
+  );
   const sourceOptions = useMemo(
     () =>
       getWebDatabaseSelectData({
-        databases,
+        databases: selectableDatabases,
         hostedFolders: hostedDatabases.folders,
       }),
-    [databases, hostedDatabases.folders],
+    [hostedDatabases.folders, selectableDatabases],
   );
-  const hasLocalChoices = databases.length > 0 || hostedDatabases.folders.length > 0;
+  const hasLocalChoices = selectableDatabases.length > 0 || hostedDatabases.folders.length > 0;
   const selectedLocalDatabase = useMemo(
-    () => databases.find((database) => database.id === selectedLocalId) ?? null,
-    [databases, selectedLocalId],
+    () => selectableDatabases.find((database) => database.id === selectedLocalId) ?? null,
+    [selectableDatabases, selectedLocalId],
   );
+  const selectedLocalHostedPath = selectedLocalDatabase?.hostedPath ?? selectedLocalStoredHostedPath;
   const selectedLocalHostedFolder = useMemo(
     () =>
-      selectedLocalDatabase?.hostedPath
-        ? hostedDatabases.folders.find((folder) => folder.path === selectedLocalDatabase.hostedPath) ??
-          null
+      selectedLocalHostedPath
+        ? hostedDatabases.folders.find((folder) => folder.path === selectedLocalHostedPath) ?? null
         : null,
-    [hostedDatabases.folders, selectedLocalDatabase?.hostedPath],
+    [hostedDatabases.folders, selectedLocalHostedPath],
   );
+  const selectedLocalPickerValue =
+    selectedLocalDatabase?.hostedPath
+      ? hostedDatabaseValue(selectedLocalDatabase.hostedPath)
+      : selectedLocalHostedFolder
+        ? hostedDatabaseValue(selectedLocalHostedFolder.path)
+        : selectedLocalId;
   const localGames = useMemo(
     () =>
       selectedLocalId ? collectGamesForSources(gamesByDatabase, [selectedLocalId]) : [],
@@ -1388,18 +1410,33 @@ function DatabaseUnderBoardPanel({
 
   useEffect(() => {
     setSelectedLocalIdValue((current) => {
-      if (resolveWebDatabaseSourceId(current, databases)) return current;
-      const firstDatabase = databases[0] ?? null;
+      if (resolveWebDatabaseSourceId(current, selectableDatabases)) return current;
+      const hostedPath = getWebDatabaseHostedPathFromSourceStorageValue(current);
+      if (
+        hostedPath &&
+        (hostedDatabases.loading ||
+          !hostedDatabases.library ||
+          hostedDatabases.folders.some((folder) => folder.path === hostedPath))
+      ) {
+        return current;
+      }
+      const firstDatabase = selectableDatabases[0] ?? null;
       return firstDatabase ? getWebDatabaseSourceStorageValue(firstDatabase) : "";
     });
-  }, [databases, setSelectedLocalIdValue]);
+  }, [
+    hostedDatabases.folders,
+    hostedDatabases.library,
+    hostedDatabases.loading,
+    selectableDatabases,
+    setSelectedLocalIdValue,
+  ]);
 
   const setSource = (nextSource: WebDatabasePanelSource) => {
     setStoredSource(nextSource);
   };
 
   const setSelectedLocalId = (nextSourceId: string | null) => {
-    const database = databases.find((candidate) => candidate.id === nextSourceId) ?? null;
+    const database = selectableDatabases.find((candidate) => candidate.id === nextSourceId) ?? null;
     setSelectedLocalIdValue(database ? getWebDatabaseSourceStorageValue(database) : "");
   };
 
@@ -1453,13 +1490,24 @@ function DatabaseUnderBoardPanel({
     const folderPath = hostedDatabasePathFromValue(value);
     const folder = hostedDatabases.folders.find((candidate) => candidate.path === folderPath);
     if (!folder || !hostedDatabases.library) return;
+    const database = databases.find((candidate) => candidate.hostedPath === folder.path) ?? null;
+    if (
+      database &&
+      !needsHostedDatabaseRefresh({
+        database,
+        games: gamesByDatabase[database.id] ?? [],
+        hostedFolder: folder,
+      })
+    ) {
+      setSelectedLocalIdValue(getWebDatabaseSourceStorageValue(database));
+      return;
+    }
     await refreshHostedLocalDatabase(folder);
   };
 
   useEffect(() => {
     if (
       source !== "local" ||
-      !selectedLocalDatabase ||
       !selectedLocalHostedFolder ||
       !hostedDatabases.library ||
       loadingLocalSource
@@ -1473,6 +1521,7 @@ function DatabaseUnderBoardPanel({
         games: localGames,
         hostedFolder: selectedLocalHostedFolder,
       })
+      && selectedLocalDatabase
     ) {
       return;
     }
@@ -1596,7 +1645,7 @@ function DatabaseUnderBoardPanel({
             <DatabaseFolderSelect
               label="Local database"
               size="xs"
-              value={selectedLocalId}
+              value={selectedLocalPickerValue}
               onChange={(value) => void chooseLocalDatabase(value)}
               data={sourceOptions}
               placeholder={hasLocalChoices ? "Choose database" : "No local databases"}
@@ -1886,15 +1935,25 @@ function PrepUnderBoardPanel({
   } = useWebExplorerOptions();
   const lastActivePrepIdRef = useRef<string | null>(null);
   const hostedDatabases = useHostedDatabaseFolders();
+  const hostedDatabaseLibraryReady = Boolean(hostedDatabases.library?.manifest);
+  const selectableDatabases = useMemo(
+    () =>
+      filterWebDatabasesByHostedAvailability({
+        databases: state.databases,
+        hostedFolders: hostedDatabases.folders,
+        hostedLibraryReady: hostedDatabaseLibraryReady,
+      }),
+    [hostedDatabaseLibraryReady, hostedDatabases.folders, state.databases],
+  );
   const sourceOptions = useMemo(
     () =>
       getWebDatabaseSelectData({
-        databases: state.databases,
+        databases: selectableDatabases,
         hostedFolders: hostedDatabases.folders,
         includeOnline: true,
         temporarySource: activePrep?.temporarySource ?? draftTemporarySource,
       }),
-    [activePrep?.temporarySource, draftTemporarySource, hostedDatabases.folders, state.databases],
+    [activePrep?.temporarySource, draftTemporarySource, hostedDatabases.folders, selectableDatabases],
   );
   const selectedPrepMode = activePrep?.mode ?? prepMode;
   const selectedPrepSource = activePrep?.source ?? prepSource;
@@ -1904,6 +1963,25 @@ function PrepUnderBoardPanel({
     selectedSource: selectedPrepSource,
     draftSourceId: sourceId,
   });
+  const draftPrepStoredHostedPath = useMemo(
+    () =>
+      !activePrep && selectedPrepSource === "local"
+        ? getWebDatabaseHostedPathFromSourceStorageValue(storedPrepSetup.sourceRef)
+        : null,
+    [activePrep, selectedPrepSource, storedPrepSetup.sourceRef],
+  );
+  const activePrepSourceId = selectedPrepSource === "local" ? selectedPrepSourceId : null;
+  const activePrepSourceDatabase =
+    selectableDatabases.find((database) => database.id === activePrepSourceId) ?? null;
+  const selectedPrepHostedPath =
+    activePrepSourceDatabase?.hostedPath ?? draftPrepStoredHostedPath;
+  const selectedPrepHostedFolder = useMemo(
+    () =>
+      selectedPrepHostedPath
+        ? hostedDatabases.folders.find((folder) => folder.path === selectedPrepHostedPath) ?? null
+        : null,
+    [hostedDatabases.folders, selectedPrepHostedPath],
+  );
   const selectedPrepSourceValue =
     selectedPrepSource === "lichess-all"
       ? WEB_LICHESS_ALL_SOURCE_VALUE
@@ -1911,23 +1989,17 @@ function PrepUnderBoardPanel({
         ? WEB_LICHESS_MASTERS_SOURCE_VALUE
         : selectedPrepSource === "temporary"
           ? WEB_TEMPORARY_PREP_SOURCE_VALUE
-          : selectedPrepSourceId;
-  const activePrepSourceId = selectedPrepSource === "local" ? selectedPrepSourceId : null;
-  const activePrepSourceDatabase =
-    state.databases.find((database) => database.id === activePrepSourceId) ?? null;
-  const activePrepSourceGames = activePrepSourceId
-    ? state.gamesByDatabase[activePrepSourceId] ?? []
+          : activePrepSourceDatabase?.hostedPath
+            ? hostedDatabaseValue(activePrepSourceDatabase.hostedPath)
+            : selectedPrepHostedFolder
+              ? hostedDatabaseValue(selectedPrepHostedFolder.path)
+              : selectedPrepSourceId;
+  const activePrepSourceGames = activePrepSourceDatabase
+    ? state.gamesByDatabase[activePrepSourceDatabase.id] ?? []
     : [];
   const selectedPrepSourceGames =
     selectedPrepSource === "temporary" ? selectedTemporarySource?.games ?? [] : activePrepSourceGames;
-  const activePrepHostedFolder = useMemo(
-    () =>
-      activePrepSourceDatabase?.hostedPath
-        ? hostedDatabases.folders.find((folder) => folder.path === activePrepSourceDatabase.hostedPath) ??
-          null
-        : null,
-    [activePrepSourceDatabase?.hostedPath, hostedDatabases.folders],
-  );
+  const activePrepHostedFolder = selectedPrepHostedFolder;
   const selectedMinGames = activePrep?.minGames ?? minGames;
   const selectedMoveLimit = activePrep?.moveLimit ?? moveLimit;
   const selectedPrepStartDate = activePrep?.startDate ?? prepStartDate;
@@ -2116,9 +2188,27 @@ function PrepUnderBoardPanel({
         state.databases,
       );
       if (storedSourceId) return storedSourceId;
+      const storedHostedPath = getWebDatabaseHostedPathFromSourceStorageValue(
+        storedPrepSetup.sourceRef,
+      );
+      if (
+        storedHostedPath &&
+        (hostedDatabases.loading ||
+          !hostedDatabases.library ||
+          hostedDatabases.folders.some((folder) => folder.path === storedHostedPath))
+      ) {
+        return null;
+      }
       return state.databases[0]?.id ?? null;
     });
-  }, [state.databases, storedPrepSetup.sourceId, storedPrepSetup.sourceRef]);
+  }, [
+    hostedDatabases.folders,
+    hostedDatabases.library,
+    hostedDatabases.loading,
+    state.databases,
+    storedPrepSetup.sourceId,
+    storedPrepSetup.sourceRef,
+  ]);
 
   useEffect(() => {
     if (!activePrep) {
@@ -2620,7 +2710,7 @@ function PrepUnderBoardPanel({
     }
 
     if (!isHostedDatabaseValue(value)) {
-      const database = state.databases.find((candidate) => candidate.id === value) ?? null;
+      const database = selectableDatabases.find((candidate) => candidate.id === value) ?? null;
       const hostedFolder = database?.hostedPath
         ? hostedDatabases.folders.find((folder) => folder.path === database.hostedPath) ?? null
         : null;
@@ -2643,13 +2733,24 @@ function PrepUnderBoardPanel({
     const folderPath = hostedDatabasePathFromValue(value);
     const folder = hostedDatabases.folders.find((candidate) => candidate.path === folderPath);
     if (!folder || !hostedDatabases.library) return;
+    const database = state.databases.find((candidate) => candidate.hostedPath === folder.path) ?? null;
+    if (
+      database &&
+      !needsHostedDatabaseRefresh({
+        database,
+        games: state.gamesByDatabase[database.id] ?? [],
+        hostedFolder: folder,
+      })
+    ) {
+      updateActivePrepSource("local", database.id);
+      return;
+    }
     await refreshHostedPrepDatabase(folder);
   };
 
   useEffect(() => {
     if (
       selectedPrepSource !== "local" ||
-      !activePrepSourceDatabase ||
       !activePrepHostedFolder ||
       !hostedDatabases.library ||
       loadingPrepSource
@@ -2663,6 +2764,7 @@ function PrepUnderBoardPanel({
         games: activePrepSourceGames,
         hostedFolder: activePrepHostedFolder,
       })
+      && activePrepSourceDatabase
     ) {
       return;
     }
@@ -5158,13 +5260,13 @@ function getWebDatabaseSelectData({
     const updateAvailable =
       hostedFolder && (database.hostedUpdatedAt ?? 0) < hostedFolder.lastModified;
     addItem(folderPath ? getHostedDatabaseGroupLabel(folderPath) : "Unfiled", {
-      value: database.id,
+      value: database.hostedPath ? hostedDatabaseValue(database.hostedPath) : database.id,
       label: formatDatabasePickerLabel(database.name),
       detail: updateAvailable
-        ? `Update available - ${formatCount(hostedFolder.fileCount)} PGN${
+        ? `Synced update available - ${formatCount(hostedFolder.fileCount)} PGN${
             hostedFolder.fileCount === 1 ? "" : "s"
           } - ${formatBytes(hostedFolder.sizeBytes)}`
-        : `Loaded - ${formatCount(database.gameCount)} game${database.gameCount === 1 ? "" : "s"}${
+        : `Ready - ${formatCount(database.gameCount)} game${database.gameCount === 1 ? "" : "s"}${
             database.sizeBytes ? ` - ${formatBytes(database.sizeBytes)}` : ""
           }`,
       searchText: [
@@ -5185,7 +5287,7 @@ function getWebDatabaseSelectData({
     addItem(folderPath ? getHostedDatabaseGroupLabel(folderPath) : "Unfiled", {
       value: hostedDatabaseValue(folder.path),
       label: getHostedDatabaseLeafLabel(folder.path),
-      detail: `Not loaded - ${formatCount(folder.fileCount)} PGN${
+      detail: `Synced - loads when selected - ${formatCount(folder.fileCount)} PGN${
         folder.fileCount === 1 ? "" : "s"
       } - ${formatBytes(folder.sizeBytes)}`,
       searchText: `${folder.label} ${folder.path} synced hosted fork database not loaded`,

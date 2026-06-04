@@ -1,5 +1,8 @@
 import { describe, expect, test } from "vitest";
 import {
+  filterWebDatabasesByHostedAvailability,
+  getWebDatabaseHostedPathFromSourceStorageValue,
+  getWebDatabaseHostedSourceStorageValue,
   getWebDatabaseSourceStorageValue,
   getReusableHostedDatabaseImport,
   mergeImportedWebDatabases,
@@ -988,6 +991,70 @@ describe("web companion PGN prep index", () => {
     ]);
   });
 
+  test("filters stale indexed hosted databases after the current library loads", () => {
+    const databases = [
+      {
+        id: "local",
+        name: "Manual import",
+        importedAt: 1,
+        updatedAt: 1,
+        gameCount: 1,
+        sizeBytes: 100,
+        latestDate: null,
+        playerNames: [],
+      },
+      {
+        id: "current-hosted",
+        name: "loxty_chesscom",
+        hostedPath: "Databases/Desktop/Online Games/Chess.com/loxty_chesscom",
+        hostedUpdatedAt: 4,
+        importedAt: 2,
+        updatedAt: 2,
+        gameCount: 2,
+        sizeBytes: 200,
+        latestDate: null,
+        playerNames: [],
+      },
+      {
+        id: "stale-hosted",
+        name: "lachlan1415_lichess",
+        hostedPath: "Databases/Fork/Online Games/Lichess/lachlan1415_lichess",
+        hostedUpdatedAt: 3,
+        importedAt: 3,
+        updatedAt: 3,
+        gameCount: 3,
+        sizeBytes: 300,
+        latestDate: null,
+        playerNames: [],
+      },
+    ];
+    const hostedFolders = [
+      {
+        path: "Databases/Desktop/Online Games/Chess.com/loxty_chesscom",
+        name: "loxty_chesscom",
+        label: "Desktop / Online Games / Chess.com / loxty_chesscom",
+        fileCount: 1,
+        sizeBytes: 200,
+        lastModified: 4,
+      },
+    ];
+
+    expect(
+      filterWebDatabasesByHostedAvailability({
+        databases,
+        hostedFolders,
+        hostedLibraryReady: false,
+      }).map((database) => database.id),
+    ).toEqual(["local", "current-hosted", "stale-hosted"]);
+    expect(
+      filterWebDatabasesByHostedAvailability({
+        databases,
+        hostedFolders,
+        hostedLibraryReady: true,
+      }).map((database) => database.id),
+    ).toEqual(["local", "current-hosted"]);
+  });
+
   test("reuses already indexed hosted databases before downloading synced PGNs", () => {
     const imported = parsePgnDatabase(
       "opponent.pgn",
@@ -1233,6 +1300,13 @@ describe("web companion PGN prep index", () => {
     const stored = getWebDatabaseSourceStorageValue(oldImport.database);
 
     expect(stored).toBe("hosted:Databases/Fork/Prep/Opponent");
+    expect(getWebDatabaseHostedSourceStorageValue("\\Databases\\Fork\\Prep\\Opponent\\")).toBe(
+      stored,
+    );
+    expect(getWebDatabaseHostedPathFromSourceStorageValue(stored)).toBe(
+      "Databases/Fork/Prep/Opponent",
+    );
+    expect(getWebDatabaseHostedPathFromSourceStorageValue(oldImport.database.id)).toBeNull();
     expect(resolveWebDatabaseSourceId(stored, [newImport.database])).toBe(newImport.database.id);
     expect(resolveWebDatabaseSourceId(oldImport.database.id, [oldImport.database])).toBe(
       oldImport.database.id,
