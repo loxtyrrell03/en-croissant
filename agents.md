@@ -390,6 +390,13 @@ default.
   switch responsive. On narrow phone widths the header now puts the switch on
   its own full-width row with equal segments, so the `Prep` segment stays
   visible and tappable instead of being clipped by the FEN/title text.
+- A later 2026-06-04 phone Database/Prep strength parity pass wired the web
+  move tables into the fork's blended strength model. Local Database stats and
+  Lichess All/Masters explorer rows now compute practical/blended strength,
+  Database has saved Smart/Engine/Practical strength settings plus strength,
+  engine, and WDL sort choices, and the phone Database table exposes
+  `Blend / Engine / Games / WDL / Last` while Prep strength cells show the same
+  engine and practical WDL details inline.
 
 ### App Shell
 

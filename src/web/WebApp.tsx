@@ -234,10 +234,17 @@ const WEB_DATABASE_PANEL_END_DATE_STORAGE_KEY = "en-croissant-web-database-panel
 const WEB_DATABASE_PANEL_RESULT_STORAGE_KEY = "en-croissant-web-database-panel-result";
 const WEB_DATABASE_PANEL_VIEW_STORAGE_KEY = "en-croissant-web-database-panel-view";
 const WEB_DATABASE_PANEL_SORT_STORAGE_KEY = "en-croissant-web-database-panel-sort";
+const WEB_DATABASE_PANEL_STRENGTH_STORAGE_KEY = "en-croissant-web-database-panel-strength";
 const WEB_LICHESS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-lichess-explorer-options";
 const WEB_MASTERS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-masters-explorer-options";
 const WEB_PREP_SETUP_STORAGE_KEY = "en-croissant-web-prep-setup";
 const WEB_DATABASE_STATS_SORT_OPTIONS: { label: string; value: WebDatabaseStatsSort }[] = [
+  { label: "Blended strength", value: "strengthHigh" },
+  { label: "Blended weakness", value: "strengthLow" },
+  { label: "Engine strength", value: "engineHigh" },
+  { label: "Engine weakness", value: "engineLow" },
+  { label: "Best WDL", value: "wdlHigh" },
+  { label: "Worst WDL", value: "wdlLow" },
   { label: "Most played", value: "games" },
   { label: "Fewest played", value: "gamesLow" },
   { label: "Most recent", value: "recent" },
@@ -1136,6 +1143,11 @@ function DatabaseUnderBoardPanel({
   const databaseStatsSort = isWebDatabaseStatsSort(storedStatsSort)
     ? storedStatsSort
     : "games";
+  const [databaseStrengthSettings, setDatabaseStrengthSettings] = usePersistentJson(
+    WEB_DATABASE_PANEL_STRENGTH_STORAGE_KEY,
+    normalizeWebPrepStrengthSettings(null),
+    normalizeWebPrepStrengthSettings,
+  );
   const [selectedLocalIdValue, setSelectedLocalIdValue] = usePersistentString(
     WEB_DATABASE_PANEL_LOCAL_STORAGE_KEY,
     "",
@@ -1230,8 +1242,16 @@ function DatabaseUnderBoardPanel({
               color: localColor,
             }
           : null,
+        strengthSettings: databaseStrengthSettings,
       }),
-    [currentFen, localColor, localFilters, localGames, trimmedLocalPlayerName],
+    [
+      currentFen,
+      databaseStrengthSettings,
+      localColor,
+      localFilters,
+      localGames,
+      trimmedLocalPlayerName,
+    ],
   );
   const localPositionGames = useMemo(
     () =>
@@ -1374,6 +1394,7 @@ function DatabaseUnderBoardPanel({
       fen: currentFen,
       token: lichessToken,
       options: explorerOptions,
+      strengthSettings: databaseStrengthSettings,
       signal: controller.signal,
     })
       .then((stats) => {
@@ -1393,7 +1414,7 @@ function DatabaseUnderBoardPanel({
       active = false;
       controller.abort();
     };
-  }, [currentFen, explorerOptions, lichessToken, refreshKey, source]);
+  }, [currentFen, databaseStrengthSettings, explorerOptions, lichessToken, refreshKey, source]);
 
   const stats = source === "local" ? localStats : onlineStats;
   const sortedStats = useMemo(
@@ -1485,17 +1506,28 @@ function DatabaseUnderBoardPanel({
         {databaseView !== "options" ? (
           <Group gap="xs" wrap="wrap" justify="flex-end">
             {databaseView === "stats" ? (
-              <Select
-                aria-label="Database move sort"
-                size="xs"
-                value={databaseStatsSort}
-                data={WEB_DATABASE_STATS_SORT_OPTIONS}
-                onChange={(value) =>
-                  setStoredStatsSort((value as WebDatabaseStatsSort | null) ?? "games")
-                }
-                allowDeselect={false}
-                w={150}
-              />
+              <>
+                <WebPrepStrengthSettingsButton
+                  builderSettings={databaseStrengthSettings}
+                  updateBuilderSettings={(patch) =>
+                    setDatabaseStrengthSettings((current) =>
+                      normalizeWebPrepStrengthSettings({ ...current, ...patch }),
+                    )
+                  }
+                  buttonLabel="Strength"
+                />
+                <Select
+                  aria-label="Database move sort"
+                  size="xs"
+                  value={databaseStatsSort}
+                  data={WEB_DATABASE_STATS_SORT_OPTIONS}
+                  onChange={(value) =>
+                    setStoredStatsSort((value as WebDatabaseStatsSort | null) ?? "games")
+                  }
+                  allowDeselect={false}
+                  w={170}
+                />
+              </>
             ) : null}
             <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
               Matches {formatCount(matchCount)}
@@ -2000,6 +2032,7 @@ function PrepUnderBoardPanel({
       fen: currentFen,
       token: lichessToken,
       options: explorerOptions,
+      strengthSettings: activePrep.builder,
       signal: controller.signal,
     });
     const rootRequest =
@@ -2011,6 +2044,7 @@ function PrepUnderBoardPanel({
               fen: branchFen,
               token: lichessToken,
               options: explorerOptions,
+              strengthSettings: activePrep.builder,
               signal: controller.signal,
             })
           : Promise.resolve<WebPrepMoveStat[]>([]);
@@ -3791,7 +3825,7 @@ function CompactMoveTable({
   }
 
   return (
-    <Table.ScrollContainer minWidth={showState ? 760 : isPrepCandidateTable ? 560 : 520}>
+    <Table.ScrollContainer minWidth={showState ? 760 : isPrepCandidateTable ? 560 : 720}>
       <Table className={classes.compactTable} verticalSpacing={showState ? 3 : 4} highlightOnHover>
         <Table.Thead>
           {showState ? (
@@ -3815,6 +3849,8 @@ function CompactMoveTable({
           ) : (
             <Table.Tr>
               <Table.Th>Move</Table.Th>
+              <Table.Th>Blend</Table.Th>
+              <Table.Th>Engine</Table.Th>
               <Table.Th>Games</Table.Th>
               <Table.Th>WDL</Table.Th>
               <Table.Th>Last</Table.Th>
@@ -3880,12 +3916,23 @@ function CompactMoveTable({
                 ) : (
                   <>
                     <Table.Td>
+                      <PrepStrengthCell strength={stat.strength} compact />
+                    </Table.Td>
+                    <Table.Td>
+                      <MoveStrengthEngineCell strength={stat.strength} />
+                    </Table.Td>
+                    <Table.Td>
                       <Text size="sm">{formatCount(stat.total)}</Text>
                       <Text size="xs" c="dimmed">
                         {formatPercent(stat.share)}
                       </Text>
                     </Table.Td>
-                    <Table.Td>{formatPercent(stat.scoreForUser)}</Table.Td>
+                    <Table.Td>
+                      <PrepResultBar stat={stat} />
+                      <Text size="xs" c="dimmed">
+                        Score {formatPercent(stat.scoreForUser)}
+                      </Text>
+                    </Table.Td>
                     <Table.Td>{formatWebDate(stat.lastPlayed) || "-"}</Table.Td>
                   </>
                 )}
@@ -4003,7 +4050,13 @@ function SortableWebPrepTh({
   );
 }
 
-function PrepStrengthCell({ strength }: { strength: WebPrepMoveStat["strength"] }) {
+function PrepStrengthCell({
+  strength,
+  compact = false,
+}: {
+  strength: WebPrepMoveStat["strength"];
+  compact?: boolean;
+}) {
   if (!strength) {
     return (
       <Text size="xs" c="dimmed">
@@ -4016,31 +4069,96 @@ function PrepStrengthCell({ strength }: { strength: WebPrepMoveStat["strength"] 
     <Tooltip label={strength.detail} multiline w={260}>
       <Stack gap={2} style={{ minWidth: 0 }}>
         <Group gap={4} wrap="nowrap">
-          <Badge variant="light" size="sm">
+          <Badge
+            color={strength.engineUnsafe ? "yellow" : "teal"}
+            variant="light"
+            size={compact ? "xs" : "sm"}
+          >
             {strength.label}
           </Badge>
           <Text size="xs" fw={700}>
             {strength.score}%
           </Text>
         </Group>
-        <Progress value={strength.score} size={3} />
+        <Progress value={strength.score} size={3} color={strength.engineUnsafe ? "yellow" : "teal"} />
+        {!compact ? (
+          <>
+            <Text size="xs" c="dimmed" lh={1.15}>
+              {formatMoveStrengthEngineLine(strength)}
+            </Text>
+            <Text size="xs" c="dimmed" lh={1.15}>
+              {formatMoveStrengthWdlLine(strength)}
+            </Text>
+          </>
+        ) : null}
       </Stack>
     </Tooltip>
   );
 }
 
+function MoveStrengthEngineCell({ strength }: { strength: WebPrepMoveStat["strength"] }) {
+  if (!strength) {
+    return (
+      <Text size="xs" c="dimmed">
+        -
+      </Text>
+    );
+  }
+
+  return (
+    <Stack gap={1}>
+      <Text size="xs" fw={700} c={strength.engineUnsafe ? "yellow.7" : undefined} lh={1.15}>
+        {formatMoveStrengthEngineLine(strength)}
+      </Text>
+      <Text size="xs" c="dimmed" lh={1.15}>
+        {formatMoveStrengthWdlLine(strength)}
+      </Text>
+    </Stack>
+  );
+}
+
+function formatMoveStrengthEngineLine(strength: NonNullable<WebPrepMoveStat["strength"]>) {
+  if (strength.engineCpLoss === null) {
+    return strength.engineCp === null ? "Engine unavailable" : formatMoveStrengthCp(strength.engineCp);
+  }
+
+  const cp = strength.engineCp === null ? "" : ` (${formatMoveStrengthCp(strength.engineCp)})`;
+  return strength.engineCpLoss <= 0
+    ? `Engine best${cp}`
+    : `Engine -${Math.round(strength.engineCpLoss)} cp${cp}`;
+}
+
+function formatMoveStrengthWdlLine(strength: NonNullable<WebPrepMoveStat["strength"]>) {
+  if (strength.databaseScore === null) return "WDL unavailable";
+  const score = `${(strength.databaseScore * 100).toFixed(1).replace(/\.0$/, "")}%`;
+  if (strength.databaseWdlLoss === null || strength.databaseWdlLoss <= 0) {
+    return `WDL best ${score}`;
+  }
+  return `WDL -${formatWdlPointLoss(strength.databaseWdlLoss)} pts (${score})`;
+}
+
+function formatMoveStrengthCp(value: number) {
+  return `${value > 0 ? "+" : ""}${Math.round(value)} cp`;
+}
+
+function formatWdlPointLoss(value: number) {
+  return (value * 100).toFixed(value >= 0.1 ? 0 : 1).replace(/\.0$/, "");
+}
+
 function WebPrepStrengthSettingsButton({
   builderSettings,
   updateBuilderSettings,
+  buttonLabel = "Strength settings",
 }: {
   builderSettings: PrepBuilderSettings;
   updateBuilderSettings: (patch: Partial<PrepBuilderSettings>) => void;
+  buttonLabel?: string;
 }) {
   return (
     <Popover width={270} position="bottom-start" shadow="md" withinPortal>
       <Popover.Target>
         <Button variant="default" size="compact-xs" leftSection={<IconSettings size={14} />}>
-          Strength settings
+          {buttonLabel}
         </Button>
       </Popover.Target>
       <Popover.Dropdown>

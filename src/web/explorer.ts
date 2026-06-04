@@ -1,6 +1,12 @@
 import type { WebPrepMoveStat } from "./prepIndex";
+import {
+  getPrepMoveStrengthMap,
+  normalizePrepBuilderSettings,
+  type PrepBuilderSettings,
+} from "@/utils/opponentPrep";
 import { getFenColor } from "./pgn";
 import type { WebColor } from "./model";
+import type { Opening } from "@/utils/db";
 
 export type WebDatabaseExplorerSource = "lichess-all" | "lichess-masters";
 export type WebLichessExplorerSpeed =
@@ -85,12 +91,14 @@ export async function fetchWebExplorerMoveStats({
   fen,
   token,
   options,
+  strengthSettings,
   signal,
 }: {
   source: WebDatabaseExplorerSource;
   fen: string;
   token: string;
   options?: Partial<WebExplorerOptions>;
+  strengthSettings?: Partial<PrepBuilderSettings> | null;
   signal?: AbortSignal;
 }): Promise<WebPrepMoveStat[]> {
   const trimmedToken = token.trim();
@@ -116,7 +124,7 @@ export async function fetchWebExplorerMoveStats({
     throw new Error(`Lichess explorer failed: ${response.status}`);
   }
 
-  return explorerMovesToStats(await response.json(), source, fen);
+  return explorerMovesToStats(await response.json(), source, fen, strengthSettings);
 }
 
 export function buildWebExplorerUrl({
@@ -196,10 +204,23 @@ function explorerMovesToStats(
   data: ExplorerResponse,
   source: WebDatabaseExplorerSource,
   fen: string,
+  strengthSettings?: Partial<PrepBuilderSettings> | null,
 ): WebPrepMoveStat[] {
   const sourceLabel = source === "lichess-all" ? "Lichess All" : "Lichess Masters";
   const userColor = getFenColor(fen);
   const grandTotal = data.moves.reduce((sum, move) => sum + move.white + move.draws + move.black, 0);
+  const openings: Opening[] = data.moves.map((move) => ({
+    move: move.san,
+    white: move.white,
+    draw: move.draws,
+    black: move.black,
+    lastPlayed: null,
+  }));
+  const strengthMap = getPrepMoveStrengthMap({
+    openings,
+    side: userColor,
+    settings: normalizeWebExplorerStrengthSettings(strengthSettings),
+  });
 
   return data.moves
     .map<WebPrepMoveStat>((move) => {
@@ -222,7 +243,7 @@ function explorerMovesToStats(
         scoreForUser,
         sourceLabel,
         examples: [],
-        strength: null,
+        strength: strengthMap.get(normalizeSan(move.san)) ?? null,
       };
     })
     .sort(
@@ -231,6 +252,23 @@ function explorerMovesToStats(
         b.scoreForUser - a.scoreForUser ||
         a.move.localeCompare(b.move, undefined, { sensitivity: "base" }),
     );
+}
+
+function normalizeWebExplorerStrengthSettings(settings?: Partial<PrepBuilderSettings> | null) {
+  return normalizePrepBuilderSettings({
+    ...settings,
+    mode: settings?.mode ?? "practical",
+    useCloudEngine: false,
+    useLichessAll: false,
+  });
+}
+
+function normalizeSan(value: string) {
+  return value
+    .trim()
+    .replace(/^0-0-0/, "O-O-O")
+    .replace(/^0-0/, "O-O")
+    .replace(/[+#?!]+$/g, "");
 }
 
 function clampExplorerMoves(value: unknown) {

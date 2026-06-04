@@ -70,6 +70,12 @@ export type WebDatabasePositionGame = {
 export type WebDatabaseStatsSort =
   | "games"
   | "gamesLow"
+  | "strengthHigh"
+  | "strengthLow"
+  | "engineHigh"
+  | "engineLow"
+  | "wdlHigh"
+  | "wdlLow"
   | "recent"
   | "oldest"
   | "scoreHigh"
@@ -411,12 +417,14 @@ export function getWebDatabaseMoveStats({
   fen,
   perspective = null,
   filters,
+  strengthSettings,
   maxExamples = 4,
 }: {
   games: WebGame[];
   fen: string;
   perspective?: WebDatabasePerspective | null;
   filters?: WebLocalGameFilters | null;
+  strengthSettings?: Partial<PrepBuilderSettings> | null;
   maxExamples?: number;
 }): WebPrepMoveStat[] {
   const key = normalizeWebFen(fen || INITIAL_FEN);
@@ -451,6 +459,18 @@ export function getWebDatabaseMoveStats({
   const sourceLabel = playerName
     ? `${playerName} as ${resultPerspective}`
     : "database move";
+  const openings: Opening[] = Array.from(bucket.values()).map((entry) => ({
+    move: entry.move,
+    white: entry.white,
+    draw: entry.draw,
+    black: entry.black,
+    lastPlayed: entry.lastPlayed,
+  }));
+  const strengthMap = getPrepMoveStrengthMap({
+    openings,
+    side: resultPerspective,
+    settings: getWebPrepStrengthSettings(strengthSettings),
+  });
 
   return Array.from(bucket.values())
     .map<WebPrepMoveStat>((entry) => ({
@@ -466,7 +486,7 @@ export function getWebDatabaseMoveStats({
       scoreForUser: entry.total > 0 ? entry.scoreForUser / entry.total : 0.5,
       sourceLabel,
       examples: entry.examples,
-      strength: null,
+      strength: strengthMap.get(normalizeSan(entry.move)) ?? null,
     }))
     .sort(
       (a, b) =>
@@ -535,6 +555,24 @@ export function sortWebDatabaseMoveStats(
     switch (sort) {
       case "gamesLow":
         return a.total - b.total || compareWebDatabaseStatsDefault(a, b);
+      case "strengthHigh":
+        return getWebDatabaseStrengthSortScore(b) - getWebDatabaseStrengthSortScore(a) ||
+          compareWebDatabaseStatsDefault(a, b);
+      case "strengthLow":
+        return getWebDatabaseStrengthSortScore(a) - getWebDatabaseStrengthSortScore(b) ||
+          compareWebDatabaseStatsDefault(a, b);
+      case "engineHigh":
+        return getWebDatabaseEngineSortScore(b) - getWebDatabaseEngineSortScore(a) ||
+          compareWebDatabaseStatsDefault(a, b);
+      case "engineLow":
+        return getWebDatabaseEngineSortScore(a) - getWebDatabaseEngineSortScore(b) ||
+          compareWebDatabaseStatsDefault(a, b);
+      case "wdlHigh":
+        return getWebDatabaseWdlSortScore(b) - getWebDatabaseWdlSortScore(a) ||
+          compareWebDatabaseStatsDefault(a, b);
+      case "wdlLow":
+        return getWebDatabaseWdlSortScore(a) - getWebDatabaseWdlSortScore(b) ||
+          compareWebDatabaseStatsDefault(a, b);
       case "recent":
         return sortableDate(b.lastPlayed ?? "") - sortableDate(a.lastPlayed ?? "") ||
           compareWebDatabaseStatsDefault(a, b);
@@ -570,6 +608,19 @@ function getWebPrepStrengthSettings(settings?: Partial<PrepBuilderSettings> | nu
     useCloudEngine: false,
     useLichessAll: false,
   });
+}
+
+function getWebDatabaseStrengthSortScore(stat: WebPrepMoveStat) {
+  return stat.strength?.score ?? Number.NEGATIVE_INFINITY;
+}
+
+function getWebDatabaseEngineSortScore(stat: WebPrepMoveStat) {
+  if (!stat.strength || stat.strength.engineCpLoss === null) return Number.NEGATIVE_INFINITY;
+  return -stat.strength.engineCpLoss;
+}
+
+function getWebDatabaseWdlSortScore(stat: WebPrepMoveStat) {
+  return stat.strength?.databaseScore ?? Number.NEGATIVE_INFINITY;
 }
 
 export function getKnownPlayers(gamesByDatabase: Record<string, WebGame[]>) {

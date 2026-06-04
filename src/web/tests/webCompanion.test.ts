@@ -335,6 +335,58 @@ describe("web companion PGN prep index", () => {
     ]);
   });
 
+  test("computes fork-style blended strength measures for phone database stats", () => {
+    const imported = parsePgnDatabase(
+      "database-strength.pgn",
+      `
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.01"]
+[Round "?"]
+[White "Target"]
+[Black "Me"]
+[Result "1-0"]
+
+1. e4 c5 1-0
+
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.02"]
+[Round "?"]
+[White "Target"]
+[Black "Me"]
+[Result "0-1"]
+
+1. d4 d5 0-1
+`,
+      1,
+    );
+
+    const stats = getWebDatabaseMoveStats({
+      games: imported.games,
+      fen: imported.games[0].moves[0].fenBefore,
+      strengthSettings: {
+        mode: "practical",
+        engineWeight: 0,
+        maxEngineCpLoss: 70,
+      },
+    });
+    const e4 = stats.find((stat) => stat.move === "e4");
+    const d4 = stats.find((stat) => stat.move === "d4");
+
+    expect(e4?.strength?.score).toBeGreaterThan(d4?.strength?.score ?? 0);
+    expect(e4?.strength?.databaseWdlLoss).toBe(0);
+    expect(d4?.strength?.databaseWdlLoss).toBeGreaterThan(0);
+    expect(sortWebDatabaseMoveStats(stats, "strengthHigh").map((stat) => stat.move)).toEqual([
+      "e4",
+      "d4",
+    ]);
+    expect(sortWebDatabaseMoveStats(stats, "wdlLow").map((stat) => stat.move)).toEqual([
+      "d4",
+      "e4",
+    ]);
+  });
+
   test("applies fork-style local date and result filters to database stats", () => {
     const imported = parsePgnDatabase(
       "database-date-result.pgn",
