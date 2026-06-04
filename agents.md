@@ -324,6 +324,12 @@ default.
   shortcut to drill into the current database folder while avoiding the
   misleading impression that a folder, rather than exactly one database, is the
   active Database or Prep source.
+- Phone Prep setup now mirrors the fork's under-board source/player controls
+  more closely. The Prep and Database phone panels share a web-native
+  Username plus player-color selector, local prep database labels such as
+  `_lichess` seed the obvious player name, Start prep is blocked until the
+  source and target are ready, and Prep setup choices persist in browser
+  storage alongside the saved Lichess token and explorer filters.
 
 ### App Shell
 

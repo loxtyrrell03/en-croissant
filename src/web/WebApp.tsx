@@ -9,6 +9,7 @@ import type { Api } from "@lichess-org/chessground/api";
 import type { Key } from "@lichess-org/chessground/types";
 import {
   ActionIcon,
+  Autocomplete,
   Badge,
   Box,
   Button,
@@ -53,6 +54,7 @@ import {
   IconFolder,
   IconPlayerPlay,
   IconRefresh,
+  IconSearch,
   IconSettings,
   IconTarget,
   IconTrash,
@@ -144,7 +146,7 @@ import {
   getWebDatabaseMoveStats,
   getGamesForWebPrepSource,
   getDatabasePlayerCounts,
-  getKnownPlayers,
+  getWebDatabaseTitlePlayerName,
   getNextOpenPrepStat,
   getWebPrepMoveKey,
   getWebPrepMoveStats,
@@ -208,12 +210,39 @@ const WEB_DATABASE_PANEL_PLAYER_STORAGE_KEY = "en-croissant-web-database-panel-p
 const WEB_DATABASE_PANEL_COLOR_STORAGE_KEY = "en-croissant-web-database-panel-color";
 const WEB_LICHESS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-lichess-explorer-options";
 const WEB_MASTERS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-masters-explorer-options";
+const WEB_PREP_SETUP_STORAGE_KEY = "en-croissant-web-prep-setup";
 const DEFAULT_WEB_PREP_MIN_GAMES = 1;
 const DEFAULT_WEB_PREP_MOVE_LIMIT = 12;
 const DEFAULT_WEB_PREP_SORT: WebPrepSortState = { column: "games", direction: "desc" };
 const DEFAULT_WEB_PREP_CANDIDATE_SORT: WebPrepSortState = {
   column: "strength",
   direction: "desc",
+};
+
+type WebPrepStoredSetup = {
+  mode: WebPrepMode;
+  source: WebPrepSource;
+  sourceId: string | null;
+  opponent: string;
+  userColor: WebColor;
+  minGames: number;
+  moveLimit: number;
+  builder: Partial<PrepBuilderSettings>;
+};
+
+const DEFAULT_WEB_PREP_SETUP: WebPrepStoredSetup = {
+  mode: "player",
+  source: "local",
+  sourceId: null,
+  opponent: "",
+  userColor: "white",
+  minGames: DEFAULT_WEB_PREP_MIN_GAMES,
+  moveLimit: DEFAULT_WEB_PREP_MOVE_LIMIT,
+  builder: {
+    mode: "practical",
+    useCloudEngine: false,
+    useLichessAll: false,
+  },
 };
 
 const theme = createTheme({
@@ -1304,33 +1333,15 @@ function DatabaseUnderBoardPanel({
               minWidth="13rem"
             />
             {selectedLocalId ? (
-              <>
-                <TextInput
-                  label="Username"
-                  size="xs"
-                  placeholder="All players"
-                  value={localPlayerName}
-                  onChange={(event) => setLocalPlayerName(event.currentTarget.value)}
-                  list="web-database-local-players"
-                  style={{ flex: "1 1 10rem" }}
-                />
-                <datalist id="web-database-local-players">
-                  {selectedDatabasePlayers.slice(0, 80).map((player) => (
-                    <option key={player.name} value={player.name} />
-                  ))}
-                </datalist>
-                <SegmentedControl
-                  aria-label="Database player color"
-                  size="xs"
-                  value={localColor}
-                  onChange={(value) => setLocalColorValue(value)}
-                  data={[
-                    { value: "white", label: trimmedLocalPlayerName ? "As white" : "White" },
-                    { value: "black", label: trimmedLocalPlayerName ? "As black" : "Black" },
-                  ]}
-                  w={trimmedLocalPlayerName ? 168 : 126}
-                />
-              </>
+              <WebDatabasePerspectiveControls
+                playerName={localPlayerName}
+                playerOptions={selectedDatabasePlayers}
+                color={localColor}
+                onPlayerNameChange={setLocalPlayerName}
+                onColorChange={(color) => setLocalColorValue(color)}
+                playerFlex="1 1 10rem"
+                colorWidth={trimmedLocalPlayerName ? 236 : 132}
+              />
             ) : null}
           </>
         ) : (
@@ -1491,19 +1502,23 @@ function PrepUnderBoardPanel({
   lichessToken: string;
   setLichessToken: (value: string) => void;
 }) {
-  const [opponent, setOpponent] = useState("");
-  const [userColor, setUserColor] = useState<WebColor>("white");
-  const [prepMode, setPrepMode] = useState<WebPrepMode>("player");
-  const [prepSource, setPrepSource] = useState<WebPrepSource>("local");
+  const [storedPrepSetup, setStoredPrepSetup] = usePersistentJson(
+    WEB_PREP_SETUP_STORAGE_KEY,
+    DEFAULT_WEB_PREP_SETUP,
+    normalizeWebPrepStoredSetup,
+  );
+  const [opponent, setOpponent] = useState(storedPrepSetup.opponent);
+  const [userColor, setUserColor] = useState<WebColor>(storedPrepSetup.userColor);
+  const [prepMode, setPrepMode] = useState<WebPrepMode>(storedPrepSetup.mode);
+  const [prepSource, setPrepSource] = useState<WebPrepSource>(storedPrepSetup.source);
   const [setupOpen, setSetupOpen] = useState(true);
-  const [sourceId, setSourceId] = useState<string | null>(() => state.databases[0]?.id ?? null);
-  const [minGames, setMinGames] = useState(DEFAULT_WEB_PREP_MIN_GAMES);
-  const [moveLimit, setMoveLimit] = useState(DEFAULT_WEB_PREP_MOVE_LIMIT);
-  const [draftBuilderSettings, setDraftBuilderSettings] = useState<Partial<PrepBuilderSettings>>({
-    mode: "practical",
-    useCloudEngine: false,
-    useLichessAll: false,
-  });
+  const [sourceId, setSourceId] = useState<string | null>(
+    () => storedPrepSetup.sourceId ?? state.databases[0]?.id ?? null,
+  );
+  const [minGames, setMinGames] = useState(storedPrepSetup.minGames);
+  const [moveLimit, setMoveLimit] = useState(storedPrepSetup.moveLimit);
+  const [draftBuilderSettings, setDraftBuilderSettings] =
+    useState<Partial<PrepBuilderSettings>>(storedPrepSetup.builder);
   const [draftTemporarySource, setDraftTemporarySource] =
     useState<WebPrepTemporarySource | null>(null);
   const [sourcesOpen] = useState(true);
@@ -1540,7 +1555,6 @@ function PrepUnderBoardPanel({
   } = useWebExplorerOptions();
   const lastActivePrepIdRef = useRef<string | null>(null);
   const hostedDatabases = useHostedDatabaseFolders();
-  const players = useMemo(() => getKnownPlayers(state.gamesByDatabase), [state.gamesByDatabase]);
   const sourceOptions = useMemo(
     () =>
       getWebDatabaseSelectData({
@@ -1574,6 +1588,12 @@ function PrepUnderBoardPanel({
   const activePrepSourceGames = activePrepSourceId
     ? state.gamesByDatabase[activePrepSourceId] ?? []
     : [];
+  const selectedPrepSourceGames =
+    selectedPrepSource === "temporary" ? selectedTemporarySource?.games ?? [] : activePrepSourceGames;
+  const selectedPrepDatabasePlayers = useMemo(
+    () => getDatabasePlayerCounts(selectedPrepSourceGames),
+    [selectedPrepSourceGames],
+  );
   const activePrepHostedFolder = useMemo(
     () =>
       activePrepSourceDatabase?.hostedPath
@@ -1589,6 +1609,17 @@ function PrepUnderBoardPanel({
     [activePrep?.builder, draftBuilderSettings],
   );
   const selectedPlayerColor = oppositeWebColor(activePrep?.userColor ?? userColor);
+  const selectedOpponentName = activePrep?.opponent ?? opponent;
+  const trimmedSelectedOpponentName = selectedOpponentName.trim();
+  const sourceReady =
+    selectedPrepSource === "local"
+      ? Boolean(activePrepSourceId)
+      : selectedPrepSource === "temporary"
+        ? Boolean(selectedTemporarySource)
+        : Boolean(lichessToken.trim());
+  const targetReady =
+    selectedPrepMode === "general" || trimmedSelectedOpponentName.length >= 3;
+  const configReady = sourceReady && targetReady;
   const selectedSourceLabel =
     selectedPrepSource === "temporary"
       ? selectedTemporarySource
@@ -1656,6 +1687,19 @@ function PrepUnderBoardPanel({
     opponent: activePrep?.opponent ?? opponent,
     userColor: activePrep?.userColor ?? userColor,
     firstLocalSourceId,
+  };
+
+  const persistPrepSetupSelection = (selection: WebPrepSetupSelection) => {
+    setStoredPrepSetup((current) =>
+      normalizeWebPrepStoredSetup({
+        ...current,
+        mode: selection.mode,
+        source: selection.source === "temporary" ? "local" : selection.source,
+        sourceId: selection.source === "local" ? selection.sourceId : current.sourceId,
+        opponent: selection.opponent,
+        userColor: selection.userColor,
+      }),
+    );
   };
 
   useEffect(() => {
@@ -1939,9 +1983,11 @@ function PrepUnderBoardPanel({
     setDraftTemporarySource(selection.temporarySource);
     setOpponent(selection.opponent);
     setUserColor(selection.userColor);
+    persistPrepSetupSelection(selection);
   };
 
   const applyPrepSetupSelection = (selection: WebPrepSetupSelection) => {
+    persistPrepSetupSelection(selection);
     if (activePrep) {
       updateActivePrepSettings(getWebPrepWorkspacePatchFromSelection(activePrep, selection));
       return;
@@ -1984,17 +2030,25 @@ function PrepUnderBoardPanel({
 
   const updatePrepMinGames = (value: number) => {
     const next = Math.max(1, Math.min(999, Math.round(value || DEFAULT_WEB_PREP_MIN_GAMES)));
+    setStoredPrepSetup((current) => normalizeWebPrepStoredSetup({ ...current, minGames: next }));
     if (activePrep) updateActivePrepSettings({ minGames: next });
     else setMinGames(next);
   };
 
   const updatePrepMoveLimit = (value: number) => {
     const next = Math.max(1, Math.min(20, Math.round(value || DEFAULT_WEB_PREP_MOVE_LIMIT)));
+    setStoredPrepSetup((current) => normalizeWebPrepStoredSetup({ ...current, moveLimit: next }));
     if (activePrep) updateActivePrepSettings({ moveLimit: next });
     else setMoveLimit(next);
   };
 
   const updatePrepBuilderSettings = (patch: Partial<PrepBuilderSettings>) => {
+    setStoredPrepSetup((current) =>
+      normalizeWebPrepStoredSetup({
+        ...current,
+        builder: getWebPrepStrengthSettingsPatch(current.builder, patch),
+      }),
+    );
     if (activePrep) {
       updateActivePrepSettings({
         builder: getWebPrepStrengthSettingsPatch(activePrep.builder, patch),
@@ -2006,14 +2060,37 @@ function PrepUnderBoardPanel({
   };
 
   const updatePrepOpponent = (value: string) => {
+    setStoredPrepSetup((current) => normalizeWebPrepStoredSetup({ ...current, opponent: value }));
     if (activePrep) updateActivePrepSettings({ opponent: value });
     else setOpponent(value);
   };
 
   const updatePrepUserColor = (value: WebColor) => {
+    setStoredPrepSetup((current) => normalizeWebPrepStoredSetup({ ...current, userColor: value }));
     if (activePrep) updateActivePrepSettings({ userColor: value });
     else setUserColor(value);
   };
+
+  useEffect(() => {
+    if (selectedPrepMode !== "player" || selectedPrepSource !== "local") return;
+    if (!activePrepSourceId || selectedPrepDatabasePlayers.length === 0) return;
+    if (trimmedSelectedOpponentName) return;
+
+    const defaultPlayer = selectedPrepDatabasePlayers[0];
+    const labelPlayer =
+      getWebDatabaseTitlePlayerName(activePrepSourceDatabase?.name, defaultPlayer.name) ??
+      defaultPlayer.name;
+    if (!labelPlayer.trim()) return;
+
+    updatePrepOpponent(labelPlayer);
+  }, [
+    activePrepSourceDatabase?.name,
+    activePrepSourceId,
+    selectedPrepDatabasePlayers,
+    selectedPrepMode,
+    selectedPrepSource,
+    trimmedSelectedOpponentName,
+  ]);
 
   const updateActivePrepSource = (nextSource: WebPrepSource, nextSourceId: string | null) => {
     applyPrepSetupSelection(
@@ -2235,6 +2312,7 @@ function PrepUnderBoardPanel({
             <Button
               size="xs"
               leftSection={<IconPlayerPlay size={14} />}
+              disabled={!configReady}
               onClick={() => {
                 if (activePrep) {
                   setSetupOpen(false);
@@ -2367,38 +2445,16 @@ function PrepUnderBoardPanel({
               ) : null}
               <Group gap="xs" wrap="wrap" align="flex-end">
                 {selectedPrepMode === "player" ? (
-                  <>
-                    <TextInput
-                      label="Player"
-                      size="xs"
-                      placeholder="Player"
-                      value={activePrep?.opponent ?? opponent}
-                      onChange={(event) => updatePrepOpponent(event.currentTarget.value)}
-                      list="web-known-players"
-                      style={{ flex: "1 1 10rem" }}
-                    />
-                    <datalist id="web-known-players">
-                      {players.map((player) => (
-                        <option key={player} value={player} />
-                      ))}
-                    </datalist>
-                    <SegmentedControl
-                      aria-label="Player colour"
-                      size="xs"
-                      value={selectedPlayerColor}
-                      onChange={(value) => updatePrepUserColor(oppositeWebColor(value as WebColor))}
-                      data={[
-                        {
-                          value: "white",
-                          label: `${(activePrep?.opponent ?? opponent).trim() || "Player"} as white`,
-                        },
-                        {
-                          value: "black",
-                          label: `${(activePrep?.opponent ?? opponent).trim() || "Player"} as black`,
-                        },
-                      ]}
-                    />
-                  </>
+                  <WebDatabasePerspectiveControls
+                    playerName={selectedOpponentName}
+                    playerOptions={selectedPrepDatabasePlayers}
+                    color={selectedPlayerColor}
+                    onPlayerNameChange={updatePrepOpponent}
+                    onColorChange={(color) => updatePrepUserColor(oppositeWebColor(color))}
+                    disabled={!sourceReady}
+                    playerFlex="1 1 10rem"
+                    colorWidth={trimmedSelectedOpponentName ? 236 : 132}
+                  />
                 ) : (
                   <SegmentedControl
                     aria-label="Your prep side"
@@ -2903,6 +2959,134 @@ function WebExplorerOptionsPanel({
         </Group>
       )}
     </Stack>
+  );
+}
+
+function WebDatabasePerspectiveControls({
+  playerName,
+  playerOptions,
+  color,
+  onPlayerNameChange,
+  onColorChange,
+  disabled = false,
+  size = "xs",
+  playerFlex = "0 1 10rem",
+  colorWidth = 132,
+}: {
+  playerName: string;
+  playerOptions: ReturnType<typeof getDatabasePlayerCounts>;
+  color: WebColor;
+  onPlayerNameChange: (playerName: string) => void;
+  onColorChange: (color: WebColor) => void;
+  disabled?: boolean;
+  size?: "xs" | "sm";
+  playerFlex?: string;
+  colorWidth?: number;
+}) {
+  const trimmedPlayerName = playerName.trim();
+  const playerData = useMemo(
+    () => playerOptions.slice(0, 80).map((player) => player.name),
+    [playerOptions],
+  );
+  const colorOptions = trimmedPlayerName
+    ? [
+        { value: "white", label: <WebPlayerColorLabel playerName={trimmedPlayerName} color="white" /> },
+        { value: "black", label: <WebPlayerColorLabel playerName={trimmedPlayerName} color="black" /> },
+      ]
+    : [
+        { value: "white", label: "White" },
+        { value: "black", label: "Black" },
+      ];
+
+  return (
+    <Group gap={4} wrap="nowrap" style={{ flex: "1 1 auto", minWidth: 0 }}>
+      <Tooltip label="Filter this database to one player's games">
+        <div style={{ flex: playerFlex, minWidth: 0 }}>
+          <Autocomplete
+            label="Username"
+            value={playerName}
+            data={playerData}
+            onChange={onPlayerNameChange}
+            leftSection={<IconSearch size="1rem" />}
+            placeholder={disabled ? "Choose database" : "All players"}
+            size={size}
+            disabled={disabled}
+            limit={8}
+          />
+        </div>
+      </Tooltip>
+      <Tooltip
+        label={
+          trimmedPlayerName
+            ? `Only games where ${trimmedPlayerName} had this color`
+            : "Only games where that player had this color"
+        }
+      >
+        <SegmentedControl
+          aria-label="Database player color"
+          size={size}
+          data={colorOptions}
+          value={color}
+          onChange={(value) => onColorChange(value as WebColor)}
+          disabled={disabled}
+          w={colorWidth}
+          styles={
+            trimmedPlayerName
+              ? {
+                  control: {
+                    minHeight: size === "sm" ? 42 : 38,
+                  },
+                  label: {
+                    alignItems: "center",
+                    display: "flex",
+                    height: "100%",
+                    justifyContent: "center",
+                    minHeight: size === "sm" ? 42 : 38,
+                    paddingInline: 4,
+                  },
+                  innerLabel: {
+                    minWidth: 0,
+                    width: "100%",
+                  },
+                }
+              : undefined
+          }
+        />
+      </Tooltip>
+    </Group>
+  );
+}
+
+function WebPlayerColorLabel({ playerName, color }: { playerName: string; color: WebColor }) {
+  return (
+    <span
+      style={{
+        alignItems: "center",
+        display: "flex",
+        flexDirection: "column",
+        gap: 1,
+        justifyContent: "center",
+        lineHeight: 1.05,
+        maxWidth: "100%",
+        minWidth: 0,
+        whiteSpace: "normal",
+      }}
+    >
+      <span
+        style={{
+          fontSize: "0.82em",
+          maxWidth: "100%",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {playerName}
+      </span>
+      <span style={{ fontSize: "0.78em", opacity: 0.9, whiteSpace: "nowrap" }}>
+        as {color}
+      </span>
+    </span>
   );
 }
 
@@ -4149,6 +4333,38 @@ function isHostedDatabaseValue(value: string) {
 
 function hostedDatabasePathFromValue(value: string) {
   return value.replace(/^hosted-db:/, "");
+}
+
+function normalizeWebPrepStoredSetup(
+  value: Partial<WebPrepStoredSetup> | null | undefined,
+): WebPrepStoredSetup {
+  const source =
+    value?.source === "lichess-all" ||
+    value?.source === "lichess-masters" ||
+    value?.source === "local"
+      ? value.source
+      : "local";
+  const mode = value?.mode === "general" ? "general" : "player";
+  const userColor: WebColor = value?.userColor === "black" ? "black" : "white";
+  const minGames = Math.max(
+    1,
+    Math.min(999, Math.round(Number(value?.minGames) || DEFAULT_WEB_PREP_MIN_GAMES)),
+  );
+  const moveLimit = Math.max(
+    1,
+    Math.min(20, Math.round(Number(value?.moveLimit) || DEFAULT_WEB_PREP_MOVE_LIMIT)),
+  );
+
+  return {
+    mode,
+    source,
+    sourceId: typeof value?.sourceId === "string" && value.sourceId ? value.sourceId : null,
+    opponent: typeof value?.opponent === "string" ? value.opponent : "",
+    userColor,
+    minGames,
+    moveLimit,
+    builder: normalizeWebPrepStrengthSettings(value?.builder),
+  };
 }
 
 function usePersistentJson<T>(

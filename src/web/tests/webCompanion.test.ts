@@ -18,7 +18,9 @@ import {
   findFirstWebPrepOpponentBranch,
   findWebPrepBranchStart,
   getFirstOpenPrepStat,
+  getDatabasePlayerCounts,
   getWebDatabaseMoveStats,
+  getWebDatabaseTitlePlayerName,
   getGamesForWebPrepSource,
   getNextOpenPrepStat,
   getWebPrepMoveKey,
@@ -267,6 +269,42 @@ describe("web companion PGN prep index", () => {
 
     expect(stats.map((stat) => stat.move).sort()).toEqual(["d4", "e4"]);
     expect(stats.every((stat) => stat.sourceLabel === "database move")).toBe(true);
+  });
+
+  test("derives fork-style prep player names from local database labels", () => {
+    const imported = parsePgnDatabase(
+      "lachlan1415_lichess.pgn",
+      `
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.01"]
+[Round "?"]
+[White "lachlan1415"]
+[Black "Me"]
+[Result "1-0"]
+
+1. e4 c5 1-0
+
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.02"]
+[Round "?"]
+[White "Me"]
+[Black "lachlan1415"]
+[Result "0-1"]
+
+1. d4 d5 0-1
+`,
+      1,
+    );
+
+    const [mostCommon] = getDatabasePlayerCounts(imported.games);
+
+    expect(mostCommon.name).toBe("lachlan1415");
+    expect(getWebDatabaseTitlePlayerName("lachlan1415_lichess", mostCommon.name)).toBe(
+      "lachlan1415",
+    );
+    expect(getWebDatabaseTitlePlayerName("Some other database", mostCommon.name)).toBeNull();
   });
 
   test("unsaved prep imports are usable without joining the normal database list", () => {

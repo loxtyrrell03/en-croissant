@@ -322,6 +322,21 @@ export function getDatabasePlayerCounts(games: WebGame[]) {
   );
 }
 
+export function getWebDatabaseTitlePlayerName(
+  databaseLabel: string | null | undefined,
+  playerName: string,
+) {
+  const label = databaseLabel?.trim();
+  if (!label || !playerName.trim()) return null;
+
+  const candidate = getWebDatabaseLabelPlayerCandidate(label);
+  if (!candidate || normalizedPlayerName(candidate) !== normalizedPlayerName(playerName)) {
+    return null;
+  }
+
+  return candidate;
+}
+
 type MoveBucket = {
   move: string;
   uci: string | null;
@@ -364,6 +379,38 @@ function normalizedPlayerName(value: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
+}
+
+function getWebDatabaseLabelPlayerCandidate(databaseLabel: string) {
+  let candidate = databaseLabel.replace(/\.db3$/i, "").replace(/\.pgn$/i, "").trim();
+  const suffixes = [
+    "_lichess",
+    " lichess",
+    "_chesscom",
+    " chesscom",
+    "_chess.com",
+    " chess.com",
+    " recent",
+    " games",
+  ];
+
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const suffix of suffixes) {
+      const next = candidate.replace(new RegExp(`${escapeRegExp(suffix)}$`, "i"), "").trim();
+      if (next !== candidate) {
+        candidate = next;
+        changed = true;
+      }
+    }
+  }
+
+  return candidate || null;
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function scoreResultCount(result: WebResult, side: WebColor) {
