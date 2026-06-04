@@ -669,7 +669,6 @@ export default function WebApp() {
               state={state}
               setState={setState}
               activePrep={activePrep}
-              importHostedPgn={importHostedPgn}
               importHostedFolder={importHostedFolder}
               importOnlineGames={importOnlineGames}
               loadGameOnBoard={loadGameOnBoard}
@@ -702,7 +701,6 @@ function BoardWorkspace({
   state,
   setState,
   activePrep,
-  importHostedPgn,
   importHostedFolder,
   importOnlineGames,
   loadGameOnBoard,
@@ -712,7 +710,6 @@ function BoardWorkspace({
   state: WebCompanionState;
   setState: Dispatch<SetStateAction<WebCompanionState>>;
   activePrep: WebPrepWorkspace | null;
-  importHostedPgn: WebHostedPgnImportHandler;
   importHostedFolder: WebHostedFolderImportHandler;
   importOnlineGames: WebOnlineImportHandler;
   loadGameOnBoard: (game: WebGame) => void;
@@ -921,7 +918,6 @@ function BoardWorkspace({
               currentFen={currentFen}
               databases={state.databases}
               gamesByDatabase={state.gamesByDatabase}
-              importHostedPgn={importHostedPgn}
               importHostedFolder={importHostedFolder}
               onPlayMove={playMove}
               onOpenSourceGame={loadGameOnBoard}
@@ -943,7 +939,6 @@ function BoardWorkspace({
               onPlayMove={playMove}
               onPlayRootMove={playMoveFromPrepRoot}
               onOpenSourceGame={loadGameOnBoard}
-              importHostedPgn={importHostedPgn}
               importHostedFolder={importHostedFolder}
               importOnlineGames={importOnlineGames}
               lichessToken={lichessToken}
@@ -1034,7 +1029,6 @@ function DatabaseUnderBoardPanel({
   currentFen,
   databases,
   gamesByDatabase,
-  importHostedPgn,
   importHostedFolder,
   onPlayMove,
   onOpenSourceGame,
@@ -1044,7 +1038,6 @@ function DatabaseUnderBoardPanel({
   currentFen: string;
   databases: WebDatabase[];
   gamesByDatabase: Record<string, WebGame[]>;
-  importHostedPgn: WebHostedPgnImportHandler;
   importHostedFolder: WebHostedFolderImportHandler;
   onPlayMove: (stat: WebPrepMoveStat) => void;
   onOpenSourceGame: (game: WebGame) => void;
@@ -1070,7 +1063,6 @@ function DatabaseUnderBoardPanel({
     "white",
   );
   const localColor: WebColor = localColorValue === "black" ? "black" : "white";
-  const [hostedOpen, setHostedOpen] = useState(false);
   const [loadingLocalSource, setLoadingLocalSource] = useState<string | null>(null);
   const [loadingLocalProgress, setLoadingLocalProgress] =
     useState<WebHostedFolderReadProgress | null>(null);
@@ -1275,29 +1267,6 @@ function DatabaseUnderBoardPanel({
     };
   }, [currentFen, explorerOptions, lichessToken, refreshKey, source]);
 
-  const importHostedPgnForDatabase = async (entry: WebHostedFileEntry) => {
-    const imported = await importHostedPgn(entry);
-    if (imported) setSelectedLocalId(imported.database.id);
-    return imported;
-  };
-
-  const importHostedFolderForDatabase = async (library: WebHostedLibrary, path: string) => {
-    const label = getHostedDatabaseGroupLabel(path) || path;
-    setLoadingLocalSource(label);
-    setLoadingLocalProgress(null);
-    try {
-      const imported = await importHostedFolder(library, path, {
-        openFirstGame: false,
-        onProgress: setLoadingLocalProgress,
-      });
-      if (imported) setSelectedLocalId(imported.database.id);
-      return imported;
-    } finally {
-      setLoadingLocalProgress(null);
-      setLoadingLocalSource(null);
-    }
-  };
-
   const stats = source === "local" ? localStats : onlineStats;
   const localSourceLabel =
     trimmedLocalPlayerName && selectedLocalDatabase
@@ -1334,14 +1303,6 @@ function DatabaseUnderBoardPanel({
               flex="1 1 13rem"
               minWidth="13rem"
             />
-            <Button
-              size="xs"
-              variant={hostedOpen ? "light" : "default"}
-              leftSection={<IconFolder size={14} />}
-              onClick={() => setHostedOpen((open) => !open)}
-            >
-              Browse
-            </Button>
             {selectedLocalId ? (
               <>
                 <TextInput
@@ -1419,17 +1380,6 @@ function DatabaseUnderBoardPanel({
           </Text>
         </Group>
       ) : null}
-
-      {source === "local" && (
-        <Collapse in={hostedOpen}>
-          <HostedFilesPanel
-            importHostedPgn={importHostedPgnForDatabase}
-            importHostedFolder={importHostedFolderForDatabase}
-            preferFolderImport
-            embedded
-          />
-        </Collapse>
-      )}
 
       {source !== "local" ? (
         <Collapse in={explorerOptionsOpen}>
@@ -1518,7 +1468,6 @@ function PrepUnderBoardPanel({
   onPlayMove,
   onPlayRootMove,
   onOpenSourceGame,
-  importHostedPgn,
   importHostedFolder,
   importOnlineGames,
   lichessToken,
@@ -1537,7 +1486,6 @@ function PrepUnderBoardPanel({
   onPlayMove: (stat: WebPrepMoveStat) => void;
   onPlayRootMove: (stat: WebPrepMoveStat) => void;
   onOpenSourceGame: (game: WebGame) => void;
-  importHostedPgn: WebHostedPgnImportHandler;
   importHostedFolder: WebHostedFolderImportHandler;
   importOnlineGames: WebOnlineImportHandler;
   lichessToken: string;
@@ -1559,7 +1507,6 @@ function PrepUnderBoardPanel({
   const [draftTemporarySource, setDraftTemporarySource] =
     useState<WebPrepTemporarySource | null>(null);
   const [sourcesOpen] = useState(true);
-  const [hostedOpen, setHostedOpen] = useState(false);
   const [loadingPrepSource, setLoadingPrepSource] = useState<string | null>(null);
   const [loadingPrepProgress, setLoadingPrepProgress] =
     useState<WebHostedFolderReadProgress | null>(null);
@@ -2209,29 +2156,6 @@ function PrepUnderBoardPanel({
     );
   };
 
-  const importHostedPgnForPrep = async (entry: WebHostedFileEntry) => {
-    const imported = await importHostedPgn(entry);
-    if (imported) attachImportedDatabase(imported.database.id);
-    return imported;
-  };
-
-  const importHostedFolderForPrep = async (library: WebHostedLibrary, path: string) => {
-    const label = getHostedDatabaseGroupLabel(path) || path;
-    setLoadingPrepSource(label);
-    setLoadingPrepProgress(null);
-    try {
-      const imported = await importHostedFolder(library, path, {
-        openFirstGame: false,
-        onProgress: setLoadingPrepProgress,
-      });
-      if (imported) attachImportedDatabase(imported.database.id);
-      return imported;
-    } finally {
-      setLoadingPrepProgress(null);
-      setLoadingPrepSource(null);
-    }
-  };
-
   const previewOnlineImportCount = async () => {
     const username = onlineUsername.trim();
     if (!username) return;
@@ -2425,14 +2349,6 @@ function PrepUnderBoardPanel({
             >
               Import games
             </Button>
-            <Button
-              size="compact-xs"
-              variant={hostedOpen ? "light" : "default"}
-              leftSection={<IconFolder size={14} />}
-              onClick={() => setHostedOpen((open) => !open)}
-            >
-              Hosted files
-            </Button>
             <WebPrepStrengthSettingsButton
               builderSettings={selectedBuilderSettings}
               updateBuilderSettings={updatePrepBuilderSettings}
@@ -2559,7 +2475,7 @@ function PrepUnderBoardPanel({
                 </Badge>
               ) : (
                 <Text size="xs" c="dimmed">
-                  Choose a prep source or import hosted/public games.
+                  Choose a prep source or import public games.
                 </Text>
               )}
               {isOnlinePrepSource(selectedPrepSource) ? (
@@ -2574,15 +2490,6 @@ function PrepUnderBoardPanel({
                 </Collapse>
               ) : null}
             </Stack>
-          </Collapse>
-
-          <Collapse in={hostedOpen}>
-            <HostedFilesPanel
-              importHostedPgn={importHostedPgnForPrep}
-              importHostedFolder={importHostedFolderForPrep}
-              preferFolderImport
-              embedded
-            />
           </Collapse>
 
           <Collapse in={onlineOpen}>

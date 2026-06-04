@@ -306,6 +306,13 @@ default.
   missing indexed databases run the hosted PGN import path, and those real
   imports now show `loaded / total PGNs` progress so large synced prep
   databases are visibly loading rather than appearing stuck.
+- The next 2026-06-04 source-picker cleanup removed the extra under-board
+  `Browse`/`Hosted files` database route from the phone Database and Prep
+  panels. Those panels now mirror the desktop fork more closely: database
+  selection happens through the single `Local database` or `Prep source`
+  picker, while hosted PGN/PDF browsing remains in the Files surface. The
+  shared picker still drills into synced folders and can load not-yet-indexed
+  hosted databases, so no database access was lost.
 
 ### App Shell
 
