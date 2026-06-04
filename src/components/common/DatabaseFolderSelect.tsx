@@ -3,10 +3,12 @@ import {
   Button,
   Group,
   InputWrapper,
+  Loader,
   Popover,
   ScrollArea,
   Stack,
   Text,
+  TextInput,
   UnstyledButton,
   type MantineSize,
 } from "@mantine/core";
@@ -14,13 +16,25 @@ import { IconChevronDown, IconChevronLeft, IconDatabase, IconFolder } from "@tab
 import { useMemo, useState, type CSSProperties } from "react";
 import type { DatabaseSelectGroup } from "@/utils/db";
 
+type DatabaseFolderSelectItem = DatabaseSelectGroup["items"][number] & {
+  detail?: string;
+  searchText?: string;
+};
+
+type DatabaseFolderSelectGroup = {
+  group: string;
+  items: DatabaseFolderSelectItem[];
+};
+
 type DatabaseFolderSelectProps = {
-  data: DatabaseSelectGroup[];
+  data: DatabaseFolderSelectGroup[];
   value: string | null;
   onChange: (value: string | null) => void;
   placeholder?: string;
   size?: MantineSize;
   disabled?: boolean;
+  loading?: boolean;
+  loadingLabel?: string;
   allowDeselect?: boolean;
   label?: string;
   width?: string | number;
@@ -37,6 +51,8 @@ export default function DatabaseFolderSelect({
   placeholder = "Select database",
   size = "sm",
   disabled = false,
+  loading = false,
+  loadingLabel,
   allowDeselect = true,
   label,
   width,
@@ -47,6 +63,7 @@ export default function DatabaseFolderSelect({
 }: DatabaseFolderSelectProps) {
   const [opened, setOpened] = useState(false);
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
   const selectedItem = useMemo(
     () => data.flatMap((group) => group.items).find((item) => item.value === value) ?? null,
     [data, value],
@@ -58,13 +75,40 @@ export default function DatabaseFolderSelect({
   const visibleGroup = activeGroup ? data.find((group) => group.group === activeGroup) : null;
   const rootGroup = data.find((group) => group.group === "Unfiled") ?? null;
   const folderGroups = data.filter((group) => group.group !== "Unfiled");
-  const buttonLabel = selectedItem?.label ?? placeholder;
+  const totalItemCount = data.reduce((sum, group) => sum + group.items.length, 0);
+  const showSearch = totalItemCount > 6 || folderGroups.length > 0;
+  const searchMatches = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return [];
+
+    return data
+      .flatMap((group) =>
+        group.items.map((item) => ({
+          item,
+          group: group.group,
+        })),
+      )
+      .filter(({ item, group }) =>
+        [item.label, item.detail, item.searchText, group]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedQuery),
+      );
+  }, [data, query]);
+  const trimmedQuery = query.trim();
+  const buttonLabel = loading ? loadingLabel ?? "Loading database" : selectedItem?.label ?? placeholder;
   const control = (
     <Popover
       opened={opened}
       onChange={(next) => {
         setOpened(next);
-        if (next) setActiveGroup(null);
+        if (next) {
+          setActiveGroup(null);
+          setQuery("");
+        } else {
+          setQuery("");
+        }
       }}
       position="bottom-start"
       withinPortal
@@ -74,9 +118,17 @@ export default function DatabaseFolderSelect({
         <Button
           variant="default"
           size={size}
-          disabled={disabled}
+          disabled={disabled || loading}
           justify="space-between"
-          leftSection={selectedItem ? <IconDatabase size="1rem" /> : <IconFolder size="1rem" />}
+          leftSection={
+            loading ? (
+              <Loader size="xs" />
+            ) : selectedItem ? (
+              <IconDatabase size="1rem" />
+            ) : (
+              <IconFolder size="1rem" />
+            )
+          }
           rightSection={<IconChevronDown size="1rem" />}
           onClick={() => setOpened((current) => !current)}
           w={width}
@@ -92,72 +144,107 @@ export default function DatabaseFolderSelect({
       </Popover.Target>
 
       <Popover.Dropdown p={6} miw={260} maw={420}>
-        {!visibleGroup ? (
-          <Stack gap={4}>
-            {rootGroup?.items.map((item) => (
-              <DatabaseRow
-                key={item.value}
-                item={item}
-                selected={item.value === value}
-                allowDeselect={allowDeselect}
-                value={value}
-                onChange={onChange}
-                onClose={() => setOpened(false)}
-              />
-            ))}
-            {rootGroup && folderGroups.length > 0 && (
-              <Box h={1} my={2} style={{ background: "var(--mantine-color-default-border)" }} />
-            )}
-            {selectedGroup && selectedGroup.group !== "Unfiled" && (
-              <FolderRow
-                label={selectedGroup.group}
-                detail="Selected folder"
-                onClick={() => setActiveGroup(selectedGroup.group)}
-              />
-            )}
-            {folderGroups
-              .filter((group) => group.group !== selectedGroup?.group)
-              .map((group) => (
-                <FolderRow
-                  key={group.group}
-                  label={group.group}
-                  detail={`${group.items.length} database${group.items.length === 1 ? "" : "s"}`}
-                  onClick={() => setActiveGroup(group.group)}
-                />
-              ))}
-          </Stack>
-        ) : (
-          <Stack gap={4}>
-            <UnstyledButton
-              onClick={() => setActiveGroup(null)}
-              px={8}
-              py={6}
-              style={{ borderRadius: 6 }}
-            >
-              <Group gap={6} wrap="nowrap">
-                <IconChevronLeft size="1rem" />
-                <Text size="sm" fw={600}>
-                  {visibleGroup.group}
-                </Text>
-              </Group>
-            </UnstyledButton>
-            <ScrollArea.Autosize mah={280} type="auto">
+        <Stack gap={6}>
+          {showSearch ? (
+            <TextInput
+              aria-label="Search databases"
+              placeholder="Search databases"
+              size={size}
+              value={query}
+              onChange={(event) => setQuery(event.currentTarget.value)}
+            />
+          ) : null}
+          {trimmedQuery ? (
+            <ScrollArea.Autosize mah={320} type="auto">
               <Stack gap={2}>
-                {visibleGroup.items.map((item) => (
-                  <DatabaseRow
-                    key={item.value}
-                    item={item}
-                    selected={item.value === value}
-                    allowDeselect={allowDeselect}
-                    value={value}
-                    onChange={onChange}
-                    onClose={() => setOpened(false)}
-                  />
-                ))}
+                {searchMatches.length > 0 ? (
+                  searchMatches.map(({ item, group }) => (
+                    <DatabaseRow
+                      key={`${group}-${item.value}`}
+                      item={item}
+                      groupLabel={group}
+                      selected={item.value === value}
+                      allowDeselect={allowDeselect}
+                      value={value}
+                      onChange={onChange}
+                      onClose={() => setOpened(false)}
+                    />
+                  ))
+                ) : (
+                  <Text size="xs" c="dimmed" px={8} py={6}>
+                    No databases match "{trimmedQuery}".
+                  </Text>
+                )}
               </Stack>
             </ScrollArea.Autosize>
-          </Stack>
-        )}
+          ) : !visibleGroup ? (
+            <Stack gap={4}>
+              {rootGroup?.items.map((item) => (
+                <DatabaseRow
+                  key={item.value}
+                  item={item}
+                  selected={item.value === value}
+                  allowDeselect={allowDeselect}
+                  value={value}
+                  onChange={onChange}
+                  onClose={() => setOpened(false)}
+                />
+              ))}
+              {rootGroup && folderGroups.length > 0 && (
+                <Box h={1} my={2} style={{ background: "var(--mantine-color-default-border)" }} />
+              )}
+              {selectedGroup && selectedGroup.group !== "Unfiled" && (
+                <FolderRow
+                  label={selectedGroup.group}
+                  detail="Selected folder"
+                  onClick={() => setActiveGroup(selectedGroup.group)}
+                />
+              )}
+              {folderGroups
+                .filter((group) => group.group !== selectedGroup?.group)
+                .map((group) => (
+                  <FolderRow
+                    key={group.group}
+                    label={group.group}
+                    detail={`Open - ${group.items.length} database${group.items.length === 1 ? "" : "s"}`}
+                    onClick={() => setActiveGroup(group.group)}
+                  />
+                ))}
+            </Stack>
+          ) : (
+            <Stack gap={4}>
+              <UnstyledButton
+                onClick={() => setActiveGroup(null)}
+                px={8}
+                py={6}
+                style={{ borderRadius: 6 }}
+              >
+                <Group gap={6} wrap="nowrap">
+                  <IconChevronLeft size="1rem" />
+                  <Text size="sm" fw={600}>
+                    {visibleGroup.group}
+                  </Text>
+                </Group>
+              </UnstyledButton>
+              <ScrollArea.Autosize mah={280} type="auto">
+                <Stack gap={2}>
+                  {visibleGroup.items.map((item) => (
+                    <DatabaseRow
+                      key={item.value}
+                      item={item}
+                      groupLabel={visibleGroup.group}
+                      selected={item.value === value}
+                      allowDeselect={allowDeselect}
+                      value={value}
+                      onChange={onChange}
+                      onClose={() => setOpened(false)}
+                    />
+                  ))}
+                </Stack>
+              </ScrollArea.Autosize>
+            </Stack>
+          )}
+        </Stack>
       </Popover.Dropdown>
     </Popover>
   );
@@ -173,13 +260,15 @@ export default function DatabaseFolderSelect({
 
 function DatabaseRow({
   item,
+  groupLabel,
   selected,
   allowDeselect,
   value,
   onChange,
   onClose,
 }: {
-  item: { value: string; label: string; disabled?: boolean };
+  item: DatabaseFolderSelectItem;
+  groupLabel?: string;
   selected: boolean;
   allowDeselect: boolean;
   value: string | null;
@@ -199,18 +288,27 @@ function DatabaseRow({
         onClose();
       }}
       px={8}
-      py={6}
+      py={7}
       style={{
         borderRadius: 6,
         opacity: item.disabled ? 0.45 : 1,
         background: selected ? "var(--mantine-color-default-hover)" : "transparent",
       }}
     >
-      <Group gap={8} wrap="nowrap">
-        <IconDatabase size="1rem" />
-        <Text size="sm" truncate>
-          {item.label}
-        </Text>
+      <Group gap={8} wrap="nowrap" align="flex-start">
+        <IconDatabase size="1rem" style={{ marginTop: 2, flexShrink: 0 }} />
+        <Box miw={0}>
+          <Text size="sm" fw={selected ? 600 : 400} truncate>
+            {item.label}
+          </Text>
+          {item.detail || groupLabel ? (
+            <Text size="xs" c="dimmed" truncate>
+              {[groupLabel && groupLabel !== "Unfiled" ? groupLabel : null, item.detail]
+                .filter(Boolean)
+                .join(" - ")}
+            </Text>
+          ) : null}
+        </Box>
       </Group>
     </UnstyledButton>
   );

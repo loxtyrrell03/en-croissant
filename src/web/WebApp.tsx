@@ -1138,7 +1138,8 @@ function DatabaseUnderBoardPanel({
               data={sourceOptions}
               placeholder={hasLocalChoices ? "Choose database" : "No local databases"}
               allowDeselect={false}
-              disabled={Boolean(loadingLocalSource)}
+              loading={Boolean(loadingLocalSource)}
+              loadingLabel={loadingLocalSource ? `Loading ${loadingLocalSource}` : undefined}
               flex="1 1 13rem"
               minWidth="13rem"
             />
@@ -1912,7 +1913,8 @@ function PrepUnderBoardPanel({
               flex="1 1 14rem"
               minWidth="14rem"
               allowDeselect={false}
-              disabled={Boolean(loadingPrepSource)}
+              loading={Boolean(loadingPrepSource)}
+              loadingLabel={loadingPrepSource ? `Loading ${loadingPrepSource}` : undefined}
             />
             <Button
               size="compact-xs"
@@ -3215,6 +3217,8 @@ type WebDatabaseSelectGroup = {
     value: string;
     label: string;
     disabled?: boolean;
+    detail?: string;
+    searchText?: string;
   }[];
 };
 
@@ -3239,14 +3243,26 @@ function getWebDatabaseSelectData({
       {
         value: WEB_TEMPORARY_PREP_SOURCE_VALUE,
         label: `${formatDatabasePickerLabel(temporarySource.name)} (${temporarySource.gameCount} unsaved)`,
+        detail: `Current prep source - ${formatCount(temporarySource.gameCount)} games`,
+        searchText: "current prep temporary unsaved source",
       },
     ]);
   }
 
   if (includeOnline) {
     groups.set("Online", [
-      { value: WEB_LICHESS_ALL_SOURCE_VALUE, label: "Lichess All" },
-      { value: WEB_LICHESS_MASTERS_SOURCE_VALUE, label: "Lichess Masters" },
+      {
+        value: WEB_LICHESS_ALL_SOURCE_VALUE,
+        label: "Lichess All",
+        detail: "Explorer - saved token reused",
+        searchText: "lichess all online explorer",
+      },
+      {
+        value: WEB_LICHESS_MASTERS_SOURCE_VALUE,
+        label: "Lichess Masters",
+        detail: "Explorer - saved token reused",
+        searchText: "lichess masters online explorer",
+      },
     ]);
   }
 
@@ -3255,6 +3271,17 @@ function getWebDatabaseSelectData({
     addItem(folderPath ? getHostedDatabaseGroupLabel(folderPath) : "Unfiled", {
       value: database.id,
       label: formatDatabasePickerLabel(database.name),
+      detail: `Loaded - ${formatCount(database.gameCount)} game${database.gameCount === 1 ? "" : "s"}${
+        database.sizeBytes ? ` - ${formatBytes(database.sizeBytes)}` : ""
+      }`,
+      searchText: [
+        database.name,
+        database.hostedPath,
+        database.playerNames.slice(0, 12).join(" "),
+        "loaded local synced database",
+      ]
+        .filter(Boolean)
+        .join(" "),
     });
   }
 
@@ -3263,7 +3290,11 @@ function getWebDatabaseSelectData({
     const folderPath = getHostedDatabaseFolderPath(folder.path);
     addItem(folderPath ? getHostedDatabaseGroupLabel(folderPath) : "Unfiled", {
       value: hostedDatabaseValue(folder.path),
-      label: `${getHostedDatabaseLeafLabel(folder.path)} (${formatBytes(folder.sizeBytes)})`,
+      label: getHostedDatabaseLeafLabel(folder.path),
+      detail: `Not loaded - ${formatCount(folder.fileCount)} PGN${
+        folder.fileCount === 1 ? "" : "s"
+      } - ${formatBytes(folder.sizeBytes)}`,
+      searchText: `${folder.label} ${folder.path} synced hosted fork database not loaded`,
     });
   }
 

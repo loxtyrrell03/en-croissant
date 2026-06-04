@@ -230,6 +230,14 @@ default.
   and Skip actions, and local/temporary source `Go to game` evidence jumps.
   Browser-side prep workspaces now persist skipped move keys separately from
   prepared move keys.
+- Another 2026-06-04 phone parity pass made the shared database picker more
+  phone-friendly without changing the one-database source model. Database and
+  Prep source pickers now include a search box when folders or many choices are
+  present, show folder rows as drill-down entries, and show source row details
+  such as `Loaded - 1,588 games - 1.1 MB`, `Not loaded - 1 PGN - 1.1 MB`, or
+  `Explorer - saved token reused`. Selecting a generated hosted database still
+  imports exactly one synced database folder, then replaces the active local or
+  prep source with that one database.
 
 ### App Shell
 
