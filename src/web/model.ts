@@ -79,6 +79,7 @@ export type WebPrepWorkspace = {
   line: WebPrepLineMove[];
   notesByFen: Record<string, string>;
   preparedMoves: Record<string, number>;
+  skippedMoves?: Record<string, number>;
   createdAt: number;
   updatedAt: number;
 };

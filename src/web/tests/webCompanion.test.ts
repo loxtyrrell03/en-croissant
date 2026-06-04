@@ -61,6 +61,11 @@ describe("web companion PGN prep index", () => {
       total: 1,
       sourceLabel: "opponent move",
     });
+    expect(stats[0].examples[0]).toMatchObject({
+      white: "Me",
+      black: "Opponent",
+      date: "2026.06.01",
+    });
   });
 
   test("general prep mode uses the database position without player filtering", () => {

@@ -29,25 +29,32 @@ import {
   Text,
   Textarea,
   TextInput,
+  Tooltip,
   Title,
 } from "@mantine/core";
 import { notifications, Notifications } from "@mantine/notifications";
 import {
   IconArrowBackUp,
+  IconCheck,
+  IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
+  IconChevronUp,
   IconChevronsLeft,
   IconChevronsRight,
   IconChess,
   IconCloudDownload,
   IconDatabase,
   IconDownload,
+  IconExternalLink,
   IconFileText,
   IconFolder,
-  IconPlus,
+  IconPlayerPlay,
   IconRefresh,
+  IconSettings,
   IconTrash,
   IconUpload,
+  IconX,
 } from "@tabler/icons-react";
 import { isNormal, makeSquare, parseSquare, parseUci } from "chessops";
 import { chessgroundDests } from "chessops/compat";
@@ -150,6 +157,13 @@ type WebOnlineImportHandler = (request: {
   saveDatabase?: boolean;
   setProgress: (progress: number | null) => void;
 }) => Promise<WebImportResult | null>;
+type WebPrepBranchStatus = "new" | "started" | "prepared" | "skipped";
+type WebPrepSortDirection = "asc" | "desc";
+type WebPrepSortColumn = "move" | "strength" | "games" | "results" | "prep" | "state";
+type WebPrepSortState = {
+  column: WebPrepSortColumn;
+  direction: WebPrepSortDirection;
+};
 
 const WEB_LICHESS_ALL_SOURCE_VALUE = "web-source:lichess-all";
 const WEB_LICHESS_MASTERS_SOURCE_VALUE = "web-source:lichess-masters";
@@ -158,6 +172,11 @@ const WEB_DATABASE_PANEL_SOURCE_STORAGE_KEY = "en-croissant-web-database-panel-s
 const WEB_DATABASE_PANEL_LOCAL_STORAGE_KEY = "en-croissant-web-database-panel-local-source";
 const DEFAULT_WEB_PREP_MIN_GAMES = 1;
 const DEFAULT_WEB_PREP_MOVE_LIMIT = 12;
+const DEFAULT_WEB_PREP_SORT: WebPrepSortState = { column: "games", direction: "desc" };
+const DEFAULT_WEB_PREP_CANDIDATE_SORT: WebPrepSortState = {
+  column: "strength",
+  direction: "desc",
+};
 
 const theme = createTheme({
   primaryColor: "blue",
@@ -623,6 +642,7 @@ export default function WebApp() {
               importHostedPgn={importHostedPgn}
               importHostedFolder={importHostedFolder}
               importOnlineGames={importOnlineGames}
+              loadGameOnBoard={loadGameOnBoard}
               lichessToken={lichessToken}
               setLichessToken={setLichessToken}
             />
@@ -655,6 +675,7 @@ function BoardWorkspace({
   importHostedPgn,
   importHostedFolder,
   importOnlineGames,
+  loadGameOnBoard,
   lichessToken,
   setLichessToken,
 }: {
@@ -664,6 +685,7 @@ function BoardWorkspace({
   importHostedPgn: WebHostedPgnImportHandler;
   importHostedFolder: WebHostedFolderImportHandler;
   importOnlineGames: WebOnlineImportHandler;
+  loadGameOnBoard: (game: WebGame) => void;
   lichessToken: string;
   setLichessToken: (value: string) => void;
 }) {
@@ -829,6 +851,7 @@ function BoardWorkspace({
               importHostedPgn={importHostedPgn}
               importHostedFolder={importHostedFolder}
               onPlayMove={playMove}
+              onOpenSourceGame={loadGameOnBoard}
               lichessToken={lichessToken}
               setLichessToken={setLichessToken}
             />
@@ -841,6 +864,7 @@ function BoardWorkspace({
               stats={prepStats}
               currentLine={currentLine}
               onPlayMove={playMove}
+              onOpenSourceGame={loadGameOnBoard}
               importHostedPgn={importHostedPgn}
               importHostedFolder={importHostedFolder}
               importOnlineGames={importOnlineGames}
@@ -935,6 +959,7 @@ function DatabaseUnderBoardPanel({
   importHostedPgn,
   importHostedFolder,
   onPlayMove,
+  onOpenSourceGame,
   lichessToken,
   setLichessToken,
 }: {
@@ -944,6 +969,7 @@ function DatabaseUnderBoardPanel({
   importHostedPgn: WebHostedPgnImportHandler;
   importHostedFolder: WebHostedFolderImportHandler;
   onPlayMove: (stat: WebPrepMoveStat) => void;
+  onOpenSourceGame: (game: WebGame) => void;
   lichessToken: string;
   setLichessToken: (value: string) => void;
 }) {
@@ -1230,6 +1256,7 @@ function DatabaseUnderBoardPanel({
           showState={false}
           emptyLabel="No database moves"
           onPlayMove={onPlayMove}
+          onOpenSourceGame={source === "local" ? onOpenSourceGame : undefined}
         />
       )}
     </Stack>
@@ -1244,6 +1271,7 @@ function PrepUnderBoardPanel({
   stats,
   currentLine,
   onPlayMove,
+  onOpenSourceGame,
   importHostedPgn,
   importHostedFolder,
   importOnlineGames,
@@ -1257,6 +1285,7 @@ function PrepUnderBoardPanel({
   stats: WebPrepMoveStat[];
   currentLine: WebPrepLineMove[];
   onPlayMove: (stat: WebPrepMoveStat) => void;
+  onOpenSourceGame: (game: WebGame) => void;
   importHostedPgn: WebHostedPgnImportHandler;
   importHostedFolder: WebHostedFolderImportHandler;
   importOnlineGames: WebOnlineImportHandler;
@@ -1267,6 +1296,7 @@ function PrepUnderBoardPanel({
   const [userColor, setUserColor] = useState<WebColor>("white");
   const [prepMode, setPrepMode] = useState<WebPrepMode>("player");
   const [prepSource, setPrepSource] = useState<WebPrepSource>("local");
+  const [setupOpen, setSetupOpen] = useState(true);
   const [sourceId, setSourceId] = useState<string | null>(() => state.databases[0]?.id ?? null);
   const [minGames, setMinGames] = useState(DEFAULT_WEB_PREP_MIN_GAMES);
   const [moveLimit, setMoveLimit] = useState(DEFAULT_WEB_PREP_MOVE_LIMIT);
@@ -1288,6 +1318,11 @@ function PrepUnderBoardPanel({
   const [onlinePrepStats, setOnlinePrepStats] = useState<WebPrepMoveStat[]>([]);
   const [onlinePrepLoading, setOnlinePrepLoading] = useState(false);
   const [onlinePrepError, setOnlinePrepError] = useState<string | null>(null);
+  const [prepSort, setPrepSort] = useState<WebPrepSortState>(DEFAULT_WEB_PREP_SORT);
+  const [prepCandidateSort, setPrepCandidateSort] = useState<WebPrepSortState>(
+    DEFAULT_WEB_PREP_CANDIDATE_SORT,
+  );
+  const lastActivePrepIdRef = useRef<string | null>(null);
   const hostedDatabases = useHostedDatabaseFolders();
   const players = useMemo(() => getKnownPlayers(state.gamesByDatabase), [state.gamesByDatabase]);
   const sourceOptions = useMemo(
@@ -1343,9 +1378,37 @@ function PrepUnderBoardPanel({
           .filter((stat) => stat.total >= selectedMinGames)
           .slice(0, selectedMoveLimit)
       : stats;
+  const openPrepStats = activePrep
+    ? displayedStats.filter((stat) => !activePrep.skippedMoves?.[stat.key])
+    : displayedStats;
   const commonOpenStat = activePrep
-    ? getFirstOpenPrepStat(displayedStats, activePrep.preparedMoves)
+    ? getFirstOpenPrepStat(openPrepStats, activePrep.preparedMoves)
     : null;
+  const showSetupStage = !activePrep || setupOpen;
+  const showTrainingStage = Boolean(activePrep) && !setupOpen;
+  const opponentToMove = activePrep
+    ? getFenColor(currentFen) === oppositeWebColor(activePrep.userColor)
+    : false;
+  const startedMoveKeys = useMemo(
+    () => new Set((activePrep?.line ?? []).map((move) => getWebPrepMoveKey(move.fenBefore, move.san))),
+    [activePrep?.line],
+  );
+  const preparedCount = displayedStats.filter(
+    (stat) =>
+      getWebPrepBranchStatus(stat, activePrep?.preparedMoves, activePrep?.skippedMoves, startedMoveKeys) ===
+      "prepared",
+  ).length;
+  const startedCount = displayedStats.filter(
+    (stat) =>
+      getWebPrepBranchStatus(stat, activePrep?.preparedMoves, activePrep?.skippedMoves, startedMoveKeys) ===
+      "started",
+  ).length;
+  const skippedCount = displayedStats.filter(
+    (stat) =>
+      getWebPrepBranchStatus(stat, activePrep?.preparedMoves, activePrep?.skippedMoves, startedMoveKeys) ===
+      "skipped",
+  ).length;
+  const shownGamesCount = displayedStats.reduce((sum, stat) => sum + stat.total, 0);
 
   useEffect(() => {
     setSourceId((current) => {
@@ -1353,6 +1416,18 @@ function PrepUnderBoardPanel({
       return state.databases[0]?.id ?? null;
     });
   }, [state.databases]);
+
+  useEffect(() => {
+    if (!activePrep) {
+      lastActivePrepIdRef.current = null;
+      setSetupOpen(true);
+      return;
+    }
+    if (lastActivePrepIdRef.current !== activePrep.id) {
+      lastActivePrepIdRef.current = activePrep.id;
+      setSetupOpen(false);
+    }
+  }, [activePrep]);
 
   useEffect(() => {
     if (onlineUsername || !activePrep?.opponent) return;
@@ -1434,6 +1509,7 @@ function PrepUnderBoardPanel({
       line: currentLine,
       notesByFen: {},
       preparedMoves: {},
+      skippedMoves: {},
       createdAt: now,
       updatedAt: now,
     };
@@ -1451,6 +1527,7 @@ function PrepUnderBoardPanel({
       },
     }));
     setDraftTemporarySource(null);
+    setSetupOpen(false);
   };
 
   const updateActivePrep = (updater: (prep: WebPrepWorkspace) => WebPrepWorkspace) => {
@@ -1463,12 +1540,25 @@ function PrepUnderBoardPanel({
     }));
   };
 
-  const markMovePrepared = (stat: WebPrepMoveStat) => {
+  const markMoveDone = (stat: WebPrepMoveStat) => {
     updateActivePrep((prep) => ({
       ...prep,
       preparedMoves: {
         ...prep.preparedMoves,
-        [stat.key]: prep.preparedMoves[stat.key] ? 0 : Date.now(),
+        [stat.key]: prep.preparedMoves[stat.key] || Date.now(),
+      },
+      skippedMoves: omitRecordKey(prep.skippedMoves ?? {}, stat.key),
+      updatedAt: Date.now(),
+    }));
+  };
+
+  const skipMove = (stat: WebPrepMoveStat) => {
+    updateActivePrep((prep) => ({
+      ...prep,
+      preparedMoves: omitRecordKey(prep.preparedMoves, stat.key),
+      skippedMoves: {
+        ...(prep.skippedMoves ?? {}),
+        [stat.key]: prep.skippedMoves?.[stat.key] || Date.now(),
       },
       updatedAt: Date.now(),
     }));
@@ -1503,10 +1593,11 @@ function PrepUnderBoardPanel({
     if (!activePrep.preparedMoves[commonOpenStat.key]) {
       updateActivePrepSettings({
         preparedMoves: nextPreparedMoves,
+        skippedMoves: omitRecordKey(activePrep.skippedMoves ?? {}, commonOpenStat.key),
       });
     }
 
-    const nextStat = getNextOpenPrepStat(displayedStats, nextPreparedMoves, commonOpenStat.key);
+    const nextStat = getNextOpenPrepStat(openPrepStats, nextPreparedMoves, commonOpenStat.key);
     if (!nextStat) {
       notifications.show({
         title: "Prep line covered",
@@ -1759,341 +1850,382 @@ function PrepUnderBoardPanel({
             </Badge>
           ) : null}
         </Group>
-        {!activePrep && (
-          <Button size="xs" leftSection={<IconPlus size={14} />} onClick={createPrep}>
-            New
+        {showSetupStage && (
+          <Button
+            size="xs"
+            leftSection={<IconPlayerPlay size={14} />}
+            onClick={() => {
+              if (activePrep) setSetupOpen(false);
+              else createPrep();
+            }}
+          >
+            Start prep
           </Button>
         )}
       </Group>
 
-      <Group align="flex-end" gap="xs" wrap="wrap">
-        {state.prepWorkspaces.length > 0 && (
-          <Select
-            label="Prep"
-            size="xs"
-            value={state.activePrepId}
-            onChange={(value) => {
-              const nextPrep = state.prepWorkspaces.find((prep) => prep.id === value);
-              setState((current) => ({
-                ...current,
-                activePrepId: value,
-                board: {
-                  ...current.board,
-                  cursor: nextPrep?.line.length ?? current.board.cursor,
-                  sourceTitle: nextPrep ? prepBoardTitle(nextPrep) : current.board.sourceTitle,
-                  sourceDatabaseId: null,
-                  sourceGameId: null,
-                },
-              }));
-            }}
-            data={state.prepWorkspaces.map((prep) => ({ value: prep.id, label: prep.name }))}
-            style={{ flex: "1 1 12rem" }}
-            clearable
-          />
-        )}
-        <SegmentedControl
-          aria-label="Prep target"
-          data={[
-            { value: "player", label: "Player" },
-            { value: "general", label: "General" },
-          ]}
-          value={selectedPrepMode}
-          onChange={(value) => updatePrepMode(value as WebPrepMode)}
-          size="xs"
-        />
-        <DatabaseFolderSelect
-          data={sourceOptions}
-          value={selectedPrepSourceValue}
-          onChange={(value) => void choosePrepSource(value)}
-          placeholder="Prep source"
-          size="xs"
-          label="Prep source"
-          flex="1 1 14rem"
-          minWidth="14rem"
-          allowDeselect={false}
-          disabled={Boolean(loadingPrepSource)}
-        />
-        <Button
-          size="compact-xs"
-          variant={onlineOpen ? "light" : "default"}
-          leftSection={<IconCloudDownload size={14} />}
-          onClick={() => setOnlineOpen((open) => !open)}
-        >
-          Import games
-        </Button>
-        <Button
-          size="compact-xs"
-          variant={hostedOpen ? "light" : "default"}
-          leftSection={<IconFolder size={14} />}
-          onClick={() => setHostedOpen((open) => !open)}
-        >
-          Hosted files
-        </Button>
-      </Group>
+      {showSetupStage ? (
+        <>
+          <Group align="flex-end" gap="xs" wrap="wrap">
+            {state.prepWorkspaces.length > 0 && (
+              <Select
+                label="Prep"
+                size="xs"
+                value={state.activePrepId}
+                onChange={(value) => {
+                  const nextPrep = state.prepWorkspaces.find((prep) => prep.id === value);
+                  setSetupOpen(!nextPrep);
+                  setState((current) => ({
+                    ...current,
+                    activePrepId: value,
+                    board: {
+                      ...current.board,
+                      cursor: nextPrep?.line.length ?? current.board.cursor,
+                      sourceTitle: nextPrep ? prepBoardTitle(nextPrep) : current.board.sourceTitle,
+                      sourceDatabaseId: null,
+                      sourceGameId: null,
+                    },
+                  }));
+                }}
+                data={state.prepWorkspaces.map((prep) => ({ value: prep.id, label: prep.name }))}
+                style={{ flex: "1 1 12rem" }}
+                clearable
+              />
+            )}
+            <SegmentedControl
+              aria-label="Prep target"
+              data={[
+                { value: "player", label: "Player" },
+                { value: "general", label: "General" },
+              ]}
+              value={selectedPrepMode}
+              onChange={(value) => updatePrepMode(value as WebPrepMode)}
+              size="xs"
+            />
+            <DatabaseFolderSelect
+              data={sourceOptions}
+              value={selectedPrepSourceValue}
+              onChange={(value) => void choosePrepSource(value)}
+              placeholder="Prep source"
+              size="xs"
+              label="Prep source"
+              flex="1 1 14rem"
+              minWidth="14rem"
+              allowDeselect={false}
+              disabled={Boolean(loadingPrepSource)}
+            />
+            <Button
+              size="compact-xs"
+              variant={onlineOpen ? "light" : "default"}
+              leftSection={<IconCloudDownload size={14} />}
+              onClick={() => setOnlineOpen((open) => !open)}
+            >
+              Import games
+            </Button>
+            <Button
+              size="compact-xs"
+              variant={hostedOpen ? "light" : "default"}
+              leftSection={<IconFolder size={14} />}
+              onClick={() => setHostedOpen((open) => !open)}
+            >
+              Hosted files
+            </Button>
+          </Group>
 
-      <Collapse in={sourcesOpen}>
-        <Stack gap="xs" className={classes.prepToolBox}>
-          {loadingPrepSource ? (
-            <Group gap="xs" wrap="nowrap">
-              <Loader size="xs" />
-              <Text size="xs" c="dimmed" truncate>
-                Loading {loadingPrepSource} from synced files
-              </Text>
-            </Group>
-          ) : null}
-          <Group gap="xs" wrap="wrap" align="flex-end">
-            {selectedPrepMode === "player" ? (
-              <>
+          <Collapse in={sourcesOpen}>
+            <Stack gap="xs" className={classes.prepToolBox}>
+              {loadingPrepSource ? (
+                <Group gap="xs" wrap="nowrap">
+                  <Loader size="xs" />
+                  <Text size="xs" c="dimmed" truncate>
+                    Loading {loadingPrepSource} from synced files
+                  </Text>
+                </Group>
+              ) : null}
+              <Group gap="xs" wrap="wrap" align="flex-end">
+                {selectedPrepMode === "player" ? (
+                  <>
+                    <TextInput
+                      label="Player"
+                      size="xs"
+                      placeholder="Player"
+                      value={activePrep?.opponent ?? opponent}
+                      onChange={(event) => updatePrepOpponent(event.currentTarget.value)}
+                      list="web-known-players"
+                      style={{ flex: "1 1 10rem" }}
+                    />
+                    <datalist id="web-known-players">
+                      {players.map((player) => (
+                        <option key={player} value={player} />
+                      ))}
+                    </datalist>
+                    <SegmentedControl
+                      aria-label="Player colour"
+                      size="xs"
+                      value={selectedPlayerColor}
+                      onChange={(value) => updatePrepUserColor(oppositeWebColor(value as WebColor))}
+                      data={[
+                        {
+                          value: "white",
+                          label: `${(activePrep?.opponent ?? opponent).trim() || "Player"} as white`,
+                        },
+                        {
+                          value: "black",
+                          label: `${(activePrep?.opponent ?? opponent).trim() || "Player"} as black`,
+                        },
+                      ]}
+                    />
+                  </>
+                ) : (
+                  <SegmentedControl
+                    aria-label="Your prep side"
+                    size="xs"
+                    value={activePrep?.userColor ?? userColor}
+                    onChange={(value) => updatePrepUserColor(value as WebColor)}
+                    data={[
+                      { value: "white", label: "I'm white" },
+                      { value: "black", label: "I'm black" },
+                    ]}
+                    w={220}
+                  />
+                )}
+                <NumberInput
+                  label="Min games"
+                  value={selectedMinGames}
+                  onChange={(value) => updatePrepMinGames(Number(value))}
+                  min={1}
+                  max={999}
+                  step={1}
+                  size="xs"
+                  w={100}
+                  aria-label="Minimum games"
+                />
+                <NumberInput
+                  label="Show top"
+                  value={selectedMoveLimit}
+                  onChange={(value) => updatePrepMoveLimit(Number(value))}
+                  min={1}
+                  max={20}
+                  step={1}
+                  size="xs"
+                  w={100}
+                  aria-label="Top opponent moves to show"
+                />
+              </Group>
+              {isOnlinePrepSource(selectedPrepSource) ? (
+                <Group gap="xs" align="flex-end" wrap="wrap">
+                  <TextInput
+                    label="Lichess token"
+                    size="xs"
+                    type="password"
+                    value={lichessToken}
+                    onChange={(event) => setLichessToken(event.currentTarget.value)}
+                    placeholder="Bearer token"
+                    style={{ flex: "1 1 12rem" }}
+                  />
+                  <Button
+                    size="xs"
+                    variant="light"
+                    leftSection={<IconCloudDownload size={14} />}
+                    onClick={() => void startWebLichessLogin()}
+                  >
+                    Sign in
+                  </Button>
+                </Group>
+              ) : selectedPrepSource === "temporary" && selectedTemporarySource ? (
+                <Badge key={selectedTemporarySource.id} size="xs" variant="light" color="violet">
+                  {formatDatabasePickerLabel(selectedTemporarySource.name)} -{" "}
+                  {selectedTemporarySource.gameCount} unsaved
+                </Badge>
+              ) : activePrepSourceDatabase ? (
+                <Badge key={activePrepSourceDatabase.id} size="xs" variant="light">
+                  {formatDatabasePickerLabel(activePrepSourceDatabase.name)} -{" "}
+                  {activePrepSourceDatabase.gameCount}
+                </Badge>
+              ) : (
+                <Text size="xs" c="dimmed">
+                  Choose a prep source or import hosted/public games.
+                </Text>
+              )}
+            </Stack>
+          </Collapse>
+
+          <Collapse in={hostedOpen}>
+            <HostedFilesPanel
+              importHostedPgn={importHostedPgnForPrep}
+              importHostedFolder={importHostedFolderForPrep}
+              preferFolderImport
+              embedded
+            />
+          </Collapse>
+
+          <Collapse in={onlineOpen}>
+            <Stack gap="xs" className={classes.prepToolBox}>
+              <Group gap="xs" align="flex-end" wrap="wrap">
+                <SegmentedControl
+                  aria-label="Online prep source"
+                  size="xs"
+                  value={onlineSource}
+                  onChange={(value) => setOnlineSource(value as WebOnlineSource)}
+                  data={[
+                    { value: "lichess", label: "Lichess" },
+                    { value: "chesscom", label: "Chess.com" },
+                  ]}
+                />
                 <TextInput
                   label="Player"
                   size="xs"
-                  placeholder="Player"
-                  value={activePrep?.opponent ?? opponent}
-                  onChange={(event) => updatePrepOpponent(event.currentTarget.value)}
-                  list="web-known-players"
-                  style={{ flex: "1 1 10rem" }}
+                  placeholder="Username"
+                  value={onlineUsername}
+                  onChange={(event) => setOnlineUsername(event.currentTarget.value)}
+                  style={{ flex: "1 1 9rem" }}
                 />
-                <datalist id="web-known-players">
-                  {players.map((player) => (
-                    <option key={player} value={player} />
-                  ))}
-                </datalist>
                 <SegmentedControl
-                  aria-label="Player colour"
+                  aria-label="Online import scope"
                   size="xs"
-                  value={selectedPlayerColor}
-                  onChange={(value) => updatePrepUserColor(oppositeWebColor(value as WebColor))}
+                  value={onlineMode}
+                  onChange={(value) => setOnlineMode(value as WebOnlineImportMode)}
                   data={[
-                    {
-                      value: "white",
-                      label: `${(activePrep?.opponent ?? opponent).trim() || "Player"} as white`,
-                    },
-                    {
-                      value: "black",
-                      label: `${(activePrep?.opponent ?? opponent).trim() || "Player"} as black`,
-                    },
+                    { value: "count", label: "Most recent" },
+                    { value: "range", label: "Date range" },
                   ]}
                 />
-              </>
-            ) : (
-              <SegmentedControl
-                aria-label="Your prep side"
-                size="xs"
-                value={activePrep?.userColor ?? userColor}
-                onChange={(value) => updatePrepUserColor(value as WebColor)}
-                data={[
-                  { value: "white", label: "I'm white" },
-                  { value: "black", label: "I'm black" },
-                ]}
-                w={220}
-              />
-            )}
-            <NumberInput
-              label="Min games"
-              value={selectedMinGames}
-              onChange={(value) => updatePrepMinGames(Number(value))}
-              min={1}
-              max={999}
-              step={1}
-              size="xs"
-              w={100}
-              aria-label="Minimum games"
-            />
-            <NumberInput
-              label="Show top"
-              value={selectedMoveLimit}
-              onChange={(value) => updatePrepMoveLimit(Number(value))}
-              min={1}
-              max={20}
-              step={1}
-              size="xs"
-              w={100}
-              aria-label="Top opponent moves to show"
-            />
-          </Group>
-          {isOnlinePrepSource(selectedPrepSource) ? (
-            <Group gap="xs" align="flex-end" wrap="wrap">
-              <TextInput
-                label="Lichess token"
-                size="xs"
-                type="password"
-                value={lichessToken}
-                onChange={(event) => setLichessToken(event.currentTarget.value)}
-                placeholder="Bearer token"
-                style={{ flex: "1 1 12rem" }}
-              />
-              <Button
-                size="xs"
-                variant="light"
-                leftSection={<IconCloudDownload size={14} />}
-                onClick={() => void startWebLichessLogin()}
-              >
-                Sign in
-              </Button>
-            </Group>
-          ) : selectedPrepSource === "temporary" && selectedTemporarySource ? (
-            <Badge key={selectedTemporarySource.id} size="xs" variant="light" color="violet">
-              {formatDatabasePickerLabel(selectedTemporarySource.name)} - {selectedTemporarySource.gameCount} unsaved
-            </Badge>
-          ) : activePrepSourceDatabase ? (
-            <Badge key={activePrepSourceDatabase.id} size="xs" variant="light">
-              {formatDatabasePickerLabel(activePrepSourceDatabase.name)} -{" "}
-              {activePrepSourceDatabase.gameCount}
-            </Badge>
-          ) : (
-            <Text size="xs" c="dimmed">
-              Choose a prep source or import hosted/public games.
-            </Text>
-          )}
-        </Stack>
-      </Collapse>
+                {onlineMode === "count" ? (
+                  <NumberInput
+                    label="Games"
+                    size="xs"
+                    value={onlineCount}
+                    min={1}
+                    max={300}
+                    step={25}
+                    onChange={(value) =>
+                      setOnlineCount(Math.max(1, Math.min(300, Number(value) || 1)))
+                    }
+                    w={94}
+                  />
+                ) : (
+                  <Select
+                    label="Range"
+                    size="xs"
+                    value={onlineRange}
+                    onChange={(value) =>
+                      setOnlineRange((value as WebOnlineRangePreset | null) ?? "3m")
+                    }
+                    data={[
+                      { value: "3m", label: getWebOnlineRangeLabel("3m") },
+                      { value: "6m", label: getWebOnlineRangeLabel("6m") },
+                      { value: "1y", label: getWebOnlineRangeLabel("1y") },
+                      { value: "all", label: getWebOnlineRangeLabel("all") },
+                    ]}
+                    allowDeselect={false}
+                    w={148}
+                  />
+                )}
+                <Button
+                  size="xs"
+                  leftSection={<IconCloudDownload size={14} />}
+                  disabled={!onlineUsername.trim()}
+                  onClick={runOnlineImport}
+                >
+                  Import + use
+                </Button>
+              </Group>
+              <Group gap="xs" wrap="wrap" align="center">
+                <Checkbox
+                  label="Save database"
+                  checked={onlineSaveDatabase}
+                  onChange={(event) => setOnlineSaveDatabase(event.currentTarget.checked)}
+                  size="xs"
+                />
+                {onlineMode === "count" ? (
+                  <Button
+                    variant="default"
+                    size="xs"
+                    disabled={!onlineUsername.trim()}
+                    loading={onlinePreviewLoading}
+                    onClick={() => void previewOnlineImportCount()}
+                  >
+                    Check range
+                  </Button>
+                ) : (
+                  <Badge variant="light">{getWebOnlineRangeLabel(onlineRange)}</Badge>
+                )}
+                {onlinePreviewText ? (
+                  <Text size="xs" c="dimmed" style={{ flex: "1 1 14rem" }}>
+                    {onlinePreviewText}
+                  </Text>
+                ) : null}
+              </Group>
+              <Group gap="xs" wrap="nowrap">
+                {onlineProgress !== null && (
+                  <>
+                    <Progress value={onlineProgress} size="xs" style={{ flex: 1 }} />
+                    <Text size="xs" c="dimmed">
+                      {Math.round(onlineProgress)}%
+                    </Text>
+                  </>
+                )}
+                {onlineProgress === null && (
+                  <Text size="xs" c="dimmed">
+                    {onlineSaveDatabase
+                      ? `Imports public PGNs from ${getWebOnlineSourceLabel(onlineSource)} into the phone database list.`
+                      : `Imports public PGNs from ${getWebOnlineSourceLabel(onlineSource)} and uses them for this prep.`}
+                  </Text>
+                )}
+              </Group>
+            </Stack>
+          </Collapse>
+        </>
+      ) : null}
 
-      <Collapse in={hostedOpen}>
-        <HostedFilesPanel
-          importHostedPgn={importHostedPgnForPrep}
-          importHostedFolder={importHostedFolderForPrep}
-          preferFolderImport
-          embedded
-        />
-      </Collapse>
-
-      <Collapse in={onlineOpen}>
-        <Stack gap="xs" className={classes.prepToolBox}>
-          <Group gap="xs" align="flex-end" wrap="wrap">
-            <SegmentedControl
-              aria-label="Online prep source"
-              size="xs"
-              value={onlineSource}
-              onChange={(value) => setOnlineSource(value as WebOnlineSource)}
-              data={[
-                { value: "lichess", label: "Lichess" },
-                { value: "chesscom", label: "Chess.com" },
-              ]}
-            />
-            <TextInput
-              label="Player"
-              size="xs"
-              placeholder="Username"
-              value={onlineUsername}
-              onChange={(event) => setOnlineUsername(event.currentTarget.value)}
-              style={{ flex: "1 1 9rem" }}
-            />
-            <SegmentedControl
-              aria-label="Online import scope"
-              size="xs"
-              value={onlineMode}
-              onChange={(value) => setOnlineMode(value as WebOnlineImportMode)}
-              data={[
-                { value: "count", label: "Most recent" },
-                { value: "range", label: "Date range" },
-              ]}
-            />
-            {onlineMode === "count" ? (
-              <NumberInput
-                label="Games"
-                size="xs"
-                value={onlineCount}
-                min={1}
-                max={300}
-                step={25}
-                onChange={(value) =>
-                  setOnlineCount(Math.max(1, Math.min(300, Number(value) || 1)))
-                }
-                w={94}
-              />
-            ) : (
-              <Select
-                label="Range"
-                size="xs"
-                value={onlineRange}
-                onChange={(value) => setOnlineRange((value as WebOnlineRangePreset | null) ?? "3m")}
-                data={[
-                  { value: "3m", label: getWebOnlineRangeLabel("3m") },
-                  { value: "6m", label: getWebOnlineRangeLabel("6m") },
-                  { value: "1y", label: getWebOnlineRangeLabel("1y") },
-                  { value: "all", label: getWebOnlineRangeLabel("all") },
-                ]}
-                allowDeselect={false}
-                w={148}
-              />
-            )}
-            <Button
-              size="xs"
-              leftSection={<IconCloudDownload size={14} />}
-              disabled={!onlineUsername.trim()}
-              onClick={runOnlineImport}
-            >
-              Import + use
-            </Button>
-          </Group>
-          <Group gap="xs" wrap="wrap" align="center">
-            <Checkbox
-              label="Save database"
-              checked={onlineSaveDatabase}
-              onChange={(event) => setOnlineSaveDatabase(event.currentTarget.checked)}
-              size="xs"
-            />
-            {onlineMode === "count" ? (
-              <Button
-                variant="default"
-                size="xs"
-                disabled={!onlineUsername.trim()}
-                loading={onlinePreviewLoading}
-                onClick={() => void previewOnlineImportCount()}
-              >
-                Check range
-              </Button>
-            ) : (
-              <Badge variant="light">{getWebOnlineRangeLabel(onlineRange)}</Badge>
-            )}
-            {onlinePreviewText ? (
-              <Text size="xs" c="dimmed" style={{ flex: "1 1 14rem" }}>
-                {onlinePreviewText}
-              </Text>
-            ) : null}
-          </Group>
-          <Group gap="xs" wrap="nowrap">
-            {onlineProgress !== null && (
-              <>
-                <Progress value={onlineProgress} size="xs" style={{ flex: 1 }} />
-                <Text size="xs" c="dimmed">
-                  {Math.round(onlineProgress)}%
-                </Text>
-              </>
-            )}
-            {onlineProgress === null && (
-              <Text size="xs" c="dimmed">
-                {onlineSaveDatabase
-                  ? `Imports public PGNs from ${getWebOnlineSourceLabel(onlineSource)} into the phone database list.`
-                  : `Imports public PGNs from ${getWebOnlineSourceLabel(onlineSource)} and uses them for this prep.`}
-              </Text>
-            )}
-          </Group>
-        </Stack>
-      </Collapse>
-
-      {!activePrep ? (
+      {showSetupStage && !activePrep ? (
         <Stack gap="xs">
           <Text size="xs" c="dimmed">
-            Create prep to track notes and prepared moves from this board position.
+            Choose a source and target, then start prep from this board.
           </Text>
         </Stack>
-      ) : (
+      ) : showTrainingStage && activePrep ? (
         <>
-          <Group justify="space-between" gap="xs">
-            <Box miw={0}>
-              <Text size="sm" fw={700} truncate>
-                {activePrep.opponent || "General prep"}
+          <Group justify="space-between" gap="xs" wrap="wrap">
+            <Stack gap={1} style={{ minWidth: 0, flex: 1 }}>
+              <Text size="xs" c="dimmed" truncate>
+                Start: game start
               </Text>
               <Text size="xs" c="dimmed" truncate>
-                {getFenColor(currentFen) === oppositeWebColor(activePrep.userColor)
+                {opponentToMove
                   ? `${activePrep.opponent || "Opponent"} to move`
                   : "Your move"}
+                {currentLine.length > 0 ? ` - ${currentLine.slice(-10).map((move) => move.san).join(" ")}` : ""}
               </Text>
-            </Box>
-            <Badge variant="light">
-              {displayedStats.reduce((sum, stat) => sum + stat.total, 0)} games
-            </Badge>
+            </Stack>
+            <Group gap={4} wrap="nowrap">
+              <Tooltip label="Play the first open common move from the prep start">
+                <Button
+                  size="xs"
+                  leftSection={<IconPlayerPlay size={14} />}
+                  disabled={!commonOpenStat}
+                  onClick={playCommonMove}
+                >
+                  Common move
+                </Button>
+              </Tooltip>
+              <Tooltip label="Mark this line done and play the next common move">
+                <Button
+                  size="xs"
+                  variant="default"
+                  leftSection={<IconChevronRight size={14} />}
+                  disabled={!commonOpenStat}
+                  onClick={doneAndNext}
+                >
+                  Done + next
+                </Button>
+              </Tooltip>
+              <Tooltip label="Change prep source and target">
+                <ActionIcon aria-label="Change prep setup" variant="default" onClick={() => setSetupOpen(true)}>
+                  <IconSettings size={16} />
+                </ActionIcon>
+              </Tooltip>
+            </Group>
           </Group>
           {onlinePrepLoading && isOnlinePrepSource(selectedPrepSource) ? (
             <Group gap="xs">
@@ -2109,23 +2241,24 @@ function PrepUnderBoardPanel({
             </Text>
           ) : null}
           <Group gap="xs" wrap="wrap">
-            <Button
-              size="xs"
-              leftSection={<IconChevronRight size={14} />}
-              disabled={!commonOpenStat}
-              onClick={playCommonMove}
-            >
-              Common move
-            </Button>
-            <Button
-              size="xs"
-              variant="default"
-              leftSection={<IconChevronsRight size={14} />}
-              disabled={!commonOpenStat}
-              onClick={doneAndNext}
-            >
-              Done + next
-            </Button>
+            {opponentToMove ? (
+              <>
+                <Badge variant="light">{preparedCount} prepared</Badge>
+                {startedCount > 0 ? <Badge variant="light">{startedCount} started</Badge> : null}
+                {skippedCount > 0 ? (
+                  <Badge color="gray" variant="light">
+                    {skippedCount} skipped
+                  </Badge>
+                ) : null}
+              </>
+            ) : (
+              <Badge color="blue" variant="light">
+                {activePrep.userColor === "white" ? "White" : "Black"} candidates
+              </Badge>
+            )}
+            <Text size="xs" c="dimmed">
+              {formatCount(shownGamesCount)} games in shown moves
+            </Text>
             {commonOpenStat ? (
               <Badge variant="light" size="sm">
                 {commonOpenStat.move} - {commonOpenStat.total} games
@@ -2143,13 +2276,25 @@ function PrepUnderBoardPanel({
           <CompactMoveTable
             stats={displayedStats}
             preparedMoves={activePrep.preparedMoves}
-            showState
+            skippedMoves={activePrep.skippedMoves ?? {}}
+            startedMoveKeys={startedMoveKeys}
+            showState={opponentToMove}
             emptyLabel="No prep moves"
             onPlayMove={onPlayMove}
-            onTogglePrepared={markMovePrepared}
+            onOpenSourceGame={isOnlinePrepSource(selectedPrepSource) ? undefined : onOpenSourceGame}
+            onMarkDone={markMoveDone}
+            onSkipMove={skipMove}
+            sort={opponentToMove ? prepSort : prepCandidateSort}
+            onSort={(column) => {
+              if (opponentToMove) {
+                setPrepSort((current) => getNextWebPrepSort(current, column));
+              } else if (column !== "prep" && column !== "state") {
+                setPrepCandidateSort((current) => getNextWebPrepSort(current, column));
+              }
+            }}
           />
         </>
-      )}
+      ) : null}
     </Stack>
   );
 }
@@ -2158,17 +2303,40 @@ function CompactMoveTable({
   stats,
   showState,
   preparedMoves,
+  skippedMoves,
+  startedMoveKeys,
   emptyLabel,
   onPlayMove,
-  onTogglePrepared,
+  onOpenSourceGame,
+  onMarkDone,
+  onSkipMove,
+  sort,
+  onSort,
 }: {
   stats: WebPrepMoveStat[];
   showState: boolean;
   preparedMoves?: Record<string, number>;
+  skippedMoves?: Record<string, number>;
+  startedMoveKeys?: Set<string>;
   emptyLabel: string;
   onPlayMove: (stat: WebPrepMoveStat) => void;
-  onTogglePrepared?: (stat: WebPrepMoveStat) => void;
+  onOpenSourceGame?: (game: WebGame) => void;
+  onMarkDone?: (stat: WebPrepMoveStat) => void;
+  onSkipMove?: (stat: WebPrepMoveStat) => void;
+  sort?: WebPrepSortState;
+  onSort?: (column: WebPrepSortColumn) => void;
 }) {
+  const isPrepTable = Boolean(onMarkDone || onSkipMove || startedMoveKeys);
+  const isPrepCandidateTable = isPrepTable && !showState;
+  const effectiveSort =
+    isPrepCandidateTable && sort && (sort.column === "prep" || sort.column === "state")
+      ? DEFAULT_WEB_PREP_CANDIDATE_SORT
+      : sort;
+  const sortedStats =
+    isPrepTable && effectiveSort
+      ? sortWebPrepMoveStats(stats, effectiveSort, preparedMoves, skippedMoves, startedMoveKeys)
+      : stats;
+
   if (stats.length === 0) {
     return (
       <Text size="sm" c="dimmed">
@@ -2178,53 +2346,165 @@ function CompactMoveTable({
   }
 
   return (
-    <Table.ScrollContainer minWidth={showState ? 560 : 440}>
-      <Table className={classes.compactTable} verticalSpacing={4} highlightOnHover>
+    <Table.ScrollContainer minWidth={showState ? 760 : isPrepCandidateTable ? 560 : 520}>
+      <Table className={classes.compactTable} verticalSpacing={showState ? 3 : 4} highlightOnHover>
         <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Move</Table.Th>
-            <Table.Th>Games</Table.Th>
-            <Table.Th>WDL</Table.Th>
-            <Table.Th>Last</Table.Th>
-            {showState && <Table.Th>State</Table.Th>}
-            <Table.Th />
-          </Table.Tr>
+          {showState ? (
+            <Table.Tr>
+              <SortableWebPrepTh label="Move" column="move" sort={effectiveSort} onSort={onSort} />
+              <SortableWebPrepTh label="Strength" column="strength" sort={effectiveSort} onSort={onSort} />
+              <SortableWebPrepTh label="Games" column="games" sort={effectiveSort} onSort={onSort} />
+              <SortableWebPrepTh label="Results" column="results" sort={effectiveSort} onSort={onSort} />
+              <SortableWebPrepTh label="Prep" column="prep" sort={effectiveSort} onSort={onSort} />
+              <SortableWebPrepTh label="State" column="state" sort={effectiveSort} onSort={onSort} />
+              <Table.Th />
+            </Table.Tr>
+          ) : isPrepCandidateTable ? (
+            <Table.Tr>
+              <SortableWebPrepTh label="Move" column="move" sort={effectiveSort} onSort={onSort} />
+              <SortableWebPrepTh label="Strength" column="strength" sort={effectiveSort} onSort={onSort} />
+              <SortableWebPrepTh label="Games" column="games" sort={effectiveSort} onSort={onSort} />
+              <SortableWebPrepTh label="WDL" column="results" sort={effectiveSort} onSort={onSort} />
+              <Table.Th />
+            </Table.Tr>
+          ) : (
+            <Table.Tr>
+              <Table.Th>Move</Table.Th>
+              <Table.Th>Games</Table.Th>
+              <Table.Th>WDL</Table.Th>
+              <Table.Th>Last</Table.Th>
+              <Table.Th />
+            </Table.Tr>
+          )}
         </Table.Thead>
         <Table.Tbody>
-          {stats.map((stat) => {
-            const prepared = Boolean(preparedMoves?.[stat.key]);
+          {sortedStats.map((stat) => {
+            const status = getWebPrepBranchStatus(stat, preparedMoves, skippedMoves, startedMoveKeys);
             return (
-              <Table.Tr key={stat.key}>
+              <Table.Tr
+                key={stat.key}
+                style={{ cursor: "pointer" }}
+                onClick={() => onPlayMove(stat)}
+              >
                 <Table.Td>
                   <Text size="sm" fw={700}>
                     {stat.move}
                   </Text>
                   <Text size="xs" c="dimmed">
-                    {stat.strength?.label ? `Strength ${stat.strength.label}` : stat.sourceLabel}
+                    {isPrepTable ? formatWebPrepLastPlayed(stat.lastPlayed) : stat.sourceLabel}
                   </Text>
                 </Table.Td>
-                <Table.Td>
-                  <Text size="sm">{stat.total}</Text>
-                  <Text size="xs" c="dimmed">
-                    {formatPercent(stat.share)}
-                  </Text>
-                </Table.Td>
-                <Table.Td>{formatPercent(stat.scoreForUser)}</Table.Td>
-                <Table.Td>{formatWebDate(stat.lastPlayed) || "-"}</Table.Td>
-                {showState && (
-                  <Table.Td>
-                    <Checkbox
-                      size="xs"
-                      checked={prepared}
-                      label={prepared ? "Done" : "Open"}
-                      onChange={() => onTogglePrepared?.(stat)}
-                    />
-                  </Table.Td>
+                {showState ? (
+                  <>
+                    <Table.Td>
+                      <PrepStrengthCell strength={stat.strength} />
+                    </Table.Td>
+                    <Table.Td>
+                      <Text size="sm">{formatCount(stat.total)}</Text>
+                      <Text size="xs" c="dimmed">
+                        {formatPercent(stat.share)}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <PrepResultBar stat={stat} />
+                    </Table.Td>
+                    <Table.Td>
+                      <PrepCoverageCell status={status} />
+                    </Table.Td>
+                    <Table.Td>
+                      <Badge color={webPrepStatusColor(status)} variant="light" size="sm">
+                        {webPrepStatusLabel(status)}
+                      </Badge>
+                    </Table.Td>
+                  </>
+                ) : isPrepCandidateTable ? (
+                  <>
+                    <Table.Td>
+                      <PrepStrengthCell strength={stat.strength} />
+                    </Table.Td>
+                    <Table.Td>
+                      <Text size="sm">{formatCount(stat.total)}</Text>
+                      <Text size="xs" c="dimmed">
+                        {formatPercent(stat.share)}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <PrepResultBar stat={stat} />
+                    </Table.Td>
+                  </>
+                ) : (
+                  <>
+                    <Table.Td>
+                      <Text size="sm">{formatCount(stat.total)}</Text>
+                      <Text size="xs" c="dimmed">
+                        {formatPercent(stat.share)}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>{formatPercent(stat.scoreForUser)}</Table.Td>
+                    <Table.Td>{formatWebDate(stat.lastPlayed) || "-"}</Table.Td>
+                  </>
                 )}
                 <Table.Td ta="right">
-                  <Button size="compact-xs" variant="light" onClick={() => onPlayMove(stat)}>
-                    Play
-                  </Button>
+                  <Group gap={2} justify="flex-end" wrap="nowrap">
+                    {!isPrepCandidateTable && onOpenSourceGame && stat.examples[0] ? (
+                      <Tooltip label="Go to game">
+                        <ActionIcon
+                          aria-label="Go to game"
+                          variant="subtle"
+                          size="sm"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onOpenSourceGame(stat.examples[0]);
+                          }}
+                        >
+                          <IconExternalLink size={15} />
+                        </ActionIcon>
+                      </Tooltip>
+                    ) : null}
+                    <Tooltip label="Play this move">
+                      <ActionIcon
+                        aria-label="Play this move"
+                        variant="subtle"
+                        size="sm"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onPlayMove(stat);
+                        }}
+                      >
+                        <IconPlayerPlay size={15} />
+                      </ActionIcon>
+                    </Tooltip>
+                    {showState && onMarkDone ? (
+                      <Tooltip label="Mark this branch done">
+                        <ActionIcon
+                          aria-label="Mark branch done"
+                          variant="subtle"
+                          size="sm"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onMarkDone(stat);
+                          }}
+                        >
+                          <IconCheck size={15} />
+                        </ActionIcon>
+                      </Tooltip>
+                    ) : null}
+                    {showState && onSkipMove ? (
+                      <Tooltip label="Skip this branch">
+                        <ActionIcon
+                          aria-label="Skip branch"
+                          variant="subtle"
+                          size="sm"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onSkipMove(stat);
+                          }}
+                        >
+                          <IconX size={15} />
+                        </ActionIcon>
+                      </Tooltip>
+                    ) : null}
+                  </Group>
                 </Table.Td>
               </Table.Tr>
             );
@@ -2233,6 +2513,245 @@ function CompactMoveTable({
       </Table>
     </Table.ScrollContainer>
   );
+}
+
+function SortableWebPrepTh({
+  label,
+  column,
+  sort,
+  onSort,
+}: {
+  label: string;
+  column: WebPrepSortColumn;
+  sort?: WebPrepSortState;
+  onSort?: (column: WebPrepSortColumn) => void;
+}) {
+  const active = sort?.column === column;
+  return (
+    <Table.Th
+      role={onSort ? "button" : undefined}
+      tabIndex={onSort ? 0 : undefined}
+      aria-sort={active ? (sort.direction === "asc" ? "ascending" : "descending") : "none"}
+      style={{ cursor: onSort ? "pointer" : undefined, userSelect: onSort ? "none" : undefined }}
+      onClick={() => onSort?.(column)}
+      onKeyDown={(event) => {
+        if (!onSort) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSort(column);
+        }
+      }}
+    >
+      <Group gap={4} wrap="nowrap">
+        <Text span size="xs" fw={700}>
+          {label}
+        </Text>
+        {active ? (
+          sort.direction === "asc" ? (
+            <IconChevronUp size={12} />
+          ) : (
+            <IconChevronDown size={12} />
+          )
+        ) : null}
+      </Group>
+    </Table.Th>
+  );
+}
+
+function PrepStrengthCell({ strength }: { strength: WebPrepMoveStat["strength"] }) {
+  if (!strength) {
+    return (
+      <Text size="xs" c="dimmed">
+        -
+      </Text>
+    );
+  }
+
+  return (
+    <Tooltip label={strength.detail} multiline w={260}>
+      <Stack gap={2} style={{ minWidth: 0 }}>
+        <Group gap={4} wrap="nowrap">
+          <Badge variant="light" size="sm">
+            {strength.label}
+          </Badge>
+          <Text size="xs" fw={700}>
+            {strength.score}%
+          </Text>
+        </Group>
+        <Progress value={strength.score} size={3} />
+      </Stack>
+    </Tooltip>
+  );
+}
+
+function PrepResultBar({ stat }: { stat: Pick<WebPrepMoveStat, "white" | "draw" | "black"> }) {
+  const total = stat.white + stat.draw + stat.black;
+  const whitePercent = total > 0 ? (stat.white / total) * 100 : 0;
+  const drawPercent = total > 0 ? (stat.draw / total) * 100 : 0;
+  const blackPercent = total > 0 ? (stat.black / total) * 100 : 0;
+
+  return (
+    <Progress.Root size="lg">
+      <Progress.Section value={whitePercent} color="gray.2">
+        <Progress.Label c="black">
+          {whitePercent >= 18 ? `${whitePercent.toFixed(0)}%` : ""}
+        </Progress.Label>
+      </Progress.Section>
+      <Progress.Section value={drawPercent} color="gray">
+        <Progress.Label>{drawPercent >= 18 ? `${drawPercent.toFixed(0)}%` : ""}</Progress.Label>
+      </Progress.Section>
+      <Progress.Section value={blackPercent} color="dark">
+        <Progress.Label>{blackPercent >= 18 ? `${blackPercent.toFixed(0)}%` : ""}</Progress.Label>
+      </Progress.Section>
+    </Progress.Root>
+  );
+}
+
+function PrepCoverageCell({ status }: { status: WebPrepBranchStatus }) {
+  const value = status === "prepared" ? 100 : status === "started" ? 45 : 0;
+  const label = status === "prepared" ? "Done" : status === "started" ? "Started" : "-";
+
+  return (
+    <Stack gap={2} style={{ minWidth: 0 }}>
+      <Group gap={4} wrap="nowrap">
+        <Badge color={status === "prepared" ? "green" : status === "started" ? "blue" : "gray"} variant="light" size="sm">
+          {label}
+        </Badge>
+        {value > 0 ? (
+          <Text size="xs" fw={700}>
+            {value}%
+          </Text>
+        ) : null}
+      </Group>
+      <Progress value={value} color={status === "prepared" ? "green" : "blue"} size={3} />
+    </Stack>
+  );
+}
+
+function getNextWebPrepSort(current: WebPrepSortState, column: WebPrepSortColumn): WebPrepSortState {
+  if (current.column === column) {
+    return {
+      column,
+      direction: current.direction === "asc" ? "desc" : "asc",
+    };
+  }
+
+  return {
+    column,
+    direction: column === "move" ? "asc" : "desc",
+  };
+}
+
+function sortWebPrepMoveStats(
+  stats: WebPrepMoveStat[],
+  sort: WebPrepSortState,
+  preparedMoves: Record<string, number> | undefined,
+  skippedMoves: Record<string, number> | undefined,
+  startedMoveKeys: Set<string> | undefined,
+) {
+  return [...stats].sort((a, b) => {
+    const diff = compareWebPrepMoveStats(a, b, sort.column, preparedMoves, skippedMoves, startedMoveKeys);
+    const directed = sort.direction === "asc" ? diff : -diff;
+    return directed || b.total - a.total || a.move.localeCompare(b.move, undefined, { sensitivity: "base" });
+  });
+}
+
+function compareWebPrepMoveStats(
+  a: WebPrepMoveStat,
+  b: WebPrepMoveStat,
+  column: WebPrepSortColumn,
+  preparedMoves: Record<string, number> | undefined,
+  skippedMoves: Record<string, number> | undefined,
+  startedMoveKeys: Set<string> | undefined,
+) {
+  if (column === "move") {
+    return a.move.localeCompare(b.move, undefined, { sensitivity: "base" });
+  }
+  if (column === "strength") {
+    return getWebPrepStrengthSortScore(a) - getWebPrepStrengthSortScore(b);
+  }
+  if (column === "results") {
+    return a.scoreForUser - b.scoreForUser;
+  }
+  if (column === "prep") {
+    return (
+      getWebPrepCoverageSortScore(a, preparedMoves, skippedMoves, startedMoveKeys) -
+      getWebPrepCoverageSortScore(b, preparedMoves, skippedMoves, startedMoveKeys)
+    );
+  }
+  if (column === "state") {
+    return (
+      getWebPrepStatusSortScore(getWebPrepBranchStatus(a, preparedMoves, skippedMoves, startedMoveKeys)) -
+      getWebPrepStatusSortScore(getWebPrepBranchStatus(b, preparedMoves, skippedMoves, startedMoveKeys))
+    );
+  }
+
+  return a.total - b.total;
+}
+
+function getWebPrepStrengthSortScore(stat: WebPrepMoveStat) {
+  return stat.strength?.score ?? -1;
+}
+
+function getWebPrepCoverageSortScore(
+  stat: WebPrepMoveStat,
+  preparedMoves: Record<string, number> | undefined,
+  skippedMoves: Record<string, number> | undefined,
+  startedMoveKeys: Set<string> | undefined,
+) {
+  const status = getWebPrepBranchStatus(stat, preparedMoves, skippedMoves, startedMoveKeys);
+  if (status === "prepared") return 100;
+  if (status === "started") return 45;
+  if (status === "new") return 0;
+  return -1;
+}
+
+function getWebPrepStatusSortScore(status: WebPrepBranchStatus) {
+  if (status === "new") return 4;
+  if (status === "started") return 3;
+  if (status === "prepared") return 2;
+  return 1;
+}
+
+function getWebPrepBranchStatus(
+  stat: Pick<WebPrepMoveStat, "key">,
+  preparedMoves: Record<string, number> | undefined,
+  skippedMoves: Record<string, number> | undefined,
+  startedMoveKeys: Set<string> | undefined,
+): WebPrepBranchStatus {
+  if (preparedMoves?.[stat.key]) return "prepared";
+  if (skippedMoves?.[stat.key]) return "skipped";
+  if (startedMoveKeys?.has(stat.key)) return "started";
+  return "new";
+}
+
+function webPrepStatusColor(status: WebPrepBranchStatus) {
+  if (status === "prepared") return "green";
+  if (status === "started") return "blue";
+  if (status === "skipped") return "gray";
+  return "orange";
+}
+
+function webPrepStatusLabel(status: WebPrepBranchStatus) {
+  if (status === "prepared") return "Done";
+  if (status === "started") return "Started";
+  if (status === "skipped") return "Skipped";
+  return "New";
+}
+
+function getWebPrepMoveKey(fen: string, move: string) {
+  return `${normalizeWebFen(fen)}:${move}`;
+}
+
+function omitRecordKey(record: Record<string, number>, key: string) {
+  const next = { ...record };
+  delete next[key];
+  return next;
+}
+
+function formatWebPrepLastPlayed(value: string | null | undefined) {
+  const label = value ? formatWebDate(value) : "";
+  return label ? `Played ${label}` : "-";
 }
 
 function FilesWorkspace({
@@ -2883,4 +3402,8 @@ function formatLibraryDate(value: string) {
 
 function formatPercent(value: number) {
   return `${Math.round(value * 100)}%`;
+}
+
+function formatCount(value: number) {
+  return Math.round(value).toLocaleString();
 }

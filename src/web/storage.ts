@@ -87,6 +87,10 @@ function isValidState(value: unknown): value is WebCompanionState {
 function normalizeWebState(state: WebCompanionState): WebCompanionState {
   return {
     ...state,
+    prepWorkspaces: state.prepWorkspaces.map((prep) => ({
+      ...prep,
+      skippedMoves: prep.skippedMoves ?? {},
+    })),
     board: {
       ...createEmptyWebBoardState(),
       ...(state.board ?? {}),

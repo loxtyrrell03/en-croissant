@@ -220,6 +220,16 @@ default.
   text while a generated hosted database folder is being imported from synced
   files. This keeps the phone UI closer to the fork's remembered source model
   and avoids the appearance that selecting a large hosted database did nothing.
+- A later 2026-06-04 phone Prep parity pass made the web Prep tab use the
+  desktop under-board Prep shape more directly. Prep now has a setup stage with
+  `Start prep`, then a training stage with `Common move`, `Done + next`, and a
+  settings icon back to setup. Existing active prep workspaces reopen in the
+  training stage after reload. Candidate-reply rows use the fork-style
+  `Move / Strength / Games / WDL` table, while opponent-move rows use
+  `Move / Strength / Games / Results / Prep / State`, sortable headers, Done
+  and Skip actions, and local/temporary source `Go to game` evidence jumps.
+  Browser-side prep workspaces now persist skipped move keys separately from
+  prepared move keys.
 
 ### App Shell
 
