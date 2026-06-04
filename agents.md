@@ -192,6 +192,14 @@ default.
   parents such as `Databases` are browsed instead of accidentally imported. The
   Lichess token state is hoisted to the web app shell so OAuth completion and
   the token field share one persisted localStorage value.
+- On 2026-06-04, phone Prep was tightened to match the desktop under-board Prep
+  root workflow. Starting prep from setup now records the current board line as
+  `rootPly`, the training header renders `Start: <line>` instead of always
+  `game start`, and Common move / Done + next cycle the same opponent branch
+  start that the fork uses rather than querying a simplified current-position
+  or game-start-only flow. The phone Prep source picker still remains a single
+  database/explorer choice and includes local synced folders plus Online /
+  Lichess All / Lichess Masters with saved-token reuse.
 - A later 2026-06-03 Prep parity pass replaced the phone Prep setup with the
   fork's visible setup model: header badges, Player/General target mode,
   folder-aware `Prep source` picker with an Online group for Lichess All and

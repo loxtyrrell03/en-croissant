@@ -6,7 +6,7 @@ import {
   type PrepMoveStrength,
 } from "@/utils/opponentPrep";
 import type { Opening } from "@/utils/db";
-import type { WebColor, WebGame, WebPrepWorkspace, WebResult } from "./model";
+import type { WebColor, WebGame, WebPrepLineMove, WebPrepWorkspace, WebResult } from "./model";
 import { getFenColor, getResultScore, normalizeWebFen, oppositeWebColor } from "./pgn";
 
 export type WebPrepMoveStat = Opening & {
@@ -18,6 +18,17 @@ export type WebPrepMoveStat = Opening & {
   sourceLabel: string;
   examples: WebGame[];
   strength: PrepMoveStrength | null;
+};
+
+export type WebPrepBranchMove = {
+  ply: number;
+  move: WebPrepLineMove;
+  key: string;
+};
+
+export type WebPrepBranchStart = {
+  branchPly: number;
+  activeBranch: WebPrepBranchMove | null;
 };
 
 export function collectGamesForSources(gamesByDatabase: Record<string, WebGame[]>, sourceIds: string[]) {
@@ -54,6 +65,78 @@ export function getNextOpenPrepStat<T extends { key: string }>(
   const startIndex = currentKey ? stats.findIndex((stat) => stat.key === currentKey) : -1;
   const ordered = startIndex >= 0 ? [...stats.slice(startIndex + 1), ...stats.slice(0, startIndex)] : stats;
   return ordered.find((stat) => !preparedMoves[stat.key]) ?? null;
+}
+
+export function getWebPrepMoveKey(fen: string, move: string) {
+  return `${normalizeWebFen(fen)}:${move}`;
+}
+
+export function findWebPrepBranchStart({
+  line,
+  rootPly,
+  rootFen,
+  userColor,
+}: {
+  line: WebPrepLineMove[];
+  rootPly: number;
+  rootFen: string;
+  userColor: WebColor;
+}): WebPrepBranchStart | null {
+  const safeRootPly = Math.max(0, Math.min(rootPly, line.length));
+  const opponentColor = oppositeWebColor(userColor);
+
+  if (getFenColor(rootFen) === opponentColor) {
+    return {
+      branchPly: safeRootPly,
+      activeBranch: null,
+    };
+  }
+
+  const activeBranch = findLastWebPrepOpponentBranch(line, safeRootPly, userColor);
+  if (!activeBranch) return null;
+
+  return {
+    branchPly: activeBranch.ply,
+    activeBranch,
+  };
+}
+
+export function findFirstWebPrepOpponentBranch(
+  line: WebPrepLineMove[],
+  fromPly: number,
+  userColor: WebColor,
+): WebPrepBranchMove | null {
+  const opponentColor = oppositeWebColor(userColor);
+  const start = Math.max(0, Math.min(fromPly, line.length));
+  for (let index = start; index < line.length; index += 1) {
+    const move = line[index];
+    if (getFenColor(move.fenBefore) !== opponentColor) continue;
+    return {
+      ply: index,
+      move,
+      key: getWebPrepMoveKey(move.fenBefore, move.san),
+    };
+  }
+  return null;
+}
+
+function findLastWebPrepOpponentBranch(
+  line: WebPrepLineMove[],
+  toPly: number,
+  userColor: WebColor,
+): WebPrepBranchMove | null {
+  const opponentColor = oppositeWebColor(userColor);
+  const end = Math.max(0, Math.min(toPly, line.length));
+  for (let index = end - 1; index >= 0; index -= 1) {
+    const move = line[index];
+    if (getFenColor(move.fenBefore) !== opponentColor) continue;
+    return {
+      ply: index,
+      move,
+      key: getWebPrepMoveKey(move.fenBefore, move.san),
+    };
+  }
+  return null;
 }
 
 export function getWebPrepMoveStats({

@@ -78,6 +78,7 @@ export type WebPrepWorkspace = {
   moveLimit?: number;
   builder?: Partial<PrepBuilderSettings>;
   startFen: string;
+  rootPly?: number;
   line: WebPrepLineMove[];
   notesByFen: Record<string, string>;
   preparedMoves: Record<string, number>;

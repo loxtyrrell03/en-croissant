@@ -8,9 +8,12 @@ import {
 } from "@/web/hostedFiles";
 import { getWebOnlineImportTitle, getWebOnlineRangeLabel } from "@/web/onlineImport";
 import {
+  findFirstWebPrepOpponentBranch,
+  findWebPrepBranchStart,
   getFirstOpenPrepStat,
   getGamesForWebPrepSource,
   getNextOpenPrepStat,
+  getWebPrepMoveKey,
   getWebPrepMoveStats,
 } from "@/web/prepIndex";
 import { parsePgnDatabase } from "@/web/pgn";
@@ -171,6 +174,59 @@ describe("web companion PGN prep index", () => {
     expect(getNextOpenPrepStat(rows, { "fen:c5": 1, "fen:e5": 1, "fen:d5": 1 }, "fen:c5")).toBe(
       null,
     );
+  });
+
+  test("finds the desktop-equivalent prep branch start in a phone line", () => {
+    const imported = parsePgnDatabase(
+      "branch-start.pgn",
+      `
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.04"]
+[Round "?"]
+[White "Opponent"]
+[Black "Me"]
+[Result "1-0"]
+
+1. e4 c5 2. Nf3 d6 1-0
+`,
+      1,
+    );
+    const line = imported.games[0].moves.map((move) => ({
+      fenBefore: move.fenBefore,
+      fenAfter: move.fenAfter,
+      san: move.san,
+      uci: move.uci,
+      actor: move.color === "black" ? "user" as const : "opponent" as const,
+    }));
+
+    const afterOpponentMove = findWebPrepBranchStart({
+      line,
+      rootPly: 1,
+      rootFen: line[0].fenAfter,
+      userColor: "black",
+    });
+    expect(afterOpponentMove).toMatchObject({
+      branchPly: 0,
+      activeBranch: {
+        key: getWebPrepMoveKey(line[0].fenBefore, "e4"),
+      },
+    });
+
+    const opponentToMoveRoot = findWebPrepBranchStart({
+      line,
+      rootPly: 2,
+      rootFen: line[1].fenAfter,
+      userColor: "black",
+    });
+    expect(opponentToMoveRoot).toMatchObject({
+      branchPly: 2,
+      activeBranch: null,
+    });
+    expect(findFirstWebPrepOpponentBranch(line, opponentToMoveRoot?.branchPly ?? 0, "black"))
+      .toMatchObject({
+        key: getWebPrepMoveKey(line[2].fenBefore, "Nf3"),
+      });
   });
 
   test("lists hosted web-library folders without requiring a laptop bridge", () => {

@@ -120,11 +120,15 @@ import {
 } from "./lichessAuth";
 import {
   collectGamesForSources,
+  findFirstWebPrepOpponentBranch,
+  findWebPrepBranchStart,
   getFirstOpenPrepStat,
   getGamesForWebPrepSource,
   getKnownPlayers,
   getNextOpenPrepStat,
+  getWebPrepMoveKey,
   getWebPrepMoveStats,
+  type WebPrepBranchStart,
   type WebPrepMoveStat,
 } from "./prepIndex";
 import {
@@ -698,6 +702,23 @@ function BoardWorkspace({
   const cursor = clampCursor(board.cursor, activeLine.length);
   const currentFen = fenAtCursor(activeLine, cursor, startFen);
   const currentLine = activeLine.slice(0, cursor);
+  const prepRootPly = activePrep
+    ? clampCursor(activePrep.rootPly ?? 0, activeLine.length)
+    : 0;
+  const prepRootFen = fenAtCursor(activeLine, prepRootPly, startFen);
+  const prepRootLine = activeLine.slice(0, prepRootPly);
+  const prepBranchStart = activePrep
+    ? findWebPrepBranchStart({
+        line: activeLine,
+        rootPly: prepRootPly,
+        rootFen: prepRootFen,
+        userColor: activePrep.userColor,
+      })
+    : null;
+  const prepBranchPly = prepBranchStart?.branchPly ?? prepRootPly;
+  const prepBranchFen = activePrep && prepBranchStart
+    ? fenAtCursor(activeLine, prepBranchPly, startFen)
+    : null;
   const prepMinGames = activePrep?.minGames ?? DEFAULT_WEB_PREP_MIN_GAMES;
   const prepMoveLimit = activePrep?.moveLimit ?? DEFAULT_WEB_PREP_MOVE_LIMIT;
   const prepGames = useMemo(
@@ -710,6 +731,15 @@ function BoardWorkspace({
         .filter((stat) => stat.total >= prepMinGames)
         .slice(0, prepMoveLimit),
     [activePrep, currentFen, prepGames, prepMinGames, prepMoveLimit],
+  );
+  const prepRootStats = useMemo(
+    () =>
+      activePrep && prepBranchFen
+        ? getWebPrepMoveStats({ games: prepGames, prep: activePrep, fen: prepBranchFen })
+            .filter((stat) => stat.total >= prepMinGames)
+            .slice(0, prepMoveLimit)
+        : [],
+    [activePrep, prepBranchFen, prepGames, prepMoveLimit, prepMinGames],
   );
   const turnColor = getFenColor(currentFen);
   const boardTitle =
@@ -740,8 +770,13 @@ function BoardWorkspace({
     }));
   };
 
-  const appendMove = (san: string, uci: string | null, fenAfter: string) => {
-    const fenBefore = currentFen;
+  const appendMoveAtCursor = (
+    san: string,
+    uci: string | null,
+    fenAfter: string,
+    sourceCursor = cursor,
+  ) => {
+    const fenBefore = fenAtCursor(activeLine, sourceCursor, startFen);
     const actor =
       activePrep && getFenColor(fenBefore) === activePrep.userColor ? "user" : "opponent";
     const move: WebPrepLineMove = {
@@ -753,10 +788,11 @@ function BoardWorkspace({
     };
 
     if (activePrep) {
-      const nextLine = [...activeLine.slice(0, cursor), move];
+      const nextLine = [...activeLine.slice(0, sourceCursor), move];
       updateActivePrep((prep) => ({
         ...prep,
         line: nextLine,
+        rootPly: Math.min(prep.rootPly ?? 0, nextLine.length),
         updatedAt: Date.now(),
       }));
       updateBoard({
@@ -768,7 +804,7 @@ function BoardWorkspace({
       return;
     }
 
-    const nextLine = [...activeLine.slice(0, cursor), move];
+    const nextLine = [...activeLine.slice(0, sourceCursor), move];
     updateBoard({
       line: nextLine,
       cursor: nextLine.length,
@@ -776,10 +812,21 @@ function BoardWorkspace({
     });
   };
 
+  const appendMove = (san: string, uci: string | null, fenAfter: string) => {
+    appendMoveAtCursor(san, uci, fenAfter, cursor);
+  };
+
   const playMove = (stat: WebPrepMoveStat) => {
     const played = playSanMove(currentFen, stat.move);
     if (!played) return;
     appendMove(played.san, played.uci, played.fenAfter);
+  };
+
+  const playMoveFromPrepRoot = (stat: WebPrepMoveStat) => {
+    if (!prepBranchFen) return;
+    const played = playSanMove(prepBranchFen, stat.move);
+    if (!played) return;
+    appendMoveAtCursor(played.san, played.uci, played.fenAfter, prepBranchPly);
   };
 
   const handleBoardMove = (uci: string) => {
@@ -864,8 +911,13 @@ function BoardWorkspace({
               activePrep={activePrep}
               currentFen={currentFen}
               stats={prepStats}
+              branchFen={prepBranchFen}
+              branchStart={prepBranchStart}
+              rootStats={prepRootStats}
               currentLine={currentLine}
+              rootLine={prepRootLine}
               onPlayMove={playMove}
+              onPlayRootMove={playMoveFromPrepRoot}
               onOpenSourceGame={loadGameOnBoard}
               importHostedPgn={importHostedPgn}
               importHostedFolder={importHostedFolder}
@@ -1272,8 +1324,13 @@ function PrepUnderBoardPanel({
   activePrep,
   currentFen,
   stats,
+  branchFen,
+  branchStart,
+  rootStats,
   currentLine,
+  rootLine,
   onPlayMove,
+  onPlayRootMove,
   onOpenSourceGame,
   importHostedPgn,
   importHostedFolder,
@@ -1286,8 +1343,13 @@ function PrepUnderBoardPanel({
   activePrep: WebPrepWorkspace | null;
   currentFen: string;
   stats: WebPrepMoveStat[];
+  branchFen: string | null;
+  branchStart: WebPrepBranchStart | null;
+  rootStats: WebPrepMoveStat[];
   currentLine: WebPrepLineMove[];
+  rootLine: WebPrepLineMove[];
   onPlayMove: (stat: WebPrepMoveStat) => void;
+  onPlayRootMove: (stat: WebPrepMoveStat) => void;
   onOpenSourceGame: (game: WebGame) => void;
   importHostedPgn: WebHostedPgnImportHandler;
   importHostedFolder: WebHostedFolderImportHandler;
@@ -1326,6 +1388,8 @@ function PrepUnderBoardPanel({
   const [onlinePrepStats, setOnlinePrepStats] = useState<WebPrepMoveStat[]>([]);
   const [onlinePrepLoading, setOnlinePrepLoading] = useState(false);
   const [onlinePrepError, setOnlinePrepError] = useState<string | null>(null);
+  const [onlineRootPrepStats, setOnlineRootPrepStats] = useState<WebPrepMoveStat[]>([]);
+  const [onlineRootPrepLoading, setOnlineRootPrepLoading] = useState(false);
   const [prepSort, setPrepSort] = useState<WebPrepSortState>(DEFAULT_WEB_PREP_SORT);
   const [prepCandidateSort, setPrepCandidateSort] = useState<WebPrepSortState>(
     DEFAULT_WEB_PREP_CANDIDATE_SORT,
@@ -1390,11 +1454,17 @@ function PrepUnderBoardPanel({
           .filter((stat) => stat.total >= selectedMinGames)
           .slice(0, selectedMoveLimit)
       : stats;
-  const openPrepStats = activePrep
-    ? displayedStats.filter((stat) => !activePrep.skippedMoves?.[stat.key])
-    : displayedStats;
+  const displayedRootStats =
+    activePrep && isOnlinePrepSource(selectedPrepSource)
+      ? onlineRootPrepStats
+          .filter((stat) => stat.total >= selectedMinGames)
+          .slice(0, selectedMoveLimit)
+      : rootStats;
+  const openRootStats = activePrep
+    ? displayedRootStats.filter((stat) => !activePrep.skippedMoves?.[stat.key])
+    : displayedRootStats;
   const commonOpenStat = activePrep
-    ? getFirstOpenPrepStat(openPrepStats, activePrep.preparedMoves)
+    ? getFirstOpenPrepStat(openRootStats, activePrep.preparedMoves)
     : null;
   const showSetupStage = !activePrep || setupOpen;
   const showTrainingStage = Boolean(activePrep) && !setupOpen;
@@ -1421,6 +1491,7 @@ function PrepUnderBoardPanel({
       "skipped",
   ).length;
   const shownGamesCount = displayedStats.reduce((sum, stat) => sum + stat.total, 0);
+  const rootStartLabel = rootLine.length > 0 ? rootLine.map((move) => move.san).join(" ") : "game start";
 
   useEffect(() => {
     setSourceId((current) => {
@@ -1454,29 +1525,47 @@ function PrepUnderBoardPanel({
   useEffect(() => {
     if (!activePrep || !isOnlinePrepSource(selectedPrepSource)) {
       setOnlinePrepStats([]);
+      setOnlineRootPrepStats([]);
       setOnlinePrepError(null);
       setOnlinePrepLoading(false);
+      setOnlineRootPrepLoading(false);
       return;
     }
 
     if (!lichessToken.trim()) {
       setOnlinePrepStats([]);
+      setOnlineRootPrepStats([]);
       setOnlinePrepError("Sign in to Lichess or paste a token to use this prep source.");
       setOnlinePrepLoading(false);
+      setOnlineRootPrepLoading(false);
       return;
     }
 
     const controller = new AbortController();
     let active = true;
     setOnlinePrepLoading(true);
+    setOnlineRootPrepLoading(true);
     setOnlinePrepError(null);
 
-    void fetchWebExplorerMoveStats({
+    const currentRequest = fetchWebExplorerMoveStats({
       source: selectedPrepSource,
       fen: currentFen,
       token: lichessToken,
       signal: controller.signal,
-    })
+    });
+    const rootRequest =
+      branchFen && normalizeWebFen(branchFen) === normalizeWebFen(currentFen)
+        ? currentRequest
+        : branchFen
+          ? fetchWebExplorerMoveStats({
+              source: selectedPrepSource,
+              fen: branchFen,
+              token: lichessToken,
+              signal: controller.signal,
+            })
+          : Promise.resolve<WebPrepMoveStat[]>([]);
+
+    void currentRequest
       .then((nextStats) => {
         if (active) setOnlinePrepStats(nextStats);
       })
@@ -1491,11 +1580,22 @@ function PrepUnderBoardPanel({
         if (active) setOnlinePrepLoading(false);
       });
 
+    void rootRequest
+      .then((nextStats) => {
+        if (active) setOnlineRootPrepStats(nextStats);
+      })
+      .catch(() => {
+        if (active) setOnlineRootPrepStats([]);
+      })
+      .finally(() => {
+        if (active) setOnlineRootPrepLoading(false);
+      });
+
     return () => {
       active = false;
       controller.abort();
     };
-  }, [activePrep, currentFen, lichessToken, selectedPrepSource]);
+  }, [activePrep, branchFen, currentFen, lichessToken, selectedPrepSource]);
 
   const createPrep = () => {
     const now = Date.now();
@@ -1519,6 +1619,7 @@ function PrepUnderBoardPanel({
       moveLimit,
       builder: getWebPrepStrengthSettingsPatch(selectedBuilderSettings, {}),
       startFen: INITIAL_FEN,
+      rootPly: currentLine.length,
       line: currentLine,
       notesByFen: {},
       preparedMoves: {},
@@ -1578,22 +1679,43 @@ function PrepUnderBoardPanel({
   };
 
   const playCommonMove = () => {
-    if (!commonOpenStat) {
+    if (!activePrep || !branchStart) {
       notifications.show({
-        title: "No common move",
-        message: "This prep source has no move for the current board position.",
+        title: "Choose your move first",
+        message: "Play into the prep line before asking for the opponent's common move.",
         color: "yellow",
       });
       return;
     }
-    onPlayMove(commonOpenStat);
+    if (!commonOpenStat) {
+      notifications.show({
+        title: "No common move",
+        message: "This prep source has no unprepared common move from the prep start.",
+        color: "yellow",
+      });
+      return;
+    }
+    onPlayRootMove(commonOpenStat);
   };
 
   const doneAndNext = () => {
-    if (!activePrep || !commonOpenStat) {
+    if (!activePrep || !branchStart) {
       notifications.show({
-        title: "No open move",
-        message: "There is no open prep move at this board position.",
+        title: "Choose your reply first",
+        message: "Play into the prep line before cycling their replies.",
+        color: "yellow",
+      });
+      return;
+    }
+
+    const activeBranch =
+      branchStart.activeBranch ??
+      findFirstWebPrepOpponentBranch(currentLine, branchStart.branchPly, activePrep.userColor);
+    const branchKey = activeBranch?.key;
+    if (!branchKey) {
+      notifications.show({
+        title: "Choose your reply first",
+        message: "Play into the prep line before cycling their replies.",
         color: "yellow",
       });
       return;
@@ -1601,16 +1723,16 @@ function PrepUnderBoardPanel({
 
     const nextPreparedMoves = {
       ...activePrep.preparedMoves,
-      [commonOpenStat.key]: activePrep.preparedMoves[commonOpenStat.key] || Date.now(),
+      [branchKey]: activePrep.preparedMoves[branchKey] || Date.now(),
     };
-    if (!activePrep.preparedMoves[commonOpenStat.key]) {
+    if (!activePrep.preparedMoves[branchKey]) {
       updateActivePrepSettings({
         preparedMoves: nextPreparedMoves,
-        skippedMoves: omitRecordKey(activePrep.skippedMoves ?? {}, commonOpenStat.key),
+        skippedMoves: omitRecordKey(activePrep.skippedMoves ?? {}, branchKey),
       });
     }
 
-    const nextStat = getNextOpenPrepStat(openPrepStats, nextPreparedMoves, commonOpenStat.key);
+    const nextStat = getNextOpenPrepStat(openRootStats, nextPreparedMoves, branchKey);
     if (!nextStat) {
       notifications.show({
         title: "Prep line covered",
@@ -1620,7 +1742,7 @@ function PrepUnderBoardPanel({
       return;
     }
 
-    window.setTimeout(() => onPlayMove(nextStat), 0);
+    window.setTimeout(() => onPlayRootMove(nextStat), 0);
   };
 
   const updateNote = (value: string) => {
@@ -1641,6 +1763,15 @@ function PrepUnderBoardPanel({
       ...patch,
       updatedAt: Date.now(),
     }));
+  };
+
+  const setActivePrepRootHere = () => {
+    if (!activePrep) return;
+    updateActivePrepSettings({
+      rootPly: currentLine.length,
+      preparedMoves: {},
+      skippedMoves: {},
+    });
   };
 
   const updatePrepMode = (mode: WebPrepMode) => {
@@ -1879,8 +2010,12 @@ function PrepUnderBoardPanel({
             size="xs"
             leftSection={<IconPlayerPlay size={14} />}
             onClick={() => {
-              if (activePrep) setSetupOpen(false);
-              else createPrep();
+              if (activePrep) {
+                setActivePrepRootHere();
+                setSetupOpen(false);
+              } else {
+                createPrep();
+              }
             }}
           >
             Start prep
@@ -2218,7 +2353,7 @@ function PrepUnderBoardPanel({
           <Group justify="space-between" gap="xs" wrap="wrap">
             <Stack gap={1} style={{ minWidth: 0, flex: 1 }}>
               <Text size="xs" c="dimmed" truncate>
-                Start: game start
+                Start: {rootStartLabel}
               </Text>
               <Text size="xs" c="dimmed" truncate>
                 {opponentToMove
@@ -2232,7 +2367,7 @@ function PrepUnderBoardPanel({
                 <Button
                   size="xs"
                   leftSection={<IconPlayerPlay size={14} />}
-                  disabled={!commonOpenStat}
+                  loading={onlineRootPrepLoading && isOnlinePrepSource(selectedPrepSource)}
                   onClick={playCommonMove}
                 >
                   Common move
@@ -2243,7 +2378,7 @@ function PrepUnderBoardPanel({
                   size="xs"
                   variant="default"
                   leftSection={<IconChevronRight size={14} />}
-                  disabled={!commonOpenStat}
+                  loading={onlineRootPrepLoading && isOnlinePrepSource(selectedPrepSource)}
                   onClick={doneAndNext}
                 >
                   Done + next
@@ -2861,10 +2996,6 @@ function webPrepStatusLabel(status: WebPrepBranchStatus) {
   if (status === "started") return "Started";
   if (status === "skipped") return "Skipped";
   return "New";
-}
-
-function getWebPrepMoveKey(fen: string, move: string) {
-  return `${normalizeWebFen(fen)}:${move}`;
 }
 
 function omitRecordKey(record: Record<string, number>, key: string) {
