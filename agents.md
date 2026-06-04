@@ -357,6 +357,10 @@ default.
   shows the same header-level `Go to game` evidence jump plus the return arrow
   to the last opponent choice, and `Done + next` uses that shared active-branch
   selection including roots where the opponent is to move.
+- The same pass made the phone Prep import drawer follow the desktop
+  under-board layout: opening `Import games` collapses the normal prep
+  source/player/min-games controls so the online source, username, range, save,
+  preview, and import controls are the focused setup surface.
 
 ### App Shell
 

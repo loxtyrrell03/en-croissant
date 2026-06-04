@@ -2602,7 +2602,7 @@ function PrepUnderBoardPanel({
             />
           </Group>
 
-          <Collapse in={sourcesOpen}>
+          <Collapse in={sourcesOpen && !onlineOpen}>
             <Stack gap="xs" className={classes.prepToolBox}>
               {loadingPrepSource ? (
                 <Group gap="xs" wrap="nowrap">
