@@ -313,6 +313,12 @@ default.
   picker, while hosted PGN/PDF browsing remains in the Files surface. The
   shared picker still drills into synced folders and can load not-yet-indexed
   hosted databases, so no database access was lost.
+- A follow-up 2026-06-04 picker-state fix made `DatabaseFolderSelect` reset its
+  active folder and search query whenever the popover opens or closes. This
+  prevents the phone Database/Prep selector from reopening inside a stale
+  folder after the user previously drilled into another database group, which
+  had made the selected source label and visible database list feel mismatched
+  or improperly loaded.
 
 ### App Shell
 

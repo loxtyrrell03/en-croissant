@@ -64,6 +64,16 @@ export default function DatabaseFolderSelect({
   const [opened, setOpened] = useState(false);
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const openPicker = () => {
+    setActiveGroup(null);
+    setQuery("");
+    setOpened(true);
+  };
+  const closePicker = () => {
+    setActiveGroup(null);
+    setQuery("");
+    setOpened(false);
+  };
   const selectedItem = useMemo(
     () => data.flatMap((group) => group.items).find((item) => item.value === value) ?? null,
     [data, value],
@@ -102,13 +112,8 @@ export default function DatabaseFolderSelect({
     <Popover
       opened={opened}
       onChange={(next) => {
-        setOpened(next);
-        if (next) {
-          setActiveGroup(null);
-          setQuery("");
-        } else {
-          setQuery("");
-        }
+        if (next) openPicker();
+        else closePicker();
       }}
       position="bottom-start"
       withinPortal
@@ -130,7 +135,10 @@ export default function DatabaseFolderSelect({
             )
           }
           rightSection={<IconChevronDown size="1rem" />}
-          onClick={() => setOpened((current) => !current)}
+          onClick={() => {
+            if (opened) closePicker();
+            else openPicker();
+          }}
           w={width}
           miw={minWidth}
           maw={maxWidth}
@@ -167,7 +175,7 @@ export default function DatabaseFolderSelect({
                       allowDeselect={allowDeselect}
                       value={value}
                       onChange={onChange}
-                      onClose={() => setOpened(false)}
+                      onClose={closePicker}
                     />
                   ))
                 ) : (
@@ -187,7 +195,7 @@ export default function DatabaseFolderSelect({
                   allowDeselect={allowDeselect}
                   value={value}
                   onChange={onChange}
-                  onClose={() => setOpened(false)}
+                  onClose={closePicker}
                 />
               ))}
               {rootGroup && folderGroups.length > 0 && (
@@ -237,7 +245,7 @@ export default function DatabaseFolderSelect({
                       allowDeselect={allowDeselect}
                       value={value}
                       onChange={onChange}
-                      onClose={() => setOpened(false)}
+                      onClose={closePicker}
                     />
                   ))}
                 </Stack>
