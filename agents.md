@@ -200,6 +200,15 @@ default.
   or game-start-only flow. The phone Prep source picker still remains a single
   database/explorer choice and includes local synced folders plus Online /
   Lichess All / Lichess Masters with saved-token reuse.
+- Also on 2026-06-04, phone synced-database loading was hardened so hosted
+  database folders behave more like desktop database files. Re-importing a
+  hosted database now replaces the older phone IndexedDB copy with the same
+  hosted path, rewires Prep source IDs and board game origins to the fresh
+  database, and removes stale duplicate loaded entries. Database and Prep
+  selected local sources auto-refresh when the published folder is newer than
+  the indexed copy, or when metadata exists but the games are missing; picker
+  rows label newer hosted folders as `Update available` instead of implying the
+  stale copy is current.
 - A later 2026-06-03 Prep parity pass replaced the phone Prep setup with the
   fork's visible setup model: header badges, Player/General target mode,
   folder-aware `Prep source` picker with an Online group for Lichess All and

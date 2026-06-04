@@ -1,5 +1,9 @@
 import { describe, expect, test } from "vitest";
 import {
+  mergeImportedWebDatabases,
+  needsHostedDatabaseRefresh,
+} from "@/web/databaseSync";
+import {
   getHostedDatabaseFolders,
   getHostedDirectPgnFilesInPath,
   getHostedPgnFilesInPath,
@@ -17,6 +21,7 @@ import {
   getWebPrepMoveStats,
 } from "@/web/prepIndex";
 import { parsePgnDatabase } from "@/web/pgn";
+import { createEmptyWebState } from "@/web/storage";
 
 describe("web companion PGN prep index", () => {
   test("indexes PGN games and returns opponent prep moves from a reached FEN", () => {
@@ -319,6 +324,132 @@ describe("web companion PGN prep index", () => {
         sizeBytes: 3072,
       }),
     ]);
+  });
+
+  test("replaces stale hosted databases and rewires prep sources", () => {
+    const oldImport = parsePgnDatabase(
+      "synced-db.pgn",
+      `
+[Event "Old"]
+[Site "?"]
+[Date "2026.06.01"]
+[Round "?"]
+[White "Me"]
+[Black "Opponent"]
+[Result "1-0"]
+
+1. e4 c5 1-0
+`,
+      1,
+    );
+    oldImport.database.hostedPath = "Databases/Fork/Prep/Opponent";
+    oldImport.database.hostedUpdatedAt = 10;
+
+    const newImport = parsePgnDatabase(
+      "synced-db.pgn",
+      `
+[Event "New"]
+[Site "?"]
+[Date "2026.06.02"]
+[Round "?"]
+[White "Me"]
+[Black "Opponent"]
+[Result "1-0"]
+
+1. e4 e5 1-0
+`,
+      2,
+    );
+    newImport.database.hostedPath = oldImport.database.hostedPath;
+    newImport.database.hostedUpdatedAt = 20;
+
+    const state = {
+      ...createEmptyWebState(),
+      databases: [oldImport.database],
+      gamesByDatabase: {
+        [oldImport.database.id]: oldImport.games,
+      },
+      prepWorkspaces: [
+        {
+          id: "prep",
+          name: "Opponent prep",
+          opponent: "Opponent",
+          userColor: "white" as const,
+          source: "local" as const,
+          sourceIds: [oldImport.database.id],
+          startFen: oldImport.games[0].moves[0].fenBefore,
+          line: [],
+          notesByFen: {},
+          preparedMoves: {},
+          skippedMoves: {},
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      ],
+      board: {
+        ...createEmptyWebState().board,
+        sourceDatabaseId: oldImport.database.id,
+      },
+    };
+
+    const merged = mergeImportedWebDatabases(state, [newImport]);
+
+    expect(merged.databases.map((database) => database.id)).toEqual([newImport.database.id]);
+    expect(merged.gamesByDatabase[oldImport.database.id]).toBeUndefined();
+    expect(merged.gamesByDatabase[newImport.database.id]).toHaveLength(1);
+    expect(merged.prepWorkspaces[0].sourceIds).toEqual([newImport.database.id]);
+    expect(merged.board.sourceDatabaseId).toBe(newImport.database.id);
+  });
+
+  test("detects hosted database updates and missing indexed games", () => {
+    const imported = parsePgnDatabase(
+      "refresh-db.pgn",
+      `
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.01"]
+[Round "?"]
+[White "Me"]
+[Black "Opponent"]
+[Result "1-0"]
+
+1. e4 c5 1-0
+`,
+      1,
+    );
+    imported.database.hostedPath = "Databases/Fork/Prep/Opponent";
+    imported.database.hostedUpdatedAt = 10;
+
+    const hostedFolder = {
+      path: imported.database.hostedPath,
+      name: "Opponent",
+      label: "Fork / Prep / Opponent",
+      fileCount: 1,
+      sizeBytes: 100,
+      lastModified: 11,
+    };
+
+    expect(
+      needsHostedDatabaseRefresh({
+        database: imported.database,
+        games: imported.games,
+        hostedFolder,
+      }),
+    ).toBe(true);
+    expect(
+      needsHostedDatabaseRefresh({
+        database: { ...imported.database, hostedUpdatedAt: 11 },
+        games: [],
+        hostedFolder,
+      }),
+    ).toBe(true);
+    expect(
+      needsHostedDatabaseRefresh({
+        database: { ...imported.database, hostedUpdatedAt: 11 },
+        games: imported.games,
+        hostedFolder,
+      }),
+    ).toBe(false);
   });
 
   test("labels web online imports like prep databases", () => {
