@@ -330,6 +330,13 @@ default.
   `_lichess` seed the obvious player name, Start prep is blocked until the
   source and target are ready, and Prep setup choices persist in browser
   storage alongside the saved Lichess token and explorer filters.
+- Phone Database and Prep local source choices now persist by stable hosted
+  database path when a database comes from synced fork files, with old raw
+  browser database ids still accepted for compatibility. This prevents a
+  refreshed/reloaded hosted database from losing the selected source and
+  falling through to an unrelated first database. Local Prep also treats an
+  empty source list as no source instead of silently querying every indexed
+  browser database.
 
 ### App Shell
 

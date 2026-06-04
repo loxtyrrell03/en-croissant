@@ -1,6 +1,9 @@
 import type { WebHostedDatabaseFolder, WebHostedFileEntry } from "./hostedFiles";
 import type { WebCompanionState, WebDatabase, WebGame, WebImportResult } from "./model";
 
+const HOSTED_SOURCE_REF_PREFIX = "hosted:";
+const ID_SOURCE_REF_PREFIX = "id:";
+
 export function mergeImportedWebDatabases(
   state: WebCompanionState,
   imported: WebImportResult[],
@@ -57,6 +60,31 @@ export function needsHostedDatabaseRefresh({
   if (!database?.hostedPath || !hostedFolder) return false;
   if ((database.hostedUpdatedAt ?? 0) < hostedFolder.lastModified) return true;
   return database.gameCount > 0 && (games?.length ?? 0) === 0;
+}
+
+export function getWebDatabaseSourceStorageValue(database: WebDatabase) {
+  return database.hostedPath
+    ? `${HOSTED_SOURCE_REF_PREFIX}${normalizeHostedPath(database.hostedPath)}`
+    : `${ID_SOURCE_REF_PREFIX}${database.id}`;
+}
+
+export function resolveWebDatabaseSourceId(
+  storedValue: string | null | undefined,
+  databases: WebDatabase[],
+) {
+  const value = storedValue?.trim();
+  if (!value) return null;
+
+  if (value.startsWith(HOSTED_SOURCE_REF_PREFIX)) {
+    const hostedPath = normalizeHostedPath(value.slice(HOSTED_SOURCE_REF_PREFIX.length));
+    return databases.find((database) => normalizeHostedPath(database.hostedPath ?? "") === hostedPath)
+      ?.id ?? null;
+  }
+
+  const id = value.startsWith(ID_SOURCE_REF_PREFIX)
+    ? value.slice(ID_SOURCE_REF_PREFIX.length)
+    : value;
+  return databases.some((database) => database.id === id) ? id : null;
 }
 
 export function getReusableHostedDatabaseImport({

@@ -50,7 +50,9 @@ export function getGamesForWebPrepSource({
 }) {
   if (!prep) return [];
   if (prep.source === "temporary") return prep.temporarySource?.games ?? [];
-  if (prep.source === "local" || !prep.source) return collectGamesForSources(gamesByDatabase, prep.sourceIds);
+  if (prep.source === "local" || !prep.source) {
+    return prep.sourceIds.length > 0 ? collectGamesForSources(gamesByDatabase, prep.sourceIds) : [];
+  }
   return [];
 }
 

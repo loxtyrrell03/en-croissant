@@ -1,8 +1,10 @@
 import { describe, expect, test } from "vitest";
 import {
+  getWebDatabaseSourceStorageValue,
   getReusableHostedDatabaseImport,
   mergeImportedWebDatabases,
   needsHostedDatabaseRefresh,
+  resolveWebDatabaseSourceId,
 } from "@/web/databaseSync";
 import { buildWebExplorerUrl } from "@/web/explorer";
 import {
@@ -352,6 +354,37 @@ describe("web companion PGN prep index", () => {
 
     expect(games).toHaveLength(1);
     expect(stats.map((stat) => stat.move)).toEqual(["c5"]);
+  });
+
+  test("local prep without a selected source does not silently use every database", () => {
+    const imported = parsePgnDatabase(
+      "all-databases-should-not-leak.pgn",
+      `
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.03"]
+[Round "?"]
+[White "Me"]
+[Black "Opponent"]
+[Result "1-0"]
+
+1. e4 c5 1-0
+`,
+      1,
+    );
+
+    expect(
+      getGamesForWebPrepSource({
+        gamesByDatabase: {
+          [imported.database.id]: imported.games,
+        },
+        prep: {
+          source: "local",
+          sourceIds: [],
+          temporarySource: null,
+        },
+      }),
+    ).toEqual([]);
   });
 
   test("selects common and next open prep rows from the shown source", () => {
@@ -720,6 +753,51 @@ describe("web companion PGN prep index", () => {
     expect(merged.gamesByDatabase[newImport.database.id]).toHaveLength(1);
     expect(merged.prepWorkspaces[0].sourceIds).toEqual([newImport.database.id]);
     expect(merged.board.sourceDatabaseId).toBe(newImport.database.id);
+  });
+
+  test("resolves persisted phone database selections by hosted path after reloads", () => {
+    const oldImport = parsePgnDatabase(
+      "synced-db.pgn",
+      `
+[Event "Old"]
+[Site "?"]
+[Date "2026.06.01"]
+[Round "?"]
+[White "Me"]
+[Black "Opponent"]
+[Result "1-0"]
+
+1. e4 c5 1-0
+`,
+      1,
+    );
+    oldImport.database.hostedPath = "Databases/Fork/Prep/Opponent";
+
+    const newImport = parsePgnDatabase(
+      "synced-db.pgn",
+      `
+[Event "New"]
+[Site "?"]
+[Date "2026.06.02"]
+[Round "?"]
+[White "Me"]
+[Black "Opponent"]
+[Result "1-0"]
+
+1. e4 e5 1-0
+`,
+      2,
+    );
+    newImport.database.hostedPath = oldImport.database.hostedPath;
+
+    const stored = getWebDatabaseSourceStorageValue(oldImport.database);
+
+    expect(stored).toBe("hosted:Databases/Fork/Prep/Opponent");
+    expect(resolveWebDatabaseSourceId(stored, [newImport.database])).toBe(newImport.database.id);
+    expect(resolveWebDatabaseSourceId(oldImport.database.id, [oldImport.database])).toBe(
+      oldImport.database.id,
+    );
+    expect(resolveWebDatabaseSourceId(stored, [])).toBeNull();
   });
 
   test("detects hosted database updates and missing indexed games", () => {

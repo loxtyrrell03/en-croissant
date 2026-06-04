@@ -92,9 +92,11 @@ import {
   type WebMastersExplorerOptions,
 } from "./explorer";
 import {
+  getWebDatabaseSourceStorageValue,
   getReusableHostedDatabaseImport,
   mergeImportedWebDatabases,
   needsHostedDatabaseRefresh,
+  resolveWebDatabaseSourceId,
 } from "./databaseSync";
 import {
   getHostedRawFileUrl,
@@ -223,6 +225,7 @@ type WebPrepStoredSetup = {
   mode: WebPrepMode;
   source: WebPrepSource;
   sourceId: string | null;
+  sourceRef?: string | null;
   opponent: string;
   userColor: WebColor;
   minGames: number;
@@ -234,6 +237,7 @@ const DEFAULT_WEB_PREP_SETUP: WebPrepStoredSetup = {
   mode: "player",
   source: "local",
   sourceId: null,
+  sourceRef: null,
   opponent: "",
   userColor: "white",
   minGames: DEFAULT_WEB_PREP_MIN_GAMES,
@@ -1082,7 +1086,10 @@ function DatabaseUnderBoardPanel({
     WEB_DATABASE_PANEL_LOCAL_STORAGE_KEY,
     "",
   );
-  const selectedLocalId = selectedLocalIdValue || null;
+  const selectedLocalId = useMemo(
+    () => resolveWebDatabaseSourceId(selectedLocalIdValue, databases),
+    [databases, selectedLocalIdValue],
+  );
   const [localPlayerName, setLocalPlayerName] = usePersistentString(
     WEB_DATABASE_PANEL_PLAYER_STORAGE_KEY,
     "",
@@ -1154,8 +1161,9 @@ function DatabaseUnderBoardPanel({
 
   useEffect(() => {
     setSelectedLocalIdValue((current) => {
-      if (current && databases.some((database) => database.id === current)) return current;
-      return databases[0]?.id ?? "";
+      if (resolveWebDatabaseSourceId(current, databases)) return current;
+      const firstDatabase = databases[0] ?? null;
+      return firstDatabase ? getWebDatabaseSourceStorageValue(firstDatabase) : "";
     });
   }, [databases, setSelectedLocalIdValue]);
 
@@ -1164,7 +1172,8 @@ function DatabaseUnderBoardPanel({
   };
 
   const setSelectedLocalId = (nextSourceId: string | null) => {
-    setSelectedLocalIdValue(nextSourceId ?? "");
+    const database = databases.find((candidate) => candidate.id === nextSourceId) ?? null;
+    setSelectedLocalIdValue(database ? getWebDatabaseSourceStorageValue(database) : "");
   };
 
   const refreshHostedLocalDatabase = useCallback(
@@ -1177,7 +1186,7 @@ function DatabaseUnderBoardPanel({
           openFirstGame: false,
           onProgress: setLoadingLocalProgress,
         });
-        if (imported) setSelectedLocalId(imported.database.id);
+        if (imported) setSelectedLocalIdValue(getWebDatabaseSourceStorageValue(imported.database));
         return imported;
       } finally {
         setLoadingLocalProgress(null);
@@ -1513,7 +1522,11 @@ function PrepUnderBoardPanel({
   const [prepSource, setPrepSource] = useState<WebPrepSource>(storedPrepSetup.source);
   const [setupOpen, setSetupOpen] = useState(true);
   const [sourceId, setSourceId] = useState<string | null>(
-    () => storedPrepSetup.sourceId ?? state.databases[0]?.id ?? null,
+    () =>
+      resolveWebDatabaseSourceId(
+        storedPrepSetup.sourceRef ?? storedPrepSetup.sourceId,
+        state.databases,
+      ) ?? state.databases[0]?.id ?? null,
   );
   const [minGames, setMinGames] = useState(storedPrepSetup.minGames);
   const [moveLimit, setMoveLimit] = useState(storedPrepSetup.moveLimit);
@@ -1582,7 +1595,7 @@ function PrepUnderBoardPanel({
         : selectedPrepSource === "temporary"
           ? WEB_TEMPORARY_PREP_SOURCE_VALUE
           : selectedPrepSourceId;
-  const activePrepSourceId = selectedPrepSourceId ?? state.databases[0]?.id ?? null;
+  const activePrepSourceId = selectedPrepSource === "local" ? selectedPrepSourceId : null;
   const activePrepSourceDatabase =
     state.databases.find((database) => database.id === activePrepSourceId) ?? null;
   const activePrepSourceGames = activePrepSourceId
@@ -1690,12 +1703,19 @@ function PrepUnderBoardPanel({
   };
 
   const persistPrepSetupSelection = (selection: WebPrepSetupSelection) => {
+    const selectedDatabase =
+      selection.source === "local" && selection.sourceId
+        ? state.databases.find((database) => database.id === selection.sourceId) ?? null
+        : null;
     setStoredPrepSetup((current) =>
       normalizeWebPrepStoredSetup({
         ...current,
         mode: selection.mode,
         source: selection.source === "temporary" ? "local" : selection.source,
         sourceId: selection.source === "local" ? selection.sourceId : current.sourceId,
+        sourceRef: selectedDatabase
+          ? getWebDatabaseSourceStorageValue(selectedDatabase)
+          : current.sourceRef,
         opponent: selection.opponent,
         userColor: selection.userColor,
       }),
@@ -1705,9 +1725,14 @@ function PrepUnderBoardPanel({
   useEffect(() => {
     setSourceId((current) => {
       if (current && state.databases.some((database) => database.id === current)) return current;
+      const storedSourceId = resolveWebDatabaseSourceId(
+        storedPrepSetup.sourceRef ?? storedPrepSetup.sourceId,
+        state.databases,
+      );
+      if (storedSourceId) return storedSourceId;
       return state.databases[0]?.id ?? null;
     });
-  }, [state.databases]);
+  }, [state.databases, storedPrepSetup.sourceId, storedPrepSetup.sourceRef]);
 
   useEffect(() => {
     if (!activePrep) {
@@ -1811,7 +1836,7 @@ function PrepUnderBoardPanel({
   const createPrep = () => {
     const now = Date.now();
     const trimmedOpponent = opponent.trim();
-    const selectedSourceId = prepSource === "local" ? sourceId ?? state.databases[0]?.id ?? null : null;
+    const selectedSourceId = prepSource === "local" ? sourceId : null;
     const selectedTemporarySource = prepSource === "temporary" ? draftTemporarySource : null;
     const prep: WebPrepWorkspace = {
       id: `prep-${now.toString(36)}`,
@@ -2098,9 +2123,17 @@ function PrepUnderBoardPanel({
     );
   };
 
-  const attachImportedDatabase = (databaseId: string) => {
+  const attachImportedDatabase = (database: WebDatabase) => {
+    setStoredPrepSetup((current) =>
+      normalizeWebPrepStoredSetup({
+        ...current,
+        source: "local",
+        sourceId: database.id,
+        sourceRef: getWebDatabaseSourceStorageValue(database),
+      }),
+    );
     applyPrepSetupSelection(
-      applyWebPrepSourceChange(currentPrepSetupSelection, "local", databaseId),
+      applyWebPrepSourceChange(currentPrepSetupSelection, "local", database.id),
     );
   };
 
@@ -2113,7 +2146,7 @@ function PrepUnderBoardPanel({
         openFirstGame: false,
         onProgress: setLoadingPrepProgress,
       });
-      if (imported) attachImportedDatabase(imported.database.id);
+      if (imported) attachImportedDatabase(imported.database);
       return imported;
     } finally {
       setLoadingPrepProgress(null);
@@ -2280,7 +2313,7 @@ function PrepUnderBoardPanel({
       setProgress: setOnlineProgress,
     }).then((imported) => {
       if (!imported) return;
-      if (onlineSaveDatabase) attachImportedDatabase(imported.database.id);
+      if (onlineSaveDatabase) attachImportedDatabase(imported.database);
       else attachTemporaryPrepSource(imported);
     });
   };
@@ -4359,6 +4392,7 @@ function normalizeWebPrepStoredSetup(
     mode,
     source,
     sourceId: typeof value?.sourceId === "string" && value.sourceId ? value.sourceId : null,
+    sourceRef: typeof value?.sourceRef === "string" && value.sourceRef ? value.sourceRef : null,
     opponent: typeof value?.opponent === "string" ? value.opponent : "",
     userColor,
     minGames,
