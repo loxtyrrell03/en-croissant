@@ -90,6 +90,7 @@ import {
   type WebMastersExplorerOptions,
 } from "./explorer";
 import {
+  getReusableHostedDatabaseImport,
   mergeImportedWebDatabases,
   needsHostedDatabaseRefresh,
 } from "./databaseSync";
@@ -97,6 +98,7 @@ import {
   getHostedRawFileUrl,
   getHostedDatabaseFolders,
   getHostedDirectPgnFilesInPath,
+  getHostedPgnFilesInPath,
   getHostedWebLibrary,
   listHostedLibraryPath,
   readHostedPgnFolder,
@@ -104,6 +106,7 @@ import {
   type WebHostedDatabaseFolder,
   type WebHostedFileEntry,
   type WebHostedFileListResponse,
+  type WebHostedFolderReadProgress,
   type WebHostedLibrary,
 } from "./hostedFiles";
 import type {
@@ -177,6 +180,7 @@ type WebHostedFolderImportHandler = (
 ) => Promise<WebImportResult | null>;
 type WebHostedFolderImportOptions = {
   openFirstGame?: boolean;
+  onProgress?: (progress: WebHostedFolderReadProgress | null) => void;
 };
 type WebOnlineImportHandler = (request: {
   source: WebOnlineSource;
@@ -462,43 +466,28 @@ export default function WebApp() {
     async (library: WebHostedLibrary, path: string, options: WebHostedFolderImportOptions = {}) => {
       setImporting(true);
       try {
-        const folder = await readHostedPgnFolder(library, path);
-        const latestHostedUpdate = Math.max(...folder.files.map((file) => file.lastModified), 0);
-        const existingDatabase = state.databases.find(
-          (database) =>
-            database.hostedPath === folder.path &&
-            (database.hostedUpdatedAt ?? 0) >= latestHostedUpdate,
-        );
-        const existingGames = existingDatabase
-          ? state.gamesByDatabase[existingDatabase.id] ?? []
-          : [];
-        if (
-          existingDatabase &&
-          !needsHostedDatabaseRefresh({
-            database: existingDatabase,
-            games: existingGames,
-            hostedFolder: {
-              path: folder.path,
-              name: folder.name,
-              label: folder.name,
-              fileCount: folder.files.length,
-              sizeBytes: folder.files.reduce((sum, file) => sum + file.sizeBytes, 0),
-              lastModified: latestHostedUpdate,
-            },
-          })
-        ) {
+        const hostedFiles = getHostedPgnFilesInPath(library, path);
+        if (hostedFiles.length === 0) {
+          throw new Error("This hosted folder does not contain PGN files.");
+        }
+        const reusableImport = getReusableHostedDatabaseImport({
+          state,
+          hostedPath: path,
+          files: hostedFiles,
+        });
+        if (reusableImport) {
           notifications.show({
             title: "Hosted database already loaded",
-            message: `${existingDatabase.name} is ready to use.`,
+            message: `${reusableImport.database.name} is ready to use.`,
             color: "blue",
           });
-          return {
-            database: existingDatabase,
-            games: existingGames,
-            warnings: [],
-          };
+          return reusableImport;
         }
 
+        const folder = await readHostedPgnFolder(library, path, (progress) => {
+          options.onProgress?.(progress);
+        });
+        const latestHostedUpdate = Math.max(...hostedFiles.map((file) => file.lastModified), 0);
         const imported = await importPgnText({
           name: folder.filename,
           pgn: folder.content,
@@ -520,6 +509,7 @@ export default function WebApp() {
           color: "red",
         });
       } finally {
+        options.onProgress?.(null);
         setImporting(false);
       }
       return null;
@@ -1082,6 +1072,8 @@ function DatabaseUnderBoardPanel({
   const localColor: WebColor = localColorValue === "black" ? "black" : "white";
   const [hostedOpen, setHostedOpen] = useState(false);
   const [loadingLocalSource, setLoadingLocalSource] = useState<string | null>(null);
+  const [loadingLocalProgress, setLoadingLocalProgress] =
+    useState<WebHostedFolderReadProgress | null>(null);
   const refreshingLocalPathRef = useRef<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [explorerOptionsOpen, setExplorerOptionsOpen] = useState(false);
@@ -1158,13 +1150,16 @@ function DatabaseUnderBoardPanel({
     async (folder: WebHostedDatabaseFolder) => {
       if (!hostedDatabases.library) return null;
       setLoadingLocalSource(folder.label);
+      setLoadingLocalProgress(null);
       try {
         const imported = await importHostedFolder(hostedDatabases.library, folder.path, {
           openFirstGame: false,
+          onProgress: setLoadingLocalProgress,
         });
         if (imported) setSelectedLocalId(imported.database.id);
         return imported;
       } finally {
+        setLoadingLocalProgress(null);
         setLoadingLocalSource(null);
       }
     },
@@ -1289,11 +1284,16 @@ function DatabaseUnderBoardPanel({
   const importHostedFolderForDatabase = async (library: WebHostedLibrary, path: string) => {
     const label = getHostedDatabaseGroupLabel(path) || path;
     setLoadingLocalSource(label);
+    setLoadingLocalProgress(null);
     try {
-      const imported = await importHostedFolder(library, path, { openFirstGame: false });
+      const imported = await importHostedFolder(library, path, {
+        openFirstGame: false,
+        onProgress: setLoadingLocalProgress,
+      });
       if (imported) setSelectedLocalId(imported.database.id);
       return imported;
     } finally {
+      setLoadingLocalProgress(null);
       setLoadingLocalSource(null);
     }
   };
@@ -1415,7 +1415,7 @@ function DatabaseUnderBoardPanel({
         <Group gap="xs" wrap="nowrap">
           <Loader size="xs" />
           <Text size="xs" c="dimmed" truncate>
-            Loading {loadingLocalSource} from synced files
+            {formatHostedLoadProgress(loadingLocalSource, loadingLocalProgress)}
           </Text>
         </Group>
       ) : null}
@@ -1448,7 +1448,7 @@ function DatabaseUnderBoardPanel({
           <Stack align="center" gap="xs">
             <Loader size="sm" />
             <Text size="xs" c="dimmed">
-              Importing hosted database
+              {formatHostedLoadProgress(loadingLocalSource, loadingLocalProgress)}
             </Text>
           </Stack>
         </Center>
@@ -1561,6 +1561,8 @@ function PrepUnderBoardPanel({
   const [sourcesOpen] = useState(true);
   const [hostedOpen, setHostedOpen] = useState(false);
   const [loadingPrepSource, setLoadingPrepSource] = useState<string | null>(null);
+  const [loadingPrepProgress, setLoadingPrepProgress] =
+    useState<WebHostedFolderReadProgress | null>(null);
   const refreshingPrepPathRef = useRef<string | null>(null);
   const [onlineOpen, setOnlineOpen] = useState(false);
   const [onlineSource, setOnlineSource] = useState<WebOnlineSource>("chesscom");
@@ -2081,13 +2083,16 @@ function PrepUnderBoardPanel({
   const refreshHostedPrepDatabase = async (folder: WebHostedDatabaseFolder) => {
     if (!hostedDatabases.library) return null;
     setLoadingPrepSource(folder.label);
+    setLoadingPrepProgress(null);
     try {
       const imported = await importHostedFolder(hostedDatabases.library, folder.path, {
         openFirstGame: false,
+        onProgress: setLoadingPrepProgress,
       });
       if (imported) attachImportedDatabase(imported.database.id);
       return imported;
     } finally {
+      setLoadingPrepProgress(null);
       setLoadingPrepSource(null);
     }
   };
@@ -2213,11 +2218,16 @@ function PrepUnderBoardPanel({
   const importHostedFolderForPrep = async (library: WebHostedLibrary, path: string) => {
     const label = getHostedDatabaseGroupLabel(path) || path;
     setLoadingPrepSource(label);
+    setLoadingPrepProgress(null);
     try {
-      const imported = await importHostedFolder(library, path, { openFirstGame: false });
+      const imported = await importHostedFolder(library, path, {
+        openFirstGame: false,
+        onProgress: setLoadingPrepProgress,
+      });
       if (imported) attachImportedDatabase(imported.database.id);
       return imported;
     } finally {
+      setLoadingPrepProgress(null);
       setLoadingPrepSource(null);
     }
   };
@@ -2435,7 +2445,7 @@ function PrepUnderBoardPanel({
                 <Group gap="xs" wrap="nowrap">
                   <Loader size="xs" />
                   <Text size="xs" c="dimmed" truncate>
-                    Loading {loadingPrepSource} from synced files
+                    {formatHostedLoadProgress(loadingPrepSource, loadingPrepProgress)}
                   </Text>
                 </Group>
               ) : null}
@@ -4129,6 +4139,16 @@ function normalizeHostedDatabasePathParts(path: string) {
 
 function formatDatabasePickerLabel(name: string) {
   return name.replace(/\.pgn$/i, "");
+}
+
+function formatHostedLoadProgress(
+  label: string | null,
+  progress: WebHostedFolderReadProgress | null,
+) {
+  const source = label || "hosted database";
+  if (!progress) return `Loading ${source} from synced files`;
+  if (progress.total <= 0) return `Loading ${source} from synced files`;
+  return `Loading ${source}: ${formatCount(progress.loaded)} / ${formatCount(progress.total)} PGNs`;
 }
 
 function formatExplorerSpeed(speed: WebLichessExplorerOptions["speeds"][number]) {

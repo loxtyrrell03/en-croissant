@@ -298,6 +298,14 @@ default.
   move count. These options persist in phone localStorage and are passed to
   both Database and Prep explorer requests, so the same online source behaves
   consistently across the phone app.
+- A follow-up 2026-06-04 phone source-picker parity pass made hosted synced
+  databases behave like normal one-at-a-time database sources in the Database
+  and Prep tabs. Selecting a hosted database first checks the web manifest
+  against the already indexed phone IndexedDB copy and immediately reuses it
+  when current, instead of downloading PGN chunks again. Only new, stale, or
+  missing indexed databases run the hosted PGN import path, and those real
+  imports now show `loaded / total PGNs` progress so large synced prep
+  databases are visibly loading rather than appearing stuck.
 
 ### App Shell
 

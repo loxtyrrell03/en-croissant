@@ -1,4 +1,4 @@
-import type { WebHostedDatabaseFolder } from "./hostedFiles";
+import type { WebHostedDatabaseFolder, WebHostedFileEntry } from "./hostedFiles";
 import type { WebCompanionState, WebDatabase, WebGame, WebImportResult } from "./model";
 
 export function mergeImportedWebDatabases(
@@ -57,4 +57,63 @@ export function needsHostedDatabaseRefresh({
   if (!database?.hostedPath || !hostedFolder) return false;
   if ((database.hostedUpdatedAt ?? 0) < hostedFolder.lastModified) return true;
   return database.gameCount > 0 && (games?.length ?? 0) === 0;
+}
+
+export function getReusableHostedDatabaseImport({
+  state,
+  hostedPath,
+  files,
+}: {
+  state: WebCompanionState;
+  hostedPath: string;
+  files: WebHostedFileEntry[];
+}): WebImportResult | null {
+  const normalizedHostedPath = normalizeHostedPath(hostedPath);
+  const hostedFolder = getHostedFolderSummary(normalizedHostedPath, files);
+  if (!hostedFolder) return null;
+
+  const existingDatabase =
+    state.databases.find(
+      (database) =>
+        database.hostedPath === normalizedHostedPath &&
+        (database.hostedUpdatedAt ?? 0) >= hostedFolder.lastModified,
+    ) ?? null;
+  const existingGames = existingDatabase ? state.gamesByDatabase[existingDatabase.id] ?? [] : [];
+
+  if (
+    !existingDatabase ||
+    needsHostedDatabaseRefresh({
+      database: existingDatabase,
+      games: existingGames,
+      hostedFolder,
+    })
+  ) {
+    return null;
+  }
+
+  return {
+    database: existingDatabase,
+    games: existingGames,
+    warnings: [],
+  };
+}
+
+function getHostedFolderSummary(path: string, files: WebHostedFileEntry[]): WebHostedDatabaseFolder | null {
+  if (files.length === 0) return null;
+  return {
+    path,
+    name: getHostedPathLeafName(path),
+    label: getHostedPathLeafName(path),
+    fileCount: files.length,
+    sizeBytes: files.reduce((sum, file) => sum + file.sizeBytes, 0),
+    lastModified: Math.max(...files.map((file) => file.lastModified), 0),
+  };
+}
+
+function normalizeHostedPath(path: string) {
+  return path.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+}
+
+function getHostedPathLeafName(path: string) {
+  return normalizeHostedPath(path).split("/").filter(Boolean).at(-1) ?? "Hosted database";
 }

@@ -54,6 +54,12 @@ export type WebHostedPgnFolderResponse = {
   content: string;
 };
 
+export type WebHostedFolderReadProgress = {
+  loaded: number;
+  total: number;
+  currentFile: string | null;
+};
+
 export type WebHostedDatabaseFolder = {
   path: string;
   name: string;
@@ -204,6 +210,7 @@ export function getHostedDatabaseFolders(library: WebHostedLibrary) {
 export async function readHostedPgnFolder(
   library: WebHostedLibrary,
   path = "",
+  onProgress?: (progress: WebHostedFolderReadProgress) => void,
 ): Promise<WebHostedPgnFolderResponse> {
   const normalizedPath = normalizeHostedPath(path);
   const files = getHostedPgnFilesInPath(library, normalizedPath);
@@ -212,9 +219,15 @@ export async function readHostedPgnFolder(
   }
 
   const chunks: string[] = [];
-  for (const file of files) {
+  onProgress?.({ loaded: 0, total: files.length, currentFile: files[0]?.filename ?? null });
+  for (const [index, file] of files.entries()) {
     const response = await readHostedPgnFile(file);
     chunks.push(response.content.trim());
+    onProgress?.({
+      loaded: index + 1,
+      total: files.length,
+      currentFile: files[index + 1]?.filename ?? null,
+    });
   }
 
   const name =

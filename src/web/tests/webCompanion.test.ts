@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
+  getReusableHostedDatabaseImport,
   mergeImportedWebDatabases,
   needsHostedDatabaseRefresh,
 } from "@/web/databaseSync";
@@ -9,6 +10,7 @@ import {
   getHostedDirectPgnFilesInPath,
   getHostedPgnFilesInPath,
   listHostedLibraryPath,
+  readHostedPgnFolder,
   type WebHostedLibrary,
 } from "@/web/hostedFiles";
 import { getWebOnlineImportTitle, getWebOnlineRangeLabel } from "@/web/onlineImport";
@@ -473,6 +475,138 @@ describe("web companion PGN prep index", () => {
         sizeBytes: 3072,
       }),
     ]);
+  });
+
+  test("reuses already indexed hosted databases before downloading synced PGNs", () => {
+    const imported = parsePgnDatabase(
+      "opponent.pgn",
+      `
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.01"]
+[Round "?"]
+[White "Me"]
+[Black "Opponent"]
+[Result "1-0"]
+
+1. e4 c5 1-0
+`,
+      1,
+    );
+    imported.database.hostedPath = "Databases/Fork/Prep/Opponent";
+    imported.database.hostedUpdatedAt = 10;
+
+    const state = {
+      ...createEmptyWebState(),
+      databases: [imported.database],
+      gamesByDatabase: {
+        [imported.database.id]: imported.games,
+      },
+    };
+    const hostedFiles = [
+      {
+        type: "file" as const,
+        name: "game-001",
+        filename: "game-001.pgn",
+        extension: "pgn" as const,
+        path: "Databases/Fork/Prep/Opponent/game-001.pgn",
+        url: "files/Databases/Fork/Prep/Opponent/game-001.pgn",
+        lastModified: 10,
+        sizeBytes: 120,
+      },
+    ];
+
+    const reusable = getReusableHostedDatabaseImport({
+      state,
+      hostedPath: "\\Databases\\Fork\\Prep\\Opponent\\",
+      files: hostedFiles,
+    });
+
+    expect(reusable?.database.id).toBe(imported.database.id);
+    expect(reusable?.games).toHaveLength(1);
+    expect(
+      getReusableHostedDatabaseImport({
+        state,
+        hostedPath: imported.database.hostedPath,
+        files: [{ ...hostedFiles[0], lastModified: 11 }],
+      }),
+    ).toBeNull();
+    expect(
+      getReusableHostedDatabaseImport({
+        state: {
+          ...state,
+          gamesByDatabase: {
+            [imported.database.id]: [],
+          },
+        },
+        hostedPath: imported.database.hostedPath,
+        files: hostedFiles,
+      }),
+    ).toBeNull();
+  });
+
+  test("reports hosted folder PGN chunk progress while reading synced files", async () => {
+    const library: WebHostedLibrary = {
+      available: true,
+      manifest: {
+        version: 1,
+        generatedAt: "2026-06-03T12:00:00.000Z",
+        sourceName: "EnCroissant",
+        files: [
+          {
+            type: "file",
+            name: "chunk-001",
+            filename: "chunk-001.pgn",
+            extension: "pgn",
+            path: "Databases/Fork/Prep/Opponent/chunk-001.pgn",
+            url: "files/chunk-001.pgn",
+            lastModified: 1,
+            sizeBytes: 100,
+          },
+          {
+            type: "file",
+            name: "chunk-002",
+            filename: "chunk-002.pgn",
+            extension: "pgn",
+            path: "Databases/Fork/Prep/Opponent/chunk-002.pgn",
+            url: "files/chunk-002.pgn",
+            lastModified: 2,
+            sizeBytes: 200,
+          },
+        ],
+      },
+    };
+    const originalFetch = globalThis.fetch;
+    const progress: { loaded: number; total: number; currentFile: string | null }[] = [];
+    globalThis.fetch = (async (url: RequestInfo | URL) => {
+      const text = String(url).includes("chunk-001")
+        ? "[Event \"One\"]\n\n1. e4 *"
+        : "[Event \"Two\"]\n\n1. d4 *";
+      return new Response(text);
+    }) as typeof fetch;
+
+    try {
+      const folder = await readHostedPgnFolder(
+        library,
+        "Databases/Fork/Prep/Opponent",
+        (event) => progress.push(event),
+      );
+
+      expect(folder.content).toContain("[Event \"One\"]");
+      expect(folder.content).toContain("[Event \"Two\"]");
+      expect(progress.map((event) => `${event.loaded}/${event.total}`)).toEqual([
+        "0/2",
+        "1/2",
+        "2/2",
+      ]);
+      expect(progress.map((event) => event.currentFile)).toEqual([
+        "chunk-001.pgn",
+        "chunk-002.pgn",
+        null,
+      ]);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 
   test("replaces stale hosted databases and rewires prep sources", () => {
