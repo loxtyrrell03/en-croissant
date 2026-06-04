@@ -283,6 +283,12 @@ default.
   unscoped all-games source. Empty states name the exact filtered source, such
   as `lachlan1415 as black in lachlan1415_lichess.pgn`, so the phone UI stays
   aligned with the fork's one-database, one-perspective model.
+- The next 2026-06-04 phone Prep parity pass split active-prep setup actions
+  the way the fork does. Reopening setup for an existing phone prep now shows
+  `Start prep`, explicit `Start here`, reset-to-prep-start, and clear
+  done/skipped controls. `Start prep` no longer silently moves the prep root to
+  the current board position or clears marks; changing the root is only done by
+  `Start here`, preserving the fork's explicit root workflow on mobile.
 
 ### App Shell
 

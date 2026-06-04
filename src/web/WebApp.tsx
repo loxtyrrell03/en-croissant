@@ -53,6 +53,7 @@ import {
   IconPlayerPlay,
   IconRefresh,
   IconSettings,
+  IconTarget,
   IconTrash,
   IconUpload,
   IconX,
@@ -1958,6 +1959,25 @@ function PrepUnderBoardPanel({
     });
   };
 
+  const resetActivePrepToStart = () => {
+    const rootCursor = activePrep ? activePrep.rootPly ?? 0 : 0;
+    setState((current) => ({
+      ...current,
+      board: {
+        ...current.board,
+        cursor: clampCursor(rootCursor, current.board.line.length),
+      },
+    }));
+  };
+
+  const clearActivePrepMarks = () => {
+    if (!activePrep) return;
+    updateActivePrepSettings({
+      preparedMoves: {},
+      skippedMoves: {},
+    });
+  };
+
   const updatePrepMode = (mode: WebPrepMode) => {
     applyPrepSetupSelection(applyWebPrepModeChange(currentPrepSetupSelection, mode));
   };
@@ -2226,20 +2246,59 @@ function PrepUnderBoardPanel({
           ) : null}
         </Group>
         {showSetupStage && (
-          <Button
-            size="xs"
-            leftSection={<IconPlayerPlay size={14} />}
-            onClick={() => {
-              if (activePrep) {
-                setActivePrepRootHere();
-                setSetupOpen(false);
-              } else {
-                createPrep();
-              }
-            }}
-          >
-            Start prep
-          </Button>
+          <Group gap={4} wrap="wrap" justify="flex-end">
+            <Button
+              size="xs"
+              leftSection={<IconPlayerPlay size={14} />}
+              onClick={() => {
+                if (activePrep) {
+                  setSetupOpen(false);
+                } else {
+                  createPrep();
+                }
+              }}
+            >
+              Start prep
+            </Button>
+            {activePrep ? (
+              <>
+                <Tooltip label="Use the current board position as the prep start">
+                  <Button
+                    size="compact-xs"
+                    variant="default"
+                    leftSection={<IconTarget size={14} />}
+                    onClick={setActivePrepRootHere}
+                  >
+                    Start here
+                  </Button>
+                </Tooltip>
+                <Tooltip label="Go back to the prep starting position">
+                  <ActionIcon
+                    aria-label="Go back to prep start"
+                    size="sm"
+                    variant="default"
+                    onClick={resetActivePrepToStart}
+                  >
+                    <IconArrowBackUp size={15} />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label="Clear manual done and skipped marks">
+                  <ActionIcon
+                    aria-label="Clear prep marks"
+                    size="sm"
+                    variant="default"
+                    disabled={
+                      Object.keys(activePrep.preparedMoves).length === 0 &&
+                      Object.keys(activePrep.skippedMoves ?? {}).length === 0
+                    }
+                    onClick={clearActivePrepMarks}
+                  >
+                    <IconRefresh size={15} />
+                  </ActionIcon>
+                </Tooltip>
+              </>
+            ) : null}
+          </Group>
         )}
       </Group>
 
