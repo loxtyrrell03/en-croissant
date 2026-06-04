@@ -1745,6 +1745,24 @@ function PrepUnderBoardPanel({
           .filter((stat) => stat.total >= selectedMinGames)
           .slice(0, selectedMoveLimit)
       : rootStats;
+  const activeBranch = useMemo(
+    () =>
+      activePrep && branchStart
+        ? branchStart.activeBranch ??
+          findFirstWebPrepOpponentBranch(currentLine, branchStart.branchPly, activePrep.userColor)
+        : null,
+    [activePrep, branchStart, currentLine],
+  );
+  const activeBranchSourceGame = useMemo(() => {
+    if (!activePrep || !activeBranch || isOnlinePrepSource(selectedPrepSource)) return null;
+    const branchMoveStats = getWebPrepMoveStats({
+      games: selectedPrepSourceGames,
+      prep: activePrep,
+      fen: activeBranch.move.fenBefore,
+      maxExamples: 1,
+    });
+    return branchMoveStats.find((stat) => stat.key === activeBranch.key)?.examples[0] ?? null;
+  }, [activeBranch, activePrep, selectedPrepSource, selectedPrepSourceGames]);
   const openRootStats = activePrep
     ? displayedRootStats.filter((stat) => !activePrep.skippedMoves?.[stat.key])
     : displayedRootStats;
@@ -2033,9 +2051,6 @@ function PrepUnderBoardPanel({
       return;
     }
 
-    const activeBranch =
-      branchStart.activeBranch ??
-      findFirstWebPrepOpponentBranch(currentLine, branchStart.branchPly, activePrep.userColor);
     const branchKey = activeBranch?.key;
     if (!branchKey) {
       notifications.show({
@@ -2068,6 +2083,17 @@ function PrepUnderBoardPanel({
     }
 
     window.setTimeout(() => onPlayRootMove(nextStat), 0);
+  };
+
+  const goToActiveChoice = () => {
+    if (!activeBranch) return;
+    setState((current) => ({
+      ...current,
+      board: {
+        ...current.board,
+        cursor: activeBranch.ply,
+      },
+    }));
   };
 
   const updateNote = (value: string) => {
@@ -2850,6 +2876,29 @@ function PrepUnderBoardPanel({
                   Done + next
                 </Button>
               </Tooltip>
+              {activeBranch && activeBranchSourceGame ? (
+                <Tooltip label={`Open a source game at ${activeBranch.move.san}`}>
+                  <Button
+                    size="xs"
+                    variant="default"
+                    leftSection={<IconExternalLink size={14} />}
+                    onClick={() => onOpenSourceGame(activeBranchSourceGame)}
+                  >
+                    Go to game
+                  </Button>
+                </Tooltip>
+              ) : null}
+              {activeBranch ? (
+                <Tooltip label="Return to the last opponent choice in this line">
+                  <ActionIcon
+                    aria-label="Return to active prep choice"
+                    variant="default"
+                    onClick={goToActiveChoice}
+                  >
+                    <IconArrowBackUp size={16} />
+                  </ActionIcon>
+                </Tooltip>
+              ) : null}
               <Tooltip label="Change prep source and target">
                 <ActionIcon aria-label="Change prep setup" variant="default" onClick={() => setSetupOpen(true)}>
                   <IconSettings size={16} />

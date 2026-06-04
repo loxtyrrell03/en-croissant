@@ -351,6 +351,12 @@ default.
   the same selected database, username/color, date, and result filters used by
   move stats, while local filters live in Options and online explorer options
   remain under the same subview.
+- A later 2026-06-04 phone Prep parity pass added the remaining desktop
+  under-board active-branch controls to the phone training header. When the
+  current line has an active local or temporary source branch, phone Prep now
+  shows the same header-level `Go to game` evidence jump plus the return arrow
+  to the last opponent choice, and `Done + next` uses that shared active-branch
+  selection including roots where the opponent is to move.
 
 ### App Shell
 
