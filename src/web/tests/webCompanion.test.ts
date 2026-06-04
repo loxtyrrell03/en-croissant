@@ -38,6 +38,7 @@ import {
   getWebPrepSelectedLocalSourceId,
   getWebPrepWorkspacePatchFromSelection,
   getWebPrepWorkspaceName,
+  normalizeWebPrepMoveSortDefaults,
   type WebPrepSetupSelection,
 } from "@/web/prepSettings";
 import { parsePgnDatabase } from "@/web/pgn";
@@ -1229,6 +1230,22 @@ describe("web companion PGN prep index", () => {
       temporarySource: null,
       opponent: "",
       userColor: "white",
+    });
+  });
+
+  test("normalizes fork-style prep move sort defaults for phone setup", () => {
+    expect(normalizeWebPrepMoveSortDefaults({ opponent: "prep", candidate: "results" })).toEqual({
+      opponent: "prep",
+      candidate: "results",
+    });
+    expect(
+      normalizeWebPrepMoveSortDefaults({
+        opponent: "not-a-sort",
+        candidate: "state",
+      } as never),
+    ).toEqual({
+      opponent: "games",
+      candidate: "strength",
     });
   });
 

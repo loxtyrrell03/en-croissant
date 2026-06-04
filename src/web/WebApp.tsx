@@ -38,6 +38,7 @@ import {
 import { notifications, Notifications } from "@mantine/notifications";
 import {
   IconArrowBackUp,
+  IconArrowsSort,
   IconCheck,
   IconChevronDown,
   IconChevronLeft,
@@ -122,8 +123,11 @@ import type {
   WebImportResult,
   WebLocalGameFilters,
   WebLocalResultFilter,
+  WebPrepCandidateSortColumn,
   WebPrepLineMove,
   WebPrepMode,
+  WebPrepMoveSortDefaults,
+  WebPrepOpponentSortColumn,
   WebPrepSource,
   WebPrepTemporarySource,
   WebPrepWorkspace,
@@ -167,9 +171,14 @@ import {
 import {
   applyWebPrepModeChange,
   applyWebPrepSourceChange,
+  isWebPrepCandidateSortColumn,
+  isWebPrepOpponentSortColumn,
   getWebPrepSelectedLocalSourceId,
   getWebPrepWorkspacePatchFromSelection,
   getWebPrepWorkspaceName,
+  normalizeWebPrepMoveSortDefaults,
+  WEB_PREP_CANDIDATE_SORT_OPTIONS,
+  WEB_PREP_OPPONENT_SORT_OPTIONS,
   type WebPrepSetupSelection,
 } from "./prepSettings";
 import {
@@ -207,9 +216,9 @@ type WebOnlineImportHandler = (request: {
 }) => Promise<WebImportResult | null>;
 type WebPrepBranchStatus = "new" | "started" | "prepared" | "skipped";
 type WebPrepSortDirection = "asc" | "desc";
-type WebPrepSortColumn = "move" | "strength" | "games" | "results" | "prep" | "state";
-type WebPrepSortState = {
-  column: WebPrepSortColumn;
+type WebPrepSortColumn = WebPrepOpponentSortColumn;
+type WebPrepSortState<TColumn extends WebPrepSortColumn = WebPrepSortColumn> = {
+  column: TColumn;
   direction: WebPrepSortDirection;
 };
 
@@ -240,11 +249,6 @@ const WEB_DATABASE_STATS_SORT_OPTIONS: { label: string; value: WebDatabaseStatsS
 ];
 const DEFAULT_WEB_PREP_MIN_GAMES = 1;
 const DEFAULT_WEB_PREP_MOVE_LIMIT = 12;
-const DEFAULT_WEB_PREP_SORT: WebPrepSortState = { column: "games", direction: "desc" };
-const DEFAULT_WEB_PREP_CANDIDATE_SORT: WebPrepSortState = {
-  column: "strength",
-  direction: "desc",
-};
 
 type WebPrepStoredSetup = {
   mode: WebPrepMode;
@@ -259,6 +263,7 @@ type WebPrepStoredSetup = {
   minGames: number;
   moveLimit: number;
   builder: Partial<PrepBuilderSettings>;
+  sortDefaults: WebPrepMoveSortDefaults;
 };
 
 const DEFAULT_WEB_PREP_SETUP: WebPrepStoredSetup = {
@@ -275,6 +280,10 @@ const DEFAULT_WEB_PREP_SETUP: WebPrepStoredSetup = {
     mode: "practical",
     useCloudEngine: false,
     useLichessAll: false,
+  },
+  sortDefaults: {
+    opponent: "games",
+    candidate: "strength",
   },
 };
 
@@ -1680,9 +1689,14 @@ function PrepUnderBoardPanel({
   const [onlineRootPrepStats, setOnlineRootPrepStats] = useState<WebPrepMoveStat[]>([]);
   const [onlineRootPrepLoading, setOnlineRootPrepLoading] = useState(false);
   const [explorerOptionsOpen, setExplorerOptionsOpen] = useState(false);
-  const [prepSort, setPrepSort] = useState<WebPrepSortState>(DEFAULT_WEB_PREP_SORT);
-  const [prepCandidateSort, setPrepCandidateSort] = useState<WebPrepSortState>(
-    DEFAULT_WEB_PREP_CANDIDATE_SORT,
+  const [builderOpen, setBuilderOpen] = useState(false);
+  const [prepSort, setPrepSort] = useState<WebPrepSortState>(
+    () => getDefaultWebPrepSortState(storedPrepSetup.sortDefaults).opponent,
+  );
+  const [prepCandidateSort, setPrepCandidateSort] = useState<
+    WebPrepSortState<WebPrepCandidateSortColumn>
+  >(
+    () => getDefaultWebPrepSortState(storedPrepSetup.sortDefaults).candidate,
   );
   const {
     lichessOptions,
@@ -1762,6 +1776,10 @@ function PrepUnderBoardPanel({
   const selectedBuilderSettings = useMemo(
     () => normalizeWebPrepStrengthSettings(activePrep?.builder ?? draftBuilderSettings),
     [activePrep?.builder, draftBuilderSettings],
+  );
+  const selectedPrepSortDefaults = useMemo(
+    () => normalizeWebPrepMoveSortDefaults(activePrep?.sortDefaults ?? storedPrepSetup.sortDefaults),
+    [activePrep?.sortDefaults, storedPrepSetup.sortDefaults],
   );
   const selectedPlayerColor = oppositeWebColor(activePrep?.userColor ?? userColor);
   const selectedOpponentName = activePrep?.opponent ?? opponent;
@@ -1936,6 +1954,12 @@ function PrepUnderBoardPanel({
   }, [activePrep]);
 
   useEffect(() => {
+    const nextSort = getDefaultWebPrepSortState(selectedPrepSortDefaults);
+    setPrepSort(nextSort.opponent);
+    setPrepCandidateSort(nextSort.candidate);
+  }, [activePrep?.id, selectedPrepSortDefaults.candidate, selectedPrepSortDefaults.opponent]);
+
+  useEffect(() => {
     if (onlineUsername || !activePrep?.opponent) return;
     setOnlineUsername(activePrep.opponent);
   }, [activePrep?.opponent, onlineUsername]);
@@ -2046,6 +2070,7 @@ function PrepUnderBoardPanel({
       minGames,
       moveLimit,
       builder: getWebPrepStrengthSettingsPatch(selectedBuilderSettings, {}),
+      sortDefaults: selectedPrepSortDefaults,
       startFen: INITIAL_FEN,
       rootPly: currentLine.length,
       line: currentLine,
@@ -2303,6 +2328,17 @@ function PrepUnderBoardPanel({
     }
 
     setDraftBuilderSettings((current) => getWebPrepStrengthSettingsPatch(current, patch));
+  };
+
+  const updatePrepSortDefaults = (patch: Partial<WebPrepMoveSortDefaults>) => {
+    const next = normalizeWebPrepMoveSortDefaults({
+      ...selectedPrepSortDefaults,
+      ...patch,
+    });
+    setStoredPrepSetup((current) => normalizeWebPrepStoredSetup({ ...current, sortDefaults: next }));
+    if (activePrep) {
+      updateActivePrepSettings({ sortDefaults: next });
+    }
   };
 
   const updatePrepOpponent = (value: string) => {
@@ -2685,7 +2721,95 @@ function PrepUnderBoardPanel({
               builderSettings={selectedBuilderSettings}
               updateBuilderSettings={updatePrepBuilderSettings}
             />
+            <Tooltip label="Tune prep table sort defaults and strength scoring">
+              <Button
+                size="compact-xs"
+                variant={builderOpen ? "light" : "default"}
+                leftSection={<IconArrowsSort size={14} />}
+                onClick={() => setBuilderOpen((open) => !open)}
+              >
+                Builder settings
+              </Button>
+            </Tooltip>
           </Group>
+
+          <Collapse in={builderOpen}>
+            <Group gap="xs" wrap="wrap" align="flex-end" className={classes.prepToolBox}>
+              <SegmentedControl
+                aria-label="Prep strength mode"
+                data={[
+                  { value: "smart", label: "Smart" },
+                  { value: "engine", label: "Engine" },
+                  { value: "practical", label: "Practical" },
+                ]}
+                value={selectedBuilderSettings.mode}
+                onChange={(value) =>
+                  updatePrepBuilderSettings({ mode: value as PrepBuilderSettings["mode"] })
+                }
+                size="xs"
+              />
+              <Select
+                label={selectedPrepMode === "general" ? "Source move sort" : "Their move sort"}
+                value={selectedPrepSortDefaults.opponent}
+                data={WEB_PREP_OPPONENT_SORT_OPTIONS}
+                onChange={(value) => {
+                  if (isWebPrepOpponentSortColumn(value)) {
+                    updatePrepSortDefaults({ opponent: value });
+                  }
+                }}
+                size="xs"
+                w={150}
+                allowDeselect={false}
+                comboboxProps={{ withinPortal: true }}
+              />
+              <Select
+                label="Your move sort"
+                value={selectedPrepSortDefaults.candidate}
+                data={WEB_PREP_CANDIDATE_SORT_OPTIONS}
+                onChange={(value) => {
+                  if (isWebPrepCandidateSortColumn(value)) {
+                    updatePrepSortDefaults({ candidate: value });
+                  }
+                }}
+                size="xs"
+                w={150}
+                allowDeselect={false}
+                comboboxProps={{ withinPortal: true }}
+              />
+              <NumberInput
+                label="Engine blend"
+                suffix="%"
+                value={selectedBuilderSettings.engineWeight}
+                onChange={(value) =>
+                  updatePrepBuilderSettings({
+                    engineWeight: Math.max(0, Math.min(100, Number(value) || 0)),
+                  })
+                }
+                min={0}
+                max={100}
+                step={5}
+                size="xs"
+                w={112}
+                aria-label="Smart mode engine blend"
+              />
+              <NumberInput
+                label="Max CP drop"
+                suffix=" cp"
+                value={selectedBuilderSettings.maxEngineCpLoss}
+                onChange={(value) =>
+                  updatePrepBuilderSettings({
+                    maxEngineCpLoss: Math.max(0, Math.min(300, Number(value) || 0)),
+                  })
+                }
+                min={0}
+                max={300}
+                step={5}
+                size="xs"
+                w={112}
+                aria-label="Maximum engine centipawn drop"
+              />
+            </Group>
+          </Collapse>
 
           <Collapse in={sourcesOpen && !onlineOpen}>
             <Stack gap="xs" className={classes.prepToolBox}>
@@ -3643,7 +3767,7 @@ function CompactMoveTable({
   const isPrepCandidateTable = isPrepTable && !showState;
   const effectiveSort =
     isPrepCandidateTable && sort && (sort.column === "prep" || sort.column === "state")
-      ? DEFAULT_WEB_PREP_CANDIDATE_SORT
+      ? getDefaultWebPrepSortState().candidate
       : sort;
   const sortedStats =
     isPrepTable && effectiveSort
@@ -4083,7 +4207,33 @@ function webPrepBranchStatsColor(label: WebPrepBranchCoverageStats["label"]) {
   }
 }
 
-function getNextWebPrepSort(current: WebPrepSortState, column: WebPrepSortColumn): WebPrepSortState {
+function getDefaultWebPrepSortState(
+  sortDefaults?: Partial<WebPrepMoveSortDefaults> | null,
+): {
+  opponent: WebPrepSortState<WebPrepOpponentSortColumn>;
+  candidate: WebPrepSortState<WebPrepCandidateSortColumn>;
+} {
+  const defaults = normalizeWebPrepMoveSortDefaults(sortDefaults);
+  return {
+    opponent: {
+      column: defaults.opponent,
+      direction: getInitialWebPrepSortDirection(defaults.opponent),
+    },
+    candidate: {
+      column: defaults.candidate,
+      direction: getInitialWebPrepSortDirection(defaults.candidate),
+    },
+  };
+}
+
+function getInitialWebPrepSortDirection(column: WebPrepSortColumn): WebPrepSortDirection {
+  return column === "move" ? "asc" : "desc";
+}
+
+function getNextWebPrepSort<TColumn extends WebPrepSortColumn>(
+  current: WebPrepSortState<TColumn>,
+  column: TColumn,
+): WebPrepSortState<TColumn> {
   if (current.column === column) {
     return {
       column,
@@ -4093,7 +4243,7 @@ function getNextWebPrepSort(current: WebPrepSortState, column: WebPrepSortColumn
 
   return {
     column,
-    direction: column === "move" ? "asc" : "desc",
+    direction: getInitialWebPrepSortDirection(column),
   };
 }
 
@@ -4959,6 +5109,7 @@ function normalizeWebPrepStoredSetup(
     minGames,
     moveLimit,
     builder: normalizeWebPrepStrengthSettings(value?.builder),
+    sortDefaults: normalizeWebPrepMoveSortDefaults(value?.sortDefaults),
   };
 }
 

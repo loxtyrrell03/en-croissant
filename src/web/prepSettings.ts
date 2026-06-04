@@ -1,6 +1,9 @@
 import type {
   WebColor,
+  WebPrepCandidateSortColumn,
   WebPrepMode,
+  WebPrepMoveSortDefaults,
+  WebPrepOpponentSortColumn,
   WebPrepSource,
   WebPrepTemporarySource,
   WebPrepWorkspace,
@@ -15,6 +18,65 @@ export type WebPrepSetupSelection = {
   userColor: WebColor;
   firstLocalSourceId: string | null;
 };
+
+export const DEFAULT_WEB_PREP_MOVE_SORT_DEFAULTS: WebPrepMoveSortDefaults = {
+  opponent: "games",
+  candidate: "strength",
+};
+
+export const WEB_PREP_OPPONENT_SORT_OPTIONS: {
+  value: WebPrepOpponentSortColumn;
+  label: string;
+}[] = [
+  { value: "games", label: "Usage" },
+  { value: "strength", label: "Smart strength" },
+  { value: "results", label: "Results" },
+  { value: "prep", label: "Prep coverage" },
+  { value: "state", label: "State" },
+  { value: "move", label: "Move" },
+];
+
+export const WEB_PREP_CANDIDATE_SORT_OPTIONS: {
+  value: WebPrepCandidateSortColumn;
+  label: string;
+}[] = [
+  { value: "strength", label: "Smart strength" },
+  { value: "games", label: "Usage" },
+  { value: "results", label: "WDL" },
+  { value: "move", label: "Move" },
+];
+
+export function normalizeWebPrepMoveSortDefaults(
+  value: Partial<WebPrepMoveSortDefaults> | null | undefined,
+): WebPrepMoveSortDefaults {
+  return {
+    opponent: isWebPrepOpponentSortColumn(value?.opponent)
+      ? value.opponent
+      : DEFAULT_WEB_PREP_MOVE_SORT_DEFAULTS.opponent,
+    candidate: isWebPrepCandidateSortColumn(value?.candidate)
+      ? value.candidate
+      : DEFAULT_WEB_PREP_MOVE_SORT_DEFAULTS.candidate,
+  };
+}
+
+export function isWebPrepOpponentSortColumn(
+  value: unknown,
+): value is WebPrepOpponentSortColumn {
+  return (
+    value === "move" ||
+    value === "strength" ||
+    value === "games" ||
+    value === "results" ||
+    value === "prep" ||
+    value === "state"
+  );
+}
+
+export function isWebPrepCandidateSortColumn(
+  value: unknown,
+): value is WebPrepCandidateSortColumn {
+  return value === "move" || value === "strength" || value === "games" || value === "results";
+}
 
 export function getWebPrepSelectedLocalSourceId({
   activePrep,

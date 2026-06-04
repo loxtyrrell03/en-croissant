@@ -379,6 +379,13 @@ default.
   under-board layout: opening `Import games` collapses the normal prep
   source/player/min-games controls so the online source, username, range, save,
   preview, and import controls are the focused setup surface.
+- A subsequent 2026-06-04 phone Prep parity pass added the fork's compact
+  builder/sort settings row to the web Prep setup. Phone Prep now persists
+  desktop-style move-sort defaults with saved setup and active prep workspaces,
+  exposes Smart/Engine/Practical, Source/Their move sort, Your move sort,
+  Engine blend, and Max CP drop controls in setup, and resets the visible
+  opponent/candidate prep tables from those defaults when the workspace or
+  defaults change.
 
 ### App Shell
 

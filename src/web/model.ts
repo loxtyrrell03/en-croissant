@@ -62,6 +62,12 @@ export type WebPrepLineMove = {
 
 export type WebPrepMode = "player" | "general";
 export type WebPrepSource = "local" | "temporary" | "lichess-all" | "lichess-masters";
+export type WebPrepOpponentSortColumn = "move" | "strength" | "games" | "results" | "prep" | "state";
+export type WebPrepCandidateSortColumn = "move" | "strength" | "games" | "results";
+export type WebPrepMoveSortDefaults = {
+  opponent: WebPrepOpponentSortColumn;
+  candidate: WebPrepCandidateSortColumn;
+};
 
 export type WebPrepTemporarySource = {
   id: string;
@@ -87,6 +93,7 @@ export type WebPrepWorkspace = {
   minGames?: number;
   moveLimit?: number;
   builder?: Partial<PrepBuilderSettings>;
+  sortDefaults?: WebPrepMoveSortDefaults;
   startFen: string;
   rootPly?: number;
   line: WebPrepLineMove[];
