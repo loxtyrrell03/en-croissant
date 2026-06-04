@@ -162,6 +162,9 @@ default.
   showing extra databases from multiple local app roots. Use
   `EN_CROISSANT_WEB_DATABASE_DIR` for one custom root or
   `EN_CROISSANT_WEB_DATABASE_DIRS` for an intentional multi-root publish. The
+  Rust package must keep `default-run = "en-croissant-fork"` because the
+  additional `export_db_to_pgn` binary otherwise makes `tauri dev` fail at
+  startup when Cargo cannot infer which binary to run. The
   Database and Prep source pickers also filter previously indexed hosted
   databases once the current hosted manifest is loaded, so stale phone IndexedDB
   imports from an older multi-root publish do not remain selectable after the
