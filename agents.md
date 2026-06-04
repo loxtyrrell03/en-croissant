@@ -269,6 +269,12 @@ default.
   returns to one local synced database source, mirroring the desktop
   under-board Prep panel instead of allowing a confusing `Player + Lichess`
   combination.
+- A follow-up 2026-06-04 phone Prep cleanup made prep titles derive from the
+  actual mode/opponent state instead of trusting stale saved workspace names.
+  Old browser-side prep workspaces that were previously named `General prep`
+  but are now in Player/local mode render as `Opponent prep` or
+  `<player> prep` in the board title and setup picker, keeping the phone header,
+  active prep selector, Player/General segment, and one selected source in sync.
 
 ### App Shell
 

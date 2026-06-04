@@ -139,6 +139,7 @@ import {
   applyWebPrepModeChange,
   applyWebPrepSourceChange,
   getWebPrepWorkspacePatchFromSelection,
+  getWebPrepWorkspaceName,
   type WebPrepSetupSelection,
 } from "./prepSettings";
 import {
@@ -759,7 +760,7 @@ function BoardWorkspace({
   );
   const turnColor = getFenColor(currentFen);
   const boardTitle =
-    activePrep?.name ?? board.sourceTitle ?? (state.databases.length > 0 ? "Analysis board" : "Board");
+    activePrep ? prepBoardTitle(activePrep) : board.sourceTitle ?? (state.databases.length > 0 ? "Analysis board" : "Board");
 
   const updateBoard = (patch: Partial<WebBoardState>) => {
     setState((current) => ({
@@ -1712,7 +1713,7 @@ function PrepUnderBoardPanel({
     const selectedTemporarySource = prepSource === "temporary" ? draftTemporarySource : null;
     const prep: WebPrepWorkspace = {
       id: `prep-${now.toString(36)}`,
-      name: `${trimmedOpponent || "General"} prep`,
+      name: getWebPrepWorkspaceName({ mode: prepMode, opponent: trimmedOpponent }),
       mode: prepMode,
       source: prepSource,
       opponent: trimmedOpponent,
@@ -2208,7 +2209,10 @@ function PrepUnderBoardPanel({
                     },
                   }));
                 }}
-                data={state.prepWorkspaces.map((prep) => ({ value: prep.id, label: prep.name }))}
+                data={state.prepWorkspaces.map((prep) => ({
+                  value: prep.id,
+                  label: prepBoardTitle(prep),
+                }))}
                 style={{ flex: "1 1 12rem" }}
                 clearable
               />
@@ -3598,7 +3602,7 @@ function clampCursor(cursor: number, lineLength: number) {
 }
 
 function prepBoardTitle(prep: WebPrepWorkspace) {
-  return prep.opponent ? `${prep.opponent} prep` : prep.name;
+  return getWebPrepWorkspaceName(prep);
 }
 
 function downloadText(filename: string, text: string) {

@@ -24,6 +24,7 @@ import {
   applyWebPrepModeChange,
   applyWebPrepSourceChange,
   getWebPrepWorkspacePatchFromSelection,
+  getWebPrepWorkspaceName,
   type WebPrepSetupSelection,
 } from "@/web/prepSettings";
 import { parsePgnDatabase } from "@/web/pgn";
@@ -545,6 +546,56 @@ describe("web companion PGN prep index", () => {
       temporarySource: null,
       opponent: "",
       userColor: "white",
+    });
+  });
+
+  test("derives phone prep names from mode and opponent instead of stale saved labels", () => {
+    expect(getWebPrepWorkspaceName({ mode: "general", opponent: "Opponent" })).toBe(
+      "General prep",
+    );
+    expect(getWebPrepWorkspaceName({ mode: "player", opponent: "" })).toBe("Opponent prep");
+    expect(getWebPrepWorkspaceName({ mode: "player", opponent: "Nakamura" })).toBe(
+      "Nakamura prep",
+    );
+  });
+
+  test("renames an active prep when returning from General explorer prep to Player", () => {
+    const selection = applyWebPrepModeChange(
+      {
+        mode: "general",
+        source: "lichess-all",
+        sourceId: null,
+        temporarySource: null,
+        opponent: "",
+        userColor: "white",
+        firstLocalSourceId: "local-db",
+      },
+      "player",
+    );
+    const patch = getWebPrepWorkspacePatchFromSelection(
+      {
+        id: "prep",
+        name: "General prep",
+        mode: "general",
+        source: "lichess-all",
+        opponent: "",
+        userColor: "white",
+        sourceIds: [],
+        startFen: "start",
+        line: [],
+        notesByFen: {},
+        preparedMoves: {},
+        createdAt: 1,
+        updatedAt: 1,
+      },
+      selection,
+    );
+
+    expect(patch).toMatchObject({
+      name: "Opponent prep",
+      mode: "player",
+      source: "local",
+      sourceIds: ["local-db"],
     });
   });
 

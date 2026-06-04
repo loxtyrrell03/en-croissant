@@ -22,6 +22,15 @@ export function isWebOnlinePrepSource(
   return source === "lichess-all" || source === "lichess-masters";
 }
 
+export function getWebPrepWorkspaceName(
+  prep: Pick<WebPrepWorkspace, "mode" | "opponent">,
+) {
+  const mode = prep.mode ?? "player";
+  const opponent = prep.opponent.trim();
+  if (mode === "general") return "General prep";
+  return opponent ? `${opponent} prep` : "Opponent prep";
+}
+
 export function applyWebPrepModeChange(
   selection: WebPrepSetupSelection,
   nextMode: WebPrepMode,
@@ -91,7 +100,7 @@ export function applyWebPrepSourceChange(
 }
 
 export function getWebPrepWorkspacePatchFromSelection(
-  prep: WebPrepWorkspace,
+  _prep: WebPrepWorkspace,
   selection: WebPrepSetupSelection,
 ): Partial<WebPrepWorkspace> {
   const sourceIds =
@@ -108,6 +117,6 @@ export function getWebPrepWorkspacePatchFromSelection(
     temporarySource: selection.source === "temporary" ? selection.temporarySource : null,
     opponent: selection.opponent,
     userColor: selection.userColor,
-    name: selection.mode === "general" && !selection.opponent.trim() ? "General prep" : prep.name,
+    name: getWebPrepWorkspaceName(selection),
   };
 }
