@@ -156,14 +156,23 @@ default.
   `src-tauri/src/bin/export_db_to_pgn.rs` is a headless Rust exporter that
   reuses the fork's move-blob decoder, while `scripts/build-web-library.mjs`
   caches exports under `%LOCALAPPDATA%/EnCroissantWebSync/db-exports` and
-  includes cached chunks in the static web library. The publish/watch/install
-  scripts expose `-MaxDatabaseMB` (default 200 MB) plus
+  includes cached chunks in the static web library. On 2026-06-04, the default
+  database export root was narrowed to the desktop app-data database directory
+  resolved from `src-tauri/tauri.conf.json`; this keeps the phone picker from
+  showing extra databases from multiple local app roots. Use
+  `EN_CROISSANT_WEB_DATABASE_DIR` for one custom root or
+  `EN_CROISSANT_WEB_DATABASE_DIRS` for an intentional multi-root publish. The
+  Database and Prep source pickers also filter previously indexed hosted
+  databases once the current hosted manifest is loaded, so stale phone IndexedDB
+  imports from an older multi-root publish do not remain selectable after the
+  site is narrowed back to the desktop source. The
+  publish/watch/install scripts expose `-MaxDatabaseMB` (default 200 MB) plus
   `-SkipDatabaseExports`; this keeps normal prep/account/repertoire databases
   available on the phone while deliberately skipping huge reference databases
   such as 2.7 GB Mega Database copies that are not practical for free static
   hosting. Phone users can import a generated database by opening Hosted files,
-  browsing to `Databases/Fork/...` or `Databases/Desktop/...`, and importing
-  the database folder.
+  browsing to `Databases/Desktop/...` for the default desktop app-data root,
+  and importing the database folder.
 - The web Prep panel now owns its database/import workflow instead of forcing a
   detour to Files. Its compact under-board Prep area has Databases, Hosted
   files, and Import games drawers: database source selection attaches indexed
@@ -397,6 +406,14 @@ default.
   engine, and WDL sort choices, and the phone Database table exposes
   `Blend / Engine / Games / WDL / Last` while Prep strength cells show the same
   engine and practical WDL details inline.
+- A follow-up fixed the phone blended-strength engine signal. The web companion
+  now uses a browser-safe Lichess cloud-eval helper instead of the desktop
+  Tauri API, keeps cloud scoring enabled for legacy phone workspaces that had
+  saved the old disabled value, and refreshes local Database/Prep rows plus
+  Lichess All/Masters explorer rows with cloud engine moves. The helper first
+  uses root MultiPV and then queries child positions for shown candidate moves
+  not present in the root cloud lines, so common non-top moves no longer
+  collapse to `Engine unavailable` when Lichess has cached analysis.
 
 ### App Shell
 

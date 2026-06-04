@@ -3,6 +3,7 @@ import {
   getPrepMoveStrengthMap,
   normalizePrepBuilderSettings,
   type PrepBuilderSettings,
+  type PrepBuilderEngineMove,
   type PrepMoveStrength,
 } from "@/utils/opponentPrep";
 import type { Opening } from "@/utils/db";
@@ -224,11 +225,13 @@ export function getWebPrepMoveStats({
   games,
   prep,
   fen,
+  engineMoves,
   maxExamples = 4,
 }: {
   games: WebGame[];
   prep: WebPrepMoveStatsPrep;
   fen: string;
+  engineMoves?: PrepBuilderEngineMove[];
   maxExamples?: number;
 }): WebPrepMoveStat[] {
   const key = normalizeWebFen(fen || INITIAL_FEN);
@@ -271,6 +274,7 @@ export function getWebPrepMoveStats({
   }));
   const strengthMap = getPrepMoveStrengthMap({
     openings,
+    engineMoves,
     side: userColor,
     settings: getWebPrepStrengthSettings(prep?.builder),
   });
@@ -418,6 +422,7 @@ export function getWebDatabaseMoveStats({
   perspective = null,
   filters,
   strengthSettings,
+  engineMoves,
   maxExamples = 4,
 }: {
   games: WebGame[];
@@ -425,6 +430,7 @@ export function getWebDatabaseMoveStats({
   perspective?: WebDatabasePerspective | null;
   filters?: WebLocalGameFilters | null;
   strengthSettings?: Partial<PrepBuilderSettings> | null;
+  engineMoves?: PrepBuilderEngineMove[];
   maxExamples?: number;
 }): WebPrepMoveStat[] {
   const key = normalizeWebFen(fen || INITIAL_FEN);
@@ -468,6 +474,7 @@ export function getWebDatabaseMoveStats({
   }));
   const strengthMap = getPrepMoveStrengthMap({
     openings,
+    engineMoves,
     side: resultPerspective,
     settings: getWebPrepStrengthSettings(strengthSettings),
   });
@@ -605,7 +612,7 @@ function getWebPrepStrengthSettings(settings?: Partial<PrepBuilderSettings> | nu
   return normalizePrepBuilderSettings({
     ...settings,
     mode: settings?.mode ?? "practical",
-    useCloudEngine: false,
+    useCloudEngine: true,
     useLichessAll: false,
   });
 }

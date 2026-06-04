@@ -19,6 +19,7 @@ const outputRoot = resolve(getCliValue("--output") || "public/web-library");
 const filesRoot = join(outputRoot, "files");
 const previousManifest = await readPreviousManifest(join(outputRoot, "manifest.json"));
 const repoRoot = resolve(".");
+const tauriConfig = await readJsonFile(join(repoRoot, "src-tauri", "tauri.conf.json"));
 
 await rm(outputRoot, { recursive: true, force: true });
 await mkdir(filesRoot, { recursive: true });
@@ -260,12 +261,10 @@ function ensureDatabaseExporter() {
 
 function getDatabaseRoots() {
   const raw = process.env.EN_CROISSANT_WEB_DATABASE_DIRS;
+  const singleRoot = process.env.EN_CROISSANT_WEB_DATABASE_DIR;
   const roots = raw
     ? raw.split(delimiter)
-    : [
-        join(getRoamingAppDataDir(), "org.encroissant.fork", "db"),
-        join(getRoamingAppDataDir(), "org.encroissant.app", "db"),
-      ];
+    : [singleRoot || getDesktopAppDatabaseRoot()];
   const seen = new Set();
   return roots
     .map((root) => root.trim())
@@ -277,6 +276,11 @@ function getDatabaseRoots() {
       seen.add(key);
       return true;
     });
+}
+
+function getDesktopAppDatabaseRoot() {
+  const identifier = typeof tauriConfig?.identifier === "string" ? tauriConfig.identifier : "org.encroissant.app";
+  return join(getRoamingAppDataDir(), identifier, "db");
 }
 
 function getDatabaseRootLabel(root) {

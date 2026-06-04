@@ -387,6 +387,58 @@ describe("web companion PGN prep index", () => {
     ]);
   });
 
+  test("uses browser cloud-eval engine moves for phone blended strength", () => {
+    const imported = parsePgnDatabase(
+      "database-cloud-strength.pgn",
+      `
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.01"]
+[Round "?"]
+[White "Target"]
+[Black "Me"]
+[Result "1-0"]
+
+1. e4 c5 1-0
+
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.02"]
+[Round "?"]
+[White "Target"]
+[Black "Me"]
+[Result "0-1"]
+
+1. d4 d5 0-1
+`,
+      1,
+    );
+
+    const stats = getWebDatabaseMoveStats({
+      games: imported.games,
+      fen: imported.games[0].moves[0].fenBefore,
+      strengthSettings: {
+        mode: "smart",
+        engineWeight: 80,
+        maxEngineCpLoss: 70,
+      },
+      engineMoves: [
+        { san: "d4", scoreCpForSide: 45, rank: 1, source: "lichess" },
+        { san: "e4", scoreCpForSide: 5, rank: 2, source: "lichess" },
+      ],
+    });
+    const d4 = stats.find((stat) => stat.move === "d4");
+    const e4 = stats.find((stat) => stat.move === "e4");
+
+    expect(d4?.strength?.engineCpLoss).toBe(0);
+    expect(d4?.strength?.detail).toContain("Engine best");
+    expect(e4?.strength?.engineCpLoss).toBe(40);
+    expect(sortWebDatabaseMoveStats(stats, "engineHigh").map((stat) => stat.move)).toEqual([
+      "d4",
+      "e4",
+    ]);
+  });
+
   test("applies fork-style local date and result filters to database stats", () => {
     const imported = parsePgnDatabase(
       "database-date-result.pgn",

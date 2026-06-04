@@ -76,7 +76,11 @@ import {
   type SetStateAction,
 } from "react";
 import { positionFromFen } from "@/utils/chessops";
-import { normalizePrepBuilderSettings, type PrepBuilderSettings } from "@/utils/opponentPrep";
+import {
+  normalizePrepBuilderSettings,
+  type PrepBuilderEngineMove,
+  type PrepBuilderSettings,
+} from "@/utils/opponentPrep";
 import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import classes from "./WebApp.module.css";
 import {
@@ -146,6 +150,7 @@ import {
   startWebLichessLogin,
   WEB_LICHESS_TOKEN_STORAGE_KEY,
 } from "./lichessAuth";
+import { queryWebLichessCloudEngineMoves } from "./lichessCloud";
 import {
   collectGamesForSources,
   findFirstWebPrepOpponentBranch,
@@ -285,7 +290,7 @@ const DEFAULT_WEB_PREP_SETUP: WebPrepStoredSetup = {
   moveLimit: DEFAULT_WEB_PREP_MOVE_LIMIT,
   builder: {
     mode: "practical",
-    useCloudEngine: false,
+    useCloudEngine: true,
     useLichessAll: false,
   },
   sortDefaults: {
@@ -825,14 +830,16 @@ function BoardWorkspace({
     () => getGamesForWebPrepSource({ gamesByDatabase: state.gamesByDatabase, prep: activePrep }),
     [activePrep, state.gamesByDatabase],
   );
-  const prepStats = useMemo(
+  const [prepEngineMoves, setPrepEngineMoves] = useState<PrepBuilderEngineMove[]>([]);
+  const [prepRootEngineMoves, setPrepRootEngineMoves] = useState<PrepBuilderEngineMove[]>([]);
+  const prepStatsBase = useMemo(
     () =>
       getWebPrepMoveStats({ games: prepGames, prep: activePrep, fen: currentFen })
         .filter((stat) => stat.total >= prepMinGames)
         .slice(0, prepMoveLimit),
     [activePrep, currentFen, prepGames, prepMinGames, prepMoveLimit],
   );
-  const prepRootStats = useMemo(
+  const prepRootStatsBase = useMemo(
     () =>
       activePrep && prepBranchFen
         ? getWebPrepMoveStats({ games: prepGames, prep: activePrep, fen: prepBranchFen })
@@ -841,6 +848,90 @@ function BoardWorkspace({
         : [],
     [activePrep, prepBranchFen, prepGames, prepMoveLimit, prepMinGames],
   );
+  const prepStats = useMemo(
+    () =>
+      getWebPrepMoveStats({
+        games: prepGames,
+        prep: activePrep,
+        fen: currentFen,
+        engineMoves: prepEngineMoves,
+      })
+        .filter((stat) => stat.total >= prepMinGames)
+        .slice(0, prepMoveLimit),
+    [activePrep, currentFen, prepEngineMoves, prepGames, prepMinGames, prepMoveLimit],
+  );
+  const prepRootStats = useMemo(
+    () =>
+      activePrep && prepBranchFen
+        ? getWebPrepMoveStats({
+            games: prepGames,
+            prep: activePrep,
+            fen: prepBranchFen,
+            engineMoves: prepRootEngineMoves,
+          })
+            .filter((stat) => stat.total >= prepMinGames)
+            .slice(0, prepMoveLimit)
+        : [],
+    [activePrep, prepBranchFen, prepGames, prepMoveLimit, prepMinGames, prepRootEngineMoves],
+  );
+
+  useEffect(() => {
+    const settings = normalizeWebPrepStrengthSettings(activePrep?.builder);
+    if (!activePrep || !settings.useCloudEngine || prepStatsBase.length === 0) {
+      setPrepEngineMoves([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    let active = true;
+    void queryWebLichessCloudEngineMoves({
+      fen: currentFen,
+      side: activePrep.userColor,
+      moves: prepStatsBase.map((stat) => stat.move),
+      multipv: prepStatsBase.length,
+      signal: controller.signal,
+    })
+      .then((moves) => {
+        if (active) setPrepEngineMoves(moves);
+      })
+      .catch(() => {
+        if (active) setPrepEngineMoves([]);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [activePrep, currentFen, prepStatsBase]);
+
+  useEffect(() => {
+    const settings = normalizeWebPrepStrengthSettings(activePrep?.builder);
+    if (!activePrep || !prepBranchFen || !settings.useCloudEngine || prepRootStatsBase.length === 0) {
+      setPrepRootEngineMoves([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    let active = true;
+    void queryWebLichessCloudEngineMoves({
+      fen: prepBranchFen,
+      side: activePrep.userColor,
+      moves: prepRootStatsBase.map((stat) => stat.move),
+      multipv: prepRootStatsBase.length,
+      signal: controller.signal,
+    })
+      .then((moves) => {
+        if (active) setPrepRootEngineMoves(moves);
+      })
+      .catch(() => {
+        if (active) setPrepRootEngineMoves([]);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [activePrep, prepBranchFen, prepRootStatsBase]);
   const turnColor = getFenColor(currentFen);
   const boardTitle =
     activePrep ? prepBoardTitle(activePrep) : board.sourceTitle ?? (state.databases.length > 0 ? "Analysis board" : "Board");
@@ -1230,7 +1321,8 @@ function DatabaseUnderBoardPanel({
     }),
     [localEndDate, localResult, localStartDate],
   );
-  const localStats = useMemo(
+  const [localEngineMoves, setLocalEngineMoves] = useState<PrepBuilderEngineMove[]>([]);
+  const localStatsBase = useMemo(
     () =>
       getWebDatabaseMoveStats({
         games: localGames,
@@ -1248,6 +1340,31 @@ function DatabaseUnderBoardPanel({
       currentFen,
       databaseStrengthSettings,
       localColor,
+      localFilters,
+      localGames,
+      trimmedLocalPlayerName,
+    ],
+  );
+  const localStats = useMemo(
+    () =>
+      getWebDatabaseMoveStats({
+        games: localGames,
+        fen: currentFen,
+        filters: localFilters,
+        perspective: trimmedLocalPlayerName
+          ? {
+              playerName: trimmedLocalPlayerName,
+              color: localColor,
+            }
+          : null,
+        strengthSettings: databaseStrengthSettings,
+        engineMoves: localEngineMoves,
+      }),
+    [
+      currentFen,
+      databaseStrengthSettings,
+      localColor,
+      localEngineMoves,
       localFilters,
       localGames,
       trimmedLocalPlayerName,
@@ -1374,6 +1491,35 @@ function DatabaseUnderBoardPanel({
     selectedLocalHostedFolder,
     source,
   ]);
+
+  useEffect(() => {
+    const settings = normalizeWebPrepStrengthSettings(databaseStrengthSettings);
+    if (source !== "local" || !settings.useCloudEngine || localStatsBase.length === 0) {
+      setLocalEngineMoves([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    let active = true;
+    void queryWebLichessCloudEngineMoves({
+      fen: currentFen,
+      side: trimmedLocalPlayerName ? localColor : getFenColor(currentFen),
+      moves: localStatsBase.map((stat) => stat.move),
+      multipv: localStatsBase.length,
+      signal: controller.signal,
+    })
+      .then((moves) => {
+        if (active) setLocalEngineMoves(moves);
+      })
+      .catch(() => {
+        if (active) setLocalEngineMoves([]);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [currentFen, databaseStrengthSettings, localColor, localStatsBase, source, trimmedLocalPlayerName]);
 
   useEffect(() => {
     if (source === "local") return;
@@ -4223,7 +4369,7 @@ function normalizeWebPrepStrengthSettings(settings?: Partial<PrepBuilderSettings
   return normalizePrepBuilderSettings({
     ...settings,
     mode: settings?.mode ?? "practical",
-    useCloudEngine: false,
+    useCloudEngine: true,
     useLichessAll: false,
   });
 }
@@ -4237,7 +4383,7 @@ function getWebPrepStrengthSettingsPatch(
     mode: settings.mode,
     engineWeight: settings.engineWeight,
     maxEngineCpLoss: settings.maxEngineCpLoss,
-    useCloudEngine: false,
+    useCloudEngine: settings.useCloudEngine,
     useLichessAll: false,
   };
 }

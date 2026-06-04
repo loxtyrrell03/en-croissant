@@ -2,11 +2,13 @@ import type { WebPrepMoveStat } from "./prepIndex";
 import {
   getPrepMoveStrengthMap,
   normalizePrepBuilderSettings,
+  type PrepBuilderEngineMove,
   type PrepBuilderSettings,
 } from "@/utils/opponentPrep";
 import { getFenColor } from "./pgn";
 import type { WebColor } from "./model";
 import type { Opening } from "@/utils/db";
+import { queryWebLichessCloudEngineMoves } from "./lichessCloud";
 
 export type WebDatabaseExplorerSource = "lichess-all" | "lichess-masters";
 export type WebLichessExplorerSpeed =
@@ -124,7 +126,16 @@ export async function fetchWebExplorerMoveStats({
     throw new Error(`Lichess explorer failed: ${response.status}`);
   }
 
-  return explorerMovesToStats(await response.json(), source, fen, strengthSettings);
+  const data = (await response.json()) as ExplorerResponse;
+  const engineMoves = await queryWebLichessCloudEngineMoves({
+    fen,
+    side: getFenColor(fen),
+    moves: data.moves.map((move) => move.san),
+    multipv: data.moves.length,
+    signal,
+  }).catch(() => []);
+
+  return explorerMovesToStats(data, source, fen, strengthSettings, engineMoves);
 }
 
 export function buildWebExplorerUrl({
@@ -205,6 +216,7 @@ function explorerMovesToStats(
   source: WebDatabaseExplorerSource,
   fen: string,
   strengthSettings?: Partial<PrepBuilderSettings> | null,
+  engineMoves?: PrepBuilderEngineMove[],
 ): WebPrepMoveStat[] {
   const sourceLabel = source === "lichess-all" ? "Lichess All" : "Lichess Masters";
   const userColor = getFenColor(fen);
@@ -218,6 +230,7 @@ function explorerMovesToStats(
   }));
   const strengthMap = getPrepMoveStrengthMap({
     openings,
+    engineMoves,
     side: userColor,
     settings: normalizeWebExplorerStrengthSettings(strengthSettings),
   });
@@ -258,7 +271,7 @@ function normalizeWebExplorerStrengthSettings(settings?: Partial<PrepBuilderSett
   return normalizePrepBuilderSettings({
     ...settings,
     mode: settings?.mode ?? "practical",
-    useCloudEngine: false,
+    useCloudEngine: true,
     useLichessAll: false,
   });
 }

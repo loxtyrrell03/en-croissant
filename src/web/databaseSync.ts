@@ -62,10 +62,40 @@ export function needsHostedDatabaseRefresh({
   return database.gameCount > 0 && (games?.length ?? 0) === 0;
 }
 
+export function filterWebDatabasesByHostedAvailability({
+  databases,
+  hostedFolders,
+  hostedLibraryReady,
+}: {
+  databases: WebDatabase[];
+  hostedFolders: WebHostedDatabaseFolder[];
+  hostedLibraryReady: boolean;
+}) {
+  if (!hostedLibraryReady) return databases;
+
+  const hostedPaths = new Set(hostedFolders.map((folder) => normalizeHostedPath(folder.path)));
+  return databases.filter((database) => {
+    if (!database.hostedPath) return true;
+    return hostedPaths.has(normalizeHostedPath(database.hostedPath));
+  });
+}
+
 export function getWebDatabaseSourceStorageValue(database: WebDatabase) {
   return database.hostedPath
-    ? `${HOSTED_SOURCE_REF_PREFIX}${normalizeHostedPath(database.hostedPath)}`
+    ? getWebDatabaseHostedSourceStorageValue(database.hostedPath)
     : `${ID_SOURCE_REF_PREFIX}${database.id}`;
+}
+
+export function getWebDatabaseHostedSourceStorageValue(hostedPath: string) {
+  return `${HOSTED_SOURCE_REF_PREFIX}${normalizeHostedPath(hostedPath)}`;
+}
+
+export function getWebDatabaseHostedPathFromSourceStorageValue(
+  storedValue: string | null | undefined,
+) {
+  const value = storedValue?.trim();
+  if (!value?.startsWith(HOSTED_SOURCE_REF_PREFIX)) return null;
+  return normalizeHostedPath(value.slice(HOSTED_SOURCE_REF_PREFIX.length));
 }
 
 export function resolveWebDatabaseSourceId(
@@ -76,7 +106,8 @@ export function resolveWebDatabaseSourceId(
   if (!value) return null;
 
   if (value.startsWith(HOSTED_SOURCE_REF_PREFIX)) {
-    const hostedPath = normalizeHostedPath(value.slice(HOSTED_SOURCE_REF_PREFIX.length));
+    const hostedPath = getWebDatabaseHostedPathFromSourceStorageValue(value);
+    if (!hostedPath) return null;
     return databases.find((database) => normalizeHostedPath(database.hostedPath ?? "") === hostedPath)
       ?.id ?? null;
   }
