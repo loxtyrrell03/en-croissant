@@ -3369,7 +3369,11 @@ function OpeningReviewPanel({
                       onClick={() => startDuePractice(dailyScopeIndices, dailyReviewScopeLabel)}
                       justify="space-between"
                       disabled={dailyScopeIndices.length === 0}
-                      rightSection={<Badge variant="white">{dailyScopeIndices.length}</Badge>}
+                      rightSection={
+                        <Badge variant="white" className={classes.reviewActionCountBadge}>
+                          {dailyScopeIndices.length}
+                        </Badge>
+                      }
                       style={{
                         flex: 1,
                         borderTopRightRadius: 0,
@@ -3415,7 +3419,9 @@ function OpeningReviewPanel({
                           justify="space-between"
                           disabled={openingPlanGapScopeIndices.length === 0}
                           rightSection={
-                            <Badge variant="white">{openingPlanGapScopeIndices.length}</Badge>
+                            <Badge variant="white" className={classes.reviewActionCountBadge}>
+                              {openingPlanGapScopeIndices.length}
+                            </Badge>
                           }
                         >
                           Train plan gaps
@@ -3449,7 +3455,11 @@ function OpeningReviewPanel({
                             onClick={startMistakeTimeManagementPractice}
                             justify="space-between"
                             disabled={timeManagementScopeCount === 0}
-                            rightSection={<Badge variant="white">{timeManagementScopeCount}</Badge>}
+                            rightSection={
+                              <Badge variant="white" className={classes.reviewActionCountBadge}>
+                                {timeManagementScopeCount}
+                              </Badge>
+                            }
                             style={{
                               flex: 1,
                               borderTopRightRadius: 0,

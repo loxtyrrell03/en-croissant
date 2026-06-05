@@ -800,6 +800,9 @@ deck metadata and training logic in `src/utils/mistakeReview*.ts`.
 - Time-management training has a per-deck long-think threshold setting on the
   trainer button; trainer counts, position filters, and future auto-updates use
   the current threshold while preserving clock-data safety.
+- Review action count badges on the idle Review panel have stable non-shrinking
+  widths, so two- and three-digit daily/time-management counts remain fully
+  readable beside long split-button labels.
 - Focused Mistake Review trainers now respect SRS readiness: long-think, phase,
   and type batches include unseen or due cards by default and do not resurface
   cards scheduled for a future day after they have just been reviewed.

@@ -37,7 +37,25 @@
 }
 
 .reviewActionButton :global(.mantine-Button-label) {
+  flex: 1 1 auto;
+  min-width: 0;
   line-height: 1.2;
+}
+
+.reviewActionButton :global(.mantine-Button-section[data-position="right"]) {
+  flex: 0 0 auto;
+  margin-left: auto;
+  min-width: fit-content;
+}
+
+.reviewActionCountBadge {
+  flex: 0 0 auto;
+  min-width: 2.25rem;
+  padding-inline: 0.6rem;
+}
+
+.reviewActionCountBadge :global(.mantine-Badge-label) {
+  white-space: nowrap;
 }
 
 .reviewBadgeGroup {
