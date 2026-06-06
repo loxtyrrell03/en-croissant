@@ -545,6 +545,14 @@ default.
   `dxc4/a4/Bxc4` and `Ne5/Nxc4` recovery plans, the Geller `e4 b5 a4`
   undermining idea, and Chebanenko `...a6` Advance `c5/Bf4` with the `a4`
   reminder.
+- Also on 2026-06-06, the White Zukertort weak-opening lesson file was added
+  as `Zukertort Opening - GM Finegold Reti Lesson.pgn`, with a repertoire
+  `.info` sidecar. It uses GM Ben Finegold's long Reti lecture transcript as
+  the main source and treats the deck as a 1.Nf3 transposition map rather than
+  one narrow opening: pure Reti `2.c4` ideas, Catalan/QGD and Slav move-orders
+  from `2.d4`, KID/Pirc/Old Indian structures after `...d6/...g6`, compact
+  Dutch fixes with `Bf4/e3/c4` or `g3`, queenside fianchetto `...b6` setups,
+  and odd `...c6`, `...Nc6`, `...Bf5`, and `...c5` leftovers.
 - Files also treats `.pdf` prep reports as first-class folder entries: selecting
   a PDF shows an in-app document preview with a system-viewer fallback, while
   PGN-only metadata, sidecar `.info`, and game-opening actions stay scoped to
