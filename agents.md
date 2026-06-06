@@ -537,6 +537,14 @@ default.
   Sicilians, Four Knights/Sveshnikov `Nxc6/e5/Bg5` reminders, Maroczy Bind
   `c4/Be3/Qd2` setups, Najdorf English Attack `Be3/f3/Qd2/O-O-O`, calmer
   Dragon `Be2` lines, and the Marshall Counterattack reminder.
+- Also on 2026-06-06, the White Slav weak-opening lesson file was added as
+  `Slav Defense - GM Naroditsky Finegold Lessons.pgn`, with a repertoire
+  `.info` sidecar. It uses GM Daniel Naroditsky's Slav speedrun transcript plus
+  GM Ben Finegold's Chebanenko clip, covering the weak deck's Schlechter
+  `...g6/Bg5` branch, quiet `e3/Nc3/Nh4` against `...Bf5`, classical
+  `dxc4/a4/Bxc4` and `Ne5/Nxc4` recovery plans, the Geller `e4 b5 a4`
+  undermining idea, and Chebanenko `...a6` Advance `c5/Bf4` with the `a4`
+  reminder.
 - Files also treats `.pdf` prep reports as first-class folder entries: selecting
   a PDF shows an in-app document preview with a system-viewer fallback, while
   PGN-only metadata, sidecar `.info`, and game-opening actions stay scoped to
