@@ -448,6 +448,14 @@ default.
   right-click rename actions for files and folders in the tree, and a folder
   import/export flow that splits a PGN or `.db3` database into one game file per
   game.
+- On 2026-06-06, an experimental local AI Coach vertical slice was added beside
+  the board controls. It uses a Tauri-only Gemini CLI bridge for local personal
+  use, defaults to `gemini-3.1-pro-preview`, sends Gemini only structured
+  Stockfish-grounded prompts, and lets Gemini request at most one bounded
+  follow-up Stockfish analysis through the XML/JSON protocol in
+  `src-tauri/src/coach.rs`. Keep Stockfish as the source of truth, do not add
+  credentials to the app, and do not expose this bridge from any public/server
+  deployment.
 - On 2026-06-06, a source-derived White repertoire file was added under the
   app Files root's `Documents/EnCroissant/General repertoire/White  rep`
   folder as `Keymer Variation - Mendonca video.pgn`, with the matching `.info`

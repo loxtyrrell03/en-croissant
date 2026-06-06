@@ -25,6 +25,7 @@ import {
   IconReload,
   IconSearch,
   IconShield,
+  IconSparkles,
   IconVolume,
 } from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
@@ -37,6 +38,11 @@ import { useTranslation } from "react-i18next";
 import {
   autoPromoteAtom,
   autoSaveAtom,
+  aiCoachEnabledAtom,
+  aiCoachGeminiCommandAtom,
+  aiCoachGeminiModelAtom,
+  aiCoachMultipvAtom,
+  aiCoachTimeoutSecsAtom,
   enableBoardScrollAtom,
   eraseDrawablesOnClickAtom,
   engineHotkeysEnabledAtom,
@@ -96,6 +102,7 @@ type SettingCategory =
   | "keybinds"
   | "directories"
   | "repertoire"
+  | "coach"
   | "privacy";
 
 interface SettingItem {
@@ -189,6 +196,27 @@ function NumberSetting({
         const safeValue = Number.isFinite(numericValue) ? numericValue : fallback;
         setValue(Math.min(max, Math.max(min, Math.round(safeValue))));
       }}
+    />
+  );
+}
+
+function TextSetting({
+  atom,
+  placeholder,
+  width = 260,
+}: {
+  atom: PrimitiveAtom<string>;
+  placeholder?: string;
+  width?: number;
+}) {
+  const [value, setValue] = useAtom(atom);
+
+  return (
+    <TextInput
+      value={value}
+      placeholder={placeholder}
+      w={width}
+      onChange={(event) => setValue(event.currentTarget.value)}
     />
   );
 }
@@ -292,6 +320,57 @@ export default function Page() {
         description: "Use E to toggle engines and Space to play the current best engine move.",
         keywords: ["engine", "hotkeys", "keyboard", "space", "best move"],
         render: () => <SettingsSwitch atom={engineHotkeysEnabledAtom} />,
+      },
+      // AI Coach settings
+      {
+        id: "ai-coach-enabled",
+        category: "coach",
+        title: "Enable AI Coach",
+        description: "Show the local experimental Coach button beside the board controls.",
+        keywords: ["ai", "coach", "gemini", "stockfish"],
+        render: () => <SettingsSwitch atom={aiCoachEnabledAtom} />,
+      },
+      {
+        id: "ai-coach-command",
+        category: "coach",
+        title: "Gemini CLI command",
+        description: "Command or executable path for the locally authenticated Gemini CLI.",
+        keywords: ["ai", "coach", "gemini", "cli", "command", "path"],
+        render: () => <TextSetting atom={aiCoachGeminiCommandAtom} placeholder="gemini" />,
+      },
+      {
+        id: "ai-coach-model",
+        category: "coach",
+        title: "Gemini model",
+        description: "Model passed to Gemini CLI; Gemini 3.1 Pro Preview is the default.",
+        keywords: ["ai", "coach", "gemini", "model", "3.1", "pro"],
+        render: () => (
+          <TextSetting
+            atom={aiCoachGeminiModelAtom}
+            placeholder="gemini-3.1-pro-preview"
+            width={280}
+          />
+        ),
+      },
+      {
+        id: "ai-coach-multipv",
+        category: "coach",
+        title: "Coach Stockfish lines",
+        description: "Number of Stockfish MultiPV lines supplied to Gemini.",
+        keywords: ["ai", "coach", "stockfish", "multipv", "lines"],
+        render: () => (
+          <NumberSetting atom={aiCoachMultipvAtom} min={3} max={5} step={1} fallback={3} />
+        ),
+      },
+      {
+        id: "ai-coach-timeout",
+        category: "coach",
+        title: "Gemini timeout",
+        description: "Seconds before the local Gemini CLI coaching request is stopped.",
+        keywords: ["ai", "coach", "gemini", "timeout"],
+        render: () => (
+          <NumberSetting atom={aiCoachTimeoutSecsAtom} min={15} max={90} step={5} fallback={75} />
+        ),
       },
       {
         id: "mistake-review-auto-play-line",
@@ -855,6 +934,11 @@ export default function Page() {
         description: t("Settings.Repertoire.Desc"),
         icon: <IconBook size="1rem" />,
       },
+      coach: {
+        title: "AI Coach",
+        description: "Local Gemini CLI coaching grounded in Stockfish analysis.",
+        icon: <IconSparkles size="1rem" />,
+      },
       privacy: {
         title: t("Settings.Privacy"),
         description: t("Settings.Privacy.Desc"),
@@ -997,6 +1081,9 @@ export default function Page() {
             <Tabs.Tab value="repertoire" leftSection={<IconBook size="1rem" />}>
               {t("Settings.Repertoire")}
             </Tabs.Tab>
+            <Tabs.Tab value="coach" leftSection={<IconSparkles size="1rem" />}>
+              AI Coach
+            </Tabs.Tab>
             <Tabs.Tab value="privacy" leftSection={<IconShield size="1rem" />}>
               {t("Settings.Privacy")}
             </Tabs.Tab>
@@ -1108,6 +1195,16 @@ export default function Page() {
                     {t("Settings.Repertoire.Desc")}
                   </Text>
                   {renderCategorySettings("repertoire")}
+                </Tabs.Panel>
+
+                <Tabs.Panel value="coach">
+                  <Text size="lg" fw={500} className={classes.title}>
+                    AI Coach
+                  </Text>
+                  <Text size="xs" c="dimmed" mt={3} mb="lg">
+                    Local Gemini CLI coaching grounded in Stockfish analysis.
+                  </Text>
+                  {renderCategorySettings("coach")}
                 </Tabs.Panel>
 
                 <Tabs.Panel value="privacy">

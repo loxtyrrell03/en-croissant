@@ -7,6 +7,7 @@ import {
   IconEditOff,
   IconEraser,
   IconRobot,
+  IconSparkles,
   IconSwitchVertical,
   IconTarget,
   IconZoomCheck,
@@ -15,18 +16,20 @@ import { useLoaderData } from "@tanstack/react-router";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeFile } from "@tauri-apps/plugin-fs";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { memo, useContext } from "react";
+import { memo, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import {
   autoSaveAtom,
+  aiCoachEnabledAtom,
   currentGameStateAtom,
   currentTabAtom,
   eraseDrawablesOnClickAtom,
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
 import { usePracticeAgainstBot } from "@/hooks/usePracticeAgainstBot";
+import AiCoachModal from "./AiCoachModal";
 
 interface BoardControlsProps {
   editingMode: boolean;
@@ -64,8 +67,10 @@ function BoardControls({
   const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
   const setGameState = useSetAtom(currentGameStateAtom);
   const autoSave = useAtomValue(autoSaveAtom);
+  const aiCoachEnabled = useAtomValue(aiCoachEnabledAtom);
   const eraseDrawablesOnClick = useAtomValue(eraseDrawablesOnClickAtom);
   const practiceAgainstBot = usePracticeAgainstBot();
+  const [coachOpened, setCoachOpened] = useState(false);
 
   const orientation = headers.orientation || "white";
   const toggleOrientation = () =>
@@ -119,78 +124,95 @@ function BoardControls({
   };
 
   return (
-    <Stack gap={4} align="center">
-      <Tooltip position="right" label={t("Board.Action.TakeSnapshot")}>
-        <ActionIcon onClick={() => takeSnapshot()}>
-          <IconCamera size="1.2rem" />
-        </ActionIcon>
-      </Tooltip>
-      {canTakeBack && onTakeBack && (
-        <Tooltip label="Take Back" position="right">
-          <ActionIcon onClick={() => onTakeBack()}>
-            <IconArrowBack />
+    <>
+      <Stack gap={4} align="center">
+        <Tooltip position="right" label={t("Board.Action.TakeSnapshot")}>
+          <ActionIcon onClick={() => takeSnapshot()}>
+            <IconCamera size="1.2rem" />
           </ActionIcon>
         </Tooltip>
-      )}
-      <Tooltip
-        position="right"
-        label={t(
-          currentTab?.type === "analysis"
-            ? "Board.Action.PlayFromHere"
-            : "Board.Action.AnalyzeGame",
+        {canTakeBack && onTakeBack && (
+          <Tooltip label="Take Back" position="right">
+            <ActionIcon onClick={() => onTakeBack()}>
+              <IconArrowBack />
+            </ActionIcon>
+          </Tooltip>
         )}
-      >
-        <ActionIcon onClick={changeTabType}>
-          {currentTab?.type === "analysis" ? (
-            <IconTarget size="1.2rem" />
-          ) : (
-            <IconZoomCheck size="1.2rem" />
+        <Tooltip
+          position="right"
+          label={t(
+            currentTab?.type === "analysis"
+              ? "Board.Action.PlayFromHere"
+              : "Board.Action.AnalyzeGame",
           )}
-        </ActionIcon>
-      </Tooltip>
-      {currentTab?.type !== "play" && (
-        <Tooltip position="right" label="Practice against bot">
-          <ActionIcon onClick={practiceAgainstBot}>
-            <IconRobot size="1.2rem" />
+        >
+          <ActionIcon onClick={changeTabType}>
+            {currentTab?.type === "analysis" ? (
+              <IconTarget size="1.2rem" />
+            ) : (
+              <IconZoomCheck size="1.2rem" />
+            )}
           </ActionIcon>
         </Tooltip>
-      )}
-      {!eraseDrawablesOnClick && (
-        <Tooltip position="right" label={t("Board.Action.ClearDrawings")}>
-          <ActionIcon onClick={() => clearShapes()}>
-            <IconEraser size="1.2rem" />
-          </ActionIcon>
-        </Tooltip>
-      )}
-      {(!disableVariations || allowEditing) && (
-        <Tooltip position="right" label={t("Board.Action.EditPosition")}>
-          <ActionIcon onClick={() => toggleEditingMode()}>
-            {editingMode ? <IconEditOff size="1.2rem" /> : <IconEdit size="1.2rem" />}
-          </ActionIcon>
-        </Tooltip>
-      )}
-
-      {saveFile && (
-        <Tooltip position="right" label={t("Board.Action.SavePGN", { key: keyMap.SAVE_FILE.keys })}>
+        {currentTab?.type !== "play" && (
+          <Tooltip position="right" label="Practice against bot">
+            <ActionIcon onClick={practiceAgainstBot}>
+              <IconRobot size="1.2rem" />
+            </ActionIcon>
+          </Tooltip>
+        )}
+        <Tooltip
+          position="right"
+          label={aiCoachEnabled ? "AI Coach" : "AI Coach disabled in Settings"}
+        >
           <ActionIcon
-            onClick={() => saveFile()}
-            variant={dirty && !autoSave ? "default" : "transparent"}
+            onClick={() => setCoachOpened(true)}
+            variant={aiCoachEnabled ? "filled" : "subtle"}
           >
-            <IconDeviceFloppy size="1.2rem" />
+            <IconSparkles size="1.2rem" />
           </ActionIcon>
         </Tooltip>
-      )}
-      <Tooltip
-        position="right"
-        label={t("Board.Action.FlipBoard", {
-          key: keyMap.SWAP_ORIENTATION.keys,
-        })}
-      >
-        <ActionIcon onClick={() => toggleOrientation()}>
-          <IconSwitchVertical size="1.2rem" />
-        </ActionIcon>
-      </Tooltip>
-    </Stack>
+        {!eraseDrawablesOnClick && (
+          <Tooltip position="right" label={t("Board.Action.ClearDrawings")}>
+            <ActionIcon onClick={() => clearShapes()}>
+              <IconEraser size="1.2rem" />
+            </ActionIcon>
+          </Tooltip>
+        )}
+        {(!disableVariations || allowEditing) && (
+          <Tooltip position="right" label={t("Board.Action.EditPosition")}>
+            <ActionIcon onClick={() => toggleEditingMode()}>
+              {editingMode ? <IconEditOff size="1.2rem" /> : <IconEdit size="1.2rem" />}
+            </ActionIcon>
+          </Tooltip>
+        )}
+
+        {saveFile && (
+          <Tooltip
+            position="right"
+            label={t("Board.Action.SavePGN", { key: keyMap.SAVE_FILE.keys })}
+          >
+            <ActionIcon
+              onClick={() => saveFile()}
+              variant={dirty && !autoSave ? "default" : "transparent"}
+            >
+              <IconDeviceFloppy size="1.2rem" />
+            </ActionIcon>
+          </Tooltip>
+        )}
+        <Tooltip
+          position="right"
+          label={t("Board.Action.FlipBoard", {
+            key: keyMap.SWAP_ORIENTATION.keys,
+          })}
+        >
+          <ActionIcon onClick={() => toggleOrientation()}>
+            <IconSwitchVertical size="1.2rem" />
+          </ActionIcon>
+        </Tooltip>
+      </Stack>
+      <AiCoachModal opened={coachOpened} onClose={() => setCoachOpened(false)} />
+    </>
   );
 }
 

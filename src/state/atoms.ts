@@ -230,6 +230,17 @@ export const planExplorerHoverEverywhereAtom = atomWithStorage<boolean>(
 );
 export const showEngineDockAtom = atomWithStorage<boolean>("show-engine-dock", true);
 export const engineHotkeysEnabledAtom = atomWithStorage<boolean>("engine-hotkeys-enabled", true);
+export const aiCoachEnabledAtom = atomWithStorage<boolean>("ai-coach-enabled", true);
+export const aiCoachGeminiCommandAtom = atomWithStorage<string>(
+    "ai-coach-gemini-command",
+    "gemini",
+);
+export const aiCoachGeminiModelAtom = atomWithStorage<string>(
+    "ai-coach-gemini-model",
+    "gemini-3.1-pro-preview",
+);
+export const aiCoachMultipvAtom = atomWithStorage<number>("ai-coach-multipv", 3);
+export const aiCoachTimeoutSecsAtom = atomWithStorage<number>("ai-coach-timeout-secs", 75);
 export const boardManualSizeAtom = atomWithStorage<number | null>("board-manual-size", null);
 export const mistakeReviewAutoPlayLineAtom = atomWithStorage<boolean>(
     "mistake-review-auto-play-line",
