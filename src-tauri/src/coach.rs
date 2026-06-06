@@ -36,9 +36,11 @@ const DEFAULT_STOCKFISH_DEPTH: u32 = 12;
 const DEFAULT_COACH_MODEL: &str = "gemini-3.1-pro-preview";
 const DEFAULT_PLANNER_MODEL: &str = "gemini-3.5-flash";
 const MAX_PLANNER_STOCKFISH_REQUESTS: usize = 6;
+const MAX_WHOLE_GAME_CRITICAL_REQUESTS: usize = 3;
 const PLANNER_TIMEOUT_SECS: u64 = 60;
 const MAX_PROMPT_PGN_CHARS: usize = 12_000;
 const MAX_CHAT_MESSAGE_CHARS: usize = 2_000;
+const MAX_REFERENCE_CONTEXT_ITEMS: usize = 120;
 const MAX_GEMINI_ERROR_CHARS: usize = 1_200;
 const AI_COACH_PROGRESS_EVENT: &str = "ai-coach-progress";
 
@@ -59,6 +61,8 @@ pub struct AiCoachRequest {
     pub question: String,
     #[serde(default)]
     pub chat_history: Vec<CoachChatMessage>,
+    #[serde(default)]
+    pub reference_context: Vec<CoachReferenceContext>,
     pub existing_lines: Vec<CoachEngineLine>,
     #[serde(default)]
     pub prior_targeted_results: Vec<CoachTargetedResult>,
@@ -103,10 +107,30 @@ pub struct CoachGameAnalysisPoint {
     pub ply: u32,
     #[serde(rename = "move")]
     pub mv: String,
+    #[serde(default)]
+    pub before_fen: Option<String>,
     pub fen: String,
+    #[serde(default)]
+    pub played_uci: Option<String>,
+    #[serde(default)]
+    pub played_side: Option<String>,
     pub eval: Option<String>,
     pub depth: Option<u32>,
     pub annotations: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct CoachReferenceContext {
+    pub label: String,
+    pub fen: String,
+    pub ply: u32,
+    #[serde(default)]
+    pub san_line: Vec<String>,
+    #[serde(default)]
+    pub source: String,
+    #[serde(default)]
+    pub detail: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Type)]
@@ -176,6 +200,12 @@ pub struct CoachTargetedResult {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 enum StockfishFollowUpRequest {
+    AnalysePosition {
+        fen: String,
+        #[serde(default)]
+        label: String,
+        reason: String,
+    },
     AnalyseMove {
         fen: String,
         #[serde(rename = "move")]
@@ -214,7 +244,9 @@ pub enum CoachError {
     #[error("AI CLI command not found: {0}")]
     GeminiMissing(String),
 
-    #[error("AI CLI appears unauthenticated. Run `agy --print \"Reply with only: ok\"` or `gemini` in a terminal, complete Google sign-in, then try again.")]
+    #[error(
+        "AI CLI appears unauthenticated. Run `agy --print \"Reply with only: ok\"` or `gemini` in a terminal, complete Google sign-in, then try again."
+    )]
     GeminiUnauthenticated,
 
     #[error("AI CLI timed out after {0} seconds")]
@@ -420,6 +452,7 @@ async fn ask_ai_coach_inner(
     );
 
     let legal_moves = format_legal_root_moves(&request.fen)?;
+    let reference_context = normalized_reference_context(&request);
     let mut targeted_results = request.prior_targeted_results.clone();
     if !targeted_results.is_empty() {
         emit_coach_progress(
@@ -429,7 +462,7 @@ async fn ask_ai_coach_inner(
             "targeted_cached",
             "Reusing targeted Stockfish memory",
             format!(
-                "Keeping {} earlier targeted result(s) for this same FEN.",
+                "Keeping {} earlier targeted result(s) from this coach session.",
                 targeted_results.len()
             ),
             10.0,
@@ -447,7 +480,12 @@ async fn ask_ai_coach_inner(
         12.0,
         false,
     );
-    let planner_prompt = build_planner_prompt(&request, &legal_moves, &targeted_results);
+    let planner_prompt = build_planner_prompt(
+        &request,
+        &legal_moves,
+        &targeted_results,
+        &reference_context,
+    );
     let planner_answer = run_gemini_cli(
         &request.settings.gemini_command,
         &planner_model,
@@ -471,7 +509,7 @@ async fn ask_ai_coach_inner(
         false,
     );
     let (mut planned_requests, rejected_planner_requests) =
-        sanitize_planner_requests(&request.fen, planner_response.requests);
+        sanitize_planner_requests(&request, &reference_context, planner_response.requests);
     for rejected in rejected_planner_requests {
         warn!("ai_coach[{request_id}] rejected planner request: {rejected}");
         emit_coach_progress(
@@ -485,6 +523,30 @@ async fn ask_ai_coach_inner(
             false,
         );
     }
+
+    let critical_requests = infer_whole_game_critical_stockfish_requests(&request);
+    if !critical_requests.is_empty() {
+        let critical_count = critical_requests.len();
+        planned_requests = merge_prioritized_stockfish_requests(
+            &request,
+            &reference_context,
+            critical_requests,
+            planned_requests,
+        )?;
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "whole_game_critical",
+            "Adding critical game alternatives",
+            format!(
+                "Queued {critical_count} best-move Stockfish check(s) for critical whole-game mistake positions."
+            ),
+            21.0,
+            false,
+        );
+    }
+
     if planned_requests.is_empty() {
         planned_requests = infer_question_stockfish_requests(&request.fen, &request.question)?;
         if planned_requests.is_empty() {
@@ -587,6 +649,7 @@ async fn ask_ai_coach_inner(
         let targeted = run_targeted_stockfish_request(
             &request.engine_path,
             &request.fen,
+            &reference_context,
             stockfish_request,
             multipv,
             Duration::from_secs(20),
@@ -628,7 +691,13 @@ async fn ask_ai_coach_inner(
         72.0,
         false,
     );
-    let prompt = build_coach_prompt(&request, &stockfish_lines, &targeted_results, &[]);
+    let prompt = build_coach_prompt(
+        &request,
+        &stockfish_lines,
+        &targeted_results,
+        &reference_context,
+        &[],
+    );
     emit_coach_progress(
         app,
         request_id,
@@ -689,6 +758,7 @@ async fn ask_ai_coach_inner(
             &request,
             &stockfish_lines,
             &targeted_results,
+            &reference_context,
             &correction_notes,
         );
         emit_coach_progress(
@@ -738,6 +808,7 @@ fn build_coach_prompt(
     request: &AiCoachRequest,
     stockfish_lines: &[CoachEngineLine],
     targeted_results: &[CoachTargetedResult],
+    reference_context: &[CoachReferenceContext],
     correction_notes: &[String],
 ) -> String {
     let pgn = request
@@ -770,6 +841,7 @@ fn build_coach_prompt(
             .join("\n\n")
     };
     let chat_history = format_chat_history(&request.chat_history);
+    let reference_context = format_reference_context(reference_context);
     let opening_context = format_opening_context(
         request.opening_context.as_ref(),
         request.opening_context_error.as_deref(),
@@ -789,10 +861,13 @@ Core rules:
 - Do not use tools, shell commands, files, network lookups, external resources, or the Stockfish request protocol. A separate planner has already requested all allowed targeted Stockfish analysis up front.
 - If the supplied Stockfish data still does not fully answer the user's question, say that limitation briefly and answer only from the supplied evidence. Do not output <stockfish_request>.
 - Use the conversation history to answer follow-up questions naturally.
-- All Stockfish PVs supplied below are full sequences from the current FEN. Targeted "After ..." results already include the requested move or requested line before the continuation.
+- Use the Position/reference context to resolve explicit references such as "after 19.Nexd4", "that line", or "the line we discussed". If a referenced FEN is supplied there, use only Stockfish results from that FEN or current-FEN lines that legally reach it; do not reinterpret the reference from a different position.
+- For whole-game review questions, do more than list mistakes: when critical-position Stockfish results are supplied, tell the user what should have been played instead and why Stockfish prefers that move over the move played. It is fine to cover only the critical mistakes.
+- Root Stockfish MultiPV is from the current FEN. Targeted results list their own FEN; use each targeted result only for that listed position. Targeted "After ..." results already include the requested move or requested line before the continuation.
 - Use bold section labels like **Direct answer**, **Key reason**, and **Main line**. Do not use Markdown # headings.
-- When you give a concrete playable variation in your final answer, wrap only the moves in <line>...</line>. Do not wrap prose. Only include a <line> block when that exact line is a full legal sequence from the analysed position and is a prefix of Stockfish data supplied here.
-- A <line> block must start at the position being analysed, not at the start of the game. Never include earlier PGN/game moves just to reach the variation. For a move-19 improvement, the block should start with the move-19 candidate, not with move 1.
+- When you give a concrete playable variation from the current FEN in your final answer, wrap only the moves in <line>...</line>. Do not wrap prose. Only include a <line> block when that exact line is a full legal sequence from the current FEN and is a prefix of current-FEN Stockfish data supplied here.
+- Do not wrap whole-game critical-position alternatives in <line> unless that targeted result's FEN is exactly the current FEN.
+- A <line> block must start at the current FEN, not at the start of the game. Never include earlier PGN/game moves just to reach the variation. For a non-current whole-game improvement, write the moves as plain text instead of a <line> block.
 - If you discuss a move that happens after another move first, the <line> block must include the earlier move(s) too. For example, use <line>Bh6 e4 ...</line>, not <line>e4 ...</line>, when e4 is only meaningful after Bh6.
 - Do not give an engine-looking line unless it appears in Stockfish MultiPV or targeted Stockfish result.
 - Keep answers concise unless the user asks for depth.
@@ -822,6 +897,9 @@ Lichess All opening context:
 Conversation so far:
 {chat_history}
 
+Position/reference context:
+{reference_context}
+
 Correction from the app:
 {correction_notes}
 
@@ -839,6 +917,7 @@ User question:
         targeted = targeted,
         opening_context = opening_context,
         chat_history = chat_history,
+        reference_context = reference_context,
         correction_notes = correction_notes,
         question = request.question.as_str(),
     )
@@ -848,6 +927,7 @@ fn build_planner_prompt(
     request: &AiCoachRequest,
     legal_moves: &str,
     targeted_results: &[CoachTargetedResult],
+    reference_context: &[CoachReferenceContext],
 ) -> String {
     let selected_move = request
         .selected_move
@@ -864,7 +944,14 @@ fn build_planner_prompt(
         .as_deref()
         .map(trim_prompt_text)
         .unwrap_or_else(|| "Unavailable".to_string());
+    let pgn_scope = match request.pgn_scope.trim() {
+        "whole_game" => "whole game PGN",
+        _ => "current line PGN up to this position",
+    };
+    let game_analysis = format_game_analysis(&request.game_analysis);
+    let critical_positions = format_critical_game_positions(request);
     let chat_history = format_chat_history(&request.chat_history);
+    let reference_context = format_reference_context(reference_context);
     let existing_engine_lines = format_engine_lines(&request.existing_lines);
     let targeted = if targeted_results.is_empty() {
         "None".to_string()
@@ -887,8 +974,12 @@ Rules:
 - Output only one JSON object. No markdown, no prose outside JSON.
 - Do not analyse chess yourself and do not answer the user's question.
 - Stockfish is the source of truth. Be generous: it is better to request too many relevant Stockfish lines than too few.
-- Every request must start from the exact current FEN. Do not invent later FENs.
+- analyse_move, compare_moves, and analyse_line requests must start from the exact current FEN. Do not invent later FENs.
+- Exception: if the user explicitly refers to a supplied Position/reference context item, requests may use that item's exact FEN. Treat those FENs as vetted anchors, not invented positions.
+- For whole-game review questions, inspect the Critical whole-game positions list. Request analyse_position for the most important blunders/mistakes so the coach can explain what should have been played instead of only what went wrong. Use the listed before-move FEN exactly.
+- analyse_position is only allowed for the exact current FEN, an exact before-move FEN listed in Critical whole-game positions, or an exact FEN from Position/reference context.
 - For a move from the current position, use analyse_move.
+- For references like "after 19.Nexd4" or "the line we discussed after 19.Nexd4", first match the reference against Position/reference context, then request analyse_position or analyse_move from that exact referenced FEN.
 - For alternatives like "why is e4 better than Nxg6", use compare_moves and include every named legal candidate plus any obvious relevant candidate from the current root lines/opening stats.
 - For "what if ... then ..." or a move that happens after another move, use analyse_line with the full sequence from the current FEN.
 - If the question asks about plans and no specific move is named, request analyse_move for 2-4 important candidate moves from existing engine lines/opening context when available.
@@ -900,6 +991,7 @@ Required JSON shape:
 {{
   "reason": "brief planner reason",
   "requests": [
+    {{"type":"analyse_position","fen":"{fen}","label":"Critical position before the mistake","reason":"Find the best move that should have been played."}},
     {{"type":"compare_moves","fen":"{fen}","moves":["e4","Nxg6"],"reason":"Compare the named candidate moves."}},
     {{"type":"analyse_move","fen":"{fen}","move":"e4","reason":"Check the main candidate move."}},
     {{"type":"analyse_line","fen":"{fen}","line":"Bh6 O-O","reason":"Check the user's what-if line from the current FEN."}}
@@ -912,8 +1004,14 @@ Side to move: {side_to_move}
 Selected move/current node: {selected_move}
 Move history in UCI: {move_history}
 
-Current-line PGN context:
+PGN context ({pgn_scope}):
 {pgn}
+
+Stored whole-game Stockfish analysis:
+{game_analysis}
+
+Critical whole-game positions:
+{critical_positions}
 
 Legal root moves:
 {legal_moves}
@@ -921,7 +1019,7 @@ Legal root moves:
 Existing root engine lines, if any:
 {existing_engine_lines}
 
-Prior targeted Stockfish already available for this same FEN:
+Prior targeted Stockfish already available:
 {targeted}
 
 Lichess All opening context, if available:
@@ -929,6 +1027,9 @@ Lichess All opening context, if available:
 
 Conversation so far:
 {chat_history}
+
+Position/reference context:
+{reference_context}
 
 User question:
 {question}
@@ -938,12 +1039,16 @@ User question:
         side_to_move = request.side_to_move,
         selected_move = selected_move,
         move_history = move_history,
+        pgn_scope = pgn_scope,
         pgn = pgn,
+        game_analysis = game_analysis,
+        critical_positions = critical_positions,
         legal_moves = legal_moves,
         existing_engine_lines = existing_engine_lines,
         targeted = targeted,
         opening_context = opening_context,
         chat_history = chat_history,
+        reference_context = reference_context,
         question = request.question
     )
 }
@@ -1001,7 +1106,8 @@ fn extract_first_json_object(output: &str) -> Option<String> {
 }
 
 fn sanitize_planner_requests(
-    current_fen: &str,
+    coach_request: &AiCoachRequest,
+    reference_context: &[CoachReferenceContext],
     requests: Vec<StockfishFollowUpRequest>,
 ) -> (Vec<StockfishFollowUpRequest>, Vec<String>) {
     let mut accepted = Vec::new();
@@ -1010,7 +1116,7 @@ fn sanitize_planner_requests(
 
     for request in requests {
         let detail = describe_stockfish_request(&request);
-        match stockfish_request_key(current_fen, &request) {
+        match stockfish_request_key(coach_request, reference_context, &request) {
             Ok(key) => {
                 if seen.insert(key) {
                     accepted.push(request);
@@ -1030,17 +1136,22 @@ fn sanitize_planner_requests(
 }
 
 fn stockfish_request_key(
-    current_fen: &str,
+    coach_request: &AiCoachRequest,
+    reference_context: &[CoachReferenceContext],
     request: &StockfishFollowUpRequest,
 ) -> Result<String, CoachError> {
     match request {
+        StockfishFollowUpRequest::AnalysePosition { fen, .. } => {
+            validate_analyse_position_fen(coach_request, reference_context, fen)?;
+            Ok(format!("analyse_position:{}", fen.trim()))
+        }
         StockfishFollowUpRequest::AnalyseMove { fen, mv, .. } => {
-            validate_follow_up_fen(current_fen, fen)?;
+            validate_follow_up_fen(&coach_request.fen, reference_context, fen)?;
             let (uci, _) = parse_single_move(fen, mv)?;
             Ok(format!("analyse_move:{uci}"))
         }
         StockfishFollowUpRequest::CompareMoves { fen, moves, .. } => {
-            validate_follow_up_fen(current_fen, fen)?;
+            validate_follow_up_fen(&coach_request.fen, reference_context, fen)?;
             if moves.is_empty() || moves.len() > 5 {
                 return Err(CoachError::IllegalStockfishRequest(
                     "compare_moves requires 1 to 5 moves".to_string(),
@@ -1062,7 +1173,7 @@ fn stockfish_request_key(
             Ok(format!("compare_moves:{}", normalized.join(",")))
         }
         StockfishFollowUpRequest::AnalyseLine { fen, line, .. } => {
-            validate_follow_up_fen(current_fen, fen)?;
+            validate_follow_up_fen(&coach_request.fen, reference_context, fen)?;
             let moves = parse_line_moves(fen, line)?;
             if moves.is_empty() {
                 return Err(CoachError::IllegalStockfishRequest(
@@ -1072,6 +1183,41 @@ fn stockfish_request_key(
             Ok(format!("analyse_line:{}", moves.join(",")))
         }
     }
+}
+
+fn validate_analyse_position_fen(
+    coach_request: &AiCoachRequest,
+    reference_context: &[CoachReferenceContext],
+    requested_fen: &str,
+) -> Result<(), CoachError> {
+    let requested_fen = requested_fen.trim();
+    if requested_fen.is_empty() {
+        return Err(CoachError::IllegalStockfishRequest(
+            "analyse_position requires a FEN".to_string(),
+        ));
+    }
+    let _ = parse_fen_to_position(requested_fen)?;
+
+    if requested_fen == coach_request.fen.trim() {
+        return Ok(());
+    }
+
+    if is_reference_fen(reference_context, requested_fen) {
+        return Ok(());
+    }
+
+    let allowed = select_critical_game_moments(coach_request)
+        .into_iter()
+        .filter_map(|point| point.before_fen.as_deref())
+        .any(|fen| fen.trim() == requested_fen);
+    if allowed {
+        return Ok(());
+    }
+
+    Err(CoachError::IllegalStockfishRequest(
+        "analyse_position may only use the current FEN or a listed critical before-move FEN"
+            .to_string(),
+    ))
 }
 
 fn format_legal_root_moves(fen: &str) -> Result<String, CoachError> {
@@ -1118,6 +1264,10 @@ fn trim_prompt_text(value: &str) -> String {
 }
 
 fn format_engine_lines(lines: &[CoachEngineLine]) -> String {
+    format_engine_lines_from(lines, "current FEN")
+}
+
+fn format_engine_lines_from(lines: &[CoachEngineLine], origin: &str) -> String {
     if lines.is_empty() {
         return "None".to_string();
     }
@@ -1131,8 +1281,8 @@ fn format_engine_lines(lines: &[CoachEngineLine]) -> String {
                 line.san_moves.join(" ")
             };
             format!(
-                "{}. eval {}, depth {}, full line from current FEN: {}",
-                line.multipv, line.eval, line.depth, pv
+                "{}. eval {}, depth {}, full line from {}: {}",
+                line.multipv, line.eval, line.depth, origin, pv
             )
         })
         .collect::<Vec<_>>()
@@ -1150,8 +1300,93 @@ fn format_targeted_result(result: &CoachTargetedResult) -> String {
         } else {
             result.moves.join(" ")
         },
-        format_engine_lines(&result.lines)
+        format_engine_lines_from(&result.lines, "this result FEN")
     )
+}
+
+fn normalized_reference_context(request: &AiCoachRequest) -> Vec<CoachReferenceContext> {
+    let mut seen = HashSet::new();
+    request
+        .reference_context
+        .iter()
+        .filter_map(|item| {
+            let fen = item.fen.trim();
+            if fen.is_empty() || parse_fen_to_position(fen).is_err() {
+                return None;
+            }
+            let label = item.label.trim();
+            let key = format!("{}:{fen}", item.ply);
+            if !seen.insert(key) {
+                return None;
+            }
+            Some(CoachReferenceContext {
+                label: if label.is_empty() {
+                    format!("Ply {}", item.ply)
+                } else {
+                    label.to_string()
+                },
+                fen: fen.to_string(),
+                ply: item.ply,
+                san_line: item
+                    .san_line
+                    .iter()
+                    .map(|value| value.trim().to_string())
+                    .filter(|value| !value.is_empty())
+                    .take(80)
+                    .collect(),
+                source: item.source.trim().to_string(),
+                detail: trim_chat_text(&item.detail),
+            })
+        })
+        .take(MAX_REFERENCE_CONTEXT_ITEMS)
+        .collect()
+}
+
+fn is_reference_fen(reference_context: &[CoachReferenceContext], requested_fen: &str) -> bool {
+    let requested_fen = requested_fen.trim();
+    reference_context
+        .iter()
+        .any(|item| item.fen.trim() == requested_fen)
+}
+
+fn format_reference_context(items: &[CoachReferenceContext]) -> String {
+    if items.is_empty() {
+        return "None".to_string();
+    }
+
+    items
+        .iter()
+        .enumerate()
+        .map(|(index, item)| {
+            let line = if item.san_line.is_empty() {
+                "SAN line unavailable".to_string()
+            } else {
+                item.san_line.join(" ")
+            };
+            let source = item
+                .source
+                .trim()
+                .is_empty()
+                .then_some("reference")
+                .unwrap_or_else(|| item.source.trim());
+            let detail = item
+                .detail
+                .trim()
+                .is_empty()
+                .then(String::new)
+                .unwrap_or_else(|| format!("\n  Detail: {}", item.detail.trim()));
+            format!(
+                "{}. {} ({source}, ply {})\n  FEN: {}\n  SAN up to reference: {}{}",
+                index + 1,
+                item.label,
+                item.ply,
+                item.fen,
+                line,
+                detail
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 fn format_chat_history(messages: &[CoachChatMessage]) -> String {
@@ -1202,17 +1437,189 @@ fn format_game_analysis(points: &[CoachGameAnalysisPoint]) -> String {
             } else {
                 format!(", annotations {}", point.annotations.join(" "))
             };
+            let played = point
+                .played_uci
+                .as_deref()
+                .filter(|value| !value.trim().is_empty())
+                .map(|value| format!(", played UCI {value}"))
+                .unwrap_or_default();
+            let side = point
+                .played_side
+                .as_deref()
+                .filter(|value| !value.trim().is_empty())
+                .map(|value| format!(", {value} to move before the move"))
+                .unwrap_or_default();
+            let before_fen = point
+                .before_fen
+                .as_deref()
+                .filter(|value| !value.trim().is_empty())
+                .map(|value| format!(", before FEN {value}"))
+                .unwrap_or_default();
             format!(
-                "Ply {ply}: {mv}, {eval}, {depth}{annotations}",
+                "Ply {ply}: {mv}, {eval}, {depth}{annotations}{played}{side}{before_fen}",
                 ply = point.ply,
                 mv = point.mv,
                 eval = eval,
                 depth = depth,
-                annotations = annotations
+                annotations = annotations,
+                played = played,
+                side = side,
+                before_fen = before_fen
             )
         })
         .collect::<Vec<_>>()
         .join("\n")
+}
+
+fn format_critical_game_positions(request: &AiCoachRequest) -> String {
+    let moments = select_critical_game_moments(request);
+    if moments.is_empty() {
+        return "None selected.".to_string();
+    }
+
+    moments
+        .into_iter()
+        .map(|point| {
+            let before_fen = point.before_fen.as_deref().unwrap_or("unknown");
+            let played_uci = point
+                .played_uci
+                .as_deref()
+                .filter(|value| !value.trim().is_empty())
+                .map(|value| format!(" ({value})"))
+                .unwrap_or_default();
+            let side = point
+                .played_side
+                .as_deref()
+                .filter(|value| !value.trim().is_empty())
+                .unwrap_or("side to move");
+            let annotation = if point.annotations.is_empty() {
+                "no annotation".to_string()
+            } else {
+                point.annotations.join(" ")
+            };
+            let eval = point.eval.as_deref().unwrap_or("no played-move eval");
+            format!(
+                "Ply {ply}: {side} played {mv}{played_uci}, annotation {annotation}, played-move eval {eval}. analyse_position FEN: {before_fen}",
+                ply = point.ply,
+                side = side,
+                mv = point.mv,
+                played_uci = played_uci,
+                annotation = annotation,
+                eval = eval,
+                before_fen = before_fen
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn infer_whole_game_critical_stockfish_requests(
+    request: &AiCoachRequest,
+) -> Vec<StockfishFollowUpRequest> {
+    if request.pgn_scope.trim() != "whole_game" {
+        return Vec::new();
+    }
+
+    select_critical_game_moments(request)
+        .into_iter()
+        .filter_map(|point| {
+            let before_fen = point.before_fen.as_deref()?.trim();
+            if before_fen.is_empty() {
+                return None;
+            }
+            let side = point
+                .played_side
+                .as_deref()
+                .filter(|value| !value.trim().is_empty())
+                .unwrap_or("the side to move");
+            let annotation = if point.annotations.is_empty() {
+                "critical move".to_string()
+            } else {
+                point.annotations.join(" ")
+            };
+            Some(StockfishFollowUpRequest::AnalysePosition {
+                fen: before_fen.to_string(),
+                label: format!("Critical ply {} before {}", point.ply, point.mv),
+                reason: format!(
+                    "Whole-game review should explain what {side} should have played instead of {} at ply {} ({annotation}); ask Stockfish for the best move from the pre-move position, not just for the move that was played.",
+                    point.mv, point.ply
+                ),
+            })
+        })
+        .collect()
+}
+
+fn merge_prioritized_stockfish_requests(
+    coach_request: &AiCoachRequest,
+    reference_context: &[CoachReferenceContext],
+    prioritized: Vec<StockfishFollowUpRequest>,
+    existing: Vec<StockfishFollowUpRequest>,
+) -> Result<Vec<StockfishFollowUpRequest>, CoachError> {
+    let mut merged = Vec::new();
+    let mut seen = HashSet::new();
+
+    for request in prioritized.into_iter().chain(existing) {
+        let key = stockfish_request_key(coach_request, reference_context, &request)?;
+        if seen.insert(key) {
+            merged.push(request);
+        }
+    }
+
+    Ok(merged)
+}
+
+fn select_critical_game_moments(request: &AiCoachRequest) -> Vec<&CoachGameAnalysisPoint> {
+    if request.pgn_scope.trim() != "whole_game" {
+        return Vec::new();
+    }
+
+    let mut moments = request
+        .game_analysis
+        .iter()
+        .filter(|point| {
+            point
+                .before_fen
+                .as_deref()
+                .map(|fen| !fen.trim().is_empty())
+                .unwrap_or(false)
+        })
+        .filter_map(|point| critical_annotation_rank(&point.annotations).map(|rank| (rank, point)))
+        .collect::<Vec<_>>();
+
+    moments.sort_by(|(left_rank, left), (right_rank, right)| {
+        left_rank
+            .cmp(right_rank)
+            .then_with(|| left.ply.cmp(&right.ply))
+    });
+
+    moments
+        .into_iter()
+        .take(MAX_WHOLE_GAME_CRITICAL_REQUESTS)
+        .map(|(_, point)| point)
+        .collect()
+}
+
+fn critical_annotation_rank(annotations: &[String]) -> Option<u8> {
+    let mut best_rank = None;
+    for annotation in annotations {
+        let trimmed = annotation.trim();
+        let lower = trimmed.to_ascii_lowercase();
+        let rank = if trimmed == "??" || lower.contains("blunder") {
+            Some(0)
+        } else if trimmed == "?" || lower.contains("mistake") {
+            Some(1)
+        } else if trimmed == "?!" || lower.contains("dubious") || lower.contains("inaccuracy") {
+            Some(2)
+        } else {
+            None
+        };
+
+        if let Some(rank) = rank {
+            best_rank = Some(best_rank.map_or(rank, |current: u8| current.min(rank)));
+        }
+    }
+
+    best_rank
 }
 
 fn trim_chat_text(value: &str) -> String {
@@ -1329,7 +1736,8 @@ fn validate_answer_line_blocks(
         return Ok(());
     }
 
-    let supported_lines = collect_supported_engine_lines(stockfish_lines, targeted_results);
+    let supported_lines =
+        collect_supported_engine_lines(current_fen, stockfish_lines, targeted_results);
     if supported_lines.is_empty() {
         return Err(CoachError::GeminiUnsupportedLine(
             "answer included a <line> block but no Stockfish lines were supplied".to_string(),
@@ -1380,6 +1788,7 @@ fn extract_answer_line_blocks(answer: &str) -> Result<Vec<String>, CoachError> {
 }
 
 fn collect_supported_engine_lines(
+    current_fen: &str,
     stockfish_lines: &[CoachEngineLine],
     targeted_results: &[CoachTargetedResult],
 ) -> Vec<Vec<String>> {
@@ -1388,6 +1797,7 @@ fn collect_supported_engine_lines(
         .chain(
             targeted_results
                 .iter()
+                .filter(|result| result.fen.trim() == current_fen.trim())
                 .flat_map(|result| result.lines.iter()),
         )
         .filter_map(|line| {
@@ -1579,6 +1989,14 @@ fn has_what_if_cue(question: &str) -> bool {
 
 fn describe_stockfish_request(request: &StockfishFollowUpRequest) -> String {
     match request {
+        StockfishFollowUpRequest::AnalysePosition { label, reason, .. } => {
+            let label = if label.trim().is_empty() {
+                "position".to_string()
+            } else {
+                label.to_string()
+            };
+            format!("Analysing {label}. Reason: {reason}")
+        }
         StockfishFollowUpRequest::AnalyseMove { mv, reason, .. } => {
             format!("Analysing move {mv}. Reason: {reason}")
         }
@@ -1594,14 +2012,52 @@ fn describe_stockfish_request(request: &StockfishFollowUpRequest) -> String {
 async fn run_targeted_stockfish_request(
     engine_path: &Path,
     current_fen: &str,
+    reference_context: &[CoachReferenceContext],
     request: StockfishFollowUpRequest,
     multipv: u8,
     timeout_duration: Duration,
     progress: Option<CoachProgressContext<'_>>,
 ) -> Result<CoachTargetedResult, CoachError> {
     match request {
+        StockfishFollowUpRequest::AnalysePosition { fen, label, reason } => {
+            let label = if label.trim().is_empty() {
+                "Position analysis".to_string()
+            } else {
+                label
+            };
+            if let Some(progress) = progress {
+                emit_coach_progress(
+                    progress.app,
+                    progress.request_id,
+                    progress.started,
+                    "targeted_analyse_position",
+                    format!("Stockfish: {label}"),
+                    "Searching the best moves from the listed position.",
+                    progress.base_progress,
+                    false,
+                );
+            }
+            let lines = run_stockfish_analysis(
+                engine_path,
+                &fen,
+                &[],
+                multipv,
+                DEFAULT_STOCKFISH_DEPTH,
+                timeout_duration,
+                &label,
+            )
+            .await?;
+            Ok(CoachTargetedResult {
+                request_type: "analyse_position".to_string(),
+                reason,
+                fen,
+                moves: Vec::new(),
+                label,
+                lines,
+            })
+        }
         StockfishFollowUpRequest::AnalyseMove { fen, mv, reason } => {
-            validate_follow_up_fen(current_fen, &fen)?;
+            validate_follow_up_fen(current_fen, reference_context, &fen)?;
             let (uci, san) = parse_single_move(&fen, &mv)?;
             if let Some(progress) = progress {
                 emit_coach_progress(
@@ -1640,7 +2096,7 @@ async fn run_targeted_stockfish_request(
             })
         }
         StockfishFollowUpRequest::CompareMoves { fen, moves, reason } => {
-            validate_follow_up_fen(current_fen, &fen)?;
+            validate_follow_up_fen(current_fen, reference_context, &fen)?;
             if moves.is_empty() || moves.len() > 5 {
                 return Err(CoachError::IllegalStockfishRequest(
                     "compare_moves requires 1 to 5 moves".to_string(),
@@ -1718,7 +2174,7 @@ async fn run_targeted_stockfish_request(
             })
         }
         StockfishFollowUpRequest::AnalyseLine { fen, line, reason } => {
-            validate_follow_up_fen(current_fen, &fen)?;
+            validate_follow_up_fen(current_fen, reference_context, &fen)?;
             let moves = parse_line_moves(&fen, &line)?;
             let san_moves = san_for_uci_line(&fen, &moves)?;
             if let Some(progress) = progress {
@@ -1788,13 +2244,21 @@ fn prefix_engine_lines(
         .collect()
 }
 
-fn validate_follow_up_fen(current_fen: &str, requested_fen: &str) -> Result<(), CoachError> {
+fn validate_follow_up_fen(
+    current_fen: &str,
+    reference_context: &[CoachReferenceContext],
+    requested_fen: &str,
+) -> Result<(), CoachError> {
     if requested_fen.trim() == current_fen.trim() {
         return Ok(());
     }
 
+    if is_reference_fen(reference_context, requested_fen) {
+        return Ok(());
+    }
+
     Err(CoachError::IllegalStockfishRequest(
-        "Stockfish requests must use the current FEN; use analyse_line to inspect a later position"
+        "Stockfish requests must use the current FEN or an exact supplied reference FEN; use analyse_line to inspect a later position"
             .to_string(),
     ))
 }
@@ -2402,6 +2866,7 @@ mod tests {
             selected_move: Some("Current node".to_string()),
             question: "What is the plan here?".to_string(),
             chat_history: Vec::new(),
+            reference_context: Vec::new(),
             existing_lines: Vec::new(),
             prior_targeted_results: Vec::new(),
             opening_context: None,
@@ -2429,6 +2894,7 @@ mod tests {
                 uci_moves: vec!["e2e4".to_string()],
                 san_moves: vec!["e4".to_string()],
             }],
+            &[],
             &[],
             &[],
         );
@@ -2478,7 +2944,7 @@ mod tests {
             }],
         });
 
-        let prompt = build_coach_prompt(&request, &[], &[], &[]);
+        let prompt = build_coach_prompt(&request, &[], &[], &[], &[]);
 
         assert!(prompt.contains("Conversation so far"));
         assert!(prompt.contains("User: Should I play c4?"));
@@ -2494,21 +2960,76 @@ mod tests {
         request.game_analysis = vec![CoachGameAnalysisPoint {
             ply: 12,
             mv: "Nf3".to_string(),
+            before_fen: Some(request.fen.clone()),
             fen: request.fen.clone(),
+            played_uci: Some("g1f3".to_string()),
+            played_side: Some("white".to_string()),
             eval: Some("+0.35".to_string()),
             depth: Some(14),
             annotations: vec!["?!".to_string()],
         }];
 
-        let prompt = build_coach_prompt(&request, &[], &[], &[]);
+        let prompt = build_coach_prompt(&request, &[], &[], &[], &[]);
 
         assert!(prompt.contains("PGN context (whole game PGN)"));
         assert!(prompt.contains("Ply 12: Nf3, +0.35, depth 14, annotations ?!"));
     }
 
     #[test]
+    fn whole_game_critical_requests_analyse_best_move_position() {
+        let mut request = sample_request();
+        request.pgn_scope = "whole_game".to_string();
+        request.game_analysis = vec![CoachGameAnalysisPoint {
+            ply: 19,
+            mv: "Bxf4".to_string(),
+            before_fen: Some(request.fen.clone()),
+            fen: "rnbqkbnr/pppppppp/8/8/5B2/8/PPPPPPPP/RN1QKBNR b KQkq - 0 1".to_string(),
+            played_uci: Some("c1f4".to_string()),
+            played_side: Some("white".to_string()),
+            eval: Some("-1.40".to_string()),
+            depth: Some(16),
+            annotations: vec!["??".to_string()],
+        }];
+
+        let requests = infer_whole_game_critical_stockfish_requests(&request);
+
+        assert_eq!(requests.len(), 1);
+        assert!(matches!(
+            &requests[0],
+            StockfishFollowUpRequest::AnalysePosition { fen, reason, .. }
+                if fen == &request.fen
+                    && reason.contains("what white should have played instead of Bxf4")
+                    && reason.contains("pre-move position")
+        ));
+    }
+
+    #[test]
+    fn planner_prompt_includes_whole_game_critical_position_instructions() {
+        let mut request = sample_request();
+        request.pgn_scope = "whole_game".to_string();
+        request.game_analysis = vec![CoachGameAnalysisPoint {
+            ply: 19,
+            mv: "Bxf4".to_string(),
+            before_fen: Some(request.fen.clone()),
+            fen: request.fen.clone(),
+            played_uci: Some("c1f4".to_string()),
+            played_side: Some("white".to_string()),
+            eval: Some("-1.40".to_string()),
+            depth: Some(16),
+            annotations: vec!["??".to_string()],
+        }];
+
+        let prompt = build_planner_prompt(&request, "e4 (e2e4), d4 (d2d4)", &[], &[]);
+
+        assert!(prompt.contains("analyse_position"));
+        assert!(prompt.contains("Critical whole-game positions"));
+        assert!(prompt.contains("Ply 19: white played Bxf4"));
+        assert!(prompt.contains("what should have been played instead"));
+    }
+
+    #[test]
     fn planner_prompt_includes_legal_moves_and_json_schema() {
-        let prompt = build_planner_prompt(&sample_request(), "e4 (e2e4), d4 (d2d4)", &[]);
+        let prompt = build_planner_prompt(&sample_request(), "e4 (e2e4), d4 (d2d4)", &[], &[]);
 
         assert!(prompt.contains("fast chess-analysis planner"));
         assert!(prompt.contains("\"requests\""));
@@ -2640,6 +3161,38 @@ mod tests {
     }
 
     #[test]
+    fn rejects_line_block_backed_only_by_non_current_whole_game_result() {
+        let result = validate_answer_line_blocks(
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            "The earlier critical alternative was <line>d4</line>.",
+            &[CoachEngineLine {
+                multipv: 1,
+                depth: 12,
+                eval: "+0.20".to_string(),
+                uci_moves: vec!["e2e4".to_string()],
+                san_moves: vec!["e4".to_string()],
+            }],
+            &[CoachTargetedResult {
+                request_type: "analyse_position".to_string(),
+                reason: "Critical game moment".to_string(),
+                fen: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1".to_string(),
+                moves: Vec::new(),
+                label: "Critical ply 4".to_string(),
+                lines: vec![CoachEngineLine {
+                    multipv: 1,
+                    depth: 12,
+                    eval: "+0.40".to_string(),
+                    uci_moves: vec!["d2d4".to_string()],
+                    san_moves: vec!["d4".to_string()],
+                }],
+            }],
+        )
+        .unwrap_err();
+
+        assert!(result.to_string().contains("not supplied by Stockfish"));
+    }
+
+    #[test]
     fn rejects_game_start_line_from_later_fen() {
         let result = validate_answer_line_blocks(
             "rnbqkbnr/pppppp1p/6p1/4N3/8/8/PPPPPPPP/RNBQKB1R w KQkq - 0 1",
@@ -2663,6 +3216,7 @@ mod tests {
     fn prompt_builder_includes_correction_notes() {
         let prompt = build_coach_prompt(
             &sample_request(),
+            &[],
             &[],
             &[],
             &["Your previous final answer was rejected.".to_string()],
@@ -2714,11 +3268,32 @@ mod tests {
     fn rejects_foreign_follow_up_fen() {
         let error = validate_follow_up_fen(
             "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            &[],
             "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
         )
         .unwrap_err();
 
         assert!(error.to_string().contains("current FEN"));
+    }
+
+    #[test]
+    fn allows_stockfish_requests_from_reference_fen() {
+        let reference_fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
+        let reference_context = vec![CoachReferenceContext {
+            label: "After 1.e4".to_string(),
+            fen: reference_fen.to_string(),
+            ply: 1,
+            san_line: vec!["e4".to_string()],
+            source: "current line".to_string(),
+            detail: "Use this exact FEN for phrases like after 1.e4.".to_string(),
+        }];
+
+        validate_follow_up_fen(
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            &reference_context,
+            reference_fen,
+        )
+        .unwrap();
     }
 
     #[test]

@@ -571,6 +571,24 @@ default.
   `ScrollArea`, Gemini timeout defaults to 180 seconds with a 120-240 second
   settings range, and Lichess All opening counts use wide numeric fields so
   billion-game totals do not fail Tauri request deserialization.
+- A follow-up on 2026-06-06 made whole-game Coach reviews explain critical
+  alternatives, not only mistakes. Whole-game analysis points now carry the
+  pre-move FEN plus played move metadata, the planner prompt exposes critical
+  blunder/mistake positions, and the backend forces up to three
+  `analyse_position` Stockfish checks so Gemini can say what should have been
+  played and why that best move was better. Non-current critical-position
+  lines remain plain text rather than clickable `<line>` blocks, preserving the
+  current-FEN line validation model.
+- Another 2026-06-06 Coach pass added explicit reference context for chatbot
+  follow-ups. `src/components/boards/AiCoachPanel.tsx` now sends a ply-by-ply
+  current-line map with FENs and SAN prefixes, plus recent discussed
+  `<line>...</line>` continuations, so phrases such as `after 19.Nexd4` or
+  `the line we discussed after 19.Nexd4` can be resolved to an exact position.
+  `src-tauri/src/coach.rs` formats this context into both the Flash planner and
+  Pro coach prompts, keeps session targeted Stockfish results available across
+  FENs, and validates planner requests against only the current FEN, critical
+  whole-game FENs, or these supplied reference FENs. Do not let future prompt
+  changes loosen that allowlist.
 - On 2026-06-06, a source-derived White repertoire file was added under the
   app Files root's `Documents/EnCroissant/General repertoire/White  rep`
   folder as `Keymer Variation - Mendonca video.pgn`, with the matching `.info`

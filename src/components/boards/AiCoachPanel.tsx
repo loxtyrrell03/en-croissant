@@ -24,6 +24,7 @@ import type {
   CoachEngineLine,
   CoachGameAnalysisPoint,
   CoachOpeningContext,
+  CoachReferenceContext,
   CoachTargetedResult,
 } from "@/bindings";
 import { commands } from "@/bindings";
@@ -42,7 +43,7 @@ import {
   moveStrengthSettingsAtom,
   sessionsAtom,
 } from "@/state/atoms";
-import { getPGN, getVariationLine, headersToPGN } from "@/utils/chess";
+import { getPGN, getVariationLine, headersToPGN, uciNormalize } from "@/utils/chess";
 import { buildAiCoachOpeningContext } from "@/utils/aiCoachOpeningContext";
 import { positionFromFen } from "@/utils/chessops";
 import type { Engine, LocalEngine } from "@/utils/engines";
@@ -52,6 +53,7 @@ import { unwrap } from "@/utils/unwrap";
 
 type CoachUiMessage = CoachChatMessage & {
   id: string;
+  baseFen?: string;
   basePath?: number[];
   baseHalfMoves?: number;
   baseSanMoves?: string[];
@@ -130,16 +132,27 @@ function wantsWholeGameContext(question: string): boolean {
 }
 
 function buildGameAnalysisContext(root: TreeNode): CoachGameAnalysisPoint[] {
-  return [...treeIteratorMainLine(root)]
-    .filter(({ position }) => position.length > 0)
-    .map(({ node }) => ({
-      ply: node.halfMoves,
-      move: node.san ?? `Ply ${node.halfMoves}`,
-      fen: node.fen,
-      eval: node.score ? formatScore(node.score.value) : null,
-      depth: node.depth,
-      annotations: node.annotations,
-    }))
+  const mainline = [...treeIteratorMainLine(root)];
+  return mainline
+    .slice(1)
+    .map(({ node }, index) => {
+      const previousNode = mainline[index]?.node;
+      const [beforePosition] = positionFromFen(previousNode?.fen ?? root.fen);
+      const playedUci =
+        beforePosition && node.move ? uciNormalize(beforePosition, node.move) : null;
+
+      return {
+        ply: node.halfMoves,
+        move: node.san ?? `Ply ${node.halfMoves}`,
+        beforeFen: previousNode?.fen ?? null,
+        fen: node.fen,
+        playedUci,
+        playedSide: node.halfMoves % 2 === 1 ? "white" : "black",
+        eval: node.score ? formatScore(node.score.value) : null,
+        depth: node.depth,
+        annotations: node.annotations,
+      };
+    })
     .filter((point) => point.eval || point.annotations.length > 0)
     .slice(0, 240);
 }
@@ -233,6 +246,96 @@ function getMainlineMoves(root: TreeNode): MainlineMove[] {
   }
 
   return moves;
+}
+
+function formatReferenceMoveLabel(ply: number, san: string): string {
+  if (ply % 2 === 1) {
+    return `${Math.ceil(ply / 2)}.${san}`;
+  }
+  return `${Math.ceil(ply / 2)}...${san}`;
+}
+
+function lineBlocksFromCoachText(content: string): string[] {
+  return splitCoachMessage(content)
+    .filter((segment): segment is { type: "line"; text: string } => segment.type === "line")
+    .map((segment) => segment.text);
+}
+
+function buildCoachReferenceContext({
+  root,
+  currentPath,
+  messages,
+  currentFen,
+  currentHalfMoves,
+  currentSanMoves,
+}: {
+  root: TreeNode;
+  currentPath: number[];
+  messages: CoachUiMessage[];
+  currentFen: string;
+  currentHalfMoves: number;
+  currentSanMoves: string[];
+}): CoachReferenceContext[] {
+  const references: CoachReferenceContext[] = [];
+  const seen = new Set<string>();
+
+  const pushReference = (reference: CoachReferenceContext) => {
+    const fen = reference.fen.trim();
+    if (!fen) return;
+    const key = `${reference.label}|${fen}|${reference.detail ?? ""}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    references.push(reference);
+  };
+
+  let node: TreeNode | undefined = root;
+  const sanLine: string[] = [];
+
+  if (currentPath.length === 0) {
+    pushReference({
+      label: "Current position at game start",
+      fen: currentFen,
+      ply: currentHalfMoves,
+      sanLine: currentSanMoves,
+      source: "current line",
+      detail: "Use this exact FEN for references to the current position.",
+    });
+  }
+
+  for (const childIndex of currentPath) {
+    node = node?.children[childIndex];
+    if (!node) break;
+    if (node.san) sanLine.push(node.san);
+    const moveLabel = node.san
+      ? formatReferenceMoveLabel(node.halfMoves, node.san)
+      : `ply ${node.halfMoves}`;
+    pushReference({
+      label: `After ${moveLabel}`,
+      fen: node.fen,
+      ply: node.halfMoves,
+      sanLine: [...sanLine],
+      source: "current line",
+      detail: `Use this exact FEN for phrases like "after ${moveLabel}".`,
+    });
+  }
+
+  for (const message of messages.slice(-8)) {
+    if (message.role !== "assistant" || !message.baseFen) continue;
+    for (const line of lineBlocksFromCoachText(message.content).slice(0, 3)) {
+      const moves = tokenizePlayableLine(line);
+      if (moves.length === 0) continue;
+      pushReference({
+        label: `Discussed line: ${moves.slice(0, 6).join(" ")}`,
+        fen: message.baseFen,
+        ply: message.baseHalfMoves ?? 0,
+        sanLine: message.baseSanMoves ?? [],
+        source: "coach discussion",
+        detail: `Discussed continuation from this FEN: ${moves.join(" ")}. For references to a move inside this line, request analyse_line from this FEN with the needed prefix.`,
+      });
+    }
+  }
+
+  return references.slice(-120);
 }
 
 function countMatchingSanPrefix(lineMoves: string[], prefixMoves: string[]): number {
@@ -435,7 +538,6 @@ export default function AiCoachPanel() {
   const [usedExistingAnalysis, setUsedExistingAnalysis] = useState(false);
   const [targetedCount, setTargetedCount] = useState(0);
   const [targetedMemory, setTargetedMemory] = useState<CoachTargetedResult[]>([]);
-  const [targetedMemoryFen, setTargetedMemoryFen] = useState("");
   const [openingContextStatus, setOpeningContextStatus] = useState<
     "idle" | "loading" | "ready" | "unavailable" | "error"
   >("idle");
@@ -555,17 +657,26 @@ export default function AiCoachPanel() {
     const requestPath = [...currentPath];
     const requestBaseSanMoves = getSanVariationLine(root, requestPath);
     const requestBaseHalfMoves = currentNode.halfMoves;
+    const referenceContext = buildCoachReferenceContext({
+      root,
+      currentPath: requestPath,
+      messages,
+      currentFen: currentNode.fen,
+      currentHalfMoves: requestBaseHalfMoves,
+      currentSanMoves: requestBaseSanMoves,
+    });
 
     const userMessage: CoachUiMessage = {
       id: `user-${Date.now()}`,
       role: "user",
       content: trimmedQuestion,
+      baseFen: currentNode.fen,
       basePath: requestPath,
       baseHalfMoves: requestBaseHalfMoves,
       baseSanMoves: requestBaseSanMoves,
     };
     const chatHistory = messages.map(({ role, content }) => ({ role, content }));
-    const priorTargetedResults = targetedMemoryFen === currentNode.fen ? targetedMemory : [];
+    const priorTargetedResults = targetedMemory;
     const requestId = createCoachRequestId();
     const startedAt = Date.now();
     const initialProgress: CoachProgressPayload = {
@@ -661,6 +772,7 @@ export default function AiCoachPanel() {
           selectedMove,
           question: trimmedQuestion,
           chatHistory,
+          referenceContext,
           existingLines,
           priorTargetedResults,
           openingContext,
@@ -683,6 +795,7 @@ export default function AiCoachPanel() {
           id: `assistant-${Date.now()}`,
           role: "assistant",
           content: response.answer,
+          baseFen: currentNode.fen,
           basePath: requestPath,
           baseHalfMoves: requestBaseHalfMoves,
           baseSanMoves: requestBaseSanMoves,
@@ -690,8 +803,18 @@ export default function AiCoachPanel() {
       ]);
       setUsedExistingAnalysis(response.usedExistingAnalysis);
       setTargetedCount(response.targetedResults.length);
-      setTargetedMemory(response.targetedResults);
-      setTargetedMemoryFen(currentNode.fen);
+      setTargetedMemory((current) => {
+        const merged = [...current, ...response.targetedResults];
+        const seen = new Set<string>();
+        return merged
+          .filter((result) => {
+            const key = `${result.requestType}|${result.fen}|${result.moves.join(",")}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          })
+          .slice(-24);
+      });
       setModelUsed(response.model);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -721,7 +844,6 @@ export default function AiCoachPanel() {
     setError("");
     setTargetedCount(0);
     setTargetedMemory([]);
-    setTargetedMemoryFen("");
     setOpeningContextStatus("idle");
     setOpeningMoveCount(0);
   }
