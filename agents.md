@@ -631,6 +631,14 @@ default.
   because those opening-stage evaluations are usually much deeper than local
   Stockfish. Local depth-17 Stockfish remains the fallback and still handles
   targeted Coach checks.
+- Coach verdicts must be line-backed. When Pro calls a move bad, inaccurate,
+  a mistake, a blunder, winning, losing, or refuted, the prompt requires a
+  concrete supplied engine PV with eval/depth where available. Whole-game
+  critical moments now queue both `analyse_move` for the played mistake, giving
+  the refutation line, and `analyse_position` from the same before-move FEN,
+  giving the better Stockfish continuation. Do not regress this into vague
+  strategic summaries such as "h4 weakens the king" without the Stockfish line
+  that proves it.
 - On 2026-06-06, the Coach question box default was cleared so opening the
   Coach tab starts with a blank input instead of the seeded `What is the plan
   here?` prompt. Keep the submit guard tied to non-empty trimmed text.

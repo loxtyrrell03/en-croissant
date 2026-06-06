@@ -608,9 +608,9 @@ async fn ask_ai_coach_inner(
             request_id,
             started,
             "whole_game_critical",
-            "Adding critical game alternatives",
+            "Adding critical game evidence",
             format!(
-                "Queued {critical_count} best-move Stockfish check(s) for critical whole-game mistake positions."
+                "Queued {critical_count} refutation/best-move Stockfish check(s) for critical whole-game mistake positions."
             ),
             21.0,
             false,
@@ -971,7 +971,7 @@ fn build_coach_prompt(
         "local Stockfish root MultiPV"
     };
     let scope_rules = if whole_game_mode {
-        "- This is a whole-game review. Do not analyse the starting position/current board as the main topic.\n- Do not give a starting-position engine main line, opening recommendation, or generic move-1 advice unless the user explicitly asks about the opening.\n- Base the answer on the loaded game PGN, Stored whole-game Stockfish analysis, and critical targeted Stockfish results.\n- Prefer whole-game sections: **Direct answer**, **Critical moments**, **What to play instead**, **Training lesson**.\n- Do not include <line> blocks in whole-game answers. Refer to move numbers and SAN in prose; the UI makes those move references clickable.".to_string()
+        "- This is a whole-game review. Do not analyse the starting position/current board as the main topic.\n- Do not give a starting-position engine main line, opening recommendation, or generic move-1 advice unless the user explicitly asks about the opening.\n- Base the answer on the loaded game PGN, Stored whole-game Stockfish analysis, and critical targeted Stockfish results.\n- Prefer whole-game sections: **Direct answer**, **Critical moments**, **What to play instead**, **Training lesson**.\n- Do not include <line> blocks in whole-game answers. Refer to move numbers and SAN in prose; the UI makes those move references clickable.\n- For every critical move you mention, include concrete Stockfish evidence: the played-move refutation line when an `After <move>` targeted result is supplied, and the better line from the matching analyse_position result when supplied.".to_string()
     } else {
         format!(
             "- This is a current-position question. {root_engine_label} and targeted Stockfish results are the main evidence."
@@ -1001,6 +1001,9 @@ fn build_coach_prompt(
 Core rules:
 - Supplied engine analysis is the source of truth. Prefer Lichess Cloud root lines when they are supplied; otherwise use local Stockfish root MultiPV. Targeted follow-up results are local Stockfish.
 - Never invent concrete tactics, evaluations, plans, or variations. Any concrete move line or plan you recommend must be backed by supplied root engine lines or targeted Stockfish results.
+- Do not give a verdict such as bad, good, inaccurate, mistake, blunder, winning, losing, or refuted unless you also cite the supplied engine line that supports it. Name the relevant evaluation/depth when available.
+- For any bad move, show the concrete Stockfish continuation that punishes it. If a targeted result labelled `After <move>` exists, use one of its full lines as the refutation. If no such line exists, say the supplied data does not contain the refutation instead of hand-waving.
+- For any recommended improvement, show the concrete Stockfish continuation from analyse_position/root lines that justifies the recommendation.
 - You may use general chess and opening knowledge for concepts, structures, plans, and naming, but only as explanation layered on top of engine-backed lines.
 - Explain like a strong GM/coach: use proper chess terminology such as isolated queen's pawn, minority attack, deflection, trapped piece, blockade, weak square, exchange sacrifice, or domination when it genuinely fits.
 - Treat Lichess All opening stats and blended strength as practical/popularity evidence only. Use it when relevant to opening choice, repertoire, popularity, or practical results; do not treat it as a tactical proof.
@@ -1018,6 +1021,7 @@ Core rules:
 - If you discuss a move that happens after another move first, the <line> block must include the earlier move(s) too. For example, use <line>Bh6 e4 ...</line>, not <line>e4 ...</line>, when e4 is only meaningful after Bh6.
 - Do not give an engine-looking line unless it appears in the supplied root engine lines or targeted Stockfish result.
 - Do not wrap move names in backticks. Write move references as normal SAN with move numbers when possible, such as 19.Nexd4 or 22.Bxh6?.
+- Prefer short but concrete line evidence over vague strategic labels. A sentence like "21.h4? is bad because 21...Rc8 22.Kg1 Qxh4 wins" is better than "21.h4 weakens the king" unless both are included.
 - Keep answers concise unless the user asks for depth.
 - {answer_shape}
 
@@ -1133,7 +1137,8 @@ Rules:
 - Stockfish is the source of truth. Be generous: it is better to request too many relevant Stockfish lines than too few.
 - analyse_move, compare_moves, and analyse_line requests must start from the exact current FEN. Do not invent later FENs.
 - Exception: if the user explicitly refers to a supplied Position/reference context item, requests may use that item's exact FEN. Treat those FENs as vetted anchors, not invented positions.
-- For whole-game review questions, inspect the Critical whole-game positions list. Request analyse_position for the most important blunders/mistakes so the coach can explain what should have been played instead of only what went wrong. Use the listed before-move FEN exactly.
+- For whole-game review questions, inspect the Critical whole-game positions list. For each important blunder/mistake you plan to mention, request BOTH analyse_move for the played bad move and analyse_position from the same before-move FEN. The coach needs the played-move refutation line and the better Stockfish line. Use the listed before-move FEN exactly.
+- If the user asks why a game move was bad, inaccurate, or a blunder, request analyse_move for that exact played move from its before-move FEN so the final answer can show the concrete refutation.
 - analyse_position is only allowed for the exact current FEN, an exact before-move FEN listed in Critical whole-game positions, or an exact FEN from Position/reference context.
 - For a move from the current position, use analyse_move.
 - For references like "after 19.Nexd4" or "the line we discussed after 19.Nexd4", first match the reference against Position/reference context, then request analyse_position or analyse_move from that exact referenced FEN.
@@ -1683,10 +1688,19 @@ fn infer_whole_game_critical_stockfish_requests(
 
     select_critical_game_moments(request)
         .into_iter()
-        .filter_map(|point| {
-            let before_fen = point.before_fen.as_deref()?.trim();
+        .flat_map(|point| {
+            let before_fen = match point.before_fen.as_deref().map(str::trim) {
+                Some(fen) if !fen.is_empty() => fen,
+                _ => return Vec::new(),
+            };
+            let played_move = point
+                .played_uci
+                .as_deref()
+                .filter(|value| !value.trim().is_empty())
+                .unwrap_or(point.mv.as_str())
+                .trim();
             if before_fen.is_empty() {
-                return None;
+                return Vec::new();
             }
             let side = point
                 .played_side
@@ -1698,14 +1712,26 @@ fn infer_whole_game_critical_stockfish_requests(
             } else {
                 point.annotations.join(" ")
             };
-            Some(StockfishFollowUpRequest::AnalysePosition {
+            let mut requests = Vec::new();
+            if !played_move.is_empty() {
+                requests.push(StockfishFollowUpRequest::AnalyseMove {
+                    fen: before_fen.to_string(),
+                    mv: played_move.to_string(),
+                    reason: format!(
+                        "Whole-game review should show the concrete Stockfish refutation after {side} played {} at ply {} ({annotation}); include the forcing line that proves why the move was bad.",
+                        point.mv, point.ply
+                    ),
+                });
+            }
+            requests.push(StockfishFollowUpRequest::AnalysePosition {
                 fen: before_fen.to_string(),
                 label: format!("Critical ply {} before {}", point.ply, point.mv),
                 reason: format!(
                     "Whole-game review should explain what {side} should have played instead of {} at ply {} ({annotation}); ask Stockfish for the best move from the pre-move position, not just for the move that was played.",
                     point.mv, point.ply
                 ),
-            })
+            });
+            requests
         })
         .collect()
 }
@@ -2499,7 +2525,8 @@ fn parse_move_in_position(
     position: &mut shakmaty::Chess,
     requested_move: &str,
 ) -> Result<(String, String), CoachError> {
-    let requested_move = requested_move.trim();
+    let cleaned_move = clean_requested_move_for_parse(requested_move);
+    let requested_move = cleaned_move.trim();
     if requested_move.is_empty() {
         return Err(CoachError::IllegalStockfishRequest(
             "empty move requested".to_string(),
@@ -2524,6 +2551,30 @@ fn parse_move_in_position(
     let san = SanPlus::from_move(position.clone(), &mv).to_string();
     position.play_unchecked(&mv);
     Ok((uci, san))
+}
+
+fn clean_requested_move_for_parse(requested_move: &str) -> String {
+    let mut value = requested_move
+        .trim()
+        .trim_matches('`')
+        .trim_matches(|ch: char| ch == ',' || ch == ';' || ch == ':' || ch == '(' || ch == ')')
+        .to_string();
+
+    while value
+        .chars()
+        .last()
+        .map(|ch| ch == '?' || ch == '!')
+        .unwrap_or(false)
+    {
+        value.pop();
+    }
+
+    value = value
+        .trim_start_matches(|ch: char| ch.is_ascii_digit() || ch == '.')
+        .trim()
+        .to_string();
+
+    value
 }
 
 fn detect_castling_mode(position: &shakmaty::Chess) -> CastlingMode {
@@ -3146,7 +3197,7 @@ mod tests {
     }
 
     #[test]
-    fn whole_game_critical_requests_analyse_best_move_position() {
+    fn whole_game_critical_requests_analyse_played_move_and_best_position() {
         let mut request = sample_request();
         request.pgn_scope = "whole_game".to_string();
         request.game_analysis = vec![CoachGameAnalysisPoint {
@@ -3163,9 +3214,16 @@ mod tests {
 
         let requests = infer_whole_game_critical_stockfish_requests(&request);
 
-        assert_eq!(requests.len(), 1);
+        assert_eq!(requests.len(), 2);
         assert!(matches!(
             &requests[0],
+            StockfishFollowUpRequest::AnalyseMove { fen, mv, reason }
+                if fen == &request.fen
+                    && mv == "c1f4"
+                    && reason.contains("concrete Stockfish refutation after white played Bxf4")
+        ));
+        assert!(matches!(
+            &requests[1],
             StockfishFollowUpRequest::AnalysePosition { fen, reason, .. }
                 if fen == &request.fen
                     && reason.contains("what white should have played instead of Bxf4")
