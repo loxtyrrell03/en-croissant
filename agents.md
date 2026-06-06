@@ -86,22 +86,27 @@ model, implementation map, and verification expectations for this app.
 
 ## Rust/Tauri Verification
 
-- Do not run broad Rust/Tauri verification loops by default. This repo can take
-  many minutes to compile even for apparently focused `cargo test` commands,
-  and tool timeouts may leave `cargo`/`rustc` running in the background.
-- Prefer the narrowest useful check for the change:
-  `cargo test --manifest-path src-tauri/Cargo.toml --bin en-croissant-fork
-  module::tests -- --nocapture` for backend unit tests in the main app binary,
-  targeted TypeScript checks for frontend-only changes, and code inspection for
-  small low-risk edits.
+- Do not run Rust/Tauri compile-heavy commands by default. In this repo even
+  apparently focused commands such as `cargo test --bin en-croissant-fork
+  some_filter` can sit compiling for many minutes and waste the user's time.
+  Avoid broad `cargo check`, `cargo test`, Tauri builds, and binary test
+  compiles unless the user explicitly asks for them or the change is high-risk
+  enough that the command is truly necessary.
+- Before starting any Rust/Tauri command expected to take more than about
+  30 seconds, tell the user exactly what command will run and why it is worth
+  the wait. If the user is frustrated about compile time or asks for speed,
+  do not run it; use static inspection and faster checks instead.
+- Prefer fast checks first: `npx tsgo --noEmit`, targeted `oxlint`, targeted
+  `oxfmt --check`, `rustfmt --edition 2021 --check <changed rust file>`, and
+  code inspection. For backend-only logic, add or update tests when useful,
+  but do not automatically run the Rust binary test target unless the user
+  approves the compile cost.
 - Use `cargo fmt --manifest-path src-tauri/Cargo.toml --check` when formatting
   validation is enough. Avoid running full-manifest `cargo fmt` casually,
   because it may reformat unrelated Rust files and create noisy diffs.
 - Reserve broad commands such as `cargo check`, unfiltered `cargo test`, or
-  full Tauri builds for final/high-risk verification, dependency or type
-  boundary changes, release/build work, or when the user explicitly asks for
-  exhaustive verification. Tell the user before starting any command expected
-  to take several minutes.
+  full Tauri builds for release/build work, dependency/type-boundary changes,
+  risky native changes, or explicit user requests for exhaustive verification.
 - After any Rust command times out, immediately check for lingering
   `cargo`, `rustc`, or `en-croissant-fork` processes before running another
   build command.
