@@ -1006,6 +1006,7 @@ Core rules:
 - Do not give a verdict such as bad, good, inaccurate, mistake, blunder, winning, losing, or refuted unless you also cite the supplied engine line that supports it. Name the relevant evaluation/depth when available.
 - A Stockfish evaluation plus a PV is not an explanation. Before or immediately after each cited PV, explain the human reason the line works. Say what changed on the board: which piece became loose, which defender was overloaded, which square/file/diagonal was weakened, which tempo was won, which king-safety problem appeared, which pawn break opened the position, or why the resulting structure/endgame is better.
 - Do not write bullets that only say "Stockfish evaluates this at..." or "the engine line is..." followed by moves. Every critical bullet needs at least one human chess sentence that interprets the line.
+- For a targeted result with a non-empty `Moves:` fixed prefix, line 1 is the evaluation of that requested move or line under best play. Lines 2+ are alternative replies/continuations for the side to move after the fixed prefix. Never quote a line 2+ eval as the main evaluation of the requested move/line.
 - For any bad move, show the concrete Stockfish continuation that punishes it. If a targeted result labelled `After <move>` exists, use one of its full lines as the refutation. If no such line exists, say the supplied data does not contain the refutation instead of hand-waving.
 - For any recommended improvement, show the concrete Stockfish continuation from analyse_position/root lines that justifies the recommendation.
 - Material summaries are guardrails, not the main explanation. Do not claim "wins the exchange", "wins a piece", "wins a pawn", or similar material verdicts unless the supplied material summary for the cited PV supports that exact claim. If the engine line only proves a positional/evaluation swing, describe the tactical or strategic mechanism instead.
@@ -1473,8 +1474,9 @@ fn format_engine_lines_from(
 }
 
 fn format_targeted_result(result: &CoachTargetedResult) -> String {
+    let prefix_note = format_targeted_prefix_note(result);
     format!(
-        "{} ({})\nFEN: {}\nMoves: {}\n{}",
+        "{} ({})\nFEN: {}\nMoves: {}\n{}\n{}",
         result.label,
         result.reason,
         result.fen,
@@ -1483,7 +1485,43 @@ fn format_targeted_result(result: &CoachTargetedResult) -> String {
         } else {
             result.moves.join(" ")
         },
+        prefix_note,
         format_engine_lines_from(&result.lines, "this result FEN", Some(&result.fen))
+    )
+}
+
+fn format_targeted_prefix_note(result: &CoachTargetedResult) -> String {
+    if result.moves.is_empty() {
+        return "Evaluation note: no fixed prefix was supplied; each MultiPV line is a candidate from this FEN.".to_string();
+    }
+
+    let prefix_len = result.moves.len();
+    let san_prefix = result
+        .lines
+        .first()
+        .map(|line| {
+            line.san_moves
+                .iter()
+                .take(prefix_len)
+                .cloned()
+                .collect::<Vec<_>>()
+                .join(" ")
+        })
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or_else(|| result.moves.join(" "));
+    let verdict = result
+        .lines
+        .first()
+        .map(|line| {
+            format!(
+                " Candidate verdict under best engine reply: eval {}, depth {}.",
+                line.eval, line.depth
+            )
+        })
+        .unwrap_or_default();
+
+    format!(
+        "Evaluation note: the fixed prefix is `{san_prefix}`.{verdict} Use line 1 as the evaluation of that requested move/line under best play. Lines 2+ are alternative continuations for the side to move after the prefix; do not quote their evals as the main evaluation of `{san_prefix}`."
     )
 }
 

@@ -646,6 +646,13 @@ default.
   coordination, simplification, structure/endgame edge, etc. Material
   summaries are guardrails for factual claims, not a substitute for explaining
   why the position changed.
+- For Coach targeted Stockfish results with a fixed move/line prefix, the
+  first MultiPV line is the verdict under best play for that requested prefix.
+  Later MultiPV lines are alternative replies for the side to move after the
+  prefix; do not let Pro cite a line-2 or line-3 eval as the evaluation of the
+  candidate move itself. This previously made `9...Nxd4 10.Qa6` look like
+  `0.00` by quoting the second PV, even though the best-reply verdict was
+  about `-1.01`.
 - PGN sent to Coach models must be plain mainline movetext only. Do not send
   PGN comments, NAGs/glyphs, arrows, extra markups, or variations to either
   the Flash planner or Pro coach. User notes previously caused confident but
