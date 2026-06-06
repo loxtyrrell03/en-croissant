@@ -625,6 +625,12 @@ default.
   12 to 17 in `src-tauri/src/coach.rs`. This applies to the current-position
   root MultiPV and planned/targeted Coach Stockfish checks so Gemini receives
   deeper tactical evidence by default.
+- The Coach frontend also checks Lichess Cloud for current-position root PVs
+  before submitting the request. When cloud lines exist, they are sent as the
+  root engine evidence and the backend uses them even if fewer PVs are returned,
+  because those opening-stage evaluations are usually much deeper than local
+  Stockfish. Local depth-17 Stockfish remains the fallback and still handles
+  targeted Coach checks.
 - On 2026-06-06, the Coach question box default was cleared so opening the
   Coach tab starts with a blank input instead of the seeded `What is the plan
   here?` prompt. Keep the submit guard tied to non-empty trimmed text.

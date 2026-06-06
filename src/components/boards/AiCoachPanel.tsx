@@ -899,6 +899,8 @@ export default function AiCoachPanel() {
     try {
       let openingContext: CoachOpeningContext | null = null;
       let openingContextError: string | null = null;
+      let requestExistingLines = existingLines;
+      let existingLinesSource = existingLines.length > 0 ? "local" : "";
       try {
         const openingProgress: CoachProgressPayload = {
           requestId,
@@ -951,6 +953,53 @@ export default function AiCoachPanel() {
         setProgressLog((current) => [...current, openingErrorProgress].slice(-12));
       }
 
+      try {
+        const cloudProgress: CoachProgressPayload = {
+          requestId,
+          stage: "cloud_root",
+          label: "Fetching Lichess Cloud evals",
+          detail: "Checking for high-depth cloud PVs for the current opening position.",
+          progress: 10,
+          finished: false,
+          elapsedMs: Date.now() - startedAt,
+        };
+        setRequestProgress(cloudProgress);
+        setProgressLog((current) => [...current, cloudProgress].slice(-12));
+
+        const cloudLines = await getCoachCloudLines(currentNode.fen, multipv);
+        if (cloudLines.length > 0) {
+          requestExistingLines = cloudLines;
+          existingLinesSource = "lichessCloud";
+        }
+
+        const cloudDoneProgress: CoachProgressPayload = {
+          requestId,
+          stage: cloudLines.length > 0 ? "cloud_root_done" : "cloud_root_unavailable",
+          label: cloudLines.length > 0 ? "Lichess Cloud evals ready" : "No Lichess Cloud evals",
+          detail:
+            cloudLines.length > 0
+              ? `Using ${cloudLines.length} cloud line(s) at depth ${cloudLines[0]?.depth ?? "?"}.`
+              : "Continuing with cached local lines or depth-17 Stockfish fallback.",
+          progress: 12,
+          finished: false,
+          elapsedMs: Date.now() - startedAt,
+        };
+        setRequestProgress(cloudDoneProgress);
+        setProgressLog((current) => [...current, cloudDoneProgress].slice(-12));
+      } catch (err) {
+        const cloudErrorProgress: CoachProgressPayload = {
+          requestId,
+          stage: "cloud_root_error",
+          label: "Lichess Cloud evals unavailable",
+          detail: err instanceof Error ? err.message : String(err),
+          progress: 12,
+          finished: false,
+          elapsedMs: Date.now() - startedAt,
+        };
+        setRequestProgress(cloudErrorProgress);
+        setProgressLog((current) => [...current, cloudErrorProgress].slice(-12));
+      }
+
       const response = unwrap(
         await commands.askAiCoach({
           requestId,
@@ -966,7 +1015,8 @@ export default function AiCoachPanel() {
           question: trimmedQuestion,
           chatHistory,
           referenceContext,
-          existingLines,
+          existingLines: requestExistingLines,
+          existingLinesSource,
           priorTargetedResults,
           openingContext,
           openingContextError,

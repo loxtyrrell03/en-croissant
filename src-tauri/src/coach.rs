@@ -44,6 +44,14 @@ const MAX_REFERENCE_CONTEXT_ITEMS: usize = 120;
 const MAX_GEMINI_ERROR_CHARS: usize = 1_200;
 const AI_COACH_PROGRESS_EVENT: &str = "ai-coach-progress";
 
+fn existing_lines_are_lichess_cloud(request: &AiCoachRequest) -> bool {
+    !request.existing_lines.is_empty()
+        && matches!(
+            request.existing_lines_source.trim(),
+            "lichessCloud" | "lichess_cloud" | "lichess"
+        )
+}
+
 #[derive(Debug, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct AiCoachRequest {
@@ -68,6 +76,8 @@ pub struct AiCoachRequest {
     #[serde(default)]
     pub reference_context: Vec<CoachReferenceContext>,
     pub existing_lines: Vec<CoachEngineLine>,
+    #[serde(default)]
+    pub existing_lines_source: String,
     #[serde(default)]
     pub prior_targeted_results: Vec<CoachTargetedResult>,
     pub opening_context: Option<CoachOpeningContext>,
@@ -639,6 +649,7 @@ async fn ask_ai_coach_inner(
     planned_requests.truncate(MAX_PLANNER_STOCKFISH_REQUESTS);
 
     let whole_game_mode = request.pgn_scope.trim() == "whole_game";
+    let use_cloud_existing_lines = existing_lines_are_lichess_cloud(&request);
     let stockfish_lines = if whole_game_mode {
         emit_coach_progress(
             app,
@@ -651,6 +662,26 @@ async fn ask_ai_coach_inner(
             false,
         );
         Vec::new()
+    } else if use_cloud_existing_lines {
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "cloud_root_cached",
+            "Using Lichess Cloud lines",
+            format!(
+                "Using {} high-depth cloud line(s) already available for this position.",
+                request.existing_lines.len().min(multipv as usize)
+            ),
+            26.0,
+            false,
+        );
+        request
+            .existing_lines
+            .iter()
+            .take(multipv as usize)
+            .cloned()
+            .collect()
     } else if request.existing_lines.len() >= multipv as usize {
         emit_coach_progress(
             app,
@@ -693,8 +724,8 @@ async fn ask_ai_coach_inner(
         )
         .await?
     };
-    let used_existing_analysis =
-        !whole_game_mode && request.existing_lines.len() >= multipv as usize;
+    let used_existing_analysis = !whole_game_mode
+        && (use_cloud_existing_lines || request.existing_lines.len() >= multipv as usize);
     emit_coach_progress(
         app,
         request_id,
@@ -905,8 +936,11 @@ fn build_coach_prompt(
         request.move_history.join(" ")
     };
     let whole_game_mode = request.pgn_scope.trim() == "whole_game";
+    let use_cloud_existing_lines = existing_lines_are_lichess_cloud(request);
     let engine_lines = if whole_game_mode {
         "Omitted for whole-game review. Do not use current-board/root opening MultiPV as whole-game evidence.".to_string()
+    } else if use_cloud_existing_lines {
+        format_engine_lines_from(stockfish_lines, "current FEN (Lichess Cloud)")
     } else {
         format_engine_lines(stockfish_lines)
     };
@@ -931,10 +965,17 @@ fn build_coach_prompt(
     };
     let game_analysis = format_game_analysis(&request.game_analysis);
     let correction_notes = format_correction_notes(correction_notes);
-    let scope_rules = if whole_game_mode {
-        "- This is a whole-game review. Do not analyse the starting position/current board as the main topic.\n- Do not give a starting-position engine main line, opening recommendation, or generic move-1 advice unless the user explicitly asks about the opening.\n- Base the answer on the loaded game PGN, Stored whole-game Stockfish analysis, and critical targeted Stockfish results.\n- Prefer whole-game sections: **Direct answer**, **Critical moments**, **What to play instead**, **Training lesson**.\n- Do not include <line> blocks in whole-game answers. Refer to move numbers and SAN in prose; the UI makes those move references clickable."
+    let root_engine_label = if use_cloud_existing_lines {
+        "Lichess Cloud root lines"
     } else {
-        "- This is a current-position question. Root Stockfish MultiPV and targeted results are the main evidence."
+        "local Stockfish root MultiPV"
+    };
+    let scope_rules = if whole_game_mode {
+        "- This is a whole-game review. Do not analyse the starting position/current board as the main topic.\n- Do not give a starting-position engine main line, opening recommendation, or generic move-1 advice unless the user explicitly asks about the opening.\n- Base the answer on the loaded game PGN, Stored whole-game Stockfish analysis, and critical targeted Stockfish results.\n- Prefer whole-game sections: **Direct answer**, **Critical moments**, **What to play instead**, **Training lesson**.\n- Do not include <line> blocks in whole-game answers. Refer to move numbers and SAN in prose; the UI makes those move references clickable.".to_string()
+    } else {
+        format!(
+            "- This is a current-position question. {root_engine_label} and targeted Stockfish results are the main evidence."
+        )
     };
     let answer_shape = if whole_game_mode {
         "Prefer this final answer shape: Direct answer; Critical moments; What to play instead; Training lesson. Do not include a Main line section unless the user asked for one specific variation."
@@ -942,9 +983,11 @@ fn build_coach_prompt(
         "Prefer this final answer shape: Direct answer; Key reason; Main line or two; Human plan/lesson; Optional training takeaway."
     };
     let stockfish_scope_rule = if whole_game_mode {
-        "- Current-position root Stockfish MultiPV is intentionally omitted for this whole-game review. Use only Stored whole-game Stockfish analysis and targeted Stockfish results as concrete engine evidence."
+        "- Current-position root engine lines are intentionally omitted for this whole-game review. Use only Stored whole-game Stockfish analysis and targeted Stockfish results as concrete engine evidence.".to_string()
+    } else if use_cloud_existing_lines {
+        "- Root Lichess Cloud lines are from the current FEN and should be preferred over local Stockfish for this opening-stage evidence. Targeted Stockfish results list their own FEN; use each targeted result only for that listed position. Targeted \"After ...\" results already include the requested move or requested line before the continuation.".to_string()
     } else {
-        "- Root Stockfish MultiPV is from the current FEN. Targeted results list their own FEN; use each targeted result only for that listed position. Targeted \"After ...\" results already include the requested move or requested line before the continuation."
+        "- Root Stockfish MultiPV is from the current FEN. Targeted results list their own FEN; use each targeted result only for that listed position. Targeted \"After ...\" results already include the requested move or requested line before the continuation.".to_string()
     };
     let section_label_rule = if whole_game_mode {
         "- Use bold section labels like **Direct answer**, **Critical moments**, **What to play instead**, and **Training lesson**. Do not use Markdown # headings."
@@ -956,13 +999,13 @@ fn build_coach_prompt(
         r#"Role: You are a chess coach explaining a position.
 
 Core rules:
-- Stockfish is the source of truth.
-- Never invent concrete tactics, evaluations, plans, or variations. Any concrete move line or plan you recommend must be backed by supplied Stockfish MultiPV or targeted Stockfish results.
-- You may use general chess and opening knowledge for concepts, structures, plans, and naming, but only as explanation layered on top of Stockfish-backed lines.
+- Supplied engine analysis is the source of truth. Prefer Lichess Cloud root lines when they are supplied; otherwise use local Stockfish root MultiPV. Targeted follow-up results are local Stockfish.
+- Never invent concrete tactics, evaluations, plans, or variations. Any concrete move line or plan you recommend must be backed by supplied root engine lines or targeted Stockfish results.
+- You may use general chess and opening knowledge for concepts, structures, plans, and naming, but only as explanation layered on top of engine-backed lines.
 - Explain like a strong GM/coach: use proper chess terminology such as isolated queen's pawn, minority attack, deflection, trapped piece, blockade, weak square, exchange sacrifice, or domination when it genuinely fits.
 - Treat Lichess All opening stats and blended strength as practical/popularity evidence only. Use it when relevant to opening choice, repertoire, popularity, or practical results; do not treat it as a tactical proof.
 - Do not use tools, shell commands, files, network lookups, external resources, or the Stockfish request protocol. A separate planner has already requested all allowed targeted Stockfish analysis up front.
-- If the supplied Stockfish data still does not fully answer the user's question, say that limitation briefly and answer only from the supplied evidence. Do not output <stockfish_request>.
+- If the supplied engine data still does not fully answer the user's question, say that limitation briefly and answer only from the supplied evidence. Do not output <stockfish_request>.
 - Use the conversation history to answer follow-up questions naturally.
 - Use the Position/reference context to resolve explicit references such as "after 19.Nexd4", "that line", or "the line we discussed". If a referenced FEN is supplied there, use only Stockfish results from that FEN or current-FEN lines that legally reach it; do not reinterpret the reference from a different position.
 - For whole-game review questions, do more than list mistakes: when critical-position Stockfish results are supplied, tell the user what should have been played instead and why Stockfish prefers that move over the move played. It is fine to cover only the critical mistakes.
@@ -973,7 +1016,7 @@ Core rules:
 - Do not wrap whole-game critical-position alternatives in <line> unless that targeted result's FEN is exactly the current FEN.
 - A <line> block must start at the current FEN, not at the start of the game. Never include earlier PGN/game moves just to reach the variation. For a non-current whole-game improvement, write the moves as plain text instead of a <line> block.
 - If you discuss a move that happens after another move first, the <line> block must include the earlier move(s) too. For example, use <line>Bh6 e4 ...</line>, not <line>e4 ...</line>, when e4 is only meaningful after Bh6.
-- Do not give an engine-looking line unless it appears in Stockfish MultiPV or targeted Stockfish result.
+- Do not give an engine-looking line unless it appears in the supplied root engine lines or targeted Stockfish result.
 - Do not wrap move names in backticks. Write move references as normal SAN with move numbers when possible, such as 19.Nexd4 or 22.Bxh6?.
 - Keep answers concise unless the user asks for depth.
 - {answer_shape}
@@ -990,7 +1033,7 @@ PGN context ({pgn_scope}):
 Stored whole-game Stockfish analysis:
 {game_analysis}
 
-Stockfish MultiPV:
+Root engine lines:
 {engine_lines}
 
 Targeted Stockfish result:
@@ -2994,6 +3037,7 @@ mod tests {
             chat_history: Vec::new(),
             reference_context: Vec::new(),
             existing_lines: Vec::new(),
+            existing_lines_source: String::new(),
             prior_targeted_results: Vec::new(),
             opening_context: None,
             opening_context_error: None,
