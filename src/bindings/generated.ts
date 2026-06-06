@@ -679,15 +679,15 @@ progressEvent: "progress-event"
 
 /** user-defined types **/
 
-export type AnalysisOptions = { fen: string; moves: string[]; annotateNovelties: boolean; referenceDb: string | null; reversed: boolean }
 export type AiCoachRequest = { fen: string; sideToMove: string; moveHistory: string[]; pgn: string | null; selectedMove: string | null; question: string; existingLines: CoachEngineLine[]; enginePath: string; settings: AiCoachSettings }
 export type AiCoachResponse = { answer: string; model: string; usedExistingAnalysis: boolean; stockfishLines: CoachEngineLine[]; targetedResults: CoachTargetedResult[] }
 export type AiCoachSettings = { enabled: boolean; geminiCommand: string; geminiModel: string; multipv: number; timeoutSecs: number }
+export type AnalysisOptions = { fen: string; moves: string[]; annotateNovelties: boolean; referenceDb: string | null; reversed: boolean }
 export type BestMoves = { nodes: number; depth: number; score: Score; uciMoves: string[]; sanMoves: string[]; multipv: number; nps: number }
 export type BestMovesPayload = { bestLines: BestMoves[]; engine: string; tab: string; fen: string; moves: string[]; progress: number }
+export type ClockUpdateEvent = { gameId: string; whiteTime: bigint | null; blackTime: bigint | null }
 export type CoachEngineLine = { multipv: number; depth: number; eval: string; uciMoves: string[]; sanMoves: string[] }
 export type CoachTargetedResult = { requestType: string; reason: string; fen: string; moves: string[]; label: string; lines: CoachEngineLine[] }
-export type ClockUpdateEvent = { gameId: string; whiteTime: bigint | null; blackTime: bigint | null }
 export type DatabaseClockCoverage = { gameCount: number; gamesWithTiming: number }
 export type DatabaseInfo = { title: string; description: string; player_count: number; event_count: number; game_count: number; storage_size: bigint; filename: string; indexed: boolean }
 export type DatabaseProgress = { id: string; progress: number }

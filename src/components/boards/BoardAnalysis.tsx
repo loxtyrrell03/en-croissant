@@ -1,6 +1,8 @@
 import {
   ActionIcon,
+  Button,
   Center,
+  Group,
   Loader,
   Paper,
   Portal,
@@ -18,6 +20,7 @@ import {
   IconGitCompare,
   IconInfoCircle,
   IconRoute,
+  IconSparkles,
   IconTarget,
   IconTargetArrow,
   IconTimeline,
@@ -41,6 +44,7 @@ import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import {
   autoSaveAtom,
+  aiCoachEnabledAtom,
   currentPracticeTabAtom,
   currentTabAtom,
   currentTabSelectedAtom,
@@ -56,6 +60,7 @@ import { TreeStateContext } from "../common/TreeStateContext";
 import Board from "./Board";
 import { BoardWithAnnotationLayout } from "./BoardWithAnnotationLayout";
 import BoardControls from "./BoardControls";
+import AiCoachModal from "./AiCoachModal";
 import EditingCard from "./EditingCard";
 import EngineDockedPanel from "./EngineDockedPanel";
 import EngineKeyboardShortcuts from "./EngineKeyboardShortcuts";
@@ -149,6 +154,7 @@ function BoardAnalysis() {
 
   const [editingMode, toggleEditingMode] = useToggle();
   const [underBoardMode, setUnderBoardMode] = useState<UnderBoardMode>("moves");
+  const [coachOpened, setCoachOpened] = useState(false);
   const [savingCopy, setSavingCopy] = useState(false);
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
   const [topBarActionsTarget, setTopBarActionsTarget] = useState<HTMLElement | null>(null);
@@ -170,6 +176,7 @@ function BoardAnalysis() {
     currentTab?.gameOrigin.kind !== "opening_review" &&
     currentTab?.gameOrigin.kind !== "mistake_review";
   const autoSave = useAtomValue(autoSaveAtom);
+  const aiCoachEnabled = useAtomValue(aiCoachEnabledAtom);
   const { documentDir } = useLoaderData({ from: "/" });
   const boardRef = useRef(null);
 
@@ -297,10 +304,22 @@ function BoardAnalysis() {
       toggleEditingMode={toggleEditingMode}
       dirty={dirty}
       saveFile={userSaveFile}
+      onOpenCoach={() => setCoachOpened(true)}
     />
   );
-  const underBoardModeSwitch = (
-    <UnderBoardModeSwitch value={underBoardMode} onChange={setUnderBoardMode} />
+  const underBoardHeaderActions = (
+    <Group gap="xs" wrap="nowrap">
+      <UnderBoardModeSwitch value={underBoardMode} onChange={setUnderBoardMode} />
+      <Button
+        aria-label="AI Coach"
+        leftSection={<IconSparkles size="1rem" />}
+        size="xs"
+        variant={aiCoachEnabled ? "filled" : "subtle"}
+        onClick={() => setCoachOpened(true)}
+      >
+        Coach
+      </Button>
+    </Group>
   );
 
   const setPracticePath = useStore(store, (s) => s.setPracticePath);
@@ -370,6 +389,7 @@ function BoardAnalysis() {
     <>
       <EvalListener active />
       <EngineKeyboardShortcuts />
+      <AiCoachModal opened={coachOpened} onClose={() => setCoachOpened(false)} />
       {topBarActionsTarget && (
         <Portal target={topBarActionsTarget}>
           <Tooltip label="Save game to files">
@@ -410,7 +430,7 @@ function BoardAnalysis() {
                   <GameNotation
                     topBar
                     controls={boardControls}
-                    headerActions={underBoardModeSwitch}
+                    headerActions={underBoardHeaderActions}
                     content={
                       underBoardMode === "moves" ? undefined : (
                         <DeferredPanel>

@@ -55,7 +55,7 @@ pub struct AiCoachSettings {
     pub gemini_command: String,
     pub gemini_model: String,
     pub multipv: u8,
-    pub timeout_secs: u64,
+    pub timeout_secs: u32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Type)]
@@ -218,7 +218,7 @@ pub async fn ask_ai_coach(request: AiCoachRequest) -> Result<AiCoachResponse, Co
         &request.settings.gemini_command,
         &model,
         &prompt,
-        timeout_secs,
+        timeout_secs.into(),
     )
     .await?;
 
@@ -241,7 +241,7 @@ pub async fn ask_ai_coach(request: AiCoachRequest) -> Result<AiCoachResponse, Co
             &request.settings.gemini_command,
             &model,
             &follow_up_prompt,
-            timeout_secs,
+            timeout_secs.into(),
         )
         .await?;
     }

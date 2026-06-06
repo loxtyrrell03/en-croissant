@@ -456,6 +456,11 @@ default.
   `src-tauri/src/coach.rs`. Keep Stockfish as the source of truth, do not add
   credentials to the app, and do not expose this bridge from any public/server
   deployment.
+- A follow-up the same day made Coach a visible text button beside the
+  under-board `Moves / Database / Prep` switch, while keeping the sparkle icon
+  as a secondary shortcut. The Gemini timeout setting was also narrowed to a
+  normal numeric Rust type so generated TypeScript bindings keep
+  `timeoutSecs` as `number` instead of `bigint`.
 - On 2026-06-06, a source-derived White repertoire file was added under the
   app Files root's `Documents/EnCroissant/General repertoire/White  rep`
   folder as `Keymer Variation - Mendonca video.pgn`, with the matching `.info`

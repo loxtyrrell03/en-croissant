@@ -36,6 +36,7 @@ interface BoardControlsProps {
   toggleEditingMode: () => void;
   dirty: boolean;
   saveFile?: () => void;
+  onOpenCoach?: () => void;
   canTakeBack?: boolean;
   onTakeBack?: () => void;
   disableVariations?: boolean;
@@ -47,6 +48,7 @@ function BoardControls({
   toggleEditingMode,
   dirty,
   saveFile,
+  onOpenCoach,
   canTakeBack,
   onTakeBack,
   disableVariations,
@@ -71,6 +73,7 @@ function BoardControls({
   const eraseDrawablesOnClick = useAtomValue(eraseDrawablesOnClickAtom);
   const practiceAgainstBot = usePracticeAgainstBot();
   const [coachOpened, setCoachOpened] = useState(false);
+  const openCoach = onOpenCoach ?? (() => setCoachOpened(true));
 
   const orientation = headers.orientation || "white";
   const toggleOrientation = () =>
@@ -165,10 +168,7 @@ function BoardControls({
           position="right"
           label={aiCoachEnabled ? "AI Coach" : "AI Coach disabled in Settings"}
         >
-          <ActionIcon
-            onClick={() => setCoachOpened(true)}
-            variant={aiCoachEnabled ? "filled" : "subtle"}
-          >
+          <ActionIcon onClick={openCoach} variant={aiCoachEnabled ? "filled" : "subtle"}>
             <IconSparkles size="1.2rem" />
           </ActionIcon>
         </Tooltip>
@@ -211,7 +211,7 @@ function BoardControls({
           </ActionIcon>
         </Tooltip>
       </Stack>
-      <AiCoachModal opened={coachOpened} onClose={() => setCoachOpened(false)} />
+      {!onOpenCoach && <AiCoachModal opened={coachOpened} onClose={() => setCoachOpened(false)} />}
     </>
   );
 }
