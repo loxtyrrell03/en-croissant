@@ -501,6 +501,16 @@ default.
   `Bc4`/f7 activity in related Center/Danish positions, then maps the exact
   weak-deck branch `1.e4 e5 2.d4 exd4 3.Qxd4 Nc6 4.Qd1 Nf6` to practical Black
   development: `...Bb4+` or `...Bb4`, fast castling, and timely `...d5`.
+- Also on 2026-06-06, the Black Scotch weak-opening lesson file was added as
+  `Scotch Game - GM Finegold and Perunovic Lessons.pgn`, with a repertoire
+  `.info` sidecar. It combines GM Ben Finegold's exact Black-side Scotch Mieses
+  lecture with the already downloaded GM Miodrag Perunovic Scotch Gambit
+  transcript. The file covers the weak deck's Mieses branch through
+  `4...Nf6 5.Nxc6 bxc6 6.e5 Qe7 7.Qe2 Nd5 8.c4 Nb6`, including `...Ba6`
+  pins, `...O-O-O`, `...Re8`, and `...d5`, and the Scotch Gambit
+  `4.Bc4 Nf6 5.Ng5 d5 6.exd5 Na5` branch, including Perunovic's warning about
+  premature `...Nxd5`, the useful `...Qe7+` precision, `...c6`, `...h6`, and
+  completing development.
 - Files also treats `.pdf` prep reports as first-class folder entries: selecting
   a PDF shows an in-app document preview with a system-viewer fallback, while
   PGN-only metadata, sidecar `.info`, and game-opening actions stay scoped to
