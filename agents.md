@@ -456,6 +456,15 @@ default.
   c6/Semi-Slav move orders, e6/Tarrasch and Queen's Indian structures, early c5
   systems, recurring cxd5/d4 decisions, Rg1-g4 kingside plans, and Ne2-g3
   manoeuvres.
+- On 2026-06-06, the first weak-openings GM-video lesson file was added beside
+  the existing weak deck at `Documents/EnCroissant/Weak openings training/black`
+  as `Catalan - GM Neiksans Boot Camp.pgn`, with a repertoire `.info` sidecar.
+  It is transcript-derived from GM Arturs Neiksans' long Catalan boot camp and
+  focuses on Black's Catalan perspective: the value of `...Bb4+`, why `...c6`
+  should usually precede `...b6`, when not to overvalue the c4 pawn, and the
+  sharper `...Bd6` setup. Continue the remaining weak-opening video-derived
+  lesson files one opening at a time in the same folder as each source weak
+  PGN, without overwriting the original weak-opening decks.
 - Files also treats `.pdf` prep reports as first-class folder entries: selecting
   a PDF shows an in-app document preview with a system-viewer fallback, while
   PGN-only metadata, sidecar `.info`, and game-opening actions stay scoped to
