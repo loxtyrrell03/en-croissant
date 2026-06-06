@@ -43,7 +43,7 @@ import {
   moveStrengthSettingsAtom,
   sessionsAtom,
 } from "@/state/atoms";
-import { getPGN, getVariationLine, headersToPGN, uciNormalize } from "@/utils/chess";
+import { getPGN, getVariationLine, uciNormalize } from "@/utils/chess";
 import { buildAiCoachOpeningContext } from "@/utils/aiCoachOpeningContext";
 import { positionFromFen } from "@/utils/chessops";
 import type { Engine, LocalEngine } from "@/utils/engines";
@@ -137,6 +137,16 @@ function toCoachLine(line: BestMoves): CoachEngineLine {
     uciMoves: line.uciMoves,
     sanMoves: line.sanMoves,
   };
+}
+
+function toCoachMovetextOnly(pgn: string): string {
+  const movetext = pgn
+    .split(/\r?\n/)
+    .filter((line) => !line.trim().startsWith("["))
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return movetext || "*";
 }
 
 async function getCoachCloudLines(fen: string, multipv: number): Promise<CoachEngineLine[]> {
@@ -676,7 +686,6 @@ function formatElapsed(seconds: number): string {
 export default function AiCoachPanel() {
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (state) => state.root);
-  const headers = useStore(store, (state) => state.headers);
   const currentNode = useStore(
     store,
     useShallow((state) => {
@@ -753,41 +762,33 @@ export default function AiCoachPanel() {
     store,
     useShallow((state) => state.position),
   );
-  const coachHeaders = useMemo(
-    () =>
-      headers
-        ? {
-            ...headers,
-            result: "*" as const,
-            white_elo: undefined,
-            black_elo: undefined,
-          }
-        : null,
-    [headers],
-  );
   const currentLinePgn = useMemo(() => {
     if (currentPath.length === 0) {
-      return coachHeaders ? `${headersToPGN(coachHeaders)}\n*`.trim() : "*";
+      return "*";
     }
 
-    return getPGN(root, {
-      headers: coachHeaders,
-      glyphs: true,
-      comments: true,
-      variations: false,
-      extraMarkups: true,
-      path: currentPath,
-    });
-  }, [coachHeaders, currentPath, root]);
+    return toCoachMovetextOnly(
+      getPGN(root, {
+        headers: null,
+        glyphs: false,
+        comments: false,
+        variations: false,
+        extraMarkups: false,
+        path: currentPath,
+      }),
+    );
+  }, [currentPath, root]);
   const wholeGamePgn = useMemo(() => {
-    return getPGN(root, {
-      headers: coachHeaders,
-      glyphs: true,
-      comments: true,
-      variations: false,
-      extraMarkups: true,
-    });
-  }, [coachHeaders, root]);
+    return toCoachMovetextOnly(
+      getPGN(root, {
+        headers: null,
+        glyphs: false,
+        comments: false,
+        variations: false,
+        extraMarkups: false,
+      }),
+    );
+  }, [root]);
   const gameAnalysis = useMemo(() => buildGameAnalysisContext(root), [root]);
   const mainlineMoves = useMemo(() => getMainlineMoves(root), [root]);
   const canSubmit = Boolean(enabled && coachEngine && question.trim().length > 0 && !loading);

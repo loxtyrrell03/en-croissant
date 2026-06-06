@@ -9,6 +9,7 @@ use std::{
 use log::{info, warn};
 use serde::{Deserialize, Serialize};
 use shakmaty::{
+    fen::Fen,
     san::{San, SanPlus},
     uci::UciMove,
     CastlingMode, Color, EnPassantMode, Position,
@@ -940,9 +941,9 @@ fn build_coach_prompt(
     let engine_lines = if whole_game_mode {
         "Omitted for whole-game review. Do not use current-board/root opening MultiPV as whole-game evidence.".to_string()
     } else if use_cloud_existing_lines {
-        format_engine_lines_from(stockfish_lines, "current FEN (Lichess Cloud)")
+        format_engine_lines_from(stockfish_lines, "current FEN (Lichess Cloud)", Some(&request.fen))
     } else {
-        format_engine_lines(stockfish_lines)
+        format_engine_lines_from(stockfish_lines, "current FEN", Some(&request.fen))
     };
     let targeted = if targeted_results.is_empty() {
         "None".to_string()
@@ -1001,9 +1002,11 @@ fn build_coach_prompt(
 Core rules:
 - Supplied engine analysis is the source of truth. Prefer Lichess Cloud root lines when they are supplied; otherwise use local Stockfish root MultiPV. Targeted follow-up results are local Stockfish.
 - Never invent concrete tactics, evaluations, plans, or variations. Any concrete move line or plan you recommend must be backed by supplied root engine lines or targeted Stockfish results.
+- PGN context is plain mainline movetext only. No PGN comments, NAGs, arrows, extra markups, or variations are supplied to you; do not infer from absent notes or annotations.
 - Do not give a verdict such as bad, good, inaccurate, mistake, blunder, winning, losing, or refuted unless you also cite the supplied engine line that supports it. Name the relevant evaluation/depth when available.
 - For any bad move, show the concrete Stockfish continuation that punishes it. If a targeted result labelled `After <move>` exists, use one of its full lines as the refutation. If no such line exists, say the supplied data does not contain the refutation instead of hand-waving.
 - For any recommended improvement, show the concrete Stockfish continuation from analyse_position/root lines that justifies the recommendation.
+- Do not claim "wins the exchange", "wins a piece", "wins a pawn", or similar material verdicts unless the supplied material summary for the cited PV supports that exact claim. If the engine line only proves a positional/evaluation swing, describe it as an evaluation or positional/tactical problem instead.
 - You may use general chess and opening knowledge for concepts, structures, plans, and naming, but only as explanation layered on top of engine-backed lines.
 - Explain like a strong GM/coach: use proper chess terminology such as isolated queen's pawn, minority attack, deflection, trapped piece, blockade, weak square, exchange sacrifice, or domination when it genuinely fits.
 - Treat Lichess All opening stats and blended strength as practical/popularity evidence only. Use it when relevant to opening choice, repertoire, popularity, or practical results; do not treat it as a tactical proof.
@@ -1430,10 +1433,14 @@ fn trim_prompt_text(value: &str) -> String {
 }
 
 fn format_engine_lines(lines: &[CoachEngineLine]) -> String {
-    format_engine_lines_from(lines, "current FEN")
+    format_engine_lines_from(lines, "current FEN", None)
 }
 
-fn format_engine_lines_from(lines: &[CoachEngineLine], origin: &str) -> String {
+fn format_engine_lines_from(
+    lines: &[CoachEngineLine],
+    origin: &str,
+    start_fen: Option<&str>,
+) -> String {
     if lines.is_empty() {
         return "None".to_string();
     }
@@ -1446,9 +1453,13 @@ fn format_engine_lines_from(lines: &[CoachEngineLine], origin: &str) -> String {
             } else {
                 line.san_moves.join(" ")
             };
+            let material = start_fen
+                .and_then(|fen| material_context_for_line(fen, &line.uci_moves))
+                .map(|summary| format!(" Material: {summary}"))
+                .unwrap_or_default();
             format!(
-                "{}. eval {}, depth {}, full line from {}: {}",
-                line.multipv, line.eval, line.depth, origin, pv
+                "{}. eval {}, depth {}, full line from {}: {}{}",
+                line.multipv, line.eval, line.depth, origin, pv, material
             )
         })
         .collect::<Vec<_>>()
@@ -1466,8 +1477,88 @@ fn format_targeted_result(result: &CoachTargetedResult) -> String {
         } else {
             result.moves.join(" ")
         },
-        format_engine_lines_from(&result.lines, "this result FEN")
+        format_engine_lines_from(&result.lines, "this result FEN", Some(&result.fen))
     )
+}
+
+#[derive(Clone, Copy, Default)]
+struct MaterialCount {
+    queens: i32,
+    rooks: i32,
+    bishops: i32,
+    knights: i32,
+    pawns: i32,
+}
+
+impl MaterialCount {
+    fn value(self) -> i32 {
+        self.queens * 9 + self.rooks * 5 + self.bishops * 3 + self.knights * 3 + self.pawns
+    }
+}
+
+fn material_context_for_line(start_fen: &str, uci_moves: &[String]) -> Option<String> {
+    let start = material_summary_from_fen(start_fen)?;
+    if uci_moves.is_empty() {
+        return Some(format!("start/end {start}"));
+    }
+
+    let final_position = parse_fen_and_apply_moves(start_fen, uci_moves).ok()?;
+    let final_fen = Fen::from_position(final_position, EnPassantMode::Legal).to_string();
+    let end = material_summary_from_fen(&final_fen)?;
+    Some(format!("start {start}; after PV {end}"))
+}
+
+fn material_summary_from_fen(fen: &str) -> Option<String> {
+    let (white, black) = material_counts_from_fen(fen)?;
+    Some(format!(
+        "{} vs {}; {}",
+        material_count_label("White", white),
+        material_count_label("Black", black),
+        material_balance_label(white, black)
+    ))
+}
+
+fn material_counts_from_fen(fen: &str) -> Option<(MaterialCount, MaterialCount)> {
+    let board = fen.split_whitespace().next()?;
+    let mut white = MaterialCount::default();
+    let mut black = MaterialCount::default();
+
+    for piece in board.chars().filter(|piece| piece.is_ascii_alphabetic()) {
+        let target = if piece.is_ascii_uppercase() {
+            &mut white
+        } else {
+            &mut black
+        };
+        match piece.to_ascii_lowercase() {
+            'q' => target.queens += 1,
+            'r' => target.rooks += 1,
+            'b' => target.bishops += 1,
+            'n' => target.knights += 1,
+            'p' => target.pawns += 1,
+            'k' => {}
+            _ => return None,
+        }
+    }
+
+    Some((white, black))
+}
+
+fn material_count_label(side: &str, material: MaterialCount) -> String {
+    format!(
+        "{side} Q{} R{} B{} N{} P{}",
+        material.queens, material.rooks, material.bishops, material.knights, material.pawns
+    )
+}
+
+fn material_balance_label(white: MaterialCount, black: MaterialCount) -> String {
+    let diff = white.value() - black.value();
+    if diff == 0 {
+        "material value equal".to_string()
+    } else if diff > 0 {
+        format!("White +{diff} by material value")
+    } else {
+        format!("Black +{} by material value", diff.abs())
+    }
 }
 
 fn normalized_reference_context(request: &AiCoachRequest) -> Vec<CoachReferenceContext> {
@@ -1598,11 +1689,6 @@ fn format_game_analysis(points: &[CoachGameAnalysisPoint]) -> String {
                 .depth
                 .map(|value| format!("depth {value}"))
                 .unwrap_or_else(|| "depth unknown".to_string());
-            let annotations = if point.annotations.is_empty() {
-                String::new()
-            } else {
-                format!(", annotations {}", point.annotations.join(" "))
-            };
             let played = point
                 .played_uci
                 .as_deref()
@@ -1622,12 +1708,11 @@ fn format_game_analysis(points: &[CoachGameAnalysisPoint]) -> String {
                 .map(|value| format!(", before FEN {value}"))
                 .unwrap_or_default();
             format!(
-                "Ply {ply}: {mv}, {eval}, {depth}{annotations}{played}{side}{before_fen}",
+                "Ply {ply}: {mv}, {eval}, {depth}{played}{side}{before_fen}",
                 ply = point.ply,
                 mv = point.mv,
                 eval = eval,
                 depth = depth,
-                annotations = annotations,
                 played = played,
                 side = side,
                 before_fen = before_fen
@@ -1658,19 +1743,13 @@ fn format_critical_game_positions(request: &AiCoachRequest) -> String {
                 .as_deref()
                 .filter(|value| !value.trim().is_empty())
                 .unwrap_or("side to move");
-            let annotation = if point.annotations.is_empty() {
-                "no annotation".to_string()
-            } else {
-                point.annotations.join(" ")
-            };
             let eval = point.eval.as_deref().unwrap_or("no played-move eval");
             format!(
-                "Ply {ply}: {side} played {mv}{played_uci}, annotation {annotation}, played-move eval {eval}. analyse_position FEN: {before_fen}",
+                "Ply {ply}: {side} played {mv}{played_uci}, played-move eval {eval}. analyse_position FEN: {before_fen}",
                 ply = point.ply,
                 side = side,
                 mv = point.mv,
                 played_uci = played_uci,
-                annotation = annotation,
                 eval = eval,
                 before_fen = before_fen
             )
@@ -1707,18 +1786,13 @@ fn infer_whole_game_critical_stockfish_requests(
                 .as_deref()
                 .filter(|value| !value.trim().is_empty())
                 .unwrap_or("the side to move");
-            let annotation = if point.annotations.is_empty() {
-                "critical move".to_string()
-            } else {
-                point.annotations.join(" ")
-            };
             let mut requests = Vec::new();
             if !played_move.is_empty() {
                 requests.push(StockfishFollowUpRequest::AnalyseMove {
                     fen: before_fen.to_string(),
                     mv: played_move.to_string(),
                     reason: format!(
-                        "Whole-game review should show the concrete Stockfish refutation after {side} played {} at ply {} ({annotation}); include the forcing line that proves why the move was bad.",
+                        "Whole-game review should show the concrete Stockfish refutation after {side} played {} at ply {}; include the forcing line that proves why the move was bad.",
                         point.mv, point.ply
                     ),
                 });
@@ -1727,7 +1801,7 @@ fn infer_whole_game_critical_stockfish_requests(
                 fen: before_fen.to_string(),
                 label: format!("Critical ply {} before {}", point.ply, point.mv),
                 reason: format!(
-                    "Whole-game review should explain what {side} should have played instead of {} at ply {} ({annotation}); ask Stockfish for the best move from the pre-move position, not just for the move that was played.",
+                    "Whole-game review should explain what {side} should have played instead of {} at ply {}; ask Stockfish for the best move from the pre-move position, not just for the move that was played.",
                     point.mv, point.ply
                 ),
             });
@@ -3120,7 +3194,7 @@ mod tests {
             &[],
         );
 
-        assert!(prompt.contains("Stockfish is the source of truth"));
+        assert!(prompt.contains("Supplied engine analysis is the source of truth"));
         assert!(prompt.contains("Do not output <stockfish_request>"));
         assert!(prompt.contains("What is the plan here?"));
         assert!(prompt.contains("full legal sequence from the current FEN"));
@@ -3193,7 +3267,8 @@ mod tests {
         let prompt = build_coach_prompt(&request, &[], &[], &[], &[]);
 
         assert!(prompt.contains("whole game PGN selected by the Flash planner"));
-        assert!(prompt.contains("Ply 12: Nf3, +0.35, depth 14, annotations ?!"));
+        assert!(prompt.contains("Ply 12: Nf3, +0.35, depth 14"));
+        assert!(!prompt.contains("annotations ?!"));
     }
 
     #[test]
