@@ -56,6 +56,10 @@ pub struct AiCoachRequest {
     #[serde(default)]
     pub pgn_scope: String,
     #[serde(default)]
+    pub current_line_pgn: Option<String>,
+    #[serde(default)]
+    pub whole_game_pgn: Option<String>,
+    #[serde(default)]
     pub game_analysis: Vec<CoachGameAnalysisPoint>,
     pub selected_move: Option<String>,
     pub question: String,
@@ -228,6 +232,8 @@ enum StockfishFollowUpRequest {
 #[serde(rename_all = "camelCase")]
 struct CoachPlannerResponse {
     #[serde(default)]
+    pgn_scope: String,
+    #[serde(default)]
     requests: Vec<StockfishFollowUpRequest>,
     #[serde(default)]
     reason: String,
@@ -310,6 +316,52 @@ struct CoachProgressContext<'a> {
     request_id: &'a str,
     started: Instant,
     base_progress: f32,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum CoachPgnScope {
+    CurrentLine,
+    WholeGame,
+}
+
+impl CoachPgnScope {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::CurrentLine => "current_line",
+            Self::WholeGame => "whole_game",
+        }
+    }
+
+    fn label(self) -> &'static str {
+        match self {
+            Self::CurrentLine => "current-line context",
+            Self::WholeGame => "whole-game context",
+        }
+    }
+}
+
+fn parse_coach_pgn_scope(value: &str) -> Option<CoachPgnScope> {
+    match value.trim().to_ascii_lowercase().as_str() {
+        "current_line" | "current-line" | "current line" | "position" => {
+            Some(CoachPgnScope::CurrentLine)
+        }
+        "whole_game" | "whole-game" | "whole game" | "game" => Some(CoachPgnScope::WholeGame),
+        _ => None,
+    }
+}
+
+fn apply_planner_pgn_scope(request: &mut AiCoachRequest, scope: CoachPgnScope) {
+    request.pgn_scope = scope.as_str().to_string();
+    request.pgn = match scope {
+        CoachPgnScope::CurrentLine => request
+            .current_line_pgn
+            .clone()
+            .or_else(|| request.pgn.clone()),
+        CoachPgnScope::WholeGame => request
+            .whole_game_pgn
+            .clone()
+            .or_else(|| request.pgn.clone()),
+    };
 }
 
 fn effective_request_id(request_id: &str) -> String {
@@ -415,7 +467,7 @@ async fn ask_ai_coach_inner(
     app: &tauri::AppHandle,
     request_id: &str,
     started: Instant,
-    request: AiCoachRequest,
+    mut request: AiCoachRequest,
 ) -> Result<AiCoachResponse, CoachError> {
     if !request.settings.enabled {
         return Err(CoachError::Disabled);
@@ -494,6 +546,13 @@ async fn ask_ai_coach_inner(
     )
     .await?;
     let planner_response = parse_planner_response(&planner_answer)?;
+    let planner_scope = parse_coach_pgn_scope(&planner_response.pgn_scope).ok_or_else(|| {
+        CoachError::GeminiPlannerMalformed(format!(
+            "missing or invalid pgn_scope `{}`; expected `current_line` or `whole_game`",
+            planner_response.pgn_scope
+        ))
+    })?;
+    apply_planner_pgn_scope(&mut request, planner_scope);
     emit_coach_progress(
         app,
         request_id,
@@ -501,7 +560,8 @@ async fn ask_ai_coach_inner(
         "planner_done",
         "Planner returned Stockfish requests",
         format!(
-            "{} request(s). {}",
+            "Selected {}; {} request(s). {}",
+            planner_scope.label(),
             planner_response.requests.len(),
             trim_chat_text(&planner_response.reason)
         ),
@@ -817,8 +877,8 @@ fn build_coach_prompt(
         .map(trim_prompt_text)
         .unwrap_or_else(|| "Unavailable".to_string());
     let pgn_scope = match request.pgn_scope.trim() {
-        "whole_game" => "whole game PGN",
-        _ => "current line PGN up to this position",
+        "whole_game" => "whole game PGN selected by the Flash planner",
+        _ => "current line PGN selected by the Flash planner",
     };
     let selected_move = request
         .selected_move
@@ -939,15 +999,18 @@ fn build_planner_prompt(
     } else {
         request.move_history.join(" ")
     };
-    let pgn = request
-        .pgn
+    let current_line_pgn = request
+        .current_line_pgn
         .as_deref()
+        .or_else(|| request.pgn.as_deref())
         .map(trim_prompt_text)
         .unwrap_or_else(|| "Unavailable".to_string());
-    let pgn_scope = match request.pgn_scope.trim() {
-        "whole_game" => "whole game PGN",
-        _ => "current line PGN up to this position",
-    };
+    let whole_game_pgn = request
+        .whole_game_pgn
+        .as_deref()
+        .or_else(|| request.pgn.as_deref())
+        .map(trim_prompt_text)
+        .unwrap_or_else(|| "Unavailable".to_string());
     let game_analysis = format_game_analysis(&request.game_analysis);
     let critical_positions = format_critical_game_positions(request);
     let chat_history = format_chat_history(&request.chat_history);
@@ -973,6 +1036,8 @@ fn build_planner_prompt(
 Rules:
 - Output only one JSON object. No markdown, no prose outside JSON.
 - Do not analyse chess yourself and do not answer the user's question.
+- First choose pgn_scope. Use "whole_game" when the user asks to analyse, review, annotate, recap, go through, or find what went wrong in the loaded game. Use "current_line" for questions about the current board position, opening choice, a candidate move, or a concrete line.
+- The stronger coach model will only receive the PGN scope you choose, so do not choose "current_line" for whole-game review wording like "analyse this game".
 - Stockfish is the source of truth. Be generous: it is better to request too many relevant Stockfish lines than too few.
 - analyse_move, compare_moves, and analyse_line requests must start from the exact current FEN. Do not invent later FENs.
 - Exception: if the user explicitly refers to a supplied Position/reference context item, requests may use that item's exact FEN. Treat those FENs as vetted anchors, not invented positions.
@@ -989,6 +1054,7 @@ Rules:
 
 Required JSON shape:
 {{
+  "pgn_scope": "current_line",
   "reason": "brief planner reason",
   "requests": [
     {{"type":"analyse_position","fen":"{fen}","label":"Critical position before the mistake","reason":"Find the best move that should have been played."}},
@@ -1004,8 +1070,11 @@ Side to move: {side_to_move}
 Selected move/current node: {selected_move}
 Move history in UCI: {move_history}
 
-PGN context ({pgn_scope}):
-{pgn}
+Current-line PGN up to selected position:
+{current_line_pgn}
+
+Whole-game PGN:
+{whole_game_pgn}
 
 Stored whole-game Stockfish analysis:
 {game_analysis}
@@ -1039,8 +1108,8 @@ User question:
         side_to_move = request.side_to_move,
         selected_move = selected_move,
         move_history = move_history,
-        pgn_scope = pgn_scope,
-        pgn = pgn,
+        current_line_pgn = current_line_pgn,
+        whole_game_pgn = whole_game_pgn,
         game_analysis = game_analysis,
         critical_positions = critical_positions,
         legal_moves = legal_moves,
@@ -1472,7 +1541,7 @@ fn format_game_analysis(points: &[CoachGameAnalysisPoint]) -> String {
 }
 
 fn format_critical_game_positions(request: &AiCoachRequest) -> String {
-    let moments = select_critical_game_moments(request);
+    let moments = select_critical_game_moments_any_scope(request);
     if moments.is_empty() {
         return "None selected.".to_string();
     }
@@ -1573,6 +1642,12 @@ fn select_critical_game_moments(request: &AiCoachRequest) -> Vec<&CoachGameAnaly
         return Vec::new();
     }
 
+    select_critical_game_moments_any_scope(request)
+}
+
+fn select_critical_game_moments_any_scope(
+    request: &AiCoachRequest,
+) -> Vec<&CoachGameAnalysisPoint> {
     let mut moments = request
         .game_analysis
         .iter()
@@ -2862,6 +2937,8 @@ mod tests {
             move_history: Vec::new(),
             pgn: Some("[Event \"?\"]\n\n*".to_string()),
             pgn_scope: "current_line".to_string(),
+            current_line_pgn: Some("[Event \"?\"]\n\n*".to_string()),
+            whole_game_pgn: Some("[Event \"?\"]\n\n*".to_string()),
             game_analysis: Vec::new(),
             selected_move: Some("Current node".to_string()),
             question: "What is the plan here?".to_string(),
@@ -2971,7 +3048,7 @@ mod tests {
 
         let prompt = build_coach_prompt(&request, &[], &[], &[], &[]);
 
-        assert!(prompt.contains("PGN context (whole game PGN)"));
+        assert!(prompt.contains("whole game PGN selected by the Flash planner"));
         assert!(prompt.contains("Ply 12: Nf3, +0.35, depth 14, annotations ?!"));
     }
 
@@ -3041,11 +3118,12 @@ mod tests {
     fn parses_planner_json_from_plain_or_fenced_output() {
         let parsed = parse_planner_response(
             r#"```json
-{"reason":"compare named moves","requests":[{"type":"compare_moves","fen":"start","moves":["e4","d4"],"reason":"named alternatives"}]}
+{"pgn_scope":"current_line","reason":"compare named moves","requests":[{"type":"compare_moves","fen":"start","moves":["e4","d4"],"reason":"named alternatives"}]}
 ```"#,
         )
         .unwrap();
 
+        assert_eq!(parsed.pgn_scope, "current_line");
         assert_eq!(parsed.reason, "compare named moves");
         assert!(matches!(
             parsed.requests.first(),

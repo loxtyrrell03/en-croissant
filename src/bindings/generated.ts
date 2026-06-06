@@ -679,7 +679,7 @@ progressEvent: "progress-event"
 
 /** user-defined types **/
 
-export type AiCoachRequest = { requestId?: string; fen: string; sideToMove: string; moveHistory: string[]; pgn: string | null; pgnScope?: string; gameAnalysis?: CoachGameAnalysisPoint[]; selectedMove: string | null; question: string; chatHistory?: CoachChatMessage[]; referenceContext?: CoachReferenceContext[]; existingLines: CoachEngineLine[]; priorTargetedResults?: CoachTargetedResult[]; openingContext: CoachOpeningContext | null; openingContextError: string | null; enginePath: string; settings: AiCoachSettings }
+export type AiCoachRequest = { requestId?: string; fen: string; sideToMove: string; moveHistory: string[]; pgn: string | null; pgnScope?: string; currentLinePgn?: string | null; wholeGamePgn?: string | null; gameAnalysis?: CoachGameAnalysisPoint[]; selectedMove: string | null; question: string; chatHistory?: CoachChatMessage[]; referenceContext?: CoachReferenceContext[]; existingLines: CoachEngineLine[]; priorTargetedResults?: CoachTargetedResult[]; openingContext: CoachOpeningContext | null; openingContextError: string | null; enginePath: string; settings: AiCoachSettings }
 export type AiCoachResponse = { answer: string; model: string; usedExistingAnalysis: boolean; stockfishLines: CoachEngineLine[]; targetedResults: CoachTargetedResult[] }
 export type AiCoachSettings = { enabled: boolean; geminiCommand: string; geminiModel: string; plannerModel?: string; multipv: number; timeoutSecs: number }
 export type AnalysisOptions = { fen: string; moves: string[]; annotateNovelties: boolean; referenceDb: string | null; reversed: boolean }

@@ -594,6 +594,18 @@ default.
   FENs, and validates planner requests against only the current FEN, critical
   whole-game FENs, or these supplied reference FENs. Do not let future prompt
   changes loosen that allowlist.
+- The Flash planner, not the frontend, owns Coach context-scope selection.
+  `AiCoachPanel.tsx` sends both `currentLinePgn` and `wholeGamePgn` plus game
+  analysis metadata; `src-tauri/src/coach.rs` asks the planner to return
+  `pgn_scope: "current_line" | "whole_game"` before building the Pro prompt.
+  Natural requests like `analyse this game`, `review the game`, `annotate our
+  game`, and `go through this game` must select `whole_game`. If scope
+  selection regresses, Pro will only see the start/current-line PGN and will
+  incorrectly answer with opening move-1 advice instead of reviewing the loaded
+  game.
+- On 2026-06-06, the Coach question box default was cleared so opening the
+  Coach tab starts with a blank input instead of the seeded `What is the plan
+  here?` prompt. Keep the submit guard tied to non-empty trimmed text.
 - On 2026-06-06, a source-derived White repertoire file was added under the
   app Files root's `Documents/EnCroissant/General repertoire/White  rep`
   folder as `Keymer Variation - Mendonca video.pgn`, with the matching `.info`

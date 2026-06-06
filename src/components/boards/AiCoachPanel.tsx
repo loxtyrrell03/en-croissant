@@ -125,12 +125,6 @@ function toCoachLine(line: BestMoves): CoachEngineLine {
   };
 }
 
-function wantsWholeGameContext(question: string): boolean {
-  return /\b(whole|entire|full)\s+game\b|\bwhat\s+went\s+wrong\b|\bwhere\s+did\s+i\s+go\s+wrong\b|\b(analy[sz]e|review)\s+(my\s+)?game\b|\bgame\s+review\b|\bmy\s+mistakes?\b|\bturning\s+point\b/i.test(
-    question,
-  );
-}
-
 function buildGameAnalysisContext(root: TreeNode): CoachGameAnalysisPoint[] {
   const mainline = [...treeIteratorMainLine(root)];
   return mainline
@@ -651,9 +645,6 @@ export default function AiCoachPanel() {
     }
     const trimmedQuestion = question.trim();
     if (!trimmedQuestion) return;
-    const pgnScope = wantsWholeGameContext(trimmedQuestion) ? "whole_game" : "current_line";
-    const requestPgn = pgnScope === "whole_game" ? wholeGamePgn : currentLinePgn;
-    const requestGameAnalysis = pgnScope === "whole_game" ? gameAnalysis : [];
     const requestPath = [...currentPath];
     const requestBaseSanMoves = getSanVariationLine(root, requestPath);
     const requestBaseHalfMoves = currentNode.halfMoves;
@@ -683,7 +674,7 @@ export default function AiCoachPanel() {
       requestId,
       stage: "frontend_context",
       label: "Collecting position",
-      detail: "Gathering FEN, side to move, PGN context, engine cache, and chat history.",
+      detail: "Gathering FEN, side to move, both PGN scopes, engine cache, and chat history.",
       progress: 2,
       finished: false,
       elapsedMs: 0,
@@ -766,9 +757,11 @@ export default function AiCoachPanel() {
           fen: currentNode.fen,
           sideToMove,
           moveHistory: moves,
-          pgn: requestPgn,
-          pgnScope,
-          gameAnalysis: requestGameAnalysis,
+          pgn: currentLinePgn,
+          pgnScope: "auto",
+          currentLinePgn,
+          wholeGamePgn,
+          gameAnalysis,
           selectedMove,
           question: trimmedQuestion,
           chatHistory,
