@@ -465,6 +465,18 @@ default.
   sharper `...Bd6` setup. Continue the remaining weak-opening video-derived
   lesson files one opening at a time in the same folder as each source weak
   PGN, without overwriting the original weak-opening decks.
+- On 2026-06-06, the next weak-openings GM-video lesson file was added in the
+  same Black weak folder as `Italian Game - GM Giri and Perunovic Lessons.pgn`,
+  with a repertoire `.info` sidecar. It uses transcript-derived notes from GM
+  Anish Giri's long Italian class for the quiet Italian `d3/c3/h3` structures,
+  `...h6/...g5`, `...a6/...Ba7`, and central-break timing, plus GM Miodrag
+  Perunovic's Scotch Gambit lesson for the `...Nf6`, tempo `...d5`, and
+  Max-Lange-adjacent defensive themes that appear repeatedly in the weak deck.
+  The user asked not to spend much time on the Center Game because it rarely
+  appears; keep that file lightweight. When the weak-openings workflow reaches
+  `Documents/EnCroissant/Weak openings training/whites/Grunfeld Defense.pgn`,
+  prioritize the White line with `h3` after Black plays `...c5` instead of only
+  covering the more common `Be3` mainline.
 - Files also treats `.pdf` prep reports as first-class folder entries: selecting
   a PDF shows an in-app document preview with a system-viewer fallback, while
   PGN-only metadata, sidecar `.info`, and game-opening actions stay scoped to
