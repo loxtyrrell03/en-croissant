@@ -521,6 +521,14 @@ default.
   the exact tabiya. The file teaches White to use `h3` to stop the easy
   `...Bg4` pin, continue with `Be2`, watch for Black's critical `...Bf5`
   equalizer, and treat the old `Be3` weak-deck line only as a secondary bridge.
+- Also on 2026-06-06, the White Queen's Gambit weak-opening lesson file was
+  added as `Queens Gambit - GM Naroditsky Colovic Lessons.pgn`, with a
+  repertoire `.info` sidecar. It combines GM Daniel Naroditsky's Queen's Gambit
+  and Queen's Gambit Accepted masterclass transcripts with GM Alex Colovic's QGD
+  lecture. The file covers the weak deck's Harrwitz `Bf4/Bd3` development,
+  `...c5` exchange structures, Baltic/Pseudo-Slav `Qb3/c5/Bf4/Nh4`, the
+  `Bg5 h6 Bh4` branch, and QGA recovery plans including the IQP after
+  `...cxd4/exd4` plus `a4` against `...a6`.
 - Files also treats `.pdf` prep reports as first-class folder entries: selecting
   a PDF shows an in-app document preview with a system-viewer fallback, while
   PGN-only metadata, sidecar `.info`, and game-opening actions stay scoped to
