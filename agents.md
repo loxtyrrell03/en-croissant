@@ -529,6 +529,14 @@ default.
   `...c5` exchange structures, Baltic/Pseudo-Slav `Qb3/c5/Bf4/Nh4`, the
   `Bg5 h6 Bh4` branch, and QGA recovery plans including the IQP after
   `...cxd4/exd4` plus `a4` against `...a6`.
+- Also on 2026-06-06, the White Sicilian weak-opening lesson file was added as
+  `Sicilian Defense - GM Naroditsky Open Sicilian Lessons.pgn`, with a
+  repertoire `.info` sidecar. It uses GM Daniel Naroditsky Open Sicilian,
+  Accelerated Dragon, Najdorf, and Dragon transcripts, grouping the 25 weak
+  Sicilian positions into e6/Kan/Taimanov `Bd3` structures, `Nc3/Bc4` Open
+  Sicilians, Four Knights/Sveshnikov `Nxc6/e5/Bg5` reminders, Maroczy Bind
+  `c4/Be3/Qd2` setups, Najdorf English Attack `Be3/f3/Qd2/O-O-O`, calmer
+  Dragon `Be2` lines, and the Marshall Counterattack reminder.
 - Files also treats `.pdf` prep reports as first-class folder entries: selecting
   a PDF shows an in-app document preview with a system-viewer fallback, while
   PGN-only metadata, sidecar `.info`, and game-opening actions stay scoped to
