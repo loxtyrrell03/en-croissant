@@ -41,6 +41,7 @@ import {
   aiCoachEnabledAtom,
   aiCoachGeminiCommandAtom,
   aiCoachGeminiModelAtom,
+  aiCoachPlannerModelAtom,
   aiCoachMultipvAtom,
   aiCoachTimeoutSecsAtom,
   enableBoardScrollAtom,
@@ -350,6 +351,16 @@ export default function Page() {
             placeholder="gemini-3.1-pro-preview"
             width={280}
           />
+        ),
+      },
+      {
+        id: "ai-coach-planner-model",
+        category: "coach",
+        title: "Gemini planner model",
+        description: "Fast model used only to choose generous Stockfish lines before coaching.",
+        keywords: ["ai", "coach", "gemini", "planner", "flash", "stockfish"],
+        render: () => (
+          <TextSetting atom={aiCoachPlannerModelAtom} placeholder="gemini-3.5-flash" width={280} />
         ),
       },
       {

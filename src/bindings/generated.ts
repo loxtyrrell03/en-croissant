@@ -681,7 +681,7 @@ progressEvent: "progress-event"
 
 export type AiCoachRequest = { requestId?: string; fen: string; sideToMove: string; moveHistory: string[]; pgn: string | null; pgnScope?: string; gameAnalysis?: CoachGameAnalysisPoint[]; selectedMove: string | null; question: string; chatHistory?: CoachChatMessage[]; existingLines: CoachEngineLine[]; priorTargetedResults?: CoachTargetedResult[]; openingContext: CoachOpeningContext | null; openingContextError: string | null; enginePath: string; settings: AiCoachSettings }
 export type AiCoachResponse = { answer: string; model: string; usedExistingAnalysis: boolean; stockfishLines: CoachEngineLine[]; targetedResults: CoachTargetedResult[] }
-export type AiCoachSettings = { enabled: boolean; geminiCommand: string; geminiModel: string; multipv: number; timeoutSecs: number }
+export type AiCoachSettings = { enabled: boolean; geminiCommand: string; geminiModel: string; plannerModel?: string; multipv: number; timeoutSecs: number }
 export type AnalysisOptions = { fen: string; moves: string[]; annotateNovelties: boolean; referenceDb: string | null; reversed: boolean }
 export type BestMoves = { nodes: number; depth: number; score: Score; uciMoves: string[]; sanMoves: string[]; multipv: number; nps: number }
 export type BestMovesPayload = { bestLines: BestMoves[]; engine: string; tab: string; fen: string; moves: string[]; progress: number }

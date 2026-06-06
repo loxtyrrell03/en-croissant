@@ -33,8 +33,10 @@ use crate::{
 };
 
 const DEFAULT_STOCKFISH_DEPTH: u32 = 12;
-const MAX_GEMINI_FOLLOW_UPS: usize = 2;
-const MAX_PROACTIVE_STOCKFISH_REQUESTS: usize = 2;
+const DEFAULT_COACH_MODEL: &str = "gemini-3.1-pro-preview";
+const DEFAULT_PLANNER_MODEL: &str = "gemini-3.5-flash";
+const MAX_PLANNER_STOCKFISH_REQUESTS: usize = 6;
+const PLANNER_TIMEOUT_SECS: u64 = 60;
 const MAX_PROMPT_PGN_CHARS: usize = 12_000;
 const MAX_CHAT_MESSAGE_CHARS: usize = 2_000;
 const MAX_GEMINI_ERROR_CHARS: usize = 1_200;
@@ -72,6 +74,8 @@ pub struct AiCoachSettings {
     pub enabled: bool,
     pub gemini_command: String,
     pub gemini_model: String,
+    #[serde(default)]
+    pub planner_model: String,
     pub multipv: u8,
     pub timeout_secs: u32,
 }
@@ -169,7 +173,7 @@ pub struct CoachTargetedResult {
     pub lines: Vec<CoachEngineLine>,
 }
 
-#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 enum StockfishFollowUpRequest {
     AnalyseMove {
@@ -188,6 +192,15 @@ enum StockfishFollowUpRequest {
         line: String,
         reason: String,
     },
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CoachPlannerResponse {
+    #[serde(default)]
+    requests: Vec<StockfishFollowUpRequest>,
+    #[serde(default)]
+    reason: String,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -212,6 +225,9 @@ pub enum CoachError {
 
     #[error("Gemini CLI returned an empty response")]
     GeminiEmpty,
+
+    #[error("Gemini planner returned malformed JSON: {0}")]
+    GeminiPlannerMalformed(String),
 
     #[error("Gemini returned an unsupported engine line: {0}")]
     GeminiUnsupportedLine(String),
@@ -380,9 +396,15 @@ async fn ask_ai_coach_inner(
     let timeout_secs = request.settings.timeout_secs.clamp(120, 240);
     let model = request.settings.gemini_model.trim().to_string();
     let model = if model.is_empty() {
-        "gemini-3.1-pro-preview".to_string()
+        DEFAULT_COACH_MODEL.to_string()
     } else {
         model
+    };
+    let planner_model = request.settings.planner_model.trim().to_string();
+    let planner_model = if planner_model.is_empty() {
+        DEFAULT_PLANNER_MODEL.to_string()
+    } else {
+        planner_model
     };
     emit_coach_progress(
         app,
@@ -390,10 +412,109 @@ async fn ask_ai_coach_inner(
         started,
         "settings",
         "Settings ready",
-        format!("Model {model}; MultiPV {multipv}; Gemini timeout {timeout_secs}s."),
+        format!(
+            "Planner {planner_model}; coach {model}; MultiPV {multipv}; Gemini timeout {timeout_secs}s."
+        ),
         6.0,
         false,
     );
+
+    let legal_moves = format_legal_root_moves(&request.fen)?;
+    let mut targeted_results = request.prior_targeted_results.clone();
+    if !targeted_results.is_empty() {
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "targeted_cached",
+            "Reusing targeted Stockfish memory",
+            format!(
+                "Keeping {} earlier targeted result(s) for this same FEN.",
+                targeted_results.len()
+            ),
+            10.0,
+            false,
+        );
+    }
+
+    emit_coach_progress(
+        app,
+        request_id,
+        started,
+        "planner_prompt",
+        format!("Asking {planner_model} to plan Stockfish work"),
+        "Choosing generous root moves and continuations before Pro sees the prompt.",
+        12.0,
+        false,
+    );
+    let planner_prompt = build_planner_prompt(&request, &legal_moves, &targeted_results);
+    let planner_answer = run_gemini_cli(
+        &request.settings.gemini_command,
+        &planner_model,
+        &planner_prompt,
+        PLANNER_TIMEOUT_SECS.min(timeout_secs.into()),
+    )
+    .await?;
+    let planner_response = parse_planner_response(&planner_answer)?;
+    emit_coach_progress(
+        app,
+        request_id,
+        started,
+        "planner_done",
+        "Planner returned Stockfish requests",
+        format!(
+            "{} request(s). {}",
+            planner_response.requests.len(),
+            trim_chat_text(&planner_response.reason)
+        ),
+        18.0,
+        false,
+    );
+    let (mut planned_requests, rejected_planner_requests) =
+        sanitize_planner_requests(&request.fen, planner_response.requests);
+    for rejected in rejected_planner_requests {
+        warn!("ai_coach[{request_id}] rejected planner request: {rejected}");
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "planner_rejected",
+            "Rejected planner Stockfish request",
+            rejected,
+            20.0,
+            false,
+        );
+    }
+    if planned_requests.is_empty() {
+        planned_requests = infer_question_stockfish_requests(&request.fen, &request.question)?;
+        if planned_requests.is_empty() {
+            emit_coach_progress(
+                app,
+                request_id,
+                started,
+                "targeted_skip",
+                "Planner did not need targeted Stockfish",
+                "The coach will use root MultiPV, cached targeted results, and opening context.",
+                22.0,
+                false,
+            );
+        } else {
+            emit_coach_progress(
+                app,
+                request_id,
+                started,
+                "planner_fallback",
+                "Using deterministic targeted fallback",
+                format!(
+                    "Planner returned no legal requests; inferred {} request(s) from named moves.",
+                    planned_requests.len()
+                ),
+                22.0,
+                false,
+            );
+        }
+    }
+    planned_requests.truncate(MAX_PLANNER_STOCKFISH_REQUESTS);
 
     let stockfish_lines = if request.existing_lines.len() >= multipv as usize {
         emit_coach_progress(
@@ -406,7 +527,7 @@ async fn ask_ai_coach_inner(
                 "Reusing {} engine line(s) already available for this position.",
                 request.existing_lines.len().min(multipv as usize)
             ),
-            16.0,
+            26.0,
             false,
         );
         request
@@ -423,7 +544,7 @@ async fn ask_ai_coach_inner(
             "stockfish_root",
             "Running Stockfish MultiPV",
             format!("Analysing the current position at depth {DEFAULT_STOCKFISH_DEPTH}."),
-            12.0,
+            26.0,
             false,
         );
         run_stockfish_analysis(
@@ -448,52 +569,19 @@ async fn ask_ai_coach_inner(
             "Collected {} line(s) for the current position.",
             stockfish_lines.len()
         ),
-        25.0,
+        36.0,
         false,
     );
 
-    let mut targeted_results = request.prior_targeted_results.clone();
-    if !targeted_results.is_empty() {
+    for (index, stockfish_request) in planned_requests.into_iter().enumerate() {
         emit_coach_progress(
             app,
             request_id,
             started,
-            "targeted_cached",
-            "Reusing targeted Stockfish memory",
-            format!(
-                "Keeping {} earlier targeted result(s) for this same FEN.",
-                targeted_results.len()
-            ),
-            28.0,
-            false,
-        );
-    }
-
-    let proactive_requests = infer_question_stockfish_requests(&request.fen, &request.question)?
-        .into_iter()
-        .take(MAX_PROACTIVE_STOCKFISH_REQUESTS)
-        .collect::<Vec<_>>();
-    if proactive_requests.is_empty() {
-        emit_coach_progress(
-            app,
-            request_id,
-            started,
-            "targeted_skip",
-            "No pre-Gemini Stockfish follow-up needed",
-            "The question did not name legal moves or a concrete line that needs a targeted check.",
-            31.0,
-            false,
-        );
-    }
-    for (index, stockfish_request) in proactive_requests.into_iter().enumerate() {
-        emit_coach_progress(
-            app,
-            request_id,
-            started,
-            "targeted_proactive",
-            format!("Running targeted Stockfish check {}", index + 1),
+            "targeted_planned",
+            format!("Running planned Stockfish check {}", index + 1),
             describe_stockfish_request(&stockfish_request),
-            32.0 + index as f32 * 6.0,
+            38.0 + index as f32 * 5.0,
             false,
         );
         let targeted = run_targeted_stockfish_request(
@@ -506,7 +594,7 @@ async fn ask_ai_coach_inner(
                 app,
                 request_id,
                 started,
-                base_progress: 33.0 + index as f32 * 6.0,
+                base_progress: 39.0 + index as f32 * 5.0,
             }),
         )
         .await?;
@@ -514,14 +602,14 @@ async fn ask_ai_coach_inner(
             app,
             request_id,
             started,
-            "targeted_proactive_done",
-            format!("Targeted Stockfish check {} ready", index + 1),
+            "targeted_planned_done",
+            format!("Planned Stockfish check {} ready", index + 1),
             format!(
                 "{} produced {} line(s).",
                 targeted.label,
                 targeted.lines.len()
             ),
-            37.0 + index as f32 * 6.0,
+            42.0 + index as f32 * 5.0,
             false,
         );
         targeted_results.push(targeted);
@@ -537,7 +625,7 @@ async fn ask_ai_coach_inner(
             stockfish_lines.len(),
             targeted_results.len()
         ),
-        45.0,
+        72.0,
         false,
     );
     let prompt = build_coach_prompt(&request, &stockfish_lines, &targeted_results, &[]);
@@ -551,10 +639,10 @@ async fn ask_ai_coach_inner(
             "Sending {} characters to the local Gemini CLI.",
             prompt.len()
         ),
-        52.0,
+        78.0,
         false,
     );
-    let first_answer = run_gemini_cli(
+    let mut final_answer = run_gemini_cli(
         &request.settings.gemini_command,
         &model,
         &prompt,
@@ -567,146 +655,15 @@ async fn ask_ai_coach_inner(
         started,
         "gemini_first_done",
         "Gemini replied",
-        format!("First response was {} characters.", first_answer.len()),
-        72.0,
+        format!("First response was {} characters.", final_answer.len()),
+        90.0,
         false,
     );
 
-    let mut final_answer = first_answer;
     let mut correction_notes = Vec::new();
-    for follow_up_index in 0..MAX_GEMINI_FOLLOW_UPS {
-        let Some(stockfish_request) = parse_stockfish_request(&final_answer)? else {
-            break;
-        };
-        emit_coach_progress(
-            app,
-            request_id,
-            started,
-            "gemini_stockfish_request",
-            format!(
-                "Gemini requested Stockfish follow-up {}",
-                follow_up_index + 1
-            ),
-            describe_stockfish_request(&stockfish_request),
-            74.0,
-            false,
-        );
-        let targeted = match run_targeted_stockfish_request(
-            &request.engine_path,
-            &request.fen,
-            stockfish_request,
-            multipv,
-            Duration::from_secs(20),
-            Some(CoachProgressContext {
-                app,
-                request_id,
-                started,
-                base_progress: 76.0,
-            }),
-        )
-        .await
-        {
-            Ok(targeted) => targeted,
-            Err(CoachError::IllegalStockfishRequest(message)) => {
-                emit_coach_progress(
-                    app,
-                    request_id,
-                    started,
-                    "gemini_stockfish_rejected",
-                    "Rejected Gemini Stockfish request",
-                    message.clone(),
-                    78.0,
-                    false,
-                );
-                correction_notes.push(format!(
-                    "Your previous <stockfish_request> was rejected: {message}. Use only the exact current FEN, and if you analyse a continuation, the line must start with a legal move from that FEN. Give a final answer from the supplied Stockfish data, or request a corrected legal Stockfish line only if it is essential."
-                ));
-                let follow_up_prompt = build_coach_prompt(
-                    &request,
-                    &stockfish_lines,
-                    &targeted_results,
-                    &correction_notes,
-                );
-                emit_coach_progress(
-                    app,
-                    request_id,
-                    started,
-                    "gemini_correction",
-                    "Asking Gemini to correct its request",
-                    format!(
-                        "Sending {} characters with the rejection reason.",
-                        follow_up_prompt.len()
-                    ),
-                    80.0,
-                    false,
-                );
-                final_answer = run_gemini_cli(
-                    &request.settings.gemini_command,
-                    &model,
-                    &follow_up_prompt,
-                    timeout_secs.into(),
-                )
-                .await?;
-                continue;
-            }
-            Err(error) => return Err(error),
-        };
-        emit_coach_progress(
-            app,
-            request_id,
-            started,
-            "gemini_stockfish_done",
-            format!("Follow-up Stockfish {} ready", follow_up_index + 1),
-            format!(
-                "{} produced {} line(s).",
-                targeted.label,
-                targeted.lines.len()
-            ),
-            82.0,
-            false,
-        );
-        targeted_results.push(targeted);
-        let follow_up_prompt = build_coach_prompt(
-            &request,
-            &stockfish_lines,
-            &targeted_results,
-            &correction_notes,
-        );
-        emit_coach_progress(
-            app,
-            request_id,
-            started,
-            "gemini_second",
-            format!("Asking {model} again"),
-            format!(
-                "Sending {} characters with the new Stockfish result.",
-                follow_up_prompt.len()
-            ),
-            86.0,
-            false,
-        );
-        final_answer = run_gemini_cli(
-            &request.settings.gemini_command,
-            &model,
-            &follow_up_prompt,
-            timeout_secs.into(),
-        )
-        .await?;
-        emit_coach_progress(
-            app,
-            request_id,
-            started,
-            "gemini_second_done",
-            "Gemini follow-up reply received",
-            format!("Response was {} characters.", final_answer.len()),
-            92.0,
-            false,
-        );
-    }
-
     if parse_stockfish_request(&final_answer)?.is_some() {
         return Err(CoachError::IllegalStockfishRequest(
-            "Gemini asked for more Stockfish data after the follow-up limit".to_string(),
+            "Gemini Pro asked for extra Stockfish after the planner phase. Follow-up Stockfish calls are disabled; make the planner request the needed lines up front.".to_string(),
         ));
     }
     if let Err(error) = validate_answer_line_blocks(
@@ -829,16 +786,8 @@ Core rules:
 - You may use general chess and opening knowledge for concepts, structures, plans, and naming, but only as explanation layered on top of Stockfish-backed lines.
 - Explain like a strong GM/coach: use proper chess terminology such as isolated queen's pawn, minority attack, deflection, trapped piece, blockade, weak square, exchange sacrifice, or domination when it genuinely fits.
 - Treat Lichess All opening stats and blended strength as practical/popularity evidence only. Use it when relevant to opening choice, repertoire, popularity, or practical results; do not treat it as a tactical proof.
-- Do not use tools, shell commands, files, network lookups, or external resources. If you need more chess data, use only the Stockfish request protocol below.
-- If the user asks "what if", "why not", "why is X better than Y", "what happens after ...", or names a move/line that is not covered by the supplied engine data, request targeted Stockfish analysis before answering. It is better to ask for more Stockfish data than to guess.
-- If the supplied lines do not answer the user's question, request targeted Stockfish analysis using exactly one XML/JSON block and no other text:
-<stockfish_request>
-{{"type":"analyse_move","fen":"...","move":"Bxd4","reason":"The user asked why Bxd4 does not work, but it was not covered by the initial MultiPV."}}
-</stockfish_request>
-- Supported Stockfish request types are analyse_move, compare_moves, and analyse_line.
-- For compare_moves, use {{"type":"compare_moves","fen":"...","moves":["Nf3","c4"],"reason":"..."}}.
-- For analyse_line, use {{"type":"analyse_line","fen":"...","line":"Nf3 d5 c4","reason":"..."}}.
-- The fen inside a Stockfish request must be exactly the current FEN below. To analyse a later position, use analyse_line from the current FEN.
+- Do not use tools, shell commands, files, network lookups, external resources, or the Stockfish request protocol. A separate planner has already requested all allowed targeted Stockfish analysis up front.
+- If the supplied Stockfish data still does not fully answer the user's question, say that limitation briefly and answer only from the supplied evidence. Do not output <stockfish_request>.
 - Use the conversation history to answer follow-up questions naturally.
 - All Stockfish PVs supplied below are full sequences from the current FEN. Targeted "After ..." results already include the requested move or requested line before the continuation.
 - When you give a concrete playable variation in your final answer, wrap only the moves in <line>...</line>. Do not wrap prose. Only include a <line> block when that exact line is a full legal sequence from the current FEN and is a prefix of Stockfish data supplied here.
@@ -891,6 +840,257 @@ User question:
         correction_notes = correction_notes,
         question = request.question.as_str(),
     )
+}
+
+fn build_planner_prompt(
+    request: &AiCoachRequest,
+    legal_moves: &str,
+    targeted_results: &[CoachTargetedResult],
+) -> String {
+    let selected_move = request
+        .selected_move
+        .as_deref()
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or("Current node");
+    let move_history = if request.move_history.is_empty() {
+        "None".to_string()
+    } else {
+        request.move_history.join(" ")
+    };
+    let pgn = request
+        .pgn
+        .as_deref()
+        .map(trim_prompt_text)
+        .unwrap_or_else(|| "Unavailable".to_string());
+    let chat_history = format_chat_history(&request.chat_history);
+    let existing_engine_lines = format_engine_lines(&request.existing_lines);
+    let targeted = if targeted_results.is_empty() {
+        "None".to_string()
+    } else {
+        targeted_results
+            .iter()
+            .map(format_targeted_result)
+            .collect::<Vec<_>>()
+            .join("\n\n")
+    };
+    let opening_context = format_opening_context(
+        request.opening_context.as_ref(),
+        request.opening_context_error.as_deref(),
+    );
+
+    format!(
+        r#"You are a fast chess-analysis planner. Your only job is to decide which local Stockfish analyses are needed before a stronger coach model answers the user.
+
+Rules:
+- Output only one JSON object. No markdown, no prose outside JSON.
+- Do not analyse chess yourself and do not answer the user's question.
+- Stockfish is the source of truth. Be generous: it is better to request too many relevant Stockfish lines than too few.
+- Every request must start from the exact current FEN. Do not invent later FENs.
+- For a move from the current position, use analyse_move.
+- For alternatives like "why is e4 better than Nxg6", use compare_moves and include every named legal candidate plus any obvious relevant candidate from the current root lines/opening stats.
+- For "what if ... then ..." or a move that happens after another move, use analyse_line with the full sequence from the current FEN.
+- If the question asks about plans and no specific move is named, request analyse_move for 2-4 important candidate moves from existing engine lines/opening context when available.
+- If the question asks about a likely opponent reply or defensive resource, include analyse_line requests that start with the user-side move and the opponent reply when the line is legal.
+- Avoid duplicate requests. Maximum {max_requests} requests.
+- Legal root moves are listed below as SAN (UCI). Use SAN or UCI in requests.
+
+Required JSON shape:
+{{
+  "reason": "brief planner reason",
+  "requests": [
+    {{"type":"compare_moves","fen":"{fen}","moves":["e4","Nxg6"],"reason":"Compare the named candidate moves."}},
+    {{"type":"analyse_move","fen":"{fen}","move":"e4","reason":"Check the main candidate move."}},
+    {{"type":"analyse_line","fen":"{fen}","line":"Bh6 O-O","reason":"Check the user's what-if line from the current FEN."}}
+  ]
+}}
+
+Current position:
+FEN: {fen}
+Side to move: {side_to_move}
+Selected move/current node: {selected_move}
+Move history in UCI: {move_history}
+
+Current-line PGN context:
+{pgn}
+
+Legal root moves:
+{legal_moves}
+
+Existing root engine lines, if any:
+{existing_engine_lines}
+
+Prior targeted Stockfish already available for this same FEN:
+{targeted}
+
+Lichess All opening context, if available:
+{opening_context}
+
+Conversation so far:
+{chat_history}
+
+User question:
+{question}
+"#,
+        max_requests = MAX_PLANNER_STOCKFISH_REQUESTS,
+        fen = request.fen,
+        side_to_move = request.side_to_move,
+        selected_move = selected_move,
+        move_history = move_history,
+        pgn = pgn,
+        legal_moves = legal_moves,
+        existing_engine_lines = existing_engine_lines,
+        targeted = targeted,
+        opening_context = opening_context,
+        chat_history = chat_history,
+        question = request.question
+    )
+}
+
+fn parse_planner_response(output: &str) -> Result<CoachPlannerResponse, CoachError> {
+    let json = extract_first_json_object(output).ok_or_else(|| {
+        CoachError::GeminiPlannerMalformed("no JSON object was found".to_string())
+    })?;
+    serde_json::from_str(&json).map_err(|error| {
+        CoachError::GeminiPlannerMalformed(format!("{} in `{}`", error, trim_error_text(output)))
+    })
+}
+
+fn extract_first_json_object(output: &str) -> Option<String> {
+    let mut start = None;
+    let mut depth = 0usize;
+    let mut in_string = false;
+    let mut escaped = false;
+
+    for (index, ch) in output.char_indices() {
+        if start.is_none() {
+            if ch == '{' {
+                start = Some(index);
+                depth = 1;
+            }
+            continue;
+        }
+
+        if in_string {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == '"' {
+                in_string = false;
+            }
+            continue;
+        }
+
+        match ch {
+            '"' => in_string = true,
+            '{' => depth += 1,
+            '}' => {
+                depth = depth.saturating_sub(1);
+                if depth == 0 {
+                    let start = start?;
+                    return Some(output[start..=index].to_string());
+                }
+            }
+            _ => {}
+        }
+    }
+
+    None
+}
+
+fn sanitize_planner_requests(
+    current_fen: &str,
+    requests: Vec<StockfishFollowUpRequest>,
+) -> (Vec<StockfishFollowUpRequest>, Vec<String>) {
+    let mut accepted = Vec::new();
+    let mut rejected = Vec::new();
+    let mut seen = HashSet::new();
+
+    for request in requests {
+        let detail = describe_stockfish_request(&request);
+        match stockfish_request_key(current_fen, &request) {
+            Ok(key) => {
+                if seen.insert(key) {
+                    accepted.push(request);
+                } else {
+                    rejected.push(format!("duplicate request: {detail}"));
+                }
+            }
+            Err(error) => rejected.push(format!("{detail} ({error})")),
+        }
+
+        if accepted.len() >= MAX_PLANNER_STOCKFISH_REQUESTS {
+            break;
+        }
+    }
+
+    (accepted, rejected)
+}
+
+fn stockfish_request_key(
+    current_fen: &str,
+    request: &StockfishFollowUpRequest,
+) -> Result<String, CoachError> {
+    match request {
+        StockfishFollowUpRequest::AnalyseMove { fen, mv, .. } => {
+            validate_follow_up_fen(current_fen, fen)?;
+            let (uci, _) = parse_single_move(fen, mv)?;
+            Ok(format!("analyse_move:{uci}"))
+        }
+        StockfishFollowUpRequest::CompareMoves { fen, moves, .. } => {
+            validate_follow_up_fen(current_fen, fen)?;
+            if moves.is_empty() || moves.len() > 5 {
+                return Err(CoachError::IllegalStockfishRequest(
+                    "compare_moves requires 1 to 5 moves".to_string(),
+                ));
+            }
+            let mut seen = HashSet::new();
+            let mut normalized = Vec::new();
+            for mv in moves {
+                let (uci, _) = parse_single_move(fen, mv)?;
+                if seen.insert(uci.clone()) {
+                    normalized.push(uci);
+                }
+            }
+            if normalized.is_empty() {
+                return Err(CoachError::IllegalStockfishRequest(
+                    "compare_moves contained no legal moves".to_string(),
+                ));
+            }
+            Ok(format!("compare_moves:{}", normalized.join(",")))
+        }
+        StockfishFollowUpRequest::AnalyseLine { fen, line, .. } => {
+            validate_follow_up_fen(current_fen, fen)?;
+            let moves = parse_line_moves(fen, line)?;
+            if moves.is_empty() {
+                return Err(CoachError::IllegalStockfishRequest(
+                    "analyse_line requires at least one legal move".to_string(),
+                ));
+            }
+            Ok(format!("analyse_line:{}", moves.join(",")))
+        }
+    }
+}
+
+fn format_legal_root_moves(fen: &str) -> Result<String, CoachError> {
+    let position = parse_fen_to_position(fen)?;
+    let castling_mode = detect_castling_mode(&position);
+    let mut moves = position
+        .legal_moves()
+        .iter()
+        .map(|mv| {
+            let san = SanPlus::from_move(position.clone(), mv).to_string();
+            let uci = UciMove::from_move(mv, castling_mode).to_string();
+            format!("{san} ({uci})")
+        })
+        .collect::<Vec<_>>();
+    moves.sort();
+
+    if moves.is_empty() {
+        Ok("No legal moves".to_string())
+    } else {
+        Ok(moves.join(", "))
+    }
 }
 
 fn format_correction_notes(notes: &[String]) -> String {
@@ -2063,6 +2263,7 @@ mod tests {
                 enabled: true,
                 gemini_command: "gemini".to_string(),
                 gemini_model: "gemini-3.1-pro-preview".to_string(),
+                planner_model: "gemini-3.5-flash".to_string(),
                 multipv: 3,
                 timeout_secs: 60,
             },
@@ -2085,7 +2286,7 @@ mod tests {
         );
 
         assert!(prompt.contains("Stockfish is the source of truth"));
-        assert!(prompt.contains("<stockfish_request>"));
+        assert!(prompt.contains("Do not output <stockfish_request>"));
         assert!(prompt.contains("What is the plan here?"));
         assert!(prompt.contains("full legal sequence from the current FEN"));
         assert!(prompt.contains("1. eval +0.20, depth 12, full line from current FEN: e4"));
@@ -2155,6 +2356,39 @@ mod tests {
 
         assert!(prompt.contains("PGN context (whole game PGN)"));
         assert!(prompt.contains("Ply 12: Nf3, +0.35, depth 14, annotations ?!"));
+    }
+
+    #[test]
+    fn planner_prompt_includes_legal_moves_and_json_schema() {
+        let prompt = build_planner_prompt(&sample_request(), "e4 (e2e4), d4 (d2d4)", &[]);
+
+        assert!(prompt.contains("fast chess-analysis planner"));
+        assert!(prompt.contains("\"requests\""));
+        assert!(prompt.contains("e4 (e2e4), d4 (d2d4)"));
+        assert!(prompt.contains("Be generous"));
+    }
+
+    #[test]
+    fn parses_planner_json_from_plain_or_fenced_output() {
+        let parsed = parse_planner_response(
+            r#"```json
+{"reason":"compare named moves","requests":[{"type":"compare_moves","fen":"start","moves":["e4","d4"],"reason":"named alternatives"}]}
+```"#,
+        )
+        .unwrap();
+
+        assert_eq!(parsed.reason, "compare named moves");
+        assert!(matches!(
+            parsed.requests.first(),
+            Some(StockfishFollowUpRequest::CompareMoves { moves, .. })
+                if moves == &vec!["e4".to_string(), "d4".to_string()]
+        ));
+    }
+
+    #[test]
+    fn rejects_malformed_planner_output() {
+        let error = parse_planner_response("I would analyse e4.").unwrap_err();
+        assert!(error.to_string().contains("malformed JSON"));
     }
 
     #[test]

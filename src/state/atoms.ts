@@ -239,6 +239,10 @@ export const aiCoachGeminiModelAtom = atomWithStorage<string>(
     "ai-coach-gemini-model",
     "gemini-3.1-pro-preview",
 );
+export const aiCoachPlannerModelAtom = atomWithStorage<string>(
+    "ai-coach-planner-model",
+    "gemini-3.5-flash",
+);
 export const aiCoachMultipvAtom = atomWithStorage<number>("ai-coach-multipv", 3);
 export const aiCoachTimeoutSecsAtom = atomWithStorage<number>("ai-coach-timeout-secs", 180);
 export const boardManualSizeAtom = atomWithStorage<number | null>("board-manual-size", null);

@@ -474,11 +474,11 @@ default.
 - On 2026-06-06, an experimental local AI Coach vertical slice was added beside
   the board controls. It uses a Tauri-only Gemini CLI bridge for local personal
   use, defaults to `gemini-3.1-pro-preview`, sends Gemini only structured
-  Stockfish-grounded prompts, and lets Gemini request bounded
-  follow-up Stockfish analysis through the XML/JSON protocol in
-  `src-tauri/src/coach.rs`. Keep Stockfish as the source of truth, do not add
-  credentials to the app, and do not expose this bridge from any public/server
-  deployment.
+  Stockfish-grounded prompts, and keeps Stockfish as the source of truth. The
+  original version let Gemini request bounded follow-up Stockfish analysis, but
+  the current version uses a separate fast planner to request targeted engine
+  lines up front. Do not add credentials to the app, and do not expose this
+  bridge from any public/server deployment.
 - A follow-up the same day made Coach a visible text button beside the
   under-board `Moves / Database / Prep` switch, while keeping the sparkle icon
   as a secondary shortcut. The Gemini timeout setting was also narrowed to a
@@ -511,12 +511,11 @@ default.
   input at the bottom, shows local request progress in the transcript, and can
   make Gemini-marked `<line>...</line>` engine lines clickable by creating or
   navigating a variation from the board path where the question was asked. The
-  backend proactively runs targeted Stockfish when the question names legal
-  candidate moves or asks a what-if/comparison, raises Coach MultiPV to 3-8
-  lines, and prompts Gemini to request more Stockfish rather than inventing
-  concrete plans or variations. Whole-game PGN plus stored analyze-game eval
-  points are only sent for whole-game review questions; normal position
-  questions still receive the current-line PGN only.
+  backend raises Coach MultiPV to 3-8 lines and requires concrete plans or
+  variations to be grounded in supplied Stockfish data. Whole-game PGN plus
+  stored analyze-game eval points are only sent for whole-game review
+  questions; normal position questions still receive the current-line PGN
+  only.
 - A follow-up tightened clickable line grounding: targeted Stockfish results
   now prefix each PV with the requested move or requested line, so every engine
   line shown to Gemini is a full sequence from the current FEN. Final Gemini
@@ -532,11 +531,23 @@ default.
   rejected if Gemini repeats them after correction.
 - The Coach request pipeline now carries a frontend-generated request id and
   emits `ai-coach-progress` events from `src-tauri/src/coach.rs` for each real
-  backend phase: settings validation, root Stockfish, proactive targeted
-  Stockfish, Gemini CLI calls, Gemini-requested Stockfish follow-ups, answer
-  repair, success, and failure. The same phases are written with `log::info!`
-  / `log::warn!` using `ai_coach[request-id]`, so hangs can be debugged from
-  the Tauri log/output instead of relying on the UI timer.
+  backend phase: settings validation, Flash planning, root Stockfish, planned
+  targeted Stockfish, Pro coaching, answer repair, success, and failure. The
+  same phases are written with `log::info!` / `log::warn!` using
+  `ai_coach[request-id]`, so hangs can be debugged from the Tauri log/output
+  instead of relying on the UI timer.
+- Coach now uses a two-model Gemini pipeline. `gemini-3.5-flash` is the default
+  planner model and receives the current FEN, legal root moves, current-line
+  PGN, chat context, cached engine lines, prior targeted results, and Lichess
+  All context, then outputs JSON-only Stockfish requests before any new engine
+  work runs. The planner is intentionally generous, with up to six upfront
+  requests; Rust validates every request against the exact current FEN and
+  legal moves before Stockfish runs. `gemini-3.1-pro-preview` remains the
+  default coach model and receives the root MultiPV plus all planned targeted
+  results in a single final prompt. Pro is no longer allowed to request
+  follow-up Stockfish analysis; if it outputs `<stockfish_request>`, the
+  backend rejects it and the planner should be improved to request that line up
+  front.
 - Coach was then moved out of the under-board panel and into the right-side
   analysis tab stack as its own `Coach` tab; the under-board Coach button is
   only a shortcut that selects that right-side tab. The standalone Current FEN

@@ -34,6 +34,7 @@ import {
   aiCoachGeminiCommandAtom,
   aiCoachGeminiModelAtom,
   aiCoachMultipvAtom,
+  aiCoachPlannerModelAtom,
   aiCoachTimeoutSecsAtom,
   engineMovesFamily,
   enginesAtom,
@@ -201,6 +202,7 @@ export default function AiCoachPanel() {
   const enabled = useAtomValue(aiCoachEnabledAtom);
   const geminiCommand = useAtomValue(aiCoachGeminiCommandAtom);
   const geminiModel = useAtomValue(aiCoachGeminiModelAtom);
+  const plannerModel = useAtomValue(aiCoachPlannerModelAtom);
   const multipv = useAtomValue(aiCoachMultipvAtom);
   const timeoutSecs = useAtomValue(aiCoachTimeoutSecsAtom);
   const effectiveTimeoutSecs = Math.max(150, Math.min(240, timeoutSecs));
@@ -463,6 +465,7 @@ export default function AiCoachPanel() {
             enabled,
             geminiCommand,
             geminiModel,
+            plannerModel,
             multipv,
             timeoutSecs: effectiveTimeoutSecs,
           },
@@ -523,6 +526,7 @@ export default function AiCoachPanel() {
         <Group gap="xs" wrap="wrap">
           <Text fw={700}>AI Coach</Text>
           <Badge variant="light">{coachEngine?.name ?? "No Stockfish"}</Badge>
+          <Badge variant="light">{plannerModel || "Gemini Flash planner"}</Badge>
           <Badge variant="light">{modelUsed || geminiModel || "Gemini"}</Badge>
           {existingLines.length > 0 && <Badge variant="outline">cached lines</Badge>}
           {targetedCount > 0 && <Badge variant="outline">targeted Stockfish</Badge>}
@@ -561,8 +565,8 @@ export default function AiCoachPanel() {
             {messages.length === 0 && !loading && (
               <Paper withBorder p="sm">
                 <Text size="sm" c="dimmed">
-                  Ask about the current position. The coach can request more Stockfish analysis when
-                  your follow-up names a move, line, or what-if.
+                  Ask about the current position. The planner chooses Stockfish lines up front when
+                  your question names a move, line, or what-if.
                 </Text>
               </Paper>
             )}
