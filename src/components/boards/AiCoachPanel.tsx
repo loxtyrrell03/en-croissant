@@ -53,9 +53,28 @@ import { unwrap } from "@/utils/unwrap";
 type CoachUiMessage = CoachChatMessage & {
   id: string;
   basePath?: number[];
+  baseHalfMoves?: number;
+  baseSanMoves?: string[];
 };
 
 type CoachMessageSegment = { type: "text"; text: string } | { type: "line"; text: string };
+
+type MainlineMove = {
+  san: string;
+  path: number[];
+  halfMoves: number;
+};
+
+type PreparedCoachMove = {
+  san: string;
+  prefix: string[];
+  label: string;
+};
+
+type PreparedCoachLine = {
+  basePath: number[];
+  moves: PreparedCoachMove[];
+};
 
 type CoachProgressPayload = {
   requestId: string;
@@ -149,17 +168,28 @@ function splitCoachMessage(content: string): CoachMessageSegment[] {
   return segments.length > 0 ? segments : [{ type: "text", text: content }];
 }
 
+function cleanMoveToken(token: string): string {
+  return token
+    .trim()
+    .replace(/^\d+\.(\.\.)?/, "")
+    .replace(/^[,;:()[\]{}]+|[,;:()[\]{}]+$/g, "")
+    .replace(/[!?]+$/g, "");
+}
+
+function normalizeSanForCompare(move: string): string {
+  return cleanMoveToken(move)
+    .replace(/[+#]+$/g, "")
+    .replace(/0/g, "O")
+    .toLowerCase();
+}
+
 function tokenizePlayableLine(line: string): string[] {
   return line
     .replace(/\{[^}]*\}/g, " ")
     .replace(/\([^)]*\)/g, " ")
+    .replace(/\[[^\]]*\]/g, " ")
     .split(/\s+/)
-    .map((token) =>
-      token
-        .trim()
-        .replace(/^\d+\.(\.\.)?/, "")
-        .replace(/^[,;:]+|[,;:]+$/g, ""),
-    )
+    .map(cleanMoveToken)
     .filter(
       (token) =>
         token.length > 0 &&
@@ -167,8 +197,177 @@ function tokenizePlayableLine(line: string): string[] {
         token !== "1-0" &&
         token !== "0-1" &&
         token !== "1/2-1/2" &&
-        !/^\d+\.*$/.test(token),
+        !/^\d+\.*$/.test(token) &&
+        !/^[+-]?\d+(?:\.\d+)?$/.test(token),
     );
+}
+
+function getSanVariationLine(root: TreeNode, path: number[]): string[] {
+  const result: string[] = [];
+  let node: TreeNode | undefined = root;
+
+  for (const childIndex of path) {
+    node = node.children[childIndex];
+    if (!node) break;
+    if (node.san) result.push(node.san);
+  }
+
+  return result;
+}
+
+function getMainlineMoves(root: TreeNode): MainlineMove[] {
+  const moves: MainlineMove[] = [];
+  let node: TreeNode | undefined = root;
+  const path: number[] = [];
+
+  while (node?.children[0]) {
+    node = node.children[0];
+    path.push(0);
+    if (node.san) {
+      moves.push({
+        san: node.san,
+        path: [...path],
+        halfMoves: node.halfMoves,
+      });
+    }
+  }
+
+  return moves;
+}
+
+function countMatchingSanPrefix(lineMoves: string[], prefixMoves: string[]): number {
+  let count = 0;
+  while (
+    count < lineMoves.length &&
+    count < prefixMoves.length &&
+    normalizeSanForCompare(lineMoves[count]) === normalizeSanForCompare(prefixMoves[count])
+  ) {
+    count++;
+  }
+  return count;
+}
+
+function findGamePrefixTrim(lineMoves: string[], mainlineMoves: MainlineMove[]) {
+  let matched = 0;
+  while (
+    matched < lineMoves.length &&
+    matched < mainlineMoves.length &&
+    normalizeSanForCompare(lineMoves[matched]) ===
+      normalizeSanForCompare(mainlineMoves[matched].san)
+  ) {
+    matched++;
+  }
+
+  if (matched >= 4 && matched < lineMoves.length) {
+    const branchPoint = mainlineMoves[matched - 1];
+    return {
+      trimCount: matched,
+      basePath: branchPoint.path,
+      baseHalfMoves: branchPoint.halfMoves,
+    };
+  }
+
+  return null;
+}
+
+function formatMoveLabel(nextPly: number, isFirstMove: boolean): string {
+  if (nextPly % 2 === 1) {
+    return `${Math.ceil(nextPly / 2)}.`;
+  }
+  return isFirstMove ? `${Math.ceil(nextPly / 2)}...` : "";
+}
+
+function prepareCoachLine({
+  line,
+  defaultBasePath,
+  defaultBaseHalfMoves,
+  defaultBaseSanMoves,
+  mainlineMoves,
+}: {
+  line: string;
+  defaultBasePath: number[];
+  defaultBaseHalfMoves: number;
+  defaultBaseSanMoves: string[];
+  mainlineMoves: MainlineMove[];
+}): PreparedCoachLine | null {
+  const originalMoves = tokenizePlayableLine(line);
+  if (originalMoves.length === 0) return null;
+
+  let basePath = defaultBasePath;
+  let baseHalfMoves = defaultBaseHalfMoves;
+  let trimCount = 0;
+
+  const defaultPrefixCount = countMatchingSanPrefix(originalMoves, defaultBaseSanMoves);
+  if (defaultPrefixCount === defaultBaseSanMoves.length && defaultPrefixCount > 0) {
+    trimCount = defaultPrefixCount;
+  }
+
+  const gamePrefix = findGamePrefixTrim(originalMoves, mainlineMoves);
+  if (gamePrefix && gamePrefix.trimCount > trimCount) {
+    trimCount = gamePrefix.trimCount;
+    basePath = gamePrefix.basePath;
+    baseHalfMoves = gamePrefix.baseHalfMoves;
+  }
+
+  const moves = originalMoves.slice(trimCount);
+  if (moves.length === 0) return null;
+
+  return {
+    basePath,
+    moves: moves.map((san, index) => ({
+      san,
+      prefix: moves.slice(0, index + 1),
+      label: formatMoveLabel(baseHalfMoves + index + 1, index === 0),
+    })),
+  };
+}
+
+function renderInlineMarkdown(text: string) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g).filter((part) => part.length > 0);
+  return parts.map((part, index) => {
+    const bold = part.startsWith("**") && part.endsWith("**");
+    const content = bold ? part.slice(2, -2) : part;
+    return (
+      <Text key={`${content}-${index}`} span fw={bold ? 700 : undefined}>
+        {content}
+      </Text>
+    );
+  });
+}
+
+function renderCoachText(text: string) {
+  return text
+    .split(/\n+/)
+    .map((rawLine) => rawLine.trim())
+    .filter((line) => line.length > 0)
+    .map((line, index) => {
+      const heading = line.match(/^#{1,6}\s+(.+)$/);
+      if (heading) {
+        return (
+          <Text key={`${line}-${index}`} size="sm" fw={700} mt={index === 0 ? 0 : "xs"}>
+            {renderInlineMarkdown(heading[1])}
+          </Text>
+        );
+      }
+
+      const bullet = line.match(/^[-*]\s+(.+)$/);
+      if (bullet) {
+        return (
+          <Group key={`${line}-${index}`} gap={6} align="flex-start" wrap="nowrap">
+            <Text size="sm" c="dimmed" aria-hidden>
+              •
+            </Text>
+            <Text size="sm">{renderInlineMarkdown(bullet[1])}</Text>
+          </Group>
+        );
+      }
+
+      return (
+        <Text key={`${line}-${index}`} size="sm">
+          {renderInlineMarkdown(line)}
+        </Text>
+      );
+    });
 }
 
 function formatElapsed(seconds: number): string {
@@ -294,6 +493,7 @@ export default function AiCoachPanel() {
     });
   }, [coachHeaders, root]);
   const gameAnalysis = useMemo(() => buildGameAnalysisContext(root), [root]);
+  const mainlineMoves = useMemo(() => getMainlineMoves(root), [root]);
   const canSubmit = Boolean(enabled && coachEngine && question.trim().length > 0 && !loading);
   const activeProgressStep = requestProgress ?? {
     requestId: activeRequestIdRef.current,
@@ -352,12 +552,17 @@ export default function AiCoachPanel() {
     const pgnScope = wantsWholeGameContext(trimmedQuestion) ? "whole_game" : "current_line";
     const requestPgn = pgnScope === "whole_game" ? wholeGamePgn : currentLinePgn;
     const requestGameAnalysis = pgnScope === "whole_game" ? gameAnalysis : [];
+    const requestPath = [...currentPath];
+    const requestBaseSanMoves = getSanVariationLine(root, requestPath);
+    const requestBaseHalfMoves = currentNode.halfMoves;
 
     const userMessage: CoachUiMessage = {
       id: `user-${Date.now()}`,
       role: "user",
       content: trimmedQuestion,
-      basePath: currentPath,
+      basePath: requestPath,
+      baseHalfMoves: requestBaseHalfMoves,
+      baseSanMoves: requestBaseSanMoves,
     };
     const chatHistory = messages.map(({ role, content }) => ({ role, content }));
     const priorTargetedResults = targetedMemoryFen === currentNode.fen ? targetedMemory : [];
@@ -478,7 +683,9 @@ export default function AiCoachPanel() {
           id: `assistant-${Date.now()}`,
           role: "assistant",
           content: response.answer,
-          basePath: currentPath,
+          basePath: requestPath,
+          baseHalfMoves: requestBaseHalfMoves,
+          baseSanMoves: requestBaseSanMoves,
         },
       ]);
       setUsedExistingAnalysis(response.usedExistingAnalysis);
@@ -494,8 +701,7 @@ export default function AiCoachPanel() {
     }
   }
 
-  function playCoachLine(line: string, basePath?: number[]) {
-    const payload = tokenizePlayableLine(line);
+  function playCoachMoves(payload: string[], basePath?: number[]) {
     if (payload.length === 0) return;
 
     const targetPath = [...(basePath ?? currentPath)];
@@ -583,7 +789,11 @@ export default function AiCoachPanel() {
                   </Text>
                   <CoachMessageContent
                     content={message.content}
-                    onPlayLine={(line) => playCoachLine(line, message.basePath)}
+                    basePath={message.basePath ?? []}
+                    baseHalfMoves={message.baseHalfMoves ?? 0}
+                    baseSanMoves={message.baseSanMoves ?? []}
+                    mainlineMoves={mainlineMoves}
+                    onPlayMoves={playCoachMoves}
                   />
                 </Stack>
               </Paper>
@@ -683,31 +893,72 @@ export default function AiCoachPanel() {
 
 function CoachMessageContent({
   content,
-  onPlayLine,
+  basePath,
+  baseHalfMoves,
+  baseSanMoves,
+  mainlineMoves,
+  onPlayMoves,
 }: {
   content: string;
-  onPlayLine: (line: string) => void;
+  basePath: number[];
+  baseHalfMoves: number;
+  baseSanMoves: string[];
+  mainlineMoves: MainlineMove[];
+  onPlayMoves: (moves: string[], basePath?: number[]) => void;
 }) {
   return (
     <Stack gap={6}>
-      {splitCoachMessage(content).map((segment, index) =>
-        segment.type === "line" ? (
-          <Button
-            key={`${segment.type}-${index}-${segment.text}`}
-            size="compact-xs"
-            variant="light"
-            leftSection={<IconSparkles size="0.85rem" />}
-            style={{ alignSelf: "flex-start", whiteSpace: "normal", height: "auto" }}
-            onClick={() => onPlayLine(segment.text)}
-          >
-            {segment.text}
-          </Button>
-        ) : (
-          <Text key={`${segment.type}-${index}`} size="sm" style={{ whiteSpace: "pre-wrap" }}>
-            {segment.text}
-          </Text>
-        ),
-      )}
+      {splitCoachMessage(content).map((segment, index) => {
+        if (segment.type === "line") {
+          const preparedLine = prepareCoachLine({
+            line: segment.text,
+            defaultBasePath: basePath,
+            defaultBaseHalfMoves: baseHalfMoves,
+            defaultBaseSanMoves: baseSanMoves,
+            mainlineMoves,
+          });
+
+          if (!preparedLine) return null;
+
+          return (
+            <Paper
+              key={`${segment.type}-${index}-${segment.text}`}
+              withBorder
+              p={6}
+              bg="var(--mantine-color-blue-light)"
+              style={{ alignSelf: "stretch" }}
+            >
+              <Group gap={4} wrap="wrap">
+                <IconSparkles size="0.85rem" />
+                {preparedLine.moves.map((move, moveIndex) => (
+                  <Group key={`${move.san}-${moveIndex}`} gap={3} wrap="nowrap">
+                    {move.label && (
+                      <Text size="sm" c="blue.2" fw={700}>
+                        {move.label}
+                      </Text>
+                    )}
+                    <Button
+                      size="compact-xs"
+                      variant="subtle"
+                      color="blue"
+                      px={4}
+                      onClick={() => onPlayMoves(move.prefix, preparedLine.basePath)}
+                    >
+                      {move.san}
+                    </Button>
+                  </Group>
+                ))}
+              </Group>
+            </Paper>
+          );
+        }
+
+        return (
+          <Stack key={`${segment.type}-${index}`} gap={4}>
+            {renderCoachText(segment.text)}
+          </Stack>
+        );
+      })}
     </Stack>
   );
 }

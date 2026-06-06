@@ -556,6 +556,14 @@ default.
   The coach bridge reads that temporary log and treats `You are not logged into
   Antigravity`, OAuth-token failures, and auth timeouts as unauthenticated AI
   CLI errors rather than surfacing a misleading empty-response failure.
+- Coach answer formatting is intentionally app-rendered rather than raw
+  Markdown. The UI strips `###` headings into bold section labels, renders
+  `**bold**`, turns Markdown bullet markers into normal bullet rows, and renders
+  each `<line>...</line>` variation as individual clickable move buttons. When
+  Gemini accidentally includes a full game prefix inside a line block, the UI
+  compares it with the current game's mainline, trims the matching prefix, and
+  anchors clicks from the branch position so blue move lines start at the
+  analysed position rather than at move 1.
 - Coach was then moved out of the under-board panel and into the right-side
   analysis tab stack as its own `Coach` tab; the under-board Coach button is
   only a shortcut that selects that right-side tab. The standalone Current FEN
