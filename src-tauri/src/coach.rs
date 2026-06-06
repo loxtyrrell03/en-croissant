@@ -211,19 +211,19 @@ pub enum CoachError {
     #[error("No Stockfish engine path was provided")]
     MissingEngine,
 
-    #[error("Gemini CLI command not found: {0}")]
+    #[error("AI CLI command not found: {0}")]
     GeminiMissing(String),
 
-    #[error("Gemini CLI appears unauthenticated. Run `gemini` in a terminal and choose Sign in with Google, then try again.")]
+    #[error("AI CLI appears unauthenticated. Run `agy --print \"Reply with only: ok\"` or `gemini` in a terminal, complete Google sign-in, then try again.")]
     GeminiUnauthenticated,
 
-    #[error("Gemini CLI timed out after {0} seconds")]
+    #[error("AI CLI timed out after {0} seconds")]
     GeminiTimeout(u64),
 
-    #[error("Gemini CLI exited with status {status}: {message}")]
+    #[error("AI CLI exited with status {status}: {message}")]
     GeminiFailed { status: String, message: String },
 
-    #[error("Gemini CLI returned an empty response")]
+    #[error("AI CLI returned an empty response")]
     GeminiEmpty,
 
     #[error("Gemini planner returned malformed JSON: {0}")]
@@ -2145,7 +2145,7 @@ async fn run_gemini_cli(
         String::new()
     };
     let combined = format!("{stdout}\n{stderr}\n{aux_log}");
-    if looks_unauthenticated(&combined) {
+    if looks_unauthenticated(&combined) && !looks_authenticated(&combined) {
         return Err(CoachError::GeminiUnauthenticated);
     }
     if !status.success() {
@@ -2155,11 +2155,106 @@ async fn run_gemini_cli(
         });
     }
 
-    let cleaned = clean_gemini_output(&stdout);
+    let mut cleaned = clean_gemini_output(&stdout);
+    if cleaned.trim().is_empty() && is_agy {
+        if let Some(transcript_output) = read_agy_transcript_response(&aux_log).await {
+            cleaned = transcript_output;
+        }
+    }
     if cleaned.trim().is_empty() {
+        let diagnostic = trim_error_text(&combined);
+        if !diagnostic.trim().is_empty() {
+            return Err(CoachError::GeminiFailed {
+                status: "empty response".to_string(),
+                message: diagnostic,
+            });
+        }
         return Err(CoachError::GeminiEmpty);
     }
     Ok(cleaned)
+}
+
+async fn read_agy_transcript_response(log: &str) -> Option<String> {
+    let conversation_id = agy_conversation_id_from_log(log)?;
+    let app_data_dir = agy_app_data_dir_from_log(log).or_else(default_agy_app_data_dir)?;
+    let transcript_dir = app_data_dir
+        .join("brain")
+        .join(conversation_id)
+        .join(".system_generated")
+        .join("logs");
+    let candidates = [
+        transcript_dir.join("transcript_full.jsonl"),
+        transcript_dir.join("transcript.jsonl"),
+    ];
+
+    for candidate in candidates {
+        let Ok(content) = tokio::fs::read_to_string(candidate).await else {
+            continue;
+        };
+        if let Some(output) = last_agy_model_content(&content) {
+            return Some(output);
+        }
+    }
+    None
+}
+
+fn agy_conversation_id_from_log(log: &str) -> Option<String> {
+    for line in log.lines().rev() {
+        if let Some(rest) = line.split("conversation=").nth(1) {
+            let id = rest
+                .split([',', ')', ' '])
+                .next()
+                .unwrap_or_default()
+                .trim();
+            if !id.is_empty() {
+                return Some(id.to_string());
+            }
+        }
+        if let Some(rest) = line.split("conversation update stream for ").nth(1) {
+            let id = rest.split_whitespace().next().unwrap_or_default().trim();
+            if !id.is_empty() {
+                return Some(id.to_string());
+            }
+        }
+    }
+    None
+}
+
+fn agy_app_data_dir_from_log(log: &str) -> Option<PathBuf> {
+    for line in log.lines().rev() {
+        if let Some(rest) = line.split("CLI app data directory: ").nth(1) {
+            let path = rest.trim();
+            if !path.is_empty() {
+                return Some(PathBuf::from(path));
+            }
+        }
+    }
+    None
+}
+
+fn default_agy_app_data_dir() -> Option<PathBuf> {
+    env::var_os("USERPROFILE").map(|profile| {
+        PathBuf::from(profile)
+            .join(".gemini")
+            .join("antigravity-cli")
+    })
+}
+
+fn last_agy_model_content(transcript_jsonl: &str) -> Option<String> {
+    transcript_jsonl
+        .lines()
+        .filter_map(|line| serde_json::from_str::<serde_json::Value>(line).ok())
+        .filter(|value| value.get("source").and_then(|source| source.as_str()) == Some("MODEL"))
+        .filter(|value| value.get("status").and_then(|status| status.as_str()) == Some("DONE"))
+        .filter_map(|value| {
+            value
+                .get("content")
+                .and_then(|content| content.as_str())
+                .map(str::trim)
+                .filter(|content| !content.is_empty())
+                .map(ToString::to_string)
+        })
+        .last()
 }
 
 fn resolve_cli_command(command: &str) -> PathBuf {
@@ -2252,7 +2347,18 @@ fn looks_unauthenticated(output: &str) -> bool {
     let output = output.to_lowercase();
     output.contains("please set an auth method")
         || output.contains("unauthenticated")
+        || output.contains("you are not logged into antigravity")
+        || output.contains("auth timed out")
+        || output.contains("failed to get oauth token")
+        || output.contains("error getting token source")
         || (output.contains("gemini_api_key") && output.contains("auth"))
+}
+
+fn looks_authenticated(output: &str) -> bool {
+    let output = output.to_lowercase();
+    output.contains("auth done received")
+        || output.contains("streamgeneratecontent")
+        || output.contains("text_drip.go")
 }
 
 fn clean_gemini_output(output: &str) -> String {
@@ -2630,6 +2736,53 @@ mod tests {
                 "Answer\nWarning: 256-color support not detected. Using a terminal with at least 256-color support is recommended for a better visual experience.\nRipgrep is not available. Falling back to GrepTool.\n"
             ),
             "Answer"
+        );
+    }
+
+    #[test]
+    fn detects_agy_auth_timeout_log_as_unauthenticated() {
+        let output = "E0606 printmode.go:235] Print mode: auth timed out\n\
+            error getting token source: You are not logged into Antigravity.";
+
+        assert!(looks_unauthenticated(output));
+        assert!(!looks_authenticated(output));
+    }
+
+    #[test]
+    fn detects_agy_success_after_initial_auth_noise() {
+        let output = "error getting token source: You are not logged into Antigravity.\n\
+            input_loop.go:510] Auth done received, triggering experiment refresh\n\
+            http_helpers.go:183] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse";
+
+        assert!(looks_unauthenticated(output));
+        assert!(looks_authenticated(output));
+    }
+
+    #[test]
+    fn extracts_agy_model_content_from_transcript() {
+        let transcript = r#"{"source":"USER_EXPLICIT","status":"DONE","content":"Question"}
+{"source":"MODEL","type":"PLANNER_RESPONSE","status":"DONE","content":"{\"requests\":[]}"}
+"#;
+
+        assert_eq!(
+            last_agy_model_content(transcript).as_deref(),
+            Some("{\"requests\":[]}")
+        );
+    }
+
+    #[test]
+    fn parses_agy_log_locations() {
+        let log = "I common.go:154] CLI app data directory: C:\\Users\\loxty\\.gemini\\antigravity-cli\n\
+            I printmode.go:82] Print mode: starting\n\
+            I printmode.go:147] Print mode: conversation=8c47d29b-aa92-43f8-a1d9-9dbebaa6453f, sending message";
+
+        assert_eq!(
+            agy_conversation_id_from_log(log).as_deref(),
+            Some("8c47d29b-aa92-43f8-a1d9-9dbebaa6453f")
+        );
+        assert_eq!(
+            agy_app_data_dir_from_log(log).as_deref(),
+            Some(Path::new("C:\\Users\\loxty\\.gemini\\antigravity-cli"))
         );
     }
 

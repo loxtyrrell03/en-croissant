@@ -551,6 +551,11 @@ default.
   prompt. Pro is no longer allowed to request follow-up Stockfish analysis; if
   it outputs `<stockfish_request>`, the backend rejects it and the planner
   should be improved to request that line up front.
+- AGY print mode can return exit code 0 with no stdout when it triggers OAuth
+  and the login flow times out; the useful error only appears in the AGY log.
+  The coach bridge reads that temporary log and treats `You are not logged into
+  Antigravity`, OAuth-token failures, and auth timeouts as unauthenticated AI
+  CLI errors rather than surfacing a misleading empty-response failure.
 - Coach was then moved out of the under-board panel and into the right-side
   analysis tab stack as its own `Coach` tab; the under-board Coach button is
   only a shortcut that selects that right-side tab. The standalone Current FEN
