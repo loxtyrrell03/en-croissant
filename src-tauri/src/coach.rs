@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    env,
     path::{Path, PathBuf},
     process::Stdio,
     time::Duration,
@@ -752,8 +753,10 @@ async fn run_gemini_cli(
         return Err(CoachError::GeminiMissing("empty command".to_string()));
     }
 
+    let resolved_command = resolve_cli_command(command);
+
     let temp_dir = tempdir()?;
-    let mut child = Command::new(command)
+    let mut child = Command::new(&resolved_command)
         .current_dir(temp_dir.path())
         .arg("--skip-trust")
         .arg("--approval-mode")
@@ -770,7 +773,11 @@ async fn run_gemini_cli(
         .spawn()
         .map_err(|error| {
             if error.kind() == std::io::ErrorKind::NotFound {
-                CoachError::GeminiMissing(command.to_string())
+                CoachError::GeminiMissing(format!(
+                    "{} (resolved to {})",
+                    command,
+                    resolved_command.display()
+                ))
             } else {
                 CoachError::Io(error)
             }
@@ -828,6 +835,76 @@ async fn run_gemini_cli(
         return Err(CoachError::GeminiEmpty);
     }
     Ok(cleaned)
+}
+
+fn resolve_cli_command(command: &str) -> PathBuf {
+    let command_path = PathBuf::from(command);
+    if command_has_path_separator(command) || command_path.extension().is_some() {
+        return command_path;
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        let dirs = command_search_dirs();
+        let extensions = [".exe", ".cmd", ".bat", ""];
+        if let Some(path) = resolve_command_from_dirs(command, &dirs, &extensions) {
+            return path;
+        }
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        let dirs = command_search_dirs();
+        let extensions = [""];
+        if let Some(path) = resolve_command_from_dirs(command, &dirs, &extensions) {
+            return path;
+        }
+    }
+
+    command_path
+}
+
+fn command_has_path_separator(command: &str) -> bool {
+    command.contains('/') || command.contains('\\')
+}
+
+fn command_search_dirs() -> Vec<PathBuf> {
+    let mut dirs = env::var_os("PATH")
+        .map(|path| env::split_paths(&path).collect::<Vec<_>>())
+        .unwrap_or_default();
+
+    #[cfg(target_os = "windows")]
+    {
+        if let Some(appdata) = env::var_os("APPDATA") {
+            dirs.push(PathBuf::from(appdata).join("npm"));
+        }
+        if let Some(userprofile) = env::var_os("USERPROFILE") {
+            dirs.push(
+                PathBuf::from(userprofile)
+                    .join("AppData")
+                    .join("Roaming")
+                    .join("npm"),
+            );
+        }
+    }
+
+    dirs
+}
+
+fn resolve_command_from_dirs(
+    command: &str,
+    dirs: &[PathBuf],
+    extensions: &[&str],
+) -> Option<PathBuf> {
+    for dir in dirs {
+        for extension in extensions {
+            let candidate = dir.join(format!("{command}{extension}"));
+            if candidate.is_file() {
+                return Some(candidate);
+            }
+        }
+    }
+    None
 }
 
 fn looks_unauthenticated(output: &str) -> bool {
@@ -959,6 +1036,23 @@ mod tests {
                 "Answer\nWarning: 256-color support not detected. Using a terminal with at least 256-color support is recommended for a better visual experience.\nRipgrep is not available. Falling back to GrepTool.\n"
             ),
             "Answer"
+        );
+    }
+
+    #[test]
+    fn resolves_command_from_cmd_shim() {
+        let temp = tempdir().unwrap();
+        std::fs::write(temp.path().join("gemini"), "").unwrap();
+        let shim = temp.path().join("gemini.cmd");
+        std::fs::write(&shim, "").unwrap();
+
+        assert_eq!(
+            resolve_command_from_dirs(
+                "gemini",
+                &[temp.path().to_path_buf()],
+                &[".exe", ".cmd", ".bat", ""]
+            ),
+            Some(shim)
         );
     }
 }

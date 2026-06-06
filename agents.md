@@ -461,6 +461,10 @@ default.
   as a secondary shortcut. The Gemini timeout setting was also narrowed to a
   normal numeric Rust type so generated TypeScript bindings keep
   `timeoutSecs` as `number` instead of `bigint`.
+- Another same-day follow-up made the local Gemini bridge resolve bare
+  `gemini` commands to Windows npm shims such as `%APPDATA%/npm/gemini.cmd`,
+  because Tauri dev/app processes may not inherit the same PATH that an
+  interactive PowerShell has.
 - On 2026-06-06, a source-derived White repertoire file was added under the
   app Files root's `Documents/EnCroissant/General repertoire/White  rep`
   folder as `Keymer Variation - Mendonca video.pgn`, with the matching `.info`
