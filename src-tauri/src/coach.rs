@@ -231,7 +231,7 @@ enum StockfishFollowUpRequest {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct CoachPlannerResponse {
-    #[serde(default)]
+    #[serde(default, rename = "pgn_scope", alias = "pgnScope")]
     pgn_scope: String,
     #[serde(default)]
     requests: Vec<StockfishFollowUpRequest>,

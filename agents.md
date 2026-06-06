@@ -602,7 +602,10 @@ default.
   game`, and `go through this game` must select `whole_game`. If scope
   selection regresses, Pro will only see the start/current-line PGN and will
   incorrectly answer with opening move-1 advice instead of reviewing the loaded
-  game.
+  game. `CoachPlannerResponse` is under camelCase serde defaults, so its
+  `pgn_scope` field must explicitly accept the snake-case key used in the
+  planner prompt; otherwise Rust will deserialize an empty scope and reject the
+  planner output.
 - On 2026-06-06, the Coach question box default was cleared so opening the
   Coach tab starts with a blank input instead of the seeded `What is the plan
   here?` prompt. Keep the submit guard tied to non-empty trimmed text.
