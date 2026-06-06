@@ -84,6 +84,28 @@ model, implementation map, and verification expectations for this app.
   are local verification artifacts. Do not delete them unless the user
   explicitly confirms deletion.
 
+## Rust/Tauri Verification
+
+- Do not run broad Rust/Tauri verification loops by default. This repo can take
+  many minutes to compile even for apparently focused `cargo test` commands,
+  and tool timeouts may leave `cargo`/`rustc` running in the background.
+- Prefer the narrowest useful check for the change:
+  `cargo test --manifest-path src-tauri/Cargo.toml --bin en-croissant-fork
+  module::tests -- --nocapture` for backend unit tests in the main app binary,
+  targeted TypeScript checks for frontend-only changes, and code inspection for
+  small low-risk edits.
+- Use `cargo fmt --manifest-path src-tauri/Cargo.toml --check` when formatting
+  validation is enough. Avoid running full-manifest `cargo fmt` casually,
+  because it may reformat unrelated Rust files and create noisy diffs.
+- Reserve broad commands such as `cargo check`, unfiltered `cargo test`, or
+  full Tauri builds for final/high-risk verification, dependency or type
+  boundary changes, release/build work, or when the user explicitly asks for
+  exhaustive verification. Tell the user before starting any command expected
+  to take several minutes.
+- After any Rust command times out, immediately check for lingering
+  `cargo`, `rustc`, or `en-croissant-fork` processes before running another
+  build command.
+
 ## Product Direction
 
 This fork is becoming a guided chess improvement workspace layered on top of
