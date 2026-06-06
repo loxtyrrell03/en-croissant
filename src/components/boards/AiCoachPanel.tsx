@@ -983,7 +983,7 @@ export default function AiCoachPanel() {
             disabled={loading}
             onChange={(event) => setQuestion(event.currentTarget.value)}
             onKeyDown={(event) => {
-              if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+              if (event.key === "Enter" && !event.shiftKey) {
                 event.preventDefault();
                 void askCoach();
               }
@@ -999,7 +999,7 @@ export default function AiCoachPanel() {
           </Button>
         </Group>
         <Text size="xs" c="dimmed" mt={4}>
-          Gemini explains; Stockfish supplies the chess truth. Use Ctrl+Enter to send.
+          Gemini explains; Stockfish supplies the chess truth. Enter sends; Shift+Enter adds a line.
         </Text>
       </Box>
     </Stack>

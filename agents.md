@@ -609,6 +609,9 @@ default.
 - On 2026-06-06, the Coach question box default was cleared so opening the
   Coach tab starts with a blank input instead of the seeded `What is the plan
   here?` prompt. Keep the submit guard tied to non-empty trimmed text.
+- On 2026-06-06, Coach input keyboard behavior was changed to chat-style
+  submission: plain Enter sends the prompt, while Shift+Enter inserts a
+  newline. Keep the textarea autosize behavior and non-empty submit guard.
 - On 2026-06-06, a source-derived White repertoire file was added under the
   app Files root's `Documents/EnCroissant/General repertoire/White  rep`
   folder as `Keymer Variation - Mendonca video.pgn`, with the matching `.info`
