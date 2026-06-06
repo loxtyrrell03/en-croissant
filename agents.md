@@ -488,11 +488,12 @@ default.
   `gemini` commands to Windows npm shims such as `%APPDATA%/npm/gemini.cmd`,
   because Tauri dev/app processes may not inherit the same PATH that an
   interactive PowerShell has.
-- The Coach modal then gained a frontend-only progress panel with elapsed time,
-  a timeout-based progress bar, and local pipeline steps for position
-  collection, Stockfish context, Gemini CLI waiting, follow-up analysis checks,
-  and near-timeout state. It intentionally labels this as pipeline progress,
-  not Gemini private reasoning.
+- The Coach modal then gained a progress panel with elapsed time and local
+  pipeline steps for position collection, Stockfish context, Gemini CLI
+  waiting, follow-up analysis checks, and near-timeout state. It intentionally
+  labels this as pipeline progress, not Gemini private reasoning. This was
+  later replaced by backend-emitted progress events so the UI no longer guesses
+  follow-up phases from elapsed time.
 - A later same-day Coach pass turned the modal into a small chat transcript.
   Each question now sends prior user/coach messages, the current-line PGN up
   to the selected board position, previous targeted Stockfish results for the
@@ -521,6 +522,21 @@ default.
   line shown to Gemini is a full sequence from the current FEN. Final Gemini
   `<line>...</line>` blocks are parsed server-side and rejected unless they are
   legal from the current FEN and match a prefix of supplied Stockfish data.
+- On 2026-06-06, the Coach backend became tolerant of Gemini's illegal
+  follow-up requests or final `<line>` blocks without weakening Stockfish
+  grounding. If Gemini asks Stockfish to analyse a game-start/opening sequence
+  that is not legal from the current FEN, or marks such a sequence as a final
+  clickable line, `src-tauri/src/coach.rs` now sends a correction prompt and
+  asks for a grounded repair instead of surfacing the raw backend error in the
+  Coach tab. Keep the repair path limited; unsupported lines must still be
+  rejected if Gemini repeats them after correction.
+- The Coach request pipeline now carries a frontend-generated request id and
+  emits `ai-coach-progress` events from `src-tauri/src/coach.rs` for each real
+  backend phase: settings validation, root Stockfish, proactive targeted
+  Stockfish, Gemini CLI calls, Gemini-requested Stockfish follow-ups, answer
+  repair, success, and failure. The same phases are written with `log::info!`
+  / `log::warn!` using `ai_coach[request-id]`, so hangs can be debugged from
+  the Tauri log/output instead of relying on the UI timer.
 - Coach was then moved out of the under-board panel and into the right-side
   analysis tab stack as its own `Coach` tab; the under-board Coach button is
   only a shortcut that selects that right-side tab. The standalone Current FEN

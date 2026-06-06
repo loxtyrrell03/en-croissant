@@ -3,9 +3,10 @@ use std::{
     env,
     path::{Path, PathBuf},
     process::Stdio,
-    time::Duration,
+    time::{Duration, Instant},
 };
 
+use log::{info, warn};
 use serde::{Deserialize, Serialize};
 use shakmaty::{
     san::{San, SanPlus},
@@ -13,6 +14,7 @@ use shakmaty::{
     CastlingMode, Color, EnPassantMode, Position,
 };
 use specta::Type;
+use tauri::Emitter;
 use tempfile::tempdir;
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
@@ -36,10 +38,13 @@ const MAX_PROACTIVE_STOCKFISH_REQUESTS: usize = 2;
 const MAX_PROMPT_PGN_CHARS: usize = 12_000;
 const MAX_CHAT_MESSAGE_CHARS: usize = 2_000;
 const MAX_GEMINI_ERROR_CHARS: usize = 1_200;
+const AI_COACH_PROGRESS_EVENT: &str = "ai-coach-progress";
 
 #[derive(Debug, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct AiCoachRequest {
+    #[serde(default)]
+    pub request_id: String,
     pub fen: String,
     pub side_to_move: String,
     pub move_history: Vec<String>,
@@ -141,6 +146,18 @@ pub struct AiCoachResponse {
     pub targeted_results: Vec<CoachTargetedResult>,
 }
 
+#[derive(Debug, Clone, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct AiCoachProgressEvent {
+    pub request_id: String,
+    pub stage: String,
+    pub label: String,
+    pub detail: String,
+    pub progress: f32,
+    pub finished: bool,
+    pub elapsed_ms: u64,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct CoachTargetedResult {
@@ -239,9 +256,119 @@ impl Type for CoachError {
     }
 }
 
+#[derive(Clone, Copy)]
+struct CoachProgressContext<'a> {
+    app: &'a tauri::AppHandle,
+    request_id: &'a str,
+    started: Instant,
+    base_progress: f32,
+}
+
+fn effective_request_id(request_id: &str) -> String {
+    let request_id = request_id.trim();
+    if request_id.is_empty() {
+        "coach-request".to_string()
+    } else {
+        request_id.chars().take(80).collect()
+    }
+}
+
+fn emit_coach_progress(
+    app: &tauri::AppHandle,
+    request_id: &str,
+    started: Instant,
+    stage: &str,
+    label: impl Into<String>,
+    detail: impl Into<String>,
+    progress: f32,
+    finished: bool,
+) {
+    let label = label.into();
+    let detail = detail.into();
+    let progress = progress.clamp(0.0, 100.0);
+    let event = AiCoachProgressEvent {
+        request_id: request_id.to_string(),
+        stage: stage.to_string(),
+        label: label.clone(),
+        detail: detail.clone(),
+        progress,
+        finished,
+        elapsed_ms: started.elapsed().as_millis() as u64,
+    };
+
+    if finished {
+        info!(
+            "ai_coach[{request_id}] {stage} finished at {progress:.1}% after {}ms: {label} - {detail}",
+            event.elapsed_ms
+        );
+    } else {
+        info!(
+            "ai_coach[{request_id}] {stage} at {progress:.1}% after {}ms: {label} - {detail}",
+            event.elapsed_ms
+        );
+    }
+
+    if let Err(error) = app.emit(AI_COACH_PROGRESS_EVENT, event) {
+        warn!("ai_coach[{request_id}] failed to emit progress event `{stage}`: {error}");
+    }
+}
+
 #[tauri::command]
 #[specta::specta]
-pub async fn ask_ai_coach(request: AiCoachRequest) -> Result<AiCoachResponse, CoachError> {
+pub async fn ask_ai_coach(
+    app: tauri::AppHandle,
+    request: AiCoachRequest,
+) -> Result<AiCoachResponse, CoachError> {
+    let request_id = effective_request_id(&request.request_id);
+    let started = Instant::now();
+    emit_coach_progress(
+        &app,
+        &request_id,
+        started,
+        "received",
+        "Received coach question",
+        "Validating settings and engine path.",
+        2.0,
+        false,
+    );
+
+    let result = ask_ai_coach_inner(&app, &request_id, started, request).await;
+    match &result {
+        Ok(response) => emit_coach_progress(
+            &app,
+            &request_id,
+            started,
+            "finished",
+            "Coach answer ready",
+            format!(
+                "Returned {} characters with {} targeted Stockfish result(s).",
+                response.answer.len(),
+                response.targeted_results.len()
+            ),
+            100.0,
+            true,
+        ),
+        Err(error) => emit_coach_progress(
+            &app,
+            &request_id,
+            started,
+            "failed",
+            "Coach request failed",
+            error.to_string(),
+            100.0,
+            true,
+        ),
+    }
+
+    result
+}
+
+async fn ask_ai_coach_inner(
+    app: &tauri::AppHandle,
+    request_id: &str,
+    started: Instant,
+    request: AiCoachRequest,
+) -> Result<AiCoachResponse, CoachError> {
     if !request.settings.enabled {
         return Err(CoachError::Disabled);
     }
@@ -257,8 +384,31 @@ pub async fn ask_ai_coach(request: AiCoachRequest) -> Result<AiCoachResponse, Co
     } else {
         model
     };
+    emit_coach_progress(
+        app,
+        request_id,
+        started,
+        "settings",
+        "Settings ready",
+        format!("Model {model}; MultiPV {multipv}; Gemini timeout {timeout_secs}s."),
+        6.0,
+        false,
+    );
 
     let stockfish_lines = if request.existing_lines.len() >= multipv as usize {
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "stockfish_cached",
+            "Using current Stockfish lines",
+            format!(
+                "Reusing {} engine line(s) already available for this position.",
+                request.existing_lines.len().min(multipv as usize)
+            ),
+            16.0,
+            false,
+        );
         request
             .existing_lines
             .iter()
@@ -266,6 +416,16 @@ pub async fn ask_ai_coach(request: AiCoachRequest) -> Result<AiCoachResponse, Co
             .cloned()
             .collect()
     } else {
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "stockfish_root",
+            "Running Stockfish MultiPV",
+            format!("Analysing the current position at depth {DEFAULT_STOCKFISH_DEPTH}."),
+            12.0,
+            false,
+        );
         run_stockfish_analysis(
             &request.engine_path,
             &request.fen,
@@ -278,23 +438,122 @@ pub async fn ask_ai_coach(request: AiCoachRequest) -> Result<AiCoachResponse, Co
         .await?
     };
     let used_existing_analysis = request.existing_lines.len() >= multipv as usize;
+    emit_coach_progress(
+        app,
+        request_id,
+        started,
+        "stockfish_root_done",
+        "Root Stockfish lines ready",
+        format!(
+            "Collected {} line(s) for the current position.",
+            stockfish_lines.len()
+        ),
+        25.0,
+        false,
+    );
 
     let mut targeted_results = request.prior_targeted_results.clone();
-    for stockfish_request in infer_question_stockfish_requests(&request.fen, &request.question)?
+    if !targeted_results.is_empty() {
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "targeted_cached",
+            "Reusing targeted Stockfish memory",
+            format!(
+                "Keeping {} earlier targeted result(s) for this same FEN.",
+                targeted_results.len()
+            ),
+            28.0,
+            false,
+        );
+    }
+
+    let proactive_requests = infer_question_stockfish_requests(&request.fen, &request.question)?
         .into_iter()
         .take(MAX_PROACTIVE_STOCKFISH_REQUESTS)
-    {
+        .collect::<Vec<_>>();
+    if proactive_requests.is_empty() {
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "targeted_skip",
+            "No pre-Gemini Stockfish follow-up needed",
+            "The question did not name legal moves or a concrete line that needs a targeted check.",
+            31.0,
+            false,
+        );
+    }
+    for (index, stockfish_request) in proactive_requests.into_iter().enumerate() {
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "targeted_proactive",
+            format!("Running targeted Stockfish check {}", index + 1),
+            describe_stockfish_request(&stockfish_request),
+            32.0 + index as f32 * 6.0,
+            false,
+        );
         let targeted = run_targeted_stockfish_request(
             &request.engine_path,
             &request.fen,
             stockfish_request,
             multipv,
             Duration::from_secs(20),
+            Some(CoachProgressContext {
+                app,
+                request_id,
+                started,
+                base_progress: 33.0 + index as f32 * 6.0,
+            }),
         )
         .await?;
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "targeted_proactive_done",
+            format!("Targeted Stockfish check {} ready", index + 1),
+            format!(
+                "{} produced {} line(s).",
+                targeted.label,
+                targeted.lines.len()
+            ),
+            37.0 + index as f32 * 6.0,
+            false,
+        );
         targeted_results.push(targeted);
     }
-    let prompt = build_coach_prompt(&request, &stockfish_lines, &targeted_results);
+    emit_coach_progress(
+        app,
+        request_id,
+        started,
+        "prompt",
+        "Building coach prompt",
+        format!(
+            "Packaging {} root line(s), {} targeted result(s), opening context, and chat history.",
+            stockfish_lines.len(),
+            targeted_results.len()
+        ),
+        45.0,
+        false,
+    );
+    let prompt = build_coach_prompt(&request, &stockfish_lines, &targeted_results, &[]);
+    emit_coach_progress(
+        app,
+        request_id,
+        started,
+        "gemini_first",
+        format!("Asking {model}"),
+        format!(
+            "Sending {} characters to the local Gemini CLI.",
+            prompt.len()
+        ),
+        52.0,
+        false,
+    );
     let first_answer = run_gemini_cli(
         &request.settings.gemini_command,
         &model,
@@ -302,22 +561,130 @@ pub async fn ask_ai_coach(request: AiCoachRequest) -> Result<AiCoachResponse, Co
         timeout_secs.into(),
     )
     .await?;
+    emit_coach_progress(
+        app,
+        request_id,
+        started,
+        "gemini_first_done",
+        "Gemini replied",
+        format!("First response was {} characters.", first_answer.len()),
+        72.0,
+        false,
+    );
 
     let mut final_answer = first_answer;
-    for _ in 0..MAX_GEMINI_FOLLOW_UPS {
+    let mut correction_notes = Vec::new();
+    for follow_up_index in 0..MAX_GEMINI_FOLLOW_UPS {
         let Some(stockfish_request) = parse_stockfish_request(&final_answer)? else {
             break;
         };
-        let targeted = run_targeted_stockfish_request(
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "gemini_stockfish_request",
+            format!(
+                "Gemini requested Stockfish follow-up {}",
+                follow_up_index + 1
+            ),
+            describe_stockfish_request(&stockfish_request),
+            74.0,
+            false,
+        );
+        let targeted = match run_targeted_stockfish_request(
             &request.engine_path,
             &request.fen,
             stockfish_request,
             multipv,
             Duration::from_secs(20),
+            Some(CoachProgressContext {
+                app,
+                request_id,
+                started,
+                base_progress: 76.0,
+            }),
         )
-        .await?;
+        .await
+        {
+            Ok(targeted) => targeted,
+            Err(CoachError::IllegalStockfishRequest(message)) => {
+                emit_coach_progress(
+                    app,
+                    request_id,
+                    started,
+                    "gemini_stockfish_rejected",
+                    "Rejected Gemini Stockfish request",
+                    message.clone(),
+                    78.0,
+                    false,
+                );
+                correction_notes.push(format!(
+                    "Your previous <stockfish_request> was rejected: {message}. Use only the exact current FEN, and if you analyse a continuation, the line must start with a legal move from that FEN. Give a final answer from the supplied Stockfish data, or request a corrected legal Stockfish line only if it is essential."
+                ));
+                let follow_up_prompt = build_coach_prompt(
+                    &request,
+                    &stockfish_lines,
+                    &targeted_results,
+                    &correction_notes,
+                );
+                emit_coach_progress(
+                    app,
+                    request_id,
+                    started,
+                    "gemini_correction",
+                    "Asking Gemini to correct its request",
+                    format!(
+                        "Sending {} characters with the rejection reason.",
+                        follow_up_prompt.len()
+                    ),
+                    80.0,
+                    false,
+                );
+                final_answer = run_gemini_cli(
+                    &request.settings.gemini_command,
+                    &model,
+                    &follow_up_prompt,
+                    timeout_secs.into(),
+                )
+                .await?;
+                continue;
+            }
+            Err(error) => return Err(error),
+        };
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "gemini_stockfish_done",
+            format!("Follow-up Stockfish {} ready", follow_up_index + 1),
+            format!(
+                "{} produced {} line(s).",
+                targeted.label,
+                targeted.lines.len()
+            ),
+            82.0,
+            false,
+        );
         targeted_results.push(targeted);
-        let follow_up_prompt = build_coach_prompt(&request, &stockfish_lines, &targeted_results);
+        let follow_up_prompt = build_coach_prompt(
+            &request,
+            &stockfish_lines,
+            &targeted_results,
+            &correction_notes,
+        );
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "gemini_second",
+            format!("Asking {model} again"),
+            format!(
+                "Sending {} characters with the new Stockfish result.",
+                follow_up_prompt.len()
+            ),
+            86.0,
+            false,
+        );
         final_answer = run_gemini_cli(
             &request.settings.gemini_command,
             &model,
@@ -325,6 +692,16 @@ pub async fn ask_ai_coach(request: AiCoachRequest) -> Result<AiCoachResponse, Co
             timeout_secs.into(),
         )
         .await?;
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "gemini_second_done",
+            "Gemini follow-up reply received",
+            format!("Response was {} characters.", final_answer.len()),
+            92.0,
+            false,
+        );
     }
 
     if parse_stockfish_request(&final_answer)?.is_some() {
@@ -332,12 +709,64 @@ pub async fn ask_ai_coach(request: AiCoachRequest) -> Result<AiCoachResponse, Co
             "Gemini asked for more Stockfish data after the follow-up limit".to_string(),
         ));
     }
-    validate_answer_line_blocks(
+    if let Err(error) = validate_answer_line_blocks(
         &request.fen,
         &final_answer,
         &stockfish_lines,
         &targeted_results,
-    )?;
+    ) {
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "answer_validation_repair",
+            "Repairing unsupported line in answer",
+            error.to_string(),
+            94.0,
+            false,
+        );
+        correction_notes.push(format!(
+            "Your previous final answer was rejected: {error}. Remove every unsupported <line> block, or replace it with an exact legal prefix of the supplied Stockfish data from the current FEN. Do not include any game-start opening sequence unless it is legal from the current FEN."
+        ));
+        let repair_prompt = build_coach_prompt(
+            &request,
+            &stockfish_lines,
+            &targeted_results,
+            &correction_notes,
+        );
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "gemini_repair",
+            format!("Asking {model} to repair the answer"),
+            format!(
+                "Sending {} characters with validation feedback.",
+                repair_prompt.len()
+            ),
+            95.0,
+            false,
+        );
+        final_answer = run_gemini_cli(
+            &request.settings.gemini_command,
+            &model,
+            &repair_prompt,
+            timeout_secs.into(),
+        )
+        .await?;
+        if parse_stockfish_request(&final_answer)?.is_some() {
+            return Err(CoachError::IllegalStockfishRequest(
+                "Gemini asked for more Stockfish data while repairing an unsupported line"
+                    .to_string(),
+            ));
+        }
+        validate_answer_line_blocks(
+            &request.fen,
+            &final_answer,
+            &stockfish_lines,
+            &targeted_results,
+        )?;
+    }
 
     Ok(AiCoachResponse {
         answer: final_answer,
@@ -352,6 +781,7 @@ fn build_coach_prompt(
     request: &AiCoachRequest,
     stockfish_lines: &[CoachEngineLine],
     targeted_results: &[CoachTargetedResult],
+    correction_notes: &[String],
 ) -> String {
     let pgn = request
         .pgn
@@ -388,6 +818,7 @@ fn build_coach_prompt(
         request.opening_context_error.as_deref(),
     );
     let game_analysis = format_game_analysis(&request.game_analysis);
+    let correction_notes = format_correction_notes(correction_notes);
 
     format!(
         r#"Role: You are a chess coach explaining a position.
@@ -440,6 +871,9 @@ Lichess All opening context:
 Conversation so far:
 {chat_history}
 
+Correction from the app:
+{correction_notes}
+
 User question:
 {question}
 "#,
@@ -454,8 +888,22 @@ User question:
         targeted = targeted,
         opening_context = opening_context,
         chat_history = chat_history,
+        correction_notes = correction_notes,
         question = request.question.as_str(),
     )
+}
+
+fn format_correction_notes(notes: &[String]) -> String {
+    if notes.is_empty() {
+        return "None".to_string();
+    }
+
+    notes
+        .iter()
+        .enumerate()
+        .map(|(index, note)| format!("{}. {}", index + 1, note))
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 fn trim_prompt_text(value: &str) -> String {
@@ -927,17 +1375,44 @@ fn has_what_if_cue(question: &str) -> bool {
         || question.contains("instead")
 }
 
+fn describe_stockfish_request(request: &StockfishFollowUpRequest) -> String {
+    match request {
+        StockfishFollowUpRequest::AnalyseMove { mv, reason, .. } => {
+            format!("Analysing move {mv}. Reason: {reason}")
+        }
+        StockfishFollowUpRequest::CompareMoves { moves, reason, .. } => {
+            format!("Comparing moves {}. Reason: {reason}", moves.join(", "))
+        }
+        StockfishFollowUpRequest::AnalyseLine { line, reason, .. } => {
+            format!("Analysing line {line}. Reason: {reason}")
+        }
+    }
+}
+
 async fn run_targeted_stockfish_request(
     engine_path: &Path,
     current_fen: &str,
     request: StockfishFollowUpRequest,
     multipv: u8,
     timeout_duration: Duration,
+    progress: Option<CoachProgressContext<'_>>,
 ) -> Result<CoachTargetedResult, CoachError> {
     match request {
         StockfishFollowUpRequest::AnalyseMove { fen, mv, reason } => {
             validate_follow_up_fen(current_fen, &fen)?;
             let (uci, san) = parse_single_move(&fen, &mv)?;
+            if let Some(progress) = progress {
+                emit_coach_progress(
+                    progress.app,
+                    progress.request_id,
+                    progress.started,
+                    "targeted_analyse_move",
+                    format!("Stockfish: {san}"),
+                    format!("Searching best replies after {san}."),
+                    progress.base_progress,
+                    false,
+                );
+            }
             let lines = run_stockfish_analysis(
                 engine_path,
                 &fen,
@@ -972,8 +1447,28 @@ async fn run_targeted_stockfish_request(
             let mut combined = Vec::new();
             let mut labels = Vec::new();
             let per_move_multipv = multipv.min(5);
-            for requested_move in moves {
+            let move_count = moves.len().max(1);
+            for (index, requested_move) in moves.into_iter().enumerate() {
                 let (uci, san) = parse_single_move(&fen, &requested_move)?;
+                if let Some(progress) = progress {
+                    let step_progress =
+                        progress.base_progress + (index as f32 / move_count as f32) * 10.0;
+                    emit_coach_progress(
+                        progress.app,
+                        progress.request_id,
+                        progress.started,
+                        "targeted_compare_move",
+                        format!("Stockfish compare: {san}"),
+                        format!(
+                            "Analysing candidate {} of {} with MultiPV {}.",
+                            index + 1,
+                            move_count,
+                            per_move_multipv
+                        ),
+                        step_progress,
+                        false,
+                    );
+                }
                 let lines = run_stockfish_analysis(
                     engine_path,
                     &fen,
@@ -1024,6 +1519,18 @@ async fn run_targeted_stockfish_request(
             validate_follow_up_fen(current_fen, &fen)?;
             let moves = parse_line_moves(&fen, &line)?;
             let san_moves = san_for_uci_line(&fen, &moves)?;
+            if let Some(progress) = progress {
+                emit_coach_progress(
+                    progress.app,
+                    progress.request_id,
+                    progress.started,
+                    "targeted_analyse_line",
+                    "Stockfish: requested line",
+                    format!("Searching best replies after {}.", san_moves.join(" ")),
+                    progress.base_progress,
+                    false,
+                );
+            }
             let lines = run_stockfish_analysis(
                 engine_path,
                 &fen,
@@ -1537,6 +2044,7 @@ mod tests {
 
     fn sample_request() -> AiCoachRequest {
         AiCoachRequest {
+            request_id: "test-coach-request".to_string(),
             fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1".to_string(),
             side_to_move: "white".to_string(),
             move_history: Vec::new(),
@@ -1572,6 +2080,7 @@ mod tests {
                 uci_moves: vec!["e2e4".to_string()],
                 san_moves: vec!["e4".to_string()],
             }],
+            &[],
             &[],
         );
 
@@ -1620,7 +2129,7 @@ mod tests {
             }],
         });
 
-        let prompt = build_coach_prompt(&request, &[], &[]);
+        let prompt = build_coach_prompt(&request, &[], &[], &[]);
 
         assert!(prompt.contains("Conversation so far"));
         assert!(prompt.contains("User: Should I play c4?"));
@@ -1642,7 +2151,7 @@ mod tests {
             annotations: vec!["?!".to_string()],
         }];
 
-        let prompt = build_coach_prompt(&request, &[], &[]);
+        let prompt = build_coach_prompt(&request, &[], &[], &[]);
 
         assert!(prompt.contains("PGN context (whole game PGN)"));
         assert!(prompt.contains("Ply 12: Nf3, +0.35, depth 14, annotations ?!"));
@@ -1746,6 +2255,39 @@ mod tests {
         .unwrap_err();
 
         assert!(result.to_string().contains("not supplied by Stockfish"));
+    }
+
+    #[test]
+    fn rejects_game_start_line_from_later_fen() {
+        let result = validate_answer_line_blocks(
+            "rnbqkbnr/pppppp1p/6p1/4N3/8/8/PPPPPPPP/RNBQKB1R w KQkq - 0 1",
+            "The line is <line>e4 g6 d4 Bg7</line>.",
+            &[CoachEngineLine {
+                multipv: 1,
+                depth: 12,
+                eval: "+0.20".to_string(),
+                uci_moves: vec!["e5g6".to_string()],
+                san_moves: vec!["Nxg6".to_string()],
+            }],
+            &[],
+        )
+        .unwrap_err();
+
+        assert!(result.to_string().contains("not a legal full line"));
+        assert!(result.to_string().contains("illegal move `e4`"));
+    }
+
+    #[test]
+    fn prompt_builder_includes_correction_notes() {
+        let prompt = build_coach_prompt(
+            &sample_request(),
+            &[],
+            &[],
+            &["Your previous final answer was rejected.".to_string()],
+        );
+
+        assert!(prompt.contains("Correction from the app"));
+        assert!(prompt.contains("1. Your previous final answer was rejected."));
     }
 
     #[test]

@@ -13,8 +13,9 @@ import {
   Textarea,
 } from "@mantine/core";
 import { IconAlertTriangle, IconSparkles } from "@tabler/icons-react";
+import { listen } from "@tauri-apps/api/event";
 import { useAtomValue } from "jotai";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 import type {
@@ -54,6 +55,23 @@ type CoachUiMessage = CoachChatMessage & {
 };
 
 type CoachMessageSegment = { type: "text"; text: string } | { type: "line"; text: string };
+
+type CoachProgressPayload = {
+  requestId: string;
+  stage: string;
+  label: string;
+  detail: string;
+  progress: number;
+  finished: boolean;
+  elapsedMs: number;
+};
+
+function createCoachRequestId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return `coach-${crypto.randomUUID()}`;
+  }
+  return `coach-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
 
 function isLocalEngine(engine: Engine): engine is LocalEngine {
   return engine.type === "local";
@@ -158,69 +176,6 @@ function formatElapsed(seconds: number): string {
   return mins > 0 ? `${mins}:${secs.toString().padStart(2, "0")}` : `${secs}s`;
 }
 
-function getCoachProgressSteps({
-  elapsedSecs,
-  hasCachedLines,
-  hasLichessToken,
-  model,
-  timeoutSecs,
-}: {
-  elapsedSecs: number;
-  hasCachedLines: boolean;
-  hasLichessToken: boolean;
-  model: string;
-  timeoutSecs: number;
-}) {
-  const nearTimeoutAt = Math.max(20, timeoutSecs - 15);
-  return [
-    {
-      at: 0,
-      label: "Collecting position",
-      detail: "Gathering FEN, side to move, current-line PGN, and chat history.",
-    },
-    {
-      at: 1,
-      label: hasLichessToken ? "Fetching Lichess All stats" : "Skipping Lichess All stats",
-      detail: hasLichessToken
-        ? "Pulling opening move counts and blended strength for this FEN."
-        : "No Lichess session token is available for explorer context.",
-    },
-    {
-      at: hasLichessToken ? 4 : 2,
-      label: hasCachedLines ? "Using current Stockfish lines" : "Running Stockfish MultiPV",
-      detail: hasCachedLines
-        ? "Reusing the analysis already shown for this board."
-        : "Asking the local engine for 3-8 principal variations.",
-    },
-    {
-      at: hasCachedLines ? 5 : 8,
-      label: "Building coach prompt",
-      detail: "Packaging Stockfish truth, opening stats, and the chat thread for Gemini.",
-    },
-    {
-      at: hasCachedLines ? 6 : 10,
-      label: `Asking ${model || "Gemini"}`,
-      detail: "Waiting for the local Gemini CLI response.",
-    },
-    {
-      at: 25,
-      label: "Still waiting on Gemini",
-      detail: "Longer chess prompts can take a while, especially on the first request.",
-    },
-    {
-      at: 45,
-      label: "Checking for follow-up analysis",
-      detail:
-        "If Gemini asks for legal targeted Stockfish checks, the app will run them and ask again.",
-    },
-    {
-      at: nearTimeoutAt,
-      label: "Near timeout",
-      detail: "The local request will stop soon if Gemini does not answer.",
-    },
-  ].filter((step) => step.at <= nearTimeoutAt || elapsedSecs >= step.at);
-}
-
 export default function AiCoachPanel() {
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (state) => state.root);
@@ -287,6 +242,9 @@ export default function AiCoachPanel() {
   const [modelUsed, setModelUsed] = useState("");
   const [requestStartedAt, setRequestStartedAt] = useState<number | null>(null);
   const [elapsedSecs, setElapsedSecs] = useState(0);
+  const [requestProgress, setRequestProgress] = useState<CoachProgressPayload | null>(null);
+  const [progressLog, setProgressLog] = useState<CoachProgressPayload[]>([]);
+  const activeRequestIdRef = useRef("");
 
   const [position] = useMemo(() => positionFromFen(currentNode.fen), [currentNode.fen]);
   const sideToMove =
@@ -335,26 +293,36 @@ export default function AiCoachPanel() {
   }, [coachHeaders, root]);
   const gameAnalysis = useMemo(() => buildGameAnalysisContext(root), [root]);
   const canSubmit = Boolean(enabled && coachEngine && question.trim().length > 0 && !loading);
-  const clampedMultipv = Math.max(3, Math.min(8, multipv));
-  const hasCachedLines = existingLines.length >= clampedMultipv;
-  const progressSteps = useMemo(
-    () =>
-      getCoachProgressSteps({
-        elapsedSecs,
-        hasCachedLines,
-        hasLichessToken: Boolean(explorerToken),
-        model: geminiModel,
-        timeoutSecs: effectiveTimeoutSecs,
-      }),
-    [elapsedSecs, explorerToken, geminiModel, hasCachedLines, effectiveTimeoutSecs],
-  );
-  const activeProgressStep =
-    [...progressSteps].reverse().find((step) => elapsedSecs >= step.at) ?? progressSteps[0];
+  const activeProgressStep = requestProgress ?? {
+    requestId: activeRequestIdRef.current,
+    stage: "idle",
+    label: "Preparing coach request",
+    detail: "Collecting board state and opening context before the backend starts.",
+    progress: loading ? 4 : 0,
+    finished: false,
+    elapsedMs: 0,
+  };
   const progressValue = loading
-    ? Math.min(96, Math.max(8, (elapsedSecs / Math.max(1, effectiveTimeoutSecs)) * 100))
+    ? Math.min(98, Math.max(6, activeProgressStep.progress))
     : answer
       ? 100
       : 0;
+
+  useEffect(() => {
+    let disposed = false;
+    const unlisten = listen<CoachProgressPayload>("ai-coach-progress", ({ payload }) => {
+      if (payload.requestId !== activeRequestIdRef.current) return;
+      setRequestProgress(payload);
+      setProgressLog((current) => [...current, payload].slice(-12));
+    });
+
+    return () => {
+      disposed = true;
+      void unlisten.then((cleanup) => {
+        if (disposed) cleanup();
+      });
+    };
+  }, []);
 
   useEffect(() => {
     if (!loading || requestStartedAt === null) return;
@@ -391,7 +359,19 @@ export default function AiCoachPanel() {
     };
     const chatHistory = messages.map(({ role, content }) => ({ role, content }));
     const priorTargetedResults = targetedMemoryFen === currentNode.fen ? targetedMemory : [];
+    const requestId = createCoachRequestId();
+    const startedAt = Date.now();
+    const initialProgress: CoachProgressPayload = {
+      requestId,
+      stage: "frontend_context",
+      label: "Collecting position",
+      detail: "Gathering FEN, side to move, PGN context, engine cache, and chat history.",
+      progress: 2,
+      finished: false,
+      elapsedMs: 0,
+    };
 
+    activeRequestIdRef.current = requestId;
     setLoading(true);
     setError("");
     setAnswer("");
@@ -401,7 +381,9 @@ export default function AiCoachPanel() {
     setOpeningContextStatus("loading");
     setOpeningMoveCount(0);
     setElapsedSecs(0);
-    setRequestStartedAt(Date.now());
+    setRequestStartedAt(startedAt);
+    setRequestProgress(initialProgress);
+    setProgressLog([initialProgress]);
     setQuestion("");
     setMessages((current) => [...current, userMessage]);
 
@@ -409,6 +391,19 @@ export default function AiCoachPanel() {
       let openingContext: CoachOpeningContext | null = null;
       let openingContextError: string | null = null;
       try {
+        const openingProgress: CoachProgressPayload = {
+          requestId,
+          stage: explorerToken ? "opening_context" : "opening_context_skip",
+          label: explorerToken ? "Fetching Lichess All stats" : "Skipping Lichess All stats",
+          detail: explorerToken
+            ? "Pulling explorer move counts and blended strength for this FEN."
+            : "No Lichess session token is available for explorer context.",
+          progress: 5,
+          finished: false,
+          elapsedMs: Date.now() - startedAt,
+        };
+        setRequestProgress(openingProgress);
+        setProgressLog((current) => [...current, openingProgress].slice(-12));
         openingContext = await buildAiCoachOpeningContext({
           fen: currentNode.fen,
           sideToMove,
@@ -418,13 +413,38 @@ export default function AiCoachPanel() {
         });
         setOpeningContextStatus(openingContext ? "ready" : "unavailable");
         setOpeningMoveCount(openingContext?.moves.length ?? 0);
+        const openingDoneProgress: CoachProgressPayload = {
+          requestId,
+          stage: openingContext ? "opening_context_done" : "opening_context_unavailable",
+          label: openingContext ? "Lichess All stats ready" : "No Lichess All stats",
+          detail: openingContext
+            ? `Collected ${openingContext.moves.length} explorer move(s).`
+            : "Continuing with Stockfish-only position context.",
+          progress: 8,
+          finished: false,
+          elapsedMs: Date.now() - startedAt,
+        };
+        setRequestProgress(openingDoneProgress);
+        setProgressLog((current) => [...current, openingDoneProgress].slice(-12));
       } catch (err) {
         openingContextError = err instanceof Error ? err.message : String(err);
         setOpeningContextStatus("error");
+        const openingErrorProgress: CoachProgressPayload = {
+          requestId,
+          stage: "opening_context_error",
+          label: "Lichess All stats unavailable",
+          detail: openingContextError,
+          progress: 8,
+          finished: false,
+          elapsedMs: Date.now() - startedAt,
+        };
+        setRequestProgress(openingErrorProgress);
+        setProgressLog((current) => [...current, openingErrorProgress].slice(-12));
       }
 
       const response = unwrap(
         await commands.askAiCoach({
+          requestId,
           fen: currentNode.fen,
           sideToMove,
           moveHistory: moves,
@@ -580,20 +600,26 @@ export default function AiCoachPanel() {
                   </Group>
                   <Progress value={progressValue} animated size="sm" radius="xl" />
                   <Stack gap={4}>
-                    {progressSteps.map((step) => {
-                      const complete = elapsedSecs >= step.at;
-                      const active = step === activeProgressStep;
+                    {progressLog.map((step, index) => {
+                      const active = index === progressLog.length - 1;
                       return (
-                        <Group key={step.label} gap="xs" wrap="nowrap">
+                        <Group
+                          key={`${step.stage}-${step.elapsedMs}-${index}`}
+                          gap="xs"
+                          wrap="nowrap"
+                        >
                           <Badge
                             size="xs"
-                            variant={active ? "filled" : complete ? "light" : "outline"}
-                            color={active ? "blue" : complete ? "green" : "gray"}
+                            variant={active ? "filled" : step.finished ? "light" : "outline"}
+                            color={active ? "blue" : step.finished ? "green" : "gray"}
                           >
-                            {complete ? "done" : "next"}
+                            {step.finished ? "done" : "step"}
                           </Badge>
-                          <Text size="xs" fw={active ? 600 : 400}>
-                            {step.label}
+                          <Text size="xs" fw={active ? 600 : 400} lineClamp={2}>
+                            {step.label}{" "}
+                            <Text span c="dimmed">
+                              {formatElapsed(Math.floor(step.elapsedMs / 1000))}
+                            </Text>
                           </Text>
                         </Group>
                       );
