@@ -530,7 +530,7 @@ export default function AiCoachPanel() {
     [engineMoves, movesKey, multipv, rootFen],
   );
 
-  const [question, setQuestion] = useState("What is the plan here?");
+  const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<CoachUiMessage[]>([]);
   const [answer, setAnswer] = useState("");
   const [error, setError] = useState("");
