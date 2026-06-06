@@ -493,6 +493,14 @@ default.
   `...Kxd8/...Ke8/...Kc8` king routes, `...h6/...h5` restraint of White's
   kingside majority, Rio-style `5.Re1 Nd6` lines, and anti-Berlin systems such
   as early `Bxc6`, `d3`, `d4`, and `Qe2`.
+- Also on 2026-06-06, the Center Game weak-opening gap was intentionally kept
+  lightweight because the user rarely sees it. `Center Game - GM Naroditsky
+  Lightweight Lesson.pgn` was added beside the Black weak deck with a
+  repertoire `.info` sidecar. It uses GM Daniel Naroditsky's Center Game
+  masterclass transcript mainly to capture the tactical warning about White's
+  `Bc4`/f7 activity in related Center/Danish positions, then maps the exact
+  weak-deck branch `1.e4 e5 2.d4 exd4 3.Qxd4 Nc6 4.Qd1 Nf6` to practical Black
+  development: `...Bb4+` or `...Bb4`, fast castling, and timely `...d5`.
 - Files also treats `.pdf` prep reports as first-class folder entries: selecting
   a PDF shows an in-app document preview with a system-viewer fallback, while
   PGN-only metadata, sidecar `.info`, and game-opening actions stay scoped to
