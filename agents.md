@@ -511,6 +511,16 @@ default.
   `4.Bc4 Nf6 5.Ng5 d5 6.exd5 Na5` branch, including Perunovic's warning about
   premature `...Nxd5`, the useful `...Qe7+` precision, `...c6`, `...h6`, and
   completing development.
+- Also on 2026-06-06, the White Grunfeld weak-opening lesson file was added as
+  `Grunfeld Defense - GM Svidler Naroditsky h3 Lesson.pgn`, with a repertoire
+  `.info` sidecar. This deliberately follows the user's later request to cover
+  the Exchange/Kramnik `8.h3` line after Black's `...c5`, rather than making
+  the common `Be3/Qd2/Rc1` branch the main lesson. It uses GM Peter Svidler and
+  GM Daniel Naroditsky Grunfeld video transcripts for the dynamic `...c5`
+  center-attack themes, plus GM Neil McDonald's ChessPublishing h3 notes for
+  the exact tabiya. The file teaches White to use `h3` to stop the easy
+  `...Bg4` pin, continue with `Be2`, watch for Black's critical `...Bf5`
+  equalizer, and treat the old `Be3` weak-deck line only as a secondary bridge.
 - Files also treats `.pdf` prep reports as first-class folder entries: selecting
   a PDF shows an in-app document preview with a system-viewer fallback, while
   PGN-only metadata, sidecar `.info`, and game-opening actions stay scoped to
