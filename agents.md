@@ -448,6 +448,14 @@ default.
   right-click rename actions for files and folders in the tree, and a folder
   import/export flow that splits a PGN or `.db3` database into one game file per
   game.
+- On 2026-06-06, a source-derived White repertoire file was added under the
+  app Files root's `Documents/EnCroissant/General repertoire/White  rep`
+  folder as `Keymer Variation - Mendonca video.pgn`, with the matching `.info`
+  sidecar marking it as a repertoire. It extracts the key 1.Nf3 d5 2.e3 Keymer
+  Variation lessons from the ChessBase India video with GM Leon Mendonca:
+  c6/Semi-Slav move orders, e6/Tarrasch and Queen's Indian structures, early c5
+  systems, recurring cxd5/d4 decisions, Rg1-g4 kingside plans, and Ne2-g3
+  manoeuvres.
 - Files also treats `.pdf` prep reports as first-class folder entries: selecting
   a PDF shows an in-app document preview with a system-viewer fallback, while
   PGN-only metadata, sidecar `.info`, and game-opening actions stay scoped to
