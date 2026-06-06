@@ -687,6 +687,14 @@ default.
   broad whole-game critical evidence for that turn. Keep unrelated later
   mistakes out of these answers unless they are direct alternatives,
   continuations/refutations, or necessary causal context for the named move.
+- Coach must also answer the user's requested task, not just the nearest
+  engine verdict. The prompt now carries a general question-intent summary for
+  verdict, defensive-resource/recovery, comparison, explanation, best-move, and
+  plan questions. For recovery questions such as "how could I have held after
+  I played X?", Pro should acknowledge the eval at most briefly and then focus
+  on the best practical try, concrete continuation, defensive idea, and what
+  to aim for next; earlier alternatives are only a short contrast unless the
+  user asks for them.
 - On 2026-06-06, the Coach question box default was cleared so opening the
   Coach tab starts with a blank input instead of the seeded `What is the plan
   here?` prompt. Keep the submit guard tied to non-empty trimmed text.

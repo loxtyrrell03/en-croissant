@@ -1043,21 +1043,26 @@ fn build_coach_prompt(
         )
     };
     let game_analysis = format_game_analysis_for_request(request);
-    let question_focus = format_question_focus(request);
+    let question_focus = format_question_focus_and_intent(request);
+    let salvage_question = question_asks_for_salvage(&request.question);
     let correction_notes = format_correction_notes(correction_notes);
     let root_engine_label = if use_cloud_existing_lines {
         "Lichess Cloud root lines"
     } else {
         "local Stockfish root MultiPV"
     };
-    let scope_rules = if whole_game_mode {
+    let scope_rules = if salvage_question {
+        "- This is a practical recovery/defensive-resource question. Use the PGN and stored analysis only to locate the named position and understand the game context.\n- Do not turn this into a broad whole-game review or a verdict report.\n- If the named move has already been played, prioritize targeted `After <move>` evidence for the best continuation from the bad position.\n- Use before-move analyse_position evidence only for a brief contrast unless the user explicitly asks what should have been played instead.".to_string()
+    } else if whole_game_mode {
         "- This is a whole-game review. Do not analyse the starting position/current board as the main topic.\n- Do not give a starting-position engine main line, opening recommendation, or generic move-1 advice unless the user explicitly asks about the opening.\n- Base the answer on the loaded game PGN, Stored whole-game Stockfish analysis, and critical targeted Stockfish results.\n- Prefer whole-game sections: **Direct answer**, **Critical moments**, **What to play instead**, **Training lesson**.\n- Do not include <line> blocks in whole-game answers. Refer to move numbers and SAN in prose; the UI makes those move references clickable.\n- For every critical move you mention, include concrete Stockfish evidence: the played-move refutation line when an `After <move>` targeted result is supplied, and the better line from the matching analyse_position result when supplied.\n- For each critical moment, explain it in this order: verdict, human chess mechanism, engine proof, lesson. The mechanism is mandatory: identify why the line works in chess terms, such as loose piece, overloaded defender, weak back rank, king exposure, bad coordination, trapped queen, open file, weak square, pawn break, tempo gain, or simplification into a better ending.".to_string()
     } else {
         format!(
             "- This is a current-position question. {root_engine_label} and targeted Stockfish results are the main evidence."
         )
     };
-    let answer_shape = if whole_game_mode {
+    let answer_shape = if salvage_question {
+        "Prefer this final answer shape: Direct answer; Best defensive try; Why it helps; Practical plan from there; What to avoid. Do not use a Critical moments section unless the user explicitly asked for a review."
+    } else if whole_game_mode {
         "Prefer this final answer shape: Direct answer; Critical moments; What to play instead; Training lesson. Do not include a Main line section unless the user asked for one specific variation."
     } else {
         "Prefer this final answer shape: Direct answer; Key reason; Main line or two; Human plan/lesson; Optional training takeaway."
@@ -1069,7 +1074,9 @@ fn build_coach_prompt(
     } else {
         "- Root Stockfish MultiPV is from the current FEN. Targeted results list their own FEN; use each targeted result only for that listed position. Targeted \"After ...\" results already include the requested move or requested line before the continuation.".to_string()
     };
-    let section_label_rule = if whole_game_mode {
+    let section_label_rule = if salvage_question {
+        "- Use bold section labels like **Direct answer**, **Best defensive try**, **Why it helps**, **Practical plan**, and **What to avoid**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
+    } else if whole_game_mode {
         "- Use bold section labels like **Direct answer**, **Critical moments**, **What to play instead**, and **Training lesson**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
     } else {
         "- Use bold section labels like **Direct answer**, **Key reason**, and **Main line**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
@@ -1095,7 +1102,9 @@ Core rules:
 - Do not use tools, shell commands, files, network lookups, external resources, or the Stockfish request protocol. A separate planner has already requested all allowed targeted Stockfish analysis up front.
 - If the supplied engine data still does not fully answer the user's question, say that limitation briefly and answer only from the supplied evidence. Do not output <stockfish_request>.
 - Use the conversation history to answer follow-up questions naturally.
-- Obey the Question focus section. When the user asks about a named move, answer around that move first. Mention other game moments only when they are direct alternatives from the same position, direct continuations/refutations after that move, or necessary causal context for that move.
+- Answer the user's actual requested task directly. First identify whether they are asking for a verdict, a defensive resource, a practical plan, a comparison, why a move works/fails, or what to play instead. Do not substitute a nearby topic just because the engine data contains it.
+- Obey the Question focus and intent section. When the user asks about a named move, answer around that move first. Mention other game moments only when they are direct alternatives from the same position, direct continuations/refutations after that move, or necessary causal context for that move.
+- When the requested task is a defensive resource or practical recovery question, answer from the difficult position the user names. Do not merely state that the user is worse or losing. You may acknowledge the eval once, then spend the answer on the best practical try, the concrete continuation, the human defensive idea, and what the user should aim for next. Keep earlier alternatives to one short note unless the user asks for them.
 - Use the Position/reference context to resolve explicit references such as "after 19.Nexd4", "that line", or "the line we discussed". If a referenced FEN is supplied there, use only Stockfish results from that FEN or current-FEN lines that legally reach it; do not reinterpret the reference from a different position.
 - For whole-game review questions, do more than list mistakes: when critical-position Stockfish results are supplied, tell the user what should have been played instead and why Stockfish prefers that move over the move played. It is fine to cover only the critical mistakes.
 - If you cannot identify a clear human mechanism from a supplied line, say that the engine line proves a concrete problem but the supplied data does not show a simple motif, then still give the best practical lesson you can support. Do not pretend to see a tactic that is not there.
@@ -1136,7 +1145,7 @@ Lichess All opening context:
 Conversation so far:
 {chat_history}
 
-Question focus:
+Question focus and intent:
 {question_focus}
 
 Position/reference context:
@@ -1202,7 +1211,7 @@ fn build_planner_prompt(
     let critical_positions = format_critical_game_positions(request);
     let chat_history = format_chat_history(&request.chat_history);
     let reference_context = format_reference_context(reference_context);
-    let question_focus = format_question_focus(request);
+    let question_focus = format_question_focus_and_intent(request);
     let existing_engine_lines = format_engine_lines(&request.existing_lines);
     let targeted = if targeted_results.is_empty() {
         "None".to_string()
@@ -1225,6 +1234,7 @@ Rules:
 - Output only one JSON object. No markdown, no prose outside JSON.
 - Do not analyse chess yourself and do not answer the user's question.
 - First choose pgn_scope. Use "whole_game" when the user asks to analyse, review, annotate, recap, go through, or find what went wrong in the loaded game. Use "current_line" for questions about the current board position, opening choice, a candidate move, or a concrete line.
+- Plan Stockfish work for the user's actual requested task, not just for a generic verdict. If they ask how to defend, hold, recover, compare, understand why, or choose a plan, request evidence that answers that task directly.
 - If the user names a concrete move from the loaded game, keep the plan anchored to that move. Do not turn a named-move question into a broad critical-moments review unless the user explicitly asks for the whole game.
 - The stronger coach model will only receive the PGN scope you choose, so do not choose "current_line" for whole-game review wording like "analyse this game".
 - Stockfish is the source of truth. Be generous: it is better to request too many relevant Stockfish lines than too few.
@@ -1288,7 +1298,7 @@ Lichess All opening context, if available:
 Conversation so far:
 {chat_history}
 
-Question focus:
+Question focus and intent:
 {question_focus}
 
 Position/reference context:
@@ -2144,10 +2154,13 @@ fn game_analysis_point_matches_move_candidates(
         .unwrap_or(false)
 }
 
-fn format_question_focus(request: &AiCoachRequest) -> String {
+fn format_question_focus_and_intent(request: &AiCoachRequest) -> String {
+    let intent = infer_question_intent(&request.question);
     let candidates = extract_move_candidates(&request.question);
     if candidates.is_empty() {
-        return "No explicit named move focus detected.".to_string();
+        return format!(
+            "Inferred intent: {intent}. No explicit named move focus detected. Answer the requested task directly instead of drifting into a generic review."
+        );
     }
 
     let named_moves = candidates.join(", ");
@@ -2177,8 +2190,51 @@ fn format_question_focus(request: &AiCoachRequest) -> String {
     };
 
     format!(
-        "The user named: {named_moves}. {matched_text} Answer this specific question first. Do not give a broad critical-moments review. Discuss other moves only when they are direct alternatives from the same position, direct continuations/refutations after the named move, or necessary causal context for that named move."
+        "Inferred intent: {intent}. The user named: {named_moves}. {matched_text} Answer this specific question first. Do not give a broad critical-moments review. Discuss other moves only when they are direct alternatives from the same position, direct continuations/refutations after the named move, or necessary causal context for that named move."
     )
+}
+
+fn infer_question_intent(question: &str) -> &'static str {
+    if question_asks_for_salvage(question) {
+        return "find the best practical defensive resource or recovery plan from a difficult position";
+    }
+
+    let lower = question.to_ascii_lowercase();
+    if has_compare_cue(question) {
+        "compare the named choices and explain the practical difference"
+    } else if lower.contains("why") {
+        "explain why the named move, line, or plan works or fails"
+    } else if lower.contains("what should")
+        || lower.contains("what to play")
+        || lower.contains("instead")
+        || lower.contains("best move")
+        || lower.contains("best")
+    {
+        "recommend what to play and justify it with concrete evidence"
+    } else if lower.contains("plan")
+        || lower.contains("idea")
+        || lower.contains("aim")
+        || lower.contains("strategy")
+    {
+        "explain the practical plan and priorities"
+    } else {
+        "answer the chess question directly from the supplied evidence"
+    }
+}
+
+fn question_asks_for_salvage(question: &str) -> bool {
+    let lower = question.to_ascii_lowercase();
+    lower.contains("hold")
+        || lower.contains("held")
+        || lower.contains("save")
+        || lower.contains("survive")
+        || lower.contains("recover")
+        || lower.contains("defend")
+        || lower.contains("defensive")
+        || lower.contains("make the most")
+        || lower.contains("bad situation")
+        || lower.contains("after i played")
+        || lower.contains("after playing")
 }
 
 fn normalize_move_reference(value: &str) -> String {
@@ -3775,11 +3831,29 @@ mod tests {
 
         let prompt = build_coach_prompt(&request, &[], &[], &[], &[]);
 
-        assert!(prompt.contains("Question focus"));
+        assert!(prompt.contains("Question focus and intent"));
+        assert!(prompt.contains(
+            "Inferred intent: find the best practical defensive resource or recovery plan"
+        ));
         assert!(prompt.contains("The user named: Qxb5"));
         assert!(prompt.contains("ply 19: white played Qxb5+"));
         assert!(prompt.contains("Do not give a broad critical-moments review"));
+        assert!(prompt.contains("Best defensive try"));
+        assert!(prompt.contains("Do not merely state that the user is worse or losing"));
+        assert!(prompt.contains("Do not turn this into a broad whole-game review"));
+        assert!(!prompt.contains("Prefer whole-game sections"));
         assert!(!prompt.contains("Ply 31: h4"));
+    }
+
+    #[test]
+    fn question_intent_classifies_common_coach_tasks() {
+        assert!(infer_question_intent("How could I have held after Qxb5?")
+            .contains("defensive resource"));
+        assert!(infer_question_intent("Why is Qxb5 bad?").contains("explain why"));
+        assert!(
+            infer_question_intent("Is Qxb5 better than Qa4?").contains("compare the named choices")
+        );
+        assert!(infer_question_intent("What is the plan here?").contains("practical plan"));
     }
 
     #[test]
