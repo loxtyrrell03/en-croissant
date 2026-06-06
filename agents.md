@@ -485,6 +485,14 @@ default.
   `...h6`, `...Be7`, `...Re8`, and `...Nbd7`, the `Bf4`/`...Nbd7` branch,
   when `...Bf5` solves Black's light-square bishop problem, the g3 Orthodox
   setup, and the Tartakower `...b6/...dxc4` reminder.
+- Also on 2026-06-06, a Black Ruy Lopez weak-openings lesson file was added as
+  `Ruy Lopez - GM Seirawan Berlin Lesson.pgn`, with a repertoire `.info`
+  sidecar. It is transcript-derived from GM Yasser Seirawan's Saint Louis
+  Chess Club Berlin Defence lecture and maps the weak deck's Berlin focus:
+  the queen-trade endgame after `4.O-O Nxe4 5.d4`, the `8.Qe2 Nd4` branch,
+  `...Kxd8/...Ke8/...Kc8` king routes, `...h6/...h5` restraint of White's
+  kingside majority, Rio-style `5.Re1 Nd6` lines, and anti-Berlin systems such
+  as early `Bxc6`, `d3`, `d4`, and `Qe2`.
 - Files also treats `.pdf` prep reports as first-class folder entries: selecting
   a PDF shows an in-app document preview with a system-viewer fallback, while
   PGN-only metadata, sidecar `.info`, and game-opening actions stay scoped to
