@@ -16,7 +16,7 @@ import { useLoaderData } from "@tanstack/react-router";
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeFile } from "@tauri-apps/plugin-fs";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { memo, useContext, useState } from "react";
+import { memo, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
@@ -29,7 +29,6 @@ import {
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
 import { usePracticeAgainstBot } from "@/hooks/usePracticeAgainstBot";
-import AiCoachModal from "./AiCoachModal";
 
 interface BoardControlsProps {
   editingMode: boolean;
@@ -72,8 +71,6 @@ function BoardControls({
   const aiCoachEnabled = useAtomValue(aiCoachEnabledAtom);
   const eraseDrawablesOnClick = useAtomValue(eraseDrawablesOnClickAtom);
   const practiceAgainstBot = usePracticeAgainstBot();
-  const [coachOpened, setCoachOpened] = useState(false);
-  const openCoach = onOpenCoach ?? (() => setCoachOpened(true));
 
   const orientation = headers.orientation || "white";
   const toggleOrientation = () =>
@@ -168,7 +165,11 @@ function BoardControls({
           position="right"
           label={aiCoachEnabled ? "AI Coach" : "AI Coach disabled in Settings"}
         >
-          <ActionIcon onClick={openCoach} variant={aiCoachEnabled ? "filled" : "subtle"}>
+          <ActionIcon
+            disabled={!onOpenCoach}
+            onClick={onOpenCoach}
+            variant={aiCoachEnabled ? "filled" : "subtle"}
+          >
             <IconSparkles size="1.2rem" />
           </ActionIcon>
         </Tooltip>
@@ -211,7 +212,6 @@ function BoardControls({
           </ActionIcon>
         </Tooltip>
       </Stack>
-      {!onOpenCoach && <AiCoachModal opened={coachOpened} onClose={() => setCoachOpened(false)} />}
     </>
   );
 }

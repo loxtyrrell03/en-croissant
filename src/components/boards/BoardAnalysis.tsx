@@ -60,7 +60,6 @@ import { TreeStateContext } from "../common/TreeStateContext";
 import Board from "./Board";
 import { BoardWithAnnotationLayout } from "./BoardWithAnnotationLayout";
 import BoardControls from "./BoardControls";
-import AiCoachModal from "./AiCoachModal";
 import EditingCard from "./EditingCard";
 import EngineDockedPanel from "./EngineDockedPanel";
 import EngineKeyboardShortcuts from "./EngineKeyboardShortcuts";
@@ -68,6 +67,7 @@ import EvalListener from "./EvalListener";
 import classes from "./BoardAnalysis.module.css";
 
 const AnalysisPanel = lazy(() => import("../panels/analysis/AnalysisPanel"));
+const AiCoachPanel = lazy(() => import("./AiCoachPanel"));
 const ComparePanel = lazy(() => import("../panels/compare/ComparePanel"));
 const DatabasePanel = lazy(() => import("../panels/database/DatabasePanel"));
 const EnginePlanExplorerPanel = lazy(() => import("../panels/enginePlan/EnginePlanExplorerPanel"));
@@ -85,7 +85,7 @@ const scrollablePanelStyle = {
   overflowY: "auto",
 } as const;
 
-type UnderBoardMode = "moves" | "database" | "prep";
+type UnderBoardMode = "moves" | "database" | "prep" | "coach";
 const INACTIVE_REVIEW_DECK_KEY = "__inactive-board-analysis__.opening-review.json";
 
 function PanelFallback() {
@@ -119,6 +119,7 @@ function UnderBoardModeSwitch({
         { value: "moves", label: "Moves" },
         { value: "database", label: "Database" },
         { value: "prep", label: "Prep" },
+        { value: "coach", label: "Coach" },
       ]}
       value={value}
       onChange={(next) => onChange(next as UnderBoardMode)}
@@ -154,7 +155,6 @@ function BoardAnalysis() {
 
   const [editingMode, toggleEditingMode] = useToggle();
   const [underBoardMode, setUnderBoardMode] = useState<UnderBoardMode>("moves");
-  const [coachOpened, setCoachOpened] = useState(false);
   const [savingCopy, setSavingCopy] = useState(false);
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
   const [topBarActionsTarget, setTopBarActionsTarget] = useState<HTMLElement | null>(null);
@@ -304,7 +304,7 @@ function BoardAnalysis() {
       toggleEditingMode={toggleEditingMode}
       dirty={dirty}
       saveFile={userSaveFile}
-      onOpenCoach={() => setCoachOpened(true)}
+      onOpenCoach={() => setUnderBoardMode("coach")}
     />
   );
   const underBoardHeaderActions = (
@@ -314,8 +314,8 @@ function BoardAnalysis() {
         aria-label="AI Coach"
         leftSection={<IconSparkles size="1rem" />}
         size="xs"
-        variant={aiCoachEnabled ? "filled" : "subtle"}
-        onClick={() => setCoachOpened(true)}
+        variant={underBoardMode === "coach" && aiCoachEnabled ? "filled" : "subtle"}
+        onClick={() => setUnderBoardMode("coach")}
       >
         Coach
       </Button>
@@ -389,7 +389,6 @@ function BoardAnalysis() {
     <>
       <EvalListener active />
       <EngineKeyboardShortcuts />
-      <AiCoachModal opened={coachOpened} onClose={() => setCoachOpened(false)} />
       {topBarActionsTarget && (
         <Portal target={topBarActionsTarget}>
           <Tooltip label="Save game to files">
@@ -437,8 +436,10 @@ function BoardAnalysis() {
                           <ResponsivePanel>
                             {underBoardMode === "database" ? (
                               <DatabasePanel />
-                            ) : (
+                            ) : underBoardMode === "prep" ? (
                               <OpponentPrepPanel underBoard />
+                            ) : (
+                              <AiCoachPanel />
                             )}
                           </ResponsivePanel>
                         </DeferredPanel>

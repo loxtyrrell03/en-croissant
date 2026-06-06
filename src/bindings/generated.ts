@@ -679,14 +679,18 @@ progressEvent: "progress-event"
 
 /** user-defined types **/
 
-export type AiCoachRequest = { fen: string; sideToMove: string; moveHistory: string[]; pgn: string | null; selectedMove: string | null; question: string; existingLines: CoachEngineLine[]; enginePath: string; settings: AiCoachSettings }
+export type AiCoachRequest = { fen: string; sideToMove: string; moveHistory: string[]; pgn: string | null; pgnScope?: string; gameAnalysis?: CoachGameAnalysisPoint[]; selectedMove: string | null; question: string; chatHistory?: CoachChatMessage[]; existingLines: CoachEngineLine[]; priorTargetedResults?: CoachTargetedResult[]; openingContext: CoachOpeningContext | null; openingContextError: string | null; enginePath: string; settings: AiCoachSettings }
 export type AiCoachResponse = { answer: string; model: string; usedExistingAnalysis: boolean; stockfishLines: CoachEngineLine[]; targetedResults: CoachTargetedResult[] }
 export type AiCoachSettings = { enabled: boolean; geminiCommand: string; geminiModel: string; multipv: number; timeoutSecs: number }
 export type AnalysisOptions = { fen: string; moves: string[]; annotateNovelties: boolean; referenceDb: string | null; reversed: boolean }
 export type BestMoves = { nodes: number; depth: number; score: Score; uciMoves: string[]; sanMoves: string[]; multipv: number; nps: number }
 export type BestMovesPayload = { bestLines: BestMoves[]; engine: string; tab: string; fen: string; moves: string[]; progress: number }
 export type ClockUpdateEvent = { gameId: string; whiteTime: bigint | null; blackTime: bigint | null }
+export type CoachChatMessage = { role: string; content: string }
 export type CoachEngineLine = { multipv: number; depth: number; eval: string; uciMoves: string[]; sanMoves: string[] }
+export type CoachGameAnalysisPoint = { ply: number; move: string; fen: string; eval: string | null; depth: number | null; annotations: string[] }
+export type CoachOpeningContext = { source: string; fen: string; side: string; totalGames: number; filters: string; moves: CoachOpeningMove[] }
+export type CoachOpeningMove = { san: string; uci: string; games: number; white: number; draw: number; black: number; usagePct: number; sideScorePct: number; blendedStrength: number; blendedLabel: string; databaseStrengthPct: number | null; engineCpLoss: number | null; engineRank: number | null; engineScore: string | null; notes: string[] }
 export type CoachTargetedResult = { requestType: string; reason: string; fen: string; moves: string[]; label: string; lines: CoachEngineLine[] }
 export type DatabaseClockCoverage = { gameCount: number; gamesWithTiming: number }
 export type DatabaseInfo = { title: string; description: string; player_count: number; event_count: number; game_count: number; storage_size: bigint; filename: string; indexed: boolean }

@@ -359,7 +359,7 @@ export default function Page() {
         description: "Number of Stockfish MultiPV lines supplied to Gemini.",
         keywords: ["ai", "coach", "stockfish", "multipv", "lines"],
         render: () => (
-          <NumberSetting atom={aiCoachMultipvAtom} min={3} max={5} step={1} fallback={3} />
+          <NumberSetting atom={aiCoachMultipvAtom} min={3} max={8} step={1} fallback={3} />
         ),
       },
       {

@@ -1,5 +1,5 @@
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     env,
     path::{Path, PathBuf},
     process::Stdio,
@@ -31,8 +31,10 @@ use crate::{
 };
 
 const DEFAULT_STOCKFISH_DEPTH: u32 = 12;
-const MAX_GEMINI_FOLLOW_UPS: usize = 1;
+const MAX_GEMINI_FOLLOW_UPS: usize = 2;
+const MAX_PROACTIVE_STOCKFISH_REQUESTS: usize = 2;
 const MAX_PROMPT_PGN_CHARS: usize = 12_000;
+const MAX_CHAT_MESSAGE_CHARS: usize = 2_000;
 const MAX_GEMINI_ERROR_CHARS: usize = 1_200;
 
 #[derive(Debug, Deserialize, Type)]
@@ -42,9 +44,19 @@ pub struct AiCoachRequest {
     pub side_to_move: String,
     pub move_history: Vec<String>,
     pub pgn: Option<String>,
+    #[serde(default)]
+    pub pgn_scope: String,
+    #[serde(default)]
+    pub game_analysis: Vec<CoachGameAnalysisPoint>,
     pub selected_move: Option<String>,
     pub question: String,
+    #[serde(default)]
+    pub chat_history: Vec<CoachChatMessage>,
     pub existing_lines: Vec<CoachEngineLine>,
+    #[serde(default)]
+    pub prior_targeted_results: Vec<CoachTargetedResult>,
+    pub opening_context: Option<CoachOpeningContext>,
+    pub opening_context_error: Option<String>,
     pub engine_path: PathBuf,
     pub settings: AiCoachSettings,
 }
@@ -69,6 +81,56 @@ pub struct CoachEngineLine {
     pub san_moves: Vec<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct CoachChatMessage {
+    pub role: String,
+    pub content: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct CoachGameAnalysisPoint {
+    pub ply: u32,
+    #[serde(rename = "move")]
+    pub mv: String,
+    pub fen: String,
+    pub eval: Option<String>,
+    pub depth: Option<u32>,
+    pub annotations: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct CoachOpeningContext {
+    pub source: String,
+    pub fen: String,
+    pub side: String,
+    pub total_games: u32,
+    pub filters: String,
+    pub moves: Vec<CoachOpeningMove>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct CoachOpeningMove {
+    pub san: String,
+    pub uci: String,
+    pub games: u32,
+    pub white: u32,
+    pub draw: u32,
+    pub black: u32,
+    pub usage_pct: f64,
+    pub side_score_pct: f64,
+    pub blended_strength: u16,
+    pub blended_label: String,
+    pub database_strength_pct: Option<f64>,
+    pub engine_cp_loss: Option<i32>,
+    pub engine_rank: Option<u16>,
+    pub engine_score: Option<String>,
+    pub notes: Vec<String>,
+}
+
 #[derive(Debug, Serialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct AiCoachResponse {
@@ -79,7 +141,7 @@ pub struct AiCoachResponse {
     pub targeted_results: Vec<CoachTargetedResult>,
 }
 
-#[derive(Debug, Clone, Serialize, Type)]
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct CoachTargetedResult {
     pub request_type: String,
@@ -184,7 +246,7 @@ pub async fn ask_ai_coach(request: AiCoachRequest) -> Result<AiCoachResponse, Co
         return Err(CoachError::MissingEngine);
     }
 
-    let multipv = request.settings.multipv.clamp(3, 5);
+    let multipv = request.settings.multipv.clamp(3, 8);
     let timeout_secs = request.settings.timeout_secs.clamp(15, 90);
     let model = request.settings.gemini_model.trim().to_string();
     let model = if model.is_empty() {
@@ -214,7 +276,22 @@ pub async fn ask_ai_coach(request: AiCoachRequest) -> Result<AiCoachResponse, Co
     };
     let used_existing_analysis = request.existing_lines.len() >= multipv as usize;
 
-    let prompt = build_coach_prompt(&request, &stockfish_lines, &[]);
+    let mut targeted_results = request.prior_targeted_results.clone();
+    for stockfish_request in infer_question_stockfish_requests(&request.fen, &request.question)?
+        .into_iter()
+        .take(MAX_PROACTIVE_STOCKFISH_REQUESTS)
+    {
+        let targeted = run_targeted_stockfish_request(
+            &request.engine_path,
+            &request.fen,
+            stockfish_request,
+            multipv,
+            Duration::from_secs(20),
+        )
+        .await?;
+        targeted_results.push(targeted);
+    }
+    let prompt = build_coach_prompt(&request, &stockfish_lines, &targeted_results);
     let first_answer = run_gemini_cli(
         &request.settings.gemini_command,
         &model,
@@ -223,7 +300,6 @@ pub async fn ask_ai_coach(request: AiCoachRequest) -> Result<AiCoachResponse, Co
     )
     .await?;
 
-    let mut targeted_results = Vec::new();
     let mut final_answer = first_answer;
     for _ in 0..MAX_GEMINI_FOLLOW_UPS {
         let Some(stockfish_request) = parse_stockfish_request(&final_answer)? else {
@@ -231,6 +307,7 @@ pub async fn ask_ai_coach(request: AiCoachRequest) -> Result<AiCoachResponse, Co
         };
         let targeted = run_targeted_stockfish_request(
             &request.engine_path,
+            &request.fen,
             stockfish_request,
             multipv,
             Duration::from_secs(20),
@@ -272,6 +349,10 @@ fn build_coach_prompt(
         .as_deref()
         .map(trim_prompt_text)
         .unwrap_or_else(|| "Unavailable".to_string());
+    let pgn_scope = match request.pgn_scope.trim() {
+        "whole_game" => "whole game PGN",
+        _ => "current line PGN up to this position",
+    };
     let selected_move = request
         .selected_move
         .as_deref()
@@ -292,14 +373,24 @@ fn build_coach_prompt(
             .collect::<Vec<_>>()
             .join("\n\n")
     };
+    let chat_history = format_chat_history(&request.chat_history);
+    let opening_context = format_opening_context(
+        request.opening_context.as_ref(),
+        request.opening_context_error.as_deref(),
+    );
+    let game_analysis = format_game_analysis(&request.game_analysis);
 
     format!(
         r#"Role: You are a chess coach explaining a position.
 
 Core rules:
 - Stockfish is the source of truth.
-- Do not invent tactics, evaluations, or variations not supported by supplied engine data.
+- Never invent concrete tactics, evaluations, plans, or variations. Any concrete move line or plan you recommend must be backed by supplied Stockfish MultiPV or targeted Stockfish results.
+- You may use general chess and opening knowledge for concepts, structures, plans, and naming, but only as explanation layered on top of Stockfish-backed lines.
+- Explain like a strong GM/coach: use proper chess terminology such as isolated queen's pawn, minority attack, deflection, trapped piece, blockade, weak square, exchange sacrifice, or domination when it genuinely fits.
+- Treat Lichess All opening stats and blended strength as practical/popularity evidence only. Use it when relevant to opening choice, repertoire, popularity, or practical results; do not treat it as a tactical proof.
 - Do not use tools, shell commands, files, network lookups, or external resources. If you need more chess data, use only the Stockfish request protocol below.
+- If the user asks "what if", "why not", "why is X better than Y", "what happens after ...", or names a move/line that is not covered by the supplied engine data, request targeted Stockfish analysis before answering. It is better to ask for more Stockfish data than to guess.
 - If the supplied lines do not answer the user's question, request targeted Stockfish analysis using exactly one XML/JSON block and no other text:
 <stockfish_request>
 {{"type":"analyse_move","fen":"...","move":"Bxd4","reason":"The user asked why Bxd4 does not work, but it was not covered by the initial MultiPV."}}
@@ -307,6 +398,10 @@ Core rules:
 - Supported Stockfish request types are analyse_move, compare_moves, and analyse_line.
 - For compare_moves, use {{"type":"compare_moves","fen":"...","moves":["Nf3","c4"],"reason":"..."}}.
 - For analyse_line, use {{"type":"analyse_line","fen":"...","line":"Nf3 d5 c4","reason":"..."}}.
+- The fen inside a Stockfish request must be exactly the current FEN below. To analyse a later position, use analyse_line from the current FEN.
+- Use the conversation history to answer follow-up questions naturally.
+- When you give a concrete playable variation in your final answer, wrap only the moves in <line>...</line>. Do not wrap prose. Only include a <line> block when that line appears in Stockfish data supplied here.
+- Do not give an engine-looking line unless it appears in Stockfish MultiPV or targeted Stockfish result.
 - Keep answers concise unless the user asks for depth.
 - Prefer this final answer shape: Direct answer; Key reason; Main line or two; Human plan/lesson; Optional training takeaway.
 
@@ -316,14 +411,23 @@ Side to move: {side_to_move}
 Selected move/current node: {selected_move}
 Move history in UCI: {move_history}
 
-PGN context:
+PGN context ({pgn_scope}):
 {pgn}
+
+Stored whole-game Stockfish analysis:
+{game_analysis}
 
 Stockfish MultiPV:
 {engine_lines}
 
 Targeted Stockfish result:
 {targeted}
+
+Lichess All opening context:
+{opening_context}
+
+Conversation so far:
+{chat_history}
 
 User question:
 {question}
@@ -332,9 +436,13 @@ User question:
         side_to_move = request.side_to_move,
         selected_move = selected_move,
         move_history = move_history,
+        pgn_scope = pgn_scope,
         pgn = pgn,
+        game_analysis = game_analysis,
         engine_lines = engine_lines,
         targeted = targeted,
+        opening_context = opening_context,
+        chat_history = chat_history,
         question = request.question.as_str(),
     )
 }
@@ -385,6 +493,145 @@ fn format_targeted_result(result: &CoachTargetedResult) -> String {
     )
 }
 
+fn format_chat_history(messages: &[CoachChatMessage]) -> String {
+    if messages.is_empty() {
+        return "None".to_string();
+    }
+
+    messages
+        .iter()
+        .rev()
+        .take(10)
+        .collect::<Vec<_>>()
+        .into_iter()
+        .rev()
+        .filter_map(|message| {
+            let role = match message.role.trim().to_ascii_lowercase().as_str() {
+                "user" => "User",
+                "assistant" => "Coach",
+                _ => return None,
+            };
+            let content = trim_chat_text(&message.content);
+            if content.is_empty() {
+                None
+            } else {
+                Some(format!("{role}: {content}"))
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n\n")
+}
+
+fn format_game_analysis(points: &[CoachGameAnalysisPoint]) -> String {
+    if points.is_empty() {
+        return "Unavailable or not requested for this question.".to_string();
+    }
+
+    points
+        .iter()
+        .take(240)
+        .map(|point| {
+            let eval = point.eval.as_deref().unwrap_or("no eval");
+            let depth = point
+                .depth
+                .map(|value| format!("depth {value}"))
+                .unwrap_or_else(|| "depth unknown".to_string());
+            let annotations = if point.annotations.is_empty() {
+                String::new()
+            } else {
+                format!(", annotations {}", point.annotations.join(" "))
+            };
+            format!(
+                "Ply {ply}: {mv}, {eval}, {depth}{annotations}",
+                ply = point.ply,
+                mv = point.mv,
+                eval = eval,
+                depth = depth,
+                annotations = annotations
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn trim_chat_text(value: &str) -> String {
+    let trimmed = value.trim();
+    if trimmed.len() <= MAX_CHAT_MESSAGE_CHARS {
+        trimmed.to_string()
+    } else {
+        let text = trimmed
+            .chars()
+            .take(MAX_CHAT_MESSAGE_CHARS)
+            .collect::<String>();
+        format!("{text}\n...[message truncated]...")
+    }
+}
+
+fn format_opening_context(context: Option<&CoachOpeningContext>, error: Option<&str>) -> String {
+    let Some(context) = context else {
+        return match error.map(str::trim).filter(|value| !value.is_empty()) {
+            Some(error) => format!("Unavailable ({})", trim_chat_text(error)),
+            None => "Unavailable".to_string(),
+        };
+    };
+
+    if context.moves.is_empty() {
+        return format!(
+            "{} for FEN {}\nSide: {}\nFilters: {}\nTotal games: {}\nNo legal opening moves returned.",
+            context.source, context.fen, context.side, context.filters, context.total_games
+        );
+    }
+
+    let moves = context
+        .moves
+        .iter()
+        .map(|line| {
+            let engine = match (&line.engine_score, line.engine_cp_loss, line.engine_rank) {
+                (Some(score), Some(loss), Some(rank)) => {
+                    format!(", engine {score}, cp loss {loss}, engine rank {rank}")
+                }
+                (Some(score), None, Some(rank)) => {
+                    format!(", engine {score}, engine rank {rank}")
+                }
+                (Some(score), _, None) => format!(", engine {score}"),
+                _ => String::new(),
+            };
+            let database_strength = line
+                .database_strength_pct
+                .map(|value| format!(", practical score {:.1}%", value))
+                .unwrap_or_default();
+            let notes = if line.notes.is_empty() {
+                String::new()
+            } else {
+                format!(", notes: {}", line.notes.join("; "))
+            };
+            format!(
+                "- {san} ({uci}): {games} games, usage {usage:.1}%, W/D/L {white}/{draw}/{black}, {side_score:.1}% score for {side}, blended {blend}/100 ({label}){database_strength}{engine}{notes}",
+                san = line.san,
+                uci = line.uci,
+                games = line.games,
+                usage = line.usage_pct,
+                white = line.white,
+                draw = line.draw,
+                black = line.black,
+                side_score = line.side_score_pct,
+                side = context.side,
+                blend = line.blended_strength,
+                label = line.blended_label,
+                database_strength = database_strength,
+                engine = engine,
+                notes = notes
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    format!(
+        "{} for FEN {}\nSide: {}\nFilters: {}\nTotal games: {}\nMoves:\n{}",
+        context.source, context.fen, context.side, context.filters, context.total_games, moves
+    )
+}
+
 fn parse_stockfish_request(answer: &str) -> Result<Option<StockfishFollowUpRequest>, CoachError> {
     let start_tag = "<stockfish_request>";
     let end_tag = "</stockfish_request>";
@@ -410,14 +657,184 @@ fn parse_stockfish_request(answer: &str) -> Result<Option<StockfishFollowUpReque
     Ok(Some(request))
 }
 
+fn infer_question_stockfish_requests(
+    fen: &str,
+    question: &str,
+) -> Result<Vec<StockfishFollowUpRequest>, CoachError> {
+    let candidates = extract_move_candidates(question);
+    if candidates.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let mut requests = Vec::new();
+    let legal_root_moves = legal_root_move_mentions(fen, &candidates)?;
+    if has_compare_cue(question) && legal_root_moves.len() >= 2 {
+        requests.push(StockfishFollowUpRequest::CompareMoves {
+            fen: fen.to_string(),
+            moves: legal_root_moves
+                .iter()
+                .take(5)
+                .map(|(_, san)| san.clone())
+                .collect(),
+            reason: "The user compared named candidate moves, so the coach needs Stockfish lines for each move before explaining the difference.".to_string(),
+        });
+        return Ok(requests);
+    }
+
+    if has_what_if_cue(question) {
+        if let Some((_, san)) = legal_root_moves.first() {
+            requests.push(StockfishFollowUpRequest::AnalyseMove {
+                fen: fen.to_string(),
+                mv: san.clone(),
+                reason: "The user asked about a specific move, so the coach needs Stockfish's answer after that move.".to_string(),
+            });
+            return Ok(requests);
+        }
+
+        if candidates.len() >= 2 && parse_line_moves(fen, &candidates.join(" ")).is_ok() {
+            requests.push(StockfishFollowUpRequest::AnalyseLine {
+                fen: fen.to_string(),
+                line: candidates.join(" "),
+                reason: "The user asked about a concrete line, so the coach needs Stockfish's answer after that sequence.".to_string(),
+            });
+        }
+    }
+
+    Ok(requests)
+}
+
+fn legal_root_move_mentions(
+    fen: &str,
+    candidates: &[String],
+) -> Result<Vec<(String, String)>, CoachError> {
+    let _ = parse_fen_to_position(fen)?;
+    let mut seen = HashSet::new();
+    let mut legal_moves = Vec::new();
+
+    for candidate in candidates {
+        if let Ok((uci, san)) = parse_single_move(fen, candidate) {
+            if seen.insert(uci.clone()) {
+                legal_moves.push((uci, san));
+            }
+        }
+    }
+
+    Ok(legal_moves)
+}
+
+fn extract_move_candidates(question: &str) -> Vec<String> {
+    let mut seen = HashSet::new();
+    question
+        .split_whitespace()
+        .filter_map(normalize_move_candidate)
+        .filter(|candidate| seen.insert(candidate.clone()))
+        .collect()
+}
+
+fn normalize_move_candidate(token: &str) -> Option<String> {
+    let mut token = token
+        .trim()
+        .trim_matches(|ch: char| {
+            ch == '"'
+                || ch == '\''
+                || ch == '`'
+                || ch == '('
+                || ch == ')'
+                || ch == '['
+                || ch == ']'
+                || ch == '{'
+                || ch == '}'
+                || ch == ','
+                || ch == ';'
+                || ch == ':'
+        })
+        .trim_end_matches(|ch: char| ch == '?' || ch == '!' || ch == '.' || ch == ',')
+        .to_string();
+
+    if token.is_empty() {
+        return None;
+    }
+
+    token = token.replace('0', "O");
+    if token.eq_ignore_ascii_case("O-O") {
+        return Some("O-O".to_string());
+    }
+    if token.eq_ignore_ascii_case("O-O-O") {
+        return Some("O-O-O".to_string());
+    }
+
+    if !looks_like_move_candidate(&token) {
+        return None;
+    }
+
+    if let Some(first) = token.chars().next() {
+        if matches!(first, 'k' | 'q' | 'r' | 'b' | 'n') {
+            token.replace_range(0..first.len_utf8(), &first.to_ascii_uppercase().to_string());
+        }
+    }
+
+    Some(token)
+}
+
+fn looks_like_move_candidate(token: &str) -> bool {
+    let lower = token.to_ascii_lowercase();
+    if lower == "o-o" || lower == "o-o-o" {
+        return true;
+    }
+
+    let has_file = lower.chars().any(|ch| matches!(ch, 'a'..='h'));
+    let has_rank = lower.chars().any(|ch| matches!(ch, '1'..='8'));
+    if !has_file || !has_rank {
+        return false;
+    }
+
+    if lower.len() == 2 {
+        return matches!(lower.as_bytes()[0], b'a'..=b'h')
+            && matches!(lower.as_bytes()[1], b'1'..=b'8');
+    }
+
+    matches!(
+        lower.chars().next(),
+        Some('a'..='h') | Some('k' | 'q' | 'r' | 'n')
+    )
+}
+
+fn has_compare_cue(question: &str) -> bool {
+    let question = question.to_ascii_lowercase();
+    question.contains(" better ")
+        || question.contains(" worse ")
+        || question.contains(" than ")
+        || question.contains(" instead")
+        || question.contains(" vs ")
+        || question.contains(" versus ")
+        || question.contains(" compare")
+}
+
+fn has_what_if_cue(question: &str) -> bool {
+    let question = question.to_ascii_lowercase();
+    question.contains("what if")
+        || question.contains("why")
+        || question.contains("doesn't")
+        || question.contains("doesnt")
+        || question.contains("work")
+        || question.contains("after")
+        || question.contains("goes")
+        || question.contains("play")
+        || question.contains("can't")
+        || question.contains("cannot")
+        || question.contains("instead")
+}
+
 async fn run_targeted_stockfish_request(
     engine_path: &Path,
+    current_fen: &str,
     request: StockfishFollowUpRequest,
     multipv: u8,
     timeout_duration: Duration,
 ) -> Result<CoachTargetedResult, CoachError> {
     match request {
         StockfishFollowUpRequest::AnalyseMove { fen, mv, reason } => {
+            validate_follow_up_fen(current_fen, &fen)?;
             let (uci, san) = parse_single_move(&fen, &mv)?;
             let lines = run_stockfish_analysis(
                 engine_path,
@@ -439,6 +856,7 @@ async fn run_targeted_stockfish_request(
             })
         }
         StockfishFollowUpRequest::CompareMoves { fen, moves, reason } => {
+            validate_follow_up_fen(current_fen, &fen)?;
             if moves.is_empty() || moves.len() > 5 {
                 return Err(CoachError::IllegalStockfishRequest(
                     "compare_moves requires 1 to 5 moves".to_string(),
@@ -446,7 +864,7 @@ async fn run_targeted_stockfish_request(
             }
             let mut combined = Vec::new();
             let mut labels = Vec::new();
-            let per_move_multipv = multipv.min(3);
+            let per_move_multipv = multipv.min(5);
             for requested_move in moves {
                 let (uci, san) = parse_single_move(&fen, &requested_move)?;
                 let lines = run_stockfish_analysis(
@@ -491,6 +909,7 @@ async fn run_targeted_stockfish_request(
             })
         }
         StockfishFollowUpRequest::AnalyseLine { fen, line, reason } => {
+            validate_follow_up_fen(current_fen, &fen)?;
             let moves = parse_line_moves(&fen, &line)?;
             let lines = run_stockfish_analysis(
                 engine_path,
@@ -512,6 +931,17 @@ async fn run_targeted_stockfish_request(
             })
         }
     }
+}
+
+fn validate_follow_up_fen(current_fen: &str, requested_fen: &str) -> Result<(), CoachError> {
+    if requested_fen.trim() == current_fen.trim() {
+        return Ok(());
+    }
+
+    Err(CoachError::IllegalStockfishRequest(
+        "Stockfish requests must use the current FEN; use analyse_line to inspect a later position"
+            .to_string(),
+    ))
 }
 
 fn parse_single_move(fen: &str, requested_move: &str) -> Result<(String, String), CoachError> {
@@ -606,7 +1036,7 @@ async fn run_stockfish_analysis(
     label: &str,
 ) -> Result<Vec<CoachEngineLine>, CoachError> {
     let _ = parse_fen_and_apply_moves(fen, moves)?;
-    let multipv = multipv.clamp(1, 5);
+    let multipv = multipv.clamp(1, 8);
     let mut engine = BaseEngine::spawn(engine_path.to_path_buf()).await?;
     engine.init_uci().await?;
     engine.set_option("MultiPV", multipv).await?;
@@ -947,9 +1377,15 @@ mod tests {
             side_to_move: "white".to_string(),
             move_history: Vec::new(),
             pgn: Some("[Event \"?\"]\n\n*".to_string()),
+            pgn_scope: "current_line".to_string(),
+            game_analysis: Vec::new(),
             selected_move: Some("Current node".to_string()),
             question: "What is the plan here?".to_string(),
+            chat_history: Vec::new(),
             existing_lines: Vec::new(),
+            prior_targeted_results: Vec::new(),
+            opening_context: None,
+            opening_context_error: None,
             engine_path: PathBuf::from("stockfish"),
             settings: AiCoachSettings {
                 enabled: true,
@@ -979,6 +1415,101 @@ mod tests {
         assert!(prompt.contains("<stockfish_request>"));
         assert!(prompt.contains("What is the plan here?"));
         assert!(prompt.contains("1. eval +0.20, depth 12, PV: e4"));
+    }
+
+    #[test]
+    fn prompt_builder_includes_chat_and_lichess_all_context() {
+        let mut request = sample_request();
+        request.chat_history = vec![
+            CoachChatMessage {
+                role: "user".to_string(),
+                content: "Should I play c4?".to_string(),
+            },
+            CoachChatMessage {
+                role: "assistant".to_string(),
+                content: "c4 is playable if Stockfish supports it.".to_string(),
+            },
+        ];
+        request.opening_context = Some(CoachOpeningContext {
+            source: "Lichess All".to_string(),
+            fen: request.fen.clone(),
+            side: "white".to_string(),
+            total_games: 1000,
+            filters: "ratings 1800+".to_string(),
+            moves: vec![CoachOpeningMove {
+                san: "e4".to_string(),
+                uci: "e2e4".to_string(),
+                games: 500,
+                white: 220,
+                draw: 120,
+                black: 160,
+                usage_pct: 50.0,
+                side_score_pct: 56.0,
+                blended_strength: 82,
+                blended_label: "82".to_string(),
+                database_strength_pct: Some(54.2),
+                engine_cp_loss: Some(0),
+                engine_rank: Some(1),
+                engine_score: Some("+0.20".to_string()),
+                notes: vec!["Matches Lichess cloud choice #1".to_string()],
+            }],
+        });
+
+        let prompt = build_coach_prompt(&request, &[], &[]);
+
+        assert!(prompt.contains("Conversation so far"));
+        assert!(prompt.contains("User: Should I play c4?"));
+        assert!(prompt.contains("Lichess All opening context"));
+        assert!(prompt.contains("e4 (e2e4): 500 games"));
+        assert!(prompt.contains("blended 82/100"));
+    }
+
+    #[test]
+    fn prompt_builder_includes_whole_game_analysis_context() {
+        let mut request = sample_request();
+        request.pgn_scope = "whole_game".to_string();
+        request.game_analysis = vec![CoachGameAnalysisPoint {
+            ply: 12,
+            mv: "Nf3".to_string(),
+            fen: request.fen.clone(),
+            eval: Some("+0.35".to_string()),
+            depth: Some(14),
+            annotations: vec!["?!".to_string()],
+        }];
+
+        let prompt = build_coach_prompt(&request, &[], &[]);
+
+        assert!(prompt.contains("PGN context (whole game PGN)"));
+        assert!(prompt.contains("Ply 12: Nf3, +0.35, depth 14, annotations ?!"));
+    }
+
+    #[test]
+    fn infers_compare_request_from_named_legal_moves() {
+        let requests = infer_question_stockfish_requests(
+            "rnbqkbnr/pppppp1p/6p1/4N3/8/8/PPPPPPPP/RNBQKB1R w KQkq - 0 1",
+            "why is e4 better than nxg6?",
+        )
+        .unwrap();
+
+        assert!(matches!(
+            requests.first(),
+            Some(StockfishFollowUpRequest::CompareMoves { moves, .. })
+                if moves == &vec!["e4".to_string(), "Nxg6".to_string()]
+        ));
+    }
+
+    #[test]
+    fn infers_lowercase_what_if_move() {
+        let requests = infer_question_stockfish_requests(
+            "rnbqkbnr/pppppp1p/6p1/4N3/8/8/PPPPPPPP/RNBQKB1R w KQkq - 0 1",
+            "what if I play nxg6 and it doesn't work?",
+        )
+        .unwrap();
+
+        assert!(matches!(
+            requests.first(),
+            Some(StockfishFollowUpRequest::AnalyseMove { mv, .. }) if mv == "Nxg6"
+        ));
     }
 
     #[test]
@@ -1017,6 +1548,17 @@ mod tests {
 </stockfish_request>"#,
         );
         assert!(parsed.is_err());
+    }
+
+    #[test]
+    fn rejects_foreign_follow_up_fen() {
+        let error = validate_follow_up_fen(
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+        )
+        .unwrap_err();
+
+        assert!(error.to_string().contains("current FEN"));
     }
 
     #[test]

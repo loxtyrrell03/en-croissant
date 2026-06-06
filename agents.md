@@ -64,8 +64,9 @@ model, implementation map, and verification expectations for this app.
 
 - Do not run Playwright or other browser automation for local UI checks unless
   the user explicitly asks for Playwright/browser verification in the prompt.
-  Default verification should be typecheck, lint, unit tests, focused Rust
-  tests, and code inspection.
+  Default verification should be code inspection plus the smallest targeted
+  check that matches the change, and it is acceptable to skip slow checks when
+  the change is low-risk or the user has not asked for verification.
 - The Vite dev server for this Tauri app normally serves at
   `http://localhost:1420`; `vite.config.ts` has `strictPort: true`, so check
   whether that port is already owned before starting a new server, but do not
@@ -451,7 +452,7 @@ default.
 - On 2026-06-06, an experimental local AI Coach vertical slice was added beside
   the board controls. It uses a Tauri-only Gemini CLI bridge for local personal
   use, defaults to `gemini-3.1-pro-preview`, sends Gemini only structured
-  Stockfish-grounded prompts, and lets Gemini request at most one bounded
+  Stockfish-grounded prompts, and lets Gemini request bounded
   follow-up Stockfish analysis through the XML/JSON protocol in
   `src-tauri/src/coach.rs`. Keep Stockfish as the source of truth, do not add
   credentials to the app, and do not expose this bridge from any public/server
@@ -470,6 +471,29 @@ default.
   collection, Stockfish context, Gemini CLI waiting, follow-up analysis checks,
   and near-timeout state. It intentionally labels this as pipeline progress,
   not Gemini private reasoning.
+- A later same-day Coach pass turned the modal into a small chat transcript.
+  Each question now sends prior user/coach messages, the current-line PGN up
+  to the selected board position, previous targeted Stockfish results for the
+  same FEN, and a compact Lichess All opening table when a saved Lichess token
+  is available. The opening table is deliberately Lichess All only, not local
+  database data, and includes move counts/WDL plus the app's blended strength
+  numbers from `src/utils/openingMoveHealth.ts`. The backend prompt tells
+  Gemini to use those opening stats only as practical/popularity evidence while
+  keeping Stockfish as the source of tactical/evaluation truth. Gemini can now
+  request up to two legal targeted Stockfish follow-ups, but requested FENs
+  must match the current board FEN and later positions must be reached through
+  `analyse_line`.
+- The Coach UI now lives inside the under-board `Moves / Database / Prep /
+  Coach` area instead of a floating modal. The panel keeps a persistent chat
+  input at the bottom, shows local request progress in the transcript, and can
+  make Gemini-marked `<line>...</line>` engine lines clickable by creating or
+  navigating a variation from the board path where the question was asked. The
+  backend proactively runs targeted Stockfish when the question names legal
+  candidate moves or asks a what-if/comparison, raises Coach MultiPV to 3-8
+  lines, and prompts Gemini to request more Stockfish rather than inventing
+  concrete plans or variations. Whole-game PGN plus stored analyze-game eval
+  points are only sent for whole-game review questions; normal position
+  questions still receive the current-line PGN only.
 - On 2026-06-06, a source-derived White repertoire file was added under the
   app Files root's `Documents/EnCroissant/General repertoire/White  rep`
   folder as `Keymer Variation - Mendonca video.pgn`, with the matching `.info`
@@ -1463,16 +1487,25 @@ from 2026-04-24 through 2026-05-03.
 
 ## Verification Expectations
 
-Choose focused verification based on the touched surface.
+Choose focused verification based on the touched surface, and prefer lightweight
+checks. Do not run the full test suite, broad Rust checks, browser automation,
+or other slow verification by default; use them only when the user asks, when
+the touched code clearly makes them necessary, or when a quick inspection finds
+a concrete risk that the check would resolve.
 
-- Frontend type/build check: `pnpm build-vite`.
-- Frontend lint for touched files: `pnpm exec oxlint <files>`.
-- Practice/review utility tests: `pnpm vitest run <test-file>` when available.
+- Frontend type/build check: `pnpm build-vite` when touching shared TypeScript,
+  app startup, build wiring, or generated bindings.
+- Frontend lint for touched files: `pnpm exec oxlint <files>` when lint-sensitive
+  code was edited and the command is expected to be quick.
+- Practice/review utility tests: `pnpm vitest run <test-file>` only for directly
+  affected logic with an existing focused test.
 - Rust compile check: `cargo check` from `src-tauri` or the repo script used by
-  the project.
-- Database/search tests: `cargo test search_index`,
+  the project only when Rust/Tauri command signatures, Cargo configuration, or
+  generated bindings are touched enough that inspection is not sufficient.
+- Database/search tests: run focused tests such as `cargo test search_index`,
   `cargo test exact_matches`, and
-  `cargo test exact_query_ignores_too_much_material_validation`.
+  `cargo test exact_query_ignores_too_much_material_validation` only when the
+  database/search behavior was changed.
 - UI/layout verification: only perform Playwright/browser checks when the user
   explicitly asks for them. Do not use the old direct-browser minimal Tauri
   global-stub method; prefer non-browser verification by default, or a clearly
