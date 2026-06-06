@@ -1384,13 +1384,13 @@ fn validate_stockfish_anchor_fen(
     }
 
     Err(CoachError::IllegalStockfishRequest(
-        "Stockfish requests must use the current FEN, an exact supplied reference FEN, or an exact listed critical before-move FEN for whole-game review; use analyse_line to inspect a later position"
+        "Stockfish requests must use the current FEN, an exact supplied reference FEN, or an exact listed critical before-move FEN from the loaded game analysis; use analyse_line to inspect an unlisted later position"
             .to_string(),
     ))
 }
 
 fn is_critical_before_fen(coach_request: &AiCoachRequest, requested_fen: &str) -> bool {
-    select_critical_game_moments(coach_request)
+    select_critical_game_moments_any_scope(coach_request)
         .into_iter()
         .filter_map(|point| point.before_fen.as_deref())
         .any(|fen| fen.trim() == requested_fen)

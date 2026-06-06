@@ -665,6 +665,11 @@ default.
   dedupe, and targeted execution on the same anchor-FEN rule; otherwise
   whole-game review questions like "why did I lose this game?" can reject the
   evidence-gathering requests before Stockfish runs.
+- The same critical before-move FEN whitelist must apply even when the Flash
+  planner chooses `current_line` scope for a follow-up question from the game
+  start, such as "How could I have held the position after Qxb5?". The board
+  cursor may be at the starting position, but the stored game-analysis critical
+  moment still provides a valid Stockfish anchor for that referenced move.
 - On 2026-06-06, the Coach question box default was cleared so opening the
   Coach tab starts with a blank input instead of the seeded `What is the plan
   here?` prompt. Keep the submit guard tied to non-empty trimmed text.
