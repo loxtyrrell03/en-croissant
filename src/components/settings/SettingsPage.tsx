@@ -334,10 +334,10 @@ export default function Page() {
       {
         id: "ai-coach-command",
         category: "coach",
-        title: "Gemini CLI command",
-        description: "Command or executable path for the locally authenticated Gemini CLI.",
-        keywords: ["ai", "coach", "gemini", "cli", "command", "path"],
-        render: () => <TextSetting atom={aiCoachGeminiCommandAtom} placeholder="gemini" />,
+        title: "AI CLI command",
+        description: "Command or executable path for the locally authenticated AGY or Gemini CLI.",
+        keywords: ["ai", "coach", "gemini", "antigravity", "agy", "cli", "command", "path"],
+        render: () => <TextSetting atom={aiCoachGeminiCommandAtom} placeholder="agy" />,
       },
       {
         id: "ai-coach-model",

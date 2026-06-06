@@ -2057,17 +2057,34 @@ async fn run_gemini_cli(
     let resolved_command = resolve_cli_command(command);
 
     let temp_dir = tempdir()?;
-    let mut child = Command::new(&resolved_command)
-        .current_dir(temp_dir.path())
-        .arg("--skip-trust")
-        .arg("--approval-mode")
-        .arg("plan")
-        .arg("--output-format")
-        .arg("text")
-        .arg("--model")
-        .arg(model)
-        .arg("--prompt")
-        .arg("Use the complete chess coaching request supplied on stdin.")
+    let agy_log_path = temp_dir.path().join("agy.log");
+    let is_agy = is_agy_command(command, &resolved_command);
+    let mut command_builder = Command::new(&resolved_command);
+    command_builder.current_dir(temp_dir.path());
+    if is_agy {
+        command_builder
+            .arg("--log-file")
+            .arg(&agy_log_path)
+            .arg("--model")
+            .arg(model)
+            .arg("--print-timeout")
+            .arg(format!("{timeout_secs}s"))
+            .arg("--print")
+            .arg("-");
+    } else {
+        command_builder
+            .arg("--skip-trust")
+            .arg("--approval-mode")
+            .arg("plan")
+            .arg("--output-format")
+            .arg("text")
+            .arg("--model")
+            .arg(model)
+            .arg("--prompt")
+            .arg("Use the complete chess coaching request supplied on stdin.");
+    }
+
+    let mut child = command_builder
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -2120,7 +2137,14 @@ async fn run_gemini_cli(
             error.to_string(),
         ))
     })??;
-    let combined = format!("{stdout}\n{stderr}");
+    let aux_log = if is_agy {
+        tokio::fs::read_to_string(&agy_log_path)
+            .await
+            .unwrap_or_default()
+    } else {
+        String::new()
+    };
+    let combined = format!("{stdout}\n{stderr}\n{aux_log}");
     if looks_unauthenticated(&combined) {
         return Err(CoachError::GeminiUnauthenticated);
     }
@@ -2165,6 +2189,19 @@ fn resolve_cli_command(command: &str) -> PathBuf {
     command_path
 }
 
+fn is_agy_command(command: &str, resolved_command: &Path) -> bool {
+    let command_name = Path::new(command)
+        .file_stem()
+        .or_else(|| Path::new(command).file_name())
+        .and_then(|value| value.to_str());
+    let resolved_name = resolved_command
+        .file_stem()
+        .and_then(|value| value.to_str());
+    command_name
+        .or(resolved_name)
+        .is_some_and(|name| name.eq_ignore_ascii_case("agy"))
+}
+
 fn command_has_path_separator(command: &str) -> bool {
     command.contains('/') || command.contains('\\')
 }
@@ -2178,6 +2215,9 @@ fn command_search_dirs() -> Vec<PathBuf> {
     {
         if let Some(appdata) = env::var_os("APPDATA") {
             dirs.push(PathBuf::from(appdata).join("npm"));
+        }
+        if let Some(localappdata) = env::var_os("LOCALAPPDATA") {
+            dirs.push(PathBuf::from(localappdata).join("agy").join("bin"));
         }
         if let Some(userprofile) = env::var_os("USERPROFILE") {
             dirs.push(

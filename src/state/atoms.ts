@@ -232,15 +232,15 @@ export const showEngineDockAtom = atomWithStorage<boolean>("show-engine-dock", t
 export const engineHotkeysEnabledAtom = atomWithStorage<boolean>("engine-hotkeys-enabled", true);
 export const aiCoachEnabledAtom = atomWithStorage<boolean>("ai-coach-enabled", true);
 export const aiCoachGeminiCommandAtom = atomWithStorage<string>(
-    "ai-coach-gemini-command",
-    "gemini",
+    "ai-coach-gemini-command-v2",
+    "agy",
 );
 export const aiCoachGeminiModelAtom = atomWithStorage<string>(
     "ai-coach-gemini-model",
     "gemini-3.1-pro-preview",
 );
 export const aiCoachPlannerModelAtom = atomWithStorage<string>(
-    "ai-coach-planner-model",
+    "ai-coach-planner-model-v4",
     "gemini-3.5-flash",
 );
 export const aiCoachMultipvAtom = atomWithStorage<number>("ai-coach-multipv", 3);
