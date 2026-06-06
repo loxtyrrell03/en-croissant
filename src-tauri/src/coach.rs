@@ -754,7 +754,7 @@ async fn ask_ai_coach_inner(
         );
         let targeted = run_targeted_stockfish_request(
             &request.engine_path,
-            &request.fen,
+            &request,
             &reference_context,
             stockfish_request,
             multipv,
@@ -1311,16 +1311,16 @@ fn stockfish_request_key(
 ) -> Result<String, CoachError> {
     match request {
         StockfishFollowUpRequest::AnalysePosition { fen, .. } => {
-            validate_analyse_position_fen(coach_request, reference_context, fen)?;
+            validate_stockfish_anchor_fen(coach_request, reference_context, fen)?;
             Ok(format!("analyse_position:{}", fen.trim()))
         }
         StockfishFollowUpRequest::AnalyseMove { fen, mv, .. } => {
-            validate_follow_up_fen(&coach_request.fen, reference_context, fen)?;
+            validate_stockfish_anchor_fen(coach_request, reference_context, fen)?;
             let (uci, _) = parse_single_move(fen, mv)?;
-            Ok(format!("analyse_move:{uci}"))
+            Ok(format!("analyse_move:{}:{uci}", fen.trim()))
         }
         StockfishFollowUpRequest::CompareMoves { fen, moves, .. } => {
-            validate_follow_up_fen(&coach_request.fen, reference_context, fen)?;
+            validate_stockfish_anchor_fen(coach_request, reference_context, fen)?;
             if moves.is_empty() || moves.len() > 5 {
                 return Err(CoachError::IllegalStockfishRequest(
                     "compare_moves requires 1 to 5 moves".to_string(),
@@ -1339,22 +1339,22 @@ fn stockfish_request_key(
                     "compare_moves contained no legal moves".to_string(),
                 ));
             }
-            Ok(format!("compare_moves:{}", normalized.join(",")))
+            Ok(format!("compare_moves:{}:{}", fen.trim(), normalized.join(",")))
         }
         StockfishFollowUpRequest::AnalyseLine { fen, line, .. } => {
-            validate_follow_up_fen(&coach_request.fen, reference_context, fen)?;
+            validate_stockfish_anchor_fen(coach_request, reference_context, fen)?;
             let moves = parse_line_moves(fen, line)?;
             if moves.is_empty() {
                 return Err(CoachError::IllegalStockfishRequest(
                     "analyse_line requires at least one legal move".to_string(),
                 ));
             }
-            Ok(format!("analyse_line:{}", moves.join(",")))
+            Ok(format!("analyse_line:{}:{}", fen.trim(), moves.join(",")))
         }
     }
 }
 
-fn validate_analyse_position_fen(
+fn validate_stockfish_anchor_fen(
     coach_request: &AiCoachRequest,
     reference_context: &[CoachReferenceContext],
     requested_fen: &str,
@@ -1375,18 +1375,21 @@ fn validate_analyse_position_fen(
         return Ok(());
     }
 
-    let allowed = select_critical_game_moments(coach_request)
-        .into_iter()
-        .filter_map(|point| point.before_fen.as_deref())
-        .any(|fen| fen.trim() == requested_fen);
-    if allowed {
+    if is_critical_before_fen(coach_request, requested_fen) {
         return Ok(());
     }
 
     Err(CoachError::IllegalStockfishRequest(
-        "analyse_position may only use the current FEN or a listed critical before-move FEN"
+        "Stockfish requests must use the current FEN, an exact supplied reference FEN, or an exact listed critical before-move FEN for whole-game review; use analyse_line to inspect a later position"
             .to_string(),
     ))
+}
+
+fn is_critical_before_fen(coach_request: &AiCoachRequest, requested_fen: &str) -> bool {
+    select_critical_game_moments(coach_request)
+        .into_iter()
+        .filter_map(|point| point.before_fen.as_deref())
+        .any(|fen| fen.trim() == requested_fen)
 }
 
 fn format_legal_root_moves(fen: &str) -> Result<String, CoachError> {
@@ -2278,7 +2281,7 @@ fn describe_stockfish_request(request: &StockfishFollowUpRequest) -> String {
 
 async fn run_targeted_stockfish_request(
     engine_path: &Path,
-    current_fen: &str,
+    coach_request: &AiCoachRequest,
     reference_context: &[CoachReferenceContext],
     request: StockfishFollowUpRequest,
     multipv: u8,
@@ -2287,6 +2290,7 @@ async fn run_targeted_stockfish_request(
 ) -> Result<CoachTargetedResult, CoachError> {
     match request {
         StockfishFollowUpRequest::AnalysePosition { fen, label, reason } => {
+            validate_stockfish_anchor_fen(coach_request, reference_context, &fen)?;
             let label = if label.trim().is_empty() {
                 "Position analysis".to_string()
             } else {
@@ -2324,7 +2328,7 @@ async fn run_targeted_stockfish_request(
             })
         }
         StockfishFollowUpRequest::AnalyseMove { fen, mv, reason } => {
-            validate_follow_up_fen(current_fen, reference_context, &fen)?;
+            validate_stockfish_anchor_fen(coach_request, reference_context, &fen)?;
             let (uci, san) = parse_single_move(&fen, &mv)?;
             if let Some(progress) = progress {
                 emit_coach_progress(
@@ -2363,7 +2367,7 @@ async fn run_targeted_stockfish_request(
             })
         }
         StockfishFollowUpRequest::CompareMoves { fen, moves, reason } => {
-            validate_follow_up_fen(current_fen, reference_context, &fen)?;
+            validate_stockfish_anchor_fen(coach_request, reference_context, &fen)?;
             if moves.is_empty() || moves.len() > 5 {
                 return Err(CoachError::IllegalStockfishRequest(
                     "compare_moves requires 1 to 5 moves".to_string(),
@@ -2441,7 +2445,7 @@ async fn run_targeted_stockfish_request(
             })
         }
         StockfishFollowUpRequest::AnalyseLine { fen, line, reason } => {
-            validate_follow_up_fen(current_fen, reference_context, &fen)?;
+            validate_stockfish_anchor_fen(coach_request, reference_context, &fen)?;
             let moves = parse_line_moves(&fen, &line)?;
             let san_moves = san_for_uci_line(&fen, &moves)?;
             if let Some(progress) = progress {

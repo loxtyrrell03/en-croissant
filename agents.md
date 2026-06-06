@@ -645,6 +645,12 @@ default.
   unsupported tactical claims, so keep notes/annotations internal-only. Engine
   PVs now include material summaries; any claim like "wins the exchange",
   "wins a piece", or "wins a pawn" must match those summaries.
+- Whole-game Coach Stockfish requests may legally start from exact critical
+  before-move FENs selected from the stored game analysis, not only from the
+  live board FEN or chat reference FENs. Keep planner sanitizing, request
+  dedupe, and targeted execution on the same anchor-FEN rule; otherwise
+  whole-game review questions like "why did I lose this game?" can reject the
+  evidence-gathering requests before Stockfish runs.
 - On 2026-06-06, the Coach question box default was cleared so opening the
   Coach tab starts with a blank input instead of the seeded `What is the plan
   here?` prompt. Keep the submit guard tied to non-empty trimmed text.
