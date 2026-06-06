@@ -556,6 +556,13 @@ default.
 - Analysis uses local engines, ChessDB, and Lichess Cloud where available.
 - Lichess Cloud evals are integrated into analysis and local-engine fallback.
 - Local Stockfish starts promptly while cloud checks run in parallel.
+- On 2026-06-06, `scripts/generate-stockfish-opening-games.py` was added as a
+  local utility for producing En Croissant Files-library PGNs from fixed
+  opening positions using Stockfish 18 against Stockfish 11. It writes one
+  multi-game PGN per opening under `Documents/EnCroissant/Stockfish 18 games`,
+  tags the fixed line and learning side in PGN headers, supports `--only` for
+  adding one opening without rerunning the whole suite, and expects the local
+  engine cache under `%LOCALAPPDATA%/EnCroissantEngineMatches`.
 - Engine output has been compacted so lines remain single-row and the dock fits
   content.
 - Engine contention was reduced so analysis, annotation, and review UI remain
