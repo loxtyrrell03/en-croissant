@@ -639,6 +639,13 @@ default.
   giving the better Stockfish continuation. Do not regress this into vague
   strategic summaries such as "h4 weakens the king" without the Stockfish line
   that proves it.
+- Coach explanations must also interpret the engine line. A PV plus an eval is
+  evidence, not the explanation. When Pro discusses a critical moment, it must
+  name the human chess mechanism first: loose piece, overloaded defender,
+  tempo gain, king exposure, weak square, open file, pawn break, bad
+  coordination, simplification, structure/endgame edge, etc. Material
+  summaries are guardrails for factual claims, not a substitute for explaining
+  why the position changed.
 - PGN sent to Coach models must be plain mainline movetext only. Do not send
   PGN comments, NAGs/glyphs, arrows, extra markups, or variations to either
   the Flash planner or Pro coach. User notes previously caused confident but
