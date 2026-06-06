@@ -847,58 +847,104 @@ async fn ask_ai_coach_inner(
         &stockfish_lines,
         &targeted_results,
     ) {
-        emit_coach_progress(
-            app,
-            request_id,
-            started,
-            "answer_validation_repair",
-            "Repairing unsupported line in answer",
-            error.to_string(),
-            94.0,
-            false,
-        );
-        correction_notes.push(format!(
-            "Your previous final answer was rejected: {error}. Remove every unsupported <line> block, or replace it with an exact legal prefix of the supplied Stockfish data from the current FEN. Do not include any game-start opening sequence unless it is legal from the current FEN."
-        ));
-        let repair_prompt = build_coach_prompt(
-            &request,
-            &stockfish_lines,
-            &targeted_results,
-            &reference_context,
-            &correction_notes,
-        );
-        emit_coach_progress(
-            app,
-            request_id,
-            started,
-            "gemini_repair",
-            format!("Asking {model} to repair the answer"),
-            format!(
-                "Sending {} characters with validation feedback.",
-                repair_prompt.len()
-            ),
-            95.0,
-            false,
-        );
-        final_answer = run_gemini_cli(
-            &request.settings.gemini_command,
-            &model,
-            &repair_prompt,
-            timeout_secs.into(),
-        )
-        .await?;
-        if parse_stockfish_request(&final_answer)?.is_some() {
-            return Err(CoachError::IllegalStockfishRequest(
-                "Gemini asked for more Stockfish data while repairing an unsupported line"
-                    .to_string(),
-            ));
-        }
-        validate_answer_line_blocks(
+        if let Some(sanitized) = demote_non_current_supported_line_blocks(
             &request.fen,
             &final_answer,
             &stockfish_lines,
             &targeted_results,
-        )?;
+        )? {
+            emit_coach_progress(
+                app,
+                request_id,
+                started,
+                "answer_validation_demote",
+                "Demoted non-current line block",
+                "A supplied targeted Stockfish line was valid evidence but not clickable from the live board FEN, so the app kept it as plain text.",
+                94.0,
+                false,
+            );
+            final_answer = sanitized;
+        } else {
+            emit_coach_progress(
+                app,
+                request_id,
+                started,
+                "answer_validation_repair",
+                "Repairing unsupported line in answer",
+                error.to_string(),
+                94.0,
+                false,
+            );
+            correction_notes.push(format!(
+            "Your previous final answer was rejected: {error}. Remove every unsupported <line> block, or replace it with an exact legal prefix of the supplied Stockfish data from the current FEN. If the moves came from a targeted Stockfish result whose FEN is not the current FEN, keep the moves as plain text without <line> tags. Do not include any game-start opening sequence unless it is legal from the current FEN."
+        ));
+            let repair_prompt = build_coach_prompt(
+                &request,
+                &stockfish_lines,
+                &targeted_results,
+                &reference_context,
+                &correction_notes,
+            );
+            emit_coach_progress(
+                app,
+                request_id,
+                started,
+                "gemini_repair",
+                format!("Asking {model} to repair the answer"),
+                format!(
+                    "Sending {} characters with validation feedback.",
+                    repair_prompt.len()
+                ),
+                95.0,
+                false,
+            );
+            final_answer = run_gemini_cli(
+                &request.settings.gemini_command,
+                &model,
+                &repair_prompt,
+                timeout_secs.into(),
+            )
+            .await?;
+            if parse_stockfish_request(&final_answer)?.is_some() {
+                return Err(CoachError::IllegalStockfishRequest(
+                    "Gemini asked for more Stockfish data while repairing an unsupported line"
+                        .to_string(),
+                ));
+            }
+            if let Err(repair_error) = validate_answer_line_blocks(
+                &request.fen,
+                &final_answer,
+                &stockfish_lines,
+                &targeted_results,
+            ) {
+                if let Some(sanitized) = demote_non_current_supported_line_blocks(
+                    &request.fen,
+                    &final_answer,
+                    &stockfish_lines,
+                    &targeted_results,
+                )? {
+                    emit_coach_progress(
+                    app,
+                    request_id,
+                    started,
+                    "answer_validation_demote",
+                    "Demoted non-current line block",
+                    "Gemini repeated a non-current targeted line block during repair, so the app kept the moves as plain text.",
+                    98.0,
+                    false,
+                );
+                    final_answer = sanitized;
+                    validate_answer_line_blocks(
+                        &request.fen,
+                        &final_answer,
+                        &stockfish_lines,
+                        &targeted_results,
+                    )?;
+                } else {
+                    return Err(repair_error);
+                }
+            }
+        }
     }
 
     Ok(AiCoachResponse {
@@ -941,7 +987,11 @@ fn build_coach_prompt(
     let engine_lines = if whole_game_mode {
         "Omitted for whole-game review. Do not use current-board/root opening MultiPV as whole-game evidence.".to_string()
     } else if use_cloud_existing_lines {
-        format_engine_lines_from(stockfish_lines, "current FEN (Lichess Cloud)", Some(&request.fen))
+        format_engine_lines_from(
+            stockfish_lines,
+            "current FEN (Lichess Cloud)",
+            Some(&request.fen),
+        )
     } else {
         format_engine_lines_from(stockfish_lines, "current FEN", Some(&request.fen))
     };
@@ -1343,7 +1393,11 @@ fn stockfish_request_key(
                     "compare_moves contained no legal moves".to_string(),
                 ));
             }
-            Ok(format!("compare_moves:{}:{}", fen.trim(), normalized.join(",")))
+            Ok(format!(
+                "compare_moves:{}:{}",
+                fen.trim(),
+                normalized.join(",")
+            ))
         }
         StockfishFollowUpRequest::AnalyseLine { fen, line, .. } => {
             validate_stockfish_anchor_fen(coach_request, reference_context, fen)?;
@@ -2072,6 +2126,129 @@ fn validate_answer_line_blocks(
     }
 
     Ok(())
+}
+
+fn demote_non_current_supported_line_blocks(
+    current_fen: &str,
+    answer: &str,
+    stockfish_lines: &[CoachEngineLine],
+    targeted_results: &[CoachTargetedResult],
+) -> Result<Option<String>, CoachError> {
+    let start_tag = "<line>";
+    let end_tag = "</line>";
+    let current_supported_lines =
+        collect_supported_engine_lines(current_fen, stockfish_lines, targeted_results);
+    let mut output = String::with_capacity(answer.len());
+    let mut cursor = 0;
+    let mut changed = false;
+
+    while let Some(relative_start) = answer[cursor..].find(start_tag) {
+        let absolute_start = cursor + relative_start;
+        let block_start = absolute_start + start_tag.len();
+        let Some(relative_end) = answer[block_start..].find(end_tag) else {
+            return Err(CoachError::GeminiUnsupportedLine(
+                "answer included <line> without a closing </line>".to_string(),
+            ));
+        };
+        let block_end = block_start + relative_end;
+        let after_end = block_end + end_tag.len();
+        let block = answer[block_start..block_end].trim();
+
+        output.push_str(&answer[cursor..absolute_start]);
+        if current_line_block_is_supported(current_fen, block, &current_supported_lines) {
+            output.push_str(&answer[absolute_start..after_end]);
+        } else if targeted_line_block_is_supported(block, targeted_results) {
+            output.push_str(block);
+            changed = true;
+        } else {
+            validate_current_line_block(current_fen, block, &current_supported_lines)?;
+        }
+        cursor = after_end;
+    }
+
+    if !changed {
+        return Ok(None);
+    }
+
+    output.push_str(&answer[cursor..]);
+    Ok(Some(output))
+}
+
+fn current_line_block_is_supported(
+    current_fen: &str,
+    line: &str,
+    supported_lines: &[Vec<String>],
+) -> bool {
+    validate_current_line_block(current_fen, line, supported_lines).is_ok()
+}
+
+fn validate_current_line_block(
+    current_fen: &str,
+    line: &str,
+    supported_lines: &[Vec<String>],
+) -> Result<(), CoachError> {
+    if supported_lines.is_empty() {
+        return Err(CoachError::GeminiUnsupportedLine(
+            "answer included a <line> block but no Stockfish lines were supplied".to_string(),
+        ));
+    }
+
+    let requested_moves = parse_line_moves(current_fen, line).map_err(|error| {
+        CoachError::GeminiUnsupportedLine(format!(
+            "`{line}` is not a legal full line from the current FEN ({error})"
+        ))
+    })?;
+    let supported = supported_lines
+        .iter()
+        .any(|stockfish_line| is_move_prefix(&requested_moves, stockfish_line));
+    if !supported {
+        return Err(CoachError::GeminiUnsupportedLine(format!(
+            "`{line}` was not supplied by Stockfish for the current FEN"
+        )));
+    }
+
+    Ok(())
+}
+
+fn targeted_line_block_is_supported(line: &str, targeted_results: &[CoachTargetedResult]) -> bool {
+    targeted_results
+        .iter()
+        .any(|result| targeted_result_supports_line_block(line, result))
+}
+
+fn targeted_result_supports_line_block(line: &str, result: &CoachTargetedResult) -> bool {
+    if let Ok(requested_moves) = parse_line_moves(&result.fen, line) {
+        if result
+            .lines
+            .iter()
+            .any(|stockfish_line| is_move_prefix(&requested_moves, &stockfish_line.uci_moves))
+        {
+            return true;
+        }
+    }
+
+    if result.moves.is_empty() {
+        return false;
+    }
+
+    let Some(after_prefix_fen) = fen_after_uci_moves(&result.fen, &result.moves) else {
+        return false;
+    };
+    let Ok(mut continuation) = parse_line_moves(&after_prefix_fen, line) else {
+        return false;
+    };
+    let mut requested_moves = result.moves.clone();
+    requested_moves.append(&mut continuation);
+
+    result
+        .lines
+        .iter()
+        .any(|stockfish_line| is_move_prefix(&requested_moves, &stockfish_line.uci_moves))
+}
+
+fn fen_after_uci_moves(fen: &str, moves: &[String]) -> Option<String> {
+    let position = parse_fen_and_apply_moves(fen, moves).ok()?;
+    Some(Fen::from_position(position, EnPassantMode::Legal).to_string())
 }
 
 fn extract_answer_line_blocks(answer: &str) -> Result<Vec<String>, CoachError> {

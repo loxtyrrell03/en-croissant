@@ -653,6 +653,12 @@ default.
   candidate move itself. This previously made `9...Nxd4 10.Qa6` look like
   `0.00` by quoting the second PV, even though the best-reply verdict was
   about `-1.01`.
+- Coach `<line>...</line>` blocks are only clickable when they are legal from
+  the live current FEN. If Pro wraps a line that is backed by a targeted
+  Stockfish result from a different FEN, the backend should demote that wrapper
+  to plain text instead of failing the whole answer. Do not accept truly
+  unsupported invented lines, but do preserve valid targeted evidence as text
+  when the UI cannot safely make it clickable from the board cursor.
 - PGN sent to Coach models must be plain mainline movetext only. Do not send
   PGN comments, NAGs/glyphs, arrows, extra markups, or variations to either
   the Flash planner or Pro coach. User notes previously caused confident but
