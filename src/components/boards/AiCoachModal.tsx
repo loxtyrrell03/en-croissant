@@ -7,6 +7,7 @@ import {
   Loader,
   Modal,
   Paper,
+  Progress,
   ScrollArea,
   Stack,
   Text,
@@ -14,7 +15,7 @@ import {
 } from "@mantine/core";
 import { IconAlertTriangle, IconSparkles } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 import type { BestMoves, CoachEngineLine } from "@/bindings";
@@ -64,6 +65,65 @@ function toCoachLine(line: BestMoves): CoachEngineLine {
     uciMoves: line.uciMoves,
     sanMoves: line.sanMoves,
   };
+}
+
+function formatElapsed(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return mins > 0 ? `${mins}:${secs.toString().padStart(2, "0")}` : `${secs}s`;
+}
+
+function getCoachProgressSteps({
+  elapsedSecs,
+  hasCachedLines,
+  model,
+  timeoutSecs,
+}: {
+  elapsedSecs: number;
+  hasCachedLines: boolean;
+  model: string;
+  timeoutSecs: number;
+}) {
+  const nearTimeoutAt = Math.max(20, timeoutSecs - 15);
+  return [
+    {
+      at: 0,
+      label: "Collecting position",
+      detail: "Gathering FEN, side to move, PGN, and move history.",
+    },
+    {
+      at: 1,
+      label: hasCachedLines ? "Using current Stockfish lines" : "Running Stockfish MultiPV",
+      detail: hasCachedLines
+        ? "Reusing the analysis already shown for this board."
+        : "Asking the local engine for 3-5 principal variations.",
+    },
+    {
+      at: hasCachedLines ? 2 : 6,
+      label: "Building coach prompt",
+      detail: "Packaging only Stockfish-backed chess evidence for Gemini.",
+    },
+    {
+      at: hasCachedLines ? 3 : 8,
+      label: `Asking ${model || "Gemini"}`,
+      detail: "Waiting for the local Gemini CLI response.",
+    },
+    {
+      at: 25,
+      label: "Still waiting on Gemini",
+      detail: "Longer chess prompts can take a while, especially on the first request.",
+    },
+    {
+      at: 45,
+      label: "Checking for follow-up analysis",
+      detail: "If Gemini asks for one legal Stockfish check, the app will run it and ask again.",
+    },
+    {
+      at: nearTimeoutAt,
+      label: "Near timeout",
+      detail: "The local request will stop soon if Gemini does not answer.",
+    },
+  ].filter((step) => step.at <= nearTimeoutAt || elapsedSecs >= step.at);
 }
 
 export default function AiCoachModal({
@@ -123,6 +183,8 @@ export default function AiCoachModal({
   const [usedExistingAnalysis, setUsedExistingAnalysis] = useState(false);
   const [targetedCount, setTargetedCount] = useState(0);
   const [modelUsed, setModelUsed] = useState("");
+  const [requestStartedAt, setRequestStartedAt] = useState<number | null>(null);
+  const [elapsedSecs, setElapsedSecs] = useState(0);
 
   const [position] = useMemo(() => positionFromFen(currentNode.fen), [currentNode.fen]);
   const sideToMove =
@@ -143,6 +205,35 @@ export default function AiCoachModal({
   );
 
   const canSubmit = Boolean(enabled && coachEngine && question.trim().length > 0 && !loading);
+  const clampedMultipv = Math.max(3, Math.min(5, multipv));
+  const hasCachedLines = existingLines.length >= clampedMultipv;
+  const progressSteps = useMemo(
+    () =>
+      getCoachProgressSteps({
+        elapsedSecs,
+        hasCachedLines,
+        model: geminiModel,
+        timeoutSecs,
+      }),
+    [elapsedSecs, geminiModel, hasCachedLines, timeoutSecs],
+  );
+  const activeProgressStep =
+    [...progressSteps].reverse().find((step) => elapsedSecs >= step.at) ?? progressSteps[0];
+  const progressValue = loading
+    ? Math.min(96, Math.max(8, (elapsedSecs / Math.max(1, timeoutSecs)) * 100))
+    : answer
+      ? 100
+      : 0;
+
+  useEffect(() => {
+    if (!loading || requestStartedAt === null) return;
+
+    const updateElapsed = () =>
+      setElapsedSecs(Math.max(0, Math.floor((Date.now() - requestStartedAt) / 1000)));
+    updateElapsed();
+    const interval = window.setInterval(updateElapsed, 500);
+    return () => window.clearInterval(interval);
+  }, [loading, requestStartedAt]);
 
   async function askCoach() {
     if (!enabled) {
@@ -164,6 +255,8 @@ export default function AiCoachModal({
     setTargetedCount(0);
     setUsedExistingAnalysis(false);
     setModelUsed("");
+    setElapsedSecs(0);
+    setRequestStartedAt(Date.now());
 
     try {
       const response = unwrap(
@@ -193,6 +286,7 @@ export default function AiCoachModal({
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
+      setRequestStartedAt(null);
     }
   }
 
@@ -250,6 +344,54 @@ export default function AiCoachModal({
             Ask Coach
           </Button>
         </Group>
+
+        {(loading || answer) && (
+          <Paper withBorder p="sm">
+            <Stack gap="xs">
+              <Group justify="space-between" gap="xs">
+                <Stack gap={2}>
+                  <Text size="sm" fw={600}>
+                    {loading ? activeProgressStep.label : "Coach response ready"}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {loading
+                      ? activeProgressStep.detail
+                      : targetedCount > 0
+                        ? "Final answer includes targeted Stockfish follow-up context."
+                        : "Final answer uses the supplied Stockfish context."}
+                  </Text>
+                </Stack>
+                <Badge variant="light">{formatElapsed(elapsedSecs)}</Badge>
+              </Group>
+              <Progress value={progressValue} animated={loading} size="sm" radius="xl" />
+              <Stack gap={4}>
+                {progressSteps.map((step) => {
+                  const complete = !loading || elapsedSecs >= step.at;
+                  const active = loading && step === activeProgressStep;
+                  return (
+                    <Group key={step.label} gap="xs" wrap="nowrap">
+                      <Badge
+                        size="xs"
+                        variant={active ? "filled" : complete ? "light" : "outline"}
+                        color={active ? "blue" : complete ? "green" : "gray"}
+                      >
+                        {complete ? "done" : "next"}
+                      </Badge>
+                      <Text size="xs" fw={active ? 600 : 400}>
+                        {step.label}
+                      </Text>
+                    </Group>
+                  );
+                })}
+              </Stack>
+              {loading && (
+                <Text size="xs" c="dimmed">
+                  Showing the local pipeline; Gemini private reasoning is not exposed.
+                </Text>
+              )}
+            </Stack>
+          </Paper>
+        )}
 
         {error && (
           <Alert color="red" icon={<IconAlertTriangle size="1rem" />}>

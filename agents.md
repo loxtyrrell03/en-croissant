@@ -465,6 +465,11 @@ default.
   `gemini` commands to Windows npm shims such as `%APPDATA%/npm/gemini.cmd`,
   because Tauri dev/app processes may not inherit the same PATH that an
   interactive PowerShell has.
+- The Coach modal then gained a frontend-only progress panel with elapsed time,
+  a timeout-based progress bar, and local pipeline steps for position
+  collection, Stockfish context, Gemini CLI waiting, follow-up analysis checks,
+  and near-timeout state. It intentionally labels this as pipeline progress,
+  not Gemini private reasoning.
 - On 2026-06-06, a source-derived White repertoire file was added under the
   app Files root's `Documents/EnCroissant/General repertoire/White  rep`
   folder as `Keymer Variation - Mendonca video.pgn`, with the matching `.info`
