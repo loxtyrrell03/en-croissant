@@ -595,7 +595,35 @@ async fn ask_ai_coach_inner(
         );
     }
 
-    let critical_requests = infer_whole_game_critical_stockfish_requests(&request);
+    let focused_game_requests = infer_question_referenced_game_stockfish_requests(&request);
+    let has_focused_game_move = !focused_game_requests.is_empty();
+    if !focused_game_requests.is_empty() {
+        let focused_count = focused_game_requests.len();
+        planned_requests = merge_prioritized_stockfish_requests(
+            &request,
+            &reference_context,
+            focused_game_requests,
+            planned_requests,
+        )?;
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "question_focus",
+            "Adding named-move evidence",
+            format!(
+                "Queued {focused_count} Stockfish check(s) for the move named in the question."
+            ),
+            20.5,
+            false,
+        );
+    }
+
+    let critical_requests = if has_focused_game_move {
+        Vec::new()
+    } else {
+        infer_whole_game_critical_stockfish_requests(&request)
+    };
     if !critical_requests.is_empty() {
         let critical_count = critical_requests.len();
         planned_requests = merge_prioritized_stockfish_requests(
@@ -1014,7 +1042,8 @@ fn build_coach_prompt(
             request.opening_context_error.as_deref(),
         )
     };
-    let game_analysis = format_game_analysis(&request.game_analysis);
+    let game_analysis = format_game_analysis_for_request(request);
+    let question_focus = format_question_focus(request);
     let correction_notes = format_correction_notes(correction_notes);
     let root_engine_label = if use_cloud_existing_lines {
         "Lichess Cloud root lines"
@@ -1066,6 +1095,7 @@ Core rules:
 - Do not use tools, shell commands, files, network lookups, external resources, or the Stockfish request protocol. A separate planner has already requested all allowed targeted Stockfish analysis up front.
 - If the supplied engine data still does not fully answer the user's question, say that limitation briefly and answer only from the supplied evidence. Do not output <stockfish_request>.
 - Use the conversation history to answer follow-up questions naturally.
+- Obey the Question focus section. When the user asks about a named move, answer around that move first. Mention other game moments only when they are direct alternatives from the same position, direct continuations/refutations after that move, or necessary causal context for that move.
 - Use the Position/reference context to resolve explicit references such as "after 19.Nexd4", "that line", or "the line we discussed". If a referenced FEN is supplied there, use only Stockfish results from that FEN or current-FEN lines that legally reach it; do not reinterpret the reference from a different position.
 - For whole-game review questions, do more than list mistakes: when critical-position Stockfish results are supplied, tell the user what should have been played instead and why Stockfish prefers that move over the move played. It is fine to cover only the critical mistakes.
 - If you cannot identify a clear human mechanism from a supplied line, say that the engine line proves a concrete problem but the supplied data does not show a simple motif, then still give the best practical lesson you can support. Do not pretend to see a tactic that is not there.
@@ -1106,6 +1136,9 @@ Lichess All opening context:
 Conversation so far:
 {chat_history}
 
+Question focus:
+{question_focus}
+
 Position/reference context:
 {reference_context}
 
@@ -1126,6 +1159,7 @@ User question:
         targeted = targeted,
         opening_context = opening_context,
         chat_history = chat_history,
+        question_focus = question_focus,
         reference_context = reference_context,
         correction_notes = correction_notes,
         scope_rules = scope_rules,
@@ -1164,10 +1198,11 @@ fn build_planner_prompt(
         .or_else(|| request.pgn.as_deref())
         .map(trim_prompt_text)
         .unwrap_or_else(|| "Unavailable".to_string());
-    let game_analysis = format_game_analysis(&request.game_analysis);
+    let game_analysis = format_game_analysis_for_request(request);
     let critical_positions = format_critical_game_positions(request);
     let chat_history = format_chat_history(&request.chat_history);
     let reference_context = format_reference_context(reference_context);
+    let question_focus = format_question_focus(request);
     let existing_engine_lines = format_engine_lines(&request.existing_lines);
     let targeted = if targeted_results.is_empty() {
         "None".to_string()
@@ -1190,11 +1225,13 @@ Rules:
 - Output only one JSON object. No markdown, no prose outside JSON.
 - Do not analyse chess yourself and do not answer the user's question.
 - First choose pgn_scope. Use "whole_game" when the user asks to analyse, review, annotate, recap, go through, or find what went wrong in the loaded game. Use "current_line" for questions about the current board position, opening choice, a candidate move, or a concrete line.
+- If the user names a concrete move from the loaded game, keep the plan anchored to that move. Do not turn a named-move question into a broad critical-moments review unless the user explicitly asks for the whole game.
 - The stronger coach model will only receive the PGN scope you choose, so do not choose "current_line" for whole-game review wording like "analyse this game".
 - Stockfish is the source of truth. Be generous: it is better to request too many relevant Stockfish lines than too few.
 - analyse_move, compare_moves, and analyse_line requests must start from the exact current FEN. Do not invent later FENs.
 - Exception: if the user explicitly refers to a supplied Position/reference context item, requests may use that item's exact FEN. Treat those FENs as vetted anchors, not invented positions.
 - For whole-game review questions, inspect the Critical whole-game positions list. For each important blunder/mistake you plan to mention, request BOTH analyse_move for the played bad move and analyse_position from the same before-move FEN. The coach needs the played-move refutation line and the better Stockfish line. Use the listed before-move FEN exactly.
+- For a named loaded-game move listed under Critical whole-game positions, request BOTH analyse_move for that named move and analyse_position from the same before-move FEN. Do not request unrelated later critical moments unless they directly explain the named move.
 - If the user asks why a game move was bad, inaccurate, or a blunder, request analyse_move for that exact played move from its before-move FEN so the final answer can show the concrete refutation.
 - analyse_position is only allowed for the exact current FEN, an exact before-move FEN listed in Critical whole-game positions, or an exact FEN from Position/reference context.
 - For a move from the current position, use analyse_move.
@@ -1251,6 +1288,9 @@ Lichess All opening context, if available:
 Conversation so far:
 {chat_history}
 
+Question focus:
+{question_focus}
+
 Position/reference context:
 {reference_context}
 
@@ -1271,6 +1311,7 @@ User question:
         targeted = targeted,
         opening_context = opening_context,
         chat_history = chat_history,
+        question_focus = question_focus,
         reference_context = reference_context,
         question = request.question
     )
@@ -1433,19 +1474,23 @@ fn validate_stockfish_anchor_fen(
         return Ok(());
     }
 
-    if is_critical_before_fen(coach_request, requested_fen) {
+    if is_allowed_game_analysis_before_fen(coach_request, requested_fen) {
         return Ok(());
     }
 
     Err(CoachError::IllegalStockfishRequest(
-        "Stockfish requests must use the current FEN, an exact supplied reference FEN, or an exact listed critical before-move FEN from the loaded game analysis; use analyse_line to inspect an unlisted later position"
+        "Stockfish requests must use the current FEN, an exact supplied reference FEN, an exact listed critical before-move FEN, or an exact named-move before-FEN from the loaded game analysis; use analyse_line to inspect an unlisted later position"
             .to_string(),
     ))
 }
 
-fn is_critical_before_fen(coach_request: &AiCoachRequest, requested_fen: &str) -> bool {
+fn is_allowed_game_analysis_before_fen(
+    coach_request: &AiCoachRequest,
+    requested_fen: &str,
+) -> bool {
     select_critical_game_moments_any_scope(coach_request)
         .into_iter()
+        .chain(select_question_referenced_game_moments(coach_request))
         .filter_map(|point| point.before_fen.as_deref())
         .any(|fen| fen.trim() == requested_fen)
 }
@@ -1778,9 +1823,40 @@ fn format_game_analysis(points: &[CoachGameAnalysisPoint]) -> String {
         return "Unavailable or not requested for this question.".to_string();
     }
 
-    points
+    format_game_analysis_points(points.iter().take(240))
+}
+
+fn format_game_analysis_for_request(request: &AiCoachRequest) -> String {
+    let focused = select_question_referenced_game_moments(request);
+    if focused.is_empty() {
+        return format_game_analysis(&request.game_analysis);
+    }
+
+    let focus_plies = focused
         .iter()
-        .take(240)
+        .map(|point| point.ply)
+        .collect::<HashSet<_>>();
+    let context_points = request
+        .game_analysis
+        .iter()
+        .filter(|point| focus_plies.iter().any(|ply| point.ply.abs_diff(*ply) <= 2))
+        .collect::<Vec<_>>();
+    if context_points.is_empty() {
+        return "Question names a game move, but no focused stored analysis rows were available."
+            .to_string();
+    }
+
+    format!(
+        "Filtered to the named move and immediate +/-2 ply context for this specific question.\n{}",
+        format_game_analysis_points(context_points.into_iter())
+    )
+}
+
+fn format_game_analysis_points<'a>(
+    points: impl IntoIterator<Item = &'a CoachGameAnalysisPoint>,
+) -> String {
+    points
+        .into_iter()
         .map(|point| {
             let eval = point.eval.as_deref().unwrap_or("no eval");
             let depth = point
@@ -1821,12 +1897,18 @@ fn format_game_analysis(points: &[CoachGameAnalysisPoint]) -> String {
 }
 
 fn format_critical_game_positions(request: &AiCoachRequest) -> String {
-    let moments = select_critical_game_moments_any_scope(request);
+    let focused_moments = select_question_referenced_game_moments(request);
+    let has_focus = !focused_moments.is_empty();
+    let moments = if has_focus {
+        focused_moments
+    } else {
+        select_critical_game_moments_any_scope(request)
+    };
     if moments.is_empty() {
         return "None selected.".to_string();
     }
 
-    moments
+    let rows = moments
         .into_iter()
         .map(|point| {
             let before_fen = point.before_fen.as_deref().unwrap_or("unknown");
@@ -1853,7 +1935,15 @@ fn format_critical_game_positions(request: &AiCoachRequest) -> String {
             )
         })
         .collect::<Vec<_>>()
-        .join("\n")
+        .join("\n");
+
+    if has_focus {
+        format!(
+            "Question-referenced game position(s) matching the named move. Use these before unrelated critical moments.\n{rows}"
+        )
+    } else {
+        rows
+    }
 }
 
 fn infer_whole_game_critical_stockfish_requests(
@@ -1900,6 +1990,52 @@ fn infer_whole_game_critical_stockfish_requests(
                 label: format!("Critical ply {} before {}", point.ply, point.mv),
                 reason: format!(
                     "Whole-game review should explain what {side} should have played instead of {} at ply {}; ask Stockfish for the best move from the pre-move position, not just for the move that was played.",
+                    point.mv, point.ply
+                ),
+            });
+            requests
+        })
+        .collect()
+}
+
+fn infer_question_referenced_game_stockfish_requests(
+    request: &AiCoachRequest,
+) -> Vec<StockfishFollowUpRequest> {
+    select_question_referenced_game_moments(request)
+        .into_iter()
+        .take(MAX_WHOLE_GAME_CRITICAL_REQUESTS)
+        .flat_map(|point| {
+            let before_fen = match point.before_fen.as_deref().map(str::trim) {
+                Some(fen) if !fen.is_empty() => fen,
+                _ => return Vec::new(),
+            };
+            let played_move = point
+                .played_uci
+                .as_deref()
+                .filter(|value| !value.trim().is_empty())
+                .unwrap_or(point.mv.as_str())
+                .trim();
+            let side = point
+                .played_side
+                .as_deref()
+                .filter(|value| !value.trim().is_empty())
+                .unwrap_or("the side to move");
+            let mut requests = Vec::new();
+            if !played_move.is_empty() {
+                requests.push(StockfishFollowUpRequest::AnalyseMove {
+                    fen: before_fen.to_string(),
+                    mv: played_move.to_string(),
+                    reason: format!(
+                        "The user asked specifically about {} at ply {}; show the concrete Stockfish continuation after {side} played that move.",
+                        point.mv, point.ply
+                    ),
+                });
+            }
+            requests.push(StockfishFollowUpRequest::AnalysePosition {
+                fen: before_fen.to_string(),
+                label: format!("Question focus before {}", point.mv),
+                reason: format!(
+                    "The user asked specifically about {} at ply {}; find what {side} should have played from the same pre-move position.",
                     point.mv, point.ply
                 ),
             });
@@ -1962,6 +2098,118 @@ fn select_critical_game_moments_any_scope(
         .take(MAX_WHOLE_GAME_CRITICAL_REQUESTS)
         .map(|(_, point)| point)
         .collect()
+}
+
+fn select_question_referenced_game_moments(
+    request: &AiCoachRequest,
+) -> Vec<&CoachGameAnalysisPoint> {
+    let candidates = extract_move_candidates(&request.question)
+        .into_iter()
+        .map(|candidate| normalize_move_reference(&candidate))
+        .collect::<HashSet<_>>();
+    if candidates.is_empty() {
+        return Vec::new();
+    }
+
+    let mut moments = request
+        .game_analysis
+        .iter()
+        .filter(|point| {
+            point
+                .before_fen
+                .as_deref()
+                .map(|fen| !fen.trim().is_empty())
+                .unwrap_or(false)
+        })
+        .filter(|point| game_analysis_point_matches_move_candidates(point, &candidates))
+        .collect::<Vec<_>>();
+    moments.sort_by_key(|point| point.ply);
+    moments
+}
+
+fn game_analysis_point_matches_move_candidates(
+    point: &CoachGameAnalysisPoint,
+    candidates: &HashSet<String>,
+) -> bool {
+    let san = normalize_move_reference(&point.mv);
+    if !san.is_empty() && candidates.contains(&san) {
+        return true;
+    }
+
+    point
+        .played_uci
+        .as_deref()
+        .map(normalize_move_reference)
+        .map(|uci| !uci.is_empty() && candidates.contains(&uci))
+        .unwrap_or(false)
+}
+
+fn format_question_focus(request: &AiCoachRequest) -> String {
+    let candidates = extract_move_candidates(&request.question);
+    if candidates.is_empty() {
+        return "No explicit named move focus detected.".to_string();
+    }
+
+    let named_moves = candidates.join(", ");
+    let matched = select_question_referenced_game_moments(request)
+        .into_iter()
+        .map(|point| {
+            let side = point
+                .played_side
+                .as_deref()
+                .filter(|value| !value.trim().is_empty())
+                .unwrap_or("side to move");
+            let eval = point.eval.as_deref().unwrap_or("no stored eval");
+            format!(
+                "ply {ply}: {side} played {mv}, stored eval {eval}",
+                ply = point.ply,
+                side = side,
+                mv = point.mv,
+                eval = eval
+            )
+        })
+        .collect::<Vec<_>>();
+    let matched_text = if matched.is_empty() {
+        "No matching loaded-game move was found; treat the named move(s) as current-position candidates or conversation references if legal."
+            .to_string()
+    } else {
+        format!("Matched loaded-game move(s): {}.", matched.join("; "))
+    };
+
+    format!(
+        "The user named: {named_moves}. {matched_text} Answer this specific question first. Do not give a broad critical-moments review. Discuss other moves only when they are direct alternatives from the same position, direct continuations/refutations after the named move, or necessary causal context for that named move."
+    )
+}
+
+fn normalize_move_reference(value: &str) -> String {
+    let mut token = value.trim();
+    while let Some(ch) = token.chars().next() {
+        if ch.is_ascii_digit() || ch == '.' {
+            token = &token[ch.len_utf8()..];
+        } else {
+            break;
+        }
+    }
+
+    token
+        .trim()
+        .trim_matches(|ch: char| {
+            ch == '"'
+                || ch == '\''
+                || ch == '`'
+                || ch == '('
+                || ch == ')'
+                || ch == '['
+                || ch == ']'
+                || ch == '{'
+                || ch == '}'
+                || ch == ','
+                || ch == ';'
+                || ch == ':'
+        })
+        .trim_end_matches(|ch: char| ch == '?' || ch == '!' || ch == '+' || ch == '#')
+        .replace('0', "O")
+        .to_ascii_lowercase()
 }
 
 fn critical_annotation_rank(annotations: &[String]) -> Option<u8> {
@@ -3494,6 +3742,47 @@ mod tests {
     }
 
     #[test]
+    fn prompt_builder_anchors_specific_named_move_questions() {
+        let mut request = sample_request();
+        request.pgn_scope = "whole_game".to_string();
+        request.question = "How could I have held the position after Qxb5?".to_string();
+        request.game_analysis = vec![
+            CoachGameAnalysisPoint {
+                ply: 19,
+                mv: "Qxb5+".to_string(),
+                before_fen: Some("4k3/8/8/1p6/8/3Q4/8/4K3 w - - 0 1".to_string()),
+                fen: "4k3/8/8/1Q6/8/8/8/4K3 b - - 0 1".to_string(),
+                played_uci: Some("d3b5".to_string()),
+                played_side: Some("white".to_string()),
+                eval: Some("-0.80".to_string()),
+                depth: Some(17),
+                annotations: vec!["?".to_string()],
+            },
+            CoachGameAnalysisPoint {
+                ply: 31,
+                mv: "h4".to_string(),
+                before_fen: Some(
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1".to_string(),
+                ),
+                fen: request.fen.clone(),
+                played_uci: Some("h2h4".to_string()),
+                played_side: Some("white".to_string()),
+                eval: Some("-2.10".to_string()),
+                depth: Some(17),
+                annotations: vec!["??".to_string()],
+            },
+        ];
+
+        let prompt = build_coach_prompt(&request, &[], &[], &[], &[]);
+
+        assert!(prompt.contains("Question focus"));
+        assert!(prompt.contains("The user named: Qxb5"));
+        assert!(prompt.contains("ply 19: white played Qxb5+"));
+        assert!(prompt.contains("Do not give a broad critical-moments review"));
+        assert!(!prompt.contains("Ply 31: h4"));
+    }
+
+    #[test]
     fn whole_game_critical_requests_analyse_played_move_and_best_position() {
         let mut request = sample_request();
         request.pgn_scope = "whole_game".to_string();
@@ -3550,6 +3839,97 @@ mod tests {
         assert!(prompt.contains("Critical whole-game positions"));
         assert!(prompt.contains("Ply 19: white played Bxf4"));
         assert!(prompt.contains("what should have been played instead"));
+    }
+
+    #[test]
+    fn planner_prompt_limits_critical_positions_to_named_game_move() {
+        let mut request = sample_request();
+        request.question = "How could I have held the position after Qxb5?".to_string();
+        request.game_analysis = vec![
+            CoachGameAnalysisPoint {
+                ply: 19,
+                mv: "Qxb5+".to_string(),
+                before_fen: Some("4k3/8/8/1p6/8/3Q4/8/4K3 w - - 0 1".to_string()),
+                fen: "4k3/8/8/1Q6/8/8/8/4K3 b - - 0 1".to_string(),
+                played_uci: Some("d3b5".to_string()),
+                played_side: Some("white".to_string()),
+                eval: Some("-0.80".to_string()),
+                depth: Some(17),
+                annotations: vec!["?".to_string()],
+            },
+            CoachGameAnalysisPoint {
+                ply: 31,
+                mv: "h4".to_string(),
+                before_fen: Some(
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1".to_string(),
+                ),
+                fen: request.fen.clone(),
+                played_uci: Some("h2h4".to_string()),
+                played_side: Some("white".to_string()),
+                eval: Some("-2.10".to_string()),
+                depth: Some(17),
+                annotations: vec!["??".to_string()],
+            },
+        ];
+
+        let prompt = build_planner_prompt(&request, "Kd2 (e1d2)", &[], &[]);
+
+        assert!(prompt.contains("Question-referenced game position"));
+        assert!(prompt.contains("Ply 19: white played Qxb5+"));
+        assert!(!prompt.contains("Ply 31: h4"));
+        assert!(!prompt.contains("Ply 31: white played h4"));
+        assert!(prompt
+            .contains("Do not turn a named-move question into a broad critical-moments review"));
+    }
+
+    #[test]
+    fn named_game_move_requests_are_prioritized_over_later_critical_moments() {
+        let mut request = sample_request();
+        request.question = "How could I have held the position after Qxb5?".to_string();
+        request.game_analysis = vec![
+            CoachGameAnalysisPoint {
+                ply: 19,
+                mv: "Qxb5+".to_string(),
+                before_fen: Some("4k3/8/8/1p6/8/3Q4/8/4K3 w - - 0 1".to_string()),
+                fen: "4k3/8/8/1Q6/8/8/8/4K3 b - - 0 1".to_string(),
+                played_uci: Some("d3b5".to_string()),
+                played_side: Some("white".to_string()),
+                eval: Some("-0.80".to_string()),
+                depth: Some(17),
+                annotations: vec!["?".to_string()],
+            },
+            CoachGameAnalysisPoint {
+                ply: 31,
+                mv: "h4".to_string(),
+                before_fen: Some(
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1".to_string(),
+                ),
+                fen: request.fen.clone(),
+                played_uci: Some("h2h4".to_string()),
+                played_side: Some("white".to_string()),
+                eval: Some("-2.10".to_string()),
+                depth: Some(17),
+                annotations: vec!["??".to_string()],
+            },
+        ];
+
+        let requests = infer_question_referenced_game_stockfish_requests(&request);
+
+        assert_eq!(requests.len(), 2);
+        assert!(matches!(
+            &requests[0],
+            StockfishFollowUpRequest::AnalyseMove { fen, mv, reason }
+                if fen == "4k3/8/8/1p6/8/3Q4/8/4K3 w - - 0 1"
+                    && mv == "d3b5"
+                    && reason.contains("Qxb5+")
+        ));
+        assert!(matches!(
+            &requests[1],
+            StockfishFollowUpRequest::AnalysePosition { fen, label, reason }
+                if fen == "4k3/8/8/1p6/8/3Q4/8/4K3 w - - 0 1"
+                    && label.contains("Qxb5+")
+                    && reason.contains("same pre-move position")
+        ));
     }
 
     #[test]

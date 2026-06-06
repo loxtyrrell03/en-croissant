@@ -679,6 +679,14 @@ default.
   start, such as "How could I have held the position after Qxb5?". The board
   cursor may be at the starting position, but the stored game-analysis critical
   moment still provides a valid Stockfish anchor for that referenced move.
+- Specific Coach questions about a named move must stay anchored to that move.
+  `src-tauri/src/coach.rs` now detects named moves such as `Qxb5`, matches
+  them against loaded game-analysis rows, filters the stored analysis context
+  to that move and immediate nearby plies, prioritizes analyse-move plus
+  analyse-position Stockfish checks for the matching before-move FEN, and skips
+  broad whole-game critical evidence for that turn. Keep unrelated later
+  mistakes out of these answers unless they are direct alternatives,
+  continuations/refutations, or necessary causal context for the named move.
 - On 2026-06-06, the Coach question box default was cleared so opening the
   Coach tab starts with a blank input instead of the seeded `What is the plan
   here?` prompt. Keep the submit guard tied to non-empty trimmed text.
