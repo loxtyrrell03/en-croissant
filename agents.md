@@ -477,6 +477,14 @@ default.
   `Documents/EnCroissant/Weak openings training/whites/Grunfeld Defense.pgn`,
   prioritize the White line with `h3` after Black plays `...c5` instead of only
   covering the more common `Be3` mainline.
+- Also on 2026-06-06, a Black Queen's Gambit weak-openings lesson file was
+  added as `Queens Gambit - GM Finegold and Neiksans Lessons.pgn`, with a
+  repertoire `.info` sidecar. It is built from GM Ben Finegold's Black-side
+  Queen's Gambit Declined lecture and GM Arturs Neiksans' 2026 QGD Exchange
+  boot camp, covering the weak deck's Exchange structures with `...c6`,
+  `...h6`, `...Be7`, `...Re8`, and `...Nbd7`, the `Bf4`/`...Nbd7` branch,
+  when `...Bf5` solves Black's light-square bishop problem, the g3 Orthodox
+  setup, and the Tartakower `...b6/...dxc4` reminder.
 - Files also treats `.pdf` prep reports as first-class folder entries: selecting
   a PDF shows an in-app document preview with a system-viewer fallback, while
   PGN-only metadata, sidecar `.info`, and game-opening actions stay scoped to
