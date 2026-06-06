@@ -562,7 +562,9 @@ default.
   multi-game PGN per opening under `Documents/EnCroissant/Stockfish 18 games`,
   tags the fixed line and learning side in PGN headers, supports `--only` for
   adding one opening without rerunning the whole suite, and expects the local
-  engine cache under `%LOCALAPPDATA%/EnCroissantEngineMatches`.
+  engine cache under `%LOCALAPPDATA%/EnCroissantEngineMatches`. The Vincent
+  Keymer System entry currently starts from
+  `1. Nf3 d5 2. c4 e6 3. e3 Nf6 4. Nc3 Be7 5. b3 O-O 6. Bb2`.
 - Engine output has been compacted so lines remain single-row and the dock fits
   content.
 - Engine contention was reduced so analysis, annotation, and review UI remain

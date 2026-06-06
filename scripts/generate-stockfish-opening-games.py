@@ -121,8 +121,8 @@ OPENINGS: tuple[OpeningSuite, ...] = (
         learning_side=chess.WHITE,
         lines=(
             OpeningLine(
-                variation="Reti-English hybrid with 5.b3",
-                san_moves=("Nf3", "d5", "c4", "e6", "e3", "Nf6", "Nc3", "Be7", "b3"),
+                variation="Reti-English hybrid with 5.b3 O-O 6.Bb2",
+                san_moves=("Nf3", "d5", "c4", "e6", "e3", "Nf6", "Nc3", "Be7", "b3", "O-O", "Bb2"),
                 games=10,
             ),
         ),
