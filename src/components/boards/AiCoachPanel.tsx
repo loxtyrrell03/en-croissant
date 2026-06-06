@@ -284,7 +284,7 @@ function resolveExistingMovePath(root: TreeNode, basePath: number[], moves: stri
   if (!node) return null;
 
   for (const move of moves) {
-    const childIndex = node.children.findIndex(
+    const childIndex: number = node.children.findIndex(
       (child) => child.san && normalizeSanForCompare(child.san) === normalizeSanForCompare(move),
     );
     if (childIndex === -1) return null;
