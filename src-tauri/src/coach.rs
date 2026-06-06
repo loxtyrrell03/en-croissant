@@ -196,6 +196,9 @@ pub enum CoachError {
     #[error("Gemini CLI returned an empty response")]
     GeminiEmpty,
 
+    #[error("Gemini returned an unsupported engine line: {0}")]
+    GeminiUnsupportedLine(String),
+
     #[error("Stockfish timed out while analysing {0}")]
     StockfishTimeout(String),
 
@@ -329,6 +332,12 @@ pub async fn ask_ai_coach(request: AiCoachRequest) -> Result<AiCoachResponse, Co
             "Gemini asked for more Stockfish data after the follow-up limit".to_string(),
         ));
     }
+    validate_answer_line_blocks(
+        &request.fen,
+        &final_answer,
+        &stockfish_lines,
+        &targeted_results,
+    )?;
 
     Ok(AiCoachResponse {
         answer: final_answer,
@@ -400,7 +409,9 @@ Core rules:
 - For analyse_line, use {{"type":"analyse_line","fen":"...","line":"Nf3 d5 c4","reason":"..."}}.
 - The fen inside a Stockfish request must be exactly the current FEN below. To analyse a later position, use analyse_line from the current FEN.
 - Use the conversation history to answer follow-up questions naturally.
-- When you give a concrete playable variation in your final answer, wrap only the moves in <line>...</line>. Do not wrap prose. Only include a <line> block when that line appears in Stockfish data supplied here.
+- All Stockfish PVs supplied below are full sequences from the current FEN. Targeted "After ..." results already include the requested move or requested line before the continuation.
+- When you give a concrete playable variation in your final answer, wrap only the moves in <line>...</line>. Do not wrap prose. Only include a <line> block when that exact line is a full legal sequence from the current FEN and is a prefix of Stockfish data supplied here.
+- If you discuss a move that happens after another move first, the <line> block must include the earlier move(s) too. For example, use <line>Bh6 e4 ...</line>, not <line>e4 ...</line>, when e4 is only meaningful after Bh6.
 - Do not give an engine-looking line unless it appears in Stockfish MultiPV or targeted Stockfish result.
 - Keep answers concise unless the user asks for depth.
 - Prefer this final answer shape: Direct answer; Key reason; Main line or two; Human plan/lesson; Optional training takeaway.
@@ -470,7 +481,7 @@ fn format_engine_lines(lines: &[CoachEngineLine]) -> String {
                 line.san_moves.join(" ")
             };
             format!(
-                "{}. eval {}, depth {}, PV: {}",
+                "{}. eval {}, depth {}, full line from current FEN: {}",
                 line.multipv, line.eval, line.depth, pv
             )
         })
@@ -655,6 +666,97 @@ fn parse_stockfish_request(answer: &str) -> Result<Option<StockfishFollowUpReque
     let request = serde_json::from_str(json)
         .map_err(|error| CoachError::MalformedStockfishRequest(error.to_string()))?;
     Ok(Some(request))
+}
+
+fn validate_answer_line_blocks(
+    current_fen: &str,
+    answer: &str,
+    stockfish_lines: &[CoachEngineLine],
+    targeted_results: &[CoachTargetedResult],
+) -> Result<(), CoachError> {
+    let line_blocks = extract_answer_line_blocks(answer)?;
+    if line_blocks.is_empty() {
+        return Ok(());
+    }
+
+    let supported_lines = collect_supported_engine_lines(stockfish_lines, targeted_results);
+    if supported_lines.is_empty() {
+        return Err(CoachError::GeminiUnsupportedLine(
+            "answer included a <line> block but no Stockfish lines were supplied".to_string(),
+        ));
+    }
+
+    for line in line_blocks {
+        let requested_moves = parse_line_moves(current_fen, &line).map_err(|error| {
+            CoachError::GeminiUnsupportedLine(format!(
+                "`{line}` is not a legal full line from the current FEN ({error})"
+            ))
+        })?;
+        let supported = supported_lines
+            .iter()
+            .any(|stockfish_line| is_move_prefix(&requested_moves, stockfish_line));
+        if !supported {
+            return Err(CoachError::GeminiUnsupportedLine(format!(
+                "`{line}` was not supplied by Stockfish for the current FEN"
+            )));
+        }
+    }
+
+    Ok(())
+}
+
+fn extract_answer_line_blocks(answer: &str) -> Result<Vec<String>, CoachError> {
+    let start_tag = "<line>";
+    let end_tag = "</line>";
+    let mut blocks = Vec::new();
+    let mut cursor = 0;
+
+    while let Some(relative_start) = answer[cursor..].find(start_tag) {
+        let start = cursor + relative_start + start_tag.len();
+        let Some(relative_end) = answer[start..].find(end_tag) else {
+            return Err(CoachError::GeminiUnsupportedLine(
+                "answer included <line> without a closing </line>".to_string(),
+            ));
+        };
+        let end = start + relative_end;
+        let block = answer[start..end].trim();
+        if !block.is_empty() {
+            blocks.push(block.to_string());
+        }
+        cursor = end + end_tag.len();
+    }
+
+    Ok(blocks)
+}
+
+fn collect_supported_engine_lines(
+    stockfish_lines: &[CoachEngineLine],
+    targeted_results: &[CoachTargetedResult],
+) -> Vec<Vec<String>> {
+    stockfish_lines
+        .iter()
+        .chain(
+            targeted_results
+                .iter()
+                .flat_map(|result| result.lines.iter()),
+        )
+        .filter_map(|line| {
+            if line.uci_moves.is_empty() {
+                None
+            } else {
+                Some(line.uci_moves.clone())
+            }
+        })
+        .collect()
+}
+
+fn is_move_prefix(candidate: &[String], stockfish_line: &[String]) -> bool {
+    !candidate.is_empty()
+        && candidate.len() <= stockfish_line.len()
+        && candidate
+            .iter()
+            .zip(stockfish_line)
+            .all(|(candidate_move, stockfish_move)| candidate_move == stockfish_move)
 }
 
 fn infer_question_stockfish_requests(
@@ -846,6 +948,11 @@ async fn run_targeted_stockfish_request(
                 &format!("move {san}"),
             )
             .await?;
+            let lines = prefix_engine_lines(
+                lines,
+                std::slice::from_ref(&uci),
+                std::slice::from_ref(&san),
+            );
             Ok(CoachTargetedResult {
                 request_type: "analyse_move".to_string(),
                 reason,
@@ -877,6 +984,11 @@ async fn run_targeted_stockfish_request(
                     &format!("move {san}"),
                 )
                 .await?;
+                let lines = prefix_engine_lines(
+                    lines,
+                    std::slice::from_ref(&uci),
+                    std::slice::from_ref(&san),
+                );
                 labels.push(format!("{san} ({uci})"));
                 combined.push(CoachTargetedResult {
                     request_type: "compare_moves".to_string(),
@@ -911,6 +1023,7 @@ async fn run_targeted_stockfish_request(
         StockfishFollowUpRequest::AnalyseLine { fen, line, reason } => {
             validate_follow_up_fen(current_fen, &fen)?;
             let moves = parse_line_moves(&fen, &line)?;
+            let san_moves = san_for_uci_line(&fen, &moves)?;
             let lines = run_stockfish_analysis(
                 engine_path,
                 &fen,
@@ -921,6 +1034,7 @@ async fn run_targeted_stockfish_request(
                 "requested line",
             )
             .await?;
+            let lines = prefix_engine_lines(lines, &moves, &san_moves);
             Ok(CoachTargetedResult {
                 request_type: "analyse_line".to_string(),
                 reason,
@@ -931,6 +1045,38 @@ async fn run_targeted_stockfish_request(
             })
         }
     }
+}
+
+fn prefix_engine_lines(
+    lines: Vec<CoachEngineLine>,
+    prefix_uci: &[String],
+    prefix_san: &[String],
+) -> Vec<CoachEngineLine> {
+    lines
+        .into_iter()
+        .map(|line| {
+            let CoachEngineLine {
+                multipv,
+                depth,
+                eval,
+                uci_moves: line_uci_moves,
+                san_moves: line_san_moves,
+            } = line;
+            let mut uci_moves = prefix_uci.to_vec();
+            uci_moves.extend(line_uci_moves);
+
+            let mut san_moves = prefix_san.to_vec();
+            san_moves.extend(line_san_moves);
+
+            CoachEngineLine {
+                multipv,
+                depth,
+                eval,
+                uci_moves,
+                san_moves,
+            }
+        })
+        .collect()
 }
 
 fn validate_follow_up_fen(current_fen: &str, requested_fen: &str) -> Result<(), CoachError> {
@@ -962,6 +1108,24 @@ fn parse_line_moves(fen: &str, line: &str) -> Result<Vec<String>, CoachError> {
         ));
     }
     Ok(moves)
+}
+
+fn san_for_uci_line(fen: &str, moves: &[String]) -> Result<Vec<String>, CoachError> {
+    let mut position = parse_fen_to_position(fen)?;
+    let mut san_moves = Vec::new();
+
+    for uci in moves {
+        let uci_move = UciMove::from_ascii(uci.as_bytes()).map_err(|_| {
+            CoachError::IllegalStockfishRequest(format!("could not parse move `{uci}`"))
+        })?;
+        let mv = uci_move
+            .to_move(&position)
+            .map_err(|_| CoachError::IllegalStockfishRequest(format!("illegal move `{uci}`")))?;
+        let san = SanPlus::from_move_and_play_unchecked(&mut position, &mv);
+        san_moves.push(san.to_string());
+    }
+
+    Ok(san_moves)
 }
 
 fn tokenize_move_line(line: &str) -> Vec<String> {
@@ -1414,7 +1578,8 @@ mod tests {
         assert!(prompt.contains("Stockfish is the source of truth"));
         assert!(prompt.contains("<stockfish_request>"));
         assert!(prompt.contains("What is the plan here?"));
-        assert!(prompt.contains("1. eval +0.20, depth 12, PV: e4"));
+        assert!(prompt.contains("full legal sequence from the current FEN"));
+        assert!(prompt.contains("1. eval +0.20, depth 12, full line from current FEN: e4"));
     }
 
     #[test]
@@ -1510,6 +1675,77 @@ mod tests {
             requests.first(),
             Some(StockfishFollowUpRequest::AnalyseMove { mv, .. }) if mv == "Nxg6"
         ));
+    }
+
+    #[test]
+    fn prefixes_targeted_engine_lines_with_requested_line() {
+        let lines = prefix_engine_lines(
+            vec![CoachEngineLine {
+                multipv: 1,
+                depth: 12,
+                eval: "+0.30".to_string(),
+                uci_moves: vec!["g8f6".to_string(), "b1c3".to_string()],
+                san_moves: vec!["Nf6".to_string(), "Nc3".to_string()],
+            }],
+            &["e2e4".to_string(), "e7e5".to_string()],
+            &["e4".to_string(), "e5".to_string()],
+        );
+
+        assert_eq!(
+            lines[0].uci_moves,
+            vec![
+                "e2e4".to_string(),
+                "e7e5".to_string(),
+                "g8f6".to_string(),
+                "b1c3".to_string()
+            ]
+        );
+        assert_eq!(
+            lines[0].san_moves,
+            vec![
+                "e4".to_string(),
+                "e5".to_string(),
+                "Nf6".to_string(),
+                "Nc3".to_string()
+            ]
+        );
+    }
+
+    #[test]
+    fn accepts_answer_line_block_backed_by_stockfish_prefix() {
+        let result = validate_answer_line_blocks(
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            "Play <line>e4 e5</line> and develop.",
+            &[CoachEngineLine {
+                multipv: 1,
+                depth: 12,
+                eval: "+0.20".to_string(),
+                uci_moves: vec!["e2e4".to_string(), "e7e5".to_string(), "g1f3".to_string()],
+                san_moves: vec!["e4".to_string(), "e5".to_string(), "Nf3".to_string()],
+            }],
+            &[],
+        );
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn rejects_answer_line_block_not_backed_by_stockfish() {
+        let result = validate_answer_line_blocks(
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            "Try <line>d4 d5</line>.",
+            &[CoachEngineLine {
+                multipv: 1,
+                depth: 12,
+                eval: "+0.20".to_string(),
+                uci_moves: vec!["e2e4".to_string(), "e7e5".to_string()],
+                san_moves: vec!["e4".to_string(), "e5".to_string()],
+            }],
+            &[],
+        )
+        .unwrap_err();
+
+        assert!(result.to_string().contains("not supplied by Stockfish"));
     }
 
     #[test]

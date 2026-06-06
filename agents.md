@@ -494,6 +494,11 @@ default.
   concrete plans or variations. Whole-game PGN plus stored analyze-game eval
   points are only sent for whole-game review questions; normal position
   questions still receive the current-line PGN only.
+- A follow-up tightened clickable line grounding: targeted Stockfish results
+  now prefix each PV with the requested move or requested line, so every engine
+  line shown to Gemini is a full sequence from the current FEN. Final Gemini
+  `<line>...</line>` blocks are parsed server-side and rejected unless they are
+  legal from the current FEN and match a prefix of supplied Stockfish data.
 - On 2026-06-06, a source-derived White repertoire file was added under the
   app Files root's `Documents/EnCroissant/General repertoire/White  rep`
   folder as `Keymer Variation - Mendonca video.pgn`, with the matching `.info`
