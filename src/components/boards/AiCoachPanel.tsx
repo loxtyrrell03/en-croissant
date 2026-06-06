@@ -630,10 +630,14 @@ function renderInlineMoves(text: string, context?: InlineMoveRenderContext): Rea
 }
 
 function renderInlineMarkdown(text: string, context?: InlineMoveRenderContext) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g).filter((part) => part.length > 0);
+  const parts = text
+    .split(/(\*\*[^*\n]+\*\*|\*[^*\n]+\*)/g)
+    .filter((part) => part.length > 0);
   return parts.map((part, index) => {
-    const bold = part.startsWith("**") && part.endsWith("**");
-    const content = bold ? part.slice(2, -2) : part;
+    const doubleBold = part.startsWith("**") && part.endsWith("**");
+    const singleBold = !doubleBold && part.startsWith("*") && part.endsWith("*");
+    const bold = doubleBold || singleBold;
+    const content = doubleBold ? part.slice(2, -2) : singleBold ? part.slice(1, -1) : part;
     return (
       <Text key={`${content}-${index}`} span fw={bold ? 700 : undefined}>
         {renderInlineMoves(content, context)}

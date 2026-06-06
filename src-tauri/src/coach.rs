@@ -1041,9 +1041,9 @@ fn build_coach_prompt(
         "- Root Stockfish MultiPV is from the current FEN. Targeted results list their own FEN; use each targeted result only for that listed position. Targeted \"After ...\" results already include the requested move or requested line before the continuation.".to_string()
     };
     let section_label_rule = if whole_game_mode {
-        "- Use bold section labels like **Direct answer**, **Critical moments**, **What to play instead**, and **Training lesson**. Do not use Markdown # headings."
+        "- Use bold section labels like **Direct answer**, **Critical moments**, **What to play instead**, and **Training lesson**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
     } else {
-        "- Use bold section labels like **Direct answer**, **Key reason**, and **Main line**. Do not use Markdown # headings."
+        "- Use bold section labels like **Direct answer**, **Key reason**, and **Main line**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
     };
 
     format!(

@@ -563,8 +563,11 @@ default.
   CLI errors rather than surfacing a misleading empty-response failure.
 - Coach answer formatting is intentionally app-rendered rather than raw
   Markdown. The UI strips `###` headings into bold section labels, renders
-  `**bold**`, turns Markdown bullet markers into normal bullet rows, and renders
-  each `<line>...</line>` variation as individual clickable move buttons. When
+  `**bold**`, asks Pro to use double-asterisk labels such as `**Verdict:**`,
+  renders Gemini's occasional single-asterisk label spans such as `*Verdict*:`
+  as bold text instead of leaking literal `*` characters, turns Markdown bullet
+  markers into normal bullet rows, and renders each
+  `<line>...</line>` variation as individual clickable move buttons. When
   Gemini accidentally includes a full game prefix inside a line block, the UI
   compares it with the current game's mainline, trims the matching prefix, and
   anchors clicks from the branch position so blue move lines start at the
