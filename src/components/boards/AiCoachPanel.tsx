@@ -15,7 +15,7 @@ import {
 import { IconAlertTriangle, IconSparkles } from "@tabler/icons-react";
 import { listen } from "@tauri-apps/api/event";
 import { useAtomValue } from "jotai";
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 import type {
@@ -47,8 +47,9 @@ import { getPGN, getVariationLine, headersToPGN, uciNormalize } from "@/utils/ch
 import { buildAiCoachOpeningContext } from "@/utils/aiCoachOpeningContext";
 import { positionFromFen } from "@/utils/chessops";
 import type { Engine, LocalEngine } from "@/utils/engines";
+import { getBestMoves as getLichessCloudBestMoves } from "@/utils/lichess/api";
 import { formatScore } from "@/utils/score";
-import { type TreeNode, treeIteratorMainLine } from "@/utils/treeReducer";
+import { getNodeAtPath, type TreeNode, treeIteratorMainLine } from "@/utils/treeReducer";
 import { unwrap } from "@/utils/unwrap";
 
 type CoachUiMessage = CoachChatMessage & {
@@ -76,6 +77,19 @@ type PreparedCoachMove = {
 type PreparedCoachLine = {
   basePath: number[];
   moves: PreparedCoachMove[];
+};
+
+type InlineMoveRenderContext = {
+  basePath: number[];
+  mainlineMoves: MainlineMove[];
+  onPlayMoves: (moves: string[], basePath?: number[]) => void;
+};
+
+type InlineMoveToken = {
+  label: string;
+  san: string;
+  moveNumber?: number;
+  blackMove?: boolean;
 };
 
 type CoachProgressPayload = {
@@ -123,6 +137,21 @@ function toCoachLine(line: BestMoves): CoachEngineLine {
     uciMoves: line.uciMoves,
     sanMoves: line.sanMoves,
   };
+}
+
+async function getCoachCloudLines(fen: string, multipv: number): Promise<CoachEngineLine[]> {
+  const requestedMultipv = Math.max(1, Math.min(8, Math.round(multipv) || 1));
+  const result = await getLichessCloudBestMoves(
+    "ai-coach",
+    { t: "Depth", c: 17 },
+    {
+      fen,
+      moves: [],
+      extraOptions: [{ name: "MultiPV", value: requestedMultipv.toString() }],
+    },
+  );
+
+  return (result?.[1] ?? []).slice(0, requestedMultipv).map(toCoachLine);
 }
 
 function buildGameAnalysisContext(root: TreeNode): CoachGameAnalysisPoint[] {
@@ -188,6 +217,82 @@ function normalizeSanForCompare(move: string): string {
     .replace(/[+#]+$/g, "")
     .replace(/0/g, "O")
     .toLowerCase();
+}
+
+function cleanInlineSan(move: string): string {
+  return cleanMoveToken(move)
+    .replace(/^`+|`+$/g, "")
+    .replace(/[.!?,;:]+$/g, "")
+    .replace(/[!?]+$/g, "");
+}
+
+function parseInlineMoveToken(raw: string): InlineMoveToken | null {
+  const match = raw.match(
+    /^`?(?:(\d+)\.(\.\.)?\s*)?((?:O-O-O|O-O|[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?)[+#]?[!?]*)`?$/i,
+  );
+  if (!match) return null;
+
+  const san = cleanInlineSan(match[3] ?? "");
+  if (!san) return null;
+
+  return {
+    label: raw.replace(/`/g, ""),
+    san,
+    moveNumber: match[1] ? Number(match[1]) : undefined,
+    blackMove: Boolean(match[2]),
+  };
+}
+
+function findMainlineMovePath(token: InlineMoveToken, mainlineMoves: MainlineMove[]) {
+  if (!token.moveNumber) return null;
+
+  const preferredPly = token.blackMove ? token.moveNumber * 2 : token.moveNumber * 2 - 1;
+  const candidates = [
+    preferredPly,
+    token.blackMove ? token.moveNumber * 2 - 1 : token.moveNumber * 2,
+  ];
+
+  for (const ply of candidates) {
+    const match = mainlineMoves.find(
+      (move) =>
+        move.halfMoves === ply &&
+        normalizeSanForCompare(move.san) === normalizeSanForCompare(token.san),
+    );
+    if (match) return match.path;
+  }
+
+  return null;
+}
+
+function findMainlineBasePathForNumberedMove(
+  token: InlineMoveToken,
+  mainlineMoves: MainlineMove[],
+) {
+  if (!token.moveNumber) return null;
+
+  const targetPly = token.blackMove ? token.moveNumber * 2 : token.moveNumber * 2 - 1;
+  const previousPly = targetPly - 1;
+  if (previousPly <= 0) return [];
+
+  const previousMove = mainlineMoves.find((move) => move.halfMoves === previousPly);
+  return previousMove?.path ?? null;
+}
+
+function resolveExistingMovePath(root: TreeNode, basePath: number[], moves: string[]) {
+  const path = [...basePath];
+  let node: TreeNode | undefined = getNodeAtPath(root, basePath);
+  if (!node) return null;
+
+  for (const move of moves) {
+    const childIndex = node.children.findIndex(
+      (child) => child.san && normalizeSanForCompare(child.san) === normalizeSanForCompare(move),
+    );
+    if (childIndex === -1) return null;
+    path.push(childIndex);
+    node = node.children[childIndex];
+  }
+
+  return path;
 }
 
 function tokenizePlayableLine(line: string): string[] {
@@ -419,20 +524,115 @@ function prepareCoachLine({
   };
 }
 
-function renderInlineMarkdown(text: string) {
+function renderMoveToken(
+  token: InlineMoveToken,
+  context?: InlineMoveRenderContext,
+  targetMoves?: string[],
+  targetBasePath?: number[],
+  mainlinePathOverride?: number[] | null,
+) {
+  if (!context) return token.label;
+
+  const mainlinePath =
+    mainlinePathOverride === undefined
+      ? findMainlineMovePath(token, context.mainlineMoves)
+      : mainlinePathOverride;
+  const handleClick = () => {
+    if (mainlinePath) {
+      context.onPlayMoves([], mainlinePath);
+      return;
+    }
+    context.onPlayMoves(targetMoves ?? [token.san], targetBasePath ?? context.basePath);
+  };
+
+  return (
+    <Text
+      key={`${token.label}-${token.san}`}
+      component="button"
+      type="button"
+      c="blue.2"
+      fw={600}
+      td="underline"
+      onClick={handleClick}
+      style={{
+        background: "transparent",
+        border: 0,
+        cursor: "pointer",
+        display: "inline",
+        font: "inherit",
+        padding: 0,
+      }}
+    >
+      {token.label}
+    </Text>
+  );
+}
+
+function renderInlineMoves(text: string, context?: InlineMoveRenderContext): ReactNode[] {
+  const pieces: ReactNode[] = [];
+  const pattern =
+    /`?(?:(?:\d+)\.(?:\.\.)?\s*)?(?:O-O-O|O-O|[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?)[+#]?[!?]*`?/gi;
+  let cursor = 0;
+  let match: RegExpExecArray | null;
+  let sequenceBasePath = context?.basePath;
+  let sequenceMoves: string[] = [];
+
+  while ((match = pattern.exec(text)) !== null) {
+    const between = text.slice(cursor, match.index);
+    if (match.index > cursor) {
+      pieces.push(between);
+    }
+
+    if (!/^[\s,;:()]*$/.test(between)) {
+      sequenceBasePath = context?.basePath;
+      sequenceMoves = [];
+    }
+
+    const raw = match[0];
+    const token = parseInlineMoveToken(raw);
+    const mainlinePath = token && context ? findMainlineMovePath(token, context.mainlineMoves) : null;
+    const numberedBasePath =
+      token && context ? findMainlineBasePathForNumberedMove(token, context.mainlineMoves) : null;
+
+    if (!token) {
+      pieces.push(raw);
+    } else if (mainlinePath) {
+      pieces.push(renderMoveToken(token, context, [], undefined, mainlinePath));
+      sequenceBasePath = mainlinePath;
+      sequenceMoves = [];
+    } else {
+      if (numberedBasePath) {
+        sequenceBasePath = numberedBasePath;
+        sequenceMoves = [];
+      }
+      const targetMoves = [...sequenceMoves, token.san];
+      pieces.push(renderMoveToken(token, context, targetMoves, sequenceBasePath, null));
+      sequenceMoves = targetMoves;
+    }
+    cursor = pattern.lastIndex;
+  }
+
+  if (cursor < text.length) {
+    pieces.push(text.slice(cursor));
+  }
+
+  return pieces;
+}
+
+function renderInlineMarkdown(text: string, context?: InlineMoveRenderContext) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g).filter((part) => part.length > 0);
   return parts.map((part, index) => {
     const bold = part.startsWith("**") && part.endsWith("**");
     const content = bold ? part.slice(2, -2) : part;
     return (
       <Text key={`${content}-${index}`} span fw={bold ? 700 : undefined}>
-        {content}
+        {renderInlineMoves(content, context)}
       </Text>
     );
   });
 }
 
-function renderCoachText(text: string) {
+function renderCoachText(text: string, context?: InlineMoveRenderContext) {
   return text
     .split(/\n+/)
     .map((rawLine) => rawLine.trim())
@@ -442,7 +642,7 @@ function renderCoachText(text: string) {
       if (heading) {
         return (
           <Text key={`${line}-${index}`} size="sm" fw={700} mt={index === 0 ? 0 : "xs"}>
-            {renderInlineMarkdown(heading[1])}
+            {renderInlineMarkdown(heading[1], context)}
           </Text>
         );
       }
@@ -454,14 +654,14 @@ function renderCoachText(text: string) {
             <Text size="sm" c="dimmed" aria-hidden>
               •
             </Text>
-            <Text size="sm">{renderInlineMarkdown(bullet[1])}</Text>
+            <Text size="sm">{renderInlineMarkdown(bullet[1], context)}</Text>
           </Group>
         );
       }
 
       return (
         <Text key={`${line}-${index}`} size="sm">
-          {renderInlineMarkdown(line)}
+          {renderInlineMarkdown(line, context)}
         </Text>
       );
     });
@@ -818,17 +1018,24 @@ export default function AiCoachPanel() {
   }
 
   function playCoachMoves(payload: string[], basePath?: number[]) {
-    if (payload.length === 0) return;
-
     const targetPath = [...(basePath ?? currentPath)];
+    if (payload.length === 0) {
+      store.getState().goToMove(targetPath);
+      return;
+    }
+
+    const existingPath = resolveExistingMovePath(root, targetPath, payload);
+    if (existingPath) {
+      store.getState().goToMove(existingPath);
+      return;
+    }
+
     store.getState().goToMove(targetPath);
-    window.setTimeout(() => {
-      store.getState().makeMoves({
-        payload,
-        mainline: false,
-        changeHeaders: false,
-      });
-    }, 0);
+    store.getState().makeMoves({
+      payload,
+      mainline: false,
+      changeHeaders: false,
+    });
   }
 
   function clearChat() {
@@ -1021,6 +1228,12 @@ function CoachMessageContent({
   mainlineMoves: MainlineMove[];
   onPlayMoves: (moves: string[], basePath?: number[]) => void;
 }) {
+  const inlineContext: InlineMoveRenderContext = {
+    basePath,
+    mainlineMoves,
+    onPlayMoves,
+  };
+
   return (
     <Stack gap={6}>
       {splitCoachMessage(content).map((segment, index) => {
@@ -1070,7 +1283,7 @@ function CoachMessageContent({
 
         return (
           <Stack key={`${segment.type}-${index}`} gap={4}>
-            {renderCoachText(segment.text)}
+            {renderCoachText(segment.text, inlineContext)}
           </Stack>
         );
       })}

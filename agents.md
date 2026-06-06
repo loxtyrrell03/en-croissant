@@ -606,6 +606,25 @@ default.
   `pgn_scope` field must explicitly accept the snake-case key used in the
   planner prompt; otherwise Rust will deserialize an empty scope and reject the
   planner output.
+- Whole-game Coach mode must not package current-board/root MultiPV or Lichess
+  opening stats as Pro evidence. When Flash selects `whole_game`, the backend
+  skips root current-position Stockfish, omits opening context from the Pro
+  prompt, and tells Pro not to produce starting-position main lines or move-1
+  opening advice. Whole-game answers should use the PGN, stored game evals, and
+  critical targeted Stockfish positions instead.
+- Coach answer move clicks should always use the response's intended base
+  position, not the live board's current position. Blue `<line>` blocks trim
+  full-game prefixes and jump/create from their stored base path. Inline prose
+  SAN references are clickable too: numbered moves jump to the matching
+  mainline ply when they are the played game move, or use the move number to
+  anchor alternatives at the mainline position before that ply. Adjacent SAN
+  sequences in prose carry their prefix from that anchor, so a response like
+  `19.Nexd4 d5` plays from before White's 19th move rather than from the live
+  board cursor.
+- On 2026-06-06, Coach's default local Stockfish analysis depth was raised from
+  12 to 17 in `src-tauri/src/coach.rs`. This applies to the current-position
+  root MultiPV and planned/targeted Coach Stockfish checks so Gemini receives
+  deeper tactical evidence by default.
 - On 2026-06-06, the Coach question box default was cleared so opening the
   Coach tab starts with a blank input instead of the seeded `What is the plan
   here?` prompt. Keep the submit guard tied to non-empty trimmed text.

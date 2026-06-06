@@ -32,7 +32,7 @@ use crate::{
     error::Error,
 };
 
-const DEFAULT_STOCKFISH_DEPTH: u32 = 12;
+const DEFAULT_STOCKFISH_DEPTH: u32 = 17;
 const DEFAULT_COACH_MODEL: &str = "gemini-3.1-pro-preview";
 const DEFAULT_PLANNER_MODEL: &str = "gemini-3.5-flash";
 const MAX_PLANNER_STOCKFISH_REQUESTS: usize = 6;
@@ -638,7 +638,20 @@ async fn ask_ai_coach_inner(
     }
     planned_requests.truncate(MAX_PLANNER_STOCKFISH_REQUESTS);
 
-    let stockfish_lines = if request.existing_lines.len() >= multipv as usize {
+    let whole_game_mode = request.pgn_scope.trim() == "whole_game";
+    let stockfish_lines = if whole_game_mode {
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "stockfish_root_skip",
+            "Skipping current-position root lines",
+            "Whole-game review will use PGN, game evals, and critical targeted Stockfish instead of starting-position/opening MultiPV.",
+            36.0,
+            false,
+        );
+        Vec::new()
+    } else if request.existing_lines.len() >= multipv as usize {
         emit_coach_progress(
             app,
             request_id,
@@ -680,7 +693,8 @@ async fn ask_ai_coach_inner(
         )
         .await?
     };
-    let used_existing_analysis = request.existing_lines.len() >= multipv as usize;
+    let used_existing_analysis =
+        !whole_game_mode && request.existing_lines.len() >= multipv as usize;
     emit_coach_progress(
         app,
         request_id,
@@ -890,7 +904,12 @@ fn build_coach_prompt(
     } else {
         request.move_history.join(" ")
     };
-    let engine_lines = format_engine_lines(stockfish_lines);
+    let whole_game_mode = request.pgn_scope.trim() == "whole_game";
+    let engine_lines = if whole_game_mode {
+        "Omitted for whole-game review. Do not use current-board/root opening MultiPV as whole-game evidence.".to_string()
+    } else {
+        format_engine_lines(stockfish_lines)
+    };
     let targeted = if targeted_results.is_empty() {
         "None".to_string()
     } else {
@@ -902,12 +921,36 @@ fn build_coach_prompt(
     };
     let chat_history = format_chat_history(&request.chat_history);
     let reference_context = format_reference_context(reference_context);
-    let opening_context = format_opening_context(
-        request.opening_context.as_ref(),
-        request.opening_context_error.as_deref(),
-    );
+    let opening_context = if whole_game_mode {
+        "Omitted for whole-game review unless the user explicitly asks about the opening phase or database choice.".to_string()
+    } else {
+        format_opening_context(
+            request.opening_context.as_ref(),
+            request.opening_context_error.as_deref(),
+        )
+    };
     let game_analysis = format_game_analysis(&request.game_analysis);
     let correction_notes = format_correction_notes(correction_notes);
+    let scope_rules = if whole_game_mode {
+        "- This is a whole-game review. Do not analyse the starting position/current board as the main topic.\n- Do not give a starting-position engine main line, opening recommendation, or generic move-1 advice unless the user explicitly asks about the opening.\n- Base the answer on the loaded game PGN, Stored whole-game Stockfish analysis, and critical targeted Stockfish results.\n- Prefer whole-game sections: **Direct answer**, **Critical moments**, **What to play instead**, **Training lesson**.\n- Do not include <line> blocks in whole-game answers. Refer to move numbers and SAN in prose; the UI makes those move references clickable."
+    } else {
+        "- This is a current-position question. Root Stockfish MultiPV and targeted results are the main evidence."
+    };
+    let answer_shape = if whole_game_mode {
+        "Prefer this final answer shape: Direct answer; Critical moments; What to play instead; Training lesson. Do not include a Main line section unless the user asked for one specific variation."
+    } else {
+        "Prefer this final answer shape: Direct answer; Key reason; Main line or two; Human plan/lesson; Optional training takeaway."
+    };
+    let stockfish_scope_rule = if whole_game_mode {
+        "- Current-position root Stockfish MultiPV is intentionally omitted for this whole-game review. Use only Stored whole-game Stockfish analysis and targeted Stockfish results as concrete engine evidence."
+    } else {
+        "- Root Stockfish MultiPV is from the current FEN. Targeted results list their own FEN; use each targeted result only for that listed position. Targeted \"After ...\" results already include the requested move or requested line before the continuation."
+    };
+    let section_label_rule = if whole_game_mode {
+        "- Use bold section labels like **Direct answer**, **Critical moments**, **What to play instead**, and **Training lesson**. Do not use Markdown # headings."
+    } else {
+        "- Use bold section labels like **Direct answer**, **Key reason**, and **Main line**. Do not use Markdown # headings."
+    };
 
     format!(
         r#"Role: You are a chess coach explaining a position.
@@ -923,15 +966,17 @@ Core rules:
 - Use the conversation history to answer follow-up questions naturally.
 - Use the Position/reference context to resolve explicit references such as "after 19.Nexd4", "that line", or "the line we discussed". If a referenced FEN is supplied there, use only Stockfish results from that FEN or current-FEN lines that legally reach it; do not reinterpret the reference from a different position.
 - For whole-game review questions, do more than list mistakes: when critical-position Stockfish results are supplied, tell the user what should have been played instead and why Stockfish prefers that move over the move played. It is fine to cover only the critical mistakes.
-- Root Stockfish MultiPV is from the current FEN. Targeted results list their own FEN; use each targeted result only for that listed position. Targeted "After ..." results already include the requested move or requested line before the continuation.
-- Use bold section labels like **Direct answer**, **Key reason**, and **Main line**. Do not use Markdown # headings.
+{scope_rules}
+{stockfish_scope_rule}
+{section_label_rule}
 - When you give a concrete playable variation from the current FEN in your final answer, wrap only the moves in <line>...</line>. Do not wrap prose. Only include a <line> block when that exact line is a full legal sequence from the current FEN and is a prefix of current-FEN Stockfish data supplied here.
 - Do not wrap whole-game critical-position alternatives in <line> unless that targeted result's FEN is exactly the current FEN.
 - A <line> block must start at the current FEN, not at the start of the game. Never include earlier PGN/game moves just to reach the variation. For a non-current whole-game improvement, write the moves as plain text instead of a <line> block.
 - If you discuss a move that happens after another move first, the <line> block must include the earlier move(s) too. For example, use <line>Bh6 e4 ...</line>, not <line>e4 ...</line>, when e4 is only meaningful after Bh6.
 - Do not give an engine-looking line unless it appears in Stockfish MultiPV or targeted Stockfish result.
+- Do not wrap move names in backticks. Write move references as normal SAN with move numbers when possible, such as 19.Nexd4 or 22.Bxh6?.
 - Keep answers concise unless the user asks for depth.
-- Prefer this final answer shape: Direct answer; Key reason; Main line or two; Human plan/lesson; Optional training takeaway.
+- {answer_shape}
 
 Position:
 FEN: {fen}
@@ -979,6 +1024,10 @@ User question:
         chat_history = chat_history,
         reference_context = reference_context,
         correction_notes = correction_notes,
+        scope_rules = scope_rules,
+        answer_shape = answer_shape,
+        stockfish_scope_rule = stockfish_scope_rule,
+        section_label_rule = section_label_rule,
         question = request.question.as_str(),
     )
 }
