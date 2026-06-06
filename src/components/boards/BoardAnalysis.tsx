@@ -85,7 +85,7 @@ const scrollablePanelStyle = {
   overflowY: "auto",
 } as const;
 
-type UnderBoardMode = "moves" | "database" | "prep" | "coach";
+type UnderBoardMode = "moves" | "database" | "prep";
 const INACTIVE_REVIEW_DECK_KEY = "__inactive-board-analysis__.opening-review.json";
 
 function PanelFallback() {
@@ -119,7 +119,6 @@ function UnderBoardModeSwitch({
         { value: "moves", label: "Moves" },
         { value: "database", label: "Database" },
         { value: "prep", label: "Prep" },
-        { value: "coach", label: "Coach" },
       ]}
       value={value}
       onChange={(next) => onChange(next as UnderBoardMode)}
@@ -280,6 +279,7 @@ function BoardAnalysis() {
     analysis: t("Board.Tabs.Analysis"),
     database: t("Board.Tabs.Database"),
     prep: "Prep",
+    coach: "Coach",
     structures: "Structures",
     planExplorer: "Plan Explorer",
     enginePlans: "Engine Plans",
@@ -304,7 +304,7 @@ function BoardAnalysis() {
       toggleEditingMode={toggleEditingMode}
       dirty={dirty}
       saveFile={userSaveFile}
-      onOpenCoach={() => setUnderBoardMode("coach")}
+      onOpenCoach={() => setCurrentTabSelected("coach")}
     />
   );
   const underBoardHeaderActions = (
@@ -314,8 +314,8 @@ function BoardAnalysis() {
         aria-label="AI Coach"
         leftSection={<IconSparkles size="1rem" />}
         size="xs"
-        variant={underBoardMode === "coach" && aiCoachEnabled ? "filled" : "subtle"}
-        onClick={() => setUnderBoardMode("coach")}
+        variant={selectedPanel === "coach" && aiCoachEnabled ? "filled" : "subtle"}
+        onClick={() => setCurrentTabSelected("coach")}
       >
         Coach
       </Button>
@@ -436,10 +436,8 @@ function BoardAnalysis() {
                           <ResponsivePanel>
                             {underBoardMode === "database" ? (
                               <DatabasePanel />
-                            ) : underBoardMode === "prep" ? (
-                              <OpponentPrepPanel underBoard />
                             ) : (
-                              <AiCoachPanel />
+                              <OpponentPrepPanel underBoard />
                             )}
                           </ResponsivePanel>
                         </DeferredPanel>
@@ -532,6 +530,11 @@ function BoardAnalysis() {
                   value="compare"
                 />
                 <BoardAnalysisTab
+                  icon={<IconSparkles size="1rem" />}
+                  label={tabLabels.coach}
+                  value="coach"
+                />
+                <BoardAnalysisTab
                   icon={<IconInfoCircle size="1rem" />}
                   label={tabLabels.info}
                   value="info"
@@ -599,6 +602,11 @@ function BoardAnalysis() {
               <Tabs.Panel value="compare" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
                 <DeferredPanel>
                   <ComparePanel />
+                </DeferredPanel>
+              </Tabs.Panel>
+              <Tabs.Panel value="coach" flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
+                <DeferredPanel>
+                  <AiCoachPanel />
                 </DeferredPanel>
               </Tabs.Panel>
               <Tabs.Panel value="analysis" flex={1} style={scrollablePanelStyle}>

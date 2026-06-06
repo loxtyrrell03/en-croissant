@@ -3,7 +3,6 @@ import {
   Badge,
   Box,
   Button,
-  Code,
   Group,
   Loader,
   Paper,
@@ -211,7 +210,8 @@ function getCoachProgressSteps({
     {
       at: 45,
       label: "Checking for follow-up analysis",
-      detail: "If Gemini asks for legal targeted Stockfish checks, the app will run them and ask again.",
+      detail:
+        "If Gemini asks for legal targeted Stockfish checks, the app will run them and ask again.",
     },
     {
       at: nearTimeoutAt,
@@ -248,6 +248,7 @@ export default function AiCoachPanel() {
   const geminiModel = useAtomValue(aiCoachGeminiModelAtom);
   const multipv = useAtomValue(aiCoachMultipvAtom);
   const timeoutSecs = useAtomValue(aiCoachTimeoutSecsAtom);
+  const effectiveTimeoutSecs = Math.max(150, Math.min(240, timeoutSecs));
   const engines = useAtomValue(enginesAtom);
   const activeTab = useAtomValue(activeTabAtom);
   const sessions = useAtomValue(sessionsAtom);
@@ -343,14 +344,14 @@ export default function AiCoachPanel() {
         hasCachedLines,
         hasLichessToken: Boolean(explorerToken),
         model: geminiModel,
-        timeoutSecs,
+        timeoutSecs: effectiveTimeoutSecs,
       }),
-    [elapsedSecs, explorerToken, geminiModel, hasCachedLines, timeoutSecs],
+    [elapsedSecs, explorerToken, geminiModel, hasCachedLines, effectiveTimeoutSecs],
   );
   const activeProgressStep =
     [...progressSteps].reverse().find((step) => elapsedSecs >= step.at) ?? progressSteps[0];
   const progressValue = loading
-    ? Math.min(96, Math.max(8, (elapsedSecs / Math.max(1, timeoutSecs)) * 100))
+    ? Math.min(96, Math.max(8, (elapsedSecs / Math.max(1, effectiveTimeoutSecs)) * 100))
     : answer
       ? 100
       : 0;
@@ -443,7 +444,7 @@ export default function AiCoachPanel() {
             geminiCommand,
             geminiModel,
             multipv,
-            timeoutSecs,
+            timeoutSecs: effectiveTimeoutSecs,
           },
         }),
       );
@@ -534,88 +535,79 @@ export default function AiCoachPanel() {
         </Alert>
       )}
 
-      <Paper withBorder p="xs">
-        <Stack gap={4}>
-          <Text size="xs" c="dimmed">
-            Current FEN
-          </Text>
-          <Code block style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-            {currentNode.fen}
-          </Code>
-        </Stack>
-      </Paper>
-
-      <ScrollArea flex={1} offsetScrollbars style={{ minHeight: 0 }}>
-        <Stack gap="xs" pr="xs">
-          {messages.length === 0 && !loading && (
-            <Paper withBorder p="sm">
-              <Text size="sm" c="dimmed">
-                Ask about the current position. The coach can request more Stockfish analysis when
-                your follow-up names a move, line, or what-if.
-              </Text>
-            </Paper>
-          )}
-          {messages.map((message) => (
-            <Paper
-              key={message.id}
-              withBorder
-              p="sm"
-              bg={message.role === "user" ? "var(--mantine-color-dark-6)" : undefined}
-            >
-              <Stack gap={6}>
-                <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-                  {message.role === "user" ? "You" : "Coach"}
+      <Box style={{ flex: "1 1 0", minHeight: 0, overflow: "hidden" }}>
+        <ScrollArea h="100%" offsetScrollbars type="auto">
+          <Stack gap="xs" pr="xs">
+            {messages.length === 0 && !loading && (
+              <Paper withBorder p="sm">
+                <Text size="sm" c="dimmed">
+                  Ask about the current position. The coach can request more Stockfish analysis when
+                  your follow-up names a move, line, or what-if.
                 </Text>
-                <CoachMessageContent
-                  content={message.content}
-                  onPlayLine={(line) => playCoachLine(line, message.basePath)}
-                />
-              </Stack>
-            </Paper>
-          ))}
-          {loading && (
-            <Paper withBorder p="sm">
-              <Stack gap="xs">
-                <Group justify="space-between" gap="xs">
-                  <Stack gap={2}>
-                    <Text size="sm" fw={600}>
-                      {activeProgressStep.label}
-                    </Text>
-                    <Text size="xs" c="dimmed">
-                      {activeProgressStep.detail}
-                    </Text>
-                  </Stack>
-                  <Badge variant="light">{formatElapsed(elapsedSecs)}</Badge>
-                </Group>
-                <Progress value={progressValue} animated size="sm" radius="xl" />
-                <Stack gap={4}>
-                  {progressSteps.map((step) => {
-                    const complete = elapsedSecs >= step.at;
-                    const active = step === activeProgressStep;
-                    return (
-                      <Group key={step.label} gap="xs" wrap="nowrap">
-                        <Badge
-                          size="xs"
-                          variant={active ? "filled" : complete ? "light" : "outline"}
-                          color={active ? "blue" : complete ? "green" : "gray"}
-                        >
-                          {complete ? "done" : "next"}
-                        </Badge>
-                        <Text size="xs" fw={active ? 600 : 400}>
-                          {step.label}
-                        </Text>
-                      </Group>
-                    );
-                  })}
+              </Paper>
+            )}
+            {messages.map((message) => (
+              <Paper
+                key={message.id}
+                withBorder
+                p="sm"
+                bg={message.role === "user" ? "var(--mantine-color-dark-6)" : undefined}
+              >
+                <Stack gap={6}>
+                  <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
+                    {message.role === "user" ? "You" : "Coach"}
+                  </Text>
+                  <CoachMessageContent
+                    content={message.content}
+                    onPlayLine={(line) => playCoachLine(line, message.basePath)}
+                  />
                 </Stack>
-                <Text size="xs" c="dimmed">
-                  Showing the local pipeline; Gemini private reasoning is not exposed.
-                </Text>
-              </Stack>
-            </Paper>
-          )}
-        </Stack>
-      </ScrollArea>
+              </Paper>
+            ))}
+            {loading && (
+              <Paper withBorder p="sm">
+                <Stack gap="xs">
+                  <Group justify="space-between" gap="xs">
+                    <Stack gap={2}>
+                      <Text size="sm" fw={600}>
+                        {activeProgressStep.label}
+                      </Text>
+                      <Text size="xs" c="dimmed">
+                        {activeProgressStep.detail}
+                      </Text>
+                    </Stack>
+                    <Badge variant="light">{formatElapsed(elapsedSecs)}</Badge>
+                  </Group>
+                  <Progress value={progressValue} animated size="sm" radius="xl" />
+                  <Stack gap={4}>
+                    {progressSteps.map((step) => {
+                      const complete = elapsedSecs >= step.at;
+                      const active = step === activeProgressStep;
+                      return (
+                        <Group key={step.label} gap="xs" wrap="nowrap">
+                          <Badge
+                            size="xs"
+                            variant={active ? "filled" : complete ? "light" : "outline"}
+                            color={active ? "blue" : complete ? "green" : "gray"}
+                          >
+                            {complete ? "done" : "next"}
+                          </Badge>
+                          <Text size="xs" fw={active ? 600 : 400}>
+                            {step.label}
+                          </Text>
+                        </Group>
+                      );
+                    })}
+                  </Stack>
+                  <Text size="xs" c="dimmed">
+                    Showing the local pipeline; Gemini private reasoning is not exposed.
+                  </Text>
+                </Stack>
+              </Paper>
+            )}
+          </Stack>
+        </ScrollArea>
+      </Box>
 
       {error && (
         <Alert color="red" icon={<IconAlertTriangle size="1rem" />}>

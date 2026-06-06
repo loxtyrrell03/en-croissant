@@ -106,7 +106,7 @@ pub struct CoachOpeningContext {
     pub source: String,
     pub fen: String,
     pub side: String,
-    pub total_games: u32,
+    pub total_games: f64,
     pub filters: String,
     pub moves: Vec<CoachOpeningMove>,
 }
@@ -116,10 +116,10 @@ pub struct CoachOpeningContext {
 pub struct CoachOpeningMove {
     pub san: String,
     pub uci: String,
-    pub games: u32,
-    pub white: u32,
-    pub draw: u32,
-    pub black: u32,
+    pub games: f64,
+    pub white: f64,
+    pub draw: f64,
+    pub black: f64,
     pub usage_pct: f64,
     pub side_score_pct: f64,
     pub blended_strength: u16,
@@ -250,7 +250,7 @@ pub async fn ask_ai_coach(request: AiCoachRequest) -> Result<AiCoachResponse, Co
     }
 
     let multipv = request.settings.multipv.clamp(3, 8);
-    let timeout_secs = request.settings.timeout_secs.clamp(15, 90);
+    let timeout_secs = request.settings.timeout_secs.clamp(120, 240);
     let model = request.settings.gemini_model.trim().to_string();
     let model = if model.is_empty() {
         "gemini-3.1-pro-preview".to_string()
@@ -1599,15 +1599,15 @@ mod tests {
             source: "Lichess All".to_string(),
             fen: request.fen.clone(),
             side: "white".to_string(),
-            total_games: 1000,
+            total_games: 1000.0,
             filters: "ratings 1800+".to_string(),
             moves: vec![CoachOpeningMove {
                 san: "e4".to_string(),
                 uci: "e2e4".to_string(),
-                games: 500,
-                white: 220,
-                draw: 120,
-                black: 160,
+                games: 500.0,
+                white: 220.0,
+                draw: 120.0,
+                black: 160.0,
                 usage_pct: 50.0,
                 side_score_pct: 56.0,
                 blended_strength: 82,

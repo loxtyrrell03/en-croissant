@@ -521,6 +521,13 @@ default.
   line shown to Gemini is a full sequence from the current FEN. Final Gemini
   `<line>...</line>` blocks are parsed server-side and rejected unless they are
   legal from the current FEN and match a prefix of supplied Stockfish data.
+- Coach was then moved out of the under-board panel and into the right-side
+  analysis tab stack as its own `Coach` tab; the under-board Coach button is
+  only a shortcut that selects that right-side tab. The standalone Current FEN
+  card was removed from the Coach UI, the transcript area uses a flexed
+  `ScrollArea`, Gemini timeout defaults to 180 seconds with a 120-240 second
+  settings range, and Lichess All opening counts use wide numeric fields so
+  billion-game totals do not fail Tauri request deserialization.
 - On 2026-06-06, a source-derived White repertoire file was added under the
   app Files root's `Documents/EnCroissant/General repertoire/White  rep`
   folder as `Keymer Variation - Mendonca video.pgn`, with the matching `.info`

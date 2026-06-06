@@ -369,7 +369,13 @@ export default function Page() {
         description: "Seconds before the local Gemini CLI coaching request is stopped.",
         keywords: ["ai", "coach", "gemini", "timeout"],
         render: () => (
-          <NumberSetting atom={aiCoachTimeoutSecsAtom} min={15} max={90} step={5} fallback={75} />
+          <NumberSetting
+            atom={aiCoachTimeoutSecsAtom}
+            min={120}
+            max={240}
+            step={10}
+            fallback={180}
+          />
         ),
       },
       {

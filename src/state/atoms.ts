@@ -240,7 +240,7 @@ export const aiCoachGeminiModelAtom = atomWithStorage<string>(
     "gemini-3.1-pro-preview",
 );
 export const aiCoachMultipvAtom = atomWithStorage<number>("ai-coach-multipv", 3);
-export const aiCoachTimeoutSecsAtom = atomWithStorage<number>("ai-coach-timeout-secs", 75);
+export const aiCoachTimeoutSecsAtom = atomWithStorage<number>("ai-coach-timeout-secs", 180);
 export const boardManualSizeAtom = atomWithStorage<number | null>("board-manual-size", null);
 export const mistakeReviewAutoPlayLineAtom = atomWithStorage<boolean>(
     "mistake-review-auto-play-line",
