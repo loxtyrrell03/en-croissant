@@ -40,7 +40,7 @@ const DEFAULT_PLANNER_MODEL: &str = "gemini-3.5-flash";
 const MAX_PLANNER_STOCKFISH_REQUESTS: usize = 6;
 const MAX_CHESS_FACT_TOOL_CALLS: usize = 10;
 const MAX_WHOLE_GAME_CRITICAL_REQUESTS: usize = 3;
-const PLANNER_TIMEOUT_SECS: u64 = 60;
+const PLANNER_TIMEOUT_SECS: u64 = 25;
 const MAX_PROMPT_PGN_CHARS: usize = 12_000;
 const MAX_CHAT_MESSAGE_CHARS: usize = 2_000;
 const MAX_REFERENCE_CONTEXT_ITEMS: usize = 120;
@@ -474,6 +474,20 @@ fn apply_planner_pgn_scope(request: &mut AiCoachRequest, scope: CoachPgnScope) {
     };
 }
 
+fn deterministic_planner_fallback_scope(
+    request: &AiCoachRequest,
+    phase_review: bool,
+    conversational_followup: bool,
+) -> CoachPgnScope {
+    if phase_review || question_explicitly_requests_whole_game(&request.question) {
+        CoachPgnScope::WholeGame
+    } else if conversational_followup {
+        CoachPgnScope::CurrentLine
+    } else {
+        parse_coach_pgn_scope(&request.pgn_scope).unwrap_or(CoachPgnScope::CurrentLine)
+    }
+}
+
 fn effective_request_id(request_id: &str) -> String {
     let request_id = request_id.trim();
     if request_id.is_empty() {
@@ -681,45 +695,77 @@ async fn ask_ai_coach_inner(
         &targeted_results,
         &reference_context,
     );
-    let planner_answer = run_gemini_cli(
+    let planner_result = match run_gemini_cli(
         &request.settings.gemini_command,
         &planner_model,
         &planner_prompt,
         PLANNER_TIMEOUT_SECS.min(timeout_secs.into()),
     )
-    .await?;
-    let planner_response = parse_planner_response(&planner_answer)?;
-    let mut planner_scope =
-        parse_coach_pgn_scope(&planner_response.pgn_scope).ok_or_else(|| {
-            CoachError::GeminiPlannerMalformed(format!(
-                "missing or invalid pgn_scope `{}`; expected `current_line` or `whole_game`",
-                planner_response.pgn_scope
-            ))
-        })?;
-    if phase_review {
-        planner_scope = CoachPgnScope::WholeGame;
-    } else if conversational_followup && !question_explicitly_requests_whole_game(&request.question)
+    .await
     {
-        planner_scope = CoachPgnScope::CurrentLine;
-    }
-    apply_planner_pgn_scope(&mut request, planner_scope);
-    emit_coach_progress(
-        app,
-        request_id,
-        started,
-        "planner_done",
-        "Planner returned Stockfish requests",
-        format!(
-            "Selected {}; {} request(s). {}",
-            planner_scope.label(),
-            planner_response.requests.len(),
-            trim_chat_text(&planner_response.reason)
-        ),
-        18.0,
-        false,
-    );
-    let (mut planned_requests, rejected_planner_requests) =
-        sanitize_planner_requests(&request, &reference_context, planner_response.requests);
+        Ok(answer) => parse_planner_response(&answer).and_then(|response| {
+            let scope = parse_coach_pgn_scope(&response.pgn_scope).ok_or_else(|| {
+                CoachError::GeminiPlannerMalformed(format!(
+                    "missing or invalid pgn_scope `{}`; expected `current_line` or `whole_game`",
+                    response.pgn_scope
+                ))
+            })?;
+            Ok((response, scope))
+        }),
+        Err(error) => Err(error),
+    };
+    let (mut planned_requests, rejected_planner_requests) = match planner_result {
+        Ok((planner_response, mut planner_scope)) => {
+            if phase_review {
+                planner_scope = CoachPgnScope::WholeGame;
+            } else if conversational_followup
+                && !question_explicitly_requests_whole_game(&request.question)
+            {
+                planner_scope = CoachPgnScope::CurrentLine;
+            }
+            apply_planner_pgn_scope(&mut request, planner_scope);
+            emit_coach_progress(
+                app,
+                request_id,
+                started,
+                "planner_done",
+                "Planner returned Stockfish requests",
+                format!(
+                    "Selected {}; {} request(s). {}",
+                    planner_scope.label(),
+                    planner_response.requests.len(),
+                    trim_chat_text(&planner_response.reason)
+                ),
+                18.0,
+                false,
+            );
+            sanitize_planner_requests(&request, &reference_context, planner_response.requests)
+        }
+        Err(error) => {
+            warn!(
+                "ai_coach[{request_id}] Stockfish planner unavailable; using deterministic fallback: {error}"
+            );
+            let planner_scope = deterministic_planner_fallback_scope(
+                &request,
+                phase_review,
+                conversational_followup,
+            );
+            apply_planner_pgn_scope(&mut request, planner_scope);
+            emit_coach_progress(
+                app,
+                request_id,
+                started,
+                "planner_fallback",
+                "Using deterministic planner fallback",
+                format!(
+                    "The first AI planner did not finish cleanly ({error}); continuing with deterministic Stockfish and chess-fact checks."
+                ),
+                18.0,
+                false,
+            );
+            (Vec::new(), Vec::new())
+        }
+    };
     if conversational_followup {
         let before_filter_count = planned_requests.len();
         planned_requests.retain(|stockfish_request| {
@@ -6390,6 +6436,28 @@ mod tests {
     fn rejects_malformed_planner_output() {
         let error = parse_planner_response("I would analyse e4.").unwrap_err();
         assert!(error.to_string().contains("malformed JSON"));
+    }
+
+    #[test]
+    fn deterministic_planner_fallback_keeps_current_line_for_generic_question() {
+        let mut request = sample_request();
+        request.pgn_scope = "current_line".to_string();
+        request.question = "why is this bad?".to_string();
+
+        let scope = deterministic_planner_fallback_scope(&request, false, false);
+
+        assert_eq!(scope, CoachPgnScope::CurrentLine);
+    }
+
+    #[test]
+    fn deterministic_planner_fallback_uses_whole_game_for_game_review() {
+        let mut request = sample_request();
+        request.pgn_scope = "current_line".to_string();
+        request.question = "analyse this whole game".to_string();
+
+        let scope = deterministic_planner_fallback_scope(&request, false, false);
+
+        assert_eq!(scope, CoachPgnScope::WholeGame);
     }
 
     #[test]

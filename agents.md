@@ -568,6 +568,12 @@ default.
   facts from visual memory, PGN context, or general chess knowledge. This was
   added after a Coach answer incorrectly called a c1 bishop undefended when
   the board facts showed it was defended.
+- Also on 2026-06-07, the first Flash Stockfish-planning stage was made
+  recoverable. Planner timeouts or malformed planner JSON now fall back to the
+  deterministic current-line/whole-game scope heuristic plus existing
+  deterministic Stockfish request inference instead of aborting the Coach
+  answer. Keep planner-side AI hops short and optional; the user should not see
+  a hard timeout before Stockfish and chess-fact evidence can run.
 - AGY print mode can return exit code 0 with no stdout when it triggers OAuth
   and the login flow times out; the useful error only appears in the AGY log.
   The coach bridge reads that temporary log and treats `You are not logged into
