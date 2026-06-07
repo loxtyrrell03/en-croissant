@@ -582,6 +582,13 @@ default.
   after Bd2?" should force a concrete capture/reply Stockfish line such as
   `Bd2 Qxd2`, then explain why that line works or fails before discussing the
   engine's best alternative.
+- The baseline `position_facts` payload shown to Coach must stay low-noise:
+  status, legal moves/captures, checks, and checkers only. Do not expose a
+  global inventory of attacked, hanging, or undefended pieces in the final
+  prompt path; it tempts the LLM to use incidental true facts as causal
+  explanations. If a loose/undefended piece matters, ground it through a
+  relevant `square_facts`, `move_facts`, `line_facts`, and especially a
+  Stockfish line that actually exploits that piece.
 - AGY print mode can return exit code 0 with no stdout when it triggers OAuth
   and the login flow times out; the useful error only appears in the AGY log.
   The coach bridge reads that temporary log and treats `You are not logged into

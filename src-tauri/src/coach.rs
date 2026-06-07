@@ -1634,6 +1634,7 @@ Core rules:
 - Do not infer current-position facts from visual memory, blindfold calculation, opening memory, or the PGN alone. If the needed private fact is missing, avoid that claim or phrase it as an engine-line consequence rather than talking about missing facts.
 - When explaining a tactic, use Stockfish for evaluation/PV and private chess facts for the concrete board mechanism, but write only normal coach prose: "the queen is overloaded", "Qxh7+ keeps White alive", "the bishop is defended", etc.
 - Only mention board facts that answer the user's question. Do not list unrelated attacked, hanging, or undefended pieces just because they appear in the private fact data.
+- A loose or undefended piece is not automatically the reason a move is bad. Mention it as causal only when a supplied Stockfish line or targeted reply actually attacks it, wins it, forces it to move, or overloads it. Otherwise leave it out.
 - Never invent concrete tactics, evaluations, plans, or variations. Any concrete move line or plan you recommend must be backed by supplied root engine lines or targeted Stockfish results.
 - PGN context is plain mainline movetext only. No PGN comments, NAGs, arrows, extra markups, or variations are supplied to you; do not infer from absent notes or annotations.
 - Do not give a verdict such as bad, good, inaccurate, mistake, blunder, winning, losing, or refuted unless you also cite the supplied engine line that supports it. Name the relevant evaluation/depth when available.
@@ -1942,7 +1943,7 @@ Hard rule:
 - Maximum {max_calls} calls. The app will add a current-position baseline even if you omit it.
 
 Available tools:
-- position_facts: board occupancy, legal moves, checks, attacked pieces, undefended pieces, hanging pieces, and legal captures.
+- position_facts: side to move, legal moves, check/mate/stalemate status, checkers, and legal captures. This is a baseline, not a tactical explanation.
 - legal_moves: full legal move list from a FEN.
 - square_facts: piece on a square, all attackers, all defenders, and whether the occupied piece is undefended.
 - move_facts: whether a move is legal, its SAN/UCI, capture/check/mate status, resulting FEN, and what the moved piece attacks after the move.
@@ -2117,9 +2118,10 @@ Hard rules:
 - Stockfish supports evaluations and PVs. Private board-state facts support board facts.
 - Never refer to the evidence-gathering process in the final answer. Rewrite implementation-flavored language into normal coach prose.
 - For the current position, remove or soften claims about legal moves, illegal moves, attacked pieces, defended pieces, undefended pieces, loose pieces, hanging pieces, threats, checks, mates, pins, forks, skewers, trapped pieces, overloaded defenders, x-rays, and tactics unless the private board-state facts explicitly support the claim.
-- In particular, do not say a piece is "undefended", "loose", or "hanging" unless a square_facts or position_facts result says it has no defenders or appears in the undefended/hanging list.
+- In particular, do not say a piece is "undefended", "loose", or "hanging" unless square, move, or line-specific facts directly about that piece support it.
 - Do not infer facts from board vision, memory, PGN context, or general chess knowledge. If a factual mechanism is not verified by the private board-state facts, remove that mechanism or describe only the engine line consequence.
 - Keep only the board facts that answer the user's question. Remove unrelated lists of attacked, hanging, or undefended pieces.
+- A loose or undefended piece is not automatically causal. Remove it unless a supplied Stockfish line or targeted reply actually exploits that piece.
 - If the user asked whether a tempting capture/reply works after a move, lead with that exact reply and the Stockfish continuation after it when supplied.
 - Keep <line>...</line> blocks only if they are already present and still necessary; do not invent new line blocks.
 - Do not output <stockfish_request>.
@@ -2693,12 +2695,6 @@ fn execute_chess_fact_tool_call(
 }
 
 fn summarize_position_facts(position: &Chess) -> String {
-    let white_undefended = undefended_piece_entries(position, Color::White);
-    let black_undefended = undefended_piece_entries(position, Color::Black);
-    let white_attacked = attacked_piece_entries(position, Color::White);
-    let black_attacked = attacked_piece_entries(position, Color::Black);
-    let white_hanging = hanging_piece_entries(position, Color::White);
-    let black_hanging = hanging_piece_entries(position, Color::Black);
     let captures = legal_capture_labels(position);
     let checkers = bitboard_piece_entries(position, position.checkers());
     let status = if position.is_checkmate() {
@@ -2712,16 +2708,10 @@ fn summarize_position_facts(position: &Chess) -> String {
     };
 
     format!(
-        "Side to move: {}. Status: {status}. Legal moves: {}. Checkers: {}. Undefended white pieces: {}. Undefended black pieces: {}. Hanging white pieces: {}. Hanging black pieces: {}. Attacked white pieces: {}. Attacked black pieces: {}. Legal captures for side to move: {}.",
+        "Side to move: {}. Status: {status}. Legal moves: {}. Checkers: {}. Legal captures for side to move: {}.",
         color_label(position.turn()),
         position.legal_moves().len(),
         list_or_none(&checkers),
-        list_or_none(&white_undefended),
-        list_or_none(&black_undefended),
-        list_or_none(&white_hanging),
-        list_or_none(&black_hanging),
-        list_or_none(&white_attacked),
-        list_or_none(&black_attacked),
         list_or_none(&captures)
     )
 }
@@ -2735,23 +2725,9 @@ fn position_facts_json(position: &Chess) -> serde_json::Value {
             "stalemate": position.is_stalemate(),
             "checkers": bitboard_piece_entries(position, position.checkers()),
         },
-        "piecePlacement": piece_entries(position),
         "legalMoveCount": position.legal_moves().len(),
         "legalMoves": legal_move_labels(position),
         "legalCaptures": legal_capture_labels(position),
-        "undefendedPieces": {
-            "white": undefended_piece_entries(position, Color::White),
-            "black": undefended_piece_entries(position, Color::Black),
-        },
-        "hangingPieces": {
-            "white": hanging_piece_entries(position, Color::White),
-            "black": hanging_piece_entries(position, Color::Black),
-        },
-        "attackedPieces": {
-            "white": attacked_piece_entries(position, Color::White),
-            "black": attacked_piece_entries(position, Color::Black),
-        },
-        "note": "Attackers and defenders are geometric board attacks from Shakmaty; pinned defenders may still require move-specific legal verification."
     })
 }
 
@@ -6290,6 +6266,23 @@ mod tests {
         assert!(result.summary.contains("Enemy attackers: c4 black rook"));
         assert!(result.summary.contains("Undefended: false"));
         assert_eq!(result.facts["isUndefended"].as_bool(), Some(false));
+    }
+
+    #[test]
+    fn position_facts_do_not_expose_global_loose_piece_inventory() {
+        let result = execute_chess_fact_tool_call(&ChessFactToolCall::PositionFacts {
+            fen: "8/p4k1p/1p3p2/2n1p3/2r2P1Q/P2q4/3B2PP/5RK1 b - - 1 32".to_string(),
+            label: "Current position baseline".to_string(),
+            reason: "Required baseline.".to_string(),
+        })
+        .unwrap();
+        let formatted = format_chess_fact_results(std::slice::from_ref(&result));
+
+        assert!(!result.facts.get("undefendedPieces").is_some());
+        assert!(!result.facts.get("hangingPieces").is_some());
+        assert!(!result.facts.get("attackedPieces").is_some());
+        assert!(!formatted.contains("h4 white queen"));
+        assert!(!formatted.contains("Undefended white pieces"));
     }
 
     #[test]
