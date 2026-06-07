@@ -1095,28 +1095,55 @@ async fn ask_ai_coach_inner(
                     &targeted_results,
                 )? {
                     emit_coach_progress(
-                    app,
-                    request_id,
-                    started,
-                    "answer_validation_demote",
-                    "Demoted non-current line block",
-                    "Gemini repeated a non-current targeted line block during repair, so the app kept the moves as plain text.",
-                    98.0,
-                    false,
-                );
+                        app,
+                        request_id,
+                        started,
+                        "answer_validation_demote",
+                        "Demoted non-current line block",
+                        "Gemini repeated a non-current targeted line block during repair, so the app kept the moves as plain text.",
+                        98.0,
+                        false,
+                    );
                     final_answer = sanitized;
-                    validate_answer_line_blocks(
-                        &request.fen,
-                        &final_answer,
+                } else {
+                    emit_coach_progress(
+                        app,
+                        request_id,
+                        started,
+                        "answer_flash_audit",
+                        format!("Asking {planner_model} to audit answer lines"),
+                        repair_error.to_string(),
+                        98.0,
+                        false,
+                    );
+                    let audit_prompt = build_answer_line_audit_prompt(
+                        &request,
                         &stockfish_lines,
                         &targeted_results,
-                    )?;
-                } else {
-                    return Err(repair_error);
+                        &reference_context,
+                        &final_answer,
+                        &repair_error.to_string(),
+                    );
+                    final_answer = run_gemini_cli(
+                        &request.settings.gemini_command,
+                        &planner_model,
+                        &audit_prompt,
+                        PLANNER_TIMEOUT_SECS.min(timeout_secs.into()),
+                    )
+                    .await?;
                 }
             }
         }
     }
+    final_answer = finalize_answer_line_safety(
+        app,
+        request_id,
+        started,
+        &request.fen,
+        &final_answer,
+        &stockfish_lines,
+        &targeted_results,
+    )?;
 
     Ok(AiCoachResponse {
         answer: final_answer,
@@ -1511,6 +1538,78 @@ User question:
         question_focus = question_focus,
         reference_context = reference_context,
         question = request.question
+    )
+}
+
+fn build_answer_line_audit_prompt(
+    request: &AiCoachRequest,
+    stockfish_lines: &[CoachEngineLine],
+    targeted_results: &[CoachTargetedResult],
+    reference_context: &[CoachReferenceContext],
+    answer: &str,
+    validation_error: &str,
+) -> String {
+    let root_lines = if stockfish_lines.is_empty() {
+        "None".to_string()
+    } else {
+        format_engine_lines_from(stockfish_lines, "current FEN", Some(&request.fen))
+    };
+    let targeted = if targeted_results.is_empty() {
+        "None".to_string()
+    } else {
+        targeted_results
+            .iter()
+            .map(format_targeted_result)
+            .collect::<Vec<_>>()
+            .join("\n\n")
+    };
+    let reference_context = format_reference_context(reference_context);
+
+    format!(
+        r#"You are an answer safety auditor for a local chess coach.
+
+Task:
+Rewrite the draft answer so it is safe to display.
+
+Hard rules:
+- Return only the revised final answer. No JSON. No code fence. No explanation of the audit.
+- Stockfish is the source of truth.
+- Do not invent engine lines, tactics, evaluations, or variations.
+- Remove every unsupported <line>...</line> block.
+- Use <line>...</line> only when that exact move sequence is legal from the current FEN and is a prefix of the supplied current-FEN root Stockfish lines.
+- If a line comes from a targeted Stockfish result whose FEN is not the current FEN, keep the moves as plain text, not inside <line>.
+- If you cannot verify a concrete move sequence against the supplied data, remove that line from the answer.
+- Preserve the useful explanation and the direct answer to the user. If removing a line makes a claim unsupported, soften or remove the claim too.
+- Do not output <stockfish_request>.
+
+Validation error:
+{validation_error}
+
+Current FEN:
+{fen}
+
+User question:
+{question}
+
+Current-FEN root Stockfish lines:
+{root_lines}
+
+Targeted Stockfish results:
+{targeted}
+
+Position/reference context:
+{reference_context}
+
+Draft answer:
+{answer}
+"#,
+        validation_error = validation_error,
+        fen = request.fen.as_str(),
+        question = request.question.as_str(),
+        root_lines = root_lines,
+        targeted = targeted,
+        reference_context = reference_context,
+        answer = answer
     )
 }
 
@@ -3128,6 +3227,136 @@ fn validate_answer_line_blocks(
     }
 
     Ok(())
+}
+
+fn finalize_answer_line_safety(
+    app: &tauri::AppHandle,
+    request_id: &str,
+    started: Instant,
+    current_fen: &str,
+    answer: &str,
+    stockfish_lines: &[CoachEngineLine],
+    targeted_results: &[CoachTargetedResult],
+) -> Result<String, CoachError> {
+    let mut safe_answer = remove_stockfish_request_blocks(answer);
+    if safe_answer.trim().is_empty() {
+        safe_answer =
+            "I could not produce a safe engine-backed answer for that question.".to_string();
+    }
+
+    if validate_answer_line_blocks(current_fen, &safe_answer, stockfish_lines, targeted_results)
+        .is_ok()
+    {
+        return Ok(safe_answer);
+    }
+
+    if let Some(demoted) = demote_non_current_supported_line_blocks(
+        current_fen,
+        &safe_answer,
+        stockfish_lines,
+        targeted_results,
+    )
+    .ok()
+    .flatten()
+    {
+        if validate_answer_line_blocks(current_fen, &demoted, stockfish_lines, targeted_results)
+            .is_ok()
+        {
+            emit_coach_progress(
+                app,
+                request_id,
+                started,
+                "answer_final_demote",
+                "Sanitized answer line wrappers",
+                "Final validation demoted targeted Stockfish lines that are not clickable from the current FEN.",
+                99.0,
+                false,
+            );
+            return Ok(demoted);
+        }
+        safe_answer = demoted;
+    }
+
+    let stripped =
+        strip_unsupported_line_blocks(current_fen, &safe_answer, stockfish_lines, targeted_results);
+    if stripped != safe_answer {
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "answer_final_strip",
+            "Removed unsupported engine line",
+            "A final answer still contained a line not backed by supplied current-FEN or targeted Stockfish data, so the app removed the unsafe line instead of showing an error.",
+            99.0,
+            false,
+        );
+    }
+
+    validate_answer_line_blocks(current_fen, &stripped, stockfish_lines, targeted_results)?;
+    Ok(stripped)
+}
+
+fn remove_stockfish_request_blocks(answer: &str) -> String {
+    let start_tag = "<stockfish_request>";
+    let end_tag = "</stockfish_request>";
+    let mut output = String::with_capacity(answer.len());
+    let mut cursor = 0;
+
+    while let Some(relative_start) = answer[cursor..].find(start_tag) {
+        let absolute_start = cursor + relative_start;
+        output.push_str(&answer[cursor..absolute_start]);
+        let block_start = absolute_start + start_tag.len();
+        let Some(relative_end) = answer[block_start..].find(end_tag) else {
+            cursor = answer.len();
+            break;
+        };
+        cursor = block_start + relative_end + end_tag.len();
+    }
+
+    output.push_str(&answer[cursor..]);
+    output
+}
+
+fn strip_unsupported_line_blocks(
+    current_fen: &str,
+    answer: &str,
+    stockfish_lines: &[CoachEngineLine],
+    targeted_results: &[CoachTargetedResult],
+) -> String {
+    let start_tag = "<line>";
+    let end_tag = "</line>";
+    let current_supported_lines =
+        collect_supported_engine_lines(current_fen, stockfish_lines, targeted_results);
+    let mut output = String::with_capacity(answer.len());
+    let mut cursor = 0;
+
+    while let Some(relative_start) = answer[cursor..].find(start_tag) {
+        let absolute_start = cursor + relative_start;
+        let block_start = absolute_start + start_tag.len();
+        output.push_str(&answer[cursor..absolute_start]);
+
+        let Some(relative_end) = answer[block_start..].find(end_tag) else {
+            output.push_str("[unsupported engine line removed]");
+            cursor = answer.len();
+            break;
+        };
+
+        let block_end = block_start + relative_end;
+        let after_end = block_end + end_tag.len();
+        let block = answer[block_start..block_end].trim();
+
+        if current_line_block_is_supported(current_fen, block, &current_supported_lines) {
+            output.push_str(&answer[absolute_start..after_end]);
+        } else if targeted_line_block_is_supported(block, targeted_results) {
+            output.push_str(block);
+        } else {
+            output.push_str("[unsupported engine line removed]");
+        }
+        cursor = after_end;
+    }
+
+    output.push_str(&answer[cursor..]);
+    output
 }
 
 fn demote_non_current_supported_line_blocks(

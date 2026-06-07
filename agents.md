@@ -615,6 +615,15 @@ default.
   non-whole-game scope for deictic follow-ups, trims prior targeted memory to
   recent results, suppresses whole-game fallback injection, and tells Pro to
   explain the referenced sequence directly.
+- Coach final answers must never fail the UI because Gemini wrapped an
+  unsupported variation in `<line>...</line>`. `coach.rs` validates line blocks
+  after Pro answers, asks the coach model to repair invalid wrappers, then uses
+  the Flash planner model as a safety auditor if repair still fails. The final
+  deterministic gate keeps current-FEN Stockfish-backed line blocks clickable,
+  demotes valid targeted lines from other FENs to plain text, strips
+  `<stockfish_request>` blocks, and replaces any remaining unsupported line
+  block with `[unsupported engine line removed]` instead of returning a red
+  error to the user. Do not weaken this fail-closed behavior.
 - Coach was then moved out of the under-board panel and into the right-side
   analysis tab stack as its own `Coach` tab; the under-board Coach button is
   only a shortcut that selects that right-side tab. The standalone Current FEN
