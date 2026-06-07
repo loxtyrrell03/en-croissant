@@ -574,6 +574,14 @@ default.
   deterministic Stockfish request inference instead of aborting the Coach
   answer. Keep planner-side AI hops short and optional; the user should not see
   a hard timeout before Stockfish and chess-fact evidence can run.
+- Coach answers must treat chess fact data as invisible scaffolding, not prose
+  material. The final answer should never mention tool calls, supplied facts,
+  private checks, structured details, or verification machinery; translate the
+  grounded facts into normal coach language and only include facts relevant to
+  the user's actual question. Questions like "can't the queen take the bishop
+  after Bd2?" should force a concrete capture/reply Stockfish line such as
+  `Bd2 Qxd2`, then explain why that line works or fails before discussing the
+  engine's best alternative.
 - AGY print mode can return exit code 0 with no stdout when it triggers OAuth
   and the login flow times out; the useful error only appears in the AGY log.
   The coach bridge reads that temporary log and treats `You are not logged into

@@ -805,6 +805,33 @@ async fn ask_ai_coach_inner(
         );
     }
 
+    let forced_capture_reply_requests = if has_capture_reply_cue(&request.question) {
+        infer_question_stockfish_requests(&request.fen, &request.question)?
+    } else {
+        Vec::new()
+    };
+    if !forced_capture_reply_requests.is_empty() {
+        let reply_count = forced_capture_reply_requests.len();
+        planned_requests = merge_prioritized_stockfish_requests(
+            &request,
+            &reference_context,
+            forced_capture_reply_requests,
+            planned_requests,
+        )?;
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "question_reply_line",
+            "Adding requested reply evidence",
+            format!(
+                "Queued {reply_count} Stockfish check(s) for the capture/reply named in the question."
+            ),
+            20.3,
+            false,
+        );
+    }
+
     let focused_game_requests = infer_question_referenced_game_stockfish_requests(&request);
     let has_focused_game_move = !focused_game_requests.is_empty();
     if !focused_game_requests.is_empty() {
@@ -1374,7 +1401,7 @@ async fn ask_ai_coach_inner(
             started,
             "answer_fact_audit",
             format!("Auditing board facts with {planner_model}"),
-            "Checking fact-sensitive chess claims against deterministic chess fact tool results.",
+            "Checking board-state claims against private board facts.",
             98.5,
             false,
         );
@@ -1602,9 +1629,11 @@ fn build_coach_prompt_with_facts(
 
 Core rules:
 - Supplied engine analysis is the source of truth. Prefer Lichess Cloud root lines when they are supplied; otherwise use local Stockfish root MultiPV. Targeted follow-up results are local Stockfish.
-- Chess fact tool results are the source of truth for board-state facts. For the current position, do not claim a move is legal/illegal, a piece is attacked, defended, undefended, loose, hanging, pinned, trapped, overloaded, forked, skewered, mating, checking, or tactically threatened unless the Chess fact tool results explicitly support that claim.
-- Do not infer current-position facts from visual memory, blindfold calculation, opening memory, or the PGN alone. If the needed fact tool result is missing, say the supplied facts do not verify that detail and soften the wording.
-- When explaining a tactic, cite both kinds of evidence when available: Stockfish for evaluation/PV, Chess fact tools for the concrete board mechanism such as attackers, defenders, legality, checks, captures, and resulting FENs.
+- Private board-state facts are guardrails for board-state claims. Use them silently. In the final answer, never refer to evidence-gathering machinery, private checks, structured details, or verification process.
+- For the current position, do not claim a move is legal/illegal, a piece is attacked, defended, undefended, loose, hanging, pinned, trapped, overloaded, forked, skewered, mating, checking, or tactically threatened unless the private chess facts support that claim.
+- Do not infer current-position facts from visual memory, blindfold calculation, opening memory, or the PGN alone. If the needed private fact is missing, avoid that claim or phrase it as an engine-line consequence rather than talking about missing facts.
+- When explaining a tactic, use Stockfish for evaluation/PV and private chess facts for the concrete board mechanism, but write only normal coach prose: "the queen is overloaded", "Qxh7+ keeps White alive", "the bishop is defended", etc.
+- Only mention board facts that answer the user's question. Do not list unrelated attacked, hanging, or undefended pieces just because they appear in the private fact data.
 - Never invent concrete tactics, evaluations, plans, or variations. Any concrete move line or plan you recommend must be backed by supplied root engine lines or targeted Stockfish results.
 - PGN context is plain mainline movetext only. No PGN comments, NAGs, arrows, extra markups, or variations are supplied to you; do not infer from absent notes or annotations.
 - Do not give a verdict such as bad, good, inaccurate, mistake, blunder, winning, losing, or refuted unless you also cite the supplied engine line that supports it. Name the relevant evaluation/depth when available.
@@ -1617,10 +1646,11 @@ Core rules:
 - You may use general chess and opening knowledge for concepts, structures, plans, and naming, but only as explanation layered on top of engine-backed lines.
 - Explain like a strong GM/coach: use proper chess terminology such as isolated queen's pawn, minority attack, deflection, trapped piece, blockade, weak square, exchange sacrifice, or domination when it genuinely fits.
 - Treat Lichess All opening stats and blended strength as practical/popularity evidence only. Use it when relevant to opening choice, repertoire, popularity, or practical results; do not treat it as a tactical proof.
-- Do not request tools, shell commands, files, network lookups, external resources, or the Stockfish request protocol in your final answer. Separate planners have already requested all allowed Stockfish analysis and chess fact tool calls up front.
+- Do not request tools, shell commands, files, network lookups, external resources, or the Stockfish request protocol in your final answer. Separate planners have already requested all allowed Stockfish analysis and private board-state checks up front.
 - If the supplied engine data still does not fully answer the user's question, say that limitation briefly and answer only from the supplied evidence. Do not output <stockfish_request>.
 - Use the conversation history to answer follow-up questions naturally.
 - Answer the user's actual requested task directly in the first paragraph. First identify whether they are asking for a verdict, a defensive resource, a practical plan, a comparison, why a move works/fails, a phase review, or what to play instead. Do not substitute a nearby topic just because the engine data contains it.
+- If the user asks whether a tempting capture/reply works after a move, answer that exact reply first. Show the Stockfish continuation after the capture/reply if targeted evidence is supplied, then explain the human reason it succeeds or fails. Do not answer only with the engine's best alternative reply.
 - If targeted Stockfish results are supplied for the latest question focus, use those results as the spine of the answer before discussing any other evidence. Do not say the data is unavailable unless no focused targeted results and no focused stored analysis are supplied.
 - Obey the Question focus and intent section. When the user asks about a named move, answer around that move first. Mention other game moments only when they are direct alternatives from the same position, direct continuations/refutations after that move, or necessary causal context for that move.
 - When the requested task is a defensive resource or practical recovery question, answer from the difficult position the user names. Do not merely state that the user is worse or losing. You may acknowledge the eval once, then spend the answer on the best practical try, the concrete continuation, the human defensive idea, and what the user should aim for next. Keep earlier alternatives to one short note unless the user asks for them.
@@ -1652,7 +1682,7 @@ PGN context ({pgn_scope}):
 Stored whole-game Stockfish analysis:
 {game_analysis}
 
-Chess fact tool results:
+Private board-state facts (internal guardrails; do not mention this section):
 {chess_facts}
 
 Root engine lines:
@@ -2079,15 +2109,18 @@ fn build_answer_fact_audit_prompt(
         r#"You are a factual safety auditor for a local chess coach.
 
 Task:
-Rewrite the draft answer so every current-position board-state claim is supported by deterministic chess fact tool results.
+Rewrite the draft answer so every current-position board-state claim is supported by the private board-state facts.
 
 Hard rules:
 - Return only the revised final answer. No JSON. No code fence. No explanation of the audit.
 - Preserve the useful coaching and the user's requested answer.
-- Stockfish supports evaluations and PVs. Chess fact tool results support board facts.
-- For the current position, remove or soften claims about legal moves, illegal moves, attacked pieces, defended pieces, undefended pieces, loose pieces, hanging pieces, threats, checks, mates, pins, forks, skewers, trapped pieces, overloaded defenders, x-rays, and tactics unless the Chess fact tool results explicitly support the claim.
+- Stockfish supports evaluations and PVs. Private board-state facts support board facts.
+- Never refer to the evidence-gathering process in the final answer. Rewrite implementation-flavored language into normal coach prose.
+- For the current position, remove or soften claims about legal moves, illegal moves, attacked pieces, defended pieces, undefended pieces, loose pieces, hanging pieces, threats, checks, mates, pins, forks, skewers, trapped pieces, overloaded defenders, x-rays, and tactics unless the private board-state facts explicitly support the claim.
 - In particular, do not say a piece is "undefended", "loose", or "hanging" unless a square_facts or position_facts result says it has no defenders or appears in the undefended/hanging list.
-- Do not infer facts from board vision, memory, PGN context, or general chess knowledge. If a factual mechanism is not verified by the tool results, write a neutral version such as "the supplied facts show it is attacked" or "the supplied facts do not verify that it is undefended."
+- Do not infer facts from board vision, memory, PGN context, or general chess knowledge. If a factual mechanism is not verified by the private board-state facts, remove that mechanism or describe only the engine line consequence.
+- Keep only the board facts that answer the user's question. Remove unrelated lists of attacked, hanging, or undefended pieces.
+- If the user asked whether a tempting capture/reply works after a move, lead with that exact reply and the Stockfish continuation after it when supplied.
 - Keep <line>...</line> blocks only if they are already present and still necessary; do not invent new line blocks.
 - Do not output <stockfish_request>.
 
@@ -2103,7 +2136,7 @@ Current-FEN root Stockfish lines:
 Targeted Stockfish results:
 {targeted}
 
-Chess fact tool results:
+Private board-state facts (internal guardrails; do not mention this section):
 {chess_facts}
 
 Draft answer:
@@ -2159,6 +2192,16 @@ fn answer_contains_fact_sensitive_claims(answer: &str) -> bool {
         "winning material",
         "tactic",
         "tactical",
+        "tool result",
+        "tool call",
+        "supplied fact",
+        "supplied facts",
+        "fact tool",
+        "facts json",
+        "deterministic fact",
+        "private check",
+        "structured detail",
+        "verification machinery",
     ]
     .iter()
     .any(|term| answer.contains(term))
@@ -2888,7 +2931,8 @@ fn line_fact_payload(fen: &str, line: &str) -> Result<(String, serde_json::Value
 
 fn format_chess_fact_results(results: &[CoachChessFactResult]) -> String {
     if results.is_empty() {
-        return "None. The final answer must avoid factual board-state claims that were not supplied by Stockfish or chess fact tools.".to_string();
+        return "None. The final answer must avoid unverified factual board-state claims."
+            .to_string();
     }
 
     results
@@ -2897,9 +2941,8 @@ fn format_chess_fact_results(results: &[CoachChessFactResult]) -> String {
         .map(|(index, result)| {
             let facts = serde_json::to_string(&result.facts).unwrap_or_else(|_| "{}".to_string());
             format!(
-                "Tool call {}: {} - {}\nReason: {}\nFEN: {}\nSummary: {}\nFacts JSON: {}",
+                "Board fact {}: {}\nReason: {}\nFEN: {}\nSummary: {}\nStructured details: {}",
                 index + 1,
-                result.tool,
                 result.label,
                 result.reason,
                 result.fen,
@@ -4922,6 +4965,11 @@ fn infer_question_stockfish_requests(
     question: &str,
 ) -> Result<Vec<StockfishFollowUpRequest>, CoachError> {
     let candidates = extract_move_candidates(question);
+    let capture_reply_requests = infer_natural_capture_reply_requests(fen, question, &candidates)?;
+    if !capture_reply_requests.is_empty() {
+        return Ok(capture_reply_requests);
+    }
+
     if candidates.is_empty() {
         return Ok(Vec::new());
     }
@@ -4961,6 +5009,115 @@ fn infer_question_stockfish_requests(
     }
 
     Ok(requests)
+}
+
+fn infer_natural_capture_reply_requests(
+    fen: &str,
+    question: &str,
+    candidates: &[String],
+) -> Result<Vec<StockfishFollowUpRequest>, CoachError> {
+    if !has_capture_reply_cue(question) {
+        return Ok(Vec::new());
+    }
+
+    let root_position = parse_fen_to_position(fen)?;
+    if let Some(reply_san) = matching_natural_capture_sans(&root_position, question)
+        .into_iter()
+        .next()
+    {
+        return Ok(vec![StockfishFollowUpRequest::AnalyseMove {
+            fen: fen.to_string(),
+            mv: reply_san,
+            reason: "The user asked whether this natural capture works, so the coach needs Stockfish's continuation after the capture, not only the best alternative reply.".to_string(),
+        }]);
+    }
+
+    for (_, first_san) in legal_root_move_mentions(fen, candidates)?
+        .into_iter()
+        .take(3)
+    {
+        let mut after_first = parse_fen_to_position(fen)?;
+        let (_, first_san) = parse_move_in_position(&mut after_first, &first_san)?;
+        if let Some(reply_san) = matching_natural_capture_sans(&after_first, question)
+            .into_iter()
+            .next()
+        {
+            return Ok(vec![StockfishFollowUpRequest::AnalyseLine {
+                fen: fen.to_string(),
+                line: format!("{first_san} {reply_san}"),
+                reason: "The user asked whether the natural capture after the named move works, so the coach needs Stockfish's continuation after that exact reply, not only the best alternative reply.".to_string(),
+            }]);
+        }
+    }
+
+    Ok(Vec::new())
+}
+
+fn matching_natural_capture_sans(position: &Chess, question: &str) -> Vec<String> {
+    let source_role = mentioned_capture_source_role(question);
+    let target_role = mentioned_capture_target_role(question, source_role);
+    let castling_mode = detect_castling_mode(position);
+    let mut captures = position
+        .legal_moves()
+        .iter()
+        .filter(|mv| mv.is_capture())
+        .filter(|mv| source_role.map_or(true, |role| mv.role() == role))
+        .filter(|mv| {
+            target_role.map_or(true, |role| {
+                mv.capture().is_some_and(|capture| capture == role)
+            })
+        })
+        .map(|mv| {
+            let san = SanPlus::from_move(position.clone(), mv).to_string();
+            let uci = UciMove::from_move(mv, castling_mode).to_string();
+            (san, uci)
+        })
+        .collect::<Vec<_>>();
+
+    captures.sort_by(|left, right| left.0.cmp(&right.0).then_with(|| left.1.cmp(&right.1)));
+    captures.into_iter().map(|(san, _)| san).collect()
+}
+
+fn mentioned_capture_source_role(question: &str) -> Option<Role> {
+    let roles = mentioned_roles_in_order(question);
+    if roles.len() >= 2 {
+        roles.first().map(|(_, role)| *role)
+    } else {
+        None
+    }
+}
+
+fn mentioned_capture_target_role(question: &str, source_role: Option<Role>) -> Option<Role> {
+    let roles = mentioned_roles_in_order(question);
+    roles
+        .iter()
+        .rev()
+        .map(|(_, role)| *role)
+        .find(|role| Some(*role) != source_role)
+        .or_else(|| {
+            roles
+                .first()
+                .map(|(_, role)| *role)
+                .filter(|_| source_role.is_none())
+        })
+}
+
+fn mentioned_roles_in_order(text: &str) -> Vec<(usize, Role)> {
+    text.split(|ch: char| !ch.is_ascii_alphabetic())
+        .enumerate()
+        .filter_map(|(index, token)| {
+            let role = match token.to_ascii_lowercase().as_str() {
+                "queen" | "queens" => Role::Queen,
+                "rook" | "rooks" => Role::Rook,
+                "bishop" | "bishops" => Role::Bishop,
+                "knight" | "knights" => Role::Knight,
+                "pawn" | "pawns" => Role::Pawn,
+                "king" | "kings" => Role::King,
+                _ => return None,
+            };
+            Some((index, role))
+        })
+        .collect()
 }
 
 fn legal_root_move_mentions(
@@ -5027,13 +5184,44 @@ fn normalize_move_candidate(token: &str) -> Option<String> {
         return None;
     }
 
-    if let Some(first) = token.chars().next() {
-        if matches!(first, 'k' | 'q' | 'r' | 'b' | 'n') {
-            token.replace_range(0..first.len_utf8(), &first.to_ascii_uppercase().to_string());
-        }
+    Some(canonicalize_move_candidate_case(&token))
+}
+
+fn canonicalize_move_candidate_case(token: &str) -> String {
+    let lower = token.to_ascii_lowercase();
+    let bytes = lower.as_bytes();
+    if matches!(bytes.len(), 4 | 5)
+        && matches!(bytes[0], b'a'..=b'h')
+        && matches!(bytes[1], b'1'..=b'8')
+        && matches!(bytes[2], b'a'..=b'h')
+        && matches!(bytes[3], b'1'..=b'8')
+    {
+        return lower;
     }
 
-    Some(token)
+    let mut previous = '\0';
+    token
+        .chars()
+        .enumerate()
+        .map(|(index, ch)| {
+            let normalized = if index == 0
+                && matches!(
+                    ch,
+                    'k' | 'q' | 'r' | 'b' | 'n' | 'K' | 'Q' | 'R' | 'B' | 'N'
+                ) {
+                ch.to_ascii_uppercase()
+            } else if previous == '=' && matches!(ch, 'q' | 'r' | 'b' | 'n' | 'Q' | 'R' | 'B' | 'N')
+            {
+                ch.to_ascii_uppercase()
+            } else if ch.is_ascii_alphabetic() {
+                ch.to_ascii_lowercase()
+            } else {
+                ch
+            };
+            previous = normalized;
+            normalized
+        })
+        .collect()
 }
 
 fn looks_like_move_candidate(token: &str) -> bool {
@@ -5083,6 +5271,26 @@ fn has_what_if_cue(question: &str) -> bool {
         || question.contains("can't")
         || question.contains("cannot")
         || question.contains("instead")
+}
+
+fn has_capture_reply_cue(question: &str) -> bool {
+    let question = question.to_ascii_lowercase();
+    (question.contains("take")
+        || question.contains("takes")
+        || question.contains("capture")
+        || question.contains("captures")
+        || question.contains("capturing")
+        || question.contains("grab")
+        || question.contains("grabs")
+        || question.contains("win the")
+        || question.contains("wins the"))
+        && (question.contains("can't")
+            || question.contains("cannot")
+            || question.contains("can ")
+            || question.contains("could")
+            || question.contains("why")
+            || question.contains("after")
+            || question.contains("what if"))
 }
 
 fn describe_stockfish_request(request: &StockfishFollowUpRequest) -> String {
@@ -5299,12 +5507,17 @@ async fn run_targeted_stockfish_request(
             )
             .await?;
             let lines = prefix_engine_lines(lines, &moves, &san_moves);
+            let label = if san_moves.is_empty() {
+                "After requested line".to_string()
+            } else {
+                format!("After {}", san_moves.join(" "))
+            };
             Ok(CoachTargetedResult {
                 request_type: "analyse_line".to_string(),
                 reason,
                 fen,
                 moves,
-                label: "After requested line".to_string(),
+                label,
                 lines,
             })
         }
@@ -6053,8 +6266,9 @@ mod tests {
             std::slice::from_ref(&fact),
         );
 
-        assert!(prompt.contains("Chess fact tool results"));
-        assert!(prompt.contains("Chess fact tool results are the source of truth"));
+        assert!(prompt.contains("Private board-state facts"));
+        assert!(prompt.contains("Use them silently"));
+        assert!(prompt.contains("normal coach prose"));
         assert!(prompt.contains("do not claim a move is legal/illegal"));
         assert!(prompt.contains("Do not infer current-position facts from visual memory"));
         assert!(prompt.contains("c1: white bishop"));
@@ -6487,6 +6701,44 @@ mod tests {
             requests.first(),
             Some(StockfishFollowUpRequest::AnalyseMove { mv, .. }) if mv == "Nxg6"
         ));
+    }
+
+    #[test]
+    fn infers_natural_capture_reply_from_current_position() {
+        let requests = infer_question_stockfish_requests(
+            "8/p4k1p/1p3p2/2n1p3/2r2P1Q/P2q4/3B2PP/5RK1 b - - 1 32",
+            "can't the queen just take the bishop after BD2?",
+        )
+        .unwrap();
+
+        assert!(matches!(
+            requests.first(),
+            Some(StockfishFollowUpRequest::AnalyseMove { mv, reason, .. })
+                if mv == "Qxd2" && reason.contains("natural capture")
+        ));
+    }
+
+    #[test]
+    fn infers_natural_capture_reply_after_named_setup_move() {
+        let requests = infer_question_stockfish_requests(
+            "8/p4k1p/1p3p2/2n1p3/2r2P1Q/P2q4/2B3PP/5RK1 w - - 0 32",
+            "can't the queen just take the bishop after BD2?",
+        )
+        .unwrap();
+
+        assert!(matches!(
+            requests.first(),
+            Some(StockfishFollowUpRequest::AnalyseLine { line, reason, .. })
+                if line == "Bd2 Qxd2" && reason.contains("after the named move")
+        ));
+    }
+
+    #[test]
+    fn normalizes_uppercase_san_move_candidates() {
+        assert_eq!(
+            extract_move_candidates("what about BD2 and QXD2?"),
+            vec!["Bd2".to_string(), "Qxd2".to_string()]
+        );
     }
 
     #[test]
