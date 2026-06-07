@@ -595,6 +595,17 @@ default.
   prevents stale move-19 or endgame evidence from hijacking a fresh opening
   question while still allowing the Flash planner to request targeted opening
   positions up front.
+- Coach phase-review questions must be evidence-focused rather than
+  theme-specific heuristics. `AiCoachPanel.tsx` sends the full mainline
+  ply/FEN map, not only annotated/evaluated moves, so the backend has safe
+  anchors throughout the game. `src-tauri/src/coach.rs` classifies the latest
+  question into named-move, opening, middlegame, conversion/endgame, or generic
+  whole-game focus, filters stale targeted Stockfish memory to that focus, and
+  injects deterministic `analyse_move` plus `analyse_position` checks for the
+  focused positions before Pro answers. If there are no annotated critical
+  moments, whole-game review falls back to representative game positions rather
+  than sending Pro an evidence vacuum. This is meant to prevent both tangent
+  answers and `no engine data for that phase` failures.
 - Coach was then moved out of the under-board panel and into the right-side
   analysis tab stack as its own `Coach` tab; the under-board Coach button is
   only a shortcut that selects that right-side tab. The standalone Current FEN

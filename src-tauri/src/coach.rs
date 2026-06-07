@@ -44,7 +44,33 @@ const MAX_CHAT_MESSAGE_CHARS: usize = 2_000;
 const MAX_REFERENCE_CONTEXT_ITEMS: usize = 120;
 const MAX_GEMINI_ERROR_CHARS: usize = 1_200;
 const OPENING_PHASE_MAX_PLY: u32 = 30;
+const CONVERSION_PHASE_WINDOW_PLIES: u32 = 40;
 const AI_COACH_PROGRESS_EVENT: &str = "ai-coach-progress";
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum CoachQuestionPhase {
+    Opening,
+    Middlegame,
+    EndgameConversion,
+}
+
+impl CoachQuestionPhase {
+    fn label(self) -> &'static str {
+        match self {
+            CoachQuestionPhase::Opening => "opening phase",
+            CoachQuestionPhase::Middlegame => "middlegame phase",
+            CoachQuestionPhase::EndgameConversion => "conversion/endgame phase",
+        }
+    }
+
+    fn progress_label(self) -> &'static str {
+        match self {
+            CoachQuestionPhase::Opening => "opening-phase",
+            CoachQuestionPhase::Middlegame => "middlegame-phase",
+            CoachQuestionPhase::EndgameConversion => "conversion-phase",
+        }
+    }
+}
 
 fn existing_lines_are_lichess_cloud(request: &AiCoachRequest) -> bool {
     !request.existing_lines.is_empty()
@@ -515,6 +541,8 @@ async fn ask_ai_coach_inner(
         false,
     );
 
+    let focus_phase = question_focus_phase(&request.question);
+    let phase_review = focus_phase.is_some();
     let legal_moves = format_legal_root_moves(&request.fen)?;
     let reference_context = normalized_reference_context(&request);
     let mut targeted_results = filter_prior_targeted_results_for_question(&request);
@@ -532,16 +560,19 @@ async fn ask_ai_coach_inner(
             10.0,
             false,
         );
-    } else if !request.prior_targeted_results.is_empty()
-        && question_asks_for_opening_phase(&request.question)
-    {
+    } else if !request.prior_targeted_results.is_empty() && phase_review {
+        let stale_scope = focus_phase
+            .map(CoachQuestionPhase::label)
+            .unwrap_or("the requested game phase");
         emit_coach_progress(
             app,
             request_id,
             started,
             "targeted_cached_filtered",
             "Ignored stale targeted Stockfish memory",
-            "The latest question asks for the opening phase, so cached later-move analysis from previous turns was omitted.",
+            format!(
+                "The latest question asks for {stale_scope}, so cached analysis from unrelated phases was omitted."
+            ),
             10.0,
             false,
         );
@@ -578,7 +609,7 @@ async fn ask_ai_coach_inner(
                 planner_response.pgn_scope
             ))
         })?;
-    if question_asks_for_opening_phase(&request.question) {
+    if phase_review {
         planner_scope = CoachPgnScope::WholeGame;
     }
     apply_planner_pgn_scope(&mut request, planner_scope);
@@ -637,7 +668,46 @@ async fn ask_ai_coach_inner(
         );
     }
 
-    let phase_review = question_asks_for_opening_phase(&request.question);
+    if let Some(phase) = focus_phase {
+        let phase_requests = infer_phase_stockfish_requests(&request, phase);
+        if !phase_requests.is_empty() {
+            let phase_count = phase_requests.len();
+            planned_requests = merge_prioritized_stockfish_requests(
+                &request,
+                &reference_context,
+                phase_requests,
+                planned_requests,
+            )?;
+            emit_coach_progress(
+                app,
+                request_id,
+                started,
+                "phase_focus",
+                format!("Adding {} evidence", phase.label()),
+                format!(
+                    "Queued {phase_count} Stockfish check(s) for {} positions.",
+                    phase.label()
+                ),
+                20.8,
+                false,
+            );
+        } else {
+            emit_coach_progress(
+                app,
+                request_id,
+                started,
+                "phase_focus_missing",
+                format!("No {} anchors found", phase.label()),
+                format!(
+                    "The app did not receive {} FEN anchors, so only planner-requested evidence is available.",
+                    phase.progress_label()
+                ),
+                20.8,
+                false,
+            );
+        }
+    }
+
     let critical_requests = if has_focused_game_move || phase_review {
         Vec::new()
     } else {
@@ -1053,7 +1123,10 @@ fn build_coach_prompt(
     };
     let chat_history = format_chat_history(&request.chat_history);
     let reference_context = format_reference_context(reference_context);
-    let opening_phase = question_asks_for_opening_phase(&request.question);
+    let focus_phase = question_focus_phase(&request.question);
+    let opening_phase = focus_phase == Some(CoachQuestionPhase::Opening);
+    let middlegame_phase = focus_phase == Some(CoachQuestionPhase::Middlegame);
+    let conversion_phase = focus_phase == Some(CoachQuestionPhase::EndgameConversion);
     let opening_context = if whole_game_mode {
         "Omitted for whole-game review; current-FEN explorer stats are not opening-phase evidence."
             .to_string()
@@ -1074,6 +1147,10 @@ fn build_coach_prompt(
     };
     let scope_rules = if opening_phase {
         "- This is an opening-phase review of the loaded game. Focus on the opening and early transition only, roughly moves 1-15 / plies 1-30.\n- Do not answer a previous chat topic, current endgame position, or later middlegame tactic unless the user explicitly asks to connect it to the opening.\n- Use the whole-game PGN only to identify the opening move order and phase boundary. Use opening-phase stored analysis and targeted opening Stockfish results as concrete evidence.\n- Do not include a Critical moments section about later blunders such as move 19 unless the latest question explicitly asks for later critical moments.".to_string()
+    } else if middlegame_phase {
+        "- This is a middlegame-phase review of the loaded game. Focus on the middlegame decisions, pawn breaks, piece coordination, king safety, and transition into the later phase.\n- Do not drift into opening move-order advice or endgame conversion technique except for one short sentence of causal context if needed.\n- Use the whole-game PGN only to identify the middlegame phase and what actually happened. Use middlegame stored analysis and targeted middlegame Stockfish results as concrete evidence.\n- Do not include generic Critical moments from unrelated phases unless the latest question explicitly asks for the whole game.".to_string()
+    } else if conversion_phase {
+        "- This is a conversion/endgame-technique review of the loaded game. Focus on the late phase where the advantaged side tried to convert.\n- Do not drift into opening or early middlegame mistakes except for one short sentence of causal context if needed.\n- Use the whole-game PGN only to identify where the conversion phase begins and what actually happened. Use conversion-phase stored analysis and targeted late-game Stockfish results as concrete evidence.\n- Answer the user's side-specific wording. If they ask about Black's conversion, evaluate Black's late decisions, technique, missed simplifications, king/pawn/rook activity, and whether Black kept or spoiled the advantage.\n- Do not include generic Critical moments from earlier in the game unless the latest question explicitly asks why the conversion phase was reached.".to_string()
     } else if salvage_question {
         "- This is a practical recovery/defensive-resource question. Use the PGN and stored analysis only to locate the named position and understand the game context.\n- Do not turn this into a broad whole-game review or a verdict report.\n- If the named move has already been played, prioritize targeted `After <move>` evidence for the best continuation from the bad position.\n- Use before-move analyse_position evidence only for a brief contrast unless the user explicitly asks what should have been played instead.".to_string()
     } else if whole_game_mode {
@@ -1085,6 +1162,10 @@ fn build_coach_prompt(
     };
     let answer_shape = if opening_phase {
         "Prefer this final answer shape: Direct answer; Opening diagnosis; Key opening moments; Better setup; Training lesson. Do not discuss later tactical blunders unless they directly arise from the opening choices."
+    } else if middlegame_phase {
+        "Prefer this final answer shape: Direct answer; Middlegame diagnosis; Key decisions; Better plan; Training lesson. Do not include an opening or starting-position main line."
+    } else if conversion_phase {
+        "Prefer this final answer shape: Direct answer; Conversion diagnosis; Key late decisions; Cleaner conversion method; Training lesson. Do not include an opening or starting-position main line."
     } else if salvage_question {
         "Prefer this final answer shape: Direct answer; Best defensive try; Why it helps; Practical plan from there; What to avoid. Do not use a Critical moments section unless the user explicitly asked for a review."
     } else if whole_game_mode {
@@ -1094,6 +1175,10 @@ fn build_coach_prompt(
     };
     let stockfish_scope_rule = if opening_phase {
         "- Current-position root engine lines are irrelevant for this opening-phase review. Use only opening-phase stored analysis and targeted Stockfish results whose labels/FENs belong to the opening phase. Ignore stale targeted results from later moves in prior chat unless the latest question asks about them.".to_string()
+    } else if middlegame_phase {
+        "- Current-position root engine lines are irrelevant for this middlegame review. Use only middlegame stored analysis and targeted Stockfish results whose labels/FENs belong to the middlegame phase. Ignore stale targeted results from opening/endgame topics in prior chat unless the latest question asks about them.".to_string()
+    } else if conversion_phase {
+        "- Current-position root engine lines are irrelevant for this conversion/endgame review. Use only conversion-phase stored analysis and targeted Stockfish results whose labels/FENs belong to the late conversion phase. Ignore stale targeted results from opening/middlegame topics in prior chat unless the latest question asks about them.".to_string()
     } else if whole_game_mode {
         "- Current-position root engine lines are intentionally omitted for this whole-game review. Use only Stored whole-game Stockfish analysis and targeted Stockfish results as concrete engine evidence.".to_string()
     } else if use_cloud_existing_lines {
@@ -1103,6 +1188,10 @@ fn build_coach_prompt(
     };
     let section_label_rule = if opening_phase {
         "- Use bold section labels like **Direct answer**, **Opening diagnosis**, **Key opening moments**, **Better setup**, and **Training lesson**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
+    } else if middlegame_phase {
+        "- Use bold section labels like **Direct answer**, **Middlegame diagnosis**, **Key decisions**, **Better plan**, and **Training lesson**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
+    } else if conversion_phase {
+        "- Use bold section labels like **Direct answer**, **Conversion diagnosis**, **Key late decisions**, **Cleaner conversion method**, and **Training lesson**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
     } else if salvage_question {
         "- Use bold section labels like **Direct answer**, **Best defensive try**, **Why it helps**, **Practical plan**, and **What to avoid**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
     } else if whole_game_mode {
@@ -1131,7 +1220,8 @@ Core rules:
 - Do not use tools, shell commands, files, network lookups, external resources, or the Stockfish request protocol. A separate planner has already requested all allowed targeted Stockfish analysis up front.
 - If the supplied engine data still does not fully answer the user's question, say that limitation briefly and answer only from the supplied evidence. Do not output <stockfish_request>.
 - Use the conversation history to answer follow-up questions naturally.
-- Answer the user's actual requested task directly. First identify whether they are asking for a verdict, a defensive resource, a practical plan, a comparison, why a move works/fails, or what to play instead. Do not substitute a nearby topic just because the engine data contains it.
+- Answer the user's actual requested task directly in the first paragraph. First identify whether they are asking for a verdict, a defensive resource, a practical plan, a comparison, why a move works/fails, a phase review, or what to play instead. Do not substitute a nearby topic just because the engine data contains it.
+- If targeted Stockfish results are supplied for the latest question focus, use those results as the spine of the answer before discussing any other evidence. Do not say the data is unavailable unless no focused targeted results and no focused stored analysis are supplied.
 - Obey the Question focus and intent section. When the user asks about a named move, answer around that move first. Mention other game moments only when they are direct alternatives from the same position, direct continuations/refutations after that move, or necessary causal context for that move.
 - When the requested task is a defensive resource or practical recovery question, answer from the difficult position the user names. Do not merely state that the user is worse or losing. You may acknowledge the eval once, then spend the answer on the best practical try, the concrete continuation, the human defensive idea, and what the user should aim for next. Keep earlier alternatives to one short note unless the user asks for them.
 - Use the Position/reference context to resolve explicit references such as "after 19.Nexd4", "that line", or "the line we discussed". If a referenced FEN is supplied there, use only Stockfish results from that FEN or current-FEN lines that legally reach it; do not reinterpret the reference from a different position.
@@ -1263,7 +1353,7 @@ Rules:
 - Output only one JSON object. No markdown, no prose outside JSON.
 - Do not analyse chess yourself and do not answer the user's question.
 - First choose pgn_scope. Use "whole_game" when the user asks to analyse, review, annotate, recap, go through, or find what went wrong in the loaded game. Use "current_line" for questions about the current board position, opening choice, a candidate move, or a concrete line.
-- If the user asks to examine the opening phase, opening stage, early phase, or opening of the loaded game, choose "whole_game" and plan only opening-phase Stockfish checks. Do not request unrelated middlegame/endgame critical moments.
+- If the user asks to examine a specific phase of the loaded game, choose "whole_game" and plan only Stockfish checks from that phase. Opening/opening phase uses opening positions; middlegame/middle-game phase uses middlegame positions; conversion/endgame technique/closing out uses late conversion positions. Do not request unrelated phase mistakes unless the user explicitly asks for the cause of that phase.
 - Plan Stockfish work for the user's actual requested task, not just for a generic verdict. If they ask how to defend, hold, recover, compare, understand why, or choose a plan, request evidence that answers that task directly.
 - If the user names a concrete move from the loaded game, keep the plan anchored to that move. Do not turn a named-move question into a broad critical-moments review unless the user explicitly asks for the whole game.
 - The stronger coach model will only receive the PGN scope you choose, so do not choose "current_line" for whole-game review wording like "analyse this game".
@@ -1519,7 +1609,7 @@ fn validate_stockfish_anchor_fen(
     }
 
     Err(CoachError::IllegalStockfishRequest(
-        "Stockfish requests must use the current FEN, an exact supplied reference FEN, an exact listed critical before-move FEN, or an exact named-move before-FEN from the loaded game analysis; use analyse_line to inspect an unlisted later position"
+        "Stockfish requests must use the current FEN, an exact supplied reference FEN, or an exact focused before-move FEN from loaded game analysis; use analyse_line to inspect an unlisted later position"
             .to_string(),
     ))
 }
@@ -1531,6 +1621,12 @@ fn is_allowed_game_analysis_before_fen(
     select_critical_game_moments_any_scope(coach_request)
         .into_iter()
         .chain(select_question_referenced_game_moments(coach_request))
+        .chain(select_whole_game_evidence_moments(coach_request))
+        .chain(
+            question_focus_phase(&coach_request.question)
+                .map(|phase| select_phase_game_moments(coach_request, phase))
+                .unwrap_or_default(),
+        )
         .filter_map(|point| point.before_fen.as_deref())
         .any(|fen| fen.trim() == requested_fen)
 }
@@ -1869,18 +1965,18 @@ fn format_game_analysis(points: &[CoachGameAnalysisPoint]) -> String {
 fn format_game_analysis_for_request(request: &AiCoachRequest) -> String {
     let focused = select_question_referenced_game_moments(request);
     if focused.is_empty() {
-        if question_asks_for_opening_phase(&request.question) {
-            let opening_points = request
-                .game_analysis
-                .iter()
-                .filter(|point| point.ply <= OPENING_PHASE_MAX_PLY)
-                .collect::<Vec<_>>();
-            if opening_points.is_empty() {
-                return "Opening-phase review requested, but no stored analysis rows were available for the opening phase.".to_string();
+        if let Some(phase) = question_focus_phase(&request.question) {
+            let phase_points = select_phase_context_points(request, phase);
+            if phase_points.is_empty() {
+                return format!(
+                    "{} review requested, but no stored analysis rows were available for that phase.",
+                    phase.label()
+                );
             }
             return format!(
-                "Filtered to opening phase only (plies 1-{OPENING_PHASE_MAX_PLY}) for this question.\n{}",
-                format_game_analysis_points(opening_points.into_iter())
+                "Filtered to {} only for this question.\n{}",
+                phase.label(),
+                format_game_analysis_points(phase_points.into_iter())
             );
         }
         return format_game_analysis(&request.game_analysis);
@@ -1953,13 +2049,15 @@ fn format_game_analysis_points<'a>(
 fn format_critical_game_positions(request: &AiCoachRequest) -> String {
     let focused_moments = select_question_referenced_game_moments(request);
     let has_focus = !focused_moments.is_empty();
-    if !has_focus && question_asks_for_opening_phase(&request.question) {
-        return "Omitted because the latest question asks for the opening phase, not later critical game moments.".to_string();
+    if !has_focus {
+        if let Some(phase) = question_focus_phase(&request.question) {
+            return format_phase_game_positions(request, phase);
+        }
     }
     let moments = if has_focus {
         focused_moments
     } else {
-        select_critical_game_moments_any_scope(request)
+        select_whole_game_evidence_moments(request)
     };
     if moments.is_empty() {
         return "None selected.".to_string();
@@ -1981,9 +2079,15 @@ fn format_critical_game_positions(request: &AiCoachRequest) -> String {
                 .filter(|value| !value.trim().is_empty())
                 .unwrap_or("side to move");
             let eval = point.eval.as_deref().unwrap_or("no played-move eval");
+            let evidence_kind = if critical_annotation_rank(&point.annotations).is_some() {
+                "critical"
+            } else {
+                "representative"
+            };
             format!(
-                "Ply {ply}: {side} played {mv}{played_uci}, played-move eval {eval}. analyse_position FEN: {before_fen}",
+                "Ply {ply}: {evidence_kind} evidence; {side} played {mv}{played_uci}, played-move eval {eval}. analyse_position FEN: {before_fen}",
                 ply = point.ply,
+                evidence_kind = evidence_kind,
                 side = side,
                 mv = point.mv,
                 played_uci = played_uci,
@@ -2003,6 +2107,51 @@ fn format_critical_game_positions(request: &AiCoachRequest) -> String {
     }
 }
 
+fn format_phase_game_positions(request: &AiCoachRequest, phase: CoachQuestionPhase) -> String {
+    let moments = select_phase_game_moments(request, phase);
+    if moments.is_empty() {
+        return format!(
+            "{} review requested, but no before-move FEN anchors were available for that phase.",
+            phase.label()
+        );
+    }
+
+    let rows = moments
+        .into_iter()
+        .map(|point| {
+            let before_fen = point.before_fen.as_deref().unwrap_or("unknown");
+            let played_uci = point
+                .played_uci
+                .as_deref()
+                .filter(|value| !value.trim().is_empty())
+                .map(|value| format!(" ({value})"))
+                .unwrap_or_default();
+            let side = point
+                .played_side
+                .as_deref()
+                .filter(|value| !value.trim().is_empty())
+                .unwrap_or("side to move");
+            let eval = point.eval.as_deref().unwrap_or("no played-move eval");
+            format!(
+                "Ply {ply}: {phase} candidate; {side} played {mv}{played_uci}, played-move eval {eval}. analyse_position FEN: {before_fen}",
+                ply = point.ply,
+                phase = phase.progress_label(),
+                side = side,
+                mv = point.mv,
+                played_uci = played_uci,
+                eval = eval,
+                before_fen = before_fen
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    format!(
+        "{} candidate positions for the latest question. Use these before-move FENs instead of unrelated phase mistakes.\n{rows}",
+        phase.label()
+    )
+}
+
 fn infer_whole_game_critical_stockfish_requests(
     request: &AiCoachRequest,
 ) -> Vec<StockfishFollowUpRequest> {
@@ -2010,7 +2159,7 @@ fn infer_whole_game_critical_stockfish_requests(
         return Vec::new();
     }
 
-    select_critical_game_moments(request)
+    select_whole_game_evidence_moments(request)
         .into_iter()
         .flat_map(|point| {
             let before_fen = match point.before_fen.as_deref().map(str::trim) {
@@ -2031,23 +2180,102 @@ fn infer_whole_game_critical_stockfish_requests(
                 .as_deref()
                 .filter(|value| !value.trim().is_empty())
                 .unwrap_or("the side to move");
+            let critical = critical_annotation_rank(&point.annotations).is_some();
+            let mut requests = Vec::new();
+            if !played_move.is_empty() {
+                requests.push(StockfishFollowUpRequest::AnalyseMove {
+                    fen: before_fen.to_string(),
+                    mv: played_move.to_string(),
+                    reason: if critical {
+                        format!(
+                            "Whole-game review should show the concrete Stockfish refutation after {side} played {} at ply {}; include the forcing line that proves why the move was bad.",
+                            point.mv, point.ply
+                        )
+                    } else {
+                        format!(
+                            "Whole-game review needs concrete engine evidence at representative ply {}; check how {side}'s actual move {} affected the position.",
+                            point.ply, point.mv
+                        )
+                    },
+                });
+            }
+            requests.push(StockfishFollowUpRequest::AnalysePosition {
+                fen: before_fen.to_string(),
+                label: if critical {
+                    format!("Critical ply {} before {}", point.ply, point.mv)
+                } else {
+                    format!("Representative ply {} before {}", point.ply, point.mv)
+                },
+                reason: if critical {
+                    format!(
+                        "Whole-game review should explain what {side} should have played instead of {} at ply {}; ask Stockfish for the best move from the pre-move position, not just for the move that was played.",
+                        point.mv, point.ply
+                    )
+                } else {
+                    format!(
+                        "Whole-game review needs a concrete best line at representative ply {} before {}; use it only if it helps answer the latest question.",
+                        point.ply, point.mv
+                    )
+                },
+            });
+            requests
+        })
+        .collect()
+}
+
+fn infer_phase_stockfish_requests(
+    request: &AiCoachRequest,
+    phase: CoachQuestionPhase,
+) -> Vec<StockfishFollowUpRequest> {
+    if request.pgn_scope.trim() != "whole_game" && question_focus_phase(&request.question).is_none()
+    {
+        return Vec::new();
+    }
+
+    select_phase_game_moments(request, phase)
+        .into_iter()
+        .flat_map(|point| {
+            let before_fen = match point.before_fen.as_deref().map(str::trim) {
+                Some(fen) if !fen.is_empty() => fen,
+                _ => return Vec::new(),
+            };
+            let played_move = point
+                .played_uci
+                .as_deref()
+                .filter(|value| !value.trim().is_empty())
+                .unwrap_or(point.mv.as_str())
+                .trim();
+            let side = point
+                .played_side
+                .as_deref()
+                .filter(|value| !value.trim().is_empty())
+                .unwrap_or("the side to move");
             let mut requests = Vec::new();
             if !played_move.is_empty() {
                 requests.push(StockfishFollowUpRequest::AnalyseMove {
                     fen: before_fen.to_string(),
                     mv: played_move.to_string(),
                     reason: format!(
-                        "Whole-game review should show the concrete Stockfish refutation after {side} played {} at ply {}; include the forcing line that proves why the move was bad.",
-                        point.mv, point.ply
+                        "The user asked about the {}. Check the move {} by {side} at ply {} and show how it affects the requested phase.",
+                        phase.label(),
+                        point.mv,
+                        point.ply
                     ),
                 });
             }
             requests.push(StockfishFollowUpRequest::AnalysePosition {
                 fen: before_fen.to_string(),
-                label: format!("Critical ply {} before {}", point.ply, point.mv),
+                label: format!(
+                    "{} ply {} before {}",
+                    phase.label(),
+                    point.ply,
+                    point.mv
+                ),
                 reason: format!(
-                    "Whole-game review should explain what {side} should have played instead of {} at ply {}; ask Stockfish for the best move from the pre-move position, not just for the move that was played.",
-                    point.mv, point.ply
+                    "The user asked about the {}. Find Stockfish's best continuation for {side} at ply {} before {}.",
+                    phase.label(),
+                    point.ply,
+                    point.mv
                 ),
             });
             requests
@@ -2123,11 +2351,11 @@ fn merge_prioritized_stockfish_requests(
 fn filter_prior_targeted_results_for_question(
     request: &AiCoachRequest,
 ) -> Vec<CoachTargetedResult> {
-    if question_asks_for_opening_phase(&request.question) {
+    if let Some(phase) = question_focus_phase(&request.question) {
         return request
             .prior_targeted_results
             .iter()
-            .filter(|result| targeted_result_is_opening_phase(request, result))
+            .filter(|result| targeted_result_matches_phase(request, *result, phase))
             .cloned()
             .collect();
     }
@@ -2135,32 +2363,145 @@ fn filter_prior_targeted_results_for_question(
     request.prior_targeted_results.clone()
 }
 
-fn targeted_result_is_opening_phase(
+fn targeted_result_matches_phase(
     request: &AiCoachRequest,
     result: &CoachTargetedResult,
+    phase: CoachQuestionPhase,
 ) -> bool {
     let label_reason = format!("{} {}", result.label, result.reason).to_ascii_lowercase();
-    if label_reason.contains("opening") {
+    if phase_label_matches(&label_reason, phase_words(phase)) {
         return true;
     }
 
-    request.game_analysis.iter().any(|point| {
-        point.ply <= OPENING_PHASE_MAX_PLY
-            && (point
+    select_phase_context_points(request, phase)
+        .into_iter()
+        .any(|point| {
+            point
                 .before_fen
                 .as_deref()
                 .map(|fen| fen.trim() == result.fen.trim())
                 .unwrap_or(false)
-                || point.fen.trim() == result.fen.trim())
-    })
+                || point.fen.trim() == result.fen.trim()
+        })
 }
 
-fn select_critical_game_moments(request: &AiCoachRequest) -> Vec<&CoachGameAnalysisPoint> {
-    if request.pgn_scope.trim() != "whole_game" {
-        return Vec::new();
+fn phase_words(phase: CoachQuestionPhase) -> Vec<&'static str> {
+    match phase {
+        CoachQuestionPhase::Opening => vec!["opening", "early"],
+        CoachQuestionPhase::Middlegame => vec!["middlegame", "middle-game", "middle game"],
+        CoachQuestionPhase::EndgameConversion => {
+            vec![
+                "conversion",
+                "endgame",
+                "technique",
+                "late-game",
+                "late game",
+            ]
+        }
+    }
+}
+
+fn phase_label_matches(label_reason: &str, words: Vec<&str>) -> bool {
+    words.into_iter().any(|word| label_reason.contains(word))
+}
+
+fn select_phase_context_points(
+    request: &AiCoachRequest,
+    phase: CoachQuestionPhase,
+) -> Vec<&CoachGameAnalysisPoint> {
+    request
+        .game_analysis
+        .iter()
+        .filter(|point| point_belongs_to_phase(request, point, phase))
+        .collect()
+}
+
+fn point_belongs_to_phase(
+    request: &AiCoachRequest,
+    point: &CoachGameAnalysisPoint,
+    phase: CoachQuestionPhase,
+) -> bool {
+    match phase {
+        CoachQuestionPhase::Opening => point.ply <= OPENING_PHASE_MAX_PLY,
+        CoachQuestionPhase::Middlegame => {
+            point.ply > OPENING_PHASE_MAX_PLY && point.ply < conversion_phase_start_ply(request)
+        }
+        CoachQuestionPhase::EndgameConversion => point.ply >= conversion_phase_start_ply(request),
+    }
+}
+
+fn conversion_phase_start_ply(request: &AiCoachRequest) -> u32 {
+    let max_ply = request
+        .game_analysis
+        .iter()
+        .map(|point| point.ply)
+        .max()
+        .unwrap_or(0);
+    if max_ply == 0 {
+        return OPENING_PHASE_MAX_PLY + 1;
     }
 
-    select_critical_game_moments_any_scope(request)
+    let late_window_start = max_ply.saturating_sub(CONVERSION_PHASE_WINDOW_PLIES).max(1);
+    late_window_start.max(OPENING_PHASE_MAX_PLY + 1)
+}
+
+fn select_phase_game_moments(
+    request: &AiCoachRequest,
+    phase: CoachQuestionPhase,
+) -> Vec<&CoachGameAnalysisPoint> {
+    let requested_side = requested_side_from_question(&request.question);
+    let mut phase_points = request
+        .game_analysis
+        .iter()
+        .filter(|point| point_belongs_to_phase(request, point, phase))
+        .filter(|point| {
+            point
+                .before_fen
+                .as_deref()
+                .map(|fen| !fen.trim().is_empty())
+                .unwrap_or(false)
+        })
+        .collect::<Vec<_>>();
+    phase_points.sort_by_key(|point| point.ply);
+
+    if let Some(side) = requested_side {
+        let side_points = phase_points
+            .iter()
+            .copied()
+            .filter(|point| {
+                point
+                    .played_side
+                    .as_deref()
+                    .map(|played_side| played_side.eq_ignore_ascii_case(side))
+                    .unwrap_or(false)
+            })
+            .collect::<Vec<_>>();
+        if !side_points.is_empty() {
+            return pick_representative_moments(side_points);
+        }
+    }
+
+    pick_representative_moments(phase_points)
+}
+
+fn pick_representative_moments(
+    points: Vec<&CoachGameAnalysisPoint>,
+) -> Vec<&CoachGameAnalysisPoint> {
+    match points.len() {
+        0..=3 => points,
+        len => vec![points[0], points[len / 2], points[len - 1]],
+    }
+}
+
+fn requested_side_from_question(question: &str) -> Option<&'static str> {
+    let lower = question.to_ascii_lowercase();
+    if lower.contains("black") {
+        Some("black")
+    } else if lower.contains("white") {
+        Some("white")
+    } else {
+        None
+    }
 }
 
 fn select_critical_game_moments_any_scope(
@@ -2190,6 +2531,27 @@ fn select_critical_game_moments_any_scope(
         .take(MAX_WHOLE_GAME_CRITICAL_REQUESTS)
         .map(|(_, point)| point)
         .collect()
+}
+
+fn select_whole_game_evidence_moments(request: &AiCoachRequest) -> Vec<&CoachGameAnalysisPoint> {
+    let critical = select_critical_game_moments_any_scope(request);
+    if !critical.is_empty() {
+        return critical;
+    }
+
+    let mut moments = request
+        .game_analysis
+        .iter()
+        .filter(|point| {
+            point
+                .before_fen
+                .as_deref()
+                .map(|fen| !fen.trim().is_empty())
+                .unwrap_or(false)
+        })
+        .collect::<Vec<_>>();
+    moments.sort_by_key(|point| point.ply);
+    pick_representative_moments(moments)
 }
 
 fn select_question_referenced_game_moments(
@@ -2238,9 +2600,21 @@ fn game_analysis_point_matches_move_candidates(
 
 fn format_question_focus_and_intent(request: &AiCoachRequest) -> String {
     let intent = infer_question_intent(&request.question);
-    if question_asks_for_opening_phase(&request.question) {
+    if let Some(phase) = question_focus_phase(&request.question) {
+        let phase_points = select_phase_context_points(request, phase);
+        let first_ply = phase_points.first().map(|point| point.ply).unwrap_or(0);
+        let last_ply = phase_points.last().map(|point| point.ply).unwrap_or(0);
+        let side = requested_side_from_question(&request.question)
+            .map(|side| format!("{side}'s "))
+            .unwrap_or_default();
         return format!(
-            "Inferred intent: {intent}. This is an opening-phase review of the loaded game. Focus on plies 1-{OPENING_PHASE_MAX_PLY}, opening move-order decisions, central structure, development, and early engine-backed alternatives. Treat prior chat as background only; do not answer earlier move-19 or endgame topics unless the latest question explicitly asks for them."
+            "Inferred intent: {intent}. This is a {side}{} review of the loaded game. Focus on the concrete game decisions in this phase{} and use focused Stockfish for those positions before any unrelated evidence. Treat other phases as background only unless the latest question explicitly asks to connect them.",
+            phase.label(),
+            if first_ply > 0 {
+                format!(" (available plies {first_ply}-{last_ply})")
+            } else {
+                String::new()
+            }
         );
     }
 
@@ -2283,8 +2657,14 @@ fn format_question_focus_and_intent(request: &AiCoachRequest) -> String {
 }
 
 fn infer_question_intent(question: &str) -> &'static str {
-    if question_asks_for_opening_phase(question) {
-        return "examine the opening phase of the loaded game";
+    if let Some(phase) = question_focus_phase(question) {
+        return match phase {
+            CoachQuestionPhase::Opening => "examine the opening phase of the loaded game",
+            CoachQuestionPhase::Middlegame => "examine the middlegame phase of the loaded game",
+            CoachQuestionPhase::EndgameConversion => {
+                "examine the conversion phase and endgame technique of the loaded game"
+            }
+        };
     }
 
     if question_asks_for_salvage(question) {
@@ -2315,8 +2695,16 @@ fn infer_question_intent(question: &str) -> &'static str {
 }
 
 fn question_asks_for_opening_phase(question: &str) -> bool {
+    question_focus_phase(question) == Some(CoachQuestionPhase::Opening)
+}
+
+fn question_asks_for_conversion_phase(question: &str) -> bool {
+    question_focus_phase(question) == Some(CoachQuestionPhase::EndgameConversion)
+}
+
+fn question_focus_phase(question: &str) -> Option<CoachQuestionPhase> {
     let lower = question.to_ascii_lowercase();
-    (lower.contains("opening phase")
+    if (lower.contains("opening phase")
         || lower.contains("opening stage")
         || lower.contains("early opening")
         || lower.contains("opening of the game")
@@ -2329,6 +2717,44 @@ fn question_asks_for_opening_phase(question: &str) -> bool {
                 || lower.contains("review")
                 || lower.contains("phase")
                 || lower.contains("game")))
+    {
+        return Some(CoachQuestionPhase::Opening);
+    }
+
+    if lower.contains("middlegame")
+        || lower.contains("middle game")
+        || lower.contains("middle-game")
+        || lower.contains("middlegame phase")
+        || lower.contains("middle phase")
+    {
+        return Some(CoachQuestionPhase::Middlegame);
+    }
+
+    if lower.contains("conversion")
+        || lower.contains("convert")
+        || lower.contains("converted")
+        || lower.contains("converting")
+        || lower.contains("endgame phase")
+        || lower.contains("endgame technique")
+        || lower.contains("winning technique")
+        || lower.contains("towards the end")
+        || lower.contains("toward the end")
+        || lower.contains("end of the game")
+        || ((lower.contains("technique")
+            || lower.contains("clean up")
+            || lower.contains("finish the game")
+            || lower.contains("closed it out")
+            || lower.contains("close it out"))
+            && (lower.contains("endgame")
+                || lower.contains("winning")
+                || lower.contains("advantage")
+                || lower.contains("black")
+                || lower.contains("white")))
+    {
+        return Some(CoachQuestionPhase::EndgameConversion);
+    }
+
+    None
 }
 
 fn question_asks_for_salvage(question: &str) -> bool {

@@ -203,7 +203,6 @@ function buildGameAnalysisContext(root: TreeNode): CoachGameAnalysisPoint[] {
         annotations: node.annotations,
       };
     })
-    .filter((point) => point.eval || point.annotations.length > 0)
     .slice(0, 240);
 }
 
