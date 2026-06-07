@@ -587,6 +587,14 @@ default.
   should reuse the existing click target rather than trying to play the same
   move twice. This keeps the rest of the inline variation clickable from the
   intended branch.
+- Opening-phase Coach questions are a distinct phase-review scope. If the user
+  asks to examine/review/analyse the opening phase of the loaded game,
+  `src-tauri/src/coach.rs` forces whole-game PGN scope, filters stored analysis
+  to plies 1-30, suppresses generic whole-game critical-moment injection, and
+  filters prior targeted Stockfish memory to opening-phase FENs/labels. This
+  prevents stale move-19 or endgame evidence from hijacking a fresh opening
+  question while still allowing the Flash planner to request targeted opening
+  positions up front.
 - Coach was then moved out of the under-board panel and into the right-side
   analysis tab stack as its own `Coach` tab; the under-board Coach button is
   only a shortcut that selects that right-side tab. The standalone Current FEN
