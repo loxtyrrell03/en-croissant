@@ -8,11 +8,12 @@ use std::{
 
 use log::{info, warn};
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use shakmaty::{
     fen::Fen,
     san::{San, SanPlus},
     uci::UciMove,
-    CastlingMode, Color, EnPassantMode, Position,
+    Bitboard, CastlingMode, Chess, Color, EnPassantMode, Move, Piece, Position, Role, Square,
 };
 use specta::Type;
 use tauri::Emitter;
@@ -37,6 +38,7 @@ const DEFAULT_STOCKFISH_DEPTH: u32 = 17;
 const DEFAULT_COACH_MODEL: &str = "gemini-3.1-pro-preview";
 const DEFAULT_PLANNER_MODEL: &str = "gemini-3.5-flash";
 const MAX_PLANNER_STOCKFISH_REQUESTS: usize = 6;
+const MAX_CHESS_FACT_TOOL_CALLS: usize = 10;
 const MAX_WHOLE_GAME_CRITICAL_REQUESTS: usize = 3;
 const PLANNER_TIMEOUT_SECS: u64 = 60;
 const MAX_PROMPT_PGN_CHARS: usize = 12_000;
@@ -266,6 +268,70 @@ enum StockfishFollowUpRequest {
     },
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "tool", rename_all = "snake_case")]
+enum ChessFactToolCall {
+    PositionFacts {
+        fen: String,
+        #[serde(default)]
+        label: String,
+        #[serde(default)]
+        reason: String,
+    },
+    LegalMoves {
+        fen: String,
+        #[serde(default)]
+        label: String,
+        #[serde(default)]
+        reason: String,
+    },
+    SquareFacts {
+        fen: String,
+        square: String,
+        #[serde(default)]
+        label: String,
+        #[serde(default)]
+        reason: String,
+    },
+    MoveFacts {
+        fen: String,
+        #[serde(rename = "move")]
+        mv: String,
+        #[serde(default)]
+        label: String,
+        #[serde(default)]
+        reason: String,
+    },
+    LineFacts {
+        fen: String,
+        line: String,
+        #[serde(default)]
+        label: String,
+        #[serde(default)]
+        reason: String,
+    },
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ChessFactToolPlan {
+    #[serde(default)]
+    calls: Vec<ChessFactToolCall>,
+    #[serde(default)]
+    reason: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+struct CoachChessFactResult {
+    tool: String,
+    label: String,
+    reason: String,
+    fen: String,
+    summary: String,
+    facts: serde_json::Value,
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct CoachPlannerResponse {
@@ -305,6 +371,9 @@ pub enum CoachError {
     #[error("Gemini planner returned malformed JSON: {0}")]
     GeminiPlannerMalformed(String),
 
+    #[error("Gemini chess fact tool planner returned malformed JSON: {0}")]
+    GeminiChessFactMalformed(String),
+
     #[error("Gemini returned an unsupported engine line: {0}")]
     GeminiUnsupportedLine(String),
 
@@ -319,6 +388,9 @@ pub enum CoachError {
 
     #[error("Gemini requested illegal Stockfish analysis: {0}")]
     IllegalStockfishRequest(String),
+
+    #[error("Gemini requested illegal chess fact tool call: {0}")]
+    IllegalChessFactToolCall(String),
 
     #[error(transparent)]
     App(#[from] Error),
@@ -958,22 +1030,135 @@ async fn ask_ai_coach_inner(
         app,
         request_id,
         started,
-        "prompt",
-        "Building coach prompt",
+        "chess_fact_plan",
+        format!("Asking {planner_model} for chess fact tool calls"),
+        "Choosing deterministic board-state checks before the final coach answer.",
+        68.0,
+        false,
+    );
+    let mut chess_fact_calls = infer_default_chess_fact_tool_calls(&request, &reference_context);
+    let chess_fact_prompt = build_chess_fact_tool_prompt(
+        &request,
+        &stockfish_lines,
+        &targeted_results,
+        &reference_context,
+        &legal_moves,
+    );
+    match run_gemini_cli(
+        &request.settings.gemini_command,
+        &planner_model,
+        &chess_fact_prompt,
+        PLANNER_TIMEOUT_SECS.min(timeout_secs.into()),
+    )
+    .await
+    {
+        Ok(answer) => match parse_chess_fact_tool_plan(&answer) {
+            Ok(plan) => {
+                let planned_count = plan.calls.len();
+                let reason = trim_chat_text(&plan.reason);
+                chess_fact_calls.extend(plan.calls);
+                emit_coach_progress(
+                    app,
+                    request_id,
+                    started,
+                    "chess_fact_plan_done",
+                    "Chess fact tool plan ready",
+                    format!(
+                        "Planner requested {planned_count} fact call(s). {}",
+                        if reason.is_empty() {
+                            "Using deterministic baseline calls too.".to_string()
+                        } else {
+                            reason
+                        }
+                    ),
+                    70.0,
+                    false,
+                );
+            }
+            Err(error) => {
+                warn!("ai_coach[{request_id}] chess fact planner malformed: {error}");
+                emit_coach_progress(
+                    app,
+                    request_id,
+                    started,
+                    "chess_fact_plan_fallback",
+                    "Using deterministic chess facts",
+                    format!(
+                        "The chess fact planner returned malformed JSON, so the app will use baseline fact calls. {error}"
+                    ),
+                    70.0,
+                    false,
+                );
+            }
+        },
+        Err(error) => {
+            warn!("ai_coach[{request_id}] chess fact planner failed: {error}");
+            emit_coach_progress(
+                app,
+                request_id,
+                started,
+                "chess_fact_plan_fallback",
+                "Using deterministic chess facts",
+                format!(
+                    "The chess fact planner failed, so the app will use baseline fact calls. {error}"
+                ),
+                70.0,
+                false,
+            );
+        }
+    }
+    let requested_fact_call_count = chess_fact_calls.len();
+    let (chess_fact_results, rejected_chess_fact_calls) =
+        execute_chess_fact_tool_calls(&request, &reference_context, chess_fact_calls);
+    for rejected in rejected_chess_fact_calls {
+        warn!("ai_coach[{request_id}] rejected chess fact tool call: {rejected}");
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "chess_fact_rejected",
+            "Rejected chess fact tool call",
+            rejected,
+            71.0,
+            false,
+        );
+    }
+    emit_coach_progress(
+        app,
+        request_id,
+        started,
+        "chess_fact_done",
+        "Chess facts ready",
         format!(
-            "Packaging {} root line(s), {} targeted result(s), opening context, and chat history.",
-            stockfish_lines.len(),
-            targeted_results.len()
+            "Executed {} of {} requested deterministic fact call(s).",
+            chess_fact_results.len(),
+            requested_fact_call_count
         ),
         72.0,
         false,
     );
-    let prompt = build_coach_prompt(
+    emit_coach_progress(
+        app,
+        request_id,
+        started,
+        "prompt",
+        "Building coach prompt",
+        format!(
+            "Packaging {} root line(s), {} targeted result(s), {} chess fact result(s), opening context, and chat history.",
+            stockfish_lines.len(),
+            targeted_results.len(),
+            chess_fact_results.len()
+        ),
+        74.0,
+        false,
+    );
+    let prompt = build_coach_prompt_with_facts(
         &request,
         &stockfish_lines,
         &targeted_results,
         &reference_context,
         &[],
+        &chess_fact_results,
     );
     emit_coach_progress(
         app,
@@ -985,7 +1170,7 @@ async fn ask_ai_coach_inner(
             "Sending {} characters to the local Gemini CLI.",
             prompt.len()
         ),
-        78.0,
+        80.0,
         false,
     );
     let mut final_answer = run_gemini_cli(
@@ -1049,12 +1234,13 @@ async fn ask_ai_coach_inner(
             correction_notes.push(format!(
             "Your previous final answer was rejected: {error}. Remove every unsupported <line> block, or replace it with an exact legal prefix of the supplied Stockfish data from the current FEN. If the moves came from a targeted Stockfish result whose FEN is not the current FEN, keep the moves as plain text without <line> tags. Do not include any game-start opening sequence unless it is legal from the current FEN."
         ));
-            let repair_prompt = build_coach_prompt(
+            let repair_prompt = build_coach_prompt_with_facts(
                 &request,
                 &stockfish_lines,
                 &targeted_results,
                 &reference_context,
                 &correction_notes,
+                &chess_fact_results,
             );
             emit_coach_progress(
                 app,
@@ -1135,6 +1321,60 @@ async fn ask_ai_coach_inner(
             }
         }
     }
+    if answer_contains_fact_sensitive_claims(&final_answer) {
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "answer_fact_audit",
+            format!("Auditing board facts with {planner_model}"),
+            "Checking fact-sensitive chess claims against deterministic chess fact tool results.",
+            98.5,
+            false,
+        );
+        let fact_audit_prompt = build_answer_fact_audit_prompt(
+            &request,
+            &stockfish_lines,
+            &targeted_results,
+            &chess_fact_results,
+            &final_answer,
+        );
+        match run_gemini_cli(
+            &request.settings.gemini_command,
+            &planner_model,
+            &fact_audit_prompt,
+            PLANNER_TIMEOUT_SECS.min(timeout_secs.into()),
+        )
+        .await
+        {
+            Ok(audited) if !audited.trim().is_empty() => {
+                final_answer = audited;
+            }
+            Ok(_) => {
+                warn!("ai_coach[{request_id}] chess fact audit returned an empty answer");
+            }
+            Err(error) => {
+                warn!("ai_coach[{request_id}] chess fact audit failed: {error}");
+                emit_coach_progress(
+                    app,
+                    request_id,
+                    started,
+                    "answer_fact_audit_skip",
+                    "Fact audit unavailable",
+                    format!(
+                        "The deterministic fact results remain in the final prompt, but the audit pass failed: {error}"
+                    ),
+                    98.5,
+                    false,
+                );
+            }
+        }
+    }
+    if parse_stockfish_request(&final_answer)?.is_some() {
+        return Err(CoachError::IllegalStockfishRequest(
+            "Gemini asked for more Stockfish data during the chess fact audit".to_string(),
+        ));
+    }
     final_answer = finalize_answer_line_safety(
         app,
         request_id,
@@ -1160,6 +1400,24 @@ fn build_coach_prompt(
     targeted_results: &[CoachTargetedResult],
     reference_context: &[CoachReferenceContext],
     correction_notes: &[String],
+) -> String {
+    build_coach_prompt_with_facts(
+        request,
+        stockfish_lines,
+        targeted_results,
+        reference_context,
+        correction_notes,
+        &[],
+    )
+}
+
+fn build_coach_prompt_with_facts(
+    request: &AiCoachRequest,
+    stockfish_lines: &[CoachEngineLine],
+    targeted_results: &[CoachTargetedResult],
+    reference_context: &[CoachReferenceContext],
+    correction_notes: &[String],
+    chess_fact_results: &[CoachChessFactResult],
 ) -> String {
     let pgn = request
         .pgn
@@ -1224,6 +1482,7 @@ fn build_coach_prompt(
     let question_focus = format_question_focus_and_intent(request);
     let salvage_question = question_asks_for_salvage(&request.question);
     let correction_notes = format_correction_notes(correction_notes);
+    let chess_facts = format_chess_fact_results(chess_fact_results);
     let root_engine_label = if use_cloud_existing_lines {
         "Lichess Cloud root lines"
     } else {
@@ -1297,6 +1556,9 @@ fn build_coach_prompt(
 
 Core rules:
 - Supplied engine analysis is the source of truth. Prefer Lichess Cloud root lines when they are supplied; otherwise use local Stockfish root MultiPV. Targeted follow-up results are local Stockfish.
+- Chess fact tool results are the source of truth for board-state facts. For the current position, do not claim a move is legal/illegal, a piece is attacked, defended, undefended, loose, hanging, pinned, trapped, overloaded, forked, skewered, mating, checking, or tactically threatened unless the Chess fact tool results explicitly support that claim.
+- Do not infer current-position facts from visual memory, blindfold calculation, opening memory, or the PGN alone. If the needed fact tool result is missing, say the supplied facts do not verify that detail and soften the wording.
+- When explaining a tactic, cite both kinds of evidence when available: Stockfish for evaluation/PV, Chess fact tools for the concrete board mechanism such as attackers, defenders, legality, checks, captures, and resulting FENs.
 - Never invent concrete tactics, evaluations, plans, or variations. Any concrete move line or plan you recommend must be backed by supplied root engine lines or targeted Stockfish results.
 - PGN context is plain mainline movetext only. No PGN comments, NAGs, arrows, extra markups, or variations are supplied to you; do not infer from absent notes or annotations.
 - Do not give a verdict such as bad, good, inaccurate, mistake, blunder, winning, losing, or refuted unless you also cite the supplied engine line that supports it. Name the relevant evaluation/depth when available.
@@ -1309,7 +1571,7 @@ Core rules:
 - You may use general chess and opening knowledge for concepts, structures, plans, and naming, but only as explanation layered on top of engine-backed lines.
 - Explain like a strong GM/coach: use proper chess terminology such as isolated queen's pawn, minority attack, deflection, trapped piece, blockade, weak square, exchange sacrifice, or domination when it genuinely fits.
 - Treat Lichess All opening stats and blended strength as practical/popularity evidence only. Use it when relevant to opening choice, repertoire, popularity, or practical results; do not treat it as a tactical proof.
-- Do not use tools, shell commands, files, network lookups, external resources, or the Stockfish request protocol. A separate planner has already requested all allowed targeted Stockfish analysis up front.
+- Do not request tools, shell commands, files, network lookups, external resources, or the Stockfish request protocol in your final answer. Separate planners have already requested all allowed Stockfish analysis and chess fact tool calls up front.
 - If the supplied engine data still does not fully answer the user's question, say that limitation briefly and answer only from the supplied evidence. Do not output <stockfish_request>.
 - Use the conversation history to answer follow-up questions naturally.
 - Answer the user's actual requested task directly in the first paragraph. First identify whether they are asking for a verdict, a defensive resource, a practical plan, a comparison, why a move works/fails, a phase review, or what to play instead. Do not substitute a nearby topic just because the engine data contains it.
@@ -1344,6 +1606,9 @@ PGN context ({pgn_scope}):
 Stored whole-game Stockfish analysis:
 {game_analysis}
 
+Chess fact tool results:
+{chess_facts}
+
 Root engine lines:
 {engine_lines}
 
@@ -1375,6 +1640,7 @@ User question:
         pgn_scope = pgn_scope,
         pgn = pgn,
         game_analysis = game_analysis,
+        chess_facts = chess_facts,
         engine_lines = engine_lines,
         targeted = targeted,
         opening_context = opening_context,
@@ -1541,6 +1807,133 @@ User question:
     )
 }
 
+fn build_chess_fact_tool_prompt(
+    request: &AiCoachRequest,
+    stockfish_lines: &[CoachEngineLine],
+    targeted_results: &[CoachTargetedResult],
+    reference_context: &[CoachReferenceContext],
+    legal_moves: &str,
+) -> String {
+    let selected_move = request
+        .selected_move
+        .as_deref()
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or("Current node");
+    let move_history = if request.move_history.is_empty() {
+        "None".to_string()
+    } else {
+        request.move_history.join(" ")
+    };
+    let current_line_pgn = request
+        .current_line_pgn
+        .as_deref()
+        .or_else(|| request.pgn.as_deref())
+        .map(trim_prompt_text)
+        .unwrap_or_else(|| "Unavailable".to_string());
+    let whole_game_pgn = request
+        .whole_game_pgn
+        .as_deref()
+        .or_else(|| request.pgn.as_deref())
+        .map(trim_prompt_text)
+        .unwrap_or_else(|| "Unavailable".to_string());
+    let chat_history = format_chat_history(&request.chat_history);
+    let reference_context = format_reference_context(reference_context);
+    let targeted = if targeted_results.is_empty() {
+        "None".to_string()
+    } else {
+        targeted_results
+            .iter()
+            .map(format_targeted_result)
+            .collect::<Vec<_>>()
+            .join("\n\n")
+    };
+    let root_lines = format_engine_lines_from(stockfish_lines, "current FEN", Some(&request.fen));
+    let question_focus = format_question_focus_and_intent(request);
+
+    format!(
+        r#"You are the chess fact tool planner for a local chess coach.
+
+Task:
+- Decide which deterministic chess fact tool calls must run before the coach writes the final answer.
+- Output only one JSON object. No markdown, no prose outside JSON.
+- Do not answer the user's question.
+
+Hard rule:
+- Any factual claim about the current position must be grounded in a chess fact tool result before the final coach model may say it. This includes legal/illegal moves, attacked pieces, defended pieces, undefended pieces, hanging pieces, threats, checks, mates, pins, forks, skewers, discovered attacks, overloaded defenders, trapped pieces, x-rays, and tactical motifs.
+- If the coach may need to mention a square, piece, move, or line to explain the answer, request a tool call for it. Prefer extra cheap fact calls over letting the final model infer from visual memory.
+- Use Stockfish only for evaluation strength. Use these chess fact tools for board-state truth.
+- Use only the current FEN, an exact Position/reference context FEN, or an exact FEN already supplied in the stored/targeted evidence. Do not invent FENs.
+- Maximum {max_calls} calls. The app will add a current-position baseline even if you omit it.
+
+Available tools:
+- position_facts: board occupancy, legal moves, checks, attacked pieces, undefended pieces, hanging pieces, and legal captures.
+- legal_moves: full legal move list from a FEN.
+- square_facts: piece on a square, all attackers, all defenders, and whether the occupied piece is undefended.
+- move_facts: whether a move is legal, its SAN/UCI, capture/check/mate status, resulting FEN, and what the moved piece attacks after the move.
+- line_facts: legal move-by-move board states and final FEN for a concrete line.
+
+Required JSON shape:
+{{
+  "reason": "brief reason for these fact checks",
+  "calls": [
+    {{"tool":"position_facts","fen":"{fen}","reason":"Baseline board facts before explaining the current position."}},
+    {{"tool":"square_facts","fen":"{fen}","square":"c1","reason":"Verify whether the c1 piece is defended or attacked."}},
+    {{"tool":"move_facts","fen":"{fen}","move":"Rc4","reason":"Verify what the candidate move attacks and whether it creates a concrete threat."}},
+    {{"tool":"line_facts","fen":"{fen}","line":"Rc4 Rxc4","reason":"Verify a concrete tactical sequence."}},
+    {{"tool":"legal_moves","fen":"{fen}","reason":"Verify all legal current-position moves before discussing legality."}}
+  ]
+}}
+
+Current position:
+FEN: {fen}
+Side to move: {side_to_move}
+Selected move/current node: {selected_move}
+Move history in UCI: {move_history}
+
+Legal root moves:
+{legal_moves}
+
+Current-line PGN:
+{current_line_pgn}
+
+Whole-game PGN:
+{whole_game_pgn}
+
+Current-FEN engine lines:
+{root_lines}
+
+Targeted Stockfish results:
+{targeted}
+
+Conversation so far:
+{chat_history}
+
+Question focus and intent:
+{question_focus}
+
+Position/reference context:
+{reference_context}
+
+User question:
+{question}
+"#,
+        max_calls = MAX_CHESS_FACT_TOOL_CALLS,
+        fen = request.fen,
+        side_to_move = request.side_to_move,
+        selected_move = selected_move,
+        move_history = move_history,
+        legal_moves = legal_moves,
+        current_line_pgn = current_line_pgn,
+        whole_game_pgn = whole_game_pgn,
+        root_lines = root_lines,
+        targeted = targeted,
+        chat_history = chat_history,
+        question_focus = question_focus,
+        reference_context = reference_context,
+        question = request.question
+    )
+}
+
 fn build_answer_line_audit_prompt(
     request: &AiCoachRequest,
     stockfish_lines: &[CoachEngineLine],
@@ -1613,12 +2006,133 @@ Draft answer:
     )
 }
 
+fn build_answer_fact_audit_prompt(
+    request: &AiCoachRequest,
+    stockfish_lines: &[CoachEngineLine],
+    targeted_results: &[CoachTargetedResult],
+    chess_fact_results: &[CoachChessFactResult],
+    answer: &str,
+) -> String {
+    let root_lines = if stockfish_lines.is_empty() {
+        "None".to_string()
+    } else {
+        format_engine_lines_from(stockfish_lines, "current FEN", Some(&request.fen))
+    };
+    let targeted = if targeted_results.is_empty() {
+        "None".to_string()
+    } else {
+        targeted_results
+            .iter()
+            .map(format_targeted_result)
+            .collect::<Vec<_>>()
+            .join("\n\n")
+    };
+    let chess_facts = format_chess_fact_results(chess_fact_results);
+
+    format!(
+        r#"You are a factual safety auditor for a local chess coach.
+
+Task:
+Rewrite the draft answer so every current-position board-state claim is supported by deterministic chess fact tool results.
+
+Hard rules:
+- Return only the revised final answer. No JSON. No code fence. No explanation of the audit.
+- Preserve the useful coaching and the user's requested answer.
+- Stockfish supports evaluations and PVs. Chess fact tool results support board facts.
+- For the current position, remove or soften claims about legal moves, illegal moves, attacked pieces, defended pieces, undefended pieces, loose pieces, hanging pieces, threats, checks, mates, pins, forks, skewers, trapped pieces, overloaded defenders, x-rays, and tactics unless the Chess fact tool results explicitly support the claim.
+- In particular, do not say a piece is "undefended", "loose", or "hanging" unless a square_facts or position_facts result says it has no defenders or appears in the undefended/hanging list.
+- Do not infer facts from board vision, memory, PGN context, or general chess knowledge. If a factual mechanism is not verified by the tool results, write a neutral version such as "the supplied facts show it is attacked" or "the supplied facts do not verify that it is undefended."
+- Keep <line>...</line> blocks only if they are already present and still necessary; do not invent new line blocks.
+- Do not output <stockfish_request>.
+
+Current FEN:
+{fen}
+
+User question:
+{question}
+
+Current-FEN root Stockfish lines:
+{root_lines}
+
+Targeted Stockfish results:
+{targeted}
+
+Chess fact tool results:
+{chess_facts}
+
+Draft answer:
+{answer}
+"#,
+        fen = request.fen.as_str(),
+        question = request.question.as_str(),
+        root_lines = root_lines,
+        targeted = targeted,
+        chess_facts = chess_facts,
+        answer = answer
+    )
+}
+
+fn answer_contains_fact_sensitive_claims(answer: &str) -> bool {
+    let answer = answer.to_ascii_lowercase();
+    [
+        "legal",
+        "illegal",
+        "undefended",
+        "unprotected",
+        "defended",
+        "defends",
+        "defender",
+        "protects",
+        "protected",
+        "loose",
+        "hanging",
+        "attacker",
+        "attackers",
+        "attacked",
+        "attacks",
+        "threat",
+        "threatens",
+        "threatened",
+        " check",
+        "checks",
+        "checking",
+        "checkmate",
+        " mate",
+        "pinned",
+        " pin",
+        "fork",
+        "skewer",
+        "x-ray",
+        "xray",
+        "trapped",
+        "overloaded",
+        "wins a piece",
+        "wins the exchange",
+        "wins a pawn",
+        "wins material",
+        "winning material",
+        "tactic",
+        "tactical",
+    ]
+    .iter()
+    .any(|term| answer.contains(term))
+}
+
 fn parse_planner_response(output: &str) -> Result<CoachPlannerResponse, CoachError> {
     let json = extract_first_json_object(output).ok_or_else(|| {
         CoachError::GeminiPlannerMalformed("no JSON object was found".to_string())
     })?;
     serde_json::from_str(&json).map_err(|error| {
         CoachError::GeminiPlannerMalformed(format!("{} in `{}`", error, trim_error_text(output)))
+    })
+}
+
+fn parse_chess_fact_tool_plan(output: &str) -> Result<ChessFactToolPlan, CoachError> {
+    let json = extract_first_json_object(output).ok_or_else(|| {
+        CoachError::GeminiChessFactMalformed("no JSON object was found".to_string())
+    })?;
+    serde_json::from_str(&json).map_err(|error| {
+        CoachError::GeminiChessFactMalformed(format!("{} in `{}`", error, trim_error_text(output)))
     })
 }
 
@@ -1830,6 +2344,825 @@ fn format_legal_root_moves(fen: &str) -> Result<String, CoachError> {
         Ok("No legal moves".to_string())
     } else {
         Ok(moves.join(", "))
+    }
+}
+
+fn infer_default_chess_fact_tool_calls(
+    request: &AiCoachRequest,
+    reference_context: &[CoachReferenceContext],
+) -> Vec<ChessFactToolCall> {
+    let mut calls = vec![ChessFactToolCall::PositionFacts {
+        fen: request.fen.clone(),
+        label: "Current position baseline".to_string(),
+        reason: "Required baseline before making factual claims about the current position."
+            .to_string(),
+    }];
+
+    let mut fact_text = request.question.clone();
+    for message in request.chat_history.iter().rev().take(3) {
+        fact_text.push('\n');
+        fact_text.push_str(&message.content);
+    }
+    for item in reference_context.iter().rev().take(8) {
+        fact_text.push('\n');
+        fact_text.push_str(&item.label);
+        fact_text.push('\n');
+        fact_text.push_str(&item.detail);
+    }
+
+    for square in extract_square_mentions(&fact_text).into_iter().take(6) {
+        calls.push(ChessFactToolCall::SquareFacts {
+            fen: request.fen.clone(),
+            square: square.clone(),
+            label: format!("Current square {square}"),
+            reason: format!(
+                "The latest coach context mentions {square}; verify occupancy, attackers, and defenders before any factual claim."
+            ),
+        });
+    }
+
+    if let Ok(legal_mentions) =
+        legal_root_move_mentions(&request.fen, &extract_move_candidates(&request.question))
+    {
+        for (_, san) in legal_mentions.into_iter().take(3) {
+            calls.push(ChessFactToolCall::MoveFacts {
+                fen: request.fen.clone(),
+                mv: san.clone(),
+                label: format!("Current move {san}"),
+                reason: format!(
+                    "The user mentions {san}; verify legality, resulting board state, and threats before explaining it."
+                ),
+            });
+        }
+    }
+
+    calls
+}
+
+fn execute_chess_fact_tool_calls(
+    coach_request: &AiCoachRequest,
+    reference_context: &[CoachReferenceContext],
+    calls: Vec<ChessFactToolCall>,
+) -> (Vec<CoachChessFactResult>, Vec<String>) {
+    let mut results = Vec::new();
+    let mut rejected = Vec::new();
+    let mut seen = HashSet::new();
+
+    for call in calls {
+        if results.len() >= MAX_CHESS_FACT_TOOL_CALLS {
+            rejected.push(format!(
+                "skipped {} because the chess fact tool limit was reached",
+                call.describe()
+            ));
+            continue;
+        }
+
+        match chess_fact_tool_call_key(coach_request, reference_context, &call) {
+            Ok(key) => {
+                if !seen.insert(key) {
+                    continue;
+                }
+            }
+            Err(error) => {
+                rejected.push(format!("{} ({error})", call.describe()));
+                continue;
+            }
+        }
+
+        match execute_chess_fact_tool_call(&call) {
+            Ok(result) => results.push(result),
+            Err(error) => rejected.push(format!("{} ({error})", call.describe())),
+        }
+    }
+
+    (results, rejected)
+}
+
+fn chess_fact_tool_call_key(
+    coach_request: &AiCoachRequest,
+    reference_context: &[CoachReferenceContext],
+    call: &ChessFactToolCall,
+) -> Result<String, CoachError> {
+    match call {
+        ChessFactToolCall::PositionFacts { fen, .. } => {
+            validate_chess_fact_anchor_fen(coach_request, reference_context, fen)?;
+            Ok(format!("position_facts:{}", fen.trim()))
+        }
+        ChessFactToolCall::LegalMoves { fen, .. } => {
+            validate_chess_fact_anchor_fen(coach_request, reference_context, fen)?;
+            Ok(format!("legal_moves:{}", fen.trim()))
+        }
+        ChessFactToolCall::SquareFacts { fen, square, .. } => {
+            validate_chess_fact_anchor_fen(coach_request, reference_context, fen)?;
+            let square = parse_square_name(square)?;
+            Ok(format!("square_facts:{}:{square}", fen.trim()))
+        }
+        ChessFactToolCall::MoveFacts { fen, mv, .. } => {
+            validate_chess_fact_anchor_fen(coach_request, reference_context, fen)?;
+            let (uci, _) = parse_single_move(fen, mv)?;
+            Ok(format!("move_facts:{}:{uci}", fen.trim()))
+        }
+        ChessFactToolCall::LineFacts { fen, line, .. } => {
+            validate_chess_fact_anchor_fen(coach_request, reference_context, fen)?;
+            let moves = parse_line_moves(fen, line)?;
+            Ok(format!("line_facts:{}:{}", fen.trim(), moves.join(",")))
+        }
+    }
+}
+
+fn validate_chess_fact_anchor_fen(
+    coach_request: &AiCoachRequest,
+    reference_context: &[CoachReferenceContext],
+    requested_fen: &str,
+) -> Result<(), CoachError> {
+    let requested_fen = requested_fen.trim();
+    if requested_fen.is_empty() {
+        return Err(CoachError::IllegalChessFactToolCall(
+            "fact tools require a FEN".to_string(),
+        ));
+    }
+    let _ = parse_fen_to_position(requested_fen)?;
+
+    if requested_fen == coach_request.fen.trim()
+        || is_reference_fen(reference_context, requested_fen)
+        || is_allowed_chess_fact_fen(coach_request, requested_fen)
+    {
+        return Ok(());
+    }
+
+    Err(CoachError::IllegalChessFactToolCall(
+        "chess fact calls must use the current FEN, an exact supplied reference FEN, or an exact FEN already supplied in game/engine evidence"
+            .to_string(),
+    ))
+}
+
+fn is_allowed_chess_fact_fen(coach_request: &AiCoachRequest, requested_fen: &str) -> bool {
+    coach_request.game_analysis.iter().any(|point| {
+        point.fen.trim() == requested_fen
+            || point
+                .before_fen
+                .as_deref()
+                .map(str::trim)
+                .is_some_and(|fen| fen == requested_fen)
+    }) || coach_request.prior_targeted_results.iter().any(|result| {
+        result.fen.trim() == requested_fen
+            || fen_after_uci_moves(&result.fen, &result.moves)
+                .as_deref()
+                .map(str::trim)
+                .is_some_and(|fen| fen == requested_fen)
+    })
+}
+
+fn execute_chess_fact_tool_call(
+    call: &ChessFactToolCall,
+) -> Result<CoachChessFactResult, CoachError> {
+    match call {
+        ChessFactToolCall::PositionFacts { fen, label, reason } => {
+            let position = parse_fen_to_position(fen)?;
+            let summary = summarize_position_facts(&position);
+            Ok(CoachChessFactResult {
+                tool: "position_facts".to_string(),
+                label: fact_label(label, "Current position facts"),
+                reason: reason.clone(),
+                fen: fen.trim().to_string(),
+                summary,
+                facts: position_facts_json(&position),
+            })
+        }
+        ChessFactToolCall::LegalMoves { fen, label, reason } => {
+            let position = parse_fen_to_position(fen)?;
+            let moves = legal_move_labels(&position);
+            let summary = if moves.is_empty() {
+                "No legal moves.".to_string()
+            } else {
+                format!("{} legal move(s): {}", moves.len(), moves.join(", "))
+            };
+            Ok(CoachChessFactResult {
+                tool: "legal_moves".to_string(),
+                label: fact_label(label, "Legal moves"),
+                reason: reason.clone(),
+                fen: fen.trim().to_string(),
+                summary,
+                facts: json!({
+                    "sideToMove": color_label(position.turn()),
+                    "legalMoves": moves,
+                }),
+            })
+        }
+        ChessFactToolCall::SquareFacts {
+            fen,
+            square,
+            label,
+            reason,
+        } => {
+            let position = parse_fen_to_position(fen)?;
+            let square = parse_square_name(square)?;
+            let (summary, facts) = square_fact_payload(&position, square);
+            Ok(CoachChessFactResult {
+                tool: "square_facts".to_string(),
+                label: fact_label(label, &format!("Square {square}")),
+                reason: reason.clone(),
+                fen: fen.trim().to_string(),
+                summary,
+                facts,
+            })
+        }
+        ChessFactToolCall::MoveFacts {
+            fen,
+            mv,
+            label,
+            reason,
+        } => {
+            let position = parse_fen_to_position(fen)?;
+            let (summary, facts) = move_fact_payload(&position, fen, mv)?;
+            Ok(CoachChessFactResult {
+                tool: "move_facts".to_string(),
+                label: fact_label(label, &format!("Move {mv}")),
+                reason: reason.clone(),
+                fen: fen.trim().to_string(),
+                summary,
+                facts,
+            })
+        }
+        ChessFactToolCall::LineFacts {
+            fen,
+            line,
+            label,
+            reason,
+        } => {
+            let (summary, facts) = line_fact_payload(fen, line)?;
+            Ok(CoachChessFactResult {
+                tool: "line_facts".to_string(),
+                label: fact_label(label, "Concrete line"),
+                reason: reason.clone(),
+                fen: fen.trim().to_string(),
+                summary,
+                facts,
+            })
+        }
+    }
+}
+
+fn summarize_position_facts(position: &Chess) -> String {
+    let white_undefended = undefended_piece_entries(position, Color::White);
+    let black_undefended = undefended_piece_entries(position, Color::Black);
+    let white_attacked = attacked_piece_entries(position, Color::White);
+    let black_attacked = attacked_piece_entries(position, Color::Black);
+    let white_hanging = hanging_piece_entries(position, Color::White);
+    let black_hanging = hanging_piece_entries(position, Color::Black);
+    let captures = legal_capture_labels(position);
+    let checkers = bitboard_piece_entries(position, position.checkers());
+    let status = if position.is_checkmate() {
+        "checkmate"
+    } else if position.is_stalemate() {
+        "stalemate"
+    } else if position.is_check() {
+        "check"
+    } else {
+        "not check"
+    };
+
+    format!(
+        "Side to move: {}. Status: {status}. Legal moves: {}. Checkers: {}. Undefended white pieces: {}. Undefended black pieces: {}. Hanging white pieces: {}. Hanging black pieces: {}. Attacked white pieces: {}. Attacked black pieces: {}. Legal captures for side to move: {}.",
+        color_label(position.turn()),
+        position.legal_moves().len(),
+        list_or_none(&checkers),
+        list_or_none(&white_undefended),
+        list_or_none(&black_undefended),
+        list_or_none(&white_hanging),
+        list_or_none(&black_hanging),
+        list_or_none(&white_attacked),
+        list_or_none(&black_attacked),
+        list_or_none(&captures)
+    )
+}
+
+fn position_facts_json(position: &Chess) -> serde_json::Value {
+    json!({
+        "sideToMove": color_label(position.turn()),
+        "status": {
+            "check": position.is_check(),
+            "checkmate": position.is_checkmate(),
+            "stalemate": position.is_stalemate(),
+            "checkers": bitboard_piece_entries(position, position.checkers()),
+        },
+        "piecePlacement": piece_entries(position),
+        "legalMoveCount": position.legal_moves().len(),
+        "legalMoves": legal_move_labels(position),
+        "legalCaptures": legal_capture_labels(position),
+        "undefendedPieces": {
+            "white": undefended_piece_entries(position, Color::White),
+            "black": undefended_piece_entries(position, Color::Black),
+        },
+        "hangingPieces": {
+            "white": hanging_piece_entries(position, Color::White),
+            "black": hanging_piece_entries(position, Color::Black),
+        },
+        "attackedPieces": {
+            "white": attacked_piece_entries(position, Color::White),
+            "black": attacked_piece_entries(position, Color::Black),
+        },
+        "note": "Attackers and defenders are geometric board attacks from Shakmaty; pinned defenders may still require move-specific legal verification."
+    })
+}
+
+fn square_fact_payload(position: &Chess, square: Square) -> (String, serde_json::Value) {
+    let piece = position.board().piece_at(square);
+    let white_attackers = attack_square_entries(position, square, Color::White);
+    let black_attackers = attack_square_entries(position, square, Color::Black);
+    let (defenders, enemy_attackers, is_undefended) = if let Some(piece) = piece {
+        let defenders = attack_square_entries(position, square, piece.color);
+        let enemy_attackers = attack_square_entries(position, square, !piece.color);
+        let is_undefended = piece.role != Role::King && defenders.is_empty();
+        (defenders, enemy_attackers, Some(is_undefended))
+    } else {
+        (Vec::new(), Vec::new(), None)
+    };
+    let piece_label = piece.map(piece_label);
+
+    let summary = if let Some(piece_label) = &piece_label {
+        format!(
+            "{square}: {piece_label}. Defenders: {}. Enemy attackers: {}. Attacked by White: {}. Attacked by Black: {}. Undefended: {}.",
+            list_or_none(&defenders),
+            list_or_none(&enemy_attackers),
+            list_or_none(&white_attackers),
+            list_or_none(&black_attackers),
+            is_undefended.unwrap_or(false)
+        )
+    } else {
+        format!(
+            "{square}: empty. Attacked by White: {}. Attacked by Black: {}.",
+            list_or_none(&white_attackers),
+            list_or_none(&black_attackers)
+        )
+    };
+
+    (
+        summary,
+        json!({
+            "square": square.to_string(),
+            "piece": piece_label,
+            "attackedByWhite": white_attackers,
+            "attackedByBlack": black_attackers,
+            "defenders": defenders,
+            "enemyAttackers": enemy_attackers,
+            "isUndefended": is_undefended,
+            "note": "Defenders are geometric board defenders; use move_facts or line_facts for legal tactic sequences."
+        }),
+    )
+}
+
+fn move_fact_payload(
+    position: &Chess,
+    fen: &str,
+    requested_move: &str,
+) -> Result<(String, serde_json::Value), CoachError> {
+    let (mv, uci, san) = parse_move_without_play(position, requested_move)?;
+    let side = position.turn();
+    let moved_piece = Piece {
+        color: side,
+        role: mv.role(),
+    };
+    let from = mv.from().map(|square| square.to_string());
+    let to = move_target_label(&mv);
+    let capture = mv.capture().map(role_label).map(|role| role.to_string());
+    let promotion = mv.promotion().map(role_label).map(|role| role.to_string());
+    let mut after = position.clone();
+    after.play_unchecked(&mv);
+    let fen_after = Fen::from_position(after.clone(), EnPassantMode::Legal).to_string();
+    let arrival_squares = move_arrival_squares(&mv);
+    let attacked_after = arrival_squares
+        .iter()
+        .flat_map(|square| moved_piece_attack_targets(&after, *square, side))
+        .collect::<Vec<_>>();
+    let checked_king = bitboard_piece_entries(&after, after.checkers());
+
+    let summary = format!(
+        "{san} ({uci}) is legal for {} from this FEN. Moved piece: {}. From: {}. To: {to}. Capture: {}. Promotion: {}. Resulting FEN: {fen_after}. Opponent in check: {}. Checkmate: {}. Moved piece attacks after move: {}.",
+        color_label(side),
+        piece_label(moved_piece),
+        from.as_deref().unwrap_or("drop/no origin"),
+        capture.as_deref().unwrap_or("none"),
+        promotion.as_deref().unwrap_or("none"),
+        after.is_check(),
+        after.is_checkmate(),
+        list_or_none(&attacked_after)
+    );
+
+    Ok((
+        summary,
+        json!({
+            "requestedMove": requested_move,
+            "san": san,
+            "uci": uci,
+            "legal": true,
+            "side": color_label(side),
+            "movedPiece": piece_label(moved_piece),
+            "from": from,
+            "to": to,
+            "capture": capture,
+            "promotion": promotion,
+            "isCastle": mv.is_castle(),
+            "isEnPassant": mv.is_en_passant(),
+            "fenBefore": fen.trim(),
+            "fenAfter": fen_after,
+            "afterStatus": {
+                "check": after.is_check(),
+                "checkmate": after.is_checkmate(),
+                "stalemate": after.is_stalemate(),
+                "checkers": checked_king,
+            },
+            "movedPieceAttacksAfterMove": attacked_after,
+        }),
+    ))
+}
+
+fn line_fact_payload(fen: &str, line: &str) -> Result<(String, serde_json::Value), CoachError> {
+    let mut position = parse_fen_to_position(fen)?;
+    let mut steps = Vec::new();
+    let mut san_line = Vec::new();
+    let mut uci_line = Vec::new();
+
+    for token in tokenize_move_line(line) {
+        let fen_before = Fen::from_position(position.clone(), EnPassantMode::Legal).to_string();
+        let (mv, uci, san) = parse_move_without_play(&position, &token)?;
+        let side = position.turn();
+        position.play_unchecked(&mv);
+        let fen_after = Fen::from_position(position.clone(), EnPassantMode::Legal).to_string();
+        san_line.push(san.clone());
+        uci_line.push(uci.clone());
+        steps.push(json!({
+            "requestedToken": token,
+            "san": san,
+            "uci": uci,
+            "side": color_label(side),
+            "fenBefore": fen_before,
+            "fenAfter": fen_after,
+            "check": position.is_check(),
+            "checkmate": position.is_checkmate(),
+            "stalemate": position.is_stalemate(),
+        }));
+    }
+
+    if steps.is_empty() {
+        return Err(CoachError::IllegalChessFactToolCall(
+            "line_facts requires at least one legal move".to_string(),
+        ));
+    }
+
+    let final_fen = Fen::from_position(position.clone(), EnPassantMode::Legal).to_string();
+    let summary = format!(
+        "Legal line of {} ply: {}. UCI: {}. Final FEN: {}. Final status: check {}, checkmate {}, stalemate {}.",
+        steps.len(),
+        san_line.join(" "),
+        uci_line.join(" "),
+        final_fen,
+        position.is_check(),
+        position.is_checkmate(),
+        position.is_stalemate()
+    );
+
+    Ok((
+        summary,
+        json!({
+            "requestedLine": line,
+            "sanLine": san_line,
+            "uciLine": uci_line,
+            "initialFen": fen.trim(),
+            "finalFen": final_fen,
+            "finalStatus": {
+                "check": position.is_check(),
+                "checkmate": position.is_checkmate(),
+                "stalemate": position.is_stalemate(),
+            },
+            "steps": steps,
+        }),
+    ))
+}
+
+fn format_chess_fact_results(results: &[CoachChessFactResult]) -> String {
+    if results.is_empty() {
+        return "None. The final answer must avoid factual board-state claims that were not supplied by Stockfish or chess fact tools.".to_string();
+    }
+
+    results
+        .iter()
+        .enumerate()
+        .map(|(index, result)| {
+            let facts = serde_json::to_string(&result.facts).unwrap_or_else(|_| "{}".to_string());
+            format!(
+                "Tool call {}: {} - {}\nReason: {}\nFEN: {}\nSummary: {}\nFacts JSON: {}",
+                index + 1,
+                result.tool,
+                result.label,
+                result.reason,
+                result.fen,
+                result.summary,
+                facts
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n\n")
+}
+
+fn extract_square_mentions(text: &str) -> Vec<String> {
+    let mut seen = HashSet::new();
+    text.split(|ch: char| !ch.is_ascii_alphanumeric())
+        .filter_map(|token| {
+            let token = token.trim().to_ascii_lowercase();
+            if token.len() != 2 {
+                return None;
+            }
+            let bytes = token.as_bytes();
+            if matches!(bytes[0], b'a'..=b'h') && matches!(bytes[1], b'1'..=b'8') {
+                Some(token)
+            } else {
+                None
+            }
+        })
+        .filter(|square| seen.insert(square.clone()))
+        .collect()
+}
+
+fn parse_square_name(square: &str) -> Result<Square, CoachError> {
+    let normalized = square.trim().to_ascii_lowercase();
+    Square::from_ascii(normalized.as_bytes())
+        .map_err(|_| CoachError::IllegalChessFactToolCall(format!("invalid square `{square}`")))
+}
+
+fn legal_move_labels(position: &Chess) -> Vec<String> {
+    let castling_mode = detect_castling_mode(position);
+    let mut moves = position
+        .legal_moves()
+        .iter()
+        .map(|mv| {
+            let san = SanPlus::from_move(position.clone(), mv).to_string();
+            let uci = UciMove::from_move(mv, castling_mode).to_string();
+            format!("{san} ({uci})")
+        })
+        .collect::<Vec<_>>();
+    moves.sort();
+    moves
+}
+
+fn legal_capture_labels(position: &Chess) -> Vec<String> {
+    let castling_mode = detect_castling_mode(position);
+    let mut captures = position
+        .legal_moves()
+        .iter()
+        .filter(|mv| mv.is_capture())
+        .map(|mv| {
+            let san = SanPlus::from_move(position.clone(), mv).to_string();
+            let uci = UciMove::from_move(mv, castling_mode).to_string();
+            format!("{san} ({uci})")
+        })
+        .collect::<Vec<_>>();
+    captures.sort();
+    captures
+}
+
+fn piece_entries(position: &Chess) -> Vec<String> {
+    bitboard_piece_entries(position, position.board().occupied())
+}
+
+fn bitboard_piece_entries(position: &Chess, bitboard: Bitboard) -> Vec<String> {
+    let mut entries = bitboard
+        .into_iter()
+        .filter_map(|square| {
+            position
+                .board()
+                .piece_at(square)
+                .map(|piece| piece_square_label(square, piece))
+        })
+        .collect::<Vec<_>>();
+    entries.sort();
+    entries
+}
+
+fn attack_square_entries(position: &Chess, square: Square, color: Color) -> Vec<String> {
+    let mut entries = position
+        .board()
+        .attacks_to(square, color, position.board().occupied())
+        .into_iter()
+        .filter_map(|from| {
+            position
+                .board()
+                .piece_at(from)
+                .map(|piece| piece_square_label(from, piece))
+        })
+        .collect::<Vec<_>>();
+    entries.sort();
+    entries
+}
+
+fn undefended_piece_entries(position: &Chess, color: Color) -> Vec<String> {
+    let mut entries = position
+        .board()
+        .by_color(color)
+        .into_iter()
+        .filter_map(|square| {
+            let piece = position.board().piece_at(square)?;
+            if piece.role == Role::King {
+                return None;
+            }
+            let defenders = attack_square_entries(position, square, color);
+            defenders
+                .is_empty()
+                .then(|| piece_square_label(square, piece))
+        })
+        .collect::<Vec<_>>();
+    entries.sort();
+    entries
+}
+
+fn attacked_piece_entries(position: &Chess, color: Color) -> Vec<String> {
+    let mut entries = position
+        .board()
+        .by_color(color)
+        .into_iter()
+        .filter_map(|square| {
+            let piece = position.board().piece_at(square)?;
+            if piece.role == Role::King {
+                return None;
+            }
+            let attackers = attack_square_entries(position, square, !color);
+            if attackers.is_empty() {
+                return None;
+            }
+            let defenders = attack_square_entries(position, square, color);
+            Some(format!(
+                "{} attacked by {}; defenders: {}",
+                piece_square_label(square, piece),
+                attackers.join(", "),
+                list_or_none(&defenders)
+            ))
+        })
+        .collect::<Vec<_>>();
+    entries.sort();
+    entries
+}
+
+fn hanging_piece_entries(position: &Chess, color: Color) -> Vec<String> {
+    let mut entries = position
+        .board()
+        .by_color(color)
+        .into_iter()
+        .filter_map(|square| {
+            let piece = position.board().piece_at(square)?;
+            if piece.role == Role::King {
+                return None;
+            }
+            let attackers = attack_square_entries(position, square, !color);
+            if attackers.is_empty() {
+                return None;
+            }
+            let defenders = attack_square_entries(position, square, color);
+            defenders.is_empty().then(|| {
+                format!(
+                    "{} attacked by {} with no listed defenders",
+                    piece_square_label(square, piece),
+                    attackers.join(", ")
+                )
+            })
+        })
+        .collect::<Vec<_>>();
+    entries.sort();
+    entries
+}
+
+fn moved_piece_attack_targets(position: &Chess, from: Square, moving_color: Color) -> Vec<String> {
+    let mut entries = (position.board().attacks_from(from)
+        & position.board().by_color(!moving_color))
+    .into_iter()
+    .filter_map(|target| {
+        let piece = position.board().piece_at(target)?;
+        let defenders = attack_square_entries(position, target, piece.color);
+        Some(format!(
+            "{} (defenders: {})",
+            piece_square_label(target, piece),
+            list_or_none(&defenders)
+        ))
+    })
+    .collect::<Vec<_>>();
+    entries.sort();
+    entries
+}
+
+fn parse_move_without_play(
+    position: &Chess,
+    requested_move: &str,
+) -> Result<(Move, String, String), CoachError> {
+    let cleaned_move = clean_requested_move_for_parse(requested_move);
+    let requested_move = cleaned_move.trim();
+    if requested_move.is_empty() {
+        return Err(CoachError::IllegalChessFactToolCall(
+            "empty move requested".to_string(),
+        ));
+    }
+
+    let mv = if let Ok(uci) = UciMove::from_ascii(requested_move.as_bytes()) {
+        uci.to_move(position).map_err(|_| {
+            CoachError::IllegalChessFactToolCall(format!("illegal move `{requested_move}`"))
+        })?
+    } else {
+        let san: San = requested_move.parse().map_err(|_| {
+            CoachError::IllegalChessFactToolCall(format!("could not parse move `{requested_move}`"))
+        })?;
+        san.to_move(position).map_err(|_| {
+            CoachError::IllegalChessFactToolCall(format!("illegal move `{requested_move}`"))
+        })?
+    };
+
+    let castling_mode = detect_castling_mode(position);
+    let uci = UciMove::from_move(&mv, castling_mode).to_string();
+    let san = SanPlus::from_move(position.clone(), &mv).to_string();
+    Ok((mv, uci, san))
+}
+
+fn move_target_label(mv: &Move) -> String {
+    match mv {
+        Move::Castle { king, rook } => {
+            if king < rook {
+                "king-side castle".to_string()
+            } else {
+                "queen-side castle".to_string()
+            }
+        }
+        _ => mv.to().to_string(),
+    }
+}
+
+fn move_arrival_squares(mv: &Move) -> Vec<Square> {
+    match mv {
+        Move::Normal { to, .. } | Move::EnPassant { to, .. } | Move::Put { to, .. } => {
+            vec![*to]
+        }
+        Move::Castle { .. } => Vec::new(),
+    }
+}
+
+fn piece_square_label(square: Square, piece: Piece) -> String {
+    format!("{square} {}", piece_label(piece))
+}
+
+fn piece_label(piece: Piece) -> String {
+    format!("{} {}", color_label(piece.color), role_label(piece.role))
+}
+
+fn color_label(color: Color) -> &'static str {
+    match color {
+        Color::White => "white",
+        Color::Black => "black",
+    }
+}
+
+fn role_label(role: Role) -> &'static str {
+    match role {
+        Role::Pawn => "pawn",
+        Role::Knight => "knight",
+        Role::Bishop => "bishop",
+        Role::Rook => "rook",
+        Role::Queen => "queen",
+        Role::King => "king",
+    }
+}
+
+fn fact_label(label: &str, fallback: &str) -> String {
+    let label = label.trim();
+    if label.is_empty() {
+        fallback.to_string()
+    } else {
+        label.to_string()
+    }
+}
+
+fn list_or_none(values: &[String]) -> String {
+    if values.is_empty() {
+        "none".to_string()
+    } else {
+        values.join(", ")
+    }
+}
+
+impl ChessFactToolCall {
+    fn describe(&self) -> String {
+        match self {
+            ChessFactToolCall::PositionFacts { fen, .. } => {
+                format!("position_facts for FEN {}", fen.trim())
+            }
+            ChessFactToolCall::LegalMoves { fen, .. } => {
+                format!("legal_moves for FEN {}", fen.trim())
+            }
+            ChessFactToolCall::SquareFacts { fen, square, .. } => {
+                format!("square_facts {square} for FEN {}", fen.trim())
+            }
+            ChessFactToolCall::MoveFacts { fen, mv, .. } => {
+                format!("move_facts {mv} for FEN {}", fen.trim())
+            }
+            ChessFactToolCall::LineFacts { fen, line, .. } => {
+                format!("line_facts {line} for FEN {}", fen.trim())
+            }
+        }
     }
 }
 
@@ -4652,6 +5985,98 @@ mod tests {
         assert!(prompt.contains("What is the plan here?"));
         assert!(prompt.contains("full legal sequence from the current FEN"));
         assert!(prompt.contains("1. eval +0.20, depth 12, full line from current FEN: e4"));
+    }
+
+    #[test]
+    fn prompt_builder_requires_chess_fact_tool_grounding_for_board_claims() {
+        let request = sample_request();
+        let fact = execute_chess_fact_tool_call(&ChessFactToolCall::SquareFacts {
+            fen: "4k3/8/8/8/2r5/8/8/1KB5 b - - 0 1".to_string(),
+            square: "c1".to_string(),
+            label: "Square c1".to_string(),
+            reason: "Verify the c1 bishop before calling it undefended.".to_string(),
+        })
+        .unwrap();
+
+        let prompt = build_coach_prompt_with_facts(
+            &request,
+            &[],
+            &[],
+            &[],
+            &[],
+            std::slice::from_ref(&fact),
+        );
+
+        assert!(prompt.contains("Chess fact tool results"));
+        assert!(prompt.contains("Chess fact tool results are the source of truth"));
+        assert!(prompt.contains("do not claim a move is legal/illegal"));
+        assert!(prompt.contains("Do not infer current-position facts from visual memory"));
+        assert!(prompt.contains("c1: white bishop"));
+        assert!(prompt.contains("Undefended: false"));
+    }
+
+    #[test]
+    fn square_facts_report_attacked_bishop_as_defended_when_defender_exists() {
+        let result = execute_chess_fact_tool_call(&ChessFactToolCall::SquareFacts {
+            fen: "4k3/8/8/8/2r5/8/8/1KB5 b - - 0 1".to_string(),
+            square: "C1".to_string(),
+            label: "Square c1".to_string(),
+            reason: "Check whether the bishop is defended.".to_string(),
+        })
+        .unwrap();
+
+        assert!(result.summary.contains("c1: white bishop"));
+        assert!(result.summary.contains("Defenders: b1 white king"));
+        assert!(result.summary.contains("Enemy attackers: c4 black rook"));
+        assert!(result.summary.contains("Undefended: false"));
+        assert_eq!(result.facts["isUndefended"].as_bool(), Some(false));
+    }
+
+    #[test]
+    fn move_facts_show_what_a_rook_move_attacks_and_who_defends_it() {
+        let position = parse_fen_to_position("2r1k3/8/8/8/8/8/8/1KB5 b - - 0 1").unwrap();
+        let (summary, facts) =
+            move_fact_payload(&position, "2r1k3/8/8/8/8/8/8/1KB5 b - - 0 1", "Rc4").unwrap();
+
+        assert!(summary.contains("Rc4"));
+        assert!(summary.contains("c1 white bishop (defenders: b1 white king)"));
+        let attacks = facts["movedPieceAttacksAfterMove"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter_map(|value| value.as_str())
+            .collect::<Vec<_>>();
+        assert!(attacks
+            .iter()
+            .any(|value| *value == "c1 white bishop (defenders: b1 white king)"));
+    }
+
+    #[test]
+    fn default_chess_fact_calls_include_mentioned_squares_from_current_context() {
+        let mut request = sample_request();
+        request.question = "Was the bishop on C1 actually defended?".to_string();
+        let calls = infer_default_chess_fact_tool_calls(&request, &[]);
+
+        assert!(calls.iter().any(|call| matches!(
+            call,
+            ChessFactToolCall::SquareFacts { square, .. } if square == "c1"
+        )));
+    }
+
+    #[test]
+    fn parses_chess_fact_tool_plan_json() {
+        let parsed = parse_chess_fact_tool_plan(
+            r#"```json
+{"reason":"verify the c1 bishop","calls":[{"tool":"square_facts","fen":"start","square":"c1","reason":"check defenders"}]}
+```"#,
+        )
+        .unwrap();
+
+        assert_eq!(parsed.reason, "verify the c1 bishop");
+        assert!(matches!(
+            parsed.calls.first(),
+            Some(ChessFactToolCall::SquareFacts { square, .. }) if square == "c1"
+        ));
     }
 
     #[test]

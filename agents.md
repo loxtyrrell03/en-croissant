@@ -556,6 +556,18 @@ default.
   prompt. Pro is no longer allowed to request follow-up Stockfish analysis; if
   it outputs `<stockfish_request>`, the backend rejects it and the planner
   should be improved to request that line up front.
+- On 2026-06-07, Coach gained a deterministic Shakmaty chess-fact tool phase
+  between Stockfish evidence gathering and the final Pro prompt. Flash now
+  plans JSON-only `position_facts`, `legal_moves`, `square_facts`,
+  `move_facts`, and `line_facts` calls, while the backend always adds a
+  current-position baseline plus mentioned-square/move checks. These facts are
+  the source of truth for legal moves, attackers, defenders, undefended pieces,
+  hanging pieces, checks, threats, and tactical mechanisms; Stockfish remains
+  the source of truth for evaluation and PV quality. Final Coach prompts and
+  the fact-audit repair pass must not let Gemini infer current-position board
+  facts from visual memory, PGN context, or general chess knowledge. This was
+  added after a Coach answer incorrectly called a c1 bishop undefended when
+  the board facts showed it was defended.
 - AGY print mode can return exit code 0 with no stdout when it triggers OAuth
   and the login flow times out; the useful error only appears in the AGY log.
   The coach bridge reads that temporary log and treats `You are not logged into
