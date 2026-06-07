@@ -14,6 +14,7 @@ import {
 } from "@mantine/core";
 import { IconAlertTriangle, IconSparkles } from "@tabler/icons-react";
 import { listen } from "@tauri-apps/api/event";
+import { parseSan } from "chessops/san";
 import { useAtomValue } from "jotai";
 import { type ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "zustand";
@@ -58,6 +59,8 @@ type CoachUiMessage = CoachChatMessage & {
   basePath?: number[];
   baseHalfMoves?: number;
   baseSanMoves?: string[];
+  engineLines?: CoachEngineLine[];
+  targetedResults?: CoachTargetedResult[];
 };
 
 type CoachMessageSegment = { type: "text"; text: string } | { type: "line"; text: string };
@@ -79,9 +82,23 @@ type PreparedCoachLine = {
   moves: PreparedCoachMove[];
 };
 
+type CoachLineAnchor = {
+  basePath: number[];
+  baseHalfMoves: number;
+  moves: string[];
+  source: "root" | "targeted";
+};
+
+type MoveClickTarget = {
+  basePath: number[];
+  moves: string[];
+};
+
 type InlineMoveRenderContext = {
+  root: TreeNode;
   basePath: number[];
   mainlineMoves: MainlineMove[];
+  lineAnchors: CoachLineAnchor[];
   onPlayMoves: (moves: string[], basePath?: number[]) => void;
 };
 
@@ -253,27 +270,6 @@ function parseInlineMoveToken(raw: string): InlineMoveToken | null {
   };
 }
 
-function findMainlineMovePath(token: InlineMoveToken, mainlineMoves: MainlineMove[]) {
-  if (!token.moveNumber) return null;
-
-  const preferredPly = token.blackMove ? token.moveNumber * 2 : token.moveNumber * 2 - 1;
-  const candidates = [
-    preferredPly,
-    token.blackMove ? token.moveNumber * 2 - 1 : token.moveNumber * 2,
-  ];
-
-  for (const ply of candidates) {
-    const match = mainlineMoves.find(
-      (move) =>
-        move.halfMoves === ply &&
-        normalizeSanForCompare(move.san) === normalizeSanForCompare(token.san),
-    );
-    if (match) return match.path;
-  }
-
-  return null;
-}
-
 function findMainlineBasePathForNumberedMove(
   token: InlineMoveToken,
   mainlineMoves: MainlineMove[],
@@ -335,6 +331,98 @@ function getSanVariationLine(root: TreeNode, path: number[]): string[] {
   }
 
   return result;
+}
+
+function pathKey(path: number[]) {
+  return path.join(",");
+}
+
+function findFirstPathByFen(root: TreeNode, fen: string): number[] | null {
+  const target = fen.trim();
+  const queue: { node: TreeNode; path: number[] }[] = [{ node: root, path: [] }];
+
+  while (queue.length > 0) {
+    const { node, path } = queue.shift()!;
+    if (node.fen.trim() === target) return path;
+    node.children.forEach((child, index) => queue.push({ node: child, path: [...path, index] }));
+  }
+
+  return null;
+}
+
+function canPlaySanMoves(root: TreeNode, basePath: number[], moves: string[]) {
+  if (moves.length === 0) return true;
+
+  const baseNode = getNodeAtPath(root, basePath);
+  const [position] = positionFromFen(baseNode.fen);
+  if (!position) return false;
+
+  for (const san of moves) {
+    const move = parseSan(position, san);
+    if (!move) return false;
+    position.play(move);
+  }
+
+  return true;
+}
+
+function getNodeHalfMoves(root: TreeNode, path: number[]) {
+  return getNodeAtPath(root, path).halfMoves;
+}
+
+function buildCoachLineAnchors({
+  root,
+  baseFen,
+  basePath,
+  baseHalfMoves,
+  engineLines,
+  targetedResults,
+}: {
+  root: TreeNode;
+  baseFen?: string;
+  basePath: number[];
+  baseHalfMoves: number;
+  engineLines: CoachEngineLine[];
+  targetedResults: CoachTargetedResult[];
+}): CoachLineAnchor[] {
+  const anchors: CoachLineAnchor[] = [];
+  const seen = new Set<string>();
+
+  const pushAnchor = (
+    source: CoachLineAnchor["source"],
+    anchorBasePath: number[],
+    anchorBaseHalfMoves: number,
+    moves: string[],
+  ) => {
+    const cleanedMoves = moves.map(cleanMoveToken).filter(Boolean);
+    if (cleanedMoves.length === 0) return;
+    if (!canPlaySanMoves(root, anchorBasePath, cleanedMoves)) return;
+    const key = `${source}|${pathKey(anchorBasePath)}|${cleanedMoves.join(" ")}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    anchors.push({
+      source,
+      basePath: anchorBasePath,
+      baseHalfMoves: anchorBaseHalfMoves,
+      moves: cleanedMoves,
+    });
+  };
+
+  for (const line of engineLines) {
+    pushAnchor("root", basePath, baseHalfMoves, line.sanMoves);
+  }
+
+  for (const result of targetedResults) {
+    const resultPath =
+      result.fen.trim() === baseFen?.trim() ? basePath : findFirstPathByFen(root, result.fen);
+    if (!resultPath) continue;
+    const resultHalfMoves = getNodeHalfMoves(root, resultPath);
+    for (const line of result.lines) {
+      pushAnchor("targeted", resultPath, resultHalfMoves, line.sanMoves);
+    }
+  }
+
+  return anchors;
 }
 
 function getMainlineMoves(root: TreeNode): MainlineMove[] {
@@ -534,25 +622,96 @@ function prepareCoachLine({
   };
 }
 
+function expectedPlyForToken(token: InlineMoveToken) {
+  if (!token.moveNumber) return null;
+  return token.blackMove ? token.moveNumber * 2 : token.moveNumber * 2 - 1;
+}
+
+function moveTargetKey(target: MoveClickTarget) {
+  return `${pathKey(target.basePath)}|${target.moves.join(" ")}`;
+}
+
+function uniqueMoveTarget(candidates: MoveClickTarget[]): MoveClickTarget | null {
+  const unique = new Map<string, MoveClickTarget>();
+  for (const candidate of candidates) {
+    unique.set(moveTargetKey(candidate), candidate);
+  }
+  return unique.size === 1 ? [...unique.values()][0] : null;
+}
+
+function appendMoveTarget(
+  root: TreeNode,
+  target: MoveClickTarget | null | undefined,
+  san: string,
+): MoveClickTarget | null {
+  if (!target) return null;
+  const moves = [...target.moves, san];
+  if (!canPlaySanMoves(root, target.basePath, moves)) return null;
+  return { basePath: target.basePath, moves };
+}
+
+function findAnchorTargetForToken(
+  token: InlineMoveToken,
+  context: InlineMoveRenderContext,
+): MoveClickTarget | null {
+  const expectedPly = expectedPlyForToken(token);
+  const candidates: MoveClickTarget[] = [];
+
+  for (const anchor of context.lineAnchors) {
+    anchor.moves.forEach((move, index) => {
+      if (normalizeSanForCompare(move) !== normalizeSanForCompare(token.san)) return;
+      if (expectedPly !== null && anchor.baseHalfMoves + index + 1 !== expectedPly) return;
+      candidates.push({
+        basePath: anchor.basePath,
+        moves: anchor.moves.slice(0, index + 1),
+      });
+    });
+  }
+
+  return uniqueMoveTarget(candidates);
+}
+
+function findNumberedMoveTarget(
+  token: InlineMoveToken,
+  context: InlineMoveRenderContext,
+): MoveClickTarget | null {
+  const expectedPly = expectedPlyForToken(token);
+  if (expectedPly === null) return null;
+  const mainlineMove = context.mainlineMoves.find(
+    (move) =>
+      move.halfMoves === expectedPly &&
+      normalizeSanForCompare(move.san) === normalizeSanForCompare(token.san),
+  );
+  if (!mainlineMove) return null;
+  const basePath = findMainlineBasePathForNumberedMove(token, context.mainlineMoves);
+  if (!basePath) return null;
+  if (!canPlaySanMoves(context.root, basePath, [token.san])) return null;
+  return { basePath, moves: [token.san] };
+}
+
+function resolveInlineMoveTarget(
+  token: InlineMoveToken,
+  context: InlineMoveRenderContext,
+  sequenceTarget: MoveClickTarget | null,
+  ambientTarget: MoveClickTarget | null,
+): MoveClickTarget | null {
+  return (
+    appendMoveTarget(context.root, sequenceTarget, token.san) ??
+    appendMoveTarget(context.root, ambientTarget, token.san) ??
+    findAnchorTargetForToken(token, context) ??
+    findNumberedMoveTarget(token, context)
+  );
+}
+
 function renderMoveToken(
   token: InlineMoveToken,
   context?: InlineMoveRenderContext,
-  targetMoves?: string[],
-  targetBasePath?: number[],
-  mainlinePathOverride?: number[] | null,
+  target?: MoveClickTarget | null,
 ) {
   if (!context) return token.label;
-
-  const mainlinePath =
-    mainlinePathOverride === undefined
-      ? findMainlineMovePath(token, context.mainlineMoves)
-      : mainlinePathOverride;
+  if (!target) return token.label;
   const handleClick = () => {
-    if (mainlinePath) {
-      context.onPlayMoves([], mainlinePath);
-      return;
-    }
-    context.onPlayMoves(targetMoves ?? [token.san], targetBasePath ?? context.basePath);
+    context.onPlayMoves(target.moves, target.basePath);
   };
 
   return (
@@ -584,8 +743,8 @@ function renderInlineMoves(text: string, context?: InlineMoveRenderContext): Rea
     /`?(?:(?:\d+)\.(?:\.\.)?\s*)?(?:O-O-O|O-O|[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?)[+#]?[!?]*`?/gi;
   let cursor = 0;
   let match: RegExpExecArray | null;
-  let sequenceBasePath = context?.basePath;
-  let sequenceMoves: string[] = [];
+  let sequenceTarget: MoveClickTarget | null = null;
+  let ambientTarget: MoveClickTarget | null = null;
 
   while ((match = pattern.exec(text)) !== null) {
     const between = text.slice(cursor, match.index);
@@ -594,30 +753,24 @@ function renderInlineMoves(text: string, context?: InlineMoveRenderContext): Rea
     }
 
     if (!/^[\s,;:()]*$/.test(between)) {
-      sequenceBasePath = context?.basePath;
-      sequenceMoves = [];
+      sequenceTarget = null;
     }
 
     const raw = match[0];
     const token = parseInlineMoveToken(raw);
-    const mainlinePath = token && context ? findMainlineMovePath(token, context.mainlineMoves) : null;
-    const numberedBasePath =
-      token && context ? findMainlineBasePathForNumberedMove(token, context.mainlineMoves) : null;
+    const target: MoveClickTarget | null =
+      token && context
+        ? resolveInlineMoveTarget(token, context, sequenceTarget, ambientTarget)
+        : null;
 
     if (!token) {
       pieces.push(raw);
-    } else if (mainlinePath) {
-      pieces.push(renderMoveToken(token, context, [], undefined, mainlinePath));
-      sequenceBasePath = mainlinePath;
-      sequenceMoves = [];
     } else {
-      if (numberedBasePath) {
-        sequenceBasePath = numberedBasePath;
-        sequenceMoves = [];
+      pieces.push(renderMoveToken(token, context, target));
+      if (target) {
+        sequenceTarget = target;
+        ambientTarget = target;
       }
-      const targetMoves = [...sequenceMoves, token.san];
-      pieces.push(renderMoveToken(token, context, targetMoves, sequenceBasePath, null));
-      sequenceMoves = targetMoves;
     }
     cursor = pattern.lastIndex;
   }
@@ -630,9 +783,7 @@ function renderInlineMoves(text: string, context?: InlineMoveRenderContext): Rea
 }
 
 function renderInlineMarkdown(text: string, context?: InlineMoveRenderContext) {
-  const parts = text
-    .split(/(\*\*[^*\n]+\*\*|\*[^*\n]+\*)/g)
-    .filter((part) => part.length > 0);
+  const parts = text.split(/(\*\*[^*\n]+\*\*|\*[^*\n]+\*)/g).filter((part) => part.length > 0);
   return parts.map((part, index) => {
     const doubleBold = part.startsWith("**") && part.endsWith("**");
     const singleBold = !doubleBold && part.startsWith("*") && part.endsWith("*");
@@ -1047,6 +1198,8 @@ export default function AiCoachPanel() {
           basePath: requestPath,
           baseHalfMoves: requestBaseHalfMoves,
           baseSanMoves: requestBaseSanMoves,
+          engineLines: response.stockfishLines,
+          targetedResults: response.targetedResults,
         },
       ]);
       setUsedExistingAnalysis(response.usedExistingAnalysis);
@@ -1166,10 +1319,14 @@ export default function AiCoachPanel() {
                   </Text>
                   <CoachMessageContent
                     content={message.content}
+                    root={root}
+                    baseFen={message.baseFen}
                     basePath={message.basePath ?? []}
                     baseHalfMoves={message.baseHalfMoves ?? 0}
                     baseSanMoves={message.baseSanMoves ?? []}
                     mainlineMoves={mainlineMoves}
+                    engineLines={message.engineLines ?? []}
+                    targetedResults={message.targetedResults ?? []}
                     onPlayMoves={playCoachMoves}
                   />
                 </Stack>
@@ -1270,22 +1427,44 @@ export default function AiCoachPanel() {
 
 function CoachMessageContent({
   content,
+  root,
+  baseFen,
   basePath,
   baseHalfMoves,
   baseSanMoves,
   mainlineMoves,
+  engineLines,
+  targetedResults,
   onPlayMoves,
 }: {
   content: string;
+  root: TreeNode;
+  baseFen?: string;
   basePath: number[];
   baseHalfMoves: number;
   baseSanMoves: string[];
   mainlineMoves: MainlineMove[];
+  engineLines: CoachEngineLine[];
+  targetedResults: CoachTargetedResult[];
   onPlayMoves: (moves: string[], basePath?: number[]) => void;
 }) {
+  const lineAnchors = useMemo(
+    () =>
+      buildCoachLineAnchors({
+        root,
+        baseFen,
+        basePath,
+        baseHalfMoves,
+        engineLines,
+        targetedResults,
+      }),
+    [baseFen, baseHalfMoves, basePath, engineLines, root, targetedResults],
+  );
   const inlineContext: InlineMoveRenderContext = {
+    root,
     basePath,
     mainlineMoves,
+    lineAnchors,
     onPlayMoves,
   };
 

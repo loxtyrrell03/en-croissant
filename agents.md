@@ -572,6 +572,16 @@ default.
   compares it with the current game's mainline, trims the matching prefix, and
   anchors clicks from the branch position so blue move lines start at the
   analysed position rather than at move 1.
+- Coach inline move clicks must be anchored by local context before the game
+  mainline. Assistant messages now carry the root Stockfish lines and targeted
+  Stockfish results used for that answer; `AiCoachPanel` builds legal SAN
+  anchors from those lines and the exact FEN path in the game tree. Inline
+  variation sequences advance from their prior clicked/resolved prefix, so a
+  move like `10.Qa6` inside `9...Nxd4 10.Qa6` goes to the Stockfish branch, not
+  to an unrelated mainline move with the same SAN. Isolated move tokens are
+  clickable only when they resolve through nearby context, a unique supplied
+  engine-line prefix, or the actual loaded game move at that ply; unsupported
+  alternatives remain plain text instead of guessing.
 - Coach was then moved out of the under-board panel and into the right-side
   analysis tab stack as its own `Coach` tab; the under-board Coach button is
   only a shortcut that selects that right-side tab. The standalone Current FEN
