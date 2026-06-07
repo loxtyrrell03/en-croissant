@@ -582,6 +582,11 @@ default.
   clickable only when they resolve through nearby context, a unique supplied
   engine-line prefix, or the actual loaded game move at that ply; unsupported
   alternatives remain plain text instead of guessing.
+- If prose anchors a line with a move such as `after 15.Nc3` and the following
+  variation repeats that first move (`Nc3 Nxc3 ...`), the repeated first token
+  should reuse the existing click target rather than trying to play the same
+  move twice. This keeps the rest of the inline variation clickable from the
+  intended branch.
 - Coach was then moved out of the under-board panel and into the right-side
   analysis tab stack as its own `Coach` tab; the under-board Coach button is
   only a shortcut that selects that right-side tab. The standalone Current FEN

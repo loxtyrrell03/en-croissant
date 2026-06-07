@@ -650,6 +650,11 @@ function appendMoveTarget(
   return { basePath: target.basePath, moves };
 }
 
+function sameAsTargetLastMove(target: MoveClickTarget | null | undefined, san: string) {
+  const lastMove = target?.moves.at(-1);
+  return Boolean(lastMove && normalizeSanForCompare(lastMove) === normalizeSanForCompare(san));
+}
+
 function findAnchorTargetForToken(
   token: InlineMoveToken,
   context: InlineMoveRenderContext,
@@ -697,7 +702,9 @@ function resolveInlineMoveTarget(
 ): MoveClickTarget | null {
   return (
     appendMoveTarget(context.root, sequenceTarget, token.san) ??
+    (sameAsTargetLastMove(sequenceTarget, token.san) ? sequenceTarget : null) ??
     appendMoveTarget(context.root, ambientTarget, token.san) ??
+    (sameAsTargetLastMove(ambientTarget, token.san) ? ambientTarget : null) ??
     findAnchorTargetForToken(token, context) ??
     findNumberedMoveTarget(token, context)
   );
