@@ -606,6 +606,15 @@ default.
   moments, whole-game review falls back to representative game positions rather
   than sending Pro an evidence vacuum. This is meant to prevent both tangent
   answers and `no engine data for that phase` failures.
+- Coach conversational follow-ups are their own focus path. Phrases such as
+  `that sequence`, `that line`, `explain that better`, or `where I can win a
+  piece` must reuse the most recent targeted Stockfish evidence and
+  coach-discussion references instead of falling through to generic whole-game
+  critical-moment analysis. `AiCoachPanel.tsx` includes recent targeted
+  Stockfish result FENs/PVs in `referenceContext`, while `coach.rs` forces
+  non-whole-game scope for deictic follow-ups, trims prior targeted memory to
+  recent results, suppresses whole-game fallback injection, and tells Pro to
+  explain the referenced sequence directly.
 - Coach was then moved out of the under-board panel and into the right-side
   analysis tab stack as its own `Coach` tab; the under-board Coach button is
   only a shortcut that selects that right-side tab. The standalone Current FEN

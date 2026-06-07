@@ -545,6 +545,10 @@ async fn ask_ai_coach_inner(
     let phase_review = focus_phase.is_some();
     let legal_moves = format_legal_root_moves(&request.fen)?;
     let reference_context = normalized_reference_context(&request);
+    let conversational_followup = question_asks_for_conversational_follow_up(&request.question)
+        && (!request.prior_targeted_results.is_empty()
+            || !reference_context.is_empty()
+            || !request.chat_history.is_empty());
     let mut targeted_results = filter_prior_targeted_results_for_question(&request);
     if !targeted_results.is_empty() {
         emit_coach_progress(
@@ -557,6 +561,17 @@ async fn ask_ai_coach_inner(
                 "Keeping {} earlier targeted result(s) from this coach session.",
                 targeted_results.len()
             ),
+            10.0,
+            false,
+        );
+    } else if conversational_followup {
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "targeted_cached_missing",
+            "No targeted memory for follow-up",
+            "The latest question refers to a prior line or sequence, but no reusable targeted Stockfish result was available.",
             10.0,
             false,
         );
@@ -611,6 +626,9 @@ async fn ask_ai_coach_inner(
         })?;
     if phase_review {
         planner_scope = CoachPgnScope::WholeGame;
+    } else if conversational_followup && !question_explicitly_requests_whole_game(&request.question)
+    {
+        planner_scope = CoachPgnScope::CurrentLine;
     }
     apply_planner_pgn_scope(&mut request, planner_scope);
     emit_coach_progress(
@@ -630,6 +648,31 @@ async fn ask_ai_coach_inner(
     );
     let (mut planned_requests, rejected_planner_requests) =
         sanitize_planner_requests(&request, &reference_context, planner_response.requests);
+    if conversational_followup {
+        let before_filter_count = planned_requests.len();
+        planned_requests.retain(|stockfish_request| {
+            stockfish_request_uses_current_or_reference_fen(
+                &request,
+                &reference_context,
+                stockfish_request,
+            )
+        });
+        let dropped_count = before_filter_count.saturating_sub(planned_requests.len());
+        if dropped_count > 0 {
+            emit_coach_progress(
+                app,
+                request_id,
+                started,
+                "planner_followup_filtered",
+                "Dropped unrelated planner requests",
+                format!(
+                    "Ignored {dropped_count} planner request(s) that did not use the current FEN or a recent coach-discussion reference FEN."
+                ),
+                19.0,
+                false,
+            );
+        }
+    }
     for rejected in rejected_planner_requests {
         warn!("ai_coach[{request_id}] rejected planner request: {rejected}");
         emit_coach_progress(
@@ -708,7 +751,7 @@ async fn ask_ai_coach_inner(
         }
     }
 
-    let critical_requests = if has_focused_game_move || phase_review {
+    let critical_requests = if has_focused_game_move || phase_review || conversational_followup {
         Vec::new()
     } else {
         infer_whole_game_critical_stockfish_requests(&request)
@@ -735,7 +778,18 @@ async fn ask_ai_coach_inner(
         );
     }
 
-    if planned_requests.is_empty() {
+    if planned_requests.is_empty() && conversational_followup && !targeted_results.is_empty() {
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "targeted_followup_reuse",
+            "Using prior line evidence",
+            "The latest question is a follow-up, so the coach will explain the recent targeted Stockfish sequence instead of starting a fresh whole-game review.",
+            22.0,
+            false,
+        );
+    } else if planned_requests.is_empty() {
         planned_requests = infer_question_stockfish_requests(&request.fen, &request.question)?;
         if planned_requests.is_empty() {
             emit_coach_progress(
@@ -1121,12 +1175,15 @@ fn build_coach_prompt(
             .collect::<Vec<_>>()
             .join("\n\n")
     };
+    let has_reference_context = !reference_context.is_empty();
     let chat_history = format_chat_history(&request.chat_history);
     let reference_context = format_reference_context(reference_context);
     let focus_phase = question_focus_phase(&request.question);
     let opening_phase = focus_phase == Some(CoachQuestionPhase::Opening);
     let middlegame_phase = focus_phase == Some(CoachQuestionPhase::Middlegame);
     let conversion_phase = focus_phase == Some(CoachQuestionPhase::EndgameConversion);
+    let conversational_followup = question_asks_for_conversational_follow_up(&request.question)
+        && (!targeted_results.is_empty() || has_reference_context);
     let opening_context = if whole_game_mode {
         "Omitted for whole-game review; current-FEN explorer stats are not opening-phase evidence."
             .to_string()
@@ -1153,6 +1210,8 @@ fn build_coach_prompt(
         "- This is a conversion/endgame-technique review of the loaded game. Focus on the late phase where the advantaged side tried to convert.\n- Do not drift into opening or early middlegame mistakes except for one short sentence of causal context if needed.\n- Use the whole-game PGN only to identify where the conversion phase begins and what actually happened. Use conversion-phase stored analysis and targeted late-game Stockfish results as concrete evidence.\n- Answer the user's side-specific wording. If they ask about Black's conversion, evaluate Black's late decisions, technique, missed simplifications, king/pawn/rook activity, and whether Black kept or spoiled the advantage.\n- Do not include generic Critical moments from earlier in the game unless the latest question explicitly asks why the conversion phase was reached.".to_string()
     } else if salvage_question {
         "- This is a practical recovery/defensive-resource question. Use the PGN and stored analysis only to locate the named position and understand the game context.\n- Do not turn this into a broad whole-game review or a verdict report.\n- If the named move has already been played, prioritize targeted `After <move>` evidence for the best continuation from the bad position.\n- Use before-move analyse_position evidence only for a brief contrast unless the user explicitly asks what should have been played instead.".to_string()
+    } else if conversational_followup {
+        "- This is a conversational follow-up about a line, sequence, variation, or idea discussed earlier in the chat.\n- Do not restart as a whole-game review, do not list new critical moments, and do not change the topic to the opening/current board unless the latest question explicitly asks for that.\n- Use the Prior targeted Stockfish results, Conversation so far, and Position/reference context to identify the referenced sequence. Explain that sequence directly and concretely.\n- If the user asks to explain it better, give the human mechanism move-by-move: what is attacked, which defender is overloaded or deflected, why a piece is won/lost, and how the supplied engine line proves it.".to_string()
     } else if whole_game_mode {
         "- This is a whole-game review. Do not analyse the starting position/current board as the main topic.\n- Do not give a starting-position engine main line, opening recommendation, or generic move-1 advice unless the user explicitly asks about the opening.\n- Base the answer on the loaded game PGN, Stored whole-game Stockfish analysis, and critical targeted Stockfish results.\n- Prefer whole-game sections: **Direct answer**, **Critical moments**, **What to play instead**, **Training lesson**.\n- Do not include <line> blocks in whole-game answers. Refer to move numbers and SAN in prose; the UI makes those move references clickable.\n- For every critical move you mention, include concrete Stockfish evidence: the played-move refutation line when an `After <move>` targeted result is supplied, and the better line from the matching analyse_position result when supplied.\n- For each critical moment, explain it in this order: verdict, human chess mechanism, engine proof, lesson. The mechanism is mandatory: identify why the line works in chess terms, such as loose piece, overloaded defender, weak back rank, king exposure, bad coordination, trapped queen, open file, weak square, pawn break, tempo gain, or simplification into a better ending.".to_string()
     } else {
@@ -1168,6 +1227,8 @@ fn build_coach_prompt(
         "Prefer this final answer shape: Direct answer; Conversion diagnosis; Key late decisions; Cleaner conversion method; Training lesson. Do not include an opening or starting-position main line."
     } else if salvage_question {
         "Prefer this final answer shape: Direct answer; Best defensive try; Why it helps; Practical plan from there; What to avoid. Do not use a Critical moments section unless the user explicitly asked for a review."
+    } else if conversational_followup {
+        "Prefer this final answer shape: Direct answer; Sequence explained; Why the tactic/plan works; Engine proof; Practical takeaway. Do not use a Critical moments or whole-game review section."
     } else if whole_game_mode {
         "Prefer this final answer shape: Direct answer; Critical moments; What to play instead; Training lesson. Do not include a Main line section unless the user asked for one specific variation."
     } else {
@@ -1179,6 +1240,8 @@ fn build_coach_prompt(
         "- Current-position root engine lines are irrelevant for this middlegame review. Use only middlegame stored analysis and targeted Stockfish results whose labels/FENs belong to the middlegame phase. Ignore stale targeted results from opening/endgame topics in prior chat unless the latest question asks about them.".to_string()
     } else if conversion_phase {
         "- Current-position root engine lines are irrelevant for this conversion/endgame review. Use only conversion-phase stored analysis and targeted Stockfish results whose labels/FENs belong to the late conversion phase. Ignore stale targeted results from opening/middlegame topics in prior chat unless the latest question asks about them.".to_string()
+    } else if conversational_followup {
+        "- This follow-up should be grounded primarily in the recent targeted Stockfish results and referenced coach-discussion FENs. Current-position root lines are secondary unless the referenced sequence starts from the current FEN. Do not use generic whole-game critical positions as evidence for this turn.".to_string()
     } else if whole_game_mode {
         "- Current-position root engine lines are intentionally omitted for this whole-game review. Use only Stored whole-game Stockfish analysis and targeted Stockfish results as concrete engine evidence.".to_string()
     } else if use_cloud_existing_lines {
@@ -1194,6 +1257,8 @@ fn build_coach_prompt(
         "- Use bold section labels like **Direct answer**, **Conversion diagnosis**, **Key late decisions**, **Cleaner conversion method**, and **Training lesson**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
     } else if salvage_question {
         "- Use bold section labels like **Direct answer**, **Best defensive try**, **Why it helps**, **Practical plan**, and **What to avoid**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
+    } else if conversational_followup {
+        "- Use bold section labels like **Direct answer**, **Sequence explained**, **Engine proof**, and **Practical takeaway**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
     } else if whole_game_mode {
         "- Use bold section labels like **Direct answer**, **Critical moments**, **What to play instead**, and **Training lesson**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
     } else {
@@ -1354,6 +1419,7 @@ Rules:
 - Do not analyse chess yourself and do not answer the user's question.
 - First choose pgn_scope. Use "whole_game" when the user asks to analyse, review, annotate, recap, go through, or find what went wrong in the loaded game. Use "current_line" for questions about the current board position, opening choice, a candidate move, or a concrete line.
 - If the user asks to examine a specific phase of the loaded game, choose "whole_game" and plan only Stockfish checks from that phase. Opening/opening phase uses opening positions; middlegame/middle-game phase uses middlegame positions; conversion/endgame technique/closing out uses late conversion positions. Do not request unrelated phase mistakes unless the user explicitly asks for the cause of that phase.
+- If the latest question uses conversational references such as "that line", "that sequence", "that variation", "explain that better", "where I can win a piece", or "the thing we discussed", treat it as a follow-up to the most recent relevant coach discussion and prior targeted Stockfish results. Choose "current_line" unless the latest question explicitly asks for the whole game. Do not restart a whole-game review and do not inspect Critical whole-game positions for that turn.
 - Plan Stockfish work for the user's actual requested task, not just for a generic verdict. If they ask how to defend, hold, recover, compare, understand why, or choose a plan, request evidence that answers that task directly.
 - If the user names a concrete move from the loaded game, keep the plan anchored to that move. Do not turn a named-move question into a broad critical-moments review unless the user explicitly asks for the whole game.
 - The stronger coach model will only receive the PGN scope you choose, so do not choose "current_line" for whole-game review wording like "analyse this game".
@@ -1366,6 +1432,7 @@ Rules:
 - analyse_position is only allowed for the exact current FEN, an exact before-move FEN listed in Critical whole-game positions, or an exact FEN from Position/reference context.
 - For a move from the current position, use analyse_move.
 - For references like "after 19.Nexd4" or "the line we discussed after 19.Nexd4", first match the reference against Position/reference context, then request analyse_position or analyse_move from that exact referenced FEN.
+- For conversational follow-ups about a previously discussed sequence, first inspect Prior targeted Stockfish already available and Position/reference context. If that evidence already contains the line, request no new Stockfish and let Pro explain it. If a small extension is needed, use analyse_line from the exact referenced FEN with the sequence prefix.
 - For alternatives like "why is e4 better than Nxg6", use compare_moves and include every named legal candidate plus any obvious relevant candidate from the current root lines/opening stats.
 - For "what if ... then ..." or a move that happens after another move, use analyse_line with the full sequence from the current FEN.
 - If the question asks about plans and no specific move is named, request analyse_move for 2-4 important candidate moves from existing engine lines/opening context when available.
@@ -1581,6 +1648,21 @@ fn stockfish_request_key(
             Ok(format!("analyse_line:{}:{}", fen.trim(), moves.join(",")))
         }
     }
+}
+
+fn stockfish_request_uses_current_or_reference_fen(
+    coach_request: &AiCoachRequest,
+    reference_context: &[CoachReferenceContext],
+    request: &StockfishFollowUpRequest,
+) -> bool {
+    let fen = match request {
+        StockfishFollowUpRequest::AnalysePosition { fen, .. }
+        | StockfishFollowUpRequest::AnalyseMove { fen, .. }
+        | StockfishFollowUpRequest::CompareMoves { fen, .. }
+        | StockfishFollowUpRequest::AnalyseLine { fen, .. } => fen.trim(),
+    };
+
+    fen == coach_request.fen.trim() || is_reference_fen(reference_context, fen)
 }
 
 fn validate_stockfish_anchor_fen(
@@ -2351,6 +2433,18 @@ fn merge_prioritized_stockfish_requests(
 fn filter_prior_targeted_results_for_question(
     request: &AiCoachRequest,
 ) -> Vec<CoachTargetedResult> {
+    if question_asks_for_conversational_follow_up(&request.question) {
+        let mut recent = request
+            .prior_targeted_results
+            .iter()
+            .rev()
+            .take(8)
+            .cloned()
+            .collect::<Vec<_>>();
+        recent.reverse();
+        return recent;
+    }
+
     if let Some(phase) = question_focus_phase(&request.question) {
         return request
             .prior_targeted_results
@@ -2618,6 +2712,13 @@ fn format_question_focus_and_intent(request: &AiCoachRequest) -> String {
         );
     }
 
+    if question_asks_for_conversational_follow_up(&request.question) {
+        let recent_targeted = request.prior_targeted_results.len().min(8);
+        return format!(
+            "Inferred intent: {intent}. This is a conversational follow-up to a previously discussed line/sequence. Use the most recent targeted Stockfish results and coach-discussion reference FENs before any PGN-wide evidence. Recent targeted results available: {recent_targeted}. Do not restart a whole-game review, do not list fresh critical moments, and answer the referenced sequence directly."
+        );
+    }
+
     let candidates = extract_move_candidates(&request.question);
     if candidates.is_empty() {
         return format!(
@@ -2665,6 +2766,10 @@ fn infer_question_intent(question: &str) -> &'static str {
                 "examine the conversion phase and endgame technique of the loaded game"
             }
         };
+    }
+
+    if question_asks_for_conversational_follow_up(question) {
+        return "explain the previously discussed line or sequence more clearly";
     }
 
     if question_asks_for_salvage(question) {
@@ -2770,6 +2875,64 @@ fn question_asks_for_salvage(question: &str) -> bool {
         || lower.contains("bad situation")
         || lower.contains("after i played")
         || lower.contains("after playing")
+}
+
+fn question_explicitly_requests_whole_game(question: &str) -> bool {
+    let lower = question.to_ascii_lowercase();
+    lower.contains("whole game")
+        || lower.contains("entire game")
+        || lower.contains("full game")
+        || (lower.contains("the game") || lower.contains("this game"))
+            && (lower.contains("analyse")
+                || lower.contains("analyze")
+                || lower.contains("review")
+                || lower.contains("annotate")
+                || lower.contains("recap")
+                || lower.contains("why did")
+                || lower.contains("what went wrong"))
+}
+
+fn question_asks_for_conversational_follow_up(question: &str) -> bool {
+    let lower = question.to_ascii_lowercase();
+    if question_explicitly_requests_whole_game(question)
+        || question_focus_phase(question).is_some()
+        || has_compare_cue(question)
+    {
+        return false;
+    }
+
+    let has_deictic_reference = lower.contains("that ")
+        || lower.contains("the line")
+        || lower.contains("that line")
+        || lower.contains("this line")
+        || lower.contains("the sequence")
+        || lower.contains("that sequence")
+        || lower.contains("this sequence")
+        || lower.contains("the variation")
+        || lower.contains("that variation")
+        || lower.contains("the continuation")
+        || lower.contains("that continuation")
+        || lower.contains("the thing")
+        || lower.contains("we discussed")
+        || lower.contains("you mentioned")
+        || lower.contains("above")
+        || lower.contains("earlier");
+
+    let asks_for_more_explanation = lower.contains("explain")
+        || lower.contains("better")
+        || lower.contains("why")
+        || lower.contains("how")
+        || lower.contains("walk me through")
+        || lower.contains("show me")
+        || lower.contains("where i can")
+        || lower.contains("where can i")
+        || lower.contains("win a piece")
+        || lower.contains("win a minor")
+        || lower.contains("minor piece")
+        || lower.contains("tactic")
+        || lower.contains("sequence");
+
+    has_deictic_reference && asks_for_more_explanation
 }
 
 fn normalize_move_reference(value: &str) -> String {

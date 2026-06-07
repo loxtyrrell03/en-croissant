@@ -529,6 +529,32 @@ function buildCoachReferenceContext({
         detail: `Discussed continuation from this FEN: ${moves.join(" ")}. For references to a move inside this line, request analyse_line from this FEN with the needed prefix.`,
       });
     }
+
+    for (const result of (message.targetedResults ?? []).slice(-4)) {
+      const messageBasePath = message.basePath ?? [];
+      const resultPath =
+        result.fen.trim() === message.baseFen.trim()
+          ? messageBasePath
+          : (findFirstPathByFen(root, result.fen) ?? messageBasePath);
+      const resultNode = getNodeAtPath(root, resultPath);
+      const fixedMoves = result.moves.length > 0 ? result.moves.join(" ") : "none";
+      const sampleLines = result.lines
+        .slice(0, 3)
+        .map((line, index) => {
+          const sanLine = line.sanMoves.join(" ").trim() || line.uciMoves.join(" ").trim();
+          return `${index + 1}. eval ${line.eval}, depth ${line.depth}: ${sanLine}`;
+        })
+        .filter(Boolean)
+        .join(" | ");
+      pushReference({
+        label: `Recent Stockfish evidence: ${result.label}`,
+        fen: result.fen,
+        ply: resultNode.halfMoves,
+        sanLine: getSanVariationLine(root, resultPath),
+        source: "coach targeted stockfish",
+        detail: `Use this exact FEN for conversational references such as "that sequence", "that line", or "where I can win a piece" when they match this recent evidence. Fixed prefix: ${fixedMoves}. Reason: ${result.reason}. Lines: ${sampleLines || "none"}.`,
+      });
+    }
   }
 
   return references.slice(-120);
