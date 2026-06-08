@@ -814,6 +814,20 @@ default.
   opponent threats, loose/defended target verification, and psychological
   reset; the second pass remained 5/5 and improved that case from 4/5 must +
   1/4 nice signals to 5/5 must + 2/4 nice signals.
+- A later 2026-06-08 iteration mined 215 annotation snippets and expanded
+  `scripts/coach-style-eval.mjs` from 5 to 13 hidden probes covering broader
+  themes: piece-trade quality/outposts, pawn-break deflection into backward
+  pawn pressure, future-pin prophylaxis, weak-square pawn pushes, neutral
+  candidate verification, space-advantage trades, opponent-resource checks,
+  and king-invasion endgame plans. The user clarified that personal
+  "ghost/fear" annotations should not drive coach style; annotations are only
+  a rough guide to the type of chess insight, not psychology. The Coach style
+  guide now explicitly avoids attributing mistakes to fear, ego, tilt,
+  underestimating opponents, time pressure, "assuming", "blinded", or "bias"
+  unless the user asks for that. Default answers must stay game-state focused:
+  candidate moves, threats, counterplay, structure, pieces, and conversion
+  technique. The broader probe suite now fails answers that volunteer those
+  psychology terms, and the final run passed 13/13.
 - On 2026-06-06, a source-derived White repertoire file was added under the
   app Files root's `Documents/EnCroissant/General repertoire/White  rep`
   folder as `Keymer Variation - Mendonca video.pgn`, with the matching `.info`

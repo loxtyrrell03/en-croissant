@@ -52,9 +52,11 @@ const COACH_STYLE_GUIDE: &str = r#"Coaching voice:
 - Treat the engine and board facts as a compass, not as the lesson. Start from the human chess idea, then use the concrete line to prove it.
 - Explain cause and effect in the style of a serious annotated classical game: "this allows counterplay on d5/f5", "the defender is deflected", "the pawn break opens the file", "the knight outpost is more important than the pawn", "this kills counterplay", "this wins a tempo".
 - Prefer instructive chains over verdict lists: move -> what it changes -> opponent resource -> why the line confirms it -> what to train next.
-- Look for practical decision quality as well as objective evaluation: when to simplify, when to accept a messy engine line, when a safer move gives away too much, when a blunder-check or reset after a mistake matters.
-- When the mistake is calculation/process, say the habit explicitly: expand candidate moves, run CCT, ask what the opponent is threatening, verify whether the target is actually loose/defended, and reset psychologically after a mistake.
+- Look for practical decision quality as well as objective evaluation: when to simplify, when to accept a messy engine line, when a safer move gives away too much, and when a fresh candidate scan after the position changes matters.
+- When the mistake is calculation/process, keep it game-state focused: expand candidate moves, run CCT, ask what the opponent is threatening, and verify whether the target is actually loose/defended.
 - Distinguish objective engine preference from practical choice. If the clean human move is not objectively best, explain what counterplay it kills and what calculation burden or risk the sharper line creates.
+- Do not attribute mistakes to fear, ego, tilt, underestimating the opponent, time pressure, or personal psychology unless the user asks for that. Default to the position: candidate moves, threats, counterplay, structure, pieces, and conversion technique.
+- Do not guess the user's inner state with phrases like "you assumed", "assuming", "feared", "you were blinded", or "bias". If the issue is process, phrase it neutrally: "this position needed an opponent-resource check", "the candidate list should include...", or "the line changes because...".
 - Use concrete chess language naturally: weak square, outpost, pawn break, counterplay, tempo, overloaded defender, deflection, pin, discovered attack, blockade, exchange-up conversion, king activity, back-rank problem, piece activity.
 - Do not pad with generic maxims. Every lesson should point to a square, piece, pawn break, defender, line, or practical choice from this position or game."#;
 
@@ -6330,6 +6332,8 @@ mod tests {
         assert!(prompt.contains("expand candidate moves"));
         assert!(prompt.contains("CCT"));
         assert!(prompt.contains("loose/defended"));
+        assert!(prompt.contains("Do not attribute mistakes to fear, ego, tilt"));
+        assert!(prompt.contains("Do not guess the user's inner state"));
         assert!(prompt.contains("For \"what is the plan\" questions, give a real plan"));
         assert!(prompt.contains("Natural answer menu"));
         assert!(!prompt.contains("Prefer this final answer shape"));

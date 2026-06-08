@@ -51,7 +51,13 @@ const cases = [
       "Better line: Qc4, eval +0.70 depth 17: Qc4 Be5 f4. White threatens g3 to win the bishop and can deflect the queen from f7 after Bxf4.",
       "Private board facts: the queen on d4 is defended in the Nd4 line; Qc4 creates a threat of g3 against the bishop.",
     ],
-    must: ["queen", "defended", "Nd4", "Qc4", "verify"],
+    must: [
+      "queen",
+      ["defended", "not actually loose", "defender"],
+      "Nd4",
+      "Qc4",
+      ["verify", "verification"],
+    ],
     nice: ["CCT", "candidate", "positional instinct", "deflect"],
   },
   {
@@ -80,6 +86,113 @@ const cases = [
     must: ["Ka1", "fortress", "candidate", "king", "bishop"],
     nice: ["shuffle", "endgame", "defensive resource", "train"],
   },
+  {
+    id: "piece-trade-outpost-quality",
+    source:
+      "Steve Cunliffe game: annotation says trading knight for bishop was wrong because the knight had future outposts while the bishop targeted little.",
+    question: "Why was trading the knight for the bishop a strategic mistake?",
+    evidence: [
+      "Played trade line: Nxb5 axb5, eval -0.25 depth 17. White gives up the knight and Black keeps a stable structure.",
+      "Better plan: h4, eval +0.35 depth 17. White keeps the knight, prepares slow improvement, and preserves access to central and kingside outposts.",
+      "Private board facts: the knight has routes to e3/f5/d5; the bishop being captured is not attacking an important target.",
+    ],
+    must: ["knight", "bishop", "outpost", "h4", "trade"],
+    nice: ["potential", "slow", "target", "strategic"],
+  },
+  {
+    id: "pawn-break-deflection-backward-pawn",
+    source:
+      "Russel Dodington game: annotation says immediate c5 is thematic; Bxf6 deflects the knight and Rxc5 pressures the backward c7 pawn.",
+    question: "Why is c5 the move in this structure even if it looks like Black wins a pawn?",
+    evidence: [
+      "Candidate line: c5, eval +0.70 depth 17: c5 dxc5 Bxf6. White uses an in-between capture to deflect the knight.",
+      "Continuation: c5 dxc5 Bxf6 Qxf6 Rxc5. White recovers the pawn and adds pressure to the backward c7 pawn.",
+      "Private board facts: Bxf6 removes the knight defender; after Rxc5 the rook attacks c7.",
+    ],
+    must: ["c5", "Bxf6", "deflect", "Rxc5", "c7"],
+    nice: ["backward", "in-between", "structure", "pawn break"],
+  },
+  {
+    id: "future-pin-prophylaxis",
+    source:
+      "Lucas Zheng game: annotation says Qb8 prepares b5 and Ba6 pin/skewer after queenside opens; Qc2 avoids the potential pin.",
+    question: "Why was Qc2 a better prophylactic move here?",
+    evidence: [
+      "Black resource: Qb8, eval equal depth 17, preparing the b5 pawn break.",
+      "If White ignores it: Qb8 Rc1 b5 axb5 axb5. Once the queenside opens, Ba6 creates a pin/skewer motif along the diagonal and eyes White's queen.",
+      "Better move: Qc2, eval +0.35 depth 17. White sidesteps the future Ba6 pin while keeping normal development.",
+      "Private board facts: Qc2 moves the queen away from the vulnerable diagonal; b5 opens queenside lines for Ba6.",
+    ],
+    must: ["Qc2", "Qb8", "b5", "Ba6", "pin"],
+    nice: ["prophylactic", "skewer", "queenside", "diagonal"],
+  },
+  {
+    id: "weak-square-pawn-push",
+    source:
+      "Andrew Divetta game: annotation says g4 weakens f4; Qf4 double-attacks e4, and g5 fails because Bxe4 comes with tempo and a fork.",
+    question: "Why is g4 not a good attacking move here?",
+    evidence: [
+      "Played idea: g4, eval -0.40 depth 17. It weakens the f4 square.",
+      "Refutation line: g4 Qf4. Black occupies f4 and double-attacks the e4 pawn.",
+      "If White continues: g4 Qf4 g5 Bxe4. Black captures with tempo and forks the queen and knight, then can remove the defender of g5 with Bxf3.",
+      "Private board facts: Qf4 attacks e4; Bxe4 hits the queen/knight fork motif in the supplied line.",
+    ],
+    must: ["g4", "f4", "Qf4", "e4", "tempo"],
+    nice: ["weakens", "double", "fork", "defender"],
+  },
+  {
+    id: "candidate-verification-concrete-resource",
+    source:
+      "Michael Binx game: annotation notes Qe7 was best; after g5 Ne8, White cannot take h6 because the queen attacks h4.",
+    question: "Is Qe7 actually safe against the g5 idea, and how should I verify it?",
+    evidence: [
+      "Best move: Qe7, eval +1.05 depth 17. This keeps Black coordinated.",
+      "Feared line: Qe7 g5 Ne8. White cannot take h6 because Black's queen is then attacking h4.",
+      "Private board facts: after Qe7 g5 Ne8, Qxh4 is a concrete resource; the h6 pawn is tactically protected by counterplay against h4.",
+    ],
+    must: ["Qe7", "g5", "Ne8", "h6", "h4"],
+    nice: ["verify", "calculate", "counterplay", "candidate"],
+  },
+  {
+    id: "space-advantage-trade-pieces",
+    source:
+      "Prabu Vismith game: annotation says Nxd5 was best, Bc6 made it work, and trading pieces is good when White has a space advantage.",
+    question: "Why does Nxd5 work, and what is the strategic lesson?",
+    evidence: [
+      "Best line: Nxd5, eval +0.45 depth 17: Nxd5 Bc6 Qxd6.",
+      "The tactical point is Bc6, which makes the capture work and lets White emerge with the better position after trades.",
+      "Private board facts: White has more space; piece trades reduce Black's cramped counterplay.",
+    ],
+    must: ["Nxd5", "Bc6", "Qxd6", "space", "trade"],
+    nice: ["cramped", "tactical point", "pieces", "advantage"],
+  },
+  {
+    id: "opponent-candidate-verification",
+    source:
+      "Oliver Harrison game: annotation says the follow-up was played too quickly without considering Qb3, which defended the knight and pressed f7.",
+    question: "What was the thinking error before I played the obvious follow-up?",
+    evidence: [
+      "Played follow-up: d5, eval -0.20 depth 17. It was played quickly because the continuation looked obvious.",
+      "Opponent resource: Qb3, eval +0.60 depth 17. White defends the knight and adds pressure to f7.",
+      "Private board facts: Qb3 defends the knight and attacks f7; Black's planned follow-up no longer wins material cleanly.",
+    ],
+    must: ["Qb3", "knight", "f7", ["candidate", "fresh scan"], ["verify", "check"]],
+    nice: ["obvious", "opponent", "complex", "knife"],
+  },
+  {
+    id: "endgame-king-invasion",
+    source:
+      "Mike Gale game: annotation says better was to invade with the king; if fxg5 Black gets isolated pawns, otherwise Kg6 invades.",
+    question: "What was the endgame plan I should have found?",
+    evidence: [
+      "Best plan: Kg6, eval +0.80 depth 17. The king invades and forces Black to make a concession.",
+      "If Black plays fxg5, Black is left with two isolated pawns.",
+      "If Black waits, White's king reaches g6 and the position becomes strategically winning.",
+      "Private board facts: the king route to g6 is available; fxg5 damages Black's structure.",
+    ],
+    must: ["king", "Kg6", "fxg5", "isolated", "pawns"],
+    nice: ["invade", "endgame", "concession", "structure"],
+  },
 ];
 
 function buildPrompt(testCase) {
@@ -107,11 +220,21 @@ Write the coach answer now.`;
 
 function scoreAnswer(testCase, answer) {
   const lower = answer.toLowerCase();
-  const hit = (terms) => terms.filter((term) => lower.includes(term.toLowerCase()));
+  const termMatches = (term) => {
+    const alternatives = Array.isArray(term) ? term : [term];
+    return alternatives.some((alternative) => lower.includes(alternative.toLowerCase()));
+  };
+  const hit = (terms) => terms.filter(termMatches);
   const mustHits = hit(testCase.must);
   const niceHits = hit(testCase.nice);
   const implementationLeak =
-    /(tool|prompt|hidden target|test case|supplied evidence|private board facts)/i.test(answer);
+    /\b(tool call|tool result|prompt|hidden target|test case|supplied evidence|private board facts)\b/i.test(
+      answer,
+    );
+  const unwantedPsychology =
+    /(fear|feared|afraid|ego|tilt|tilted|frustrated|underestimated|underestimating|psychological|time pressure|low time|likely assuming|assuming|assumed|blinded|bias|momentum bias)/i.test(
+      answer,
+    );
   const engineDump =
     /(eval|depth|stockfish|engine)/i.test(answer) &&
     !/(because|so|therefore|means|point|idea|counterplay|tempo|defend|weak|pin|clamp|fortress)/i.test(
@@ -124,10 +247,12 @@ function scoreAnswer(testCase, answer) {
     mustScore: `${mustHits.length}/${testCase.must.length}`,
     niceScore: `${niceHits.length}/${testCase.nice.length}`,
     implementationLeak,
+    unwantedPsychology,
     engineDump,
     pass:
       mustHits.length >= Math.max(3, testCase.must.length - 1) &&
       !implementationLeak &&
+      !unwantedPsychology &&
       !engineDump,
   };
 }
