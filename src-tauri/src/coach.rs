@@ -2555,7 +2555,10 @@ fn should_plan_extra_chess_fact_calls(
         "tactic",
         "tactical",
         "what if",
-        "work",
+        "does it work",
+        "does this work",
+        "does that work",
+        "works",
         "fails",
         "refute",
     ]
@@ -6424,6 +6427,14 @@ mod tests {
     #[test]
     fn broad_plan_questions_skip_extra_chess_fact_planner() {
         let request = sample_request();
+
+        assert!(!should_plan_extra_chess_fact_calls(&request, &[]));
+    }
+
+    #[test]
+    fn training_focus_questions_skip_extra_chess_fact_planner() {
+        let mut request = sample_request();
+        request.question = "What should I work on from this position?".to_string();
 
         assert!(!should_plan_extra_chess_fact_calls(&request, &[]));
     }
