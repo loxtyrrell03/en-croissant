@@ -48,6 +48,13 @@ const MAX_GEMINI_ERROR_CHARS: usize = 1_200;
 const OPENING_PHASE_MAX_PLY: u32 = 30;
 const CONVERSION_PHASE_WINDOW_PLIES: u32 = 40;
 const AI_COACH_PROGRESS_EVENT: &str = "ai-coach-progress";
+const COACH_STYLE_GUIDE: &str = r#"Coaching voice:
+- Treat the engine and board facts as a compass, not as the lesson. Start from the human chess idea, then use the concrete line to prove it.
+- Explain cause and effect in the style of a serious annotated classical game: "this allows counterplay on d5/f5", "the defender is deflected", "the pawn break opens the file", "the knight outpost is more important than the pawn", "this kills counterplay", "this wins a tempo".
+- Prefer instructive chains over verdict lists: move -> what it changes -> opponent resource -> why the line confirms it -> what to train next.
+- Look for practical decision quality as well as objective evaluation: when to simplify, when to accept a messy engine line, when a safer move gives away too much, when a blunder-check or reset after a mistake matters.
+- Use concrete chess language naturally: weak square, outpost, pawn break, counterplay, tempo, overloaded defender, deflection, pin, discovered attack, blockade, exchange-up conversion, king activity, back-rank problem, piece activity.
+- Do not pad with generic maxims. Every lesson should point to a square, piece, pawn break, defender, line, or practical choice from this position or game."#;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum CoachQuestionPhase {
@@ -1099,57 +1106,74 @@ async fn ask_ai_coach_inner(
         );
         targeted_results.push(targeted);
     }
-    emit_coach_progress(
-        app,
-        request_id,
-        started,
-        "chess_fact_plan",
-        format!("Asking {planner_model} for chess fact tool calls"),
-        "Choosing deterministic board-state checks before the final coach answer.",
-        68.0,
-        false,
-    );
     let mut chess_fact_calls = infer_default_chess_fact_tool_calls(&request, &reference_context);
-    let chess_fact_prompt = build_chess_fact_tool_prompt(
-        &request,
-        &stockfish_lines,
-        &targeted_results,
-        &reference_context,
-        &legal_moves,
-    );
-    match run_gemini_cli(
-        &request.settings.gemini_command,
-        &planner_model,
-        &chess_fact_prompt,
-        PLANNER_TIMEOUT_SECS.min(timeout_secs.into()),
-    )
-    .await
-    {
-        Ok(answer) => match parse_chess_fact_tool_plan(&answer) {
-            Ok(plan) => {
-                let planned_count = plan.calls.len();
-                let reason = trim_chat_text(&plan.reason);
-                chess_fact_calls.extend(plan.calls);
-                emit_coach_progress(
-                    app,
-                    request_id,
-                    started,
-                    "chess_fact_plan_done",
-                    "Chess fact tool plan ready",
-                    format!(
-                        "Planner requested {planned_count} fact call(s). {}",
-                        if reason.is_empty() {
-                            "Using deterministic baseline calls too.".to_string()
-                        } else {
-                            reason
-                        }
-                    ),
-                    70.0,
-                    false,
-                );
-            }
+    if should_plan_extra_chess_fact_calls(&request, &reference_context) {
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "chess_fact_plan",
+            format!("Asking {planner_model} for chess fact tool calls"),
+            "Choosing extra board-state checks for a concrete tactical or legality question.",
+            68.0,
+            false,
+        );
+        let chess_fact_prompt = build_chess_fact_tool_prompt(
+            &request,
+            &stockfish_lines,
+            &targeted_results,
+            &reference_context,
+            &legal_moves,
+        );
+        match run_gemini_cli(
+            &request.settings.gemini_command,
+            &planner_model,
+            &chess_fact_prompt,
+            PLANNER_TIMEOUT_SECS.min(timeout_secs.into()),
+        )
+        .await
+        {
+            Ok(answer) => match parse_chess_fact_tool_plan(&answer) {
+                Ok(plan) => {
+                    let planned_count = plan.calls.len();
+                    let reason = trim_chat_text(&plan.reason);
+                    chess_fact_calls.extend(plan.calls);
+                    emit_coach_progress(
+                        app,
+                        request_id,
+                        started,
+                        "chess_fact_plan_done",
+                        "Chess fact tool plan ready",
+                        format!(
+                            "Planner requested {planned_count} fact call(s). {}",
+                            if reason.is_empty() {
+                                "Using deterministic baseline calls too.".to_string()
+                            } else {
+                                reason
+                            }
+                        ),
+                        70.0,
+                        false,
+                    );
+                }
+                Err(error) => {
+                    warn!("ai_coach[{request_id}] chess fact planner malformed: {error}");
+                    emit_coach_progress(
+                        app,
+                        request_id,
+                        started,
+                        "chess_fact_plan_fallback",
+                        "Using deterministic chess facts",
+                        format!(
+                            "The chess fact planner returned malformed JSON, so the app will use baseline fact calls. {error}"
+                        ),
+                        70.0,
+                        false,
+                    );
+                }
+            },
             Err(error) => {
-                warn!("ai_coach[{request_id}] chess fact planner malformed: {error}");
+                warn!("ai_coach[{request_id}] chess fact planner failed: {error}");
                 emit_coach_progress(
                     app,
                     request_id,
@@ -1157,28 +1181,24 @@ async fn ask_ai_coach_inner(
                     "chess_fact_plan_fallback",
                     "Using deterministic chess facts",
                     format!(
-                        "The chess fact planner returned malformed JSON, so the app will use baseline fact calls. {error}"
+                        "The chess fact planner failed, so the app will use baseline fact calls. {error}"
                     ),
                     70.0,
                     false,
                 );
             }
-        },
-        Err(error) => {
-            warn!("ai_coach[{request_id}] chess fact planner failed: {error}");
-            emit_coach_progress(
-                app,
-                request_id,
-                started,
-                "chess_fact_plan_fallback",
-                "Using deterministic chess facts",
-                format!(
-                    "The chess fact planner failed, so the app will use baseline fact calls. {error}"
-                ),
-                70.0,
-                false,
-            );
         }
+    } else {
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "chess_fact_plan_skip",
+            "Using deterministic chess facts",
+            "Baseline facts plus explicitly mentioned moves/squares are enough for this conceptual coaching question.",
+            70.0,
+            false,
+        );
     }
     let requested_fact_call_count = chess_fact_calls.len();
     let (chess_fact_results, rejected_chess_fact_calls) =
@@ -1394,7 +1414,7 @@ async fn ask_ai_coach_inner(
             }
         }
     }
-    if answer_contains_fact_sensitive_claims(&final_answer) {
+    if answer_needs_fact_audit(&final_answer, &chess_fact_results) {
         emit_coach_progress(
             app,
             request_id,
@@ -1579,19 +1599,19 @@ fn build_coach_prompt_with_facts(
         )
     };
     let answer_shape = if opening_phase {
-        "Prefer this final answer shape: Direct answer; Opening diagnosis; Key opening moments; Better setup; Training lesson. Do not discuss later tactical blunders unless they directly arise from the opening choices."
+        "Natural answer menu: Direct answer; Opening diagnosis; Key opening moments; Better setup; Training lesson. Use only the sections that help the user's question. Do not discuss later tactical blunders unless they directly arise from the opening choices."
     } else if middlegame_phase {
-        "Prefer this final answer shape: Direct answer; Middlegame diagnosis; Key decisions; Better plan; Training lesson. Do not include an opening or starting-position main line."
+        "Natural answer menu: Direct answer; Middlegame diagnosis; Key decisions; Better plan; Training lesson. Use only the sections that help the user's question. Do not include an opening or starting-position main line."
     } else if conversion_phase {
-        "Prefer this final answer shape: Direct answer; Conversion diagnosis; Key late decisions; Cleaner conversion method; Training lesson. Do not include an opening or starting-position main line."
+        "Natural answer menu: Direct answer; Conversion diagnosis; Key late decisions; Cleaner conversion method; Training lesson. Use only the sections that help the user's question. Do not include an opening or starting-position main line."
     } else if salvage_question {
-        "Prefer this final answer shape: Direct answer; Best defensive try; Why it helps; Practical plan from there; What to avoid. Do not use a Critical moments section unless the user explicitly asked for a review."
+        "Natural answer menu: Direct answer; Best defensive try; Why it helps; Practical plan from there; What to avoid. Use only the sections that help the user's question. Do not use a Critical moments section unless the user explicitly asked for a review."
     } else if conversational_followup {
-        "Prefer this final answer shape: Direct answer; Sequence explained; Why the tactic/plan works; Engine proof; Practical takeaway. Do not use a Critical moments or whole-game review section."
+        "Natural answer menu: Direct answer; Sequence explained; Why the tactic/plan works; Engine proof; Practical takeaway. Use only the sections that help the user's question. Do not use a Critical moments or whole-game review section."
     } else if whole_game_mode {
-        "Prefer this final answer shape: Direct answer; Critical moments; What to play instead; Training lesson. Do not include a Main line section unless the user asked for one specific variation."
+        "Natural answer menu: Direct answer; Critical moments; What to play instead; Training lesson. Use only the sections that help the user's question. Do not include a Main line section unless the user asked for one specific variation."
     } else {
-        "Prefer this final answer shape: Direct answer; Key reason; Main line or two; Human plan/lesson; Optional training takeaway."
+        "Natural answer menu: Direct answer; Key reason; Main line or two; Human plan/lesson; Optional training takeaway. Use only the sections that help the user's question."
     };
     let stockfish_scope_rule = if opening_phase {
         "- Current-position root engine lines are irrelevant for this opening-phase review. Use only opening-phase stored analysis and targeted Stockfish results whose labels/FENs belong to the opening phase. Ignore stale targeted results from later moves in prior chat unless the latest question asks about them.".to_string()
@@ -1609,27 +1629,30 @@ fn build_coach_prompt_with_facts(
         "- Root Stockfish MultiPV is from the current FEN. Targeted results list their own FEN; use each targeted result only for that listed position. Targeted \"After ...\" results already include the requested move or requested line before the continuation.".to_string()
     };
     let section_label_rule = if opening_phase {
-        "- Use bold section labels like **Direct answer**, **Opening diagnosis**, **Key opening moments**, **Better setup**, and **Training lesson**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
+        "- When section labels help, use bold labels like **Direct answer**, **Opening diagnosis**, **Key opening moments**, **Better setup**, and **Training lesson**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
     } else if middlegame_phase {
-        "- Use bold section labels like **Direct answer**, **Middlegame diagnosis**, **Key decisions**, **Better plan**, and **Training lesson**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
+        "- When section labels help, use bold labels like **Direct answer**, **Middlegame diagnosis**, **Key decisions**, **Better plan**, and **Training lesson**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
     } else if conversion_phase {
-        "- Use bold section labels like **Direct answer**, **Conversion diagnosis**, **Key late decisions**, **Cleaner conversion method**, and **Training lesson**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
+        "- When section labels help, use bold labels like **Direct answer**, **Conversion diagnosis**, **Key late decisions**, **Cleaner conversion method**, and **Training lesson**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
     } else if salvage_question {
-        "- Use bold section labels like **Direct answer**, **Best defensive try**, **Why it helps**, **Practical plan**, and **What to avoid**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
+        "- When section labels help, use bold labels like **Direct answer**, **Best defensive try**, **Why it helps**, **Practical plan**, and **What to avoid**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
     } else if conversational_followup {
-        "- Use bold section labels like **Direct answer**, **Sequence explained**, **Engine proof**, and **Practical takeaway**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
+        "- When section labels help, use bold labels like **Direct answer**, **Sequence explained**, **Engine proof**, and **Practical takeaway**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
     } else if whole_game_mode {
-        "- Use bold section labels like **Direct answer**, **Critical moments**, **What to play instead**, and **Training lesson**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
+        "- When section labels help, use bold labels like **Direct answer**, **Critical moments**, **What to play instead**, and **Training lesson**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
     } else {
-        "- Use bold section labels like **Direct answer**, **Key reason**, and **Main line**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
+        "- When section labels help, use bold labels like **Direct answer**, **Key reason**, and **Main line**. For inline labels, use double-asterisk bold such as **Verdict:**, not single-asterisk italic labels like *Verdict*:. Do not use Markdown # headings."
     };
 
     format!(
-        r#"Role: You are a chess coach explaining a position.
+        r#"Role: You are a concept-first chess coach explaining a position.
+
+{style_guide}
 
 Core rules:
-- Supplied engine analysis is the source of truth. Prefer Lichess Cloud root lines when they are supplied; otherwise use local Stockfish root MultiPV. Targeted follow-up results are local Stockfish.
-- Private board-state facts are guardrails for board-state claims. Use them silently. In the final answer, never refer to evidence-gathering machinery, private checks, structured details, or verification process.
+- Supplied engine analysis is the source of truth for concrete evaluations and variations. Prefer Lichess Cloud root lines when they are supplied; otherwise use local Stockfish root MultiPV. Targeted follow-up results are local Stockfish.
+- Private board-state facts are guardrails for board-state claims, not prose material. Use them silently. In the final answer, never refer to evidence-gathering machinery, private checks, structured details, or verification process.
+- Your job is to teach the chess meaning of the evidence. Do not merely inventory facts, evals, or candidate moves. First name the strategic/tactical tension in human terms, then use the supplied line as proof.
 - For the current position, do not claim a move is legal/illegal, a piece is attacked, defended, undefended, loose, hanging, pinned, trapped, overloaded, forked, skewered, mating, checking, or tactically threatened unless the private chess facts support that claim.
 - Do not infer current-position facts from visual memory, blindfold calculation, opening memory, or the PGN alone. If the needed private fact is missing, avoid that claim or phrase it as an engine-line consequence rather than talking about missing facts.
 - When explaining a tactic, use Stockfish for evaluation/PV and private chess facts for the concrete board mechanism, but write only normal coach prose: "the queen is overloaded", "Qxh7+ keeps White alive", "the bishop is defended", etc.
@@ -1640,6 +1663,7 @@ Core rules:
 - Do not give a verdict such as bad, good, inaccurate, mistake, blunder, winning, losing, or refuted unless you also cite the supplied engine line that supports it. Name the relevant evaluation/depth when available.
 - A Stockfish evaluation plus a PV is not an explanation. Before or immediately after each cited PV, explain the human reason the line works. Say what changed on the board: which piece became loose, which defender was overloaded, which square/file/diagonal was weakened, which tempo was won, which king-safety problem appeared, which pawn break opened the position, or why the resulting structure/endgame is better.
 - Do not write bullets that only say "Stockfish evaluates this at..." or "the engine line is..." followed by moves. Every critical bullet needs at least one human chess sentence that interprets the line.
+- When the engine's top line is messy or counterintuitive, explain the practical tradeoff: what counterplay is allowed, what counterplay is killed, what must be calculated, and whether a human should choose the clean conversion or the maximum engine continuation.
 - For a targeted result with a non-empty `Moves:` fixed prefix, line 1 is the evaluation of that requested move or line under best play. Lines 2+ are alternative replies/continuations for the side to move after the fixed prefix. Never quote a line 2+ eval as the main evaluation of the requested move/line.
 - For any bad move, show the concrete Stockfish continuation that punishes it. If a targeted result labelled `After <move>` exists, use one of its full lines as the refutation. If no such line exists, say the supplied data does not contain the refutation instead of hand-waving.
 - For any recommended improvement, show the concrete Stockfish continuation from analyse_position/root lines that justifies the recommendation.
@@ -1651,6 +1675,7 @@ Core rules:
 - If the supplied engine data still does not fully answer the user's question, say that limitation briefly and answer only from the supplied evidence. Do not output <stockfish_request>.
 - Use the conversation history to answer follow-up questions naturally.
 - Answer the user's actual requested task directly in the first paragraph. First identify whether they are asking for a verdict, a defensive resource, a practical plan, a comparison, why a move works/fails, a phase review, or what to play instead. Do not substitute a nearby topic just because the engine data contains it.
+- For "what is the plan" questions, give a real plan, not just a best move: ideal piece placement, pawn break, opponent counterplay to stop, and the tactical reason the plan is currently possible.
 - If the user asks whether a tempting capture/reply works after a move, answer that exact reply first. Show the Stockfish continuation after the capture/reply if targeted evidence is supplied, then explain the human reason it succeeds or fails. Do not answer only with the engine's best alternative reply.
 - If targeted Stockfish results are supplied for the latest question focus, use those results as the spine of the answer before discussing any other evidence. Do not say the data is unavailable unless no focused targeted results and no focused stored analysis are supplied.
 - Obey the Question focus and intent section. When the user asks about a named move, answer around that move first. Mention other game moments only when they are direct alternatives from the same position, direct continuations/refutations after that move, or necessary causal context for that move.
@@ -1668,7 +1693,7 @@ Core rules:
 - Do not give an engine-looking line unless it appears in the supplied root engine lines or targeted Stockfish result.
 - Do not wrap move names in backticks. Write move references as normal SAN with move numbers when possible, such as 19.Nexd4 or 22.Bxh6?.
 - Prefer short but concrete line evidence over vague strategic labels. A sentence like "21.h4? is bad because 21...Rc8 22.Kg1 Qxh4 wins" is better than "21.h4 weakens the king" unless both are included.
-- Keep answers concise unless the user asks for depth.
+- Keep answers concise unless the user asks for depth, but do not be shallow: one well-explained mechanism is better than several unexplained engine facts.
 - {answer_shape}
 
 Position:
@@ -1725,6 +1750,7 @@ User question:
         question_focus = question_focus,
         reference_context = reference_context,
         correction_notes = correction_notes,
+        style_guide = COACH_STYLE_GUIDE,
         scope_rules = scope_rules,
         answer_shape = answer_shape,
         stockfish_scope_rule = stockfish_scope_rule,
@@ -2153,47 +2179,9 @@ Draft answer:
     )
 }
 
-fn answer_contains_fact_sensitive_claims(answer: &str) -> bool {
+fn answer_contains_evidence_leakage(answer: &str) -> bool {
     let answer = answer.to_ascii_lowercase();
     [
-        "legal",
-        "illegal",
-        "undefended",
-        "unprotected",
-        "defended",
-        "defends",
-        "defender",
-        "protects",
-        "protected",
-        "loose",
-        "hanging",
-        "attacker",
-        "attackers",
-        "attacked",
-        "attacks",
-        "threat",
-        "threatens",
-        "threatened",
-        " check",
-        "checks",
-        "checking",
-        "checkmate",
-        " mate",
-        "pinned",
-        " pin",
-        "fork",
-        "skewer",
-        "x-ray",
-        "xray",
-        "trapped",
-        "overloaded",
-        "wins a piece",
-        "wins the exchange",
-        "wins a pawn",
-        "wins material",
-        "winning material",
-        "tactic",
-        "tactical",
         "tool result",
         "tool call",
         "supplied fact",
@@ -2204,9 +2192,44 @@ fn answer_contains_fact_sensitive_claims(answer: &str) -> bool {
         "private check",
         "structured detail",
         "verification machinery",
+        "private board-state facts",
     ]
     .iter()
     .any(|term| answer.contains(term))
+}
+
+fn answer_contains_high_risk_board_claim(answer: &str) -> bool {
+    let answer = answer.to_ascii_lowercase();
+    [
+        "legal",
+        "illegal",
+        "undefended",
+        "unprotected",
+        "loose",
+        "hanging",
+        "pinned",
+        " pin",
+        "fork",
+        "skewer",
+        "x-ray",
+        "xray",
+        "trapped",
+        "overloaded",
+        "checkmate",
+        " mate",
+        "wins a piece",
+        "wins the exchange",
+        "wins a pawn",
+        "wins material",
+        "winning material",
+    ]
+    .iter()
+    .any(|term| answer.contains(term))
+}
+
+fn answer_needs_fact_audit(answer: &str, chess_fact_results: &[CoachChessFactResult]) -> bool {
+    answer_contains_evidence_leakage(answer)
+        || (answer_contains_high_risk_board_claim(answer) && chess_fact_results.len() <= 1)
 }
 
 fn parse_planner_response(output: &str) -> Result<CoachPlannerResponse, CoachError> {
@@ -2488,6 +2511,63 @@ fn infer_default_chess_fact_tool_calls(
     }
 
     calls
+}
+
+fn should_plan_extra_chess_fact_calls(
+    request: &AiCoachRequest,
+    reference_context: &[CoachReferenceContext],
+) -> bool {
+    let question = request.question.to_ascii_lowercase();
+    let asks_for_whole_game_or_phase = request.pgn_scope.trim() == "whole_game"
+        || question_focus_phase(&request.question).is_some();
+    let has_concrete_reference = !extract_square_mentions(&request.question).is_empty()
+        || !extract_move_candidates(&request.question).is_empty()
+        || !reference_context.is_empty();
+    let asks_for_tactical_truth = [
+        "legal",
+        "illegal",
+        "can i",
+        "can't",
+        "cannot",
+        "take",
+        "takes",
+        "capture",
+        "recapture",
+        "sac",
+        "sacrifice",
+        "defended",
+        "undefended",
+        "loose",
+        "hanging",
+        "attacked",
+        "attacker",
+        "threat",
+        "pin",
+        "pinned",
+        "fork",
+        "skewer",
+        "x-ray",
+        "xray",
+        "trapped",
+        "overloaded",
+        "checkmate",
+        "mate",
+        "tactic",
+        "tactical",
+        "what if",
+        "work",
+        "fails",
+        "refute",
+    ]
+    .iter()
+    .any(|term| question.contains(term));
+
+    if asks_for_whole_game_or_phase && !has_concrete_reference {
+        return false;
+    }
+
+    asks_for_tactical_truth
+        || (has_concrete_reference && question_asks_for_conversational_follow_up(&request.question))
 }
 
 fn execute_chess_fact_tool_calls(
@@ -6223,6 +6303,31 @@ mod tests {
     }
 
     #[test]
+    fn prompt_builder_uses_concept_first_coaching_voice() {
+        let prompt = build_coach_prompt(
+            &sample_request(),
+            &[CoachEngineLine {
+                multipv: 1,
+                depth: 17,
+                eval: "+0.35".to_string(),
+                uci_moves: vec!["c2c4".to_string(), "g8f6".to_string()],
+                san_moves: vec!["c4".to_string(), "Nf6".to_string()],
+            }],
+            &[],
+            &[],
+            &[],
+        );
+
+        assert!(prompt.contains("concept-first chess coach"));
+        assert!(prompt.contains("engine and board facts as a compass"));
+        assert!(prompt.contains("counterplay"));
+        assert!(prompt.contains("what it changes"));
+        assert!(prompt.contains("For \"what is the plan\" questions, give a real plan"));
+        assert!(prompt.contains("Natural answer menu"));
+        assert!(!prompt.contains("Prefer this final answer shape"));
+    }
+
+    #[test]
     fn prompt_builder_requires_chess_fact_tool_grounding_for_board_claims() {
         let request = sample_request();
         let fact = execute_chess_fact_tool_call(&ChessFactToolCall::SquareFacts {
@@ -6314,6 +6419,58 @@ mod tests {
             call,
             ChessFactToolCall::SquareFacts { square, .. } if square == "c1"
         )));
+    }
+
+    #[test]
+    fn broad_plan_questions_skip_extra_chess_fact_planner() {
+        let request = sample_request();
+
+        assert!(!should_plan_extra_chess_fact_calls(&request, &[]));
+    }
+
+    #[test]
+    fn concrete_tactical_questions_use_extra_chess_fact_planner() {
+        let mut request = sample_request();
+        request.question = "Can't the queen take the bishop on c1?".to_string();
+
+        assert!(should_plan_extra_chess_fact_calls(&request, &[]));
+    }
+
+    #[test]
+    fn whole_game_reviews_skip_extra_chess_fact_planner_without_concrete_reference() {
+        let mut request = sample_request();
+        request.pgn_scope = "whole_game".to_string();
+        request.question = "Can you review this whole game?".to_string();
+
+        assert!(!should_plan_extra_chess_fact_calls(&request, &[]));
+    }
+
+    #[test]
+    fn fact_audit_is_reserved_for_leaks_or_high_risk_ungrounded_claims() {
+        assert!(!answer_needs_fact_audit(
+            "White should use the c-file pressure and stop Black's counterplay.",
+            &[]
+        ));
+        assert!(answer_needs_fact_audit(
+            "The private board-state facts show the bishop is loose.",
+            &[]
+        ));
+        assert!(answer_needs_fact_audit(
+            "The bishop is undefended, so Qxd2 wins a piece.",
+            &[]
+        ));
+        let specific_fact = CoachChessFactResult {
+            tool: "square_facts".to_string(),
+            label: "Current square d2".to_string(),
+            reason: "test".to_string(),
+            fen: sample_request().fen,
+            summary: "d2: white bishop. Undefended: true".to_string(),
+            facts: json!({"isUndefended": true}),
+        };
+        assert!(!answer_needs_fact_audit(
+            "The bishop is undefended, so Qxd2 wins a piece.",
+            &[specific_fact]
+        ));
     }
 
     #[test]

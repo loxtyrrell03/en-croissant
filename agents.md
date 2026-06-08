@@ -786,6 +786,19 @@ default.
 - On 2026-06-06, Coach input keyboard behavior was changed to chat-style
   submission: plain Enter sends the prompt, while Shift+Enter inserts a
   newline. Keep the textarea autosize behavior and non-empty submit guard.
+- On 2026-06-08, Coach prompting was loosened into a concept-first teaching
+  voice calibrated from the user's annotated `My classical games` PGNs. The
+  final Pro prompt now tells the model to treat Stockfish/chess facts as a
+  compass rather than the lesson, lead with the human mechanism, explain
+  counterplay, tempo, weak squares, defenders, pawn breaks, practical risk, and
+  what to train next, then cite concrete engine lines as proof. The previous
+  rigid answer template was softened into a natural answer menu so follow-ups
+  can feel conversational while still obeying clickable-line and grounding
+  rules. To reduce latency and avoid over-boxing the final answer, the extra
+  Gemini chess-fact planner is skipped for broad conceptual/phase-review
+  questions and kept for concrete tactical, legality, capture, and
+  fact-sensitive questions; final fact auditing is reserved for implementation
+  leakage or high-risk board claims without specific fact results.
 - On 2026-06-06, a source-derived White repertoire file was added under the
   app Files root's `Documents/EnCroissant/General repertoire/White  rep`
   folder as `Keymer Variation - Mendonca video.pgn`, with the matching `.info`
