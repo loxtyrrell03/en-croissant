@@ -799,6 +799,21 @@ default.
   questions and kept for concrete tactical, legality, capture, and
   fact-sensitive questions; final fact auditing is reserved for implementation
   leakage or high-risk board claims without specific fact results.
+- On 2026-06-08, the Coach prompt was then tested directly against five hidden
+  style targets derived from the user's annotated `My classical games` notes:
+  practical `b5` over sharper `Bxh3` to kill `d5`/`f5` counterplay, immediate
+  `fxe4` tempo into `Ng4`/`Nxf2`/`Bb6`, a failed `Nd4` tactic because the
+  queen was defended, a rushed central break where `Ne4` kept the clamp, and a
+  fortress endgame where `Ka1` required candidate expansion beyond bishop
+  moves. The reusable local probe is `scripts/coach-style-eval.mjs`; it calls
+  the local Gemini CLI, writes ignored reports under `tmp/coach-style-eval`,
+  and scores whether answers recover the annotation-style mechanisms without
+  being shown the original annotations. First pass was 5/5 overall but the
+  defended-queen/process case was weak on calculation-language. The follow-up
+  prompt patch added explicit process coaching for candidate expansion, CCT,
+  opponent threats, loose/defended target verification, and psychological
+  reset; the second pass remained 5/5 and improved that case from 4/5 must +
+  1/4 nice signals to 5/5 must + 2/4 nice signals.
 - On 2026-06-06, a source-derived White repertoire file was added under the
   app Files root's `Documents/EnCroissant/General repertoire/White  rep`
   folder as `Keymer Variation - Mendonca video.pgn`, with the matching `.info`

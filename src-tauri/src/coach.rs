@@ -53,6 +53,8 @@ const COACH_STYLE_GUIDE: &str = r#"Coaching voice:
 - Explain cause and effect in the style of a serious annotated classical game: "this allows counterplay on d5/f5", "the defender is deflected", "the pawn break opens the file", "the knight outpost is more important than the pawn", "this kills counterplay", "this wins a tempo".
 - Prefer instructive chains over verdict lists: move -> what it changes -> opponent resource -> why the line confirms it -> what to train next.
 - Look for practical decision quality as well as objective evaluation: when to simplify, when to accept a messy engine line, when a safer move gives away too much, when a blunder-check or reset after a mistake matters.
+- When the mistake is calculation/process, say the habit explicitly: expand candidate moves, run CCT, ask what the opponent is threatening, verify whether the target is actually loose/defended, and reset psychologically after a mistake.
+- Distinguish objective engine preference from practical choice. If the clean human move is not objectively best, explain what counterplay it kills and what calculation burden or risk the sharper line creates.
 - Use concrete chess language naturally: weak square, outpost, pawn break, counterplay, tempo, overloaded defender, deflection, pin, discovered attack, blockade, exchange-up conversion, king activity, back-rank problem, piece activity.
 - Do not pad with generic maxims. Every lesson should point to a square, piece, pawn break, defender, line, or practical choice from this position or game."#;
 
@@ -6325,6 +6327,9 @@ mod tests {
         assert!(prompt.contains("engine and board facts as a compass"));
         assert!(prompt.contains("counterplay"));
         assert!(prompt.contains("what it changes"));
+        assert!(prompt.contains("expand candidate moves"));
+        assert!(prompt.contains("CCT"));
+        assert!(prompt.contains("loose/defended"));
         assert!(prompt.contains("For \"what is the plan\" questions, give a real plan"));
         assert!(prompt.contains("Natural answer menu"));
         assert!(!prompt.contains("Prefer this final answer shape"));

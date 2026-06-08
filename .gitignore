@@ -9,6 +9,7 @@ lerna-debug.log*
 
 node_modules
 coverage
+tmp/
 dist
 dist-ssr
 public/web-library/
