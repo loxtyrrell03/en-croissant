@@ -1386,14 +1386,15 @@ urgent due cards first, then ordinary due reviews, then weak-theme or
   rating-calibration puzzles. Puzzle progress is intentionally scoped per
   installed puzzle database snapshot so future database updates do not silently
   mix stats from different source data.
-- The Puzzle tab UI now has Train, Stats, Themes, and SRS panels. Train shows
-  Puzzle Elo, database accuracy, due/mastered counts, selection reason, SRS
-  state, current puzzle themes, and the Elo delta after an attempt. Stats shows
-  Elo and volume/accuracy trends, Themes ranks per-theme skill and weakness,
-  and SRS exposes counts, the next review queue, reset, refresh, and progress
-  export controls. Completed puzzle attempts now increment existing puzzle
-  daily goals automatically instead of requiring the Home goal's manual
-  progress button.
+- The Puzzle tab UI now has Train, Stats, and SRS panels. Train shows Puzzle
+  Elo, database accuracy, due/mastered counts, selection reason, SRS state,
+  current puzzle themes, and the Elo delta after an attempt. Stats shows Elo,
+  volume/accuracy trends, and per-theme skill/weakness rankings in one place;
+  theme rows update immediately from the recorded attempt result and are then
+  reconciled by the full dashboard refresh. SRS exposes counts, the next review
+  queue, reset, refresh, and progress export controls. Completed puzzle
+  attempts now increment existing puzzle daily goals automatically instead of
+  requiring the Home goal's manual progress button.
 - Puzzle selection now broadens empty filter combinations before surfacing an
   error: if a theme/rating search has no match, it falls back through rating
   only, broad theme, then any available puzzle. Switching puzzle databases

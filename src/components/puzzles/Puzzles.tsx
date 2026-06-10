@@ -35,7 +35,6 @@ import {
   IconRefresh,
   IconRobot,
   IconSettings,
-  IconTargetArrow,
   IconTrash,
   IconX,
   IconZoomCheck,
@@ -489,6 +488,12 @@ function Puzzles({ id }: { id: string }) {
         attemptResult = res.data;
         setLastAttempt(res.data);
         applyProgressSummary(res.data.summary, true);
+        setDashboard((dashboard) =>
+          mergePuzzleAttemptIntoDashboard(dashboard, res.data, {
+            success: completion === "correct" && !usedHint && !viewedSolution,
+            timeSpentMs: timeSpent,
+          }),
+        );
         setProgressError(null);
       } else {
         setProgressError(String(res.error));
@@ -605,6 +610,7 @@ function Puzzles({ id }: { id: string }) {
   };
 
   const currentSessionPuzzle = puzzles[currentPuzzle];
+  const activePanelView = panelView === "themes" ? "stats" : panelView;
 
   function clearSession() {
     autoStartKeyRef.current = null;
@@ -852,7 +858,7 @@ function Puzzles({ id }: { id: string }) {
             </Alert>
           )}
           <Tabs
-            value={panelView}
+            value={activePanelView}
             onChange={(value) => setPanelView(value ?? "train")}
             h={settingsOpened ? "calc(100% - 11rem)" : "calc(100% - 5.5rem)"}
             style={{ display: "flex", flexDirection: "column", minHeight: 0 }}
@@ -863,9 +869,6 @@ function Puzzles({ id }: { id: string }) {
               </Tabs.Tab>
               <Tabs.Tab value="stats" leftSection={<IconChartLine size={16} />}>
                 Stats
-              </Tabs.Tab>
-              <Tabs.Tab value="themes" leftSection={<IconTargetArrow size={16} />}>
-                Themes
               </Tabs.Tab>
               <Tabs.Tab value="srs" leftSection={<IconListCheck size={16} />}>
                 SRS
@@ -911,11 +914,6 @@ function Puzzles({ id }: { id: string }) {
             <Tabs.Panel value="stats" h="100%" pt="sm" style={{ minHeight: 0 }}>
               <ScrollArea h="100%" offsetScrollbars>
                 <PuzzleStatsPanel dashboard={dashboard} summary={durableSummary} />
-              </ScrollArea>
-            </Tabs.Panel>
-            <Tabs.Panel value="themes" h="100%" pt="sm" style={{ minHeight: 0 }}>
-              <ScrollArea h="100%" offsetScrollbars>
-                <PuzzleThemesPanel dashboard={dashboard} />
               </ScrollArea>
             </Tabs.Panel>
             <Tabs.Panel value="srs" h="100%" pt="sm" style={{ minHeight: 0 }}>
@@ -1334,6 +1332,7 @@ function PuzzleStatsPanel({
           </Text>
         )}
       </Paper>
+      <PuzzleThemesPanel dashboard={dashboard} />
     </Stack>
   );
 }
@@ -1607,6 +1606,70 @@ function isNewerPuzzleSummary(
   if (nextUpdatedAt !== previousUpdatedAt) return nextUpdatedAt > previousUpdatedAt;
 
   return toNumber(next.totalAttempts) >= toNumber(previous.totalAttempts);
+}
+
+function mergePuzzleAttemptIntoDashboard(
+  dashboard: PuzzleDashboard | null,
+  attempt: PuzzleAttemptResult,
+  options: { success: boolean; timeSpentMs: number },
+): PuzzleDashboard | null {
+  if (!dashboard || dashboard.summary.dbKey !== attempt.summary.dbKey) return dashboard;
+
+  const deltaByTheme = new Map(attempt.themeDeltas.map((delta) => [delta.theme, delta]));
+  const attemptedThemes = new Set(attempt.themeDeltas.map((delta) => delta.theme));
+  if (attemptedThemes.size === 0) {
+    return { ...dashboard, summary: attempt.summary };
+  }
+
+  const seen = new Set<string>();
+  const themes = dashboard.themes.map((row) => {
+    if (!attemptedThemes.has(row.theme)) return row;
+
+    seen.add(row.theme);
+    const attempts = toNumber(row.attempts) + 1;
+    const correct = toNumber(row.correct) + Number(options.success);
+    const recentAttempts = toNumber(row.recentAttempts) + 1;
+    const recentCorrect =
+      Math.round(row.recentAccuracy * toNumber(row.recentAttempts)) + Number(options.success);
+    const delta = deltaByTheme.get(row.theme);
+
+    return {
+      ...row,
+      attempts: BigInt(attempts),
+      correct: BigInt(correct),
+      accuracy: attempts > 0 ? correct / attempts : 0,
+      averageTimeMs:
+        attempts > 0
+          ? (row.averageTimeMs * (attempts - 1) + Math.max(0, options.timeSpentMs)) / attempts
+          : 0,
+      skill: delta?.skillAfter ?? row.skill,
+      recentAttempts: BigInt(recentAttempts),
+      recentAccuracy: recentAttempts > 0 ? recentCorrect / recentAttempts : 0,
+      lastAttemptAt: attempt.card.lastAttemptAt,
+    };
+  });
+
+  for (const theme of attemptedThemes) {
+    if (seen.has(theme)) continue;
+
+    const delta = deltaByTheme.get(theme);
+    themes.push({
+      theme,
+      attempts: BigInt(1),
+      correct: BigInt(Number(options.success)),
+      accuracy: Number(options.success),
+      averageTimeMs: Math.max(0, options.timeSpentMs),
+      skill: delta?.skillAfter ?? attempt.eloAfter,
+      weaknessScore: 0,
+      recentAttempts: BigInt(1),
+      recentAccuracy: Number(options.success),
+      due: BigInt(0),
+      mastered: BigInt(attempt.card.mastered ? 1 : 0),
+      lastAttemptAt: attempt.card.lastAttemptAt,
+    });
+  }
+
+  return { ...dashboard, summary: attempt.summary, themes };
 }
 
 export default Puzzles;
