@@ -1428,6 +1428,12 @@ urgent due cards first, then ordinary due reviews, then weak-theme or
   through the same rated Elo attempt model. The old five-way
   Coach/SRS/Theme/Ladder/Random selector and Progressive switch should stay
   hidden unless a future design deliberately re-expands the trainer.
+- Another 2026-06-10 fix removed a truthiness check from the puzzle attempt
+  recorder. Puzzle ids can be valid even when they are `0`; the UI must record
+  attempts whenever the id is a finite number, otherwise Puzzle Elo silently
+  stays static. Failed or skipped writes should clear the transient
+  `Saving result` badge and surface a progress error instead of pretending
+  the Elo update is still in flight.
 
 ### Practice Bot Trainer
 

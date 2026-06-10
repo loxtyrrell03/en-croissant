@@ -474,7 +474,7 @@ function Puzzles({ id }: { id: string }) {
 
     incrementPuzzleDailyGoals();
 
-    if (selectedDb && puzzle.id) {
+    if (selectedDb && Number.isFinite(puzzle.id)) {
       const res = await commands.recordPuzzleAttempt(selectedDb, {
         puzzleId: puzzle.id,
         mode:
@@ -493,24 +493,30 @@ function Puzzles({ id }: { id: string }) {
       } else {
         setProgressError(String(res.error));
       }
+    } else if (!selectedDb) {
+      setProgressError("Select a puzzle database before recording puzzle progress.");
+    } else {
+      setProgressError(`Puzzle ${puzzle.id} could not be recorded.`);
     }
 
-    if (attemptResult) {
-      setPuzzles((puzzles) => {
-        const next = [...puzzles];
-        if (next[puzzleIndex]) {
-          next[puzzleIndex] = {
-            ...next[puzzleIndex],
-            attemptRecorded: true,
-            themes: attemptResult.themes,
-            progress: attemptResult.card,
-            eloAfter: attemptResult.eloAfter,
-            eloDelta: attemptResult.eloDelta,
-          };
-        }
-        return next;
-      });
-    }
+    setPuzzles((puzzles) => {
+      const next = [...puzzles];
+      if (next[puzzleIndex]) {
+        next[puzzleIndex] = {
+          ...next[puzzleIndex],
+          attemptRecorded: attemptResult ? true : undefined,
+          ...(attemptResult
+            ? {
+                themes: attemptResult.themes,
+                progress: attemptResult.card,
+                eloAfter: attemptResult.eloAfter,
+                eloDelta: attemptResult.eloDelta,
+              }
+            : {}),
+        };
+      }
+      return next;
+    });
 
     if (selectedDb) {
       void refreshPuzzleProgress(selectedDb);
