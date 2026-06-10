@@ -1225,6 +1225,20 @@ and `src/utils/lichess/study.ts`.
   2026-06-03 cleanup of `My classical games` moved 40 duplicate PGN copies
   into `Documents/EnCroissantDataBackups/my-classical-games-dedupe-*`, leaving
   45 active unique mainline PGNs and preserving all moved copies.
+- On 2026-06-10, `My classical games` needed another repair because the study
+  database had been used as an online-game import target. The current Lichess
+  study `j2XwsJxt` had 45 chapters, while the local database had 58 rows; the
+  13 extra rows were Chess.com `Live Chess` games from June 4 and June 6, and
+  linked folder sync had also left lower-annotation duplicate PGNs beside the
+  rich local copies. The cleanup moved 51 duplicate/off-study PGN+info pairs
+  plus a database backup into
+  `Documents/EnCroissantDataBackups/my-classical-games-cleanup-20260610-222430`,
+  restored the database to 45 games, and renamed all active Files PGNs into
+  numeric `0001`-`0045` study order. Future linked study folder sync now keeps
+  the highest-annotation same-mainline file, removes stale same-mainline
+  siblings during ordered sync, and online-game imports reject Lichess-study
+  database descriptions so Chess.com/Lichess account imports cannot append
+  into a study database again.
 - PGN import timestamp normalization was fixed so online-update ordering stays
   reliable.
 

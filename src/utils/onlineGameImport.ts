@@ -63,9 +63,14 @@ export type OnlineDatabaseLocalSnapshot = {
 };
 
 export const ONLINE_DATABASE_CLOCK_REFRESH_VERSION = 2;
+const LICHESS_STUDY_URL_PATTERN = /https?:\/\/(?:www\.)?lichess\.org\/study\/[A-Za-z0-9]+/i;
 
 export function getOnlineGameSourceLabel(source: OnlineGameSource) {
     return source === "lichess" ? "Lichess" : "Chess.com";
+}
+
+export function isLichessStudyDatabaseDescription(description?: string | null) {
+    return LICHESS_STUDY_URL_PATTERN.test(description ?? "");
 }
 
 export function getOnlineDatabaseUpdateAccounts(
@@ -348,6 +353,12 @@ export async function importOnlineGamesToDatabase({
     setProgress = () => {},
     setConversionState,
 }: ImportOnlineGamesOptions) {
+    if (isLichessStudyDatabaseDescription(description)) {
+        throw new Error(
+            "Online games cannot be appended to a Lichess study database. Create or select an online-games database instead.",
+        );
+    }
+
     const pgnPath = await resolve(databaseDir, getOnlineGamePgnFilename(source, username));
     const sourceFileName = await basename(pgnPath);
     const progressId = getOnlineGameImportId(source, username);
@@ -414,6 +425,12 @@ export async function importOnlineGameAccountsToDatabase({
     description,
     setConversionState,
 }: ImportOnlineGameAccountsOptions): Promise<OnlineDatabaseUpdateAccount[]> {
+    if (isLichessStudyDatabaseDescription(description)) {
+        throw new Error(
+            "Online games cannot be appended to a Lichess study database. Create or select an online-games database instead.",
+        );
+    }
+
     const importedAccounts: OnlineDatabaseUpdateAccount[] = [];
 
     for (const account of accounts) {

@@ -17,9 +17,17 @@ const INVALID_FOLDER_CHARS = /[\\/:*?"<>|]/;
 const INVALID_FILENAME_CHARS = /[\\/:*?"<>|]+/g;
 const GAME_FILE_METADATA = '{"type":"game","tags":[]}';
 
+type ExistingPgnEntry = {
+    path: string;
+    contentHash: string;
+    mainlineHash: string;
+    annotationScore: number;
+};
+
 type ExistingPgnIndex = {
-    contentHashes: Map<string, string>;
-    mainlineHashes: Map<string, { path: string; annotationScore: number }>;
+    entriesByPath: Map<string, ExistingPgnEntry>;
+    contentHashes: Map<string, ExistingPgnEntry[]>;
+    mainlineHashes: Map<string, ExistingPgnEntry[]>;
 };
 
 export function removeDatabaseExtension(name: string) {
@@ -174,24 +182,36 @@ export async function syncDatabaseLinkedFolder({
             const hash = hashPgnContent(sourceGameText);
             const mainlineHash = orderedFilenames ? hashPgnMainline(sourceGameText) : null;
             const targetFileName = getPrefixedPgnFileName(entry.name, fileNamePrefix);
-            const existingPath =
-                existingIndex.contentHashes.get(hash) ??
-                (mainlineHash ? existingIndex.mainlineHashes.get(mainlineHash)?.path : undefined);
+            const existingEntry = findReusablePgnEntry(existingIndex, {
+                contentHash: hash,
+                mainlineHash,
+                targetFileName,
+            });
 
-            if (existingPath) {
+            if (existingEntry) {
                 if (orderedFilenames) {
+                    if (mainlineHash) {
+                        const duplicatePaths = getDuplicatePgnPathsForMainline(
+                            existingIndex,
+                            mainlineHash,
+                            existingEntry.path,
+                        );
+                        await removeExistingPgnFiles(duplicatePaths);
+                        for (const duplicatePath of duplicatePaths) {
+                            removeExistingPgnIndexPath(existingIndex, duplicatePath);
+                        }
+                    }
+
                     const renamedPath = await renameExistingPgnToTargetName(
-                        existingPath,
+                        existingEntry.path,
                         targetDir,
                         targetFileName,
                     );
-                    existingIndex.contentHashes.set(hash, renamedPath);
-                    if (mainlineHash) {
-                        existingIndex.mainlineHashes.set(mainlineHash, {
-                            path: renamedPath,
-                            annotationScore: getPgnAnnotationScore(sourceGameText),
-                        });
-                    }
+                    removeExistingPgnIndexPath(existingIndex, existingEntry.path);
+                    addExistingPgnIndexEntry(existingIndex, {
+                        ...existingEntry,
+                        path: renamedPath,
+                    });
                 }
                 skipped += 1;
                 continue;
@@ -208,13 +228,12 @@ export async function syncDatabaseLinkedFolder({
                 await writeTextFile(targetInfoPath, GAME_FILE_METADATA);
             }
 
-            existingIndex.contentHashes.set(hash, targetGamePath);
-            if (mainlineHash) {
-                existingIndex.mainlineHashes.set(mainlineHash, {
-                    path: targetGamePath,
-                    annotationScore: getPgnAnnotationScore(sourceGameText),
-                });
-            }
+            addExistingPgnIndexEntry(existingIndex, {
+                path: targetGamePath,
+                contentHash: hash,
+                mainlineHash: hashPgnMainline(sourceGameText),
+                annotationScore: getPgnAnnotationScore(sourceGameText),
+            });
             created += 1;
         }
 
@@ -242,6 +261,7 @@ export async function syncDatabaseLinkedFolder({
 async function readExistingPgnIndex(targetDir: string): Promise<ExistingPgnIndex> {
     const entries = await readDir(targetDir).catch(() => []);
     const index: ExistingPgnIndex = {
+        entriesByPath: new Map(),
         contentHashes: new Map(),
         mainlineHashes: new Map(),
     };
@@ -251,20 +271,120 @@ async function readExistingPgnIndex(targetDir: string): Promise<ExistingPgnIndex
         try {
             const path = await resolve(targetDir, entry.name);
             const text = await readTextFile(path);
-            index.contentHashes.set(hashPgnContent(text), path);
-
-            const mainlineHash = hashPgnMainline(text);
-            const annotationScore = getPgnAnnotationScore(text);
-            const existing = index.mainlineHashes.get(mainlineHash);
-            if (!existing || annotationScore > existing.annotationScore) {
-                index.mainlineHashes.set(mainlineHash, { path, annotationScore });
-            }
+            addExistingPgnIndexEntry(index, {
+                path,
+                contentHash: hashPgnContent(text),
+                mainlineHash: hashPgnMainline(text),
+                annotationScore: getPgnAnnotationScore(text),
+            });
         } catch {
             // Ignore files that cannot be read so one broken sidecar does not block sync.
         }
     }
 
     return index;
+}
+
+function addExistingPgnIndexEntry(index: ExistingPgnIndex, entry: ExistingPgnEntry) {
+    index.entriesByPath.set(entry.path, entry);
+    appendIndexEntry(index.contentHashes, entry.contentHash, entry);
+    appendIndexEntry(index.mainlineHashes, entry.mainlineHash, entry);
+}
+
+function appendIndexEntry(
+    map: Map<string, ExistingPgnEntry[]>,
+    key: string,
+    entry: ExistingPgnEntry,
+) {
+    const entries = map.get(key) ?? [];
+    if (!entries.some((candidate) => candidate.path === entry.path)) {
+        entries.push(entry);
+    }
+    map.set(key, entries);
+}
+
+function removeExistingPgnIndexPath(index: ExistingPgnIndex, path: string) {
+    const entry = index.entriesByPath.get(path);
+    if (!entry) return;
+
+    index.entriesByPath.delete(path);
+    removeIndexEntry(index.contentHashes, entry.contentHash, path);
+    removeIndexEntry(index.mainlineHashes, entry.mainlineHash, path);
+}
+
+function removeIndexEntry(map: Map<string, ExistingPgnEntry[]>, key: string, path: string) {
+    const entries = map.get(key);
+    if (!entries) return;
+
+    const nextEntries = entries.filter((entry) => entry.path !== path);
+    if (nextEntries.length > 0) {
+        map.set(key, nextEntries);
+    } else {
+        map.delete(key);
+    }
+}
+
+function findReusablePgnEntry(
+    index: ExistingPgnIndex,
+    {
+        contentHash,
+        mainlineHash,
+        targetFileName,
+    }: {
+        contentHash: string;
+        mainlineHash: string | null;
+        targetFileName: string;
+    },
+) {
+    const candidatesByPath = new Map<string, ExistingPgnEntry>();
+    for (const entry of index.contentHashes.get(contentHash) ?? []) {
+        candidatesByPath.set(entry.path, entry);
+    }
+    if (mainlineHash) {
+        for (const entry of index.mainlineHashes.get(mainlineHash) ?? []) {
+            candidatesByPath.set(entry.path, entry);
+        }
+    }
+
+    return Array.from(candidatesByPath.values()).sort((a, b) =>
+        compareReusablePgnEntries(a, b, targetFileName),
+    )[0];
+}
+
+function compareReusablePgnEntries(
+    a: ExistingPgnEntry,
+    b: ExistingPgnEntry,
+    targetFileName: string,
+) {
+    return (
+        b.annotationScore - a.annotationScore ||
+        Number(getPathFileName(b.path) === targetFileName) -
+            Number(getPathFileName(a.path) === targetFileName) ||
+        getPathFileName(a.path).localeCompare(getPathFileName(b.path), undefined, {
+            numeric: true,
+        })
+    );
+}
+
+function getDuplicatePgnPathsForMainline(
+    index: ExistingPgnIndex,
+    mainlineHash: string,
+    keepPath: string,
+) {
+    return (index.mainlineHashes.get(mainlineHash) ?? [])
+        .map((entry) => entry.path)
+        .filter((path) => path !== keepPath);
+}
+
+async function removeExistingPgnFiles(paths: string[]) {
+    for (const path of paths) {
+        await remove(path).catch(() => {});
+
+        const infoPath = pgnInfoPath(path);
+        if (await exists(infoPath)) {
+            await remove(infoPath).catch(() => {});
+        }
+    }
 }
 
 async function renameExistingPgnToTargetName(
@@ -444,3 +564,21 @@ function stripPgnCommentsAndVariations(input: string) {
         .replace(/\s+/g, " ")
         .trim();
 }
+
+export const __databaseFileExportTestUtils = {
+    hashPgnMainline,
+    getPgnAnnotationScore,
+    createExistingPgnIndex(entries: ExistingPgnEntry[]) {
+        const index: ExistingPgnIndex = {
+            entriesByPath: new Map(),
+            contentHashes: new Map(),
+            mainlineHashes: new Map(),
+        };
+        for (const entry of entries) {
+            addExistingPgnIndexEntry(index, entry);
+        }
+        return index;
+    },
+    findReusablePgnEntry,
+    getDuplicatePgnPathsForMainline,
+};
