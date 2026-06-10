@@ -1444,11 +1444,11 @@ urgent due cards first, then ordinary due reviews, then weak-theme or
   instead of a JavaScript `BigInt`, and retries any completed session puzzle
   that is still marked `attemptRecorded: false` so old stuck cards can finish
   saving after a reload.
-- The Puzzle Train panel now has a visible `Timer` switch inside the main
-  Smart/Manual training surface. Turning it off clears the current timer and
-  prevents challenge-history navigation from restarting timing for incomplete
-  puzzles; the old timer switch was removed from the settings drawer so users
-  have one obvious stop/start control.
+- The Puzzle Train panel now uses explicit `Start training` and
+  `Stop training` buttons inside the main Smart/Manual surface. `Stop training`
+  clears the timer and disables solve timing, while `Start training` resumes
+  timing for the current incomplete puzzle or loads the first session puzzle.
+  Do not reintroduce a timer-labeled switch for this flow.
 - On 2026-06-10, the Next puzzle path was made latency-tolerant. The trainer
   now keeps one matching training candidate prefetched for the active
   database/mode/rating/theme request and consumes that buffered card
@@ -1458,6 +1458,15 @@ urgent due cards first, then ordinary due reviews, then weak-theme or
   The backend random fallback also no longer uses `ORDER BY RANDOM()` for
   puzzle selection; it counts the filtered set and fetches a random offset,
   avoiding multi-second SQLite shuffles on large puzzle databases.
+- A follow-up on 2026-06-10 hardened puzzle database handling against stale or
+  invalid `.db3` selections. Puzzle source databases now open read-only and are
+  validated before any trainer/progress command computes the database
+  fingerprint, so missing paths cannot silently create empty SQLite files and
+  raw `no such table` errors are converted into a user-facing invalid puzzle
+  database message. Puzzle progress also migrates from the scanned
+  `puzzles/puzzle-progress.db3` location into app-data `progress`, while the
+  picker ignores any old `puzzle-progress.db3` file left behind so progress
+  storage is not rediscovered as a puzzle source.
 
 ### Practice Bot Trainer
 

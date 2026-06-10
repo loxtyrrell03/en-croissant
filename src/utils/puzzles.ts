@@ -41,7 +41,9 @@ async function getPuzzleDatabase(name: string): Promise<PuzzleDatabaseInfo> {
 export async function getPuzzleDatabases(): Promise<PuzzleDatabaseInfo[]> {
     const puzzlesDir = await getPuzzlesDir();
     const files = await readDir(puzzlesDir);
-    const dbs = files.filter((file) => file.name?.endsWith(".db3"));
+    const dbs = files.filter(
+        (file) => file.name?.endsWith(".db3") && file.name !== "puzzle-progress.db3",
+    );
     return (await Promise.allSettled(dbs.map((db) => getPuzzleDatabase(db.name))))
         .filter((r) => r.status === "fulfilled")
         .map((r) => (r as PromiseFulfilledResult<PuzzleDatabaseInfo>).value);

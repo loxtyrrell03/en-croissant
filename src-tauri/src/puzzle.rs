@@ -1,26 +1,19 @@
 use std::{
     collections::VecDeque,
-    fs::{create_dir_all, remove_file},
+    fs::{copy, create_dir_all, remove_file},
     path::{Path, PathBuf},
     sync::Mutex,
     time::{SystemTime, UNIX_EPOCH},
 };
 
 use chrono::{DateTime, Duration, Utc};
-use diesel::{
-    dsl::sql, sql_types::Bool, Connection as DieselConnection, ExpressionMethods, QueryDsl,
-    RunQueryDsl,
-};
 use once_cell::sync::Lazy;
-use rusqlite::{params, Connection as RusqliteConnection, OptionalExtension};
+use rusqlite::{params, Connection as RusqliteConnection, OpenFlags, OptionalExtension};
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use tauri::Manager;
 
-use crate::{
-    db::{puzzle_themes, puzzles, themes, Puzzle},
-    error::Error,
-};
+use crate::{db::Puzzle, error::Error};
 
 const DEFAULT_PUZZLE_ELO: f64 = 1500.0;
 const DEFAULT_THEME_SKILL: f64 = 1500.0;
@@ -72,26 +65,9 @@ impl PuzzleCache {
             self.cache.clear();
             self.counter = 0;
 
-            let mut db = diesel::SqliteConnection::establish(file).expect("open database");
-
-            let new_puzzles: Vec<Puzzle> = if let Some(theme_name) = theme {
-                puzzles::table
-                    .inner_join(puzzle_themes::table.inner_join(themes::table))
-                    .filter(themes::name.eq(theme_name))
-                    .filter(puzzles::rating.le(max_rating as i32))
-                    .filter(puzzles::rating.ge(min_rating as i32))
-                    .select(puzzles::all_columns)
-                    .order(sql::<Bool>("RANDOM()"))
-                    .limit(20)
-                    .load::<Puzzle>(&mut db)?
-            } else {
-                puzzles::table
-                    .filter(puzzles::rating.le(max_rating as i32))
-                    .filter(puzzles::rating.ge(min_rating as i32))
-                    .order(sql::<Bool>("RANDOM()"))
-                    .limit(20)
-                    .load::<Puzzle>(&mut db)?
-            };
+            let db = open_puzzle_database(file)?;
+            let new_puzzles =
+                load_random_puzzles(&db, min_rating, max_rating, theme.as_deref(), 20)?;
 
             self.cache = new_puzzles.into_iter().collect();
             self.file = file.to_string();
@@ -353,10 +329,8 @@ pub struct PuzzleDashboard {
 pub async fn get_puzzle_db_info(file: PathBuf) -> Result<PuzzleDatabaseInfo, Error> {
     let path = file;
 
-    let mut db =
-        diesel::SqliteConnection::establish(&path.to_string_lossy()).expect("open database");
-
-    let puzzle_count = puzzles::table.count().get_result::<i64>(&mut db)? as i32;
+    let conn = open_puzzle_database_path(&path)?;
+    let puzzle_count = puzzle_count_from_conn(&conn)? as i32;
 
     let storage_size = path.metadata()?.len();
     let filename = path.file_name().expect("get filename").to_string_lossy();
@@ -380,25 +354,23 @@ pub fn delete_puzzle_database(file: String) -> Result<(), Error> {
 #[tauri::command]
 #[specta::specta]
 pub fn get_puzzle_themes(file: String) -> Result<Vec<String>, Error> {
-    let mut db = diesel::SqliteConnection::establish(&file).expect("open database");
-    let result: Vec<String> = themes::table
-        .select(themes::name)
-        .order(themes::name.asc())
-        .load(&mut db)?;
-    Ok(result)
+    let conn = open_puzzle_database(&file)?;
+    let mut stmt = match conn.prepare("SELECT name FROM themes ORDER BY name ASC") {
+        Ok(stmt) => stmt,
+        Err(error) if is_missing_sqlite_table(&error) => return Ok(Vec::new()),
+        Err(error) => return Err(error.into()),
+    };
+    let themes = stmt
+        .query_map([], |row| row.get(0))?
+        .collect::<Result<Vec<String>, _>>()?;
+    Ok(themes)
 }
 
 #[tauri::command]
 #[specta::specta]
 pub fn get_themes_for_puzzle(file: String, puzzle_id: i32) -> Result<Vec<String>, Error> {
-    let mut db = diesel::SqliteConnection::establish(&file).expect("open database");
-    let result: Vec<String> = themes::table
-        .inner_join(puzzle_themes::table)
-        .filter(puzzle_themes::puzzle_id.eq(puzzle_id))
-        .select(themes::name)
-        .order(themes::name.asc())
-        .load(&mut db)?;
-    Ok(result)
+    let conn = open_puzzle_database(&file)?;
+    get_themes_for_puzzle_rusqlite(&conn, puzzle_id)
 }
 
 #[tauri::command]
@@ -426,7 +398,7 @@ pub fn get_training_puzzle(
     let db_key = puzzle_db_key(&file)?;
     let progress_conn = open_progress_connection(&app)?;
     ensure_profile(&progress_conn, &db_key)?;
-    let puzzle_conn = RusqliteConnection::open(&file)?;
+    let puzzle_conn = open_puzzle_database(&file)?;
     let elo = get_profile_elo(&progress_conn, &db_key)?;
 
     let mut candidate = match mode {
@@ -524,7 +496,7 @@ pub fn record_puzzle_attempt(
     let db_key = puzzle_db_key(&file)?;
     let mut progress_conn = open_progress_connection(&app)?;
     ensure_profile(&progress_conn, &db_key)?;
-    let puzzle_conn = RusqliteConnection::open(&file)?;
+    let puzzle_conn = open_puzzle_database(&file)?;
     let puzzle = load_puzzle_by_id(&puzzle_conn, input.puzzle_id)?.ok_or(Error::NoPuzzles)?;
     let themes = get_themes_for_puzzle_rusqlite(&puzzle_conn, input.puzzle_id)?;
     let now = now_ms();
@@ -647,7 +619,7 @@ pub fn get_puzzle_dashboard(
     let db_key = puzzle_db_key(&file)?;
     let conn = open_progress_connection(&app)?;
     ensure_profile(&conn, &db_key)?;
-    let puzzle_conn = RusqliteConnection::open(&file)?;
+    let puzzle_conn = open_puzzle_database(&file)?;
     let summary = get_progress_summary(&conn, &db_key)?;
     let themes = get_theme_rows(&conn, &db_key)?;
     let trends = get_trend_points(&conn, &db_key, days.unwrap_or(90))?;
@@ -672,11 +644,26 @@ pub fn reset_puzzle_progress(
     let db_key = puzzle_db_key(&file)?;
     let mut conn = open_progress_connection(&app)?;
     let tx = conn.transaction()?;
-    tx.execute("DELETE FROM puzzle_attempts WHERE db_key = ?1", params![db_key])?;
-    tx.execute("DELETE FROM puzzle_cards WHERE db_key = ?1", params![db_key])?;
-    tx.execute("DELETE FROM puzzle_theme_stats WHERE db_key = ?1", params![db_key])?;
-    tx.execute("DELETE FROM puzzle_daily_snapshots WHERE db_key = ?1", params![db_key])?;
-    tx.execute("DELETE FROM puzzle_profiles WHERE db_key = ?1", params![db_key])?;
+    tx.execute(
+        "DELETE FROM puzzle_attempts WHERE db_key = ?1",
+        params![db_key],
+    )?;
+    tx.execute(
+        "DELETE FROM puzzle_cards WHERE db_key = ?1",
+        params![db_key],
+    )?;
+    tx.execute(
+        "DELETE FROM puzzle_theme_stats WHERE db_key = ?1",
+        params![db_key],
+    )?;
+    tx.execute(
+        "DELETE FROM puzzle_daily_snapshots WHERE db_key = ?1",
+        params![db_key],
+    )?;
+    tx.execute(
+        "DELETE FROM puzzle_profiles WHERE db_key = ?1",
+        params![db_key],
+    )?;
     tx.commit()?;
     ensure_profile(&conn, &db_key)?;
     get_progress_summary(&conn, &db_key)
@@ -708,15 +695,65 @@ pub fn export_puzzle_progress(
 }
 
 fn progress_db_path(app: &tauri::AppHandle) -> Result<PathBuf, Error> {
-    let dir = app.path().app_data_dir()?.join("puzzles");
+    let app_data_dir = app.path().app_data_dir()?;
+    let dir = app_data_dir.join("progress");
     create_dir_all(&dir)?;
-    Ok(dir.join("puzzle-progress.db3"))
+    let path = dir.join("puzzle-progress.db3");
+    let old_path = app_data_dir.join("puzzles").join("puzzle-progress.db3");
+    if !path.is_file() && old_path.is_file() {
+        let _ = copy(old_path, &path);
+    }
+    Ok(path)
 }
 
 fn open_progress_connection(app: &tauri::AppHandle) -> Result<RusqliteConnection, Error> {
     let conn = RusqliteConnection::open(progress_db_path(app)?)?;
     init_progress_schema(&conn)?;
     Ok(conn)
+}
+
+fn open_puzzle_database(file: &str) -> Result<RusqliteConnection, Error> {
+    open_puzzle_database_path(Path::new(file))
+}
+
+fn open_puzzle_database_path(path: &Path) -> Result<RusqliteConnection, Error> {
+    if !path.is_file() {
+        return Err(Error::InvalidPuzzleDatabase(
+            "The selected puzzle database file no longer exists.".to_string(),
+        ));
+    }
+
+    let conn = RusqliteConnection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)
+        .map_err(map_rusqlite_puzzle_error)?;
+    validate_puzzle_database(&conn)?;
+    Ok(conn)
+}
+
+fn validate_puzzle_database(conn: &RusqliteConnection) -> Result<(), Error> {
+    puzzle_count_from_conn(conn).map(|_| ())
+}
+
+fn puzzle_count_from_conn(conn: &RusqliteConnection) -> Result<i64, Error> {
+    conn.query_row("SELECT COUNT(*) FROM puzzles", [], |row| row.get(0))
+        .map_err(map_rusqlite_puzzle_error)
+}
+
+fn map_rusqlite_puzzle_error(error: rusqlite::Error) -> Error {
+    if is_missing_sqlite_table(&error) {
+        Error::InvalidPuzzleDatabase(
+            "This file is not a usable puzzle database. Reinstall or select a Lichess puzzle database."
+                .to_string(),
+        )
+    } else {
+        error.into()
+    }
+}
+
+fn is_missing_sqlite_table(error: &rusqlite::Error) -> bool {
+    match error {
+        rusqlite::Error::SqliteFailure(_, Some(message)) => message.contains("no such table"),
+        _ => error.to_string().contains("no such table"),
+    }
 }
 
 fn init_progress_schema(conn: &RusqliteConnection) -> Result<(), Error> {
@@ -824,8 +861,8 @@ fn puzzle_db_key(file: &str) -> Result<String, Error> {
 }
 
 fn puzzle_count_rusqlite(file: &str) -> Result<i64, Error> {
-    let conn = RusqliteConnection::open(file)?;
-    Ok(conn.query_row("SELECT COUNT(*) FROM puzzles", [], |row| row.get(0))?)
+    let conn = open_puzzle_database(file)?;
+    puzzle_count_from_conn(&conn)
 }
 
 fn now_ms() -> i64 {
@@ -929,7 +966,7 @@ fn get_card_progress(
         row_to_card_progress,
     )
     .optional()
-    .map_err(Error::from)
+    .map_err(map_rusqlite_puzzle_error)
 }
 
 fn row_to_card_progress(row: &rusqlite::Row) -> rusqlite::Result<PuzzleCardProgress> {
@@ -1056,8 +1093,13 @@ fn update_theme_stats(
     let next_correct = correct + i64::from(success);
     let next_total_time = total_time + time_spent_ms.max(0);
     let next_lapses = lapses + i64::from(!success);
-    let weakness_score =
-        calculate_theme_weakness(next_attempts, next_correct, next_lapses, next_skill, global_elo);
+    let weakness_score = calculate_theme_weakness(
+        next_attempts,
+        next_correct,
+        next_lapses,
+        next_skill,
+        global_elo,
+    );
 
     conn.execute(
         "INSERT INTO puzzle_theme_stats
@@ -1401,8 +1443,8 @@ fn load_random_puzzle(
         let count = match count {
             Ok(Some(count)) => count,
             Ok(None) => 0,
-            Err(error) if error.to_string().contains("no such table") => return Ok(None),
-            Err(error) => return Err(error.into()),
+            Err(error) if is_missing_sqlite_table(&error) => return Ok(None),
+            Err(error) => return Err(map_rusqlite_puzzle_error(error)),
         };
         if count <= 0 {
             return Ok(None);
@@ -1420,13 +1462,15 @@ fn load_random_puzzle(
             row_to_puzzle,
         )
         .optional()
-        .map_err(Error::from)
+        .map_err(map_rusqlite_puzzle_error)
     } else {
-        let count: i64 = conn.query_row(
-            "SELECT COUNT(*) FROM puzzles WHERE rating >= ?1 AND rating <= ?2",
-            params![low, high],
-            |row| row.get(0),
-        )?;
+        let count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM puzzles WHERE rating >= ?1 AND rating <= ?2",
+                params![low, high],
+                |row| row.get(0),
+            )
+            .map_err(map_rusqlite_puzzle_error)?;
         if count <= 0 {
             return Ok(None);
         }
@@ -1440,8 +1484,102 @@ fn load_random_puzzle(
             row_to_puzzle,
         )
         .optional()
-        .map_err(Error::from)
+        .map_err(map_rusqlite_puzzle_error)
     }
+}
+
+fn load_random_puzzles(
+    conn: &RusqliteConnection,
+    min_rating: u16,
+    max_rating: u16,
+    theme: Option<&str>,
+    limit: i64,
+) -> Result<Vec<Puzzle>, Error> {
+    let low = min_rating.min(max_rating) as i64;
+    let high = min_rating.max(max_rating) as i64;
+    let count = count_matching_puzzles(conn, low, high, theme)?;
+    if count <= 0 || limit <= 0 {
+        return Ok(Vec::new());
+    }
+
+    let limit = limit.min(count);
+    let offset = random_offset(count);
+    let mut puzzles = load_puzzle_page(conn, low, high, theme, limit, offset)?;
+    if puzzles.len() < limit as usize && offset > 0 {
+        let remaining = limit - puzzles.len() as i64;
+        puzzles.extend(load_puzzle_page(conn, low, high, theme, remaining, 0)?);
+    }
+    Ok(puzzles)
+}
+
+fn count_matching_puzzles(
+    conn: &RusqliteConnection,
+    low: i64,
+    high: i64,
+    theme: Option<&str>,
+) -> Result<i64, Error> {
+    if let Some(theme) = theme {
+        let result = conn.query_row(
+            "SELECT COUNT(*)
+             FROM puzzles p
+             INNER JOIN puzzle_themes pt ON pt.puzzle_id = p.id
+             INNER JOIN themes t ON t.id = pt.theme_id
+             WHERE t.name = ?1 AND p.rating >= ?2 AND p.rating <= ?3",
+            params![theme, low, high],
+            |row| row.get(0),
+        );
+        match result {
+            Ok(count) => Ok(count),
+            Err(error) if is_missing_sqlite_table(&error) => Ok(0),
+            Err(error) => Err(map_rusqlite_puzzle_error(error)),
+        }
+    } else {
+        conn.query_row(
+            "SELECT COUNT(*) FROM puzzles WHERE rating >= ?1 AND rating <= ?2",
+            params![low, high],
+            |row| row.get(0),
+        )
+        .map_err(map_rusqlite_puzzle_error)
+    }
+}
+
+fn load_puzzle_page(
+    conn: &RusqliteConnection,
+    low: i64,
+    high: i64,
+    theme: Option<&str>,
+    limit: i64,
+    offset: i64,
+) -> Result<Vec<Puzzle>, Error> {
+    if let Some(theme) = theme {
+        let mut stmt = match conn.prepare(
+            "SELECT p.id, p.fen, p.moves, p.rating, p.rating_deviation, p.popularity, p.nb_plays
+             FROM puzzles p
+             INNER JOIN puzzle_themes pt ON pt.puzzle_id = p.id
+             INNER JOIN themes t ON t.id = pt.theme_id
+             WHERE t.name = ?1 AND p.rating >= ?2 AND p.rating <= ?3
+             ORDER BY p.id LIMIT ?4 OFFSET ?5",
+        ) {
+            Ok(stmt) => stmt,
+            Err(error) if is_missing_sqlite_table(&error) => return Ok(Vec::new()),
+            Err(error) => return Err(map_rusqlite_puzzle_error(error)),
+        };
+        return stmt
+            .query_map(params![theme, low, high, limit, offset], row_to_puzzle)?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(map_rusqlite_puzzle_error);
+    }
+
+    let mut stmt = conn
+        .prepare(
+            "SELECT id, fen, moves, rating, rating_deviation, popularity, nb_plays
+             FROM puzzles WHERE rating >= ?1 AND rating <= ?2
+             ORDER BY id LIMIT ?3 OFFSET ?4",
+        )
+        .map_err(map_rusqlite_puzzle_error)?;
+    stmt.query_map(params![low, high, limit, offset], row_to_puzzle)?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(map_rusqlite_puzzle_error)
 }
 
 fn random_offset(count: i64) -> i64 {
@@ -1455,10 +1593,7 @@ fn random_offset(count: i64) -> i64 {
     nanos.rem_euclid(count)
 }
 
-fn load_puzzle_by_id(
-    conn: &RusqliteConnection,
-    puzzle_id: i32,
-) -> Result<Option<Puzzle>, Error> {
+fn load_puzzle_by_id(conn: &RusqliteConnection, puzzle_id: i32) -> Result<Option<Puzzle>, Error> {
     conn.query_row(
         "SELECT id, fen, moves, rating, rating_deviation, popularity, nb_plays
          FROM puzzles WHERE id = ?1",
@@ -1466,7 +1601,7 @@ fn load_puzzle_by_id(
         row_to_puzzle,
     )
     .optional()
-    .map_err(Error::from)
+    .map_err(map_rusqlite_puzzle_error)
 }
 
 fn row_to_puzzle(row: &rusqlite::Row) -> rusqlite::Result<Puzzle> {
@@ -1493,8 +1628,8 @@ fn get_themes_for_puzzle_rusqlite(
          ORDER BY t.name ASC",
     ) {
         Ok(stmt) => stmt,
-        Err(error) if error.to_string().contains("no such table") => return Ok(Vec::new()),
-        Err(error) => return Err(error.into()),
+        Err(error) if is_missing_sqlite_table(&error) => return Ok(Vec::new()),
+        Err(error) => return Err(map_rusqlite_puzzle_error(error)),
     };
     let themes = stmt
         .query_map(params![puzzle_id], |row| row.get(0))?
@@ -1502,10 +1637,7 @@ fn get_themes_for_puzzle_rusqlite(
     Ok(themes)
 }
 
-fn strongest_weak_theme(
-    conn: &RusqliteConnection,
-    db_key: &str,
-) -> Result<Option<String>, Error> {
+fn strongest_weak_theme(conn: &RusqliteConnection, db_key: &str) -> Result<Option<String>, Error> {
     let mut stmt = conn.prepare(
         "SELECT theme FROM puzzle_theme_stats
          WHERE db_key = ?1 AND attempts >= 3 AND weakness_score > 0
@@ -1618,8 +1750,7 @@ fn get_trend_points(
     db_key: &str,
     days: u16,
 ) -> Result<Vec<PuzzleTrendPoint>, Error> {
-    let start_key = (Utc::now()
-        - Duration::try_days(days as i64).unwrap_or_default())
+    let start_key = (Utc::now() - Duration::try_days(days as i64).unwrap_or_default())
         .format("%Y-%m-%d")
         .to_string();
     let mut stmt = conn.prepare(
@@ -1859,5 +1990,24 @@ mod tests {
             candidate.reason,
             "No puzzle matched that rating range; broadening the theme search"
         );
+    }
+
+    #[test]
+    fn empty_file_is_reported_as_invalid_puzzle_database() {
+        let file = tempfile::NamedTempFile::new().unwrap();
+        let error = open_puzzle_database_path(file.path()).unwrap_err();
+
+        assert!(matches!(error, Error::InvalidPuzzleDatabase(_)));
+        assert!(!error.to_string().contains("no such table"));
+    }
+
+    #[test]
+    fn missing_file_is_not_created_when_opening_puzzle_database() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("missing.db3");
+        let error = open_puzzle_database_path(&path).unwrap_err();
+
+        assert!(matches!(error, Error::InvalidPuzzleDatabase(_)));
+        assert!(!path.exists());
     }
 }

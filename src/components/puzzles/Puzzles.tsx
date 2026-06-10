@@ -1039,13 +1039,17 @@ function Puzzles({ id }: { id: string }) {
                   puzzleLoading={puzzleLoading}
                   hideRating={hideRating}
                   trackTime={trackTime}
-                  setTrackTime={(enabled) => {
-                    if (!enabled) {
-                      setTimerStart(null);
-                      setTrackTime(false);
-                    } else {
-                      setTrackTime(true);
+                  onStartTraining={() => {
+                    setTrackTime(true);
+                    if (currentSessionPuzzle?.completion === "incomplete") {
+                      setTimerStart(Date.now() - (currentSessionPuzzle.timeSpent || 0));
+                    } else if (!currentSessionPuzzle && selectedDb) {
+                      void generatePuzzle(selectedDb, true);
                     }
+                  }}
+                  onStopTraining={() => {
+                    setTimerStart(null);
+                    setTrackTime(false);
                   }}
                   elapsedTime={elapsedTime}
                   turnToMove={turnToMove ?? null}
@@ -1146,7 +1150,8 @@ function PuzzleTrainPanel({
   puzzleLoading,
   hideRating,
   trackTime,
-  setTrackTime,
+  onStartTraining,
+  onStopTraining,
   elapsedTime,
   turnToMove,
   puzzleMode,
@@ -1177,7 +1182,8 @@ function PuzzleTrainPanel({
   puzzleLoading: boolean;
   hideRating: boolean;
   trackTime: boolean;
-  setTrackTime: (enabled: boolean) => void;
+  onStartTraining: () => void;
+  onStopTraining: () => void;
   elapsedTime: number;
   turnToMove: "white" | "black" | null;
   puzzleMode: PuzzleSelectionMode;
@@ -1239,12 +1245,25 @@ function PuzzleTrainPanel({
           <Text size="xs" c="dimmed">
             {activeModeGuide.purpose}
           </Text>
-          <Switch
-            label="Timer"
-            description={trackTime ? "Solve time is being tracked." : "Solve time is stopped."}
-            checked={trackTime}
-            onChange={(event) => setTrackTime(event.currentTarget.checked)}
-          />
+          <Group gap="xs">
+            <Button
+              size="xs"
+              variant={trackTime ? "light" : "filled"}
+              onClick={onStartTraining}
+              disabled={trackTime && currentPuzzle?.completion === "incomplete"}
+            >
+              Start training
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="red"
+              onClick={onStopTraining}
+              disabled={!trackTime}
+            >
+              Stop training
+            </Button>
+          </Group>
         </Stack>
       </Paper>
       {puzzleMode === "manual" && (
