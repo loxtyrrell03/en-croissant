@@ -897,19 +897,6 @@ function Puzzles({ id }: { id: string }) {
                       checked={hideRating}
                       onChange={(event) => setHideRating(event.currentTarget.checked)}
                     />
-                    <Switch
-                      label={t("Puzzle.TrackPuzzleTime")}
-                      description={t("Puzzle.TrackPuzzleTime.Desc")}
-                      checked={trackTime}
-                      onChange={(event) => {
-                        if (!event.currentTarget.checked) {
-                          setTimerStart(null);
-                          setTrackTime(false);
-                        } else {
-                          setTrackTime(true);
-                        }
-                      }}
-                    />
                   </SimpleGrid>
                 </Stack>
               </Accordion.Panel>
@@ -951,6 +938,14 @@ function Puzzles({ id }: { id: string }) {
                   puzzleLoading={puzzleLoading}
                   hideRating={hideRating}
                   trackTime={trackTime}
+                  setTrackTime={(enabled) => {
+                    if (!enabled) {
+                      setTimerStart(null);
+                      setTrackTime(false);
+                    } else {
+                      setTrackTime(true);
+                    }
+                  }}
                   elapsedTime={elapsedTime}
                   turnToMove={turnToMove ?? null}
                   puzzleMode={puzzleMode}
@@ -1019,7 +1014,7 @@ function Puzzles({ id }: { id: string }) {
                   setIsPlayingSolution(false);
                   setCurrentPuzzle(i);
                   setPuzzle(puzzles[i]);
-                  if (puzzles[i].completion === "incomplete") {
+                  if (trackTime && puzzles[i].completion === "incomplete") {
                     setTimerStart(Date.now() - (puzzles[i].timeSpent || 0));
                   } else {
                     setTimerStart(null);
@@ -1050,6 +1045,7 @@ function PuzzleTrainPanel({
   puzzleLoading,
   hideRating,
   trackTime,
+  setTrackTime,
   elapsedTime,
   turnToMove,
   puzzleMode,
@@ -1080,6 +1076,7 @@ function PuzzleTrainPanel({
   puzzleLoading: boolean;
   hideRating: boolean;
   trackTime: boolean;
+  setTrackTime: (enabled: boolean) => void;
   elapsedTime: number;
   turnToMove: "white" | "black" | null;
   puzzleMode: PuzzleSelectionMode;
@@ -1141,6 +1138,12 @@ function PuzzleTrainPanel({
           <Text size="xs" c="dimmed">
             {activeModeGuide.purpose}
           </Text>
+          <Switch
+            label="Timer"
+            description={trackTime ? "Solve time is being tracked." : "Solve time is stopped."}
+            checked={trackTime}
+            onChange={(event) => setTrackTime(event.currentTarget.checked)}
+          />
         </Stack>
       </Paper>
       {puzzleMode === "manual" && (

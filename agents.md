@@ -1444,6 +1444,11 @@ urgent due cards first, then ordinary due reviews, then weak-theme or
   instead of a JavaScript `BigInt`, and retries any completed session puzzle
   that is still marked `attemptRecorded: false` so old stuck cards can finish
   saving after a reload.
+- The Puzzle Train panel now has a visible `Timer` switch inside the main
+  Smart/Manual training surface. Turning it off clears the current timer and
+  prevents challenge-history navigation from restarting timing for incomplete
+  puzzles; the old timer switch was removed from the settings drawer so users
+  have one obvious stop/start control.
 
 ### Practice Bot Trainer
 
