@@ -2,6 +2,7 @@ import { resolve } from "@tauri-apps/api/path";
 import { readDir } from "@tauri-apps/plugin-fs";
 import {
     commands,
+    type PuzzleAttemptQuality,
     type PuzzleCardProgress,
     type PuzzleDatabaseInfo,
     type PuzzleTrainingMode,
@@ -27,9 +28,11 @@ export interface Puzzle {
     progress?: PuzzleCardProgress | null;
     usedHint?: boolean;
     viewedSolution?: boolean;
+    wrongMoves?: number;
     attemptRecorded?: boolean;
     eloAfter?: number;
     eloDelta?: number;
+    attemptQuality?: PuzzleAttemptQuality;
 }
 
 async function getPuzzleDatabase(name: string): Promise<PuzzleDatabaseInfo> {

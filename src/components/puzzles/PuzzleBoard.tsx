@@ -23,7 +23,10 @@ function PuzzleBoard({
 }: {
   puzzles: Puzzle[];
   currentPuzzle: number;
-  changeCompletion: (completion: Exclude<Completion, "incomplete">) => Promise<void>;
+  changeCompletion: (
+    completion: Exclude<Completion, "incomplete">,
+    options?: { wrongMoves?: number },
+  ) => Promise<void>;
 }) {
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (s) => s.root);
@@ -95,7 +98,7 @@ function PuzzleBoard({
         changeHeaders: false,
       });
       if (!ended) {
-        await changeCompletion("incorrect");
+        await changeCompletion("incorrect", { wrongMoves: (puzzle.wrongMoves ?? 0) + 1 });
       }
       setEnded(true);
     }

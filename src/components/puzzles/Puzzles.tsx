@@ -67,6 +67,7 @@ import {
 import { useStore } from "zustand";
 import {
   commands,
+  type PuzzleAttemptQuality,
   type PuzzleAttemptResult,
   type PuzzleDashboard,
   type PuzzleDatabaseInfo,
@@ -531,6 +532,7 @@ function Puzzles({ id }: { id: string }) {
       timeSpent,
       usedHint,
       viewedSolution,
+      wrongMoves,
     }: {
       puzzle: Puzzle;
       puzzleIndex: number;
@@ -538,6 +540,7 @@ function Puzzles({ id }: { id: string }) {
       timeSpent: number;
       usedHint: boolean;
       viewedSolution: boolean;
+      wrongMoves: number;
     }) => {
       const saveKey = `${selectedDb ?? "no-db"}:${puzzleIndex}:${puzzle.id}`;
       if (savingAttemptKeysRef.current.has(saveKey)) return;
@@ -556,6 +559,7 @@ function Puzzles({ id }: { id: string }) {
             timeSpentMs: Math.max(0, Math.round(timeSpent)) as unknown as bigint,
             usedHint,
             viewedSolution,
+            wrongMoves: Math.max(0, Math.round(wrongMoves)) as unknown as bigint,
           });
 
           if (res.status === "ok") {
@@ -564,7 +568,6 @@ function Puzzles({ id }: { id: string }) {
             applyProgressSummary(res.data.summary, true);
             setDashboard((dashboard) =>
               mergePuzzleAttemptIntoDashboard(dashboard, res.data, {
-                success: completion === "correct" && !usedHint && !viewedSolution,
                 timeSpentMs: timeSpent,
               }),
             );
@@ -595,6 +598,7 @@ function Puzzles({ id }: { id: string }) {
                   progress: attemptResult.card,
                   eloAfter: attemptResult.eloAfter,
                   eloDelta: attemptResult.eloDelta,
+                  attemptQuality: attemptResult.attemptQuality,
                 }
               : {}),
           };
@@ -631,12 +635,13 @@ function Puzzles({ id }: { id: string }) {
       timeSpent: puzzle.timeSpent ?? 0,
       usedHint: Boolean(puzzle.usedHint),
       viewedSolution: Boolean(puzzle.viewedSolution),
+      wrongMoves: Math.max(0, puzzle.wrongMoves ?? 0),
     });
   }, [currentPuzzle, puzzles, savePuzzleAttempt]);
 
   async function changeCompletion(
     completion: Completion,
-    options: { usedHint?: boolean; viewedSolution?: boolean } = {},
+    options: { usedHint?: boolean; viewedSolution?: boolean; wrongMoves?: number } = {},
   ) {
     const puzzleIndex = currentPuzzle;
     const timeSpent = timerStart !== null ? Date.now() - timerStart : 0;
@@ -645,6 +650,7 @@ function Puzzles({ id }: { id: string }) {
 
     const usedHint = Boolean(options.usedHint || puzzle.usedHint);
     const viewedSolution = Boolean(options.viewedSolution || puzzle.viewedSolution);
+    const wrongMoves = Math.max(puzzle.wrongMoves ?? 0, options.wrongMoves ?? 0, 0);
 
     setTimerStart(null);
     setPuzzles((puzzles) => {
@@ -656,6 +662,7 @@ function Puzzles({ id }: { id: string }) {
           timeSpent,
           usedHint,
           viewedSolution,
+          wrongMoves,
           attemptRecorded: false,
         };
       }
@@ -671,6 +678,7 @@ function Puzzles({ id }: { id: string }) {
       timeSpent,
       usedHint,
       viewedSolution,
+      wrongMoves,
     });
   }
 
@@ -1369,6 +1377,9 @@ function PuzzleTrainPanel({
               {trackTime && (
                 <Badge variant="outline">Time {formatTime(currentPuzzle.timeSpent ?? 0)}</Badge>
               )}
+              {currentPuzzle.attemptQuality && (
+                <Badge variant="outline">{formatAttemptQuality(currentPuzzle.attemptQuality)}</Badge>
+              )}
               {currentPuzzle.attemptRecorded === false && selectedDb && (
                 <Badge variant="outline">Saving result</Badge>
               )}
@@ -1704,7 +1715,12 @@ function PuzzleSrsPanel({
                   </Stack>
                 </Table.Td>
                 <Table.Td>
-                  <Badge variant="light">{formatSrsState(card.state)}</Badge>
+                  <Stack gap={3}>
+                    <Badge variant="light">{formatSrsState(card.state)}</Badge>
+                    <Text size="xs" c="dimmed">
+                      {formatAttemptQuality(card.lastQuality)}
+                    </Text>
+                  </Stack>
                 </Table.Td>
                 <Table.Td ta="right">{formatDueTime(card.dueAt)}</Table.Td>
               </Table.Tr>
@@ -1768,6 +1784,25 @@ function formatSrsState(state: string) {
   return state.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^./, (char) => char.toUpperCase());
 }
 
+function formatAttemptQuality(quality: string) {
+  switch (quality) {
+    case "failed":
+      return "Failed";
+    case "assisted":
+      return "Assisted";
+    case "hard":
+      return "Hard solve";
+    case "fluent":
+      return "Fluent";
+    default:
+      return "Solid";
+  }
+}
+
+function isCleanAttemptQuality(quality: PuzzleAttemptQuality) {
+  return quality === "hard" || quality === "solid" || quality === "fluent";
+}
+
 function formatDueTime(value: bigint | number) {
   const due = toNumber(value);
   const diff = due - Date.now();
@@ -1802,7 +1837,7 @@ function isNewerPuzzleSummary(
 function mergePuzzleAttemptIntoDashboard(
   dashboard: PuzzleDashboard | null,
   attempt: PuzzleAttemptResult,
-  options: { success: boolean; timeSpentMs: number },
+  options: { timeSpentMs: number },
 ): PuzzleDashboard | null {
   if (!dashboard || dashboard.summary.dbKey !== attempt.summary.dbKey) return dashboard;
 
@@ -1817,11 +1852,12 @@ function mergePuzzleAttemptIntoDashboard(
     if (!attemptedThemes.has(row.theme)) return row;
 
     seen.add(row.theme);
+    const success = isCleanAttemptQuality(attempt.attemptQuality);
     const attempts = toNumber(row.attempts) + 1;
-    const correct = toNumber(row.correct) + Number(options.success);
+    const correct = toNumber(row.correct) + Number(success);
     const recentAttempts = toNumber(row.recentAttempts) + 1;
     const recentCorrect =
-      Math.round(row.recentAccuracy * toNumber(row.recentAttempts)) + Number(options.success);
+      Math.round(row.recentAccuracy * toNumber(row.recentAttempts)) + Number(success);
     const delta = deltaByTheme.get(row.theme);
 
     return {
@@ -1844,16 +1880,17 @@ function mergePuzzleAttemptIntoDashboard(
     if (seen.has(theme)) continue;
 
     const delta = deltaByTheme.get(theme);
+    const success = isCleanAttemptQuality(attempt.attemptQuality);
     themes.push({
       theme,
       attempts: BigInt(1),
-      correct: BigInt(Number(options.success)),
-      accuracy: Number(options.success),
+      correct: BigInt(Number(success)),
+      accuracy: Number(success),
       averageTimeMs: Math.max(0, options.timeSpentMs),
       skill: delta?.skillAfter ?? attempt.eloAfter,
       weaknessScore: 0,
       recentAttempts: BigInt(1),
-      recentAccuracy: Number(options.success),
+      recentAccuracy: Number(success),
       due: BigInt(0),
       mastered: BigInt(attempt.card.mastered ? 1 : 0),
       lastAttemptAt: attempt.card.lastAttemptAt,

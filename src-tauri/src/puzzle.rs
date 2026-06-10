@@ -25,6 +25,8 @@ const THEME_FIRST_ATTEMPT_K: f64 = 24.0;
 const THEME_REVIEW_ATTEMPT_K: f64 = 8.0;
 const DAY_MS: i64 = 24 * 60 * 60 * 1000;
 const MINUTE_MS: i64 = 60 * 1000;
+const SLOW_SOLVE_MS: i64 = 180_000;
+const WEAK_THEME_THRESHOLD: f64 = 100.0;
 
 #[derive(Debug)]
 struct PuzzleCache {
@@ -154,6 +156,42 @@ impl PuzzleAttemptOutcome {
 
 #[derive(Clone, Debug, Serialize, Deserialize, Type, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+pub enum PuzzleAttemptQuality {
+    Failed,
+    Assisted,
+    Hard,
+    Solid,
+    Fluent,
+}
+
+impl PuzzleAttemptQuality {
+    fn as_str(&self) -> &'static str {
+        match self {
+            Self::Failed => "failed",
+            Self::Assisted => "assisted",
+            Self::Hard => "hard",
+            Self::Solid => "solid",
+            Self::Fluent => "fluent",
+        }
+    }
+
+    fn from_str(value: &str) -> Self {
+        match value {
+            "assisted" => Self::Assisted,
+            "hard" => Self::Hard,
+            "solid" => Self::Solid,
+            "fluent" => Self::Fluent,
+            _ => Self::Failed,
+        }
+    }
+
+    fn is_clean_success(&self) -> bool {
+        matches!(self, Self::Hard | Self::Solid | Self::Fluent)
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Type, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub enum PuzzleSrsState {
     New,
     Learning,
@@ -213,6 +251,7 @@ pub struct PuzzleCardProgress {
     last_attempt_at: Option<i64>,
     total_attempts: i64,
     correct_attempts: i64,
+    last_quality: PuzzleAttemptQuality,
     mastered: bool,
 }
 
@@ -236,6 +275,7 @@ pub struct PuzzleAttemptInput {
     time_spent_ms: i64,
     used_hint: bool,
     viewed_solution: bool,
+    wrong_moves: i64,
 }
 
 #[derive(Clone, Debug, Serialize, Type)]
@@ -256,6 +296,7 @@ pub struct PuzzleAttemptResult {
     elo_before: f64,
     elo_after: f64,
     elo_delta: f64,
+    attempt_quality: PuzzleAttemptQuality,
     theme_deltas: Vec<PuzzleThemeDelta>,
 }
 
@@ -301,6 +342,7 @@ pub struct PuzzleSrsQueueRow {
     interval_days: f64,
     total_attempts: i64,
     correct_attempts: i64,
+    last_quality: PuzzleAttemptQuality,
     mastered: bool,
 }
 
@@ -500,13 +542,12 @@ pub fn record_puzzle_attempt(
     let puzzle = load_puzzle_by_id(&puzzle_conn, input.puzzle_id)?.ok_or(Error::NoPuzzles)?;
     let themes = get_themes_for_puzzle_rusqlite(&puzzle_conn, input.puzzle_id)?;
     let now = now_ms();
-    let success = input.outcome == PuzzleAttemptOutcome::Correct
-        && !input.used_hint
-        && !input.viewed_solution;
-
     let tx = progress_conn.transaction()?;
     let before_card = get_card_progress(&tx, &db_key, input.puzzle_id)?;
     let elo_before = get_profile_elo(&tx, &db_key)?;
+    let attempt_quality =
+        classify_puzzle_attempt(&tx, &db_key, &input, puzzle.rating, elo_before, &themes)?;
+    let success = attempt_quality.is_clean_success();
     let first_rated_attempt = before_card
         .as_ref()
         .map(|card| card.total_attempts == 0)
@@ -518,14 +559,15 @@ pub fn record_puzzle_attempt(
     };
     let elo_delta = calculate_elo_delta(elo_before, puzzle.rating as f64, success, k);
     let elo_after = (elo_before + elo_delta).max(100.0);
-    let card = schedule_puzzle_card(before_card, input.puzzle_id, success, now);
+    let card = schedule_puzzle_card(before_card, input.puzzle_id, &attempt_quality, now);
     let themes_json = serde_json::to_string(&themes).unwrap_or_else(|_| "[]".to_string());
 
     tx.execute(
         "INSERT INTO puzzle_attempts
             (db_key, puzzle_id, attempted_at, mode, outcome, puzzle_rating, elo_before,
-             elo_after, elo_delta, time_spent_ms, used_hint, viewed_solution, themes)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
+             elo_after, elo_delta, time_spent_ms, used_hint, viewed_solution, wrong_moves,
+             attempt_quality, themes)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)",
         params![
             db_key,
             input.puzzle_id,
@@ -539,14 +581,16 @@ pub fn record_puzzle_attempt(
             input.time_spent_ms.max(0),
             input.used_hint,
             input.viewed_solution,
+            input.wrong_moves.max(0),
+            attempt_quality.as_str(),
             themes_json,
         ],
     )?;
     tx.execute(
         "INSERT INTO puzzle_cards
             (db_key, puzzle_id, due_at, state, reps, lapses, interval_days, ease,
-             last_attempt_at, total_attempts, correct_attempts, mastered)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)
+             last_attempt_at, total_attempts, correct_attempts, last_quality, mastered)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)
          ON CONFLICT(db_key, puzzle_id) DO UPDATE SET
             due_at = excluded.due_at,
             state = excluded.state,
@@ -557,6 +601,7 @@ pub fn record_puzzle_attempt(
             last_attempt_at = excluded.last_attempt_at,
             total_attempts = excluded.total_attempts,
             correct_attempts = excluded.correct_attempts,
+            last_quality = excluded.last_quality,
             mastered = excluded.mastered",
         params![
             db_key,
@@ -570,6 +615,7 @@ pub fn record_puzzle_attempt(
             card.last_attempt_at,
             card.total_attempts,
             card.correct_attempts,
+            card.last_quality.as_str(),
             card.mastered,
         ],
     )?;
@@ -605,6 +651,7 @@ pub fn record_puzzle_attempt(
         elo_before,
         elo_after,
         elo_delta,
+        attempt_quality,
         theme_deltas,
     })
 }
@@ -779,6 +826,8 @@ fn init_progress_schema(conn: &RusqliteConnection) -> Result<(), Error> {
             time_spent_ms INTEGER NOT NULL DEFAULT 0,
             used_hint INTEGER NOT NULL DEFAULT 0,
             viewed_solution INTEGER NOT NULL DEFAULT 0,
+            wrong_moves INTEGER NOT NULL DEFAULT 0,
+            attempt_quality TEXT NOT NULL DEFAULT 'failed',
             themes TEXT NOT NULL DEFAULT '[]'
         );
         CREATE INDEX IF NOT EXISTS idx_puzzle_attempts_db_time
@@ -797,6 +846,7 @@ fn init_progress_schema(conn: &RusqliteConnection) -> Result<(), Error> {
             last_attempt_at INTEGER,
             total_attempts INTEGER NOT NULL DEFAULT 0,
             correct_attempts INTEGER NOT NULL DEFAULT 0,
+            last_quality TEXT NOT NULL DEFAULT 'failed',
             mastered INTEGER NOT NULL DEFAULT 0,
             PRIMARY KEY(db_key, puzzle_id)
         );
@@ -830,6 +880,54 @@ fn init_progress_schema(conn: &RusqliteConnection) -> Result<(), Error> {
         );
         ",
     )?;
+    add_column_if_missing(
+        conn,
+        "puzzle_attempts",
+        "wrong_moves",
+        "INTEGER NOT NULL DEFAULT 0",
+    )?;
+    add_column_if_missing(
+        conn,
+        "puzzle_attempts",
+        "attempt_quality",
+        "TEXT NOT NULL DEFAULT 'failed'",
+    )?;
+    add_column_if_missing(
+        conn,
+        "puzzle_cards",
+        "last_quality",
+        "TEXT NOT NULL DEFAULT 'failed'",
+    )?;
+    conn.execute(
+        "UPDATE puzzle_attempts
+         SET attempt_quality = 'solid'
+         WHERE attempt_quality = 'failed'
+           AND outcome = 'correct'
+           AND used_hint = 0
+           AND viewed_solution = 0",
+        [],
+    )?;
+    Ok(())
+}
+
+fn add_column_if_missing(
+    conn: &RusqliteConnection,
+    table_name: &str,
+    column_name: &str,
+    column_definition: &str,
+) -> Result<(), Error> {
+    let mut stmt = conn.prepare(&format!("PRAGMA table_info({table_name})"))?;
+    let exists = stmt
+        .query_map([], |row| row.get::<_, String>(1))?
+        .collect::<Result<Vec<_>, _>>()?
+        .iter()
+        .any(|name| name == column_name);
+    if !exists {
+        conn.execute(
+            &format!("ALTER TABLE {table_name} ADD COLUMN {column_name} {column_definition}"),
+            [],
+        )?;
+    }
     Ok(())
 }
 
@@ -898,7 +996,7 @@ fn get_progress_summary(
     )?;
     let (total_attempts, correct_attempts): (i64, i64) = conn.query_row(
         "SELECT COUNT(*),
-                COALESCE(SUM(CASE WHEN outcome = 'correct' AND used_hint = 0 AND viewed_solution = 0
+                COALESCE(SUM(CASE WHEN attempt_quality IN ('hard', 'solid', 'fluent')
                                   THEN 1 ELSE 0 END), 0)
          FROM puzzle_attempts WHERE db_key = ?1",
         params![db_key],
@@ -960,7 +1058,7 @@ fn get_card_progress(
 ) -> Result<Option<PuzzleCardProgress>, Error> {
     conn.query_row(
         "SELECT puzzle_id, due_at, state, reps, lapses, interval_days, ease,
-                last_attempt_at, total_attempts, correct_attempts, mastered
+                last_attempt_at, total_attempts, correct_attempts, last_quality, mastered
          FROM puzzle_cards WHERE db_key = ?1 AND puzzle_id = ?2",
         params![db_key, puzzle_id],
         row_to_card_progress,
@@ -971,7 +1069,8 @@ fn get_card_progress(
 
 fn row_to_card_progress(row: &rusqlite::Row) -> rusqlite::Result<PuzzleCardProgress> {
     let state: String = row.get(2)?;
-    let mastered: i64 = row.get(10)?;
+    let last_quality: String = row.get(10)?;
+    let mastered: i64 = row.get(11)?;
     Ok(PuzzleCardProgress {
         puzzle_id: row.get(0)?,
         due_at: row.get(1)?,
@@ -983,6 +1082,7 @@ fn row_to_card_progress(row: &rusqlite::Row) -> rusqlite::Result<PuzzleCardProgr
         last_attempt_at: row.get(7)?,
         total_attempts: row.get(8)?,
         correct_attempts: row.get(9)?,
+        last_quality: PuzzleAttemptQuality::from_str(&last_quality),
         mastered: mastered != 0,
     })
 }
@@ -990,7 +1090,7 @@ fn row_to_card_progress(row: &rusqlite::Row) -> rusqlite::Result<PuzzleCardProgr
 fn schedule_puzzle_card(
     previous: Option<PuzzleCardProgress>,
     puzzle_id: i32,
-    success: bool,
+    quality: &PuzzleAttemptQuality,
     now: i64,
 ) -> PuzzleCardProgress {
     let mut card = previous.unwrap_or(PuzzleCardProgress {
@@ -1004,45 +1104,186 @@ fn schedule_puzzle_card(
         last_attempt_at: None,
         total_attempts: 0,
         correct_attempts: 0,
+        last_quality: PuzzleAttemptQuality::Failed,
         mastered: false,
     });
 
     card.total_attempts += 1;
     card.last_attempt_at = Some(now);
+    card.last_quality = quality.clone();
 
-    if success {
-        card.correct_attempts += 1;
-        card.reps += 1;
-        card.ease = (card.ease + 0.05).max(MIN_EASE);
-        card.interval_days = if card.reps <= 1 {
-            1.0
-        } else if card.reps == 2 {
-            3.0
-        } else {
-            (card.interval_days.max(1.0) * card.ease).round().max(1.0)
-        };
-        card.mastered = card.reps >= 5 && card.interval_days >= 21.0;
-        card.state = if card.mastered {
-            PuzzleSrsState::Mastered
-        } else {
-            PuzzleSrsState::Review
-        };
-        card.due_at = now + (card.interval_days * DAY_MS as f64).round() as i64;
-    } else {
-        card.lapses += 1;
-        card.reps = 0;
-        card.ease = (card.ease - 0.2).max(MIN_EASE);
-        card.interval_days = 10.0 / (24.0 * 60.0);
-        card.mastered = false;
-        card.state = if card.total_attempts > 1 {
-            PuzzleSrsState::Relearning
-        } else {
-            PuzzleSrsState::Learning
-        };
-        card.due_at = now + 10 * MINUTE_MS;
+    match quality {
+        PuzzleAttemptQuality::Failed => {
+            card.lapses += 1;
+            card.reps = 0;
+            card.ease = (card.ease - 0.2).max(MIN_EASE);
+            card.interval_days = 10.0 / (24.0 * 60.0);
+            card.mastered = false;
+            card.state = if card.total_attempts > 1 {
+                PuzzleSrsState::Relearning
+            } else {
+                PuzzleSrsState::Learning
+            };
+            card.due_at = now + 10 * MINUTE_MS;
+        }
+        PuzzleAttemptQuality::Assisted => {
+            card.lapses += 1;
+            card.reps = 0;
+            card.ease = (card.ease - 0.1).max(MIN_EASE);
+            card.interval_days = 1.0;
+            card.mastered = false;
+            card.state = if card.total_attempts > 1 {
+                PuzzleSrsState::Relearning
+            } else {
+                PuzzleSrsState::Learning
+            };
+            card.due_at = now + DAY_MS;
+        }
+        PuzzleAttemptQuality::Hard => {
+            card.correct_attempts += 1;
+            card.reps += 1;
+            card.interval_days = if card.reps <= 1 {
+                1.0
+            } else if card.reps == 2 {
+                3.0
+            } else {
+                (card.interval_days.max(1.0) * (card.ease * 0.65).max(MIN_EASE))
+                    .round()
+                    .max(1.0)
+            };
+            card.mastered = card.reps >= 5 && card.interval_days >= 21.0;
+            card.state = if card.mastered {
+                PuzzleSrsState::Mastered
+            } else {
+                PuzzleSrsState::Review
+            };
+            card.due_at = now + (card.interval_days * DAY_MS as f64).round() as i64;
+        }
+        PuzzleAttemptQuality::Solid => {
+            card.correct_attempts += 1;
+            card.reps += 1;
+            card.ease = (card.ease + 0.05).max(MIN_EASE);
+            card.interval_days = if card.reps <= 1 {
+                3.0
+            } else if card.reps == 2 {
+                8.0
+            } else {
+                (card.interval_days.max(1.0) * card.ease).round().max(1.0)
+            };
+            card.mastered = card.reps >= 4 && card.interval_days >= 21.0;
+            card.state = if card.mastered {
+                PuzzleSrsState::Mastered
+            } else {
+                PuzzleSrsState::Review
+            };
+            card.due_at = now + (card.interval_days * DAY_MS as f64).round() as i64;
+        }
+        PuzzleAttemptQuality::Fluent => {
+            card.correct_attempts += 1;
+            card.ease = (card.ease + 0.1).max(MIN_EASE);
+            if card.lapses == 0 && card.total_attempts == 1 {
+                card.reps = card.reps.max(5);
+                card.interval_days = 0.0;
+                card.mastered = true;
+                card.state = PuzzleSrsState::Mastered;
+                card.due_at = now;
+            } else {
+                card.reps += 1;
+                card.interval_days = if card.reps <= 1 {
+                    7.0
+                } else if card.reps == 2 {
+                    21.0
+                } else {
+                    (card.interval_days.max(7.0) * (card.ease * 1.2)).round()
+                };
+                card.mastered = card.reps >= 3 && card.interval_days >= 21.0;
+                card.state = if card.mastered {
+                    PuzzleSrsState::Mastered
+                } else {
+                    PuzzleSrsState::Review
+                };
+                card.due_at = now + (card.interval_days * DAY_MS as f64).round() as i64;
+            }
+        }
     }
 
     card
+}
+
+fn classify_puzzle_attempt(
+    conn: &RusqliteConnection,
+    db_key: &str,
+    input: &PuzzleAttemptInput,
+    puzzle_rating: i32,
+    puzzle_elo: f64,
+    themes: &[String],
+) -> Result<PuzzleAttemptQuality, Error> {
+    if input.viewed_solution {
+        return Ok(PuzzleAttemptQuality::Failed);
+    }
+
+    if input.used_hint {
+        return Ok(PuzzleAttemptQuality::Assisted);
+    }
+
+    if input.outcome == PuzzleAttemptOutcome::Incorrect {
+        return Ok(PuzzleAttemptQuality::Failed);
+    }
+
+    if input.wrong_moves > 0 {
+        return Ok(PuzzleAttemptQuality::Assisted);
+    }
+
+    let time_spent_ms = input.time_spent_ms.max(0);
+    if time_spent_ms == 0 {
+        return Ok(PuzzleAttemptQuality::Solid);
+    }
+
+    let expected_ms = expected_solve_time_ms(puzzle_rating, puzzle_elo);
+    let time_ratio = time_spent_ms as f64 / expected_ms as f64;
+    let weak_theme = has_weak_attempt_theme(conn, db_key, themes)?;
+
+    if time_spent_ms <= 20_000 && time_ratio <= 0.65 && !weak_theme {
+        return Ok(PuzzleAttemptQuality::Fluent);
+    }
+
+    if time_spent_ms >= SLOW_SOLVE_MS || time_ratio >= 2.25 || (weak_theme && time_ratio >= 1.25) {
+        return Ok(PuzzleAttemptQuality::Hard);
+    }
+
+    Ok(PuzzleAttemptQuality::Solid)
+}
+
+fn expected_solve_time_ms(puzzle_rating: i32, puzzle_elo: f64) -> i64 {
+    let rating_component = 45_000.0 + (puzzle_rating as f64 - 1500.0) * 40.0;
+    let rating_gap = puzzle_rating as f64 - puzzle_elo;
+    let gap_component = if rating_gap >= 0.0 {
+        (rating_gap / 400.0).min(1.0) * 45_000.0
+    } else {
+        (rating_gap / 400.0).max(-1.0) * 20_000.0
+    };
+    (rating_component + gap_component).clamp(15_000.0, 180_000.0) as i64
+}
+
+fn has_weak_attempt_theme(
+    conn: &RusqliteConnection,
+    db_key: &str,
+    themes: &[String],
+) -> Result<bool, Error> {
+    for theme in themes.iter().filter(|theme| is_training_theme(theme)) {
+        let weakness = conn
+            .query_row(
+                "SELECT weakness_score FROM puzzle_theme_stats
+                 WHERE db_key = ?1 AND theme = ?2 AND attempts >= 3",
+                params![db_key, theme],
+                |row| row.get::<_, f64>(0),
+            )
+            .optional()?;
+        if weakness.unwrap_or(0.0) >= WEAK_THEME_THRESHOLD {
+            return Ok(true);
+        }
+    }
+    Ok(false)
 }
 
 fn calculate_elo_delta(player_elo: f64, puzzle_rating: f64, success: bool, k: f64) -> f64 {
@@ -1169,7 +1410,7 @@ fn refresh_daily_snapshot(
     let end = start + DAY_MS;
     let (attempts, correct): (i64, i64) = conn.query_row(
         "SELECT COUNT(*),
-                COALESCE(SUM(CASE WHEN outcome = 'correct' AND used_hint = 0 AND viewed_solution = 0
+                COALESCE(SUM(CASE WHEN attempt_quality IN ('hard', 'solid', 'fluent')
                                   THEN 1 ELSE 0 END), 0)
          FROM puzzle_attempts WHERE db_key = ?1 AND attempted_at >= ?2 AND attempted_at < ?3",
         params![db_key, start, end],
@@ -1697,7 +1938,7 @@ fn get_theme_rows(
     for (theme, attempts, correct, total_time_ms, skill, weakness_score, last_attempt_at) in rows {
         let (recent_attempts, recent_correct): (i64, i64) = conn.query_row(
             "SELECT COUNT(*),
-                    COALESCE(SUM(CASE WHEN outcome = 'correct' AND used_hint = 0 AND viewed_solution = 0
+                    COALESCE(SUM(CASE WHEN attempt_quality IN ('hard', 'solid', 'fluent')
                                       THEN 1 ELSE 0 END), 0)
              FROM puzzle_attempts
              WHERE db_key = ?1 AND attempted_at >= ?2 AND themes LIKE ?3",
@@ -1829,7 +2070,7 @@ fn get_due_queue(
     let now = now_ms();
     let mut stmt = progress_conn.prepare(
         "SELECT puzzle_id, due_at, state, reps, lapses, interval_days,
-                total_attempts, correct_attempts, mastered
+                total_attempts, correct_attempts, last_quality, mastered
          FROM puzzle_cards
          WHERE db_key = ?1 AND mastered = 0
          ORDER BY CASE WHEN due_at <= ?2 THEN 0 ELSE 1 END,
@@ -1839,7 +2080,8 @@ fn get_due_queue(
     let cards = stmt
         .query_map(params![db_key, now, limit as i64], |row| {
             let state: String = row.get(2)?;
-            let mastered: i64 = row.get(8)?;
+            let last_quality: String = row.get(8)?;
+            let mastered: i64 = row.get(9)?;
             Ok((
                 row.get::<_, i32>(0)?,
                 row.get::<_, i64>(1)?,
@@ -1849,6 +2091,7 @@ fn get_due_queue(
                 row.get::<_, f64>(5)?,
                 row.get::<_, i64>(6)?,
                 row.get::<_, i64>(7)?,
+                PuzzleAttemptQuality::from_str(&last_quality),
                 mastered != 0,
             ))
         })?
@@ -1864,6 +2107,7 @@ fn get_due_queue(
         interval_days,
         total_attempts,
         correct_attempts,
+        last_quality,
         mastered,
     ) in cards
     {
@@ -1879,6 +2123,7 @@ fn get_due_queue(
                 interval_days,
                 total_attempts,
                 correct_attempts,
+                last_quality,
                 mastered,
             });
         }
@@ -1908,23 +2153,23 @@ mod tests {
     #[test]
     fn failed_card_returns_quickly_until_relearned() {
         let now = 1_700_000_000_000;
-        let card = schedule_puzzle_card(None, 42, false, now);
+        let card = schedule_puzzle_card(None, 42, &PuzzleAttemptQuality::Failed, now);
         assert_eq!(card.state, PuzzleSrsState::Learning);
         assert_eq!(card.lapses, 1);
         assert!(card.due_at - now <= 10 * MINUTE_MS);
 
-        let card = schedule_puzzle_card(Some(card), 42, false, now + 1);
+        let card = schedule_puzzle_card(Some(card), 42, &PuzzleAttemptQuality::Failed, now + 1);
         assert_eq!(card.state, PuzzleSrsState::Relearning);
         assert_eq!(card.reps, 0);
         assert_eq!(card.lapses, 2);
     }
 
     #[test]
-    fn correct_reviews_grow_interval_and_can_master() {
+    fn hard_reviews_grow_interval_and_can_master() {
         let mut card = None;
         let mut now = 1_700_000_000_000;
         for _ in 0..5 {
-            let next = schedule_puzzle_card(card, 12, true, now);
+            let next = schedule_puzzle_card(card, 12, &PuzzleAttemptQuality::Hard, now);
             now = next.due_at;
             card = Some(next);
         }
@@ -1933,6 +2178,29 @@ mod tests {
         assert!(card.interval_days >= 21.0);
         assert!(card.mastered);
         assert_eq!(card.state, PuzzleSrsState::Mastered);
+    }
+
+    #[test]
+    fn fluent_first_solve_graduates_without_due_review() {
+        let now = 1_700_000_000_000;
+        let card = schedule_puzzle_card(None, 42, &PuzzleAttemptQuality::Fluent, now);
+
+        assert_eq!(card.state, PuzzleSrsState::Mastered);
+        assert!(card.mastered);
+        assert_eq!(card.due_at, now);
+        assert_eq!(card.last_quality, PuzzleAttemptQuality::Fluent);
+    }
+
+    #[test]
+    fn assisted_card_returns_tomorrow_without_clean_rep_credit() {
+        let now = 1_700_000_000_000;
+        let card = schedule_puzzle_card(None, 42, &PuzzleAttemptQuality::Assisted, now);
+
+        assert_eq!(card.state, PuzzleSrsState::Learning);
+        assert_eq!(card.reps, 0);
+        assert_eq!(card.correct_attempts, 0);
+        assert_eq!(card.interval_days, 1.0);
+        assert_eq!(card.due_at, now + DAY_MS);
     }
 
     #[test]
