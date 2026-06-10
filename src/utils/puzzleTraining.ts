@@ -1,3 +1,4 @@
+import type { PuzzleTrainingMode } from "@/bindings";
 import type { DailyGoal } from "@/state/atoms";
 
 export type PuzzleThemeSort = "weakness" | "accuracy" | "skill" | "attempts" | "recent";
@@ -18,6 +19,41 @@ export type PuzzleTrendLike = {
     mastered: bigint | number;
 };
 
+export const PUZZLE_TRAINING_MODE_ORDER: PuzzleTrainingMode[] = [
+    "coach",
+    "srsReview",
+    "themeFocus",
+    "ratingLadder",
+    "random",
+];
+
+export const PUZZLE_TRAINING_MODE_GUIDE: Record<
+    PuzzleTrainingMode,
+    { label: string; purpose: string }
+> = {
+    coach: {
+        label: "Coach",
+        purpose: "Chooses the next useful puzzle from due reviews, weak themes, and rating fit.",
+    },
+    srsReview: {
+        label: "SRS",
+        purpose: "Reviews puzzles that are due so failed or shaky patterns come back on schedule.",
+    },
+    themeFocus: {
+        label: "Theme",
+        purpose:
+            "Trains the selected theme, falling back wider only when the filtered pool is empty.",
+    },
+    ratingLadder: {
+        label: "Ladder",
+        purpose: "Pushes puzzle difficulty upward from your current range or progressive setting.",
+    },
+    random: {
+        label: "Random",
+        purpose: "Samples any puzzle that matches the current rating and theme filters.",
+    },
+};
+
 export function puzzleNumber(value: bigint | number | null | undefined) {
     if (value === null || value === undefined) return 0;
     return Number(value);
@@ -31,7 +67,8 @@ export function rankPuzzleThemes<T extends PuzzleThemeRankable>(
     switch (sort) {
         case "accuracy":
             return data.sort(
-                (a, b) => b.accuracy - a.accuracy || puzzleNumber(b.attempts) - puzzleNumber(a.attempts),
+                (a, b) =>
+                    b.accuracy - a.accuracy || puzzleNumber(b.attempts) - puzzleNumber(a.attempts),
             );
         case "skill":
             return data.sort((a, b) => b.skill - a.skill);
@@ -52,6 +89,13 @@ export function buildPuzzleTrendRows(points: readonly PuzzleTrendLike[]) {
         accuracy: Math.round(point.accuracy * 100),
         mastered: puzzleNumber(point.mastered),
     }));
+}
+
+export function formatPuzzleEloChange(value: number | null | undefined) {
+    if (value === null || value === undefined || Number.isNaN(value)) return "-";
+    const rounded = Math.round(value);
+    if (rounded > 0) return `+${rounded}`;
+    return rounded.toString();
 }
 
 export function getActivePuzzleGoals(goals: readonly DailyGoal[]) {

@@ -1414,6 +1414,12 @@ urgent due cards first, then ordinary due reviews, then weak-theme or
   refresh responses, so small review deltas remain visible and an older
   dashboard request cannot overwrite the fresher summary returned by a just
   recorded attempt.
+- On 2026-06-10, puzzle attempt summaries returned from
+  `recordPuzzleAttempt` became authoritative in the trainer UI so Puzzle Elo
+  updates immediately after every recorded solve, miss, hint, or solution view.
+  The Train panel now also shows a signed whole-number last Elo change such as
+  `+10` or `-7`, and includes compact purpose copy for Coach, SRS, Theme,
+  Ladder, and Random modes so users know when to choose each training path.
 
 ### Practice Bot Trainer
 

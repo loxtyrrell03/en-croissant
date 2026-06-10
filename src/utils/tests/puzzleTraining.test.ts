@@ -2,17 +2,37 @@ import { describe, expect, test } from "vitest";
 import type { DailyGoal } from "@/state/atoms";
 import {
     buildPuzzleTrendRows,
+    formatPuzzleEloChange,
     getActivePuzzleGoals,
     puzzleNumber,
+    PUZZLE_TRAINING_MODE_GUIDE,
     rankPuzzleThemes,
 } from "@/utils/puzzleTraining";
 
 describe("puzzleTraining", () => {
     test("ranks weakest puzzle themes first by default", () => {
         const rows = [
-            { attempts: BigInt(10), accuracy: 0.8, skill: 1600, weaknessScore: 20, recentAccuracy: 0.7 },
-            { attempts: BigInt(4), accuracy: 0.4, skill: 1350, weaknessScore: 90, recentAccuracy: 0.5 },
-            { attempts: BigInt(20), accuracy: 0.6, skill: 1450, weaknessScore: 50, recentAccuracy: 0.6 },
+            {
+                attempts: BigInt(10),
+                accuracy: 0.8,
+                skill: 1600,
+                weaknessScore: 20,
+                recentAccuracy: 0.7,
+            },
+            {
+                attempts: BigInt(4),
+                accuracy: 0.4,
+                skill: 1350,
+                weaknessScore: 90,
+                recentAccuracy: 0.5,
+            },
+            {
+                attempts: BigInt(20),
+                accuracy: 0.6,
+                skill: 1450,
+                weaknessScore: 50,
+                recentAccuracy: 0.6,
+            },
         ];
 
         expect(rankPuzzleThemes(rows, "weakness").map((row) => row.weaknessScore)).toEqual([
@@ -22,8 +42,20 @@ describe("puzzleTraining", () => {
 
     test("ranks accuracy ties by larger sample", () => {
         const rows = [
-            { attempts: BigInt(3), accuracy: 0.75, skill: 1500, weaknessScore: 10, recentAccuracy: 0.7 },
-            { attempts: BigInt(18), accuracy: 0.75, skill: 1500, weaknessScore: 10, recentAccuracy: 0.7 },
+            {
+                attempts: BigInt(3),
+                accuracy: 0.75,
+                skill: 1500,
+                weaknessScore: 10,
+                recentAccuracy: 0.7,
+            },
+            {
+                attempts: BigInt(18),
+                accuracy: 0.75,
+                skill: 1500,
+                weaknessScore: 10,
+                recentAccuracy: 0.7,
+            },
         ];
 
         expect(puzzleNumber(rankPuzzleThemes(rows, "accuracy")[0].attempts)).toBe(18);
@@ -47,6 +79,25 @@ describe("puzzleTraining", () => {
             accuracy: 71,
             mastered: 2,
         });
+    });
+
+    test("formats signed whole-number Elo changes", () => {
+        expect(formatPuzzleEloChange(10.4)).toBe("+10");
+        expect(formatPuzzleEloChange(-6.6)).toBe("-7");
+        expect(formatPuzzleEloChange(0)).toBe("0");
+        expect(formatPuzzleEloChange(undefined)).toBe("-");
+    });
+
+    test("describes every puzzle training mode", () => {
+        expect(Object.keys(PUZZLE_TRAINING_MODE_GUIDE).sort()).toEqual([
+            "coach",
+            "random",
+            "ratingLadder",
+            "srsReview",
+            "themeFocus",
+        ]);
+        expect(PUZZLE_TRAINING_MODE_GUIDE.coach.purpose).toContain("next useful puzzle");
+        expect(PUZZLE_TRAINING_MODE_GUIDE.srsReview.purpose).toContain("due");
     });
 
     test("filters active puzzle daily goals", () => {

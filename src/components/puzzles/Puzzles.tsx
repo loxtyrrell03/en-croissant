@@ -44,7 +44,15 @@ import { save } from "@tauri-apps/plugin-dialog";
 import { isNormal, makeSquare, makeUci, parseUci } from "chessops";
 import { parseFen } from "chessops/fen";
 import { useAtom, useSetAtom } from "jotai";
-import { useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { useTranslation } from "react-i18next";
 import {
   Area,
@@ -89,8 +97,11 @@ import { formatThemeLabel, formatTime } from "@/utils/format";
 import { type Completion, getPuzzleDatabases, type Puzzle } from "@/utils/puzzles";
 import {
   buildPuzzleTrendRows,
+  formatPuzzleEloChange,
   getActivePuzzleGoals,
   puzzleNumber,
+  PUZZLE_TRAINING_MODE_GUIDE,
+  PUZZLE_TRAINING_MODE_ORDER,
   rankPuzzleThemes,
   type PuzzleThemeSort,
 } from "@/utils/puzzleTraining";
@@ -185,13 +196,13 @@ function Puzzles({ id }: { id: string }) {
     });
   }, [selectedDb]);
 
-  const applyProgressSummary = useCallback((summary: PuzzleProgressSummary) => {
+  const applyProgressSummary = useCallback((summary: PuzzleProgressSummary, force = false) => {
     setProgressSummary((previous) =>
-      isNewerPuzzleSummary(summary, previous) ? summary : previous,
+      force || isNewerPuzzleSummary(summary, previous) ? summary : previous,
     );
     setDashboard((previous) => {
       if (!previous || previous.summary.dbKey !== summary.dbKey) return previous;
-      if (!isNewerPuzzleSummary(summary, previous.summary)) return previous;
+      if (!force && !isNewerPuzzleSummary(summary, previous.summary)) return previous;
       return { ...previous, summary };
     });
   }, []);
@@ -313,10 +324,13 @@ function Puzzles({ id }: { id: string }) {
     }
   }, [dailyGoals, setDailyGoalCompletionPrompt, setDailyGoalHistory]);
 
-  const setPuzzle = useCallback((puzzle: { fen: string; moves: string[] }) => {
-    setFen(puzzle.fen);
-    makeMove({ payload: parseUci(puzzle.moves[0])! });
-  }, [makeMove, setFen]);
+  const setPuzzle = useCallback(
+    (puzzle: { fen: string; moves: string[] }) => {
+      setFen(puzzle.fen);
+      makeMove({ payload: parseUci(puzzle.moves[0])! });
+    },
+    [makeMove, setFen],
+  );
 
   const solutionAbortRef = useRef<AbortController | null>(null);
   const puzzleGenerationRef = useRef(false);
@@ -480,7 +494,7 @@ function Puzzles({ id }: { id: string }) {
       if (res.status === "ok") {
         attemptResult = res.data;
         setLastAttempt(res.data);
-        applyProgressSummary(res.data.summary);
+        applyProgressSummary(res.data.summary, true);
         setProgressError(null);
       } else {
         setProgressError(String(res.error));
@@ -1051,11 +1065,15 @@ function PuzzleTrainPanel({
   const puzzleRating =
     currentPuzzle && currentPuzzle.completion === "incomplete" && hideRating
       ? "?"
-      : currentPuzzle?.rating?.toString() ?? "-";
+      : (currentPuzzle?.rating?.toString() ?? "-");
   const activeMode = progressive ? "ratingLadder" : trainingMode;
+  const activeModeGuide = PUZZLE_TRAINING_MODE_GUIDE[activeMode];
   const currentThemes = currentPuzzle?.themes ?? [];
-  const eloDelta = currentPuzzle?.eloDelta ?? lastAttempt?.eloDelta;
   const isCompleted = currentPuzzle !== undefined && currentPuzzle.completion !== "incomplete";
+  const completedEloDelta = isCompleted
+    ? (currentPuzzle.eloDelta ?? lastAttempt?.eloDelta)
+    : undefined;
+  const lastEloDelta = completedEloDelta ?? lastAttempt?.eloDelta;
   const newPuzzleLabel = !currentPuzzle
     ? "Start training"
     : currentPuzzle.completion === "incomplete"
@@ -1069,20 +1087,55 @@ function PuzzleTrainPanel({
         onChange={(value) => setTrainingMode(value as PuzzleTrainingMode)}
         disabled={progressive}
         data={[
-          { label: "Coach", value: "coach" },
-          { label: "SRS", value: "srsReview" },
-          { label: "Theme", value: "themeFocus" },
-          { label: "Ladder", value: "ratingLadder" },
-          { label: "Random", value: "random" },
+          { label: PUZZLE_TRAINING_MODE_GUIDE.coach.label, value: "coach" },
+          { label: PUZZLE_TRAINING_MODE_GUIDE.srsReview.label, value: "srsReview" },
+          { label: PUZZLE_TRAINING_MODE_GUIDE.themeFocus.label, value: "themeFocus" },
+          { label: PUZZLE_TRAINING_MODE_GUIDE.ratingLadder.label, value: "ratingLadder" },
+          { label: PUZZLE_TRAINING_MODE_GUIDE.random.label, value: "random" },
         ]}
       />
+      <Paper withBorder p="xs">
+        <Stack gap={6}>
+          <Group justify="space-between" gap="xs">
+            <Text size="sm" fw={700}>
+              {activeModeGuide.label}
+            </Text>
+            {lastEloDelta !== undefined && (
+              <Badge color={lastEloDelta >= 0 ? "teal" : "orange"} variant="light">
+                Last Elo {formatPuzzleEloChange(lastEloDelta)}
+              </Badge>
+            )}
+          </Group>
+          <Text size="xs" c="dimmed">
+            {activeModeGuide.purpose}
+          </Text>
+          <SimpleGrid cols={{ base: 1, sm: 2 }} spacing={4}>
+            {PUZZLE_TRAINING_MODE_ORDER.map((mode) => {
+              const guide = PUZZLE_TRAINING_MODE_GUIDE[mode];
+              return (
+                <Text key={mode} size="xs" c={mode === activeMode ? undefined : "dimmed"}>
+                  <Text span fw={700}>
+                    {guide.label}:
+                  </Text>{" "}
+                  {guide.purpose}
+                </Text>
+              );
+            })}
+          </SimpleGrid>
+        </Stack>
+      </Paper>
       {progressive && (
         <Text size="xs" c="dimmed">
           Progressive mode is using Rating Ladder selection.
         </Text>
       )}
-      <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="xs">
+      <SimpleGrid cols={{ base: 2, sm: 5 }} spacing="xs">
         <PuzzleStatTile label="Puzzle Elo" value={formatRating(durableSummary?.puzzleElo)} />
+        <PuzzleStatTile
+          label="Last change"
+          value={formatPuzzleEloChange(lastEloDelta)}
+          color={lastEloDelta === undefined ? "dimmed" : lastEloDelta >= 0 ? "teal" : "orange"}
+        />
         <PuzzleStatTile
           label="Database accuracy"
           value={durableAccuracy === null ? "-" : `${durableAccuracy}%`}
@@ -1143,13 +1196,12 @@ function PuzzleTrainPanel({
               {currentPuzzle.attemptRecorded === false && selectedDb && (
                 <Badge variant="outline">Saving result</Badge>
               )}
-              {eloDelta !== undefined && (
-                <Badge color={eloDelta >= 0 ? "teal" : "orange"} variant="outline">
-                  Elo {eloDelta >= 0 ? "+" : ""}
-                  {eloDelta.toFixed(1)}
+              {completedEloDelta !== undefined && (
+                <Badge color={completedEloDelta >= 0 ? "teal" : "orange"} variant="outline">
+                  Elo {formatPuzzleEloChange(completedEloDelta)}
                 </Badge>
               )}
-              {currentPuzzle.eloAfter && (
+              {currentPuzzle.eloAfter !== undefined && (
                 <Badge variant="outline">Now {formatRating(currentPuzzle.eloAfter)}</Badge>
               )}
             </Group>
@@ -1225,10 +1277,7 @@ function PuzzleStatsPanel({
   dashboard: PuzzleDashboard | null;
   summary: PuzzleProgressSummary | null;
 }) {
-  const trendData = useMemo(
-    () => buildPuzzleTrendRows(dashboard?.trends ?? []),
-    [dashboard],
-  );
+  const trendData = useMemo(() => buildPuzzleTrendRows(dashboard?.trends ?? []), [dashboard]);
 
   if (!summary) {
     return (
@@ -1360,7 +1409,11 @@ function PuzzleThemeRow({ row }: { row: PuzzleThemeStatsRow }) {
             <Text size="sm" fw={500}>
               {formatThemeLabel(row.theme)}
             </Text>
-            {row.weaknessScore > 0 && <Badge size="xs" color="orange">Weakness</Badge>}
+            {row.weaknessScore > 0 && (
+              <Badge size="xs" color="orange">
+                Weakness
+              </Badge>
+            )}
           </Group>
           <Text size="xs" c="dimmed">
             {attempts} attempts, avg {formatCompactTime(row.averageTimeMs)}
@@ -1405,7 +1458,12 @@ function PuzzleSrsPanel({
     <Stack gap="sm">
       <Group justify="space-between">
         <Group gap="xs">
-          <Button size="xs" variant="light" leftSection={<IconRefresh size={16} />} onClick={onRefresh}>
+          <Button
+            size="xs"
+            variant="light"
+            leftSection={<IconRefresh size={16} />}
+            onClick={onRefresh}
+          >
             Refresh
           </Button>
           <Button
@@ -1525,9 +1583,7 @@ function formatCompactTime(ms: number) {
 }
 
 function formatSrsState(state: string) {
-  return state
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/^./, (char) => char.toUpperCase());
+  return state.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^./, (char) => char.toUpperCase());
 }
 
 function formatDueTime(value: bigint | number) {
