@@ -23,7 +23,7 @@ function PuzzleBoard({
 }: {
   puzzles: Puzzle[];
   currentPuzzle: number;
-  changeCompletion: (completion: Completion) => Promise<void>;
+  changeCompletion: (completion: Exclude<Completion, "incomplete">) => Promise<void>;
 }) {
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (s) => s.root);

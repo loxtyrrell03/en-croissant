@@ -342,6 +342,7 @@ function Puzzles({ id }: { id: string }) {
   const solutionAbortRef = useRef<AbortController | null>(null);
   const puzzleGenerationRef = useRef(false);
   const autoStartKeyRef = useRef<string | null>(null);
+  const savingAttemptKeysRef = useRef(new Set<string>());
 
   const generatePuzzle = useCallback(
     async (db: string, force: boolean = false) => {
@@ -442,6 +443,114 @@ function Puzzles({ id }: { id: string }) {
     selectedDb,
   ]);
 
+  const savePuzzleAttempt = useCallback(
+    async ({
+      puzzle,
+      puzzleIndex,
+      completion,
+      timeSpent,
+      usedHint,
+      viewedSolution,
+    }: {
+      puzzle: Puzzle;
+      puzzleIndex: number;
+      completion: Exclude<Completion, "incomplete">;
+      timeSpent: number;
+      usedHint: boolean;
+      viewedSolution: boolean;
+    }) => {
+      const saveKey = `${selectedDb ?? "no-db"}:${puzzleIndex}:${puzzle.id}`;
+      if (savingAttemptKeysRef.current.has(saveKey)) return;
+
+      savingAttemptKeysRef.current.add(saveKey);
+      let attemptResult: PuzzleAttemptResult | null = null;
+
+      try {
+        if (selectedDb && Number.isFinite(puzzle.id)) {
+          const res = await commands.recordPuzzleAttempt(selectedDb, {
+            puzzleId: puzzle.id,
+            mode:
+              puzzle.trainingMode ??
+              backendModeForPuzzleSelection(puzzleMode, effectiveSelectedTheme),
+            outcome: completion === "correct" ? "correct" : "incorrect",
+            timeSpentMs: Math.max(0, Math.round(timeSpent)) as unknown as bigint,
+            usedHint,
+            viewedSolution,
+          });
+
+          if (res.status === "ok") {
+            attemptResult = res.data;
+            setLastAttempt(res.data);
+            applyProgressSummary(res.data.summary, true);
+            setDashboard((dashboard) =>
+              mergePuzzleAttemptIntoDashboard(dashboard, res.data, {
+                success: completion === "correct" && !usedHint && !viewedSolution,
+                timeSpentMs: timeSpent,
+              }),
+            );
+            setProgressError(null);
+          } else {
+            setProgressError(`Could not save puzzle result: ${String(res.error)}`);
+          }
+        } else if (!selectedDb) {
+          setProgressError("Select a puzzle database before recording puzzle progress.");
+        } else {
+          setProgressError(`Puzzle ${puzzle.id} could not be recorded.`);
+        }
+      } catch (error) {
+        setProgressError(`Could not save puzzle result: ${formatUnknownError(error)}`);
+      } finally {
+        savingAttemptKeysRef.current.delete(saveKey);
+      }
+
+      setPuzzles((puzzles) => {
+        const next = [...puzzles];
+        if (next[puzzleIndex]) {
+          next[puzzleIndex] = {
+            ...next[puzzleIndex],
+            attemptRecorded: attemptResult ? true : undefined,
+            ...(attemptResult
+              ? {
+                  themes: attemptResult.themes,
+                  progress: attemptResult.card,
+                  eloAfter: attemptResult.eloAfter,
+                  eloDelta: attemptResult.eloDelta,
+                }
+              : {}),
+          };
+        }
+        return next;
+      });
+
+      if (selectedDb) {
+        void refreshPuzzleProgress(selectedDb);
+      }
+    },
+    [
+      applyProgressSummary,
+      effectiveSelectedTheme,
+      puzzleMode,
+      refreshPuzzleProgress,
+      selectedDb,
+      setPuzzles,
+    ],
+  );
+
+  useEffect(() => {
+    const puzzle = puzzles[currentPuzzle];
+    if (!puzzle || puzzle.completion === "incomplete" || puzzle.attemptRecorded !== false) return;
+    const completion = puzzle.completion === "correct" ? "correct" : "incorrect";
+
+    void savePuzzleAttempt({
+      puzzle,
+      puzzleIndex: currentPuzzle,
+      completion,
+      timeSpent: puzzle.timeSpent ?? 0,
+      usedHint: Boolean(puzzle.usedHint),
+      viewedSolution: Boolean(puzzle.viewedSolution),
+    });
+  }, [currentPuzzle, puzzles, savePuzzleAttempt]);
+
   async function changeCompletion(
     completion: Completion,
     options: { usedHint?: boolean; viewedSolution?: boolean } = {},
@@ -449,9 +558,8 @@ function Puzzles({ id }: { id: string }) {
     const puzzleIndex = currentPuzzle;
     const timeSpent = timerStart !== null ? Date.now() - timerStart : 0;
     const puzzle = puzzles[puzzleIndex];
-    if (!puzzle || puzzle.completion !== "incomplete") return;
+    if (!puzzle || puzzle.completion !== "incomplete" || completion === "incomplete") return;
 
-    let attemptResult: PuzzleAttemptResult | null = null;
     const usedHint = Boolean(options.usedHint || puzzle.usedHint);
     const viewedSolution = Boolean(options.viewedSolution || puzzle.viewedSolution);
 
@@ -473,59 +581,14 @@ function Puzzles({ id }: { id: string }) {
 
     incrementPuzzleDailyGoals();
 
-    if (selectedDb && Number.isFinite(puzzle.id)) {
-      const res = await commands.recordPuzzleAttempt(selectedDb, {
-        puzzleId: puzzle.id,
-        mode:
-          puzzle.trainingMode ?? backendModeForPuzzleSelection(puzzleMode, effectiveSelectedTheme),
-        outcome: completion === "correct" ? "correct" : "incorrect",
-        timeSpentMs: BigInt(Math.max(0, Math.round(timeSpent))),
-        usedHint,
-        viewedSolution,
-      });
-
-      if (res.status === "ok") {
-        attemptResult = res.data;
-        setLastAttempt(res.data);
-        applyProgressSummary(res.data.summary, true);
-        setDashboard((dashboard) =>
-          mergePuzzleAttemptIntoDashboard(dashboard, res.data, {
-            success: completion === "correct" && !usedHint && !viewedSolution,
-            timeSpentMs: timeSpent,
-          }),
-        );
-        setProgressError(null);
-      } else {
-        setProgressError(String(res.error));
-      }
-    } else if (!selectedDb) {
-      setProgressError("Select a puzzle database before recording puzzle progress.");
-    } else {
-      setProgressError(`Puzzle ${puzzle.id} could not be recorded.`);
-    }
-
-    setPuzzles((puzzles) => {
-      const next = [...puzzles];
-      if (next[puzzleIndex]) {
-        next[puzzleIndex] = {
-          ...next[puzzleIndex],
-          attemptRecorded: attemptResult ? true : undefined,
-          ...(attemptResult
-            ? {
-                themes: attemptResult.themes,
-                progress: attemptResult.card,
-                eloAfter: attemptResult.eloAfter,
-                eloDelta: attemptResult.eloDelta,
-              }
-            : {}),
-        };
-      }
-      return next;
+    await savePuzzleAttempt({
+      puzzle,
+      puzzleIndex,
+      completion: completion === "correct" ? "correct" : "incorrect",
+      timeSpent,
+      usedHint,
+      viewedSolution,
     });
-
-    if (selectedDb) {
-      void refreshPuzzleProgress(selectedDb);
-    }
   }
 
   useEffect(() => {
@@ -1571,6 +1634,11 @@ function formatCompactTime(ms: number) {
   if (!Number.isFinite(ms) || ms <= 0) return "-";
   if (ms < 60_000) return `${(ms / 1000).toFixed(1)}s`;
   return `${Math.round(ms / 60_000)}m`;
+}
+
+function formatUnknownError(error: unknown) {
+  if (error instanceof Error) return error.message;
+  return String(error);
 }
 
 function formatSrsState(state: string) {

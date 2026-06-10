@@ -1435,6 +1435,15 @@ urgent due cards first, then ordinary due reviews, then weak-theme or
   stays static. Failed or skipped writes should clear the transient
   `Saving result` badge and surface a progress error instead of pretending
   the Elo update is still in flight.
+- A further 2026-06-10 fix hardened the stuck `Saving result` path. The
+  generated Tauri binding can throw real JavaScript `Error`s before returning a
+  typed `Result`, so puzzle attempt saves must wrap `recordPuzzleAttempt` in
+  `try/catch`, clear the optimistic saving state on failure, and show the
+  thrown message in the progress alert. The frontend now also sends
+  `timeSpentMs` as a plain safe number cast to the generated bigint type
+  instead of a JavaScript `BigInt`, and retries any completed session puzzle
+  that is still marked `attemptRecorded: false` so old stuck cards can finish
+  saving after a reload.
 
 ### Practice Bot Trainer
 
