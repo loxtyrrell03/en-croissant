@@ -754,9 +754,152 @@ fn progress_db_path(app: &tauri::AppHandle) -> Result<PathBuf, Error> {
 }
 
 fn open_progress_connection(app: &tauri::AppHandle) -> Result<RusqliteConnection, Error> {
-    let conn = RusqliteConnection::open(progress_db_path(app)?)?;
+    let app_data_dir = app.path().app_data_dir()?;
+    let path = progress_db_path(app)?;
+    let conn = RusqliteConnection::open(&path)?;
     init_progress_schema(&conn)?;
+    let old_path = app_data_dir.join("puzzles").join("puzzle-progress.db3");
+    merge_legacy_progress_database(&conn, &path, &old_path)?;
     Ok(conn)
+}
+
+fn merge_legacy_progress_database(
+    conn: &RusqliteConnection,
+    current_path: &Path,
+    old_path: &Path,
+) -> Result<(), Error> {
+    if !old_path.is_file() || same_file_path(current_path, old_path) {
+        return Ok(());
+    }
+
+    let legacy_conn = RusqliteConnection::open(old_path)?;
+    init_progress_schema(&legacy_conn)?;
+    drop(legacy_conn);
+
+    let old_path_string = old_path.to_string_lossy().to_string();
+    conn.execute(
+        "ATTACH DATABASE ?1 AS legacy_progress",
+        params![old_path_string],
+    )?;
+    let result = merge_attached_legacy_progress(conn);
+    let detach_result = conn.execute("DETACH DATABASE legacy_progress", []);
+
+    result?;
+    detach_result?;
+    Ok(())
+}
+
+fn same_file_path(left: &Path, right: &Path) -> bool {
+    match (left.canonicalize(), right.canonicalize()) {
+        (Ok(left), Ok(right)) => left == right,
+        _ => left == right,
+    }
+}
+
+fn merge_attached_legacy_progress(conn: &RusqliteConnection) -> Result<(), Error> {
+    conn.execute_batch(
+        "
+        INSERT INTO puzzle_profiles (db_key, puzzle_elo, created_at, updated_at)
+        SELECT db_key, puzzle_elo, created_at, updated_at
+        FROM legacy_progress.puzzle_profiles legacy
+        WHERE NOT EXISTS (
+            SELECT 1 FROM puzzle_profiles current WHERE current.db_key = legacy.db_key
+        );
+
+        UPDATE puzzle_profiles
+        SET
+            puzzle_elo = (
+                SELECT legacy.puzzle_elo
+                FROM legacy_progress.puzzle_profiles legacy
+                WHERE legacy.db_key = puzzle_profiles.db_key
+            ),
+            updated_at = (
+                SELECT legacy.updated_at
+                FROM legacy_progress.puzzle_profiles legacy
+                WHERE legacy.db_key = puzzle_profiles.db_key
+            )
+        WHERE EXISTS (
+            SELECT 1
+            FROM legacy_progress.puzzle_profiles legacy
+            WHERE legacy.db_key = puzzle_profiles.db_key
+              AND legacy.updated_at > puzzle_profiles.updated_at
+        );
+
+        INSERT INTO puzzle_attempts
+            (db_key, puzzle_id, attempted_at, mode, outcome, puzzle_rating, elo_before,
+             elo_after, elo_delta, time_spent_ms, used_hint, viewed_solution, wrong_moves,
+             attempt_quality, themes)
+        SELECT legacy.db_key, legacy.puzzle_id, legacy.attempted_at, legacy.mode, legacy.outcome,
+               legacy.puzzle_rating, legacy.elo_before, legacy.elo_after, legacy.elo_delta,
+               legacy.time_spent_ms, legacy.used_hint, legacy.viewed_solution, legacy.wrong_moves,
+               legacy.attempt_quality, legacy.themes
+        FROM legacy_progress.puzzle_attempts legacy
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM puzzle_attempts current
+            WHERE current.db_key = legacy.db_key
+              AND current.puzzle_id = legacy.puzzle_id
+              AND current.attempted_at = legacy.attempted_at
+              AND current.mode = legacy.mode
+              AND current.outcome = legacy.outcome
+              AND current.elo_after = legacy.elo_after
+        );
+
+        INSERT INTO puzzle_cards
+            (db_key, puzzle_id, due_at, state, reps, lapses, interval_days, ease,
+             last_attempt_at, total_attempts, correct_attempts, last_quality, mastered)
+        SELECT db_key, puzzle_id, due_at, state, reps, lapses, interval_days, ease,
+               last_attempt_at, total_attempts, correct_attempts, last_quality, mastered
+        FROM legacy_progress.puzzle_cards
+        WHERE true
+        ON CONFLICT(db_key, puzzle_id) DO UPDATE SET
+            due_at = excluded.due_at,
+            state = excluded.state,
+            reps = excluded.reps,
+            lapses = excluded.lapses,
+            interval_days = excluded.interval_days,
+            ease = excluded.ease,
+            last_attempt_at = excluded.last_attempt_at,
+            total_attempts = excluded.total_attempts,
+            correct_attempts = excluded.correct_attempts,
+            last_quality = excluded.last_quality,
+            mastered = excluded.mastered
+        WHERE COALESCE(excluded.last_attempt_at, 0) > COALESCE(puzzle_cards.last_attempt_at, 0);
+
+        INSERT INTO puzzle_theme_stats
+            (db_key, theme, attempts, correct, total_time_ms, skill, lapses,
+             weakness_score, last_attempt_at)
+        SELECT db_key, theme, attempts, correct, total_time_ms, skill, lapses,
+               weakness_score, last_attempt_at
+        FROM legacy_progress.puzzle_theme_stats
+        WHERE true
+        ON CONFLICT(db_key, theme) DO UPDATE SET
+            attempts = excluded.attempts,
+            correct = excluded.correct,
+            total_time_ms = excluded.total_time_ms,
+            skill = excluded.skill,
+            lapses = excluded.lapses,
+            weakness_score = excluded.weakness_score,
+            last_attempt_at = excluded.last_attempt_at
+        WHERE COALESCE(excluded.last_attempt_at, 0) > COALESCE(puzzle_theme_stats.last_attempt_at, 0);
+
+        INSERT INTO puzzle_daily_snapshots
+            (db_key, date_key, puzzle_elo, attempts, correct, solved, due, mastered, updated_at)
+        SELECT db_key, date_key, puzzle_elo, attempts, correct, solved, due, mastered, updated_at
+        FROM legacy_progress.puzzle_daily_snapshots
+        WHERE true
+        ON CONFLICT(db_key, date_key) DO UPDATE SET
+            puzzle_elo = excluded.puzzle_elo,
+            attempts = excluded.attempts,
+            correct = excluded.correct,
+            solved = excluded.solved,
+            due = excluded.due,
+            mastered = excluded.mastered,
+            updated_at = excluded.updated_at
+        WHERE excluded.updated_at > puzzle_daily_snapshots.updated_at;
+        ",
+    )?;
+    Ok(())
 }
 
 fn open_puzzle_database(file: &str) -> Result<RusqliteConnection, Error> {
@@ -2277,5 +2420,81 @@ mod tests {
 
         assert!(matches!(error, Error::InvalidPuzzleDatabase(_)));
         assert!(!path.exists());
+    }
+
+    #[test]
+    fn legacy_progress_merge_preserves_saved_puzzle_elo() {
+        let now = 1_700_000_000_000;
+        let target = RusqliteConnection::open_in_memory().unwrap();
+        init_progress_schema(&target).unwrap();
+        ensure_profile(&target, "Lichess Puzzles.db3:123:10").unwrap();
+        target
+            .execute(
+                "UPDATE puzzle_profiles
+                 SET puzzle_elo = 1500, updated_at = ?2
+                 WHERE db_key = ?1",
+                params!["Lichess Puzzles.db3:123:10", now],
+            )
+            .unwrap();
+
+        let legacy_file = tempfile::NamedTempFile::new().unwrap();
+        let legacy = RusqliteConnection::open(legacy_file.path()).unwrap();
+        init_progress_schema(&legacy).unwrap();
+        legacy
+            .execute(
+                "INSERT INTO puzzle_profiles (db_key, puzzle_elo, created_at, updated_at)
+                 VALUES (?1, ?2, ?3, ?4)",
+                params!["Lichess Puzzles.db3:123:10", 1515.2, now, now + 1_000],
+            )
+            .unwrap();
+        legacy
+            .execute(
+                "INSERT INTO puzzle_attempts
+                    (db_key, puzzle_id, attempted_at, mode, outcome, puzzle_rating, elo_before,
+                     elo_after, elo_delta, time_spent_ms, used_hint, viewed_solution, wrong_moves,
+                     attempt_quality, themes)
+                 VALUES (?1, ?2, ?3, 'coach', 'correct', 1600, 1500, 1515.2, 15.2,
+                         12000, 0, 0, 0, 'solid', '[]')",
+                params!["Lichess Puzzles.db3:123:10", 42, now + 500],
+            )
+            .unwrap();
+        drop(legacy);
+
+        let legacy_path = legacy_file.path().to_string_lossy().to_string();
+        target
+            .execute(
+                "ATTACH DATABASE ?1 AS legacy_progress",
+                params![legacy_path],
+            )
+            .unwrap();
+        merge_attached_legacy_progress(&target).unwrap();
+        target
+            .execute("DETACH DATABASE legacy_progress", [])
+            .unwrap();
+
+        let summary = get_progress_summary(&target, "Lichess Puzzles.db3:123:10").unwrap();
+        assert_eq!(summary.puzzle_elo, 1515.2);
+        assert_eq!(summary.total_attempts, 1);
+
+        let legacy_path = legacy_file.path().to_string_lossy().to_string();
+        target
+            .execute(
+                "ATTACH DATABASE ?1 AS legacy_progress",
+                params![legacy_path],
+            )
+            .unwrap();
+        merge_attached_legacy_progress(&target).unwrap();
+        target
+            .execute("DETACH DATABASE legacy_progress", [])
+            .unwrap();
+
+        let attempts: i64 = target
+            .query_row(
+                "SELECT COUNT(*) FROM puzzle_attempts WHERE db_key = ?1",
+                params!["Lichess Puzzles.db3:123:10"],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(attempts, 1);
     }
 }

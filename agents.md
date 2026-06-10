@@ -1467,6 +1467,14 @@ urgent due cards first, then ordinary due reviews, then weak-theme or
   `puzzles/puzzle-progress.db3` location into app-data `progress`, while the
   picker ignores any old `puzzle-progress.db3` file left behind so progress
   storage is not rediscovered as a puzzle source.
+- A later 2026-06-10 persistence fix made that migration defensive instead of
+  one-shot. Opening puzzle progress now initializes both the new
+  `progress/puzzle-progress.db3` database and any legacy
+  `puzzles/puzzle-progress.db3`, then merges legacy profiles, attempts, SRS
+  cards, theme stats, and daily snapshots into the new store without duplicating
+  attempts. This prevents Puzzle Elo from appearing to reset to 1500 between
+  sessions when attempts were still stranded in the old puzzle-folder progress
+  database or the copied target had an older default profile.
 - Puzzle SRS is now attempt-quality aware instead of treating every clean solve
   the same. `recordPuzzleAttempt` classifies attempts as Failed, Assisted,
   Hard, Solid, or Fluent using solution/hint/wrong-move flags, solve time
