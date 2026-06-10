@@ -1467,6 +1467,15 @@ urgent due cards first, then ordinary due reviews, then weak-theme or
   `puzzles/puzzle-progress.db3` location into app-data `progress`, while the
   picker ignores any old `puzzle-progress.db3` file left behind so progress
   storage is not rediscovered as a puzzle source.
+- Puzzle SRS is now attempt-quality aware instead of treating every clean solve
+  the same. `recordPuzzleAttempt` classifies attempts as Failed, Assisted,
+  Hard, Solid, or Fluent using solution/hint/wrong-move flags, solve time
+  normalized by puzzle rating and current Puzzle Elo, and weak-theme context.
+  Failed cards return in 10 minutes, assisted cards return tomorrow, hard
+  solves use a short ladder, solid solves use a normal ladder, and fluent
+  first-time solves graduate straight to mastered so high-volume training does
+  not turn every easy puzzle into a future chore queue. Trainer feedback and
+  the SRS queue show the last quality so the scheduling reason is visible.
 
 ### Practice Bot Trainer
 
