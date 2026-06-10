@@ -1449,6 +1449,15 @@ urgent due cards first, then ordinary due reviews, then weak-theme or
   prevents challenge-history navigation from restarting timing for incomplete
   puzzles; the old timer switch was removed from the settings drawer so users
   have one obvious stop/start control.
+- On 2026-06-10, the Next puzzle path was made latency-tolerant. The trainer
+  now keeps one matching training candidate prefetched for the active
+  database/mode/rating/theme request and consumes that buffered card
+  immediately when the user presses Next puzzle, then warms the following card
+  in the background. Smart/SRS mode avoids prefetching while the current due
+  card is still incomplete so the buffer does not repeat the same due puzzle.
+  The backend random fallback also no longer uses `ORDER BY RANDOM()` for
+  puzzle selection; it counts the filtered set and fetches a random offset,
+  avoiding multi-second SQLite shuffles on large puzzle databases.
 
 ### Practice Bot Trainer
 

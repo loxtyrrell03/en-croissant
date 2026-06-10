@@ -1387,33 +1387,72 @@ fn load_random_puzzle(
     let low = min_rating.min(max_rating) as i64;
     let high = min_rating.max(max_rating) as i64;
     if let Some(theme) = theme {
-        let result = conn.query_row(
+        let count = conn
+            .query_row(
+                "SELECT COUNT(*)
+                 FROM puzzles p
+                 INNER JOIN puzzle_themes pt ON pt.puzzle_id = p.id
+                 INNER JOIN themes t ON t.id = pt.theme_id
+                 WHERE t.name = ?1 AND p.rating >= ?2 AND p.rating <= ?3",
+                params![theme, low, high],
+                |row| row.get::<_, i64>(0),
+            )
+            .optional();
+        let count = match count {
+            Ok(Some(count)) => count,
+            Ok(None) => 0,
+            Err(error) if error.to_string().contains("no such table") => return Ok(None),
+            Err(error) => return Err(error.into()),
+        };
+        if count <= 0 {
+            return Ok(None);
+        }
+
+        let offset = random_offset(count);
+        conn.query_row(
             "SELECT p.id, p.fen, p.moves, p.rating, p.rating_deviation, p.popularity, p.nb_plays
              FROM puzzles p
              INNER JOIN puzzle_themes pt ON pt.puzzle_id = p.id
              INNER JOIN themes t ON t.id = pt.theme_id
              WHERE t.name = ?1 AND p.rating >= ?2 AND p.rating <= ?3
-             ORDER BY RANDOM() LIMIT 1",
-            params![theme, low, high],
+             ORDER BY p.id LIMIT 1 OFFSET ?4",
+            params![theme, low, high, offset],
             row_to_puzzle,
         )
-        .optional();
-        match result {
-            Ok(puzzle) => Ok(puzzle),
-            Err(error) if error.to_string().contains("no such table") => Ok(None),
-            Err(error) => Err(error.into()),
-        }
+        .optional()
+        .map_err(Error::from)
     } else {
+        let count: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM puzzles WHERE rating >= ?1 AND rating <= ?2",
+            params![low, high],
+            |row| row.get(0),
+        )?;
+        if count <= 0 {
+            return Ok(None);
+        }
+
+        let offset = random_offset(count);
         conn.query_row(
             "SELECT id, fen, moves, rating, rating_deviation, popularity, nb_plays
              FROM puzzles WHERE rating >= ?1 AND rating <= ?2
-             ORDER BY RANDOM() LIMIT 1",
-            params![low, high],
+             ORDER BY id LIMIT 1 OFFSET ?3",
+            params![low, high, offset],
             row_to_puzzle,
         )
         .optional()
         .map_err(Error::from)
     }
+}
+
+fn random_offset(count: i64) -> i64 {
+    if count <= 1 {
+        return 0;
+    }
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_nanos() as i64)
+        .unwrap_or_else(|_| now_ms());
+    nanos.rem_euclid(count)
 }
 
 fn load_puzzle_by_id(

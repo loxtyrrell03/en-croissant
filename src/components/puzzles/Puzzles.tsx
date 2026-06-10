@@ -72,6 +72,7 @@ import {
   type PuzzleDatabaseInfo,
   type PuzzleProgressSummary,
   type PuzzleThemeStatsRow,
+  type PuzzleTrainingCandidate,
   type PuzzleTrainingMode,
 } from "@/bindings";
 import { usePracticeAgainstBot } from "@/hooks/usePracticeAgainstBot";
@@ -116,12 +117,33 @@ import PuzzleBoard from "./PuzzleBoard";
 
 const SMART_PUZZLE_RATING_RANGE: [number, number] = [600, 3000];
 
+type TrainingPuzzleRequest = {
+  db: string;
+  mode: PuzzleTrainingMode;
+  minRating: number;
+  maxRating: number;
+  theme: string | null;
+  key: string;
+};
+
 function backendModeForPuzzleSelection(
   mode: PuzzleSelectionMode,
   theme: string | null,
 ): PuzzleTrainingMode {
   if (mode === "smart") return "coach";
   return theme ? "themeFocus" : "random";
+}
+
+function puzzleFromCandidate(candidate: PuzzleTrainingCandidate): Puzzle {
+  return {
+    ...candidate.puzzle,
+    moves: candidate.puzzle.moves.split(" "),
+    completion: "incomplete",
+    themes: candidate.themes,
+    trainingMode: candidate.mode,
+    selectionReason: candidate.reason,
+    progress: candidate.progress,
+  };
 }
 
 function Puzzles({ id }: { id: string }) {
@@ -343,6 +365,60 @@ function Puzzles({ id }: { id: string }) {
   const puzzleGenerationRef = useRef(false);
   const autoStartKeyRef = useRef<string | null>(null);
   const savingAttemptKeysRef = useRef(new Set<string>());
+  const prefetchedPuzzleRef = useRef<{
+    key: string;
+    candidate: PuzzleTrainingCandidate;
+  } | null>(null);
+  const prefetchInFlightRef = useRef<{ key: string; promise: Promise<void> } | null>(null);
+
+  const buildTrainingPuzzleRequest = useCallback(
+    (db: string): TrainingPuzzleRequest => {
+      const mode = backendModeForPuzzleSelection(puzzleMode, effectiveSelectedTheme);
+      const range = puzzleMode === "smart" ? SMART_PUZZLE_RATING_RANGE : ratingRange;
+      const theme = puzzleMode === "manual" ? effectiveSelectedTheme : null;
+      return {
+        db,
+        mode,
+        minRating: range[0],
+        maxRating: range[1],
+        theme,
+        key: [db, mode, range[0], range[1], theme ?? "all"].join(":"),
+      };
+    },
+    [effectiveSelectedTheme, puzzleMode, ratingRange],
+  );
+
+  const prefetchNextPuzzle = useCallback((request: TrainingPuzzleRequest) => {
+    if (prefetchedPuzzleRef.current?.key === request.key) return;
+    if (prefetchInFlightRef.current?.key === request.key) return;
+
+    const promise = commands
+      .getTrainingPuzzle(
+        request.db,
+        request.mode,
+        request.minRating,
+        request.maxRating,
+        request.theme,
+      )
+      .then((res) => {
+        const candidate = unwrap(res);
+        if (prefetchInFlightRef.current?.key === request.key) {
+          prefetchedPuzzleRef.current = { key: request.key, candidate };
+        }
+      })
+      .catch(() => {
+        if (prefetchedPuzzleRef.current?.key === request.key) {
+          prefetchedPuzzleRef.current = null;
+        }
+      })
+      .finally(() => {
+        if (prefetchInFlightRef.current?.key === request.key) {
+          prefetchInFlightRef.current = null;
+        }
+      });
+
+    prefetchInFlightRef.current = { key: request.key, promise };
+  }, []);
 
   const generatePuzzle = useCallback(
     async (db: string, force: boolean = false) => {
@@ -375,22 +451,26 @@ function Puzzles({ id }: { id: string }) {
         solutionAbortRef.current?.abort();
         setIsPlayingSolution(false);
 
-        const mode = backendModeForPuzzleSelection(puzzleMode, effectiveSelectedTheme);
-        const range = puzzleMode === "smart" ? SMART_PUZZLE_RATING_RANGE : ratingRange;
-        const theme = puzzleMode === "manual" ? effectiveSelectedTheme : null;
-        const res = await commands.getTrainingPuzzle(db, mode, range[0], range[1], theme);
-        const candidate = unwrap(res);
-        const puzzle = candidate.puzzle;
+        const request = buildTrainingPuzzleRequest(db);
+        const cachedCandidate =
+          prefetchedPuzzleRef.current?.key === request.key
+            ? prefetchedPuzzleRef.current.candidate
+            : null;
+        const candidate =
+          cachedCandidate && cachedCandidate.puzzle.id !== puzzles[currentPuzzle]?.id
+            ? cachedCandidate
+            : unwrap(
+                await commands.getTrainingPuzzle(
+                  request.db,
+                  request.mode,
+                  request.minRating,
+                  request.maxRating,
+                  request.theme,
+                ),
+              );
+        prefetchedPuzzleRef.current = null;
         const nextPuzzleIndex = puzzles.length;
-        const newPuzzle: Puzzle = {
-          ...puzzle,
-          moves: puzzle.moves.split(" "),
-          completion: "incomplete",
-          themes: candidate.themes,
-          trainingMode: candidate.mode,
-          selectionReason: candidate.reason,
-          progress: candidate.progress,
-        };
+        const newPuzzle = puzzleFromCandidate(candidate);
         setPuzzles((puzzles) => [...puzzles, newPuzzle]);
         setCurrentPuzzle(nextPuzzleIndex);
         setPuzzle(newPuzzle);
@@ -398,6 +478,7 @@ function Puzzles({ id }: { id: string }) {
         if (trackTime) {
           setTimerStart(Date.now());
         }
+        prefetchNextPuzzle(request);
       } catch (error) {
         setProgressError(error instanceof Error ? error.message : String(error));
       } finally {
@@ -407,10 +488,9 @@ function Puzzles({ id }: { id: string }) {
     },
     [
       currentPuzzle,
-      effectiveSelectedTheme,
-      puzzleMode,
+      buildTrainingPuzzleRequest,
       puzzles,
-      ratingRange,
+      prefetchNextPuzzle,
       setCurrentPuzzle,
       setPuzzles,
       setPuzzle,
@@ -524,11 +604,14 @@ function Puzzles({ id }: { id: string }) {
 
       if (selectedDb) {
         void refreshPuzzleProgress(selectedDb);
+        prefetchNextPuzzle(buildTrainingPuzzleRequest(selectedDb));
       }
     },
     [
       applyProgressSummary,
+      buildTrainingPuzzleRequest,
       effectiveSelectedTheme,
+      prefetchNextPuzzle,
       puzzleMode,
       refreshPuzzleProgress,
       selectedDb,
@@ -581,7 +664,7 @@ function Puzzles({ id }: { id: string }) {
 
     incrementPuzzleDailyGoals();
 
-    await savePuzzleAttempt({
+    void savePuzzleAttempt({
       puzzle,
       puzzleIndex,
       completion: completion === "correct" ? "correct" : "incorrect",
@@ -608,6 +691,11 @@ function Puzzles({ id }: { id: string }) {
     setLastAttempt(null);
     setIsPlayingSolution(false);
   }, [reset, selectedDb, setCurrentPuzzle, setPuzzles, setTimerStart]);
+
+  useEffect(() => {
+    prefetchedPuzzleRef.current = null;
+    prefetchInFlightRef.current = null;
+  }, [buildTrainingPuzzleRequest]);
 
   useEffect(() => {
     if (trackTime && isPuzzleIncomplete && timerStart === null) {
@@ -674,6 +762,19 @@ function Puzzles({ id }: { id: string }) {
 
   const currentSessionPuzzle = puzzles[currentPuzzle];
   const activePanelView = panelView === "themes" ? "stats" : panelView;
+
+  useEffect(() => {
+    if (!selectedDb || !currentSessionPuzzle || puzzleLoading) return;
+    if (puzzleMode === "smart" && currentSessionPuzzle.completion === "incomplete") return;
+    prefetchNextPuzzle(buildTrainingPuzzleRequest(selectedDb));
+  }, [
+    buildTrainingPuzzleRequest,
+    currentSessionPuzzle,
+    prefetchNextPuzzle,
+    puzzleLoading,
+    puzzleMode,
+    selectedDb,
+  ]);
 
   function clearSession() {
     autoStartKeyRef.current = null;
