@@ -5,7 +5,7 @@ import {
     formatPuzzleEloChange,
     getActivePuzzleGoals,
     puzzleNumber,
-    PUZZLE_TRAINING_MODE_GUIDE,
+    PUZZLE_SELECTION_MODE_GUIDE,
     rankPuzzleThemes,
 } from "@/utils/puzzleTraining";
 
@@ -88,16 +88,11 @@ describe("puzzleTraining", () => {
         expect(formatPuzzleEloChange(undefined)).toBe("-");
     });
 
-    test("describes every puzzle training mode", () => {
-        expect(Object.keys(PUZZLE_TRAINING_MODE_GUIDE).sort()).toEqual([
-            "coach",
-            "random",
-            "ratingLadder",
-            "srsReview",
-            "themeFocus",
-        ]);
-        expect(PUZZLE_TRAINING_MODE_GUIDE.coach.purpose).toContain("next useful puzzle");
-        expect(PUZZLE_TRAINING_MODE_GUIDE.srsReview.purpose).toContain("due");
+    test("describes the simplified puzzle training modes", () => {
+        expect(Object.keys(PUZZLE_SELECTION_MODE_GUIDE).sort()).toEqual(["manual", "smart"]);
+        expect(PUZZLE_SELECTION_MODE_GUIDE.smart.purpose).toContain("SRS");
+        expect(PUZZLE_SELECTION_MODE_GUIDE.smart.purpose).toContain("weaker themes");
+        expect(PUZZLE_SELECTION_MODE_GUIDE.manual.purpose).toContain("rating every attempt");
     });
 
     test("filters active puzzle daily goals", () => {

@@ -1,7 +1,7 @@
-import type { PuzzleTrainingMode } from "@/bindings";
 import type { DailyGoal } from "@/state/atoms";
 
 export type PuzzleThemeSort = "weakness" | "accuracy" | "skill" | "attempts" | "recent";
+export type PuzzleSelectionMode = "smart" | "manual";
 
 export type PuzzleThemeRankable = {
     attempts: bigint | number;
@@ -19,38 +19,18 @@ export type PuzzleTrendLike = {
     mastered: bigint | number;
 };
 
-export const PUZZLE_TRAINING_MODE_ORDER: PuzzleTrainingMode[] = [
-    "coach",
-    "srsReview",
-    "themeFocus",
-    "ratingLadder",
-    "random",
-];
-
-export const PUZZLE_TRAINING_MODE_GUIDE: Record<
-    PuzzleTrainingMode,
+export const PUZZLE_SELECTION_MODE_GUIDE: Record<
+    PuzzleSelectionMode,
     { label: string; purpose: string }
 > = {
-    coach: {
-        label: "Coach",
-        purpose: "Chooses the next useful puzzle from due reviews, weak themes, and rating fit.",
-    },
-    srsReview: {
-        label: "SRS",
-        purpose: "Reviews puzzles that are due so failed or shaky patterns come back on schedule.",
-    },
-    themeFocus: {
-        label: "Theme",
+    smart: {
+        label: "Smart",
         purpose:
-            "Trains the selected theme, falling back wider only when the filtered pool is empty.",
+            "Uses SRS first, then leans into weaker themes and rating-fit puzzles automatically.",
     },
-    ratingLadder: {
-        label: "Ladder",
-        purpose: "Pushes puzzle difficulty upward from your current range or progressive setting.",
-    },
-    random: {
-        label: "Random",
-        purpose: "Samples any puzzle that matches the current rating and theme filters.",
+    manual: {
+        label: "Manual",
+        purpose: "Uses the rating range and theme you choose while still rating every attempt.",
     },
 };
 

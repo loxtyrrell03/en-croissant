@@ -766,6 +766,10 @@ function tabValue<T extends object | string | boolean | number | null | undefine
 
 // Puzzles
 export const hidePuzzleRatingAtom = atomWithStorage<boolean>("hide-puzzle-rating", false);
+export const puzzleSelectionModeAtom = atomWithStorage<"smart" | "manual">(
+    "puzzle-selection-mode",
+    "smart",
+);
 export const progressivePuzzlesAtom = atomWithStorage<boolean>("progressive-puzzles", false);
 export const jumpToNextPuzzleAtom = atomWithStorage<boolean>("puzzle-jump-immediately", true);
 export const trackPuzzleTimeAtom = atomWithStorage<boolean>("track-puzzle-time", true);

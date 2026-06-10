@@ -84,10 +84,9 @@ import {
   dailyGoalHistoryAtom,
   dailyGoalsAtom,
   hidePuzzleRatingAtom,
-  progressivePuzzlesAtom,
+  puzzleSelectionModeAtom,
   puzzleRatingRangeAtom,
   puzzleThemeAtom,
-  puzzleTrainingModeAtom,
   selectedPuzzleDbAtom,
   tabsAtom,
   trackPuzzleTimeAtom,
@@ -100,9 +99,9 @@ import {
   formatPuzzleEloChange,
   getActivePuzzleGoals,
   puzzleNumber,
-  PUZZLE_TRAINING_MODE_GUIDE,
-  PUZZLE_TRAINING_MODE_ORDER,
+  PUZZLE_SELECTION_MODE_GUIDE,
   rankPuzzleThemes,
+  type PuzzleSelectionMode,
   type PuzzleThemeSort,
 } from "@/utils/puzzleTraining";
 import { createTab } from "@/utils/tabs";
@@ -115,6 +114,16 @@ import MoveControls from "../common/MoveControls";
 import { TreeStateContext } from "../common/TreeStateContext";
 import AddPuzzle from "./AddPuzzle";
 import PuzzleBoard from "./PuzzleBoard";
+
+const SMART_PUZZLE_RATING_RANGE: [number, number] = [600, 3000];
+
+function backendModeForPuzzleSelection(
+  mode: PuzzleSelectionMode,
+  theme: string | null,
+): PuzzleTrainingMode {
+  if (mode === "smart") return "coach";
+  return theme ? "themeFocus" : "random";
+}
 
 function Puzzles({ id }: { id: string }) {
   const { t } = useTranslation();
@@ -163,7 +172,7 @@ function Puzzles({ id }: { id: string }) {
   }, [puzzleDbs, selectedDb, setSelectedDb]);
 
   const [ratingRange, setRatingRange] = useAtom(puzzleRatingRangeAtom);
-  const [trainingMode, setTrainingMode] = useAtom(puzzleTrainingModeAtom);
+  const [puzzleMode, setPuzzleMode] = useAtom(puzzleSelectionModeAtom);
   const [dailyGoals] = useAtom(dailyGoalsAtom);
   const [, setDailyGoalHistory] = useAtom(dailyGoalHistoryAtom);
   const [, setDailyGoalCompletionPrompt] = useAtom(dailyGoalCompletionPromptAtom);
@@ -253,7 +262,6 @@ function Puzzles({ id }: { id: string }) {
     void refreshPuzzleProgress();
   }, [refreshPuzzleProgress]);
 
-  const [progressive, setProgressive] = useAtom(progressivePuzzlesAtom);
   const [hideRating, setHideRating] = useAtom(hidePuzzleRatingAtom);
   const [trackTime, setTrackTime] = useAtom(trackPuzzleTimeAtom);
 
@@ -367,22 +375,10 @@ function Puzzles({ id }: { id: string }) {
         solutionAbortRef.current?.abort();
         setIsPlayingSolution(false);
 
-        let range = ratingRange;
-        if (progressive) {
-          const rating = puzzles[currentPuzzle]?.rating;
-          if (rating) {
-            range = [rating + 50, rating + 100];
-            setRatingRange([rating + 50, rating + 100]);
-          }
-        }
-        const mode: PuzzleTrainingMode = progressive ? "ratingLadder" : trainingMode;
-        const res = await commands.getTrainingPuzzle(
-          db,
-          mode,
-          range[0],
-          range[1],
-          effectiveSelectedTheme,
-        );
+        const mode = backendModeForPuzzleSelection(puzzleMode, effectiveSelectedTheme);
+        const range = puzzleMode === "smart" ? SMART_PUZZLE_RATING_RANGE : ratingRange;
+        const theme = puzzleMode === "manual" ? effectiveSelectedTheme : null;
+        const res = await commands.getTrainingPuzzle(db, mode, range[0], range[1], theme);
         const candidate = unwrap(res);
         const puzzle = candidate.puzzle;
         const nextPuzzleIndex = puzzles.length;
@@ -412,16 +408,14 @@ function Puzzles({ id }: { id: string }) {
     [
       currentPuzzle,
       effectiveSelectedTheme,
-      progressive,
+      puzzleMode,
       puzzles,
       ratingRange,
       setCurrentPuzzle,
       setPuzzles,
       setPuzzle,
-      setRatingRange,
       setTimerStart,
       trackTime,
-      trainingMode,
     ],
   );
 
@@ -430,10 +424,10 @@ function Puzzles({ id }: { id: string }) {
 
     const autoStartKey = [
       selectedDb,
-      progressive ? "ratingLadder" : trainingMode,
-      ratingRange[0],
-      ratingRange[1],
-      effectiveSelectedTheme ?? "all",
+      puzzleMode,
+      puzzleMode === "manual" ? ratingRange[0] : SMART_PUZZLE_RATING_RANGE[0],
+      puzzleMode === "manual" ? ratingRange[1] : SMART_PUZZLE_RATING_RANGE[1],
+      puzzleMode === "manual" ? (effectiveSelectedTheme ?? "all") : "smart",
     ].join(":");
     if (autoStartKeyRef.current === autoStartKey) return;
 
@@ -442,12 +436,11 @@ function Puzzles({ id }: { id: string }) {
   }, [
     effectiveSelectedTheme,
     generatePuzzle,
-    progressive,
+    puzzleMode,
     puzzleLoading,
     puzzles.length,
     ratingRange,
     selectedDb,
-    trainingMode,
   ]);
 
   async function changeCompletion(
@@ -484,7 +477,8 @@ function Puzzles({ id }: { id: string }) {
     if (selectedDb && puzzle.id) {
       const res = await commands.recordPuzzleAttempt(selectedDb, {
         puzzleId: puzzle.id,
-        mode: puzzle.trainingMode ?? trainingMode,
+        mode:
+          puzzle.trainingMode ?? backendModeForPuzzleSelection(puzzleMode, effectiveSelectedTheme),
         outcome: completion === "correct" ? "correct" : "incorrect",
         timeSpentMs: BigInt(Math.max(0, Math.round(timeSpent))),
         usedHint,
@@ -821,43 +815,7 @@ function Puzzles({ id }: { id: string }) {
                       This database does not support themes. Update to the latest puzzle DB.
                     </Alert>
                   )}
-                  <div>
-                    <Text size="sm" fw={500} mb={4}>
-                      {t("Puzzle.RatingRange")}
-                    </Text>
-                    <RangeSlider
-                      min={600}
-                      my="md"
-                      max={2800}
-                      value={ratingRange}
-                      onChange={setRatingRange}
-                      disabled={progressive}
-                      marks={[
-                        { value: 600, label: "600" },
-                        { value: 1700, label: "1700" },
-                        { value: 2800, label: "2800" },
-                      ]}
-                    />
-                  </div>
-                  <Select
-                    label="Theme"
-                    placeholder="All themes"
-                    data={availableThemes.map((theme) => ({
-                      label: formatThemeLabel(theme),
-                      value: theme,
-                    }))}
-                    value={effectiveSelectedTheme}
-                    onChange={setSelectedTheme}
-                    clearable
-                    searchable
-                  />
                   <SimpleGrid cols={2} spacing="sm">
-                    <Switch
-                      label={t("Puzzle.Progressive")}
-                      description={t("Puzzle.Progressive.Desc")}
-                      checked={progressive}
-                      onChange={(event) => setProgressive(event.currentTarget.checked)}
-                    />
                     <Switch
                       label={t("Puzzle.HideRating")}
                       description={t("Puzzle.HideRating.Desc")}
@@ -890,7 +848,7 @@ function Puzzles({ id }: { id: string }) {
           <Tabs
             value={panelView}
             onChange={(value) => setPanelView(value ?? "train")}
-            h={settingsOpened ? "calc(100% - 18rem)" : "calc(100% - 5.5rem)"}
+            h={settingsOpened ? "calc(100% - 11rem)" : "calc(100% - 5.5rem)"}
             style={{ display: "flex", flexDirection: "column", minHeight: 0 }}
           >
             <Tabs.List grow>
@@ -923,9 +881,13 @@ function Puzzles({ id }: { id: string }) {
                   trackTime={trackTime}
                   elapsedTime={elapsedTime}
                   turnToMove={turnToMove ?? null}
-                  trainingMode={trainingMode}
-                  setTrainingMode={setTrainingMode}
-                  progressive={progressive}
+                  puzzleMode={puzzleMode}
+                  setPuzzleMode={setPuzzleMode}
+                  ratingRange={ratingRange}
+                  setRatingRange={setRatingRange}
+                  selectedTheme={effectiveSelectedTheme}
+                  setSelectedTheme={setSelectedTheme}
+                  availableThemes={availableThemes}
                   lastAttempt={lastAttempt}
                   onNewPuzzle={() => selectedDb && generatePuzzle(selectedDb, true)}
                   onAnalyze={analyzeCurrentPuzzle}
@@ -1023,9 +985,13 @@ function PuzzleTrainPanel({
   trackTime,
   elapsedTime,
   turnToMove,
-  trainingMode,
-  setTrainingMode,
-  progressive,
+  puzzleMode,
+  setPuzzleMode,
+  ratingRange,
+  setRatingRange,
+  selectedTheme,
+  setSelectedTheme,
+  availableThemes,
   lastAttempt,
   onNewPuzzle,
   onAnalyze,
@@ -1049,9 +1015,13 @@ function PuzzleTrainPanel({
   trackTime: boolean;
   elapsedTime: number;
   turnToMove: "white" | "black" | null;
-  trainingMode: PuzzleTrainingMode;
-  setTrainingMode: (mode: PuzzleTrainingMode) => void;
-  progressive: boolean;
+  puzzleMode: PuzzleSelectionMode;
+  setPuzzleMode: (mode: PuzzleSelectionMode) => void;
+  ratingRange: [number, number];
+  setRatingRange: (range: [number, number]) => void;
+  selectedTheme: string | null;
+  setSelectedTheme: (theme: string | null) => void;
+  availableThemes: string[];
   lastAttempt: PuzzleAttemptResult | null;
   onNewPuzzle: () => void;
   onAnalyze: () => void;
@@ -1066,8 +1036,7 @@ function PuzzleTrainPanel({
     currentPuzzle && currentPuzzle.completion === "incomplete" && hideRating
       ? "?"
       : (currentPuzzle?.rating?.toString() ?? "-");
-  const activeMode = progressive ? "ratingLadder" : trainingMode;
-  const activeModeGuide = PUZZLE_TRAINING_MODE_GUIDE[activeMode];
+  const activeModeGuide = PUZZLE_SELECTION_MODE_GUIDE[puzzleMode];
   const currentThemes = currentPuzzle?.themes ?? [];
   const isCompleted = currentPuzzle !== undefined && currentPuzzle.completion !== "incomplete";
   const completedEloDelta = isCompleted
@@ -1083,15 +1052,11 @@ function PuzzleTrainPanel({
   return (
     <Stack gap="sm">
       <SegmentedControl
-        value={activeMode}
-        onChange={(value) => setTrainingMode(value as PuzzleTrainingMode)}
-        disabled={progressive}
+        value={puzzleMode}
+        onChange={(value) => setPuzzleMode(value as PuzzleSelectionMode)}
         data={[
-          { label: PUZZLE_TRAINING_MODE_GUIDE.coach.label, value: "coach" },
-          { label: PUZZLE_TRAINING_MODE_GUIDE.srsReview.label, value: "srsReview" },
-          { label: PUZZLE_TRAINING_MODE_GUIDE.themeFocus.label, value: "themeFocus" },
-          { label: PUZZLE_TRAINING_MODE_GUIDE.ratingLadder.label, value: "ratingLadder" },
-          { label: PUZZLE_TRAINING_MODE_GUIDE.random.label, value: "random" },
+          { label: PUZZLE_SELECTION_MODE_GUIDE.smart.label, value: "smart" },
+          { label: PUZZLE_SELECTION_MODE_GUIDE.manual.label, value: "manual" },
         ]}
       />
       <Paper withBorder p="xs">
@@ -1109,25 +1074,46 @@ function PuzzleTrainPanel({
           <Text size="xs" c="dimmed">
             {activeModeGuide.purpose}
           </Text>
-          <SimpleGrid cols={{ base: 1, sm: 2 }} spacing={4}>
-            {PUZZLE_TRAINING_MODE_ORDER.map((mode) => {
-              const guide = PUZZLE_TRAINING_MODE_GUIDE[mode];
-              return (
-                <Text key={mode} size="xs" c={mode === activeMode ? undefined : "dimmed"}>
-                  <Text span fw={700}>
-                    {guide.label}:
-                  </Text>{" "}
-                  {guide.purpose}
-                </Text>
-              );
-            })}
-          </SimpleGrid>
         </Stack>
       </Paper>
-      {progressive && (
-        <Text size="xs" c="dimmed">
-          Progressive mode is using Rating Ladder selection.
-        </Text>
+      {puzzleMode === "manual" && (
+        <Paper withBorder p="xs">
+          <Stack gap="sm">
+            <div>
+              <Group justify="space-between" mb={4}>
+                <Text size="sm" fw={500}>
+                  Rating range
+                </Text>
+                <Badge variant="light">
+                  {ratingRange[0]}-{ratingRange[1]}
+                </Badge>
+              </Group>
+              <RangeSlider
+                min={600}
+                max={2800}
+                value={ratingRange}
+                onChange={setRatingRange}
+                marks={[
+                  { value: 600, label: "600" },
+                  { value: 1700, label: "1700" },
+                  { value: 2800, label: "2800" },
+                ]}
+              />
+            </div>
+            <Select
+              label="Theme"
+              placeholder="All themes"
+              data={availableThemes.map((theme) => ({
+                label: formatThemeLabel(theme),
+                value: theme,
+              }))}
+              value={selectedTheme}
+              onChange={setSelectedTheme}
+              clearable
+              searchable
+            />
+          </Stack>
+        </Paper>
       )}
       <SimpleGrid cols={{ base: 2, sm: 5 }} spacing="xs">
         <PuzzleStatTile label="Puzzle Elo" value={formatRating(durableSummary?.puzzleElo)} />

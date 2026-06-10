@@ -1420,6 +1420,14 @@ urgent due cards first, then ordinary due reviews, then weak-theme or
   The Train panel now also shows a signed whole-number last Elo change such as
   `+10` or `-7`, and includes compact purpose copy for Coach, SRS, Theme,
   Ladder, and Random modes so users know when to choose each training path.
+- A follow-up on 2026-06-10 simplified the Puzzle Train surface to two
+  user-facing modes. `Smart` maps to the existing Coach backend selector and
+  uses SRS first, then weaker-theme balancing, then rating-fit fallback without
+  inheriting manual filters. `Manual` exposes only theme and rating range
+  controls while still recording every solve, miss, hint, or solution view
+  through the same rated Elo attempt model. The old five-way
+  Coach/SRS/Theme/Ladder/Random selector and Progressive switch should stay
+  hidden unless a future design deliberately re-expands the trainer.
 
 ### Practice Bot Trainer
 
