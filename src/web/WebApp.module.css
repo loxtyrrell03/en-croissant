@@ -94,7 +94,13 @@
   overflow: hidden;
   border-radius: 8px;
   background: #769656;
-  touch-action: none;
+  touch-action: pan-y;
+}
+
+.boardMount :global(.cg-wrap),
+.boardMount :global(cg-container),
+.boardMount :global(cg-board) {
+  touch-action: pan-y;
 }
 
 .boardMount cg-board {

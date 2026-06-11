@@ -5712,6 +5712,7 @@ function WebChessboard({
   const apiRef = useRef<Api | null>(null);
   const onMoveRef = useRef(onMove);
   onMoveRef.current = onMove;
+  useBoardVerticalScrollEscape(boardRef);
 
   const config = useMemo(() => {
     const [position] = positionFromFen(fen);
@@ -5762,6 +5763,101 @@ function WebChessboard({
   }, [config]);
 
   return <Box ref={boardRef} className={classes.boardMount} />;
+}
+
+const BOARD_SCROLL_INTENT_PX = 8;
+const BOARD_SCROLL_AXIS_BIAS = 1.15;
+
+function useBoardVerticalScrollEscape(boardRef: { current: HTMLDivElement | null }) {
+  useEffect(() => {
+    const boardElement = boardRef.current;
+    if (!boardElement) return;
+
+    let gesture:
+      | {
+          startX: number;
+          startY: number;
+          lastY: number;
+          mode: "pending" | "scroll" | "board";
+        }
+      | null = null;
+
+    const resetGesture = () => {
+      gesture = null;
+    };
+
+    const onTouchStart = (event: TouchEvent) => {
+      if (event.touches.length !== 1) {
+        resetGesture();
+        return;
+      }
+
+      const touch = event.touches[0];
+      gesture = {
+        startX: touch.clientX,
+        startY: touch.clientY,
+        lastY: touch.clientY,
+        mode: "pending",
+      };
+    };
+
+    const onTouchMove = (event: TouchEvent) => {
+      if (!gesture || event.touches.length !== 1) return;
+
+      const touch = event.touches[0];
+      const deltaX = touch.clientX - gesture.startX;
+      const deltaY = touch.clientY - gesture.startY;
+      const absX = Math.abs(deltaX);
+      const absY = Math.abs(deltaY);
+
+      if (gesture.mode === "pending") {
+        if (Math.max(absX, absY) < BOARD_SCROLL_INTENT_PX) return;
+        gesture.mode = absY > absX * BOARD_SCROLL_AXIS_BIAS ? "scroll" : "board";
+      }
+
+      if (gesture.mode !== "scroll") return;
+
+      const scrollDelta = gesture.lastY - touch.clientY;
+      gesture.lastY = touch.clientY;
+      if (scrollDelta !== 0) scrollPageBy(scrollDelta);
+
+      if (event.cancelable) event.preventDefault();
+      event.stopPropagation();
+    };
+
+    boardElement.addEventListener("touchstart", onTouchStart, {
+      capture: true,
+      passive: true,
+    });
+    boardElement.addEventListener("touchmove", onTouchMove, {
+      capture: true,
+      passive: false,
+    });
+    boardElement.addEventListener("touchend", resetGesture, {
+      capture: true,
+      passive: true,
+    });
+    boardElement.addEventListener("touchcancel", resetGesture, {
+      capture: true,
+      passive: true,
+    });
+
+    return () => {
+      boardElement.removeEventListener("touchstart", onTouchStart, { capture: true });
+      boardElement.removeEventListener("touchmove", onTouchMove, { capture: true });
+      boardElement.removeEventListener("touchend", resetGesture, { capture: true });
+      boardElement.removeEventListener("touchcancel", resetGesture, { capture: true });
+    };
+  }, [boardRef]);
+}
+
+function scrollPageBy(deltaY: number) {
+  const scroller = document.scrollingElement;
+  if (scroller) {
+    scroller.scrollTop += deltaY;
+  } else {
+    window.scrollBy(0, deltaY);
+  }
 }
 
 function UnderBoardEmpty({ icon, title, text }: { icon: ReactNode; title: string; text: string }) {

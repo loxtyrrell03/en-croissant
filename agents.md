@@ -477,6 +477,12 @@ default.
   database/game split, and Mantine scroll areas now all have explicit
   `min-width: 0` / `max-width: 100%` constraints, so long synced database or
   PGN names truncate inside their rows instead of widening the page.
+- Another 2026-06-11 phone web companion fix made vertical swipes that begin
+  on the Chessground board scroll the page. The board CSS now allows vertical
+  panning, and the web board has a small touch escape hatch that converts clear
+  up/down swipes into document scrolling even when Chessground captures a touch
+  that started on a piece. Preserve this behavior for phone layouts; tap-to-move
+  remains the primary reliable move input when a gesture is mostly vertical.
 
 ### App Shell
 
