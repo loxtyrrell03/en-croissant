@@ -497,7 +497,10 @@ black`, Min games, Show top, and the online import drawer's Save database,
   under the board. Lichess Cloud evals are fetched through the existing
   browser-safe cloud-eval path and can appear while local Stockfish warms up;
   the Database tab remains responsible for Lichess All/Masters opening
-  explorer statistics.
+  explorer statistics. A follow-up reshaped the phone engine surface to match
+  the fork's desktop analysis panel anatomy: play/pause icon header, compact
+  source/eval/depth summary, settings cog with collapsed controls, progress
+  strip, inactive/error states, and table-style PV rows.
 
 ### App Shell
 

@@ -301,6 +301,61 @@
   font-variant-numeric: tabular-nums;
 }
 
+.enginePanelShell {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.enginePanelHeader {
+  min-width: 0;
+  min-height: 3.2rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: center;
+  padding: 0.48rem 0.55rem;
+}
+
+.enginePanelToggle {
+  flex: 0 0 auto;
+}
+
+.enginePanelTitleArea {
+  min-width: 0;
+  display: grid;
+  gap: 0.12rem;
+}
+
+.enginePanelHeaderRight {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.enginePanelMetric {
+  min-width: 2.7rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.enginePanelCode {
+  max-width: 8.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.66rem;
+  line-height: 1.05rem;
+}
+
+.enginePanelSettings {
+  min-width: 0;
+  padding: 0.58rem 0.65rem 0.68rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.065);
+  background: rgba(0, 0, 0, 0.08);
+}
+
 .engineSettingsRow {
   min-width: 0;
   align-items: end !important;
@@ -310,40 +365,82 @@
   min-width: 0;
 }
 
-.engineLineRow {
+.enginePanelBody {
+  min-width: 0;
+}
+
+.enginePanelMessage {
+  min-height: 8.5rem;
+  display: grid;
+  gap: 0.25rem;
+  place-items: center;
+  padding: 1.15rem;
+  color: var(--mantine-color-gray-4);
+  text-align: center;
+}
+
+.enginePanelLoadingText {
+  padding: 0 0.72rem 0.65rem;
+}
+
+.engineAnalysisTable {
+  table-layout: fixed;
+}
+
+.engineAnalysisTable td {
+  padding: 0.5rem 0.62rem;
+  vertical-align: top;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.engineAnalysisTable tr:first-child td {
+  border-top: 0;
+}
+
+.engineAnalysisScoreCell {
+  width: 4.25rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.engineAnalysisScore {
+  line-height: 1.05rem;
+}
+
+.engineAnalysisRank {
+  line-height: 0.95rem;
+}
+
+.engineAnalysisLineCell {
+  min-width: 0;
+}
+
+.engineAnalysisMoveButton {
   width: 100%;
   min-width: 0;
-  padding: 0.55rem 0.65rem;
-  border: 1px solid rgba(255, 255, 255, 0.065);
-  border-radius: 7px;
-  background: rgba(255, 255, 255, 0.04);
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: inherit;
   text-align: left;
+  font: inherit;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
 }
 
-.engineLineRow:disabled {
+.engineAnalysisMoveButton:disabled {
   cursor: default;
-  opacity: 0.82;
+  opacity: 0.78;
 }
 
-.engineLineRow:not(:disabled):active {
+.engineAnalysisMoveButton:not(:disabled):active {
   transform: translateY(1px);
 }
 
-.engineScore {
-  min-width: 3.35rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.engineDepth {
-  flex: 0 0 auto;
-  font-variant-numeric: tabular-nums;
-}
-
-.enginePvLine {
-  margin-top: 0.28rem;
-  overflow-wrap: anywhere;
-  line-height: 1.25;
+.engineAnalysisMeta {
+  min-width: 0;
+  margin-top: 0.22rem;
 }
 
 @media (max-width: 32rem) {
@@ -389,6 +486,23 @@
 
   .engineSettingsRow > * {
     flex: 1 1 8rem !important;
+  }
+
+  .enginePanelHeader {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .enginePanelHeaderRight {
+    grid-column: 1 / -1;
+    justify-content: space-between !important;
+  }
+
+  .enginePanelMetric {
+    text-align: left;
+  }
+
+  .engineAnalysisScoreCell {
+    width: 3.8rem;
   }
 }
 
