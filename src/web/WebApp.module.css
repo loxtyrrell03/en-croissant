@@ -70,12 +70,15 @@
 }
 
 .panel {
+  min-width: 0;
+  max-width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   background: color-mix(in srgb, var(--mantine-color-dark-7) 84%, transparent);
 }
 
 .panelBody {
+  min-width: 0;
   padding: var(--mantine-spacing-md);
 }
 
@@ -294,6 +297,9 @@
   grid-template-columns: minmax(280px, 0.86fr) minmax(0, 1.14fr);
   gap: var(--mantine-spacing-md);
   align-items: start;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .filesSplit {
@@ -301,15 +307,31 @@
   grid-template-columns: minmax(210px, 0.82fr) minmax(0, 1.18fr);
   gap: var(--mantine-spacing-md);
   align-items: start;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.filesWorkspace > *,
+.filesSplit > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.filesWorkspace :global(.mantine-ScrollArea-root),
+.filesWorkspace :global(.mantine-ScrollArea-viewport) {
+  max-width: 100%;
 }
 
 .itemList {
   display: grid;
   gap: 0.45rem;
+  min-width: 0;
 }
 
 .listButton {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   min-height: 3.15rem;
   padding: 0.55rem 0.65rem;
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -317,6 +339,15 @@
   background: rgba(255, 255, 255, 0.035);
   color: inherit;
   text-align: left;
+}
+
+.listButton :global(.mantine-Group-root) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.listButton :global(.mantine-Text-root) {
+  max-width: 100%;
 }
 
 .listButton[data-active="true"] {
@@ -392,6 +423,22 @@
 
   .main {
     padding-inline: max(0.45rem, env(safe-area-inset-left)) max(0.45rem, env(safe-area-inset-right));
+  }
+
+  .filesWorkspace {
+    gap: var(--mantine-spacing-sm);
+  }
+
+  .filesSplit {
+    gap: var(--mantine-spacing-sm);
+  }
+
+  .filesWorkspace :global(.mantine-Group-root) {
+    max-width: 100%;
+  }
+
+  .filesWorkspace :global(.mantine-Button-root) {
+    max-width: 100%;
   }
 
   .boardHeader {

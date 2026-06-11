@@ -472,6 +472,11 @@ default.
   fixed desktop minimum width at phone breakpoints. Future phone UI work should
   keep table detail within the screen by wrapping/tightening the mobile layout
   rather than reintroducing sideways page scroll.
+- A follow-up on 2026-06-11 fixed remaining sideways scroll on the phone Files
+  page. Files panels, the hosted file list, indexed database list, inner
+  database/game split, and Mantine scroll areas now all have explicit
+  `min-width: 0` / `max-width: 100%` constraints, so long synced database or
+  PGN names truncate inside their rows instead of widening the page.
 
 ### App Shell
 
