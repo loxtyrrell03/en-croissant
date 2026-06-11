@@ -14,6 +14,16 @@ model, implementation map, and verification expectations for this app.
 - After each meaningful change or feature, update this `AGENTS.md` product map
   with a short note explaining what was added and why, so future agents inherit
   the current design intent instead of only the code diff.
+- For every phone web companion change, treat publishing to the phone app site
+  as part of the done criteria. After the app change is locally verified and
+  committed, run `npm run web:publish` so the GitHub Pages phone site is
+  rebuilt, committed, and pushed. This applies to `src/web/**`, browser/PWA
+  startup, `public/web-*`, hosted-library/export scripts, phone-only layout or
+  styling, and any other change whose result should appear on the phone. Do
+  not rely on auto-sync alone for code changes.
+- If `npm run web:publish` fails, or if the user explicitly asks to defer
+  publishing, say so in the final response and do not describe the phone app
+  change as deployed.
 - Do not wait until the end of a long session to save progress unless the user
   explicitly asks for a single final commit.
 - Avoid committing broken, half-finished, or unverified work unless the user
@@ -501,6 +511,12 @@ black`, Min games, Show top, and the online import drawer's Save database,
   the fork's desktop analysis panel anatomy: play/pause icon header, compact
   source/eval/depth summary, settings cog with collapsed controls, progress
   strip, inactive/error states, and table-style PV rows.
+- On 2026-06-11, the agent workflow was tightened so future phone web
+  companion code, asset, layout, PWA, hosted-library, or publish-script changes
+  must be followed by `npm run web:publish` after local verification and the
+  local app commit. The publish step rebuilds and pushes the GitHub Pages phone
+  app site, so phone work should not be reported as deployed until it succeeds
+  unless the user explicitly defers publication.
 
 ### App Shell
 
