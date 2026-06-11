@@ -463,6 +463,22 @@ export default function WebApp() {
     setView("board");
   }, []);
 
+  const exitBoardFile = useCallback(() => {
+    setState((current) => ({
+      ...current,
+      activePrepId: null,
+      board: {
+        ...createEmptyWebBoardState(),
+        ...current.board,
+        sourceTitle: "Analysis board",
+        sourceDatabaseId: null,
+        sourceGameId: null,
+      },
+    }));
+    setSelectedGameId(null);
+    setView("board");
+  }, []);
+
   const addImportedDatabases = useCallback(
     (imported: WebImportResult[]) => {
       setState((current) => mergeImportedWebDatabases(current, imported));
@@ -863,6 +879,7 @@ export default function WebApp() {
               importOnlineGames={importOnlineGames}
               loadGameOnBoard={loadGameOnBoard}
               onStartBlankBoard={openEmptyBoard}
+              onExitBoardFile={exitBoardFile}
               lichessToken={lichessToken}
               setLichessToken={setLichessToken}
             />
@@ -896,6 +913,7 @@ function BoardWorkspace({
   importOnlineGames,
   loadGameOnBoard,
   onStartBlankBoard,
+  onExitBoardFile,
   lichessToken,
   setLichessToken,
 }: {
@@ -906,6 +924,7 @@ function BoardWorkspace({
   importOnlineGames: WebOnlineImportHandler;
   loadGameOnBoard: (game: WebGame) => void;
   onStartBlankBoard: () => void;
+  onExitBoardFile: () => void;
   lichessToken: string;
   setLichessToken: (value: string) => void;
 }) {
@@ -1141,13 +1160,14 @@ function BoardWorkspace({
 
   const activeLastMove = cursor > 0 ? (activeLine[cursor - 1]?.uci ?? null) : null;
   const orientation = activePrep?.userColor ?? board.orientation;
+  const isViewingFile = !activePrep && Boolean(board.sourceDatabaseId || board.sourceGameId);
 
   return (
     <Box className={classes.phoneBoard}>
       <Box className={classes.boardHeader}>
         <Box miw={0}>
           <Text size="xs" c="dimmed">
-            {activePrep ? "Prep board" : "Board"}
+            {activePrep ? "Prep board" : isViewingFile ? "File board" : "Board"}
           </Text>
           <Title order={3} className={classes.truncateTitle}>
             {boardTitle}
@@ -1157,10 +1177,10 @@ function BoardWorkspace({
           <Button
             size="xs"
             variant="light"
-            leftSection={<IconRefresh size={14} />}
-            onClick={onStartBlankBoard}
+            leftSection={isViewingFile ? <IconX size={14} /> : <IconRefresh size={14} />}
+            onClick={isViewingFile ? onExitBoardFile : onStartBlankBoard}
           >
-            New board
+            {isViewingFile ? "Exit file" : "New board"}
           </Button>
           <Badge color={turnColor === "white" ? "gray" : "dark"} variant="light">
             {turnColor}
