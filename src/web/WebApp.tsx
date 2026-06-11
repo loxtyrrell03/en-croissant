@@ -28,6 +28,7 @@ import {
   SegmentedControl,
   Select,
   Stack,
+  Switch,
   Table,
   Text,
   Textarea,
@@ -48,7 +49,9 @@ import {
   IconChevronsLeft,
   IconChevronsRight,
   IconChess,
+  IconCloud,
   IconCloudDownload,
+  IconCpu,
   IconDatabase,
   IconDownload,
   IconExternalLink,
@@ -131,6 +134,7 @@ import type {
   WebColor,
   WebCompanionState,
   WebDatabase,
+  WebEngineLine,
   WebGame,
   WebImportResult,
   WebLocalGameFilters,
@@ -158,7 +162,7 @@ import {
   startWebLichessLogin,
   WEB_LICHESS_TOKEN_STORAGE_KEY,
 } from "./lichessAuth";
-import { queryWebLichessCloudEngineMoves } from "./lichessCloud";
+import { queryWebLichessCloudEngineMoves, queryWebLichessCloudLines } from "./lichessCloud";
 import {
   collectGamesForSources,
   findFirstWebPrepOpponentBranch,
@@ -211,9 +215,10 @@ import {
   loadWebState,
   saveWebState,
 } from "./storage";
+import { analyzeWithWebStockfish18, stopWebStockfish18Search } from "./stockfishEngine";
 
 type ViewMode = "board" | "files";
-type BoardPanelMode = "moves" | "database" | "prep";
+type BoardPanelMode = "moves" | "database" | "prep" | "engine";
 type WebHostedPgnImportHandler = (entry: WebHostedFileEntry) => Promise<WebImportResult | null>;
 type WebHostedFolderImportHandler = (
   library: WebHostedLibrary,
@@ -257,6 +262,7 @@ const WEB_DATABASE_PANEL_STRENGTH_STORAGE_KEY = "en-croissant-web-database-panel
 const WEB_LICHESS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-lichess-explorer-options";
 const WEB_MASTERS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-masters-explorer-options";
 const WEB_PREP_SETUP_STORAGE_KEY = "en-croissant-web-prep-setup";
+const WEB_ENGINE_PANEL_SETTINGS_STORAGE_KEY = "en-croissant-web-engine-panel-settings";
 const WEB_DATABASE_STATS_SORT_OPTIONS: { label: string; value: WebDatabaseStatsSort }[] = [
   { label: "Blended strength", value: "strengthHigh" },
   { label: "Blended weakness", value: "strengthLow" },
@@ -275,6 +281,20 @@ const WEB_DATABASE_STATS_SORT_OPTIONS: { label: string; value: WebDatabaseStatsS
 ];
 const DEFAULT_WEB_PREP_MIN_GAMES = 1;
 const DEFAULT_WEB_PREP_MOVE_LIMIT = 12;
+
+type WebEnginePanelSettings = {
+  enabled: boolean;
+  useCloud: boolean;
+  multipv: number;
+  depth: number;
+};
+
+const DEFAULT_WEB_ENGINE_PANEL_SETTINGS: WebEnginePanelSettings = {
+  enabled: false,
+  useCloud: true,
+  multipv: 3,
+  depth: 14,
+};
 
 type WebPrepStoredSetup = {
   mode: WebPrepMode;
@@ -443,6 +463,7 @@ export default function WebApp() {
         sourceTitle: `${game.white} - ${game.black}`,
         sourceDatabaseId: game.databaseId,
         sourceGameId: game.id,
+        sourceComments: game.comments ?? [],
       },
     }));
     setSelectedDatabaseId(game.databaseId);
@@ -473,6 +494,7 @@ export default function WebApp() {
         sourceTitle: "Analysis board",
         sourceDatabaseId: null,
         sourceGameId: null,
+        sourceComments: [],
       },
     }));
     setSelectedGameId(null);
@@ -1145,6 +1167,12 @@ function BoardWorkspace({
     appendMove(played.san, played.uci, played.fenAfter);
   };
 
+  const playEngineMove = (uci: string) => {
+    const played = playUciMove(currentFen, uci);
+    if (!played) return;
+    appendMove(played.san, played.uci, played.fenAfter);
+  };
+
   const playMoveFromPrepRoot = (stat: WebPrepMoveStat) => {
     if (!prepBranchFen) return;
     const played = playSanMove(prepBranchFen, stat.move);
@@ -1195,16 +1223,13 @@ function BoardWorkspace({
         onMove={handleBoardMove}
       />
 
-      <BoardStartActions
-        activeMode={panelMode}
-        onChooseMode={(mode) => setPanelMode(mode)}
-      />
+      <BoardStartActions activeMode={panelMode} onChooseMode={(mode) => setPanelMode(mode)} />
 
       <Box className={classes.underBoardPanel}>
         <Group className={classes.underBoardTop} justify="space-between" gap="xs" wrap="nowrap">
           <Box miw={0}>
             <Text size="sm" fw={700} truncate>
-              {panelMode === "moves" ? "Moves" : panelMode === "database" ? "Database" : "Prep"}
+              {getBoardPanelModeLabel(panelMode)}
             </Text>
             <Text size="xs" c="dimmed" truncate>
               {normalizeWebFen(currentFen)}
@@ -1220,6 +1245,7 @@ function BoardWorkspace({
               { value: "moves", label: "Moves" },
               { value: "database", label: "Database" },
               { value: "prep", label: "Prep" },
+              { value: "engine", label: "Engine" },
             ]}
           />
         </Group>
@@ -1231,6 +1257,7 @@ function BoardWorkspace({
               cursor={cursor}
               setCursor={setCursor}
               sourceTitle={boardTitle}
+              sourceComments={activePrep ? [] : (board.sourceComments ?? [])}
             />
           ) : panelMode === "database" ? (
             <DatabaseUnderBoardPanel
@@ -1243,7 +1270,7 @@ function BoardWorkspace({
               lichessToken={lichessToken}
               setLichessToken={setLichessToken}
             />
-          ) : (
+          ) : panelMode === "prep" ? (
             <PrepUnderBoardPanel
               state={state}
               setState={setState}
@@ -1264,6 +1291,8 @@ function BoardWorkspace({
               lichessToken={lichessToken}
               setLichessToken={setLichessToken}
             />
+          ) : (
+            <EngineUnderBoardPanel currentFen={currentFen} onPlayMove={playEngineMove} />
           )}
         </Box>
       </Box>
@@ -1304,6 +1333,14 @@ function BoardStartActions({
       >
         Prep
       </Button>
+      <Button
+        size="xs"
+        variant={activeMode === "engine" ? "filled" : "light"}
+        leftSection={<IconCpu size={14} />}
+        onClick={() => onChooseMode("engine")}
+      >
+        Engine
+      </Button>
     </Group>
   );
 }
@@ -1313,11 +1350,13 @@ function MovesUnderBoardPanel({
   cursor,
   setCursor,
   sourceTitle,
+  sourceComments,
 }: {
   line: WebPrepLineMove[];
   cursor: number;
   setCursor: (cursor: number) => void;
   sourceTitle: string;
+  sourceComments: string[];
 }) {
   return (
     <Stack gap="xs">
@@ -1352,6 +1391,15 @@ function MovesUnderBoardPanel({
           </ActionIcon>
         </Group>
       </Group>
+      {sourceComments.length > 0 && (
+        <Box className={classes.moveRootComments}>
+          {sourceComments.map((comment, index) => (
+            <Text key={`root-comment-${index}`} size="xs" className={classes.moveComment}>
+              {comment}
+            </Text>
+          ))}
+        </Box>
+      )}
       <Box className={classes.moveList}>
         {line.length === 0 ? (
           <Text size="sm" c="dimmed">
@@ -1361,17 +1409,45 @@ function MovesUnderBoardPanel({
           line.map((move, index) => {
             const moveNumber = Math.floor(index / 2) + 1;
             const isWhiteMove = index % 2 === 0;
+            const annotations = move.annotations ?? [];
+            const startingComments = move.startingComments ?? [];
+            const comments = move.comments ?? [];
+            const hasNotes = startingComments.length > 0 || comments.length > 0;
             return (
-              <button
+              <Box
                 key={`${index}-${move.san}-${move.fenAfter}`}
-                className={classes.movePill}
-                data-current={cursor === index + 1}
-                type="button"
-                onClick={() => setCursor(index + 1)}
+                className={classes.moveEntry}
+                data-annotated={hasNotes ? "true" : undefined}
               >
-                {isWhiteMove ? `${moveNumber}. ` : ""}
-                {move.san}
-              </button>
+                {startingComments.map((comment, commentIndex) => (
+                  <Text
+                    key={`before-${commentIndex}`}
+                    size="xs"
+                    className={`${classes.moveComment} ${classes.moveStartingComment}`}
+                  >
+                    {comment}
+                  </Text>
+                ))}
+                <button
+                  className={classes.movePill}
+                  data-current={cursor === index + 1}
+                  type="button"
+                  onClick={() => setCursor(index + 1)}
+                >
+                  {isWhiteMove ? `${moveNumber}. ` : ""}
+                  {move.san}
+                  {annotations.map((annotation) => (
+                    <span key={annotation} className={classes.moveGlyph}>
+                      {annotation}
+                    </span>
+                  ))}
+                </button>
+                {comments.map((comment, commentIndex) => (
+                  <Text key={`after-${commentIndex}`} size="xs" className={classes.moveComment}>
+                    {comment}
+                  </Text>
+                ))}
+              </Box>
             );
           })
         )}
@@ -2136,6 +2212,251 @@ function DatabaseUnderBoardPanel({
           }
         />
       )}
+    </Stack>
+  );
+}
+
+type WebEnginePanelStatus = "idle" | "loading" | "running" | "complete" | "error";
+type WebEngineCloudStatus = "off" | "loading" | "ready" | "miss" | "error";
+
+function EngineUnderBoardPanel({
+  currentFen,
+  onPlayMove,
+}: {
+  currentFen: string;
+  onPlayMove: (uci: string) => void;
+}) {
+  const [settings, setSettings] = usePersistentJson(
+    WEB_ENGINE_PANEL_SETTINGS_STORAGE_KEY,
+    DEFAULT_WEB_ENGINE_PANEL_SETTINGS,
+    normalizeWebEnginePanelSettings,
+  );
+  const [stockfishLines, setStockfishLines] = useState<WebEngineLine[]>([]);
+  const [cloudLines, setCloudLines] = useState<WebEngineLine[]>([]);
+  const [status, setStatus] = useState<WebEnginePanelStatus>("idle");
+  const [cloudStatus, setCloudStatus] = useState<WebEngineCloudStatus>(
+    settings.useCloud ? "miss" : "off",
+  );
+  const [error, setError] = useState<string | null>(null);
+
+  const updateSettings = (patch: Partial<WebEnginePanelSettings>) => {
+    setSettings((current) => normalizeWebEnginePanelSettings({ ...current, ...patch }));
+  };
+
+  useEffect(() => {
+    if (!settings.enabled) {
+      stopWebStockfish18Search();
+      setStatus("idle");
+      setError(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    let active = true;
+    setStatus("loading");
+    setError(null);
+    setStockfishLines([]);
+
+    if (settings.useCloud) {
+      setCloudStatus("loading");
+      setCloudLines([]);
+      void queryWebLichessCloudLines({
+        fen: currentFen,
+        multipv: settings.multipv,
+        signal: controller.signal,
+      })
+        .then((lines) => {
+          if (!active) return;
+          setCloudLines(lines);
+          setCloudStatus(lines.length > 0 ? "ready" : "miss");
+        })
+        .catch((cloudError) => {
+          if (!active || isAbortError(cloudError)) return;
+          setCloudLines([]);
+          setCloudStatus("error");
+        });
+    } else {
+      setCloudStatus("off");
+      setCloudLines([]);
+    }
+
+    void analyzeWithWebStockfish18({
+      fen: currentFen,
+      multipv: settings.multipv,
+      depth: settings.depth,
+      signal: controller.signal,
+      onUpdate: (lines) => {
+        if (!active) return;
+        setStockfishLines(lines);
+        setStatus(lines.length > 0 ? "running" : "loading");
+      },
+    })
+      .then((lines) => {
+        if (!active) return;
+        setStockfishLines(lines);
+        setStatus("complete");
+      })
+      .catch((engineError) => {
+        if (!active || isAbortError(engineError)) return;
+        setStockfishLines([]);
+        setStatus("error");
+        setError(engineError instanceof Error ? engineError.message : "Stockfish 18 failed.");
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [currentFen, settings.depth, settings.enabled, settings.multipv, settings.useCloud]);
+
+  const displayLines = stockfishLines.length > 0 ? stockfishLines : cloudLines;
+  const showingCloudFallback = stockfishLines.length === 0 && cloudLines.length > 0;
+
+  return (
+    <Stack gap="xs">
+      <Box className={classes.prepToolBox}>
+        <Stack gap="xs">
+          <Group justify="space-between" align="center" gap="xs" wrap="nowrap">
+            <Switch
+              checked={settings.enabled}
+              onChange={(event) => updateSettings({ enabled: event.currentTarget.checked })}
+              label="Stockfish 18"
+              size="sm"
+              onLabel="ON"
+              offLabel="OFF"
+            />
+            <Group gap={4} wrap="nowrap">
+              <Badge
+                size="xs"
+                variant="light"
+                color={settings.enabled ? engineStatusColor(status) : "gray"}
+              >
+                {settings.enabled ? engineStatusLabel(status) : "Off"}
+              </Badge>
+              <Badge size="xs" variant="outline" color={cloudStatusColor(cloudStatus)}>
+                {cloudStatusLabel(cloudStatus)}
+              </Badge>
+            </Group>
+          </Group>
+
+          <Group gap="xs" grow className={classes.engineSettingsRow}>
+            <Switch
+              checked={settings.useCloud}
+              onChange={(event) => updateSettings({ useCloud: event.currentTarget.checked })}
+              label="Lichess Cloud"
+              size="xs"
+              disabled={!settings.enabled}
+            />
+            <NumberInput
+              label="Lines"
+              value={settings.multipv}
+              onChange={(value) => updateSettings({ multipv: Number(value) || 1 })}
+              min={1}
+              max={8}
+              step={1}
+              size="xs"
+              disabled={!settings.enabled}
+            />
+            <NumberInput
+              label="Depth"
+              value={settings.depth}
+              onChange={(value) => updateSettings({ depth: Number(value) || 14 })}
+              min={6}
+              max={30}
+              step={1}
+              size="xs"
+              disabled={!settings.enabled}
+            />
+          </Group>
+        </Stack>
+      </Box>
+
+      {!settings.enabled ? (
+        <UnderBoardEmpty
+          icon={<IconCpu size={30} />}
+          title="Engine off"
+          text="Turn on Stockfish 18 to analyze this board position on your phone."
+        />
+      ) : error ? (
+        <UnderBoardEmpty icon={<IconCpu size={30} />} title="Engine unavailable" text={error} />
+      ) : displayLines.length === 0 ? (
+        <UnderBoardEmpty
+          icon={status === "loading" ? <Loader size="sm" /> : <IconCpu size={30} />}
+          title={status === "loading" ? "Starting Stockfish 18" : "No engine lines yet"}
+          text={
+            settings.useCloud && cloudStatus === "loading"
+              ? "Checking Lichess Cloud while the local engine warms up."
+              : "Stockfish will show candidate lines here as soon as it reaches the position."
+          }
+        />
+      ) : (
+        <Stack gap={6}>
+          {showingCloudFallback ? (
+            <Text size="xs" c="dimmed">
+              Showing Lichess Cloud evals while Stockfish 18 analyzes locally.
+            </Text>
+          ) : null}
+          <EngineLineList lines={displayLines} onPlayMove={onPlayMove} />
+        </Stack>
+      )}
+    </Stack>
+  );
+}
+
+function EngineLineList({
+  lines,
+  onPlayMove,
+}: {
+  lines: WebEngineLine[];
+  onPlayMove: (uci: string) => void;
+}) {
+  return (
+    <Stack gap={6}>
+      {lines.map((line) => {
+        const firstMove = line.uciMoves[0] ?? null;
+        const pv = line.sanMoves.length > 0 ? line.sanMoves.join(" ") : line.uciMoves.join(" ");
+        return (
+          <button
+            key={`${line.source}-${line.multipv}`}
+            type="button"
+            className={classes.engineLineRow}
+            disabled={!firstMove}
+            onClick={() => firstMove && onPlayMove(firstMove)}
+            aria-label={`Play engine line ${line.multipv}`}
+          >
+            <Group justify="space-between" gap="xs" wrap="nowrap">
+              <Group gap={6} wrap="nowrap" miw={0}>
+                <Badge size="xs" variant="light">
+                  #{line.multipv}
+                </Badge>
+                <Text size="sm" fw={800} className={classes.engineScore}>
+                  {formatWebEngineScore(line.score)}
+                </Text>
+                <Badge
+                  size="xs"
+                  variant="outline"
+                  color={line.source === "lichess-cloud" ? "cyan" : "blue"}
+                  leftSection={
+                    line.source === "lichess-cloud" ? (
+                      <IconCloud size={10} />
+                    ) : (
+                      <IconCpu size={10} />
+                    )
+                  }
+                >
+                  {line.source === "lichess-cloud" ? "Cloud" : "SF18"}
+                </Badge>
+              </Group>
+              <Text size="xs" c="dimmed" className={classes.engineDepth}>
+                d{line.depth || "?"}
+              </Text>
+            </Group>
+            <Text size="sm" className={classes.enginePvLine}>
+              {pv || "-"}
+            </Text>
+          </button>
+        );
+      })}
     </Stack>
   );
 }
@@ -5020,6 +5341,44 @@ function formatWdlPointLoss(value: number) {
   return (value * 100).toFixed(value >= 0.1 ? 0 : 1).replace(/\.0$/, "");
 }
 
+function formatWebEngineScore(score: WebEngineLine["score"]) {
+  if (score.type === "mate") {
+    return `${score.value > 0 ? "+" : "-"}M${Math.abs(score.value)}`;
+  }
+  const pawns = score.value / 100;
+  return `${pawns > 0 ? "+" : ""}${pawns.toFixed(2)}`;
+}
+
+function engineStatusLabel(status: WebEnginePanelStatus) {
+  if (status === "loading") return "Starting";
+  if (status === "running") return "Analyzing";
+  if (status === "complete") return "Ready";
+  if (status === "error") return "Error";
+  return "Idle";
+}
+
+function engineStatusColor(status: WebEnginePanelStatus) {
+  if (status === "running" || status === "complete") return "green";
+  if (status === "loading") return "blue";
+  if (status === "error") return "red";
+  return "gray";
+}
+
+function cloudStatusLabel(status: WebEngineCloudStatus) {
+  if (status === "loading") return "Cloud checking";
+  if (status === "ready") return "Cloud ready";
+  if (status === "error") return "Cloud error";
+  if (status === "off") return "Cloud off";
+  return "No cloud";
+}
+
+function cloudStatusColor(status: WebEngineCloudStatus) {
+  if (status === "ready") return "cyan";
+  if (status === "loading") return "blue";
+  if (status === "error") return "red";
+  return "gray";
+}
+
 function WebPrepStrengthSettingsButton({
   builderSettings,
   updateBuilderSettings,
@@ -5773,14 +6132,12 @@ function useBoardVerticalScrollEscape(boardRef: { current: HTMLDivElement | null
     const boardElement = boardRef.current;
     if (!boardElement) return;
 
-    let gesture:
-      | {
-          startX: number;
-          startY: number;
-          lastY: number;
-          mode: "pending" | "scroll" | "board";
-        }
-      | null = null;
+    let gesture: {
+      startX: number;
+      startY: number;
+      lastY: number;
+      mode: "pending" | "scroll" | "board";
+    } | null = null;
 
     const resetGesture = () => {
       gesture = null;
@@ -5909,6 +6266,13 @@ function clampCursor(cursor: number, lineLength: number) {
 
 function prepBoardTitle(prep: WebPrepWorkspace) {
   return getWebPrepWorkspaceName(prep);
+}
+
+function getBoardPanelModeLabel(mode: BoardPanelMode) {
+  if (mode === "moves") return "Moves";
+  if (mode === "database") return "Database";
+  if (mode === "prep") return "Prep";
+  return "Engine";
 }
 
 function downloadText(filename: string, text: string) {
@@ -6275,6 +6639,30 @@ function normalizeWebDateFilter(value: unknown) {
     return "";
   }
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function normalizeWebEnginePanelSettings(
+  value: Partial<WebEnginePanelSettings> | null | undefined,
+): WebEnginePanelSettings {
+  return {
+    enabled: Boolean(value?.enabled),
+    useCloud: value?.useCloud !== false,
+    multipv: clampWholeNumber(value?.multipv, 1, 8, DEFAULT_WEB_ENGINE_PANEL_SETTINGS.multipv),
+    depth: clampWholeNumber(value?.depth, 6, 30, DEFAULT_WEB_ENGINE_PANEL_SETTINGS.depth),
+  };
+}
+
+function clampWholeNumber(value: unknown, min: number, max: number, fallback: number) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return fallback;
+  return Math.min(max, Math.max(min, Math.round(numeric)));
+}
+
+function isAbortError(error: unknown) {
+  return (
+    (error instanceof DOMException && error.name === "AbortError") ||
+    (error instanceof Error && error.name === "AbortError")
+  );
 }
 
 function usePersistentJson<T>(

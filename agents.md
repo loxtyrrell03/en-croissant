@@ -88,7 +88,7 @@ model, implementation map, and verification expectations for this app.
 
 - Do not run Rust/Tauri compile-heavy commands by default. In this repo even
   apparently focused commands such as `cargo test --bin en-croissant-fork
-  some_filter` can sit compiling for many minutes and waste the user's time.
+some_filter` can sit compiling for many minutes and waste the user's time.
   Avoid broad `cargo check`, `cargo test`, Tauri builds, and binary test
   compiles unless the user explicitly asks for them or the change is high-risk
   enough that the command is truly necessary.
@@ -165,7 +165,7 @@ default.
   filesystem bridge as the phone product path; it makes phone access depend on
   the laptop being awake and can expose local files on a development network.
 - On 2026-06-03, local auto-sync was added for the phone site. `npm run
-  web:publish` runs `scripts/publish-web-site.ps1`, regenerating the hosted
+web:publish` runs `scripts/publish-web-site.ps1`, regenerating the hosted
   library, building Vite, mirroring `dist` into the `loxtyrrell03.github.io`
   Pages checkout under `%LOCALAPPDATA%/EnCroissantWebSync`, committing, and
   pushing only when there are real staged changes. `npm run web:install-sync`
@@ -271,7 +271,7 @@ default.
   fork's visible setup model: header badges, Player/General target mode,
   folder-aware `Prep source` picker with an Online group for Lichess All and
   Lichess Masters, player/opponent colour controls, general `I'm white`/`I'm
-  black`, Min games, Show top, and the online import drawer's Save database,
+black`, Min games, Show top, and the online import drawer's Save database,
   Check range, range/count, and Import + use controls. Local prep stats now
   respect Player versus General filtering plus Min games/Show top. Lichess
   All/Masters prep sources use the persisted web Lichess token and the web
@@ -483,6 +483,21 @@ default.
   up/down swipes into document scrolling even when Chessground captures a touch
   that started on a piece. Preserve this behavior for phone layouts; tap-to-move
   remains the primary reliable move input when a gesture is mostly vertical.
+- On 2026-06-11, phone game files began carrying PGN annotations into the
+  board `Moves` panel. Browser PGN import now keeps root comments, move
+  comments, starting comments, and NAGs on `WebMove`/board-line records, while
+  the phone move list renders annotated moves as wrapping rows with inline
+  glyphs and note text. Keep this path lightweight: the full PGN still preserves
+  richer notation for export, but the phone board intentionally shows mainline
+  annotations without becoming a full variation editor.
+- Also on 2026-06-11, the phone under-board workspace gained an `Engine` tab.
+  It loads Stockfish 18's lite single-threaded browser WASM worker from the
+  `stockfish` npm package, persists an on/off switch plus Lichess Cloud,
+  MultiPV, and depth settings in browser storage, and shows tappable PV rows
+  under the board. Lichess Cloud evals are fetched through the existing
+  browser-safe cloud-eval path and can appear while local Stockfish warms up;
+  the Database tab remains responsible for Lichess All/Masters opening
+  explorer statistics.
 
 ### App Shell
 
@@ -530,7 +545,7 @@ default.
   must match the current board FEN and later positions must be reached through
   `analyse_line`.
 - The Coach UI now lives inside the under-board `Moves / Database / Prep /
-  Coach` area instead of a floating modal. The panel keeps a persistent chat
+Coach` area instead of a floating modal. The panel keeps a persistent chat
   input at the bottom, shows local request progress in the transcript, and can
   make Gemini-marked `<line>...</line>` engine lines clickable by creating or
   navigating a variation from the board path where the question was asked. The
@@ -610,7 +625,7 @@ default.
 - AGY print mode can return exit code 0 with no stdout when it triggers OAuth
   and the login flow times out; the useful error only appears in the AGY log.
   The coach bridge reads that temporary log and treats `You are not logged into
-  Antigravity`, OAuth-token failures, and auth timeouts as unauthenticated AI
+Antigravity`, OAuth-token failures, and auth timeouts as unauthenticated AI
   CLI errors rather than surfacing a misleading empty-response failure.
 - Coach answer formatting is intentionally app-rendered rather than raw
   Markdown. The UI strips `###` headings into bold section labels, renders
@@ -659,7 +674,7 @@ default.
   answers and `no engine data for that phase` failures.
 - Coach conversational follow-ups are their own focus path. Phrases such as
   `that sequence`, `that line`, `explain that better`, or `where I can win a
-  piece` must reuse the most recent targeted Stockfish evidence and
+piece` must reuse the most recent targeted Stockfish evidence and
   coach-discussion references instead of falling through to generic whole-game
   critical-moment analysis. `AiCoachPanel.tsx` includes recent targeted
   Stockfish result FENs/PVs in `referenceContext`, while `coach.rs` forces
@@ -705,7 +720,7 @@ default.
   analysis metadata; `src-tauri/src/coach.rs` asks the planner to return
   `pgn_scope: "current_line" | "whole_game"` before building the Pro prompt.
   Natural requests like `analyse this game`, `review the game`, `annotate our
-  game`, and `go through this game` must select `whole_game`. If scope
+game`, and `go through this game` must select `whole_game`. If scope
   selection regresses, Pro will only see the start/current-line PGN and will
   incorrectly answer with opening move-1 advice instead of reviewing the loaded
   game. `CoachPlannerResponse` is under camelCase serde defaults, so its
@@ -800,7 +815,7 @@ default.
   user asks for them.
 - On 2026-06-06, the Coach question box default was cleared so opening the
   Coach tab starts with a blank input instead of the seeded `What is the plan
-  here?` prompt. Keep the submit guard tied to non-empty trimmed text.
+here?` prompt. Keep the submit guard tied to non-empty trimmed text.
 - On 2026-06-06, Coach input keyboard behavior was changed to chat-style
   submission: plain Enter sends the prompt, while Shift+Enter inserts a
   newline. Keep the textarea autosize behavior and non-empty submit guard.
@@ -893,7 +908,7 @@ default.
   as early `Bxc6`, `d3`, `d4`, and `Qe2`.
 - Also on 2026-06-06, the Center Game weak-opening gap was intentionally kept
   lightweight because the user rarely sees it. `Center Game - GM Naroditsky
-  Lightweight Lesson.pgn` was added beside the Black weak deck with a
+Lightweight Lesson.pgn` was added beside the Black weak deck with a
   repertoire `.info` sidecar. It uses GM Daniel Naroditsky's Center Game
   masterclass transcript mainly to capture the tactical warning about White's
   `Bc4`/f7 activity in related Center/Danish positions, then maps the exact
@@ -1415,9 +1430,10 @@ and read puzzle progress, select Coach/SRS/theme/rating/random training
 puzzles, record rated attempts, update SRS cards and per-theme skill estimates,
 serve dashboard data, and reset/export progress. The Coach selector clears
 urgent due cards first, then ordinary due reviews, then weak-theme or
-  rating-calibration puzzles. Puzzle progress is intentionally scoped per
-  installed puzzle database snapshot so future database updates do not silently
-  mix stats from different source data.
+rating-calibration puzzles. Puzzle progress is intentionally scoped per
+installed puzzle database snapshot so future database updates do not silently
+mix stats from different source data.
+
 - The Puzzle tab UI now has Train, Stats, and SRS panels. Train shows Puzzle
   Elo, database accuracy, due/mastered counts, selection reason, SRS state,
   current puzzle themes, and the Elo delta after an attempt. Stats shows Elo,

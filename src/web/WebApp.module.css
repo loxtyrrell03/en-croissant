@@ -195,6 +195,29 @@
   font-variant-numeric: tabular-nums;
 }
 
+.moveRootComments {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+  padding: 0.45rem 0.5rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.moveEntry {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.24rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.moveEntry[data-annotated="true"] {
+  flex: 1 1 100%;
+  padding-block: 0.15rem;
+}
+
 .movePill {
   min-height: 1.85rem;
   padding: 0.2rem 0.45rem;
@@ -209,6 +232,30 @@
 .movePill[data-current="true"] {
   border-color: color-mix(in srgb, var(--mantine-primary-color-5) 55%, transparent);
   background: color-mix(in srgb, var(--mantine-primary-color-9) 34%, rgba(255, 255, 255, 0.06));
+}
+
+.moveGlyph {
+  margin-left: 0.18rem;
+  color: var(--mantine-color-teal-2);
+  font-weight: 800;
+}
+
+.moveComment {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.38rem 0.48rem;
+  border-left: 2px solid color-mix(in srgb, var(--mantine-primary-color-5) 62%, transparent);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--mantine-color-gray-2);
+  line-height: 1.35;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.moveStartingComment {
+  border-left-color: rgba(255, 255, 255, 0.22);
+  color: var(--mantine-color-gray-4);
 }
 
 .compactTable {
@@ -254,6 +301,51 @@
   font-variant-numeric: tabular-nums;
 }
 
+.engineSettingsRow {
+  min-width: 0;
+  align-items: end !important;
+}
+
+.engineSettingsRow > * {
+  min-width: 0;
+}
+
+.engineLineRow {
+  width: 100%;
+  min-width: 0;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  text-align: left;
+}
+
+.engineLineRow:disabled {
+  cursor: default;
+  opacity: 0.82;
+}
+
+.engineLineRow:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+.engineScore {
+  min-width: 3.35rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.engineDepth {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.enginePvLine {
+  margin-top: 0.28rem;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
+
 @media (max-width: 32rem) {
   .headerInner {
     grid-template-columns: minmax(0, 1fr);
@@ -289,6 +381,14 @@
 
   .underBoardContent :global(.mantine-InputWrapper-root) {
     min-width: 0 !important;
+  }
+
+  .engineSettingsRow {
+    flex-wrap: wrap !important;
+  }
+
+  .engineSettingsRow > * {
+    flex: 1 1 8rem !important;
   }
 }
 
