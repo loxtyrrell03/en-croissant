@@ -1472,6 +1472,11 @@ urgent due cards first, then ordinary due reviews, then weak-theme or
   The backend random fallback also no longer uses `ORDER BY RANDOM()` for
   puzzle selection; it counts the filtered set and fetches a random offset,
   avoiding multi-second SQLite shuffles on large puzzle databases.
+- On 2026-06-11, puzzle page loading was adjusted so rusqlite `query_map`
+  iterators are collected into a local value before returning from
+  `load_puzzle_page`. Keep this binding pattern in future puzzle pagination
+  changes; returning the borrowed iterator chain as the final block expression
+  can trip Rust's temporary-drop ordering and break the Tauri binary compile.
 - A follow-up on 2026-06-10 hardened puzzle database handling against stale or
   invalid `.db3` selections. Puzzle source databases now open read-only and are
   validated before any trainer/progress command computes the database

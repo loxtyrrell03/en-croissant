@@ -1948,10 +1948,11 @@ fn load_puzzle_page(
             Err(error) if is_missing_sqlite_table(&error) => return Ok(Vec::new()),
             Err(error) => return Err(map_rusqlite_puzzle_error(error)),
         };
-        return stmt
+        let puzzles = stmt
             .query_map(params![theme, low, high, limit, offset], row_to_puzzle)?
             .collect::<Result<Vec<_>, _>>()
-            .map_err(map_rusqlite_puzzle_error);
+            .map_err(map_rusqlite_puzzle_error)?;
+        return Ok(puzzles);
     }
 
     let mut stmt = conn
@@ -1961,9 +1962,11 @@ fn load_puzzle_page(
              ORDER BY id LIMIT ?3 OFFSET ?4",
         )
         .map_err(map_rusqlite_puzzle_error)?;
-    stmt.query_map(params![low, high, limit, offset], row_to_puzzle)?
+    let puzzles = stmt
+        .query_map(params![low, high, limit, offset], row_to_puzzle)?
         .collect::<Result<Vec<_>, _>>()
-        .map_err(map_rusqlite_puzzle_error)
+        .map_err(map_rusqlite_puzzle_error)?;
+    Ok(puzzles)
 }
 
 fn random_offset(count: i64) -> i64 {
