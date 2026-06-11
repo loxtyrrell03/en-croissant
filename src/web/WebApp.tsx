@@ -35,6 +35,7 @@ import {
   Tooltip,
   Title,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { notifications, Notifications } from "@mantine/notifications";
 import {
   IconArrowBackUp,
@@ -204,7 +205,12 @@ import {
   playUciMove,
   webGameToLine,
 } from "./pgn";
-import { createEmptyWebBoardState, createEmptyWebState, loadWebState, saveWebState } from "./storage";
+import {
+  createEmptyWebBoardState,
+  createEmptyWebState,
+  loadWebState,
+  saveWebState,
+} from "./storage";
 
 type ViewMode = "board" | "files";
 type BoardPanelMode = "moves" | "database" | "prep";
@@ -332,10 +338,7 @@ export default function WebApp() {
   const [importing, setImporting] = useState(false);
   const [selectedDatabaseId, setSelectedDatabaseId] = useState<string | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
-  const [lichessToken, setLichessToken] = usePersistentString(
-    WEB_LICHESS_TOKEN_STORAGE_KEY,
-    "",
-  );
+  const [lichessToken, setLichessToken] = usePersistentString(WEB_LICHESS_TOKEN_STORAGE_KEY, "");
   const saveReady = useRef(false);
 
   useEffect(() => {
@@ -420,9 +423,13 @@ export default function WebApp() {
     () => state.databases.find((database) => database.id === selectedDatabaseId) ?? null,
     [selectedDatabaseId, state.databases],
   );
-  const activeDatabaseGames = activeDatabase ? state.gamesByDatabase[activeDatabase.id] ?? [] : [];
+  const activeDatabaseGames = activeDatabase
+    ? (state.gamesByDatabase[activeDatabase.id] ?? [])
+    : [];
   const selectedGame =
-    activeDatabaseGames.find((game) => game.id === selectedGameId) ?? activeDatabaseGames[0] ?? null;
+    activeDatabaseGames.find((game) => game.id === selectedGameId) ??
+    activeDatabaseGames[0] ??
+    null;
 
   const loadGameOnBoard = useCallback((game: WebGame) => {
     setState((current) => ({
@@ -443,10 +450,26 @@ export default function WebApp() {
     setView("board");
   }, []);
 
-  const addImportedDatabases = useCallback((imported: WebImportResult[]) => {
-    setState((current) => mergeImportedWebDatabases(current, imported));
-    setSelectedDatabaseId(imported[0]?.database.id ?? selectedDatabaseId);
-  }, [selectedDatabaseId]);
+  const openEmptyBoard = useCallback(() => {
+    setState((current) => ({
+      ...current,
+      activePrepId: null,
+      board: {
+        ...createEmptyWebBoardState(),
+        sourceTitle: "Analysis board",
+      },
+    }));
+    setSelectedGameId(null);
+    setView("board");
+  }, []);
+
+  const addImportedDatabases = useCallback(
+    (imported: WebImportResult[]) => {
+      setState((current) => mergeImportedWebDatabases(current, imported));
+      setSelectedDatabaseId(imported[0]?.database.id ?? selectedDatabaseId);
+    },
+    [selectedDatabaseId],
+  );
 
   const importPgnText = useCallback(
     async ({
@@ -669,7 +692,8 @@ export default function WebApp() {
         console.error(error);
         notifications.show({
           title: "Could not open database",
-          message: error instanceof Error ? error.message : "The hosted database could not be read.",
+          message:
+            error instanceof Error ? error.message : "The hosted database could not be read.",
           color: "red",
         });
       } finally {
@@ -706,7 +730,9 @@ export default function WebApp() {
           },
         });
         if (games.length === 0) {
-          throw new Error(`${getWebOnlineSourceLabel(source)} did not return public PGNs for ${username}.`);
+          throw new Error(
+            `${getWebOnlineSourceLabel(source)} did not return public PGNs for ${username}.`,
+          );
         }
 
         const title = getWebOnlineImportTitle({ source, username, mode, count, range });
@@ -836,6 +862,7 @@ export default function WebApp() {
               importHostedFolder={openHostedDatabaseSource}
               importOnlineGames={importOnlineGames}
               loadGameOnBoard={loadGameOnBoard}
+              onStartBlankBoard={openEmptyBoard}
               lichessToken={lichessToken}
               setLichessToken={setLichessToken}
             />
@@ -868,6 +895,7 @@ function BoardWorkspace({
   importHostedFolder,
   importOnlineGames,
   loadGameOnBoard,
+  onStartBlankBoard,
   lichessToken,
   setLichessToken,
 }: {
@@ -877,6 +905,7 @@ function BoardWorkspace({
   importHostedFolder: WebHostedFolderImportHandler;
   importOnlineGames: WebOnlineImportHandler;
   loadGameOnBoard: (game: WebGame) => void;
+  onStartBlankBoard: () => void;
   lichessToken: string;
   setLichessToken: (value: string) => void;
 }) {
@@ -887,9 +916,7 @@ function BoardWorkspace({
   const cursor = clampCursor(board.cursor, activeLine.length);
   const currentFen = fenAtCursor(activeLine, cursor, startFen);
   const currentLine = activeLine.slice(0, cursor);
-  const prepRootPly = activePrep
-    ? clampCursor(activePrep.rootPly ?? 0, activeLine.length)
-    : 0;
+  const prepRootPly = activePrep ? clampCursor(activePrep.rootPly ?? 0, activeLine.length) : 0;
   const prepRootFen = fenAtCursor(activeLine, prepRootPly, startFen);
   const prepRootLine = activeLine.slice(0, prepRootPly);
   const prepBranchStart = activePrep
@@ -902,9 +929,8 @@ function BoardWorkspace({
       })
     : null;
   const prepBranchPly = prepBranchStart?.branchPly ?? prepRootPly;
-  const prepBranchFen = activePrep && prepBranchStart
-    ? fenAtCursor(activeLine, prepBranchPly, startFen)
-    : null;
+  const prepBranchFen =
+    activePrep && prepBranchStart ? fenAtCursor(activeLine, prepBranchPly, startFen) : null;
   const prepMinGames = activePrep?.minGames ?? DEFAULT_WEB_PREP_MIN_GAMES;
   const prepMoveLimit = activePrep?.moveLimit ?? DEFAULT_WEB_PREP_MOVE_LIMIT;
   const prepGames = useMemo(
@@ -987,7 +1013,12 @@ function BoardWorkspace({
 
   useEffect(() => {
     const settings = normalizeWebPrepStrengthSettings(activePrep?.builder);
-    if (!activePrep || !prepBranchFen || !settings.useCloudEngine || prepRootStatsBase.length === 0) {
+    if (
+      !activePrep ||
+      !prepBranchFen ||
+      !settings.useCloudEngine ||
+      prepRootStatsBase.length === 0
+    ) {
       setPrepRootEngineMoves([]);
       return;
     }
@@ -1014,8 +1045,9 @@ function BoardWorkspace({
     };
   }, [activePrep, prepBranchFen, prepRootStatsBase]);
   const turnColor = getFenColor(currentFen);
-  const boardTitle =
-    activePrep ? prepBoardTitle(activePrep) : board.sourceTitle ?? (state.databases.length > 0 ? "Analysis board" : "Board");
+  const boardTitle = activePrep
+    ? prepBoardTitle(activePrep)
+    : (board.sourceTitle ?? (state.databases.length > 0 ? "Analysis board" : "Board"));
 
   const updateBoard = (patch: Partial<WebBoardState>) => {
     setState((current) => ({
@@ -1107,7 +1139,7 @@ function BoardWorkspace({
     appendMove(played.san, played.uci, played.fenAfter);
   };
 
-  const activeLastMove = cursor > 0 ? activeLine[cursor - 1]?.uci ?? null : null;
+  const activeLastMove = cursor > 0 ? (activeLine[cursor - 1]?.uci ?? null) : null;
   const orientation = activePrep?.userColor ?? board.orientation;
 
   return (
@@ -1121,9 +1153,19 @@ function BoardWorkspace({
             {boardTitle}
           </Title>
         </Box>
-        <Badge color={turnColor === "white" ? "gray" : "dark"} variant="light">
-          {turnColor}
-        </Badge>
+        <Group gap="xs" wrap="nowrap">
+          <Button
+            size="xs"
+            variant="light"
+            leftSection={<IconRefresh size={14} />}
+            onClick={onStartBlankBoard}
+          >
+            New board
+          </Button>
+          <Badge color={turnColor === "white" ? "gray" : "dark"} variant="light">
+            {turnColor}
+          </Badge>
+        </Group>
       </Box>
 
       <WebChessboard
@@ -1131,6 +1173,11 @@ function BoardWorkspace({
         orientation={orientation}
         lastMoveUci={activeLastMove}
         onMove={handleBoardMove}
+      />
+
+      <BoardStartActions
+        activeMode={panelMode}
+        onChooseMode={(mode) => setPanelMode(mode)}
       />
 
       <Box className={classes.underBoardPanel}>
@@ -1201,6 +1248,43 @@ function BoardWorkspace({
         </Box>
       </Box>
     </Box>
+  );
+}
+
+function BoardStartActions({
+  activeMode,
+  onChooseMode,
+}: {
+  activeMode: BoardPanelMode;
+  onChooseMode: (mode: BoardPanelMode) => void;
+}) {
+  return (
+    <Group className={classes.boardStartActions} gap="xs" grow>
+      <Button
+        size="xs"
+        variant={activeMode === "moves" ? "filled" : "light"}
+        leftSection={<IconPlayerPlay size={14} />}
+        onClick={() => onChooseMode("moves")}
+      >
+        Analysis
+      </Button>
+      <Button
+        size="xs"
+        variant={activeMode === "database" ? "filled" : "light"}
+        leftSection={<IconDatabase size={14} />}
+        onClick={() => onChooseMode("database")}
+      >
+        Database
+      </Button>
+      <Button
+        size="xs"
+        variant={activeMode === "prep" ? "filled" : "light"}
+        leftSection={<IconTarget size={14} />}
+        onClick={() => onChooseMode("prep")}
+      >
+        Prep
+      </Button>
+    </Group>
   );
 }
 
@@ -1312,9 +1396,7 @@ function DatabaseUnderBoardPanel({
     WEB_DATABASE_PANEL_SORT_STORAGE_KEY,
     "games",
   );
-  const databaseStatsSort = isWebDatabaseStatsSort(storedStatsSort)
-    ? storedStatsSort
-    : "games";
+  const databaseStatsSort = isWebDatabaseStatsSort(storedStatsSort) ? storedStatsSort : "games";
   const [databaseStrengthSettings, setDatabaseStrengthSettings] = usePersistentJson(
     WEB_DATABASE_PANEL_STRENGTH_STORAGE_KEY,
     normalizeWebPrepStrengthSettings(null),
@@ -1358,13 +1440,8 @@ function DatabaseUnderBoardPanel({
   const [onlineStats, setOnlineStats] = useState<WebPrepMoveStat[]>([]);
   const [onlineLoading, setOnlineLoading] = useState(false);
   const [onlineError, setOnlineError] = useState<string | null>(null);
-  const {
-    lichessOptions,
-    setLichessOptions,
-    mastersOptions,
-    setMastersOptions,
-    explorerOptions,
-  } = useWebExplorerOptions();
+  const { lichessOptions, setLichessOptions, mastersOptions, setMastersOptions, explorerOptions } =
+    useWebExplorerOptions();
   const hostedDatabases = useHostedDatabaseFolders();
   const hostedDatabaseLibraryReady = Boolean(hostedDatabases.library?.manifest);
   const selectableDatabases = useMemo(
@@ -1396,20 +1473,21 @@ function DatabaseUnderBoardPanel({
   const isSelectedLocalLazy = Boolean(
     selectedLocalDatabase?.hostedLazy && selectedLocalDatabase.hostedPath,
   );
-  const selectedLocalHostedPath = selectedLocalDatabase?.hostedPath ?? selectedLocalStoredHostedPath;
+  const selectedLocalHostedPath =
+    selectedLocalDatabase?.hostedPath ?? selectedLocalStoredHostedPath;
   const selectedLocalHostedFolder = useMemo(
     () =>
       selectedLocalHostedPath
-        ? hostedDatabases.folders.find((folder) => folder.path === selectedLocalHostedPath) ?? null
+        ? (hostedDatabases.folders.find((folder) => folder.path === selectedLocalHostedPath) ??
+          null)
         : null,
     [hostedDatabases.folders, selectedLocalHostedPath],
   );
-  const selectedLocalPickerValue =
-    selectedLocalDatabase?.hostedPath
-      ? hostedDatabaseValue(selectedLocalDatabase.hostedPath)
-      : selectedLocalHostedFolder
-        ? hostedDatabaseValue(selectedLocalHostedFolder.path)
-        : selectedLocalId;
+  const selectedLocalPickerValue = selectedLocalDatabase?.hostedPath
+    ? hostedDatabaseValue(selectedLocalDatabase.hostedPath)
+    : selectedLocalHostedFolder
+      ? hostedDatabaseValue(selectedLocalHostedFolder.path)
+      : selectedLocalId;
   const localGames = useMemo(
     () =>
       selectedLocalId && !isSelectedLocalLazy
@@ -1631,12 +1709,12 @@ function DatabaseUnderBoardPanel({
     if (!isHostedDatabaseValue(value)) {
       const database = databases.find((candidate) => candidate.id === value) ?? null;
       const hostedFolder = database?.hostedPath
-        ? hostedDatabases.folders.find((folder) => folder.path === database.hostedPath) ?? null
+        ? (hostedDatabases.folders.find((folder) => folder.path === database.hostedPath) ?? null)
         : null;
       if (
         needsHostedDatabaseRefresh({
           database,
-          games: database ? gamesByDatabase[database.id] ?? [] : [],
+          games: database ? (gamesByDatabase[database.id] ?? []) : [],
           hostedFolder,
         }) &&
         hostedFolder
@@ -1682,8 +1760,8 @@ function DatabaseUnderBoardPanel({
         database: selectedLocalDatabase,
         games: localGames,
         hostedFolder: selectedLocalHostedFolder,
-      })
-      && selectedLocalDatabase
+      }) &&
+      selectedLocalDatabase
     ) {
       return;
     }
@@ -1730,7 +1808,14 @@ function DatabaseUnderBoardPanel({
       active = false;
       controller.abort();
     };
-  }, [currentFen, databaseStrengthSettings, localColor, localStatsBase, source, trimmedLocalPlayerName]);
+  }, [
+    currentFen,
+    databaseStrengthSettings,
+    localColor,
+    localStatsBase,
+    source,
+    trimmedLocalPlayerName,
+  ]);
 
   useEffect(() => {
     if (source === "local") return;
@@ -1761,7 +1846,9 @@ function DatabaseUnderBoardPanel({
       .catch((error) => {
         if (!active) return;
         setOnlineStats([]);
-        setOnlineError(error instanceof Error ? error.message : "Could not query Lichess explorer.");
+        setOnlineError(
+          error instanceof Error ? error.message : "Could not query Lichess explorer.",
+        );
       })
       .finally(() => {
         if (active) setOnlineLoading(false);
@@ -1785,7 +1872,7 @@ function DatabaseUnderBoardPanel({
   const localSourceLabel =
     trimmedLocalPlayerName && selectedLocalDatabase && !isSelectedLocalLazy
       ? `${trimmedLocalPlayerName} as ${localColor} in ${selectedLocalDatabase.name}`
-      : selectedLocalDatabase?.name ?? "Local database";
+      : (selectedLocalDatabase?.name ?? "Local database");
   const sourceLabel = source === "local" ? localSourceLabel : getExplorerSourceLabel(source);
 
   return (
@@ -2000,7 +2087,11 @@ function DatabaseUnderBoardPanel({
         <UnderBoardEmpty
           icon={<IconDatabase size={30} />}
           title="No local databases"
-          text={hostedDatabases.loading ? "Loading hosted database list." : "Import PGNs or wait for the phone-site sync."}
+          text={
+            hostedDatabases.loading
+              ? "Loading hosted database list."
+              : "Import PGNs or wait for the phone-site sync."
+          }
         />
       ) : source === "local" && !selectedLocalId ? (
         <UnderBoardEmpty
@@ -2020,7 +2111,9 @@ function DatabaseUnderBoardPanel({
           showState={false}
           emptyLabel="No database moves"
           onPlayMove={onPlayMove}
-          onOpenSourceGame={source === "local" && !isSelectedLocalLazy ? onOpenSourceGame : undefined}
+          onOpenSourceGame={
+            source === "local" && !isSelectedLocalLazy ? onOpenSourceGame : undefined
+          }
         />
       )}
     </Stack>
@@ -2084,14 +2177,18 @@ function PrepUnderBoardPanel({
       resolveWebDatabaseSourceId(
         storedPrepSetup.sourceRef ?? storedPrepSetup.sourceId,
         state.databases,
-      ) ?? state.databases[0]?.id ?? null,
+      ) ??
+      state.databases[0]?.id ??
+      null,
   );
   const [minGames, setMinGames] = useState(storedPrepSetup.minGames);
   const [moveLimit, setMoveLimit] = useState(storedPrepSetup.moveLimit);
-  const [draftBuilderSettings, setDraftBuilderSettings] =
-    useState<Partial<PrepBuilderSettings>>(storedPrepSetup.builder);
-  const [draftTemporarySource, setDraftTemporarySource] =
-    useState<WebPrepTemporarySource | null>(null);
+  const [draftBuilderSettings, setDraftBuilderSettings] = useState<Partial<PrepBuilderSettings>>(
+    storedPrepSetup.builder,
+  );
+  const [draftTemporarySource, setDraftTemporarySource] = useState<WebPrepTemporarySource | null>(
+    null,
+  );
   const [sourcesOpen] = useState(true);
   const [loadingPrepSource, setLoadingPrepSource] = useState<string | null>(null);
   const [loadingPrepProgress, setLoadingPrepProgress] =
@@ -2115,7 +2212,9 @@ function PrepUnderBoardPanel({
   const [lazyPrepMoves, setLazyPrepMoves] = useState<WebHostedPositionMove[]>([]);
   const [lazyRootPrepMoves, setLazyRootPrepMoves] = useState<WebHostedPositionMove[]>([]);
   const [lazyPrepEngineMoves, setLazyPrepEngineMoves] = useState<PrepBuilderEngineMove[]>([]);
-  const [lazyRootPrepEngineMoves, setLazyRootPrepEngineMoves] = useState<PrepBuilderEngineMove[]>([]);
+  const [lazyRootPrepEngineMoves, setLazyRootPrepEngineMoves] = useState<PrepBuilderEngineMove[]>(
+    [],
+  );
   const [lazyPrepLoading, setLazyPrepLoading] = useState(false);
   const [lazyRootPrepLoading, setLazyRootPrepLoading] = useState(false);
   const [lazyPrepError, setLazyPrepError] = useState<string | null>(null);
@@ -2126,16 +2225,9 @@ function PrepUnderBoardPanel({
   );
   const [prepCandidateSort, setPrepCandidateSort] = useState<
     WebPrepSortState<WebPrepCandidateSortColumn>
-  >(
-    () => getDefaultWebPrepSortState(storedPrepSetup.sortDefaults).candidate,
-  );
-  const {
-    lichessOptions,
-    setLichessOptions,
-    mastersOptions,
-    setMastersOptions,
-    explorerOptions,
-  } = useWebExplorerOptions();
+  >(() => getDefaultWebPrepSortState(storedPrepSetup.sortDefaults).candidate);
+  const { lichessOptions, setLichessOptions, mastersOptions, setMastersOptions, explorerOptions } =
+    useWebExplorerOptions();
   const lastActivePrepIdRef = useRef<string | null>(null);
   const hostedDatabases = useHostedDatabaseFolders();
   const hostedDatabaseLibraryReady = Boolean(hostedDatabases.library?.manifest);
@@ -2156,7 +2248,12 @@ function PrepUnderBoardPanel({
         includeOnline: true,
         temporarySource: activePrep?.temporarySource ?? draftTemporarySource,
       }),
-    [activePrep?.temporarySource, draftTemporarySource, hostedDatabases.folders, selectableDatabases],
+    [
+      activePrep?.temporarySource,
+      draftTemporarySource,
+      hostedDatabases.folders,
+      selectableDatabases,
+    ],
   );
   const selectedPrepMode = activePrep?.mode ?? prepMode;
   const selectedPrepSource = activePrep?.source ?? prepSource;
@@ -2178,15 +2275,14 @@ function PrepUnderBoardPanel({
     selectableDatabases.find((database) => database.id === activePrepSourceId) ?? null;
   const selectedPrepSourceIsLazy = Boolean(
     selectedPrepSource === "local" &&
-      activePrepSourceDatabase?.hostedLazy &&
-      activePrepSourceDatabase.hostedPath,
+    activePrepSourceDatabase?.hostedLazy &&
+    activePrepSourceDatabase.hostedPath,
   );
-  const selectedPrepHostedPath =
-    activePrepSourceDatabase?.hostedPath ?? draftPrepStoredHostedPath;
+  const selectedPrepHostedPath = activePrepSourceDatabase?.hostedPath ?? draftPrepStoredHostedPath;
   const selectedPrepHostedFolder = useMemo(
     () =>
       selectedPrepHostedPath
-        ? hostedDatabases.folders.find((folder) => folder.path === selectedPrepHostedPath) ?? null
+        ? (hostedDatabases.folders.find((folder) => folder.path === selectedPrepHostedPath) ?? null)
         : null,
     [hostedDatabases.folders, selectedPrepHostedPath],
   );
@@ -2202,11 +2298,14 @@ function PrepUnderBoardPanel({
             : selectedPrepHostedFolder
               ? hostedDatabaseValue(selectedPrepHostedFolder.path)
               : selectedPrepSourceId;
-  const activePrepSourceGames = activePrepSourceDatabase && !selectedPrepSourceIsLazy
-    ? state.gamesByDatabase[activePrepSourceDatabase.id] ?? []
-    : [];
+  const activePrepSourceGames =
+    activePrepSourceDatabase && !selectedPrepSourceIsLazy
+      ? (state.gamesByDatabase[activePrepSourceDatabase.id] ?? [])
+      : [];
   const selectedPrepSourceGames =
-    selectedPrepSource === "temporary" ? selectedTemporarySource?.games ?? [] : activePrepSourceGames;
+    selectedPrepSource === "temporary"
+      ? (selectedTemporarySource?.games ?? [])
+      : activePrepSourceGames;
   const activePrepHostedFolder = selectedPrepHostedFolder;
   const selectedMinGames = activePrep?.minGames ?? minGames;
   const selectedMoveLimit = activePrep?.moveLimit ?? moveLimit;
@@ -2237,7 +2336,8 @@ function PrepUnderBoardPanel({
     [activePrep?.builder, draftBuilderSettings],
   );
   const selectedPrepSortDefaults = useMemo(
-    () => normalizeWebPrepMoveSortDefaults(activePrep?.sortDefaults ?? storedPrepSetup.sortDefaults),
+    () =>
+      normalizeWebPrepMoveSortDefaults(activePrep?.sortDefaults ?? storedPrepSetup.sortDefaults),
     [activePrep?.sortDefaults, storedPrepSetup.sortDefaults],
   );
   const selectedPlayerColor = oppositeWebColor(activePrep?.userColor ?? userColor);
@@ -2249,8 +2349,7 @@ function PrepUnderBoardPanel({
       : selectedPrepSource === "temporary"
         ? Boolean(selectedTemporarySource)
         : Boolean(lichessToken.trim());
-  const targetReady =
-    selectedPrepMode === "general" || trimmedSelectedOpponentName.length >= 3;
+  const targetReady = selectedPrepMode === "general" || trimmedSelectedOpponentName.length >= 3;
   const configReady = sourceReady && targetReady;
   const selectedSourceLabel =
     selectedPrepSource === "temporary"
@@ -2263,9 +2362,9 @@ function PrepUnderBoardPanel({
           ? "Lichess Masters"
           : activePrepSourceDatabase
             ? formatDatabasePickerLabel(activePrepSourceDatabase.name)
-            : sourceOptions
+            : (sourceOptions
                 .flatMap((group) => group.items)
-                .find((item) => item.value === selectedPrepSourceValue)?.label ?? null;
+                .find((item) => item.value === selectedPrepSourceValue)?.label ?? null);
   const lazyPrepStatsBase = useMemo(
     () =>
       activePrep && selectedPrepSourceIsLazy
@@ -2318,24 +2417,14 @@ function PrepUnderBoardPanel({
             engineMoves: lazyRootPrepEngineMoves,
           })
         : [],
-    [
-      activePrep,
-      branchFen,
-      lazyRootPrepEngineMoves,
-      lazyRootPrepMoves,
-      selectedPrepSourceIsLazy,
-    ],
+    [activePrep, branchFen, lazyRootPrepEngineMoves, lazyRootPrepMoves, selectedPrepSourceIsLazy],
   );
   const displayedStats =
     activePrep && isOnlinePrepSource(selectedPrepSource)
-      ? onlinePrepStats
-          .filter((stat) => stat.total >= selectedMinGames)
-          .slice(0, selectedMoveLimit)
+      ? onlinePrepStats.filter((stat) => stat.total >= selectedMinGames).slice(0, selectedMoveLimit)
       : activePrep && selectedPrepSourceIsLazy
-        ? lazyPrepStats
-            .filter((stat) => stat.total >= selectedMinGames)
-            .slice(0, selectedMoveLimit)
-      : stats;
+        ? lazyPrepStats.filter((stat) => stat.total >= selectedMinGames).slice(0, selectedMoveLimit)
+        : stats;
   const displayedRootStats =
     activePrep && isOnlinePrepSource(selectedPrepSource)
       ? onlineRootPrepStats
@@ -2345,17 +2434,23 @@ function PrepUnderBoardPanel({
         ? lazyRootPrepStats
             .filter((stat) => stat.total >= selectedMinGames)
             .slice(0, selectedMoveLimit)
-      : rootStats;
+        : rootStats;
   const activeBranch = useMemo(
     () =>
       activePrep && branchStart
-        ? branchStart.activeBranch ??
-          findFirstWebPrepOpponentBranch(currentLine, branchStart.branchPly, activePrep.userColor)
+        ? (branchStart.activeBranch ??
+          findFirstWebPrepOpponentBranch(currentLine, branchStart.branchPly, activePrep.userColor))
         : null,
     [activePrep, branchStart, currentLine],
   );
   const activeBranchSourceGame = useMemo(() => {
-    if (!activePrep || !activeBranch || isOnlinePrepSource(selectedPrepSource) || selectedPrepSourceIsLazy) return null;
+    if (
+      !activePrep ||
+      !activeBranch ||
+      isOnlinePrepSource(selectedPrepSource) ||
+      selectedPrepSourceIsLazy
+    )
+      return null;
     const branchMoveStats = getWebPrepMoveStats({
       games: selectedPrepSourceGames,
       prep: activePrep,
@@ -2363,7 +2458,13 @@ function PrepUnderBoardPanel({
       maxExamples: 1,
     });
     return branchMoveStats.find((stat) => stat.key === activeBranch.key)?.examples[0] ?? null;
-  }, [activeBranch, activePrep, selectedPrepSource, selectedPrepSourceGames, selectedPrepSourceIsLazy]);
+  }, [
+    activeBranch,
+    activePrep,
+    selectedPrepSource,
+    selectedPrepSourceGames,
+    selectedPrepSourceIsLazy,
+  ]);
   const openRootStats = activePrep
     ? displayedRootStats.filter((stat) => !activePrep.skippedMoves?.[stat.key])
     : displayedRootStats;
@@ -2376,23 +2477,36 @@ function PrepUnderBoardPanel({
     ? getFenColor(currentFen) === oppositeWebColor(activePrep.userColor)
     : false;
   const startedMoveKeys = useMemo(
-    () => new Set((activePrep?.line ?? []).map((move) => getWebPrepMoveKey(move.fenBefore, move.san))),
+    () =>
+      new Set((activePrep?.line ?? []).map((move) => getWebPrepMoveKey(move.fenBefore, move.san))),
     [activePrep?.line],
   );
   const preparedCount = displayedStats.filter(
     (stat) =>
-      getWebPrepBranchStatus(stat, activePrep?.preparedMoves, activePrep?.skippedMoves, startedMoveKeys) ===
-      "prepared",
+      getWebPrepBranchStatus(
+        stat,
+        activePrep?.preparedMoves,
+        activePrep?.skippedMoves,
+        startedMoveKeys,
+      ) === "prepared",
   ).length;
   const startedCount = displayedStats.filter(
     (stat) =>
-      getWebPrepBranchStatus(stat, activePrep?.preparedMoves, activePrep?.skippedMoves, startedMoveKeys) ===
-      "started",
+      getWebPrepBranchStatus(
+        stat,
+        activePrep?.preparedMoves,
+        activePrep?.skippedMoves,
+        startedMoveKeys,
+      ) === "started",
   ).length;
   const skippedCount = displayedStats.filter(
     (stat) =>
-      getWebPrepBranchStatus(stat, activePrep?.preparedMoves, activePrep?.skippedMoves, startedMoveKeys) ===
-      "skipped",
+      getWebPrepBranchStatus(
+        stat,
+        activePrep?.preparedMoves,
+        activePrep?.skippedMoves,
+        startedMoveKeys,
+      ) === "skipped",
   ).length;
   const shownGamesCount = displayedStats.reduce((sum, stat) => sum + stat.total, 0);
   const branchStatsByKey = useMemo<Record<string, WebPrepBranchCoverageStats>>(() => {
@@ -2424,7 +2538,8 @@ function PrepUnderBoardPanel({
     selectedPrepSourceGames,
     startedMoveKeys,
   ]);
-  const rootStartLabel = rootLine.length > 0 ? rootLine.map((move) => move.san).join(" ") : "game start";
+  const rootStartLabel =
+    rootLine.length > 0 ? rootLine.map((move) => move.san).join(" ") : "game start";
   const firstLocalSourceId = state.databases[0]?.id ?? null;
   const currentPrepSetupSelection: WebPrepSetupSelection = {
     mode: selectedPrepMode,
@@ -2439,7 +2554,7 @@ function PrepUnderBoardPanel({
   const persistPrepSetupSelection = (selection: WebPrepSetupSelection) => {
     const selectedDatabase =
       selection.source === "local" && selection.sourceId
-        ? state.databases.find((database) => database.id === selection.sourceId) ?? null
+        ? (state.databases.find((database) => database.id === selection.sourceId) ?? null)
         : null;
     setStoredPrepSetup((current) =>
       normalizeWebPrepStoredSetup({
@@ -2511,7 +2626,9 @@ function PrepUnderBoardPanel({
 
   useEffect(() => {
     if (onlineMode !== "range") return;
-    setOnlinePreviewText(`Imports every public PGN in ${getWebOnlineRangeLabel(onlineRange).toLowerCase()}.`);
+    setOnlinePreviewText(
+      `Imports every public PGN in ${getWebOnlineRangeLabel(onlineRange).toLowerCase()}.`,
+    );
   }, [onlineMode, onlineRange]);
 
   useEffect(() => {
@@ -2942,7 +3059,7 @@ function PrepUnderBoardPanel({
   };
 
   const resetActivePrepToStart = () => {
-    const rootCursor = activePrep ? activePrep.rootPly ?? 0 : 0;
+    const rootCursor = activePrep ? (activePrep.rootPly ?? 0) : 0;
     setState((current) => ({
       ...current,
       board: {
@@ -3021,7 +3138,9 @@ function PrepUnderBoardPanel({
       ...selectedPrepSortDefaults,
       ...patch,
     });
-    setStoredPrepSetup((current) => normalizeWebPrepStoredSetup({ ...current, sortDefaults: next }));
+    setStoredPrepSetup((current) =>
+      normalizeWebPrepStoredSetup({ ...current, sortDefaults: next }),
+    );
     if (activePrep) {
       updateActivePrepSettings({ sortDefaults: next });
     }
@@ -3127,12 +3246,12 @@ function PrepUnderBoardPanel({
     if (!isHostedDatabaseValue(value)) {
       const database = selectableDatabases.find((candidate) => candidate.id === value) ?? null;
       const hostedFolder = database?.hostedPath
-        ? hostedDatabases.folders.find((folder) => folder.path === database.hostedPath) ?? null
+        ? (hostedDatabases.folders.find((folder) => folder.path === database.hostedPath) ?? null)
         : null;
       if (
         needsHostedDatabaseRefresh({
           database,
-          games: database ? state.gamesByDatabase[database.id] ?? [] : [],
+          games: database ? (state.gamesByDatabase[database.id] ?? []) : [],
           hostedFolder,
         }) &&
         hostedFolder
@@ -3148,7 +3267,8 @@ function PrepUnderBoardPanel({
     const folderPath = hostedDatabasePathFromValue(value);
     const folder = hostedDatabases.folders.find((candidate) => candidate.path === folderPath);
     if (!folder || !hostedDatabases.library) return;
-    const database = state.databases.find((candidate) => candidate.hostedPath === folder.path) ?? null;
+    const database =
+      state.databases.find((candidate) => candidate.hostedPath === folder.path) ?? null;
     if (
       database &&
       !needsHostedDatabaseRefresh({
@@ -3178,8 +3298,8 @@ function PrepUnderBoardPanel({
         database: activePrepSourceDatabase,
         games: activePrepSourceGames,
         hostedFolder: activePrepHostedFolder,
-      })
-      && activePrepSourceDatabase
+      }) &&
+      activePrepSourceDatabase
     ) {
       return;
     }
@@ -3240,7 +3360,9 @@ function PrepUnderBoardPanel({
         return;
       }
       const oldest = Math.min(...games.map((game) => game.playedAt).filter(Boolean));
-      const oldestLabel = Number.isFinite(oldest) ? formatWebDate(new Date(oldest).toISOString()) : "";
+      const oldestLabel = Number.isFinite(oldest)
+        ? formatWebDate(new Date(oldest).toISOString())
+        : "";
       setOnlinePreviewText(
         `${games.length} public game${games.length === 1 ? "" : "s"} found${
           oldestLabel ? `; range goes back to ${oldestLabel}` : ""
@@ -3726,7 +3848,11 @@ function PrepUnderBoardPanel({
               <Text size="xs" c="dimmed" truncate>
                 Start: {rootStartLabel}
               </Text>
-              <Text size="xs" c={!isInsidePrepLine || !opponentToMove ? "dimmed" : undefined} truncate>
+              <Text
+                size="xs"
+                c={!isInsidePrepLine || !opponentToMove ? "dimmed" : undefined}
+                truncate
+              >
                 {!isInsidePrepLine
                   ? "Away from prep start"
                   : opponentToMove
@@ -3736,7 +3862,12 @@ function PrepUnderBoardPanel({
                     : `Play your ${activePrep.userColor} ${
                         selectedPrepMode === "general" ? "move" : "response"
                       } on the board`}
-                {currentLine.length > 0 ? ` - ${currentLine.slice(-10).map((move) => move.san).join(" ")}` : ""}
+                {currentLine.length > 0
+                  ? ` - ${currentLine
+                      .slice(-10)
+                      .map((move) => move.san)
+                      .join(" ")}`
+                  : ""}
               </Text>
             </Stack>
             <Group gap={4} wrap="nowrap">
@@ -3791,7 +3922,11 @@ function PrepUnderBoardPanel({
                 </Tooltip>
               ) : null}
               <Tooltip label="Change prep source and target">
-                <ActionIcon aria-label="Change prep setup" variant="default" onClick={() => setSetupOpen(true)}>
+                <ActionIcon
+                  aria-label="Change prep setup"
+                  variant="default"
+                  onClick={() => setSetupOpen(true)}
+                >
                   <IconSettings size={16} />
                 </ActionIcon>
               </Tooltip>
@@ -3901,10 +4036,14 @@ function WebExplorerOptionsPanel({
   onMastersOptionsChange: Dispatch<SetStateAction<WebMastersExplorerOptions>>;
 }) {
   const updateLichessOptions = (patch: Partial<WebLichessExplorerOptions>) => {
-    onLichessOptionsChange((current) => normalizeWebLichessExplorerOptions({ ...current, ...patch }));
+    onLichessOptionsChange((current) =>
+      normalizeWebLichessExplorerOptions({ ...current, ...patch }),
+    );
   };
   const updateMastersOptions = (patch: Partial<WebMastersExplorerOptions>) => {
-    onMastersOptionsChange((current) => normalizeWebMastersExplorerOptions({ ...current, ...patch }));
+    onMastersOptionsChange((current) =>
+      normalizeWebMastersExplorerOptions({ ...current, ...patch }),
+    );
   };
 
   return (
@@ -3993,7 +4132,9 @@ function WebExplorerOptionsPanel({
               label="Color"
               size="xs"
               value={lichessOptions.color}
-              onChange={(value) => updateLichessOptions({ color: value === "black" ? "black" : "white" })}
+              onChange={(value) =>
+                updateLichessOptions({ color: value === "black" ? "black" : "white" })
+              }
               data={[
                 { value: "white", label: "White" },
                 { value: "black", label: "Black" },
@@ -4107,6 +4248,8 @@ function WebDatabaseGamesList({
   games: WebDatabasePositionGame[];
   onOpenGame: (game: WebGame) => void;
 }) {
+  const isPhoneWidth = useMediaQuery("(max-width: 520px)");
+
   if (games.length === 0) {
     return (
       <UnderBoardEmpty
@@ -4118,7 +4261,7 @@ function WebDatabaseGamesList({
   }
 
   return (
-    <Table.ScrollContainer minWidth={640}>
+    <Table.ScrollContainer minWidth={isPhoneWidth ? 0 : 640}>
       <Table className={classes.compactTable} verticalSpacing={4} highlightOnHover>
         <Table.Thead>
           <Table.Tr>
@@ -4130,17 +4273,14 @@ function WebDatabaseGamesList({
         </Table.Thead>
         <Table.Tbody>
           {games.map(({ game, ply, nextMove }) => (
-            <Table.Tr
-              key={game.id}
-              style={{ cursor: "pointer" }}
-              onClick={() => onOpenGame(game)}
-            >
+            <Table.Tr key={game.id} style={{ cursor: "pointer" }} onClick={() => onOpenGame(game)}>
               <Table.Td>
                 <Text size="sm" fw={700}>
                   {game.white} - {game.black}
                 </Text>
                 <Text size="xs" c="dimmed">
-                  {[formatWebDate(game.date), game.event].filter(Boolean).join(" - ") || game.databaseName}
+                  {[formatWebDate(game.date), game.event].filter(Boolean).join(" - ") ||
+                    game.databaseName}
                 </Text>
               </Table.Td>
               <Table.Td>
@@ -4203,7 +4343,11 @@ function WebLichessAccessControls({
           Relink
         </Button>
         <Tooltip label="Forget saved Lichess token">
-          <ActionIcon aria-label="Forget Lichess token" variant="default" onClick={() => setToken("")}>
+          <ActionIcon
+            aria-label="Forget Lichess token"
+            variant="default"
+            onClick={() => setToken("")}
+          >
             <IconX size={15} />
           </ActionIcon>
         </Tooltip>
@@ -4327,8 +4471,14 @@ function WebDatabasePerspectiveControls({
   );
   const colorOptions = trimmedPlayerName
     ? [
-        { value: "white", label: <WebPlayerColorLabel playerName={trimmedPlayerName} color="white" /> },
-        { value: "black", label: <WebPlayerColorLabel playerName={trimmedPlayerName} color="black" /> },
+        {
+          value: "white",
+          label: <WebPlayerColorLabel playerName={trimmedPlayerName} color="white" />,
+        },
+        {
+          value: "black",
+          label: <WebPlayerColorLabel playerName={trimmedPlayerName} color="black" />,
+        },
       ]
     : [
         { value: "white", label: "White" },
@@ -4420,9 +4570,7 @@ function WebPlayerColorLabel({ playerName, color }: { playerName: string; color:
       >
         {playerName}
       </span>
-      <span style={{ fontSize: "0.78em", opacity: 0.9, whiteSpace: "nowrap" }}>
-        as {color}
-      </span>
+      <span style={{ fontSize: "0.78em", opacity: 0.9, whiteSpace: "nowrap" }}>as {color}</span>
     </span>
   );
 }
@@ -4456,6 +4604,7 @@ function CompactMoveTable({
   sort?: WebPrepSortState;
   onSort?: (column: WebPrepSortColumn) => void;
 }) {
+  const isPhoneWidth = useMediaQuery("(max-width: 520px)");
   const isPrepTable = Boolean(onMarkDone || onSkipMove || startedMoveKeys);
   const isPrepCandidateTable = isPrepTable && !showState;
   const effectiveSort =
@@ -4483,25 +4632,62 @@ function CompactMoveTable({
   }
 
   return (
-    <Table.ScrollContainer minWidth={showState ? 760 : isPrepCandidateTable ? 560 : 720}>
+    <Table.ScrollContainer
+      minWidth={isPhoneWidth ? 0 : showState ? 760 : isPrepCandidateTable ? 560 : 720}
+    >
       <Table className={classes.compactTable} verticalSpacing={showState ? 3 : 4} highlightOnHover>
         <Table.Thead>
           {showState ? (
             <Table.Tr>
               <SortableWebPrepTh label="Move" column="move" sort={effectiveSort} onSort={onSort} />
-              <SortableWebPrepTh label="Strength" column="strength" sort={effectiveSort} onSort={onSort} />
-              <SortableWebPrepTh label="Games" column="games" sort={effectiveSort} onSort={onSort} />
-              <SortableWebPrepTh label="Results" column="results" sort={effectiveSort} onSort={onSort} />
+              <SortableWebPrepTh
+                label="Strength"
+                column="strength"
+                sort={effectiveSort}
+                onSort={onSort}
+              />
+              <SortableWebPrepTh
+                label="Games"
+                column="games"
+                sort={effectiveSort}
+                onSort={onSort}
+              />
+              <SortableWebPrepTh
+                label="Results"
+                column="results"
+                sort={effectiveSort}
+                onSort={onSort}
+              />
               <SortableWebPrepTh label="Prep" column="prep" sort={effectiveSort} onSort={onSort} />
-              <SortableWebPrepTh label="State" column="state" sort={effectiveSort} onSort={onSort} />
+              <SortableWebPrepTh
+                label="State"
+                column="state"
+                sort={effectiveSort}
+                onSort={onSort}
+              />
               <Table.Th />
             </Table.Tr>
           ) : isPrepCandidateTable ? (
             <Table.Tr>
               <SortableWebPrepTh label="Move" column="move" sort={effectiveSort} onSort={onSort} />
-              <SortableWebPrepTh label="Strength" column="strength" sort={effectiveSort} onSort={onSort} />
-              <SortableWebPrepTh label="Games" column="games" sort={effectiveSort} onSort={onSort} />
-              <SortableWebPrepTh label="WDL" column="results" sort={effectiveSort} onSort={onSort} />
+              <SortableWebPrepTh
+                label="Strength"
+                column="strength"
+                sort={effectiveSort}
+                onSort={onSort}
+              />
+              <SortableWebPrepTh
+                label="Games"
+                column="games"
+                sort={effectiveSort}
+                onSort={onSort}
+              />
+              <SortableWebPrepTh
+                label="WDL"
+                column="results"
+                sort={effectiveSort}
+                onSort={onSort}
+              />
               <Table.Th />
             </Table.Tr>
           ) : (
@@ -4518,7 +4704,12 @@ function CompactMoveTable({
         </Table.Thead>
         <Table.Tbody>
           {sortedStats.map((stat) => {
-            const status = getWebPrepBranchStatus(stat, preparedMoves, skippedMoves, startedMoveKeys);
+            const status = getWebPrepBranchStatus(
+              stat,
+              preparedMoves,
+              skippedMoves,
+              startedMoveKeys,
+            );
             return (
               <Table.Tr
                 key={stat.key}
@@ -4738,7 +4929,11 @@ function PrepStrengthCell({
             {strength.score}%
           </Text>
         </Group>
-        <Progress value={strength.score} size={3} color={strength.engineUnsafe ? "yellow" : "teal"} />
+        <Progress
+          value={strength.score}
+          size={3}
+          color={strength.engineUnsafe ? "yellow" : "teal"}
+        />
         {!compact ? (
           <>
             <Text size="xs" c="dimmed" lh={1.15}>
@@ -4777,7 +4972,9 @@ function MoveStrengthEngineCell({ strength }: { strength: WebPrepMoveStat["stren
 
 function formatMoveStrengthEngineLine(strength: NonNullable<WebPrepMoveStat["strength"]>) {
   if (strength.engineCpLoss === null) {
-    return strength.engineCp === null ? "Engine unavailable" : formatMoveStrengthCp(strength.engineCp);
+    return strength.engineCp === null
+      ? "Engine unavailable"
+      : formatMoveStrengthCp(strength.engineCp);
   }
 
   const cp = strength.engineCp === null ? "" : ` (${formatMoveStrengthCp(strength.engineCp)})`;
@@ -4960,8 +5157,7 @@ function webPrepBranchStatsTooltip(stats: WebPrepBranchCoverageStats) {
       ? "Line started, but no common replies met the current threshold."
       : "No saved continuation under this opponent move yet.";
   }
-  const started =
-    stats.startedReplies > 0 ? `, ${stats.startedReplies} only started` : "";
+  const started = stats.startedReplies > 0 ? `, ${stats.startedReplies} only started` : "";
   const missing =
     stats.missingImportantMoves.length > 0
       ? ` Missing: ${stats.missingImportantMoves.join(", ")}.`
@@ -4984,9 +5180,7 @@ function webPrepBranchStatsColor(label: WebPrepBranchCoverageStats["label"]) {
   }
 }
 
-function getDefaultWebPrepSortState(
-  sortDefaults?: Partial<WebPrepMoveSortDefaults> | null,
-): {
+function getDefaultWebPrepSortState(sortDefaults?: Partial<WebPrepMoveSortDefaults> | null): {
   opponent: WebPrepSortState<WebPrepOpponentSortColumn>;
   candidate: WebPrepSortState<WebPrepCandidateSortColumn>;
 } {
@@ -5043,7 +5237,11 @@ function sortWebPrepMoveStats(
       branchStatsByKey,
     );
     const directed = sort.direction === "asc" ? diff : -diff;
-    return directed || b.total - a.total || a.move.localeCompare(b.move, undefined, { sensitivity: "base" });
+    return (
+      directed ||
+      b.total - a.total ||
+      a.move.localeCompare(b.move, undefined, { sensitivity: "base" })
+    );
   });
 }
 
@@ -5067,14 +5265,24 @@ function compareWebPrepMoveStats(
   }
   if (column === "prep") {
     return (
-      getWebPrepCoverageSortScore(a, branchStatsByKey, preparedMoves, skippedMoves, startedMoveKeys) -
+      getWebPrepCoverageSortScore(
+        a,
+        branchStatsByKey,
+        preparedMoves,
+        skippedMoves,
+        startedMoveKeys,
+      ) -
       getWebPrepCoverageSortScore(b, branchStatsByKey, preparedMoves, skippedMoves, startedMoveKeys)
     );
   }
   if (column === "state") {
     return (
-      getWebPrepStatusSortScore(getWebPrepBranchStatus(a, preparedMoves, skippedMoves, startedMoveKeys)) -
-      getWebPrepStatusSortScore(getWebPrepBranchStatus(b, preparedMoves, skippedMoves, startedMoveKeys))
+      getWebPrepStatusSortScore(
+        getWebPrepBranchStatus(a, preparedMoves, skippedMoves, startedMoveKeys),
+      ) -
+      getWebPrepStatusSortScore(
+        getWebPrepBranchStatus(b, preparedMoves, skippedMoves, startedMoveKeys),
+      )
     );
   }
 
@@ -5172,7 +5380,7 @@ function FilesWorkspace({
   deleteDatabase: (database: WebDatabase) => void;
   loadGameOnBoard: (game: WebGame) => void;
 }) {
-  const activeGames = selectedDatabaseId ? gamesByDatabase[selectedDatabaseId] ?? [] : [];
+  const activeGames = selectedDatabaseId ? (gamesByDatabase[selectedDatabaseId] ?? []) : [];
 
   return (
     <Box className={classes.filesWorkspace}>
@@ -5186,7 +5394,12 @@ function FilesWorkspace({
               Browser-side databases used by the board panels
             </Text>
           </Box>
-          <Button component="label" size="xs" leftSection={<IconUpload size={14} />} loading={importing}>
+          <Button
+            component="label"
+            size="xs"
+            leftSection={<IconUpload size={14} />}
+            loading={importing}
+          >
             Import
             <input
               hidden
@@ -5258,7 +5471,10 @@ function FilesWorkspace({
                     variant="light"
                     leftSection={<IconDownload size={14} />}
                     onClick={() =>
-                      downloadText(`${selectedGame.white}-${selectedGame.black}.pgn`, selectedGame.pgn)
+                      downloadText(
+                        `${selectedGame.white}-${selectedGame.black}.pgn`,
+                        selectedGame.pgn,
+                      )
                     }
                   >
                     PGN
@@ -5279,7 +5495,8 @@ function FilesWorkspace({
                         {game.white} - {game.black}
                       </Text>
                       <Text size="xs" c="dimmed" truncate>
-                        {formatWebDate(game.date) || "undated"} - {game.result} - {game.moves.length} plies
+                        {formatWebDate(game.date) || "undated"} - {game.result} -{" "}
+                        {game.moves.length} plies
                       </Text>
                     </button>
                   ))}
@@ -5325,27 +5542,31 @@ function HostedFilesPanel({
     [library, path],
   );
 
-  const load = useCallback(async (nextPath = path) => {
-    setLoading(true);
-    try {
-      const nextLibrary = await getHostedWebLibrary();
-      const nextListing = listHostedLibraryPath(nextLibrary, nextPath);
-      setLibrary(nextLibrary);
-      setListing(nextListing);
-      setPath(nextPath);
-    } catch (error) {
-      console.error(error);
-      setLibrary(null);
-      setListing(null);
-      notifications.show({
-        title: "Hosted files unavailable",
-        message: error instanceof Error ? error.message : "The published file library did not respond.",
-        color: "red",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [path]);
+  const load = useCallback(
+    async (nextPath = path) => {
+      setLoading(true);
+      try {
+        const nextLibrary = await getHostedWebLibrary();
+        const nextListing = listHostedLibraryPath(nextLibrary, nextPath);
+        setLibrary(nextLibrary);
+        setListing(nextListing);
+        setPath(nextPath);
+      } catch (error) {
+        console.error(error);
+        setLibrary(null);
+        setListing(null);
+        notifications.show({
+          title: "Hosted files unavailable",
+          message:
+            error instanceof Error ? error.message : "The published file library did not respond.",
+          color: "red",
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [path],
+  );
 
   useEffect(() => {
     void load("");
@@ -5383,7 +5604,9 @@ function HostedFilesPanel({
               size="compact-xs"
               leftSection={<IconDatabase size={14} />}
               loading={loading}
-              onClick={() => void importHostedFolder(library, path, { openFirstGame: !preferFolderImport })}
+              onClick={() =>
+                void importHostedFolder(library, path, { openFirstGame: !preferFolderImport })
+              }
             >
               Import database
             </Button>
@@ -5407,7 +5630,12 @@ function HostedFilesPanel({
                 type="button"
                 onClick={() => {
                   if (entry.type === "directory") {
-                    if (preferFolderImport && importHostedFolder && entry.directPgnFileCount > 0 && library) {
+                    if (
+                      preferFolderImport &&
+                      importHostedFolder &&
+                      entry.directPgnFileCount > 0 &&
+                      library
+                    ) {
                       void importHostedFolder(library, entry.path, { openFirstGame: false });
                       return;
                     }
@@ -5516,15 +5744,7 @@ function WebChessboard({
   return <Box ref={boardRef} className={classes.boardMount} />;
 }
 
-function UnderBoardEmpty({
-  icon,
-  title,
-  text,
-}: {
-  icon: ReactNode;
-  title: string;
-  text: string;
-}) {
+function UnderBoardEmpty({ icon, title, text }: { icon: ReactNode; title: string; text: string }) {
   return (
     <Box className={classes.underBoardEmpty}>
       <Stack align="center" gap={6}>
@@ -5949,7 +6169,9 @@ function usePersistentJson<T>(
   const [value, setValue] = useState<T>(() => {
     try {
       const stored = window.localStorage.getItem(key);
-      return stored ? normalize(JSON.parse(stored) as Partial<T>) : normalize(fallback as Partial<T>);
+      return stored
+        ? normalize(JSON.parse(stored) as Partial<T>)
+        : normalize(fallback as Partial<T>);
     } catch {
       return normalize(fallback as Partial<T>);
     }

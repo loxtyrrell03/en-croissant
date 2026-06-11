@@ -465,6 +465,13 @@ default.
   spikes unless they have meaningful position share. Tiny perfect-score rows
   can still display their own result, but they no longer define the `best WDL`
   baseline and crush common engine-good moves such as `c4`/`Nf3` to `0%`.
+- On 2026-06-11, the phone web companion layout was hardened against iPhone
+  horizontal overflow. The app shell, board workspace, and under-board panel now
+  clamp to the viewport, controls inside the under-board surface can shrink
+  instead of forcing page width, and the compact Database/Prep tables drop their
+  fixed desktop minimum width at phone breakpoints. Future phone UI work should
+  keep table detail within the screen by wrapping/tightening the mobile layout
+  rather than reintroducing sideways page scroll.
 
 ### App Shell
 
