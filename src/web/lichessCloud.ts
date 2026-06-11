@@ -1,10 +1,11 @@
 import { parseUci } from "chessops";
+import { normalizeMove } from "chessops/chess";
 import { makeFen } from "chessops/fen";
 import { makeSan, parseSan } from "chessops/san";
 import { BoundedMap, BoundedSet } from "@/utils/boundedCache";
 import { positionFromFen } from "@/utils/chessops";
 import type { PrepBuilderEngineMove } from "@/utils/opponentPrep";
-import type { WebColor } from "./model";
+import type { WebColor, WebEngineLine } from "./model";
 
 type WebLichessCloudData = {
   fen: string;
@@ -67,6 +68,40 @@ export async function queryWebLichessCloudEngineMoves({
   return Array.from(bySan.values()).sort(
     (a, b) => (a.rank ?? 99) - (b.rank ?? 99) || a.san.localeCompare(b.san),
   );
+}
+
+export async function queryWebLichessCloudLines({
+  fen,
+  multipv,
+  signal,
+}: {
+  fen: string;
+  multipv: number;
+  signal?: AbortSignal;
+}): Promise<WebEngineLine[]> {
+  const [position] = positionFromFen(fen);
+  if (!position) return [];
+
+  const data = await getCloudEvaluation(fen, multipv, signal);
+  return (data.pvs ?? [])
+    .map((pv, index) => {
+      const uciMoves = pv.moves.trim().split(/\s+/).filter(Boolean);
+      const sanMoves = makeSanLineFromUci(fen, uciMoves);
+      return {
+        source: "lichess-cloud" as const,
+        multipv: index + 1,
+        depth: data.depth ?? 0,
+        nodes: data.knodes ? data.knodes * 1000 : null,
+        nps: null,
+        score:
+          "cp" in pv
+            ? ({ type: "cp", value: pv.cp } as const)
+            : ({ type: "mate", value: pv.mate } as const),
+        uciMoves,
+        sanMoves,
+      };
+    })
+    .filter((line) => line.uciMoves.length > 0);
 }
 
 async function queryRootCloudMoves({
@@ -176,6 +211,23 @@ function applySanToFen(fen: string, san: string) {
 
 function cloudPvToCp(pv: WebLichessCloudPv) {
   return "cp" in pv ? pv.cp : mateToCloudCp(pv.mate);
+}
+
+function makeSanLineFromUci(fen: string, uciMoves: string[]) {
+  const [position] = positionFromFen(fen);
+  if (!position) return [];
+
+  const sans: string[] = [];
+  for (const uci of uciMoves) {
+    const move = parseUci(uci);
+    if (!move || !position.isLegal(move)) break;
+
+    const normalized = normalizeMove(position, move);
+    sans.push(makeSan(position, normalized));
+    position.play(normalized);
+  }
+
+  return sans;
 }
 
 function mateToCloudCp(mate: number) {
