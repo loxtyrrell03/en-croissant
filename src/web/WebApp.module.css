@@ -118,6 +118,19 @@
   border: 0 !important;
 }
 
+.boardStartActions {
+  min-width: 0;
+}
+
+.boardStartActions :global(.mantine-Button-root) {
+  min-width: 0;
+}
+
+.boardStartActions :global(.mantine-Button-label) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .underBoardPanel {
   min-width: 0;
   max-width: 100%;
