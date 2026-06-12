@@ -430,6 +430,31 @@
   color: var(--mantine-color-gray-4);
 }
 
+.databaseSetup {
+  min-width: 0;
+}
+
+.databaseSetupHeader {
+  min-width: 0;
+}
+
+.databaseSetupTitle {
+  flex: 1 1 11rem;
+  min-width: 0;
+}
+
+.databaseSetupTitle :global(.mantine-Badge-root) {
+  max-width: min(100%, 14rem);
+}
+
+.databaseSetupControls {
+  min-width: 0;
+}
+
+.databaseSetupControls :global(.mantine-SegmentedControl-root) {
+  max-width: 100%;
+}
+
 .prepToolBox {
   min-width: 0;
   padding: 0.55rem;
@@ -437,12 +462,14 @@
   background: rgba(255, 255, 255, 0.04);
 }
 
-.prepTrainingMoves {
+.prepTrainingMoves,
+.databaseStartedMoves {
   position: relative;
   min-width: 0;
 }
 
-.prepTrainingExit {
+.prepTrainingExit,
+.databaseStartedExit {
   position: absolute;
   top: 0.28rem;
   right: 0.28rem;
@@ -450,13 +477,15 @@
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
-.prepTrainingMoves .phonePrepRows {
+.prepTrainingMoves .phonePrepRows,
+.databaseStartedMoves .phonePrepRows {
   box-sizing: border-box;
   padding-top: 0.2rem;
   padding-right: 2.05rem;
 }
 
-.prepTrainingMoves :global(.mantine-TableScrollContainer-root) {
+.prepTrainingMoves :global(.mantine-TableScrollContainer-root),
+.databaseStartedMoves :global(.mantine-TableScrollContainer-root) {
   padding-right: 2.05rem;
 }
 

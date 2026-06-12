@@ -268,6 +268,7 @@ const WEB_DATABASE_PANEL_RESULT_STORAGE_KEY = "en-croissant-web-database-panel-r
 const WEB_DATABASE_PANEL_VIEW_STORAGE_KEY = "en-croissant-web-database-panel-view";
 const WEB_DATABASE_PANEL_SORT_STORAGE_KEY = "en-croissant-web-database-panel-sort";
 const WEB_DATABASE_PANEL_STRENGTH_STORAGE_KEY = "en-croissant-web-database-panel-strength";
+const WEB_DATABASE_PANEL_STAGE_STORAGE_KEY = "en-croissant-web-database-panel-stage";
 const WEB_LICHESS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-lichess-explorer-options";
 const WEB_MASTERS_EXPLORER_OPTIONS_STORAGE_KEY = "en-croissant-web-masters-explorer-options";
 const WEB_PREP_SETUP_STORAGE_KEY = "en-croissant-web-prep-setup";
@@ -1709,6 +1710,12 @@ function DatabaseUnderBoardPanel({
     "stats",
   );
   const databaseView = isWebDatabasePanelView(storedView) ? storedView : "stats";
+  const [storedPanelStage, setStoredPanelStage] = usePersistentString(
+    WEB_DATABASE_PANEL_STAGE_STORAGE_KEY,
+    "setup",
+  );
+  const databaseStarted = storedPanelStage === "moves";
+  const visibleDatabaseView = databaseStarted ? "stats" : databaseView;
   const [storedStatsSort, setStoredStatsSort] = usePersistentString(
     WEB_DATABASE_PANEL_SORT_STORAGE_KEY,
     "games",
@@ -2185,7 +2192,7 @@ function DatabaseUnderBoardPanel({
     [databaseStatsSort, stats],
   );
   const matchCount =
-    databaseView === "games" && source === "local" && !isSelectedLocalLazy
+    visibleDatabaseView === "games" && source === "local" && !isSelectedLocalLazy
       ? localPositionGames.length
       : stats.reduce((sum, stat) => sum + stat.total, 0);
   const localSourceLabel =
@@ -2193,83 +2200,256 @@ function DatabaseUnderBoardPanel({
       ? `${trimmedLocalPlayerName} as ${localColor} in ${selectedLocalDatabase.name}`
       : (selectedLocalDatabase?.name ?? "Local database");
   const sourceLabel = source === "local" ? localSourceLabel : getExplorerSourceLabel(source);
+  const selectedDatabaseBadgeLabel = selectedLocalDatabase
+    ? formatDatabasePickerLabel(selectedLocalDatabase.name)
+    : selectedLocalHostedFolder
+      ? getHostedDatabaseLeafLabel(selectedLocalHostedFolder.path)
+      : "";
+  const databaseCanStart =
+    source === "local"
+      ? Boolean(selectedLocalId) && !loadingLocalSource && !localLazyLoading
+      : Boolean(lichessToken.trim()) && !onlineLoading;
+  const startDatabaseMoves = () => {
+    setStoredView("stats");
+    setStoredPanelStage("moves");
+  };
+
+  const databaseContent =
+    source === "local" && loadingLocalSource ? (
+      <Center h={150}>
+        <Stack align="center" gap="xs">
+          <Loader size="sm" />
+          <Text size="xs" c="dimmed">
+            {formatHostedLoadProgress(loadingLocalSource, loadingLocalProgress)}
+          </Text>
+        </Stack>
+      </Center>
+    ) : source === "local" && isSelectedLocalLazy && localLazyLoading ? (
+      <Center h={150}>
+        <Stack align="center" gap="xs">
+          <Loader size="sm" />
+          <Text size="xs" c="dimmed">
+            Loading one position from {sourceLabel}
+          </Text>
+        </Stack>
+      </Center>
+    ) : source === "local" && isSelectedLocalLazy && localLazyError ? (
+      <UnderBoardEmpty
+        icon={<IconDatabase size={30} />}
+        title="Position index unavailable"
+        text={localLazyError}
+      />
+    ) : source !== "local" && !lichessToken.trim() ? (
+      <UnderBoardEmpty
+        icon={<IconDatabase size={30} />}
+        title={`${sourceLabel} locked`}
+        text="Sign in to use this source."
+      />
+    ) : onlineLoading && source !== "local" ? (
+      <Center h={150}>
+        <Stack align="center" gap="xs">
+          <Loader size="sm" />
+          <Text size="xs" c="dimmed">
+            Querying {sourceLabel}
+          </Text>
+        </Stack>
+      </Center>
+    ) : onlineError && source !== "local" ? (
+      <UnderBoardEmpty
+        icon={<IconDatabase size={30} />}
+        title="Explorer unavailable"
+        text={onlineError}
+      />
+    ) : visibleDatabaseView === "options" ? (
+      source === "local" && selectedLocalId && isSelectedLocalLazy ? (
+        <UnderBoardEmpty
+          icon={<IconDatabase size={30} />}
+          title="Lazy synced source"
+          text="This database is queried one position at a time on phone, so player/date/result filters need a full PGN import."
+        />
+      ) : source === "local" && selectedLocalId ? (
+        <WebDatabaseOptionsPanel
+          sourceLabel={sourceLabel}
+          startDate={localStartDate}
+          endDate={localEndDate}
+          result={localResult}
+          onStartDateChange={setLocalStartDate}
+          onEndDateChange={setLocalEndDate}
+          onResultChange={(result) => setLocalResultValue(result)}
+        />
+      ) : source !== "local" ? (
+        <WebExplorerOptionsPanel
+          source={source}
+          lichessOptions={lichessOptions}
+          mastersOptions={mastersOptions}
+          onLichessOptionsChange={setLichessOptions}
+          onMastersOptionsChange={setMastersOptions}
+        />
+      ) : null
+    ) : visibleDatabaseView === "games" ? (
+      source === "local" && selectedLocalId && isSelectedLocalLazy ? (
+        <UnderBoardEmpty
+          icon={<IconDatabase size={30} />}
+          title="No game samples"
+          text="This synced database is lazy-loaded for move stats. Open the PGN from Files if you need individual source games on phone."
+        />
+      ) : source === "local" && selectedLocalId ? (
+        <WebDatabaseGamesList games={localPositionGames} onOpenGame={onOpenSourceGame} />
+      ) : source !== "local" ? (
+        <UnderBoardEmpty
+          icon={<IconDatabase size={30} />}
+          title="No game samples"
+          text={`${sourceLabel} move stats are available here; sample games are not downloaded on phone yet.`}
+        />
+      ) : null
+    ) : source === "local" && !hasLocalChoices ? (
+      <UnderBoardEmpty
+        icon={<IconDatabase size={30} />}
+        title="No local databases"
+        text={
+          hostedDatabases.loading
+            ? "Loading hosted database list."
+            : "Import PGNs or wait for the phone-site sync."
+        }
+      />
+    ) : source === "local" && !selectedLocalId ? (
+      <UnderBoardEmpty
+        icon={<IconDatabase size={30} />}
+        title="Pick a database"
+        text="Choose one synced source."
+      />
+    ) : stats.length === 0 ? (
+      <UnderBoardEmpty
+        icon={<IconDatabase size={30} />}
+        title="No moves here"
+        text={`${sourceLabel} has no games at this position.`}
+      />
+    ) : (
+      <CompactMoveTable
+        stats={sortedStats}
+        showState={false}
+        emptyLabel="No database moves"
+        onPlayMove={onPlayMove}
+        onOpenSourceGame={source === "local" && !isSelectedLocalLazy ? onOpenSourceGame : undefined}
+      />
+    );
 
   return (
-    <Stack gap="xs">
-      <Group gap="xs" align="flex-end" wrap="wrap">
-        <SegmentedControl
-          aria-label="Database source"
-          size="xs"
-          value={source}
-          onChange={(value) => setSource(value as WebDatabasePanelSource)}
-          data={[
-            { value: "local", label: "Local" },
-            { value: "lichess-all", label: "Lichess All" },
-            { value: "lichess-masters", label: "Lichess Masters" },
-          ]}
-        />
-        {source === "local" ? (
-          <>
-            <DatabaseFolderSelect
-              label="Local database"
+    <Stack gap={databaseStarted ? 4 : 6}>
+      {!databaseStarted ? (
+        <Stack gap={6} className={classes.databaseSetup}>
+          <Group
+            justify="space-between"
+            gap={6}
+            align="center"
+            wrap="wrap"
+            className={classes.databaseSetupHeader}
+          >
+            <Group gap={6} wrap="wrap" className={classes.databaseSetupTitle}>
+              <Text fw={700} size="sm">
+                Database
+              </Text>
+              <Badge variant="light" size="sm">
+                {source === "local" ? "Local" : getExplorerSourceLabel(source)}
+              </Badge>
+              {source === "local" && selectedDatabaseBadgeLabel ? (
+                <Badge variant="light" size="sm">
+                  {selectedDatabaseBadgeLabel}
+                </Badge>
+              ) : null}
+              {visibleDatabaseView !== "options" ? (
+                <Badge color="gray" variant="light" size="sm">
+                  {formatCount(matchCount)} matches
+                </Badge>
+              ) : null}
+            </Group>
+            <Button
               size="xs"
-              value={selectedLocalPickerValue}
-              onChange={(value) => void chooseLocalDatabase(value)}
-              data={sourceOptions}
-              placeholder={hasLocalChoices ? "Choose database" : "No local databases"}
-              allowDeselect={false}
-              loading={Boolean(loadingLocalSource)}
-              loadingLabel={loadingLocalSource ? `Loading ${loadingLocalSource}` : undefined}
-              flex="1 1 13rem"
-              minWidth="13rem"
-            />
-            {selectedLocalId && !isSelectedLocalLazy ? (
-              <WebDatabasePerspectiveControls
-                playerName={localPlayerName}
-                playerOptions={selectedDatabasePlayers}
-                color={localColor}
-                onPlayerNameChange={setLocalPlayerName}
-                onColorChange={(color) => setLocalColorValue(color)}
-                playerFlex="1 1 10rem"
-                colorWidth={trimmedLocalPlayerName ? 236 : 132}
-              />
-            ) : null}
-          </>
-        ) : (
-          <>
-            <WebLichessAccessControls
-              token={lichessToken}
-              setToken={setLichessToken}
-              signedInLabel="Lichess saved"
-            />
-            <ActionIcon
-              aria-label="Refresh Lichess explorer"
-              onClick={() => setRefreshKey((key) => key + 1)}
-              disabled={!lichessToken.trim()}
-              loading={onlineLoading}
+              leftSection={<IconPlayerPlay size={14} />}
+              disabled={!databaseCanStart}
+              onClick={startDatabaseMoves}
             >
-              <IconRefresh size={16} />
-            </ActionIcon>
-          </>
-        )}
-      </Group>
+              Start
+            </Button>
+          </Group>
 
-      <Group justify="space-between" gap="xs" align="center" wrap="wrap">
-        <SegmentedControl
-          aria-label="Database view"
-          size="xs"
-          value={databaseView}
-          onChange={(value) => setStoredView(value as WebDatabasePanelView)}
-          data={[
-            { value: "stats", label: "Stats" },
-            { value: "games", label: "Games" },
-            { value: "options", label: "Options" },
-          ]}
-        />
-        {databaseView !== "options" ? (
-          <Group gap="xs" wrap="wrap" justify="flex-end">
-            {databaseView === "stats" ? (
+          <Group gap={6} align="center" wrap="wrap" className={classes.databaseSetupControls}>
+            <SegmentedControl
+              aria-label="Database source"
+              size="xs"
+              value={source}
+              onChange={(value) => setSource(value as WebDatabasePanelSource)}
+              data={[
+                { value: "local", label: "Local" },
+                { value: "lichess-all", label: "Lichess All" },
+                { value: "lichess-masters", label: "Lichess Masters" },
+              ]}
+            />
+            {source === "local" ? (
               <>
+                <DatabaseFolderSelect
+                  size="xs"
+                  value={selectedLocalPickerValue}
+                  onChange={(value) => void chooseLocalDatabase(value)}
+                  data={sourceOptions}
+                  placeholder={hasLocalChoices ? "Choose database" : "No local databases"}
+                  allowDeselect={false}
+                  loading={Boolean(loadingLocalSource)}
+                  loadingLabel={loadingLocalSource ? `Loading ${loadingLocalSource}` : undefined}
+                  flex="1 1 11rem"
+                  minWidth="11rem"
+                />
+                {selectedLocalId && !isSelectedLocalLazy ? (
+                  <WebDatabasePerspectiveControls
+                    playerName={localPlayerName}
+                    playerOptions={selectedDatabasePlayers}
+                    color={localColor}
+                    onPlayerNameChange={setLocalPlayerName}
+                    onColorChange={(color) => setLocalColorValue(color)}
+                    playerFlex="1 1 10rem"
+                    colorWidth={trimmedLocalPlayerName ? 236 : 132}
+                  />
+                ) : null}
+              </>
+            ) : (
+              <>
+                <WebLichessAccessControls
+                  token={lichessToken}
+                  setToken={setLichessToken}
+                  signedInLabel="Lichess saved"
+                />
+                <ActionIcon
+                  aria-label="Refresh Lichess explorer"
+                  onClick={() => setRefreshKey((key) => key + 1)}
+                  disabled={!lichessToken.trim()}
+                  loading={onlineLoading}
+                >
+                  <IconRefresh size={16} />
+                </ActionIcon>
+              </>
+            )}
+          </Group>
+
+          <Group
+            justify="space-between"
+            gap={6}
+            align="center"
+            wrap="wrap"
+            className={classes.databaseSetupControls}
+          >
+            <SegmentedControl
+              aria-label="Database view"
+              size="xs"
+              value={databaseView}
+              onChange={(value) => setStoredView(value as WebDatabasePanelView)}
+              data={[
+                { value: "stats", label: "Stats" },
+                { value: "games", label: "Games" },
+                { value: "options", label: "Options" },
+              ]}
+            />
+            {databaseView === "stats" ? (
+              <Group gap={6} wrap="wrap" justify="flex-end">
                 <WebPrepStrengthSettingsButton
                   builderSettings={databaseStrengthSettings}
                   updateBuilderSettings={(patch) =>
@@ -2288,153 +2468,47 @@ function DatabaseUnderBoardPanel({
                     setStoredStatsSort((value as WebDatabaseStatsSort | null) ?? "games")
                   }
                   allowDeselect={false}
-                  w={170}
+                  w={154}
                 />
-              </>
+              </Group>
             ) : null}
-            <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
-              Matches {formatCount(matchCount)}
-            </Text>
           </Group>
-        ) : null}
-      </Group>
 
-      {source === "local" && loadingLocalSource ? (
-        <Group gap="xs" wrap="nowrap">
-          <Loader size="xs" />
-          <Text size="xs" c="dimmed" truncate>
-            {formatHostedLoadProgress(loadingLocalSource, loadingLocalProgress)}
-          </Text>
-        </Group>
-      ) : source === "local" && isSelectedLocalLazy && localLazyLoading ? (
-        <Group gap="xs" wrap="nowrap">
-          <Loader size="xs" />
-          <Text size="xs" c="dimmed" truncate>
-            Loading {sourceLabel} position
-          </Text>
-        </Group>
+          {source === "local" && loadingLocalSource ? (
+            <Group gap="xs" wrap="nowrap">
+              <Loader size="xs" />
+              <Text size="xs" c="dimmed" truncate>
+                {formatHostedLoadProgress(loadingLocalSource, loadingLocalProgress)}
+              </Text>
+            </Group>
+          ) : source === "local" && isSelectedLocalLazy && localLazyLoading ? (
+            <Group gap="xs" wrap="nowrap">
+              <Loader size="xs" />
+              <Text size="xs" c="dimmed" truncate>
+                Loading {sourceLabel} position
+              </Text>
+            </Group>
+          ) : null}
+        </Stack>
       ) : null}
 
-      {source === "local" && loadingLocalSource ? (
-        <Center h={150}>
-          <Stack align="center" gap="xs">
-            <Loader size="sm" />
-            <Text size="xs" c="dimmed">
-              {formatHostedLoadProgress(loadingLocalSource, loadingLocalProgress)}
-            </Text>
-          </Stack>
-        </Center>
-      ) : source === "local" && isSelectedLocalLazy && localLazyLoading ? (
-        <Center h={150}>
-          <Stack align="center" gap="xs">
-            <Loader size="sm" />
-            <Text size="xs" c="dimmed">
-              Loading one position from {sourceLabel}
-            </Text>
-          </Stack>
-        </Center>
-      ) : source === "local" && isSelectedLocalLazy && localLazyError ? (
-        <UnderBoardEmpty
-          icon={<IconDatabase size={30} />}
-          title="Position index unavailable"
-          text={localLazyError}
-        />
-      ) : source !== "local" && !lichessToken.trim() ? (
-        <UnderBoardEmpty
-          icon={<IconDatabase size={30} />}
-          title={`${sourceLabel} locked`}
-          text="Sign in to use this source."
-        />
-      ) : onlineLoading && source !== "local" ? (
-        <Center h={150}>
-          <Stack align="center" gap="xs">
-            <Loader size="sm" />
-            <Text size="xs" c="dimmed">
-              Querying {sourceLabel}
-            </Text>
-          </Stack>
-        </Center>
-      ) : onlineError && source !== "local" ? (
-        <UnderBoardEmpty
-          icon={<IconDatabase size={30} />}
-          title="Explorer unavailable"
-          text={onlineError}
-        />
-      ) : databaseView === "options" ? (
-        source === "local" && selectedLocalId && isSelectedLocalLazy ? (
-          <UnderBoardEmpty
-            icon={<IconDatabase size={30} />}
-            title="Lazy synced source"
-            text="This database is queried one position at a time on phone, so player/date/result filters need a full PGN import."
-          />
-        ) : source === "local" && selectedLocalId ? (
-          <WebDatabaseOptionsPanel
-            sourceLabel={sourceLabel}
-            startDate={localStartDate}
-            endDate={localEndDate}
-            result={localResult}
-            onStartDateChange={setLocalStartDate}
-            onEndDateChange={setLocalEndDate}
-            onResultChange={(result) => setLocalResultValue(result)}
-          />
-        ) : source !== "local" ? (
-          <WebExplorerOptionsPanel
-            source={source}
-            lichessOptions={lichessOptions}
-            mastersOptions={mastersOptions}
-            onLichessOptionsChange={setLichessOptions}
-            onMastersOptionsChange={setMastersOptions}
-          />
-        ) : null
-      ) : databaseView === "games" ? (
-        source === "local" && selectedLocalId && isSelectedLocalLazy ? (
-          <UnderBoardEmpty
-            icon={<IconDatabase size={30} />}
-            title="No game samples"
-            text="This synced database is lazy-loaded for move stats. Open the PGN from Files if you need individual source games on phone."
-          />
-        ) : source === "local" && selectedLocalId ? (
-          <WebDatabaseGamesList games={localPositionGames} onOpenGame={onOpenSourceGame} />
-        ) : source !== "local" ? (
-          <UnderBoardEmpty
-            icon={<IconDatabase size={30} />}
-            title="No game samples"
-            text={`${sourceLabel} move stats are available here; sample games are not downloaded on phone yet.`}
-          />
-        ) : null
-      ) : source === "local" && !hasLocalChoices ? (
-        <UnderBoardEmpty
-          icon={<IconDatabase size={30} />}
-          title="No local databases"
-          text={
-            hostedDatabases.loading
-              ? "Loading hosted database list."
-              : "Import PGNs or wait for the phone-site sync."
-          }
-        />
-      ) : source === "local" && !selectedLocalId ? (
-        <UnderBoardEmpty
-          icon={<IconDatabase size={30} />}
-          title="Pick a database"
-          text="Choose one synced source."
-        />
-      ) : stats.length === 0 ? (
-        <UnderBoardEmpty
-          icon={<IconDatabase size={30} />}
-          title="No moves here"
-          text={`${sourceLabel} has no games at this position.`}
-        />
-      ) : (
-        <CompactMoveTable
-          stats={sortedStats}
-          showState={false}
-          emptyLabel="No database moves"
-          onPlayMove={onPlayMove}
-          onOpenSourceGame={
-            source === "local" && !isSelectedLocalLazy ? onOpenSourceGame : undefined
-          }
-        />
-      )}
+      {databaseStarted ? (
+        <Box className={classes.databaseStartedMoves}>
+          <Tooltip label="Return to database settings">
+            <ActionIcon
+              aria-label="Return to database settings"
+              className={classes.databaseStartedExit}
+              size="sm"
+              variant="filled"
+              color="dark"
+              onClick={() => setStoredPanelStage("setup")}
+            >
+              <IconX size={15} />
+            </ActionIcon>
+          </Tooltip>
+          {databaseContent}
+        </Box>
+      ) : null}
     </Stack>
   );
 }

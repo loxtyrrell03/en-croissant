@@ -491,6 +491,12 @@ Engine` selector on the phone workspace, and the active panel content starts
   setup buttons use compact copy, and picker folder/details text avoids wrapping
   long phrases. Keep these controls terse so the board-first phone surface does
   not lose usable width to repeated explanatory text.
+- On 2026-06-12, the phone Database tab gained the same setup/start split as
+  Prep. Database setup now keeps source/view/sort controls in a compact header
+  with a `Start` action, and started Database mode hides those controls so only
+  the move rows remain under the board with a small exit button back to
+  settings. Keep future Database controls behind setup so started mode stays
+  move-first.
 - A later 2026-06-04 phone Database/Prep strength parity pass wired the web
   move tables into the fork's blended strength model. Local Database stats and
   Lichess All/Masters explorer rows now compute practical/blended strength,
