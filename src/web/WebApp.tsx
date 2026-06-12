@@ -871,18 +871,18 @@ export default function WebApp() {
           <Box className={classes.headerInner}>
             <Box className={classes.brand}>
               <Group gap="xs" wrap="nowrap">
-                <IconChess size={24} />
+                <IconChess className={classes.brandIcon} size={24} />
                 <Box>
-                  <Title order={3} lh={1.1}>
+                  <Title order={3} className={classes.brandTitle} lh={1.1}>
                     En Croissant Web
                   </Title>
-                  <Text size="xs" c="dimmed" truncate>
+                  <Text className={classes.brandSubtitle} size="xs" c="dimmed" truncate>
                     Board, files, prep
                   </Text>
                 </Box>
               </Group>
             </Box>
-            <Group justify="flex-end" gap="xs" wrap="nowrap">
+            <Group className={classes.headerActions} justify="flex-end" gap="xs" wrap="nowrap">
               <SegmentedControl
                 size="xs"
                 value={view}
@@ -893,6 +893,8 @@ export default function WebApp() {
                 ]}
               />
               <Button
+                aria-label="Import PGN files"
+                className={classes.headerImportButton}
                 component="label"
                 size="xs"
                 leftSection={<IconUpload size={15} />}

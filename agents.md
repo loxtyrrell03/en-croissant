@@ -2028,6 +2028,11 @@ from 2026-04-24 through 2026-05-03.
   branches inline and can jump the board onto a tapped branch, and local
   Database/Prep indexing walks the full tree so repertoire files contribute
   variation moves to stats.
+- On 2026-06-12, the phone web header was compressed so the board workspace
+  starts higher in the first viewport. Narrow screens now use a single-row
+  sticky header with the subtitle hidden, smaller title/icon/action sizing, and
+  reduced top content padding; the board title row is also tightened so more of
+  the under-board panel is visible without scrolling.
 
 ## Verification Expectations
 

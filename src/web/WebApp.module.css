@@ -32,6 +32,19 @@
   min-width: 0;
 }
 
+.brandIcon {
+  flex: 0 0 auto;
+}
+
+.brandTitle,
+.brandSubtitle {
+  max-width: 100%;
+}
+
+.headerActions {
+  min-width: 0;
+}
+
 .main {
   max-width: 1180px;
   min-width: 0;
@@ -773,7 +786,53 @@
 
 @media (max-width: 520px) {
   .headerInner {
-    padding: 0.6rem var(--mantine-spacing-sm);
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.42rem;
+    padding: 0.28rem max(0.5rem, env(safe-area-inset-right)) 0.28rem
+      max(0.5rem, env(safe-area-inset-left));
+  }
+
+  .brand > :global(.mantine-Group-root) {
+    gap: 0.35rem;
+  }
+
+  .brandIcon {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+
+  .brandTitle {
+    font-size: 0.92rem;
+    line-height: 1;
+  }
+
+  .brandSubtitle {
+    display: none;
+  }
+
+  .headerActions {
+    gap: 0.34rem !important;
+  }
+
+  .headerActions :global(.mantine-SegmentedControl-label) {
+    min-height: 1.75rem;
+    padding-inline: 0.44rem;
+    font-size: 0.72rem;
+  }
+
+  .headerImportButton {
+    width: 1.9rem;
+    min-width: 1.9rem;
+    height: 1.9rem;
+    padding-inline: 0;
+  }
+
+  .headerImportButton :global(.mantine-Button-section) {
+    margin-inline: 0;
+  }
+
+  .headerImportButton :global(.mantine-Button-label) {
+    display: none;
   }
 
   .panelBody,
@@ -782,7 +841,12 @@
   }
 
   .main {
+    padding-block-start: 0.35rem;
     padding-inline: max(0.45rem, env(safe-area-inset-left)) max(0.45rem, env(safe-area-inset-right));
+  }
+
+  .phoneBoard {
+    gap: 0.42rem;
   }
 
   .filesWorkspace {
@@ -802,7 +866,32 @@
   }
 
   .boardHeader {
-    gap: var(--mantine-spacing-xs);
+    gap: 0.45rem;
+  }
+
+  .boardHeader > :first-child :global(.mantine-Text-root) {
+    line-height: 1;
+  }
+
+  .boardHeader .truncateTitle {
+    font-size: 1.05rem;
+    line-height: 1.08;
+  }
+
+  .boardHeader :global(.mantine-Button-root) {
+    min-height: 1.78rem;
+    height: 1.78rem;
+    padding-inline: 0.45rem;
+  }
+
+  .boardHeader :global(.mantine-Button-section) {
+    margin-inline-end: 0.22rem;
+  }
+
+  .boardHeader :global(.mantine-Badge-root) {
+    min-height: 1.28rem;
+    height: 1.28rem;
+    padding-inline: 0.42rem;
   }
 
   .underBoardContent {
