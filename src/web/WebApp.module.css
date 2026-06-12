@@ -150,6 +150,11 @@
 
 .boardStartActions :global(.mantine-Button-root) {
   min-width: 0;
+  padding-inline: 0.42rem;
+}
+
+.boardStartActions :global(.mantine-Button-section) {
+  margin-inline-end: 0.24rem;
 }
 
 .boardStartActions :global(.mantine-Button-label) {
@@ -303,7 +308,7 @@
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  padding: 0.34rem 0.46rem;
+  padding: 0.3rem 0.46rem;
   border: 1px solid rgba(255, 255, 255, 0.075);
   border-radius: 7px;
   background: rgba(255, 255, 255, 0.035);
@@ -337,6 +342,22 @@
 
 .phonePrepActions {
   flex: 0 0 auto;
+}
+
+.phonePrepStatLine {
+  min-width: 0;
+  margin-top: 0.2rem;
+  padding-top: 0.2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--mantine-color-gray-3);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+}
+
+.phonePrepStatItem {
+  flex: 0 1 auto;
+  min-width: 0;
+  white-space: nowrap;
 }
 
 .phonePrepMetrics {
