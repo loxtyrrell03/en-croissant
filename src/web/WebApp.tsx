@@ -877,7 +877,7 @@ export default function WebApp() {
                     En Croissant Web
                   </Title>
                   <Text size="xs" c="dimmed" truncate>
-                    Board, files, database, prep
+                    Board, files, prep
                   </Text>
                 </Box>
               </Group>
@@ -1444,24 +1444,27 @@ function BoardStartActions({
   onChooseMode: (mode: BoardPanelMode) => void;
 }) {
   return (
-    <Group className={classes.boardStartActions} gap="xs" grow>
+    <Group className={classes.boardStartActions} gap={6} grow>
       <Button
+        aria-label="Moves"
         size="xs"
         variant={activeMode === "moves" ? "filled" : "light"}
         leftSection={<IconPlayerPlay size={14} />}
         onClick={() => onChooseMode("moves")}
       >
-        Analysis
+        Moves
       </Button>
       <Button
+        aria-label="Database"
         size="xs"
         variant={activeMode === "database" ? "filled" : "light"}
         leftSection={<IconDatabase size={14} />}
         onClick={() => onChooseMode("database")}
       >
-        Database
+        DB
       </Button>
       <Button
+        aria-label="Prep"
         size="xs"
         variant={activeMode === "prep" ? "filled" : "light"}
         leftSection={<IconTarget size={14} />}
@@ -1470,6 +1473,7 @@ function BoardStartActions({
         Prep
       </Button>
       <Button
+        aria-label="Engine"
         size="xs"
         variant={activeMode === "engine" ? "filled" : "light"}
         leftSection={<IconCpu size={14} />}
@@ -2337,7 +2341,7 @@ function DatabaseUnderBoardPanel({
         <UnderBoardEmpty
           icon={<IconDatabase size={30} />}
           title={`${sourceLabel} locked`}
-          text="Sign in to Lichess or paste a token to query this source from the phone."
+          text="Sign in to use this source."
         />
       ) : onlineLoading && source !== "local" ? (
         <Center h={150}>
@@ -2409,14 +2413,14 @@ function DatabaseUnderBoardPanel({
       ) : source === "local" && !selectedLocalId ? (
         <UnderBoardEmpty
           icon={<IconDatabase size={30} />}
-          title="Choose a database"
-          text="Use Local database to pick one synced fork database."
+          title="Pick a database"
+          text="Choose one synced source."
         />
       ) : stats.length === 0 ? (
         <UnderBoardEmpty
           icon={<IconDatabase size={30} />}
-          title="No database games"
-          text={`No ${sourceLabel} moves reach this board position.`}
+          title="No moves here"
+          text={`${sourceLabel} has no games at this position.`}
         />
       ) : (
         <CompactMoveTable
@@ -4194,7 +4198,7 @@ function PrepUnderBoardPanel({
               leftSection={<IconCloudDownload size={14} />}
               onClick={() => setOnlineOpen((open) => !open)}
             >
-              Import games
+              Import
             </Button>
             <WebPrepStrengthSettingsButton
               builderSettings={selectedBuilderSettings}
@@ -4207,7 +4211,7 @@ function PrepUnderBoardPanel({
                 leftSection={<IconArrowsSort size={14} />}
                 onClick={() => setBuilderOpen((open) => !open)}
               >
-                Builder settings
+                Builder
               </Button>
             </Tooltip>
           </Group>
@@ -4376,7 +4380,7 @@ function PrepUnderBoardPanel({
                 </Badge>
               ) : (
                 <Text size="xs" c="dimmed">
-                  Pick a source or import games.
+                  Pick a source.
                 </Text>
               )}
               {selectedPrepSource === "local" && activePrepSourceId && !selectedPrepSourceIsLazy ? (
@@ -4522,13 +4526,7 @@ function PrepUnderBoardPanel({
         </>
       ) : null}
 
-      {showSetupStage && !activePrep ? (
-        <Stack gap="xs">
-          <Text size="xs" c="dimmed">
-            Pick source, then Start prep.
-          </Text>
-        </Stack>
-      ) : showTrainingStage && activePrep ? (
+      {showTrainingStage && activePrep ? (
         <Stack gap="xs">
           {onlinePrepLoading && isOnlinePrepSource(selectedPrepSource) ? (
             <Group gap="xs">
@@ -5316,33 +5314,10 @@ function CompactMoveTable({
                 </Group>
               </Group>
 
-              <Box className={classes.phonePrepMetrics}>
-                <Box className={classes.phonePrepMetric}>
-                  <Text className={classes.phonePrepMetricLabel}>Strength</Text>
-                  <PhonePrepStrengthSummary strength={stat.strength} />
-                </Box>
-                <Box className={classes.phonePrepMetric}>
-                  <Text className={classes.phonePrepMetricLabel}>Games</Text>
-                  <Text size="sm" fw={700}>
-                    {formatCount(stat.total)}
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    {formatPercent(stat.share)}
-                  </Text>
-                </Box>
-                {showState ? (
-                  <Box className={classes.phonePrepMetric}>
-                    <Text className={classes.phonePrepMetricLabel}>Prep</Text>
-                    <PrepBranchStatsCell stats={branchStatsByKey?.[stat.key]} compact />
-                  </Box>
-                ) : null}
-                <Box className={classes.phonePrepMetric}>
-                  <Text className={classes.phonePrepMetricLabel}>
-                    {showState ? "Results" : "WDL"}
-                  </Text>
-                  <PrepResultBar stat={stat} />
-                </Box>
-              </Box>
+              <PhoneMoveStatsLine
+                stat={stat}
+                branchStats={showState ? branchStatsByKey?.[stat.key] : undefined}
+              />
             </Box>
           );
         })}
@@ -5668,6 +5643,30 @@ function PrepStrengthCell({
   );
 }
 
+function PhoneMoveStatsLine({
+  stat,
+  branchStats,
+}: {
+  stat: WebPrepMoveStat;
+  branchStats?: WebPrepBranchCoverageStats;
+}) {
+  return (
+    <Group className={classes.phonePrepStatLine} gap={6} wrap="nowrap">
+      <PhonePrepStrengthSummary strength={stat.strength} />
+      <Text size="xs" fw={700} className={classes.phonePrepStatItem}>
+        {formatCount(stat.total)} games
+      </Text>
+      <Text size="xs" c="dimmed" className={classes.phonePrepStatItem}>
+        {formatPercent(stat.share)}
+      </Text>
+      {branchStats ? <PrepBranchStatsCell stats={branchStats} compact /> : null}
+      <Text size="xs" c="dimmed" className={classes.phonePrepStatItem}>
+        {formatCompactWdl(stat)}
+      </Text>
+    </Group>
+  );
+}
+
 function PhonePrepStrengthSummary({ strength }: { strength: WebPrepMoveStat["strength"] }) {
   if (!strength) {
     return (
@@ -5679,26 +5678,14 @@ function PhonePrepStrengthSummary({ strength }: { strength: WebPrepMoveStat["str
 
   return (
     <Tooltip label={strength.detail} multiline w={260}>
-      <Box className={classes.phonePrepStrength}>
-        <Group gap={5} wrap="nowrap" className={classes.phonePrepStrengthTop}>
-          <Badge color={strength.engineUnsafe ? "yellow" : "teal"} variant="light" size="xs">
-            {strength.label}
-          </Badge>
-          <Text size="sm" fw={800}>
-            {strength.score}%
-          </Text>
-          <Progress
-            value={strength.score}
-            size={3}
-            color={strength.engineUnsafe ? "yellow" : "teal"}
-            className={classes.phonePrepStrengthProgress}
-          />
-        </Group>
-        <Text size="xs" c="dimmed" className={classes.phonePrepStrengthLine}>
-          {formatMoveStrengthEngineLine(strength, true)} /{" "}
-          {formatMoveStrengthWdlLine(strength, true)}
-        </Text>
-      </Box>
+      <Text
+        size="xs"
+        fw={800}
+        c={strength.engineUnsafe ? "yellow.5" : "teal.3"}
+        className={classes.phonePrepStatItem}
+      >
+        Str {strength.score}%
+      </Text>
     </Tooltip>
   );
 }
@@ -5840,7 +5827,7 @@ function cloudStatusTextColor(status: WebEngineCloudStatus) {
 function WebPrepStrengthSettingsButton({
   builderSettings,
   updateBuilderSettings,
-  buttonLabel = "Strength settings",
+  buttonLabel = "Strength",
 }: {
   builderSettings: PrepBuilderSettings;
   updateBuilderSettings: (patch: Partial<PrepBuilderSettings>) => void;
@@ -5856,7 +5843,7 @@ function WebPrepStrengthSettingsButton({
       <Popover.Dropdown>
         <Stack gap="xs">
           <Text size="sm" fw={700}>
-            Strength settings
+            Strength
           </Text>
           <SegmentedControl
             aria-label="Prep strength mode"
@@ -5955,6 +5942,15 @@ function PrepResultBar({ stat }: { stat: Pick<WebPrepMoveStat, "white" | "draw" 
       </Progress.Section>
     </Progress.Root>
   );
+}
+
+function formatCompactWdl(stat: Pick<WebPrepMoveStat, "white" | "draw" | "black">) {
+  const total = stat.white + stat.draw + stat.black;
+  if (total <= 0) return "WDL -";
+  const white = Math.round((stat.white / total) * 100);
+  const draw = Math.round((stat.draw / total) * 100);
+  const black = Math.round((stat.black / total) * 100);
+  return `WDL ${white}/${draw}/${black}`;
 }
 
 function PrepBranchStatsCell({
@@ -6989,7 +6985,7 @@ function getWebDatabaseSelectData({
       value: database.hostedPath ? hostedDatabaseValue(database.hostedPath) : database.id,
       label: formatDatabasePickerLabel(database.name),
       detail: updateAvailable
-        ? `Synced update available - ${formatCount(hostedFolder.fileCount)} PGN${
+        ? `Update - ${formatCount(hostedFolder.fileCount)} PGN${
             hostedFolder.fileCount === 1 ? "" : "s"
           } - ${formatBytes(hostedFolder.sizeBytes)}`
         : `Ready - ${formatCount(database.gameCount)} game${database.gameCount === 1 ? "" : "s"}${
@@ -7013,7 +7009,7 @@ function getWebDatabaseSelectData({
     addItem(folderPath ? getHostedDatabaseGroupLabel(folderPath) : "Unfiled", {
       value: hostedDatabaseValue(folder.path),
       label: getHostedDatabaseLeafLabel(folder.path),
-      detail: `Synced - loads when selected - ${formatCount(folder.fileCount)} PGN${
+      detail: `Tap to load - ${formatCount(folder.fileCount)} PGN${
         folder.fileCount === 1 ? "" : "s"
       } - ${formatBytes(folder.sizeBytes)}`,
       searchText: `${folder.label} ${folder.path} synced hosted fork database not loaded`,

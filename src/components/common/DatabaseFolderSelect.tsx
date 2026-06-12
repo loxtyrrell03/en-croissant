@@ -107,7 +107,9 @@ export default function DatabaseFolderSelect({
       );
   }, [data, query]);
   const trimmedQuery = query.trim();
-  const buttonLabel = loading ? loadingLabel ?? "Loading database" : selectedItem?.label ?? placeholder;
+  const buttonLabel = loading
+    ? (loadingLabel ?? "Loading database")
+    : (selectedItem?.label ?? placeholder);
   const control = (
     <Popover
       opened={opened}
@@ -204,7 +206,7 @@ export default function DatabaseFolderSelect({
               {selectedGroup && selectedGroup.group !== "Unfiled" && (
                 <FolderRow
                   label={selectedGroup.group}
-                  detail="Open current folder"
+                  detail="Current"
                   onClick={() => setActiveGroup(selectedGroup.group)}
                 />
               )}
@@ -214,7 +216,7 @@ export default function DatabaseFolderSelect({
                   <FolderRow
                     key={group.group}
                     label={group.group}
-                    detail={`Open - ${group.items.length} database${group.items.length === 1 ? "" : "s"}`}
+                    detail={`${group.items.length} db${group.items.length === 1 ? "" : "s"}`}
                     onClick={() => setActiveGroup(group.group)}
                   />
                 ))}
@@ -296,7 +298,7 @@ function DatabaseRow({
         onClose();
       }}
       px={8}
-      py={7}
+      py={6}
       style={{
         borderRadius: 6,
         opacity: item.disabled ? 0.45 : 1,
@@ -332,7 +334,7 @@ function FolderRow({
   onClick: () => void;
 }) {
   return (
-    <UnstyledButton onClick={onClick} px={8} py={7} style={{ borderRadius: 6 }}>
+    <UnstyledButton onClick={onClick} px={8} py={6} style={{ borderRadius: 6 }}>
       <Group justify="space-between" wrap="nowrap">
         <Group gap={8} wrap="nowrap" miw={0}>
           <IconFolder size="1rem" />

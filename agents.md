@@ -473,6 +473,11 @@ Engine` selector on the phone workspace, and the active panel content starts
   board with only a small `Return to prep settings` exit button. Keep this
   started-state surface move-first; source, target, root, and builder controls
   belong behind the setup/startup view.
+- On 2026-06-12, phone under-board controls and prep rows were tightened for
+  narrow screens: the board mode selector now uses shorter visible labels with
+  full aria labels, source-picker folder rows use compact helper text, and
+  phone prep move rows collapse strength, games, share, coverage, and WDL into
+  one stat line. Keep future phone row additions similarly dense and scannable.
 - On 2026-06-12, the phone Database and Prep source pickers stopped treating
   loose opened PGN files as selectable databases. Individual hosted PGNs opened
   from Files are now marked as `opened-file`, legacy unmarked loose PGNs are
@@ -481,6 +486,11 @@ Engine` selector on the phone workspace, and the active panel content starts
   sources appear above/in the folder picker. Keep file browsing/history
   separate from source database selection so recently opened games do not
   masquerade as prep databases.
+- On 2026-06-12, the phone board and source-picker labels were tightened for
+  narrow screens: board action buttons use short labels with aria labels, Prep
+  setup buttons use compact copy, and picker folder/details text avoids wrapping
+  long phrases. Keep these controls terse so the board-first phone surface does
+  not lose usable width to repeated explanatory text.
 - A later 2026-06-04 phone Database/Prep strength parity pass wired the web
   move tables into the fork's blended strength model. Local Database stats and
   Lichess All/Masters explorer rows now compute practical/blended strength,
