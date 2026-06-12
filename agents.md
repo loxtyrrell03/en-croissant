@@ -2064,6 +2064,13 @@ from 2026-04-24 through 2026-05-03.
   files, Indexed PGNs, and game rows. Keep this page closer to a compact file
   browser than a card list so more folders and files remain visible without
   scrolling.
+- A follow-up on 2026-06-12 made the phone Files rows denser again and added
+  hosted-library pin support. Desktop Files pins are mirrored to app data as
+  `web-pinned-file-entries.json`; `npm run web:publish` maps those absolute
+  paths into hosted `pinnedPaths`, and the phone Hosted files list floats
+  pinned siblings first with only a small pin icon. Keep pin UI compact and
+  metadata-driven so publishing from the fork carries the user's pinned Files
+  choices to the phone site.
 
 ## Verification Expectations
 

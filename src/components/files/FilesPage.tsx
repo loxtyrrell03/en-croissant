@@ -26,7 +26,8 @@ import {
   IconCheck,
 } from "@tabler/icons-react";
 import { useLoaderData } from "@tanstack/react-router";
-import { remove } from "@tauri-apps/plugin-fs";
+import { appDataDir, resolve } from "@tauri-apps/api/path";
+import { mkdir, remove, writeTextFile } from "@tauri-apps/plugin-fs";
 import clsx from "clsx";
 import { useAtom, useSetAtom } from "jotai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -67,6 +68,7 @@ import {
 
 const FILE_TYPES: FileType[] = ["game", "repertoire", "tournament", "puzzle", "other", "pdf"];
 const ROW_REORDER_EDGE_RATIO = 0.32;
+const PINNED_FILE_ENTRIES_EXPORT = "web-pinned-file-entries.json";
 
 const SORT_OPTIONS: { value: FilesSortMode; label: string }[] = [
   { value: "manual", label: "Manual order" },
@@ -100,6 +102,27 @@ function isDescendantPath(path: string, parent: string) {
 
 function isSameOrDescendantPath(path: string, parent: string) {
   return path === parent || isDescendantPath(path, parent);
+}
+
+async function writePinnedFileEntriesExport(pinnedPaths: string[]) {
+  try {
+    const dir = await appDataDir();
+    await mkdir(dir, { recursive: true });
+    const path = await resolve(dir, PINNED_FILE_ENTRIES_EXPORT);
+    await writeTextFile(
+      path,
+      `${JSON.stringify(
+        {
+          version: 1,
+          pinnedPaths,
+        },
+        null,
+        2,
+      )}\n`,
+    );
+  } catch (error) {
+    console.warn("Could not export pinned file entries for the web companion.", error);
+  }
 }
 
 function replacePathPrefix(path: string, oldPath: string, newPath: string) {
@@ -254,7 +277,7 @@ function FilesPage() {
   } = useFileDirectory(documentDir);
   const setTabs = useSetAtom(tabsAtom);
   const setRecentFiles = useSetAtom(recentFilesAtom);
-  const setPinnedFiles = useSetAtom(pinnedFileEntriesAtom);
+  const [pinnedFiles, setPinnedFiles] = useAtom(pinnedFileEntriesAtom);
   const setArchivedFiles = useSetAtom(archivedFileEntriesAtom);
   const [manualOrder, setManualOrder] = useAtom(manualFileEntryOrderAtom);
   const [sortMode, setSortMode] = useAtom(filesSortModeAtom);
@@ -292,6 +315,10 @@ function FilesPage() {
   useEffect(() => {
     setGames(new Map());
   }, [selected]);
+
+  useEffect(() => {
+    void writePinnedFileEntriesExport(pinnedFiles);
+  }, [pinnedFiles]);
 
   useEffect(() => {
     if (!files || !selected) {

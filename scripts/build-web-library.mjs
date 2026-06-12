@@ -28,6 +28,7 @@ const files = [];
 await collectFiles(sourceRoot);
 await collectDatabaseExports();
 const sortedFiles = files.sort((a, b) => a.path.localeCompare(b.path, undefined, { sensitivity: "base" }));
+const pinnedPaths = await getPinnedHostedPaths();
 const sourceName = basename(sourceRoot);
 
 const manifest = {
@@ -35,10 +36,12 @@ const manifest = {
   generatedAt:
     previousManifest &&
     previousManifest.sourceName === sourceName &&
-    areFileManifestsEqual(previousManifest.files, sortedFiles)
+    areFileManifestsEqual(previousManifest.files, sortedFiles) &&
+    areStringArraysEqual(previousManifest.pinnedPaths, pinnedPaths)
       ? previousManifest.generatedAt
       : new Date().toISOString(),
   sourceName,
+  pinnedPaths,
   files: sortedFiles,
 };
 
@@ -255,6 +258,65 @@ async function collectGeneratedPgnFiles(directory, virtualPath, lastModified) {
   }
 }
 
+async function getPinnedHostedPaths() {
+  const pinnedFiles = await getPinnedFileEntries();
+  const mapped = pinnedFiles
+    .map((path) => getHostedPathForPinnedEntry(path))
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+
+  return Array.from(new Set(mapped));
+}
+
+async function getPinnedFileEntries() {
+  const explicitPath = process.env.EN_CROISSANT_WEB_PINNED_FILES;
+  const appIds = [
+    getAppIdentifier(),
+    "org.encroissant.fork",
+    "org.encroissant.app",
+  ].filter(Boolean);
+  const candidates = [
+    explicitPath,
+    ...appIds.map((id) => join(getRoamingAppDataDir(), id, "web-pinned-file-entries.json")),
+    ...appIds.map((id) => join(getLocalAppDataDir(), id, "web-pinned-file-entries.json")),
+    join(sourceRoot, ".en-croissant-web-pins.json"),
+  ].filter(Boolean);
+
+  const entries = [];
+  const seenFiles = new Set();
+  for (const candidate of candidates) {
+    const key = candidate.toLowerCase();
+    if (seenFiles.has(key)) continue;
+    seenFiles.add(key);
+
+    const data = await readJsonFile(candidate);
+    const pinnedPaths = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.pinnedPaths)
+        ? data.pinnedPaths
+        : [];
+    for (const path of pinnedPaths) {
+      if (typeof path === "string" && path.trim()) {
+        entries.push(path);
+      }
+    }
+  }
+
+  return entries;
+}
+
+function getHostedPathForPinnedEntry(path) {
+  const normalizedPath = normalizeAbsolutePath(path);
+  const normalizedSourceRoot = normalizeAbsolutePath(sourceRoot);
+
+  if (isSameOrDescendantAbsolutePath(normalizedPath, normalizedSourceRoot)) {
+    const relativePath = normalizePath(relative(sourceRoot, path));
+    return relativePath && relativePath !== "." ? relativePath : null;
+  }
+
+  return null;
+}
+
 function ensureDatabaseExporter() {
   const extension = process.platform === "win32" ? ".exe" : "";
   const exporterPath = join(repoRoot, "src-tauri", "target", "debug", `export_db_to_pgn${extension}`);
@@ -292,8 +354,12 @@ function getDatabaseRoots() {
     });
 }
 
+function getAppIdentifier() {
+  return typeof tauriConfig?.identifier === "string" ? tauriConfig.identifier : null;
+}
+
 function getDesktopAppDatabaseRoot() {
-  const identifier = typeof tauriConfig?.identifier === "string" ? tauriConfig.identifier : "org.encroissant.app";
+  const identifier = getAppIdentifier() || "org.encroissant.app";
   return join(getRoamingAppDataDir(), identifier, "db");
 }
 
@@ -381,6 +447,14 @@ function normalizePath(path) {
   return path.split(sep).join("/");
 }
 
+function normalizeAbsolutePath(path) {
+  return resolve(path).replace(/\\/g, "/").replace(/\/+$/g, "").toLowerCase();
+}
+
+function isSameOrDescendantAbsolutePath(path, parent) {
+  return path === parent || path.startsWith(`${parent}/`);
+}
+
 function encodePath(path) {
   return path.split("/").map(encodeURIComponent).join("/");
 }
@@ -418,6 +492,14 @@ function areFileManifestsEqual(a, b) {
     ) {
       return false;
     }
+  }
+  return true;
+}
+
+function areStringArraysEqual(a, b) {
+  if (!Array.isArray(a) || a.length !== b.length) return false;
+  for (let i = 0; i < b.length; i += 1) {
+    if (a[i] !== b[i]) return false;
   }
   return true;
 }

@@ -59,6 +59,7 @@ import {
   IconExternalLink,
   IconFileText,
   IconFolder,
+  IconPinned,
   IconPlayerPause,
   IconPlayerPlay,
   IconRefresh,
@@ -6576,10 +6577,10 @@ function FilesWorkspace({
                   >
                     <Group justify="space-between" gap="xs" wrap="nowrap">
                       <Box miw={0}>
-                        <Text fw={700} truncate>
+                        <Text fw={700} size="xs" truncate>
                           {database.name}
                         </Text>
-                        <Text size="xs" c="dimmed" truncate>
+                        <Text size="0.66rem" c="dimmed" truncate>
                           {database.gameCount} games - {formatBytes(database.sizeBytes)}
                         </Text>
                       </Box>
@@ -6591,7 +6592,7 @@ function FilesWorkspace({
                           deleteDatabase(database);
                         }}
                       >
-                        <IconTrash size={16} />
+                        <IconTrash size={14} />
                       </ActionIcon>
                     </Group>
                   </button>
@@ -6632,10 +6633,10 @@ function FilesWorkspace({
                         onClick={() => setSelectedGameId(game.id)}
                         type="button"
                       >
-                        <Text fw={700} truncate>
+                        <Text fw={700} size="xs" truncate>
                           {game.white} - {game.black}
                         </Text>
-                        <Text size="xs" c="dimmed" truncate>
+                        <Text size="0.66rem" c="dimmed" truncate>
                           {formatWebDate(game.date) || "undated"} - {game.result} -{" "}
                           {game.moves.length} plies
                           {variationMoves > 0 ? ` + ${variationMoves} variation plies` : ""}
@@ -6794,15 +6795,16 @@ function HostedFilesPanel({
               >
                 <Group gap="xs" wrap="nowrap">
                   {entry.type === "directory" ? (
-                    <IconFolder size={18} />
+                    <IconFolder className={classes.listMainIcon} size={14} />
                   ) : (
-                    <IconFileText size={18} />
+                    <IconFileText className={classes.listMainIcon} size={14} />
                   )}
+                  {entry.pinned && <IconPinned className={classes.listPinIcon} size={12} />}
                   <Box miw={0}>
-                    <Text fw={700} truncate>
+                    <Text fw={700} size="xs" truncate>
                       {entry.name}
                     </Text>
-                    <Text size="xs" c="dimmed" truncate>
+                    <Text size="0.66rem" c="dimmed" truncate>
                       {entry.type === "directory"
                         ? entry.directPgnFileCount > 0
                           ? `${entry.directPgnFileCount} PGN ${entry.directPgnFileCount === 1 ? "file" : "files"}`

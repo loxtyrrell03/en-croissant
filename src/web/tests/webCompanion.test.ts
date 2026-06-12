@@ -1112,6 +1112,69 @@ describe("web companion PGN prep index", () => {
         expect(getHostedPgnFilesInPath(library, "Prep")).toHaveLength(1);
     });
 
+    test("sorts hosted pinned folders and files before unpinned siblings", () => {
+        const library: WebHostedLibrary = {
+            available: true,
+            manifest: {
+                version: 1,
+                generatedAt: "2026-06-12T12:00:00.000Z",
+                sourceName: "EnCroissant",
+                pinnedPaths: ["Prep/Pinned folder", "Prep/pinned file.pgn"],
+                files: [
+                    {
+                        type: "file",
+                        name: "regular folder game",
+                        filename: "regular folder game.pgn",
+                        extension: "pgn",
+                        path: "Prep/Regular folder/regular folder game.pgn",
+                        url: "files/Prep/Regular%20folder/regular%20folder%20game.pgn",
+                        lastModified: 1,
+                        sizeBytes: 10,
+                    },
+                    {
+                        type: "file",
+                        name: "pinned folder game",
+                        filename: "pinned folder game.pgn",
+                        extension: "pgn",
+                        path: "Prep/Pinned folder/pinned folder game.pgn",
+                        url: "files/Prep/Pinned%20folder/pinned%20folder%20game.pgn",
+                        lastModified: 2,
+                        sizeBytes: 20,
+                    },
+                    {
+                        type: "file",
+                        name: "regular file",
+                        filename: "regular file.pgn",
+                        extension: "pgn",
+                        path: "Prep/regular file.pgn",
+                        url: "files/Prep/regular%20file.pgn",
+                        lastModified: 3,
+                        sizeBytes: 30,
+                    },
+                    {
+                        type: "file",
+                        name: "pinned file",
+                        filename: "pinned file.pgn",
+                        extension: "pgn",
+                        path: "Prep/pinned file.pgn",
+                        url: "files/Prep/pinned%20file.pgn",
+                        lastModified: 4,
+                        sizeBytes: 40,
+                    },
+                ],
+            },
+        };
+
+        const prep = listHostedLibraryPath(library, "Prep");
+
+        expect(prep?.entries.map((entry) => [entry.name, Boolean(entry.pinned)])).toEqual([
+            ["Pinned folder", true],
+            ["pinned file", true],
+            ["Regular folder", false],
+            ["regular file", false],
+        ]);
+    });
+
     test("identifies synced database folders without treating broad parents as direct databases", () => {
         const library: WebHostedLibrary = {
             available: true,
