@@ -6,6 +6,7 @@ import "@/styles/global.css";
 
 import { Chessground } from "@lichess-org/chessground";
 import type { Api } from "@lichess-org/chessground/api";
+import type { DrawShape } from "@lichess-org/chessground/draw";
 import type { Key } from "@lichess-org/chessground/types";
 import {
   ActionIcon,
@@ -83,6 +84,7 @@ import {
   type SetStateAction,
 } from "react";
 import { positionFromFen } from "@/utils/chessops";
+import { getWinChance, normalizeScore } from "@/utils/score";
 import {
   normalizePrepBuilderSettings,
   type PrepBuilderEngineMove,
@@ -285,6 +287,16 @@ const WEB_DATABASE_STATS_SORT_OPTIONS: { label: string; value: WebDatabaseStatsS
 ];
 const DEFAULT_WEB_PREP_MIN_GAMES = 1;
 const DEFAULT_WEB_PREP_MOVE_LIMIT = 12;
+const WEB_ENGINE_ARROW_LARGE_BRUSH = 11;
+const WEB_ENGINE_ARROW_MEDIUM_BRUSH = 7.5;
+const WEB_ENGINE_ARROW_SMALL_BRUSH = 4;
+const WEB_ENGINE_ARROW_WIN_CHANCE_LIMIT = 10;
+const WEB_ENGINE_ARROW_COLORS = [
+  { strong: "blue", pale: "paleBlue" },
+  { strong: "green", pale: "paleGreen" },
+  { strong: "red", pale: "paleRed" },
+  { strong: "yellow", pale: "yellow" },
+] as const;
 
 type WebEnginePanelSettings = {
   enabled: boolean;
@@ -955,6 +967,10 @@ function BoardWorkspace({
   setLichessToken: (value: string) => void;
 }) {
   const [panelMode, setPanelMode] = useState<BoardPanelMode>("moves");
+  const [engineArrowAnalysis, setEngineArrowAnalysis] = useState<{
+    fen: string;
+    lines: WebEngineLine[];
+  } | null>(null);
   const board = state.board ?? createEmptyWebBoardState();
   const activeLine = activePrep?.line ?? board.line;
   const startFen = activePrep?.startFen ?? board.startFen;
@@ -1025,6 +1041,16 @@ function BoardWorkspace({
             .slice(0, prepMoveLimit)
         : [],
     [activePrep, prepBranchFen, prepGames, prepMoveLimit, prepMinGames, prepRootEngineMoves],
+  );
+  const handleEngineAnalysisLinesChange = useCallback((fen: string, lines: WebEngineLine[]) => {
+    setEngineArrowAnalysis(lines.length > 0 ? { fen, lines } : null);
+  }, []);
+  const engineArrowShapes = useMemo(
+    () =>
+      panelMode === "engine" && engineArrowAnalysis?.fen === currentFen
+        ? getWebEngineArrowShapes(engineArrowAnalysis.lines, currentFen)
+        : [],
+    [currentFen, engineArrowAnalysis, panelMode],
   );
 
   useEffect(() => {
@@ -1224,36 +1250,13 @@ function BoardWorkspace({
         fen={currentFen}
         orientation={orientation}
         lastMoveUci={activeLastMove}
+        engineArrowShapes={engineArrowShapes}
         onMove={handleBoardMove}
       />
 
       <BoardStartActions activeMode={panelMode} onChooseMode={(mode) => setPanelMode(mode)} />
 
       <Box className={classes.underBoardPanel}>
-        <Group className={classes.underBoardTop} justify="space-between" gap="xs" wrap="nowrap">
-          <Box miw={0}>
-            <Text size="sm" fw={700} truncate>
-              {getBoardPanelModeLabel(panelMode)}
-            </Text>
-            <Text size="xs" c="dimmed" truncate>
-              {normalizeWebFen(currentFen)}
-            </Text>
-          </Box>
-          <SegmentedControl
-            aria-label="Under-board panel"
-            className={classes.underBoardModeSwitch}
-            size="xs"
-            value={panelMode}
-            onChange={(value) => setPanelMode(value as BoardPanelMode)}
-            data={[
-              { value: "moves", label: "Moves" },
-              { value: "database", label: "Database" },
-              { value: "prep", label: "Prep" },
-              { value: "engine", label: "Engine" },
-            ]}
-          />
-        </Group>
-
         <Box className={classes.underBoardContent}>
           {panelMode === "moves" ? (
             <MovesUnderBoardPanel
@@ -1296,7 +1299,11 @@ function BoardWorkspace({
               setLichessToken={setLichessToken}
             />
           ) : (
-            <EngineUnderBoardPanel currentFen={currentFen} onPlayMove={playEngineMove} />
+            <EngineUnderBoardPanel
+              currentFen={currentFen}
+              onAnalysisLinesChange={handleEngineAnalysisLinesChange}
+              onPlayMove={playEngineMove}
+            />
           )}
         </Box>
       </Box>
@@ -2225,9 +2232,11 @@ type WebEngineCloudStatus = "off" | "loading" | "ready" | "miss" | "error";
 
 function EngineUnderBoardPanel({
   currentFen,
+  onAnalysisLinesChange,
   onPlayMove,
 }: {
   currentFen: string;
+  onAnalysisLinesChange: (fen: string, lines: WebEngineLine[]) => void;
   onPlayMove: (uci: string) => void;
 }) {
   const [settings, setSettings] = usePersistentJson(
@@ -2315,6 +2324,14 @@ function EngineUnderBoardPanel({
   }, [currentFen, settings.depth, settings.enabled, settings.multipv, settings.useCloud]);
 
   const displayLines = stockfishLines.length > 0 ? stockfishLines : cloudLines;
+  useEffect(() => {
+    onAnalysisLinesChange(currentFen, settings.enabled ? displayLines : []);
+  }, [currentFen, displayLines, onAnalysisLinesChange, settings.enabled]);
+
+  useEffect(() => {
+    return () => onAnalysisLinesChange(currentFen, []);
+  }, [currentFen, onAnalysisLinesChange]);
+
   const topLine = displayLines[0] ?? null;
   const progress = getWebEngineProgress({
     enabled: settings.enabled,
@@ -6402,11 +6419,13 @@ function WebChessboard({
   fen,
   orientation,
   lastMoveUci,
+  engineArrowShapes,
   onMove,
 }: {
   fen: string;
   orientation: WebColor;
   lastMoveUci: string | null;
+  engineArrowShapes: DrawShape[];
   onMove: (uci: string) => void;
 }) {
   const boardRef = useRef<HTMLDivElement | null>(null);
@@ -6443,11 +6462,16 @@ function WebChessboard({
       draggable: {
         enabled: true,
       },
+      drawable: {
+        enabled: true,
+        visible: true,
+        autoShapes: engineArrowShapes,
+      },
       animation: {
         enabled: true,
       },
     };
-  }, [fen, lastMoveUci, orientation]);
+  }, [engineArrowShapes, fen, lastMoveUci, orientation]);
 
   const initialConfigRef = useRef(config);
 
@@ -6576,6 +6600,52 @@ function UnderBoardEmpty({ icon, title, text }: { icon: ReactNode; title: string
   );
 }
 
+function getWebEngineArrowShapes(lines: WebEngineLine[], fen: string): DrawShape[] {
+  const [position] = positionFromFen(fen);
+  if (!position || lines.length === 0) return [];
+
+  const sortedLines = [...lines]
+    .filter((line) => line.uciMoves.length > 0)
+    .sort((a, b) => a.multipv - b.multipv);
+  const bestLine = sortedLines[0];
+  if (!bestLine) return [];
+
+  const bestWinChance = getWinChance(normalizeScore(bestLine.score, position.turn));
+  const shapes: DrawShape[] = [];
+  for (const [index, line] of sortedLines.entries()) {
+    const move = parseUci(line.uciMoves[0]);
+    if (!move || !isNormal(move) || !position.isLegal(move)) continue;
+
+    const winChance = getWinChance(normalizeScore(line.score, position.turn));
+    const winChanceDrop = bestWinChance - winChance;
+    if (winChanceDrop >= WEB_ENGINE_ARROW_WIN_CHANCE_LIMIT) continue;
+
+    const from = makeSquare(move.from);
+    const to = makeSquare(move.to);
+    if (!from || !to || shapes.some((shape) => shape.orig === from && shape.dest === to)) {
+      continue;
+    }
+
+    const color = WEB_ENGINE_ARROW_COLORS[0];
+    shapes.push({
+      orig: from as Key,
+      dest: to as Key,
+      brush: index === 0 ? color.strong : color.pale,
+      modifiers: {
+        lineWidth: getWebEngineArrowLineWidth(winChanceDrop),
+      },
+    });
+  }
+
+  return shapes;
+}
+
+function getWebEngineArrowLineWidth(winChanceDrop: number) {
+  if (winChanceDrop < 2.5) return WEB_ENGINE_ARROW_LARGE_BRUSH;
+  if (winChanceDrop < 5) return WEB_ENGINE_ARROW_MEDIUM_BRUSH;
+  return WEB_ENGINE_ARROW_SMALL_BRUSH;
+}
+
 function makeBoardMoveUci(fen: string, orig: Key, dest: Key) {
   const [position] = positionFromFen(fen);
   if (!position || orig === "a0" || dest === "a0") return null;
@@ -6611,13 +6681,6 @@ function clampCursor(cursor: number, lineLength: number) {
 
 function prepBoardTitle(prep: WebPrepWorkspace) {
   return getWebPrepWorkspaceName(prep);
-}
-
-function getBoardPanelModeLabel(mode: BoardPanelMode) {
-  if (mode === "moves") return "Moves";
-  if (mode === "database") return "Database";
-  if (mode === "prep") return "Prep";
-  return "Engine";
 }
 
 function downloadText(filename: string, text: string) {
