@@ -154,6 +154,7 @@ import type {
   WebPrepTemporarySource,
   WebPrepWorkspace,
 } from "./model";
+import { getWebMovePanelBranchLine, getWebMovePanelDisplayLines } from "./movePanel";
 import {
   fetchWebOnlineGames,
   getWebOnlineImportTitle,
@@ -1505,9 +1506,9 @@ function MovesUnderBoardPanel({
   sourceTitle: string;
   sourceComments: string[];
 }) {
-  const rootAlternatives = rootLines.filter(
-    (rootLine) => rootLine.length > 0 && !webLinesStartSame(rootLine, line),
-  );
+  const displayLines = getWebMovePanelDisplayLines(line, rootLines);
+  const primaryLine = displayLines[0] ?? [];
+  const rootAlternatives = displayLines.slice(1);
 
   const renderLine = (
     moves: WebPrepLineMove[],
@@ -1518,6 +1519,7 @@ function MovesUnderBoardPanel({
     moves.map((move, index) => {
       const beforeMoveLine = [...parentLine, ...moves.slice(0, index)];
       const lineToMove = [...beforeMoveLine, move];
+      const fullBranchLine = getWebMovePanelBranchLine(parentLine, moves);
       const annotations = move.annotations ?? [];
       const startingComments = move.startingComments ?? [];
       const comments = move.comments ?? [];
@@ -1548,7 +1550,7 @@ function MovesUnderBoardPanel({
                   setCursor(lineToMove.length);
                   return;
                 }
-                onChooseLine(lineToMove, lineToMove.length);
+                onChooseLine(fullBranchLine, lineToMove.length);
               }}
             >
               {formatMovePrefix(move, index === 0)}
@@ -1628,12 +1630,13 @@ function MovesUnderBoardPanel({
         </Box>
       )}
       <Box className={classes.moveList}>
-        {line.length === 0 && rootAlternatives.length === 0 ? (
+        {displayLines.length === 0 ? (
           <Text size="sm" c="dimmed">
             Start
           </Text>
         ) : (
           <>
+            {primaryLine.length > 0 ? renderLine(primaryLine, [], "main", 0) : null}
             {rootAlternatives.map((variation, variationIndex) => (
               <Box
                 key={`root-variation-${variationIndex}`}
@@ -1645,7 +1648,6 @@ function MovesUnderBoardPanel({
                 </Box>
               </Box>
             ))}
-            {renderLine(line, [], "main", 0)}
           </>
         )}
       </Box>
@@ -1659,11 +1661,6 @@ function formatMovePrefix(move: WebPrepLineMove, isFirstInRenderedLine: boolean)
   const label = Number.isFinite(moveNumber) && moveNumber > 0 ? moveNumber : null;
   if (getFenColor(move.fenBefore) === "white") return label ? `${label}. ` : "";
   return isFirstInRenderedLine && label ? `${label}... ` : "";
-}
-
-function webLinesStartSame(left: WebPrepLineMove[], right: WebPrepLineMove[]) {
-  if (left.length === 0 || right.length === 0) return left.length === right.length;
-  return webMovesMatch(left[0], right[0]);
 }
 
 function webLineStartsWith(line: WebPrepLineMove[], prefix: WebPrepLineMove[]) {

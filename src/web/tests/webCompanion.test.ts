@@ -47,7 +47,13 @@ import {
     normalizeWebPrepMoveSortDefaults,
     type WebPrepSetupSelection,
 } from "@/web/prepSettings";
-import { countWebGameVariationMoves, parsePgnDatabase, webGameToLine } from "@/web/pgn";
+import { getWebMovePanelBranchLine, getWebMovePanelDisplayLines } from "@/web/movePanel";
+import {
+    countWebGameVariationMoves,
+    parsePgnDatabase,
+    webGameToLine,
+    webGameToRootLines,
+} from "@/web/pgn";
 import { createEmptyWebState } from "@/web/storage";
 
 describe("web companion PGN prep index", () => {
@@ -156,6 +162,36 @@ describe("web companion PGN prep index", () => {
         expect(countWebGameVariationMoves(game)).toBe(4);
         expect(initialStats.map((stat) => stat.move).sort()).toEqual(["d4", "e4"]);
         expect(afterE4Stats.map((stat) => stat.move).sort()).toEqual(["c5", "e5"]);
+    });
+
+    test("keeps the source mainline visible after selecting a phone variation", () => {
+        const imported = parsePgnDatabase(
+            "variation-selection.pgn",
+            `
+[Event "Variation selection"]
+[Site "?"]
+[Date "2026.06.12"]
+[Round "?"]
+[White "Me"]
+[Black "Opponent"]
+[Result "*"]
+
+1. e4 (1. d4 d5) e5 (1... c5 2. Nf3) 2. Nf3 *
+`,
+            1,
+        );
+        const game = imported.games[0];
+        const rootLines = webGameToRootLines(game);
+        const selectedVariationLine = getWebMovePanelBranchLine(
+            [rootLines[0][0]],
+            rootLines[0][0].variations?.[0] ?? [],
+        );
+        const displayLines = getWebMovePanelDisplayLines(selectedVariationLine, rootLines);
+
+        expect(selectedVariationLine.map((move) => move.san)).toEqual(["e4", "c5", "Nf3"]);
+        expect(displayLines[0].map((move) => move.san)).toEqual(["e4", "e5", "Nf3"]);
+        expect(displayLines[0][0].variations?.[0].map((move) => move.san)).toEqual(["c5", "Nf3"]);
+        expect(displayLines[1].map((move) => move.san)).toEqual(["d4", "d5"]);
     });
 
     test("builds Lichess All explorer URLs with desktop-style filters", () => {

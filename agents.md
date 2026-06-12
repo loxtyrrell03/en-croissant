@@ -2034,6 +2034,11 @@ from 2026-04-24 through 2026-05-03.
   branches inline and can jump the board onto a tapped branch, and local
   Database/Prep indexing walks the full tree so repertoire files contribute
   variation moves to stats.
+- Phone Moves variation selection keeps the source PGN tree separate from the
+  active board branch. When a user taps a variation in a loaded file, the board
+  line switches to the full selected branch and cursor, but the Moves panel
+  still renders the original mainline plus root/nested variations instead of
+  replacing the visible file with the selected branch prefix.
 - On 2026-06-12, the phone web header was compressed so the board workspace
   starts higher in the first viewport. Narrow screens now use a single-row
   sticky header with the subtitle hidden, smaller title/icon/action sizing, and
