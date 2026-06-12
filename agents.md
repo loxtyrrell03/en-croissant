@@ -2039,6 +2039,10 @@ from 2026-04-24 through 2026-05-03.
   line switches to the full selected branch and cursor, but the Moves panel
   still renders the original mainline plus root/nested variations instead of
   replacing the visible file with the selected branch prefix.
+- The phone board title for an opened file/database now comes from the source
+  file or database name instead of the loaded game's White/Black player pair.
+  Keep the top board title source-oriented so browsing multi-game PGNs and prep
+  files does not make the file identity disappear.
 - On 2026-06-12, the phone web header was compressed so the board workspace
   starts higher in the first viewport. Narrow screens now use a single-row
   sticky header with the subtitle hidden, smaller title/icon/action sizing, and

@@ -224,6 +224,7 @@ import {
   loadWebState,
   saveWebState,
 } from "./storage";
+import { getWebBoardSourceTitle } from "./boardTitle";
 import { formatWebEngineScore } from "./engineScore";
 import { analyzeWithWebStockfish18, stopWebStockfish18Search } from "./stockfishEngine";
 
@@ -481,7 +482,7 @@ export default function WebApp() {
         startFen: INITIAL_FEN,
         line: webGameToLine(game),
         cursor: game.moves.length,
-        sourceTitle: `${game.white} - ${game.black}`,
+        sourceTitle: getWebBoardSourceTitle(game, current.databases),
         sourceDatabaseId: game.databaseId,
         sourceGameId: game.id,
         sourceComments: game.comments ?? [],

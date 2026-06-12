@@ -10,6 +10,7 @@ import {
     needsHostedDatabaseRefresh,
     resolveWebDatabaseSourceId,
 } from "@/web/databaseSync";
+import { getWebBoardSourceTitle } from "@/web/boardTitle";
 import { formatWebEngineScore, normalizeWebEngineScoreForWhite } from "@/web/engineScore";
 import { buildWebExplorerUrl } from "@/web/explorer";
 import {
@@ -113,6 +114,28 @@ describe("web companion PGN prep index", () => {
             comments: ["Take the center"],
         });
         expect(game.pgn).toContain("Take the center [%clk 0:09:58]");
+    });
+
+    test("uses the file title for the phone board source title", () => {
+        const imported = parsePgnDatabase(
+            "opening-notes.pgn",
+            `
+[Event "Training game"]
+[Site "?"]
+[Date "2026.06.12"]
+[Round "?"]
+[White "White Player"]
+[Black "Black Player"]
+[Result "*"]
+
+1. e4 *
+`,
+            1,
+        );
+        const game = imported.games[0];
+
+        expect(getWebBoardSourceTitle(game, [imported.database])).toBe("opening-notes.pgn");
+        expect(getWebBoardSourceTitle(game, [])).toBe("opening-notes.pgn");
     });
 
     test("keeps PGN variations visible and indexed for phone game files", () => {
