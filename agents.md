@@ -2048,6 +2048,18 @@ from 2026-04-24 through 2026-05-03.
   sticky header with the subtitle hidden, smaller title/icon/action sizing, and
   reduced top content padding; the board title row is also tightened so more of
   the under-board panel is visible without scrolling.
+- On 2026-06-12, started phone Database and Prep views gained compact sort
+  dropdowns above the move rows. Keep these controls available after Start so
+  users can switch between blended strength, most played, results, and related
+  row orderings without returning to setup.
+- On 2026-06-12, Database and Prep move rows gained inline WDL bars at the same
+  vertical level as the SAN, using the fork-style white/draw/black progress
+  design. Keep the result visual tied to the move identity in compact phone
+  rows and table move cells instead of leaving phone WDL as text-only metadata.
+- On 2026-06-12, phone Engine settings replaced the editable Lines/Depth number
+  inputs with compact button steppers. This keeps arrow taps from focusing a
+  text field, selecting the value, opening the keyboard, or triggering mobile
+  input zoom while preserving quick one-step changes.
 
 ## Verification Expectations
 

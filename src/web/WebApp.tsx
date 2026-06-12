@@ -291,6 +291,56 @@ const WEB_DATABASE_STATS_SORT_OPTIONS: { label: string; value: WebDatabaseStatsS
   { label: "Move", value: "move" },
   { label: "Move descending", value: "moveDesc" },
 ];
+type WebPrepSortSelectOption<TColumn extends WebPrepSortColumn = WebPrepSortColumn> = {
+  label: string;
+  value: string;
+  sort: WebPrepSortState<TColumn>;
+};
+const WEB_PREP_STARTED_OPPONENT_SORT_OPTIONS: WebPrepSortSelectOption<WebPrepOpponentSortColumn>[] =
+  [
+    {
+      label: "Blended strength",
+      value: "strength:desc",
+      sort: { column: "strength", direction: "desc" },
+    },
+    {
+      label: "Blended weakness",
+      value: "strength:asc",
+      sort: { column: "strength", direction: "asc" },
+    },
+    { label: "Most played", value: "games:desc", sort: { column: "games", direction: "desc" } },
+    { label: "Fewest played", value: "games:asc", sort: { column: "games", direction: "asc" } },
+    {
+      label: "Best results",
+      value: "results:desc",
+      sort: { column: "results", direction: "desc" },
+    },
+    { label: "Worst results", value: "results:asc", sort: { column: "results", direction: "asc" } },
+    { label: "Best covered", value: "prep:desc", sort: { column: "prep", direction: "desc" } },
+    { label: "Needs prep", value: "prep:asc", sort: { column: "prep", direction: "asc" } },
+    { label: "Open first", value: "state:desc", sort: { column: "state", direction: "desc" } },
+    { label: "Move A-Z", value: "move:asc", sort: { column: "move", direction: "asc" } },
+    { label: "Move Z-A", value: "move:desc", sort: { column: "move", direction: "desc" } },
+  ];
+const WEB_PREP_STARTED_CANDIDATE_SORT_OPTIONS: WebPrepSortSelectOption<WebPrepCandidateSortColumn>[] =
+  [
+    {
+      label: "Blended strength",
+      value: "strength:desc",
+      sort: { column: "strength", direction: "desc" },
+    },
+    {
+      label: "Blended weakness",
+      value: "strength:asc",
+      sort: { column: "strength", direction: "asc" },
+    },
+    { label: "Most played", value: "games:desc", sort: { column: "games", direction: "desc" } },
+    { label: "Fewest played", value: "games:asc", sort: { column: "games", direction: "asc" } },
+    { label: "Best WDL", value: "results:desc", sort: { column: "results", direction: "desc" } },
+    { label: "Worst WDL", value: "results:asc", sort: { column: "results", direction: "asc" } },
+    { label: "Move A-Z", value: "move:asc", sort: { column: "move", direction: "asc" } },
+    { label: "Move Z-A", value: "move:desc", sort: { column: "move", direction: "desc" } },
+  ];
 const DEFAULT_WEB_PREP_MIN_GAMES = 1;
 const DEFAULT_WEB_PREP_MOVE_LIMIT = 12;
 const WEB_ENGINE_ARROW_LARGE_BRUSH = 11;
@@ -2492,18 +2542,32 @@ function DatabaseUnderBoardPanel({
 
       {databaseStarted ? (
         <Box className={classes.databaseStartedMoves}>
-          <Tooltip label="Return to database settings">
-            <ActionIcon
-              aria-label="Return to database settings"
-              className={classes.databaseStartedExit}
-              size="sm"
-              variant="filled"
-              color="dark"
-              onClick={() => setStoredPanelStage("setup")}
-            >
-              <IconX size={15} />
-            </ActionIcon>
-          </Tooltip>
+          <Group gap={4} wrap="nowrap" justify="flex-end" className={classes.startedMovesToolbar}>
+            <Select
+              aria-label="Database move sort"
+              className={classes.startedSortSelect}
+              size="xs"
+              value={databaseStatsSort}
+              data={WEB_DATABASE_STATS_SORT_OPTIONS}
+              onChange={(value) =>
+                setStoredStatsSort((value as WebDatabaseStatsSort | null) ?? "games")
+              }
+              allowDeselect={false}
+              leftSection={<IconArrowsSort size={14} />}
+              comboboxProps={{ withinPortal: true }}
+            />
+            <Tooltip label="Return to database settings">
+              <ActionIcon
+                aria-label="Return to database settings"
+                size="sm"
+                variant="filled"
+                color="dark"
+                onClick={() => setStoredPanelStage("setup")}
+              >
+                <IconX size={15} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
           {databaseContent}
         </Box>
       ) : null}
@@ -2513,6 +2577,70 @@ function DatabaseUnderBoardPanel({
 
 type WebEnginePanelStatus = "idle" | "loading" | "running" | "complete" | "error";
 type WebEngineCloudStatus = "off" | "loading" | "ready" | "miss" | "error";
+
+function EngineNumberStepper({
+  label,
+  value,
+  min,
+  max,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  disabled?: boolean;
+  onChange: (value: number) => void;
+}) {
+  const safeValue = clampWholeNumber(value, min, max, value);
+  const updateValue = (delta: number) => {
+    onChange(clampWholeNumber(safeValue + delta, min, max, safeValue));
+  };
+
+  return (
+    <Box className={classes.engineStepControl}>
+      <Text size="xs" c="dimmed" className={classes.engineStepLabel}>
+        {label}
+      </Text>
+      <Box
+        className={classes.engineStepShell}
+        aria-label={`${label} ${safeValue}`}
+        aria-disabled={disabled || undefined}
+      >
+        <Text className={classes.engineStepValue} aria-live="polite">
+          {safeValue}
+        </Text>
+        <Box className={classes.engineStepButtons}>
+          <ActionIcon
+            aria-label={`Increase ${label.toLowerCase()}`}
+            className={classes.engineStepButton}
+            disabled={disabled || safeValue >= max}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => updateValue(1)}
+            radius={0}
+            size="xs"
+            variant="subtle"
+          >
+            <IconChevronUp size={12} />
+          </ActionIcon>
+          <ActionIcon
+            aria-label={`Decrease ${label.toLowerCase()}`}
+            className={classes.engineStepButton}
+            disabled={disabled || safeValue <= min}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => updateValue(-1)}
+            radius={0}
+            size="xs"
+            variant="subtle"
+          >
+            <IconChevronDown size={12} />
+          </ActionIcon>
+        </Box>
+      </Box>
+    </Box>
+  );
+}
 
 function EngineUnderBoardPanel({
   currentFen,
@@ -2720,25 +2848,21 @@ function EngineUnderBoardPanel({
               size="xs"
               disabled={!settings.enabled}
             />
-            <NumberInput
+            <EngineNumberStepper
               label="Lines"
               value={settings.multipv}
-              onChange={(value) => updateSettings({ multipv: Number(value) || 1 })}
               min={1}
               max={8}
-              step={1}
-              size="xs"
               disabled={!settings.enabled}
+              onChange={(multipv) => updateSettings({ multipv })}
             />
-            <NumberInput
+            <EngineNumberStepper
               label="Depth"
               value={settings.depth}
-              onChange={(value) => updateSettings({ depth: Number(value) || 14 })}
               min={6}
               max={30}
-              step={1}
-              size="xs"
               disabled={!settings.enabled}
+              onChange={(depth) => updateSettings({ depth })}
             />
           </Group>
         </Box>
@@ -3312,6 +3436,22 @@ function PrepUnderBoardPanel({
     opponent: activePrep?.opponent ?? opponent,
     userColor: activePrep?.userColor ?? userColor,
     firstLocalSourceId,
+  };
+  const startedPrepSortOptions = opponentToMove
+    ? WEB_PREP_STARTED_OPPONENT_SORT_OPTIONS
+    : WEB_PREP_STARTED_CANDIDATE_SORT_OPTIONS;
+  const startedPrepSortValue = getWebPrepSortSelectValue(
+    opponentToMove ? prepSort : prepCandidateSort,
+  );
+  const updateStartedPrepSort = (value: string | null) => {
+    if (opponentToMove) {
+      const nextSort = getWebPrepSortFromSelect(value, WEB_PREP_STARTED_OPPONENT_SORT_OPTIONS);
+      if (nextSort) setPrepSort(nextSort);
+      return;
+    }
+
+    const nextSort = getWebPrepSortFromSelect(value, WEB_PREP_STARTED_CANDIDATE_SORT_OPTIONS);
+    if (nextSort) setPrepCandidateSort(nextSort);
   };
 
   const persistPrepSetupSelection = (selection: WebPrepSetupSelection) => {
@@ -4629,18 +4769,30 @@ function PrepUnderBoardPanel({
             </Text>
           ) : null}
           <Box className={classes.prepTrainingMoves}>
-            <Tooltip label="Return to prep settings">
-              <ActionIcon
-                aria-label="Return to prep settings"
-                className={classes.prepTrainingExit}
-                size="sm"
-                variant="filled"
-                color="dark"
-                onClick={() => setSetupOpen(true)}
-              >
-                <IconX size={15} />
-              </ActionIcon>
-            </Tooltip>
+            <Group gap={4} wrap="nowrap" justify="flex-end" className={classes.startedMovesToolbar}>
+              <Select
+                aria-label="Prep move sort"
+                className={classes.startedSortSelect}
+                size="xs"
+                value={startedPrepSortValue}
+                data={startedPrepSortOptions.map(({ label, value }) => ({ label, value }))}
+                onChange={updateStartedPrepSort}
+                allowDeselect={false}
+                leftSection={<IconArrowsSort size={14} />}
+                comboboxProps={{ withinPortal: true }}
+              />
+              <Tooltip label="Return to prep settings">
+                <ActionIcon
+                  aria-label="Return to prep settings"
+                  size="sm"
+                  variant="filled"
+                  color="dark"
+                  onClick={() => setSetupOpen(true)}
+                >
+                  <IconX size={15} />
+                </ActionIcon>
+              </Tooltip>
+            </Group>
             <CompactMoveTable
               stats={displayedStats}
               preparedMoves={activePrep.preparedMoves}
@@ -5306,21 +5458,18 @@ function CompactMoveTable({
               }}
             >
               <Group justify="space-between" align="flex-start" gap="xs" wrap="nowrap">
-                <Box className={classes.phonePrepMoveTitle}>
-                  <Group gap={6} wrap="nowrap" align="center">
-                    <Text fw={800} className={classes.phonePrepMove}>
-                      {stat.move}
-                    </Text>
-                    {showState ? (
+                <MoveWithInlineWdl
+                  stat={stat}
+                  meta={metaLabel}
+                  variant="phone"
+                  statusBadge={
+                    showState ? (
                       <Badge color={webPrepStatusColor(status)} variant="light" size="xs">
                         {webPrepStatusLabel(status)}
                       </Badge>
-                    ) : null}
-                  </Group>
-                  <Text size="xs" c="dimmed" className={classes.phonePrepMeta}>
-                    {metaLabel}
-                  </Text>
-                </Box>
+                    ) : null
+                  }
+                />
                 <Group
                   gap={2}
                   justify="flex-end"
@@ -5485,12 +5634,11 @@ function CompactMoveTable({
                 onClick={() => onPlayMove(stat)}
               >
                 <Table.Td>
-                  <Text size="sm" fw={700}>
-                    {stat.move}
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    {isPrepTable ? formatWebPrepLastPlayed(stat.lastPlayed) : stat.sourceLabel}
-                  </Text>
+                  <MoveWithInlineWdl
+                    stat={stat}
+                    meta={isPrepTable ? formatWebPrepLastPlayed(stat.lastPlayed) : stat.sourceLabel}
+                    variant="table"
+                  />
                 </Table.Td>
                 {showState ? (
                   <>
@@ -5624,6 +5772,59 @@ function CompactMoveTable({
   );
 }
 
+function MoveWithInlineWdl({
+  stat,
+  meta,
+  variant,
+  statusBadge,
+}: {
+  stat: WebPrepMoveStat;
+  meta: string | null | undefined;
+  variant: "phone" | "table";
+  statusBadge?: ReactNode;
+}) {
+  const isPhone = variant === "phone";
+  return (
+    <Box className={isPhone ? classes.phonePrepMoveTitle : classes.tableMoveTitle}>
+      <Group className={classes.moveWithWdlLine} gap={isPhone ? 6 : 8} wrap="nowrap" align="center">
+        <Text
+          size={isPhone ? undefined : "sm"}
+          fw={isPhone ? 800 : 700}
+          className={isPhone ? classes.phonePrepMove : classes.tableMoveText}
+        >
+          {stat.move}
+        </Text>
+        <InlineMoveWdlBar stat={stat} variant={variant} />
+        {statusBadge}
+      </Group>
+      {meta ? (
+        <Text size="xs" c="dimmed" className={isPhone ? classes.phonePrepMeta : undefined}>
+          {meta}
+        </Text>
+      ) : null}
+    </Box>
+  );
+}
+
+function InlineMoveWdlBar({
+  stat,
+  variant,
+}: {
+  stat: Pick<WebPrepMoveStat, "white" | "draw" | "black">;
+  variant: "phone" | "table";
+}) {
+  return (
+    <Box
+      aria-label={formatCompactWdl(stat)}
+      className={`${classes.inlineMoveWdlBar} ${
+        variant === "phone" ? classes.phoneInlineMoveWdlBar : classes.tableInlineMoveWdlBar
+      }`}
+    >
+      <PrepResultBar stat={stat} />
+    </Box>
+  );
+}
+
 function SortableWebPrepTh({
   label,
   column,
@@ -5734,9 +5935,6 @@ function PhoneMoveStatsLine({
         {formatPercent(stat.share)}
       </Text>
       {branchStats ? <PrepBranchStatsCell stats={branchStats} compact /> : null}
-      <Text size="xs" c="dimmed" className={classes.phonePrepStatItem}>
-        {formatCompactWdl(stat)}
-      </Text>
     </Group>
   );
 }
@@ -6142,6 +6340,17 @@ function getNextWebPrepSort<TColumn extends WebPrepSortColumn>(
     column,
     direction: getInitialWebPrepSortDirection(column),
   };
+}
+
+function getWebPrepSortSelectValue(sort: WebPrepSortState) {
+  return `${sort.column}:${sort.direction}`;
+}
+
+function getWebPrepSortFromSelect<TColumn extends WebPrepSortColumn>(
+  value: string | null,
+  options: WebPrepSortSelectOption<TColumn>[],
+) {
+  return options.find((option) => option.value === value)?.sort ?? null;
 }
 
 function sortWebPrepMoveStats(
