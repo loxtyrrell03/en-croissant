@@ -21,7 +21,7 @@ const previousManifest = await readPreviousManifest(join(outputRoot, "manifest.j
 const repoRoot = resolve(".");
 const tauriConfig = await readJsonFile(join(repoRoot, "src-tauri", "tauri.conf.json"));
 
-await rm(outputRoot, { recursive: true, force: true });
+await removeGeneratedDirectory(outputRoot);
 await mkdir(filesRoot, { recursive: true });
 
 const files = [];
@@ -46,6 +46,15 @@ await writeFile(join(outputRoot, "manifest.json"), `${JSON.stringify(manifest, n
 
 console.log(`Published ${manifest.files.length} web library files from ${sourceRoot}`);
 console.log(`Output: ${outputRoot}`);
+
+async function removeGeneratedDirectory(path) {
+  await rm(path, {
+    recursive: true,
+    force: true,
+    maxRetries: process.platform === "win32" ? 10 : 0,
+    retryDelay: 100,
+  });
+}
 
 async function collectFiles(directory) {
   const entries = await readdir(directory, { withFileTypes: true }).catch(() => []);
@@ -139,7 +148,7 @@ async function collectDatabaseExports() {
 
     const cached = await readJsonFile(metadataPath);
     if (!isDatabaseCacheFresh(cached, metadata)) {
-      await rm(cacheDir, { recursive: true, force: true });
+      await removeGeneratedDirectory(cacheDir);
       await mkdir(cacheDir, { recursive: true });
       const result = spawnSync(
         exporter,
@@ -159,7 +168,7 @@ async function collectDatabaseExports() {
       if (result.status !== 0) {
         const message = `${result.stderr || result.stdout || "database export failed"}`.trim();
         console.warn(`Skipping ${database.absolutePath}: ${message}`);
-        await rm(cacheDir, { recursive: true, force: true });
+        await removeGeneratedDirectory(cacheDir);
         continue;
       }
 

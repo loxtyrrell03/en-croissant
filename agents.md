@@ -542,6 +542,11 @@ Engine` selector on the phone workspace, and the active panel content starts
   local app commit. The publish step rebuilds and pushes the GitHub Pages phone
   app site, so phone work should not be reported as deployed until it succeeds
   unless the user explicitly defers publication.
+- On 2026-06-12, `scripts/build-web-library.mjs` gained Windows retry options
+  for generated-library directory removal. Large hosted database
+  `position-index/shards` trees can momentarily report `ENOTEMPTY` during
+  cleanup, so future publish-script cleanup should keep resilient `fs.rm`
+  retries rather than hand-deleting generated folders.
 
 ### App Shell
 
