@@ -4148,7 +4148,7 @@ function PrepUnderBoardPanel({
                 </Badge>
               ) : (
                 <Text size="xs" c="dimmed">
-                  Choose a prep source or import public games.
+                  Pick a source or import games.
                 </Text>
               )}
               {selectedPrepSource === "local" && activePrepSourceId && !selectedPrepSourceIsLazy ? (
@@ -4284,8 +4284,8 @@ function PrepUnderBoardPanel({
                 {onlineProgress === null && (
                   <Text size="xs" c="dimmed">
                     {onlineSaveDatabase
-                      ? `Imports public PGNs from ${getWebOnlineSourceLabel(onlineSource)} into the phone database list.`
-                      : `Imports public PGNs from ${getWebOnlineSourceLabel(onlineSource)} and uses them for this prep.`}
+                      ? `Save ${getWebOnlineSourceLabel(onlineSource)} games to Databases.`
+                      : `Use ${getWebOnlineSourceLabel(onlineSource)} games for this prep.`}
                   </Text>
                 )}
               </Group>
@@ -4297,7 +4297,7 @@ function PrepUnderBoardPanel({
       {showSetupStage && !activePrep ? (
         <Stack gap="xs">
           <Text size="xs" c="dimmed">
-            Choose a source and target, then start prep from this board.
+            Pick source, then Start prep.
           </Text>
         </Stack>
       ) : showTrainingStage && activePrep ? (
@@ -4305,7 +4305,7 @@ function PrepUnderBoardPanel({
           <Group justify="space-between" gap="xs" wrap="wrap">
             <Stack gap={1} style={{ minWidth: 0, flex: 1 }}>
               <Text size="xs" c="dimmed" truncate>
-                Start: {rootStartLabel}
+                Start {rootStartLabel}
               </Text>
               <Text
                 size="xs"
@@ -4313,14 +4313,12 @@ function PrepUnderBoardPanel({
                 truncate
               >
                 {!isInsidePrepLine
-                  ? "Away from prep start"
+                  ? "Away from start"
                   : opponentToMove
                     ? selectedPrepMode === "general"
                       ? `${oppositeWebColor(activePrep.userColor) === "white" ? "White" : "Black"} to move`
                       : `${activePrep.opponent || "Opponent"} to move`
-                    : `Play your ${activePrep.userColor} ${
-                        selectedPrepMode === "general" ? "move" : "response"
-                      } on the board`}
+                    : "Your move"}
                 {currentLine.length > 0
                   ? ` - ${currentLine
                       .slice(-10)
@@ -4434,11 +4432,11 @@ function PrepUnderBoardPanel({
               </Badge>
             )}
             <Text size="xs" c="dimmed">
-              {formatCount(shownGamesCount)} games in shown moves
+              {formatCount(shownGamesCount)} shown games
             </Text>
             {commonOpenStat ? (
               <Badge variant="light" size="sm">
-                {commonOpenStat.move} - {commonOpenStat.total} games
+                {commonOpenStat.move}: {commonOpenStat.total}
               </Badge>
             ) : null}
           </Group>
@@ -5081,12 +5079,149 @@ function CompactMoveTable({
           branchStatsByKey,
         )
       : stats;
+  const showPhonePrepRows = isPhoneWidth && isPrepTable;
 
   if (stats.length === 0) {
     return (
       <Text size="sm" c="dimmed">
         {emptyLabel}
       </Text>
+    );
+  }
+
+  if (showPhonePrepRows) {
+    return (
+      <Stack gap="xs" className={classes.phonePrepRows}>
+        {sortedStats.map((stat) => {
+          const status = getWebPrepBranchStatus(stat, preparedMoves, skippedMoves, startedMoveKeys);
+          return (
+            <Box
+              key={stat.key}
+              className={classes.phonePrepRow}
+              role="button"
+              tabIndex={0}
+              onClick={() => onPlayMove(stat)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onPlayMove(stat);
+                }
+              }}
+            >
+              <Group justify="space-between" align="flex-start" gap="xs" wrap="nowrap">
+                <Box className={classes.phonePrepMoveTitle}>
+                  <Group gap={6} wrap="nowrap" align="center">
+                    <Text fw={800} className={classes.phonePrepMove}>
+                      {stat.move}
+                    </Text>
+                    {showState ? (
+                      <Badge color={webPrepStatusColor(status)} variant="light" size="xs">
+                        {webPrepStatusLabel(status)}
+                      </Badge>
+                    ) : null}
+                  </Group>
+                  <Text size="xs" c="dimmed" className={classes.phonePrepMeta}>
+                    {formatWebPrepLastPlayedShort(stat.lastPlayed)}
+                  </Text>
+                </Box>
+                <Group
+                  gap={2}
+                  justify="flex-end"
+                  wrap="nowrap"
+                  className={classes.phonePrepActions}
+                >
+                  {!isPrepCandidateTable && onOpenSourceGame && stat.examples[0] ? (
+                    <Tooltip label="Go to game">
+                      <ActionIcon
+                        aria-label="Go to game"
+                        variant="subtle"
+                        size="sm"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onOpenSourceGame(stat.examples[0]);
+                        }}
+                      >
+                        <IconExternalLink size={15} />
+                      </ActionIcon>
+                    </Tooltip>
+                  ) : null}
+                  <Tooltip label="Play move">
+                    <ActionIcon
+                      aria-label="Play this move"
+                      variant="subtle"
+                      size="sm"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onPlayMove(stat);
+                      }}
+                    >
+                      <IconPlayerPlay size={15} />
+                    </ActionIcon>
+                  </Tooltip>
+                  {showState && onMarkDone ? (
+                    <Tooltip label="Mark done">
+                      <ActionIcon
+                        aria-label="Mark branch done"
+                        variant="subtle"
+                        size="sm"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onMarkDone(stat);
+                        }}
+                      >
+                        <IconCheck size={15} />
+                      </ActionIcon>
+                    </Tooltip>
+                  ) : null}
+                  {showState && onSkipMove ? (
+                    <Tooltip label="Skip">
+                      <ActionIcon
+                        aria-label="Skip branch"
+                        variant="subtle"
+                        size="sm"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onSkipMove(stat);
+                        }}
+                      >
+                        <IconX size={15} />
+                      </ActionIcon>
+                    </Tooltip>
+                  ) : null}
+                </Group>
+              </Group>
+
+              <Box className={classes.phonePrepMetrics}>
+                <Box className={classes.phonePrepMetric} data-wide="true">
+                  <Text className={classes.phonePrepMetricLabel}>Strength</Text>
+                  <PhonePrepStrengthSummary strength={stat.strength} />
+                </Box>
+                <Box className={classes.phonePrepMetric}>
+                  <Text className={classes.phonePrepMetricLabel}>Games</Text>
+                  <Text size="sm" fw={700}>
+                    {formatCount(stat.total)}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {formatPercent(stat.share)}
+                  </Text>
+                </Box>
+                {showState ? (
+                  <Box className={classes.phonePrepMetric}>
+                    <Text className={classes.phonePrepMetricLabel}>Prep</Text>
+                    <PrepBranchStatsCell stats={branchStatsByKey?.[stat.key]} compact />
+                  </Box>
+                ) : null}
+                <Box className={classes.phonePrepMetric} data-wide="true">
+                  <Text className={classes.phonePrepMetricLabel}>
+                    {showState ? "Results" : "WDL"}
+                  </Text>
+                  <PrepResultBar stat={stat} />
+                </Box>
+              </Box>
+            </Box>
+          );
+        })}
+      </Stack>
     );
   }
 
@@ -5408,6 +5543,40 @@ function PrepStrengthCell({
   );
 }
 
+function PhonePrepStrengthSummary({ strength }: { strength: WebPrepMoveStat["strength"] }) {
+  if (!strength) {
+    return (
+      <Text size="xs" c="dimmed">
+        -
+      </Text>
+    );
+  }
+
+  return (
+    <Tooltip label={strength.detail} multiline w={260}>
+      <Box className={classes.phonePrepStrength}>
+        <Group gap={5} wrap="nowrap">
+          <Badge color={strength.engineUnsafe ? "yellow" : "teal"} variant="light" size="xs">
+            {strength.label}
+          </Badge>
+          <Text size="sm" fw={800}>
+            {strength.score}%
+          </Text>
+        </Group>
+        <Progress
+          value={strength.score}
+          size={3}
+          color={strength.engineUnsafe ? "yellow" : "teal"}
+        />
+        <Text size="xs" c="dimmed" className={classes.phonePrepStrengthLine}>
+          {formatMoveStrengthEngineLine(strength, true)} /{" "}
+          {formatMoveStrengthWdlLine(strength, true)}
+        </Text>
+      </Box>
+    </Tooltip>
+  );
+}
+
 function MoveStrengthEngineCell({ strength }: { strength: WebPrepMoveStat["strength"] }) {
   if (!strength) {
     return (
@@ -5429,26 +5598,41 @@ function MoveStrengthEngineCell({ strength }: { strength: WebPrepMoveStat["stren
   );
 }
 
-function formatMoveStrengthEngineLine(strength: NonNullable<WebPrepMoveStat["strength"]>) {
+function formatMoveStrengthEngineLine(
+  strength: NonNullable<WebPrepMoveStat["strength"]>,
+  short = false,
+) {
   if (strength.engineCpLoss === null) {
     return strength.engineCp === null
-      ? "Engine unavailable"
+      ? short
+        ? "No engine"
+        : "Engine unavailable"
       : formatMoveStrengthCp(strength.engineCp);
   }
 
   const cp = strength.engineCp === null ? "" : ` (${formatMoveStrengthCp(strength.engineCp)})`;
+  if (short) {
+    return strength.engineCpLoss <= 0
+      ? `Best${cp}`
+      : `-${Math.round(strength.engineCpLoss)} cp${cp}`;
+  }
   return strength.engineCpLoss <= 0
     ? `Engine best${cp}`
     : `Engine -${Math.round(strength.engineCpLoss)} cp${cp}`;
 }
 
-function formatMoveStrengthWdlLine(strength: NonNullable<WebPrepMoveStat["strength"]>) {
-  if (strength.databaseScore === null) return "WDL unavailable";
+function formatMoveStrengthWdlLine(
+  strength: NonNullable<WebPrepMoveStat["strength"]>,
+  short = false,
+) {
+  if (strength.databaseScore === null) return short ? "No WDL" : "WDL unavailable";
   const score = `${(strength.databaseScore * 100).toFixed(1).replace(/\.0$/, "")}%`;
   if (strength.databaseWdlLoss === null || strength.databaseWdlLoss <= 0) {
-    return `WDL best ${score}`;
+    return short ? `WDL ${score}` : `WDL best ${score}`;
   }
-  return `WDL -${formatWdlPointLoss(strength.databaseWdlLoss)} pts (${score})`;
+  return short
+    ? `-${formatWdlPointLoss(strength.databaseWdlLoss)} pts (${score})`
+    : `WDL -${formatWdlPointLoss(strength.databaseWdlLoss)} pts (${score})`;
 }
 
 function formatMoveStrengthCp(value: number) {
@@ -5647,7 +5831,13 @@ function PrepResultBar({ stat }: { stat: Pick<WebPrepMoveStat, "white" | "draw" 
   );
 }
 
-function PrepBranchStatsCell({ stats }: { stats?: WebPrepBranchCoverageStats }) {
+function PrepBranchStatsCell({
+  stats,
+  compact = false,
+}: {
+  stats?: WebPrepBranchCoverageStats;
+  compact?: boolean;
+}) {
   if (!stats) {
     return (
       <Text size="xs" c="dimmed">
@@ -5670,9 +5860,11 @@ function PrepBranchStatsCell({ stats }: { stats?: WebPrepBranchCoverageStats }) 
           </Text>
         </Group>
         <Progress value={stats.score} color={color} size={3} />
-        <Text size="xs" c="dimmed" truncate>
-          {Math.round(stats.replyCoverage * 100)}% replies - {stats.depthPly} ply
-        </Text>
+        {compact ? null : (
+          <Text size="xs" c="dimmed" truncate>
+            {Math.round(stats.replyCoverage * 100)}% replies - {stats.depthPly} ply
+          </Text>
+        )}
       </Stack>
     </Tooltip>
   );
@@ -5680,16 +5872,14 @@ function PrepBranchStatsCell({ stats }: { stats?: WebPrepBranchCoverageStats }) 
 
 function webPrepBranchStatsTooltip(stats: WebPrepBranchCoverageStats) {
   if (stats.commonReplies <= 0) {
-    return stats.depthPly > 0
-      ? "Line started, but no common replies met the current threshold."
-      : "No saved continuation under this opponent move yet.";
+    return stats.depthPly > 0 ? "Line started. No common replies yet." : "No saved line yet.";
   }
   const started = stats.startedReplies > 0 ? `, ${stats.startedReplies} only started` : "";
   const missing =
     stats.missingImportantMoves.length > 0
       ? ` Missing: ${stats.missingImportantMoves.join(", ")}.`
       : "";
-  return `${stats.preparedReplies}/${stats.commonReplies} shown replies prepared${started}.${missing}`;
+  return `${stats.preparedReplies}/${stats.commonReplies} replies done${started}.${missing}`;
 }
 
 function webPrepBranchStatsColor(label: WebPrepBranchCoverageStats["label"]) {
@@ -5878,6 +6068,10 @@ function omitRecordKey(record: Record<string, number>, key: string) {
 function formatWebPrepLastPlayed(value: string | null | undefined) {
   const label = value ? formatWebDate(value) : "";
   return label ? `Played ${label}` : "-";
+}
+
+function formatWebPrepLastPlayedShort(value: string | null | undefined) {
+  return value ? (formatWebDate(value) ?? "-") : "-";
 }
 
 function FilesWorkspace({

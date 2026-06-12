@@ -1966,6 +1966,11 @@ from 2026-04-24 through 2026-05-03.
   every ply. The phone Chessground board also initializes once and updates via
   `api.set(config)` on FEN/config changes, avoiding a destroy/recreate cycle
   after every move.
+- Phone Prep row spacing: active Prep move rows now use a phone-only stacked
+  row layout instead of squeezing the desktop table columns into the under-board
+  panel. Keep this compact, status-first shape when changing Prep training UI:
+  move/date/actions first, then short strength, games, prep coverage, and
+  result blocks with minimal explanatory copy.
 
 ## Verification Expectations
 
