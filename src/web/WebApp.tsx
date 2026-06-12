@@ -5869,6 +5869,21 @@ function PrepBranchStatsCell({
 
   const color = webPrepBranchStatsColor(stats.label);
 
+  if (compact) {
+    return (
+      <Tooltip label={webPrepBranchStatsTooltip(stats)} multiline w={290}>
+        <Group gap={4} wrap="nowrap" style={{ minWidth: 0 }}>
+          <Badge color={color} variant="light" size="xs">
+            {stats.label}
+          </Badge>
+          <Text size="xs" fw={700}>
+            {stats.score}%
+          </Text>
+        </Group>
+      </Tooltip>
+    );
+  }
+
   return (
     <Tooltip label={webPrepBranchStatsTooltip(stats)} multiline w={290}>
       <Stack gap={2} style={{ minWidth: 0 }}>
@@ -5881,11 +5896,9 @@ function PrepBranchStatsCell({
           </Text>
         </Group>
         <Progress value={stats.score} color={color} size={3} />
-        {compact ? null : (
-          <Text size="xs" c="dimmed" truncate>
-            {Math.round(stats.replyCoverage * 100)}% replies - {stats.depthPly} ply
-          </Text>
-        )}
+        <Text size="xs" c="dimmed" truncate>
+          {Math.round(stats.replyCoverage * 100)}% replies - {stats.depthPly} ply
+        </Text>
       </Stack>
     </Tooltip>
   );
