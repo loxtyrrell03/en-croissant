@@ -460,6 +460,14 @@ black`, Min games, Show top, and the online import drawer's Save database,
   The blue board action buttons are now the only `Analysis / Database / Prep /
 Engine` selector on the phone workspace, and the active panel content starts
   directly below them to preserve vertical board space.
+- On 2026-06-12, the phone Database and Prep source pickers stopped treating
+  loose opened PGN files as selectable databases. Individual hosted PGNs opened
+  from Files are now marked as `opened-file`, legacy unmarked loose PGNs are
+  filtered out of the source dropdown, and only explicit source databases,
+  synced hosted database folders, online sources, or current unsaved prep
+  sources appear above/in the folder picker. Keep file browsing/history
+  separate from source database selection so recently opened games do not
+  masquerade as prep databases.
 - A later 2026-06-04 phone Database/Prep strength parity pass wired the web
   move tables into the fork's blended strength model. Local Database stats and
   Lichess All/Masters explorer rows now compute practical/blended strength,

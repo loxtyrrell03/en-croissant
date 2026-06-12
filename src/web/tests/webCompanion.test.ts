@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
     filterWebDatabasesByHostedAvailability,
+    filterWebSourceDatabases,
     getWebDatabaseHostedPathFromSourceStorageValue,
     getWebDatabaseHostedSourceStorageValue,
     getWebDatabaseSourceStorageValue,
@@ -1116,6 +1117,65 @@ describe("web companion PGN prep index", () => {
                 hostedLibraryReady: true,
             }).map((database) => database.id),
         ).toEqual(["local", "current-hosted"]);
+    });
+
+    test("keeps loose opened PGNs out of phone source pickers", () => {
+        const databases = [
+            {
+                id: "opened-file",
+                name: "recent-game.pgn",
+                sourceKind: "opened-file" as const,
+                hostedFilePath: "Games/recent-game.pgn",
+                importedAt: 1,
+                updatedAt: 1,
+                gameCount: 1,
+                sizeBytes: 100,
+                latestDate: null,
+                playerNames: [],
+            },
+            {
+                id: "legacy-opened-file",
+                name: "old-recent-game.pgn",
+                importedAt: 2,
+                updatedAt: 2,
+                gameCount: 1,
+                sizeBytes: 100,
+                latestDate: null,
+                playerNames: [],
+            },
+            {
+                id: "saved-import",
+                name: "Opponent Chess.com recent 25.pgn",
+                sourceKind: "source" as const,
+                importedAt: 3,
+                updatedAt: 3,
+                gameCount: 25,
+                sizeBytes: 5000,
+                latestDate: "2026.06.01",
+                playerNames: ["Opponent"],
+            },
+            {
+                id: "hosted-db",
+                name: "prep-source.pgn",
+                hostedPath: "Databases/Desktop/Prep/prep-source",
+                importedAt: 4,
+                updatedAt: 4,
+                gameCount: 100,
+                sizeBytes: 20000,
+                latestDate: "2026.06.02",
+                playerNames: [],
+            },
+        ];
+
+        expect(filterWebSourceDatabases(databases).map((database) => database.id)).toEqual([
+            "saved-import",
+            "hosted-db",
+        ]);
+        expect(
+            filterWebSourceDatabases(databases, ["legacy-opened-file"]).map(
+                (database) => database.id,
+            ),
+        ).toEqual(["legacy-opened-file", "saved-import", "hosted-db"]);
     });
 
     test("reuses already indexed hosted databases before downloading synced PGNs", () => {

@@ -81,6 +81,17 @@ export function filterWebDatabasesByHostedAvailability({
   });
 }
 
+export function filterWebSourceDatabases(databases: WebDatabase[], extraSourceIds: string[] = []) {
+  const extraIds = new Set(extraSourceIds);
+  return databases.filter((database) => isWebSourceDatabase(database) || extraIds.has(database.id));
+}
+
+export function isWebSourceDatabase(database: WebDatabase) {
+  if (database.sourceKind === "opened-file") return false;
+  if (database.sourceKind === "source") return true;
+  return Boolean(database.hostedPath);
+}
+
 export function getWebDatabaseSourceStorageValue(database: WebDatabase) {
   return database.hostedPath
     ? getWebDatabaseHostedSourceStorageValue(database.hostedPath)

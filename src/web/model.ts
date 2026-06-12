@@ -46,7 +46,9 @@ export type WebGame = {
 export type WebDatabase = {
     id: string;
     name: string;
+    sourceKind?: "source" | "opened-file";
     hostedPath?: string;
+    hostedFilePath?: string;
     hostedLazy?: boolean;
     hostedUpdatedAt?: number;
     importedAt: number;

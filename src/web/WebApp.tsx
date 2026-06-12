@@ -107,6 +107,7 @@ import {
 } from "./explorer";
 import {
   filterWebDatabasesByHostedAvailability,
+  filterWebSourceDatabases,
   getWebDatabaseHostedPathFromSourceStorageValue,
   getWebDatabaseSourceStorageValue,
   getReusableHostedDatabaseImport,
@@ -546,6 +547,7 @@ export default function WebApp() {
         ...parsed,
         database: {
           ...parsed.database,
+          sourceKind: "source",
           ...databasePatch,
         },
       };
@@ -574,7 +576,14 @@ export default function WebApp() {
         const imported: WebImportResult[] = [];
         for (const file of Array.from(files)) {
           const text = await file.text();
-          imported.push(parsePgnDatabase(file.name, text));
+          const parsed = parsePgnDatabase(file.name, text);
+          imported.push({
+            ...parsed,
+            database: {
+              ...parsed.database,
+              sourceKind: "source",
+            },
+          });
         }
 
         addImportedDatabases(imported);
@@ -613,6 +622,10 @@ export default function WebApp() {
           notificationTitle: "Hosted file opened",
           notificationMessage: (imported) =>
             `${imported.games.length} games indexed from ${file.filename}.`,
+          databasePatch: {
+            sourceKind: "opened-file",
+            hostedFilePath: entry.path,
+          },
         });
         return imported;
       } catch (error) {
@@ -721,6 +734,7 @@ export default function WebApp() {
           database: {
             id: createHostedDatabaseId(normalizedPath),
             name: `${name}.pgn`,
+            sourceKind: "source",
             hostedPath: normalizedPath,
             hostedLazy: true,
             hostedUpdatedAt: latestHostedUpdate,
@@ -1553,11 +1567,13 @@ function DatabaseUnderBoardPanel({
   const hostedDatabaseLibraryReady = Boolean(hostedDatabases.library?.manifest);
   const selectableDatabases = useMemo(
     () =>
-      filterWebDatabasesByHostedAvailability({
-        databases,
-        hostedFolders: hostedDatabases.folders,
-        hostedLibraryReady: hostedDatabaseLibraryReady,
-      }),
+      filterWebSourceDatabases(
+        filterWebDatabasesByHostedAvailability({
+          databases,
+          hostedFolders: hostedDatabases.folders,
+          hostedLibraryReady: hostedDatabaseLibraryReady,
+        }),
+      ),
     [databases, hostedDatabaseLibraryReady, hostedDatabases.folders],
   );
   const selectedLocalId = useMemo(
@@ -1814,7 +1830,7 @@ function DatabaseUnderBoardPanel({
     }
 
     if (!isHostedDatabaseValue(value)) {
-      const database = databases.find((candidate) => candidate.id === value) ?? null;
+      const database = selectableDatabases.find((candidate) => candidate.id === value) ?? null;
       const hostedFolder = database?.hostedPath
         ? (hostedDatabases.folders.find((folder) => folder.path === database.hostedPath) ?? null)
         : null;
@@ -2709,12 +2725,15 @@ function PrepUnderBoardPanel({
   const hostedDatabaseLibraryReady = Boolean(hostedDatabases.library?.manifest);
   const selectableDatabases = useMemo(
     () =>
-      filterWebDatabasesByHostedAvailability({
-        databases: state.databases,
-        hostedFolders: hostedDatabases.folders,
-        hostedLibraryReady: hostedDatabaseLibraryReady,
-      }),
-    [hostedDatabaseLibraryReady, hostedDatabases.folders, state.databases],
+      filterWebSourceDatabases(
+        filterWebDatabasesByHostedAvailability({
+          databases: state.databases,
+          hostedFolders: hostedDatabases.folders,
+          hostedLibraryReady: hostedDatabaseLibraryReady,
+        }),
+        state.prepWorkspaces.flatMap((prep) => prep.sourceIds),
+      ),
+    [hostedDatabaseLibraryReady, hostedDatabases.folders, state.databases, state.prepWorkspaces],
   );
   const sourceOptions = useMemo(
     () =>
@@ -3016,7 +3035,7 @@ function PrepUnderBoardPanel({
   ]);
   const rootStartLabel =
     rootLine.length > 0 ? rootLine.map((move) => move.san).join(" ") : "game start";
-  const firstLocalSourceId = state.databases[0]?.id ?? null;
+  const firstLocalSourceId = selectableDatabases[0]?.id ?? null;
   const currentPrepSetupSelection: WebPrepSetupSelection = {
     mode: selectedPrepMode,
     source: selectedPrepSource,
@@ -3049,10 +3068,12 @@ function PrepUnderBoardPanel({
 
   useEffect(() => {
     setSourceId((current) => {
-      if (current && state.databases.some((database) => database.id === current)) return current;
+      if (current && selectableDatabases.some((database) => database.id === current)) {
+        return current;
+      }
       const storedSourceId = resolveWebDatabaseSourceId(
         storedPrepSetup.sourceRef ?? storedPrepSetup.sourceId,
-        state.databases,
+        selectableDatabases,
       );
       if (storedSourceId) return storedSourceId;
       const storedHostedPath = getWebDatabaseHostedPathFromSourceStorageValue(
@@ -3066,13 +3087,13 @@ function PrepUnderBoardPanel({
       ) {
         return null;
       }
-      return state.databases[0]?.id ?? null;
+      return selectableDatabases[0]?.id ?? null;
     });
   }, [
     hostedDatabases.folders,
     hostedDatabases.library,
     hostedDatabases.loading,
-    state.databases,
+    selectableDatabases,
     storedPrepSetup.sourceId,
     storedPrepSetup.sourceRef,
   ]);
