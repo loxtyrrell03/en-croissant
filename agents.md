@@ -2060,6 +2060,10 @@ from 2026-04-24 through 2026-05-03.
   inputs with compact button steppers. This keeps arrow taps from focusing a
   text field, selecting the value, opening the keyboard, or triggering mobile
   input zoom while preserving quick one-step changes.
+- On 2026-06-12, the phone Files surface row density was reduced for Hosted
+  files, Indexed PGNs, and game rows. Keep this page closer to a compact file
+  browser than a card list so more folders and files remain visible without
+  scrolling.
 
 ## Verification Expectations
 

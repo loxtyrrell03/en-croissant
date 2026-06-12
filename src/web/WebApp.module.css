@@ -816,7 +816,7 @@
 
 .itemList {
   display: grid;
-  gap: 0.45rem;
+  gap: 0.22rem;
   min-width: 0;
 }
 
@@ -824,8 +824,8 @@
   width: 100%;
   min-width: 0;
   max-width: 100%;
-  min-height: 3.15rem;
-  padding: 0.55rem 0.65rem;
+  min-height: 2.35rem;
+  padding: 0.32rem 0.5rem;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 7px;
   background: rgba(255, 255, 255, 0.035);
@@ -840,6 +840,13 @@
 
 .listButton :global(.mantine-Text-root) {
   max-width: 100%;
+  line-height: 1.12;
+}
+
+.listButton :global(.mantine-ActionIcon-root) {
+  width: 1.75rem;
+  min-width: 1.75rem;
+  height: 1.75rem;
 }
 
 .listButton[data-active="true"] {
