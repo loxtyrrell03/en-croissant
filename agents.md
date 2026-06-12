@@ -1960,6 +1960,12 @@ from 2026-04-24 through 2026-05-03.
 - Empty move-list annotation: right-clicking blank notation space now exposes
   an Annotate action that opens the starting-position comment editor, allowing
   pre-move PGN comments without first making a move.
+- Phone engine/eval responsiveness: the web companion now treats under-board
+  engine scores as White-perspective before display, converting local
+  Stockfish side-to-move UCI scores at parse time so the sign does not flip
+  every ply. The phone Chessground board also initializes once and updates via
+  `api.set(config)` on FEN/config changes, avoiding a destroy/recreate cycle
+  after every move.
 
 ## Verification Expectations
 

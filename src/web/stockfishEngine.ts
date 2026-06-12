@@ -5,6 +5,7 @@ import { normalizeMove } from "chessops/chess";
 import { makeSan } from "chessops/san";
 import { positionFromFen } from "@/utils/chessops";
 import type { WebEngineLine, WebEngineScore } from "./model";
+import { normalizeWebEngineScoreForWhite } from "./engineScore";
 
 const STOCKFISH_READY_TIMEOUT_MS = 20_000;
 const STOCKFISH_SEARCH_TIMEOUT_MS = 90_000;
@@ -178,6 +179,9 @@ function postStockfish(command: string) {
 function parseStockfishInfoLine(line: string, fen: string): WebEngineLine | null {
     if (!line.startsWith("info ")) return null;
 
+    const [position] = positionFromFen(fen);
+    if (!position) return null;
+
     const tokens = line.trim().split(/\s+/);
     const pvIndex = tokens.indexOf("pv");
     const scoreIndex = tokens.indexOf("score");
@@ -198,7 +202,7 @@ function parseStockfishInfoLine(line: string, fen: string): WebEngineLine | null
         seldepth: readNumericInfoToken(tokens, "seldepth"),
         nodes: readNumericInfoToken(tokens, "nodes"),
         nps: readNumericInfoToken(tokens, "nps"),
-        score,
+        score: normalizeWebEngineScoreForWhite(score, position.turn),
         uciMoves,
         sanMoves: makeSanLineFromUci(fen, uciMoves),
     };

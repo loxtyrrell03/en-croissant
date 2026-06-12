@@ -218,6 +218,7 @@ import {
   loadWebState,
   saveWebState,
 } from "./storage";
+import { formatWebEngineScore } from "./engineScore";
 import { analyzeWithWebStockfish18, stopWebStockfish18Search } from "./stockfishEngine";
 
 type ViewMode = "board" | "files";
@@ -5458,14 +5459,6 @@ function formatWdlPointLoss(value: number) {
   return (value * 100).toFixed(value >= 0.1 ? 0 : 1).replace(/\.0$/, "");
 }
 
-function formatWebEngineScore(score: WebEngineLine["score"]) {
-  if (score.type === "mate") {
-    return `${score.value > 0 ? "+" : "-"}M${Math.abs(score.value)}`;
-  }
-  const pawns = score.value / 100;
-  return `${pawns > 0 ? "+" : ""}${pawns.toFixed(2)}`;
-}
-
 function getWebEngineProgress({
   enabled,
   status,
@@ -6262,15 +6255,18 @@ function WebChessboard({
     };
   }, [fen, lastMoveUci, orientation]);
 
-  useEffect(() => {
-    if (!boardRef.current || apiRef.current) return;
-    apiRef.current = Chessground(boardRef.current, config);
+  const initialConfigRef = useRef(config);
 
+  useEffect(() => {
+    const boardElement = boardRef.current;
+    if (!boardElement || apiRef.current) return;
+    const api = Chessground(boardElement, initialConfigRef.current);
+    apiRef.current = api;
     return () => {
-      apiRef.current?.destroy();
-      apiRef.current = null;
+      api.destroy();
+      if (apiRef.current === api) apiRef.current = null;
     };
-  }, [config]);
+  }, []);
 
   useEffect(() => {
     apiRef.current?.set(config);

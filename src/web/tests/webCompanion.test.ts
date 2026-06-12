@@ -9,6 +9,7 @@ import {
     needsHostedDatabaseRefresh,
     resolveWebDatabaseSourceId,
 } from "@/web/databaseSync";
+import { formatWebEngineScore, normalizeWebEngineScoreForWhite } from "@/web/engineScore";
 import { buildWebExplorerUrl } from "@/web/explorer";
 import {
     getHostedDatabaseFolders,
@@ -49,6 +50,20 @@ import { parsePgnDatabase, webGameToLine } from "@/web/pgn";
 import { createEmptyWebState } from "@/web/storage";
 
 describe("web companion PGN prep index", () => {
+    test("normalizes phone Stockfish evals to White perspective", () => {
+        expect(formatWebEngineScore({ type: "cp", value: 35 })).toBe("+0.35");
+        expect(
+            formatWebEngineScore(
+                normalizeWebEngineScoreForWhite({ type: "cp", value: 35 }, "black"),
+            ),
+        ).toBe("-0.35");
+        expect(
+            formatWebEngineScore(
+                normalizeWebEngineScoreForWhite({ type: "mate", value: 3 }, "black"),
+            ),
+        ).toBe("-M3");
+    });
+
     test("keeps PGN annotations and comments for phone game files", () => {
         const imported = parsePgnDatabase(
             "annotated-game.pgn",
