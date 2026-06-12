@@ -5096,7 +5096,7 @@ function CompactMoveTable({
           branchStatsByKey,
         )
       : stats;
-  const showPhonePrepRows = isPhoneWidth && isPrepTable;
+  const showPhoneMoveRows = isPhoneWidth;
 
   if (stats.length === 0) {
     return (
@@ -5106,11 +5106,14 @@ function CompactMoveTable({
     );
   }
 
-  if (showPhonePrepRows) {
+  if (showPhoneMoveRows) {
     return (
       <Stack gap="xs" className={classes.phonePrepRows}>
         {sortedStats.map((stat) => {
           const status = getWebPrepBranchStatus(stat, preparedMoves, skippedMoves, startedMoveKeys);
+          const metaLabel = isPrepTable
+            ? formatWebPrepLastPlayedShort(stat.lastPlayed)
+            : (formatWebDate(stat.lastPlayed) ?? stat.sourceLabel);
           return (
             <Box
               key={stat.key}
@@ -5138,7 +5141,7 @@ function CompactMoveTable({
                     ) : null}
                   </Group>
                   <Text size="xs" c="dimmed" className={classes.phonePrepMeta}>
-                    {formatWebPrepLastPlayedShort(stat.lastPlayed)}
+                    {metaLabel}
                   </Text>
                 </Box>
                 <Group
@@ -5209,7 +5212,7 @@ function CompactMoveTable({
               </Group>
 
               <Box className={classes.phonePrepMetrics}>
-                <Box className={classes.phonePrepMetric} data-wide="true">
+                <Box className={classes.phonePrepMetric}>
                   <Text className={classes.phonePrepMetricLabel}>Strength</Text>
                   <PhonePrepStrengthSummary strength={stat.strength} />
                 </Box>
@@ -5228,7 +5231,7 @@ function CompactMoveTable({
                     <PrepBranchStatsCell stats={branchStatsByKey?.[stat.key]} compact />
                   </Box>
                 ) : null}
-                <Box className={classes.phonePrepMetric} data-wide="true">
+                <Box className={classes.phonePrepMetric}>
                   <Text className={classes.phonePrepMetricLabel}>
                     {showState ? "Results" : "WDL"}
                   </Text>
@@ -5572,19 +5575,20 @@ function PhonePrepStrengthSummary({ strength }: { strength: WebPrepMoveStat["str
   return (
     <Tooltip label={strength.detail} multiline w={260}>
       <Box className={classes.phonePrepStrength}>
-        <Group gap={5} wrap="nowrap">
+        <Group gap={5} wrap="nowrap" className={classes.phonePrepStrengthTop}>
           <Badge color={strength.engineUnsafe ? "yellow" : "teal"} variant="light" size="xs">
             {strength.label}
           </Badge>
           <Text size="sm" fw={800}>
             {strength.score}%
           </Text>
+          <Progress
+            value={strength.score}
+            size={3}
+            color={strength.engineUnsafe ? "yellow" : "teal"}
+            className={classes.phonePrepStrengthProgress}
+          />
         </Group>
-        <Progress
-          value={strength.score}
-          size={3}
-          color={strength.engineUnsafe ? "yellow" : "teal"}
-        />
         <Text size="xs" c="dimmed" className={classes.phonePrepStrengthLine}>
           {formatMoveStrengthEngineLine(strength, true)} /{" "}
           {formatMoveStrengthWdlLine(strength, true)}

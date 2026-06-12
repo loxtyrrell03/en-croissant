@@ -458,7 +458,7 @@ black`, Min games, Show top, and the online import drawer's Save database,
   visible and tappable instead of being clipped by the FEN/title text.
 - On 2026-06-12, the duplicate in-panel phone under-board header was removed.
   The blue board action buttons are now the only `Analysis / Database / Prep /
-  Engine` selector on the phone workspace, and the active panel content starts
+Engine` selector on the phone workspace, and the active panel content starts
   directly below them to preserve vertical board space.
 - A later 2026-06-04 phone Database/Prep strength parity pass wired the web
   move tables into the fork's blended strength model. Local Database stats and
@@ -1975,6 +1975,11 @@ from 2026-04-24 through 2026-05-03.
   panel. Keep this compact, status-first shape when changing Prep training UI:
   move/date/actions first, then short strength, games, prep coverage, and
   result blocks with minimal explanatory copy.
+- Phone Database/Prep row sizing: the same phone row renderer now handles
+  Database stats and Prep rows, with rows forced to full under-board width and
+  a tighter two-column metric grid. Avoid returning to narrow, full-height
+  table-card rows on phone; the row should scan as move/date/actions plus
+  compact strength, games, prep, and WDL/results metrics.
 - Phone engine arrows now mirror the desktop fork when the under-board Engine
   panel is enabled. The web board receives live Stockfish/Lichess cloud
   MultiPV lines as Chessground `drawable.autoShapes`, using the same strong
