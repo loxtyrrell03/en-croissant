@@ -131,6 +131,23 @@
   min-width: 0;
 }
 
+.boardMoveControls {
+  min-width: 0;
+  min-height: 1.75rem;
+  margin-block: -0.22rem -0.1rem;
+}
+
+.boardMoveButton {
+  width: 1.75rem;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  color: var(--mantine-color-gray-1);
+}
+
+.boardMoveButton:disabled {
+  opacity: 0.34;
+}
+
 .boardStartActions :global(.mantine-Button-root) {
   min-width: 0;
 }
@@ -190,6 +207,27 @@
 .moveEntry[data-annotated="true"] {
   flex: 1 1 100%;
   padding-block: 0.15rem;
+}
+
+.moveVariationGroup {
+  flex: 1 1 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0.28rem 0 0.28rem 0.45rem;
+  border-left: 2px solid rgba(255, 255, 255, 0.14);
+}
+
+.moveVariationGroup[data-root="true"] {
+  margin-left: 0;
+  border-left-color: color-mix(in srgb, var(--mantine-primary-color-5) 45%, transparent);
+}
+
+.moveVariationLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 0.28rem;
+  min-width: 0;
 }
 
 .movePill {
@@ -363,6 +401,29 @@
   padding: 0.55rem;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.04);
+}
+
+.prepTrainingMoves {
+  position: relative;
+  min-width: 0;
+}
+
+.prepTrainingExit {
+  position: absolute;
+  top: 0.28rem;
+  right: 0.28rem;
+  z-index: 3;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.prepTrainingMoves .phonePrepRows {
+  box-sizing: border-box;
+  padding-top: 0.2rem;
+  padding-right: 2.05rem;
+}
+
+.prepTrainingMoves :global(.mantine-TableScrollContainer-root) {
+  padding-right: 2.05rem;
 }
 
 .line {

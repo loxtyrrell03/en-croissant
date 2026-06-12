@@ -1,7 +1,15 @@
 import { isNormal, makeUci, parseUci, type Move } from "chessops";
+import type { Position } from "chessops/chess";
 import { normalizeMove } from "chessops/chess";
 import { INITIAL_FEN, makeFen } from "chessops/fen";
-import { makePgn, parseComment, parsePgn, startingPosition } from "chessops/pgn";
+import {
+    makePgn,
+    parseComment,
+    parsePgn,
+    startingPosition,
+    type ChildNode,
+    type PgnNodeData,
+} from "chessops/pgn";
 import { makeSan, parseSan } from "chessops/san";
 import { positionFromFen } from "@/utils/chessops";
 import type {
@@ -60,40 +68,20 @@ export function parsePgnDatabase(
             return;
         }
 
-        const moves: WebMove[] = [];
-        let ply = 0;
-
-        for (const node of game.moves.mainline()) {
-            const fenBefore = makeFen(position.toSetup());
-            const move = parseSan(position, node.san);
-            if (!move) {
-                warnings.push(`Game ${index + 1}: stopped at illegal move ${node.san}.`);
-                break;
-            }
-
-            const san = makeSan(position, move);
-            const uci = makeMoveUci(position, move);
-            position.play(move);
-            ply += 1;
-
-            const webMove: WebMove = {
-                ply,
-                color: ply % 2 === 1 ? "white" : "black",
-                san,
-                uci,
-                fenBefore,
-                fenAfter: makeFen(position.toSetup()),
-            };
-            const annotations = formatWebNags(node.nags);
-            const startingComments = formatWebComments(node.startingComments);
-            const comments = formatWebComments(node.comments);
-
-            if (annotations.length > 0) webMove.annotations = annotations;
-            if (startingComments.length > 0) webMove.startingComments = startingComments;
-            if (comments.length > 0) webMove.comments = comments;
-
-            moves.push(webMove);
-        }
+        const moves = buildWebMoveLine({
+            firstChild: game.moves.children[0],
+            position,
+            previousPly: 0,
+            gameIndex: index,
+            warnings,
+        });
+        const rootVariations = buildWebVariationLines({
+            children: game.moves.children.slice(1),
+            position,
+            previousPly: 0,
+            gameIndex: index,
+            warnings,
+        });
 
         const result = normalizeResult(game.headers.get("Result"));
         const date = game.headers.get("Date") ?? game.headers.get("UTCDate") ?? "";
@@ -121,6 +109,7 @@ export function parsePgnDatabase(
             moves,
             importedAt,
         };
+        if (rootVariations.length > 0) webGame.rootVariations = rootVariations;
         const comments = formatWebComments(game.comments);
         if (comments.length > 0) webGame.comments = comments;
 
@@ -188,16 +177,31 @@ export function currentWebFen(line: { fenAfter: string }[], startFen = INITIAL_F
 }
 
 export function webGameToLine(game: WebGame): WebPrepLineMove[] {
-    return game.moves.map((move) => ({
-        fenBefore: move.fenBefore,
-        fenAfter: move.fenAfter,
-        san: move.san,
-        uci: move.uci,
-        actor: move.color === "white" ? "user" : "opponent",
-        annotations: move.annotations,
-        comments: move.comments,
-        startingComments: move.startingComments,
-    }));
+    return webMovesToLine(game.moves);
+}
+
+export function webGameToRootLines(game: WebGame): WebPrepLineMove[][] {
+    return [webGameToLine(game), ...webMoveVariationLinesToPrepLines(game.rootVariations ?? [])];
+}
+
+export function getWebGameIndexedMoves(game: WebGame) {
+    const moves: WebMove[] = [];
+    collectWebMoves(game.moves, moves);
+    for (const variation of game.rootVariations ?? []) {
+        collectWebMoves(variation, moves);
+    }
+    return moves;
+}
+
+export function countWebGameVariationMoves(game: WebGame) {
+    let count = 0;
+    for (const move of game.moves) {
+        count += countWebMoveVariations(move);
+    }
+    for (const variation of game.rootVariations ?? []) {
+        count += countWebMoveLine(variation);
+    }
+    return count;
 }
 
 function createDatabaseId(name: string, importedAt: number) {
@@ -214,6 +218,165 @@ function createDatabaseId(name: string, importedAt: number) {
 function makeMoveUci(position: Parameters<typeof normalizeMove>[0], move: Move) {
     const normalized = normalizeMove(position, move);
     return isNormal(normalized) ? makeUci(normalized) : null;
+}
+
+function buildWebMoveLine({
+    firstChild,
+    position,
+    previousPly,
+    gameIndex,
+    warnings,
+}: {
+    firstChild: ChildNode<PgnNodeData> | undefined;
+    position: Position;
+    previousPly: number;
+    gameIndex: number;
+    warnings: string[];
+}) {
+    const line: WebMove[] = [];
+    let currentChild = firstChild;
+    let currentPosition = position.clone();
+    let currentPly = previousPly;
+
+    while (currentChild) {
+        const parsed = buildWebMove({
+            child: currentChild,
+            position: currentPosition,
+            previousPly: currentPly,
+            gameIndex,
+            warnings,
+        });
+        if (!parsed) break;
+
+        line.push(parsed.move);
+        currentPosition = parsed.positionAfter;
+        currentPly = parsed.move.ply;
+        currentChild = currentChild.children[0];
+    }
+
+    return line;
+}
+
+function buildWebMove({
+    child,
+    position,
+    previousPly,
+    gameIndex,
+    warnings,
+}: {
+    child: ChildNode<PgnNodeData>;
+    position: Position;
+    previousPly: number;
+    gameIndex: number;
+    warnings: string[];
+}) {
+    const fenBefore = makeFen(position.toSetup());
+    const parsedMove = parseSan(position, child.data.san);
+    if (!parsedMove) {
+        warnings.push(`Game ${gameIndex + 1}: stopped at illegal move ${child.data.san}.`);
+        return null;
+    }
+
+    const san = makeSan(position, parsedMove);
+    const uci = makeMoveUci(position, parsedMove);
+    const positionAfter = position.clone();
+    positionAfter.play(parsedMove);
+    const ply = previousPly + 1;
+    const webMove: WebMove = {
+        ply,
+        color: ply % 2 === 1 ? "white" : "black",
+        san,
+        uci,
+        fenBefore,
+        fenAfter: makeFen(positionAfter.toSetup()),
+    };
+    const annotations = formatWebNags(child.data.nags);
+    const startingComments = formatWebComments(child.data.startingComments);
+    const comments = formatWebComments(child.data.comments);
+    const variations = buildWebVariationLines({
+        children: child.children.slice(1),
+        position: positionAfter,
+        previousPly: ply,
+        gameIndex,
+        warnings,
+    });
+
+    if (annotations.length > 0) webMove.annotations = annotations;
+    if (startingComments.length > 0) webMove.startingComments = startingComments;
+    if (comments.length > 0) webMove.comments = comments;
+    if (variations.length > 0) webMove.variations = variations;
+
+    return {
+        move: webMove,
+        positionAfter,
+    };
+}
+
+function buildWebVariationLines({
+    children,
+    position,
+    previousPly,
+    gameIndex,
+    warnings,
+}: {
+    children: ChildNode<PgnNodeData>[];
+    position: Position;
+    previousPly: number;
+    gameIndex: number;
+    warnings: string[];
+}) {
+    return children
+        .map((child) =>
+            buildWebMoveLine({
+                firstChild: child,
+                position,
+                previousPly,
+                gameIndex,
+                warnings,
+            }),
+        )
+        .filter((line) => line.length > 0);
+}
+
+function webMovesToLine(moves: WebMove[]): WebPrepLineMove[] {
+    return moves.map(webMoveToLineMove);
+}
+
+function webMoveToLineMove(move: WebMove): WebPrepLineMove {
+    const lineMove: WebPrepLineMove = {
+        fenBefore: move.fenBefore,
+        fenAfter: move.fenAfter,
+        san: move.san,
+        uci: move.uci,
+        actor: move.color === "white" ? "user" : "opponent",
+        annotations: move.annotations,
+        comments: move.comments,
+        startingComments: move.startingComments,
+    };
+    const variations = webMoveVariationLinesToPrepLines(move.variations ?? []);
+    if (variations.length > 0) lineMove.variations = variations;
+    return lineMove;
+}
+
+function webMoveVariationLinesToPrepLines(variations: WebMove[][]) {
+    return variations.map(webMovesToLine).filter((line) => line.length > 0);
+}
+
+function collectWebMoves(line: WebMove[], moves: WebMove[]) {
+    for (const move of line) {
+        moves.push(move);
+        for (const variation of move.variations ?? []) {
+            collectWebMoves(variation, moves);
+        }
+    }
+}
+
+function countWebMoveLine(line: WebMove[]): number {
+    return line.reduce((sum, move) => sum + 1 + countWebMoveVariations(move), 0);
+}
+
+function countWebMoveVariations(move: WebMove): number {
+    return (move.variations ?? []).reduce((sum, variation) => sum + countWebMoveLine(variation), 0);
 }
 
 function normalizeResult(value: string | null | undefined): WebResult {

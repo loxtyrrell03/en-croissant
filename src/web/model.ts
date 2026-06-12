@@ -22,6 +22,7 @@ export type WebMove = {
     annotations?: string[];
     startingComments?: string[];
     comments?: string[];
+    variations?: WebMove[][];
 };
 
 export type WebGame = {
@@ -39,6 +40,7 @@ export type WebGame = {
     result: WebResult;
     pgn: string;
     moves: WebMove[];
+    rootVariations?: WebMove[][];
     comments?: string[];
     importedAt: number;
 };
@@ -68,6 +70,7 @@ export type WebPrepLineMove = {
     annotations?: string[];
     startingComments?: string[];
     comments?: string[];
+    variations?: WebPrepLineMove[][];
 };
 
 export type WebPrepMode = "player" | "general";

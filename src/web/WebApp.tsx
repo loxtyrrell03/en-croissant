@@ -34,7 +34,6 @@ import {
   Switch,
   Table,
   Text,
-  Textarea,
   TextInput,
   Tooltip,
   Title,
@@ -74,6 +73,7 @@ import { isNormal, makeSquare, parseSquare, parseUci } from "chessops";
 import { chessgroundDests } from "chessops/compat";
 import { INITIAL_FEN } from "chessops/fen";
 import {
+  Fragment,
   useCallback,
   useEffect,
   useMemo,
@@ -206,6 +206,7 @@ import {
   type WebPrepSetupSelection,
 } from "./prepSettings";
 import {
+  countWebGameVariationMoves,
   formatWebDate,
   getFenColor,
   normalizeWebFen,
@@ -214,6 +215,7 @@ import {
   playSanMove,
   playUciMove,
   webGameToLine,
+  webGameToRootLines,
 } from "./pgn";
 import {
   createEmptyWebBoardState,
@@ -991,6 +993,18 @@ function BoardWorkspace({
   const cursor = clampCursor(board.cursor, activeLine.length);
   const currentFen = fenAtCursor(activeLine, cursor, startFen);
   const currentLine = activeLine.slice(0, cursor);
+  const sourceGame = useMemo(() => {
+    if (activePrep || !board.sourceDatabaseId || !board.sourceGameId) return null;
+    return (
+      (state.gamesByDatabase[board.sourceDatabaseId] ?? []).find(
+        (game) => game.id === board.sourceGameId,
+      ) ?? null
+    );
+  }, [activePrep, board.sourceDatabaseId, board.sourceGameId, state.gamesByDatabase]);
+  const sourceRootLines = useMemo(
+    () => (sourceGame ? webGameToRootLines(sourceGame) : []),
+    [sourceGame],
+  );
   const prepRootPly = activePrep ? clampCursor(activePrep.rootPly ?? 0, activeLine.length) : 0;
   const prepRootFen = fenAtCursor(activeLine, prepRootPly, startFen);
   const prepRootLine = activeLine.slice(0, prepRootPly);
@@ -1149,6 +1163,15 @@ function BoardWorkspace({
     updateBoard({ cursor: clampCursor(nextCursor, activeLine.length) });
   };
 
+  const canGoToPreviousMove = cursor > 0;
+  const canGoToNextMove = cursor < activeLine.length;
+  const goToPreviousMove = () => {
+    if (canGoToPreviousMove) setCursor(cursor - 1);
+  };
+  const goToNextMove = () => {
+    if (canGoToNextMove) setCursor(cursor + 1);
+  };
+
   const updateActivePrep = (updater: (prep: WebPrepWorkspace) => WebPrepWorkspace) => {
     if (!activePrep) return;
     setState((current) => ({
@@ -1157,6 +1180,32 @@ function BoardWorkspace({
         prep.id === activePrep.id ? updater(prep) : prep,
       ),
     }));
+  };
+
+  const chooseMovePanelLine = (nextLine: WebPrepLineMove[], nextCursor = nextLine.length) => {
+    const cursor = clampCursor(nextCursor, nextLine.length);
+
+    if (activePrep) {
+      updateActivePrep((prep) => ({
+        ...prep,
+        line: nextLine,
+        rootPly: Math.min(prep.rootPly ?? 0, nextLine.length),
+        updatedAt: Date.now(),
+      }));
+      updateBoard({
+        cursor,
+        sourceTitle: prepBoardTitle(activePrep),
+        sourceDatabaseId: null,
+        sourceGameId: null,
+      });
+      return;
+    }
+
+    updateBoard({
+      line: nextLine,
+      cursor,
+      sourceTitle: board.sourceTitle ?? "Analysis board",
+    });
   };
 
   const appendMoveAtCursor = (
@@ -1266,6 +1315,17 @@ function BoardWorkspace({
         lastMoveUci={activeLastMove}
         engineArrowShapes={engineArrowShapes}
         onMove={handleBoardMove}
+        canGoToPreviousMove={canGoToPreviousMove}
+        canGoToNextMove={canGoToNextMove}
+        onPreviousMove={goToPreviousMove}
+        onNextMove={goToNextMove}
+      />
+
+      <BoardMoveControls
+        canGoToPreviousMove={canGoToPreviousMove}
+        canGoToNextMove={canGoToNextMove}
+        onPreviousMove={goToPreviousMove}
+        onNextMove={goToNextMove}
       />
 
       <BoardStartActions activeMode={panelMode} onChooseMode={(mode) => setPanelMode(mode)} />
@@ -1277,6 +1337,8 @@ function BoardWorkspace({
               line={activeLine}
               cursor={cursor}
               setCursor={setCursor}
+              rootLines={sourceRootLines}
+              onChooseLine={chooseMovePanelLine}
               sourceTitle={boardTitle}
               sourceComments={activePrep ? [] : (board.sourceComments ?? [])}
             />
@@ -1322,6 +1384,55 @@ function BoardWorkspace({
         </Box>
       </Box>
     </Box>
+  );
+}
+
+function BoardMoveControls({
+  canGoToPreviousMove,
+  canGoToNextMove,
+  onPreviousMove,
+  onNextMove,
+}: {
+  canGoToPreviousMove: boolean;
+  canGoToNextMove: boolean;
+  onPreviousMove: () => void;
+  onNextMove: () => void;
+}) {
+  return (
+    <Group
+      aria-label="Board move navigation"
+      className={classes.boardMoveControls}
+      gap="xs"
+      justify="center"
+      wrap="nowrap"
+    >
+      <Tooltip label="Previous move">
+        <ActionIcon
+          aria-label="Previous move"
+          className={classes.boardMoveButton}
+          disabled={!canGoToPreviousMove}
+          onClick={onPreviousMove}
+          radius="xl"
+          size="sm"
+          variant="subtle"
+        >
+          <IconChevronLeft size={18} />
+        </ActionIcon>
+      </Tooltip>
+      <Tooltip label="Next move">
+        <ActionIcon
+          aria-label="Next move"
+          className={classes.boardMoveButton}
+          disabled={!canGoToNextMove}
+          onClick={onNextMove}
+          radius="xl"
+          size="sm"
+          variant="subtle"
+        >
+          <IconChevronRight size={18} />
+        </ActionIcon>
+      </Tooltip>
+    </Group>
   );
 }
 
@@ -1374,15 +1485,99 @@ function MovesUnderBoardPanel({
   line,
   cursor,
   setCursor,
+  rootLines,
+  onChooseLine,
   sourceTitle,
   sourceComments,
 }: {
   line: WebPrepLineMove[];
   cursor: number;
   setCursor: (cursor: number) => void;
+  rootLines: WebPrepLineMove[][];
+  onChooseLine: (line: WebPrepLineMove[], cursor?: number) => void;
   sourceTitle: string;
   sourceComments: string[];
 }) {
+  const rootAlternatives = rootLines.filter(
+    (rootLine) => rootLine.length > 0 && !webLinesStartSame(rootLine, line),
+  );
+
+  const renderLine = (
+    moves: WebPrepLineMove[],
+    parentLine: WebPrepLineMove[],
+    keyPrefix: string,
+    depth: number,
+  ) =>
+    moves.map((move, index) => {
+      const beforeMoveLine = [...parentLine, ...moves.slice(0, index)];
+      const lineToMove = [...beforeMoveLine, move];
+      const annotations = move.annotations ?? [];
+      const startingComments = move.startingComments ?? [];
+      const comments = move.comments ?? [];
+      const variations = move.variations ?? [];
+      const hasNotes = startingComments.length > 0 || comments.length > 0;
+      const isOnActiveLine = webLineStartsWith(line, lineToMove);
+      const isCurrent = isOnActiveLine && cursor === lineToMove.length;
+      const moveKey = `${keyPrefix}-${index}-${move.san}-${move.fenAfter}`;
+
+      return (
+        <Fragment key={moveKey}>
+          <Box className={classes.moveEntry} data-annotated={hasNotes ? "true" : undefined}>
+            {startingComments.map((comment, commentIndex) => (
+              <Text
+                key={`before-${commentIndex}`}
+                size="xs"
+                className={`${classes.moveComment} ${classes.moveStartingComment}`}
+              >
+                {comment}
+              </Text>
+            ))}
+            <button
+              className={classes.movePill}
+              data-current={isCurrent}
+              type="button"
+              onClick={() => {
+                if (isOnActiveLine) {
+                  setCursor(lineToMove.length);
+                  return;
+                }
+                onChooseLine(lineToMove, lineToMove.length);
+              }}
+            >
+              {formatMovePrefix(move, index === 0)}
+              {move.san}
+              {annotations.map((annotation, annotationIndex) => (
+                <span key={`${annotation}-${annotationIndex}`} className={classes.moveGlyph}>
+                  {annotation}
+                </span>
+              ))}
+            </button>
+            {comments.map((comment, commentIndex) => (
+              <Text key={`after-${commentIndex}`} size="xs" className={classes.moveComment}>
+                {comment}
+              </Text>
+            ))}
+          </Box>
+          {variations.map((variation, variationIndex) => (
+            <Box
+              key={`${moveKey}-variation-${variationIndex}`}
+              className={classes.moveVariationGroup}
+              style={{ marginLeft: `${Math.min(depth + 1, 3) * 0.45}rem` }}
+            >
+              <Box className={classes.moveVariationLine}>
+                {renderLine(
+                  variation,
+                  lineToMove,
+                  `${moveKey}-variation-${variationIndex}`,
+                  depth + 1,
+                )}
+              </Box>
+            </Box>
+          ))}
+        </Fragment>
+      );
+    });
+
   return (
     <Stack gap="xs">
       <Group justify="space-between" gap="xs" wrap="nowrap">
@@ -1426,58 +1621,53 @@ function MovesUnderBoardPanel({
         </Box>
       )}
       <Box className={classes.moveList}>
-        {line.length === 0 ? (
+        {line.length === 0 && rootAlternatives.length === 0 ? (
           <Text size="sm" c="dimmed">
             Start
           </Text>
         ) : (
-          line.map((move, index) => {
-            const moveNumber = Math.floor(index / 2) + 1;
-            const isWhiteMove = index % 2 === 0;
-            const annotations = move.annotations ?? [];
-            const startingComments = move.startingComments ?? [];
-            const comments = move.comments ?? [];
-            const hasNotes = startingComments.length > 0 || comments.length > 0;
-            return (
+          <>
+            {rootAlternatives.map((variation, variationIndex) => (
               <Box
-                key={`${index}-${move.san}-${move.fenAfter}`}
-                className={classes.moveEntry}
-                data-annotated={hasNotes ? "true" : undefined}
+                key={`root-variation-${variationIndex}`}
+                className={classes.moveVariationGroup}
+                data-root="true"
               >
-                {startingComments.map((comment, commentIndex) => (
-                  <Text
-                    key={`before-${commentIndex}`}
-                    size="xs"
-                    className={`${classes.moveComment} ${classes.moveStartingComment}`}
-                  >
-                    {comment}
-                  </Text>
-                ))}
-                <button
-                  className={classes.movePill}
-                  data-current={cursor === index + 1}
-                  type="button"
-                  onClick={() => setCursor(index + 1)}
-                >
-                  {isWhiteMove ? `${moveNumber}. ` : ""}
-                  {move.san}
-                  {annotations.map((annotation) => (
-                    <span key={annotation} className={classes.moveGlyph}>
-                      {annotation}
-                    </span>
-                  ))}
-                </button>
-                {comments.map((comment, commentIndex) => (
-                  <Text key={`after-${commentIndex}`} size="xs" className={classes.moveComment}>
-                    {comment}
-                  </Text>
-                ))}
+                <Box className={classes.moveVariationLine}>
+                  {renderLine(variation, [], `root-variation-${variationIndex}`, 0)}
+                </Box>
               </Box>
-            );
-          })
+            ))}
+            {renderLine(line, [], "main", 0)}
+          </>
         )}
       </Box>
     </Stack>
+  );
+}
+
+function formatMovePrefix(move: WebPrepLineMove, isFirstInRenderedLine: boolean) {
+  const fields = move.fenBefore.trim().split(/\s+/);
+  const moveNumber = Number.parseInt(fields[5] ?? "", 10);
+  const label = Number.isFinite(moveNumber) && moveNumber > 0 ? moveNumber : null;
+  if (getFenColor(move.fenBefore) === "white") return label ? `${label}. ` : "";
+  return isFirstInRenderedLine && label ? `${label}... ` : "";
+}
+
+function webLinesStartSame(left: WebPrepLineMove[], right: WebPrepLineMove[]) {
+  if (left.length === 0 || right.length === 0) return left.length === right.length;
+  return webMovesMatch(left[0], right[0]);
+}
+
+function webLineStartsWith(line: WebPrepLineMove[], prefix: WebPrepLineMove[]) {
+  if (prefix.length > line.length) return false;
+  return prefix.every((move, index) => webMovesMatch(move, line[index]));
+}
+
+function webMovesMatch(left: WebPrepLineMove, right: WebPrepLineMove | undefined) {
+  if (!right) return false;
+  return (
+    left.san === right.san && left.fenBefore === right.fenBefore && left.fenAfter === right.fenAfter
   );
 }
 
@@ -3894,27 +4084,27 @@ function PrepUnderBoardPanel({
 
   return (
     <Stack gap="sm">
-      <Group justify="space-between" align="center" gap="xs" wrap="wrap">
-        <Group gap="xs" wrap="wrap">
-          <Text fw={700} size="sm">
-            {selectedPrepMode === "general" ? "Opening prep" : "Opponent prep"}
-          </Text>
-          {selectedSourceLabel ? (
-            <Badge variant="light" size="sm">
-              {selectedSourceLabel}
-            </Badge>
-          ) : null}
-          {selectedPrepMode === "general" ? (
-            <Badge color="teal" variant="light" size="sm">
-              You as {activePrep?.userColor ?? userColor}
-            </Badge>
-          ) : (activePrep?.opponent ?? opponent).trim() ? (
-            <Badge color="orange" variant="light" size="sm">
-              {(activePrep?.opponent ?? opponent).trim()} as {selectedPlayerColor}
-            </Badge>
-          ) : null}
-        </Group>
-        {showSetupStage && (
+      {showSetupStage ? (
+        <Group justify="space-between" align="center" gap="xs" wrap="wrap">
+          <Group gap="xs" wrap="wrap">
+            <Text fw={700} size="sm">
+              {selectedPrepMode === "general" ? "Opening prep" : "Opponent prep"}
+            </Text>
+            {selectedSourceLabel ? (
+              <Badge variant="light" size="sm">
+                {selectedSourceLabel}
+              </Badge>
+            ) : null}
+            {selectedPrepMode === "general" ? (
+              <Badge color="teal" variant="light" size="sm">
+                You as {activePrep?.userColor ?? userColor}
+              </Badge>
+            ) : (activePrep?.opponent ?? opponent).trim() ? (
+              <Badge color="orange" variant="light" size="sm">
+                {(activePrep?.opponent ?? opponent).trim()} as {selectedPlayerColor}
+              </Badge>
+            ) : null}
+          </Group>
           <Group gap={4} wrap="wrap" justify="flex-end">
             <Button
               size="xs"
@@ -3969,8 +4159,8 @@ function PrepUnderBoardPanel({
               </>
             ) : null}
           </Group>
-        )}
-      </Group>
+        </Group>
+      ) : null}
 
       {showSetupStage ? (
         <>
@@ -4339,94 +4529,7 @@ function PrepUnderBoardPanel({
           </Text>
         </Stack>
       ) : showTrainingStage && activePrep ? (
-        <>
-          <Group justify="space-between" gap="xs" wrap="wrap">
-            <Stack gap={1} style={{ minWidth: 0, flex: 1 }}>
-              <Text size="xs" c="dimmed" truncate>
-                Start {rootStartLabel}
-              </Text>
-              <Text
-                size="xs"
-                c={!isInsidePrepLine || !opponentToMove ? "dimmed" : undefined}
-                truncate
-              >
-                {!isInsidePrepLine
-                  ? "Away from start"
-                  : opponentToMove
-                    ? selectedPrepMode === "general"
-                      ? `${oppositeWebColor(activePrep.userColor) === "white" ? "White" : "Black"} to move`
-                      : `${activePrep.opponent || "Opponent"} to move`
-                    : "Your move"}
-                {currentLine.length > 0
-                  ? ` - ${currentLine
-                      .slice(-10)
-                      .map((move) => move.san)
-                      .join(" ")}`
-                  : ""}
-              </Text>
-            </Stack>
-            <Group gap={4} wrap="nowrap">
-              <Tooltip label="Play the first open common move from the prep start">
-                <Button
-                  size="xs"
-                  leftSection={<IconPlayerPlay size={14} />}
-                  loading={
-                    (onlineRootPrepLoading && isOnlinePrepSource(selectedPrepSource)) ||
-                    (lazyRootPrepLoading && selectedPrepSourceIsLazy)
-                  }
-                  onClick={playCommonMove}
-                >
-                  Common move
-                </Button>
-              </Tooltip>
-              <Tooltip label="Mark this line done and play the next common move">
-                <Button
-                  size="xs"
-                  variant="default"
-                  leftSection={<IconChevronRight size={14} />}
-                  loading={
-                    (onlineRootPrepLoading && isOnlinePrepSource(selectedPrepSource)) ||
-                    (lazyRootPrepLoading && selectedPrepSourceIsLazy)
-                  }
-                  onClick={doneAndNext}
-                >
-                  Done + next
-                </Button>
-              </Tooltip>
-              {activeBranch && activeBranchSourceGame ? (
-                <Tooltip label={`Open a source game at ${activeBranch.move.san}`}>
-                  <Button
-                    size="xs"
-                    variant="default"
-                    leftSection={<IconExternalLink size={14} />}
-                    onClick={() => onOpenSourceGame(activeBranchSourceGame)}
-                  >
-                    Go to game
-                  </Button>
-                </Tooltip>
-              ) : null}
-              {activeBranch ? (
-                <Tooltip label="Return to the last opponent choice in this line">
-                  <ActionIcon
-                    aria-label="Return to active prep choice"
-                    variant="default"
-                    onClick={goToActiveChoice}
-                  >
-                    <IconArrowBackUp size={16} />
-                  </ActionIcon>
-                </Tooltip>
-              ) : null}
-              <Tooltip label="Change prep source and target">
-                <ActionIcon
-                  aria-label="Change prep setup"
-                  variant="default"
-                  onClick={() => setSetupOpen(true)}
-                >
-                  <IconSettings size={16} />
-                </ActionIcon>
-              </Tooltip>
-            </Group>
-          </Group>
+        <Stack gap="xs">
           {onlinePrepLoading && isOnlinePrepSource(selectedPrepSource) ? (
             <Group gap="xs">
               <Loader size="xs" />
@@ -4453,65 +4556,46 @@ function PrepUnderBoardPanel({
               {lazyPrepError}
             </Text>
           ) : null}
-          <Group gap="xs" wrap="wrap">
-            {opponentToMove ? (
-              <>
-                <Badge variant="light">{preparedCount} prepared</Badge>
-                {startedCount > 0 ? <Badge variant="light">{startedCount} started</Badge> : null}
-                {skippedCount > 0 ? (
-                  <Badge color="gray" variant="light">
-                    {skippedCount} skipped
-                  </Badge>
-                ) : null}
-              </>
-            ) : (
-              <Badge color="blue" variant="light">
-                {activePrep.userColor === "white" ? "White" : "Black"} candidates
-              </Badge>
-            )}
-            <Text size="xs" c="dimmed">
-              {formatCount(shownGamesCount)} shown games
-            </Text>
-            {commonOpenStat ? (
-              <Badge variant="light" size="sm">
-                {commonOpenStat.move}: {commonOpenStat.total}
-              </Badge>
-            ) : null}
-          </Group>
-          <Textarea
-            label="Position notes"
-            size="xs"
-            autosize
-            minRows={2}
-            value={activePrep.notesByFen[normalizeWebFen(currentFen)] ?? ""}
-            onChange={(event) => updateNote(event.currentTarget.value)}
-          />
-          <CompactMoveTable
-            stats={displayedStats}
-            preparedMoves={activePrep.preparedMoves}
-            skippedMoves={activePrep.skippedMoves ?? {}}
-            startedMoveKeys={startedMoveKeys}
-            branchStatsByKey={branchStatsByKey}
-            showState={opponentToMove}
-            emptyLabel="No prep moves"
-            onPlayMove={onPlayMove}
-            onOpenSourceGame={
-              isOnlinePrepSource(selectedPrepSource) || selectedPrepSourceIsLazy
-                ? undefined
-                : onOpenSourceGame
-            }
-            onMarkDone={markMoveDone}
-            onSkipMove={skipMove}
-            sort={opponentToMove ? prepSort : prepCandidateSort}
-            onSort={(column) => {
-              if (opponentToMove) {
-                setPrepSort((current) => getNextWebPrepSort(current, column));
-              } else if (column !== "prep" && column !== "state") {
-                setPrepCandidateSort((current) => getNextWebPrepSort(current, column));
+          <Box className={classes.prepTrainingMoves}>
+            <Tooltip label="Return to prep settings">
+              <ActionIcon
+                aria-label="Return to prep settings"
+                className={classes.prepTrainingExit}
+                size="sm"
+                variant="filled"
+                color="dark"
+                onClick={() => setSetupOpen(true)}
+              >
+                <IconX size={15} />
+              </ActionIcon>
+            </Tooltip>
+            <CompactMoveTable
+              stats={displayedStats}
+              preparedMoves={activePrep.preparedMoves}
+              skippedMoves={activePrep.skippedMoves ?? {}}
+              startedMoveKeys={startedMoveKeys}
+              branchStatsByKey={branchStatsByKey}
+              showState={opponentToMove}
+              emptyLabel="No prep moves"
+              onPlayMove={onPlayMove}
+              onOpenSourceGame={
+                isOnlinePrepSource(selectedPrepSource) || selectedPrepSourceIsLazy
+                  ? undefined
+                  : onOpenSourceGame
               }
-            }}
-          />
-        </>
+              onMarkDone={markMoveDone}
+              onSkipMove={skipMove}
+              sort={opponentToMove ? prepSort : prepCandidateSort}
+              onSort={(column) => {
+                if (opponentToMove) {
+                  setPrepSort((current) => getNextWebPrepSort(current, column));
+                } else if (column !== "prep" && column !== "state") {
+                  setPrepCandidateSort((current) => getNextWebPrepSort(current, column));
+                }
+              }}
+            />
+          </Box>
+        </Stack>
       ) : null}
     </Stack>
   );
@@ -6259,23 +6343,27 @@ function FilesWorkspace({
               </Group>
               <ScrollArea.Autosize mah={280}>
                 <Box className={classes.itemList}>
-                  {activeGames.map((game) => (
-                    <button
-                      key={game.id}
-                      className={classes.listButton}
-                      data-active={game.id === selectedGame?.id}
-                      onClick={() => setSelectedGameId(game.id)}
-                      type="button"
-                    >
-                      <Text fw={700} truncate>
-                        {game.white} - {game.black}
-                      </Text>
-                      <Text size="xs" c="dimmed" truncate>
-                        {formatWebDate(game.date) || "undated"} - {game.result} -{" "}
-                        {game.moves.length} plies
-                      </Text>
-                    </button>
-                  ))}
+                  {activeGames.map((game) => {
+                    const variationMoves = countWebGameVariationMoves(game);
+                    return (
+                      <button
+                        key={game.id}
+                        className={classes.listButton}
+                        data-active={game.id === selectedGame?.id}
+                        onClick={() => setSelectedGameId(game.id)}
+                        type="button"
+                      >
+                        <Text fw={700} truncate>
+                          {game.white} - {game.black}
+                        </Text>
+                        <Text size="xs" c="dimmed" truncate>
+                          {formatWebDate(game.date) || "undated"} - {game.result} -{" "}
+                          {game.moves.length} plies
+                          {variationMoves > 0 ? ` + ${variationMoves} variation plies` : ""}
+                        </Text>
+                      </button>
+                    );
+                  })}
                 </Box>
               </ScrollArea.Autosize>
               {selectedGame && (
@@ -6459,18 +6547,31 @@ function WebChessboard({
   lastMoveUci,
   engineArrowShapes,
   onMove,
+  canGoToPreviousMove,
+  canGoToNextMove,
+  onPreviousMove,
+  onNextMove,
 }: {
   fen: string;
   orientation: WebColor;
   lastMoveUci: string | null;
   engineArrowShapes: DrawShape[];
   onMove: (uci: string) => void;
+  canGoToPreviousMove: boolean;
+  canGoToNextMove: boolean;
+  onPreviousMove: () => void;
+  onNextMove: () => void;
 }) {
   const boardRef = useRef<HTMLDivElement | null>(null);
   const apiRef = useRef<Api | null>(null);
   const onMoveRef = useRef(onMove);
   onMoveRef.current = onMove;
-  useBoardVerticalScrollEscape(boardRef);
+  useBoardTouchGestures(boardRef, {
+    canGoToPreviousMove,
+    canGoToNextMove,
+    onPreviousMove,
+    onNextMove,
+  });
 
   const config = useMemo(() => {
     const [position] = positionFromFen(fen);
@@ -6533,8 +6634,23 @@ function WebChessboard({
 
 const BOARD_SCROLL_INTENT_PX = 8;
 const BOARD_SCROLL_AXIS_BIAS = 1.15;
+const BOARD_SWIPE_DISTANCE_PX = 48;
+const BOARD_SWIPE_AXIS_BIAS = 1.35;
 
-function useBoardVerticalScrollEscape(boardRef: { current: HTMLDivElement | null }) {
+type BoardTouchNavigation = {
+  canGoToPreviousMove: boolean;
+  canGoToNextMove: boolean;
+  onPreviousMove: () => void;
+  onNextMove: () => void;
+};
+
+function useBoardTouchGestures(
+  boardRef: { current: HTMLDivElement | null },
+  navigation: BoardTouchNavigation,
+) {
+  const navigationRef = useRef(navigation);
+  navigationRef.current = navigation;
+
   useEffect(() => {
     const boardElement = boardRef.current;
     if (!boardElement) return;
@@ -6542,8 +6658,10 @@ function useBoardVerticalScrollEscape(boardRef: { current: HTMLDivElement | null
     let gesture: {
       startX: number;
       startY: number;
+      lastX: number;
       lastY: number;
-      mode: "pending" | "scroll" | "board";
+      mode: "pending" | "scroll" | "swipe" | "board";
+      swipeEligible: boolean;
     } | null = null;
 
     const resetGesture = () => {
@@ -6557,11 +6675,16 @@ function useBoardVerticalScrollEscape(boardRef: { current: HTMLDivElement | null
       }
 
       const touch = event.touches[0];
+      const navigationState = navigationRef.current;
       gesture = {
         startX: touch.clientX,
         startY: touch.clientY,
+        lastX: touch.clientX,
         lastY: touch.clientY,
         mode: "pending",
+        swipeEligible:
+          (navigationState.canGoToPreviousMove || navigationState.canGoToNextMove) &&
+          !isChessgroundPieceTarget(event.target),
       };
     };
 
@@ -6576,17 +6699,60 @@ function useBoardVerticalScrollEscape(boardRef: { current: HTMLDivElement | null
 
       if (gesture.mode === "pending") {
         if (Math.max(absX, absY) < BOARD_SCROLL_INTENT_PX) return;
-        gesture.mode = absY > absX * BOARD_SCROLL_AXIS_BIAS ? "scroll" : "board";
+        gesture.mode =
+          absY > absX * BOARD_SCROLL_AXIS_BIAS
+            ? "scroll"
+            : gesture.swipeEligible && absX > absY * BOARD_SWIPE_AXIS_BIAS
+              ? "swipe"
+              : "board";
+      }
+
+      if (gesture.mode === "swipe") {
+        gesture.lastX = touch.clientX;
+        gesture.lastY = touch.clientY;
+        if (event.cancelable) event.preventDefault();
+        event.stopPropagation();
+        return;
       }
 
       if (gesture.mode !== "scroll") return;
 
       const scrollDelta = gesture.lastY - touch.clientY;
+      gesture.lastX = touch.clientX;
       gesture.lastY = touch.clientY;
       if (scrollDelta !== 0) scrollPageBy(scrollDelta);
 
       if (event.cancelable) event.preventDefault();
       event.stopPropagation();
+    };
+
+    const onTouchEnd = (event: TouchEvent) => {
+      if (!gesture) return;
+
+      const completedGesture = gesture;
+      resetGesture();
+
+      if (completedGesture.mode !== "swipe") return;
+
+      const touch = event.changedTouches[0];
+      const finalX = touch?.clientX ?? completedGesture.lastX;
+      const finalY = touch?.clientY ?? completedGesture.lastY;
+      const deltaX = finalX - completedGesture.startX;
+      const deltaY = finalY - completedGesture.startY;
+      const absX = Math.abs(deltaX);
+      const absY = Math.abs(deltaY);
+
+      if (event.cancelable) event.preventDefault();
+      event.stopPropagation();
+
+      if (absX < BOARD_SWIPE_DISTANCE_PX || absX <= absY * BOARD_SWIPE_AXIS_BIAS) return;
+
+      const navigationState = navigationRef.current;
+      if (deltaX < 0) {
+        if (navigationState.canGoToNextMove) navigationState.onNextMove();
+      } else if (navigationState.canGoToPreviousMove) {
+        navigationState.onPreviousMove();
+      }
     };
 
     boardElement.addEventListener("touchstart", onTouchStart, {
@@ -6597,9 +6763,9 @@ function useBoardVerticalScrollEscape(boardRef: { current: HTMLDivElement | null
       capture: true,
       passive: false,
     });
-    boardElement.addEventListener("touchend", resetGesture, {
+    boardElement.addEventListener("touchend", onTouchEnd, {
       capture: true,
-      passive: true,
+      passive: false,
     });
     boardElement.addEventListener("touchcancel", resetGesture, {
       capture: true,
@@ -6609,10 +6775,14 @@ function useBoardVerticalScrollEscape(boardRef: { current: HTMLDivElement | null
     return () => {
       boardElement.removeEventListener("touchstart", onTouchStart, { capture: true });
       boardElement.removeEventListener("touchmove", onTouchMove, { capture: true });
-      boardElement.removeEventListener("touchend", resetGesture, { capture: true });
+      boardElement.removeEventListener("touchend", onTouchEnd, { capture: true });
       boardElement.removeEventListener("touchcancel", resetGesture, { capture: true });
     };
   }, [boardRef]);
+}
+
+function isChessgroundPieceTarget(target: EventTarget | null) {
+  return target instanceof Element && Boolean(target.closest("piece"));
 }
 
 function scrollPageBy(deltaY: number) {

@@ -47,7 +47,7 @@ import {
     normalizeWebPrepMoveSortDefaults,
     type WebPrepSetupSelection,
 } from "@/web/prepSettings";
-import { parsePgnDatabase, webGameToLine } from "@/web/pgn";
+import { countWebGameVariationMoves, parsePgnDatabase, webGameToLine } from "@/web/pgn";
 import { createEmptyWebState } from "@/web/storage";
 
 describe("web companion PGN prep index", () => {
@@ -107,6 +107,55 @@ describe("web companion PGN prep index", () => {
             comments: ["Take the center"],
         });
         expect(game.pgn).toContain("Take the center [%clk 0:09:58]");
+    });
+
+    test("keeps PGN variations visible and indexed for phone game files", () => {
+        const imported = parsePgnDatabase(
+            "variation-game.pgn",
+            `
+[Event "Variation tree"]
+[Site "?"]
+[Date "2026.06.12"]
+[Round "?"]
+[White "Me"]
+[Black "Opponent"]
+[Result "*"]
+
+1. e4! (1. d4!? {Queen pawn branch} d5) e5 (1... c5 {Sicilian branch} 2. Nf3 $5) 2. Nf3 *
+`,
+            1,
+        );
+        const game = imported.games[0];
+        const line = webGameToLine(game);
+        const initialStats = getWebDatabaseMoveStats({
+            games: imported.games,
+            fen: game.moves[0].fenBefore,
+        });
+        const afterE4Stats = getWebDatabaseMoveStats({
+            games: imported.games,
+            fen: game.moves[0].fenAfter,
+        });
+
+        expect(game.moves.map((move) => move.san)).toEqual(["e4", "e5", "Nf3"]);
+        expect(game.rootVariations?.[0].map((move) => move.san)).toEqual(["d4", "d5"]);
+        expect(game.rootVariations?.[0][0]).toMatchObject({
+            annotations: ["!?"],
+            comments: ["Queen pawn branch"],
+        });
+        expect(game.moves[0].variations?.[0].map((move) => move.san)).toEqual(["c5", "Nf3"]);
+        expect(game.moves[0].variations?.[0][0]).toMatchObject({
+            comments: ["Sicilian branch"],
+        });
+        expect(game.moves[0].variations?.[0][1]).toMatchObject({
+            annotations: ["!?"],
+        });
+        expect(line[0].variations?.[0][0]).toMatchObject({
+            san: "c5",
+            comments: ["Sicilian branch"],
+        });
+        expect(countWebGameVariationMoves(game)).toBe(4);
+        expect(initialStats.map((stat) => stat.move).sort()).toEqual(["d4", "e4"]);
+        expect(afterE4Stats.map((stat) => stat.move).sort()).toEqual(["c5", "e5"]);
     });
 
     test("builds Lichess All explorer URLs with desktop-style filters", () => {

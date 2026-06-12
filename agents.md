@@ -460,6 +460,19 @@ black`, Min games, Show top, and the online import drawer's Save database,
   The blue board action buttons are now the only `Analysis / Database / Prep /
 Engine` selector on the phone workspace, and the active panel content starts
   directly below them to preserve vertical board space.
+- On 2026-06-12, the phone board gained compact previous/next arrow controls
+  directly under the Chessground board, plus left/right empty-board swipe
+  navigation that uses the same cursor model as the Moves panel. Swipe left
+  advances one move and swipe right goes back one move; gestures that start on
+  pieces are ignored by the swipe handler so normal piece dragging remains
+  protected, while the existing vertical board-swipe page scroll behavior is
+  preserved.
+- On 2026-06-12, active phone Prep training was compacted further: once prep
+  has started, the under-board Prep panel hides its setup/status/action header,
+  badges, and position notes, then shows the move rows/table directly under the
+  board with only a small `Return to prep settings` exit button. Keep this
+  started-state surface move-first; source, target, root, and builder controls
+  belong behind the setup/startup view.
 - On 2026-06-12, the phone Database and Prep source pickers stopped treating
   loose opened PGN files as selectable databases. Individual hosted PGNs opened
   from Files are now marked as `opened-file`, legacy unmarked loose PGNs are
@@ -1994,6 +2007,12 @@ from 2026-04-24 through 2026-05-03.
   MultiPV lines as Chessground `drawable.autoShapes`, using the same strong
   blue best-line arrow, pale-blue close alternatives, win-chance filtering, and
   line-width thresholds as the desktop engine arrows.
+- Phone PGN file playback now preserves PGN variation trees instead of only
+  importing `mainline()` moves. Browser-side games carry root and nested
+  variation lines with comments/NAGs, the under-board Moves panel renders those
+  branches inline and can jump the board onto a tapped branch, and local
+  Database/Prep indexing walks the full tree so repertoire files contribute
+  variation moves to stats.
 
 ## Verification Expectations
 
