@@ -323,6 +323,23 @@ export function createDefaultHumanOpponent(name = "Player"): OpponentSettings {
     };
 }
 
+export function createDefaultBlindfoldHumanOpponent(name = "Player"): OpponentSettings {
+    return {
+        ...createDefaultHumanOpponent(name),
+        timeControl: undefined,
+    };
+}
+
+export function createDefaultBlindfoldMaiaOpponent(
+    engine: LocalEngine | null = null,
+    fideElo = DEFAULT_BLINDFOLD_MAIA_ELO,
+): OpponentSettings {
+    return {
+        ...createDefaultMaiaOpponent(engine, fideElo),
+        timeControl: undefined,
+    };
+}
+
 function normalizeOptionValue(value: string | number | boolean | null | undefined) {
     if (value === null || value === undefined) return "";
     return value.toString();

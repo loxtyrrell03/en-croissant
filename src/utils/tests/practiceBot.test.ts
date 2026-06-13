@@ -1,6 +1,8 @@
 import { expect, test } from "vitest";
 import {
     buildPracticeBotOptions,
+    createDefaultBlindfoldHumanOpponent,
+    createDefaultBlindfoldMaiaOpponent,
     createDefaultMaiaOpponent,
     createDefaultPracticeBotOpponent,
     describePracticeBotBackend,
@@ -107,6 +109,21 @@ test("defaults blindfold Maia to a managed install path when no engine is select
     if (opponent.type !== "engine") return;
     expect(opponent.engine).toBeNull();
     expect(opponent.botProfile).toMatchObject({
+        enabled: true,
+        kind: "maia",
+        fideElo: 1500,
+    });
+});
+
+test("keeps blindfold Maia games untimed by default", () => {
+    const human = createDefaultBlindfoldHumanOpponent();
+    const maia = createDefaultBlindfoldMaiaOpponent(null, 1500);
+
+    expect(human.timeControl).toBeUndefined();
+    expect(maia.timeControl).toBeUndefined();
+    expect(maia.type).toBe("engine");
+    if (maia.type !== "engine") return;
+    expect(maia.botProfile).toMatchObject({
         enabled: true,
         kind: "maia",
         fideElo: 1500,

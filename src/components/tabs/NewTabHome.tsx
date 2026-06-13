@@ -149,8 +149,8 @@ import {
 import { getOpeningReviewGapReason } from "@/utils/openingReviewAutoUpdate";
 import { getGameName } from "@/utils/treeReducer";
 import {
-  createDefaultHumanOpponent,
-  createDefaultMaiaOpponent,
+  createDefaultBlindfoldHumanOpponent,
+  createDefaultBlindfoldMaiaOpponent,
   DEFAULT_BLINDFOLD_MAIA_ELO,
 } from "@/utils/practiceBot";
 import { resolve, tempDir } from "@tauri-apps/api/path";
@@ -2452,8 +2452,11 @@ export default function NewTabHome() {
 
     store.set(gameInputColorAtom, "white");
     store.set(gameSameTimeControlAtom, true);
-    store.set(gamePlayer1SettingsAtom, createDefaultHumanOpponent());
-    store.set(gamePlayer2SettingsAtom, createDefaultMaiaOpponent(null, DEFAULT_BLINDFOLD_MAIA_ELO));
+    store.set(gamePlayer1SettingsAtom, createDefaultBlindfoldHumanOpponent());
+    store.set(
+      gamePlayer2SettingsAtom,
+      createDefaultBlindfoldMaiaOpponent(null, DEFAULT_BLINDFOLD_MAIA_ELO),
+    );
     store.set(blindfoldGameSettingsFamily(tabId), {
       ...DEFAULT_BLINDFOLD_GAME_SETTINGS,
       enabled: true,

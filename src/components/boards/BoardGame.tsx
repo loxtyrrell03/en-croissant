@@ -61,7 +61,7 @@ import {
   gameSameTimeControlAtom,
   tabsAtom,
 } from "@/state/atoms";
-import { parsePGN } from "@/utils/chess";
+import { getLastMainlinePosition, parsePGN } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
 import type { GameHeaders, TreeNode } from "@/utils/treeReducer";
 import { unwrap } from "@/utils/unwrap";
@@ -75,8 +75,8 @@ import {
 } from "@/utils/blindfoldGameLibrary";
 import {
   buildPracticeBotOptions,
-  createDefaultHumanOpponent,
-  createDefaultMaiaOpponent,
+  createDefaultBlindfoldHumanOpponent,
+  createDefaultBlindfoldMaiaOpponent,
   DEFAULT_BLINDFOLD_MAIA_ELO,
   ensureManagedMaiaEngine,
   formatPracticeBotName,
@@ -96,7 +96,12 @@ import { ResponsivePanel } from "../common/ResponsivePanel";
 import { TreeStateContext } from "../common/TreeStateContext";
 import Board from "./Board";
 import BoardControls from "./BoardControls";
-import { BlindfoldMaiaSetupPanel, BlindfoldTrainingPanel } from "./BlindfoldTrainingPanel";
+import {
+  BlindfoldGamePanel,
+  BlindfoldMaiaSetupPanel,
+  BlindfoldMovePanel,
+} from "./BlindfoldTrainingPanel";
+import { BoardWithAnnotationLayout } from "./BoardWithAnnotationLayout";
 import EditingCard from "./EditingCard";
 import { OpponentForm, type OpponentSettings } from "./OpponentForm";
 
@@ -212,6 +217,9 @@ function BoardGame() {
   const [startingGame, setStartingGame] = useState(false);
   const [installingMaia, setInstallingMaia] = useState(false);
   const [maiaInstallError, setMaiaInstallError] = useState<string | null>(null);
+  const [blindfoldUnderBoardMode, setBlindfoldUnderBoardMode] = useState<"input" | "notation">(
+    "input",
+  );
 
   const hasEngine = players.white.type === "engine" || players.black.type === "engine";
   const blindfoldActive = blindfoldSettings.enabled;
@@ -424,6 +432,7 @@ function BoardGame() {
   }
 
   async function startGame() {
+    const isBlindfoldGame = blindfoldSettings.enabled;
     const selectedPlayers = getPlayers();
     const missingEngine = [selectedPlayers.white, selectedPlayers.black].some(
       (player) => player.type === "engine" && !player.botProfile?.enabled && !player.engine?.path,
@@ -435,7 +444,7 @@ function BoardGame() {
 
     setStartingGame(true);
     try {
-      if (blindfoldSettings.enabled) {
+      if (isBlindfoldGame) {
         setMaiaInstallError(null);
       }
 
@@ -462,22 +471,24 @@ function BoardGame() {
       const config: GameConfig = {
         white: toPlayerConfig(playerSettings.white),
         black: toPlayerConfig(playerSettings.black),
-        whiteTimeControl: playerSettings.white.timeControl
-          ? {
-              initialTime: playerSettings.white.timeControl.seconds,
-              increment: playerSettings.white.timeControl.increment ?? 0,
-            }
-          : null,
-        blackTimeControl: playerSettings.black.timeControl
-          ? {
-              initialTime: playerSettings.black.timeControl.seconds,
-              increment: playerSettings.black.timeControl.increment ?? 0,
-            }
-          : null,
+        whiteTimeControl:
+          !isBlindfoldGame && playerSettings.white.timeControl
+            ? {
+                initialTime: playerSettings.white.timeControl.seconds,
+                increment: playerSettings.white.timeControl.increment ?? 0,
+              }
+            : null,
+        blackTimeControl:
+          !isBlindfoldGame && playerSettings.black.timeControl
+            ? {
+                initialTime: playerSettings.black.timeControl.seconds,
+                increment: playerSettings.black.timeControl.increment ?? 0,
+              }
+            : null,
         initialFen: root.fen === INITIAL_FEN ? null : root.fen,
         initialMoves,
         openingBook:
-          !blindfoldSettings.enabled && openingBookEnabled && openingBookPath
+          !isBlindfoldGame && openingBookEnabled && openingBookPath
             ? { path: openingBookPath, maxPly: Math.max(1, openingBookMaxPly) }
             : null,
       } as GameConfig;
@@ -485,11 +496,11 @@ function BoardGame() {
       const result = await commands.startGame(newGameId, config);
       const state = unwrap(result);
 
-      setWhiteTime(state.whiteTime !== null ? Number(state.whiteTime) : null);
-      setBlackTime(state.blackTime !== null ? Number(state.blackTime) : null);
+      setWhiteTime(!isBlindfoldGame && state.whiteTime !== null ? Number(state.whiteTime) : null);
+      setBlackTime(!isBlindfoldGame && state.blackTime !== null ? Number(state.blackTime) : null);
 
       setGameState("playing");
-      if (blindfoldSettings.enabled) {
+      if (isBlindfoldGame) {
         setBlindfoldSessionId(genID());
         setBlindfoldMarks([]);
         setBlindfoldPeekFen(null);
@@ -513,7 +524,7 @@ function BoardGame() {
       const whiteIsEngine = playerSettings.white.type === "engine";
       const blackIsEngine = playerSettings.black.type === "engine";
       let eventStr = "Casual Game";
-      if (blindfoldSettings.enabled) {
+      if (isBlindfoldGame) {
         eventStr = "Blindfold";
       } else if (whiteIsEngine && blackIsEngine) {
         eventStr = "Engine Match";
@@ -542,13 +553,15 @@ function BoardGame() {
         date: dateStr,
         time: timeStr,
         time_control: undefined,
+        white_time_control: undefined,
+        black_time_control: undefined,
       };
 
-      if (sameTimeControl) {
+      if (!isBlindfoldGame && sameTimeControl) {
         if (whiteTimeControl !== "-") {
           newHeaders.time_control = whiteTimeControl;
         }
-      } else {
+      } else if (!isBlindfoldGame) {
         newHeaders.white_time_control = whiteTimeControl;
         newHeaders.black_time_control = blackTimeControl;
       }
@@ -696,12 +709,14 @@ function BoardGame() {
     (color: "white" | "black") => {
       setInputColor(color);
       setPlayer1Settings((current) =>
-        current.type === "human" ? current : createDefaultHumanOpponent(),
+        current.type === "human"
+          ? { ...current, timeControl: undefined }
+          : createDefaultBlindfoldHumanOpponent(),
       );
       setPlayer2Settings((current) =>
         current.type === "engine" && current.botProfile?.kind === "maia"
-          ? current
-          : createDefaultMaiaOpponent(
+          ? { ...current, timeControl: undefined }
+          : createDefaultBlindfoldMaiaOpponent(
               current.type === "engine" ? current.engine : null,
               blindfoldMaiaElo,
             ),
@@ -716,7 +731,7 @@ function BoardGame() {
       setMaiaInstallError(null);
       setPlayer2Settings((current) => {
         const engine = current.type === "engine" ? current.engine : null;
-        const next = createDefaultMaiaOpponent(engine, level) as Extract<
+        const next = createDefaultBlindfoldMaiaOpponent(engine, level) as Extract<
           OpponentSettings,
           { type: "engine" }
         >;
@@ -735,9 +750,9 @@ function BoardGame() {
         return {
           ...next,
           go: current.go,
-          timeControl: current.timeControl,
-          timeUnit: current.timeUnit,
-          incrementUnit: current.incrementUnit,
+          timeControl: undefined,
+          timeUnit: next.timeUnit,
+          incrementUnit: next.incrementUnit,
           engineSettings: nextEngineSettings,
           botProfile: {
             ...next.botProfile!,
@@ -761,16 +776,16 @@ function BoardGame() {
           (setting) => setting.name === "WeightsFile",
         )?.value;
         setPlayer2Settings((current) => {
-          const next = createDefaultMaiaOpponent(engine, level) as Extract<
+          const next = createDefaultBlindfoldMaiaOpponent(engine, level) as Extract<
             OpponentSettings,
             { type: "engine" }
           >;
           return {
             ...next,
             go: current.type === "engine" ? current.go : next.go,
-            timeControl: current.type === "engine" ? current.timeControl : next.timeControl,
-            timeUnit: current.type === "engine" ? current.timeUnit : next.timeUnit,
-            incrementUnit: current.type === "engine" ? current.incrementUnit : next.incrementUnit,
+            timeControl: undefined,
+            timeUnit: next.timeUnit,
+            incrementUnit: next.incrementUnit,
             botProfile: {
               ...next.botProfile!,
               timeUse:
@@ -852,7 +867,7 @@ function BoardGame() {
 
       try {
         const treeState = await parsePGN(savedGame.pgn, savedGame.initialFen);
-        treeState.position = savedGame.marks[0]?.path ?? [];
+        treeState.position = getLastMainlinePosition(treeState.root);
         setState(treeState);
         setBlindfoldSettings({
           ...savedGame.settings,
@@ -869,8 +884,8 @@ function BoardGame() {
 
         const humanName =
           savedGame.humanColor === "black" ? savedGame.black : savedGame.white || "Player";
-        const human = createDefaultHumanOpponent(humanName || "Player");
-        const maia = createDefaultMaiaOpponent(null, DEFAULT_BLINDFOLD_MAIA_ELO);
+        const human = createDefaultBlindfoldHumanOpponent(humanName || "Player");
+        const maia = createDefaultBlindfoldMaiaOpponent(null, DEFAULT_BLINDFOLD_MAIA_ELO);
         setPlayers(
           savedGame.humanColor === "black"
             ? { white: maia, black: human }
@@ -1043,12 +1058,16 @@ function BoardGame() {
     }
 
     if (player1Settings.type !== "human") {
-      setPlayer1Settings(createDefaultHumanOpponent());
+      setPlayer1Settings(createDefaultBlindfoldHumanOpponent());
+    } else if (player1Settings.timeControl) {
+      setPlayer1Settings({ ...player1Settings, timeControl: undefined });
     }
 
     if (player2Settings.type !== "engine" || player2Settings.botProfile?.kind !== "maia") {
       const engine = player2Settings.type === "engine" ? player2Settings.engine : null;
-      setPlayer2Settings(createDefaultMaiaOpponent(engine, blindfoldMaiaElo));
+      setPlayer2Settings(createDefaultBlindfoldMaiaOpponent(engine, blindfoldMaiaElo));
+    } else if (player2Settings.timeControl) {
+      setPlayer2Settings({ ...player2Settings, timeControl: undefined });
     }
 
     if (!sameTimeControl) {
@@ -1114,6 +1133,53 @@ function BoardGame() {
     resetTree();
   }
 
+  const handleDeleteBlindfoldSavedGame = useCallback(
+    (id: string) => {
+      const deleted = savedBlindfoldGames.find((game) => game.id === id);
+      setSavedBlindfoldGames((current) => current.filter((game) => game.id !== id));
+      if (blindfoldSessionId === id) {
+        setBlindfoldSessionId(null);
+      }
+      notifications.show({
+        title: "Deleted",
+        message: deleted
+          ? `${deleted.title} was removed from the blindfold library.`
+          : "The game was removed from the blindfold library.",
+      });
+    },
+    [blindfoldSessionId, savedBlindfoldGames, setBlindfoldSessionId, setSavedBlindfoldGames],
+  );
+
+  const handleExitBlindfoldGame = useCallback(async () => {
+    if (gameState === "playing" && gameId) {
+      try {
+        await commands.abortGame(gameId);
+      } catch {
+        // Exiting the local trainer should still return the user to setup.
+      }
+    }
+    setGameId(null);
+    setGameState("settingUp");
+    setWhiteTime(null);
+    setBlackTime(null);
+    setBlindfoldSessionId(null);
+    setBlindfoldMarks([]);
+    setBlindfoldPeekFen(null);
+    resetTree();
+    setCurrentTab((tab) => (tab ? { ...tab, type: "play", name: "Blindfold" } : tab));
+  }, [
+    gameId,
+    gameState,
+    resetTree,
+    setBlackTime,
+    setBlindfoldMarks,
+    setBlindfoldSessionId,
+    setCurrentTab,
+    setGameId,
+    setGameState,
+    setWhiteTime,
+  ]);
+
   async function handleSelectOpeningBook() {
     const selected = await open({
       multiple: false,
@@ -1130,44 +1196,100 @@ function BoardGame() {
     }
   }
 
+  const boardElement = (
+    <Board
+      editingMode={gameState === "settingUp" && editingMode}
+      viewOnly={gameState !== "playing" && !editingMode}
+      disableVariations
+      boardRef={boardRef}
+      movable={
+        blindfoldBoardHidden || (gameState === "settingUp" && editingMode) ? "none" : movable
+      }
+      whiteTime={gameState === "playing" && !blindfoldActive ? (whiteTime ?? undefined) : undefined}
+      blackTime={gameState === "playing" && !blindfoldActive ? (blackTime ?? undefined) : undefined}
+      onMove={handleHumanMove}
+      selectedPiece={selectedPiece}
+      cgRef={cgRef}
+      enablePremoves={isPlayerVsEngine && gameState === "playing"}
+      showDestsOverride={
+        blindfoldActive && gameState === "playing"
+          ? blindfoldSettings.showPieceDestinations
+          : undefined
+      }
+      moveHighlightOverride={
+        blindfoldActive && gameState === "playing" ? blindfoldSettings.highlightLastMove : undefined
+      }
+      blindfoldOverlay={
+        blindfoldCanHideBoard
+          ? {
+              hidden: blindfoldBoardHidden,
+              canReveal: blindfoldSettings.allowPeeking,
+              onReveal: () => setBlindfoldPeekFen(currentNode.fen),
+              label: "Board hidden",
+            }
+          : undefined
+      }
+    />
+  );
+
+  const blindfoldUnderBoardHeaderActions = (
+    <SegmentedControl
+      size="xs"
+      value={blindfoldUnderBoardMode}
+      onChange={(value) => setBlindfoldUnderBoardMode(value as "input" | "notation")}
+      data={[
+        { value: "input", label: "Input" },
+        { value: "notation", label: "Move list" },
+      ]}
+    />
+  );
+
   return (
     <>
       <Portal target="#left" style={{ height: "100%" }}>
-        <Board
-          editingMode={gameState === "settingUp" && editingMode}
-          viewOnly={gameState !== "playing" && !editingMode}
-          disableVariations
-          boardRef={boardRef}
-          movable={
-            blindfoldBoardHidden || (gameState === "settingUp" && editingMode) ? "none" : movable
-          }
-          whiteTime={gameState === "playing" ? (whiteTime ?? undefined) : undefined}
-          blackTime={gameState === "playing" ? (blackTime ?? undefined) : undefined}
-          onMove={handleHumanMove}
-          selectedPiece={selectedPiece}
-          cgRef={cgRef}
-          enablePremoves={isPlayerVsEngine && gameState === "playing"}
-          showDestsOverride={
-            blindfoldActive && gameState === "playing"
-              ? blindfoldSettings.showPieceDestinations
-              : undefined
-          }
-          moveHighlightOverride={
-            blindfoldActive && gameState === "playing"
-              ? blindfoldSettings.highlightLastMove
-              : undefined
-          }
-          blindfoldOverlay={
-            blindfoldCanHideBoard
-              ? {
-                  hidden: blindfoldBoardHidden,
-                  canReveal: blindfoldSettings.allowPeeking,
-                  onReveal: () => setBlindfoldPeekFen(currentNode.fen),
-                  label: "Board hidden",
-                }
-              : undefined
-          }
-        />
+        {blindfoldActive && gameState !== "settingUp" ? (
+          <BoardWithAnnotationLayout
+            board={boardElement}
+            underBoard={
+              <Stack h="100%" gap="xs">
+                <GameNotation
+                  topBar
+                  compact
+                  controls={
+                    <BoardControls
+                      editingMode={false}
+                      toggleEditingMode={toggleEditingMode}
+                      dirty={false}
+                      canTakeBack={onePlayerIsEngine}
+                      onTakeBack={onTakeBack}
+                      disableVariations
+                      allowEditing={false}
+                    />
+                  }
+                  headerActions={blindfoldUnderBoardHeaderActions}
+                  content={
+                    blindfoldUnderBoardMode === "input" ? (
+                      <BlindfoldMovePanel
+                        fen={currentNode.fen}
+                        gameState={gameState}
+                        players={players}
+                        currentLineAtEnd={currentLineAtEnd}
+                        marks={blindfoldMarks}
+                        currentPath={currentPath}
+                        onPlayMove={handleBlindfoldMove}
+                        onGoToMark={handleGoToBlindfoldMark}
+                        framed={false}
+                      />
+                    ) : undefined
+                  }
+                />
+                {blindfoldUnderBoardMode === "notation" && <MoveControls />}
+              </Stack>
+            }
+          />
+        ) : (
+          boardElement
+        )}
       </Portal>
       <Portal target="#topRight" style={{ height: "100%", overflow: "hidden" }}>
         <Paper withBorder shadow="sm" p="md" h="100%">
@@ -1215,6 +1337,7 @@ function BoardGame() {
                             onMaiaEloChange={handleBlindfoldMaiaEloChange}
                             onLoadFen={loadBlindfoldFen}
                             onLoadSavedGame={handleLoadSavedBlindfoldGame}
+                            onDeleteSavedGame={handleDeleteBlindfoldSavedGame}
                           />
                         ) : (
                           <>
@@ -1333,7 +1456,7 @@ function BoardGame() {
                 )}
                 {(gameState === "playing" || gameState === "gameOver") &&
                   (blindfoldActive ? (
-                    <BlindfoldTrainingPanel
+                    <BlindfoldGamePanel
                       fen={currentNode.fen}
                       gameState={gameState}
                       players={players}
@@ -1346,16 +1469,12 @@ function BoardGame() {
                       lastMoveSan={lastEngineMoveSan}
                       marks={blindfoldMarks}
                       currentPath={currentPath}
-                      savedGames={savedBlindfoldGames}
-                      activeSavedGameId={blindfoldSessionId}
                       onRevealBoard={() => setBlindfoldPeekFen(currentNode.fen)}
                       onHideBoard={() => setBlindfoldPeekFen(null)}
-                      onPlayMove={handleBlindfoldMove}
                       onToggleLostTrack={handleToggleLostTrack}
-                      onGoToMark={handleGoToBlindfoldMark}
                       onPlayFromCurrentPosition={handlePlayBlindfoldFromCurrentPosition}
                       onSaveGameToFile={handleSaveBlindfoldGameToFile}
-                      onLoadSavedGame={handleLoadSavedBlindfoldGame}
+                      onExitGame={handleExitBlindfoldGame}
                     />
                   ) : (
                     <Stack h="100%">
@@ -1415,7 +1534,7 @@ function BoardGame() {
             selectedPiece={selectedPiece}
             setSelectedPiece={setSelectedPiece}
           />
-        ) : (
+        ) : blindfoldActive ? null : (
           <Stack h="100%" gap="xs">
             <GameNotation
               topBar

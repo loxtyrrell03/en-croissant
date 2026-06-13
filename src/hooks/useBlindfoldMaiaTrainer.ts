@@ -13,8 +13,8 @@ import {
     gameSameTimeControlAtom,
 } from "@/state/atoms";
 import {
-    createDefaultHumanOpponent,
-    createDefaultMaiaOpponent,
+    createDefaultBlindfoldHumanOpponent,
+    createDefaultBlindfoldMaiaOpponent,
     DEFAULT_BLINDFOLD_MAIA_ELO,
 } from "@/utils/practiceBot";
 
@@ -49,8 +49,8 @@ export function useBlindfoldMaiaTrainer() {
         });
         setInputColor(sideToMove);
         setSameTimeControl(true);
-        setPlayer1Settings(createDefaultHumanOpponent());
-        setPlayer2Settings(createDefaultMaiaOpponent(null, DEFAULT_BLINDFOLD_MAIA_ELO));
+        setPlayer1Settings(createDefaultBlindfoldHumanOpponent());
+        setPlayer2Settings(createDefaultBlindfoldMaiaOpponent(null, DEFAULT_BLINDFOLD_MAIA_ELO));
         setBlindfoldSettings({
             ...DEFAULT_BLINDFOLD_GAME_SETTINGS,
             enabled: true,

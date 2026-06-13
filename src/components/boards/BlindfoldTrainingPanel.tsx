@@ -10,7 +10,6 @@ import {
   Paper,
   ScrollArea,
   SegmentedControl,
-  Select,
   SimpleGrid,
   Stack,
   Switch,
@@ -25,6 +24,8 @@ import {
   IconEyeClosed,
   IconFlag,
   IconPlayerPlay,
+  IconTrash,
+  IconX,
 } from "@tabler/icons-react";
 import { useAtom } from "jotai";
 import { useEffect, useMemo, useState } from "react";
@@ -56,9 +57,10 @@ type BlindfoldMaiaSetupPanelProps = {
   onMaiaEloChange: (elo: number) => void;
   onLoadFen: (fen: string) => boolean;
   onLoadSavedGame: (id: string) => void | Promise<void>;
+  onDeleteSavedGame: (id: string) => void | Promise<void>;
 };
 
-type BlindfoldTrainingPanelProps = {
+type BlindfoldGamePanelProps = {
   fen: string;
   gameState: "playing" | "gameOver";
   players: {
@@ -72,16 +74,27 @@ type BlindfoldTrainingPanelProps = {
   lastMoveSan: string | null;
   marks: BlindfoldLostTrackMark[];
   currentPath: number[];
-  savedGames: BlindfoldSavedGame[];
-  activeSavedGameId: string | null;
   onRevealBoard: () => void;
   onHideBoard: () => void;
-  onPlayMove: (uci: string) => void | Promise<void>;
   onToggleLostTrack: () => void;
-  onGoToMark: (path: number[]) => void;
   onPlayFromCurrentPosition: () => void | Promise<void>;
   onSaveGameToFile: () => void | Promise<void>;
-  onLoadSavedGame: (id: string) => void | Promise<void>;
+  onExitGame: () => void | Promise<void>;
+};
+
+type BlindfoldMovePanelProps = {
+  fen: string;
+  gameState: "playing" | "gameOver";
+  players: {
+    white: OpponentSettings;
+    black: OpponentSettings;
+  };
+  currentLineAtEnd: boolean;
+  marks: BlindfoldLostTrackMark[];
+  currentPath: number[];
+  onPlayMove: (uci: string) => void | Promise<void>;
+  onGoToMark: (path: number[]) => void;
+  framed?: boolean;
 };
 
 const PIECE_TOKENS = [
@@ -99,14 +112,14 @@ function activeColorFromFen(fen: string): PlayerColor {
   return fen.split(/\s+/)[1] === "b" ? "black" : "white";
 }
 
-function humanColor(players: BlindfoldTrainingPanelProps["players"]): PlayerColor | "turn" | null {
+function humanColor(players: BlindfoldGamePanelProps["players"]): PlayerColor | "turn" | null {
   if (players.white.type === "human" && players.black.type !== "human") return "white";
   if (players.black.type === "human" && players.white.type !== "human") return "black";
   if (players.white.type === "human" && players.black.type === "human") return "turn";
   return null;
 }
 
-function botLabel(players: BlindfoldTrainingPanelProps["players"]) {
+function botLabel(players: BlindfoldGamePanelProps["players"]) {
   const engine = players.white.type === "engine" ? players.white : players.black;
   if (engine.type !== "engine") return "Maia";
   return engine.botProfile ? formatPracticeBotName(engine.botProfile, engine.timeControl) : "Maia";
@@ -118,14 +131,18 @@ function moveNumberFromFen(fen: string) {
   return `${fullMove}${parts[1] === "b" ? "..." : "."}`;
 }
 
-function savedGameOptions(savedGames: BlindfoldSavedGame[]) {
-  return savedGames.map((game) => ({
-    value: game.id,
-    label: game.title,
-    description: `${game.moveCount} ply - ${game.result} - ${new Date(
-      game.updatedAt,
-    ).toLocaleString()}`,
-  }));
+function formatSavedGameTime(timestamp: number) {
+  return new Date(timestamp).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function savedGameMoveLabel(moveCount: number) {
+  const fullMoves = Math.ceil(moveCount / 2);
+  return `${fullMoves} move${fullMoves === 1 ? "" : "s"}`;
 }
 
 export function BlindfoldMaiaSetupPanel({
@@ -140,10 +157,16 @@ export function BlindfoldMaiaSetupPanel({
   onMaiaEloChange,
   onLoadFen,
   onLoadSavedGame,
+  onDeleteSavedGame,
 }: BlindfoldMaiaSetupPanelProps) {
   const [settings, setSettings] = useAtom(currentBlindfoldGameSettingsAtom);
+  const [phase, setPhase] = useState<"settings" | "library" | "position">("settings");
   const [fenInput, setFenInput] = useState(currentFen);
   const [fenError, setFenError] = useState<string | null>(null);
+  const libraryGames = useMemo(
+    () => [...savedGames].sort((a, b) => b.updatedAt - a.updatedAt),
+    [savedGames],
+  );
 
   useEffect(() => {
     setFenInput(currentFen);
@@ -204,124 +227,220 @@ export function BlindfoldMaiaSetupPanel({
         </Stack>
       </Paper>
 
-      <Paper withBorder p="md">
-        <Stack gap="sm">
-          <Text size="sm" fw={700}>
-            Settings
-          </Text>
+      <SegmentedControl
+        fullWidth
+        value={phase}
+        onChange={(value) => setPhase(value as "settings" | "library" | "position")}
+        data={[
+          { value: "settings", label: "Settings" },
+          { value: "library", label: "Library" },
+          { value: "position", label: "Position" },
+        ]}
+      />
 
-          <SegmentedControl
-            value={settings.moveInputMode}
-            onChange={(value) =>
-              setSettings((current) => ({
-                ...current,
-                moveInputMode: value as "legal" | "manual",
-              }))
-            }
-            data={[
-              { value: "legal", label: "Legal moves" },
-              { value: "manual", label: "Manual SAN" },
-            ]}
-          />
-          <Group grow align="flex-start">
-            <Switch
-              label="Hide board"
-              checked={settings.hideBoard}
-              onChange={(event) =>
-                setSettings((current) => ({
-                  ...current,
-                  hideBoard: event.currentTarget.checked,
-                }))
-              }
-            />
-            <Switch
-              label="Allow peeking"
-              checked={settings.allowPeeking}
-              disabled={!settings.hideBoard}
-              onChange={(event) =>
-                setSettings((current) => ({
-                  ...current,
-                  allowPeeking: event.currentTarget.checked,
-                }))
-              }
-            />
-          </Group>
-          <NumberInput
-            label="AI move display time"
-            min={0}
-            max={15}
-            step={1}
-            value={Math.round(settings.aiMoveDisplayMs / 1000)}
-            onChange={(value) =>
-              setSettings((current) => ({
-                ...current,
-                aiMoveDisplayMs: Math.max(0, Math.min(15, Number(value) || 0)) * 1000,
-              }))
-            }
-          />
-          <Group grow>
-            <Checkbox
-              label="Highlight last move"
-              checked={settings.highlightLastMove}
-              onChange={(event) =>
-                setSettings((current) => ({
-                  ...current,
-                  highlightLastMove: event.currentTarget.checked,
-                }))
-              }
-            />
-            <Checkbox
-              label="Piece destinations"
-              checked={settings.showPieceDestinations}
-              onChange={(event) =>
-                setSettings((current) => ({
-                  ...current,
-                  showPieceDestinations: event.currentTarget.checked,
-                }))
-              }
-            />
-          </Group>
-        </Stack>
-      </Paper>
+      {phase === "settings" && (
+        <Paper withBorder p="md">
+          <Stack gap="sm">
+            <Text size="sm" fw={700}>
+              Settings
+            </Text>
 
-      <Paper withBorder p="md">
-        <Stack gap="xs">
-          <Text size="sm" fw={700}>
-            Games and positions
-          </Text>
-          <Select
-            searchable
-            clearable
-            label="Blindfold games"
-            placeholder={savedGames.length > 0 ? "Select a saved game" : "No saved games yet"}
-            data={savedGameOptions(savedGames)}
-            disabled={savedGames.length === 0}
-            onChange={(value) => {
-              if (value) void onLoadSavedGame(value);
-            }}
-          />
-          <Group align="flex-end" grow>
-            <TextInput
-              label="Load position"
-              placeholder="Paste FEN"
-              value={fenInput}
-              error={fenError}
-              onChange={(event) => setFenInput(event.currentTarget.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") loadFen();
-              }}
+            <SegmentedControl
+              value={settings.moveInputMode}
+              onChange={(value) =>
+                setSettings((current) => ({
+                  ...current,
+                  moveInputMode: value as "legal" | "manual",
+                }))
+              }
+              data={[
+                { value: "legal", label: "Legal moves" },
+                { value: "manual", label: "Manual SAN" },
+              ]}
             />
-            <Button variant="default" onClick={loadFen}>
-              Load FEN
-            </Button>
-          </Group>
-        </Stack>
-      </Paper>
+            <Group grow align="flex-start">
+              <Switch
+                label="Hide board"
+                checked={settings.hideBoard}
+                onChange={(event) =>
+                  setSettings((current) => ({
+                    ...current,
+                    hideBoard: event.currentTarget.checked,
+                  }))
+                }
+              />
+              <Switch
+                label="Allow peeking"
+                checked={settings.allowPeeking}
+                disabled={!settings.hideBoard}
+                onChange={(event) =>
+                  setSettings((current) => ({
+                    ...current,
+                    allowPeeking: event.currentTarget.checked,
+                  }))
+                }
+              />
+            </Group>
+            <NumberInput
+              label="AI move display time"
+              min={0}
+              max={15}
+              step={1}
+              value={Math.round(settings.aiMoveDisplayMs / 1000)}
+              onChange={(value) =>
+                setSettings((current) => ({
+                  ...current,
+                  aiMoveDisplayMs: Math.max(0, Math.min(15, Number(value) || 0)) * 1000,
+                }))
+              }
+            />
+            <Group grow>
+              <Checkbox
+                label="Highlight last move"
+                checked={settings.highlightLastMove}
+                onChange={(event) =>
+                  setSettings((current) => ({
+                    ...current,
+                    highlightLastMove: event.currentTarget.checked,
+                  }))
+                }
+              />
+              <Checkbox
+                label="Piece destinations"
+                checked={settings.showPieceDestinations}
+                onChange={(event) =>
+                  setSettings((current) => ({
+                    ...current,
+                    showPieceDestinations: event.currentTarget.checked,
+                  }))
+                }
+              />
+            </Group>
+          </Stack>
+        </Paper>
+      )}
+
+      {phase === "library" && (
+        <Paper withBorder p="md">
+          <Stack gap="sm">
+            <Group justify="space-between" wrap="nowrap">
+              <Box>
+                <Text size="sm" fw={700}>
+                  Game library
+                </Text>
+                <Text size="xs" c="dimmed">
+                  Saved blindfold games and lost-track marks.
+                </Text>
+              </Box>
+              <Badge variant="light">{libraryGames.length}</Badge>
+            </Group>
+
+            {libraryGames.length === 0 ? (
+              <Text size="sm" c="dimmed">
+                No saved games yet.
+              </Text>
+            ) : (
+              <Stack gap="xs">
+                {libraryGames.map((game) => (
+                  <Paper key={game.id} withBorder p="sm">
+                    <Stack gap={6}>
+                      <Group justify="space-between" wrap="nowrap" align="flex-start">
+                        <Box style={{ minWidth: 0 }}>
+                          <Text size="sm" fw={700} truncate>
+                            {game.title}
+                          </Text>
+                          <Text size="xs" c="dimmed" truncate>
+                            {game.white} vs {game.black}
+                          </Text>
+                        </Box>
+                        <Badge size="sm" variant="light">
+                          {game.result}
+                        </Badge>
+                      </Group>
+                      <Group gap={6}>
+                        <Badge size="sm" variant="default">
+                          {savedGameMoveLabel(game.moveCount)}
+                        </Badge>
+                        <Badge
+                          size="sm"
+                          color={game.marks.length > 0 ? "yellow" : "gray"}
+                          variant="light"
+                        >
+                          {game.marks.length} mark{game.marks.length === 1 ? "" : "s"}
+                        </Badge>
+                        {game.lastMoveSan && (
+                          <Badge size="sm" variant="default">
+                            Last {game.lastMoveSan}
+                          </Badge>
+                        )}
+                      </Group>
+                      <Group justify="space-between" wrap="nowrap">
+                        <Text size="xs" c="dimmed">
+                          {formatSavedGameTime(game.updatedAt)}
+                        </Text>
+                        <Group gap={6} wrap="nowrap">
+                          <Button
+                            size="xs"
+                            variant="light"
+                            onClick={() => void onLoadSavedGame(game.id)}
+                          >
+                            Open
+                          </Button>
+                          <Button
+                            size="xs"
+                            variant="subtle"
+                            color="red"
+                            leftSection={<IconTrash size={14} />}
+                            onClick={() => {
+                              if (
+                                window.confirm(`Delete "${game.title}" from the blindfold library?`)
+                              ) {
+                                void onDeleteSavedGame(game.id);
+                              }
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </Group>
+                      </Group>
+                    </Stack>
+                  </Paper>
+                ))}
+              </Stack>
+            )}
+          </Stack>
+        </Paper>
+      )}
+
+      {phase === "position" && (
+        <Paper withBorder p="md">
+          <Stack gap="xs">
+            <Text size="sm" fw={700}>
+              Load position
+            </Text>
+            <Group align="flex-end" grow>
+              <TextInput
+                label="FEN"
+                placeholder="Paste FEN"
+                value={fenInput}
+                error={fenError}
+                onChange={(event) => setFenInput(event.currentTarget.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") loadFen();
+                }}
+              />
+              <Button variant="default" onClick={loadFen}>
+                Load FEN
+              </Button>
+            </Group>
+          </Stack>
+        </Paper>
+      )}
     </Stack>
   );
 }
 
-export function BlindfoldTrainingPanel({
+export function BlindfoldGamePanel({
   fen,
   gameState,
   players,
@@ -332,30 +451,18 @@ export function BlindfoldTrainingPanel({
   lastMoveSan,
   marks,
   currentPath,
-  savedGames,
-  activeSavedGameId,
   onRevealBoard,
   onHideBoard,
-  onPlayMove,
   onToggleLostTrack,
-  onGoToMark,
   onPlayFromCurrentPosition,
   onSaveGameToFile,
-  onLoadSavedGame,
-}: BlindfoldTrainingPanelProps) {
-  const [settings, setSettings] = useAtom(currentBlindfoldGameSettingsAtom);
-  const [manualInput, setManualInput] = useState("");
+  onExitGame,
+}: BlindfoldGamePanelProps) {
+  const [settings] = useAtom(currentBlindfoldGameSettingsAtom);
   const [displayedLastMove, setDisplayedLastMove] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const turn = activeColorFromFen(fen);
-  const legalMoves = useMemo(() => getBlindfoldLegalMoves(fen), [fen]);
-  const manualStatus = useMemo(
-    () => getBlindfoldMoveInputStatus(fen, manualInput),
-    [fen, manualInput],
-  );
   const playerColor = humanColor(players);
-  const canMove =
-    gameState === "playing" && currentLineAtEnd && (playerColor === "turn" || playerColor === turn);
   const waitingReason =
     gameState === "gameOver"
       ? "Game over"
@@ -366,14 +473,6 @@ export function BlindfoldTrainingPanel({
           : null;
   const currentPathKey = blindfoldPathKey(currentPath);
   const currentMark = marks.find((mark) => blindfoldPathKey(mark.path) === currentPathKey);
-  const orderedMarks = useMemo(
-    () => [...marks].sort((a, b) => a.ply - b.ply || a.createdAt - b.createdAt),
-    [marks],
-  );
-
-  useEffect(() => {
-    setManualInput("");
-  }, [fen]);
 
   useEffect(() => {
     if (!lastMoveSan || settings.aiMoveDisplayMs <= 0) {
@@ -388,16 +487,6 @@ export function BlindfoldTrainingPanel({
     return () => window.clearTimeout(timeout);
   }, [lastMoveSan, settings.aiMoveDisplayMs]);
 
-  function appendToken(token: string) {
-    setManualInput((current) => `${current}${token}`);
-  }
-
-  async function playMove(uci: string) {
-    if (!canMove) return;
-    setManualInput("");
-    await onPlayMove(uci);
-  }
-
   async function saveGameToFile() {
     setSaving(true);
     try {
@@ -406,12 +495,6 @@ export function BlindfoldTrainingPanel({
       setSaving(false);
     }
   }
-
-  const submitManual = async () => {
-    const move = findBlindfoldMove(fen, manualInput);
-    if (!move) return;
-    await playMove(move.uci);
-  };
 
   return (
     <Stack h="100%" gap="sm">
@@ -432,7 +515,7 @@ export function BlindfoldTrainingPanel({
         </Box>
       </Group>
 
-      <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="xs">
+      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
         <Button
           size="xs"
           variant={currentMark ? "filled" : "light"}
@@ -468,6 +551,15 @@ export function BlindfoldTrainingPanel({
         >
           {boardHidden ? "Reveal" : boardRevealed ? "Hide" : "Visible"}
         </Button>
+        <Button
+          size="xs"
+          variant="subtle"
+          color="red"
+          leftSection={<IconX size={14} />}
+          onClick={() => void onExitGame()}
+        >
+          Exit
+        </Button>
       </SimpleGrid>
 
       {displayedLastMove && (
@@ -482,169 +574,284 @@ export function BlindfoldTrainingPanel({
         </Alert>
       )}
 
-      <SegmentedControl
-        value={settings.moveInputMode}
-        onChange={(value) =>
-          setSettings((current) => ({
-            ...current,
-            moveInputMode: value as "legal" | "manual",
-          }))
-        }
-        data={[
-          { value: "legal", label: "Legal moves" },
-          { value: "manual", label: "Manual SAN" },
-        ]}
-      />
-
-      <ScrollArea style={{ flex: 1 }} offsetScrollbars>
-        {settings.moveInputMode === "legal" ? (
-          <Stack gap="xs">
-            <Text size="xs" c="dimmed">
-              {legalMoves.length} legal move{legalMoves.length === 1 ? "" : "s"}
-            </Text>
-            <SimpleGrid cols={{ base: 3, sm: 4 }}>
-              {legalMoves.map((move) => (
-                <Button
-                  key={move.uci}
-                  variant="default"
-                  disabled={!canMove}
-                  onClick={() => void playMove(move.uci)}
-                >
-                  {move.san}
-                </Button>
-              ))}
-            </SimpleGrid>
-          </Stack>
-        ) : (
-          <Stack gap="xs">
-            <Paper withBorder p="sm">
-              <Group justify="space-between" wrap="nowrap">
-                <Text fw={800} size="lg">
-                  {manualInput || " "}
-                </Text>
-                <Badge
-                  color={
-                    manualStatus.kind === "legal"
-                      ? "green"
-                      : manualStatus.kind === "illegal"
-                        ? "red"
-                        : "gray"
-                  }
-                  variant="light"
-                >
-                  {manualStatus.kind === "legal"
-                    ? "Legal"
-                    : manualStatus.kind === "illegal"
-                      ? "No match"
-                      : "Input"}
-                </Badge>
-              </Group>
-            </Paper>
-
-            <SimpleGrid cols={6}>
-              {PIECE_TOKENS.map((token) => (
-                <Button
-                  key={token.label}
-                  variant="default"
-                  aria-label={token.aria}
-                  onClick={() => appendToken(token.label)}
-                >
-                  {token.label}
-                </Button>
-              ))}
-              <Button variant="default" aria-label="Capture" onClick={() => appendToken("x")}>
-                x
-              </Button>
-            </SimpleGrid>
-            <SimpleGrid cols={8}>
-              {FILE_TOKENS.map((token) => (
-                <Button key={token} variant="default" onClick={() => appendToken(token)}>
-                  {token}
-                </Button>
-              ))}
-            </SimpleGrid>
-            <SimpleGrid cols={8}>
-              {RANK_TOKENS.map((token) => (
-                <Button key={token} variant="default" onClick={() => appendToken(token)}>
-                  {token}
-                </Button>
-              ))}
-            </SimpleGrid>
-            <SimpleGrid cols={5}>
-              <Button variant="default" aria-label="Check" onClick={() => appendToken("+")}>
-                +
-              </Button>
-              <Button variant="default" aria-label="Promotion" onClick={() => appendToken("=")}>
-                =
-              </Button>
-              <Button variant="default" aria-label="Checkmate" onClick={() => appendToken("#")}>
-                #
-              </Button>
-              <Button
-                variant="default"
-                aria-label="Kingside castling"
-                onClick={() => appendToken("O-O")}
-              >
-                O-O
-              </Button>
-              <Button
-                variant="default"
-                aria-label="Queenside castling"
-                onClick={() => appendToken("O-O-O")}
-              >
-                O-O-O
-              </Button>
-            </SimpleGrid>
-
-            <Divider />
-            <Group grow>
-              <Button
-                variant="default"
-                leftSection={<IconBackspace size={16} />}
-                onClick={() => setManualInput((current) => current.slice(0, -1))}
-              >
-                Backspace
-              </Button>
-              <Button variant="default" onClick={() => setManualInput("")}>
-                Clear
-              </Button>
-              <Button
-                disabled={!canMove || manualStatus.kind !== "legal"}
-                onClick={() => void submitManual()}
-              >
-                Submit
-              </Button>
-            </Group>
-          </Stack>
-        )}
-      </ScrollArea>
+      <Box style={{ flex: 1 }} />
 
       <Paper withBorder p="xs">
-        <Stack gap={6}>
-          <Select
-            searchable
-            clearable
-            size="xs"
-            label="Blindfold games"
-            placeholder={savedGames.length > 0 ? "Revisit a saved game" : "No saved games yet"}
-            data={savedGameOptions(savedGames)}
-            value={activeSavedGameId}
-            disabled={savedGames.length === 0}
-            onChange={(value) => {
-              if (value) void onLoadSavedGame(value);
-            }}
-          />
+        <Group justify="space-between" wrap="nowrap">
+          <Text size="xs" fw={700}>
+            Lost-track positions
+          </Text>
+          <Badge size="sm" color={marks.length > 0 ? "yellow" : "gray"} variant="light">
+            {marks.length}
+          </Badge>
+        </Group>
+      </Paper>
+    </Stack>
+  );
+}
 
-          {orderedMarks.length > 0 && (
+export function BlindfoldMovePanel({
+  fen,
+  gameState,
+  players,
+  currentLineAtEnd,
+  marks,
+  currentPath,
+  onPlayMove,
+  onGoToMark,
+  framed = true,
+}: BlindfoldMovePanelProps) {
+  const [settings, setSettings] = useAtom(currentBlindfoldGameSettingsAtom);
+  const [phase, setPhase] = useState<"moves" | "marks">("moves");
+  const [manualInput, setManualInput] = useState("");
+  const turn = activeColorFromFen(fen);
+  const legalMoves = useMemo(() => getBlindfoldLegalMoves(fen), [fen]);
+  const manualStatus = useMemo(
+    () => getBlindfoldMoveInputStatus(fen, manualInput),
+    [fen, manualInput],
+  );
+  const playerColor = humanColor(players);
+  const canMove =
+    gameState === "playing" && currentLineAtEnd && (playerColor === "turn" || playerColor === turn);
+  const waitingReason =
+    gameState === "gameOver"
+      ? "Game over"
+      : !currentLineAtEnd
+        ? "Go to the end of the game to move"
+        : playerColor !== "turn" && playerColor !== turn
+          ? `${botLabel(players)} to move`
+          : null;
+  const currentPathKey = blindfoldPathKey(currentPath);
+  const orderedMarks = useMemo(
+    () => [...marks].sort((a, b) => a.ply - b.ply || a.createdAt - b.createdAt),
+    [marks],
+  );
+
+  useEffect(() => {
+    setManualInput("");
+  }, [fen]);
+
+  function appendToken(token: string) {
+    setManualInput((current) => `${current}${token}`);
+  }
+
+  async function playMove(uci: string) {
+    if (!canMove) return;
+    setManualInput("");
+    await onPlayMove(uci);
+  }
+
+  const submitManual = async () => {
+    const move = findBlindfoldMove(fen, manualInput);
+    if (!move) return;
+    await playMove(move.uci);
+  };
+
+  const content = (
+    <Stack h="100%" gap="xs">
+      <Group justify="space-between" gap="xs" wrap="nowrap">
+        <Box style={{ minWidth: 0 }}>
+          <Text size="sm" fw={800}>
+            Moves
+          </Text>
+          <Text size="xs" c="dimmed">
+            {moveNumberFromFen(fen)} {turn === "white" ? "White" : "Black"} to move
+          </Text>
+        </Box>
+        <SegmentedControl
+          size="xs"
+          value={phase}
+          onChange={(value) => setPhase(value as "moves" | "marks")}
+          data={[
+            { value: "moves", label: "Moves" },
+            { value: "marks", label: "Marks" },
+          ]}
+        />
+      </Group>
+
+      {waitingReason && (
+        <Alert color={gameState === "gameOver" ? "gray" : "yellow"} variant="light" py="xs">
+          {waitingReason}
+        </Alert>
+      )}
+
+      {settings.moveInputMode === "legal"
+        ? phase === "moves" && (
             <>
-              <Group justify="space-between" wrap="nowrap">
-                <Text size="xs" fw={700}>
-                  Lost-track positions
-                </Text>
-                <Badge size="sm" variant="light">
-                  {orderedMarks.length}
-                </Badge>
-              </Group>
+              <SegmentedControl
+                size="xs"
+                value={settings.moveInputMode}
+                onChange={(value) =>
+                  setSettings((current) => ({
+                    ...current,
+                    moveInputMode: value as "legal" | "manual",
+                  }))
+                }
+                data={[
+                  { value: "legal", label: "Legal moves" },
+                  { value: "manual", label: "Manual SAN" },
+                ]}
+              />
+
+              <ScrollArea style={{ flex: 1 }} offsetScrollbars>
+                <Stack gap="xs">
+                  <Text size="xs" c="dimmed">
+                    {legalMoves.length} legal move{legalMoves.length === 1 ? "" : "s"}
+                  </Text>
+                  <SimpleGrid cols={{ base: 3, sm: 5, lg: 6 }} spacing="xs">
+                    {legalMoves.map((move) => (
+                      <Button
+                        key={move.uci}
+                        variant="default"
+                        disabled={!canMove}
+                        onClick={() => void playMove(move.uci)}
+                      >
+                        {move.san}
+                      </Button>
+                    ))}
+                  </SimpleGrid>
+                </Stack>
+              </ScrollArea>
+            </>
+          )
+        : phase === "moves" && (
+            <>
+              <SegmentedControl
+                size="xs"
+                value={settings.moveInputMode}
+                onChange={(value) =>
+                  setSettings((current) => ({
+                    ...current,
+                    moveInputMode: value as "legal" | "manual",
+                  }))
+                }
+                data={[
+                  { value: "legal", label: "Legal moves" },
+                  { value: "manual", label: "Manual SAN" },
+                ]}
+              />
+
+              <ScrollArea style={{ flex: 1 }} offsetScrollbars>
+                <Stack gap="xs">
+                  <Paper withBorder p="sm">
+                    <Group justify="space-between" wrap="nowrap">
+                      <Text fw={800} size="lg">
+                        {manualInput || " "}
+                      </Text>
+                      <Badge
+                        color={
+                          manualStatus.kind === "legal"
+                            ? "green"
+                            : manualStatus.kind === "illegal"
+                              ? "red"
+                              : "gray"
+                        }
+                        variant="light"
+                      >
+                        {manualStatus.kind === "legal"
+                          ? "Legal"
+                          : manualStatus.kind === "illegal"
+                            ? "No match"
+                            : "Input"}
+                      </Badge>
+                    </Group>
+                  </Paper>
+
+                  <SimpleGrid cols={6} spacing="xs">
+                    {PIECE_TOKENS.map((token) => (
+                      <Button
+                        key={token.label}
+                        variant="default"
+                        aria-label={token.aria}
+                        onClick={() => appendToken(token.label)}
+                      >
+                        {token.label}
+                      </Button>
+                    ))}
+                    <Button variant="default" aria-label="Capture" onClick={() => appendToken("x")}>
+                      x
+                    </Button>
+                  </SimpleGrid>
+                  <SimpleGrid cols={8} spacing="xs">
+                    {FILE_TOKENS.map((token) => (
+                      <Button key={token} variant="default" onClick={() => appendToken(token)}>
+                        {token}
+                      </Button>
+                    ))}
+                  </SimpleGrid>
+                  <SimpleGrid cols={8} spacing="xs">
+                    {RANK_TOKENS.map((token) => (
+                      <Button key={token} variant="default" onClick={() => appendToken(token)}>
+                        {token}
+                      </Button>
+                    ))}
+                  </SimpleGrid>
+                  <SimpleGrid cols={5} spacing="xs">
+                    <Button variant="default" aria-label="Check" onClick={() => appendToken("+")}>
+                      +
+                    </Button>
+                    <Button
+                      variant="default"
+                      aria-label="Promotion"
+                      onClick={() => appendToken("=")}
+                    >
+                      =
+                    </Button>
+                    <Button
+                      variant="default"
+                      aria-label="Checkmate"
+                      onClick={() => appendToken("#")}
+                    >
+                      #
+                    </Button>
+                    <Button
+                      variant="default"
+                      aria-label="Kingside castling"
+                      onClick={() => appendToken("O-O")}
+                    >
+                      O-O
+                    </Button>
+                    <Button
+                      variant="default"
+                      aria-label="Queenside castling"
+                      onClick={() => appendToken("O-O-O")}
+                    >
+                      O-O-O
+                    </Button>
+                  </SimpleGrid>
+
+                  <Divider />
+                  <Group grow>
+                    <Button
+                      variant="default"
+                      leftSection={<IconBackspace size={16} />}
+                      onClick={() => setManualInput((current) => current.slice(0, -1))}
+                    >
+                      Backspace
+                    </Button>
+                    <Button variant="default" onClick={() => setManualInput("")}>
+                      Clear
+                    </Button>
+                    <Button
+                      disabled={!canMove || manualStatus.kind !== "legal"}
+                      onClick={() => void submitManual()}
+                    >
+                      Submit
+                    </Button>
+                  </Group>
+                </Stack>
+              </ScrollArea>
+            </>
+          )}
+
+      {phase === "marks" && (
+        <ScrollArea style={{ flex: 1 }} offsetScrollbars>
+          <Stack gap="xs">
+            {orderedMarks.length === 0 ? (
+              <Text size="sm" c="dimmed">
+                No lost-track positions marked.
+              </Text>
+            ) : (
               <SimpleGrid cols={{ base: 1, sm: 2 }} spacing={6}>
                 {orderedMarks.map((mark) => (
                   <Button
@@ -659,16 +866,24 @@ export function BlindfoldTrainingPanel({
                   </Button>
                 ))}
               </SimpleGrid>
-            </>
-          )}
-        </Stack>
-      </Paper>
+            )}
+          </Stack>
+        </ScrollArea>
+      )}
 
-      {!currentLineAtEnd && (
+      {!currentLineAtEnd && phase === "moves" && (
         <Button variant="light" leftSection={<IconArrowBackUp size={16} />} disabled>
           Return to game end to move
         </Button>
       )}
     </Stack>
+  );
+
+  if (!framed) return content;
+
+  return (
+    <Paper withBorder p="sm" h="100%" style={{ overflow: "hidden" }}>
+      {content}
+    </Paper>
   );
 }
