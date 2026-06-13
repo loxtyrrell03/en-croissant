@@ -2113,12 +2113,9 @@ from 2026-04-24 through 2026-05-03.
   under-board area on the left is the normal notation move list plus navigation
   controls. The setup pane is phased into Settings, Library, and Position
   instead of dumping everything together; the Library is a dedicated saved-game
-  list with open and delete actions. Opening a saved blindfold
-  game from the Library should create a normal Analysis tab at the mainline
-  end, matching the `Analyse your last game` viewer so the board, notation, and
-  analysis panels can be expanded. Lost-track marks remain saved as PGN
-  comments, while trainer mark controls stay in the active blindfold play
-  surface.
+  list with open and delete actions. Loading a saved blindfold game should jump
+  to the mainline end by default, while lost-track marks remain explicit
+  revisit targets.
 
 ## Verification Expectations
 
