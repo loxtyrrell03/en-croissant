@@ -2121,6 +2121,11 @@ from 2026-04-24 through 2026-05-03.
   opening to show a readonly board plus clickable main-line SAN moves; the
   existing `Open` action still loads the saved game into the blindfold trainer
   review path rather than switching it to a generic analysis tab.
+- A later 2026-06-13 Blindfold play update added the standard compact engine
+  dock below the right-side move-entry/actions panel. Keep this wired through
+  `EngineDockedPanel` and `EvalListener` so blindfold analysis follows the same
+  dock setting, engine rows, and evaluation lifecycle as the other board
+  workspaces.
 
 ## Verification Expectations
 

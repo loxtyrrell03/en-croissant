@@ -99,6 +99,8 @@ import BoardControls from "./BoardControls";
 import { BlindfoldGamePanel, BlindfoldMaiaSetupPanel } from "./BlindfoldTrainingPanel";
 import { BoardWithAnnotationLayout } from "./BoardWithAnnotationLayout";
 import EditingCard from "./EditingCard";
+import EngineDockedPanel from "./EngineDockedPanel";
+import EvalListener from "./EvalListener";
 import { OpponentForm, type OpponentSettings } from "./OpponentForm";
 
 function gameResultToOutcome(result: GameResult): Outcome {
@@ -1220,6 +1222,7 @@ function BoardGame() {
 
   return (
     <>
+      {blindfoldActive && <EvalListener active={gameState !== "settingUp"} />}
       <Portal target="#left" style={{ height: "100%" }}>
         {blindfoldActive && gameState !== "settingUp" ? (
           <BoardWithAnnotationLayout
@@ -1414,30 +1417,34 @@ function BoardGame() {
                 )}
                 {(gameState === "playing" || gameState === "gameOver") &&
                   (blindfoldActive ? (
-                    <BlindfoldGamePanel
-                      fen={currentNode.fen}
-                      gameState={gameState}
-                      players={players}
-                      currentLineAtEnd={currentLineAtEnd}
-                      boardHidden={blindfoldBoardHidden}
-                      boardRevealed={
-                        blindfoldActive && blindfoldSettings.hideBoard && !blindfoldBoardHidden
-                      }
-                      canRevealBoard={blindfoldSettings.allowPeeking}
-                      canTakeBack={gameState === "playing" && Boolean(gameId) && onePlayerIsEngine}
-                      lastMoveSan={lastEngineMoveSan}
-                      marks={blindfoldMarks}
-                      currentPath={currentPath}
-                      onRevealBoard={() => setBlindfoldPeekFen(currentNode.fen)}
-                      onHideBoard={() => setBlindfoldPeekFen(null)}
-                      onToggleLostTrack={handleToggleLostTrack}
-                      onPlayFromCurrentPosition={handlePlayBlindfoldFromCurrentPosition}
-                      onSaveGameToFile={handleSaveBlindfoldGameToFile}
-                      onExitGame={handleExitBlindfoldGame}
-                      onTakeBack={onTakeBack}
-                      onPlayMove={handleBlindfoldMove}
-                      onGoToMark={handleGoToBlindfoldMark}
-                    />
+                    <EngineDockedPanel>
+                      <BlindfoldGamePanel
+                        fen={currentNode.fen}
+                        gameState={gameState}
+                        players={players}
+                        currentLineAtEnd={currentLineAtEnd}
+                        boardHidden={blindfoldBoardHidden}
+                        boardRevealed={
+                          blindfoldActive && blindfoldSettings.hideBoard && !blindfoldBoardHidden
+                        }
+                        canRevealBoard={blindfoldSettings.allowPeeking}
+                        canTakeBack={
+                          gameState === "playing" && Boolean(gameId) && onePlayerIsEngine
+                        }
+                        lastMoveSan={lastEngineMoveSan}
+                        marks={blindfoldMarks}
+                        currentPath={currentPath}
+                        onRevealBoard={() => setBlindfoldPeekFen(currentNode.fen)}
+                        onHideBoard={() => setBlindfoldPeekFen(null)}
+                        onToggleLostTrack={handleToggleLostTrack}
+                        onPlayFromCurrentPosition={handlePlayBlindfoldFromCurrentPosition}
+                        onSaveGameToFile={handleSaveBlindfoldGameToFile}
+                        onExitGame={handleExitBlindfoldGame}
+                        onTakeBack={onTakeBack}
+                        onPlayMove={handleBlindfoldMove}
+                        onGoToMark={handleGoToBlindfoldMark}
+                      />
+                    </EngineDockedPanel>
                   ) : (
                     <Stack h="100%">
                       <Box flex={1}>
