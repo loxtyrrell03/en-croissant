@@ -84,6 +84,7 @@ function CompleteMoveCell({
   targetRef,
   tableLayout,
   scoreText,
+  compact = false,
 }: {
   halfMoves: number;
   comment: string;
@@ -96,6 +97,7 @@ function CompleteMoveCell({
   targetRef: React.RefObject<HTMLSpanElement | null>;
   tableLayout?: boolean;
   scoreText?: string;
+  compact?: boolean;
 }) {
   const store = useContext(TreeStateContext)!;
   const isStart = useStore(store, (s) => equal(movePath, s.headers.start));
@@ -181,6 +183,7 @@ function CompleteMoveCell({
                   e.preventDefault();
                   e.stopPropagation();
                 }}
+                compact={compact}
                 fullWidth={tableLayout}
                 rightAccessory={rightAccessory}
               />

@@ -2130,6 +2130,10 @@ from 2026-04-24 through 2026-05-03.
   slightly larger height allocation and switched to compact notation chrome.
   The intent is that the `Moves / Database / Prep / Coach` header takes less
   vertical space so more SAN moves and comments are visible before scrolling.
+- A follow-up on 2026-06-13 made that compact under-board notation denser
+  without making it tiny: move pills now use the existing compact style and the
+  under-board comments/notation text render slightly smaller with tighter line
+  height.
 
 ## Verification Expectations
 

@@ -60,6 +60,12 @@
   min-height: 0;
 }
 
+.underBoardNotation :global(.mantine-ScrollArea-viewport),
+.underBoardNotation :global(.mantine-Typography-root) {
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
 .underBoardHeaderActions {
   flex: 0 0 auto;
 }

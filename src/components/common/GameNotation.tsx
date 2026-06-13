@@ -233,7 +233,7 @@ function GameNotation({
                         </Box>
                       )}
                       {tableView ? (
-                        <TableNotation targetRef={targetRef} />
+                        <TableNotation targetRef={targetRef} compact={compact} />
                       ) : (
                         <Box pt={compact ? 3 : "md"} px={compact ? 8 : "sm"}>
                           <RenderVariationTree
@@ -241,6 +241,7 @@ function GameNotation({
                             nodePath={[]}
                             depth={0}
                             first
+                            compact={compact}
                           />
                         </Box>
                       )}
@@ -582,11 +583,13 @@ const RenderVariationTree = memo(
     depth,
     first,
     targetRef,
+    compact = false,
   }: {
     nodePath: number[];
     depth: number;
     first?: boolean;
     targetRef: React.RefObject<HTMLSpanElement | null>;
+    compact?: boolean;
   }) {
     const store = useContext(TreeStateContext)!;
     const showVariations = useAtomValue(currentShowVariationsAtom);
@@ -610,8 +613,14 @@ const RenderVariationTree = memo(
                 movePath={newPath}
                 showComments={showComments}
                 first
+                compact={compact}
               />
-              <RenderVariationTree targetRef={targetRef} nodePath={newPath} depth={depth + 2} />
+              <RenderVariationTree
+                targetRef={targetRef}
+                nodePath={newPath}
+                depth={depth + 2}
+                compact={compact}
+              />
             </React.Fragment>
           );
         })
@@ -631,20 +640,29 @@ const RenderVariationTree = memo(
             movePath={mainLinePath}
             showComments={showComments}
             first={first}
+            compact={compact}
           />
         )}
 
         <VariationCell moveNodes={variationNodes} />
 
         {node.children.length > 0 && (
-          <RenderVariationTree targetRef={targetRef} nodePath={mainLinePath} depth={depth + 1} />
+          <RenderVariationTree
+            targetRef={targetRef}
+            nodePath={mainLinePath}
+            depth={depth + 1}
+            compact={compact}
+          />
         )}
       </>
     );
   },
   (prev, next) => {
     return (
-      equal(prev.nodePath, next.nodePath) && prev.depth === next.depth && prev.first === next.first
+      equal(prev.nodePath, next.nodePath) &&
+      prev.depth === next.depth &&
+      prev.first === next.first &&
+      prev.compact === next.compact
     );
   },
 );
@@ -861,8 +879,10 @@ function getTableNotationSegments({
 
 const TableNotation = memo(function TableNotation({
   targetRef,
+  compact = false,
 }: {
   targetRef: React.RefObject<HTMLSpanElement | null>;
+  compact?: boolean;
 }) {
   const store = useContext(TreeStateContext)!;
   const showVariations = useAtomValue(currentShowVariationsAtom);
@@ -910,6 +930,7 @@ const TableNotation = memo(function TableNotation({
                         targetRef={targetRef}
                         pathStr={variationPathStr}
                         showComments={showComments}
+                        compact={compact}
                       />
                     ))}
                   </Box>
@@ -926,6 +947,7 @@ const TableNotation = memo(function TableNotation({
               whitePathStr={seg.whitePathStr}
               blackPathStr={seg.blackPathStr}
               splitRow={seg.splitRow}
+              compact={compact}
             />
           );
         })}
@@ -961,10 +983,12 @@ function VariationTableTree({
   pathStr,
   targetRef,
   showComments,
+  compact = false,
 }: {
   pathStr: string;
   targetRef: React.RefObject<HTMLSpanElement | null>;
   showComments: boolean;
+  compact?: boolean;
 }) {
   const store = useContext(TreeStateContext)!;
   const variationPath = useMemo(() => parsePathStr(pathStr), [pathStr]);
@@ -988,8 +1012,14 @@ function VariationTableTree({
         movePath={variationPath}
         showComments={showComments}
         first
+        compact={compact}
       />
-      <RenderVariationTree targetRef={targetRef} nodePath={variationPath} depth={1} />
+      <RenderVariationTree
+        targetRef={targetRef}
+        nodePath={variationPath}
+        depth={1}
+        compact={compact}
+      />
     </Box>
   );
 }
@@ -1000,12 +1030,14 @@ function RowSegment({
   blackPathStr,
   splitRow,
   targetRef,
+  compact = false,
 }: {
   moveNumber: number;
   whitePathStr: string;
   blackPathStr: string;
   splitRow?: boolean;
   targetRef: React.RefObject<HTMLSpanElement | null>;
+  compact?: boolean;
 }) {
   const store = useContext(TreeStateContext)!;
   const showComments = useAtomValue(currentShowCommentsAtom);
@@ -1032,6 +1064,7 @@ function RowSegment({
             scoreText={
               showMoveAnnotations && white.score ? formatScore(white.score.value, 1) : undefined
             }
+            compact={compact}
           />
         ) : (
           <Text c="dimmed" style={{ padding: "5px 8px" }}>
@@ -1054,6 +1087,7 @@ function RowSegment({
             scoreText={
               showMoveAnnotations && black.score ? formatScore(black.score.value, 1) : undefined
             }
+            compact={compact}
           />
         ) : splitRow ? (
           <Text c="dimmed" style={{ padding: "5px 8px" }}>
