@@ -27,7 +27,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import type { Piece } from "chessops";
 import { makeUci, parseUci } from "chessops";
 import { INITIAL_FEN } from "chessops/fen";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useStore as useJotaiStore } from "jotai";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
@@ -59,6 +59,7 @@ import {
   gamePlayer1SettingsAtom,
   gamePlayer2SettingsAtom,
   gameSameTimeControlAtom,
+  tabFamily,
   tabsAtom,
 } from "@/state/atoms";
 import { getLastMainlinePosition, parsePGN } from "@/utils/chess";
@@ -86,7 +87,7 @@ import {
   preparePracticeBotOpponent,
   shouldUseClockTimeManagement,
 } from "@/utils/practiceBot";
-import { genID, saveToFile } from "@/utils/tabs";
+import { createTab, genID, saveToFile } from "@/utils/tabs";
 import EngineLogsView from "../common/EngineLogsView";
 import FileInput from "../common/FileInput";
 import GameInfo from "../common/GameInfo";
@@ -140,7 +141,8 @@ function activeColorFromFen(fen: string): "white" | "black" {
 function BoardGame() {
   const { t } = useTranslation();
   const { documentDir } = useLoaderData({ from: "/" });
-  const activeTab = useAtomValue(activeTabAtom);
+  const [activeTab, setActiveTab] = useAtom(activeTabAtom);
+  const jotaiStore = useJotaiStore();
 
   const [editingMode, toggleEditingMode] = useToggle();
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
@@ -182,7 +184,6 @@ function BoardGame() {
   const appendMove = useStore(store, (s) => s.appendMove);
   const resetTree = useStore(store, (s) => s.reset);
   const goToMove = useStore(store, (s) => s.goToMove);
-  const setState = useStore(store, (s) => s.setState);
   const setCommentAtPath = useStore(store, (s) => s.setCommentAtPath);
   const currentPath = useStore(store, (s) => s.position);
 
@@ -861,39 +862,25 @@ function BoardGame() {
       try {
         const treeState = await parsePGN(savedGame.pgn, savedGame.initialFen);
         treeState.position = getLastMainlinePosition(treeState.root);
-        setState(treeState);
-        setBlindfoldSettings({
-          ...savedGame.settings,
-          enabled: true,
+        const tabId = await createTab({
+          tab: {
+            name: savedGame.title || "Blindfold game",
+            type: "analysis",
+          },
+          setTabs,
+          setActiveTab,
+          pgn: savedGame.pgn,
+          initialState: treeState,
+          gameOrigin: {
+            kind: "none",
+          },
         });
-        setBlindfoldMarks(savedGame.marks);
-        setBlindfoldSessionId(savedGame.id);
-        setGameId(null);
-        setGameState("gameOver");
-        setWhiteTime(null);
-        setBlackTime(null);
-        setBlindfoldPeekFen(null);
-        setInputColor(savedGame.humanColor ?? activeColorFromFen(savedGame.initialFen));
-
-        const humanName =
-          savedGame.humanColor === "black" ? savedGame.black : savedGame.white || "Player";
-        const human = createDefaultBlindfoldHumanOpponent(humanName || "Player");
-        const maia = createDefaultBlindfoldMaiaOpponent(null, DEFAULT_BLINDFOLD_MAIA_ELO);
-        setPlayers(
-          savedGame.humanColor === "black"
-            ? { white: maia, black: human }
-            : { white: human, black: maia },
-        );
-
-        setCurrentTab((tab) =>
-          tab
-            ? {
-                ...tab,
-                type: "play",
-                name: `Blindfold: ${savedGame.title}`,
-              }
-            : tab,
-        );
+        jotaiStore.set(tabFamily(tabId), "analysis");
+        notifications.show({
+          title: "Blindfold game opened",
+          message: "Loaded in the analysis viewer.",
+          color: "green",
+        });
       } catch (err) {
         notifications.show({
           color: "red",
@@ -902,20 +889,7 @@ function BoardGame() {
         });
       }
     },
-    [
-      savedBlindfoldGames,
-      setBlackTime,
-      setBlindfoldMarks,
-      setBlindfoldSessionId,
-      setBlindfoldSettings,
-      setCurrentTab,
-      setGameId,
-      setGameState,
-      setInputColor,
-      setPlayers,
-      setState,
-      setWhiteTime,
-    ],
+    [jotaiStore, savedBlindfoldGames, setActiveTab, setTabs],
   );
 
   const pendingMovesRef = useRef<{ uci: string; clock: number | null }[] | null>(null);
