@@ -96,11 +96,7 @@ import { ResponsivePanel } from "../common/ResponsivePanel";
 import { TreeStateContext } from "../common/TreeStateContext";
 import Board from "./Board";
 import BoardControls from "./BoardControls";
-import {
-  BlindfoldGamePanel,
-  BlindfoldMaiaSetupPanel,
-  BlindfoldMovePanel,
-} from "./BlindfoldTrainingPanel";
+import { BlindfoldGamePanel, BlindfoldMaiaSetupPanel } from "./BlindfoldTrainingPanel";
 import { BoardWithAnnotationLayout } from "./BoardWithAnnotationLayout";
 import EditingCard from "./EditingCard";
 import { OpponentForm, type OpponentSettings } from "./OpponentForm";
@@ -217,9 +213,6 @@ function BoardGame() {
   const [startingGame, setStartingGame] = useState(false);
   const [installingMaia, setInstallingMaia] = useState(false);
   const [maiaInstallError, setMaiaInstallError] = useState<string | null>(null);
-  const [blindfoldUnderBoardMode, setBlindfoldUnderBoardMode] = useState<"input" | "notation">(
-    "input",
-  );
 
   const hasEngine = players.white.type === "engine" || players.black.type === "engine";
   const blindfoldActive = blindfoldSettings.enabled;
@@ -1232,18 +1225,6 @@ function BoardGame() {
     />
   );
 
-  const blindfoldUnderBoardHeaderActions = (
-    <SegmentedControl
-      size="xs"
-      value={blindfoldUnderBoardMode}
-      onChange={(value) => setBlindfoldUnderBoardMode(value as "input" | "notation")}
-      data={[
-        { value: "input", label: "Input" },
-        { value: "notation", label: "Move list" },
-      ]}
-    />
-  );
-
   return (
     <>
       <Portal target="#left" style={{ height: "100%" }}>
@@ -1266,24 +1247,8 @@ function BoardGame() {
                       allowEditing={false}
                     />
                   }
-                  headerActions={blindfoldUnderBoardHeaderActions}
-                  content={
-                    blindfoldUnderBoardMode === "input" ? (
-                      <BlindfoldMovePanel
-                        fen={currentNode.fen}
-                        gameState={gameState}
-                        players={players}
-                        currentLineAtEnd={currentLineAtEnd}
-                        marks={blindfoldMarks}
-                        currentPath={currentPath}
-                        onPlayMove={handleBlindfoldMove}
-                        onGoToMark={handleGoToBlindfoldMark}
-                        framed={false}
-                      />
-                    ) : undefined
-                  }
                 />
-                {blindfoldUnderBoardMode === "notation" && <MoveControls />}
+                <MoveControls />
               </Stack>
             }
           />
@@ -1475,6 +1440,8 @@ function BoardGame() {
                       onPlayFromCurrentPosition={handlePlayBlindfoldFromCurrentPosition}
                       onSaveGameToFile={handleSaveBlindfoldGameToFile}
                       onExitGame={handleExitBlindfoldGame}
+                      onPlayMove={handleBlindfoldMove}
+                      onGoToMark={handleGoToBlindfoldMark}
                     />
                   ) : (
                     <Stack h="100%">

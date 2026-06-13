@@ -80,6 +80,8 @@ type BlindfoldGamePanelProps = {
   onPlayFromCurrentPosition: () => void | Promise<void>;
   onSaveGameToFile: () => void | Promise<void>;
   onExitGame: () => void | Promise<void>;
+  onPlayMove: (uci: string) => void | Promise<void>;
+  onGoToMark: (path: number[]) => void;
 };
 
 type BlindfoldMovePanelProps = {
@@ -457,20 +459,13 @@ export function BlindfoldGamePanel({
   onPlayFromCurrentPosition,
   onSaveGameToFile,
   onExitGame,
+  onPlayMove,
+  onGoToMark,
 }: BlindfoldGamePanelProps) {
   const [settings] = useAtom(currentBlindfoldGameSettingsAtom);
   const [displayedLastMove, setDisplayedLastMove] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const turn = activeColorFromFen(fen);
-  const playerColor = humanColor(players);
-  const waitingReason =
-    gameState === "gameOver"
-      ? "Game over"
-      : !currentLineAtEnd
-        ? "Go to the end of the game to move"
-        : playerColor !== "turn" && playerColor !== turn
-          ? `${botLabel(players)} to move`
-          : null;
   const currentPathKey = blindfoldPathKey(currentPath);
   const currentMark = marks.find((mark) => blindfoldPathKey(mark.path) === currentPathKey);
 
@@ -568,24 +563,21 @@ export function BlindfoldGamePanel({
         </Alert>
       )}
 
-      {waitingReason && (
-        <Alert color={gameState === "gameOver" ? "gray" : "yellow"} variant="light" py="xs">
-          {waitingReason}
-        </Alert>
-      )}
+      <Divider />
 
-      <Box style={{ flex: 1 }} />
-
-      <Paper withBorder p="xs">
-        <Group justify="space-between" wrap="nowrap">
-          <Text size="xs" fw={700}>
-            Lost-track positions
-          </Text>
-          <Badge size="sm" color={marks.length > 0 ? "yellow" : "gray"} variant="light">
-            {marks.length}
-          </Badge>
-        </Group>
-      </Paper>
+      <Box style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
+        <BlindfoldMovePanel
+          fen={fen}
+          gameState={gameState}
+          players={players}
+          currentLineAtEnd={currentLineAtEnd}
+          marks={marks}
+          currentPath={currentPath}
+          onPlayMove={onPlayMove}
+          onGoToMark={onGoToMark}
+          framed={false}
+        />
+      </Box>
     </Stack>
   );
 }
