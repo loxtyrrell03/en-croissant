@@ -1300,12 +1300,12 @@ async fn ask_ai_coach_inner(
         &stockfish_lines,
         &targeted_results,
     ) {
-        if let Some(sanitized) = demote_non_current_supported_line_blocks(
+        if let Some(sanitized) = demote_non_current_supported_line_blocks_if_possible(
             &request.fen,
             &final_answer,
             &stockfish_lines,
             &targeted_results,
-        )? {
+        ) {
             emit_coach_progress(
                 app,
                 request_id,
@@ -1371,12 +1371,12 @@ async fn ask_ai_coach_inner(
                 &stockfish_lines,
                 &targeted_results,
             ) {
-                if let Some(sanitized) = demote_non_current_supported_line_blocks(
+                if let Some(sanitized) = demote_non_current_supported_line_blocks_if_possible(
                     &request.fen,
                     &final_answer,
                     &stockfish_lines,
                     &targeted_results,
-                )? {
+                ) {
                     emit_coach_progress(
                         app,
                         request_id,
@@ -4735,15 +4735,12 @@ fn finalize_answer_line_safety(
         return Ok(safe_answer);
     }
 
-    if let Some(demoted) = demote_non_current_supported_line_blocks(
+    if let Some(demoted) = demote_non_current_supported_line_blocks_if_possible(
         current_fen,
         &safe_answer,
         stockfish_lines,
         targeted_results,
-    )
-    .ok()
-    .flatten()
-    {
+    ) {
         if validate_answer_line_blocks(current_fen, &demoted, stockfish_lines, targeted_results)
             .is_ok()
         {
@@ -4888,6 +4885,17 @@ fn demote_non_current_supported_line_blocks(
 
     output.push_str(&answer[cursor..]);
     Ok(Some(output))
+}
+
+fn demote_non_current_supported_line_blocks_if_possible(
+    current_fen: &str,
+    answer: &str,
+    stockfish_lines: &[CoachEngineLine],
+    targeted_results: &[CoachTargetedResult],
+) -> Option<String> {
+    demote_non_current_supported_line_blocks(current_fen, answer, stockfish_lines, targeted_results)
+        .ok()
+        .flatten()
 }
 
 fn current_line_block_is_supported(
@@ -6980,6 +6988,24 @@ mod tests {
         .unwrap_err();
 
         assert!(result.to_string().contains("not supplied by Stockfish"));
+    }
+
+    #[test]
+    fn unsupported_line_block_demotion_probe_is_non_fatal() {
+        let demoted = demote_non_current_supported_line_blocks_if_possible(
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            "Try <line>d4 d5</line>.",
+            &[CoachEngineLine {
+                multipv: 1,
+                depth: 12,
+                eval: "+0.20".to_string(),
+                uci_moves: vec!["e2e4".to_string(), "e7e5".to_string()],
+                san_moves: vec!["e4".to_string(), "e5".to_string()],
+            }],
+            &[],
+        );
+
+        assert!(demoted.is_none());
     }
 
     #[test]

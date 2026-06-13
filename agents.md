@@ -754,7 +754,10 @@ piece` must reuse the most recent targeted Stockfish evidence and
   demotes valid targeted lines from other FENs to plain text, strips
   `<stockfish_request>` blocks, and replaces any remaining unsupported line
   block with `[unsupported engine line removed]` instead of returning a red
-  error to the user. Do not weaken this fail-closed behavior.
+  error to the user. On 2026-06-13, the pre-final targeted-line demotion probe
+  was made non-fatal so unsupported current-FEN wrappers fall through to repair
+  and final stripping instead of bubbling `GeminiUnsupportedLine` early. Do not
+  weaken this fail-closed behavior.
 - Coach was then moved out of the under-board panel and into the right-side
   analysis tab stack as its own `Coach` tab; the under-board Coach button is
   only a shortcut that selects that right-side tab. The standalone Current FEN
