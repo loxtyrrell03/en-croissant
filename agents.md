@@ -2096,8 +2096,12 @@ from 2026-04-24 through 2026-05-03.
   blindfold controls, saved blindfold games, and FEN loading; do not reintroduce
   Human/Trainer/Engine toggles, opening-book controls, or Patricia copy into
   this mode. Maia is now managed by the trainer path: on Windows it installs a
-  CPU LC0 build plus the selected CSSLab Maia weights on demand or from the
-  setup button, then passes the weight file through LC0's `WeightsFile` option.
+  CPU LC0 build plus the selected CSSLab Maia weights automatically when the
+  setup opens or when the game starts, then passes the weight file through
+  LC0's `WeightsFile` option. The LC0 Windows CPU archive extracts `lc0.exe`
+  directly into the managed Maia directory; do not point the managed path at an
+  extra nested release folder or Windows will fail to spawn it with a directory
+  error.
 
 ## Verification Expectations
 

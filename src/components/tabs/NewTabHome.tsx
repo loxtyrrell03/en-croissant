@@ -152,7 +152,6 @@ import {
   createDefaultHumanOpponent,
   createDefaultMaiaOpponent,
   DEFAULT_BLINDFOLD_MAIA_ELO,
-  isLikelyMaiaEngine,
 } from "@/utils/practiceBot";
 import { resolve, tempDir } from "@tauri-apps/api/path";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
@@ -2442,7 +2441,6 @@ export default function NewTabHome() {
   );
 
   const openBlindfoldBoardTab = useCallback(async () => {
-    const maiaEngine = localEngines.find(isLikelyMaiaEngine) ?? null;
     const tabId = await createTab({
       tab: {
         name: "Blindfold Maia trainer",
@@ -2455,16 +2453,13 @@ export default function NewTabHome() {
     store.set(gameInputColorAtom, "white");
     store.set(gameSameTimeControlAtom, true);
     store.set(gamePlayer1SettingsAtom, createDefaultHumanOpponent());
-    store.set(
-      gamePlayer2SettingsAtom,
-      createDefaultMaiaOpponent(maiaEngine, DEFAULT_BLINDFOLD_MAIA_ELO),
-    );
+    store.set(gamePlayer2SettingsAtom, createDefaultMaiaOpponent(null, DEFAULT_BLINDFOLD_MAIA_ELO));
     store.set(blindfoldGameSettingsFamily(tabId), {
       ...DEFAULT_BLINDFOLD_GAME_SETTINGS,
       enabled: true,
     });
     navigate({ to: "/" });
-  }, [localEngines, navigate, setActiveTab, setTabs, store]);
+  }, [navigate, setActiveTab, setTabs, store]);
 
   useEffect(() => {
     const checkFiles = async () => {

@@ -101,7 +101,7 @@ const MANAGED_MAIA_PACKAGES: Partial<
         Platform,
         {
             url: string;
-            directory: string;
+            directory?: string;
             executable: string;
             size: number;
         }
@@ -109,7 +109,6 @@ const MANAGED_MAIA_PACKAGES: Partial<
 > = {
     windows: {
         url: `https://github.com/LeelaChessZero/lc0/releases/download/v${MANAGED_MAIA_ENGINE_VERSION}/lc0-v${MANAGED_MAIA_ENGINE_VERSION}-windows-cpu-dnnl.zip`,
-        directory: `lc0-v${MANAGED_MAIA_ENGINE_VERSION}-windows-cpu-dnnl`,
         executable: "lc0.exe",
         size: 24_001_097,
     },
@@ -523,7 +522,7 @@ export async function ensureManagedMaiaEngine(
 
     const trainerDir = await getManagedTrainerDir();
     const maiaDir = await resolve(trainerDir, MANAGED_MAIA_DIR);
-    const engineDir = await resolve(maiaDir, pkg.directory);
+    const engineDir = pkg.directory ? await resolve(maiaDir, pkg.directory) : maiaDir;
     const enginePath = await resolve(engineDir, pkg.executable);
     const weightsPath = await ensureManagedMaiaWeights(fideElo);
 
@@ -607,9 +606,13 @@ export async function preparePracticeBotOpponent(
 
     if (profile.kind === "maia") {
         const level = maiaLevelFromElo(profile.fideElo);
-        const engine = settings.engine?.path
-            ? settings.engine
-            : await ensureManagedMaiaEngine(level);
+        const selectedEngineExists = settings.engine?.path
+            ? await pathExists(settings.engine.path)
+            : false;
+        const engine =
+            settings.engine?.path && selectedEngineExists
+                ? settings.engine
+                : await ensureManagedMaiaEngine(level);
         const engineSettings = settings.engineSettings ?? engine.settings ?? undefined;
         const configuredWeights =
             profile.maiaWeightsPath || getMaiaWeightsFileSetting(engineSettings);

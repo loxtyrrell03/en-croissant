@@ -193,6 +193,7 @@ function BoardGame() {
 
   const boardRef = useRef(null);
   const cgRef = useRef<ChessgroundRef>(null);
+  const maiaAutoPrepareLevelRef = useRef<number | null>(null);
   const [gameState, setGameState] = useAtom(currentGameStateAtom);
   const [players, setPlayers] = useAtom(currentPlayersAtom);
 
@@ -434,6 +435,10 @@ function BoardGame() {
 
     setStartingGame(true);
     try {
+      if (blindfoldSettings.enabled) {
+        setMaiaInstallError(null);
+      }
+
       const playerSettings = {
         white: await preparePracticeBotOpponent(selectedPlayers.white),
         black: await preparePracticeBotOpponent(selectedPlayers.black),
@@ -745,50 +750,75 @@ function BoardGame() {
     [setPlayer2Settings],
   );
 
-  const handleInstallManagedMaia = useCallback(async () => {
-    const level = maiaLevelFromElo(blindfoldMaiaElo);
-    setInstallingMaia(true);
-    setMaiaInstallError(null);
-    try {
-      const engine = await ensureManagedMaiaEngine(level);
-      const weightsPath = engine.settings?.find((setting) => setting.name === "WeightsFile")?.value;
-      setPlayer2Settings((current) => {
-        const next = createDefaultMaiaOpponent(engine, level) as Extract<
-          OpponentSettings,
-          { type: "engine" }
-        >;
-        return {
-          ...next,
-          go: current.type === "engine" ? current.go : next.go,
-          timeControl: current.type === "engine" ? current.timeControl : next.timeControl,
-          timeUnit: current.type === "engine" ? current.timeUnit : next.timeUnit,
-          incrementUnit: current.type === "engine" ? current.incrementUnit : next.incrementUnit,
-          botProfile: {
-            ...next.botProfile!,
-            timeUse:
-              current.type === "engine"
-                ? (current.botProfile?.timeUse ?? next.botProfile!.timeUse)
-                : next.botProfile!.timeUse,
-            maiaWeightsPath: typeof weightsPath === "string" ? weightsPath : undefined,
-          },
-        };
-      });
-      notifications.show({
-        title: "Maia ready",
-        message: `Maia ${level} files are installed.`,
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      setMaiaInstallError(message);
-      notifications.show({
-        color: "red",
-        title: "Could not install Maia",
-        message,
-      });
-    } finally {
-      setInstallingMaia(false);
-    }
-  }, [blindfoldMaiaElo, setPlayer2Settings]);
+  const handlePrepareManagedMaia = useCallback(
+    async (showNotification = false) => {
+      const level = maiaLevelFromElo(blindfoldMaiaElo);
+      setInstallingMaia(true);
+      setMaiaInstallError(null);
+      try {
+        const engine = await ensureManagedMaiaEngine(level);
+        const weightsPath = engine.settings?.find(
+          (setting) => setting.name === "WeightsFile",
+        )?.value;
+        setPlayer2Settings((current) => {
+          const next = createDefaultMaiaOpponent(engine, level) as Extract<
+            OpponentSettings,
+            { type: "engine" }
+          >;
+          return {
+            ...next,
+            go: current.type === "engine" ? current.go : next.go,
+            timeControl: current.type === "engine" ? current.timeControl : next.timeControl,
+            timeUnit: current.type === "engine" ? current.timeUnit : next.timeUnit,
+            incrementUnit: current.type === "engine" ? current.incrementUnit : next.incrementUnit,
+            botProfile: {
+              ...next.botProfile!,
+              timeUse:
+                current.type === "engine"
+                  ? (current.botProfile?.timeUse ?? next.botProfile!.timeUse)
+                  : next.botProfile!.timeUse,
+              maiaWeightsPath: typeof weightsPath === "string" ? weightsPath : undefined,
+            },
+          };
+        });
+        if (showNotification) {
+          notifications.show({
+            title: "Maia ready",
+            message: `Maia ${level} files are installed.`,
+          });
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setMaiaInstallError(message);
+        if (showNotification) {
+          notifications.show({
+            color: "red",
+            title: "Could not prepare Maia",
+            message,
+          });
+        }
+      } finally {
+        setInstallingMaia(false);
+      }
+    },
+    [blindfoldMaiaElo, setPlayer2Settings],
+  );
+
+  useEffect(() => {
+    if (!blindfoldActive || gameState !== "settingUp") return;
+    if (blindfoldMaiaReady || installingMaia) return;
+    if (maiaAutoPrepareLevelRef.current === blindfoldMaiaElo) return;
+
+    maiaAutoPrepareLevelRef.current = blindfoldMaiaElo;
+    void handlePrepareManagedMaia(false);
+  }, [
+    blindfoldActive,
+    blindfoldMaiaElo,
+    blindfoldMaiaReady,
+    gameState,
+    handlePrepareManagedMaia,
+    installingMaia,
+  ]);
 
   const handleSaveBlindfoldGameToFile = useCallback(async () => {
     try {
@@ -1186,7 +1216,6 @@ function BoardGame() {
                             savedGames={savedBlindfoldGames}
                             onPlayerColorChange={handleBlindfoldPlayerColorChange}
                             onMaiaEloChange={handleBlindfoldMaiaEloChange}
-                            onInstallMaia={handleInstallManagedMaia}
                             onLoadFen={loadBlindfoldFen}
                             onLoadSavedGame={handleLoadSavedBlindfoldGame}
                           />

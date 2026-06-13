@@ -21,7 +21,6 @@ import {
   IconArrowBackUp,
   IconBackspace,
   IconDeviceFloppy,
-  IconDownload,
   IconEye,
   IconEyeClosed,
   IconFlag,
@@ -55,7 +54,6 @@ type BlindfoldMaiaSetupPanelProps = {
   savedGames: BlindfoldSavedGame[];
   onPlayerColorChange: (color: PlayerColor) => void;
   onMaiaEloChange: (elo: number) => void;
-  onInstallMaia: () => void | Promise<void>;
   onLoadFen: (fen: string) => boolean;
   onLoadSavedGame: (id: string) => void | Promise<void>;
 };
@@ -140,7 +138,6 @@ export function BlindfoldMaiaSetupPanel({
   savedGames,
   onPlayerColorChange,
   onMaiaEloChange,
-  onInstallMaia,
   onLoadFen,
   onLoadSavedGame,
 }: BlindfoldMaiaSetupPanelProps) {
@@ -174,7 +171,7 @@ export function BlindfoldMaiaSetupPanel({
               </Text>
             </Box>
             <Badge color={maiaReady ? "green" : "blue"} variant="light">
-              {maiaReady ? "Maia ready" : "Installs on start"}
+              {maiaReady ? "Maia ready" : maiaInstallLoading ? "Preparing Maia" : "Maia included"}
             </Badge>
           </Group>
 
@@ -199,18 +196,9 @@ export function BlindfoldMaiaSetupPanel({
             }}
           />
 
-          <Button
-            variant={maiaReady ? "default" : "light"}
-            leftSection={<IconDownload size={16} />}
-            loading={maiaInstallLoading}
-            onClick={() => void onInstallMaia()}
-          >
-            Install Maia files
-          </Button>
-
           {maiaInstallError && (
             <Alert color="red" variant="light">
-              {maiaInstallError}
+              {maiaInstallError}. Starting the game will retry.
             </Alert>
           )}
         </Stack>
