@@ -1128,19 +1128,12 @@ function BoardGame() {
 
   const handleDeleteBlindfoldSavedGame = useCallback(
     (id: string) => {
-      const deleted = savedBlindfoldGames.find((game) => game.id === id);
       setSavedBlindfoldGames((current) => current.filter((game) => game.id !== id));
       if (blindfoldSessionId === id) {
         setBlindfoldSessionId(null);
       }
-      notifications.show({
-        title: "Deleted",
-        message: deleted
-          ? `${deleted.title} was removed from the blindfold library.`
-          : "The game was removed from the blindfold library.",
-      });
     },
-    [blindfoldSessionId, savedBlindfoldGames, setBlindfoldSessionId, setSavedBlindfoldGames],
+    [blindfoldSessionId, setBlindfoldSessionId, setSavedBlindfoldGames],
   );
 
   const handleExitBlindfoldGame = useCallback(async () => {

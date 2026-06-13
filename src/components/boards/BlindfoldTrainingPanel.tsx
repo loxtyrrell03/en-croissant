@@ -395,13 +395,7 @@ export function BlindfoldMaiaSetupPanel({
                             variant="subtle"
                             color="red"
                             leftSection={<IconTrash size={14} />}
-                            onClick={() => {
-                              if (
-                                window.confirm(`Delete "${game.title}" from the blindfold library?`)
-                              ) {
-                                void onDeleteSavedGame(game.id);
-                              }
-                            }}
+                            onClick={() => void onDeleteSavedGame(game.id)}
                           >
                             Delete
                           </Button>
