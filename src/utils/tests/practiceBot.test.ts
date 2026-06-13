@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import {
     buildPracticeBotOptions,
+    createDefaultMaiaOpponent,
     createDefaultPracticeBotOpponent,
     describePracticeBotBackend,
     formatPracticeBotName,
@@ -97,6 +98,42 @@ test("uses explicit Maia profiles on the Maia backend while legacy Stockfish sta
     expect(describePracticeBotBackend(maiaProfile)).toContain("Maia human model");
     expect(maiaLevelFromElo(1450)).toBe(1400);
     expect(formatPracticeBotName(maiaProfile)).toBe("Maia 1900");
+});
+
+test("defaults blindfold Maia to a managed install path when no engine is selected", () => {
+    const opponent = createDefaultMaiaOpponent(null, 1500);
+
+    expect(opponent.type).toBe("engine");
+    if (opponent.type !== "engine") return;
+    expect(opponent.engine).toBeNull();
+    expect(opponent.botProfile).toMatchObject({
+        enabled: true,
+        kind: "maia",
+        fideElo: 1500,
+    });
+});
+
+test("passes Maia weights through LC0 options without Patricia strength options", () => {
+    const options = buildPracticeBotOptions(
+        [
+            { name: "Threads", value: 2 },
+            { name: "MultiPV", value: 3 },
+        ],
+        {
+            enabled: true,
+            kind: "maia",
+            fideElo: 1500,
+            maiaWeightsPath: "C:/maia/maia-1500.pb.gz",
+        },
+    );
+
+    expect(options).toContainEqual({ name: "Threads", value: "2" });
+    expect(options).toContainEqual({
+        name: "WeightsFile",
+        value: "C:/maia/maia-1500.pb.gz",
+    });
+    expect(options).not.toContainEqual({ name: "UCI_LimitStrength", value: "true" });
+    expect(options.find((option) => option.name === "MultiPV")).toBeUndefined();
 });
 
 test("uses Patricia movetime search without UCI clock management", () => {

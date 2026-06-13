@@ -2078,10 +2078,9 @@ from 2026-04-24 through 2026-05-03.
   blindfold-chess.online. It can be launched from the home screen or board
   control rail, reuses the existing game backend, hides/reveals the board with
   per-tab blindfold settings, offers right-pane legal SAN move buttons plus a
-  manual SAN keypad, and routes trainer setup through an explicit local
-  Maia/LCZero engine profile with Maia-level strength settings. Do not silently
-  fall back to Patricia for this mode; if no local Maia-style engine is
-  configured, setup should block and explain that one must be added in Engines.
+  manual SAN keypad, and routes trainer setup through a Maia-only profile with
+  Maia-level strength settings. Do not silently fall back to Patricia for this
+  mode.
 - A follow-up on 2026-06-13 made the Blindfold Maia trainer a revisitable
   training surface instead of only a one-off play mode. Live blindfold games
   now auto-save into a dedicated local `Blindfold games` library separate from
@@ -2091,6 +2090,14 @@ from 2026-04-24 through 2026-05-03.
   as a PGN comment, then jump back to those marked positions later. The setup
   panel also accepts pasted FENs so arbitrary positions can be loaded and
   played out blindfold against Maia.
+- A later 2026-06-13 cleanup made the Blindfold Maia setup intentionally
+  separate from the generic play-game opponent form. The right pane should stay
+  focused on player colour, Maia level, managed Maia install/readiness,
+  blindfold controls, saved blindfold games, and FEN loading; do not reintroduce
+  Human/Trainer/Engine toggles, opening-book controls, or Patricia copy into
+  this mode. Maia is now managed by the trainer path: on Windows it installs a
+  CPU LC0 build plus the selected CSSLab Maia weights on demand or from the
+  setup button, then passes the weight file through LC0's `WeightsFile` option.
 
 ## Verification Expectations
 

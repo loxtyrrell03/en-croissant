@@ -33,7 +33,12 @@ export type PracticeBotTimeClass = "bullet" | "blitz" | "rapid" | "classical";
 
 const MANAGED_PATRICIA_VERSION = "5";
 const MANAGED_PATRICIA_ENGINE_ID = "managed-patricia-trainer";
+const MANAGED_MAIA_ENGINE_VERSION = "0.32.1";
+const MANAGED_MAIA_ENGINE_ID = "managed-maia-lc0";
+const MANAGED_MAIA_WEIGHTS_VERSION = "v1.0";
 const MANAGED_TRAINER_DIR = "trainer-bot";
+const MANAGED_MAIA_DIR = "maia";
+const MANAGED_MAIA_WEIGHTS_DIR = "weights";
 const PATRICIA_MIN_FIDE_ELO = 800;
 const PATRICIA_MAX_FIDE_ELO = 3000;
 const MAIA_MIN_ELO = 1100;
@@ -88,6 +93,25 @@ const MANAGED_PATRICIA_PACKAGES: Partial<
         directory: `patricia-${MANAGED_PATRICIA_VERSION}`,
         executable: "patricia_v2.exe",
         size: 4_142_592,
+    },
+};
+
+const MANAGED_MAIA_PACKAGES: Partial<
+    Record<
+        Platform,
+        {
+            url: string;
+            directory: string;
+            executable: string;
+            size: number;
+        }
+    >
+> = {
+    windows: {
+        url: `https://github.com/LeelaChessZero/lc0/releases/download/v${MANAGED_MAIA_ENGINE_VERSION}/lc0-v${MANAGED_MAIA_ENGINE_VERSION}-windows-cpu-dnnl.zip`,
+        directory: `lc0-v${MANAGED_MAIA_ENGINE_VERSION}-windows-cpu-dnnl`,
+        executable: "lc0.exe",
+        size: 24_001_097,
     },
 };
 
@@ -314,6 +338,27 @@ function upsertOption(options: EngineOption[], name: string, value: string | num
     return options.map((option, i) => (i === index ? next : option));
 }
 
+function getSettingValue(settings: EngineSettings | undefined, name: string) {
+    return settings?.find((setting) => setting.name === name)?.value;
+}
+
+function getMaiaWeightsFileSetting(settings: EngineSettings | undefined) {
+    const value = getSettingValue(settings, "WeightsFile");
+    return typeof value === "string" && value.trim() ? value : null;
+}
+
+function upsertEngineSetting(
+    settings: EngineSettings | undefined,
+    name: string,
+    value: string | number | boolean,
+): EngineSettings {
+    const existing = settings ?? [];
+    const index = existing.findIndex((setting) => setting.name === name);
+    const next = { name, value };
+    if (index === -1) return [...existing, next];
+    return existing.map((setting, i) => (i === index ? next : setting));
+}
+
 export function buildPracticeBotOptions(
     engineSettings: EngineSettings | undefined,
     profile: PracticeBotProfile | null,
@@ -432,6 +477,83 @@ async function pathExists(path: string) {
     return result.status === "ok" && result.data;
 }
 
+async function getManagedTrainerDir() {
+    const enginesDir = await getEnginesDir();
+    return resolve(enginesDir, MANAGED_TRAINER_DIR);
+}
+
+async function getManagedMaiaWeightsPath(fideElo: number) {
+    const level = maiaLevelFromElo(fideElo);
+    const trainerDir = await getManagedTrainerDir();
+    const maiaDir = await resolve(trainerDir, MANAGED_MAIA_DIR);
+    const weightsDir = await resolve(maiaDir, MANAGED_MAIA_WEIGHTS_DIR);
+    return resolve(weightsDir, `maia-${level}.pb.gz`);
+}
+
+async function ensureManagedMaiaWeights(fideElo: number) {
+    const level = maiaLevelFromElo(fideElo);
+    const weightsPath = await getManagedMaiaWeightsPath(level);
+    if (!(await pathExists(weightsPath))) {
+        const trainerDir = await getManagedTrainerDir();
+        const maiaDir = await resolve(trainerDir, MANAGED_MAIA_DIR);
+        const weightsDir = await resolve(maiaDir, MANAGED_MAIA_WEIGHTS_DIR);
+        await ensureDirectory(weightsDir);
+        unwrap(
+            await commands.downloadFile(
+                `practice_bot_maia_${level}`,
+                `https://github.com/CSSLab/maia-chess/releases/download/${MANAGED_MAIA_WEIGHTS_VERSION}/maia-${level}.pb.gz`,
+                weightsPath,
+                null,
+                true,
+                null,
+            ),
+        );
+    }
+    return weightsPath;
+}
+
+export async function ensureManagedMaiaEngine(
+    fideElo = DEFAULT_BLINDFOLD_MAIA_ELO,
+): Promise<LocalEngine> {
+    const os = await platform();
+    const pkg = MANAGED_MAIA_PACKAGES[os];
+    if (!pkg) {
+        throw new Error("Managed Maia trainer is currently packaged for Windows.");
+    }
+
+    const trainerDir = await getManagedTrainerDir();
+    const maiaDir = await resolve(trainerDir, MANAGED_MAIA_DIR);
+    const engineDir = await resolve(maiaDir, pkg.directory);
+    const enginePath = await resolve(engineDir, pkg.executable);
+    const weightsPath = await ensureManagedMaiaWeights(fideElo);
+
+    if (!(await pathExists(enginePath))) {
+        await ensureDirectory(maiaDir);
+        unwrap(
+            await commands.downloadFile(
+                "practice_bot_maia_lc0",
+                pkg.url,
+                maiaDir,
+                null,
+                true,
+                pkg.size,
+            ),
+        );
+        unwrap(await commands.setFileAsExecutable(enginePath));
+    }
+
+    return {
+        type: "local",
+        id: MANAGED_MAIA_ENGINE_ID,
+        name: "Maia Human Trainer",
+        version: `lc0 ${MANAGED_MAIA_ENGINE_VERSION}`,
+        path: enginePath,
+        loaded: true,
+        elo: maiaLevelFromElo(fideElo),
+        settings: [{ name: "WeightsFile", value: weightsPath }],
+    };
+}
+
 async function ensureManagedPatriciaEngine(): Promise<LocalEngine> {
     const os = await platform();
     const pkg = MANAGED_PATRICIA_PACKAGES[os];
@@ -439,8 +561,7 @@ async function ensureManagedPatriciaEngine(): Promise<LocalEngine> {
         throw new Error("Managed Patricia trainer is currently packaged for Windows.");
     }
 
-    const enginesDir = await getEnginesDir();
-    const trainerDir = await resolve(enginesDir, MANAGED_TRAINER_DIR);
+    const trainerDir = await getManagedTrainerDir();
     const patriciaDir = await resolve(trainerDir, pkg.directory);
     const patriciaPath = await resolve(patriciaDir, pkg.executable);
 
@@ -485,17 +606,28 @@ export async function preparePracticeBotOpponent(
     };
 
     if (profile.kind === "maia") {
-        if (!settings.engine?.path) {
-            throw new Error(
-                "Blindfold Maia trainer needs a local Maia or LCZero engine. Add one in Engines or choose it in this game setup.",
-            );
-        }
+        const level = maiaLevelFromElo(profile.fideElo);
+        const engine = settings.engine?.path
+            ? settings.engine
+            : await ensureManagedMaiaEngine(level);
+        const engineSettings = settings.engineSettings ?? engine.settings ?? undefined;
+        const configuredWeights =
+            profile.maiaWeightsPath || getMaiaWeightsFileSetting(engineSettings);
+        const weightsPath =
+            configuredWeights && (await pathExists(configuredWeights))
+                ? configuredWeights
+                : await ensureManagedMaiaWeights(level);
+
         return {
             ...settings,
-            engine: settings.engine,
-            engineSettings: settings.engine.settings || settings.engineSettings || undefined,
+            engine,
+            engineSettings: upsertEngineSetting(engineSettings, "WeightsFile", weightsPath),
             go: settings.go ?? { t: "Time", c: 500 },
-            botProfile: profile,
+            botProfile: {
+                ...profile,
+                fideElo: level,
+                maiaWeightsPath: weightsPath,
+            },
         };
     }
 

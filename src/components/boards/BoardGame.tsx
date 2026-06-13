@@ -78,9 +78,11 @@ import {
   createDefaultHumanOpponent,
   createDefaultMaiaOpponent,
   DEFAULT_BLINDFOLD_MAIA_ELO,
+  ensureManagedMaiaEngine,
   formatPracticeBotName,
   getPracticeBotGoMode,
   getPracticeBotMoveDelay,
+  maiaLevelFromElo,
   preparePracticeBotOpponent,
   shouldUseClockTimeManagement,
 } from "@/utils/practiceBot";
@@ -94,7 +96,7 @@ import { ResponsivePanel } from "../common/ResponsivePanel";
 import { TreeStateContext } from "../common/TreeStateContext";
 import Board from "./Board";
 import BoardControls from "./BoardControls";
-import { BlindfoldSetupPanel, BlindfoldTrainingPanel } from "./BlindfoldTrainingPanel";
+import { BlindfoldMaiaSetupPanel, BlindfoldTrainingPanel } from "./BlindfoldTrainingPanel";
 import EditingCard from "./EditingCard";
 import { OpponentForm, type OpponentSettings } from "./OpponentForm";
 
@@ -207,9 +209,27 @@ function BoardGame() {
   const [openingBookEnabled, setOpeningBookEnabled] = useAtom(gameOpeningBookEnabledAtom);
   const [openingBookMaxPly, setOpeningBookMaxPly] = useAtom(gameOpeningBookMaxPlyAtom);
   const [startingGame, setStartingGame] = useState(false);
+  const [installingMaia, setInstallingMaia] = useState(false);
+  const [maiaInstallError, setMaiaInstallError] = useState<string | null>(null);
 
   const hasEngine = players.white.type === "engine" || players.black.type === "engine";
   const blindfoldActive = blindfoldSettings.enabled;
+  const blindfoldMaiaElo =
+    player2Settings.type === "engine" && player2Settings.botProfile?.kind === "maia"
+      ? maiaLevelFromElo(player2Settings.botProfile.fideElo)
+      : DEFAULT_BLINDFOLD_MAIA_ELO;
+  const blindfoldMaiaWeightsReady =
+    player2Settings.type === "engine" &&
+    Boolean(
+      player2Settings.botProfile?.maiaWeightsPath ||
+      (player2Settings.engineSettings ?? player2Settings.engine?.settings)?.some(
+        (setting) => setting.name === "WeightsFile",
+      ),
+    );
+  const blindfoldMaiaReady =
+    player2Settings.type === "engine" &&
+    Boolean(player2Settings.engine?.path) &&
+    blindfoldMaiaWeightsReady;
   const mainlineEnd = useMemo(() => getMainlineEnd(root), [root]);
   const currentLineAtEnd =
     currentNode.fen === mainlineEnd.fen && currentNode.halfMoves === mainlineEnd.halfMoves;
@@ -452,7 +472,7 @@ function BoardGame() {
         initialFen: root.fen === INITIAL_FEN ? null : root.fen,
         initialMoves,
         openingBook:
-          openingBookEnabled && openingBookPath
+          !blindfoldSettings.enabled && openingBookEnabled && openingBookPath
             ? { path: openingBookPath, maxPly: Math.max(1, openingBookMaxPly) }
             : null,
       } as GameConfig;
@@ -488,7 +508,9 @@ function BoardGame() {
       const whiteIsEngine = playerSettings.white.type === "engine";
       const blackIsEngine = playerSettings.black.type === "engine";
       let eventStr = "Casual Game";
-      if (whiteIsEngine && blackIsEngine) {
+      if (blindfoldSettings.enabled) {
+        eventStr = "Blindfold Maia";
+      } else if (whiteIsEngine && blackIsEngine) {
         eventStr = "Engine Match";
       } else if (whiteIsEngine || blackIsEngine) {
         eventStr = "Player vs Engine";
@@ -664,6 +686,109 @@ function BoardGame() {
       });
     }
   }, [currentNode.fen, gameId, gameState, loadBlindfoldFen]);
+
+  const handleBlindfoldPlayerColorChange = useCallback(
+    (color: "white" | "black") => {
+      setInputColor(color);
+      setPlayer1Settings((current) =>
+        current.type === "human" ? current : createDefaultHumanOpponent(),
+      );
+      setPlayer2Settings((current) =>
+        current.type === "engine" && current.botProfile?.kind === "maia"
+          ? current
+          : createDefaultMaiaOpponent(
+              current.type === "engine" ? current.engine : null,
+              blindfoldMaiaElo,
+            ),
+      );
+    },
+    [blindfoldMaiaElo, setInputColor, setPlayer1Settings, setPlayer2Settings],
+  );
+
+  const handleBlindfoldMaiaEloChange = useCallback(
+    (elo: number) => {
+      const level = maiaLevelFromElo(elo);
+      setMaiaInstallError(null);
+      setPlayer2Settings((current) => {
+        const engine = current.type === "engine" ? current.engine : null;
+        const next = createDefaultMaiaOpponent(engine, level) as Extract<
+          OpponentSettings,
+          { type: "engine" }
+        >;
+        if (current.type !== "engine") return next;
+
+        const keepWeights =
+          current.botProfile?.kind === "maia" &&
+          maiaLevelFromElo(current.botProfile.fideElo) === level
+            ? current.botProfile.maiaWeightsPath
+            : undefined;
+        const currentEngineSettings = current.engineSettings ?? engine?.settings ?? [];
+        const nextEngineSettings = keepWeights
+          ? currentEngineSettings
+          : currentEngineSettings.filter((setting) => setting.name !== "WeightsFile");
+
+        return {
+          ...next,
+          go: current.go,
+          timeControl: current.timeControl,
+          timeUnit: current.timeUnit,
+          incrementUnit: current.incrementUnit,
+          engineSettings: nextEngineSettings,
+          botProfile: {
+            ...next.botProfile!,
+            timeUse: current.botProfile?.timeUse ?? next.botProfile!.timeUse,
+            maiaWeightsPath: keepWeights,
+          },
+        };
+      });
+    },
+    [setPlayer2Settings],
+  );
+
+  const handleInstallManagedMaia = useCallback(async () => {
+    const level = maiaLevelFromElo(blindfoldMaiaElo);
+    setInstallingMaia(true);
+    setMaiaInstallError(null);
+    try {
+      const engine = await ensureManagedMaiaEngine(level);
+      const weightsPath = engine.settings?.find((setting) => setting.name === "WeightsFile")?.value;
+      setPlayer2Settings((current) => {
+        const next = createDefaultMaiaOpponent(engine, level) as Extract<
+          OpponentSettings,
+          { type: "engine" }
+        >;
+        return {
+          ...next,
+          go: current.type === "engine" ? current.go : next.go,
+          timeControl: current.type === "engine" ? current.timeControl : next.timeControl,
+          timeUnit: current.type === "engine" ? current.timeUnit : next.timeUnit,
+          incrementUnit: current.type === "engine" ? current.incrementUnit : next.incrementUnit,
+          botProfile: {
+            ...next.botProfile!,
+            timeUse:
+              current.type === "engine"
+                ? (current.botProfile?.timeUse ?? next.botProfile!.timeUse)
+                : next.botProfile!.timeUse,
+            maiaWeightsPath: typeof weightsPath === "string" ? weightsPath : undefined,
+          },
+        };
+      });
+      notifications.show({
+        title: "Maia ready",
+        message: `Maia ${level} files are installed.`,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setMaiaInstallError(message);
+      notifications.show({
+        color: "red",
+        title: "Could not install Maia",
+        message,
+      });
+    } finally {
+      setInstallingMaia(false);
+    }
+  }, [blindfoldMaiaElo, setPlayer2Settings]);
 
   const handleSaveBlindfoldGameToFile = useCallback(async () => {
     try {
@@ -880,6 +1005,39 @@ function BoardGame() {
 
   const [sameTimeControl, setSameTimeControl] = useAtom(gameSameTimeControlAtom);
 
+  useEffect(() => {
+    if (!blindfoldActive || gameState !== "settingUp") return;
+
+    if (inputColor === "random") {
+      setInputColor("white");
+    }
+
+    if (player1Settings.type !== "human") {
+      setPlayer1Settings(createDefaultHumanOpponent());
+    }
+
+    if (player2Settings.type !== "engine" || player2Settings.botProfile?.kind !== "maia") {
+      const engine = player2Settings.type === "engine" ? player2Settings.engine : null;
+      setPlayer2Settings(createDefaultMaiaOpponent(engine, blindfoldMaiaElo));
+    }
+
+    if (!sameTimeControl) {
+      setSameTimeControl(true);
+    }
+  }, [
+    blindfoldActive,
+    blindfoldMaiaElo,
+    gameState,
+    inputColor,
+    player1Settings,
+    player2Settings,
+    sameTimeControl,
+    setInputColor,
+    setPlayer1Settings,
+    setPlayer2Settings,
+    setSameTimeControl,
+  ]);
+
   const onePlayerIsEngine = players.white.type !== players.black.type;
   const isEngineVsEngine = players.white.type === "engine" && players.black.type === "engine";
 
@@ -888,9 +1046,6 @@ function BoardGame() {
     for (const player of configuredPlayers) {
       if (player.type !== "engine") continue;
       if (player.botProfile?.enabled) {
-        if (player.botProfile.kind === "maia" && !player.engine?.path) {
-          return "Select a local Maia or LCZero engine before starting.";
-        }
         continue;
       }
       if (!player.engine?.path) return "Select an engine before starting.";
@@ -1020,102 +1175,114 @@ function BoardGame() {
                   <Stack h="100%" gap={0}>
                     <ScrollArea style={{ flex: 1 }} offsetScrollbars>
                       <Stack>
-                        <Group>
-                          <Text flex={1} ta="center" fz="lg" fw="bold">
-                            {match(inputColor)
-                              .with("white", () => "White")
-                              .with("random", () => "Random")
-                              .with("black", () => "Black")
-                              .exhaustive()}
-                          </Text>
-                          <ActionIcon onClick={cycleColor}>
-                            <IconArrowsExchange />
-                          </ActionIcon>
-                          <Text flex={1} ta="center" fz="lg" fw="bold">
-                            {match(inputColor)
-                              .with("white", () => "Black")
-                              .with("random", () => "Random")
-                              .with("black", () => "White")
-                              .exhaustive()}
-                          </Text>
-                        </Group>
-                        <Box flex={1}>
-                          <Group style={{ alignItems: "start" }}>
-                            <OpponentForm
-                              sameTimeControl={sameTimeControl}
-                              opponent={player1Settings}
-                              setOpponent={setPlayer1Settings}
-                              setOtherOpponent={setPlayer2Settings}
-                            />
-                            <Divider orientation="vertical" />
-                            <OpponentForm
-                              sameTimeControl={sameTimeControl}
-                              opponent={player2Settings}
-                              setOpponent={setPlayer2Settings}
-                              setOtherOpponent={setPlayer1Settings}
-                            />
-                          </Group>
-                        </Box>
-
-                        <Paper withBorder p="sm">
-                          <Stack>
-                            <Checkbox
-                              label={t("Board.Opponent.SameTimeControl")}
-                              checked={sameTimeControl}
-                              onChange={(e) => {
-                                const checked = e.target.checked;
-                                setSameTimeControl(checked);
-                                if (checked) {
-                                  setPlayer2Settings((prev) => ({
-                                    ...prev,
-                                    timeControl: player1Settings.timeControl,
-                                    timeUnit: player1Settings.timeUnit,
-                                    incrementUnit: player1Settings.incrementUnit,
-                                  }));
-                                }
-                              }}
-                            />
-
-                            <Divider variant="dashed" />
-
-                            <Checkbox
-                              label="Enable Opening Book"
-                              checked={openingBookEnabled}
-                              onChange={(e) => setOpeningBookEnabled(e.currentTarget.checked)}
-                            />
-
-                            {openingBookEnabled && (
-                              <>
-                                <FileInput
-                                  label="Opening book (.pgn/.epd/.bin/.zip)"
-                                  description={t("Import.PGN.ClickToSelect")}
-                                  filename={openingBookPath}
-                                  onClick={handleSelectOpeningBook}
+                        {blindfoldActive ? (
+                          <BlindfoldMaiaSetupPanel
+                            currentFen={root.fen}
+                            playerColor={inputColor === "black" ? "black" : "white"}
+                            maiaElo={blindfoldMaiaElo}
+                            maiaReady={blindfoldMaiaReady}
+                            maiaInstallLoading={installingMaia}
+                            maiaInstallError={maiaInstallError}
+                            savedGames={savedBlindfoldGames}
+                            onPlayerColorChange={handleBlindfoldPlayerColorChange}
+                            onMaiaEloChange={handleBlindfoldMaiaEloChange}
+                            onInstallMaia={handleInstallManagedMaia}
+                            onLoadFen={loadBlindfoldFen}
+                            onLoadSavedGame={handleLoadSavedBlindfoldGame}
+                          />
+                        ) : (
+                          <>
+                            <Group>
+                              <Text flex={1} ta="center" fz="lg" fw="bold">
+                                {match(inputColor)
+                                  .with("white", () => "White")
+                                  .with("random", () => "Random")
+                                  .with("black", () => "Black")
+                                  .exhaustive()}
+                              </Text>
+                              <ActionIcon onClick={cycleColor}>
+                                <IconArrowsExchange />
+                              </ActionIcon>
+                              <Text flex={1} ta="center" fz="lg" fw="bold">
+                                {match(inputColor)
+                                  .with("white", () => "Black")
+                                  .with("random", () => "Random")
+                                  .with("black", () => "White")
+                                  .exhaustive()}
+                              </Text>
+                            </Group>
+                            <Box flex={1}>
+                              <Group style={{ alignItems: "start" }}>
+                                <OpponentForm
+                                  sameTimeControl={sameTimeControl}
+                                  opponent={player1Settings}
+                                  setOpponent={setPlayer1Settings}
+                                  setOtherOpponent={setPlayer2Settings}
                                 />
-                                {openingBookPath?.includes(".bin") && (
-                                  <NumberInput
-                                    label="Polyglot max plies"
-                                    description="Maximum number of plies from the starting position that the opening book will be used for."
-                                    min={1}
-                                    value={openingBookMaxPly}
-                                    onChange={(value) => {
-                                      if (typeof value === "number" && Number.isFinite(value)) {
-                                        setOpeningBookMaxPly(Math.max(1, Math.trunc(value)));
-                                      }
-                                    }}
-                                  />
-                                )}
-                              </>
-                            )}
-                          </Stack>
-                        </Paper>
+                                <Divider orientation="vertical" />
+                                <OpponentForm
+                                  sameTimeControl={sameTimeControl}
+                                  opponent={player2Settings}
+                                  setOpponent={setPlayer2Settings}
+                                  setOtherOpponent={setPlayer1Settings}
+                                />
+                              </Group>
+                            </Box>
 
-                        <BlindfoldSetupPanel
-                          currentFen={root.fen}
-                          savedGames={savedBlindfoldGames}
-                          onLoadFen={loadBlindfoldFen}
-                          onLoadSavedGame={handleLoadSavedBlindfoldGame}
-                        />
+                            <Paper withBorder p="sm">
+                              <Stack>
+                                <Checkbox
+                                  label={t("Board.Opponent.SameTimeControl")}
+                                  checked={sameTimeControl}
+                                  onChange={(e) => {
+                                    const checked = e.target.checked;
+                                    setSameTimeControl(checked);
+                                    if (checked) {
+                                      setPlayer2Settings((prev) => ({
+                                        ...prev,
+                                        timeControl: player1Settings.timeControl,
+                                        timeUnit: player1Settings.timeUnit,
+                                        incrementUnit: player1Settings.incrementUnit,
+                                      }));
+                                    }
+                                  }}
+                                />
+
+                                <Divider variant="dashed" />
+
+                                <Checkbox
+                                  label="Enable Opening Book"
+                                  checked={openingBookEnabled}
+                                  onChange={(e) => setOpeningBookEnabled(e.currentTarget.checked)}
+                                />
+
+                                {openingBookEnabled && (
+                                  <>
+                                    <FileInput
+                                      label="Opening book (.pgn/.epd/.bin/.zip)"
+                                      description={t("Import.PGN.ClickToSelect")}
+                                      filename={openingBookPath}
+                                      onClick={handleSelectOpeningBook}
+                                    />
+                                    {openingBookPath?.includes(".bin") && (
+                                      <NumberInput
+                                        label="Polyglot max plies"
+                                        description="Maximum number of plies from the starting position that the opening book will be used for."
+                                        min={1}
+                                        value={openingBookMaxPly}
+                                        onChange={(value) => {
+                                          if (typeof value === "number" && Number.isFinite(value)) {
+                                            setOpeningBookMaxPly(Math.max(1, Math.trunc(value)));
+                                          }
+                                        }}
+                                      />
+                                    )}
+                                  </>
+                                )}
+                              </Stack>
+                            </Paper>
+                          </>
+                        )}
                       </Stack>
                     </ScrollArea>
 
@@ -1130,9 +1297,11 @@ function BoardGame() {
                       fullWidth
                       variant="light"
                       loading={startingGame}
-                      disabled={error !== null || setupIssue !== null || startingGame}
+                      disabled={
+                        error !== null || setupIssue !== null || startingGame || installingMaia
+                      }
                     >
-                      {t("Board.Opponent.StartGame")}
+                      {blindfoldActive ? "Start Blindfold Maia" : t("Board.Opponent.StartGame")}
                     </Button>
                   </Stack>
                 )}

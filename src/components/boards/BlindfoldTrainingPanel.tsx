@@ -21,6 +21,7 @@ import {
   IconArrowBackUp,
   IconBackspace,
   IconDeviceFloppy,
+  IconDownload,
   IconEye,
   IconEyeClosed,
   IconFlag,
@@ -40,13 +41,21 @@ import {
   getBlindfoldLegalMoves,
   getBlindfoldMoveInputStatus,
 } from "@/utils/blindfoldTraining";
-import { formatPracticeBotName } from "@/utils/practiceBot";
+import { formatPracticeBotName, maiaLevelFromElo } from "@/utils/practiceBot";
 
 type PlayerColor = "white" | "black";
 
-type BlindfoldSetupPanelProps = {
+type BlindfoldMaiaSetupPanelProps = {
   currentFen: string;
+  playerColor: PlayerColor;
+  maiaElo: number;
+  maiaReady: boolean;
+  maiaInstallLoading: boolean;
+  maiaInstallError: string | null;
   savedGames: BlindfoldSavedGame[];
+  onPlayerColorChange: (color: PlayerColor) => void;
+  onMaiaEloChange: (elo: number) => void;
+  onInstallMaia: () => void | Promise<void>;
   onLoadFen: (fen: string) => boolean;
   onLoadSavedGame: (id: string) => void | Promise<void>;
 };
@@ -121,12 +130,20 @@ function savedGameOptions(savedGames: BlindfoldSavedGame[]) {
   }));
 }
 
-export function BlindfoldSetupPanel({
+export function BlindfoldMaiaSetupPanel({
   currentFen,
+  playerColor,
+  maiaElo,
+  maiaReady,
+  maiaInstallLoading,
+  maiaInstallError,
   savedGames,
+  onPlayerColorChange,
+  onMaiaEloChange,
+  onInstallMaia,
   onLoadFen,
   onLoadSavedGame,
-}: BlindfoldSetupPanelProps) {
+}: BlindfoldMaiaSetupPanelProps) {
   const [settings, setSettings] = useAtom(currentBlindfoldGameSettingsAtom);
   const [fenInput, setFenInput] = useState(currentFen);
   const [fenError, setFenError] = useState<string | null>(null);
@@ -146,143 +163,173 @@ export function BlindfoldSetupPanel({
   }
 
   return (
-    <Paper withBorder p="sm">
-      <Stack gap="sm">
-        <Group justify="space-between" gap="sm" wrap="nowrap">
-          <Box>
-            <Text size="sm" fw={700}>
-              Blindfold mode
-            </Text>
-            <Text size="xs" c="dimmed">
-              Hide the board and enter moves by legal choices or SAN keypad.
-            </Text>
-          </Box>
-          <Switch
-            checked={settings.enabled}
-            onChange={(event) =>
+    <Stack gap="sm">
+      <Paper withBorder p="md">
+        <Stack gap="md">
+          <Group justify="space-between" gap="sm" align="flex-start">
+            <Box>
+              <Text fw={800}>Blindfold Maia</Text>
+              <Text size="xs" c="dimmed">
+                Maia {maiaLevelFromElo(maiaElo)}
+              </Text>
+            </Box>
+            <Badge color={maiaReady ? "green" : "blue"} variant="light">
+              {maiaReady ? "Maia ready" : "Installs on start"}
+            </Badge>
+          </Group>
+
+          <SegmentedControl
+            fullWidth
+            value={playerColor}
+            onChange={(value) => onPlayerColorChange(value as PlayerColor)}
+            data={[
+              { value: "white", label: "Play white" },
+              { value: "black", label: "Play black" },
+            ]}
+          />
+
+          <NumberInput
+            label="Maia level"
+            min={1100}
+            max={1900}
+            step={100}
+            value={maiaElo}
+            onChange={(value) => {
+              if (typeof value === "number") onMaiaEloChange(maiaLevelFromElo(value));
+            }}
+          />
+
+          <Button
+            variant={maiaReady ? "default" : "light"}
+            leftSection={<IconDownload size={16} />}
+            loading={maiaInstallLoading}
+            onClick={() => void onInstallMaia()}
+          >
+            Install Maia files
+          </Button>
+
+          {maiaInstallError && (
+            <Alert color="red" variant="light">
+              {maiaInstallError}
+            </Alert>
+          )}
+        </Stack>
+      </Paper>
+
+      <Paper withBorder p="md">
+        <Stack gap="sm">
+          <Text size="sm" fw={700}>
+            Training surface
+          </Text>
+
+          <SegmentedControl
+            value={settings.moveInputMode}
+            onChange={(value) =>
               setSettings((current) => ({
                 ...current,
-                enabled: event.currentTarget.checked,
+                moveInputMode: value as "legal" | "manual",
               }))
             }
-            aria-label="Enable blindfold mode"
+            data={[
+              { value: "legal", label: "Legal moves" },
+              { value: "manual", label: "Manual SAN" },
+            ]}
           />
-        </Group>
-
-        {settings.enabled && (
-          <>
-            <SegmentedControl
-              value={settings.moveInputMode}
-              onChange={(value) =>
+          <Group grow align="flex-start">
+            <Switch
+              label="Hide board"
+              checked={settings.hideBoard}
+              onChange={(event) =>
                 setSettings((current) => ({
                   ...current,
-                  moveInputMode: value as "legal" | "manual",
-                }))
-              }
-              data={[
-                { value: "legal", label: "Legal moves" },
-                { value: "manual", label: "Manual SAN" },
-              ]}
-            />
-            <Group grow align="flex-start">
-              <Switch
-                label="Hide board"
-                checked={settings.hideBoard}
-                onChange={(event) =>
-                  setSettings((current) => ({
-                    ...current,
-                    hideBoard: event.currentTarget.checked,
-                  }))
-                }
-              />
-              <Switch
-                label="Allow peeking"
-                checked={settings.allowPeeking}
-                disabled={!settings.hideBoard}
-                onChange={(event) =>
-                  setSettings((current) => ({
-                    ...current,
-                    allowPeeking: event.currentTarget.checked,
-                  }))
-                }
-              />
-            </Group>
-            <NumberInput
-              label="AI move display time"
-              description="Seconds to keep Maia's latest reply visible in the trainer panel."
-              min={0}
-              max={15}
-              step={1}
-              value={Math.round(settings.aiMoveDisplayMs / 1000)}
-              onChange={(value) =>
-                setSettings((current) => ({
-                  ...current,
-                  aiMoveDisplayMs: Math.max(0, Math.min(15, Number(value) || 0)) * 1000,
+                  hideBoard: event.currentTarget.checked,
                 }))
               }
             />
-            <Group grow>
-              <Checkbox
-                label="Highlight last move"
-                checked={settings.highlightLastMove}
-                onChange={(event) =>
-                  setSettings((current) => ({
-                    ...current,
-                    highlightLastMove: event.currentTarget.checked,
-                  }))
-                }
-              />
-              <Checkbox
-                label="Piece destinations"
-                checked={settings.showPieceDestinations}
-                onChange={(event) =>
-                  setSettings((current) => ({
-                    ...current,
-                    showPieceDestinations: event.currentTarget.checked,
-                  }))
-                }
-              />
-            </Group>
+            <Switch
+              label="Allow peeking"
+              checked={settings.allowPeeking}
+              disabled={!settings.hideBoard}
+              onChange={(event) =>
+                setSettings((current) => ({
+                  ...current,
+                  allowPeeking: event.currentTarget.checked,
+                }))
+              }
+            />
+          </Group>
+          <NumberInput
+            label="AI move display time"
+            min={0}
+            max={15}
+            step={1}
+            value={Math.round(settings.aiMoveDisplayMs / 1000)}
+            onChange={(value) =>
+              setSettings((current) => ({
+                ...current,
+                aiMoveDisplayMs: Math.max(0, Math.min(15, Number(value) || 0)) * 1000,
+              }))
+            }
+          />
+          <Group grow>
+            <Checkbox
+              label="Highlight last move"
+              checked={settings.highlightLastMove}
+              onChange={(event) =>
+                setSettings((current) => ({
+                  ...current,
+                  highlightLastMove: event.currentTarget.checked,
+                }))
+              }
+            />
+            <Checkbox
+              label="Piece destinations"
+              checked={settings.showPieceDestinations}
+              onChange={(event) =>
+                setSettings((current) => ({
+                  ...current,
+                  showPieceDestinations: event.currentTarget.checked,
+                }))
+              }
+            />
+          </Group>
+        </Stack>
+      </Paper>
 
-            <Divider />
-
-            <Stack gap="xs">
-              <Text size="sm" fw={700}>
-                Trainer library
-              </Text>
-              <Select
-                searchable
-                clearable
-                label="Blindfold games"
-                placeholder={
-                  savedGames.length > 0 ? "Revisit a saved blindfold game" : "No saved games yet"
-                }
-                data={savedGameOptions(savedGames)}
-                disabled={savedGames.length === 0}
-                onChange={(value) => {
-                  if (value) void onLoadSavedGame(value);
-                }}
-              />
-              <Group align="flex-end" grow>
-                <TextInput
-                  label="Load position"
-                  placeholder="Paste a FEN to play out blindfold"
-                  value={fenInput}
-                  error={fenError}
-                  onChange={(event) => setFenInput(event.currentTarget.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") loadFen();
-                  }}
-                />
-                <Button variant="default" onClick={loadFen}>
-                  Load FEN
-                </Button>
-              </Group>
-            </Stack>
-          </>
-        )}
-      </Stack>
-    </Paper>
+      <Paper withBorder p="md">
+        <Stack gap="xs">
+          <Text size="sm" fw={700}>
+            Games and positions
+          </Text>
+          <Select
+            searchable
+            clearable
+            label="Blindfold games"
+            placeholder={savedGames.length > 0 ? "Select a saved game" : "No saved games yet"}
+            data={savedGameOptions(savedGames)}
+            disabled={savedGames.length === 0}
+            onChange={(value) => {
+              if (value) void onLoadSavedGame(value);
+            }}
+          />
+          <Group align="flex-end" grow>
+            <TextInput
+              label="Load position"
+              placeholder="Paste FEN"
+              value={fenInput}
+              error={fenError}
+              onChange={(event) => setFenInput(event.currentTarget.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") loadFen();
+              }}
+            />
+            <Button variant="default" onClick={loadFen}>
+              Load FEN
+            </Button>
+          </Group>
+        </Stack>
+      </Paper>
+    </Stack>
   );
 }
 
