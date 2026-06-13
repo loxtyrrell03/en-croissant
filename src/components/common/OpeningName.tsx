@@ -4,7 +4,7 @@ import { useStore } from "zustand";
 import { getOpening } from "@/utils/chess";
 import { TreeStateContext } from "./TreeStateContext";
 
-function OpeningName() {
+function OpeningName({ compact = false }: { compact?: boolean }) {
   const [openingName, setOpeningName] = useState("");
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (s) => s.root);
@@ -15,7 +15,11 @@ function OpeningName() {
   }, [root, position]);
 
   return (
-    <Text style={{ userSelect: "text" }} fz="sm">
+    <Text
+      style={{ lineHeight: compact ? 1.15 : undefined, userSelect: "text" }}
+      fz={compact ? "xs" : "sm"}
+      truncate={compact}
+    >
       {openingName}
     </Text>
   );

@@ -308,7 +308,7 @@ function BoardAnalysis() {
     />
   );
   const underBoardHeaderActions = (
-    <Group gap="xs" wrap="nowrap">
+    <Group className={classes.underBoardHeaderActions} gap={6} wrap="nowrap">
       <UnderBoardModeSwitch value={underBoardMode} onChange={setUnderBoardMode} />
       <Button
         aria-label="AI Coach"
@@ -406,6 +406,7 @@ function BoardAnalysis() {
       )}
       <Portal target="#left" style={{ height: "100%" }}>
         <BoardWithAnnotationLayout
+          underBoardSize="large"
           board={
             <Board
               practicing={practicing}
@@ -428,6 +429,8 @@ function BoardAnalysis() {
                 <Suspense fallback={<NotationFallback />}>
                   <GameNotation
                     topBar
+                    compact
+                    className={classes.underBoardNotation}
                     controls={boardControls}
                     headerActions={underBoardHeaderActions}
                     content={

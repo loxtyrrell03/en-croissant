@@ -2126,6 +2126,10 @@ from 2026-04-24 through 2026-05-03.
   `EngineDockedPanel` and `EvalListener` so blindfold analysis follows the same
   dock setting, engine rows, and evaluation lifecycle as the other board
   workspaces.
+- On 2026-06-13, the desktop analysis board under-board move panel was given a
+  slightly larger height allocation and switched to compact notation chrome.
+  The intent is that the `Moves / Database / Prep / Coach` header takes less
+  vertical space so more SAN moves and comments are visible before scrolling.
 
 ## Verification Expectations
 

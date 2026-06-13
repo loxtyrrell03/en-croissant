@@ -55,3 +55,30 @@
   opacity: 1;
   transform: translate(-50%, 0);
 }
+
+.underBoardNotation {
+  min-height: 0;
+}
+
+.underBoardHeaderActions {
+  flex: 0 0 auto;
+}
+
+.underBoardHeaderActions :global(.mantine-SegmentedControl-root) {
+  flex: 0 0 auto;
+}
+
+.underBoardHeaderActions :global(.mantine-SegmentedControl-label) {
+  min-height: 1.65rem;
+  padding-inline: 0.45rem;
+}
+
+.underBoardHeaderActions :global(.mantine-Button-root) {
+  height: 1.65rem;
+  min-height: 1.65rem;
+  padding-inline: 0.5rem;
+}
+
+.underBoardHeaderActions :global(.mantine-Button-section) {
+  margin-inline-end: 0.25rem;
+}

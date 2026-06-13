@@ -146,7 +146,12 @@ function GameNotation({
       <Group h="100%" wrap="nowrap" align="stretch" gap={0} style={{ minHeight: 0 }}>
         {controls && (
           <>
-            <ScrollArea type="never" py="md" mx="xs" style={{ flexShrink: 0 }}>
+            <ScrollArea
+              type="never"
+              py={compact ? 6 : "md"}
+              mx={compact ? 4 : "xs"}
+              style={{ flexShrink: 0 }}
+            >
               {controls}
             </ScrollArea>
             <Divider orientation="vertical" />
@@ -230,7 +235,7 @@ function GameNotation({
                       {tableView ? (
                         <TableNotation targetRef={targetRef} />
                       ) : (
-                        <Box pt={compact ? 6 : "md"} px="sm">
+                        <Box pt={compact ? 3 : "md"} px={compact ? 8 : "sm"}>
                           <RenderVariationTree
                             targetRef={targetRef}
                             nodePath={[]}
@@ -240,7 +245,7 @@ function GameNotation({
                         </Box>
                       )}
                     </Box>
-                    <Box pb={compact ? 6 : "md"}>
+                    <Box pb={compact ? 4 : "md"}>
                       {headers.result !== "*" && (
                         <Text ta="center">
                           {headers.result}
@@ -479,61 +484,72 @@ function NotationHeader({
       setShowMoveAnnotations(false);
     }
   };
+  const actionIconSize = compact ? "sm" : "md";
+  const iconSize = compact ? "0.9rem" : "1rem";
 
   return (
-    <Stack gap={compact ? 4 : "xs"} pt={compact ? 5 : "xs"}>
-      <Group justify="space-between" px="sm">
-        <OpeningName />
-        <Group gap="sm">
+    <Stack gap={compact ? 2 : "xs"} pt={compact ? 3 : "xs"}>
+      <Group justify="space-between" px={compact ? 8 : "sm"} gap={compact ? 4 : "sm"}>
+        <Box miw={0} style={{ flex: "1 1 11rem" }}>
+          <OpeningName compact={compact} />
+        </Box>
+        <Group gap={compact ? 4 : "sm"} wrap="nowrap" style={{ flex: "0 0 auto" }}>
           {headerActions}
           <Tooltip label={focusNotationLabel}>
             <ActionIcon
               aria-label={focusNotationLabel}
+              size={actionIconSize}
               variant={notationDetailsHidden ? "filled" : undefined}
               onClick={toggleNotationDetails}
             >
-              <IconFocus size="1rem" />
+              <IconFocus size={iconSize} />
             </ActionIcon>
           </Tooltip>
           <Tooltip label={copyPgnLabel}>
             <ActionIcon
               aria-label={copyPgnLabel}
+              size={actionIconSize}
               loading={copying}
               onClick={() => void copyCompletePgn()}
             >
-              {copied ? <IconCheck size="1rem" /> : <IconCopy size="1rem" />}
+              {copied ? <IconCheck size={iconSize} /> : <IconCopy size={iconSize} />}
             </ActionIcon>
           </Tooltip>
           <Tooltip label={analyzeLabel}>
             <ActionIcon
               aria-label={analyzeLabel}
+              size={actionIconSize}
               loading={reportInProgress}
               disabled={root.children.length === 0}
               onClick={() => void analyzeGame()}
             >
-              {reportVisible ? <IconList size="1rem" /> : <IconChartBar size="1rem" />}
+              {reportVisible ? <IconList size={iconSize} /> : <IconChartBar size={iconSize} />}
             </ActionIcon>
           </Tooltip>
           <Tooltip label={invisible ? t("Notation.ShowMoves") : t("Notation.HideMoves")}>
-            <ActionIcon onClick={() => setInvisible((v) => !v)}>
-              {invisible ? <IconEyeOff size="1rem" /> : <IconEye size="1rem" />}
+            <ActionIcon size={actionIconSize} onClick={() => setInvisible((v) => !v)}>
+              {invisible ? <IconEyeOff size={iconSize} /> : <IconEye size={iconSize} />}
             </ActionIcon>
           </Tooltip>
           <Tooltip label={tableView ? t("Notation.NormalView") : t("Notation.TableView")}>
-            <ActionIcon onClick={() => setTableView((v) => !v)}>
-              {tableView ? <IconList size="1rem" /> : <IconLayoutList size="1rem" />}
+            <ActionIcon size={actionIconSize} onClick={() => setTableView((v) => !v)}>
+              {tableView ? <IconList size={iconSize} /> : <IconLayoutList size={iconSize} />}
             </ActionIcon>
           </Tooltip>
           <Tooltip label={showComments ? t("Notation.HideComments") : t("Notation.ShowComments")}>
-            <ActionIcon onClick={() => setShowComments((v) => !v)}>
-              {showComments ? <IconArticle size="1rem" /> : <IconArticleOff size="1rem" />}
+            <ActionIcon size={actionIconSize} onClick={() => setShowComments((v) => !v)}>
+              {showComments ? <IconArticle size={iconSize} /> : <IconArticleOff size={iconSize} />}
             </ActionIcon>
           </Tooltip>
           <Tooltip
             label={showVariations ? t("Notation.HideVariations") : t("Notation.ShowVariations")}
           >
-            <ActionIcon onClick={() => setShowVariations((v) => !v)}>
-              {showVariations ? <IconArrowsSplit size="1rem" /> : <IconArrowRight size="1rem" />}
+            <ActionIcon size={actionIconSize} onClick={() => setShowVariations((v) => !v)}>
+              {showVariations ? (
+                <IconArrowsSplit size={iconSize} />
+              ) : (
+                <IconArrowRight size={iconSize} />
+              )}
             </ActionIcon>
           </Tooltip>
         </Group>
