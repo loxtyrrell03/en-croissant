@@ -781,6 +781,89 @@ export const blindfoldGameSettingsFamily = atomFamily((_tab: string) =>
 );
 export const currentBlindfoldGameSettingsAtom = tabValue(blindfoldGameSettingsFamily);
 
+const blindfoldGameSettingsSchema: z.ZodType<BlindfoldGameSettings> = z.object({
+    enabled: z.boolean(),
+    hideBoard: z.boolean(),
+    allowPeeking: z.boolean(),
+    aiMoveDisplayMs: z.number(),
+    moveInputMode: z.enum(["legal", "manual"]),
+    pieceVisibility: z.enum(["both", "own", "opponent"]),
+    showAsStones: z.boolean(),
+    pieceColorMode: z.enum(["normal", "allWhite", "allBlack"]),
+    hidePawns: z.boolean(),
+    highlightLastMove: z.boolean(),
+    showPieceDestinations: z.boolean(),
+});
+
+export type BlindfoldLostTrackMark = {
+    id: string;
+    fen: string;
+    path: number[];
+    ply: number;
+    label: string;
+    sanLine: string[];
+    note?: string;
+    createdAt: number;
+};
+
+const blindfoldLostTrackMarkSchema: z.ZodType<BlindfoldLostTrackMark> = z.object({
+    id: z.string(),
+    fen: z.string(),
+    path: z.array(z.number()),
+    ply: z.number(),
+    label: z.string(),
+    sanLine: z.array(z.string()),
+    note: z.string().optional(),
+    createdAt: z.number(),
+});
+
+export type BlindfoldSavedGame = {
+    id: string;
+    title: string;
+    pgn: string;
+    initialFen: string;
+    result: string;
+    white: string;
+    black: string;
+    humanColor: "white" | "black" | null;
+    moveCount: number;
+    lastMoveSan: string | null;
+    settings: BlindfoldGameSettings;
+    marks: BlindfoldLostTrackMark[];
+    createdAt: number;
+    updatedAt: number;
+};
+
+const blindfoldSavedGameSchema: z.ZodType<BlindfoldSavedGame> = z.object({
+    id: z.string(),
+    title: z.string(),
+    pgn: z.string(),
+    initialFen: z.string(),
+    result: z.string(),
+    white: z.string(),
+    black: z.string(),
+    humanColor: z.enum(["white", "black"]).nullable(),
+    moveCount: z.number(),
+    lastMoveSan: z.string().nullable(),
+    settings: blindfoldGameSettingsSchema,
+    marks: z.array(blindfoldLostTrackMarkSchema),
+    createdAt: z.number(),
+    updatedAt: z.number(),
+});
+
+export const blindfoldSavedGamesAtom = atomWithStorage<BlindfoldSavedGame[]>(
+    "blindfold-saved-games",
+    [],
+    createZodStorage(zodArray(blindfoldSavedGameSchema), localStorage),
+    { getOnInit: true },
+);
+
+const blindfoldSessionIdFamily = atomFamily((_tab: string) => atom<string | null>(null));
+export const currentBlindfoldSessionIdAtom = tabValue(blindfoldSessionIdFamily);
+
+const blindfoldMarksFamily = atomFamily((_tab: string) => atom<BlindfoldLostTrackMark[]>([]));
+export const currentBlindfoldMarksAtom = tabValue(blindfoldMarksFamily);
+
 function tabValue<T extends object | string | boolean | number | null | undefined>(
     family: AtomFamily<string, PrimitiveAtom<T>>,
 ) {
@@ -1589,6 +1672,8 @@ export function cleanupClosedTabAtomState(
     playersFamily.remove(tab);
     gameIdFamily.remove(tab);
     blindfoldGameSettingsFamily.remove(tab);
+    blindfoldSessionIdFamily.remove(tab);
+    blindfoldMarksFamily.remove(tab);
     practiceStateFamily.remove(tab);
     practiceSessionStatsFamily.remove(tab);
     practiceCardStartTimeFamily.remove(tab);

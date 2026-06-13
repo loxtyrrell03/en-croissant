@@ -2082,6 +2082,15 @@ from 2026-04-24 through 2026-05-03.
   Maia/LCZero engine profile with Maia-level strength settings. Do not silently
   fall back to Patricia for this mode; if no local Maia-style engine is
   configured, setup should block and explain that one must be added in Engines.
+- A follow-up on 2026-06-13 made the Blindfold Maia trainer a revisitable
+  training surface instead of only a one-off play mode. Live blindfold games
+  now auto-save into a dedicated local `Blindfold games` library separate from
+  the normal Files surface, can still be exported explicitly as PGN, and can be
+  reopened in blindfold review with the board hidden. Players can mark the
+  current position as `Lost track`, which persists both as trainer metadata and
+  as a PGN comment, then jump back to those marked positions later. The setup
+  panel also accepts pasted FENs so arbitrary positions can be loaded and
+  played out blindfold against Maia.
 
 ## Verification Expectations
 

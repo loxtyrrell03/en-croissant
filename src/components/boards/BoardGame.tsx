@@ -22,6 +22,7 @@ import {
   IconX,
   IconZoomCheck,
 } from "@tabler/icons-react";
+import { useLoaderData } from "@tanstack/react-router";
 import { open } from "@tauri-apps/plugin-dialog";
 import type { Piece } from "chessops";
 import { makeUci, parseUci } from "chessops";
@@ -43,9 +44,13 @@ import {
 import type { ChessgroundRef } from "@/chessground/Chessground";
 import {
   activeTabAtom,
+  blindfoldSavedGamesAtom,
+  currentBlindfoldMarksAtom,
   currentBlindfoldGameSettingsAtom,
+  currentBlindfoldSessionIdAtom,
   currentGameIdAtom,
   currentGameStateAtom,
+  currentTabAtom,
   currentPlayersAtom,
   gameInputColorAtom,
   gameOpeningBookEnabledAtom,
@@ -56,17 +61,30 @@ import {
   gameSameTimeControlAtom,
   tabsAtom,
 } from "@/state/atoms";
+import { parsePGN } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
 import type { GameHeaders, TreeNode } from "@/utils/treeReducer";
 import { unwrap } from "@/utils/unwrap";
 import {
+  addLostTrackComment,
+  blindfoldPathKey,
+  buildBlindfoldSavedGame,
+  createBlindfoldLostTrackMark,
+  removeLostTrackComment,
+  upsertBlindfoldSavedGame,
+} from "@/utils/blindfoldGameLibrary";
+import {
   buildPracticeBotOptions,
+  createDefaultHumanOpponent,
+  createDefaultMaiaOpponent,
+  DEFAULT_BLINDFOLD_MAIA_ELO,
   formatPracticeBotName,
   getPracticeBotGoMode,
   getPracticeBotMoveDelay,
   preparePracticeBotOpponent,
   shouldUseClockTimeManagement,
 } from "@/utils/practiceBot";
+import { genID, saveToFile } from "@/utils/tabs";
 import EngineLogsView from "../common/EngineLogsView";
 import FileInput from "../common/FileInput";
 import GameInfo from "../common/GameInfo";
@@ -112,8 +130,13 @@ function getHumanPlayerColor(players: {
   return null;
 }
 
+function activeColorFromFen(fen: string): "white" | "black" {
+  return fen.split(/\s+/)[1] === "b" ? "black" : "white";
+}
+
 function BoardGame() {
   const { t } = useTranslation();
+  const { documentDir } = useLoaderData({ from: "/" });
   const activeTab = useAtomValue(activeTabAtom);
 
   const [editingMode, toggleEditingMode] = useToggle();
@@ -155,8 +178,16 @@ function BoardGame() {
   const setResult = useStore(store, (s) => s.setResult);
   const appendMove = useStore(store, (s) => s.appendMove);
   const resetTree = useStore(store, (s) => s.reset);
+  const goToMove = useStore(store, (s) => s.goToMove);
+  const setState = useStore(store, (s) => s.setState);
+  const setCommentAtPath = useStore(store, (s) => s.setCommentAtPath);
+  const currentPath = useStore(store, (s) => s.position);
 
   const [, setTabs] = useAtom(tabsAtom);
+  const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
+  const [savedBlindfoldGames, setSavedBlindfoldGames] = useAtom(blindfoldSavedGamesAtom);
+  const [blindfoldSessionId, setBlindfoldSessionId] = useAtom(currentBlindfoldSessionIdAtom);
+  const [blindfoldMarks, setBlindfoldMarks] = useAtom(currentBlindfoldMarksAtom);
 
   const boardRef = useRef(null);
   const cgRef = useRef<ChessgroundRef>(null);
@@ -170,7 +201,7 @@ function BoardGame() {
   const [logsOpened, toggleLogsOpened] = useToggle();
   const [logsColor, setLogsColor] = useState<"white" | "black">("white");
   const [engineLogs, setEngineLogs] = useState<EngineLog[]>([]);
-  const [blindfoldSettings] = useAtom(currentBlindfoldGameSettingsAtom);
+  const [blindfoldSettings, setBlindfoldSettings] = useAtom(currentBlindfoldGameSettingsAtom);
   const [blindfoldPeekFen, setBlindfoldPeekFen] = useState<string | null>(null);
   const [openingBookPath, setOpeningBookPath] = useAtom(gameOpeningBookPathAtom);
   const [openingBookEnabled, setOpeningBookEnabled] = useAtom(gameOpeningBookEnabledAtom);
@@ -182,11 +213,9 @@ function BoardGame() {
   const mainlineEnd = useMemo(() => getMainlineEnd(root), [root]);
   const currentLineAtEnd =
     currentNode.fen === mainlineEnd.fen && currentNode.halfMoves === mainlineEnd.halfMoves;
-  const blindfoldBoardHidden =
-    blindfoldActive &&
-    blindfoldSettings.hideBoard &&
-    gameState === "playing" &&
-    blindfoldPeekFen !== currentNode.fen;
+  const blindfoldCanHideBoard =
+    blindfoldActive && blindfoldSettings.hideBoard && gameState !== "settingUp";
+  const blindfoldBoardHidden = blindfoldCanHideBoard && blindfoldPeekFen !== currentNode.fen;
   const humanPlayerColor = getHumanPlayerColor(players);
   const lastMoveColor =
     mainlineEnd.move && mainlineEnd.halfMoves > 0
@@ -202,6 +231,52 @@ function BoardGame() {
   const isPlayerVsEngine =
     (players.white.type === "human" && players.black.type === "engine") ||
     (players.black.type === "human" && players.white.type === "engine");
+
+  useEffect(() => {
+    if (!blindfoldActive || gameState === "settingUp") return;
+
+    const sessionId = blindfoldSessionId ?? genID();
+    if (!blindfoldSessionId) {
+      setBlindfoldSessionId(sessionId);
+    }
+
+    setSavedBlindfoldGames((current) => {
+      const existing = current.find((game) => game.id === sessionId) ?? null;
+      const snapshot = buildBlindfoldSavedGame({
+        id: sessionId,
+        root,
+        headers,
+        settings: blindfoldSettings,
+        marks: blindfoldMarks,
+        humanColor: humanPlayerColor,
+        existing,
+        now: Date.now(),
+      });
+
+      const unchanged =
+        existing &&
+        existing.pgn === snapshot.pgn &&
+        existing.result === snapshot.result &&
+        existing.white === snapshot.white &&
+        existing.black === snapshot.black &&
+        existing.humanColor === snapshot.humanColor &&
+        JSON.stringify(existing.settings) === JSON.stringify(snapshot.settings) &&
+        JSON.stringify(existing.marks) === JSON.stringify(snapshot.marks);
+
+      return unchanged ? current : upsertBlindfoldSavedGame(current, snapshot);
+    });
+  }, [
+    blindfoldActive,
+    blindfoldMarks,
+    blindfoldSessionId,
+    blindfoldSettings,
+    gameState,
+    headers,
+    humanPlayerColor,
+    root,
+    setBlindfoldSessionId,
+    setSavedBlindfoldGames,
+  ]);
 
   const fetchEngineLogs = useCallback(async () => {
     if (!gameId || !hasEngine) return;
@@ -389,6 +464,11 @@ function BoardGame() {
       setBlackTime(state.blackTime !== null ? Number(state.blackTime) : null);
 
       setGameState("playing");
+      if (blindfoldSettings.enabled) {
+        setBlindfoldSessionId(genID());
+        setBlindfoldMarks([]);
+        setBlindfoldPeekFen(null);
+      }
 
       setFen(state.initialFen);
       for (const move of mapBackendMoves(state.moves)) {
@@ -490,6 +570,189 @@ function BoardGame() {
       await handleHumanMove(uci);
     },
     [handleHumanMove],
+  );
+
+  const loadBlindfoldFen = useCallback(
+    (fen: string) => {
+      const [loadedPosition, loadError] = positionFromFen(fen);
+      if (!loadedPosition || loadError) return false;
+
+      const sideToMove = activeColorFromFen(fen);
+      setGameId(null);
+      setGameState("settingUp");
+      setWhiteTime(null);
+      setBlackTime(null);
+      setBlindfoldPeekFen(null);
+      setBlindfoldSessionId(null);
+      setBlindfoldMarks([]);
+      setFen(fen);
+      setHeaders({
+        ...headers,
+        event: headers.event || "Blindfold Maia",
+        fen,
+        orientation: sideToMove,
+        result: "*",
+      });
+      setInputColor(sideToMove);
+      setBlindfoldSettings((current) => ({
+        ...current,
+        enabled: true,
+      }));
+      return true;
+    },
+    [
+      headers,
+      setBlackTime,
+      setBlindfoldMarks,
+      setBlindfoldSessionId,
+      setBlindfoldSettings,
+      setFen,
+      setGameId,
+      setGameState,
+      setHeaders,
+      setInputColor,
+      setWhiteTime,
+    ],
+  );
+
+  const handleToggleLostTrack = useCallback(() => {
+    const path = [...currentPath];
+    const pathKey = blindfoldPathKey(path);
+    const existing = blindfoldMarks.find((mark) => blindfoldPathKey(mark.path) === pathKey);
+
+    if (existing) {
+      setBlindfoldMarks((current) =>
+        current.filter((mark) => blindfoldPathKey(mark.path) !== pathKey),
+      );
+      setCommentAtPath(path, removeLostTrackComment(currentNode.comment));
+      return;
+    }
+
+    const mark = createBlindfoldLostTrackMark({
+      id: genID(),
+      root,
+      path,
+      now: Date.now(),
+    });
+    if (!mark) return;
+
+    setBlindfoldMarks((current) => [...current, mark]);
+    setCommentAtPath(path, addLostTrackComment(currentNode.comment));
+  }, [blindfoldMarks, currentNode.comment, currentPath, root, setBlindfoldMarks, setCommentAtPath]);
+
+  const handleGoToBlindfoldMark = useCallback(
+    (path: number[]) => {
+      goToMove(path);
+      setBlindfoldPeekFen(null);
+    },
+    [goToMove],
+  );
+
+  const handlePlayBlindfoldFromCurrentPosition = useCallback(async () => {
+    if (gameState === "playing" && gameId) {
+      try {
+        await commands.abortGame(gameId);
+      } catch {
+        // Loading the position still gives the user the requested new setup.
+      }
+    }
+    const loaded = loadBlindfoldFen(currentNode.fen);
+    if (loaded) {
+      notifications.show({
+        title: "Position loaded",
+        message: "Start the game to play this position blindfold against Maia.",
+      });
+    }
+  }, [currentNode.fen, gameId, gameState, loadBlindfoldFen]);
+
+  const handleSaveBlindfoldGameToFile = useCallback(async () => {
+    try {
+      const saved = await saveToFile({
+        dir: documentDir,
+        tab: currentTab ?? undefined,
+        setCurrentTab,
+        store,
+        isUserSave: true,
+        forceSaveAs: true,
+      });
+      if (saved) {
+        notifications.show({
+          title: "Blindfold game saved",
+          message: "The current game was exported as a PGN file.",
+        });
+      }
+    } catch (err) {
+      notifications.show({
+        color: "red",
+        title: "Could not save PGN",
+        message: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }, [currentTab, documentDir, setCurrentTab, store]);
+
+  const handleLoadSavedBlindfoldGame = useCallback(
+    async (id: string) => {
+      const savedGame = savedBlindfoldGames.find((game) => game.id === id);
+      if (!savedGame) return;
+
+      try {
+        const treeState = await parsePGN(savedGame.pgn, savedGame.initialFen);
+        treeState.position = savedGame.marks[0]?.path ?? [];
+        setState(treeState);
+        setBlindfoldSettings({
+          ...savedGame.settings,
+          enabled: true,
+        });
+        setBlindfoldMarks(savedGame.marks);
+        setBlindfoldSessionId(savedGame.id);
+        setGameId(null);
+        setGameState("gameOver");
+        setWhiteTime(null);
+        setBlackTime(null);
+        setBlindfoldPeekFen(null);
+        setInputColor(savedGame.humanColor ?? activeColorFromFen(savedGame.initialFen));
+
+        const humanName =
+          savedGame.humanColor === "black" ? savedGame.black : savedGame.white || "Player";
+        const human = createDefaultHumanOpponent(humanName || "Player");
+        const maia = createDefaultMaiaOpponent(null, DEFAULT_BLINDFOLD_MAIA_ELO);
+        setPlayers(
+          savedGame.humanColor === "black"
+            ? { white: maia, black: human }
+            : { white: human, black: maia },
+        );
+
+        setCurrentTab((tab) =>
+          tab
+            ? {
+                ...tab,
+                type: "play",
+                name: `Blindfold: ${savedGame.title}`,
+              }
+            : tab,
+        );
+      } catch (err) {
+        notifications.show({
+          color: "red",
+          title: "Could not load blindfold game",
+          message: err instanceof Error ? err.message : String(err),
+        });
+      }
+    },
+    [
+      savedBlindfoldGames,
+      setBlackTime,
+      setBlindfoldMarks,
+      setBlindfoldSessionId,
+      setBlindfoldSettings,
+      setCurrentTab,
+      setGameId,
+      setGameState,
+      setInputColor,
+      setPlayers,
+      setState,
+      setWhiteTime,
+    ],
   );
 
   const pendingMovesRef = useRef<{ uci: string; clock: number | null }[] | null>(null);
@@ -660,6 +923,9 @@ function BoardGame() {
     setGameState("settingUp");
     setWhiteTime(null);
     setBlackTime(null);
+    setBlindfoldSessionId(null);
+    setBlindfoldMarks([]);
+    setBlindfoldPeekFen(null);
     resetTree();
   }
 
@@ -707,7 +973,7 @@ function BoardGame() {
               : undefined
           }
           blindfoldOverlay={
-            blindfoldActive && gameState === "playing"
+            blindfoldCanHideBoard
               ? {
                   hidden: blindfoldBoardHidden,
                   canReveal: blindfoldSettings.allowPeeking,
@@ -844,7 +1110,12 @@ function BoardGame() {
                           </Stack>
                         </Paper>
 
-                        <BlindfoldSetupPanel />
+                        <BlindfoldSetupPanel
+                          currentFen={root.fen}
+                          savedGames={savedBlindfoldGames}
+                          onLoadFen={loadBlindfoldFen}
+                          onLoadSavedGame={handleLoadSavedBlindfoldGame}
+                        />
                       </Stack>
                     </ScrollArea>
 
@@ -874,16 +1145,22 @@ function BoardGame() {
                       currentLineAtEnd={currentLineAtEnd}
                       boardHidden={blindfoldBoardHidden}
                       boardRevealed={
-                        blindfoldActive &&
-                        blindfoldSettings.hideBoard &&
-                        !blindfoldBoardHidden &&
-                        gameState === "playing"
+                        blindfoldActive && blindfoldSettings.hideBoard && !blindfoldBoardHidden
                       }
                       canRevealBoard={blindfoldSettings.allowPeeking}
                       lastMoveSan={lastEngineMoveSan}
+                      marks={blindfoldMarks}
+                      currentPath={currentPath}
+                      savedGames={savedBlindfoldGames}
+                      activeSavedGameId={blindfoldSessionId}
                       onRevealBoard={() => setBlindfoldPeekFen(currentNode.fen)}
                       onHideBoard={() => setBlindfoldPeekFen(null)}
                       onPlayMove={handleBlindfoldMove}
+                      onToggleLostTrack={handleToggleLostTrack}
+                      onGoToMark={handleGoToBlindfoldMark}
+                      onPlayFromCurrentPosition={handlePlayBlindfoldFromCurrentPosition}
+                      onSaveGameToFile={handleSaveBlindfoldGameToFile}
+                      onLoadSavedGame={handleLoadSavedBlindfoldGame}
                     />
                   ) : (
                     <Stack h="100%">

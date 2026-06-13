@@ -10,16 +10,31 @@ import {
   Paper,
   ScrollArea,
   SegmentedControl,
+  Select,
   SimpleGrid,
   Stack,
   Switch,
   Text,
+  TextInput,
 } from "@mantine/core";
-import { IconArrowBackUp, IconBackspace, IconEye, IconEyeClosed } from "@tabler/icons-react";
+import {
+  IconArrowBackUp,
+  IconBackspace,
+  IconDeviceFloppy,
+  IconEye,
+  IconEyeClosed,
+  IconFlag,
+  IconPlayerPlay,
+} from "@tabler/icons-react";
 import { useAtom } from "jotai";
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { OpponentSettings } from "@/components/boards/OpponentForm";
-import { currentBlindfoldGameSettingsAtom } from "@/state/atoms";
+import {
+  currentBlindfoldGameSettingsAtom,
+  type BlindfoldLostTrackMark,
+  type BlindfoldSavedGame,
+} from "@/state/atoms";
+import { blindfoldPathKey } from "@/utils/blindfoldGameLibrary";
 import {
   findBlindfoldMove,
   getBlindfoldLegalMoves,
@@ -28,6 +43,13 @@ import {
 import { formatPracticeBotName } from "@/utils/practiceBot";
 
 type PlayerColor = "white" | "black";
+
+type BlindfoldSetupPanelProps = {
+  currentFen: string;
+  savedGames: BlindfoldSavedGame[];
+  onLoadFen: (fen: string) => boolean;
+  onLoadSavedGame: (id: string) => void | Promise<void>;
+};
 
 type BlindfoldTrainingPanelProps = {
   fen: string;
@@ -41,9 +63,18 @@ type BlindfoldTrainingPanelProps = {
   boardRevealed: boolean;
   canRevealBoard: boolean;
   lastMoveSan: string | null;
+  marks: BlindfoldLostTrackMark[];
+  currentPath: number[];
+  savedGames: BlindfoldSavedGame[];
+  activeSavedGameId: string | null;
   onRevealBoard: () => void;
   onHideBoard: () => void;
   onPlayMove: (uci: string) => void | Promise<void>;
+  onToggleLostTrack: () => void;
+  onGoToMark: (path: number[]) => void;
+  onPlayFromCurrentPosition: () => void | Promise<void>;
+  onSaveGameToFile: () => void | Promise<void>;
+  onLoadSavedGame: (id: string) => void | Promise<void>;
 };
 
 const PIECE_TOKENS = [
@@ -80,8 +111,39 @@ function moveNumberFromFen(fen: string) {
   return `${fullMove}${parts[1] === "b" ? "..." : "."}`;
 }
 
-export function BlindfoldSetupPanel() {
+function savedGameOptions(savedGames: BlindfoldSavedGame[]) {
+  return savedGames.map((game) => ({
+    value: game.id,
+    label: game.title,
+    description: `${game.moveCount} ply - ${game.result} - ${new Date(
+      game.updatedAt,
+    ).toLocaleString()}`,
+  }));
+}
+
+export function BlindfoldSetupPanel({
+  currentFen,
+  savedGames,
+  onLoadFen,
+  onLoadSavedGame,
+}: BlindfoldSetupPanelProps) {
   const [settings, setSettings] = useAtom(currentBlindfoldGameSettingsAtom);
+  const [fenInput, setFenInput] = useState(currentFen);
+  const [fenError, setFenError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setFenInput(currentFen);
+  }, [currentFen]);
+
+  function loadFen() {
+    const fen = fenInput.trim();
+    if (!fen) return;
+    if (onLoadFen(fen)) {
+      setFenError(null);
+    } else {
+      setFenError("That FEN could not be loaded.");
+    }
+  }
 
   return (
     <Paper withBorder p="sm">
@@ -181,6 +243,42 @@ export function BlindfoldSetupPanel() {
                 }
               />
             </Group>
+
+            <Divider />
+
+            <Stack gap="xs">
+              <Text size="sm" fw={700}>
+                Trainer library
+              </Text>
+              <Select
+                searchable
+                clearable
+                label="Blindfold games"
+                placeholder={
+                  savedGames.length > 0 ? "Revisit a saved blindfold game" : "No saved games yet"
+                }
+                data={savedGameOptions(savedGames)}
+                disabled={savedGames.length === 0}
+                onChange={(value) => {
+                  if (value) void onLoadSavedGame(value);
+                }}
+              />
+              <Group align="flex-end" grow>
+                <TextInput
+                  label="Load position"
+                  placeholder="Paste a FEN to play out blindfold"
+                  value={fenInput}
+                  error={fenError}
+                  onChange={(event) => setFenInput(event.currentTarget.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") loadFen();
+                  }}
+                />
+                <Button variant="default" onClick={loadFen}>
+                  Load FEN
+                </Button>
+              </Group>
+            </Stack>
           </>
         )}
       </Stack>
@@ -197,13 +295,23 @@ export function BlindfoldTrainingPanel({
   boardRevealed,
   canRevealBoard,
   lastMoveSan,
+  marks,
+  currentPath,
+  savedGames,
+  activeSavedGameId,
   onRevealBoard,
   onHideBoard,
   onPlayMove,
+  onToggleLostTrack,
+  onGoToMark,
+  onPlayFromCurrentPosition,
+  onSaveGameToFile,
+  onLoadSavedGame,
 }: BlindfoldTrainingPanelProps) {
   const [settings, setSettings] = useAtom(currentBlindfoldGameSettingsAtom);
   const [manualInput, setManualInput] = useState("");
   const [displayedLastMove, setDisplayedLastMove] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const turn = activeColorFromFen(fen);
   const legalMoves = useMemo(() => getBlindfoldLegalMoves(fen), [fen]);
   const manualStatus = useMemo(
@@ -221,6 +329,12 @@ export function BlindfoldTrainingPanel({
         : playerColor !== "turn" && playerColor !== turn
           ? `${botLabel(players)} to move`
           : null;
+  const currentPathKey = blindfoldPathKey(currentPath);
+  const currentMark = marks.find((mark) => blindfoldPathKey(mark.path) === currentPathKey);
+  const orderedMarks = useMemo(
+    () => [...marks].sort((a, b) => a.ply - b.ply || a.createdAt - b.createdAt),
+    [marks],
+  );
 
   useEffect(() => {
     setManualInput("");
@@ -249,6 +363,15 @@ export function BlindfoldTrainingPanel({
     await onPlayMove(uci);
   }
 
+  async function saveGameToFile() {
+    setSaving(true);
+    try {
+      await onSaveGameToFile();
+    } finally {
+      setSaving(false);
+    }
+  }
+
   const submitManual = async () => {
     const move = findBlindfoldMove(fen, manualInput);
     if (!move) return;
@@ -257,16 +380,50 @@ export function BlindfoldTrainingPanel({
 
   return (
     <Stack h="100%" gap="sm">
-      <Group justify="space-between" gap="xs" wrap="nowrap">
+      <Group justify="space-between" gap="xs" wrap="nowrap" align="flex-start">
         <Box style={{ minWidth: 0 }}>
           <Group gap={6} wrap="nowrap">
             <Text fw={800}>Blindfold Maia</Text>
             <Badge variant="light">{botLabel(players)}</Badge>
+            {currentMark && (
+              <Badge color="yellow" variant="light">
+                Lost track
+              </Badge>
+            )}
           </Group>
           <Text size="xs" c="dimmed">
             {moveNumberFromFen(fen)} {turn === "white" ? "White" : "Black"} to move
           </Text>
         </Box>
+      </Group>
+
+      <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="xs">
+        <Button
+          size="xs"
+          variant={currentMark ? "filled" : "light"}
+          color={currentMark ? "yellow" : "gray"}
+          leftSection={<IconFlag size={14} />}
+          onClick={onToggleLostTrack}
+        >
+          {currentMark ? "Marked" : "Lost track"}
+        </Button>
+        <Button
+          size="xs"
+          variant="default"
+          leftSection={<IconDeviceFloppy size={14} />}
+          loading={saving}
+          onClick={() => void saveGameToFile()}
+        >
+          Save PGN
+        </Button>
+        <Button
+          size="xs"
+          variant="default"
+          leftSection={<IconPlayerPlay size={14} />}
+          onClick={onPlayFromCurrentPosition}
+        >
+          Play here
+        </Button>
         <Button
           size="xs"
           variant={boardHidden ? "light" : "default"}
@@ -276,7 +433,7 @@ export function BlindfoldTrainingPanel({
         >
           {boardHidden ? "Reveal" : boardRevealed ? "Hide" : "Visible"}
         </Button>
-      </Group>
+      </SimpleGrid>
 
       {displayedLastMove && (
         <Alert color="blue" variant="light" py="xs">
@@ -426,6 +583,51 @@ export function BlindfoldTrainingPanel({
           </Stack>
         )}
       </ScrollArea>
+
+      <Paper withBorder p="xs">
+        <Stack gap={6}>
+          <Select
+            searchable
+            clearable
+            size="xs"
+            label="Blindfold games"
+            placeholder={savedGames.length > 0 ? "Revisit a saved game" : "No saved games yet"}
+            data={savedGameOptions(savedGames)}
+            value={activeSavedGameId}
+            disabled={savedGames.length === 0}
+            onChange={(value) => {
+              if (value) void onLoadSavedGame(value);
+            }}
+          />
+
+          {orderedMarks.length > 0 && (
+            <>
+              <Group justify="space-between" wrap="nowrap">
+                <Text size="xs" fw={700}>
+                  Lost-track positions
+                </Text>
+                <Badge size="sm" variant="light">
+                  {orderedMarks.length}
+                </Badge>
+              </Group>
+              <SimpleGrid cols={{ base: 1, sm: 2 }} spacing={6}>
+                {orderedMarks.map((mark) => (
+                  <Button
+                    key={mark.id}
+                    size="xs"
+                    variant={blindfoldPathKey(mark.path) === currentPathKey ? "light" : "default"}
+                    justify="space-between"
+                    rightSection={<IconArrowBackUp size={14} />}
+                    onClick={() => onGoToMark(mark.path)}
+                  >
+                    {mark.label}
+                  </Button>
+                ))}
+              </SimpleGrid>
+            </>
+          )}
+        </Stack>
+      </Paper>
 
       {!currentLineAtEnd && (
         <Button variant="light" leftSection={<IconArrowBackUp size={16} />} disabled>
