@@ -6,6 +6,7 @@ import {
   Checkbox,
   Divider,
   Group,
+  Loader,
   NumberInput,
   Paper,
   ScrollArea,
@@ -19,6 +20,8 @@ import {
 import {
   IconArrowBackUp,
   IconBackspace,
+  IconChevronDown,
+  IconChevronRight,
   IconDeviceFloppy,
   IconEye,
   IconEyeClosed,
@@ -28,13 +31,15 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { useAtom } from "jotai";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Chessground } from "@/chessground/Chessground";
 import type { OpponentSettings } from "@/components/boards/OpponentForm";
 import {
   currentBlindfoldGameSettingsAtom,
   type BlindfoldLostTrackMark,
   type BlindfoldSavedGame,
 } from "@/state/atoms";
+import { parsePGN } from "@/utils/chess";
 import { blindfoldPathKey } from "@/utils/blindfoldGameLibrary";
 import {
   findBlindfoldMove,
@@ -42,6 +47,7 @@ import {
   getBlindfoldMoveInputStatus,
 } from "@/utils/blindfoldTraining";
 import { formatPracticeBotName, maiaLevelFromElo } from "@/utils/practiceBot";
+import { treeIteratorMainLine } from "@/utils/treeReducer";
 
 type PlayerColor = "white" | "black";
 
@@ -101,6 +107,27 @@ type BlindfoldMovePanelProps = {
   framed?: boolean;
 };
 
+type BlindfoldLibraryPreviewMove = {
+  ply: number;
+  halfMoves: number;
+  san: string;
+  fen: string;
+};
+
+type BlindfoldLibraryPreview = {
+  startFen: string;
+  white: string;
+  black: string;
+  event: string;
+  opening: string;
+  moves: BlindfoldLibraryPreviewMove[];
+};
+
+type BlindfoldLibraryPreviewState =
+  | { status: "idle" | "loading" }
+  | { status: "ready"; preview: BlindfoldLibraryPreview }
+  | { status: "error"; message: string };
+
 const PIECE_TOKENS = [
   { label: "K", aria: "King" },
   { label: "Q", aria: "Queen" },
@@ -149,6 +176,124 @@ function savedGameMoveLabel(moveCount: number) {
   return `${fullMoves} move${fullMoves === 1 ? "" : "s"}`;
 }
 
+function formatPreviewMoveLabel(move: BlindfoldLibraryPreviewMove) {
+  const moveNumber = Math.ceil(move.halfMoves / 2);
+  const separator = move.halfMoves % 2 === 0 ? "..." : ".";
+  return `${moveNumber}${separator} ${move.san}`;
+}
+
+function getBlindfoldPreviewOrientation(game: BlindfoldSavedGame): PlayerColor {
+  return game.humanColor ?? "white";
+}
+
+function BlindfoldSavedGamePreview({
+  game,
+  previewState,
+  previewPly,
+  onSetPreviewPly,
+}: {
+  game: BlindfoldSavedGame;
+  previewState: BlindfoldLibraryPreviewState;
+  previewPly: number;
+  onSetPreviewPly: (ply: number) => void;
+}) {
+  if (previewState.status === "idle" || previewState.status === "loading") {
+    return (
+      <Box pt="xs" mt="xs" style={{ borderTop: "1px solid var(--mantine-color-default-border)" }}>
+        <Group justify="center" py="md">
+          <Loader size="xs" />
+          <Text size="xs" c="dimmed">
+            Loading board preview...
+          </Text>
+        </Group>
+      </Box>
+    );
+  }
+
+  if (previewState.status === "error") {
+    return (
+      <Box pt="xs" mt="xs" style={{ borderTop: "1px solid var(--mantine-color-default-border)" }}>
+        <Alert color="red" variant="light">
+          Could not read this PGN: {previewState.message}
+        </Alert>
+      </Box>
+    );
+  }
+
+  if (previewState.status !== "ready") return null;
+
+  const { preview } = previewState;
+  const clampedPly = Math.max(0, Math.min(previewPly, preview.moves.length));
+  const activeFen = clampedPly === 0 ? preview.startFen : preview.moves[clampedPly - 1]?.fen;
+
+  return (
+    <Box pt="xs" mt="xs" style={{ borderTop: "1px solid var(--mantine-color-default-border)" }}>
+      <Group align="flex-start" gap="sm" wrap="wrap">
+        <Box
+          style={{
+            flex: "0 1 210px",
+            maxWidth: 210,
+            minWidth: 160,
+            width: "100%",
+            borderRadius: 4,
+            overflow: "hidden",
+            boxShadow: "0 0 0 1px var(--mantine-color-default-border)",
+          }}
+        >
+          <Chessground
+            coordinates={false}
+            viewOnly
+            fen={activeFen ?? preview.startFen}
+            orientation={getBlindfoldPreviewOrientation(game)}
+          />
+        </Box>
+
+        <Stack gap="xs" style={{ flex: 1, minWidth: 220 }}>
+          <Stack gap={2}>
+            <Text size="sm" fw={700} truncate>
+              {preview.opening}
+            </Text>
+            <Text size="xs" c="dimmed" truncate>
+              {preview.white} vs {preview.black}
+            </Text>
+            <Text size="xs" c="dimmed" truncate>
+              {preview.event}
+            </Text>
+          </Stack>
+
+          {preview.moves.length === 0 ? (
+            <Text size="xs" c="dimmed">
+              No main-line moves were found in this PGN.
+            </Text>
+          ) : (
+            <ScrollArea.Autosize mah={150}>
+              <Group gap={4}>
+                <Button
+                  size="compact-xs"
+                  variant={clampedPly === 0 ? "filled" : "light"}
+                  onClick={() => onSetPreviewPly(0)}
+                >
+                  Start
+                </Button>
+                {preview.moves.map((move) => (
+                  <Button
+                    key={move.ply}
+                    size="compact-xs"
+                    variant={clampedPly === move.ply ? "filled" : "light"}
+                    onClick={() => onSetPreviewPly(move.ply)}
+                  >
+                    {formatPreviewMoveLabel(move)}
+                  </Button>
+                ))}
+              </Group>
+            </ScrollArea.Autosize>
+          )}
+        </Stack>
+      </Group>
+    </Box>
+  );
+}
+
 export function BlindfoldMaiaSetupPanel({
   currentFen,
   playerColor,
@@ -167,6 +312,11 @@ export function BlindfoldMaiaSetupPanel({
   const [phase, setPhase] = useState<"settings" | "library" | "position">("settings");
   const [fenInput, setFenInput] = useState(currentFen);
   const [fenError, setFenError] = useState<string | null>(null);
+  const [expandedGameIds, setExpandedGameIds] = useState<Set<string>>(() => new Set());
+  const [previewByGameId, setPreviewByGameId] = useState<
+    Record<string, BlindfoldLibraryPreviewState>
+  >({});
+  const [previewPlyByGameId, setPreviewPlyByGameId] = useState<Record<string, number>>({});
   const libraryGames = useMemo(
     () => [...savedGames].sort((a, b) => b.updatedAt - a.updatedAt),
     [savedGames],
@@ -175,6 +325,101 @@ export function BlindfoldMaiaSetupPanel({
   useEffect(() => {
     setFenInput(currentFen);
   }, [currentFen]);
+
+  useEffect(() => {
+    const validIds = new Set(libraryGames.map((game) => game.id));
+    setExpandedGameIds((current) => {
+      const next = new Set([...current].filter((id) => validIds.has(id)));
+      return next.size === current.size ? current : next;
+    });
+    setPreviewByGameId((current) =>
+      Object.fromEntries(Object.entries(current).filter(([id]) => validIds.has(id))),
+    );
+    setPreviewPlyByGameId((current) =>
+      Object.fromEntries(Object.entries(current).filter(([id]) => validIds.has(id))),
+    );
+  }, [libraryGames]);
+
+  const ensurePreview = useCallback(
+    async (game: BlindfoldSavedGame) => {
+      const existingPreview = previewByGameId[game.id];
+      if (existingPreview?.status === "loading" || existingPreview?.status === "ready") return;
+
+      setPreviewByGameId((current) => {
+        const currentPreview = current[game.id];
+        if (currentPreview?.status === "loading" || currentPreview?.status === "ready") {
+          return current;
+        }
+        return {
+          ...current,
+          [game.id]: { status: "loading" },
+        };
+      });
+
+      try {
+        const tree = await parsePGN(game.pgn, game.initialFen);
+        const moves = [...treeIteratorMainLine(tree.root)]
+          .filter((item) => item.node.san)
+          .map((item, index) => ({
+            ply: index + 1,
+            halfMoves: item.node.halfMoves,
+            san: item.node.san!,
+            fen: item.node.fen,
+          }));
+        const preview: BlindfoldLibraryPreview = {
+          startFen: tree.root.fen,
+          white: tree.headers.white || game.white || "White",
+          black: tree.headers.black || game.black || "Black",
+          event: tree.headers.event || game.title,
+          opening: tree.headers.other?.Opening || tree.headers.eco || "Blindfold game",
+          moves,
+        };
+
+        setPreviewByGameId((current) => ({
+          ...current,
+          [game.id]: { status: "ready", preview },
+        }));
+      } catch (error) {
+        setPreviewByGameId((current) => ({
+          ...current,
+          [game.id]: {
+            status: "error",
+            message: error instanceof Error ? error.message : String(error),
+          },
+        }));
+      }
+    },
+    [previewByGameId],
+  );
+
+  function toggleExpanded(game: BlindfoldSavedGame) {
+    const willExpand = !expandedGameIds.has(game.id);
+
+    setExpandedGameIds((current) => {
+      const next = new Set(current);
+      if (next.has(game.id)) {
+        next.delete(game.id);
+      } else {
+        next.add(game.id);
+      }
+      return next;
+    });
+
+    if (willExpand) {
+      setPreviewPlyByGameId((current) => ({
+        ...current,
+        [game.id]: current[game.id] ?? 0,
+      }));
+      void ensurePreview(game);
+    }
+  }
+
+  function setPreviewPly(gameId: string, ply: number) {
+    setPreviewPlyByGameId((current) => ({
+      ...current,
+      [gameId]: ply,
+    }));
+  }
 
   function loadFen() {
     const fen = fenInput.trim();
@@ -345,65 +590,113 @@ export function BlindfoldMaiaSetupPanel({
               </Text>
             ) : (
               <Stack gap="xs">
-                {libraryGames.map((game) => (
-                  <Paper key={game.id} withBorder p="sm">
-                    <Stack gap={6}>
-                      <Group justify="space-between" wrap="nowrap" align="flex-start">
-                        <Box style={{ minWidth: 0 }}>
-                          <Text size="sm" fw={700} truncate>
-                            {game.title}
-                          </Text>
-                          <Text size="xs" c="dimmed" truncate>
-                            {game.white} vs {game.black}
-                          </Text>
-                        </Box>
-                        <Badge size="sm" variant="light">
-                          {game.result}
-                        </Badge>
-                      </Group>
-                      <Group gap={6}>
-                        <Badge size="sm" variant="default">
-                          {savedGameMoveLabel(game.moveCount)}
-                        </Badge>
-                        <Badge
-                          size="sm"
-                          color={game.marks.length > 0 ? "yellow" : "gray"}
-                          variant="light"
-                        >
-                          {game.marks.length} mark{game.marks.length === 1 ? "" : "s"}
-                        </Badge>
-                        {game.lastMoveSan && (
-                          <Badge size="sm" variant="default">
-                            Last {game.lastMoveSan}
+                {libraryGames.map((game) => {
+                  const expanded = expandedGameIds.has(game.id);
+
+                  return (
+                    <Paper
+                      key={game.id}
+                      withBorder
+                      p="sm"
+                      onClick={() => toggleExpanded(game)}
+                      style={{
+                        width: "100%",
+                        textAlign: "left",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <Stack gap={6}>
+                        <Group justify="space-between" wrap="nowrap" align="flex-start">
+                          <Box style={{ minWidth: 0 }}>
+                            <Text size="sm" fw={700} truncate>
+                              {game.title}
+                            </Text>
+                            <Text size="xs" c="dimmed" truncate>
+                              {game.white} vs {game.black}
+                            </Text>
+                          </Box>
+                          <Badge size="sm" variant="light">
+                            {game.result}
                           </Badge>
-                        )}
-                      </Group>
-                      <Group justify="space-between" wrap="nowrap">
-                        <Text size="xs" c="dimmed">
-                          {formatSavedGameTime(game.updatedAt)}
-                        </Text>
-                        <Group gap={6} wrap="nowrap">
-                          <Button
-                            size="xs"
-                            variant="light"
-                            onClick={() => void onLoadSavedGame(game.id)}
-                          >
-                            Open
-                          </Button>
-                          <Button
-                            size="xs"
-                            variant="subtle"
-                            color="red"
-                            leftSection={<IconTrash size={14} />}
-                            onClick={() => void onDeleteSavedGame(game.id)}
-                          >
-                            Delete
-                          </Button>
                         </Group>
-                      </Group>
-                    </Stack>
-                  </Paper>
-                ))}
+                        <Group gap={6}>
+                          <Badge size="sm" variant="default">
+                            {savedGameMoveLabel(game.moveCount)}
+                          </Badge>
+                          <Badge
+                            size="sm"
+                            color={game.marks.length > 0 ? "yellow" : "gray"}
+                            variant="light"
+                          >
+                            {game.marks.length} mark{game.marks.length === 1 ? "" : "s"}
+                          </Badge>
+                          {game.lastMoveSan && (
+                            <Badge size="sm" variant="default">
+                              Last {game.lastMoveSan}
+                            </Badge>
+                          )}
+                        </Group>
+                        <Group justify="space-between" wrap="nowrap">
+                          <Text size="xs" c="dimmed">
+                            {formatSavedGameTime(game.updatedAt)}
+                          </Text>
+                          <Group gap={6} wrap="nowrap">
+                            <Button
+                              size="xs"
+                              variant="subtle"
+                              aria-expanded={expanded}
+                              leftSection={
+                                expanded ? (
+                                  <IconChevronDown size={14} />
+                                ) : (
+                                  <IconChevronRight size={14} />
+                                )
+                              }
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                toggleExpanded(game);
+                              }}
+                            >
+                              {expanded ? "Hide" : "Details"}
+                            </Button>
+                            <Button
+                              size="xs"
+                              variant="light"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                void onLoadSavedGame(game.id);
+                              }}
+                            >
+                              Open
+                            </Button>
+                            <Button
+                              size="xs"
+                              variant="subtle"
+                              color="red"
+                              leftSection={<IconTrash size={14} />}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                void onDeleteSavedGame(game.id);
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          </Group>
+                        </Group>
+                        {expanded && (
+                          <Box onClick={(event) => event.stopPropagation()}>
+                            <BlindfoldSavedGamePreview
+                              game={game}
+                              previewState={previewByGameId[game.id] ?? { status: "idle" }}
+                              previewPly={previewPlyByGameId[game.id] ?? 0}
+                              onSetPreviewPly={(ply) => setPreviewPly(game.id, ply)}
+                            />
+                          </Box>
+                        )}
+                      </Stack>
+                    </Paper>
+                  );
+                })}
               </Stack>
             )}
           </Stack>

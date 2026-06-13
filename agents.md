@@ -2116,6 +2116,11 @@ from 2026-04-24 through 2026-05-03.
   list with open and delete actions. Loading a saved blindfold game should jump
   to the mainline end by default, while lost-track marks remain explicit
   revisit targets.
+- On 2026-06-13, the Blindfold setup Library gained inline game previews like
+  the `Choose online game` picker. Each saved-game row can expand before
+  opening to show a readonly board plus clickable main-line SAN moves; the
+  existing `Open` action still loads the saved game into the blindfold trainer
+  review path rather than switching it to a generic analysis tab.
 
 ## Verification Expectations
 
