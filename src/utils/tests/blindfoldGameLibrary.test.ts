@@ -69,7 +69,7 @@ describe("blindfold game library", () => {
         const tree = defaultTree();
         tree.headers.white = "Player";
         tree.headers.black = "Maia 1500";
-        tree.headers.event = "Blindfold Maia";
+        tree.headers.event = "Blindfold";
         tree.root.children.push(child("d4", 1, "after d4"));
 
         const first = buildBlindfoldSavedGame({

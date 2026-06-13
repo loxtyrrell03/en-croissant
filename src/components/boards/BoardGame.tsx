@@ -514,7 +514,7 @@ function BoardGame() {
       const blackIsEngine = playerSettings.black.type === "engine";
       let eventStr = "Casual Game";
       if (blindfoldSettings.enabled) {
-        eventStr = "Blindfold Maia";
+        eventStr = "Blindfold";
       } else if (whiteIsEngine && blackIsEngine) {
         eventStr = "Engine Match";
       } else if (whiteIsEngine || blackIsEngine) {
@@ -615,7 +615,7 @@ function BoardGame() {
       setFen(fen);
       setHeaders({
         ...headers,
-        event: headers.event || "Blindfold Maia",
+        event: headers.event || "Blindfold",
         fen,
         orientation: sideToMove,
         result: "*",
@@ -783,8 +783,8 @@ function BoardGame() {
         });
         if (showNotification) {
           notifications.show({
-            title: "Maia ready",
-            message: `Maia ${level} files are installed.`,
+            title: "Ready",
+            message: `Maia ${level} is ready.`,
           });
         }
       } catch (err) {
@@ -1164,9 +1164,6 @@ function BoardGame() {
                   canReveal: blindfoldSettings.allowPeeking,
                   onReveal: () => setBlindfoldPeekFen(currentNode.fen),
                   label: "Board hidden",
-                  detail: blindfoldSettings.allowPeeking
-                    ? "Use the move buttons or peek briefly when you need to recalibrate."
-                    : "Peeking is disabled for this blindfold game.",
                 }
               : undefined
           }
@@ -1330,7 +1327,7 @@ function BoardGame() {
                         error !== null || setupIssue !== null || startingGame || installingMaia
                       }
                     >
-                      {blindfoldActive ? "Start Blindfold Maia" : t("Board.Opponent.StartGame")}
+                      {blindfoldActive ? "Start" : t("Board.Opponent.StartGame")}
                     </Button>
                   </Stack>
                 )}

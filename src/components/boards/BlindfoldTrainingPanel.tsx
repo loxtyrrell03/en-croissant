@@ -165,13 +165,13 @@ export function BlindfoldMaiaSetupPanel({
         <Stack gap="md">
           <Group justify="space-between" gap="sm" align="flex-start">
             <Box>
-              <Text fw={800}>Blindfold Maia</Text>
+              <Text fw={800}>Blindfold</Text>
               <Text size="xs" c="dimmed">
                 Maia {maiaLevelFromElo(maiaElo)}
               </Text>
             </Box>
             <Badge color={maiaReady ? "green" : "blue"} variant="light">
-              {maiaReady ? "Maia ready" : maiaInstallLoading ? "Preparing Maia" : "Maia included"}
+              {maiaReady ? "Ready" : maiaInstallLoading ? "Preparing" : "Included"}
             </Badge>
           </Group>
 
@@ -207,7 +207,7 @@ export function BlindfoldMaiaSetupPanel({
       <Paper withBorder p="md">
         <Stack gap="sm">
           <Text size="sm" fw={700}>
-            Training surface
+            Settings
           </Text>
 
           <SegmentedControl
@@ -418,7 +418,7 @@ export function BlindfoldTrainingPanel({
       <Group justify="space-between" gap="xs" wrap="nowrap" align="flex-start">
         <Box style={{ minWidth: 0 }}>
           <Group gap={6} wrap="nowrap">
-            <Text fw={800}>Blindfold Maia</Text>
+            <Text fw={800}>Blindfold</Text>
             <Badge variant="light">{botLabel(players)}</Badge>
             {currentMark && (
               <Badge color="yellow" variant="light">

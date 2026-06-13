@@ -2443,7 +2443,7 @@ export default function NewTabHome() {
   const openBlindfoldBoardTab = useCallback(async () => {
     const tabId = await createTab({
       tab: {
-        name: "Blindfold Maia trainer",
+        name: "Blindfold",
         type: "play",
       },
       setTabs,
@@ -3318,9 +3318,9 @@ export default function NewTabHome() {
     },
     {
       icon: <IconEyeClosed size={60} />,
-      title: "Blindfold Maia",
-      description: "Play a hidden-board training game with legal move buttons or SAN keypad entry.",
-      label: "Start blindfold",
+      title: "Blindfold",
+      description: "Play with the board hidden.",
+      label: "Start",
       onClick: () => {
         void openBlindfoldBoardTab();
       },

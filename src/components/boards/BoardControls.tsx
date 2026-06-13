@@ -164,7 +164,7 @@ function BoardControls({
                 <IconRobot size="1.2rem" />
               </ActionIcon>
             </Tooltip>
-            <Tooltip position="right" label="Blindfold Maia trainer">
+            <Tooltip position="right" label="Blindfold trainer">
               <ActionIcon onClick={startBlindfoldTrainer}>
                 <IconEyeClosed size="1.2rem" />
               </ActionIcon>

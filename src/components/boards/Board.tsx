@@ -2098,9 +2098,7 @@ function Board({
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      background:
-                        "color-mix(in srgb, var(--mantine-color-dark-9) 88%, transparent)",
-                      backdropFilter: "blur(2px)",
+                      background: theme.colors.dark[9],
                     }}
                   >
                     <Stack align="center" gap="xs" px="md" ta="center">

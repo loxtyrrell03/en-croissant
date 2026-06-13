@@ -2074,14 +2074,14 @@ from 2026-04-24 through 2026-05-03.
   pinned siblings first with only a small pin icon. Keep pin UI compact and
   metadata-driven so publishing from the fork carries the user's pinned Files
   choices to the phone site.
-- On 2026-06-13, desktop play gained a Blindfold Maia trainer mode inspired by
+- On 2026-06-13, desktop play gained a Blindfold trainer mode inspired by
   blindfold-chess.online. It can be launched from the home screen or board
   control rail, reuses the existing game backend, hides/reveals the board with
   per-tab blindfold settings, offers right-pane legal SAN move buttons plus a
   manual SAN keypad, and routes trainer setup through a Maia-only profile with
   Maia-level strength settings. Do not silently fall back to Patricia for this
   mode.
-- A follow-up on 2026-06-13 made the Blindfold Maia trainer a revisitable
+- A follow-up on 2026-06-13 made the Blindfold trainer a revisitable
   training surface instead of only a one-off play mode. Live blindfold games
   now auto-save into a dedicated local `Blindfold games` library separate from
   the normal Files surface, can still be exported explicitly as PGN, and can be
@@ -2090,7 +2090,7 @@ from 2026-04-24 through 2026-05-03.
   as a PGN comment, then jump back to those marked positions later. The setup
   panel also accepts pasted FENs so arbitrary positions can be loaded and
   played out blindfold against Maia.
-- A later 2026-06-13 cleanup made the Blindfold Maia setup intentionally
+- A later 2026-06-13 cleanup made the Blindfold setup intentionally
   separate from the generic play-game opponent form. The right pane should stay
   focused on player colour, Maia level, managed Maia install/readiness,
   blindfold controls, saved blindfold games, and FEN loading; do not reintroduce
@@ -2102,6 +2102,10 @@ from 2026-04-24 through 2026-05-03.
   directly into the managed Maia directory; do not point the managed path at an
   extra nested release folder or Windows will fail to spawn it with a directory
   error.
+- The user-facing name is intentionally just `Blindfold` / `Blindfold trainer`;
+  Maia is the included opponent, not the mode name. When the board is hidden,
+  the board overlay must be fully opaque so pieces and squares are not visible
+  through a blur or tint.
 
 ## Verification Expectations
 

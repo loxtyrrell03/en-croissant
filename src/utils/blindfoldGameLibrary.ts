@@ -104,7 +104,7 @@ function countMainlineMoves(root: TreeNode) {
 function defaultBlindfoldTitle(headers: GameHeaders) {
     const gameName = getGameName(headers);
     if (gameName && gameName !== "Unknown" && gameName !== "? - ?") return gameName;
-    return "Blindfold Maia game";
+    return "Blindfold game";
 }
 
 export function buildBlindfoldSavedGame({
