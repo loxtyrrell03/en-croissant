@@ -744,6 +744,43 @@ export const gameOpeningBookEnabledAtom = atomWithStorage<boolean>(
 
 export const gameOpeningBookMaxPlyAtom = atomWithStorage<number>("game-opening-book-max-ply", 40);
 
+export type BlindfoldMoveInputMode = "legal" | "manual";
+export type BlindfoldPieceVisibility = "both" | "own" | "opponent";
+export type BlindfoldPieceColorMode = "normal" | "allWhite" | "allBlack";
+
+export type BlindfoldGameSettings = {
+    enabled: boolean;
+    hideBoard: boolean;
+    allowPeeking: boolean;
+    aiMoveDisplayMs: number;
+    moveInputMode: BlindfoldMoveInputMode;
+    pieceVisibility: BlindfoldPieceVisibility;
+    showAsStones: boolean;
+    pieceColorMode: BlindfoldPieceColorMode;
+    hidePawns: boolean;
+    highlightLastMove: boolean;
+    showPieceDestinations: boolean;
+};
+
+export const DEFAULT_BLINDFOLD_GAME_SETTINGS: BlindfoldGameSettings = {
+    enabled: false,
+    hideBoard: true,
+    allowPeeking: true,
+    aiMoveDisplayMs: 5000,
+    moveInputMode: "legal",
+    pieceVisibility: "both",
+    showAsStones: false,
+    pieceColorMode: "normal",
+    hidePawns: false,
+    highlightLastMove: true,
+    showPieceDestinations: true,
+};
+
+export const blindfoldGameSettingsFamily = atomFamily((_tab: string) =>
+    atom<BlindfoldGameSettings>(DEFAULT_BLINDFOLD_GAME_SETTINGS),
+);
+export const currentBlindfoldGameSettingsAtom = tabValue(blindfoldGameSettingsFamily);
+
 function tabValue<T extends object | string | boolean | number | null | undefined>(
     family: AtomFamily<string, PrimitiveAtom<T>>,
 ) {
@@ -1551,6 +1588,7 @@ export function cleanupClosedTabAtomState(
     gameStateFamily.remove(tab);
     playersFamily.remove(tab);
     gameIdFamily.remove(tab);
+    blindfoldGameSettingsFamily.remove(tab);
     practiceStateFamily.remove(tab);
     practiceSessionStatsFamily.remove(tab);
     practiceCardStartTimeFamily.remove(tab);

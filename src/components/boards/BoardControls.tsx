@@ -6,6 +6,7 @@ import {
   IconEdit,
   IconEditOff,
   IconEraser,
+  IconEyeClosed,
   IconRobot,
   IconSparkles,
   IconSwitchVertical,
@@ -28,6 +29,7 @@ import {
   eraseDrawablesOnClickAtom,
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
+import { useBlindfoldMaiaTrainer } from "@/hooks/useBlindfoldMaiaTrainer";
 import { usePracticeAgainstBot } from "@/hooks/usePracticeAgainstBot";
 
 interface BoardControlsProps {
@@ -71,6 +73,7 @@ function BoardControls({
   const aiCoachEnabled = useAtomValue(aiCoachEnabledAtom);
   const eraseDrawablesOnClick = useAtomValue(eraseDrawablesOnClickAtom);
   const practiceAgainstBot = usePracticeAgainstBot();
+  const startBlindfoldTrainer = useBlindfoldMaiaTrainer();
 
   const orientation = headers.orientation || "white";
   const toggleOrientation = () =>
@@ -155,11 +158,18 @@ function BoardControls({
           </ActionIcon>
         </Tooltip>
         {currentTab?.type !== "play" && (
-          <Tooltip position="right" label="Practice against bot">
-            <ActionIcon onClick={practiceAgainstBot}>
-              <IconRobot size="1.2rem" />
-            </ActionIcon>
-          </Tooltip>
+          <>
+            <Tooltip position="right" label="Practice against bot">
+              <ActionIcon onClick={practiceAgainstBot}>
+                <IconRobot size="1.2rem" />
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip position="right" label="Blindfold Maia trainer">
+              <ActionIcon onClick={startBlindfoldTrainer}>
+                <IconEyeClosed size="1.2rem" />
+              </ActionIcon>
+            </Tooltip>
+          </>
         )}
         <Tooltip
           position="right"

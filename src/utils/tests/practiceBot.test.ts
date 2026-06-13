@@ -6,6 +6,7 @@ import {
     formatPracticeBotName,
     getPracticeBotMoveDelay,
     getPracticeBotGoMode,
+    maiaLevelFromElo,
     patriciaSkillLevelElo,
     patriciaSkillLevelFromFide,
     patriciaTrainerEloFromFide,
@@ -79,7 +80,7 @@ test("passes time-control-calibrated strength options for trainer games", () => 
     expect(options).toContainEqual({ name: "Skill_Level", value: "11" });
 });
 
-test("keeps legacy Maia and Stockfish profiles on the Patricia backend", () => {
+test("uses explicit Maia profiles on the Maia backend while legacy Stockfish stays Patricia", () => {
     const maiaProfile = {
         enabled: true,
         kind: "maia" as const,
@@ -91,9 +92,11 @@ test("keeps legacy Maia and Stockfish profiles on the Patricia backend", () => {
         fideElo: 2400,
     };
 
-    expect(practiceBotBackendKind(maiaProfile)).toBe("patricia");
+    expect(practiceBotBackendKind(maiaProfile)).toBe("maia");
     expect(practiceBotBackendKind(stockfishProfile)).toBe("patricia");
-    expect(describePracticeBotBackend(maiaProfile)).toContain("Patricia human mode");
+    expect(describePracticeBotBackend(maiaProfile)).toContain("Maia human model");
+    expect(maiaLevelFromElo(1450)).toBe(1400);
+    expect(formatPracticeBotName(maiaProfile)).toBe("Maia 1900");
 });
 
 test("uses Patricia movetime search without UCI clock management", () => {

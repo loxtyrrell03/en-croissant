@@ -22,6 +22,7 @@ import {
   IconArrowBackUp,
   IconChevronRight,
   IconEye,
+  IconEyeClosed,
   IconPlayerPlay,
   IconRotate,
   IconSettings,
@@ -451,6 +452,15 @@ interface ChessboardProps {
   onMove?: (uci: string, fen: string, san: string) => void;
   cgRef?: React.Ref<ChessgroundRef>;
   enablePremoves?: boolean;
+  showDestsOverride?: boolean;
+  moveHighlightOverride?: boolean;
+  blindfoldOverlay?: {
+    hidden: boolean;
+    canReveal: boolean;
+    onReveal: () => void;
+    label: string;
+    detail?: string;
+  };
 }
 
 function Board({
@@ -466,6 +476,9 @@ function Board({
   onMove,
   cgRef,
   enablePremoves = false,
+  showDestsOverride,
+  moveHighlightOverride,
+  blindfoldOverlay,
 }: ChessboardProps) {
   const { t } = useTranslation();
   const store = useContext(TreeStateContext)!;
@@ -511,8 +524,10 @@ function Board({
   const [practiceState, setPracticeState] = useAtom(practiceStateAtom);
 
   const moveInput = useAtomValue(moveInputAtom);
-  const showDests = useAtomValue(showDestsAtom);
-  const moveHighlight = useAtomValue(moveHighlightAtom);
+  const globalShowDests = useAtomValue(showDestsAtom);
+  const globalMoveHighlight = useAtomValue(moveHighlightAtom);
+  const showDests = showDestsOverride ?? globalShowDests;
+  const moveHighlight = moveHighlightOverride ?? globalMoveHighlight;
   const showArrows = useAtomValue(showArrowsAtom);
   const hiddenReviewPractice = practicing && practiceState.phase === "waiting";
   const engineArrowsEnabled = showArrows && !hiddenReviewPractice;
@@ -2074,6 +2089,43 @@ function Board({
                     },
                   }}
                 />
+                {blindfoldOverlay?.hidden && (
+                  <Box
+                    pos="absolute"
+                    inset={0}
+                    style={{
+                      zIndex: 45,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background:
+                        "color-mix(in srgb, var(--mantine-color-dark-9) 88%, transparent)",
+                      backdropFilter: "blur(2px)",
+                    }}
+                  >
+                    <Stack align="center" gap="xs" px="md" ta="center">
+                      <IconEyeClosed size={34} />
+                      <Text fw={800}>{blindfoldOverlay.label}</Text>
+                      {blindfoldOverlay.detail && (
+                        <Text size="xs" c="dimmed" maw={260}>
+                          {blindfoldOverlay.detail}
+                        </Text>
+                      )}
+                      <Button
+                        size="xs"
+                        variant="light"
+                        leftSection={<IconEye size={14} />}
+                        disabled={!blindfoldOverlay.canReveal}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          blindfoldOverlay.onReveal();
+                        }}
+                      >
+                        Reveal board
+                      </Button>
+                    </Stack>
+                  </Box>
+                )}
                 {(["nw", "ne", "sw", "se"] as const).map((corner) => (
                   <Box
                     key={corner}

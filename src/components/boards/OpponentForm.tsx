@@ -1,4 +1,5 @@
 import {
+  Alert,
   Center,
   Divider,
   Group,
@@ -20,6 +21,8 @@ import type { EngineSettings, LocalEngine } from "@/utils/engines";
 import {
   createDefaultPracticeBotProfile,
   describePracticeBotBackend,
+  isLikelyMaiaEngine,
+  maiaLevelFromElo,
   type PracticeBotProfile,
 } from "@/utils/practiceBot";
 import { EnginesSelect } from "./EnginesSelect";
@@ -175,17 +178,51 @@ export function OpponentForm({
 
       {opponent.type === "engine" && opponent.botProfile?.enabled && (
         <Stack>
-          <Divider variant="dashed" label="Trainer Bot" />
+          <Divider
+            variant="dashed"
+            label={opponent.botProfile.kind === "maia" ? "Maia trainer" : "Trainer Bot"}
+          />
+          {opponent.botProfile.kind === "maia" && (
+            <>
+              <EnginesSelect
+                label="Maia engine"
+                description="Choose a local Maia or LCZero-style engine from Engines."
+                placeholder="No Maia engine installed"
+                engine={isLikelyMaiaEngine(opponent.engine) ? opponent.engine : null}
+                filterEngine={isLikelyMaiaEngine}
+                setEngine={(engine) =>
+                  setOpponent((prev) => {
+                    if (prev.type === "human") return prev;
+                    return {
+                      ...prev,
+                      engine,
+                      engineSettings: engine?.settings || undefined,
+                    };
+                  })
+                }
+              />
+              {!isLikelyMaiaEngine(opponent.engine) && (
+                <Alert color="yellow" variant="light">
+                  Add a local Maia or LCZero engine in Engines before starting this game.
+                </Alert>
+              )}
+            </>
+          )}
           <NumberInput
-            label="FIDE Elo"
-            min={800}
-            max={3000}
-            step={50}
+            label={opponent.botProfile.kind === "maia" ? "Maia level" : "FIDE Elo"}
+            min={opponent.botProfile.kind === "maia" ? 1100 : 800}
+            max={opponent.botProfile.kind === "maia" ? 1900 : 3000}
+            step={opponent.botProfile.kind === "maia" ? 100 : 50}
             value={opponent.botProfile.fideElo}
             onChange={(value) =>
               updateBotProfile((profile) => ({
                 ...profile,
-                fideElo: typeof value === "number" ? value : profile.fideElo,
+                fideElo:
+                  typeof value === "number"
+                    ? profile.kind === "maia"
+                      ? maiaLevelFromElo(value)
+                      : value
+                    : profile.fideElo,
               }))
             }
           />

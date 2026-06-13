@@ -28,9 +28,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   activeTabAtom,
   addRecentFileAtom,
+  blindfoldGameSettingsFamily,
   deckAtomFamily,
   dailyGoalDeckRevisionAtom,
+  DEFAULT_BLINDFOLD_GAME_SETTINGS,
   enginesAtom,
+  gameInputColorAtom,
+  gamePlayer1SettingsAtom,
+  gamePlayer2SettingsAtom,
+  gameSameTimeControlAtom,
   latestOnlineGameAccountSelectionAtom,
   mistakeReviewScanProgressAtom,
   onlineDatabaseUpdatesAtom,
@@ -61,6 +67,7 @@ import {
   IconDatabase,
   IconEye,
   IconExclamationCircle,
+  IconEyeClosed,
   IconFileImport,
   IconPlayerPlay,
   IconPuzzle,
@@ -141,6 +148,12 @@ import {
 } from "@/utils/onlineLatestGame";
 import { getOpeningReviewGapReason } from "@/utils/openingReviewAutoUpdate";
 import { getGameName } from "@/utils/treeReducer";
+import {
+  createDefaultHumanOpponent,
+  createDefaultMaiaOpponent,
+  DEFAULT_BLINDFOLD_MAIA_ELO,
+  isLikelyMaiaEngine,
+} from "@/utils/practiceBot";
 import { resolve, tempDir } from "@tauri-apps/api/path";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
 import DailyGoalsPanel from "./DailyGoalsPanel";
@@ -2428,6 +2441,31 @@ export default function NewTabHome() {
     [navigate, setActiveTab, setTabs, store],
   );
 
+  const openBlindfoldBoardTab = useCallback(async () => {
+    const maiaEngine = localEngines.find(isLikelyMaiaEngine) ?? null;
+    const tabId = await createTab({
+      tab: {
+        name: "Blindfold Maia trainer",
+        type: "play",
+      },
+      setTabs,
+      setActiveTab,
+    });
+
+    store.set(gameInputColorAtom, "white");
+    store.set(gameSameTimeControlAtom, true);
+    store.set(gamePlayer1SettingsAtom, createDefaultHumanOpponent());
+    store.set(
+      gamePlayer2SettingsAtom,
+      createDefaultMaiaOpponent(maiaEngine, DEFAULT_BLINDFOLD_MAIA_ELO),
+    );
+    store.set(blindfoldGameSettingsFamily(tabId), {
+      ...DEFAULT_BLINDFOLD_GAME_SETTINGS,
+      enabled: true,
+    });
+    navigate({ to: "/" });
+  }, [localEngines, navigate, setActiveTab, setTabs, store]);
+
   useEffect(() => {
     const checkFiles = async () => {
       const newRecentFiles = await Promise.all(
@@ -3281,6 +3319,15 @@ export default function NewTabHome() {
           name: t("Home.NewGame"),
           type: "play",
         });
+      },
+    },
+    {
+      icon: <IconEyeClosed size={60} />,
+      title: "Blindfold Maia",
+      description: "Play a hidden-board training game with legal move buttons or SAN keypad entry.",
+      label: "Start blindfold",
+      onClick: () => {
+        void openBlindfoldBoardTab();
       },
     },
     {

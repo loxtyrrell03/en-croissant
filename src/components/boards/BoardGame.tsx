@@ -43,6 +43,7 @@ import {
 import type { ChessgroundRef } from "@/chessground/Chessground";
 import {
   activeTabAtom,
+  currentBlindfoldGameSettingsAtom,
   currentGameIdAtom,
   currentGameStateAtom,
   currentPlayersAtom,
@@ -56,7 +57,7 @@ import {
   tabsAtom,
 } from "@/state/atoms";
 import { positionFromFen } from "@/utils/chessops";
-import type { GameHeaders } from "@/utils/treeReducer";
+import type { GameHeaders, TreeNode } from "@/utils/treeReducer";
 import { unwrap } from "@/utils/unwrap";
 import {
   buildPracticeBotOptions,
@@ -75,6 +76,7 @@ import { ResponsivePanel } from "../common/ResponsivePanel";
 import { TreeStateContext } from "../common/TreeStateContext";
 import Board from "./Board";
 import BoardControls from "./BoardControls";
+import { BlindfoldSetupPanel, BlindfoldTrainingPanel } from "./BlindfoldTrainingPanel";
 import EditingCard from "./EditingCard";
 import { OpponentForm, type OpponentSettings } from "./OpponentForm";
 
@@ -91,6 +93,23 @@ function mapBackendMoves(moves: { uci: string; clock: bigint | null }[]): Backen
     uci: m.uci,
     clock: m.clock !== null ? Number(m.clock) : null,
   }));
+}
+
+function getMainlineEnd(root: TreeNode): TreeNode {
+  let node = root;
+  while (node.children.length > 0) {
+    node = node.children[0];
+  }
+  return node;
+}
+
+function getHumanPlayerColor(players: {
+  white: OpponentSettings;
+  black: OpponentSettings;
+}): "white" | "black" | null {
+  if (players.white.type === "human" && players.black.type !== "human") return "white";
+  if (players.black.type === "human" && players.white.type !== "human") return "black";
+  return null;
 }
 
 function BoardGame() {
@@ -129,6 +148,7 @@ function BoardGame() {
 
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (s) => s.root);
+  const currentNode = useStore(store, (s) => s.currentNode());
   const headers = useStore(store, (s) => s.headers);
   const setFen = useStore(store, (s) => s.setFen);
   const setHeaders = useStore(store, (s) => s.setHeaders);
@@ -150,12 +170,34 @@ function BoardGame() {
   const [logsOpened, toggleLogsOpened] = useToggle();
   const [logsColor, setLogsColor] = useState<"white" | "black">("white");
   const [engineLogs, setEngineLogs] = useState<EngineLog[]>([]);
+  const [blindfoldSettings] = useAtom(currentBlindfoldGameSettingsAtom);
+  const [blindfoldPeekFen, setBlindfoldPeekFen] = useState<string | null>(null);
   const [openingBookPath, setOpeningBookPath] = useAtom(gameOpeningBookPathAtom);
   const [openingBookEnabled, setOpeningBookEnabled] = useAtom(gameOpeningBookEnabledAtom);
   const [openingBookMaxPly, setOpeningBookMaxPly] = useAtom(gameOpeningBookMaxPlyAtom);
   const [startingGame, setStartingGame] = useState(false);
 
   const hasEngine = players.white.type === "engine" || players.black.type === "engine";
+  const blindfoldActive = blindfoldSettings.enabled;
+  const mainlineEnd = useMemo(() => getMainlineEnd(root), [root]);
+  const currentLineAtEnd =
+    currentNode.fen === mainlineEnd.fen && currentNode.halfMoves === mainlineEnd.halfMoves;
+  const blindfoldBoardHidden =
+    blindfoldActive &&
+    blindfoldSettings.hideBoard &&
+    gameState === "playing" &&
+    blindfoldPeekFen !== currentNode.fen;
+  const humanPlayerColor = getHumanPlayerColor(players);
+  const lastMoveColor =
+    mainlineEnd.move && mainlineEnd.halfMoves > 0
+      ? mainlineEnd.halfMoves % 2 === 1
+        ? "white"
+        : "black"
+      : null;
+  const lastEngineMoveSan =
+    humanPlayerColor && lastMoveColor && lastMoveColor !== humanPlayerColor
+      ? mainlineEnd.san
+      : null;
 
   const isPlayerVsEngine =
     (players.white.type === "human" && players.black.type === "engine") ||
@@ -180,6 +222,10 @@ function BoardGame() {
       fetchEngineLogs();
     }
   }, [logsOpened, fetchEngineLogs]);
+
+  useEffect(() => {
+    setBlindfoldPeekFen(null);
+  }, [currentNode.fen]);
 
   const syncTreeWithMoves = useCallback(
     (backendMoves: BackendMove[]) => {
@@ -438,6 +484,14 @@ function BoardGame() {
     [gameId, gameState],
   );
 
+  const handleBlindfoldMove = useCallback(
+    async (uci: string) => {
+      setBlindfoldPeekFen(null);
+      await handleHumanMove(uci);
+    },
+    [handleHumanMove],
+  );
+
   const pendingMovesRef = useRef<{ uci: string; clock: number | null }[] | null>(null);
   const pendingTimesRef = useRef<{
     white: number | null;
@@ -571,6 +625,9 @@ function BoardGame() {
     for (const player of configuredPlayers) {
       if (player.type !== "engine") continue;
       if (player.botProfile?.enabled) {
+        if (player.botProfile.kind === "maia" && !player.engine?.path) {
+          return "Select a local Maia or LCZero engine before starting.";
+        }
         continue;
       }
       if (!player.engine?.path) return "Select an engine before starting.";
@@ -630,13 +687,38 @@ function BoardGame() {
           viewOnly={gameState !== "playing" && !editingMode}
           disableVariations
           boardRef={boardRef}
-          movable={gameState === "settingUp" && editingMode ? "none" : movable}
+          movable={
+            blindfoldBoardHidden || (gameState === "settingUp" && editingMode) ? "none" : movable
+          }
           whiteTime={gameState === "playing" ? (whiteTime ?? undefined) : undefined}
           blackTime={gameState === "playing" ? (blackTime ?? undefined) : undefined}
           onMove={handleHumanMove}
           selectedPiece={selectedPiece}
           cgRef={cgRef}
           enablePremoves={isPlayerVsEngine && gameState === "playing"}
+          showDestsOverride={
+            blindfoldActive && gameState === "playing"
+              ? blindfoldSettings.showPieceDestinations
+              : undefined
+          }
+          moveHighlightOverride={
+            blindfoldActive && gameState === "playing"
+              ? blindfoldSettings.highlightLastMove
+              : undefined
+          }
+          blindfoldOverlay={
+            blindfoldActive && gameState === "playing"
+              ? {
+                  hidden: blindfoldBoardHidden,
+                  canReveal: blindfoldSettings.allowPeeking,
+                  onReveal: () => setBlindfoldPeekFen(currentNode.fen),
+                  label: "Board hidden",
+                  detail: blindfoldSettings.allowPeeking
+                    ? "Use the move buttons or peek briefly when you need to recalibrate."
+                    : "Peeking is disabled for this blindfold game.",
+                }
+              : undefined
+          }
         />
       </Portal>
       <Portal target="#topRight" style={{ height: "100%", overflow: "hidden" }}>
@@ -761,6 +843,8 @@ function BoardGame() {
                             )}
                           </Stack>
                         </Paper>
+
+                        <BlindfoldSetupPanel />
                       </Stack>
                     </ScrollArea>
 
@@ -781,51 +865,71 @@ function BoardGame() {
                     </Button>
                   </Stack>
                 )}
-                {(gameState === "playing" || gameState === "gameOver") && (
-                  <Stack h="100%">
-                    <Box flex={1}>
-                      <GameInfo headers={headers} />
-                    </Box>
-                    <Group grow>
-                      {gameState === "playing" && (
+                {(gameState === "playing" || gameState === "gameOver") &&
+                  (blindfoldActive ? (
+                    <BlindfoldTrainingPanel
+                      fen={currentNode.fen}
+                      gameState={gameState}
+                      players={players}
+                      currentLineAtEnd={currentLineAtEnd}
+                      boardHidden={blindfoldBoardHidden}
+                      boardRevealed={
+                        blindfoldActive &&
+                        blindfoldSettings.hideBoard &&
+                        !blindfoldBoardHidden &&
+                        gameState === "playing"
+                      }
+                      canRevealBoard={blindfoldSettings.allowPeeking}
+                      lastMoveSan={lastEngineMoveSan}
+                      onRevealBoard={() => setBlindfoldPeekFen(currentNode.fen)}
+                      onHideBoard={() => setBlindfoldPeekFen(null)}
+                      onPlayMove={handleBlindfoldMove}
+                    />
+                  ) : (
+                    <Stack h="100%">
+                      <Box flex={1}>
+                        <GameInfo headers={headers} />
+                      </Box>
+                      <Group grow>
+                        {gameState === "playing" && (
+                          <Button
+                            variant="default"
+                            color="red"
+                            onClick={isEngineVsEngine ? handleAbort : handleResign}
+                            leftSection={<IconX />}
+                          >
+                            {isEngineVsEngine ? "Abort" : "Resign"}
+                          </Button>
+                        )}
+                        {gameState === "gameOver" && (
+                          <Button
+                            variant="default"
+                            onClick={handleNewGame}
+                            leftSection={<IconPlus />}
+                          >
+                            New Game
+                          </Button>
+                        )}
                         <Button
                           variant="default"
-                          color="red"
-                          onClick={isEngineVsEngine ? handleAbort : handleResign}
-                          leftSection={<IconX />}
+                          onClick={() => changeToAnalysisMode()}
+                          leftSection={<IconZoomCheck />}
                         >
-                          {isEngineVsEngine ? "Abort" : "Resign"}
+                          Analyze
                         </Button>
-                      )}
-                      {gameState === "gameOver" && (
-                        <Button
-                          variant="default"
-                          onClick={handleNewGame}
-                          leftSection={<IconPlus />}
-                        >
-                          New Game
-                        </Button>
-                      )}
-                      <Button
-                        variant="default"
-                        onClick={() => changeToAnalysisMode()}
-                        leftSection={<IconZoomCheck />}
-                      >
-                        Analyze
-                      </Button>
 
-                      {hasEngine && (
-                        <Button
-                          variant="default"
-                          onClick={() => toggleLogsOpened()}
-                          leftSection={<IconFileText size="1rem" />}
-                        >
-                          Engine Logs
-                        </Button>
-                      )}
-                    </Group>
-                  </Stack>
-                )}
+                        {hasEngine && (
+                          <Button
+                            variant="default"
+                            onClick={() => toggleLogsOpened()}
+                            leftSection={<IconFileText size="1rem" />}
+                          >
+                            Engine Logs
+                          </Button>
+                        )}
+                      </Group>
+                    </Stack>
+                  ))}
               </>
             )}
           </ResponsivePanel>

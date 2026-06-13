@@ -36,6 +36,10 @@ const MANAGED_PATRICIA_ENGINE_ID = "managed-patricia-trainer";
 const MANAGED_TRAINER_DIR = "trainer-bot";
 const PATRICIA_MIN_FIDE_ELO = 800;
 const PATRICIA_MAX_FIDE_ELO = 3000;
+const MAIA_MIN_ELO = 1100;
+const MAIA_MAX_ELO = 1900;
+
+export const DEFAULT_BLINDFOLD_MAIA_ELO = 1500;
 
 export const DEFAULT_PRACTICE_BOT_ELO = 1600;
 
@@ -55,6 +59,8 @@ const PATRICIA_SKILL_LEVELS = [
     500, 800, 1000, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300, 2400,
     2500, 2650, 2800, 3000,
 ] as const;
+
+const MAIA_LEVELS = [1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900] as const;
 
 // Rating-equivalent move-quality handicap; keep in sync with src-tauri/src/game.rs.
 const TRAINER_QUALITY_PENALTY_POINTS = [
@@ -183,15 +189,28 @@ export function patriciaSkillLevelElo(skillLevel: number) {
     return PATRICIA_SKILL_LEVELS[index];
 }
 
+export function maiaLevelFromElo(fideElo: number) {
+    const target = clamp(Math.round(fideElo), MAIA_MIN_ELO, MAIA_MAX_ELO);
+    return MAIA_LEVELS.reduce((best, elo) =>
+        Math.abs(elo - target) < Math.abs(best - target) ? elo : best,
+    );
+}
+
 export function practiceBotBackendKind(profile: PracticeBotProfile | null): PracticeBotKind {
     if (!profile?.enabled) return "patricia";
-    return "patricia";
+    return profile.kind === "maia" ? "maia" : "patricia";
 }
 
 export function describePracticeBotBackend(
     profile: PracticeBotProfile,
     timeControl?: TimeControlField,
 ) {
+    if (profile.kind === "maia") {
+        const level = maiaLevelFromElo(profile.fideElo);
+        const weights = profile.maiaWeightsPath ? "custom weights" : `${level} level`;
+        return `Maia human model - ${weights}`;
+    }
+
     const skillLevel = patriciaSkillLevelFromFide(profile.fideElo, timeControl);
     const targetElo = patriciaTrainerEloFromFide(profile.fideElo, timeControl);
     const penalty = practiceBotTimeControlQualityPenalty(profile.fideElo, timeControl);
@@ -202,6 +221,10 @@ export function describePracticeBotBackend(
 }
 
 export function formatPracticeBotName(profile: PracticeBotProfile, timeControl?: TimeControlField) {
+    if (profile.kind === "maia") {
+        return `Maia ${maiaLevelFromElo(profile.fideElo)}`;
+    }
+
     const targetElo = patriciaTrainerEloFromFide(profile.fideElo, timeControl);
     const penalty = practiceBotTimeControlQualityPenalty(profile.fideElo, timeControl);
     if (timeControl && penalty > 0) {
@@ -215,10 +238,24 @@ export function isLikelyPatriciaEngine(engine: LocalEngine | null | undefined) {
     return /patricia/i.test(`${engine.name} ${engine.path}`);
 }
 
+export function isLikelyMaiaEngine(engine: LocalEngine | null | undefined) {
+    if (!engine) return false;
+    return /\b(maia|lc0|lczero|leela)\b/i.test(`${engine.name} ${engine.path}`);
+}
+
 export function createDefaultPracticeBotProfile(engine?: LocalEngine | null): PracticeBotProfile {
     return {
         ...DEFAULT_PRACTICE_BOT_PROFILE,
         kind: isLikelyPatriciaEngine(engine) ? "patricia" : DEFAULT_PRACTICE_BOT_PROFILE.kind,
+    };
+}
+
+export function createDefaultMaiaProfile(fideElo = DEFAULT_BLINDFOLD_MAIA_ELO): PracticeBotProfile {
+    return {
+        enabled: true,
+        kind: "maia",
+        fideElo: maiaLevelFromElo(fideElo),
+        timeUse: "balanced",
     };
 }
 
@@ -234,6 +271,22 @@ export function createDefaultPracticeBotOpponent(
         incrementUnit: "s",
         engineSettings: isLikelyPatriciaEngine(engine) ? engine?.settings || undefined : undefined,
         botProfile: createDefaultPracticeBotProfile(engine),
+    };
+}
+
+export function createDefaultMaiaOpponent(
+    engine: LocalEngine | null = null,
+    fideElo = DEFAULT_BLINDFOLD_MAIA_ELO,
+): OpponentSettings {
+    return {
+        type: "engine",
+        engine,
+        go: { t: "Time", c: 500 },
+        timeControl: PRACTICE_BOT_DEFAULT_TIME_CONTROL,
+        timeUnit: "m",
+        incrementUnit: "s",
+        engineSettings: engine?.settings || undefined,
+        botProfile: createDefaultMaiaProfile(fideElo),
     };
 }
 
@@ -274,6 +327,13 @@ export function buildPracticeBotOptions(
         }));
 
     if (!profile?.enabled) {
+        return options;
+    }
+
+    if (profile.kind === "maia") {
+        if (profile.maiaWeightsPath) {
+            options = upsertOption(options, "WeightsFile", profile.maiaWeightsPath);
+        }
         return options;
     }
 
@@ -418,12 +478,28 @@ export async function preparePracticeBotOpponent(
         return settings;
     }
 
-    const profile = {
+    const profile: PracticeBotProfile = {
         ...DEFAULT_PRACTICE_BOT_PROFILE,
         ...settings.botProfile,
         enabled: true,
-        kind: "patricia" as const,
     };
+
+    if (profile.kind === "maia") {
+        if (!settings.engine?.path) {
+            throw new Error(
+                "Blindfold Maia trainer needs a local Maia or LCZero engine. Add one in Engines or choose it in this game setup.",
+            );
+        }
+        return {
+            ...settings,
+            engine: settings.engine,
+            engineSettings: settings.engine.settings || settings.engineSettings || undefined,
+            go: settings.go ?? { t: "Time", c: 500 },
+            botProfile: profile,
+        };
+    }
+
+    profile.kind = "patricia";
 
     const engine = isLikelyPatriciaEngine(settings.engine)
         ? settings.engine!

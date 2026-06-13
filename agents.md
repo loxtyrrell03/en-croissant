@@ -2074,6 +2074,14 @@ from 2026-04-24 through 2026-05-03.
   pinned siblings first with only a small pin icon. Keep pin UI compact and
   metadata-driven so publishing from the fork carries the user's pinned Files
   choices to the phone site.
+- On 2026-06-13, desktop play gained a Blindfold Maia trainer mode inspired by
+  blindfold-chess.online. It can be launched from the home screen or board
+  control rail, reuses the existing game backend, hides/reveals the board with
+  per-tab blindfold settings, offers right-pane legal SAN move buttons plus a
+  manual SAN keypad, and routes trainer setup through an explicit local
+  Maia/LCZero engine profile with Maia-level strength settings. Do not silently
+  fall back to Patricia for this mode; if no local Maia-style engine is
+  configured, setup should block and explain that one must be added in Engines.
 
 ## Verification Expectations
 
