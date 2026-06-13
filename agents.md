@@ -2134,6 +2134,12 @@ from 2026-04-24 through 2026-05-03.
   without making it tiny: move pills now use the existing compact style and the
   under-board comments/notation text render slightly smaller with tighter line
   height.
+- On 2026-06-13, Lichess Cloud eval access was made API-friendly for both the
+  desktop engine path and phone web engine/prep/database helpers. Cloud eval
+  requests now cap MultiPV to Lichess's useful cloud range, share identical
+  in-flight position lookups, run one cloud request at a time with a small
+  spacing delay, and cool down after `429` responses so opening navigation
+  does not burn the cloud limit and silently fall back to local Stockfish.
 
 ## Verification Expectations
 

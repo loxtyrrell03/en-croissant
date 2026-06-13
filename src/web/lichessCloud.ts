@@ -20,10 +20,17 @@ type WebLichessCloudPv = {
 
 const LICHESS_CLOUD_URL = "https://lichess.org/api/cloud-eval";
 const LICHESS_CLOUD_TIMEOUT_MS = 12_000;
+const LICHESS_CLOUD_MAX_MULTIPV = 5;
+const LICHESS_CLOUD_MIN_REQUEST_INTERVAL_MS = 1_000;
+const LICHESS_CLOUD_RATE_LIMIT_COOLDOWN_MS = 60_000;
 const MAX_CHILD_EVAL_MOVES = 20;
 
 const cloudCache = new BoundedMap<string, WebLichessCloudData>(500);
 const missingCloudCache = new BoundedSet<string>(2000);
+const inFlightCloudCache = new Map<string, Promise<WebLichessCloudData>>();
+let cloudRequestQueue: Promise<void> = Promise.resolve();
+let nextCloudRequestAt = 0;
+let cloudRateLimitedUntil = 0;
 
 export async function queryWebLichessCloudEngineMoves({
   fen,
@@ -148,12 +155,34 @@ async function getCloudEvaluation(
   multipv: number,
   signal?: AbortSignal,
 ): Promise<WebLichessCloudData> {
-  const cacheKey = `${fen}-${multipv}`;
+  const safeMultipv = normalizeCloudMultipv(multipv);
+  const cacheKey = `${fen}-${safeMultipv}`;
   if (cloudCache.has(cacheKey)) return cloudCache.get(cacheKey)!;
   if (missingCloudCache.has(cacheKey)) {
     throw new Error("No Lichess cloud evaluation available.");
   }
+  if (Date.now() < cloudRateLimitedUntil) {
+    throw new Error("Lichess cloud evaluation is rate-limited.");
+  }
 
+  const inFlight = inFlightCloudCache.get(cacheKey);
+  if (inFlight) return inFlight;
+
+  const request = enqueueCloudEvaluationRequest(async () => {
+    return await fetchCloudEvaluation(fen, safeMultipv, cacheKey, signal);
+  }).finally(() => {
+    inFlightCloudCache.delete(cacheKey);
+  });
+  inFlightCloudCache.set(cacheKey, request);
+  return request;
+}
+
+async function fetchCloudEvaluation(
+  fen: string,
+  multipv: number,
+  cacheKey: string,
+  signal?: AbortSignal,
+): Promise<WebLichessCloudData> {
   const url = new URL(LICHESS_CLOUD_URL);
   url.searchParams.set("fen", fen);
   url.searchParams.set("multiPv", String(multipv));
@@ -163,6 +192,12 @@ async function getCloudEvaluation(
     missingCloudCache.add(cacheKey);
     throw new Error("No Lichess cloud evaluation available.");
   }
+  if (response.status === 429) {
+    const cooldownMs = parseRetryAfterMs(response.headers.get("Retry-After"));
+    cloudRateLimitedUntil = Date.now() + (cooldownMs ?? LICHESS_CLOUD_RATE_LIMIT_COOLDOWN_MS);
+    nextCloudRequestAt = Math.max(nextCloudRequestAt, cloudRateLimitedUntil);
+    throw new Error("Lichess cloud evaluation is rate-limited.");
+  }
   if (!response.ok) {
     throw new Error(`Lichess cloud evaluation failed: ${response.status}`);
   }
@@ -170,6 +205,54 @@ async function getCloudEvaluation(
   const data = (await response.json()) as WebLichessCloudData;
   cloudCache.set(cacheKey, data);
   return data;
+}
+
+async function enqueueCloudEvaluationRequest<T>(run: () => Promise<T>): Promise<T> {
+  const task = cloudRequestQueue.then(async () => {
+    if (Date.now() < cloudRateLimitedUntil) {
+      throw new Error("Lichess cloud evaluation is rate-limited.");
+    }
+
+    const waitMs = nextCloudRequestAt - Date.now();
+    if (waitMs > 0) {
+      await sleep(waitMs);
+    }
+
+    try {
+      return await run();
+    } finally {
+      nextCloudRequestAt = Math.max(
+        nextCloudRequestAt,
+        Date.now() + LICHESS_CLOUD_MIN_REQUEST_INTERVAL_MS,
+      );
+    }
+  });
+
+  cloudRequestQueue = task.then(
+    () => undefined,
+    () => undefined,
+  );
+  return task;
+}
+
+function normalizeCloudMultipv(multipv: number) {
+  return Math.max(1, Math.min(LICHESS_CLOUD_MAX_MULTIPV, Math.round(multipv) || 1));
+}
+
+function parseRetryAfterMs(value: string | null) {
+  if (!value) return null;
+  const seconds = Number.parseInt(value, 10);
+  if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
+
+  const dateMs = Date.parse(value);
+  if (Number.isFinite(dateMs)) return Math.max(0, dateMs - Date.now());
+  return null;
+}
+
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
 }
 
 async function fetchWithTimeout(url: string, signal?: AbortSignal) {

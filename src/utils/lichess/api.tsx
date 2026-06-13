@@ -35,6 +35,9 @@ const tablebaseURL = "https://tablebase.lichess.org";
 const LICHESS_EXPLORER_TIMEOUT_MS = 20_000;
 const LICHESS_GAME_EXPORT_TIMEOUT_MS = 15_000;
 const LICHESS_CLOUD_TIMEOUT_MS = 12_000;
+const LICHESS_CLOUD_MAX_MULTIPV = 5;
+const LICHESS_CLOUD_MIN_REQUEST_INTERVAL_MS = 1_000;
+const LICHESS_CLOUD_RATE_LIMIT_COOLDOWN_MS = 60_000;
 
 export const MIN_DATE = new Date(1952, 0, 1);
 
@@ -360,6 +363,10 @@ export async function getBestMoves(
 
 const cache = new BoundedMap<string, LichessCloudData>(500);
 const missingCache = new BoundedSet<string>(2000);
+const inFlightCloudCache = new Map<string, Promise<LichessCloudData>>();
+let cloudRequestQueue: Promise<void> = Promise.resolve();
+let nextCloudRequestAt = 0;
+let cloudRateLimitedUntil = 0;
 
 type LichessCloudData = {
   fen: string;
@@ -387,13 +394,37 @@ export type LichessCloudMove = {
 };
 
 async function getCloudEvaluation(fen: string, multipv: number): Promise<LichessCloudData> {
-  const cacheKey = `${fen}-${multipv}`;
+  const safeMultipv = normalizeCloudMultipv(multipv);
+  const cacheKey = `${fen}-${safeMultipv}`;
   if (cache.has(cacheKey)) {
     return cache.get(cacheKey)!;
   }
   if (missingCache.has(cacheKey)) {
     throw new Error("No Lichess cloud evaluation available.");
   }
+  if (Date.now() < cloudRateLimitedUntil) {
+    throw new Error("Lichess cloud evaluation is rate-limited. Trying local analysis instead.");
+  }
+
+  const inFlight = inFlightCloudCache.get(cacheKey);
+  if (inFlight) {
+    return inFlight;
+  }
+
+  const request = enqueueCloudEvaluationRequest(async () => {
+    return await fetchCloudEvaluation(fen, safeMultipv, cacheKey);
+  }).finally(() => {
+    inFlightCloudCache.delete(cacheKey);
+  });
+  inFlightCloudCache.set(cacheKey, request);
+  return request;
+}
+
+async function fetchCloudEvaluation(
+  fen: string,
+  multipv: number,
+  cacheKey: string,
+): Promise<LichessCloudData> {
   const url = new URL(`${baseURL}/cloud-eval`);
   url.searchParams.append("fen", fen);
   url.searchParams.append("multiPv", multipv.toString());
@@ -408,12 +439,66 @@ async function getCloudEvaluation(fen: string, multipv: number): Promise<Lichess
     missingCache.add(cacheKey);
     throw new Error("No Lichess cloud evaluation available.");
   }
+  if (response.status === 429) {
+    const cooldownMs = parseRetryAfterMs(response.headers.get("Retry-After"));
+    cloudRateLimitedUntil = Date.now() + (cooldownMs ?? LICHESS_CLOUD_RATE_LIMIT_COOLDOWN_MS);
+    nextCloudRequestAt = Math.max(nextCloudRequestAt, cloudRateLimitedUntil);
+    throw new Error("Lichess cloud evaluation is rate-limited. Trying local analysis instead.");
+  }
   if (!response.ok) {
     throw new Error(`Lichess cloud evaluation failed: ${response.status}`);
   }
   const data = (await response.json()) as LichessCloudData;
   cache.set(cacheKey, data);
   return data;
+}
+
+async function enqueueCloudEvaluationRequest<T>(run: () => Promise<T>): Promise<T> {
+  const task = cloudRequestQueue.then(async () => {
+    if (Date.now() < cloudRateLimitedUntil) {
+      throw new Error("Lichess cloud evaluation is rate-limited. Trying local analysis instead.");
+    }
+
+    const waitMs = nextCloudRequestAt - Date.now();
+    if (waitMs > 0) {
+      await sleep(waitMs);
+    }
+
+    try {
+      return await run();
+    } finally {
+      nextCloudRequestAt = Math.max(
+        nextCloudRequestAt,
+        Date.now() + LICHESS_CLOUD_MIN_REQUEST_INTERVAL_MS,
+      );
+    }
+  });
+
+  cloudRequestQueue = task.then(
+    () => undefined,
+    () => undefined,
+  );
+  return task;
+}
+
+function normalizeCloudMultipv(multipv: number) {
+  return Math.max(1, Math.min(LICHESS_CLOUD_MAX_MULTIPV, Math.round(multipv) || 1));
+}
+
+function parseRetryAfterMs(value: string | null) {
+  if (!value) return null;
+  const seconds = Number.parseInt(value, 10);
+  if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
+
+  const dateMs = Date.parse(value);
+  if (Number.isFinite(dateMs)) return Math.max(0, dateMs - Date.now());
+  return null;
+}
+
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => {
+    globalThis.setTimeout(resolve, ms);
+  });
 }
 
 export async function queryLichessCloudMoves(
