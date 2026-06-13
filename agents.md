@@ -2109,7 +2109,7 @@ from 2026-04-24 through 2026-05-03.
 - A follow-up on 2026-06-13 tightened the Blindfold trainer surface after user
   feedback. Blindfold games are untimed end to end, the active right pane is
   only for game actions such as lost-track marking, save, reveal, play-here,
-  exit, legal/manual move-entry, and mark revisit controls, while the
+  take-back, exit, legal/manual move-entry, and mark revisit controls, while the
   under-board area on the left is the normal notation move list plus navigation
   controls. The setup pane is phased into Settings, Library, and Position
   instead of dumping everything together; the Library is a dedicated saved-game

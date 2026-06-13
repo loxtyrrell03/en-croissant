@@ -71,6 +71,7 @@ type BlindfoldGamePanelProps = {
   boardHidden: boolean;
   boardRevealed: boolean;
   canRevealBoard: boolean;
+  canTakeBack: boolean;
   lastMoveSan: string | null;
   marks: BlindfoldLostTrackMark[];
   currentPath: number[];
@@ -80,6 +81,7 @@ type BlindfoldGamePanelProps = {
   onPlayFromCurrentPosition: () => void | Promise<void>;
   onSaveGameToFile: () => void | Promise<void>;
   onExitGame: () => void | Promise<void>;
+  onTakeBack: () => void | Promise<void>;
   onPlayMove: (uci: string) => void | Promise<void>;
   onGoToMark: (path: number[]) => void;
 };
@@ -450,6 +452,7 @@ export function BlindfoldGamePanel({
   boardHidden,
   boardRevealed,
   canRevealBoard,
+  canTakeBack,
   lastMoveSan,
   marks,
   currentPath,
@@ -459,12 +462,14 @@ export function BlindfoldGamePanel({
   onPlayFromCurrentPosition,
   onSaveGameToFile,
   onExitGame,
+  onTakeBack,
   onPlayMove,
   onGoToMark,
 }: BlindfoldGamePanelProps) {
   const [settings] = useAtom(currentBlindfoldGameSettingsAtom);
   const [displayedLastMove, setDisplayedLastMove] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [takingBack, setTakingBack] = useState(false);
   const turn = activeColorFromFen(fen);
   const currentPathKey = blindfoldPathKey(currentPath);
   const currentMark = marks.find((mark) => blindfoldPathKey(mark.path) === currentPathKey);
@@ -488,6 +493,16 @@ export function BlindfoldGamePanel({
       await onSaveGameToFile();
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function takeBack() {
+    if (!canTakeBack || !currentLineAtEnd) return;
+    setTakingBack(true);
+    try {
+      await onTakeBack();
+    } finally {
+      setTakingBack(false);
     }
   }
 
@@ -536,6 +551,16 @@ export function BlindfoldGamePanel({
           onClick={onPlayFromCurrentPosition}
         >
           Play here
+        </Button>
+        <Button
+          size="xs"
+          variant="default"
+          leftSection={<IconArrowBackUp size={14} />}
+          disabled={!canTakeBack || !currentLineAtEnd}
+          loading={takingBack}
+          onClick={() => void takeBack()}
+        >
+          Take back
         </Button>
         <Button
           size="xs"

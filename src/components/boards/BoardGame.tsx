@@ -1431,6 +1431,7 @@ function BoardGame() {
                         blindfoldActive && blindfoldSettings.hideBoard && !blindfoldBoardHidden
                       }
                       canRevealBoard={blindfoldSettings.allowPeeking}
+                      canTakeBack={gameState === "playing" && Boolean(gameId) && onePlayerIsEngine}
                       lastMoveSan={lastEngineMoveSan}
                       marks={blindfoldMarks}
                       currentPath={currentPath}
@@ -1440,6 +1441,7 @@ function BoardGame() {
                       onPlayFromCurrentPosition={handlePlayBlindfoldFromCurrentPosition}
                       onSaveGameToFile={handleSaveBlindfoldGameToFile}
                       onExitGame={handleExitBlindfoldGame}
+                      onTakeBack={onTakeBack}
                       onPlayMove={handleBlindfoldMove}
                       onGoToMark={handleGoToBlindfoldMark}
                     />
