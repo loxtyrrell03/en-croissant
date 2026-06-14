@@ -2241,13 +2241,19 @@ from 2026-04-24 through 2026-05-03.
 - A follow-up hardened that setup-mode fix after the UI could still appear
   unchanged: hover previews now suppress the normal automatic Plan Explorer
   arrow set until hover leaves, streaming engine-strength refreshes no longer
-  clear the active hover preview, and a 45-second watchdog stops stale
+  clear the active hover preview, and a watchdog stops stale
   Plan Explorer engine-strength requests that never emit a matching final PV.
 - Another Plan Explorer Setups polish pass made White/Black side filtering
   explicit and state-safe: switching side clears stale setup previews, setup
   rows are filtered through a shared setup-side classifier, and the side control
   shows filtered setup counts so agents can immediately tell whether the view is
   showing White, Black, or no rows for that side.
+- A subsequent fix made the Setups White/Black switch a real lifecycle boundary:
+  the side and `Plans / Setups` view now participate in the Plan Explorer
+  request key and engine-strength cache key, side/view changes stop stale engine
+  strength requests, setup rows only report `Analyzing` for the current side's
+  active request, and nested per-route hover handlers were removed so moving
+  between setup rows cannot restore a previous row's arrow preview.
 
 ## Verification Expectations
 

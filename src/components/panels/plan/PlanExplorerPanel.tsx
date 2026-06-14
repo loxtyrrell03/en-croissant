@@ -131,7 +131,7 @@ import PlanCoachInline, { type PlanCoachInlineRequest } from "./PlanCoachInline"
 import resultClasses from "../database/OpeningsTable.module.css";
 
 const MAX_ENGINE_STRENGTH_REPORT_CACHE_ENTRIES = 24;
-const ENGINE_STRENGTH_WATCHDOG_MS = 45_000;
+const ENGINE_STRENGTH_WATCHDOG_MS = 15_000;
 
 type SideFilter = "all" | "white" | "black";
 type PlanExplorerSource = "local" | OnlinePlanExplorerSource;
@@ -265,8 +265,15 @@ function PlanExplorerPanel() {
 
   const engineStrengthCacheKey = useMemo(() => {
     if (!selectedEngine) return "";
-    return [debouncedFen, selectedEngine.id, clampedEngineDepth, clampedEngineMultipv].join("|");
-  }, [clampedEngineDepth, clampedEngineMultipv, debouncedFen, selectedEngine]);
+    return [
+      debouncedFen,
+      selectedEngine.id,
+      clampedEngineDepth,
+      clampedEngineMultipv,
+      view,
+      sideFilter,
+    ].join("|");
+  }, [clampedEngineDepth, clampedEngineMultipv, debouncedFen, selectedEngine, sideFilter, view]);
   const cachedEngineReport = engineStrengthCacheKey
     ? engineStrengthState.cache[engineStrengthCacheKey]
     : null;
@@ -308,6 +315,8 @@ function PlanExplorerPanel() {
         masterOptionsKey,
         explorerToken ? "auth" : "no-auth",
         maxPlies,
+        view,
+        sideFilter,
       ].join("|"),
     [
       currentTab?.value,
@@ -318,7 +327,9 @@ function PlanExplorerPanel() {
       masterOptionsKey,
       maxPlies,
       referenceDatabase,
+      sideFilter,
       source,
+      view,
     ],
   );
 
@@ -340,6 +351,8 @@ function PlanExplorerPanel() {
         lichessOptionsKey,
         masterOptionsKey,
         maxPlies,
+        view,
+        sideFilter,
       ]
     : null;
 
@@ -561,6 +574,7 @@ function PlanExplorerPanel() {
         });
       } catch (caught) {
         if (engineRequestRef.current?.token === active.token) {
+          cleanupEngineWatchdog();
           setEngineStrengthState((current) => ({
             ...current,
             error: caught instanceof Error ? caught.message : String(caught),
@@ -593,6 +607,7 @@ function PlanExplorerPanel() {
         .catch((caught) => {
           const current = engineRequestRef.current;
           if (!current || current.token !== active.token) return;
+          cleanupEngineWatchdog();
           setEngineStrengthState((state) => ({
             ...state,
             error: caught instanceof Error ? caught.message : String(caught),
@@ -605,6 +620,7 @@ function PlanExplorerPanel() {
     },
     [
       cleanupEngineListener,
+      cleanupEngineWatchdog,
       clampedEngineDepth,
       clampedEngineMultipv,
       currentTab?.value,
@@ -666,6 +682,7 @@ function PlanExplorerPanel() {
   useEffect(() => {
     setPlanExplorerData(null);
     setPreviewLine(null);
+    stopEngineStrength();
   }, [
     debouncedFen,
     lichessOptionsKey,
@@ -677,7 +694,10 @@ function PlanExplorerPanel() {
     referenceDatabase,
     setPlanExplorerData,
     setPreviewLine,
+    sideFilter,
     source,
+    stopEngineStrength,
+    view,
   ]);
 
   useEffect(() => {
@@ -716,7 +736,10 @@ function PlanExplorerPanel() {
     return sortedVisiblePlanData?.pieces ?? [];
   }, [sortedVisiblePlanData?.pieces]);
   const setups = sortedVisibleSetups;
-  const waitingForFirstEngineReport = engineStrengthState.running && !visibleEngineReport;
+  const waitingForFirstEngineReport =
+    engineStrengthState.running &&
+    engineStrengthState.activeRequestKey === engineStrengthCacheKey &&
+    !visibleEngineReport;
 
   const content = (() => {
     if (isLocalSource && !referenceDatabase) {
@@ -2387,13 +2410,7 @@ function SetupRow({
               : null;
 
             return (
-              <Group
-                key={planLineKey(plan, plan.line)}
-                gap="xs"
-                wrap="nowrap"
-                onMouseEnter={() => previewLine(line)}
-                onMouseLeave={() => previewLine(lines)}
-              >
+              <Group key={planLineKey(plan, plan.line)} gap="xs" wrap="nowrap">
                 <Tooltip label="Draw route">
                   <ActionIcon
                     size="sm"
