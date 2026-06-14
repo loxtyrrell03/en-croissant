@@ -2243,6 +2243,11 @@ from 2026-04-24 through 2026-05-03.
   arrow set until hover leaves, streaming engine-strength refreshes no longer
   clear the active hover preview, and a 45-second watchdog stops stale
   Plan Explorer engine-strength requests that never emit a matching final PV.
+- Another Plan Explorer Setups polish pass made White/Black side filtering
+  explicit and state-safe: switching side clears stale setup previews, setup
+  rows are filtered through a shared setup-side classifier, and the side control
+  shows filtered setup counts so agents can immediately tell whether the view is
+  showing White, Black, or no rows for that side.
 
 ## Verification Expectations
 

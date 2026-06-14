@@ -386,11 +386,13 @@ function PlanExplorerPanel() {
     return {
       ...planData,
       pieces: planData.pieces.filter((piece) => piece.color === sideFilter),
-      setups: (planData.setups ?? []).filter((setup) =>
-        setup.plans.every((plan) => plan.color === sideFilter),
-      ),
+      setups: (planData.setups ?? []).filter((setup) => setupSide(setup) === sideFilter),
     };
   }, [planData, sideFilter]);
+  const setupSideCounts = useMemo(
+    () => countSetupSides(planData?.setups ?? []),
+    [planData?.setups],
+  );
   const resultPerspective = isLocalSource ? getLocalResultPerspective(localOptions) : null;
   const coachSourceLabel = useMemo(
     () =>
@@ -691,6 +693,10 @@ function PlanExplorerPanel() {
     setPlanExplorerData(sortedVisiblePlanData);
   }, [setPlanExplorerData, sortedVisiblePlanData]);
 
+  useEffect(() => {
+    setPreviewLine(null);
+  }, [setPreviewLine, sideFilter, view]);
+
   const drawLine = useCallback(
     (line: ColoredPlanExplorerLine) => {
       const existing = currentNode.shapes.filter((shape) => !isPlanBrush(shape.brush));
@@ -836,7 +842,9 @@ function PlanExplorerPanel() {
                   <Table.Tr>
                     <Table.Td colSpan={engineStrengthEnabled ? 6 : 5}>
                       <Text ta="center" c="dimmed" py="lg">
-                        No recurring setups found in the sampled continuations.
+                        {sideFilter === "all"
+                          ? "No recurring setups found in the sampled continuations."
+                          : `No ${sideFilter} setup rows found. Switch to All to see every setup side.`}
                       </Text>
                     </Table.Td>
                   </Table.Tr>
@@ -947,11 +955,7 @@ function PlanExplorerPanel() {
             size="sm"
             value={sideFilter}
             onChange={(value) => setSideFilter(value as SideFilter)}
-            data={[
-              { label: "All", value: "all" },
-              { label: "White", value: "white" },
-              { label: "Black", value: "black" },
-            ]}
+            data={sideFilterOptions(view, setupSideCounts)}
           />
           <Tooltip label="Tune blended strength for plan and setup rows">
             <Box>
@@ -1614,6 +1618,45 @@ function planSetupKey(setup: PlanExplorerSetup) {
   return setup.plans.map((plan) => planLineKey(plan, plan.line)).join("||");
 }
 
+function setupSide(setup: PlanExplorerSetup): "white" | "black" | null {
+  const colors = new Set(setup.plans.map((plan) => plan.color));
+  if (colors.size !== 1) return null;
+
+  const color = setup.plans[0]?.color;
+  return color === "white" || color === "black" ? color : null;
+}
+
+function countSetupSides(setups: PlanExplorerSetup[]) {
+  return setups.reduce(
+    (counts, setup) => {
+      const side = setupSide(setup);
+      if (side) counts[side] += 1;
+      return counts;
+    },
+    { white: 0, black: 0 },
+  );
+}
+
+function sideFilterOptions(
+  view: PlanExplorerView,
+  setupSideCounts: ReturnType<typeof countSetupSides>,
+) {
+  if (view !== "setups") {
+    return [
+      { label: "All", value: "all" },
+      { label: "White", value: "white" },
+      { label: "Black", value: "black" },
+    ];
+  }
+
+  const total = setupSideCounts.white + setupSideCounts.black;
+  return [
+    { label: `All ${total}`, value: "all" },
+    { label: `White ${setupSideCounts.white}`, value: "white" },
+    { label: `Black ${setupSideCounts.black}`, value: "black" },
+  ];
+}
+
 function getSetupPerspective(
   setup: PlanExplorerSetup,
   resultPerspective: DatabaseResultPerspective | null,
@@ -1623,11 +1666,8 @@ function getSetupPerspective(
   if (resultPerspective === "white" || resultPerspective === "black") return resultPerspective;
   if (sideFilter === "white" || sideFilter === "black") return sideFilter;
 
-  const setupColor = setup.plans[0]?.color;
-  if (setupColor === "white" || setupColor === "black") {
-    const singleColor = setup.plans.every((plan) => plan.color === setupColor);
-    if (singleColor) return setupColor;
-  }
+  const setupColor = setupSide(setup);
+  if (setupColor) return setupColor;
 
   return fen?.split(" ")[1] === "b" ? "black" : "white";
 }
