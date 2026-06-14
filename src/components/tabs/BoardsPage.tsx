@@ -19,6 +19,7 @@ import { match } from "ts-pattern";
 import { commands } from "@/bindings";
 import {
   activeTabAtom,
+  blindfoldGameSettingsFamily,
   cleanupClosedTabAtomState,
   enginesAtom,
   tabFamily,
@@ -332,6 +333,7 @@ const DEFAULT_TOP_RIGHT_RATIO = 0.72;
 function BoardWorkspaceLayout({ tab }: { tab: Tab }) {
   const [layout, setLayout] = useAtom(workspaceLayoutAtom);
   const selectedBoardPanel = useAtomValue(tabFamily(tab.value));
+  const blindfoldSettings = useAtomValue(blindfoldGameSettingsFamily(tab.value));
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
@@ -359,7 +361,8 @@ function BoardWorkspaceLayout({ tab }: { tab: Tab }) {
   const resolvedRightPaneHeights = resolveRightPaneHeights(layout, splitAvailableHeight);
   const usesUnderBoardNotation =
     tab.type === "analysis" || tab.type === "opening-review" || tab.type === "mistake-review";
-  const bottomRightHidden = usesUnderBoardNotation || selectedBoardPanel === "compare";
+  const bottomRightHidden =
+    usesUnderBoardNotation || blindfoldSettings.enabled || selectedBoardPanel === "compare";
   const topRightHeight = bottomRightHidden
     ? containerSize.height
     : resolvedRightPaneHeights.topRightHeight;
