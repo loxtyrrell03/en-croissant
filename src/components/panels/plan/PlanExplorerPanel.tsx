@@ -153,6 +153,11 @@ type PlanStrength = {
   usingEngine: boolean;
   detail: string;
 };
+type SetupVerdict = {
+  label: string;
+  color: string;
+  detail: string;
+};
 type PlanExplorerEngineRequest = {
   token: number;
   engine: LocalEngine;
@@ -1831,6 +1836,150 @@ function getSetupEngineStrengthScore(
   return average + coverage * 10_000;
 }
 
+function getDatabaseSetupVerdict({
+  setup,
+  sampledGames,
+  engineStrengthEnabled,
+  engineReport,
+  engineRunning,
+  engineMatches,
+  strength,
+}: {
+  setup: PlanExplorerSetup;
+  sampledGames: number;
+  engineStrengthEnabled: boolean;
+  engineReport: EnginePlanReport | null;
+  engineRunning: boolean;
+  engineMatches: PlanExplorerEnginePlanMatch[];
+  strength: PlanStrength | null;
+}): SetupVerdict {
+  const components = setup.plans.length;
+  const structuralComponents = setup.plans.filter(isSetupStructuralPlan).length;
+  const anchorComponents = setup.plans.filter(isSetupAnchorComponent).length;
+  const strictMatches = engineMatches.filter(isStrictSetupEngineMatch).length;
+  const looseMatches = engineMatches.length;
+  const strictCoverage = strictMatches / Math.max(1, components);
+  const looseCoverage = looseMatches / Math.max(1, components);
+  const sampleShare = sampledGames > 0 ? setup.games / sampledGames : null;
+  const sampleDetail =
+    sampleShare === null ? null : `${formatPercent(sampleShare)} of sampled continuations`;
+
+  if (engineStrengthEnabled && engineRunning && !engineReport) {
+    return {
+      label: "Checking",
+      color: "gray",
+      detail: "Engine setup safety is still being checked.",
+    };
+  }
+
+  if (engineStrengthEnabled && engineReport) {
+    if (strength?.engineUnsafe) {
+      return {
+        label: "Engine risk",
+        color: "yellow",
+        detail: [
+          "The observed setup has at least one component over the configured engine safety limit.",
+          `${strictMatches}/${components} components have strict engine matches.`,
+          sampleDetail,
+        ]
+          .filter((part): part is string => !!part)
+          .join(" "),
+      };
+    }
+
+    if (
+      components >= 3 &&
+      structuralComponents > 0 &&
+      anchorComponents > 0 &&
+      strictCoverage >= 0.67
+    ) {
+      return {
+        label: "Verified setup",
+        color: "teal",
+        detail: [
+          "A coherent database setup with structural and development evidence matches the engine plan directly.",
+          `${strictMatches}/${components} components are strict matches.`,
+          sampleDetail,
+        ]
+          .filter((part): part is string => !!part)
+          .join(" "),
+      };
+    }
+
+    if (looseCoverage >= 0.5) {
+      return {
+        label: "Loose match",
+        color: "blue",
+        detail: [
+          "Some components overlap engine plans, but the whole setup is not directly verified.",
+          `${looseMatches}/${components} components match, ${strictMatches} strictly.`,
+          sampleDetail,
+        ]
+          .filter((part): part is string => !!part)
+          .join(" "),
+      };
+    }
+
+    return {
+      label: "Observed only",
+      color: "gray",
+      detail: [
+        "This setup appears in the database sample, but the current engine report does not verify it as a setup.",
+        sampleDetail,
+      ]
+        .filter((part): part is string => !!part)
+        .join(" "),
+    };
+  }
+
+  if (components >= 3 && structuralComponents > 0 && anchorComponents > 0) {
+    return {
+      label: "Observed setup",
+      color: "blue",
+      detail: [
+        "A coherent structure-plus-development pattern found in the sampled games.",
+        "Run engine strength before treating it as a recommendation.",
+        sampleDetail,
+      ]
+        .filter((part): part is string => !!part)
+        .join(" "),
+    };
+  }
+
+  return {
+    label: "Loose pattern",
+    color: "gray",
+    detail: [
+      "This row has limited setup evidence and should be treated as a pattern, not a recommendation.",
+      sampleDetail,
+    ]
+      .filter((part): part is string => !!part)
+      .join(" "),
+  };
+}
+
+function isStrictSetupEngineMatch(match: PlanExplorerEnginePlanMatch) {
+  return (
+    match.match === "route" ||
+    match.match === "routePrefix" ||
+    match.match === "pawnSetup" ||
+    match.match === "castling"
+  );
+}
+
+function isSetupStructuralPlan(plan: PlanExplorerSetupPlan) {
+  return plan.role === "pawn";
+}
+
+function isSetupAnchorComponent(plan: PlanExplorerSetupPlan) {
+  return (
+    plan.role === "knight" ||
+    plan.role === "bishop" ||
+    (plan.role === "king" &&
+      plan.line.san.some((san) => san.startsWith("O-O") || san.startsWith("0-0")))
+  );
+}
+
 function setupPlanToColoredLine(plan: PlanExplorerSetupPlan): ColoredPlanExplorerLine {
   return withPlanLineColor(plan.line, plan.color);
 }
@@ -1929,6 +2078,7 @@ function buildSetupPlanCoachRequest({
   engineReport,
   engineRunning,
   engineMatches,
+  verdict,
 }: {
   setup: PlanExplorerSetup;
   fen: string;
@@ -1941,6 +2091,7 @@ function buildSetupPlanCoachRequest({
   engineReport: EnginePlanReport | null;
   engineRunning: boolean;
   engineMatches: PlanExplorerEnginePlanMatch[];
+  verdict: SetupVerdict;
 }): PlanCoachInlineRequest {
   const title = setupTitle(setup);
   const setupRoutes = setup.plans.map((plan) => formatPlanPieceRoute(plan, plan.line));
@@ -1975,6 +2126,7 @@ function buildSetupPlanCoachRequest({
       `Setup games: ${formatNumber(setup.games)}`,
       `Setup result: ${formatPlanCoachResult(setup, perspective)}`,
       `Result perspective: ${capitalize(perspective)}`,
+      `Setup verdict: ${verdict.label}. ${verdict.detail}`,
       strength
         ? `Blended strength: ${strength.label}. ${strength.detail}`
         : "Blended strength: unavailable",
@@ -2338,6 +2490,27 @@ function SetupRow({
     () => getSetupEngineMatches(setup, engineReport),
     [engineReport, setup],
   );
+  const verdict = useMemo(
+    () =>
+      getDatabaseSetupVerdict({
+        setup,
+        sampledGames,
+        engineStrengthEnabled,
+        engineReport,
+        engineRunning,
+        engineMatches,
+        strength: strength ?? null,
+      }),
+    [
+      engineMatches,
+      engineReport,
+      engineRunning,
+      engineStrengthEnabled,
+      sampledGames,
+      setup,
+      strength,
+    ],
+  );
   const coachRequest = useMemo(
     () =>
       buildSetupPlanCoachRequest({
@@ -2352,6 +2525,7 @@ function SetupRow({
         engineReport,
         engineRunning,
         engineMatches,
+        verdict,
       }),
     [
       engineMatches,
@@ -2365,6 +2539,7 @@ function SetupRow({
       sourceLabel,
       strength,
       totalGames,
+      verdict,
     ],
   );
   const coachCacheKey = useMemo(
@@ -2390,9 +2565,16 @@ function SetupRow({
     >
       <Table.Td>
         <Stack gap={2}>
-          <Text size="sm" fw={700}>
-            {setupTitle(setup)}
-          </Text>
+          <Group gap="xs" wrap="wrap">
+            <Text size="sm" fw={700}>
+              {setupTitle(setup)}
+            </Text>
+            <Tooltip label={verdict.detail} multiline w={300} withArrow>
+              <Badge size="xs" color={verdict.color} variant="light">
+                {verdict.label}
+              </Badge>
+            </Tooltip>
+          </Group>
           <Text size="xs" c="dimmed">
             WDL for {capitalize(perspective)}
           </Text>

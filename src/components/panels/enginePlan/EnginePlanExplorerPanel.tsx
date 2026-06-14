@@ -147,6 +147,11 @@ type EngineSetupBlend = {
   engineUnsafe: boolean;
   practical: EngineSetupPracticalMatch | null;
 };
+type EngineSetupVerdict = {
+  label: string;
+  color: string;
+  detail: string;
+};
 
 function EnginePlanExplorerPanel() {
   const store = useContext(TreeStateContext)!;
@@ -1054,9 +1059,13 @@ function SetupRow({
     () => setup.plans.map(planToLine).filter((line): line is ColoredPlanExplorerLine => !!line),
     [setup.plans],
   );
+  const verdict = useMemo(
+    () => getEngineSetupVerdict(setup, totalPvs, blend),
+    [blend, setup, totalPvs],
+  );
   const coachRequest = useMemo(
-    () => buildEngineSetupCoachRequest(setup, rootFen, totalPvs, blend),
-    [blend, rootFen, setup, totalPvs],
+    () => buildEngineSetupCoachRequest(setup, rootFen, totalPvs, blend, verdict),
+    [blend, rootFen, setup, totalPvs, verdict],
   );
   const coachCacheKey = useMemo(
     () =>
@@ -1069,8 +1078,9 @@ function SetupRow({
         setup.weightedEvalCp ?? "mate-or-none",
         blend?.score ?? "no-blend",
         blend?.practical?.setup.games ?? "no-practical",
+        verdict.label,
       ].join("|"),
-    [blend, rootFen, setup],
+    [blend, rootFen, setup, verdict],
   );
 
   return (
@@ -1079,6 +1089,11 @@ function SetupRow({
         <Stack gap={4}>
           <Group gap="xs" wrap="wrap">
             <Badge variant="light">{setup.plans.length} plans</Badge>
+            <Tooltip label={verdict.detail} multiline w={320} withArrow>
+              <Badge color={verdict.color} variant="light">
+                {verdict.label}
+              </Badge>
+            </Tooltip>
             {setup.archetype && <Badge variant="filled">{setup.archetype}</Badge>}
             <Badge variant="outline">{setup.appearsInTopPv ? "PV1" : "Side PV"}</Badge>
           </Group>
@@ -1626,6 +1641,79 @@ function engineStrengthSortScore(target: EnginePlan | EnginePlanSetup) {
   );
 }
 
+function getEngineSetupVerdict(
+  setup: EnginePlanSetup,
+  totalPvs: number,
+  blend: EngineSetupBlend | null,
+): EngineSetupVerdict {
+  const inferredComponents = setup.plans.filter((plan) => plan.origin === "template").length;
+  const pvComponents = setup.plans.filter((plan) => plan.origin === "pv").length;
+  const rootComponents = setup.plans.filter((plan) => plan.origin === "root").length;
+  const supportLabel = `${setup.supportCount}/${totalPvs} PVs`;
+
+  if (setup.approval === "Weak" || blend?.engineUnsafe) {
+    return {
+      label: "Engine risk",
+      color: "yellow",
+      detail: [
+        "The engine evidence does not safely support this setup.",
+        `${supportLabel} support.`,
+        inferredComponents > 0 ? `${inferredComponents} template components.` : null,
+      ]
+        .filter((part): part is string => !!part)
+        .join(" "),
+    };
+  }
+
+  if (inferredComponents > 0) {
+    return {
+      label: "Template candidate",
+      color: setup.approval === "Strong" ? "blue" : "gray",
+      detail: [
+        "Some setup arrows are inferred from the named setup template rather than directly shown in engine PVs.",
+        `${pvComponents} PV-backed, ${rootComponents} already on board, ${inferredComponents} inferred.`,
+        `${supportLabel} support.`,
+      ].join(" "),
+    };
+  }
+
+  if (
+    blend?.practical &&
+    blend.practical.matchedComponents >= Math.max(3, Math.ceil(setup.plans.length * 0.67)) &&
+    setup.supportRatio >= 0.5
+  ) {
+    return {
+      label: "Verified setup",
+      color: "teal",
+      detail: [
+        "The setup is directly supported by engine PVs and has a tight practical database match.",
+        `${blend.practical.matchedComponents}/${setup.plans.length} components matched.`,
+        `${supportLabel} support.`,
+      ].join(" "),
+    };
+  }
+
+  if (setup.approval === "Strong" || setup.approval === "OK") {
+    return {
+      label: "Engine line",
+      color: setup.approval === "Strong" ? "teal" : "blue",
+      detail: [
+        "Engine PVs contain this setup pattern, but the full final setup still needs practical or deeper-line confirmation.",
+        `${supportLabel} support.`,
+      ].join(" "),
+    };
+  }
+
+  return {
+    label: "Needs check",
+    color: "gray",
+    detail: [
+      "The available engine evidence is not clear enough to recommend this as a setup.",
+      `${supportLabel} support.`,
+    ].join(" "),
+  };
+}
+
 function buildEngineSetupBlendBySignature(
   setups: EnginePlanSetup[],
   practicalSetups: PlanExplorerSetup[],
@@ -1739,14 +1827,15 @@ function findPracticalSetupMatch(
 
     const overlap = [...practicalComponents].filter((signature) => engineComponents.has(signature));
     const matchedComponents = overlap.length;
-    if (matchedComponents < 2) continue;
+    if (matchedComponents < 3) continue;
 
     const anchorMatches = overlap.filter(isSetupAnchorSignature).length;
     if (engineAnchors.length > 0 && anchorMatches === 0) continue;
+    if (!overlap.some(isSetupStructuralSignature)) continue;
 
     const rowShare = matchedComponents / Math.max(1, practicalComponents.size);
     const engineShare = matchedComponents / Math.max(1, engineComponents.size);
-    if (rowShare < 0.5 && engineShare < 0.34) continue;
+    if (rowShare < 0.6 || engineShare < 0.4) continue;
 
     const rankScore =
       matchedComponents * 100 +
@@ -1820,6 +1909,10 @@ function isSetupAnchorSignature(signature: string) {
     signature === "pawn_setup:black:b6" ||
     signature === "pawn_setup:black:g6"
   );
+}
+
+function isSetupStructuralSignature(signature: string) {
+  return signature.startsWith("pawn_setup:");
 }
 
 function getEngineSetupCpLoss(setup: EnginePlanSetup, settings: MoveStrengthSettings) {
@@ -2130,6 +2223,7 @@ function buildEngineSetupCoachRequest(
   rootFen: string,
   totalPvs: number,
   blend: EngineSetupBlend | null,
+  verdict: EngineSetupVerdict,
 ): PlanCoachInlineRequest {
   return {
     fen: rootFen,
@@ -2150,6 +2244,7 @@ function buildEngineSetupCoachRequest(
       `Position: ${sideToMoveLabel(rootFen)} to move`,
       `Color: ${setup.color}`,
       `Engine approval: ${setup.approval}`,
+      `Setup verdict: ${verdict.label}. ${verdict.detail}`,
       `Confidence: ${setup.confidence}`,
       `Support: ${setup.supportCount}/${totalPvs} PVs (${(setup.supportRatio * 100).toFixed(0)}%)`,
       `Top PV: ${setup.appearsInTopPv ? "yes" : "no"}`,

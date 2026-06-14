@@ -49,6 +49,7 @@ export type EnginePlanSignal = {
     role?: Role;
     routeSquares?: string[];
     routeSegments?: [string, string][];
+    origin?: "pv" | "root" | "template";
 };
 
 export type EnginePlan = EnginePlanSignal & {
@@ -120,7 +121,14 @@ export type EnginePlanMovePreview = {
 
 export type PlanExplorerEnginePlanMatch = {
     plan: EnginePlan;
-    match: "route" | "routePrefix" | "destination" | "pawnBreak" | "expansion" | "castling";
+    match:
+        | "route"
+        | "routePrefix"
+        | "destination"
+        | "pawnSetup"
+        | "pawnBreak"
+        | "expansion"
+        | "castling";
 };
 
 type PieceState = {
@@ -208,6 +216,7 @@ type EngineSetupTemplateComponent = {
     color: Color;
     role?: Role;
     routeSquares?: string[];
+    origin?: "template";
 };
 type EngineSetupTemplate = {
     id: string;
@@ -545,6 +554,7 @@ function extractRootSetupSignals(fen: string) {
                 color,
                 role: "pawn",
                 routeSquares: [square],
+                origin: "root",
             });
         }
 
@@ -563,6 +573,7 @@ function extractRootSetupSignals(fen: string) {
                     color,
                     role,
                     routeSquares: [square],
+                    origin: "root",
                 });
             }
         }
@@ -765,6 +776,13 @@ export function getPlanExplorerLineEnginePlan(
         );
         if (pawnBreakPlan) {
             return { plan: pawnBreakPlan, match: "pawnBreak" };
+        }
+
+        const pawnSetupPlan = report.plans.find(
+            (plan) => plan.signature === `pawn_setup:${color}:${lastSquare}`,
+        );
+        if (pawnSetupPlan) {
+            return { plan: pawnSetupPlan, match: "pawnSetup" };
         }
 
         const expansionPlan = strongestPlan(
@@ -1177,7 +1195,10 @@ function scoreSetup(
 ): EnginePlanSetup | null {
     if (plans.length < ENGINE_SETUP_MIN_PLANS) return null;
 
-    const support = scoreEngineEvidence(evidence, totalPvs, rootBestQuality, "setup");
+    const support = adjustSetupSupportForInferredComponents(
+        scoreEngineEvidence(evidence, totalPvs, rootBestQuality, "setup"),
+        plans,
+    );
     const archetype = forcedArchetype ?? setupArchetype(color, plans);
     return {
         signature: signatures.join("||"),
@@ -1186,6 +1207,40 @@ function scoreSetup(
         color,
         plans,
         ...support,
+    };
+}
+
+function adjustSetupSupportForInferredComponents(
+    support: ReturnType<typeof scoreEngineEvidence>,
+    plans: EnginePlan[],
+): ReturnType<typeof scoreEngineEvidence> {
+    const inferredComponents = plans.filter((plan) => plan.origin === "template").length;
+    if (inferredComponents === 0) return support;
+
+    const directPvComponents = plans.filter((plan) => plan.origin === "pv").length;
+    let approval = support.approval;
+    let confidence = support.confidence;
+
+    if (directPvComponents === 0) {
+        approval = "Unclear";
+    } else if (approval === "Strong" && directPvComponents < 2) {
+        approval = "OK";
+    }
+
+    if (confidence === "High" && directPvComponents < plans.length - inferredComponents) {
+        confidence = "Medium";
+    }
+    if (confidence === "High" && directPvComponents < 2) {
+        confidence = "Medium";
+    }
+
+    const inferredLabel =
+        inferredComponents === 1 ? "1 component is" : `${inferredComponents} components are`;
+    return {
+        ...support,
+        approval,
+        confidence,
+        explanation: `${support.explanation} ${inferredLabel} inferred from the setup template rather than directly shown in the engine PVs.`,
     };
 }
 
@@ -1249,7 +1304,7 @@ function scoreEngineEvidence(
         qualityEvidence.length !== evidence.length
     ) {
         approval = "Unclear";
-    } else if (appearsInTopPv && nearBest && supportRatio >= (subject === "setup" ? 0.3 : 0.5)) {
+    } else if (appearsInTopPv && nearBest && supportRatio >= 0.5) {
         approval = "Strong";
     } else if (supportRatio >= (subject === "setup" ? 0.5 : 0.6) && nearBest) {
         approval = "Strong";
@@ -1739,6 +1794,7 @@ function recordRootCastlingSignal(
             color,
             role: "king",
             routeSquares: [kingSideKing],
+            origin: "root",
         });
     }
     if (
@@ -1752,6 +1808,7 @@ function recordRootCastlingSignal(
             color,
             role: "king",
             routeSquares: [queenSideKing],
+            origin: "root",
         });
     }
 }
@@ -1769,6 +1826,7 @@ function setupPawnComponent(color: Color, from: string, to: string): EngineSetup
         color,
         role: "pawn",
         routeSquares: [from, to],
+        origin: "template",
     };
 }
 
@@ -1785,6 +1843,7 @@ function setupPieceComponent(
         color,
         role,
         routeSquares: [from, to],
+        origin: "template",
     };
 }
 
@@ -1801,6 +1860,7 @@ function setupCastlingComponent(
         color,
         role: "king",
         routeSquares: [`e${rank}`, kingTo],
+        origin: "template",
     };
 }
 
@@ -1978,7 +2038,7 @@ function toRole(value: string): Role | null {
 }
 
 function addSignal(signals: Map<string, EnginePlanSignal>, signal: EnginePlanSignal) {
-    signals.set(signal.signature, signal);
+    signals.set(signal.signature, { ...signal, origin: signal.origin ?? "pv" });
 }
 
 function isRoutePiece(role: Role) {

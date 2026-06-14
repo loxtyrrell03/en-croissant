@@ -2484,6 +2484,10 @@ fn setup_feature_path(path: &ObservedPiecePath) -> ObservedPiecePath {
         return path.clone();
     }
 
+    if path.piece.role != Role::Pawn {
+        return path.clone();
+    }
+
     ObservedPiecePath {
         piece: path.piece,
         squares: path.squares.iter().copied().take(2).collect(),
@@ -2647,6 +2651,10 @@ fn setup_support_priority(path: &ObservedPiecePath) -> i32 {
 
 fn is_valid_plan_setup_row(setup: &PlanExplorerSetup) -> bool {
     if !setup.plans.iter().any(is_setup_anchor_plan) {
+        return false;
+    }
+
+    if !setup.plans.iter().any(is_structural_setup_plan) {
         return false;
     }
 

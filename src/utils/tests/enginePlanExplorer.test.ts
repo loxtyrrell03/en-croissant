@@ -264,7 +264,8 @@ describe("Engine Plan Explorer", () => {
         const catalan = report.setups.find((setup) => setup.archetype === "Catalan");
         const bySignature = new Map(catalan?.plans.map((plan) => [plan.signature, plan]));
 
-        expect(catalan?.approval).toBe("Strong");
+        expect(catalan?.approval).toBe("OK");
+        expect(catalan?.explanation).toContain("inferred from the setup template");
         expect(bySignature.get("pawn_setup:white:g3")?.routeSquares).toEqual(["g2", "g3"]);
         expect(bySignature.get("piece_destination:white:bishop:g2")?.routeSquares).toEqual([
             "f1",
@@ -290,7 +291,8 @@ describe("Engine Plan Explorer", () => {
         const kid = report.setups.find((setup) => setup.archetype === "King's Indian");
         const bySignature = new Map(kid?.plans.map((plan) => [plan.signature, plan]));
 
-        expect(kid?.approval).toBe("Strong");
+        expect(kid?.approval).toBe("OK");
+        expect(kid?.explanation).toContain("inferred from the setup template");
         expect(bySignature.get("pawn_setup:black:g6")?.routeSquares).toEqual(["g7", "g6"]);
         expect(bySignature.get("piece_destination:black:bishop:g7")?.routeSquares).toEqual([
             "f8",
@@ -589,6 +591,38 @@ describe("Engine Plan Explorer", () => {
         expect(match?.match).toBe("pawnBreak");
         expect(match?.plan.approval).toBe("Strong");
         expect(match?.plan.supportCount).toBe(2);
+    });
+
+    test("matches database pawn setup lines to engine setup signals", () => {
+        const report = buildEnginePlanReport(
+            AFTER_D4_D5_FEN,
+            [
+                pv(1, ["g2g3", "g8f6", "f1g2"], 30),
+                pv(2, ["g2g3", "e7e6", "f1g2"], 20),
+                pv(3, ["c2c4", "g8f6"], 0),
+            ],
+            {
+                requestedMultipv: 3,
+                limitLabel: "Depth 12",
+            },
+        );
+
+        const match = getPlanExplorerLineEnginePlan(
+            {
+                color: "white",
+                role: "pawn",
+            },
+            {
+                ...emptyLine(),
+                squares: ["g2", "g3"],
+                games: 20,
+            },
+            report,
+        );
+
+        expect(match?.match).toBe("pawnSetup");
+        expect(match?.plan.signature).toBe("pawn_setup:white:g3");
+        expect(match?.plan.approval).toBe("Strong");
     });
 
     test("summarizes database plan groups with concise chess labels", () => {

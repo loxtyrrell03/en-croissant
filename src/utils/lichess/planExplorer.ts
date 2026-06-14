@@ -476,6 +476,10 @@ function setupFeaturePath(path: TrackedPath): TrackedPath {
         return clonePath(path);
     }
 
+    if (path.role !== "pawn") {
+        return clonePath(path);
+    }
+
     return {
         ...path,
         squares: path.squares.slice(0, 2),
@@ -738,6 +742,7 @@ function setupPlanOutputPriority(plan: PlanExplorerSetupPlan) {
 
 function isValidSetupRow(setup: PlanExplorerSetup) {
     if (!setup.plans.some(isSetupAnchorPlan)) return false;
+    if (!setup.plans.some(isStructuralSetupPlan)) return false;
     if (setup.plans.length >= PLAN_SETUP_MIN_PLANS) return true;
 
     return (

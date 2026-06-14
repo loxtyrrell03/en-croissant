@@ -2308,6 +2308,18 @@ from 2026-04-24 through 2026-05-03.
   before falling back to approval/support heuristics.
   Keep the fetch gated to Setups view with a saved Lichess token, and keep
   unmatched rows explicit as `No match` rather than inventing practical stats.
+- On 2026-06-15, setup rows were hardened so Plan Explorer and Engine Plans no
+  longer overstate loose setup evidence as a good setup. Engine setup signals
+  now remember whether each component was PV-backed, already present at the
+  root, or inferred from a named template; template-filled setups are labelled
+  as candidates and cannot receive the same confidence as fully PV-backed
+  setups. Plan Explorer Setups gained explicit verdict badges such as
+  `Observed setup`, `Loose match`, `Engine risk`, and `Verified setup`, and the
+  coach prompt receives the same verdict context. Local and online setup mining
+  now require a structural pawn component in addition to a development/castling
+  anchor, and non-pawn setup routes keep their real route instead of being
+  flattened to the first move. Treat `Verified setup` as the only UI label that
+  should imply a setup recommendation; other labels are evidence categories.
 
 ## Verification Expectations
 
