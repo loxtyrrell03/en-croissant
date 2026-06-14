@@ -2486,6 +2486,7 @@ fn setup_seed_priority(path: &ObservedPiecePath) -> i32 {
         Role::Pawn if same_file && is_fianchetto_pawn_seed(path) => 110,
         Role::Pawn if same_file && is_central_or_advanced_pawn_path(path) => 100,
         Role::Pawn if same_file => 72,
+        Role::Pawn => 40,
         Role::Knight | Role::Bishop => 86,
         Role::King if is_castling_path(path) => 82,
         Role::Queen | Role::Rook | Role::King => 40,
