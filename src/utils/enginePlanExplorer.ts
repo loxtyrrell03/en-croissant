@@ -65,8 +65,8 @@ export type EnginePlan = EnginePlanSignal & {
     bestQualityCp: number | null;
     averageQualityCp: number | null;
     weightedQualityCp: number | null;
-    bestRegretCp: number | null;
-    weightedRegretCp: number | null;
+    bestCpLoss: number | null;
+    weightedCpLoss: number | null;
 };
 
 export type EnginePlanSetup = {
@@ -88,8 +88,8 @@ export type EnginePlanSetup = {
     bestQualityCp: number | null;
     averageQualityCp: number | null;
     weightedQualityCp: number | null;
-    bestRegretCp: number | null;
-    weightedRegretCp: number | null;
+    bestCpLoss: number | null;
+    weightedCpLoss: number | null;
 };
 
 export type EnginePlanReport = {
@@ -1220,11 +1220,11 @@ function scoreEngineEvidence(
     const weightedQualityCp = weightedAverageCp(evidence, "qualityCp");
     const averageQualityCp = averageCp(evidence, "qualityCp");
     const bestQualityCp = bestSupportingQualityCp(evidence);
-    const bestRegretCp =
+    const bestCpLoss =
         rootBestQuality !== null && bestQualityCp !== null
             ? Math.max(0, rootBestQuality - bestQualityCp)
             : null;
-    const weightedRegretCp =
+    const weightedCpLoss =
         rootBestQuality !== null && weightedQualityCp !== null
             ? Math.max(0, rootBestQuality - weightedQualityCp)
             : null;
@@ -1282,8 +1282,8 @@ function scoreEngineEvidence(
         bestQualityCp,
         averageQualityCp,
         weightedQualityCp,
-        bestRegretCp,
-        weightedRegretCp,
+        bestCpLoss,
+        weightedCpLoss,
     };
 }
 

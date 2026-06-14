@@ -2292,9 +2292,11 @@ from 2026-04-24 through 2026-05-03.
   Stockfish support is tempered by practical WDL strength. The overlay preserves
   existing Lichess All ratings/speeds/date filters but deliberately clears any
   player-specific explorer filter so the score reflects the broad Lichess All
-  pool. Engine plan/setup rows also expose a compact `Regret` column based on
-  best/weighted CP regret versus the strongest root PV, and the setup blend uses
-  that regret when available before falling back to approval/support heuristics.
+  pool. Engine plan/setup rows expose a single `Engine Strength` column that
+  combines the approval badge, PV support count, and best/weighted CP-loss
+  context versus the strongest root PV; avoid splitting these into competing
+  strength columns. The setup blend uses that CP-loss context when available
+  before falling back to approval/support heuristics.
   Keep the fetch gated to Setups view with a saved Lichess token, and keep
   unmatched rows explicit as `No match` rather than inventing practical stats.
 

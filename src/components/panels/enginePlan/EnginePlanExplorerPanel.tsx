@@ -123,14 +123,7 @@ type ActiveRequest = {
 };
 
 type SortDirection = "asc" | "desc";
-type EnginePlanSortKey =
-  | "plan"
-  | "blend"
-  | "strength"
-  | "regret"
-  | "support"
-  | "eval"
-  | "confidence";
+type EnginePlanSortKey = "plan" | "blend" | "strength" | "eval" | "confidence";
 type EnginePlanSort = {
   key: EnginePlanSortKey;
   direction: SortDirection;
@@ -908,14 +901,8 @@ function PlansTable({
           <SortableEngineTh sortKey="plan" sort={sort} setSort={setSort}>
             Plan
           </SortableEngineTh>
-          <SortableEngineTh sortKey="strength" sort={sort} setSort={setSort} style={{ width: 118 }}>
-            PV Support
-          </SortableEngineTh>
-          <SortableEngineTh sortKey="regret" sort={sort} setSort={setSort} style={{ width: 104 }}>
-            Regret
-          </SortableEngineTh>
-          <SortableEngineTh sortKey="support" sort={sort} setSort={setSort} style={{ width: 110 }}>
-            Support
+          <SortableEngineTh sortKey="strength" sort={sort} setSort={setSort} style={{ width: 140 }}>
+            Engine Strength
           </SortableEngineTh>
           <SortableEngineTh sortKey="eval" sort={sort} setSort={setSort} style={{ width: 96 }}>
             Eval
@@ -996,14 +983,8 @@ function SetupsTable({
           <SortableEngineTh sortKey="blend" sort={sort} setSort={setSort} style={{ width: 122 }}>
             Blend
           </SortableEngineTh>
-          <SortableEngineTh sortKey="strength" sort={sort} setSort={setSort} style={{ width: 118 }}>
-            PV Support
-          </SortableEngineTh>
-          <SortableEngineTh sortKey="regret" sort={sort} setSort={setSort} style={{ width: 104 }}>
-            Regret
-          </SortableEngineTh>
-          <SortableEngineTh sortKey="support" sort={sort} setSort={setSort} style={{ width: 110 }}>
-            Support
+          <SortableEngineTh sortKey="strength" sort={sort} setSort={setSort} style={{ width: 140 }}>
+            Engine Strength
           </SortableEngineTh>
           <SortableEngineTh sortKey="eval" sort={sort} setSort={setSort} style={{ width: 96 }}>
             Eval
@@ -1152,20 +1133,7 @@ function SetupRow({
         />
       </Table.Td>
       <Table.Td>
-        <Badge color={approvalColor(setup.approval)} variant="light">
-          {setup.approval}
-        </Badge>
-      </Table.Td>
-      <Table.Td>
-        <EngineRegretCell target={setup} />
-      </Table.Td>
-      <Table.Td>
-        <Stack gap={0}>
-          <Text size="sm">{`${setup.supportCount}/${totalPvs}`}</Text>
-          <Text size="xs" c="dimmed">
-            {`${(setup.supportRatio * 100).toFixed(0)}%`}
-          </Text>
-        </Stack>
+        <EngineStrengthCell target={setup} totalPvs={totalPvs} />
       </Table.Td>
       <Table.Td>{formatEvalCp(setup.weightedEvalCp)}</Table.Td>
       <Table.Td>
@@ -1249,22 +1217,22 @@ function SetupBlendCell({
   );
 }
 
-function EngineRegretCell({ target }: { target: EnginePlan | EnginePlanSetup }) {
-  if (target.bestRegretCp === null && target.weightedRegretCp === null) {
-    return (
-      <Text size="xs" c="dimmed">
-        n/a
-      </Text>
-    );
-  }
-
-  const regretCp = target.bestRegretCp ?? target.weightedRegretCp ?? 0;
-  const label = formatEngineRegretCp(regretCp);
-  const severity = engineRegretSeverity(regretCp);
+function EngineStrengthCell({
+  target,
+  totalPvs,
+}: {
+  target: EnginePlan | EnginePlanSetup;
+  totalPvs: number;
+}) {
+  const cpLoss = target.bestCpLoss ?? target.weightedCpLoss;
+  const cpLossLabel = cpLoss === null ? "CP n/a" : `${formatEngineCpLoss(cpLoss)} loss`;
+  const supportLabel = `${target.supportCount}/${totalPvs} PVs`;
   const detail = [
-    `Regret ${label} versus the best root PV`,
-    target.weightedRegretCp !== null
-      ? `weighted support regret ${formatEngineRegretCp(target.weightedRegretCp)}`
+    `Engine strength: ${target.approval}`,
+    `PV support ${supportLabel} (${(target.supportRatio * 100).toFixed(0)}%)`,
+    cpLoss === null ? "CP loss unavailable" : `Best-line CP loss ${formatEngineCpLoss(cpLoss)}`,
+    target.weightedCpLoss !== null
+      ? `weighted CP loss ${formatEngineCpLoss(target.weightedCpLoss)}`
       : null,
     target.bestQualityCp !== null
       ? `best supporting quality ${Math.round(target.bestQualityCp)} cp`
@@ -1276,11 +1244,11 @@ function EngineRegretCell({ target }: { target: EnginePlan | EnginePlanSetup }) 
   return (
     <Tooltip label={detail} multiline w={280} withArrow>
       <Stack gap={2}>
-        <Badge color={engineRegretColor(severity)} variant="light">
-          {engineRegretLabel(severity)}
+        <Badge color={approvalColor(target.approval)} variant="light">
+          {target.approval}
         </Badge>
         <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
-          {label}
+          {`${cpLossLabel} - ${supportLabel}`}
         </Text>
       </Stack>
     </Tooltip>
@@ -1371,20 +1339,7 @@ function PlanRow({
         </Stack>
       </Table.Td>
       <Table.Td>
-        <Badge color={approvalColor(plan.approval)} variant="light">
-          {plan.approval}
-        </Badge>
-      </Table.Td>
-      <Table.Td>
-        <EngineRegretCell target={plan} />
-      </Table.Td>
-      <Table.Td>
-        <Stack gap={0}>
-          <Text size="sm">{`${plan.supportCount}/${totalPvs}`}</Text>
-          <Text size="xs" c="dimmed">
-            {`${(plan.supportRatio * 100).toFixed(0)}%`}
-          </Text>
-        </Stack>
+        <EngineStrengthCell target={plan} totalPvs={totalPvs} />
       </Table.Td>
       <Table.Td>{formatEvalCp(plan.weightedEvalCp)}</Table.Td>
       <Table.Td>
@@ -1571,15 +1526,7 @@ function sortEnginePlans(plans: EnginePlan[], sort: EnginePlanSort) {
         break;
       case "strength":
       case "blend":
-        diff =
-          engineApprovalScore(a.approval) - engineApprovalScore(b.approval) ||
-          a.supportCount - b.supportCount;
-        break;
-      case "regret":
-        diff = engineRegretSortScore(a) - engineRegretSortScore(b);
-        break;
-      case "support":
-        diff = a.supportCount - b.supportCount || a.supportRatio - b.supportRatio;
+        diff = engineStrengthSortScore(a) - engineStrengthSortScore(b);
         break;
       case "eval":
         diff = nullableEvalSortScore(a.weightedEvalCp) - nullableEvalSortScore(b.weightedEvalCp);
@@ -1612,21 +1559,13 @@ function sortEngineSetups(
         diff =
           (blendBySetupSignature.get(a.signature)?.score ?? -1) -
             (blendBySetupSignature.get(b.signature)?.score ?? -1) ||
-          engineApprovalScore(a.approval) - engineApprovalScore(b.approval) ||
-          a.supportCount - b.supportCount ||
+          engineStrengthSortScore(a) - engineStrengthSortScore(b) ||
           a.plans.length - b.plans.length;
         break;
       case "strength":
         diff =
-          engineApprovalScore(a.approval) - engineApprovalScore(b.approval) ||
-          a.supportCount - b.supportCount ||
+          engineStrengthSortScore(a) - engineStrengthSortScore(b) ||
           a.plans.length - b.plans.length;
-        break;
-      case "regret":
-        diff = engineRegretSortScore(a) - engineRegretSortScore(b);
-        break;
-      case "support":
-        diff = a.supportCount - b.supportCount || a.supportRatio - b.supportRatio;
         break;
       case "eval":
         diff = nullableEvalSortScore(a.weightedEvalCp) - nullableEvalSortScore(b.weightedEvalCp);
@@ -1643,7 +1582,7 @@ function sortEngineSetups(
 }
 
 function defaultEnginePlanSortDirection(key: EnginePlanSortKey): SortDirection {
-  return key === "plan" || key === "regret" ? "asc" : "desc";
+  return key === "plan" ? "asc" : "desc";
 }
 
 function engineApprovalScore(approval: EnginePlan["approval"]) {
@@ -1674,8 +1613,17 @@ function nullableEvalSortScore(value: number | null) {
   return value ?? Number.NEGATIVE_INFINITY;
 }
 
-function engineRegretSortScore(target: EnginePlan | EnginePlanSetup) {
-  return target.bestRegretCp ?? target.weightedRegretCp ?? Number.POSITIVE_INFINITY;
+function engineStrengthSortScore(target: EnginePlan | EnginePlanSetup) {
+  const cpLoss = target.bestCpLoss ?? target.weightedCpLoss;
+  const cpPenalty = cpLoss === null ? 500 : Math.min(500, Math.max(0, cpLoss));
+  return (
+    engineApprovalScore(target.approval) * 100_000 +
+    engineConfidenceScore(target.confidence) * 10_000 +
+    target.supportCount * 100 +
+    target.supportRatio * 10 +
+    (target.appearsInTopPv ? 50 : 0) -
+    cpPenalty
+  );
 }
 
 function buildEngineSetupBlendBySignature(
@@ -1875,17 +1823,17 @@ function isSetupAnchorSignature(signature: string) {
 }
 
 function getEngineSetupCpLoss(setup: EnginePlanSetup, settings: MoveStrengthSettings) {
-  const setupRegret = setup.bestRegretCp ?? setup.weightedRegretCp;
-  const planRegrets = setup.plans
-    .map((plan) => plan.bestRegretCp ?? plan.weightedRegretCp)
+  const setupCpLoss = setup.bestCpLoss ?? setup.weightedCpLoss;
+  const planCpLosses = setup.plans
+    .map((plan) => plan.bestCpLoss ?? plan.weightedCpLoss)
     .filter((value): value is number => value !== null);
 
-  if (setupRegret !== null) {
-    if (planRegrets.length === 0) return setupRegret;
+  if (setupCpLoss !== null) {
+    if (planCpLosses.length === 0) return setupCpLoss;
 
-    const average = planRegrets.reduce((sum, loss) => sum + loss, 0) / planRegrets.length;
-    const worst = Math.max(...planRegrets);
-    return setupRegret * 0.65 + average * 0.2 + worst * 0.15;
+    const average = planCpLosses.reduce((sum, loss) => sum + loss, 0) / planCpLosses.length;
+    const worst = Math.max(...planCpLosses);
+    return setupCpLoss * 0.65 + average * 0.2 + worst * 0.15;
   }
 
   const maxLoss = Math.max(1, settings.maxEngineCpLoss);
@@ -1898,8 +1846,8 @@ function getEngineSetupCpLoss(setup: EnginePlanSetup, settings: MoveStrengthSett
   });
   const planLosses = setup.plans.map(
     (plan) =>
-      plan.bestRegretCp ??
-      plan.weightedRegretCp ??
+      plan.bestCpLoss ??
+      plan.weightedCpLoss ??
       getEngineEvidenceCpLoss({
         approval: plan.approval,
         confidence: plan.confidence,
@@ -2009,8 +1957,8 @@ function formatEngineSetupBlendDetail({
   );
   parts.push(
     engineCpLoss === null
-      ? "No engine regret score"
-      : `${formatEngineRegretCp(engineCpLoss)} engine regret versus the strongest available PV`,
+      ? "No engine CP-loss score"
+      : `${formatEngineCpLoss(engineCpLoss)} engine CP loss versus the strongest available PV`,
   );
   parts.push(
     `Lichess All match ${practical.matchedComponents}/${practical.totalComponents} setup components (${practical.setup.games.toLocaleString()} games)`,
@@ -2052,42 +2000,7 @@ function formatSideName(side: "white" | "black") {
   return side === "white" ? "White" : "Black";
 }
 
-type EngineRegretSeverity = "best" | "playable" | "concession" | "dubious";
-
-function engineRegretSeverity(cp: number): EngineRegretSeverity {
-  if (cp <= 20) return "best";
-  if (cp <= 60) return "playable";
-  if (cp <= 120) return "concession";
-  return "dubious";
-}
-
-function engineRegretLabel(severity: EngineRegretSeverity) {
-  switch (severity) {
-    case "best":
-      return "Best";
-    case "playable":
-      return "Playable";
-    case "concession":
-      return "Concession";
-    case "dubious":
-      return "Dubious";
-  }
-}
-
-function engineRegretColor(severity: EngineRegretSeverity) {
-  switch (severity) {
-    case "best":
-      return "green";
-    case "playable":
-      return "blue";
-    case "concession":
-      return "orange";
-    case "dubious":
-      return "red";
-  }
-}
-
-function formatEngineRegretCp(value: number) {
+function formatEngineCpLoss(value: number) {
   return value <= 0 ? "0 cp" : `${Math.round(value)} cp`;
 }
 
@@ -2202,8 +2115,8 @@ function buildEnginePlanCoachRequest(
       `Confidence: ${plan.confidence}`,
       `Support: ${plan.supportCount}/${totalPvs} PVs (${(plan.supportRatio * 100).toFixed(0)}%)`,
       `Top PV: ${plan.appearsInTopPv ? "yes" : "no"}`,
-      `Best-line regret: ${formatNullableRegretCp(plan.bestRegretCp)}`,
-      `Weighted regret: ${formatNullableRegretCp(plan.weightedRegretCp)}`,
+      `Best-line CP loss: ${formatNullableEngineCpLoss(plan.bestCpLoss)}`,
+      `Weighted CP loss: ${formatNullableEngineCpLoss(plan.weightedCpLoss)}`,
       `Weighted eval: ${formatNullableEvalCp(plan.weightedEvalCp)}`,
       `Best supporting eval: ${formatNullableEvalCp(plan.bestEvalCp)}`,
       "Database stats: not present in this engine-only panel; use Plan Explorer rows for database WDL evidence.",
@@ -2240,8 +2153,8 @@ function buildEngineSetupCoachRequest(
       `Confidence: ${setup.confidence}`,
       `Support: ${setup.supportCount}/${totalPvs} PVs (${(setup.supportRatio * 100).toFixed(0)}%)`,
       `Top PV: ${setup.appearsInTopPv ? "yes" : "no"}`,
-      `Best-line regret: ${formatNullableRegretCp(setup.bestRegretCp)}`,
-      `Weighted regret: ${formatNullableRegretCp(setup.weightedRegretCp)}`,
+      `Best-line CP loss: ${formatNullableEngineCpLoss(setup.bestCpLoss)}`,
+      `Weighted CP loss: ${formatNullableEngineCpLoss(setup.weightedCpLoss)}`,
       `Weighted eval: ${formatNullableEvalCp(setup.weightedEvalCp)}`,
       `Best supporting eval: ${formatNullableEvalCp(setup.bestEvalCp)}`,
       `Setup size: ${setup.plans.length} component plans`,
@@ -2263,7 +2176,7 @@ function formatEnginePlanForCoach(plan: EnginePlan, totalPvs: number) {
     `approval ${plan.approval}`,
     `confidence ${plan.confidence}`,
     `support ${plan.supportCount}/${totalPvs} PVs`,
-    `regret ${formatNullableRegretCp(plan.bestRegretCp)}`,
+    `CP loss ${formatNullableEngineCpLoss(plan.bestCpLoss)}`,
     `weighted eval ${formatNullableEvalCp(plan.weightedEvalCp)}`,
     plan.explanation,
   ].join("; ");
@@ -2290,8 +2203,8 @@ function formatNullableEvalCp(value: number | null) {
   return value === null ? "unavailable" : formatEvalCp(value);
 }
 
-function formatNullableRegretCp(value: number | null) {
-  return value === null ? "unavailable" : formatEngineRegretCp(value);
+function formatNullableEngineCpLoss(value: number | null) {
+  return value === null ? "unavailable" : formatEngineCpLoss(value);
 }
 
 function sideToMoveLabel(fen: string) {

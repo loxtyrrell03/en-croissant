@@ -117,7 +117,7 @@ describe("Engine Plan Explorer", () => {
         expect(h4Break?.approval).toBe("Weak");
         expect(h4Break?.confidence).toBe("Low");
         expect(h4Break?.appearsInTopPv).toBe(false);
-        expect(h4Break?.bestRegretCp).toBe(280);
+        expect(h4Break?.bestCpLoss).toBe(280);
     });
 
     test("uses unclear when there are not enough PVs", () => {
@@ -326,7 +326,7 @@ describe("Engine Plan Explorer", () => {
         const be7 = report.plans.find(
             (plan) => plan.signature === "piece_destination:black:bishop:e7",
         );
-        expect(be7?.bestRegretCp).toBe(19);
+        expect(be7?.bestCpLoss).toBe(19);
     });
 
     test("shows London candidate arrows when Bf4 is engine-supported", () => {
