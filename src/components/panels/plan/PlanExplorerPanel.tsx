@@ -124,6 +124,7 @@ import { withLimitedRecordEntry } from "@/utils/boundedCache";
 import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveControls";
 import { MoveStrengthSettingsButton } from "../database/MoveStrengthSettingsButton";
 import NoDatabaseWarning from "../database/NoDatabaseWarning";
+import resultClasses from "../database/OpeningsTable.module.css";
 
 const MAX_ENGINE_STRENGTH_REPORT_CACHE_ENTRIES = 24;
 
@@ -2030,12 +2031,28 @@ function ResultBar({
 
   const first = perspective === "black" ? line.black : line.white;
   const third = perspective === "black" ? line.white : line.black;
+  const firstPercent = (first / total) * 100;
+  const drawPercent = (line.draw / total) * 100;
+  const thirdPercent = (third / total) * 100;
+  const showLabelThreshold = 10;
 
   return (
-    <Progress.Root size="sm">
-      <Progress.Section value={(first / total) * 100} color="gray.3" />
-      <Progress.Section value={(line.draw / total) * 100} color="gray" />
-      <Progress.Section value={(third / total) * 100} color="dark" />
+    <Progress.Root size="xl" className={resultClasses.result}>
+      <Progress.Section value={firstPercent} className={resultClasses.whiteResultsSection}>
+        <Progress.Label c="black">
+          {firstPercent > showLabelThreshold ? `${firstPercent.toFixed(1)}%` : ""}
+        </Progress.Label>
+      </Progress.Section>
+      <Progress.Section value={drawPercent} color="gray">
+        <Progress.Label>
+          {drawPercent > showLabelThreshold ? `${drawPercent.toFixed(1)}%` : ""}
+        </Progress.Label>
+      </Progress.Section>
+      <Progress.Section value={thirdPercent} color="black">
+        <Progress.Label>
+          {thirdPercent > showLabelThreshold ? `${thirdPercent.toFixed(1)}%` : ""}
+        </Progress.Label>
+      </Progress.Section>
     </Progress.Root>
   );
 }

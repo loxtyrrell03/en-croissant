@@ -2153,6 +2153,11 @@ from 2026-04-24 through 2026-05-03.
   family of arrows, so use this for human opening training when judging whether
   a coordinated piece/pawn setup performs well in the selected database rather
   than judging every route in isolation.
+- On 2026-06-14, Plan Explorer WDL result bars were aligned with the Database
+  move table design: larger segmented bars, the shared light/dark outline and
+  white-section styling, and readable in-bar percentage labels when a segment is
+  wide enough. Keep future plan/setup result summaries visually consistent with
+  Database rather than returning to unlabeled mini bars.
 
 ## Verification Expectations
 
