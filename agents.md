@@ -2194,6 +2194,16 @@ from 2026-04-24 through 2026-05-03.
   because those can change the nature of the setup even when the pawn structure
   matches. Merged database/online rows keep per-route game counts while the
   setup row count describes the whole compatible structure cluster.
+- A follow-up on 2026-06-14 made Engine Plans setups less PV-literal. Stockfish
+  PVs remain the evaluation source, but candidate setup families can now carry
+  the full human arrow group when the engine supports a setup-starting move.
+  This fixes cases such as `1.d4 Nf6 2.Nf3 e6 3.c4 d5`, where `g3` may be
+  engine-playable but the PV does not naturally continue with the tidy Catalan
+  `Bg2/O-O` setup inside the visible horizon. The current candidate catalog
+  covers Catalan, London, Colle, English fianchetto, King's Indian, Queen's
+  Indian, and Slav families; keep these engine-only by requiring root/PV
+  support for the setup skeleton and scoring from Stockfish evidence, not
+  database/WDL data.
 - A follow-up on 2026-06-14 added inline Coach explanations to database-backed
   Plan Explorer rows and engine-only Engine Plans rows. These explanations use
   the existing local AI CLI bridge through a dedicated `ask_plan_coach` command

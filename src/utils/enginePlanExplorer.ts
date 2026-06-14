@@ -191,6 +191,138 @@ type EngineSetupGroup = {
     slots: Map<string, string>;
     evidence: EnginePlanEvidence[];
 };
+type EngineSetupTemplateComponent = {
+    signature: string;
+    category: EnginePlanCategory;
+    label: string;
+    color: Color;
+    role?: Role;
+    routeSquares?: string[];
+};
+type EngineSetupTemplate = {
+    id: string;
+    archetype: string;
+    color: Color;
+    components: EngineSetupTemplateComponent[];
+    required: string[];
+    preferredEvidence: string[];
+};
+
+const ENGINE_SETUP_TEMPLATES: EngineSetupTemplate[] = [
+    {
+        id: "white-catalan",
+        archetype: "Catalan",
+        color: "white",
+        required: ["pawn_setup:white:d4", "pawn_setup:white:c4"],
+        preferredEvidence: [
+            "pawn_setup:white:g3",
+            "piece_destination:white:bishop:g2",
+            "castling:white:kingside",
+        ],
+        components: [
+            setupPawnComponent("white", "d2", "d4"),
+            setupPawnComponent("white", "c2", "c4"),
+            setupPieceComponent("white", "knight", "g1", "f3"),
+            setupPawnComponent("white", "g2", "g3"),
+            setupPieceComponent("white", "bishop", "f1", "g2"),
+            setupCastlingComponent("white", "kingside"),
+        ],
+    },
+    {
+        id: "white-london",
+        archetype: "London",
+        color: "white",
+        required: ["pawn_setup:white:d4"],
+        preferredEvidence: ["piece_destination:white:bishop:f4"],
+        components: [
+            setupPawnComponent("white", "d2", "d4"),
+            setupPieceComponent("white", "bishop", "c1", "f4"),
+            setupPieceComponent("white", "knight", "g1", "f3"),
+            setupPawnComponent("white", "e2", "e3"),
+            setupPawnComponent("white", "c2", "c3"),
+            setupCastlingComponent("white", "kingside"),
+        ],
+    },
+    {
+        id: "white-colle",
+        archetype: "Colle",
+        color: "white",
+        required: ["pawn_setup:white:d4"],
+        preferredEvidence: ["piece_destination:white:bishop:d3", "pawn_setup:white:e3"],
+        components: [
+            setupPawnComponent("white", "d2", "d4"),
+            setupPieceComponent("white", "knight", "g1", "f3"),
+            setupPawnComponent("white", "e2", "e3"),
+            setupPieceComponent("white", "bishop", "f1", "d3"),
+            setupPawnComponent("white", "c2", "c3"),
+            setupCastlingComponent("white", "kingside"),
+        ],
+    },
+    {
+        id: "white-english-fianchetto",
+        archetype: "English fianchetto",
+        color: "white",
+        required: ["pawn_setup:white:c4"],
+        preferredEvidence: ["pawn_setup:white:g3", "piece_destination:white:bishop:g2"],
+        components: [
+            setupPawnComponent("white", "c2", "c4"),
+            setupPawnComponent("white", "g2", "g3"),
+            setupPieceComponent("white", "bishop", "f1", "g2"),
+            setupPieceComponent("white", "knight", "b1", "c3"),
+            setupPieceComponent("white", "knight", "g1", "f3"),
+            setupCastlingComponent("white", "kingside"),
+        ],
+    },
+    {
+        id: "black-kings-indian",
+        archetype: "King's Indian",
+        color: "black",
+        required: ["piece_destination:black:knight:f6"],
+        preferredEvidence: [
+            "pawn_setup:black:g6",
+            "piece_destination:black:bishop:g7",
+            "pawn_setup:black:d6",
+            "castling:black:kingside",
+        ],
+        components: [
+            setupPieceComponent("black", "knight", "g8", "f6"),
+            setupPawnComponent("black", "g7", "g6"),
+            setupPieceComponent("black", "bishop", "f8", "g7"),
+            setupPawnComponent("black", "d7", "d6"),
+            setupCastlingComponent("black", "kingside"),
+        ],
+    },
+    {
+        id: "black-queens-indian",
+        archetype: "Queen's Indian",
+        color: "black",
+        required: ["piece_destination:black:knight:f6", "pawn_setup:black:e6"],
+        preferredEvidence: ["pawn_setup:black:b6", "piece_destination:black:bishop:b7"],
+        components: [
+            setupPieceComponent("black", "knight", "g8", "f6"),
+            setupPawnComponent("black", "e7", "e6"),
+            setupPawnComponent("black", "b7", "b6"),
+            setupPieceComponent("black", "bishop", "c8", "b7"),
+            setupPieceComponent("black", "bishop", "f8", "e7"),
+            setupCastlingComponent("black", "kingside"),
+        ],
+    },
+    {
+        id: "black-slav",
+        archetype: "Slav",
+        color: "black",
+        required: ["pawn_setup:black:d5"],
+        preferredEvidence: ["pawn_setup:black:c6", "piece_destination:black:bishop:f5"],
+        components: [
+            setupPawnComponent("black", "d7", "d5"),
+            setupPawnComponent("black", "c7", "c6"),
+            setupPieceComponent("black", "knight", "g8", "f6"),
+            setupPieceComponent("black", "bishop", "c8", "f5"),
+            setupPawnComponent("black", "e7", "e6"),
+            setupCastlingComponent("black", "kingside"),
+        ],
+    },
+];
 
 export function buildEnginePlanReport(
     fen: string,
@@ -229,6 +361,7 @@ export function buildEnginePlanReport(
         .map((group) => scorePlan(group, pvs.length, rootBestQuality))
         .sort(comparePlans);
     const setups = buildEnginePlanSetups(
+        fen,
         signalsByPv,
         rootSetupSignals,
         plans,
@@ -693,6 +826,7 @@ export function engineConfidenceScore(confidence: EnginePlanConfidence) {
 }
 
 function buildEnginePlanSetups(
+    fen: string,
     signalsByPv: Map<number, EnginePlanSignal[]>,
     rootSetupSignals: EnginePlanSignal[],
     plans: EnginePlan[],
@@ -760,7 +894,7 @@ function buildEnginePlanSetups(
         }
     }
 
-    return grouped
+    const pvSetups = grouped
         .map((group) => {
             const signatures = Array.from(group.signatures).sort((a, b) => a.localeCompare(b));
             const setupPlans = signatures
@@ -789,9 +923,159 @@ function buildEnginePlanSetups(
                 rootBestQuality,
             );
         })
-        .filter((setup): setup is EnginePlanSetup => !!setup)
+        .filter((setup): setup is EnginePlanSetup => !!setup);
+    const candidateSetups = buildCandidateEngineSetups(
+        fen,
+        rootSetupSignals,
+        plansBySignature,
+        pvs,
+        rootBestQuality,
+    );
+
+    return dedupeEngineSetups([...pvSetups, ...candidateSetups])
         .sort(compareSetups)
         .slice(0, ENGINE_SETUP_MAX_RESULTS);
+}
+
+function buildCandidateEngineSetups(
+    fen: string,
+    rootSetupSignals: EnginePlanSignal[],
+    plansBySignature: Map<string, EnginePlan>,
+    pvs: EnginePlanPv[],
+    rootBestQuality: number | null,
+) {
+    const [pos] = positionFromFen(fen);
+    if (!pos) return [];
+
+    const rootSignalsBySignature = new Map(
+        rootSetupSignals.map((signal) => [signal.signature, signal]),
+    );
+    const anchoredSignatures = new Set([
+        ...rootSignalsBySignature.keys(),
+        ...plansBySignature.keys(),
+    ]);
+    const candidates: EnginePlanSetup[] = [];
+    for (const template of ENGINE_SETUP_TEMPLATES) {
+        const signals = materializeSetupTemplateSignals(template, pos, rootSignalsBySignature);
+        if (signals.length < ENGINE_SETUP_MIN_PLANS) continue;
+
+        const signatures = sortedSignalSignatures(signals);
+        if (!template.required.every((signature) => anchoredSignatures.has(signature))) continue;
+
+        const evidence = collectTemplateEvidence(template, plansBySignature);
+        if (evidence.length === 0) continue;
+
+        const setupPlans = signals
+            .map((signal) => {
+                const plan = plansBySignature.get(signal.signature);
+                if (plan) return plan;
+
+                return scoreRootSetupAnchor(signal, evidence, pvs.length, rootBestQuality);
+            })
+            .sort(compareSetupPlans);
+        const setup = scoreSetup(
+            signatures,
+            template.color,
+            setupPlans,
+            evidence,
+            pvs.length,
+            rootBestQuality,
+            template.archetype,
+        );
+        if (setup) candidates.push(setup);
+    }
+
+    return candidates;
+}
+
+function materializeSetupTemplateSignals(
+    template: EngineSetupTemplate,
+    pos: NonNullable<ReturnType<typeof positionFromFen>[0]>,
+    rootSignalsBySignature: Map<string, EnginePlanSignal>,
+) {
+    const signals: EnginePlanSignal[] = [];
+    for (const component of template.components) {
+        const rootSignal = rootSignalsBySignature.get(component.signature);
+        if (rootSignal) {
+            signals.push(rootSignal);
+            continue;
+        }
+
+        if (setupTemplateComponentAvailable(component, pos)) {
+            signals.push(component);
+        }
+    }
+
+    return uniqueSetupSignals(signals);
+}
+
+function setupTemplateComponentAvailable(
+    component: EngineSetupTemplateComponent,
+    pos: NonNullable<ReturnType<typeof positionFromFen>[0]>,
+) {
+    const route = component.routeSquares;
+    const from = route?.[0];
+    const to = route?.at(-1);
+    if (!from || !to || !component.role) return false;
+
+    const destinationPiece = pieceAt(pos, to);
+    if (destinationPiece?.color === component.color && destinationPiece.role === component.role) {
+        return true;
+    }
+
+    const originPiece = pieceAt(pos, from);
+    if (originPiece?.color !== component.color || originPiece.role !== component.role) {
+        return false;
+    }
+
+    if (component.category === "castling") {
+        const rank = component.color === "white" ? "1" : "8";
+        const rook = pieceAt(pos, `h${rank}`);
+        return rook?.color === component.color && rook.role === "rook";
+    }
+
+    return true;
+}
+
+function collectTemplateEvidence(
+    template: EngineSetupTemplate,
+    plansBySignature: Map<string, EnginePlan>,
+) {
+    const preferred = collectEvidenceForSignatures(template.preferredEvidence, plansBySignature);
+    if (preferred.length > 0) return preferred;
+
+    return collectEvidenceForSignatures(
+        template.components.map((component) => component.signature),
+        plansBySignature,
+    );
+}
+
+function collectEvidenceForSignatures(
+    signatures: string[],
+    plansBySignature: Map<string, EnginePlan>,
+) {
+    const evidence = new Map<number, EnginePlanEvidence>();
+    for (const signature of signatures) {
+        const plan = plansBySignature.get(signature);
+        if (!plan) continue;
+
+        for (const line of plan.evidence) {
+            evidence.set(line.rank, line);
+        }
+    }
+
+    return Array.from(evidence.values()).sort((a, b) => a.rank - b.rank);
+}
+
+function dedupeEngineSetups(setups: EnginePlanSetup[]) {
+    const bySignature = new Map<string, EnginePlanSetup>();
+    for (const setup of setups) {
+        const existing = bySignature.get(setup.signature);
+        if (!existing || compareSetups(setup, existing) < 0) {
+            bySignature.set(setup.signature, setup);
+        }
+    }
+    return Array.from(bySignature.values());
 }
 
 function consolidateEngineSetupSignals(signals: EnginePlanSignal[]) {
@@ -893,11 +1177,12 @@ function scoreSetup(
     evidence: EnginePlanEvidence[],
     totalPvs: number,
     rootBestQuality: number | null,
+    forcedArchetype: string | null = null,
 ): EnginePlanSetup | null {
     if (plans.length < ENGINE_SETUP_MIN_PLANS) return null;
 
     const support = scoreEngineEvidence(evidence, totalPvs, rootBestQuality, "setup");
-    const archetype = setupArchetype(color, plans);
+    const archetype = forcedArchetype ?? setupArchetype(color, plans);
     return {
         signature: signatures.join("||"),
         label: setupLabel(color, plans, archetype),
@@ -1022,6 +1307,54 @@ function setupArchetype(color: Color, plans: EnginePlan[]) {
         (has("piece_destination:black:knight:f6") || has("castling:black:kingside"))
     ) {
         return "King's Indian";
+    }
+
+    if (
+        color === "white" &&
+        has("pawn_setup:white:d4") &&
+        has("piece_destination:white:bishop:f4") &&
+        has("piece_destination:white:knight:f3") &&
+        has("pawn_setup:white:e3")
+    ) {
+        return "London";
+    }
+
+    if (
+        color === "white" &&
+        has("pawn_setup:white:d4") &&
+        has("piece_destination:white:knight:f3") &&
+        has("pawn_setup:white:e3") &&
+        has("piece_destination:white:bishop:d3")
+    ) {
+        return "Colle";
+    }
+
+    if (
+        color === "white" &&
+        has("pawn_setup:white:c4") &&
+        (has("pawn_setup:white:g3") || has("piece_destination:white:bishop:g2")) &&
+        (has("piece_destination:white:knight:c3") || has("piece_destination:white:knight:f3"))
+    ) {
+        return "English fianchetto";
+    }
+
+    if (
+        color === "black" &&
+        has("piece_destination:black:knight:f6") &&
+        has("pawn_setup:black:e6") &&
+        has("pawn_setup:black:b6") &&
+        has("piece_destination:black:bishop:b7")
+    ) {
+        return "Queen's Indian";
+    }
+
+    if (
+        color === "black" &&
+        has("pawn_setup:black:d5") &&
+        has("pawn_setup:black:c6") &&
+        has("piece_destination:black:knight:f6")
+    ) {
+        return "Slav";
     }
 
     return null;
@@ -1407,6 +1740,49 @@ function recordRootCastlingSignal(
 function pieceAt(pos: NonNullable<ReturnType<typeof positionFromFen>[0]>, squareName: string) {
     const square = parseSquare(squareName);
     return square === undefined ? undefined : pos.board.get(square);
+}
+
+function setupPawnComponent(color: Color, from: string, to: string): EngineSetupTemplateComponent {
+    return {
+        signature: `pawn_setup:${color}:${to}`,
+        category: "pawnSetup",
+        label: `${capitalize(color)} plays ${formatPawnSetupSquare(color, to)} setup move`,
+        color,
+        role: "pawn",
+        routeSquares: [from, to],
+    };
+}
+
+function setupPieceComponent(
+    color: Color,
+    role: Role,
+    from: string,
+    to: string,
+): EngineSetupTemplateComponent {
+    return {
+        signature: `piece_destination:${color}:${role}:${to}`,
+        category: "pieceDestination",
+        label: `${capitalize(color)} ${role} reaches ${to}`,
+        color,
+        role,
+        routeSquares: [from, to],
+    };
+}
+
+function setupCastlingComponent(
+    color: Color,
+    side: "kingside" | "queenside",
+): EngineSetupTemplateComponent {
+    const rank = color === "white" ? "1" : "8";
+    const kingTo = side === "kingside" ? `g${rank}` : `c${rank}`;
+    return {
+        signature: `castling:${color}:${side}`,
+        category: "castling",
+        label: `${capitalize(color)} castles ${side}`,
+        color,
+        role: "king",
+        routeSquares: [`e${rank}`, kingTo],
+    };
 }
 
 function attacksEnemyPawn(
