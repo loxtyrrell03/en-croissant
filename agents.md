@@ -2154,7 +2154,10 @@ from 2026-04-24 through 2026-05-03.
   grid spacing and smaller status text, keeping the legal/manual controls
   space-efficient without looking crushed. In manual SAN mode, keep the
   Backspace/Clear/Submit footer outside the scroll area with a non-shrinking
-  row so the bottom buttons cannot be half-clipped by the panel edge.
+  row so the bottom buttons cannot be half-clipped by the panel edge. The
+  overall Blindfold play panel must be a bounded flex column with no fixed
+  minimum height on the move-entry area; otherwise the persistent Maia-move
+  banner can push the manual controls below the visible panel.
 - Also on 2026-06-15, unfinished Blindfold library entries became resumable
   instead of review-only. Saved games with `Result "*"` and a non-terminal
   mainline end now show `In progress` / `Resume`, reload to the mainline end,

@@ -769,7 +769,7 @@ export function BlindfoldGamePanel({
   }
 
   return (
-    <Stack h="100%" gap="sm">
+    <Stack h="100%" gap="sm" style={{ minHeight: 0, overflow: "hidden" }}>
       <Group justify="space-between" gap="xs" wrap="nowrap" align="flex-start">
         <Box style={{ minWidth: 0 }}>
           <Group gap={6} wrap="nowrap">
@@ -878,7 +878,7 @@ export function BlindfoldGamePanel({
 
       <Divider />
 
-      <Box style={{ flex: "1 1 26rem", minHeight: "22rem", overflow: "hidden" }}>
+      <Box style={{ flex: "1 1 0", minHeight: 0, overflow: "hidden" }}>
         <BlindfoldMovePanel
           fen={fen}
           gameState={gameState}
