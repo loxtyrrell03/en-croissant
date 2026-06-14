@@ -2227,6 +2227,15 @@ from 2026-04-24 through 2026-05-03.
   Indian, and Slav families; keep these engine-only by requiring root/PV
   support for the setup skeleton and scoring from Stockfish evidence, not
   database/WDL data.
+- A later 2026-06-14 Engine Plans template-evidence fix tightened that
+  candidate catalog: named template completions may still draw familiar setup
+  arrows, but their scored support must come from template-specific PV evidence
+  such as `g3/Bg2` for Catalan or `...g6/...Bg7` for King's Indian. Generic
+  shared components such as an already-developed `Nf6` knight or kingside
+  castling must not create or inflate named template support by themselves.
+  This prevents Catalan/QGD positions like
+  `1.d4 Nf6 2.c4 e6 3.Nf3 d5 4.g3` from showing a fake strongest black
+  King's Indian setup merely because normal engine PVs castle.
 - A follow-up on 2026-06-14 added inline Coach explanations to database-backed
   Plan Explorer rows and engine-only Engine Plans rows. These explanations use
   the existing local AI CLI bridge through a dedicated `ask_plan_coach` command

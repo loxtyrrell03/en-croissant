@@ -22,6 +22,8 @@ const BREAK_FEN = "rnbqkbnr/ppp1pppp/8/3p4/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const H_FILE_BREAK_FEN = "rnbqkbnr/pppppp1p/8/6p1/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const CASTLING_FEN = "r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1";
 const QUEENS_GAMBIT_NF3_FEN = "rnbqkb1r/ppp2ppp/4pn2/3p4/2PP4/5N2/PP2PPPP/RNBQKB1R w KQkq - 0 4";
+const CATALAN_BLACK_TO_MOVE_FEN =
+    "rnbqkb1r/ppp2ppp/4pn2/3p4/2PP4/5NP1/PP2PP1P/RNBQKB1R b KQkq - 0 4";
 const BLACK_FIANCHETTO_ROOT_FEN = "rnbqk2r/ppp1ppbp/3p1np1/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";
 const AFTER_D4_NF6_NF3_FEN = "rnbqkb1r/pppppppp/5n2/8/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 1 2";
 const AFTER_D4_D5_FEN = "rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 2";
@@ -295,6 +297,30 @@ describe("Engine Plan Explorer", () => {
         ]);
         expect(bySignature.get("pawn_setup:black:d6")?.routeSquares).toEqual(["d7", "d6"]);
         expect(bySignature.get("castling:black:kingside")?.routeSquares).toEqual(["e8", "g8"]);
+    });
+
+    test("does not promote King's Indian from generic Nf6 and castling evidence", () => {
+        const report = buildEnginePlanReport(
+            CATALAN_BLACK_TO_MOVE_FEN,
+            [
+                pv(1, ["d5c4", "f1g2", "f8b4", "c1d2", "e8g8"], 23),
+                pv(2, ["f8e7", "f1g2", "e8g8", "e1g1"], 42),
+                pv(3, ["b8c6", "f1g2", "f8d6", "e1g1", "e8g8"], 45),
+            ],
+            {
+                requestedMultipv: 3,
+                limitLabel: "Depth 18",
+            },
+        );
+
+        expect(
+            report.plans.some(
+                (plan) =>
+                    plan.signature === "pawn_setup:black:g6" ||
+                    plan.signature === "piece_destination:black:bishop:g7",
+            ),
+        ).toBe(false);
+        expect(report.setups.find((setup) => setup.archetype === "King's Indian")).toBeUndefined();
     });
 
     test("shows London candidate arrows when Bf4 is engine-supported", () => {

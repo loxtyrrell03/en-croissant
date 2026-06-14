@@ -205,6 +205,7 @@ type EngineSetupTemplate = {
     color: Color;
     components: EngineSetupTemplateComponent[];
     required: string[];
+    // Template candidates are scored only from these distinctive PV-backed signatures.
     preferredEvidence: string[];
 };
 
@@ -214,11 +215,7 @@ const ENGINE_SETUP_TEMPLATES: EngineSetupTemplate[] = [
         archetype: "Catalan",
         color: "white",
         required: ["pawn_setup:white:d4", "pawn_setup:white:c4"],
-        preferredEvidence: [
-            "pawn_setup:white:g3",
-            "piece_destination:white:bishop:g2",
-            "castling:white:kingside",
-        ],
+        preferredEvidence: ["pawn_setup:white:g3", "piece_destination:white:bishop:g2"],
         components: [
             setupPawnComponent("white", "d2", "d4"),
             setupPawnComponent("white", "c2", "c4"),
@@ -278,12 +275,7 @@ const ENGINE_SETUP_TEMPLATES: EngineSetupTemplate[] = [
         archetype: "King's Indian",
         color: "black",
         required: ["piece_destination:black:knight:f6"],
-        preferredEvidence: [
-            "pawn_setup:black:g6",
-            "piece_destination:black:bishop:g7",
-            "pawn_setup:black:d6",
-            "castling:black:kingside",
-        ],
+        preferredEvidence: ["pawn_setup:black:g6", "piece_destination:black:bishop:g7"],
         components: [
             setupPieceComponent("black", "knight", "g8", "f6"),
             setupPawnComponent("black", "g7", "g6"),
@@ -1041,13 +1033,7 @@ function collectTemplateEvidence(
     template: EngineSetupTemplate,
     plansBySignature: Map<string, EnginePlan>,
 ) {
-    const preferred = collectEvidenceForSignatures(template.preferredEvidence, plansBySignature);
-    if (preferred.length > 0) return preferred;
-
-    return collectEvidenceForSignatures(
-        template.components.map((component) => component.signature),
-        plansBySignature,
-    );
+    return collectEvidenceForSignatures(template.preferredEvidence, plansBySignature);
 }
 
 function collectEvidenceForSignatures(
