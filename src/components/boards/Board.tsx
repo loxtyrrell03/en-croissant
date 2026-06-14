@@ -1340,26 +1340,28 @@ function Board({
       }
     }
 
-    if (
-      showPlanExplorerArrows &&
-      currentTabSelected === "engine-plans" &&
-      activeEnginePlanExplorerData
-    ) {
-      nextShapes = nextShapes.concat(
-        planLinesToShapes(
-          getAutoPlanLines(activeEnginePlanExplorerData, planExplorerArrowLimit, {
-            minGames: 1,
-          }),
-          planExplorerArrowLimit,
-        ),
-      );
-    } else if (showPlanExplorerArrows && activePlanExplorerData) {
-      nextShapes = nextShapes.concat(
-        planLinesToShapes(
-          getAutoPlanLines(activePlanExplorerData, planExplorerArrowLimit),
-          planExplorerArrowLimit,
-        ),
-      );
+    if (!planExplorerPreviewLine) {
+      if (
+        showPlanExplorerArrows &&
+        currentTabSelected === "engine-plans" &&
+        activeEnginePlanExplorerData
+      ) {
+        nextShapes = nextShapes.concat(
+          planLinesToShapes(
+            getAutoPlanLines(activeEnginePlanExplorerData, planExplorerArrowLimit, {
+              minGames: 1,
+            }),
+            planExplorerArrowLimit,
+          ),
+        );
+      } else if (showPlanExplorerArrows && activePlanExplorerData) {
+        nextShapes = nextShapes.concat(
+          planLinesToShapes(
+            getAutoPlanLines(activePlanExplorerData, planExplorerArrowLimit),
+            planExplorerArrowLimit,
+          ),
+        );
+      }
     }
 
     if (planExplorerPreviewLine) {

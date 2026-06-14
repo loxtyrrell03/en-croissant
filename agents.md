@@ -2238,6 +2238,11 @@ from 2026-04-24 through 2026-05-03.
   route under the pointer before returning to the full setup family, and pinned
   plan arrows are temporarily hidden during hover previews so row changes remain
   visually obvious.
+- A follow-up hardened that setup-mode fix after the UI could still appear
+  unchanged: hover previews now suppress the normal automatic Plan Explorer
+  arrow set until hover leaves, streaming engine-strength refreshes no longer
+  clear the active hover preview, and a 45-second watchdog stops stale
+  Plan Explorer engine-strength requests that never emit a matching final PV.
 
 ## Verification Expectations
 

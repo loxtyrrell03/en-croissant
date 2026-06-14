@@ -131,6 +131,7 @@ import PlanCoachInline, { type PlanCoachInlineRequest } from "./PlanCoachInline"
 import resultClasses from "../database/OpeningsTable.module.css";
 
 const MAX_ENGINE_STRENGTH_REPORT_CACHE_ENTRIES = 24;
+const ENGINE_STRENGTH_WATCHDOG_MS = 45_000;
 
 type SideFilter = "all" | "white" | "black";
 type PlanExplorerSource = "local" | OnlinePlanExplorerSource;
@@ -202,6 +203,7 @@ function PlanExplorerPanel() {
   const [sort, setSort] = useState<PlanSort>({ key: "engine", direction: "desc" });
   const engineRequestRef = useRef<PlanExplorerEngineRequest | null>(null);
   const engineUnlistenRef = useRef<(() => void) | null>(null);
+  const engineWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const engineTokenRef = useRef(0);
   const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
     ?.accessToken;
@@ -223,6 +225,33 @@ function PlanExplorerPanel() {
     engineUnlistenRef.current?.();
     engineUnlistenRef.current = null;
   }, []);
+  const cleanupEngineWatchdog = useCallback(() => {
+    if (engineWatchdogRef.current) {
+      clearTimeout(engineWatchdogRef.current);
+      engineWatchdogRef.current = null;
+    }
+  }, []);
+  const startEngineWatchdog = useCallback(
+    (active: PlanExplorerEngineRequest) => {
+      cleanupEngineWatchdog();
+      engineWatchdogRef.current = setTimeout(() => {
+        const current = engineRequestRef.current;
+        if (!current || current.token !== active.token) return;
+
+        engineWatchdogRef.current = null;
+        engineRequestRef.current = null;
+        cleanupEngineListener();
+        setEngineStrengthState((state) => ({
+          ...state,
+          running: false,
+          activeRequestKey: null,
+          error: "Engine strength timed out before returning Plan Explorer PVs.",
+        }));
+        void stopEngine(current.engine, current.tab);
+      }, ENGINE_STRENGTH_WATCHDOG_MS);
+    },
+    [cleanupEngineListener, cleanupEngineWatchdog, setEngineStrengthState],
+  );
 
   useEffect(() => {
     if (localEngines.length === 0) {
@@ -432,6 +461,7 @@ function PlanExplorerPanel() {
           }));
           engineRequestRef.current = null;
           cleanupEngineListener();
+          cleanupEngineWatchdog();
         }
         return;
       }
@@ -460,9 +490,12 @@ function PlanExplorerPanel() {
       if (nextClampedProgress >= 100) {
         engineRequestRef.current = null;
         cleanupEngineListener();
+        cleanupEngineWatchdog();
+      } else {
+        startEngineWatchdog(active);
       }
     },
-    [cleanupEngineListener, setEngineStrengthState],
+    [cleanupEngineListener, cleanupEngineWatchdog, setEngineStrengthState, startEngineWatchdog],
   );
 
   const runEngineStrength = useCallback(
@@ -512,6 +545,7 @@ function PlanExplorerPanel() {
         error: null,
         activeRequestKey: engineStrengthCacheKey,
       }));
+      startEngineWatchdog(active);
 
       let unlisten: () => void;
       try {
@@ -580,6 +614,7 @@ function PlanExplorerPanel() {
       planData,
       selectedEngine,
       setEngineStrengthState,
+      startEngineWatchdog,
     ],
   );
 
@@ -587,6 +622,7 @@ function PlanExplorerPanel() {
     const active = engineRequestRef.current;
     engineRequestRef.current = null;
     cleanupEngineListener();
+    cleanupEngineWatchdog();
     setEngineStrengthState((current) => ({
       ...current,
       running: false,
@@ -595,7 +631,7 @@ function PlanExplorerPanel() {
     if (active) {
       void stopEngine(active.engine, active.tab);
     }
-  }, [cleanupEngineListener, setEngineStrengthState]);
+  }, [cleanupEngineListener, cleanupEngineWatchdog, setEngineStrengthState]);
 
   useEffect(() => {
     if (!engineStrengthEnabled) {
@@ -653,8 +689,7 @@ function PlanExplorerPanel() {
 
   useEffect(() => {
     setPlanExplorerData(sortedVisiblePlanData);
-    setPreviewLine(null);
-  }, [setPlanExplorerData, setPreviewLine, sortedVisiblePlanData]);
+  }, [setPlanExplorerData, sortedVisiblePlanData]);
 
   const drawLine = useCallback(
     (line: ColoredPlanExplorerLine) => {
