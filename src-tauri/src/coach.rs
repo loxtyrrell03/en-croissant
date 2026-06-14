@@ -37,6 +37,7 @@ use crate::{
 const DEFAULT_STOCKFISH_DEPTH: u32 = 17;
 const DEFAULT_COACH_MODEL: &str = "gemini-3.1-pro-preview";
 const DEFAULT_PLANNER_MODEL: &str = "gemini-3.5-flash";
+const DEFAULT_PLAN_COACH_MODEL: &str = DEFAULT_PLANNER_MODEL;
 const MAX_PLANNER_STOCKFISH_REQUESTS: usize = 6;
 const MAX_CHESS_FACT_TOOL_CALLS: usize = 10;
 const MAX_WHOLE_GAME_CRITICAL_REQUESTS: usize = 3;
@@ -44,6 +45,9 @@ const PLANNER_TIMEOUT_SECS: u64 = 25;
 const MAX_PROMPT_PGN_CHARS: usize = 12_000;
 const MAX_CHAT_MESSAGE_CHARS: usize = 2_000;
 const MAX_REFERENCE_CONTEXT_ITEMS: usize = 120;
+const MAX_PLAN_COACH_ITEMS: usize = 48;
+const MAX_PLAN_COACH_ITEM_CHARS: usize = 900;
+const MAX_PLAN_COACH_SUMMARY_CHARS: usize = 1_600;
 const MAX_GEMINI_ERROR_CHARS: usize = 1_200;
 const OPENING_PHASE_MAX_PLY: u32 = 30;
 const CONVERSION_PHASE_WINDOW_PLIES: u32 = 40;
@@ -227,6 +231,55 @@ pub struct AiCoachResponse {
     pub used_existing_analysis: bool,
     pub stockfish_lines: Vec<CoachEngineLine>,
     pub targeted_results: Vec<CoachTargetedResult>,
+}
+
+#[derive(Debug, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct PlanCoachRequest {
+    pub fen: String,
+    pub side_to_move: String,
+    pub surface: String,
+    pub subject_kind: String,
+    pub title: String,
+    pub summary: String,
+    #[serde(default)]
+    pub plan_lines: Vec<String>,
+    #[serde(default)]
+    pub stats: Vec<String>,
+    #[serde(default)]
+    pub evidence: Vec<String>,
+    pub settings: PlanCoachSettings,
+}
+
+#[derive(Debug, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct PlanCoachSettings {
+    pub enabled: bool,
+    pub gemini_command: String,
+    #[serde(default)]
+    pub gemini_model: String,
+    pub timeout_secs: u32,
+}
+
+#[derive(Debug, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct PlanCoachResponse {
+    pub answer: String,
+    pub model: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct PlanCoachPromptContext {
+    fen: String,
+    side_to_move: String,
+    surface: String,
+    subject_kind: String,
+    title: String,
+    summary: String,
+    plan_lines: Vec<String>,
+    stats: Vec<String>,
+    evidence: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Type)]
@@ -596,6 +649,100 @@ pub async fn ask_ai_coach(
     }
 
     result
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn ask_plan_coach(request: PlanCoachRequest) -> Result<PlanCoachResponse, CoachError> {
+    if !request.settings.enabled {
+        return Err(CoachError::Disabled);
+    }
+
+    let model = normalize_plan_coach_model(&request.settings.gemini_model);
+    let timeout_secs = u64::from(request.settings.timeout_secs.max(30));
+    let prompt = build_plan_coach_prompt(&request)?;
+    let answer = run_gemini_cli(
+        &request.settings.gemini_command,
+        &model,
+        &prompt,
+        timeout_secs,
+    )
+    .await?;
+
+    Ok(PlanCoachResponse { answer, model })
+}
+
+fn normalize_plan_coach_model(model: &str) -> String {
+    let model = model.trim();
+    if model.is_empty() || model.to_ascii_lowercase().contains("pro") {
+        DEFAULT_PLAN_COACH_MODEL.to_string()
+    } else {
+        model.to_string()
+    }
+}
+
+fn build_plan_coach_prompt(request: &PlanCoachRequest) -> Result<String, CoachError> {
+    let context = PlanCoachPromptContext {
+        fen: truncate_plan_coach_text(&request.fen, MAX_PLAN_COACH_ITEM_CHARS),
+        side_to_move: truncate_plan_coach_text(&request.side_to_move, 40),
+        surface: truncate_plan_coach_text(&request.surface, 80),
+        subject_kind: truncate_plan_coach_text(&request.subject_kind, 40),
+        title: truncate_plan_coach_text(&request.title, 160),
+        summary: truncate_plan_coach_text(&request.summary, MAX_PLAN_COACH_SUMMARY_CHARS),
+        plan_lines: sanitize_plan_coach_items(&request.plan_lines),
+        stats: sanitize_plan_coach_items(&request.stats),
+        evidence: sanitize_plan_coach_items(&request.evidence),
+    };
+    let context_json = serde_json::to_string_pretty(&context)?;
+
+    Ok(format!(
+        r#"Role: You are a concise chess coach explaining one plan or setup from En Croissant.
+
+{COACH_STYLE_GUIDE}
+
+Task:
+- Explain what this {subject_kind} is trying to achieve in the exact FEN.
+- Give context about the pawn structure, piece placement, side to move, and likely phase when it is visible from the supplied facts.
+- Explain how to proceed: which piece moves, pawn breaks, trades, or opponent resources matter next.
+- Name familiar structures or setups when they genuinely fit the supplied facts, such as a King's Indian setup, Hedgehog setup, fianchetto setup, minority attack, IQP play, Maroczy Bind, Stonewall, Carlsbad structure, or hanging pawns.
+- Do not force a named setup. If the evidence is only a loose resemblance, phrase it as "this has some ... features" or explain without a label.
+- Use the supplied engine, blended-strength, and database evidence when it changes confidence or practical choice.
+- Never invent a concrete eval, database result, route, or continuation that is not present in the context JSON.
+- If evidence is missing or thin, say that plainly and keep the advice provisional.
+- Write 2-4 short paragraphs or compact bullets. No markdown table. No tool/protocol talk.
+
+Context JSON:
+```json
+{context_json}
+```
+"#,
+        subject_kind = context.subject_kind,
+    ))
+}
+
+fn sanitize_plan_coach_items(items: &[String]) -> Vec<String> {
+    items
+        .iter()
+        .filter_map(|item| {
+            let trimmed = item.trim();
+            (!trimmed.is_empty())
+                .then(|| truncate_plan_coach_text(trimmed, MAX_PLAN_COACH_ITEM_CHARS))
+        })
+        .take(MAX_PLAN_COACH_ITEMS)
+        .collect()
+}
+
+fn truncate_plan_coach_text(value: &str, max_chars: usize) -> String {
+    if value.chars().count() <= max_chars {
+        return value.to_string();
+    }
+
+    let mut truncated = value
+        .chars()
+        .take(max_chars.saturating_sub(3))
+        .collect::<String>();
+    truncated.push_str("...");
+    truncated
 }
 
 async fn ask_ai_coach_inner(

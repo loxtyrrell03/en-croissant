@@ -141,6 +141,14 @@ async askAiCoach(request: AiCoachRequest) : Promise<Result<AiCoachResponse, stri
     else return { status: "error", error: e  as any };
 }
 },
+async askPlanCoach(request: PlanCoachRequest) : Promise<Result<PlanCoachResponse, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("ask_plan_coach", { request }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async memorySize() : Promise<number> {
     return await TAURI_INVOKE("memory_size");
 },
@@ -743,6 +751,9 @@ export type OpeningHealthPlayerPositionsRequest = { playerDb: string; playerId: 
 export type OutOpening = { name: string; fen: string }
 export type Outcome = "1-0" | "0-1" | "1/2-1/2" | "*"
 export type PgnSplitReport = { created: number; targetDir: string }
+export type PlanCoachRequest = { fen: string; sideToMove: string; surface: string; subjectKind: string; title: string; summary: string; planLines?: string[]; stats?: string[]; evidence?: string[]; settings: PlanCoachSettings }
+export type PlanCoachResponse = { answer: string; model: string }
+export type PlanCoachSettings = { enabled: boolean; geminiCommand: string; geminiModel?: string; timeoutSecs: number }
 export type PlanExplorerData = { fen: string; total_games: number; sampled_games: number; max_plies: number; pieces: PlanExplorerPiece[]; setups: PlanExplorerSetup[] }
 export type PlanExplorerLine = { squares: string[]; san: string[]; uci: string[]; games: number; white: number; draw: number; black: number }
 export type PlanExplorerPiece = { color: string; role: string; from: string; total: number; lines: PlanExplorerLine[] }

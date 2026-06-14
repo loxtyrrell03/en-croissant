@@ -42,7 +42,7 @@ use crate::chess::{
     scan_mistake_review, score_mistake_review_move, set_mistake_review_scan_paused, stop_engine,
     stop_interactive_engines, stop_matching_engine, MistakeReviewScanProgress,
 };
-use crate::coach::ask_ai_coach;
+use crate::coach::{ask_ai_coach, ask_plan_coach};
 use crate::db::{
     cancel_database_search, clear_games, convert_pgn, create_indexes, delete_database,
     delete_db_game, delete_empty_games, delete_indexes, export_to_pgn, find_repertoire_gaps,
@@ -159,6 +159,7 @@ fn main() {
             kill_engines,
             get_engine_logs,
             ask_ai_coach,
+            ask_plan_coach,
             memory_size,
             get_puzzle,
             get_puzzle_progress,

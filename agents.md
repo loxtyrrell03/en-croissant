@@ -2168,6 +2168,18 @@ from 2026-04-24 through 2026-05-03.
   Indian configuration. Hovering an engine setup row should preview the full
   setup arrow family, while drawing the setup should add the same family to the
   board.
+- A follow-up on 2026-06-14 added inline Coach explanations to database-backed
+  Plan Explorer rows and engine-only Engine Plans rows. These explanations use
+  the existing local AI CLI bridge through a dedicated `ask_plan_coach` command
+  and intentionally default to the fast `gemini-3.5-flash` model rather than
+  the full Coach's Pro model. Row requests must include the available evidence:
+  route/setup summaries, database WDL and blended strength where available,
+  engine approval/support/eval/PV evidence where available, and an explicit
+  note when database stats are not present in the engine-only panel. The coach
+  should name real chess structures such as King's Indian, Hedgehog,
+  fianchetto, IQP, Carlsbad, or Maroczy Bind only when the supplied position
+  and route evidence justify that label; otherwise it should explain the plan
+  without forcing a named setup.
 
 ## Verification Expectations
 

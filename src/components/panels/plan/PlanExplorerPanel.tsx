@@ -81,6 +81,8 @@ import {
 import {
   buildEnginePlanReport,
   enginePlanStrengthScore,
+  formatEvalCp,
+  formatScoreValue,
   getPlanExplorerLineEnginePlan,
   type EnginePlan,
   type EnginePlanReport,
@@ -122,8 +124,10 @@ import {
 } from "@/utils/moveStrength";
 import { withLimitedRecordEntry } from "@/utils/boundedCache";
 import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveControls";
+import type { LocalOptions } from "../database/DatabasePanel";
 import { MoveStrengthSettingsButton } from "../database/MoveStrengthSettingsButton";
 import NoDatabaseWarning from "../database/NoDatabaseWarning";
+import PlanCoachInline, { type PlanCoachInlineRequest } from "./PlanCoachInline";
 import resultClasses from "../database/OpeningsTable.module.css";
 
 const MAX_ENGINE_STRENGTH_REPORT_CACHE_ENTRIES = 24;
@@ -358,6 +362,15 @@ function PlanExplorerPanel() {
     };
   }, [planData, sideFilter]);
   const resultPerspective = isLocalSource ? getLocalResultPerspective(localOptions) : null;
+  const coachSourceLabel = useMemo(
+    () =>
+      planExplorerCoachSourceLabel({
+        source,
+        referenceDatabase,
+        localOptions,
+      }),
+    [localOptions, referenceDatabase, source],
+  );
   const planStrengthByKey = useMemo(
     () =>
       buildPlanStrengthByKey(
@@ -717,6 +730,10 @@ function PlanExplorerPanel() {
                     <PieceRow
                       key={`${piece.color}-${piece.role}-${piece.from}`}
                       piece={piece}
+                      fen={debouncedFen}
+                      sourceLabel={coachSourceLabel}
+                      totalGames={planData?.total_games ?? 0}
+                      sampledGames={planData?.sampled_games ?? 0}
                       drawLine={drawLine}
                       previewLine={setPreviewLine}
                       engineStrengthEnabled={engineStrengthEnabled}
@@ -779,6 +796,10 @@ function PlanExplorerPanel() {
                     <SetupRow
                       key={planSetupKey(setup)}
                       setup={setup}
+                      fen={debouncedFen}
+                      sourceLabel={coachSourceLabel}
+                      totalGames={planData?.total_games ?? 0}
+                      sampledGames={planData?.sampled_games ?? 0}
                       drawLines={drawLines}
                       previewLine={setPreviewLine}
                       engineStrengthEnabled={engineStrengthEnabled}
@@ -786,7 +807,6 @@ function PlanExplorerPanel() {
                       engineRunning={engineStrengthState.running}
                       resultPerspective={resultPerspective}
                       sideFilter={sideFilter}
-                      fen={debouncedFen}
                       strength={setupStrengthByKey.get(planSetupKey(setup))}
                     />
                   ))
@@ -1701,6 +1721,263 @@ function setupTitle(setup: PlanExplorerSetup) {
   return `${side}setup (${setup.plans.length} plans)`;
 }
 
+function buildPiecePlanCoachRequest({
+  piece,
+  fen,
+  sourceLabel,
+  totalGames,
+  sampledGames,
+  resultPerspective,
+  strength,
+  engineStrengthEnabled,
+  engineReport,
+  engineRunning,
+  engineMatch,
+}: {
+  piece: PlanExplorerPiece;
+  fen: string;
+  sourceLabel: string;
+  totalGames: number;
+  sampledGames: number;
+  resultPerspective: DatabaseResultPerspective | null;
+  strength: PlanStrength | null;
+  engineStrengthEnabled: boolean;
+  engineReport: EnginePlanReport | null;
+  engineRunning: boolean;
+  engineMatch: PlanExplorerEnginePlanMatch | null;
+}): PlanCoachInlineRequest {
+  const perspective = resultPerspective ?? toResultSide(piece.color);
+  const title = `${capitalize(piece.color)} ${piece.role} plan from ${piece.from}`;
+  const planLines = piece.lines.slice(0, 6).map((line, index) => {
+    const match = engineStrengthEnabled
+      ? getPlanExplorerLineEnginePlan(piece, line, engineReport)
+      : null;
+    return [
+      `${index + 1}. ${formatPlanPieceRoute(piece, line)}`,
+      `${formatNumber(line.games)} games`,
+      formatPlanCoachResult(line, perspective),
+      match ? formatEngineMatchForCoach(match, engineReport) : null,
+    ]
+      .filter((part): part is string => !!part)
+      .join("; ");
+  });
+
+  return {
+    fen,
+    sideToMove: sideToMoveLabel(fen),
+    surface: "Plan Explorer",
+    subjectKind: "plan",
+    title,
+    summary: `${summaryWithNamedSetupCue(summarizePlanPiece(piece))} Explain the route family as a practical plan for ${piece.color}.`,
+    planLines,
+    stats: [
+      `Source: ${sourceLabel}`,
+      `Position: ${sideToMoveLabel(fen)} to move`,
+      `Matches: ${formatPlanCoachMatchCount(totalGames, sampledGames)}`,
+      `Piece route games: ${formatNumber(piece.total)}`,
+      `Result perspective: ${capitalize(perspective)}`,
+      strength
+        ? `Blended strength: ${strength.label}. ${strength.detail}`
+        : "Blended strength: unavailable",
+      formatPlanCoachEngineStatus(engineStrengthEnabled, engineRunning, engineReport),
+      engineMatch
+        ? `Best engine match: ${formatEngineMatchForCoach(engineMatch, engineReport)}`
+        : null,
+    ].filter((item): item is string => !!item),
+    evidence: [
+      ...piece.lines
+        .slice(0, 4)
+        .map(
+          (line) =>
+            `Database route ${formatPlanPieceRoute(piece, line)}: ${formatPlanCoachResult(line, perspective)} from ${formatNumber(line.games)} games.`,
+        ),
+      ...(engineMatch ? formatEnginePlanEvidenceForCoach(engineMatch.plan) : []),
+    ],
+  };
+}
+
+function buildSetupPlanCoachRequest({
+  setup,
+  fen,
+  sourceLabel,
+  totalGames,
+  sampledGames,
+  perspective,
+  strength,
+  engineStrengthEnabled,
+  engineReport,
+  engineRunning,
+  engineMatches,
+}: {
+  setup: PlanExplorerSetup;
+  fen: string;
+  sourceLabel: string;
+  totalGames: number;
+  sampledGames: number;
+  perspective: DatabaseResultPerspective;
+  strength: PlanStrength | null;
+  engineStrengthEnabled: boolean;
+  engineReport: EnginePlanReport | null;
+  engineRunning: boolean;
+  engineMatches: PlanExplorerEnginePlanMatch[];
+}): PlanCoachInlineRequest {
+  const title = setupTitle(setup);
+  const setupRoutes = setup.plans.map((plan) => formatPlanPieceRoute(plan, plan.line));
+  const strongestMatch = engineMatches
+    .slice()
+    .sort((a, b) => enginePlanStrengthScore(b.plan) - enginePlanStrengthScore(a.plan))[0];
+
+  return {
+    fen,
+    sideToMove: sideToMoveLabel(fen),
+    surface: "Plan Explorer",
+    subjectKind: "setup",
+    title,
+    summary: `${title}: coordinated routes ${setupRoutes.join(", ")}. Consider whether this matches a named chess setup or structure, but only name one when the routes and position justify it.`,
+    planLines: setup.plans.slice(0, 8).map((plan, index) => {
+      const match = engineStrengthEnabled
+        ? getPlanExplorerLineEnginePlan(plan, plan.line, engineReport)
+        : null;
+      return [
+        `${index + 1}. ${capitalize(plan.color)} ${plan.role} from ${plan.from}: ${formatPlanPieceRoute(plan, plan.line)}`,
+        `${formatNumber(plan.line.games)} games`,
+        formatPlanCoachResult(plan.line, perspective),
+        match ? formatEngineMatchForCoach(match, engineReport) : null,
+      ]
+        .filter((part): part is string => !!part)
+        .join("; ");
+    }),
+    stats: [
+      `Source: ${sourceLabel}`,
+      `Position: ${sideToMoveLabel(fen)} to move`,
+      `Matches: ${formatPlanCoachMatchCount(totalGames, sampledGames)}`,
+      `Setup games: ${formatNumber(setup.games)}`,
+      `Setup result: ${formatPlanCoachResult(setup, perspective)}`,
+      `Result perspective: ${capitalize(perspective)}`,
+      strength
+        ? `Blended strength: ${strength.label}. ${strength.detail}`
+        : "Blended strength: unavailable",
+      formatPlanCoachEngineStatus(engineStrengthEnabled, engineRunning, engineReport),
+      engineStrengthEnabled
+        ? `Engine coverage: ${engineMatches.length}/${setup.plans.length} routes matched engine plans.`
+        : null,
+      strongestMatch
+        ? `Strongest engine match: ${formatEngineMatchForCoach(strongestMatch, engineReport)}`
+        : null,
+    ].filter((item): item is string => !!item),
+    evidence: [
+      ...setup.plans
+        .slice(0, 6)
+        .map(
+          (plan) =>
+            `Database setup route ${capitalize(plan.color)} ${plan.role} ${plan.from}: ${formatPlanPieceRoute(plan, plan.line)}; ${formatPlanCoachResult(plan.line, perspective)} from ${formatNumber(plan.line.games)} games.`,
+        ),
+      ...engineMatches.flatMap((match) => formatEnginePlanEvidenceForCoach(match.plan).slice(0, 2)),
+    ],
+  };
+}
+
+function planExplorerCoachSourceLabel({
+  source,
+  referenceDatabase,
+  localOptions,
+}: {
+  source: PlanExplorerSource;
+  referenceDatabase: string | null;
+  localOptions: LocalOptions;
+}) {
+  if (source === "lch_all") return "Lichess All explorer";
+  if (source === "lch_master") return "Lichess Masters explorer";
+
+  const filters = [
+    localOptions.type === "partial" ? "partial position" : "exact position",
+    localOptions.playerName
+      ? `player ${localOptions.playerName}`
+      : localOptions.player
+        ? `player id ${localOptions.player}`
+        : null,
+    `as ${localOptions.color}`,
+    localOptions.start_date ? `from ${localOptions.start_date}` : null,
+    localOptions.end_date ? `to ${localOptions.end_date}` : null,
+    localOptions.result !== "any" ? `result ${formatLocalResultFilter(localOptions.result)}` : null,
+  ].filter((item): item is string => !!item);
+  const databaseName = referenceDatabase ? pathFileName(referenceDatabase) : "no database selected";
+  return `Local database ${databaseName}; filters: ${filters.join(", ")}`;
+}
+
+function formatLocalResultFilter(result: LocalOptions["result"]) {
+  switch (result) {
+    case "whitewon":
+      return "white won";
+    case "blackwon":
+      return "black won";
+    case "draw":
+      return "draw";
+    case "any":
+      return "any";
+  }
+}
+
+function pathFileName(path: string) {
+  return path.split(/[\\/]/).filter(Boolean).at(-1) ?? path;
+}
+
+function sideToMoveLabel(fen: string) {
+  return fen.split(" ")[1] === "b" ? "black" : "white";
+}
+
+function formatPlanCoachMatchCount(totalGames: number, sampledGames: number) {
+  if (sampledGames > 0 && sampledGames < totalGames) {
+    return `${formatNumber(totalGames)} total, ${formatNumber(sampledGames)} sampled`;
+  }
+  return formatNumber(totalGames);
+}
+
+function formatPlanCoachResult(
+  line: Pick<PlanExplorerLine, "white" | "draw" | "black">,
+  perspective: DatabaseResultPerspective,
+) {
+  const total = line.white + line.draw + line.black;
+  if (total <= 0) return "WDL unavailable";
+  return `WDL ${formatNumber(line.white)}-${formatNumber(line.draw)}-${formatNumber(line.black)}, ${formatPercent(getLineResultScore(line, perspective))} score for ${perspective}`;
+}
+
+function formatPlanCoachEngineStatus(
+  enabled: boolean,
+  running: boolean,
+  report: EnginePlanReport | null,
+) {
+  if (!enabled) return "Engine strength: off";
+  if (report) return `Engine strength: ${report.limitLabel}, ${report.totalPvs} PVs`;
+  return running ? "Engine strength: running" : "Engine strength: no report loaded";
+}
+
+function formatEngineMatchForCoach(
+  match: PlanExplorerEnginePlanMatch,
+  report: EnginePlanReport | null,
+) {
+  const totalPvs = report?.totalPvs ?? match.plan.supportCount;
+  return `${match.plan.label}: ${match.plan.approval}, ${match.plan.confidence} confidence, ${match.plan.supportCount}/${totalPvs} PV support, ${formatEngineCoachEval(match.plan.weightedEvalCp)}, match ${match.match}`;
+}
+
+function formatEnginePlanEvidenceForCoach(plan: EnginePlan) {
+  return [
+    `Engine plan summary: ${plan.label}. ${plan.approval}, ${plan.confidence} confidence, ${formatEngineCoachEval(plan.weightedEvalCp)}. ${plan.explanation}`,
+    ...plan.evidence.slice(0, 3).map((line) => {
+      const san = line.sanMoves.slice(0, 10).join(" ");
+      return `Engine PV${line.rank}: ${formatScoreValue(line.score.value)}, depth ${line.depth}, first move ${line.firstMove || "-"}, line ${san || "-"}.`;
+    }),
+  ];
+}
+
+function formatEngineCoachEval(evalCp: number | null) {
+  return evalCp === null ? "eval unavailable" : `weighted eval ${formatEvalCp(evalCp)}`;
+}
+
+function summaryWithNamedSetupCue(summary: string) {
+  return `${summary} If the route resembles a known setup or structure, name it only when the position and route evidence support that label.`;
+}
+
 function EngineStrengthCell({
   match,
   running,
@@ -1730,6 +2007,10 @@ function EngineStrengthCell({
 
 function PieceRow({
   piece,
+  fen,
+  sourceLabel,
+  totalGames,
+  sampledGames,
   drawLine,
   previewLine,
   engineStrengthEnabled,
@@ -1739,6 +2020,10 @@ function PieceRow({
   strength,
 }: {
   piece: PlanExplorerPiece;
+  fen: string;
+  sourceLabel: string;
+  totalGames: number;
+  sampledGames: number;
   drawLine: (line: ColoredPlanExplorerLine) => void;
   previewLine: (line: ColoredPlanExplorerLine | null) => void;
   engineStrengthEnabled: boolean;
@@ -1752,6 +2037,51 @@ function PieceRow({
   const engineMatch = useMemo(
     () => getPieceEngineMatch(piece, engineReport),
     [engineReport, piece],
+  );
+  const coachRequest = useMemo(
+    () =>
+      buildPiecePlanCoachRequest({
+        piece,
+        fen,
+        sourceLabel,
+        totalGames,
+        sampledGames,
+        resultPerspective,
+        strength,
+        engineStrengthEnabled,
+        engineReport,
+        engineRunning,
+        engineMatch,
+      }),
+    [
+      engineMatch,
+      engineReport,
+      engineRunning,
+      engineStrengthEnabled,
+      fen,
+      piece,
+      resultPerspective,
+      sampledGames,
+      sourceLabel,
+      strength,
+      totalGames,
+    ],
+  );
+  const coachCacheKey = useMemo(
+    () =>
+      [
+        "plan-explorer-piece",
+        fen,
+        sourceLabel,
+        piece.color,
+        piece.role,
+        piece.from,
+        piece.total,
+        piece.lines.map((line) => line.squares.join("-")).join(","),
+        strength?.score ?? "no-strength",
+        engineMatch?.plan.signature ?? "no-engine",
+      ].join("|"),
+    [engineMatch, fen, piece, sourceLabel, strength],
   );
 
   return (
@@ -1831,6 +2161,7 @@ function PieceRow({
               </Group>
             );
           })}
+          <PlanCoachInline request={coachRequest} cacheKey={coachCacheKey} />
         </Stack>
       </Table.Td>
       <Table.Td>
@@ -1847,6 +2178,10 @@ function PieceRow({
 
 function SetupRow({
   setup,
+  fen,
+  sourceLabel,
+  totalGames,
+  sampledGames,
   drawLines,
   previewLine,
   engineStrengthEnabled,
@@ -1854,10 +2189,13 @@ function SetupRow({
   engineRunning,
   resultPerspective,
   sideFilter,
-  fen,
   strength,
 }: {
   setup: PlanExplorerSetup;
+  fen: string;
+  sourceLabel: string;
+  totalGames: number;
+  sampledGames: number;
   drawLines: (lines: ColoredPlanExplorerLine[]) => void;
   previewLine: (line: ColoredPlanExplorerLine | ColoredPlanExplorerLine[] | null) => void;
   engineStrengthEnabled: boolean;
@@ -1865,11 +2203,56 @@ function SetupRow({
   engineRunning: boolean;
   resultPerspective: DatabaseResultPerspective | null;
   sideFilter: SideFilter;
-  fen: string;
   strength: PlanStrength | undefined;
 }) {
   const lines = setup.plans.map(setupPlanToColoredLine);
   const perspective = getSetupPerspective(setup, resultPerspective, sideFilter, fen);
+  const engineMatches = useMemo(
+    () => getSetupEngineMatches(setup, engineReport),
+    [engineReport, setup],
+  );
+  const coachRequest = useMemo(
+    () =>
+      buildSetupPlanCoachRequest({
+        setup,
+        fen,
+        sourceLabel,
+        totalGames,
+        sampledGames,
+        perspective,
+        strength: strength ?? null,
+        engineStrengthEnabled,
+        engineReport,
+        engineRunning,
+        engineMatches,
+      }),
+    [
+      engineMatches,
+      engineReport,
+      engineRunning,
+      engineStrengthEnabled,
+      fen,
+      perspective,
+      sampledGames,
+      setup,
+      sourceLabel,
+      strength,
+      totalGames,
+    ],
+  );
+  const coachCacheKey = useMemo(
+    () =>
+      [
+        "plan-explorer-setup",
+        fen,
+        sourceLabel,
+        planSetupKey(setup),
+        setup.games,
+        strength?.score ?? "no-strength",
+        engineMatches.map((match) => match.plan.signature).join(",") || "no-engine",
+      ].join("|"),
+    [engineMatches, fen, setup, sourceLabel, strength],
+  );
 
   return (
     <Table.Tr
@@ -1942,6 +2325,7 @@ function SetupRow({
               </Group>
             );
           })}
+          <PlanCoachInline request={coachRequest} cacheKey={coachCacheKey} />
         </Stack>
       </Table.Td>
       <Table.Td>

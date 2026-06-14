@@ -86,6 +86,7 @@ import {
 } from "@/utils/planExplorer";
 import { withLimitedRecordEntry } from "@/utils/boundedCache";
 import { positionFromFen } from "@/utils/chessops";
+import PlanCoachInline, { type PlanCoachInlineRequest } from "../plan/PlanCoachInline";
 
 const MAX_ENGINE_PLAN_REPORT_CACHE_ENTRIES = 24;
 
@@ -918,6 +919,22 @@ function SetupRow({
     () => setup.plans.map(planToLine).filter((line): line is ColoredPlanExplorerLine => !!line),
     [setup.plans],
   );
+  const coachRequest = useMemo(
+    () => buildEngineSetupCoachRequest(setup, rootFen, totalPvs),
+    [rootFen, setup, totalPvs],
+  );
+  const coachCacheKey = useMemo(
+    () =>
+      [
+        "engine-plan-setup",
+        rootFen,
+        setup.signature,
+        setup.approval,
+        setup.supportCount,
+        setup.weightedEvalCp ?? "mate-or-none",
+      ].join("|"),
+    [rootFen, setup],
+  );
 
   return (
     <Table.Tr onMouseEnter={() => previewLine(routeLines)} onMouseLeave={() => previewLine(null)}>
@@ -940,6 +957,7 @@ function SetupRow({
           <Text size="sm" c="dimmed" lineClamp={2}>
             {setup.explanation}
           </Text>
+          <PlanCoachInline request={coachRequest} cacheKey={coachCacheKey} />
           <details>
             <summary>Evidence</summary>
             <Table withRowBorders={false} mt="xs">
@@ -1023,6 +1041,22 @@ function PlanRow({
   clearPreview: () => void;
 }) {
   const routeLine = useMemo(() => planToLine(plan), [plan]);
+  const coachRequest = useMemo(
+    () => buildEnginePlanCoachRequest(plan, rootFen, totalPvs),
+    [plan, rootFen, totalPvs],
+  );
+  const coachCacheKey = useMemo(
+    () =>
+      [
+        "engine-plan",
+        rootFen,
+        plan.signature,
+        plan.approval,
+        plan.supportCount,
+        plan.weightedEvalCp ?? "mate-or-none",
+      ].join("|"),
+    [plan, rootFen],
+  );
 
   return (
     <Table.Tr
@@ -1041,6 +1075,7 @@ function PlanRow({
           <Text size="sm" c="dimmed" lineClamp={2}>
             {plan.explanation}
           </Text>
+          <PlanCoachInline request={coachRequest} cacheKey={coachCacheKey} />
           <details>
             <summary>Evidence</summary>
             <Table withRowBorders={false} mt="xs">
@@ -1437,6 +1472,111 @@ function pieceSymbol(role: EnginePlan["role"]) {
     case undefined:
       return "";
   }
+}
+
+function buildEnginePlanCoachRequest(
+  plan: EnginePlan,
+  rootFen: string,
+  totalPvs: number,
+): PlanCoachInlineRequest {
+  return {
+    fen: rootFen,
+    sideToMove: sideToMoveLabel(rootFen),
+    surface: "Engine Plans",
+    subjectKind: "plan",
+    title: plan.label,
+    summary: `${plan.label}. ${plan.explanation} If this resembles a named chess setup or structure, name it only when the position and route evidence support that label.`,
+    planLines: [formatEnginePlanForCoach(plan, totalPvs)],
+    stats: [
+      "Source: local Stockfish PV plan extraction",
+      `Position: ${sideToMoveLabel(rootFen)} to move`,
+      `Category: ${categoryLabel(plan.category)}`,
+      `Color: ${plan.color}`,
+      plan.role ? `Piece: ${plan.role}` : null,
+      `Engine approval: ${plan.approval}`,
+      `Confidence: ${plan.confidence}`,
+      `Support: ${plan.supportCount}/${totalPvs} PVs (${(plan.supportRatio * 100).toFixed(0)}%)`,
+      `Top PV: ${plan.appearsInTopPv ? "yes" : "no"}`,
+      `Weighted eval: ${formatNullableEvalCp(plan.weightedEvalCp)}`,
+      `Best supporting eval: ${formatNullableEvalCp(plan.bestEvalCp)}`,
+      "Database stats: not present in this engine-only panel; use Plan Explorer rows for database WDL evidence.",
+    ].filter((item): item is string => !!item),
+    evidence: formatEngineEvidenceForCoach(plan.evidence),
+  };
+}
+
+function buildEngineSetupCoachRequest(
+  setup: EnginePlanSetup,
+  rootFen: string,
+  totalPvs: number,
+): PlanCoachInlineRequest {
+  return {
+    fen: rootFen,
+    sideToMove: sideToMoveLabel(rootFen),
+    surface: "Engine Plans",
+    subjectKind: "setup",
+    title: setup.label,
+    summary: `${setup.label}. Component plans: ${setup.plans
+      .map(compactEnginePlanLabel)
+      .join(
+        ", ",
+      )}. Explain whether this has features of a named setup, such as a King's Indian setup, Hedgehog, fianchetto setup, minority attack, or other standard structure, only when the supplied facts justify it.`,
+    planLines: setup.plans.map((plan) => formatEnginePlanForCoach(plan, totalPvs)),
+    stats: [
+      "Source: local Stockfish PV setup extraction",
+      `Position: ${sideToMoveLabel(rootFen)} to move`,
+      `Color: ${setup.color}`,
+      `Engine approval: ${setup.approval}`,
+      `Confidence: ${setup.confidence}`,
+      `Support: ${setup.supportCount}/${totalPvs} PVs (${(setup.supportRatio * 100).toFixed(0)}%)`,
+      `Top PV: ${setup.appearsInTopPv ? "yes" : "no"}`,
+      `Weighted eval: ${formatNullableEvalCp(setup.weightedEvalCp)}`,
+      `Best supporting eval: ${formatNullableEvalCp(setup.bestEvalCp)}`,
+      `Setup size: ${setup.plans.length} component plans`,
+      "Database stats: not present in this engine-only panel; use Plan Explorer rows for database WDL evidence.",
+    ],
+    evidence: [
+      ...setup.plans.flatMap((plan) => formatEngineEvidenceForCoach(plan.evidence).slice(0, 2)),
+      ...formatEngineEvidenceForCoach(setup.evidence).slice(0, 4),
+    ],
+  };
+}
+
+function formatEnginePlanForCoach(plan: EnginePlan, totalPvs: number) {
+  return [
+    `${categoryLabel(plan.category)}: ${plan.label}`,
+    `route: ${formatEnginePlanRoute(plan)}`,
+    `approval ${plan.approval}`,
+    `confidence ${plan.confidence}`,
+    `support ${plan.supportCount}/${totalPvs} PVs`,
+    `weighted eval ${formatNullableEvalCp(plan.weightedEvalCp)}`,
+    plan.explanation,
+  ].join("; ");
+}
+
+function formatEnginePlanRoute(plan: EnginePlan) {
+  if (plan.routeSegments?.length) {
+    return plan.routeSegments.map(([from, to]) => `${from}-${to}`).join(", ");
+  }
+  if (plan.routeSquares?.length) {
+    return plan.routeSquares.join("-");
+  }
+  return "no route squares";
+}
+
+function formatEngineEvidenceForCoach(evidence: EnginePlan["evidence"]) {
+  return evidence.slice(0, 4).map((line) => {
+    const san = line.sanMoves.slice(0, 10).join(" ");
+    return `PV${line.rank}: ${formatScoreValue(line.score.value)}, depth ${line.depth}, first move ${line.firstMove || "-"}, line ${san || "-"}.`;
+  });
+}
+
+function formatNullableEvalCp(value: number | null) {
+  return value === null ? "unavailable" : formatEvalCp(value);
+}
+
+function sideToMoveLabel(fen: string) {
+  return fen.split(" ")[1] === "b" ? "black" : "white";
 }
 
 function toPlanLineSegments(segments: [string, string][] | undefined) {
