@@ -214,6 +214,7 @@ function BoardGame() {
   const [openingBookEnabled, setOpeningBookEnabled] = useAtom(gameOpeningBookEnabledAtom);
   const [openingBookMaxPly, setOpeningBookMaxPly] = useAtom(gameOpeningBookMaxPlyAtom);
   const [startingGame, setStartingGame] = useState(false);
+  const [blindfoldResumeStartRequest, setBlindfoldResumeStartRequest] = useState(0);
   const [installingMaia, setInstallingMaia] = useState(false);
   const [maiaInstallError, setMaiaInstallError] = useState<string | null>(null);
 
@@ -586,6 +587,9 @@ function BoardGame() {
     }
   }
 
+  const startGameRef = useRef(startGame);
+  startGameRef.current = startGame;
+
   const handleHumanMove = useCallback(
     async (uci: string) => {
       if (!gameId || gameState !== "playing") return;
@@ -874,6 +878,7 @@ function BoardGame() {
         setBlindfoldSessionId(savedGame.id);
         setGameId(null);
         setGameState(canResume ? "settingUp" : "gameOver");
+        setBlindfoldResumeStartRequest((current) => (canResume ? current + 1 : current));
         setWhiteTime(null);
         setBlackTime(null);
         setBlindfoldPeekFen(null);
@@ -1102,6 +1107,23 @@ function BoardGame() {
     }
     return null;
   }, [player1Settings, player2Settings]);
+
+  useEffect(() => {
+    if (blindfoldResumeStartRequest === 0) return;
+    if (!blindfoldActive || gameState !== "settingUp") return;
+    if (startingGame || installingMaia || error !== null || setupIssue !== null) return;
+
+    setBlindfoldResumeStartRequest(0);
+    void startGameRef.current();
+  }, [
+    blindfoldActive,
+    blindfoldResumeStartRequest,
+    error,
+    gameState,
+    installingMaia,
+    setupIssue,
+    startingGame,
+  ]);
 
   function getResignationLosingColor(): "white" | "black" {
     if (isPlayerVsEngine) {

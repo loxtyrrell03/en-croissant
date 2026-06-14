@@ -2155,10 +2155,10 @@ from 2026-04-24 through 2026-05-03.
   without repeated vertical scrolling.
 - Also on 2026-06-15, unfinished Blindfold library entries became resumable
   instead of review-only. Saved games with `Result "*"` and a non-terminal
-  mainline end now show `In progress` / `Resume`, reload into setup at the
-  mainline end, and `Start` recreates the Maia backend from the saved initial
-  FEN plus already-played moves while preserving the same saved-game id and
-  lost-track marks. Completed saved games still open in blindfold review.
+  mainline end now show `In progress` / `Resume`, reload to the mainline end,
+  and automatically recreate the Maia backend from the saved initial FEN plus
+  already-played moves while preserving the same saved-game id and lost-track
+  marks. Completed saved games still open in blindfold review.
 - On 2026-06-13, the desktop analysis board under-board move panel was given a
   slightly larger height allocation and switched to compact notation chrome.
   The intent is that the `Moves / Database / Prep / Coach` header takes less
