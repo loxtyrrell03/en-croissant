@@ -45,6 +45,7 @@ const PLAN_EXPLORER_FALLBACK_FULL_SAMPLE_MAX_GAMES: usize = 100_000;
 const PLAN_SETUP_FEATURED_PATHS_PER_COLOR: usize = 7;
 const PLAN_SETUP_SEED_PATHS_PER_COLOR: usize = 4;
 const PLAN_SETUP_MIN_PLANS: usize = 3;
+const PLAN_SETUP_MIN_COMPACT_PLANS: usize = 2;
 const PLAN_SETUP_MAX_PLANS: usize = 6;
 const PLAN_SETUP_MAX_RESULTS: usize = 40;
 const MASTER_GAME_FAST_CANDIDATE_LIMIT: usize = 30_000;
@@ -783,10 +784,11 @@ fn setup_plan_output_priority(path: &ObservedPiecePath) -> i32 {
 
 fn is_castling_path(path: &ObservedPiecePath) -> bool {
     path.piece.role == Role::King
-        && path
-            .san
-            .iter()
-            .any(|san| san.starts_with("O-O") || san.starts_with("0-0"))
+        && (is_root_castling_anchor_path(path)
+            || path
+                .san
+                .iter()
+                .any(|san| san.starts_with("O-O") || san.starts_with("0-0")))
 }
 
 fn setup_slots(paths: &[ObservedPiecePath]) -> HashMap<String, String> {
@@ -798,6 +800,9 @@ fn setup_slots(paths: &[ObservedPiecePath]) -> HashMap<String, String> {
 
 fn setup_slot(path: &ObservedPiecePath) -> Option<(String, String)> {
     if is_structural_setup_path(path) {
+        return None;
+    }
+    if path.squares.len() <= 1 {
         return None;
     }
 
@@ -2008,10 +2013,126 @@ fn collect_piece_plans(
         position.play_unchecked(&m);
     }
 
-    paths
+    let mut observed = paths
         .into_values()
         .filter(|path| path.squares.len() > 1)
-        .collect()
+        .collect::<Vec<_>>();
+    observed.extend(collect_root_setup_paths(chess));
+    observed.sort_by(compare_observed_piece_path);
+    observed.dedup_by(|a, b| plan_line_key_from_path(a) == plan_line_key_from_path(b));
+    observed
+}
+
+fn collect_root_setup_paths(chess: &Chess) -> Vec<ObservedPiecePath> {
+    let mut paths = Vec::new();
+
+    for square in chess.board().occupied() {
+        let Some(piece) = chess.board().piece_at(square) else {
+            continue;
+        };
+
+        if !is_root_setup_anchor_square(piece.color, piece.role, square) {
+            continue;
+        }
+
+        paths.push(ObservedPiecePath {
+            piece: PieceKey {
+                color: piece.color,
+                role: piece.role,
+                from: square,
+            },
+            squares: vec![square],
+            san: Vec::new(),
+            uci: Vec::new(),
+        });
+    }
+
+    paths
+}
+
+fn is_root_setup_anchor_path(path: &ObservedPiecePath) -> bool {
+    path.squares.len() == 1
+        && path.san.is_empty()
+        && path.uci.is_empty()
+        && is_root_setup_anchor_square(path.piece.color, path.piece.role, path.piece.from)
+}
+
+fn is_root_castling_anchor_path(path: &ObservedPiecePath) -> bool {
+    path.piece.role == Role::King
+        && path.squares.len() == 1
+        && path.san.is_empty()
+        && path.uci.is_empty()
+        && is_root_castled_king_square(path.piece.color, path.piece.from)
+}
+
+fn is_root_setup_anchor_square(color: Color, role: Role, square: Square) -> bool {
+    match role {
+        Role::Pawn => is_root_setup_pawn_square(color, square),
+        Role::Knight => is_root_setup_knight_square(color, square),
+        Role::Bishop => is_root_setup_bishop_square(color, square),
+        Role::King => is_root_castled_king_square(color, square),
+        Role::Queen | Role::Rook => false,
+    }
+}
+
+fn is_root_setup_pawn_square(color: Color, square: Square) -> bool {
+    match color {
+        Color::White => matches!(
+            square,
+            Square::B3
+                | Square::C3
+                | Square::D3
+                | Square::E3
+                | Square::F3
+                | Square::G3
+                | Square::B4
+                | Square::C4
+                | Square::D4
+                | Square::E4
+                | Square::F4
+        ),
+        Color::Black => matches!(
+            square,
+            Square::B6
+                | Square::C6
+                | Square::D6
+                | Square::E6
+                | Square::F6
+                | Square::G6
+                | Square::B5
+                | Square::C5
+                | Square::D5
+                | Square::E5
+                | Square::F5
+        ),
+    }
+}
+
+fn is_root_setup_knight_square(color: Color, square: Square) -> bool {
+    match color {
+        Color::White => matches!(square, Square::C3 | Square::D2 | Square::E2 | Square::F3),
+        Color::Black => matches!(square, Square::C6 | Square::D7 | Square::E7 | Square::F6),
+    }
+}
+
+fn is_root_setup_bishop_square(color: Color, square: Square) -> bool {
+    match color {
+        Color::White => matches!(
+            square,
+            Square::B2 | Square::D3 | Square::E2 | Square::F4 | Square::G2 | Square::G5
+        ),
+        Color::Black => matches!(
+            square,
+            Square::B7 | Square::D6 | Square::E7 | Square::F5 | Square::G4 | Square::G7
+        ),
+    }
+}
+
+fn is_root_castled_king_square(color: Color, square: Square) -> bool {
+    match color {
+        Color::White => matches!(square, Square::C1 | Square::G1),
+        Color::Black => matches!(square, Square::C8 | Square::G8),
+    }
 }
 
 fn record_piece_move(
@@ -2478,7 +2599,7 @@ fn setup_feature_path(path: &ObservedPiecePath) -> ObservedPiecePath {
 }
 
 fn is_setup_family_path(path: &ObservedPiecePath) -> bool {
-    path.squares.len() > 1
+    path.squares.len() > 1 || is_root_setup_anchor_path(path)
 }
 
 fn select_plan_setup_seed_paths(paths: &[ObservedPiecePath]) -> Vec<ObservedPiecePath> {
@@ -2535,6 +2656,10 @@ fn is_structural_setup_path(path: &ObservedPiecePath) -> bool {
 }
 
 fn is_setup_seed_path(path: &ObservedPiecePath) -> bool {
+    if is_root_setup_anchor_path(path) {
+        return matches!(path.piece.role, Role::Knight | Role::Bishop | Role::King);
+    }
+
     match path.piece.role {
         Role::Pawn => is_fianchetto_pawn_seed(path),
         Role::Knight | Role::Bishop => is_development_setup_path(path),
@@ -2593,12 +2718,16 @@ fn is_setup_support_path(seed: &ObservedPiecePath, path: &ObservedPiecePath) -> 
 }
 
 fn is_development_setup_path(path: &ObservedPiecePath) -> bool {
-    matches!(path.piece.role, Role::Knight | Role::Bishop) && path.squares.len() > 1
+    matches!(path.piece.role, Role::Knight | Role::Bishop)
+        && (path.squares.len() > 1 || is_root_setup_anchor_path(path))
 }
 
 fn is_setup_pawn_support_path(path: &ObservedPiecePath) -> bool {
     if path.piece.role != Role::Pawn {
         return false;
+    }
+    if is_root_setup_anchor_path(path) {
+        return true;
     }
     if is_fianchetto_pawn_seed(path) {
         return true;
@@ -2631,16 +2760,31 @@ fn setup_support_priority(path: &ObservedPiecePath) -> i32 {
 }
 
 fn is_valid_plan_setup_row(setup: &PlanExplorerSetup) -> bool {
-    setup.plans.len() >= PLAN_SETUP_MIN_PLANS
-        && setup.plans.iter().any(|plan| {
-            matches!(plan.role.as_str(), "knight" | "bishop")
-                || (plan.role == "king"
-                    && plan
-                        .line
-                        .san
-                        .iter()
-                        .any(|san| san.starts_with("O-O") || san.starts_with("0-0")))
-        })
+    if !setup.plans.iter().any(is_setup_anchor_plan) {
+        return false;
+    }
+
+    if setup.plans.len() >= PLAN_SETUP_MIN_PLANS {
+        return true;
+    }
+
+    setup.plans.len() >= PLAN_SETUP_MIN_COMPACT_PLANS
+        && setup.plans.iter().any(is_structural_setup_plan)
+}
+
+fn is_setup_anchor_plan(plan: &PlanExplorerSetupPlan) -> bool {
+    matches!(plan.role.as_str(), "knight" | "bishop")
+        || (plan.role == "king"
+            && (plan.line.squares.len() <= 1
+                || plan
+                    .line
+                    .san
+                    .iter()
+                    .any(|san| san.starts_with("O-O") || san.starts_with("0-0"))))
+}
+
+fn is_structural_setup_plan(plan: &PlanExplorerSetupPlan) -> bool {
+    plan.role == "pawn"
 }
 
 fn plan_line_key_from_path(path: &ObservedPiecePath) -> PlanLineKey {
@@ -2651,6 +2795,15 @@ fn plan_line_key_from_path(path: &ObservedPiecePath) -> PlanLineKey {
 }
 
 fn plan_setup_path_priority(path: &ObservedPiecePath) -> i32 {
+    if is_root_setup_anchor_path(path) {
+        return match path.piece.role {
+            Role::King => 92,
+            Role::Pawn => 88,
+            Role::Knight | Role::Bishop => 84,
+            Role::Queen | Role::Rook => 72,
+        };
+    }
+
     let role_score = match path.piece.role {
         Role::Queen => 80,
         Role::Rook => 72,
@@ -2790,6 +2943,10 @@ fn plan_explorer_from_occurrences(
         let mut mainline = iter_mainline_move_bytes(entry.moves).skip(occurrence.ply as usize);
         let paths = collect_piece_plans(&position, &mut mainline, max_plies);
         for path in &paths {
+            if path.squares.len() <= 1 {
+                continue;
+            }
+
             let key = PlanLineKey {
                 piece: path.piece,
                 squares: path.squares.clone(),
@@ -3672,6 +3829,10 @@ pub async fn get_plan_explorer(
         total_games.fetch_add(1, Ordering::Relaxed);
 
         for path in &paths {
+            if path.squares.len() <= 1 {
+                continue;
+            }
+
             let key = PlanLineKey {
                 piece: path.piece,
                 squares: path.squares.clone(),
@@ -4213,6 +4374,70 @@ mod tests {
         assert_eq!(setup_rows.len(), 1);
         assert_eq!(setup_rows[0].games, 1);
         assert!(setup_rows[0].plans.iter().all(|plan| plan.color == "black"));
+    }
+
+    #[test]
+    fn plan_setup_mining_accepts_compact_anchored_setups() {
+        let paths = vec![
+            ObservedPiecePath {
+                piece: PieceKey {
+                    color: Color::Black,
+                    role: Role::Pawn,
+                    from: Square::G7,
+                },
+                squares: vec![Square::G7, Square::G6],
+                san: vec!["g6".to_string()],
+                uci: vec!["g7g6".to_string()],
+            },
+            ObservedPiecePath {
+                piece: PieceKey {
+                    color: Color::Black,
+                    role: Role::Bishop,
+                    from: Square::F8,
+                },
+                squares: vec![Square::F8, Square::G7],
+                san: vec!["Bg7".to_string()],
+                uci: vec!["f8g7".to_string()],
+            },
+        ];
+
+        let mined = collect_plan_setup_entries(&paths, GameResult::BlackWin)
+            .into_iter()
+            .collect::<HashMap<_, _>>();
+        let setup_rows = plan_setups_from_stats(mined);
+
+        assert_eq!(setup_rows.len(), 1);
+        assert_eq!(setup_rows[0].plans.len(), 2);
+        assert!(setup_rows[0]
+            .plans
+            .iter()
+            .any(|plan| plan.role == "pawn" && plan.from == "g7"));
+        assert!(setup_rows[0]
+            .plans
+            .iter()
+            .any(|plan| plan.role == "bishop" && plan.from == "f8"));
+    }
+
+    #[test]
+    fn plan_setup_mining_uses_root_setup_anchors() {
+        let fen = Some("rnbqkbnr/pppppppp/8/8/3P1B2/8/PPP1PPPP/RN1QKBNR w KQkq - 0 1".to_string());
+        let position = starting_position(&fen.as_deref()).unwrap();
+        let mut empty_mainline = std::iter::empty();
+        let paths = collect_piece_plans(&position, &mut empty_mainline, 8);
+        let mined = collect_plan_setup_entries(&paths, GameResult::WhiteWin)
+            .into_iter()
+            .collect::<HashMap<_, _>>();
+        let setup_rows = plan_setups_from_stats(mined);
+
+        assert_eq!(setup_rows.len(), 1);
+        assert!(setup_rows[0].plans.iter().any(|plan| plan.role == "pawn"
+            && plan.from == "d4"
+            && plan.line.squares == vec!["d4".to_string()]));
+        assert!(setup_rows[0].plans.iter().any(|plan| {
+            plan.role == "bishop"
+                && plan.from == "f4"
+                && plan.line.squares == vec!["f4".to_string()]
+        }));
     }
 
     #[test]

@@ -2261,6 +2261,14 @@ from 2026-04-24 through 2026-05-03.
   In local Setups mode, changing the database White/Black perspective also
   updates the setup-side filter immediately so the table refreshes to the side
   the user just selected.
+- A follow-up widened Plan Explorer Setups by borrowing Engine Plans' root setup
+  signal idea. Local database and online Plan Explorer setup mining now include
+  one-square root anchors for already-present setup pawns, developed knights,
+  developed bishops, and castled kings, rank pawn setup anchors high enough to
+  survive the featured-path cap, and accept compact two-component setup rows
+  when they combine a real anchor with a structural pawn. This keeps pawn-only
+  noise filtered out while showing common structures such as fianchetto pairs,
+  London-style pawn/bishop setups, and already-developed root positions.
 
 ## Verification Expectations
 
