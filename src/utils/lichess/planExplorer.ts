@@ -541,15 +541,20 @@ function selectSetupPaths(paths: TrackedPath[], seed: TrackedPath) {
 }
 
 function setupFamilyKeyFromPaths(paths: TrackedPath[]) {
-    let anchors = paths.filter(isSetupSeedPath);
+    let anchors = paths.filter(isStructuralSetupPath);
+    if (anchors.length === 0) anchors = paths.filter(isSetupSeedPath);
     if (anchors.length === 0) anchors = paths.filter((path) => !isStructuralSetupPath(path));
     if (anchors.length === 0) anchors = paths;
 
-    const anchor = [...anchors].sort(
-        (a, b) => setupSeedPriority(b) - setupSeedPriority(a) || compareTrackedPath(a, b),
-    )[0];
-
-    return anchor ? setupKeyFromPaths([anchor]) : "";
+    return setupKeyFromPaths(
+        [...anchors]
+            .sort(
+                (a, b) =>
+                    selectedSetupPathPriority(b) - selectedSetupPathPriority(a) ||
+                    compareTrackedPath(a, b),
+            )
+            .slice(0, PLAN_SETUP_MAX_PLANS),
+    );
 }
 
 function mergeSelectedSetupPaths(existing: TrackedPath[], incoming: TrackedPath[]) {

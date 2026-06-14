@@ -48,6 +48,7 @@ const PLAN_SETUP_MIN_PLANS: usize = 3;
 const PLAN_SETUP_MIN_COMPACT_PLANS: usize = 2;
 const PLAN_SETUP_MAX_PLANS: usize = 6;
 const PLAN_SETUP_MAX_RESULTS: usize = 40;
+const PLAN_SETUP_MAX_VARIANTS_PER_KEY: usize = 16;
 const MASTER_GAME_FAST_CANDIDATE_LIMIT: usize = 30_000;
 const MASTER_GAME_MAX_SAMPLE_LIMIT: usize = 5_000;
 const OPENING_HEALTH_SCORE_GAP: f64 = 0.15;
@@ -708,7 +709,7 @@ impl SetupStats {
                 .find(|existing| existing.is_compatible_with(&variant))
             {
                 existing.add_stats(variant);
-            } else {
+            } else if self.variants.len() < PLAN_SETUP_MAX_VARIANTS_PER_KEY {
                 self.variants.push(variant);
             }
         }
@@ -2529,8 +2530,15 @@ fn collect_plan_setup_entries(
 fn plan_setup_key_from_paths(paths: &[ObservedPiecePath]) -> PlanSetupKey {
     let mut anchors = paths
         .iter()
-        .filter(|path| is_setup_seed_path(path))
+        .filter(|path| is_structural_setup_path(path))
         .collect::<Vec<_>>();
+
+    if anchors.is_empty() {
+        anchors = paths
+            .iter()
+            .filter(|path| is_setup_seed_path(path))
+            .collect::<Vec<_>>();
+    }
 
     if anchors.is_empty() {
         anchors = paths
@@ -2544,15 +2552,15 @@ fn plan_setup_key_from_paths(paths: &[ObservedPiecePath]) -> PlanSetupKey {
     }
 
     anchors.sort_by(|a, b| {
-        setup_seed_priority(b)
-            .cmp(&setup_seed_priority(a))
+        selected_setup_path_priority(b)
+            .cmp(&selected_setup_path_priority(a))
             .then_with(|| compare_observed_piece_path(a, b))
     });
 
     PlanSetupKey {
         plans: anchors
             .into_iter()
-            .take(1)
+            .take(PLAN_SETUP_MAX_PLANS)
             .map(plan_line_key_from_path)
             .collect(),
     }

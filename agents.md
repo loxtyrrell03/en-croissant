@@ -2276,6 +2276,11 @@ from 2026-04-24 through 2026-05-03.
   when they combine a real anchor with a structural pawn. This keeps pawn-only
   noise filtered out while showing common structures such as fianchetto pairs,
   London-style pawn/bishop setups, and already-developed root positions.
+- A quick responsiveness fix then changed setup-family keys to prefer
+  structural pawn setup anchors before individual seed pieces and capped local
+  database setup variants per key. This prevents broad root anchors from
+  creating unbounded incompatible setup variants in large samples, which could
+  leave Plan Explorer stuck loading after the wider setup-mining pass.
 
 ## Verification Expectations
 
