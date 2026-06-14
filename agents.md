@@ -2159,6 +2159,12 @@ from 2026-04-24 through 2026-05-03.
   and automatically recreate the Maia backend from the saved initial FEN plus
   already-played moves while preserving the same saved-game id and lost-track
   marks. Completed saved games still open in blindfold review.
+- A later 2026-06-15 Blindfold reveal fix made board visibility an explicit
+  revealed/hidden session state instead of a peek tied to the current FEN.
+  Revealing the board now stays revealed while cycling through moves, jumping
+  to lost-track marks, or playing moves, until the user presses Hide. Keep both
+  the right-panel Hide action and the compact in-board Hide button available
+  while the board is revealed.
 - On 2026-06-13, the desktop analysis board under-board move panel was given a
   slightly larger height allocation and switched to compact notation chrome.
   The intent is that the `Moves / Database / Prep / Coach` header takes less

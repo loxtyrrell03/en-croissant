@@ -209,7 +209,7 @@ function BoardGame() {
   const [logsColor, setLogsColor] = useState<"white" | "black">("white");
   const [engineLogs, setEngineLogs] = useState<EngineLog[]>([]);
   const [blindfoldSettings, setBlindfoldSettings] = useAtom(currentBlindfoldGameSettingsAtom);
-  const [blindfoldPeekFen, setBlindfoldPeekFen] = useState<string | null>(null);
+  const [blindfoldBoardRevealed, setBlindfoldBoardRevealed] = useState(false);
   const [openingBookPath, setOpeningBookPath] = useAtom(gameOpeningBookPathAtom);
   const [openingBookEnabled, setOpeningBookEnabled] = useAtom(gameOpeningBookEnabledAtom);
   const [openingBookMaxPly, setOpeningBookMaxPly] = useAtom(gameOpeningBookMaxPlyAtom);
@@ -241,7 +241,7 @@ function BoardGame() {
     currentNode.fen === mainlineEnd.fen && currentNode.halfMoves === mainlineEnd.halfMoves;
   const blindfoldCanHideBoard =
     blindfoldActive && blindfoldSettings.hideBoard && gameState !== "settingUp";
-  const blindfoldBoardHidden = blindfoldCanHideBoard && blindfoldPeekFen !== currentNode.fen;
+  const blindfoldBoardHidden = blindfoldCanHideBoard && !blindfoldBoardRevealed;
   const humanPlayerColor = getHumanPlayerColor(players);
   const lastMoveColor =
     mainlineEnd.move && mainlineEnd.halfMoves > 0
@@ -323,10 +323,6 @@ function BoardGame() {
       fetchEngineLogs();
     }
   }, [logsOpened, fetchEngineLogs]);
-
-  useEffect(() => {
-    setBlindfoldPeekFen(null);
-  }, [currentNode.fen]);
 
   const syncTreeWithMoves = useCallback(
     (backendMoves: BackendMove[]) => {
@@ -499,7 +495,7 @@ function BoardGame() {
       setGameState("playing");
       if (isBlindfoldGame) {
         setBlindfoldSessionId(blindfoldSessionId ?? genID());
-        setBlindfoldPeekFen(null);
+        setBlindfoldBoardRevealed(false);
       }
 
       setFen(state.initialFen);
@@ -605,7 +601,6 @@ function BoardGame() {
 
   const handleBlindfoldMove = useCallback(
     async (uci: string) => {
-      setBlindfoldPeekFen(null);
       await handleHumanMove(uci);
     },
     [handleHumanMove],
@@ -621,7 +616,7 @@ function BoardGame() {
       setGameState("settingUp");
       setWhiteTime(null);
       setBlackTime(null);
-      setBlindfoldPeekFen(null);
+      setBlindfoldBoardRevealed(false);
       setBlindfoldSessionId(null);
       setBlindfoldMarks([]);
       setFen(fen);
@@ -679,13 +674,7 @@ function BoardGame() {
     setCommentAtPath(path, addLostTrackComment(currentNode.comment));
   }, [blindfoldMarks, currentNode.comment, currentPath, root, setBlindfoldMarks, setCommentAtPath]);
 
-  const handleGoToBlindfoldMark = useCallback(
-    (path: number[]) => {
-      goToMove(path);
-      setBlindfoldPeekFen(null);
-    },
-    [goToMove],
-  );
+  const handleGoToBlindfoldMark = useCallback((path: number[]) => goToMove(path), [goToMove]);
 
   const handlePlayBlindfoldFromCurrentPosition = useCallback(async () => {
     if (gameState === "playing" && gameId) {
@@ -881,7 +870,7 @@ function BoardGame() {
         setBlindfoldResumeStartRequest((current) => (canResume ? current + 1 : current));
         setWhiteTime(null);
         setBlackTime(null);
-        setBlindfoldPeekFen(null);
+        setBlindfoldBoardRevealed(false);
         setInputColor(savedGame.humanColor ?? activeColorFromFen(savedGame.initialFen));
 
         const humanName =
@@ -1152,7 +1141,7 @@ function BoardGame() {
     setBlackTime(null);
     setBlindfoldSessionId(null);
     setBlindfoldMarks([]);
-    setBlindfoldPeekFen(null);
+    setBlindfoldBoardRevealed(false);
     resetTree();
   }
 
@@ -1180,7 +1169,7 @@ function BoardGame() {
     setBlackTime(null);
     setBlindfoldSessionId(null);
     setBlindfoldMarks([]);
-    setBlindfoldPeekFen(null);
+    setBlindfoldBoardRevealed(false);
     resetTree();
     setCurrentTab((tab) => (tab ? { ...tab, type: "play", name: "Blindfold" } : tab));
   }, [
@@ -1239,8 +1228,10 @@ function BoardGame() {
         blindfoldCanHideBoard
           ? {
               hidden: blindfoldBoardHidden,
+              revealed: blindfoldBoardRevealed,
               canReveal: blindfoldSettings.allowPeeking,
-              onReveal: () => setBlindfoldPeekFen(currentNode.fen),
+              onReveal: () => setBlindfoldBoardRevealed(true),
+              onHide: () => setBlindfoldBoardRevealed(false),
               label: "Board hidden",
             }
           : undefined
@@ -1462,8 +1453,8 @@ function BoardGame() {
                         lastMoveSan={lastEngineMoveSan}
                         marks={blindfoldMarks}
                         currentPath={currentPath}
-                        onRevealBoard={() => setBlindfoldPeekFen(currentNode.fen)}
-                        onHideBoard={() => setBlindfoldPeekFen(null)}
+                        onRevealBoard={() => setBlindfoldBoardRevealed(true)}
+                        onHideBoard={() => setBlindfoldBoardRevealed(false)}
                         onToggleLostTrack={handleToggleLostTrack}
                         onPlayFromCurrentPosition={handlePlayBlindfoldFromCurrentPosition}
                         onSaveGameToFile={handleSaveBlindfoldGameToFile}

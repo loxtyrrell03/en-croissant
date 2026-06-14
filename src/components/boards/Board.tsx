@@ -456,8 +456,10 @@ interface ChessboardProps {
   moveHighlightOverride?: boolean;
   blindfoldOverlay?: {
     hidden: boolean;
+    revealed?: boolean;
     canReveal: boolean;
     onReveal: () => void;
+    onHide?: () => void;
     label: string;
     detail?: string;
   };
@@ -2131,6 +2133,29 @@ function Board({
                       </Button>
                     </Stack>
                   </Box>
+                )}
+                {blindfoldOverlay?.revealed && blindfoldOverlay.onHide && (
+                  <Button
+                    pos="absolute"
+                    top={8}
+                    right={8}
+                    size="compact-xs"
+                    variant="filled"
+                    color="dark"
+                    leftSection={<IconEyeClosed size={14} />}
+                    aria-label="Hide blindfold board"
+                    title="Hide blindfold board"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      blindfoldOverlay.onHide?.();
+                    }}
+                    style={{
+                      zIndex: 45,
+                      boxShadow: "0 4px 16px rgba(0, 0, 0, 0.24)",
+                    }}
+                  >
+                    Hide
+                  </Button>
                 )}
                 {(["nw", "ne", "sw", "se"] as const).map((corner) => (
                   <Box
