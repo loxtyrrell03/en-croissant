@@ -137,6 +137,76 @@ describe("Engine Plan Explorer", () => {
         expect(report.plans.some((plan) => plan.category === "pawnBreak")).toBe(false);
     });
 
+    test("builds engine-only setup families from co-occurring PV plans", () => {
+        const report = buildEnginePlanReport(
+            INITIAL_FEN,
+            [
+                pv(
+                    1,
+                    [
+                        "d2d4",
+                        "g8f6",
+                        "c1f4",
+                        "g7g6",
+                        "e2e3",
+                        "f8g7",
+                        "g1f3",
+                        "d7d6",
+                        "f1e2",
+                        "e8g8",
+                    ],
+                    30,
+                ),
+                pv(
+                    2,
+                    [
+                        "d2d4",
+                        "g8f6",
+                        "g1f3",
+                        "g7g6",
+                        "c1f4",
+                        "f8g7",
+                        "e2e3",
+                        "d7d6",
+                        "f1e2",
+                        "e8g8",
+                    ],
+                    20,
+                ),
+                pv(3, ["d2d4", "d7d5", "c1f4", "g8f6", "e2e3", "e7e6"], 0),
+            ],
+            {
+                requestedMultipv: 3,
+                limitLabel: "Depth 12",
+            },
+        );
+
+        const setup = report.setups.find((candidate) => {
+            const signatures = new Set(candidate.plans.map((plan) => plan.signature));
+            return (
+                candidate.color === "black" &&
+                signatures.has("pawn_setup:black:g6") &&
+                signatures.has("piece_destination:black:bishop:g7") &&
+                signatures.has("pawn_setup:black:d6") &&
+                signatures.has("piece_destination:black:knight:f6") &&
+                signatures.has("castling:black:kingside")
+            );
+        });
+
+        expect(setup?.approval).toBe("Strong");
+        expect(setup?.supportCount).toBe(2);
+        expect(setup?.appearsInTopPv).toBe(true);
+        expect(setup?.plans.map((plan) => plan.signature)).toEqual(
+            expect.arrayContaining([
+                "pawn_setup:black:g6",
+                "piece_destination:black:bishop:g7",
+                "pawn_setup:black:d6",
+                "piece_destination:black:knight:f6",
+                "castling:black:kingside",
+            ]),
+        );
+    });
+
     test("builds per-move board previews from a PV", () => {
         const previews = getPvMovePreviews(INITIAL_FEN, ["e2e4", "c7c5"], ["e4", "c5"]);
 

@@ -311,6 +311,7 @@ export const enginePlanSideFilterAtom = atomWithStorage<"all" | "white" | "black
     "engine-plan-side-filter",
     "all",
 );
+export const enginePlanViewAtom = atomWithStorage<"plans" | "setups">("engine-plan-view", "plans");
 export const eraseDrawablesOnClickAtom = atomWithStorage<boolean>(
     "erase-drawables-on-click",
     false,

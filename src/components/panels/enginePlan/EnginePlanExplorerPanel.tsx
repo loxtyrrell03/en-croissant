@@ -54,6 +54,7 @@ import {
   enginePlanMultipvAtom,
   enginePlanSideFilterAtom,
   enginePlanTimeMsAtom,
+  enginePlanViewAtom,
   enginesAtom,
   planExplorerArrowLimitAtom,
   showPlanExplorerArrowsAtom,
@@ -68,6 +69,7 @@ import {
   type EnginePlan,
   type EnginePlanMovePreview,
   type EnginePlanReport,
+  type EnginePlanSetup,
 } from "@/utils/enginePlanExplorer";
 import {
   type EngineSettings,
@@ -78,6 +80,7 @@ import {
 import {
   isPlanBrush,
   planLineToShapes,
+  planLinesToShapes,
   type ColoredPlanExplorerLine,
   type PlanExplorerSegment,
 } from "@/utils/planExplorer";
@@ -103,6 +106,7 @@ type EnginePlanSort = {
   direction: SortDirection;
 };
 type EnginePlanSideFilter = "all" | "white" | "black";
+type EnginePlanView = "plans" | "setups";
 
 function EnginePlanExplorerPanel() {
   const store = useContext(TreeStateContext)!;
@@ -122,6 +126,7 @@ function EnginePlanExplorerPanel() {
   const [depth, setDepth] = useAtom(enginePlanDepthAtom);
   const [timeMs, setTimeMs] = useAtom(enginePlanTimeMsAtom);
   const [sideFilter, setSideFilter] = useAtom(enginePlanSideFilterAtom);
+  const [view, setView] = useAtom(enginePlanViewAtom);
   const [showPlanArrows, setShowPlanArrows] = useAtom(showPlanExplorerArrowsAtom);
   const [arrowLimit, setArrowLimit] = useAtom(planExplorerArrowLimitAtom);
   const [planState, setPlanState] = useAtom(currentEnginePlanReportAtom);
@@ -237,6 +242,7 @@ function EnginePlanExplorerPanel() {
     return {
       ...visibleReport,
       plans: visibleReport.plans.filter((plan) => plan.color === sideFilter),
+      setups: visibleReport.setups.filter((setup) => setup.color === sideFilter),
     };
   }, [sideFilter, visibleReport]);
 
@@ -444,6 +450,13 @@ function EnginePlanExplorerPanel() {
     },
     [currentNode.shapes, setShapes],
   );
+  const drawLines = useCallback(
+    (lines: ColoredPlanExplorerLine[]) => {
+      const existing = currentNode.shapes.filter((shape) => !isPlanBrush(shape.brush));
+      setShapes([...existing, ...planLinesToShapes(lines, 16)]);
+    },
+    [currentNode.shapes, setShapes],
+  );
 
   const previewBoardMove = useCallback(
     (move: EnginePlanMovePreview, pinned = false) => {
@@ -520,17 +533,17 @@ function EnginePlanExplorerPanel() {
               <Badge variant="light">{sideFilterLabel(sideFilter)}</Badge>
             </Group>
             <Text size="xs" c="dimmed">
-              Raw eval details are kept inside each plan.
+              Raw eval details are kept inside each row.
             </Text>
           </Group>
 
-          {!filteredReport || filteredReport.plans.length === 0 ? (
+          {view === "plans" && (!filteredReport || filteredReport.plans.length === 0) ? (
             <Text ta="center" c="dimmed" py="xl">
               {sideFilter === "all"
                 ? "No plan signals found in the PVs."
                 : `No ${sideFilter} plan signals found in the PVs.`}
             </Text>
-          ) : (
+          ) : view === "plans" && filteredReport ? (
             <PlansTable
               plans={filteredReport.plans}
               rootFen={visibleReport.fen}
@@ -538,6 +551,25 @@ function EnginePlanExplorerPanel() {
               sort={planSort}
               setSort={setPlanSort}
               drawLine={drawLine}
+              previewLine={setPreviewLine}
+              previewMove={previewBoardMove}
+              loadPvMove={loadPvMove}
+              clearPreview={clearBoardMovePreview}
+            />
+          ) : !filteredReport || filteredReport.setups.length === 0 ? (
+            <Text ta="center" c="dimmed" py="xl">
+              {sideFilter === "all"
+                ? "No engine setup families found in the PVs."
+                : `No ${sideFilter} engine setup families found in the PVs.`}
+            </Text>
+          ) : (
+            <SetupsTable
+              setups={filteredReport.setups}
+              rootFen={visibleReport.fen}
+              totalPvs={visibleReport.totalPvs}
+              sort={planSort}
+              setSort={setPlanSort}
+              drawLines={drawLines}
               previewLine={setPreviewLine}
               previewMove={previewBoardMove}
               loadPvMove={loadPvMove}
@@ -629,6 +661,16 @@ function EnginePlanExplorerPanel() {
                 { label: "All", value: "all" },
                 { label: "White", value: "white" },
                 { label: "Black", value: "black" },
+              ]}
+            />
+            <SegmentedControl
+              aria-label="Engine plan view"
+              size="sm"
+              value={view}
+              onChange={(value) => setView(value as EnginePlanView)}
+              data={[
+                { label: "Plans", value: "plans" },
+                { label: "Setups", value: "setups" },
               ]}
             />
             <Switch
@@ -779,6 +821,185 @@ function PlansTable({
         ))}
       </Table.Tbody>
     </Table>
+  );
+}
+
+function SetupsTable({
+  setups,
+  rootFen,
+  totalPvs,
+  sort,
+  setSort,
+  drawLines,
+  previewLine,
+  previewMove,
+  loadPvMove,
+  clearPreview,
+}: {
+  setups: EnginePlanSetup[];
+  rootFen: string;
+  totalPvs: number;
+  sort: EnginePlanSort;
+  setSort: Dispatch<SetStateAction<EnginePlanSort>>;
+  drawLines: (lines: ColoredPlanExplorerLine[]) => void;
+  previewLine: (line: ColoredPlanExplorerLine | ColoredPlanExplorerLine[] | null) => void;
+  previewMove: (move: EnginePlanMovePreview, pinned?: boolean) => void;
+  loadPvMove: (uciMoves: string[], moveIndex: number) => void;
+  clearPreview: () => void;
+}) {
+  const sortedSetups = useMemo(() => sortEngineSetups(setups, sort).slice(0, 30), [setups, sort]);
+
+  return (
+    <Table withTableBorder highlightOnHover stickyHeader>
+      <Table.Thead>
+        <Table.Tr>
+          <SortableEngineTh sortKey="plan" sort={sort} setSort={setSort}>
+            Setup
+          </SortableEngineTh>
+          <SortableEngineTh sortKey="strength" sort={sort} setSort={setSort} style={{ width: 118 }}>
+            Strength
+          </SortableEngineTh>
+          <SortableEngineTh sortKey="support" sort={sort} setSort={setSort} style={{ width: 110 }}>
+            Support
+          </SortableEngineTh>
+          <SortableEngineTh sortKey="eval" sort={sort} setSort={setSort} style={{ width: 96 }}>
+            Eval
+          </SortableEngineTh>
+          <SortableEngineTh
+            sortKey="confidence"
+            sort={sort}
+            setSort={setSort}
+            style={{ width: 118 }}
+          >
+            Confidence
+          </SortableEngineTh>
+          <Table.Th style={{ width: 54 }} />
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>
+        {sortedSetups.map((setup) => (
+          <SetupRow
+            key={setup.signature}
+            setup={setup}
+            rootFen={rootFen}
+            totalPvs={totalPvs}
+            drawLines={drawLines}
+            previewLine={previewLine}
+            previewMove={previewMove}
+            loadPvMove={loadPvMove}
+            clearPreview={clearPreview}
+          />
+        ))}
+      </Table.Tbody>
+    </Table>
+  );
+}
+
+function SetupRow({
+  setup,
+  rootFen,
+  totalPvs,
+  drawLines,
+  previewLine,
+  previewMove,
+  loadPvMove,
+  clearPreview,
+}: {
+  setup: EnginePlanSetup;
+  rootFen: string;
+  totalPvs: number;
+  drawLines: (lines: ColoredPlanExplorerLine[]) => void;
+  previewLine: (line: ColoredPlanExplorerLine | ColoredPlanExplorerLine[] | null) => void;
+  previewMove: (move: EnginePlanMovePreview, pinned?: boolean) => void;
+  loadPvMove: (uciMoves: string[], moveIndex: number) => void;
+  clearPreview: () => void;
+}) {
+  const routeLines = useMemo(
+    () => setup.plans.map(planToLine).filter((line): line is ColoredPlanExplorerLine => !!line),
+    [setup.plans],
+  );
+
+  return (
+    <Table.Tr onMouseEnter={() => previewLine(routeLines)} onMouseLeave={() => previewLine(null)}>
+      <Table.Td>
+        <Stack gap={4}>
+          <Group gap="xs" wrap="wrap">
+            <Badge variant="light">{setup.plans.length} plans</Badge>
+            <Badge variant="outline">{setup.appearsInTopPv ? "PV1" : "Side PV"}</Badge>
+          </Group>
+          <Text fw={700} size="sm">
+            {setup.label}
+          </Text>
+          <Group gap={4} wrap="wrap">
+            {setup.plans.map((plan) => (
+              <Badge key={plan.signature} size="xs" variant="light">
+                {categoryLabel(plan.category)}: {compactEnginePlanLabel(plan)}
+              </Badge>
+            ))}
+          </Group>
+          <Text size="sm" c="dimmed" lineClamp={2}>
+            {setup.explanation}
+          </Text>
+          <details>
+            <summary>Evidence</summary>
+            <Table withRowBorders={false} mt="xs">
+              <Table.Tbody>
+                {setup.evidence.map((line) => (
+                  <Table.Tr key={line.rank}>
+                    <Table.Td w={48}>
+                      <Badge size="sm" variant="light">
+                        PV{line.rank}
+                      </Badge>
+                    </Table.Td>
+                    <Table.Td>
+                      <PvMoveLine
+                        rootFen={rootFen}
+                        uciMoves={line.uciMoves}
+                        sanMoves={line.sanMoves}
+                        previewMove={previewMove}
+                        loadPvMove={loadPvMove}
+                        clearPreview={clearPreview}
+                      />
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </details>
+        </Stack>
+      </Table.Td>
+      <Table.Td>
+        <Badge color={approvalColor(setup.approval)} variant="light">
+          {setup.approval}
+        </Badge>
+      </Table.Td>
+      <Table.Td>
+        <Stack gap={0}>
+          <Text size="sm">{`${setup.supportCount}/${totalPvs}`}</Text>
+          <Text size="xs" c="dimmed">
+            {`${(setup.supportRatio * 100).toFixed(0)}%`}
+          </Text>
+        </Stack>
+      </Table.Td>
+      <Table.Td>{formatEvalCp(setup.weightedEvalCp)}</Table.Td>
+      <Table.Td>
+        <Badge variant="outline">{setup.confidence}</Badge>
+      </Table.Td>
+      <Table.Td>
+        {routeLines.length > 0 && (
+          <Tooltip label="Draw setup">
+            <ActionIcon
+              size="sm"
+              variant="subtle"
+              onClick={() => drawLines(routeLines)}
+              aria-label="Draw setup"
+            >
+              <IconRoute size="1rem" />
+            </ActionIcon>
+          </Tooltip>
+        )}
+      </Table.Td>
+    </Table.Tr>
   );
 }
 
@@ -1066,6 +1287,38 @@ function sortEnginePlans(plans: EnginePlan[], sort: EnginePlanSort) {
   });
 }
 
+function sortEngineSetups(setups: EnginePlanSetup[], sort: EnginePlanSort) {
+  const direction = sort.direction === "asc" ? 1 : -1;
+
+  return [...setups].sort((a, b) => {
+    let diff = 0;
+    switch (sort.key) {
+      case "plan":
+        diff = a.label.localeCompare(b.label);
+        break;
+      case "strength":
+        diff =
+          engineApprovalScore(a.approval) - engineApprovalScore(b.approval) ||
+          a.supportCount - b.supportCount ||
+          a.plans.length - b.plans.length;
+        break;
+      case "support":
+        diff = a.supportCount - b.supportCount || a.supportRatio - b.supportRatio;
+        break;
+      case "eval":
+        diff = nullableEvalSortScore(a.weightedEvalCp) - nullableEvalSortScore(b.weightedEvalCp);
+        break;
+      case "confidence":
+        diff =
+          engineConfidenceScore(a.confidence) - engineConfidenceScore(b.confidence) ||
+          a.supportCount - b.supportCount;
+        break;
+    }
+
+    return direction * (diff || a.label.localeCompare(b.label));
+  });
+}
+
 function defaultEnginePlanSortDirection(key: EnginePlanSortKey): SortDirection {
   return key === "plan" ? "asc" : "desc";
 }
@@ -1145,6 +1398,45 @@ function planToLine(plan: EnginePlan): ColoredPlanExplorerLine | null {
     draw: 0,
     black: 0,
   };
+}
+
+function compactEnginePlanLabel(plan: EnginePlan) {
+  if (plan.routeSquares?.length) {
+    const last = plan.routeSquares[plan.routeSquares.length - 1];
+    switch (plan.category) {
+      case "castling":
+        return plan.label.replace(/^White |^Black /, "");
+      case "pawnSetup":
+      case "pawnBreak":
+        return plan.color === "black" ? `...${last}` : last;
+      case "pieceDestination":
+        return plan.role ? `${pieceSymbol(plan.role)}${last}` : last;
+      case "pieceRoute":
+        return plan.role ? `${pieceSymbol(plan.role)}${plan.routeSquares.join("-")}` : last;
+      case "sideExpansion":
+        return plan.label.replace(/^White |^Black /, "");
+    }
+  }
+
+  return plan.label.replace(/^White |^Black /, "");
+}
+
+function pieceSymbol(role: EnginePlan["role"]) {
+  switch (role) {
+    case "knight":
+      return "N";
+    case "bishop":
+      return "B";
+    case "rook":
+      return "R";
+    case "queen":
+      return "Q";
+    case "king":
+      return "K";
+    case "pawn":
+    case undefined:
+      return "";
+  }
 }
 
 function toPlanLineSegments(segments: [string, string][] | undefined) {

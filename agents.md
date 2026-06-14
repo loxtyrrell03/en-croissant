@@ -2158,6 +2158,16 @@ from 2026-04-24 through 2026-05-03.
   white-section styling, and readable in-bar percentage labels when a segment is
   wide enough. Keep future plan/setup result summaries visually consistent with
   Database rather than returning to unlabeled mini bars.
+- On 2026-06-14, the Engine Plans tab gained its own `Plans / Setups` toggle.
+  Engine setups are deliberately engine-only: they are generated from same-side
+  plan signals that co-occur inside Stockfish PVs and are scored from PV support,
+  PV1 presence, confidence, and supporting evaluations, with no database/WDL
+  input. The engine extractor now treats quiet setup pawns such as `...g6` and
+  `...d6`, plus fianchetto bishop destinations such as `...Bg7`, as plan
+  signals so setup families can represent real opening structures like a King's
+  Indian configuration. Hovering an engine setup row should preview the full
+  setup arrow family, while drawing the setup should add the same family to the
+  board.
 
 ## Verification Expectations
 
