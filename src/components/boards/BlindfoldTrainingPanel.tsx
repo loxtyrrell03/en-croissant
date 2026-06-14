@@ -953,10 +953,10 @@ export function BlindfoldMovePanel({
   };
 
   const content = (
-    <Stack h="100%" gap={6}>
-      <Group justify="space-between" gap={6} wrap="nowrap">
+    <Stack h="100%" gap="xs">
+      <Group justify="space-between" gap="xs" wrap="nowrap">
         <Box style={{ minWidth: 0 }}>
-          <Text size="xs" fw={800}>
+          <Text size="sm" fw={800}>
             Moves
           </Text>
           <Text size="xs" c="dimmed">
@@ -999,15 +999,15 @@ export function BlindfoldMovePanel({
               />
 
               <ScrollArea style={{ flex: 1 }} offsetScrollbars>
-                <Stack gap={4}>
+                <Stack gap="xs">
                   <Text size="xs" c="dimmed">
                     {legalMoves.length} legal move{legalMoves.length === 1 ? "" : "s"}
                   </Text>
-                  <SimpleGrid cols={{ base: 3, sm: 5, lg: 6 }} spacing={4}>
+                  <SimpleGrid cols={{ base: 3, sm: 5, lg: 6 }} spacing="xs">
                     {legalMoves.map((move) => (
                       <Button
                         key={move.uci}
-                        size="compact-xs"
+                        size="xs"
                         variant="default"
                         disabled={!canMove}
                         onClick={() => void playMove(move.uci)}
@@ -1038,9 +1038,9 @@ export function BlindfoldMovePanel({
               />
 
               <ScrollArea style={{ flex: 1 }} offsetScrollbars>
-                <Stack gap={4}>
-                  <Paper withBorder p={6}>
-                    <Group justify="space-between" gap={6} wrap="nowrap">
+                <Stack gap="xs">
+                  <Paper withBorder p="xs">
+                    <Group justify="space-between" gap="xs" wrap="nowrap">
                       <Text fw={800} size="sm">
                         {manualInput || " "}
                       </Text>
@@ -1064,11 +1064,11 @@ export function BlindfoldMovePanel({
                     </Group>
                   </Paper>
 
-                  <SimpleGrid cols={6} spacing={4}>
+                  <SimpleGrid cols={6} spacing="xs">
                     {PIECE_TOKENS.map((token) => (
                       <Button
                         key={token.label}
-                        size="compact-xs"
+                        size="xs"
                         variant="default"
                         aria-label={token.aria}
                         onClick={() => appendToken(token.label)}
@@ -1077,7 +1077,7 @@ export function BlindfoldMovePanel({
                       </Button>
                     ))}
                     <Button
-                      size="compact-xs"
+                      size="xs"
                       variant="default"
                       aria-label="Capture"
                       onClick={() => appendToken("x")}
@@ -1085,11 +1085,11 @@ export function BlindfoldMovePanel({
                       x
                     </Button>
                   </SimpleGrid>
-                  <SimpleGrid cols={8} spacing={4}>
+                  <SimpleGrid cols={8} spacing="xs">
                     {FILE_TOKENS.map((token) => (
                       <Button
                         key={token}
-                        size="compact-xs"
+                        size="xs"
                         variant="default"
                         onClick={() => appendToken(token)}
                       >
@@ -1097,11 +1097,11 @@ export function BlindfoldMovePanel({
                       </Button>
                     ))}
                   </SimpleGrid>
-                  <SimpleGrid cols={8} spacing={4}>
+                  <SimpleGrid cols={8} spacing="xs">
                     {RANK_TOKENS.map((token) => (
                       <Button
                         key={token}
-                        size="compact-xs"
+                        size="xs"
                         variant="default"
                         onClick={() => appendToken(token)}
                       >
@@ -1109,9 +1109,9 @@ export function BlindfoldMovePanel({
                       </Button>
                     ))}
                   </SimpleGrid>
-                  <SimpleGrid cols={5} spacing={4}>
+                  <SimpleGrid cols={5} spacing="xs">
                     <Button
-                      size="compact-xs"
+                      size="xs"
                       variant="default"
                       aria-label="Check"
                       onClick={() => appendToken("+")}
@@ -1119,7 +1119,7 @@ export function BlindfoldMovePanel({
                       +
                     </Button>
                     <Button
-                      size="compact-xs"
+                      size="xs"
                       variant="default"
                       aria-label="Promotion"
                       onClick={() => appendToken("=")}
@@ -1127,7 +1127,7 @@ export function BlindfoldMovePanel({
                       =
                     </Button>
                     <Button
-                      size="compact-xs"
+                      size="xs"
                       variant="default"
                       aria-label="Checkmate"
                       onClick={() => appendToken("#")}
@@ -1135,7 +1135,7 @@ export function BlindfoldMovePanel({
                       #
                     </Button>
                     <Button
-                      size="compact-xs"
+                      size="xs"
                       variant="default"
                       aria-label="Kingside castling"
                       onClick={() => appendToken("O-O")}
@@ -1143,7 +1143,7 @@ export function BlindfoldMovePanel({
                       O-O
                     </Button>
                     <Button
-                      size="compact-xs"
+                      size="xs"
                       variant="default"
                       aria-label="Queenside castling"
                       onClick={() => appendToken("O-O-O")}
@@ -1155,18 +1155,18 @@ export function BlindfoldMovePanel({
                   <Divider />
                   <Group grow>
                     <Button
-                      size="compact-xs"
+                      size="xs"
                       variant="default"
                       leftSection={<IconBackspace size={14} />}
                       onClick={() => setManualInput((current) => current.slice(0, -1))}
                     >
                       Backspace
                     </Button>
-                    <Button size="compact-xs" variant="default" onClick={() => setManualInput("")}>
+                    <Button size="xs" variant="default" onClick={() => setManualInput("")}>
                       Clear
                     </Button>
                     <Button
-                      size="compact-xs"
+                      size="xs"
                       disabled={!canMove || manualStatus.kind !== "legal"}
                       onClick={() => void submitManual()}
                     >
@@ -1180,7 +1180,7 @@ export function BlindfoldMovePanel({
 
       {phase === "marks" && (
         <ScrollArea style={{ flex: 1 }} offsetScrollbars>
-          <Stack gap={4}>
+          <Stack gap="xs">
             {orderedMarks.length === 0 ? (
               <Text size="xs" c="dimmed">
                 No lost-track positions marked.
@@ -1207,7 +1207,7 @@ export function BlindfoldMovePanel({
 
       {!currentLineAtEnd && phase === "moves" && (
         <Button
-          size="compact-xs"
+          size="xs"
           variant="light"
           leftSection={<IconArrowBackUp size={14} />}
           disabled

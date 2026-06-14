@@ -2150,9 +2150,9 @@ from 2026-04-24 through 2026-05-03.
   display duration control. Blindfold tabs also hide the otherwise empty
   bottom-right workspace pane so the right-side move-entry area expands and the
   docked engine panel sits at the bottom of the full right column. The
-  blindfold move-entry panel intentionally uses compact buttons, tight grid
-  spacing, and smaller status text so the legal/manual move controls fit
-  without repeated vertical scrolling.
+  blindfold move-entry panel should use small `xs` buttons with normal `xs`
+  grid spacing and smaller status text, keeping the legal/manual controls
+  space-efficient without looking crushed.
 - Also on 2026-06-15, unfinished Blindfold library entries became resumable
   instead of review-only. Saved games with `Result "*"` and a non-terminal
   mainline end now show `In progress` / `Resume`, reload to the mainline end,
