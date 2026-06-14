@@ -2285,6 +2285,18 @@ from 2026-04-24 through 2026-05-03.
   keys prefer structural pawn anchors before individual seed pieces. Local setup
   variants are capped per key so broad samples cannot leave Plan Explorer stuck
   loading.
+- On 2026-06-14, Engine Plans Setups gained a Lichess All practical overlay.
+  The setup table now has a `Blend` column that fetches global Lichess All setup
+  families for the current FEN, matches them to same-side engine setup
+  components, and scores the row with the shared move-strength settings so
+  Stockfish support is tempered by practical WDL strength. The overlay preserves
+  existing Lichess All ratings/speeds/date filters but deliberately clears any
+  player-specific explorer filter so the score reflects the broad Lichess All
+  pool. Engine plan/setup rows also expose a compact `Regret` column based on
+  best/weighted CP regret versus the strongest root PV, and the setup blend uses
+  that regret when available before falling back to approval/support heuristics.
+  Keep the fetch gated to Setups view with a saved Lichess token, and keep
+  unmatched rows explicit as `No match` rather than inventing practical stats.
 
 ## Verification Expectations
 

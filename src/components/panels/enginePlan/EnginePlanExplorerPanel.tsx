@@ -25,7 +25,14 @@ import {
   IconRefresh,
   IconRoute,
 } from "@tabler/icons-react";
-import { events, type BestMoves, type EngineOption, type GoMode } from "@/bindings";
+import {
+  events,
+  type BestMoves,
+  type EngineOption,
+  type GoMode,
+  type PlanExplorerSetup,
+  type PlanExplorerSetupPlan,
+} from "@/bindings";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   memo,
@@ -40,6 +47,7 @@ import {
   type ReactNode,
   type SetStateAction,
 } from "react";
+import useSWR from "swr/immutable";
 import { useStore } from "zustand";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import MoveCell from "@/components/common/MoveCell";
@@ -56,7 +64,10 @@ import {
   enginePlanTimeMsAtom,
   enginePlanViewAtom,
   enginesAtom,
+  lichessOptionsAtom,
+  moveStrengthSettingsAtom,
   planExplorerArrowLimitAtom,
+  sessionsAtom,
   showPlanExplorerArrowsAtom,
 } from "@/state/atoms";
 import {
@@ -78,17 +89,28 @@ import {
   stopEngine,
 } from "@/utils/engines";
 import {
+  detectPlanCastling,
   isPlanBrush,
   planLineToShapes,
   planLinesToShapes,
   type ColoredPlanExplorerLine,
   type PlanExplorerSegment,
 } from "@/utils/planExplorer";
+import { getOnlinePlanExplorer } from "@/utils/lichess/planExplorer";
+import {
+  evaluateMoveStrength,
+  getEngineScoreSpreadCp,
+  getPracticalWdlRate,
+  getUsageAwarePracticalWdlRate,
+  normalizeMoveStrengthSettings,
+  type MoveStrengthSettings,
+} from "@/utils/moveStrength";
 import { withLimitedRecordEntry } from "@/utils/boundedCache";
 import { positionFromFen } from "@/utils/chessops";
 import PlanCoachInline, { type PlanCoachInlineRequest } from "../plan/PlanCoachInline";
 
 const MAX_ENGINE_PLAN_REPORT_CACHE_ENTRIES = 24;
+const ENGINE_SETUP_PRACTICAL_MAX_PLIES = 8;
 
 type ActiveRequest = {
   token: number;
@@ -101,13 +123,37 @@ type ActiveRequest = {
 };
 
 type SortDirection = "asc" | "desc";
-type EnginePlanSortKey = "plan" | "strength" | "support" | "eval" | "confidence";
+type EnginePlanSortKey =
+  | "plan"
+  | "blend"
+  | "strength"
+  | "regret"
+  | "support"
+  | "eval"
+  | "confidence";
 type EnginePlanSort = {
   key: EnginePlanSortKey;
   direction: SortDirection;
 };
 type EnginePlanSideFilter = "all" | "white" | "black";
 type EnginePlanView = "plans" | "setups";
+type EngineSetupPracticalMatch = {
+  setup: PlanExplorerSetup;
+  matchedComponents: number;
+  totalComponents: number;
+  rowComponents: number;
+  anchorMatches: number;
+};
+type EngineSetupBlend = {
+  score: number;
+  label: string;
+  detail: string;
+  databaseScore: number | null;
+  databaseWdlLoss: number | null;
+  engineCpLoss: number | null;
+  engineUnsafe: boolean;
+  practical: EngineSetupPracticalMatch | null;
+};
 
 function EnginePlanExplorerPanel() {
   const store = useContext(TreeStateContext)!;
@@ -118,6 +164,9 @@ function EnginePlanExplorerPanel() {
   const makeMoves = useStore(store, (s) => s.makeMoves);
   const goToMove = useStore(store, (s) => s.goToMove);
   const engines = useAtomValue(enginesAtom);
+  const sessions = useAtomValue(sessionsAtom);
+  const lichessOptions = useAtomValue(lichessOptionsAtom);
+  const moveStrengthSettings = useAtomValue(moveStrengthSettingsAtom);
   const activeTab = useAtomValue(activeTabAtom);
   const setBoardPreviewShapes = useSetAtom(currentBoardPreviewShapesAtom);
   const setEnginePlanData = useSetAtom(currentEnginePlanExplorerDataAtom);
@@ -142,6 +191,12 @@ function EnginePlanExplorerPanel() {
   const returnPathRef = useRef<number[] | null>(null);
   const tokenRef = useRef(0);
   const { progress, running, error } = planState;
+  const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
+    ?.accessToken;
+  const lichessOptionsKey = JSON.stringify({
+    ...lichessOptions,
+    player: undefined,
+  });
 
   const cleanupListener = useCallback(() => {
     unlistenRef.current?.();
@@ -246,6 +301,47 @@ function EnginePlanExplorerPanel() {
       setups: visibleReport.setups.filter((setup) => setup.color === sideFilter),
     };
   }, [sideFilter, visibleReport]);
+  const practicalLichessOptions = useMemo(
+    () => ({
+      ...lichessOptions,
+      player: undefined,
+      topGames: 0,
+      recentGames: 0,
+    }),
+    [lichessOptions],
+  );
+  const practicalSetupKey =
+    view === "setups" && visibleReport && explorerToken
+      ? [
+          "engine-plan-setup-practical",
+          visibleReport.fen,
+          lichessOptionsKey,
+          ENGINE_SETUP_PRACTICAL_MAX_PLIES,
+          "auth",
+        ]
+      : null;
+  const {
+    data: practicalSetupData,
+    isLoading: practicalSetupLoading,
+    error: practicalSetupError,
+  } = useSWR(practicalSetupKey, () =>
+    getOnlinePlanExplorer(
+      "lch_all",
+      visibleReport!.fen,
+      practicalLichessOptions,
+      ENGINE_SETUP_PRACTICAL_MAX_PLIES,
+      explorerToken,
+    ),
+  );
+  const practicalSetupBlends = useMemo(
+    () =>
+      buildEngineSetupBlendBySignature(
+        filteredReport?.setups ?? [],
+        practicalSetupData?.setups ?? [],
+        moveStrengthSettings,
+      ),
+    [filteredReport?.setups, moveStrengthSettings, practicalSetupData?.setups],
+  );
 
   useEffect(() => {
     setEnginePlanData(filteredReport ? engineReportToPlanExplorerData(filteredReport) : null);
@@ -532,6 +628,28 @@ function EnginePlanExplorerPanel() {
               <Badge variant="light">{visibleReport.totalPvs} PVs</Badge>
               <Badge variant="light">{visibleReport.limitLabel}</Badge>
               <Badge variant="light">{sideFilterLabel(sideFilter)}</Badge>
+              {view === "setups" && (
+                <Badge
+                  variant="light"
+                  color={
+                    practicalSetupLoading
+                      ? "blue"
+                      : practicalSetupError
+                        ? "orange"
+                        : explorerToken
+                          ? "teal"
+                          : "gray"
+                  }
+                >
+                  {practicalSetupLoading
+                    ? "Lichess All loading"
+                    : practicalSetupError
+                      ? "Lichess All unavailable"
+                      : explorerToken
+                        ? "Lichess All blend"
+                        : "Link Lichess for blend"}
+                </Badge>
+              )}
             </Group>
             <Text size="xs" c="dimmed">
               Raw eval details are kept inside each row.
@@ -570,6 +688,10 @@ function EnginePlanExplorerPanel() {
               totalPvs={visibleReport.totalPvs}
               sort={planSort}
               setSort={setPlanSort}
+              blendBySetupSignature={practicalSetupBlends}
+              practicalLoading={practicalSetupLoading}
+              practicalError={practicalSetupError}
+              hasExplorerToken={!!explorerToken}
               drawLines={drawLines}
               previewLine={setPreviewLine}
               previewMove={previewBoardMove}
@@ -787,7 +909,10 @@ function PlansTable({
             Plan
           </SortableEngineTh>
           <SortableEngineTh sortKey="strength" sort={sort} setSort={setSort} style={{ width: 118 }}>
-            Strength
+            PV Support
+          </SortableEngineTh>
+          <SortableEngineTh sortKey="regret" sort={sort} setSort={setSort} style={{ width: 104 }}>
+            Regret
           </SortableEngineTh>
           <SortableEngineTh sortKey="support" sort={sort} setSort={setSort} style={{ width: 110 }}>
             Support
@@ -831,6 +956,10 @@ function SetupsTable({
   totalPvs,
   sort,
   setSort,
+  blendBySetupSignature,
+  practicalLoading,
+  practicalError,
+  hasExplorerToken,
   drawLines,
   previewLine,
   previewMove,
@@ -842,13 +971,20 @@ function SetupsTable({
   totalPvs: number;
   sort: EnginePlanSort;
   setSort: Dispatch<SetStateAction<EnginePlanSort>>;
+  blendBySetupSignature: Map<string, EngineSetupBlend>;
+  practicalLoading: boolean;
+  practicalError: unknown;
+  hasExplorerToken: boolean;
   drawLines: (lines: ColoredPlanExplorerLine[]) => void;
   previewLine: (line: ColoredPlanExplorerLine | ColoredPlanExplorerLine[] | null) => void;
   previewMove: (move: EnginePlanMovePreview, pinned?: boolean) => void;
   loadPvMove: (uciMoves: string[], moveIndex: number) => void;
   clearPreview: () => void;
 }) {
-  const sortedSetups = useMemo(() => sortEngineSetups(setups, sort).slice(0, 30), [setups, sort]);
+  const sortedSetups = useMemo(
+    () => sortEngineSetups(setups, sort, blendBySetupSignature).slice(0, 30),
+    [blendBySetupSignature, setups, sort],
+  );
 
   return (
     <Table withTableBorder highlightOnHover stickyHeader>
@@ -857,8 +993,14 @@ function SetupsTable({
           <SortableEngineTh sortKey="plan" sort={sort} setSort={setSort}>
             Setup
           </SortableEngineTh>
+          <SortableEngineTh sortKey="blend" sort={sort} setSort={setSort} style={{ width: 122 }}>
+            Blend
+          </SortableEngineTh>
           <SortableEngineTh sortKey="strength" sort={sort} setSort={setSort} style={{ width: 118 }}>
-            Strength
+            PV Support
+          </SortableEngineTh>
+          <SortableEngineTh sortKey="regret" sort={sort} setSort={setSort} style={{ width: 104 }}>
+            Regret
           </SortableEngineTh>
           <SortableEngineTh sortKey="support" sort={sort} setSort={setSort} style={{ width: 110 }}>
             Support
@@ -884,6 +1026,10 @@ function SetupsTable({
             setup={setup}
             rootFen={rootFen}
             totalPvs={totalPvs}
+            blend={blendBySetupSignature.get(setup.signature) ?? null}
+            practicalLoading={practicalLoading}
+            practicalError={practicalError}
+            hasExplorerToken={hasExplorerToken}
             drawLines={drawLines}
             previewLine={previewLine}
             previewMove={previewMove}
@@ -900,6 +1046,10 @@ function SetupRow({
   setup,
   rootFen,
   totalPvs,
+  blend,
+  practicalLoading,
+  practicalError,
+  hasExplorerToken,
   drawLines,
   previewLine,
   previewMove,
@@ -909,6 +1059,10 @@ function SetupRow({
   setup: EnginePlanSetup;
   rootFen: string;
   totalPvs: number;
+  blend: EngineSetupBlend | null;
+  practicalLoading: boolean;
+  practicalError: unknown;
+  hasExplorerToken: boolean;
   drawLines: (lines: ColoredPlanExplorerLine[]) => void;
   previewLine: (line: ColoredPlanExplorerLine | ColoredPlanExplorerLine[] | null) => void;
   previewMove: (move: EnginePlanMovePreview, pinned?: boolean) => void;
@@ -920,8 +1074,8 @@ function SetupRow({
     [setup.plans],
   );
   const coachRequest = useMemo(
-    () => buildEngineSetupCoachRequest(setup, rootFen, totalPvs),
-    [rootFen, setup, totalPvs],
+    () => buildEngineSetupCoachRequest(setup, rootFen, totalPvs, blend),
+    [blend, rootFen, setup, totalPvs],
   );
   const coachCacheKey = useMemo(
     () =>
@@ -932,8 +1086,10 @@ function SetupRow({
         setup.approval,
         setup.supportCount,
         setup.weightedEvalCp ?? "mate-or-none",
+        blend?.score ?? "no-blend",
+        blend?.practical?.setup.games ?? "no-practical",
       ].join("|"),
-    [rootFen, setup],
+    [blend, rootFen, setup],
   );
 
   return (
@@ -988,9 +1144,20 @@ function SetupRow({
         </Stack>
       </Table.Td>
       <Table.Td>
+        <SetupBlendCell
+          blend={blend}
+          loading={practicalLoading}
+          error={practicalError}
+          hasExplorerToken={hasExplorerToken}
+        />
+      </Table.Td>
+      <Table.Td>
         <Badge color={approvalColor(setup.approval)} variant="light">
           {setup.approval}
         </Badge>
+      </Table.Td>
+      <Table.Td>
+        <EngineRegretCell target={setup} />
       </Table.Td>
       <Table.Td>
         <Stack gap={0}>
@@ -1019,6 +1186,104 @@ function SetupRow({
         )}
       </Table.Td>
     </Table.Tr>
+  );
+}
+
+function SetupBlendCell({
+  blend,
+  loading,
+  error,
+  hasExplorerToken,
+}: {
+  blend: EngineSetupBlend | null;
+  loading: boolean;
+  error: unknown;
+  hasExplorerToken: boolean;
+}) {
+  if (!hasExplorerToken) {
+    return (
+      <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+        Link Lichess
+      </Text>
+    );
+  }
+
+  if (loading && !blend) {
+    return (
+      <Text size="xs" c="dimmed">
+        Loading
+      </Text>
+    );
+  }
+
+  if (error && !blend) {
+    return (
+      <Text size="xs" c="orange">
+        Unavailable
+      </Text>
+    );
+  }
+
+  if (!blend) {
+    return (
+      <Text size="xs" c="dimmed">
+        No match
+      </Text>
+    );
+  }
+
+  return (
+    <Tooltip label={blend.detail} multiline w={330} withArrow>
+      <Stack gap={3}>
+        <Badge color={blend.engineUnsafe ? "yellow" : "teal"} variant="light">
+          {blend.label}
+        </Badge>
+        <Progress value={blend.score} color={blend.engineUnsafe ? "yellow" : "teal"} size={3} />
+        {blend.practical && (
+          <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+            {blend.practical.setup.games.toLocaleString()} games
+          </Text>
+        )}
+      </Stack>
+    </Tooltip>
+  );
+}
+
+function EngineRegretCell({ target }: { target: EnginePlan | EnginePlanSetup }) {
+  if (target.bestRegretCp === null && target.weightedRegretCp === null) {
+    return (
+      <Text size="xs" c="dimmed">
+        n/a
+      </Text>
+    );
+  }
+
+  const regretCp = target.bestRegretCp ?? target.weightedRegretCp ?? 0;
+  const label = formatEngineRegretCp(regretCp);
+  const severity = engineRegretSeverity(regretCp);
+  const detail = [
+    `Regret ${label} versus the best root PV`,
+    target.weightedRegretCp !== null
+      ? `weighted support regret ${formatEngineRegretCp(target.weightedRegretCp)}`
+      : null,
+    target.bestQualityCp !== null
+      ? `best supporting quality ${Math.round(target.bestQualityCp)} cp`
+      : null,
+  ]
+    .filter((part): part is string => !!part)
+    .join(". ");
+
+  return (
+    <Tooltip label={detail} multiline w={280} withArrow>
+      <Stack gap={2}>
+        <Badge color={engineRegretColor(severity)} variant="light">
+          {engineRegretLabel(severity)}
+        </Badge>
+        <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+          {label}
+        </Text>
+      </Stack>
+    </Tooltip>
   );
 }
 
@@ -1109,6 +1374,9 @@ function PlanRow({
         <Badge color={approvalColor(plan.approval)} variant="light">
           {plan.approval}
         </Badge>
+      </Table.Td>
+      <Table.Td>
+        <EngineRegretCell target={plan} />
       </Table.Td>
       <Table.Td>
         <Stack gap={0}>
@@ -1302,9 +1570,13 @@ function sortEnginePlans(plans: EnginePlan[], sort: EnginePlanSort) {
         diff = a.label.localeCompare(b.label);
         break;
       case "strength":
+      case "blend":
         diff =
           engineApprovalScore(a.approval) - engineApprovalScore(b.approval) ||
           a.supportCount - b.supportCount;
+        break;
+      case "regret":
+        diff = engineRegretSortScore(a) - engineRegretSortScore(b);
         break;
       case "support":
         diff = a.supportCount - b.supportCount || a.supportRatio - b.supportRatio;
@@ -1323,7 +1595,11 @@ function sortEnginePlans(plans: EnginePlan[], sort: EnginePlanSort) {
   });
 }
 
-function sortEngineSetups(setups: EnginePlanSetup[], sort: EnginePlanSort) {
+function sortEngineSetups(
+  setups: EnginePlanSetup[],
+  sort: EnginePlanSort,
+  blendBySetupSignature: Map<string, EngineSetupBlend>,
+) {
   const direction = sort.direction === "asc" ? 1 : -1;
 
   return [...setups].sort((a, b) => {
@@ -1332,11 +1608,22 @@ function sortEngineSetups(setups: EnginePlanSetup[], sort: EnginePlanSort) {
       case "plan":
         diff = a.label.localeCompare(b.label);
         break;
+      case "blend":
+        diff =
+          (blendBySetupSignature.get(a.signature)?.score ?? -1) -
+            (blendBySetupSignature.get(b.signature)?.score ?? -1) ||
+          engineApprovalScore(a.approval) - engineApprovalScore(b.approval) ||
+          a.supportCount - b.supportCount ||
+          a.plans.length - b.plans.length;
+        break;
       case "strength":
         diff =
           engineApprovalScore(a.approval) - engineApprovalScore(b.approval) ||
           a.supportCount - b.supportCount ||
           a.plans.length - b.plans.length;
+        break;
+      case "regret":
+        diff = engineRegretSortScore(a) - engineRegretSortScore(b);
         break;
       case "support":
         diff = a.supportCount - b.supportCount || a.supportRatio - b.supportRatio;
@@ -1356,7 +1643,7 @@ function sortEngineSetups(setups: EnginePlanSetup[], sort: EnginePlanSort) {
 }
 
 function defaultEnginePlanSortDirection(key: EnginePlanSortKey): SortDirection {
-  return key === "plan" ? "asc" : "desc";
+  return key === "plan" || key === "regret" ? "asc" : "desc";
 }
 
 function engineApprovalScore(approval: EnginePlan["approval"]) {
@@ -1385,6 +1672,423 @@ function engineConfidenceScore(confidence: EnginePlan["confidence"]) {
 
 function nullableEvalSortScore(value: number | null) {
   return value ?? Number.NEGATIVE_INFINITY;
+}
+
+function engineRegretSortScore(target: EnginePlan | EnginePlanSetup) {
+  return target.bestRegretCp ?? target.weightedRegretCp ?? Number.POSITIVE_INFINITY;
+}
+
+function buildEngineSetupBlendBySignature(
+  setups: EnginePlanSetup[],
+  practicalSetups: PlanExplorerSetup[],
+  strengthSettings: Partial<MoveStrengthSettings> | null | undefined,
+) {
+  const settings = normalizeMoveStrengthSettings(strengthSettings);
+  if (setups.length === 0 || practicalSetups.length === 0) {
+    return new Map<string, EngineSetupBlend>();
+  }
+
+  const candidates = setups.map((setup) => {
+    const practical = findPracticalSetupMatch(setup, practicalSetups);
+    const games = practical?.setup.games ?? 0;
+    const databaseScore =
+      practical && games > 0
+        ? getPracticalWdlRate(
+            {
+              white: practical.setup.white,
+              draw: practical.setup.draw,
+              black: practical.setup.black,
+            },
+            setup.color,
+          )
+        : null;
+
+    return {
+      setup,
+      practical,
+      perspective: setup.color,
+      games,
+      databaseScore,
+      engineCpLoss: getEngineSetupCpLoss(setup, settings),
+    };
+  });
+  const baselines = getEngineSetupBlendBaselines(candidates);
+  const engineSpread = getEngineScoreSpreadCp(
+    candidates.map((candidate) =>
+      candidate.engineCpLoss === null ? null : -candidate.engineCpLoss,
+    ),
+  );
+  const entries: [string, EngineSetupBlend][] = [];
+
+  for (const candidate of candidates) {
+    if (!candidate.practical) continue;
+
+    const baseline = baselines.get(candidate.perspective);
+    const databaseScore = getUsageAwarePracticalWdlRate({
+      score: candidate.databaseScore,
+      total: candidate.games,
+      usageShare:
+        baseline && baseline.totalGames > 0 ? candidate.games / baseline.totalGames : null,
+      baseline: baseline?.average ?? null,
+      mode: settings.mode,
+    });
+    const databaseWdlLoss =
+      databaseScore === null || baseline?.best === null || baseline?.best === undefined
+        ? null
+        : Math.max(0, baseline.best - databaseScore);
+    const blended = evaluateMoveStrength({
+      settings,
+      engineCpLoss: candidate.engineCpLoss,
+      hasEngineMoves: true,
+      databaseWdlLoss,
+      engineScoreSpreadCp: engineSpread,
+    });
+
+    entries.push([
+      candidate.setup.signature,
+      {
+        score: blended.score,
+        label: blended.score.toString(),
+        detail: formatEngineSetupBlendDetail({
+          settings,
+          score: blended.score,
+          engineCpLoss: candidate.engineCpLoss,
+          engineUnsafe: blended.engineUnsafe,
+          databaseScore,
+          databaseWdlLoss,
+          practical: candidate.practical,
+          perspective: candidate.perspective,
+        }),
+        databaseScore,
+        databaseWdlLoss,
+        engineCpLoss: candidate.engineCpLoss,
+        engineUnsafe: blended.engineUnsafe,
+        practical: candidate.practical,
+      },
+    ]);
+  }
+
+  return new Map(entries);
+}
+
+function findPracticalSetupMatch(
+  setup: EnginePlanSetup,
+  practicalSetups: PlanExplorerSetup[],
+): EngineSetupPracticalMatch | null {
+  const engineComponents = new Set(setup.plans.map((plan) => plan.signature));
+  const engineAnchors = [...engineComponents].filter(isSetupAnchorSignature);
+  let best:
+    | (EngineSetupPracticalMatch & {
+        rankScore: number;
+      })
+    | null = null;
+
+  for (const practical of practicalSetups) {
+    if (practicalSetupSide(practical) !== setup.color) continue;
+
+    const practicalComponents = practicalSetupComponentSignatures(practical);
+    if (practicalComponents.size === 0) continue;
+
+    const overlap = [...practicalComponents].filter((signature) => engineComponents.has(signature));
+    const matchedComponents = overlap.length;
+    if (matchedComponents < 2) continue;
+
+    const anchorMatches = overlap.filter(isSetupAnchorSignature).length;
+    if (engineAnchors.length > 0 && anchorMatches === 0) continue;
+
+    const rowShare = matchedComponents / Math.max(1, practicalComponents.size);
+    const engineShare = matchedComponents / Math.max(1, engineComponents.size);
+    if (rowShare < 0.5 && engineShare < 0.34) continue;
+
+    const rankScore =
+      matchedComponents * 100 +
+      anchorMatches * 30 +
+      rowShare * 20 +
+      engineShare * 10 +
+      Math.log10(practical.games + 1);
+    if (!best || rankScore > best.rankScore) {
+      best = {
+        setup: practical,
+        matchedComponents,
+        totalComponents: engineComponents.size,
+        rowComponents: practicalComponents.size,
+        anchorMatches,
+        rankScore,
+      };
+    }
+  }
+
+  if (!best) return null;
+  const { rankScore: _rankScore, ...match } = best;
+  return match;
+}
+
+function practicalSetupComponentSignatures(setup: PlanExplorerSetup) {
+  return new Set(
+    setup.plans
+      .map(practicalSetupPlanSignature)
+      .filter((signature): signature is string => !!signature),
+  );
+}
+
+function practicalSetupPlanSignature(plan: PlanExplorerSetupPlan) {
+  const color = plan.color === "black" ? "black" : "white";
+  const to = plan.line.squares.at(-1);
+  if (!to) return null;
+
+  const castling = plan.role === "king" ? detectPlanCastling(plan.line, color) : null;
+  if (castling) {
+    return `castling:${color}:${castling.side}`;
+  }
+
+  switch (plan.role) {
+    case "pawn":
+      return `pawn_setup:${color}:${to}`;
+    case "bishop":
+    case "knight":
+    case "rook":
+    case "queen":
+    case "king":
+      return `piece_destination:${color}:${plan.role}:${to}`;
+    default:
+      return null;
+  }
+}
+
+function practicalSetupSide(setup: PlanExplorerSetup) {
+  const colors = new Set(setup.plans.map((plan) => plan.color));
+  if (colors.size !== 1) return null;
+
+  const color = setup.plans[0]?.color;
+  return color === "black" || color === "white" ? color : null;
+}
+
+function isSetupAnchorSignature(signature: string) {
+  if (signature.startsWith("castling:")) return true;
+  if (/^piece_destination:(white|black):(bishop|knight):/.test(signature)) return true;
+  return (
+    signature === "pawn_setup:white:b3" ||
+    signature === "pawn_setup:white:g3" ||
+    signature === "pawn_setup:black:b6" ||
+    signature === "pawn_setup:black:g6"
+  );
+}
+
+function getEngineSetupCpLoss(setup: EnginePlanSetup, settings: MoveStrengthSettings) {
+  const setupRegret = setup.bestRegretCp ?? setup.weightedRegretCp;
+  const planRegrets = setup.plans
+    .map((plan) => plan.bestRegretCp ?? plan.weightedRegretCp)
+    .filter((value): value is number => value !== null);
+
+  if (setupRegret !== null) {
+    if (planRegrets.length === 0) return setupRegret;
+
+    const average = planRegrets.reduce((sum, loss) => sum + loss, 0) / planRegrets.length;
+    const worst = Math.max(...planRegrets);
+    return setupRegret * 0.65 + average * 0.2 + worst * 0.15;
+  }
+
+  const maxLoss = Math.max(1, settings.maxEngineCpLoss);
+  const setupLoss = getEngineEvidenceCpLoss({
+    approval: setup.approval,
+    confidence: setup.confidence,
+    supportCount: setup.supportCount,
+    appearsInTopPv: setup.appearsInTopPv,
+    maxLoss,
+  });
+  const planLosses = setup.plans.map(
+    (plan) =>
+      plan.bestRegretCp ??
+      plan.weightedRegretCp ??
+      getEngineEvidenceCpLoss({
+        approval: plan.approval,
+        confidence: plan.confidence,
+        supportCount: plan.supportCount,
+        appearsInTopPv: plan.appearsInTopPv,
+        maxLoss,
+      }),
+  );
+  if (planLosses.length === 0) return setupLoss;
+
+  const average = planLosses.reduce((sum, loss) => sum + loss, 0) / planLosses.length;
+  const worst = Math.max(...planLosses);
+  return setupLoss * 0.5 + average * 0.25 + worst * 0.25;
+}
+
+function getEngineEvidenceCpLoss({
+  approval,
+  confidence,
+  supportCount,
+  appearsInTopPv,
+  maxLoss,
+}: {
+  approval: EnginePlan["approval"];
+  confidence: EnginePlan["confidence"];
+  supportCount: number;
+  appearsInTopPv: boolean;
+  maxLoss: number;
+}) {
+  const approvalLoss = (() => {
+    switch (approval) {
+      case "Strong":
+        return appearsInTopPv ? 0 : maxLoss * 0.12;
+      case "OK":
+        return maxLoss * 0.38;
+      case "Unclear":
+        return maxLoss * 0.72;
+      case "Weak":
+        return maxLoss * 1.15;
+    }
+  })();
+  const confidencePenalty =
+    confidence === "High" ? 0 : confidence === "Medium" ? maxLoss * 0.08 : maxLoss * 0.16;
+  const supportBonus = Math.min(maxLoss * 0.18, Math.max(0, supportCount - 1) * maxLoss * 0.05);
+
+  return Math.max(0, approvalLoss + confidencePenalty - supportBonus);
+}
+
+function getEngineSetupBlendBaselines<
+  T extends { perspective: string; games: number; databaseScore: number | null },
+>(candidates: T[]) {
+  const grouped = new Map<
+    string,
+    { totalGames: number; weightedScore: number; best: number | null }
+  >();
+
+  for (const candidate of candidates) {
+    const current = grouped.get(candidate.perspective) ?? {
+      totalGames: 0,
+      weightedScore: 0,
+      best: null,
+    };
+    current.totalGames += candidate.games;
+    if (candidate.databaseScore !== null) {
+      current.weightedScore += candidate.databaseScore * candidate.games;
+      current.best =
+        current.best === null
+          ? candidate.databaseScore
+          : Math.max(current.best, candidate.databaseScore);
+    }
+    grouped.set(candidate.perspective, current);
+  }
+
+  return new Map(
+    [...grouped.entries()].map(([perspective, value]) => [
+      perspective,
+      {
+        totalGames: value.totalGames,
+        average: value.totalGames > 0 ? value.weightedScore / value.totalGames : 0.5,
+        best: value.best,
+      },
+    ]),
+  );
+}
+
+function formatEngineSetupBlendDetail({
+  settings,
+  score,
+  engineCpLoss,
+  engineUnsafe,
+  databaseScore,
+  databaseWdlLoss,
+  practical,
+  perspective,
+}: {
+  settings: MoveStrengthSettings;
+  score: number;
+  engineCpLoss: number | null;
+  engineUnsafe: boolean;
+  databaseScore: number | null;
+  databaseWdlLoss: number | null;
+  practical: EngineSetupPracticalMatch;
+  perspective: "white" | "black";
+}) {
+  const parts = [`Blended strength ${score}`];
+  parts.push(
+    `${formatMoveStrengthMode(settings.mode)} mode, ${settings.engineWeight}% engine blend, max ${settings.maxEngineCpLoss} cp drop`,
+  );
+  parts.push(
+    engineCpLoss === null
+      ? "No engine regret score"
+      : `${formatEngineRegretCp(engineCpLoss)} engine regret versus the strongest available PV`,
+  );
+  parts.push(
+    `Lichess All match ${practical.matchedComponents}/${practical.totalComponents} setup components (${practical.setup.games.toLocaleString()} games)`,
+  );
+  if (databaseScore === null) {
+    parts.push("Practical WDL unavailable");
+  } else {
+    parts.push(`Practical WDL ${formatPercent(databaseScore)} for ${formatSideName(perspective)}`);
+  }
+  if (databaseWdlLoss !== null && databaseWdlLoss > 0) {
+    parts.push(`${formatWdlPointLoss(databaseWdlLoss)} WDL points behind best matched setup`);
+  }
+  if (engineUnsafe) {
+    parts.push("Over the configured CP-drop limit");
+  }
+  return parts.join(". ");
+}
+
+function formatMoveStrengthMode(mode: MoveStrengthSettings["mode"]) {
+  switch (mode) {
+    case "smart":
+      return "Smart";
+    case "engine":
+      return "Engine";
+    case "practical":
+      return "Practical";
+  }
+}
+
+function formatPercent(value: number) {
+  return `${(value * 100).toFixed(1).replace(/\.0$/, "")}%`;
+}
+
+function formatWdlPointLoss(value: number) {
+  return (value * 100).toFixed(1).replace(/\.0$/, "");
+}
+
+function formatSideName(side: "white" | "black") {
+  return side === "white" ? "White" : "Black";
+}
+
+type EngineRegretSeverity = "best" | "playable" | "concession" | "dubious";
+
+function engineRegretSeverity(cp: number): EngineRegretSeverity {
+  if (cp <= 20) return "best";
+  if (cp <= 60) return "playable";
+  if (cp <= 120) return "concession";
+  return "dubious";
+}
+
+function engineRegretLabel(severity: EngineRegretSeverity) {
+  switch (severity) {
+    case "best":
+      return "Best";
+    case "playable":
+      return "Playable";
+    case "concession":
+      return "Concession";
+    case "dubious":
+      return "Dubious";
+  }
+}
+
+function engineRegretColor(severity: EngineRegretSeverity) {
+  switch (severity) {
+    case "best":
+      return "green";
+    case "playable":
+      return "blue";
+    case "concession":
+      return "orange";
+    case "dubious":
+      return "red";
+  }
+}
+
+function formatEngineRegretCp(value: number) {
+  return value <= 0 ? "0 cp" : `${Math.round(value)} cp`;
 }
 
 function buildEngineOptions(
@@ -1498,6 +2202,8 @@ function buildEnginePlanCoachRequest(
       `Confidence: ${plan.confidence}`,
       `Support: ${plan.supportCount}/${totalPvs} PVs (${(plan.supportRatio * 100).toFixed(0)}%)`,
       `Top PV: ${plan.appearsInTopPv ? "yes" : "no"}`,
+      `Best-line regret: ${formatNullableRegretCp(plan.bestRegretCp)}`,
+      `Weighted regret: ${formatNullableRegretCp(plan.weightedRegretCp)}`,
       `Weighted eval: ${formatNullableEvalCp(plan.weightedEvalCp)}`,
       `Best supporting eval: ${formatNullableEvalCp(plan.bestEvalCp)}`,
       "Database stats: not present in this engine-only panel; use Plan Explorer rows for database WDL evidence.",
@@ -1510,6 +2216,7 @@ function buildEngineSetupCoachRequest(
   setup: EnginePlanSetup,
   rootFen: string,
   totalPvs: number,
+  blend: EngineSetupBlend | null,
 ): PlanCoachInlineRequest {
   return {
     fen: rootFen,
@@ -1524,18 +2231,24 @@ function buildEngineSetupCoachRequest(
       )}. Explain whether this has features of a named setup, such as a King's Indian setup, Hedgehog, fianchetto setup, minority attack, or other standard structure, only when the supplied facts justify it.`,
     planLines: setup.plans.map((plan) => formatEnginePlanForCoach(plan, totalPvs)),
     stats: [
-      "Source: local Stockfish PV setup extraction",
+      blend
+        ? "Source: local Stockfish PV setup extraction plus Lichess All practical setup match"
+        : "Source: local Stockfish PV setup extraction",
       `Position: ${sideToMoveLabel(rootFen)} to move`,
       `Color: ${setup.color}`,
       `Engine approval: ${setup.approval}`,
       `Confidence: ${setup.confidence}`,
       `Support: ${setup.supportCount}/${totalPvs} PVs (${(setup.supportRatio * 100).toFixed(0)}%)`,
       `Top PV: ${setup.appearsInTopPv ? "yes" : "no"}`,
+      `Best-line regret: ${formatNullableRegretCp(setup.bestRegretCp)}`,
+      `Weighted regret: ${formatNullableRegretCp(setup.weightedRegretCp)}`,
       `Weighted eval: ${formatNullableEvalCp(setup.weightedEvalCp)}`,
       `Best supporting eval: ${formatNullableEvalCp(setup.bestEvalCp)}`,
       `Setup size: ${setup.plans.length} component plans`,
-      "Database stats: not present in this engine-only panel; use Plan Explorer rows for database WDL evidence.",
-    ],
+      blend
+        ? `Blended strength: ${blend.label}. ${blend.detail}`
+        : "Lichess All practical stats: no matching setup row available.",
+    ].filter((item): item is string => !!item),
     evidence: [
       ...setup.plans.flatMap((plan) => formatEngineEvidenceForCoach(plan.evidence).slice(0, 2)),
       ...formatEngineEvidenceForCoach(setup.evidence).slice(0, 4),
@@ -1550,6 +2263,7 @@ function formatEnginePlanForCoach(plan: EnginePlan, totalPvs: number) {
     `approval ${plan.approval}`,
     `confidence ${plan.confidence}`,
     `support ${plan.supportCount}/${totalPvs} PVs`,
+    `regret ${formatNullableRegretCp(plan.bestRegretCp)}`,
     `weighted eval ${formatNullableEvalCp(plan.weightedEvalCp)}`,
     plan.explanation,
   ].join("; ");
@@ -1574,6 +2288,10 @@ function formatEngineEvidenceForCoach(evidence: EnginePlan["evidence"]) {
 
 function formatNullableEvalCp(value: number | null) {
   return value === null ? "unavailable" : formatEvalCp(value);
+}
+
+function formatNullableRegretCp(value: number | null) {
+  return value === null ? "unavailable" : formatEngineRegretCp(value);
 }
 
 function sideToMoveLabel(fen: string) {

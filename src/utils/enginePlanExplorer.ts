@@ -62,6 +62,11 @@ export type EnginePlan = EnginePlanSignal & {
     bestEvalCp: number | null;
     averageEvalCp: number | null;
     weightedEvalCp: number | null;
+    bestQualityCp: number | null;
+    averageQualityCp: number | null;
+    weightedQualityCp: number | null;
+    bestRegretCp: number | null;
+    weightedRegretCp: number | null;
 };
 
 export type EnginePlanSetup = {
@@ -80,6 +85,11 @@ export type EnginePlanSetup = {
     bestEvalCp: number | null;
     averageEvalCp: number | null;
     weightedEvalCp: number | null;
+    bestQualityCp: number | null;
+    averageQualityCp: number | null;
+    weightedQualityCp: number | null;
+    bestRegretCp: number | null;
+    weightedRegretCp: number | null;
 };
 
 export type EnginePlanReport = {
@@ -1208,6 +1218,16 @@ function scoreEngineEvidence(
     const averageEvalCp = averageCp(evidence, "evalCp");
     const bestEvalCp = bestSupportingEvalCp(evidence);
     const weightedQualityCp = weightedAverageCp(evidence, "qualityCp");
+    const averageQualityCp = averageCp(evidence, "qualityCp");
+    const bestQualityCp = bestSupportingQualityCp(evidence);
+    const bestRegretCp =
+        rootBestQuality !== null && bestQualityCp !== null
+            ? Math.max(0, rootBestQuality - bestQualityCp)
+            : null;
+    const weightedRegretCp =
+        rootBestQuality !== null && weightedQualityCp !== null
+            ? Math.max(0, rootBestQuality - weightedQualityCp)
+            : null;
     const nearBest =
         rootBestQuality !== null &&
         weightedQualityCp !== null &&
@@ -1259,6 +1279,11 @@ function scoreEngineEvidence(
         bestEvalCp,
         averageEvalCp,
         weightedEvalCp,
+        bestQualityCp,
+        averageQualityCp,
+        weightedQualityCp,
+        bestRegretCp,
+        weightedRegretCp,
     };
 }
 
@@ -1530,6 +1555,14 @@ function bestSupportingEvalCp(evidence: EnginePlanEvidence[]) {
     const cpLines = evidence.filter((line) => line.evalCp !== null && line.qualityCp !== null);
     if (cpLines.length === 0) return null;
     return cpLines.reduce((best, line) => (line.qualityCp! > best.qualityCp! ? line : best)).evalCp;
+}
+
+function bestSupportingQualityCp(evidence: EnginePlanEvidence[]) {
+    const values = evidence
+        .map((line) => line.qualityCp)
+        .filter((value): value is number => value !== null);
+    if (values.length === 0) return null;
+    return Math.max(...values);
 }
 
 function bestRootQuality(pvs: EnginePlanPv[]) {
