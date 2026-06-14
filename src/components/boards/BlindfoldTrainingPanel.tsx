@@ -845,7 +845,7 @@ export function BlindfoldGamePanel({
       {lastMoveSan && (
         <Paper
           withBorder
-          p="md"
+          p="sm"
           radius="sm"
           role="status"
           aria-live="polite"
@@ -854,7 +854,7 @@ export function BlindfoldGamePanel({
             background: "var(--mantine-color-blue-light)",
           }}
         >
-          <Stack gap={4} align="center">
+          <Stack gap={2} align="center">
             <Text size="xs" fw={800} c="blue" tt="uppercase">
               {engineName} played
             </Text>
@@ -862,7 +862,7 @@ export function BlindfoldGamePanel({
               fw={900}
               ta="center"
               style={{
-                fontSize: "3rem",
+                fontSize: "1.5rem",
                 lineHeight: 1,
                 letterSpacing: 0,
                 wordBreak: "break-word",
@@ -876,7 +876,7 @@ export function BlindfoldGamePanel({
 
       <Divider />
 
-      <Box style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
+      <Box style={{ flex: "1 1 26rem", minHeight: "22rem", overflow: "hidden" }}>
         <BlindfoldMovePanel
           fen={fen}
           gameState={gameState}

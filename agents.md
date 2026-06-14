@@ -2143,12 +2143,13 @@ from 2026-04-24 through 2026-05-03.
   dock setting, engine rows, and evaluation lifecycle as the other board
   workspaces.
 - On 2026-06-15, the Blindfold play panel made the latest engine move a
-  persistent large status panel instead of a timed small alert. Keep the latest
-  engine SAN visible until a newer engine move replaces it, and do not
-  reintroduce the setup-side AI move display duration control. Blindfold tabs
-  also hide the otherwise empty bottom-right workspace pane so the right-side
-  move-entry area expands and the docked engine panel sits at the bottom of the
-  full right column.
+  persistent prominent status panel instead of a timed small alert. Keep the
+  latest engine SAN visible until a newer engine move replaces it, but keep the
+  move readout compact enough that the move-entry panel below remains tall and
+  usable without extra scrolling. Do not reintroduce the setup-side AI move
+  display duration control. Blindfold tabs also hide the otherwise empty
+  bottom-right workspace pane so the right-side move-entry area expands and the
+  docked engine panel sits at the bottom of the full right column.
 - On 2026-06-13, the desktop analysis board under-board move panel was given a
   slightly larger height allocation and switched to compact notation chrome.
   The intent is that the `Moves / Database / Prep / Coach` header takes less
