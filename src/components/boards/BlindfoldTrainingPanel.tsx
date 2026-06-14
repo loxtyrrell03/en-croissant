@@ -530,19 +530,6 @@ export function BlindfoldMaiaSetupPanel({
                 }
               />
             </Group>
-            <NumberInput
-              label="AI move display time"
-              min={0}
-              max={15}
-              step={1}
-              value={Math.round(settings.aiMoveDisplayMs / 1000)}
-              onChange={(value) =>
-                setSettings((current) => ({
-                  ...current,
-                  aiMoveDisplayMs: Math.max(0, Math.min(15, Number(value) || 0)) * 1000,
-                }))
-              }
-            />
             <Group grow>
               <Checkbox
                 label="Highlight last move"
@@ -753,26 +740,12 @@ export function BlindfoldGamePanel({
   onPlayMove,
   onGoToMark,
 }: BlindfoldGamePanelProps) {
-  const [settings] = useAtom(currentBlindfoldGameSettingsAtom);
-  const [displayedLastMove, setDisplayedLastMove] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [takingBack, setTakingBack] = useState(false);
   const turn = activeColorFromFen(fen);
+  const engineName = botLabel(players);
   const currentPathKey = blindfoldPathKey(currentPath);
   const currentMark = marks.find((mark) => blindfoldPathKey(mark.path) === currentPathKey);
-
-  useEffect(() => {
-    if (!lastMoveSan || settings.aiMoveDisplayMs <= 0) {
-      setDisplayedLastMove(null);
-      return;
-    }
-
-    setDisplayedLastMove(lastMoveSan);
-    const timeout = window.setTimeout(() => {
-      setDisplayedLastMove(null);
-    }, settings.aiMoveDisplayMs);
-    return () => window.clearTimeout(timeout);
-  }, [lastMoveSan, settings.aiMoveDisplayMs]);
 
   async function saveGameToFile() {
     setSaving(true);
@@ -869,10 +842,36 @@ export function BlindfoldGamePanel({
         </Button>
       </SimpleGrid>
 
-      {displayedLastMove && (
-        <Alert color="blue" variant="light" py="xs">
-          Maia played {displayedLastMove}
-        </Alert>
+      {lastMoveSan && (
+        <Paper
+          withBorder
+          p="md"
+          radius="sm"
+          role="status"
+          aria-live="polite"
+          style={{
+            borderColor: "var(--mantine-color-blue-4)",
+            background: "var(--mantine-color-blue-light)",
+          }}
+        >
+          <Stack gap={4} align="center">
+            <Text size="xs" fw={800} c="blue" tt="uppercase">
+              {engineName} played
+            </Text>
+            <Text
+              fw={900}
+              ta="center"
+              style={{
+                fontSize: "3rem",
+                lineHeight: 1,
+                letterSpacing: 0,
+                wordBreak: "break-word",
+              }}
+            >
+              {lastMoveSan}
+            </Text>
+          </Stack>
+        </Paper>
       )}
 
       <Divider />
