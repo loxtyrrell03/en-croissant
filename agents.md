@@ -2198,15 +2198,18 @@ from 2026-04-24 through 2026-05-03.
   setup-candidate catalog with generic co-occurrence mining. Local database and
   online Lichess/Masters setup rows now infer broad setup families from sampled
   human routes: each sampled branch contributes same-side setup features,
-  recurring seed routes such as a fianchetto pawn, central/support pawn,
-  developed minor, or castling move become setup-family keys, and compatible
-  supporting routes are merged across database samples. This means a row can
-  grow from multiple related games instead of requiring one exact branch to
-  contain the whole configuration, while still using only local/online database
-  games, WDL, and blended strength. The online Lichess/Masters sampler was also
-  widened to follow more popular human branches before mining setups. Do not
-  reintroduce manual opening labels or a hardcoded opening catalog in the
-  database Plan Explorer path.
+  recurring seed routes such as a true fianchetto pawn, developed minor, or
+  castling move become setup-family keys, and compatible supporting routes are
+  merged across database samples. Central/support pawns can support a setup but
+  must not define a setup row on their own; final rows should include at least
+  one minor-piece development or castling route so unrelated pawn bags such as
+  `b4/c3/d3/d4/e4/h3` are filtered out. This means a row can grow from multiple
+  related games instead of requiring one exact branch to contain the whole
+  configuration, while still using only local/online database games, WDL, and
+  blended strength. The online Lichess/Masters sampler was also widened to
+  follow more popular human branches before mining setups. Do not reintroduce
+  manual opening labels or a hardcoded opening catalog in the database Plan
+  Explorer path.
 - A follow-up on 2026-06-14 made Engine Plans setups less PV-literal. Stockfish
   PVs remain the evaluation source, but candidate setup families can now carry
   the full human arrow group when the engine supports a setup-starting move.
@@ -2229,6 +2232,12 @@ from 2026-04-24 through 2026-05-03.
   fianchetto, IQP, Carlsbad, or Maroczy Bind only when the supplied position
   and route evidence justify that label; otherwise it should explain the plan
   without forcing a named setup.
+- A later 2026-06-14 Plan Explorer setup-mode polish pass fixed two interaction
+  traps: empty final engine-strength payloads now clear the running state
+  instead of leaving setup rows on `Analyzing`, setup route hovers preview the
+  route under the pointer before returning to the full setup family, and pinned
+  plan arrows are temporarily hidden during hover previews so row changes remain
+  visually obvious.
 
 ## Verification Expectations
 

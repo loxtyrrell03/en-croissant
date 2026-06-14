@@ -1373,8 +1373,11 @@ function Board({
       nextShapes = nextShapes.concat(boardPreviewShapes.shapes);
     }
 
-    if (currentNode.shapes.length > 0) {
-      nextShapes = nextShapes.concat(currentNode.shapes);
+    const visibleNodeShapes = planExplorerPreviewLine
+      ? currentNode.shapes.filter((shape) => !isPlanBrush(shape.brush))
+      : currentNode.shapes;
+    if (visibleNodeShapes.length > 0) {
+      nextShapes = nextShapes.concat(visibleNodeShapes);
     }
 
     if (activeMistakeReviewReveal) {

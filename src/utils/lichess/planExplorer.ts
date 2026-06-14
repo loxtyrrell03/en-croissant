@@ -419,7 +419,7 @@ function buildPiecesFromLeaves(leaves: BranchNode[]) {
     const setupRows = setups
         .map((group) => group.setup)
         .map(limitSetupPlans)
-        .filter((setup) => setup.plans.length >= PLAN_SETUP_MIN_PLANS)
+        .filter(isValidSetupRow)
         .sort(
             (a, b) =>
                 b.games - a.games ||
@@ -497,7 +497,10 @@ function selectSetupPaths(paths: TrackedPath[], seed: TrackedPath) {
     const selected = [clonePath(seed)];
     const candidates = paths
         .filter((path) => setupPathKey(path) !== setupPathKey(seed))
-        .sort((a, b) => setupPathPriority(b) - setupPathPriority(a) || compareTrackedPath(a, b));
+        .filter((path) => isSetupSupportPath(seed, path))
+        .sort(
+            (a, b) => setupSupportPriority(b) - setupSupportPriority(a) || compareTrackedPath(a, b),
+        );
 
     for (const candidate of candidates) {
         if (selected.length >= PLAN_SETUP_MAX_PLANS) break;
@@ -512,25 +515,49 @@ function isStructuralSetupPath(path: TrackedPath) {
 }
 
 function isSetupSeedPath(path: TrackedPath) {
-    return (
-        path.role === "pawn" || path.role === "knight" || path.role === "bishop" || isCastle(path)
-    );
+    if (path.role === "pawn") return isFianchettoPawnSeed(path);
+    if (path.role === "knight" || path.role === "bishop") return isDevelopmentSetupPath(path);
+    return path.role === "king" && isCastle(path);
 }
 
 function setupSeedPriority(path: TrackedPath) {
-    const last = path.squares.at(-1);
-    const sameFile = !!last && last[0] === path.from[0];
-
-    if (path.role === "pawn" && sameFile && isFianchettoPawnSeed(path)) return 110;
-    if (path.role === "pawn" && sameFile && isCentralOrAdvancedPawnPath(path)) return 100;
-    if (path.role === "pawn" && sameFile) return 72;
+    if (path.role === "pawn" && isFianchettoPawnSeed(path)) return 110;
     if (path.role === "knight" || path.role === "bishop") return 86;
     if (path.role === "king" && isCastle(path)) return 82;
     return 40;
 }
 
 function isFianchettoPawnSeed(path: TrackedPath) {
-    return path.role === "pawn" && (path.from[0] === "b" || path.from[0] === "g");
+    const to = path.squares.at(-1);
+    if (path.role !== "pawn" || !to) return false;
+    if (path.from[0] !== to[0] || !["b", "g"].includes(path.from[0])) return false;
+    return path.color === "white"
+        ? path.from[1] === "2" && to[1] === "3"
+        : path.from[1] === "7" && to[1] === "6";
+}
+
+function isSetupSupportPath(seed: TrackedPath, path: TrackedPath) {
+    if (seed.color !== path.color) return false;
+    return isDevelopmentSetupPath(path) || isCastle(path) || isSetupPawnSupportPath(path);
+}
+
+function isDevelopmentSetupPath(path: TrackedPath) {
+    return (path.role === "knight" || path.role === "bishop") && path.squares.length > 1;
+}
+
+function isSetupPawnSupportPath(path: TrackedPath) {
+    const to = path.squares.at(-1);
+    if (path.role !== "pawn" || !to) return false;
+    if (isFianchettoPawnSeed(path)) return true;
+    return path.from[0] === to[0] && ["c", "d", "e", "f"].includes(path.from[0]);
+}
+
+function setupSupportPriority(path: TrackedPath) {
+    if (path.role === "king" && isCastle(path)) return 110;
+    if (path.role === "bishop" || path.role === "knight") return 104;
+    if (path.role === "pawn" && isFianchettoPawnSeed(path)) return 96;
+    if (path.role === "pawn" && isSetupPawnSupportPath(path)) return 82;
+    return 40;
 }
 
 function setupFromPaths(paths: TrackedPath[], stats: ResultStats): PlanExplorerSetup {
@@ -640,17 +667,50 @@ function compareSetupPlansForOutput(a: PlanExplorerSetupPlan, b: PlanExplorerSet
 }
 
 function setupPlanOutputPriority(plan: PlanExplorerSetupPlan) {
-    if (plan.role === "pawn") return 100 + Math.min(plan.line.san.length, 4) * 6;
     if (
         plan.role === "king" &&
         plan.line.san.some((san) => san.startsWith("O-O") || san.startsWith("0-0"))
     ) {
-        return 90;
+        return 112;
     }
-    if (plan.role === "bishop" || plan.role === "knight") return 84;
+    if (plan.role === "bishop" || plan.role === "knight") return 106;
+    if (plan.role === "pawn" && isFianchettoSetupPlan(plan)) return 98;
+    if (plan.role === "pawn" && isSetupPawnPlan(plan)) return 90;
+    if (plan.role === "pawn") return 70;
     if (plan.role === "rook") return 76;
     if (plan.role === "queen") return 72;
     return 50;
+}
+
+function isValidSetupRow(setup: PlanExplorerSetup) {
+    return (
+        setup.plans.length >= PLAN_SETUP_MIN_PLANS &&
+        setup.plans.some(
+            (plan) =>
+                plan.role === "knight" ||
+                plan.role === "bishop" ||
+                (plan.role === "king" &&
+                    plan.line.san.some((san) => san.startsWith("O-O") || san.startsWith("0-0"))),
+        )
+    );
+}
+
+function isFianchettoSetupPlan(plan: PlanExplorerSetupPlan) {
+    const to = plan.line.squares.at(-1);
+    if (plan.role !== "pawn" || !to) return false;
+    if (plan.from[0] !== to[0] || !["b", "g"].includes(plan.from[0])) return false;
+    return plan.color === "white"
+        ? plan.from[1] === "2" && to[1] === "3"
+        : plan.from[1] === "7" && to[1] === "6";
+}
+
+function isSetupPawnPlan(plan: PlanExplorerSetupPlan) {
+    const to = plan.line.squares.at(-1);
+    if (plan.role !== "pawn" || !to) return false;
+    return (
+        isFianchettoSetupPlan(plan) ||
+        (plan.from[0] === to[0] && ["c", "d", "e", "f"].includes(plan.from[0]))
+    );
 }
 
 function setupPlanFromPath(path: TrackedPath, stats: ResultStats): PlanExplorerSetupPlan {

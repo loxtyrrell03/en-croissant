@@ -765,15 +765,17 @@ fn compare_setup_plan_stats_for_output(a: &SetupPlanStats, b: &SetupPlanStats) -
 fn setup_plan_output_priority(path: &ObservedPiecePath) -> i32 {
     let move_count_score = path.san.len().min(4) as i32 * 6;
     match path.piece.role {
-        Role::Pawn => 100 + move_count_score,
         Role::King => {
             if is_castling_path(path) {
-                90 + move_count_score
+                112 + move_count_score
             } else {
                 50 + move_count_score
             }
         }
-        Role::Knight | Role::Bishop => 84 + move_count_score,
+        Role::Knight | Role::Bishop => 106 + move_count_score,
+        Role::Pawn if is_fianchetto_pawn_seed(path) => 98 + move_count_score,
+        Role::Pawn if is_setup_pawn_support_path(path) => 90 + move_count_score,
+        Role::Pawn => 70 + move_count_score,
         Role::Rook => 76 + move_count_score,
         Role::Queen => 72 + move_count_score,
     }
@@ -2344,7 +2346,7 @@ where
     let mut setup_rows = setups
         .into_iter()
         .flat_map(|(_, stats)| stats.into_rows())
-        .filter(|setup| setup.plans.len() >= PLAN_SETUP_MIN_PLANS)
+        .filter(is_valid_plan_setup_row)
         .collect::<Vec<_>>();
 
     setup_rows.sort_by(|a, b| {
@@ -2444,12 +2446,13 @@ fn select_plan_setup_paths(
     let mut candidates = paths
         .iter()
         .filter(|path| plan_line_key_from_path(path) != plan_line_key_from_path(seed))
+        .filter(|path| is_setup_support_path(seed, path))
         .cloned()
         .collect::<Vec<_>>();
 
     candidates.sort_by(|a, b| {
-        plan_setup_path_priority(b)
-            .cmp(&plan_setup_path_priority(a))
+        setup_support_priority(b)
+            .cmp(&setup_support_priority(a))
             .then_with(|| compare_observed_piece_path(a, b))
     });
 
@@ -2469,26 +2472,20 @@ fn is_structural_setup_path(path: &ObservedPiecePath) -> bool {
 }
 
 fn is_setup_seed_path(path: &ObservedPiecePath) -> bool {
-    matches!(path.piece.role, Role::Pawn | Role::Knight | Role::Bishop) || is_castling_path(path)
+    match path.piece.role {
+        Role::Pawn => is_fianchetto_pawn_seed(path),
+        Role::Knight | Role::Bishop => is_development_setup_path(path),
+        Role::King => is_castling_path(path),
+        Role::Queen | Role::Rook => false,
+    }
 }
 
 fn setup_seed_priority(path: &ObservedPiecePath) -> i32 {
-    let last = path.squares.last().map(|square| square.to_string());
-    let from = path.piece.from.to_string();
-    let same_file = last
-        .as_ref()
-        .and_then(|last| last.chars().next())
-        .zip(from.chars().next())
-        .map(|(last_file, from_file)| last_file == from_file)
-        .unwrap_or(false);
-
     match path.piece.role {
-        Role::Pawn if same_file && is_fianchetto_pawn_seed(path) => 110,
-        Role::Pawn if same_file && is_central_or_advanced_pawn_path(path) => 100,
-        Role::Pawn if same_file => 72,
+        Role::Pawn if is_fianchetto_pawn_seed(path) => 110,
+        Role::Knight | Role::Bishop => 100,
+        Role::King if is_castling_path(path) => 90,
         Role::Pawn => 40,
-        Role::Knight | Role::Bishop => 86,
-        Role::King if is_castling_path(path) => 82,
         Role::Queen | Role::Rook | Role::King => 40,
     }
 }
@@ -2499,10 +2496,88 @@ fn is_fianchetto_pawn_seed(path: &ObservedPiecePath) -> bool {
     }
 
     let from = path.piece.from.to_string();
+    let to = path.squares.last().map(|square| square.to_string());
+    let Some(to) = to else {
+        return false;
+    };
     let Some(file) = from.chars().next() else {
         return false;
     };
+    let Some(rank) = from.chars().nth(1) else {
+        return false;
+    };
+    let Some(to_file) = to.chars().next() else {
+        return false;
+    };
+    let Some(to_rank) = to.chars().nth(1) else {
+        return false;
+    };
+
     matches!(file, 'b' | 'g')
+        && file == to_file
+        && match path.piece.color {
+            Color::White => rank == '2' && to_rank == '3',
+            Color::Black => rank == '7' && to_rank == '6',
+        }
+}
+
+fn is_setup_support_path(seed: &ObservedPiecePath, path: &ObservedPiecePath) -> bool {
+    if seed.piece.color != path.piece.color {
+        return false;
+    }
+
+    is_development_setup_path(path) || is_castling_path(path) || is_setup_pawn_support_path(path)
+}
+
+fn is_development_setup_path(path: &ObservedPiecePath) -> bool {
+    matches!(path.piece.role, Role::Knight | Role::Bishop) && path.squares.len() > 1
+}
+
+fn is_setup_pawn_support_path(path: &ObservedPiecePath) -> bool {
+    if path.piece.role != Role::Pawn {
+        return false;
+    }
+    if is_fianchetto_pawn_seed(path) {
+        return true;
+    }
+
+    let from = path.piece.from.to_string();
+    let to = path.squares.last().map(|square| square.to_string());
+    let Some(to) = to else {
+        return false;
+    };
+    let Some(file) = from.chars().next() else {
+        return false;
+    };
+    let Some(to_file) = to.chars().next() else {
+        return false;
+    };
+
+    file == to_file && matches!(file, 'c' | 'd' | 'e' | 'f')
+}
+
+fn setup_support_priority(path: &ObservedPiecePath) -> i32 {
+    match path.piece.role {
+        Role::King if is_castling_path(path) => 110,
+        Role::Bishop | Role::Knight => 104,
+        Role::Pawn if is_fianchetto_pawn_seed(path) => 96,
+        Role::Pawn if is_setup_pawn_support_path(path) => 82,
+        Role::Queen | Role::Rook => 50,
+        Role::Pawn | Role::King => 40,
+    }
+}
+
+fn is_valid_plan_setup_row(setup: &PlanExplorerSetup) -> bool {
+    setup.plans.len() >= PLAN_SETUP_MIN_PLANS
+        && setup.plans.iter().any(|plan| {
+            matches!(plan.role.as_str(), "knight" | "bishop")
+                || (plan.role == "king"
+                    && plan
+                        .line
+                        .san
+                        .iter()
+                        .any(|san| san.starts_with("O-O") || san.starts_with("0-0")))
+        })
 }
 
 fn plan_line_key_from_path(path: &ObservedPiecePath) -> PlanLineKey {
@@ -4040,6 +4115,33 @@ mod tests {
         assert_eq!(routes.get("white:pawn:g2").unwrap(), &vec!["g2", "g3"]);
         assert_eq!(routes.get("white:bishop:f1").unwrap(), &vec!["f1", "g2"]);
         assert_eq!(routes.get("white:king:e1").unwrap(), &vec!["e1", "g1"]);
+    }
+
+    #[test]
+    fn plan_setup_mining_rejects_uncoordinated_pawn_bags() {
+        let pawn_path = |from, to, san: &str, uci: &str| ObservedPiecePath {
+            piece: PieceKey {
+                color: Color::White,
+                role: Role::Pawn,
+                from,
+            },
+            squares: vec![from, to],
+            san: vec![san.to_string()],
+            uci: vec![uci.to_string()],
+        };
+        let paths = vec![
+            pawn_path(Square::B2, Square::B4, "b4", "b2b4"),
+            pawn_path(Square::C2, Square::C3, "c3", "c2c3"),
+            pawn_path(Square::D2, Square::D3, "d3", "d2d3"),
+            pawn_path(Square::D2, Square::D4, "d4", "d2d4"),
+            pawn_path(Square::E2, Square::E4, "e4", "e2e4"),
+            pawn_path(Square::H2, Square::H3, "h3", "h2h3"),
+        ];
+        let mined = collect_plan_setup_entries(&paths, GameResult::WhiteWin)
+            .into_iter()
+            .collect::<HashMap<_, _>>();
+
+        assert!(plan_setups_from_stats(mined).is_empty());
     }
 
     #[test]

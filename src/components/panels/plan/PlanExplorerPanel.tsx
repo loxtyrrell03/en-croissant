@@ -349,6 +349,7 @@ function PlanExplorerPanel() {
       requestId,
     );
   });
+  const visibleError = isExpectedPlanExplorerCancellation(error) ? null : error;
 
   const visiblePlanData = useMemo(() => {
     if (!planData) return null;
@@ -420,9 +421,21 @@ function PlanExplorerPanel() {
 
   const handleEngineLines = useCallback(
     (active: PlanExplorerEngineRequest, bestLines: BestMoves[], nextProgress: number) => {
-      if (bestLines.length === 0) return;
-
       const nextClampedProgress = Math.min(100, Math.max(0, nextProgress));
+      if (bestLines.length === 0) {
+        if (nextClampedProgress >= 100) {
+          setEngineStrengthState((current) => ({
+            ...current,
+            progress: 100,
+            running: false,
+            activeRequestKey: null,
+          }));
+          engineRequestRef.current = null;
+          cleanupEngineListener();
+        }
+        return;
+      }
+
       const nextReport = buildEnginePlanReport(active.fen, bestLines, {
         requestedMultipv: active.requestedMultipv,
         limitLabel: active.limitLabel,
@@ -662,6 +675,7 @@ function PlanExplorerPanel() {
     return sortedVisiblePlanData?.pieces ?? [];
   }, [sortedVisiblePlanData?.pieces]);
   const setups = sortedVisibleSetups;
+  const waitingForFirstEngineReport = engineStrengthState.running && !visibleEngineReport;
 
   const content = (() => {
     if (isLocalSource && !referenceDatabase) {
@@ -738,7 +752,7 @@ function PlanExplorerPanel() {
                       previewLine={setPreviewLine}
                       engineStrengthEnabled={engineStrengthEnabled}
                       engineReport={visibleEngineReport}
-                      engineRunning={engineStrengthState.running}
+                      engineRunning={waitingForFirstEngineReport}
                       resultPerspective={resultPerspective}
                       strength={getPieceStrength(piece, planStrengthByKey)}
                     />
@@ -804,7 +818,7 @@ function PlanExplorerPanel() {
                       previewLine={setPreviewLine}
                       engineStrengthEnabled={engineStrengthEnabled}
                       engineReport={visibleEngineReport}
-                      engineRunning={engineStrengthState.running}
+                      engineRunning={waitingForFirstEngineReport}
                       resultPerspective={resultPerspective}
                       sideFilter={sideFilter}
                       strength={setupStrengthByKey.get(planSetupKey(setup))}
@@ -1021,9 +1035,9 @@ function PlanExplorerPanel() {
         size="xs"
       />
 
-      {error && (
+      {visibleError && (
         <Alert color="red" variant="light">
-          {String(error)}
+          {String(visibleError)}
         </Alert>
       )}
       {engineStrengthEnabled && localEngines.length === 0 && (
@@ -1905,6 +1919,12 @@ function planExplorerCoachSourceLabel({
   return `Local database ${databaseName}; filters: ${filters.join(", ")}`;
 }
 
+function isExpectedPlanExplorerCancellation(error: unknown) {
+  if (!error) return false;
+  const message = error instanceof Error ? error.message : String(error);
+  return message === "Request canceled" || message === "Search stopped";
+}
+
 function formatLocalResultFilter(result: LocalOptions["result"]) {
   switch (result) {
     case "whitewon":
@@ -2205,7 +2225,7 @@ function SetupRow({
   sideFilter: SideFilter;
   strength: PlanStrength | undefined;
 }) {
-  const lines = setup.plans.map(setupPlanToColoredLine);
+  const lines = useMemo(() => setup.plans.map(setupPlanToColoredLine), [setup.plans]);
   const perspective = getSetupPerspective(setup, resultPerspective, sideFilter, fen);
   const engineMatches = useMemo(
     () => getSetupEngineMatches(setup, engineReport),
@@ -2256,7 +2276,7 @@ function SetupRow({
 
   return (
     <Table.Tr
-      onMouseEnter={() => previewLine(lines)}
+      onMouseEnter={() => lines.length > 0 && previewLine(lines)}
       onMouseLeave={() => previewLine(null)}
       onClick={() => drawLines(lines)}
       style={{ cursor: lines.length > 0 ? "pointer" : "default" }}
@@ -2296,7 +2316,7 @@ function SetupRow({
                 key={planLineKey(plan, plan.line)}
                 gap="xs"
                 wrap="nowrap"
-                onMouseEnter={() => previewLine(lines)}
+                onMouseEnter={() => previewLine(line)}
                 onMouseLeave={() => previewLine(lines)}
               >
                 <Tooltip label="Draw route">
