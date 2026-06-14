@@ -1071,8 +1071,10 @@ const enginePlanReportFamily = atomFamily((_tab: string) =>
 );
 export const currentEnginePlanReportAtom = tabValue(enginePlanReportFamily);
 
+export type PlanExplorerPreviewLines = ColoredPlanExplorerLine | ColoredPlanExplorerLine[] | null;
+
 const planExplorerPreviewLineFamily = atomFamily((_tab: string) =>
-    atom<ColoredPlanExplorerLine | null>(null),
+    atom<PlanExplorerPreviewLines>(null),
 );
 export const currentPlanExplorerPreviewLineAtom = tabValue(planExplorerPreviewLineFamily);
 

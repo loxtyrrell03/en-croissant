@@ -1363,7 +1363,10 @@ function Board({
     }
 
     if (planExplorerPreviewLine) {
-      nextShapes = nextShapes.concat(planLineToShapes(planExplorerPreviewLine));
+      const previewLines = Array.isArray(planExplorerPreviewLine)
+        ? planExplorerPreviewLine
+        : [planExplorerPreviewLine];
+      nextShapes = nextShapes.concat(planLinesToShapes(previewLines, 16));
     }
 
     if (boardPreviewShapes?.fen === boardFen) {

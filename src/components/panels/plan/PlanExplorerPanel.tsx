@@ -1858,7 +1858,7 @@ function SetupRow({
 }: {
   setup: PlanExplorerSetup;
   drawLines: (lines: ColoredPlanExplorerLine[]) => void;
-  previewLine: (line: ColoredPlanExplorerLine | null) => void;
+  previewLine: (line: ColoredPlanExplorerLine | ColoredPlanExplorerLine[] | null) => void;
   engineStrengthEnabled: boolean;
   engineReport: EnginePlanReport | null;
   engineRunning: boolean;
@@ -1868,12 +1868,11 @@ function SetupRow({
   strength: PlanStrength | undefined;
 }) {
   const lines = setup.plans.map(setupPlanToColoredLine);
-  const firstLine = lines[0] ?? null;
   const perspective = getSetupPerspective(setup, resultPerspective, sideFilter, fen);
 
   return (
     <Table.Tr
-      onMouseEnter={() => firstLine && previewLine(firstLine)}
+      onMouseEnter={() => previewLine(lines)}
       onMouseLeave={() => previewLine(null)}
       onClick={() => drawLines(lines)}
       style={{ cursor: lines.length > 0 ? "pointer" : "default" }}
@@ -1913,8 +1912,8 @@ function SetupRow({
                 key={planLineKey(plan, plan.line)}
                 gap="xs"
                 wrap="nowrap"
-                onMouseEnter={() => previewLine(line)}
-                onMouseLeave={() => firstLine && previewLine(firstLine)}
+                onMouseEnter={() => previewLine(lines)}
+                onMouseLeave={() => previewLine(lines)}
               >
                 <Tooltip label="Draw route">
                   <ActionIcon

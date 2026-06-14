@@ -2144,12 +2144,15 @@ from 2026-04-24 through 2026-05-03.
   `Plans / Setups` view and a blended strength measure. The existing plan rows
   remain available, now with a `Blend` score that combines the engine-plan
   approval signal with comparable WDL performance using the shared move-strength
-  settings. The new Setups view is backed by exact same-side two- and three-plan
+  settings. The new Setups view is backed by exact same-side three- to six-plan
   combinations observed in each sampled local database game, with matching
-  branch-derived setup rows for online Lichess/Masters samples; use this for
-  human opening training when judging whether a coordinated piece/pawn setup
-  performs well in the selected database rather than judging every route in
-  isolation.
+  branch-derived setup rows for online Lichess/Masters samples; this is meant to
+  capture real opening structures such as a King's Indian style configuration
+  with `...g6`, `...Bg7`, `...d6`, `...Nf6`, castling, and a central break
+  rather than tiny fragments. Hovering a setup row should preview the full
+  family of arrows, so use this for human opening training when judging whether
+  a coordinated piece/pawn setup performs well in the selected database rather
+  than judging every route in isolation.
 
 ## Verification Expectations
 
