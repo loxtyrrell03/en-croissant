@@ -295,6 +295,15 @@ function PlanExplorerPanel() {
     [databases],
   );
   const dbSelectData = getDatabaseSelectData(localDatabases);
+  const handleLocalColorChange = useCallback(
+    (color: LocalOptions["color"]) => {
+      setLocalOptions((current) => ({ ...current, color }));
+      if (view === "setups") {
+        setSideFilter(color);
+      }
+    },
+    [setLocalOptions, view],
+  );
 
   const requestId = useMemo(
     () =>
@@ -930,7 +939,7 @@ function PlanExplorerPanel() {
                   onPlayerNameChange={(playerName) =>
                     setLocalOptions((q) => ({ ...q, playerName }))
                   }
-                  onColorChange={(color) => setLocalOptions((q) => ({ ...q, color }))}
+                  onColorChange={handleLocalColorChange}
                   size="sm"
                 />
               </>

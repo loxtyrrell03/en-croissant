@@ -447,10 +447,20 @@ function collectSetupRows(paths: TrackedPath[], stats: ResultStats): SetupCandid
             .sort((a, b) => setupPathPriority(b) - setupPathPriority(a) || compareTrackedPath(a, b))
             .slice(0, PLAN_SETUP_FEATURED_PATHS_PER_COLOR);
 
+        const selectedByKey = new Map<string, TrackedPath[]>();
         for (const seed of selectSetupSeedPaths(featured)) {
             const selected = selectSetupPaths(featured, seed);
+            const key = setupFamilyKeyFromPaths(selected);
+            mergeSelectedSetupPaths(
+                getOrInsert(selectedByKey, key, () => []),
+                selected,
+            );
+        }
+
+        for (const [key, selectedPaths] of selectedByKey) {
+            const selected = limitSelectedSetupPaths(selectedPaths);
             setups.push({
-                key: setupKeyFromPaths([seed]),
+                key,
                 slots: setupSlots(selected),
                 setup: setupFromPaths(selected, stats),
             });
@@ -508,6 +518,43 @@ function selectSetupPaths(paths: TrackedPath[], seed: TrackedPath) {
     }
 
     return selected.sort(compareTrackedPath);
+}
+
+function setupFamilyKeyFromPaths(paths: TrackedPath[]) {
+    let anchors = paths.filter(isSetupSeedPath);
+    if (anchors.length === 0) anchors = paths.filter((path) => !isStructuralSetupPath(path));
+    if (anchors.length === 0) anchors = paths;
+
+    const anchor = [...anchors].sort(
+        (a, b) => setupSeedPriority(b) - setupSeedPriority(a) || compareTrackedPath(a, b),
+    )[0];
+
+    return anchor ? setupKeyFromPaths([anchor]) : "";
+}
+
+function mergeSelectedSetupPaths(existing: TrackedPath[], incoming: TrackedPath[]) {
+    const seen = new Set(existing.map(setupPathKey));
+    for (const path of incoming) {
+        if (!seen.has(setupPathKey(path))) {
+            existing.push(clonePath(path));
+            seen.add(setupPathKey(path));
+        }
+    }
+}
+
+function limitSelectedSetupPaths(paths: TrackedPath[]) {
+    return [...paths]
+        .sort(
+            (a, b) =>
+                selectedSetupPathPriority(b) - selectedSetupPathPriority(a) ||
+                compareTrackedPath(a, b),
+        )
+        .slice(0, PLAN_SETUP_MAX_PLANS)
+        .sort(compareTrackedPath);
+}
+
+function selectedSetupPathPriority(path: TrackedPath) {
+    return setupSupportPriority(path) + (isSetupSeedPath(path) ? 20 : 0);
 }
 
 function isStructuralSetupPath(path: TrackedPath) {

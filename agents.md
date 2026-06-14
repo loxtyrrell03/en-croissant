@@ -2254,6 +2254,13 @@ from 2026-04-24 through 2026-05-03.
   strength requests, setup rows only report `Analyzing` for the current side's
   active request, and nested per-route hover handlers were removed so moving
   between setup rows cannot restore a previous row's arrow preview.
+- A 2026-06-14 Plan Explorer Setups dedupe pass moved setup family
+  canonicalization into both the local database miner and browser/Lichess miner.
+  Multiple seed moves from the same game now merge into one setup-family row
+  before stats are counted, preventing duplicate setup rows and inflated games.
+  In local Setups mode, changing the database White/Black perspective also
+  updates the setup-side filter immediately so the table refreshes to the side
+  the user just selected.
 
 ## Verification Expectations
 

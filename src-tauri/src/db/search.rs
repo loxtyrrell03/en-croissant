@@ -2389,16 +2389,79 @@ fn collect_plan_setup_entries(
         color_paths.dedup_by(|a, b| plan_line_key_from_path(a) == plan_line_key_from_path(b));
         color_paths.truncate(PLAN_SETUP_FEATURED_PATHS_PER_COLOR);
 
+        let mut selected_by_key: HashMap<PlanSetupKey, Vec<ObservedPiecePath>> = HashMap::new();
         for seed in select_plan_setup_seed_paths(&color_paths) {
             let selected = select_plan_setup_paths(&color_paths, &seed);
-            let key = PlanSetupKey {
-                plans: vec![plan_line_key_from_path(&seed)],
-            };
+            let key = plan_setup_key_from_paths(&selected);
+            merge_setup_paths(selected_by_key.entry(key).or_default(), selected);
+        }
+
+        for (key, mut selected) in selected_by_key {
+            limit_selected_setup_paths(&mut selected);
             entries.push((key, SetupStats::new(selected, result)));
         }
     }
 
     entries
+}
+
+fn plan_setup_key_from_paths(paths: &[ObservedPiecePath]) -> PlanSetupKey {
+    let mut anchors = paths
+        .iter()
+        .filter(|path| is_setup_seed_path(path))
+        .collect::<Vec<_>>();
+
+    if anchors.is_empty() {
+        anchors = paths
+            .iter()
+            .filter(|path| !is_structural_setup_path(path))
+            .collect();
+    }
+
+    if anchors.is_empty() {
+        anchors = paths.iter().collect();
+    }
+
+    anchors.sort_by(|a, b| {
+        setup_seed_priority(b)
+            .cmp(&setup_seed_priority(a))
+            .then_with(|| compare_observed_piece_path(a, b))
+    });
+
+    PlanSetupKey {
+        plans: anchors
+            .into_iter()
+            .take(1)
+            .map(plan_line_key_from_path)
+            .collect(),
+    }
+}
+
+fn merge_setup_paths(existing: &mut Vec<ObservedPiecePath>, incoming: Vec<ObservedPiecePath>) {
+    let mut seen = existing
+        .iter()
+        .map(plan_line_key_from_path)
+        .collect::<HashSet<_>>();
+
+    for path in incoming {
+        if seen.insert(plan_line_key_from_path(&path)) {
+            existing.push(path);
+        }
+    }
+}
+
+fn limit_selected_setup_paths(paths: &mut Vec<ObservedPiecePath>) {
+    paths.sort_by(|a, b| {
+        selected_setup_path_priority(b)
+            .cmp(&selected_setup_path_priority(a))
+            .then_with(|| compare_observed_piece_path(a, b))
+    });
+    paths.truncate(PLAN_SETUP_MAX_PLANS);
+    paths.sort_by(compare_observed_piece_path);
+}
+
+fn selected_setup_path_priority(path: &ObservedPiecePath) -> i32 {
+    setup_support_priority(path) + if is_setup_seed_path(path) { 20 } else { 0 }
 }
 
 fn setup_feature_path(path: &ObservedPiecePath) -> ObservedPiecePath {
@@ -4087,19 +4150,9 @@ mod tests {
             }
         }
 
-        let setup =
-            plan_setups_from_stats(mined)
-                .into_iter()
-                .find(|setup| {
-                    setup.plans.iter().any(|plan| {
-                        plan.color == "white" && plan.role == "pawn" && plan.from == "g2"
-                    }) && setup.plans.iter().any(|plan| {
-                        plan.color == "white" && plan.role == "bishop" && plan.from == "f1"
-                    }) && setup.plans.iter().any(|plan| {
-                        plan.color == "white" && plan.role == "king" && plan.from == "e1"
-                    })
-                })
-                .unwrap();
+        let setup_rows = plan_setups_from_stats(mined);
+        assert_eq!(setup_rows.len(), 1);
+        let setup = setup_rows.into_iter().next().unwrap();
         let routes = setup
             .plans
             .iter()
@@ -4115,6 +4168,51 @@ mod tests {
         assert_eq!(routes.get("white:pawn:g2").unwrap(), &vec!["g2", "g3"]);
         assert_eq!(routes.get("white:bishop:f1").unwrap(), &vec!["f1", "g2"]);
         assert_eq!(routes.get("white:king:e1").unwrap(), &vec!["e1", "g1"]);
+    }
+
+    #[test]
+    fn plan_setup_mining_dedupes_multiple_seed_paths_in_one_game() {
+        let paths = vec![
+            ObservedPiecePath {
+                piece: PieceKey {
+                    color: Color::Black,
+                    role: Role::Pawn,
+                    from: Square::G7,
+                },
+                squares: vec![Square::G7, Square::G6],
+                san: vec!["g6".to_string()],
+                uci: vec!["g7g6".to_string()],
+            },
+            ObservedPiecePath {
+                piece: PieceKey {
+                    color: Color::Black,
+                    role: Role::Bishop,
+                    from: Square::F8,
+                },
+                squares: vec![Square::F8, Square::G7],
+                san: vec!["Bg7".to_string()],
+                uci: vec!["f8g7".to_string()],
+            },
+            ObservedPiecePath {
+                piece: PieceKey {
+                    color: Color::Black,
+                    role: Role::King,
+                    from: Square::E8,
+                },
+                squares: vec![Square::E8, Square::G8],
+                san: vec!["O-O".to_string()],
+                uci: vec!["e8g8".to_string()],
+            },
+        ];
+
+        let mined = collect_plan_setup_entries(&paths, GameResult::BlackWin)
+            .into_iter()
+            .collect::<HashMap<_, _>>();
+        let setup_rows = plan_setups_from_stats(mined);
+
+        assert_eq!(setup_rows.len(), 1);
+        assert_eq!(setup_rows[0].games, 1);
+        assert!(setup_rows[0].plans.iter().all(|plan| plan.color == "black"));
     }
 
     #[test]
