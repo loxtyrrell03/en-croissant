@@ -2178,6 +2178,16 @@ from 2026-04-24 through 2026-05-03.
   arrows in the normal Plans table, and named archetypes such as Catalan and
   King's Indian should be based on component facts rather than a single hard
   coded FEN.
+- A later 2026-06-14 setup-clustering pass made Plan Explorer and Engine Plans
+  structure-aware instead of exact-combination-only. Local database, online
+  Lichess/Masters, and engine PV setup generation now group candidates first by
+  same-side pawn skeleton, then merge compatible piece-placement details inside
+  that skeleton so a row can show deeper "where the pieces belong" arrows such
+  as castling plus knight/bishop development. Conflicting destinations for the
+  same piece slot, or conflicting castling sides, remain separate setup rows
+  because those can change the nature of the setup even when the pawn structure
+  matches. Merged database/online rows keep per-route game counts while the
+  setup row count describes the whole compatible structure cluster.
 - A follow-up on 2026-06-14 added inline Coach explanations to database-backed
   Plan Explorer rows and engine-only Engine Plans rows. These explanations use
   the existing local AI CLI bridge through a dedicated `ask_plan_coach` command

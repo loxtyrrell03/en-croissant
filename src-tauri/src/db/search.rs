@@ -600,19 +600,19 @@ impl LineStats {
 }
 
 #[derive(Debug, Clone)]
-struct SetupStats {
-    plans: Vec<ObservedPiecePath>,
+struct SetupPlanStats {
+    path: ObservedPiecePath,
     games: i32,
     white: i32,
     draw: i32,
     black: i32,
 }
 
-impl SetupStats {
-    fn new(plans: Vec<ObservedPiecePath>, result: GameResult) -> Self {
+impl SetupPlanStats {
+    fn new(path: ObservedPiecePath, result: GameResult) -> Self {
         let (white, draw, black) = result_counts(result);
         Self {
-            plans,
+            path,
             games: 1,
             white,
             draw,
@@ -620,13 +620,227 @@ impl SetupStats {
         }
     }
 
-    fn add_result(&mut self, result: GameResult) {
-        let (white, draw, black) = result_counts(result);
-        self.games += 1;
-        self.white += white;
-        self.draw += draw;
-        self.black += black;
+    fn add_stats(&mut self, other: SetupPlanStats) {
+        self.games += other.games;
+        self.white += other.white;
+        self.draw += other.draw;
+        self.black += other.black;
     }
+}
+
+#[derive(Debug, Clone)]
+struct SetupVariantStats {
+    plans: HashMap<PlanLineKey, SetupPlanStats>,
+    slots: HashMap<String, String>,
+    games: i32,
+    white: i32,
+    draw: i32,
+    black: i32,
+}
+
+impl SetupVariantStats {
+    fn new(plans: Vec<ObservedPiecePath>, result: GameResult) -> Self {
+        let (white, draw, black) = result_counts(result);
+        let slots = setup_slots(&plans);
+        let mut stats = Self {
+            plans: HashMap::new(),
+            slots,
+            games: 1,
+            white,
+            draw,
+            black,
+        };
+
+        for path in plans {
+            stats.add_plan(path, result);
+        }
+
+        stats
+    }
+
+    fn add_plan(&mut self, path: ObservedPiecePath, result: GameResult) {
+        let key = plan_line_key_from_path(&path);
+        self.plans
+            .entry(key)
+            .and_modify(|plan| plan.add_stats(SetupPlanStats::new(path.clone(), result)))
+            .or_insert_with(|| SetupPlanStats::new(path, result));
+    }
+
+    fn add_stats(&mut self, other: SetupVariantStats) {
+        self.games += other.games;
+        self.white += other.white;
+        self.draw += other.draw;
+        self.black += other.black;
+
+        for (key, plan) in other.plans {
+            self.plans
+                .entry(key)
+                .and_modify(|existing| existing.add_stats(plan.clone()))
+                .or_insert(plan);
+        }
+
+        self.slots.extend(other.slots);
+    }
+
+    fn is_compatible_with(&self, other: &SetupVariantStats) -> bool {
+        compatible_setup_slots(&self.slots, &other.slots)
+    }
+}
+
+#[derive(Debug, Clone)]
+struct SetupStats {
+    variants: Vec<SetupVariantStats>,
+}
+
+impl SetupStats {
+    fn new(plans: Vec<ObservedPiecePath>, result: GameResult) -> Self {
+        Self {
+            variants: vec![SetupVariantStats::new(plans, result)],
+        }
+    }
+
+    fn add_stats(&mut self, other: SetupStats) {
+        for variant in other.variants {
+            if let Some(existing) = self
+                .variants
+                .iter_mut()
+                .find(|existing| existing.is_compatible_with(&variant))
+            {
+                existing.add_stats(variant);
+            } else {
+                self.variants.push(variant);
+            }
+        }
+    }
+
+    fn into_rows(self) -> Vec<PlanExplorerSetup> {
+        self.variants
+            .into_iter()
+            .map(setup_row_from_variant)
+            .collect()
+    }
+}
+
+fn setup_row_from_variant(stats: SetupVariantStats) -> PlanExplorerSetup {
+    let mut plans = stats.plans.into_values().collect::<Vec<_>>();
+    plans.sort_by(compare_setup_plan_stats_for_output);
+    plans.truncate(PLAN_SETUP_MAX_PLANS);
+
+    PlanExplorerSetup {
+        plans: plans
+            .into_iter()
+            .map(|plan| PlanExplorerSetupPlan {
+                color: color_name(plan.path.piece.color).to_string(),
+                role: role_name(plan.path.piece.role).to_string(),
+                from: plan.path.piece.from.to_string(),
+                line: PlanExplorerLine {
+                    squares: plan
+                        .path
+                        .squares
+                        .iter()
+                        .map(|square| square.to_string())
+                        .collect(),
+                    san: plan.path.san,
+                    uci: plan.path.uci,
+                    games: plan.games,
+                    white: plan.white,
+                    draw: plan.draw,
+                    black: plan.black,
+                },
+            })
+            .collect(),
+        games: stats.games,
+        white: stats.white,
+        draw: stats.draw,
+        black: stats.black,
+    }
+}
+
+fn compare_setup_plan_stats_for_output(a: &SetupPlanStats, b: &SetupPlanStats) -> CmpOrdering {
+    setup_plan_output_priority(&b.path)
+        .cmp(&setup_plan_output_priority(&a.path))
+        .then_with(|| compare_observed_piece_path(&a.path, &b.path))
+}
+
+fn setup_plan_output_priority(path: &ObservedPiecePath) -> i32 {
+    let move_count_score = path.san.len().min(4) as i32 * 6;
+    match path.piece.role {
+        Role::Pawn => 100 + move_count_score,
+        Role::King => {
+            if is_castling_path(path) {
+                90 + move_count_score
+            } else {
+                50 + move_count_score
+            }
+        }
+        Role::Knight | Role::Bishop => 84 + move_count_score,
+        Role::Rook => 76 + move_count_score,
+        Role::Queen => 72 + move_count_score,
+    }
+}
+
+fn is_castling_path(path: &ObservedPiecePath) -> bool {
+    path.piece.role == Role::King
+        && path
+            .san
+            .iter()
+            .any(|san| san.starts_with("O-O") || san.starts_with("0-0"))
+}
+
+fn setup_slots(paths: &[ObservedPiecePath]) -> HashMap<String, String> {
+    paths
+        .iter()
+        .filter_map(setup_slot)
+        .collect::<HashMap<_, _>>()
+}
+
+fn setup_slot(path: &ObservedPiecePath) -> Option<(String, String)> {
+    if is_structural_setup_path(path) {
+        return None;
+    }
+
+    let destination = path.squares.last()?.to_string();
+    if is_castling_path(path) {
+        let side = path
+            .san
+            .iter()
+            .find(|san| san.starts_with("O-O") || san.starts_with("0-0"))
+            .map(|san| {
+                if san.starts_with("O-O-O") || san.starts_with("0-0-0") {
+                    "queenside"
+                } else {
+                    "kingside"
+                }
+            })
+            .unwrap_or("king");
+
+        return Some((
+            format!("king:{}:{}", color_name(path.piece.color), path.piece.from),
+            side.to_string(),
+        ));
+    }
+
+    Some((
+        format!(
+            "piece:{}:{}:{}",
+            color_name(path.piece.color),
+            role_name(path.piece.role),
+            path.piece.from
+        ),
+        destination,
+    ))
+}
+
+fn compatible_setup_slots(
+    existing: &HashMap<String, String>,
+    incoming: &HashMap<String, String>,
+) -> bool {
+    incoming.iter().all(|(key, value)| {
+        existing
+            .get(key)
+            .map(|existing_value| existing_value == value)
+            .unwrap_or(true)
+    })
 }
 
 fn result_counts(result: GameResult) -> (i32, i32, i32) {
@@ -2129,34 +2343,7 @@ where
 {
     let mut setup_rows = setups
         .into_iter()
-        .map(|(_, stats)| PlanExplorerSetup {
-            plans: stats
-                .plans
-                .iter()
-                .map(|path| PlanExplorerSetupPlan {
-                    color: color_name(path.piece.color).to_string(),
-                    role: role_name(path.piece.role).to_string(),
-                    from: path.piece.from.to_string(),
-                    line: PlanExplorerLine {
-                        squares: path
-                            .squares
-                            .iter()
-                            .map(|square| square.to_string())
-                            .collect(),
-                        san: path.san.clone(),
-                        uci: path.uci.clone(),
-                        games: stats.games,
-                        white: stats.white,
-                        draw: stats.draw,
-                        black: stats.black,
-                    },
-                })
-                .collect(),
-            games: stats.games,
-            white: stats.white,
-            draw: stats.draw,
-            black: stats.black,
-        })
+        .flat_map(|(_, stats)| stats.into_rows())
         .collect::<Vec<_>>();
 
     setup_rows.sort_by(|a, b| {
@@ -2194,50 +2381,58 @@ fn collect_plan_setup_entries(
         });
         color_paths.truncate(PLAN_SETUP_FEATURED_PATHS_PER_COLOR);
 
-        let max_plans = PLAN_SETUP_MAX_PLANS.min(color_paths.len());
-        for size in PLAN_SETUP_MIN_PLANS..=max_plans {
-            collect_plan_setup_combinations(
-                &color_paths,
-                size,
-                0,
-                &mut Vec::new(),
-                result,
-                &mut entries,
-            );
+        let selected = select_plan_setup_paths(&color_paths);
+        if selected.len() < PLAN_SETUP_MIN_PLANS {
+            continue;
         }
+
+        let structural = selected
+            .iter()
+            .filter(|path| is_structural_setup_path(path))
+            .cloned()
+            .collect::<Vec<_>>();
+        let key_paths = if structural.is_empty() {
+            selected.clone()
+        } else {
+            structural
+        };
+        let key = PlanSetupKey {
+            plans: key_paths.iter().map(plan_line_key_from_path).collect(),
+        };
+        entries.push((key, SetupStats::new(selected, result)));
     }
 
     entries
 }
 
-fn collect_plan_setup_combinations(
-    paths: &[ObservedPiecePath],
-    target_size: usize,
-    start: usize,
-    selected: &mut Vec<ObservedPiecePath>,
-    result: GameResult,
-    entries: &mut Vec<(PlanSetupKey, SetupStats)>,
-) {
-    if selected.len() == target_size {
-        let mut plans = selected.clone();
-        plans.sort_by(compare_observed_piece_path);
-        let key = PlanSetupKey {
-            plans: plans.iter().map(plan_line_key_from_path).collect(),
-        };
-        entries.push((key, SetupStats::new(plans, result)));
-        return;
-    }
+fn select_plan_setup_paths(paths: &[ObservedPiecePath]) -> Vec<ObservedPiecePath> {
+    let mut structural = paths
+        .iter()
+        .filter(|path| is_structural_setup_path(path))
+        .cloned()
+        .collect::<Vec<_>>();
+    let mut extras = paths
+        .iter()
+        .filter(|path| !is_structural_setup_path(path))
+        .cloned()
+        .collect::<Vec<_>>();
 
-    let remaining = target_size - selected.len();
-    if paths.len().saturating_sub(start) < remaining {
-        return;
-    }
+    structural.sort_by(compare_observed_piece_path);
+    extras.sort_by(|a, b| {
+        plan_setup_path_priority(b)
+            .cmp(&plan_setup_path_priority(a))
+            .then_with(|| compare_observed_piece_path(a, b))
+    });
 
-    for index in start..=paths.len() - remaining {
-        selected.push(paths[index].clone());
-        collect_plan_setup_combinations(paths, target_size, index + 1, selected, result, entries);
-        selected.pop();
-    }
+    structural
+        .into_iter()
+        .chain(extras)
+        .take(PLAN_SETUP_MAX_PLANS)
+        .collect()
+}
+
+fn is_structural_setup_path(path: &ObservedPiecePath) -> bool {
+    path.piece.role == Role::Pawn
 }
 
 fn plan_line_key_from_path(path: &ObservedPiecePath) -> PlanLineKey {
@@ -2399,7 +2594,7 @@ fn plan_explorer_from_occurrences(
         for (key, stats) in collect_plan_setup_entries(&paths, entry.result) {
             setups
                 .entry(key)
-                .and_modify(|existing| existing.add_result(entry.result))
+                .and_modify(|existing| existing.add_stats(stats.clone()))
                 .or_insert(stats);
         }
     }
@@ -3282,7 +3477,7 @@ pub async fn get_plan_explorer(
         for (key, stats) in collect_plan_setup_entries(&paths, entry.result) {
             setups
                 .entry(key)
-                .and_modify(|existing| existing.add_result(entry.result))
+                .and_modify(|existing| existing.add_stats(stats.clone()))
                 .or_insert(stats);
         }
     };

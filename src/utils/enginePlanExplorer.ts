@@ -184,6 +184,13 @@ const FIANCHETTO_BISHOP_SQUARES: Record<Color, Set<string>> = {
     black: new Set(["b7", "g7"]),
 };
 const SQUARE_PATTERN = /^[a-h][1-8]$/;
+type EngineSetupGroup = {
+    keySignatures: string[];
+    signatures: Set<string>;
+    color: Color;
+    slots: Map<string, string>;
+    evidence: EnginePlanEvidence[];
+};
 
 export function buildEnginePlanReport(
     fen: string,
@@ -698,10 +705,7 @@ function buildEnginePlanSetups(
     );
     const rootSignatures = new Set(rootSignalsBySignature.keys());
     const pvsByRank = new Map(pvs.map((pv) => [pv.rank, pv]));
-    const grouped = new Map<
-        string,
-        { signatures: string[]; color: Color; evidence: EnginePlanEvidence[] }
-    >();
+    const grouped: EngineSetupGroup[] = [];
 
     for (const [rank, signals] of signalsByPv) {
         const pv = pvsByRank.get(rank);
@@ -725,35 +729,41 @@ function buildEnginePlanSetups(
                 .slice(0, ENGINE_SETUP_FEATURED_SIGNALS_PER_COLOR);
             if (featured.length < ENGINE_SETUP_MIN_PLANS) continue;
 
-            const maxPlans = Math.min(ENGINE_SETUP_MAX_PLANS, featured.length);
-            for (let size = ENGINE_SETUP_MIN_PLANS; size <= maxPlans; size += 1) {
-                collectEngineSetupCombinations(featured, size, 0, [], (selected) => {
-                    const signatures = selected
-                        .map((signal) => signal.signature)
-                        .sort((a, b) => a.localeCompare(b));
-                    if (signatures.every((signature) => rootSignatures.has(signature))) return;
+            const { keySignatures, setupSignatures, slots } =
+                consolidateEngineSetupSignals(featured);
+            if (setupSignatures.length < ENGINE_SETUP_MIN_PLANS) continue;
+            if (setupSignatures.every((signature) => rootSignatures.has(signature))) continue;
 
-                    const key = signatures.join("||");
-                    const existing = grouped.get(key);
-                    if (existing) {
-                        if (!existing.evidence.some((line) => line.rank === evidence.rank)) {
-                            existing.evidence.push(evidence);
-                        }
-                    } else {
-                        grouped.set(key, {
-                            signatures,
-                            color,
-                            evidence: [evidence],
-                        });
-                    }
+            const existing = grouped.find(
+                (group) =>
+                    group.color === color &&
+                    sameStringArray(group.keySignatures, keySignatures) &&
+                    compatibleSetupSlots(group.slots, slots),
+            );
+            if (existing) {
+                for (const signature of setupSignatures) {
+                    existing.signatures.add(signature);
+                }
+                mergeSetupSlots(existing.slots, slots);
+                if (!existing.evidence.some((line) => line.rank === evidence.rank)) {
+                    existing.evidence.push(evidence);
+                }
+            } else {
+                grouped.push({
+                    keySignatures,
+                    signatures: new Set(setupSignatures),
+                    color,
+                    slots,
+                    evidence: [evidence],
                 });
             }
         }
     }
 
-    return Array.from(grouped.values())
+    return grouped
         .map((group) => {
-            const setupPlans = group.signatures
+            const signatures = Array.from(group.signatures).sort((a, b) => a.localeCompare(b));
+            const setupPlans = signatures
                 .map((signature) => {
                     const plan = plansBySignature.get(signature);
                     if (plan) return plan;
@@ -771,7 +781,7 @@ function buildEnginePlanSetups(
                 .filter((plan): plan is EnginePlan => !!plan)
                 .sort(compareSetupPlans);
             return scoreSetup(
-                group.signatures,
+                signatures,
                 group.color,
                 setupPlans,
                 group.evidence,
@@ -782,6 +792,80 @@ function buildEnginePlanSetups(
         .filter((setup): setup is EnginePlanSetup => !!setup)
         .sort(compareSetups)
         .slice(0, ENGINE_SETUP_MAX_RESULTS);
+}
+
+function consolidateEngineSetupSignals(signals: EnginePlanSignal[]) {
+    const structural = signals.filter(isStructuralSetupSignal);
+    const extras = signals.filter((signal) => !isStructuralSetupSignal(signal));
+    const keySignals =
+        structural.length > 0 ? structural : signals.slice(0, ENGINE_SETUP_MAX_PLANS);
+    const setupSignals = [...structural, ...extras].slice(0, ENGINE_SETUP_MAX_PLANS);
+
+    return {
+        keySignatures: sortedSignalSignatures(keySignals),
+        setupSignatures: sortedSignalSignatures(setupSignals),
+        slots: setupSlots(setupSignals),
+    };
+}
+
+function isStructuralSetupSignal(signal: EnginePlanSignal) {
+    return (
+        signal.category === "pawnSetup" ||
+        signal.category === "pawnBreak" ||
+        signal.category === "sideExpansion"
+    );
+}
+
+function sortedSignalSignatures(signals: EnginePlanSignal[]) {
+    return signals.map((signal) => signal.signature).sort((a, b) => a.localeCompare(b));
+}
+
+function setupSlots(signals: EnginePlanSignal[]) {
+    const slots = new Map<string, string>();
+    for (const signal of signals) {
+        const slot = setupSlot(signal);
+        if (slot) slots.set(slot.key, slot.value);
+    }
+    return slots;
+}
+
+function setupSlot(signal: EnginePlanSignal) {
+    if (isStructuralSetupSignal(signal)) return null;
+
+    if (signal.category === "castling") {
+        return { key: `king:${signal.color}`, value: signal.signature };
+    }
+
+    if (signal.category === "pieceDestination" || signal.category === "pieceRoute") {
+        const from = signal.routeSquares?.[0];
+        const destination = signal.routeSquares?.at(-1);
+        if (!signal.role || !from || !destination || from === destination) return null;
+
+        return {
+            key: `piece:${signal.color}:${signal.role}:${from}`,
+            value: destination,
+        };
+    }
+
+    return null;
+}
+
+function compatibleSetupSlots(existing: Map<string, string>, incoming: Map<string, string>) {
+    for (const [key, value] of incoming) {
+        const existingValue = existing.get(key);
+        if (existingValue !== undefined && existingValue !== value) return false;
+    }
+    return true;
+}
+
+function mergeSetupSlots(existing: Map<string, string>, incoming: Map<string, string>) {
+    for (const [key, value] of incoming) {
+        existing.set(key, value);
+    }
+}
+
+function sameStringArray(a: string[], b: string[]) {
+    return a.length === b.length && a.every((value, index) => value === b[index]);
 }
 
 function uniqueSetupSignals(signals: EnginePlanSignal[]) {
@@ -800,28 +884,6 @@ function groupSignalsByColor(signals: EnginePlanSignal[]) {
         byColor.set(signal.color, group);
     }
     return byColor;
-}
-
-function collectEngineSetupCombinations(
-    signals: EnginePlanSignal[],
-    targetSize: number,
-    start: number,
-    selected: EnginePlanSignal[],
-    emit: (selected: EnginePlanSignal[]) => void,
-) {
-    if (selected.length === targetSize) {
-        emit([...selected]);
-        return;
-    }
-
-    const remaining = targetSize - selected.length;
-    if (signals.length - start < remaining) return;
-
-    for (let index = start; index <= signals.length - remaining; index += 1) {
-        selected.push(signals[index]);
-        collectEngineSetupCombinations(signals, targetSize, index + 1, selected, emit);
-        selected.pop();
-    }
 }
 
 function scoreSetup(

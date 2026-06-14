@@ -22,6 +22,7 @@ const BREAK_FEN = "rnbqkbnr/ppp1pppp/8/3p4/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const H_FILE_BREAK_FEN = "rnbqkbnr/pppppp1p/8/6p1/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const CASTLING_FEN = "r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1";
 const QUEENS_GAMBIT_NF3_FEN = "rnbqkb1r/ppp2ppp/4pn2/3p4/2PP4/5N2/PP2PPPP/RNBQKB1R w KQkq - 0 4";
+const BLACK_FIANCHETTO_ROOT_FEN = "rnbqk2r/ppp1ppbp/3p1np1/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";
 
 function pv(rank: number, uciMoves: string[], cp: number, depth = 12): BestMoves {
     return {
@@ -239,6 +240,42 @@ describe("Engine Plan Explorer", () => {
         expect(catalan?.approval).toBe("Strong");
         expect(catalan?.supportCount).toBe(2);
         expect(catalan?.appearsInTopPv).toBe(true);
+    });
+
+    test("merges compatible setup details while splitting conflicting piece destinations", () => {
+        const report = buildEnginePlanReport(
+            BLACK_FIANCHETTO_ROOT_FEN,
+            [pv(1, ["e8g8"], 30), pv(2, ["b8c6"], 20), pv(3, ["c8g4"], 10), pv(4, ["c8f5"], 8)],
+            {
+                requestedMultipv: 4,
+                limitLabel: "Depth 12",
+            },
+        );
+
+        const skeletonSetups = report.setups.filter((setup) => {
+            const signatures = new Set(setup.plans.map((plan) => plan.signature));
+            return (
+                setup.color === "black" &&
+                signatures.has("pawn_setup:black:g6") &&
+                signatures.has("pawn_setup:black:d6")
+            );
+        });
+        const withBg4 = skeletonSetups.find((setup) => {
+            const signatures = new Set(setup.plans.map((plan) => plan.signature));
+            return (
+                signatures.has("castling:black:kingside") &&
+                signatures.has("piece_destination:black:knight:c6") &&
+                signatures.has("piece_destination:black:bishop:g4")
+            );
+        });
+        const withBf5 = skeletonSetups.find((setup) => {
+            const signatures = new Set(setup.plans.map((plan) => plan.signature));
+            return signatures.has("piece_destination:black:bishop:f5");
+        });
+
+        expect(skeletonSetups).toHaveLength(2);
+        expect(withBg4?.supportCount).toBe(3);
+        expect(withBf5?.supportCount).toBe(1);
     });
 
     test("builds per-move board previews from a PV", () => {

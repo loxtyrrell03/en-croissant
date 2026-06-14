@@ -66,6 +66,12 @@ type BranchNode = {
 };
 
 type LineAccumulator = PlanExplorerLine;
+type SetupCandidate = {
+    key: string;
+    slots: Map<string, string>;
+    setup: PlanExplorerSetup;
+};
+type SetupGroup = SetupCandidate;
 
 export async function getOnlinePlanExplorer(
     source: OnlinePlanExplorerSource,
@@ -337,7 +343,7 @@ function selectCandidateMoves(data: PositionData) {
 
 function buildPiecesFromLeaves(leaves: BranchNode[]) {
     const grouped = new Map<string, Map<string, LineAccumulator>>();
-    const setups = new Map<string, PlanExplorerSetup>();
+    const setups: SetupGroup[] = [];
     let sampledGames = 0;
 
     for (const leaf of leaves) {
@@ -373,22 +379,17 @@ function buildPiecesFromLeaves(leaves: BranchNode[]) {
             }
         }
 
-        for (const setup of collectSetupRows(movedPaths, leaf.stats)) {
-            const key = setupKey(setup.plans);
-            const existing = setups.get(key);
+        for (const candidate of collectSetupRows(movedPaths, leaf.stats)) {
+            const existing = setups.find(
+                (group) =>
+                    group.key === candidate.key &&
+                    compatibleSetupSlots(group.slots, candidate.slots),
+            );
             if (existing) {
-                existing.games += setup.games;
-                existing.white += setup.white;
-                existing.draw += setup.draw;
-                existing.black += setup.black;
-                for (const plan of existing.plans) {
-                    plan.line.games = existing.games;
-                    plan.line.white = existing.white;
-                    plan.line.draw = existing.draw;
-                    plan.line.black = existing.black;
-                }
+                mergeSetup(existing.setup, candidate.setup);
+                mergeSetupSlots(existing.slots, candidate.slots);
             } else {
-                setups.set(key, setup);
+                setups.push(candidate);
             }
         }
     }
@@ -414,7 +415,9 @@ function buildPiecesFromLeaves(leaves: BranchNode[]) {
                 a.from.localeCompare(b.from),
         ) as PlanExplorerPiece[];
 
-    const setupRows = [...setups.values()]
+    const setupRows = setups
+        .map((group) => group.setup)
+        .map(limitSetupPlans)
         .sort(
             (a, b) =>
                 b.games - a.games ||
@@ -426,58 +429,163 @@ function buildPiecesFromLeaves(leaves: BranchNode[]) {
     return { pieces, setups: setupRows, sampledGames };
 }
 
-function collectSetupRows(paths: TrackedPath[], stats: ResultStats): PlanExplorerSetup[] {
+function collectSetupRows(paths: TrackedPath[], stats: ResultStats): SetupCandidate[] {
     const byColor = new Map<Color, TrackedPath[]>();
     for (const path of paths) {
         const pathsForColor = getOrInsert(byColor, path.color, () => []);
         pathsForColor.push(path);
     }
 
-    const setups: PlanExplorerSetup[] = [];
+    const setups: SetupCandidate[] = [];
     for (const colorPaths of byColor.values()) {
         if (colorPaths.length < PLAN_SETUP_MIN_PLANS) continue;
 
         const featured = [...colorPaths]
             .sort((a, b) => setupPathPriority(b) - setupPathPriority(a) || compareTrackedPath(a, b))
             .slice(0, PLAN_SETUP_FEATURED_PATHS_PER_COLOR);
-        const maxPlans = Math.min(PLAN_SETUP_MAX_PLANS, featured.length);
+        const selected = selectSetupPaths(featured);
+        if (selected.length < PLAN_SETUP_MIN_PLANS) continue;
 
-        for (let size = PLAN_SETUP_MIN_PLANS; size <= maxPlans; size += 1) {
-            collectSetupCombinations(featured, size, 0, [], stats, setups);
-        }
+        const structural = selected.filter(isStructuralSetupPath);
+        const keyPaths = structural.length > 0 ? structural : selected;
+        setups.push({
+            key: setupKeyFromPaths(keyPaths),
+            slots: setupSlots(selected),
+            setup: setupFromPaths(selected, stats),
+        });
     }
 
     return setups;
 }
 
-function collectSetupCombinations(
-    paths: TrackedPath[],
-    targetSize: number,
-    start: number,
-    selected: TrackedPath[],
-    stats: ResultStats,
-    setups: PlanExplorerSetup[],
-) {
-    if (selected.length === targetSize) {
-        const sorted = [...selected].sort(compareTrackedPath);
-        setups.push({
-            plans: sorted.map((path) => setupPlanFromPath(path, stats)),
-            games: stats.games,
-            white: stats.white,
-            draw: stats.draw,
-            black: stats.black,
-        });
-        return;
+function selectSetupPaths(paths: TrackedPath[]) {
+    const structural = paths.filter(isStructuralSetupPath);
+    const extras = paths.filter((path) => !isStructuralSetupPath(path));
+    return [...structural, ...extras].slice(0, PLAN_SETUP_MAX_PLANS);
+}
+
+function isStructuralSetupPath(path: TrackedPath) {
+    return path.role === "pawn";
+}
+
+function setupFromPaths(paths: TrackedPath[], stats: ResultStats): PlanExplorerSetup {
+    const sorted = [...paths].sort(compareTrackedPath);
+    return {
+        plans: sorted.map((path) => setupPlanFromPath(path, stats)),
+        games: stats.games,
+        white: stats.white,
+        draw: stats.draw,
+        black: stats.black,
+    };
+}
+
+function setupKeyFromPaths(paths: TrackedPath[]) {
+    return [...paths]
+        .sort(compareTrackedPath)
+        .map((path) => `${path.color}|${path.role}|${path.from}|${path.squares.join("-")}`)
+        .join("||");
+}
+
+function setupSlots(paths: TrackedPath[]) {
+    const slots = new Map<string, string>();
+    for (const path of paths) {
+        const slot = setupSlot(path);
+        if (slot) slots.set(slot.key, slot.value);
+    }
+    return slots;
+}
+
+function setupSlot(path: TrackedPath) {
+    if (isStructuralSetupPath(path)) return null;
+
+    const destination = path.squares.at(-1);
+    if (!destination) return null;
+
+    if (path.role === "king") {
+        const castling = path.san.find((san) => san.startsWith("O-O") || san.startsWith("0-0"));
+        if (castling) {
+            return {
+                key: `king:${path.color}:${path.from}`,
+                value:
+                    castling.startsWith("O-O-O") || castling.startsWith("0-0-0")
+                        ? "queenside"
+                        : "kingside",
+            };
+        }
     }
 
-    const remaining = targetSize - selected.length;
-    if (paths.length - start < remaining) return;
+    return {
+        key: `piece:${path.color}:${path.role}:${path.from}`,
+        value: destination,
+    };
+}
 
-    for (let index = start; index <= paths.length - remaining; index += 1) {
-        selected.push(paths[index]);
-        collectSetupCombinations(paths, targetSize, index + 1, selected, stats, setups);
-        selected.pop();
+function compatibleSetupSlots(existing: Map<string, string>, incoming: Map<string, string>) {
+    for (const [key, value] of incoming) {
+        const existingValue = existing.get(key);
+        if (existingValue !== undefined && existingValue !== value) return false;
     }
+    return true;
+}
+
+function mergeSetupSlots(existing: Map<string, string>, incoming: Map<string, string>) {
+    for (const [key, value] of incoming) {
+        existing.set(key, value);
+    }
+}
+
+function mergeSetup(existing: PlanExplorerSetup, incoming: PlanExplorerSetup) {
+    existing.games += incoming.games;
+    existing.white += incoming.white;
+    existing.draw += incoming.draw;
+    existing.black += incoming.black;
+
+    const existingPlans = new Map(existing.plans.map((plan) => [setupPlanKey(plan), plan]));
+    for (const plan of incoming.plans) {
+        const key = setupPlanKey(plan);
+        const existingPlan = existingPlans.get(key);
+        if (existingPlan) {
+            mergeLineStats(existingPlan.line, plan.line);
+        } else {
+            existing.plans.push(plan);
+            existingPlans.set(key, plan);
+        }
+    }
+}
+
+function mergeLineStats(existing: PlanExplorerLine, incoming: PlanExplorerLine) {
+    existing.games += incoming.games;
+    existing.white += incoming.white;
+    existing.draw += incoming.draw;
+    existing.black += incoming.black;
+}
+
+function limitSetupPlans(setup: PlanExplorerSetup): PlanExplorerSetup {
+    return {
+        ...setup,
+        plans: [...setup.plans].sort(compareSetupPlansForOutput).slice(0, PLAN_SETUP_MAX_PLANS),
+    };
+}
+
+function compareSetupPlansForOutput(a: PlanExplorerSetupPlan, b: PlanExplorerSetupPlan) {
+    return (
+        setupPlanOutputPriority(b) - setupPlanOutputPriority(a) ||
+        setupPlanKey(a).localeCompare(setupPlanKey(b))
+    );
+}
+
+function setupPlanOutputPriority(plan: PlanExplorerSetupPlan) {
+    if (plan.role === "pawn") return 100 + Math.min(plan.line.san.length, 4) * 6;
+    if (
+        plan.role === "king" &&
+        plan.line.san.some((san) => san.startsWith("O-O") || san.startsWith("0-0"))
+    ) {
+        return 90;
+    }
+    if (plan.role === "bishop" || plan.role === "knight") return 84;
+    if (plan.role === "rook") return 76;
+    if (plan.role === "queen") return 72;
+    return 50;
 }
 
 function setupPlanFromPath(path: TrackedPath, stats: ResultStats): PlanExplorerSetupPlan {
@@ -546,9 +654,11 @@ function compareTrackedPath(a: TrackedPath, b: TrackedPath) {
 }
 
 function setupKey(plans: PlanExplorerSetupPlan[]) {
-    return plans
-        .map((plan) => `${plan.color}|${plan.role}|${plan.from}|${plan.line.squares.join("-")}`)
-        .join("||");
+    return plans.map(setupPlanKey).join("||");
+}
+
+function setupPlanKey(plan: PlanExplorerSetupPlan) {
+    return `${plan.color}|${plan.role}|${plan.from}|${plan.line.squares.join("-")}`;
 }
 
 function statsFromPosition(data: PositionData): ResultStats {
