@@ -2194,6 +2194,19 @@ from 2026-04-24 through 2026-05-03.
   because those can change the nature of the setup even when the pawn structure
   matches. Merged database/online rows keep per-route game counts while the
   setup row count describes the whole compatible structure cluster.
+- A follow-up on 2026-06-14 replaced database-backed Plan Explorer's
+  setup-candidate catalog with generic co-occurrence mining. Local database and
+  online Lichess/Masters setup rows now infer broad setup families from sampled
+  human routes: each sampled branch contributes same-side setup features,
+  recurring seed routes such as a fianchetto pawn, central/support pawn,
+  developed minor, or castling move become setup-family keys, and compatible
+  supporting routes are merged across database samples. This means a row can
+  grow from multiple related games instead of requiring one exact branch to
+  contain the whole configuration, while still using only local/online database
+  games, WDL, and blended strength. The online Lichess/Masters sampler was also
+  widened to follow more popular human branches before mining setups. Do not
+  reintroduce manual opening labels or a hardcoded opening catalog in the
+  database Plan Explorer path.
 - A follow-up on 2026-06-14 made Engine Plans setups less PV-literal. Stockfish
   PVs remain the evaluation source, but candidate setup families can now carry
   the full human arrow group when the engine supports a setup-starting move.

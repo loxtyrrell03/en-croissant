@@ -28,12 +28,13 @@ import type { LichessGamesOptions, MasterGamesOptions } from "@/utils/lichess/ex
 
 export type OnlinePlanExplorerSource = "lch_all" | "lch_master";
 
-const PLAN_FETCH_MOVES = 6;
-const PLAN_BRANCH_WIDTH = 4;
-const PLAN_MAX_REQUESTS = 36;
-const PLAN_MIN_CHILD_SHARE = 0.05;
+const PLAN_FETCH_MOVES = 10;
+const PLAN_BRANCH_WIDTH = 6;
+const PLAN_MAX_REQUESTS = 72;
+const PLAN_MIN_CHILD_SHARE = 0.03;
 const PLAN_MAX_LINES_PER_PIECE = 8;
 const PLAN_SETUP_FEATURED_PATHS_PER_COLOR = 7;
+const PLAN_SETUP_SEED_PATHS_PER_COLOR = 4;
 const PLAN_SETUP_MIN_PLANS = 3;
 const PLAN_SETUP_MAX_PLANS = 6;
 const PLAN_SETUP_MAX_RESULTS = 40;
@@ -418,6 +419,7 @@ function buildPiecesFromLeaves(leaves: BranchNode[]) {
     const setupRows = setups
         .map((group) => group.setup)
         .map(limitSetupPlans)
+        .filter((setup) => setup.plans.length >= PLAN_SETUP_MIN_PLANS)
         .sort(
             (a, b) =>
                 b.games - a.games ||
@@ -432,40 +434,103 @@ function buildPiecesFromLeaves(leaves: BranchNode[]) {
 function collectSetupRows(paths: TrackedPath[], stats: ResultStats): SetupCandidate[] {
     const byColor = new Map<Color, TrackedPath[]>();
     for (const path of paths) {
-        const pathsForColor = getOrInsert(byColor, path.color, () => []);
-        pathsForColor.push(path);
+        const feature = setupFeaturePath(path);
+        if (!isSetupFamilyPath(feature)) continue;
+
+        const pathsForColor = getOrInsert(byColor, feature.color, () => []);
+        pathsForColor.push(feature);
     }
 
     const setups: SetupCandidate[] = [];
-    for (const colorPaths of byColor.values()) {
-        if (colorPaths.length < PLAN_SETUP_MIN_PLANS) continue;
-
-        const featured = [...colorPaths]
+    for (const rawColorPaths of byColor.values()) {
+        const featured = dedupeSetupPaths(rawColorPaths)
             .sort((a, b) => setupPathPriority(b) - setupPathPriority(a) || compareTrackedPath(a, b))
             .slice(0, PLAN_SETUP_FEATURED_PATHS_PER_COLOR);
-        const selected = selectSetupPaths(featured);
-        if (selected.length < PLAN_SETUP_MIN_PLANS) continue;
 
-        const structural = selected.filter(isStructuralSetupPath);
-        const keyPaths = structural.length > 0 ? structural : selected;
-        setups.push({
-            key: setupKeyFromPaths(keyPaths),
-            slots: setupSlots(selected),
-            setup: setupFromPaths(selected, stats),
-        });
+        for (const seed of selectSetupSeedPaths(featured)) {
+            const selected = selectSetupPaths(featured, seed);
+            setups.push({
+                key: setupKeyFromPaths([seed]),
+                slots: setupSlots(selected),
+                setup: setupFromPaths(selected, stats),
+            });
+        }
     }
 
     return setups;
 }
 
-function selectSetupPaths(paths: TrackedPath[]) {
-    const structural = paths.filter(isStructuralSetupPath);
-    const extras = paths.filter((path) => !isStructuralSetupPath(path));
-    return [...structural, ...extras].slice(0, PLAN_SETUP_MAX_PLANS);
+function setupFeaturePath(path: TrackedPath): TrackedPath {
+    if (path.squares.length <= 2) {
+        return clonePath(path);
+    }
+
+    return {
+        ...path,
+        squares: path.squares.slice(0, 2),
+        san: path.san.slice(0, 1),
+        uci: path.uci.slice(0, 1),
+    };
+}
+
+function isSetupFamilyPath(path: TrackedPath) {
+    return path.squares.length > 1;
+}
+
+function dedupeSetupPaths(paths: TrackedPath[]) {
+    const deduped = new Map<string, TrackedPath>();
+    for (const path of paths) {
+        deduped.set(setupPathKey(path), path);
+    }
+    return [...deduped.values()];
+}
+
+function selectSetupSeedPaths(paths: TrackedPath[]) {
+    const seeds = paths.filter(isSetupSeedPath);
+    const selected = seeds.length > 0 ? seeds : paths;
+    return [...selected]
+        .sort((a, b) => setupSeedPriority(b) - setupSeedPriority(a) || compareTrackedPath(a, b))
+        .slice(0, PLAN_SETUP_SEED_PATHS_PER_COLOR);
+}
+
+function selectSetupPaths(paths: TrackedPath[], seed: TrackedPath) {
+    const selected = [clonePath(seed)];
+    const candidates = paths
+        .filter((path) => setupPathKey(path) !== setupPathKey(seed))
+        .sort((a, b) => setupPathPriority(b) - setupPathPriority(a) || compareTrackedPath(a, b));
+
+    for (const candidate of candidates) {
+        if (selected.length >= PLAN_SETUP_MAX_PLANS) break;
+        selected.push(clonePath(candidate));
+    }
+
+    return selected.sort(compareTrackedPath);
 }
 
 function isStructuralSetupPath(path: TrackedPath) {
     return path.role === "pawn";
+}
+
+function isSetupSeedPath(path: TrackedPath) {
+    return (
+        path.role === "pawn" || path.role === "knight" || path.role === "bishop" || isCastle(path)
+    );
+}
+
+function setupSeedPriority(path: TrackedPath) {
+    const last = path.squares.at(-1);
+    const sameFile = !!last && last[0] === path.from[0];
+
+    if (path.role === "pawn" && sameFile && isFianchettoPawnSeed(path)) return 110;
+    if (path.role === "pawn" && sameFile && isCentralOrAdvancedPawnPath(path)) return 100;
+    if (path.role === "pawn" && sameFile) return 72;
+    if (path.role === "knight" || path.role === "bishop") return 86;
+    if (path.role === "king" && isCastle(path)) return 82;
+    return 40;
+}
+
+function isFianchettoPawnSeed(path: TrackedPath) {
+    return path.role === "pawn" && (path.from[0] === "b" || path.from[0] === "g");
 }
 
 function setupFromPaths(paths: TrackedPath[], stats: ResultStats): PlanExplorerSetup {
@@ -679,18 +744,25 @@ function statsFromMove(move: ExplorerMove): ResultStats {
     };
 }
 
+function clonePath(path: TrackedPath): TrackedPath {
+    return {
+        ...path,
+        squares: [...path.squares],
+        san: [...path.san],
+        uci: [...path.uci],
+    };
+}
+
+function isCastle(path: TrackedPath) {
+    return path.san.some((san) => san.startsWith("O-O") || san.startsWith("0-0"));
+}
+
+function setupPathKey(path: TrackedPath) {
+    return `${path.color}|${path.role}|${path.from}|${path.squares.join("-")}`;
+}
+
 function clonePaths(paths: Map<string, TrackedPath>) {
-    return new Map(
-        [...paths.entries()].map(([key, path]) => [
-            key,
-            {
-                ...path,
-                squares: [...path.squares],
-                san: [...path.san],
-                uci: [...path.uci],
-            },
-        ]),
-    );
+    return new Map([...paths.entries()].map(([key, path]) => [key, clonePath(path)]));
 }
 
 function getOrInsert<K, V>(map: Map<K, V>, key: K, create: () => V) {
