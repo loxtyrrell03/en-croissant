@@ -942,6 +942,7 @@ function SetupRow({
         <Stack gap={4}>
           <Group gap="xs" wrap="wrap">
             <Badge variant="light">{setup.plans.length} plans</Badge>
+            {setup.archetype && <Badge variant="filled">{setup.archetype}</Badge>}
             <Badge variant="outline">{setup.appearsInTopPv ? "PV1" : "Side PV"}</Badge>
           </Group>
           <Text fw={700} size="sm">

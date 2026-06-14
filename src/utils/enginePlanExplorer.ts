@@ -67,6 +67,7 @@ export type EnginePlan = EnginePlanSignal & {
 export type EnginePlanSetup = {
     signature: string;
     label: string;
+    archetype: string | null;
     color: Color;
     plans: EnginePlan[];
     approval: EngineApproval;
@@ -157,8 +158,22 @@ const PAWN_BREAKS: Record<Color, Set<string>> = {
     black: new Set(["b5", "c5", "e5", "f5", "g5", "h5"]),
 };
 const PAWN_SETUP_SQUARES: Record<Color, Set<string>> = {
-    white: new Set(["b3", "c3", "d3", "e3", "g3"]),
-    black: new Set(["b6", "c6", "d6", "e6", "g6"]),
+    white: new Set(["b3", "c3", "d3", "e3", "g3", "c4", "d4", "e4"]),
+    black: new Set(["b6", "c6", "d6", "e6", "g6", "c5", "d5", "e5"]),
+};
+const ROOT_SETUP_PAWN_SQUARES: Record<Color, Set<string>> = {
+    white: new Set(["b3", "c3", "d3", "e3", "f3", "g3", "b4", "c4", "d4", "e4", "f4"]),
+    black: new Set(["b6", "c6", "d6", "e6", "f6", "g6", "b5", "c5", "d5", "e5", "f5"]),
+};
+const ROOT_SETUP_PIECE_SQUARES: Record<Color, Partial<Record<Role, Set<string>>>> = {
+    white: {
+        knight: new Set(["c3", "d2", "e2", "f3"]),
+        bishop: new Set(["b2", "d3", "e2", "f4", "g2", "g5"]),
+    },
+    black: {
+        knight: new Set(["c6", "d7", "e7", "f6"]),
+        bishop: new Set(["b7", "d6", "e7", "f5", "g4", "g7"]),
+    },
 };
 const CENTRAL_FILES = new Set(["c", "d", "e", "f"]);
 const QUEENSIDE_FILES = new Set(["a", "b", "c"]);
@@ -184,6 +199,7 @@ export function buildEnginePlanReport(
     const rootBestQuality = bestRootQuality(pvs);
     const grouped = new Map<string, EnginePlanSignal & { evidence: EnginePlanEvidence[] }>();
     const signalsByPv = new Map<number, EnginePlanSignal[]>();
+    const rootSetupSignals = extractRootSetupSignals(fen);
 
     for (const pv of pvs) {
         const signals = extractPlansFromPv(fen, pv);
@@ -205,7 +221,13 @@ export function buildEnginePlanReport(
     const plans = Array.from(grouped.values())
         .map((group) => scorePlan(group, pvs.length, rootBestQuality))
         .sort(comparePlans);
-    const setups = buildEnginePlanSetups(signalsByPv, plans, pvs, rootBestQuality);
+    const setups = buildEnginePlanSetups(
+        signalsByPv,
+        rootSetupSignals,
+        plans,
+        pvs,
+        rootBestQuality,
+    );
 
     return {
         fen,
@@ -356,6 +378,54 @@ export function extractPlansFromPv(fen: string, pv: Pick<EnginePlanPv, "uciMoves
             pawnExpansionSegments[color],
             signals,
         );
+    }
+
+    return Array.from(signals.values());
+}
+
+function extractRootSetupSignals(fen: string) {
+    const [pos] = positionFromFen(fen);
+    if (!pos) return [];
+
+    const signals = new Map<string, EnginePlanSignal>();
+    for (const color of ["white", "black"] as const) {
+        for (const square of ROOT_SETUP_PAWN_SQUARES[color]) {
+            const piece = pieceAt(pos, square);
+            if (piece?.color !== color || piece.role !== "pawn") continue;
+
+            addSignal(signals, {
+                signature: `pawn_setup:${color}:${square}`,
+                category: "pawnSetup",
+                label: `${capitalize(color)} has ${formatPawnSetupSquare(
+                    color,
+                    square,
+                )} ${pawnSetupKind(square)}`,
+                color,
+                role: "pawn",
+                routeSquares: [square],
+            });
+        }
+
+        for (const [role, squares] of Object.entries(ROOT_SETUP_PIECE_SQUARES[color]) as [
+            Role,
+            Set<string>,
+        ][]) {
+            for (const square of squares) {
+                const piece = pieceAt(pos, square);
+                if (piece?.color !== color || piece.role !== role) continue;
+
+                addSignal(signals, {
+                    signature: `piece_destination:${color}:${role}:${square}`,
+                    category: "pieceDestination",
+                    label: `${capitalize(color)} ${role} is already on ${square}`,
+                    color,
+                    role,
+                    routeSquares: [square],
+                });
+            }
+        }
+
+        recordRootCastlingSignal(color, pos, signals);
     }
 
     return Array.from(signals.values());
@@ -617,11 +687,16 @@ export function engineConfidenceScore(confidence: EnginePlanConfidence) {
 
 function buildEnginePlanSetups(
     signalsByPv: Map<number, EnginePlanSignal[]>,
+    rootSetupSignals: EnginePlanSignal[],
     plans: EnginePlan[],
     pvs: EnginePlanPv[],
     rootBestQuality: number | null,
 ): EnginePlanSetup[] {
     const plansBySignature = new Map(plans.map((plan) => [plan.signature, plan]));
+    const rootSignalsBySignature = new Map(
+        rootSetupSignals.map((signal) => [signal.signature, signal]),
+    );
+    const rootSignatures = new Set(rootSignalsBySignature.keys());
     const pvsByRank = new Map(pvs.map((pv) => [pv.rank, pv]));
     const grouped = new Map<
         string,
@@ -636,12 +711,16 @@ function buildEnginePlanSetups(
             ...pv,
             firstMove: pv.sanMoves[0] ?? pv.uciMoves[0] ?? "",
         };
-        const uniqueSignals = uniqueSetupSignals(signals);
+        const uniqueSignals = uniqueSetupSignals([...rootSetupSignals, ...signals]);
         const byColor = groupSignalsByColor(uniqueSignals);
 
         for (const [color, colorSignals] of byColor) {
             const featured = colorSignals
-                .filter((signal) => plansBySignature.has(signal.signature))
+                .filter(
+                    (signal) =>
+                        plansBySignature.has(signal.signature) ||
+                        rootSignalsBySignature.has(signal.signature),
+                )
                 .sort(compareSetupSignals)
                 .slice(0, ENGINE_SETUP_FEATURED_SIGNALS_PER_COLOR);
             if (featured.length < ENGINE_SETUP_MIN_PLANS) continue;
@@ -652,6 +731,8 @@ function buildEnginePlanSetups(
                     const signatures = selected
                         .map((signal) => signal.signature)
                         .sort((a, b) => a.localeCompare(b));
+                    if (signatures.every((signature) => rootSignatures.has(signature))) return;
+
                     const key = signatures.join("||");
                     const existing = grouped.get(key);
                     if (existing) {
@@ -673,7 +754,20 @@ function buildEnginePlanSetups(
     return Array.from(grouped.values())
         .map((group) => {
             const setupPlans = group.signatures
-                .map((signature) => plansBySignature.get(signature))
+                .map((signature) => {
+                    const plan = plansBySignature.get(signature);
+                    if (plan) return plan;
+
+                    const rootSignal = rootSignalsBySignature.get(signature);
+                    return rootSignal
+                        ? scoreRootSetupAnchor(
+                              rootSignal,
+                              group.evidence,
+                              pvs.length,
+                              rootBestQuality,
+                          )
+                        : null;
+                })
                 .filter((plan): plan is EnginePlan => !!plan)
                 .sort(compareSetupPlans);
             return scoreSetup(
@@ -741,12 +835,26 @@ function scoreSetup(
     if (plans.length < ENGINE_SETUP_MIN_PLANS) return null;
 
     const support = scoreEngineEvidence(evidence, totalPvs, rootBestQuality, "setup");
+    const archetype = setupArchetype(color, plans);
     return {
         signature: signatures.join("||"),
-        label: setupLabel(color, plans),
+        label: setupLabel(color, plans, archetype),
+        archetype,
         color,
         plans,
         ...support,
+    };
+}
+
+function scoreRootSetupAnchor(
+    signal: EnginePlanSignal,
+    evidence: EnginePlanEvidence[],
+    totalPvs: number,
+    rootBestQuality: number | null,
+): EnginePlan {
+    return {
+        ...signal,
+        ...scoreEngineEvidence(evidence, totalPvs, rootBestQuality, "setup"),
     };
 }
 
@@ -821,10 +929,40 @@ function scoreEngineEvidence(
     };
 }
 
-function setupLabel(color: Color, plans: EnginePlan[]) {
+function setupLabel(color: Color, plans: EnginePlan[], archetype: string | null) {
     const names = plans.slice(0, 4).map((plan) => compactPlanLabel(plan));
     const suffix = plans.length > names.length ? ` +${plans.length - names.length}` : "";
-    return `${capitalize(color)} setup: ${names.join(", ")}${suffix}`;
+    const prefix = archetype
+        ? `${capitalize(color)} ${archetype} setup`
+        : `${capitalize(color)} setup`;
+    return `${prefix}: ${names.join(", ")}${suffix}`;
+}
+
+function setupArchetype(color: Color, plans: EnginePlan[]) {
+    const signatures = new Set(plans.map((plan) => plan.signature));
+    const has = (signature: string) => signatures.has(signature);
+
+    if (
+        color === "white" &&
+        has("pawn_setup:white:d4") &&
+        has("pawn_setup:white:c4") &&
+        has("piece_destination:white:knight:f3") &&
+        (has("pawn_setup:white:g3") || has("piece_destination:white:bishop:g2"))
+    ) {
+        return "Catalan";
+    }
+
+    if (
+        color === "black" &&
+        has("pawn_setup:black:g6") &&
+        has("piece_destination:black:bishop:g7") &&
+        (has("pawn_setup:black:d6") || has("pawn_setup:black:e6")) &&
+        (has("piece_destination:black:knight:f6") || has("castling:black:kingside"))
+    ) {
+        return "King's Indian";
+    }
+
+    return null;
 }
 
 function compactPlanLabel(plan: EnginePlan) {
@@ -833,10 +971,10 @@ function compactPlanLabel(plan: EnginePlan) {
             return plan.label.replace(/^White |^Black /, "");
         case "pawnSetup":
         case "pawnBreak":
-            return plan.routeSquares?.[1]
+            return plan.routeSquares?.at(-1)
                 ? plan.color === "black"
-                    ? `...${plan.routeSquares[1]}`
-                    : plan.routeSquares[1]
+                    ? `...${plan.routeSquares.at(-1)}`
+                    : plan.routeSquares.at(-1)!
                 : plan.label;
         case "pieceDestination":
             return plan.role && plan.routeSquares?.at(-1)
@@ -881,6 +1019,7 @@ function compareSetupPlans(a: EnginePlan, b: EnginePlan) {
 function compareSetups(a: EnginePlanSetup, b: EnginePlanSetup) {
     const approvalDiff = approvalRank(a.approval) - approvalRank(b.approval);
     if (approvalDiff !== 0) return approvalDiff;
+    if (!!a.archetype !== !!b.archetype) return a.archetype ? -1 : 1;
     if (a.supportCount !== b.supportCount) return b.supportCount - a.supportCount;
     if (a.plans.length !== b.plans.length) return b.plans.length - a.plans.length;
     if (a.appearsInTopPv !== b.appearsInTopPv) return a.appearsInTopPv ? -1 : 1;
@@ -1144,17 +1283,68 @@ function recordPawnSetupSignal(
 ) {
     if (!PAWN_SETUP_SQUARES[color].has(destination)) return;
 
-    const moveLabel = color === "black" ? `...${destination}` : destination;
-    const setupKind =
-        destination[0] === "b" || destination[0] === "g" ? "fianchetto setup" : "central support";
+    const moveLabel = formatPawnSetupSquare(color, destination);
     addSignal(signals, {
         signature: `pawn_setup:${color}:${destination}`,
         category: "pawnSetup",
-        label: `${capitalize(color)} plays ${moveLabel} ${setupKind}`,
+        label: `${capitalize(color)} plays ${moveLabel} ${pawnSetupKind(destination)}`,
         color,
         role: "pawn",
         routeSquares: [origin, destination],
     });
+}
+
+function formatPawnSetupSquare(color: Color, square: string) {
+    return color === "black" ? `...${square}` : square;
+}
+
+function pawnSetupKind(square: string) {
+    const file = square[0];
+    if (file === "b" || file === "g") return "fianchetto setup";
+    if (CENTRAL_FILES.has(file)) return "central structure";
+    return "support square";
+}
+
+function recordRootCastlingSignal(
+    color: Color,
+    pos: NonNullable<ReturnType<typeof positionFromFen>[0]>,
+    signals: Map<string, EnginePlanSignal>,
+) {
+    const rank = color === "white" ? "1" : "8";
+    const kingSideKing = `g${rank}`;
+    const queenSideKing = `c${rank}`;
+
+    if (
+        pieceAt(pos, kingSideKing)?.color === color &&
+        pieceAt(pos, kingSideKing)?.role === "king"
+    ) {
+        addSignal(signals, {
+            signature: `castling:${color}:kingside`,
+            category: "castling",
+            label: `${capitalize(color)} has castled kingside`,
+            color,
+            role: "king",
+            routeSquares: [kingSideKing],
+        });
+    }
+    if (
+        pieceAt(pos, queenSideKing)?.color === color &&
+        pieceAt(pos, queenSideKing)?.role === "king"
+    ) {
+        addSignal(signals, {
+            signature: `castling:${color}:queenside`,
+            category: "castling",
+            label: `${capitalize(color)} has castled queenside`,
+            color,
+            role: "king",
+            routeSquares: [queenSideKing],
+        });
+    }
+}
+
+function pieceAt(pos: NonNullable<ReturnType<typeof positionFromFen>[0]>, squareName: string) {
+    const square = parseSquare(squareName);
+    return square === undefined ? undefined : pos.board.get(square);
 }
 
 function attacksEnemyPawn(

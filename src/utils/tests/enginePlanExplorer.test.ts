@@ -21,6 +21,7 @@ import {
 const BREAK_FEN = "rnbqkbnr/ppp1pppp/8/3p4/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const H_FILE_BREAK_FEN = "rnbqkbnr/pppppp1p/8/6p1/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const CASTLING_FEN = "r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1";
+const QUEENS_GAMBIT_NF3_FEN = "rnbqkb1r/ppp2ppp/4pn2/3p4/2PP4/5N2/PP2PPPP/RNBQKB1R w KQkq - 0 4";
 
 function pv(rank: number, uciMoves: string[], cp: number, depth = 12): BestMoves {
     return {
@@ -205,6 +206,39 @@ describe("Engine Plan Explorer", () => {
                 "castling:black:kingside",
             ]),
         );
+    });
+
+    test("combines root structure with PV moves to suggest Catalan setups", () => {
+        const report = buildEnginePlanReport(
+            QUEENS_GAMBIT_NF3_FEN,
+            [
+                pv(1, ["g2g3", "f8e7", "f1g2", "e8g8", "e1g1", "c7c6"], 34),
+                pv(2, ["g2g3", "d5c4", "f1g2", "f8e7", "e1g1", "e8g8"], 24),
+                pv(3, ["b1c3", "f8e7", "c1g5", "e8g8", "e2e3", "c7c6"], 8),
+            ],
+            {
+                requestedMultipv: 3,
+                limitLabel: "Depth 12",
+            },
+        );
+
+        const catalan = report.setups.find((setup) => {
+            const signatures = new Set(setup.plans.map((plan) => plan.signature));
+            return (
+                setup.archetype === "Catalan" &&
+                setup.color === "white" &&
+                signatures.has("pawn_setup:white:d4") &&
+                signatures.has("pawn_setup:white:c4") &&
+                signatures.has("piece_destination:white:knight:f3") &&
+                signatures.has("pawn_setup:white:g3") &&
+                signatures.has("piece_destination:white:bishop:g2")
+            );
+        });
+
+        expect(catalan?.label).toContain("Catalan");
+        expect(catalan?.approval).toBe("Strong");
+        expect(catalan?.supportCount).toBe(2);
+        expect(catalan?.appearsInTopPv).toBe(true);
     });
 
     test("builds per-move board previews from a PV", () => {

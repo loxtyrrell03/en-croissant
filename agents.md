@@ -2168,6 +2168,16 @@ from 2026-04-24 through 2026-05-03.
   Indian configuration. Hovering an engine setup row should preview the full
   setup arrow family, while drawing the setup should add the same family to the
   board.
+- A follow-up on 2026-06-14 fixed Engine Plans setup blind spots where a real
+  structure was already partly present in the current FEN. Setup generation now
+  adds root-position anchors for common pawn structures, developed minor pieces,
+  and already-castled kings before combining them with Stockfish PV signals.
+  This keeps positions such as `1.d4 Nf6 2.Nf3 e6 3.c4 d5` from missing Catalan
+  setups just because `d4`, `c4`, and `Nf3` were played before the current
+  board. Root anchors are used for setup recognition and naming, not as fake
+  arrows in the normal Plans table, and named archetypes such as Catalan and
+  King's Indian should be based on component facts rather than a single hard
+  coded FEN.
 - A follow-up on 2026-06-14 added inline Coach explanations to database-backed
   Plan Explorer rows and engine-only Engine Plans rows. These explanations use
   the existing local AI CLI bridge through a dedicated `ask_plan_coach` command
