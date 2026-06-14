@@ -4843,14 +4843,14 @@ fn validate_answer_line_blocks(
     }
 
     for line in line_blocks {
-        let requested_moves = parse_line_moves(current_fen, &line).map_err(|error| {
+        let requested_line = parse_line_move_sequence(current_fen, &line).map_err(|error| {
             CoachError::GeminiUnsupportedLine(format!(
                 "`{line}` is not a legal full line from the current FEN ({error})"
             ))
         })?;
         let supported = supported_lines
             .iter()
-            .any(|stockfish_line| is_move_prefix(&requested_moves, stockfish_line));
+            .any(|stockfish_line| is_engine_line_prefix(&requested_line, stockfish_line));
         if !supported {
             return Err(CoachError::GeminiUnsupportedLine(format!(
                 "`{line}` was not supplied by Stockfish for the current FEN"
@@ -5048,7 +5048,7 @@ fn demote_non_current_supported_line_blocks_if_possible(
 fn current_line_block_is_supported(
     current_fen: &str,
     line: &str,
-    supported_lines: &[Vec<String>],
+    supported_lines: &[SupportedEngineLine],
 ) -> bool {
     validate_current_line_block(current_fen, line, supported_lines).is_ok()
 }
@@ -5056,7 +5056,7 @@ fn current_line_block_is_supported(
 fn validate_current_line_block(
     current_fen: &str,
     line: &str,
-    supported_lines: &[Vec<String>],
+    supported_lines: &[SupportedEngineLine],
 ) -> Result<(), CoachError> {
     if supported_lines.is_empty() {
         return Err(CoachError::GeminiUnsupportedLine(
@@ -5064,14 +5064,14 @@ fn validate_current_line_block(
         ));
     }
 
-    let requested_moves = parse_line_moves(current_fen, line).map_err(|error| {
+    let requested_line = parse_line_move_sequence(current_fen, line).map_err(|error| {
         CoachError::GeminiUnsupportedLine(format!(
             "`{line}` is not a legal full line from the current FEN ({error})"
         ))
     })?;
     let supported = supported_lines
         .iter()
-        .any(|stockfish_line| is_move_prefix(&requested_moves, stockfish_line));
+        .any(|stockfish_line| is_engine_line_prefix(&requested_line, stockfish_line));
     if !supported {
         return Err(CoachError::GeminiUnsupportedLine(format!(
             "`{line}` was not supplied by Stockfish for the current FEN"
@@ -5150,7 +5150,7 @@ fn collect_supported_engine_lines(
     current_fen: &str,
     stockfish_lines: &[CoachEngineLine],
     targeted_results: &[CoachTargetedResult],
-) -> Vec<Vec<String>> {
+) -> Vec<SupportedEngineLine> {
     stockfish_lines
         .iter()
         .chain(
@@ -5160,13 +5160,34 @@ fn collect_supported_engine_lines(
                 .flat_map(|result| result.lines.iter()),
         )
         .filter_map(|line| {
-            if line.uci_moves.is_empty() {
+            if line.uci_moves.is_empty() && line.san_moves.is_empty() {
                 None
             } else {
-                Some(line.uci_moves.clone())
+                Some(SupportedEngineLine {
+                    uci_moves: line.uci_moves.clone(),
+                    san_moves: line.san_moves.clone(),
+                })
             }
         })
         .collect()
+}
+
+struct ParsedLineMoves {
+    uci_moves: Vec<String>,
+    san_moves: Vec<String>,
+}
+
+struct SupportedEngineLine {
+    uci_moves: Vec<String>,
+    san_moves: Vec<String>,
+}
+
+fn is_engine_line_prefix(
+    candidate: &ParsedLineMoves,
+    stockfish_line: &SupportedEngineLine,
+) -> bool {
+    is_move_prefix(&candidate.uci_moves, &stockfish_line.uci_moves)
+        || is_move_prefix(&candidate.san_moves, &stockfish_line.san_moves)
 }
 
 fn is_move_prefix(candidate: &[String], stockfish_line: &[String]) -> bool {
@@ -5799,18 +5820,27 @@ fn parse_single_move(fen: &str, requested_move: &str) -> Result<(String, String)
 }
 
 fn parse_line_moves(fen: &str, line: &str) -> Result<Vec<String>, CoachError> {
+    Ok(parse_line_move_sequence(fen, line)?.uci_moves)
+}
+
+fn parse_line_move_sequence(fen: &str, line: &str) -> Result<ParsedLineMoves, CoachError> {
     let mut position = parse_fen_to_position(fen)?;
-    let mut moves = Vec::new();
+    let mut uci_moves = Vec::new();
+    let mut san_moves = Vec::new();
     for token in tokenize_move_line(line) {
-        let (uci, _) = parse_move_in_position(&mut position, &token)?;
-        moves.push(uci);
+        let (uci, san) = parse_move_in_position(&mut position, &token)?;
+        uci_moves.push(uci);
+        san_moves.push(san);
     }
-    if moves.is_empty() {
+    if uci_moves.is_empty() {
         return Err(CoachError::IllegalStockfishRequest(
             "analyse_line did not contain any moves".to_string(),
         ));
     }
-    Ok(moves)
+    Ok(ParsedLineMoves {
+        uci_moves,
+        san_moves,
+    })
 }
 
 fn san_for_uci_line(fen: &str, moves: &[String]) -> Result<Vec<String>, CoachError> {
@@ -7111,6 +7141,46 @@ mod tests {
                 eval: "+0.20".to_string(),
                 uci_moves: vec!["e2e4".to_string(), "e7e5".to_string(), "g1f3".to_string()],
                 san_moves: vec!["e4".to_string(), "e5".to_string(), "Nf3".to_string()],
+            }],
+            &[],
+        );
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn accepts_answer_line_block_with_frontend_normalized_castling_uci() {
+        let result = validate_answer_line_blocks(
+            "rnbqkb1r/ppp2ppp/4pn2/3p4/2PP4/5NP1/PP2PP1P/RNBQKB1R b KQkq - 0 4",
+            "The main line is <line>dxc4 Bg2 c5 O-O Nc6 Ne5 Bd7 Na3 cxd4 Naxc4</line>.",
+            &[CoachEngineLine {
+                multipv: 1,
+                depth: 60,
+                eval: "+0.16".to_string(),
+                uci_moves: vec![
+                    "d5c4".to_string(),
+                    "f1g2".to_string(),
+                    "c7c5".to_string(),
+                    "e1h1".to_string(),
+                    "b8c6".to_string(),
+                    "f3e5".to_string(),
+                    "c8d7".to_string(),
+                    "b1a3".to_string(),
+                    "c5d4".to_string(),
+                    "a3c4".to_string(),
+                ],
+                san_moves: vec![
+                    "dxc4".to_string(),
+                    "Bg2".to_string(),
+                    "c5".to_string(),
+                    "O-O".to_string(),
+                    "Nc6".to_string(),
+                    "Ne5".to_string(),
+                    "Bd7".to_string(),
+                    "Na3".to_string(),
+                    "cxd4".to_string(),
+                    "Naxc4".to_string(),
+                ],
             }],
             &[],
         );

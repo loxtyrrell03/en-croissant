@@ -758,6 +758,15 @@ piece` must reuse the most recent targeted Stockfish evidence and
   was made non-fatal so unsupported current-FEN wrappers fall through to repair
   and final stripping instead of bubbling `GeminiUnsupportedLine` early. Do not
   weaken this fail-closed behavior.
+- On 2026-06-14, Coach line-block validation was hardened for frontend
+  normalized castling UCI. Chessops can send cloud PV castling as Chess960-style
+  `e1h1`/`e8h8`, while Rust parses the displayed SAN `O-O` as standard
+  `e1g1`/`e8g8`; this caused valid current-FEN Lichess Cloud lines to be
+  rejected and could push Coach into a 25-second Flash audit timeout. The
+  backend still requires each `<line>` block to parse legally from the live FEN
+  and be backed by supplied current-FEN evidence, but it now accepts either UCI
+  or SAN prefix equivalence so equivalent castling spellings do not break
+  clickable lines.
 - Coach was then moved out of the under-board panel and into the right-side
   analysis tab stack as its own `Coach` tab; the under-board Coach button is
   only a shortcut that selects that right-side tab. The standalone Current FEN
