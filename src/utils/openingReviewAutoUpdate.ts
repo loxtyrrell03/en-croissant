@@ -12,8 +12,9 @@ import {
     onlineDatabaseUpdatesAtom,
     openingReviewAutoUpdateStateAtom,
 } from "@/state/atoms";
-import { query_players } from "@/utils/db";
+import { getDatabases, query_players } from "@/utils/db";
 import { getDocumentDir } from "@/utils/directories";
+import { resolveOnlineDatabaseUpdateRecordForPath } from "@/utils/onlineGameImport";
 import {
     type OpeningReviewAutoUpdateConfig,
     type OpeningReviewDeck,
@@ -199,6 +200,7 @@ async function collectOpeningReviewAutoUpdateJobs(
     records: OnlineDatabaseUpdateRecords,
 ): Promise<AutoUpdateJob[]> {
     const documentDir = await getDocumentDir();
+    const databases = await getDatabases().catch(() => []);
     const summaries = await listOpeningReviewDecks(documentDir);
     const jobs: AutoUpdateJob[] = [];
 
@@ -206,20 +208,38 @@ async function collectOpeningReviewAutoUpdateJobs(
         const deck = await readOpeningReviewDeck(summary.path).catch(() => null);
         if (!deck?.autoUpdate?.enabled) continue;
 
-        const config = deck.autoUpdate;
-        const record = records[config.playerDb];
-        if (!record) continue;
+        const resolved = resolveOnlineDatabaseUpdateRecordForPath(
+            deck.autoUpdate.playerDb,
+            records,
+            databases,
+        );
+        if (!resolved) continue;
 
-        const recordUpdatedAt = record.lastUpdatedAt ?? 0;
-        const recordGameCount = record.lastKnownGameCount ?? 0;
-        const deckSawGameCount = config.lastKnownGameCount ?? 0;
-        const hasMoreGames = recordGameCount > deckSawGameCount;
-        if (!recordUpdatedAt || !hasMoreGames) continue;
+        const config =
+            resolved.record.dbPath === deck.autoUpdate.playerDb
+                ? deck.autoUpdate
+                : { ...deck.autoUpdate, playerDb: resolved.record.dbPath };
+        const record = resolved.record;
+        if (!openingReviewAutoUpdateNeedsScan(config, record)) continue;
 
         jobs.push({ path: summary.path, deck, config, record });
     }
 
     return jobs;
+}
+
+export function openingReviewAutoUpdateNeedsScan(
+    config: OpeningReviewAutoUpdateConfig,
+    record: OnlineDatabaseUpdateRecord,
+) {
+    const recordUpdatedAt = record.lastUpdatedAt ?? 0;
+    const recordGameCount = record.lastKnownGameCount ?? 0;
+    const deckSawGameCount = config.lastKnownGameCount ?? 0;
+    const deckSawDatabaseUpdate = config.lastUpdatedDatabaseAt ?? 0;
+    const hasMoreGames = recordGameCount > deckSawGameCount;
+    const hasNewDatabaseUpdate = recordUpdatedAt > deckSawDatabaseUpdate;
+
+    return hasMoreGames || Boolean(recordUpdatedAt && hasNewDatabaseUpdate);
 }
 
 async function updateOpeningReviewDeckFromOnlineDatabase(
@@ -451,7 +471,8 @@ export function rankOpeningReviewPositions(positions: Position[]) {
             position,
             index,
             urgency: openingReviewPositionUrgency(position),
-            lastPlayedTime: parseOpeningReviewDate(position.openingHealth?.lastPlayed)?.getTime() ?? 0,
+            lastPlayedTime:
+                parseOpeningReviewDate(position.openingHealth?.lastPlayed)?.getTime() ?? 0,
         }))
         .sort(
             (a, b) =>
@@ -579,11 +600,7 @@ export function openingReviewPositionExplanation(position: Position) {
     if (position.openingHealth) {
         const health = position.openingHealth;
         const owner = health.mode === "opponent" ? "They" : "You";
-        if (
-            health.topMoveUci &&
-            health.usualMoveUci &&
-            health.topMoveUci !== health.usualMoveUci
-        ) {
+        if (health.topMoveUci && health.usualMoveUci && health.topMoveUci !== health.usualMoveUci) {
             return prefixOpeningReviewGapType(
                 position,
                 `${owner} usually played ${health.usualMoveSan ?? "this move"}, while strong games prefer ${health.topMoveSan ?? "another move"}.`,

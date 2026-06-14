@@ -143,6 +143,93 @@ export function getOnlineGameIdentityFromFilename(filename: string) {
     return null;
 }
 
+type OnlineGameIdentity = NonNullable<ReturnType<typeof getOnlineGameIdentityFromFilename>>;
+
+export type OnlineDatabaseUpdateRecordResolution = {
+    record: OnlineDatabaseUpdateRecord;
+    relocated: boolean;
+};
+
+function getFilenameFromPath(path: string) {
+    return path.split(/[\\/]/).pop() ?? path;
+}
+
+function getOnlineGameIdentityFromPath(path: string) {
+    return getOnlineGameIdentityFromFilename(getFilenameFromPath(path));
+}
+
+function normalizeOnlineUsername(value: string) {
+    return value.trim().toLowerCase();
+}
+
+function onlineGameIdentitiesMatch(
+    a: Pick<OnlineGameIdentity, "source" | "username"> | null | undefined,
+    b: Pick<OnlineGameIdentity, "source" | "username"> | null | undefined,
+) {
+    return (
+        Boolean(a && b) &&
+        a!.source === b!.source &&
+        normalizeOnlineUsername(a!.username) === normalizeOnlineUsername(b!.username)
+    );
+}
+
+function onlineDatabaseRecordMatchesIdentity(
+    record: OnlineDatabaseUpdateRecord,
+    identity: OnlineGameIdentity,
+) {
+    if (onlineGameIdentitiesMatch(record, identity)) return true;
+    if (onlineGameIdentitiesMatch(getOnlineGameIdentityFromPath(record.dbPath), identity)) {
+        return true;
+    }
+
+    return getOnlineDatabaseUpdateAccounts(record).some((account) =>
+        onlineGameIdentitiesMatch(account, identity),
+    );
+}
+
+function databaseMatchesOnlineIdentity(database: DatabaseInfo, identity: OnlineGameIdentity) {
+    return (
+        database.type === "success" &&
+        (onlineGameIdentitiesMatch(
+            getOnlineGameIdentityFromFilename(database.filename),
+            identity,
+        ) ||
+            onlineGameIdentitiesMatch(getOnlineGameIdentityFromPath(database.file), identity))
+    );
+}
+
+function compareOnlineDatabaseRecords(
+    a: OnlineDatabaseUpdateRecord,
+    b: OnlineDatabaseUpdateRecord,
+) {
+    return (
+        (b.lastUpdatedAt ?? 0) - (a.lastUpdatedAt ?? 0) ||
+        (b.lastKnownGameCount ?? 0) - (a.lastKnownGameCount ?? 0) ||
+        a.dbPath.localeCompare(b.dbPath, undefined, { sensitivity: "base" })
+    );
+}
+
+function getOnlineDatabaseUpdateRecordWithSnapshot(
+    database: DatabaseInfo,
+    records: OnlineDatabaseUpdateRecords,
+) {
+    const record = getOnlineDatabaseUpdateRecord(database, records);
+    if (!record || database.type !== "success") return record;
+
+    const databaseGameCount = Number(database.game_count);
+    if (
+        Number.isFinite(databaseGameCount) &&
+        databaseGameCount > (record.lastKnownGameCount ?? 0)
+    ) {
+        return {
+            ...record,
+            lastKnownGameCount: databaseGameCount,
+        };
+    }
+
+    return record;
+}
+
 export function getOnlineDatabaseUpdateRecord(
     database: DatabaseInfo,
     records: OnlineDatabaseUpdateRecords,
@@ -189,6 +276,48 @@ export function getOnlineDatabaseUpdateRecord(
         clockDataRefreshedAt: null,
         clockDataRefreshVersion: null,
     };
+}
+
+export function resolveOnlineDatabaseUpdateRecordForPath(
+    dbPath: string,
+    records: OnlineDatabaseUpdateRecords,
+    databases: DatabaseInfo[] = [],
+): OnlineDatabaseUpdateRecordResolution | null {
+    const exactDatabase = databases.find(
+        (database) => database.type === "success" && database.file === dbPath,
+    );
+    if (exactDatabase) {
+        const record = getOnlineDatabaseUpdateRecordWithSnapshot(exactDatabase, records);
+        if (record) {
+            return { record, relocated: record.dbPath !== dbPath };
+        }
+    }
+
+    const identity = getOnlineGameIdentityFromPath(dbPath);
+    if (identity) {
+        const databaseRecord = databases
+            .filter((database) => databaseMatchesOnlineIdentity(database, identity))
+            .map((database) => getOnlineDatabaseUpdateRecordWithSnapshot(database, records))
+            .filter((record): record is OnlineDatabaseUpdateRecord => Boolean(record))
+            .sort(compareOnlineDatabaseRecords)[0];
+
+        if (databaseRecord) {
+            return { record: databaseRecord, relocated: databaseRecord.dbPath !== dbPath };
+        }
+    }
+
+    const directRecord = records[dbPath];
+    if (directRecord) {
+        return { record: directRecord, relocated: false };
+    }
+
+    if (!identity) return null;
+
+    const record = Object.values(records)
+        .filter((candidate) => onlineDatabaseRecordMatchesIdentity(candidate, identity))
+        .sort(compareOnlineDatabaseRecords)[0];
+
+    return record ? { record, relocated: record.dbPath !== dbPath } : null;
 }
 
 export function upsertOnlineDatabaseUpdateRecord(

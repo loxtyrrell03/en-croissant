@@ -25,9 +25,12 @@ import {
     writeMistakeReviewDeck,
 } from "@/utils/mistakeReview";
 import { hydrateMistakeReviewClockData } from "@/utils/mistakeReviewClockHydration";
-import { query_players } from "@/utils/db";
+import { getDatabases, query_players } from "@/utils/db";
 import { getDocumentDir } from "@/utils/directories";
-import { getOnlineDatabaseUpdateAccounts } from "@/utils/onlineGameImport";
+import {
+    getOnlineDatabaseUpdateAccounts,
+    resolveOnlineDatabaseUpdateRecordForPath,
+} from "@/utils/onlineGameImport";
 
 const MISTAKE_REVIEW_AUTO_UPDATE_INITIAL_DELAY_MS = 30 * 1000;
 
@@ -210,6 +213,7 @@ async function collectMistakeReviewAutoUpdateJobs(
     records: OnlineDatabaseUpdateRecords,
 ): Promise<AutoUpdateJob[]> {
     const documentDir = await getDocumentDir();
+    const databases = await getDatabases().catch(() => []);
     const summaries = await listMistakeReviewDecks(documentDir);
     const jobs: AutoUpdateJob[] = [];
 
@@ -217,17 +221,25 @@ async function collectMistakeReviewAutoUpdateJobs(
         const deck = await readMistakeReviewDeck(summary.path).catch(() => null);
         if (!deck?.autoUpdate?.enabled) continue;
 
-        const config = deck.autoUpdate;
-        const record = records[config.playerDb];
-        if (!record) continue;
+        const resolved = resolveOnlineDatabaseUpdateRecordForPath(
+            deck.autoUpdate.playerDb,
+            records,
+            databases,
+        );
+        if (!resolved) continue;
 
+        const config =
+            resolved.record.dbPath === deck.autoUpdate.playerDb
+                ? deck.autoUpdate
+                : { ...deck.autoUpdate, playerDb: resolved.record.dbPath };
+        const record = resolved.record;
         const recordUpdatedAt = record.lastUpdatedAt ?? 0;
         const recordGameCount = record.lastKnownGameCount ?? 0;
         const deckSawGameCount = config.lastKnownGameCount ?? 0;
         const deckSawDatabaseUpdate = config.lastUpdatedDatabaseAt ?? 0;
         const hasMoreGames = recordGameCount > deckSawGameCount;
         const hasNewDatabaseUpdate = recordUpdatedAt > deckSawDatabaseUpdate;
-        if (!recordUpdatedAt || (!hasMoreGames && !hasNewDatabaseUpdate)) continue;
+        if (!hasMoreGames && (!recordUpdatedAt || !hasNewDatabaseUpdate)) continue;
 
         jobs.push({ path: summary.path, deck, config, record });
     }

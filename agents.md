@@ -1218,6 +1218,13 @@ and `src/utils/lichess/study.ts`.
 - Online imports report progress and keep progress moving during long fetches.
 - Online mistake and opening review decks can auto-update when linked account
   databases update.
+- On 2026-06-14, review-deck auto-updates were hardened for moved online
+  databases. Opening Review and Mistake Review now resolve the current database
+  record by online identity when a saved deck still points at an older
+  `*_chesscom.db3` or `*_lichess.db3` path, then write the recovered path back
+  on the next successful scan. Opening Review also treats a newer database
+  `lastUpdatedAt` as a scan trigger even when the stored game count already
+  matches, so a database update cannot consume the signal before the deck scans.
 - The online game picker has provider tabs for Lichess and Chess.com, account
   selection, recent-game previews, single-select analysis, and multi-select
   review deck creation.

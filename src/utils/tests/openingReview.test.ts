@@ -13,6 +13,7 @@ import {
 import {
     getOpeningReviewGapTrainingType,
     getOpeningReviewPlanGapTrainingIndices,
+    openingReviewAutoUpdateNeedsScan,
     openingReviewGapTrainingTypeDescription,
     openingReviewGapTrainingTypeLabel,
     openingReviewPositionExplanation,
@@ -514,5 +515,69 @@ describe("opening review helpers", () => {
         expect(getOpeningReviewPlanGapTrainingIndices([planLow, openingGap, planHigh])).toEqual([
             2, 0,
         ]);
+    });
+
+    test("auto-update reruns when the linked database changed after the deck scan", () => {
+        expect(
+            openingReviewAutoUpdateNeedsScan(
+                {
+                    enabled: true,
+                    playerDb: "loxi-ty_chesscom.db3",
+                    playerId: 1,
+                    playerName: "Loxi-ty",
+                    referenceDb: "mega.db3",
+                    mode: "self",
+                    color: "any",
+                    maxPlies: 30,
+                    minPlayerGames: 3,
+                    minReferenceGames: 20,
+                    topReferenceMoves: 3,
+                    dateRange: "all",
+                    lastUpdatedDatabaseAt: 1_000,
+                    lastKnownGameCount: 12_970,
+                },
+                {
+                    source: "chesscom",
+                    username: "loxi-ty",
+                    dbPath: "loxi-ty_chesscom.db3",
+                    title: "loxi-ty Chess.com",
+                    autoUpdate: true,
+                    lastCheckedAt: 2_000,
+                    lastUpdatedAt: 2_000,
+                    lastKnownGameCount: 12_970,
+                },
+            ),
+        ).toBe(true);
+
+        expect(
+            openingReviewAutoUpdateNeedsScan(
+                {
+                    enabled: true,
+                    playerDb: "loxi-ty_chesscom.db3",
+                    playerId: 1,
+                    playerName: "Loxi-ty",
+                    referenceDb: "mega.db3",
+                    mode: "self",
+                    color: "any",
+                    maxPlies: 30,
+                    minPlayerGames: 3,
+                    minReferenceGames: 20,
+                    topReferenceMoves: 3,
+                    dateRange: "all",
+                    lastUpdatedDatabaseAt: 1_000,
+                    lastKnownGameCount: 12_835,
+                },
+                {
+                    source: "chesscom",
+                    username: "loxi-ty",
+                    dbPath: "loxi-ty_chesscom.db3",
+                    title: "loxi-ty Chess.com",
+                    autoUpdate: true,
+                    lastCheckedAt: null,
+                    lastUpdatedAt: null,
+                    lastKnownGameCount: 12_970,
+                },
+            ),
+        ).toBe(true);
     });
 });
