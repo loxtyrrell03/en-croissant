@@ -396,6 +396,7 @@ export function engineReportToPlanExplorerData(report: EnginePlanReport): PlanEx
                 lines: piece.lines.sort((a, b) => b.games - a.games),
             }))
             .sort((a, b) => b.total - a.total || a.from.localeCompare(b.from)),
+        setups: [],
     };
 }
 

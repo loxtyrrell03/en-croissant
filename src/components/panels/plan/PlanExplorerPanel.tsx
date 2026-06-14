@@ -34,6 +34,8 @@ import {
   type GoMode,
   type PlanExplorerLine,
   type PlanExplorerPiece,
+  type PlanExplorerSetup,
+  type PlanExplorerSetupPlan,
 } from "@/bindings";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
@@ -64,12 +66,14 @@ import {
   enginesAtom,
   lichessOptionsAtom,
   masterOptionsAtom,
+  moveStrengthSettingsAtom,
   planExplorerArrowLimitAtom,
   planExplorerEngineStrengthDepthAtom,
   planExplorerEngineStrengthEnabledAtom,
   planExplorerEngineStrengthMultipvAtom,
   planExplorerHoverEverywhereAtom,
   planExplorerSourceAtom,
+  planExplorerViewAtom,
   referenceDbAtom,
   sessionsAtom,
   showPlanExplorerArrowsAtom,
@@ -103,23 +107,45 @@ import {
   formatPlanPieceRoute,
   isPlanBrush,
   planLineToShapes,
+  planLinesToShapes,
   summarizePlanPiece,
   withPlanLineColor,
   type ColoredPlanExplorerLine,
 } from "@/utils/planExplorer";
+import {
+  evaluateMoveStrength,
+  getEngineScoreSpreadCp,
+  getPracticalWdlRate,
+  getUsageAwarePracticalWdlRate,
+  normalizeMoveStrengthSettings,
+  type MoveStrengthSettings,
+} from "@/utils/moveStrength";
 import { withLimitedRecordEntry } from "@/utils/boundedCache";
 import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveControls";
+import { MoveStrengthSettingsButton } from "../database/MoveStrengthSettingsButton";
 import NoDatabaseWarning from "../database/NoDatabaseWarning";
 
 const MAX_ENGINE_STRENGTH_REPORT_CACHE_ENTRIES = 24;
 
 type SideFilter = "all" | "white" | "black";
 type PlanExplorerSource = "local" | OnlinePlanExplorerSource;
+type PlanExplorerView = "plans" | "setups";
 type SortDirection = "asc" | "desc";
-type PlanSortKey = "piece" | "routes" | "games" | "results" | "engine";
+type PlanSortKey = "piece" | "blend" | "routes" | "games" | "results" | "engine";
 type PlanSort = {
   key: PlanSortKey;
   direction: SortDirection;
+};
+type PlanStrength = {
+  score: number;
+  loss: number;
+  label: string;
+  databaseScore: number | null;
+  databaseWdlLoss: number | null;
+  engineCpLoss: number | null;
+  engineUnsafe: boolean;
+  usingEngine: boolean;
+  detail: string;
 };
 type PlanExplorerEngineRequest = {
   token: number;
@@ -143,6 +169,8 @@ function PlanExplorerPanel() {
   const [arrowLimit, setArrowLimit] = useAtom(planExplorerArrowLimitAtom);
   const [hoverEverywhere, setHoverEverywhere] = useAtom(planExplorerHoverEverywhereAtom);
   const [source, setSource] = useAtom(planExplorerSourceAtom);
+  const [view, setView] = useAtom(planExplorerViewAtom);
+  const moveStrengthSettings = useAtomValue(moveStrengthSettingsAtom);
   const currentTab = useAtomValue(currentTabAtom);
   const engines = useAtomValue(enginesAtom);
   const [localOptions, setLocalOptions] = useAtom(currentLocalOptionsAtom);
@@ -323,8 +351,41 @@ function PlanExplorerPanel() {
     return {
       ...planData,
       pieces: planData.pieces.filter((piece) => piece.color === sideFilter),
+      setups: (planData.setups ?? []).filter((setup) =>
+        setup.plans.every((plan) => plan.color === sideFilter),
+      ),
     };
   }, [planData, sideFilter]);
+  const resultPerspective = isLocalSource ? getLocalResultPerspective(localOptions) : null;
+  const planStrengthByKey = useMemo(
+    () =>
+      buildPlanStrengthByKey(
+        visiblePlanData?.pieces ?? [],
+        visibleEngineReport,
+        resultPerspective,
+        moveStrengthSettings,
+      ),
+    [moveStrengthSettings, resultPerspective, visibleEngineReport, visiblePlanData?.pieces],
+  );
+  const setupStrengthByKey = useMemo(
+    () =>
+      buildSetupStrengthByKey(
+        visiblePlanData?.setups ?? [],
+        visibleEngineReport,
+        resultPerspective,
+        sideFilter,
+        debouncedFen,
+        moveStrengthSettings,
+      ),
+    [
+      debouncedFen,
+      moveStrengthSettings,
+      resultPerspective,
+      sideFilter,
+      visibleEngineReport,
+      visiblePlanData?.setups,
+    ],
+  );
   const sortedVisiblePlanData = useMemo(() => {
     if (!visiblePlanData) return null;
     return {
@@ -333,10 +394,15 @@ function PlanExplorerPanel() {
         visiblePlanData.pieces,
         sort,
         visibleEngineReport,
-        isLocalSource ? getLocalResultPerspective(localOptions) : null,
+        resultPerspective,
+        planStrengthByKey,
       ),
     };
-  }, [isLocalSource, localOptions, sort, visibleEngineReport, visiblePlanData]);
+  }, [planStrengthByKey, resultPerspective, sort, visibleEngineReport, visiblePlanData]);
+  const sortedVisibleSetups = useMemo(() => {
+    const setups = visiblePlanData?.setups ?? [];
+    return sortPlanSetups(setups, sort, visibleEngineReport, resultPerspective, setupStrengthByKey);
+  }, [resultPerspective, setupStrengthByKey, sort, visibleEngineReport, visiblePlanData?.setups]);
 
   const handleEngineLines = useCallback(
     (active: PlanExplorerEngineRequest, bestLines: BestMoves[], nextProgress: number) => {
@@ -570,10 +636,18 @@ function PlanExplorerPanel() {
     },
     [currentNode.shapes, setShapes],
   );
+  const drawLines = useCallback(
+    (lines: ColoredPlanExplorerLine[]) => {
+      const existing = currentNode.shapes.filter((shape) => !isPlanBrush(shape.brush));
+      setShapes([...existing, ...planLinesToShapes(lines, 16)]);
+    },
+    [currentNode.shapes, setShapes],
+  );
 
   const pieces = useMemo(() => {
     return sortedVisiblePlanData?.pieces ?? [];
   }, [sortedVisiblePlanData?.pieces]);
+  const setups = sortedVisibleSetups;
 
   const content = (() => {
     if (isLocalSource && !referenceDatabase) {
@@ -592,51 +666,133 @@ function PlanExplorerPanel() {
     return (
       <ScrollArea flex={1} offsetScrollbars>
         <Table withTableBorder highlightOnHover stickyHeader>
-          <Table.Thead>
-            <Table.Tr>
-              <SortableTh sortKey="piece" sort={sort} setSort={setSort} style={{ width: 150 }}>
-                Piece
-              </SortableTh>
-              {engineStrengthEnabled && (
-                <SortableTh sortKey="engine" sort={sort} setSort={setSort} style={{ width: 130 }}>
-                  Engine
-                </SortableTh>
-              )}
-              <SortableTh sortKey="routes" sort={sort} setSort={setSort}>
-                Routes
-              </SortableTh>
-              <SortableTh sortKey="games" sort={sort} setSort={setSort} style={{ width: 110 }}>
-                Games
-              </SortableTh>
-              <SortableTh sortKey="results" sort={sort} setSort={setSort} style={{ width: 150 }}>
-                Results
-              </SortableTh>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {pieces.length === 0 && !isLoading ? (
-              <Table.Tr>
-                <Table.Td colSpan={engineStrengthEnabled ? 5 : 4}>
-                  <Text ta="center" c="dimmed" py="lg">
-                    No piece routes found in the sampled continuations.
-                  </Text>
-                </Table.Td>
-              </Table.Tr>
-            ) : (
-              pieces.map((piece) => (
-                <PieceRow
-                  key={`${piece.color}-${piece.role}-${piece.from}`}
-                  piece={piece}
-                  drawLine={drawLine}
-                  previewLine={setPreviewLine}
-                  engineStrengthEnabled={engineStrengthEnabled}
-                  engineReport={visibleEngineReport}
-                  engineRunning={engineStrengthState.running}
-                  resultPerspective={isLocalSource ? getLocalResultPerspective(localOptions) : null}
-                />
-              ))
-            )}
-          </Table.Tbody>
+          {view === "plans" ? (
+            <>
+              <Table.Thead>
+                <Table.Tr>
+                  <SortableTh sortKey="piece" sort={sort} setSort={setSort} style={{ width: 150 }}>
+                    Piece
+                  </SortableTh>
+                  <SortableTh sortKey="blend" sort={sort} setSort={setSort} style={{ width: 120 }}>
+                    Blend
+                  </SortableTh>
+                  {engineStrengthEnabled && (
+                    <SortableTh
+                      sortKey="engine"
+                      sort={sort}
+                      setSort={setSort}
+                      style={{ width: 130 }}
+                    >
+                      Engine
+                    </SortableTh>
+                  )}
+                  <SortableTh sortKey="routes" sort={sort} setSort={setSort}>
+                    Routes
+                  </SortableTh>
+                  <SortableTh sortKey="games" sort={sort} setSort={setSort} style={{ width: 110 }}>
+                    Games
+                  </SortableTh>
+                  <SortableTh
+                    sortKey="results"
+                    sort={sort}
+                    setSort={setSort}
+                    style={{ width: 150 }}
+                  >
+                    Results
+                  </SortableTh>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {pieces.length === 0 && !isLoading ? (
+                  <Table.Tr>
+                    <Table.Td colSpan={engineStrengthEnabled ? 6 : 5}>
+                      <Text ta="center" c="dimmed" py="lg">
+                        No piece routes found in the sampled continuations.
+                      </Text>
+                    </Table.Td>
+                  </Table.Tr>
+                ) : (
+                  pieces.map((piece) => (
+                    <PieceRow
+                      key={`${piece.color}-${piece.role}-${piece.from}`}
+                      piece={piece}
+                      drawLine={drawLine}
+                      previewLine={setPreviewLine}
+                      engineStrengthEnabled={engineStrengthEnabled}
+                      engineReport={visibleEngineReport}
+                      engineRunning={engineStrengthState.running}
+                      resultPerspective={resultPerspective}
+                      strength={getPieceStrength(piece, planStrengthByKey)}
+                    />
+                  ))
+                )}
+              </Table.Tbody>
+            </>
+          ) : (
+            <>
+              <Table.Thead>
+                <Table.Tr>
+                  <SortableTh sortKey="piece" sort={sort} setSort={setSort} style={{ width: 170 }}>
+                    Setup
+                  </SortableTh>
+                  <SortableTh sortKey="blend" sort={sort} setSort={setSort} style={{ width: 120 }}>
+                    Blend
+                  </SortableTh>
+                  {engineStrengthEnabled && (
+                    <SortableTh
+                      sortKey="engine"
+                      sort={sort}
+                      setSort={setSort}
+                      style={{ width: 130 }}
+                    >
+                      Engine
+                    </SortableTh>
+                  )}
+                  <SortableTh sortKey="routes" sort={sort} setSort={setSort}>
+                    Plans
+                  </SortableTh>
+                  <SortableTh sortKey="games" sort={sort} setSort={setSort} style={{ width: 110 }}>
+                    Games
+                  </SortableTh>
+                  <SortableTh
+                    sortKey="results"
+                    sort={sort}
+                    setSort={setSort}
+                    style={{ width: 150 }}
+                  >
+                    Results
+                  </SortableTh>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {setups.length === 0 && !isLoading ? (
+                  <Table.Tr>
+                    <Table.Td colSpan={engineStrengthEnabled ? 6 : 5}>
+                      <Text ta="center" c="dimmed" py="lg">
+                        No recurring setups found in the sampled continuations.
+                      </Text>
+                    </Table.Td>
+                  </Table.Tr>
+                ) : (
+                  setups.map((setup) => (
+                    <SetupRow
+                      key={planSetupKey(setup)}
+                      setup={setup}
+                      drawLines={drawLines}
+                      previewLine={setPreviewLine}
+                      engineStrengthEnabled={engineStrengthEnabled}
+                      engineReport={visibleEngineReport}
+                      engineRunning={engineStrengthState.running}
+                      resultPerspective={resultPerspective}
+                      sideFilter={sideFilter}
+                      fen={debouncedFen}
+                      strength={setupStrengthByKey.get(planSetupKey(setup))}
+                    />
+                  ))
+                )}
+              </Table.Tbody>
+            </>
+          )}
         </Table>
       </ScrollArea>
     );
@@ -710,6 +866,15 @@ function PlanExplorerPanel() {
           />
           <SegmentedControl
             size="sm"
+            value={view}
+            onChange={(value) => setView(value as PlanExplorerView)}
+            data={[
+              { label: "Plans", value: "plans" },
+              { label: "Setups", value: "setups" },
+            ]}
+          />
+          <SegmentedControl
+            size="sm"
             value={sideFilter}
             onChange={(value) => setSideFilter(value as SideFilter)}
             data={[
@@ -718,6 +883,11 @@ function PlanExplorerPanel() {
               { label: "Black", value: "black" },
             ]}
           />
+          <Tooltip label="Tune blended strength for plan and setup rows">
+            <Box>
+              <MoveStrengthSettingsButton size="lg" />
+            </Box>
+          </Tooltip>
           <Switch
             label="Engine strength"
             size="sm"
@@ -985,6 +1155,7 @@ function sortPlanPieces(
   sort: PlanSort,
   engineReport: EnginePlanReport | null,
   resultPerspective: DatabaseResultPerspective | null,
+  strengthByKey: Map<string, PlanStrength>,
 ) {
   const direction = sort.direction === "asc" ? 1 : -1;
 
@@ -1008,10 +1179,59 @@ function sortPlanPieces(
           getPieceResultScore(a, resultPerspective) - getPieceResultScore(b, resultPerspective) ||
           a.total - b.total;
         break;
+      case "blend":
+        diff =
+          (getPieceStrength(a, strengthByKey)?.score ?? -1) -
+            (getPieceStrength(b, strengthByKey)?.score ?? -1) || a.total - b.total;
+        break;
       case "engine":
         diff =
           getPieceEngineStrengthScore(a, engineReport) -
             getPieceEngineStrengthScore(b, engineReport) || a.total - b.total;
+        break;
+    }
+
+    return direction * diff;
+  });
+}
+
+function sortPlanSetups(
+  setups: PlanExplorerSetup[],
+  sort: PlanSort,
+  engineReport: EnginePlanReport | null,
+  resultPerspective: DatabaseResultPerspective | null,
+  strengthByKey: Map<string, PlanStrength>,
+) {
+  const direction = sort.direction === "asc" ? 1 : -1;
+
+  return [...setups].sort((a, b) => {
+    let diff = 0;
+    switch (sort.key) {
+      case "piece":
+        diff =
+          setupTitle(a).localeCompare(setupTitle(b)) ||
+          planSetupKey(a).localeCompare(planSetupKey(b));
+        break;
+      case "routes":
+        diff = a.plans.length - b.plans.length || a.games - b.games;
+        break;
+      case "games":
+        diff = a.games - b.games;
+        break;
+      case "results":
+        diff =
+          getSetupResultScore(a, resultPerspective, "all", null) -
+            getSetupResultScore(b, resultPerspective, "all", null) || a.games - b.games;
+        break;
+      case "blend":
+        diff =
+          (strengthByKey.get(planSetupKey(a))?.score ?? -1) -
+            (strengthByKey.get(planSetupKey(b))?.score ?? -1) || a.games - b.games;
+        break;
+      case "engine":
+        diff =
+          getSetupEngineStrengthScore(a, engineReport) -
+            getSetupEngineStrengthScore(b, engineReport) || a.games - b.games;
         break;
     }
 
@@ -1030,15 +1250,394 @@ function getPieceResultScore(
   const topLine = piece.lines[0];
   if (!topLine) return 0;
 
-  return getLineResultScore(topLine, resultPerspective ?? piece.color);
+  return getLineResultScore(topLine, resultPerspective ?? toResultSide(piece.color));
 }
 
-function getLineResultScore(line: PlanExplorerLine, color: string) {
+function getLineResultScore(
+  line: Pick<PlanExplorerLine, "white" | "draw" | "black">,
+  color: string,
+) {
   const total = line.white + line.draw + line.black;
   if (total <= 0) return 0;
 
   const wins = color === "black" ? line.black : line.white;
   return (wins + line.draw * 0.5) / total;
+}
+
+function buildPlanStrengthByKey(
+  pieces: PlanExplorerPiece[],
+  engineReport: EnginePlanReport | null,
+  resultPerspective: DatabaseResultPerspective | null,
+  strengthSettings: Partial<MoveStrengthSettings> | null | undefined,
+) {
+  const settings = normalizeMoveStrengthSettings(strengthSettings);
+  const usingEngine = !!engineReport;
+  const effectiveSettings = usingEngine ? settings : { ...settings, mode: "practical" as const };
+  const candidates = pieces.flatMap((piece) =>
+    piece.lines.map((line) => {
+      const perspective = resultPerspective ?? piece.color;
+      const games = line.white + line.draw + line.black;
+      return {
+        key: planLineKey(piece, line),
+        piece,
+        line,
+        perspective,
+        games,
+        databaseScore:
+          games > 0
+            ? getPracticalWdlRate(
+                { white: line.white, draw: line.draw, black: line.black },
+                perspective === "black" ? "black" : "white",
+              )
+            : null,
+        engineCpLoss: getPlanLineEngineCpLoss(piece, line, engineReport, effectiveSettings),
+      };
+    }),
+  );
+  const baselines = getStrengthBaselines(candidates);
+  const engineSpread = getEngineScoreSpreadCp(
+    candidates.map((candidate) =>
+      candidate.engineCpLoss === null ? null : -candidate.engineCpLoss,
+    ),
+  );
+
+  return new Map(
+    candidates.map((candidate) => {
+      const baseline = baselines.get(candidate.perspective);
+      const databaseScore = getUsageAwarePracticalWdlRate({
+        score: candidate.databaseScore,
+        total: candidate.games,
+        usageShare:
+          baseline && baseline.totalGames > 0 ? candidate.games / baseline.totalGames : null,
+        baseline: baseline?.average ?? null,
+        mode: effectiveSettings.mode,
+      });
+      const databaseWdlLoss =
+        databaseScore === null || baseline?.best === null || baseline?.best === undefined
+          ? null
+          : Math.max(0, baseline.best - databaseScore);
+      const strength = evaluatePlanStrength({
+        settings: effectiveSettings,
+        usingEngine,
+        engineCpLoss: candidate.engineCpLoss,
+        databaseScore,
+        databaseWdlLoss,
+        engineScoreSpreadCp: engineSpread,
+      });
+      return [candidate.key, strength] as const;
+    }),
+  );
+}
+
+function buildSetupStrengthByKey(
+  setups: PlanExplorerSetup[],
+  engineReport: EnginePlanReport | null,
+  resultPerspective: DatabaseResultPerspective | null,
+  sideFilter: SideFilter,
+  fen: string,
+  strengthSettings: Partial<MoveStrengthSettings> | null | undefined,
+) {
+  const settings = normalizeMoveStrengthSettings(strengthSettings);
+  const usingEngine = !!engineReport;
+  const effectiveSettings = usingEngine ? settings : { ...settings, mode: "practical" as const };
+  const candidates = setups.map((setup) => {
+    const perspective = getSetupPerspective(setup, resultPerspective, sideFilter, fen);
+    const games = setup.white + setup.draw + setup.black;
+    return {
+      key: planSetupKey(setup),
+      setup,
+      perspective,
+      games,
+      databaseScore:
+        games > 0
+          ? getPracticalWdlRate(
+              { white: setup.white, draw: setup.draw, black: setup.black },
+              perspective,
+            )
+          : null,
+      engineCpLoss: getSetupEngineCpLoss(setup, engineReport, effectiveSettings),
+    };
+  });
+  const baselines = getStrengthBaselines(candidates);
+  const engineSpread = getEngineScoreSpreadCp(
+    candidates.map((candidate) =>
+      candidate.engineCpLoss === null ? null : -candidate.engineCpLoss,
+    ),
+  );
+
+  return new Map(
+    candidates.map((candidate) => {
+      const baseline = baselines.get(candidate.perspective);
+      const databaseScore = getUsageAwarePracticalWdlRate({
+        score: candidate.databaseScore,
+        total: candidate.games,
+        usageShare:
+          baseline && baseline.totalGames > 0 ? candidate.games / baseline.totalGames : null,
+        baseline: baseline?.average ?? null,
+        mode: effectiveSettings.mode,
+      });
+      const databaseWdlLoss =
+        databaseScore === null || baseline?.best === null || baseline?.best === undefined
+          ? null
+          : Math.max(0, baseline.best - databaseScore);
+      const strength = evaluatePlanStrength({
+        settings: effectiveSettings,
+        usingEngine,
+        engineCpLoss: candidate.engineCpLoss,
+        databaseScore,
+        databaseWdlLoss,
+        engineScoreSpreadCp: engineSpread,
+      });
+      return [candidate.key, strength] as const;
+    }),
+  );
+}
+
+function getStrengthBaselines<
+  T extends { perspective: string; games: number; databaseScore: number | null },
+>(candidates: T[]) {
+  const grouped = new Map<
+    string,
+    { totalGames: number; weightedScore: number; best: number | null }
+  >();
+  for (const candidate of candidates) {
+    const current = grouped.get(candidate.perspective) ?? {
+      totalGames: 0,
+      weightedScore: 0,
+      best: null,
+    };
+    current.totalGames += candidate.games;
+    if (candidate.databaseScore !== null) {
+      current.weightedScore += candidate.databaseScore * candidate.games;
+      current.best =
+        current.best === null
+          ? candidate.databaseScore
+          : Math.max(current.best, candidate.databaseScore);
+    }
+    grouped.set(candidate.perspective, current);
+  }
+
+  return new Map(
+    [...grouped.entries()].map(([perspective, value]) => [
+      perspective,
+      {
+        totalGames: value.totalGames,
+        average: value.totalGames > 0 ? value.weightedScore / value.totalGames : 0.5,
+        best: value.best,
+      },
+    ]),
+  );
+}
+
+function evaluatePlanStrength({
+  settings,
+  usingEngine,
+  engineCpLoss,
+  databaseScore,
+  databaseWdlLoss,
+  engineScoreSpreadCp,
+}: {
+  settings: MoveStrengthSettings;
+  usingEngine: boolean;
+  engineCpLoss: number | null;
+  databaseScore: number | null;
+  databaseWdlLoss: number | null;
+  engineScoreSpreadCp: number | null;
+}) {
+  const blended = evaluateMoveStrength({
+    settings,
+    engineCpLoss,
+    hasEngineMoves: usingEngine,
+    databaseWdlLoss,
+    engineScoreSpreadCp,
+  });
+
+  return {
+    score: blended.score,
+    loss: blended.loss,
+    label: blended.score.toString(),
+    databaseScore,
+    databaseWdlLoss,
+    engineCpLoss: usingEngine ? engineCpLoss : null,
+    engineUnsafe: blended.engineUnsafe,
+    usingEngine,
+    detail: formatPlanStrengthDetail({
+      settings,
+      usingEngine,
+      engineCpLoss: usingEngine ? engineCpLoss : null,
+      databaseScore,
+      databaseWdlLoss,
+      engineUnsafe: blended.engineUnsafe,
+      score: blended.score,
+    }),
+  };
+}
+
+function getPlanLineEngineCpLoss(
+  piece: Pick<PlanExplorerPiece, "color" | "role">,
+  line: PlanExplorerLine,
+  engineReport: EnginePlanReport | null,
+  settings: MoveStrengthSettings,
+) {
+  const match = getPlanExplorerLineEnginePlan(piece, line, engineReport);
+  return getEnginePlanCpLoss(match?.plan ?? null, settings);
+}
+
+function getSetupEngineCpLoss(
+  setup: PlanExplorerSetup,
+  engineReport: EnginePlanReport | null,
+  settings: MoveStrengthSettings,
+) {
+  if (!engineReport) return null;
+
+  const losses = setup.plans.map((plan) =>
+    getPlanLineEngineCpLoss(plan, plan.line, engineReport, settings),
+  );
+  const finiteLosses = losses.filter((loss): loss is number => typeof loss === "number");
+  if (finiteLosses.length === 0) return null;
+  const average = finiteLosses.reduce((sum, loss) => sum + loss, 0) / finiteLosses.length;
+  const worst = Math.max(...finiteLosses);
+
+  return average * 0.45 + worst * 0.55;
+}
+
+function getEnginePlanCpLoss(plan: EnginePlan | null, settings: MoveStrengthSettings) {
+  if (!plan) return null;
+
+  const maxLoss = Math.max(1, settings.maxEngineCpLoss);
+  const approvalLoss = (() => {
+    switch (plan.approval) {
+      case "Strong":
+        return plan.appearsInTopPv ? 0 : maxLoss * 0.12;
+      case "OK":
+        return maxLoss * 0.38;
+      case "Unclear":
+        return maxLoss * 0.72;
+      case "Weak":
+        return maxLoss * 1.15;
+    }
+  })();
+  const confidencePenalty =
+    plan.confidence === "High" ? 0 : plan.confidence === "Medium" ? maxLoss * 0.08 : maxLoss * 0.16;
+  const supportBonus = Math.min(
+    maxLoss * 0.18,
+    Math.max(0, plan.supportCount - 1) * maxLoss * 0.05,
+  );
+
+  return Math.max(0, approvalLoss + confidencePenalty - supportBonus);
+}
+
+function getPieceStrength(piece: PlanExplorerPiece, strengthByKey: Map<string, PlanStrength>) {
+  const topLine = piece.lines[0];
+  if (!topLine) return null;
+  return strengthByKey.get(planLineKey(piece, topLine)) ?? null;
+}
+
+function planLineKey(
+  piece: Pick<PlanExplorerPiece, "color" | "role" | "from">,
+  line: PlanExplorerLine,
+) {
+  return `${piece.color}|${piece.role}|${piece.from}|${line.squares.join("-")}`;
+}
+
+function planSetupKey(setup: PlanExplorerSetup) {
+  return setup.plans.map((plan) => planLineKey(plan, plan.line)).join("||");
+}
+
+function getSetupPerspective(
+  setup: PlanExplorerSetup,
+  resultPerspective: DatabaseResultPerspective | null,
+  sideFilter: SideFilter,
+  fen: string | null,
+): "white" | "black" {
+  if (resultPerspective === "white" || resultPerspective === "black") return resultPerspective;
+  if (sideFilter === "white" || sideFilter === "black") return sideFilter;
+
+  const setupColor = setup.plans[0]?.color;
+  if (setupColor === "white" || setupColor === "black") {
+    const singleColor = setup.plans.every((plan) => plan.color === setupColor);
+    if (singleColor) return setupColor;
+  }
+
+  return fen?.split(" ")[1] === "b" ? "black" : "white";
+}
+
+function toResultSide(color: string): "white" | "black" {
+  return color === "black" ? "black" : "white";
+}
+
+function getSetupResultScore(
+  setup: PlanExplorerSetup,
+  resultPerspective: DatabaseResultPerspective | null,
+  sideFilter: SideFilter,
+  fen: string | null,
+) {
+  return getLineResultScore(setup, getSetupPerspective(setup, resultPerspective, sideFilter, fen));
+}
+
+function formatPlanStrengthDetail({
+  settings,
+  usingEngine,
+  engineCpLoss,
+  databaseScore,
+  databaseWdlLoss,
+  engineUnsafe,
+  score,
+}: {
+  settings: MoveStrengthSettings;
+  usingEngine: boolean;
+  engineCpLoss: number | null;
+  databaseScore: number | null;
+  databaseWdlLoss: number | null;
+  engineUnsafe: boolean;
+  score: number;
+}) {
+  const parts = [`Blended strength ${score}`];
+  parts.push(
+    usingEngine
+      ? `${formatMoveStrengthMode(settings.mode)} mode, ${settings.engineWeight}% engine blend, max ${settings.maxEngineCpLoss} cp drop`
+      : "Practical WDL only until engine strength is available",
+  );
+  if (usingEngine) {
+    parts.push(
+      engineCpLoss === null
+        ? "No matching engine plan"
+        : `${Math.round(engineCpLoss)} cp-equivalent behind the matched engine plan best`,
+    );
+  }
+  if (databaseScore === null) {
+    parts.push("WDL unavailable");
+  } else {
+    const scoreText = formatPercent(databaseScore);
+    parts.push(
+      databaseWdlLoss !== null && databaseWdlLoss > 0
+        ? `WDL ${formatWdlPointLoss(databaseWdlLoss)} pts behind the best comparable row (${scoreText})`
+        : `WDL best comparable row (${scoreText})`,
+    );
+  }
+  if (engineUnsafe) {
+    parts.push("Over the configured CP-drop limit");
+  }
+  return parts.join(". ");
+}
+
+function formatMoveStrengthMode(mode: "smart" | "engine" | "practical") {
+  switch (mode) {
+    case "smart":
+      return "Smart";
+    case "engine":
+      return "Engine";
+    case "practical":
+      return "Practical";
+  }
+}
+
+function formatPercent(value: number) {
+  return `${(value * 100).toFixed(1).replace(/\.0$/, "")}%`;
+}
+
+function formatWdlPointLoss(value: number) {
+  return (value * 100).toFixed(1).replace(/\.0$/, "");
 }
 
 function getPieceEngineMatch(
@@ -1065,6 +1664,40 @@ function getPieceEngineStrengthScore(
   engineReport: EnginePlanReport | null,
 ) {
   return enginePlanStrengthScore(getPieceEngineMatch(piece, engineReport)?.plan);
+}
+
+function getSetupEngineMatches(
+  setup: PlanExplorerSetup,
+  engineReport: EnginePlanReport | null,
+): PlanExplorerEnginePlanMatch[] {
+  return setup.plans
+    .map((plan) => getPlanExplorerLineEnginePlan(plan, plan.line, engineReport))
+    .filter((match): match is PlanExplorerEnginePlanMatch => !!match);
+}
+
+function getSetupEngineStrengthScore(
+  setup: PlanExplorerSetup,
+  engineReport: EnginePlanReport | null,
+) {
+  const matches = getSetupEngineMatches(setup, engineReport);
+  if (matches.length === 0) return -1;
+
+  const average =
+    matches.reduce((sum, match) => sum + enginePlanStrengthScore(match.plan), 0) / matches.length;
+  const coverage = matches.length / Math.max(1, setup.plans.length);
+
+  return average + coverage * 10_000;
+}
+
+function setupPlanToColoredLine(plan: PlanExplorerSetupPlan): ColoredPlanExplorerLine {
+  return withPlanLineColor(plan.line, plan.color);
+}
+
+function setupTitle(setup: PlanExplorerSetup) {
+  const color = setup.plans[0]?.color;
+  const singleColor = color && setup.plans.every((plan) => plan.color === color);
+  const side = singleColor ? `${capitalize(color)} ` : "";
+  return `${side}setup (${setup.plans.length} plans)`;
 }
 
 function EngineStrengthCell({
@@ -1102,6 +1735,7 @@ function PieceRow({
   engineReport,
   engineRunning,
   resultPerspective,
+  strength,
 }: {
   piece: PlanExplorerPiece;
   drawLine: (line: ColoredPlanExplorerLine) => void;
@@ -1110,6 +1744,7 @@ function PieceRow({
   engineReport: EnginePlanReport | null;
   engineRunning: boolean;
   resultPerspective: DatabaseResultPerspective | null;
+  strength: PlanStrength | null;
 }) {
   const topLine = piece.lines[0] ? withPlanLineColor(piece.lines[0], piece.color) : null;
   const summary = summarizePlanPiece(piece);
@@ -1142,6 +1777,9 @@ function PieceRow({
             </Text>
           </Box>
         </Group>
+      </Table.Td>
+      <Table.Td>
+        <PlanStrengthCell strength={strength} />
       </Table.Td>
       {engineStrengthEnabled && (
         <Table.Td>
@@ -1197,8 +1835,181 @@ function PieceRow({
       <Table.Td>
         <Badge variant="light">{formatNumber(piece.total)}</Badge>
       </Table.Td>
-      <Table.Td>{topLine && <ResultBar line={topLine} perspective={resultPerspective} />}</Table.Td>
+      <Table.Td>
+        {topLine && (
+          <ResultBar line={topLine} perspective={resultPerspective ?? toResultSide(piece.color)} />
+        )}
+      </Table.Td>
     </Table.Tr>
+  );
+}
+
+function SetupRow({
+  setup,
+  drawLines,
+  previewLine,
+  engineStrengthEnabled,
+  engineReport,
+  engineRunning,
+  resultPerspective,
+  sideFilter,
+  fen,
+  strength,
+}: {
+  setup: PlanExplorerSetup;
+  drawLines: (lines: ColoredPlanExplorerLine[]) => void;
+  previewLine: (line: ColoredPlanExplorerLine | null) => void;
+  engineStrengthEnabled: boolean;
+  engineReport: EnginePlanReport | null;
+  engineRunning: boolean;
+  resultPerspective: DatabaseResultPerspective | null;
+  sideFilter: SideFilter;
+  fen: string;
+  strength: PlanStrength | undefined;
+}) {
+  const lines = setup.plans.map(setupPlanToColoredLine);
+  const firstLine = lines[0] ?? null;
+  const perspective = getSetupPerspective(setup, resultPerspective, sideFilter, fen);
+
+  return (
+    <Table.Tr
+      onMouseEnter={() => firstLine && previewLine(firstLine)}
+      onMouseLeave={() => previewLine(null)}
+      onClick={() => drawLines(lines)}
+      style={{ cursor: lines.length > 0 ? "pointer" : "default" }}
+    >
+      <Table.Td>
+        <Stack gap={2}>
+          <Text size="sm" fw={700}>
+            {setupTitle(setup)}
+          </Text>
+          <Text size="xs" c="dimmed">
+            WDL for {capitalize(perspective)}
+          </Text>
+        </Stack>
+      </Table.Td>
+      <Table.Td>
+        <PlanStrengthCell strength={strength ?? null} />
+      </Table.Td>
+      {engineStrengthEnabled && (
+        <Table.Td>
+          <SetupEngineStrengthCell
+            setup={setup}
+            engineReport={engineReport}
+            running={engineRunning}
+          />
+        </Table.Td>
+      )}
+      <Table.Td>
+        <Stack gap={4}>
+          {setup.plans.map((plan) => {
+            const line = setupPlanToColoredLine(plan);
+            const match = engineStrengthEnabled
+              ? getPlanExplorerLineEnginePlan(plan, plan.line, engineReport)
+              : null;
+
+            return (
+              <Group
+                key={planLineKey(plan, plan.line)}
+                gap="xs"
+                wrap="nowrap"
+                onMouseEnter={() => previewLine(line)}
+                onMouseLeave={() => firstLine && previewLine(firstLine)}
+              >
+                <Tooltip label="Draw route">
+                  <ActionIcon
+                    size="sm"
+                    variant="subtle"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      drawLines([line]);
+                    }}
+                  >
+                    <IconRoute size="1rem" />
+                  </ActionIcon>
+                </Tooltip>
+                <Text size="sm" ff="monospace" truncate>
+                  {formatPlanPieceRoute(plan, plan.line)}
+                </Text>
+                <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+                  {capitalize(plan.role)} {plan.from}
+                </Text>
+                {match && (
+                  <Badge size="xs" color={approvalColor(match.plan.approval)} variant="light">
+                    {match.plan.approval}
+                  </Badge>
+                )}
+              </Group>
+            );
+          })}
+        </Stack>
+      </Table.Td>
+      <Table.Td>
+        <Badge variant="light">{formatNumber(setup.games)}</Badge>
+      </Table.Td>
+      <Table.Td>
+        <ResultBar line={setup} perspective={perspective} />
+      </Table.Td>
+    </Table.Tr>
+  );
+}
+
+function PlanStrengthCell({ strength }: { strength: PlanStrength | null }) {
+  if (!strength) {
+    return (
+      <Text size="xs" c="dimmed">
+        -
+      </Text>
+    );
+  }
+
+  return (
+    <Tooltip label={strength.detail} multiline w={300} withArrow>
+      <Stack gap={3}>
+        <Badge color={strength.engineUnsafe ? "yellow" : "teal"} variant="light">
+          {strength.label}
+        </Badge>
+        <Progress
+          value={strength.score}
+          color={strength.engineUnsafe ? "yellow" : "teal"}
+          size={3}
+        />
+      </Stack>
+    </Tooltip>
+  );
+}
+
+function SetupEngineStrengthCell({
+  setup,
+  engineReport,
+  running,
+}: {
+  setup: PlanExplorerSetup;
+  engineReport: EnginePlanReport | null;
+  running: boolean;
+}) {
+  const matches = getSetupEngineMatches(setup, engineReport);
+  if (matches.length === 0) {
+    return (
+      <Text size="xs" c="dimmed">
+        {running ? "Analyzing" : "No PV"}
+      </Text>
+    );
+  }
+
+  const strongest = matches
+    .slice()
+    .sort((a, b) => enginePlanStrengthScore(b.plan) - enginePlanStrengthScore(a.plan))[0];
+
+  return (
+    <Stack gap={2}>
+      <Badge color={approvalColor(strongest.plan.approval)} variant="light">
+        {strongest.plan.approval}
+      </Badge>
+      <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+        {matches.length}/{setup.plans.length} matched
+      </Text>
+    </Stack>
   );
 }
 
@@ -1206,7 +2017,7 @@ function ResultBar({
   line,
   perspective,
 }: {
-  line: PlanExplorerLine;
+  line: Pick<PlanExplorerLine, "white" | "draw" | "black">;
   perspective: DatabaseResultPerspective | null;
 }) {
   const total = line.white + line.draw + line.black;

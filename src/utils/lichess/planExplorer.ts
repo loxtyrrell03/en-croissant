@@ -14,7 +14,13 @@ import {
 import { castlingSide } from "chessops/chess";
 import { makeSan } from "chessops/san";
 import { squareFromCoords } from "chessops/util";
-import type { PlanExplorerData, PlanExplorerLine, PlanExplorerPiece } from "@/bindings";
+import type {
+    PlanExplorerData,
+    PlanExplorerLine,
+    PlanExplorerPiece,
+    PlanExplorerSetup,
+    PlanExplorerSetupPlan,
+} from "@/bindings";
 import { uciNormalize } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
 import { getLichessGames, getMasterGames, type PositionData } from "@/utils/lichess/api";
@@ -27,6 +33,10 @@ const PLAN_BRANCH_WIDTH = 4;
 const PLAN_MAX_REQUESTS = 36;
 const PLAN_MIN_CHILD_SHARE = 0.05;
 const PLAN_MAX_LINES_PER_PIECE = 8;
+const PLAN_SETUP_FEATURED_PATHS_PER_COLOR = 5;
+const PLAN_SETUP_MIN_PLANS = 2;
+const PLAN_SETUP_MAX_PLANS = 3;
+const PLAN_SETUP_MAX_RESULTS = 40;
 
 type ExplorerMove = PositionData["moves"][number];
 
@@ -113,7 +123,7 @@ export async function getOnlinePlanExplorer(
         }
     }
 
-    const { pieces, sampledGames } = buildPiecesFromLeaves(leaves);
+    const { pieces, setups, sampledGames } = buildPiecesFromLeaves(leaves);
 
     return {
         fen,
@@ -121,6 +131,7 @@ export async function getOnlinePlanExplorer(
         sampled_games: sampledGames,
         max_plies: depthLimit,
         pieces,
+        setups,
     };
 }
 
@@ -326,13 +337,15 @@ function selectCandidateMoves(data: PositionData) {
 
 function buildPiecesFromLeaves(leaves: BranchNode[]) {
     const grouped = new Map<string, Map<string, LineAccumulator>>();
+    const setups = new Map<string, PlanExplorerSetup>();
     let sampledGames = 0;
 
     for (const leaf of leaves) {
         if (leaf.depth === 0 || leaf.stats.games <= 0) continue;
         sampledGames += leaf.stats.games;
 
-        for (const path of leaf.paths.values()) {
+        const movedPaths = [...leaf.paths.values()].filter((path) => path.squares.length > 1);
+        for (const path of movedPaths) {
             if (path.squares.length <= 1) continue;
 
             const pieceMap = getOrInsert(
@@ -359,6 +372,25 @@ function buildPiecesFromLeaves(leaves: BranchNode[]) {
                 });
             }
         }
+
+        for (const setup of collectSetupRows(movedPaths, leaf.stats)) {
+            const key = setupKey(setup.plans);
+            const existing = setups.get(key);
+            if (existing) {
+                existing.games += setup.games;
+                existing.white += setup.white;
+                existing.draw += setup.draw;
+                existing.black += setup.black;
+                for (const plan of existing.plans) {
+                    plan.line.games = existing.games;
+                    plan.line.white = existing.white;
+                    plan.line.draw = existing.draw;
+                    plan.line.black = existing.black;
+                }
+            } else {
+                setups.set(key, setup);
+            }
+        }
     }
 
     const pieces = [...grouped.entries()]
@@ -382,7 +414,141 @@ function buildPiecesFromLeaves(leaves: BranchNode[]) {
                 a.from.localeCompare(b.from),
         ) as PlanExplorerPiece[];
 
-    return { pieces, sampledGames };
+    const setupRows = [...setups.values()]
+        .sort(
+            (a, b) =>
+                b.games - a.games ||
+                b.plans.length - a.plans.length ||
+                setupKey(a.plans).localeCompare(setupKey(b.plans)),
+        )
+        .slice(0, PLAN_SETUP_MAX_RESULTS);
+
+    return { pieces, setups: setupRows, sampledGames };
+}
+
+function collectSetupRows(paths: TrackedPath[], stats: ResultStats): PlanExplorerSetup[] {
+    const byColor = new Map<Color, TrackedPath[]>();
+    for (const path of paths) {
+        const pathsForColor = getOrInsert(byColor, path.color, () => []);
+        pathsForColor.push(path);
+    }
+
+    const setups: PlanExplorerSetup[] = [];
+    for (const colorPaths of byColor.values()) {
+        if (colorPaths.length < PLAN_SETUP_MIN_PLANS) continue;
+
+        const featured = [...colorPaths]
+            .sort((a, b) => setupPathPriority(b) - setupPathPriority(a) || compareTrackedPath(a, b))
+            .slice(0, PLAN_SETUP_FEATURED_PATHS_PER_COLOR);
+        const maxPlans = Math.min(PLAN_SETUP_MAX_PLANS, featured.length);
+
+        for (let size = PLAN_SETUP_MIN_PLANS; size <= maxPlans; size += 1) {
+            collectSetupCombinations(featured, size, 0, [], stats, setups);
+        }
+    }
+
+    return setups;
+}
+
+function collectSetupCombinations(
+    paths: TrackedPath[],
+    targetSize: number,
+    start: number,
+    selected: TrackedPath[],
+    stats: ResultStats,
+    setups: PlanExplorerSetup[],
+) {
+    if (selected.length === targetSize) {
+        const sorted = [...selected].sort(compareTrackedPath);
+        setups.push({
+            plans: sorted.map((path) => setupPlanFromPath(path, stats)),
+            games: stats.games,
+            white: stats.white,
+            draw: stats.draw,
+            black: stats.black,
+        });
+        return;
+    }
+
+    const remaining = targetSize - selected.length;
+    if (paths.length - start < remaining) return;
+
+    for (let index = start; index <= paths.length - remaining; index += 1) {
+        selected.push(paths[index]);
+        collectSetupCombinations(paths, targetSize, index + 1, selected, stats, setups);
+        selected.pop();
+    }
+}
+
+function setupPlanFromPath(path: TrackedPath, stats: ResultStats): PlanExplorerSetupPlan {
+    return {
+        color: path.color,
+        role: path.role,
+        from: path.from,
+        line: {
+            squares: [...path.squares],
+            san: [...path.san],
+            uci: [...path.uci],
+            games: stats.games,
+            white: stats.white,
+            draw: stats.draw,
+            black: stats.black,
+        },
+    };
+}
+
+function setupPathPriority(path: TrackedPath) {
+    const roleScore = (() => {
+        switch (path.role) {
+            case "queen":
+                return 80;
+            case "rook":
+                return 72;
+            case "knight":
+            case "bishop":
+                return 68;
+            case "king":
+                return path.san.some((san) => san.startsWith("O-O") || san.startsWith("0-0"))
+                    ? 70
+                    : 34;
+            case "pawn":
+                return isCentralOrAdvancedPawnPath(path) ? 64 : 42;
+            default:
+                return 40;
+        }
+    })();
+
+    return roleScore + Math.min(path.san.length, 4) * 6;
+}
+
+function isCentralOrAdvancedPawnPath(path: TrackedPath) {
+    if (path.role !== "pawn" || path.squares.length < 2) return false;
+    const first = path.squares[0];
+    const last = path.squares[path.squares.length - 1];
+    const firstFile = first[0];
+    const lastFile = last[0];
+    const lastRank = Number(last[1]);
+
+    return (
+        firstFile !== lastFile ||
+        ["c", "d", "e", "f"].includes(firstFile) ||
+        (path.color === "white" ? lastRank >= 5 : lastRank <= 4)
+    );
+}
+
+function compareTrackedPath(a: TrackedPath, b: TrackedPath) {
+    return (
+        a.color.localeCompare(b.color) ||
+        a.role.localeCompare(b.role) ||
+        a.from.localeCompare(b.from) ||
+        a.squares.join("-").localeCompare(b.squares.join("-"))
+    );
+}
+
+function setupKey(plans: PlanExplorerSetupPlan[]) {
+    return plans
+        .map((plan) => `${plan.color}|${plan.role}|${plan.from}|${plan.line.squares.join("-")}`)
+        .join("||");
 }
 
 function statsFromPosition(data: PositionData): ResultStats {

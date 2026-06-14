@@ -239,6 +239,7 @@ describe("Engine Plan Explorer", () => {
             total_games: 100,
             sampled_games: 100,
             max_plies: 8,
+            setups: [],
             pieces: [
                 planPiece("white", "knight", "g1", 100, ["g1", "f3"]),
                 planPiece("white", "bishop", "f1", 90, ["f1", "b5"]),
@@ -279,6 +280,7 @@ describe("Engine Plan Explorer", () => {
             total_games: 100,
             sampled_games: 100,
             max_plies: 8,
+            setups: [],
             pieces: [
                 planPiece("white", "queen", "d1", 100, ["d1", "d2", "d3", "d4"]),
                 planPiece("white", "rook", "a1", 95, ["a1", "a3"]),

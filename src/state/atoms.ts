@@ -290,6 +290,10 @@ export const planExplorerEngineStrengthMultipvAtom = atomWithStorage<number>(
     "plan-explorer-engine-strength-multipv",
     5,
 );
+export const planExplorerViewAtom = atomWithStorage<"plans" | "setups">(
+    "plan-explorer-view",
+    "plans",
+);
 export const moveStrengthSettingsAtom = atomWithStorage<MoveStrengthSettings>(
     "move-strength-settings",
     DEFAULT_MOVE_STRENGTH_SETTINGS,

@@ -42,6 +42,10 @@ use super::{GameQuery, Sides};
 const DB_CACHE_LIMIT: usize = 4;
 const PLAN_EXPLORER_INDEXED_SAMPLES: usize = 5_000;
 const PLAN_EXPLORER_FALLBACK_FULL_SAMPLE_MAX_GAMES: usize = 100_000;
+const PLAN_SETUP_FEATURED_PATHS_PER_COLOR: usize = 5;
+const PLAN_SETUP_MIN_PLANS: usize = 2;
+const PLAN_SETUP_MAX_PLANS: usize = 3;
+const PLAN_SETUP_MAX_RESULTS: usize = 40;
 const MASTER_GAME_FAST_CANDIDATE_LIMIT: usize = 30_000;
 const MASTER_GAME_MAX_SAMPLE_LIMIT: usize = 5_000;
 const OPENING_HEALTH_SCORE_GAP: f64 = 0.15;
@@ -497,6 +501,7 @@ pub struct PlanExplorerData {
     pub sampled_games: i32,
     pub max_plies: i32,
     pub pieces: Vec<PlanExplorerPiece>,
+    pub setups: Vec<PlanExplorerSetup>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Type)]
@@ -519,6 +524,23 @@ pub struct PlanExplorerLine {
     pub black: i32,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Type)]
+pub struct PlanExplorerSetup {
+    pub plans: Vec<PlanExplorerSetupPlan>,
+    pub games: i32,
+    pub white: i32,
+    pub draw: i32,
+    pub black: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Type)]
+pub struct PlanExplorerSetupPlan {
+    pub color: String,
+    pub role: String,
+    pub from: String,
+    pub line: PlanExplorerLine,
+}
+
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 struct PieceKey {
     color: Color,
@@ -530,6 +552,11 @@ struct PieceKey {
 struct PlanLineKey {
     piece: PieceKey,
     squares: Vec<Square>,
+}
+
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+struct PlanSetupKey {
+    plans: Vec<PlanLineKey>,
 }
 
 #[derive(Debug, Clone)]
@@ -556,6 +583,36 @@ impl LineStats {
         Self {
             san: path.san.clone(),
             uci: path.uci.clone(),
+            games: 1,
+            white,
+            draw,
+            black,
+        }
+    }
+
+    fn add_result(&mut self, result: GameResult) {
+        let (white, draw, black) = result_counts(result);
+        self.games += 1;
+        self.white += white;
+        self.draw += draw;
+        self.black += black;
+    }
+}
+
+#[derive(Debug, Clone)]
+struct SetupStats {
+    plans: Vec<ObservedPiecePath>,
+    games: i32,
+    white: i32,
+    draw: i32,
+    black: i32,
+}
+
+impl SetupStats {
+    fn new(plans: Vec<ObservedPiecePath>, result: GameResult) -> Self {
+        let (white, draw, black) = result_counts(result);
+        Self {
+            plans,
             games: 1,
             white,
             draw,
@@ -2066,6 +2123,222 @@ where
     pieces
 }
 
+fn plan_setups_from_stats<I>(setups: I) -> Vec<PlanExplorerSetup>
+where
+    I: IntoIterator<Item = (PlanSetupKey, SetupStats)>,
+{
+    let mut setup_rows = setups
+        .into_iter()
+        .map(|(_, stats)| PlanExplorerSetup {
+            plans: stats
+                .plans
+                .iter()
+                .map(|path| PlanExplorerSetupPlan {
+                    color: color_name(path.piece.color).to_string(),
+                    role: role_name(path.piece.role).to_string(),
+                    from: path.piece.from.to_string(),
+                    line: PlanExplorerLine {
+                        squares: path
+                            .squares
+                            .iter()
+                            .map(|square| square.to_string())
+                            .collect(),
+                        san: path.san.clone(),
+                        uci: path.uci.clone(),
+                        games: stats.games,
+                        white: stats.white,
+                        draw: stats.draw,
+                        black: stats.black,
+                    },
+                })
+                .collect(),
+            games: stats.games,
+            white: stats.white,
+            draw: stats.draw,
+            black: stats.black,
+        })
+        .collect::<Vec<_>>();
+
+    setup_rows.sort_by(|a, b| {
+        b.games
+            .cmp(&a.games)
+            .then_with(|| b.plans.len().cmp(&a.plans.len()))
+            .then_with(|| setup_label(a).cmp(&setup_label(b)))
+    });
+    setup_rows.truncate(PLAN_SETUP_MAX_RESULTS);
+    setup_rows
+}
+
+fn collect_plan_setup_entries(
+    paths: &[ObservedPiecePath],
+    result: GameResult,
+) -> Vec<(PlanSetupKey, SetupStats)> {
+    let mut by_color: HashMap<Color, Vec<ObservedPiecePath>> = HashMap::new();
+    for path in paths {
+        by_color
+            .entry(path.piece.color)
+            .or_default()
+            .push(path.clone());
+    }
+
+    let mut entries = Vec::new();
+    for (_, mut color_paths) in by_color {
+        if color_paths.len() < PLAN_SETUP_MIN_PLANS {
+            continue;
+        }
+
+        color_paths.sort_by(|a, b| {
+            plan_setup_path_priority(b)
+                .cmp(&plan_setup_path_priority(a))
+                .then_with(|| compare_observed_piece_path(a, b))
+        });
+        color_paths.truncate(PLAN_SETUP_FEATURED_PATHS_PER_COLOR);
+
+        let max_plans = PLAN_SETUP_MAX_PLANS.min(color_paths.len());
+        for size in PLAN_SETUP_MIN_PLANS..=max_plans {
+            collect_plan_setup_combinations(
+                &color_paths,
+                size,
+                0,
+                &mut Vec::new(),
+                result,
+                &mut entries,
+            );
+        }
+    }
+
+    entries
+}
+
+fn collect_plan_setup_combinations(
+    paths: &[ObservedPiecePath],
+    target_size: usize,
+    start: usize,
+    selected: &mut Vec<ObservedPiecePath>,
+    result: GameResult,
+    entries: &mut Vec<(PlanSetupKey, SetupStats)>,
+) {
+    if selected.len() == target_size {
+        let mut plans = selected.clone();
+        plans.sort_by(compare_observed_piece_path);
+        let key = PlanSetupKey {
+            plans: plans.iter().map(plan_line_key_from_path).collect(),
+        };
+        entries.push((key, SetupStats::new(plans, result)));
+        return;
+    }
+
+    let remaining = target_size - selected.len();
+    if paths.len().saturating_sub(start) < remaining {
+        return;
+    }
+
+    for index in start..=paths.len() - remaining {
+        selected.push(paths[index].clone());
+        collect_plan_setup_combinations(paths, target_size, index + 1, selected, result, entries);
+        selected.pop();
+    }
+}
+
+fn plan_line_key_from_path(path: &ObservedPiecePath) -> PlanLineKey {
+    PlanLineKey {
+        piece: path.piece,
+        squares: path.squares.clone(),
+    }
+}
+
+fn plan_setup_path_priority(path: &ObservedPiecePath) -> i32 {
+    let role_score = match path.piece.role {
+        Role::Queen => 80,
+        Role::Rook => 72,
+        Role::Knight | Role::Bishop => 68,
+        Role::King => {
+            if path
+                .san
+                .iter()
+                .any(|san| san.starts_with("O-O") || san.starts_with("0-0"))
+            {
+                70
+            } else {
+                34
+            }
+        }
+        Role::Pawn => {
+            if is_central_or_advanced_pawn_path(path) {
+                64
+            } else {
+                42
+            }
+        }
+    };
+    let move_count_score = path.san.len().min(4) as i32 * 6;
+    role_score + move_count_score
+}
+
+fn is_central_or_advanced_pawn_path(path: &ObservedPiecePath) -> bool {
+    if path.piece.role != Role::Pawn || path.squares.len() < 2 {
+        return false;
+    }
+
+    let first = path.squares.first().map(|square| square.to_string());
+    let last = path.squares.last().map(|square| square.to_string());
+    let Some(first) = first else {
+        return false;
+    };
+    let Some(last) = last else {
+        return false;
+    };
+
+    let first_file = first.as_bytes().first().copied().unwrap_or_default() as char;
+    let last_file = last.as_bytes().first().copied().unwrap_or_default() as char;
+    let last_rank = last
+        .as_bytes()
+        .get(1)
+        .and_then(|rank| (*rank as char).to_digit(10))
+        .unwrap_or(0);
+
+    first_file != last_file
+        || matches!(first_file, 'c' | 'd' | 'e' | 'f')
+        || if path.piece.color == Color::White {
+            last_rank >= 5
+        } else {
+            last_rank <= 4
+        }
+}
+
+fn compare_observed_piece_path(a: &ObservedPiecePath, b: &ObservedPiecePath) -> CmpOrdering {
+    color_name(a.piece.color)
+        .cmp(color_name(b.piece.color))
+        .then_with(|| role_name(a.piece.role).cmp(role_name(b.piece.role)))
+        .then_with(|| a.piece.from.to_string().cmp(&b.piece.from.to_string()))
+        .then_with(|| square_route_label(&a.squares).cmp(&square_route_label(&b.squares)))
+}
+
+fn square_route_label(squares: &[Square]) -> String {
+    squares
+        .iter()
+        .map(|square| square.to_string())
+        .collect::<Vec<_>>()
+        .join("-")
+}
+
+fn setup_label(setup: &PlanExplorerSetup) -> String {
+    setup
+        .plans
+        .iter()
+        .map(|plan| {
+            format!(
+                "{}|{}|{}|{}",
+                plan.color,
+                plan.role,
+                plan.from,
+                plan.line.squares.join("-")
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("||")
+}
+
 fn plan_explorer_from_occurrences(
     index: &MmapSearchIndex,
     query: &GameQuery,
@@ -2074,9 +2347,10 @@ fn plan_explorer_from_occurrences(
     max_samples: usize,
     wanted_result: Option<GameResult>,
     cancel_flag: &AtomicBool,
-) -> Result<(i32, i32, Vec<PlanExplorerPiece>), Error> {
+) -> Result<(i32, i32, Vec<PlanExplorerPiece>, Vec<PlanExplorerSetup>), Error> {
     let occurrences = index.position_occurrences(legacy_position_index_key(&exact.position));
     let mut lines: HashMap<PlanLineKey, LineStats> = HashMap::new();
+    let mut setups: HashMap<PlanSetupKey, SetupStats> = HashMap::new();
     let mut seen_games = HashSet::new();
     let mut total_games = 0i32;
     let mut sampled_games = 0i32;
@@ -2111,7 +2385,8 @@ fn plan_explorer_from_occurrences(
 
         sampled_games += 1;
         let mut mainline = iter_mainline_move_bytes(entry.moves).skip(occurrence.ply as usize);
-        for path in collect_piece_plans(&position, &mut mainline, max_plies) {
+        let paths = collect_piece_plans(&position, &mut mainline, max_plies);
+        for path in &paths {
             let key = PlanLineKey {
                 piece: path.piece,
                 squares: path.squares.clone(),
@@ -2119,11 +2394,22 @@ fn plan_explorer_from_occurrences(
             lines
                 .entry(key)
                 .and_modify(|stats| stats.add_result(entry.result))
-                .or_insert_with(|| LineStats::new(&path, entry.result));
+                .or_insert_with(|| LineStats::new(path, entry.result));
+        }
+        for (key, stats) in collect_plan_setup_entries(&paths, entry.result) {
+            setups
+                .entry(key)
+                .and_modify(|existing| existing.add_result(entry.result))
+                .or_insert(stats);
         }
     }
 
-    Ok((total_games, sampled_games, plan_pieces_from_lines(lines)))
+    Ok((
+        total_games,
+        sampled_games,
+        plan_pieces_from_lines(lines),
+        plan_setups_from_stats(setups),
+    ))
 }
 
 #[tauri::command]
@@ -2864,6 +3150,7 @@ pub async fn get_plan_explorer(
             sampled_games: 0,
             max_plies,
             pieces: Vec::new(),
+            setups: Vec::new(),
         });
     };
 
@@ -2921,7 +3208,7 @@ pub async fn get_plan_explorer(
             drop(permit);
             finish_cancelable_db_request(&state, &request_id, &cancel_flag);
 
-            let (total_games, sampled_games, pieces) = indexed_result?;
+            let (total_games, sampled_games, pieces, setups) = indexed_result?;
 
             info!(
                 "finished occurrence-index plan explorer in {:?}",
@@ -2934,6 +3221,7 @@ pub async fn get_plan_explorer(
                 sampled_games,
                 max_plies,
                 pieces,
+                setups,
             };
             state.plan_explorer_cache.insert(cache_key, data.clone());
             return Ok(data);
@@ -2943,6 +3231,7 @@ pub async fn get_plan_explorer(
     let total_games = AtomicUsize::new(0);
     let sampled_games = AtomicUsize::new(0);
     let lines: DashMap<PlanLineKey, LineStats> = DashMap::new();
+    let setups: DashMap<PlanSetupKey, SetupStats> = DashMap::new();
 
     let process_entry = |entry: SearchGameEntryRef<'_>| {
         if cancel_flag.load(Ordering::Relaxed) {
@@ -2979,7 +3268,7 @@ pub async fn get_plan_explorer(
 
         total_games.fetch_add(1, Ordering::Relaxed);
 
-        for path in paths {
+        for path in &paths {
             let key = PlanLineKey {
                 piece: path.piece,
                 squares: path.squares.clone(),
@@ -2987,7 +3276,14 @@ pub async fn get_plan_explorer(
             lines
                 .entry(key)
                 .and_modify(|stats| stats.add_result(entry.result))
-                .or_insert_with(|| LineStats::new(&path, entry.result));
+                .or_insert_with(|| LineStats::new(path, entry.result));
+        }
+
+        for (key, stats) in collect_plan_setup_entries(&paths, entry.result) {
+            setups
+                .entry(key)
+                .and_modify(|existing| existing.add_result(entry.result))
+                .or_insert(stats);
         }
     };
 
@@ -3020,6 +3316,7 @@ pub async fn get_plan_explorer(
     }
 
     let pieces = plan_pieces_from_lines(lines);
+    let setups = plan_setups_from_stats(setups);
 
     drop(permit);
     finish_cancelable_db_request(&state, &request_id, &cancel_flag);
@@ -3032,6 +3329,7 @@ pub async fn get_plan_explorer(
         sampled_games: sampled_games.load(Ordering::Relaxed) as i32,
         max_plies,
         pieces,
+        setups,
     };
     state.plan_explorer_cache.insert(cache_key, data.clone());
     Ok(data)

@@ -2140,6 +2140,16 @@ from 2026-04-24 through 2026-05-03.
   in-flight position lookups, run one cloud request at a time with a small
   spacing delay, and cool down after `429` responses so opening navigation
   does not burn the cloud limit and silently fall back to local Stockfish.
+- On 2026-06-14, the database-backed Plan Explorer gained a second
+  `Plans / Setups` view and a blended strength measure. The existing plan rows
+  remain available, now with a `Blend` score that combines the engine-plan
+  approval signal with comparable WDL performance using the shared move-strength
+  settings. The new Setups view is backed by exact same-side two- and three-plan
+  combinations observed in each sampled local database game, with matching
+  branch-derived setup rows for online Lichess/Masters samples; use this for
+  human opening training when judging whether a coordinated piece/pawn setup
+  performs well in the selected database rather than judging every route in
+  isolation.
 
 ## Verification Expectations
 
