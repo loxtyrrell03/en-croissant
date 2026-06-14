@@ -2158,6 +2158,12 @@ from 2026-04-24 through 2026-05-03.
   white-section styling, and readable in-bar percentage labels when a segment is
   wide enough. Keep future plan/setup result summaries visually consistent with
   Database rather than returning to unlabeled mini bars.
+- A follow-up clarified the Plan Explorer setup WDL bars for black-side
+  exploration. Blended strength was already scored from the row's effective
+  perspective, but the bar could look inverted because the leading
+  perspective segment reused the white-section styling even when it represented
+  Black's result. The bar now colors and labels the scored side explicitly
+  while preserving perspective-based scoring.
 - On 2026-06-14, the Engine Plans tab gained its own `Plans / Setups` toggle.
   Engine setups are deliberately engine-only: they are generated from same-side
   plan signals that co-occur inside Stockfish PVs and are scored from PV support,

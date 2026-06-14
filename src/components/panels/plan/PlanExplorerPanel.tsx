@@ -2413,32 +2413,55 @@ function ResultBar({
     );
   }
 
-  const first = perspective === "black" ? line.black : line.white;
-  const third = perspective === "black" ? line.white : line.black;
-  const firstPercent = (first / total) * 100;
+  const scoredSide = perspective === "black" ? "black" : "white";
+  const opponentSide = scoredSide === "black" ? "white" : "black";
+  const scoredWins = scoredSide === "black" ? line.black : line.white;
+  const opponentWins = scoredSide === "black" ? line.white : line.black;
+  const scoredPercent = (scoredWins / total) * 100;
   const drawPercent = (line.draw / total) * 100;
-  const thirdPercent = (third / total) * 100;
+  const opponentPercent = (opponentWins / total) * 100;
   const showLabelThreshold = 10;
+  const scoredSideLabel = capitalize(scoredSide);
+  const opponentSideLabel = capitalize(opponentSide);
 
   return (
-    <Progress.Root size="xl" className={resultClasses.result}>
-      <Progress.Section value={firstPercent} className={resultClasses.whiteResultsSection}>
-        <Progress.Label c="black">
-          {firstPercent > showLabelThreshold ? `${firstPercent.toFixed(1)}%` : ""}
-        </Progress.Label>
-      </Progress.Section>
-      <Progress.Section value={drawPercent} color="gray">
-        <Progress.Label>
-          {drawPercent > showLabelThreshold ? `${drawPercent.toFixed(1)}%` : ""}
-        </Progress.Label>
-      </Progress.Section>
-      <Progress.Section value={thirdPercent} color="black">
-        <Progress.Label>
-          {thirdPercent > showLabelThreshold ? `${thirdPercent.toFixed(1)}%` : ""}
-        </Progress.Label>
-      </Progress.Section>
-    </Progress.Root>
+    <Tooltip
+      withArrow
+      label={`${scoredSideLabel} ${scoredPercent.toFixed(1)}% / Draw ${drawPercent.toFixed(
+        1,
+      )}% / ${opponentSideLabel} ${opponentPercent.toFixed(1)}%`}
+    >
+      <Progress.Root
+        size="xl"
+        className={resultClasses.result}
+        aria-label={`WDL scored for ${scoredSideLabel}`}
+      >
+        <Progress.Section value={scoredPercent} {...resultSectionProps(scoredSide)}>
+          <Progress.Label c={resultLabelColor(scoredSide)}>
+            {scoredPercent > showLabelThreshold ? `${scoredPercent.toFixed(1)}%` : ""}
+          </Progress.Label>
+        </Progress.Section>
+        <Progress.Section value={drawPercent} color="gray">
+          <Progress.Label>
+            {drawPercent > showLabelThreshold ? `${drawPercent.toFixed(1)}%` : ""}
+          </Progress.Label>
+        </Progress.Section>
+        <Progress.Section value={opponentPercent} {...resultSectionProps(opponentSide)}>
+          <Progress.Label c={resultLabelColor(opponentSide)}>
+            {opponentPercent > showLabelThreshold ? `${opponentPercent.toFixed(1)}%` : ""}
+          </Progress.Label>
+        </Progress.Section>
+      </Progress.Root>
+    </Tooltip>
   );
+}
+
+function resultSectionProps(side: "white" | "black") {
+  return side === "white" ? { className: resultClasses.whiteResultsSection } : { color: "black" };
+}
+
+function resultLabelColor(side: "white" | "black") {
+  return side === "white" ? "black" : undefined;
 }
 
 function toChessgroundPiece(piece: PlanExplorerPiece): Piece {
