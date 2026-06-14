@@ -2152,7 +2152,9 @@ from 2026-04-24 through 2026-05-03.
   docked engine panel sits at the bottom of the full right column. The
   blindfold move-entry panel should use small `xs` buttons with normal `xs`
   grid spacing and smaller status text, keeping the legal/manual controls
-  space-efficient without looking crushed.
+  space-efficient without looking crushed. In manual SAN mode, keep the
+  Backspace/Clear/Submit footer outside the scroll area with a non-shrinking
+  row so the bottom buttons cannot be half-clipped by the panel edge.
 - Also on 2026-06-15, unfinished Blindfold library entries became resumable
   instead of review-only. Saved games with `Result "*"` and a non-terminal
   mainline end now show `In progress` / `Resume`, reload to the mainline end,

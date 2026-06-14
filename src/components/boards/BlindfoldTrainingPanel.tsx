@@ -953,7 +953,7 @@ export function BlindfoldMovePanel({
   };
 
   const content = (
-    <Stack h="100%" gap="xs">
+    <Stack h="100%" gap="xs" style={{ minHeight: 0, overflow: "hidden" }}>
       <Group justify="space-between" gap="xs" wrap="nowrap">
         <Box style={{ minWidth: 0 }}>
           <Text size="sm" fw={800}>
@@ -998,7 +998,7 @@ export function BlindfoldMovePanel({
                 ]}
               />
 
-              <ScrollArea style={{ flex: 1 }} offsetScrollbars>
+              <ScrollArea style={{ flex: 1, minHeight: 0 }} offsetScrollbars>
                 <Stack gap="xs">
                   <Text size="xs" c="dimmed">
                     {legalMoves.length} legal move{legalMoves.length === 1 ? "" : "s"}
@@ -1037,7 +1037,7 @@ export function BlindfoldMovePanel({
                 ]}
               />
 
-              <ScrollArea style={{ flex: 1 }} offsetScrollbars>
+              <ScrollArea style={{ flex: 1, minHeight: 0 }} offsetScrollbars>
                 <Stack gap="xs">
                   <Paper withBorder p="xs">
                     <Group justify="space-between" gap="xs" wrap="nowrap">
@@ -1152,34 +1152,34 @@ export function BlindfoldMovePanel({
                     </Button>
                   </SimpleGrid>
 
-                  <Divider />
-                  <Group grow>
-                    <Button
-                      size="xs"
-                      variant="default"
-                      leftSection={<IconBackspace size={14} />}
-                      onClick={() => setManualInput((current) => current.slice(0, -1))}
-                    >
-                      Backspace
-                    </Button>
-                    <Button size="xs" variant="default" onClick={() => setManualInput("")}>
-                      Clear
-                    </Button>
-                    <Button
-                      size="xs"
-                      disabled={!canMove || manualStatus.kind !== "legal"}
-                      onClick={() => void submitManual()}
-                    >
-                      Submit
-                    </Button>
-                  </Group>
                 </Stack>
               </ScrollArea>
+              <Divider />
+              <Group grow style={{ flexShrink: 0 }}>
+                <Button
+                  size="xs"
+                  variant="default"
+                  leftSection={<IconBackspace size={14} />}
+                  onClick={() => setManualInput((current) => current.slice(0, -1))}
+                >
+                  Backspace
+                </Button>
+                <Button size="xs" variant="default" onClick={() => setManualInput("")}>
+                  Clear
+                </Button>
+                <Button
+                  size="xs"
+                  disabled={!canMove || manualStatus.kind !== "legal"}
+                  onClick={() => void submitManual()}
+                >
+                  Submit
+                </Button>
+              </Group>
             </>
           )}
 
       {phase === "marks" && (
-        <ScrollArea style={{ flex: 1 }} offsetScrollbars>
+        <ScrollArea style={{ flex: 1, minHeight: 0 }} offsetScrollbars>
           <Stack gap="xs">
             {orderedMarks.length === 0 ? (
               <Text size="xs" c="dimmed">
