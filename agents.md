@@ -2135,8 +2135,8 @@ from 2026-04-24 through 2026-05-03.
 - On 2026-06-13, the Blindfold setup Library gained inline game previews like
   the `Choose online game` picker. Each saved-game row can expand before
   opening to show a readonly board plus clickable main-line SAN moves; the
-  existing `Open` action still loads the saved game into the blindfold trainer
-  review path rather than switching it to a generic analysis tab.
+  completed-game `Open` action still loads the saved game into the blindfold
+  trainer review path rather than switching it to a generic analysis tab.
 - A later 2026-06-13 Blindfold play update added the standard compact engine
   dock below the right-side move-entry/actions panel. Keep this wired through
   `EngineDockedPanel` and `EvalListener` so blindfold analysis follows the same
@@ -2150,6 +2150,12 @@ from 2026-04-24 through 2026-05-03.
   display duration control. Blindfold tabs also hide the otherwise empty
   bottom-right workspace pane so the right-side move-entry area expands and the
   docked engine panel sits at the bottom of the full right column.
+- Also on 2026-06-15, unfinished Blindfold library entries became resumable
+  instead of review-only. Saved games with `Result "*"` and a non-terminal
+  mainline end now show `In progress` / `Resume`, reload into setup at the
+  mainline end, and `Start` recreates the Maia backend from the saved initial
+  FEN plus already-played moves while preserving the same saved-game id and
+  lost-track marks. Completed saved games still open in blindfold review.
 - On 2026-06-13, the desktop analysis board under-board move panel was given a
   slightly larger height allocation and switched to compact notation chrome.
   The intent is that the `Moves / Database / Prep / Coach` header takes less

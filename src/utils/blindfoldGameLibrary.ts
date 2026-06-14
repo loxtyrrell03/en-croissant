@@ -1,4 +1,5 @@
 import { getPGN } from "./chess";
+import { positionFromFen } from "./chessops";
 import { getGameName, type GameHeaders, type TreeNode } from "./treeReducer";
 import type {
     BlindfoldGameSettings,
@@ -56,6 +57,13 @@ export function formatBlindfoldPlyLabel(node: TreeNode) {
     if (!node.san || node.halfMoves <= 0) return "Start position";
     const moveNumber = Math.ceil(node.halfMoves / 2);
     return node.halfMoves % 2 === 1 ? `${moveNumber}. ${node.san}` : `${moveNumber}... ${node.san}`;
+}
+
+export function canResumeBlindfoldSavedGame(result: string, fen: string) {
+    if (result !== "*") return false;
+
+    const [position, error] = positionFromFen(fen);
+    return Boolean(position && !error && !position.isEnd());
 }
 
 export function createBlindfoldLostTrackMark({

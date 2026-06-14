@@ -4,6 +4,7 @@ import {
     addLostTrackComment,
     BLINDFOLD_LOST_TRACK_COMMENT,
     buildBlindfoldSavedGame,
+    canResumeBlindfoldSavedGame,
     createBlindfoldLostTrackMark,
     formatBlindfoldPlyLabel,
     hasLostTrackComment,
@@ -97,5 +98,14 @@ describe("blindfold game library", () => {
         expect(second.moveCount).toBe(1);
         expect(second.lastMoveSan).toBe("d4");
         expect(second.pgn).toContain("1. d4");
+    });
+
+    test("only unfinished non-terminal blindfold games are resumable", () => {
+        const playableFen = "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";
+        const stalemateFen = "7k/5K2/6Q1/8/8/8/8/8 b - - 0 1";
+
+        expect(canResumeBlindfoldSavedGame("*", playableFen)).toBe(true);
+        expect(canResumeBlindfoldSavedGame("1-0", playableFen)).toBe(false);
+        expect(canResumeBlindfoldSavedGame("*", stalemateFen)).toBe(false);
     });
 });

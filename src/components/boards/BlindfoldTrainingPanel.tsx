@@ -579,6 +579,7 @@ export function BlindfoldMaiaSetupPanel({
               <Stack gap="xs">
                 {libraryGames.map((game) => {
                   const expanded = expandedGameIds.has(game.id);
+                  const inProgress = game.result === "*";
 
                   return (
                     <Paper
@@ -602,8 +603,8 @@ export function BlindfoldMaiaSetupPanel({
                               {game.white} vs {game.black}
                             </Text>
                           </Box>
-                          <Badge size="sm" variant="light">
-                            {game.result}
+                          <Badge size="sm" color={inProgress ? "blue" : undefined} variant="light">
+                            {inProgress ? "In progress" : game.result}
                           </Badge>
                         </Group>
                         <Group gap={6}>
@@ -649,12 +650,13 @@ export function BlindfoldMaiaSetupPanel({
                             <Button
                               size="xs"
                               variant="light"
+                              leftSection={inProgress ? <IconPlayerPlay size={14} /> : undefined}
                               onClick={(event) => {
                                 event.stopPropagation();
                                 void onLoadSavedGame(game.id);
                               }}
                             >
-                              Open
+                              {inProgress ? "Resume" : "Open"}
                             </Button>
                             <Button
                               size="xs"

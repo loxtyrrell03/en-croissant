@@ -69,6 +69,7 @@ import {
   addLostTrackComment,
   blindfoldPathKey,
   buildBlindfoldSavedGame,
+  canResumeBlindfoldSavedGame,
   createBlindfoldLostTrackMark,
   removeLostTrackComment,
   upsertBlindfoldSavedGame,
@@ -496,8 +497,7 @@ function BoardGame() {
 
       setGameState("playing");
       if (isBlindfoldGame) {
-        setBlindfoldSessionId(genID());
-        setBlindfoldMarks([]);
+        setBlindfoldSessionId(blindfoldSessionId ?? genID());
         setBlindfoldPeekFen(null);
       }
 
@@ -863,6 +863,8 @@ function BoardGame() {
       try {
         const treeState = await parsePGN(savedGame.pgn, savedGame.initialFen);
         treeState.position = getLastMainlinePosition(treeState.root);
+        const resumeNode = getMainlineEnd(treeState.root);
+        const canResume = canResumeBlindfoldSavedGame(savedGame.result, resumeNode.fen);
         setState(treeState);
         setBlindfoldSettings({
           ...savedGame.settings,
@@ -871,7 +873,7 @@ function BoardGame() {
         setBlindfoldMarks(savedGame.marks);
         setBlindfoldSessionId(savedGame.id);
         setGameId(null);
-        setGameState("gameOver");
+        setGameState(canResume ? "settingUp" : "gameOver");
         setWhiteTime(null);
         setBlackTime(null);
         setBlindfoldPeekFen(null);
@@ -881,6 +883,8 @@ function BoardGame() {
           savedGame.humanColor === "black" ? savedGame.black : savedGame.white || "Player";
         const human = createDefaultBlindfoldHumanOpponent(humanName || "Player");
         const maia = createDefaultBlindfoldMaiaOpponent(null, DEFAULT_BLINDFOLD_MAIA_ELO);
+        setPlayer1Settings(human);
+        setPlayer2Settings(maia);
         setPlayers(
           savedGame.humanColor === "black"
             ? { white: maia, black: human }
@@ -914,6 +918,8 @@ function BoardGame() {
       setGameId,
       setGameState,
       setInputColor,
+      setPlayer1Settings,
+      setPlayer2Settings,
       setPlayers,
       setState,
       setWhiteTime,
