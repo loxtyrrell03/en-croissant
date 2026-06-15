@@ -1,4 +1,4 @@
-import { Box } from "@mantine/core";
+import { Box, Center, Stack, Text } from "@mantine/core";
 import { useElementSize, useForceUpdate } from "@mantine/hooks";
 import { type Move, makeUci, type NormalMove, parseSquare } from "chessops";
 import { chessgroundDests, chessgroundMove } from "chessops/compat";
@@ -20,6 +20,8 @@ function PuzzleBoard({
   puzzles,
   currentPuzzle,
   changeCompletion,
+  blindfoldMode = false,
+  blindfoldHidden = false,
 }: {
   puzzles: Puzzle[];
   currentPuzzle: number;
@@ -27,6 +29,8 @@ function PuzzleBoard({
     completion: Exclude<Completion, "incomplete">,
     options?: { wrongMoves?: number },
   ) => Promise<void>;
+  blindfoldMode?: boolean;
+  blindfoldHidden?: boolean;
 }) {
   const store = useContext(TreeStateContext)!;
   const root = useStore(store, (s) => s.root);
@@ -108,7 +112,7 @@ function PuzzleBoard({
   const { ref: parentRef, height: parentHeight } = useElementSize();
 
   return (
-    <Box w="100%" h="100%" ref={parentRef}>
+    <Box w="100%" h="100%" ref={parentRef} style={{ position: "relative" }}>
       <Box
         className={classes.chessboard}
         style={{
@@ -142,6 +146,7 @@ function PuzzleBoard({
           movable={{
             free: false,
             color:
+              !blindfoldMode &&
               puzzle &&
               equal(position, Array(currentMove).fill(0)) &&
               (puzzle.completion === "incomplete" || puzzle.completion === "incorrect")
@@ -172,6 +177,26 @@ function PuzzleBoard({
           check={moveHighlight && pos?.isCheck()}
         />
       </Box>
+      {blindfoldHidden && (
+        <Center
+          pos="absolute"
+          inset={0}
+          style={{
+            zIndex: 4,
+            background: "var(--mantine-color-dark-8)",
+            color: "var(--mantine-color-gray-0)",
+          }}
+        >
+          <Stack gap={4} align="center">
+            <Text fw={900} size="xl">
+              Board hidden
+            </Text>
+            <Text size="sm" c="dimmed">
+              Solve from memory
+            </Text>
+          </Stack>
+        </Center>
+      )}
     </Box>
   );
 }

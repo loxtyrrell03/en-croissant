@@ -890,7 +890,13 @@ function tabValue<T extends object | string | boolean | number | null | undefine
 }
 
 // Puzzles
+export type PuzzleSolveMode = "normal" | "blindfold";
+
 export const hidePuzzleRatingAtom = atomWithStorage<boolean>("hide-puzzle-rating", false);
+export const puzzleSolveModeAtom = atomWithStorage<PuzzleSolveMode>(
+    "puzzle-solve-mode",
+    "normal",
+);
 export const puzzleSelectionModeAtom = atomWithStorage<"smart" | "manual">(
     "puzzle-selection-mode",
     "smart",
@@ -905,6 +911,10 @@ export const puzzleTrainingModeAtom = atomWithStorage<PuzzleTrainingMode>(
 export const puzzleRatingRangeAtom = atomWithStorage<[number, number]>(
     "puzzle-ratings",
     [1000, 1500],
+);
+export const blindfoldPuzzlePreviewSecondsAtom = atomWithStorage<number>(
+    "blindfold-puzzle-preview-seconds",
+    10,
 );
 
 export const puzzleThemeAtom = atomWithStorage<string | null>("puzzle-theme", null);

@@ -3,10 +3,12 @@ import {
   ActionIcon,
   Alert,
   Badge,
+  Box,
   Button,
   Center,
   Divider,
   Group,
+  NumberInput,
   Paper,
   Portal,
   Progress,
@@ -79,6 +81,7 @@ import {
 import { usePracticeAgainstBot } from "@/hooks/usePracticeAgainstBot";
 import {
   activeTabAtom,
+  blindfoldPuzzlePreviewSecondsAtom,
   currentPuzzleAtom,
   currentPuzzleTimerAtom,
   dailyGoalCompletionPromptAtom,
@@ -87,13 +90,20 @@ import {
   hidePuzzleRatingAtom,
   puzzleSelectionModeAtom,
   puzzleRatingRangeAtom,
+  puzzleSolveModeAtom,
   puzzleThemeAtom,
   selectedPuzzleDbAtom,
   tabsAtom,
   trackPuzzleTimeAtom,
+  type PuzzleSolveMode,
 } from "@/state/atoms";
 import { positionFromFen } from "@/utils/chessops";
 import { formatThemeLabel, formatTime } from "@/utils/format";
+import {
+  findBlindfoldMove,
+  getBlindfoldLegalMoves,
+  getBlindfoldMoveInputStatus,
+} from "@/utils/blindfoldTraining";
 import { type Completion, getPuzzleDatabases, type Puzzle } from "@/utils/puzzles";
 import {
   buildPuzzleTrendRows,
@@ -106,7 +116,7 @@ import {
   type PuzzleThemeSort,
 } from "@/utils/puzzleTraining";
 import { createTab } from "@/utils/tabs";
-import { defaultTree } from "@/utils/treeReducer";
+import { defaultTree, treeIteratorMainLine } from "@/utils/treeReducer";
 import { unwrap } from "@/utils/unwrap";
 import ChallengeHistory from "../common/ChallengeHistory";
 import ConfirmModal from "../common/ConfirmModal";
@@ -117,6 +127,10 @@ import AddPuzzle from "./AddPuzzle";
 import PuzzleBoard from "./PuzzleBoard";
 
 const SMART_PUZZLE_RATING_RANGE: [number, number] = [600, 3000];
+const BLINDFOLD_PUZZLE_TOKENS = ["K", "Q", "R", "B", "N", "x"] as const;
+const BLINDFOLD_PUZZLE_FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
+const BLINDFOLD_PUZZLE_RANKS = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
+const BLINDFOLD_PUZZLE_SUFFIXES = ["+", "=", "#", "O-O", "O-O-O"] as const;
 
 type TrainingPuzzleRequest = {
   db: string;
@@ -126,6 +140,10 @@ type TrainingPuzzleRequest = {
   theme: string | null;
   key: string;
 };
+
+type BlindfoldPuzzleResponse =
+  | { kind: "reply"; san: string }
+  | { kind: "incorrect"; san: string };
 
 function backendModeForPuzzleSelection(
   mode: PuzzleSelectionMode,
@@ -147,6 +165,26 @@ function puzzleFromCandidate(candidate: PuzzleTrainingCandidate): Puzzle {
   };
 }
 
+function getPuzzleSolutionIndex(root: ReturnType<typeof defaultTree>["root"], puzzle: Puzzle | null) {
+  if (!puzzle) return 0;
+
+  const treeIter = treeIteratorMainLine(root);
+  treeIter.next();
+  let index = 0;
+  for (const { node } of treeIter) {
+    if (node.move && makeUci(node.move) === puzzle.moves[index]) {
+      index++;
+    } else {
+      break;
+    }
+  }
+  return index;
+}
+
+function getSanForUci(fen: string, uci: string) {
+  return getBlindfoldLegalMoves(fen).find((move) => move.uci === uci)?.san ?? uci;
+}
+
 function Puzzles({ id }: { id: string }) {
   const { t } = useTranslation();
   const store = useContext(TreeStateContext)!;
@@ -154,7 +192,10 @@ function Puzzles({ id }: { id: string }) {
   const goToStart = useStore(store, (s) => s.goToStart);
   const reset = useStore(store, (s) => s.reset);
   const makeMove = useStore(store, (s) => s.makeMove);
+  const makeMoves = useStore(store, (s) => s.makeMoves);
   const setShapes = useStore(store, (s) => s.setShapes);
+  const root = useStore(store, (s) => s.root);
+  const currentNode = useStore(store, (s) => s.currentNode());
   const currentMove = useStore(store, (s) => s.currentNode().move);
   const practiceAgainstBot = usePracticeAgainstBot();
   const [puzzles, setPuzzles] = useSessionStorage<Puzzle[]>({
@@ -166,6 +207,7 @@ function Puzzles({ id }: { id: string }) {
   const [puzzleDbs, setPuzzleDbs] = useState<PuzzleDatabaseInfo[]>([]);
   const [selectedDb, setSelectedDb] = useAtom(selectedPuzzleDbAtom);
   const previousSelectedDbRef = useRef<string | null | undefined>(undefined);
+  const previousSolveModeRef = useRef<PuzzleSolveMode | undefined>(undefined);
 
   const [settingsOpened, setSettingsOpened] = useState(false);
   const [panelView, setPanelView] = useState<string | null>("train");
@@ -195,6 +237,15 @@ function Puzzles({ id }: { id: string }) {
 
   const [ratingRange, setRatingRange] = useAtom(puzzleRatingRangeAtom);
   const [puzzleMode, setPuzzleMode] = useAtom(puzzleSelectionModeAtom);
+  const [solveMode, setSolveMode] = useAtom(puzzleSolveModeAtom);
+  const [blindfoldPreviewSeconds, setBlindfoldPreviewSeconds] = useAtom(
+    blindfoldPuzzlePreviewSecondsAtom,
+  );
+  const isBlindfoldPuzzleMode = solveMode === "blindfold";
+  const [blindfoldPreviewEndsAt, setBlindfoldPreviewEndsAt] = useState<number | null>(null);
+  const [blindfoldPreviewNow, setBlindfoldPreviewNow] = useState(Date.now());
+  const [lastBlindfoldResponse, setLastBlindfoldResponse] =
+    useState<BlindfoldPuzzleResponse | null>(null);
   const [dailyGoals] = useAtom(dailyGoalsAtom);
   const [, setDailyGoalHistory] = useAtom(dailyGoalHistoryAtom);
   const [, setDailyGoalCompletionPrompt] = useAtom(dailyGoalCompletionPromptAtom);
@@ -204,6 +255,66 @@ function Puzzles({ id }: { id: string }) {
   const [themesTableMissing, setThemesTableMissing] = useState(false);
   const effectiveSelectedTheme =
     selectedTheme && availableThemes.includes(selectedTheme) ? selectedTheme : null;
+
+  const getActivePuzzleProgress = useCallback(
+    (db: string) =>
+      isBlindfoldPuzzleMode
+        ? commands.getBlindfoldPuzzleProgress(db)
+        : commands.getPuzzleProgress(db),
+    [isBlindfoldPuzzleMode],
+  );
+
+  const getActivePuzzleDashboard = useCallback(
+    (db: string, days: number | null) =>
+      isBlindfoldPuzzleMode
+        ? commands.getBlindfoldPuzzleDashboard(db, days)
+        : commands.getPuzzleDashboard(db, days),
+    [isBlindfoldPuzzleMode],
+  );
+
+  const getActiveTrainingPuzzle = useCallback(
+    (request: TrainingPuzzleRequest) =>
+      isBlindfoldPuzzleMode
+        ? commands.getBlindfoldTrainingPuzzle(
+            request.db,
+            request.mode,
+            request.minRating,
+            request.maxRating,
+            request.theme,
+          )
+        : commands.getTrainingPuzzle(
+            request.db,
+            request.mode,
+            request.minRating,
+            request.maxRating,
+            request.theme,
+          ),
+    [isBlindfoldPuzzleMode],
+  );
+
+  const recordActivePuzzleAttempt = useCallback(
+    (db: string, input: Parameters<typeof commands.recordPuzzleAttempt>[1]) =>
+      isBlindfoldPuzzleMode
+        ? commands.recordBlindfoldPuzzleAttempt(db, input)
+        : commands.recordPuzzleAttempt(db, input),
+    [isBlindfoldPuzzleMode],
+  );
+
+  const resetActivePuzzleProgress = useCallback(
+    (db: string) =>
+      isBlindfoldPuzzleMode
+        ? commands.resetBlindfoldPuzzleProgress(db)
+        : commands.resetPuzzleProgress(db),
+    [isBlindfoldPuzzleMode],
+  );
+
+  const exportActivePuzzleProgress = useCallback(
+    (db: string, target: string) =>
+      isBlindfoldPuzzleMode
+        ? commands.exportBlindfoldPuzzleProgress(db, target)
+        : commands.exportPuzzleProgress(db, target),
+    [isBlindfoldPuzzleMode],
+  );
 
   useEffect(() => {
     setThemesTableMissing(false);
@@ -252,8 +363,8 @@ function Puzzles({ id }: { id: string }) {
       setProgressError(null);
       try {
         const [summary, dashboard] = await Promise.all([
-          commands.getPuzzleProgress(db),
-          commands.getPuzzleDashboard(db, 90),
+          getActivePuzzleProgress(db),
+          getActivePuzzleDashboard(db, 90),
         ]);
         if (requestId !== progressRequestIdRef.current) return;
         if (summary.status === "ok") {
@@ -277,7 +388,7 @@ function Puzzles({ id }: { id: string }) {
         }
       }
     },
-    [applyProgressSummary, selectedDb],
+    [applyProgressSummary, getActivePuzzleDashboard, getActivePuzzleProgress, selectedDb],
   );
 
   useEffect(() => {
@@ -286,7 +397,6 @@ function Puzzles({ id }: { id: string }) {
 
   const [hideRating, setHideRating] = useAtom(hidePuzzleRatingAtom);
   const [trackTime, setTrackTime] = useAtom(trackPuzzleTimeAtom);
-
   const [timerStart, setTimerStart] = useAtom(currentPuzzleTimerAtom);
   const [, setTick] = useState(0);
   const isPuzzleIncomplete = puzzles[currentPuzzle]?.completion === "incomplete";
@@ -383,43 +493,39 @@ function Puzzles({ id }: { id: string }) {
         minRating: range[0],
         maxRating: range[1],
         theme,
-        key: [db, mode, range[0], range[1], theme ?? "all"].join(":"),
+        key: [db, solveMode, mode, range[0], range[1], theme ?? "all"].join(":"),
       };
     },
-    [effectiveSelectedTheme, puzzleMode, ratingRange],
+    [effectiveSelectedTheme, puzzleMode, ratingRange, solveMode],
   );
 
-  const prefetchNextPuzzle = useCallback((request: TrainingPuzzleRequest) => {
-    if (prefetchedPuzzleRef.current?.key === request.key) return;
-    if (prefetchInFlightRef.current?.key === request.key) return;
+  const prefetchNextPuzzle = useCallback(
+    (request: TrainingPuzzleRequest) => {
+      if (prefetchedPuzzleRef.current?.key === request.key) return;
+      if (prefetchInFlightRef.current?.key === request.key) return;
 
-    const promise = commands
-      .getTrainingPuzzle(
-        request.db,
-        request.mode,
-        request.minRating,
-        request.maxRating,
-        request.theme,
-      )
-      .then((res) => {
-        const candidate = unwrap(res);
-        if (prefetchInFlightRef.current?.key === request.key) {
-          prefetchedPuzzleRef.current = { key: request.key, candidate };
-        }
-      })
-      .catch(() => {
-        if (prefetchedPuzzleRef.current?.key === request.key) {
-          prefetchedPuzzleRef.current = null;
-        }
-      })
-      .finally(() => {
-        if (prefetchInFlightRef.current?.key === request.key) {
-          prefetchInFlightRef.current = null;
-        }
-      });
+      const promise = getActiveTrainingPuzzle(request)
+        .then((res) => {
+          const candidate = unwrap(res);
+          if (prefetchInFlightRef.current?.key === request.key) {
+            prefetchedPuzzleRef.current = { key: request.key, candidate };
+          }
+        })
+        .catch(() => {
+          if (prefetchedPuzzleRef.current?.key === request.key) {
+            prefetchedPuzzleRef.current = null;
+          }
+        })
+        .finally(() => {
+          if (prefetchInFlightRef.current?.key === request.key) {
+            prefetchInFlightRef.current = null;
+          }
+        });
 
-    prefetchInFlightRef.current = { key: request.key, promise };
-  }, []);
+      prefetchInFlightRef.current = { key: request.key, promise };
+    },
+    [getActiveTrainingPuzzle],
+  );
 
   const generatePuzzle = useCallback(
     async (db: string, force: boolean = false) => {
@@ -460,15 +566,7 @@ function Puzzles({ id }: { id: string }) {
         const candidate =
           cachedCandidate && cachedCandidate.puzzle.id !== puzzles[currentPuzzle]?.id
             ? cachedCandidate
-            : unwrap(
-                await commands.getTrainingPuzzle(
-                  request.db,
-                  request.mode,
-                  request.minRating,
-                  request.maxRating,
-                  request.theme,
-                ),
-              );
+            : unwrap(await getActiveTrainingPuzzle(request));
         prefetchedPuzzleRef.current = null;
         const nextPuzzleIndex = puzzles.length;
         const newPuzzle = puzzleFromCandidate(candidate);
@@ -490,6 +588,7 @@ function Puzzles({ id }: { id: string }) {
     [
       currentPuzzle,
       buildTrainingPuzzleRequest,
+      getActiveTrainingPuzzle,
       puzzles,
       prefetchNextPuzzle,
       setCurrentPuzzle,
@@ -505,6 +604,7 @@ function Puzzles({ id }: { id: string }) {
 
     const autoStartKey = [
       selectedDb,
+      solveMode,
       puzzleMode,
       puzzleMode === "manual" ? ratingRange[0] : SMART_PUZZLE_RATING_RANGE[0],
       puzzleMode === "manual" ? ratingRange[1] : SMART_PUZZLE_RATING_RANGE[1],
@@ -522,6 +622,7 @@ function Puzzles({ id }: { id: string }) {
     puzzles.length,
     ratingRange,
     selectedDb,
+    solveMode,
   ]);
 
   const savePuzzleAttempt = useCallback(
@@ -542,7 +643,7 @@ function Puzzles({ id }: { id: string }) {
       viewedSolution: boolean;
       wrongMoves: number;
     }) => {
-      const saveKey = `${selectedDb ?? "no-db"}:${puzzleIndex}:${puzzle.id}`;
+      const saveKey = `${solveMode}:${selectedDb ?? "no-db"}:${puzzleIndex}:${puzzle.id}`;
       if (savingAttemptKeysRef.current.has(saveKey)) return;
 
       savingAttemptKeysRef.current.add(saveKey);
@@ -550,7 +651,7 @@ function Puzzles({ id }: { id: string }) {
 
       try {
         if (selectedDb && Number.isFinite(puzzle.id)) {
-          const res = await commands.recordPuzzleAttempt(selectedDb, {
+          const res = await recordActivePuzzleAttempt(selectedDb, {
             puzzleId: puzzle.id,
             mode:
               puzzle.trainingMode ??
@@ -617,9 +718,11 @@ function Puzzles({ id }: { id: string }) {
       effectiveSelectedTheme,
       prefetchNextPuzzle,
       puzzleMode,
+      recordActivePuzzleAttempt,
       refreshPuzzleProgress,
       selectedDb,
       setPuzzles,
+      solveMode,
     ],
   );
 
@@ -639,10 +742,10 @@ function Puzzles({ id }: { id: string }) {
     });
   }, [currentPuzzle, puzzles, savePuzzleAttempt]);
 
-  async function changeCompletion(
+  const changeCompletion = useCallback(async (
     completion: Completion,
     options: { usedHint?: boolean; viewedSolution?: boolean; wrongMoves?: number } = {},
-  ) {
+  ) => {
     const puzzleIndex = currentPuzzle;
     const timeSpent = timerStart !== null ? Date.now() - timerStart : 0;
     const puzzle = puzzles[puzzleIndex];
@@ -680,7 +783,15 @@ function Puzzles({ id }: { id: string }) {
       viewedSolution,
       wrongMoves,
     });
-  }
+  }, [
+    currentPuzzle,
+    incrementPuzzleDailyGoals,
+    puzzles,
+    savePuzzleAttempt,
+    setPuzzles,
+    setTimerStart,
+    timerStart,
+  ]);
 
   useEffect(() => {
     if (previousSelectedDbRef.current === undefined) {
@@ -699,6 +810,29 @@ function Puzzles({ id }: { id: string }) {
     setLastAttempt(null);
     setIsPlayingSolution(false);
   }, [reset, selectedDb, setCurrentPuzzle, setPuzzles, setTimerStart]);
+
+  useEffect(() => {
+    if (previousSolveModeRef.current === undefined) {
+      previousSolveModeRef.current = solveMode;
+      return;
+    }
+    if (previousSolveModeRef.current === solveMode) return;
+
+    previousSolveModeRef.current = solveMode;
+    autoStartKeyRef.current = null;
+    solutionAbortRef.current?.abort();
+    setPuzzles([]);
+    setCurrentPuzzle(0);
+    reset();
+    setTimerStart(null);
+    setLastAttempt(null);
+    setIsPlayingSolution(false);
+    setDashboard(null);
+    setProgressSummary(null);
+    setProgressError(null);
+    setBlindfoldPreviewEndsAt(null);
+    setLastBlindfoldResponse(null);
+  }, [reset, setCurrentPuzzle, setPuzzles, setTimerStart, solveMode]);
 
   useEffect(() => {
     prefetchedPuzzleRef.current = null;
@@ -769,7 +903,110 @@ function Puzzles({ id }: { id: string }) {
   };
 
   const currentSessionPuzzle = puzzles[currentPuzzle];
+  const currentSessionPuzzleId = currentSessionPuzzle?.id ?? null;
   const activePanelView = panelView === "themes" ? "stats" : panelView;
+  const currentPuzzleSolutionIndex = getPuzzleSolutionIndex(root, currentSessionPuzzle ?? null);
+  const blindfoldPuzzleIncomplete =
+    isBlindfoldPuzzleMode && currentSessionPuzzle?.completion === "incomplete";
+  const blindfoldPreviewRemainingMs =
+    blindfoldPuzzleIncomplete && blindfoldPreviewEndsAt !== null
+      ? Math.max(0, blindfoldPreviewEndsAt - blindfoldPreviewNow)
+      : 0;
+  const blindfoldPreviewActive = blindfoldPuzzleIncomplete && blindfoldPreviewRemainingMs > 0;
+  const blindfoldBoardHidden = blindfoldPuzzleIncomplete && !blindfoldPreviewActive;
+
+  useEffect(() => {
+    if (!blindfoldPuzzleIncomplete || currentSessionPuzzleId === null) {
+      setBlindfoldPreviewEndsAt(null);
+      setLastBlindfoldResponse(null);
+      return;
+    }
+
+    const previewMs = Math.max(0, Math.round(blindfoldPreviewSeconds * 1000));
+    const now = Date.now();
+    setBlindfoldPreviewNow(now);
+    setBlindfoldPreviewEndsAt(previewMs > 0 ? now + previewMs : now);
+    setLastBlindfoldResponse(null);
+  }, [
+    blindfoldPreviewSeconds,
+    blindfoldPuzzleIncomplete,
+    currentPuzzle,
+    currentSessionPuzzleId,
+  ]);
+
+  useEffect(() => {
+    if (!blindfoldPuzzleIncomplete || blindfoldPreviewEndsAt === null) return;
+
+    const interval = window.setInterval(() => {
+      setBlindfoldPreviewNow(Date.now());
+    }, 100);
+    return () => window.clearInterval(interval);
+  }, [blindfoldPreviewEndsAt, blindfoldPuzzleIncomplete]);
+
+  const playBlindfoldPuzzleMove = useCallback(
+    async (uci: string, san: string) => {
+      const puzzle = currentSessionPuzzle;
+      if (!puzzle || puzzle.completion !== "incomplete" || !blindfoldBoardHidden) return;
+
+      const expectedMove = puzzle.moves[currentPuzzleSolutionIndex];
+      if (!expectedMove) return;
+
+      const parsedMove = parseUci(uci);
+      if (!parsedMove) return;
+
+      const [pos] = positionFromFen(currentNode.fen);
+      const newPos = pos?.clone();
+      if (newPos && parsedMove) {
+        newPos.play(parsedMove);
+      }
+      const correct = expectedMove === uci || Boolean(newPos?.isCheckmate());
+
+      if (!correct) {
+        makeMove({
+          payload: parsedMove,
+          changePosition: false,
+          changeHeaders: false,
+        });
+        setLastBlindfoldResponse({ kind: "incorrect", san });
+        await changeCompletion("incorrect", { wrongMoves: (puzzle.wrongMoves ?? 0) + 1 });
+        return;
+      }
+
+      const userMoveIsFinal = currentPuzzleSolutionIndex === puzzle.moves.length - 1;
+      const nextMoves = puzzle.moves.slice(
+        currentPuzzleSolutionIndex,
+        currentPuzzleSolutionIndex + 2,
+      );
+      const replyUci = nextMoves[1];
+      const replySan = replyUci
+        ? getSanForUci(
+            getBlindfoldLegalMoves(currentNode.fen).find((move) => move.uci === uci)?.fenAfter ??
+              currentNode.fen,
+            replyUci,
+          )
+        : null;
+
+      makeMoves({
+        payload: nextMoves,
+        mainline: true,
+        changeHeaders: false,
+      });
+      setLastBlindfoldResponse(replySan ? { kind: "reply", san: replySan } : null);
+
+      if (userMoveIsFinal) {
+        await changeCompletion("correct");
+      }
+    },
+    [
+      blindfoldBoardHidden,
+      changeCompletion,
+      currentNode.fen,
+      currentPuzzleSolutionIndex,
+      currentSessionPuzzle,
+      makeMove,
+      makeMoves,
+    ],
+  );
 
   useEffect(() => {
     if (!selectedDb || !currentSessionPuzzle || puzzleLoading) return;
@@ -873,7 +1110,7 @@ function Puzzles({ id }: { id: string }) {
 
   async function resetPuzzleProgress() {
     if (!selectedDb) return;
-    const res = await commands.resetPuzzleProgress(selectedDb);
+    const res = await resetActivePuzzleProgress(selectedDb);
     if (res.status === "ok") {
       setProgressSummary(res.data);
       setDashboard(null);
@@ -895,7 +1132,7 @@ function Puzzles({ id }: { id: string }) {
       filters: [{ name: "JSON", extensions: ["json"] }],
     });
     if (!target) return;
-    const res = await commands.exportPuzzleProgress(selectedDb, target);
+    const res = await exportActivePuzzleProgress(selectedDb, target);
     if (res.status === "error") {
       setProgressError(String(res.error));
     }
@@ -909,6 +1146,8 @@ function Puzzles({ id }: { id: string }) {
           puzzles={puzzles}
           currentPuzzle={currentPuzzle}
           changeCompletion={changeCompletion}
+          blindfoldMode={isBlindfoldPuzzleMode}
+          blindfoldHidden={blindfoldBoardHidden}
         />
       </Portal>
       <Portal target="#topRight" style={{ height: "100%" }}>
@@ -1006,6 +1245,19 @@ function Puzzles({ id }: { id: string }) {
                       checked={hideRating}
                       onChange={(event) => setHideRating(event.currentTarget.checked)}
                     />
+                    <NumberInput
+                      label="Blindfold preview"
+                      description="Seconds to inspect the puzzle before the board hides"
+                      min={0}
+                      max={120}
+                      step={1}
+                      value={blindfoldPreviewSeconds}
+                      onChange={(value) =>
+                        setBlindfoldPreviewSeconds(
+                          Math.max(0, Math.min(120, Number(value) || 0)),
+                        )
+                      }
+                    />
                   </SimpleGrid>
                 </Stack>
               </Accordion.Panel>
@@ -1061,6 +1313,15 @@ function Puzzles({ id }: { id: string }) {
                   }}
                   elapsedTime={elapsedTime}
                   turnToMove={turnToMove ?? null}
+                  solveMode={solveMode}
+                  setSolveMode={setSolveMode}
+                  blindfoldPreviewSeconds={blindfoldPreviewSeconds}
+                  blindfoldPreviewActive={blindfoldPreviewActive}
+                  blindfoldPreviewRemainingMs={blindfoldPreviewRemainingMs}
+                  blindfoldBoardHidden={blindfoldBoardHidden}
+                  blindfoldCurrentFen={currentNode.fen}
+                  blindfoldResponse={lastBlindfoldResponse}
+                  onBlindfoldMove={playBlindfoldPuzzleMove}
                   puzzleMode={puzzleMode}
                   setPuzzleMode={setPuzzleMode}
                   ratingRange={ratingRange}
@@ -1100,8 +1361,10 @@ function Puzzles({ id }: { id: string }) {
             </Tabs.Panel>
           </Tabs>
           <ConfirmModal
-            title="Reset Puzzle Progress"
-            description="Reset the Elo, SRS cards, theme stats, and attempt history for this puzzle database?"
+            title={`Reset ${isBlindfoldPuzzleMode ? "Blindfold Puzzle" : "Puzzle"} Progress`}
+            description={`Reset the ${
+              isBlindfoldPuzzleMode ? "blindfold puzzle" : "normal puzzle"
+            } Elo, SRS cards, theme stats, and attempt history for this puzzle database?`}
             opened={resetProgressModalOpened}
             onClose={() => setResetProgressModalOpened(false)}
             onConfirm={async () => {
@@ -1162,6 +1425,15 @@ function PuzzleTrainPanel({
   onStopTraining,
   elapsedTime,
   turnToMove,
+  solveMode,
+  setSolveMode,
+  blindfoldPreviewSeconds,
+  blindfoldPreviewActive,
+  blindfoldPreviewRemainingMs,
+  blindfoldBoardHidden,
+  blindfoldCurrentFen,
+  blindfoldResponse,
+  onBlindfoldMove,
   puzzleMode,
   setPuzzleMode,
   ratingRange,
@@ -1194,6 +1466,15 @@ function PuzzleTrainPanel({
   onStopTraining: () => void;
   elapsedTime: number;
   turnToMove: "white" | "black" | null;
+  solveMode: PuzzleSolveMode;
+  setSolveMode: (mode: PuzzleSolveMode) => void;
+  blindfoldPreviewSeconds: number;
+  blindfoldPreviewActive: boolean;
+  blindfoldPreviewRemainingMs: number;
+  blindfoldBoardHidden: boolean;
+  blindfoldCurrentFen: string;
+  blindfoldResponse: BlindfoldPuzzleResponse | null;
+  onBlindfoldMove: (uci: string, san: string) => void | Promise<void>;
   puzzleMode: PuzzleSelectionMode;
   setPuzzleMode: (mode: PuzzleSelectionMode) => void;
   ratingRange: [number, number];
@@ -1227,9 +1508,18 @@ function PuzzleTrainPanel({
     : currentPuzzle.completion === "incomplete"
       ? "New puzzle"
       : "Next puzzle";
+  const isBlindfoldSolveMode = solveMode === "blindfold";
 
   return (
     <Stack gap="sm">
+      <SegmentedControl
+        value={solveMode}
+        onChange={(value) => setSolveMode(value as PuzzleSolveMode)}
+        data={[
+          { label: "Normal", value: "normal" },
+          { label: "Blindfold", value: "blindfold" },
+        ]}
+      />
       <SegmentedControl
         value={puzzleMode}
         onChange={(value) => setPuzzleMode(value as PuzzleSelectionMode)}
@@ -1314,7 +1604,10 @@ function PuzzleTrainPanel({
         </Paper>
       )}
       <SimpleGrid cols={{ base: 2, sm: 5 }} spacing="xs">
-        <PuzzleStatTile label="Puzzle Elo" value={formatRating(durableSummary?.puzzleElo)} />
+        <PuzzleStatTile
+          label={isBlindfoldSolveMode ? "Blindfold Elo" : "Puzzle Elo"}
+          value={formatRating(durableSummary?.puzzleElo)}
+        />
         <PuzzleStatTile
           label="Last change"
           value={formatPuzzleEloChange(lastEloDelta)}
@@ -1414,6 +1707,17 @@ function PuzzleTrainPanel({
           ))}
         </Group>
       )}
+      {isBlindfoldSolveMode && currentPuzzle?.completion === "incomplete" && (
+        <BlindfoldPuzzleSolvePanel
+          fen={blindfoldCurrentFen}
+          previewSeconds={blindfoldPreviewSeconds}
+          previewActive={blindfoldPreviewActive}
+          previewRemainingMs={blindfoldPreviewRemainingMs}
+          boardHidden={blindfoldBoardHidden}
+          response={blindfoldResponse}
+          onMove={onBlindfoldMove}
+        />
+      )}
       <Group justify="space-between">
         <Text fz="1.5rem" fw={500}>
           {!turnToMove ? "" : turnToMove === "white" ? "Black to move" : "White to move"}
@@ -1454,6 +1758,236 @@ function PuzzleTrainPanel({
         </Button>
       </Group>
     </Stack>
+  );
+}
+
+function BlindfoldPuzzleSolvePanel({
+  fen,
+  previewSeconds,
+  previewActive,
+  previewRemainingMs,
+  boardHidden,
+  response,
+  onMove,
+}: {
+  fen: string;
+  previewSeconds: number;
+  previewActive: boolean;
+  previewRemainingMs: number;
+  boardHidden: boolean;
+  response: BlindfoldPuzzleResponse | null;
+  onMove: (uci: string, san: string) => void | Promise<void>;
+}) {
+  const [inputMode, setInputMode] = useState<"manual" | "legal">("manual");
+  const [manualInput, setManualInput] = useState("");
+  const legalMoves = useMemo(() => getBlindfoldLegalMoves(fen), [fen]);
+  const manualStatus = useMemo(
+    () => getBlindfoldMoveInputStatus(fen, manualInput),
+    [fen, manualInput],
+  );
+  const disabled = !boardHidden;
+  const remainingSeconds = Math.ceil(previewRemainingMs / 1000);
+
+  useEffect(() => {
+    setManualInput("");
+  }, [fen]);
+
+  function appendToken(token: string) {
+    setManualInput((current) => `${current}${token}`);
+  }
+
+  async function playMove(uci: string, san: string) {
+    if (disabled) return;
+    setManualInput("");
+    await onMove(uci, san);
+  }
+
+  async function submitManual() {
+    const move = findBlindfoldMove(fen, manualInput);
+    if (!move) return;
+    await playMove(move.uci, move.san);
+  }
+
+  return (
+    <Paper withBorder p="xs">
+      <Stack gap="xs">
+        <Group justify="space-between" gap="xs">
+          <Box>
+            <Text size="sm" fw={800}>
+              Blindfold solve
+            </Text>
+            <Text size="xs" c="dimmed">
+              {previewActive
+                ? `Look now - ${remainingSeconds}s before the board hides`
+                : "Board hidden - enter the next move from memory"}
+            </Text>
+          </Box>
+          <SegmentedControl
+            size="xs"
+            value={inputMode}
+            onChange={(value) => setInputMode(value as "manual" | "legal")}
+            data={[
+              { value: "manual", label: "Manual SAN" },
+              { value: "legal", label: "Legal moves" },
+            ]}
+          />
+        </Group>
+
+        {previewActive && previewSeconds > 0 && (
+          <Progress
+            size="sm"
+            value={Math.max(0, Math.min(100, (previewRemainingMs / (previewSeconds * 1000)) * 100))}
+          />
+        )}
+
+        {response && (
+          <Paper
+            withBorder
+            p="xs"
+            style={{
+              borderColor:
+                response.kind === "incorrect"
+                  ? "var(--mantine-color-red-4)"
+                  : "var(--mantine-color-blue-4)",
+              background:
+                response.kind === "incorrect"
+                  ? "var(--mantine-color-red-light)"
+                  : "var(--mantine-color-blue-light)",
+            }}
+          >
+            <Group justify="space-between" gap="xs">
+              <Text size="xs" fw={800} tt="uppercase">
+                {response.kind === "incorrect" ? "Incorrect" : "Response"}
+              </Text>
+              <Text fw={900} size="lg">
+                {response.san}
+              </Text>
+            </Group>
+          </Paper>
+        )}
+
+        {inputMode === "legal" ? (
+          <SimpleGrid cols={{ base: 3, sm: 5 }} spacing="xs">
+            {legalMoves.map((move) => (
+              <Button
+                key={move.uci}
+                size="xs"
+                variant="default"
+                disabled={disabled}
+                onClick={() => void playMove(move.uci, move.san)}
+              >
+                {move.san}
+              </Button>
+            ))}
+          </SimpleGrid>
+        ) : (
+          <Stack gap="xs">
+            <Paper withBorder p="xs">
+              <Group justify="space-between" gap="xs" wrap="nowrap">
+                <Text fw={800} size="sm">
+                  {manualInput || " "}
+                </Text>
+                <Badge
+                  size="xs"
+                  color={
+                    manualStatus.kind === "legal"
+                      ? "green"
+                      : manualStatus.kind === "illegal"
+                        ? "red"
+                        : "gray"
+                  }
+                  variant="light"
+                >
+                  {manualStatus.kind === "legal"
+                    ? "Legal"
+                    : manualStatus.kind === "illegal"
+                      ? "No match"
+                      : "Input"}
+                </Badge>
+              </Group>
+            </Paper>
+            <SimpleGrid cols={6} spacing="xs">
+              {BLINDFOLD_PUZZLE_TOKENS.map((token) => (
+                <Button
+                  key={token}
+                  size="xs"
+                  variant="default"
+                  disabled={disabled}
+                  onClick={() => appendToken(token)}
+                >
+                  {token}
+                </Button>
+              ))}
+            </SimpleGrid>
+            <SimpleGrid cols={8} spacing="xs">
+              {BLINDFOLD_PUZZLE_FILES.map((token) => (
+                <Button
+                  key={token}
+                  size="xs"
+                  variant="default"
+                  disabled={disabled}
+                  onClick={() => appendToken(token)}
+                >
+                  {token}
+                </Button>
+              ))}
+            </SimpleGrid>
+            <SimpleGrid cols={8} spacing="xs">
+              {BLINDFOLD_PUZZLE_RANKS.map((token) => (
+                <Button
+                  key={token}
+                  size="xs"
+                  variant="default"
+                  disabled={disabled}
+                  onClick={() => appendToken(token)}
+                >
+                  {token}
+                </Button>
+              ))}
+            </SimpleGrid>
+            <SimpleGrid cols={5} spacing="xs">
+              {BLINDFOLD_PUZZLE_SUFFIXES.map((token) => (
+                <Button
+                  key={token}
+                  size="xs"
+                  variant="default"
+                  disabled={disabled}
+                  onClick={() => appendToken(token)}
+                >
+                  {token}
+                </Button>
+              ))}
+            </SimpleGrid>
+            <Divider />
+            <Group grow>
+              <Button
+                size="xs"
+                variant="default"
+                disabled={disabled}
+                onClick={() => setManualInput((current) => current.slice(0, -1))}
+              >
+                Backspace
+              </Button>
+              <Button
+                size="xs"
+                variant="default"
+                disabled={disabled}
+                onClick={() => setManualInput("")}
+              >
+                Clear
+              </Button>
+              <Button
+                size="xs"
+                disabled={disabled || manualStatus.kind !== "legal"}
+                onClick={() => void submitManual()}
+              >
+                Submit
+              </Button>
+            </Group>
+          </Stack>
+        )}
+      </Stack>
+    </Paper>
   );
 }
 
