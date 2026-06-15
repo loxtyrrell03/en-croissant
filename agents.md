@@ -1527,6 +1527,16 @@ mix stats from different source data.
   queue, reset, refresh, and progress export controls. Completed puzzle
   attempts now increment existing puzzle daily goals automatically instead of
   requiring the Home goal's manual progress button.
+- On 2026-06-15, Puzzle Training gained a Blindfold tactics solve mode. The
+  mode uses the same puzzle database and solution-line mechanics as normal
+  puzzles but records attempts, SRS cards, theme stats, dashboard data, export,
+  reset, and Elo under a separate `blindfold:` progress namespace so Blindfold
+  Elo never mutates normal Puzzle Elo. The Train panel has a Normal/Blindfold
+  solve-mode switch, the settings accordion owns the configurable blindfold
+  preview time, the board is visible but not draggable during preview, then an
+  opaque hidden-board overlay appears. Solving happens from the right panel
+  with blindfold-style Legal moves / Manual SAN input, and correct moves
+  auto-play the puzzle reply while showing that response SAN prominently.
 - Puzzle selection now broadens empty filter combinations before surfacing an
   error: if a theme/rating search has no match, it falls back through rating
   only, broad theme, then any available puzzle. Switching puzzle databases
