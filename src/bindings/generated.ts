@@ -168,9 +168,25 @@ async getPuzzleProgress(file: string) : Promise<Result<PuzzleProgressSummary, st
     else return { status: "error", error: e  as any };
 }
 },
+async getBlindfoldPuzzleProgress(file: string) : Promise<Result<PuzzleProgressSummary, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_blindfold_puzzle_progress", { file }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async getTrainingPuzzle(file: string, mode: PuzzleTrainingMode, minRating: number, maxRating: number, theme: string | null) : Promise<Result<PuzzleTrainingCandidate, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_training_puzzle", { file, mode, minRating, maxRating, theme }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async getBlindfoldTrainingPuzzle(file: string, mode: PuzzleTrainingMode, minRating: number, maxRating: number, theme: string | null) : Promise<Result<PuzzleTrainingCandidate, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_blindfold_training_puzzle", { file, mode, minRating, maxRating, theme }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -184,9 +200,25 @@ async recordPuzzleAttempt(file: string, input: PuzzleAttemptInput) : Promise<Res
     else return { status: "error", error: e  as any };
 }
 },
+async recordBlindfoldPuzzleAttempt(file: string, input: PuzzleAttemptInput) : Promise<Result<PuzzleAttemptResult, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("record_blindfold_puzzle_attempt", { file, input }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async getPuzzleDashboard(file: string, days: number | null) : Promise<Result<PuzzleDashboard, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("get_puzzle_dashboard", { file, days }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async getBlindfoldPuzzleDashboard(file: string, days: number | null) : Promise<Result<PuzzleDashboard, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_blindfold_puzzle_dashboard", { file, days }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -200,9 +232,25 @@ async resetPuzzleProgress(file: string) : Promise<Result<PuzzleProgressSummary, 
     else return { status: "error", error: e  as any };
 }
 },
+async resetBlindfoldPuzzleProgress(file: string) : Promise<Result<PuzzleProgressSummary, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("reset_blindfold_puzzle_progress", { file }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async exportPuzzleProgress(file: string, targetFile: string) : Promise<Result<null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("export_puzzle_progress", { file, targetFile }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async exportBlindfoldPuzzleProgress(file: string, targetFile: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("export_blindfold_puzzle_progress", { file, targetFile }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };

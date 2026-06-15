@@ -422,6 +422,23 @@ pub fn get_puzzle_progress(
     app: tauri::AppHandle,
 ) -> Result<PuzzleProgressSummary, Error> {
     let db_key = puzzle_db_key(&file)?;
+    get_puzzle_progress_for_key(db_key, app)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn get_blindfold_puzzle_progress(
+    file: String,
+    app: tauri::AppHandle,
+) -> Result<PuzzleProgressSummary, Error> {
+    let db_key = blindfold_puzzle_db_key(&file)?;
+    get_puzzle_progress_for_key(db_key, app)
+}
+
+fn get_puzzle_progress_for_key(
+    db_key: String,
+    app: tauri::AppHandle,
+) -> Result<PuzzleProgressSummary, Error> {
     let conn = open_progress_connection(&app)?;
     ensure_profile(&conn, &db_key)?;
     get_progress_summary(&conn, &db_key)
@@ -438,6 +455,32 @@ pub fn get_training_puzzle(
     app: tauri::AppHandle,
 ) -> Result<PuzzleTrainingCandidate, Error> {
     let db_key = puzzle_db_key(&file)?;
+    get_training_puzzle_for_key(file, db_key, mode, min_rating, max_rating, theme, app)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn get_blindfold_training_puzzle(
+    file: String,
+    mode: PuzzleTrainingMode,
+    min_rating: u16,
+    max_rating: u16,
+    theme: Option<String>,
+    app: tauri::AppHandle,
+) -> Result<PuzzleTrainingCandidate, Error> {
+    let db_key = blindfold_puzzle_db_key(&file)?;
+    get_training_puzzle_for_key(file, db_key, mode, min_rating, max_rating, theme, app)
+}
+
+fn get_training_puzzle_for_key(
+    file: String,
+    db_key: String,
+    mode: PuzzleTrainingMode,
+    min_rating: u16,
+    max_rating: u16,
+    theme: Option<String>,
+    app: tauri::AppHandle,
+) -> Result<PuzzleTrainingCandidate, Error> {
     let progress_conn = open_progress_connection(&app)?;
     ensure_profile(&progress_conn, &db_key)?;
     let puzzle_conn = open_puzzle_database(&file)?;
@@ -536,6 +579,26 @@ pub fn record_puzzle_attempt(
     app: tauri::AppHandle,
 ) -> Result<PuzzleAttemptResult, Error> {
     let db_key = puzzle_db_key(&file)?;
+    record_puzzle_attempt_for_key(file, db_key, input, app)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn record_blindfold_puzzle_attempt(
+    file: String,
+    input: PuzzleAttemptInput,
+    app: tauri::AppHandle,
+) -> Result<PuzzleAttemptResult, Error> {
+    let db_key = blindfold_puzzle_db_key(&file)?;
+    record_puzzle_attempt_for_key(file, db_key, input, app)
+}
+
+fn record_puzzle_attempt_for_key(
+    file: String,
+    db_key: String,
+    input: PuzzleAttemptInput,
+    app: tauri::AppHandle,
+) -> Result<PuzzleAttemptResult, Error> {
     let mut progress_conn = open_progress_connection(&app)?;
     ensure_profile(&progress_conn, &db_key)?;
     let puzzle_conn = open_puzzle_database(&file)?;
@@ -664,6 +727,26 @@ pub fn get_puzzle_dashboard(
     app: tauri::AppHandle,
 ) -> Result<PuzzleDashboard, Error> {
     let db_key = puzzle_db_key(&file)?;
+    get_puzzle_dashboard_for_key(file, db_key, days, app)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn get_blindfold_puzzle_dashboard(
+    file: String,
+    days: Option<u16>,
+    app: tauri::AppHandle,
+) -> Result<PuzzleDashboard, Error> {
+    let db_key = blindfold_puzzle_db_key(&file)?;
+    get_puzzle_dashboard_for_key(file, db_key, days, app)
+}
+
+fn get_puzzle_dashboard_for_key(
+    file: String,
+    db_key: String,
+    days: Option<u16>,
+    app: tauri::AppHandle,
+) -> Result<PuzzleDashboard, Error> {
     let conn = open_progress_connection(&app)?;
     ensure_profile(&conn, &db_key)?;
     let puzzle_conn = open_puzzle_database(&file)?;
@@ -689,6 +772,23 @@ pub fn reset_puzzle_progress(
     app: tauri::AppHandle,
 ) -> Result<PuzzleProgressSummary, Error> {
     let db_key = puzzle_db_key(&file)?;
+    reset_puzzle_progress_for_key(db_key, app)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn reset_blindfold_puzzle_progress(
+    file: String,
+    app: tauri::AppHandle,
+) -> Result<PuzzleProgressSummary, Error> {
+    let db_key = blindfold_puzzle_db_key(&file)?;
+    reset_puzzle_progress_for_key(db_key, app)
+}
+
+fn reset_puzzle_progress_for_key(
+    db_key: String,
+    app: tauri::AppHandle,
+) -> Result<PuzzleProgressSummary, Error> {
     let mut conn = open_progress_connection(&app)?;
     let tx = conn.transaction()?;
     tx.execute(
@@ -724,6 +824,25 @@ pub fn export_puzzle_progress(
     app: tauri::AppHandle,
 ) -> Result<(), Error> {
     let db_key = puzzle_db_key(&file)?;
+    export_puzzle_progress_for_key(db_key, target_file, app)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn export_blindfold_puzzle_progress(
+    file: String,
+    target_file: String,
+    app: tauri::AppHandle,
+) -> Result<(), Error> {
+    let db_key = blindfold_puzzle_db_key(&file)?;
+    export_puzzle_progress_for_key(db_key, target_file, app)
+}
+
+fn export_puzzle_progress_for_key(
+    db_key: String,
+    target_file: String,
+    app: tauri::AppHandle,
+) -> Result<(), Error> {
     let conn = open_progress_connection(&app)?;
     ensure_profile(&conn, &db_key)?;
     let summary = get_progress_summary(&conn, &db_key)?;
@@ -1099,6 +1218,10 @@ fn puzzle_db_key(file: &str) -> Result<String, Error> {
         metadata.len(),
         puzzle_count
     ))
+}
+
+fn blindfold_puzzle_db_key(file: &str) -> Result<String, Error> {
+    Ok(format!("blindfold:{}", puzzle_db_key(file)?))
 }
 
 fn puzzle_count_rusqlite(file: &str) -> Result<i64, Error> {

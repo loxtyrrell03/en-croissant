@@ -61,9 +61,11 @@ use crate::lexer::lex_pgn;
 use crate::oauth::authenticate;
 use crate::pgn::{count_pgn_games, delete_game, read_games, split_pgn_to_files, write_game};
 use crate::puzzle::{
-    delete_puzzle_database, export_puzzle_progress, get_puzzle, get_puzzle_dashboard,
-    get_puzzle_db_info, get_puzzle_progress, get_puzzle_themes, get_themes_for_puzzle,
-    get_training_puzzle, record_puzzle_attempt, reset_puzzle_progress,
+    delete_puzzle_database, export_blindfold_puzzle_progress, export_puzzle_progress,
+    get_blindfold_puzzle_dashboard, get_blindfold_puzzle_progress, get_blindfold_training_puzzle,
+    get_puzzle, get_puzzle_dashboard, get_puzzle_db_info, get_puzzle_progress, get_puzzle_themes,
+    get_themes_for_puzzle, get_training_puzzle, record_blindfold_puzzle_attempt,
+    record_puzzle_attempt, reset_blindfold_puzzle_progress, reset_puzzle_progress,
 };
 use crate::sound::get_sound_server_port;
 use crate::{
@@ -163,11 +165,17 @@ fn main() {
             memory_size,
             get_puzzle,
             get_puzzle_progress,
+            get_blindfold_puzzle_progress,
             get_training_puzzle,
+            get_blindfold_training_puzzle,
             record_puzzle_attempt,
+            record_blindfold_puzzle_attempt,
             get_puzzle_dashboard,
+            get_blindfold_puzzle_dashboard,
             reset_puzzle_progress,
+            reset_blindfold_puzzle_progress,
             export_puzzle_progress,
+            export_blindfold_puzzle_progress,
             search_opening_name,
             get_opening_from_fen,
             get_opening_from_fens,
