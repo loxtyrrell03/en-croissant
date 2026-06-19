@@ -2427,6 +2427,14 @@ from 2026-04-24 through 2026-05-03.
   as position hits, and `is_position_in_db` no longer writes negative entries
   into `line_cache`. Preserve this cache boundary: existence checks must not
   poison Prep/Database move tables.
+- A second same-day follow-up found a separate frontend cause for the same Prep
+  empty-state symptom: Player-mode prep could seed player text from source
+  labels such as `Sebastian443 Chess.com`, fail to resolve the actual database
+  player row `Sebastian443`, and then query `player1 = -1`. Player-name
+  resolution now strips provider/database label tokens and prefers exact
+  username-token matches before declaring no player. Keep this resolver
+  tolerant of Chess.com/Lichess/source-label suffixes, because prep source
+  labels are not always literal `Players.Name` values.
 
 ## Verification Expectations
 

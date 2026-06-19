@@ -15,6 +15,11 @@ import {
 } from "@/bindings";
 import type { LocalOptions } from "@/components/panels/database/DatabasePanel";
 import { getDatabasesDir } from "@/utils/directories";
+import {
+    getPlayerSearchQueries,
+    normalizePlayerText,
+    selectResolvedPlayerCandidate,
+} from "@/utils/playerName";
 import { unwrap } from "./unwrap";
 
 export type SuccessDatabaseInfo = Extract<DatabaseInfo, { type: "success" }>;
@@ -625,19 +630,7 @@ async function resolvePlayerByName(databasePath: string, searchText: string) {
         }
     }
 
-    const normalizedSearch = normalizePlayerText(searchText);
-    const tokens = normalizedSearch.split(" ").filter(Boolean);
-    const exact = players.find(
-        (player) => normalizePlayerText(player.name ?? "") === normalizedSearch,
-    );
-    if (exact) return exact;
-
-    return (
-        players.find((player) => {
-            const normalizedName = normalizePlayerText(player.name ?? "");
-            return tokens.length > 0 && tokens.every((token) => normalizedName.includes(token));
-        }) ?? null
-    );
+    return selectResolvedPlayerCandidate(players, searchText);
 }
 
 function getLocalPlayerGameQuery(
@@ -652,26 +645,4 @@ function getLocalPlayerGameQuery(
     };
 }
 
-export function normalizePlayerText(value: string) {
-    return value
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, " ")
-        .trim()
-        .replace(/\s+/g, " ");
-}
-
-function getPlayerSearchQueries(searchText: string) {
-    const normalized = normalizePlayerText(searchText);
-    if (normalized.length < 3) return [];
-
-    const queries = new Set([searchText.trim()]);
-    const tokens = normalized.split(" ").filter(Boolean);
-    if (tokens.length === 2 && !searchText.includes(",")) {
-        queries.add(`${tokens[1]}, ${tokens[0]}`);
-    }
-    for (const token of tokens) {
-        if (token.length >= 3) queries.add(token);
-    }
-
-    return Array.from(queries).filter(Boolean);
-}
+export { normalizePlayerText };
