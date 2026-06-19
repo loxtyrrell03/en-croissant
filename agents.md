@@ -625,6 +625,10 @@ Engine` selector on the phone workspace, and the active panel content starts
   pins are stored separately from database/source pins so existing preferences
   remain compatible. Keep this behavior in `DatabaseFolderSelect` so desktop
   and phone Database/Prep pickers stay consistent.
+- On 2026-06-20, the desktop `DatabaseFolderSelect` popover was constrained so
+  large database/folder lists scroll inside the dropdown instead of stretching
+  the page. Search results, the top-level pinned/folder list, and drilled-in
+  folder contents now share the same compact max-height scroll area.
 - On 2026-06-12, the phone Database tab gained the same setup/start split as
   Prep. Database setup now keeps source/view/sort controls in a compact header
   with a `Start` action, and started Database mode hides those controls so only

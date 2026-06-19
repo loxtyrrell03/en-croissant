@@ -62,6 +62,7 @@ type DatabasePickerPreferences = {
 };
 
 const DATABASE_PICKER_PREFERENCES_KEY = "database-picker-preferences";
+const DATABASE_PICKER_LIST_MAX_HEIGHT = 280;
 const DEFAULT_DATABASE_PICKER_PREFERENCES: DatabasePickerPreferences = {
   pinnedValues: [],
   pinnedFolders: [],
@@ -575,7 +576,12 @@ export default function DatabaseFolderSelect({
             />
           ) : null}
           {trimmedQuery ? (
-            <ScrollArea.Autosize mah={320} type="auto">
+            <ScrollArea.Autosize
+              mah={DATABASE_PICKER_LIST_MAX_HEIGHT}
+              type="auto"
+              offsetScrollbars
+              scrollbarSize={6}
+            >
               <Stack gap={2}>
                 {searchMatches.length > 0 ? (
                   searchMatches.map(({ item, group }) => (
@@ -599,69 +605,76 @@ export default function DatabaseFolderSelect({
               </Stack>
             </ScrollArea.Autosize>
           ) : !visibleGroup ? (
-            <Stack gap={4}>
-              {pinnedItems.map(({ item, group }) => (
-                <DatabaseRow
-                  key={`pinned-${item.value}`}
-                  item={item}
-                  groupLabel={group}
-                  selected={item.value === value}
-                  allowDeselect={allowDeselect}
-                  value={value}
-                  onChange={onChange}
-                  onClose={closePicker}
-                  preferences={preferencePropsFor(item, group, "pinned")}
-                />
-              ))}
-              {pinnedFolderGroups.map((group) => (
-                <FolderRow
-                  key={`pinned-folder-${group.group}`}
-                  label={group.group}
-                  detail={getFolderDetail(group)}
-                  onClick={() => setActiveGroup(group.group)}
-                  preferences={folderPreferencePropsFor(group, "pinned")}
-                />
-              ))}
-              {hasPinnedRows && hasRowsAfterPinned && (
-                <Box h={1} my={2} style={{ background: "var(--mantine-color-default-border)" }} />
-              )}
-              {rootItems.map((item) => (
-                <DatabaseRow
-                  key={item.value}
-                  item={item}
-                  selected={item.value === value}
-                  allowDeselect={allowDeselect}
-                  value={value}
-                  onChange={onChange}
-                  onClose={closePicker}
-                  preferences={preferencePropsFor(item, rootGroup?.group ?? "Unfiled", "group")}
-                />
-              ))}
-              {rootItems.length > 0 && normalFolderGroups.length > 0 && (
-                <Box h={1} my={2} style={{ background: "var(--mantine-color-default-border)" }} />
-              )}
-              {selectedGroup &&
-                selectedGroup.group !== "Unfiled" &&
-                !pinnedFolderSet.has(selectedGroup.group) && (
-                  <FolderRow
-                    label={selectedGroup.group}
-                    detail={getFolderDetail(selectedGroup)}
-                    onClick={() => setActiveGroup(selectedGroup.group)}
-                    preferences={folderPreferencePropsFor(selectedGroup, "root")}
+            <ScrollArea.Autosize
+              mah={DATABASE_PICKER_LIST_MAX_HEIGHT}
+              type="auto"
+              offsetScrollbars
+              scrollbarSize={6}
+            >
+              <Stack gap={4}>
+                {pinnedItems.map(({ item, group }) => (
+                  <DatabaseRow
+                    key={`pinned-${item.value}`}
+                    item={item}
+                    groupLabel={group}
+                    selected={item.value === value}
+                    allowDeselect={allowDeselect}
+                    value={value}
+                    onChange={onChange}
+                    onClose={closePicker}
+                    preferences={preferencePropsFor(item, group, "pinned")}
                   />
-                )}
-              {normalFolderGroups
-                .filter((group) => group.group !== selectedGroup?.group)
-                .map((group) => (
+                ))}
+                {pinnedFolderGroups.map((group) => (
                   <FolderRow
-                    key={group.group}
+                    key={`pinned-folder-${group.group}`}
                     label={group.group}
                     detail={getFolderDetail(group)}
                     onClick={() => setActiveGroup(group.group)}
-                    preferences={folderPreferencePropsFor(group, "root")}
+                    preferences={folderPreferencePropsFor(group, "pinned")}
                   />
                 ))}
-            </Stack>
+                {hasPinnedRows && hasRowsAfterPinned && (
+                  <Box h={1} my={2} style={{ background: "var(--mantine-color-default-border)" }} />
+                )}
+                {rootItems.map((item) => (
+                  <DatabaseRow
+                    key={item.value}
+                    item={item}
+                    selected={item.value === value}
+                    allowDeselect={allowDeselect}
+                    value={value}
+                    onChange={onChange}
+                    onClose={closePicker}
+                    preferences={preferencePropsFor(item, rootGroup?.group ?? "Unfiled", "group")}
+                  />
+                ))}
+                {rootItems.length > 0 && normalFolderGroups.length > 0 && (
+                  <Box h={1} my={2} style={{ background: "var(--mantine-color-default-border)" }} />
+                )}
+                {selectedGroup &&
+                  selectedGroup.group !== "Unfiled" &&
+                  !pinnedFolderSet.has(selectedGroup.group) && (
+                    <FolderRow
+                      label={selectedGroup.group}
+                      detail={getFolderDetail(selectedGroup)}
+                      onClick={() => setActiveGroup(selectedGroup.group)}
+                      preferences={folderPreferencePropsFor(selectedGroup, "root")}
+                    />
+                  )}
+                {normalFolderGroups
+                  .filter((group) => group.group !== selectedGroup?.group)
+                  .map((group) => (
+                    <FolderRow
+                      key={group.group}
+                      label={group.group}
+                      detail={getFolderDetail(group)}
+                      onClick={() => setActiveGroup(group.group)}
+                      preferences={folderPreferencePropsFor(group, "root")}
+                    />
+                  ))}
+              </Stack>
+            </ScrollArea.Autosize>
           ) : (
             <Stack gap={4}>
               <UnstyledButton
@@ -677,7 +690,12 @@ export default function DatabaseFolderSelect({
                   </Text>
                 </Group>
               </UnstyledButton>
-              <ScrollArea.Autosize mah={280} type="auto">
+              <ScrollArea.Autosize
+                mah={DATABASE_PICKER_LIST_MAX_HEIGHT}
+                type="auto"
+                offsetScrollbars
+                scrollbarSize={6}
+              >
                 <Stack gap={2}>
                   {visibleGroup.items.map((item) => (
                     <DatabaseRow
