@@ -659,6 +659,12 @@ Engine` selector on the phone workspace, and the active panel content starts
   the compact sort menu can still inspect another metric, but navigating to the
   next move resets the visible table to the saved automatic Prep sort defaults
   (Usage for their/source moves and Strength for user replies by default).
+- A 2026-06-20 Prep tab persistence fix moved the setup/training page flag out
+  of remount-local component state. Desktop under-board Prep now stores the
+  current page in the per-tab opponent-prep atom, while phone Prep stores it on
+  each active prep workspace and normalizes old saved workspaces to training.
+  Clicking away from Prep and returning should preserve whether the user was in
+  move-first training or the settings page.
 - The practical/blended strength benchmark now ignores one- and two-game WDL
   spikes unless they have meaningful position share. Tiny perfect-score rows
   can still display their own result, but they no longer define the `best WDL`

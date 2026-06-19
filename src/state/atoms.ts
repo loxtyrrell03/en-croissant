@@ -500,6 +500,8 @@ export const comparePanelSettingsByFileAtom = atomWithStorage<
     Record<string, ComparePanelFileSettings>
 >("database-compare-settings-by-file", {});
 
+export type OpponentPrepPanelStage = "setup" | "train";
+
 export type OpponentPrepState = {
     mode: "player" | "general";
     source: "local" | "lch_all" | "lch_master";
@@ -516,6 +518,7 @@ export type OpponentPrepState = {
     rootPath: number[] | null;
     completedBranches: Record<string, number>;
     skippedBranches: Record<string, number>;
+    panelStage: OpponentPrepPanelStage;
     builder?: Partial<PrepBuilderSettings>;
     sortDefaults?: {
         opponent?: "move" | "strength" | "games" | "results" | "prep" | "state";
@@ -525,7 +528,7 @@ export type OpponentPrepState = {
 
 export type OpponentPrepStoredSettings = Omit<
     OpponentPrepState,
-    "rootPath" | "completedBranches" | "skippedBranches"
+    "rootPath" | "completedBranches" | "skippedBranches" | "panelStage"
 >;
 
 const defaultOpponentPrepState = (): OpponentPrepState => ({
@@ -542,6 +545,7 @@ const defaultOpponentPrepState = (): OpponentPrepState => ({
     rootPath: null,
     completedBranches: {},
     skippedBranches: {},
+    panelStage: "setup",
 });
 
 const defaultOpponentPrepStoredSettings = (): OpponentPrepStoredSettings => {
@@ -549,6 +553,7 @@ const defaultOpponentPrepStoredSettings = (): OpponentPrepStoredSettings => {
         rootPath: _rootPath,
         completedBranches: _completedBranches,
         skippedBranches: _skippedBranches,
+        panelStage: _panelStage,
         ...settings
     } = defaultOpponentPrepState();
     return settings;

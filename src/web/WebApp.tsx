@@ -3057,7 +3057,6 @@ function PrepUnderBoardPanel({
   const [prepStartDate, setPrepStartDate] = useState(storedPrepSetup.startDate ?? "");
   const [prepEndDate, setPrepEndDate] = useState(storedPrepSetup.endDate ?? "");
   const [prepResult, setPrepResult] = useState<WebLocalResultFilter>(storedPrepSetup.result);
-  const [setupOpen, setSetupOpen] = useState(true);
   const [sourceId, setSourceId] = useState<string | null>(
     () =>
       resolveWebDatabaseSourceId(
@@ -3114,7 +3113,6 @@ function PrepUnderBoardPanel({
   >(() => getDefaultWebPrepSortState(storedPrepSetup.sortDefaults).candidate);
   const { lichessOptions, setLichessOptions, mastersOptions, setMastersOptions, explorerOptions } =
     useWebExplorerOptions();
-  const lastActivePrepIdRef = useRef<string | null>(null);
   const hostedDatabases = useHostedDatabaseFolders();
   const hostedDatabaseLibraryReady = Boolean(hostedDatabases.library?.manifest);
   const selectableDatabases = useMemo(
@@ -3364,7 +3362,8 @@ function PrepUnderBoardPanel({
   const commonOpenStat = activePrep
     ? getFirstOpenPrepStat(openRootStats, activePrep.preparedMoves)
     : null;
-  const showSetupStage = !activePrep || setupOpen;
+  const setupOpen = !activePrep || (activePrep.panelStage ?? "train") === "setup";
+  const showSetupStage = setupOpen;
   const showTrainingStage = Boolean(activePrep) && !setupOpen;
   const opponentToMove = activePrep
     ? getFenColor(currentFen) === oppositeWebColor(activePrep.userColor)
@@ -3511,18 +3510,6 @@ function PrepUnderBoardPanel({
     storedPrepSetup.sourceId,
     storedPrepSetup.sourceRef,
   ]);
-
-  useEffect(() => {
-    if (!activePrep) {
-      lastActivePrepIdRef.current = null;
-      setSetupOpen(true);
-      return;
-    }
-    if (lastActivePrepIdRef.current !== activePrep.id) {
-      lastActivePrepIdRef.current = activePrep.id;
-      setSetupOpen(false);
-    }
-  }, [activePrep]);
 
   useEffect(() => {
     const nextSort = getDefaultWebPrepSortState(selectedPrepSortDefaults);
@@ -3796,6 +3783,7 @@ function PrepUnderBoardPanel({
       notesByFen: {},
       preparedMoves: {},
       skippedMoves: {},
+      panelStage: "train",
       createdAt: now,
       updatedAt: now,
     };
@@ -3813,7 +3801,6 @@ function PrepUnderBoardPanel({
       },
     }));
     setDraftTemporarySource(null);
-    setSetupOpen(false);
   };
 
   const updateActivePrep = (updater: (prep: WebPrepWorkspace) => WebPrepWorkspace) => {
@@ -4341,7 +4328,7 @@ function PrepUnderBoardPanel({
               disabled={!configReady}
               onClick={() => {
                 if (activePrep) {
-                  setSetupOpen(false);
+                  updateActivePrepSettings({ panelStage: "train" });
                 } else {
                   createPrep();
                 }
@@ -4798,7 +4785,7 @@ function PrepUnderBoardPanel({
                   size="sm"
                   variant="filled"
                   color="dark"
-                  onClick={() => setSetupOpen(true)}
+                  onClick={() => updateActivePrepSettings({ panelStage: "setup" })}
                 >
                   <IconX size={15} />
                 </ActionIcon>

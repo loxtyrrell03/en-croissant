@@ -75,6 +75,7 @@ export type WebPrepLineMove = {
 
 export type WebPrepMode = "player" | "general";
 export type WebPrepSource = "local" | "temporary" | "lichess-all" | "lichess-masters";
+export type WebPrepPanelStage = "setup" | "train";
 export type WebPrepOpponentSortColumn =
     | "move"
     | "strength"
@@ -119,6 +120,7 @@ export type WebPrepWorkspace = {
     notesByFen: Record<string, string>;
     preparedMoves: Record<string, number>;
     skippedMoves?: Record<string, number>;
+    panelStage?: WebPrepPanelStage;
     createdAt: number;
     updatedAt: number;
 };

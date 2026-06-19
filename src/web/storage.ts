@@ -91,6 +91,7 @@ function normalizeWebState(state: WebCompanionState): WebCompanionState {
         prepWorkspaces: state.prepWorkspaces.map((prep) => ({
             ...prep,
             skippedMoves: prep.skippedMoves ?? {},
+            panelStage: prep.panelStage === "setup" ? "setup" : "train",
         })),
         board: {
             ...createEmptyWebBoardState(),

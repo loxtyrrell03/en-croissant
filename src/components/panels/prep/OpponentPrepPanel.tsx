@@ -82,6 +82,7 @@ import {
   underBoardLichessOptionsAtom,
   underBoardMasterOptionsAtom,
   underBoardOpponentPrepSettingsAtom,
+  type OpponentPrepPanelStage,
   type OpponentPrepState,
   type OpponentPrepStoredSettings,
   type StoredDatabaseLocalOptions,
@@ -362,6 +363,20 @@ function OpponentPrepPanel({
   const referenceDatabaseAtom =
     scope === "underBoard" ? currentUnderBoardReferenceDbAtom : referenceDbAtom;
   const [prep, setPrep] = useAtom(prepAtom);
+  const underBoardStage = prep.panelStage ?? "setup";
+  const setUnderBoardStage = useCallback(
+    (panelStage: OpponentPrepPanelStage) => {
+      setPrep((current) =>
+        current.panelStage === panelStage
+          ? current
+          : {
+              ...current,
+              panelStage,
+            },
+      );
+    },
+    [setPrep],
+  );
   const [savedPrepSettings, setSavedPrepSettings] = useAtom(prepSettingsAtom);
   const currentLocalOptions = useAtomValue(localOptionsAtom);
   const lichessOptions = useAtomValue(lichessOptionsStateAtom);
@@ -413,7 +428,6 @@ function OpponentPrepPanel({
     null,
   );
   const [openingSourceGameKey, setOpeningSourceGameKey] = useState<string | null>(null);
-  const [underBoardStage, setUnderBoardStage] = useState<"setup" | "train">("setup");
   const [moveTableSort, setMoveTableSort] = useState<PrepMoveTableSortState>(() =>
     getDefaultPrepMoveTableSortState(prep.sortDefaults),
   );
@@ -680,7 +694,7 @@ function OpponentPrepPanel({
     if (underBoard && !configReady) {
       setUnderBoardStage("setup");
     }
-  }, [configReady, underBoard]);
+  }, [configReady, setUnderBoardStage, underBoard]);
 
   useEffect(() => {
     if (!currentSearchId) return undefined;
@@ -1741,7 +1755,7 @@ function OpponentPrepPanel({
     if (!configReady) return;
     setRootHere();
     setUnderBoardStage("train");
-  }, [configReady, setRootHere]);
+  }, [configReady, setRootHere, setUnderBoardStage]);
 
   const resetLine = useCallback(() => {
     store.getState().goToMove(rootPath);
