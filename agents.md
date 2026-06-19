@@ -176,6 +176,23 @@ model, implementation map, and verification expectations for this app.
   The Chess.com opening comparison kept `demyan7777` high confidence: White is
   an overwhelming 1.e4 match, recent 2026 Black games are Sicilian-heavy like
   OTB, and only older/slower account games show a notable extra 1...e5 tendency.
+- On 2026-06-20, the Southall app-side database layout was reorganized into
+  one event folder with one subfolder per player. The old `OTB Prep` and
+  `Online Games Southall` folders were emptied and removed; all `.db3`, `.pgn`,
+  `.ecsi`, and import sidecar files now live together by player under
+  `C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\Southall Congress 260620 U2400`.
+  Current player folders are `00 Verbytski, Oleg`, `01 Figeac, Aurelien`,
+  `02 Onuoha, Obioma`, `03 Lapidus, Alexey M` (Windows path omits the trailing
+  dot), `04 Mokhber-Garcia, Sebastian`, and `05 Balmond, Tom`. Verified
+  converted database counts after the move are Verbytski 505 OTB and 1,065
+  Chess.com, Figeac 45 OTB, Onuoha 107 OTB / 14,020 Chess.com / 9,793 Lichess,
+  Lapidus 129 OTB / 113 Chess.com / 5,644 Lichess, Mokhber-Garcia 369 OTB /
+  27,797 Chess.com, and Balmond 95 OTB / 2,044 Chess.com. The Southall
+  `_manifest.json`, `_chesscom_import_summary.json`, `_lichess_import_summary.json`,
+  `_dedupe_cleanup_summary.json`, `_style_report_analysis.json`, Verbytski
+  prep summary, `Chess.com opening comparison.md`, and
+  `Southall database layout.md` were updated so current paths no longer point
+  at the removed folders.
 
 ## Local Browser Verification
 
