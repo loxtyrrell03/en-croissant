@@ -61,6 +61,7 @@ const OPENING_HEALTH_MAX_REPORT_ROWS: usize = 600;
 const OPENING_HEALTH_REFERENCE_SAMPLE_GAMES: usize = 750_000;
 const OPENING_HEALTH_REFERENCE_OCCURRENCE_SAMPLE_LIMIT: usize = 5_000;
 const OPENING_HEALTH_MAX_REFERENCE_WORKERS: usize = 6;
+const STARTING_SIDE_MATERIAL_SCORE: u8 = 39;
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct OpeningHealthProgress {
@@ -1223,11 +1224,7 @@ fn search_master_games_from_index_candidates(
             continue;
         }
 
-        let end_material: MaterialCount = ByColor {
-            white: entry.white_material,
-            black: entry.black_material,
-        };
-        if !position_query.can_reach(&end_material, entry.pawn_home) {
+        if !entry_can_reach_position_query(&entry, position_query) {
             continue;
         }
 
@@ -2347,6 +2344,27 @@ fn position_stats_has_playable_move(opening: &PositionStats) -> bool {
         && move_text != "*"
         && move_text != "Total"
         && opening.white + opening.draw + opening.black > 0
+}
+
+fn entry_can_reach_position_query(
+    entry: &SearchGameEntryRef<'_>,
+    position_query: &PositionQuery,
+) -> bool {
+    if !entry_has_reachability_metadata(entry) {
+        return true;
+    }
+
+    let end_material: MaterialCount = ByColor {
+        white: entry.white_material,
+        black: entry.black_material,
+    };
+    position_query.can_reach(&end_material, entry.pawn_home)
+}
+
+fn entry_has_reachability_metadata(entry: &SearchGameEntryRef<'_>) -> bool {
+    entry.pawn_home != 0
+        || entry.white_material < STARTING_SIDE_MATERIAL_SCORE
+        || entry.black_material < STARTING_SIDE_MATERIAL_SCORE
 }
 
 fn plan_pieces_from_lines<I>(lines: I) -> Vec<PlanExplorerPiece>
@@ -3573,11 +3591,7 @@ pub async fn search_position(
         }
 
         if let Some(position_query) = &parsed_position_query {
-            let end_material: MaterialCount = ByColor {
-                white: entry.white_material,
-                black: entry.black_material,
-            };
-            if position_query.can_reach(&end_material, entry.pawn_home) {
+            if entry_can_reach_position_query(&entry, position_query) {
                 if let Ok(Some(m)) = get_move_after_match(entry.moves, &entry.fen, position_query) {
                     let mut heap = top_games.lock().unwrap();
                     if include_games {
@@ -3771,12 +3785,7 @@ pub async fn get_plan_explorer(
             return;
         }
 
-        let end_material: MaterialCount = ByColor {
-            white: entry.white_material,
-            black: entry.black_material,
-        };
-
-        if !parsed_position_query.can_reach(&end_material, entry.pawn_home) {
+        if !entry_can_reach_position_query(&entry, &parsed_position_query) {
             return;
         }
 
@@ -3909,12 +3918,8 @@ pub async fn is_position_in_db(
     let mmap_index = open_mmap_search_index(&file, &state)?;
 
     let check_entry = |entry: SearchGameEntryRef<'_>| -> bool {
-        let end_material: MaterialCount = ByColor {
-            white: entry.white_material,
-            black: entry.black_material,
-        };
         if let Some(position_query) = &parsed_position_query {
-            position_query.can_reach(&end_material, entry.pawn_home)
+            entry_can_reach_position_query(&entry, position_query)
                 && get_move_after_match(entry.moves, &entry.fen, position_query)
                     .unwrap_or(None)
                     .is_some()
@@ -4237,6 +4242,36 @@ mod tests {
             false,
             Some(&partial)
         ));
+    }
+
+    #[test]
+    fn placeholder_reachability_metadata_does_not_prune_position_search() {
+        let query = PositionQuery::exact_from_fen(
+            "rnbqkbnr/pp1ppp1p/6p1/8/3pP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 4",
+        )
+        .unwrap();
+        let mut entry = test_entry();
+        entry.white_material = STARTING_SIDE_MATERIAL_SCORE;
+        entry.black_material = STARTING_SIDE_MATERIAL_SCORE;
+        entry.pawn_home = 0;
+
+        assert!(!entry_has_reachability_metadata(&entry));
+        assert!(entry_can_reach_position_query(&entry, &query));
+    }
+
+    #[test]
+    fn populated_reachability_metadata_can_prune_position_search() {
+        let query = PositionQuery::exact_from_fen(
+            "rnbqkbnr/pp1ppp1p/6p1/8/3pP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 4",
+        )
+        .unwrap();
+        let mut entry = test_entry();
+        entry.white_material = STARTING_SIDE_MATERIAL_SCORE;
+        entry.black_material = STARTING_SIDE_MATERIAL_SCORE;
+        entry.pawn_home = 0xffff;
+
+        assert!(entry_has_reachability_metadata(&entry));
+        assert!(!entry_can_reach_position_query(&entry, &query));
     }
 
     #[test]

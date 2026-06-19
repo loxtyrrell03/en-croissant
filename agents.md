@@ -2435,6 +2435,14 @@ from 2026-04-24 through 2026-05-03.
   username-token matches before declaring no player. Keep this resolver
   tolerant of Chess.com/Lichess/source-label suffixes, because prep source
   labels are not always literal `Players.Name` values.
+- The same bug also exposed that some imported online databases store
+  placeholder reachability summaries (`WhiteMaterial = 39`, `BlackMaterial =
+  39`, `PawnHome = 0`) for every game. Exact-position scan fallbacks now treat
+  that combination as missing metadata and decode the move blob instead of
+  pruning the game before search. A direct probe on the Sebastian443 Chess.com
+  database found 73 Sebastian-as-White games after
+  `1. e4 c5 2. Nf3 g6 3. d4 cxd4`, with continuations including `Nxd4` and
+  `Qxd4`; keep this placeholder-metadata guard in any future search prefilter.
 
 ## Verification Expectations
 
