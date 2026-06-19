@@ -35,14 +35,15 @@ database games, and tournament-site PGN downloads.
   Mega/reference databases already found many games. Local database hits are
   never a reason to skip Chessscope, Lichess broadcasts, TWIC, event PGNs, or
   other online source checks for that player.
-- For real web prep or account-finding work, attempt to spawn a small team of
-  web-search subagents by default. Use them to make the online pass faster and
-  more complete. Give each subagent explicit player identities, FIDE/national
-  IDs, source targets, and the requirement to search hard for both downloadable
-  PGNs and credible Chess.com account links. The lead agent still owns dedupe,
-  database creation, verification, and the final honesty check. If multi-agent
-  tooling is unavailable, say so in the final response and do the same source
-  checklist manually.
+- For real web prep or account-finding work, spawning online-account subagents
+  is mandatory when tooling is available: assign at least one dedicated
+  account-finding subagent per player being prepped. Give each subagent explicit
+  player identities, FIDE/national IDs, source targets, and the requirement to
+  search hard for credible Chess.com account links and corroborating evidence.
+  Use additional source-family subagents for downloadable PGNs when useful. The
+  lead agent still owns dedupe, database creation, verification, and the final
+  honesty check. If multi-agent tooling is unavailable, say so in the final
+  response and do the same source checklist manually.
 - Do not do a shallow global pass and call it finished. Work player by player,
   and do not move on from a player until that player has completed the full
   exhaustive checklist: identity normalization, local/reference databases,
@@ -62,9 +63,18 @@ database games, and tournament-site PGN downloads.
   If the first pass finds few games, make a second targeted pass with alternate
   spellings, FIDE/national IDs, event leads, Chessscope, Lichess broadcasts,
   TWIC, and local/reference databases before reporting the count as final.
-- Public Chess.com account guesses are not game sources. Keep speculative
-  online-account research separate from OTB/broadcast PGN imports unless the
-  user asks to import online blitz/rapid games.
+- Public Chess.com account guesses are not OTB game sources. Keep online-account
+  research and imported online games separate from OTB/broadcast PGN imports.
+  After candidate accounts are found, import the public Chess.com games into
+  separate account databases, compare their opening profile against the OTB
+  prep games, and update confidence. If the comparison shows a clear mismatch,
+  delete the imported Chess.com PGN/`.db3`/search index and keep only a rejected
+  lead note so the bad account is not reused.
+- At the end of an event prep run, organize app-side databases into a clear
+  event folder rather than leaving many flat files in the database root. Use
+  subfolders such as `OTB Prep` and `Chess.com Accounts`, and make Chess.com
+  filenames link the OTB player to the handle, for example
+  `02 Onuoha, Obioma - Chess.com obiosky.db3`.
 - Chessscope pages may show only an accessible recent slice for prolific
   players. Still check them, because they can reveal many Lichess broadcast
   games missing from local Mega databases.
@@ -143,11 +153,14 @@ Keep folder names short enough for Windows paths.
      recent game found, notes.
 
 4. Coordinate a web-search subagent team by default.
-   - Before doing the online pass, try to use the available multi-agent tooling
-     to spawn subagents. For a single-player account-finding task, use at least
-     two focused searches when possible: one for identity/club/context and one
-     for Chess.com candidates/profile verification. For larger prep jobs, use a
-     broader team.
+   - Before doing the online pass, use the available multi-agent tooling to
+     spawn account-finding subagents. This is mandatory when the tools exist:
+     assign at least one dedicated online-account search subagent for every
+     player being prepped. For a single-player account-finding task, use at
+     least two focused searches when possible: one for identity/club/context and
+     one for Chess.com candidates/profile verification. For larger prep jobs,
+     use one account-search subagent per player plus any broader source-family
+     subagents that would help.
    - Use subagents to speed up and broaden the online research pass, especially
      for larger entrant lists or events with many possible sources.
    - Assign work by player or by source family, for example Chessscope/Lichess
@@ -240,13 +253,43 @@ Keep folder names short enough for Windows paths.
    - Leave players with zero PGNs as folders only, with notes; do not create
      empty `.db3` files unless requested.
 
-10. Prepare the final response.
+10. Import and test Chess.com account databases.
+   - For every credible or plausible Chess.com candidate account, download the
+     public archive PGNs and create a separate online-account `.db3`. Do not
+     merge these games into the OTB prep database.
+   - Compare the Chess.com opening profile against the player's OTB/broadcast
+     games before treating the account as active: check White first moves, Black
+     first replies, top opening families/ECOs, repeated 4-6 ply line prefixes,
+     time-control mix, rating plausibility, country/location/profile metadata,
+     club membership, and activity recency.
+   - Update account confidence from the comparison. Strong line overlap can
+     raise confidence; a completely different repertoire, implausible rating,
+     wrong country/club context, or contradictory profile metadata lowers it.
+   - If the account is a clear mismatch, delete the imported Chess.com
+     `.pgn`, `.db3`, and any stale `.ecsi` search index. Keep a rejected-lead
+     note in the manifest/comparison file so future agents do not reimport the
+     same bad account.
+   - If the account is credible but stale or only partly useful, keep it
+     clearly labelled as such rather than presenting it as current prep truth.
+
+11. Organize app-side databases into event folders.
+   - Before finalizing, move/rename the app-side databases into a dedicated
+     event folder under the active database root.
+   - Use clear subfolders, usually `OTB Prep` and `Chess.com Accounts`.
+   - OTB database names should identify the event and player, for example
+     `02 Onuoha, Obioma - Southall U2400 OTB prep.db3`.
+   - Chess.com database names must identify both the OTB player and the handle,
+     for example `02 Onuoha, Obioma - Chess.com obiosky.db3`.
+   - Update manifests, comparison reports, and any folder/account labels after
+     moving files so paths and confidence notes remain accurate.
+
+12. Prepare the final response.
    - Do not create a separate `research-summary.md` unless the user explicitly
      asks for one.
    - Include exactly what sources were researched, which assets were created,
      per-opponent game counts, most recent game found for each opponent,
-     account guesses where relevant, confidence notes, and what could not be
-     found.
+     account guesses and imported online-account verdicts where relevant,
+     confidence notes, and what could not be found.
    - Explicitly list "no credible PGNs found" cases.
    - For every zero-game or low-count player, include the second-pass searches
      performed and the reason the remaining count should be treated as a known
@@ -471,8 +514,11 @@ Notes:
 
 ### Online Account Game APIs
 
-Only import online-account games if the user asks for online games. Otherwise,
-use these for identity/account research and possible prep notes.
+For Chess.com candidates found during prep, import public account games into
+separate account databases so the repertoire can be compared against OTB games.
+Do not merge these games into the OTB/broadcast prep database. For Lichess or
+other online accounts, import only when useful for the user's request or when a
+similar confidence check is needed.
 
 Chess.com profile and stats:
 
@@ -496,7 +542,7 @@ https://lichess.org/api/games/user/<username>
 ```
 
 Filter online games separately by time control and source. Label them clearly
-if mixed with OTB prep.
+and keep them in their own database/folder if used alongside OTB prep.
 
 ## Chess.com Account Research
 
@@ -504,12 +550,15 @@ The goal is a best-guess account table, not false certainty. Search broadly
 before deciding there is no credible account, and verify hard before marking an
 account as high confidence.
 
-When using subagents, assign Chess.com account research explicitly. At least
-one subagent should search candidate usernames, profile metadata, public club
-membership, country/location/rating plausibility, activity recency, and any
-event or federation clues linking the account to the OTB player. Require a
-confidence label and the evidence for it; do not let a same-name account become
-an unqualified claim.
+When using subagents, assign Chess.com account research explicitly. Spawn at
+least one dedicated account-finding subagent for each player being prepped when
+multi-agent tooling is available. Each subagent should search candidate
+usernames, profile metadata, public club membership, country/location/rating
+plausibility, activity recency, and any event or federation clues linking the
+account to the OTB player. Require a confidence label and the evidence for it;
+do not let a same-name account become an unqualified claim. If tooling is
+unavailable, perform the same one-player-at-a-time account search manually and
+state that limitation in the final response.
 
 Direct checks:
 
@@ -607,6 +656,25 @@ Do not overtrust an exact-name account. In Muswell prep, several exact-name
 accounts were discarded because they had US/KR/FR flags or 300-level ratings
 for a 1700-1900 OTB player.
 
+After candidate accounts are found, import and test them instead of leaving the
+account confidence as a pure profile guess:
+
+- Download all public Chess.com archives for each credible or plausible
+  candidate account.
+- Convert the downloaded PGN to a separate online-account `.db3` using the same
+  converter as other PGNs.
+- Store it outside the OTB prep database, in a clearly named event/account
+  folder that links player to handle.
+- Compare the account's openings with the OTB/broadcast prep games. At minimum,
+  compare White first moves, Black first replies, common 4-6 ply line prefixes,
+  top ECO/opening families, and slower-time-control samples when available.
+- Treat a strong repertoire match as corroborating evidence, especially when it
+  aligns with real name, country/location, club, and activity clues.
+- Treat a completely different repertoire as a serious negative signal. If the
+  mismatch is clear, delete the imported Chess.com PGN/`.db3` and any `.ecsi`
+  index, mark the account as rejected, and update the player folder label or
+  manifest to avoid future reuse.
+
 ## PGN Dedupe Rules
 
 Use a conservative canonical key:
@@ -651,6 +719,26 @@ Avoid characters invalid on Windows: `< > : " / \ | ? *`.
 
 ## Creating Per-Player Databases
 
+Use an event-level app database folder for finished prep. Do not leave a large
+event run as a flat pile of files in the database root. A typical finished
+layout is:
+
+```text
+C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\<Event Name>\OTB Prep
+C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\<Event Name>\Chess.com Accounts
+```
+
+Use clear titles that encode both purpose and identity:
+
+```text
+02 Onuoha, Obioma - Southall U2400 OTB prep.db3
+02 Onuoha, Obioma - Chess.com obiosky.db3
+```
+
+Keep the matching source `.pgn` beside the `.db3`. If files are moved after
+conversion, update the working manifest and any comparison report with the new
+paths.
+
 The converter usually exists at:
 
 ```text
@@ -662,21 +750,21 @@ For each player:
 1. Concatenate all `.pgn` files from that player's folder into:
 
 ```text
-C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\muswell congress prep - PLAYER.pgn
+C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\<Event Name>\OTB Prep\NN PLAYER - EVENT OTB prep.pgn
 ```
 
 2. Convert to:
 
 ```text
-C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\muswell congress prep - PLAYER.db3
+C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\<Event Name>\OTB Prep\NN PLAYER - EVENT OTB prep.db3
 ```
 
 3. Example:
 
 ```powershell
 & 'C:\Users\loxty\Desktop\Repos\En croissant chess\src-tauri\target\debug\pgn_to_ec_db.exe' `
-  'C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\muswell congress prep - Large, Peter G.pgn' `
-  'C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\muswell congress prep - Large, Peter G.db3' `
+  'C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\Muswell Congress\OTB Prep\01 Large, Peter G - Muswell OTB prep.pgn' `
+  'C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\Muswell Congress\OTB Prep\01 Large, Peter G - Muswell OTB prep.db3' `
   'Muswell Prep - Large, Peter G' `
   'Public OTB and Lichess broadcast games collected for Muswell prep: Large, Peter G'
 ```
@@ -722,10 +810,22 @@ for db in sorted(root.glob("muswell congress prep - *.db3")):
 
 3. Confirm the app database directory is the active one.
 
-4. Open/refresh En Croissant Databases page and verify the per-player databases
+4. Confirm the final app-side database layout is organized by event folder,
+   with separate OTB prep and Chess.com account folders when account games were
+   imported. Make sure filenames clearly link each online account database to
+   the OTB player and handle.
+
+5. Confirm every credible/plausible Chess.com candidate has an import verdict:
+   active, stale-but-credible, low-confidence, rejected mismatch, or no credible
+   account. For active/stale/low-confidence accounts, record the database path
+   and converted game count. For rejected mismatches, confirm the imported
+   `.pgn`, `.db3`, and stale `.ecsi` files were deleted and that a rejected-lead
+   note remains.
+
+6. Open/refresh En Croissant Databases page and verify the per-player databases
    appear.
 
-5. Prepare final-response counts from the verified folder and database totals:
+7. Prepare final-response counts from the verified folder and database totals:
    - original/local games found
    - online/broadcast games added
    - current total per opponent
@@ -733,7 +833,8 @@ for db in sorted(root.glob("muswell congress prep - *.db3")):
      known, opponent, color, and result when available
    - sources checked
    - no-PGN and low-count cases
-   - Chess.com account guesses where relevant
+   - Chess.com account imports, mismatch checks, and confidence verdicts where
+     relevant
 
 ## Reporting To The User
 
@@ -746,12 +847,16 @@ Keep the final answer short but precise:
 - Give an honest per-opponent count table: player, local/reference PGNs,
   online/broadcast PGNs added, final PGN/database count, most recent game found
   with date/event/opponent/result where available, and coverage notes.
+- For Chess.com accounts, state the imported account handle, converted game
+  count, confidence after comparing openings with OTB games, and whether any
+  imported account was deleted as a clear mismatch.
 - List players with zero PGNs or suspiciously low counts, including the
   second-pass sources checked for them.
 - Say where games may still be missing, such as inaccessible ChessBase exports,
   events with no public PGN, Chessscope recent-slice limits, ambiguous player
   identities, or unconfirmed online accounts.
-- Mention the folder and database paths.
+- Mention the folder and database paths, including the event database folder
+  and any `OTB Prep` / `Chess.com Accounts` subfolders.
 - Mention any source limitations, for example: Chessscope only exposed the
   accessible recent slice for very prolific players.
 

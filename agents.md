@@ -106,6 +106,13 @@ model, implementation map, and verification expectations for this app.
   `alex_lapidus` high identity but stale, kept `Sebastian443` high with a note
   that blitz/bullet online games are more experimental than OTB, and kept
   `Tom_Balmond` high.
+- On 2026-06-19, `docs/opponent-prep-agent-guide.md` was updated from the
+  Southall workflow: future prep runs must spawn one online-account search
+  subagent per player when tooling is available, import plausible Chess.com
+  accounts into separate account databases, compare their openings against OTB
+  prep games before final confidence, delete clear mismatch imports, and finish
+  with event-level database folders such as `OTB Prep` and
+  `Chess.com Accounts`.
 
 ## Local Browser Verification
 
