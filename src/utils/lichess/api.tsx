@@ -41,6 +41,55 @@ const LICHESS_CLOUD_RATE_LIMIT_COOLDOWN_MS = 60_000;
 
 export const MIN_DATE = new Date(1952, 0, 1);
 
+export type LichessCloudFailureReason =
+  | "missing"
+  | "rate-limited"
+  | "timeout"
+  | "network"
+  | "http"
+  | "invalid-response";
+
+export class LichessCloudEvaluationError extends Error {
+  readonly reason: LichessCloudFailureReason;
+  readonly status?: number;
+  readonly retryAfterMs?: number;
+
+  constructor(
+    reason: LichessCloudFailureReason,
+    message: string,
+    options?: { status?: number; retryAfterMs?: number; cause?: unknown },
+  ) {
+    super(message);
+    this.name = "LichessCloudEvaluationError";
+    this.reason = reason;
+    this.status = options?.status;
+    this.retryAfterMs = options?.retryAfterMs;
+    if (options?.cause !== undefined) {
+      (this as Error & { cause?: unknown }).cause = options.cause;
+    }
+  }
+}
+
+export type LichessCloudFailure = {
+  reason: LichessCloudFailureReason;
+  message: string;
+  detail?: string;
+};
+
+export function getLichessCloudFailure(error: unknown): LichessCloudFailure {
+  const cloudError = normalizeLichessCloudError(error);
+  return {
+    reason: cloudError.reason,
+    message: cloudError.message,
+    detail:
+      cloudError.reason === "rate-limited" && cloudError.retryAfterMs
+        ? `Retry after about ${formatDuration(cloudError.retryAfterMs)}.`
+        : cloudError.status
+          ? `HTTP ${cloudError.status}`
+          : undefined,
+  };
+}
+
 export type TablebaseCategory =
   | "win"
   | "unknown"
@@ -320,36 +369,45 @@ export async function getBestMoves(
     }
     pos.play(m);
   }
-  let data: LichessCloudData;
-  try {
-    data = await getCloudEvaluation(
-      makeFen(pos.toSetup()),
-      Number.parseInt(options.extraOptions.find((o) => o.name === "MultiPV")?.value ?? "1"),
+  const data = await getCloudEvaluation(
+    makeFen(pos.toSetup()),
+    Number.parseInt(options.extraOptions.find((o) => o.name === "MultiPV")?.value ?? "1"),
+  );
+  if (!data.pvs?.length) {
+    throw new LichessCloudEvaluationError(
+      "invalid-response",
+      "Lichess Cloud returned no principal variations for this position.",
     );
-  } catch {
-    return [100, []];
   }
-  return [
-    100,
-    data.pvs?.map((m, i) => {
-      const uciMoves = m.moves.split(" ");
+
+  const bestMoves = data.pvs
+    .map<BestMoves | null>((m, i) => {
+      const uciMoves = m.moves.trim().split(/\s+/).filter(Boolean);
       const posCopy = pos.clone();
       const normalizedUciMoves: string[] = [];
+      const sanMoves: string[] = [];
 
-      const sanMoves = uciMoves.map((m) => {
-        const move = parseUci(m)!;
-        const san = makeSan(posCopy, move);
+      for (const uci of uciMoves) {
+        const move = parseUci(uci);
+        if (!move || !posCopy.isLegal(move)) break;
+        sanMoves.push(makeSan(posCopy, move));
         normalizedUciMoves.push(uciNormalize(posCopy, move));
         posCopy.play(move);
-        return san;
-      });
+      }
+
+      if (sanMoves.length === 0) {
+        return null;
+      }
 
       return {
         score: {
-          value: "cp" in m ? { type: "cp", value: m.cp } : { type: "mate", value: m.mate },
+          value:
+            "cp" in m
+              ? { type: "cp" as const, value: m.cp }
+              : { type: "mate" as const, value: m.mate },
           wdl: null,
         },
-        source: "lichess",
+        source: "lichess" as const,
         nodes: data.knodes * 1000,
         depth: data.depth,
         multipv: i + 1,
@@ -357,7 +415,19 @@ export async function getBestMoves(
         sanMoves,
         uciMoves: normalizedUciMoves,
       };
-    }) ?? [],
+    })
+    .filter((move): move is BestMoves => move !== null);
+
+  if (bestMoves.length === 0) {
+    throw new LichessCloudEvaluationError(
+      "invalid-response",
+      "Lichess Cloud returned no playable analysis line for this position.",
+    );
+  }
+
+  return [
+    100,
+    bestMoves,
   ];
 }
 
@@ -400,10 +470,13 @@ async function getCloudEvaluation(fen: string, multipv: number): Promise<Lichess
     return cache.get(cacheKey)!;
   }
   if (missingCache.has(cacheKey)) {
-    throw new Error("No Lichess cloud evaluation available.");
+    throw new LichessCloudEvaluationError(
+      "missing",
+      "No Lichess Cloud eval is cached for this exact position.",
+    );
   }
   if (Date.now() < cloudRateLimitedUntil) {
-    throw new Error("Lichess cloud evaluation is rate-limited. Trying local analysis instead.");
+    throw createRateLimitError();
   }
 
   const inFlight = inFlightCloudCache.get(cacheKey);
@@ -425,30 +498,96 @@ async function fetchCloudEvaluation(
   multipv: number,
   cacheKey: string,
 ): Promise<LichessCloudData> {
+  try {
+    return await fetchCloudEvaluationForMultipv(fen, multipv, cacheKey);
+  } catch (error) {
+    const failure = getLichessCloudFailure(error);
+    if (failure.reason !== "missing" || multipv <= 1) {
+      throw error;
+    }
+
+    const fallbackCacheKey = `${fen}-1`;
+    if (cache.has(fallbackCacheKey)) {
+      const fallbackData = cache.get(fallbackCacheKey)!;
+      cache.set(cacheKey, fallbackData);
+      missingCache.delete(cacheKey);
+      return fallbackData;
+    }
+
+    try {
+      const fallbackData = await fetchCloudEvaluationForMultipv(fen, 1, fallbackCacheKey);
+      cache.set(cacheKey, fallbackData);
+      missingCache.delete(cacheKey);
+      return fallbackData;
+    } catch (fallbackError) {
+      if (getLichessCloudFailure(fallbackError).reason === "missing") {
+        missingCache.add(cacheKey);
+      }
+      throw fallbackError;
+    }
+  }
+}
+
+async function fetchCloudEvaluationForMultipv(
+  fen: string,
+  multipv: number,
+  cacheKey: string,
+): Promise<LichessCloudData> {
   const url = new URL(`${baseURL}/cloud-eval`);
   url.searchParams.append("fen", fen);
   url.searchParams.append("multiPv", multipv.toString());
 
-  const response = await fetchWithTimeout(
-    url.toString(),
-    { headers: apiHeaders() },
-    LICHESS_CLOUD_TIMEOUT_MS,
-    "Lichess cloud evaluation timed out. Try again in a moment.",
-  );
+  let response: Response;
+  try {
+    response = await fetchWithTimeout(
+      url.toString(),
+      { headers: apiHeaders() },
+      LICHESS_CLOUD_TIMEOUT_MS,
+      "Lichess Cloud timed out.",
+    );
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("timed out")) {
+      throw new LichessCloudEvaluationError(
+        "timeout",
+        "Lichess Cloud did not answer before the timeout.",
+        { cause: error },
+      );
+    }
+    throw new LichessCloudEvaluationError(
+      "network",
+      "Could not reach Lichess Cloud. Check your internet connection or lichess.org status.",
+      { cause: error },
+    );
+  }
+
   if (response.status === 404) {
     missingCache.add(cacheKey);
-    throw new Error("No Lichess cloud evaluation available.");
+    throw new LichessCloudEvaluationError(
+      "missing",
+      "No Lichess Cloud eval is cached for this exact position.",
+      { status: response.status },
+    );
   }
   if (response.status === 429) {
     const cooldownMs = parseRetryAfterMs(response.headers.get("Retry-After"));
     cloudRateLimitedUntil = Date.now() + (cooldownMs ?? LICHESS_CLOUD_RATE_LIMIT_COOLDOWN_MS);
     nextCloudRequestAt = Math.max(nextCloudRequestAt, cloudRateLimitedUntil);
-    throw new Error("Lichess cloud evaluation is rate-limited. Trying local analysis instead.");
+    throw createRateLimitError(cooldownMs);
   }
   if (!response.ok) {
-    throw new Error(`Lichess cloud evaluation failed: ${response.status}`);
+    throw new LichessCloudEvaluationError(
+      "http",
+      `Lichess Cloud returned HTTP ${response.status}.`,
+      { status: response.status },
+    );
   }
   const data = (await response.json()) as LichessCloudData;
+  if (!Array.isArray(data.pvs)) {
+    throw new LichessCloudEvaluationError(
+      "invalid-response",
+      "Lichess Cloud returned a response without analysis lines.",
+    );
+  }
   cache.set(cacheKey, data);
   return data;
 }
@@ -456,7 +595,7 @@ async function fetchCloudEvaluation(
 async function enqueueCloudEvaluationRequest<T>(run: () => Promise<T>): Promise<T> {
   const task = cloudRequestQueue.then(async () => {
     if (Date.now() < cloudRateLimitedUntil) {
-      throw new Error("Lichess cloud evaluation is rate-limited. Trying local analysis instead.");
+      throw createRateLimitError();
     }
 
     const waitMs = nextCloudRequestAt - Date.now();
@@ -485,6 +624,47 @@ function normalizeCloudMultipv(multipv: number) {
   return Math.max(1, Math.min(LICHESS_CLOUD_MAX_MULTIPV, Math.round(multipv) || 1));
 }
 
+function normalizeLichessCloudError(error: unknown): LichessCloudEvaluationError {
+  if (error instanceof LichessCloudEvaluationError) {
+    return error;
+  }
+  if (error instanceof Error && error.message.includes("timed out")) {
+    return new LichessCloudEvaluationError(
+      "timeout",
+      "Lichess Cloud did not answer before the timeout.",
+      { cause: error },
+    );
+  }
+  if (error instanceof Error && error.message.includes("No Lichess cloud evaluation")) {
+    return new LichessCloudEvaluationError(
+      "missing",
+      "No Lichess Cloud eval is cached for this exact position.",
+      { cause: error },
+    );
+  }
+  return new LichessCloudEvaluationError(
+    "network",
+    error instanceof Error
+      ? `Could not reach Lichess Cloud: ${error.message}`
+      : "Could not reach Lichess Cloud.",
+    { cause: error },
+  );
+}
+
+function createRateLimitError(retryAfterMs?: number | null) {
+  const fallbackMs = Math.max(0, cloudRateLimitedUntil - Date.now());
+  const waitMs = retryAfterMs ?? fallbackMs;
+  return new LichessCloudEvaluationError(
+    "rate-limited",
+    waitMs > 0
+      ? `Lichess Cloud is rate-limiting this connection. Try again in about ${formatDuration(
+          waitMs,
+        )}.`
+      : "Lichess Cloud is rate-limiting this connection.",
+    { status: 429, retryAfterMs: waitMs > 0 ? waitMs : undefined },
+  );
+}
+
 function parseRetryAfterMs(value: string | null) {
   if (!value) return null;
   const seconds = Number.parseInt(value, 10);
@@ -493,6 +673,14 @@ function parseRetryAfterMs(value: string | null) {
   const dateMs = Date.parse(value);
   if (Number.isFinite(dateMs)) return Math.max(0, dateMs - Date.now());
   return null;
+}
+
+function formatDuration(ms: number) {
+  const seconds = Math.max(1, Math.ceil(ms / 1000));
+  if (seconds < 90) return `${seconds}s`;
+  const minutes = Math.ceil(seconds / 60);
+  if (minutes < 90) return `${minutes}m`;
+  return `${Math.ceil(minutes / 60)}h`;
 }
 
 function sleep(ms: number) {
@@ -512,7 +700,7 @@ export async function queryLichessCloudMoves(
   try {
     data = await getCloudEvaluation(fen, multipv);
   } catch (error) {
-    if (error instanceof Error && error.message.includes("No Lichess cloud evaluation")) {
+    if (getLichessCloudFailure(error).reason === "missing") {
       return null;
     }
     throw error;

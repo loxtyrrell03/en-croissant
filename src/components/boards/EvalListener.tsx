@@ -11,6 +11,8 @@ import {
   activeTabAtom,
   currentThreatAtom,
   currentLiveEvalAtom,
+  type EngineCloudEvalStatus,
+  engineCloudEvalStatusFamily,
   engineMovesFamily,
   engineProgressFamily,
   enginesAtom,
@@ -28,7 +30,10 @@ import {
   stopEngine,
   stopMatchingEngine,
 } from "@/utils/engines";
-import { getBestMoves as lichessGetBestMoves } from "@/utils/lichess/api";
+import {
+  getBestMoves as lichessGetBestMoves,
+  getLichessCloudFailure,
+} from "@/utils/lichess/api";
 import { BoundedSet, withLimitedMapEntry } from "@/utils/boundedCache";
 import { TreeStateContext } from "../common/TreeStateContext";
 
@@ -161,6 +166,9 @@ function EngineListener({
   const [, setLiveEval] = useAtom(currentLiveEvalAtom);
 
   const [, setProgress] = useAtom(engineProgressFamily({ engine: engine.id, tab: activeTab! }));
+  const [, setCloudEvalStatus] = useAtom(
+    engineCloudEvalStatusFamily({ engine: engine.id, tab: activeTab! }),
+  );
 
   const [, setEngineVariation] = useAtom(engineMovesFamily({ engine: engine.id, tab: activeTab! }));
   const [settings] = useAtom(
@@ -274,20 +282,6 @@ function EngineListener({
     setProgress,
   ]);
 
-  const getBestMoves = useMemo(
-    () =>
-      match(engine.type)
-        .with(
-          "local",
-          () => (tab: string, goMode: GoMode, options: EngineOptions) =>
-            getLocalBestMovesWithLichessCloud(engine as LocalEngine, tab, goMode, options),
-        )
-        .with("chessdb", () => chessdbGetBestMoves)
-        .with("lichess", () => lichessGetBestMoves)
-        .exhaustive(),
-    [engine],
-  );
-
   const settingsOptionsKey = useMemo(() => JSON.stringify(settings.settings ?? []), [
     settings.settings,
   ]);
@@ -338,7 +332,35 @@ function EngineListener({
       if (cancelled || requestSequenceRef.current !== requestId) return;
 
       startedLocalSearch = engine.type === "local";
-      getBestMoves(tab, settings.go, engineOptions)
+      const updateCloudStatus = (status: EngineCloudEvalStatus) => {
+        if (
+          cancelled ||
+          requestSequenceRef.current !== requestId ||
+          latestSearchKeyRef.current !== searchKey
+        ) {
+          return;
+        }
+        startTransition(() => {
+          setCloudEvalStatus((prev) =>
+            withLimitedMapEntry(prev, searchKey, status, MAX_ENGINE_RESULT_CACHE_ENTRIES),
+          );
+        });
+      };
+
+      const bestMovesPromise =
+        engine.type === "local"
+          ? getLocalBestMovesWithLichessCloud(
+              engine,
+              tab,
+              settings.go,
+              engineOptions,
+              updateCloudStatus,
+            )
+          : engine.type === "lichess"
+            ? getLichessBestMovesWithStatus(tab, settings.go, engineOptions, updateCloudStatus)
+            : chessdbGetBestMoves(tab, settings.go, engineOptions);
+
+      bestMovesPromise
         .then((moves) => {
           if (
             cancelled ||
@@ -418,11 +440,11 @@ function EngineListener({
     engine,
     engineOptions,
     fen,
-    getBestMoves,
     isGameOver,
     searchKey,
     searchingFen,
     searchingMovesKey,
+    setCloudEvalStatus,
     setEngineVariation,
     setLiveEval,
     setProgress,
@@ -438,36 +460,90 @@ async function getLocalBestMovesWithLichessCloud(
   tab: string,
   goMode: GoMode,
   options: EngineOptions,
+  updateCloudStatus: (status: EngineCloudEvalStatus) => void,
 ) {
   const localStart = startLocalBestMoves(engine, tab, goMode, options);
   let cloudCoveredLocalSearch = false;
-  // Keep Stockfish running behind cloud hits. Cloud replies can arrive after navigation,
-  // so only stop the speculative local search if it still matches this exact request.
-  const cloudPromise = withTimeout(
-    lichessGetBestMoves(tab, goMode, options),
-    LOCAL_ENGINE_CLOUD_TIMEOUT_MS,
-  ).catch(() => null);
+  updateCloudStatus({
+    phase: "checking",
+    message: "Checking Lichess Cloud...",
+    updatedAt: Date.now(),
+  });
 
   try {
-    const quickCloudMoves = await withTimeout(cloudPromise, LOCAL_ENGINE_CLOUD_PRIORITY_MS).catch(
-      () => null,
-    );
-
-    if (quickCloudMoves?.[1]?.length) {
-      cloudCoveredLocalSearch = true;
-      return quickCloudMoves;
-    }
-
-    const cloudMoves = await cloudPromise;
+    const cloudMoves = await lichessGetBestMoves(tab, goMode, options);
     if (cloudMoves?.[1]?.length) {
       cloudCoveredLocalSearch = true;
+      updateCloudStatus({
+        phase: "available",
+        message: formatCloudAvailableMessage(cloudMoves[1]),
+        updatedAt: Date.now(),
+      });
       return cloudMoves;
     }
 
+    updateCloudStatus({
+      phase: "missing",
+      message: "Lichess Cloud returned no analysis lines for this position.",
+      updatedAt: Date.now(),
+    });
+    return await localStart.promise;
+  } catch (error) {
+    updateCloudStatus(cloudFailureStatus(error));
     return await localStart.promise;
   } finally {
     localStart.cleanup(cloudCoveredLocalSearch);
   }
+}
+
+async function getLichessBestMovesWithStatus(
+  tab: string,
+  goMode: GoMode,
+  options: EngineOptions,
+  updateCloudStatus: (status: EngineCloudEvalStatus) => void,
+) {
+  updateCloudStatus({
+    phase: "checking",
+    message: "Checking Lichess Cloud...",
+    updatedAt: Date.now(),
+  });
+  try {
+    const cloudMoves = await lichessGetBestMoves(tab, goMode, options);
+    if (cloudMoves?.[1]?.length) {
+      updateCloudStatus({
+        phase: "available",
+        message: formatCloudAvailableMessage(cloudMoves[1]),
+        updatedAt: Date.now(),
+      });
+    } else {
+      updateCloudStatus({
+        phase: "missing",
+        message: "Lichess Cloud returned no analysis lines for this position.",
+        updatedAt: Date.now(),
+      });
+    }
+    return cloudMoves;
+  } catch (error) {
+    updateCloudStatus(cloudFailureStatus(error));
+    throw error;
+  }
+}
+
+function cloudFailureStatus(error: unknown): EngineCloudEvalStatus {
+  const failure = getLichessCloudFailure(error);
+  return {
+    phase: failure.reason === "missing" ? "missing" : "error",
+    message: failure.message,
+    detail: failure.detail,
+    updatedAt: Date.now(),
+  };
+}
+
+function formatCloudAvailableMessage(bestMoves: BestMoves[]) {
+  const firstLine = bestMoves[0];
+  const depth = firstLine?.depth ? `depth ${firstLine.depth}` : "ready";
+  const lines = bestMoves.length === 1 ? "1 line" : `${bestMoves.length} lines`;
+  return `Using Lichess Cloud ${depth}, ${lines}.`;
 }
 
 function startLocalBestMoves(
@@ -535,13 +611,6 @@ function startLocalBestMoves(
       }
     },
   };
-}
-
-function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
-  return Promise.race([
-    promise,
-    rejectAfter<T>(timeoutMs, "Timed out waiting for Lichess Cloud"),
-  ]);
 }
 
 function rejectAfter<T>(timeoutMs: number, message: string): Promise<T> {

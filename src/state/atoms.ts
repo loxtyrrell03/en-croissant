@@ -1490,6 +1490,19 @@ export const engineProgressFamily = atomFamily(
     (a, b) => a.tab === b.tab && a.engine === b.engine,
 );
 
+export type EngineCloudEvalStatus = {
+    phase: "checking" | "available" | "missing" | "error";
+    message: string;
+    detail?: string;
+    updatedAt: number;
+};
+
+export const engineCloudEvalStatusFamily = atomFamily(
+    ({ tab: _tab, engine: _engine }: { tab: string; engine: string }) =>
+        atom<Map<string, EngineCloudEvalStatus>>(new Map()),
+    (a, b) => a.tab === b.tab && a.engine === b.engine,
+);
+
 const emptyBestMovesByEngine = new Map<number, { pv: string[]; winChance: number }[]>();
 
 // returns the best moves of each engine for the current position

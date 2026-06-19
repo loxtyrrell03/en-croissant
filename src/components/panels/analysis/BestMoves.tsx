@@ -35,12 +35,14 @@ import type { BestMoves } from "@/bindings";
 import {
   activeTabAtom,
   currentDetachedEngineAtom,
+  engineCloudEvalStatusFamily,
   currentThreatAtom,
   engineMovesFamily,
   engineProgressFamily,
   enginesAtom,
   showArrowsAtom,
   tabEngineSettingsFamily,
+  type EngineCloudEvalStatus,
 } from "@/state/atoms";
 import { getBestMoveSourceLabel } from "@/utils/analysisSource";
 import { chessopsError, positionFromFen, swapMove } from "@/utils/chessops";
@@ -84,6 +86,9 @@ function BestMovesComponent({
   const activeTab = useAtomValue(activeTabAtom);
   const ev = useAtomValue(engineMovesFamily({ engine: engine.id, tab: activeTab! }));
   const progress = useAtomValue(engineProgressFamily({ engine: engine.id, tab: activeTab! }));
+  const cloudStatuses = useAtomValue(
+    engineCloudEvalStatusFamily({ engine: engine.id, tab: activeTab! }),
+  );
   const [, setEngines] = useAtom(enginesAtom);
   const [settings, setSettings2] = useAtom(
     tabEngineSettingsFamily({
@@ -155,14 +160,23 @@ function BestMovesComponent({
         .exhaustive(),
     [fen, moves, threat, finalFen],
   );
+  const searchKey = useMemo(
+    () => `${searchingFen}:${searchingMoves.join(",")}`,
+    [searchingFen, searchingMoves],
+  );
 
   const engineVariations = useDeferredValue(
-    useMemo(
-      () => ev.get(`${searchingFen}:${searchingMoves.join(",")}`),
-      [ev, searchingFen, searchingMoves],
-    ),
+    useMemo(() => ev.get(searchKey), [ev, searchKey]),
   );
   const displayedEngineVariations = settings.enabled ? engineVariations : undefined;
+  const cloudStatus = settings.enabled ? cloudStatuses.get(searchKey) : undefined;
+  const cloudNoticeStatus =
+    !isGameOver &&
+    !error &&
+    cloudStatus &&
+    (cloudStatus.phase === "missing" || cloudStatus.phase === "error")
+      ? cloudStatus
+      : null;
 
   return (
     <>
@@ -198,6 +212,7 @@ function BestMovesComponent({
             enabled={settings.enabled}
             progress={progress}
             error={error}
+            cloudStatus={cloudStatus}
             compact={compact}
           />
         </Accordion.Control>
@@ -323,6 +338,20 @@ function BestMovesComponent({
                 </Table.Td>
               </Table.Tr>
             )}
+            {cloudNoticeStatus && (
+              <Table.Tr>
+                <Table.Td colSpan={3}>
+                  <Text
+                    ta="center"
+                    my={compact ? 3 : "xs"}
+                    fz="xs"
+                    c={cloudNoticeStatus.phase === "error" ? "yellow.4" : "dimmed"}
+                  >
+                    {formatCloudStatusMessage(cloudNoticeStatus, engine.type === "local")}
+                  </Text>
+                </Table.Td>
+              </Table.Tr>
+            )}
             {!isGameOver &&
               !error &&
               !displayedEngineVariations &&
@@ -379,6 +408,7 @@ function EngineTop({
   enabled,
   progress,
   error,
+  cloudStatus,
   compact = false,
 }: {
   name: string;
@@ -387,6 +417,7 @@ function EngineTop({
   enabled: boolean;
   progress: number;
   error: any;
+  cloudStatus?: EngineCloudEvalStatus;
   compact?: boolean;
 }) {
   const { t } = useTranslation();
@@ -407,6 +438,13 @@ function EngineTop({
         {source && (
           <Tooltip label={`Using ${getBestMoveSourceLabel(source)} analysis`}>
             <Code fz="xs">{getBestMoveSourceLabel(source)}</Code>
+          </Tooltip>
+        )}
+        {!source && enabled && !isGameOver && !error && cloudStatus && (
+          <Tooltip label={formatCloudStatusMessage(cloudStatus, false)} multiline maw={360}>
+            <Code fz="xs" c={cloudStatusColor(cloudStatus)}>
+              {cloudStatusLabel(cloudStatus)}
+            </Code>
           </Tooltip>
         )}
         {progress < 100 &&
@@ -453,6 +491,41 @@ function EngineTop({
       </Group>
     </Group>
   );
+}
+
+function cloudStatusLabel(status: EngineCloudEvalStatus) {
+  switch (status.phase) {
+    case "checking":
+      return "Cloud checking";
+    case "available":
+      return "Cloud ready";
+    case "missing":
+      return "No cloud";
+    case "error":
+      return "Cloud error";
+    default:
+      return status.phase satisfies never;
+  }
+}
+
+function cloudStatusColor(status: EngineCloudEvalStatus) {
+  switch (status.phase) {
+    case "checking":
+      return "blue.3";
+    case "available":
+      return "teal.3";
+    case "missing":
+      return "dimmed";
+    case "error":
+      return "yellow.4";
+    default:
+      return status.phase satisfies never;
+  }
+}
+
+function formatCloudStatusMessage(status: EngineCloudEvalStatus, localFallback: boolean) {
+  const fallback = localFallback ? " Using local Stockfish until Lichess Cloud is available." : "";
+  return `${status.message}${status.detail ? ` ${status.detail}` : ""}${fallback}`;
 }
 
 export default memo(BestMovesComponent, (prev, next) => {

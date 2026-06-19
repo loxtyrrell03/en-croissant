@@ -1220,6 +1220,12 @@ Lightweight Lesson.pgn` was added beside the Black weak deck with a
 - Analysis uses local engines, ChessDB, and Lichess Cloud where available.
 - Lichess Cloud evals are integrated into analysis and local-engine fallback.
 - Local Stockfish starts promptly while cloud checks run in parallel.
+- On 2026-06-19, analysis cloud fallback gained explicit Lichess Cloud status
+  state. `engineCloudEvalStatusFamily` stores per-position checking,
+  available, missing, and error messages; `utils/lichess/api.tsx` now raises
+  typed cloud failures for missing, rate-limited, timeout, network, HTTP, and
+  invalid-response cases; and `EvalListener` records cloud availability while
+  preserving local Stockfish fallback.
 - On 2026-06-06, `scripts/generate-stockfish-opening-games.py` was added as a
   local utility for producing En Croissant Files-library PGNs from fixed
   opening positions using Stockfish 18 against Stockfish 11. It writes one
