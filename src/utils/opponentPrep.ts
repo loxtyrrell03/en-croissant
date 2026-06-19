@@ -389,13 +389,6 @@ export function getPrepMoveStrengthMap({
     );
 }
 
-export function getPrepStrengthMoveListKey(moves: readonly string[]) {
-    const normalized = new Set(
-        moves.map((move) => normalizeSanForPrep(move)).filter((move) => move.length > 0),
-    );
-    return Array.from(normalized).sort().join("|");
-}
-
 export function applyPrepSanMove(fen: string, san: string) {
     const [pos] = positionFromFen(fen);
     if (!pos) return null;
@@ -1637,14 +1630,11 @@ function evaluatePrepStrengthCandidates({
             (engineCpLoss === null
                 ? settings.mode !== "practical"
                 : engineCpLoss > maxEngineCpLoss);
-        const engineLossNorm =
-            !settings.useCloudEngine || engineMoves.length === 0 || !hasVisibleEngineCoverage
-                ? 0
-                : engineCpLoss === null
-                  ? settings.mode === "practical"
-                      ? PRACTICAL_MISSING_ENGINE_SCORE_LOSS_NORM
-                      : MISSING_ENGINE_SCORE_LOSS_NORM
-                  : clamp(engineCpLoss / maxEngineCpLoss, 0, 1.5);
+        const engineLossNorm = !settings.useCloudEngine
+            ? 0
+            : engineCpLoss === null
+              ? getPrepMissingEngineLossNorm(settings)
+              : clamp(engineCpLoss / maxEngineCpLoss, 0, 1.5);
         const databaseLossNorm =
             databaseWdlLoss === null
                 ? 0.75
@@ -1680,6 +1670,12 @@ function evaluatePrepStrengthCandidates({
             strengthLoss,
         };
     });
+}
+
+function getPrepMissingEngineLossNorm(settings: PrepBuilderSettings) {
+    return settings.mode === "practical"
+        ? PRACTICAL_MISSING_ENGINE_SCORE_LOSS_NORM
+        : MISSING_ENGINE_SCORE_LOSS_NORM;
 }
 
 function getPrepStrengthDatabaseBaseline(candidates: PrepStrengthCandidate[]) {

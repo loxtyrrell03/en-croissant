@@ -21,7 +21,6 @@ import {
     getPrepBuilderTaskPriority,
     getPrepBuilderUserResponseChildIndex,
     getPrepMoveStrengthMap,
-    getPrepStrengthMoveListKey,
     hasPrepBuilderDatabaseCandidates,
     isPrepStraightLineBadForOpponent,
     normalizePrepBuilderSettings,
@@ -807,6 +806,7 @@ describe("opponent prep helpers", () => {
         expect(strength.get("e4")?.engineCpLoss).toBeNull();
         expect(strength.get("e4")?.engineUnsafe).toBe(false);
         expect(strength.get("e4")?.score).toBeGreaterThan(0);
+        expect(strength.get("e4")?.score).toBeLessThan(90);
     });
 
     test("smart strength does not zero player rows when engine data misses the visible moves", () => {
@@ -828,6 +828,7 @@ describe("opponent prep helpers", () => {
         expect(strength.get("e4")?.engineCpLoss).toBeNull();
         expect(strength.get("e4")?.engineUnsafe).toBe(false);
         expect(strength.get("e4")?.score).toBeGreaterThan(0);
+        expect(strength.get("e4")?.score).toBeLessThan(90);
         expect(strength.get("d4")?.score).toBeGreaterThan(0);
     });
 
@@ -850,15 +851,6 @@ describe("opponent prep helpers", () => {
         expect(strength.get("b4")?.engineCpLoss).toBeNull();
         expect(strength.get("b4")?.engineUnsafe).toBe(true);
         expect(strength.get("b4")?.score).toBeLessThan(strength.get("e4")!.score);
-    });
-
-    test("prep strength move-list keys distinguish different player tables", () => {
-        expect(getPrepStrengthMoveListKey(["e4", "d4", "O-O+"])).toBe(
-            getPrepStrengthMoveListKey(["0-0", "d4", "e4"]),
-        );
-        expect(getPrepStrengthMoveListKey(["e4", "d4"])).not.toBe(
-            getPrepStrengthMoveListKey(["c4", "Nf3"]),
-        );
     });
 
     test("prep builder branch priority accounts for practical danger", () => {

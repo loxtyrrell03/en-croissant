@@ -1361,13 +1361,15 @@ and `src/utils/lichess/study.ts`.
   reduced so practical WDL evidence acts as the tie-breaker; clear engine
   separation restores the configured blend.
 - On 2026-06-19, desktop Prep and Database strength handling was hardened for
-  Lichess Cloud rate-limit and partial-coverage states. Opponent Prep strength
-  cache keys include the actual displayed move list, Prep keeps ChessDB's full
-  all-move fallback instead of slicing it to the Lichess MultiPV count, and the
-  shared strength scorers no longer treat an unrelated cloud move list as proof
-  that every visible player-specific row should score zero. Database tables now
-  prefer ChessDB all-move data when Lichess returns a partial list that misses
-  shown rows.
+  Lichess Cloud rate-limit and partial-coverage states. Opponent Prep shares
+  engine lookups by FEN, side, and MultiPV across the side panel and under-board
+  panel; Prep keeps ChessDB's full all-move fallback instead of slicing it to
+  the Lichess MultiPV count; and strength is scored from the full 20-row prep
+  move pool rather than the currently displayed `Show top` slice. The shared
+  strength scorer caps missing-engine fallback scores so an unrelated or absent
+  cloud move list cannot turn tiny WDL samples into confident top choices.
+  Database tables now prefer ChessDB all-move data when Lichess returns a
+  partial list that misses shown rows.
 - Prep settings now save through a persisted app setting record, including
   source/player filters, min games/show top, move-sort defaults, and strength
   builder settings, so changed controls survive leaving and reopening the app.

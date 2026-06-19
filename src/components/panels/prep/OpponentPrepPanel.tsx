@@ -128,7 +128,6 @@ import {
   getPrepBuilderTaskPriority,
   getPrepBuilderUserResponseChildIndex,
   getPrepMoveStrengthMap,
-  getPrepStrengthMoveListKey,
   hasPrepBuilderDatabaseCandidates,
   isPrepStraightLineBadForOpponent,
   normalizePrepBuilderSettings,
@@ -156,6 +155,8 @@ import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveCont
 
 const DEFAULT_PREP_MIN_GAMES = 2;
 const DEFAULT_PREP_MOVE_LIMIT = 8;
+const MAX_PREP_MOVE_LIMIT = 20;
+const PREP_STRENGTH_MOVE_POOL_LIMIT = MAX_PREP_MOVE_LIMIT;
 const DEFAULT_STRAIGHT_LINE_MODE: PrepStraightLineSearchMode = "venom";
 const DEFAULT_VENOM_LINE_MIN_SHARE = 65;
 const DEFAULT_VENOM_LINE_MIN_CP = 40;
@@ -797,7 +798,7 @@ function OpponentPrepPanel({
     async (fen: string, userColor: "white" | "black", settings: PrepBuilderSettings) => {
       if (!settings.useCloudEngine) return [];
 
-      const multipv = Math.max(3, Math.min(8, settings.opponentMoveLimit + 3));
+      const multipv = getPrepBuilderEngineMultipv(settings);
       const [lichessResult, chessDbResult] = await Promise.allSettled([
         queryLichessCloudMoves(fen, multipv),
         queryChessDbMoves(fen),
@@ -881,23 +882,16 @@ function OpponentPrepPanel({
     [currentFen, currentOpenings, opponentToMove, prep.minGames, prep.moveLimit],
   );
   const strengthRows = opponentToMove ? currentRows : candidateRows;
-  const strengthSide = opponentToMove ? prep.color : userColor;
-  const strengthRowsKey = useMemo(
-    () => getPrepStrengthMoveListKey(strengthRows.map((row) => row.move)),
-    [strengthRows],
+  const strengthOpenings = useMemo(
+    () =>
+      sortOpponentPrepOpenings(currentOpenings ?? [], prep.minGames, PREP_STRENGTH_MOVE_POOL_LIMIT),
+    [currentOpenings, prep.minGames],
   );
+  const strengthSide = opponentToMove ? prep.color : userColor;
+  const strengthEngineMultipv = getPrepBuilderEngineMultipv(builderSettings);
   const strengthEngineKey =
     showTrainingStage && configReady && builderSettings.useCloudEngine && strengthRows.length > 0
-      ? [
-          "opponent-prep-strength-engine",
-          currentFen,
-          strengthSide,
-          strengthRowsKey,
-          builderSettings.mode,
-          builderSettings.engineWeight,
-          builderSettings.maxEngineCpLoss,
-          builderSettings.opponentMoveLimit,
-        ]
+      ? ["opponent-prep-strength-engine", currentFen, strengthSide, strengthEngineMultipv]
       : null;
   const { data: strengthEngineMoves, isLoading: strengthLoading } = useSWR(strengthEngineKey, () =>
     loadPrepBuilderEngineMoves(currentFen, strengthSide, builderSettings),
@@ -905,12 +899,12 @@ function OpponentPrepPanel({
   const strengthByMove = useMemo(
     () =>
       getPrepMoveStrengthMap({
-        openings: strengthRows,
+        openings: strengthOpenings,
         engineMoves: strengthEngineMoves ?? [],
         side: strengthSide,
         settings: builderSettings,
       }),
-    [builderSettings, strengthEngineMoves, strengthRows, strengthSide],
+    [builderSettings, strengthEngineMoves, strengthOpenings, strengthSide],
   );
   const currentTreeHash = useMemo(() => getTreeStructureHash(currentNode), [currentNode]);
   const branchStatsKey =
@@ -2644,7 +2638,7 @@ function OpponentPrepPanel({
                     )
                   }
                   min={1}
-                  max={20}
+                  max={MAX_PREP_MOVE_LIMIT}
                   step={1}
                   size={controlSize}
                   w={dense ? 92 : 108}
@@ -4742,11 +4736,15 @@ function getPrepBuilderSafetyPositionLimit(size: PrepBuilderSettings["size"]) {
 }
 
 function getPrepBuilderExplorerMoveLimit(moveLimit: number) {
-  return Math.max(12, Math.min(100, moveLimit));
+  return Math.max(PREP_STRENGTH_MOVE_POOL_LIMIT, Math.min(100, moveLimit));
 }
 
 function getPrepBuilderBranchSearchMoveLimit(settings: PrepBuilderSettings) {
   return Math.max(100, settings.opponentMoveLimit);
+}
+
+function getPrepBuilderEngineMultipv(settings: PrepBuilderSettings) {
+  return Math.max(3, Math.min(8, settings.opponentMoveLimit + 3));
 }
 
 function getPrepBuilderReferenceMoveLimit(moveLimit: number) {
