@@ -72,11 +72,11 @@ model, implementation map, and verification expectations for this app.
 - On 2026-06-19, Southall Congress 260620 U2400 prep was completed for every
   section entrant except `Tyrrell, Lachlan`. Files-side folders were written to
   `C:\Users\loxty\Documents\EnCroissant\Southall Congress 260620 U2400 player games`
-  and app-side databases were rebuilt in
-  `C:\Users\loxty\AppData\Roaming\org.encroissant.app\db` as
-  `southall congress 260620 u2400 prep - PLAYER.db3`. Sources checked included
-  local Mega by exact player ID, Chess-Results game search by FIDE ID, Lichess
-  FIDE pages, the full public Lichess broadcast monthly database from 2020-01
+  and app-side OTB prep databases are organized under
+  `C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\Southall Congress 260620 U2400\OTB Prep`
+  as `NN PLAYER - Southall U2400 OTB prep.db3`. Sources checked included local
+  Mega by exact player ID, Chess-Results game search by FIDE ID, Lichess FIDE
+  pages, the full public Lichess broadcast monthly database from 2020-01
   through 2026-05, Chessscope player pages, FIDE/ECF identity pages, public
   web/TWIC searches, BritBase PGN files, ChessBites PGN pages, Chess.com public
   game pages, and subagent-led online account research. Final source PGN /
@@ -86,23 +86,26 @@ model, implementation map, and verification expectations for this app.
   remaining source/database count gaps came from converter-skipped malformed or
   incomplete source PGNs and were reported rather than hidden. The canonical
   name audit was clean for all five targets. Account labels used in folder
-  names were `figeac` low, `obiosky` high, `alex_lapidus` high but stale,
+  names are Figeac no Chess.com match, `obiosky` high,
+  `alex_lapidus` high but stale,
   `Sebastian443` high, and `Tom_Balmond` high; no online account games were
   imported.
 - A 2026-06-19 follow-up imported the researched Southall U2400 Chess.com
-  accounts into app-side online databases under
-  `C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\Online Games\Chess.com`
-  using the fork's `_chesscom.pgn` / `_chesscom.db3` convention, then compared
-  online opening profiles against the gathered OTB/broadcast prep PGNs. Final
-  converted Chess.com database counts after empty-game cleanup were `figeac`
-  1,049, `obiosky` 14,020, `alex_lapidus` 113, `Sebastian443` 27,797, and
-  `Tom_Balmond` 2,044. The generated comparison files live beside the prep
-  folders as `_chesscom_import_summary.json`,
-  `_chesscom_opening_comparison.json`, and `Chess.com opening comparison.md`.
-  Opening comparison reinforced `figeac` as low confidence, kept `obiosky`
-  high, kept `alex_lapidus` high identity but stale, kept `Sebastian443` high
-  with a note that blitz/bullet online games are more experimental than OTB,
-  and kept `Tom_Balmond` high.
+  accounts and then reorganized active online databases under
+  `C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\Southall Congress 260620 U2400\Chess.com Accounts`
+  with filenames that link each player to the handle, such as
+  `02 Onuoha, Obioma - Chess.com obiosky.db3`. Online opening profiles were
+  compared against the gathered OTB/broadcast prep PGNs. `figeac` was rejected
+  as a mismatch and its downloaded Chess.com PGN/database were deleted, so
+  Figeac has no active Chess.com database. Active converted Chess.com database
+  counts after empty-game cleanup are `obiosky` 14,020, `alex_lapidus` 113,
+  `Sebastian443` 27,797, and `Tom_Balmond` 2,044. The generated comparison and
+  layout files live beside the prep folders as `_chesscom_import_summary.json`,
+  `_chesscom_opening_comparison.json`, `Chess.com opening comparison.md`, and
+  `Southall database layout.md`. Opening comparison kept `obiosky` high, kept
+  `alex_lapidus` high identity but stale, kept `Sebastian443` high with a note
+  that blitz/bullet online games are more experimental than OTB, and kept
+  `Tom_Balmond` high.
 
 ## Local Browser Verification
 
