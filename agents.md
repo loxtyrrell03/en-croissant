@@ -138,6 +138,15 @@ model, implementation map, and verification expectations for this app.
   using `scripts/generate-southall-style-reports.py`, with Stockfish 17.1 depth
   8 samples, opening/result summaries, strengths, weaknesses, and player
   strategy notes.
+- On 2026-06-19, the user-requested Chess.com account `demyan7777` was imported
+  into the Southall `Online Games Southall` app-side folder as
+  `06 Verbytski, Oleg - Chess.com demyan7777.db3`. Chess.com profile metadata
+  identified the account as NM Oleg Verbytski, GB. The public archive import
+  covered 35 monthly archives from 2019-11 through 2026-05, wrote 1,070 source
+  PGN games, then removed 5 zero-ply rows after conversion for 1,065 usable
+  database games. The matching source PGN and `.import.json` live beside the
+  `.db3`, and the Southall `_chesscom_import_summary.json`, `_manifest.json`,
+  and `Southall database layout.md` sidecars were updated.
 
 ## Local Browser Verification
 
