@@ -92,7 +92,7 @@ model, implementation map, and verification expectations for this app.
   imported.
 - A 2026-06-19 follow-up imported the researched Southall U2400 Chess.com
   accounts and then reorganized active online databases under
-  `C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\Southall Congress 260620 U2400\Chess.com Accounts`
+  `C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\Southall Congress 260620 U2400\Online Games Southall`
   with filenames that link each player to the handle, such as
   `02 Onuoha, Obioma - Chess.com obiosky.db3`. Online opening profiles were
   compared against the gathered OTB/broadcast prep PGNs. `figeac` was rejected
@@ -106,13 +106,23 @@ model, implementation map, and verification expectations for this app.
   `alex_lapidus` high identity but stale, kept `Sebastian443` high with a note
   that blitz/bullet online games are more experimental than OTB, and kept
   `Tom_Balmond` high.
+- A later 2026-06-19 Southall follow-up added the current Lichess lead for
+  `Lapidus, Alexey M.` to the same `Online Games Southall` app-side folder:
+  `03 Lapidus, Alexey M. - Lichess ALexChess2010_2022.db3`. The source export
+  from Lichess contained 5,644 standard public games from 2022-07-30 through
+  2026-06-19, and conversion wrote all 5,644 games with no skipped games.
+  Exact Lichess game IDs and canonical player/date/result/movetext duplicate
+  checks were clean; broad date/result/move-blob duplicate-style hits were only
+  separate 0- or 1-ply games with distinct opponents and Lichess IDs. The
+  Southall manifest/layout sidecars were updated and
+  `_lichess_import_summary.json` was added beside the prep folders.
 - On 2026-06-19, `docs/opponent-prep-agent-guide.md` was updated from the
   Southall workflow: future prep runs must spawn one online-account search
   subagent per player when tooling is available, import plausible Chess.com
   accounts into separate account databases, compare their openings against OTB
   prep games before final confidence, delete clear mismatch imports, and finish
   with event-level database folders such as `OTB Prep` and
-  `Chess.com Accounts`.
+  `Online Games Southall`.
 - A later 2026-06-19 Southall follow-up deduped repeated OTB source games
   across the Files-side player folders, app-side combined OTB PGNs, and rebuilt
   OTB `.db3` databases. Duplicate source copies were moved into timestamped
