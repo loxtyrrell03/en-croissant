@@ -1372,7 +1372,11 @@ and `src/utils/lichess/study.ts`.
   sample cap in Smart/Practical modes, and made Prep treat Lichess Cloud as the
   authoritative engine list whenever it is available, using ChessDB only as a
   fallback when Lichess has no usable result. Database tables now prefer ChessDB
-  all-move data when Lichess returns a partial list that misses shown rows.
+  all-move data when Lichess returns a partial list that misses shown rows. A
+  later correction added an engine-backed score floor for covered prep moves,
+  so a move that is best or safely close by engine cannot display as `0`
+  strength merely because its practical WDL is poor; low-sample caps still
+  override that floor for tiny one/two-game rows.
 - Prep settings now save through a persisted app setting record, including
   source/player filters, min games/show top, move-sort defaults, and strength
   builder settings, so changed controls survive leaving and reopening the app.

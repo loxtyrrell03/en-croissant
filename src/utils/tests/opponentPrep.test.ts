@@ -878,6 +878,29 @@ describe("opponent prep helpers", () => {
         expect(strength.get("c5")?.detail).toContain("Low sample cap");
     });
 
+    test("engine-best prep moves do not show zero when WDL is terrible", () => {
+        const settings = normalizePrepBuilderSettings({
+            mode: "practical",
+            maxEngineCpLoss: 70,
+        });
+        const strength = getPrepMoveStrengthMap({
+            side: "white",
+            settings,
+            openings: [
+                { move: "Be3", white: 900, draw: 120, black: 2079 },
+                { move: "h3", white: 1400, draw: 160, black: 67 },
+            ],
+            engineMoves: [
+                { san: "Be3", scoreCpForSide: 19, rank: 1, source: "lichess" },
+                { san: "h3", scoreCpForSide: -35, rank: 2, source: "lichess" },
+            ],
+        });
+
+        expect(strength.get("Be3")?.engineCpLoss).toBe(0);
+        expect(strength.get("Be3")?.score).toBeGreaterThan(50);
+        expect(strength.get("Be3")?.detail).toContain("Engine floor");
+    });
+
     test("prep builder branch priority accounts for practical danger", () => {
         const settings = normalizePrepBuilderSettings({ mode: "smart" });
         const riskyBranch = getPrepBuilderBranchValue({

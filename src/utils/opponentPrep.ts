@@ -1649,9 +1649,16 @@ function evaluatePrepStrengthCandidates({
             databaseLossNorm,
             engineScoreSpreadCp,
         });
+        const engineScoreFloor = getPrepEngineScoreFloor({
+            settings,
+            engineCpLoss,
+            maxEngineCpLoss,
+        });
         const lowSampleCap = getPrepLowSampleStrengthCap(candidate, settings);
         const rawScore = Math.round((1 - clamp(strengthLoss, 0, 1)) * 100);
-        const score = Math.min(rawScore, lowSampleCap ?? 100);
+        const scoreWithEngineFloor =
+            engineScoreFloor === null ? rawScore : Math.max(rawScore, engineScoreFloor);
+        const score = Math.min(scoreWithEngineFloor, lowSampleCap ?? 100);
 
         return {
             move: candidate.move,
@@ -1672,6 +1679,7 @@ function evaluatePrepStrengthCandidates({
                 engineScoreSpreadCp,
                 settings,
                 lowSampleCap,
+                engineScoreFloor,
             }),
             engineRank: engine?.rank ?? null,
             strengthLoss,
@@ -1696,6 +1704,25 @@ function getPrepLowSampleStrengthCap(
     return settings.mode === "practical"
         ? LOW_SAMPLE_PRACTICAL_STRENGTH_CAP
         : LOW_SAMPLE_SMART_STRENGTH_CAP;
+}
+
+function getPrepEngineScoreFloor({
+    settings,
+    engineCpLoss,
+    maxEngineCpLoss,
+}: {
+    settings: PrepBuilderSettings;
+    engineCpLoss: number | null;
+    maxEngineCpLoss: number;
+}) {
+    if (!settings.useCloudEngine || engineCpLoss === null) return null;
+    if (engineCpLoss > maxEngineCpLoss) return null;
+
+    const lossShare = clamp(engineCpLoss / maxEngineCpLoss, 0, 1);
+    const bestMoveFloor = settings.mode === "engine" ? 92 : settings.mode === "practical" ? 62 : 82;
+    const safeMoveFloor = settings.mode === "engine" ? 68 : settings.mode === "practical" ? 42 : 58;
+
+    return Math.round(bestMoveFloor - (bestMoveFloor - safeMoveFloor) * lossShare);
 }
 
 function getPrepStrengthDatabaseBaseline(candidates: PrepStrengthCandidate[]) {
@@ -1854,6 +1881,7 @@ function formatPrepStrengthDetail({
     engineScoreSpreadCp,
     settings,
     lowSampleCap,
+    engineScoreFloor,
 }: {
     engineCp: number | null;
     engineCpLoss: number | null;
@@ -1863,6 +1891,7 @@ function formatPrepStrengthDetail({
     engineScoreSpreadCp: number | null;
     settings: PrepBuilderSettings;
     lowSampleCap?: number | null;
+    engineScoreFloor?: number | null;
 }) {
     const parts: string[] = [];
 
@@ -1901,6 +1930,10 @@ function formatPrepStrengthDetail({
 
     if (lowSampleCap !== null && lowSampleCap !== undefined) {
         parts.push(`Low sample cap ${lowSampleCap}`);
+    }
+
+    if (engineScoreFloor !== null && engineScoreFloor !== undefined) {
+        parts.push(`Engine floor ${engineScoreFloor}`);
     }
 
     return parts.join("; ");
