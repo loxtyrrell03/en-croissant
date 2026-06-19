@@ -131,4 +131,24 @@ describe("opening move health", () => {
             strength.get("e5")!.blendedStrengthScore,
         );
     });
+
+    test("engine strength keeps database signal when cloud omits a shown move", () => {
+        const strength = getOpeningMoveStrengthMap({
+            openings: [
+                { move: "e4", white: 80, draw: 10, black: 10 },
+                { move: "d4", white: 60, draw: 20, black: 20 },
+            ],
+            side: "white",
+            fen: "startpos",
+            strengthSettings: { mode: "engine", maxEngineCpLoss: 70 },
+            cloudData: {
+                source: "lichess",
+                moves: [{ san: "Nf3", scoreCpForWhite: 35, rank: 1, winrate: null }],
+            },
+        });
+
+        expect(strength.get("e4")?.cpLoss).toBeNull();
+        expect(strength.get("e4")?.engineUnsafeForBlend).toBe(true);
+        expect(strength.get("e4")?.blendedStrengthScore).toBeGreaterThan(0);
+    });
 });

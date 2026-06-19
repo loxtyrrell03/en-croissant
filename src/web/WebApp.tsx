@@ -187,6 +187,7 @@ import {
   getWebPrepBranchCoverageStats,
   getWebPrepMoveKey,
   getWebPrepMoveStats,
+  getWebPrepStrengthSideForFen,
   sortWebDatabaseMoveStats,
   type WebPrepBranchCoverageStats,
   type WebPrepBranchStart,
@@ -1148,7 +1149,7 @@ function BoardWorkspace({
     let active = true;
     void queryWebLichessCloudEngineMoves({
       fen: currentFen,
-      side: activePrep.userColor,
+      side: getWebPrepStrengthSideForFen(currentFen, activePrep.userColor),
       moves: prepStatsBase.map((stat) => stat.move),
       multipv: prepStatsBase.length,
       signal: controller.signal,
@@ -1182,7 +1183,7 @@ function BoardWorkspace({
     let active = true;
     void queryWebLichessCloudEngineMoves({
       fen: prepBranchFen,
-      side: activePrep.userColor,
+      side: getWebPrepStrengthSideForFen(prepBranchFen, activePrep.userColor),
       moves: prepRootStatsBase.map((stat) => stat.move),
       multipv: prepRootStatsBase.length,
       signal: controller.signal,
@@ -3261,6 +3262,7 @@ function PrepUnderBoardPanel({
             fen: currentFen,
             side: activePrep.userColor,
             sourceLabel: getWebPrepSourceLabelForFen(currentFen, activePrep.userColor),
+            strengthSide: getWebPrepStrengthSideForFen(currentFen, activePrep.userColor),
             strengthSettings: activePrep.builder,
           })
         : [],
@@ -3274,6 +3276,7 @@ function PrepUnderBoardPanel({
             fen: currentFen,
             side: activePrep.userColor,
             sourceLabel: getWebPrepSourceLabelForFen(currentFen, activePrep.userColor),
+            strengthSide: getWebPrepStrengthSideForFen(currentFen, activePrep.userColor),
             strengthSettings: activePrep.builder,
             engineMoves: lazyPrepEngineMoves,
           })
@@ -3288,6 +3291,7 @@ function PrepUnderBoardPanel({
             fen: branchFen,
             side: activePrep.userColor,
             sourceLabel: getWebPrepSourceLabelForFen(branchFen, activePrep.userColor),
+            strengthSide: getWebPrepStrengthSideForFen(branchFen, activePrep.userColor),
             strengthSettings: activePrep.builder,
           })
         : [],
@@ -3301,6 +3305,7 @@ function PrepUnderBoardPanel({
             fen: branchFen,
             side: activePrep.userColor,
             sourceLabel: getWebPrepSourceLabelForFen(branchFen, activePrep.userColor),
+            strengthSide: getWebPrepStrengthSideForFen(branchFen, activePrep.userColor),
             strengthSettings: activePrep.builder,
             engineMoves: lazyRootPrepEngineMoves,
           })
@@ -3702,7 +3707,7 @@ function PrepUnderBoardPanel({
     let active = true;
     void queryWebLichessCloudEngineMoves({
       fen: currentFen,
-      side: activePrep.userColor,
+      side: getWebPrepStrengthSideForFen(currentFen, activePrep.userColor),
       moves: lazyPrepStatsBase.map((stat) => stat.move),
       multipv: lazyPrepStatsBase.length,
       signal: controller.signal,
@@ -3737,7 +3742,7 @@ function PrepUnderBoardPanel({
     let active = true;
     void queryWebLichessCloudEngineMoves({
       fen: branchFen,
-      side: activePrep.userColor,
+      side: getWebPrepStrengthSideForFen(branchFen, activePrep.userColor),
       moves: lazyRootPrepStatsBase.map((stat) => stat.move),
       multipv: lazyRootPrepStatsBase.length,
       signal: controller.signal,

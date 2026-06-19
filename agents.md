@@ -566,6 +566,14 @@ Engine` selector on the phone workspace, and the active panel content starts
   uses root MultiPV and then queries child positions for shown candidate moves
   not present in the root cloud lines, so common non-top moves no longer
   collapse to `Engine unavailable` when Lichess has cached analysis.
+- On 2026-06-19, phone Database/Prep strength scoring was hardened after Prep
+  rows could show `0` for normal move-one choices. Web Prep now scores
+  opponent-turn strength from the opponent colour while keeping the existing
+  result/tie-break perspective unchanged, lazy hosted Prep sources pass a
+  separate strength side, and partial cloud coverage no longer treats a shown
+  row missing from the cloud move list as a full engine-loss cliff. Keep these
+  sides separate: `scoreForUser` remains UI/result perspective, while strength
+  follows the side whose candidate move is being evaluated.
 - The practical/blended strength benchmark now ignores one- and two-game WDL
   spikes unless they have meaningful position share. Tiny perfect-score rows
   can still display their own result, but they no longer define the `best WDL`

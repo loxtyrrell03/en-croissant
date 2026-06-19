@@ -788,6 +788,26 @@ describe("opponent prep helpers", () => {
         expect(strength.get("Nf3")?.score).toBeGreaterThan(70);
     });
 
+    test("engine strength does not collapse unmatched cloud rows to zero", () => {
+        const settings = normalizePrepBuilderSettings({
+            mode: "engine",
+            maxEngineCpLoss: 70,
+        });
+        const strength = getPrepMoveStrengthMap({
+            side: "white",
+            settings,
+            openings: [
+                { move: "e4", white: 80, draw: 10, black: 10 },
+                { move: "d4", white: 60, draw: 20, black: 20 },
+            ],
+            engineMoves: [{ san: "Nf3", scoreCpForSide: 35, rank: 1, source: "lichess" }],
+        });
+
+        expect(strength.get("e4")?.engineCpLoss).toBeNull();
+        expect(strength.get("e4")?.engineUnsafe).toBe(true);
+        expect(strength.get("e4")?.score).toBeGreaterThan(0);
+    });
+
     test("prep builder branch priority accounts for practical danger", () => {
         const settings = normalizePrepBuilderSettings({ mode: "smart" });
         const riskyBranch = getPrepBuilderBranchValue({

@@ -144,6 +144,11 @@ export function getWebPrepMoveKey(fen: string, move: string) {
     return `${normalizeWebFen(fen)}:${move}`;
 }
 
+export function getWebPrepStrengthSideForFen(fen: string, userColor: WebColor): WebColor {
+    const opponentColor = oppositeWebColor(userColor);
+    return getFenColor(fen || INITIAL_FEN) === opponentColor ? opponentColor : userColor;
+}
+
 export function findWebPrepBranchStart({
     line,
     rootPly,
@@ -243,6 +248,7 @@ export function getWebPrepMoveStats({
     const key = normalizeWebFen(fen || INITIAL_FEN);
     const userColor = prep?.userColor ?? getFenColor(fen || INITIAL_FEN);
     const opponentColor = oppositeWebColor(userColor);
+    const strengthSide = getWebPrepStrengthSideForFen(fen || INITIAL_FEN, userColor);
     const prepMode = prep?.mode ?? "player";
     const opponent = prep?.opponent.trim().toLowerCase() ?? "";
     const bucket = new Map<string, MoveBucket>();
@@ -281,7 +287,7 @@ export function getWebPrepMoveStats({
     const strengthMap = getPrepMoveStrengthMap({
         openings,
         engineMoves,
-        side: userColor,
+        side: strengthSide,
         settings: getWebPrepStrengthSettings(prep?.builder),
     });
 
@@ -524,6 +530,7 @@ export function getWebHostedPositionMoveStats({
     fen,
     side,
     sourceLabel = "database move",
+    strengthSide = side,
     strengthSettings,
     engineMoves,
 }: {
@@ -531,6 +538,7 @@ export function getWebHostedPositionMoveStats({
     fen: string;
     side: WebColor;
     sourceLabel?: string;
+    strengthSide?: WebColor;
     strengthSettings?: Partial<PrepBuilderSettings> | null;
     engineMoves?: PrepBuilderEngineMove[];
 }): WebPrepMoveStat[] {
@@ -546,7 +554,7 @@ export function getWebHostedPositionMoveStats({
     const strengthMap = getPrepMoveStrengthMap({
         openings,
         engineMoves,
-        side,
+        side: strengthSide,
         settings: getWebPrepStrengthSettings(strengthSettings),
     });
 

@@ -15,6 +15,8 @@ export const DEFAULT_MOVE_STRENGTH_SETTINGS: MoveStrengthSettings = {
 export const DATABASE_STRENGTH_FULL_STEP = 0.18;
 export const ENGINE_CLUSTER_FULL_PRACTICAL_SPREAD_CP = 30;
 const TINY_SAMPLE_USAGE_SHARE = 0.08;
+const MISSING_ENGINE_SCORE_LOSS_NORM = 0.75;
+const PRACTICAL_MISSING_ENGINE_SCORE_LOSS_NORM = 0.35;
 
 export function normalizeMoveStrengthSettings(
     settings: Partial<MoveStrengthSettings> | null | undefined,
@@ -90,8 +92,8 @@ export function evaluateMoveStrength({
         ? 0
         : engineCpLoss === null
           ? normalized.mode === "practical"
-              ? 0.55
-              : 1.25
+              ? PRACTICAL_MISSING_ENGINE_SCORE_LOSS_NORM
+              : MISSING_ENGINE_SCORE_LOSS_NORM
           : clampNumber(engineCpLoss / maxEngineCpLoss, 0, 1.5, 0);
     const databaseLossNorm =
         databaseWdlLoss === null

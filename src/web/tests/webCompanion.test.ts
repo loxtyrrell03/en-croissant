@@ -37,6 +37,7 @@ import {
     getWebPrepBranchCoverageStats,
     getWebPrepMoveKey,
     getWebPrepMoveStats,
+    getWebPrepStrengthSideForFen,
     sortWebDatabaseMoveStats,
 } from "@/web/prepIndex";
 import {
@@ -319,6 +320,62 @@ describe("web companion PGN prep index", () => {
             black: "Opponent",
             date: "2026.06.01",
         });
+    });
+
+    test("scores phone prep opponent moves from the opponent side at move one", () => {
+        const imported = parsePgnDatabase(
+            "sebastian-prep.pgn",
+            `
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.01"]
+[Round "?"]
+[White "Sebastian443"]
+[Black "Me"]
+[Result "1-0"]
+
+1. e4 c5 1-0
+
+[Event "Training"]
+[Site "?"]
+[Date "2026.06.02"]
+[Round "?"]
+[White "Sebastian443"]
+[Black "Me"]
+[Result "0-1"]
+
+1. d4 d5 0-1
+`,
+            1,
+        );
+
+        const startFen = imported.games[0].moves[0].fenBefore;
+        expect(getWebPrepStrengthSideForFen(startFen, "black")).toBe("white");
+
+        const stats = getWebPrepMoveStats({
+            games: imported.games,
+            fen: startFen,
+            prep: {
+                mode: "player",
+                opponent: "Sebastian443",
+                userColor: "black",
+                sourceIds: [imported.database.id],
+                builder: { mode: "engine", useCloudEngine: true, maxEngineCpLoss: 70 },
+            },
+            engineMoves: [
+                { san: "e4", scoreCpForSide: 35, rank: 1, source: "lichess" },
+                { san: "d4", scoreCpForSide: 20, rank: 2, source: "lichess" },
+            ],
+        });
+        const e4 = stats.find((stat) => stat.move === "e4");
+        const d4 = stats.find((stat) => stat.move === "d4");
+
+        expect(e4?.sourceLabel).toBe("opponent move");
+        expect(e4?.scoreForUser).toBe(0);
+        expect(e4?.strength?.engineCpLoss).toBe(0);
+        expect(e4?.strength?.databaseWdlLoss).toBe(0);
+        expect(d4?.strength?.engineCpLoss).toBe(15);
+        expect(d4?.strength?.databaseWdlLoss).toBeGreaterThan(0);
     });
 
     test("general prep mode uses the database position without player filtering", () => {

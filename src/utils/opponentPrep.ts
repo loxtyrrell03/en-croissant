@@ -198,6 +198,8 @@ export const DEFAULT_PREP_BUILDER_SETTINGS: PrepBuilderSettings = {
 const DATABASE_STRENGTH_FULL_STEP = 0.18;
 const DATABASE_STRENGTH_BENCHMARK_MIN_GAMES = 3;
 const DATABASE_STRENGTH_BENCHMARK_MIN_SHARE = 0.08;
+const MISSING_ENGINE_SCORE_LOSS_NORM = 0.75;
+const PRACTICAL_MISSING_ENGINE_SCORE_LOSS_NORM = 0.35;
 
 export function getFenTurn(fen: string): PrepColor {
     return fen.trim().split(/\s+/)[1] === "b" ? "black" : "white";
@@ -1625,8 +1627,8 @@ function evaluatePrepStrengthCandidates({
                 ? 0
                 : engineCpLoss === null
                   ? settings.mode === "practical"
-                      ? 0.55
-                      : 1.25
+                      ? PRACTICAL_MISSING_ENGINE_SCORE_LOSS_NORM
+                      : MISSING_ENGINE_SCORE_LOSS_NORM
                   : clamp(engineCpLoss / maxEngineCpLoss, 0, 1.5);
         const databaseLossNorm =
             databaseWdlLoss === null
