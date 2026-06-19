@@ -116,6 +116,18 @@ model, implementation map, and verification expectations for this app.
   separate 0- or 1-ply games with distinct opponents and Lichess IDs. The
   Southall manifest/layout sidecars were updated and
   `_lichess_import_summary.json` was added beside the prep folders.
+- A later 2026-06-19 speed-focused Southall follow-up added `Onuoha, Obioma`
+  Lichess `obiosky` to the same `Online Games Southall` app-side folder as
+  `02 Onuoha, Obioma - Lichess obiosky.db3`. Lichess filtered account exports
+  were capped at about 10,000 games per request and older-page pagination was
+  stopped at the user's request to hurry, so this database intentionally uses
+  the newest capped export slice rather than a full historical crawl. After
+  removing 203 `From Position` games, the source PGN and converted database
+  both contain 9,793 standard games from 2022-03-20 through 2026-06-13, with no
+  converter skips and no duplicate Lichess game IDs. One broad canonical
+  duplicate-style hit is only two separate abandoned games with distinct
+  Lichess IDs and UTC times. The Southall manifest, layout markdown, and
+  `_lichess_import_summary.json` sidecar were updated with this limitation.
 - On 2026-06-19, `docs/opponent-prep-agent-guide.md` was updated from the
   Southall workflow: future prep runs must spawn one online-account search
   subagent per player when tooling is available, import plausible Chess.com
