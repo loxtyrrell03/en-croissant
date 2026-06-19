@@ -29,7 +29,8 @@ use crate::{
         normalize_games, position_index_key, position_index_key_from_fen_key,
         schema::*,
         search_index::{
-            get_index_path, GameResult, MmapSearchIndex, PositionIndexKey, SearchGameEntryRef,
+            get_index_path, GameResult, MmapSearchIndex, PositionIndexKey, PositionOccurrenceRef,
+            SearchGameEntryRef,
         },
         ConnectionOptions, MaterialCount,
     },
@@ -2230,7 +2231,7 @@ fn search_position_from_occurrences(
     include_games: bool,
     max_samples: usize,
 ) -> Result<(Vec<PositionStats>, Vec<i32>), Error> {
-    let occurrences = index.position_occurrences(legacy_position_index_key(&exact.position));
+    let occurrences = position_occurrences_for_exact_query(index, exact);
     let mut openings: HashMap<String, PositionStats> = HashMap::new();
     let mut top_games = BinaryHeap::with_capacity(max_samples + 1);
     let mut seen_games = HashSet::new();
@@ -2292,6 +2293,42 @@ fn search_position_from_occurrences(
     };
 
     Ok((openings, ids))
+}
+
+fn position_occurrences_for_exact_query(
+    index: &MmapSearchIndex,
+    exact: &ExactData,
+) -> Vec<PositionOccurrenceRef> {
+    let board_turn_key = legacy_position_index_key(&exact.position);
+    let exact_key = position_index_key(&exact.position);
+    let mut occurrences = index.position_occurrences(board_turn_key);
+
+    if exact_key != board_turn_key {
+        occurrences.extend(index.position_occurrences(exact_key));
+    }
+
+    occurrences
+}
+
+fn should_fallback_after_occurrence_search(
+    openings: &[PositionStats],
+    game_ids: &[i32],
+    include_openings: bool,
+    include_games: bool,
+) -> bool {
+    let missing_playable_openings =
+        include_openings && !openings.iter().any(position_stats_has_playable_move);
+    let missing_games = include_games && game_ids.is_empty();
+
+    missing_playable_openings || missing_games
+}
+
+fn position_stats_has_playable_move(opening: &PositionStats) -> bool {
+    let move_text = opening.move_.trim();
+    !move_text.is_empty()
+        && move_text != "*"
+        && move_text != "Total"
+        && opening.white + opening.draw + opening.black > 0
 }
 
 fn plan_pieces_from_lines<I>(lines: I) -> Vec<PlanExplorerPiece>
@@ -3389,30 +3426,46 @@ pub async fn search_position(
                 max_samples,
             )?;
 
-            let (white_players, black_players) = diesel::alias!(players as white, players as black);
-            let games: Vec<(Game, Player, Player, Event, Site)> = games::table
-                .inner_join(white_players.on(games::white_id.eq(white_players.field(players::id))))
-                .inner_join(black_players.on(games::black_id.eq(black_players.field(players::id))))
-                .inner_join(events::table.on(games::event_id.eq(events::id)))
-                .inner_join(sites::table.on(games::site_id.eq(sites::id)))
-                .filter(games::id.eq_any(ids))
-                .order((games::white_elo.desc(), games::black_elo.desc()))
-                .load(db)?;
-            let mut normalized_games = normalize_games(games);
-            sort_master_games(&mut normalized_games);
-            let file_path = file.clone();
+            if should_fallback_after_occurrence_search(
+                &openings,
+                &ids,
+                include_openings,
+                include_games,
+            ) {
+                info!(
+                    "occurrence-index search on {tab_id} returned no playable result; falling back to scan"
+                );
+            } else {
+                let (white_players, black_players) =
+                    diesel::alias!(players as white, players as black);
+                let games: Vec<(Game, Player, Player, Event, Site)> = games::table
+                    .inner_join(
+                        white_players.on(games::white_id.eq(white_players.field(players::id))),
+                    )
+                    .inner_join(
+                        black_players.on(games::black_id.eq(black_players.field(players::id))),
+                    )
+                    .inner_join(events::table.on(games::event_id.eq(events::id)))
+                    .inner_join(sites::table.on(games::site_id.eq(sites::id)))
+                    .filter(games::id.eq_any(ids))
+                    .order((games::white_elo.desc(), games::black_elo.desc()))
+                    .load(db)?;
+                let mut normalized_games = normalize_games(games);
+                sort_master_games(&mut normalized_games);
+                let file_path = file.clone();
 
-            state.line_cache.insert(
-                (query.clone(), file.clone()),
-                (openings.clone(), normalized_games.clone()),
-            );
-            state.search_collisions.remove(&(query, file_path));
+                state.line_cache.insert(
+                    (query.clone(), file.clone()),
+                    (openings.clone(), normalized_games.clone()),
+                );
+                state.search_collisions.remove(&(query, file_path));
 
-            drop(permit);
-            finish_cancelable_db_request(&state, &tab_id, &cancel_flag);
-            info!("finished occurrence-index search in {:?}", start.elapsed());
+                drop(permit);
+                finish_cancelable_db_request(&state, &tab_id, &cancel_flag);
+                info!("finished occurrence-index search in {:?}", start.elapsed());
 
-            return Ok((openings, normalized_games));
+                return Ok((openings, normalized_games));
+            }
         }
     }
 
@@ -4077,6 +4130,43 @@ mod tests {
     }
 
     #[test]
+    fn occurrence_empty_playable_result_triggers_scan_fallback() {
+        let terminal_only = vec![PositionStats {
+            move_: "*".to_string(),
+            white: 1,
+            draw: 0,
+            black: 0,
+            last_played: Some("2024.01.01".to_string()),
+        }];
+        let playable = vec![PositionStats {
+            move_: "Nxd4".to_string(),
+            white: 1,
+            draw: 0,
+            black: 0,
+            last_played: Some("2024.01.01".to_string()),
+        }];
+
+        assert!(should_fallback_after_occurrence_search(
+            &terminal_only,
+            &[],
+            true,
+            false
+        ));
+        assert!(!should_fallback_after_occurrence_search(
+            &playable,
+            &[],
+            true,
+            false
+        ));
+        assert!(should_fallback_after_occurrence_search(
+            &[],
+            &[],
+            false,
+            true
+        ));
+    }
+
+    #[test]
     fn opening_health_classifies_repertoire_gap() {
         let classification = classify_opening_health(5, 40, Some(4), 0.55, Some(0.55), 3, 20, 3);
 
@@ -4489,6 +4579,65 @@ mod tests {
 
         assert_eq!(openings.len(), 1);
         assert_eq!(openings[0].move_, "e5");
+    }
+
+    #[test]
+    fn occurrence_search_uses_exact_key_when_board_turn_key_is_missing() {
+        let dir = tempdir().unwrap();
+        let index_path = dir.path().join("exact-position.ecsi");
+        let fen_text = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        let fen = Some(fen_text);
+        let position = starting_position(&fen).unwrap();
+        let next_move = Move::Normal {
+            role: Role::Pawn,
+            from: Square::E2,
+            to: Square::E4,
+            capture: None,
+            promotion: None,
+        };
+        let next_byte = encode_move(&next_move, &position).unwrap();
+        let entry = SearchGameEntry::from_game_data(
+            1,
+            10,
+            20,
+            None,
+            Some("*".to_string()),
+            vec![next_byte],
+            Some(fen_text.to_string()),
+            0,
+            0,
+            0,
+            Some(2500),
+            Some(2500),
+        );
+        let mut search_index = SearchIndex::with_capacity(1);
+        search_index.push_occurrence(PositionOccurrence::new(
+            position_index_key(&position),
+            0,
+            0,
+            Some(next_byte),
+        ));
+        search_index.push(entry);
+        search_index.write_to(&index_path).unwrap();
+
+        let index = MmapSearchIndex::open(&index_path).unwrap();
+        let PositionQuery::Exact(exact) = PositionQuery::exact_from_fen(fen_text).unwrap() else {
+            panic!("expected exact query");
+        };
+        let (openings, _) = search_position_from_occurrences(
+            &index,
+            &GameQuery::default(),
+            &exact,
+            None,
+            &AtomicBool::new(false),
+            true,
+            false,
+            10,
+        )
+        .unwrap();
+
+        assert_eq!(openings.len(), 1);
+        assert_eq!(openings[0].move_, "e4");
     }
 
     #[test]

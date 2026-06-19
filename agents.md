@@ -2409,6 +2409,17 @@ from 2026-04-24 through 2026-05-03.
   anchor, and non-pawn setup routes keep their real route instead of being
   flattened to the first move. Treat `Verified setup` as the only UI label that
   should imply a setup recommendation; other labels are evidence categories.
+- On 2026-06-19, local database position search was hardened after Prep and
+  Database panels could falsely show no threshold-eligible moves in common
+  opening positions such as `1. e4 c5 2. Nf3 g6 3. d4 cxd4` from the
+  Sebastian443 Chess.com database. The root issue is backend indexed-search
+  fragility, not the Prep threshold UI: exact-position searches now consult
+  both board/turn and exact occurrence keys, and if the occurrence index returns
+  no playable continuation or no game sample, search falls back to the scan
+  path instead of caching a false empty result. Preserve this invariant for all
+  database move consumers: an indexed search result with only `*`, `Total`, or
+  zero rows is not trustworthy enough to drive an empty-state message until the
+  scan path has had a chance to recover.
 
 ## Verification Expectations
 
