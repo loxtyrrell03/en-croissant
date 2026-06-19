@@ -535,6 +535,13 @@ Engine` selector on the phone workspace, and the active panel content starts
   setup buttons use compact copy, and picker folder/details text avoids wrapping
   long phrases. Keep these controls terse so the board-first phone surface does
   not lose usable width to repeated explanatory text.
+- On 2026-06-19, the shared Database/Prep source dropdown gained database
+  pinning and manual row order. Pins are stored by database/source value in
+  browser-safe localStorage, show a compact pin marker, appear as top
+  quick-access rows before folder navigation, and can be reordered with row
+  up/down actions; normal rows can also be reordered within their pinned or
+  unpinned section. Keep this behavior in `DatabaseFolderSelect` so desktop and
+  phone Database/Prep pickers stay consistent.
 - On 2026-06-12, the phone Database tab gained the same setup/start split as
   Prep. Database setup now keeps source/view/sort controls in a compact header
   with a `Start` action, and started Database mode hides those controls so only
