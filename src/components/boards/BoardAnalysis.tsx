@@ -438,7 +438,7 @@ function BoardAnalysis() {
                         <DeferredPanel>
                           <ResponsivePanel>
                             {underBoardMode === "database" ? (
-                              <DatabasePanel />
+                              <DatabasePanel scope="underBoard" />
                             ) : (
                               <OpponentPrepPanel underBoard />
                             )}

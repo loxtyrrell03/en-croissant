@@ -1203,6 +1203,13 @@ Lightweight Lesson.pgn` was added beside the Black weak deck with a
 - Under-board Prep stays more compact than the right-side Prep panel: it forces
   dense controls/tables and replaces the large off-start blue alert with a
   one-line status so the move table remains the primary content.
+- On 2026-06-19, the under-board Database/Prep surfaces were intentionally
+  split from the right-side Database/Prep surfaces. Under-board Database now has
+  its own per-tab source, local filters, Lichess/Masters filters, tab, and move
+  strength side state; under-board Prep has its own prep workspace and saved
+  defaults seeded from the under-board database state. Keep these placement
+  states independent so a prep workflow can compare one database under the
+  board with another database or prep source on the right.
 - Engine output is docked into the active panel where possible and hidden when
   disabled.
 - Board tab labels use icon-first compact tabs with hover tooltips.

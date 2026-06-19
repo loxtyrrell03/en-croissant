@@ -8,21 +8,29 @@ import {
   IconHourglassHigh,
   IconSend,
 } from "@tabler/icons-react";
-import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 import { match } from "ts-pattern";
 import ToggleButtonGroup, {
   type ToggleButtonGroupOption,
 } from "@/components/common/ToggleButtonGroup";
-import { lichessOptionsAtom } from "@/state/atoms";
 import { capitalize } from "@/utils/format";
 import { MIN_DATE } from "@/utils/lichess/api";
-import type { LichessGameSpeed, LichessRating } from "@/utils/lichess/explorer";
+import type {
+  LichessGamesOptions,
+  LichessGameSpeed,
+  LichessRating,
+} from "@/utils/lichess/explorer";
 
-const LichessOptionsPanel = () => {
+const LichessOptionsPanel = ({
+  options,
+  setOptions,
+}: {
+  options: LichessGamesOptions;
+  setOptions: (
+    value: LichessGamesOptions | ((current: LichessGamesOptions) => LichessGamesOptions),
+  ) => void;
+}) => {
   const { t } = useTranslation();
-
-  const [options, setOptions] = useAtom(lichessOptionsAtom);
 
   const timeControls: LichessGameSpeed[] = [
     "ultraBullet",

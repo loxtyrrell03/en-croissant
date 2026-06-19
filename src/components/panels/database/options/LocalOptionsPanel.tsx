@@ -12,18 +12,24 @@ import { DateInput } from "@mantine/dates";
 import { type Piece, parseSquare } from "chessops";
 import { EMPTY_BOARD_FEN, makeFen, parseFen } from "chessops/fen";
 import dayjs from "dayjs";
-import { useAtom } from "jotai";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Chessground } from "@/chessground/Chessground";
 import PiecesGrid from "@/components/boards/PiecesGrid";
-import { currentLocalOptionsAtom } from "@/state/atoms";
+import type { LocalOptions } from "../DatabasePanel";
 import { DatabasePerspectiveControls } from "../DatabasePerspectiveControls";
 
-function LocalOptionsPanel({ boardFen }: { boardFen: string }) {
+function LocalOptionsPanel({
+  boardFen,
+  options,
+  setOptions,
+}: {
+  boardFen: string;
+  options: LocalOptions;
+  setOptions: (value: LocalOptions | ((current: LocalOptions) => LocalOptions)) => void;
+}) {
   const { t } = useTranslation();
   const boardRef = useRef(null);
-  const [options, setOptions] = useAtom(currentLocalOptionsAtom);
 
   const setSimilarStructure = async (fen: string) => {
     const setup = parseFen(fen).unwrap();

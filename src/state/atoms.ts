@@ -447,6 +447,9 @@ export const dailyGoalAutoStartRequestAtom = atom<{ createdAt: number } | null>(
 
 export const referenceDbAtom = atomWithStorage<string | null>("reference-database", null);
 
+const underBoardReferenceDbFamily = atomFamily((_tab: string) => atom<string | null>(null));
+export const currentUnderBoardReferenceDbAtom = tabValue(underBoardReferenceDbFamily);
+
 export type DatabaseSourcePreference =
     | {
           type: "local";
@@ -558,15 +561,33 @@ export const opponentPrepSettingsAtom = atomWithStorage<OpponentPrepStoredSettin
     { getOnInit: true },
 );
 
+export const underBoardOpponentPrepSettingsAtom = atomWithStorage<OpponentPrepStoredSettings>(
+    "under-board-opponent-prep-settings",
+    defaultOpponentPrepStoredSettings(),
+    undefined,
+    { getOnInit: true },
+);
+
 const opponentPrepFamily = atomFamily((_tab: string) =>
     atom<OpponentPrepState>(defaultOpponentPrepState()),
 );
 export const currentOpponentPrepAtom = tabValue(opponentPrepFamily);
 
+const underBoardOpponentPrepFamily = atomFamily((_tab: string) =>
+    atom<OpponentPrepState>(defaultOpponentPrepState()),
+);
+export const currentUnderBoardOpponentPrepAtom = tabValue(underBoardOpponentPrepFamily);
+
 export const databaseMoveHealthSideAtom = atomWithStorage<OpeningMoveHealthSidePreference>(
     "database-move-health-side",
     "sideToMove",
 );
+
+export const underBoardDatabaseMoveHealthSideAtom =
+    atomWithStorage<OpeningMoveHealthSidePreference>(
+        "under-board-database-move-health-side",
+        "sideToMove",
+    );
 
 export const selectedPuzzleDbAtom = atomWithStorage<string | null>("puzzle-db", null);
 
@@ -893,10 +914,7 @@ function tabValue<T extends object | string | boolean | number | null | undefine
 export type PuzzleSolveMode = "normal" | "blindfold";
 
 export const hidePuzzleRatingAtom = atomWithStorage<boolean>("hide-puzzle-rating", false);
-export const puzzleSolveModeAtom = atomWithStorage<PuzzleSolveMode>(
-    "puzzle-solve-mode",
-    "normal",
-);
+export const puzzleSolveModeAtom = atomWithStorage<PuzzleSolveMode>("puzzle-solve-mode", "normal");
 export const puzzleSelectionModeAtom = atomWithStorage<"smart" | "manual">(
     "puzzle-selection-mode",
     "smart",
@@ -965,37 +983,64 @@ export const currentShowVariationsAtom = tabValue(showVariationsFamily);
 export const tabFamily = atomFamily((_tab: string) => atom("info"));
 export const currentTabSelectedAtom = tabValue(tabFamily);
 
-const localOptionsFamily = atomFamily((_tab: string) =>
-    atom<LocalOptions>({
-        path: null,
-        type: "exact",
-        fen: "",
-        player: null,
-        playerName: "",
-        color: "white",
-        result: "any",
-    }),
-);
+const defaultLocalOptions = (): LocalOptions => ({
+    path: null,
+    type: "exact",
+    fen: "",
+    player: null,
+    playerName: "",
+    color: "white",
+    result: "any",
+});
+
+const localOptionsFamily = atomFamily((_tab: string) => atom<LocalOptions>(defaultLocalOptions()));
 export const currentLocalOptionsAtom = tabValue(localOptionsFamily);
+
+const underBoardLocalOptionsFamily = atomFamily((_tab: string) =>
+    atom<LocalOptions>(defaultLocalOptions()),
+);
+export const currentUnderBoardLocalOptionsAtom = tabValue(underBoardLocalOptionsFamily);
+
+const defaultLichessGamesOptions = (): LichessGamesOptions => ({
+    ratings: [1000, 1200, 1400, 1600, 1800, 2000, 2200, 2500],
+    speeds: ["bullet", "blitz", "rapid", "classical", "correspondence"],
+    color: "white",
+});
 
 export const lichessOptionsAtom = atomWithStorage<LichessGamesOptions>(
     "lichess-all-options",
-    {
-        ratings: [1000, 1200, 1400, 1600, 1800, 2000, 2200, 2500],
-        speeds: ["bullet", "blitz", "rapid", "classical", "correspondence"],
-        color: "white",
-    },
+    defaultLichessGamesOptions(),
     createZodStorage(lichessGamesOptionsSchema, localStorage),
     {
         getOnInit: true,
     },
 );
 
+export const underBoardLichessOptionsAtom = atomWithStorage<LichessGamesOptions>(
+    "under-board-lichess-all-options",
+    defaultLichessGamesOptions(),
+    createZodStorage(lichessGamesOptionsSchema, localStorage),
+    {
+        getOnInit: true,
+    },
+);
+
+const defaultMasterGamesOptions = (): MasterGamesOptions => ({
+    topGames: 15,
+});
+
 export const masterOptionsAtom = atomWithStorage<MasterGamesOptions>(
     "lichess-master-options",
+    defaultMasterGamesOptions(),
+    createZodStorage(masterOptionsSchema, localStorage),
     {
-        topGames: 15,
+        getOnInit: true,
     },
+);
+
+export const underBoardMasterOptionsAtom = atomWithStorage<MasterGamesOptions>(
+    "under-board-lichess-master-options",
+    defaultMasterGamesOptions(),
     createZodStorage(masterOptionsSchema, localStorage),
     {
         getOnInit: true,
@@ -1007,8 +1052,16 @@ const dbTypeFamily = atomFamily((_tab: string) =>
 );
 export const currentDbTypeAtom = tabValue(dbTypeFamily);
 
+const underBoardDbTypeFamily = atomFamily((_tab: string) =>
+    atom<"local" | "lch_all" | "lch_master">("lch_all"),
+);
+export const currentUnderBoardDbTypeAtom = tabValue(underBoardDbTypeFamily);
+
 const dbTabFamily = atomFamily((_tab: string) => atom("stats"));
 export const currentDbTabAtom = tabValue(dbTabFamily);
+
+const underBoardDbTabFamily = atomFamily((_tab: string) => atom("stats"));
+export const currentUnderBoardDbTabAtom = tabValue(underBoardDbTabFamily);
 
 const compareDatabasesFamily = atomFamily((_tab: string) => atom<string[]>([]));
 export const currentCompareDatabasesAtom = tabValue(compareDatabasesFamily);

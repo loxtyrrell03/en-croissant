@@ -27,6 +27,10 @@ import {
   currentDbTabAtom,
   currentDbTypeAtom,
   currentLocalOptionsAtom,
+  currentUnderBoardDbTabAtom,
+  currentUnderBoardDbTypeAtom,
+  currentUnderBoardLocalOptionsAtom,
+  currentUnderBoardReferenceDbAtom,
   currentTabAtom,
   databasePanelSettingsByFileAtom,
   databaseMoveHealthSideAtom,
@@ -38,6 +42,9 @@ import {
   referenceDbAtom,
   sessionsAtom,
   type StoredDatabaseLocalOptions,
+  underBoardDatabaseMoveHealthSideAtom,
+  underBoardLichessOptionsAtom,
+  underBoardMasterOptionsAtom,
 } from "@/state/atoms";
 import {
   cancelDatabaseSearch,
@@ -102,6 +109,8 @@ type MasterGamePlayerFilters = {
   anyPlayerText: string;
   anyPlayerId?: number | null;
 };
+
+type DatabasePanelScope = "side" | "underBoard";
 
 const MASTER_GAME_DEFAULT_LIMIT = 80;
 const MASTER_GAME_PLAYER_TEXT_LIMIT = 5_000;
@@ -219,6 +228,11 @@ function toStoredLocalOptions(options: LocalOptions): StoredDatabaseLocalOptions
   };
 }
 
+function getScopedDatabasePanelSettingsKey(settingsKey: string | null, scope: DatabasePanelScope) {
+  if (!settingsKey || scope === "side") return settingsKey;
+  return `${settingsKey}::under-board-database`;
+}
+
 async function fetchOpening(
   db: DBType,
   tab: string,
@@ -291,7 +305,7 @@ async function fetchOpening(
     .exhaustive();
 }
 
-function DatabasePanel() {
+function DatabasePanel({ scope = "side" }: { scope?: DatabasePanelScope }) {
   const { t } = useTranslation();
   const panelDensity = usePanelDensity();
   const dense = panelDensity === "dense";
@@ -301,21 +315,36 @@ function DatabasePanel() {
 
   const store = useContext(TreeStateContext)!;
   const fen = useStore(store, (s) => s.currentNode().fen);
-  const [referenceDatabase, setReferenceDatabase] = useAtom(referenceDbAtom);
+  const referenceDatabaseAtom =
+    scope === "underBoard" ? currentUnderBoardReferenceDbAtom : referenceDbAtom;
+  const localOptionsAtom =
+    scope === "underBoard" ? currentUnderBoardLocalOptionsAtom : currentLocalOptionsAtom;
+  const dbTypeAtom = scope === "underBoard" ? currentUnderBoardDbTypeAtom : currentDbTypeAtom;
+  const dbTabAtom = scope === "underBoard" ? currentUnderBoardDbTabAtom : currentDbTabAtom;
+  const lichessOptionsStateAtom =
+    scope === "underBoard" ? underBoardLichessOptionsAtom : lichessOptionsAtom;
+  const masterOptionsStateAtom =
+    scope === "underBoard" ? underBoardMasterOptionsAtom : masterOptionsAtom;
+  const moveHealthSideAtom =
+    scope === "underBoard" ? underBoardDatabaseMoveHealthSideAtom : databaseMoveHealthSideAtom;
+  const [referenceDatabase, setReferenceDatabase] = useAtom(referenceDatabaseAtom);
   const [defaultDatabaseSource, setDefaultDatabaseSource] = useAtom(defaultDatabaseSourceAtom);
   const [databasePanelSettingsByFile, setDatabasePanelSettingsByFile] = useAtom(
     databasePanelSettingsByFileAtom,
   );
   const tab = useAtomValue(currentTabAtom);
-  const settingsKey = useMemo(() => getTabWorkspaceKey(tab), [tab]);
+  const settingsKey = useMemo(
+    () => getScopedDatabasePanelSettingsKey(getTabWorkspaceKey(tab), scope),
+    [scope, tab],
+  );
   const savedPanelSettings = settingsKey ? databasePanelSettingsByFile[settingsKey] : undefined;
   const sessions = useAtomValue(sessionsAtom);
   const [debouncedFen] = useDebouncedValue(fen, 50);
-  const [lichessOptions, setLichessOptions] = useAtom(lichessOptionsAtom);
-  const [masterOptions, setMasterOptions] = useAtom(masterOptionsAtom);
-  const [localOptions, setLocalOptions] = useAtom(currentLocalOptionsAtom);
-  const [db, setDb] = useAtom(currentDbTypeAtom);
-  const [moveHealthSide, setMoveHealthSide] = useAtom(databaseMoveHealthSideAtom);
+  const [lichessOptions, setLichessOptions] = useAtom(lichessOptionsStateAtom);
+  const [masterOptions, setMasterOptions] = useAtom(masterOptionsStateAtom);
+  const [localOptions, setLocalOptions] = useAtom(localOptionsAtom);
+  const [db, setDb] = useAtom(dbTypeAtom);
+  const [moveHealthSide, setMoveHealthSide] = useAtom(moveHealthSideAtom);
   const [openingSort, setOpeningSort] = useState<OpeningSort>("games");
   const [masterGamePlayerFilters, setMasterGamePlayerFilters] = useState<MasterGamePlayerFilters>({
     whitePlayer: null,
@@ -402,7 +431,7 @@ function DatabasePanel() {
     }))
     .exhaustive();
 
-  const [tabType, setTabType] = useAtom(currentDbTabAtom);
+  const [tabType, setTabType] = useAtom(dbTabAtom);
   const appliedSettingsKeyRef = useRef<string | null>(null);
   const skipNextPersistKeyRef = useRef<string | null>(null);
   const effectiveDefaultDatabaseSource = useMemo(
@@ -503,6 +532,7 @@ function DatabasePanel() {
     () =>
       [
         "database",
+        scope,
         tab?.value ?? "tab",
         db,
         debouncedFen,
@@ -526,6 +556,7 @@ function DatabasePanel() {
       masterGamePlayerFilters.whitePlayer,
       masterGamePlayerFilters.blackPlayer,
       masterGameTextPlayer?.id,
+      scope,
       tab?.value,
       tabType,
     ],
@@ -705,6 +736,7 @@ function DatabasePanel() {
           error={error}
           type={db}
           header={header}
+          referenceDatabase={referenceDatabase}
           missingExplorerToken={missingExplorerToken}
         >
           <OpeningsTable
@@ -722,6 +754,7 @@ function DatabasePanel() {
           error={error}
           type={db}
           header={header}
+          referenceDatabase={referenceDatabase}
           missingExplorerToken={missingExplorerToken}
         >
           <GamesTable
@@ -753,13 +786,24 @@ function DatabasePanel() {
           error={error}
           type={db}
           header={header}
+          referenceDatabase={referenceDatabase}
           missingExplorerToken={missingExplorerToken}
         >
           <ScrollArea flex={1} offsetScrollbars pt="sm">
             {match(db)
-              .with("local", () => <LocalOptionsPanel boardFen={debouncedFen} />)
-              .with("lch_all", () => <LichessOptionsPanel />)
-              .with("lch_master", () => <MasterOptionsPanel />)
+              .with("local", () => (
+                <LocalOptionsPanel
+                  boardFen={debouncedFen}
+                  options={localOptions}
+                  setOptions={setLocalOptions}
+                />
+              ))
+              .with("lch_all", () => (
+                <LichessOptionsPanel options={lichessOptions} setOptions={setLichessOptions} />
+              ))
+              .with("lch_master", () => (
+                <MasterOptionsPanel options={masterOptions} setOptions={setMasterOptions} />
+              ))
               .exhaustive()}
           </ScrollArea>
         </PanelWithError>
@@ -774,14 +818,14 @@ function PanelWithError(props: {
   type: string;
   header: React.ReactNode;
   children: React.ReactNode;
+  referenceDatabase: string | null;
   missingExplorerToken: boolean;
 }) {
-  const referenceDatabase = useAtomValue(referenceDbAtom);
   const { t } = useTranslation();
   const panelDensity = usePanelDensity();
   const compact = panelDensity !== "regular";
   let children = props.children;
-  if (props.type === "local" && !referenceDatabase) {
+  if (props.type === "local" && !props.referenceDatabase) {
     children = <NoDatabaseWarning />;
   }
   if (props.missingExplorerToken && props.type !== "local") {

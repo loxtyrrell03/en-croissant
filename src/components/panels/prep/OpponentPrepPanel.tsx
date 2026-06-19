@@ -67,6 +67,9 @@ import {
   currentLocalOptionsAtom,
   currentOpponentPrepAtom,
   currentTabAtom,
+  currentUnderBoardLocalOptionsAtom,
+  currentUnderBoardOpponentPrepAtom,
+  currentUnderBoardReferenceDbAtom,
   databaseConversionStateAtom,
   lichessOptionsAtom,
   masterOptionsAtom,
@@ -76,6 +79,9 @@ import {
   sessionsAtom,
   storedDatabasesDirAtom,
   tabsAtom,
+  underBoardLichessOptionsAtom,
+  underBoardMasterOptionsAtom,
+  underBoardOpponentPrepSettingsAtom,
   type OpponentPrepState,
   type OpponentPrepStoredSettings,
   type StoredDatabaseLocalOptions,
@@ -325,19 +331,39 @@ function getPrepCandidateRows({
   }));
 }
 
-function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
+type OpponentPrepPanelScope = "side" | "underBoard";
+
+function OpponentPrepPanel({
+  underBoard = false,
+  scope = underBoard ? "underBoard" : "side",
+}: {
+  underBoard?: boolean;
+  scope?: OpponentPrepPanelScope;
+}) {
   const store = useContext(TreeStateContext)!;
   const currentNode = useStore(store, (s) => s.currentNode());
   const currentFen = currentNode.fen;
   const currentPath = useStore(store, (s) => s.position);
   const root = useStore(store, (s) => s.root);
-  const [prep, setPrep] = useAtom(currentOpponentPrepAtom);
-  const [savedPrepSettings, setSavedPrepSettings] = useAtom(opponentPrepSettingsAtom);
-  const currentLocalOptions = useAtomValue(currentLocalOptionsAtom);
-  const lichessOptions = useAtomValue(lichessOptionsAtom);
-  const masterOptions = useAtomValue(masterOptionsAtom);
+  const prepAtom =
+    scope === "underBoard" ? currentUnderBoardOpponentPrepAtom : currentOpponentPrepAtom;
+  const prepSettingsAtom =
+    scope === "underBoard" ? underBoardOpponentPrepSettingsAtom : opponentPrepSettingsAtom;
+  const localOptionsAtom =
+    scope === "underBoard" ? currentUnderBoardLocalOptionsAtom : currentLocalOptionsAtom;
+  const lichessOptionsStateAtom =
+    scope === "underBoard" ? underBoardLichessOptionsAtom : lichessOptionsAtom;
+  const masterOptionsStateAtom =
+    scope === "underBoard" ? underBoardMasterOptionsAtom : masterOptionsAtom;
+  const referenceDatabaseAtom =
+    scope === "underBoard" ? currentUnderBoardReferenceDbAtom : referenceDbAtom;
+  const [prep, setPrep] = useAtom(prepAtom);
+  const [savedPrepSettings, setSavedPrepSettings] = useAtom(prepSettingsAtom);
+  const currentLocalOptions = useAtomValue(localOptionsAtom);
+  const lichessOptions = useAtomValue(lichessOptionsStateAtom);
+  const masterOptions = useAtomValue(masterOptionsStateAtom);
   const compareSettingsByFile = useAtomValue(comparePanelSettingsByFileAtom);
-  const referenceDb = useAtomValue(referenceDbAtom);
+  const referenceDb = useAtomValue(referenceDatabaseAtom);
   const sessions = useAtomValue(sessionsAtom);
   const [databaseDir] = useAtom(storedDatabasesDirAtom);
   const [, setConversionState] = useAtom(databaseConversionStateAtom);
@@ -503,6 +529,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
   const queryScope = useMemo(
     () =>
       JSON.stringify({
+        scope,
         mode: prepMode,
         source: prepSource,
         databasePath: prep.databasePath,
@@ -542,6 +569,7 @@ function OpponentPrepPanel({ underBoard = false }: { underBoard?: boolean }) {
       prep.result,
       prepMode,
       prepSource,
+      scope,
       prep.start_date,
     ],
   );
