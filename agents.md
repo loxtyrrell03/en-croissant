@@ -69,6 +69,26 @@ model, implementation map, and verification expectations for this app.
   source PGN games, 240 converted `.db3` games, latest known game date
   `2026.05.09`, and a clean canonical target-name audit with only
   `Mesropyan, Hayk` in both PGN tags and database player rows.
+- On 2026-06-19, Southall Congress 260620 U2400 prep was completed for every
+  section entrant except `Tyrrell, Lachlan`. Files-side folders were written to
+  `C:\Users\loxty\Documents\EnCroissant\Southall Congress 260620 U2400 player games`
+  and app-side databases were rebuilt in
+  `C:\Users\loxty\AppData\Roaming\org.encroissant.app\db` as
+  `southall congress 260620 u2400 prep - PLAYER.db3`. Sources checked included
+  local Mega by exact player ID, Chess-Results game search by FIDE ID, Lichess
+  FIDE pages, the full public Lichess broadcast monthly database from 2020-01
+  through 2026-05, Chessscope player pages, FIDE/ECF identity pages, public
+  web/TWIC searches, BritBase PGN files, ChessBites PGN pages, Chess.com public
+  game pages, and subagent-led online account research. Final source PGN /
+  converted `.db3` counts were: `Figeac, Aurelien` 52 / 52, `Onuoha, Obioma`
+  146 / 145, `Lapidus, Alexey M.` 173 / 173,
+  `Mokhber-Garcia, Sebastian` 480 / 477, and `Balmond, Tom` 146 / 145. The
+  remaining source/database count gaps came from converter-skipped malformed or
+  incomplete source PGNs and were reported rather than hidden. The canonical
+  name audit was clean for all five targets. Account labels used in folder
+  names were `figeac` low, `obiosky` high, `alex_lapidus` high but stale,
+  `Sebastian443` high, and `Tom_Balmond` high; no online account games were
+  imported.
 
 ## Local Browser Verification
 
