@@ -599,6 +599,11 @@ Engine` selector on the phone workspace, and the active panel content starts
   row missing from the cloud move list as a full engine-loss cliff. Keep these
   sides separate: `scoreForUser` remains UI/result perspective, while strength
   follows the side whose candidate move is being evaluated.
+- A later 2026-06-19 phone Prep sorting fix made started-mode manual sort
+  choices temporary to the current board position. Clicking a table header or
+  the compact sort menu can still inspect another metric, but navigating to the
+  next move resets the visible table to the saved automatic Prep sort defaults
+  (Usage for their/source moves and Strength for user replies by default).
 - The practical/blended strength benchmark now ignores one- and two-game WDL
   spikes unless they have meaningful position share. Tiny perfect-score rows
   can still display their own result, but they no longer define the `best WDL`
@@ -1224,7 +1229,9 @@ Lightweight Lesson.pgn` was added beside the Black weak deck with a
 - Prep move tables support clickable, keyboard-accessible column headers for
   local sorting, matching the Database tab expectation: Move, Games, Results,
   Prep, and State in opponent-move mode, and Move, Games, and WDL in candidate
-  reply mode.
+  reply mode. Manual column-header sorting is position-local: after the user
+  makes another move, Prep returns to its saved automatic defaults, normally
+  Usage for opponent/source moves and Strength for the user's candidate moves.
 - Under-board Prep stays more compact than the right-side Prep panel: it forces
   dense controls/tables and replaces the large off-start blue alert with a
   one-line status so the move table remains the primary content.

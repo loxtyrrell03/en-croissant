@@ -3528,7 +3528,12 @@ function PrepUnderBoardPanel({
     const nextSort = getDefaultWebPrepSortState(selectedPrepSortDefaults);
     setPrepSort(nextSort.opponent);
     setPrepCandidateSort(nextSort.candidate);
-  }, [activePrep?.id, selectedPrepSortDefaults.candidate, selectedPrepSortDefaults.opponent]);
+  }, [
+    activePrep?.id,
+    currentFen,
+    selectedPrepSortDefaults.candidate,
+    selectedPrepSortDefaults.opponent,
+  ]);
 
   useEffect(() => {
     if (onlineUsername || !activePrep?.opponent) return;

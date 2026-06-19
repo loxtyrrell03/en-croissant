@@ -438,8 +438,13 @@ function OpponentPrepPanel({
   );
 
   useEffect(() => {
-    setMoveTableSort(getDefaultPrepMoveTableSortState(prep.sortDefaults));
-  }, [prep.sortDefaults]);
+    setMoveTableSort(
+      getDefaultPrepMoveTableSortState({
+        opponent: prepSortDefaults.opponent,
+        candidate: prepSortDefaults.candidate,
+      }),
+    );
+  }, [currentFen, prepSortDefaults.candidate, prepSortDefaults.opponent]);
   const { data: databases } = useSWR("databases", () => getDatabases());
   const localDatabases = useMemo(
     () =>
