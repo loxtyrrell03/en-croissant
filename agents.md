@@ -147,6 +147,23 @@ model, implementation map, and verification expectations for this app.
   database games. The matching source PGN and `.import.json` live beside the
   `.db3`, and the Southall `_chesscom_import_summary.json`, `_manifest.json`,
   and `Southall database layout.md` sidecars were updated.
+- A later 2026-06-19 Southall added-entrant pass completed the full prep
+  pipeline for `Verbytski, Oleg` (FIDE 495506), while keeping the user's
+  explicit `Liang Qin Yi` exclusion. A dedicated online-account subagent
+  confirmed Chess.com `demyan7777` as high confidence and found a matching
+  Lichess `Demyan7777` lead. The Files-side folder is
+  `00 2092 - Verbytski, Oleg [cc demyan7777 high]`; 511 deduped raw OTB PGNs
+  were reduced to 505 playable top-level PGNs after six zero-move shells were
+  moved to `_excluded_empty_pgns_20260619`. The app-side OTB database
+  `00 Verbytski, Oleg - Southall U2400 OTB prep.db3` was rebuilt with 505
+  games, zero empty rows, zero duplicate game groups, and a clean canonical
+  `Verbytski, Oleg` player-name audit. Sources checked included local Mega by
+  exact player ID, Chess-Results by FIDE ID, Lichess FIDE rounds, the full
+  public Lichess broadcast database, Chessscope slug checks, TWIC/event PGN
+  attempts, FIDE/ECF pages, BritBase/public PGNs, and Chess.com archives.
+  The Chess.com opening comparison kept `demyan7777` high confidence: White is
+  an overwhelming 1.e4 match, recent 2026 Black games are Sicilian-heavy like
+  OTB, and only older/slower account games show a notable extra 1...e5 tendency.
 
 ## Local Browser Verification
 
