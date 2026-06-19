@@ -1368,8 +1368,11 @@ and `src/utils/lichess/study.ts`.
   move pool rather than the currently displayed `Show top` slice. The shared
   strength scorer caps missing-engine fallback scores so an unrelated or absent
   cloud move list cannot turn tiny WDL samples into confident top choices.
-  Database tables now prefer ChessDB all-move data when Lichess returns a
-  partial list that misses shown rows.
+  A follow-up tightened the same scorer with a final low-share one/two-game
+  sample cap in Smart/Practical modes, and made Prep treat Lichess Cloud as the
+  authoritative engine list whenever it is available, using ChessDB only as a
+  fallback when Lichess has no usable result. Database tables now prefer ChessDB
+  all-move data when Lichess returns a partial list that misses shown rows.
 - Prep settings now save through a persisted app setting record, including
   source/player filters, min games/show top, move-sort defaults, and strength
   builder settings, so changed controls survive leaving and reopening the app.

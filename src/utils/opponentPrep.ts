@@ -200,6 +200,10 @@ const DATABASE_STRENGTH_BENCHMARK_MIN_GAMES = 3;
 const DATABASE_STRENGTH_BENCHMARK_MIN_SHARE = 0.08;
 const MISSING_ENGINE_SCORE_LOSS_NORM = 0.75;
 const PRACTICAL_MISSING_ENGINE_SCORE_LOSS_NORM = 0.35;
+const LOW_SAMPLE_STRENGTH_CAP_MAX_GAMES = 2;
+const LOW_SAMPLE_STRENGTH_CAP_MAX_SHARE = 0.08;
+const LOW_SAMPLE_SMART_STRENGTH_CAP = 72;
+const LOW_SAMPLE_PRACTICAL_STRENGTH_CAP = 58;
 
 export function getFenTurn(fen: string): PrepColor {
     return fen.trim().split(/\s+/)[1] === "b" ? "black" : "white";
@@ -1645,7 +1649,9 @@ function evaluatePrepStrengthCandidates({
             databaseLossNorm,
             engineScoreSpreadCp,
         });
-        const score = Math.round((1 - clamp(strengthLoss, 0, 1)) * 100);
+        const lowSampleCap = getPrepLowSampleStrengthCap(candidate, settings);
+        const rawScore = Math.round((1 - clamp(strengthLoss, 0, 1)) * 100);
+        const score = Math.min(rawScore, lowSampleCap ?? 100);
 
         return {
             move: candidate.move,
@@ -1665,6 +1671,7 @@ function evaluatePrepStrengthCandidates({
                 engineMoves,
                 engineScoreSpreadCp,
                 settings,
+                lowSampleCap,
             }),
             engineRank: engine?.rank ?? null,
             strengthLoss,
@@ -1676,6 +1683,19 @@ function getPrepMissingEngineLossNorm(settings: PrepBuilderSettings) {
     return settings.mode === "practical"
         ? PRACTICAL_MISSING_ENGINE_SCORE_LOSS_NORM
         : MISSING_ENGINE_SCORE_LOSS_NORM;
+}
+
+function getPrepLowSampleStrengthCap(
+    candidate: PrepStrengthCandidate,
+    settings: PrepBuilderSettings,
+) {
+    if (settings.mode === "engine") return null;
+    if (candidate.total > LOW_SAMPLE_STRENGTH_CAP_MAX_GAMES) return null;
+    if ((candidate.usageShare ?? 0) >= LOW_SAMPLE_STRENGTH_CAP_MAX_SHARE) return null;
+
+    return settings.mode === "practical"
+        ? LOW_SAMPLE_PRACTICAL_STRENGTH_CAP
+        : LOW_SAMPLE_SMART_STRENGTH_CAP;
 }
 
 function getPrepStrengthDatabaseBaseline(candidates: PrepStrengthCandidate[]) {
@@ -1833,6 +1853,7 @@ function formatPrepStrengthDetail({
     engineMoves,
     engineScoreSpreadCp,
     settings,
+    lowSampleCap,
 }: {
     engineCp: number | null;
     engineCpLoss: number | null;
@@ -1841,6 +1862,7 @@ function formatPrepStrengthDetail({
     engineMoves: PrepBuilderEngineMove[];
     engineScoreSpreadCp: number | null;
     settings: PrepBuilderSettings;
+    lowSampleCap?: number | null;
 }) {
     const parts: string[] = [];
 
@@ -1875,6 +1897,10 @@ function formatPrepStrengthDetail({
                 ? `WDL best ${scoreText}`
                 : `WDL -${formatPrepWdlPointLoss(databaseWdlLoss)} pts (${scoreText})`,
         );
+    }
+
+    if (lowSampleCap !== null && lowSampleCap !== undefined) {
+        parts.push(`Low sample cap ${lowSampleCap}`);
     }
 
     return parts.join("; ");

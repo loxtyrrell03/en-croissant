@@ -157,6 +157,7 @@ const DEFAULT_PREP_MIN_GAMES = 2;
 const DEFAULT_PREP_MOVE_LIMIT = 8;
 const MAX_PREP_MOVE_LIMIT = 20;
 const PREP_STRENGTH_MOVE_POOL_LIMIT = MAX_PREP_MOVE_LIMIT;
+const PREP_STRENGTH_ENGINE_CACHE_VERSION = "v3";
 const DEFAULT_STRAIGHT_LINE_MODE: PrepStraightLineSearchMode = "venom";
 const DEFAULT_VENOM_LINE_MIN_SHARE = 65;
 const DEFAULT_VENOM_LINE_MIN_CP = 40;
@@ -799,40 +800,37 @@ function OpponentPrepPanel({
       if (!settings.useCloudEngine) return [];
 
       const multipv = getPrepBuilderEngineMultipv(settings);
-      const [lichessResult, chessDbResult] = await Promise.allSettled([
-        queryLichessCloudMoves(fen, multipv),
-        queryChessDbMoves(fen),
-      ]);
-      const lichessMoves =
-        lichessResult.status === "fulfilled" && lichessResult.value
-          ? lichessResult.value.map<PrepBuilderEngineMove>((move, index) => ({
-              san: move.san,
-              scoreCpForSide:
-                move.scoreCpForWhite === null
-                  ? null
-                  : userColor === "black"
-                    ? -move.scoreCpForWhite
-                    : move.scoreCpForWhite,
-              rank: index + 1,
-              source: "lichess",
-            }))
-          : [];
-      const chessDbMoves =
-        chessDbResult.status === "fulfilled" && chessDbResult.value
-          ? chessDbResult.value.map<PrepBuilderEngineMove>((move, index) => ({
-              san: move.san,
-              scoreCpForSide:
-                move.scoreCpForWhite === null
-                  ? null
-                  : userColor === "black"
-                    ? -move.scoreCpForWhite
-                    : move.scoreCpForWhite,
-              rank: move.rank && move.rank > 0 ? move.rank : index + 1,
-              source: "chessdb",
-            }))
-          : [];
+      const lichessMoves = await queryLichessCloudMoves(fen, multipv).catch(() => null);
+      if (lichessMoves?.length) {
+        return mergePrepBuilderEngineMoves(
+          lichessMoves.map<PrepBuilderEngineMove>((move, index) => ({
+            san: move.san,
+            scoreCpForSide:
+              move.scoreCpForWhite === null
+                ? null
+                : userColor === "black"
+                  ? -move.scoreCpForWhite
+                  : move.scoreCpForWhite,
+            rank: index + 1,
+            source: "lichess",
+          })),
+        );
+      }
 
-      return mergePrepBuilderEngineMoves([...lichessMoves, ...chessDbMoves]);
+      const chessDbMoves = await queryChessDbMoves(fen).catch(() => null);
+      return mergePrepBuilderEngineMoves(
+        chessDbMoves?.map<PrepBuilderEngineMove>((move, index) => ({
+          san: move.san,
+          scoreCpForSide:
+            move.scoreCpForWhite === null
+              ? null
+              : userColor === "black"
+                ? -move.scoreCpForWhite
+                : move.scoreCpForWhite,
+          rank: move.rank && move.rank > 0 ? move.rank : index + 1,
+          source: "chessdb",
+        })) ?? [],
+      );
     },
     [],
   );
@@ -891,7 +889,13 @@ function OpponentPrepPanel({
   const strengthEngineMultipv = getPrepBuilderEngineMultipv(builderSettings);
   const strengthEngineKey =
     showTrainingStage && configReady && builderSettings.useCloudEngine && strengthRows.length > 0
-      ? ["opponent-prep-strength-engine", currentFen, strengthSide, strengthEngineMultipv]
+      ? [
+          "opponent-prep-strength-engine",
+          PREP_STRENGTH_ENGINE_CACHE_VERSION,
+          currentFen,
+          strengthSide,
+          strengthEngineMultipv,
+        ]
       : null;
   const { data: strengthEngineMoves, isLoading: strengthLoading } = useSWR(strengthEngineKey, () =>
     loadPrepBuilderEngineMoves(currentFen, strengthSide, builderSettings),

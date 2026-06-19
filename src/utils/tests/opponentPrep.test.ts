@@ -853,6 +853,31 @@ describe("opponent prep helpers", () => {
         expect(strength.get("b4")?.score).toBeLessThan(strength.get("e4")!.score);
     });
 
+    test("smart strength caps tiny low-share samples even with a top engine score", () => {
+        const settings = normalizePrepBuilderSettings({
+            mode: "smart",
+            engineWeight: 55,
+            maxEngineCpLoss: 70,
+        });
+        const strength = getPrepMoveStrengthMap({
+            side: "black",
+            settings,
+            openings: [
+                { move: "c5", white: 0, draw: 0, black: 2 },
+                { move: "a5", white: 30, draw: 30, black: 120 },
+                { move: "Nbd7", white: 80, draw: 80, black: 220 },
+            ],
+            engineMoves: [
+                { san: "c5", scoreCpForSide: 80, rank: 1, source: "chessdb" },
+                { san: "a5", scoreCpForSide: 70, rank: 2, source: "lichess" },
+            ],
+        });
+
+        expect(strength.get("c5")?.score).toBeLessThanOrEqual(72);
+        expect(strength.get("c5")?.score).toBeLessThan(strength.get("a5")!.score);
+        expect(strength.get("c5")?.detail).toContain("Low sample cap");
+    });
+
     test("prep builder branch priority accounts for practical danger", () => {
         const settings = normalizePrepBuilderSettings({ mode: "smart" });
         const riskyBranch = getPrepBuilderBranchValue({
