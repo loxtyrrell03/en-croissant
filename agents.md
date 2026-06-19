@@ -1226,6 +1226,12 @@ Lightweight Lesson.pgn` was added beside the Black weak deck with a
   typed cloud failures for missing, rate-limited, timeout, network, HTTP, and
   invalid-response cases; and `EvalListener` records cloud availability while
   preserving local Stockfish fallback.
+- A same-day follow-up made Lichess Cloud authoritative for local-engine
+  analysis. Local Stockfish may still show interim/fallback lines, but a
+  successful Lichess Cloud response replaces them instead of losing a short
+  race. Engine rows now show `Cloud checking`, `No cloud`, or `Cloud error`
+  status plus the exact reason in the expanded panel when Lichess is missing,
+  timed out, rate-limited, unreachable, or returning bad data.
 - On 2026-06-06, `scripts/generate-stockfish-opening-games.py` was added as a
   local utility for producing En Croissant Files-library PGNs from fixed
   opening positions using Stockfish 18 against Stockfish 11. It writes one
