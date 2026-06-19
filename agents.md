@@ -540,8 +540,11 @@ Engine` selector on the phone workspace, and the active panel content starts
   browser-safe localStorage, show a compact pin marker, appear as top
   quick-access rows before folder navigation, and can be reordered with row
   up/down actions; normal rows can also be reordered within their pinned or
-  unpinned section. Keep this behavior in `DatabaseFolderSelect` so desktop and
-  phone Database/Prep pickers stay consistent.
+  unpinned section. Database folder rows can also be pinned as top-level
+  shortcuts while still opening into the same one-database picker; those folder
+  pins are stored separately from database/source pins so existing preferences
+  remain compatible. Keep this behavior in `DatabaseFolderSelect` so desktop
+  and phone Database/Prep pickers stay consistent.
 - On 2026-06-12, the phone Database tab gained the same setup/start split as
   Prep. Database setup now keeps source/view/sort controls in a compact header
   with a `Start` action, and started Database mode hides those controls so only

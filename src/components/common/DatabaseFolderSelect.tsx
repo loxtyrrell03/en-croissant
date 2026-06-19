@@ -57,12 +57,14 @@ type DatabaseFolderSelectProps = {
 
 type DatabasePickerPreferences = {
   pinnedValues: string[];
+  pinnedFolders: string[];
   manualOrder: Record<string, string[]>;
 };
 
 const DATABASE_PICKER_PREFERENCES_KEY = "database-picker-preferences";
 const DEFAULT_DATABASE_PICKER_PREFERENCES: DatabasePickerPreferences = {
   pinnedValues: [],
+  pinnedFolders: [],
   manualOrder: {},
 };
 const databasePickerPreferenceListeners = new Set<() => void>();
@@ -87,6 +89,9 @@ function normalizeDatabasePickerPreferences(value: unknown): DatabasePickerPrefe
   const pinnedValues = Array.isArray(record.pinnedValues)
     ? record.pinnedValues.filter((item): item is string => typeof item === "string")
     : [];
+  const pinnedFolders = Array.isArray(record.pinnedFolders)
+    ? record.pinnedFolders.filter((item): item is string => typeof item === "string")
+    : [];
   const rawManualOrder = record.manualOrder as Record<string, unknown> | undefined;
   const manualOrder =
     rawManualOrder && typeof rawManualOrder === "object"
@@ -102,6 +107,7 @@ function normalizeDatabasePickerPreferences(value: unknown): DatabasePickerPrefe
 
   return {
     pinnedValues: Array.from(new Set(pinnedValues)),
+    pinnedFolders: Array.from(new Set(pinnedFolders)),
     manualOrder,
   };
 }
@@ -298,6 +304,18 @@ export default function DatabaseFolderSelect({
   const rootGroup = orderedData.find((group) => group.group === "Unfiled") ?? null;
   const rootItems = rootGroup?.items.filter((item) => !pinnedValueSet.has(item.value)) ?? [];
   const folderGroups = orderedData.filter((group) => group.group !== "Unfiled");
+  const pinnedFolderSet = useMemo(
+    () => new Set(preferences.pinnedFolders),
+    [preferences.pinnedFolders],
+  );
+  const pinnedFolderGroups = useMemo(() => {
+    const groupByName = new Map(folderGroups.map((group) => [group.group, group]));
+
+    return preferences.pinnedFolders
+      .map((folder) => groupByName.get(folder))
+      .filter((group): group is DatabaseFolderSelectGroup => Boolean(group));
+  }, [folderGroups, preferences.pinnedFolders]);
+  const normalFolderGroups = folderGroups.filter((group) => !pinnedFolderSet.has(group.group));
   const totalItemCount = orderedData.reduce((sum, group) => sum + group.items.length, 0);
   const showSearch = totalItemCount > 6 || folderGroups.length > 0;
   const searchMatches = useMemo(() => {
@@ -330,6 +348,20 @@ export default function DatabaseFolderSelect({
     },
     [updatePreferences],
   );
+  const togglePinnedFolder = useCallback(
+    (folder: string) => {
+      updatePreferences((current) => {
+        const isPinned = current.pinnedFolders.includes(folder);
+        return {
+          ...current,
+          pinnedFolders: isPinned
+            ? current.pinnedFolders.filter((value) => value !== folder)
+            : [...current.pinnedFolders, folder],
+        };
+      });
+    },
+    [updatePreferences],
+  );
   const movePinned = useCallback(
     (itemValue: string, direction: "up" | "down") => {
       const visiblePinnedValues = pinnedItems.map(({ item }) => item.value);
@@ -353,6 +385,30 @@ export default function DatabaseFolderSelect({
       }));
     },
     [pinnedItems, updatePreferences],
+  );
+  const movePinnedFolder = useCallback(
+    (folder: string, direction: "up" | "down") => {
+      const visiblePinnedFolders = pinnedFolderGroups.map((group) => group.group);
+      const currentIndex = visiblePinnedFolders.indexOf(folder);
+      const targetIndex = currentIndex + (direction === "up" ? -1 : 1);
+      if (currentIndex < 0 || targetIndex < 0 || targetIndex >= visiblePinnedFolders.length) return;
+
+      const nextVisiblePinnedFolders = [...visiblePinnedFolders];
+      [nextVisiblePinnedFolders[currentIndex], nextVisiblePinnedFolders[targetIndex]] = [
+        nextVisiblePinnedFolders[targetIndex],
+        nextVisiblePinnedFolders[currentIndex],
+      ];
+      const visiblePinnedFolderSet = new Set(visiblePinnedFolders);
+
+      updatePreferences((current) => ({
+        ...current,
+        pinnedFolders: [
+          ...nextVisiblePinnedFolders,
+          ...current.pinnedFolders.filter((value) => !visiblePinnedFolderSet.has(value)),
+        ],
+      }));
+    },
+    [pinnedFolderGroups, updatePreferences],
   );
   const moveWithinGroup = useCallback(
     (group: string, itemValue: string, direction: "up" | "down") => {
@@ -438,7 +494,32 @@ export default function DatabaseFolderSelect({
       totalItemCount,
     ],
   );
-  const hasRowsAfterPinned = rootItems.length > 0 || folderGroups.length > 0;
+  const folderPreferencePropsFor = useCallback(
+    (group: DatabaseFolderSelectGroup, mode: "root" | "pinned") => {
+      const index = pinnedFolderGroups.findIndex((candidate) => candidate.group === group.group);
+      const isPinned = pinnedFolderSet.has(group.group);
+
+      return {
+        isPinned,
+        canMoveUp: mode === "pinned" && index > 0,
+        canMoveDown: mode === "pinned" && index >= 0 && index < pinnedFolderGroups.length - 1,
+        showMoveControls: mode === "pinned" && pinnedFolderGroups.length > 1,
+        onTogglePin: () => togglePinnedFolder(group.group),
+        onMoveUp: () => movePinnedFolder(group.group, "up"),
+        onMoveDown: () => movePinnedFolder(group.group, "down"),
+      };
+    },
+    [movePinnedFolder, pinnedFolderGroups, pinnedFolderSet, togglePinnedFolder],
+  );
+  const getFolderDetail = useCallback(
+    (group: DatabaseFolderSelectGroup) =>
+      group.group === selectedGroup?.group
+        ? "Open current folder"
+        : `${group.items.length} db${group.items.length === 1 ? "" : "s"}`,
+    [selectedGroup?.group],
+  );
+  const hasPinnedRows = pinnedItems.length > 0 || pinnedFolderGroups.length > 0;
+  const hasRowsAfterPinned = rootItems.length > 0 || normalFolderGroups.length > 0;
   const control = (
     <Popover
       opened={opened}
@@ -532,7 +613,16 @@ export default function DatabaseFolderSelect({
                   preferences={preferencePropsFor(item, group, "pinned")}
                 />
               ))}
-              {pinnedItems.length > 0 && hasRowsAfterPinned && (
+              {pinnedFolderGroups.map((group) => (
+                <FolderRow
+                  key={`pinned-folder-${group.group}`}
+                  label={group.group}
+                  detail={getFolderDetail(group)}
+                  onClick={() => setActiveGroup(group.group)}
+                  preferences={folderPreferencePropsFor(group, "pinned")}
+                />
+              ))}
+              {hasPinnedRows && hasRowsAfterPinned && (
                 <Box h={1} my={2} style={{ background: "var(--mantine-color-default-border)" }} />
               )}
               {rootItems.map((item) => (
@@ -547,24 +637,28 @@ export default function DatabaseFolderSelect({
                   preferences={preferencePropsFor(item, rootGroup?.group ?? "Unfiled", "group")}
                 />
               ))}
-              {rootItems.length > 0 && folderGroups.length > 0 && (
+              {rootItems.length > 0 && normalFolderGroups.length > 0 && (
                 <Box h={1} my={2} style={{ background: "var(--mantine-color-default-border)" }} />
               )}
-              {selectedGroup && selectedGroup.group !== "Unfiled" && (
-                <FolderRow
-                  label={selectedGroup.group}
-                  detail="Current"
-                  onClick={() => setActiveGroup(selectedGroup.group)}
-                />
-              )}
-              {folderGroups
+              {selectedGroup &&
+                selectedGroup.group !== "Unfiled" &&
+                !pinnedFolderSet.has(selectedGroup.group) && (
+                  <FolderRow
+                    label={selectedGroup.group}
+                    detail={getFolderDetail(selectedGroup)}
+                    onClick={() => setActiveGroup(selectedGroup.group)}
+                    preferences={folderPreferencePropsFor(selectedGroup, "root")}
+                  />
+                )}
+              {normalFolderGroups
                 .filter((group) => group.group !== selectedGroup?.group)
                 .map((group) => (
                   <FolderRow
                     key={group.group}
                     label={group.group}
-                    detail={`${group.items.length} db${group.items.length === 1 ? "" : "s"}`}
+                    detail={getFolderDetail(group)}
                     onClick={() => setActiveGroup(group.group)}
+                    preferences={folderPreferencePropsFor(group, "root")}
                   />
                 ))}
             </Stack>
@@ -744,26 +838,83 @@ function FolderRow({
   label,
   detail,
   onClick,
+  preferences,
 }: {
   label: string;
   detail: string;
   onClick: () => void;
+  preferences: {
+    isPinned: boolean;
+    canMoveUp: boolean;
+    canMoveDown: boolean;
+    showMoveControls: boolean;
+    onTogglePin: () => void;
+    onMoveUp: () => void;
+    onMoveDown: () => void;
+  };
 }) {
   const displayLabel = label.split(" / ").at(-1) ?? label;
 
   return (
-    <UnstyledButton onClick={onClick} px={8} py={6} style={{ width: "100%", borderRadius: 6 }}>
-      <Group gap={8} wrap="nowrap" align="flex-start">
-        <IconFolder size="1rem" style={{ marginTop: 2, flexShrink: 0 }} />
-        <Box miw={0} style={{ flex: 1 }}>
-          <Text size="sm" fw={600} truncate>
-            {displayLabel}
-          </Text>
-          <Text size="xs" c="dimmed" truncate>
-            {detail}
-          </Text>
-        </Box>
+    <Box px={4} py={2} style={{ width: "100%", borderRadius: 6 }}>
+      <Group gap={4} wrap="nowrap" align="center">
+        <UnstyledButton onClick={onClick} px={4} py={4} style={{ flex: 1, minWidth: 0 }}>
+          <Group gap={8} wrap="nowrap" align="flex-start">
+            <IconFolder size="1rem" style={{ marginTop: 2, flexShrink: 0 }} />
+            <Box miw={0} style={{ flex: 1 }}>
+              <Group gap={4} wrap="nowrap" align="center">
+                <Text size="sm" fw={600} truncate>
+                  {displayLabel}
+                </Text>
+                {preferences.isPinned ? (
+                  <IconPinned size={12} style={{ flexShrink: 0, opacity: 0.72 }} />
+                ) : null}
+              </Group>
+              <Text size="xs" c="dimmed" truncate>
+                {detail}
+              </Text>
+            </Box>
+          </Group>
+        </UnstyledButton>
+        <Group gap={0} wrap="nowrap" style={{ flexShrink: 0 }}>
+          {preferences.showMoveControls ? (
+            <>
+              <Tooltip label="Move up">
+                <ActionIcon
+                  aria-label={`Move ${displayLabel} up`}
+                  size="compact-xs"
+                  variant="subtle"
+                  disabled={!preferences.canMoveUp}
+                  onClick={preferences.onMoveUp}
+                >
+                  <IconArrowUp size={13} />
+                </ActionIcon>
+              </Tooltip>
+              <Tooltip label="Move down">
+                <ActionIcon
+                  aria-label={`Move ${displayLabel} down`}
+                  size="compact-xs"
+                  variant="subtle"
+                  disabled={!preferences.canMoveDown}
+                  onClick={preferences.onMoveDown}
+                >
+                  <IconArrowDown size={13} />
+                </ActionIcon>
+              </Tooltip>
+            </>
+          ) : null}
+          <Tooltip label={preferences.isPinned ? "Unpin folder" : "Pin folder"}>
+            <ActionIcon
+              aria-label={`${preferences.isPinned ? "Unpin" : "Pin"} ${displayLabel}`}
+              size="compact-xs"
+              variant="subtle"
+              onClick={preferences.onTogglePin}
+            >
+              {preferences.isPinned ? <IconPinnedOff size={13} /> : <IconPinned size={13} />}
+            </ActionIcon>
+          </Tooltip>
+        </Group>
       </Group>
-    </UnstyledButton>
+    </Box>
   );
 }
