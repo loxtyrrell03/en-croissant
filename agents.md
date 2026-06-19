@@ -113,6 +113,21 @@ model, implementation map, and verification expectations for this app.
   prep games before final confidence, delete clear mismatch imports, and finish
   with event-level database folders such as `OTB Prep` and
   `Chess.com Accounts`.
+- A later 2026-06-19 Southall follow-up deduped repeated OTB source games
+  across the Files-side player folders, app-side combined OTB PGNs, and rebuilt
+  OTB `.db3` databases. Duplicate source copies were moved into timestamped
+  `_dedupe_backup_*` folders under the Southall Files root, stale `.ecsi`
+  indexes were cleared, and an independent SQLite check showed zero duplicate
+  rows in every Southall OTB and Chess.com account database. Cleaned source PGN
+  / converted `.db3` counts are now: `Figeac, Aurelien` 45 / 45,
+  `Onuoha, Obioma` 107 / 107, `Lapidus, Alexey M.` 129 / 129,
+  `Mokhber-Garcia, Sebastian` 370 / 369, and `Balmond, Tom` 96 / 95; the
+  remaining one-game gaps are malformed/skipped PGNs, not duplicate rows.
+  `scripts/dedupe-southall-prep.py` records the cleanup workflow. The same
+  pass generated per-player PDF style reports in each Southall player folder
+  using `scripts/generate-southall-style-reports.py`, with Stockfish 17.1 depth
+  8 samples, opening/result summaries, strengths, weaknesses, and player
+  strategy notes.
 
 ## Local Browser Verification
 
