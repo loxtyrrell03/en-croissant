@@ -235,7 +235,7 @@ describe("opponent prep helpers", () => {
             leafScoreCpForUser: 140,
             bestOpportunityCpForUser: 140,
             targetMove: null,
-            targetConcessionCpForUser: null,
+            targetPositionCpForUser: null,
             targetBestMoveForOpponent: null,
             reachProbability: 0.93,
             opportunityScore: 210,
@@ -303,7 +303,7 @@ describe("opponent prep helpers", () => {
         expect(search.userPositionsWithoutMoves).toBe(0);
     });
 
-    test("venom search scores habitual opponent engine concessions", async () => {
+    test("venom search scores habitual reached-position engine evals", async () => {
         const normalStartFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         const afterE4 = applyPrepSanMove(normalStartFen, "e4")!;
 
@@ -322,7 +322,7 @@ describe("opponent prep helpers", () => {
             loadEngineMoves: async (fen) => {
                 if (fen === normalStartFen) {
                     return [
-                        { san: "d4", scoreCpForSide: 0, rank: 1, source: "chessdb" },
+                        { san: "d4", scoreCpForSide: 60, rank: 1, source: "chessdb" },
                         { san: "e4", scoreCpForSide: 70, rank: 2, source: "chessdb" },
                     ];
                 }
@@ -335,7 +335,7 @@ describe("opponent prep helpers", () => {
 
         expect(search.best?.targetMove).toBe("e4");
         expect(search.best?.targetBestMoveForOpponent).toBe("d4");
-        expect(search.best?.targetConcessionCpForUser).toBe(70);
+        expect(search.best?.targetPositionCpForUser).toBe(70);
         expect(search.best?.bestOpportunityCpForUser).toBe(70);
         expect(isPrepStraightLineBadForOpponent(search.best, 40)).toBe(true);
     });

@@ -119,7 +119,6 @@ export type PrepStraightLineStep = {
     secondShare: number | null;
     engineCpForUser: number | null;
     bestMoveForOpponent: string | null;
-    concessionCpForUser: number | null;
 };
 
 export type PrepStraightLineSearchMode = "strict" | "venom";
@@ -131,7 +130,7 @@ export type PrepStraightLineCandidate = {
     leafScoreCpForUser: number | null;
     bestOpportunityCpForUser: number | null;
     targetMove: string | null;
-    targetConcessionCpForUser: number | null;
+    targetPositionCpForUser: number | null;
     targetBestMoveForOpponent: string | null;
     reachProbability: number;
     opportunityScore: number;
@@ -448,8 +447,7 @@ export function comparePrepStraightLineCandidates(
 ) {
     return (
         getPrepStraightLineScore(b) - getPrepStraightLineScore(a) ||
-        (b.bestOpportunityCpForUser ?? b.leafScoreCpForUser ?? -9999) -
-            (a.bestOpportunityCpForUser ?? a.leafScoreCpForUser ?? -9999) ||
+        (b.bestOpportunityCpForUser ?? -9999) - (a.bestOpportunityCpForUser ?? -9999) ||
         b.opponentMoveCount - a.opponentMoveCount ||
         b.minOpponentShare - a.minOpponentShare ||
         b.opponentGamesFloor - a.opponentGamesFloor
@@ -460,10 +458,7 @@ export function isPrepStraightLineBadForOpponent(
     candidate: PrepStraightLineCandidate | null | undefined,
     minCpForUser: number,
 ) {
-    return (
-        (candidate?.bestOpportunityCpForUser ?? candidate?.leafScoreCpForUser ?? -Infinity) >=
-        minCpForUser
-    );
+    return (candidate?.bestOpportunityCpForUser ?? -Infinity) >= minCpForUser;
 }
 
 export async function findPrepStraightLineCandidates({
@@ -504,7 +499,7 @@ export async function findPrepStraightLineCandidates({
         opponentMoveCount: number;
         reachProbability: number;
         targetMove: string | null;
-        targetConcessionCpForUser: number | null;
+        targetPositionCpForUser: number | null;
         targetBestMoveForOpponent: string | null;
     };
 
@@ -523,7 +518,7 @@ export async function findPrepStraightLineCandidates({
             opponentMoveCount: 0,
             reachProbability: 1,
             targetMove: null,
-            targetConcessionCpForUser: null,
+            targetPositionCpForUser: null,
             targetBestMoveForOpponent: null,
         },
     ];
@@ -572,13 +567,15 @@ export async function findPrepStraightLineCandidates({
                     playedMove: forced.move,
                     loadEngineMoves,
                 });
+                const targetPositionCandidate =
+                    mode === "venom" ? opponentMoveEval.playedScoreCpForUser : null;
                 const improvesTarget =
-                    opponentMoveEval.concessionCpForUser !== null &&
-                    (node.targetConcessionCpForUser === null ||
-                        opponentMoveEval.concessionCpForUser > node.targetConcessionCpForUser);
-                const targetConcessionCpForUser = improvesTarget
-                    ? opponentMoveEval.concessionCpForUser
-                    : node.targetConcessionCpForUser;
+                    targetPositionCandidate !== null &&
+                    (node.targetPositionCpForUser === null ||
+                        targetPositionCandidate > node.targetPositionCpForUser);
+                const targetPositionCpForUser = improvesTarget
+                    ? targetPositionCandidate
+                    : node.targetPositionCpForUser;
 
                 const nextSteps: PrepStraightLineStep[] = [
                     ...node.steps,
@@ -593,7 +590,6 @@ export async function findPrepStraightLineCandidates({
                         secondShare: forced.secondShare,
                         engineCpForUser: opponentMoveEval.playedScoreCpForUser,
                         bestMoveForOpponent: opponentMoveEval.bestMoveForOpponent,
-                        concessionCpForUser: opponentMoveEval.concessionCpForUser,
                     },
                 ];
                 const nextNode: SearchNode = {
@@ -605,7 +601,7 @@ export async function findPrepStraightLineCandidates({
                     opponentMoveCount: node.opponentMoveCount + 1,
                     reachProbability: node.reachProbability * forced.share,
                     targetMove: improvesTarget ? forced.move : node.targetMove,
-                    targetConcessionCpForUser,
+                    targetPositionCpForUser,
                     targetBestMoveForOpponent: improvesTarget
                         ? opponentMoveEval.bestMoveForOpponent
                         : node.targetBestMoveForOpponent,
@@ -613,8 +609,9 @@ export async function findPrepStraightLineCandidates({
                 const leafEngine = await getBestEngineMove(nextFen);
                 if (!leafEngine) leafPositionsWithoutEngine += 1;
                 const bestOpportunityCpForUser = getPrepStraightLineOpportunityCp({
+                    mode,
                     leafScoreCpForUser: leafEngine?.scoreCpForSide ?? null,
-                    targetConcessionCpForUser,
+                    targetPositionCpForUser,
                 });
                 candidates.push({
                     ...nextNode,
@@ -666,7 +663,6 @@ export async function findPrepStraightLineCandidates({
                             secondShare: null,
                             engineCpForUser: reply.engineCpForUser,
                             bestMoveForOpponent: null,
-                            concessionCpForUser: null,
                         },
                     ],
                     ply: node.ply + 1,
@@ -694,7 +690,7 @@ export async function findPrepStraightLineCandidates({
 }
 
 function getPrepStraightLineScore(candidate: PrepStraightLineCandidate) {
-    const evalScore = candidate.bestOpportunityCpForUser ?? candidate.leafScoreCpForUser ?? -300;
+    const evalScore = candidate.bestOpportunityCpForUser ?? -300;
     const forceBonus = Math.round(candidate.minOpponentShare * 60);
     const depthBonus = Math.min(80, candidate.opponentMoveCount * 16);
     const evidenceBonus = Math.min(40, Math.log2(candidate.opponentGamesFloor + 1) * 6);
@@ -741,31 +737,23 @@ async function getPrepStraightLineOpponentMoveEval({
         (move) => normalizeSanForPrep(move.san) === normalizeSanForPrep(playedMove),
     );
     const playedScoreCpForUser = played?.scoreCpForSide ?? null;
-    const bestScoreCpForUser = bestMoveForOpponent?.scoreCpForSide ?? null;
-    const concessionCpForUser =
-        playedScoreCpForUser !== null && bestScoreCpForUser !== null
-            ? Math.max(0, playedScoreCpForUser - bestScoreCpForUser)
-            : null;
 
     return {
         playedScoreCpForUser,
         bestMoveForOpponent: bestMoveForOpponent?.san ?? null,
-        concessionCpForUser,
     };
 }
 
 function getPrepStraightLineOpportunityCp({
+    mode,
     leafScoreCpForUser,
-    targetConcessionCpForUser,
+    targetPositionCpForUser,
 }: {
+    mode: PrepStraightLineSearchMode;
     leafScoreCpForUser: number | null;
-    targetConcessionCpForUser: number | null;
+    targetPositionCpForUser: number | null;
 }) {
-    const values = [leafScoreCpForUser, targetConcessionCpForUser].filter(
-        (value): value is number => value !== null,
-    );
-    if (values.length === 0) return null;
-    return Math.max(...values);
+    return mode === "venom" ? targetPositionCpForUser : leafScoreCpForUser;
 }
 
 function getPrepStraightLineOpportunityScore({

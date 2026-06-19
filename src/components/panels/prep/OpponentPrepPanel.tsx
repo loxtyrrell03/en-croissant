@@ -137,6 +137,7 @@ import {
   type PrepBuilderEngineMove,
   type PrepBuilderMoveChoice,
   type PrepBuilderSettings,
+  type PrepColor,
   type PrepMoveStrength,
   type PrepStraightLineCandidate,
   type PrepStraightLineSearchMode,
@@ -2864,7 +2865,7 @@ function OpponentPrepPanel({
               <Tooltip
                 label={
                   canRunStraightLine
-                    ? "Find a high-confidence line where this player keeps following forced moves into a bad engine position"
+                    ? "Find a high-confidence line where this player keeps reaching a position that is good for your prep side"
                     : "Straight lines need Player mode with a local player source"
                 }
               >
@@ -2899,6 +2900,7 @@ function OpponentPrepPanel({
                 minShare={straightLineMinShare}
                 minCp={straightLineMinCp}
                 maxPly={straightLineMaxPly}
+                userColor={userColor}
                 onModeChange={(mode) => {
                   setStraightLineMode(mode);
                   setStraightLineMinShare(
@@ -3095,6 +3097,7 @@ function OpponentPrepPanel({
               qualifies={straightLineQualifies}
               mode={straightLineMode}
               minCp={straightLineMinCp}
+              userColor={userColor}
               onPlay={playStraightLineResult}
               onClear={() => {
                 setStraightLineResult(null);
@@ -4059,6 +4062,7 @@ function PrepStraightLineSettingsButton({
   minShare,
   minCp,
   maxPly,
+  userColor,
   onModeChange,
   onMinShareChange,
   onMinCpChange,
@@ -4069,11 +4073,14 @@ function PrepStraightLineSettingsButton({
   minShare: number;
   minCp: number;
   maxPly: number;
+  userColor: PrepColor;
   onModeChange: (value: PrepStraightLineSearchMode) => void;
   onMinShareChange: (value: number) => void;
   onMinCpChange: (value: number) => void;
   onMaxPlyChange: (value: number) => void;
 }) {
+  const userColorLabel = getPrepColorLabel(userColor);
+
   return (
     <Popover width={270} position="bottom-start" shadow="md" withinPortal>
       <Popover.Target>
@@ -4086,7 +4093,7 @@ function PrepStraightLineSettingsButton({
           <Text size="sm" fw={700}>
             Straight line settings
           </Text>
-          <Tooltip label="Strict finds rare railroad lines; Venom finds repeated engine concessions">
+          <Tooltip label="Strict finds rare railroad lines; Venom finds repeated positions that are good for your prep side">
             <SegmentedControl
               value={mode}
               onChange={(value) => onModeChange(value as PrepStraightLineSearchMode)}
@@ -4119,9 +4126,15 @@ function PrepStraightLineSettingsButton({
               aria-label="Straight line forced play rate"
             />
           </Tooltip>
-          <Tooltip label="Venom counts the opponent's engine concession; Strict also values the final edge">
+          <Tooltip
+            label={
+              mode === "venom"
+                ? `Venom requires their habitual move to reach this engine edge for ${userColorLabel}.`
+                : `Strict requires the final searched position to reach this engine edge for ${userColorLabel}.`
+            }
+          >
             <NumberInput
-              label={mode === "venom" ? "Min concession" : "Bad for them"}
+              label={`Min ${userColorLabel} edge`}
               suffix=" cp"
               value={minCp}
               onChange={(value) =>
@@ -4171,6 +4184,7 @@ function PrepStraightLineResultPanel({
   qualifies,
   mode,
   minCp,
+  userColor,
   onPlay,
   onClear,
 }: {
@@ -4180,11 +4194,13 @@ function PrepStraightLineResultPanel({
   qualifies: boolean;
   mode: PrepStraightLineSearchMode;
   minCp: number;
+  userColor: PrepColor;
   onPlay: () => void;
   onClear: () => void;
 }) {
   const opponentSteps = result?.steps.filter((step) => step.actor === "opponent") ?? [];
-  const resultCp = result?.bestOpportunityCpForUser ?? result?.leafScoreCpForUser ?? null;
+  const resultCp = result?.bestOpportunityCpForUser ?? null;
+  const userColorLabel = getPrepColorLabel(userColor);
   const alertColor = running ? "blue" : result ? (qualifies ? "red" : "yellow") : "gray";
   const title = running
     ? mode === "venom"
@@ -4213,7 +4229,7 @@ function PrepStraightLineResultPanel({
             {result ? (
               <>
                 <Badge color={qualifies ? "red" : "yellow"} variant="light">
-                  {formatPrepStraightLineEval(resultCp)} for you
+                  {formatPrepStraightLineEval(resultCp)} for {userColorLabel}
                 </Badge>
                 <Badge variant="light">
                   {formatPrepStraightLineShare(result.minOpponentShare)} floor
@@ -4258,14 +4274,14 @@ function PrepStraightLineResultPanel({
             <Text size="xs" c="dimmed">
               {qualifies
                 ? mode === "venom"
-                  ? `Engine target met: habit concession or final edge is at least ${formatPrepStraightLineEval(minCp)}.`
-                  : `Engine target met: final edge is at least ${formatPrepStraightLineEval(minCp)}.`
+                  ? `Engine target met: habitual position reaches at least ${formatPrepStraightLineEval(minCp)} for ${userColorLabel}.`
+                  : `Engine target met: final edge is at least ${formatPrepStraightLineEval(minCp)} for ${userColorLabel}.`
                 : mode === "venom"
-                  ? `Best habit is below the ${formatPrepStraightLineEval(minCp)} target; try a lower habit rate, deeper search, or a later prep start.`
-                  : `Best line is below the ${formatPrepStraightLineEval(minCp)} target; try a lower forced rate, deeper search, or a later prep start.`}
+                  ? `Best habit position is below the ${formatPrepStraightLineEval(minCp)} ${userColorLabel} target; try a lower habit rate, deeper search, or a later prep start.`
+                  : `Best line is below the ${formatPrepStraightLineEval(minCp)} ${userColorLabel} target; try a lower forced rate, deeper search, or a later prep start.`}
               {result.leafBestMove ? ` Best next move: ${result.leafBestMove}.` : ""}
-              {result.targetMove && result.targetConcessionCpForUser !== null
-                ? ` Biggest concession: ${result.targetMove} gives up ${formatPrepStraightLineEval(result.targetConcessionCpForUser)} versus ${result.targetBestMoveForOpponent ?? "the engine's best move"}.`
+              {mode === "venom" && result.targetMove && result.targetPositionCpForUser !== null
+                ? ` Venom point: after ${result.targetMove}, the position is ${formatPrepStraightLineEval(result.targetPositionCpForUser)} for ${userColorLabel}.`
                 : ""}
             </Text>
             {opponentSteps.length > 0 ? (
@@ -4274,8 +4290,8 @@ function PrepStraightLineResultPanel({
                   <Badge key={`${step.fen}-${step.move}-${index}`} variant="outline" color="orange">
                     {step.move} {formatPrepStraightLineShare(step.share ?? 0)}
                     {step.total !== null ? ` / ${formatNumber(step.total)}` : ""}
-                    {step.concessionCpForUser !== null
-                      ? `, drops ${formatPrepStraightLineEval(step.concessionCpForUser)}`
+                    {step.engineCpForUser !== null
+                      ? `, ${formatPrepStraightLineEval(step.engineCpForUser)} for ${userColorLabel}`
                       : ""}
                   </Badge>
                 ))}
@@ -4303,6 +4319,10 @@ function formatPrepStraightLineEval(cp: number | null) {
 function formatPrepStraightLineShare(share: number) {
   const percent = Math.max(0, Math.min(1, share)) * 100;
   return `${percent >= 99.95 ? percent.toFixed(0) : percent.toFixed(1)}%`;
+}
+
+function getPrepColorLabel(color: PrepColor) {
+  return color === "white" ? "White" : "Black";
 }
 
 function getPrepNumberInputValue(value: string | number, fallback: number) {
