@@ -37,8 +37,6 @@ import {
 import { BoundedSet, withLimitedMapEntry } from "@/utils/boundedCache";
 import { TreeStateContext } from "../common/TreeStateContext";
 
-const LOCAL_ENGINE_CLOUD_PRIORITY_MS = 300;
-const LOCAL_ENGINE_CLOUD_TIMEOUT_MS = 1500;
 const LOCAL_ENGINE_OUTPUT_TIMEOUT_MS = 12000;
 const LOCAL_ENGINE_SEARCH_DELAY_MS = 260;
 const REMOTE_ENGINE_SEARCH_DELAY_MS = 120;
