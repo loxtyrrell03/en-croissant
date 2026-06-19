@@ -89,6 +89,20 @@ model, implementation map, and verification expectations for this app.
   names were `figeac` low, `obiosky` high, `alex_lapidus` high but stale,
   `Sebastian443` high, and `Tom_Balmond` high; no online account games were
   imported.
+- A 2026-06-19 follow-up imported the researched Southall U2400 Chess.com
+  accounts into app-side online databases under
+  `C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\Online Games\Chess.com`
+  using the fork's `_chesscom.pgn` / `_chesscom.db3` convention, then compared
+  online opening profiles against the gathered OTB/broadcast prep PGNs. Final
+  converted Chess.com database counts after empty-game cleanup were `figeac`
+  1,049, `obiosky` 14,020, `alex_lapidus` 113, `Sebastian443` 27,797, and
+  `Tom_Balmond` 2,044. The generated comparison files live beside the prep
+  folders as `_chesscom_import_summary.json`,
+  `_chesscom_opening_comparison.json`, and `Chess.com opening comparison.md`.
+  Opening comparison reinforced `figeac` as low confidence, kept `obiosky`
+  high, kept `alex_lapidus` high identity but stale, kept `Sebastian443` high
+  with a note that blitz/bullet online games are more experimental than OTB,
+  and kept `Tom_Balmond` high.
 
 ## Local Browser Verification
 
