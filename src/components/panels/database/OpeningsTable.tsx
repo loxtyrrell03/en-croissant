@@ -260,6 +260,10 @@ function OpeningsTable({
   const resultSortSide = resultPerspective ?? healthSide;
   const playableOpenings = useMemo(() => openings.filter(isPlayableOpeningRow), [openings]);
   const cloudMultipv = useMemo(() => getOpeningEvalMultipv(playableOpenings), [playableOpenings]);
+  const cloudMoveListKey = useMemo(
+    () => playableOpenings.map((opening) => normalizeOpeningCloudSan(opening.move)).join("|"),
+    [playableOpenings],
+  );
 
   const healthByMove = useMemo(
     () =>
@@ -307,7 +311,11 @@ function OpeningsTable({
   useEffect(() => {
     let cancelled = false;
     setCloudData(undefined);
-    void queryOpeningCloudData(currentFen, cloudMultipv)
+    void queryOpeningCloudData(
+      currentFen,
+      cloudMultipv,
+      playableOpenings.map((opening) => opening.move),
+    )
       .then((data) => {
         if (!cancelled) {
           setCloudData(data);
@@ -322,7 +330,7 @@ function OpeningsTable({
     return () => {
       cancelled = true;
     };
-  }, [cloudMultipv, currentFen]);
+  }, [cloudMoveListKey, cloudMultipv, currentFen, playableOpenings]);
 
   const whiteTotal = sortedOpenings.reduce((acc, curr) => acc + curr.white, 0);
   const blackTotal = sortedOpenings.reduce((acc, curr) => acc + curr.black, 0);
@@ -790,22 +798,24 @@ function getSideScore(opening: Opening, side: OpeningMoveHealthSide) {
 async function queryOpeningCloudData(
   fen: string,
   multipv: number,
+  visibleMoves: string[],
 ): Promise<OpeningMoveCloudData | null> {
   const lichessMoves = await queryLichessCloudMoves(fen, multipv).catch(() => null);
-  if (lichessMoves?.length) {
-    return {
-      source: "lichess",
-      moves: lichessMoves.map((move, index) => ({
-        san: move.san,
-        scoreCpForWhite: move.scoreCpForWhite,
-        rank: index + 1,
-        winrate: null,
-      })),
-    };
+  const lichessCloudMoves =
+    lichessMoves?.map((move, index) => ({
+      san: move.san,
+      scoreCpForWhite: move.scoreCpForWhite,
+      rank: index + 1,
+      winrate: null,
+    })) ?? [];
+  if (lichessCloudMoves.length && hasOpeningCloudCoverage(lichessCloudMoves, visibleMoves)) {
+    return { source: "lichess", moves: lichessCloudMoves };
   }
 
   const chessDbMoves = await queryChessDbMoves(fen).catch(() => null);
-  if (!chessDbMoves?.length) return null;
+  if (!chessDbMoves?.length) {
+    return lichessCloudMoves.length ? { source: "lichess", moves: lichessCloudMoves } : null;
+  }
 
   return {
     source: "chessdb",
@@ -816,6 +826,23 @@ async function queryOpeningCloudData(
       winrate: move.winrate,
     })),
   };
+}
+
+function hasOpeningCloudCoverage(
+  cloudMoves: { san: string; scoreCpForWhite: number | null }[],
+  visibleMoves: string[],
+) {
+  if (visibleMoves.length === 0) return true;
+  const cloudSans = new Set(cloudMoves.map((move) => normalizeOpeningCloudSan(move.san)));
+  return visibleMoves.every((move) => cloudSans.has(normalizeOpeningCloudSan(move)));
+}
+
+function normalizeOpeningCloudSan(value: string) {
+  return value
+    .trim()
+    .replace(/^0-0-0/, "O-O-O")
+    .replace(/^0-0/, "O-O")
+    .replace(/[+#?!]+$/g, "");
 }
 
 function getOpeningEvalMultipv(openings: Opening[]) {

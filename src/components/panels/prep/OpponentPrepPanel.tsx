@@ -128,6 +128,7 @@ import {
   getPrepBuilderTaskPriority,
   getPrepBuilderUserResponseChildIndex,
   getPrepMoveStrengthMap,
+  getPrepStrengthMoveListKey,
   hasPrepBuilderDatabaseCandidates,
   isPrepStraightLineBadForOpponent,
   normalizePrepBuilderSettings,
@@ -830,7 +831,7 @@ function OpponentPrepPanel({
             }))
           : [];
 
-      return mergePrepBuilderEngineMoves([...lichessMoves, ...chessDbMoves]).slice(0, multipv);
+      return mergePrepBuilderEngineMoves([...lichessMoves, ...chessDbMoves]);
     },
     [],
   );
@@ -881,12 +882,17 @@ function OpponentPrepPanel({
   );
   const strengthRows = opponentToMove ? currentRows : candidateRows;
   const strengthSide = opponentToMove ? prep.color : userColor;
+  const strengthRowsKey = useMemo(
+    () => getPrepStrengthMoveListKey(strengthRows.map((row) => row.move)),
+    [strengthRows],
+  );
   const strengthEngineKey =
     showTrainingStage && configReady && builderSettings.useCloudEngine && strengthRows.length > 0
       ? [
           "opponent-prep-strength-engine",
           currentFen,
           strengthSide,
+          strengthRowsKey,
           builderSettings.mode,
           builderSettings.engineWeight,
           builderSettings.maxEngineCpLoss,

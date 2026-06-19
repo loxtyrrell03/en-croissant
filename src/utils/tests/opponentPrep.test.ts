@@ -21,6 +21,7 @@ import {
     getPrepBuilderTaskPriority,
     getPrepBuilderUserResponseChildIndex,
     getPrepMoveStrengthMap,
+    getPrepStrengthMoveListKey,
     hasPrepBuilderDatabaseCandidates,
     isPrepStraightLineBadForOpponent,
     normalizePrepBuilderSettings,
@@ -804,8 +805,60 @@ describe("opponent prep helpers", () => {
         });
 
         expect(strength.get("e4")?.engineCpLoss).toBeNull();
-        expect(strength.get("e4")?.engineUnsafe).toBe(true);
+        expect(strength.get("e4")?.engineUnsafe).toBe(false);
         expect(strength.get("e4")?.score).toBeGreaterThan(0);
+    });
+
+    test("smart strength does not zero player rows when engine data misses the visible moves", () => {
+        const settings = normalizePrepBuilderSettings({
+            mode: "smart",
+            engineWeight: 55,
+            maxEngineCpLoss: 70,
+        });
+        const strength = getPrepMoveStrengthMap({
+            side: "white",
+            settings,
+            openings: [
+                { move: "e4", white: 24, draw: 4, black: 4 },
+                { move: "d4", white: 17, draw: 3, black: 3 },
+            ],
+            engineMoves: [{ san: "Nf3", scoreCpForSide: 35, rank: 1, source: "lichess" }],
+        });
+
+        expect(strength.get("e4")?.engineCpLoss).toBeNull();
+        expect(strength.get("e4")?.engineUnsafe).toBe(false);
+        expect(strength.get("e4")?.score).toBeGreaterThan(0);
+        expect(strength.get("d4")?.score).toBeGreaterThan(0);
+    });
+
+    test("smart strength still warns when only some visible moves have engine coverage", () => {
+        const settings = normalizePrepBuilderSettings({
+            mode: "smart",
+            engineWeight: 55,
+            maxEngineCpLoss: 70,
+        });
+        const strength = getPrepMoveStrengthMap({
+            side: "white",
+            settings,
+            openings: [
+                { move: "e4", white: 24, draw: 4, black: 4 },
+                { move: "b4", white: 1, draw: 0, black: 8 },
+            ],
+            engineMoves: [{ san: "e4", scoreCpForSide: 35, rank: 1, source: "lichess" }],
+        });
+
+        expect(strength.get("b4")?.engineCpLoss).toBeNull();
+        expect(strength.get("b4")?.engineUnsafe).toBe(true);
+        expect(strength.get("b4")?.score).toBeLessThan(strength.get("e4")!.score);
+    });
+
+    test("prep strength move-list keys distinguish different player tables", () => {
+        expect(getPrepStrengthMoveListKey(["e4", "d4", "O-O+"])).toBe(
+            getPrepStrengthMoveListKey(["0-0", "d4", "e4"]),
+        );
+        expect(getPrepStrengthMoveListKey(["e4", "d4"])).not.toBe(
+            getPrepStrengthMoveListKey(["c4", "Nf3"]),
+        );
     });
 
     test("prep builder branch priority accounts for practical danger", () => {

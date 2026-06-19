@@ -431,13 +431,15 @@ function getOpeningMoveStrength({
     const fallbackStatus = healthToStrengthStatus(health.status);
     const sourceLabel = cloud.source ? cloudSourceLabel(cloud.source) : "cloud analysis";
     const hasEngineMoves = !pending && cloud.covered && cloud.bestScore !== null;
+    const hasMoveEngineScore =
+        cloudMove?.scoreForSide !== null && cloudMove?.scoreForSide !== undefined;
 
     if (!pending && cloud.covered && cloud.bestScore !== null && cloud.source) {
         if (!cloudMove || cloudMove.scoreForSide === null) {
             const blended = evaluateMoveStrength({
                 settings,
                 engineCpLoss: null,
-                hasEngineMoves,
+                hasEngineMoves: hasEngineMoves && hasMoveEngineScore,
                 databaseWdlLoss,
                 engineScoreSpreadCp: cloud.scoreSpreadCp,
             });

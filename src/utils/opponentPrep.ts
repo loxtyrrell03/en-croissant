@@ -389,6 +389,13 @@ export function getPrepMoveStrengthMap({
     );
 }
 
+export function getPrepStrengthMoveListKey(moves: readonly string[]) {
+    const normalized = new Set(
+        moves.map((move) => normalizeSanForPrep(move)).filter((move) => move.length > 0),
+    );
+    return Array.from(normalized).sort().join("|");
+}
+
 export function applyPrepSanMove(fen: string, san: string) {
     const [pos] = positionFromFen(fen);
     if (!pos) return null;
@@ -1601,6 +1608,13 @@ function evaluatePrepStrengthCandidates({
         databaseBaseline,
     );
     const engineByMove = new Map(engineMoves.map((move) => [normalizeSanForPrep(move.san), move]));
+    const scoredEngineByMove = new Map(
+        scoredEngineMoves.map((move) => [normalizeSanForPrep(move.san), move]),
+    );
+    const visibleEngineMatches = playable.filter((candidate) =>
+        scoredEngineByMove.has(normalizeSanForPrep(candidate.move)),
+    ).length;
+    const hasVisibleEngineCoverage = visibleEngineMatches > 0;
     const maxEngineCpLoss = Math.max(1, settings.maxEngineCpLoss);
 
     return playable.map((candidate) => {
@@ -1616,14 +1630,15 @@ function evaluatePrepStrengthCandidates({
             databaseScore !== null && bestDatabaseScore !== null
                 ? Math.max(0, bestDatabaseScore - databaseScore)
                 : null;
-        const hasEngineCloud = settings.useCloudEngine && engineMoves.length > 0;
+        const hasEngineCloud =
+            settings.useCloudEngine && engineMoves.length > 0 && hasVisibleEngineCoverage;
         const engineUnsafe =
             hasEngineCloud &&
             (engineCpLoss === null
                 ? settings.mode !== "practical"
                 : engineCpLoss > maxEngineCpLoss);
         const engineLossNorm =
-            !settings.useCloudEngine || engineMoves.length === 0
+            !settings.useCloudEngine || engineMoves.length === 0 || !hasVisibleEngineCoverage
                 ? 0
                 : engineCpLoss === null
                   ? settings.mode === "practical"
@@ -1709,7 +1724,9 @@ function getPrepStrengthBestDatabaseScore(
     const source = benchmarkCandidates.length > 0 ? benchmarkCandidates : candidates;
 
     return Math.max(
-        ...source.map((candidate) => getPrepStrengthDatabaseScore(candidate, settings, baseline) ?? 0),
+        ...source.map(
+            (candidate) => getPrepStrengthDatabaseScore(candidate, settings, baseline) ?? 0,
+        ),
     );
 }
 
