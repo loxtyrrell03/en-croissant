@@ -2420,6 +2420,13 @@ from 2026-04-24 through 2026-05-03.
   database move consumers: an indexed search result with only `*`, `Total`, or
   zero rows is not trustworthy enough to drive an empty-state message until the
   scan path has had a chance to recover.
+- A same-day follow-up found that stale exact-position empty results could still
+  survive through `line_cache`, especially because `is_position_in_db` novelty
+  checks wrote negative lookups into the shared move-result cache. Exact cached
+  results with no playable moves are now revalidated, cached game samples count
+  as position hits, and `is_position_in_db` no longer writes negative entries
+  into `line_cache`. Preserve this cache boundary: existence checks must not
+  poison Prep/Database move tables.
 
 ## Verification Expectations
 

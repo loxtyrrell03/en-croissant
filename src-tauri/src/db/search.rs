@@ -2323,6 +2323,24 @@ fn should_fallback_after_occurrence_search(
     missing_playable_openings || missing_games
 }
 
+fn should_revalidate_cached_position_search_result(
+    openings: &[PositionStats],
+    games: &[NormalizedGame],
+    include_openings: bool,
+    include_games: bool,
+    query: Option<&PositionQuery>,
+) -> bool {
+    if !matches!(query, Some(PositionQuery::Exact(_))) {
+        return false;
+    }
+
+    let missing_playable_openings =
+        include_openings && !openings.iter().any(position_stats_has_playable_move);
+    let missing_games = include_games && games.is_empty();
+
+    missing_playable_openings || missing_games
+}
+
 fn position_stats_has_playable_move(opening: &PositionStats) -> bool {
     let move_text = opening.move_.trim();
     !move_text.is_empty()
@@ -3346,30 +3364,10 @@ pub async fn search_position(
 
     super::ensure_search_index_current(&file, &state)?;
 
-    if let Some(pos) = state.line_cache.get(&(query.clone(), file.clone())) {
-        finish_cancelable_db_request(&state, &tab_id, &cancel_flag);
-        return Ok(pos.clone());
-    }
-
     if cancel_flag.load(Ordering::Relaxed) {
         finish_cancelable_db_request(&state, &tab_id, &cancel_flag);
         return Err(Error::SearchStopped);
     }
-
-    let start = Instant::now();
-    info!("start loading games");
-
-    let permit = state.new_request.acquire().await.unwrap();
-
-    let mmap_index = open_mmap_search_index(&file, &state)?;
-
-    let game_count = mmap_index.len();
-
-    info!(
-        "Ready to search {} games: {:?}",
-        game_count,
-        start.elapsed()
-    );
 
     let query_options = query.options.as_ref();
     let include_openings = query_options.map_or(true, |options| !options.skip_count);
@@ -3409,6 +3407,36 @@ pub async fn search_position(
         "draw" => Some(GameResult::Draw),
         _ => None,
     });
+
+    if let Some(pos) = state.line_cache.get(&(query.clone(), file.clone())) {
+        if should_revalidate_cached_position_search_result(
+            &pos.0,
+            &pos.1,
+            include_openings,
+            include_games,
+            parsed_position_query.as_ref(),
+        ) {
+            info!("cached exact-position search on {tab_id} was empty; revalidating");
+        } else {
+            finish_cancelable_db_request(&state, &tab_id, &cancel_flag);
+            return Ok(pos.clone());
+        }
+    }
+
+    let start = Instant::now();
+    info!("start loading games");
+
+    let permit = state.new_request.acquire().await.unwrap();
+
+    let mmap_index = open_mmap_search_index(&file, &state)?;
+
+    let game_count = mmap_index.len();
+
+    info!(
+        "Ready to search {} games: {:?}",
+        game_count,
+        start.elapsed()
+    );
 
     if let Some(PositionQuery::Exact(exact)) = &parsed_position_query {
         if !mmap_index.has_board_turn_position_index() {
@@ -3853,15 +3881,25 @@ pub async fn is_position_in_db(
 
     super::ensure_search_index_current(&file, &state)?;
 
-    if let Some(pos) = state.line_cache.get(&(query.clone(), file.clone())) {
-        return Ok(!pos.0.is_empty());
-    }
-
     let parsed_position_query: Option<PositionQuery> = if let Some(pq) = &query.position {
         Some(convert_position_query(pq.clone())?)
     } else {
         None
     };
+
+    if let Some(pos) = state.line_cache.get(&(query.clone(), file.clone())) {
+        if should_revalidate_cached_position_search_result(
+            &pos.0,
+            &pos.1,
+            true,
+            false,
+            parsed_position_query.as_ref(),
+        ) {
+            info!("cached exact-position existence result was empty; revalidating");
+        } else {
+            return Ok(!pos.0.is_empty() || !pos.1.is_empty());
+        }
+    }
 
     let start = Instant::now();
     info!("start loading games for is_position_in_db");
@@ -3888,12 +3926,6 @@ pub async fn is_position_in_db(
     let exists = mmap_index.par_iter().any(check_entry);
 
     info!("finished search in {:?}", start.elapsed());
-
-    if !exists {
-        state
-            .line_cache
-            .insert((query.clone(), file.clone()), (vec![], vec![]));
-    }
 
     state.search_collisions.remove(&(query, file));
 
@@ -4163,6 +4195,47 @@ mod tests {
             &[],
             false,
             true
+        ));
+    }
+
+    #[test]
+    fn exact_empty_cached_search_result_is_revalidated() {
+        let exact = PositionQuery::exact_from_fen(
+            "rnbqkbnr/pp1ppp1p/6p1/8/3pP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 4",
+        )
+        .unwrap();
+        let partial = PositionQuery::partial_from_fen(
+            "rnbqkbnr/pp1ppp1p/6p1/8/3pP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 4",
+        )
+        .unwrap();
+        let playable = vec![PositionStats {
+            move_: "Nxd4".to_string(),
+            white: 1,
+            draw: 0,
+            black: 0,
+            last_played: Some("2024.01.01".to_string()),
+        }];
+
+        assert!(should_revalidate_cached_position_search_result(
+            &[],
+            &[],
+            true,
+            false,
+            Some(&exact)
+        ));
+        assert!(!should_revalidate_cached_position_search_result(
+            &playable,
+            &[],
+            true,
+            false,
+            Some(&exact)
+        ));
+        assert!(!should_revalidate_cached_position_search_result(
+            &[],
+            &[],
+            true,
+            false,
+            Some(&partial)
         ));
     }
 
