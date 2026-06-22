@@ -114,7 +114,9 @@ import {
   findLastOpponentBranch,
   findOpponentPrepSourceMovePath,
   findOpponentPrepStart,
+  applyPrepSanMove,
   choosePrepBuilderMove,
+  createProjectedPrepLineStrength,
   findPrepStraightLineCandidates,
   getFenTurn,
   getOpponentPrepCandidateLineImpact,
@@ -211,6 +213,13 @@ type PrepCandidateMoveRow = Opening & {
   key: string;
   total: number;
   share: number;
+};
+
+type OpponentBranchPrepProjection = {
+  responseMove: string;
+  label: string;
+  strength: PrepMoveStrength;
+  lineImpact: OpponentPrepLineImpact | null;
 };
 
 type PrepSortDirection = "asc" | "desc";
@@ -999,31 +1008,93 @@ function OpponentPrepPanel({
 
     return Object.fromEntries(entries);
   });
-  const branchAfterPrepStrengthByMove = useMemo(
-    () =>
-      prepMode === "player" && opponentToMove && branchStatsByKey
-        ? getAfterPrepStrengthMap({
-            openings: strengthOpenings,
-            engineMoves: strengthEngineMoves ?? [],
-            side: prep.color,
+  const branchPrepProjectionKey =
+    configReady &&
+    showTrainingStage &&
+    prepMode === "player" &&
+    opponentToMove &&
+    currentRows.length > 0
+      ? [
+          "opponent-prep-branch-prep-projection",
+          PREP_STRENGTH_ENGINE_CACHE_VERSION,
+          queryScope,
+          currentFen,
+          prep.minGames,
+          prep.moveLimit,
+          strengthEngineMultipv,
+          JSON.stringify(builderSettings),
+          currentRows.map((row) => row.key).join("|"),
+        ]
+      : null;
+  const { data: branchPrepProjectionByKey, isLoading: branchPrepProjectionLoading } = useSWR(
+    branchPrepProjectionKey,
+    async () => {
+      const entries: [string, OpponentBranchPrepProjection][] = [];
+
+      await Promise.all(
+        currentRows.map(async (row) => {
+          const projection = await getOpponentBranchPrepProjection({
+            fen: currentFen,
+            row,
+            opponentColor: prep.color,
+            userColor,
+            loadOpenings: loadOpeningsForFen,
+            loadEngineMoves: loadPrepBuilderEngineMoves,
+            minGames: prep.minGames,
+            moveLimit: prep.moveLimit,
             settings: builderSettings,
-            getImpact: (opening) =>
-              branchStatsByKey[getOpponentPrepBranchKey(currentFen, opening.move)]
-                ?.preparedLineImpact ?? null,
-            getAfterScore: getPreparedLineImpactComparisonScore,
-          })
-        : new Map<string, PrepMoveStrength>(),
-    [
-      branchStatsByKey,
-      builderSettings,
-      currentFen,
-      opponentToMove,
-      prep.color,
-      prepMode,
-      strengthEngineMoves,
-      strengthOpenings,
-    ],
+          });
+          if (projection) entries.push([row.key, projection]);
+        }),
+      );
+
+      return Object.fromEntries(entries);
+    },
   );
+  const branchAfterPrepStrengthByMove = useMemo(() => {
+    if (prepMode !== "player" || !opponentToMove) {
+      return new Map<string, PrepMoveStrength>();
+    }
+
+    const savedLineStrengths = branchStatsByKey
+      ? getAfterPrepStrengthMap({
+          openings: strengthOpenings,
+          engineMoves: strengthEngineMoves ?? [],
+          side: prep.color,
+          settings: builderSettings,
+          getImpact: (opening) =>
+            branchStatsByKey[getOpponentPrepBranchKey(currentFen, opening.move)]
+              ?.preparedLineImpact ?? null,
+          getAfterScore: getPreparedLineImpactComparisonScore,
+        })
+      : new Map<string, PrepMoveStrength>();
+
+    if (!branchPrepProjectionByKey) {
+      return savedLineStrengths;
+    }
+
+    const result = new Map(savedLineStrengths);
+    for (const row of currentRows) {
+      const moveKey = normalizePrepBuilderSan(row.move);
+      if (result.has(moveKey)) continue;
+
+      const projection = branchPrepProjectionByKey[row.key];
+      if (projection) result.set(moveKey, projection.strength);
+    }
+
+    return result;
+  }, [
+    branchStatsByKey,
+    branchPrepProjectionByKey,
+    builderSettings,
+    currentFen,
+    currentRows,
+    opponentToMove,
+    prep.color,
+    prepMode,
+    strengthEngineMoves,
+    strengthOpenings,
+  ]);
   const candidateAfterPrepStrengthByMove = useMemo(
     () =>
       prepMode === "player" && !opponentToMove && candidateLineImpactByKey
@@ -3358,9 +3429,11 @@ function OpponentPrepPanel({
               onClearPreview={clearMovePreview}
               branchStatsByKey={branchStatsByKey}
               branchStatsLoading={branchStatsLoading}
+              branchPrepProjectionByKey={branchPrepProjectionByKey}
               strengthByMove={strengthByMove}
               afterPrepStrengthByMove={branchAfterPrepStrengthByMove}
               strengthLoading={strengthLoading}
+              afterPrepLoading={strengthLoading || branchPrepProjectionLoading}
               sort={moveTableSort.opponent}
               onSort={setOpponentMoveSortColumn}
             />
@@ -3403,9 +3476,11 @@ function OpponentPrepMoveTable({
   onClearPreview,
   branchStatsByKey,
   branchStatsLoading,
+  branchPrepProjectionByKey,
   strengthByMove,
   afterPrepStrengthByMove,
   strengthLoading,
+  afterPrepLoading,
   sort,
   onSort,
 }: {
@@ -3423,9 +3498,11 @@ function OpponentPrepMoveTable({
   onClearPreview: () => void;
   branchStatsByKey?: Record<string, OpponentPrepBranchStats>;
   branchStatsLoading: boolean;
+  branchPrepProjectionByKey?: Record<string, OpponentBranchPrepProjection>;
   strengthByMove: Map<string, PrepMoveStrength>;
   afterPrepStrengthByMove: Map<string, PrepMoveStrength>;
   strengthLoading: boolean;
+  afterPrepLoading: boolean;
   sort: PrepSortState<OpponentPrepSortColumn>;
   onSort: (column: OpponentPrepSortColumn) => void;
 }) {
@@ -3529,6 +3606,8 @@ function OpponentPrepMoveTable({
       <Table.Tbody>
         {sortedRows.map((row) => {
           const lineImpact = branchStatsByKey?.[row.key]?.preparedLineImpact ?? null;
+          const projection = branchPrepProjectionByKey?.[row.key] ?? null;
+          const projectionContext = projection ? branchPrepProjectionTooltipLines(projection) : [];
 
           return (
             <Table.Tr
@@ -3553,9 +3632,16 @@ function OpponentPrepMoveTable({
               <Table.Td>
                 <PrepAfterStrengthCell
                   strength={afterPrepStrengthByMove.get(normalizePrepBuilderSan(row.move))}
-                  label="Saved line"
-                  context={lineImpact ? preparedLineImpactTooltipLines(lineImpact) : []}
-                  loading={strengthLoading}
+                  label={lineImpact ? "Saved line" : projection?.label}
+                  summary={
+                    !lineImpact && projection
+                      ? `${projection.label} ${projection.strength.score}: projected from the best available prep reply after this opponent move.`
+                      : undefined
+                  }
+                  context={
+                    lineImpact ? preparedLineImpactTooltipLines(lineImpact) : projectionContext
+                  }
+                  loading={afterPrepLoading}
                 />
               </Table.Td>
               <Table.Td>
@@ -4138,6 +4224,160 @@ function getPrepStatusSortScore(status: OpponentPrepMoveRow["status"]) {
   return 1;
 }
 
+async function getOpponentBranchPrepProjection({
+  fen,
+  row,
+  opponentColor,
+  userColor,
+  loadOpenings,
+  loadEngineMoves,
+  minGames,
+  moveLimit,
+  settings,
+}: {
+  fen: string;
+  row: OpponentPrepMoveRow;
+  opponentColor: PrepColor;
+  userColor: PrepColor;
+  loadOpenings: (fen: string) => Promise<Opening[]>;
+  loadEngineMoves: (
+    fen: string,
+    userColor: PrepColor,
+    settings: PrepBuilderSettings,
+  ) => Promise<PrepBuilderEngineMove[]>;
+  minGames: number;
+  moveLimit: number;
+  settings: PrepBuilderSettings;
+}): Promise<OpponentBranchPrepProjection | null> {
+  const branchFen = applyPrepSanMove(fen, row.move);
+  if (!branchFen || getFenTurn(branchFen) !== userColor) return null;
+
+  const replies = sortOpponentPrepOpenings(await loadOpenings(branchFen), minGames, moveLimit);
+  if (replies.length === 0) return null;
+
+  const engineMoves = settings.useCloudEngine
+    ? await loadEngineMoves(branchFen, userColor, settings).catch(() => [])
+    : [];
+  if (settings.useCloudEngine && engineMoves.length === 0) return null;
+
+  const strengthByMove = getPrepMoveStrengthMap({
+    openings: replies,
+    engineMoves,
+    side: userColor,
+    settings,
+  });
+  const eligibleTotal = replies.reduce((sum, reply) => sum + getOpeningTotal(reply), 0);
+  const candidates: {
+    reply: Opening;
+    strength: PrepMoveStrength;
+    total: number;
+    share: number;
+    score: number;
+  }[] = [];
+
+  for (const reply of replies) {
+    const strength = strengthByMove.get(normalizePrepBuilderSan(reply.move)) ?? null;
+    if (!strength || (settings.useCloudEngine && strength.engineCpLoss === null)) continue;
+
+    const total = getOpeningTotal(reply);
+    candidates.push({
+      reply,
+      strength,
+      total,
+      share: eligibleTotal > 0 ? total / eligibleTotal : 0,
+      score: getPrepResultScore(reply, userColor),
+    });
+  }
+
+  candidates.sort(
+    (a, b) =>
+      b.strength.score - a.strength.score ||
+      b.score - a.score ||
+      b.share - a.share ||
+      b.total - a.total ||
+      a.reply.move.localeCompare(b.reply.move),
+  );
+
+  if (candidates.length === 0) return null;
+
+  const impacts = await Promise.all(
+    candidates.slice(0, 3).map((candidate) =>
+      getOpponentPrepCandidateLineImpact({
+        fen: branchFen,
+        row: {
+          ...candidate.reply,
+          total: candidate.total,
+          share: candidate.share,
+        },
+        opponentColor,
+        loadOpenings,
+        loadEngineMoves,
+        minGames,
+        moveLimit,
+        settings,
+      }).catch(() => null),
+    ),
+  );
+  const bestImpact =
+    impacts
+      .filter((impact): impact is OpponentPrepLineImpact =>
+        Boolean(impact?.continuationLineStrength),
+      )
+      .sort(compareBranchPrepLineImpacts)[0] ?? null;
+
+  if (bestImpact?.continuationLineStrength) {
+    return {
+      responseMove: bestImpact.userMove,
+      label: formatBranchPrepProjectionLabel(bestImpact),
+      strength: bestImpact.continuationLineStrength,
+      lineImpact: bestImpact,
+    };
+  }
+
+  const best = candidates[0];
+  const label = `After ${best.reply.move}`;
+  const projectedStrength = createProjectedPrepLineStrength({
+    strength: best.strength,
+    userScore: best.score,
+    settings,
+  });
+  return {
+    responseMove: best.reply.move,
+    label,
+    strength: withBranchProjectionStrengthDetail(projectedStrength, label, row.move),
+    lineImpact: null,
+  };
+}
+
+function compareBranchPrepLineImpacts(left: OpponentPrepLineImpact, right: OpponentPrepLineImpact) {
+  return (
+    (right.continuationLineScore ?? -1) - (left.continuationLineScore ?? -1) ||
+    (right.continuationStrengthScore ?? -1) - (left.continuationStrengthScore ?? -1) ||
+    right.weightedStrengthScore - left.weightedStrengthScore ||
+    left.continuationDepthPly - right.continuationDepthPly ||
+    right.userGames - left.userGames ||
+    left.userMove.localeCompare(right.userMove)
+  );
+}
+
+function formatBranchPrepProjectionLabel(impact: OpponentPrepLineImpact) {
+  const moves = [impact.userMove, ...impact.continuationMoves];
+  const visibleMoves = moves.slice(0, 3).join(" ");
+  const suffix = moves.length > 3 ? " ..." : "";
+  return visibleMoves ? `After ${visibleMoves}${suffix}` : "After prep";
+}
+
+function withBranchProjectionStrengthDetail(
+  strength: PrepMoveStrength,
+  label: string,
+  opponentMove: string,
+): PrepMoveStrength {
+  return {
+    ...strength,
+    detail: `${label}: best available prep-side reply after ${opponentMove}.\n\n${strength.detail}`,
+  };
+}
+
 function getAfterPrepStrengthMap({
   openings,
   engineMoves,
@@ -4328,11 +4568,13 @@ function PrepStrengthCell({
 function PrepAfterStrengthCell({
   strength,
   label,
+  summary,
   context = [],
   loading,
 }: {
   strength?: PrepMoveStrength;
   label?: string;
+  summary?: string;
   context?: string[];
   loading: boolean;
 }) {
@@ -4345,7 +4587,8 @@ function PrepAfterStrengthCell({
   }
 
   const tooltip = [
-    `${label || "After prep"} ${strength.score}: recalculated with your conditional prep line.`,
+    summary ??
+      `${label || "After prep"} ${strength.score}: recalculated with your conditional prep line.`,
     ...context,
     strength.detail,
   ]
@@ -5105,6 +5348,18 @@ function preparedLineImpactTooltipLines(impact: OpponentPrepLineImpact | null) {
   }
 
   return lines;
+}
+
+function branchPrepProjectionTooltipLines(projection: OpponentBranchPrepProjection) {
+  const lines = [
+    `Projected reply: ${projection.responseMove}. This is scored from the position after the opponent move, even if no line has been saved.`,
+  ];
+
+  if (projection.lineImpact) {
+    lines.push(candidateLineImpactTooltip(projection.lineImpact));
+  }
+
+  return lines.filter(Boolean);
 }
 
 function candidateLineImpactTooltip(impact: OpponentPrepLineImpact) {

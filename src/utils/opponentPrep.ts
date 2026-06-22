@@ -2322,7 +2322,7 @@ function getPrepStrengthLoss({
     return engineLossNorm * effectiveEngineWeight + databaseLossNorm * (1 - effectiveEngineWeight);
 }
 
-function createProjectedPrepLineStrength({
+export function createProjectedPrepLineStrength({
     strength,
     userScore,
     settings,

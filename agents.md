@@ -335,6 +335,15 @@ default.
   prep side's perspective. Cap the future move's relative strength by the
   absolute future WDL/eval blend so a locally best move in a bad future
   position does not show as `100` in the root table.
+- Opponent-branch `After prep` must not depend on whether the user has already
+  saved a line in the prep tree. When the table is showing opponent moves, the
+  column should project the best available prep-side reply from the position
+  after each opponent move, score it with the active strength settings and
+  local eval data when enabled, and show a compact label such as `After c5`.
+  Existing saved-line impact can still take precedence when present, but
+  `NO LINE` rows may still have an `After prep` value. If engine scoring is
+  enabled and the local eval store has no covered reply, leave the signal
+  absent instead of silently switching to a no-engine score.
 - The prep strength scorer's engine floor is intentionally limited to Engine
   mode. In Smart and Practical modes, the configured engine/practical blend
   must be allowed to pull an engine-best move down when opponent-specific WDL is
