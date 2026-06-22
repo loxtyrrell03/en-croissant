@@ -377,6 +377,19 @@ default.
   grafted onto the cloud row while keeping the cloud score, depth, and root
   move authoritative. If local Stockfish does not include a cloud first move in
   its MultiPV output, that row remains a one-move cloud line.
+- A same-day correction hardened that line-extension path: after the root
+  MultiPV graft, any still-one-move local cloud row now gets a hidden
+  Stockfish follow-up search from the child position with `MultiPV=1`. The UI
+  still shows the cloud score/depth/root move, but the continuation can now be
+  filled even when the cloud move was not part of Stockfish's root MultiPV.
+- A later 2026-06-22 engine-panel cleanup made desktop analysis quiet about
+  cloud/API lookup failures and removed the visible `Loading`/cloud-status
+  badges from the engine row. Local Stockfish analysis now starts immediately
+  with no frontend search debounce or local UI update throttle, while local
+  engine cloud lookup uses the compact local Lichess eval store only and falls
+  straight through to Stockfish when that store has no row. Keep this panel
+  focused on the active Stockfish/available local-cloud lines rather than
+  surfacing Lichess API rate-limit or fallback narration.
 
 ### Web Companion
 
@@ -403,6 +416,11 @@ default.
   navigates the active line, Database shows browser-indexed PGN move stats from
   the current FEN, and Prep creates/selects opponent workspaces with notes,
   prepared/open move state, and the same compact move table.
+- On 2026-06-22, the phone/web under-board Engine panel was simplified to be
+  Stockfish-first. It no longer exposes Lichess Cloud/API controls or a cloud
+  status chip, defaults cloud lookup off for stored settings normalization, and
+  treats an enabled engine as `Stockfish`/running immediately instead of
+  showing a `Loading` or warm-up state before the first line arrives.
 - Anywhere phone file access should use a hosted static library rather than a
   laptop-dependent bridge. `scripts/build-web-library.mjs` mirrors PGN/PDF files
   from `Documents/EnCroissant` or `EN_CROISSANT_WEB_FILES_DIR` into ignored

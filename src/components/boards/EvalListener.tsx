@@ -20,7 +20,6 @@ import {
   tabEngineSettingsFamily,
 } from "@/state/atoms";
 import { getVariationLine } from "@/utils/chess";
-import { getBestMoves as chessdbGetBestMoves } from "@/utils/chessdb/api";
 import { positionFromFen, swapMove } from "@/utils/chessops";
 import {
   type Engine,
@@ -30,17 +29,14 @@ import {
   stopEngine,
   stopMatchingEngine,
 } from "@/utils/engines";
-import {
-  getBestMoves as lichessGetBestMoves,
-  getLichessCloudFailure,
-} from "@/utils/lichess/api";
+import { getBestMoves as lichessGetBestMoves, getLichessCloudFailure } from "@/utils/lichess/api";
 import { BoundedSet, withLimitedMapEntry } from "@/utils/boundedCache";
 import { TreeStateContext } from "../common/TreeStateContext";
 
 const LOCAL_ENGINE_OUTPUT_TIMEOUT_MS = 12000;
-const LOCAL_ENGINE_SEARCH_DELAY_MS = 260;
+const LOCAL_ENGINE_SEARCH_DELAY_MS = 0;
 const REMOTE_ENGINE_SEARCH_DELAY_MS = 120;
-const LOCAL_ENGINE_UI_UPDATE_INTERVAL_MS = 700;
+const LOCAL_ENGINE_UI_UPDATE_INTERVAL_MS = 0;
 const MAX_ENGINE_RESULT_CACHE_ENTRIES = 80;
 
 function EvalListener({ active }: { active: boolean }) {
@@ -280,9 +276,10 @@ function EngineListener({
     setProgress,
   ]);
 
-  const settingsOptionsKey = useMemo(() => JSON.stringify(settings.settings ?? []), [
-    settings.settings,
-  ]);
+  const settingsOptionsKey = useMemo(
+    () => JSON.stringify(settings.settings ?? []),
+    [settings.settings],
+  );
   const engineExtraOptions = useMemo<EngineOptions["extraOptions"]>(() => {
     const settingsList = JSON.parse(settingsOptionsKey) as {
       name: string;
@@ -326,7 +323,7 @@ function EngineListener({
       return;
     }
 
-    const timer = window.setTimeout(() => {
+    const startSearch = () => {
       if (cancelled || requestSequenceRef.current !== requestId) return;
 
       startedLocalSearch = engine.type === "local";
@@ -354,9 +351,7 @@ function EngineListener({
               engineOptions,
               updateCloudStatus,
             )
-          : engine.type === "lichess"
-            ? getLichessBestMovesWithStatus(tab, settings.go, engineOptions, updateCloudStatus)
-            : chessdbGetBestMoves(tab, settings.go, engineOptions);
+          : getLichessBestMovesWithStatus(tab, settings.go, engineOptions, updateCloudStatus);
 
       bestMovesPromise
         .then((moves) => {
@@ -421,11 +416,25 @@ function EngineListener({
             setProgress(100);
           });
         });
-    }, searchDelay);
+    };
+
+    if (searchDelay > 0) {
+      const timer = window.setTimeout(startSearch, searchDelay);
+      return () => {
+        cancelled = true;
+        window.clearTimeout(timer);
+        if (startedLocalSearch && engine.type === "local") {
+          void stopMatchingEngine(engine, tab, settings.go, engineOptions).catch((error) => {
+            console.error(`Failed to cancel stale analysis for ${engine.name}`, error);
+          });
+        }
+      };
+    }
+
+    startSearch();
 
     return () => {
       cancelled = true;
-      window.clearTimeout(timer);
       if (startedLocalSearch && engine.type === "local") {
         void stopMatchingEngine(engine, tab, settings.go, engineOptions).catch((error) => {
           console.error(`Failed to cancel stale analysis for ${engine.name}`, error);
@@ -469,7 +478,7 @@ async function getLocalBestMovesWithLichessCloud(
   });
 
   try {
-    const cloudMoves = await lichessGetBestMoves(tab, goMode, options);
+    const cloudMoves = await lichessGetBestMoves(tab, goMode, options, { remoteFallback: false });
     if (cloudMoves?.[1]?.length) {
       stopLocalSearchAfterCloud = true;
       let bestMoves = cloudMoves[1];

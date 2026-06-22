@@ -31,7 +31,6 @@ import {
   Select,
   Skeleton,
   Stack,
-  Switch,
   Table,
   Text,
   TextInput,
@@ -51,7 +50,6 @@ import {
   IconChevronsLeft,
   IconChevronsRight,
   IconChess,
-  IconCloud,
   IconCloudDownload,
   IconCpu,
   IconDatabase,
@@ -170,7 +168,7 @@ import {
   startWebLichessLogin,
   WEB_LICHESS_TOKEN_STORAGE_KEY,
 } from "./lichessAuth";
-import { queryWebLichessCloudEngineMoves, queryWebLichessCloudLines } from "./lichessCloud";
+import { queryWebLichessCloudEngineMoves } from "./lichessCloud";
 import {
   collectGamesForSources,
   findFirstWebPrepOpponentBranch,
@@ -365,7 +363,7 @@ type WebEnginePanelSettings = {
 
 const DEFAULT_WEB_ENGINE_PANEL_SETTINGS: WebEnginePanelSettings = {
   enabled: false,
-  useCloud: true,
+  useCloud: false,
   multipv: 3,
   depth: 14,
 };
@@ -2578,7 +2576,6 @@ function DatabaseUnderBoardPanel({
 }
 
 type WebEnginePanelStatus = "idle" | "loading" | "running" | "complete" | "error";
-type WebEngineCloudStatus = "off" | "loading" | "ready" | "miss" | "error";
 
 function EngineNumberStepper({
   label,
@@ -2659,11 +2656,7 @@ function EngineUnderBoardPanel({
     normalizeWebEnginePanelSettings,
   );
   const [stockfishLines, setStockfishLines] = useState<WebEngineLine[]>([]);
-  const [cloudLines, setCloudLines] = useState<WebEngineLine[]>([]);
   const [status, setStatus] = useState<WebEnginePanelStatus>("idle");
-  const [cloudStatus, setCloudStatus] = useState<WebEngineCloudStatus>(
-    settings.useCloud ? "miss" : "off",
-  );
   const [error, setError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -2681,32 +2674,9 @@ function EngineUnderBoardPanel({
 
     const controller = new AbortController();
     let active = true;
-    setStatus("loading");
+    setStatus("running");
     setError(null);
     setStockfishLines([]);
-
-    if (settings.useCloud) {
-      setCloudStatus("loading");
-      setCloudLines([]);
-      void queryWebLichessCloudLines({
-        fen: currentFen,
-        multipv: settings.multipv,
-        signal: controller.signal,
-      })
-        .then((lines) => {
-          if (!active) return;
-          setCloudLines(lines);
-          setCloudStatus(lines.length > 0 ? "ready" : "miss");
-        })
-        .catch((cloudError) => {
-          if (!active || isAbortError(cloudError)) return;
-          setCloudLines([]);
-          setCloudStatus("error");
-        });
-    } else {
-      setCloudStatus("off");
-      setCloudLines([]);
-    }
 
     void analyzeWithWebStockfish18({
       fen: currentFen,
@@ -2716,7 +2686,7 @@ function EngineUnderBoardPanel({
       onUpdate: (lines) => {
         if (!active) return;
         setStockfishLines(lines);
-        setStatus(lines.length > 0 ? "running" : "loading");
+        setStatus("running");
       },
     })
       .then((lines) => {
@@ -2735,9 +2705,9 @@ function EngineUnderBoardPanel({
       active = false;
       controller.abort();
     };
-  }, [currentFen, settings.depth, settings.enabled, settings.multipv, settings.useCloud]);
+  }, [currentFen, settings.depth, settings.enabled, settings.multipv]);
 
-  const displayLines = stockfishLines.length > 0 ? stockfishLines : cloudLines;
+  const displayLines = stockfishLines;
   useEffect(() => {
     onAnalysisLinesChange(currentFen, settings.enabled ? displayLines : []);
   }, [currentFen, displayLines, onAnalysisLinesChange, settings.enabled]);
@@ -2756,9 +2726,7 @@ function EngineUnderBoardPanel({
   const headerStatus = getWebEngineHeaderStatus({
     enabled: settings.enabled,
     status,
-    cloudStatus,
     topLine,
-    hasCloudFallback: stockfishLines.length === 0 && cloudLines.length > 0,
   });
   const topLineSpeed = topLine ? formatWebEngineNodeSpeed(topLine.nps) : null;
 
@@ -2783,11 +2751,6 @@ function EngineUnderBoardPanel({
             {headerStatus ? (
               <Code className={classes.enginePanelCode} c={engineStatusTextColor(status)}>
                 {headerStatus}
-              </Code>
-            ) : null}
-            {settings.useCloud ? (
-              <Code className={classes.enginePanelCode} c={cloudStatusTextColor(cloudStatus)}>
-                {cloudStatusLabel(cloudStatus)}
               </Code>
             ) : null}
           </Group>
@@ -2816,17 +2779,6 @@ function EngineUnderBoardPanel({
             </Text>
           </Box>
           <ActionIcon.Group>
-            <Tooltip label={settings.useCloud ? "Disable Lichess Cloud" : "Enable Lichess Cloud"}>
-              <ActionIcon
-                aria-label="Toggle Lichess Cloud"
-                variant={settings.useCloud ? "light" : "subtle"}
-                color={settings.useCloud ? "cyan" : "gray"}
-                disabled={!settings.enabled}
-                onClick={() => updateSettings({ useCloud: !settings.useCloud })}
-              >
-                <IconCloud size={16} />
-              </ActionIcon>
-            </Tooltip>
             <Tooltip label="Engine settings">
               <ActionIcon
                 aria-label="Engine settings"
@@ -2843,13 +2795,6 @@ function EngineUnderBoardPanel({
       <Collapse in={settingsOpen}>
         <Box className={classes.enginePanelSettings}>
           <Group gap="xs" grow className={classes.engineSettingsRow}>
-            <Switch
-              checked={settings.useCloud}
-              onChange={(event) => updateSettings({ useCloud: event.currentTarget.checked })}
-              label="Lichess Cloud"
-              size="xs"
-              disabled={!settings.enabled}
-            />
             <EngineNumberStepper
               label="Lines"
               value={settings.multipv}
@@ -2876,7 +2821,6 @@ function EngineUnderBoardPanel({
         error={error}
         lines={displayLines}
         settings={settings}
-        status={status}
         onPlayMove={onPlayMove}
       />
     </Box>
@@ -2888,14 +2832,12 @@ function EngineLineTable({
   error,
   lines,
   settings,
-  status,
   onPlayMove,
 }: {
   enabled: boolean;
   error: string | null;
   lines: WebEngineLine[];
   settings: WebEnginePanelSettings;
-  status: WebEnginePanelStatus;
   onPlayMove: (uci: string) => void;
 }) {
   if (!enabled) {
@@ -2947,9 +2889,7 @@ function EngineLineTable({
           </Table.Tbody>
         </Table>
         <Text size="xs" c="dimmed" className={classes.enginePanelLoadingText}>
-          {status === "loading"
-            ? "Starting Stockfish 18"
-            : "Waiting for engine lines from this position"}
+          Waiting for Stockfish lines from this position
         </Text>
       </Box>
     );
@@ -6047,22 +5987,16 @@ function getWebEngineProgress({
 function getWebEngineHeaderStatus({
   enabled,
   status,
-  cloudStatus,
   topLine,
-  hasCloudFallback,
 }: {
   enabled: boolean;
   status: WebEnginePanelStatus;
-  cloudStatus: WebEngineCloudStatus;
   topLine: WebEngineLine | null;
-  hasCloudFallback: boolean;
 }) {
   if (!enabled) return "Off";
   if (status === "error") return "Error";
-  if (hasCloudFallback) return "Lichess";
   if (topLine) return topLine.source === "lichess-cloud" ? "Lichess" : "Stockfish";
-  if (cloudStatus === "loading") return "Loading";
-  return status === "loading" ? "Loading" : "Stockfish";
+  return "Stockfish";
 }
 
 function formatWebEngineNodeSpeed(value?: number | null) {
@@ -6076,21 +6010,6 @@ function engineStatusTextColor(status: WebEnginePanelStatus) {
   if (status === "error") return "red";
   if (status === "running" || status === "complete") return "green";
   if (status === "loading") return "blue";
-  return "dimmed";
-}
-
-function cloudStatusLabel(status: WebEngineCloudStatus) {
-  if (status === "loading") return "Cloud";
-  if (status === "ready") return "Cloud";
-  if (status === "error") return "Cloud error";
-  if (status === "off") return "Cloud off";
-  return "No cloud";
-}
-
-function cloudStatusTextColor(status: WebEngineCloudStatus) {
-  if (status === "ready") return "cyan";
-  if (status === "loading") return "blue";
-  if (status === "error") return "red";
   return "dimmed";
 }
 

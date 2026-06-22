@@ -470,7 +470,11 @@ export type LichessCloudMove = {
   source: LichessCloudSource;
 };
 
-async function getCloudEvaluation(fen: string, multipv: number): Promise<LichessCloudData> {
+async function getCloudEvaluation(
+  fen: string,
+  multipv: number,
+  options?: { remoteFallback?: boolean },
+): Promise<LichessCloudData> {
   const safeMultipv = normalizeCloudMultipv(multipv);
   const cacheKey = `${fen}-${safeMultipv}`;
   if (cache.has(cacheKey)) {
@@ -482,6 +486,13 @@ async function getCloudEvaluation(fen: string, multipv: number): Promise<Lichess
     cache.set(cacheKey, localData);
     missingCache.delete(cacheKey);
     return localData;
+  }
+
+  if (options?.remoteFallback === false) {
+    throw new LichessCloudEvaluationError(
+      "missing",
+      "No local Lichess eval is cached for this exact position.",
+    );
   }
 
   if (missingCache.has(cacheKey)) {
@@ -538,7 +549,7 @@ async function getLocalCloudEvaluation(
       source: "local-lichess",
     };
   } catch (error) {
-    console.warn("Local Lichess eval lookup failed; falling back to Lichess Cloud.", error);
+    console.warn("Local Lichess eval lookup failed.", error);
     return null;
   }
 }
