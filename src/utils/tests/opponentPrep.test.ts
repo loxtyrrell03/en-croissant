@@ -444,6 +444,7 @@ describe("opponent prep helpers", () => {
     test("flags a candidate reply when the prep response improves the line", async () => {
         const store = createTreeStore();
         store.getState().makeMove({ payload: "e4" });
+        const settings = normalizePrepBuilderSettings({ mode: "practical", useCloudEngine: false });
 
         const fen = store.getState().root.children[0].fen;
         const afterC5 = applyPrepSanMove(fen, "c5");
@@ -476,6 +477,7 @@ describe("opponent prep helpers", () => {
             },
             minGames: 1,
             moveLimit: 4,
+            settings,
         });
 
         expect(impact).toMatchObject({
@@ -495,13 +497,57 @@ describe("opponent prep helpers", () => {
         expect(impact?.userResponseScore).toBeCloseTo(0.65);
         expect(impact?.userResponseShare).toBeCloseTo(0.67);
         expect(impact?.continuationUserScore).toBeCloseTo(0.65);
+        expect(impact?.continuationStrengthScore).toBe(100);
         expect(impact?.scoreDrop).toBeCloseTo(0.4);
         expect(impact?.weightedScoreDrop ?? 0).toBeGreaterThan(0.2);
+    });
+
+    test("chooses future prep replies by strength instead of raw WDL", async () => {
+        const store = createTreeStore();
+        store.getState().makeMove({ payload: "e4" });
+        const settings = normalizePrepBuilderSettings({ mode: "practical", useCloudEngine: false });
+
+        const fen = store.getState().root.children[0].fen;
+        const afterC5 = applyPrepSanMove(fen, "c5");
+        const afterC5Nf3 = afterC5 ? applyPrepSanMove(afterC5, "Nf3") : null;
+        const impact = await getOpponentPrepCandidateLineImpact({
+            fen,
+            row: {
+                move: "c5",
+                white: 70,
+                draw: 10,
+                black: 20,
+                total: 100,
+                share: 0.24,
+            },
+            opponentColor: "white",
+            loadOpenings: async (position) => {
+                if (position === afterC5) {
+                    return [{ move: "Nf3", white: 24, draw: 8, black: 8 }];
+                }
+                if (position === afterC5Nf3) {
+                    return [
+                        { move: "g6", white: 0, draw: 0, black: 2 },
+                        { move: "d6", white: 20, draw: 0, black: 80 },
+                    ];
+                }
+                return [];
+            },
+            minGames: 1,
+            moveLimit: 4,
+            settings,
+        });
+
+        expect(impact?.continuationMoves).toEqual(["Nf3", "d6"]);
+        expect(impact?.userResponseMove).toBe("d6");
+        expect(impact?.userResponseScore).toBeCloseTo(0.8);
+        expect(impact?.userResponseStrengthScore).toBe(100);
     });
 
     test("can use a common deeper candidate continuation after discounting", async () => {
         const store = createTreeStore();
         store.getState().makeMove({ payload: "e4" });
+        const settings = normalizePrepBuilderSettings({ mode: "practical", useCloudEngine: false });
 
         const fen = store.getState().root.children[0].fen;
         const afterC5 = applyPrepSanMove(fen, "c5");
@@ -528,8 +574,19 @@ describe("opponent prep helpers", () => {
                 }
                 if (position === afterC5Nf3) {
                     return [
-                        { move: "g6", white: 15, draw: 8, black: 17 },
-                        { move: "d6", white: 15, draw: 4, black: 1 },
+                        { move: "g6", white: 0, draw: 0, black: 2 },
+                        { move: "a6", white: 2, draw: 0, black: 0 },
+                        { move: "b6", white: 2, draw: 0, black: 0 },
+                        { move: "d6", white: 2, draw: 0, black: 0 },
+                        { move: "e6", white: 2, draw: 0, black: 0 },
+                        { move: "h6", white: 2, draw: 0, black: 0 },
+                        { move: "Nc6", white: 2, draw: 0, black: 0 },
+                        { move: "Nf6", white: 2, draw: 0, black: 0 },
+                        { move: "Qc7", white: 2, draw: 0, black: 0 },
+                        { move: "Qa5", white: 2, draw: 0, black: 0 },
+                        { move: "Qb6", white: 2, draw: 0, black: 0 },
+                        { move: "e5", white: 2, draw: 0, black: 0 },
+                        { move: "f6", white: 2, draw: 0, black: 0 },
                     ];
                 }
                 if (position === afterC5Nf3G6) {
@@ -547,18 +604,22 @@ describe("opponent prep helpers", () => {
                 return [];
             },
             minGames: 1,
-            moveLimit: 4,
+            moveLimit: 16,
+            settings,
         });
 
         expect(impact?.continuationMoves).toEqual(["Nf3", "g6", "d4", "Bg7"]);
         expect(impact?.continuationUserScore).toBeCloseTo(0.95);
+        expect(impact?.userResponseStrengthScore).toBe(58);
+        expect(impact?.continuationStrengthScore).toBe(100);
         expect(impact?.continuationDepthPly).toBe(4);
-        expect(impact?.weightedScoreDrop ?? 0).toBeGreaterThan(0.18);
+        expect(impact?.weightedStrengthScore ?? 0).toBeGreaterThan(40);
     });
 
     test("keeps a nearer candidate continuation above a rare deeper WDL swing", async () => {
         const store = createTreeStore();
         store.getState().makeMove({ payload: "e4" });
+        const settings = normalizePrepBuilderSettings({ mode: "practical", useCloudEngine: false });
 
         const fen = store.getState().root.children[0].fen;
         const afterC5 = applyPrepSanMove(fen, "c5");
@@ -601,6 +662,7 @@ describe("opponent prep helpers", () => {
             },
             minGames: 1,
             moveLimit: 4,
+            settings,
         });
 
         expect(impact?.continuationMoves).toEqual(["Nf3", "g6"]);

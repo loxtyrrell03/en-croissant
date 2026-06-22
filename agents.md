@@ -300,6 +300,13 @@ default.
   spike two or three moves later should not override a stronger near-term
   signal. Do not reduce this back to a one-ply `candidate -> opponent reply`
   check.
+- A follow-up correction made candidate continuation choice use the same
+  configured move Strength concept instead of choosing future prep replies by
+  raw WDL. Opponent replies are still predicted by commonness, but prep-side
+  replies below that are selected and ranked by `getPrepMoveStrengthMap` using
+  the active Strength settings and database evidence from the future position.
+  WDL remains supporting evidence for the tooltip and after-strength
+  recalculation, not the primary future-move selector.
 
 ### Local Lichess Cloud Evals
 

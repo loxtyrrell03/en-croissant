@@ -977,6 +977,7 @@ function OpponentPrepPanel({
           currentFen,
           prep.minGames,
           prep.moveLimit,
+          JSON.stringify(builderSettings),
           candidateRows.map((row) => row.key).join("|"),
         ]
       : null;
@@ -992,6 +993,7 @@ function OpponentPrepPanel({
           loadOpenings: loadOpeningsForFen,
           minGames: prep.minGames,
           moveLimit: prep.moveLimit,
+          settings: builderSettings,
         });
         if (impact) entries.push([row.key, impact]);
       }),
@@ -4977,9 +4979,15 @@ function candidateLineImpactTooltip(impact: OpponentPrepLineImpact) {
     `Nearby prep line after ${impact.userMove}: ${impact.continuationMoves.join(" ")}.`,
   ];
 
+  if (impact.continuationStrengthScore !== null) {
+    lines.push(
+      `Future move strength: ${impact.continuationStrengthScore} for the prep-side reply in that line.`,
+    );
+  }
+
   if (impact.continuationUserScore !== null && impact.continuationGames !== null) {
     lines.push(
-      `Your side scores ${formatPrepScorePercent(impact.continuationUserScore)} over ${formatNumber(impact.continuationGames)} games at that point, compared with opponent ${formatPrepScorePercent(impact.surfaceScore)} over ${formatNumber(impact.surfaceGames)} after ${impact.userMove}.`,
+      `Database evidence there: your side scores ${formatPrepScorePercent(impact.continuationUserScore)} over ${formatNumber(impact.continuationGames)} games, compared with opponent ${formatPrepScorePercent(impact.surfaceScore)} over ${formatNumber(impact.surfaceGames)} after ${impact.userMove}.`,
     );
   }
 
@@ -4996,7 +5004,7 @@ function candidateLineImpactTooltip(impact: OpponentPrepLineImpact) {
 
   if (impact.continuationDepthPly > 2) {
     lines.push(
-      `Deeper WDL is discounted by depth and opponent path frequency, so it will not override a stronger near-term signal by itself.`,
+      `Deeper strength is discounted by depth and opponent path frequency, so it will not override a stronger near-term signal by itself.`,
     );
   }
 
