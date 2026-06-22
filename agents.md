@@ -320,6 +320,15 @@ default.
   current candidate, a later weaker move such as `...cxd4` must not drag the
   `After prep` value below `...g6`'s own current strength; the future-line label
   should only appear when that future continuation is the displayed score.
+- Candidate `After prep` cells should be blank unless the future continuation
+  is actually stronger than the row's normal `Strength`; duplicating the same
+  number in both columns makes it look like there is conditional evidence when
+  there is not.
+- The prep strength scorer's engine floor is intentionally limited to Engine
+  mode. In Smart and Practical modes, the configured engine/practical blend
+  must be allowed to pull an engine-best move down when opponent-specific WDL is
+  bad, so a move like `...e5` should not stay high solely because it is the top
+  cloud move if the selected opponent scores heavily against it.
 
 ### Local Lichess Cloud Evals
 

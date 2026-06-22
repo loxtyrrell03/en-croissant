@@ -805,6 +805,34 @@ describe("opponent prep helpers", () => {
         expect(choice?.engineCpLoss).toBe(0);
     });
 
+    test("smart strength does not floor an engine-best move over awful opponent WDL", () => {
+        const settings = normalizePrepBuilderSettings({
+            mode: "smart",
+            engineWeight: 55,
+            maxEngineCpLoss: 70,
+        });
+        const strength = getPrepMoveStrengthMap({
+            side: "black",
+            settings,
+            openings: [
+                { move: "e5", white: 426, draw: 23, black: 126 },
+                { move: "c6", white: 146, draw: 22, black: 80 },
+                { move: "c5", white: 334, draw: 38, black: 167 },
+            ],
+            engineMoves: [
+                { san: "e5", scoreCpForSide: 80, rank: 1, source: "lichess" },
+                { san: "c6", scoreCpForSide: 60, rank: 2, source: "lichess" },
+                { san: "c5", scoreCpForSide: 50, rank: 3, source: "lichess" },
+            ],
+        });
+
+        expect(strength.get("e5")?.engineCpLoss).toBe(0);
+        expect(strength.get("e5")?.databaseWdlLoss).toBeGreaterThan(0.1);
+        expect(strength.get("e5")?.score).toBeLessThan(strength.get("c6")!.score);
+        expect(strength.get("e5")?.score).toBeLessThan(strength.get("c5")!.score);
+        expect(strength.get("e5")?.detail).not.toContain("Engine floor");
+    });
+
     test("smart strength leans practical when top engine moves are clustered", () => {
         const settings = normalizePrepBuilderSettings({
             mode: "smart",
@@ -1166,9 +1194,9 @@ describe("opponent prep helpers", () => {
         expect(strength.get("c5")?.detail).toContain("Low sample cap");
     });
 
-    test("engine-best prep moves do not show zero when WDL is terrible", () => {
+    test("engine mode keeps engine-best prep moves from showing zero when WDL is terrible", () => {
         const settings = normalizePrepBuilderSettings({
-            mode: "practical",
+            mode: "engine",
             maxEngineCpLoss: 70,
         });
         const strength = getPrepMoveStrengthMap({

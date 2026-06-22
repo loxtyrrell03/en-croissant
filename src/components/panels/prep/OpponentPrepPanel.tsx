@@ -4213,7 +4213,7 @@ function getCandidateContinuationStrengthMap({
       continuationStrength &&
       (!currentStrength || continuationStrength.score > currentStrength.score)
         ? continuationStrength
-        : currentStrength;
+        : null;
 
     if (displayedStrength) entries.push([moveKey, displayedStrength]);
   }

@@ -2187,11 +2187,12 @@ function getPrepEngineScoreFloor({
     maxEngineCpLoss: number;
 }) {
     if (!settings.useCloudEngine || engineCpLoss === null) return null;
+    if (settings.mode !== "engine") return null;
     if (engineCpLoss > maxEngineCpLoss) return null;
 
     const lossShare = clamp(engineCpLoss / maxEngineCpLoss, 0, 1);
-    const bestMoveFloor = settings.mode === "engine" ? 92 : settings.mode === "practical" ? 62 : 82;
-    const safeMoveFloor = settings.mode === "engine" ? 68 : settings.mode === "practical" ? 42 : 58;
+    const bestMoveFloor = 92;
+    const safeMoveFloor = 68;
 
     return Math.round(bestMoveFloor - (bestMoveFloor - safeMoveFloor) * lossShare);
 }
