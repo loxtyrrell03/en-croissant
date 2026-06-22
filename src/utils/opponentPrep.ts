@@ -1047,6 +1047,56 @@ export async function getOpponentPrepBranchStats({
     });
 }
 
+export async function getOpponentPrepCandidateLineImpact({
+    fen,
+    row,
+    opponentColor,
+    loadOpenings,
+    minGames,
+    moveLimit,
+}: {
+    fen: string;
+    row: Pick<OpponentPrepMoveRow, "move" | "total" | "share" | "white" | "draw" | "black">;
+    opponentColor: PrepColor;
+    loadOpenings: (fen: string) => Promise<Opening[]>;
+    minGames: number;
+    moveLimit: number;
+}): Promise<OpponentPrepLineImpact | null> {
+    const surfaceScore = getOpeningScoreForSide(row, opponentColor);
+    if (surfaceScore < PREP_LINE_IMPACT_MIN_SURFACE_SCORE) return null;
+
+    const nextFen = applyPrepSanMove(fen, row.move);
+    if (!nextFen) return null;
+
+    const opponentReply = await getTopOpponentReplyImpact({
+        fen: nextFen,
+        opponentColor,
+        loadOpenings,
+        minGames,
+        moveLimit,
+    });
+    if (!opponentReply || opponentReply.share < PREP_LINE_IMPACT_MIN_OPPONENT_REPLY_SHARE) {
+        return null;
+    }
+
+    const scoreDrop = surfaceScore - opponentReply.score;
+    if (scoreDrop < PREP_LINE_IMPACT_MIN_SCORE_DROP) return null;
+
+    return {
+        surfaceScore,
+        surfaceGames: row.total,
+        userMove: row.move,
+        userScore: surfaceScore,
+        userGames: row.total,
+        userShare: row.share,
+        opponentReplyMove: opponentReply.move,
+        opponentReplyScore: opponentReply.score,
+        opponentReplyGames: opponentReply.games,
+        opponentReplyShare: opponentReply.share,
+        scoreDrop,
+    };
+}
+
 async function getPreparedLineImpact({
     branchNode,
     row,

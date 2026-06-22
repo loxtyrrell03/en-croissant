@@ -11,6 +11,7 @@ import {
     findOpponentPrepSourceMovePath,
     findOpponentPrepStart,
     getOpponentPrepBranchStats,
+    getOpponentPrepCandidateLineImpact,
     getOpponentPrepMoveRows,
     getPrepStraightLineForcedMove,
     getPrepBuilderBranchValue,
@@ -438,6 +439,45 @@ describe("opponent prep helpers", () => {
         expect(stats.preparedLineImpact?.userScore).toBeCloseTo(0.3);
         expect(stats.preparedLineImpact?.opponentReplyScore).toBeCloseTo(0.4);
         expect(stats.preparedLineImpact?.opponentReplyShare).toBeCloseTo(0.8);
+    });
+
+    test("flags a candidate reply when the opponent usually enters a worse scoring line", async () => {
+        const store = createTreeStore();
+        store.getState().makeMove({ payload: "e4" });
+
+        const fen = store.getState().root.children[0].fen;
+        const afterC5 = applyPrepSanMove(fen, "c5");
+        const impact = await getOpponentPrepCandidateLineImpact({
+            fen,
+            row: {
+                move: "c5",
+                white: 70,
+                draw: 10,
+                black: 20,
+                total: 100,
+                share: 0.24,
+            },
+            opponentColor: "white",
+            loadOpenings: async (position) =>
+                position === afterC5
+                    ? [
+                          { move: "Nf3", white: 12, draw: 8, black: 20 },
+                          { move: "Nc3", white: 6, draw: 0, black: 4 },
+                      ]
+                    : [],
+            minGames: 1,
+            moveLimit: 4,
+        });
+
+        expect(impact).toMatchObject({
+            userMove: "c5",
+            opponentReplyMove: "Nf3",
+            surfaceGames: 100,
+            opponentReplyGames: 40,
+        });
+        expect(impact?.surfaceScore).toBeCloseTo(0.75);
+        expect(impact?.opponentReplyScore).toBeCloseTo(0.4);
+        expect(impact?.opponentReplyShare).toBeCloseTo(0.8);
     });
 
     test("keeps shallow branches with unanswered common replies marked as needing work", async () => {

@@ -117,6 +117,7 @@ import {
   choosePrepBuilderMove,
   findPrepStraightLineCandidates,
   getFenTurn,
+  getOpponentPrepCandidateLineImpact,
   getLineSans,
   getOpeningTotal,
   getOpponentPrepBranchKey,
@@ -968,6 +969,36 @@ function OpponentPrepPanel({
       return Object.fromEntries(entries);
     },
   );
+  const candidateLineImpactKey =
+    configReady && showTrainingStage && !opponentToMove && candidateRows.length > 0
+      ? [
+          "opponent-prep-candidate-line-impact",
+          queryScope,
+          currentFen,
+          prep.minGames,
+          prep.moveLimit,
+          candidateRows.map((row) => row.key).join("|"),
+        ]
+      : null;
+  const { data: candidateLineImpactByKey } = useSWR(candidateLineImpactKey, async () => {
+    const entries: [string, OpponentPrepLineImpact][] = [];
+
+    await Promise.all(
+      candidateRows.map(async (row) => {
+        const impact = await getOpponentPrepCandidateLineImpact({
+          fen: currentFen,
+          row,
+          opponentColor: prep.color,
+          loadOpenings: loadOpeningsForFen,
+          minGames: prep.minGames,
+          moveLimit: prep.moveLimit,
+        });
+        if (impact) entries.push([row.key, impact]);
+      }),
+    );
+
+    return Object.fromEntries(entries);
+  });
   const activeBranch = useMemo(
     () =>
       isInsidePrepTree ? findLastOpponentBranch(root, currentPath, prep.color, rootPath) : null,
@@ -3300,6 +3331,7 @@ function OpponentPrepPanel({
               onClearPreview={clearMovePreview}
               strengthByMove={strengthByMove}
               strengthLoading={strengthLoading}
+              candidateLineImpactByKey={candidateLineImpactByKey}
               sort={moveTableSort.candidate}
               onSort={setCandidateMoveSortColumn}
             />
@@ -3541,6 +3573,7 @@ function PrepCandidateMoveTable({
   onClearPreview,
   strengthByMove,
   strengthLoading,
+  candidateLineImpactByKey,
   sort,
   onSort,
 }: {
@@ -3554,6 +3587,7 @@ function PrepCandidateMoveTable({
   onClearPreview: () => void;
   strengthByMove: Map<string, PrepMoveStrength>;
   strengthLoading: boolean;
+  candidateLineImpactByKey?: Record<string, OpponentPrepLineImpact>;
   sort: PrepSortState<CandidatePrepSortColumn>;
   onSort: (column: CandidatePrepSortColumn) => void;
 }) {
@@ -3628,53 +3662,58 @@ function PrepCandidateMoveTable({
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {sortedRows.map((row) => (
-            <Table.Tr
-              key={row.key}
-              style={{ cursor: "pointer" }}
-              onClick={() => onPlay(row.move)}
-              onMouseEnter={() => onPreview(row.move)}
-              onMouseLeave={onClearPreview}
-            >
-              <Table.Td>
-                <Text size={textSize} fw={700}>
-                  {row.move}
-                </Text>
-                <PrepLastPlayedText value={row.lastPlayed} kind={general ? "played" : "faced"} />
-              </Table.Td>
-              <Table.Td>
-                <PrepStrengthCell
-                  strength={strengthByMove.get(normalizePrepBuilderSan(row.move))}
-                  loading={strengthLoading}
-                />
-              </Table.Td>
-              <Table.Td>
-                <Text size={textSize}>{formatNumber(row.total)}</Text>
-                <Text size="xs" c="dimmed">
-                  {(row.share * 100).toFixed(0)}%
-                </Text>
-              </Table.Td>
-              <Table.Td>
-                <PrepResultBar row={row} />
-              </Table.Td>
-              <Table.Td>
-                <Group gap={2} wrap="nowrap" justify="flex-end">
-                  <Tooltip label={general ? "Play this database move" : "Play this reply"}>
-                    <ActionIcon
-                      variant="subtle"
-                      size="sm"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onPlay(row.move);
-                      }}
-                    >
-                      <IconPlayerPlay size="0.95rem" />
-                    </ActionIcon>
-                  </Tooltip>
-                </Group>
-              </Table.Td>
-            </Table.Tr>
-          ))}
+          {sortedRows.map((row) => {
+            const lineImpact = candidateLineImpactByKey?.[row.key];
+
+            return (
+              <Table.Tr
+                key={row.key}
+                style={{ cursor: "pointer" }}
+                onClick={() => onPlay(row.move)}
+                onMouseEnter={() => onPreview(row.move)}
+                onMouseLeave={onClearPreview}
+              >
+                <Table.Td>
+                  <Text size={textSize} fw={700}>
+                    {row.move}
+                  </Text>
+                  <PrepLastPlayedText value={row.lastPlayed} kind={general ? "played" : "faced"} />
+                </Table.Td>
+                <Table.Td>
+                  <PrepStrengthCell
+                    strength={strengthByMove.get(normalizePrepBuilderSan(row.move))}
+                    loading={strengthLoading}
+                  />
+                </Table.Td>
+                <Table.Td>
+                  <Text size={textSize}>{formatNumber(row.total)}</Text>
+                  <Text size="xs" c="dimmed">
+                    {(row.share * 100).toFixed(0)}%
+                  </Text>
+                </Table.Td>
+                <Table.Td>
+                  <PrepResultBar row={row} />
+                  <CandidateLineImpactText impact={lineImpact} />
+                </Table.Td>
+                <Table.Td>
+                  <Group gap={2} wrap="nowrap" justify="flex-end">
+                    <Tooltip label={general ? "Play this database move" : "Play this reply"}>
+                      <ActionIcon
+                        variant="subtle"
+                        size="sm"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onPlay(row.move);
+                        }}
+                      >
+                        <IconPlayerPlay size="0.95rem" />
+                      </ActionIcon>
+                    </Tooltip>
+                  </Group>
+                </Table.Td>
+              </Table.Tr>
+            );
+          })}
         </Table.Tbody>
       </Table>
     </Stack>
@@ -4397,7 +4436,7 @@ function BranchStatsCell({
         <Progress value={stats.score} color={color} size={dense ? 3 : "xs"} />
         <Text size="xs" c={lineImpact ? "teal" : "dimmed"} fw={lineImpact ? 700 : 400} truncate>
           {lineImpact && lineImpactScore !== null
-            ? `Prep helps: opp ${formatPrepScorePercent(lineImpact.surfaceScore)} -> ${formatPrepScorePercent(lineImpactScore)}`
+            ? `Prep helps: opp score ${formatPrepScorePercent(lineImpact.surfaceScore)} -> ${formatPrepScorePercent(lineImpactScore)}`
             : `${Math.round(stats.replyCoverage * 100)}% replies - ${stats.depthPly} ply`}
         </Text>
       </Stack>
@@ -4425,6 +4464,27 @@ function PrepResultBar({ row }: { row: Pick<Opening, "white" | "draw" | "black">
         <Progress.Label>{blackPercent >= 18 ? `${blackPercent.toFixed(0)}%` : ""}</Progress.Label>
       </Progress.Section>
     </Progress.Root>
+  );
+}
+
+function CandidateLineImpactText({ impact }: { impact?: OpponentPrepLineImpact }) {
+  if (
+    !impact ||
+    !impact.opponentReplyMove ||
+    impact.opponentReplyScore === null ||
+    impact.opponentReplyGames === null ||
+    impact.opponentReplyShare === null
+  ) {
+    return null;
+  }
+
+  return (
+    <Tooltip label={candidateLineImpactTooltip(impact)} multiline w={310}>
+      <Text size="xs" c="teal" fw={700} truncate mt={3}>
+        Likely {impact.opponentReplyMove}: opp score {formatPrepScorePercent(impact.surfaceScore)}{" "}
+        {"->"} {formatPrepScorePercent(impact.opponentReplyScore)}
+      </Text>
+    </Tooltip>
   );
 }
 
@@ -4722,6 +4782,22 @@ function preparedLineImpactTooltipLines(impact: OpponentPrepLineImpact | null) {
   }
 
   return lines;
+}
+
+function candidateLineImpactTooltip(impact: OpponentPrepLineImpact) {
+  if (
+    !impact.opponentReplyMove ||
+    impact.opponentReplyScore === null ||
+    impact.opponentReplyGames === null ||
+    impact.opponentReplyShare === null
+  ) {
+    return "";
+  }
+
+  return [
+    `Likely reply helps: after your ${impact.userMove}, they play ${impact.opponentReplyMove} in ${formatPrepScorePercent(impact.opponentReplyShare)} of games.`,
+    `Opponent score drops from ${formatPrepScorePercent(impact.surfaceScore)} over ${formatNumber(impact.surfaceGames)} games to ${formatPrepScorePercent(impact.opponentReplyScore)} over ${formatNumber(impact.opponentReplyGames)} games.`,
+  ].join("\n");
 }
 
 function getPreparedLineImpactComparisonScore(impact: OpponentPrepLineImpact) {

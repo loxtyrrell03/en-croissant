@@ -275,6 +275,14 @@ default.
   score, the saved reply score, and the usual next reply when available. Keep
   this intentionally thresholded and tied to saved prep lines so the move table
   does not become another broad lookahead table.
+- A follow-up the same day extended the signal to the candidate reply table,
+  which is the `Move / Strength / Games / WDL` view shown when the user is
+  choosing their response to an opponent move. Candidate rows now show
+  `Likely <move>: opp score X% -> Y%` under the WDL bar when the opponent's
+  most common next reply is common enough and materially worse for them than
+  the surface result after the user's candidate move. This is deliberately
+  visible only for meaningful reversals, so ordinary rows stay as compact as
+  before.
 
 ### Local Lichess Cloud Evals
 
