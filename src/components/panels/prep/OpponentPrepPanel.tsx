@@ -1038,26 +1038,13 @@ function OpponentPrepPanel({
   const candidateAfterPrepStrengthByMove = useMemo(
     () =>
       prepMode === "player" && !opponentToMove && candidateLineImpactByKey
-        ? getAfterPrepStrengthMap({
+        ? getCandidateContinuationStrengthMap({
             openings: strengthOpenings,
-            engineMoves: strengthEngineMoves ?? [],
-            side: userColor,
-            settings: builderSettings,
-            getImpact: (opening) =>
-              candidateLineImpactByKey[getOpponentPrepBranchKey(currentFen, opening.move)] ?? null,
-            getAfterScore: getCandidateLineImpactUserScore,
+            currentFen,
+            candidateLineImpactByKey,
           })
         : new Map<string, PrepMoveStrength>(),
-    [
-      builderSettings,
-      candidateLineImpactByKey,
-      currentFen,
-      opponentToMove,
-      prepMode,
-      strengthEngineMoves,
-      strengthOpenings,
-      userColor,
-    ],
+    [candidateLineImpactByKey, currentFen, opponentToMove, prepMode, strengthOpenings],
   );
   const activeBranch = useMemo(
     () =>
@@ -4182,6 +4169,28 @@ function getAfterPrepStrengthMap({
   return new Map([...fullMap].filter(([move]) => impactedMoves.has(move)));
 }
 
+function getCandidateContinuationStrengthMap({
+  openings,
+  currentFen,
+  candidateLineImpactByKey,
+}: {
+  openings: Opening[];
+  currentFen: string;
+  candidateLineImpactByKey: Record<string, OpponentPrepLineImpact>;
+}) {
+  const entries: [string, PrepMoveStrength][] = [];
+
+  for (const opening of openings) {
+    const key = getOpponentPrepBranchKey(currentFen, opening.move);
+    const impact = candidateLineImpactByKey[key];
+    if (!impact?.continuationStrength) continue;
+
+    entries.push([normalizePrepBuilderSan(opening.move), impact.continuationStrength]);
+  }
+
+  return new Map(entries);
+}
+
 function createOpeningFromSideScore({
   move,
   side,
@@ -4206,12 +4215,6 @@ function createOpeningFromSideScore({
     black: side === "black" ? sideWins : sideLosses,
     lastPlayed,
   };
-}
-
-function getCandidateLineImpactUserScore(impact: OpponentPrepLineImpact) {
-  if (impact.continuationUserScore !== null) return impact.continuationUserScore;
-  if (impact.userResponseScore !== null) return impact.userResponseScore;
-  return 1 - (impact.opponentReplyScore ?? impact.userScore);
 }
 
 function getAfterPrepImpactGames(impact: OpponentPrepLineImpact, score: number) {

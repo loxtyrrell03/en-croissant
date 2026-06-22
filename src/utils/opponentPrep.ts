@@ -66,11 +66,13 @@ export type OpponentPrepLineImpact = {
     userResponseGames: number | null;
     userResponseShare: number | null;
     userResponseStrengthScore: number | null;
+    userResponseStrength: PrepMoveStrength | null;
     continuationMoves: string[];
     continuationUserScore: number | null;
     continuationOpponentScore: number | null;
     continuationGames: number | null;
     continuationStrengthScore: number | null;
+    continuationStrength: PrepMoveStrength | null;
     continuationDepthPly: number;
     continuationWeight: number;
     scoreDrop: number;
@@ -84,6 +86,7 @@ type PrepLineMoveImpact = {
     share: number;
     score: number;
     strengthScore: number | null;
+    strength: PrepMoveStrength | null;
 };
 
 type CandidateContinuationImpact = {
@@ -92,6 +95,7 @@ type CandidateContinuationImpact = {
     opponentScore: number;
     games: number;
     strengthScore: number;
+    strength: PrepMoveStrength;
     depthPly: number;
     weight: number;
     scoreDrop: number;
@@ -1135,11 +1139,13 @@ export async function getOpponentPrepCandidateLineImpact({
         userResponseGames: continuation.firstUserResponse?.games ?? null,
         userResponseShare: continuation.firstUserResponse?.share ?? null,
         userResponseStrengthScore: continuation.firstUserResponse?.strengthScore ?? null,
+        userResponseStrength: continuation.firstUserResponse?.strength ?? null,
         continuationMoves: continuation.moves,
         continuationUserScore: continuation.userScore,
         continuationOpponentScore: continuation.opponentScore,
         continuationGames: continuation.games,
         continuationStrengthScore: continuation.strengthScore,
+        continuationStrength: continuation.strength,
         continuationDepthPly: continuation.depthPly,
         continuationWeight: continuation.weight,
         scoreDrop: continuation.scoreDrop,
@@ -1224,11 +1230,13 @@ async function getPreparedLineImpact({
                 userResponseGames: null,
                 userResponseShare: null,
                 userResponseStrengthScore: null,
+                userResponseStrength: null,
                 continuationMoves: [],
                 continuationUserScore: null,
                 continuationOpponentScore: userScore,
                 continuationGames: userGames,
                 continuationStrengthScore: null,
+                continuationStrength: null,
                 continuationDepthPly: 0,
                 continuationWeight: 1,
                 scoreDrop,
@@ -1280,12 +1288,12 @@ async function getCandidateContinuationImpact({
         userScore,
         opponentScore,
         games,
-        strengthScore,
+        strength,
     }: {
         userScore: number;
         opponentScore: number;
         games: number;
-        strengthScore: number;
+        strength: PrepMoveStrength;
     }) => {
         const depthPly = moves.length;
         const weight = getCandidateContinuationWeight({
@@ -1298,12 +1306,13 @@ async function getCandidateContinuationImpact({
             userScore,
             opponentScore,
             games,
-            strengthScore,
+            strengthScore: strength.score,
+            strength,
             depthPly,
             weight,
             scoreDrop,
             weightedScoreDrop: scoreDrop * weight,
-            weightedStrengthScore: strengthScore * weight,
+            weightedStrengthScore: strength.score * weight,
             firstOpponentReply,
             firstUserResponse,
         });
@@ -1340,7 +1349,7 @@ async function getCandidateContinuationImpact({
             moveLimit,
             settings,
         });
-        if (!userResponse || userResponse.strengthScore === null) break;
+        if (!userResponse || !userResponse.strength) break;
 
         firstUserResponse ??= userResponse;
         moves.push(userResponse.move);
@@ -1348,7 +1357,7 @@ async function getCandidateContinuationImpact({
             userScore: userResponse.score,
             opponentScore: 1 - userResponse.score,
             games: userResponse.games,
-            strengthScore: userResponse.strengthScore,
+            strength: userResponse.strength,
         });
 
         const nextFen = applyPrepSanMove(userResponseFen, userResponse.move);
@@ -1413,6 +1422,7 @@ async function getTopOpponentReplyImpact({
         share: games / eligibleTotal,
         score: getOpeningScoreForSide(topReply, opponentColor),
         strengthScore: null,
+        strength: null,
     };
 }
 
@@ -1456,6 +1466,7 @@ async function getBestUserResponseImpact({
                 share: getOpeningTotal(opening) / eligibleTotal,
                 score: getOpeningScoreForSide(opening, userColor),
                 strengthScore: strength?.score ?? null,
+                strength,
             };
         })
         .sort(
