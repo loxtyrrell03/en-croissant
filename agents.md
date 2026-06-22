@@ -324,6 +324,12 @@ default.
   is actually stronger than the row's normal `Strength`; duplicating the same
   number in both columns makes it look like there is conditional evidence when
   there is not.
+- When cloud engine is enabled, candidate lookahead must fetch engine/cloud
+  moves for the future prep-side position before scoring the future reply. Do
+  not disable the engine component as a fallback; if future engine data is
+  unavailable or the future move is not covered by engine data, leave the
+  `After prep` signal absent instead of showing the repeated missing-engine
+  score around `59`.
 - The prep strength scorer's engine floor is intentionally limited to Engine
   mode. In Smart and Practical modes, the configured engine/practical blend
   must be allowed to pull an engine-best move down when opponent-specific WDL is

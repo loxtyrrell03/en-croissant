@@ -502,6 +502,102 @@ describe("opponent prep helpers", () => {
         expect(impact?.weightedScoreDrop ?? 0).toBeGreaterThan(0.2);
     });
 
+    test("candidate reply strength uses future engine data when cloud engine is enabled", async () => {
+        const store = createTreeStore();
+        store.getState().makeMove({ payload: "e4" });
+        const settings = normalizePrepBuilderSettings({
+            mode: "smart",
+            engineWeight: 55,
+            maxEngineCpLoss: 70,
+            useCloudEngine: true,
+        });
+
+        const fen = store.getState().root.children[0].fen;
+        const afterC5 = applyPrepSanMove(fen, "c5");
+        const afterC5Nf3 = afterC5 ? applyPrepSanMove(afterC5, "Nf3") : null;
+        const impact = await getOpponentPrepCandidateLineImpact({
+            fen,
+            row: {
+                move: "c5",
+                white: 70,
+                draw: 10,
+                black: 20,
+                total: 100,
+                share: 0.24,
+            },
+            opponentColor: "white",
+            loadOpenings: async (position) => {
+                if (position === afterC5) {
+                    return [{ move: "Nf3", white: 24, draw: 8, black: 8 }];
+                }
+                if (position === afterC5Nf3) {
+                    return [
+                        { move: "g6", white: 10, draw: 8, black: 22 },
+                        { move: "d6", white: 12, draw: 4, black: 4 },
+                    ];
+                }
+                return [];
+            },
+            loadEngineMoves: async (position) =>
+                position === afterC5Nf3
+                    ? [
+                          { san: "g6", scoreCpForSide: 80, rank: 1, source: "lichess" },
+                          { san: "d6", scoreCpForSide: 60, rank: 2, source: "lichess" },
+                      ]
+                    : [],
+            minGames: 1,
+            moveLimit: 4,
+            settings,
+        });
+
+        expect(impact?.continuationMoves).toEqual(["Nf3", "g6"]);
+        expect(impact?.continuationStrengthScore).toBe(100);
+        expect(impact?.continuationStrengthScore).not.toBe(59);
+        expect(impact?.continuationStrength?.engineCpLoss).toBe(0);
+    });
+
+    test("candidate reply strength is absent rather than fixed at 59 when future engine data is missing", async () => {
+        const store = createTreeStore();
+        store.getState().makeMove({ payload: "e4" });
+        const settings = normalizePrepBuilderSettings({
+            mode: "smart",
+            engineWeight: 55,
+            maxEngineCpLoss: 70,
+            useCloudEngine: true,
+        });
+
+        const fen = store.getState().root.children[0].fen;
+        const afterC5 = applyPrepSanMove(fen, "c5");
+        const afterC5Nf3 = afterC5 ? applyPrepSanMove(afterC5, "Nf3") : null;
+        const impact = await getOpponentPrepCandidateLineImpact({
+            fen,
+            row: {
+                move: "c5",
+                white: 70,
+                draw: 10,
+                black: 20,
+                total: 100,
+                share: 0.24,
+            },
+            opponentColor: "white",
+            loadOpenings: async (position) => {
+                if (position === afterC5) {
+                    return [{ move: "Nf3", white: 24, draw: 8, black: 8 }];
+                }
+                if (position === afterC5Nf3) {
+                    return [{ move: "g6", white: 10, draw: 8, black: 22 }];
+                }
+                return [];
+            },
+            loadEngineMoves: async () => [],
+            minGames: 1,
+            moveLimit: 4,
+            settings,
+        });
+
+        expect(impact).toBeNull();
+    });
+
     test("chooses future prep replies by strength instead of raw WDL", async () => {
         const store = createTreeStore();
         store.getState().makeMove({ payload: "e4" });

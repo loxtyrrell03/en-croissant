@@ -982,10 +982,12 @@ function OpponentPrepPanel({
     configReady && showTrainingStage && !opponentToMove && candidateRows.length > 0
       ? [
           "opponent-prep-candidate-line-impact",
+          PREP_STRENGTH_ENGINE_CACHE_VERSION,
           queryScope,
           currentFen,
           prep.minGames,
           prep.moveLimit,
+          strengthEngineMultipv,
           JSON.stringify(builderSettings),
           candidateRows.map((row) => row.key).join("|"),
         ]
@@ -1000,6 +1002,7 @@ function OpponentPrepPanel({
           row,
           opponentColor: prep.color,
           loadOpenings: loadOpeningsForFen,
+          loadEngineMoves: loadPrepBuilderEngineMoves,
           minGames: prep.minGames,
           moveLimit: prep.moveLimit,
           settings: builderSettings,

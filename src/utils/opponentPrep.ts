@@ -127,6 +127,12 @@ export type PrepBuilderEngineMove = {
     source: "lichess" | "chessdb";
 };
 
+export type PrepBuilderLoadEngineMoves = (
+    fen: string,
+    side: PrepColor,
+    settings: PrepBuilderSettings,
+) => Promise<PrepBuilderEngineMove[]>;
+
 export type PrepBuilderMoveChoice = {
     move: string;
     score: number;
@@ -1095,6 +1101,7 @@ export async function getOpponentPrepCandidateLineImpact({
     row,
     opponentColor,
     loadOpenings,
+    loadEngineMoves,
     minGames,
     moveLimit,
     settings,
@@ -1103,6 +1110,7 @@ export async function getOpponentPrepCandidateLineImpact({
     row: Pick<OpponentPrepMoveRow, "move" | "total" | "share" | "white" | "draw" | "black">;
     opponentColor: PrepColor;
     loadOpenings: (fen: string) => Promise<Opening[]>;
+    loadEngineMoves?: PrepBuilderLoadEngineMoves;
     minGames: number;
     moveLimit: number;
     settings: PrepBuilderSettings;
@@ -1117,6 +1125,7 @@ export async function getOpponentPrepCandidateLineImpact({
         surfaceScore,
         opponentColor,
         loadOpenings,
+        loadEngineMoves,
         minGames,
         moveLimit,
         settings,
@@ -1264,6 +1273,7 @@ async function getCandidateContinuationImpact({
     surfaceScore,
     opponentColor,
     loadOpenings,
+    loadEngineMoves,
     minGames,
     moveLimit,
     settings,
@@ -1272,6 +1282,7 @@ async function getCandidateContinuationImpact({
     surfaceScore: number;
     opponentColor: PrepColor;
     loadOpenings: (fen: string) => Promise<Opening[]>;
+    loadEngineMoves?: PrepBuilderLoadEngineMoves;
     minGames: number;
     moveLimit: number;
     settings: PrepBuilderSettings;
@@ -1345,6 +1356,7 @@ async function getCandidateContinuationImpact({
             fen: userResponseFen,
             userColor,
             loadOpenings,
+            loadEngineMoves,
             minGames,
             moveLimit,
             settings,
@@ -1430,6 +1442,7 @@ async function getBestUserResponseImpact({
     fen,
     userColor,
     loadOpenings,
+    loadEngineMoves,
     minGames,
     moveLimit,
     settings,
@@ -1437,6 +1450,7 @@ async function getBestUserResponseImpact({
     fen: string;
     userColor: PrepColor;
     loadOpenings: (fen: string) => Promise<Opening[]>;
+    loadEngineMoves?: PrepBuilderLoadEngineMoves;
     minGames: number;
     moveLimit: number;
     settings: PrepBuilderSettings;
@@ -1451,22 +1465,30 @@ async function getBestUserResponseImpact({
     if (eligibleTotal <= 0) return null;
 
     const replies = sortOpponentPrepOpenings(openings, minGames, moveLimit);
+    const engineMoves =
+        settings.useCloudEngine && loadEngineMoves
+            ? await loadEngineMoves(fen, userColor, settings).catch(() => [])
+            : [];
+    if (settings.useCloudEngine && engineMoves.length === 0) return null;
+
     const strengthByMove = getPrepMoveStrengthMap({
         openings: replies,
-        engineMoves: [],
+        engineMoves,
         side: userColor,
         settings,
     });
     const bestReply = replies
         .map((opening) => {
             const strength = strengthByMove.get(normalizeSanForPrep(opening.move)) ?? null;
+            const usableStrength =
+                settings.useCloudEngine && strength?.engineCpLoss === null ? null : strength;
             return {
                 move: opening.move,
                 games: getOpeningTotal(opening),
                 share: getOpeningTotal(opening) / eligibleTotal,
                 score: getOpeningScoreForSide(opening, userColor),
-                strengthScore: strength?.score ?? null,
-                strength,
+                strengthScore: usableStrength?.score ?? null,
+                strength: usableStrength,
             };
         })
         .sort(
