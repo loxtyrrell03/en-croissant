@@ -1042,9 +1042,17 @@ function OpponentPrepPanel({
             openings: strengthOpenings,
             currentFen,
             candidateLineImpactByKey,
+            strengthByMove,
           })
         : new Map<string, PrepMoveStrength>(),
-    [candidateLineImpactByKey, currentFen, opponentToMove, prepMode, strengthOpenings],
+    [
+      candidateLineImpactByKey,
+      currentFen,
+      opponentToMove,
+      prepMode,
+      strengthByMove,
+      strengthOpenings,
+    ],
   );
   const activeBranch = useMemo(
     () =>
@@ -3764,6 +3772,14 @@ function PrepCandidateMoveTable({
         <Table.Tbody>
           {sortedRows.map((row) => {
             const lineImpact = candidateLineImpactByKey?.[row.key];
+            const moveKey = normalizePrepBuilderSan(row.move);
+            const rowStrength = strengthByMove.get(moveKey);
+            const afterPrepStrength = afterPrepStrengthByMove.get(moveKey);
+            const continuationStrength = lineImpact?.continuationStrength ?? null;
+            const continuationIsShown =
+              continuationStrength !== null &&
+              afterPrepStrength?.score === continuationStrength.score &&
+              (!rowStrength || continuationStrength.score > rowStrength.score);
 
             return (
               <Table.Tr
@@ -3780,16 +3796,21 @@ function PrepCandidateMoveTable({
                   <PrepLastPlayedText value={row.lastPlayed} kind={general ? "played" : "faced"} />
                 </Table.Td>
                 <Table.Td>
-                  <PrepStrengthCell
-                    strength={strengthByMove.get(normalizePrepBuilderSan(row.move))}
-                    loading={strengthLoading}
-                  />
+                  <PrepStrengthCell strength={rowStrength} loading={strengthLoading} />
                 </Table.Td>
                 <Table.Td>
                   <PrepAfterStrengthCell
-                    strength={afterPrepStrengthByMove.get(normalizePrepBuilderSan(row.move))}
-                    label={lineImpact ? formatCandidateAfterPrepLabel(lineImpact) : ""}
-                    context={lineImpact ? [candidateLineImpactTooltip(lineImpact)] : []}
+                    strength={afterPrepStrength}
+                    label={
+                      lineImpact && continuationIsShown
+                        ? formatCandidateAfterPrepLabel(lineImpact)
+                        : ""
+                    }
+                    context={
+                      lineImpact && continuationIsShown
+                        ? [candidateLineImpactTooltip(lineImpact)]
+                        : []
+                    }
                     loading={strengthLoading}
                   />
                 </Table.Td>
@@ -4173,19 +4194,28 @@ function getCandidateContinuationStrengthMap({
   openings,
   currentFen,
   candidateLineImpactByKey,
+  strengthByMove,
 }: {
   openings: Opening[];
   currentFen: string;
   candidateLineImpactByKey: Record<string, OpponentPrepLineImpact>;
+  strengthByMove: Map<string, PrepMoveStrength>;
 }) {
   const entries: [string, PrepMoveStrength][] = [];
 
   for (const opening of openings) {
+    const moveKey = normalizePrepBuilderSan(opening.move);
     const key = getOpponentPrepBranchKey(currentFen, opening.move);
     const impact = candidateLineImpactByKey[key];
-    if (!impact?.continuationStrength) continue;
+    const currentStrength = strengthByMove.get(moveKey);
+    const continuationStrength = impact?.continuationStrength ?? null;
+    const displayedStrength =
+      continuationStrength &&
+      (!currentStrength || continuationStrength.score > currentStrength.score)
+        ? continuationStrength
+        : currentStrength;
 
-    entries.push([normalizePrepBuilderSan(opening.move), impact.continuationStrength]);
+    if (displayedStrength) entries.push([moveKey, displayedStrength]);
   }
 
   return new Map(entries);

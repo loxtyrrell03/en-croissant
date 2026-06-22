@@ -312,12 +312,14 @@ default.
   separate columns for opponent-specific prep; the WDL/results column is
   intentionally narrower to make room, and the future-line label belongs in
   the `After prep` cell rather than under the normal strength badge.
-- For candidate replies, `After prep` is keyed to the current row but displays
-  the actual `PrepMoveStrength` of the future prep-side move in the selected
-  continuation. For example, if `1.e4 c5` is the row and the selected line is
-  `2.Nf3 g6`, the `After prep` score should be the strength of `...g6` from
-  the `1.e4 c5 2.Nf3` position, not a synthetic re-score of `...c5` from the
-  root candidate table.
+- For candidate replies, `After prep` is keyed to the current row and should
+  show the best nearby prep-side strength, not blindly the next prep move
+  deeper in the line. For example, if `1.e4 c5` is the row and the selected
+  line is `2.Nf3 g6`, the `After prep` score can lift `...c5` to the strength
+  of the future `...g6`. But once the table is already showing `...g6` as the
+  current candidate, a later weaker move such as `...cxd4` must not drag the
+  `After prep` value below `...g6`'s own current strength; the future-line label
+  should only appear when that future continuation is the displayed score.
 
 ### Local Lichess Cloud Evals
 
