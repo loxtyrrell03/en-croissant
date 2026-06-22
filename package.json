@@ -9,7 +9,7 @@
     "web:publish": "powershell -ExecutionPolicy Bypass -File scripts/publish-web-site.ps1",
     "web:watch": "powershell -ExecutionPolicy Bypass -File scripts/watch-web-sync.ps1",
     "web:install-sync": "powershell -ExecutionPolicy Bypass -File scripts/install-web-sync-task.ps1",
-    "lichess-evals:build": "cargo run --manifest-path src-tauri/Cargo.toml --bin build_lichess_eval_db --",
+    "lichess-evals:build": "cargo run --release --manifest-path src-tauri/Cargo.toml --bin build_lichess_eval_db --",
     "build-web-library": "npm run web:library && npm run build-vite",
     "build-vite": "tsgo --noEmit && vite build",
     "build": "tauri build --no-bundle",

@@ -354,7 +354,14 @@ default.
   the local store first and falls back to the Lichess API when the store is not
   built or a position is absent. Build the store with `npm run
   lichess-evals:build`; the CLI streams the official `.zst` source directly
-  and avoids writing a huge decompressed JSONL temporary file.
+  with the release-profile builder and avoids writing a huge decompressed JSONL
+  temporary file. The same CLI supports `--status` and `--lookup-fen <fen>` for
+  local verification. The first full local build completed on 2026-06-22 at
+  `C:\Users\loxty\AppData\Roaming\org.encroissant.app\lichess-cloud-evals`,
+  storing 388,458,657 positions with 0 skipped rows in 2,048 shards and a final
+  on-disk size of about 11.1 GB. A start-position lookup returned depth 65
+  root moves `c2c4`, `e2e4`, `g1f3`, `d2d4`, and `g2g3`, confirming the built
+  store is queryable.
 
 ### Web Companion
 

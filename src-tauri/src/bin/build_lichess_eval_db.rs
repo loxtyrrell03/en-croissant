@@ -1,8 +1,8 @@
 use std::{env, path::PathBuf, time::Instant};
 
 use en_croissant_fork::local_eval::{
-    build_compact_eval_database, default_cli_store_dir, default_source_url, LocalEvalBuildOptions,
-    LocalEvalSource,
+    build_compact_eval_database, database_status, default_cli_store_dir, default_source_url,
+    lookup_eval, LocalEvalBuildOptions, LocalEvalSource,
 };
 
 fn main() {
@@ -14,12 +14,38 @@ fn main() {
 
 fn run() -> Result<(), String> {
     let args = parse_args()?;
+    let output_dir = args.output.clone().unwrap_or_else(default_cli_store_dir);
+    if args.status {
+        let status = database_status(&output_dir);
+        println!(
+            "available={} positions={} shards={} max_pvs={} size={} path={}",
+            status.available,
+            status.positions,
+            status.shard_count,
+            status.max_pvs,
+            human_bytes(status.storage_bytes),
+            status.path
+        );
+        if let Some(error) = status.error {
+            println!("error={error}");
+        }
+        return Ok(());
+    }
+    if let Some(fen) = args.lookup_fen {
+        let result = lookup_eval(&output_dir, &fen, args.max_pvs.unwrap_or(5))
+            .map_err(|error| error.to_string())?;
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&result).map_err(|error| error.to_string())?
+        );
+        return Ok(());
+    }
+
     let source = match (args.source, args.url) {
         (Some(source), _) => LocalEvalSource::File(source),
         (None, Some(url)) => LocalEvalSource::Url(url),
         _ => LocalEvalSource::Url(default_source_url().to_string()),
     };
-    let output_dir = args.output.unwrap_or_else(default_cli_store_dir);
     let options = LocalEvalBuildOptions {
         id: "lichess-eval-cli-build".to_string(),
         source,
@@ -68,6 +94,8 @@ struct Args {
     output: Option<PathBuf>,
     max_pvs: Option<u8>,
     shards: Option<u16>,
+    lookup_fen: Option<String>,
+    status: bool,
 }
 
 fn parse_args() -> Result<Args, String> {
@@ -92,6 +120,8 @@ fn parse_args() -> Result<Args, String> {
                         .map_err(|_| "--shards must be a number".to_string())?,
                 )
             }
+            "--lookup-fen" => parsed.lookup_fen = Some(next_value(&mut args, "--lookup-fen")?),
+            "--status" => parsed.status = true,
             "--help" | "-h" => {
                 print_help();
                 std::process::exit(0);
@@ -146,6 +176,8 @@ Options:\n\
   --output <dir>    Output directory (default: app data lichess-cloud-evals)\n\
   --max-pvs <1-5>   Number of root moves/evals to store per position (default: 5)\n\
   --shards <n>      Number of binary shards (default: 2048)\n\
+  --status          Print local store status and exit\n\
+  --lookup-fen <fen> Look up one position in the local store and print JSON\n\
 \n\
 Default URL: {}",
         default_source_url()
