@@ -307,6 +307,11 @@ default.
   the active Strength settings and database evidence from the future position.
   WDL remains supporting evidence for the tooltip and after-strength
   recalculation, not the primary future-move selector.
+- The desktop move tables now show the conditional value as its own sortable
+  `After prep` column beside the normal `Strength` column. Keep these as
+  separate columns for opponent-specific prep; the WDL/results column is
+  intentionally narrower to make room, and the future-line label belongs in
+  the `After prep` cell rather than under the normal strength badge.
 
 ### Local Lichess Cloud Evals
 

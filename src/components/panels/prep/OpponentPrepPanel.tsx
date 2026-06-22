@@ -215,8 +215,15 @@ type PrepCandidateMoveRow = Opening & {
 };
 
 type PrepSortDirection = "asc" | "desc";
-type OpponentPrepSortColumn = "move" | "strength" | "games" | "results" | "prep" | "state";
-type CandidatePrepSortColumn = "move" | "strength" | "games" | "results";
+type OpponentPrepSortColumn =
+  | "move"
+  | "strength"
+  | "afterPrep"
+  | "games"
+  | "results"
+  | "prep"
+  | "state";
+type CandidatePrepSortColumn = "move" | "strength" | "afterPrep" | "games" | "results";
 type PrepSortState<TColumn extends string> = {
   column: TColumn;
   direction: PrepSortDirection;
@@ -238,6 +245,7 @@ const DEFAULT_PREP_MOVE_SORT_DEFAULTS: PrepMoveSortDefaults = {
 const PREP_OPPONENT_SORT_OPTIONS: { value: OpponentPrepSortColumn; label: string }[] = [
   { value: "games", label: "Usage" },
   { value: "strength", label: "Smart strength" },
+  { value: "afterPrep", label: "After prep strength" },
   { value: "results", label: "Results" },
   { value: "prep", label: "Prep coverage" },
   { value: "state", label: "State" },
@@ -245,6 +253,7 @@ const PREP_OPPONENT_SORT_OPTIONS: { value: OpponentPrepSortColumn; label: string
 ];
 const PREP_CANDIDATE_SORT_OPTIONS: { value: CandidatePrepSortColumn; label: string }[] = [
   { value: "strength", label: "Smart strength" },
+  { value: "afterPrep", label: "After prep strength" },
   { value: "games", label: "Usage" },
   { value: "results", label: "WDL" },
   { value: "move", label: "Move" },
@@ -3438,8 +3447,16 @@ function OpponentPrepMoveTable({
 }) {
   const textSize = dense ? "xs" : "sm";
   const sortedRows = useMemo(
-    () => sortOpponentPrepTableRows(rows, sort, branchStatsByKey, resultSide, strengthByMove),
-    [branchStatsByKey, resultSide, rows, sort, strengthByMove],
+    () =>
+      sortOpponentPrepTableRows(
+        rows,
+        sort,
+        branchStatsByKey,
+        resultSide,
+        strengthByMove,
+        afterPrepStrengthByMove,
+      ),
+    [afterPrepStrengthByMove, branchStatsByKey, resultSide, rows, sort, strengthByMove],
   );
 
   if (loading) {
@@ -3485,22 +3502,35 @@ function OpponentPrepMoveTable({
             column="strength"
             sort={sort}
             onSort={onSort}
-            style={{ width: dense ? 96 : 126 }}
+            style={{ width: dense ? 78 : 104 }}
+          />
+          <SortablePrepTh
+            label="After prep"
+            column="afterPrep"
+            sort={sort}
+            onSort={onSort}
+            style={{ width: dense ? 88 : 118 }}
           />
           <SortablePrepTh
             label="Games"
             column="games"
             sort={sort}
             onSort={onSort}
-            style={{ width: dense ? 78 : 110 }}
+            style={{ width: dense ? 70 : 92 }}
           />
-          <SortablePrepTh label="Results" column="results" sort={sort} onSort={onSort} />
+          <SortablePrepTh
+            label="Results"
+            column="results"
+            sort={sort}
+            onSort={onSort}
+            style={{ width: dense ? 160 : 230 }}
+          />
           <SortablePrepTh
             label="Prep"
             column="prep"
             sort={sort}
             onSort={onSort}
-            style={{ width: dense ? 110 : 150 }}
+            style={{ width: dense ? 96 : 132 }}
           />
           <SortablePrepTh
             label="State"
@@ -3533,9 +3563,14 @@ function OpponentPrepMoveTable({
               <Table.Td>
                 <PrepStrengthCell
                   strength={strengthByMove.get(normalizePrepBuilderSan(row.move))}
-                  afterPrepStrength={afterPrepStrengthByMove.get(normalizePrepBuilderSan(row.move))}
-                  afterPrepLabel="After prep"
-                  afterPrepContext={lineImpact ? preparedLineImpactTooltipLines(lineImpact) : []}
+                  loading={strengthLoading}
+                />
+              </Table.Td>
+              <Table.Td>
+                <PrepAfterStrengthCell
+                  strength={afterPrepStrengthByMove.get(normalizePrepBuilderSan(row.move))}
+                  label="Saved line"
+                  context={lineImpact ? preparedLineImpactTooltipLines(lineImpact) : []}
                   loading={strengthLoading}
                 />
               </Table.Td>
@@ -3658,8 +3693,9 @@ function PrepCandidateMoveTable({
   const textSize = dense ? "xs" : "sm";
   const colorLabel = userColor === "white" ? "White" : "Black";
   const sortedRows = useMemo(
-    () => sortCandidatePrepTableRows(rows, sort, userColor, strengthByMove),
-    [rows, sort, userColor, strengthByMove],
+    () =>
+      sortCandidatePrepTableRows(rows, sort, userColor, strengthByMove, afterPrepStrengthByMove),
+    [afterPrepStrengthByMove, rows, sort, userColor, strengthByMove],
   );
 
   if (loading) {
@@ -3712,16 +3748,29 @@ function PrepCandidateMoveTable({
               column="strength"
               sort={sort}
               onSort={onSort}
-              style={{ width: dense ? 96 : 126 }}
+              style={{ width: dense ? 78 : 104 }}
+            />
+            <SortablePrepTh
+              label="After prep"
+              column="afterPrep"
+              sort={sort}
+              onSort={onSort}
+              style={{ width: dense ? 88 : 118 }}
             />
             <SortablePrepTh
               label="Games"
               column="games"
               sort={sort}
               onSort={onSort}
-              style={{ width: dense ? 78 : 110 }}
+              style={{ width: dense ? 70 : 92 }}
             />
-            <SortablePrepTh label="WDL" column="results" sort={sort} onSort={onSort} />
+            <SortablePrepTh
+              label="WDL"
+              column="results"
+              sort={sort}
+              onSort={onSort}
+              style={{ width: dense ? 170 : 260 }}
+            />
             <Table.Th style={{ width: dense ? 64 : 82 }} />
           </Table.Tr>
         </Table.Thead>
@@ -3746,11 +3795,14 @@ function PrepCandidateMoveTable({
                 <Table.Td>
                   <PrepStrengthCell
                     strength={strengthByMove.get(normalizePrepBuilderSan(row.move))}
-                    afterPrepStrength={afterPrepStrengthByMove.get(
-                      normalizePrepBuilderSan(row.move),
-                    )}
-                    afterPrepLabel={lineImpact ? formatCandidateAfterPrepLabel(lineImpact) : ""}
-                    afterPrepContext={lineImpact ? [candidateLineImpactTooltip(lineImpact)] : []}
+                    loading={strengthLoading}
+                  />
+                </Table.Td>
+                <Table.Td>
+                  <PrepAfterStrengthCell
+                    strength={afterPrepStrengthByMove.get(normalizePrepBuilderSan(row.move))}
+                    label={lineImpact ? formatCandidateAfterPrepLabel(lineImpact) : ""}
+                    context={lineImpact ? [candidateLineImpactTooltip(lineImpact)] : []}
                     loading={strengthLoading}
                   />
                 </Table.Td>
@@ -3935,6 +3987,7 @@ function isOpponentPrepSortColumn(value: unknown): value is OpponentPrepSortColu
   return (
     value === "move" ||
     value === "strength" ||
+    value === "afterPrep" ||
     value === "games" ||
     value === "results" ||
     value === "prep" ||
@@ -3943,7 +3996,13 @@ function isOpponentPrepSortColumn(value: unknown): value is OpponentPrepSortColu
 }
 
 function isCandidatePrepSortColumn(value: unknown): value is CandidatePrepSortColumn {
-  return value === "move" || value === "strength" || value === "games" || value === "results";
+  return (
+    value === "move" ||
+    value === "strength" ||
+    value === "afterPrep" ||
+    value === "games" ||
+    value === "results"
+  );
 }
 
 function sortOpponentPrepTableRows(
@@ -3952,6 +4011,7 @@ function sortOpponentPrepTableRows(
   branchStatsByKey: Record<string, OpponentPrepBranchStats> | undefined,
   resultSide: "white" | "black",
   strengthByMove: Map<string, PrepMoveStrength>,
+  afterPrepStrengthByMove: Map<string, PrepMoveStrength>,
 ) {
   return [...rows].sort((a, b) => {
     const diff = compareOpponentPrepRows(
@@ -3961,6 +4021,7 @@ function sortOpponentPrepTableRows(
       branchStatsByKey,
       resultSide,
       strengthByMove,
+      afterPrepStrengthByMove,
     );
     return withPrepSortDirection(diff, sort.direction) || comparePrepRowsDefault(a, b);
   });
@@ -3971,9 +4032,17 @@ function sortCandidatePrepTableRows(
   sort: PrepSortState<CandidatePrepSortColumn>,
   resultSide: "white" | "black",
   strengthByMove: Map<string, PrepMoveStrength>,
+  afterPrepStrengthByMove: Map<string, PrepMoveStrength>,
 ) {
   return [...rows].sort((a, b) => {
-    const diff = compareCandidatePrepRows(a, b, sort.column, resultSide, strengthByMove);
+    const diff = compareCandidatePrepRows(
+      a,
+      b,
+      sort.column,
+      resultSide,
+      strengthByMove,
+      afterPrepStrengthByMove,
+    );
     return withPrepSortDirection(diff, sort.direction) || comparePrepRowsDefault(a, b);
   });
 }
@@ -3985,6 +4054,7 @@ function compareOpponentPrepRows(
   branchStatsByKey: Record<string, OpponentPrepBranchStats> | undefined,
   resultSide: "white" | "black",
   strengthByMove: Map<string, PrepMoveStrength>,
+  afterPrepStrengthByMove: Map<string, PrepMoveStrength>,
 ) {
   if (column === "prep") {
     return (
@@ -3997,7 +4067,14 @@ function compareOpponentPrepRows(
     return getPrepStatusSortScore(a.status) - getPrepStatusSortScore(b.status);
   }
 
-  return compareCandidatePrepRows(a, b, column, resultSide, strengthByMove);
+  return compareCandidatePrepRows(
+    a,
+    b,
+    column,
+    resultSide,
+    strengthByMove,
+    afterPrepStrengthByMove,
+  );
 }
 
 function compareCandidatePrepRows(
@@ -4006,6 +4083,7 @@ function compareCandidatePrepRows(
   column: CandidatePrepSortColumn | Exclude<OpponentPrepSortColumn, "prep" | "state">,
   resultSide: "white" | "black",
   strengthByMove: Map<string, PrepMoveStrength>,
+  afterPrepStrengthByMove: Map<string, PrepMoveStrength>,
 ) {
   if (column === "move") {
     return a.move.localeCompare(b.move);
@@ -4015,6 +4093,13 @@ function compareCandidatePrepRows(
     return (
       getPrepStrengthSortScore(a.move, strengthByMove) -
       getPrepStrengthSortScore(b.move, strengthByMove)
+    );
+  }
+
+  if (column === "afterPrep") {
+    return (
+      getPrepStrengthSortScore(a.move, afterPrepStrengthByMove) -
+      getPrepStrengthSortScore(b.move, afterPrepStrengthByMove)
     );
   }
 
@@ -4182,15 +4267,9 @@ function getPrepResultScore(
 
 function PrepStrengthCell({
   strength,
-  afterPrepStrength,
-  afterPrepLabel = "After prep",
-  afterPrepContext = [],
   loading,
 }: {
   strength?: PrepMoveStrength;
-  afterPrepStrength?: PrepMoveStrength;
-  afterPrepLabel?: string;
-  afterPrepContext?: string[];
   loading: boolean;
 }) {
   if (!strength) {
@@ -4201,22 +4280,8 @@ function PrepStrengthCell({
     );
   }
 
-  const afterPrepText = afterPrepStrength
-    ? `${afterPrepLabel || "After prep"} ${afterPrepStrength.score}`
-    : "";
-  const tooltip = afterPrepStrength
-    ? [
-        strength.detail,
-        `${afterPrepText}: recalculated with your conditional prep line.`,
-        ...afterPrepContext,
-        afterPrepStrength.detail,
-      ]
-        .filter(Boolean)
-        .join("\n\n")
-    : strength.detail;
-
   return (
-    <Tooltip label={tooltip} multiline w={afterPrepStrength ? 320 : 260}>
+    <Tooltip label={strength.detail} multiline w={260}>
       <Stack gap={2} style={{ minWidth: 0 }}>
         <Group gap={4} wrap="nowrap">
           <Badge color={strength.engineUnsafe ? "yellow" : "teal"} variant="light" size="sm">
@@ -4233,9 +4298,59 @@ function PrepStrengthCell({
           color={strength.engineUnsafe ? "yellow" : "teal"}
           size={3}
         />
-        {afterPrepStrength ? (
+      </Stack>
+    </Tooltip>
+  );
+}
+
+function PrepAfterStrengthCell({
+  strength,
+  label,
+  context = [],
+  loading,
+}: {
+  strength?: PrepMoveStrength;
+  label?: string;
+  context?: string[];
+  loading: boolean;
+}) {
+  if (!strength) {
+    return (
+      <Text size="xs" c="dimmed">
+        {loading ? "Checking" : "-"}
+      </Text>
+    );
+  }
+
+  const tooltip = [
+    `${label || "After prep"} ${strength.score}: recalculated with your conditional prep line.`,
+    ...context,
+    strength.detail,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
+  return (
+    <Tooltip label={tooltip} multiline w={320}>
+      <Stack gap={2} style={{ minWidth: 0 }}>
+        <Group gap={4} wrap="nowrap">
+          <Badge color={strength.engineUnsafe ? "yellow" : "teal"} variant="light" size="sm">
+            {strength.label}
+          </Badge>
+          {loading ? (
+            <Text size="xs" c="dimmed">
+              ...
+            </Text>
+          ) : null}
+        </Group>
+        <Progress
+          value={strength.score}
+          color={strength.engineUnsafe ? "yellow" : "teal"}
+          size={3}
+        />
+        {label ? (
           <Text size="xs" c="teal" fw={700} truncate>
-            {afterPrepText}
+            {label}
           </Text>
         ) : null}
       </Stack>

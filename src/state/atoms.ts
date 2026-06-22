@@ -521,8 +521,8 @@ export type OpponentPrepState = {
     panelStage: OpponentPrepPanelStage;
     builder?: Partial<PrepBuilderSettings>;
     sortDefaults?: {
-        opponent?: "move" | "strength" | "games" | "results" | "prep" | "state";
-        candidate?: "move" | "strength" | "games" | "results";
+        opponent?: "move" | "strength" | "afterPrep" | "games" | "results" | "prep" | "state";
+        candidate?: "move" | "strength" | "afterPrep" | "games" | "results";
     };
 };
 
