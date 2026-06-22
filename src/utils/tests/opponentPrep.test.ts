@@ -381,6 +381,65 @@ describe("opponent prep helpers", () => {
         expect(stats.missingImportantMoves).toEqual([]);
     });
 
+    test("flags a saved reply when it changes a scary surface score", async () => {
+        const store = createTreeStore();
+        store.getState().makeMove({ payload: "e4" });
+        store.getState().makeMove({ payload: "c5" });
+        store.getState().makeMove({ payload: "Nf3" });
+        store.getState().makeMove({ payload: "d6" });
+        store.getState().goToMove([0]);
+
+        const state = store.getState();
+        const parentNode = state.root.children[0];
+        const [row] = getOpponentPrepMoveRows({
+            fen: parentNode.fen,
+            node: parentNode,
+            openings: [{ move: "c5", white: 20, draw: 10, black: 70 }],
+            minGames: 1,
+            moveLimit: 4,
+            completedBranches: {},
+            skippedBranches: {},
+        });
+        const branchFen = parentNode.children[0].fen;
+        const userReplyFen = parentNode.children[0].children[0].fen;
+        const stats = await getOpponentPrepBranchStats({
+            parentNode,
+            row,
+            opponentColor: "black",
+            loadOpenings: async (fen) => {
+                if (fen === branchFen) {
+                    return [
+                        { move: "Nf3", white: 24, draw: 8, black: 8 },
+                        { move: "Nc3", white: 5, draw: 0, black: 5 },
+                    ];
+                }
+                if (fen === userReplyFen) {
+                    return [
+                        { move: "d6", white: 20, draw: 8, black: 12 },
+                        { move: "Nc6", white: 2, draw: 0, black: 8 },
+                    ];
+                }
+                return [];
+            },
+            minGames: 1,
+            moveLimit: 4,
+            completedBranches: {},
+            skippedBranches: {},
+        });
+
+        expect(stats.preparedLineImpact).toMatchObject({
+            userMove: "Nf3",
+            opponentReplyMove: "d6",
+            surfaceGames: 100,
+            userGames: 40,
+            opponentReplyGames: 40,
+        });
+        expect(stats.preparedLineImpact?.surfaceScore).toBeCloseTo(0.75);
+        expect(stats.preparedLineImpact?.userScore).toBeCloseTo(0.3);
+        expect(stats.preparedLineImpact?.opponentReplyScore).toBeCloseTo(0.4);
+        expect(stats.preparedLineImpact?.opponentReplyShare).toBeCloseTo(0.8);
+    });
+
     test("keeps shallow branches with unanswered common replies marked as needing work", async () => {
         const store = createTreeStore();
         store.getState().makeMove({ payload: "e4" });

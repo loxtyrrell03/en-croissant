@@ -47,6 +47,21 @@ export type OpponentPrepBranchStats = {
     startedReplies: number;
     replyCoverage: number;
     missingImportantMoves: string[];
+    preparedLineImpact: OpponentPrepLineImpact | null;
+};
+
+export type OpponentPrepLineImpact = {
+    surfaceScore: number;
+    surfaceGames: number;
+    userMove: string;
+    userScore: number;
+    userGames: number;
+    userShare: number;
+    opponentReplyMove: string | null;
+    opponentReplyScore: number | null;
+    opponentReplyGames: number | null;
+    opponentReplyShare: number | null;
+    scoreDrop: number;
 };
 
 export type PrepBuilderSettings = {
@@ -179,6 +194,10 @@ type EvaluatedPrepStrengthCandidate = PrepMoveStrength & {
 
 const DEFAULT_STATS_MAX_PLY = 10;
 const DEFAULT_STATS_MAX_POSITIONS = 12;
+const PREP_LINE_IMPACT_MIN_SURFACE_SCORE = 0.55;
+const PREP_LINE_IMPACT_MIN_SCORE_DROP = 0.12;
+const PREP_LINE_IMPACT_MIN_USER_SHARE = 0.08;
+const PREP_LINE_IMPACT_MIN_OPPONENT_REPLY_SHARE = 0.4;
 export const DEFAULT_PREP_BUILDER_SETTINGS: PrepBuilderSettings = {
     mode: "smart",
     size: "balanced",
@@ -944,9 +963,18 @@ export async function getOpponentPrepBranchStats({
             startedReplies: 0,
             replyCoverage: 0,
             missingImportantMoves: [],
+            preparedLineImpact: null,
         });
     }
 
+    const preparedLineImpact = await getPreparedLineImpact({
+        branchNode,
+        row,
+        opponentColor,
+        loadOpenings,
+        minGames,
+        moveLimit,
+    });
     const opponentNodes = collectOpponentTurnNodes(
         branchNode,
         opponentColor,
@@ -1015,7 +1043,131 @@ export async function getOpponentPrepBranchStats({
         startedReplies,
         replyCoverage: coverageWeight > 0 ? weightedCoverage / coverageWeight : 0,
         missingImportantMoves,
+        preparedLineImpact,
     });
+}
+
+async function getPreparedLineImpact({
+    branchNode,
+    row,
+    opponentColor,
+    loadOpenings,
+    minGames,
+    moveLimit,
+}: {
+    branchNode: TreeNode;
+    row: OpponentPrepMoveRow;
+    opponentColor: PrepColor;
+    loadOpenings: (fen: string) => Promise<Opening[]>;
+    minGames: number;
+    moveLimit: number;
+}): Promise<OpponentPrepLineImpact | null> {
+    if (branchNode.children.length === 0) return null;
+
+    const surfaceScore = getOpeningScoreForSide(row, opponentColor);
+    if (surfaceScore < PREP_LINE_IMPACT_MIN_SURFACE_SCORE) return null;
+
+    const userOpenings = getPlayableOpenings(await loadOpenings(branchNode.fen));
+    const userOpeningTotal = userOpenings.reduce(
+        (sum, opening) => sum + getOpeningTotal(opening),
+        0,
+    );
+    if (userOpeningTotal <= 0) return null;
+
+    const candidates = await Promise.all(
+        branchNode.children.map(async (userNode) => {
+            if (!userNode.san) return null;
+
+            const userOpening = findMatchingOpening(userOpenings, branchNode.fen, userNode.san);
+            if (!userOpening) return null;
+
+            const userGames = getOpeningTotal(userOpening);
+            const userShare = userGames / userOpeningTotal;
+            if (
+                userGames < Math.max(3, minGames) ||
+                (userShare < PREP_LINE_IMPACT_MIN_USER_SHARE && userGames < 8)
+            ) {
+                return null;
+            }
+
+            const userScore = getOpeningScoreForSide(userOpening, opponentColor);
+            const opponentReply = await getTopOpponentReplyImpact({
+                fen: userNode.fen,
+                opponentColor,
+                loadOpenings,
+                minGames,
+                moveLimit,
+            });
+            const aggregateDrop = surfaceScore - userScore;
+            const replyDrop =
+                opponentReply && opponentReply.share >= PREP_LINE_IMPACT_MIN_OPPONENT_REPLY_SHARE
+                    ? surfaceScore - opponentReply.score
+                    : Number.NEGATIVE_INFINITY;
+            const scoreDrop = Math.max(aggregateDrop, replyDrop);
+
+            if (scoreDrop < PREP_LINE_IMPACT_MIN_SCORE_DROP) return null;
+
+            return {
+                surfaceScore,
+                surfaceGames: row.total,
+                userMove: userNode.san,
+                userScore,
+                userGames,
+                userShare,
+                opponentReplyMove: opponentReply?.move ?? null,
+                opponentReplyScore: opponentReply?.score ?? null,
+                opponentReplyGames: opponentReply?.games ?? null,
+                opponentReplyShare: opponentReply?.share ?? null,
+                scoreDrop,
+            } satisfies OpponentPrepLineImpact;
+        }),
+    );
+
+    return (
+        candidates
+            .filter((candidate): candidate is OpponentPrepLineImpact => candidate !== null)
+            .sort(
+                (a, b) =>
+                    b.scoreDrop - a.scoreDrop ||
+                    b.userShare - a.userShare ||
+                    b.userGames - a.userGames ||
+                    a.userMove.localeCompare(b.userMove),
+            )[0] ?? null
+    );
+}
+
+async function getTopOpponentReplyImpact({
+    fen,
+    opponentColor,
+    loadOpenings,
+    minGames,
+    moveLimit,
+}: {
+    fen: string;
+    opponentColor: PrepColor;
+    loadOpenings: (fen: string) => Promise<Opening[]>;
+    minGames: number;
+    moveLimit: number;
+}) {
+    if (getFenTurn(fen) !== opponentColor) return null;
+
+    const openings = await loadOpenings(fen);
+    const eligibleTotal = getOpponentPrepEligibleOpenings(openings, minGames).reduce(
+        (sum, opening) => sum + getOpeningTotal(opening),
+        0,
+    );
+    if (eligibleTotal <= 0) return null;
+
+    const topReply = sortOpponentPrepOpenings(openings, minGames, moveLimit)[0];
+    if (!topReply) return null;
+
+    const games = getOpeningTotal(topReply);
+    return {
+        move: topReply.move,
+        games,
+        share: games / eligibleTotal,
+        score: getOpeningScoreForSide(topReply, opponentColor),
+    };
 }
 
 export function getPrepBuilderTaskPriority({
@@ -1405,6 +1557,26 @@ function findMatchingChildIndex(node: TreeNode, fen: string, san: string) {
         (child) => normalizeSanForPrep(child.san) === normalizedSan,
     );
     return sanIndex === -1 ? null : sanIndex;
+}
+
+function findMatchingOpening(openings: Opening[], fen: string, san: string) {
+    const moveUci = getMoveUciFromSan(fen, san);
+    if (moveUci) {
+        const uciOpening = openings.find(
+            (opening) => getMoveUciFromSan(fen, opening.move) === moveUci,
+        );
+        if (uciOpening) return uciOpening;
+    }
+
+    const normalizedSan = normalizeSanForPrep(san);
+    return openings.find((opening) => normalizeSanForPrep(opening.move) === normalizedSan) ?? null;
+}
+
+function getOpeningScoreForSide(row: Pick<Opening, "white" | "draw" | "black">, side: PrepColor) {
+    const total = getOpeningTotal(row);
+    if (total <= 0) return 0;
+    const wins = side === "white" ? row.white : row.black;
+    return (wins + row.draw * 0.5) / total;
 }
 
 function collectOpponentTurnNodes(
@@ -1940,6 +2112,7 @@ function createBranchStats({
     startedReplies,
     replyCoverage,
     missingImportantMoves,
+    preparedLineImpact,
 }: {
     branchResponseScore: number;
     depthPly: number;
@@ -1949,6 +2122,7 @@ function createBranchStats({
     startedReplies: number;
     replyCoverage: number;
     missingImportantMoves: string[];
+    preparedLineImpact: OpponentPrepLineImpact | null;
 }): OpponentPrepBranchStats {
     const depthScore = Math.min(1, depthPly / 8);
     const breadthScore = Math.min(1, opponentPositions / 3);
@@ -1970,6 +2144,7 @@ function createBranchStats({
         startedReplies,
         replyCoverage,
         missingImportantMoves: missingImportantMoves.slice(0, 3),
+        preparedLineImpact,
     };
 }
 

@@ -143,6 +143,7 @@ import {
   type PrepStraightLineCandidate,
   type PrepStraightLineSearchMode,
   type OpponentPrepBranchStats,
+  type OpponentPrepLineImpact,
   type OpponentPrepMoveRow,
 } from "@/utils/opponentPrep";
 import { createTab, getTabWorkspaceKey, saveToFile } from "@/utils/tabs";
@@ -4379,6 +4380,8 @@ function BranchStatsCell({
   }
 
   const color = branchStatsColor(stats.label);
+  const lineImpact = stats.preparedLineImpact;
+  const lineImpactScore = lineImpact ? getPreparedLineImpactComparisonScore(lineImpact) : null;
 
   return (
     <Tooltip label={branchStatsTooltip(stats)} multiline w={290}>
@@ -4392,8 +4395,10 @@ function BranchStatsCell({
           </Text>
         </Group>
         <Progress value={stats.score} color={color} size={dense ? 3 : "xs"} />
-        <Text size="xs" c="dimmed" truncate>
-          {Math.round(stats.replyCoverage * 100)}% replies - {stats.depthPly} ply
+        <Text size="xs" c={lineImpact ? "teal" : "dimmed"} fw={lineImpact ? 700 : 400} truncate>
+          {lineImpact && lineImpactScore !== null
+            ? `Prep helps: opp ${formatPrepScorePercent(lineImpact.surfaceScore)} -> ${formatPrepScorePercent(lineImpactScore)}`
+            : `${Math.round(stats.replyCoverage * 100)}% replies - ${stats.depthPly} ply`}
         </Text>
       </Stack>
     </Tooltip>
@@ -4679,6 +4684,7 @@ function normalizePrepOnlinePlayerName(value: string | null | undefined) {
 
 function branchStatsTooltip(stats: OpponentPrepBranchStats) {
   const lines = [
+    ...preparedLineImpactTooltipLines(stats.preparedLineImpact),
     `${stats.label}: ${stats.score}%`,
     stats.depthPly > 0 ? `Depth: ${stats.depthPly} ply` : "No saved response in this branch yet.",
     stats.opponentPositions > 0
@@ -4693,6 +4699,46 @@ function branchStatsTooltip(stats: OpponentPrepBranchStats) {
   ];
 
   return lines.filter(Boolean).join("\n");
+}
+
+function preparedLineImpactTooltipLines(impact: OpponentPrepLineImpact | null) {
+  if (!impact) return [];
+
+  const lines = [
+    `Prepared line helps: opponent score drops by ${formatPrepScorePointDrop(impact.scoreDrop)}.`,
+    `Surface: opponent scored ${formatPrepScorePercent(impact.surfaceScore)} from ${formatNumber(impact.surfaceGames)} games after this move.`,
+    `After your ${impact.userMove}: opponent scored ${formatPrepScorePercent(impact.userScore)} from ${formatNumber(impact.userGames)} games (${formatPrepScorePercent(impact.userShare)} of this branch).`,
+  ];
+
+  if (
+    impact.opponentReplyMove &&
+    impact.opponentReplyScore !== null &&
+    impact.opponentReplyGames !== null &&
+    impact.opponentReplyShare !== null
+  ) {
+    lines.push(
+      `Their usual next ${impact.opponentReplyMove}: ${formatPrepScorePercent(impact.opponentReplyShare)} of replies, opponent scored ${formatPrepScorePercent(impact.opponentReplyScore)} from ${formatNumber(impact.opponentReplyGames)} games.`,
+    );
+  }
+
+  return lines;
+}
+
+function getPreparedLineImpactComparisonScore(impact: OpponentPrepLineImpact) {
+  const usefulUsualReply =
+    impact.opponentReplyScore !== null &&
+    impact.opponentReplyShare !== null &&
+    impact.opponentReplyShare >= 0.4 &&
+    impact.surfaceScore - impact.opponentReplyScore >= 0.12;
+  return usefulUsualReply ? impact.opponentReplyScore : impact.userScore;
+}
+
+function formatPrepScorePercent(value: number) {
+  return `${Math.round(value * 100)}%`;
+}
+
+function formatPrepScorePointDrop(value: number) {
+  return `${Math.round(value * 100)} points`;
 }
 
 function lichessMovesToOpenings(

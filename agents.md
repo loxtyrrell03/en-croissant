@@ -264,6 +264,18 @@ default.
 
 ## Product Map
 
+### Opponent Prep Conditional Lines
+
+- On 2026-06-22, desktop opponent prep gained a compact conditional-line
+  signal for saved replies. The prep coverage cell now detects when an
+  opponent move has a strong surface score for the opponent, but the user's
+  saved reply, or the opponent's usual next reply after it, drops the
+  opponent's score enough to matter. In that case the row shows
+  `Prep helps: opp X% -> Y%` and the existing tooltip explains the surface
+  score, the saved reply score, and the usual next reply when available. Keep
+  this intentionally thresholded and tied to saved prep lines so the move table
+  does not become another broad lookahead table.
+
 ### Local Lichess Cloud Evals
 
 - On 2026-06-22, the desktop fork gained a local compact Lichess cloud-eval
