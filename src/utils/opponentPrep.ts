@@ -9,6 +9,7 @@ import {
     getSmartMoveStrengthEngineWeight,
     getUsageAwarePracticalWdlRate,
 } from "@/utils/moveStrength";
+import { getWinChance } from "@/utils/score";
 import { getNodeAtPath, type TreeNode } from "@/utils/treeReducer";
 
 export type PrepColor = "white" | "black";
@@ -73,6 +74,8 @@ export type OpponentPrepLineImpact = {
     continuationGames: number | null;
     continuationStrengthScore: number | null;
     continuationStrength: PrepMoveStrength | null;
+    continuationLineScore: number | null;
+    continuationLineStrength: PrepMoveStrength | null;
     continuationDepthPly: number;
     continuationWeight: number;
     scoreDrop: number;
@@ -87,6 +90,8 @@ type PrepLineMoveImpact = {
     score: number;
     strengthScore: number | null;
     strength: PrepMoveStrength | null;
+    lineScore: number | null;
+    lineStrength: PrepMoveStrength | null;
 };
 
 type CandidateContinuationImpact = {
@@ -96,11 +101,14 @@ type CandidateContinuationImpact = {
     games: number;
     strengthScore: number;
     strength: PrepMoveStrength;
+    lineScore: number;
+    lineStrength: PrepMoveStrength;
     depthPly: number;
     weight: number;
     scoreDrop: number;
     weightedScoreDrop: number;
     weightedStrengthScore: number;
+    weightedLineScore: number;
     firstOpponentReply: PrepLineMoveImpact | null;
     firstUserResponse: PrepLineMoveImpact | null;
 };
@@ -1155,6 +1163,8 @@ export async function getOpponentPrepCandidateLineImpact({
         continuationGames: continuation.games,
         continuationStrengthScore: continuation.strengthScore,
         continuationStrength: continuation.strength,
+        continuationLineScore: continuation.lineScore,
+        continuationLineStrength: continuation.lineStrength,
         continuationDepthPly: continuation.depthPly,
         continuationWeight: continuation.weight,
         scoreDrop: continuation.scoreDrop,
@@ -1246,6 +1256,8 @@ async function getPreparedLineImpact({
                 continuationGames: userGames,
                 continuationStrengthScore: null,
                 continuationStrength: null,
+                continuationLineScore: null,
+                continuationLineStrength: null,
                 continuationDepthPly: 0,
                 continuationWeight: 1,
                 scoreDrop,
@@ -1300,11 +1312,13 @@ async function getCandidateContinuationImpact({
         opponentScore,
         games,
         strength,
+        lineStrength,
     }: {
         userScore: number;
         opponentScore: number;
         games: number;
         strength: PrepMoveStrength;
+        lineStrength: PrepMoveStrength;
     }) => {
         const depthPly = moves.length;
         const weight = getCandidateContinuationWeight({
@@ -1319,11 +1333,14 @@ async function getCandidateContinuationImpact({
             games,
             strengthScore: strength.score,
             strength,
+            lineScore: lineStrength.score,
+            lineStrength,
             depthPly,
             weight,
             scoreDrop,
             weightedScoreDrop: scoreDrop * weight,
             weightedStrengthScore: strength.score * weight,
+            weightedLineScore: lineStrength.score * weight,
             firstOpponentReply,
             firstUserResponse,
         });
@@ -1361,7 +1378,7 @@ async function getCandidateContinuationImpact({
             moveLimit,
             settings,
         });
-        if (!userResponse || !userResponse.strength) break;
+        if (!userResponse || !userResponse.strength || !userResponse.lineStrength) break;
 
         firstUserResponse ??= userResponse;
         moves.push(userResponse.move);
@@ -1370,6 +1387,7 @@ async function getCandidateContinuationImpact({
             opponentScore: 1 - userResponse.score,
             games: userResponse.games,
             strength: userResponse.strength,
+            lineStrength: userResponse.lineStrength,
         });
 
         const nextFen = applyPrepSanMove(userResponseFen, userResponse.move);
@@ -1380,8 +1398,10 @@ async function getCandidateContinuationImpact({
     return (
         endpoints.sort(
             (a, b) =>
+                b.weightedLineScore - a.weightedLineScore ||
                 b.weightedStrengthScore - a.weightedStrengthScore ||
                 a.depthPly - b.depthPly ||
+                b.lineScore - a.lineScore ||
                 b.strengthScore - a.strengthScore ||
                 b.weightedScoreDrop - a.weightedScoreDrop ||
                 b.scoreDrop - a.scoreDrop ||
@@ -1435,6 +1455,8 @@ async function getTopOpponentReplyImpact({
         score: getOpeningScoreForSide(topReply, opponentColor),
         strengthScore: null,
         strength: null,
+        lineScore: null,
+        lineStrength: null,
     };
 }
 
@@ -1482,6 +1504,13 @@ async function getBestUserResponseImpact({
             const strength = strengthByMove.get(normalizeSanForPrep(opening.move)) ?? null;
             const usableStrength =
                 settings.useCloudEngine && strength?.engineCpLoss === null ? null : strength;
+            const lineStrength = usableStrength
+                ? createProjectedPrepLineStrength({
+                      strength: usableStrength,
+                      userScore: getOpeningScoreForSide(opening, userColor),
+                      settings,
+                  })
+                : null;
             return {
                 move: opening.move,
                 games: getOpeningTotal(opening),
@@ -1489,6 +1518,8 @@ async function getBestUserResponseImpact({
                 score: getOpeningScoreForSide(opening, userColor),
                 strengthScore: usableStrength?.score ?? null,
                 strength: usableStrength,
+                lineScore: lineStrength?.score ?? null,
+                lineStrength,
             };
         })
         .sort(
@@ -2288,6 +2319,63 @@ function getPrepStrengthLoss({
     const effectiveEngineWeight = getSmartMoveStrengthEngineWeight(settings, engineScoreSpreadCp);
 
     return engineLossNorm * effectiveEngineWeight + databaseLossNorm * (1 - effectiveEngineWeight);
+}
+
+function createProjectedPrepLineStrength({
+    strength,
+    userScore,
+    settings,
+}: {
+    strength: PrepMoveStrength;
+    userScore: number;
+    settings: PrepBuilderSettings;
+}): PrepMoveStrength {
+    const practicalScore = clamp((strength.databaseScore ?? userScore) * 100, 0, 100);
+    const engineScore =
+        settings.useCloudEngine && strength.engineCp !== null
+            ? getWinChance(strength.engineCp)
+            : null;
+    const engineWeight = getProjectedLineEngineWeight({
+        settings,
+        hasEngineScore: engineScore !== null,
+    });
+    const projectedOutcomeScore =
+        engineScore === null
+            ? practicalScore
+            : practicalScore * (1 - engineWeight) + engineScore * engineWeight;
+    const cappedScore = Math.round(Math.min(strength.score, projectedOutcomeScore));
+    const projectedText = `${Math.round(projectedOutcomeScore)}`;
+    const practicalText = `${Math.round(practicalScore)}`;
+    const engineText = engineScore === null ? null : `${Math.round(engineScore)}`;
+
+    return {
+        ...strength,
+        score: cappedScore,
+        label: cappedScore.toString(),
+        detail: [
+            `Projected line ${cappedScore}: future move strength ${strength.score}, capped by absolute line outcome ${projectedText}.`,
+            `Future WDL component ${practicalText}.`,
+            engineText ? `Future engine component ${engineText}.` : null,
+            strength.detail,
+        ]
+            .filter((part): part is string => Boolean(part))
+            .join("; "),
+    };
+}
+
+function getProjectedLineEngineWeight({
+    settings,
+    hasEngineScore,
+}: {
+    settings: PrepBuilderSettings;
+    hasEngineScore: boolean;
+}) {
+    if (!settings.useCloudEngine || !hasEngineScore) return 0;
+
+    if (settings.mode === "engine") return 0.88;
+    if (settings.mode === "practical") return 0.18;
+
+    return getSmartMoveStrengthEngineWeight(settings, null);
 }
 
 function getWeightedSidePracticalWdlRate(openings: Opening[], side: PrepColor) {

@@ -330,6 +330,11 @@ default.
   unavailable or the future move is not covered by engine data, leave the
   `After prep` signal absent instead of showing the repeated missing-engine
   score around `59`.
+- Candidate lookahead may use future move strength to select a reply, but the
+  displayed `After prep` score must be a projected line value from the original
+  prep side's perspective. Cap the future move's relative strength by the
+  absolute future WDL/eval blend so a locally best move in a bad future
+  position does not show as `100` in the root table.
 - The prep strength scorer's engine floor is intentionally limited to Engine
   mode. In Smart and Practical modes, the configured engine/practical blend
   must be allowed to pull an engine-best move down when opponent-specific WDL is

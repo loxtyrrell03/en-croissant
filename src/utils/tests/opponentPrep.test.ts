@@ -552,8 +552,57 @@ describe("opponent prep helpers", () => {
 
         expect(impact?.continuationMoves).toEqual(["Nf3", "g6"]);
         expect(impact?.continuationStrengthScore).toBe(100);
+        expect(impact?.continuationLineScore).toBeLessThan(impact!.continuationStrengthScore!);
         expect(impact?.continuationStrengthScore).not.toBe(59);
         expect(impact?.continuationStrength?.engineCpLoss).toBe(0);
+    });
+
+    test("candidate after-prep value is capped by absolute future line outcome", async () => {
+        const store = createTreeStore();
+        store.getState().makeMove({ payload: "e4" });
+        const settings = normalizePrepBuilderSettings({
+            mode: "smart",
+            engineWeight: 55,
+            maxEngineCpLoss: 70,
+            useCloudEngine: true,
+        });
+
+        const fen = store.getState().root.children[0].fen;
+        const afterC5 = applyPrepSanMove(fen, "c5");
+        const afterC5Nf3 = afterC5 ? applyPrepSanMove(afterC5, "Nf3") : null;
+        const impact = await getOpponentPrepCandidateLineImpact({
+            fen,
+            row: {
+                move: "c5",
+                white: 70,
+                draw: 10,
+                black: 20,
+                total: 100,
+                share: 0.24,
+            },
+            opponentColor: "white",
+            loadOpenings: async (position) => {
+                if (position === afterC5) {
+                    return [{ move: "Nf3", white: 24, draw: 8, black: 8 }];
+                }
+                if (position === afterC5Nf3) {
+                    return [{ move: "g6", white: 100, draw: 0, black: 0 }];
+                }
+                return [];
+            },
+            loadEngineMoves: async (position) =>
+                position === afterC5Nf3
+                    ? [{ san: "g6", scoreCpForSide: 120, rank: 1, source: "lichess" }]
+                    : [],
+            minGames: 1,
+            moveLimit: 4,
+            settings,
+        });
+
+        expect(impact?.continuationMoves).toEqual(["Nf3", "g6"]);
+        expect(impact?.continuationStrengthScore).toBe(100);
+        expect(impact?.continuationLineScore).toBeLessThan(40);
+        expect(impact?.continuationLineScore).toBeLessThan(impact!.continuationStrengthScore!);
     });
 
     test("candidate reply strength is absent rather than fixed at 59 when future engine data is missing", async () => {

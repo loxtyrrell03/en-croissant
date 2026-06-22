@@ -3778,7 +3778,7 @@ function PrepCandidateMoveTable({
             const moveKey = normalizePrepBuilderSan(row.move);
             const rowStrength = strengthByMove.get(moveKey);
             const afterPrepStrength = afterPrepStrengthByMove.get(moveKey);
-            const continuationStrength = lineImpact?.continuationStrength ?? null;
+            const continuationStrength = lineImpact?.continuationLineStrength ?? null;
             const continuationIsShown =
               continuationStrength !== null &&
               afterPrepStrength?.score === continuationStrength.score &&
@@ -4211,7 +4211,7 @@ function getCandidateContinuationStrengthMap({
     const key = getOpponentPrepBranchKey(currentFen, opening.move);
     const impact = candidateLineImpactByKey[key];
     const currentStrength = strengthByMove.get(moveKey);
-    const continuationStrength = impact?.continuationStrength ?? null;
+    const continuationStrength = impact?.continuationLineStrength ?? null;
     const displayedStrength =
       continuationStrength &&
       (!currentStrength || continuationStrength.score > currentStrength.score)
@@ -5133,6 +5133,12 @@ function candidateLineImpactTooltip(impact: OpponentPrepLineImpact) {
   if (impact.continuationStrengthScore !== null) {
     lines.push(
       `Future move strength: ${impact.continuationStrengthScore} for the prep-side reply in that line.`,
+    );
+  }
+
+  if (impact.continuationLineScore !== null) {
+    lines.push(
+      `Projected line value: ${impact.continuationLineScore}, capped by the actual future WDL/eval so a locally best bad position is not overrated.`,
     );
   }
 
