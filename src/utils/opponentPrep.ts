@@ -61,7 +61,38 @@ export type OpponentPrepLineImpact = {
     opponentReplyScore: number | null;
     opponentReplyGames: number | null;
     opponentReplyShare: number | null;
+    userResponseMove: string | null;
+    userResponseScore: number | null;
+    userResponseGames: number | null;
+    userResponseShare: number | null;
+    continuationMoves: string[];
+    continuationUserScore: number | null;
+    continuationOpponentScore: number | null;
+    continuationGames: number | null;
+    continuationDepthPly: number;
+    continuationWeight: number;
     scoreDrop: number;
+    weightedScoreDrop: number;
+};
+
+type PrepLineMoveImpact = {
+    move: string;
+    games: number;
+    share: number;
+    score: number;
+};
+
+type CandidateContinuationImpact = {
+    moves: string[];
+    userScore: number;
+    opponentScore: number;
+    games: number;
+    depthPly: number;
+    weight: number;
+    scoreDrop: number;
+    weightedScoreDrop: number;
+    firstOpponentReply: PrepLineMoveImpact | null;
+    firstUserResponse: PrepLineMoveImpact | null;
 };
 
 export type PrepBuilderSettings = {
@@ -198,6 +229,8 @@ const PREP_LINE_IMPACT_MIN_SURFACE_SCORE = 0.55;
 const PREP_LINE_IMPACT_MIN_SCORE_DROP = 0.12;
 const PREP_LINE_IMPACT_MIN_USER_SHARE = 0.08;
 const PREP_LINE_IMPACT_MIN_OPPONENT_REPLY_SHARE = 0.4;
+const PREP_CANDIDATE_LINE_MAX_USER_RESPONSES = 3;
+const PREP_CANDIDATE_LINE_DEPTH_DECAY = 0.72;
 export const DEFAULT_PREP_BUILDER_SETTINGS: PrepBuilderSettings = {
     mode: "smart",
     size: "balanced",
@@ -1063,24 +1096,19 @@ export async function getOpponentPrepCandidateLineImpact({
     moveLimit: number;
 }): Promise<OpponentPrepLineImpact | null> {
     const surfaceScore = getOpeningScoreForSide(row, opponentColor);
-    if (surfaceScore < PREP_LINE_IMPACT_MIN_SURFACE_SCORE) return null;
 
     const nextFen = applyPrepSanMove(fen, row.move);
     if (!nextFen) return null;
 
-    const opponentReply = await getTopOpponentReplyImpact({
-        fen: nextFen,
+    const continuation = await getCandidateContinuationImpact({
+        startFen: nextFen,
+        surfaceScore,
         opponentColor,
         loadOpenings,
         minGames,
         moveLimit,
     });
-    if (!opponentReply || opponentReply.share < PREP_LINE_IMPACT_MIN_OPPONENT_REPLY_SHARE) {
-        return null;
-    }
-
-    const scoreDrop = surfaceScore - opponentReply.score;
-    if (scoreDrop < PREP_LINE_IMPACT_MIN_SCORE_DROP) return null;
+    if (!continuation) return null;
 
     return {
         surfaceScore,
@@ -1089,11 +1117,22 @@ export async function getOpponentPrepCandidateLineImpact({
         userScore: surfaceScore,
         userGames: row.total,
         userShare: row.share,
-        opponentReplyMove: opponentReply.move,
-        opponentReplyScore: opponentReply.score,
-        opponentReplyGames: opponentReply.games,
-        opponentReplyShare: opponentReply.share,
-        scoreDrop,
+        opponentReplyMove: continuation.firstOpponentReply?.move ?? null,
+        opponentReplyScore: continuation.firstOpponentReply?.score ?? null,
+        opponentReplyGames: continuation.firstOpponentReply?.games ?? null,
+        opponentReplyShare: continuation.firstOpponentReply?.share ?? null,
+        userResponseMove: continuation.firstUserResponse?.move ?? null,
+        userResponseScore: continuation.firstUserResponse?.score ?? null,
+        userResponseGames: continuation.firstUserResponse?.games ?? null,
+        userResponseShare: continuation.firstUserResponse?.share ?? null,
+        continuationMoves: continuation.moves,
+        continuationUserScore: continuation.userScore,
+        continuationOpponentScore: continuation.opponentScore,
+        continuationGames: continuation.games,
+        continuationDepthPly: continuation.depthPly,
+        continuationWeight: continuation.weight,
+        scoreDrop: continuation.scoreDrop,
+        weightedScoreDrop: continuation.weightedScoreDrop,
     };
 }
 
@@ -1125,7 +1164,7 @@ async function getPreparedLineImpact({
     if (userOpeningTotal <= 0) return null;
 
     const candidates = await Promise.all(
-        branchNode.children.map(async (userNode) => {
+        branchNode.children.map(async (userNode): Promise<OpponentPrepLineImpact | null> => {
             if (!userNode.san) return null;
 
             const userOpening = findMatchingOpening(userOpenings, branchNode.fen, userNode.san);
@@ -1168,7 +1207,18 @@ async function getPreparedLineImpact({
                 opponentReplyScore: opponentReply?.score ?? null,
                 opponentReplyGames: opponentReply?.games ?? null,
                 opponentReplyShare: opponentReply?.share ?? null,
+                userResponseMove: null,
+                userResponseScore: null,
+                userResponseGames: null,
+                userResponseShare: null,
+                continuationMoves: [],
+                continuationUserScore: null,
+                continuationOpponentScore: userScore,
+                continuationGames: userGames,
+                continuationDepthPly: 0,
+                continuationWeight: 1,
                 scoreDrop,
+                weightedScoreDrop: scoreDrop,
             } satisfies OpponentPrepLineImpact;
         }),
     );
@@ -1186,6 +1236,131 @@ async function getPreparedLineImpact({
     );
 }
 
+async function getCandidateContinuationImpact({
+    startFen,
+    surfaceScore,
+    opponentColor,
+    loadOpenings,
+    minGames,
+    moveLimit,
+}: {
+    startFen: string;
+    surfaceScore: number;
+    opponentColor: PrepColor;
+    loadOpenings: (fen: string) => Promise<Opening[]>;
+    minGames: number;
+    moveLimit: number;
+}): Promise<CandidateContinuationImpact | null> {
+    const userColor = oppositePrepColor(opponentColor);
+    const endpoints: CandidateContinuationImpact[] = [];
+    const moves: string[] = [];
+    let fen = startFen;
+    let opponentPathShare = 1;
+    let firstOpponentReply: PrepLineMoveImpact | null = null;
+    let firstUserResponse: PrepLineMoveImpact | null = null;
+
+    const pushEndpoint = ({
+        userScore,
+        opponentScore,
+        games,
+    }: {
+        userScore: number;
+        opponentScore: number;
+        games: number;
+    }) => {
+        const depthPly = moves.length;
+        const weight = getCandidateContinuationWeight({
+            depthPly,
+            opponentPathShare,
+        });
+        const scoreDrop = surfaceScore - opponentScore;
+        endpoints.push({
+            moves: [...moves],
+            userScore,
+            opponentScore,
+            games,
+            depthPly,
+            weight,
+            scoreDrop,
+            weightedScoreDrop: scoreDrop * weight,
+            firstOpponentReply,
+            firstUserResponse,
+        });
+    };
+
+    for (
+        let userResponses = 0;
+        userResponses < PREP_CANDIDATE_LINE_MAX_USER_RESPONSES;
+        userResponses += 1
+    ) {
+        if (getFenTurn(fen) !== opponentColor) break;
+
+        const opponentReply = await getTopOpponentReplyImpact({
+            fen,
+            opponentColor,
+            loadOpenings,
+            minGames,
+            moveLimit,
+        });
+        if (!opponentReply) break;
+
+        firstOpponentReply ??= opponentReply;
+        opponentPathShare *= opponentReply.share;
+        moves.push(opponentReply.move);
+        pushEndpoint({
+            userScore: 1 - opponentReply.score,
+            opponentScore: opponentReply.score,
+            games: opponentReply.games,
+        });
+
+        const userResponseFen = applyPrepSanMove(fen, opponentReply.move);
+        if (!userResponseFen || getFenTurn(userResponseFen) !== userColor) break;
+
+        const userResponse = await getBestUserResponseImpact({
+            fen: userResponseFen,
+            userColor,
+            loadOpenings,
+            minGames,
+            moveLimit,
+        });
+        if (!userResponse) break;
+
+        firstUserResponse ??= userResponse;
+        moves.push(userResponse.move);
+        pushEndpoint({
+            userScore: userResponse.score,
+            opponentScore: 1 - userResponse.score,
+            games: userResponse.games,
+        });
+
+        const nextFen = applyPrepSanMove(userResponseFen, userResponse.move);
+        if (!nextFen) break;
+        fen = nextFen;
+    }
+
+    return (
+        endpoints.sort(
+            (a, b) =>
+                b.weightedScoreDrop - a.weightedScoreDrop ||
+                a.depthPly - b.depthPly ||
+                b.scoreDrop - a.scoreDrop ||
+                b.games - a.games ||
+                a.moves.join(" ").localeCompare(b.moves.join(" ")),
+        )[0] ?? null
+    );
+}
+
+function getCandidateContinuationWeight({
+    depthPly,
+    opponentPathShare,
+}: {
+    depthPly: number;
+    opponentPathShare: number;
+}) {
+    const depthWeight = Math.pow(PREP_CANDIDATE_LINE_DEPTH_DECAY, Math.max(0, depthPly - 1));
+    return depthWeight * clamp(opponentPathShare, 0, 1);
+}
+
 async function getTopOpponentReplyImpact({
     fen,
     opponentColor,
@@ -1198,7 +1373,7 @@ async function getTopOpponentReplyImpact({
     loadOpenings: (fen: string) => Promise<Opening[]>;
     minGames: number;
     moveLimit: number;
-}) {
+}): Promise<PrepLineMoveImpact | null> {
     if (getFenTurn(fen) !== opponentColor) return null;
 
     const openings = await loadOpenings(fen);
@@ -1218,6 +1393,47 @@ async function getTopOpponentReplyImpact({
         share: games / eligibleTotal,
         score: getOpeningScoreForSide(topReply, opponentColor),
     };
+}
+
+async function getBestUserResponseImpact({
+    fen,
+    userColor,
+    loadOpenings,
+    minGames,
+    moveLimit,
+}: {
+    fen: string;
+    userColor: PrepColor;
+    loadOpenings: (fen: string) => Promise<Opening[]>;
+    minGames: number;
+    moveLimit: number;
+}): Promise<PrepLineMoveImpact | null> {
+    if (getFenTurn(fen) !== userColor) return null;
+
+    const openings = await loadOpenings(fen);
+    const eligibleTotal = getOpponentPrepEligibleOpenings(openings, minGames).reduce(
+        (sum, opening) => sum + getOpeningTotal(opening),
+        0,
+    );
+    if (eligibleTotal <= 0) return null;
+
+    const replies = sortOpponentPrepOpenings(openings, minGames, moveLimit);
+    const bestReply = replies
+        .map((opening) => ({
+            move: opening.move,
+            games: getOpeningTotal(opening),
+            share: getOpeningTotal(opening) / eligibleTotal,
+            score: getOpeningScoreForSide(opening, userColor),
+        }))
+        .sort(
+            (a, b) =>
+                b.score - a.score ||
+                b.share - a.share ||
+                b.games - a.games ||
+                a.move.localeCompare(b.move),
+        )[0];
+
+    return bestReply ?? null;
 }
 
 export function getPrepBuilderTaskPriority({

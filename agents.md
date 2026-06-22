@@ -290,6 +290,16 @@ default.
   surface badge, with the conditional continuation's WDL evidence substituted
   for the row's surface WDL, so the two values stay comparable instead of being
   separate raw result stats.
+- A correction to that pass made candidate reply strength scan a short
+  continuation beyond the first candidate move: user's candidate, the
+  opponent's likely reply, the best/common reply for the prep side, and up to a
+  couple more nearby replies when the opponent path remains common. This fixes
+  cases like `1.e4 c5 2.Nf3 g6`, where `...c5` can look bad from the surface
+  WDL but the intended `...g6` prep reply scores much better for Black. Deeper
+  endpoints are discounted by depth and opponent path frequency, so a rare WDL
+  spike two or three moves later should not override a stronger near-term
+  signal. Do not reduce this back to a one-ply `candidate -> opponent reply`
+  check.
 
 ### Local Lichess Cloud Evals
 

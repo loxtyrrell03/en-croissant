@@ -441,12 +441,13 @@ describe("opponent prep helpers", () => {
         expect(stats.preparedLineImpact?.opponentReplyShare).toBeCloseTo(0.8);
     });
 
-    test("flags a candidate reply when the opponent usually enters a worse scoring line", async () => {
+    test("flags a candidate reply when the prep response improves the line", async () => {
         const store = createTreeStore();
         store.getState().makeMove({ payload: "e4" });
 
         const fen = store.getState().root.children[0].fen;
         const afterC5 = applyPrepSanMove(fen, "c5");
+        const afterC5Nf3 = afterC5 ? applyPrepSanMove(afterC5, "Nf3") : null;
         const impact = await getOpponentPrepCandidateLineImpact({
             fen,
             row: {
@@ -458,13 +459,21 @@ describe("opponent prep helpers", () => {
                 share: 0.24,
             },
             opponentColor: "white",
-            loadOpenings: async (position) =>
-                position === afterC5
-                    ? [
-                          { move: "Nf3", white: 12, draw: 8, black: 20 },
-                          { move: "Nc3", white: 6, draw: 0, black: 4 },
-                      ]
-                    : [],
+            loadOpenings: async (position) => {
+                if (position === afterC5) {
+                    return [
+                        { move: "Nf3", white: 24, draw: 8, black: 8 },
+                        { move: "Nc3", white: 6, draw: 0, black: 4 },
+                    ];
+                }
+                if (position === afterC5Nf3) {
+                    return [
+                        { move: "g6", white: 10, draw: 8, black: 22 },
+                        { move: "d6", white: 12, draw: 4, black: 4 },
+                    ];
+                }
+                return [];
+            },
             minGames: 1,
             moveLimit: 4,
         });
@@ -474,10 +483,128 @@ describe("opponent prep helpers", () => {
             opponentReplyMove: "Nf3",
             surfaceGames: 100,
             opponentReplyGames: 40,
+            userResponseMove: "g6",
+            userResponseGames: 40,
+            continuationMoves: ["Nf3", "g6"],
+            continuationGames: 40,
+            continuationDepthPly: 2,
         });
         expect(impact?.surfaceScore).toBeCloseTo(0.75);
-        expect(impact?.opponentReplyScore).toBeCloseTo(0.4);
+        expect(impact?.opponentReplyScore).toBeCloseTo(0.7);
         expect(impact?.opponentReplyShare).toBeCloseTo(0.8);
+        expect(impact?.userResponseScore).toBeCloseTo(0.65);
+        expect(impact?.userResponseShare).toBeCloseTo(0.67);
+        expect(impact?.continuationUserScore).toBeCloseTo(0.65);
+        expect(impact?.scoreDrop).toBeCloseTo(0.4);
+        expect(impact?.weightedScoreDrop ?? 0).toBeGreaterThan(0.2);
+    });
+
+    test("can use a common deeper candidate continuation after discounting", async () => {
+        const store = createTreeStore();
+        store.getState().makeMove({ payload: "e4" });
+
+        const fen = store.getState().root.children[0].fen;
+        const afterC5 = applyPrepSanMove(fen, "c5");
+        const afterC5Nf3 = afterC5 ? applyPrepSanMove(afterC5, "Nf3") : null;
+        const afterC5Nf3G6 = afterC5Nf3 ? applyPrepSanMove(afterC5Nf3, "g6") : null;
+        const afterC5Nf3G6D4 = afterC5Nf3G6 ? applyPrepSanMove(afterC5Nf3G6, "d4") : null;
+        const impact = await getOpponentPrepCandidateLineImpact({
+            fen,
+            row: {
+                move: "c5",
+                white: 70,
+                draw: 10,
+                black: 20,
+                total: 100,
+                share: 0.24,
+            },
+            opponentColor: "white",
+            loadOpenings: async (position) => {
+                if (position === afterC5) {
+                    return [
+                        { move: "Nf3", white: 24, draw: 8, black: 8 },
+                        { move: "Nc3", white: 6, draw: 0, black: 4 },
+                    ];
+                }
+                if (position === afterC5Nf3) {
+                    return [
+                        { move: "g6", white: 15, draw: 8, black: 17 },
+                        { move: "d6", white: 15, draw: 4, black: 1 },
+                    ];
+                }
+                if (position === afterC5Nf3G6) {
+                    return [
+                        { move: "d4", white: 45, draw: 0, black: 45 },
+                        { move: "Bb5", white: 1, draw: 0, black: 9 },
+                    ];
+                }
+                if (position === afterC5Nf3G6D4) {
+                    return [
+                        { move: "Bg7", white: 0, draw: 4, black: 36 },
+                        { move: "cxd4", white: 10, draw: 4, black: 6 },
+                    ];
+                }
+                return [];
+            },
+            minGames: 1,
+            moveLimit: 4,
+        });
+
+        expect(impact?.continuationMoves).toEqual(["Nf3", "g6", "d4", "Bg7"]);
+        expect(impact?.continuationUserScore).toBeCloseTo(0.95);
+        expect(impact?.continuationDepthPly).toBe(4);
+        expect(impact?.weightedScoreDrop ?? 0).toBeGreaterThan(0.18);
+    });
+
+    test("keeps a nearer candidate continuation above a rare deeper WDL swing", async () => {
+        const store = createTreeStore();
+        store.getState().makeMove({ payload: "e4" });
+
+        const fen = store.getState().root.children[0].fen;
+        const afterC5 = applyPrepSanMove(fen, "c5");
+        const afterC5Nf3 = afterC5 ? applyPrepSanMove(afterC5, "Nf3") : null;
+        const afterC5Nf3G6 = afterC5Nf3 ? applyPrepSanMove(afterC5Nf3, "g6") : null;
+        const afterC5Nf3G6D4 = afterC5Nf3G6 ? applyPrepSanMove(afterC5Nf3G6, "d4") : null;
+        const impact = await getOpponentPrepCandidateLineImpact({
+            fen,
+            row: {
+                move: "c5",
+                white: 70,
+                draw: 10,
+                black: 20,
+                total: 100,
+                share: 0.24,
+            },
+            opponentColor: "white",
+            loadOpenings: async (position) => {
+                if (position === afterC5) {
+                    return [
+                        { move: "Nf3", white: 24, draw: 8, black: 8 },
+                        { move: "Nc3", white: 6, draw: 0, black: 4 },
+                    ];
+                }
+                if (position === afterC5Nf3) {
+                    return [{ move: "g6", white: 15, draw: 8, black: 17 }];
+                }
+                if (position === afterC5Nf3G6) {
+                    return [
+                        { move: "d4", white: 15, draw: 0, black: 15 },
+                        { move: "Bg2", white: 12, draw: 0, black: 13 },
+                        { move: "c3", white: 12, draw: 0, black: 13 },
+                        { move: "Bb5", white: 9, draw: 0, black: 11 },
+                    ];
+                }
+                if (position === afterC5Nf3G6D4) {
+                    return [{ move: "Bg7", white: 0, draw: 4, black: 36 }];
+                }
+                return [];
+            },
+            minGames: 1,
+            moveLimit: 4,
+        });
+
+        expect(impact?.continuationMoves).toEqual(["Nf3", "g6"]);
+        expect(impact?.continuationUserScore).toBeCloseTo(0.525);
     });
 
     test("keeps shallow branches with unanswered common replies marked as needing work", async () => {

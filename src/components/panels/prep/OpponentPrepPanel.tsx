@@ -3747,9 +3747,7 @@ function PrepCandidateMoveTable({
                     afterPrepStrength={afterPrepStrengthByMove.get(
                       normalizePrepBuilderSan(row.move),
                     )}
-                    afterPrepLabel={
-                      lineImpact?.opponentReplyMove ? `After ${lineImpact.opponentReplyMove}` : ""
-                    }
+                    afterPrepLabel={lineImpact ? formatCandidateAfterPrepLabel(lineImpact) : ""}
                     afterPrepContext={lineImpact ? [candidateLineImpactTooltip(lineImpact)] : []}
                     loading={strengthLoading}
                   />
@@ -4124,10 +4122,28 @@ function createOpeningFromSideScore({
 }
 
 function getCandidateLineImpactUserScore(impact: OpponentPrepLineImpact) {
+  if (impact.continuationUserScore !== null) return impact.continuationUserScore;
+  if (impact.userResponseScore !== null) return impact.userResponseScore;
   return 1 - (impact.opponentReplyScore ?? impact.userScore);
 }
 
 function getAfterPrepImpactGames(impact: OpponentPrepLineImpact, score: number) {
+  if (
+    impact.continuationUserScore !== null &&
+    impact.continuationGames !== null &&
+    Math.abs(score - impact.continuationUserScore) < 0.001
+  ) {
+    return impact.continuationGames;
+  }
+
+  if (
+    impact.userResponseScore !== null &&
+    impact.userResponseGames !== null &&
+    Math.abs(score - impact.userResponseScore) < 0.001
+  ) {
+    return impact.userResponseGames;
+  }
+
   if (
     impact.opponentReplyScore !== null &&
     impact.opponentReplyGames !== null &&
@@ -4953,19 +4969,48 @@ function preparedLineImpactTooltipLines(impact: OpponentPrepLineImpact | null) {
 }
 
 function candidateLineImpactTooltip(impact: OpponentPrepLineImpact) {
-  if (
-    !impact.opponentReplyMove ||
-    impact.opponentReplyScore === null ||
-    impact.opponentReplyGames === null ||
-    impact.opponentReplyShare === null
-  ) {
+  if (impact.continuationMoves.length === 0) {
     return "";
   }
 
-  return [
-    `Likely reply helps: after your ${impact.userMove}, they play ${impact.opponentReplyMove} in ${formatPrepScorePercent(impact.opponentReplyShare)} of games.`,
-    `Opponent score drops from ${formatPrepScorePercent(impact.surfaceScore)} over ${formatNumber(impact.surfaceGames)} games to ${formatPrepScorePercent(impact.opponentReplyScore)} over ${formatNumber(impact.opponentReplyGames)} games.`,
-  ].join("\n");
+  const lines = [
+    `Nearby prep line after ${impact.userMove}: ${impact.continuationMoves.join(" ")}.`,
+  ];
+
+  if (impact.continuationUserScore !== null && impact.continuationGames !== null) {
+    lines.push(
+      `Your side scores ${formatPrepScorePercent(impact.continuationUserScore)} over ${formatNumber(impact.continuationGames)} games at that point, compared with opponent ${formatPrepScorePercent(impact.surfaceScore)} over ${formatNumber(impact.surfaceGames)} after ${impact.userMove}.`,
+    );
+  }
+
+  if (
+    impact.opponentReplyMove &&
+    impact.opponentReplyScore !== null &&
+    impact.opponentReplyGames !== null &&
+    impact.opponentReplyShare !== null
+  ) {
+    lines.push(
+      `First opponent reply ${impact.opponentReplyMove}: ${formatPrepScorePercent(impact.opponentReplyShare)} of replies, opponent scored ${formatPrepScorePercent(impact.opponentReplyScore)} over ${formatNumber(impact.opponentReplyGames)} games.`,
+    );
+  }
+
+  if (impact.continuationDepthPly > 2) {
+    lines.push(
+      `Deeper WDL is discounted by depth and opponent path frequency, so it will not override a stronger near-term signal by itself.`,
+    );
+  }
+
+  return lines.join("\n");
+}
+
+function formatCandidateAfterPrepLabel(impact: OpponentPrepLineImpact) {
+  if (impact.continuationMoves.length > 0) {
+    const visibleMoves = impact.continuationMoves.slice(0, 2).join(" ");
+    const suffix = impact.continuationMoves.length > 2 ? " ..." : "";
+    return `After ${visibleMoves}${suffix}`;
+  }
+  if (impact.opponentReplyMove) return `After ${impact.opponentReplyMove}`;
+  return "After prep";
 }
 
 function getPreparedLineImpactComparisonScore(impact: OpponentPrepLineImpact) {
