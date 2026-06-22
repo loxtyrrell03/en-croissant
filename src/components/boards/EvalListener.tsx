@@ -461,7 +461,7 @@ async function getLocalBestMovesWithLichessCloud(
   updateCloudStatus: (status: EngineCloudEvalStatus) => void,
 ) {
   const localStart = startLocalBestMoves(engine, tab, goMode, options);
-  let cloudCoveredLocalSearch = false;
+  let stopLocalSearchAfterCloud = false;
   updateCloudStatus({
     phase: "checking",
     message: "Checking Lichess Cloud...",
@@ -471,13 +471,28 @@ async function getLocalBestMovesWithLichessCloud(
   try {
     const cloudMoves = await lichessGetBestMoves(tab, goMode, options);
     if (cloudMoves?.[1]?.length) {
-      cloudCoveredLocalSearch = true;
+      stopLocalSearchAfterCloud = true;
+      let bestMoves = cloudMoves[1];
+
+      if (hasPartialCloudLines(bestMoves)) {
+        updateCloudStatus({
+          phase: "checking",
+          message: "Extending Lichess Cloud lines with local Stockfish...",
+          updatedAt: Date.now(),
+        });
+        const localMoves = await localStart.promise.catch((error) => {
+          console.warn("Failed to extend Lichess Cloud lines with local Stockfish.", error);
+          return null;
+        });
+        bestMoves = mergeCloudLinesWithLocalMultiPv(bestMoves, localMoves?.[1]);
+      }
+
       updateCloudStatus({
         phase: "available",
-        message: formatCloudAvailableMessage(cloudMoves[1]),
+        message: formatCloudAvailableMessage(bestMoves),
         updatedAt: Date.now(),
       });
-      return cloudMoves;
+      return [cloudMoves[0], bestMoves] as [number, BestMoves[]];
     }
 
     updateCloudStatus({
@@ -490,7 +505,7 @@ async function getLocalBestMovesWithLichessCloud(
     updateCloudStatus(cloudFailureStatus(error));
     return await localStart.promise;
   } finally {
-    localStart.cleanup(cloudCoveredLocalSearch);
+    localStart.cleanup(stopLocalSearchAfterCloud);
   }
 }
 
@@ -541,7 +556,59 @@ function formatCloudAvailableMessage(bestMoves: BestMoves[]) {
   const firstLine = bestMoves[0];
   const depth = firstLine?.depth ? `depth ${firstLine.depth}` : "ready";
   const lines = bestMoves.length === 1 ? "1 line" : `${bestMoves.length} lines`;
-  return `Using Lichess Cloud ${depth}, ${lines}.`;
+  const hasExtendedLines = bestMoves.some((move) =>
+    Boolean((move as CloudBackedBestMove).cloudLineExtendedWithLocal),
+  );
+  return hasExtendedLines
+    ? `Using Lichess Cloud ${depth}, ${lines}; local Stockfish continuations.`
+    : `Using Lichess Cloud ${depth}, ${lines}.`;
+}
+
+type CloudBackedBestMove = BestMoves & {
+  cloudLinePartial?: boolean;
+  cloudLineExtendedWithLocal?: boolean;
+};
+
+function hasPartialCloudLines(bestMoves: BestMoves[]) {
+  return bestMoves.some((move) => Boolean((move as CloudBackedBestMove).cloudLinePartial));
+}
+
+function mergeCloudLinesWithLocalMultiPv(
+  cloudMoves: BestMoves[],
+  localMoves: BestMoves[] | null | undefined,
+) {
+  if (!localMoves?.length) return cloudMoves;
+
+  const localByFirstMove = new Map<string, BestMoves>();
+  for (const localMove of localMoves) {
+    const firstMove = localMove.uciMoves[0];
+    if (!firstMove || localMove.uciMoves.length <= 1 || localByFirstMove.has(firstMove)) {
+      continue;
+    }
+    localByFirstMove.set(firstMove, localMove);
+  }
+
+  if (localByFirstMove.size === 0) return cloudMoves;
+
+  return cloudMoves.map((cloudMove) => {
+    const cloudState = cloudMove as CloudBackedBestMove;
+    if (!cloudState.cloudLinePartial) return cloudMove;
+
+    const firstMove = cloudMove.uciMoves[0];
+    const localMove = firstMove ? localByFirstMove.get(firstMove) : null;
+    if (!firstMove || !localMove) return cloudMove;
+
+    return {
+      ...cloudMove,
+      sanMoves: [
+        cloudMove.sanMoves[0] ?? localMove.sanMoves[0] ?? firstMove,
+        ...localMove.sanMoves.slice(1),
+      ],
+      uciMoves: [firstMove, ...localMove.uciMoves.slice(1)],
+      cloudLineExtendedWithLocal: true,
+      cloudLinePartial: false,
+    } satisfies CloudBackedBestMove;
+  });
 }
 
 function startLocalBestMoves(

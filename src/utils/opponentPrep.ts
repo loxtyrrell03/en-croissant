@@ -132,7 +132,7 @@ export type PrepBuilderEngineMove = {
     san: string;
     scoreCpForSide: number | null;
     rank: number | null;
-    source: "lichess" | "chessdb";
+    source: "local-lichess" | "lichess" | "chessdb";
 };
 
 export type PrepBuilderLoadEngineMoves = (
@@ -2197,6 +2197,7 @@ function evaluatePrepStrengthCandidates({
             detail: formatPrepStrengthDetail({
                 engineCp,
                 engineCpLoss,
+                engineSource: engine?.source ?? null,
                 databaseScore,
                 databaseWdlLoss,
                 engineMoves,
@@ -2432,10 +2433,11 @@ function getPrepBuilderMoveReasons({ strength }: { strength: EvaluatedPrepStreng
     const reasons: string[] = [];
 
     if (strength.engineCpLoss !== null) {
+        const engineSource = getPrepEngineSourceLabel(strength.engineSource);
         reasons.push(
             strength.engineCpLoss <= 0
-                ? "Engine: best cloud move"
-                : `Engine: -${Math.round(strength.engineCpLoss)} cp from best`,
+                ? `${engineSource}: best move`
+                : `${engineSource}: -${Math.round(strength.engineCpLoss)} cp from best`,
         );
     } else {
         reasons.push("Engine: unavailable");
@@ -2457,6 +2459,7 @@ function getPrepBuilderMoveReasons({ strength }: { strength: EvaluatedPrepStreng
 function formatPrepStrengthDetail({
     engineCp,
     engineCpLoss,
+    engineSource,
     databaseScore,
     databaseWdlLoss,
     engineMoves,
@@ -2467,6 +2470,7 @@ function formatPrepStrengthDetail({
 }: {
     engineCp: number | null;
     engineCpLoss: number | null;
+    engineSource: PrepBuilderEngineMove["source"] | null;
     databaseScore: number | null;
     databaseWdlLoss: number | null;
     engineMoves: PrepBuilderEngineMove[];
@@ -2482,12 +2486,15 @@ function formatPrepStrengthDetail({
     } else if (engineMoves.length === 0) {
         parts.push("Engine unavailable");
     } else if (engineCpLoss === null) {
-        parts.push("Engine not in cloud moves");
+        parts.push(`Not in ${formatPrepEngineSourceList(engineMoves)} moves`);
     } else {
         const cp =
             engineCp === null ? "" : ` (${engineCp > 0 ? "+" : ""}${Math.round(engineCp)} cp)`;
+        const engineSourceLabel = getPrepEngineSourceLabel(engineSource);
         parts.push(
-            engineCpLoss <= 0 ? `Engine best${cp}` : `Engine -${Math.round(engineCpLoss)} cp${cp}`,
+            engineCpLoss <= 0
+                ? `${engineSourceLabel} best${cp}`
+                : `${engineSourceLabel} -${Math.round(engineCpLoss)} cp${cp}`,
         );
     }
 
@@ -2519,6 +2526,20 @@ function formatPrepStrengthDetail({
     }
 
     return parts.join("; ");
+}
+
+function getPrepEngineSourceLabel(source: PrepBuilderEngineMove["source"] | null) {
+    if (source === "local-lichess") return "Local cloud";
+    if (source === "lichess") return "Lichess cloud";
+    if (source === "chessdb") return "ChessDB";
+    return "Engine";
+}
+
+function formatPrepEngineSourceList(moves: PrepBuilderEngineMove[]) {
+    const labels = Array.from(new Set(moves.map((move) => getPrepEngineSourceLabel(move.source))));
+    if (labels.length === 0) return "engine";
+    if (labels.length === 1) return labels[0];
+    return labels.slice(0, -1).join(", ") + ` or ${labels[labels.length - 1]}`;
 }
 
 function formatPrepWdlPointLoss(value: number) {

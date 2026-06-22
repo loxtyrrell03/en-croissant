@@ -51,6 +51,7 @@ function lichessMove(
         scoreCpForWhite,
         depth,
         mate: null,
+        source: "lichess",
     };
 }
 

@@ -843,7 +843,7 @@ function OpponentPrepPanel({
                   ? -move.scoreCpForWhite
                   : move.scoreCpForWhite,
             rank: index + 1,
-            source: "lichess",
+            source: move.source,
           })),
         );
       }
@@ -5239,7 +5239,14 @@ function mergePrepBuilderEngineMoves(moves: PrepBuilderEngineMove[]) {
 }
 
 function prepBuilderEngineSourceRank(source: PrepBuilderEngineMove["source"]) {
-  return source === "lichess" ? 0 : 1;
+  switch (source) {
+    case "local-lichess":
+      return 0;
+    case "lichess":
+      return 1;
+    case "chessdb":
+      return 2;
+  }
 }
 
 function formatPrepBuilderChoiceComment(choice: PrepBuilderMoveChoice) {

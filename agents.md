@@ -362,6 +362,21 @@ default.
   on-disk size of about 11.1 GB. A start-position lookup returned depth 65
   root moves `c2c4`, `e2e4`, `g1f3`, `d2d4`, and `g2g3`, confirming the built
   store is queryable.
+- A follow-up on 2026-06-22 threaded the local cloud-eval source through
+  desktop opponent-prep strength scoring. `queryLichessCloudMoves` now labels
+  whether SAN engine moves came from the local Lichess dump or the remote
+  Lichess API, and opponent prep preserves that label in both normal
+  `Strength` and future-position `After prep` calculations. Keep local cloud
+  ahead of remote Lichess and ChessDB when engine candidates are merged, while
+  retaining the remote/API fallback behavior when the local store has no row.
+- Another 2026-06-22 follow-up made desktop board cloud analysis extend compact
+  local cloud rows with local Stockfish root MultiPV tails. The compact store
+  still preserves only cloud evals plus first moves on disk; at runtime, rows
+  from the local dump are marked as partial, the already-started local engine
+  search is allowed to return MultiPV, and matching first-move PV tails are
+  grafted onto the cloud row while keeping the cloud score, depth, and root
+  move authoritative. If local Stockfish does not include a cloud first move in
+  its MultiPV output, that row remains a one-move cloud line.
 
 ### Web Companion
 

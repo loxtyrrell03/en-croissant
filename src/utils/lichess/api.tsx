@@ -381,7 +381,7 @@ export async function getBestMoves(
   }
 
   const bestMoves = data.pvs
-    .map<BestMoves | null>((m, i) => {
+    .map<(BestMoves & { cloudLinePartial?: boolean }) | null>((m, i) => {
       const uciMoves = m.moves.trim().split(/\s+/).filter(Boolean);
       const posCopy = pos.clone();
       const normalizedUciMoves: string[] = [];
@@ -399,7 +399,7 @@ export async function getBestMoves(
         return null;
       }
 
-      return {
+      const bestMove: BestMoves & { cloudLinePartial?: boolean } = {
         score: {
           value:
             "cp" in m
@@ -415,6 +415,12 @@ export async function getBestMoves(
         sanMoves,
         uciMoves: normalizedUciMoves,
       };
+
+      if (data.source === "local-lichess") {
+        bestMove.cloudLinePartial = true;
+      }
+
+      return bestMove;
     })
     .filter((move): move is BestMoves => move !== null);
 
@@ -425,10 +431,7 @@ export async function getBestMoves(
     );
   }
 
-  return [
-    100,
-    bestMoves,
-  ];
+  return [100, bestMoves];
 }
 
 const cache = new BoundedMap<string, LichessCloudData>(500);
@@ -438,11 +441,14 @@ let cloudRequestQueue: Promise<void> = Promise.resolve();
 let nextCloudRequestAt = 0;
 let cloudRateLimitedUntil = 0;
 
+export type LichessCloudSource = "local-lichess" | "lichess";
+
 type LichessCloudData = {
   fen: string;
   knodes: number;
   depth: number;
   pvs: (LichessCp | LichessMate)[];
+  source: LichessCloudSource;
 };
 
 type LichessCp = {
@@ -461,6 +467,7 @@ export type LichessCloudMove = {
   scoreCpForWhite: number;
   depth: number;
   mate: number | null;
+  source: LichessCloudSource;
 };
 
 async function getCloudEvaluation(fen: string, multipv: number): Promise<LichessCloudData> {
@@ -528,6 +535,7 @@ async function getLocalCloudEvaluation(
       knodes: local.knodes,
       depth: local.depth,
       pvs,
+      source: "local-lichess",
     };
   } catch (error) {
     console.warn("Local Lichess eval lookup failed; falling back to Lichess Cloud.", error);
@@ -623,15 +631,19 @@ async function fetchCloudEvaluationForMultipv(
       { status: response.status },
     );
   }
-  const data = (await response.json()) as LichessCloudData;
+  const data = (await response.json()) as Omit<LichessCloudData, "source">;
   if (!Array.isArray(data.pvs)) {
     throw new LichessCloudEvaluationError(
       "invalid-response",
       "Lichess Cloud returned a response without analysis lines.",
     );
   }
-  cache.set(cacheKey, data);
-  return data;
+  const cloudData: LichessCloudData = {
+    ...data,
+    source: "lichess",
+  };
+  cache.set(cacheKey, cloudData);
+  return cloudData;
 }
 
 async function enqueueCloudEvaluationRequest<T>(run: () => Promise<T>): Promise<T> {
@@ -767,6 +779,7 @@ export async function queryLichessCloudMoves(
       scoreCpForWhite,
       depth: data.depth,
       mate: "mate" in pv ? pv.mate : null,
+      source: data.source,
     });
   }
 

@@ -875,7 +875,7 @@ describe("opponent prep helpers", () => {
         expect(choice?.move).toBe("c5");
         expect(choice?.engineRank).toBe(2);
         expect(choice?.databaseRank).toBe(1);
-        expect(choice?.reasons).toEqual(["Engine: -20 cp from best", "Database: best WDL"]);
+        expect(choice?.reasons).toEqual(["Lichess cloud: -20 cp from best", "Database: best WDL"]);
     });
 
     test("engine prep builder keeps the top engine move when mode asks for it", () => {
