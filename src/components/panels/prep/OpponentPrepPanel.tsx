@@ -999,6 +999,55 @@ function OpponentPrepPanel({
 
     return Object.fromEntries(entries);
   });
+  const branchAfterPrepStrengthByMove = useMemo(
+    () =>
+      prepMode === "player" && opponentToMove && branchStatsByKey
+        ? getAfterPrepStrengthMap({
+            openings: strengthOpenings,
+            engineMoves: strengthEngineMoves ?? [],
+            side: prep.color,
+            settings: builderSettings,
+            getImpact: (opening) =>
+              branchStatsByKey[getOpponentPrepBranchKey(currentFen, opening.move)]
+                ?.preparedLineImpact ?? null,
+            getAfterScore: getPreparedLineImpactComparisonScore,
+          })
+        : new Map<string, PrepMoveStrength>(),
+    [
+      branchStatsByKey,
+      builderSettings,
+      currentFen,
+      opponentToMove,
+      prep.color,
+      prepMode,
+      strengthEngineMoves,
+      strengthOpenings,
+    ],
+  );
+  const candidateAfterPrepStrengthByMove = useMemo(
+    () =>
+      prepMode === "player" && !opponentToMove && candidateLineImpactByKey
+        ? getAfterPrepStrengthMap({
+            openings: strengthOpenings,
+            engineMoves: strengthEngineMoves ?? [],
+            side: userColor,
+            settings: builderSettings,
+            getImpact: (opening) =>
+              candidateLineImpactByKey[getOpponentPrepBranchKey(currentFen, opening.move)] ?? null,
+            getAfterScore: getCandidateLineImpactUserScore,
+          })
+        : new Map<string, PrepMoveStrength>(),
+    [
+      builderSettings,
+      candidateLineImpactByKey,
+      currentFen,
+      opponentToMove,
+      prepMode,
+      strengthEngineMoves,
+      strengthOpenings,
+      userColor,
+    ],
+  );
   const activeBranch = useMemo(
     () =>
       isInsidePrepTree ? findLastOpponentBranch(root, currentPath, prep.color, rootPath) : null,
@@ -3315,6 +3364,7 @@ function OpponentPrepPanel({
               branchStatsByKey={branchStatsByKey}
               branchStatsLoading={branchStatsLoading}
               strengthByMove={strengthByMove}
+              afterPrepStrengthByMove={branchAfterPrepStrengthByMove}
               strengthLoading={strengthLoading}
               sort={moveTableSort.opponent}
               onSort={setOpponentMoveSortColumn}
@@ -3330,6 +3380,7 @@ function OpponentPrepPanel({
               onPreview={previewMove}
               onClearPreview={clearMovePreview}
               strengthByMove={strengthByMove}
+              afterPrepStrengthByMove={candidateAfterPrepStrengthByMove}
               strengthLoading={strengthLoading}
               candidateLineImpactByKey={candidateLineImpactByKey}
               sort={moveTableSort.candidate}
@@ -3358,6 +3409,7 @@ function OpponentPrepMoveTable({
   branchStatsByKey,
   branchStatsLoading,
   strengthByMove,
+  afterPrepStrengthByMove,
   strengthLoading,
   sort,
   onSort,
@@ -3377,6 +3429,7 @@ function OpponentPrepMoveTable({
   branchStatsByKey?: Record<string, OpponentPrepBranchStats>;
   branchStatsLoading: boolean;
   strengthByMove: Map<string, PrepMoveStrength>;
+  afterPrepStrengthByMove: Map<string, PrepMoveStrength>;
   strengthLoading: boolean;
   sort: PrepSortState<OpponentPrepSortColumn>;
   onSort: (column: OpponentPrepSortColumn) => void;
@@ -3430,7 +3483,7 @@ function OpponentPrepMoveTable({
             column="strength"
             sort={sort}
             onSort={onSort}
-            style={{ width: dense ? 80 : 104 }}
+            style={{ width: dense ? 96 : 126 }}
           />
           <SortablePrepTh
             label="Games"
@@ -3458,105 +3511,112 @@ function OpponentPrepMoveTable({
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>
-        {sortedRows.map((row) => (
-          <Table.Tr
-            key={row.key}
-            style={{ cursor: "pointer" }}
-            onClick={() => onPlay(row.move)}
-            onMouseEnter={() => onPreview(row.move)}
-            onMouseLeave={onClearPreview}
-          >
-            <Table.Td>
-              <Text size={textSize} fw={700}>
-                {row.move}
-              </Text>
-              <PrepLastPlayedText value={row.lastPlayed} kind="played" />
-            </Table.Td>
-            <Table.Td>
-              <PrepStrengthCell
-                strength={strengthByMove.get(normalizePrepBuilderSan(row.move))}
-                loading={strengthLoading}
-              />
-            </Table.Td>
-            <Table.Td>
-              <Text size={textSize}>{formatNumber(row.total)}</Text>
-              <Text size="xs" c="dimmed">
-                {(row.share * 100).toFixed(0)}%
-              </Text>
-            </Table.Td>
-            <Table.Td>
-              <PrepResultBar row={row} />
-            </Table.Td>
-            <Table.Td>
-              <BranchStatsCell
-                stats={branchStatsByKey?.[row.key]}
-                loading={branchStatsLoading}
-                dense={dense}
-              />
-            </Table.Td>
-            <Table.Td>
-              <Badge color={statusColor(row.status)} variant="light" size="sm">
-                {statusLabel(row.status)}
-              </Badge>
-            </Table.Td>
-            <Table.Td>
-              <Group gap={2} wrap="nowrap" justify="flex-end">
-                {onOpenGame ? (
-                  <Tooltip label="Go to game">
+        {sortedRows.map((row) => {
+          const lineImpact = branchStatsByKey?.[row.key]?.preparedLineImpact ?? null;
+
+          return (
+            <Table.Tr
+              key={row.key}
+              style={{ cursor: "pointer" }}
+              onClick={() => onPlay(row.move)}
+              onMouseEnter={() => onPreview(row.move)}
+              onMouseLeave={onClearPreview}
+            >
+              <Table.Td>
+                <Text size={textSize} fw={700}>
+                  {row.move}
+                </Text>
+                <PrepLastPlayedText value={row.lastPlayed} kind="played" />
+              </Table.Td>
+              <Table.Td>
+                <PrepStrengthCell
+                  strength={strengthByMove.get(normalizePrepBuilderSan(row.move))}
+                  afterPrepStrength={afterPrepStrengthByMove.get(normalizePrepBuilderSan(row.move))}
+                  afterPrepLabel="After prep"
+                  afterPrepContext={lineImpact ? preparedLineImpactTooltipLines(lineImpact) : []}
+                  loading={strengthLoading}
+                />
+              </Table.Td>
+              <Table.Td>
+                <Text size={textSize}>{formatNumber(row.total)}</Text>
+                <Text size="xs" c="dimmed">
+                  {(row.share * 100).toFixed(0)}%
+                </Text>
+              </Table.Td>
+              <Table.Td>
+                <PrepResultBar row={row} />
+              </Table.Td>
+              <Table.Td>
+                <BranchStatsCell
+                  stats={branchStatsByKey?.[row.key]}
+                  loading={branchStatsLoading}
+                  dense={dense}
+                />
+              </Table.Td>
+              <Table.Td>
+                <Badge color={statusColor(row.status)} variant="light" size="sm">
+                  {statusLabel(row.status)}
+                </Badge>
+              </Table.Td>
+              <Table.Td>
+                <Group gap={2} wrap="nowrap" justify="flex-end">
+                  {onOpenGame ? (
+                    <Tooltip label="Go to game">
+                      <ActionIcon
+                        aria-label="Go to game"
+                        variant="subtle"
+                        size="sm"
+                        loading={openingGameKey === row.key}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onOpenGame(row);
+                        }}
+                      >
+                        <IconExternalLink size="0.95rem" />
+                      </ActionIcon>
+                    </Tooltip>
+                  ) : null}
+                  <Tooltip label="Play this move">
                     <ActionIcon
-                      aria-label="Go to game"
                       variant="subtle"
                       size="sm"
-                      loading={openingGameKey === row.key}
                       onClick={(event) => {
                         event.stopPropagation();
-                        onOpenGame(row);
+                        onPlay(row.move);
                       }}
                     >
-                      <IconExternalLink size="0.95rem" />
+                      <IconPlayerPlay size="0.95rem" />
                     </ActionIcon>
                   </Tooltip>
-                ) : null}
-                <Tooltip label="Play this move">
-                  <ActionIcon
-                    variant="subtle"
-                    size="sm"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onPlay(row.move);
-                    }}
-                  >
-                    <IconPlayerPlay size="0.95rem" />
-                  </ActionIcon>
-                </Tooltip>
-                <Tooltip label="Mark this branch done">
-                  <ActionIcon
-                    variant="subtle"
-                    size="sm"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onDone(row);
-                    }}
-                  >
-                    <IconCheck size="0.95rem" />
-                  </ActionIcon>
-                </Tooltip>
-                <Tooltip label="Skip this branch">
-                  <ActionIcon
-                    variant="subtle"
-                    size="sm"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onSkip(row);
-                    }}
-                  >
-                    <IconX size="0.95rem" />
-                  </ActionIcon>
-                </Tooltip>
-              </Group>
-            </Table.Td>
-          </Table.Tr>
-        ))}
+                  <Tooltip label="Mark this branch done">
+                    <ActionIcon
+                      variant="subtle"
+                      size="sm"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onDone(row);
+                      }}
+                    >
+                      <IconCheck size="0.95rem" />
+                    </ActionIcon>
+                  </Tooltip>
+                  <Tooltip label="Skip this branch">
+                    <ActionIcon
+                      variant="subtle"
+                      size="sm"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onSkip(row);
+                      }}
+                    >
+                      <IconX size="0.95rem" />
+                    </ActionIcon>
+                  </Tooltip>
+                </Group>
+              </Table.Td>
+            </Table.Tr>
+          );
+        })}
       </Table.Tbody>
     </Table>
   );
@@ -3572,6 +3632,7 @@ function PrepCandidateMoveTable({
   onPreview,
   onClearPreview,
   strengthByMove,
+  afterPrepStrengthByMove,
   strengthLoading,
   candidateLineImpactByKey,
   sort,
@@ -3586,6 +3647,7 @@ function PrepCandidateMoveTable({
   onPreview: (move: string) => void;
   onClearPreview: () => void;
   strengthByMove: Map<string, PrepMoveStrength>;
+  afterPrepStrengthByMove: Map<string, PrepMoveStrength>;
   strengthLoading: boolean;
   candidateLineImpactByKey?: Record<string, OpponentPrepLineImpact>;
   sort: PrepSortState<CandidatePrepSortColumn>;
@@ -3648,7 +3710,7 @@ function PrepCandidateMoveTable({
               column="strength"
               sort={sort}
               onSort={onSort}
-              style={{ width: dense ? 80 : 104 }}
+              style={{ width: dense ? 96 : 126 }}
             />
             <SortablePrepTh
               label="Games"
@@ -3682,6 +3744,13 @@ function PrepCandidateMoveTable({
                 <Table.Td>
                   <PrepStrengthCell
                     strength={strengthByMove.get(normalizePrepBuilderSan(row.move))}
+                    afterPrepStrength={afterPrepStrengthByMove.get(
+                      normalizePrepBuilderSan(row.move),
+                    )}
+                    afterPrepLabel={
+                      lineImpact?.opponentReplyMove ? `After ${lineImpact.opponentReplyMove}` : ""
+                    }
+                    afterPrepContext={lineImpact ? [candidateLineImpactTooltip(lineImpact)] : []}
                     loading={strengthLoading}
                   />
                 </Table.Td>
@@ -3693,7 +3762,6 @@ function PrepCandidateMoveTable({
                 </Table.Td>
                 <Table.Td>
                   <PrepResultBar row={row} />
-                  <CandidateLineImpactText impact={lineImpact} />
                 </Table.Td>
                 <Table.Td>
                   <Group gap={2} wrap="nowrap" justify="flex-end">
@@ -3988,6 +4056,102 @@ function getPrepStatusSortScore(status: OpponentPrepMoveRow["status"]) {
   return 1;
 }
 
+function getAfterPrepStrengthMap({
+  openings,
+  engineMoves,
+  side,
+  settings,
+  getImpact,
+  getAfterScore,
+}: {
+  openings: Opening[];
+  engineMoves: PrepBuilderEngineMove[];
+  side: PrepColor;
+  settings: PrepBuilderSettings;
+  getImpact: (opening: Opening) => OpponentPrepLineImpact | null;
+  getAfterScore: (impact: OpponentPrepLineImpact) => number;
+}) {
+  const impactedMoves = new Set<string>();
+  const afterPrepOpenings = openings.map((opening) => {
+    const impact = getImpact(opening);
+    if (!impact) return opening;
+
+    impactedMoves.add(normalizePrepBuilderSan(opening.move));
+    const score = clampPrepScore(getAfterScore(impact));
+    const total = getAfterPrepImpactGames(impact, score) ?? getOpeningTotal(opening);
+    return createOpeningFromSideScore({
+      move: opening.move,
+      side,
+      score,
+      total,
+      lastPlayed: opening.lastPlayed,
+    });
+  });
+
+  const fullMap = getPrepMoveStrengthMap({
+    openings: afterPrepOpenings,
+    engineMoves,
+    side,
+    settings,
+  });
+  return new Map([...fullMap].filter(([move]) => impactedMoves.has(move)));
+}
+
+function createOpeningFromSideScore({
+  move,
+  side,
+  score,
+  total,
+  lastPlayed,
+}: {
+  move: string;
+  side: PrepColor;
+  score: number;
+  total: number;
+  lastPlayed?: string | null;
+}): Opening {
+  const safeTotal = Math.max(1, Math.round(total));
+  const sideWins = Math.max(0, Math.min(safeTotal, Math.round(score * safeTotal)));
+  const sideLosses = safeTotal - sideWins;
+
+  return {
+    move,
+    white: side === "white" ? sideWins : sideLosses,
+    draw: 0,
+    black: side === "black" ? sideWins : sideLosses,
+    lastPlayed,
+  };
+}
+
+function getCandidateLineImpactUserScore(impact: OpponentPrepLineImpact) {
+  return 1 - (impact.opponentReplyScore ?? impact.userScore);
+}
+
+function getAfterPrepImpactGames(impact: OpponentPrepLineImpact, score: number) {
+  if (
+    impact.opponentReplyScore !== null &&
+    impact.opponentReplyGames !== null &&
+    Math.abs(score - impact.opponentReplyScore) < 0.001
+  ) {
+    return impact.opponentReplyGames;
+  }
+
+  const userScoreForOpponent = 1 - score;
+  if (
+    impact.opponentReplyScore !== null &&
+    impact.opponentReplyGames !== null &&
+    Math.abs(userScoreForOpponent - impact.opponentReplyScore) < 0.001
+  ) {
+    return impact.opponentReplyGames;
+  }
+
+  return impact.userGames;
+}
+
+function clampPrepScore(value: number) {
+  return Math.max(0, Math.min(1, value));
+}
+
 function getPrepResultScore(
   row: Pick<Opening, "white" | "draw" | "black">,
   side: "white" | "black",
@@ -4000,9 +4164,15 @@ function getPrepResultScore(
 
 function PrepStrengthCell({
   strength,
+  afterPrepStrength,
+  afterPrepLabel = "After prep",
+  afterPrepContext = [],
   loading,
 }: {
   strength?: PrepMoveStrength;
+  afterPrepStrength?: PrepMoveStrength;
+  afterPrepLabel?: string;
+  afterPrepContext?: string[];
   loading: boolean;
 }) {
   if (!strength) {
@@ -4013,8 +4183,22 @@ function PrepStrengthCell({
     );
   }
 
+  const afterPrepText = afterPrepStrength
+    ? `${afterPrepLabel || "After prep"} ${afterPrepStrength.score}`
+    : "";
+  const tooltip = afterPrepStrength
+    ? [
+        strength.detail,
+        `${afterPrepText}: recalculated with your conditional prep line.`,
+        ...afterPrepContext,
+        afterPrepStrength.detail,
+      ]
+        .filter(Boolean)
+        .join("\n\n")
+    : strength.detail;
+
   return (
-    <Tooltip label={strength.detail} multiline w={260}>
+    <Tooltip label={tooltip} multiline w={afterPrepStrength ? 320 : 260}>
       <Stack gap={2} style={{ minWidth: 0 }}>
         <Group gap={4} wrap="nowrap">
           <Badge color={strength.engineUnsafe ? "yellow" : "teal"} variant="light" size="sm">
@@ -4031,6 +4215,11 @@ function PrepStrengthCell({
           color={strength.engineUnsafe ? "yellow" : "teal"}
           size={3}
         />
+        {afterPrepStrength ? (
+          <Text size="xs" c="teal" fw={700} truncate>
+            {afterPrepText}
+          </Text>
+        ) : null}
       </Stack>
     </Tooltip>
   );
@@ -4467,27 +4656,6 @@ function PrepResultBar({ row }: { row: Pick<Opening, "white" | "draw" | "black">
   );
 }
 
-function CandidateLineImpactText({ impact }: { impact?: OpponentPrepLineImpact }) {
-  if (
-    !impact ||
-    !impact.opponentReplyMove ||
-    impact.opponentReplyScore === null ||
-    impact.opponentReplyGames === null ||
-    impact.opponentReplyShare === null
-  ) {
-    return null;
-  }
-
-  return (
-    <Tooltip label={candidateLineImpactTooltip(impact)} multiline w={310}>
-      <Text size="xs" c="teal" fw={700} truncate mt={3}>
-        Likely {impact.opponentReplyMove}: opp score {formatPrepScorePercent(impact.surfaceScore)}{" "}
-        {"->"} {formatPrepScorePercent(impact.opponentReplyScore)}
-      </Text>
-    </Tooltip>
-  );
-}
-
 async function fetchPrepOnlineRecentGames({
   source,
   username,
@@ -4801,12 +4969,16 @@ function candidateLineImpactTooltip(impact: OpponentPrepLineImpact) {
 }
 
 function getPreparedLineImpactComparisonScore(impact: OpponentPrepLineImpact) {
-  const usefulUsualReply =
+  if (
     impact.opponentReplyScore !== null &&
     impact.opponentReplyShare !== null &&
     impact.opponentReplyShare >= 0.4 &&
-    impact.surfaceScore - impact.opponentReplyScore >= 0.12;
-  return usefulUsualReply ? impact.opponentReplyScore : impact.userScore;
+    impact.surfaceScore - impact.opponentReplyScore >= 0.12
+  ) {
+    return impact.opponentReplyScore;
+  }
+
+  return impact.userScore;
 }
 
 function formatPrepScorePercent(value: number) {

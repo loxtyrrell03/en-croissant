@@ -277,12 +277,19 @@ default.
   does not become another broad lookahead table.
 - A follow-up the same day extended the signal to the candidate reply table,
   which is the `Move / Strength / Games / WDL` view shown when the user is
-  choosing their response to an opponent move. Candidate rows now show
-  `Likely <move>: opp score X% -> Y%` under the WDL bar when the opponent's
-  most common next reply is common enough and materially worse for them than
-  the surface result after the user's candidate move. This is deliberately
-  visible only for meaningful reversals, so ordinary rows stay as compact as
-  before.
+  choosing their response to an opponent move. Candidate rows now detect when
+  the opponent's most common next reply is common enough and materially worse
+  for them than the surface result after the user's candidate move. This is
+  deliberately visible only for meaningful reversals, so ordinary rows stay as
+  compact as before.
+- A subsequent pass moved the conditional value into the Strength column for
+  opponent-specific prep. The original strength badge remains the first value,
+  while rows with conditional evidence show a second compact line such as
+  `After Nf3 88` for candidate replies or `After prep 58` for saved opponent
+  branches. The second value is produced by the same strength scorer as the
+  surface badge, with the conditional continuation's WDL evidence substituted
+  for the row's surface WDL, so the two values stay comparable instead of being
+  separate raw result stats.
 
 ### Local Lichess Cloud Evals
 
