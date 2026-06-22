@@ -151,7 +151,6 @@ import { createTab, getTabWorkspaceKey, saveToFile } from "@/utils/tabs";
 import { parsePGN } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
 import { getTreeStructureHash, type TreeState } from "@/utils/treeReducer";
-import { queryChessDbMoves } from "@/utils/chessdb/api";
 import { queryLichessCloudMoves } from "@/utils/lichess/api";
 import { unwrap } from "@/utils/unwrap";
 import { BoundedMap } from "@/utils/boundedCache";
@@ -848,20 +847,7 @@ function OpponentPrepPanel({
         );
       }
 
-      const chessDbMoves = await queryChessDbMoves(fen).catch(() => null);
-      return mergePrepBuilderEngineMoves(
-        chessDbMoves?.map<PrepBuilderEngineMove>((move, index) => ({
-          san: move.san,
-          scoreCpForSide:
-            move.scoreCpForWhite === null
-              ? null
-              : userColor === "black"
-                ? -move.scoreCpForWhite
-                : move.scoreCpForWhite,
-          rank: move.rank && move.rank > 0 ? move.rank : index + 1,
-          source: "chessdb",
-        })) ?? [],
-      );
+      return [];
     },
     [],
   );

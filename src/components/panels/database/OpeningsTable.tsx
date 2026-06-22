@@ -12,7 +12,6 @@ import {
   moveStrengthSettingsAtom,
 } from "@/state/atoms";
 import { addPieceSymbol } from "@/utils/annotation";
-import { queryChessDbMoves } from "@/utils/chessdb/api";
 import { positionFromFen } from "@/utils/chessops";
 import type { DatabaseResultPerspective, Opening } from "@/utils/db";
 import { formatNumber } from "@/utils/format";
@@ -485,7 +484,7 @@ function OpeningsTable({
                       </Text>
                     ) : null}
                     {health.source === "chessdb" && health.engineWinrate !== null ? (
-                      <Text size="xs">ChessDB win rate {formatPercent(health.engineWinrate)}</Text>
+                      <Text size="xs">External win rate {formatPercent(health.engineWinrate)}</Text>
                     ) : null}
                     {health.source === "local" && health.referenceRank ? (
                       <Text size="xs">
@@ -812,20 +811,7 @@ async function queryOpeningCloudData(
     return { source: "lichess", moves: lichessCloudMoves };
   }
 
-  const chessDbMoves = await queryChessDbMoves(fen).catch(() => null);
-  if (!chessDbMoves?.length) {
-    return lichessCloudMoves.length ? { source: "lichess", moves: lichessCloudMoves } : null;
-  }
-
-  return {
-    source: "chessdb",
-    moves: chessDbMoves.map((move) => ({
-      san: move.san,
-      scoreCpForWhite: move.scoreCpForWhite,
-      rank: move.rank,
-      winrate: move.winrate,
-    })),
-  };
+  return lichessCloudMoves.length ? { source: "lichess", moves: lichessCloudMoves } : null;
 }
 
 function hasOpeningCloudCoverage(
@@ -913,5 +899,5 @@ function formatMoveStrengthMode(mode: "smart" | "engine" | "practical") {
 }
 
 function cloudSourceLabel(source: OpeningMoveCloudSource) {
-  return source === "lichess" ? "Lichess Cloud" : "ChessDB";
+  return source === "lichess" ? "Local eval" : "External eval";
 }

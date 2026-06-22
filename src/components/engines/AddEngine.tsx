@@ -114,17 +114,9 @@ function AddEngine({
             <CloudCard
               engine={{
                 id: crypto.randomUUID(),
-                name: "ChessDB",
-                type: "chessdb",
-                url: "https://chessdb.cn",
-              }}
-            />
-            <CloudCard
-              engine={{
-                id: crypto.randomUUID(),
-                name: "Lichess Cloud",
+                name: "Local Lichess evals",
                 type: "lichess",
-                url: "https://lichess.org",
+                url: "local://lichess-evals",
               }}
             />
           </SimpleGrid>

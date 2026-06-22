@@ -673,7 +673,7 @@ function cloudStrengthReasons(
             : `${Math.round(cpLoss)} cp behind the best ${sourceLabel} score.`,
     ];
     if (source === "chessdb" && move.winrate !== null) {
-        reasons.push(`ChessDB win rate ${Math.round(move.winrate * 100)}%.`);
+        reasons.push(`External win rate ${Math.round(move.winrate * 100)}%.`);
     }
     if (status === "strong") {
         reasons.push(`Within ${STRONG_CP_LOSS} cp of the best move.`);
@@ -686,7 +686,7 @@ function cloudStrengthReasons(
 }
 
 function cloudSourceLabel(source: OpeningMoveCloudSource) {
-    return source === "lichess" ? "Lichess Cloud" : "ChessDB";
+    return source === "lichess" ? "Local eval" : "External eval";
 }
 
 function isPlayableOpening(opening: OpeningMoveHealthInput) {

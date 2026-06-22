@@ -473,12 +473,12 @@ async function getLocalBestMovesWithLichessCloud(
   let stopLocalSearchAfterCloud = false;
   updateCloudStatus({
     phase: "checking",
-    message: "Checking Lichess Cloud...",
+    message: "Checking local Lichess evals...",
     updatedAt: Date.now(),
   });
 
   try {
-    const cloudMoves = await lichessGetBestMoves(tab, goMode, options, { remoteFallback: false });
+    const cloudMoves = await lichessGetBestMoves(tab, goMode, options);
     if (cloudMoves?.[1]?.length) {
       stopLocalSearchAfterCloud = true;
       let bestMoves = cloudMoves[1];
@@ -486,11 +486,11 @@ async function getLocalBestMovesWithLichessCloud(
       if (hasPartialCloudLines(bestMoves)) {
         updateCloudStatus({
           phase: "checking",
-          message: "Extending Lichess Cloud lines with local Stockfish...",
+          message: "Extending local eval lines with Stockfish...",
           updatedAt: Date.now(),
         });
         const localMoves = await localStart.promise.catch((error) => {
-          console.warn("Failed to extend Lichess Cloud lines with local Stockfish.", error);
+          console.warn("Failed to extend local eval lines with Stockfish.", error);
           return null;
         });
         bestMoves = mergeCloudLinesWithLocalMultiPv(bestMoves, localMoves?.[1]);
@@ -506,7 +506,7 @@ async function getLocalBestMovesWithLichessCloud(
 
     updateCloudStatus({
       phase: "missing",
-      message: "Lichess Cloud returned no analysis lines for this position.",
+      message: "No local Lichess eval was found for this position.",
       updatedAt: Date.now(),
     });
     return await localStart.promise;
@@ -526,7 +526,7 @@ async function getLichessBestMovesWithStatus(
 ) {
   updateCloudStatus({
     phase: "checking",
-    message: "Checking Lichess Cloud...",
+    message: "Checking local Lichess evals...",
     updatedAt: Date.now(),
   });
   try {
@@ -540,7 +540,7 @@ async function getLichessBestMovesWithStatus(
     } else {
       updateCloudStatus({
         phase: "missing",
-        message: "Lichess Cloud returned no analysis lines for this position.",
+        message: "No local Lichess eval was found for this position.",
         updatedAt: Date.now(),
       });
     }
@@ -569,8 +569,8 @@ function formatCloudAvailableMessage(bestMoves: BestMoves[]) {
     Boolean((move as CloudBackedBestMove).cloudLineExtendedWithLocal),
   );
   return hasExtendedLines
-    ? `Using Lichess Cloud ${depth}, ${lines}; local Stockfish continuations.`
-    : `Using Lichess Cloud ${depth}, ${lines}.`;
+    ? `Using local Lichess evals ${depth}, ${lines}; Stockfish continuations.`
+    : `Using local Lichess evals ${depth}, ${lines}.`;
 }
 
 type CloudBackedBestMove = BestMoves & {

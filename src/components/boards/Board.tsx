@@ -106,7 +106,6 @@ import classes from "@/styles/Chessboard.module.css";
 import { ANNOTATION_INFO, isBasicAnnotation } from "@/utils/annotation";
 import { getVariationLine } from "@/utils/chess";
 import { chessopsError, forceEnPassant, positionFromFen } from "@/utils/chessops";
-import { queryChessDbMoves } from "@/utils/chessdb/api";
 import { queryLichessCloudMoves } from "@/utils/lichess/api";
 import {
   formatMistakeReviewLastSeen,
@@ -426,10 +425,7 @@ async function assessOpeningPracticeMoveWithCloud(
     position.fen,
     OPENING_REVIEW_CLOUD_MULTIPV,
   ).catch(() => null);
-  const chessDbMoves = lichessMoves?.length
-    ? null
-    : await queryChessDbMoves(position.fen).catch(() => null);
-  return assessOpeningReviewMove(position, playedMove, chessDbMoves, lichessMoves);
+  return assessOpeningReviewMove(position, playedMove, null, lichessMoves);
 }
 
 function buildMistakeReviewLine(firstMove: string | undefined, pv?: string[]) {

@@ -364,11 +364,16 @@ default.
   store is queryable.
 - A follow-up on 2026-06-22 threaded the local cloud-eval source through
   desktop opponent-prep strength scoring. `queryLichessCloudMoves` now labels
-  whether SAN engine moves came from the local Lichess dump or the remote
-  Lichess API, and opponent prep preserves that label in both normal
-  `Strength` and future-position `After prep` calculations. Keep local cloud
-  ahead of remote Lichess and ChessDB when engine candidates are merged, while
-  retaining the remote/API fallback behavior when the local store has no row.
+  SAN engine moves from the local Lichess dump, and opponent prep preserves
+  that label in both normal `Strength` and future-position `After prep`
+  calculations.
+- A correction immediately after made desktop eval/scoring local-only. The
+  shared `queryLichessCloudMoves` / `getBestMoves` path must use the local
+  Lichess eval store only; it must not fall through to the remote Lichess
+  cloud-eval API, and opponent prep/database/opening-health scoring must not
+  use ChessDB as an engine fallback. If the local store lacks an exact
+  position, leave the engine evidence absent, or use local Stockfish only in
+  features that explicitly expose a local-engine fallback.
 - Another 2026-06-22 follow-up made desktop board cloud analysis extend compact
   local cloud rows with local Stockfish root MultiPV tails. The compact store
   still preserves only cloud evals plus first moves on disk; at runtime, rows

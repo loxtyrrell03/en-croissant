@@ -2529,9 +2529,9 @@ function formatPrepStrengthDetail({
 }
 
 function getPrepEngineSourceLabel(source: PrepBuilderEngineMove["source"] | null) {
-    if (source === "local-lichess") return "Local cloud";
-    if (source === "lichess") return "Lichess cloud";
-    if (source === "chessdb") return "ChessDB";
+    if (source === "local-lichess") return "Local eval";
+    if (source === "lichess") return "Local eval";
+    if (source === "chessdb") return "External eval";
     return "Engine";
 }
 

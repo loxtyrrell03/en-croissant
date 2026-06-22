@@ -83,7 +83,6 @@ import {
   setDatabaseSearchPaused,
   type SuccessDatabaseInfo,
 } from "@/utils/db";
-import { queryChessDbMoves, type ChessDbCloudMove } from "@/utils/chessdb/api";
 import { formatNumber } from "@/utils/format";
 import {
   getLichessGames,
@@ -154,10 +153,8 @@ const ONLINE_REFERENCE_POSITION_LIMIT = 300;
 const OPENING_HEALTH_MAX_REPORT_ROWS = 600;
 const OPENING_HEALTH_SCORE_GAP = 0.15;
 const OPENING_HEALTH_POOR_SCORE = 0.45;
-const LICHESS_DEEP_VERIFY_LIMIT = 20;
 const LICHESS_CLOUD_VERIFY_CONCURRENCY = 1;
-const CHESSDB_VERIFY_CONCURRENCY = 16;
-const CHESSDB_UNSCORED_MOVE_LOSS_CP = 280;
+const LOCAL_EVAL_UNSCORED_MOVE_LOSS_CP = 280;
 const ENGINE_SIGNIFICANT_DROP_CP = 50;
 const ENGINE_VERIFY_MULTIPV = 5;
 const ENGINE_VERIFY_TIMEOUT_MS = 45_000;
@@ -683,14 +680,11 @@ function RepertoireGapsPanel() {
         );
         const engineMessage =
           engineChecks && engineChecks.total > 0
-            ? ` ${engineChecks.completed} checked with ChessDB; Lichess Cloud deep-checks only the top ${Math.min(
-                LICHESS_DEEP_VERIFY_LIMIT,
-                engineChecks.completed,
-              )} priority rows${
+            ? ` ${engineChecks.completed} checked with local Lichess evals${
                 localFallback && stockfishEngine ? ` + ${stockfishEngine.name}` : ""
               }.${
                 localFallback && !stockfishEngine
-                  ? " Cloud misses were left for later because no local engine is loaded."
+                  ? " Local eval misses were left for later because no local engine is loaded."
                   : ""
               }`
             : "";
@@ -1198,29 +1192,29 @@ function RepertoireGapsPanel() {
     };
 
     try {
-      let chessDbGroupCursor = 0;
-      async function checkChessDbGroups() {
-        while (chessDbGroupCursor < fenGroups.length) {
+      let localEvalGroupCursor = 0;
+      async function checkLocalEvalGroups() {
+        while (localEvalGroupCursor < fenGroups.length) {
           if (await waitIfNeeded()) return;
 
-          const group = fenGroups[chessDbGroupCursor];
-          chessDbGroupCursor += 1;
+          const group = fenGroups[localEvalGroupCursor];
+          localEvalGroupCursor += 1;
           if (!group) continue;
 
           const [fen, gapsForFen] = group;
-          let cloudMoves: ChessDbCloudMove[] | null = null;
+          let localEvalMoves: LichessCloudMove[] | null = null;
           try {
-            cloudMoves = await queryChessDbMoves(fen);
+            localEvalMoves = await queryLichessCloudMoves(fen, ENGINE_VERIFY_MULTIPV);
           } catch {
-            cloudMoves = null;
+            localEvalMoves = null;
           }
 
           for (const gap of gapsForFen) {
-            const chessDbVerification = cloudMoves
-              ? buildChessDbCloudVerification(gap, cloudMoves)
+            const localEvalVerification = localEvalMoves
+              ? buildLichessCloudVerification(gap, localEvalMoves)
               : null;
-            if (chessDbVerification) {
-              markVerification(gap, chessDbVerification);
+            if (localEvalVerification) {
+              markVerification(gap, localEvalVerification);
             } else {
               markVerification(gap, buildMissingCloudVerification());
               if (fallbackToLocalEngine && engine) {
@@ -1232,68 +1226,13 @@ function RepertoireGapsPanel() {
       }
 
       await Promise.all(
-        Array.from({ length: Math.min(CHESSDB_VERIFY_CONCURRENCY, fenGroups.length) }, () =>
-          checkChessDbGroups(),
+        Array.from({ length: Math.min(LICHESS_CLOUD_VERIFY_CONCURRENCY, fenGroups.length) }, () =>
+          checkLocalEvalGroups(),
         ),
       );
       flushVerificationUpdates(true);
       updateVerificationRun(true);
       finishPrimaryScanAfterBulkValidation();
-
-      if (scanControlRef.current.stopRequested) {
-        return { completed: stats.completed, total: stats.total, stopped: true };
-      }
-
-      stats.phase = "deep";
-      updateVerificationRun(true);
-      const lichessRows = selectRowsForLichessDeepVerification(rowsToVerify, verificationByKey);
-      const lichessRowsByFen = new Map<string, RepertoireGap[]>();
-      for (const gap of lichessRows) {
-        lichessRowsByFen.set(gap.fen, [...(lichessRowsByFen.get(gap.fen) ?? []), gap]);
-      }
-      const lichessFenGroups = Array.from(lichessRowsByFen.entries());
-
-      let lichessGroupCursor = 0;
-      async function checkLichessGroups() {
-        while (lichessGroupCursor < lichessFenGroups.length) {
-          if (await waitIfNeeded()) return;
-
-          const group = lichessFenGroups[lichessGroupCursor];
-          lichessGroupCursor += 1;
-          if (!group) continue;
-
-          const [fen, gapsForFen] = group;
-          let lichessMoves: LichessCloudMove[] | null = null;
-          try {
-            lichessMoves = await queryLichessCloudMoves(fen, ENGINE_VERIFY_MULTIPV);
-          } catch {
-            lichessMoves = null;
-          }
-
-          if (!lichessMoves) continue;
-
-          for (const gap of gapsForFen) {
-            const lichessVerification = buildLichessCloudVerification(gap, lichessMoves);
-            if (!lichessVerification) continue;
-
-            const key = gapKey(gap);
-            markVerification(gap, lichessVerification, !verificationByKey.has(key));
-            const localIndex = localFallbackRows.findIndex((row) => gapKey(row) === key);
-            if (localIndex >= 0) {
-              localFallbackRows.splice(localIndex, 1);
-            }
-          }
-        }
-      }
-
-      await Promise.all(
-        Array.from(
-          { length: Math.min(LICHESS_CLOUD_VERIFY_CONCURRENCY, lichessFenGroups.length) },
-          () => checkLichessGroups(),
-        ),
-      );
-      flushVerificationUpdates(true);
-      updateVerificationRun(true);
 
       if (scanControlRef.current.stopRequested) {
         return { completed: stats.completed, total: stats.total, stopped: true };
@@ -1405,10 +1344,7 @@ function RepertoireGapsPanel() {
         title: "Validation complete",
         message: `${result.completed} position${
           result.completed === 1 ? "" : "s"
-        } checked with ChessDB; Lichess Cloud deep-checks only the top ${Math.min(
-          LICHESS_DEEP_VERIFY_LIMIT,
-          result.completed,
-        )} priority row${Math.min(LICHESS_DEEP_VERIFY_LIMIT, result.completed) === 1 ? "" : "s"}${
+        } checked with local Lichess evals${
           result.total > result.completed ? ` (${result.total - result.completed} left)` : ""
         }.${fallbackMessage}`,
         color: "blue",
@@ -1441,15 +1377,15 @@ function RepertoireGapsPanel() {
       : null;
   const verificationRunText = engineVerificationRun
     ? engineVerificationRun.phase === "deep"
-      ? `Deep-checking top rows, ${engineVerificationRun.chessdb} ChessDB${
-          engineVerificationRun.lichess > 0 ? `, ${engineVerificationRun.lichess} Lichess` : ""
+      ? `Checking local evals, ${engineVerificationRun.lichess} local eval${
+          engineVerificationRun.lichess === 1 ? "" : "s"
         }${engineVerificationRun.missing > 0 ? `, ${engineVerificationRun.missing} missing` : ""}`
       : engineVerificationRun.phase === "engine"
         ? `Engine fallback, ${engineVerificationRun.completed}/${engineVerificationRun.total}${
             engineVerificationRun.local > 0 ? `, ${engineVerificationRun.local} engine` : ""
           }`
         : `Validating ${engineVerificationRun.completed}/${engineVerificationRun.total}${
-            engineVerificationRun.chessdb > 0 ? `, ${engineVerificationRun.chessdb} ChessDB` : ""
+            engineVerificationRun.lichess > 0 ? `, ${engineVerificationRun.lichess} local eval` : ""
           }${engineVerificationRun.missing > 0 ? `, ${engineVerificationRun.missing} missing` : ""}`
     : null;
 
@@ -1565,16 +1501,16 @@ function RepertoireGapsPanel() {
               <Stack gap={4} miw={180}>
                 <Group gap={4}>
                   <Text size="sm" fw={500}>
-                    Cloud validation
+                    Local eval validation
                   </Text>
                   <Tooltip
-                    label={`During the scan, ChessDB validates the bulk list first. Lichess Cloud is used as a deeper upgrade for the top ${LICHESS_DEEP_VERIFY_LIMIT} priority rows only. If neither has usable coverage, the local engine fallback can analyze that position.`}
+                    label="During the scan, local Lichess evals validate the flagged positions. If the local dump has no usable coverage, the local engine fallback can analyze that position."
                     multiline
                     maw={280}
                     withArrow
                   >
                     <ActionIcon
-                      aria-label="Cloud validation help"
+                      aria-label="Local eval validation help"
                       size="xs"
                       variant="subtle"
                       color="gray"
@@ -1715,7 +1651,7 @@ function RepertoireGapsPanel() {
                 </Badge>
               )}
               <Tooltip
-                label={`Checks every visible flagged row with ChessDB first, then uses Lichess Cloud as a deeper upgrade for the top ${LICHESS_DEEP_VERIFY_LIMIT} priority rows. If enabled, misses fall back to ${stockfishEngine?.name ?? "a loaded local engine"} at depth ${boundedEngineVerifyDepth}. Small engine nudges are light; drops over half a pawn push rows up sharply.`}
+                label={`Checks every visible flagged row with local Lichess evals. If enabled, misses fall back to ${stockfishEngine?.name ?? "a loaded local engine"} at depth ${boundedEngineVerifyDepth}. Small engine nudges are light; drops over half a pawn push rows up sharply.`}
                 multiline
                 maw={280}
                 withArrow
@@ -3256,10 +3192,10 @@ function openingHealthPriority(
   const effectiveVerification = effectiveOpeningHealthVerification(gap, verification);
   if (effectiveVerification?.status === "missing") {
     return {
-      label: "Cloud missing",
+      label: "Local eval missing",
       color: "gray",
       description:
-        "No usable Lichess Cloud or ChessDB score was found; priority comes from results and frequency.",
+        "No usable local eval score was found; priority comes from results and frequency.",
     };
   }
   if (effectiveVerification?.status === "bad") {
@@ -3385,9 +3321,9 @@ function openingHealthNextStep(
 function verificationSourceLabel(verification: EngineVerification) {
   switch (verification.source) {
     case "lichess":
-      return "Lichess Cloud";
+      return "Local eval";
     case "chessdb":
-      return "ChessDB";
+      return "External eval";
     case "local":
       return "Stockfish";
   }
@@ -3492,22 +3428,6 @@ function selectRowsForEngineVerification(
     );
 }
 
-function selectRowsForLichessDeepVerification(
-  rows: RepertoireGap[],
-  verifications: Map<string, EngineVerification>,
-) {
-  return [...rows]
-    .sort(
-      (a, b) =>
-        openingHealthUrgency(b, verifications.get(gapKey(b))) -
-          openingHealthUrgency(a, verifications.get(gapKey(a))) ||
-        b.playerPositionGames - a.playerPositionGames ||
-        openingHealthRecencyScore(b.lastPlayed) - openingHealthRecencyScore(a.lastPlayed) ||
-        a.ply - b.ply,
-    )
-    .slice(0, LICHESS_DEEP_VERIFY_LIMIT);
-}
-
 function selectOpeningHealthEngine(engines: Engine[]): LocalEngine | null {
   const localEngines = engines.filter(
     (engine): engine is LocalEngine => engine.type === "local" && Boolean(engine.loaded),
@@ -3600,7 +3520,7 @@ function buildLichessCloudVerification(
     return {
       status: "bad",
       source: "lichess",
-      lossCp: CHESSDB_UNSCORED_MOVE_LOSS_CP,
+      lossCp: LOCAL_EVAL_UNSCORED_MOVE_LOSS_CP,
       depth: bestMove.move.depth,
       bestMoveSan: bestMove.move.san,
       bestMoveUci: bestMove.move.uci,
@@ -3625,66 +3545,10 @@ function buildLichessCloudVerification(
   };
 }
 
-function buildChessDbCloudVerification(
-  gap: RepertoireGap,
-  moves: ChessDbCloudMove[],
-): EngineVerification | null {
-  const scoredMoves = moves
-    .filter((move) => move.scoreCpForWhite !== null)
-    .map((move) => ({
-      move,
-      scoreForSide: scoreForGapSide(move.scoreCpForWhite!, gap.sideToMove),
-    }))
-    .sort(
-      (a, b) =>
-        b.scoreForSide - a.scoreForSide ||
-        (b.move.rank ?? -1) - (a.move.rank ?? -1) ||
-        a.move.san.localeCompare(b.move.san),
-    );
-  const bestMove = scoredMoves[0];
-  const playedMoveIndex = scoredMoves.findIndex((entry) =>
-    openingHealthMovesMatch(entry.move.uci, entry.move.san, gap.playerMoveUci, gap.playerMoveSan),
-  );
-  const playedMove = playedMoveIndex >= 0 ? scoredMoves[playedMoveIndex] : null;
-  const rawPlayedMove = moves.find((move) =>
-    openingHealthMovesMatch(move.uci, move.san, gap.playerMoveUci, gap.playerMoveSan),
-  );
-
-  if (!bestMove) return null;
-
-  if (!playedMove) {
-    return {
-      status: "bad",
-      source: "chessdb",
-      lossCp: CHESSDB_UNSCORED_MOVE_LOSS_CP,
-      depth: null,
-      bestMoveSan: bestMove.move.san,
-      bestMoveUci: bestMove.move.uci,
-      playedRank: rawPlayedMove?.rank ?? null,
-      checkedAt: Date.now(),
-    };
-  }
-
-  const lossCp = Math.max(0, bestMove.scoreForSide - playedMove.scoreForSide);
-  const status: EngineVerificationStatus =
-    lossCp >= 120 ? "bad" : lossCp >= 60 ? "questionable" : "ok";
-
-  return {
-    status,
-    source: "chessdb",
-    lossCp,
-    depth: null,
-    bestMoveSan: bestMove.move.san,
-    bestMoveUci: bestMove.move.uci,
-    playedRank: playedMoveIndex + 1,
-    checkedAt: Date.now(),
-  };
-}
-
 function buildMissingCloudVerification(): EngineVerification {
   return {
     status: "missing",
-    source: "chessdb",
+    source: "lichess",
     lossCp: 0,
     depth: null,
     bestMoveSan: null,
