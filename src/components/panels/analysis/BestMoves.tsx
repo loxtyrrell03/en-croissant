@@ -385,7 +385,7 @@ function BestMovesComponent({
                     engine={engine.name}
                     moves={engineVariation.sanMoves}
                     score={engineVariation.score}
-                    source={engineVariation.source}
+                    source={engineVariation.source ?? undefined}
                     halfMoves={halfMoves}
                     threat={threat}
                     fen={threat ? swapMove(finalFen) : finalFen}
@@ -424,7 +424,7 @@ function EngineTop({
   const isComputed = engineVariations && engineVariations.length > 0;
   const depth = isComputed ? engineVariations[0].depth : 0;
   const nps = isComputed ? formatNodes(engineVariations[0].nps) : 0;
-  const source = isComputed ? engineVariations[0].source : undefined;
+  const source = isComputed ? (engineVariations[0].source ?? undefined) : undefined;
 
   return (
     <Group justify="space-between" gap={compact ? 6 : "md"} wrap="nowrap">

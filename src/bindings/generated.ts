@@ -21,6 +21,30 @@ async getBestMoves(id: string, engine: string, tab: string, goMode: GoMode, opti
     else return { status: "error", error: e  as any };
 }
 },
+async lookupLocalLichessCloudEval(fen: string, multipv: number | null) : Promise<Result<LocalLichessCloudEval | null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("lookup_local_lichess_cloud_eval", { fen, multipv }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async getLocalLichessEvalDbStatus() : Promise<Result<LocalEvalDbStatus, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_local_lichess_eval_db_status") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async buildLocalLichessEvalDb(request: LocalEvalBuildRequest) : Promise<Result<LocalEvalBuildReport, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("build_local_lichess_eval_db", { request }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async analyzeGame(id: string, engine: string, goMode: GoMode, options: AnalysisOptions, uciOptions: EngineOption[]) : Promise<Result<MoveAnalysis[], string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("analyze_game", { id, engine, goMode, options, uciOptions }) };
@@ -717,6 +741,7 @@ clockUpdateEvent: ClockUpdateEvent,
 databaseProgress: DatabaseProgress,
 gameMoveEvent: GameMoveEvent,
 gameOverEvent: GameOverEvent,
+localEvalBuildProgress: LocalEvalBuildProgress,
 mistakeReviewScanProgress: MistakeReviewScanProgress,
 progressEvent: ProgressEvent
 }>({
@@ -725,6 +750,7 @@ clockUpdateEvent: "clock-update-event",
 databaseProgress: "database-progress",
 gameMoveEvent: "game-move-event",
 gameOverEvent: "game-over-event",
+localEvalBuildProgress: "local-eval-build-progress",
 mistakeReviewScanProgress: "mistake-review-scan-progress",
 progressEvent: "progress-event"
 })
@@ -739,7 +765,8 @@ export type AiCoachRequest = { requestId?: string; fen: string; sideToMove: stri
 export type AiCoachResponse = { answer: string; model: string; usedExistingAnalysis: boolean; stockfishLines: CoachEngineLine[]; targetedResults: CoachTargetedResult[] }
 export type AiCoachSettings = { enabled: boolean; geminiCommand: string; geminiModel: string; plannerModel?: string; multipv: number; timeoutSecs: number }
 export type AnalysisOptions = { fen: string; moves: string[]; annotateNovelties: boolean; referenceDb: string | null; reversed: boolean }
-export type BestMoves = { nodes: number; depth: number; score: Score; uciMoves: string[]; sanMoves: string[]; multipv: number; nps: number }
+export type BestMoveSource = "lichess" | "chessdb"
+export type BestMoves = { nodes: number; depth: number; score: Score; source?: BestMoveSource | null; uciMoves: string[]; sanMoves: string[]; multipv: number; nps: number }
 export type BestMovesPayload = { bestLines: BestMoves[]; engine: string; tab: string; fen: string; moves: string[]; progress: number }
 export type ClockUpdateEvent = { gameId: string; whiteTime: bigint | null; blackTime: bigint | null }
 export type CoachChatMessage = { role: string; content: string }
@@ -773,6 +800,12 @@ export type GameSort = "id" | "date" | "whiteElo" | "blackElo" | "ply_count"
 export type GameState = { gameId: string; status: GameStatus; initialFen: string; moves: GameMove[]; currentFen: string; ply: number; turn: string; whiteTime: bigint | null; blackTime: bigint | null; whitePlayer: string; blackPlayer: string }
 export type GameStatus = "playing" | { finished: { result: GameResult } }
 export type GoMode = { t: "PlayersTime"; c: PlayersTime } | { t: "Depth"; c: number } | { t: "Time"; c: number } | { t: "Nodes"; c: number } | { t: "Infinite" }
+export type LocalEvalBuildProgress = { id: string; phase: string; progress: number; positions: number; skipped: number; compressedBytesRead: number; compressedBytesTotal?: number | null; finished: boolean }
+export type LocalEvalBuildReport = { outputDir: string; source: string; positions: number; skipped: number; shardCount: number; maxPvs: number; storageBytes: number; builtAt: number }
+export type LocalEvalBuildRequest = { id?: string | null; source?: string | null; sourceUrl?: string | null; outputDir?: string | null; maxPvs?: number | null; shardCount?: number | null }
+export type LocalEvalDbStatus = { available: boolean; path: string; positions: number; shardCount: number; maxPvs: number; storageBytes: number; builtAt?: number | null; source?: string | null; error?: string | null }
+export type LocalLichessCloudEval = { fen: string; knodes: number; depth: number; pvs: LocalLichessCloudPv[] }
+export type LocalLichessCloudPv = { moves: string; cp?: number | null; mate?: number | null }
 export type MistakeReviewAnalysisMode = "single" | "layered"
 export type MistakeReviewAttemptLabel = "best" | "good" | "okay" | "inaccuracy" | "mistake" | "blunder"
 export type MistakeReviewClockTiming = { reviewKey: string; gameId: number; ply: number; moveSequence: string; moveTimeSeconds: number | null; clockBeforeSeconds: number | null; clockAfterSeconds: number | null; date: string | null; time: string | null; timeControl: string | null }

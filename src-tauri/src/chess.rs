@@ -183,6 +183,9 @@ pub struct BestMoves {
     nodes: u32,
     depth: u32,
     score: Score,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[specta(optional)]
+    source: Option<BestMoveSource>,
     #[serde(rename = "uciMoves")]
     uci_moves: Vec<String>,
     #[serde(rename = "sanMoves")]
@@ -190,6 +193,14 @@ pub struct BestMoves {
     #[derivative(Default(value = "1"))]
     multipv: u16,
     nps: u32,
+}
+
+#[derive(Clone, Serialize, Debug, Type)]
+#[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
+pub enum BestMoveSource {
+    Lichess,
+    Chessdb,
 }
 
 #[derive(Serialize, Debug, Clone, Type, Event)]

@@ -79,6 +79,10 @@ use crate::{
         get_opening_from_fen, get_opening_from_fens, get_opening_from_name, search_opening_name,
     },
 };
+use en_croissant_fork::local_eval::{
+    self, LocalEvalBuildProgress, LocalEvalBuildReport, LocalEvalBuildRequest, LocalEvalDbStatus,
+    LocalLichessCloudEval,
+};
 use std::sync::atomic::AtomicBool;
 use tokio::sync::Semaphore;
 
@@ -146,6 +150,9 @@ fn main() {
         .commands(tauri_specta::collect_commands!(
             close_splashscreen,
             get_best_moves,
+            lookup_local_lichess_cloud_eval,
+            get_local_lichess_eval_db_status,
+            build_local_lichess_eval_db,
             analyze_game,
             scan_mistake_review,
             get_mistake_review_game_metadata,
@@ -242,6 +249,7 @@ fn main() {
             DatabaseProgress,
             MistakeReviewScanProgress,
             ProgressEvent,
+            LocalEvalBuildProgress,
             GameMoveEvent,
             ClockUpdateEvent,
             GameOverEvent
@@ -341,4 +349,29 @@ fn is_bmi2_compatible() -> bool {
 fn memory_size() -> u32 {
     let total_bytes = sysinfo::System::new_all().total_memory();
     (total_bytes / 1024 / 1024) as u32
+}
+
+#[tauri::command]
+#[specta::specta]
+fn lookup_local_lichess_cloud_eval(
+    fen: String,
+    multipv: Option<u8>,
+    app: tauri::AppHandle,
+) -> Result<Option<LocalLichessCloudEval>, String> {
+    local_eval::lookup_local_lichess_cloud_eval(fen, multipv, app)
+}
+
+#[tauri::command]
+#[specta::specta]
+fn get_local_lichess_eval_db_status(app: tauri::AppHandle) -> Result<LocalEvalDbStatus, String> {
+    local_eval::get_local_lichess_eval_db_status(app)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn build_local_lichess_eval_db(
+    request: LocalEvalBuildRequest,
+    app: tauri::AppHandle,
+) -> Result<LocalEvalBuildReport, String> {
+    local_eval::build_local_lichess_eval_db(request, app).await
 }

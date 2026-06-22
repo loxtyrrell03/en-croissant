@@ -264,6 +264,21 @@ default.
 
 ## Product Map
 
+### Local Lichess Cloud Evals
+
+- On 2026-06-22, the desktop fork gained a local compact Lichess cloud-eval
+  store path. The design intentionally stores all positions from the official
+  `lichess_db_eval.jsonl.zst` dump as sorted compressed binary shards under
+  app data, with only a 128-bit stable FEN hash, depth, knodes, and the top
+  1-5 root moves/evals per position. Full PV tails are deliberately omitted to
+  keep the laptop copy compact; future prep features should reconstruct longer
+  lines by chaining local position lookups and should use local Stockfish only
+  for final verification or missing positions. Desktop cloud analysis now asks
+  the local store first and falls back to the Lichess API when the store is not
+  built or a position is absent. Build the store with `npm run
+  lichess-evals:build`; the CLI streams the official `.zst` source directly
+  and avoids writing a huge decompressed JSONL temporary file.
+
 ### Web Companion
 
 - On 2026-06-03, a first browser/PWA MVP was added for phone access without

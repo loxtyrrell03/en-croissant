@@ -469,6 +469,14 @@ async function getCloudEvaluation(fen: string, multipv: number): Promise<Lichess
   if (cache.has(cacheKey)) {
     return cache.get(cacheKey)!;
   }
+
+  const localData = await getLocalCloudEvaluation(fen, safeMultipv);
+  if (localData?.pvs?.length) {
+    cache.set(cacheKey, localData);
+    missingCache.delete(cacheKey);
+    return localData;
+  }
+
   if (missingCache.has(cacheKey)) {
     throw new LichessCloudEvaluationError(
       "missing",
@@ -491,6 +499,40 @@ async function getCloudEvaluation(fen: string, multipv: number): Promise<Lichess
   });
   inFlightCloudCache.set(cacheKey, request);
   return request;
+}
+
+async function getLocalCloudEvaluation(
+  fen: string,
+  multipv: number,
+): Promise<LichessCloudData | null> {
+  try {
+    const local = unwrap(await commands.lookupLocalLichessCloudEval(fen, multipv));
+    if (!local?.pvs?.length) return null;
+
+    const pvs = local.pvs
+      .map((pv) => {
+        if (pv.mate !== null && pv.mate !== undefined) {
+          return { mate: pv.mate, moves: pv.moves };
+        }
+        if (pv.cp !== null && pv.cp !== undefined) {
+          return { cp: pv.cp, moves: pv.moves };
+        }
+        return null;
+      })
+      .filter((pv): pv is LichessCp | LichessMate => pv !== null);
+
+    if (pvs.length === 0) return null;
+
+    return {
+      fen: local.fen,
+      knodes: local.knodes,
+      depth: local.depth,
+      pvs,
+    };
+  } catch (error) {
+    console.warn("Local Lichess eval lookup failed; falling back to Lichess Cloud.", error);
+    return null;
+  }
 }
 
 async function fetchCloudEvaluation(
