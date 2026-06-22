@@ -494,6 +494,14 @@ async function getLocalBestMovesWithLichessCloud(
           return null;
         });
         bestMoves = mergeCloudLinesWithLocalMultiPv(bestMoves, localMoves?.[1]);
+        localStart.cleanup(true);
+        bestMoves = await extendMissingCloudLinesWithLocalSearches(
+          engine,
+          tab,
+          goMode,
+          options,
+          bestMoves,
+        );
       }
 
       updateCloudStatus({
@@ -576,6 +584,7 @@ function formatCloudAvailableMessage(bestMoves: BestMoves[]) {
 type CloudBackedBestMove = BestMoves & {
   cloudLinePartial?: boolean;
   cloudLineExtendedWithLocal?: boolean;
+  cloudLineForcedWithLocal?: boolean;
 };
 
 function hasPartialCloudLines(bestMoves: BestMoves[]) {
@@ -618,6 +627,106 @@ function mergeCloudLinesWithLocalMultiPv(
       cloudLinePartial: false,
     } satisfies CloudBackedBestMove;
   });
+}
+
+async function extendMissingCloudLinesWithLocalSearches(
+  engine: LocalEngine,
+  tab: string,
+  goMode: GoMode,
+  options: EngineOptions,
+  cloudMoves: BestMoves[],
+) {
+  let extendedMoves = cloudMoves;
+
+  for (const [index, cloudMove] of extendedMoves.entries()) {
+    const cloudState = cloudMove as CloudBackedBestMove;
+    const firstMove = cloudMove.uciMoves[0];
+    if (!cloudState.cloudLinePartial || !firstMove || cloudMove.uciMoves.length > 1) {
+      continue;
+    }
+
+    const localMove = await getLocalContinuationAfterCloudMove(
+      engine,
+      tab,
+      goMode,
+      options,
+      firstMove,
+      index,
+    );
+    if (!localMove?.uciMoves.length) continue;
+
+    extendedMoves = extendedMoves.map((candidate, candidateIndex) => {
+      if (candidateIndex !== index) return candidate;
+      return mergeCloudLineWithLocalTail(candidate, localMove, true);
+    });
+  }
+
+  return extendedMoves;
+}
+
+async function getLocalContinuationAfterCloudMove(
+  engine: LocalEngine,
+  tab: string,
+  goMode: GoMode,
+  options: EngineOptions,
+  firstMove: string,
+  index: number,
+) {
+  const forcedOptions: EngineOptions = {
+    ...options,
+    moves: [...options.moves, firstMove],
+    extraOptions: withMultiPv(options.extraOptions, 1),
+  };
+  const forcedTab = `${tab}:cloud-tail:${engine.id}:${index}:${firstMove}`;
+  const localStart = startLocalBestMoves(engine, forcedTab, goMode, forcedOptions);
+
+  try {
+    const localMoves = await localStart.promise.catch((error) => {
+      console.warn(`Failed to calculate local continuation after ${firstMove}.`, error);
+      return null;
+    });
+    return localMoves?.[1]?.[0] ?? null;
+  } finally {
+    localStart.cleanup(true);
+  }
+}
+
+function mergeCloudLineWithLocalTail(
+  cloudMove: BestMoves,
+  localMove: BestMoves,
+  forced: boolean,
+): CloudBackedBestMove {
+  const firstMove = cloudMove.uciMoves[0];
+  return {
+    ...cloudMove,
+    sanMoves: [cloudMove.sanMoves[0] ?? localMove.sanMoves[0] ?? firstMove, ...localMove.sanMoves],
+    uciMoves: [firstMove, ...localMove.uciMoves],
+    cloudLineExtendedWithLocal: true,
+    cloudLineForcedWithLocal: forced,
+    cloudLinePartial: false,
+  };
+}
+
+function withMultiPv(
+  extraOptions: EngineOptions["extraOptions"],
+  multipv: number,
+): EngineOptions["extraOptions"] {
+  let found = false;
+  const nextOptions = extraOptions.map((option) => {
+    if (option.name !== "MultiPV") return option;
+    found = true;
+    return {
+      ...option,
+      value: String(multipv),
+    };
+  });
+  if (!found) {
+    nextOptions.push({
+      name: "MultiPV",
+      value: String(multipv),
+    });
+  }
+  return nextOptions;
 }
 
 function startLocalBestMoves(
