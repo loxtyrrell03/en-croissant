@@ -611,6 +611,30 @@ describe("opponent prep helpers", () => {
         expect(reply?.lineStrength?.score).toBeGreaterThan(50);
     });
 
+    test("after-prep reply projection prefers projected line value over static strength", () => {
+        const settings = normalizePrepBuilderSettings({
+            mode: "smart",
+            useCloudEngine: true,
+            engineWeight: 80,
+            maxEngineCpLoss: 300,
+        });
+        const reply = getBestPrepLineReplyImpact({
+            userColor: "black",
+            settings,
+            replies: [
+                { move: "c6", white: 93, draw: 7, black: 0 },
+                { move: "c5", white: 28, draw: 15, black: 57 },
+            ],
+            engineMoves: [
+                { san: "c6", scoreCpForSide: 80, rank: 1, source: "local-lichess" },
+                { san: "c5", scoreCpForSide: 20, rank: 2, source: "local-lichess" },
+            ],
+        });
+
+        expect(reply?.move).toBe("c5");
+        expect(reply?.lineScore ?? 0).toBeGreaterThan(40);
+    });
+
     test("candidate line impact stays on their top reply and our first best response", async () => {
         const store = createTreeStore();
         store.getState().makeMove({ payload: "e4" });

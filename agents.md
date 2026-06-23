@@ -442,6 +442,16 @@ default.
   request must mark the top After-prep candidate as the app recommendation and
   list After-prep before immediate Strength in the evidence, so Gemini cannot
   drift back to a static-strength choice such as `...c6`.
+- A same-day correction split independent coach report ranking into two
+  stages. When the report starts from an opponent-to-move position, the
+  opponent/source first move is ranked by reach/share first, and rare first
+  moves below the configured important-reply share threshold are evidence-only
+  even if their projected After-prep score is high. Once the main opponent move
+  is chosen, the reply to that move is selected by projected After-prep before
+  static Strength. This specifically prevents reports from recommending a
+  rare `1.e3` over an overwhelmingly common `1.e4`, and prevents the main
+  `1.e4` branch from falling back to `...c6` when `...c5` has the better
+  projected After-prep score.
 
 ### Local Lichess Cloud Evals
 

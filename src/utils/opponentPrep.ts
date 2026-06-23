@@ -1615,6 +1615,7 @@ export function getBestPrepLineReplyImpact({
     return (
         safeChoices.sort(
             (a, b) =>
+                (b.lineScore ?? -1) - (a.lineScore ?? -1) ||
                 (b.strengthScore ?? -1) - (a.strengthScore ?? -1) ||
                 b.score - a.score ||
                 b.share - a.share ||
