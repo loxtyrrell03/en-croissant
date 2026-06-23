@@ -419,6 +419,13 @@ default.
   still uses hash binary search. Frontend local-cloud rows are only marked as
   partial when the returned PV contains a single move, so full v2 cloud lines
   do not trigger local Stockfish continuation grafting.
+- A same-day engine-panel speed fix made local Stockfish start immediately in
+  parallel with the local cloud lookup. If the local cloud store hits, the
+  cloud score/depth/PV remains authoritative and the speculative Stockfish
+  search is stopped; if the cloud store misses, Stockfish has already started
+  instead of waiting behind shard lookup/decompression. Keep this parallel
+  miss path intact so out-of-book positions do not appear to stall before
+  local analysis begins.
 
 ### Web Companion
 

@@ -497,6 +497,8 @@ async function getLocalBestMovesWithLichessCloud(
   options: EngineOptions,
   updateCloudStatus: (status: EngineCloudEvalStatus) => void,
 ) {
+  const localStart = startLocalBestMoves(engine, tab, goMode, options);
+
   updateCloudStatus({
     phase: "checking",
     message: "Checking local Lichess evals...",
@@ -506,6 +508,7 @@ async function getLocalBestMovesWithLichessCloud(
   try {
     const cloudMoves = await lichessGetBestMoves(tab, goMode, options);
     if (cloudMoves?.[1]?.length) {
+      localStart.cleanup(true);
       updateCloudStatus({
         phase: "available",
         message: formatCloudAvailableMessage(cloudMoves[1]),
@@ -519,21 +522,9 @@ async function getLocalBestMovesWithLichessCloud(
       message: "No local Lichess eval was found for this position.",
       updatedAt: Date.now(),
     });
-    return await getLocalBestMovesFallback(engine, tab, goMode, options);
+    return await localStart.promise;
   } catch (error) {
     updateCloudStatus(cloudFailureStatus(error));
-    return await getLocalBestMovesFallback(engine, tab, goMode, options);
-  }
-}
-
-async function getLocalBestMovesFallback(
-  engine: LocalEngine,
-  tab: string,
-  goMode: GoMode,
-  options: EngineOptions,
-) {
-  const localStart = startLocalBestMoves(engine, tab, goMode, options);
-  try {
     return await localStart.promise;
   } finally {
     localStart.cleanup(false);
