@@ -156,7 +156,7 @@ import {
 import { createTab, getTabWorkspaceKey, saveToFile } from "@/utils/tabs";
 import { parsePGN } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
-import { getNodeAtPath, getTreeStructureHash, type TreeState } from "@/utils/treeReducer";
+import { getTreeStructureHash, type TreeState } from "@/utils/treeReducer";
 import { queryLichessCloudMoves } from "@/utils/lichess/api";
 import { unwrap } from "@/utils/unwrap";
 import { BoundedMap } from "@/utils/boundedCache";
@@ -648,7 +648,6 @@ function OpponentPrepPanel({
     const candidate = prep.rootPath ?? [];
     return pathExists(root, candidate) ? candidate : [];
   }, [prep.rootPath, root]);
-  const prepRootFen = useMemo(() => getNodeAtPath(root, rootPath).fen, [root, rootPath]);
   const rootPathKey = rootPath.join("/");
   const isInsidePrepTree = isPrefix(rootPath, currentPath);
   const opponentToMove = getFenTurn(currentFen) === prep.color;
@@ -2639,6 +2638,271 @@ function OpponentPrepPanel({
     ],
   );
 
+  const buildPrepCoachReportBrief = useCallback(
+    async (settings: PrepBuilderSettings, safeRootPath: number[]) => {
+      const state = store.getState();
+      if (!pathExists(state.root, safeRootPath)) return null;
+
+      const startNode = state.getNode(safeRootPath);
+      if (!startNode) return null;
+
+      const userSide = oppositePrepColor(prep.color);
+      const startLine = getLineSans(state.root, safeRootPath);
+      const sourceLabel = getPrepGamePlanSourceLabel({
+        prepMode,
+        prepSource,
+        databaseLabel: selectedDatabaseLabel,
+        playerName: prep.playerName,
+      });
+      const turn = getFenTurn(startNode.fen);
+      const candidates: PrepCoachCandidateEvidence[] = [];
+      const scanLimit = getPrepCoachScanLimit(settings);
+      let checkedPositions = 1;
+      let rootDatabaseGames: number | null = null;
+
+      const getEvidenceMinGames = (ply: number) =>
+        getPrepBuilderEvidenceMinGames({
+          settings,
+          rootGames: rootDatabaseGames,
+          ply,
+        });
+
+      if (turn === userSide) {
+        const [opponentOpenings, engineMoves] = await Promise.all([
+          loadOpeningsForFen(startNode.fen, settings.opponentMoveLimit).catch(() => []),
+          loadPrepBuilderEngineMoves(startNode.fen, userSide, settings).catch(() => []),
+        ]);
+        rootDatabaseGames = getPlayablePrepGames(opponentOpenings);
+        const minGames = getEvidenceMinGames(0);
+        const rows = getPrepCandidateRows({
+          fen: startNode.fen,
+          openings: opponentOpenings,
+          minGames,
+          moveLimit: Math.max(settings.opponentMoveLimit, scanLimit),
+        }).slice(0, scanLimit);
+        const strengthByMove = getPrepMoveStrengthMap({
+          openings: sortOpponentPrepOpenings(
+            opponentOpenings,
+            minGames,
+            PREP_STRENGTH_MOVE_POOL_LIMIT,
+          ),
+          engineMoves,
+          side: userSide,
+          settings,
+        });
+
+        for (const [index, row] of rows.entries()) {
+          const moveKey = normalizePrepBuilderSan(row.move);
+          const strength = strengthByMove.get(moveKey) ?? null;
+          const impact = await getOpponentPrepCandidateLineImpact({
+            fen: startNode.fen,
+            row,
+            opponentColor: prep.color,
+            loadOpenings: loadOpeningsForFen,
+            loadEngineMoves: loadPrepBuilderEngineMoves,
+            minGames,
+            moveLimit: settings.opponentMoveLimit,
+            settings,
+            maxUserResponses: settings.size === "quick" ? 1 : 2,
+          }).catch(() => null);
+          checkedPositions += 1;
+
+          const continuationStrength = impact?.continuationLineStrength ?? null;
+          const showContinuation = shouldShowCandidateAfterPrepStrength({
+            continuationStrength,
+            currentStrength: strength ?? undefined,
+            impact: impact ?? undefined,
+          });
+          const afterPrepStrength = showContinuation
+            ? continuationStrength
+            : strength
+              ? createCurrentAfterPrepStrength(strength)
+              : null;
+          const engineUnsafe = Boolean(
+            strength?.engineUnsafe || (showContinuation && continuationStrength?.engineUnsafe),
+          );
+          const exclusionReason = engineUnsafe
+            ? `Max CP Drop gate: this move is over the configured ${settings.maxEngineCpLoss} cp loss when local eval evidence is available.`
+            : null;
+          const status: PrepCoachCandidateStatus = exclusionReason
+            ? "unsafe"
+            : strength
+              ? "safe"
+              : "thin";
+          const continuationMoves = impact?.continuationMoves ?? [];
+
+          candidates.push({
+            id: `C${index + 1}`,
+            kind: "your-move",
+            status,
+            move: row.move,
+            line: [...startLine, row.move, ...continuationMoves],
+            games: row.total,
+            share: row.share,
+            surfaceScore: getPrepResultScore(row, userSide),
+            surfaceScoreLabel: `${getPrepColorLabel(userSide)} database score`,
+            strength,
+            afterPrepStrength,
+            afterPrepSource: showContinuation ? "projection" : strength ? "current" : "none",
+            likelyOpponentMove: impact?.opponentReplyMove ?? null,
+            responseMove: impact?.userResponseMove ?? null,
+            responseDetail: impact
+              ? candidateLineImpactTooltip(impact, prepMode === "general")
+              : null,
+            engineUnsafe,
+            exclusionReason,
+            priority: getPrepCoachCandidatePriority({
+              status,
+              games: row.total,
+              share: row.share,
+              surfaceScore: getPrepResultScore(row, userSide),
+              strength,
+              afterPrepStrength,
+            }),
+          });
+        }
+      } else if (turn === prep.color) {
+        const openings = await loadOpeningsForFen(
+          startNode.fen,
+          getPrepBuilderBranchSearchMoveLimit(settings),
+        ).catch(() => []);
+        rootDatabaseGames = getPlayablePrepGames(openings);
+        const minGames = getEvidenceMinGames(0);
+        const sortedOpenings = sortOpponentPrepOpenings(openings, minGames, scanLimit);
+        const rowTotalGames = sortedOpenings.reduce(
+          (sum, opening) => sum + getOpeningTotal(opening),
+          0,
+        );
+        const strengthByMove = getPrepMoveStrengthMap({
+          openings: sortedOpenings,
+          side: prep.color,
+          settings,
+        });
+
+        for (const [index, opening] of sortedOpenings.slice(0, scanLimit).entries()) {
+          const key = getOpponentPrepBranchKey(startNode.fen, opening.move);
+          const row: OpponentPrepMoveRow = {
+            ...opening,
+            key,
+            uci: null,
+            total: getOpeningTotal(opening),
+            share: rowTotalGames > 0 ? getOpeningTotal(opening) / rowTotalGames : 0,
+            childIndex: null,
+            status: prep.skippedBranches[key] ? "skipped" : "new",
+          };
+          const projection =
+            row.status === "skipped"
+              ? null
+              : await getOpponentBranchPrepProjection({
+                  fen: startNode.fen,
+                  row,
+                  userColor: userSide,
+                  loadOpenings: loadOpeningsForFen,
+                  loadEngineMoves: loadPrepBuilderEngineMoves,
+                  minGames,
+                  moveLimit: settings.opponentMoveLimit,
+                  settings,
+                }).catch(() => null);
+          checkedPositions += 1;
+
+          const strength = strengthByMove.get(normalizePrepBuilderSan(row.move)) ?? null;
+          const responseStrength = projection?.strength ?? null;
+          const opponentScore = getPrepResultScore(row, prep.color);
+          const userSurfaceScore = getPrepResultScore(row, userSide);
+          const engineUnsafe = Boolean(responseStrength?.engineUnsafe);
+          const exclusionReason =
+            row.status === "skipped"
+              ? "This branch is marked skipped in prep."
+              : engineUnsafe
+                ? `Max CP Drop gate: the available answer is over the configured ${settings.maxEngineCpLoss} cp loss.`
+                : !projection
+                  ? "No safe answer was found from the supplied database/eval evidence."
+                  : null;
+          const status: PrepCoachCandidateStatus =
+            row.status === "skipped"
+              ? "skipped"
+              : engineUnsafe
+                ? "unsafe"
+                : projection
+                  ? "safe"
+                  : "no-safe-answer";
+
+          candidates.push({
+            id: `C${index + 1}`,
+            kind: "opponent-move",
+            status,
+            move: row.move,
+            line: [
+              ...startLine,
+              row.move,
+              ...(projection?.responseMove ? [projection.responseMove] : []),
+            ],
+            games: row.total,
+            share: row.share,
+            surfaceScore: opponentScore,
+            surfaceScoreLabel:
+              prepMode === "general" ? "source-side surface score" : "opponent surface score",
+            strength,
+            afterPrepStrength: responseStrength,
+            afterPrepSource: responseStrength ? "projection" : "none",
+            likelyOpponentMove: row.move,
+            responseMove: projection?.responseMove ?? null,
+            responseDetail: projection?.strength.detail ?? null,
+            engineUnsafe,
+            exclusionReason,
+            priority: getPrepGamePlanReplyPriority({
+              row,
+              branchShare: 1,
+              opponentScore,
+              userSurfaceScore,
+              afterPrep: responseStrength?.score ?? null,
+            }),
+          });
+        }
+      }
+
+      const sortedCandidates = candidates.sort(
+        (a, b) =>
+          b.priority - a.priority ||
+          getPrepCoachStatusSort(b.status) - getPrepCoachStatusSort(a.status) ||
+          b.share - a.share ||
+          b.games - a.games ||
+          a.move.localeCompare(b.move),
+      );
+      const briefBase: PrepCoachReportBriefBase = {
+        generatedAt: Date.now(),
+        rootFen: startNode.fen,
+        startLine,
+        sourceLabel,
+        userColor: userSide,
+        opponentColor: prep.color,
+        maxEngineCpLoss: settings.maxEngineCpLoss,
+        checkedPositions,
+        candidates: sortedCandidates,
+      };
+
+      return {
+        ...briefBase,
+        request: buildPrepCoachReportRequest({
+          brief: briefBase,
+          settings,
+          general: prepMode === "general",
+        }),
+      } satisfies PrepCoachReportBrief;
+    },
+    [
+      loadOpeningsForFen,
+      loadPrepBuilderEngineMoves,
+      prep.color,
+      prep.playerName,
+      prep.skippedBranches,
+      prepMode,
+      prepSource,
+      selectedDatabaseLabel,
+      store,
+    ],
+  );
+
   const runPrepBuilder = useCallback(async () => {
     if (!configReady || builderRunning) return;
 
@@ -2649,6 +2913,8 @@ function OpponentPrepPanel({
     setBuilderRunning(true);
     setBuilderNeedsSave(false);
     setGamePlanBrief(null);
+    setPrepCoachReportBrief(null);
+    setPrepCoachAutoRunKey(null);
     clearMovePreview();
     setBuilderStatus({
       phase: "Starting",
@@ -3150,13 +3416,28 @@ function OpponentPrepPanel({
     [clearMovePreview, gamePlanBrief, prep.rootPath, store],
   );
 
-  const runGamePlanCoachReport = useCallback(async () => {
-    if (!configReady || builderRunning || gamePlanReportRunning) return;
+  const playPrepCoachReportLine = useCallback(
+    (moves: string[]) => {
+      if (!prepCoachReportBrief) return;
+
+      clearMovePreview();
+      const state = store.getState();
+      const safeRootPath = pathExists(state.root, prep.rootPath ?? []) ? (prep.rootPath ?? []) : [];
+      state.goToMove(safeRootPath);
+      for (const move of moves.slice(prepCoachReportBrief.startLine.length)) {
+        store.getState().makeMove({ payload: move });
+      }
+    },
+    [clearMovePreview, prep.rootPath, prepCoachReportBrief, store],
+  );
+
+  const runPrepCoachReport = useCallback(async () => {
+    if (!configReady || builderRunning || prepCoachReportRunning) return;
 
     const settings = normalizePrepBuilderSettings(prep.builder);
-    setGamePlanReportRunning(true);
+    setPrepCoachReportRunning(true);
     setBuilderStatus((current) => ({
-      phase: "Building coach report",
+      phase: "Checking coach evidence",
       addedMoves: current?.addedMoves ?? 0,
       visitedPositions: current?.visitedPositions ?? 0,
       stoppedLines: current?.stoppedLines ?? 0,
@@ -3165,19 +3446,19 @@ function OpponentPrepPanel({
     try {
       const state = store.getState();
       const safeRootPath = pathExists(state.root, prep.rootPath ?? []) ? (prep.rootPath ?? []) : [];
-      const brief = gamePlanBrief ?? (await buildPrepGamePlanBrief(settings, safeRootPath));
+      const brief = await buildPrepCoachReportBrief(settings, safeRootPath);
 
-      if (!brief || brief.mainLine.length === 0) {
+      if (!brief || brief.candidates.length === 0) {
         notifications.show({
           title: "No coach report yet",
-          message: "The builder could not find a supported prep route from this position.",
+          message: "No database/eval candidates were found from this prep start.",
           color: "yellow",
         });
         return;
       }
 
-      setGamePlanBrief(brief);
-      setGamePlanCoachAutoRunKey(`prep-coach-report-${Date.now()}`);
+      setPrepCoachReportBrief(brief);
+      setPrepCoachAutoRunKey(`prep-coach-report-${Date.now()}`);
     } catch (error) {
       notifications.show({
         title: "Coach report failed",
@@ -3185,50 +3466,36 @@ function OpponentPrepPanel({
         color: "red",
       });
     } finally {
-      setGamePlanReportRunning(false);
+      setPrepCoachReportRunning(false);
     }
   }, [
-    buildPrepGamePlanBrief,
+    buildPrepCoachReportBrief,
     builderRunning,
     configReady,
-    gamePlanBrief,
-    gamePlanReportRunning,
     prep.builder,
     prep.rootPath,
+    prepCoachReportRunning,
     store,
   ]);
 
-  const gamePlanCoachRequest = useMemo(
+  const prepCoachReportCacheKey = useMemo(
     () =>
-      gamePlanBrief
-        ? buildPrepGamePlanCoachRequest({
-            brief: gamePlanBrief,
-            rootFen: prepRootFen,
-            userColor,
-            opponentColor: prep.color,
-            general: prepMode === "general",
-            settings: builderSettings,
-          })
-        : null,
-    [builderSettings, gamePlanBrief, prep.color, prepMode, prepRootFen, userColor],
-  );
-  const gamePlanCoachCacheKey = useMemo(
-    () =>
-      gamePlanBrief
+      prepCoachReportBrief
         ? JSON.stringify({
-            scope: "prep-game-plan-coach",
-            generatedAt: gamePlanBrief.generatedAt,
-            source: gamePlanBrief.sourceLabel,
-            line: gamePlanBrief.mainLine.map((step) => step.move).join(" "),
-            replies: gamePlanBrief.replies.map((reply) => [
-              reply.positionLine.join(" "),
-              reply.opponentMove,
-              reply.responseMove,
-              reply.afterPrep,
+            scope: "independent-prep-coach-report",
+            generatedAt: prepCoachReportBrief.generatedAt,
+            source: prepCoachReportBrief.sourceLabel,
+            line: prepCoachReportBrief.startLine.join(" "),
+            candidates: prepCoachReportBrief.candidates.map((candidate) => [
+              candidate.id,
+              candidate.status,
+              candidate.line.join(" "),
+              candidate.strength?.score ?? null,
+              candidate.afterPrepStrength?.score ?? null,
             ]),
           })
-        : "prep-game-plan-coach-empty",
-    [gamePlanBrief],
+        : "independent-prep-coach-report-empty",
+    [prepCoachReportBrief],
   );
 
   return (
@@ -3638,14 +3905,14 @@ function OpponentPrepPanel({
                   Build prep
                 </Button>
               </Tooltip>
-              <Tooltip label="Build a compact prep brief and ask the AI coach for a report from the same evidence">
+              <Tooltip label="Ask the AI coach to choose a prep line from database, strength, eval, and after-prep evidence">
                 <Button
                   variant="default"
                   size={controlSize}
                   leftSection={<IconSparkles size="0.95rem" />}
                   disabled={!configReady || builderRunning}
-                  loading={gamePlanReportRunning}
-                  onClick={() => void runGamePlanCoachReport()}
+                  loading={prepCoachReportRunning}
+                  onClick={() => void runPrepCoachReport()}
                 >
                   Coach report
                 </Button>
@@ -3893,18 +4160,26 @@ function OpponentPrepPanel({
               }}
             />
           ) : null}
+          {prepCoachReportBrief ? (
+            <PrepCoachReportPanel
+              brief={prepCoachReportBrief}
+              cacheKey={prepCoachReportCacheKey}
+              autoRunKey={prepCoachAutoRunKey}
+              onPlayLine={playPrepCoachReportLine}
+              onClear={() => {
+                setPrepCoachReportBrief(null);
+                setPrepCoachAutoRunKey(null);
+              }}
+            />
+          ) : null}
           {gamePlanBrief ? (
             <PrepGamePlanBriefPanel
               brief={gamePlanBrief}
               general={prepMode === "general"}
               userColor={userColor}
-              coachRequest={gamePlanCoachRequest}
-              coachCacheKey={gamePlanCoachCacheKey}
-              coachAutoRunKey={gamePlanCoachAutoRunKey}
               onPlayLine={playGamePlanLine}
               onClear={() => {
                 setGamePlanBrief(null);
-                setGamePlanCoachAutoRunKey(null);
               }}
             />
           ) : null}
@@ -4935,62 +5210,149 @@ function getAfterPrepDeepScanRows(
     .slice(0, AFTER_PREP_DEEP_ROW_LIMIT);
 }
 
-function buildPrepGamePlanCoachRequest({
+function buildPrepCoachReportRequest({
   brief,
-  rootFen,
-  userColor,
-  opponentColor,
   general,
   settings,
 }: {
-  brief: PrepGamePlanBrief;
-  rootFen: string;
-  userColor: PrepColor;
-  opponentColor: PrepColor;
+  brief: PrepCoachReportBriefBase;
   general: boolean;
   settings: PrepBuilderSettings;
 }): PlanCoachInlineRequest {
-  const userLabel = userColor === "white" ? "White" : "Black";
+  const userLabel = getPrepColorLabel(brief.userColor);
   const sourceLabel = general ? "source side" : "opponent";
-  const mainMoves = brief.mainLine.map((step) => step.move);
+  const safeCandidates = brief.candidates.filter((candidate) => candidate.status === "safe");
+  const blockedCandidates = brief.candidates.filter((candidate) => candidate.status !== "safe");
 
   return {
-    fen: rootFen,
-    sideToMove: getFenTurn(rootFen) === userColor ? `${userLabel} / prep side` : sourceLabel,
-    surface: "Prep builder game plan",
-    subjectKind: general ? "opening-prep game plan" : "opponent-prep game plan",
-    title: `Coach-guided prep report for ${brief.sourceLabel}`,
+    fen: brief.rootFen,
+    sideToMove:
+      getFenTurn(brief.rootFen) === brief.userColor ? `${userLabel} / prep side` : sourceLabel,
+    surface: "Independent prep coach report",
+    subjectKind: "prep line selection",
+    title: `Independent coach prep report for ${brief.sourceLabel}`,
     summary: [
-      `Pre-game prep report for ${userLabel}.`,
-      `The builder already applied a hard Max CP Drop gate of ${brief.maxEngineCpLoss} cp.`,
-      "Do not recommend excluded or engine-unsafe alternatives; explain the supplied safe route and where the memory should go.",
+      `Pre-game prep report for ${userLabel}. Choose the single best prep line yourself from the safe candidates below; the prep builder has not selected the line for you.`,
+      `Hard constraint: Max CP Drop is ${brief.maxEngineCpLoss} cp. Candidates marked unsafe, skipped, thin, or no-safe-answer are evidence only and must not be recommended.`,
+      "Use the supplied database WDL, games/share, blended Strength, local eval evidence, and After-prep projection to choose the line.",
+      "Output a compact practical report with: chosen line, why it is best, what replies to know, risks, and what to memorize before the game.",
       `Strength mode ${settings.mode}; cloud eval ${settings.useCloudEngine ? "on" : "off"}.`,
     ].join(" "),
-    planLines: [
-      mainMoves.length > 0 ? `Main route: ${mainMoves.join(" ")}` : "No main route found.",
-      ...brief.replies
-        .slice(0, 6)
-        .map(
-          (reply) =>
-            `Answer ${reply.opponentMove} with ${reply.responseMove ?? "no safe answer found"}${
-              reply.positionLine.length > brief.startLine.length
-                ? ` after ${reply.positionLine.slice(brief.startLine.length).join(" ")}`
-                : ""
-            }.`,
-        ),
-    ],
+    planLines:
+      safeCandidates.length > 0
+        ? safeCandidates
+            .slice(0, 8)
+            .map((candidate) =>
+              [
+                `${candidate.id}: ${formatPrepCoachCandidateLine(candidate, brief.startLine)}`,
+                `status safe`,
+                candidate.responseMove ? `answer/follow-up ${candidate.responseMove}` : null,
+                `strength ${candidate.strength?.score ?? "n/a"}`,
+                `after-prep ${candidate.afterPrepStrength?.score ?? "n/a"} (${candidate.afterPrepSource})`,
+              ]
+                .filter((part): part is string => Boolean(part))
+                .join("; "),
+            )
+        : ["No safe candidate was found under the current Max CP Drop and evidence settings."],
     stats: [
       `Prep source: ${brief.sourceLabel}.`,
-      `Preparing as ${userLabel}; ${sourceLabel} colour is ${opponentColor}.`,
+      `Preparing as ${userLabel}; ${sourceLabel} colour is ${brief.opponentColor}.`,
       `Checked positions: ${brief.checkedPositions}.`,
+      `Safe candidates: ${safeCandidates.length}; evidence-only candidates: ${blockedCandidates.length}.`,
       `Builder size: ${settings.size}; opponent move limit ${settings.opponentMoveLimit}; min games ${settings.minOpponentGames}; min reply share ${settings.minOpponentMoveShare}%.`,
       `Max CP Drop: ${brief.maxEngineCpLoss} cp. Treat this as a hard safety constraint.`,
     ],
     evidence: [
-      ...brief.mainLine.map((step, index) => formatPrepGamePlanStepForCoach(step, index)),
-      ...brief.replies.map(formatPrepGamePlanReplyForCoach),
+      ...brief.candidates.slice(0, 14).map(formatPrepCoachCandidateForCoach),
+      ...blockedCandidates
+        .slice(0, 5)
+        .map(
+          (candidate) =>
+            `Evidence-only ${candidate.id}: ${candidate.exclusionReason ?? getPrepCoachStatusLabel(candidate.status)}.`,
+        ),
     ],
   };
+}
+
+function getPlayablePrepGames(openings: Opening[]) {
+  return openings.reduce(
+    (sum, opening) =>
+      opening.move === "*" || opening.move === "Total" ? sum : sum + getOpeningTotal(opening),
+    0,
+  );
+}
+
+function getPrepCoachScanLimit(settings: PrepBuilderSettings) {
+  if (settings.size === "quick") return Math.min(8, PREP_COACH_SCAN_LIMIT);
+  if (settings.size === "deep") return PREP_COACH_SCAN_LIMIT;
+  return 10;
+}
+
+function getPrepCoachCandidatePriority({
+  status,
+  games,
+  share,
+  surfaceScore,
+  strength,
+  afterPrepStrength,
+}: {
+  status: PrepCoachCandidateStatus;
+  games: number;
+  share: number;
+  surfaceScore: number;
+  strength: PrepMoveStrength | null;
+  afterPrepStrength: PrepMoveStrength | null;
+}) {
+  const statusBoost = getPrepCoachStatusSort(status) * 1000;
+  const strengthScore = afterPrepStrength?.score ?? strength?.score ?? surfaceScore * 100;
+  const confidence = Math.min(1, Math.log10(games + 1) / 3);
+
+  return statusBoost + strengthScore * 1.35 + share * 100 * 0.6 + confidence * 12;
+}
+
+function getPrepCoachStatusSort(status: PrepCoachCandidateStatus) {
+  switch (status) {
+    case "safe":
+      return 4;
+    case "thin":
+      return 3;
+    case "no-safe-answer":
+      return 2;
+    case "skipped":
+      return 1;
+    case "unsafe":
+      return 0;
+  }
+}
+
+function getPrepCoachStatusLabel(status: PrepCoachCandidateStatus) {
+  switch (status) {
+    case "safe":
+      return "Safe";
+    case "unsafe":
+      return "Unsafe";
+    case "no-safe-answer":
+      return "No answer";
+    case "thin":
+      return "Thin";
+    case "skipped":
+      return "Skipped";
+  }
+}
+
+function getPrepCoachStatusColor(status: PrepCoachCandidateStatus) {
+  switch (status) {
+    case "safe":
+      return "teal";
+    case "unsafe":
+      return "red";
+    case "no-safe-answer":
+      return "yellow";
+    case "thin":
+      return "gray";
+    case "skipped":
+      return "gray";
+  }
 }
 
 function getPrepGamePlanReplyPriority({
@@ -5028,53 +5390,54 @@ function formatPrepGamePlanUserNote(
   return [...parts, ...choice.reasons.slice(0, 2)].join(" - ");
 }
 
-function formatPrepGamePlanStepForCoach(step: PrepGamePlanStep, index: number) {
-  const actor = step.actor === "user" ? "Prep-side move" : "Opponent/source move";
+function formatPrepCoachCandidateLine(
+  candidate: PrepCoachCandidateEvidence,
+  startLine: string[] = [],
+) {
+  const visible = candidate.line.slice(startLine.length);
+  if (visible.length > 0) return visible.join(" ");
+  return candidate.move;
+}
+
+function formatPrepCoachCandidateShortEvidence(candidate: PrepCoachCandidateEvidence) {
   const metrics = [
-    `${actor} ${index + 1}: ${step.move}`,
-    `line ${step.line.join(" ")}`,
-    step.games !== null ? `${formatNumber(step.games)} games` : null,
-    step.share !== null ? `${formatPrepGamePlanShare(step.share)} share` : null,
-    step.strength !== null ? `strength ${step.strength}` : null,
-    step.afterPrep !== null ? `after-prep ${step.afterPrep}` : null,
-    step.databaseScore !== null
-      ? `database score ${formatPrepCoachPercent(step.databaseScore)}`
-      : null,
-    formatPrepCoachEngineEvidence({
-      engineCp: step.engineCp,
-      engineCpLoss: step.engineCpLoss,
-      engineSource: step.engineSource,
-      engineUnsafe: step.engineUnsafe,
-    }),
-    step.note,
+    `${candidate.surfaceScoreLabel} ${formatPrepCoachPercent(candidate.surfaceScore)}`,
+    candidate.afterPrepStrength ? `after-prep ${candidate.afterPrepStrength.score}` : null,
+    candidate.likelyOpponentMove ? `reply ${candidate.likelyOpponentMove}` : null,
+    candidate.responseMove ? `answer ${candidate.responseMove}` : null,
+    candidate.exclusionReason,
   ];
 
   return metrics.filter((part): part is string => Boolean(part)).join("; ");
 }
 
-function formatPrepGamePlanReplyForCoach(reply: PrepGamePlanReply) {
+function formatPrepCoachCandidateForCoach(candidate: PrepCoachCandidateEvidence) {
+  const actor = candidate.kind === "your-move" ? "prep-side candidate" : "opponent/source move";
   const metrics = [
-    `Reply to know: ${reply.opponentMove}`,
-    reply.positionLine.length > 0
-      ? `position line ${reply.positionLine.join(" ")}`
-      : "from prep start",
-    `${formatNumber(reply.games)} games`,
-    `${formatPrepGamePlanShare(reply.share)} share`,
-    `surface opponent/source score ${formatPrepCoachPercent(reply.opponentScore)}`,
-    reply.responseMove ? `recommended answer ${reply.responseMove}` : "no safe answer found",
-    reply.afterPrep !== null ? `after-prep ${reply.afterPrep}` : null,
-    reply.responseStrength !== null ? `answer strength ${reply.responseStrength}` : null,
-    reply.responseDatabaseScore !== null
-      ? `answer database score ${formatPrepCoachPercent(reply.responseDatabaseScore)}`
-      : null,
+    `${candidate.id}: ${actor} ${candidate.move}`,
+    `status ${getPrepCoachStatusLabel(candidate.status)}`,
+    `line ${candidate.line.join(" ")}`,
+    `${formatNumber(candidate.games)} games`,
+    `${formatPrepGamePlanShare(candidate.share)} share`,
+    `${candidate.surfaceScoreLabel} ${formatPrepCoachPercent(candidate.surfaceScore)}`,
+    candidate.strength
+      ? `blended strength ${candidate.strength.score}`
+      : "blended strength unavailable",
+    candidate.afterPrepStrength
+      ? `after-prep ${candidate.afterPrepStrength.score} (${candidate.afterPrepSource})`
+      : "after-prep unavailable",
+    candidate.likelyOpponentMove ? `likely reply ${candidate.likelyOpponentMove}` : null,
+    candidate.responseMove ? `answer/follow-up ${candidate.responseMove}` : null,
     formatPrepCoachEngineEvidence({
-      engineCp: reply.responseEngineCp,
-      engineCpLoss: reply.responseEngineCpLoss,
-      engineSource: reply.responseEngineSource,
-      engineUnsafe: false,
+      engineCp: candidate.afterPrepStrength?.engineCp ?? candidate.strength?.engineCp ?? null,
+      engineCpLoss:
+        candidate.afterPrepStrength?.engineCpLoss ?? candidate.strength?.engineCpLoss ?? null,
+      engineSource:
+        candidate.afterPrepStrength?.engineSource ?? candidate.strength?.engineSource ?? null,
+      engineUnsafe: candidate.engineUnsafe,
     }),
-    reply.responseDetail,
-    reply.note,
+    candidate.exclusionReason ? `do not recommend: ${candidate.exclusionReason}` : null,
+    candidate.responseDetail,
   ];
 
   return metrics.filter((part): part is string => Boolean(part)).join("; ");
@@ -5560,22 +5923,137 @@ function PrepStrengthSettingsButton({
   );
 }
 
+function PrepCoachReportPanel({
+  brief,
+  cacheKey,
+  autoRunKey,
+  onPlayLine,
+  onClear,
+}: {
+  brief: PrepCoachReportBrief;
+  cacheKey: string;
+  autoRunKey: string | null;
+  onPlayLine: (moves: string[]) => void;
+  onClear: () => void;
+}) {
+  const safeCandidates = brief.candidates.filter((candidate) => candidate.status === "safe");
+  const visibleCandidates = [
+    ...safeCandidates,
+    ...brief.candidates.filter((candidate) => candidate.status !== "safe"),
+  ].slice(0, 6);
+  const userLabel = getPrepColorLabel(brief.userColor);
+
+  return (
+    <Alert color="blue" variant="light" mt="xs">
+      <Stack gap={8}>
+        <Group justify="space-between" gap="xs" wrap="wrap">
+          <Group gap={6} wrap="wrap">
+            <Text size="sm" fw={700}>
+              Coach report
+            </Text>
+            <Badge color="blue" variant="light">
+              {userLabel}
+            </Badge>
+            <Badge variant="light">{safeCandidates.length} safe candidates</Badge>
+            <Badge variant="light">{brief.checkedPositions} checked</Badge>
+          </Group>
+          <Tooltip label="Clear coach report">
+            <ActionIcon variant="subtle" size="sm" onClick={onClear}>
+              <IconX size="0.9rem" />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+
+        <Table
+          withTableBorder
+          horizontalSpacing="xs"
+          verticalSpacing={4}
+          style={{ tableLayout: "fixed" }}
+        >
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th style={{ width: "34%" }}>Line</Table.Th>
+              <Table.Th style={{ width: "18%" }}>Status</Table.Th>
+              <Table.Th style={{ width: "16%" }}>Strength</Table.Th>
+              <Table.Th>Evidence</Table.Th>
+              <Table.Th style={{ width: 54 }} />
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {visibleCandidates.map((candidate) => (
+              <Table.Tr key={candidate.id}>
+                <Table.Td>
+                  <Text size="sm" fw={700} style={{ wordBreak: "break-word" }}>
+                    {formatPrepCoachCandidateLine(candidate, brief.startLine)}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {formatPrepGamePlanShare(candidate.share)} / {formatNumber(candidate.games)}
+                  </Text>
+                </Table.Td>
+                <Table.Td>
+                  <Badge
+                    size="sm"
+                    variant="light"
+                    color={getPrepCoachStatusColor(candidate.status)}
+                  >
+                    {getPrepCoachStatusLabel(candidate.status)}
+                  </Badge>
+                </Table.Td>
+                <Table.Td>
+                  <Text size="xs">
+                    {candidate.strength ? `Now ${candidate.strength.score}` : "Now -"}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {candidate.afterPrepStrength
+                      ? `After ${candidate.afterPrepStrength.score}`
+                      : "After -"}
+                  </Text>
+                </Table.Td>
+                <Table.Td>
+                  <Text size="xs" lineClamp={2}>
+                    {formatPrepCoachCandidateShortEvidence(candidate)}
+                  </Text>
+                </Table.Td>
+                <Table.Td>
+                  <Tooltip label="Play candidate line">
+                    <ActionIcon
+                      variant="subtle"
+                      size="sm"
+                      disabled={candidate.line.length <= brief.startLine.length}
+                      onClick={() => onPlayLine(candidate.line)}
+                    >
+                      <IconPlayerPlay size="0.95rem" />
+                    </ActionIcon>
+                  </Tooltip>
+                </Table.Td>
+              </Table.Tr>
+            ))}
+          </Table.Tbody>
+        </Table>
+
+        <PlanCoachInline
+          request={brief.request}
+          cacheKey={cacheKey}
+          disabled={brief.candidates.length === 0}
+          actionLabel="Coach report"
+          refreshLabel="Refresh report"
+          autoRunKey={autoRunKey}
+        />
+      </Stack>
+    </Alert>
+  );
+}
+
 function PrepGamePlanBriefPanel({
   brief,
   general,
   userColor,
-  coachRequest,
-  coachCacheKey,
-  coachAutoRunKey,
   onPlayLine,
   onClear,
 }: {
   brief: PrepGamePlanBrief;
   general: boolean;
   userColor: PrepColor;
-  coachRequest: PlanCoachInlineRequest | null;
-  coachCacheKey: string;
-  coachAutoRunKey: string | null;
   onPlayLine: (moves: string[]) => void;
   onClear: () => void;
 }) {
@@ -5695,17 +6173,6 @@ function PrepGamePlanBriefPanel({
               })}
             </Table.Tbody>
           </Table>
-        ) : null}
-
-        {coachRequest ? (
-          <PlanCoachInline
-            request={coachRequest}
-            cacheKey={coachCacheKey}
-            disabled={brief.mainLine.length === 0}
-            actionLabel="Coach report"
-            refreshLabel="Refresh report"
-            autoRunKey={coachAutoRunKey}
-          />
         ) : null}
       </Stack>
     </Alert>

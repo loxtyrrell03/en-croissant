@@ -399,6 +399,15 @@ default.
   auto-runs the inline Plan Coach report from that evidence, instead of hiding
   the report action inside a panel that only appeared after a prior successful
   brief render.
+- A later 2026-06-23 correction separated `Coach report` from `Build prep`.
+  The coach report must not call the builder's game-plan selector or require a
+  generated prep tree. It now runs its own bounded database/eval evidence pass
+  from the prep start, gives the Plan Coach candidate lines with normal
+  Strength, WDL/game-share evidence, local-eval CP loss/source, After-prep
+  projection, and explicit safe/unsafe/no-answer status, and asks the coach to
+  choose the best safe line itself. Keep the hard `Max CP Drop` rule in this
+  evidence packet: engine-unsafe candidates may be shown as evidence, but the
+  prompt must forbid recommending them.
 - A later 2026-06-23 correction made desktop `After prep` values non-optional
   for visible prep rows once normal Strength is available. Candidate rows now
   show a projected continuation when it improves the current row, otherwise the
