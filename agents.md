@@ -393,6 +393,12 @@ default.
   the configured CP limit. If all practical candidates violate the limit, the
   builder stops that branch instead of falling back to the least-bad unsafe
   move.
+- A same-day UX correction made the `Coach report` entry point visible in the
+  top prep-builder button row beside `Build prep`. Clicking it now builds the
+  compact game-plan evidence first when needed, opens the game-plan panel, and
+  auto-runs the inline Plan Coach report from that evidence, instead of hiding
+  the report action inside a panel that only appeared after a prior successful
+  brief render.
 
 ### Local Lichess Cloud Evals
 

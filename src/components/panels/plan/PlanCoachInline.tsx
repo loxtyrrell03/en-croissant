@@ -1,7 +1,7 @@
 import { Alert, Badge, Button, Group, Paper, Stack, Text } from "@mantine/core";
 import { IconRefresh, IconSparkles } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { commands, type PlanCoachRequest } from "@/bindings";
 import {
   aiCoachEnabledAtom,
@@ -19,6 +19,7 @@ type PlanCoachInlineProps = {
   disabled?: boolean;
   actionLabel?: string;
   refreshLabel?: string;
+  autoRunKey?: string | null;
 };
 
 export default function PlanCoachInline({
@@ -27,6 +28,7 @@ export default function PlanCoachInline({
   disabled,
   actionLabel = "Coach",
   refreshLabel = "Refresh coach",
+  autoRunKey = null,
 }: PlanCoachInlineProps) {
   const enabled = useAtomValue(aiCoachEnabledAtom);
   const geminiCommand = useAtomValue(aiCoachGeminiCommandAtom);
@@ -44,7 +46,7 @@ export default function PlanCoachInline({
     setError(null);
   }, [cacheKey]);
 
-  async function askPlanCoach() {
+  const askPlanCoach = useCallback(async () => {
     if (!enabled) {
       setError("AI Coach is disabled in Settings.");
       return;
@@ -71,7 +73,12 @@ export default function PlanCoachInline({
     } finally {
       setLoading(false);
     }
-  }
+  }, [enabled, geminiCommand, model, request, timeoutSecs]);
+
+  useEffect(() => {
+    if (!autoRunKey || disabled) return;
+    void askPlanCoach();
+  }, [askPlanCoach, autoRunKey, disabled]);
 
   return (
     <Stack gap={6} mt={4} onClick={(event) => event.stopPropagation()}>

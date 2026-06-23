@@ -473,6 +473,8 @@ function OpponentPrepPanel({
   const [savingBuilderResult, setSavingBuilderResult] = useState<"new" | "overwrite" | null>(null);
   const [builderStatus, setBuilderStatus] = useState<PrepBuilderStatus | null>(null);
   const [gamePlanBrief, setGamePlanBrief] = useState<PrepGamePlanBrief | null>(null);
+  const [gamePlanReportRunning, setGamePlanReportRunning] = useState(false);
+  const [gamePlanCoachAutoRunKey, setGamePlanCoachAutoRunKey] = useState<string | null>(null);
   const [straightLineRunning, setStraightLineRunning] = useState(false);
   const [straightLineStatus, setStraightLineStatus] = useState<PrepStraightLineStatus | null>(null);
   const [straightLineResult, setStraightLineResult] = useState<PrepStraightLineSearchResult | null>(
@@ -779,6 +781,7 @@ function OpponentPrepPanel({
     setStraightLineResult(null);
     setStraightLineStatus(null);
     setGamePlanBrief(null);
+    setGamePlanCoachAutoRunKey(null);
   }, [queryScope, rootPathKey]);
 
   const loadOpeningsForFen = useCallback(
@@ -3094,6 +3097,54 @@ function OpponentPrepPanel({
     [clearMovePreview, gamePlanBrief, prep.rootPath, store],
   );
 
+  const runGamePlanCoachReport = useCallback(async () => {
+    if (!configReady || builderRunning || gamePlanReportRunning) return;
+
+    const settings = normalizePrepBuilderSettings(prep.builder);
+    setGamePlanReportRunning(true);
+    setBuilderStatus((current) => ({
+      phase: "Building coach report",
+      addedMoves: current?.addedMoves ?? 0,
+      visitedPositions: current?.visitedPositions ?? 0,
+      stoppedLines: current?.stoppedLines ?? 0,
+    }));
+
+    try {
+      const state = store.getState();
+      const safeRootPath = pathExists(state.root, prep.rootPath ?? []) ? (prep.rootPath ?? []) : [];
+      const brief = gamePlanBrief ?? (await buildPrepGamePlanBrief(settings, safeRootPath));
+
+      if (!brief || brief.mainLine.length === 0) {
+        notifications.show({
+          title: "No coach report yet",
+          message: "The builder could not find a supported prep route from this position.",
+          color: "yellow",
+        });
+        return;
+      }
+
+      setGamePlanBrief(brief);
+      setGamePlanCoachAutoRunKey(`prep-coach-report-${Date.now()}`);
+    } catch (error) {
+      notifications.show({
+        title: "Coach report failed",
+        message: error instanceof Error ? error.message : String(error),
+        color: "red",
+      });
+    } finally {
+      setGamePlanReportRunning(false);
+    }
+  }, [
+    buildPrepGamePlanBrief,
+    builderRunning,
+    configReady,
+    gamePlanBrief,
+    gamePlanReportRunning,
+    prep.builder,
+    prep.rootPath,
+    store,
+  ]);
+
   const gamePlanCoachRequest = useMemo(
     () =>
       gamePlanBrief
@@ -3534,6 +3585,18 @@ function OpponentPrepPanel({
                   Build prep
                 </Button>
               </Tooltip>
+              <Tooltip label="Build a compact prep brief and ask the AI coach for a report from the same evidence">
+                <Button
+                  variant="default"
+                  size={controlSize}
+                  leftSection={<IconSparkles size="0.95rem" />}
+                  disabled={!configReady || builderRunning}
+                  loading={gamePlanReportRunning}
+                  onClick={() => void runGamePlanCoachReport()}
+                >
+                  Coach report
+                </Button>
+              </Tooltip>
               <Tooltip
                 label={
                   canRunStraightLine
@@ -3784,8 +3847,12 @@ function OpponentPrepPanel({
               userColor={userColor}
               coachRequest={gamePlanCoachRequest}
               coachCacheKey={gamePlanCoachCacheKey}
+              coachAutoRunKey={gamePlanCoachAutoRunKey}
               onPlayLine={playGamePlanLine}
-              onClear={() => setGamePlanBrief(null)}
+              onClear={() => {
+                setGamePlanBrief(null);
+                setGamePlanCoachAutoRunKey(null);
+              }}
             />
           ) : null}
         </Box>
@@ -5469,6 +5536,7 @@ function PrepGamePlanBriefPanel({
   userColor,
   coachRequest,
   coachCacheKey,
+  coachAutoRunKey,
   onPlayLine,
   onClear,
 }: {
@@ -5477,6 +5545,7 @@ function PrepGamePlanBriefPanel({
   userColor: PrepColor;
   coachRequest: PlanCoachInlineRequest | null;
   coachCacheKey: string;
+  coachAutoRunKey: string | null;
   onPlayLine: (moves: string[]) => void;
   onClear: () => void;
 }) {
@@ -5605,6 +5674,7 @@ function PrepGamePlanBriefPanel({
             disabled={brief.mainLine.length === 0}
             actionLabel="Coach report"
             refreshLabel="Refresh report"
+            autoRunKey={coachAutoRunKey}
           />
         ) : null}
       </Stack>
