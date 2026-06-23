@@ -1484,35 +1484,44 @@ async function getBestUserResponseImpact({
         (sum, opening) => sum + getOpeningTotal(opening),
         0,
     );
-    if (eligibleTotal <= 0) return null;
 
     const replies = sortOpponentPrepOpenings(openings, minGames, moveLimit);
     const engineMoves =
         settings.useCloudEngine && loadEngineMoves
             ? await loadEngineMoves(fen, userColor, settings).catch(() => [])
             : [];
+    if (eligibleTotal <= 0 && engineMoves.length === 0) return null;
 
-    const strengthByMove = getPrepMoveStrengthMap({
-        openings: replies,
+    const { candidates, metaByMove } = getPrepStrengthReplyCandidates({
+        replies,
         engineMoves,
         side: userColor,
-        settings,
     });
-    const bestReply = replies
-        .map((opening) => {
-            const strength = strengthByMove.get(normalizeSanForPrep(opening.move)) ?? null;
+    const strengthByMove = new Map(
+        evaluatePrepStrengthCandidates({
+            candidates,
+            engineMoves,
+            settings,
+        }).map((candidate) => [normalizeSanForPrep(candidate.move), candidate]),
+    );
+    if (strengthByMove.size === 0) return null;
+
+    const candidateMoves = Array.from(metaByMove.values());
+    const bestReply = candidateMoves
+        .map((candidate) => {
+            const strength = strengthByMove.get(normalizeSanForPrep(candidate.move)) ?? null;
             const lineStrength = strength
                 ? createProjectedPrepLineStrength({
                       strength,
-                      userScore: getOpeningScoreForSide(opening, userColor),
+                      userScore: candidate.score,
                       settings,
                   })
                 : null;
             return {
-                move: opening.move,
-                games: getOpeningTotal(opening),
-                share: getOpeningTotal(opening) / eligibleTotal,
-                score: getOpeningScoreForSide(opening, userColor),
+                move: candidate.move,
+                games: candidate.games,
+                share: candidate.share,
+                score: candidate.score,
                 strengthScore: strength?.score ?? null,
                 strength,
                 lineScore: lineStrength?.score ?? null,
@@ -2403,6 +2412,67 @@ function getPrepBuilderDatabaseRanksFromScores(
         );
 
     return new Map(ranked.map((candidate, index) => [candidate.key, index + 1]));
+}
+
+function getPrepStrengthReplyCandidates({
+    replies,
+    engineMoves,
+    side,
+}: {
+    replies: Opening[];
+    engineMoves: PrepBuilderEngineMove[];
+    side: PrepColor;
+}) {
+    const positionGames = replies.reduce((sum, opening) => sum + getOpeningTotal(opening), 0);
+    const seen = new Set<string>();
+    const candidates: PrepStrengthCandidate[] = [];
+    const metaByMove = new Map<
+        string,
+        {
+            move: string;
+            games: number;
+            share: number;
+            score: number;
+        }
+    >();
+
+    for (const reply of replies) {
+        const key = normalizeSanForPrep(reply.move);
+        const games = getOpeningTotal(reply);
+        seen.add(key);
+        candidates.push({
+            move: reply.move,
+            total: games,
+            usageShare: positionGames > 0 ? games / positionGames : null,
+            databaseScore: getSidePracticalWdlRateForOpening(reply, side),
+        });
+        metaByMove.set(key, {
+            move: reply.move,
+            games,
+            share: positionGames > 0 ? games / positionGames : 0,
+            score: getOpeningScoreForSide(reply, side),
+        });
+    }
+
+    for (const engineMove of engineMoves) {
+        const key = normalizeSanForPrep(engineMove.san);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        candidates.push({
+            move: engineMove.san,
+            total: 1,
+            usageShare: null,
+            databaseScore: null,
+        });
+        metaByMove.set(key, {
+            move: engineMove.san,
+            games: 0,
+            share: 0,
+            score: 0.5,
+        });
+    }
+
+    return { candidates, metaByMove };
 }
 
 function getSideScoreForOpening(

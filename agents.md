@@ -320,16 +320,23 @@ default.
   current candidate, a later weaker move such as `...cxd4` must not drag the
   `After prep` value below `...g6`'s own current strength; the future-line label
   should only appear when that future continuation is the displayed score.
-- Candidate `After prep` cells should be blank unless the future continuation
-  is actually stronger than the row's normal `Strength`; duplicating the same
-  number in both columns makes it look like there is conditional evidence when
-  there is not.
+- Candidate `After prep` cells should normally be blank unless the future
+  continuation is stronger than the row's normal `Strength`. A lower projected
+  value may still be shown when the future prep-side reply came from local eval
+  coverage because the opponent database has no reply row there; this clarifies
+  sparse lines such as `1.c3` without silently hiding the local eval result.
+  Identical values should remain blank, and ordinary deeper database lines
+  should not drag an already-good current candidate below its own surface
+  strength.
 - When cloud engine is enabled, candidate lookahead must fetch engine/cloud
   moves for the future prep-side position before scoring the future reply. Do
   not call any external eval API here. The source must be the local stored
-  Lichess cloud-eval database; if that has no moves for the position, still
-  show a practical/database projection instead of a blank or repeated
-  missing-engine value such as `59`.
+  Lichess cloud-eval database. If a future prep-side position has local eval
+  moves but no opponent-database reply rows, synthesize engine-only reply
+  candidates with neutral WDL and low-confidence scoring rather than leaving
+  the cell blank. If the local store has no moves for the position, still show
+  a practical/database projection instead of a blank or repeated missing-engine
+  value such as `59`.
 - Candidate lookahead may use future move strength to select a reply, but the
   displayed `After prep` score must be a projected line value from the original
   prep side's perspective. Cap the future move's relative strength by the

@@ -3857,8 +3857,7 @@ function PrepCandidateMoveTable({
             const continuationStrength = lineImpact?.continuationLineStrength ?? null;
             const continuationIsShown =
               continuationStrength !== null &&
-              afterPrepStrength?.score === continuationStrength.score &&
-              (!rowStrength || continuationStrength.score > rowStrength.score);
+              afterPrepStrength?.score === continuationStrength.score;
 
             return (
               <Table.Tr
@@ -4441,16 +4440,35 @@ function getCandidateContinuationStrengthMap({
     const impact = candidateLineImpactByKey[key];
     const currentStrength = strengthByMove.get(moveKey);
     const continuationStrength = impact?.continuationLineStrength ?? null;
-    const displayedStrength =
-      continuationStrength &&
-      (!currentStrength || continuationStrength.score > currentStrength.score)
-        ? continuationStrength
-        : null;
+    const displayedStrength = shouldShowCandidateAfterPrepStrength({
+      continuationStrength,
+      currentStrength,
+      impact,
+    })
+      ? continuationStrength
+      : null;
 
     if (displayedStrength) entries.push([moveKey, displayedStrength]);
   }
 
   return new Map(entries);
+}
+
+function shouldShowCandidateAfterPrepStrength({
+  continuationStrength,
+  currentStrength,
+  impact,
+}: {
+  continuationStrength: PrepMoveStrength | null;
+  currentStrength: PrepMoveStrength | undefined;
+  impact: OpponentPrepLineImpact | undefined;
+}) {
+  if (!continuationStrength) return false;
+  if (!currentStrength) return true;
+  if (continuationStrength.score > currentStrength.score) return true;
+  if (continuationStrength.score === currentStrength.score) return false;
+
+  return impact?.userResponseGames === 0 && impact.userResponseStrength?.engineCp !== null;
 }
 
 function createOpeningFromSideScore({

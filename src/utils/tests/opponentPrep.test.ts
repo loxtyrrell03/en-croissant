@@ -651,6 +651,58 @@ describe("opponent prep helpers", () => {
         expect(impact?.continuationLineStrength?.detail).toContain("Engine unavailable");
     });
 
+    test("candidate reply strength can use local eval moves when future database replies are missing", async () => {
+        const store = createTreeStore();
+        const settings = normalizePrepBuilderSettings({
+            mode: "smart",
+            engineWeight: 55,
+            maxEngineCpLoss: 70,
+            useCloudEngine: true,
+        });
+
+        const fen = store.getState().root.fen;
+        const afterC3 = applyPrepSanMove(fen, "c3");
+        const afterC3E5 = afterC3 ? applyPrepSanMove(afterC3, "e5") : null;
+        const impact = await getOpponentPrepCandidateLineImpact({
+            fen,
+            row: {
+                move: "c3",
+                white: 2,
+                draw: 0,
+                black: 1,
+                total: 3,
+                share: 0.01,
+            },
+            opponentColor: "black",
+            loadOpenings: async (position) => {
+                if (position === afterC3) {
+                    return [{ move: "e5", white: 1, draw: 0, black: 1 }];
+                }
+                if (position === afterC3E5) {
+                    return [];
+                }
+                return [];
+            },
+            loadEngineMoves: async (position) =>
+                position === afterC3E5
+                    ? [
+                          { san: "d4", scoreCpForSide: 45, rank: 1, source: "lichess" },
+                          { san: "e4", scoreCpForSide: 30, rank: 2, source: "lichess" },
+                      ]
+                    : [],
+            minGames: 1,
+            moveLimit: 4,
+            settings,
+        });
+
+        expect(impact?.continuationMoves).toEqual(["e5", "d4"]);
+        expect(impact?.userResponseMove).toBe("d4");
+        expect(impact?.userResponseGames).toBe(0);
+        expect(impact?.continuationLineStrength).not.toBeNull();
+        expect(impact?.continuationLineStrength?.detail).toContain("Local eval best");
+        expect(impact?.continuationLineStrength?.detail).toContain("WDL unavailable");
+    });
+
     test("chooses future prep replies by strength instead of raw WDL", async () => {
         const store = createTreeStore();
         store.getState().makeMove({ payload: "e4" });
