@@ -399,6 +399,34 @@ function EngineListener({
               });
             }
           });
+
+          if (engine.type === "local" && cloudCovered && hasPartialCloudLines(bestMoves)) {
+            void extendMissingCloudLinesWithLocalSearches(
+              engine,
+              tab,
+              settings.go,
+              engineOptions,
+              bestMoves,
+            ).then((extendedMoves) => {
+              if (
+                cancelled ||
+                requestSequenceRef.current !== requestId ||
+                latestSearchKeyRef.current !== searchKey
+              ) {
+                return;
+              }
+              startTransition(() => {
+                setEngineVariation((prev) =>
+                  withLimitedMapEntry(
+                    prev,
+                    searchKey,
+                    extendedMoves,
+                    MAX_ENGINE_RESULT_CACHE_ENTRIES,
+                  ),
+                );
+              });
+            });
+          }
         })
         .catch((error) => {
           if (
@@ -469,8 +497,6 @@ async function getLocalBestMovesWithLichessCloud(
   options: EngineOptions,
   updateCloudStatus: (status: EngineCloudEvalStatus) => void,
 ) {
-  const localStart = startLocalBestMoves(engine, tab, goMode, options);
-  let stopLocalSearchAfterCloud = false;
   updateCloudStatus({
     phase: "checking",
     message: "Checking local Lichess evals...",
@@ -480,36 +506,12 @@ async function getLocalBestMovesWithLichessCloud(
   try {
     const cloudMoves = await lichessGetBestMoves(tab, goMode, options);
     if (cloudMoves?.[1]?.length) {
-      stopLocalSearchAfterCloud = true;
-      let bestMoves = cloudMoves[1];
-
-      if (hasPartialCloudLines(bestMoves)) {
-        updateCloudStatus({
-          phase: "checking",
-          message: "Extending local eval lines with Stockfish...",
-          updatedAt: Date.now(),
-        });
-        const localMoves = await localStart.promise.catch((error) => {
-          console.warn("Failed to extend local eval lines with Stockfish.", error);
-          return null;
-        });
-        bestMoves = mergeCloudLinesWithLocalMultiPv(bestMoves, localMoves?.[1]);
-        localStart.cleanup(true);
-        bestMoves = await extendMissingCloudLinesWithLocalSearches(
-          engine,
-          tab,
-          goMode,
-          options,
-          bestMoves,
-        );
-      }
-
       updateCloudStatus({
         phase: "available",
-        message: formatCloudAvailableMessage(bestMoves),
+        message: formatCloudAvailableMessage(cloudMoves[1]),
         updatedAt: Date.now(),
       });
-      return [cloudMoves[0], bestMoves] as [number, BestMoves[]];
+      return cloudMoves;
     }
 
     updateCloudStatus({
@@ -517,12 +519,24 @@ async function getLocalBestMovesWithLichessCloud(
       message: "No local Lichess eval was found for this position.",
       updatedAt: Date.now(),
     });
-    return await localStart.promise;
+    return await getLocalBestMovesFallback(engine, tab, goMode, options);
   } catch (error) {
     updateCloudStatus(cloudFailureStatus(error));
+    return await getLocalBestMovesFallback(engine, tab, goMode, options);
+  }
+}
+
+async function getLocalBestMovesFallback(
+  engine: LocalEngine,
+  tab: string,
+  goMode: GoMode,
+  options: EngineOptions,
+) {
+  const localStart = startLocalBestMoves(engine, tab, goMode, options);
+  try {
     return await localStart.promise;
   } finally {
-    localStart.cleanup(stopLocalSearchAfterCloud);
+    localStart.cleanup(false);
   }
 }
 
@@ -589,44 +603,6 @@ type CloudBackedBestMove = BestMoves & {
 
 function hasPartialCloudLines(bestMoves: BestMoves[]) {
   return bestMoves.some((move) => Boolean((move as CloudBackedBestMove).cloudLinePartial));
-}
-
-function mergeCloudLinesWithLocalMultiPv(
-  cloudMoves: BestMoves[],
-  localMoves: BestMoves[] | null | undefined,
-) {
-  if (!localMoves?.length) return cloudMoves;
-
-  const localByFirstMove = new Map<string, BestMoves>();
-  for (const localMove of localMoves) {
-    const firstMove = localMove.uciMoves[0];
-    if (!firstMove || localMove.uciMoves.length <= 1 || localByFirstMove.has(firstMove)) {
-      continue;
-    }
-    localByFirstMove.set(firstMove, localMove);
-  }
-
-  if (localByFirstMove.size === 0) return cloudMoves;
-
-  return cloudMoves.map((cloudMove) => {
-    const cloudState = cloudMove as CloudBackedBestMove;
-    if (!cloudState.cloudLinePartial) return cloudMove;
-
-    const firstMove = cloudMove.uciMoves[0];
-    const localMove = firstMove ? localByFirstMove.get(firstMove) : null;
-    if (!firstMove || !localMove) return cloudMove;
-
-    return {
-      ...cloudMove,
-      sanMoves: [
-        cloudMove.sanMoves[0] ?? localMove.sanMoves[0] ?? firstMove,
-        ...localMove.sanMoves.slice(1),
-      ],
-      uciMoves: [firstMove, ...localMove.uciMoves.slice(1)],
-      cloudLineExtendedWithLocal: true,
-      cloudLinePartial: false,
-    } satisfies CloudBackedBestMove;
-  });
 }
 
 async function extendMissingCloudLinesWithLocalSearches(

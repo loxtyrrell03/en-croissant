@@ -404,6 +404,13 @@ default.
   straight through to Stockfish when that store has no row. Keep this panel
   focused on the active Stockfish/available local-cloud lines rather than
   surfacing Lichess API rate-limit or fallback narration.
+- On 2026-06-23, the desktop board eval flow was corrected so local cloud evals
+  are no longer blocked behind Stockfish continuation generation. The local
+  eval lookup now runs first and returns saved cloud rows immediately; Stockfish
+  only starts as the main fallback when the local store misses. For compact
+  one-move cloud rows, hidden child-position Stockfish continuation searches
+  may update the displayed PV later, but they must not delay or replace the
+  saved cloud score/depth/root move.
 
 ### Web Companion
 
