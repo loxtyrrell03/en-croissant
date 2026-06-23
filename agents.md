@@ -363,6 +363,15 @@ default.
   than the surface row. General-mode tooltips should describe the source side
   rather than a named opponent, while keeping the same eval rule: local Lichess
   evals only, practical projection when no local eval covers the position.
+- A same-day performance pass made desktop `After prep` projections progressive
+  instead of all-or-nothing. Branch/source rows now use a cheap immediate
+  prep-side reply projection and publish each row as it resolves, while
+  candidate rows first scan only the next likely source/opponent reply plus the
+  prep-side response for every visible row, then run the deeper continuation
+  refinement only for a small strongest/common subset. Keep this bounded,
+  progressive shape so general prep does not freeze while waiting on many
+  Lichess/database child-position lookups, and so missing general-mode values
+  are not caused by one slow row blocking the entire map.
 
 ### Local Lichess Cloud Evals
 
@@ -440,6 +449,11 @@ default.
   instead of waiting behind shard lookup/decompression. Keep this parallel
   miss path intact so out-of-book positions do not appear to stall before
   local analysis begins.
+- A later 2026-06-23 cache fix made local cloud-eval misses honor the existing
+  missing-position cache before calling the Tauri lookup again. This matters
+  for After prep and other sparse-position features that may revisit the same
+  future FEN repeatedly; cached misses should return as absent engine evidence
+  instead of repeating slow shard/decompression work.
 
 ### Web Companion
 

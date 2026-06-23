@@ -13,6 +13,7 @@ import {
     getOpponentPrepBranchStats,
     getOpponentPrepCandidateLineImpact,
     getOpponentPrepMoveRows,
+    getBestPrepLineReplyImpact,
     getPrepStraightLineForcedMove,
     getPrepBuilderBranchValue,
     getPrepBuilderEffectiveMaxPly,
@@ -500,6 +501,87 @@ describe("opponent prep helpers", () => {
         expect(impact?.continuationStrengthScore).toBe(100);
         expect(impact?.scoreDrop).toBeCloseTo(0.4);
         expect(impact?.weightedScoreDrop ?? 0).toBeGreaterThan(0.2);
+    });
+
+    test("projects an immediate prep reply from already loaded reply stats", () => {
+        const settings = normalizePrepBuilderSettings({ mode: "practical", useCloudEngine: false });
+        const reply = getBestPrepLineReplyImpact({
+            userColor: "black",
+            settings,
+            replies: [
+                { move: "g6", white: 10, draw: 8, black: 22 },
+                { move: "d6", white: 12, draw: 4, black: 4 },
+            ],
+        });
+
+        expect(reply?.move).toBe("g6");
+        expect(reply?.strength).not.toBeNull();
+        expect(reply?.lineStrength).not.toBeNull();
+        expect(reply?.lineStrength?.score).toBeGreaterThan(50);
+    });
+
+    test("can limit candidate line impact to a fast first prep response", async () => {
+        const store = createTreeStore();
+        store.getState().makeMove({ payload: "e4" });
+        const settings = normalizePrepBuilderSettings({ mode: "practical", useCloudEngine: false });
+
+        const fen = store.getState().root.children[0].fen;
+        const afterC5 = applyPrepSanMove(fen, "c5");
+        const afterC5Nf3 = afterC5 ? applyPrepSanMove(afterC5, "Nf3") : null;
+        const afterC5Nf3G6 = afterC5Nf3 ? applyPrepSanMove(afterC5Nf3, "g6") : null;
+        const afterC5Nf3G6D4 = afterC5Nf3G6 ? applyPrepSanMove(afterC5Nf3G6, "d4") : null;
+        const loadOpenings = async (position: string) => {
+            if (position === afterC5) {
+                return [{ move: "Nf3", white: 24, draw: 8, black: 8 }];
+            }
+            if (position === afterC5Nf3) {
+                return [{ move: "g6", white: 15, draw: 8, black: 17 }];
+            }
+            if (position === afterC5Nf3G6) {
+                return [{ move: "d4", white: 45, draw: 0, black: 45 }];
+            }
+            if (position === afterC5Nf3G6D4) {
+                return [{ move: "Bg7", white: 0, draw: 4, black: 36 }];
+            }
+            return [];
+        };
+
+        const fastImpact = await getOpponentPrepCandidateLineImpact({
+            fen,
+            row: {
+                move: "c5",
+                white: 70,
+                draw: 10,
+                black: 20,
+                total: 100,
+                share: 0.24,
+            },
+            opponentColor: "white",
+            loadOpenings,
+            minGames: 1,
+            moveLimit: 8,
+            settings,
+            maxUserResponses: 1,
+        });
+        const deepImpact = await getOpponentPrepCandidateLineImpact({
+            fen,
+            row: {
+                move: "c5",
+                white: 70,
+                draw: 10,
+                black: 20,
+                total: 100,
+                share: 0.24,
+            },
+            opponentColor: "white",
+            loadOpenings,
+            minGames: 1,
+            moveLimit: 8,
+            settings,
+        });
+
+        expect(fastImpact?.continuationMoves).toEqual(["Nf3", "g6"]);
+        expect(deepImpact?.continuationMoves).toEqual(["Nf3", "g6", "d4", "Bg7"]);
     });
 
     test("candidate reply strength uses future engine data when cloud engine is enabled", async () => {

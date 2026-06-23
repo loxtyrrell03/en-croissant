@@ -83,7 +83,7 @@ export type OpponentPrepLineImpact = {
     weightedStrengthScore: number;
 };
 
-type PrepLineMoveImpact = {
+export type PrepLineMoveImpact = {
     move: string;
     games: number;
     share: number;
@@ -1113,6 +1113,7 @@ export async function getOpponentPrepCandidateLineImpact({
     minGames,
     moveLimit,
     settings,
+    maxUserResponses = PREP_CANDIDATE_LINE_MAX_USER_RESPONSES,
 }: {
     fen: string;
     row: Pick<OpponentPrepMoveRow, "move" | "total" | "share" | "white" | "draw" | "black">;
@@ -1122,6 +1123,7 @@ export async function getOpponentPrepCandidateLineImpact({
     minGames: number;
     moveLimit: number;
     settings: PrepBuilderSettings;
+    maxUserResponses?: number;
 }): Promise<OpponentPrepLineImpact | null> {
     const surfaceScore = getOpeningScoreForSide(row, opponentColor);
 
@@ -1137,6 +1139,7 @@ export async function getOpponentPrepCandidateLineImpact({
         minGames,
         moveLimit,
         settings,
+        maxUserResponses,
     });
     if (!continuation) return null;
 
@@ -1289,6 +1292,7 @@ async function getCandidateContinuationImpact({
     minGames,
     moveLimit,
     settings,
+    maxUserResponses,
 }: {
     startFen: string;
     surfaceScore: number;
@@ -1298,6 +1302,7 @@ async function getCandidateContinuationImpact({
     minGames: number;
     moveLimit: number;
     settings: PrepBuilderSettings;
+    maxUserResponses: number;
 }): Promise<CandidateContinuationImpact | null> {
     const userColor = oppositePrepColor(opponentColor);
     const endpoints: CandidateContinuationImpact[] = [];
@@ -1346,11 +1351,12 @@ async function getCandidateContinuationImpact({
         });
     };
 
-    for (
-        let userResponses = 0;
-        userResponses < PREP_CANDIDATE_LINE_MAX_USER_RESPONSES;
-        userResponses += 1
-    ) {
+    const responseLimit = Math.max(
+        1,
+        Math.min(PREP_CANDIDATE_LINE_MAX_USER_RESPONSES, Math.round(maxUserResponses)),
+    );
+
+    for (let userResponses = 0; userResponses < responseLimit; userResponses += 1) {
         if (getFenTurn(fen) !== opponentColor) break;
 
         const opponentReply = await getTopOpponentReplyImpact({
@@ -1492,52 +1498,12 @@ async function getBestUserResponseImpact({
             : [];
     if (eligibleTotal <= 0 && engineMoves.length === 0) return null;
 
-    const { candidates, metaByMove } = getPrepStrengthReplyCandidates({
+    return getBestPrepLineReplyImpact({
         replies,
         engineMoves,
-        side: userColor,
+        userColor,
+        settings,
     });
-    const strengthByMove = new Map(
-        evaluatePrepStrengthCandidates({
-            candidates,
-            engineMoves,
-            settings,
-        }).map((candidate) => [normalizeSanForPrep(candidate.move), candidate]),
-    );
-    if (strengthByMove.size === 0) return null;
-
-    const candidateMoves = Array.from(metaByMove.values());
-    const bestReply = candidateMoves
-        .map((candidate) => {
-            const strength = strengthByMove.get(normalizeSanForPrep(candidate.move)) ?? null;
-            const lineStrength = strength
-                ? createProjectedPrepLineStrength({
-                      strength,
-                      userScore: candidate.score,
-                      settings,
-                  })
-                : null;
-            return {
-                move: candidate.move,
-                games: candidate.games,
-                share: candidate.share,
-                score: candidate.score,
-                strengthScore: strength?.score ?? null,
-                strength,
-                lineScore: lineStrength?.score ?? null,
-                lineStrength,
-            };
-        })
-        .sort(
-            (a, b) =>
-                (b.strengthScore ?? -1) - (a.strengthScore ?? -1) ||
-                b.score - a.score ||
-                b.share - a.share ||
-                b.games - a.games ||
-                a.move.localeCompare(b.move),
-        )[0];
-
-    return bestReply ?? null;
 }
 
 export function getPrepBuilderTaskPriority({
@@ -1557,6 +1523,64 @@ export function getPrepBuilderTaskPriority({
     const depthMomentum = 1 + commonness * clamp(ply / Math.max(1, settings.maxPly), 0, 1) * 0.25;
     const breadthExponent = clamp(settings.breadthBias / 100, 0.2, 1);
     return Math.pow(branchShare, breadthExponent) * shallowBoost * depthMomentum * branchValue;
+}
+
+export function getBestPrepLineReplyImpact({
+    replies,
+    engineMoves = [],
+    userColor,
+    settings,
+}: {
+    replies: Opening[];
+    engineMoves?: PrepBuilderEngineMove[];
+    userColor: PrepColor;
+    settings: PrepBuilderSettings;
+}): PrepLineMoveImpact | null {
+    const { candidates, metaByMove } = getPrepStrengthReplyCandidates({
+        replies,
+        engineMoves,
+        side: userColor,
+    });
+    const strengthByMove = new Map(
+        evaluatePrepStrengthCandidates({
+            candidates,
+            engineMoves,
+            settings,
+        }).map((candidate) => [normalizeSanForPrep(candidate.move), candidate]),
+    );
+    if (strengthByMove.size === 0) return null;
+
+    return (
+        Array.from(metaByMove.values())
+            .map((candidate) => {
+                const strength = strengthByMove.get(normalizeSanForPrep(candidate.move)) ?? null;
+                const lineStrength = strength
+                    ? createProjectedPrepLineStrength({
+                          strength,
+                          userScore: candidate.score,
+                          settings,
+                      })
+                    : null;
+                return {
+                    move: candidate.move,
+                    games: candidate.games,
+                    share: candidate.share,
+                    score: candidate.score,
+                    strengthScore: strength?.score ?? null,
+                    strength,
+                    lineScore: lineStrength?.score ?? null,
+                    lineStrength,
+                };
+            })
+            .sort(
+                (a, b) =>
+                    (b.strengthScore ?? -1) - (a.strengthScore ?? -1) ||
+                    b.score - a.score ||
+                    b.share - a.share ||
+                    b.games - a.games ||
+                    a.move.localeCompare(b.move),
+            )[0] ?? null
+    );
 }
 
 export function getPrepBuilderEffectiveMaxPly({

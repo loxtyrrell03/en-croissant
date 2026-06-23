@@ -469,6 +469,12 @@ async function getCloudEvaluation(fen: string, multipv: number): Promise<Lichess
   if (cache.has(cacheKey)) {
     return cache.get(cacheKey)!;
   }
+  if (missingCache.has(cacheKey)) {
+    throw new LichessCloudEvaluationError(
+      "missing",
+      "No local Lichess eval is cached for this exact position.",
+    );
+  }
 
   const localData = await getLocalCloudEvaluation(fen, safeMultipv);
   if (localData?.pvs?.length) {
