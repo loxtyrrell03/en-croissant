@@ -413,7 +413,7 @@ export async function getBestMoves(
         uciMoves: normalizedUciMoves,
       };
 
-      if (data.source === "local-lichess") {
+      if (data.source === "local-lichess" && normalizedUciMoves.length <= 1) {
         bestMove.cloudLinePartial = true;
       }
 

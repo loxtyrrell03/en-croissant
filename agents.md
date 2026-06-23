@@ -411,6 +411,14 @@ default.
   one-move cloud rows, hidden child-position Stockfish continuation searches
   may update the displayed PV later, but they must not delay or replace the
   saved cloud score/depth/root move.
+- A later 2026-06-23 correction changed new local Lichess eval builds to
+  format version 2, storing full cloud PV tails for the selected top 1-5 moves
+  as binary UCI move codes instead of keeping only the root move. Version 1
+  root-only shards remain readable while a rebuild is in progress, but new
+  builds write variable-length records with a per-shard offset index so lookup
+  still uses hash binary search. Frontend local-cloud rows are only marked as
+  partial when the returned PV contains a single move, so full v2 cloud lines
+  do not trigger local Stockfish continuation grafting.
 
 ### Web Companion
 

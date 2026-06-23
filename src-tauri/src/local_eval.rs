@@ -17,11 +17,14 @@ use specta::Type;
 use tauri::Manager;
 use tauri_specta::Event;
 
-const FORMAT_VERSION: u16 = 1;
+const FORMAT_VERSION: u16 = 2;
+const ROOT_ONLY_FORMAT_VERSION: u16 = 1;
 const DEFAULT_SHARD_COUNT: u16 = 2048;
 const DEFAULT_MAX_PVS: u8 = 5;
 const MAX_STORED_PVS: usize = 5;
-const RECORD_SIZE: usize = 54;
+const ROOT_ONLY_RECORD_SIZE: usize = 54;
+const VARIABLE_RECORD_SIZE: usize = 0;
+const V2_SHARD_MAGIC: &[u8; 4] = b"LEI2";
 const SHARD_BUFFER_FLUSH_BYTES: usize = 256 * 1024;
 const SHARD_CACHE_MAX_BYTES: usize = 256 * 1024 * 1024;
 const MANIFEST_FILE: &str = "manifest.json";
@@ -195,31 +198,20 @@ struct SourcePv {
     line: String,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 struct CompactPv {
-    move_code: u16,
     score: i16,
     score_kind: u8,
+    moves: Vec<u16>,
 }
 
-impl Default for CompactPv {
-    fn default() -> Self {
-        Self {
-            move_code: 0,
-            score: 0,
-            score_kind: 0,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 struct CompactRecord {
     hash_hi: u64,
     hash_lo: u64,
     depth: u16,
-    pv_count: u8,
     knodes: u32,
-    pvs: [CompactPv; MAX_STORED_PVS],
+    pvs: Vec<CompactPv>,
 }
 
 struct CountingReader<R> {
@@ -347,7 +339,7 @@ where
         match parse_compact_record(&line, max_pvs) {
             Ok(Some(record)) => {
                 let shard = shard_for_hash(record.hash_hi, record.hash_lo, shard_count);
-                spool.push(shard, &pack_record(&record))?;
+                spool.push(shard, &pack_record(&record)?)?;
                 positions += 1;
             }
             Ok(None) => skipped += 1,
@@ -423,7 +415,7 @@ where
     let manifest = LocalEvalManifest {
         format: "en-croissant-lichess-eval-compact".to_string(),
         version: FORMAT_VERSION,
-        record_size: RECORD_SIZE,
+        record_size: VARIABLE_RECORD_SIZE,
         shard_count,
         max_pvs,
         positions,
@@ -482,28 +474,32 @@ pub fn lookup_eval(
         return Ok(None);
     }
 
-    let bytes = load_shard(&path)?;
-    if bytes.len() % RECORD_SIZE != 0 {
-        return Err(LocalEvalError::InvalidDatabase(format!(
-            "shard {} has invalid byte length {}",
-            path.display(),
-            bytes.len()
-        )));
+    if manifest.version == ROOT_ONLY_FORMAT_VERSION {
+        return lookup_root_only_eval(
+            &path,
+            &fen_key,
+            hash_hi,
+            hash_lo,
+            &manifest,
+            requested_multipv,
+        );
     }
 
-    let Some(record) = find_record(&bytes, hash_hi, hash_lo) else {
+    let bytes = load_shard(&path)?;
+
+    let Some(record) = find_record(&bytes, hash_hi, hash_lo)? else {
         return Ok(None);
     };
 
     let pv_limit = requested_multipv
         .max(1)
         .min(manifest.max_pvs)
-        .min(record.pv_count) as usize;
+        .min(record.pvs.len() as u8) as usize;
     let pvs = record
         .pvs
         .iter()
         .take(pv_limit)
-        .filter_map(|pv| decode_pv(*pv))
+        .filter_map(decode_pv)
         .collect::<Vec<_>>();
 
     if pvs.is_empty() {
@@ -557,6 +553,50 @@ pub fn database_status(store_dir: &Path) -> LocalEvalDbStatus {
             error: Some(error.to_string()),
         },
     }
+}
+
+fn lookup_root_only_eval(
+    path: &Path,
+    fen_key: &str,
+    hash_hi: u64,
+    hash_lo: u64,
+    manifest: &LocalEvalManifest,
+    requested_multipv: u8,
+) -> Result<Option<LocalLichessCloudEval>, LocalEvalError> {
+    let bytes = load_shard(path)?;
+    if bytes.len() % ROOT_ONLY_RECORD_SIZE != 0 {
+        return Err(LocalEvalError::InvalidDatabase(format!(
+            "shard {} has invalid byte length {}",
+            path.display(),
+            bytes.len()
+        )));
+    }
+
+    let Some(record) = find_root_only_record(&bytes, hash_hi, hash_lo) else {
+        return Ok(None);
+    };
+
+    let pv_limit = requested_multipv
+        .max(1)
+        .min(manifest.max_pvs)
+        .min(record.pvs.len() as u8) as usize;
+    let pvs = record
+        .pvs
+        .iter()
+        .take(pv_limit)
+        .filter_map(decode_pv)
+        .collect::<Vec<_>>();
+
+    if pvs.is_empty() {
+        return Ok(None);
+    }
+
+    Ok(Some(LocalLichessCloudEval {
+        fen: fen_key.to_string(),
+        knodes: record.knodes,
+        depth: record.depth,
+        pvs,
+    }))
 }
 
 pub fn default_cli_store_dir() -> PathBuf {
@@ -637,15 +677,22 @@ fn validate_manifest(manifest: &LocalEvalManifest) -> Result<(), LocalEvalError>
             "manifest says build is incomplete".to_string(),
         ));
     }
-    if manifest.version != FORMAT_VERSION {
+    if manifest.version != FORMAT_VERSION && manifest.version != ROOT_ONLY_FORMAT_VERSION {
         return Err(LocalEvalError::InvalidDatabase(format!(
             "unsupported format version {}",
             manifest.version
         )));
     }
-    if manifest.record_size != RECORD_SIZE {
+    if manifest.version == ROOT_ONLY_FORMAT_VERSION && manifest.record_size != ROOT_ONLY_RECORD_SIZE
+    {
         return Err(LocalEvalError::InvalidDatabase(format!(
-            "record size mismatch: expected {RECORD_SIZE}, got {}",
+            "record size mismatch: expected {ROOT_ONLY_RECORD_SIZE}, got {}",
+            manifest.record_size
+        )));
+    }
+    if manifest.version == FORMAT_VERSION && manifest.record_size != VARIABLE_RECORD_SIZE {
+        return Err(LocalEvalError::InvalidDatabase(format!(
+            "record size mismatch: expected variable-size marker {VARIABLE_RECORD_SIZE}, got {}",
             manifest.record_size
         )));
     }
@@ -663,27 +710,27 @@ fn parse_compact_record(line: &str, max_pvs: u8) -> Result<Option<CompactRecord>
         return Ok(None);
     };
 
-    let mut pvs = [CompactPv::default(); MAX_STORED_PVS];
-    let mut pv_count = 0_u8;
+    let mut pvs = Vec::with_capacity(max_pvs as usize);
     for pv in eval.pvs.iter().take(max_pvs as usize) {
-        let Some(first_move) = pv.line.split_whitespace().next() else {
+        let moves = pv
+            .line
+            .split_whitespace()
+            .filter_map(encode_uci_move)
+            .collect::<Vec<_>>();
+        if moves.is_empty() {
             continue;
-        };
-        let Some(move_code) = encode_uci_move(first_move) else {
-            continue;
-        };
+        }
         let Some((score, score_kind)) = encode_score(pv) else {
             continue;
         };
-        pvs[pv_count as usize] = CompactPv {
-            move_code,
+        pvs.push(CompactPv {
             score,
             score_kind,
-        };
-        pv_count += 1;
+            moves,
+        });
     }
 
-    if pv_count == 0 {
+    if pvs.is_empty() {
         return Ok(None);
     }
 
@@ -692,7 +739,6 @@ fn parse_compact_record(line: &str, max_pvs: u8) -> Result<Option<CompactRecord>
         hash_hi,
         hash_lo,
         depth: eval.depth,
-        pv_count,
         knodes: eval.knodes.min(u32::MAX as u64) as u32,
         pvs,
     }))
@@ -728,8 +774,16 @@ fn encode_score(pv: &SourcePv) -> Option<(i16, u8)> {
     pv.mate.map(|mate| (mate, 1))
 }
 
-fn decode_pv(pv: CompactPv) -> Option<LocalLichessCloudPv> {
-    let moves = decode_uci_move(pv.move_code)?;
+fn decode_pv(pv: &CompactPv) -> Option<LocalLichessCloudPv> {
+    let moves = pv
+        .moves
+        .iter()
+        .map(|code| decode_uci_move(*code))
+        .collect::<Option<Vec<_>>>()?
+        .join(" ");
+    if moves.is_empty() {
+        return None;
+    }
     match pv.score_kind {
         0 => Some(LocalLichessCloudPv {
             moves,
@@ -823,72 +877,246 @@ fn shard_for_hash(hash_hi: u64, hash_lo: u64, shard_count: u16) -> u16 {
     ((hash_hi ^ hash_lo) % shard_count as u64) as u16
 }
 
-fn pack_record(record: &CompactRecord) -> [u8; RECORD_SIZE] {
-    let mut out = [0_u8; RECORD_SIZE];
-    out[0..8].copy_from_slice(&record.hash_hi.to_le_bytes());
-    out[8..16].copy_from_slice(&record.hash_lo.to_le_bytes());
-    out[16..18].copy_from_slice(&record.depth.to_le_bytes());
-    out[18] = record.pv_count;
-    out[19] = 0;
-    out[20..24].copy_from_slice(&record.knodes.to_le_bytes());
+fn pack_record(record: &CompactRecord) -> Result<Vec<u8>, LocalEvalError> {
+    let mut out = vec![0_u8; 26];
+    out[2..10].copy_from_slice(&record.hash_hi.to_le_bytes());
+    out[10..18].copy_from_slice(&record.hash_lo.to_le_bytes());
+    out[18..20].copy_from_slice(&record.depth.to_le_bytes());
+    out[20] = record.pvs.len().min(MAX_STORED_PVS) as u8;
+    out[21] = 0;
+    out[22..26].copy_from_slice(&record.knodes.to_le_bytes());
 
-    let mut offset = 24;
-    for pv in record.pvs {
-        out[offset..offset + 2].copy_from_slice(&pv.move_code.to_le_bytes());
-        out[offset + 2..offset + 4].copy_from_slice(&pv.score.to_le_bytes());
-        out[offset + 4] = pv.score_kind;
-        out[offset + 5] = 0;
-        offset += 6;
+    for pv in record.pvs.iter().take(MAX_STORED_PVS) {
+        let move_count = pv.moves.len().min(u8::MAX as usize);
+        if move_count == 0 {
+            continue;
+        }
+        out.extend_from_slice(&pv.score.to_le_bytes());
+        out.push(pv.score_kind);
+        out.push(move_count as u8);
+        for move_code in pv.moves.iter().take(move_count) {
+            out.extend_from_slice(&move_code.to_le_bytes());
+        }
     }
-    out
+
+    let record_len = u16::try_from(out.len()).map_err(|_| {
+        LocalEvalError::InvalidDatabase(format!("packed eval record is too large: {}", out.len()))
+    })?;
+    out[0..2].copy_from_slice(&record_len.to_le_bytes());
+    Ok(out)
 }
 
-fn unpack_record(bytes: &[u8]) -> CompactRecord {
-    let mut pvs = [CompactPv::default(); MAX_STORED_PVS];
+fn unpack_record(bytes: &[u8]) -> Result<CompactRecord, LocalEvalError> {
+    if bytes.len() < 26 {
+        return Err(LocalEvalError::InvalidDatabase(format!(
+            "record too short: {} bytes",
+            bytes.len()
+        )));
+    }
+    let record_len = u16::from_le_bytes([bytes[0], bytes[1]]) as usize;
+    if record_len != bytes.len() {
+        return Err(LocalEvalError::InvalidDatabase(format!(
+            "record length mismatch: expected {record_len}, got {}",
+            bytes.len()
+        )));
+    }
+
+    let pv_count = bytes[20].min(MAX_STORED_PVS as u8) as usize;
+    let mut offset = 26;
+    let mut pvs = Vec::with_capacity(pv_count);
+    for _ in 0..pv_count {
+        if offset + 4 > bytes.len() {
+            return Err(LocalEvalError::InvalidDatabase(
+                "record ended inside PV header".to_string(),
+            ));
+        }
+        let score = i16::from_le_bytes([bytes[offset], bytes[offset + 1]]);
+        let score_kind = bytes[offset + 2];
+        let move_count = bytes[offset + 3] as usize;
+        offset += 4;
+        let move_bytes = move_count * 2;
+        if offset + move_bytes > bytes.len() {
+            return Err(LocalEvalError::InvalidDatabase(
+                "record ended inside PV moves".to_string(),
+            ));
+        }
+        let moves = bytes[offset..offset + move_bytes]
+            .chunks_exact(2)
+            .map(|chunk| u16::from_le_bytes([chunk[0], chunk[1]]))
+            .collect::<Vec<_>>();
+        offset += move_bytes;
+        pvs.push(CompactPv {
+            score,
+            score_kind,
+            moves,
+        });
+    }
+    if offset != bytes.len() {
+        return Err(LocalEvalError::InvalidDatabase(format!(
+            "record has {} trailing bytes",
+            bytes.len() - offset
+        )));
+    }
+
+    Ok(CompactRecord {
+        hash_hi: u64::from_le_bytes(bytes[2..10].try_into().unwrap()),
+        hash_lo: u64::from_le_bytes(bytes[10..18].try_into().unwrap()),
+        depth: u16::from_le_bytes(bytes[18..20].try_into().unwrap()),
+        knodes: u32::from_le_bytes(bytes[22..26].try_into().unwrap()),
+        pvs,
+    })
+}
+
+fn unpack_root_only_record(bytes: &[u8]) -> CompactRecord {
+    let pv_count = bytes[18].min(MAX_STORED_PVS as u8) as usize;
+    let mut pvs = Vec::with_capacity(pv_count);
     let mut offset = 24;
-    for pv in &mut pvs {
-        *pv = CompactPv {
-            move_code: u16::from_le_bytes([bytes[offset], bytes[offset + 1]]),
-            score: i16::from_le_bytes([bytes[offset + 2], bytes[offset + 3]]),
-            score_kind: bytes[offset + 4],
-        };
+    for _ in 0..MAX_STORED_PVS {
+        let move_code = u16::from_le_bytes([bytes[offset], bytes[offset + 1]]);
+        let score = i16::from_le_bytes([bytes[offset + 2], bytes[offset + 3]]);
+        let score_kind = bytes[offset + 4];
         offset += 6;
+        if pvs.len() < pv_count {
+            pvs.push(CompactPv {
+                score,
+                score_kind,
+                moves: vec![move_code],
+            });
+        }
     }
 
     CompactRecord {
         hash_hi: u64::from_le_bytes(bytes[0..8].try_into().unwrap()),
         hash_lo: u64::from_le_bytes(bytes[8..16].try_into().unwrap()),
         depth: u16::from_le_bytes(bytes[16..18].try_into().unwrap()),
-        pv_count: bytes[18].min(MAX_STORED_PVS as u8),
         knodes: u32::from_le_bytes(bytes[20..24].try_into().unwrap()),
         pvs,
     }
 }
 
-fn record_hash_at(bytes: &[u8], index: usize) -> (u64, u64) {
-    let offset = index * RECORD_SIZE;
+fn root_only_record_hash_at(bytes: &[u8], index: usize) -> (u64, u64) {
+    let offset = index * ROOT_ONLY_RECORD_SIZE;
     (
         u64::from_le_bytes(bytes[offset..offset + 8].try_into().unwrap()),
         u64::from_le_bytes(bytes[offset + 8..offset + 16].try_into().unwrap()),
     )
 }
 
-fn find_record(bytes: &[u8], hash_hi: u64, hash_lo: u64) -> Option<CompactRecord> {
+fn find_root_only_record(bytes: &[u8], hash_hi: u64, hash_lo: u64) -> Option<CompactRecord> {
     let mut low = 0_usize;
-    let mut high = bytes.len() / RECORD_SIZE;
+    let mut high = bytes.len() / ROOT_ONLY_RECORD_SIZE;
     while low < high {
         let mid = low + (high - low) / 2;
-        let hash = record_hash_at(bytes, mid);
+        let hash = root_only_record_hash_at(bytes, mid);
         match hash.cmp(&(hash_hi, hash_lo)) {
             Ordering::Less => low = mid + 1,
             Ordering::Greater => high = mid,
             Ordering::Equal => {
-                let offset = mid * RECORD_SIZE;
-                return Some(unpack_record(&bytes[offset..offset + RECORD_SIZE]));
+                let offset = mid * ROOT_ONLY_RECORD_SIZE;
+                return Some(unpack_root_only_record(
+                    &bytes[offset..offset + ROOT_ONLY_RECORD_SIZE],
+                ));
             }
         }
     }
     None
+}
+
+fn record_hash(record: &[u8]) -> Result<(u64, u64), LocalEvalError> {
+    if record.len() < 18 {
+        return Err(LocalEvalError::InvalidDatabase(format!(
+            "record too short for hash: {} bytes",
+            record.len()
+        )));
+    }
+    Ok((
+        u64::from_le_bytes(record[2..10].try_into().unwrap()),
+        u64::from_le_bytes(record[10..18].try_into().unwrap()),
+    ))
+}
+
+fn find_record(
+    bytes: &[u8],
+    hash_hi: u64,
+    hash_lo: u64,
+) -> Result<Option<CompactRecord>, LocalEvalError> {
+    let index = read_shard_index(bytes)?;
+    let mut low = 0_usize;
+    let mut high = index.count as usize;
+    while low < high {
+        let mid = low + (high - low) / 2;
+        let offset = read_index_offset(bytes, &index, mid)?;
+        let record = record_at(bytes, index.records_end, offset)?;
+        match record_hash(record)?.cmp(&(hash_hi, hash_lo)) {
+            Ordering::Less => low = mid + 1,
+            Ordering::Greater => high = mid,
+            Ordering::Equal => return Ok(Some(unpack_record(record)?)),
+        }
+    }
+    Ok(None)
+}
+
+struct ShardIndex {
+    index_start: usize,
+    records_end: usize,
+    count: u32,
+}
+
+fn read_shard_index(bytes: &[u8]) -> Result<ShardIndex, LocalEvalError> {
+    if bytes.len() < 8 {
+        return Err(LocalEvalError::InvalidDatabase(format!(
+            "v2 shard too short: {} bytes",
+            bytes.len()
+        )));
+    }
+    if &bytes[bytes.len() - 4..] != V2_SHARD_MAGIC {
+        return Err(LocalEvalError::InvalidDatabase(
+            "v2 shard is missing index magic".to_string(),
+        ));
+    }
+    let count = u32::from_le_bytes(bytes[bytes.len() - 8..bytes.len() - 4].try_into().unwrap());
+    let index_bytes = count as usize * 4;
+    if bytes.len() < 8 + index_bytes {
+        return Err(LocalEvalError::InvalidDatabase(format!(
+            "v2 shard index is larger than shard: count={count}, bytes={}",
+            bytes.len()
+        )));
+    }
+    let index_start = bytes.len() - 8 - index_bytes;
+    Ok(ShardIndex {
+        index_start,
+        records_end: index_start,
+        count,
+    })
+}
+
+fn read_index_offset(
+    bytes: &[u8],
+    index: &ShardIndex,
+    position: usize,
+) -> Result<usize, LocalEvalError> {
+    if position >= index.count as usize {
+        return Err(LocalEvalError::InvalidDatabase(format!(
+            "v2 shard index position {position} is out of range"
+        )));
+    }
+    let offset = index.index_start + position * 4;
+    Ok(u32::from_le_bytes(bytes[offset..offset + 4].try_into().unwrap()) as usize)
+}
+
+fn record_at(bytes: &[u8], records_end: usize, offset: usize) -> Result<&[u8], LocalEvalError> {
+    if offset + 2 > records_end {
+        return Err(LocalEvalError::InvalidDatabase(format!(
+            "v2 record offset {offset} is out of range"
+        )));
+    }
+    let record_len = u16::from_le_bytes([bytes[offset], bytes[offset + 1]]) as usize;
+    if record_len < 26 || offset + record_len > records_end {
+        return Err(LocalEvalError::InvalidDatabase(format!(
+            "v2 record at {offset} has invalid length {record_len}"
+        )));
+    }
+    Ok(&bytes[offset..offset + record_len])
 }
 
 struct ShardSpool {
@@ -908,7 +1136,7 @@ impl ShardSpool {
         shard_path(&self.dir, shard)
     }
 
-    fn push(&mut self, shard: u16, record: &[u8; RECORD_SIZE]) -> Result<(), LocalEvalError> {
+    fn push(&mut self, shard: u16, record: &[u8]) -> Result<(), LocalEvalError> {
         let buffer = &mut self.buffers[shard as usize];
         buffer.extend_from_slice(record);
         if buffer.len() >= SHARD_BUFFER_FLUSH_BYTES {
@@ -942,30 +1170,62 @@ fn sort_and_compress_shard(input_path: &Path, output_path: &Path) -> Result<u64,
         return Ok(0);
     }
     let bytes = fs::read(input_path)?;
-    if bytes.len() % RECORD_SIZE != 0 {
-        return Err(LocalEvalError::InvalidDatabase(format!(
-            "spool shard {} has invalid byte length {}",
-            input_path.display(),
-            bytes.len()
-        )));
-    }
-
-    let mut records = bytes
-        .chunks_exact(RECORD_SIZE)
-        .map(unpack_record)
-        .collect::<Vec<_>>();
-    records.sort_unstable_by_key(|record| (record.hash_hi, record.hash_lo));
+    let mut records = unpack_spooled_records(&bytes, input_path)?;
+    records.sort_unstable_by(|a, b| {
+        let a_hash = record_hash(a).unwrap_or((0, 0));
+        let b_hash = record_hash(b).unwrap_or((0, 0));
+        a_hash.cmp(&b_hash)
+    });
 
     let output = File::create(output_path)?;
     let writer = BufWriter::new(output);
     let mut encoder = zstd::Encoder::new(writer, 6)?;
+    let mut offsets = Vec::with_capacity(records.len());
+    let mut offset = 0_u32;
     for record in &records {
-        encoder.write_all(&pack_record(record))?;
+        offsets.push(offset);
+        encoder.write_all(record)?;
+        offset = offset.checked_add(record.len() as u32).ok_or_else(|| {
+            LocalEvalError::InvalidDatabase("v2 shard offset overflow".to_string())
+        })?;
     }
+    for offset in offsets {
+        encoder.write_all(&offset.to_le_bytes())?;
+    }
+    let count = u32::try_from(records.len()).map_err(|_| {
+        LocalEvalError::InvalidDatabase(format!("too many records in shard: {}", records.len()))
+    })?;
+    encoder.write_all(&count.to_le_bytes())?;
+    encoder.write_all(V2_SHARD_MAGIC)?;
     let mut writer = encoder.finish()?;
     writer.flush()?;
 
     Ok(records.len() as u64)
+}
+
+fn unpack_spooled_records(bytes: &[u8], input_path: &Path) -> Result<Vec<Vec<u8>>, LocalEvalError> {
+    let mut records = Vec::new();
+    let mut offset = 0_usize;
+    while offset < bytes.len() {
+        if offset + 2 > bytes.len() {
+            return Err(LocalEvalError::InvalidDatabase(format!(
+                "spool shard {} ended inside record length",
+                input_path.display()
+            )));
+        }
+        let record_len = u16::from_le_bytes([bytes[offset], bytes[offset + 1]]) as usize;
+        if record_len < 26 || offset + record_len > bytes.len() {
+            return Err(LocalEvalError::InvalidDatabase(format!(
+                "spool shard {} has invalid record length {record_len} at byte {offset}",
+                input_path.display()
+            )));
+        }
+        let record = bytes[offset..offset + record_len].to_vec();
+        record_hash(&record)?;
+        records.push(record);
+        offset += record_len;
+    }
+    Ok(records)
 }
 
 fn open_source(
@@ -1016,7 +1276,7 @@ fn build_dir_for(output_dir: &Path, built_at: u64) -> Result<PathBuf, LocalEvalE
         .file_name()
         .and_then(|name| name.to_str())
         .unwrap_or("lichess-cloud-evals");
-    Ok(parent.join(format!(".{name}.building-{built_at}")))
+    Ok(parent.join(format!("{name}-building-{built_at}")))
 }
 
 fn install_build_dir(build_dir: &Path, output_dir: &Path) -> Result<(), LocalEvalError> {
@@ -1029,7 +1289,7 @@ fn install_build_dir(build_dir: &Path, output_dir: &Path) -> Result<(), LocalEva
     fs::create_dir_all(parent)?;
 
     let backup_dir = parent.join(format!(
-        ".{}.backup-{}",
+        "{}-backup-{}",
         output_dir
             .file_name()
             .and_then(|name| name.to_str())
@@ -1177,43 +1437,44 @@ mod tests {
             hash_hi: 1,
             hash_lo: 2,
             depth: 36,
-            pv_count: 2,
             knodes: 123_456,
-            pvs: [
+            pvs: vec![
                 CompactPv {
-                    move_code: encode_uci_move("e2e4").unwrap(),
                     score: 20,
                     score_kind: 0,
+                    moves: vec![
+                        encode_uci_move("e2e4").unwrap(),
+                        encode_uci_move("e7e5").unwrap(),
+                    ],
                 },
                 CompactPv {
-                    move_code: encode_uci_move("g1f3").unwrap(),
                     score: -3,
                     score_kind: 0,
+                    moves: vec![
+                        encode_uci_move("g1f3").unwrap(),
+                        encode_uci_move("g8f6").unwrap(),
+                    ],
                 },
-                CompactPv::default(),
-                CompactPv::default(),
-                CompactPv::default(),
             ],
         };
 
-        let packed = pack_record(&record);
-        assert_eq!(packed.len(), RECORD_SIZE);
-        let unpacked = unpack_record(&packed);
+        let packed = pack_record(&record).unwrap();
+        let unpacked = unpack_record(&packed).unwrap();
         assert_eq!(unpacked.hash_hi, record.hash_hi);
         assert_eq!(unpacked.hash_lo, record.hash_lo);
         assert_eq!(unpacked.depth, record.depth);
-        assert_eq!(unpacked.pv_count, record.pv_count);
+        assert_eq!(unpacked.pvs.len(), record.pvs.len());
         assert_eq!(unpacked.knodes, record.knodes);
-        assert_eq!(unpacked.pvs[0].move_code, record.pvs[0].move_code);
+        assert_eq!(unpacked.pvs[0].moves, record.pvs[0].moves);
     }
 
     #[test]
-    fn parses_top_moves_without_pv_tail() {
+    fn parses_top_moves_with_pv_tail() {
         let line = r#"{"fen":"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -","evals":[{"pvs":[{"cp":20,"line":"e2e4 e7e5"},{"cp":18,"line":"d2d4 d7d5"}],"knodes":3000,"depth":36}]}"#;
         let record = parse_compact_record(line, 5).unwrap().unwrap();
         assert_eq!(record.depth, 36);
-        assert_eq!(record.pv_count, 2);
-        assert_eq!(decode_pv(record.pvs[0]).unwrap().moves, "e2e4");
-        assert_eq!(decode_pv(record.pvs[1]).unwrap().moves, "d2d4");
+        assert_eq!(record.pvs.len(), 2);
+        assert_eq!(decode_pv(&record.pvs[0]).unwrap().moves, "e2e4 e7e5");
+        assert_eq!(decode_pv(&record.pvs[1]).unwrap().moves, "d2d4 d7d5");
     }
 }
