@@ -33,6 +33,7 @@ import { getBestMoves as lichessGetBestMoves, getLichessCloudFailure } from "@/u
 import { BoundedSet, withLimitedMapEntry } from "@/utils/boundedCache";
 import { TreeStateContext } from "../common/TreeStateContext";
 
+const LOCAL_ENGINE_OUTPUT_TIMEOUT_MS = 15000;
 const LOCAL_ENGINE_TAIL_OUTPUT_TIMEOUT_MS = 12000;
 const LOCAL_ENGINE_SEARCH_DELAY_MS = 0;
 const REMOTE_ENGINE_SEARCH_DELAY_MS = 120;
@@ -536,7 +537,9 @@ async function getLocalBestMovesWithLichessCloud(
   options: EngineOptions,
   updateCloudStatus: (status: EngineCloudEvalStatus) => void,
 ) {
-  const localStart = startLocalBestMoves(engine, tab, goMode, options);
+  const localStart = startLocalBestMoves(engine, tab, goMode, options, {
+    timeoutMs: LOCAL_ENGINE_OUTPUT_TIMEOUT_MS,
+  });
 
   try {
     const searchFullmove = getSearchFullmoveNumber(options);

@@ -534,11 +534,12 @@ default.
   first-start attempts no longer cache `No analysis available`; starting a
   local search clears stale empty rows, clears any stale cloud-covered marker
   for that search key, resets progress, and retries one fresh local process if
-  startup fails. The main visible Stockfish search no longer has a 12-second
-  first-output kill timer; only hidden cloud-tail continuation searches keep a
-  bounded timeout. Keep this distinction so positions without saved local
-  cloud evals fall through to live Stockfish immediately instead of freezing on
-  an empty analysis state.
+  startup fails or the first output is too slow. The main visible Stockfish
+  search keeps a bounded first-output watchdog, but timeout now means
+  clear/retry/keep the UI recoverable rather than caching an empty analysis
+  result. Keep this distinction so positions without saved local cloud evals
+  fall through to live Stockfish immediately instead of freezing on an empty
+  analysis state.
 - The same reliability pass added a desktop engine-panel cutoff for local
   cloud-eval probes after fullmove 15. The compact local eval store does not
   record aggregate ply/fullmove coverage stats, so the app cannot cheaply ask
