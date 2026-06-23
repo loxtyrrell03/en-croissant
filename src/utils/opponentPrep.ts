@@ -1639,6 +1639,29 @@ export function getPrepBuilderReplyPolicy({
     };
 }
 
+export function getPrepBuilderFocusedReplyLimit({
+    branchShare,
+    settings,
+}: {
+    branchShare: number;
+    settings: PrepBuilderSettings;
+}) {
+    const policy = getPrepBuilderReplyPolicy({ branchShare, settings });
+    if (settings.size === "deep") return policy.moveLimit;
+
+    const percent = branchShare * 100;
+    if (settings.size === "quick") {
+        if (percent >= 15) return Math.min(policy.moveLimit, 3);
+        if (percent >= 6) return Math.min(policy.moveLimit, 2);
+        return Math.min(policy.moveLimit, 1);
+    }
+
+    if (percent >= 15) return Math.min(policy.moveLimit, 5);
+    if (percent >= 6) return Math.min(policy.moveLimit, 3);
+    if (percent >= 2) return Math.min(policy.moveLimit, 2);
+    return Math.min(policy.moveLimit, 1);
+}
+
 export function getPrepBuilderUserResponseChildIndex(node: TreeNode) {
     return node.children.length > 0 ? 0 : null;
 }

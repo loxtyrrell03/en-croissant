@@ -127,6 +127,7 @@ import {
   getBestPrepLineReplyImpact,
   getPrepBuilderBranchValue,
   getPrepBuilderEvidenceMinGames,
+  getPrepBuilderFocusedReplyLimit,
   getPrepBuilderReplyPolicy,
   getPrepBuilderStopReason,
   getPrepBuilderTaskPriority,
@@ -296,6 +297,38 @@ type PrepStraightLineSearchResult = PrepStraightLineCandidate & {
   fromPath: number[];
 };
 
+type PrepGamePlanStep = {
+  actor: "user" | "opponent";
+  move: string;
+  line: string[];
+  games: number | null;
+  share: number | null;
+  strength: number | null;
+  afterPrep: number | null;
+  note: string;
+};
+
+type PrepGamePlanReply = {
+  positionLine: string[];
+  opponentMove: string;
+  responseMove: string | null;
+  games: number;
+  share: number;
+  opponentScore: number;
+  afterPrep: number | null;
+  priority: number;
+  note: string;
+};
+
+type PrepGamePlanBrief = {
+  generatedAt: number;
+  startLine: string[];
+  mainLine: PrepGamePlanStep[];
+  replies: PrepGamePlanReply[];
+  insights: string[];
+  checkedPositions: number;
+};
+
 function normalizePrepPlayerName(name: string) {
   return name.trim().toLowerCase();
 }
@@ -425,6 +458,7 @@ function OpponentPrepPanel({
   const [builderNeedsSave, setBuilderNeedsSave] = useState(false);
   const [savingBuilderResult, setSavingBuilderResult] = useState<"new" | "overwrite" | null>(null);
   const [builderStatus, setBuilderStatus] = useState<PrepBuilderStatus | null>(null);
+  const [gamePlanBrief, setGamePlanBrief] = useState<PrepGamePlanBrief | null>(null);
   const [straightLineRunning, setStraightLineRunning] = useState(false);
   const [straightLineStatus, setStraightLineStatus] = useState<PrepStraightLineStatus | null>(null);
   const [straightLineResult, setStraightLineResult] = useState<PrepStraightLineSearchResult | null>(
@@ -729,6 +763,7 @@ function OpponentPrepPanel({
   useEffect(() => {
     setStraightLineResult(null);
     setStraightLineStatus(null);
+    setGamePlanBrief(null);
   }, [queryScope, rootPathKey]);
 
   const loadOpeningsForFen = useCallback(
@@ -2241,6 +2276,271 @@ function OpponentPrepPanel({
     }
   }, [clearMovePreview, store, straightLineResult]);
 
+  const buildPrepGamePlanBrief = useCallback(
+    async (settings: PrepBuilderSettings, safeRootPath: number[]) => {
+      const state = store.getState();
+      if (!pathExists(state.root, safeRootPath)) return null;
+
+      const startNode = state.getNode(safeRootPath);
+      if (!startNode) return null;
+
+      const userSide = oppositePrepColor(prep.color);
+      const startLine = getLineSans(state.root, safeRootPath);
+      const mainLine: PrepGamePlanStep[] = [];
+      const replies: PrepGamePlanReply[] = [];
+      const replyKeys = new Set<string>();
+      const maxPly = settings.size === "deep" ? 14 : settings.size === "quick" ? 8 : 10;
+      let fen = startNode.fen;
+      let line = [...startLine];
+      let branchShare = 1;
+      let checkedPositions = 0;
+      let rootDatabaseGames: number | null = null;
+
+      const getPlayableGames = (openings: Opening[]) =>
+        openings.reduce(
+          (sum, opening) =>
+            opening.move === "*" || opening.move === "Total" ? sum : sum + getOpeningTotal(opening),
+          0,
+        );
+
+      const rememberRootDatabaseGames = (openings: Opening[]) => {
+        if (rootDatabaseGames !== null) return;
+        rootDatabaseGames = getPlayableGames(openings);
+      };
+
+      const getEvidenceMinGames = (ply: number) =>
+        getPrepBuilderEvidenceMinGames({
+          settings,
+          rootGames: rootDatabaseGames,
+          ply,
+        });
+
+      for (let ply = 0; ply < maxPly && !builderCancelRef.current; ply += 1) {
+        const turn = getFenTurn(fen);
+
+        if (turn === userSide) {
+          checkedPositions += 1;
+          const evidenceMinGames = getEvidenceMinGames(ply);
+          const [opponentOpenings, referenceOpenings, engineMoves] = await Promise.all([
+            loadOpeningsForFen(fen, settings.opponentMoveLimit).catch(() => []),
+            loadLichessAllOpeningsForFen(fen, settings).catch(() => []),
+            loadPrepBuilderEngineMoves(fen, userSide, settings).catch(() => []),
+          ]);
+          rememberRootDatabaseGames(opponentOpenings);
+
+          const choice = choosePrepBuilderMove({
+            opponentOpenings,
+            referenceOpenings,
+            engineMoves,
+            userColor: userSide,
+            settings,
+            minGames: evidenceMinGames,
+          });
+          if (!choice) break;
+
+          const candidateRow =
+            getPrepCandidateRows({
+              fen,
+              openings: opponentOpenings,
+              minGames: evidenceMinGames,
+              moveLimit: settings.opponentMoveLimit,
+            }).find(
+              (row) => normalizePrepBuilderSan(row.move) === normalizePrepBuilderSan(choice.move),
+            ) ?? null;
+          const lineImpact = candidateRow
+            ? await getOpponentPrepCandidateLineImpact({
+                fen,
+                row: candidateRow,
+                opponentColor: prep.color,
+                loadOpenings: loadOpeningsForFen,
+                loadEngineMoves: loadPrepBuilderEngineMoves,
+                minGames: evidenceMinGames,
+                moveLimit: settings.opponentMoveLimit,
+                settings,
+                maxUserResponses: 2,
+              }).catch(() => null)
+            : null;
+          const nextFen = applyPrepSanMove(fen, choice.move);
+          if (!nextFen) break;
+
+          const nextLine = [...line, choice.move];
+          mainLine.push({
+            actor: "user",
+            move: choice.move,
+            line: nextLine,
+            games: choice.opponentGames || candidateRow?.total || null,
+            share: candidateRow?.share ?? choice.opponentShare,
+            strength: choice.score,
+            afterPrep: lineImpact?.continuationLineStrength?.score ?? null,
+            note: formatPrepGamePlanUserNote(choice, lineImpact),
+          });
+          fen = nextFen;
+          line = nextLine;
+          continue;
+        }
+
+        if (turn !== prep.color) break;
+
+        checkedPositions += 1;
+        const replyPolicy = getPrepBuilderReplyPolicy({
+          branchShare,
+          settings,
+        });
+        const evidenceMinGames = getEvidenceMinGames(ply + 1);
+        const openings = await loadOpeningsForFen(
+          fen,
+          getPrepBuilderBranchSearchMoveLimit(settings),
+        ).catch(() => []);
+        rememberRootDatabaseGames(openings);
+        const availableGames = getPlayableGames(openings);
+        const stopReason = getPrepBuilderStopReason({
+          branchShare,
+          depthShare: branchShare,
+          ply,
+          availableGames,
+          minGames: evidenceMinGames,
+          settings,
+        });
+        if (stopReason) break;
+
+        const sortedOpenings = sortOpponentPrepOpenings(
+          openings,
+          evidenceMinGames,
+          replyPolicy.moveLimit,
+        );
+        const rowTotalGames = sortedOpenings.reduce(
+          (sum, opening) => sum + getOpeningTotal(opening),
+          0,
+        );
+        const rows = sortedOpenings
+          .map<OpponentPrepMoveRow>((opening) => {
+            const key = getOpponentPrepBranchKey(fen, opening.move);
+            return {
+              ...opening,
+              key,
+              uci: null,
+              total: getOpeningTotal(opening),
+              share: rowTotalGames > 0 ? getOpeningTotal(opening) / rowTotalGames : 0,
+              childIndex: null,
+              status: prep.skippedBranches[key] ? "skipped" : "new",
+            };
+          })
+          .filter(
+            (row) =>
+              row.status !== "skipped" &&
+              row.total >= evidenceMinGames &&
+              row.share * 100 >= replyPolicy.minMoveShare,
+          );
+        if (rows.length === 0) break;
+
+        const focusedLimit = getPrepBuilderFocusedReplyLimit({
+          branchShare,
+          settings,
+        });
+        const scanLimit = Math.max(focusedLimit * 2, Math.min(8, replyPolicy.moveLimit));
+        const ranked = [];
+
+        for (const row of rows.slice(0, scanLimit)) {
+          const projection = await getOpponentBranchPrepProjection({
+            fen,
+            row,
+            userColor: userSide,
+            loadOpenings: loadOpeningsForFen,
+            loadEngineMoves: loadPrepBuilderEngineMoves,
+            minGames: evidenceMinGames,
+            moveLimit: settings.opponentMoveLimit,
+            settings,
+          }).catch(() => null);
+          const opponentScore = getPrepResultScore(row, prep.color);
+          const userSurfaceScore = getPrepResultScore(row, userSide);
+          const afterPrep = projection?.strength.score ?? null;
+          ranked.push({
+            row,
+            projection,
+            opponentScore,
+            afterPrep,
+            priority: getPrepGamePlanReplyPriority({
+              row,
+              branchShare,
+              opponentScore,
+              userSurfaceScore,
+              afterPrep,
+            }),
+          });
+        }
+
+        ranked.sort(
+          (a, b) =>
+            b.priority - a.priority ||
+            b.row.share - a.row.share ||
+            b.row.total - a.row.total ||
+            a.row.move.localeCompare(b.row.move),
+        );
+        const main = ranked[0];
+        if (!main) break;
+
+        for (const item of ranked.slice(0, Math.min(focusedLimit, 5))) {
+          const key = `${line.join(" ")}|${item.row.move}`;
+          if (replyKeys.has(key)) continue;
+          replyKeys.add(key);
+          replies.push({
+            positionLine: [...line],
+            opponentMove: item.row.move,
+            responseMove: item.projection?.responseMove ?? null,
+            games: item.row.total,
+            share: item.row.share,
+            opponentScore: item.opponentScore,
+            afterPrep: item.afterPrep,
+            priority: item.priority,
+            note: formatPrepGamePlanReplyNote(item.afterPrep, item.opponentScore),
+          });
+        }
+
+        const nextFen = applyPrepSanMove(fen, main.row.move);
+        if (!nextFen) break;
+        const nextLine = [...line, main.row.move];
+        mainLine.push({
+          actor: "opponent",
+          move: main.row.move,
+          line: nextLine,
+          games: main.row.total,
+          share: main.row.share,
+          strength: Math.round(main.opponentScore * 100),
+          afterPrep: main.afterPrep,
+          note: formatPrepGamePlanOpponentNote(main.afterPrep, main.opponentScore),
+        });
+        fen = nextFen;
+        line = nextLine;
+        branchShare *= main.row.share;
+      }
+
+      return {
+        generatedAt: Date.now(),
+        startLine,
+        mainLine,
+        replies: replies
+          .sort(
+            (a, b) =>
+              b.priority - a.priority ||
+              b.share - a.share ||
+              b.games - a.games ||
+              a.opponentMove.localeCompare(b.opponentMove),
+          )
+          .slice(0, settings.size === "quick" ? 5 : 7),
+        insights: getPrepGamePlanInsights(mainLine, replies, settings),
+        checkedPositions,
+      } satisfies PrepGamePlanBrief;
+    },
+    [
+      loadLichessAllOpeningsForFen,
+      loadOpeningsForFen,
+      loadPrepBuilderEngineMoves,
+      prep.color,
+      prep.skippedBranches,
+      store,
+    ],
+  );
+
   const runPrepBuilder = useCallback(async () => {
     if (!configReady || builderRunning) return;
 
@@ -2250,6 +2550,7 @@ function OpponentPrepPanel({
     builderCancelRef.current = false;
     setBuilderRunning(true);
     setBuilderNeedsSave(false);
+    setGamePlanBrief(null);
     clearMovePreview();
     setBuilderStatus({
       phase: "Starting",
@@ -2444,6 +2745,11 @@ function OpponentPrepPanel({
     try {
       const state = store.getState();
       const safeRootPath = pathExists(state.root, prep.rootPath ?? []) ? (prep.rootPath ?? []) : [];
+      updateStatus("Building game plan", true);
+      const brief = await buildPrepGamePlanBrief(settings, safeRootPath);
+      if (brief && !builderCancelRef.current) {
+        setGamePlanBrief(brief);
+      }
       const queue: PrepBuilderQueueItem[] = [
         {
           path: safeRootPath,
@@ -2456,7 +2762,6 @@ function OpponentPrepPanel({
         queue.push(...tasks);
         queue.sort(
           (a, b) =>
-            a.ply - b.ply ||
             getPrepBuilderTaskPriority({
               branchShare: b.branchShare,
               branchValue: b.branchValue,
@@ -2469,6 +2774,7 @@ function OpponentPrepPanel({
                 ply: a.ply,
                 settings,
               }) ||
+            a.ply - b.ply ||
             b.depthShare - a.depthShare,
         );
       };
@@ -2549,18 +2855,48 @@ function OpponentPrepPanel({
             continue;
           }
 
+          const focusedLimit = getPrepBuilderFocusedReplyLimit({
+            branchShare: task.depthShare,
+            settings,
+          });
+          const rankedRows = rows
+            .map((row) => {
+              const nextBranchShare = task.branchShare * row.share;
+              const nextDepthShare = Math.min(task.depthShare, row.share);
+              const nextBranchValue = getPrepBuilderBranchValue({
+                opening: row,
+                userColor: userSide,
+                settings,
+              });
+              const nextPly = task.ply + 1;
+              return {
+                row,
+                nextBranchShare,
+                nextDepthShare,
+                nextBranchValue,
+                nextPly,
+                priority: getPrepBuilderTaskPriority({
+                  branchShare: nextBranchShare,
+                  branchValue: nextBranchValue,
+                  ply: nextPly,
+                  settings,
+                }),
+              };
+            })
+            .sort(
+              (a, b) =>
+                b.priority - a.priority ||
+                b.row.share - a.row.share ||
+                b.row.total - a.row.total ||
+                a.row.move.localeCompare(b.row.move),
+            )
+            .slice(0, focusedLimit);
+
           const nextTasks: PrepBuilderQueueItem[] = [];
-          for (const row of rows.slice(0, replyPolicy.moveLimit)) {
+          for (const rankedRow of rankedRows) {
             if (builderCancelRef.current) break;
 
-            const nextBranchShare = task.branchShare * row.share;
-            const nextDepthShare = Math.min(task.depthShare, row.share);
-            const nextBranchValue = getPrepBuilderBranchValue({
-              opening: row,
-              userColor: userSide,
-              settings,
-            });
-            const nextPly = task.ply + 1;
+            const { row, nextBranchShare, nextDepthShare, nextBranchValue, nextPly } = rankedRow;
             const branchStopReason = getPrepBuilderStopReason({
               branchShare: nextBranchShare,
               depthShare: nextDepthShare,
@@ -2636,6 +2972,7 @@ function OpponentPrepPanel({
       setBuilderRunning(false);
     }
   }, [
+    buildPrepGamePlanBrief,
     builderRunning,
     clearMovePreview,
     configReady,
@@ -2698,6 +3035,21 @@ function OpponentPrepPanel({
       }
     },
     [currentTab, documentDir, savingBuilderResult, setCurrentTab, store],
+  );
+
+  const playGamePlanLine = useCallback(
+    (moves: string[]) => {
+      if (!gamePlanBrief) return;
+
+      clearMovePreview();
+      const state = store.getState();
+      const safeRootPath = pathExists(state.root, prep.rootPath ?? []) ? (prep.rootPath ?? []) : [];
+      state.goToMove(safeRootPath);
+      for (const move of moves.slice(gamePlanBrief.startLine.length)) {
+        store.getState().makeMove({ payload: move });
+      }
+    },
+    [clearMovePreview, gamePlanBrief, prep.rootPath, store],
   );
 
   return (
@@ -3348,6 +3700,15 @@ function OpponentPrepPanel({
                 setStraightLineResult(null);
                 setStraightLineStatus(null);
               }}
+            />
+          ) : null}
+          {gamePlanBrief ? (
+            <PrepGamePlanBriefPanel
+              brief={gamePlanBrief}
+              general={prepMode === "general"}
+              userColor={userColor}
+              onPlayLine={playGamePlanLine}
+              onClear={() => setGamePlanBrief(null)}
             />
           ) : null}
         </Box>
@@ -4349,6 +4710,108 @@ function getAfterPrepDeepScanRows(
     .slice(0, AFTER_PREP_DEEP_ROW_LIMIT);
 }
 
+function getPrepGamePlanReplyPriority({
+  row,
+  branchShare,
+  opponentScore,
+  userSurfaceScore,
+  afterPrep,
+}: {
+  row: OpponentPrepMoveRow;
+  branchShare: number;
+  opponentScore: number;
+  userSurfaceScore: number;
+  afterPrep: number | null;
+}) {
+  const reach = branchShare * row.share * 100;
+  const danger = opponentScore * 100;
+  const prepSwing = afterPrep === null ? 0 : Math.max(0, afterPrep - userSurfaceScore * 100);
+  const confidence = Math.min(1, Math.log10(row.total + 1) / 2);
+
+  return reach * 1.25 + danger * 0.45 + prepSwing * 1.1 + confidence * 8;
+}
+
+function formatPrepGamePlanUserNote(
+  choice: PrepBuilderMoveChoice,
+  impact: OpponentPrepLineImpact | null,
+) {
+  const parts = [`Strength ${choice.score}`];
+  if (impact?.continuationLineStrength) {
+    parts.push(`after prep ${impact.continuationLineStrength.score}`);
+  }
+  if (choice.opponentGames > 0) {
+    parts.push(`${formatNumber(choice.opponentGames)} games`);
+  }
+  return [...parts, ...choice.reasons.slice(0, 2)].join(" - ");
+}
+
+function formatPrepGamePlanOpponentNote(afterPrep: number | null, opponentScore: number) {
+  const score = Math.round(opponentScore * 100);
+  if (afterPrep !== null) {
+    return `Opponent scores ${score} before your answer; after prep projects ${afterPrep}.`;
+  }
+  return `Opponent scores ${score}; keep this reply on the radar.`;
+}
+
+function formatPrepGamePlanReplyNote(afterPrep: number | null, opponentScore: number) {
+  const score = Math.round(opponentScore * 100);
+  if (afterPrep !== null) return `Answer projects ${afterPrep} after their ${score} surface score.`;
+  return `Surface danger ${score}; no projected answer score was found.`;
+}
+
+function getPrepGamePlanInsights(
+  mainLine: PrepGamePlanStep[],
+  replies: PrepGamePlanReply[],
+  settings: PrepBuilderSettings,
+) {
+  const insights: string[] = [];
+  const firstUserMove = mainLine.find((step) => step.actor === "user");
+  const topReply = replies[0];
+  const bestSwingReply = replies
+    .filter((reply) => reply.afterPrep !== null)
+    .sort(
+      (a, b) =>
+        b.afterPrep! - b.opponentScore * 100 - (a.afterPrep! - a.opponentScore * 100) ||
+        b.share - a.share,
+    )[0];
+
+  if (firstUserMove) {
+    insights.push(
+      `Main recommendation: ${firstUserMove.move} at strength ${firstUserMove.strength ?? "n/a"}${
+        firstUserMove.afterPrep !== null ? `, after prep ${firstUserMove.afterPrep}` : ""
+      }.`,
+    );
+  }
+
+  if (topReply) {
+    insights.push(
+      `Highest-alert reply: ${topReply.opponentMove} from ${formatPrepGamePlanShare(
+        topReply.share,
+      )} of games; answer ${topReply.responseMove ?? "not found"}.`,
+    );
+  }
+
+  if (bestSwingReply && bestSwingReply.afterPrep !== null) {
+    insights.push(
+      `Best prep swing: ${bestSwingReply.opponentMove} -> ${
+        bestSwingReply.responseMove ?? "answer not found"
+      } projects ${bestSwingReply.afterPrep} after their ${Math.round(
+        bestSwingReply.opponentScore * 100,
+      )} surface score.`,
+    );
+  }
+
+  if (insights.length === 0) {
+    insights.push(
+      settings.useCloudEngine
+        ? "No clear practical swing was found from the current source."
+        : "No clear practical swing was found without local eval evidence.",
+    );
+  }
+
+  return insights;
+}
+
 async function getOpponentBranchPrepProjection({
   fen,
   row,
@@ -4760,6 +5223,141 @@ function PrepStrengthSettingsButton({
   );
 }
 
+function PrepGamePlanBriefPanel({
+  brief,
+  general,
+  userColor,
+  onPlayLine,
+  onClear,
+}: {
+  brief: PrepGamePlanBrief;
+  general: boolean;
+  userColor: PrepColor;
+  onPlayLine: (moves: string[]) => void;
+  onClear: () => void;
+}) {
+  const mainMoves = brief.mainLine.map((step) => step.move);
+  const fullMainLine = brief.mainLine.at(-1)?.line ?? brief.startLine;
+  const opponentLabel = general ? "Source" : "Opponent";
+  const userLabel = userColor === "white" ? "White" : "Black";
+
+  return (
+    <Alert color="teal" variant="light" mt="xs">
+      <Stack gap={8}>
+        <Group justify="space-between" gap="xs" wrap="wrap">
+          <Group gap={6} wrap="wrap">
+            <Text size="sm" fw={700}>
+              Game plan
+            </Text>
+            <Badge color="teal" variant="light">
+              {userLabel}
+            </Badge>
+            <Badge variant="light">{brief.checkedPositions} checked</Badge>
+          </Group>
+          <Group gap={4} wrap="nowrap">
+            {mainMoves.length > 0 ? (
+              <Button
+                variant="default"
+                size="xs"
+                leftSection={<IconPlayerPlay size="0.85rem" />}
+                onClick={() => onPlayLine(fullMainLine)}
+              >
+                Play main
+              </Button>
+            ) : null}
+            <Tooltip label="Clear game plan">
+              <ActionIcon variant="subtle" size="sm" onClick={onClear}>
+                <IconX size="0.9rem" />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+        </Group>
+
+        <Stack gap={3}>
+          {brief.insights.slice(0, 3).map((insight) => (
+            <Text key={insight} size="xs">
+              {insight}
+            </Text>
+          ))}
+        </Stack>
+
+        <Box>
+          <Text size="xs" c="dimmed">
+            Main route
+          </Text>
+          <Text size="sm" fw={700} style={{ wordBreak: "break-word" }}>
+            {mainMoves.length > 0 ? mainMoves.join(" ") : "No supported route found"}
+          </Text>
+        </Box>
+
+        {brief.replies.length > 0 ? (
+          <Table
+            withTableBorder
+            horizontalSpacing="xs"
+            verticalSpacing={4}
+            style={{ tableLayout: "fixed" }}
+          >
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th style={{ width: "22%" }}>{opponentLabel}</Table.Th>
+                <Table.Th style={{ width: "22%" }}>Answer</Table.Th>
+                <Table.Th>Why</Table.Th>
+                <Table.Th style={{ width: 54 }} />
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {brief.replies.map((reply) => {
+                const line = [
+                  ...reply.positionLine,
+                  reply.opponentMove,
+                  ...(reply.responseMove ? [reply.responseMove] : []),
+                ];
+                return (
+                  <Table.Tr key={`${reply.positionLine.join(" ")}|${reply.opponentMove}`}>
+                    <Table.Td>
+                      <Text size="sm" fw={700}>
+                        {reply.opponentMove}
+                      </Text>
+                      <Text size="xs" c="dimmed">
+                        {formatPrepGamePlanShare(reply.share)} / {formatNumber(reply.games)}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text size="sm" fw={700}>
+                        {reply.responseMove ?? "-"}
+                      </Text>
+                      <Text size="xs" c="dimmed" truncate>
+                        {reply.positionLine.length > brief.startLine.length
+                          ? `after ${reply.positionLine.slice(brief.startLine.length).join(" ")}`
+                          : "from start"}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text size="xs">{reply.note}</Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Tooltip label="Play this answer">
+                        <ActionIcon
+                          variant="subtle"
+                          size="sm"
+                          disabled={!reply.responseMove}
+                          onClick={() => onPlayLine(line)}
+                        >
+                          <IconPlayerPlay size="0.95rem" />
+                        </ActionIcon>
+                      </Tooltip>
+                    </Table.Td>
+                  </Table.Tr>
+                );
+              })}
+            </Table.Tbody>
+          </Table>
+        ) : null}
+      </Stack>
+    </Alert>
+  );
+}
+
 function PrepStraightLineSettingsButton({
   controlSize,
   mode,
@@ -5023,6 +5621,11 @@ function formatPrepStraightLineEval(cp: number | null) {
 function formatPrepStraightLineShare(share: number) {
   const percent = Math.max(0, Math.min(1, share)) * 100;
   return `${percent >= 99.95 ? percent.toFixed(0) : percent.toFixed(1)}%`;
+}
+
+function formatPrepGamePlanShare(share: number) {
+  const percent = Math.max(0, Math.min(1, share)) * 100;
+  return `${percent >= 10 ? percent.toFixed(0) : percent.toFixed(1)}%`;
 }
 
 function getPrepColorLabel(color: PrepColor) {

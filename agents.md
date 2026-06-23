@@ -372,6 +372,15 @@ default.
   progressive shape so general prep does not freeze while waiting on many
   Lichess/database child-position lookups, and so missing general-mode values
   are not caused by one slow row blocking the entire map.
+- A later 2026-06-23 desktop prep-builder pass made `Build prep` produce a
+  compact game-plan brief before adding tree moves. The brief follows one
+  principal route chosen from the same blended Strength and nearby After-prep
+  projection evidence, then lists the highest-alert opponent/source replies
+  with the recommended answer, usage, surface danger, and projected after-prep
+  score. Short and Normal builder sizes now expand only a focused reply set
+  at opponent turns, while Deep mode keeps the older broad reply coverage; the
+  task queue is priority-led before ply-led so high-value continuations deepen
+  sooner in quick pre-game runs.
 
 ### Local Lichess Cloud Evals
 

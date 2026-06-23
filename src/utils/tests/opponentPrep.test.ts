@@ -18,6 +18,7 @@ import {
     getPrepBuilderBranchValue,
     getPrepBuilderEffectiveMaxPly,
     getPrepBuilderEvidenceMinGames,
+    getPrepBuilderFocusedReplyLimit,
     getPrepBuilderReplyPolicy,
     getPrepBuilderStopReason,
     getPrepBuilderTaskPriority,
@@ -1609,5 +1610,20 @@ describe("opponent prep helpers", () => {
         expect(quick.minOpponentMoveShare).toBeGreaterThan(deep.minOpponentMoveShare);
         expect(deep.opponentMoveLimit).toBeGreaterThan(quick.opponentMoveLimit);
         expect(deep.minOpponentMoveShare).toBeLessThan(3);
+    });
+
+    test("focused prep builder keeps short runs compact but leaves deep mode broad", () => {
+        const quick = normalizePrepBuilderSettings({ size: "quick" });
+        const balanced = normalizePrepBuilderSettings({ size: "balanced" });
+        const deep = normalizePrepBuilderSettings({ size: "deep" });
+
+        expect(getPrepBuilderFocusedReplyLimit({ branchShare: 0.3, settings: quick })).toBe(3);
+        expect(getPrepBuilderFocusedReplyLimit({ branchShare: 0.08, settings: quick })).toBe(2);
+        expect(getPrepBuilderFocusedReplyLimit({ branchShare: 0.01, settings: quick })).toBe(1);
+        expect(getPrepBuilderFocusedReplyLimit({ branchShare: 0.3, settings: balanced })).toBe(5);
+        expect(getPrepBuilderFocusedReplyLimit({ branchShare: 0.08, settings: balanced })).toBe(3);
+        expect(getPrepBuilderFocusedReplyLimit({ branchShare: 0.3, settings: deep })).toBe(
+            getPrepBuilderReplyPolicy({ branchShare: 0.3, settings: deep }).moveLimit,
+        );
     });
 });
