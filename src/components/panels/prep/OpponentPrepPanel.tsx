@@ -167,8 +167,6 @@ const MAX_PREP_MOVE_LIMIT = 20;
 const PREP_STRENGTH_MOVE_POOL_LIMIT = MAX_PREP_MOVE_LIMIT;
 const PREP_STRENGTH_ENGINE_CACHE_VERSION = "v3";
 const AFTER_PREP_PROJECTION_CONCURRENCY = 3;
-const AFTER_PREP_ENRICHMENT_CONCURRENCY = 2;
-const AFTER_PREP_DEEP_ROW_LIMIT = 6;
 const PREP_COACH_SCAN_LIMIT = 12;
 const DEFAULT_STRAIGHT_LINE_MODE: PrepStraightLineSearchMode = "venom";
 const DEFAULT_VENOM_LINE_MIN_SHARE = 65;
@@ -359,7 +357,7 @@ type PrepCoachCandidateEvidence = {
   surfaceScoreLabel: string;
   strength: PrepMoveStrength | null;
   afterPrepStrength: PrepMoveStrength | null;
-  afterPrepSource: "projection" | "current" | "none";
+  afterPrepSource: "projection" | "none";
   likelyOpponentMove: string | null;
   responseMove: string | null;
   responseDetail: string | null;
@@ -1112,7 +1110,6 @@ function OpponentPrepPanel({
             minGames: prep.minGames,
             moveLimit: prep.moveLimit,
             settings: builderSettings,
-            maxUserResponses: 1,
           }).catch(() => null);
           if (!impact || cancelled) return;
 
@@ -1123,33 +1120,6 @@ function OpponentPrepPanel({
 
       if (cancelled) return;
       setCandidateLineImpactLoading(false);
-
-      const enrichmentRows = getAfterPrepDeepScanRows(candidateRows, strengthByMove);
-      if (enrichmentRows.length === 0) return;
-
-      await runAfterPrepProjectionJobs(
-        enrichmentRows,
-        AFTER_PREP_ENRICHMENT_CONCURRENCY,
-        async (row) => {
-          const impact = await getOpponentPrepCandidateLineImpact({
-            fen: currentFen,
-            row,
-            opponentColor: prep.color,
-            loadOpenings: loadOpeningsForFen,
-            loadEngineMoves: loadPrepBuilderEngineMoves,
-            minGames: prep.minGames,
-            moveLimit: prep.moveLimit,
-            settings: builderSettings,
-          }).catch(() => null);
-          if (!impact || cancelled) return;
-
-          const current = entries.get(row.key) ?? null;
-          if (!current || compareAfterPrepLineImpacts(impact, current) < 0) {
-            entries.set(row.key, impact);
-            publish();
-          }
-        },
-      );
     };
 
     void run().catch(() => {
@@ -1173,7 +1143,6 @@ function OpponentPrepPanel({
     prep.minGames,
     prep.moveLimit,
     showTrainingStage,
-    strengthByMove,
   ]);
 
   useEffect(() => {
@@ -2420,7 +2389,6 @@ function OpponentPrepPanel({
                 minGames: evidenceMinGames,
                 moveLimit: settings.opponentMoveLimit,
                 settings,
-                maxUserResponses: 2,
               }).catch(() => null)
             : null;
           const nextFen = applyPrepSanMove(fen, choice.move);
@@ -2696,7 +2664,6 @@ function OpponentPrepPanel({
             minGames,
             moveLimit: settings.opponentMoveLimit,
             settings,
-            maxUserResponses: settings.size === "quick" ? 1 : 2,
           }).catch(() => null);
           checkedPositions += 1;
 
@@ -5153,21 +5120,6 @@ async function runAfterPrepProjectionJobs<T>(
   );
 }
 
-function getAfterPrepDeepScanRows(
-  rows: PrepCandidateMoveRow[],
-  strengthByMove: Map<string, PrepMoveStrength>,
-) {
-  return [...rows]
-    .sort(
-      (a, b) =>
-        getPrepStrengthSortScore(b.move, strengthByMove) -
-          getPrepStrengthSortScore(a.move, strengthByMove) ||
-        b.total - a.total ||
-        a.move.localeCompare(b.move),
-    )
-    .slice(0, AFTER_PREP_DEEP_ROW_LIMIT);
-}
-
 function buildPrepCoachReportRequest({
   brief,
   general,
@@ -5569,17 +5521,6 @@ async function getOpponentBranchPrepProjection({
     strength: withBranchProjectionStrengthDetail(baseStrength, label, row.move),
     lineImpact: null,
   };
-}
-
-function compareAfterPrepLineImpacts(left: OpponentPrepLineImpact, right: OpponentPrepLineImpact) {
-  return (
-    (right.continuationLineScore ?? -1) - (left.continuationLineScore ?? -1) ||
-    (right.continuationStrengthScore ?? -1) - (left.continuationStrengthScore ?? -1) ||
-    right.weightedStrengthScore - left.weightedStrengthScore ||
-    left.continuationDepthPly - right.continuationDepthPly ||
-    right.userGames - left.userGames ||
-    left.userMove.localeCompare(right.userMove)
-  );
 }
 
 function withBranchProjectionStrengthDetail(

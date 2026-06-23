@@ -418,7 +418,9 @@ default.
   semantics. The column must never show a `Current` fallback: it means the
   source/opponent's most common response after the displayed candidate, followed
   by the best available prep-side answer scored with the active Strength
-  settings. Show that projection even when it is weaker than the candidate's
+  settings. Do not replace this with a deeper continuation scan; candidate
+  `After prep` is intentionally one source/opponent reply plus one prep-side
+  answer. Show that projection even when it is weaker than the candidate's
   surface Strength, because the projected line value is the point of the column.
   The repro was the Alexey Lapidus Lichess database as White at `1.e4`, where
   `...f5` should follow `...f5 2.e5 d5` and show the projected `d5` score

@@ -583,7 +583,7 @@ describe("opponent prep helpers", () => {
         expect(reply?.lineStrength?.score).toBeGreaterThan(50);
     });
 
-    test("can limit candidate line impact to a fast first prep response", async () => {
+    test("candidate line impact stays on their top reply and our first best response", async () => {
         const store = createTreeStore();
         store.getState().makeMove({ payload: "e4" });
         const settings = normalizePrepBuilderSettings({ mode: "practical", useCloudEngine: false });
@@ -609,24 +609,7 @@ describe("opponent prep helpers", () => {
             return [];
         };
 
-        const fastImpact = await getOpponentPrepCandidateLineImpact({
-            fen,
-            row: {
-                move: "c5",
-                white: 70,
-                draw: 10,
-                black: 20,
-                total: 100,
-                share: 0.24,
-            },
-            opponentColor: "white",
-            loadOpenings,
-            minGames: 1,
-            moveLimit: 8,
-            settings,
-            maxUserResponses: 1,
-        });
-        const deepImpact = await getOpponentPrepCandidateLineImpact({
+        const impact = await getOpponentPrepCandidateLineImpact({
             fen,
             row: {
                 move: "c5",
@@ -643,8 +626,10 @@ describe("opponent prep helpers", () => {
             settings,
         });
 
-        expect(fastImpact?.continuationMoves).toEqual(["Nf3", "g6"]);
-        expect(deepImpact?.continuationMoves).toEqual(["Nf3", "g6", "d4", "Bg7"]);
+        expect(impact?.continuationMoves).toEqual(["Nf3", "g6"]);
+        expect(impact?.continuationDepthPly).toBe(2);
+        expect(impact?.opponentReplyMove).toBe("Nf3");
+        expect(impact?.userResponseMove).toBe("g6");
     });
 
     test("candidate reply strength uses future engine data when cloud engine is enabled", async () => {
@@ -936,7 +921,7 @@ describe("opponent prep helpers", () => {
         expect(impact?.userResponseStrengthScore).toBe(100);
     });
 
-    test("can use a common deeper candidate continuation after discounting", async () => {
+    test("candidate projection does not chase a deeper WDL spike", async () => {
         const store = createTreeStore();
         store.getState().makeMove({ payload: "e4" });
         const settings = normalizePrepBuilderSettings({ mode: "practical", useCloudEngine: false });
@@ -1000,12 +985,11 @@ describe("opponent prep helpers", () => {
             settings,
         });
 
-        expect(impact?.continuationMoves).toEqual(["Nf3", "g6", "d4", "Bg7"]);
-        expect(impact?.continuationUserScore).toBeCloseTo(0.95);
+        expect(impact?.continuationMoves).toEqual(["Nf3", "g6"]);
+        expect(impact?.continuationUserScore).toBeCloseTo(1);
         expect(impact?.userResponseStrengthScore).toBe(58);
-        expect(impact?.continuationStrengthScore).toBe(100);
-        expect(impact?.continuationDepthPly).toBe(4);
-        expect(impact?.weightedStrengthScore ?? 0).toBeGreaterThan(40);
+        expect(impact?.continuationDepthPly).toBe(2);
+        expect(impact?.continuationMoves).not.toContain("Bg7");
     });
 
     test("keeps a nearer candidate continuation above a rare deeper WDL swing", async () => {

@@ -254,7 +254,6 @@ const PREP_LINE_IMPACT_MIN_SURFACE_SCORE = 0.55;
 const PREP_LINE_IMPACT_MIN_SCORE_DROP = 0.12;
 const PREP_LINE_IMPACT_MIN_USER_SHARE = 0.08;
 const PREP_LINE_IMPACT_MIN_OPPONENT_REPLY_SHARE = 0.4;
-const PREP_CANDIDATE_LINE_MAX_USER_RESPONSES = 3;
 const PREP_CANDIDATE_LINE_DEPTH_DECAY = 0.85;
 export const DEFAULT_PREP_BUILDER_SETTINGS: PrepBuilderSettings = {
     mode: "smart",
@@ -1141,7 +1140,6 @@ export async function getOpponentPrepCandidateLineImpact({
     minGames,
     moveLimit,
     settings,
-    maxUserResponses = PREP_CANDIDATE_LINE_MAX_USER_RESPONSES,
 }: {
     fen: string;
     row: Pick<OpponentPrepMoveRow, "move" | "total" | "share" | "white" | "draw" | "black">;
@@ -1151,7 +1149,6 @@ export async function getOpponentPrepCandidateLineImpact({
     minGames: number;
     moveLimit: number;
     settings: PrepBuilderSettings;
-    maxUserResponses?: number;
 }): Promise<OpponentPrepLineImpact | null> {
     const surfaceScore = getOpeningScoreForSide(row, opponentColor);
 
@@ -1167,7 +1164,6 @@ export async function getOpponentPrepCandidateLineImpact({
         minGames,
         moveLimit,
         settings,
-        maxUserResponses,
     });
     if (!continuation) return null;
 
@@ -1320,7 +1316,6 @@ async function getCandidateContinuationImpact({
     minGames,
     moveLimit,
     settings,
-    maxUserResponses,
 }: {
     startFen: string;
     surfaceScore: number;
@@ -1330,7 +1325,6 @@ async function getCandidateContinuationImpact({
     minGames: number;
     moveLimit: number;
     settings: PrepBuilderSettings;
-    maxUserResponses: number;
 }): Promise<CandidateContinuationImpact | null> {
     const userColor = oppositePrepColor(opponentColor);
     const endpoints: CandidateContinuationImpact[] = [];
@@ -1379,12 +1373,7 @@ async function getCandidateContinuationImpact({
         });
     };
 
-    const responseLimit = Math.max(
-        1,
-        Math.min(PREP_CANDIDATE_LINE_MAX_USER_RESPONSES, Math.round(maxUserResponses)),
-    );
-
-    for (let userResponses = 0; userResponses < responseLimit; userResponses += 1) {
+    for (let userResponses = 0; userResponses < 1; userResponses += 1) {
         if (getFenTurn(fen) !== opponentColor) break;
 
         const opponentReply = await getTopOpponentReplyImpact({
