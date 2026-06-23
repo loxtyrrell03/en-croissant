@@ -438,7 +438,10 @@ default.
   Strength. Static Strength remains the fallback only when no projection is
   available. Keep this behavior: if `...c6` has the best immediate Strength
   but `...c5` has the better projected After-prep score, the coach and builder
-  should prefer `...c5` subject to the Max CP Drop safety gate.
+  should prefer `...c5` subject to the Max CP Drop safety gate. The coach
+  request must mark the top After-prep candidate as the app recommendation and
+  list After-prep before immediate Strength in the evidence, so Gemini cannot
+  drift back to a static-strength choice such as `...c6`.
 
 ### Local Lichess Cloud Evals
 

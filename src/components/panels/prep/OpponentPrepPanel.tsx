@@ -2877,13 +2877,8 @@ function OpponentPrepPanel({
         }
       }
 
-      const sortedCandidates = candidates.sort(
-        (a, b) =>
-          b.priority - a.priority ||
-          getPrepCoachStatusSort(b.status) - getPrepCoachStatusSort(a.status) ||
-          b.share - a.share ||
-          b.games - a.games ||
-          a.move.localeCompare(b.move),
+      const sortedCandidates = candidates.sort((a, b) =>
+        comparePrepCoachCandidatesByAfterPrep(a, b),
       );
       const briefBase: PrepCoachReportBriefBase = {
         generatedAt: Date.now(),
@@ -5201,6 +5196,7 @@ function buildPrepCoachReportRequest({
   const sourceLabel = general ? "source side" : "opponent";
   const safeCandidates = brief.candidates.filter((candidate) => candidate.status === "safe");
   const blockedCandidates = brief.candidates.filter((candidate) => candidate.status !== "safe");
+  const recommendedCandidate = safeCandidates[0] ?? null;
 
   return {
     fen: brief.rootFen,
@@ -5210,9 +5206,12 @@ function buildPrepCoachReportRequest({
     subjectKind: "prep line selection",
     title: `Independent coach prep report for ${brief.sourceLabel}`,
     summary: [
-      `Pre-game prep report for ${userLabel}. Choose the single best prep line yourself from the safe candidates below; the prep builder has not selected the line for you.`,
+      `Pre-game prep report for ${userLabel}. Safe candidates are already ranked by projected After-prep score.`,
+      recommendedCandidate
+        ? `Candidate 1 is the app recommendation by After-prep: ${formatPrepCoachCandidateLine(recommendedCandidate, brief.startLine)} with After-prep ${recommendedCandidate.afterPrepStrength?.score ?? "n/a"}. Explain that line unless the evidence itself marks it unsafe.`
+        : "No safe After-prep recommendation was found.",
       `Hard constraint: Max CP Drop is ${brief.maxEngineCpLoss} cp. Candidates marked unsafe, skipped, thin, or no-safe-answer are evidence only and must not be recommended.`,
-      "Use After-prep projection as the primary score when it is available; normal blended Strength is only the first-move fallback.",
+      "After-prep projection is the primary score. Do not override a higher After-prep candidate just because another move has higher immediate/static Strength, more games, or better WDL.",
       "Output natural language only. Start with the chosen line, then explain why it is best, the replies to know, risks, and what to memorize before the game.",
       `Strength mode ${settings.mode}; cloud eval ${settings.useCloudEngine ? "on" : "off"}.`,
     ].join(" "),
@@ -5220,13 +5219,13 @@ function buildPrepCoachReportRequest({
       safeCandidates.length > 0
         ? safeCandidates
             .slice(0, 8)
-            .map((candidate) =>
+            .map((candidate, index) =>
               [
-                `${candidate.id}: ${formatPrepCoachCandidateLine(candidate, brief.startLine)}`,
+                `Candidate ${index + 1}${index === 0 ? " (RECOMMENDED BY AFTER-PREP)" : ""}: ${formatPrepCoachCandidateLine(candidate, brief.startLine)}`,
                 `status safe`,
-                candidate.responseMove ? `answer/follow-up ${candidate.responseMove}` : null,
-                `strength ${candidate.strength?.score ?? "n/a"}`,
                 `after-prep ${candidate.afterPrepStrength?.score ?? "n/a"} (${candidate.afterPrepSource})`,
+                candidate.responseMove ? `answer/follow-up ${candidate.responseMove}` : null,
+                `immediate strength ${candidate.strength?.score ?? "n/a"} (secondary)`,
               ]
                 .filter((part): part is string => Boolean(part))
                 .join("; "),
@@ -5237,9 +5236,12 @@ function buildPrepCoachReportRequest({
       `Preparing as ${userLabel}; ${sourceLabel} colour is ${brief.opponentColor}.`,
       `Checked positions: ${brief.checkedPositions}.`,
       `Safe candidates: ${safeCandidates.length}; evidence-only candidates: ${blockedCandidates.length}.`,
+      recommendedCandidate
+        ? `App After-prep recommendation: ${formatPrepCoachCandidateLine(recommendedCandidate, brief.startLine)}.`
+        : null,
       `Builder size: ${settings.size}; opponent move limit ${settings.opponentMoveLimit}; min games ${settings.minOpponentGames}; min reply share ${settings.minOpponentMoveShare}%.`,
       `Max CP Drop: ${brief.maxEngineCpLoss} cp. Treat this as a hard safety constraint.`,
-    ],
+    ].filter((item): item is string => Boolean(item)),
     evidence: [
       ...brief.candidates.slice(0, 14).map(formatPrepCoachCandidateForCoach),
       ...blockedCandidates
@@ -5300,6 +5302,33 @@ function getPrepCoachCandidatePriority({
     strengthScore * 1.35 +
     share * 100 * 0.6 +
     confidence * 12
+  );
+}
+
+function comparePrepCoachCandidatesByAfterPrep(
+  a: PrepCoachCandidateEvidence,
+  b: PrepCoachCandidateEvidence,
+) {
+  const statusDelta = getPrepCoachStatusSort(b.status) - getPrepCoachStatusSort(a.status);
+  if (statusDelta !== 0) return statusDelta;
+
+  const aAfter = a.afterPrepStrength?.score ?? null;
+  const bAfter = b.afterPrepStrength?.score ?? null;
+  if (aAfter !== null || bAfter !== null) {
+    return (
+      (bAfter ?? -1) - (aAfter ?? -1) ||
+      (b.strength?.score ?? -1) - (a.strength?.score ?? -1) ||
+      b.share - a.share ||
+      b.games - a.games ||
+      a.move.localeCompare(b.move)
+    );
+  }
+
+  return (
+    (b.strength?.score ?? -1) - (a.strength?.score ?? -1) ||
+    b.share - a.share ||
+    b.games - a.games ||
+    a.move.localeCompare(b.move)
   );
 }
 
@@ -5410,17 +5439,17 @@ function formatPrepCoachCandidateForCoach(candidate: PrepCoachCandidateEvidence)
     `${candidate.id}: ${actor} ${candidate.move}`,
     `status ${getPrepCoachStatusLabel(candidate.status)}`,
     `line ${candidate.line.join(" ")}`,
+    candidate.afterPrepStrength
+      ? `primary after-prep score ${candidate.afterPrepStrength.score} (${candidate.afterPrepSource})`
+      : "primary after-prep score unavailable",
+    candidate.responseMove ? `answer/follow-up ${candidate.responseMove}` : null,
+    candidate.likelyOpponentMove ? `likely reply ${candidate.likelyOpponentMove}` : null,
     `${formatNumber(candidate.games)} games`,
     `${formatPrepGamePlanShare(candidate.share)} share`,
     `${candidate.surfaceScoreLabel} ${formatPrepCoachPercent(candidate.surfaceScore)}`,
     candidate.strength
-      ? `blended strength ${candidate.strength.score}`
+      ? `secondary immediate blended strength ${candidate.strength.score}`
       : "blended strength unavailable",
-    candidate.afterPrepStrength
-      ? `after-prep ${candidate.afterPrepStrength.score} (${candidate.afterPrepSource})`
-      : "after-prep unavailable",
-    candidate.likelyOpponentMove ? `likely reply ${candidate.likelyOpponentMove}` : null,
-    candidate.responseMove ? `answer/follow-up ${candidate.responseMove}` : null,
     formatPrepCoachEngineEvidence({
       engineCp: candidate.afterPrepStrength?.engineCp ?? candidate.strength?.engineCp ?? null,
       engineCpLoss:
