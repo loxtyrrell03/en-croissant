@@ -1491,7 +1491,6 @@ async function getBestUserResponseImpact({
         settings.useCloudEngine && loadEngineMoves
             ? await loadEngineMoves(fen, userColor, settings).catch(() => [])
             : [];
-    if (settings.useCloudEngine && engineMoves.length === 0) return null;
 
     const strengthByMove = getPrepMoveStrengthMap({
         openings: replies,
@@ -1502,11 +1501,9 @@ async function getBestUserResponseImpact({
     const bestReply = replies
         .map((opening) => {
             const strength = strengthByMove.get(normalizeSanForPrep(opening.move)) ?? null;
-            const usableStrength =
-                settings.useCloudEngine && strength?.engineCpLoss === null ? null : strength;
-            const lineStrength = usableStrength
+            const lineStrength = strength
                 ? createProjectedPrepLineStrength({
-                      strength: usableStrength,
+                      strength,
                       userScore: getOpeningScoreForSide(opening, userColor),
                       settings,
                   })
@@ -1516,8 +1513,8 @@ async function getBestUserResponseImpact({
                 games: getOpeningTotal(opening),
                 share: getOpeningTotal(opening) / eligibleTotal,
                 score: getOpeningScoreForSide(opening, userColor),
-                strengthScore: usableStrength?.score ?? null,
-                strength: usableStrength,
+                strengthScore: strength?.score ?? null,
+                strength,
                 lineScore: lineStrength?.score ?? null,
                 lineStrength,
             };
@@ -2158,11 +2155,12 @@ function evaluatePrepStrengthCandidates({
             (engineCpLoss === null
                 ? settings.mode !== "practical"
                 : engineCpLoss > maxEngineCpLoss);
-        const engineLossNorm = !settings.useCloudEngine
-            ? 0
-            : engineCpLoss === null
-              ? getPrepMissingEngineLossNorm(settings)
-              : clamp(engineCpLoss / maxEngineCpLoss, 0, 1.5);
+        const engineLossNorm =
+            !settings.useCloudEngine || scoredEngineMoves.length === 0
+                ? 0
+                : engineCpLoss === null
+                  ? getPrepMissingEngineLossNorm(settings)
+                  : clamp(engineCpLoss / maxEngineCpLoss, 0, 1.5);
         const databaseLossNorm =
             databaseWdlLoss === null
                 ? 0.75

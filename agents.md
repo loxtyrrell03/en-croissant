@@ -326,10 +326,11 @@ default.
   there is not.
 - When cloud engine is enabled, candidate lookahead must fetch engine/cloud
   moves for the future prep-side position before scoring the future reply. Do
-  not disable the engine component as a fallback; if future engine data is
-  unavailable or the future move is not covered by engine data, leave the
-  `After prep` signal absent instead of showing the repeated missing-engine
-  score around `59`.
+  not call the Lichess API here. The first source must be the local stored
+  Lichess cloud-eval database; if that has no moves for the position, use
+  ChessDB as a fallback. If neither eval source answers, still show a
+  practical/database projection instead of a blank or repeated missing-engine
+  value such as `59`.
 - Candidate lookahead may use future move strength to select a reply, but the
   displayed `After prep` score must be a projected line value from the original
   prep side's perspective. Cap the future move's relative strength by the
@@ -341,9 +342,9 @@ default.
   after each opponent move, score it with the active strength settings and
   local eval data when enabled, and show a compact label such as `After c5`.
   Existing saved-line impact can still take precedence when present, but
-  `NO LINE` rows may still have an `After prep` value. If engine scoring is
-  enabled and the local eval store has no covered reply, leave the signal
-  absent instead of silently switching to a no-engine score.
+  `NO LINE` rows may still have an `After prep` value. Engine scoring should
+  use local Lichess evals first, ChessDB second, and only then a practical-only
+  projection when no engine source has coverage.
 - The prep strength scorer's engine floor is intentionally limited to Engine
   mode. In Smart and Practical modes, the configured engine/practical blend
   must be allowed to pull an engine-best move down when opponent-specific WDL is
@@ -354,9 +355,9 @@ default.
   Masters. Both common source-move rows and user candidate rows may now show
   projected prep-side strength when a nearby continuation is genuinely better
   than the surface row. General-mode tooltips should describe the source side
-  rather than a named opponent, while keeping the same local-eval rule: if cloud
-  engine scoring is enabled and no covered local engine/cloud evidence exists,
-  leave the `After prep` value absent.
+  rather than a named opponent, while keeping the same eval rule: local Lichess
+  evals first, ChessDB fallback second, practical projection only when no eval
+  source covers the position.
 
 ### Local Lichess Cloud Evals
 

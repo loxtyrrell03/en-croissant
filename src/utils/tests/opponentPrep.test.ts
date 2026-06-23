@@ -605,7 +605,7 @@ describe("opponent prep helpers", () => {
         expect(impact?.continuationLineScore).toBeLessThan(impact!.continuationStrengthScore!);
     });
 
-    test("candidate reply strength is absent rather than fixed at 59 when future engine data is missing", async () => {
+    test("candidate reply strength falls back to practical scoring when future engine data is missing", async () => {
         const store = createTreeStore();
         store.getState().makeMove({ payload: "e4" });
         const settings = normalizePrepBuilderSettings({
@@ -644,7 +644,11 @@ describe("opponent prep helpers", () => {
             settings,
         });
 
-        expect(impact).toBeNull();
+        expect(impact?.continuationMoves).toEqual(["Nf3", "g6"]);
+        expect(impact?.continuationStrengthScore).not.toBe(59);
+        expect(impact?.continuationLineScore).toBeGreaterThan(0);
+        expect(impact?.continuationLineStrength?.engineCpLoss).toBeNull();
+        expect(impact?.continuationLineStrength?.detail).toContain("Engine unavailable");
     });
 
     test("chooses future prep replies by strength instead of raw WDL", async () => {
