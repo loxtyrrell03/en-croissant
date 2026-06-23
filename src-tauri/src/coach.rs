@@ -674,7 +674,7 @@ pub async fn ask_plan_coach(request: PlanCoachRequest) -> Result<PlanCoachRespon
 
 fn normalize_plan_coach_model(model: &str) -> String {
     let model = model.trim();
-    if model.is_empty() || model.to_ascii_lowercase().contains("pro") {
+    if model.is_empty() {
         DEFAULT_PLAN_COACH_MODEL.to_string()
     } else {
         model.to_string()

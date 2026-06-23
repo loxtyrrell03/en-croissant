@@ -848,23 +848,19 @@ describe("opponent prep helpers", () => {
         expect(impact?.continuationLineStrength?.detail).toContain("WDL unavailable");
     });
 
-    test("candidate after-prep strength falls back to current strength when no projection is shown", () => {
+    test("candidate after-prep strength does not invent a current-strength projection", () => {
         const store = createTreeStore();
         const currentFen = applyPrepSanMove(store.getState().root.fen, "e4")!;
-        const currentStrength = prepStrength("f5", 65);
         const map = getCandidateAfterPrepStrengthMap({
             openings: [{ move: "f5", white: 2, draw: 1, black: 2 }],
             currentFen,
             candidateLineImpactByKey: {},
-            strengthByMove: new Map([["f5", currentStrength]]),
         });
 
-        const afterPrep = map.get("f5");
-        expect(afterPrep?.score).toBe(65);
-        expect(afterPrep?.detail).toContain("instead of leaving the column blank");
+        expect(map.has("f5")).toBe(false);
     });
 
-    test("candidate after-prep strength keeps stronger continuation projections", () => {
+    test("candidate after-prep strength uses the continuation projection", () => {
         const store = createTreeStore();
         const currentFen = applyPrepSanMove(store.getState().root.fen, "e4")!;
         const key = getOpponentPrepBranchKey(currentFen, "f5");
@@ -874,16 +870,14 @@ describe("opponent prep helpers", () => {
             candidateLineImpactByKey: {
                 [key]: prepLineImpact("f5", prepStrength("d5", 100)),
             },
-            strengthByMove: new Map([["f5", prepStrength("f5", 65)]]),
         });
 
         const afterPrep = map.get("f5");
         expect(afterPrep?.move).toBe("d5");
         expect(afterPrep?.score).toBe(100);
-        expect(afterPrep?.detail).not.toContain("instead of leaving the column blank");
     });
 
-    test("candidate after-prep strength does not replace a stronger current move with a weaker database continuation", () => {
+    test("candidate after-prep strength still shows a weaker continuation projection", () => {
         const store = createTreeStore();
         const currentFen = applyPrepSanMove(store.getState().root.fen, "e4")!;
         const key = getOpponentPrepBranchKey(currentFen, "c6");
@@ -893,13 +887,11 @@ describe("opponent prep helpers", () => {
             candidateLineImpactByKey: {
                 [key]: prepLineImpact("c6", prepStrength("d4", 34)),
             },
-            strengthByMove: new Map([["c6", prepStrength("c6", 60)]]),
         });
 
         const afterPrep = map.get("c6");
-        expect(afterPrep?.move).toBe("c6");
-        expect(afterPrep?.score).toBe(60);
-        expect(afterPrep?.detail).toContain("instead of leaving the column blank");
+        expect(afterPrep?.move).toBe("d4");
+        expect(afterPrep?.score).toBe(34);
     });
 
     test("chooses future prep replies by strength instead of raw WDL", async () => {
@@ -1633,6 +1625,32 @@ describe("opponent prep helpers", () => {
         expect(strength.get("b4")?.engineCpLoss).toBeNull();
         expect(strength.get("b4")?.engineUnsafe).toBe(true);
         expect(strength.get("b4")?.score).toBeLessThan(strength.get("e4")!.score);
+    });
+
+    test("smart strength heavily penalizes moves over the configured CP drop", () => {
+        const settings = normalizePrepBuilderSettings({
+            mode: "smart",
+            engineWeight: 55,
+            maxEngineCpLoss: 40,
+        });
+        const strength = getPrepMoveStrengthMap({
+            side: "black",
+            settings,
+            openings: [
+                { move: "dubious", white: 0, draw: 0, black: 20 },
+                { move: "sound", white: 8, draw: 4, black: 8 },
+            ],
+            engineMoves: [
+                { san: "sound", scoreCpForSide: 20, rank: 1, source: "local-lichess" },
+                { san: "dubious", scoreCpForSide: -60, rank: 2, source: "local-lichess" },
+            ],
+        });
+
+        expect(strength.get("dubious")?.engineCpLoss).toBe(80);
+        expect(strength.get("dubious")?.engineUnsafe).toBe(true);
+        expect(strength.get("dubious")?.score).toBe(0);
+        expect(strength.get("dubious")?.score).toBeLessThan(strength.get("sound")!.score);
+        expect(strength.get("dubious")?.detail).toContain("Max CP drop cap");
     });
 
     test("smart strength caps tiny low-share samples even with a top engine score", () => {

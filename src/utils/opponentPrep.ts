@@ -280,6 +280,8 @@ const LOW_SAMPLE_STRENGTH_CAP_MAX_GAMES = 2;
 const LOW_SAMPLE_STRENGTH_CAP_MAX_SHARE = 0.08;
 const LOW_SAMPLE_SMART_STRENGTH_CAP = 72;
 const LOW_SAMPLE_PRACTICAL_STRENGTH_CAP = 58;
+const ENGINE_UNSAFE_STRENGTH_CAP = 35;
+const MISSING_ENGINE_UNSAFE_STRENGTH_CAP = 28;
 
 export function getFenTurn(fen: string): PrepColor {
     return fen.trim().split(/\s+/)[1] === "b" ? "black" : "white";
@@ -473,12 +475,10 @@ export function getCandidateAfterPrepStrengthMap({
     openings,
     currentFen,
     candidateLineImpactByKey,
-    strengthByMove,
 }: {
     openings: Opening[];
     currentFen: string;
     candidateLineImpactByKey: Record<string, OpponentPrepLineImpact>;
-    strengthByMove: Map<string, PrepMoveStrength>;
 }) {
     const entries: [string, PrepMoveStrength][] = [];
 
@@ -486,48 +486,14 @@ export function getCandidateAfterPrepStrengthMap({
         const moveKey = normalizeSanForPrep(opening.move);
         const key = getOpponentPrepBranchKey(currentFen, opening.move);
         const impact = candidateLineImpactByKey[key];
-        const currentStrength = strengthByMove.get(moveKey);
         const continuationStrength = impact?.continuationLineStrength ?? null;
 
-        if (
-            continuationStrength &&
-            shouldShowCandidateAfterPrepStrength({
-                continuationStrength,
-                currentStrength,
-                impact,
-            })
-        ) {
+        if (continuationStrength) {
             entries.push([moveKey, continuationStrength]);
-        } else if (currentStrength) {
-            entries.push([moveKey, createCurrentAfterPrepStrength(currentStrength)]);
         }
     }
 
     return new Map(entries);
-}
-
-export function shouldShowCandidateAfterPrepStrength({
-    continuationStrength,
-    currentStrength,
-    impact,
-}: {
-    continuationStrength: PrepMoveStrength | null;
-    currentStrength: PrepMoveStrength | undefined;
-    impact: OpponentPrepLineImpact | undefined;
-}) {
-    if (!continuationStrength) return false;
-    if (!currentStrength) return true;
-    if (continuationStrength.score > currentStrength.score) return true;
-    if (continuationStrength.score === currentStrength.score) return false;
-
-    return impact?.userResponseGames === 0 && impact.userResponseStrength?.engineCp !== null;
-}
-
-export function createCurrentAfterPrepStrength(strength: PrepMoveStrength): PrepMoveStrength {
-    return {
-        ...strength,
-        detail: `No stronger after-prep continuation was available for this row, so this cell keeps the current move strength instead of leaving the column blank.\n\n${strength.detail}`,
-    };
 }
 
 export function applyPrepSanMove(fen: string, san: string) {
@@ -2307,10 +2273,15 @@ function evaluatePrepStrengthCandidates({
             maxEngineCpLoss,
         });
         const lowSampleCap = getPrepLowSampleStrengthCap(candidate, settings);
+        const engineUnsafeCap = getEngineUnsafeStrengthCap({
+            engineUnsafe,
+            engineCpLoss,
+            maxEngineCpLoss,
+        });
         const rawScore = Math.round((1 - clamp(strengthLoss, 0, 1)) * 100);
         const scoreWithEngineFloor =
             engineScoreFloor === null ? rawScore : Math.max(rawScore, engineScoreFloor);
-        const score = Math.min(scoreWithEngineFloor, lowSampleCap ?? 100);
+        const score = Math.min(scoreWithEngineFloor, lowSampleCap ?? 100, engineUnsafeCap ?? 100);
 
         return {
             move: candidate.move,
@@ -2333,11 +2304,29 @@ function evaluatePrepStrengthCandidates({
                 settings,
                 lowSampleCap,
                 engineScoreFloor,
+                engineUnsafeCap,
             }),
             engineRank: engine?.rank ?? null,
             strengthLoss,
         };
     });
+}
+
+function getEngineUnsafeStrengthCap({
+    engineUnsafe,
+    engineCpLoss,
+    maxEngineCpLoss,
+}: {
+    engineUnsafe: boolean;
+    engineCpLoss: number | null;
+    maxEngineCpLoss: number;
+}) {
+    if (!engineUnsafe) return null;
+    if (engineCpLoss === null) return MISSING_ENGINE_UNSAFE_STRENGTH_CAP;
+
+    const overage = Math.max(0, engineCpLoss - maxEngineCpLoss);
+    const overageShare = clamp(overage / maxEngineCpLoss, 0, 1);
+    return Math.round(ENGINE_UNSAFE_STRENGTH_CAP * (1 - overageShare));
 }
 
 function getPrepMissingEngineLossNorm(settings: PrepBuilderSettings) {
@@ -2656,6 +2645,7 @@ function formatPrepStrengthDetail({
     settings,
     lowSampleCap,
     engineScoreFloor,
+    engineUnsafeCap,
 }: {
     engineCp: number | null;
     engineCpLoss: number | null;
@@ -2667,6 +2657,7 @@ function formatPrepStrengthDetail({
     settings: PrepBuilderSettings;
     lowSampleCap?: number | null;
     engineScoreFloor?: number | null;
+    engineUnsafeCap?: number | null;
 }) {
     const parts: string[] = [];
 
@@ -2712,6 +2703,10 @@ function formatPrepStrengthDetail({
 
     if (engineScoreFloor !== null && engineScoreFloor !== undefined) {
         parts.push(`Engine floor ${engineScoreFloor}`);
+    }
+
+    if (engineUnsafeCap !== null && engineUnsafeCap !== undefined) {
+        parts.push(`Max CP drop cap ${engineUnsafeCap}`);
     }
 
     return parts.join("; ");

@@ -408,19 +408,26 @@ default.
   choose the best safe line itself. Keep the hard `Max CP Drop` rule in this
   evidence packet: engine-unsafe candidates may be shown as evidence, but the
   prompt must forbid recommending them.
-- A later 2026-06-23 correction made desktop `After prep` values non-optional
-  for visible prep rows once normal Strength is available. Candidate rows now
-  show a projected continuation when it improves the current row, otherwise the
-  column keeps the row's current Strength with a `Current` label instead of
-  rendering `-`; opponent/source rows apply the same fallback after saved-line
-  and projected-reply evidence. The repro was the Alexey Lapidus Lichess
-  database as White at `1.e4`, where `...f5` had continuation data but no
-  visible `After prep` value because the candidate display suppressed weaker or
-  absent projections. A PGN probe over the local
+- A same-day UX/model correction made the visible `Coach report` output the
+  natural-language coach answer first, not the candidate evidence table. The
+  candidate grid is now collapsed as supporting evidence, while the report
+  auto-runs through `gemini-3.1-pro-preview`. Do not downgrade prep coach
+  reports to the Flash planner model, and do not make the evidence table the
+  primary "report" again.
+- A later 2026-06-23 correction fixed the desktop candidate-row `After prep`
+  semantics. The column must never show a `Current` fallback: it means the
+  source/opponent's most common response after the displayed candidate, followed
+  by the best available prep-side answer scored with the active Strength
+  settings. Show that projection even when it is weaker than the candidate's
+  surface Strength, because the projected line value is the point of the column.
+  The repro was the Alexey Lapidus Lichess database as White at `1.e4`, where
+  `...f5` should follow `...f5 2.e5 d5` and show the projected `d5` score
+  rather than a surface/current value. A PGN probe over the local
   `ALexChess2010_2022` database checked `1.e4`, `1.e4 c5 2.Nf3`,
   `1.e4 f5 2.e5`, `1.e4 d5 2.exd5`, and `1.e4 c6 2.d4` with zero missing
-  visible after-prep values. Keep this "never hide the value" behavior: only
-  show `Checking` while async Strength/projection work is still resolving.
+  projected values. The same pass made Strength apply a hard cap when local
+  eval CP loss exceeds the configured `Max CP Drop`, so a database-practical
+  spike cannot outrank a sound move after blowing the CP threshold.
 
 ### Local Lichess Cloud Evals
 

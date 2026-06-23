@@ -116,7 +116,6 @@ import {
   findOpponentPrepStart,
   applyPrepSanMove,
   choosePrepBuilderMove,
-  createCurrentAfterPrepStrength,
   findPrepStraightLineCandidates,
   getCandidateAfterPrepStrengthMap,
   getFenTurn,
@@ -140,7 +139,6 @@ import {
   normalizePrepBuilderSettings,
   oppositePrepColor,
   pathExists,
-  shouldShowCandidateAfterPrepStrength,
   sortOpponentPrepOpenings,
   type PrepBuilderEngineMove,
   type PrepBuilderMoveChoice,
@@ -1272,9 +1270,6 @@ function OpponentPrepPanel({
       const projection = branchPrepProjectionByKey[row.key];
       if (projection) {
         result.set(moveKey, projection.strength);
-      } else {
-        const currentStrength = strengthByMove.get(moveKey);
-        if (currentStrength) result.set(moveKey, createCurrentAfterPrepStrength(currentStrength));
       }
     }
 
@@ -1289,7 +1284,6 @@ function OpponentPrepPanel({
     prep.color,
     strengthEngineMoves,
     strengthOpenings,
-    strengthByMove,
   ]);
   const candidateAfterPrepStrengthByMove = useMemo(
     () =>
@@ -1298,10 +1292,9 @@ function OpponentPrepPanel({
             openings: strengthOpenings,
             currentFen,
             candidateLineImpactByKey,
-            strengthByMove,
           })
         : new Map<string, PrepMoveStrength>(),
-    [candidateLineImpactByKey, currentFen, opponentToMove, strengthByMove, strengthOpenings],
+    [candidateLineImpactByKey, currentFen, opponentToMove, strengthOpenings],
   );
   const activeBranch = useMemo(
     () =>
@@ -2708,18 +2701,9 @@ function OpponentPrepPanel({
           checkedPositions += 1;
 
           const continuationStrength = impact?.continuationLineStrength ?? null;
-          const showContinuation = shouldShowCandidateAfterPrepStrength({
-            continuationStrength,
-            currentStrength: strength ?? undefined,
-            impact: impact ?? undefined,
-          });
-          const afterPrepStrength = showContinuation
-            ? continuationStrength
-            : strength
-              ? createCurrentAfterPrepStrength(strength)
-              : null;
+          const afterPrepStrength = continuationStrength;
           const engineUnsafe = Boolean(
-            strength?.engineUnsafe || (showContinuation && continuationStrength?.engineUnsafe),
+            strength?.engineUnsafe || continuationStrength?.engineUnsafe,
           );
           const exclusionReason = engineUnsafe
             ? `Max CP Drop gate: this move is over the configured ${settings.maxEngineCpLoss} cp loss when local eval evidence is available.`
@@ -2743,7 +2727,7 @@ function OpponentPrepPanel({
             surfaceScoreLabel: `${getPrepColorLabel(userSide)} database score`,
             strength,
             afterPrepStrength,
-            afterPrepSource: showContinuation ? "projection" : strength ? "current" : "none",
+            afterPrepSource: continuationStrength ? "projection" : "none",
             likelyOpponentMove: impact?.opponentReplyMove ?? null,
             responseMove: impact?.userResponseMove ?? null,
             responseDetail: impact
@@ -4530,10 +4514,6 @@ function OpponentPrepMoveTable({
           const projectionContext = projection
             ? branchPrepProjectionTooltipLines(projection, general)
             : [];
-          const fallbackSummary =
-            !lineImpact && !projection && afterPrepStrength
-              ? `Current strength ${afterPrepStrength.score}: no stronger after-prep projection was available for this ${general ? "source" : "opponent"} move, so the column keeps the row's current strength.`
-              : undefined;
 
           return (
             <Table.Tr
@@ -4558,15 +4538,11 @@ function OpponentPrepMoveTable({
               <Table.Td>
                 <PrepAfterStrengthCell
                   strength={afterPrepStrength}
-                  label={
-                    lineImpact
-                      ? "Saved line"
-                      : projection?.label || (afterPrepStrength ? "Current" : "")
-                  }
+                  label={lineImpact ? "Saved line" : projection?.label}
                   summary={
                     !lineImpact && projection
                       ? `${projection.label} ${projection.strength.score}: projected from the best available prep reply after this ${general ? "source" : "opponent"} move.`
-                      : fallbackSummary
+                      : undefined
                   }
                   context={
                     lineImpact
@@ -4787,22 +4763,7 @@ function PrepCandidateMoveTable({
             const rowStrength = strengthByMove.get(moveKey);
             const afterPrepStrength = afterPrepStrengthByMove.get(moveKey);
             const continuationStrength = lineImpact?.continuationLineStrength ?? null;
-            const continuationIsShown = shouldShowCandidateAfterPrepStrength({
-              continuationStrength,
-              currentStrength: rowStrength,
-              impact: lineImpact,
-            });
-            const fallbackSummary =
-              afterPrepStrength && !continuationIsShown
-                ? `Current strength ${afterPrepStrength.score}: no stronger after-prep continuation replaced this candidate, so the column keeps the row's current strength.`
-                : undefined;
-            const fallbackContext =
-              lineImpact && !continuationIsShown
-                ? [
-                    "A nearby continuation was checked but did not improve this candidate's current strength.",
-                    candidateLineImpactTooltip(lineImpact, general),
-                  ]
-                : [];
+            const continuationIsShown = Boolean(lineImpact && continuationStrength);
 
             return (
               <Table.Tr
@@ -4827,15 +4788,12 @@ function PrepCandidateMoveTable({
                     label={
                       lineImpact && continuationIsShown
                         ? formatCandidateAfterPrepLabel(lineImpact)
-                        : afterPrepStrength
-                          ? "Current"
-                          : ""
+                        : ""
                     }
-                    summary={fallbackSummary}
                     context={
                       lineImpact && continuationIsShown
                         ? [candidateLineImpactTooltip(lineImpact, general)]
-                        : fallbackContext
+                        : []
                     }
                     loading={afterPrepLoading}
                   />
@@ -5235,7 +5193,7 @@ function buildPrepCoachReportRequest({
       `Pre-game prep report for ${userLabel}. Choose the single best prep line yourself from the safe candidates below; the prep builder has not selected the line for you.`,
       `Hard constraint: Max CP Drop is ${brief.maxEngineCpLoss} cp. Candidates marked unsafe, skipped, thin, or no-safe-answer are evidence only and must not be recommended.`,
       "Use the supplied database WDL, games/share, blended Strength, local eval evidence, and After-prep projection to choose the line.",
-      "Output a compact practical report with: chosen line, why it is best, what replies to know, risks, and what to memorize before the game.",
+      "Output natural language only. Start with the chosen line, then explain why it is best, the replies to know, risks, and what to memorize before the game.",
       `Strength mode ${settings.mode}; cloud eval ${settings.useCloudEngine ? "on" : "off"}.`,
     ].join(" "),
     planLines:
@@ -5942,6 +5900,7 @@ function PrepCoachReportPanel({
     ...brief.candidates.filter((candidate) => candidate.status !== "safe"),
   ].slice(0, 6);
   const userLabel = getPrepColorLabel(brief.userColor);
+  const [evidenceOpen, setEvidenceOpen] = useState(false);
 
   return (
     <Alert color="blue" variant="light" mt="xs">
@@ -5964,81 +5923,101 @@ function PrepCoachReportPanel({
           </Tooltip>
         </Group>
 
-        <Table
-          withTableBorder
-          horizontalSpacing="xs"
-          verticalSpacing={4}
-          style={{ tableLayout: "fixed" }}
-        >
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th style={{ width: "34%" }}>Line</Table.Th>
-              <Table.Th style={{ width: "18%" }}>Status</Table.Th>
-              <Table.Th style={{ width: "16%" }}>Strength</Table.Th>
-              <Table.Th>Evidence</Table.Th>
-              <Table.Th style={{ width: 54 }} />
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {visibleCandidates.map((candidate) => (
-              <Table.Tr key={candidate.id}>
-                <Table.Td>
-                  <Text size="sm" fw={700} style={{ wordBreak: "break-word" }}>
-                    {formatPrepCoachCandidateLine(candidate, brief.startLine)}
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    {formatPrepGamePlanShare(candidate.share)} / {formatNumber(candidate.games)}
-                  </Text>
-                </Table.Td>
-                <Table.Td>
-                  <Badge
-                    size="sm"
-                    variant="light"
-                    color={getPrepCoachStatusColor(candidate.status)}
-                  >
-                    {getPrepCoachStatusLabel(candidate.status)}
-                  </Badge>
-                </Table.Td>
-                <Table.Td>
-                  <Text size="xs">
-                    {candidate.strength ? `Now ${candidate.strength.score}` : "Now -"}
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    {candidate.afterPrepStrength
-                      ? `After ${candidate.afterPrepStrength.score}`
-                      : "After -"}
-                  </Text>
-                </Table.Td>
-                <Table.Td>
-                  <Text size="xs" lineClamp={2}>
-                    {formatPrepCoachCandidateShortEvidence(candidate)}
-                  </Text>
-                </Table.Td>
-                <Table.Td>
-                  <Tooltip label="Play candidate line">
-                    <ActionIcon
-                      variant="subtle"
-                      size="sm"
-                      disabled={candidate.line.length <= brief.startLine.length}
-                      onClick={() => onPlayLine(candidate.line)}
-                    >
-                      <IconPlayerPlay size="0.95rem" />
-                    </ActionIcon>
-                  </Tooltip>
-                </Table.Td>
-              </Table.Tr>
-            ))}
-          </Table.Tbody>
-        </Table>
-
         <PlanCoachInline
           request={brief.request}
           cacheKey={cacheKey}
           disabled={brief.candidates.length === 0}
-          actionLabel="Coach report"
+          actionLabel="Write report"
           refreshLabel="Refresh report"
           autoRunKey={autoRunKey}
+          modelOverride="gemini-3.1-pro-preview"
+          loadingLabel="Writing natural-language report with Gemini 3.1 Pro..."
         />
+
+        <Group justify="space-between" gap="xs" wrap="wrap">
+          <Text size="xs" c="dimmed">
+            Evidence packet sent to the coach
+          </Text>
+          <Button
+            variant="subtle"
+            size="compact-xs"
+            rightSection={
+              evidenceOpen ? <IconChevronUp size="0.85rem" /> : <IconChevronDown size="0.85rem" />
+            }
+            onClick={() => setEvidenceOpen((open) => !open)}
+          >
+            {evidenceOpen ? "Hide evidence" : "Show evidence"}
+          </Button>
+        </Group>
+
+        <Collapse in={evidenceOpen}>
+          <Table
+            withTableBorder
+            horizontalSpacing="xs"
+            verticalSpacing={4}
+            style={{ tableLayout: "fixed" }}
+          >
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th style={{ width: "34%" }}>Line</Table.Th>
+                <Table.Th style={{ width: "18%" }}>Status</Table.Th>
+                <Table.Th style={{ width: "16%" }}>Strength</Table.Th>
+                <Table.Th>Evidence</Table.Th>
+                <Table.Th style={{ width: 54 }} />
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {visibleCandidates.map((candidate) => (
+                <Table.Tr key={candidate.id}>
+                  <Table.Td>
+                    <Text size="sm" fw={700} style={{ wordBreak: "break-word" }}>
+                      {formatPrepCoachCandidateLine(candidate, brief.startLine)}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      {formatPrepGamePlanShare(candidate.share)} / {formatNumber(candidate.games)}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Badge
+                      size="sm"
+                      variant="light"
+                      color={getPrepCoachStatusColor(candidate.status)}
+                    >
+                      {getPrepCoachStatusLabel(candidate.status)}
+                    </Badge>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="xs">
+                      {candidate.strength ? `Now ${candidate.strength.score}` : "Now -"}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      {candidate.afterPrepStrength
+                        ? `After ${candidate.afterPrepStrength.score}`
+                        : "After -"}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="xs" lineClamp={2}>
+                      {formatPrepCoachCandidateShortEvidence(candidate)}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Tooltip label="Play candidate line">
+                      <ActionIcon
+                        variant="subtle"
+                        size="sm"
+                        disabled={candidate.line.length <= brief.startLine.length}
+                        onClick={() => onPlayLine(candidate.line)}
+                      >
+                        <IconPlayerPlay size="0.95rem" />
+                      </ActionIcon>
+                    </Tooltip>
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </Collapse>
       </Stack>
     </Alert>
   );

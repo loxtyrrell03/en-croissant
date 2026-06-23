@@ -20,6 +20,8 @@ type PlanCoachInlineProps = {
   actionLabel?: string;
   refreshLabel?: string;
   autoRunKey?: string | null;
+  modelOverride?: string;
+  loadingLabel?: string;
 };
 
 export default function PlanCoachInline({
@@ -29,12 +31,17 @@ export default function PlanCoachInline({
   actionLabel = "Coach",
   refreshLabel = "Refresh coach",
   autoRunKey = null,
+  modelOverride,
+  loadingLabel,
 }: PlanCoachInlineProps) {
   const enabled = useAtomValue(aiCoachEnabledAtom);
   const geminiCommand = useAtomValue(aiCoachGeminiCommandAtom);
   const plannerModel = useAtomValue(aiCoachPlannerModelAtom);
   const timeoutSecs = useAtomValue(aiCoachTimeoutSecsAtom);
-  const model = useMemo(() => normalizePlanCoachModel(plannerModel), [plannerModel]);
+  const model = useMemo(
+    () => normalizePlanCoachModel(modelOverride ?? plannerModel),
+    [modelOverride, plannerModel],
+  );
   const [answer, setAnswer] = useState<string | null>(null);
   const [modelUsed, setModelUsed] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -105,6 +112,11 @@ export default function PlanCoachInline({
           {error}
         </Alert>
       )}
+      {loading && loadingLabel ? (
+        <Text size="xs" c="dimmed">
+          {loadingLabel}
+        </Text>
+      ) : null}
       {answer && (
         <Paper withBorder p="xs" radius="sm">
           <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
@@ -118,6 +130,6 @@ export default function PlanCoachInline({
 
 function normalizePlanCoachModel(model: string) {
   const trimmed = model.trim();
-  if (!trimmed || trimmed.toLowerCase().includes("pro")) return "gemini-3.5-flash";
+  if (!trimmed) return "gemini-3.5-flash";
   return trimmed;
 }
