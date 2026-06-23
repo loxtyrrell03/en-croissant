@@ -399,6 +399,19 @@ default.
   auto-runs the inline Plan Coach report from that evidence, instead of hiding
   the report action inside a panel that only appeared after a prior successful
   brief render.
+- A later 2026-06-23 correction made desktop `After prep` values non-optional
+  for visible prep rows once normal Strength is available. Candidate rows now
+  show a projected continuation when it improves the current row, otherwise the
+  column keeps the row's current Strength with a `Current` label instead of
+  rendering `-`; opponent/source rows apply the same fallback after saved-line
+  and projected-reply evidence. The repro was the Alexey Lapidus Lichess
+  database as White at `1.e4`, where `...f5` had continuation data but no
+  visible `After prep` value because the candidate display suppressed weaker or
+  absent projections. A PGN probe over the local
+  `ALexChess2010_2022` database checked `1.e4`, `1.e4 c5 2.Nf3`,
+  `1.e4 f5 2.e5`, `1.e4 d5 2.exd5`, and `1.e4 c6 2.d4` with zero missing
+  visible after-prep values. Keep this "never hide the value" behavior: only
+  show `Checking` while async Strength/projection work is still resolving.
 
 ### Local Lichess Cloud Evals
 

@@ -469,6 +469,67 @@ export function getPrepMoveStrengthMap({
     );
 }
 
+export function getCandidateAfterPrepStrengthMap({
+    openings,
+    currentFen,
+    candidateLineImpactByKey,
+    strengthByMove,
+}: {
+    openings: Opening[];
+    currentFen: string;
+    candidateLineImpactByKey: Record<string, OpponentPrepLineImpact>;
+    strengthByMove: Map<string, PrepMoveStrength>;
+}) {
+    const entries: [string, PrepMoveStrength][] = [];
+
+    for (const opening of openings) {
+        const moveKey = normalizeSanForPrep(opening.move);
+        const key = getOpponentPrepBranchKey(currentFen, opening.move);
+        const impact = candidateLineImpactByKey[key];
+        const currentStrength = strengthByMove.get(moveKey);
+        const continuationStrength = impact?.continuationLineStrength ?? null;
+
+        if (
+            continuationStrength &&
+            shouldShowCandidateAfterPrepStrength({
+                continuationStrength,
+                currentStrength,
+                impact,
+            })
+        ) {
+            entries.push([moveKey, continuationStrength]);
+        } else if (currentStrength) {
+            entries.push([moveKey, createCurrentAfterPrepStrength(currentStrength)]);
+        }
+    }
+
+    return new Map(entries);
+}
+
+export function shouldShowCandidateAfterPrepStrength({
+    continuationStrength,
+    currentStrength,
+    impact,
+}: {
+    continuationStrength: PrepMoveStrength | null;
+    currentStrength: PrepMoveStrength | undefined;
+    impact: OpponentPrepLineImpact | undefined;
+}) {
+    if (!continuationStrength) return false;
+    if (!currentStrength) return true;
+    if (continuationStrength.score > currentStrength.score) return true;
+    if (continuationStrength.score === currentStrength.score) return false;
+
+    return impact?.userResponseGames === 0 && impact.userResponseStrength?.engineCp !== null;
+}
+
+export function createCurrentAfterPrepStrength(strength: PrepMoveStrength): PrepMoveStrength {
+    return {
+        ...strength,
+        detail: `No stronger after-prep continuation was available for this row, so this cell keeps the current move strength instead of leaving the column blank.\n\n${strength.detail}`,
+    };
+}
+
 export function applyPrepSanMove(fen: string, san: string) {
     const [pos] = positionFromFen(fen);
     if (!pos) return null;

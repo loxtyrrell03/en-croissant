@@ -11,6 +11,7 @@ import {
     findOpponentPrepSourceMovePath,
     findOpponentPrepStart,
     getOpponentPrepBranchStats,
+    getOpponentPrepBranchKey,
     getOpponentPrepCandidateLineImpact,
     getOpponentPrepMoveRows,
     getBestPrepLineReplyImpact,
@@ -23,11 +24,72 @@ import {
     getPrepBuilderStopReason,
     getPrepBuilderTaskPriority,
     getPrepBuilderUserResponseChildIndex,
+    getCandidateAfterPrepStrengthMap,
     getPrepMoveStrengthMap,
     hasPrepBuilderDatabaseCandidates,
     isPrepStraightLineBadForOpponent,
     normalizePrepBuilderSettings,
+    type OpponentPrepLineImpact,
+    type PrepMoveStrength,
 } from "@/utils/opponentPrep";
+
+function prepStrength(move: string, score: number): PrepMoveStrength {
+    return {
+        move,
+        score,
+        engineCp: null,
+        engineCpLoss: null,
+        engineSource: null,
+        databaseScore: score / 100,
+        databaseWdlLoss: null,
+        engineUnsafe: false,
+        label: score.toString(),
+        detail: `strength ${score}`,
+    };
+}
+
+function prepLineImpact(
+    move: string,
+    continuationLineStrength: PrepMoveStrength | null,
+): OpponentPrepLineImpact {
+    return {
+        surfaceScore: 0.5,
+        surfaceGames: 10,
+        userMove: move,
+        userScore: 0.5,
+        userGames: 10,
+        userShare: 0.2,
+        opponentReplyMove: "e5",
+        opponentReplyScore: 0.4,
+        opponentReplyGames: 6,
+        opponentReplyShare: 0.6,
+        userResponseMove: continuationLineStrength?.move ?? null,
+        userResponseScore: continuationLineStrength ? continuationLineStrength.score / 100 : null,
+        userResponseGames: continuationLineStrength ? 4 : null,
+        userResponseShare: continuationLineStrength ? 0.4 : null,
+        userResponseStrengthScore: continuationLineStrength?.score ?? null,
+        userResponseStrength: continuationLineStrength,
+        continuationMoves: continuationLineStrength ? ["e5", continuationLineStrength.move] : [],
+        continuationUserScore: continuationLineStrength
+            ? continuationLineStrength.score / 100
+            : null,
+        continuationOpponentScore: continuationLineStrength
+            ? 1 - continuationLineStrength.score / 100
+            : null,
+        continuationGames: continuationLineStrength ? 4 : null,
+        continuationStrengthScore: continuationLineStrength?.score ?? null,
+        continuationStrength: continuationLineStrength,
+        continuationLineScore: continuationLineStrength?.score ?? null,
+        continuationLineStrength,
+        continuationDepthPly: continuationLineStrength ? 2 : 0,
+        continuationWeight: 1,
+        scoreDrop: continuationLineStrength ? continuationLineStrength.score / 100 - 0.5 : 0,
+        weightedScoreDrop: continuationLineStrength
+            ? continuationLineStrength.score / 100 - 0.5
+            : 0,
+        weightedStrengthScore: continuationLineStrength?.score ?? 0,
+    };
+}
 
 describe("opponent prep helpers", () => {
     beforeAll(() => {
@@ -786,6 +848,60 @@ describe("opponent prep helpers", () => {
         expect(impact?.continuationLineStrength?.detail).toContain("WDL unavailable");
     });
 
+    test("candidate after-prep strength falls back to current strength when no projection is shown", () => {
+        const store = createTreeStore();
+        const currentFen = applyPrepSanMove(store.getState().root.fen, "e4")!;
+        const currentStrength = prepStrength("f5", 65);
+        const map = getCandidateAfterPrepStrengthMap({
+            openings: [{ move: "f5", white: 2, draw: 1, black: 2 }],
+            currentFen,
+            candidateLineImpactByKey: {},
+            strengthByMove: new Map([["f5", currentStrength]]),
+        });
+
+        const afterPrep = map.get("f5");
+        expect(afterPrep?.score).toBe(65);
+        expect(afterPrep?.detail).toContain("instead of leaving the column blank");
+    });
+
+    test("candidate after-prep strength keeps stronger continuation projections", () => {
+        const store = createTreeStore();
+        const currentFen = applyPrepSanMove(store.getState().root.fen, "e4")!;
+        const key = getOpponentPrepBranchKey(currentFen, "f5");
+        const map = getCandidateAfterPrepStrengthMap({
+            openings: [{ move: "f5", white: 2, draw: 1, black: 2 }],
+            currentFen,
+            candidateLineImpactByKey: {
+                [key]: prepLineImpact("f5", prepStrength("d5", 100)),
+            },
+            strengthByMove: new Map([["f5", prepStrength("f5", 65)]]),
+        });
+
+        const afterPrep = map.get("f5");
+        expect(afterPrep?.move).toBe("d5");
+        expect(afterPrep?.score).toBe(100);
+        expect(afterPrep?.detail).not.toContain("instead of leaving the column blank");
+    });
+
+    test("candidate after-prep strength does not replace a stronger current move with a weaker database continuation", () => {
+        const store = createTreeStore();
+        const currentFen = applyPrepSanMove(store.getState().root.fen, "e4")!;
+        const key = getOpponentPrepBranchKey(currentFen, "c6");
+        const map = getCandidateAfterPrepStrengthMap({
+            openings: [{ move: "c6", white: 146, draw: 22, black: 80 }],
+            currentFen,
+            candidateLineImpactByKey: {
+                [key]: prepLineImpact("c6", prepStrength("d4", 34)),
+            },
+            strengthByMove: new Map([["c6", prepStrength("c6", 60)]]),
+        });
+
+        const afterPrep = map.get("c6");
+        expect(afterPrep?.move).toBe("c6");
+        expect(afterPrep?.score).toBe(60);
+        expect(afterPrep?.detail).toContain("instead of leaving the column blank");
+    });
+
     test("chooses future prep replies by strength instead of raw WDL", async () => {
         const store = createTreeStore();
         store.getState().makeMove({ payload: "e4" });
@@ -1358,6 +1474,27 @@ describe("opponent prep helpers", () => {
 
         expect(reply?.move).toBe("e5");
         expect(reply?.strength?.engineUnsafe).toBe(false);
+    });
+
+    test("after-prep reply selection can use engine-only replies when database replies are absent", () => {
+        const settings = normalizePrepBuilderSettings({
+            mode: "smart",
+            useCloudEngine: true,
+        });
+        const reply = getBestPrepLineReplyImpact({
+            userColor: "white",
+            settings,
+            replies: [],
+            engineMoves: [
+                { san: "d4", scoreCpForSide: 42, rank: 1, source: "local-lichess" },
+                { san: "Nf3", scoreCpForSide: 15, rank: 2, source: "local-lichess" },
+            ],
+        });
+
+        expect(reply?.move).toBe("d4");
+        expect(reply?.games).toBe(0);
+        expect(reply?.strength?.engineCpLoss).toBe(0);
+        expect(reply?.lineStrength?.detail).toContain("WDL unavailable");
     });
 
     test("smart prep builder shrinks tiny opponent samples toward reference WDL", () => {
