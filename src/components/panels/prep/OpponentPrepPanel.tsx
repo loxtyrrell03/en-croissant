@@ -152,7 +152,6 @@ import {
 import { createTab, getTabWorkspaceKey, saveToFile } from "@/utils/tabs";
 import { parsePGN } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
-import { queryChessDbMoves } from "@/utils/chessdb/api";
 import { getTreeStructureHash, type TreeState } from "@/utils/treeReducer";
 import { queryLichessCloudMoves } from "@/utils/lichess/api";
 import { unwrap } from "@/utils/unwrap";
@@ -853,24 +852,6 @@ function OpponentPrepPanel({
                   : move.scoreCpForWhite,
             rank: index + 1,
             source: move.source,
-          })),
-        );
-      }
-
-      const chessDbMoveLimit = Math.max(multipv, PREP_STRENGTH_MOVE_POOL_LIMIT);
-      const chessDbMoves = await queryChessDbMoves(fen).catch(() => null);
-      if (chessDbMoves?.length) {
-        return mergePrepBuilderEngineMoves(
-          chessDbMoves.slice(0, chessDbMoveLimit).map<PrepBuilderEngineMove>((move, index) => ({
-            san: move.san,
-            scoreCpForSide:
-              move.scoreCpForWhite === null
-                ? null
-                : userColor === "black"
-                  ? -move.scoreCpForWhite
-                  : move.scoreCpForWhite,
-            rank: move.rank ?? index + 1,
-            source: "chessdb",
           })),
         );
       }

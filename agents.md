@@ -326,11 +326,10 @@ default.
   there is not.
 - When cloud engine is enabled, candidate lookahead must fetch engine/cloud
   moves for the future prep-side position before scoring the future reply. Do
-  not call the Lichess API here. The first source must be the local stored
-  Lichess cloud-eval database; if that has no moves for the position, use
-  ChessDB as a fallback. If neither eval source answers, still show a
-  practical/database projection instead of a blank or repeated missing-engine
-  value such as `59`.
+  not call any external eval API here. The source must be the local stored
+  Lichess cloud-eval database; if that has no moves for the position, still
+  show a practical/database projection instead of a blank or repeated
+  missing-engine value such as `59`.
 - Candidate lookahead may use future move strength to select a reply, but the
   displayed `After prep` score must be a projected line value from the original
   prep side's perspective. Cap the future move's relative strength by the
@@ -343,8 +342,8 @@ default.
   local eval data when enabled, and show a compact label such as `After c5`.
   Existing saved-line impact can still take precedence when present, but
   `NO LINE` rows may still have an `After prep` value. Engine scoring should
-  use local Lichess evals first, ChessDB second, and only then a practical-only
-  projection when no engine source has coverage.
+  use local Lichess evals only in this table, with a practical-only projection
+  when the local store has no coverage.
 - The prep strength scorer's engine floor is intentionally limited to Engine
   mode. In Smart and Practical modes, the configured engine/practical blend
   must be allowed to pull an engine-best move down when opponent-specific WDL is
@@ -356,8 +355,7 @@ default.
   projected prep-side strength when a nearby continuation is genuinely better
   than the surface row. General-mode tooltips should describe the source side
   rather than a named opponent, while keeping the same eval rule: local Lichess
-  evals first, ChessDB fallback second, practical projection only when no eval
-  source covers the position.
+  evals only, practical projection when no local eval covers the position.
 
 ### Local Lichess Cloud Evals
 
