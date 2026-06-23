@@ -3,6 +3,7 @@ import { createTreeStore } from "@/state/store/tree";
 import {
     collectOpponentBranchPaths,
     choosePrepBuilderMove,
+    choosePrepBuilderMoveWithAfterPrep,
     applyPrepSanMove,
     comparePrepStraightLineCandidates,
     findPrepStraightLineCandidates,
@@ -30,6 +31,7 @@ import {
     isPrepStraightLineBadForOpponent,
     normalizePrepBuilderSettings,
     type OpponentPrepLineImpact,
+    type PrepBuilderMoveChoice,
     type PrepMoveStrength,
 } from "@/utils/opponentPrep";
 
@@ -88,6 +90,32 @@ function prepLineImpact(
             ? continuationLineStrength.score / 100 - 0.5
             : 0,
         weightedStrengthScore: continuationLineStrength?.score ?? 0,
+    };
+}
+
+function prepBuilderChoice(
+    move: string,
+    score: number,
+    opponentGames = 100,
+): PrepBuilderMoveChoice {
+    return {
+        move,
+        score,
+        engineRank: null,
+        engineCp: null,
+        engineCpLoss: null,
+        engineSource: null,
+        databaseRank: null,
+        databaseScore: score / 100,
+        databaseWdlLoss: null,
+        opponentGames,
+        opponentShare: 0.2,
+        opponentScore: null,
+        referenceOpponentScore: null,
+        opponentReferenceDelta: null,
+        referenceGames: 0,
+        referenceShare: 0,
+        reasons: [`Strength ${score}`],
     };
 }
 
@@ -1107,6 +1135,41 @@ describe("opponent prep helpers", () => {
         expect(choice?.engineRank).toBe(2);
         expect(choice?.databaseRank).toBe(1);
         expect(choice?.reasons).toEqual(["Local eval: -20 cp from best", "Database: best WDL"]);
+    });
+
+    test("prep builder after-prep selector prefers projected line value over static strength", () => {
+        const selected = choosePrepBuilderMoveWithAfterPrep([
+            {
+                choice: prepBuilderChoice("c6", 100, 2200),
+                lineImpact: prepLineImpact("c6", prepStrength("d5", 43)),
+                afterPrepStrength: prepStrength("d5", 43),
+            },
+            {
+                choice: prepBuilderChoice("c5", 65, 500),
+                lineImpact: prepLineImpact("c5", prepStrength("Nf3", 78)),
+                afterPrepStrength: prepStrength("Nf3", 78),
+            },
+        ]);
+
+        expect(selected?.choice.move).toBe("c5");
+        expect(selected?.afterPrepStrength?.score).toBe(78);
+    });
+
+    test("prep builder after-prep selector falls back to static strength without projections", () => {
+        const selected = choosePrepBuilderMoveWithAfterPrep([
+            {
+                choice: prepBuilderChoice("c6", 100, 2200),
+                lineImpact: null,
+                afterPrepStrength: null,
+            },
+            {
+                choice: prepBuilderChoice("c5", 65, 500),
+                lineImpact: null,
+                afterPrepStrength: null,
+            },
+        ]);
+
+        expect(selected?.choice.move).toBe("c6");
     });
 
     test("engine prep builder keeps the top engine move when mode asks for it", () => {

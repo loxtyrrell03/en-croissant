@@ -161,6 +161,21 @@ export type PrepBuilderMoveChoice = {
     reasons: string[];
 };
 
+type PrepBuilderMoveChoiceArgs = {
+    opponentOpenings: Opening[];
+    referenceOpenings?: Opening[];
+    engineMoves?: PrepBuilderEngineMove[];
+    userColor: PrepColor;
+    settings: PrepBuilderSettings;
+    minGames?: number;
+};
+
+export type PrepBuilderMoveChoiceWithAfterPrep = {
+    choice: PrepBuilderMoveChoice;
+    lineImpact: OpponentPrepLineImpact | null;
+    afterPrepStrength: PrepMoveStrength | null;
+};
+
 type ScoredPrepBuilderMoveChoice = PrepBuilderMoveChoice & {
     engineUnsafe: boolean;
     strengthLoss: number;
@@ -1737,21 +1752,14 @@ export function getPrepBuilderBranchValue({
     return clamp(0.55 + practicalRisk * 0.75 + uncertainty * 0.3, 0.45, 1.65);
 }
 
-export function choosePrepBuilderMove({
+export function getPrepBuilderMoveChoices({
     opponentOpenings,
     referenceOpenings = [],
     engineMoves = [],
     userColor,
     settings,
     minGames,
-}: {
-    opponentOpenings: Opening[];
-    referenceOpenings?: Opening[];
-    engineMoves?: PrepBuilderEngineMove[];
-    userColor: PrepColor;
-    settings: PrepBuilderSettings;
-    minGames?: number;
-}): PrepBuilderMoveChoice | null {
+}: PrepBuilderMoveChoiceArgs): PrepBuilderMoveChoice[] {
     const requiredGames = Math.max(1, minGames ?? settings.minOpponentGames);
     const playableOpponent = getPlayableOpenings(opponentOpenings);
     const playableReference = getPlayableOpenings(referenceOpenings);
@@ -1774,7 +1782,7 @@ export function choosePrepBuilderMove({
     const referenceByMove = new Map(
         playableReference.map((opening) => [normalizeSanForPrep(opening.move), opening]),
     );
-    if (eligibleOpponent.length === 0) return null;
+    if (eligibleOpponent.length === 0) return [];
 
     const moves = new Set<string>();
 
@@ -1897,12 +1905,29 @@ export function choosePrepBuilderMove({
     });
     const safeChoices = scoredChoices.filter((choice) => !choice.engineUnsafe);
     if (safeChoices.length === 0 && scoredChoices.some((choice) => choice.engineUnsafe)) {
-        return null;
+        return [];
     }
 
-    const choices = safeChoices.sort(comparePrepBuilderChoices);
+    return safeChoices.sort(comparePrepBuilderChoices);
+}
 
-    return choices[0] ?? null;
+export function choosePrepBuilderMove(
+    args: PrepBuilderMoveChoiceArgs,
+): PrepBuilderMoveChoice | null {
+    return getPrepBuilderMoveChoices(args)[0] ?? null;
+}
+
+export function choosePrepBuilderMoveWithAfterPrep(
+    choices: PrepBuilderMoveChoiceWithAfterPrep[],
+): PrepBuilderMoveChoiceWithAfterPrep | null {
+    if (choices.length === 0) return null;
+
+    const projectedChoices = choices.filter(
+        (choice) => choice.afterPrepStrength !== null && !choice.afterPrepStrength.engineUnsafe,
+    );
+    const pool = projectedChoices.length > 0 ? projectedChoices : choices;
+
+    return [...pool].sort(comparePrepBuilderAfterPrepChoices)[0] ?? null;
 }
 
 export function collectOpponentBranchPaths({
@@ -2154,6 +2179,30 @@ function comparePrepBuilderChoices(a: ScoredPrepBuilderMoveChoice, b: ScoredPrep
         (a.engineRank ?? 99) - (b.engineRank ?? 99) ||
         b.opponentGames - a.opponentGames ||
         a.move.localeCompare(b.move)
+    );
+}
+
+function comparePrepBuilderAfterPrepChoices(
+    a: PrepBuilderMoveChoiceWithAfterPrep,
+    b: PrepBuilderMoveChoiceWithAfterPrep,
+) {
+    const aAfter = a.afterPrepStrength?.score ?? null;
+    const bAfter = b.afterPrepStrength?.score ?? null;
+
+    if (aAfter !== null || bAfter !== null) {
+        return (
+            (bAfter ?? -1) - (aAfter ?? -1) ||
+            b.choice.score - a.choice.score ||
+            b.choice.opponentGames - a.choice.opponentGames ||
+            a.choice.move.localeCompare(b.choice.move)
+        );
+    }
+
+    return (
+        b.choice.score - a.choice.score ||
+        (a.choice.engineRank ?? 99) - (b.choice.engineRank ?? 99) ||
+        b.choice.opponentGames - a.choice.opponentGames ||
+        a.choice.move.localeCompare(b.choice.move)
     );
 }
 

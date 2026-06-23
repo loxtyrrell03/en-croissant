@@ -430,6 +430,15 @@ default.
   projected values. The same pass made Strength apply a hard cap when local
   eval CP loss exceeds the configured `Max CP Drop`, so a database-practical
   spike cannot outrank a sound move after blowing the CP threshold.
+- A subsequent 2026-06-23 correction made projected `After prep` the primary
+  decision value for both the independent coach report and `Build prep` user
+  move selection. The builder now gathers safe static candidates, projects one
+  likely source/opponent reply plus the best prep-side answer for a bounded
+  candidate set, and chooses by projected `After prep` score before static
+  Strength. Static Strength remains the fallback only when no projection is
+  available. Keep this behavior: if `...c6` has the best immediate Strength
+  but `...c5` has the better projected After-prep score, the coach and builder
+  should prefer `...c5` subject to the Max CP Drop safety gate.
 
 ### Local Lichess Cloud Evals
 

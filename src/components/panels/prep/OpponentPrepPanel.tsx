@@ -115,7 +115,7 @@ import {
   findOpponentPrepSourceMovePath,
   findOpponentPrepStart,
   applyPrepSanMove,
-  choosePrepBuilderMove,
+  choosePrepBuilderMoveWithAfterPrep,
   findPrepStraightLineCandidates,
   getCandidateAfterPrepStrengthMap,
   getFenTurn,
@@ -129,6 +129,7 @@ import {
   getPrepBuilderBranchValue,
   getPrepBuilderEvidenceMinGames,
   getPrepBuilderFocusedReplyLimit,
+  getPrepBuilderMoveChoices,
   getPrepBuilderReplyPolicy,
   getPrepBuilderStopReason,
   getPrepBuilderTaskPriority,
@@ -142,6 +143,7 @@ import {
   sortOpponentPrepOpenings,
   type PrepBuilderEngineMove,
   type PrepBuilderMoveChoice,
+  type PrepBuilderMoveChoiceWithAfterPrep,
   type PrepBuilderSettings,
   type PrepColor,
   type PrepMoveStrength,
@@ -168,6 +170,7 @@ const PREP_STRENGTH_MOVE_POOL_LIMIT = MAX_PREP_MOVE_LIMIT;
 const PREP_STRENGTH_ENGINE_CACHE_VERSION = "v3";
 const AFTER_PREP_PROJECTION_CONCURRENCY = 3;
 const PREP_COACH_SCAN_LIMIT = 12;
+const PREP_BUILDER_AFTER_PREP_SCAN_LIMIT = 10;
 const DEFAULT_STRAIGHT_LINE_MODE: PrepStraightLineSearchMode = "venom";
 const DEFAULT_VENOM_LINE_MIN_SHARE = 65;
 const DEFAULT_VENOM_LINE_MIN_CP = 40;
@@ -341,6 +344,10 @@ type PrepGamePlanBrief = {
   checkedPositions: number;
   sourceLabel: string;
   maxEngineCpLoss: number;
+};
+
+type PrepBuilderAfterPrepSelection = PrepBuilderMoveChoiceWithAfterPrep & {
+  row: PrepCandidateMoveRow | null;
 };
 
 type PrepCoachCandidateStatus = "safe" | "unsafe" | "no-safe-answer" | "thin" | "skipped";
@@ -2308,6 +2315,82 @@ function OpponentPrepPanel({
     }
   }, [clearMovePreview, store, straightLineResult]);
 
+  const choosePrepBuilderAfterPrepMove = useCallback(
+    async ({
+      fen,
+      opponentOpenings,
+      referenceOpenings,
+      engineMoves,
+      userSide,
+      settings,
+      minGames,
+    }: {
+      fen: string;
+      opponentOpenings: Opening[];
+      referenceOpenings: Opening[];
+      engineMoves: PrepBuilderEngineMove[];
+      userSide: PrepColor;
+      settings: PrepBuilderSettings;
+      minGames: number;
+    }): Promise<PrepBuilderAfterPrepSelection | null> => {
+      const choices = getPrepBuilderMoveChoices({
+        opponentOpenings,
+        referenceOpenings,
+        engineMoves,
+        userColor: userSide,
+        settings,
+        minGames,
+      });
+      if (choices.length === 0) return null;
+
+      const rows = getPrepCandidateRows({
+        fen,
+        openings: opponentOpenings,
+        minGames,
+        moveLimit: Math.max(settings.opponentMoveLimit, getPrepBuilderAfterPrepScanLimit(settings)),
+      });
+      const rowByMove = new Map(
+        rows.map((row) => [normalizePrepBuilderSan(row.move), row] as const),
+      );
+      const scanLimit = Math.min(choices.length, getPrepBuilderAfterPrepScanLimit(settings));
+      const projectedChoices = await Promise.all(
+        choices.slice(0, scanLimit).map(async (choice) => {
+          const row = rowByMove.get(normalizePrepBuilderSan(choice.move)) ?? null;
+          const lineImpact = row
+            ? await getOpponentPrepCandidateLineImpact({
+                fen,
+                row,
+                opponentColor: prep.color,
+                loadOpenings: loadOpeningsForFen,
+                loadEngineMoves: loadPrepBuilderEngineMoves,
+                minGames,
+                moveLimit: settings.opponentMoveLimit,
+                settings,
+              }).catch(() => null)
+            : null;
+
+          return {
+            choice,
+            row,
+            lineImpact,
+            afterPrepStrength: lineImpact?.continuationLineStrength ?? null,
+          } satisfies PrepBuilderAfterPrepSelection;
+        }),
+      );
+
+      const selected = choosePrepBuilderMoveWithAfterPrep(projectedChoices);
+      if (selected) return selected as PrepBuilderAfterPrepSelection;
+
+      return {
+        choice: choices[0],
+        row: rowByMove.get(normalizePrepBuilderSan(choices[0].move)) ?? null,
+        lineImpact: null,
+        afterPrepStrength: null,
+      };
+    },
+    [loadOpeningsForFen, loadPrepBuilderEngineMoves, prep.color],
+  );
+
   const buildPrepGamePlanBrief = useCallback(
     async (settings: PrepBuilderSettings, safeRootPath: number[]) => {
       const state = store.getState();
@@ -2360,37 +2443,18 @@ function OpponentPrepPanel({
           ]);
           rememberRootDatabaseGames(opponentOpenings);
 
-          const choice = choosePrepBuilderMove({
+          const selection = await choosePrepBuilderAfterPrepMove({
+            fen,
             opponentOpenings,
             referenceOpenings,
             engineMoves,
-            userColor: userSide,
+            userSide,
             settings,
             minGames: evidenceMinGames,
           });
-          if (!choice) break;
+          if (!selection) break;
 
-          const candidateRow =
-            getPrepCandidateRows({
-              fen,
-              openings: opponentOpenings,
-              minGames: evidenceMinGames,
-              moveLimit: settings.opponentMoveLimit,
-            }).find(
-              (row) => normalizePrepBuilderSan(row.move) === normalizePrepBuilderSan(choice.move),
-            ) ?? null;
-          const lineImpact = candidateRow
-            ? await getOpponentPrepCandidateLineImpact({
-                fen,
-                row: candidateRow,
-                opponentColor: prep.color,
-                loadOpenings: loadOpeningsForFen,
-                loadEngineMoves: loadPrepBuilderEngineMoves,
-                minGames: evidenceMinGames,
-                moveLimit: settings.opponentMoveLimit,
-                settings,
-              }).catch(() => null)
-            : null;
+          const { choice, row: candidateRow, lineImpact } = selection;
           const nextFen = applyPrepSanMove(fen, choice.move);
           if (!nextFen) break;
 
@@ -2586,6 +2650,7 @@ function OpponentPrepPanel({
       } satisfies PrepGamePlanBrief;
     },
     [
+      choosePrepBuilderAfterPrepMove,
       loadLichessAllOpeningsForFen,
       loadOpeningsForFen,
       loadPrepBuilderEngineMoves,
@@ -3019,25 +3084,27 @@ function OpponentPrepPanel({
         return null;
       }
 
-      const choice = choosePrepBuilderMove({
+      const selection = await choosePrepBuilderAfterPrepMove({
+        fen: node.fen,
         opponentOpenings,
         referenceOpenings,
         engineMoves,
-        userColor: userSide,
+        userSide,
         settings,
         minGames: evidenceMinGames,
       });
 
-      if (!choice) {
+      if (!selection) {
         stoppedLines += 1;
         updateStatus("No supported database move");
         return null;
       }
 
+      const { choice } = selection;
       const child = addMoveWithComment(
         task.path,
         choice.move,
-        formatPrepBuilderChoiceComment(choice),
+        formatPrepBuilderChoiceComment(choice, selection.afterPrepStrength),
       );
       if (!child) {
         stoppedLines += 1;
@@ -3289,6 +3356,7 @@ function OpponentPrepPanel({
   }, [
     buildPrepGamePlanBrief,
     builderRunning,
+    choosePrepBuilderAfterPrepMove,
     clearMovePreview,
     configReady,
     loadLichessAllOpeningsForFen,
@@ -5144,7 +5212,7 @@ function buildPrepCoachReportRequest({
     summary: [
       `Pre-game prep report for ${userLabel}. Choose the single best prep line yourself from the safe candidates below; the prep builder has not selected the line for you.`,
       `Hard constraint: Max CP Drop is ${brief.maxEngineCpLoss} cp. Candidates marked unsafe, skipped, thin, or no-safe-answer are evidence only and must not be recommended.`,
-      "Use the supplied database WDL, games/share, blended Strength, local eval evidence, and After-prep projection to choose the line.",
+      "Use After-prep projection as the primary score when it is available; normal blended Strength is only the first-move fallback.",
       "Output natural language only. Start with the chosen line, then explain why it is best, the replies to know, risks, and what to memorize before the game.",
       `Strength mode ${settings.mode}; cloud eval ${settings.useCloudEngine ? "on" : "off"}.`,
     ].join(" "),
@@ -5198,6 +5266,12 @@ function getPrepCoachScanLimit(settings: PrepBuilderSettings) {
   return 10;
 }
 
+function getPrepBuilderAfterPrepScanLimit(settings: PrepBuilderSettings) {
+  if (settings.size === "quick") return Math.min(6, PREP_BUILDER_AFTER_PREP_SCAN_LIMIT);
+  if (settings.size === "deep") return PREP_BUILDER_AFTER_PREP_SCAN_LIMIT;
+  return 8;
+}
+
 function getPrepCoachCandidatePriority({
   status,
   games,
@@ -5214,10 +5288,19 @@ function getPrepCoachCandidatePriority({
   afterPrepStrength: PrepMoveStrength | null;
 }) {
   const statusBoost = getPrepCoachStatusSort(status) * 1000;
-  const strengthScore = afterPrepStrength?.score ?? strength?.score ?? surfaceScore * 100;
+  const hasAfterPrep = afterPrepStrength !== null;
+  const strengthScore = hasAfterPrep
+    ? afterPrepStrength.score
+    : Math.min(strength?.score ?? surfaceScore * 100, 35);
   const confidence = Math.min(1, Math.log10(games + 1) / 3);
 
-  return statusBoost + strengthScore * 1.35 + share * 100 * 0.6 + confidence * 12;
+  return (
+    statusBoost +
+    (hasAfterPrep ? 1000 : 0) +
+    strengthScore * 1.35 +
+    share * 100 * 0.6 +
+    confidence * 12
+  );
 }
 
 function getPrepCoachStatusSort(status: PrepCoachCandidateStatus) {
@@ -6904,8 +6987,15 @@ function prepBuilderEngineSourceRank(source: PrepBuilderEngineMove["source"]) {
   }
 }
 
-function formatPrepBuilderChoiceComment(choice: PrepBuilderMoveChoice) {
-  return choice.reasons.map((reason) => `${reason}.`).join(" ");
+function formatPrepBuilderChoiceComment(
+  choice: PrepBuilderMoveChoice,
+  afterPrepStrength?: PrepMoveStrength | null,
+) {
+  const reasons = choice.reasons.map((reason) => `${reason}.`);
+  if (afterPrepStrength) {
+    reasons.unshift(`After prep: ${afterPrepStrength.score}.`);
+  }
+  return reasons.join(" ");
 }
 
 function formatPrepBuilderOpponentComment({
