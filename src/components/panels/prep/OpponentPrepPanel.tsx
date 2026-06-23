@@ -987,7 +987,11 @@ function OpponentPrepPanel({
           candidateRows.map((row) => row.key).join("|"),
         ]
       : null;
-  const { data: candidateLineImpactByKey } = useSWR(candidateLineImpactKey, async () => {
+  const {
+    data: candidateLineImpactByKey,
+    isLoading: candidateLineImpactLoading,
+    isValidating: candidateLineImpactValidating,
+  } = useSWR(candidateLineImpactKey, async () => {
     const entries: [string, OpponentPrepLineImpact][] = [];
 
     await Promise.all(
@@ -1009,11 +1013,7 @@ function OpponentPrepPanel({
     return Object.fromEntries(entries);
   });
   const branchPrepProjectionKey =
-    configReady &&
-    showTrainingStage &&
-    prepMode === "player" &&
-    opponentToMove &&
-    currentRows.length > 0
+    configReady && showTrainingStage && opponentToMove && currentRows.length > 0
       ? [
           "opponent-prep-branch-prep-projection",
           PREP_STRENGTH_ENGINE_CACHE_VERSION,
@@ -1026,33 +1026,34 @@ function OpponentPrepPanel({
           currentRows.map((row) => row.key).join("|"),
         ]
       : null;
-  const { data: branchPrepProjectionByKey, isLoading: branchPrepProjectionLoading } = useSWR(
-    branchPrepProjectionKey,
-    async () => {
-      const entries: [string, OpponentBranchPrepProjection][] = [];
+  const {
+    data: branchPrepProjectionByKey,
+    isLoading: branchPrepProjectionLoading,
+    isValidating: branchPrepProjectionValidating,
+  } = useSWR(branchPrepProjectionKey, async () => {
+    const entries: [string, OpponentBranchPrepProjection][] = [];
 
-      await Promise.all(
-        currentRows.map(async (row) => {
-          const projection = await getOpponentBranchPrepProjection({
-            fen: currentFen,
-            row,
-            opponentColor: prep.color,
-            userColor,
-            loadOpenings: loadOpeningsForFen,
-            loadEngineMoves: loadPrepBuilderEngineMoves,
-            minGames: prep.minGames,
-            moveLimit: prep.moveLimit,
-            settings: builderSettings,
-          });
-          if (projection) entries.push([row.key, projection]);
-        }),
-      );
+    await Promise.all(
+      currentRows.map(async (row) => {
+        const projection = await getOpponentBranchPrepProjection({
+          fen: currentFen,
+          row,
+          opponentColor: prep.color,
+          userColor,
+          loadOpenings: loadOpeningsForFen,
+          loadEngineMoves: loadPrepBuilderEngineMoves,
+          minGames: prep.minGames,
+          moveLimit: prep.moveLimit,
+          settings: builderSettings,
+        });
+        if (projection) entries.push([row.key, projection]);
+      }),
+    );
 
-      return Object.fromEntries(entries);
-    },
-  );
+    return Object.fromEntries(entries);
+  });
   const branchAfterPrepStrengthByMove = useMemo(() => {
-    if (prepMode !== "player" || !opponentToMove) {
+    if (!opponentToMove) {
       return new Map<string, PrepMoveStrength>();
     }
 
@@ -1091,13 +1092,12 @@ function OpponentPrepPanel({
     currentRows,
     opponentToMove,
     prep.color,
-    prepMode,
     strengthEngineMoves,
     strengthOpenings,
   ]);
   const candidateAfterPrepStrengthByMove = useMemo(
     () =>
-      prepMode === "player" && !opponentToMove && candidateLineImpactByKey
+      !opponentToMove && candidateLineImpactByKey
         ? getCandidateContinuationStrengthMap({
             openings: strengthOpenings,
             currentFen,
@@ -1105,14 +1105,7 @@ function OpponentPrepPanel({
             strengthByMove,
           })
         : new Map<string, PrepMoveStrength>(),
-    [
-      candidateLineImpactByKey,
-      currentFen,
-      opponentToMove,
-      prepMode,
-      strengthByMove,
-      strengthOpenings,
-    ],
+    [candidateLineImpactByKey, currentFen, opponentToMove, strengthByMove, strengthOpenings],
   );
   const activeBranch = useMemo(
     () =>
@@ -3433,7 +3426,9 @@ function OpponentPrepPanel({
               strengthByMove={strengthByMove}
               afterPrepStrengthByMove={branchAfterPrepStrengthByMove}
               strengthLoading={strengthLoading}
-              afterPrepLoading={strengthLoading || branchPrepProjectionLoading}
+              afterPrepLoading={
+                strengthLoading || branchPrepProjectionLoading || branchPrepProjectionValidating
+              }
               sort={moveTableSort.opponent}
               onSort={setOpponentMoveSortColumn}
             />
@@ -3450,6 +3445,9 @@ function OpponentPrepPanel({
               strengthByMove={strengthByMove}
               afterPrepStrengthByMove={candidateAfterPrepStrengthByMove}
               strengthLoading={strengthLoading}
+              afterPrepLoading={
+                strengthLoading || candidateLineImpactLoading || candidateLineImpactValidating
+              }
               candidateLineImpactByKey={candidateLineImpactByKey}
               sort={moveTableSort.candidate}
               onSort={setCandidateMoveSortColumn}
@@ -3607,7 +3605,9 @@ function OpponentPrepMoveTable({
         {sortedRows.map((row) => {
           const lineImpact = branchStatsByKey?.[row.key]?.preparedLineImpact ?? null;
           const projection = branchPrepProjectionByKey?.[row.key] ?? null;
-          const projectionContext = projection ? branchPrepProjectionTooltipLines(projection) : [];
+          const projectionContext = projection
+            ? branchPrepProjectionTooltipLines(projection, general)
+            : [];
 
           return (
             <Table.Tr
@@ -3635,11 +3635,13 @@ function OpponentPrepMoveTable({
                   label={lineImpact ? "Saved line" : projection?.label}
                   summary={
                     !lineImpact && projection
-                      ? `${projection.label} ${projection.strength.score}: projected from the best available prep reply after this opponent move.`
+                      ? `${projection.label} ${projection.strength.score}: projected from the best available prep reply after this ${general ? "source" : "opponent"} move.`
                       : undefined
                   }
                   context={
-                    lineImpact ? preparedLineImpactTooltipLines(lineImpact) : projectionContext
+                    lineImpact
+                      ? preparedLineImpactTooltipLines(lineImpact, general)
+                      : projectionContext
                   }
                   loading={afterPrepLoading}
                 />
@@ -3741,6 +3743,7 @@ function PrepCandidateMoveTable({
   strengthByMove,
   afterPrepStrengthByMove,
   strengthLoading,
+  afterPrepLoading,
   candidateLineImpactByKey,
   sort,
   onSort,
@@ -3756,6 +3759,7 @@ function PrepCandidateMoveTable({
   strengthByMove: Map<string, PrepMoveStrength>;
   afterPrepStrengthByMove: Map<string, PrepMoveStrength>;
   strengthLoading: boolean;
+  afterPrepLoading: boolean;
   candidateLineImpactByKey?: Record<string, OpponentPrepLineImpact>;
   sort: PrepSortState<CandidatePrepSortColumn>;
   onSort: (column: CandidatePrepSortColumn) => void;
@@ -3886,7 +3890,7 @@ function PrepCandidateMoveTable({
                         ? [candidateLineImpactTooltip(lineImpact)]
                         : []
                     }
-                    loading={strengthLoading}
+                    loading={afterPrepLoading}
                   />
                 </Table.Td>
                 <Table.Td>
@@ -5327,13 +5331,14 @@ function branchStatsTooltip(stats: OpponentPrepBranchStats) {
   return lines.filter(Boolean).join("\n");
 }
 
-function preparedLineImpactTooltipLines(impact: OpponentPrepLineImpact | null) {
+function preparedLineImpactTooltipLines(impact: OpponentPrepLineImpact | null, general = false) {
   if (!impact) return [];
 
+  const sourceSide = general ? "source side" : "opponent";
   const lines = [
-    `Prepared line helps: opponent score drops by ${formatPrepScorePointDrop(impact.scoreDrop)}.`,
-    `Surface: opponent scored ${formatPrepScorePercent(impact.surfaceScore)} from ${formatNumber(impact.surfaceGames)} games after this move.`,
-    `After your ${impact.userMove}: opponent scored ${formatPrepScorePercent(impact.userScore)} from ${formatNumber(impact.userGames)} games (${formatPrepScorePercent(impact.userShare)} of this branch).`,
+    `Prepared line helps: ${sourceSide} score drops by ${formatPrepScorePointDrop(impact.scoreDrop)}.`,
+    `Surface: ${sourceSide} scored ${formatPrepScorePercent(impact.surfaceScore)} from ${formatNumber(impact.surfaceGames)} games after this move.`,
+    `After your ${impact.userMove}: ${sourceSide} scored ${formatPrepScorePercent(impact.userScore)} from ${formatNumber(impact.userGames)} games (${formatPrepScorePercent(impact.userShare)} of this branch).`,
   ];
 
   if (
@@ -5343,16 +5348,20 @@ function preparedLineImpactTooltipLines(impact: OpponentPrepLineImpact | null) {
     impact.opponentReplyShare !== null
   ) {
     lines.push(
-      `Their usual next ${impact.opponentReplyMove}: ${formatPrepScorePercent(impact.opponentReplyShare)} of replies, opponent scored ${formatPrepScorePercent(impact.opponentReplyScore)} from ${formatNumber(impact.opponentReplyGames)} games.`,
+      `${general ? "Source side's" : "Their"} usual next ${impact.opponentReplyMove}: ${formatPrepScorePercent(impact.opponentReplyShare)} of replies, ${sourceSide} scored ${formatPrepScorePercent(impact.opponentReplyScore)} from ${formatNumber(impact.opponentReplyGames)} games.`,
     );
   }
 
   return lines;
 }
 
-function branchPrepProjectionTooltipLines(projection: OpponentBranchPrepProjection) {
+function branchPrepProjectionTooltipLines(
+  projection: OpponentBranchPrepProjection,
+  general: boolean,
+) {
+  const sourceLabel = general ? "source move" : "opponent move";
   const lines = [
-    `Projected reply: ${projection.responseMove}. This is scored from the position after the opponent move, even if no line has been saved.`,
+    `Projected reply: ${projection.responseMove}. This is scored from the position after the ${sourceLabel}, even if no line has been saved.`,
   ];
 
   if (projection.lineImpact) {

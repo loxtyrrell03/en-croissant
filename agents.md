@@ -349,6 +349,14 @@ default.
   must be allowed to pull an engine-best move down when opponent-specific WDL is
   bad, so a move like `...e5` should not stay high solely because it is the top
   cloud move if the selected opponent scores heavily against it.
+- On 2026-06-23, desktop `After prep` projection was extended from
+  player-specific prep to general prep sources such as Lichess All and Lichess
+  Masters. Both common source-move rows and user candidate rows may now show
+  projected prep-side strength when a nearby continuation is genuinely better
+  than the surface row. General-mode tooltips should describe the source side
+  rather than a named opponent, while keeping the same local-eval rule: if cloud
+  engine scoring is enabled and no covered local engine/cloud evidence exists,
+  leave the `After prep` value absent.
 
 ### Local Lichess Cloud Evals
 
