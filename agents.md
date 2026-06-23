@@ -529,6 +529,25 @@ default.
   instead of waiting behind shard lookup/decompression. Keep this parallel
   miss path intact so out-of-book positions do not appear to stall before
   local analysis begins.
+- A later 2026-06-23 reliability fix kept local Stockfish searches from being
+  poisoned by empty fallback payloads. Empty local `bestmove` events and failed
+  first-start attempts no longer cache `No analysis available`; starting a
+  local search clears stale empty rows, clears any stale cloud-covered marker
+  for that search key, resets progress, and retries one fresh local process if
+  startup fails. The main visible Stockfish search no longer has a 12-second
+  first-output kill timer; only hidden cloud-tail continuation searches keep a
+  bounded timeout. Keep this distinction so positions without saved local
+  cloud evals fall through to live Stockfish immediately instead of freezing on
+  an empty analysis state.
+- The same reliability pass added a desktop engine-panel cutoff for local
+  cloud-eval probes after fullmove 15. The compact local eval store does not
+  record aggregate ply/fullmove coverage stats, so the app cannot cheaply ask
+  the built store for its deepest contained position. The practical rule is
+  now: visible local Stockfish analysis may use saved local cloud rows through
+  move 15, but after that it skips the local cloud lookup and keeps the already
+  running Stockfish search. Do not apply this blindly to remote cloud-only
+  engines or prep scoring paths unless they have an equivalent live Stockfish
+  fallback.
 - A later 2026-06-23 cache fix made local cloud-eval misses honor the existing
   missing-position cache before calling the Tauri lookup again. This matters
   for After prep and other sparse-position features that may revisit the same
