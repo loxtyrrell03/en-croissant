@@ -145,6 +145,7 @@ export type PrepBuilderMoveChoice = {
     move: string;
     score: number;
     engineRank: number | null;
+    engineCp: number | null;
     engineCpLoss: number | null;
     engineSource: PrepBuilderEngineMove["source"] | null;
     databaseRank: number | null;
@@ -1550,36 +1551,45 @@ export function getBestPrepLineReplyImpact({
     );
     if (strengthByMove.size === 0) return null;
 
+    const replyChoices = Array.from(metaByMove.values())
+        .map((candidate) => {
+            const strength = strengthByMove.get(normalizeSanForPrep(candidate.move)) ?? null;
+            const lineStrength = strength
+                ? createProjectedPrepLineStrength({
+                      strength,
+                      userScore: candidate.score,
+                      settings,
+                  })
+                : null;
+            return {
+                move: candidate.move,
+                games: candidate.games,
+                share: candidate.share,
+                score: candidate.score,
+                strengthScore: strength?.score ?? null,
+                strength,
+                lineScore: lineStrength?.score ?? null,
+                lineStrength,
+            };
+        })
+        .filter((candidate) => candidate.strength !== null);
+    const safeChoices = replyChoices.filter((candidate) => !candidate.strength!.engineUnsafe);
+    if (
+        safeChoices.length === 0 &&
+        replyChoices.some((candidate) => candidate.strength!.engineUnsafe)
+    ) {
+        return null;
+    }
+
     return (
-        Array.from(metaByMove.values())
-            .map((candidate) => {
-                const strength = strengthByMove.get(normalizeSanForPrep(candidate.move)) ?? null;
-                const lineStrength = strength
-                    ? createProjectedPrepLineStrength({
-                          strength,
-                          userScore: candidate.score,
-                          settings,
-                      })
-                    : null;
-                return {
-                    move: candidate.move,
-                    games: candidate.games,
-                    share: candidate.share,
-                    score: candidate.score,
-                    strengthScore: strength?.score ?? null,
-                    strength,
-                    lineScore: lineStrength?.score ?? null,
-                    lineStrength,
-                };
-            })
-            .sort(
-                (a, b) =>
-                    (b.strengthScore ?? -1) - (a.strengthScore ?? -1) ||
-                    b.score - a.score ||
-                    b.share - a.share ||
-                    b.games - a.games ||
-                    a.move.localeCompare(b.move),
-            )[0] ?? null
+        safeChoices.sort(
+            (a, b) =>
+                (b.strengthScore ?? -1) - (a.strengthScore ?? -1) ||
+                b.score - a.score ||
+                b.share - a.share ||
+                b.games - a.games ||
+                a.move.localeCompare(b.move),
+        )[0] ?? null
     );
 }
 
@@ -1850,6 +1860,7 @@ export function choosePrepBuilderMove({
             move: candidate.move,
             score: strength.score,
             engineRank: strength.engineRank,
+            engineCp: strength.engineCp,
             engineCpLoss: strength.engineCpLoss,
             engineSource: strength.engineSource,
             databaseRank,
@@ -1869,9 +1880,11 @@ export function choosePrepBuilderMove({
         };
     });
     const safeChoices = scoredChoices.filter((choice) => !choice.engineUnsafe);
-    const choices = (safeChoices.length > 0 ? safeChoices : scoredChoices).sort(
-        comparePrepBuilderChoices,
-    );
+    if (safeChoices.length === 0 && scoredChoices.some((choice) => choice.engineUnsafe)) {
+        return null;
+    }
+
+    const choices = safeChoices.sort(comparePrepBuilderChoices);
 
     return choices[0] ?? null;
 }

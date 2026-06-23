@@ -17,9 +17,17 @@ type PlanCoachInlineProps = {
   request: PlanCoachInlineRequest;
   cacheKey: string;
   disabled?: boolean;
+  actionLabel?: string;
+  refreshLabel?: string;
 };
 
-export default function PlanCoachInline({ request, cacheKey, disabled }: PlanCoachInlineProps) {
+export default function PlanCoachInline({
+  request,
+  cacheKey,
+  disabled,
+  actionLabel = "Coach",
+  refreshLabel = "Refresh coach",
+}: PlanCoachInlineProps) {
   const enabled = useAtomValue(aiCoachEnabledAtom);
   const geminiCommand = useAtomValue(aiCoachGeminiCommandAtom);
   const plannerModel = useAtomValue(aiCoachPlannerModelAtom);
@@ -79,7 +87,7 @@ export default function PlanCoachInline({ request, cacheKey, disabled }: PlanCoa
             void askPlanCoach();
           }}
         >
-          {answer ? "Refresh coach" : "Coach"}
+          {answer ? refreshLabel : actionLabel}
         </Button>
         <Badge size="xs" variant="light">
           {modelUsed ?? model}

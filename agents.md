@@ -381,6 +381,18 @@ default.
   at opponent turns, while Deep mode keeps the older broad reply coverage; the
   task queue is priority-led before ply-led so high-value continuations deepen
   sooner in quick pre-game runs.
+- A follow-up on 2026-06-23 connected the game-plan brief to the existing Plan
+  Coach surface. The brief now carries the prep source label, Strength score,
+  local-eval CP/loss/source, database score, WDL-style surface score, After-prep
+  score, and recommended answer evidence into a `Coach report` button, with the
+  prompt explicitly telling the coach to explain only the supplied safe route
+  and not recommend excluded or engine-unsafe alternatives. The builder remains
+  the executor and safety gate: `Max CP Drop` is now hard-enforced in root prep
+  move choice and in future prep-side reply selection, so a high practical WDL
+  line cannot be chosen when local eval evidence marks every candidate outside
+  the configured CP limit. If all practical candidates violate the limit, the
+  builder stops that branch instead of falling back to the least-bad unsafe
+  move.
 
 ### Local Lichess Cloud Evals
 

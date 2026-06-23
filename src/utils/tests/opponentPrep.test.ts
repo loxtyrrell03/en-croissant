@@ -1315,6 +1315,51 @@ describe("opponent prep helpers", () => {
         expect(choice?.move).toBe("e5");
     });
 
+    test("prep builder hard-stops when every practical candidate exceeds max CP drop", () => {
+        const settings = normalizePrepBuilderSettings({
+            mode: "practical",
+            maxEngineCpLoss: 50,
+        });
+        const choice = choosePrepBuilderMove({
+            userColor: "black",
+            settings,
+            opponentOpenings: [
+                { move: "h6", white: 0, draw: 0, black: 50 },
+                { move: "a6", white: 5, draw: 0, black: 45 },
+            ],
+            referenceOpenings: [],
+            engineMoves: [
+                { san: "e5", scoreCpForSide: 80, rank: 1, source: "local-lichess" },
+                { san: "h6", scoreCpForSide: -30, rank: 5, source: "local-lichess" },
+                { san: "a6", scoreCpForSide: -10, rank: 6, source: "local-lichess" },
+            ],
+        });
+
+        expect(choice).toBeNull();
+    });
+
+    test("after-prep reply selection respects max CP drop before practical WDL", () => {
+        const settings = normalizePrepBuilderSettings({
+            mode: "practical",
+            maxEngineCpLoss: 50,
+        });
+        const reply = getBestPrepLineReplyImpact({
+            userColor: "black",
+            settings,
+            replies: [
+                { move: "h6", white: 0, draw: 0, black: 40 },
+                { move: "e5", white: 20, draw: 10, black: 20 },
+            ],
+            engineMoves: [
+                { san: "e5", scoreCpForSide: 30, rank: 1, source: "local-lichess" },
+                { san: "h6", scoreCpForSide: -80, rank: 5, source: "local-lichess" },
+            ],
+        });
+
+        expect(reply?.move).toBe("e5");
+        expect(reply?.strength?.engineUnsafe).toBe(false);
+    });
+
     test("smart prep builder shrinks tiny opponent samples toward reference WDL", () => {
         const settings = normalizePrepBuilderSettings({ mode: "smart" });
         const choice = choosePrepBuilderMove({

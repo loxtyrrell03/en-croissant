@@ -153,11 +153,12 @@ import {
 import { createTab, getTabWorkspaceKey, saveToFile } from "@/utils/tabs";
 import { parsePGN } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
-import { getTreeStructureHash, type TreeState } from "@/utils/treeReducer";
+import { getNodeAtPath, getTreeStructureHash, type TreeState } from "@/utils/treeReducer";
 import { queryLichessCloudMoves } from "@/utils/lichess/api";
 import { unwrap } from "@/utils/unwrap";
 import { BoundedMap } from "@/utils/boundedCache";
 import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveControls";
+import PlanCoachInline, { type PlanCoachInlineRequest } from "../plan/PlanCoachInline";
 
 const DEFAULT_PREP_MIN_GAMES = 2;
 const DEFAULT_PREP_MOVE_LIMIT = 8;
@@ -305,6 +306,11 @@ type PrepGamePlanStep = {
   share: number | null;
   strength: number | null;
   afterPrep: number | null;
+  engineCp: number | null;
+  engineCpLoss: number | null;
+  engineSource: PrepBuilderEngineMove["source"] | null;
+  databaseScore: number | null;
+  engineUnsafe: boolean;
   note: string;
 };
 
@@ -316,6 +322,12 @@ type PrepGamePlanReply = {
   share: number;
   opponentScore: number;
   afterPrep: number | null;
+  responseStrength: number | null;
+  responseEngineCp: number | null;
+  responseEngineCpLoss: number | null;
+  responseEngineSource: PrepBuilderEngineMove["source"] | null;
+  responseDatabaseScore: number | null;
+  responseDetail: string | null;
   priority: number;
   note: string;
 };
@@ -327,6 +339,8 @@ type PrepGamePlanBrief = {
   replies: PrepGamePlanReply[];
   insights: string[];
   checkedPositions: number;
+  sourceLabel: string;
+  maxEngineCpLoss: number;
 };
 
 function normalizePrepPlayerName(name: string) {
@@ -586,6 +600,7 @@ function OpponentPrepPanel({
     const candidate = prep.rootPath ?? [];
     return pathExists(root, candidate) ? candidate : [];
   }, [prep.rootPath, root]);
+  const prepRootFen = useMemo(() => getNodeAtPath(root, rootPath).fen, [root, rootPath]);
   const rootPathKey = rootPath.join("/");
   const isInsidePrepTree = isPrefix(rootPath, currentPath);
   const opponentToMove = getFenTurn(currentFen) === prep.color;
@@ -2372,6 +2387,11 @@ function OpponentPrepPanel({
             share: candidateRow?.share ?? choice.opponentShare,
             strength: choice.score,
             afterPrep: lineImpact?.continuationLineStrength?.score ?? null,
+            engineCp: choice.engineCp,
+            engineCpLoss: choice.engineCpLoss,
+            engineSource: choice.engineSource,
+            databaseScore: choice.databaseScore,
+            engineUnsafe: false,
             note: formatPrepGamePlanUserNote(choice, lineImpact),
           });
           fen = nextFen;
@@ -2491,6 +2511,12 @@ function OpponentPrepPanel({
             share: item.row.share,
             opponentScore: item.opponentScore,
             afterPrep: item.afterPrep,
+            responseStrength: item.projection?.strength.score ?? null,
+            responseEngineCp: item.projection?.strength.engineCp ?? null,
+            responseEngineCpLoss: item.projection?.strength.engineCpLoss ?? null,
+            responseEngineSource: item.projection?.strength.engineSource ?? null,
+            responseDatabaseScore: item.projection?.strength.databaseScore ?? null,
+            responseDetail: item.projection?.strength.detail ?? null,
             priority: item.priority,
             note: formatPrepGamePlanReplyNote(item.afterPrep, item.opponentScore),
           });
@@ -2507,6 +2533,11 @@ function OpponentPrepPanel({
           share: main.row.share,
           strength: Math.round(main.opponentScore * 100),
           afterPrep: main.afterPrep,
+          engineCp: main.projection?.strength.engineCp ?? null,
+          engineCpLoss: main.projection?.strength.engineCpLoss ?? null,
+          engineSource: main.projection?.strength.engineSource ?? null,
+          databaseScore: main.projection?.strength.databaseScore ?? null,
+          engineUnsafe: main.projection?.strength.engineUnsafe ?? false,
           note: formatPrepGamePlanOpponentNote(main.afterPrep, main.opponentScore),
         });
         fen = nextFen;
@@ -2529,14 +2560,25 @@ function OpponentPrepPanel({
           .slice(0, settings.size === "quick" ? 5 : 7),
         insights: getPrepGamePlanInsights(mainLine, replies, settings),
         checkedPositions,
+        sourceLabel: getPrepGamePlanSourceLabel({
+          prepMode,
+          prepSource,
+          databaseLabel: selectedDatabaseLabel,
+          playerName: prep.playerName,
+        }),
+        maxEngineCpLoss: settings.maxEngineCpLoss,
       } satisfies PrepGamePlanBrief;
     },
     [
       loadLichessAllOpeningsForFen,
       loadOpeningsForFen,
       loadPrepBuilderEngineMoves,
+      prep.playerName,
       prep.color,
       prep.skippedBranches,
+      prepMode,
+      prepSource,
+      selectedDatabaseLabel,
       store,
     ],
   );
@@ -3050,6 +3092,39 @@ function OpponentPrepPanel({
       }
     },
     [clearMovePreview, gamePlanBrief, prep.rootPath, store],
+  );
+
+  const gamePlanCoachRequest = useMemo(
+    () =>
+      gamePlanBrief
+        ? buildPrepGamePlanCoachRequest({
+            brief: gamePlanBrief,
+            rootFen: prepRootFen,
+            userColor,
+            opponentColor: prep.color,
+            general: prepMode === "general",
+            settings: builderSettings,
+          })
+        : null,
+    [builderSettings, gamePlanBrief, prep.color, prepMode, prepRootFen, userColor],
+  );
+  const gamePlanCoachCacheKey = useMemo(
+    () =>
+      gamePlanBrief
+        ? JSON.stringify({
+            scope: "prep-game-plan-coach",
+            generatedAt: gamePlanBrief.generatedAt,
+            source: gamePlanBrief.sourceLabel,
+            line: gamePlanBrief.mainLine.map((step) => step.move).join(" "),
+            replies: gamePlanBrief.replies.map((reply) => [
+              reply.positionLine.join(" "),
+              reply.opponentMove,
+              reply.responseMove,
+              reply.afterPrep,
+            ]),
+          })
+        : "prep-game-plan-coach-empty",
+    [gamePlanBrief],
   );
 
   return (
@@ -3707,6 +3782,8 @@ function OpponentPrepPanel({
               brief={gamePlanBrief}
               general={prepMode === "general"}
               userColor={userColor}
+              coachRequest={gamePlanCoachRequest}
+              coachCacheKey={gamePlanCoachCacheKey}
               onPlayLine={playGamePlanLine}
               onClear={() => setGamePlanBrief(null)}
             />
@@ -4710,6 +4787,64 @@ function getAfterPrepDeepScanRows(
     .slice(0, AFTER_PREP_DEEP_ROW_LIMIT);
 }
 
+function buildPrepGamePlanCoachRequest({
+  brief,
+  rootFen,
+  userColor,
+  opponentColor,
+  general,
+  settings,
+}: {
+  brief: PrepGamePlanBrief;
+  rootFen: string;
+  userColor: PrepColor;
+  opponentColor: PrepColor;
+  general: boolean;
+  settings: PrepBuilderSettings;
+}): PlanCoachInlineRequest {
+  const userLabel = userColor === "white" ? "White" : "Black";
+  const sourceLabel = general ? "source side" : "opponent";
+  const mainMoves = brief.mainLine.map((step) => step.move);
+
+  return {
+    fen: rootFen,
+    sideToMove: getFenTurn(rootFen) === userColor ? `${userLabel} / prep side` : sourceLabel,
+    surface: "Prep builder game plan",
+    subjectKind: general ? "opening-prep game plan" : "opponent-prep game plan",
+    title: `Coach-guided prep report for ${brief.sourceLabel}`,
+    summary: [
+      `Pre-game prep report for ${userLabel}.`,
+      `The builder already applied a hard Max CP Drop gate of ${brief.maxEngineCpLoss} cp.`,
+      "Do not recommend excluded or engine-unsafe alternatives; explain the supplied safe route and where the memory should go.",
+      `Strength mode ${settings.mode}; cloud eval ${settings.useCloudEngine ? "on" : "off"}.`,
+    ].join(" "),
+    planLines: [
+      mainMoves.length > 0 ? `Main route: ${mainMoves.join(" ")}` : "No main route found.",
+      ...brief.replies
+        .slice(0, 6)
+        .map(
+          (reply) =>
+            `Answer ${reply.opponentMove} with ${reply.responseMove ?? "no safe answer found"}${
+              reply.positionLine.length > brief.startLine.length
+                ? ` after ${reply.positionLine.slice(brief.startLine.length).join(" ")}`
+                : ""
+            }.`,
+        ),
+    ],
+    stats: [
+      `Prep source: ${brief.sourceLabel}.`,
+      `Preparing as ${userLabel}; ${sourceLabel} colour is ${opponentColor}.`,
+      `Checked positions: ${brief.checkedPositions}.`,
+      `Builder size: ${settings.size}; opponent move limit ${settings.opponentMoveLimit}; min games ${settings.minOpponentGames}; min reply share ${settings.minOpponentMoveShare}%.`,
+      `Max CP Drop: ${brief.maxEngineCpLoss} cp. Treat this as a hard safety constraint.`,
+    ],
+    evidence: [
+      ...brief.mainLine.map((step, index) => formatPrepGamePlanStepForCoach(step, index)),
+      ...brief.replies.map(formatPrepGamePlanReplyForCoach),
+    ],
+  };
+}
+
 function getPrepGamePlanReplyPriority({
   row,
   branchShare,
@@ -4743,6 +4878,88 @@ function formatPrepGamePlanUserNote(
     parts.push(`${formatNumber(choice.opponentGames)} games`);
   }
   return [...parts, ...choice.reasons.slice(0, 2)].join(" - ");
+}
+
+function formatPrepGamePlanStepForCoach(step: PrepGamePlanStep, index: number) {
+  const actor = step.actor === "user" ? "Prep-side move" : "Opponent/source move";
+  const metrics = [
+    `${actor} ${index + 1}: ${step.move}`,
+    `line ${step.line.join(" ")}`,
+    step.games !== null ? `${formatNumber(step.games)} games` : null,
+    step.share !== null ? `${formatPrepGamePlanShare(step.share)} share` : null,
+    step.strength !== null ? `strength ${step.strength}` : null,
+    step.afterPrep !== null ? `after-prep ${step.afterPrep}` : null,
+    step.databaseScore !== null
+      ? `database score ${formatPrepCoachPercent(step.databaseScore)}`
+      : null,
+    formatPrepCoachEngineEvidence({
+      engineCp: step.engineCp,
+      engineCpLoss: step.engineCpLoss,
+      engineSource: step.engineSource,
+      engineUnsafe: step.engineUnsafe,
+    }),
+    step.note,
+  ];
+
+  return metrics.filter((part): part is string => Boolean(part)).join("; ");
+}
+
+function formatPrepGamePlanReplyForCoach(reply: PrepGamePlanReply) {
+  const metrics = [
+    `Reply to know: ${reply.opponentMove}`,
+    reply.positionLine.length > 0
+      ? `position line ${reply.positionLine.join(" ")}`
+      : "from prep start",
+    `${formatNumber(reply.games)} games`,
+    `${formatPrepGamePlanShare(reply.share)} share`,
+    `surface opponent/source score ${formatPrepCoachPercent(reply.opponentScore)}`,
+    reply.responseMove ? `recommended answer ${reply.responseMove}` : "no safe answer found",
+    reply.afterPrep !== null ? `after-prep ${reply.afterPrep}` : null,
+    reply.responseStrength !== null ? `answer strength ${reply.responseStrength}` : null,
+    reply.responseDatabaseScore !== null
+      ? `answer database score ${formatPrepCoachPercent(reply.responseDatabaseScore)}`
+      : null,
+    formatPrepCoachEngineEvidence({
+      engineCp: reply.responseEngineCp,
+      engineCpLoss: reply.responseEngineCpLoss,
+      engineSource: reply.responseEngineSource,
+      engineUnsafe: false,
+    }),
+    reply.responseDetail,
+    reply.note,
+  ];
+
+  return metrics.filter((part): part is string => Boolean(part)).join("; ");
+}
+
+function formatPrepCoachEngineEvidence({
+  engineCp,
+  engineCpLoss,
+  engineSource,
+  engineUnsafe,
+}: {
+  engineCp: number | null;
+  engineCpLoss: number | null;
+  engineSource: PrepBuilderEngineMove["source"] | null;
+  engineUnsafe: boolean;
+}) {
+  if (engineCpLoss === null) return "engine evidence unavailable";
+  const source = getPrepGamePlanEngineSourceLabel(engineSource);
+  const cp = engineCp === null ? "" : ` (${engineCp > 0 ? "+" : ""}${Math.round(engineCp)} cp)`;
+  return `${source}: ${Math.round(engineCpLoss)} cp drop${cp}${
+    engineUnsafe ? "; engine-unsafe and excluded" : ""
+  }`;
+}
+
+function getPrepGamePlanEngineSourceLabel(source: PrepBuilderEngineMove["source"] | null) {
+  if (source === "local-lichess") return "Local eval";
+  if (source === "lichess") return "Local eval";
+  if (source === "chessdb") return "External eval";
+  return "Engine";
+}
+
+function formatPrepCoachPercent(score: number) {
+  return `${Math.round(score * 100)}%`;
 }
 
 function formatPrepGamePlanOpponentNote(afterPrep: number | null, opponentScore: number) {
@@ -4810,6 +5027,29 @@ function getPrepGamePlanInsights(
   }
 
   return insights;
+}
+
+function getPrepGamePlanSourceLabel({
+  prepMode,
+  prepSource,
+  databaseLabel,
+  playerName,
+}: {
+  prepMode: "player" | "general";
+  prepSource: OpponentPrepState["source"];
+  databaseLabel: string | null | undefined;
+  playerName: string;
+}) {
+  const source =
+    prepSource === "lch_all"
+      ? "Lichess All"
+      : prepSource === "lch_master"
+        ? "Lichess Masters"
+        : databaseLabel || "local prep database";
+  const player = playerName.trim();
+
+  if (prepMode === "player" && player) return `${player} from ${source}`;
+  return source;
 }
 
 async function getOpponentBranchPrepProjection({
@@ -5227,12 +5467,16 @@ function PrepGamePlanBriefPanel({
   brief,
   general,
   userColor,
+  coachRequest,
+  coachCacheKey,
   onPlayLine,
   onClear,
 }: {
   brief: PrepGamePlanBrief;
   general: boolean;
   userColor: PrepColor;
+  coachRequest: PlanCoachInlineRequest | null;
+  coachCacheKey: string;
   onPlayLine: (moves: string[]) => void;
   onClear: () => void;
 }) {
@@ -5352,6 +5596,16 @@ function PrepGamePlanBriefPanel({
               })}
             </Table.Tbody>
           </Table>
+        ) : null}
+
+        {coachRequest ? (
+          <PlanCoachInline
+            request={coachRequest}
+            cacheKey={coachCacheKey}
+            disabled={brief.mainLine.length === 0}
+            actionLabel="Coach report"
+            refreshLabel="Refresh report"
+          />
         ) : null}
       </Stack>
     </Alert>
