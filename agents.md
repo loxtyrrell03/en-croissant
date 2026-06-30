@@ -193,6 +193,26 @@ model, implementation map, and verification expectations for this app.
   prep summary, `Chess.com opening comparison.md`, and
   `Southall database layout.md` were updated so current paths no longer point
   at the removed folders.
+- On 2026-06-30, single-player prep was completed for `Kodukula, Sameera`
+  (FIDE `343413994`, ECF `348668A`). Files-side assets live under
+  `C:\Users\loxty\Documents\EnCroissant\Sameera Kodukula prep player games`
+  and app-side databases live under
+  `C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\Sameera Kodukula Prep`.
+  The full public Lichess broadcast database from 2020-01 through 2026-05 was
+  streamed and filtered; Chessscope, Lichess FIDE, Chess-Results event/game
+  pages, FIDE/ECF, TWIC/event searches, local Mega/reference databases,
+  ChessArchive/public web searches, and account-search subagents were also
+  checked. The target broadcast search found 34 records, but one 2026-01-31
+  Kodukula-Lupu broadcast shell had zero movetext and was excluded, so the
+  OTB prep source PGN and `.db3` contain 33 playable games. The canonical-name
+  audit is clean with only `Kodukula, Sameera` in the OTB database target rows,
+  zero duplicate PGN keys, and latest imported games on `2026.04.06` from the
+  4NCL Easter Congress U2000. No credible current Chess.com account was found:
+  `SKodukula` was rejected as low-confidence/inactive/no-archive. Lichess
+  `SameeraKodukula` was imported separately as a high-confidence historical
+  but stale/TOS-flagged account with 297 standard playable games; opening
+  comparison shows low current prep value because the 2022 account is mostly
+  1.e4/1...e5 while the 2024-2026 broadcast set is 1.Nf3/London and French/e6.
 
 ## Local Browser Verification
 
