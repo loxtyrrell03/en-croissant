@@ -213,6 +213,14 @@ model, implementation map, and verification expectations for this app.
   but stale/TOS-flagged account with 297 standard playable games; opening
   comparison shows low current prep value because the 2022 account is mostly
   1.e4/1...e5 while the 2024-2026 broadcast set is 1.Nf3/London and French/e6.
+- A same-day Sameera follow-up created an explicit app-side `Lichess Broadcast`
+  database because the original 33 playable Lichess broadcast games were
+  present inside the OTB prep database but the naming was easy to miss. The
+  duplicate explicit broadcast source lives at
+  `C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\Sameera Kodukula Prep\Lichess Broadcast\00 Kodukula, Sameera - Lichess broadcast games.db3`
+  with the matching `.pgn` beside it. Verification showed 33 games and all 33
+  reference the canonical `Kodukula, Sameera` player row. The zero-ply
+  Kodukula-Lupu broadcast shell remains excluded.
 
 ## Local Browser Verification
 
