@@ -221,6 +221,17 @@ model, implementation map, and verification expectations for this app.
   with the matching `.pgn` beside it. Verification showed 33 games and all 33
   reference the canonical `Kodukula, Sameera` player row. The zero-ply
   Kodukula-Lupu broadcast shell remains excluded.
+- On 2026-07-01, the Sameera app-side prep layout was reorganized to match the
+  Southall per-opponent folder pattern. The active app-side folder is now
+  `C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\Sameera Kodukula Prep\00 Kodukula, Sameera`,
+  containing `00 Kodukula, Sameera - OTB prep.db3` (33 games),
+  `00 Kodukula, Sameera - Lichess broadcast games.db3` (33 games), and
+  `00 Kodukula, Sameera - Lichess SameeraKodukula.db3` (297 account games),
+  with matching `.pgn` files beside each database. The old split `OTB Prep`,
+  `Lichess Broadcast`, and `Online Accounts` folders were removed after the
+  new databases were verified. The Files-side player folder also now has a
+  plainly named `Kodukula, Sameera - Lichess SameeraKodukula games (297).pgn`
+  for the account source.
 
 ## Local Browser Verification
 
