@@ -232,6 +232,26 @@ model, implementation map, and verification expectations for this app.
   new databases were verified. The Files-side player folder also now has a
   plainly named `Kodukula, Sameera - Lichess SameeraKodukula games (297).pgn`
   for the account source.
+- A later 2026-07-01 Sameera account-search follow-up used three account
+  subagents plus lead-agent checks across Chess.com direct/API candidates,
+  public club-member lists, Lichess lookalikes, and broader web clues. No
+  credible current Chess.com account was found; `SKodukula` remains rejected as
+  low-confidence, inactive, AU-flagged, and archive-empty. The old Lichess
+  `SameeraKodukula` account remains only high-confidence historical identity
+  evidence; its public `tosViolation` flag and a Lichess issue comment do not
+  publicly specify cheating, so do not describe the reason beyond TOS-flagged.
+  The strong current online lead is World Chess / FIDE Online Arena profile
+  `853760`, which matches exact real name, FIDE ID `343413994`, England, AFM,
+  active status, and recent public games. Its public PGN endpoints were
+  imported into the app-side player folder as
+  `00 Kodukula, Sameera - World Chess 853760.db3` with 1,519 converted games
+  from 2024-07-16 through 2026-06-26; the source API exposed 1,529 records, of
+  which six zero-ply games, two bot games, and two duplicate normalized PGN
+  keys were excluded. Verification showed all 1,519 rows reference canonical
+  `Kodukula, Sameera`, zero duplicate database groups, and a strong current
+  repertoire match to the OTB/broadcast prep: White is Nf3-heavy and Black is
+  overwhelmingly French/e6. The Files-side folder label is now
+  `00 1858 - Kodukula, Sameera [wc 853760 high recent li stale cc none]`.
 
 ## Local Browser Verification
 
