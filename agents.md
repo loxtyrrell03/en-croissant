@@ -135,6 +135,13 @@ model, implementation map, and verification expectations for this app.
   prep games before final confidence, delete clear mismatch imports, and finish
   with event-level database folders such as `OTB Prep` and
   `Online Games Southall`.
+- On 2026-07-01, `docs/opponent-prep-agent-guide.md` was broadened after the
+  Sameera Kodukula World Chess import. Account-search subagents must now search
+  beyond Chess.com/Lichess and explicitly check World Chess / FIDE Online Arena
+  profiles when a FIDE ID is known, including `worldchess.com/profile`,
+  `chessarena.com/profile`, the public `api.worldchess.com/api/gaming/players`
+  endpoints, per-board PGN downloads, exact FIDE ID verification, and separate
+  `Online Accounts` database organization.
 - A later 2026-06-19 Southall follow-up deduped repeated OTB source games
   across the Files-side player folders, app-side combined OTB PGNs, and rebuilt
   OTB `.db3` databases. Duplicate source copies were moved into timestamped

@@ -16,7 +16,8 @@ opponent-ready En Croissant assets:
 
 The goal is to avoid missing games that are online somewhere, especially
 Lichess broadcast PGNs, Chessscope-indexed broadcast games, ChessBase/Mega
-database games, and tournament-site PGN downloads.
+database games, tournament-site PGN downloads, and current online-account
+sources such as Chess.com, Lichess, and World Chess / FIDE Online Arena.
 
 ## Critical Lessons From The Muswell And Oxford Prep Sessions
 
@@ -39,11 +40,12 @@ database games, and tournament-site PGN downloads.
   is mandatory when tooling is available: assign at least one dedicated
   account-finding subagent per player being prepped. Give each subagent explicit
   player identities, FIDE/national IDs, source targets, and the requirement to
-  search hard for credible Chess.com account links and corroborating evidence.
-  Use additional source-family subagents for downloadable PGNs when useful. The
-  lead agent still owns dedupe, database creation, verification, and the final
-  honesty check. If multi-agent tooling is unavailable, say so in the final
-  response and do the same source checklist manually.
+  search hard for credible Chess.com, Lichess, World Chess / FIDE Online Arena,
+  and other online-account links with corroborating evidence. Use additional
+  source-family subagents for downloadable PGNs when useful. The lead agent
+  still owns dedupe, database creation, verification, and the final honesty
+  check. If multi-agent tooling is unavailable, say so in the final response
+  and do the same source checklist manually.
 - Do not do a shallow global pass and call it finished. Work player by player,
   and do not move on from a player until that player has completed the full
   exhaustive checklist: identity normalization, local/reference databases,
@@ -63,18 +65,20 @@ database games, and tournament-site PGN downloads.
   If the first pass finds few games, make a second targeted pass with alternate
   spellings, FIDE/national IDs, event leads, Chessscope, Lichess broadcasts,
   TWIC, and local/reference databases before reporting the count as final.
-- Public Chess.com account guesses are not OTB game sources. Keep online-account
+- Public online-account guesses are not OTB game sources. Keep online-account
   research and imported online games separate from OTB/broadcast PGN imports.
-  After candidate accounts are found, import the public Chess.com games into
-  separate account databases, compare their opening profile against the OTB
-  prep games, and update confidence. If the comparison shows a clear mismatch,
-  delete the imported Chess.com PGN/`.db3`/search index and keep only a rejected
+  After candidate accounts are found, import public Chess.com, Lichess, World
+  Chess / FIDE Online Arena, or other account games into separate account
+  databases when PGN export is available, compare their opening profile against
+  the OTB prep games, and update confidence. If the comparison shows a clear
+  mismatch, delete the imported PGN/`.db3`/search index and keep only a rejected
   lead note so the bad account is not reused.
 - At the end of an event prep run, organize app-side databases into a clear
   event folder rather than leaving many flat files in the database root. Use
-  subfolders such as `OTB Prep` and `Chess.com Accounts`, and make Chess.com
-  filenames link the OTB player to the handle, for example
-  `02 Onuoha, Obioma - Chess.com obiosky.db3`.
+  subfolders such as `OTB Prep` and `Online Accounts`, and make account
+  filenames link the OTB player to the platform and handle/profile ID, for
+  example `02 Onuoha, Obioma - Chess.com obiosky.db3` or
+  `00 Kodukula, Sameera - World Chess 853760.db3`.
 - Chessscope pages may show only an accessible recent slice for prolific
   players. Still check them, because they can reveal many Lichess broadcast
   games missing from local Mega databases.
@@ -149,8 +153,8 @@ Keep folder names short enough for Windows paths.
      the work. This is an internal tracking aid, not a required final
      deliverable.
    - Columns: player, rating, FIDE ID, national ID, club, federation,
-     Chess.com guess, confidence, OTB PGNs found, broadcast PGNs added, most
-     recent game found, notes.
+     online account leads, confidence, OTB PGNs found, broadcast PGNs added,
+     most recent game found, notes.
 
 4. Coordinate a web-search subagent team by default.
    - Before doing the online pass, use the available multi-agent tooling to
@@ -158,23 +162,25 @@ Keep folder names short enough for Windows paths.
      assign at least one dedicated online-account search subagent for every
      player being prepped. For a single-player account-finding task, use at
      least two focused searches when possible: one for identity/club/context and
-     one for Chess.com candidates/profile verification. For larger prep jobs,
-     use one account-search subagent per player plus any broader source-family
-     subagents that would help.
+     one for online-account candidates and profile verification across
+     Chess.com, Lichess, World Chess / FIDE Online Arena, and similar public
+     platforms. For larger prep jobs, use one account-search subagent per
+     player plus any broader source-family subagents that would help.
    - Use subagents to speed up and broaden the online research pass, especially
      for larger entrant lists or events with many possible sources.
    - Assign work by player or by source family, for example Chessscope/Lichess
      broadcasts, Chess-Results/TWIC/event PGNs, federation/FIDE/event leads,
-     public game databases, and Chess.com account research.
+     public game databases, and online-account research for Chess.com,
+     Lichess, World Chess / FIDE Online Arena, and other public platforms.
    - Every subagent brief must include the player's normalized name variants,
      FIDE ID, national ID, federation/club/event clues, and the expected output:
      downloadable PGN links or files found, source pages checked, most recent
-     game found, candidate Chess.com accounts with confidence, and unresolved
+     game found, candidate online accounts with confidence, and unresolved
      gaps.
    - Tell subagents to search hard, not just run one query. They should use
-     alternate spellings, initials, FIDE IDs, event names, club names, and
-     broadcast sources before returning "no games found" or "no credible
-     Chess.com account".
+     alternate spellings, initials, FIDE IDs, event names, club names, FIDE
+     Online Arena/World Chess profile IDs, and broadcast sources before
+     returning "no games found" or "no credible online account".
    - The lead agent must merge subagent findings into the working manifest,
      dedupe PGNs, verify counts, and resolve conflicts. Subagent reports are
      evidence, not final truth.
@@ -253,33 +259,36 @@ Keep folder names short enough for Windows paths.
    - Leave players with zero PGNs as folders only, with notes; do not create
      empty `.db3` files unless requested.
 
-10. Import and test Chess.com account databases.
-   - For every credible or plausible Chess.com candidate account, download the
-     public archive PGNs and create a separate online-account `.db3`. Do not
+10. Import and test online-account databases.
+   - For every credible or plausible Chess.com, Lichess, World Chess / FIDE
+     Online Arena, or other public online-account candidate, download public
+     PGNs when available and create a separate online-account `.db3`. Do not
      merge these games into the OTB prep database.
-   - Compare the Chess.com opening profile against the player's OTB/broadcast
-     games before treating the account as active: check White first moves, Black
-     first replies, top opening families/ECOs, repeated 4-6 ply line prefixes,
-     time-control mix, rating plausibility, country/location/profile metadata,
-     club membership, and activity recency.
+   - Compare the online account's opening profile against the player's
+     OTB/broadcast games before treating the account as active: check White
+     first moves, Black first replies, top opening families/ECOs, repeated
+     4-6 ply line prefixes, time-control mix, rating plausibility,
+     country/location/profile metadata, club membership, FIDE ID/profile ID
+     links, and activity recency.
    - Update account confidence from the comparison. Strong line overlap can
      raise confidence; a completely different repertoire, implausible rating,
      wrong country/club context, or contradictory profile metadata lowers it.
-   - If the account is a clear mismatch, delete the imported Chess.com
-     `.pgn`, `.db3`, and any stale `.ecsi` search index. Keep a rejected-lead
-     note in the manifest/comparison file so future agents do not reimport the
-     same bad account.
+   - If the account is a clear mismatch, delete the imported `.pgn`, `.db3`,
+     and any stale `.ecsi` search index. Keep a rejected-lead note in the
+     manifest/comparison file so future agents do not reimport the same bad
+     account.
    - If the account is credible but stale or only partly useful, keep it
      clearly labelled as such rather than presenting it as current prep truth.
 
 11. Organize app-side databases into event folders.
    - Before finalizing, move/rename the app-side databases into a dedicated
      event folder under the active database root.
-   - Use clear subfolders, usually `OTB Prep` and `Chess.com Accounts`.
+   - Use clear subfolders, usually `OTB Prep` and `Online Accounts`.
    - OTB database names should identify the event and player, for example
      `02 Onuoha, Obioma - Southall U2400 OTB prep.db3`.
-   - Chess.com database names must identify both the OTB player and the handle,
-     for example `02 Onuoha, Obioma - Chess.com obiosky.db3`.
+   - Online-account database names must identify the OTB player, platform, and
+     handle/profile ID, for example `02 Onuoha, Obioma - Chess.com obiosky.db3`
+     or `00 Kodukula, Sameera - World Chess 853760.db3`.
    - Update manifests, comparison reports, and any folder/account labels after
      moving files so paths and confidence notes remain accurate.
 
@@ -514,11 +523,12 @@ Notes:
 
 ### Online Account Game APIs
 
-For Chess.com candidates found during prep, import public account games into
-separate account databases so the repertoire can be compared against OTB games.
-Do not merge these games into the OTB/broadcast prep database. For Lichess or
-other online accounts, import only when useful for the user's request or when a
-similar confidence check is needed.
+For credible or plausible online accounts found during prep, import public
+account games into separate account databases so the repertoire can be compared
+against OTB games. Do not merge these games into the OTB/broadcast prep
+database. Chess.com, Lichess, and World Chess / FIDE Online Arena are the main
+public APIs to check, but the same confidence/import rules apply to other
+platforms with public PGN export.
 
 Chess.com profile and stats:
 
@@ -541,24 +551,62 @@ https://lichess.org/@/<username>
 https://lichess.org/api/games/user/<username>
 ```
 
+World Chess / FIDE Online Arena profile and public game APIs:
+
+```text
+https://worldchess.com/profile/<profileId>
+https://chessarena.com/profile/<profileId>
+https://api.worldchess.com/api/gaming/players/<profileId>
+https://api.worldchess.com/api/gaming/players/<profileId>/ratings/current
+https://api.worldchess.com/api/gaming/players/<profileId>/totals
+https://api.worldchess.com/api/gaming/players/<profileId>/games?limit=50&offset=0
+https://api.worldchess.com/api/gaming/players/<profileId>/tournaments?limit=50&offset=0
+https://api.worldchess.com/api/online/gaming/<board_uid>/pgn/
+```
+
+World Chess profiles can be real-name profiles rather than username handles.
+When a FIDE ID is known, check the FIDE profile for an FOA title/rating section
+or external profile link, then search web results for:
+
+```text
+"<player name>" "World Chess"
+"<player name>" "FIDE Online Arena"
+"<player name>" "chessarena.com/profile"
+"<FIDE ID>" "worldchess.com/profile"
+"<FIDE ID>" "api.worldchess.com/api/gaming/players"
+```
+
+For a candidate World Chess profile, high-confidence evidence is an exact FIDE
+ID match in the `gaming/players/<profileId>` API, matching real name,
+federation/country, plausible FOA or World Chess ratings, `games_hidden=false`,
+and recent public games or tournaments. If public games are available, page
+through the `games` endpoint, download each game's PGN through the
+`online/gaming/<board_uid>/pgn/` endpoint, exclude bot/zero-ply/broken games,
+normalize the target player's name to the folder's canonical `Surname,
+Firstname` form, dedupe, and build a separate online-account database.
+
 Filter online games separately by time control and source. Label them clearly
 and keep them in their own database/folder if used alongside OTB prep.
 
-## Chess.com Account Research
+## Online Account Research
 
 The goal is a best-guess account table, not false certainty. Search broadly
-before deciding there is no credible account, and verify hard before marking an
-account as high confidence.
+before deciding there is no credible account on Chess.com, Lichess, World
+Chess / FIDE Online Arena, or another public platform, and verify hard before
+marking an account as high confidence.
 
-When using subagents, assign Chess.com account research explicitly. Spawn at
+When using subagents, assign online-account research explicitly. Spawn at
 least one dedicated account-finding subagent for each player being prepped when
 multi-agent tooling is available. Each subagent should search candidate
-usernames, profile metadata, public club membership, country/location/rating
-plausibility, activity recency, and any event or federation clues linking the
-account to the OTB player. Require a confidence label and the evidence for it;
-do not let a same-name account become an unqualified claim. If tooling is
-unavailable, perform the same one-player-at-a-time account search manually and
-state that limitation in the final response.
+usernames, real-name profile IDs, profile metadata, public club membership,
+country/location/rating plausibility, activity recency, and any event or
+federation clues linking the account to the OTB player. This search must cover
+Chess.com and also World Chess / FIDE Online Arena whenever a FIDE ID is known;
+include Lichess and other public platforms when the player context suggests
+them. Require a confidence label and the evidence for it; do not let a
+same-name account become an unqualified claim. If tooling is unavailable,
+perform the same one-player-at-a-time account search manually and state that
+limitation in the final response.
 
 Direct checks:
 
@@ -566,6 +614,9 @@ Direct checks:
 https://api.chess.com/pub/player/<candidate>
 https://api.chess.com/pub/player/<candidate>/stats
 https://www.chess.com/member/<candidate>
+https://worldchess.com/profile/<profileId>
+https://api.worldchess.com/api/gaming/players/<profileId>
+https://api.worldchess.com/api/gaming/players/<profileId>/games?limit=1&offset=0
 ```
 
 Generate candidates from:
@@ -582,7 +633,8 @@ Generate candidates from:
 - federation, club, school, city, or event abbreviations combined with name
   fragments
 - known handles from club pages, federation pages, event pages, social links,
-  Lichess profiles, old PGN tags, or local context
+  Lichess profiles, old PGN tags, World Chess profile IDs, FOA/FIDE links, or
+  local context
 
 Required search passes:
 
@@ -590,6 +642,15 @@ Required search passes:
 - Search web results for Chess.com member pages using full name, surname-first
   name, initials, FIDE ID, ECF/national code, club, school, city, and known
   event names.
+- Search World Chess / FIDE Online Arena profile pages using full name,
+  surname-first name, FIDE ID, federation, title, school/club/city clues, and
+  `chessarena.com/profile` / `worldchess.com/profile` URL patterns.
+- When a World Chess profile is found, verify the public API profile fields:
+  exact FIDE ID, real name, country/federation, FOA title, activity status,
+  `games_hidden`, ratings/current, totals, latest game, and tournament count.
+- If the World Chess games API exposes public games, test a sample
+  `online/gaming/<board_uid>/pgn/` endpoint and import the account when the
+  profile is credible or plausibly useful.
 - Find the player's real-world club from ECF/FIDE/tournament pages where
   possible, then search for that club on Chess.com.
 - If a likely Chess.com club exists, inspect the public members list if visible
@@ -598,8 +659,8 @@ Required search passes:
 - Search public Chess.com club pages, news, forums, descriptions, and member
   pages for the club plus player-name variants.
 - Cross-check candidate accounts against country flag/location, displayed
-  name, linked clubs, activity recency, online ratings, and time-control
-  ratings.
+  name, linked clubs, activity recency, online ratings, time-control ratings,
+  and exact FIDE/FOA profile IDs when available.
 
 Club-member heuristics:
 
@@ -629,6 +690,11 @@ Rating and identity sanity checks:
 - For example, a UK player rated around 1800 FIDE/ECF with an active Chess.com
   account rated around 1700-2100 rapid/blitz is plausible; an active account
   around 800 with no explanation is a major negative signal.
+- For World Chess / FIDE Online Arena, exact FIDE ID match plus plausible FOA
+  or World Chess ratings is stronger than a name-only match. A real-name
+  profile with `games_hidden=false`, recent public games, and an exact FIDE ID
+  should be treated as a serious candidate even if no username-style handle
+  exists.
 - Very low online ratings can still be possible for new, inactive, or puzzle-only
   accounts, but then confidence should stay low unless there is strong external
   evidence linking the account.
@@ -641,9 +707,9 @@ Rating and identity sanity checks:
 Score confidence:
 
 - High: strong username/name match plus multiple corroborating signals such as
-  matching country/location, real-world club or likely Chess.com club
-  membership, plausible online rating for FIDE/national strength, and recent or
-  historically relevant activity.
+  matching country/location, exact FIDE/FOA ID, real-world club or likely
+  platform club membership, plausible online rating for FIDE/national strength,
+  and recent or historically relevant activity.
 - Medium: strong username/name match plus some corroboration, such as matching
   country and plausible rating, but no club confirmation or weak activity
   evidence.
@@ -659,21 +725,22 @@ for a 1700-1900 OTB player.
 After candidate accounts are found, import and test them instead of leaving the
 account confidence as a pure profile guess:
 
-- Download all public Chess.com archives for each credible or plausible
+- Download all public Chess.com archives, Lichess exports, World Chess
+  per-board PGNs, or other platform PGNs for each credible or plausible
   candidate account.
 - Convert the downloaded PGN to a separate online-account `.db3` using the same
   converter as other PGNs.
 - Store it outside the OTB prep database, in a clearly named event/account
-  folder that links player to handle.
+  folder that links player to platform and handle/profile ID.
 - Compare the account's openings with the OTB/broadcast prep games. At minimum,
   compare White first moves, Black first replies, common 4-6 ply line prefixes,
   top ECO/opening families, and slower-time-control samples when available.
 - Treat a strong repertoire match as corroborating evidence, especially when it
   aligns with real name, country/location, club, and activity clues.
 - Treat a completely different repertoire as a serious negative signal. If the
-  mismatch is clear, delete the imported Chess.com PGN/`.db3` and any `.ecsi`
-  index, mark the account as rejected, and update the player folder label or
-  manifest to avoid future reuse.
+  mismatch is clear, delete the imported PGN/`.db3` and any `.ecsi` index, mark
+  the account as rejected, and update the player folder label or manifest to
+  avoid future reuse.
 
 ## PGN Dedupe Rules
 
@@ -725,7 +792,7 @@ layout is:
 
 ```text
 C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\<Event Name>\OTB Prep
-C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\<Event Name>\Chess.com Accounts
+C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\<Event Name>\Online Accounts
 ```
 
 Use clear titles that encode both purpose and identity:
@@ -733,6 +800,7 @@ Use clear titles that encode both purpose and identity:
 ```text
 02 Onuoha, Obioma - Southall U2400 OTB prep.db3
 02 Onuoha, Obioma - Chess.com obiosky.db3
+00 Kodukula, Sameera - World Chess 853760.db3
 ```
 
 Keep the matching source `.pgn` beside the `.db3`. If files are moved after
@@ -811,16 +879,16 @@ for db in sorted(root.glob("muswell congress prep - *.db3")):
 3. Confirm the app database directory is the active one.
 
 4. Confirm the final app-side database layout is organized by event folder,
-   with separate OTB prep and Chess.com account folders when account games were
+   with separate OTB prep and online-account folders when account games were
    imported. Make sure filenames clearly link each online account database to
-   the OTB player and handle.
+   the OTB player, platform, and handle/profile ID.
 
-5. Confirm every credible/plausible Chess.com candidate has an import verdict:
-   active, stale-but-credible, low-confidence, rejected mismatch, or no credible
-   account. For active/stale/low-confidence accounts, record the database path
-   and converted game count. For rejected mismatches, confirm the imported
-   `.pgn`, `.db3`, and stale `.ecsi` files were deleted and that a rejected-lead
-   note remains.
+5. Confirm every credible/plausible online-account candidate has an import
+   verdict: active, stale-but-credible, low-confidence, rejected mismatch, or no
+   credible account. For active/stale/low-confidence accounts, record the
+   platform, handle/profile ID, database path, and converted game count. For
+   rejected mismatches, confirm the imported `.pgn`, `.db3`, and stale `.ecsi`
+   files were deleted and that a rejected-lead note remains.
 
 6. Open/refresh En Croissant Databases page and verify the per-player databases
    appear.
@@ -833,7 +901,7 @@ for db in sorted(root.glob("muswell congress prep - *.db3")):
      known, opponent, color, and result when available
    - sources checked
    - no-PGN and low-count cases
-   - Chess.com account imports, mismatch checks, and confidence verdicts where
+   - online-account imports, mismatch checks, and confidence verdicts where
      relevant
 
 ## Reporting To The User
@@ -847,7 +915,7 @@ Keep the final answer short but precise:
 - Give an honest per-opponent count table: player, local/reference PGNs,
   online/broadcast PGNs added, final PGN/database count, most recent game found
   with date/event/opponent/result where available, and coverage notes.
-- For Chess.com accounts, state the imported account handle, converted game
+- For online accounts, state the platform, handle/profile ID, converted game
   count, confidence after comparing openings with OTB games, and whether any
   imported account was deleted as a clear mismatch.
 - List players with zero PGNs or suspiciously low counts, including the
@@ -856,7 +924,7 @@ Keep the final answer short but precise:
   events with no public PGN, Chessscope recent-slice limits, ambiguous player
   identities, or unconfirmed online accounts.
 - Mention the folder and database paths, including the event database folder
-  and any `OTB Prep` / `Chess.com Accounts` subfolders.
+  and any `OTB Prep` / `Online Accounts` subfolders.
 - Mention any source limitations, for example: Chessscope only exposed the
   accessible recent slice for very prolific players.
 
