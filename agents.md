@@ -259,6 +259,21 @@ model, implementation map, and verification expectations for this app.
   repertoire match to the OTB/broadcast prep: White is Nf3-heavy and Black is
   overwhelmingly French/e6. The Files-side folder label is now
   `00 1858 - Kodukula, Sameera [wc 853760 high recent li stale cc none]`.
+- On 2026-07-02, Sameera prep was published to the phone web app. The hosted
+  files folder `Sameera Kodukula prep player games` was added to the phone
+  picker pins, and GitHub Pages was pushed with hosted database exports for
+  `00 Kodukula, Sameera - OTB prep` (33 games), `00 Kodukula, Sameera -
+  Lichess broadcast games` (33 games), `00 Kodukula, Sameera - Lichess
+  SameeraKodukula` (297 games), and `00 Kodukula, Sameera - World Chess
+  853760` (1,519 games). During the publish, the local desktop app-side
+  `00 Kodukula, Sameera - Lichess broadcast games.db3` was found to be stale
+  and locked by the running `en-croissant-fork` process, with 71 rows including
+  unrelated `Alex_The_Great15` games. The phone site was corrected by copying
+  the verified 33-game OTB hosted export over the generated broadcast export
+  before rebuilding and republishing. Before any future full `npm run
+  web:publish`, replace the local locked broadcast `.db3` with a clean copy
+  rebuilt from its 33-game PGN or it may regenerate the stale 71-game hosted
+  export.
 
 ## Local Browser Verification
 
