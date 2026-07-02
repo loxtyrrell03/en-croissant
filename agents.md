@@ -329,13 +329,17 @@ lead with the next useful action, the source of the evidence, and the safest
 default.
 
 - On 2026-07-02, `docs/PROPRIETARY_REBUILD_PLAN.md` was updated from a
-  high-level clean-room MVP outline into a full 1:1 behavioral replacement
-  plan. Future proprietary-rebuild work should preserve every meaningful
-  workflow in this product map as behavior, evidence, saved data, imports,
-  exports, verification expectations, phone/web parity, and preparation flows,
-  while still requiring an original implementation, original design, fresh
-  schemas/names/assets/copy/build files, and owner-attested reusable-delta
-  review before copying any later code.
+  high-level clean-room MVP outline into a phased full 1:1 behavioral
+  replacement plan. The current intent is to reuse the user's owner-authored
+  non-native fork feature code heavily after full-history provenance
+  extraction, while replacing GPL/native base implementation, final shipped
+  assets, schemas, build files, and public product identity. The design target
+  should draw inspiration from this fork's clean, modern, simple feel, but use
+  original/right-cleared assets, copy, visual tokens, and branding. Future
+  proprietary-rebuild agents may inspect the full git history only in the
+  extraction workspace to identify owner-added code; implementation in the
+  fresh proprietary repo should use approved reusable-delta bundles and the
+  behavior/parity specs.
 
 ## Product Map
 

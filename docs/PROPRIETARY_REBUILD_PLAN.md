@@ -2,15 +2,15 @@
 
 ## 1. Executive Summary
 
-The goal is to build a proprietary chess workstation that is a feature-complete behavioral replacement for the current En Croissant fork as of 2026-07-02. The new product should support the same user workflows, data outcomes, import/export paths, training loops, preparation flows, web companion behavior, and verification expectations, while using an original implementation and a visibly distinct product design.
+The goal is to build a proprietary chess workstation that is a feature-complete behavioral replacement for the current En Croissant fork as of 2026-07-02. The new product should support the same user workflows, data outcomes, import/export paths, training loops, preparation flows, web companion behavior, and verification expectations, while using the owner's reusable feature code heavily and presenting an original product identity.
 
-This is a 1:1 behavioral clone target, not a source-code port. "1:1" means that a user can accomplish the same practical tasks with equivalent evidence, controls, saved state, and output quality. It does not mean copying GPL source, file layout, command names, database schema, generated bindings, UI text, styling, assets, screenshots, or build configuration.
+This is a 1:1 behavioral clone target with maximum owner-code reuse, not a GPL-base source-code port. "1:1" means that a user can accomplish the same practical tasks with equivalent evidence, controls, saved state, and output quality. Owner-authored feature code, tests, docs, scripts, and assets may be copied through an audited reusable-delta bundle. GPL base code, original En Croissant implementation code, third-party material with unclear rights, and old assets/build metadata must not be copied unless separately cleared.
 
-The GPL base of the current application must not be reused, translated, restructured, or mechanically adapted. However, the owner has attested on 2026-04-27 that everything committed to this repository during the past week is the owner's own code and assets. That owner-authored contribution set may be copied into the proprietary rebuild after it is isolated from the GPL base. This permission applies to the owner-owned delta, new owner-created files, and owner-created assets from the listed commits; it does not grant permission to copy unmodified GPL base code or third-party material with unclear rights.
+The GPL base of the original application must not be reused, translated, restructured, or mechanically adapted. However, the owner attests that all functionality in this fork that is not native to the original En Croissant app was added by the owner. Those owner-authored features should be extracted from the fork history and reused heavily in the proprietary rebuild when provenance review confirms the copied files, hunks, tests, docs, scripts, or assets are owner-authored and not unmodified GPL base or uncleared third-party material. The 2026-04-27 past-week attestation remains valid, but it is no longer the only intended reusable range.
 
 The proprietary rebuild should intentionally use the same broad language and platform choices as the current app to make transfer easier: a TypeScript/React front end, a Rust native back end, Tauri as the desktop shell, SQLite for local storage, UCI engine integration, and a similar board/database/engine/review product-layer split. This is architecture compatibility, not permission to copy GPL base structure or implementation.
 
-The rebuild must happen in a separate repository, not in this repository and not on top of this repository's git history. Implementation agents should work from the separate proprietary repository, this plan, later clean-room specifications, the current product map distilled into behavior-only requirements, and owner-prepared reusable-delta bundles. They should not browse the old GPL repository as an implementation reference except for controlled owner/provenance extraction passes.
+The rebuild must happen in a separate repository, not in this repository and not on top of this repository's git history. Implementation agents should work from the separate proprietary repository, this plan, later clean-room specifications, the current product map distilled into behavior-only requirements, and owner-prepared reusable-delta bundles. Extraction agents may inspect this fork's full git history, diffs, and blame output, and may compare against the original En Croissant baseline, to identify exactly what the owner added. Implementation agents should not browse the old GPL repository as an open-ended implementation reference except for controlled owner/provenance extraction passes.
 
 This plan is not legal advice. Anything uncertain should be marked "needs manual/legal review" before commercial release.
 
@@ -20,34 +20,31 @@ This plan is not legal advice. Anything uncertain should be marked "needs manual
 
 - Build in a separate new repository with no copied source tree, no copied git history, no shared remote, and no imported GPL base files.
 - Do not fork, clone-and-delete, rename, or continue development inside this repository for the proprietary rebuild.
-- Keep this repository as a read-only reference/archive after the controlled extraction step.
-- Copying is allowed only for the owner-attested reusable contribution set listed in this plan, preferably from an isolated export bundle rather than from the old repository.
-- New files created entirely by the owner during the past-week range may be copied wholesale if they do not contain GPL-derived/generated material.
-- For files that modify pre-existing GPL files, copy only the owner-authored hunks or re-express them in the new architecture; do not copy the surrounding GPL file wholesale.
+- Keep this repository as a read-only extraction/reference archive after the controlled extraction step.
+- Copying is allowed for owner-attested reusable contributions identified by full-history provenance review, preferably from isolated export bundles rather than directly from the old repository.
+- New files created entirely by the owner may be copied wholesale if they do not contain GPL-derived/generated material or third-party material with unclear rights.
+- For files that modify pre-existing GPL files, copy owner-authored hunks or owner-authored feature regions when they can be separated from the surrounding GPL base; do not copy the surrounding GPL file wholesale.
 - Reuse the same broad languages and platform stack where useful: Rust, TypeScript, React, Tauri, SQLite, UCI engines, local files, and background jobs.
 - Reuse the same general product architecture shape where useful: desktop shell, front-end board/workspace UI, native back-end services, database/search/indexing services, engine process services, import/export services, preferences, and optional cloud/account adapters.
-- Write all other production code, tests, documentation, schemas, assets, and UI copy independently.
+- Write GPL-base replacement code, fresh schemas, fresh product assets, and final user-facing copy independently unless a specific item is owner-authored and approved in a reusable-delta bundle.
 - Use behavior-level specifications, user stories, acceptance criteria, public protocols, and independently authored designs.
 - Do not ask implementation agents to compare against, port from, or inspect the GPL repository once the proprietary implementation begins, except when using a reviewed owner-authored delta bundle.
 - Keep a written design log explaining why major architecture, schema, UI, and dependency choices were made independently.
 
-### Do Not Copy
+### Do Not Copy GPL Or Unowned Material
 
-The proprietary rebuild must not copy from the GPL base or from unowned material in the existing repository. The owner-attested past-week reusable contribution set is the only planned exception.
+The proprietary rebuild must not copy from the GPL base or from unowned material in the existing repository. Owner-authored feature code and assets are the planned exception after provenance review.
 
-- Source files.
-- Distinctive function, class, hook, command, type, component, or module names.
-- Folder structure or route structure.
-- Database schema, migrations, indexes, generated bindings, serialized index formats, or storage layouts.
-- UI text, menu labels, tooltip wording, onboarding copy, empty-state copy, error messages, or translation strings.
-- Assets, icons, logos, images, sounds, board themes, piece sets, screenshots, or generated media.
-- CSS, theme files, layout measurements, visual tokens, or component styling.
-- Test fixtures, expected-output files, PGN samples, database samples, benchmark inputs, or snapshots.
-- Documentation text, README text, comments, issue templates, or contribution guides.
-- Generated code derived from GPL files.
-- Build scripts, packaging config, capability manifests, or launcher scripts.
+- GPL or original En Croissant source files.
+- GPL or original En Croissant function, class, hook, command, type, component, or module names.
+- GPL or original En Croissant folder structure, route structure, database schema, migrations, indexes, generated bindings, serialized index formats, or storage layouts.
+- GPL or original En Croissant UI text, menu labels, tooltip wording, onboarding copy, empty-state copy, error messages, or translation strings.
+- GPL or original En Croissant assets, icons, logos, images, sounds, board themes, piece sets, screenshots, or generated media.
+- GPL or original En Croissant CSS, theme files, layout measurements, visual tokens, or component styling.
+- Third-party test fixtures, expected-output files, PGN samples, database samples, benchmark inputs, or snapshots without rights clearance.
+- GPL or original En Croissant documentation text, README text, comments, issue templates, contribution guides, build scripts, packaging config, capability manifests, launcher scripts, or generated code.
 
-Owner-authored files, code hunks, tests, docs, scripts, and assets from the past-week commit range may be copied only after provenance review confirms they are part of the owner's own contribution set and are not generated from GPL files unless the generated output is independently reproducible from owner-owned inputs.
+Owner-authored files, code hunks, tests, docs, scripts, and assets from the fork may be copied after provenance review confirms they are part of the owner's own contribution set and are not generated from GPL files unless the generated output is independently reproducible from owner-owned inputs.
 
 ### Behavior-Only Feature Descriptions
 
@@ -64,33 +61,36 @@ Avoid descriptions such as:
 - Exact table names or index encodings from the current app.
 - Exact UI strings, component names, CSS class names, or translation keys.
 
-### Owner-Attested Reusable Delta Exception
+### Owner-Attested Reusable Delta Policy
 
-The owner has stated that all work committed during the past week is their own code. For this plan, the reusable contribution range is the commits observed since 2026-04-20 on branch `codex/en-croissant-fork`, which in practice are dated 2026-04-24 through 2026-04-27 and run from `42732755` through `6c9de0d8`, plus the documentation commit `4c34803e`.
+The owner has stated that all functionality in this fork that is not native to the original En Croissant app was added by the owner. The proprietary rebuild should therefore reuse the owner's feature work heavily instead of rebuilding it all from scratch.
 
-Many important features were added after that original attested range. Those later features are now in scope for the 1:1 behavioral clone, but they are not automatically in scope for direct copying. Before any later code, asset, script, prompt, test, or schema fragment is copied into the proprietary rebuild, prepare a new owner-attested reusable-delta bundle for the relevant commit range and classify it with the same controls below. Until that review is complete, later work should be treated as behavior-only product requirements and reimplemented independently.
+For this plan, the first explicit reusable contribution range observed was the 2026-04-24 through 2026-04-27 commit range from `42732755` through `6c9de0d8`, plus documentation commit `4c34803e`. That range remains a known reusable starting point. It should be expanded with full-history extraction passes that identify all later owner-authored feature code, tests, docs, scripts, prompts, assets, and generated outputs whose inputs are owner-owned.
+
+Extraction agents may inspect this repository's full git history to establish provenance. They may use `git log`, `git show`, `git diff`, `git blame`, tag/branch comparisons, and comparison against the original En Croissant upstream to determine which parts are native GPL base, which parts are owner-added features, and which parts need manual/legal review. This source inspection is allowed for provenance extraction; it is not permission for implementation agents in the fresh proprietary repo to browse the GPL-derived repo as a coding reference.
 
 Allowed reuse:
 
-- Directly copy owner-created new files from that range when they do not include GPL-derived generated output or third-party assets with unclear rights.
-- Directly copy owner-authored code hunks from modified files when the hunk can be separated from the surrounding GPL base.
-- Directly copy owner-authored tests and fixtures from that range when the test data was independently authored or otherwise rights-cleared.
+- Directly copy owner-created new files from any attested range when they do not include GPL-derived generated output or third-party assets with unclear rights.
+- Directly copy owner-authored feature code, hooks, utilities, UI components, tests, docs, scripts, prompts, and assets when provenance review confirms the copied material is owner-authored.
+- Directly copy owner-authored code hunks or larger owner-authored feature regions from modified GPL files when the copied region can be separated from the surrounding GPL base.
+- Directly copy owner-authored tests and fixtures when the test data was independently authored or otherwise rights-cleared.
 - Directly copy owner-authored documentation and prompt templates from this plan.
 - Use owner-created screenshots and session artifacts as private design references; do not ship them as product assets unless their contents and rights are reviewed.
 
 Required controls:
 
-- Prepare a reusable-delta bundle from the commit range before implementation starts.
+- Prepare reusable-delta bundles from the relevant commit ranges before importing code into the proprietary repository.
 - Mark each copied item as `new owner file`, `owner hunk from modified GPL file`, `owner asset`, `owner test`, `generated from owner-owned input`, or `needs manual/legal review`.
 - Do not copy unchanged GPL files just because they were touched nearby.
-- Do not preserve old module paths, command names, schema names, or UI text unless they are generic or independently chosen.
+- Do not preserve original En Croissant module paths, command names, schema names, or UI text unless they are generic or independently chosen. Owner-authored names may be retained when they are useful, but still prefer fresh public-facing names where that improves product distinctness.
 - When extraction is hard to reason about, reimplement the behavior from the neutral spec instead of copying code.
 
 ### Separate Repository Isolation Workflow
 
 The proprietary rebuild should use a two-workspace process:
 
-1. **Extraction workspace:** this current GPL-derived repository, used only to identify and export owner-authored past-week material.
+1. **Extraction workspace:** this current GPL-derived repository, used to identify and export owner-authored material across the full fork history.
 2. **Implementation workspace:** a brand-new proprietary repository created independently, used for all product implementation.
 
 Required isolation rules:
@@ -100,10 +100,10 @@ Required isolation rules:
 - Do not copy `src`, `src-tauri`, `public`, `sound`, `.github`, build outputs, dependency folders, generated bindings, generated route trees, caches, or config files wholesale.
 - Do not copy `.git`, commit history, branches, tags, issue templates, CI files, lockfiles, generated artifacts, local build outputs, or app metadata from this repo into the new repo.
 - Put the approved reusable delta in a neutral transfer bundle, for example `approved-owner-delta/`, with a manifest describing provenance and reuse status for every included file or hunk.
-- The transfer bundle should contain only owner-authored items approved for reuse. It should not mirror the old directory tree unless the path is needed temporarily for provenance review.
+- The transfer bundle should contain only owner-authored items approved for reuse. It may retain temporary source-path notes for provenance, but the proprietary repository should organize imported code under a fresh project structure.
 - Import the plan document into the new repo as a specification document, then treat the old repo as closed for implementation work.
 - Start future Codex sessions from the new repo root only. Do not include this GPL-derived repo as the active workspace or adjacent source reference.
-- If an implementation task needs additional detail from this repo, pause and create a small owner-reviewed spec or delta export; do not let the implementation agent freely inspect the old repository.
+- If an implementation task needs additional detail from this repo, pause and run a controlled extraction pass in this repository to create a small owner-reviewed spec or delta export; do not let the implementation agent freely inspect the old repository as a coding reference.
 
 ### Transfer-Friendly Architecture Policy
 
@@ -118,7 +118,7 @@ Allowed alignment:
 - Use public UCI protocol concepts for engine integration.
 - Use a similar high-level set of domains: board workspace, notation/game tree, analysis, databases, files/studies, repertoires, review/training, settings, online accounts, and background jobs.
 - Generate front-end/back-end type bindings from newly written Rust or schema definitions.
-- Keep the same owner-added feature algorithms where they come from the approved owner-delta bundle.
+- Keep and reuse the same owner-added feature algorithms and implementation code wherever practical when they come from an approved owner-delta bundle.
 
 Not allowed alignment:
 
@@ -128,7 +128,7 @@ Not allowed alignment:
 - Do not copy old migrations, index binary formats, generated code, package config, Tauri config, lockfiles, theme files, or asset directories.
 - Do not use the old repository as a live "how did they implement this?" reference during new implementation.
 
-Practical target: make the new repo familiar enough that owner-authored recent code can be moved with minimal conceptual translation, but different enough in file layout, naming, schema, generated APIs, styling, and documentation that GPL base code is not carried across.
+Practical target: make the new repo familiar enough that owner-authored feature code can be moved with minimal conceptual translation, while keeping file layout, base app architecture details, schema, generated APIs, final styling, and shipped assets distinct enough that GPL base code is not carried across.
 
 ### 1:1 Behavioral Clone Policy
 
@@ -144,27 +144,29 @@ Behavioral parity means:
 - The same cross-device workflows exist for the phone/web companion, including hosted file browsing, database imports, prep/database parity surfaces, PWA startup, static library publishing, and local sync/export helpers.
 - The same quality bar applies: large databases remain responsive, long scans can be cancelled or resumed where appropriate, local verification is scoped to the change, and browser/Playwright verification remains opt-in unless specifically requested.
 
-Behavioral parity does not mean:
+Behavioral parity and owner-code reuse do not mean:
 
-- Copying source files, generated code, schemas, migrations, routes, command names, component names, state keys, style tokens, UI strings, screenshots, board/piece themes, or build scripts.
+- Copying GPL/original En Croissant source files, generated code, schemas, migrations, routes, command names, component names, state keys, style tokens, UI strings, screenshots, board/piece themes, or build scripts.
 - Recreating the old visual design with only superficial color changes.
 - Letting implementation agents use the GPL repository as a live reference while coding.
-- Importing later owner-authored work without a commit-range attestation and reusable-delta review.
+- Importing owner-authored work without full-history provenance review and reusable-delta bundling.
 
 The current fork's `agents.md` is the living product map for parity scope. Before implementation begins in the fresh repository, convert the relevant parts of that file into behavior-only specifications, acceptance criteria, and fixture-free test plans. Once converted, agents in the proprietary repository should use only those neutral specs, public protocols/docs, and approved reusable-delta bundles.
 
-### Design-Difference Requirement
+### Design Direction And Difference Requirement
 
-The proprietary app may keep the same broad workstation mental model, but it should look and read like a new product:
+The proprietary app should draw inspiration from the current fork's clean, modern, simple feel: calm density, clear task-led surfaces, compact evidence, board-first workflows, restrained controls, and low-friction navigation. The goal is to preserve the product's usability taste while giving the proprietary app its own identity.
 
 - Create original branding, iconography, board and piece presentation, sound set, empty states, status copy, onboarding copy, and settings labels.
-- Redesign navigation labels and layouts enough that screenshots are clearly distinguishable from the GPL-derived fork while retaining equivalent workflows.
+- Use original or rights-cleared assets for icons, boards, pieces, sounds, screenshots, generated images, and marketing materials.
+- Keep the visual direction clean, modern, and simple rather than ornate, gamified, or cluttered.
+- Redesign navigation labels, spacing, component styling, color tokens, and layouts enough that screenshots are clearly distinguishable from the GPL-derived fork while retaining equivalent workflows.
 - Prefer domain-language names for new modules and APIs; do not preserve old internal names unless they are generic chess terms or approved owner-authored API names.
 - Treat old screenshots and local verification images as private product-memory artifacts only. Do not ship them.
 
 ## 3. Feature Inventory
 
-Inspection basis: top-level metadata, public README-level product description, behavior-level route and feature names, the current `agents.md` product map, user-facing screenshots/artifacts as private design-memory inputs, and the past-week commit log. No GPL implementation logic or source snippets were copied into this plan. The custom-feature classification below now treats the owner's past-week commits as an owner-attested reusable contribution set. Later features listed here are parity requirements, not permission to copy later source code without a separate reusable-delta review.
+Inspection basis: top-level metadata, public README-level product description, behavior-level route and feature names, the current `agents.md` product map, user-facing screenshots/artifacts as private design-memory inputs, and the fork git history. No GPL implementation logic or source snippets were copied into this plan. The custom-feature classification below treats owner-authored non-native fork features as reusable after full-history provenance review and reusable-delta bundling.
 
 | Feature name for new spec | User-facing behaviour | Why it matters | Classification |
 | --- | --- | --- | --- |
@@ -318,11 +320,11 @@ The table above is an older baseline inventory. The proprietary replacement shou
 
 ## 4. My Added Features Preservation Plan
 
-The following specifications preserve the desired behavior and identify owner-added code that may be copied into the proprietary rebuild when it comes from the owner-attested past-week contribution set. The "Current reference location" column is for private owner review and provenance extraction. Implementation agents in the fresh proprietary repo should use a reviewed reusable-delta bundle rather than browsing the old GPL repository.
+The following specifications preserve the desired behavior and identify owner-added code that may be copied into the proprietary rebuild after provenance review. The "Current reference location" column is for private owner review and extraction. Implementation agents in the fresh proprietary repo should use reviewed reusable-delta bundles rather than browsing the old GPL repository.
 
 ### Past-Week Owner-Added Feature Map
 
-The table below summarizes the work committed in the past week and which parts appear to be owner-added. "May copy" means copy the owner-authored code/assets/tests from the relevant commits after provenance review; it does not mean copy unmodified GPL base code surrounding a modified hunk.
+The table below summarizes the first reviewed owner-added range from 2026-04-24 through 2026-04-27. It is not the full intended reuse set. Full-history extraction should add later owner-authored features to additional bundles. "May copy" means copy the owner-authored code/assets/tests from the relevant commits after provenance review; it does not mean copy unmodified GPL base code surrounding a modified hunk.
 
 | Owner-added feature area | User-facing feature added | Parts the owner added in the past-week commits | Reuse guidance |
 | --- | --- | --- | --- |
@@ -732,94 +734,130 @@ Design notes:
 - Show progress for import, position indexing, statistics generation, and review scans.
 - Ensure stale jobs cannot update inactive UI contexts incorrectly.
 
-## 11. MVP And Full-Parity Roadmap
+## 11. Key Rebuild Phases
 
-The early phases build an independently owned chess workstation foundation. They are not the full product target. Full release readiness requires behavioral parity with the current fork's product map, including features added after the original April plan.
+The rebuild should move through clear gates. Earlier phases create the independent shell and clean replacement for original En Croissant baseline functionality. Later phases import and adapt the owner's feature code heavily, using full-history provenance bundles, until the proprietary app reaches full day-to-day parity with the fork.
 
-### Phase 0: Repo Setup and Licence Hygiene
+### Phase 0: Provenance, Scope, And Design Direction
 
-- Create a separate fresh repository with `git init` or an equivalent empty-repo process; do not fork, clone, or rename this repository.
-- Set up the same broad stack for transfer ease: Tauri, Rust, TypeScript, React, Vite, and SQLite, subject to dependency licence review.
-- Keep the GPL-derived repository outside the implementation workspace and treat it as read-only after owner-delta extraction.
-- Import only this plan and the approved owner-delta bundle into the new repository.
-- Add original README, licence, contribution policy, and clean-room notes.
-- Add dependency licence tracking.
-- Create original branding, icons, board theme, and placeholder assets.
-- Document that implementation must not reference the old repository.
+**Goal:** define exactly what can be reused, what must be rebuilt, and what the new product should feel like.
 
-### Phase 1: Board + Game Model + FEN/PGN Basics
+- Inspect the fork's full git history and compare against the original En Croissant baseline to classify owner-added features, owner-created files, owner hunks inside modified GPL files, generated owner outputs, third-party assets, and GPL/native base code.
+- Produce reusable-delta bundles for owner-authored code and assets, with provenance manifests.
+- Produce a behavior-only parity checklist from `agents.md`, grouped by desktop, phone/web, prep, coach, review/training, files/databases, online data, reports, settings, and verification.
+- Define a fresh visual identity that is inspired by the current fork's clean, modern, simple design language but uses original assets, copy, spacing, color tokens, icons, board/piece styling, and branding.
+- Decide dependency licence rules, engine distribution policy, online-service terms constraints, and manual/legal review gates.
 
-- Implement domain model for positions, legal moves, move tree, comments, NAGs, and visual annotations.
-- Build an interactive board and notation panel.
-- Add FEN load/export.
-- Add basic PGN import/export with independent tests.
+**Done when:** the fresh repo can be created with this plan, the parity checklist, approved owner-delta bundles, a design direction brief, and a clear "do not copy GPL/native base" boundary.
 
-### Phase 2: Stockfish Analysis
+### Phase 1: Fresh Repository And Product Shell
 
-- Implement a fresh UCI adapter.
-- Add engine profile management for user-supplied engines.
-- Show analysis lines, depth, score, and MultiPV.
-- Add cancellation and process diagnostics.
+**Goal:** create the independent proprietary app container without chess complexity.
 
-### Phase 3: Local Database Import/Search
+- Initialize a new repository with independent history, remotes, package metadata, licence notes, clean-room notes, dependency licence tracking, and original placeholder branding.
+- Set up the broad transfer-friendly stack: Tauri, Rust, TypeScript, React, Vite, SQLite-ready persistence, background job plumbing, and freshly generated front-end/back-end bindings.
+- Create the app shell, task-led home launcher skeleton, board workspace shell, settings skeleton, error/progress surfaces, and original design system foundations.
+- Keep the implementation workspace isolated from this GPL-derived repository; import only approved bundles and neutral specs.
 
-- Add SQLite storage, migrations, import jobs, and game list browsing.
-- Add header search and pagination.
-- Add position indexing and opening statistics.
-- Add progress UI and cancellation for large imports.
+**Done when:** the app launches as its own product, shows the intended clean/modern/simple direction, has no copied GPL/native base assets or configs, and can receive owner feature modules.
 
-### Phase 4: Annotations, Studies, and Repertoires
+### Phase 2: Chess Core And Baseline Data Model
 
-- Add study projects and chapters.
-- Add repertoire books and line editing.
-- Add basic repertoire practice with scheduling.
-- Add export/import for studies and repertoires.
+**Goal:** replace original En Croissant baseline mechanics with independently owned core services.
 
-### Phase 5: Custom Product Features
+- Implement or integrate permissively licensed chess rules, board state, legal moves, move application, FEN, PGN parsing/export, game trees, variations, comments, NAGs, clocks, annotations, and board overlays.
+- Design a fresh SQLite schema for games, players, events, sources, studies, repertoires, review decks, attempts, engine snapshots, imports, and background jobs.
+- Add migrations from day one, independent fixtures, PGN/FEN diagnostics, and round-trip tests.
+- Build the board, notation, move list, save/open, and basic file/database flows needed for later feature imports.
 
-- Add two-source opening comparison.
-- Add strategic route exploration and board previews.
-- Add repertoire gap and opponent preparation scanners.
-- Add generated review decks with editing, evidence, and practice modes.
-- Add online game import and refresh adapters after terms/licence review.
+**Done when:** the proprietary app can open, edit, annotate, save, import, export, and navigate games without depending on old GPL/native base code or schemas.
 
-### Phase 6: Polish, Packaging, and Testing
+### Phase 3: Engine, Analysis, And Evaluation Foundation
 
-- Add settings, shortcuts, themes, sounds, accessibility, and responsive layouts.
-- Add crash recovery and backup/restore.
-- Add packaging/signing for target platforms.
-- Add performance benchmarks for large databases.
-- Complete licence audit and manual/legal review.
+**Goal:** provide the shared evaluation layer used by analysis, prep, coach, review, and training.
 
-### Phase 7: Guided Prep, Coach, and Strength Parity
+- Implement a fresh UCI adapter for user-supplied engines, with engine profiles, options, lifecycle, cancellation, MultiPV, diagnostics, and stale-result protection.
+- Add local/cloud eval abstractions, source labels, cache policy, status reporting, and fresh storage formats for any local cloud-eval database.
+- Recreate engine panels, eval-first move information, compact line display, local engine fallback, and responsive analysis behavior.
+- Keep GPL engines such as Stockfish external/user-supplied unless legal review approves another distribution strategy.
 
-- Rebuild opponent/general prep workflows, strength scoring, after-prep projections, prep builder, game-plan briefs, and coach-report evidence packets from neutral behavior specs.
-- Add local/cloud eval integration only through reviewed sources and fresh storage formats.
-- Verify engine-safety gates, CP-drop handling, sparse-line behavior, progressive row resolution, and saved-setting persistence.
+**Done when:** every later feature can request evaluation evidence through one owned service with clear source/provenance and cancellation semantics.
 
-### Phase 8: Review, Training, and Practice Parity
+### Phase 4: Databases, Files, Sources, And Search
 
-- Rebuild Opening Review, Mistake Review, Puzzle Training, Practice Bot, Blindfold, daily goals, SRS, review migrations, time-management training, and large-deck responsiveness.
-- Preserve the user data outcomes: saved decks, attempts, annotations, evidence, source metadata, due queues, progress summaries, and export/report options.
-- Add independent training fixtures and migration tests.
+**Goal:** make the app a serious local chess workstation before layering advanced workflows.
 
-### Phase 9: Files, Online Data, Studies, and Sync Parity
+- Implement local database creation/import/export, database folders, Files folders, linked Files/database exports, pinned/archived/manual order behavior, metadata-first scans, and PDF/report visibility.
+- Implement header search, current-position search, opening statistics, source filters, result perspective, player/source-side attribution, recent sorting, WDL bars, and large-database cancellation/progress.
+- Import owner-authored search/index/cache code heavily where provenance permits, adapting it to the fresh schema and names.
+- Add source selectors for local databases, generated web exports, online references, studies, and account databases.
 
-- Rebuild Files, database folders, linked file/database exports, online imports, online auto-updates, Lichess Study import/update/sync, hosted-library generation, and source identity persistence.
-- Add provider-specific terms/licence review before enabling each online adapter.
-- Verify dedupe, skipped-game reporting, clock/comment preservation, database export/import, and moved-source recovery.
+**Done when:** local database research, Files organization, import/export, and opening table workflows can replace the fork for normal desktop use.
 
-### Phase 10: Phone/Web Companion Parity
+### Phase 5: Owner Feature Import - Research And Planning
 
-- Rebuild the browser/PWA companion with no eager desktop runtime imports.
-- Mirror the desktop board, files, database, prep, engine, moves, source-picker, hosted-library, and import workflows at phone scale.
-- Keep static publishing as part of done criteria for every phone-facing change and document any deployment failure.
+**Goal:** bring across the owner-authored research features that distinguish the fork.
 
-### Phase 11: Full Parity Audit and Release Hardening
+- Import/adapt owner-authored two-source comparison, Plan Explorer, engine plans, setup/template clustering, pawn-structure trajectory, hover previews, pinned/automatic arrows, source preferences, and board-piece route shortcuts.
+- Preserve behavior and evidence while refreshing public names, final styling, and assets.
+- Verify large-source cancellation, sample-size reporting, WDL/result bars, source provenance, and no-stale-result behavior.
 
-- Convert the current `agents.md` product map and recent feature inventory into a final parity checklist.
-- Mark every workflow implemented, intentionally redesigned, deferred, legally blocked, or removed with explicit owner approval.
-- Run licence scanning, dependency review, clean-room design-log review, data migration checks, packaging tests, and manual/legal review before commercial release.
+**Done when:** source comparison, plan exploration, engine plans, structures, and visual planning tools reach behavioral parity with the fork.
+
+### Phase 6: Owner Feature Import - Prep And Coach
+
+**Goal:** recreate the guided preparation and explanation workflows that are now central to the product.
+
+- Import/adapt owner-authored Prep, strength scoring, Smart/Practical/Engine modes, after-prep projection, prep builder, game-plan briefs, coach-report evidence, source defaults, import drawers, and compact under-board prep surfaces.
+- Recreate AI Coach with legal-line validation, context selection, evidence packets, model/CLI bridge options, progress UI, app-rendered formatting, and failure-tolerant unsupported-line cleanup.
+- Preserve engine-safety gates, CP-drop limits, sparse-line behavior, progressive row resolution, player/general modes, and saved settings.
+- Keep opponent-prep data workflows in scope: per-player folders/databases, online account research, canonical-name audits, dedupe, skipped-game reporting, latest-game reporting, and style/report outputs.
+
+**Done when:** opponent prep, general prep, coach reports, and conversational Coach can replace the fork for tournament preparation and analysis explanations.
+
+### Phase 7: Owner Feature Import - Review, Training, And Play
+
+**Goal:** bring across all practice loops and user-progress data.
+
+- Import/adapt owner-authored Opening Review, Mistake Review, Puzzle Training, Practice Bot, Blindfold, daily goals, SRS, time-management review, deck migrations, source evidence, reveal controls, and large-deck responsiveness.
+- Preserve saved decks, attempts, annotations, evidence, due queues, progress summaries, selected-game review creation, and online/local scan outputs.
+- Recreate practice bot and managed-engine support with licensing/distribution review for Maia/LC0 or alternatives.
+- Verify that attempted moves, saved practice trees, annotations, review evidence, and daily progress survive app restarts and source moves.
+
+**Done when:** training and review behavior reaches full parity, including saved-data survival and large-deck responsiveness.
+
+### Phase 8: Online Data, Studies, Sync, And Phone/Web Companion
+
+**Goal:** restore cross-device and online-source workflows.
+
+- Implement Lichess/Chess.com imports, account/token handling, online game picker, selected-game analysis/review, paging, auto-updates, import summaries, dedupe, clock/comment preservation, and moved-source recovery.
+- Implement Lichess Study import/update/sync, source-order preservation, chapter/study metadata, and protection against mixing account games into study databases.
+- Rebuild the browser/PWA companion without eager desktop runtime imports, including board, files, moves, engine, database, prep, hosted-library imports, source pickers, and compact phone layouts.
+- Recreate hosted-library build/publish flows, manifests, position indexes, and static publishing as done criteria for phone-facing changes.
+
+**Done when:** desktop and phone workflows stay in sync, online data imports are reliable, and phone/PWA parity is no longer dependent on the old fork.
+
+### Phase 9: Polish, Packaging, Migration, And Commercial Readiness
+
+**Goal:** turn the parity product into a shippable proprietary application.
+
+- Complete original branding/assets/copy, accessibility, responsive layout hardening, crash recovery, backup/restore, settings completeness, onboarding, shortcut help, and packaging/signing.
+- Add migration/import tools for user-owned data where legally and technically safe, using fresh schemas and explicit provenance notes.
+- Run dependency licence scanning, online-service terms review, engine distribution review, manual/legal review, and clean-room design-log review.
+- Build performance benchmarks for large databases, imports, review decks, phone hosted-library imports, and engine/prep workloads.
+
+**Done when:** the app is installable, visually distinct, commercially reviewable, and ready for owner beta use.
+
+### Phase 10: Full Parity Audit And Release Gate
+
+**Goal:** prove the new product can replace the fork.
+
+- Walk the final parity checklist from `agents.md` and mark every workflow implemented, intentionally redesigned, deferred with owner-approved reason, legally blocked, or missing.
+- Confirm every copied file/hunk came from an approved owner-delta bundle or was rewritten independently.
+- Confirm no GPL/native base source, schema, generated API, UI copy, assets, build scripts, or fixtures were imported.
+- Run focused automated/manual verification for desktop, phone/web, prep, coach, review/training, online imports, files/databases, reports, settings, packaging, and data survival.
+
+**Done when:** there are no release-blocking parity gaps, contamination risks, licence blockers, or unverified critical data paths.
 
 ## 12. Acceptance Criteria
 
@@ -851,8 +889,8 @@ The early phases build an independently owned chess workstation foundation. They
 - The proprietary rebuild lives in a separate git repository with independent history, independent remotes, and no relationship to this GPL-derived repository other than documented import of approved owner-owned material.
 - The new repository uses the same broad language/platform architecture for transfer ease while retaining independently written file layout, module boundaries, command names, schema, generated bindings, UI copy, styling, and assets.
 - The new repository has no copied GPL base source, file structure, generated code, schemas, migrations, fixtures, UI copy, comments, documentation, assets, or build scripts.
-- Any copied material comes only from the owner-attested past-week reusable contribution set, from an audited delta bundle, with provenance notes.
-- New owner-created files from the past-week range are identified separately from owner-authored hunks inside modified GPL files.
+- Any copied material comes only from audited owner-attested reusable-delta bundles, with provenance notes.
+- New owner-created files are identified separately from owner-authored hunks or regions inside modified GPL files.
 - Modified GPL files are not copied wholesale unless manual/legal review confirms the entire file is owner-owned or otherwise reusable.
 - Implementation agents used only this plan, clean-room specs, public protocols/docs, and the approved owner-authored reusable-delta bundle, not the old GPL repository as an open-ended reference.
 - All dependency licences are recorded, reviewed, and compatible with the intended proprietary distribution, or explicitly marked for legal review.
@@ -867,11 +905,12 @@ The early phases build an independently owned chess workstation foundation. They
 | Risk | Impact | Mitigation |
 | --- | --- | --- |
 | Rebuild accidentally occurs inside the GPL-derived repository | New proprietary work may inherit contaminated history, paths, configs, or accidental copies. | Use a physically separate `git init` repository; keep this repo read-only after extraction; never add it as a remote/submodule/dependency; run implementation sessions from the new repo root only. |
-| Accidental GPL contamination | Proprietary release may be compromised. | Start fresh repo; remove old repo from active workspace; forbid source-level reference; keep clean-room design log; review diffs before release. |
-| Confusing stack parity with code copying | Same languages and high-level architecture could lead contributors to recreate GPL structure too closely. | Allow Tauri/Rust/TypeScript/React/SQLite parity, but require fresh file layout, names, APIs, schemas, generated bindings, UI copy, styling, and docs. |
+| Accidental GPL contamination | Proprietary release may be compromised. | Start fresh repo; remove old repo from active workspace after extraction; forbid open-ended source reference during implementation; keep clean-room design log; review diffs before release. |
+| Confusing owner-code reuse with GPL-base copying | Useful owner-authored feature code may be copied together with surrounding GPL/native base code. | Use full-history extraction, upstream comparison, tight hunk review, reusable-delta manifests, and manual/legal review for unclear regions. |
+| Confusing stack parity with code copying | Same languages and high-level architecture could lead contributors to recreate GPL structure too closely. | Allow Tauri/Rust/TypeScript/React/SQLite parity and owner feature reuse, but require fresh base layout, schemas, generated bindings, final UI copy, styling, and assets. |
 | Over-reliance on old architecture | New app may be argued to be structurally derivative or inherit old limitations. | Keep only broad architectural parity; use domain-first boundaries in this plan; rename concepts where not generic; document independent alternatives considered. |
-| Hidden copied UI text or assets | Licence and branding risk. | Create original copy deck, icons, themes, sounds, piece assets, and screenshots; audit translations and resource folders. |
-| Distinctive names copied into APIs | Internal structure may reveal old implementation influence. | Use new names for modules, commands, types, state keys, generated bindings, and database tables. |
+| Hidden copied UI text or assets | Licence and branding risk. | Create original copy deck, icons, themes, sounds, piece assets, and screenshots; audit translations and resource folders; keep only approved owner-created assets. |
+| Distinctive GPL/native names copied into APIs | Internal structure may reveal old implementation influence. | Use new names for base modules, commands, types, state keys, generated bindings, and database tables; keep owner-authored feature names only when reviewed and useful. |
 | GPL/AGPL dependency accidentally introduced | Distribution obligations may conflict with proprietary goal. | Use licence scanner; require dependency approval; avoid GPL/AGPL unless manually/legal reviewed. |
 | Stockfish distribution complexity | Bundling GPL engine may trigger obligations. | Prefer user-supplied engine path; document optional external integration; obtain legal advice before bundling any engine. |
 | Online service terms violation | Imports or cloud lookups may breach provider terms. | Review API terms; implement rate limits; provide user authentication where required; add service health and backoff. |
@@ -883,7 +922,7 @@ The early phases build an independently owned chess workstation foundation. They
 | Position indexing correctness | Opening statistics may be wrong around transpositions or variants. | Define position keys carefully; test with independent examples; keep exact and transposition modes separate. |
 | Packaging complexity | Commercial release delayed by signing, updates, or platform quirks. | Prototype packaging by Phase 2; add CI for target platforms; document release steps. |
 | Privacy and token storage | Account integrations may expose user data. | Use OS credential storage where possible; encrypt local tokens; minimize stored personal data; provide disconnect/delete options. |
-| Parity goal mistaken for copying permission | A "1:1 clone" instruction may cause source, schema, UI, or asset copying. | Define parity as behavior only; keep clean-room specs, owner-delta bundles, and code-review gates; require original naming, schemas, copy, styling, and assets. |
+| Parity goal mistaken for broad copying permission | A "1:1 clone" instruction may cause GPL/native source, schema, UI, or asset copying. | Define parity as behavior plus approved owner-code reuse; keep reusable-delta bundles and code-review gates; require original base naming, schemas, copy, styling, and assets. |
 | Stale parity specification | The fork continues to gain features after this document is copied into the new repo. | Maintain a dated parity checklist sourced from `agents.md`; periodically export neutral behavior addenda; require owner approval for deferred features. |
 | Feature-complete scope creep | Full parity can delay first usable proprietary builds. | Ship staged internal milestones, but label them foundation/MVP only until the full parity audit is complete. |
 | Phone companion deployment drift | Desktop changes may not reach the hosted phone/PWA workflow. | Treat static web publish or its successor as done criteria for phone-facing changes and verify hosted-library manifests/imports. |
@@ -893,16 +932,16 @@ The early phases build an independently owned chess workstation foundation. They
 
 Before implementation starts:
 
-- [ ] Record the owner's attestation that the past-week commits are owner-owned and reusable.
-- [ ] Create a reusable-delta bundle from commits `42732755` through `6c9de0d8`, plus documentation commit `4c34803e` if needed.
-- [ ] Classify bundled items as new owner file, owner hunk from modified GPL file, owner asset, owner test, generated from owner-owned input, or needs manual/legal review.
-- [ ] For modified GPL files, extract only owner-authored hunks or rewrite from the behavioral spec.
+- [ ] Record the owner's attestation that all non-native fork functionality was owner-added and is intended for heavy reuse where provenance confirms it.
+- [ ] Compare the fork against the original En Croissant baseline and inspect the full git history to identify owner-created files, owner-authored feature hunks, owner tests, owner docs/scripts/prompts, generated owner outputs, native GPL/base code, and uncleared third-party material.
+- [ ] Create reusable-delta bundles from the initial commits `42732755` through `6c9de0d8`, documentation commit `4c34803e`, and later owner-authored feature ranges identified by full-history extraction.
+- [ ] Classify bundled items as new owner file, owner hunk from modified GPL file, owner feature region, owner asset, owner test, generated from owner-owned input, or needs manual/legal review.
+- [ ] For modified GPL files, extract only owner-authored hunks/regions or rewrite the behavior from the behavioral spec.
 - [ ] Export the current `agents.md` product map into a behavior-only parity checklist with dated source coverage.
-- [ ] For features added after the original April owner-attested range, either create new owner-attested reusable-delta bundles or mark them for independent reimplementation from neutral specs.
-- [ ] Confirm that "1:1 clone" is written in implementation prompts as "1:1 behavioral replacement with original implementation and design."
+- [ ] Confirm that "1:1 clone" is written in implementation prompts as "1:1 behavioral replacement with heavy approved owner-code reuse, original base implementation, and original product design."
 - [ ] Create a physically separate repository for the proprietary rebuild; do not fork, clone, or rename this repository.
 - [ ] Confirm the new repository has its own `.git` directory, independent first commit, independent remote, and no connection to this repository's history.
-- [ ] Copy only this plan and the approved owner-delta bundle into the new repository.
+- [ ] Copy only this plan, the neutral parity checklist, design direction brief, and approved owner-delta bundles into the new repository.
 - [ ] Remove the old GPL repository from the active implementation workspace after the controlled delta extraction is complete.
 - [ ] Keep the old repository closed/read-only during implementation sessions unless a new owner-reviewed delta/spec export is needed.
 - [ ] Use only this plan, later clean-room specifications, public documentation, and the reviewed owner-delta bundle as implementation references.
@@ -911,8 +950,8 @@ Before implementation starts:
 - [ ] Verify every direct and transitive dependency licence.
 - [ ] Avoid GPL/AGPL dependencies unless deliberately chosen after legal review.
 - [ ] Decide whether engines are user-supplied, separately downloaded, or bundled; get legal review before bundling GPL engines.
-- [ ] Replace all branding, names, logos, icons, screenshots, sounds, board themes, and piece sets.
-- [ ] Write original UI copy and original documentation.
+- [ ] Replace all GPL/native branding, names, logos, icons, screenshots, sounds, board themes, and piece sets with original or rights-cleared proprietary assets.
+- [ ] Write original final UI copy and original public documentation, while allowing approved owner-authored docs/prompts/specs to be reused internally.
 - [ ] Avoid copying UI text, empty states, tooltips, error messages, translation strings, or settings labels.
 - [ ] Design a fresh folder structure and module naming system.
 - [ ] Design a fresh database schema and migration strategy.
@@ -925,7 +964,13 @@ Before implementation starts:
 
 ## 15. Implementation Prompt Templates
 
-Use these prompts later in the fresh repository. Each prompt forbids open-ended reference to the old GPL repository. If a task should reuse owner-authored work, provide Codex with a reviewed owner-authored reusable-delta bundle and explicitly say which files or hunks are approved to copy. When asking for full parity, always say "behavioral replacement" rather than "port" or "copy."
+Use these prompts later in the fresh repository. Each prompt forbids open-ended reference to the old GPL repository. If a task should reuse owner-authored work, provide Codex with a reviewed owner-authored reusable-delta bundle and explicitly say which files or hunks are approved to copy. When asking for full parity, say "behavioral replacement with heavy approved owner-code reuse" rather than "port the GPL app."
+
+### Extract owner-authored reusable code
+
+```text
+In the GPL-derived extraction workspace, inspect the fork's full git history and compare it against the original En Croissant baseline to identify all owner-authored non-native feature code, tests, docs, scripts, prompts, assets, and generated outputs. Use git log, git show, git diff, git blame, upstream comparisons, and manual review. Build reusable-delta bundles with a manifest classifying each item as owner-created file, owner hunk from modified GPL file, owner feature region, owner asset, owner test, generated from owner-owned input, third-party needs review, or GPL/native base do not copy. Do not implement proprietary product code in this workspace.
+```
 
 ### Create the neutral parity checklist
 
@@ -936,19 +981,19 @@ Create a behavior-only parity checklist for the proprietary chess workstation fr
 ### Create the separate proprietary repository
 
 ```text
-Create a brand-new proprietary repository for a feature-complete behavioral replacement of the current chess workstation. Do not fork, clone, rename, or continue from the old GPL-derived repository. Initialize independent git history. Use the same broad stack for transfer ease: Tauri 2, Rust, TypeScript, React, Vite, and SQLite, subject to licence review. Add only original project scaffolding, import this plan and the neutral parity checklist as specification documents, and leave any approved owner-delta bundle as a reviewed input directory. Do not copy old source trees, build configs, generated files, assets, lockfiles, CI files, UI text, database schemas, or git history.
+Create a brand-new proprietary repository for a feature-complete behavioral replacement of the current chess workstation with heavy approved owner-code reuse. Do not fork, clone, rename, or continue from the old GPL-derived repository. Initialize independent git history. Use the same broad stack for transfer ease: Tauri 2, Rust, TypeScript, React, Vite, and SQLite, subject to licence review. Add only original project scaffolding, import this plan, the neutral parity checklist, the design direction brief, and approved owner-delta bundles as reviewed inputs. Do not copy GPL/native source trees, build configs, generated files, assets, lockfiles, CI files, UI text, database schemas, or git history.
 ```
 
 ### Import owner-owned reusable delta
 
 ```text
-Import the approved owner-authored reusable code bundle into this separate proprietary repository. Do not open, inspect, or copy from the old GPL repository. Only use the files/hunks/assets/tests included in the approved bundle, which are owner-attested as created in the past-week commits. Preserve useful logic where it fits the new architecture, rename APIs and modules as needed for this new codebase, and do not import GPL base files, old folder structure, old UI text, old schemas, or generated files that were derived from GPL sources unless separately approved.
+Import the approved owner-authored reusable code bundles into this separate proprietary repository. Do not open, inspect, or copy from the old GPL repository. Only use the files/hunks/regions/assets/tests/docs/scripts included in the approved bundles. Preserve useful owner-written logic heavily where it fits the new architecture, adapt APIs and modules as needed for this new codebase, and do not import GPL/native base files, old folder structure, old UI text, old schemas, or generated files that were derived from GPL sources unless separately approved.
 ```
 
 ### Create the initial app skeleton
 
 ```text
-Create the initial desktop app skeleton for a proprietary chess workstation in this separate fresh repository. Use the same broad architecture class as the current app for transfer ease: Tauri desktop shell, Rust native service layer, TypeScript/React front end, Vite build, SQLite-ready persistence layer, generated front-end/back-end bindings from fresh definitions, and background job/event plumbing. Do not reference, inspect, or copy any old GPL repository, source files, folder structure, UI text, assets, schemas, generated code, tests, or implementation details. If an approved owner-authored reusable-delta bundle is provided, use only the approved items from that bundle. Use this repository's plan, the neutral parity checklist, and public documentation for selected dependencies. Set up original project structure, original placeholder branding, licence notes, and dependency licence tracking. Do not implement chess features yet.
+Create the initial desktop app skeleton for a proprietary chess workstation in this separate fresh repository. Use the same broad architecture class as the current app for transfer ease: Tauri desktop shell, Rust native service layer, TypeScript/React front end, Vite build, SQLite-ready persistence layer, generated front-end/back-end bindings from fresh definitions, and background job/event plumbing. Do not reference, inspect, or copy any old GPL repository, GPL/native source files, folder structure, UI text, assets, schemas, generated code, tests, or implementation details. If approved owner-authored reusable-delta bundles are provided, use only the approved items from those bundles. Use this repository's plan, the neutral parity checklist, the design direction brief, and public documentation for selected dependencies. Set up original project structure, original placeholder branding, licence notes, and dependency licence tracking. Do not implement chess features yet.
 ```
 
 ### Implement the chess domain model
