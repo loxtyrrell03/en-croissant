@@ -340,6 +340,13 @@ default.
   extraction workspace to identify owner-added code; implementation in the
   fresh proprietary repo should use approved reusable-delta bundles and the
   behavior/parity specs.
+- A same-day follow-up replaced the stale April-only rebuild-plan commit
+  inventory with a current owner-authored feature-wave map through 2026-07-02.
+  The plan now explicitly captures later waves including smart prep, phone/PWA
+  parity, Files/database organization, board style behavior, online clocks and
+  live replay, AI Coach, puzzle/blindfold training, setup/structure mining,
+  local Lichess eval storage, After-prep projections, World Chess account
+  research, generated reports, and Southall/Sameera prep workflows.
 
 ## Product Map
 

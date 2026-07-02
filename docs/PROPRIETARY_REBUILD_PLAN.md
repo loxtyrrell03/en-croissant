@@ -229,6 +229,7 @@ The table above is an older baseline inventory. The proprietary replacement shou
 - Task-led home launcher for opening recent files, importing games, starting analysis, choosing review decks, launching mistake scans, seeing daily goals, and returning to active work.
 - Board-first workspace with a large resizable board, always-near annotation tools, right-side panels, under-board compact panels, detached eval/notation/controls where appropriate, saved layout preferences, and small-viewport resilience.
 - Multi-panel research model covering analysis, database, prep, plan exploration, engine views, coach, practice, structures, moves, and files without losing board context.
+- Report entry points for game analysis, move-list reports, rating/time-management reports, and generated prep/style reports should remain part of the task-led workspace, with outputs treated as user artifacts rather than hidden diagnostics.
 - Robust startup behavior on Windows, including serialized dev-session startup for the fork equivalent, self-healing dependency installation for local development, clear progress fallbacks during heavy route/chunk loads, and safe single-instance handoff.
 - App settings for board design, pieces, sounds, keybindings, trainer thresholds, engine behavior, source defaults, prep strength settings, builder settings, phone/web preferences, and layout.
 
@@ -239,6 +240,7 @@ The table above is an older baseline inventory. The proprietary replacement shou
 - Board clocks and move think-time chips should display when online imports provide clock or timestamp data, with live replay that can animate recorded move timing.
 - Analysis and training board states must preserve attempted moves, expected lines, variation context, and saved annotation edits instead of collapsing back into transient previews.
 - Blindfold-style board modes should be supported for both puzzle/training use and play/trainer-bot use, with explicit visibility/reveal controls and engine move reporting.
+- Board style choices should preserve the behavior of the fork's clean/default and chess.com-inspired modes, including sound/selection behavior where useful, but proprietary releases must use original or rights-cleared board, piece, and sound assets.
 
 #### Analysis, Engines, And Cloud Evals
 
@@ -250,20 +252,22 @@ The table above is an older baseline inventory. The proprietary replacement shou
 
 #### Databases, Sources, Files, And Export
 
-- Local databases, database folders, file folders, pinned/archived/manual-order file organization, lazy folder loading, metadata-first scans, PDF/report visibility, and hidden generated artifact folders.
+- Local databases, database folders, file folders, rename actions, pinned/archived/manual-order file organization, lazy folder loading, metadata-first scans, PDF/report visibility, and hidden generated artifact folders.
 - Database import from PGN, compressed PGN, and supported database files; database export into Files as one PGN per game; analysis-board save-to-files; linked Files folders that sync one-game PGNs from database changes.
 - Search by headers, exact position, transposition-compatible modes where designed, player/event metadata, dates, ratings, results, time controls, and current-position opening statistics.
 - Large-database responsiveness with cancellable request ids, stale-result protection, mmap or equivalent warm caches, progressive loading, partial results, and bounded memory.
 - Opening tables with sortable columns, compact mode, recent-move sorting, WDL bars, result-perspective correctness, player/source-side attribution, engine-only CP strength, blended strength, and source default controls.
 - Source selectors for local databases, hosted database folders, Lichess All, Lichess Masters, study databases, generated web exports, and online account databases, with stable persisted identities and graceful fallback when sources move.
+- Files and database views should support source-game jumps, direct game/database export shortcuts, in-app PDF previews, generated report browsing, linked-folder dedupe, and moved/renamed source recovery.
 
 #### Online Games, Studies, And Account Data
 
 - Lichess and Chess.com username imports into local databases with progress, date/count/range options, deduplication, import summaries, token reuse where appropriate, and provider-specific error handling.
 - Online game picker with provider tabs, account/search flows, selected-game analysis, selected-game review creation, and paging beyond the first recent slice.
+- Online games should preserve available clock/timestamp comments, time controls, move think times, board clocks, live replay controls, and clock-data enrichment during refresh.
 - Auto-update metadata for online game databases and review decks, including moved database detection, PGN timestamp normalization, stable source identity, and explicit skip/error summaries.
 - Lichess Study import as a local database with source-order preservation, chapter/study metadata, refresh controls, optional two-way sync, ordering repair, and protection against appending unrelated account games into study databases.
-- Online account and external-service imports should be behind reviewed adapters, with terms-of-service notes, rate limits, source labels, and user-visible confidence/provenance.
+- Online account and external-service imports, including World Chess / FIDE Online Arena where useful for opponent prep, should be behind reviewed adapters, with terms-of-service notes, rate limits, source labels, exact-identity checks, and user-visible confidence/provenance.
 
 #### Prep, Opponent Research, And Strength Models
 
@@ -273,7 +277,8 @@ The table above is an older baseline inventory. The proprietary replacement shou
 - `After prep` projection is in scope for both opponent-specific and general prep sources: candidate rows and opponent/source rows should project nearby prep-side continuations, use local evals only when enabled, avoid external eval API calls, progressively resolve rows, and keep lower/identical projections hidden except when sparse local-eval evidence is the useful signal.
 - Prep builder should create a compact game-plan brief, priority-led queue, focused reply expansion for shorter runs, deep mode for broader coverage, hard CP safety enforcement, and a separate coach-report evidence pass that does not require building a tree.
 - Plan Coach integration for prep should pass only supplied safe-route evidence, forbid recommending excluded or engine-unsafe alternatives, and distinguish normal strength, WDL/game share, local-eval CP/loss/source, after-prep projection, and no-answer states.
-- Opponent prep data workflows should support per-player folders/databases, online account research, OTB and online source separation, canonical name audits, duplicate detection, skipped/malformed PGN reporting, latest-game reporting, style/report outputs, and app-side database organization by event/player.
+- Opponent prep data workflows should support per-player folders/databases, online account research, OTB and online source separation, source-game jumps, straight-line and venom-style prep finders, canonical name audits, duplicate detection, skipped/malformed PGN reporting, latest-game reporting, style/report outputs, and app-side database organization by event/player.
+- Account research should include Chess.com, Lichess, World Chess/FIDE Online Arena, public event/broadcast sources, club/member clues, rating plausibility, FIDE/ECF identity checks, and explicit confidence labels before importing online account games.
 
 #### AI Coach
 
@@ -282,6 +287,7 @@ The table above is an older baseline inventory. The proprietary replacement shou
 - A planner/pro model split or equivalent staged reasoning pipeline should decide context scope, gather facts, and produce final answers, while invalid or unsupported engine lines are repaired or stripped rather than breaking the UI.
 - Coach must answer the user's actual question, keep chess-fact scaffolding internal, avoid hallucinated illegal lines, distinguish conversational follow-ups from phase-review tasks, and interpret engine lines rather than merely quoting evals.
 - Local prompt/evaluation tooling, hidden test prompts, style evaluation reports, and lesson/prompt artifacts should be treated as owner-authored material only if separately attested before copying.
+- Coach-adjacent report workflows should include move-list game reports, style reports, rating trajectory reports, and time-management reports where they are part of the user's current analysis workflow, with generated artifacts clearly separated from shippable product assets.
 
 #### Opening Review, Mistake Review, And Daily Training
 
@@ -294,7 +300,7 @@ The table above is an older baseline inventory. The proprietary replacement shou
 #### Puzzle, Bot, Blindfold, And Practice Modes
 
 - Puzzle training should include train/stats/SRS panels, import/migration safety, attempt summaries, dashboard/progress export, explicit start/next flows, latency-tolerant transitions, and blindfold tactics mode.
-- Practice bot should support setup profiles, engine-backed opponents, managed Maia/LC0 where legally/distribution-wise appropriate, FIDE-style strength selection, clock pacing, move delays, and engine fallback.
+- Practice bot should support setup profiles, engine-backed opponents, managed Maia/LC0 or proprietary alternatives where legally/distribution-wise appropriate, FIDE-style strength selection, calibrated human-style time usage, clock pacing, move delays, and engine fallback.
 - Blindfold trainer/play modes should support library previews, compact engine panels, move announcements, latest-engine-move display, reveal/visibility controls, and source naming that stays generic/original.
 
 #### Plan Explorer, Engine Plans, And Structures
@@ -322,78 +328,39 @@ The table above is an older baseline inventory. The proprietary replacement shou
 
 The following specifications preserve the desired behavior and identify owner-added code that may be copied into the proprietary rebuild after provenance review. The "Current reference location" column is for private owner review and extraction. Implementation agents in the fresh proprietary repo should use reviewed reusable-delta bundles rather than browsing the old GPL repository.
 
-### Past-Week Owner-Added Feature Map
+### Current Owner-Authored Feature Wave Map
 
-The table below summarizes the first reviewed owner-added range from 2026-04-24 through 2026-04-27. It is not the full intended reuse set. Full-history extraction should add later owner-authored features to additional bundles. "May copy" means copy the owner-authored code/assets/tests from the relevant commits after provenance review; it does not mean copy unmodified GPL base code surrounding a modified hunk.
+This inventory supersedes the old April-only "past week" list. It summarizes
+the reusable owner-authored feature waves currently visible in branch history
+through 2026-07-02. Exact file and hunk boundaries still require Phase 0
+provenance extraction against the original En Croissant baseline before code is
+copied into a proprietary repository.
 
-| Owner-added feature area | User-facing feature added | Parts the owner added in the past-week commits | Reuse guidance |
+| Date range / anchor commits | Owner-added feature wave | User-facing scope to preserve | Reuse guidance |
 | --- | --- | --- | --- |
-| Fork/session scaffolding and safe launch helpers | Local fork identity, safer development launch, backup-oriented startup helpers, and session notes. | Package/app metadata changes, local launch scripts, fork icon asset, session changelog, verification artifacts. | May copy owner-created scripts/docs/assets after asset rights review; do not copy GPL packaging files wholesale. |
-| Database comparison workspace | Compare two opening/reference sources for the same position. | Compare tab, side-by-side source panels, local and online source selection, compact opening tables, sorting, saved defaults, hover previews, click-to-load moves. | May copy owner-created comparison components/utilities or hunks; redesign route/module names in the new app. |
-| Online opening/reference sources | Lichess All, Lichess Masters, and master-game style reference sources in research views. | Source adapters, option panels, source metadata, normalized source-selection behavior. | May copy owner-authored adapters only after API terms review; keep service terms/licence notes. |
-| Database search performance | Faster exact-position lookup and more responsive large database behavior. | Position occurrence index work, mmap/cache behavior, cancellable request ids, stale request protection, large-database sampling caps, validation tolerance for displayable positions. | May copy owner-authored algorithms/hunks after separating them from old storage code; fresh schema/index names still required unless copied as owner-authored new files. |
-| Plan Explorer | Show common piece routes and pawn plans from reference continuations. | Plan extraction, route grouping, side filters, ply controls, result summaries, hover previews, pinned arrows, auto arrows, keyboard/mouse board shortcut, online plan sources. | May copy owner-authored plan-explorer code/tests; consider renaming public APIs and UI labels for the proprietary product. |
-| Engine plan exploration and move ranking | Use engine output or reference data to rank plans/moves and explain candidate choices. | Engine-plan panel, route/move ranking utilities, tests, integration with board overlays. | May copy owner-authored utilities and tests after isolating them from old panel infrastructure. |
-| Repertoire gaps and opening health | Find missing or weak repertoire coverage from databases and online sources. | Gaps tab, scan controls, urgency scoring, orientation-aware attribution, date filters, engine/cloud validation metadata, bulk save, export/training actions. | May copy owner-created scanner code/hunks and tests; if old database commands are intertwined, rehost logic into fresh query services. |
-| Opponent preparation and own-repertoire review | Analyze opponent games or personal games against preparation needs. | Two review modes, color-aware scans, result/recency/frequency prioritization, clearer evidence fields, saved review actions. | May copy owner-authored ranking and workflow code; write new UI copy for the proprietary app unless the copy is owner-confirmed original. |
-| Opening Review workspace | Turn analysis findings into reviewable opening decks. | Home entry point, full review workspace, deck creation/merge/delete, card editing, correct-move overrides, saved notes/arrows/annotations, backward compatibility for owner-created cards. | May copy owner-created review workspace and utilities; new storage schema should remain freshly designed unless copied schema elements are verified owner-authored. |
-| Opening Review practice | Practice saved cards with due/full-deck modes and post-attempt evidence. | Spaced-repetition practice, full-deck practice, attempt summaries, evidence after attempts, alternative-good-move feedback, review rating prompts, board-played move overrides. | May copy owner-authored practice logic/tests; verify scheduler dependency licence. |
-| Mistake trainer workflow | Train from generated or imported mistakes in a board-first practice flow. | Mistake review training workflow, reveal controls, engine dock, keyboard shortcuts, game-context placement, playback/resizing fixes, attempt summary fixes, session screenshots/artifacts. | May copy owner-created trainer code and tests; screenshots should remain private design references unless cleared for product use. |
-| Cloud and local engine validation | Combine fast cloud checks with local Stockfish analysis and fallback behavior. | ChessDB/Lichess cloud validation usage, Lichess cloud eval display in analysis, local Stockfish start without cloud delay, fallback restoration, UI contention reduction. | May copy owner-authored orchestration/hunks; respect API terms and do not bundle GPL engines without review. |
-| Engine dock and shortcut UX | Keep engine controls available during practice/review without overloading the main panel. | Docked engine panel, extracted engine panel content, keyboard shortcut helper, shortcut hint integration. | May copy owner-created components; create original styling and labels in the new app. |
-| Board overlays and responsive layout | More usable board, panels, and annotation workflow. | Resizable board/right-panel layout, responsive scaling, hidden resize handles, persistent annotation tools, transient overlay brushes, plan arrows, board settings. | May copy owner-authored layout/overlay code where separable; avoid copying old CSS/theme material. |
-| Database/review polish and perspective fixes | More accurate result perspectives and evidence display. | WDL perspective fixes for black/side-to-move, move-side review boards, opening stat name caching, summary bars, saved database move evidence. | May copy owner-authored fixes/tests; use fresh UI copy and data labels. |
-| Online game import and auto-update | Import online games into local databases and keep sources current. | Lichess/Chess.com username import, progress reporting, token reuse, auto-update metadata, shared online game source helpers. | May copy owner-authored import/update code after API terms review and token-storage redesign. |
-| File organizer improvements | Better root drag behavior and deselection in the file/workspace browser. | Directory tree drag/deselect behavior and related CSS/UI hunks. | May copy owner-authored hunks if useful; fresh app should design its own workspace/file model. |
-| Test coverage for custom features | Regression tests for plan exploration, opening health, move health, opening review, review practice, and mistake review. | Owner-created test files and expectations for the new feature set. | May copy tests when fixtures/expected data are owner-authored; otherwise rewrite cases from behavior. |
-| Proprietary rebuild planning docs | Plan for a proprietary rebuild and implementation prompts. | This Markdown file and future plan updates. | May copy directly as owner-authored documentation. |
+| 2026-04-24 to 2026-04-27, `42732755` through `6c9de0d8`, plus docs `4c34803e` | First owner-feature foundation | Compare, Plan Explorer, database source workflows, opening health/repertoire gaps, review decks/practice, Mistake Review, cloud/local eval validation, responsive board layout, engine dock, hover previews, file organizer polish, and rebuild planning docs. | Known starting owner-delta range. Copy owner-authored files/hunks/tests/docs after provenance review; do not copy surrounding GPL/native base files. |
+| 2026-04-28 to 2026-05-04 | Board/workspace, online data, review, home, and prep expansion | Better engine/cloud interaction, merged online databases, online import progress, daily Opening Review, latest-game analysis, online game picker, provider tabs, Lichess Study import/update, home launcher, daily goals, time-management trainer, practice bot, managed Maia/human trainer work, startup/launcher reliability, opening plan gaps, opponent prep builder, SRS feedback, and report/stat benchmark artifacts. | Bundle owner-authored workflow code and tests by feature family. Treat launcher/package changes and generated reports/assets as separate review classes. |
+| 2026-05-07 to 2026-05-16 | Smart prep, notation, review performance, live clocks, Files export, and pawn structures | General prep sources, smart prep builder and scoring, prep builder controls/depth/play-rate thresholds, practical prep ranking, under-board notation/annotation layout, review startup and transition performance, engine lifecycle hardening, online game clocks/time controls/live replay, file rename/import/export shortcuts, analysis save shortcuts, Lichess Study reload, pawn-structure detector and trajectory panel, online game picker pagination, and mistake review SRS/readiness fixes. | High-value owner code for Prep, review, clocks, Files, and structures should be reused heavily. Replace any copied Chess.com-style assets/sounds unless rights-cleared; preserve only behavior unless asset provenance is approved. |
+| 2026-05-17 to 2026-05-29 | Database/files organization, under-board Database/Prep, prep strength, opponent-prep workflow, board style, and PDF/report surfaces | Large study/deck stall fixes, default opponent prep player/source/min-games, online player import in Prep, under-board Database and Prep modes, database folders and folder-first pickers, sortable prep columns, rebuilt strength scoring and persisted settings, database eval/strength columns, linked database-to-Files folders, lazy Files tree, pin/archive/manual ordering, Lichess Study two-way sync, opponent-prep source/account-search playbook, chess.com-inspired board style, move-list annotation action, source-game jump from prep, plan castling, in-app PDF previews, hidden render artifacts, straight-line/venom prep finders, and app/browser verification guidance. | Reuse owner-authored workflows and performance fixes. Board-style implementation needs special asset review; if assets are not clearly owner-owned/right-cleared, rebuild with original proprietary board/piece/sound assets. |
+| 2026-05-31 to 2026-06-05 | Prep data operations, puzzle backend, phone companion MVP, hosted sync, and phone parity foundation | Hayk prep refresh docs, archived file filters, durable puzzle trainer backend/workspace, puzzle feedback/start/advance fixes, Lichess Study order/dedupe fixes, notation focus mode, mobile web prep companion MVP, hosted phone prep workspace, web prep database imports, phone database source parity, phone site auto-sync, database publishing to phone site, phone prep setup/common-move/source/branch/root/strength/database/filter/game-list/sort parity, hosted database loading, stale hosted source filtering, and Tauri dev startup binary selection. | Treat phone/PWA and hosted-library code as owner-authored feature code. Keep web publishing pipeline behavior but recreate product assets/copy and avoid desktop-only eager imports in the proprietary phone app. |
+| 2026-06-06 to 2026-06-08 | AI Coach, generated lessons/reports, and coach grounding | Stockfish opening-game generator, repertoire/lesson documentation, experimental AI Coach, Gemini/AGY CLI bridge, progress logging, planner/pro split, current-FEN line validation, side-panel Coach, transcript response handling, answer formatting, reference context memory, prompt blanking, Enter-to-send behavior, whole-game scope handling, cloud root lines for prompts, clickable move paths, line-backed verdicts, chess-fact grounding, invisible fact scaffolding, follow-up anchoring, annotation-style evaluation probes, and rating/time-management report artifacts. | Reuse owner-authored Coach orchestration, prompt/evidence shaping, validators, UI, and report scripts after provenance review. Generated lessons/reports are owner artifacts but should be classified separately from shippable product assets. |
+| 2026-06-10 to 2026-06-15 | Puzzle hardening, phone UI, blindfold, setup plans, and Coach validation | Puzzle mode simplification, Elo/progress/SRS persistence, puzzle database handling, study duplicate prevention, phone overflow/layout fixes, board quick actions, phone engine panel/arrows/eval signs, compact phone rows/header/files, phone PGN variation preservation, Blindfold Maia/trainer/library/tactics modes, managed Maia preparation, blindfold reveal/input/controls/engine dock/resume/progress, analysis under-board moves density, Lichess cloud throttling, Plan Explorer setups and WDL bars, engine setup candidates, setup clustering/templates/practical blend, setup previews, review auto-update movement fixes, and castling-normalized Coach validation. | Reuse owner-authored puzzle, phone, blindfold, setup-mining, and Coach validation code. Keep Maia/LC0 engine distribution under licence review. Replace any borrowed visual/audio assets with original/right-cleared assets. |
+| 2026-06-18 to 2026-06-20 | Performance reports, event prep records, database picker hardening, prep strength cleanup, and Southall workflows | Unrated rapid/rating trajectory reports, Southall prep/account/database organization records, opponent-prep account workflow updates, database picker pinning/ordering/folder pinning/dropdown constraints, indexed position-search hardening, placeholder metadata handling, provider-labeled prep player resolution, phone prep strength scoring, split under-board state, cloud status handling, unified prep strength scoring, low-sample caps, engine-best prep scoring, Southall dedupe/style-report scripts, Southall Chess.com/Lichess imports, and prep tab stage persistence. | Treat scripts, reports, prep manifests, and workflow docs as owner-authored artifacts. For proprietary implementation, preserve data workflow behavior and reporting outputs while using fresh product storage/schema. |
+| 2026-06-22 to 2026-06-23 | Local Lichess eval store, After-prep projection, prep builder game plan, and prep Coach report | Compact local Lichess eval store/build/lookup, conditional prep line signals, candidate after-prep values, continuation lookahead, strength-based future selection, separate after-prep column, row-strength floor behavior, practical WDL lowering Smart strength, local eval data for sparse/general source projections, local-only eval lookups, progressive after-prep speedups, focused prep builder game plan, coach-report button, natural-language prep report, independent coach-report evidence pass, after-prep ranking, main-branch ranking fixes, and bounded Stockfish startup fallback. | This is core proprietary parity scope. Reuse owner-authored prep/eval code heavily, but create fresh local eval storage formats and names unless provenance confirms the whole format is owner-authored and safe. |
+| 2026-06-30 to 2026-07-01 | Sameera prep, World Chess/FIDE Online Arena workflow, and account-search expansion | Sameera Kodukula prep assets, explicit Lichess broadcast database, app-side prep folder reorganization, World Chess profile/import workflow, account-search guide expansion beyond Chess.com/Lichess, FIDE ID verification, World Chess API endpoints, and online-account database organization. | Preserve as opponent-prep data workflow requirements and reusable scripts/docs. Online-service adapters need terms review and rate-limit handling before shipping. |
+| 2026-07-02 | Proprietary rebuild plan refresh | Full behavioral clone plan, phased rebuild plan, design direction, owner-code reuse policy, and full-history provenance workflow. | May copy directly as owner-authored planning documentation. |
 
-### Past-Week Commit Inventory
+### Current Commit-History Coverage Snapshot
 
-Observed commits since 2026-04-20 on `codex/en-croissant-fork`; the actual feature work in this range is dated 2026-04-24 through 2026-04-27.
-
-| Commit | Date | Message | Owner-added feature/part |
-| --- | --- | --- | --- |
-| `42732755` | 2026-04-24 | Add plan explorer and database workflows | Initial Compare, Plan Explorer, Gaps, hover preview, local/online source, safe launch, and fork scaffolding work. |
-| `2708253f` | 2026-04-24 | Optimize database position lookups | Position occurrence indexing and exact lookup acceleration. |
-| `c7a74c3a` | 2026-04-24 | Keep large database indexes responsive | Large index cache and responsiveness improvements. |
-| `adfd2c5f` | 2026-04-24 | Make plan explorer arrows responsive | Plan arrow request ownership and side-filter responsiveness. |
-| `2b30a53d` | 2026-04-24 | Speed up plan explorer fallback scans | Sampling and cancellation improvements for fallback plan searches. |
-| `cefd3880` | 2026-04-24 | Save analysis workspace improvements | Analysis layout, compare/database/plan UI polish, online import pieces, Lichess plan source support. |
-| `d31d8bea` | 2026-04-25 | Add opening health review workflows | Opening health/gaps workflows, review workspace foundation, online auto-update, validation source handling, tests. |
-| `4b328f86` | 2026-04-25 | Move repertoire analysis into review workspace | Review workspace entry point and relocation of repertoire analysis flow. |
-| `02fed207` | 2026-04-25 | Show review line annotations in opening review | Display saved annotations inside review lines. |
-| `3b3f3337` | 2026-04-25 | Add master game tools and engine move ranking | Master/reference game tools, engine ranking, and move-health utility work. |
-| `6ea276bb` | 2026-04-25 | Add responsive panel scaling | Responsive board/panel scaling, engine plan explorer, repertoire copy, plan tests. |
-| `eaeb9f25` | 2026-04-26 | Add mistake review training workflow | Mistake review utilities, practice flow, opening review expansion, tests, home/workspace integration. |
-| `c26e0ea3` | 2026-04-26 | Add mistake trainer session artifacts | Playwright/session artifacts and screenshots for the mistake trainer workflow. |
-| `e79ad5b0` | 2026-04-26 | Fix black opening stats result mapping | Result-perspective correction for black-side review evidence. |
-| `b764521f` | 2026-04-26 | Ask for review rating on good alternatives | Practice feedback flow for acceptable alternative moves. |
-| `eeb21a12` | 2026-04-26 | Show saved database move in review evidence | Evidence panel display of stored database move context. |
-| `32316a1d` | 2026-04-26 | Clarify feedback for good review moves | More nuanced post-attempt feedback behavior. |
-| `c752f55c` | 2026-04-26 | Add opening health date filters | Date filters for opening health/review scans and persistence. |
-| `9acc5cf2` | 2026-04-26 | Fix opening health engine matching and bulk save | Engine matching and bulk-save behavior in opening health workflows. |
-| `b360f4b5` | 2026-04-26 | Prefer saved engine best move in opening review | Prefer stored validated move during review practice. |
-| `3c00cd9b` | 2026-04-26 | Cache opening stats names and add summary bars | Cached opening names and summary visualizations in review. |
-| `a345e797` | 2026-04-26 | Fix opening review board orientation | Board orientation and move-side fixes in opening review. |
-| `9eb61e47` | 2026-04-26 | Integrate Lichess cloud evals into analysis | Cloud eval source integration in the analysis display. |
-| `97baa0f9` | 2026-04-26 | Fix opening review deck perspective | Deck perspective and color handling corrections. |
-| `d9e9d485` | 2026-04-26 | Improve files root drag and deselect | File organizer drag and deselect polish. |
-| `4aa7094d` | 2026-04-26 | Use move side for opening review boards | Move-side-aware review board setup. |
-| `87c59061` | 2026-04-26 | Fix opening stats WDL perspective | WDL perspective utilities and tests. |
-| `61db2e73` | 2026-04-27 | Avoid localStorage for review deck data | Review deck persistence state improvements. |
-| `c6e77d74` | 2026-04-27 | Add mistake trainer reveal controls and engine dock | Reveal controls, docked engine panel, extracted analysis content, shortcuts. |
-| `cce28d78` | 2026-04-27 | Merge engine shortcut hint into panel | Engine shortcut hint integration. |
-| `919d15c9` | 2026-04-27 | Move mistake review game info below actions | Practice layout adjustment. |
-| `1b64912a` | 2026-04-27 | Improve mistake trainer playback and resizing | Board playback, resizing controls, settings, and supporting backend command. |
-| `42ea1570` | 2026-04-27 | Anchor mistake review game info at bottom | Practice layout anchoring. |
-| `2e5515d8` | 2026-04-27 | Hide board resize handles | Board resize-handle visibility change. |
-| `2b8d21e3` | 2026-04-27 | Fix mistake review attempt summary | Attempt summary correction. |
-| `df0ae69b` | 2026-04-27 | Start local Stockfish without cloud delay | Local engine startup path separated from cloud delay. |
-| `d07cf42d` | 2026-04-27 | Show engine plan auto arrows | Automatic engine/plan arrows and test coverage. |
-| `8dca17e2` | 2026-04-27 | Restore Lichess cloud fallback for local engines | Cloud fallback behavior when local engine path is unavailable or delayed. |
-| `4c34803e` | 2026-04-27 | Add proprietary rebuild plan | Initial rebuild plan documentation. |
-| `6c9de0d8` | 2026-04-27 | Reduce Stockfish UI contention | Stockfish process/UI contention reduction. |
+As of this update, the branch history after the original rebuild-plan commit
+contains owner-authored work on these active dates: 2026-04-27, 2026-04-28,
+2026-04-30, 2026-05-02 through 2026-05-05, 2026-05-07, 2026-05-09 through
+2026-05-11, 2026-05-14 through 2026-05-18, 2026-05-21, 2026-05-24 through
+2026-05-29, 2026-05-31, 2026-06-02 through 2026-06-15, 2026-06-18 through
+2026-06-20, 2026-06-22 through 2026-06-23, 2026-06-30, 2026-07-01, and
+2026-07-02. Phase 0 extraction should use `git log --reverse --date=short`,
+`git show`, `git diff`, `git blame`, and upstream comparison to turn these
+waves into exact reusable-delta bundles.
 
 | Neutral feature | Behavioural specification | Current reference location |
 | --- | --- | --- |
