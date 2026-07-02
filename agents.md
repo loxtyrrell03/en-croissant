@@ -347,6 +347,12 @@ default.
   live replay, AI Coach, puzzle/blindfold training, setup/structure mining,
   local Lichess eval storage, After-prep projections, World Chess account
   research, generated reports, and Southall/Sameera prep workflows.
+- A subsequent 2026-07-02 cleanup deleted the obsolete attempted rebuild at
+  `C:\Users\loxty\Desktop\Repos\proprietary-chess-workstation` so future
+  agents do not mistake it for the active proprietary base. The rebuild plan's
+  technology section now treats Tauri 2, Rust, TypeScript, React, Vite, and
+  SQLite as the required baseline stack unless the owner explicitly approves a
+  change.
 
 ## Product Map
 

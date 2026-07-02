@@ -455,11 +455,11 @@ The new architecture should be transfer-friendly and domain-first. It should use
 - Supports account linking, token storage, rate limiting, import cursors, online opening data, cloud analysis, and service health.
 - Each adapter must be reviewed for terms-of-service compliance and dependency licences.
 
-## 6. Suggested Technology Stack
+## 6. Required Technology Stack
 
-Use the same broad language/platform stack as the current app unless a specific dependency creates licence or technical risk. Prefer permissively licensed dependencies where possible. Verify licences at selection time and before release. Avoid GPL/AGPL dependencies unless deliberately chosen with legal review and a distribution strategy.
+Use the same broad language/platform stack as the current app unless the owner explicitly approves a change. This is a requirement, not just a preference, because it maximizes reuse of owner-authored feature code and reduces translation work. Prefer permissively licensed dependencies where possible. Verify licences at selection time and before release. Avoid GPL/AGPL dependencies unless deliberately chosen with legal review and a distribution strategy.
 
-Preferred baseline stack for transfer ease:
+Required baseline stack:
 
 - Desktop shell: Tauri 2.
 - Native layer: Rust.
