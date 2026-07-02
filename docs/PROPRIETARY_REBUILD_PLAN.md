@@ -1,14 +1,16 @@
-# Proprietary Clean-Room Rebuild Plan
+# Proprietary Clean-Room Behavioral Clone Plan
 
 ## 1. Executive Summary
 
-The goal is to build a proprietary chess workstation inspired by general chess-GUI concepts: interactive board analysis, PGN/FEN handling, UCI engine analysis, local chess databases, repertoire work, study organization, and training workflows.
+The goal is to build a proprietary chess workstation that is a feature-complete behavioral replacement for the current En Croissant fork as of 2026-07-02. The new product should support the same user workflows, data outcomes, import/export paths, training loops, preparation flows, web companion behavior, and verification expectations, while using an original implementation and a visibly distinct product design.
+
+This is a 1:1 behavioral clone target, not a source-code port. "1:1" means that a user can accomplish the same practical tasks with equivalent evidence, controls, saved state, and output quality. It does not mean copying GPL source, file layout, command names, database schema, generated bindings, UI text, styling, assets, screenshots, or build configuration.
 
 The GPL base of the current application must not be reused, translated, restructured, or mechanically adapted. However, the owner has attested on 2026-04-27 that everything committed to this repository during the past week is the owner's own code and assets. That owner-authored contribution set may be copied into the proprietary rebuild after it is isolated from the GPL base. This permission applies to the owner-owned delta, new owner-created files, and owner-created assets from the listed commits; it does not grant permission to copy unmodified GPL base code or third-party material with unclear rights.
 
 The proprietary rebuild should intentionally use the same broad language and platform choices as the current app to make transfer easier: a TypeScript/React front end, a Rust native back end, Tauri as the desktop shell, SQLite for local storage, UCI engine integration, and a similar board/database/engine/review product-layer split. This is architecture compatibility, not permission to copy GPL base structure or implementation.
 
-The rebuild must happen in a separate repository, not in this repository and not on top of this repository's git history. Implementation agents should work from the separate proprietary repository, this plan, later specifications, and an owner-prepared reusable-delta bundle. They should not browse the old GPL repository as an implementation reference except for a controlled owner/provenance extraction pass.
+The rebuild must happen in a separate repository, not in this repository and not on top of this repository's git history. Implementation agents should work from the separate proprietary repository, this plan, later clean-room specifications, the current product map distilled into behavior-only requirements, and owner-prepared reusable-delta bundles. They should not browse the old GPL repository as an implementation reference except for controlled owner/provenance extraction passes.
 
 This plan is not legal advice. Anything uncertain should be marked "needs manual/legal review" before commercial release.
 
@@ -65,6 +67,8 @@ Avoid descriptions such as:
 ### Owner-Attested Reusable Delta Exception
 
 The owner has stated that all work committed during the past week is their own code. For this plan, the reusable contribution range is the commits observed since 2026-04-20 on branch `codex/en-croissant-fork`, which in practice are dated 2026-04-24 through 2026-04-27 and run from `42732755` through `6c9de0d8`, plus the documentation commit `4c34803e`.
+
+Many important features were added after that original attested range. Those later features are now in scope for the 1:1 behavioral clone, but they are not automatically in scope for direct copying. Before any later code, asset, script, prompt, test, or schema fragment is copied into the proprietary rebuild, prepare a new owner-attested reusable-delta bundle for the relevant commit range and classify it with the same controls below. Until that review is complete, later work should be treated as behavior-only product requirements and reimplemented independently.
 
 Allowed reuse:
 
@@ -126,9 +130,41 @@ Not allowed alignment:
 
 Practical target: make the new repo familiar enough that owner-authored recent code can be moved with minimal conceptual translation, but different enough in file layout, naming, schema, generated APIs, styling, and documentation that GPL base code is not carried across.
 
+### 1:1 Behavioral Clone Policy
+
+The proprietary product target is a complete behavioral replacement for the current fork, not a reduced chess GUI inspired by it. The rebuild should preserve every meaningful capability recorded in the current product map, including features added after the original April rebuild plan.
+
+Behavioral parity means:
+
+- The same user goals are supported from equivalent entry points, even if the screen layout and copy are redesigned.
+- The same source types can be opened, imported, searched, refreshed, exported, and organized where terms/licences allow.
+- The same chess workflows produce equivalent practical outputs: games, positions, annotations, review decks, prep trees, training attempts, reports, imports, exports, and sync artifacts.
+- The same evidence categories are available to users: WDL/result data, game counts, recency, ratings, local database provenance, online source provenance, local engine results, cloud-eval status, validation confidence, and known limitations.
+- The same safety behaviors exist: stale-request cancellation, background job progress, deduplication, canonical-player audits where relevant, source-confidence labels, engine-safety gates, and explicit skipped-game reporting.
+- The same cross-device workflows exist for the phone/web companion, including hosted file browsing, database imports, prep/database parity surfaces, PWA startup, static library publishing, and local sync/export helpers.
+- The same quality bar applies: large databases remain responsive, long scans can be cancelled or resumed where appropriate, local verification is scoped to the change, and browser/Playwright verification remains opt-in unless specifically requested.
+
+Behavioral parity does not mean:
+
+- Copying source files, generated code, schemas, migrations, routes, command names, component names, state keys, style tokens, UI strings, screenshots, board/piece themes, or build scripts.
+- Recreating the old visual design with only superficial color changes.
+- Letting implementation agents use the GPL repository as a live reference while coding.
+- Importing later owner-authored work without a commit-range attestation and reusable-delta review.
+
+The current fork's `agents.md` is the living product map for parity scope. Before implementation begins in the fresh repository, convert the relevant parts of that file into behavior-only specifications, acceptance criteria, and fixture-free test plans. Once converted, agents in the proprietary repository should use only those neutral specs, public protocols/docs, and approved reusable-delta bundles.
+
+### Design-Difference Requirement
+
+The proprietary app may keep the same broad workstation mental model, but it should look and read like a new product:
+
+- Create original branding, iconography, board and piece presentation, sound set, empty states, status copy, onboarding copy, and settings labels.
+- Redesign navigation labels and layouts enough that screenshots are clearly distinguishable from the GPL-derived fork while retaining equivalent workflows.
+- Prefer domain-language names for new modules and APIs; do not preserve old internal names unless they are generic chess terms or approved owner-authored API names.
+- Treat old screenshots and local verification images as private product-memory artifacts only. Do not ship them.
+
 ## 3. Feature Inventory
 
-Inspection basis: top-level metadata, public README-level product description, route and file names, current session change log, user-facing screenshots/artifacts, and the past-week commit log. No GPL implementation logic or source snippets were copied into this plan. The custom-feature classification below now treats the owner's past-week commits as an owner-attested reusable contribution set.
+Inspection basis: top-level metadata, public README-level product description, behavior-level route and feature names, the current `agents.md` product map, user-facing screenshots/artifacts as private design-memory inputs, and the past-week commit log. No GPL implementation logic or source snippets were copied into this plan. The custom-feature classification below now treats the owner's past-week commits as an owner-attested reusable contribution set. Later features listed here are parity requirements, not permission to copy later source code without a separate reusable-delta review.
 
 | Feature name for new spec | User-facing behaviour | Why it matters | Classification |
 | --- | --- | --- | --- |
@@ -181,6 +217,104 @@ Inspection basis: top-level metadata, public README-level product description, r
 | Large database performance mode | Very large references can be searched, sampled, cached, and indexed progressively. | Required for master databases and power users. | My added product-specific functionality |
 | Settings for board, pieces, theme, sound, shortcuts, and training thresholds | Users can customize appearance, input, audio, and training behavior. | Expected desktop app polish. | Baseline chess GUI functionality |
 | Cross-platform packaging | Users can install and run the application as a desktop app. | Commercial distribution requirement. | Baseline chess GUI functionality |
+
+### Current Full-Parity Scope Addendum (2026-07-02)
+
+The table above is an older baseline inventory. The proprietary replacement should also cover the post-plan feature set recorded in `agents.md`. Treat this addendum as the current behavioral parity target. A future implementation pass should turn each bullet into neutral user stories, acceptance criteria, and tests before coding in the fresh repository.
+
+#### App Shell, Home, And Workspace
+
+- Task-led home launcher for opening recent files, importing games, starting analysis, choosing review decks, launching mistake scans, seeing daily goals, and returning to active work.
+- Board-first workspace with a large resizable board, always-near annotation tools, right-side panels, under-board compact panels, detached eval/notation/controls where appropriate, saved layout preferences, and small-viewport resilience.
+- Multi-panel research model covering analysis, database, prep, plan exploration, engine views, coach, practice, structures, moves, and files without losing board context.
+- Robust startup behavior on Windows, including serialized dev-session startup for the fork equivalent, self-healing dependency installation for local development, clear progress fallbacks during heavy route/chunk loads, and safe single-instance handoff.
+- App settings for board design, pieces, sounds, keybindings, trainer thresholds, engine behavior, source defaults, prep strength settings, builder settings, phone/web preferences, and layout.
+
+#### Board, Game, Annotation, And Playback
+
+- Legal move entry, promotion handling, FEN/PGN load/save, game-tree navigation, variations, comments, NAGs, clocks, visual annotations, arrows, highlights, and move-list display.
+- Imported PGN annotations and variation trees must remain available during playback and when saving back to files, review decks, or databases.
+- Board clocks and move think-time chips should display when online imports provide clock or timestamp data, with live replay that can animate recorded move timing.
+- Analysis and training board states must preserve attempted moves, expected lines, variation context, and saved annotation edits instead of collapsing back into transient previews.
+- Blindfold-style board modes should be supported for both puzzle/training use and play/trainer-bot use, with explicit visibility/reveal controls and engine move reporting.
+
+#### Analysis, Engines, And Cloud Evals
+
+- User-supplied UCI engine configuration, MultiPV analysis, engine profiles, options, diagnostics, cancellation, and responsive local process management.
+- Local Stockfish or equivalent user-supplied engine starts promptly while cloud checks run independently; stale engine results cannot update current positions.
+- Lichess Cloud or equivalent local/cloud-eval source integration for root PVs, engine fallback, analysis display, database/prep strength scoring, and coach evidence, subject to terms/licence review.
+- Local compact cloud-eval storage/build workflow, status/lookup tooling, cache-miss handling, shard/index format versioning, and rebuild safety should be recreated with fresh formats and names if kept.
+- Engine panels should show eval-first move information, source/status labels, depth/CP/loss data where available, compact plans/setups modes, and quiet behavior when eval data is missing or intentionally unavailable.
+
+#### Databases, Sources, Files, And Export
+
+- Local databases, database folders, file folders, pinned/archived/manual-order file organization, lazy folder loading, metadata-first scans, PDF/report visibility, and hidden generated artifact folders.
+- Database import from PGN, compressed PGN, and supported database files; database export into Files as one PGN per game; analysis-board save-to-files; linked Files folders that sync one-game PGNs from database changes.
+- Search by headers, exact position, transposition-compatible modes where designed, player/event metadata, dates, ratings, results, time controls, and current-position opening statistics.
+- Large-database responsiveness with cancellable request ids, stale-result protection, mmap or equivalent warm caches, progressive loading, partial results, and bounded memory.
+- Opening tables with sortable columns, compact mode, recent-move sorting, WDL bars, result-perspective correctness, player/source-side attribution, engine-only CP strength, blended strength, and source default controls.
+- Source selectors for local databases, hosted database folders, Lichess All, Lichess Masters, study databases, generated web exports, and online account databases, with stable persisted identities and graceful fallback when sources move.
+
+#### Online Games, Studies, And Account Data
+
+- Lichess and Chess.com username imports into local databases with progress, date/count/range options, deduplication, import summaries, token reuse where appropriate, and provider-specific error handling.
+- Online game picker with provider tabs, account/search flows, selected-game analysis, selected-game review creation, and paging beyond the first recent slice.
+- Auto-update metadata for online game databases and review decks, including moved database detection, PGN timestamp normalization, stable source identity, and explicit skip/error summaries.
+- Lichess Study import as a local database with source-order preservation, chapter/study metadata, refresh controls, optional two-way sync, ordering repair, and protection against appending unrelated account games into study databases.
+- Online account and external-service imports should be behind reviewed adapters, with terms-of-service notes, rate limits, source labels, and user-visible confidence/provenance.
+
+#### Prep, Opponent Research, And Strength Models
+
+- Desktop Prep must support player-specific and general modes, target color, source selection, root controls, import drawer, min-games/show-top settings, saved builder/strength settings, started/setup surfaces, and compact under-board parity.
+- Prep move tables need sortable columns, WDL/result evidence, branch coverage, relative last-played labels, row previews, active-branch controls, player/color labels, and default source behavior matching the fork's workflows.
+- Strength scoring must preserve the fork's Smart/Practical/Engine concepts at the behavior level: local eval data, WDL/practical evidence, minimum-game hardening, low-count safeguards, engine-safety gates, CP-drop limits, and clear source/status labels.
+- `After prep` projection is in scope for both opponent-specific and general prep sources: candidate rows and opponent/source rows should project nearby prep-side continuations, use local evals only when enabled, avoid external eval API calls, progressively resolve rows, and keep lower/identical projections hidden except when sparse local-eval evidence is the useful signal.
+- Prep builder should create a compact game-plan brief, priority-led queue, focused reply expansion for shorter runs, deep mode for broader coverage, hard CP safety enforcement, and a separate coach-report evidence pass that does not require building a tree.
+- Plan Coach integration for prep should pass only supplied safe-route evidence, forbid recommending excluded or engine-unsafe alternatives, and distinguish normal strength, WDL/game share, local-eval CP/loss/source, after-prep projection, and no-answer states.
+- Opponent prep data workflows should support per-player folders/databases, online account research, OTB and online source separation, canonical name audits, duplicate detection, skipped/malformed PGN reporting, latest-game reporting, style/report outputs, and app-side database organization by event/player.
+
+#### AI Coach
+
+- In-app Coach should support local CLI/model bridge modes, small chat transcript UI, progress/elapsed state, right-side and workspace entry points, concept-first teaching answers, and app-rendered formatting.
+- Coach evidence packets should include legal moves, position facts, relevant PGN scope, Stockfish/cloud evals, targeted candidate lines, before-move FEN anchors, and strict clickable-line validation.
+- A planner/pro model split or equivalent staged reasoning pipeline should decide context scope, gather facts, and produce final answers, while invalid or unsupported engine lines are repaired or stripped rather than breaking the UI.
+- Coach must answer the user's actual question, keep chess-fact scaffolding internal, avoid hallucinated illegal lines, distinguish conversational follow-ups from phase-review tasks, and interpret engine lines rather than merely quoting evals.
+- Local prompt/evaluation tooling, hidden test prompts, style evaluation reports, and lesson/prompt artifacts should be treated as owner-authored material only if separately attested before copying.
+
+#### Opening Review, Mistake Review, And Daily Training
+
+- Opening Review decks should be saved files, not localStorage-only state, with create/merge/delete/open flows, due/full/focused practice, SRS attempts, daily goals, source evidence, annotations, user overrides, and post-attempt explanations.
+- Opening health and repertoire scans should support orientation-aware attribution, frequency/recency/practical-result gaps, date filters, validation metadata, bulk save, player/source-side color grouping, and explicit low-confidence handling.
+- Mistake Review should scan local databases, PGNs, online selected games, and auto-updated sources into normal decks with source-game metadata, player database info, phase categories, reveal controls, time-management/long-think training, daily progress, and large-deck responsiveness.
+- Review trainers must preserve attempted moves, hydrate saved practice trees, keep the interactive engine listener alive where needed, defer/coalesce saves for responsiveness, and avoid showing the saved answer before the attempt when that is the intended training mode.
+- Daily goals should count Opening Review and Mistake Review practice, sync after auto-updates, and stay stable across session transitions.
+
+#### Puzzle, Bot, Blindfold, And Practice Modes
+
+- Puzzle training should include train/stats/SRS panels, import/migration safety, attempt summaries, dashboard/progress export, explicit start/next flows, latency-tolerant transitions, and blindfold tactics mode.
+- Practice bot should support setup profiles, engine-backed opponents, managed Maia/LC0 where legally/distribution-wise appropriate, FIDE-style strength selection, clock pacing, move delays, and engine fallback.
+- Blindfold trainer/play modes should support library previews, compact engine panels, move announcements, latest-engine-move display, reveal/visibility controls, and source naming that stays generic/original.
+
+#### Plan Explorer, Engine Plans, And Structures
+
+- Database-backed Plan Explorer should show piece routes, pawn plans, sample size, WDL/result bars, side filters, ply/depth controls, hover previews, pinned arrows, automatic arrows, board-piece shortcuts, and large-source cancellation.
+- Engine Plans should support moves/plans and setups modes, local engine or cloud evidence, template/setup clustering, Lichess All practical overlays, source explanations, and safe behavior when engine/template evidence is sparse.
+- Pawn-structure trajectory views should detect and explain named structure templates, support color reversal and allowed file mirroring, show compact current-structure surfaces, and avoid overclaiming when templates do not match.
+
+#### Phone/Web Companion And Hosted Library
+
+- Browser/PWA phone companion must provide board, files, database, prep, moves, engine, review-adjacent, hosted-library, and import workflows without eager desktop/Tauri imports.
+- Hosted library build/publish flow should mirror selected PGN/PDF/database exports, generate manifests and position indexes, publish static assets, and keep `npm run web:publish` or its successor as the done criterion for phone-facing changes.
+- Phone Database and Prep should mirror desktop source selection, local/hosted imports, strength settings, WDL bars, sort controls, branch coverage, setup/start split, stable source persistence, import drawer behavior, and compact row layouts.
+- Phone Moves should preserve PGN variation trees, source titles, annotations, playback controls, board orientation, engine arrows, and stable current-folder/source labels.
+- Phone UI should handle iPhone-scale viewports, compressed headers, compact previous/next controls, dense file rows, non-overlapping text, and no accidental desktop-only controls.
+
+#### Verification, Migration, And Parity Audits
+
+- Every rebuilt feature should have behavior-level acceptance tests or manual verification notes that prove parity without comparing source code.
+- Import/export parity should be checked with independently created or permissively licensed PGN/FEN/database fixtures, not copied GPL fixtures.
+- Database migrations, review-deck migrations, puzzle progress migrations, and hosted-library import migrations should be newly designed but cover the same user data survival cases.
+- A pre-release parity audit should walk `agents.md` headings and recent feature inventory, marking each current fork capability as implemented, intentionally redesigned, deferred with reason, or legally blocked.
 
 ## 4. My Added Features Preservation Plan
 
@@ -598,7 +732,9 @@ Design notes:
 - Show progress for import, position indexing, statistics generation, and review scans.
 - Ensure stale jobs cannot update inactive UI contexts incorrectly.
 
-## 11. MVP Roadmap
+## 11. MVP And Full-Parity Roadmap
+
+The early phases build an independently owned chess workstation foundation. They are not the full product target. Full release readiness requires behavioral parity with the current fork's product map, including features added after the original April plan.
 
 ### Phase 0: Repo Setup and Licence Hygiene
 
@@ -655,6 +791,36 @@ Design notes:
 - Add performance benchmarks for large databases.
 - Complete licence audit and manual/legal review.
 
+### Phase 7: Guided Prep, Coach, and Strength Parity
+
+- Rebuild opponent/general prep workflows, strength scoring, after-prep projections, prep builder, game-plan briefs, and coach-report evidence packets from neutral behavior specs.
+- Add local/cloud eval integration only through reviewed sources and fresh storage formats.
+- Verify engine-safety gates, CP-drop handling, sparse-line behavior, progressive row resolution, and saved-setting persistence.
+
+### Phase 8: Review, Training, and Practice Parity
+
+- Rebuild Opening Review, Mistake Review, Puzzle Training, Practice Bot, Blindfold, daily goals, SRS, review migrations, time-management training, and large-deck responsiveness.
+- Preserve the user data outcomes: saved decks, attempts, annotations, evidence, source metadata, due queues, progress summaries, and export/report options.
+- Add independent training fixtures and migration tests.
+
+### Phase 9: Files, Online Data, Studies, and Sync Parity
+
+- Rebuild Files, database folders, linked file/database exports, online imports, online auto-updates, Lichess Study import/update/sync, hosted-library generation, and source identity persistence.
+- Add provider-specific terms/licence review before enabling each online adapter.
+- Verify dedupe, skipped-game reporting, clock/comment preservation, database export/import, and moved-source recovery.
+
+### Phase 10: Phone/Web Companion Parity
+
+- Rebuild the browser/PWA companion with no eager desktop runtime imports.
+- Mirror the desktop board, files, database, prep, engine, moves, source-picker, hosted-library, and import workflows at phone scale.
+- Keep static publishing as part of done criteria for every phone-facing change and document any deployment failure.
+
+### Phase 11: Full Parity Audit and Release Hardening
+
+- Convert the current `agents.md` product map and recent feature inventory into a final parity checklist.
+- Mark every workflow implemented, intentionally redesigned, deferred, legally blocked, or removed with explicit owner approval.
+- Run licence scanning, dependency review, clean-room design-log review, data migration checks, packaging tests, and manual/legal review before commercial release.
+
 ## 12. Acceptance Criteria
 
 ### Product Acceptance Criteria
@@ -667,6 +833,18 @@ Design notes:
 - Custom features are available as independently implemented workflows: source comparison, strategic route exploration, gap scanning, review decks, online game import/refresh, and background validation.
 - The app remains responsive during imports, indexing, engine analysis, and large database queries.
 - The app can be packaged and installed on target platforms with original branding and assets.
+
+### Full-Parity Product Acceptance Criteria
+
+- The proprietary product can replace the current fork for the owner's normal workflows without needing the old app open for board analysis, database research, opponent prep, review training, online imports, phone companion use, or file/database organization.
+- Every current `agents.md` product-map feature is represented in a neutral parity checklist and has an implementation status before release.
+- Desktop prep behavior covers player-specific and general sources, strength settings, after-prep projections, prep builder briefs, coach-report evidence, import drawers, source defaults, and row-level evidence.
+- Review/training behavior covers Opening Review, Mistake Review, Puzzle Training, Practice Bot, Blindfold, daily goals, SRS, saved attempts, review migrations, and large-deck responsiveness.
+- Data workflows cover local databases, database folders, Files folders, linked exports, hosted web exports, online account imports, Lichess Study imports, auto-updates, dedupe, skipped-game reporting, and source provenance.
+- Coach behavior covers legal-line validation, engine/cloud evidence, phase/conversation scopes, app-rendered answer formatting, progress states, and failure-tolerant cleanup of unsupported lines.
+- Phone/web behavior covers PWA startup, hosted files, database/prep/source parity, import progress, engine arrows/eval display, compact moves, variation preservation, and the static publish workflow.
+- Performance behavior covers cancellation, stale-result protection, progressive results, local cache warming, bounded memory, and visible progress for long-running work.
+- Visual design, UI copy, branding, icons, board/piece presentation, schema, generated APIs, and build/package structure are original enough that a screenshot and code review clearly distinguish the proprietary product from the GPL-derived fork.
 
 ### Licence Hygiene Acceptance Criteria
 
@@ -705,6 +883,10 @@ Design notes:
 | Position indexing correctness | Opening statistics may be wrong around transpositions or variants. | Define position keys carefully; test with independent examples; keep exact and transposition modes separate. |
 | Packaging complexity | Commercial release delayed by signing, updates, or platform quirks. | Prototype packaging by Phase 2; add CI for target platforms; document release steps. |
 | Privacy and token storage | Account integrations may expose user data. | Use OS credential storage where possible; encrypt local tokens; minimize stored personal data; provide disconnect/delete options. |
+| Parity goal mistaken for copying permission | A "1:1 clone" instruction may cause source, schema, UI, or asset copying. | Define parity as behavior only; keep clean-room specs, owner-delta bundles, and code-review gates; require original naming, schemas, copy, styling, and assets. |
+| Stale parity specification | The fork continues to gain features after this document is copied into the new repo. | Maintain a dated parity checklist sourced from `agents.md`; periodically export neutral behavior addenda; require owner approval for deferred features. |
+| Feature-complete scope creep | Full parity can delay first usable proprietary builds. | Ship staged internal milestones, but label them foundation/MVP only until the full parity audit is complete. |
+| Phone companion deployment drift | Desktop changes may not reach the hosted phone/PWA workflow. | Treat static web publish or its successor as done criteria for phone-facing changes and verify hosted-library manifests/imports. |
 | Manual/legal review gaps | Unresolved uncertainty reaches release. | Maintain "needs manual/legal review" list; schedule review before beta and before commercial release. |
 
 ## 14. Manual Review Checklist
@@ -715,6 +897,9 @@ Before implementation starts:
 - [ ] Create a reusable-delta bundle from commits `42732755` through `6c9de0d8`, plus documentation commit `4c34803e` if needed.
 - [ ] Classify bundled items as new owner file, owner hunk from modified GPL file, owner asset, owner test, generated from owner-owned input, or needs manual/legal review.
 - [ ] For modified GPL files, extract only owner-authored hunks or rewrite from the behavioral spec.
+- [ ] Export the current `agents.md` product map into a behavior-only parity checklist with dated source coverage.
+- [ ] For features added after the original April owner-attested range, either create new owner-attested reusable-delta bundles or mark them for independent reimplementation from neutral specs.
+- [ ] Confirm that "1:1 clone" is written in implementation prompts as "1:1 behavioral replacement with original implementation and design."
 - [ ] Create a physically separate repository for the proprietary rebuild; do not fork, clone, or rename this repository.
 - [ ] Confirm the new repository has its own `.git` directory, independent first commit, independent remote, and no connection to this repository's history.
 - [ ] Copy only this plan and the approved owner-delta bundle into the new repository.
@@ -733,18 +918,25 @@ Before implementation starts:
 - [ ] Design a fresh database schema and migration strategy.
 - [ ] Design fresh generated API bindings if needed.
 - [ ] Create independent test fixtures from public rules, original examples, or permissively licensed datasets.
+- [ ] Create a release-blocking full-parity audit that covers desktop, phone/web, prep, coach, review/training, online data, files/databases, reports, and settings.
 - [ ] Document independent design decisions in a clean-room design log.
 - [ ] Mark uncertain items as "needs manual/legal review."
 - [ ] Get legal review before commercial release.
 
 ## 15. Implementation Prompt Templates
 
-Use these prompts later in the fresh repository. Each prompt forbids open-ended reference to the old GPL repository. If a task should reuse your past-week work, provide Codex with a reviewed owner-authored reusable-delta bundle and explicitly say which files or hunks are approved to copy.
+Use these prompts later in the fresh repository. Each prompt forbids open-ended reference to the old GPL repository. If a task should reuse owner-authored work, provide Codex with a reviewed owner-authored reusable-delta bundle and explicitly say which files or hunks are approved to copy. When asking for full parity, always say "behavioral replacement" rather than "port" or "copy."
+
+### Create the neutral parity checklist
+
+```text
+Create a behavior-only parity checklist for the proprietary chess workstation from the supplied product-map excerpt and this rebuild plan. Do not inspect or reference the old GPL repository. Convert each workflow into user goals, inputs, outputs, edge cases, data outcomes, acceptance criteria, and suggested independent tests. Do not include old source paths, component names, command names, schema names, UI strings, CSS details, screenshots, or implementation details. The checklist should cover desktop board/workspace, analysis/engine/cloud evals, databases/files/export, online imports/studies, prep/strength/coach report, AI Coach, Opening Review, Mistake Review, Puzzle Training, Practice Bot, Blindfold, Plan Explorer, structures, phone/web companion, hosted library publishing, settings, migrations, and verification.
+```
 
 ### Create the separate proprietary repository
 
 ```text
-Create a brand-new proprietary repository for the chess workstation rebuild. Do not fork, clone, rename, or continue from the old GPL-derived repository. Initialize independent git history. Use the same broad stack for transfer ease: Tauri 2, Rust, TypeScript, React, Vite, and SQLite, subject to licence review. Add only original project scaffolding, import this plan as a specification document, and leave the approved owner-delta bundle as a reviewed input directory. Do not copy old source trees, build configs, generated files, assets, lockfiles, CI files, or git history.
+Create a brand-new proprietary repository for a feature-complete behavioral replacement of the current chess workstation. Do not fork, clone, rename, or continue from the old GPL-derived repository. Initialize independent git history. Use the same broad stack for transfer ease: Tauri 2, Rust, TypeScript, React, Vite, and SQLite, subject to licence review. Add only original project scaffolding, import this plan and the neutral parity checklist as specification documents, and leave any approved owner-delta bundle as a reviewed input directory. Do not copy old source trees, build configs, generated files, assets, lockfiles, CI files, UI text, database schemas, or git history.
 ```
 
 ### Import owner-owned reusable delta
@@ -756,7 +948,7 @@ Import the approved owner-authored reusable code bundle into this separate propr
 ### Create the initial app skeleton
 
 ```text
-Create the initial desktop app skeleton for a proprietary chess workstation in this separate fresh repository. Use the same broad architecture class as the current app for transfer ease: Tauri desktop shell, Rust native service layer, TypeScript/React front end, Vite build, SQLite-ready persistence layer, generated front-end/back-end bindings from fresh definitions, and background job/event plumbing. Do not reference, inspect, or copy any old GPL repository, source files, folder structure, UI text, assets, schemas, generated code, tests, or implementation details. If an approved owner-authored reusable-delta bundle is provided, use only the approved items from that bundle. Use this repository's plan and public documentation for selected dependencies. Set up original project structure, original placeholder branding, licence notes, and dependency licence tracking. Do not implement chess features yet.
+Create the initial desktop app skeleton for a proprietary chess workstation in this separate fresh repository. Use the same broad architecture class as the current app for transfer ease: Tauri desktop shell, Rust native service layer, TypeScript/React front end, Vite build, SQLite-ready persistence layer, generated front-end/back-end bindings from fresh definitions, and background job/event plumbing. Do not reference, inspect, or copy any old GPL repository, source files, folder structure, UI text, assets, schemas, generated code, tests, or implementation details. If an approved owner-authored reusable-delta bundle is provided, use only the approved items from that bundle. Use this repository's plan, the neutral parity checklist, and public documentation for selected dependencies. Set up original project structure, original placeholder branding, licence notes, and dependency licence tracking. Do not implement chess features yet.
 ```
 
 ### Implement the chess domain model
@@ -817,4 +1009,10 @@ Implement a repertoire gap scanner. Do not reference or copy any old GPL scannin
 
 ```text
 Implement opening review decks and practice from the training specification and any approved owner-authored reusable-delta bundle. Do not reference or copy any old GPL review code, scheduler integration, UI wording, card schema, tests, or assets. Support deck creation, card editing, expected-move overrides, saved notes and board marks, due-card and full-deck practice modes, attempt logging, spaced-repetition scheduling, and post-attempt evidence.
+```
+
+### Run the full parity audit
+
+```text
+Audit this proprietary repository against the supplied neutral parity checklist. Do not inspect the old GPL repository. For each workflow, mark it implemented, partially implemented, intentionally redesigned, deferred with owner-approved reason, legally blocked, or missing. Verify that implementation names, schemas, UI copy, styling, assets, build scripts, generated APIs, fixtures, and docs are original or from approved owner-delta bundles. Produce a release-blocking issue list for any missing parity, contamination risk, licensing issue, or unverified data-migration/import/export path.
 ```

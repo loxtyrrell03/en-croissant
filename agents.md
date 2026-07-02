@@ -328,6 +328,15 @@ The design principle is "guided depth": keep all expert controls available, but
 lead with the next useful action, the source of the evidence, and the safest
 default.
 
+- On 2026-07-02, `docs/PROPRIETARY_REBUILD_PLAN.md` was updated from a
+  high-level clean-room MVP outline into a full 1:1 behavioral replacement
+  plan. Future proprietary-rebuild work should preserve every meaningful
+  workflow in this product map as behavior, evidence, saved data, imports,
+  exports, verification expectations, phone/web parity, and preparation flows,
+  while still requiring an original implementation, original design, fresh
+  schemas/names/assets/copy/build files, and owner-attested reusable-delta
+  review before copying any later code.
+
 ## Product Map
 
 ### Opponent Prep Conditional Lines
