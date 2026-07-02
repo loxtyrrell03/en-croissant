@@ -1,0 +1,127 @@
+﻿.panel {
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(34, 139, 230, 0.07), transparent 38%),
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.025) 0,
+      rgba(255, 255, 255, 0.025) 34px,
+      transparent 34px,
+      transparent 68px
+    ),
+    var(--mantine-color-body);
+}
+
+.streakCard {
+  min-width: 98px;
+  padding: 8px 12px;
+  text-align: center;
+}
+
+.streakNumber {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.streakFire {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.dayRail {
+  margin-top: var(--mantine-spacing-md);
+  margin-bottom: var(--mantine-spacing-sm);
+}
+
+.dayItem {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.dayBubble {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: 999px;
+  color: var(--mantine-color-dimmed);
+  font-weight: 800;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.dayBubbleComplete {
+  border-color: var(--mantine-color-blue-5);
+  background: var(--mantine-color-blue-5);
+  color: var(--mantine-color-white);
+}
+
+.dayBubbleToday {
+  box-shadow:
+    0 0 0 3px var(--mantine-color-body),
+    0 0 0 5px var(--mantine-color-blue-4);
+}
+
+.goalList {
+  margin-top: var(--mantine-spacing-md);
+  border-top: 1px solid var(--mantine-color-default-border);
+}
+
+.goalRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--mantine-spacing-sm);
+  align-items: center;
+  min-height: 76px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+.goalIcon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: var(--mantine-radius-sm);
+  background: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-6));
+  color: var(--mantine-color-blue-5);
+}
+
+.goalMain {
+  min-width: 0;
+}
+
+.goalActions {
+  justify-content: flex-end;
+}
+
+.emptyGoals {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-sm);
+  padding: var(--mantine-spacing-md) 0 0;
+}
+
+@media (max-width: 720px) {
+  .goalRow {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .goalActions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    padding-left: 48px;
+  }
+
+  .dayBubble {
+    width: 38px;
+    height: 38px;
+  }
+}
