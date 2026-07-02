@@ -1,22 +1,10 @@
-# Proprietary Rebuild — Phase Status
+# Proprietary Rebuild — Phase Status (extraction side)
 
-Canonical copy: once the fresh repo exists, `docs/PHASE_STATUS.md` in the proprietary repo is canonical; this file tracks extraction-side work only.
+**Canonical status now lives in the proprietary repo: `C:\Users\loxty\Desktop\Repos\outpost-chess\docs\PHASE_STATUS.md`.** This file tracks extraction-side work only.
 
 Last updated: 2026-07-02.
 
-| Phase | Scope | Status |
-| --- | --- | --- |
-| 0 | Provenance, scope, design direction | **In progress** — provenance manifest done; owner-delta bundle built (154 files); parity checklist generating; design brief done |
-| 1 | Fresh repo + product shell | Starting — sibling repo `outpost-chess` with independent history |
-| 2 | Chess core + fresh data model | Not started |
-| 3 | Engine/eval foundation | Not started |
-| 4 | Databases, files, sources, search | Not started |
-| 5 | Owner import: research/planning | Not started |
-| 6 | Owner import: prep + coach | Not started |
-| 7 | Owner import: review/training/play | Not started |
-| 8 | Online data, studies, sync, phone/web | Not started |
-| 9 | Polish, packaging, migration | Not started |
-| 10 | Full parity audit + release gate | Not started |
+Phase 0 (provenance, scope, design direction) is **complete** in this workspace. The fresh proprietary repo `outpost-chess` exists with independent git history; Phases 1-2 are done there and Phase 3 is underway. This repository is now a read-only extraction/reference archive: open it again only for controlled owner-hunk extraction passes, appending results to `approved-owner-delta/` with new manifest rows.
 
 ## Phase 0 artifact inventory
 

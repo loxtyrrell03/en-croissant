@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "outpost-web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["-C", "C:/Users/loxty/Desktop/Repos/outpost-chess", "dev"],
+      "port": 4780
+    }
+  ]
+}
