@@ -244,7 +244,7 @@ Assert-DevPortAvailable
 
 $devExitCode = 0
 try {
-  pnpm dev:tauri
+  npm run dev:tauri
   $devExitCode = $LASTEXITCODE
 }
 finally {

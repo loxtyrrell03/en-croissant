@@ -371,6 +371,15 @@ default.
 
 ## Product Map
 
+### Startup And Dev Launcher
+
+- On 2026-07-03, the desktop dev launcher was changed to avoid a startup hang
+  caused by `pnpm` prompting to purge/reinstall `node_modules` when a different
+  pnpm version is first on PATH. `scripts/safe-dev.ps1` now calls
+  `npm run dev:tauri`, and Tauri `beforeDevCommand`/`beforeBuildCommand` now
+  call the existing npm scripts. Keep this non-interactive launcher path so a
+  stale package-manager prompt cannot prevent the app window from opening.
+
 ### Engine Analysis Reliability
 
 - On 2026-07-03, desktop live analysis was hardened after Stockfish could get
