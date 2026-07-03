@@ -2,7 +2,7 @@ import { parseUci } from "chessops";
 import { INITIAL_FEN, makeFen } from "chessops/fen";
 import equal from "fast-deep-equal";
 import { useAtom, useAtomValue } from "jotai";
-import { startTransition, useContext, useEffect, useMemo, useRef } from "react";
+import { startTransition, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
@@ -45,6 +45,7 @@ function EvalListener({ active }: { active: boolean }) {
   const [engines] = useAtom(enginesAtom);
   const threat = useAtomValue(currentThreatAtom);
   const activeTab = useAtomValue(activeTabAtom);
+  const engineWakeRevision = useEngineWakeRevision(active);
   const store = useContext(TreeStateContext)!;
   const fen = useStore(store, (s) => s.root.fen);
 
@@ -125,6 +126,7 @@ function EvalListener({ active }: { active: boolean }) {
       <EngineListener
         key={e.id}
         engine={e}
+        engineWakeRevision={engineWakeRevision}
         firstEngineWithLines={firstEngineWithLines}
         isGameOver={isGameOver}
         finalFen={finalFen || ""}
@@ -137,8 +139,46 @@ function EvalListener({ active }: { active: boolean }) {
     ));
 }
 
+function useEngineWakeRevision(active: boolean) {
+  const [revision, setRevision] = useState(0);
+  const inactiveRef = useRef(false);
+
+  useEffect(() => {
+    if (!active) return;
+
+    const markInactive = () => {
+      inactiveRef.current = true;
+    };
+    const wakeIfNeeded = () => {
+      if (!inactiveRef.current || document.visibilityState === "hidden") return;
+      inactiveRef.current = false;
+      setRevision((value) => value + 1);
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        markInactive();
+      } else {
+        wakeIfNeeded();
+      }
+    };
+
+    window.addEventListener("blur", markInactive);
+    window.addEventListener("focus", wakeIfNeeded);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("blur", markInactive);
+      window.removeEventListener("focus", wakeIfNeeded);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [active]);
+
+  return revision;
+}
+
 function EngineListener({
   engine,
+  engineWakeRevision,
   firstEngineWithLines,
   isGameOver,
   finalFen,
@@ -149,6 +189,7 @@ function EngineListener({
   threat,
 }: {
   engine: Engine;
+  engineWakeRevision: number;
   firstEngineWithLines: string | null;
   isGameOver: boolean;
   finalFen: string;
@@ -303,6 +344,7 @@ function EngineListener({
     }),
     [engineExtraOptions, searchingFen, searchingMoves],
   );
+  const localWakeRevision = engine.type === "local" ? engineWakeRevision : 0;
 
   useEffect(() => {
     if (!activeTab) return;
@@ -505,6 +547,7 @@ function EngineListener({
     engineOptions,
     fen,
     isGameOver,
+    localWakeRevision,
     searchKey,
     searchingFen,
     searchingMovesKey,

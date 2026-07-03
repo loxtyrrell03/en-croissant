@@ -175,6 +175,49 @@ impl EngineProcess {
     pub fn kill_sync(&mut self) {
         self.base.kill_sync();
     }
+
+    fn record_best_moves(&mut self, best_moves: BestMoves) -> Option<Vec<BestMoves>> {
+        let multipv = best_moves.multipv;
+        let depth = best_moves.depth;
+
+        if self.real_multipv == 0
+            || multipv == 0
+            || multipv > self.real_multipv
+            || depth < self.last_depth
+        {
+            return None;
+        }
+
+        if let Some(current_depth) = self.best_moves.first().map(|line| line.depth) {
+            if depth < current_depth {
+                return None;
+            }
+            if depth > current_depth {
+                self.best_moves.clear();
+            }
+        }
+
+        if let Some(existing) = self
+            .best_moves
+            .iter_mut()
+            .find(|line| line.multipv == multipv)
+        {
+            *existing = best_moves;
+        } else {
+            self.best_moves.push(best_moves);
+        }
+
+        if self.best_moves.len() != self.real_multipv as usize
+            || !self.best_moves.iter().all(|line| line.depth == depth)
+        {
+            return None;
+        }
+
+        self.best_moves.sort_by_key(|line| line.multipv);
+        let complete_lines = self.best_moves.clone();
+        self.best_moves.clear();
+        Some(complete_lines)
+    }
 }
 
 #[derive(Clone, Serialize, Debug, Derivative, Type)]
@@ -494,44 +537,36 @@ pub async fn get_best_moves(
                         {
                             continue;
                         }
-                        let multipv = best_moves.multipv;
                         let cur_depth = best_moves.depth;
                         let cur_nodes = best_moves.nodes;
-                        if multipv as usize == proc.best_moves.len() + 1 {
-                            proc.best_moves.push(best_moves);
-                            if multipv == proc.real_multipv {
-                                if proc.best_moves.iter().all(|x| x.depth == cur_depth)
-                                    && cur_depth >= proc.last_depth
-                                    && lim.check().is_ok()
-                                {
-                                    let progress = match proc.go_mode {
-                                        GoMode::Depth(depth) => {
-                                            (cur_depth as f64 / depth as f64) * 100.0
-                                        }
-                                        GoMode::Time(time) => {
-                                            (proc.start.elapsed().as_millis() as f64 / time as f64)
-                                                * 100.0
-                                        }
-                                        GoMode::Nodes(nodes) => {
-                                            (cur_nodes as f64 / nodes as f64) * 100.0
-                                        }
-                                        GoMode::PlayersTime(_) => 99.99,
-                                        GoMode::Infinite => 99.99,
-                                    };
-                                    BestMovesPayload {
-                                        best_lines: proc.best_moves.clone(),
-                                        engine: id.clone(),
-                                        tab: tab.clone(),
-                                        fen: proc.options.fen.clone(),
-                                        moves: proc.options.moves.clone(),
-                                        progress,
+                        if let Some(best_lines) = proc.record_best_moves(best_moves) {
+                            if cur_depth >= proc.last_depth && lim.check().is_ok() {
+                                let progress = match proc.go_mode {
+                                    GoMode::Depth(depth) => {
+                                        (cur_depth as f64 / depth as f64) * 100.0
                                     }
-                                    .emit(&app)?;
-                                    proc.last_depth = cur_depth;
-                                    proc.last_best_moves = proc.best_moves.clone();
-                                    proc.last_progress = progress as f32;
+                                    GoMode::Time(time) => {
+                                        (proc.start.elapsed().as_millis() as f64 / time as f64)
+                                            * 100.0
+                                    }
+                                    GoMode::Nodes(nodes) => {
+                                        (cur_nodes as f64 / nodes as f64) * 100.0
+                                    }
+                                    GoMode::PlayersTime(_) => 99.99,
+                                    GoMode::Infinite => 99.99,
+                                };
+                                BestMovesPayload {
+                                    best_lines: best_lines.clone(),
+                                    engine: id.clone(),
+                                    tab: tab.clone(),
+                                    fen: proc.options.fen.clone(),
+                                    moves: proc.options.moves.clone(),
+                                    progress,
                                 }
-                                proc.best_moves.clear();
+                                .emit(&app)?;
+                                proc.last_depth = cur_depth;
+                                proc.last_best_moves = best_lines;
+                                proc.last_progress = progress as f32;
                             }
                         }
                     }
@@ -710,19 +745,11 @@ pub async fn analyze_game(
                     if let Ok(best_moves) =
                         parse_uci_attrs(attrs, &proc.options.fen.parse()?, moves)
                     {
-                        let multipv = best_moves.multipv;
                         let cur_depth = best_moves.depth;
-                        if multipv as usize == proc.best_moves.len() + 1 {
-                            proc.best_moves.push(best_moves);
-                            if multipv == proc.real_multipv {
-                                if proc.best_moves.iter().all(|x| x.depth == cur_depth)
-                                    && cur_depth >= proc.last_depth
-                                {
-                                    current_analysis.best = proc.best_moves.clone();
-                                    proc.last_depth = cur_depth;
-                                }
-                                assert_eq!(proc.best_moves.len(), proc.real_multipv as usize);
-                                proc.best_moves.clear();
+                        if let Some(best_lines) = proc.record_best_moves(best_moves) {
+                            if cur_depth >= proc.last_depth {
+                                current_analysis.best = best_lines;
+                                proc.last_depth = cur_depth;
                             }
                         }
                     }
@@ -2022,18 +2049,11 @@ async fn analyze_mistake_review_position(
                         continue;
                     }
 
-                    let multipv = best_moves.multipv;
                     let cur_depth = best_moves.depth;
-                    if multipv as usize == proc.best_moves.len() + 1 {
-                        proc.best_moves.push(best_moves);
-                        if multipv == proc.real_multipv {
-                            if proc.best_moves.iter().all(|x| x.depth == cur_depth)
-                                && cur_depth >= proc.last_depth
-                            {
-                                proc.last_depth = cur_depth;
-                                proc.last_best_moves = proc.best_moves.clone();
-                            }
-                            proc.best_moves.clear();
+                    if let Some(best_lines) = proc.record_best_moves(best_moves) {
+                        if cur_depth >= proc.last_depth {
+                            proc.last_depth = cur_depth;
+                            proc.last_best_moves = best_lines;
                         }
                     }
                 }

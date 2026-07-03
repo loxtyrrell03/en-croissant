@@ -371,6 +371,20 @@ default.
 
 ## Product Map
 
+### Engine Analysis Reliability
+
+- On 2026-07-03, desktop live analysis was hardened after Stockfish could get
+  stuck showing skeleton rows while CPU was still active. The frontend now
+  wakes enabled local engines after the app returns from blur/hidden, preserving
+  the existing inactive-window engine stop behavior instead of leaving a
+  stopped search enabled with no output. The Tauri engine reader also now
+  accumulates MultiPV info by the engine-reported `multipv` slot and replaces
+  duplicate/out-of-order lines before emitting a completed depth, so Stockfish
+  output ordering cannot wedge live analysis, game analysis, or mistake-review
+  helper searches. Local Lichess cloud eval lookup and cloud-backed line
+  extension are intentionally unchanged; focus wakeups only restart local
+  fallback searches.
+
 ### Opponent Prep Conditional Lines
 
 - On 2026-06-22, desktop opponent prep gained a compact conditional-line
