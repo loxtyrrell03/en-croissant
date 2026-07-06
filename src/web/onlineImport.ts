@@ -124,7 +124,10 @@ async function fetchChessComGames(
     }
 
     games.sort((a, b) => b.playedAt - a.playedAt);
-    onProgress?.(Math.min(games.length, limit), since ? archives.length : limit);
+    onProgress?.(
+      since ? index + 1 : Math.min(games.length, limit),
+      since ? archives.length : limit,
+    );
     if (games.length >= limit) break;
     if (since && index === archives.length - 1) break;
   }

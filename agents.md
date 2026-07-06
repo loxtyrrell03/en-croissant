@@ -1146,6 +1146,43 @@ Engine` selector on the phone workspace, and the active panel content starts
   `position-index/shards` trees can momentarily report `ENOTEMPTY` during
   cleanup, so future publish-script cleanup should keep resilient `fs.rm`
   retries rather than hand-deleting generated folders.
+- On 2026-07-06, a phone-app bug-fix wave landed from a full mobile QA +
+  code-review sweep. Visual: chessground package coords are realigned inside
+  the phone board (the package CSS assumes lichess-style outside gutters and
+  clipped the `h` file / floated ranks above the board), the board-header
+  action group no longer gets crushed by long file titles, dead CSS-module
+  `square.last-move`/`move-dest` rules were rescoped with `:global` (CSS
+  modules had hashed them into never-matching selectors), primary tap targets
+  were raised to >=40px (move nav) and >=2rem elsewhere, and the moves panel
+  auto-scrolls the current move pill into view. Features: pawn promotion now
+  shows a phone promotion picker overlay instead of silently queening; the
+  documented `Common move` / `Done + next` prep training buttons were
+  restored to the training stage (handlers existed but were unreachable);
+  Lichess explorer prep stats reuse `getWebPrepMoveKey` so started/prepared
+  marks match online sources and survive transpositions; the Lichess
+  `/player` explorer endpoint is parsed as ndjson (last line) instead of
+  failing on `response.json()`; hosted database refresh remaps
+  `board.sourceGameId` alongside `sourceDatabaseId`; local position stats
+  count each game at most once per (position, move) so annotated PGNs and
+  repetitions no longer inflate W/D/L; custom-FEN games keep their start
+  position on the file board; engine pause clears stale eval/depth; engine
+  multipv arrows use per-line colors; lazy hosted sources ignore a remembered
+  player name when computing perspective; the opponent autofill only fires
+  once per source so the field can be cleared; plus smaller fixes (media-query
+  first-render flash, `state:asc` blank sort select, stale range-import
+  caption, stray hosted `Up` button, nested-button database rows, singular
+  pluralization).
+- Also on 2026-07-06, phone-site freshness and fast pushes: `public/web-sw.js`
+  (cache `en-croissant-web-v2`) is network-first for navigations and
+  `web-library/manifest.json` so publishes appear on the phone's first load,
+  hosted file URLs carry a `?v=<lastModified>` content stamp to bust HTTP/SW
+  caches on re-push, and the new `npm run web:push -- <pattern>` /
+  `--changed` (`scripts/push-web-files.mjs`) copies selected PGN/PDF files
+  from `Documents/EnCroissant` straight into the Pages checkout plus
+  `public/web-library`, upserts both manifests, and auto commits/pushes -
+  seconds instead of a full `web:publish`, with `--dry-run` / `--no-push` /
+  `--message` options. Full `web:publish` is still required for code changes
+  (Vite build) and for adding/removing hosted database exports.
 
 ### App Shell
 

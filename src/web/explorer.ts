@@ -1,4 +1,4 @@
-import type { WebPrepMoveStat } from "./prepIndex";
+import { getWebPrepMoveKey, type WebPrepMoveStat } from "./prepIndex";
 import {
   getPrepMoveStrengthMap,
   normalizePrepBuilderSettings,
@@ -126,7 +126,18 @@ export async function fetchWebExplorerMoveStats({
     throw new Error(`Lichess explorer failed: ${response.status}`);
   }
 
-  const data = (await response.json()) as ExplorerResponse;
+  // The /player explorer endpoint streams ndjson progress lines while Lichess
+  // indexes the player's games; the final line holds the complete result.
+  const body = await response.text();
+  const lastLine = body
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .at(-1);
+  if (!lastLine) {
+    throw new Error("Lichess explorer returned an empty response.");
+  }
+  const data = JSON.parse(lastLine) as ExplorerResponse;
   const engineMoves = await queryWebLichessCloudEngineMoves({
     fen,
     side: getFenColor(fen),
@@ -249,7 +260,7 @@ function explorerMovesToStats(
         draw: move.draws,
         black: move.black,
         lastPlayed: null,
-        key: `${source}:${fen}:${move.uci || move.san}`,
+        key: getWebPrepMoveKey(fen, move.san),
         uci: move.uci || null,
         total,
         share: grandTotal > 0 ? total / grandTotal : 0,

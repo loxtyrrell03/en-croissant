@@ -529,7 +529,7 @@ export default function WebApp() {
       activePrepId: null,
       board: {
         orientation: "white",
-        startFen: INITIAL_FEN,
+        startFen: game.moves[0]?.fenBefore ?? INITIAL_FEN,
         line: webGameToLine(game),
         cursor: game.moves.length,
         sourceTitle: getWebBoardSourceTitle(game, current.databases),
@@ -613,7 +613,8 @@ export default function WebApp() {
 
       notifications.show({
         title: notificationTitle,
-        message: notificationMessage?.(imported) ?? `${imported.games.length} games indexed.`,
+        message:
+          notificationMessage?.(imported) ?? `${pluralWeb(imported.games.length, "game")} indexed.`,
         color: "green",
       });
 
@@ -649,7 +650,10 @@ export default function WebApp() {
 
         notifications.show({
           title: "PGN imported",
-          message: `${imported.reduce((sum, result) => sum + result.games.length, 0)} games indexed.`,
+          message: `${pluralWeb(
+            imported.reduce((sum, result) => sum + result.games.length, 0),
+            "game",
+          )} indexed.`,
           color: "green",
         });
       } catch (error) {
@@ -676,7 +680,7 @@ export default function WebApp() {
           pgn: file.content,
           notificationTitle: "Hosted file opened",
           notificationMessage: (imported) =>
-            `${imported.games.length} games indexed from ${file.filename}.`,
+            `${pluralWeb(imported.games.length, "game")} indexed from ${file.filename}.`,
           databasePatch: {
             sourceKind: "opened-file",
             hostedFilePath: entry.path,
@@ -729,7 +733,10 @@ export default function WebApp() {
           pgn: folder.content,
           notificationTitle: "Hosted database opened",
           notificationMessage: (imported) =>
-            `${imported.games.length} games indexed from ${folder.files.length} hosted PGNs.`,
+            `${pluralWeb(imported.games.length, "game")} indexed from ${pluralWeb(
+              folder.files.length,
+              "hosted PGN",
+            )}.`,
           databasePatch: {
             hostedPath: folder.path,
             hostedUpdatedAt: latestHostedUpdate,
@@ -866,13 +873,19 @@ export default function WebApp() {
               pgn,
               notificationTitle: "Online games imported",
               notificationMessage: (imported) =>
-                `${imported.games.length} ${getWebOnlineSourceLabel(source)} games indexed for ${username}.`,
+                `${pluralWeb(
+                  imported.games.length,
+                  `${getWebOnlineSourceLabel(source)} game`,
+                )} indexed for ${username}.`,
             })
           : parsePgnDatabase(`${title}.pgn`, pgn);
         if (!saveDatabase) {
           notifications.show({
             title: "Prep source ready",
-            message: `${imported.games.length} ${getWebOnlineSourceLabel(source)} games are available for this prep.`,
+            message: `${pluralWeb(
+              imported.games.length,
+              `${getWebOnlineSourceLabel(source)} game`,
+            )} ${imported.games.length === 1 ? "is" : "are"} available for this prep.`,
             color: "green",
           });
         }
@@ -1349,7 +1362,7 @@ function BoardWorkspace({
             {boardTitle}
           </Title>
         </Box>
-        <Group gap="xs" wrap="nowrap">
+        <Group gap="xs" wrap="nowrap" style={{ flexShrink: 0 }}>
           <Button
             size="xs"
             variant="light"
@@ -1561,6 +1574,14 @@ function MovesUnderBoardPanel({
   const primaryLine = displayLines[0] ?? [];
   const rootAlternatives = displayLines.slice(1);
 
+  const moveListRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const current = moveListRef.current?.querySelector('[data-current="true"]');
+    if (current instanceof HTMLElement) {
+      current.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+  }, [cursor, line]);
+
   const renderLine = (
     moves: WebPrepLineMove[],
     parentLine: WebPrepLineMove[],
@@ -1680,7 +1701,7 @@ function MovesUnderBoardPanel({
           ))}
         </Box>
       )}
-      <Box className={classes.moveList}>
+      <Box ref={moveListRef} className={classes.moveList}>
         {displayLines.length === 0 ? (
           <Text size="sm" c="dimmed">
             Start
@@ -1883,7 +1904,10 @@ function DatabaseUnderBoardPanel({
   const [localLazyMoves, setLocalLazyMoves] = useState<WebHostedPositionMove[]>([]);
   const [localLazyLoading, setLocalLazyLoading] = useState(false);
   const [localLazyError, setLocalLazyError] = useState<string | null>(null);
-  const localLazySide = trimmedLocalPlayerName ? localColor : getFenColor(currentFen);
+  // Lazy hosted databases cannot filter by player (the perspective controls
+  // are hidden), so a remembered player name must not flip their perspective.
+  const localLazySide =
+    trimmedLocalPlayerName && !isSelectedLocalLazy ? localColor : getFenColor(currentFen);
   const localLazyStatsBase = useMemo(
     () =>
       isSelectedLocalLazy
@@ -2166,7 +2190,8 @@ function DatabaseUnderBoardPanel({
     let active = true;
     void queryWebLichessCloudEngineMoves({
       fen: currentFen,
-      side: trimmedLocalPlayerName ? localColor : getFenColor(currentFen),
+      side:
+        trimmedLocalPlayerName && !isSelectedLocalLazy ? localColor : getFenColor(currentFen),
       moves: localStatsBase.map((stat) => stat.move),
       multipv: localStatsBase.length,
       signal: controller.signal,
@@ -2185,6 +2210,7 @@ function DatabaseUnderBoardPanel({
   }, [
     currentFen,
     databaseStrengthSettings,
+    isSelectedLocalLazy,
     localColor,
     localStatsBase,
     source,
@@ -2669,6 +2695,7 @@ function EngineUnderBoardPanel({
       stopWebStockfish18Search();
       setStatus("idle");
       setError(null);
+      setStockfishLines([]);
       return;
     }
 
@@ -3468,7 +3495,10 @@ function PrepUnderBoardPanel({
   }, [activePrep?.opponent, onlineUsername]);
 
   useEffect(() => {
-    if (onlineMode !== "range") return;
+    if (onlineMode !== "range") {
+      setOnlinePreviewText("");
+      return;
+    }
     setOnlinePreviewText(
       `Imports every public PGN in ${getWebOnlineRangeLabel(onlineRange).toLowerCase()}.`,
     );
@@ -3551,7 +3581,18 @@ function PrepUnderBoardPanel({
       active = false;
       controller.abort();
     };
-  }, [activePrep, branchFen, currentFen, explorerOptions, lichessToken, selectedPrepSource]);
+    // Depend on the prep identity and builder settings, not the whole prep
+    // object: done/skip/note taps replace the prep object and would otherwise
+    // abort and refetch the explorer queries on every tap.
+  }, [
+    activePrep?.id,
+    activePrep?.builder,
+    branchFen,
+    currentFen,
+    explorerOptions,
+    lichessToken,
+    selectedPrepSource,
+  ]);
 
   useEffect(() => {
     if (!activePrep || !selectedPrepSourceIsLazy || !activePrepSourceDatabase?.hostedPath) {
@@ -3616,7 +3657,7 @@ function PrepUnderBoardPanel({
       controller.abort();
     };
   }, [
-    activePrep,
+    activePrep?.id,
     activePrepSourceDatabase?.hostedPath,
     branchFen,
     currentFen,
@@ -4001,9 +4042,14 @@ function PrepUnderBoardPanel({
     else setUserColor(value);
   };
 
+  // Autofill the opponent only once per selected source; refilling whenever
+  // the field becomes empty made it impossible to clear and retype a name.
+  const autofilledOpponentSourceRef = useRef<string | null>(null);
   useEffect(() => {
     if (selectedPrepMode !== "player" || selectedPrepSource !== "local") return;
     if (!activePrepSourceId || selectedPrepDatabasePlayers.length === 0) return;
+    if (autofilledOpponentSourceRef.current === activePrepSourceId) return;
+    autofilledOpponentSourceRef.current = activePrepSourceId;
     if (trimmedSelectedOpponentName) return;
 
     const defaultPlayer = selectedPrepDatabasePlayers[0];
@@ -4706,6 +4752,27 @@ function PrepUnderBoardPanel({
               {lazyPrepError}
             </Text>
           ) : null}
+          <Group gap={6} wrap="nowrap">
+            <Button
+              size="xs"
+              variant="light"
+              leftSection={<IconPlayerPlay size={14} />}
+              onClick={playCommonMove}
+              style={{ flex: "1 1 auto" }}
+            >
+              Common move
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="teal"
+              leftSection={<IconCheck size={14} />}
+              onClick={doneAndNext}
+              style={{ flex: "1 1 auto" }}
+            >
+              Done + next
+            </Button>
+          </Group>
           <Box className={classes.prepTrainingMoves}>
             <Group gap={4} wrap="nowrap" justify="flex-end" className={classes.startedMovesToolbar}>
               <Select
@@ -4989,7 +5056,9 @@ function WebDatabaseGamesList({
   games: WebDatabasePositionGame[];
   onOpenGame: (game: WebGame) => void;
 }) {
-  const isPhoneWidth = useMediaQuery("(max-width: 520px)");
+  const isPhoneWidth = useMediaQuery("(max-width: 520px)", false, {
+    getInitialValueInEffect: false,
+  });
 
   if (games.length === 0) {
     return (
@@ -5345,7 +5414,9 @@ function CompactMoveTable({
   sort?: WebPrepSortState;
   onSort?: (column: WebPrepSortColumn) => void;
 }) {
-  const isPhoneWidth = useMediaQuery("(max-width: 520px)");
+  const isPhoneWidth = useMediaQuery("(max-width: 520px)", false, {
+    getInitialValueInEffect: false,
+  });
   const isPrepTable = Boolean(onMarkDone || onSkipMove || startedMoveKeys);
   const isPrepCandidateTable = isPrepTable && !showState;
   const effectiveSort =
@@ -5380,7 +5451,7 @@ function CompactMoveTable({
           const status = getWebPrepBranchStatus(stat, preparedMoves, skippedMoves, startedMoveKeys);
           const metaLabel = isPrepTable
             ? formatWebPrepLastPlayedShort(stat.lastPlayed)
-            : (formatWebDate(stat.lastPlayed) ?? stat.sourceLabel);
+            : formatWebDate(stat.lastPlayed) || stat.sourceLabel;
           return (
             <Box
               key={stat.key}
@@ -5867,7 +5938,7 @@ function PhoneMoveStatsLine({
     <Group className={classes.phonePrepStatLine} gap={6} wrap="nowrap">
       <PhonePrepStrengthSummary strength={stat.strength} />
       <Text size="xs" fw={700} className={classes.phonePrepStatItem}>
-        {formatCount(stat.total)} games
+        {formatCount(stat.total)} {stat.total === 1 ? "game" : "games"}
       </Text>
       <Text size="xs" c="dimmed" className={classes.phonePrepStatItem}>
         {formatPercent(stat.share)}
@@ -6247,6 +6318,9 @@ function getNextWebPrepSort<TColumn extends WebPrepSortColumn>(
   column: TColumn,
 ): WebPrepSortState<TColumn> {
   if (current.column === column) {
+    // "state" only exists as "Open first" (desc) in the sort selects; an asc
+    // direction would render the toolbar Select blank.
+    if (column === "state") return current;
     return {
       column,
       direction: current.direction === "asc" ? "desc" : "asc",
@@ -6406,7 +6480,7 @@ function formatWebPrepLastPlayed(value: string | null | undefined) {
 }
 
 function formatWebPrepLastPlayedShort(value: string | null | undefined) {
-  return value ? (formatWebDate(value) ?? "-") : "-";
+  return value ? formatWebDate(value) || "-" : "-";
 }
 
 function FilesWorkspace({
@@ -6481,15 +6555,24 @@ function FilesWorkspace({
             <ScrollArea.Autosize mah={520}>
               <Box className={classes.itemList}>
                 {databases.map((database) => (
-                  <button
+                  // A real <button> here would nest the delete ActionIcon
+                  // button inside it, which is invalid HTML.
+                  <Box
                     key={database.id}
                     className={classes.listButton}
                     data-active={database.id === selectedDatabaseId}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => {
                       setSelectedDatabaseId(database.id);
                       setSelectedGameId(null);
                     }}
-                    type="button"
+                    onKeyDown={(event) => {
+                      if (event.key !== "Enter" && event.key !== " ") return;
+                      event.preventDefault();
+                      setSelectedDatabaseId(database.id);
+                      setSelectedGameId(null);
+                    }}
                   >
                     <Group justify="space-between" gap="xs" wrap="nowrap">
                       <Box miw={0}>
@@ -6497,7 +6580,8 @@ function FilesWorkspace({
                           {database.name}
                         </Text>
                         <Text size="0.66rem" c="dimmed" truncate>
-                          {database.gameCount} games - {formatBytes(database.sizeBytes)}
+                          {pluralWeb(database.gameCount, "game")} -{" "}
+                          {formatBytes(database.sizeBytes)}
                         </Text>
                       </Box>
                       <ActionIcon
@@ -6511,7 +6595,7 @@ function FilesWorkspace({
                         <IconTrash size={14} />
                       </ActionIcon>
                     </Group>
-                  </button>
+                  </Box>
                 ))}
               </Box>
             </ScrollArea.Autosize>
@@ -6554,8 +6638,10 @@ function FilesWorkspace({
                         </Text>
                         <Text size="0.66rem" c="dimmed" truncate>
                           {formatWebDate(game.date) || "undated"} - {game.result} -{" "}
-                          {game.moves.length} plies
-                          {variationMoves > 0 ? ` + ${variationMoves} variation plies` : ""}
+                          {pluralWeb(game.moves.length, "ply", "plies")}
+                          {variationMoves > 0
+                            ? ` + ${pluralWeb(variationMoves, "variation ply", "variation plies")}`
+                            : ""}
                         </Text>
                       </button>
                     );
@@ -6649,7 +6735,7 @@ function HostedFilesPanel({
         </ActionIcon>
       </Group>
 
-      {listing?.parentPath !== null && (
+      {listing && listing.parentPath !== null && (
         <Group gap="xs" mb="xs" wrap="wrap">
           <Button
             size="compact-xs"
@@ -6763,6 +6849,7 @@ function WebChessboard({
   const apiRef = useRef<Api | null>(null);
   const onMoveRef = useRef(onMove);
   onMoveRef.current = onMove;
+  const [pendingPromotion, setPendingPromotion] = useState<{ orig: Key; dest: Key } | null>(null);
   useBoardTouchGestures(boardRef, {
     canGoToPreviousMove,
     canGoToNextMove,
@@ -6790,6 +6877,10 @@ function WebChessboard({
         showDests: true,
         events: {
           after(orig: Key, dest: Key) {
+            if (boardMoveNeedsPromotion(fen, orig, dest)) {
+              setPendingPromotion({ orig, dest });
+              return;
+            }
             const uci = makeBoardMoveUci(fen, orig, dest);
             if (uci) onMoveRef.current(uci);
           },
@@ -6826,7 +6917,62 @@ function WebChessboard({
     apiRef.current?.set(config);
   }, [config]);
 
-  return <Box ref={boardRef} className={classes.boardMount} />;
+  useEffect(() => {
+    setPendingPromotion(null);
+  }, [fen]);
+
+  const promotionColor = useMemo(() => getFenColor(fen), [fen]);
+  const promotionGlyphs: Record<WebPromotionRole, string> =
+    promotionColor === "white"
+      ? { q: "♕", r: "♖", b: "♗", n: "♘" }
+      : { q: "♛", r: "♜", b: "♝", n: "♞" };
+
+  return (
+    <Box className={classes.boardArea}>
+      <Box ref={boardRef} className={classes.boardMount} />
+      {pendingPromotion && (
+        <Box className={classes.promotionOverlay}>
+          <Box className={classes.promotionDialog}>
+            <Group gap={6} justify="center" wrap="nowrap">
+              {(["q", "r", "b", "n"] as const).map((role) => (
+                <button
+                  key={role}
+                  type="button"
+                  className={classes.promotionChoice}
+                  aria-label={`Promote to ${
+                    { q: "queen", r: "rook", b: "bishop", n: "knight" }[role]
+                  }`}
+                  onClick={() => {
+                    const uci = makeBoardMoveUci(
+                      fen,
+                      pendingPromotion.orig,
+                      pendingPromotion.dest,
+                      role,
+                    );
+                    setPendingPromotion(null);
+                    if (uci) onMoveRef.current(uci);
+                  }}
+                >
+                  {promotionGlyphs[role]}
+                </button>
+              ))}
+            </Group>
+            <Button
+              size="compact-xs"
+              variant="subtle"
+              color="gray"
+              onClick={() => {
+                setPendingPromotion(null);
+                apiRef.current?.set(config);
+              }}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Box>
+      )}
+    </Box>
+  );
 }
 
 const BOARD_SCROLL_INTENT_PX = 8;
@@ -7031,11 +7177,13 @@ function getWebEngineArrowShapes(lines: WebEngineLine[], fen: string): DrawShape
       continue;
     }
 
-    const color = WEB_ENGINE_ARROW_COLORS[0];
+    const color = WEB_ENGINE_ARROW_COLORS[Math.min(index, WEB_ENGINE_ARROW_COLORS.length - 1)];
     shapes.push({
       orig: from as Key,
       dest: to as Key,
-      brush: index === 0 ? color.strong : color.pale,
+      // Only the first move of each multipv line is drawn, so each line uses
+      // its own strong brush (matches the desktop arrowColors mapping).
+      brush: color.strong,
       modifiers: {
         lineWidth: getWebEngineArrowLineWidth(winChanceDrop),
       },
@@ -7051,7 +7199,9 @@ function getWebEngineArrowLineWidth(winChanceDrop: number) {
   return WEB_ENGINE_ARROW_SMALL_BRUSH;
 }
 
-function makeBoardMoveUci(fen: string, orig: Key, dest: Key) {
+type WebPromotionRole = "q" | "r" | "b" | "n";
+
+function makeBoardMoveUci(fen: string, orig: Key, dest: Key, promotion: WebPromotionRole = "q") {
   const [position] = positionFromFen(fen);
   if (!position || orig === "a0" || dest === "a0") return null;
 
@@ -7059,13 +7209,20 @@ function makeBoardMoveUci(fen: string, orig: Key, dest: Key) {
   const to = parseSquare(dest);
   if (from === undefined || to === undefined) return null;
 
+  return `${orig}${dest}${boardMoveNeedsPromotion(fen, orig, dest) ? promotion : ""}`;
+}
+
+function boardMoveNeedsPromotion(fen: string, orig: Key, dest: Key) {
+  const [position] = positionFromFen(fen);
+  if (!position) return false;
+  const from = parseSquare(orig);
+  if (from === undefined) return false;
   const piece = position.board.get(from);
-  const needsPromotion =
+  return (
     piece?.role === "pawn" &&
     ((piece.color === "white" && dest.endsWith("8")) ||
-      (piece.color === "black" && dest.endsWith("1")));
-
-  return `${orig}${dest}${needsPromotion ? "q" : ""}`;
+      (piece.color === "black" && dest.endsWith("1")))
+  );
 }
 
 function getLastMove(uci: string | null): Key[] | undefined {
@@ -7073,6 +7230,10 @@ function getLastMove(uci: string | null): Key[] | undefined {
   const move = parseUci(uci);
   if (!move || !isNormal(move)) return undefined;
   return [makeSquare(move.from) as Key, makeSquare(move.to) as Key];
+}
+
+function pluralWeb(count: number, noun: string, plural = `${noun}s`) {
+  return `${count} ${count === 1 ? noun : plural}`;
 }
 
 function fenAtCursor(line: WebPrepLineMove[], cursor: number, startFen = INITIAL_FEN) {

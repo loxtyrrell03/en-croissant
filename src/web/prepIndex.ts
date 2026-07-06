@@ -258,8 +258,13 @@ export function getWebPrepMoveStats({
         if (!gameMatchesLocalFilters(game, prep)) continue;
         if (prepMode === "player" && !gameMatchesOpponent(game, opponent, opponentColor)) continue;
 
+        // Variations and repeated positions revisit the same (position, move);
+        // count each game at most once per move so W/D/L stays per-game.
+        const countedMoves = new Set<string>();
         for (const move of getWebGameIndexedMoves(game)) {
             if (normalizeWebFen(move.fenBefore) !== key) continue;
+            if (countedMoves.has(move.san)) continue;
+            countedMoves.add(move.san);
 
             const entry = bucket.get(move.san) ?? createMoveBucket(move.san);
             entry.uci ??= move.uci;
@@ -467,8 +472,11 @@ export function getWebDatabaseMoveStats({
         if (!gameMatchesLocalFilters(game, filters)) continue;
         if (playerName && !gameMatchesPlayerColor(game, playerName, resultPerspective)) continue;
 
+        const countedMoves = new Set<string>();
         for (const move of getWebGameIndexedMoves(game)) {
             if (normalizeWebFen(move.fenBefore) !== key) continue;
+            if (countedMoves.has(move.san)) continue;
+            countedMoves.add(move.san);
 
             const entry = bucket.get(move.san) ?? createMoveBucket(move.san);
             entry.uci ??= move.uci;

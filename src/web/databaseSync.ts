@@ -39,12 +39,28 @@ export function mergeImportedWebDatabases(
       ...prep,
       sourceIds: prep.sourceIds.map((id) => replacementIds.get(id) ?? id),
     })),
-    board: {
-      ...state.board,
-      sourceDatabaseId: state.board.sourceDatabaseId
-        ? replacementIds.get(state.board.sourceDatabaseId) ?? state.board.sourceDatabaseId
-        : state.board.sourceDatabaseId,
-    },
+    board: remapBoardSource(state.board, replacementIds),
+  };
+}
+
+function remapBoardSource(
+  board: WebCompanionState["board"],
+  replacementIds: Map<string, string>,
+) {
+  const oldDatabaseId = board.sourceDatabaseId;
+  const newDatabaseId = oldDatabaseId ? replacementIds.get(oldDatabaseId) : undefined;
+  if (!oldDatabaseId || !newDatabaseId) return board;
+
+  // Game ids are `${databaseId}:${index}` and indexes are stable for the same
+  // hosted folder, so a refreshed database keeps the open game addressable.
+  const sourceGameId = board.sourceGameId?.startsWith(`${oldDatabaseId}:`)
+    ? `${newDatabaseId}${board.sourceGameId.slice(oldDatabaseId.length)}`
+    : board.sourceGameId;
+
+  return {
+    ...board,
+    sourceDatabaseId: newDatabaseId,
+    sourceGameId,
   };
 }
 

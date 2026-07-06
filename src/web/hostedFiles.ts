@@ -76,7 +76,7 @@ const WEB_LIBRARY_BASE = `${import.meta.env.BASE_URL}web-library/`;
 const HOSTED_DATABASE_ROOT = "Databases";
 
 export async function getHostedWebLibrary(): Promise<WebHostedLibrary> {
-    const response = await fetch(`${WEB_LIBRARY_BASE}manifest.json`);
+    const response = await fetch(`${WEB_LIBRARY_BASE}manifest.json`, { cache: "no-cache" });
     if (response.status === 404) {
         return { available: false, manifest: null };
     }
@@ -258,7 +258,10 @@ export async function readHostedPgnFolder(
 }
 
 export function getHostedRawFileUrl(entry: WebHostedFileEntry) {
-    return `${WEB_LIBRARY_BASE}${entry.url}`;
+    // Content stamp busts the HTTP and service-worker caches when a hosted
+    // file is re-pushed at the same path.
+    const stamp = Number.isFinite(entry.lastModified) ? Math.round(entry.lastModified) : 0;
+    return `${WEB_LIBRARY_BASE}${entry.url}${stamp ? `?v=${stamp}` : ""}`;
 }
 
 export function getHostedLibraryFileUrl(path: string) {
