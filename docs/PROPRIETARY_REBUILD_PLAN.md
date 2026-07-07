@@ -467,7 +467,7 @@ as active Outpost gaps unless the owner reopens that scope.
   deterministic/local-CLI/Gemini architecture is a viable proprietary
   replacement, but the plan should record which provider path is accepted for
   release and which remaining fork native-coach polish behaviors are required:
-  interpretation layer and input mechanics polish.
+  input mechanics polish.
   - 2026-07-07 update: Outpost now surfaces local CLI auth failures explicitly.
     Empty-output CLI runs with login/auth/token/session diagnostics and thrown
     desktop command auth errors append a `CLI authentication required` message
@@ -497,6 +497,12 @@ as active Outpost gaps unless the owner reopens that scope.
     engine evidence. Legal SAN segments only become clickable line chips when
     they prefix-match supplied engine/cloud evidence; legal but unsupported
     provider lines remain plain text with a visible not-in-evidence note.
+  - 2026-07-07 update: Outpost now gates Coach material interpretation claims.
+    Supplied engine/cloud lines carry replayed material-swing summaries such as
+    `White +1`, provider evidence includes those summaries, and final answer
+    claims such as "wins a piece", "wins the exchange", "wins a rook", or
+    "wins a queen" are marked unsupported unless a supplied line's material
+    summary backs the side and threshold.
 
 #### Visual And Flow Differences To Verify
 
