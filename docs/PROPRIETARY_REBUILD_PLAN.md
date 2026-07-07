@@ -515,9 +515,13 @@ as active Outpost gaps unless the owner reopens that scope.
     addendum are already closed in Outpost: persistent eval-cache reads/writes
     stop past fullmove 15, cloud-eval misses expire and re-probe, engine
     start/stop calls are idempotent per profile, and opt-in focus-pause resumes
-    the same FEN. Remaining engine/eval tails are explicit per-position cloud
-    status, PV-tail/child-search extension, and first-output watchdog
-    re-verification.
+    the same FEN. Remaining engine/eval tails are PV-tail/child-search
+    extension and first-output watchdog re-verification.
+  - 2026-07-07 update: Outpost now surfaces explicit per-position cloud status
+    in the expanded Analysis engine card. Cloud eval fetches return typed
+    available/missing/rate-limited/timeout/network/invalid-response states with
+    exact reason text, checking/paused states are scoped to the current FEN, and
+    compact engine rows remain quiet about cloud noise.
 
 #### Visual And Flow Differences To Verify
 
