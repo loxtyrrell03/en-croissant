@@ -6057,8 +6057,8 @@ function PrepCoachReportPanel({
           actionLabel="Write report"
           refreshLabel="Refresh report"
           autoRunKey={autoRunKey}
-          modelOverride="gemini-3.1-pro-preview"
-          loadingLabel="Writing natural-language report with Gemini 3.1 Pro..."
+          modelOverride="gemini-3.5-pro-preview"
+          loadingLabel="Writing natural-language report with Gemini 3.5 Pro..."
         />
 
         <Group justify="space-between" gap="xs" wrap="wrap">

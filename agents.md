@@ -554,9 +554,13 @@ default.
 - A same-day UX/model correction made the visible `Coach report` output the
   natural-language coach answer first, not the candidate evidence table. The
   candidate grid is now collapsed as supporting evidence, while the report
-  auto-runs through `gemini-3.1-pro-preview`. Do not downgrade prep coach
+  auto-runs through `gemini-3.5-pro-preview`. Do not downgrade prep coach
   reports to the Flash planner model, and do not make the evidence table the
   primary "report" again.
+- On 2026-07-07, the owner explicitly reverted and pinned the main Gemini
+  coach/report model to `gemini-3.5-pro-preview`. Do not change this model id,
+  default, placeholder, or prep-report override again unless the owner
+  explicitly asks for a different Gemini model.
 - A later 2026-06-23 correction fixed the desktop candidate-row `After prep`
   semantics. The column must never show a `Current` fallback: it means the
   source/opponent's most common response after the displayed candidate, followed
@@ -1209,7 +1213,7 @@ Engine` selector on the phone workspace, and the active panel content starts
   game.
 - On 2026-06-06, an experimental local AI Coach vertical slice was added beside
   the board controls. It uses a Tauri-only Gemini CLI bridge for local personal
-  use, defaults to `gemini-3.1-pro-preview`, sends Gemini only structured
+  use, defaults to `gemini-3.5-pro-preview`, sends Gemini only structured
   Stockfish-grounded prompts, and keeps Stockfish as the source of truth. The
   original version let Gemini request bounded follow-up Stockfish analysis, but
   the current version uses a separate fast planner to request targeted engine
@@ -1282,7 +1286,7 @@ Coach` area instead of a floating modal. The panel keeps a persistent chat
   outputs JSON-only Stockfish requests before any new engine work runs. The
   planner is intentionally generous, with up to six upfront requests; Rust
   validates every request against the exact current FEN and legal moves before
-  Stockfish runs. `gemini-3.1-pro-preview` remains the default coach model and
+  Stockfish runs. `gemini-3.5-pro-preview` remains the default coach model and
   receives the root MultiPV plus all planned targeted results in a single final
   prompt. Pro is no longer allowed to request follow-up Stockfish analysis; if
   it outputs `<stockfish_request>`, the backend rejects it and the planner

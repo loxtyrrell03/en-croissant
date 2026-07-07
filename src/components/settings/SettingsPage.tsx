@@ -343,12 +343,12 @@ export default function Page() {
         id: "ai-coach-model",
         category: "coach",
         title: "Gemini model",
-        description: "Model passed to Gemini CLI; Gemini 3.1 Pro Preview is the default.",
-        keywords: ["ai", "coach", "gemini", "model", "3.1", "pro"],
+        description: "Model passed to Gemini CLI; Gemini 3.5 Pro Preview is the owner-pinned default.",
+        keywords: ["ai", "coach", "gemini", "model", "3.5", "pro"],
         render: () => (
           <TextSetting
             atom={aiCoachGeminiModelAtom}
-            placeholder="gemini-3.1-pro-preview"
+            placeholder="gemini-3.5-pro-preview"
             width={280}
           />
         ),
