@@ -442,6 +442,10 @@ holes below instead of re-litigating already implemented surfaces.
 - **Eval display may be live-engine-only.** Verify and patch whether the board
   eval bar and charts should display stored node evals, cloud/local evals, and
   report-generated evals after the live engine is stopped.
+  - 2026-07-07 update: Outpost's board eval bar now stays available for
+    matching last/live engine PV1, transient cloud/local eval snapshots, and
+    stored node `[%eval]` text from imported/report PGNs while preserving the
+    focus-mode hide behavior.
 - **Mistake-review metadata is simpler.** Add or explicitly defer richer
   severity/nature/phase/time classifications, tactical cause labels, online
   clock backfill, and filters matching the fork's mistake-review workspace.
