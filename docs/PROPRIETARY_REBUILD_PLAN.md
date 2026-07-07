@@ -506,6 +506,11 @@ as active Outpost gaps unless the owner reopens that scope.
   - 2026-07-07 update: Outpost now matches the Coach input mechanics requirement.
     The composer starts blank, submits on Enter, keeps Shift+Enter for a newline,
     blocks empty submissions, and disables submit while a provider turn is busy.
+  - 2026-07-07 verification update: The previously ranked Plan Explorer inline
+    explanation tail is already closed in Outpost. Database-backed Plan Explorer
+    piece/setup rows expose deterministic `Explain` boxes through
+    `planExplanation.ts`, reusing the Engine Plans explanation builder while
+    swapping engine PV metrics for practical sample evidence.
 
 #### Visual And Flow Differences To Verify
 
