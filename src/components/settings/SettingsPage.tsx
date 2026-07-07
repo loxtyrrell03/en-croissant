@@ -40,7 +40,6 @@ import {
   autoSaveAtom,
   aiCoachEnabledAtom,
   aiCoachGeminiCommandAtom,
-  aiCoachGeminiModelAtom,
   aiCoachPlannerModelAtom,
   aiCoachMultipvAtom,
   aiCoachTimeoutSecsAtom,
@@ -338,20 +337,6 @@ export default function Page() {
         description: "Command or executable path for the locally authenticated AGY or Gemini CLI.",
         keywords: ["ai", "coach", "gemini", "antigravity", "agy", "cli", "command", "path"],
         render: () => <TextSetting atom={aiCoachGeminiCommandAtom} placeholder="agy" />,
-      },
-      {
-        id: "ai-coach-model",
-        category: "coach",
-        title: "Gemini model",
-        description: "Model passed to Gemini CLI; Gemini 3.5 Pro Preview is the owner-pinned default.",
-        keywords: ["ai", "coach", "gemini", "model", "3.5", "pro"],
-        render: () => (
-          <TextSetting
-            atom={aiCoachGeminiModelAtom}
-            placeholder="gemini-3.5-pro-preview"
-            width={280}
-          />
-        ),
       },
       {
         id: "ai-coach-planner-model",

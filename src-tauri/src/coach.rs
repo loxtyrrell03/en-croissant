@@ -35,7 +35,9 @@ use crate::{
 };
 
 const DEFAULT_STOCKFISH_DEPTH: u32 = 17;
-const DEFAULT_COACH_MODEL: &str = "gemini-3.1-pro-preview";
+// Owner directive 2026-07-07: the main coach/report Gemini model is pinned.
+// Do not make this user-configurable or change the id.
+const DEFAULT_COACH_MODEL: &str = "gemini-3.5-pro-preview";
 const DEFAULT_PLANNER_MODEL: &str = "gemini-3.5-flash";
 const DEFAULT_PLAN_COACH_MODEL: &str = DEFAULT_PLANNER_MODEL;
 const MAX_PLANNER_STOCKFISH_REQUESTS: usize = 6;
@@ -760,12 +762,7 @@ async fn ask_ai_coach_inner(
 
     let multipv = request.settings.multipv.clamp(3, 8);
     let timeout_secs = request.settings.timeout_secs.clamp(120, 240);
-    let model = request.settings.gemini_model.trim().to_string();
-    let model = if model.is_empty() {
-        DEFAULT_COACH_MODEL.to_string()
-    } else {
-        model
-    };
+    let model = DEFAULT_COACH_MODEL.to_string();
     let planner_model = request.settings.planner_model.trim().to_string();
     let planner_model = if planner_model.is_empty() {
         DEFAULT_PLANNER_MODEL.to_string()
@@ -6463,12 +6460,17 @@ mod tests {
             settings: AiCoachSettings {
                 enabled: true,
                 gemini_command: "gemini".to_string(),
-                gemini_model: "gemini-3.1-pro-preview".to_string(),
+                gemini_model: "legacy-model-ignored".to_string(),
                 planner_model: "gemini-3.5-flash".to_string(),
                 multipv: 3,
                 timeout_secs: 60,
             },
         }
+    }
+
+    #[test]
+    fn main_coach_model_is_owner_pinned() {
+        assert_eq!(DEFAULT_COACH_MODEL, "gemini-3.5-pro-preview");
     }
 
     #[test]

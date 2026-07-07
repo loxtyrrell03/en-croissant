@@ -1,6 +1,7 @@
 import { createStore } from "jotai";
 import { beforeEach, expect, test } from "vitest";
 import {
+    AI_COACH_GEMINI_MODEL,
     activeTabAtom,
     currentShowCommentsAtom,
     currentShowMoveAnnotationsAtom,
@@ -20,6 +21,10 @@ function analysisTab(value: string): Tab {
 
 beforeEach(() => {
     sessionStorage.clear();
+});
+
+test("main Gemini coach model is owner-pinned", () => {
+    expect(AI_COACH_GEMINI_MODEL).toBe("gemini-3.5-pro-preview");
 });
 
 test("per-tab atoms fall back when no tab is selected", () => {

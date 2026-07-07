@@ -31,10 +31,10 @@ import type {
 import { commands } from "@/bindings";
 import { TreeStateContext } from "@/components/common/TreeStateContext";
 import {
+  AI_COACH_GEMINI_MODEL,
   activeTabAtom,
   aiCoachEnabledAtom,
   aiCoachGeminiCommandAtom,
-  aiCoachGeminiModelAtom,
   aiCoachMultipvAtom,
   aiCoachPlannerModelAtom,
   aiCoachTimeoutSecsAtom,
@@ -893,7 +893,7 @@ export default function AiCoachPanel() {
 
   const enabled = useAtomValue(aiCoachEnabledAtom);
   const geminiCommand = useAtomValue(aiCoachGeminiCommandAtom);
-  const geminiModel = useAtomValue(aiCoachGeminiModelAtom);
+  const geminiModel = AI_COACH_GEMINI_MODEL;
   const plannerModel = useAtomValue(aiCoachPlannerModelAtom);
   const multipv = useAtomValue(aiCoachMultipvAtom);
   const timeoutSecs = useAtomValue(aiCoachTimeoutSecsAtom);

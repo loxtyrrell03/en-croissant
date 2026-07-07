@@ -235,12 +235,9 @@ export const aiCoachGeminiCommandAtom = atomWithStorage<string>(
     "ai-coach-gemini-command-v2",
     "agy",
 );
-// Owner directive 2026-07-07: keep the coach model pinned here.
-// Do not change this default unless the owner explicitly asks for a new model.
-export const aiCoachGeminiModelAtom = atomWithStorage<string>(
-    "ai-coach-gemini-model",
-    "gemini-3.5-pro-preview",
-);
+// Owner directive 2026-07-07: this main coach/report model is hard-pinned.
+// Do not make it user-configurable or change the id.
+export const AI_COACH_GEMINI_MODEL = "gemini-3.5-pro-preview" as const;
 export const aiCoachPlannerModelAtom = atomWithStorage<string>(
     "ai-coach-planner-model-v4",
     "gemini-3.5-flash",
