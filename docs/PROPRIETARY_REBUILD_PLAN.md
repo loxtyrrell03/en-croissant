@@ -409,6 +409,10 @@ as active Outpost gaps unless the owner reopens that scope.
   interrupted or placeholder file repair, linked Files-folder sync, hidden
   intermediate artifact folders, direct jump-to-source-games follow-through, and
   database/source move recovery after renames.
+  - 2026-07-07 verification update: gzip-compressed PGN import is already
+    closed in Outpost. Browser import and desktop Files reads sniff gzip magic
+    bytes, and linked-folder sync includes `.pgn.gz`; remaining import-format
+    parity is zip archives and foreign database formats.
 - **Opening/repertoire gap workspace is thinner.** Outpost has useful scan
   modals and deck save flows, but the fork's unified opening-review workspace
   combines stats, filters, analyze/review actions, position management,
