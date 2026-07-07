@@ -340,28 +340,13 @@ tables, coach, reports, review/training, structures, packaging, and much of the
 fork-like desktop geometry already exist. Future agents should focus on the
 holes below instead of re-litigating already implemented surfaces.
 
+2026-07-07 owner direction: phone/PWA/web-companion parity is acceptable to
+defer for now. Do not treat dedicated phone shell, phone layout, phone prep,
+phone engine, hosted phone publish automation, or phone-specific cache behavior
+as active Outpost gaps unless the owner reopens that scope.
+
 #### Release-Blocking Or High-Priority Product Gaps
 
-- **Dedicated phone/PWA companion is missing.** Outpost currently renders the
-  main app in the browser instead of routing to a phone-specific companion like
-  the fork's `src/web/WebApp.tsx`. Build a dedicated phone/web shell or
-  explicitly accept responsive-desktop web as a product change. Parity target:
-  compact phone board, under-board `Moves / Database / Prep / Engine` modes,
-  hosted source picker, persistent phone state, variation-preserving moves,
-  prep setup/train flow, phone import drawer, and iPhone-scale non-overlap.
-- **Hosted database publishing is shallower than the fork.** Outpost's hosted
-  library mirrors existing PGN/PDF files and indexes PGN folders, but it does
-  not yet export local collections or database files into chunked hosted PGNs
-  with caching, size caps, multi-root overrides, and generated position
-  indexes. Add this before treating hosted database parity as complete.
-- **Hosted raw-file cache busting is missing.** Hosted PGN/PDF URLs should carry
-  a content timestamp or equivalent version stamp so republished same-path
-  files are not trapped by the browser/service-worker cache.
-- **Phone/web publish automation is thinner.** The fork has full publish,
-  selective file push, watch/sync scripts, and database-root monitoring. Outpost
-  has only build/publish helpers. Either recreate selective push and scheduled
-  or watched publishing, or record an owner-approved decision that manual
-  publish is the proprietary workflow.
 - **Startup launcher can regress into package-manager prompts.** Outpost's
   Tauri dev/build hooks still call the package manager path directly. Replace
   them with a non-interactive launcher path equivalent to the fork's
@@ -398,8 +383,7 @@ holes below instead of re-litigating already implemented surfaces.
   allow.
 - **Prep online import behavior differs.** Desktop prep import works, but future
   agents should close parity for provider/date previews, save-as-database
-  toggles, temporary unsaved prep sources, and phone-ready import drawer
-  behavior.
+  toggles, and temporary unsaved prep sources.
 - **Database move tables lack full strength parity.** Outpost's database table
   remains more WDL/game-count centered. Add fork-equivalent Smart/Engine/
   Practical strength columns, settings popover, local-eval blend, CP-drop
@@ -491,10 +475,9 @@ holes below instead of re-litigating already implemented surfaces.
   agents must preserve user-visible folder/source workflows, source provenance,
   export paths, and prep/event organization so the storage redesign does not
   remove practical fork workflows.
-- **Visual sign-off items remain.** Confirm notation density, phone settings
-  navigation, engine-card header anatomy, and phone board layout against the
-  reference captures. These are owner sign-off items unless the owner explicitly
-  asks for code changes.
+- **Visual sign-off items remain.** Confirm notation density and engine-card
+  header anatomy against the reference captures. These are owner sign-off items
+  unless the owner explicitly asks for code changes.
 
 #### Owner, Legal, Or Product Decisions
 

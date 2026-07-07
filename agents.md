@@ -372,14 +372,15 @@ default.
   Outpost rebuild at `C:\Users\loxty\Desktop\Repos\outpost-chess` against this
   fork and Outpost's own parity/status docs. `docs/PROPRIETARY_REBUILD_PLAN.md`
   now has a dated "Current Outpost Gap Audit Addendum" marking the remaining
-  holes for future agents: dedicated phone/PWA companion and hosted database
-  publishing, non-interactive startup and restored-tab routing, prep
-  straight-line/habit finder, richer prep coach reports, prep source/audit
+  holes for future agents: non-interactive startup and restored-tab routing,
+  prep straight-line/habit finder, richer prep coach reports, prep source/audit
   tooling, database strength/reachability parity, review auto-updates, engine
   PV arrows, fork-style report workflow or replacement sign-off, clock
   hydration, puzzle/trainer decisions, URL/deep-link decisions, visual sign-off
-  items, and owner/legal release decisions. Treat that addendum as the current
-  patch backlog before claiming Outpost is a full fork replacement.
+  items, and owner/legal release decisions. A same-day owner direction now marks
+  phone/PWA/web-companion parity as deferred rather than an active Outpost gap.
+  Treat that addendum as the current patch backlog before claiming Outpost is a
+  full fork replacement.
 
 ## Product Map
 
