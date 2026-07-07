@@ -405,14 +405,19 @@ as active Outpost gaps unless the owner reopens that scope.
   results can fall back to slower recovery scans, and existence-only novelty
   probes cannot poison shared move caches.
 - **Import/export/source robustness still trails the fork.** Future work should
-  cover compressed PGN/database import, foreign-format import decisions,
-  interrupted or placeholder file repair, linked Files-folder sync, hidden
-  intermediate artifact folders, direct jump-to-source-games follow-through, and
-  database/source move recovery after renames.
+  cover zip/database import, foreign-format import decisions, interrupted or
+  placeholder file repair, hidden intermediate artifact folders,
+  direct jump-to-source-games follow-through, and database/source move recovery
+  after renames.
   - 2026-07-07 verification update: gzip-compressed PGN import is already
     closed in Outpost. Browser import and desktop Files reads sniff gzip magic
     bytes, and linked-folder sync includes `.pgn.gz`; remaining import-format
     parity is zip archives and foreign database formats.
+  - 2026-07-07 verification update: linked Files-folder sync is already closed
+    in Outpost for ordinary library collections. Collections can persist a
+    linked Files folder, reload it additively with bounded recursive PGN
+    discovery and backend fingerprint dedupe, and include those links in the
+    library auto-update pass. The separate study-folder sync row remains open.
 - **Opening/repertoire gap workspace is thinner.** Outpost has useful scan
   modals and deck save flows, but the fork's unified opening-review workspace
   combines stats, filters, analyze/review actions, position management,
