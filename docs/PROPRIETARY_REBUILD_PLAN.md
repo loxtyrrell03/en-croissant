@@ -468,7 +468,12 @@ as active Outpost gaps unless the owner reopens that scope.
   replacement, but the plan should record which provider path is accepted for
   release and which fork native-coach behaviors remain required: engine request
   allowlist, bounded illegal-line repair, first-line verdict behavior, teaching
-  voice, follow-up evidence reuse, and auth-failure surfacing.
+  voice, and follow-up evidence reuse.
+  - 2026-07-07 update: Outpost now surfaces local CLI auth failures explicitly.
+    Empty-output CLI runs with login/auth/token/session diagnostics and thrown
+    desktop command auth errors append a `CLI authentication required` message
+    and mark provider status `auth required`, instead of falling through to a
+    misleading empty-response/provider-failed fallback.
 
 #### Visual And Flow Differences To Verify
 
