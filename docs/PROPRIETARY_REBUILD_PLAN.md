@@ -361,6 +361,13 @@ as active Outpost gaps unless the owner reopens that scope.
   database detail, Engines, Accounts, and Settings routes are required for
   parity. If yes, implement browser history/deep-link restoration; if no, record
   the in-memory model as an intentional proprietary redesign.
+  - 2026-07-07 update: Outpost chose URL-addressable shell routes and now maps
+    Home, Board, Files, Databases, database detail (`/databases/:id`), Engines,
+    Reports, Accounts, and Settings into browser history. Explicit deep links
+    restore their surface on startup, root startup still preserves restored
+    board workspaces, app navigation pushes `history.pushState`, back/forward
+    uses `popstate`, and the Databases detail Explore/back flow keeps the URL
+    synchronized.
 
 #### Prep, Database, And Source-Research Gaps
 
