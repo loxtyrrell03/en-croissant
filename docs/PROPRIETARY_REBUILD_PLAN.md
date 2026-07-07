@@ -324,6 +324,188 @@ The table above is an older baseline inventory. The proprietary replacement shou
 - Database migrations, review-deck migrations, puzzle progress migrations, and hosted-library import migrations should be newly designed but cover the same user data survival cases.
 - A pre-release parity audit should walk `agents.md` headings and recent feature inventory, marking each current fork capability as implemented, intentionally redesigned, deferred with reason, or legally blocked.
 
+### Current Outpost Gap Audit Addendum (2026-07-07)
+
+Four parallel read-only audit agents compared the current Outpost rebuild at
+`C:\Users\loxty\Desktop\Repos\outpost-chess` against this fork and Outpost's own
+`PARITY_AUDIT`, `PHASE_STATUS`, `FORK_FLOW_SPEC`, and `FORK_LAYOUT_SPEC` records.
+This addendum is the dated patch list for future Outpost agents. It should be
+used together with Outpost's local release sign-off checklist; if an item below
+is later fixed in Outpost, update both the Outpost docs and this plan or add a
+superseding dated note.
+
+Important context from the audit: Outpost is no longer an early stub. Home,
+tabbed board workspaces, Files, collection management, engine basics, prep
+tables, coach, reports, review/training, structures, packaging, and much of the
+fork-like desktop geometry already exist. Future agents should focus on the
+holes below instead of re-litigating already implemented surfaces.
+
+#### Release-Blocking Or High-Priority Product Gaps
+
+- **Dedicated phone/PWA companion is missing.** Outpost currently renders the
+  main app in the browser instead of routing to a phone-specific companion like
+  the fork's `src/web/WebApp.tsx`. Build a dedicated phone/web shell or
+  explicitly accept responsive-desktop web as a product change. Parity target:
+  compact phone board, under-board `Moves / Database / Prep / Engine` modes,
+  hosted source picker, persistent phone state, variation-preserving moves,
+  prep setup/train flow, phone import drawer, and iPhone-scale non-overlap.
+- **Hosted database publishing is shallower than the fork.** Outpost's hosted
+  library mirrors existing PGN/PDF files and indexes PGN folders, but it does
+  not yet export local collections or database files into chunked hosted PGNs
+  with caching, size caps, multi-root overrides, and generated position
+  indexes. Add this before treating hosted database parity as complete.
+- **Hosted raw-file cache busting is missing.** Hosted PGN/PDF URLs should carry
+  a content timestamp or equivalent version stamp so republished same-path
+  files are not trapped by the browser/service-worker cache.
+- **Phone/web publish automation is thinner.** The fork has full publish,
+  selective file push, watch/sync scripts, and database-root monitoring. Outpost
+  has only build/publish helpers. Either recreate selective push and scheduled
+  or watched publishing, or record an owner-approved decision that manual
+  publish is the proprietary workflow.
+- **Startup launcher can regress into package-manager prompts.** Outpost's
+  Tauri dev/build hooks still call the package manager path directly. Replace
+  them with a non-interactive launcher path equivalent to the fork's
+  `safe-dev`/npm-script handoff so local dev startup cannot hang on a pnpm
+  reinstall prompt.
+- **Restored tabs do not automatically select the Board route.** Outpost now
+  persists tab sessions, but startup navigation still begins on Home. If saved
+  board tabs exist, startup should open the Board workspace; Home should be the
+  default only when no restored workspace exists.
+- **URL/history routing is not parity-complete.** Outpost uses an in-memory
+  surface store. Decide whether URL-addressable Home, Board, Files, Databases,
+  database detail, Engines, Accounts, and Settings routes are required for
+  parity. If yes, implement browser history/deep-link restoration; if no, record
+  the in-memory model as an intentional proprietary redesign.
+
+#### Prep, Database, And Source-Research Gaps
+
+- **Opponent prep straight-line and habit finder is missing.** The fork has a
+  straight-line/venom-style prep finder that ranks forced or habitual opponent
+  paths, supports cancellation, and can play the found line onto the board.
+  Outpost has strict/venom strength modes but not the full search/result
+  workflow. Add this as a separate prep workstream with tests.
+- **Prep coach/game-plan reporting is reduced.** Outpost has prep coach packets
+  and a compact builder, but not the fork's richer game-plan report action,
+  natural-language report output, evidence grid, safe/unsafe/no-answer states,
+  and bounded independent evidence pass. Patch this separately from ordinary
+  coach chat.
+- **Prep source-management tooling is not first-class enough.** Add event/player
+  prep organization, per-player OTB vs online source separation, combined source
+  PGNs beside converted databases, latest-game reporting, source PGN vs
+  converted count reporting, canonical player-name audits, duplicate detection,
+  skipped/malformed-game reporting, account confidence records, mismatch cleanup,
+  and first-class World Chess/FIDE Online Arena account identity where terms
+  allow.
+- **Prep online import behavior differs.** Desktop prep import works, but future
+  agents should close parity for provider/date previews, save-as-database
+  toggles, temporary unsaved prep sources, and phone-ready import drawer
+  behavior.
+- **Database move tables lack full strength parity.** Outpost's database table
+  remains more WDL/game-count centered. Add fork-equivalent Smart/Engine/
+  Practical strength columns, settings popover, local-eval blend, CP-drop
+  controls, sortable strength/after-prep behavior, and perspective-safe WDL bars
+  to database and compare surfaces.
+- **Reachability and stale-empty protections are incomplete.** Patch search so
+  placeholder reachability metadata does not hide reachable games, indexed empty
+  results can fall back to slower recovery scans, and existence-only novelty
+  probes cannot poison shared move caches.
+- **Import/export/source robustness still trails the fork.** Future work should
+  cover compressed PGN/database import, foreign-format import decisions,
+  interrupted or placeholder file repair, linked Files-folder sync, hidden
+  intermediate artifact folders, direct jump-to-source-games follow-through, and
+  database/source move recovery after renames.
+- **Opening/repertoire gap workspace is thinner.** Outpost has useful scan
+  modals and deck save flows, but the fork's unified opening-review workspace
+  combines stats, filters, analyze/review actions, position management,
+  per-deck settings, urgency/verification display, and embedded practice. Add a
+  workstream to decide whether to rebuild that unified workspace or document the
+  modal split as an accepted redesign.
+
+#### Analysis, Review, Training, And Coach Gaps
+
+- **Review deck auto-update runner is missing or incomplete.** Outpost exposes
+  auto-update flags, but needs a real background runner that detects changed
+  online/local sources, resolves moved databases by identity, rescans linked
+  decks, and records update summaries before practice starts.
+- **Engine PV arrows are incomplete.** Outpost has an arrows preference, but
+  engine PV rows should actually draw/update board arrows like the fork, without
+  leaking hidden review answers.
+- **Game report generation differs.** Outpost can export/copy reports from
+  current evidence, but lacks the fork-style explicit engine-analysis report
+  workflow that runs analysis, builds eval charts, writes quality markers, and
+  lets users jump from report rows to moves. Either implement this report modal
+  behavior or record the current report model as an intentional replacement.
+- **Eval display may be live-engine-only.** Verify and patch whether the board
+  eval bar and charts should display stored node evals, cloud/local evals, and
+  report-generated evals after the live engine is stopped.
+- **Mistake-review metadata is simpler.** Add or explicitly defer richer
+  severity/nature/phase/time classifications, tactical cause labels, online
+  clock backfill, and filters matching the fork's mistake-review workspace.
+- **Clock hydration/backfill is missing.** Outpost parses `%clk`/`%emt`, but
+  needs the fork-equivalent layer that enriches older online PGNs and
+  mistake-review cards with clock/timestamp data during refresh.
+- **Puzzle source/database parity needs a decision.** Outpost's local puzzle
+  sets, SRS, and blindfold work are strong, but the fork's native puzzle
+  database import/download/source model is not equivalent. Decide whether local
+  sets are the accepted proprietary replacement or add puzzle database
+  import/download/management parity.
+- **Managed human-like trainer models need a decision.** The fork supports
+  Patricia/Maia/Stockfish-style managed trainers. Outpost uses local personas
+  and user engines. Record this as an intentional legally safer replacement or
+  authorize a licensed managed-model workstream.
+- **Opening Review home modal tails remain.** Close parity on per-deck settings,
+  online opening scan settings, positions/settings actions, and mistake-review
+  online scan settings exposed from Home modals.
+- **AI Coach is present, but provider behavior needs sign-off.** Outpost's
+  deterministic/local-CLI/Gemini architecture is a viable proprietary
+  replacement, but the plan should record which provider path is accepted for
+  release and which fork native-coach behaviors remain required: engine request
+  allowlist, bounded illegal-line repair, first-line verdict behavior, teaching
+  voice, follow-up evidence reuse, and auth-failure surfacing.
+
+#### Visual And Flow Differences To Verify
+
+- **Board right-side layout is close but not identical.** The fork has a more
+  explicit persisted top-right/bottom-right region model, while Outpost uses a
+  simpler two-pane split and training tab replacements. Verify with owner
+  screenshots whether the current model is acceptable or implement the missing
+  right-column row divider behavior.
+- **Titlebar action injection differs.** The fork can inject board-specific
+  actions beside the File menu. Add an Outpost titlebar action slot if save or
+  board actions should live in that same place.
+- **Accounts and database details are not first-class routes.** Even if
+  in-memory navigation is kept, decide whether Accounts should be visible in the
+  rail or addressable from a stable route, and whether database detail needs a
+  deep-linkable page equivalent.
+- **Database storage model is intentionally different.** Outpost centralizes
+  games in a proprietary library SQLite with collection labels instead of
+  managing many `.db3` files/folders. This is probably desirable, but future
+  agents must preserve user-visible folder/source workflows, source provenance,
+  export paths, and prep/event organization so the storage redesign does not
+  remove practical fork workflows.
+- **Visual sign-off items remain.** Confirm notation density, phone settings
+  navigation, engine-card header anatomy, and phone board layout against the
+  reference captures. These are owner sign-off items unless the owner explicitly
+  asks for code changes.
+
+#### Owner, Legal, Or Product Decisions
+
+- **Internationalization:** the fork ships multiple locales; Outpost is
+  English-only. Decide whether English-only is acceptable for proprietary
+  release or authorize a translation pipeline.
+- **Local Lichess eval-store builder:** Outpost can read an existing compact
+  eval store, but a full public-dump builder/download workflow remains a
+  product and distribution decision.
+- **Auto-update and changelog:** packaging exists, but updater channel,
+  changelog presentation, and release distribution are owner decisions.
+- **Telemetry:** Outpost currently has no telemetry. Confirm this privacy-first
+  stance or authorize an opt-in telemetry design.
+- **Titlebar style:** custom titlebar is currently aligned to fork geometry and
+  Outpost identity; confirm or request native-titlebar conversion.
+- **Online-service terms:** Chess.com PubAPI, World Chess/FIDE Online Arena,
+  Gemini BYOK, Lichess token storage, and engine download/bundling decisions
+  must be resolved through Outpost's adapter/licensing docs before release.
+
 ## 4. My Added Features Preservation Plan
 
 The following specifications preserve the desired behavior and identify owner-added code that may be copied into the proprietary rebuild after provenance review. The "Current reference location" column is for private owner review and extraction. Implementation agents in the fresh proprietary repo should use reviewed reusable-delta bundles rather than browsing the old GPL repository.

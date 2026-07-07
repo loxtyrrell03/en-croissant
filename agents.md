@@ -368,6 +368,18 @@ default.
   technology section now treats Tauri 2, Rust, TypeScript, React, Vite, and
   SQLite as the required baseline stack unless the owner explicitly approves a
   change.
+- On 2026-07-07, a four-subagent read-only parity audit compared the active
+  Outpost rebuild at `C:\Users\loxty\Desktop\Repos\outpost-chess` against this
+  fork and Outpost's own parity/status docs. `docs/PROPRIETARY_REBUILD_PLAN.md`
+  now has a dated "Current Outpost Gap Audit Addendum" marking the remaining
+  holes for future agents: dedicated phone/PWA companion and hosted database
+  publishing, non-interactive startup and restored-tab routing, prep
+  straight-line/habit finder, richer prep coach reports, prep source/audit
+  tooling, database strength/reachability parity, review auto-updates, engine
+  PV arrows, fork-style report workflow or replacement sign-off, clock
+  hydration, puzzle/trainer decisions, URL/deep-link decisions, visual sign-off
+  items, and owner/legal release decisions. Treat that addendum as the current
+  patch backlog before claiming Outpost is a full fork replacement.
 
 ## Product Map
 
