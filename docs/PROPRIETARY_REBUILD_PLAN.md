@@ -411,6 +411,14 @@ as active Outpost gaps unless the owner reopens that scope.
   auto-update flags, but needs a real background runner that detects changed
   online/local sources, resolves moved databases by identity, rescans linked
   decks, and records update summaries before practice starts.
+  - 2026-07-07 update: Outpost now has an Opening Review deck auto-update
+    runner for saved account, local-collection, and coverage-walk recipes. It
+    runs as a 30-minute app-scheduler job, performs the same stale-check before
+    opening an auto-update deck, writes generated cards through the deferred
+    review-card batch path, and records `lastAutoUpdate` summaries on the deck
+    catalog. Remaining nuance for future work: mistake-review online-DB-linked
+    deck refresh still uses the separate rescan-prompt path, and local source
+    recovery should be revisited if collection identities become path-based.
 - **Engine PV arrows are incomplete.** Outpost has an arrows preference, but
   engine PV rows should actually draw/update board arrows like the fork, without
   leaking hidden review answers.
