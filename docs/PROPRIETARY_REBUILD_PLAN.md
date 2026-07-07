@@ -511,6 +511,13 @@ as active Outpost gaps unless the owner reopens that scope.
     piece/setup rows expose deterministic `Explain` boxes through
     `planExplanation.ts`, reusing the Engine Plans explanation builder while
     swapping engine PV metrics for practical sample evidence.
+  - 2026-07-07 verification update: Several engine/eval guard rows from the
+    addendum are already closed in Outpost: persistent eval-cache reads/writes
+    stop past fullmove 15, cloud-eval misses expire and re-probe, engine
+    start/stop calls are idempotent per profile, and opt-in focus-pause resumes
+    the same FEN. Remaining engine/eval tails are explicit per-position cloud
+    status, PV-tail/child-search extension, and first-output watchdog
+    re-verification.
 
 #### Visual And Flow Differences To Verify
 
