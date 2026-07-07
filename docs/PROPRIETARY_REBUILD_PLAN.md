@@ -267,6 +267,11 @@ The table above is an older baseline inventory. The proprietary replacement shou
 - Online games should preserve available clock/timestamp comments, time controls, move think times, board clocks, live replay controls, and clock-data enrichment during refresh.
 - Auto-update metadata for online game databases and review decks, including moved database detection, PGN timestamp normalization, stable source identity, and explicit skip/error summaries.
 - Lichess Study import as a local database with source-order preservation, chapter/study metadata, refresh controls, optional two-way sync, ordering repair, and protection against appending unrelated account games into study databases.
+  - 2026-07-07 verification update: source-order preservation and ordering
+    repair are already closed in Outpost. Lichess study sync records chapter
+    indexes from the export, survives reloads/insertions, and the database
+    detail view defaults study-linked collections to the sortable chapter-order
+    column. Two-way write-back remains optional/open.
 - Online account and external-service imports, including World Chess / FIDE Online Arena where useful for opponent prep, should be behind reviewed adapters, with terms-of-service notes, rate limits, source labels, exact-identity checks, and user-visible confidence/provenance.
 
 #### Prep, Opponent Research, And Strength Models
