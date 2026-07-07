@@ -396,6 +396,10 @@ as active Outpost gaps unless the owner reopens that scope.
   Practical strength columns, settings popover, local-eval blend, CP-drop
   controls, sortable strength/after-prep behavior, and perspective-safe WDL bars
   to database and compare surfaces.
+  - 2026-07-07 verification update: ordinary DatabasePanel opening-move column
+    sorting is already closed in Outpost. The current table persists clickable
+    Move/Games/White/Draws/Black/Score/Recent sorting; the remaining gap here
+    is strength/blend parity, not basic WDL/count/date sorting.
 - **Reachability and stale-empty protections are incomplete.** Patch search so
   placeholder reachability metadata does not hide reachable games, indexed empty
   results can fall back to slower recovery scans, and existence-only novelty
