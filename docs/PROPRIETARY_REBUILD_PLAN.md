@@ -515,8 +515,8 @@ as active Outpost gaps unless the owner reopens that scope.
     addendum are already closed in Outpost: persistent eval-cache reads/writes
     stop past fullmove 15, cloud-eval misses expire and re-probe, engine
     start/stop calls are idempotent per profile, and opt-in focus-pause resumes
-    the same FEN. After the dated updates below, the remaining engine/eval tail
-    is PV-tail/child-search extension.
+    the same FEN. After the dated updates below, Section 3's engine/eval-store
+    tail is closed in Outpost.
   - 2026-07-07 update: Outpost now surfaces explicit per-position cloud status
     in the expanded Analysis engine card. Cloud eval fetches return typed
     available/missing/rate-limited/timeout/network/invalid-response states with
@@ -525,8 +525,13 @@ as active Outpost gaps unless the owner reopens that scope.
   - 2026-07-07 update: Outpost now has a bounded first-output watchdog for
     engine searches. Profile starts/restarts clear stale rows, retry once when
     no analysis line arrives, and stop/clear the analyzing state after a silent
-    retry so the UI remains recoverable. Remaining engine/eval tail is
-    PV-tail/child-search extension.
+    retry so the UI remains recoverable.
+  - 2026-07-07 update: Outpost now closes the Section 3 engine/eval-store tail
+    for compact one-move cloud rows. Matching root engine MultiPV tails are
+    grafted onto local cloud rows when available, and still-compact rows run a
+    bounded hidden child-position engine search to fill continuation PVs later,
+    while the stored cloud score, depth, source, and root move remain
+    authoritative.
 
 #### Visual And Flow Differences To Verify
 
