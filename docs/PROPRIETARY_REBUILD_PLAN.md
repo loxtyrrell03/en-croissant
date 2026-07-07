@@ -430,6 +430,10 @@ holes below instead of re-litigating already implemented surfaces.
 - **Engine PV arrows are incomplete.** Outpost has an arrows preference, but
   engine PV rows should actually draw/update board arrows like the fork, without
   leaking hidden review answers.
+  - 2026-07-07 update: Outpost now draws transient board arrows for visible,
+    legal engine/cloud PV first moves when Analysis arrows and eval visibility
+    are enabled; stale rows, hidden-answer review positions, and collapsed or
+    non-Engine views clear the overlay.
 - **Game report generation differs.** Outpost can export/copy reports from
   current evidence, but lacks the fork-style explicit engine-analysis report
   workflow that runs analysis, builds eval charts, writes quality markers, and
