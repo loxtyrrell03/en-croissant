@@ -467,8 +467,7 @@ as active Outpost gaps unless the owner reopens that scope.
   deterministic/local-CLI/Gemini architecture is a viable proprietary
   replacement, but the plan should record which provider path is accepted for
   release and which fork native-coach behaviors remain required: engine request
-  allowlist, bounded illegal-line repair, teaching voice, and follow-up evidence
-  reuse.
+  allowlist, bounded illegal-line repair, and follow-up evidence reuse.
   - 2026-07-07 update: Outpost now surfaces local CLI auth failures explicitly.
     Empty-output CLI runs with login/auth/token/session diagnostics and thrown
     desktop command auth errors append a `CLI authentication required` message
@@ -479,6 +478,10 @@ as active Outpost gaps unless the owner reopens that scope.
     supplied line 1 is the candidate/prefix verdict under best play, while later
     supplied lines are comparison or alternative replies and must not be cited
     as that candidate's own evaluation.
+  - 2026-07-07 update: Outpost now records the concept-first teaching voice in
+    the Coach bridge. Providers are instructed to explain the concrete chess
+    mechanism before eval numbers, use evals as supporting evidence, and avoid
+    psychological attributions unless the user explicitly asks for that lens.
 
 #### Visual And Flow Differences To Verify
 
