@@ -1,7 +1,8 @@
 import { spawn } from "node:child_process";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 
-const MODEL = process.env.COACH_EVAL_MODEL ?? "gemini-3.1-pro-preview";
+// Owner directive 2026-07-07: keep the main coach/report model pinned.
+const MODEL = "gemini-3.5-pro-preview";
 const GEMINI =
   process.env.COACH_EVAL_COMMAND ??
   (process.platform === "win32" && process.env.APPDATA
