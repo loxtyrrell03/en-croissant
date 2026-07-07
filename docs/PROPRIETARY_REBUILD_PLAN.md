@@ -466,8 +466,9 @@ as active Outpost gaps unless the owner reopens that scope.
 - **AI Coach is present, but provider behavior needs sign-off.** Outpost's
   deterministic/local-CLI/Gemini architecture is a viable proprietary
   replacement, but the plan should record which provider path is accepted for
-  release and which fork native-coach behaviors remain required: engine request
-  allowlist and bounded illegal-line repair.
+  release and which remaining fork native-coach polish behaviors are required:
+  interpretation layer, input mechanics polish, and full engine-evidence
+  prefix matching for every interactive citation.
   - 2026-07-07 update: Outpost now surfaces local CLI auth failures explicitly.
     Empty-output CLI runs with login/auth/token/session diagnostics and thrown
     desktop command auth errors append a `CLI authentication required` message
@@ -487,6 +488,12 @@ as active Outpost gaps unless the owner reopens that scope.
     answer snippet, and anchor to questions such as "that line"; previous lines
     become verdict evidence only when the board FEN is unchanged, otherwise
     they remain scope notes.
+  - 2026-07-07 update: The previously listed engine request allowlist and
+    bounded illegal-line repair items are verified as present in Outpost:
+    `coachEngineRequests.ts` honors only current-position or after-line evals,
+    visibly ignores unsupported requests, and validates/repairs after-line
+    requests once; `coachLines.ts` bounds answer-line repair to one visible
+    attempt before leaving invalid lines as plain text.
 
 #### Visual And Flow Differences To Verify
 
