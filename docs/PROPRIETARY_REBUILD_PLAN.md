@@ -466,8 +466,8 @@ as active Outpost gaps unless the owner reopens that scope.
 - **AI Coach is present, but provider behavior needs sign-off.** Outpost's
   deterministic/local-CLI/Gemini architecture is a viable proprietary
   replacement, but the plan should record which provider path is accepted for
-  release and which remaining fork native-coach polish behaviors are required:
-  input mechanics polish.
+  release. The native-coach polish behaviors listed in this addendum are now
+  closed at item level.
   - 2026-07-07 update: Outpost now surfaces local CLI auth failures explicitly.
     Empty-output CLI runs with login/auth/token/session diagnostics and thrown
     desktop command auth errors append a `CLI authentication required` message
@@ -503,6 +503,9 @@ as active Outpost gaps unless the owner reopens that scope.
     claims such as "wins a piece", "wins the exchange", "wins a rook", or
     "wins a queen" are marked unsupported unless a supplied line's material
     summary backs the side and threshold.
+  - 2026-07-07 update: Outpost now matches the Coach input mechanics requirement.
+    The composer starts blank, submits on Enter, keeps Shift+Enter for a newline,
+    blocks empty submissions, and disables submit while a provider turn is busy.
 
 #### Visual And Flow Differences To Verify
 
