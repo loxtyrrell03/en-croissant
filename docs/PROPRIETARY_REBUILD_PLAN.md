@@ -9,6 +9,8 @@ The active proprietary plan now lives with the product being built:
 - [Full surface and behavior matrix](../../outpost-chess/docs/parity-audit/2026-07-09/MATRIX.md)
 - [Active gap ledger](../../outpost-chess/docs/parity-audit/2026-07-09/GAP_LEDGER.md)
 - [Deterministic fixture contract](../../outpost-chess/docs/parity-audit/2026-07-09/fixtures/README.md)
+- [Hidden screenshot workflow](../../outpost-chess/docs/parity-audit/SCREENSHOT_WORKFLOW.md)
+- [Long-running rebuild goal prompt](../../outpost-chess/docs/PROPRIETARY_REBUILD_GOAL_PROMPT.md)
 
 This fork-side file is deliberately short. The old plan mixed clean-room strategy, speculative architecture, completed implementation waves, commit chronology, prompt templates, and several superseded audits. Git history retains that history; it is not the current backlog.
 
@@ -67,6 +69,7 @@ The exact row-by-row status and acceptance conditions are in the linked Outpost 
 - Missing transient/error/progress states must remain marked fixture-required; do not fabricate mocks and call them product evidence.
 - All fork and owner-data captures are internal-only and must never ship or appear in marketing.
 - Future capture must run hidden/off-screen and must not activate the owner’s app or move the operating-system pointer.
+- Follow the linked screenshot workflow for the exact WebView2/CDP launch, capture, top/middle/bottom, validation, manifest, comparison, and cleanup procedure.
 
 ## Phone/PWA
 

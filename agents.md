@@ -383,11 +383,17 @@ default.
   full fork replacement.
 - On 2026-07-09, the active proprietary-rebuild handoff was consolidated in
   `C:\Users\loxty\Desktop\Repos\outpost-chess\docs\PROPRIETARY_REBUILD_PLAN.md`
-  and `docs/parity-audit/2026-07-09` in the Outpost repo. The audit contains a
-  129-image labeled corpus, an exhaustive source-backed parity matrix, a
+  and `docs/parity-audit/2026-07-09` in the Outpost repo. A 2026-07-10 hidden
+  fork sweep expanded the audit to a 192-image labeled corpus, including 63
+  current fork native captures for shell menus, populated Database and Prep,
+  engine lifecycle, and Mistake Review attempt/reveal states. The audit also
+  contains an exhaustive source-backed parity matrix, a
   prioritized gap ledger, and a deterministic fixture contract. Native
   off-screen captures now prove populated Prep and Database move tables,
   including top/middle/bottom segments that collectively show every move row.
+  `docs/parity-audit/SCREENSHOT_WORKFLOW.md` records the exact no-foreground
+  WebView2/CDP procedure, and `docs/PROPRIETARY_REBUILD_GOAL_PROMPT.md` is the
+  copy-ready long-running implementation handoff.
   The fork-side `docs/PROPRIETARY_REBUILD_PLAN.md` is now a concise pointer to
   that authoritative plan. Treat the July 9 matrix and ledger as current; the
   July 7 addendum and older phase/status narratives are historical evidence.
