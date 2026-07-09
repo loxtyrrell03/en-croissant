@@ -381,6 +381,18 @@ default.
   phone/PWA/web-companion parity as deferred rather than an active Outpost gap.
   Treat that addendum as the current patch backlog before claiming Outpost is a
   full fork replacement.
+- On 2026-07-09, the active proprietary-rebuild handoff was consolidated in
+  `C:\Users\loxty\Desktop\Repos\outpost-chess\docs\PROPRIETARY_REBUILD_PLAN.md`
+  and `docs/parity-audit/2026-07-09` in the Outpost repo. The audit contains a
+  129-image labeled corpus, an exhaustive source-backed parity matrix, a
+  prioritized gap ledger, and a deterministic fixture contract. Native
+  off-screen captures now prove populated Prep and Database move tables,
+  including top/middle/bottom segments that collectively show every move row.
+  The fork-side `docs/PROPRIETARY_REBUILD_PLAN.md` is now a concise pointer to
+  that authoritative plan. Treat the July 9 matrix and ledger as current; the
+  July 7 addendum and older phase/status narratives are historical evidence.
+  Future capture must stay hidden/off-screen and must not move the owner's
+  pointer or activate either product window.
 
 ## Product Map
 
