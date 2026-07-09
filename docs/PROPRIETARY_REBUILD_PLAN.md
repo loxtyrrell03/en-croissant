@@ -1,12 +1,13 @@
 # Proprietary rebuild handoff — fork-side reference
 
-**Status:** current handoff · **Last rewritten:** 2026-07-09 · **Active rebuild:** `C:\Users\loxty\Desktop\Repos\outpost-chess`
+**Status:** current handoff · **Last rewritten:** 2026-07-10 · **Active rebuild:** `C:\Users\loxty\Desktop\Repos\outpost-chess`
 
 The active proprietary plan now lives with the product being built:
 
 - [Current Outpost execution plan](../../outpost-chess/docs/PROPRIETARY_REBUILD_PLAN.md)
 - [2026-07-09 parity audit](../../outpost-chess/docs/parity-audit/2026-07-09/README.md)
 - [Full surface and behavior matrix](../../outpost-chess/docs/parity-audit/2026-07-09/MATRIX.md)
+- [Source-level micro-gap audit](../../outpost-chess/docs/parity-audit/2026-07-09/MICRO_GAP_AUDIT.md)
 - [Active gap ledger](../../outpost-chess/docs/parity-audit/2026-07-09/GAP_LEDGER.md)
 - [Deterministic fixture contract](../../outpost-chess/docs/parity-audit/2026-07-09/fixtures/README.md)
 - [Hidden screenshot workflow](../../outpost-chess/docs/parity-audit/SCREENSHOT_WORKFLOW.md)
@@ -53,11 +54,12 @@ It is not the implementation base for Outpost’s proprietary native layer, sche
 Outpost already has broad desktop coverage. The current phase is not “build an MVP.” It is:
 
 1. build an isolated deterministic fixture/capture harness;
-2. close Database and review correctness/scale gaps;
-3. complete durable full-game analysis and Prep jobs;
-4. resolve owner decisions;
-5. perform fixture-backed visual and interaction sign-off;
-6. complete provenance, migration, packaging, signing, recovery, and release gates.
+2. stop silent loss, orphaning, truncation, and wrong-target saves—especially game identity, Files/repertoire origin binding, structured metadata, position indexing, review ownership, and reset behavior;
+3. close full-data Database/review/tab-state/Files/Accounts/training correctness and scale gaps;
+4. complete durable full-game analysis and Prep jobs;
+5. resolve owner decisions;
+6. perform fixture-backed visual, interaction, defaults, and accessibility sign-off;
+7. complete provenance, migration, packaging, signing, recovery, and release gates.
 
 The exact row-by-row status and acceptance conditions are in the linked Outpost matrix and ledger. Do not recreate a second backlog here.
 
@@ -66,6 +68,7 @@ The exact row-by-row status and acceptance conditions are in the linked Outpost 
 - Browser captures are supplementary and cannot prove native Tauri behavior.
 - Empty/setup images cannot prove populated Database, Prep, review, Files, Accounts, Engines, or report parity.
 - Database and Prep evidence must show started data-bearing tables, every fixture row across top/middle/bottom captures, counts, source, Strength/After Prep or CP, Games, WDL, Games evidence, and Options.
+- Before calling those captures complete, assert the query and rendered move counts against fixture truth; current 24-row Database and 20-row Prep ceilings can otherwise make an incomplete sequence look exhaustive.
 - Missing transient/error/progress states must remain marked fixture-required; do not fabricate mocks and call them product evidence.
 - All fork and owner-data captures are internal-only and must never ship or appear in marketing.
 - Future capture must run hidden/off-screen and must not activate the owner’s app or move the operating-system pointer.
@@ -77,7 +80,7 @@ Phone/PWA/web-companion parity is deferred unless the owner explicitly reopens i
 
 ## Next-agent workflow
 
-1. Read the active Outpost plan, matrix, ledger, and fixture contract.
+1. Read the active Outpost plan, matrix, micro-gap audit, ledger, and fixture contract.
 2. Check both worktrees and preserve unrelated changes.
 3. Work from the first unfinished ledger item in the recommended order unless the owner directs otherwise.
 4. Implement and verify in Outpost using isolated fixture data.
