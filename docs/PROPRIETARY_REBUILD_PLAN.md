@@ -63,7 +63,7 @@ Outpost already has broad desktop coverage. The current phase is not “build an
 
 The exact row-by-row status and acceptance conditions are in the linked Outpost matrix and ledger. Do not recreate a second backlog here.
 
-The 2026-07-10 implementation wave added fatal recovery, individual engine-PV copy, unopened-descendant Files search, independent Daily Goal accounting, drag/click/both input, figurine notation, forced en passant, fork-aligned/right-cleared fresh defaults, richer settings migration, Lichess-All Database default, and diagnostic shell/About behavior. The full TypeScript suite (1,562 tests) and production build passed. These rows remain `PARTIAL` or `UNVERIFIED` until their native paired fixtures are captured; the matrix records their exact residuals.
+The 2026-07-10 implementation/correction wave added fatal recovery, individual engine-PV copy, recursive Files search and state reconciliation, configurable Daily Goal records and setup flows, drag/click/both input, figurine notation, forced en passant, fork-aligned/right-cleared defaults, local-human Play with durable clock snapshots, puzzle Elo and assistance fixes, scoped Database preferences, tab/menu behavior, Settings semantics, honest missing-engine failure, and diagnostic shell/About behavior. Outpost commit `ad108d9` records the reconciled 321-image corpus and current residuals. The full TypeScript suite (1,621 tests) and production build passed. Ordinary Files, Daily Goals, Play, tabs, Settings, shell menus/About, and puzzle-rating visual states now have current evidence; deterministic persistence/error/boundary pairs and the Matrix gaps remain open.
 
 ## Reference and screenshot rules
 

@@ -384,13 +384,16 @@ default.
 - On 2026-07-09, the active proprietary-rebuild handoff was consolidated in
   `C:\Users\loxty\Desktop\Repos\outpost-chess\docs\PROPRIETARY_REBUILD_PLAN.md`
   and `docs/parity-audit/2026-07-09` in the Outpost repo. A 2026-07-10 hidden
-  fork sweep expanded the audit to a 192-image labeled corpus, including 63
-  current fork native captures for shell menus, populated Database and Prep,
-  engine lifecycle, and Mistake Review attempt/reveal states. The audit also
-  contains an exhaustive source-backed parity matrix, a
-  prioritized gap ledger, and a deterministic fixture contract. Native
-  off-screen captures now prove populated Prep and Database move tables,
-  including top/middle/bottom segments that collectively show every move row.
+  sweep and follow-up pairing expanded the audit to a 321-image labeled corpus:
+  150 current fork native, 63 Outpost native, 75 Outpost browser-fixture, 24
+  historical fork native, and 9 historical phone images. Current pairs now
+  include Files dialogs, configurable/duplicate Daily Goals, local-human Play,
+  tab actions, every Outpost Settings category, shell menus/About, and puzzle
+  rating states, in addition to populated Database/Prep and review/training
+  evidence. The audit also contains an exhaustive source-backed parity matrix,
+  prioritized gap ledger, and deterministic fixture contract. Native off-screen
+  captures prove populated Prep and Database move tables, including segmented
+  top/middle/bottom sets that collectively show every visible move row.
   `docs/parity-audit/SCREENSHOT_WORKFLOW.md` records the exact no-foreground
   WebView2/CDP procedure, and `docs/PROPRIETARY_REBUILD_GOAL_PROMPT.md` is the
   copy-ready long-running implementation handoff.
@@ -400,17 +403,19 @@ default.
   Future capture must stay hidden/off-screen and must not move the owner's
   pointer or activate either product window.
 - On 2026-07-10, the first post-audit Outpost implementation wave landed as
-  seven focused commits: fatal recovery, individual engine-PV copy, deep Files
-  search, independent Daily Goal accounting, drag/click/both input, figurine
-  notation, forced en passant, fork-aligned/right-cleared defaults and
-  migration, Lichess-All Database default, and diagnostic shell/About behavior.
-  Outpost's full TypeScript suite passed 1,562 tests and the production build
-  was green. The authoritative matrix deliberately keeps the new surfaces
-  `PARTIAL` or `UNVERIFIED` until native paired fixtures are captured. Remaining
-  related gaps include custom/duplicate Daily Goals, automatic Prep progress,
-  review scale, Files drag/drop and multi-game save-back, Prep defaults, and
-  broad accessibility. Continue to avoid the owner-active board/Prep/native
-  storage files unless their current changes have been reconciled first.
+  focused milestones for fatal recovery, PV copy, deep Files search/state,
+  configurable Daily Goals, board input/defaults, local-human Play/clocks,
+  puzzle Elo/assistance, scoped Database preferences, tab behavior, Settings
+  semantics, and honest engine/report failure states. Outpost commit `ad108d9`
+  records the reconciled 321-image corpus, matrix, ledger, and hidden-capture
+  workflow. The full TypeScript suite passed 1,621 tests and the production
+  build was green. Remaining gaps include exact-path Home due binding and Prep
+  Practice routing, Opening Review daily controls, per-side/engine-v-engine
+  Play, Files icons/metadata/dialog outcomes/drag/multi-game save-back, native
+  puzzle-chart proof and full Stats depth, Settings/OAuth/titlebar decisions,
+  data ceilings, persistent jobs, release fixtures, and broad accessibility.
+  Continue to avoid the owner-active board/Prep/native storage files unless
+  their current changes have been reconciled first.
 
 ## Product Map
 
