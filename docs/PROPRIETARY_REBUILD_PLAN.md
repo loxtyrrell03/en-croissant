@@ -1,17 +1,17 @@
-# Proprietary rebuild handoff — fork-side reference
+# Proprietary rebuild handoff — fork-side roadmap reference
 
-**Status:** focused V1 handoff · **Updated:** 2026-07-10
+**Status:** staged roadmap handoff · **Updated:** 2026-07-10
 
 **Active rebuild:** `C:\Users\loxty\Desktop\Repos\outpost-chess`
 
 The authoritative plan lives with Outpost:
 
-- [Focused V1 execution plan](../../outpost-chess/docs/PROPRIETARY_REBUILD_PLAN.md)
-- [Focused scope and full-work recovery](../../outpost-chess/docs/FOCUSED_V1_SCOPE.md)
+- [Staged proprietary rebuild roadmap](../../outpost-chess/docs/PROPRIETARY_REBUILD_PLAN.md)
+- [Wave 1 scope and full-work recovery](../../outpost-chess/docs/FOCUSED_V1_SCOPE.md)
 - [Current phase status](../../outpost-chess/docs/PHASE_STATUS.md)
 - [Long-running focused goal prompt](../../outpost-chess/docs/PROPRIETARY_REBUILD_GOAL_PROMPT.md)
 - [Hidden screenshot workflow](../../outpost-chess/docs/parity-audit/SCREENSHOT_WORKFLOW.md)
-- [Historical parity evidence](../../outpost-chess/docs/parity-audit/2026-07-09/README.md)
+- [Long-term parity evidence](../../outpost-chess/docs/parity-audit/2026-07-09/README.md)
 
 ## Current product decision
 
@@ -19,15 +19,19 @@ The long-term vision remains the same capable chess product, rebuilt as the
 owner's independently controlled proprietary software with original/right-cleared
 implementation, identity, assets, schemas, packaging, and release process.
 
-The immediate release target is deliberately smaller: a preparation-first V1.
+The immediate release target is deliberately smaller: preparation-first Wave 1.
 Retained scope is Home analysis/latest/online/import, Files/folders, Databases,
 board/notation/annotations, engines, Prep, Plan Explorer, Engine Plans, Compare,
 Info, Accounts, and focused Settings.
 
-Deferred features are Play Chess, Blindfold, Opening Review, repertoire
+Later-wave features are Play Chess, Blindfold, Opening Review, repertoire
 Practice/review due badges, Mistake Review, Puzzle Training, standalone Reports
 and Files style reports, Daily Goals, Pawn Structures, AI Coach, and phone/PWA.
-Their absence on Outpost `main` is not a parity bug.
+Their absence on Outpost `main` is not a Wave 1 bug, but it also does not remove
+them from the long-term product. The full matrix, gap ledger, micro-audit,
+screenshots, fixtures, and recorded discrepancies remain authoritative. After
+the essentials ship, Outpost scales up in deliberate core-depth, improvement,
+and play/training/expansion waves.
 
 ## Preserved full rebuild
 
@@ -51,7 +55,8 @@ review.
 
 ## Screenshot rule
 
-Use the July corpus only for retained V1 surfaces during this phase. Capture
+Use the Wave 1 subset of the July corpus during this phase, while preserving the
+entire corpus as the long-term parity specification. Capture
 hidden/off-screen; never activate either product or move the owner's pointer.
 On Windows, changing `APPDATA`/`LOCALAPPDATA` did not isolate Tauri
 `app_data_dir()`. Before fixture writes, verify an explicit backend data-dir
@@ -60,4 +65,5 @@ workflow for populated Database/Prep top/middle/bottom sequences, manifests,
 diffs, and cleanup.
 
 Do not recreate another backlog in this fork. Update the authoritative Outpost
-plan and use Git history plus the archive branch when deferred work is resumed.
+plan and use its unchanged matrix/ledger plus Git history and the archive branch
+when each later wave is resumed.

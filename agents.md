@@ -424,12 +424,21 @@ default.
   Plan Explorer, Engine Plans, Compare, Info, and Accounts. Play, Blindfold,
   Opening/Mistake Review, repertoire Practice/due badges, Puzzle Training,
   standalone Reports/style reports, Daily Goals, Structures, AI Coach, and
-  phone/PWA are deferred rather than current parity bugs. The authoritative
-  handoff is now Outpost `docs/PROPRIETARY_REBUILD_PLAN.md`, with exact archive
+  phone/PWA are scheduled for later waves rather than Wave 1 release bugs. The
+  authoritative handoff is now Outpost `docs/PROPRIETARY_REBUILD_PLAN.md`, with exact archive
   recovery in `docs/FOCUSED_V1_SCOPE.md`. Future native capture must also heed
   the workflow's Windows warning: changing `APPDATA`/`LOCALAPPDATA` did not
   isolate Tauri `app_data_dir`; verify an explicit backend data-dir override
   with `storage_status` before fixture writes, otherwise capture read-only.
+- A subsequent 2026-07-10 clarification makes that focus a sequencing decision,
+  not a smaller final vision. The July matrix, gap ledger, micro-audit, 321-image
+  corpus, fixtures, and every recorded visual/functional difference remain the
+  authoritative long-term rebuild specification. Wave 1 ships the preparation
+  essentials; later waves harden core depth/scale, restore improvement loops,
+  and then restore Play/training/expansion features. A hidden Wave 1 surface is
+  not a current release bug, but its existing parity status must not be deleted,
+  closed, or marked matched. Use Outpost's staged
+  `docs/PROPRIETARY_REBUILD_PLAN.md` for the exact wave interpretation.
 - A later 2026-07-10 Outpost launcher follow-up replaced the desktop shortcut's
   direct stale-executable target with Outpost `scripts/launch-latest.ps1`.
   `Outpost.lnk` now hashes all frontend/native build inputs on every click,
