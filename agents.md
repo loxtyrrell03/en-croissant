@@ -416,6 +416,20 @@ default.
   data ceilings, persistent jobs, release fixtures, and broad accessibility.
   Continue to avoid the owner-active board/Prep/native storage files unless
   their current changes have been reconciled first.
+- Later on 2026-07-10, the owner narrowed the proprietary release target to a
+  preparation-first V1. The complete Outpost parity state is preserved at
+  branch `codex/full-parity-rebuild-2026-07-10`, commit `194c0e3`; Outpost
+  `main` is now the focused product. Retained scope is Home analysis/latest/
+  online/import, Files/folders, Databases, board/annotations, engines, Prep,
+  Plan Explorer, Engine Plans, Compare, Info, and Accounts. Play, Blindfold,
+  Opening/Mistake Review, repertoire Practice/due badges, Puzzle Training,
+  standalone Reports/style reports, Daily Goals, Structures, AI Coach, and
+  phone/PWA are deferred rather than current parity bugs. The authoritative
+  handoff is now Outpost `docs/PROPRIETARY_REBUILD_PLAN.md`, with exact archive
+  recovery in `docs/FOCUSED_V1_SCOPE.md`. Future native capture must also heed
+  the workflow's Windows warning: changing `APPDATA`/`LOCALAPPDATA` did not
+  isolate Tauri `app_data_dir`; verify an explicit backend data-dir override
+  with `storage_status` before fixture writes, otherwise capture read-only.
 
 ## Product Map
 
