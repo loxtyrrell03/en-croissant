@@ -399,6 +399,18 @@ default.
   July 7 addendum and older phase/status narratives are historical evidence.
   Future capture must stay hidden/off-screen and must not move the owner's
   pointer or activate either product window.
+- On 2026-07-10, the first post-audit Outpost implementation wave landed as
+  seven focused commits: fatal recovery, individual engine-PV copy, deep Files
+  search, independent Daily Goal accounting, drag/click/both input, figurine
+  notation, forced en passant, fork-aligned/right-cleared defaults and
+  migration, Lichess-All Database default, and diagnostic shell/About behavior.
+  Outpost's full TypeScript suite passed 1,562 tests and the production build
+  was green. The authoritative matrix deliberately keeps the new surfaces
+  `PARTIAL` or `UNVERIFIED` until native paired fixtures are captured. Remaining
+  related gaps include custom/duplicate Daily Goals, automatic Prep progress,
+  review scale, Files drag/drop and multi-game save-back, Prep defaults, and
+  broad accessibility. Continue to avoid the owner-active board/Prep/native
+  storage files unless their current changes have been reconciled first.
 
 ## Product Map
 

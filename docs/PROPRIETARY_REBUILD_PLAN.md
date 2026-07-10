@@ -63,6 +63,8 @@ Outpost already has broad desktop coverage. The current phase is not “build an
 
 The exact row-by-row status and acceptance conditions are in the linked Outpost matrix and ledger. Do not recreate a second backlog here.
 
+The 2026-07-10 implementation wave added fatal recovery, individual engine-PV copy, unopened-descendant Files search, independent Daily Goal accounting, drag/click/both input, figurine notation, forced en passant, fork-aligned/right-cleared fresh defaults, richer settings migration, Lichess-All Database default, and diagnostic shell/About behavior. The full TypeScript suite (1,562 tests) and production build passed. These rows remain `PARTIAL` or `UNVERIFIED` until their native paired fixtures are captured; the matrix records their exact residuals.
+
 ## Reference and screenshot rules
 
 - Browser captures are supplementary and cannot prove native Tauri behavior.
