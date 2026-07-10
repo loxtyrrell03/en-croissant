@@ -430,6 +430,15 @@ default.
   the workflow's Windows warning: changing `APPDATA`/`LOCALAPPDATA` did not
   isolate Tauri `app_data_dir`; verify an explicit backend data-dir override
   with `storage_status` before fixture writes, otherwise capture read-only.
+- A later 2026-07-10 Outpost launcher follow-up replaced the desktop shortcut's
+  direct stale-executable target with Outpost `scripts/launch-latest.ps1`.
+  `Outpost.lnk` now hashes all frontend/native build inputs on every click,
+  runs `npx tauri build --no-bundle` when they differ from the last successful
+  release, and otherwise opens the verified current release immediately. The
+  first verified build completed successfully and launched a responsive release;
+  launcher state/logs live under `%LOCALAPPDATA%\Outpost`. Preserve this
+  source-aware shortcut behavior so the desktop icon cannot silently reopen an
+  obsolete binary.
 
 ## Product Map
 
