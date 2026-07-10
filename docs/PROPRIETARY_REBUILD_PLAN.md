@@ -1,92 +1,63 @@
 # Proprietary rebuild handoff — fork-side reference
 
-**Status:** current handoff · **Last rewritten:** 2026-07-10 · **Active rebuild:** `C:\Users\loxty\Desktop\Repos\outpost-chess`
+**Status:** focused V1 handoff · **Updated:** 2026-07-10
 
-The active proprietary plan now lives with the product being built:
+**Active rebuild:** `C:\Users\loxty\Desktop\Repos\outpost-chess`
 
-- [Current Outpost execution plan](../../outpost-chess/docs/PROPRIETARY_REBUILD_PLAN.md)
-- [2026-07-09 parity audit](../../outpost-chess/docs/parity-audit/2026-07-09/README.md)
-- [Full surface and behavior matrix](../../outpost-chess/docs/parity-audit/2026-07-09/MATRIX.md)
-- [Source-level micro-gap audit](../../outpost-chess/docs/parity-audit/2026-07-09/MICRO_GAP_AUDIT.md)
-- [Active gap ledger](../../outpost-chess/docs/parity-audit/2026-07-09/GAP_LEDGER.md)
-- [Deterministic fixture contract](../../outpost-chess/docs/parity-audit/2026-07-09/fixtures/README.md)
+The authoritative plan lives with Outpost:
+
+- [Focused V1 execution plan](../../outpost-chess/docs/PROPRIETARY_REBUILD_PLAN.md)
+- [Focused scope and full-work recovery](../../outpost-chess/docs/FOCUSED_V1_SCOPE.md)
+- [Current phase status](../../outpost-chess/docs/PHASE_STATUS.md)
+- [Long-running focused goal prompt](../../outpost-chess/docs/PROPRIETARY_REBUILD_GOAL_PROMPT.md)
 - [Hidden screenshot workflow](../../outpost-chess/docs/parity-audit/SCREENSHOT_WORKFLOW.md)
-- [Long-running rebuild goal prompt](../../outpost-chess/docs/PROPRIETARY_REBUILD_GOAL_PROMPT.md)
+- [Historical parity evidence](../../outpost-chess/docs/parity-audit/2026-07-09/README.md)
 
-This fork-side file is deliberately short. The old plan mixed clean-room strategy, speculative architecture, completed implementation waves, commit chronology, prompt templates, and several superseded audits. Git history retains that history; it is not the current backlog.
+## Current product decision
 
-## Vision
+The long-term vision remains the same capable chess product, rebuilt as the
+owner's independently controlled proprietary software with original/right-cleared
+implementation, identity, assets, schemas, packaging, and release process.
 
-Build the same capable chess product as the owner’s En Croissant fork as the owner’s own proprietary software that can be sold.
+The immediate release target is deliberately smaller: a preparation-first V1.
+Retained scope is Home analysis/latest/online/import, Files/folders, Databases,
+board/notation/annotations, engines, Prep, Plan Explorer, Engine Plans, Compare,
+Info, Accounts, and focused Settings.
 
-That means:
+Deferred features are Play Chess, Blindfold, Opening Review, repertoire
+Practice/review due badges, Mistake Review, Puzzle Training, standalone Reports
+and Files style reports, Daily Goals, Pawn Structures, AI Coach, and phone/PWA.
+Their absence on Outpost `main` is not a parity bug.
 
-- equivalent user jobs, depth, flows, intermediate states, persistence, scale, and reliability;
-- an original commercial implementation boundary, identity, copy system, assets, schemas, build files, packaging, and release process;
-- explicit decisions for deliberate Outpost improvements rather than silently calling differences “parity.”
+## Preserved full rebuild
 
-It does not mean copying protected fork/native implementation, branding, or final shipped assets.
+The exact Outpost state before this reduction is preserved at:
 
-## Non-negotiable boundaries
+- branch `codex/full-parity-rebuild-2026-07-10`;
+- commit `194c0e3` (`Checkpoint complete parity rebuild before V1 focus`).
 
-- Keep the Tauri 2, Rust, TypeScript, React, Vite, and SQLite baseline unless the owner explicitly changes it.
-- Do not copy GPL/native base implementation into the proprietary shipping tree without a separate written license.
-- Reuse owner-authored non-native deltas only after provenance extraction confirms ownership and separation from inherited code.
-- Ship only original or right-cleared branding, copy, icons, board/pieces, fonts, sounds, screenshots, sample data, and other assets.
-- Record the origin/license of every shipped dependency and asset.
-- Treat final legal release approval as an owner/counsel gate, not an engineering assumption.
-- Never use the owner’s live data for destructive, migration, or corruption testing.
+Outpost `docs/FOCUSED_V1_SCOPE.md` contains exact inspect, switch, worktree, and
+selective-restoration commands. No Git remote was configured when the checkpoint
+was made, so the archive is local until the owner adds a remote and pushes it.
 
-## Purpose of this fork
+## Clean-room boundary
 
-This repository is the behavior/reference side of the clean-room process. It may be used to:
+This fork remains behavior/provenance reference material, not the implementation
+base for Outpost's proprietary native layer, schemas, build identity, assets, or
+packaging. Do not copy GPL/native-base implementation into the shipping tree
+without a separate written licence. Reuse owner-authored deltas only through the
+reviewed provenance process. Final commercial release still requires owner/legal
+review.
 
-- enumerate features and states;
-- observe behavior and flows;
-- produce internal parity references;
-- write behavior specifications and tests;
-- identify and provenance-check owner-authored reusable deltas.
+## Screenshot rule
 
-It is not the implementation base for Outpost’s proprietary native layer, schemas, assets, build identity, or packaging.
+Use the July corpus only for retained V1 surfaces during this phase. Capture
+hidden/off-screen; never activate either product or move the owner's pointer.
+On Windows, changing `APPDATA`/`LOCALAPPDATA` did not isolate Tauri
+`app_data_dir()`. Before fixture writes, verify an explicit backend data-dir
+override with `storage_status`; otherwise capture read-only. Follow the linked
+workflow for populated Database/Prep top/middle/bottom sequences, manifests,
+diffs, and cleanup.
 
-## Current phase
-
-Outpost already has broad desktop coverage. The current phase is not “build an MVP.” It is:
-
-1. build an isolated deterministic fixture/capture harness;
-2. stop silent loss, orphaning, truncation, and wrong-target saves—especially game identity, Files/repertoire origin binding, structured metadata, position indexing, review ownership, and reset behavior;
-3. close full-data Database/review/tab-state/Files/Accounts/training correctness and scale gaps;
-4. complete durable full-game analysis and Prep jobs;
-5. resolve owner decisions;
-6. perform fixture-backed visual, interaction, defaults, and accessibility sign-off;
-7. complete provenance, migration, packaging, signing, recovery, and release gates.
-
-The exact row-by-row status and acceptance conditions are in the linked Outpost matrix and ledger. Do not recreate a second backlog here.
-
-The 2026-07-10 implementation/correction wave added fatal recovery, individual engine-PV copy, recursive Files search and state reconciliation, configurable Daily Goal records and setup flows, drag/click/both input, figurine notation, forced en passant, fork-aligned/right-cleared defaults, local-human Play with durable clock snapshots, puzzle Elo and assistance fixes, scoped Database preferences, tab/menu behavior, Settings semantics, honest missing-engine failure, and diagnostic shell/About behavior. Outpost commit `ad108d9` records the reconciled 321-image corpus and current residuals. The full TypeScript suite (1,621 tests) and production build passed. Ordinary Files, Daily Goals, Play, tabs, Settings, shell menus/About, and puzzle-rating visual states now have current evidence; deterministic persistence/error/boundary pairs and the Matrix gaps remain open.
-
-## Reference and screenshot rules
-
-- Browser captures are supplementary and cannot prove native Tauri behavior.
-- Empty/setup images cannot prove populated Database, Prep, review, Files, Accounts, Engines, or report parity.
-- Database and Prep evidence must show started data-bearing tables, every fixture row across top/middle/bottom captures, counts, source, Strength/After Prep or CP, Games, WDL, Games evidence, and Options.
-- Before calling those captures complete, assert the query and rendered move counts against fixture truth; current 24-row Database and 20-row Prep ceilings can otherwise make an incomplete sequence look exhaustive.
-- Missing transient/error/progress states must remain marked fixture-required; do not fabricate mocks and call them product evidence.
-- All fork and owner-data captures are internal-only and must never ship or appear in marketing.
-- Future capture must run hidden/off-screen and must not activate the owner’s app or move the operating-system pointer.
-- Follow the linked screenshot workflow for the exact WebView2/CDP launch, capture, top/middle/bottom, validation, manifest, comparison, and cleanup procedure.
-
-## Phone/PWA
-
-Phone/PWA/web-companion parity is deferred unless the owner explicitly reopens it. Historical phone screenshots remain useful reference evidence, not an active Outpost completion gate.
-
-## Next-agent workflow
-
-1. Read the active Outpost plan, matrix, micro-gap audit, ledger, and fixture contract.
-2. Check both worktrees and preserve unrelated changes.
-3. Work from the first unfinished ledger item in the recommended order unless the owner directs otherwise.
-4. Implement and verify in Outpost using isolated fixture data.
-5. Add deterministic paired evidence and update the authoritative Outpost matrix/ledger.
-6. Use this fork only for behavior reference/provenance work that is necessary for that item.
-
-The goal remains stable: **the same product and usefulness, rebuilt as the owner’s own commercial software without inheriting the fork’s protected implementation or identity.**
+Do not recreate another backlog in this fork. Update the authoritative Outpost
+plan and use Git history plus the archive branch when deferred work is resumed.
