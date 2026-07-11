@@ -3162,6 +3162,16 @@ from 2026-04-24 through 2026-05-03.
   caption; sparse local eval can synthesize zero-game replies; and visible rows
   resolve progressively with three concurrent jobs. The clean committed
   Outpost tree passed TypeScript checking and 30 focused prep tests.
+- On 2026-07-12, Outpost commit `8137246` completed the visible and numeric
+  `After prep` parity correction. Candidate projections still follow the
+  source/opponent's most-played reply and then choose the best prep-side answer,
+  but their displayed line value is no longer damped toward 50 by branch share;
+  frequency selects the projected route without altering its score. Candidate
+  captions now show both evidence moves, such as `After Nf3 g6`, while
+  opponent/source rows keep the immediate one-move reply caption and saved
+  projections keep `Saved line`. The two focused prep suites passed 31 tests;
+  the repo-wide TypeScript check remained blocked only by unrelated concurrent
+  `AppDialog.tsx` type errors.
 
 ## Verification Expectations
 
