@@ -3192,3 +3192,14 @@ a concrete risk that the check would resolve.
   failures in eval/search fixture expectations. Treat broad failures as
   suspicious, but verify whether they predate the current change before editing
   unrelated code.
+
+## Recent Evaluation Source Behavior
+
+- On 2026-07-12, desktop evaluation source priority was made consistent across
+  the board, Database, and Prep surfaces. Stored local Lichess cloud evaluations
+  are now preferred at every move when available; the local engine starts only
+  as fallback when the exact position is absent or unreadable. Prep Strength,
+  After-prep projections, builder choices, and coach evidence always opt into
+  the same stored cloud source, including workspaces carrying a legacy saved
+  `useCloudEngine: false` value. Database Engine CP and Engine eval already use
+  the shared local Lichess lookup and remain aligned with this behavior.

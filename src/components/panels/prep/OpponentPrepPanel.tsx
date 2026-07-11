@@ -567,7 +567,17 @@ function OpponentPrepPanel({
     ?.accessToken;
   const prepMode = prep.mode ?? "player";
   const prepSource = prep.source ?? "local";
-  const builderSettings = useMemo(() => normalizePrepBuilderSettings(prep.builder), [prep.builder]);
+  const builderSettings = useMemo(
+    () =>
+      normalizePrepBuilderSettings({
+        ...prep.builder,
+        // Stored Lichess cloud evaluations are the canonical engine evidence for
+        // Strength and After prep. Ignore stale persisted opt-outs from builds
+        // that exposed a cloud-engine toggle.
+        useCloudEngine: true,
+      }),
+    [prep.builder],
+  );
   const prepSortDefaults = useMemo(
     () => normalizePrepMoveSortDefaults(prep.sortDefaults),
     [prep.sortDefaults],
@@ -2920,7 +2930,7 @@ function OpponentPrepPanel({
   const runPrepBuilder = useCallback(async () => {
     if (!configReady || builderRunning) return;
 
-    const settings = normalizePrepBuilderSettings(prep.builder);
+    const settings = builderSettings;
     const userSide = oppositePrepColor(prep.color);
     const safetyPositionLimit = getPrepBuilderSafetyPositionLimit(settings.size);
     builderCancelRef.current = false;
@@ -3360,7 +3370,7 @@ function OpponentPrepPanel({
     loadLichessAllOpeningsForFen,
     loadOpeningsForFen,
     loadPrepBuilderEngineMoves,
-    prep.builder,
+    builderSettings,
     prep.color,
     prep.completedBranches,
     prep.rootPath,
@@ -3451,7 +3461,7 @@ function OpponentPrepPanel({
   const runPrepCoachReport = useCallback(async () => {
     if (!configReady || builderRunning || prepCoachReportRunning) return;
 
-    const settings = normalizePrepBuilderSettings(prep.builder);
+    const settings = builderSettings;
     setPrepCoachReportRunning(true);
     setBuilderStatus((current) => ({
       phase: "Checking coach evidence",
@@ -3487,9 +3497,9 @@ function OpponentPrepPanel({
     }
   }, [
     buildPrepCoachReportBrief,
+    builderSettings,
     builderRunning,
     configReady,
-    prep.builder,
     prep.rootPath,
     prepCoachReportRunning,
     store,

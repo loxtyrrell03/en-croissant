@@ -39,7 +39,6 @@ const LOCAL_ENGINE_SEARCH_DELAY_MS = 0;
 const REMOTE_ENGINE_SEARCH_DELAY_MS = 120;
 const LOCAL_ENGINE_UI_UPDATE_INTERVAL_MS = 0;
 const MAX_ENGINE_RESULT_CACHE_ENTRIES = 80;
-const LOCAL_CLOUD_EVAL_FULLMOVE_CUTOFF = 15;
 
 function EvalListener({ active }: { active: boolean }) {
   const [engines] = useAtom(enginesAtom);
@@ -580,21 +579,8 @@ async function getLocalBestMovesWithLichessCloud(
   options: EngineOptions,
   updateCloudStatus: (status: EngineCloudEvalStatus) => void,
 ) {
-  const localStart = startLocalBestMoves(engine, tab, goMode, options, {
-    timeoutMs: LOCAL_ENGINE_OUTPUT_TIMEOUT_MS,
-  });
-
+  let cloudLookupFailed = false;
   try {
-    const searchFullmove = getSearchFullmoveNumber(options);
-    if (searchFullmove !== null && searchFullmove > LOCAL_CLOUD_EVAL_FULLMOVE_CUTOFF) {
-      updateCloudStatus({
-        phase: "missing",
-        message: `Skipped local Lichess evals after move ${LOCAL_CLOUD_EVAL_FULLMOVE_CUTOFF}; using Stockfish.`,
-        updatedAt: Date.now(),
-      });
-      return await localStart.promise;
-    }
-
     updateCloudStatus({
       phase: "checking",
       message: "Checking local Lichess evals...",
@@ -603,7 +589,6 @@ async function getLocalBestMovesWithLichessCloud(
 
     const cloudMoves = await lichessGetBestMoves(tab, goMode, options);
     if (cloudMoves?.[1]?.length) {
-      localStart.cleanup(true);
       updateCloudStatus({
         phase: "available",
         message: formatCloudAvailableMessage(cloudMoves[1]),
@@ -611,28 +596,26 @@ async function getLocalBestMovesWithLichessCloud(
       });
       return cloudMoves;
     }
+  } catch (error) {
+    cloudLookupFailed = true;
+    updateCloudStatus(cloudFailureStatus(error));
+  }
 
+  if (!cloudLookupFailed) {
     updateCloudStatus({
       phase: "missing",
-      message: "No local Lichess eval was found for this position.",
+      message: "No local Lichess eval was found for this position; using Stockfish.",
       updatedAt: Date.now(),
     });
-    return await localStart.promise;
-  } catch (error) {
-    updateCloudStatus(cloudFailureStatus(error));
+  }
+  const localStart = startLocalBestMoves(engine, tab, goMode, options, {
+    timeoutMs: LOCAL_ENGINE_OUTPUT_TIMEOUT_MS,
+  });
+  try {
     return await localStart.promise;
   } finally {
     localStart.cleanup(false);
   }
-}
-
-function getSearchFullmoveNumber(options: EngineOptions) {
-  const parts = options.fen.trim().split(/\s+/);
-  const startFullmove = Number.parseInt(parts[5] ?? "", 10);
-  if (!Number.isFinite(startFullmove)) return null;
-
-  const startsWithBlackToMove = parts[1] === "b";
-  return startFullmove + Math.floor((options.moves.length + (startsWithBlackToMove ? 1 : 0)) / 2);
 }
 
 async function getLichessBestMovesWithStatus(
