@@ -1,5 +1,6 @@
 import { Badge, Group, Progress, Stack, Text, Tooltip } from "@mantine/core";
 import { isNormal, makeSquare } from "chessops";
+import { makeFen } from "chessops/fen";
 import { parseSan } from "chessops/san";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { DataTable, type DataTableSortStatus } from "mantine-datatable";
@@ -24,7 +25,6 @@ import {
   type OpeningMoveStrength,
   type OpeningMoveHealthSide,
   type OpeningMoveHealthSidePreference,
-  type OpeningMoveStrengthStatus,
 } from "@/utils/openingMoveHealth";
 import classes from "./OpeningsTable.module.css";
 
@@ -48,7 +48,7 @@ export type OpeningSort =
   | "move"
   | "moveDesc";
 
-type OpeningSortColumn = "move" | "blendStrength" | "health" | "strengthRank" | "total" | "results";
+type OpeningSortColumn = "move" | "blendStrength" | "strengthRank" | "total" | "results";
 export type OpeningTableDensity = "regular" | "compact" | "dense";
 const ENGINE_EVAL_MULTIPV = 10;
 
@@ -200,7 +200,6 @@ function OpeningsTable({
   const textSize = isDense ? "0.68rem" : isCompact ? "xs" : "sm";
   const columnWidths = {
     move: isDense ? 52 : isCompact ? 64 : 100,
-    health: isDense ? 58 : isCompact ? 72 : 106,
     blendStrength: isDense ? 54 : isCompact ? 68 : 104,
     strengthRank: isDense ? 48 : isCompact ? 68 : 112,
     total: isDense ? 64 : isCompact ? 90 : 180,
@@ -445,75 +444,6 @@ function OpeningsTable({
                     />
                   ) : null}
                 </Stack>
-              </Tooltip>
-            );
-          },
-        },
-        {
-          accessor: "health",
-          title: isDense ? "CP" : isCompact ? "Engine" : "Engine CP",
-          width: columnWidths.health,
-          ellipsis: true,
-          sortable: true,
-          render: ({ move }) => {
-            const health = healthByMove.get(move);
-            if (!health) return null;
-
-            return (
-              <Tooltip
-                withArrow
-                multiline
-                w={280}
-                label={
-                  <Stack gap={2}>
-                    <Text size="xs" fw={700}>
-                      {health.label} move
-                    </Text>
-                    <Text size="xs">
-                      {health.source !== "local"
-                        ? `Based on ${cloudSourceLabel(health.source)} analysis.`
-                        : health.pending
-                          ? "Cloud analysis is checking this position in the background."
-                          : "No cloud move list was found here, so this is a quick local estimate."}
-                    </Text>
-                    {health.cpLoss !== null ? (
-                      <Text size="xs">
-                        About {Math.round(health.cpLoss)} cp behind{" "}
-                        {health.source !== "local" ? `${cloudSourceLabel(health.source)}'s` : "the"}{" "}
-                        best move
-                      </Text>
-                    ) : null}
-                    {health.source === "chessdb" && health.engineWinrate !== null ? (
-                      <Text size="xs">External win rate {formatPercent(health.engineWinrate)}</Text>
-                    ) : null}
-                    {health.source === "local" && health.referenceRank ? (
-                      <Text size="xs">
-                        Strong-games choice #{health.referenceRank}
-                        {health.referenceShare !== null
-                          ? `, ${formatPercent(health.referenceShare)} share`
-                          : ""}
-                      </Text>
-                    ) : health.source === "local" && health.topReferenceMove ? (
-                      <Text size="xs">
-                        Outside strong-games moves; top is {health.topReferenceMove}
-                      </Text>
-                    ) : null}
-                    {health.reasons.map((reason) => (
-                      <Text key={reason} size="xs">
-                        {reason}
-                      </Text>
-                    ))}
-                  </Stack>
-                }
-              >
-                <Badge
-                  color={healthStatusColor(health.status)}
-                  variant="light"
-                  size={isCompact ? "xs" : "sm"}
-                  className={`${classes.healthBadge} ${isDense ? classes.denseHealthBadge : ""}`}
-                >
-                  {isDense ? health.label.slice(0, 2).toUpperCase() : health.label}
-                </Badge>
               </Tooltip>
             );
           },
@@ -771,7 +701,6 @@ function statusToOpeningSort(status: DataTableSortStatus<Opening>): OpeningSort 
       return descending ? "moveDesc" : "move";
     case "blendStrength":
       return descending ? "blendedStrength" : "blendedWeakness";
-    case "health":
     case "strengthRank":
       return descending ? "chessDbStrength" : "chessDbWeakness";
     case "total":
@@ -807,11 +736,53 @@ async function queryOpeningCloudData(
       rank: index + 1,
       winrate: null,
     })) ?? [];
+  const coveredSans = new Set(lichessCloudMoves.map((move) => normalizeOpeningCloudSan(move.san)));
+  const missingMoves = visibleMoves.filter(
+    (move) => !coveredSans.has(normalizeOpeningCloudSan(move)),
+  );
+  const childEvaluations = await Promise.all(
+    missingMoves.map((move) => queryOpeningChildEvaluation(fen, move)),
+  );
+  for (const evaluation of childEvaluations) {
+    if (evaluation) lichessCloudMoves.push(evaluation);
+  }
+
+  const [position] = positionFromFen(fen);
+  const sideToMove = position?.turn ?? "white";
+  lichessCloudMoves.sort((a, b) =>
+    sideToMove === "white"
+      ? (b.scoreCpForWhite ?? Number.NEGATIVE_INFINITY) -
+        (a.scoreCpForWhite ?? Number.NEGATIVE_INFINITY)
+      : (a.scoreCpForWhite ?? Number.POSITIVE_INFINITY) -
+        (b.scoreCpForWhite ?? Number.POSITIVE_INFINITY),
+  );
+  lichessCloudMoves.forEach((move, index) => {
+    move.rank = index + 1;
+  });
   if (lichessCloudMoves.length && hasOpeningCloudCoverage(lichessCloudMoves, visibleMoves)) {
     return { source: "lichess", moves: lichessCloudMoves };
   }
 
   return lichessCloudMoves.length ? { source: "lichess", moves: lichessCloudMoves } : null;
+}
+
+async function queryOpeningChildEvaluation(fen: string, san: string) {
+  const [position] = positionFromFen(fen);
+  if (!position) return null;
+  const move = parseSan(position, san);
+  if (!move || !isNormal(move)) return null;
+  position.play(move);
+
+  const childMoves = await queryLichessCloudMoves(makeFen(position.toSetup()), 1).catch(() => null);
+  const childBest = childMoves?.[0];
+  if (!childBest) return null;
+
+  return {
+    san,
+    scoreCpForWhite: childBest.scoreCpForWhite,
+    rank: 0,
+    winrate: null,
+  };
 }
 
 function hasOpeningCloudCoverage(
@@ -866,17 +837,6 @@ function formatCloudScore(score: number) {
     return score > 0 ? "Win" : "Loss";
   }
   return `${score >= 0 ? "+" : ""}${(score / 100).toFixed(2)}`;
-}
-
-function healthStatusColor(status: OpeningMoveStrengthStatus) {
-  switch (status) {
-    case "weak":
-      return "red";
-    case "strong":
-      return "green";
-    case "ok":
-      return "gray";
-  }
 }
 
 function formatPercent(value: number) {
