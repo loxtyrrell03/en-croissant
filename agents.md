@@ -3213,3 +3213,11 @@ a concrete risk that the check would resolve.
   the same stored cloud source, including workspaces carrying a legacy saved
   `useCloudEngine: false` value. Database Engine CP and Engine eval already use
   the shared local Lichess lookup and remain aligned with this behavior.
+
+## Recent Plan Explorer UI Behavior
+
+- On 2026-07-12, Plan Explorer removed the per-route and per-setup Explain
+  controls. Route statistics now sit directly beside each route with explicit
+  `games` and share labels, total-count badges say `games`, and setup routes
+  show their supporting game count. Plan Explorer WDL bars now use the same
+  compact white/draw/black styling and percentage-label thresholds as Prep.

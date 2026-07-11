@@ -127,8 +127,7 @@ import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveCont
 import type { LocalOptions } from "../database/DatabasePanel";
 import { MoveStrengthSettingsButton } from "../database/MoveStrengthSettingsButton";
 import NoDatabaseWarning from "../database/NoDatabaseWarning";
-import PlanCoachInline, { type PlanCoachInlineRequest } from "./PlanCoachInline";
-import resultClasses from "../database/OpeningsTable.module.css";
+import type { PlanCoachInlineRequest } from "./PlanCoachInline";
 
 const MAX_ENGINE_STRENGTH_REPORT_CACHE_ENTRIES = 24;
 const ENGINE_STRENGTH_WATCHDOG_MS = 15_000;
@@ -421,15 +420,6 @@ function PlanExplorerPanel() {
     [planData?.setups],
   );
   const resultPerspective = isLocalSource ? getLocalResultPerspective(localOptions) : null;
-  const coachSourceLabel = useMemo(
-    () =>
-      planExplorerCoachSourceLabel({
-        source,
-        referenceDatabase,
-        localOptions,
-      }),
-    [localOptions, referenceDatabase, source],
-  );
   const planStrengthByKey = useMemo(
     () =>
       buildPlanStrengthByKey(
@@ -822,10 +812,6 @@ function PlanExplorerPanel() {
                     <PieceRow
                       key={`${piece.color}-${piece.role}-${piece.from}`}
                       piece={piece}
-                      fen={debouncedFen}
-                      sourceLabel={coachSourceLabel}
-                      totalGames={planData?.total_games ?? 0}
-                      sampledGames={planData?.sampled_games ?? 0}
                       drawLine={drawLine}
                       previewLine={setPreviewLine}
                       engineStrengthEnabled={engineStrengthEnabled}
@@ -891,8 +877,6 @@ function PlanExplorerPanel() {
                       key={planSetupKey(setup)}
                       setup={setup}
                       fen={debouncedFen}
-                      sourceLabel={coachSourceLabel}
-                      totalGames={planData?.total_games ?? 0}
                       sampledGames={planData?.sampled_games ?? 0}
                       drawLines={drawLines}
                       previewLine={setPreviewLine}
@@ -1991,7 +1975,7 @@ function setupTitle(setup: PlanExplorerSetup) {
   return `${side}setup (${setup.plans.length} plans)`;
 }
 
-function buildPiecePlanCoachRequest({
+export function buildPiecePlanCoachRequest({
   piece,
   fen,
   sourceLabel,
@@ -2066,7 +2050,7 @@ function buildPiecePlanCoachRequest({
   };
 }
 
-function buildSetupPlanCoachRequest({
+export function buildSetupPlanCoachRequest({
   setup,
   fen,
   sourceLabel,
@@ -2150,7 +2134,7 @@ function buildSetupPlanCoachRequest({
   };
 }
 
-function planExplorerCoachSourceLabel({
+export function planExplorerCoachSourceLabel({
   source,
   referenceDatabase,
   localOptions,
@@ -2286,10 +2270,6 @@ function EngineStrengthCell({
 
 function PieceRow({
   piece,
-  fen,
-  sourceLabel,
-  totalGames,
-  sampledGames,
   drawLine,
   previewLine,
   engineStrengthEnabled,
@@ -2299,10 +2279,6 @@ function PieceRow({
   strength,
 }: {
   piece: PlanExplorerPiece;
-  fen: string;
-  sourceLabel: string;
-  totalGames: number;
-  sampledGames: number;
   drawLine: (line: ColoredPlanExplorerLine) => void;
   previewLine: (line: ColoredPlanExplorerLine | null) => void;
   engineStrengthEnabled: boolean;
@@ -2316,51 +2292,6 @@ function PieceRow({
   const engineMatch = useMemo(
     () => getPieceEngineMatch(piece, engineReport),
     [engineReport, piece],
-  );
-  const coachRequest = useMemo(
-    () =>
-      buildPiecePlanCoachRequest({
-        piece,
-        fen,
-        sourceLabel,
-        totalGames,
-        sampledGames,
-        resultPerspective,
-        strength,
-        engineStrengthEnabled,
-        engineReport,
-        engineRunning,
-        engineMatch,
-      }),
-    [
-      engineMatch,
-      engineReport,
-      engineRunning,
-      engineStrengthEnabled,
-      fen,
-      piece,
-      resultPerspective,
-      sampledGames,
-      sourceLabel,
-      strength,
-      totalGames,
-    ],
-  );
-  const coachCacheKey = useMemo(
-    () =>
-      [
-        "plan-explorer-piece",
-        fen,
-        sourceLabel,
-        piece.color,
-        piece.role,
-        piece.from,
-        piece.total,
-        piece.lines.map((line) => line.squares.join("-")).join(","),
-        strength?.score ?? "no-strength",
-        engineMatch?.plan.signature ?? "no-engine",
-      ].join("|"),
-    [engineMatch, fen, piece, sourceLabel, strength],
   );
 
   return (
@@ -2423,15 +2354,15 @@ function PieceRow({
                     <IconRoute size="1rem" />
                   </ActionIcon>
                 </Tooltip>
-                <Text size="sm" ff="monospace" truncate>
+                <Text size="sm" ff="monospace" style={{ whiteSpace: "nowrap" }}>
                   {formatPlanPieceRoute(piece, line)}
                 </Text>
-                <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
-                  {formatNumber(line.games)}
-                </Text>
-                <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
-                  {piece.total > 0 ? `${((line.games / piece.total) * 100).toFixed(0)}%` : "0%"}
-                </Text>
+                <Badge size="sm" variant="light" color="gray" style={{ flexShrink: 0 }}>
+                  {formatNumber(line.games)} games ·{" "}
+                  {piece.total > 0
+                    ? `${((line.games / piece.total) * 100).toFixed(0)}% of piece games`
+                    : "0% of piece games"}
+                </Badge>
                 {lineMatch && (
                   <Badge size="xs" color={approvalColor(lineMatch.plan.approval)} variant="light">
                     {lineMatch.plan.approval}
@@ -2440,11 +2371,10 @@ function PieceRow({
               </Group>
             );
           })}
-          <PlanCoachInline request={coachRequest} cacheKey={coachCacheKey} />
         </Stack>
       </Table.Td>
       <Table.Td>
-        <Badge variant="light">{formatNumber(piece.total)}</Badge>
+        <Badge variant="light">{formatNumber(piece.total)} games</Badge>
       </Table.Td>
       <Table.Td>
         {topLine && (
@@ -2458,8 +2388,6 @@ function PieceRow({
 function SetupRow({
   setup,
   fen,
-  sourceLabel,
-  totalGames,
   sampledGames,
   drawLines,
   previewLine,
@@ -2472,8 +2400,6 @@ function SetupRow({
 }: {
   setup: PlanExplorerSetup;
   fen: string;
-  sourceLabel: string;
-  totalGames: number;
   sampledGames: number;
   drawLines: (lines: ColoredPlanExplorerLine[]) => void;
   previewLine: (line: ColoredPlanExplorerLine | ColoredPlanExplorerLine[] | null) => void;
@@ -2510,50 +2436,6 @@ function SetupRow({
       setup,
       strength,
     ],
-  );
-  const coachRequest = useMemo(
-    () =>
-      buildSetupPlanCoachRequest({
-        setup,
-        fen,
-        sourceLabel,
-        totalGames,
-        sampledGames,
-        perspective,
-        strength: strength ?? null,
-        engineStrengthEnabled,
-        engineReport,
-        engineRunning,
-        engineMatches,
-        verdict,
-      }),
-    [
-      engineMatches,
-      engineReport,
-      engineRunning,
-      engineStrengthEnabled,
-      fen,
-      perspective,
-      sampledGames,
-      setup,
-      sourceLabel,
-      strength,
-      totalGames,
-      verdict,
-    ],
-  );
-  const coachCacheKey = useMemo(
-    () =>
-      [
-        "plan-explorer-setup",
-        fen,
-        sourceLabel,
-        planSetupKey(setup),
-        setup.games,
-        strength?.score ?? "no-strength",
-        engineMatches.map((match) => match.plan.signature).join(",") || "no-engine",
-      ].join("|"),
-    [engineMatches, fen, setup, sourceLabel, strength],
   );
 
   return (
@@ -2620,6 +2502,9 @@ function SetupRow({
                 <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
                   {capitalize(plan.role)} {plan.from}
                 </Text>
+                <Badge size="sm" variant="light" color="gray" style={{ flexShrink: 0 }}>
+                  {formatNumber(plan.line.games)} games
+                </Badge>
                 {match && (
                   <Badge size="xs" color={approvalColor(match.plan.approval)} variant="light">
                     {match.plan.approval}
@@ -2628,11 +2513,10 @@ function SetupRow({
               </Group>
             );
           })}
-          <PlanCoachInline request={coachRequest} cacheKey={coachCacheKey} />
         </Stack>
       </Table.Td>
       <Table.Td>
-        <Badge variant="light">{formatNumber(setup.games)}</Badge>
+        <Badge variant="light">{formatNumber(setup.games)} games</Badge>
       </Table.Td>
       <Table.Td>
         <ResultBar line={setup} perspective={perspective} />
@@ -2702,7 +2586,6 @@ function SetupEngineStrengthCell({
 
 function ResultBar({
   line,
-  perspective,
 }: {
   line: Pick<PlanExplorerLine, "white" | "draw" | "black">;
   perspective: DatabaseResultPerspective | null;
@@ -2716,55 +2599,25 @@ function ResultBar({
     );
   }
 
-  const scoredSide = perspective === "black" ? "black" : "white";
-  const opponentSide = scoredSide === "black" ? "white" : "black";
-  const scoredWins = scoredSide === "black" ? line.black : line.white;
-  const opponentWins = scoredSide === "black" ? line.white : line.black;
-  const scoredPercent = (scoredWins / total) * 100;
+  const whitePercent = (line.white / total) * 100;
   const drawPercent = (line.draw / total) * 100;
-  const opponentPercent = (opponentWins / total) * 100;
-  const showLabelThreshold = 10;
-  const scoredSideLabel = capitalize(scoredSide);
-  const opponentSideLabel = capitalize(opponentSide);
+  const blackPercent = (line.black / total) * 100;
 
   return (
-    <Tooltip
-      withArrow
-      label={`${scoredSideLabel} ${scoredPercent.toFixed(1)}% / Draw ${drawPercent.toFixed(
-        1,
-      )}% / ${opponentSideLabel} ${opponentPercent.toFixed(1)}%`}
-    >
-      <Progress.Root
-        size="xl"
-        className={resultClasses.result}
-        aria-label={`WDL scored for ${scoredSideLabel}`}
-      >
-        <Progress.Section value={scoredPercent} {...resultSectionProps(scoredSide)}>
-          <Progress.Label c={resultLabelColor(scoredSide)}>
-            {scoredPercent > showLabelThreshold ? `${scoredPercent.toFixed(1)}%` : ""}
-          </Progress.Label>
-        </Progress.Section>
-        <Progress.Section value={drawPercent} color="gray">
-          <Progress.Label>
-            {drawPercent > showLabelThreshold ? `${drawPercent.toFixed(1)}%` : ""}
-          </Progress.Label>
-        </Progress.Section>
-        <Progress.Section value={opponentPercent} {...resultSectionProps(opponentSide)}>
-          <Progress.Label c={resultLabelColor(opponentSide)}>
-            {opponentPercent > showLabelThreshold ? `${opponentPercent.toFixed(1)}%` : ""}
-          </Progress.Label>
-        </Progress.Section>
-      </Progress.Root>
-    </Tooltip>
+    <Progress.Root size="lg">
+      <Progress.Section value={whitePercent} color="gray.2">
+        <Progress.Label c="black">
+          {whitePercent >= 18 ? `${whitePercent.toFixed(0)}%` : ""}
+        </Progress.Label>
+      </Progress.Section>
+      <Progress.Section value={drawPercent} color="gray">
+        <Progress.Label>{drawPercent >= 18 ? `${drawPercent.toFixed(0)}%` : ""}</Progress.Label>
+      </Progress.Section>
+      <Progress.Section value={blackPercent} color="dark">
+        <Progress.Label>{blackPercent >= 18 ? `${blackPercent.toFixed(0)}%` : ""}</Progress.Label>
+      </Progress.Section>
+    </Progress.Root>
   );
-}
-
-function resultSectionProps(side: "white" | "black") {
-  return side === "white" ? { className: resultClasses.whiteResultsSection } : { color: "black" };
-}
-
-function resultLabelColor(side: "white" | "black") {
-  return side === "white" ? "black" : undefined;
 }
 
 function toChessgroundPiece(piece: PlanExplorerPiece): Piece {
