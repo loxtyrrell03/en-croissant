@@ -62,20 +62,15 @@ import { TreeStateContext } from "@/components/common/TreeStateContext";
 import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import {
   activeTabAtom,
-  comparePanelSettingsByFileAtom,
   currentBoardPreviewShapesAtom,
-  currentLocalOptionsAtom,
   currentOpponentPrepAtom,
   currentTabAtom,
-  currentUnderBoardLocalOptionsAtom,
   currentUnderBoardOpponentPrepAtom,
-  currentUnderBoardReferenceDbAtom,
   databaseConversionStateAtom,
   lichessOptionsAtom,
   masterOptionsAtom,
   onlineDatabaseUpdatesAtom,
   opponentPrepSettingsAtom,
-  referenceDbAtom,
   sessionsAtom,
   storedDatabasesDirAtom,
   tabsAtom,
@@ -85,7 +80,6 @@ import {
   type OpponentPrepPanelStage,
   type OpponentPrepState,
   type OpponentPrepStoredSettings,
-  type StoredDatabaseLocalOptions,
 } from "@/state/atoms";
 import { getRecentChessComGames } from "@/utils/chess.com/api";
 import {
@@ -153,7 +147,7 @@ import {
   type OpponentPrepLineImpact,
   type OpponentPrepMoveRow,
 } from "@/utils/opponentPrep";
-import { createTab, getTabWorkspaceKey, saveToFile } from "@/utils/tabs";
+import { createTab, saveToFile } from "@/utils/tabs";
 import { parsePGN } from "@/utils/chess";
 import { positionFromFen } from "@/utils/chessops";
 import { getTreeStructureHash, type TreeState } from "@/utils/treeReducer";
@@ -469,14 +463,10 @@ function OpponentPrepPanel({
     scope === "underBoard" ? currentUnderBoardOpponentPrepAtom : currentOpponentPrepAtom;
   const prepSettingsAtom =
     scope === "underBoard" ? underBoardOpponentPrepSettingsAtom : opponentPrepSettingsAtom;
-  const localOptionsAtom =
-    scope === "underBoard" ? currentUnderBoardLocalOptionsAtom : currentLocalOptionsAtom;
   const lichessOptionsStateAtom =
     scope === "underBoard" ? underBoardLichessOptionsAtom : lichessOptionsAtom;
   const masterOptionsStateAtom =
     scope === "underBoard" ? underBoardMasterOptionsAtom : masterOptionsAtom;
-  const referenceDatabaseAtom =
-    scope === "underBoard" ? currentUnderBoardReferenceDbAtom : referenceDbAtom;
   const [prep, setPrep] = useAtom(prepAtom);
   const underBoardStage = prep.panelStage ?? "setup";
   const setUnderBoardStage = useCallback(
@@ -493,11 +483,8 @@ function OpponentPrepPanel({
     [setPrep],
   );
   const [savedPrepSettings, setSavedPrepSettings] = useAtom(prepSettingsAtom);
-  const currentLocalOptions = useAtomValue(localOptionsAtom);
   const lichessOptions = useAtomValue(lichessOptionsStateAtom);
   const masterOptions = useAtomValue(masterOptionsStateAtom);
-  const compareSettingsByFile = useAtomValue(comparePanelSettingsByFileAtom);
-  const referenceDb = useAtomValue(referenceDatabaseAtom);
   const sessions = useAtomValue(sessionsAtom);
   const [databaseDir] = useAtom(storedDatabasesDirAtom);
   const [, setConversionState] = useAtom(databaseConversionStateAtom);
@@ -558,11 +545,8 @@ function OpponentPrepPanel({
   );
   const builderCancelRef = useRef(false);
   const straightLineCancelRef = useRef(false);
-  const seededRef = useRef(false);
   const savedSettingsAppliedRef = useRef(false);
   const seededDefaultPlayerDatabaseRef = useRef<string | null>(null);
-  const settingsKey = useMemo(() => getTabWorkspaceKey(currentTab), [currentTab]);
-  const savedCompareSettings = settingsKey ? compareSettingsByFile[settingsKey] : undefined;
   const explorerToken = sessions.find((session) => session.lichess?.accessToken)?.lichess
     ?.accessToken;
   const prepMode = prep.mode ?? "player";
@@ -599,13 +583,20 @@ function OpponentPrepPanel({
       ),
     [databases],
   );
+  const prepDatabases = useMemo(
+    () => localDatabases.filter((database) => !isMyLibraryDatabase(database)),
+    [localDatabases],
+  );
   const sourceOptions = useMemo(() => {
-    const groupedOptions = getDatabaseSelectData(localDatabases);
+    const groupedOptions = getDatabaseSelectData(prepDatabases);
 
     if (
       prepSource === "local" &&
       prep.databasePath &&
-      !localDatabases.some((database) => database.file === prep.databasePath)
+      !localDatabases.some(
+        (database) => database.file === prep.databasePath && isMyLibraryDatabase(database),
+      ) &&
+      !prepDatabases.some((database) => database.file === prep.databasePath)
     ) {
       groupedOptions.unshift({
         group: "Current",
@@ -634,10 +625,10 @@ function OpponentPrepPanel({
       },
       ...groupedOptions,
     ];
-  }, [localDatabases, prep.databaseLabel, prep.databasePath, prepSource]);
+  }, [localDatabases, prep.databaseLabel, prep.databasePath, prepDatabases, prepSource]);
   const selectedDatabase = useMemo(
-    () => localDatabases.find((database) => database.file === prep.databasePath) ?? null,
-    [localDatabases, prep.databasePath],
+    () => prepDatabases.find((database) => database.file === prep.databasePath) ?? null,
+    [prep.databasePath, prepDatabases],
   );
   const selectedDatabaseLabel =
     selectedDatabase?.title || selectedDatabase?.filename || prep.databaseLabel;
@@ -752,16 +743,12 @@ function OpponentPrepPanel({
   useEffect(() => {
     if (savedSettingsAppliedRef.current) return;
     savedSettingsAppliedRef.current = true;
-    if (hasStoredPrepSourceSettings(savedPrepSettings)) {
-      seededRef.current = true;
-    }
-
     setPrep((current) => {
       if (!shouldApplyStoredPrepSettings(current)) return current;
 
       return {
         ...current,
-        ...savedPrepSettings,
+        ...getStoredPrepPreferences(savedPrepSettings),
         rootPath: current.rootPath,
         completedBranches: current.completedBranches,
         skippedBranches: current.skippedBranches,
@@ -774,40 +761,6 @@ function OpponentPrepPanel({
       };
     });
   }, [savedPrepSettings, setPrep]);
-
-  useEffect(() => {
-    if (
-      !savedSettingsAppliedRef.current ||
-      seededRef.current ||
-      prepSource !== "local" ||
-      prep.databasePath ||
-      localDatabases.length === 0
-    ) {
-      return;
-    }
-    const seed = getInitialPrepSeed({
-      currentLocalOptions,
-      localDatabases,
-      referenceDb,
-      savedCompareSettings,
-    });
-    if (!seed) return;
-
-    seededRef.current = true;
-    setPrep((current) => ({
-      ...current,
-      ...seed,
-      rootPath: current.rootPath ?? [],
-    }));
-  }, [
-    currentLocalOptions,
-    localDatabases,
-    prep.databasePath,
-    prepSource,
-    referenceDb,
-    savedCompareSettings,
-    setPrep,
-  ]);
 
   useEffect(() => {
     if (!configReady || prep.rootPath !== null) return;
@@ -1517,20 +1470,19 @@ function OpponentPrepPanel({
         return;
       }
 
-      const database = localDatabases[0] ?? null;
       updateSettings(
         {
           mode,
           source: "local",
-          databasePath: database?.file ?? null,
-          databaseLabel: database ? database.title || database.filename : null,
+          databasePath: null,
+          databaseLabel: null,
           player: null,
           playerName: "",
         },
         true,
       );
     },
-    [localDatabases, prepSource, updateSettings],
+    [prepSource, updateSettings],
   );
 
   const changePrepSource = useCallback(
@@ -5009,12 +4961,26 @@ function shouldApplyStoredPrepSettings(current: OpponentPrepState) {
   );
 }
 
-function hasStoredPrepSourceSettings(settings: OpponentPrepStoredSettings) {
-  return (
-    settings.source !== "local" ||
-    Boolean(settings.databasePath) ||
-    settings.player !== null ||
-    settings.playerName.trim().length > 0
+function getStoredPrepPreferences(
+  settings: OpponentPrepStoredSettings,
+): Partial<OpponentPrepStoredSettings> {
+  return {
+    color: settings.color,
+    result: settings.result,
+    minGames: settings.minGames,
+    moveLimit: settings.moveLimit,
+    builder: settings.builder,
+    sortDefaults: settings.sortDefaults,
+  };
+}
+
+function isMyLibraryDatabase(database: SuccessDatabaseInfo) {
+  return [database.title, database.filename].some(
+    (label) =>
+      label
+        .replace(/\.db3$/i, "")
+        .trim()
+        .toLowerCase() === "my library",
   );
 }
 
@@ -7242,76 +7208,6 @@ function getPrepBuilderSettingsPatch(
   }
 
   return next;
-}
-
-function getInitialPrepSeed({
-  currentLocalOptions,
-  localDatabases,
-  referenceDb,
-  savedCompareSettings,
-}: {
-  currentLocalOptions: {
-    path: string | null;
-    player: number | null;
-    playerName?: string;
-    color: "white" | "black";
-    start_date?: string;
-    end_date?: string;
-    result: StoredDatabaseLocalOptions["result"];
-  };
-  localDatabases: SuccessDatabaseInfo[];
-  referenceDb: string | null;
-  savedCompareSettings?: {
-    slots: {
-      sourceValue: string | null;
-      localOptions: StoredDatabaseLocalOptions;
-    }[];
-  };
-}): Partial<OpponentPrepState> | null {
-  const localPaths = new Set(localDatabases.map((database) => database.file));
-  const compareSlot = savedCompareSettings?.slots.find(
-    (slot) =>
-      slot.sourceValue &&
-      localPaths.has(slot.sourceValue) &&
-      (slot.localOptions.player || slot.localOptions.playerName?.trim()),
-  );
-
-  if (compareSlot?.sourceValue) {
-    const database = localDatabases.find((item) => item.file === compareSlot.sourceValue);
-    return {
-      mode: "player",
-      source: "local",
-      databasePath: compareSlot.sourceValue,
-      databaseLabel: database ? database.title || database.filename : null,
-      player: compareSlot.localOptions.player,
-      playerName: compareSlot.localOptions.playerName ?? "",
-      color: compareSlot.localOptions.color,
-      start_date: compareSlot.localOptions.start_date,
-      end_date: compareSlot.localOptions.end_date,
-      result: compareSlot.localOptions.result,
-    };
-  }
-
-  const databasePath =
-    currentLocalOptions.path && localPaths.has(currentLocalOptions.path)
-      ? currentLocalOptions.path
-      : referenceDb && localPaths.has(referenceDb)
-        ? referenceDb
-        : localDatabases[0]?.file;
-  if (!databasePath) return null;
-
-  const database = localDatabases.find((item) => item.file === databasePath);
-  return {
-    source: "local",
-    databasePath,
-    databaseLabel: database ? database.title || database.filename : null,
-    player: currentLocalOptions.player,
-    playerName: currentLocalOptions.playerName ?? "",
-    color: currentLocalOptions.color,
-    start_date: currentLocalOptions.start_date,
-    end_date: currentLocalOptions.end_date,
-    result: currentLocalOptions.result,
-  };
 }
 
 function getPrepSearchId(scope: string, fen: string) {
