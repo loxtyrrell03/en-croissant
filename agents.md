@@ -3223,3 +3223,15 @@ a concrete risk that the check would resolve.
   `games` and share labels, total-count badges say `games`, and setup routes
   show their supporting game count. Plan Explorer WDL bars now use the same
   compact white/draw/black styling and percentage-label thresholds as Prep.
+
+## Recent Outpost ChessDB Evaluation Fallback
+
+- On 2026-07-12, Outpost commit `19466ce` made Database move evaluations
+  strictly local-Lichess-first per move, then filled only uncovered SAN rows
+  with one cached, read-only ChessDB `queryall` API probe. Local overlaps stay
+  authoritative; combined CP drops are recomputed across both sources. The
+  fixed native endpoint has an 8-second timeout, 256 KB cap, in-flight dedupe,
+  200-position LRU, five-minute miss TTL, and 60-second 429 backoff. Focused
+  source-order/parser/cache/orientation tests, all 1,902 frontend tests, and the
+  production build passed; the live API returned the formerly blank `g6`,
+  `a6`, and `dxc4` evaluations from the owner's screenshot position.
