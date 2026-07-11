@@ -458,6 +458,15 @@ default.
   formal release builds still retain the release profile and full LTO. Preserve
   the cached-copy separation from `src-tauri\target\debug`, because it lets the
   compiler update the target while the currently verified app remains open.
+- Later on 2026-07-11, Outpost commit `23b4331` made the desktop `Outpost.lnk`
+  an active live-development launcher. `scripts/launch-live.ps1` keeps one
+  `tauri dev` session on dedicated port 4799, so React, CSS, and asset edits
+  update in the open native window through Vite HMR; Rust/backend edits use
+  Tauri's watcher and automatically rebuild/restart the app. The stable cached
+  production-bundle-style path remains available through
+  `scripts/launch-latest.ps1`. Both launchers invoke the checked-in Tauri/Vite
+  Node entrypoints directly so a temporarily missing `node_modules\.bin` or
+  `npx` package-name resolution cannot break desktop startup.
 
 ## Product Map
 
