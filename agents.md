@@ -448,6 +448,16 @@ default.
   launcher state/logs live under `%LOCALAPPDATA%\Outpost`. Preserve this
   source-aware shortcut behavior so the desktop icon cannot silently reopen an
   obsolete binary.
+- On 2026-07-11, Outpost commit `d943c49` removed the desktop shortcut's
+  repeated full-release/LTO wait while preserving source freshness. The launcher
+  now opens a versioned verified executable from
+  `%LOCALAPPDATA%\Outpost\desktop-builds` before fingerprinting, ignores
+  test-only inputs, and compiles changed source in the background for the next
+  restart using a Vite production bundle plus incremental debug-native Rust
+  without debug symbols. A named mutex prevents duplicate background builds;
+  formal release builds still retain the release profile and full LTO. Preserve
+  the cached-copy separation from `src-tauri\target\debug`, because it lets the
+  compiler update the target while the currently verified app remains open.
 
 ## Product Map
 
