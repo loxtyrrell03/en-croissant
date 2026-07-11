@@ -3144,6 +3144,15 @@ from 2026-04-24 through 2026-05-03.
   database found 73 Sebastian-as-White games after
   `1. e4 c5 2. Nf3 g6 3. d4 cxd4`, with continuations including `Nxd4` and
   `Qxd4`; keep this placeholder-metadata guard in any future search prefilter.
+- On 2026-07-11, Outpost commit `d7f07d0` brought the rebuild's `After prep`
+  projection semantics back in line with the fork. Opponent/source rows now
+  score the best immediate prep reply, while prep-side candidates follow the
+  most-played source reply and then score the best answer. Weaker future-line
+  values remain visible; absolute future WDL/local-eval caps prevent inflated
+  scores; saved replies take precedence and alone receive the saved-line
+  caption; sparse local eval can synthesize zero-game replies; and visible rows
+  resolve progressively with three concurrent jobs. The clean committed
+  Outpost tree passed TypeScript checking and 30 focused prep tests.
 
 ## Verification Expectations
 
