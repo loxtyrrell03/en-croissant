@@ -1,5 +1,7 @@
 # AGENTS.md
 
+- On 2026-07-12, Plan Explorer WDL bars were unified with the Database move-table bars through a shared `DatabaseWdlBar` component. Plan rows now use the same theme-aware white/draw/black styling, decimal percentage labels, sizing behavior, outlines, and side-perspective ordering as Database rows.
+
 This file is the working product map for the En Croissant fork on the
 `codex/en-croissant-fork` branch. It records the major features added during
 the recent Codex session and gives future agents the design intent, navigation

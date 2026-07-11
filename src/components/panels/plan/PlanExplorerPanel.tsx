@@ -124,6 +124,7 @@ import {
 } from "@/utils/moveStrength";
 import { withLimitedRecordEntry } from "@/utils/boundedCache";
 import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveControls";
+import { DatabaseWdlBar } from "../database/DatabaseWdlBar";
 import type { LocalOptions } from "../database/DatabasePanel";
 import { MoveStrengthSettingsButton } from "../database/MoveStrengthSettingsButton";
 import NoDatabaseWarning from "../database/NoDatabaseWarning";
@@ -2586,6 +2587,7 @@ function SetupEngineStrengthCell({
 
 function ResultBar({
   line,
+  perspective,
 }: {
   line: Pick<PlanExplorerLine, "white" | "draw" | "black">;
   perspective: DatabaseResultPerspective | null;
@@ -2599,24 +2601,14 @@ function ResultBar({
     );
   }
 
-  const whitePercent = (line.white / total) * 100;
-  const drawPercent = (line.draw / total) * 100;
-  const blackPercent = (line.black / total) * 100;
-
   return (
-    <Progress.Root size="lg">
-      <Progress.Section value={whitePercent} color="gray.2">
-        <Progress.Label c="black">
-          {whitePercent >= 18 ? `${whitePercent.toFixed(0)}%` : ""}
-        </Progress.Label>
-      </Progress.Section>
-      <Progress.Section value={drawPercent} color="gray">
-        <Progress.Label>{drawPercent >= 18 ? `${drawPercent.toFixed(0)}%` : ""}</Progress.Label>
-      </Progress.Section>
-      <Progress.Section value={blackPercent} color="dark">
-        <Progress.Label>{blackPercent >= 18 ? `${blackPercent.toFixed(0)}%` : ""}</Progress.Label>
-      </Progress.Section>
-    </Progress.Root>
+    <DatabaseWdlBar
+      white={line.white}
+      draw={line.draw}
+      black={line.black}
+      perspective={perspective}
+      compact
+    />
   );
 }
 

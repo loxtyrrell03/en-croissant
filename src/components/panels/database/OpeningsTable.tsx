@@ -27,6 +27,7 @@ import {
   type OpeningMoveHealthSidePreference,
 } from "@/utils/openingMoveHealth";
 import classes from "./OpeningsTable.module.css";
+import { DatabaseWdlBar } from "./DatabaseWdlBar";
 
 export type OpeningSort =
   | "games"
@@ -205,9 +206,6 @@ function OpeningsTable({
     total: isDense ? 64 : isCompact ? 90 : 180,
     results: isDense ? 88 : isCompact ? 104 : undefined,
   };
-  const resultClassName = [classes.result, isDense ? classes.denseResult : null]
-    .filter(Boolean)
-    .join(" ");
 
   const clearMovePreview = useCallback(() => {
     setBoardPreviewShapes(null);
@@ -538,30 +536,15 @@ function OpeningsTable({
           ellipsis: true,
           sortable: true,
           render: ({ black, white, draw }) => {
-            const total = white + draw + black;
-            const resultStats = getDisplayResultStats({ white, draw, black }, resultPerspective);
-            const firstPercent = total > 0 ? (resultStats.first / total) * 100 : 0;
-            const drawPercent = total > 0 ? (draw / total) * 100 : 0;
-            const thirdPercent = total > 0 ? (resultStats.third / total) * 100 : 0;
-            const showLabelThreshold = isDense ? 18 : 10;
             return (
-              <Progress.Root size={isCompact ? "lg" : "xl"} className={resultClassName}>
-                <Progress.Section value={firstPercent} className={classes.whiteResultsSection}>
-                  <Progress.Label c="black">
-                    {firstPercent > showLabelThreshold ? `${firstPercent.toFixed(1)}%` : ""}
-                  </Progress.Label>
-                </Progress.Section>
-                <Progress.Section value={drawPercent} color="gray">
-                  <Progress.Label>
-                    {drawPercent > showLabelThreshold ? `${drawPercent.toFixed(1)}%` : ""}
-                  </Progress.Label>
-                </Progress.Section>
-                <Progress.Section value={thirdPercent} color="black">
-                  <Progress.Label>
-                    {thirdPercent > showLabelThreshold ? `${thirdPercent.toFixed(1)}%` : ""}
-                  </Progress.Label>
-                </Progress.Section>
-              </Progress.Root>
+              <DatabaseWdlBar
+                white={white}
+                draw={draw}
+                black={black}
+                perspective={resultPerspective}
+                compact={isCompact}
+                dense={isDense}
+              />
             );
           },
         },
@@ -603,23 +586,6 @@ function getOpeningDateSortValue(opening: Opening) {
   const digits = opening.lastPlayed?.replace(/\D/g, "");
   if (!digits) return 0;
   return Number(digits.padEnd(8, "0"));
-}
-
-function getDisplayResultStats(
-  opening: Pick<Opening, "white" | "draw" | "black">,
-  perspective: DatabaseResultPerspective | null,
-) {
-  if (!perspective) {
-    return {
-      first: opening.white,
-      third: opening.black,
-    };
-  }
-
-  return {
-    first: perspective === "white" ? opening.white : opening.black,
-    third: perspective === "white" ? opening.black : opening.white,
-  };
 }
 
 function openingSortToStatus(sortBy: OpeningSort): DataTableSortStatus<Opening> {
