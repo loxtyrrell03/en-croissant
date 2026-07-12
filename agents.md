@@ -1,5 +1,13 @@
 # AGENTS.md
 
+- On 2026-07-12, Home gained a polished `Import games into a database` dock
+  above the general action grid. Its unified modal offers Chess.com, Lichess,
+  and OTB source lanes: online accounts reuse the existing standard-game
+  download, dedupe, auto-update, and database conversion pipeline, while OTB
+  reuses the deterministic multi-source collector and is forced to persist a
+  real database from this Home workflow. The card uses restrained source marks,
+  progressive disclosure, responsive layout, and reduced-motion-safe hover and
+  selection feedback rather than adding another generic dashboard tile.
 - On 2026-07-12, Opponent Prep gained a separate deterministic `Find OTB
   games` importer. It searches Chess-Results by FIDE ID, current and monthly
   Lichess broadcasts, public ChessBase news-site PGNs, TWIC, official

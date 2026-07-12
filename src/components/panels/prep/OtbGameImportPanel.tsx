@@ -52,6 +52,7 @@ export default function OtbGameImportPanel({
   localDatabases,
   controlSize,
   dense,
+  forceSaveDatabase = false,
   onImported,
 }: {
   initialPlayerName: string;
@@ -59,6 +60,7 @@ export default function OtbGameImportPanel({
   localDatabases: SuccessDatabaseInfo[];
   controlSize: MantineSize;
   dense: boolean;
+  forceSaveDatabase?: boolean;
   onImported: (result: OtbImportComplete) => void | Promise<void>;
 }) {
   const currentYear = new Date().getFullYear();
@@ -72,6 +74,7 @@ export default function OtbGameImportPanel({
   const [progress, setProgress] = useState<OtbImportProgress | null>(null);
   const [report, setReport] = useState<OtbImportReport | null>(null);
   const [importedGameCount, setImportedGameCount] = useState<number | null>(null);
+  const shouldSaveDatabase = forceSaveDatabase || saveDatabase;
   const [, setConversionState] = useAtom(databaseConversionStateAtom);
   const activeJobIdRef = useRef<string | null>(null);
   const initialNameAppliedRef = useRef(initialPlayerName);
@@ -118,16 +121,20 @@ export default function OtbGameImportPanel({
     if (running) return;
     const jobId = `otb-import-${Date.now()}`;
     const baseTitle = getOtbImportTitle(playerName, fromYear);
-    const title = saveDatabase ? getUniqueOtbDatabaseTitle(baseTitle, localDatabases) : baseTitle;
+    const title = shouldSaveDatabase
+      ? getUniqueOtbDatabaseTitle(baseTitle, localDatabases)
+      : baseTitle;
     const filename = sanitizeOtbImportFilename(title);
-    const targetDir = saveDatabase ? databaseDir || (await getDatabasesDir()) : await tempDir();
+    const targetDir = shouldSaveDatabase
+      ? databaseDir || (await getDatabasesDir())
+      : await tempDir();
     const dbPath = await resolve(
       targetDir,
-      saveDatabase ? `${filename}.db3` : `${filename}-${jobId}.db3`,
+      shouldSaveDatabase ? `${filename}.db3` : `${filename}-${jobId}.db3`,
     );
     const pgnPath = await resolve(
       targetDir,
-      saveDatabase ? `${filename}.pgn` : `${filename}-${jobId}.pgn`,
+      shouldSaveDatabase ? `${filename}.pgn` : `${filename}-${jobId}.pgn`,
     );
     const cacheDir = await resolve(await appCacheDir(), "otb-game-import");
     const request = createOtbImportRequest({
@@ -205,14 +212,14 @@ export default function OtbGameImportPanel({
       }));
       await commands.clearGames();
 
-      if (saveDatabase) {
+      if (shouldSaveDatabase) {
         const nextDatabases = await getDatabases();
         await mutate("databases", nextDatabases, { revalidate: false });
       }
       await onImported({
         dbPath,
         title,
-        temporary: !saveDatabase,
+        temporary: !shouldSaveDatabase,
         importedGameCount: convertedGameCount,
         report: result,
       });
@@ -274,12 +281,14 @@ export default function OtbGameImportPanel({
           size={controlSize}
           w={dense ? 92 : 108}
         />
-        <Checkbox
-          label="Save database"
-          checked={saveDatabase}
-          onChange={(event) => setSaveDatabase(event.currentTarget.checked)}
-          size={controlSize}
-        />
+        {!forceSaveDatabase ? (
+          <Checkbox
+            label="Save database"
+            checked={saveDatabase}
+            onChange={(event) => setSaveDatabase(event.currentTarget.checked)}
+            size={controlSize}
+          />
+        ) : null}
       </Group>
       <Group gap={dense ? 6 : "sm"} wrap="wrap">
         {OTB_IMPORT_SOURCE_DETAILS.map((source) => (

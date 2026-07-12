@@ -156,6 +156,7 @@ import {
 import { resolve, tempDir } from "@tauri-apps/api/path";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
 import DailyGoalsPanel from "./DailyGoalsPanel";
+import HomeGameDatabaseImport from "./HomeGameDatabaseImport";
 
 dayjs.extend(relativeTime);
 
@@ -3637,6 +3638,7 @@ export default function NewTabHome() {
           }
           onOpenPrepFile={openRecentFile}
         />
+        <HomeGameDatabaseImport />
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }}>
           {cards.map((card) => (
             <Card shadow="sm" p="lg" radius="md" withBorder key={card.title}>
