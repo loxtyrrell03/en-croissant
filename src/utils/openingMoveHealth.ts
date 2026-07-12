@@ -51,9 +51,11 @@ export type OpeningMoveStrength = Omit<OpeningMoveHealth, "label" | "reasons" | 
     source: OpeningMoveCloudSource | "local";
     pending: boolean;
     cpLoss: number | null;
+    engineSide: OpeningMoveHealthSide;
     engineRank: number | null;
     engineScoreRank: number | null;
     engineScoreCp: number | null;
+    engineScoreCpForWhite: number | null;
     engineWinrate: number | null;
     blendedStrengthScore: number;
     blendedStrengthLoss: number;
@@ -74,6 +76,8 @@ export type OpeningMoveCloudMove = {
 export type OpeningMoveCloudData = {
     source: OpeningMoveCloudSource;
     moves: OpeningMoveCloudMove[];
+    rootBestMoveSan?: string | null;
+    rootBestScoreCpForWhite?: number | null;
 };
 
 type ReferenceMoveHealth = OpeningMoveHealthInput & {
@@ -451,9 +455,11 @@ function getOpeningMoveStrength({
                 pending: false,
                 score: 18,
                 cpLoss: null,
+                engineSide: cloud.engineSide,
                 engineRank: cloudMove?.rank ?? null,
                 engineScoreRank: cloudMove?.scoreRank ?? null,
                 engineScoreCp: cloudMove?.scoreForSide ?? null,
+                engineScoreCpForWhite: cloudMove?.scoreCpForWhite ?? null,
                 engineWinrate: cloudMove?.winrate ?? null,
                 blendedStrengthScore: blended.score,
                 blendedStrengthLoss: blended.loss,
@@ -469,7 +475,7 @@ function getOpeningMoveStrength({
             };
         }
 
-        const cpLoss = Math.max(0, cloud.bestScore - cloudMove.scoreForSide);
+        const cpLoss = Math.max(0, cloud.bestScore - cloudMove.comparisonScoreForSide);
         const status = cloudStrengthStatus(cpLoss);
         const blended = evaluateMoveStrength({
             settings,
@@ -486,9 +492,11 @@ function getOpeningMoveStrength({
             pending: false,
             score: strengthScore(status, cpLoss),
             cpLoss,
+            engineSide: cloud.engineSide,
             engineRank: cloudMove.rank,
             engineScoreRank: cloudMove.scoreRank,
             engineScoreCp: cloudMove.scoreForSide,
+            engineScoreCpForWhite: cloudMove.scoreCpForWhite,
             engineWinrate: cloudMove.winrate,
             blendedStrengthScore: blended.score,
             blendedStrengthLoss: blended.loss,
@@ -515,9 +523,11 @@ function getOpeningMoveStrength({
         pending,
         score: fallbackStrengthScore(fallbackStatus, health.score),
         cpLoss: null,
+        engineSide: cloud.engineSide,
         engineRank: null,
         engineScoreRank: null,
         engineScoreCp: null,
+        engineScoreCpForWhite: null,
         engineWinrate: null,
         blendedStrengthScore: blended.score,
         blendedStrengthLoss: blended.loss,
@@ -535,14 +545,17 @@ function getOpeningMoveStrength({
 }
 
 function getCloudStrengthData(
-    _fen: string,
+    fen: string,
     side: OpeningMoveHealthSide,
     data: OpeningMoveCloudData | null | undefined,
 ) {
+    const engineSide = getFenSideToMove(fen) ?? side;
     const bySan = new Map<
         string,
         {
             scoreForSide: number | null;
+            scoreCpForWhite: number | null;
+            comparisonScoreForSide: number;
             rank: number | null;
             scoreRank: number | null;
             winrate: number | null;
@@ -558,32 +571,41 @@ function getCloudStrengthData(
             bestScore: null,
             scoreSpreadCp: null,
             source,
+            engineSide,
             bySan,
         };
     }
 
+    const rootBestScoreForSide = toSideScore(data?.rootBestScoreCpForWhite, engineSide);
+    const rootBestMoveSan = data?.rootBestMoveSan ?? null;
+
     const scoredMoves: {
         san: string;
         scoreForSide: number;
+        comparisonScoreForSide: number;
+        isAuthoritativeBest: boolean;
     }[] = [];
 
     for (const move of moves) {
-        const scoreForSide =
-            move.scoreCpForWhite === null
-                ? null
-                : side === "black"
-                  ? -move.scoreCpForWhite
-                  : move.scoreCpForWhite;
+        const scoreForSide = toSideScore(move.scoreCpForWhite, engineSide);
         if (scoreForSide !== null) {
-            scored.push(scoreForSide);
+            const comparisonScoreForSide =
+                rootBestScoreForSide === null
+                    ? scoreForSide
+                    : Math.min(scoreForSide, rootBestScoreForSide);
+            scored.push(comparisonScoreForSide);
             scoredMoves.push({
                 san: move.san,
                 scoreForSide,
+                comparisonScoreForSide,
+                isAuthoritativeBest: move.san === rootBestMoveSan,
             });
         }
 
         bySan.set(move.san, {
             scoreForSide,
+            scoreCpForWhite: move.scoreCpForWhite,
+            comparisonScoreForSide: scoreForSide ?? Number.NEGATIVE_INFINITY,
             rank: move.rank,
             scoreRank: null,
             winrate: move.winrate,
@@ -591,21 +613,40 @@ function getCloudStrengthData(
     }
 
     scoredMoves
-        .sort((a, b) => b.scoreForSide - a.scoreForSide || a.san.localeCompare(b.san))
+        .sort(
+            (a, b) =>
+                b.comparisonScoreForSide - a.comparisonScoreForSide ||
+                Number(b.isAuthoritativeBest) - Number(a.isAuthoritativeBest) ||
+                a.san.localeCompare(b.san),
+        )
         .forEach((move, index) => {
             const entry = bySan.get(move.san);
             if (entry) {
                 entry.scoreRank = index + 1;
+                entry.comparisonScoreForSide = move.comparisonScoreForSide;
             }
         });
 
     return {
         covered: true,
-        bestScore: scored.length > 0 ? Math.max(...scored) : null,
+        bestScore: rootBestScoreForSide ?? (scored.length > 0 ? Math.max(...scored) : null),
         scoreSpreadCp: getEngineScoreSpreadCp(scored),
         source,
+        engineSide,
         bySan,
     };
+}
+
+function getFenSideToMove(fen: string): OpeningMoveHealthSide | null {
+    const activeColor = fen.trim().split(/\s+/)[1];
+    if (activeColor === "w") return "white";
+    if (activeColor === "b") return "black";
+    return null;
+}
+
+function toSideScore(scoreCpForWhite: number | null | undefined, side: OpeningMoveHealthSide) {
+    if (scoreCpForWhite === null || scoreCpForWhite === undefined) return null;
+    return side === "black" ? -scoreCpForWhite : scoreCpForWhite;
 }
 
 function cloudStrengthStatus(cpLoss: number): OpeningMoveStrengthStatus {

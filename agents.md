@@ -1,5 +1,12 @@
 # AGENTS.md
 
+- On 2026-07-12, Database move-quality scoring was corrected so the exact
+  position's root evaluation remains the authoritative best-move baseline.
+  Independently cached child-position evals may fill omitted rows but cannot
+  displace the root PV, engine CP loss always uses the actual side to move
+  rather than the selected WDL perspective, and displayed numeric evals remain
+  White-relative to match the Analysis panel. The `1.e4 ...e5` regression now
+  guarantees that the root-best `...e5` is zero-loss and Strong.
 - On 2026-07-12, the Databases library toolbar was reorganized into a clearer
   two-row command area: search and the primary Add database action lead, while
   sorting, New folder, and Auto-organize sit together as library-management

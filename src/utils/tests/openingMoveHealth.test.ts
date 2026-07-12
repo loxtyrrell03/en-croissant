@@ -57,6 +57,48 @@ describe("opening move health", () => {
         expect(strength.get("c4")?.engineScoreRank).toBe(2);
     });
 
+    test("keeps the root best move strong when child evals look better", () => {
+        const strength = getOpeningMoveStrengthMap({
+            openings: [
+                { move: "e5", white: 51, draw: 4, black: 45 },
+                { move: "c6", white: 47, draw: 5, black: 48 },
+                { move: "d6", white: 49, draw: 4, black: 47 },
+                { move: "d5", white: 48, draw: 5, black: 47 },
+            ],
+            // The WDL perspective must not change which move the engine considers best.
+            side: "white",
+            fen: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+            cloudData: {
+                source: "lichess",
+                rootBestMoveSan: "e5",
+                rootBestScoreCpForWhite: 22,
+                moves: [
+                    { san: "e5", scoreCpForWhite: 22, rank: 1, winrate: null },
+                    { san: "c6", scoreCpForWhite: 27, rank: 2, winrate: null },
+                    { san: "d6", scoreCpForWhite: 45, rank: 3, winrate: null },
+                    // A separately cached child position must not displace the root PV.
+                    { san: "d5", scoreCpForWhite: 16, rank: 4, winrate: null },
+                ],
+            },
+        });
+
+        expect(strength.get("e5")).toMatchObject({
+            status: "strong",
+            label: "Strong",
+            cpLoss: 0,
+            engineSide: "black",
+            engineScoreRank: 1,
+            engineScoreCp: -22,
+            engineScoreCpForWhite: 22,
+        });
+        expect(strength.get("c6")?.cpLoss).toBe(5);
+        expect(strength.get("c6")?.status).toBe("strong");
+        expect(strength.get("d6")?.cpLoss).toBe(23);
+        expect(strength.get("d6")?.status).toBe("ok");
+        expect(strength.get("d5")?.cpLoss).toBe(0);
+        expect(strength.get("d5")?.engineScoreRank).toBe(2);
+    });
+
     test("smart blended strength dampens tiny practical samples", () => {
         const strength = getOpeningMoveStrengthMap({
             openings: [

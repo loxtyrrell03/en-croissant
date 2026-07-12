@@ -472,7 +472,7 @@ function OpeningsTable({
                       <Text size="xs">Checking cloud analysis for this position.</Text>
                     ) : health.source === "local" ? (
                       <Text size="xs">No cloud score was found for this position.</Text>
-                    ) : health.engineScoreCp === null ? (
+                    ) : health.engineScoreCpForWhite === null ? (
                       <Text size="xs">
                         {cloudSourceLabel(health.source)} lists this move but has no usable score
                         yet.
@@ -480,12 +480,13 @@ function OpeningsTable({
                     ) : (
                       <>
                         <Text size="xs">
-                          Score {formatCloudScore(health.engineScoreCp)} for {health.side}.
+                          Score {formatCloudScore(health.engineScoreCpForWhite)} from White&apos;s
+                          perspective.
                         </Text>
                         <Text size="xs">
                           {health.cpLoss !== null
-                            ? `${Math.round(health.cpLoss)} cp behind the best move`
-                            : "Best available cloud score for this side"}
+                            ? `${Math.round(health.cpLoss)} cp behind the best move for ${health.engineSide}`
+                            : `Best available cloud score for ${health.engineSide}`}
                         </Text>
                       </>
                     )}
@@ -702,6 +703,9 @@ async function queryOpeningCloudData(
       rank: index + 1,
       winrate: null,
     })) ?? [];
+  const [position] = positionFromFen(fen);
+  const sideToMove = position?.turn ?? "white";
+  const rootBestMove = getBestOpeningCloudMove(lichessCloudMoves, sideToMove);
   const coveredSans = new Set(lichessCloudMoves.map((move) => normalizeOpeningCloudSan(move.san)));
   const missingMoves = visibleMoves.filter(
     (move) => !coveredSans.has(normalizeOpeningCloudSan(move)),
@@ -713,8 +717,6 @@ async function queryOpeningCloudData(
     if (evaluation) lichessCloudMoves.push(evaluation);
   }
 
-  const [position] = positionFromFen(fen);
-  const sideToMove = position?.turn ?? "white";
   lichessCloudMoves.sort((a, b) =>
     sideToMove === "white"
       ? (b.scoreCpForWhite ?? Number.NEGATIVE_INFINITY) -
@@ -726,10 +728,36 @@ async function queryOpeningCloudData(
     move.rank = index + 1;
   });
   if (lichessCloudMoves.length && hasOpeningCloudCoverage(lichessCloudMoves, visibleMoves)) {
-    return { source: "lichess", moves: lichessCloudMoves };
+    return {
+      source: "lichess",
+      moves: lichessCloudMoves,
+      rootBestMoveSan: rootBestMove?.san ?? null,
+      rootBestScoreCpForWhite: rootBestMove?.scoreCpForWhite ?? null,
+    };
   }
 
-  return lichessCloudMoves.length ? { source: "lichess", moves: lichessCloudMoves } : null;
+  return lichessCloudMoves.length
+    ? {
+        source: "lichess",
+        moves: lichessCloudMoves,
+        rootBestMoveSan: rootBestMove?.san ?? null,
+        rootBestScoreCpForWhite: rootBestMove?.scoreCpForWhite ?? null,
+      }
+    : null;
+}
+
+function getBestOpeningCloudMove(
+  moves: { san: string; scoreCpForWhite: number | null }[],
+  sideToMove: OpeningMoveHealthSide,
+) {
+  return moves.reduce<(typeof moves)[number] | null>((best, move) => {
+    if (move.scoreCpForWhite === null) return best;
+    if (!best || best.scoreCpForWhite === null) return move;
+    if (sideToMove === "white") {
+      return move.scoreCpForWhite > best.scoreCpForWhite ? move : best;
+    }
+    return move.scoreCpForWhite < best.scoreCpForWhite ? move : best;
+  }, null);
 }
 
 async function queryOpeningChildEvaluation(fen: string, san: string) {
@@ -777,7 +805,7 @@ function getOpeningEvalMultipv(openings: Opening[]) {
 
 function getEngineStrengthSortScore(health?: OpeningMoveStrength) {
   if (!health) return Number.NEGATIVE_INFINITY;
-  if (health.engineScoreCp !== null) return health.engineScoreCp;
+  if (health.cpLoss !== null) return -health.cpLoss;
   if (health.source !== "local") return Number.NEGATIVE_INFINITY;
   return health.score - 50;
 }
@@ -789,7 +817,7 @@ function getBlendedStrengthSortScore(health?: OpeningMoveStrength) {
 function formatCloudEval(health: OpeningMoveStrength) {
   if (health.pending) return "...";
   if (health.source === "local") return "-";
-  if (health.engineScoreCp !== null) return formatCloudScore(health.engineScoreCp);
+  if (health.engineScoreCpForWhite !== null) return formatCloudScore(health.engineScoreCpForWhite);
   if (health.engineRank !== null) return "No eval";
   return "Out";
 }
