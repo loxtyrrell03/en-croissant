@@ -14,6 +14,7 @@ mod fs;
 mod lexer;
 mod oauth;
 mod opening;
+mod otb_import;
 mod pgn;
 mod progress;
 mod puzzle;
@@ -59,6 +60,7 @@ use crate::game::{
 use crate::fs::set_file_as_executable;
 use crate::lexer::lex_pgn;
 use crate::oauth::authenticate;
+use crate::otb_import::{collect_otb_games, OtbImportProgress};
 use crate::pgn::{count_pgn_games, delete_game, read_games, split_pgn_to_files, write_game};
 use crate::puzzle::{
     delete_puzzle_database, export_blindfold_puzzle_progress, export_puzzle_progress,
@@ -196,6 +198,7 @@ fn main() {
             replace_database_from_pgn,
             get_player,
             get_most_common_player,
+            collect_otb_games,
             count_pgn_games,
             read_games,
             split_pgn_to_files,
@@ -250,6 +253,7 @@ fn main() {
             MistakeReviewScanProgress,
             ProgressEvent,
             LocalEvalBuildProgress,
+            OtbImportProgress,
             GameMoveEvent,
             ClockUpdateEvent,
             GameOverEvent

@@ -156,6 +156,7 @@ import { unwrap } from "@/utils/unwrap";
 import { BoundedMap } from "@/utils/boundedCache";
 import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveControls";
 import PlanCoachInline, { type PlanCoachInlineRequest } from "../plan/PlanCoachInline";
+import OtbGameImportPanel, { type OtbImportComplete } from "./OtbGameImportPanel";
 
 const DEFAULT_PREP_MIN_GAMES = 2;
 const DEFAULT_PREP_MOVE_LIMIT = 8;
@@ -523,6 +524,7 @@ function OpponentPrepPanel({
   const [straightLineMinCp, setStraightLineMinCp] = useState(DEFAULT_STRAIGHT_LINE_MIN_CP);
   const [straightLineMaxPly, setStraightLineMaxPly] = useState(DEFAULT_STRAIGHT_LINE_MAX_PLY);
   const [onlineImportOpen, setOnlineImportOpen] = useState(false);
+  const [otbImportOpen, setOtbImportOpen] = useState(false);
   const [onlineImportSource, setOnlineImportSource] = useState<OnlineGameSource>("lichess");
   const [onlineImportUsername, setOnlineImportUsername] = useState("");
   const [onlineImportMode, setOnlineImportMode] = useState<PrepOnlineImportMode>("count");
@@ -1768,6 +1770,35 @@ function OpponentPrepPanel({
     setPrep,
     setSavedPrepSettings,
   ]);
+
+  const useImportedOtbGames = useCallback(
+    async ({ dbPath, title, temporary, report }: OtbImportComplete) => {
+      const player = await resolvePrepOnlineImportPlayer(dbPath, report.playerName);
+      const databaseLabel = temporary ? `${title} (temporary)` : title;
+      setPrep((current) => ({
+        ...current,
+        mode: "player",
+        source: "local",
+        databasePath: dbPath,
+        databaseLabel,
+        player: player?.id ?? null,
+        playerName: player?.name ?? report.playerName,
+        rootPath: [],
+        completedBranches: {},
+        skippedBranches: {},
+      }));
+      setSavedPrepSettings((current) => ({
+        ...current,
+        mode: "player",
+        source: "local",
+        databasePath: dbPath,
+        databaseLabel,
+        player: player?.id ?? null,
+        playerName: player?.name ?? report.playerName,
+      }));
+    },
+    [setPrep, setSavedPrepSettings],
+  );
 
   const clearMovePreview = useCallback(() => {
     setBoardPreviewShapes(null);
@@ -3575,14 +3606,30 @@ function OpponentPrepPanel({
               width={dense ? 180 : 230}
               allowDeselect={false}
             />
-            <Tooltip label="Import a player's online games and use them as this prep source">
+            <Tooltip label="Import a player's personal Chess.com or Lichess account games">
               <Button
                 variant="default"
                 size={controlSize}
                 leftSection={<IconCloudDownload size="0.95rem" />}
-                onClick={() => setOnlineImportOpen((open) => !open)}
+                onClick={() => {
+                  setOtbImportOpen(false);
+                  setOnlineImportOpen((open) => !open);
+                }}
               >
-                Import games
+                Import online
+              </Button>
+            </Tooltip>
+            <Tooltip label="Find public over-the-board PGNs across broadcast, news, and tournament sources">
+              <Button
+                variant="default"
+                size={controlSize}
+                leftSection={<IconCloudDownload size="0.95rem" />}
+                onClick={() => {
+                  setOnlineImportOpen(false);
+                  setOtbImportOpen((open) => !open);
+                }}
+              >
+                Find OTB games
               </Button>
             </Tooltip>
             {underBoard ? (
@@ -3594,7 +3641,7 @@ function OpponentPrepPanel({
             ) : null}
           </Group>
 
-          <Collapse in={!onlineImportOpen} style={{ flexShrink: 0 }}>
+          <Collapse in={!onlineImportOpen && !otbImportOpen} style={{ flexShrink: 0 }}>
             <Group gap={dense ? 4 : "xs"} wrap="wrap" align="flex-end">
               {prepMode === "player" ? (
                 <DatabasePerspectiveControls
@@ -3864,6 +3911,20 @@ function OpponentPrepPanel({
               </Group>
             ) : null}
           </Group>
+        </Stack>
+        <Divider my={dense ? 2 : 4} />
+      </Collapse>
+
+      <Collapse in={showSetupStage && otbImportOpen} style={{ flexShrink: 0 }}>
+        <Stack gap={dense ? 3 : 6} pt={dense ? 2 : 4} pb={dense ? 4 : 6}>
+          <OtbGameImportPanel
+            initialPlayerName={prep.playerName}
+            databaseDir={databaseDir}
+            localDatabases={localDatabases}
+            controlSize={controlSize}
+            dense={dense}
+            onImported={useImportedOtbGames}
+          />
         </Stack>
         <Divider my={dense ? 2 : 4} />
       </Collapse>

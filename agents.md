@@ -1,5 +1,17 @@
 # AGENTS.md
 
+- On 2026-07-12, Opponent Prep gained a separate deterministic `Find OTB
+  games` importer. It searches Chess-Results by FIDE ID, current and monthly
+  Lichess broadcasts, public ChessBase news-site PGNs, TWIC, official
+  tournament-organiser PGN indexes (beginning with the 4NCL archive), and
+  optional user PGN/ZIP/ZST sources; personal Chess.com/Lichess account games
+  remain a separate importer and are never merged. The collector preserves
+  per-game source provenance, filters explicit online events, resolves identity
+  by FIDE ID plus exact normalized names, and deduplicates conflicting copies
+  by their mainline moves. Regression audits found five public additions over
+  Sameera Kodukula's 33-game baseline, nine over Alexey Lapidus's 112 genuinely
+  unique games (the 129 source records contained repeated movetext), and no
+  additions over Peter Large's 650 unique games among 776 source files.
 - On 2026-07-12, Database move-quality scoring was corrected so the exact
   position's root evaluation remains the authoritative best-move baseline.
   Independently cached child-position evals may fill omitted rows but cannot

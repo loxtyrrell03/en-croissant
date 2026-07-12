@@ -616,7 +616,7 @@ export type DatabaseConversionState = {
     phase: "downloading" | "converting" | null;
     progress: number | null;
     progressId: string | null;
-    sourceKind?: "online-games" | "lichess-study" | "local-import" | null;
+    sourceKind?: "online-games" | "otb-games" | "lichess-study" | "local-import" | null;
     startedAt?: number | null;
     updatedAt?: number | null;
     totalGames: number;

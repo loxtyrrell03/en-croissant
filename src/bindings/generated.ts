@@ -384,6 +384,14 @@ async getMostCommonPlayer(file: string) : Promise<Result<Player | null, string>>
     else return { status: "error", error: e  as any };
 }
 },
+async collectOtbGames(request: OtbImportRequest) : Promise<Result<OtbImportReport, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("collect_otb_games", { request }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async countPgnGames(file: string) : Promise<Result<number, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("count_pgn_games", { file }) };
@@ -743,6 +751,7 @@ gameMoveEvent: GameMoveEvent,
 gameOverEvent: GameOverEvent,
 localEvalBuildProgress: LocalEvalBuildProgress,
 mistakeReviewScanProgress: MistakeReviewScanProgress,
+otbImportProgress: OtbImportProgress,
 progressEvent: ProgressEvent
 }>({
 bestMovesPayload: "best-moves-payload",
@@ -752,6 +761,7 @@ gameMoveEvent: "game-move-event",
 gameOverEvent: "game-over-event",
 localEvalBuildProgress: "local-eval-build-progress",
 mistakeReviewScanProgress: "mistake-review-scan-progress",
+otbImportProgress: "otb-import-progress",
 progressEvent: "progress-event"
 })
 
@@ -825,6 +835,11 @@ export type MistakeReviewThresholds = { inaccuracy: number; mistake: number; blu
 export type MistakeReviewTimeManagementSettings = { enabled: boolean; minMoveSeconds: number }
 export type MoveAnalysis = { best: BestMoves[]; novelty: boolean; is_sacrifice: boolean }
 export type NormalizedGame = { id: number; fen: string; event: string; event_id: number; site: string; site_id: number; date?: string | null; time?: string | null; round?: string | null; white: string; white_id: number; white_elo?: number | null; black: string; black_id: number; black_elo?: number | null; result: Outcome; time_control?: string | null; eco?: string | null; ply_count?: number | null; moves: string }
+export type OtbImportNewestGame = { date: string; event: string; white: string; black: string; result: string; source: string }
+export type OtbImportProgress = { jobId: string; source: string; phase: string; current: number; total: number; gamesFound: number; message: string }
+export type OtbImportReport = { playerName: string; fideId: string | null; outputPath: string; gamesFound: number; duplicatesRemoved: number; suspectedOnlineGamesExcluded: number; identityMismatchesExcluded: number; newestGame: OtbImportNewestGame | null; sources: OtbImportSourceReport[] }
+export type OtbImportRequest = { jobId: string; playerName: string; fideId: string | null; fromYear: number; includeLichessBroadcasts: boolean; includeChessResults: boolean; includeChessbaseNews: boolean; includeOfficialPgnIndexes: boolean; includeTwic: boolean; localPgnPaths: string[]; cacheDir: string; outputPath: string }
+export type OtbImportSourceReport = { source: string; archivesChecked: number; cachedArchives: number; matchedGames: number; uniqueGamesAdded: number; errors: string[] }
 export type OpeningBookConfig = { path: string; maxPly?: bigint }
 export type OpeningHealthPlayerPosition = { fen: string; normalizedFen: string; ply: number; sideToMove: string; moveSequence: string; playerMoveSan: string; playerMoveUci: string; playerGames: number; playerPositionGames: number; playerWhite: number; playerDraw: number; playerBlack: number; playerScore: number; lastPlayed: string | null; sampleGameIds: number[] }
 export type OpeningHealthPlayerPositionsReport = { playerGames: number; candidatePositions: number; positions: OpeningHealthPlayerPosition[] }
