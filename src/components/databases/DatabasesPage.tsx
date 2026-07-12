@@ -32,6 +32,8 @@ import { useDebouncedValue, useElementSize, useToggle } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import {
   IconArrowRight,
+  IconArchive,
+  IconArchiveOff,
   IconArrowsSort,
   IconDots,
   IconDatabase,
@@ -55,10 +57,12 @@ import { exists, mkdir } from "@tauri-apps/plugin-fs";
 import { useAtom, useAtomValue } from "jotai";
 import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import useSWR from "swr";
+import useSWR, { mutate as mutateSWR } from "swr";
 import type { DatabaseInfo } from "@/bindings";
 import { commands } from "@/bindings";
 import {
+  archivedDatabaseEntriesAtom,
+  archivedDatabaseFoldersAtom,
   type DatabaseConversionState,
   databaseConversionStateAtom,
   databaseLinkedFoldersAtom,
@@ -76,6 +80,17 @@ import {
   storedDocumentDirAtom,
 } from "@/state/atoms";
 import { useActiveDatabaseViewStore } from "@/state/store/database";
+import {
+  getArchivedDatabaseFolderAncestor,
+  isDatabaseArchived,
+  isDatabasePathDirectlyArchived,
+  isSameOrDescendantDatabaseFolder,
+  normalizeArchivedDatabaseFolder,
+  replaceArchivedDatabaseFolderPrefix,
+  replaceArchivedDatabasePath,
+  setDatabaseFolderArchived,
+  setDatabasePathArchived,
+} from "@/utils/databaseArchive";
 import {
   getDefaultDatabaseFolderName,
   getDatabaseLinkedFolderRecord,
@@ -177,14 +192,25 @@ function rewriteDatabaseUpdateRecordPath<TRecord extends { dbPath: string }>(
 export default function DatabasesPage() {
   const { t } = useTranslation();
 
-  const { data: databases, isLoading, mutate } = useSWR("databases", () => getDatabases());
+  const {
+    data: databases,
+    isLoading,
+    mutate,
+  } = useSWR("databases-with-archived", () => getDatabases({ includeArchived: true }));
   const { data: folders, mutate: mutateFolders } = useSWR("database-folders", () =>
     getDatabaseFolders(),
   );
 
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [archiveView, setArchiveView] = useState<"active" | "archived">("active");
   const [selected, setSelected] = useState<string | null>(null);
+  const [archivedDatabaseEntries, setArchivedDatabaseEntries] = useAtom(
+    archivedDatabaseEntriesAtom,
+  );
+  const [archivedDatabaseFolders, setArchivedDatabaseFolders] = useAtom(
+    archivedDatabaseFoldersAtom,
+  );
   const [referenceDatabase, setReferenceDatabase] = useAtom(referenceDbAtom);
   const [conversionState, setConversionState] = useAtom(databaseConversionStateAtom);
   const [onlineDatabaseUpdates, setOnlineDatabaseUpdates] = useAtom(onlineDatabaseUpdatesAtom);
@@ -238,12 +264,10 @@ export default function DatabasesPage() {
 
         setSessions((current) => {
           const existing = current.find(
-            (session) =>
-              session.lichess?.username.toLowerCase() === account.username.toLowerCase(),
+            (session) => session.lichess?.username.toLowerCase() === account.username.toLowerCase(),
           );
           const remaining = current.filter(
-            (session) =>
-              session.lichess?.username.toLowerCase() !== account.username.toLowerCase(),
+            (session) => session.lichess?.username.toLowerCase() !== account.username.toLowerCase(),
           );
           return [
             ...remaining,
@@ -313,13 +337,31 @@ export default function DatabasesPage() {
         : null,
     [databaseLinkedFolders, selectedDatabase],
   );
+  const archiveState = useMemo(
+    () => ({ databasePaths: archivedDatabaseEntries, folderPaths: archivedDatabaseFolders }),
+    [archivedDatabaseEntries, archivedDatabaseFolders],
+  );
+  const selectedArchivedFolderAncestor = selectedDatabase
+    ? getArchivedDatabaseFolderAncestor(
+        getDatabaseFolderPath(selectedDatabase),
+        archivedDatabaseFolders,
+      )
+    : null;
+  const selectedDatabaseArchived = selectedDatabase
+    ? isDatabaseArchived(selectedDatabase, archiveState)
+    : false;
+  const archivedDatabaseCount = useMemo(
+    () => (databases ?? []).filter((database) => isDatabaseArchived(database, archiveState)).length,
+    [archiveState, databases],
+  );
+  const archivedItemCount = archivedDatabaseCount + archivedDatabaseFolders.length;
   const filteredDatabases = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
-    if (!normalizedSearch) {
-      return databases ?? [];
-    }
-
     return (databases ?? []).filter((item) => {
+      const archived = isDatabaseArchived(item, archiveState);
+      if ((archiveView === "archived") !== archived) return false;
+      if (!normalizedSearch) return true;
+
       const values = [
         item.filename,
         item.file,
@@ -329,7 +371,7 @@ export default function DatabasesPage() {
 
       return values.some((value) => value.toLowerCase().includes(normalizedSearch));
     });
-  }, [databases, search]);
+  }, [archiveState, archiveView, databases, search]);
   const showConversionPlaceholder =
     conversionState.inProgress &&
     !!conversionState.targetDatabasePath &&
@@ -365,14 +407,19 @@ export default function DatabasesPage() {
     const groups = groupDatabasesByFolder(filteredDatabases, sortMode);
     const existing = new Set(groups.map((group) => group.path));
     const emptyGroups = (folders ?? [])
-      .filter((folder) => !existing.has(folder))
+      .filter((folder) => {
+        if (existing.has(folder)) return false;
+        const archived = !!getArchivedDatabaseFolderAncestor(folder, archivedDatabaseFolders);
+        if ((archiveView === "archived") !== archived) return false;
+        return !search.trim() || folder.toLowerCase().includes(search.trim().toLowerCase());
+      })
       .map((folder) => ({ path: folder, label: folder, databases: [] }));
     return [...groups, ...emptyGroups].sort((a, b) => {
       if (a.path === "" && b.path !== "") return -1;
       if (a.path !== "" && b.path === "") return 1;
       return a.label.localeCompare(b.label, undefined, { sensitivity: "base" });
     });
-  }, [filteredDatabases, folders, sortMode]);
+  }, [archiveView, archivedDatabaseFolders, filteredDatabases, folders, search, sortMode]);
   const databaseFolderOptions = useMemo(
     () => Array.from(new Set([...getDatabaseFolderOptions(databases ?? []), ...(folders ?? [])])),
     [databases, folders],
@@ -403,6 +450,64 @@ export default function DatabasesPage() {
     setDatabaseLinkedFolders((records) =>
       rewriteDatabaseUpdateRecordPath(records, previousPath, nextPath),
     );
+    setArchivedDatabaseEntries((paths) =>
+      replaceArchivedDatabasePath(paths, previousPath, nextPath),
+    );
+  }
+
+  function refreshActiveDatabaseLists() {
+    void mutateSWR("databases");
+  }
+
+  function setDatabaseArchived(database: DatabaseInfo, archived: boolean) {
+    setArchivedDatabaseEntries((paths) => setDatabasePathArchived(paths, database.file, archived));
+    if (archived && referenceDatabase === database.file) {
+      commands.clearGames();
+      setReferenceDatabase(null);
+    }
+    setSelected(null);
+    refreshActiveDatabaseLists();
+    notifications.show({
+      title: archived ? "Database archived" : "Database restored",
+      message: `${getDatabaseDisplayTitle(database)} ${archived ? "moved to Archived" : "returned to Active"}.`,
+      color: archived ? "blue" : "green",
+    });
+  }
+
+  function setFolderArchived(folder: string, archived: boolean) {
+    setArchivedDatabaseFolders((paths) => setDatabaseFolderArchived(paths, folder, archived));
+    const databasePathsInFolder = new Set(
+      (databases ?? [])
+        .filter((database) =>
+          isSameOrDescendantDatabaseFolder(getDatabaseFolderPath(database), folder),
+        )
+        .map((database) => database.file.toLowerCase()),
+    );
+    setArchivedDatabaseEntries((paths) =>
+      paths.filter((path) => !databasePathsInFolder.has(path.toLowerCase())),
+    );
+    if (
+      archived &&
+      selectedDatabase &&
+      isSameOrDescendantDatabaseFolder(getDatabaseFolderPath(selectedDatabase), folder)
+    ) {
+      setSelected(null);
+    }
+    const reference = (databases ?? []).find((database) => database.file === referenceDatabase);
+    if (
+      archived &&
+      reference &&
+      isSameOrDescendantDatabaseFolder(getDatabaseFolderPath(reference), folder)
+    ) {
+      commands.clearGames();
+      setReferenceDatabase(null);
+    }
+    refreshActiveDatabaseLists();
+    notifications.show({
+      title: archived ? "Folder archived" : "Folder restored",
+      message: `${folder} and its databases ${archived ? "moved to Archived" : "returned to Active"}.`,
+      color: archived ? "blue" : "green",
+    });
   }
 
   async function moveDatabaseToFolder(database: DatabaseInfo, folder: string) {
@@ -417,6 +522,7 @@ export default function DatabasesPage() {
     rewriteMovedDatabasePath(database.file, target);
     await mutate();
     await mutateFolders();
+    refreshActiveDatabaseLists();
   }
 
   async function createDatabaseFolder(folder: string) {
@@ -448,8 +554,12 @@ export default function DatabasesPage() {
       const targetFolder = [normalizedNextFolder, trailing].filter(Boolean).join("/");
       await moveDatabaseToFolder(database, targetFolder);
     }
+    setArchivedDatabaseFolders((paths) =>
+      replaceArchivedDatabaseFolderPrefix(paths, previousFolder, normalizedNextFolder),
+    );
     await mutate();
     await mutateFolders();
+    refreshActiveDatabaseLists();
   }
 
   async function autoOrganizeDatabases() {
@@ -659,9 +769,13 @@ export default function DatabasesPage() {
           commands.deleteDatabase(selectedDatabase.file).then(() => {
             mutate();
             setSelected(null);
+            setArchivedDatabaseEntries((paths) =>
+              setDatabasePathArchived(paths, selectedDatabase.file, false),
+            );
             setDatabaseLinkedFolders((records) =>
               removeDatabaseLinkedFolderRecord(records, selectedDatabase.file),
             );
+            refreshActiveDatabaseLists();
           });
           toggleDeleteModal();
         }}
@@ -780,23 +894,40 @@ export default function DatabasesPage() {
                 </Group>
 
                 <Group gap="xs" justify="space-between" wrap="wrap">
-                  <Select
-                    size="sm"
-                    w={compact ? 152 : 168}
-                    aria-label="Sort databases"
-                    leftSection={<IconArrowsSort size="1rem" />}
-                    data={[
-                      { value: "folder", label: "Sort: Folder" },
-                      { value: "name", label: "Sort: Name" },
-                      { value: "games", label: "Sort: Games" },
-                      { value: "storage", label: "Sort: Storage" },
-                    ]}
-                    value={sortMode}
-                    allowDeselect={false}
-                    onChange={(value) =>
-                      setSortMode((value as DatabaseSortMode | null) ?? "folder")
-                    }
-                  />
+                  <Group gap="xs" wrap="wrap">
+                    <SegmentedControl
+                      size="sm"
+                      value={archiveView}
+                      onChange={(value) => {
+                        setArchiveView(value as "active" | "archived");
+                        setSelected(null);
+                      }}
+                      data={[
+                        {
+                          value: "active",
+                          label: `Active (${(databases?.length ?? 0) - archivedDatabaseCount})`,
+                        },
+                        { value: "archived", label: `Archived (${archivedItemCount})` },
+                      ]}
+                    />
+                    <Select
+                      size="sm"
+                      w={compact ? 152 : 168}
+                      aria-label="Sort databases"
+                      leftSection={<IconArrowsSort size="1rem" />}
+                      data={[
+                        { value: "folder", label: "Sort: Folder" },
+                        { value: "name", label: "Sort: Name" },
+                        { value: "games", label: "Sort: Games" },
+                        { value: "storage", label: "Sort: Storage" },
+                      ]}
+                      value={sortMode}
+                      allowDeselect={false}
+                      onChange={(value) =>
+                        setSortMode((value as DatabaseSortMode | null) ?? "folder")
+                      }
+                    />
+                  </Group>
                   <Group gap="xs" wrap="wrap">
                     <Tooltip label="Create an empty folder inside your database library.">
                       <Button
@@ -872,7 +1003,11 @@ export default function DatabasesPage() {
                       <Stack key={folder.path || "unfiled"} gap={6}>
                         <Group justify="space-between" wrap="nowrap">
                           <Group gap={6} wrap="nowrap" miw={0}>
-                            <IconFolder size="1rem" />
+                            {archiveView === "archived" ? (
+                              <IconArchive size="1rem" />
+                            ) : (
+                              <IconFolder size="1rem" />
+                            )}
                             <Text fw={700} size="xs" tt="uppercase" c="dimmed" truncate>
                               {folder.label}
                             </Text>
@@ -881,27 +1016,14 @@ export default function DatabasesPage() {
                             </Badge>
                           </Group>
                           {folder.path && (
-                            <Menu position="bottom-end" withinPortal>
-                              <Menu.Target>
-                                <ActionIcon
-                                  size="sm"
-                                  variant="subtle"
-                                  aria-label={`Folder actions for ${folder.label}`}
-                                >
-                                  <IconDots size="1rem" />
-                                </ActionIcon>
-                              </Menu.Target>
-                              <Menu.Dropdown>
-                                <Menu.Item
-                                  leftSection={<IconEdit size="1rem" />}
-                                  onClick={() =>
-                                    setFolderModal({ mode: "rename", folder: folder.path })
-                                  }
-                                >
-                                  Rename folder
-                                </Menu.Item>
-                              </Menu.Dropdown>
-                            </Menu>
+                            <DatabaseFolderActions
+                              folder={folder.path}
+                              archivedFolders={archivedDatabaseFolders}
+                              onRename={() =>
+                                setFolderModal({ mode: "rename", folder: folder.path })
+                              }
+                              onSetArchived={(archived) => setFolderArchived(folder.path, archived)}
+                            />
                           )}
                         </Group>
                         <SimpleGrid cols={listColumns} spacing={compact ? 6 : "sm"}>
@@ -935,6 +1057,17 @@ export default function DatabasesPage() {
                               onChangeReference={changeReferenceDatabase}
                               onUpdateOnline={updateOnlineDatabase}
                               onUpdateStudy={updateLichessStudyDatabase}
+                              directlyArchived={isDatabasePathDirectlyArchived(
+                                item.file,
+                                archivedDatabaseEntries,
+                              )}
+                              archivedFolderAncestor={getArchivedDatabaseFolderAncestor(
+                                getDatabaseFolderPath(item),
+                                archivedDatabaseFolders,
+                              )}
+                              onToggleArchive={(database, archived) =>
+                                setDatabaseArchived(database, archived)
+                              }
                             />
                           ))}
                         </SimpleGrid>
@@ -949,9 +1082,13 @@ export default function DatabasesPage() {
                       <IconDatabase size={32} />
                     </ThemeIcon>
                     <Text c="dimmed" fw={500} ta="center">
-                      {hasSearch ? t("Common.NoResults") : t("Databases.Empty.NoInstalled")}
+                      {hasSearch
+                        ? t("Common.NoResults")
+                        : archiveView === "archived"
+                          ? "No archived databases or folders"
+                          : t("Databases.Empty.NoInstalled")}
                     </Text>
-                    {!hasSearch && (
+                    {!hasSearch && archiveView === "active" && (
                       <Text c="dimmed" size="sm" ta="center">
                         {t("Databases.Empty.AddHint")}
                       </Text>
@@ -1345,9 +1482,39 @@ export default function DatabasesPage() {
                         </Button>
                       </Group>
                     )}
-                    <Button onClick={() => toggleDeleteModal()} color="red">
-                      {t("Common.Delete")}
-                    </Button>
+                    <Group gap="xs">
+                      <Tooltip
+                        label={
+                          selectedArchivedFolderAncestor
+                            ? `Restore the ${selectedArchivedFolderAncestor} folder to restore this database.`
+                            : selectedDatabaseArchived
+                              ? "Return this database to the active library."
+                              : "Hide this database from the active library without deleting it."
+                        }
+                      >
+                        <span style={{ display: "inline-flex" }}>
+                          <Button
+                            variant="default"
+                            leftSection={
+                              selectedDatabaseArchived ? (
+                                <IconArchiveOff size="1rem" />
+                              ) : (
+                                <IconArchive size="1rem" />
+                              )
+                            }
+                            disabled={!!selectedArchivedFolderAncestor}
+                            onClick={() =>
+                              setDatabaseArchived(selectedDatabase, !selectedDatabaseArchived)
+                            }
+                          >
+                            {selectedDatabaseArchived ? "Restore" : "Archive"}
+                          </Button>
+                        </span>
+                      </Tooltip>
+                      <Button onClick={() => toggleDeleteModal()} color="red">
+                        {t("Common.Delete")}
+                      </Button>
+                    </Group>
                   </Group>
                 </Stack>
               </ScrollArea>
@@ -1450,6 +1617,57 @@ function DatabaseConversionCard({ conversionState }: { conversionState: Database
   );
 }
 
+function DatabaseFolderActions({
+  folder,
+  archivedFolders,
+  onRename,
+  onSetArchived,
+}: {
+  folder: string;
+  archivedFolders: string[];
+  onRename: () => void;
+  onSetArchived: (archived: boolean) => void;
+}) {
+  const normalizedFolder = normalizeArchivedDatabaseFolder(folder).toLowerCase();
+  const directlyArchived = archivedFolders.some(
+    (candidate) => normalizeArchivedDatabaseFolder(candidate).toLowerCase() === normalizedFolder,
+  );
+  const archiveAncestor = getArchivedDatabaseFolderAncestor(
+    folder,
+    archivedFolders.filter(
+      (candidate) => normalizeArchivedDatabaseFolder(candidate).toLowerCase() !== normalizedFolder,
+    ),
+  );
+
+  return (
+    <Menu position="bottom-end" withinPortal>
+      <Menu.Target>
+        <ActionIcon size="sm" variant="subtle" aria-label={`Folder actions for ${folder}`}>
+          <IconDots size="1rem" />
+        </ActionIcon>
+      </Menu.Target>
+      <Menu.Dropdown>
+        <Menu.Item
+          leftSection={
+            directlyArchived ? <IconArchiveOff size="1rem" /> : <IconArchive size="1rem" />
+          }
+          disabled={!!archiveAncestor}
+          onClick={() => onSetArchived(!directlyArchived)}
+        >
+          {directlyArchived
+            ? "Restore folder"
+            : archiveAncestor
+              ? `Archived by ${archiveAncestor}`
+              : "Archive folder"}
+        </Menu.Item>
+        <Menu.Item leftSection={<IconEdit size="1rem" />} onClick={onRename}>
+          Rename folder
+        </Menu.Item>
+      </Menu.Dropdown>
+    </Menu>
+  );
+}
+
 function DatabaseListCard({
   item,
   selectedDatabase,
@@ -1463,6 +1681,9 @@ function DatabaseListCard({
   onChangeReference,
   onUpdateOnline,
   onUpdateStudy,
+  directlyArchived,
+  archivedFolderAncestor,
+  onToggleArchive,
 }: {
   item: DatabaseInfo;
   selectedDatabase: DatabaseInfo | null;
@@ -1476,6 +1697,9 @@ function DatabaseListCard({
   onChangeReference: (file: string) => void;
   onUpdateOnline: (database: SuccessDatabaseInfo) => void;
   onUpdateStudy: (database: SuccessDatabaseInfo, record: LichessStudyDatabaseUpdateRecord) => void;
+  directlyArchived: boolean;
+  archivedFolderAncestor: string | null;
+  onToggleArchive: (database: DatabaseInfo, archived: boolean) => void;
 }) {
   const { t } = useTranslation();
   const onlineRecord =
@@ -1544,6 +1768,32 @@ function DatabaseListCard({
                 onChangeReference(item.file);
               }}
             />
+            <Menu position="bottom-end" withinPortal>
+              <Menu.Target>
+                <ActionIcon
+                  aria-label={`Database actions for ${getDatabaseDisplayTitle(item)}`}
+                  variant="subtle"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <IconDots size="1rem" />
+                </ActionIcon>
+              </Menu.Target>
+              <Menu.Dropdown onClick={(event) => event.stopPropagation()}>
+                <Menu.Item
+                  leftSection={
+                    directlyArchived ? <IconArchiveOff size="1rem" /> : <IconArchive size="1rem" />
+                  }
+                  disabled={!!archivedFolderAncestor}
+                  onClick={() => onToggleArchive(item, !directlyArchived)}
+                >
+                  {directlyArchived
+                    ? "Restore database"
+                    : archivedFolderAncestor
+                      ? `Archived by ${archivedFolderAncestor}`
+                      : "Archive database"}
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
           </Group>
         </Group>
       }

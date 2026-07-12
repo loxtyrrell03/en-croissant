@@ -27,6 +27,10 @@ import { type Position, positionSchema } from "@/components/files/opening";
 import type { LocalOptions } from "@/components/panels/database/DatabasePanel";
 import { positionFromFen, swapMove } from "@/utils/chessops";
 import type { SuccessDatabaseInfo } from "@/utils/db";
+import {
+    ARCHIVED_DATABASE_ENTRIES_STORAGE_KEY,
+    ARCHIVED_DATABASE_FOLDERS_STORAGE_KEY,
+} from "@/utils/databaseArchive";
 import { type Engine, type EngineSettings, engineSchema } from "@/utils/engines";
 import type { EnginePlanReport } from "@/utils/enginePlanExplorer";
 import { DEFAULT_MOVE_STRENGTH_SETTINGS, type MoveStrengthSettings } from "@/utils/moveStrength";
@@ -86,6 +90,18 @@ export const pinnedFileEntriesAtom = atomWithStorage<string[]>(
 
 export const archivedFileEntriesAtom = atomWithStorage<string[]>(
     "archived-file-entries",
+    [],
+    createZodStorage(z.array(z.string()), localStorage),
+);
+
+export const archivedDatabaseEntriesAtom = atomWithStorage<string[]>(
+    ARCHIVED_DATABASE_ENTRIES_STORAGE_KEY,
+    [],
+    createZodStorage(z.array(z.string()), localStorage),
+);
+
+export const archivedDatabaseFoldersAtom = atomWithStorage<string[]>(
+    ARCHIVED_DATABASE_FOLDERS_STORAGE_KEY,
     [],
     createZodStorage(z.array(z.string()), localStorage),
 );

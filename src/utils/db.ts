@@ -15,6 +15,7 @@ import {
 } from "@/bindings";
 import type { LocalOptions } from "@/components/panels/database/DatabasePanel";
 import { getDatabasesDir } from "@/utils/directories";
+import { getStoredDatabaseArchiveState, isDatabaseArchived } from "@/utils/databaseArchive";
 import {
     getPlayerSearchQueries,
     normalizePlayerText,
@@ -198,12 +199,18 @@ type DatabaseFileEntry = {
     relativePath: string;
 };
 
-export async function getDatabases(): Promise<DatabaseInfo[]> {
+export async function getDatabases(
+    options: { includeArchived?: boolean } = {},
+): Promise<DatabaseInfo[]> {
     const dbDir = await getDatabasesDir();
     const dbs = await getDatabaseFiles(dbDir);
-    return (await Promise.allSettled(dbs.map((db) => getDatabase(db))))
+    const databases = (await Promise.allSettled(dbs.map((db) => getDatabase(db))))
         .filter((r) => r.status === "fulfilled")
         .map((r) => (r as PromiseFulfilledResult<DatabaseInfo>).value);
+    if (options.includeArchived) return databases;
+
+    const archiveState = getStoredDatabaseArchiveState();
+    return databases.filter((database) => !isDatabaseArchived(database, archiveState));
 }
 
 export async function getDatabaseFolders(): Promise<string[]> {

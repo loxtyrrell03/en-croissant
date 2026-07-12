@@ -7,6 +7,12 @@
   rather than the selected WDL perspective, and displayed numeric evals remain
   White-relative to match the Analysis panel. The `1.e4 ...e5` regression now
   guarantees that the root-best `...e5` is zero-loss and Strong.
+- On 2026-07-12, databases and database folders gained reversible archiving.
+  The Databases library now separates Active and Archived views, exposes
+  archive/restore actions on database cards, database settings, and folder
+  menus, inherits archive state through nested folders, and keeps archived
+  databases out of normal pickers and automatic update discovery without
+  moving or deleting their files.
 - On 2026-07-12, the Databases library toolbar was reorganized into a clearer
   two-row command area: search and the primary Add database action lead, while
   sorting, New folder, and Auto-organize sit together as library-management
