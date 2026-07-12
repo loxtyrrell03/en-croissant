@@ -452,10 +452,13 @@ function PlanExplorerPanel() {
   );
   const sortedVisiblePlanData = useMemo(() => {
     if (!visiblePlanData) return null;
+    const strengthOrderedPieces = visiblePlanData.pieces.map((piece) =>
+      orderPieceLinesByStrength(piece, planStrengthByKey),
+    );
     return {
       ...visiblePlanData,
       pieces: sortPlanPieces(
-        visiblePlanData.pieces,
+        strengthOrderedPieces,
         sort,
         visibleEngineReport,
         resultPerspective,
@@ -762,7 +765,12 @@ function PlanExplorerPanel() {
 
     return (
       <ScrollArea flex={1} offsetScrollbars>
-        <Table withTableBorder highlightOnHover stickyHeader>
+        <Table
+          withTableBorder
+          highlightOnHover
+          stickyHeader
+          miw={view === "plans" ? (engineStrengthEnabled ? 920 : 810) : 760}
+        >
           {view === "plans" ? (
             <>
               <Table.Thead>
@@ -770,7 +778,7 @@ function PlanExplorerPanel() {
                   <SortableTh sortKey="piece" sort={sort} setSort={setSort} style={{ width: 150 }}>
                     Piece
                   </SortableTh>
-                  <SortableTh sortKey="blend" sort={sort} setSort={setSort} style={{ width: 120 }}>
+                  <SortableTh sortKey="blend" sort={sort} setSort={setSort} style={{ width: 105 }}>
                     Blend
                   </SortableTh>
                   {engineStrengthEnabled && (
@@ -778,31 +786,44 @@ function PlanExplorerPanel() {
                       sortKey="engine"
                       sort={sort}
                       setSort={setSort}
-                      style={{ width: 130 }}
+                      style={{ width: 105 }}
                     >
                       Engine
                     </SortableTh>
                   )}
-                  <SortableTh sortKey="routes" sort={sort} setSort={setSort}>
-                    Routes
+                  <SortableTh
+                    sortKey="routes"
+                    sort={sort}
+                    setSort={setSort}
+                    style={{ minWidth: 180 }}
+                  >
+                    Route
                   </SortableTh>
-                  <SortableTh sortKey="games" sort={sort} setSort={setSort} style={{ width: 110 }}>
+                  <Table.Th style={{ width: 70, textAlign: "right" }}>Share</Table.Th>
+                  <SortableTh
+                    sortKey="games"
+                    sort={sort}
+                    setSort={setSort}
+                    style={{ width: 90 }}
+                    align="right"
+                  >
                     Games
                   </SortableTh>
                   <SortableTh
                     sortKey="results"
                     sort={sort}
                     setSort={setSort}
-                    style={{ width: 150 }}
+                    style={{ width: 210 }}
+                    align="center"
                   >
-                    Results
+                    W / D / L
                   </SortableTh>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
                 {pieces.length === 0 && !isLoading ? (
                   <Table.Tr>
-                    <Table.Td colSpan={engineStrengthEnabled ? 6 : 5}>
+                    <Table.Td colSpan={engineStrengthEnabled ? 7 : 6}>
                       <Text ta="center" c="dimmed" py="lg">
                         No piece routes found in the sampled continuations.
                       </Text>
@@ -1207,18 +1228,20 @@ function SortableTh({
   setSort,
   children,
   style,
+  align = "left",
 }: {
   sortKey: PlanSortKey;
   sort: PlanSort;
   setSort: Dispatch<SetStateAction<PlanSort>>;
   children: ReactNode;
   style?: CSSProperties;
+  align?: "left" | "center" | "right";
 }) {
   const active = sort.key === sortKey;
   const Icon = sort.direction === "asc" ? IconChevronUp : IconChevronDown;
 
   return (
-    <Table.Th style={style}>
+    <Table.Th style={{ ...style, textAlign: align }}>
       <UnstyledButton
         w="100%"
         onClick={() =>
@@ -1235,7 +1258,11 @@ function SortableTh({
           )
         }
       >
-        <Group gap={4} wrap="nowrap">
+        <Group
+          gap={4}
+          wrap="nowrap"
+          justify={align === "right" ? "flex-end" : align === "center" ? "center" : undefined}
+        >
           <Text size="sm" fw={700}>
             {children}
           </Text>
@@ -1289,6 +1316,23 @@ function sortPlanPieces(
 
     return direction * diff;
   });
+}
+
+function orderPieceLinesByStrength(
+  piece: PlanExplorerPiece,
+  strengthByKey: Map<string, PlanStrength>,
+) {
+  return {
+    ...piece,
+    lines: [...piece.lines].sort((a, b) => {
+      const strengthDiff =
+        (strengthByKey.get(planLineKey(piece, b))?.score ?? -1) -
+        (strengthByKey.get(planLineKey(piece, a))?.score ?? -1);
+      return (
+        strengthDiff || b.games - a.games || a.squares.join("-").localeCompare(b.squares.join("-"))
+      );
+    }),
+  };
 }
 
 function sortPlanSetups(
@@ -2288,61 +2332,62 @@ function PieceRow({
   resultPerspective: DatabaseResultPerspective | null;
   strength: PlanStrength | null;
 }) {
-  const topLine = piece.lines[0] ? withPlanLineColor(piece.lines[0], piece.color) : null;
   const summary = summarizePlanPiece(piece);
   const engineMatch = useMemo(
     () => getPieceEngineMatch(piece, engineReport),
     [engineReport, piece],
   );
+  const lines = piece.lines.slice(0, 4);
 
   return (
-    <Table.Tr
-      onMouseEnter={() => topLine && previewLine(topLine)}
-      onMouseLeave={() => previewLine(null)}
-      onClick={() => topLine && drawLine(topLine)}
-      style={{ cursor: topLine ? "pointer" : "default" }}
-    >
-      <Table.Td>
-        <Group gap="xs" wrap="nowrap">
-          <Box w={24} h={24}>
-            <PieceComponent piece={toChessgroundPiece(piece)} size={24} />
-          </Box>
-          <Box>
-            <Text size="sm" fw={700}>
-              {capitalize(piece.role)}
-            </Text>
-            <Text size="xs" c="dimmed">
-              {piece.from}
-            </Text>
-            <Text size="xs" c="dimmed" lineClamp={2}>
-              {summary}
-            </Text>
-          </Box>
-        </Group>
-      </Table.Td>
-      <Table.Td>
-        <PlanStrengthCell strength={strength} />
-      </Table.Td>
-      {engineStrengthEnabled && (
-        <Table.Td>
-          <EngineStrengthCell match={engineMatch} running={engineRunning} />
-        </Table.Td>
-      )}
-      <Table.Td>
-        <Stack gap={4}>
-          {piece.lines.slice(0, 4).map((rawLine) => {
-            const line = withPlanLineColor(rawLine, piece.color);
-            const lineMatch = engineStrengthEnabled
-              ? getPlanExplorerLineEnginePlan(piece, rawLine, engineReport)
-              : null;
-            return (
-              <Group
-                key={line.squares.join("-")}
-                gap="xs"
-                wrap="nowrap"
-                onMouseEnter={() => previewLine(line)}
-                onMouseLeave={() => topLine && previewLine(topLine)}
-              >
+    <>
+      {lines.map((rawLine, index) => {
+        const line = withPlanLineColor(rawLine, piece.color);
+        const lineMatch = engineStrengthEnabled
+          ? getPlanExplorerLineEnginePlan(piece, rawLine, engineReport)
+          : null;
+        const share = piece.total > 0 ? (line.games / piece.total) * 100 : 0;
+
+        return (
+          <Table.Tr
+            key={line.squares.join("-")}
+            onMouseEnter={() => previewLine(line)}
+            onMouseLeave={() => previewLine(null)}
+            onClick={() => drawLine(line)}
+            style={{ cursor: "pointer" }}
+          >
+            {index === 0 && (
+              <Table.Td rowSpan={lines.length} style={{ verticalAlign: "top" }}>
+                <Group gap="xs" wrap="nowrap">
+                  <Box w={24} h={24}>
+                    <PieceComponent piece={toChessgroundPiece(piece)} size={24} />
+                  </Box>
+                  <Box>
+                    <Text size="sm" fw={700}>
+                      {capitalize(piece.role)}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      {piece.from}
+                    </Text>
+                    <Text size="xs" c="dimmed" lineClamp={3}>
+                      {summary}
+                    </Text>
+                  </Box>
+                </Group>
+              </Table.Td>
+            )}
+            {index === 0 && (
+              <Table.Td rowSpan={lines.length} style={{ verticalAlign: "top" }}>
+                <PlanStrengthCell strength={strength} />
+              </Table.Td>
+            )}
+            {index === 0 && engineStrengthEnabled && (
+              <Table.Td rowSpan={lines.length} style={{ verticalAlign: "top" }}>
+                <EngineStrengthCell match={engineMatch} running={engineRunning} />
+              </Table.Td>
+            )}
+            <Table.Td>
+              <Group gap={6} wrap="nowrap">
                 <Tooltip label="Draw route">
                   <ActionIcon
                     size="sm"
@@ -2358,31 +2403,35 @@ function PieceRow({
                 <Text size="sm" ff="monospace" style={{ whiteSpace: "nowrap" }}>
                   {formatPlanPieceRoute(piece, line)}
                 </Text>
-                <Badge size="sm" variant="light" color="gray" style={{ flexShrink: 0 }}>
-                  {formatNumber(line.games)} games ·{" "}
-                  {piece.total > 0
-                    ? `${((line.games / piece.total) * 100).toFixed(0)}% of piece games`
-                    : "0% of piece games"}
-                </Badge>
+                {index === 0 && (
+                  <Badge size="xs" variant="light" color="teal" style={{ flexShrink: 0 }}>
+                    Strongest
+                  </Badge>
+                )}
                 {lineMatch && (
                   <Badge size="xs" color={approvalColor(lineMatch.plan.approval)} variant="light">
                     {lineMatch.plan.approval}
                   </Badge>
                 )}
               </Group>
-            );
-          })}
-        </Stack>
-      </Table.Td>
-      <Table.Td>
-        <Badge variant="light">{formatNumber(piece.total)} games</Badge>
-      </Table.Td>
-      <Table.Td>
-        {topLine && (
-          <ResultBar line={topLine} perspective={resultPerspective ?? toResultSide(piece.color)} />
-        )}
-      </Table.Td>
-    </Table.Tr>
+            </Table.Td>
+            <Table.Td>
+              <Text size="sm" fw={600} ta="right" style={{ whiteSpace: "nowrap" }}>
+                {share.toFixed(0)}%
+              </Text>
+            </Table.Td>
+            <Table.Td>
+              <Text size="sm" ta="right" style={{ whiteSpace: "nowrap" }}>
+                {formatNumber(line.games)}
+              </Text>
+            </Table.Td>
+            <Table.Td>
+              <ResultBar line={line} perspective={resultPerspective ?? toResultSide(piece.color)} />
+            </Table.Td>
+          </Table.Tr>
+        );
+      })}
+    </>
   );
 }
 
@@ -2607,7 +2656,6 @@ function ResultBar({
       draw={line.draw}
       black={line.black}
       perspective={perspective}
-      compact
     />
   );
 }
