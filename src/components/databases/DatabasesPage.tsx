@@ -863,105 +863,75 @@ export default function DatabasesPage() {
         <ResponsivePanel>
           <Paper withBorder style={{ borderWidth: 2 }} h="100%">
             <Stack gap={0} h="100%" style={{ overflow: "hidden" }}>
-              <Stack p="xs" gap={8}>
-                <Group gap="xs" wrap="nowrap">
-                  <Input
-                    size="sm"
-                    style={{ flexGrow: 1, minWidth: 0 }}
-                    leftSection={<IconSearch size="1rem" />}
-                    aria-label="Search databases"
-                    placeholder="Search databases"
-                    value={search}
-                    onChange={(e) => setSearch(e.currentTarget.value)}
-                  />
-                  <Tooltip
-                    label="Add a database from the web, an online account, a Lichess study, or a local PGN."
-                    multiline
-                    w={280}
+              <Group p="xs" gap="xs">
+                <Input
+                  size="sm"
+                  style={{ flexGrow: 1 }}
+                  leftSection={<IconSearch size="1rem" />}
+                  placeholder={t("Common.Search")}
+                  value={search}
+                  onChange={(e) => setSearch(e.currentTarget.value)}
+                />
+                <SegmentedControl
+                  size="sm"
+                  value={archiveView}
+                  onChange={(value) => {
+                    setArchiveView(value as "active" | "archived");
+                    setSelected(null);
+                  }}
+                  data={[
+                    {
+                      value: "active",
+                      label: `Active (${(databases?.length ?? 0) - archivedDatabaseCount})`,
+                    },
+                    { value: "archived", label: `Archived (${archivedItemCount})` },
+                  ]}
+                />
+                <Select
+                  size="sm"
+                  w={compact ? 128 : 160}
+                  aria-label="Sort databases"
+                  leftSection={<IconArrowsSort size="1rem" />}
+                  data={[
+                    { value: "folder", label: "Folder" },
+                    { value: "name", label: "Name" },
+                    { value: "games", label: "Games" },
+                    { value: "storage", label: "Storage" },
+                  ]}
+                  value={sortMode}
+                  onChange={(value) => setSortMode((value as DatabaseSortMode | null) ?? "folder")}
+                />
+                <Tooltip label="Create folder">
+                  <ActionIcon
+                    variant="default"
+                    size="lg"
+                    onClick={() => setFolderModal({ mode: "create" })}
                   >
-                    <span style={{ display: "inline-flex" }}>
-                      <Button
-                        size="sm"
-                        leftSection={<IconPlus size="1rem" />}
-                        onClick={() => setOpen(true)}
-                        disabled={conversionState.inProgress}
-                        aria-label="Add database"
-                      >
-                        Add database
-                      </Button>
-                    </span>
-                  </Tooltip>
-                </Group>
-
-                <Group gap="xs" justify="space-between" wrap="wrap">
-                  <Group gap="xs" wrap="wrap">
-                    <SegmentedControl
-                      size="sm"
-                      value={archiveView}
-                      onChange={(value) => {
-                        setArchiveView(value as "active" | "archived");
-                        setSelected(null);
-                      }}
-                      data={[
-                        {
-                          value: "active",
-                          label: `Active (${(databases?.length ?? 0) - archivedDatabaseCount})`,
-                        },
-                        { value: "archived", label: `Archived (${archivedItemCount})` },
-                      ]}
-                    />
-                    <Select
-                      size="sm"
-                      w={compact ? 152 : 168}
-                      aria-label="Sort databases"
-                      leftSection={<IconArrowsSort size="1rem" />}
-                      data={[
-                        { value: "folder", label: "Sort: Folder" },
-                        { value: "name", label: "Sort: Name" },
-                        { value: "games", label: "Sort: Games" },
-                        { value: "storage", label: "Sort: Storage" },
-                      ]}
-                      value={sortMode}
-                      allowDeselect={false}
-                      onChange={(value) =>
-                        setSortMode((value as DatabaseSortMode | null) ?? "folder")
-                      }
-                    />
-                  </Group>
-                  <Group gap="xs" wrap="wrap">
-                    <Tooltip label="Create an empty folder inside your database library.">
-                      <Button
-                        variant="default"
-                        size="sm"
-                        leftSection={<IconFolderPlus size="1rem" />}
-                        onClick={() => setFolderModal({ mode: "create" })}
-                        aria-label="Create database folder"
-                      >
-                        New folder
-                      </Button>
-                    </Tooltip>
-                    <Tooltip
-                      label="Move database files into suggested folders such as Personal, Repertoires, Online Games, and Imported."
-                      multiline
-                      w={280}
-                    >
-                      <span style={{ display: "inline-flex" }}>
-                        <Button
-                          variant="default"
-                          size="sm"
-                          leftSection={<IconWand size="1rem" />}
-                          loading={organizing}
-                          disabled={conversionState.inProgress}
-                          onClick={() => void autoOrganizeDatabases()}
-                          aria-label="Automatically organize databases"
-                        >
-                          Auto-organize
-                        </Button>
-                      </span>
-                    </Tooltip>
-                  </Group>
-                </Group>
-              </Stack>
+                    <IconFolderPlus size="1rem" />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label="Auto organize databases">
+                  <ActionIcon
+                    variant="default"
+                    size="lg"
+                    loading={organizing}
+                    disabled={conversionState.inProgress}
+                    onClick={() => void autoOrganizeDatabases()}
+                  >
+                    <IconWand size="1rem" />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label={t("Common.AddNew")}>
+                  <ActionIcon
+                    variant="default"
+                    size="lg"
+                    onClick={() => setOpen(true)}
+                    disabled={conversionState.inProgress}
+                  >
+                    <IconPlus size="1rem" />
+                  </ActionIcon>
+                </Tooltip>
+              </Group>
               <Divider />
               {conversionState.inProgress && (
                 <>
