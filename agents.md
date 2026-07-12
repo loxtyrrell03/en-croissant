@@ -1,5 +1,11 @@
 # AGENTS.md
 
+- On 2026-07-12, the Databases library toolbar was reorganized into a clearer
+  two-row command area: search and the primary Add database action lead, while
+  sorting, New folder, and Auto-organize sit together as library-management
+  controls. Icon-only actions now have visible labels, descriptive hover text,
+  and accessible names, including an explicit warning that Auto-organize moves
+  database files into suggested folders.
 - On 2026-07-12, Plan Explorer WDL bars were unified with the Database move-table bars through a shared `DatabaseWdlBar` component. Plan rows now use the same theme-aware white/draw/black styling, decimal percentage labels, sizing behavior, outlines, and side-perspective ordering as Database rows.
 - On 2026-07-12, Plan Explorer plan routes became true table rows with
   adjacent Share, Games, and full-size W/D/L columns. Routes are ordered by
