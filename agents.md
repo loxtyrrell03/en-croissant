@@ -1,5 +1,13 @@
 # AGENTS.md
 
+- On 2026-07-13, the deterministic OTB collector broadened its public-source
+  coverage with FIDE-verified Chessscope broadcast discovery, the current and
+  legacy BritBase hosts, and tightly filtered PGN Mentor event/player files.
+  Initial-heavy identities such as `Sooraj M R` now match safely, every new
+  lane still passes through the existing OTB filter, provenance, and
+  move-sequence dedupe, and a failed or slow archive remains isolated to that
+  source report. PGN Mentor discovery is surname-scoped before download so
+  common forenames cannot trigger large unrelated player collections.
 - On 2026-07-12, Home gained a polished `Import games into a database` dock
   above the general action grid. Its unified modal offers Chess.com, Lichess,
   and OTB source lanes: online accounts reuse the existing standard-game

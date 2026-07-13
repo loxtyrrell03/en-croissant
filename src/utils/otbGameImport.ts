@@ -19,8 +19,8 @@ export const DEFAULT_OTB_IMPORT_SOURCES: OtbImportSourceSelection = {
 export const OTB_IMPORT_SOURCE_DETAILS = [
     {
         key: "lichessBroadcasts" as const,
-        label: "Lichess broadcasts",
-        detail: "Official monthly OTB broadcast archive",
+        label: "Broadcast archives",
+        detail: "Lichess monthly and live broadcasts, plus Chessscope player discovery",
     },
     {
         key: "chessResults" as const,
@@ -34,8 +34,8 @@ export const OTB_IMPORT_SOURCE_DETAILS = [
     },
     {
         key: "officialPgnIndexes" as const,
-        label: "Official event sites",
-        detail: "Tournament-organiser PGN indexes, starting with the 4NCL archive",
+        label: "Public OTB archives",
+        detail: "4NCL, BritBase, PGN Mentor, and other downloadable event collections",
     },
     {
         key: "twic" as const,

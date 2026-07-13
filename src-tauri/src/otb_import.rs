@@ -7,6 +7,7 @@ use std::{
 };
 
 use chrono::{Datelike, Utc};
+use futures_util::{stream, StreamExt};
 use pgn_reader::{BufferedReader as PgnReader, SanPlus, Skip, Visitor};
 use reqwest::header::{COOKIE, SET_COOKIE};
 use reqwest::Client;
@@ -21,7 +22,25 @@ const CHESSBASE_ORIGIN: &str = "https://en.chessbase.com";
 const CHESS_RESULTS_PLAYER_SEARCH: &str = "https://s1.chess-results.com/partiesuche.aspx?lan=1";
 const FOUR_NCL_PGN_INDEX: &str = "https://www.4ncl.co.uk/pgn-replay.htm";
 const FOUR_NCL_ORIGIN: &str = "https://www.4ncl.co.uk";
-const USER_AGENT: &str = "Outpost OTB importer/0.1";
+const CHESSCOPE_ORIGIN: &str = "https://chesscope.com";
+const BRITBASE_ORIGINS: &[&str] = &["https://www.saund.org.uk", "https://www.saund.co.uk"];
+const PGN_MENTOR_INDEX: &str = "https://www.pgnmentor.com/files.html?outpost=1";
+const USER_AGENT: &str = "Outpost OTB importer/0.2";
+
+const BRITBASE_INDEXES: &[(&str, u16)] = &[
+    ("/britbase/brit2020.htm", 2020),
+    ("/britbase/brit2010.htm", 2010),
+    ("/britbase/brit2000.htm", 2000),
+    ("/britbase/brit90.htm", 1990),
+    ("/britbase/brit80.htm", 1980),
+    ("/britbase/brit70.htm", 1970),
+    ("/britbase/brit60.htm", 1960),
+    ("/britbase/brit50.htm", 1950),
+    ("/britbase/brit40.htm", 1940),
+    ("/britbase/brit30.htm", 1930),
+    ("/britbase/brit20.htm", 1920),
+    ("/britbase/britpre1920.html", 0),
+];
 
 #[derive(Clone, Debug, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
@@ -127,6 +146,7 @@ struct PlayerIdentity {
     canonical_name: String,
     fide_id: Option<String>,
     core_name_tokens: HashSet<String>,
+    all_name_tokens: HashSet<String>,
 }
 
 impl PlayerIdentity {
@@ -145,7 +165,8 @@ impl PlayerIdentity {
             })
             .filter(|value| !value.is_empty());
         let core_name_tokens = core_name_tokens(&canonical_name);
-        if core_name_tokens.len() < 2 {
+        let all_name_tokens = all_name_tokens(&canonical_name);
+        if all_name_tokens.len() < 2 || core_name_tokens.is_empty() {
             return Err("Enter at least a first name and surname.".to_string());
         }
 
@@ -153,12 +174,18 @@ impl PlayerIdentity {
             canonical_name,
             fide_id,
             core_name_tokens,
+            all_name_tokens,
         })
     }
 
     fn name_matches(&self, candidate: &str) -> bool {
         let candidate_tokens = core_name_tokens(candidate);
-        candidate_tokens.len() >= 2 && candidate_tokens == self.core_name_tokens
+        if self.core_name_tokens.len() >= 2 {
+            candidate_tokens.len() >= 2 && candidate_tokens == self.core_name_tokens
+        } else {
+            let candidate_tokens = all_name_tokens(candidate);
+            candidate_tokens.len() >= 2 && candidate_tokens == self.all_name_tokens
+        }
     }
 }
 
@@ -213,6 +240,7 @@ pub async fn collect_otb_games(
 
     let client = Client::builder()
         .user_agent(USER_AGENT)
+        .connect_timeout(Duration::from_secs(15))
         .build()
         .map_err(|error| error.to_string())?;
     let mut collection = Collection::default();
@@ -232,6 +260,9 @@ pub async fn collect_otb_games(
         let live_report =
             scan_lichess_fide_broadcasts(&client, &request, &identity, &mut collection, &app).await;
         reports.push(live_report);
+        let discovery_report =
+            scan_chessscope_broadcasts(&client, &request, &identity, &mut collection, &app).await;
+        reports.push(discovery_report);
         let report =
             scan_lichess_broadcasts(&client, &request, &identity, &mut collection, &app).await;
         reports.push(report);
@@ -245,6 +276,10 @@ pub async fn collect_otb_games(
     if request.include_official_pgn_indexes {
         let report =
             scan_4ncl_otb_archive(&client, &request, &identity, &mut collection, &app).await;
+        reports.push(report);
+        let report = scan_britbase(&client, &request, &identity, &mut collection, &app).await;
+        reports.push(report);
+        let report = scan_pgn_mentor(&client, &request, &identity, &mut collection, &app).await;
         reports.push(report);
     }
 
@@ -490,6 +525,209 @@ async fn scan_lichess_fide_broadcasts(
                     .len()
                     .saturating_sub(before)
                     .min(u32::MAX as usize) as u32;
+            }
+            Err(error) => report.errors.push(format!("{pgn_url}: {error}")),
+        }
+    }
+
+    report
+}
+
+async fn scan_chessscope_broadcasts(
+    client: &Client,
+    request: &OtbImportRequest,
+    identity: &PlayerIdentity,
+    collection: &mut Collection,
+    app: &tauri::AppHandle,
+) -> OtbImportSourceReport {
+    let mut report = OtbImportSourceReport::new("Chessscope broadcast discovery");
+    emit_progress(
+        app,
+        request,
+        "Chessscope",
+        "discovering",
+        0,
+        1,
+        collection.games.len(),
+        "Resolving the player on Chessscope".to_string(),
+    );
+
+    let search_html = match client
+        .get(format!("{CHESSCOPE_ORIGIN}/search"))
+        .query(&[("q", identity.canonical_name.as_str())])
+        .send()
+        .await
+    {
+        Ok(response) => match response.error_for_status() {
+            Ok(response) => match response.text().await {
+                Ok(html) => html,
+                Err(error) => {
+                    report.errors.push(error.to_string());
+                    String::new()
+                }
+            },
+            Err(error) => {
+                report.errors.push(error.to_string());
+                String::new()
+            }
+        },
+        Err(error) => {
+            report.errors.push(error.to_string());
+            String::new()
+        }
+    };
+    report.archives_checked = 1;
+
+    let mut player_urls = extract_quoted_values(&search_html, "href=")
+        .into_iter()
+        .filter(|href| href.starts_with("/player/") && !href.contains('?') && !href.contains('#'))
+        .map(|href| format!("{CHESSCOPE_ORIGIN}{href}"))
+        .collect::<HashSet<_>>();
+    for slug in chessscope_slug_candidates(&identity.canonical_name) {
+        player_urls.insert(format!("{CHESSCOPE_ORIGIN}/player/{slug}"));
+    }
+
+    let mut player_urls = player_urls.into_iter().collect::<Vec<_>>();
+    player_urls.sort();
+    player_urls.truncate(20);
+    let mut game_urls = HashSet::new();
+    for (index, player_url) in player_urls.iter().enumerate() {
+        emit_progress(
+            app,
+            request,
+            "Chessscope",
+            "discovering",
+            index,
+            player_urls.len(),
+            collection.games.len(),
+            format!("Checking Chessscope player candidate {}", index + 1),
+        );
+        let response = match client.get(player_url).send().await {
+            Ok(response) if response.status() == reqwest::StatusCode::NOT_FOUND => continue,
+            Ok(response) => match response.error_for_status() {
+                Ok(response) => response,
+                Err(error) => {
+                    report.errors.push(format!("{player_url}: {error}"));
+                    continue;
+                }
+            },
+            Err(error) => {
+                report.errors.push(format!("{player_url}: {error}"));
+                continue;
+            }
+        };
+        report.archives_checked = report.archives_checked.saturating_add(1);
+        let html = match response.text().await {
+            Ok(html) => html,
+            Err(error) => {
+                report.errors.push(format!("{player_url}: {error}"));
+                continue;
+            }
+        };
+        if !chessscope_page_matches_identity(&html, identity) {
+            continue;
+        }
+        game_urls.extend(
+            extract_chessscope_game_paths(&html, request.from_year)
+                .into_iter()
+                .map(|path| format!("{CHESSCOPE_ORIGIN}{path}")),
+        );
+    }
+
+    let mut game_urls = game_urls.into_iter().collect::<Vec<_>>();
+    game_urls.sort();
+    let total_game_pages = game_urls.len();
+    let mut game_pages = stream::iter(game_urls.into_iter().map(|game_url| {
+        let client = client.clone();
+        async move {
+            let response = client
+                .get(&game_url)
+                .send()
+                .await
+                .map_err(|error| error.to_string())?
+                .error_for_status()
+                .map_err(|error| error.to_string())?;
+            let html = response.text().await.map_err(|error| error.to_string())?;
+            Ok::<_, String>((game_url, html))
+        }
+    }))
+    .buffer_unordered(8);
+    let mut rounds = HashSet::new();
+    let mut checked_game_pages = 0usize;
+    while let Some(result) = game_pages.next().await {
+        checked_game_pages += 1;
+        emit_progress(
+            app,
+            request,
+            "Chessscope",
+            "discovering",
+            checked_game_pages,
+            total_game_pages,
+            collection.games.len(),
+            format!(
+                "Resolving Chessscope broadcast game {} of {}",
+                checked_game_pages, total_game_pages
+            ),
+        );
+        match result {
+            Ok((_game_url, html)) => {
+                report.archives_checked = report.archives_checked.saturating_add(1);
+                rounds.extend(extract_chessscope_round_ids(&html));
+            }
+            Err(error) => report.errors.push(error),
+        }
+    }
+
+    let mut rounds = rounds.into_iter().collect::<Vec<_>>();
+    rounds.sort();
+    for (index, round_id) in rounds.iter().enumerate() {
+        emit_progress(
+            app,
+            request,
+            "Chessscope",
+            "downloading",
+            index,
+            rounds.len(),
+            collection.games.len(),
+            format!(
+                "Scanning Chessscope broadcast round {} of {}",
+                index + 1,
+                rounds.len()
+            ),
+        );
+        let pgn_url = format!("https://lichess.org/api/broadcast/round/{round_id}.pgn");
+        let bytes = match get_lichess_with_backoff(client, &pgn_url).await {
+            Ok(response) => match response.bytes().await {
+                Ok(bytes) => bytes,
+                Err(error) => {
+                    report.errors.push(format!("{pgn_url}: {error}"));
+                    continue;
+                }
+            },
+            Err(error) => {
+                report.errors.push(format!("{pgn_url}: {error}"));
+                continue;
+            }
+        };
+        report.archives_checked = report.archives_checked.saturating_add(1);
+        let before = collection.games.len();
+        match scan_pgn_reader(
+            BufReader::new(Cursor::new(bytes)),
+            identity,
+            collection,
+            "Chessscope broadcast discovery",
+            &pgn_url,
+            request.from_year,
+        ) {
+            Ok(matched) => {
+                report.matched_games = report.matched_games.saturating_add(matched);
+                report.unique_games_added = report.unique_games_added.saturating_add(
+                    collection
+                        .games
+                        .len()
+                        .saturating_sub(before)
+                        .min(u32::MAX as usize) as u32,
+                );
             }
             Err(error) => report.errors.push(format!("{pgn_url}: {error}")),
         }
@@ -1019,6 +1257,256 @@ fn is_4ncl_otb_archive_url(url: &str) -> bool {
         || lower.contains("/fide/pgn/")
         || lower.contains("/rp/")
         || lower.contains("gmspring")
+}
+
+async fn scan_britbase(
+    client: &Client,
+    request: &OtbImportRequest,
+    identity: &PlayerIdentity,
+    collection: &mut Collection,
+    app: &tauri::AppHandle,
+) -> OtbImportSourceReport {
+    let mut report = OtbImportSourceReport::new("BritBase public OTB archive");
+    let relevant_indexes = BRITBASE_INDEXES
+        .iter()
+        .filter(|(_, start_year)| {
+            (*start_year == 0 && request.from_year < 1920)
+                || (*start_year > 0 && start_year.saturating_add(9) >= request.from_year)
+        })
+        .collect::<Vec<_>>();
+    let mut archive_urls = HashSet::new();
+
+    for (index, (path, _)) in relevant_indexes.iter().enumerate() {
+        emit_progress(
+            app,
+            request,
+            "BritBase",
+            "discovering",
+            index,
+            relevant_indexes.len(),
+            collection.games.len(),
+            format!("Checking BritBase archive index {}", index + 1),
+        );
+        let mut loaded = false;
+        for origin in BRITBASE_ORIGINS {
+            let index_url = format!("{origin}{path}");
+            let response = match client.get(&index_url).send().await {
+                Ok(response) => match response.error_for_status() {
+                    Ok(response) => response,
+                    Err(error) => {
+                        report.errors.push(format!("{index_url}: {error}"));
+                        continue;
+                    }
+                },
+                Err(error) => {
+                    report.errors.push(format!("{index_url}: {error}"));
+                    continue;
+                }
+            };
+            report.archives_checked = report.archives_checked.saturating_add(1);
+            match response.text().await {
+                Ok(html) => {
+                    archive_urls.extend(extract_britbase_archive_urls(
+                        &html,
+                        request.from_year,
+                        origin,
+                    ));
+                    loaded = true;
+                    break;
+                }
+                Err(error) => report.errors.push(format!("{index_url}: {error}")),
+            }
+        }
+        if !loaded {
+            report.errors.push(format!(
+                "BritBase index {path} was unavailable from both public hosts"
+            ));
+        }
+    }
+
+    let mut archive_urls = archive_urls.into_iter().collect::<Vec<_>>();
+    archive_urls.sort();
+    for (index, archive_url) in archive_urls.iter().enumerate() {
+        let filename = file_name_from_url(archive_url);
+        emit_progress(
+            app,
+            request,
+            "BritBase",
+            "downloading",
+            index,
+            archive_urls.len(),
+            collection.games.len(),
+            format!(
+                "Scanning BritBase file {} of {}",
+                index + 1,
+                archive_urls.len()
+            ),
+        );
+        let cache_path = request.cache_dir.join(format!("britbase-{filename}"));
+        let (bytes, cached) = match fetch_cached(client, archive_url, &cache_path).await {
+            Ok(result) => result,
+            Err(error) => {
+                report.errors.push(format!("{archive_url}: {error}"));
+                continue;
+            }
+        };
+        report.archives_checked = report.archives_checked.saturating_add(1);
+        if cached {
+            report.cached_archives = report.cached_archives.saturating_add(1);
+        }
+        let before = collection.games.len();
+        let result = if archive_url
+            .split('?')
+            .next()
+            .is_some_and(|url| url.to_ascii_lowercase().ends_with(".zip"))
+        {
+            scan_zip_pgns(
+                bytes,
+                identity,
+                collection,
+                "BritBase public OTB archive",
+                archive_url,
+                request.from_year,
+            )
+        } else {
+            scan_pgn_reader(
+                BufReader::new(Cursor::new(bytes)),
+                identity,
+                collection,
+                "BritBase public OTB archive",
+                archive_url,
+                request.from_year,
+            )
+        };
+        match result {
+            Ok(matched) => {
+                report.matched_games = report.matched_games.saturating_add(matched);
+                report.unique_games_added = report.unique_games_added.saturating_add(
+                    collection
+                        .games
+                        .len()
+                        .saturating_sub(before)
+                        .min(u32::MAX as usize) as u32,
+                );
+            }
+            Err(error) => report.errors.push(format!("{archive_url}: {error}")),
+        }
+    }
+
+    report
+}
+
+async fn scan_pgn_mentor(
+    client: &Client,
+    request: &OtbImportRequest,
+    identity: &PlayerIdentity,
+    collection: &mut Collection,
+    app: &tauri::AppHandle,
+) -> OtbImportSourceReport {
+    let mut report = OtbImportSourceReport::new("PGN Mentor public collections");
+    emit_progress(
+        app,
+        request,
+        "PGN Mentor",
+        "discovering",
+        0,
+        1,
+        collection.games.len(),
+        "Checking PGN Mentor public collections".to_string(),
+    );
+    let response = match client.get(PGN_MENTOR_INDEX).send().await {
+        Ok(response) => match response.error_for_status() {
+            Ok(response) => response,
+            Err(error) => {
+                report.errors.push(error.to_string());
+                return report;
+            }
+        },
+        Err(error) => {
+            report.errors.push(error.to_string());
+            return report;
+        }
+    };
+    report.archives_checked = 1;
+    let html = match response.text().await {
+        Ok(html) => html,
+        Err(error) => {
+            report.errors.push(error.to_string());
+            return report;
+        }
+    };
+    let mut archive_urls = extract_pgn_mentor_archive_urls(&html, identity, request.from_year);
+    archive_urls.sort();
+    archive_urls.dedup();
+
+    for (index, archive_url) in archive_urls.iter().enumerate() {
+        let filename = file_name_from_url(archive_url);
+        emit_progress(
+            app,
+            request,
+            "PGN Mentor",
+            "downloading",
+            index,
+            archive_urls.len(),
+            collection.games.len(),
+            format!(
+                "Scanning PGN Mentor file {} of {}",
+                index + 1,
+                archive_urls.len()
+            ),
+        );
+        let cache_path = request.cache_dir.join(format!("pgnmentor-{filename}"));
+        let (bytes, cached) = match fetch_cached(client, archive_url, &cache_path).await {
+            Ok(result) => result,
+            Err(error) => {
+                report.errors.push(format!("{archive_url}: {error}"));
+                continue;
+            }
+        };
+        report.archives_checked = report.archives_checked.saturating_add(1);
+        if cached {
+            report.cached_archives = report.cached_archives.saturating_add(1);
+        }
+        let before = collection.games.len();
+        let result = if archive_url
+            .split('?')
+            .next()
+            .is_some_and(|url| url.to_ascii_lowercase().ends_with(".zip"))
+        {
+            scan_zip_pgns(
+                bytes,
+                identity,
+                collection,
+                "PGN Mentor public collections",
+                archive_url,
+                request.from_year,
+            )
+        } else {
+            scan_pgn_reader(
+                BufReader::new(Cursor::new(bytes)),
+                identity,
+                collection,
+                "PGN Mentor public collections",
+                archive_url,
+                request.from_year,
+            )
+        };
+        match result {
+            Ok(matched) => {
+                report.matched_games = report.matched_games.saturating_add(matched);
+                report.unique_games_added = report.unique_games_added.saturating_add(
+                    collection
+                        .games
+                        .len()
+                        .saturating_sub(before)
+                        .min(u32::MAX as usize) as u32,
+                );
+            }
+            Err(error) => report.errors.push(format!("{archive_url}: {error}")),
+        }
+    }
+
+    report
 }
 
 async fn scan_twic(
@@ -1653,6 +2141,209 @@ fn core_name_tokens(name: &str) -> HashSet<String> {
         .collect()
 }
 
+fn all_name_tokens(name: &str) -> HashSet<String> {
+    const TITLES: &[&str] = &["gm", "im", "fm", "cm", "wgm", "wim", "wfm", "wcm", "nm"];
+    normalized_name(name)
+        .split_whitespace()
+        .filter(|token| !TITLES.contains(token))
+        .map(str::to_string)
+        .collect()
+}
+
+fn chessscope_slug_candidates(name: &str) -> Vec<String> {
+    let mut candidates = vec![slugify_name(name)];
+    if let Some((surname, given_names)) = name.split_once(',') {
+        candidates.push(slugify_name(&format!("{surname} {given_names}")));
+        candidates.push(slugify_name(&format!("{given_names} {surname}")));
+    } else {
+        let tokens = normalized_name(name)
+            .split_whitespace()
+            .map(str::to_string)
+            .collect::<Vec<_>>();
+        if tokens.len() >= 2 {
+            let mut surname_first = vec![tokens.last().cloned().unwrap_or_default()];
+            surname_first.extend(tokens[..tokens.len() - 1].iter().cloned());
+            candidates.push(surname_first.join("-"));
+        }
+    }
+    candidates.retain(|candidate| !candidate.is_empty());
+    candidates.sort();
+    candidates.dedup();
+    candidates
+}
+
+fn slugify_name(name: &str) -> String {
+    normalized_name(name)
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join("-")
+}
+
+fn chessscope_page_matches_identity(html: &str, identity: &PlayerIdentity) -> bool {
+    if let Some(fide_id) = identity.fide_id.as_deref() {
+        return html.contains(&format!("FIDE ID {fide_id}"))
+            || html.contains(&format!("FIDE ID <!-- -->{fide_id}"))
+            || html.contains(&format!(r#"\"FIDE ID \",\"{fide_id}\""#));
+    }
+    let Some((_, title_tail)) = html.split_once("<title>") else {
+        return false;
+    };
+    let Some((title, _)) = title_tail.split_once("</title>") else {
+        return false;
+    };
+    let name = decode_basic_html_entities(title)
+        .split(['—', '·'])
+        .next()
+        .unwrap_or_default()
+        .trim()
+        .to_string();
+    identity.name_matches(&name)
+}
+
+fn extract_chessscope_game_paths(html: &str, from_year: u16) -> Vec<String> {
+    let mut paths = HashSet::new();
+    for row in html.split("<tr").skip(1) {
+        let row = row.split_once("</tr>").map_or(row, |(row, _)| row);
+        if find_plausible_year(row).is_some_and(|year| year < from_year) {
+            continue;
+        }
+        for href in extract_quoted_values(row, "href=") {
+            if let Some(path) = href.strip_prefix("/game/") {
+                let hash = path.split(['?', '#', '/']).next().unwrap_or_default();
+                if hash.len() == 40 && hash.chars().all(|char| char.is_ascii_hexdigit()) {
+                    paths.insert(format!("/game/{hash}"));
+                }
+            }
+        }
+    }
+    let mut paths = paths.into_iter().collect::<Vec<_>>();
+    paths.sort();
+    paths
+}
+
+fn extract_chessscope_round_ids(html: &str) -> Vec<String> {
+    let mut round_ids = extract_quoted_values(html, "href=")
+        .into_iter()
+        .filter(|href| href.contains("lichess.org/broadcast/"))
+        .filter_map(|href| {
+            let clean = decode_basic_html_entities(&href);
+            let round_id = clean
+                .split(['?', '#'])
+                .next()?
+                .trim_end_matches(".pgn")
+                .trim_end_matches('/')
+                .rsplit('/')
+                .next()?;
+            (round_id.len() == 8 && round_id.chars().all(|char| char.is_ascii_alphanumeric()))
+                .then(|| round_id.to_string())
+        })
+        .collect::<Vec<_>>();
+    round_ids.sort();
+    round_ids.dedup();
+    round_ids
+}
+
+fn extract_britbase_archive_urls(html: &str, from_year: u16, origin: &str) -> Vec<String> {
+    let mut urls = extract_quoted_values(html, "href=")
+        .into_iter()
+        .filter_map(|href| absolute_britbase_url(&decode_basic_html_entities(&href), origin))
+        .filter(|url| {
+            let path = url.split('?').next().unwrap_or(url).to_ascii_lowercase();
+            path.ends_with(".pgn") || path.ends_with(".zip")
+        })
+        .filter(|url| archive_file_year(url).map_or(true, |year| year >= from_year))
+        .collect::<Vec<_>>();
+    urls.sort();
+    urls.dedup();
+    urls
+}
+
+fn absolute_britbase_url(href: &str, origin: &str) -> Option<String> {
+    let href = href.trim();
+    if href.starts_with("https://") || href.starts_with("http://") {
+        return Some(href.to_string());
+    }
+    if let Some(path) = href.strip_prefix("//") {
+        return Some(format!("https://{path}"));
+    }
+    if href.starts_with('/') {
+        return Some(format!("{origin}{href}"));
+    }
+    (!href.is_empty()).then(|| format!("{origin}/britbase/{}", href.trim_start_matches("./")))
+}
+
+fn extract_pgn_mentor_archive_urls(
+    html: &str,
+    identity: &PlayerIdentity,
+    from_year: u16,
+) -> Vec<String> {
+    extract_quoted_values(html, "href=")
+        .into_iter()
+        .filter_map(|href| absolute_pgn_mentor_url(&decode_basic_html_entities(&href)))
+        .filter(|url| {
+            let lower = url.to_ascii_lowercase();
+            if lower.contains("/events/") {
+                return archive_file_year(url).is_some_and(|year| year >= from_year);
+            }
+            lower.contains("/players/") && pgn_mentor_player_file_matches(url, identity)
+        })
+        .collect()
+}
+
+fn absolute_pgn_mentor_url(href: &str) -> Option<String> {
+    let href = href.trim();
+    if href.starts_with("https://") || href.starts_with("http://") {
+        return Some(href.to_string());
+    }
+    if let Some(path) = href.strip_prefix("//") {
+        return Some(format!("https://{path}"));
+    }
+    if href.starts_with('/') {
+        return Some(format!("https://www.pgnmentor.com{href}"));
+    }
+    (!href.is_empty()).then(|| format!("https://www.pgnmentor.com/{href}"))
+}
+
+fn pgn_mentor_player_file_matches(url: &str, identity: &PlayerIdentity) -> bool {
+    let filename = file_name_from_url(url);
+    let stem = filename
+        .split('?')
+        .next()
+        .unwrap_or(&filename)
+        .rsplit_once('.')
+        .map_or(filename.as_str(), |(stem, _)| stem);
+    let normalized = normalized_name(stem).replace(' ', "");
+    let surname = identity
+        .canonical_name
+        .split_once(',')
+        .map(|(surname, _)| normalized_name(surname).replace(' ', ""))
+        .filter(|surname| surname.len() >= 3)
+        .or_else(|| {
+            identity
+                .core_name_tokens
+                .iter()
+                .filter(|token| token.len() >= 3)
+                .max_by_key(|token| token.len())
+                .cloned()
+        });
+    surname.is_some_and(|surname| normalized == surname)
+}
+
+fn archive_file_year(url: &str) -> Option<u16> {
+    let filename = file_name_from_url(url);
+    find_plausible_year(&filename)
+}
+
+fn find_plausible_year(value: &str) -> Option<u16> {
+    value.as_bytes().windows(4).find_map(|window| {
+        if !window.iter().all(u8::is_ascii_digit) {
+            return None;
+        }
+        let year = std::str::from_utf8(window).ok()?.parse::<u16>().ok()?;
+        (1900..=2200).contains(&year).then_some(year)
+    })
+}
+
 fn chessbase_search_queries(identity: &PlayerIdentity) -> Vec<String> {
     let mut queries = vec![identity.canonical_name.clone()];
     if let Some((surname, given_names)) = identity.canonical_name.split_once(',') {
@@ -1906,6 +2597,14 @@ mod tests {
     }
 
     #[test]
+    fn accepts_initial_heavy_names_without_matching_bare_forenames() {
+        let identity = PlayerIdentity::new("Sooraj M R", Some("35014730")).unwrap();
+        assert!(identity.name_matches("R, Sooraj M"));
+        assert!(identity.name_matches("Sooraj M R"));
+        assert!(!identity.name_matches("Sooraj Kumar"));
+    }
+
+    #[test]
     fn fide_id_overrides_same_name_mismatch() {
         let pgn = r#"[White "Lapidus, Alexey M."]
 [Black "Opponent, One"]
@@ -2019,6 +2718,63 @@ mod tests {
         ));
         assert!(!is_4ncl_otb_archive_url(
             "https://www.4ncl.co.uk/pgn/2425/congress/online/onlines11/4NCLonline11all.pgn"
+        ));
+    }
+
+    #[test]
+    fn resolves_chessscope_candidates_and_recent_rounds() {
+        assert_eq!(
+            chessscope_slug_candidates("Mesropyan, Hayk"),
+            vec!["hayk-mesropyan".to_string(), "mesropyan-hayk".to_string()]
+        );
+        let html = r#"<meta name="description" content="110 games, FIDE ID 499455">
+<table><tr><td>May 9, 2026</td><td><a href="/game/0123456789abcdef0123456789abcdef01234567">Game</a></td></tr>
+<tr><td>May 9, 2023</td><td><a href="/game/fedcba9876543210fedcba9876543210fedcba98">Old</a></td></tr></table>"#;
+        assert!(chessscope_page_matches_identity(
+            html,
+            &PlayerIdentity::new("Mesropyan, Hayk", Some("499455")).unwrap()
+        ));
+        assert_eq!(
+            extract_chessscope_game_paths(html, 2024),
+            vec!["/game/0123456789abcdef0123456789abcdef01234567".to_string()]
+        );
+        assert_eq!(
+            extract_chessscope_round_ids(
+                r#"<a href="https://lichess.org/broadcast/event/round/M5XEUuPJ">Source</a>"#
+            ),
+            vec!["M5XEUuPJ".to_string()]
+        );
+    }
+
+    #[test]
+    fn parses_recent_britbase_downloads() {
+        let html = r#"<a href="pgn/202506event.pgn">2025</a>
+<a href="/britbase/pgn/202301old.zip">2023</a>"#;
+        assert_eq!(
+            extract_britbase_archive_urls(html, 2024, BRITBASE_ORIGINS[0]),
+            vec!["https://www.saund.org.uk/britbase/pgn/202506event.pgn".to_string()]
+        );
+    }
+
+    #[test]
+    fn limits_pgn_mentor_to_recent_events_and_matching_player_files() {
+        let html = r#"<a href="events/London2025.pgn">Event</a>
+<a href="events/London2023.pgn">Old</a>
+<a href="players/Mesropyan.zip">Player</a>
+<a href="players/Carlsen.zip">Other player</a>"#;
+        let identity = PlayerIdentity::new("Mesropyan, Hayk", Some("499455")).unwrap();
+        let mut urls = extract_pgn_mentor_archive_urls(html, &identity, 2024);
+        urls.sort();
+        assert_eq!(
+            urls,
+            vec![
+                "https://www.pgnmentor.com/events/London2025.pgn".to_string(),
+                "https://www.pgnmentor.com/players/Mesropyan.zip".to_string(),
+            ]
+        );
+        assert!(!pgn_mentor_player_file_matches(
+            "https://www.pgnmentor.com/players/Tom.zip",
+            &identity
         ));
     }
 }
