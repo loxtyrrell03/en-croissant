@@ -1,5 +1,10 @@
 # AGENTS.md
 
+- On 2026-07-13, the Home `Import player games` dock was promoted above Daily
+  Goals so the unified Chess.com, Lichess, and OTB database workflow is visible
+  immediately. Its copy now frames the action around gathering one player's
+  games, and a real low-memory Tauri build plus Computer Use accessibility
+  inspection verified the dock, source labels, primary action, and Home order.
 - On 2026-07-13, the deterministic OTB collector broadened its public-source
   coverage with FIDE-verified Chessscope broadcast discovery, the current and
   legacy BritBase hosts, and tightly filtered PGN Mentor event/player files.

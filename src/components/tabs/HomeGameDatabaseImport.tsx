@@ -211,15 +211,15 @@ export default function HomeGameDatabaseImport() {
             <Box>
               <Group gap="xs" mb={3}>
                 <Text fw={700} size="lg">
-                  Import games into a database
+                  Import player games
                 </Text>
                 <Badge variant="light" size="sm" color="blue">
                   NEW
                 </Badge>
               </Group>
               <Text size="sm" c="dimmed" maw={560}>
-                Build a searchable database from a Chess.com account, Lichess account, or public
-                over-the-board games.
+                Turn a player’s Chess.com, Lichess, or public over-the-board games into one
+                searchable database.
               </Text>
             </Box>
           </Group>
@@ -258,7 +258,7 @@ export default function HomeGameDatabaseImport() {
               Game database
             </Text>
             <Text fw={700} size="lg">
-              Choose where the games come from
+              Import a player’s games
             </Text>
           </Box>
         }

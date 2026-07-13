@@ -3620,6 +3620,7 @@ export default function NewTabHome() {
         }}
       />
       <Stack gap="lg" p="md">
+        <HomeGameDatabaseImport />
         <DailyGoalsPanel
           openingDecks={reviewDecks}
           mistakeDecks={mistakeDecks}
@@ -3638,7 +3639,6 @@ export default function NewTabHome() {
           }
           onOpenPrepFile={openRecentFile}
         />
-        <HomeGameDatabaseImport />
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }}>
           {cards.map((card) => (
             <Card shadow="sm" p="lg" radius="md" withBorder key={card.title}>
