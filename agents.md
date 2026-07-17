@@ -1,5 +1,24 @@
 # AGENTS.md
 
+- On 2026-07-17, Outpost learned setup families gained conservative offline
+  opening-book names and Engine Plans recovered valid multi-route setups
+  without weakening the two-route invariant. Book matches come only from
+  normalized positions actually reached while a main route completes in
+  exact-core observations. A same-side live footprint rejects labels donated
+  by optional developed minors, queen/rook moves, variants, or root-only
+  context; Plan Explorer requires agreement in every material opponent-reply
+  bucket (including aggregated small replies), while Engine MultiPV requires
+  unanimity because it has no independent reply tree. Matches remain
+  display-only metadata that cannot merge families, add arrows, alter ranking,
+  or affect strength; ambiguous and uncovered positions stay `Thematic setup`.
+  Engine Plans now recommends five PVs, may treat one exact PV as
+  low-confidence co-occurrence evidence, selects one complete representative
+  bundle rather than unioning
+  partial lines, and preserves curated named setup milestones through later
+  exchanges. Root context still never qualifies a setup; pawn lineage and
+  exact actor survival prevent captured pawns or replacement pieces from
+  fabricating opening structures, and every displayed main route must coexist
+  in one supporting observation.
 - On 2026-07-17, Outpost setup discovery was widened without restoring subset
   noise. Plan Explorer now spends its crawl budget on representative deep
   continuations, measures family share only against branches deep enough to
