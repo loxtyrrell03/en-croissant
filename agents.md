@@ -3,13 +3,18 @@
 - On 2026-07-17, Outpost setup discovery was widened without restoring subset
   noise. Plan Explorer now spends its crawl budget on representative deep
   continuations, measures family share only against branches deep enough to
-  reveal the identity, canonicalizes transposed opponent structures, admits a
-  setup completed from root context by one new route, folds named subtypes
-  into parents when both occur, and quality-selects at most six diverse
-  families per side. Named families use a lower admission threshold than
-  learned families, while choose-one and reply-specific material participate
-  in validation instead of being discarded. Plan Explorer setups now use a
-  compact four-column expandable table (`Setup`, `Blended strength`, `Games`,
+  reveal the identity, canonicalizes transposed opponent structures, folds
+  named subtypes into parents when both occur, and quality-selects at most six
+  diverse families per side. Every rendered setup must contain at least two
+  distinct compatible main routes: root context may name a family but cannot
+  qualify it, and optional, reply-only, or choose-one moves do not count.
+  Learned families are built only from new future targets; named Sicilian
+  families cover the Closed Sicilian, Grand Prix, Open Sicilian, Alapin, and
+  major Black structures from a matching `1.e4 c5` environment, with Alapin's
+  `c3` structure taking precedence over the broader Open-Sicilian matcher.
+  Root setup anchors count only while their target state remains on the board.
+  Plan Explorer setups now use a compact four-column expandable table (`Setup`,
+  `Blended strength`, `Games`,
   `W / D / L`) with Prep-style sortable headers; the blend combines shrunken
   exact-setup results with exact engine backing and clearly falls back to
   practical-only. Engine Plans uses a simpler three-column engine-only table
