@@ -1,5 +1,21 @@
 # AGENTS.md
 
+- On 2026-07-17, Outpost setup discovery was widened without restoring subset
+  noise. Plan Explorer now spends its crawl budget on representative deep
+  continuations, measures family share only against branches deep enough to
+  reveal the identity, canonicalizes transposed opponent structures, admits a
+  setup completed from root context by one new route, folds named subtypes
+  into parents when both occur, and quality-selects at most six diverse
+  families per side. Named families use a lower admission threshold than
+  learned families, while choose-one and reply-specific material participate
+  in validation instead of being discarded. Plan Explorer setups now use a
+  compact four-column expandable table (`Setup`, `Blended strength`, `Games`,
+  `W / D / L`) with Prep-style sortable headers; the blend combines shrunken
+  exact-setup results with exact engine backing and clearly falls back to
+  practical-only. Engine Plans uses a simpler three-column engine-only table
+  because root-move practical results are not setup evidence. Technical reach,
+  joint-core, and reply details remain behind expansion/tooltips rather than
+  becoming permanent columns.
 - On 2026-07-13, the Home `Import player games` dock was promoted above Daily
   Goals so the unified Chess.com, Lichess, and OTB database workflow is visible
   immediately. Its copy now frames the action around gathering one player's
