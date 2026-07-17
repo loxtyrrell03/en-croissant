@@ -1,5 +1,16 @@
 # AGENTS.md
 
+- On 2026-07-17, Outpost development storage was recovered after 15 separate
+  repo/worktree checkouts accumulated independent Rust `src-tauri/target`
+  trees. Cargo now uses the user-level shared target directory
+  `C:\Users\loxty\.cargo\shared-target`, and `scripts/safe-dev.ps1` limits
+  dated shared-data backups by both count and total size, skips oversized
+  generated review sidecars in normal backups, and supports cleanup-only
+  pruning for backups and stale large agent scratch databases. Compact backups
+  exclude the required multi-gigabyte local Lichess evaluation store; the live
+  store is preserved, while intentional full backups may include it. This
+  prevents native builds, safety snapshots, and temporary database probes from
+  multiplying into hundreds of gigabytes while retaining the newest backup.
 - On 2026-07-17, Outpost learned setup families gained conservative offline
   opening-book names and Engine Plans recovered valid multi-route setups
   without weakening the two-route invariant. Book matches come only from

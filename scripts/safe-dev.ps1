@@ -2,8 +2,13 @@ param(
   [switch]$SkipBackup,
   [switch]$FullBackup,
   [switch]$AllowLargeFullBackup,
-  [int]$MaxBackups = 5,
-  [int]$FullBackupLimitGb = 2
+  [switch]$CleanupBackupsOnly,
+  [switch]$CleanupAgentScratchOnly,
+  [int]$MaxBackups = 3,
+  [int]$MaxBackupTotalGb = 10,
+  [int]$FullBackupLimitGb = 2,
+  [int]$MaxReviewSidecarMb = 50,
+  [int]$AgentScratchMinAgeHours = 2
 )
 
 $ErrorActionPreference = "Stop"
@@ -18,10 +23,6 @@ $devPort = 1420
 $devSessionMutexName = "Local\EnCroissantForkDevSession"
 $devSessionMutex = $null
 $devSessionMutexAcquired = $false
-
-if (-not $SkipBackup -and -not (Test-Path $sharedData)) {
-  throw "Could not find En Croissant data at $sharedData"
-}
 
 function Release-DevSessionMutex {
   if ($script:devSessionMutexAcquired -and $script:devSessionMutex) {
@@ -154,21 +155,96 @@ function Remove-EmptyDirectory {
 }
 
 function Remove-OldBackups {
-  param([int]$Keep)
+  param(
+    [int]$Keep,
+    [int]$MaxTotalGb
+  )
 
   if ($Keep -lt 1 -or -not (Test-Path $backupRoot)) {
     return
   }
 
-  $oldBackups = Get-ChildItem -LiteralPath $backupRoot -Force -Directory -ErrorAction SilentlyContinue |
+  $backups = @(Get-ChildItem -LiteralPath $backupRoot -Force -Directory -ErrorAction SilentlyContinue |
     Where-Object { $_.Name.StartsWith($backupPrefix) } |
-    Sort-Object LastWriteTime -Descending |
-    Select-Object -Skip $Keep
+    Sort-Object LastWriteTime -Descending)
 
-  foreach ($oldBackup in $oldBackups) {
-    Remove-Item -LiteralPath $oldBackup.FullName -Recurse -Force
-    Write-Host "Pruned old En Croissant dev backup $($oldBackup.FullName)"
+  $maxTotalBytes = [int64]$MaxTotalGb * 1GB
+  $keptCount = 0
+  $keptBytes = [int64]0
+
+  foreach ($backup in $backups) {
+    $backupBytes = Get-DirectorySizeBytes $backup.FullName
+    $isNewest = $keptCount -eq 0
+    $fitsCount = $keptCount -lt $Keep
+    $fitsSize = $MaxTotalGb -le 0 -or ($keptBytes + $backupBytes) -le $maxTotalBytes
+
+    if ($isNewest -or ($fitsCount -and $fitsSize)) {
+      $keptCount++
+      $keptBytes += $backupBytes
+      continue
+    }
+
+    Remove-Item -LiteralPath $backup.FullName -Recurse -Force
+    Write-Host "Pruned old En Croissant dev backup $($backup.FullName) ($([math]::Round($backupBytes / 1GB, 2)) GB)"
   }
+}
+
+function Remove-OldAgentScratchFiles {
+  param([int]$MinAgeHours)
+
+  $cutoff = (Get-Date).AddHours(-1 * [math]::Max($MinAgeHours, 1))
+  $repoTempToken = $repoRoot -replace '[:\\ ]', '-'
+  $claudeRepoTemp = Join-Path (Join-Path $env:TEMP "claude") $repoTempToken
+  $allowedRoots = @($claudeRepoTemp, $env:TEMP)
+  $candidates = @()
+
+  if (Test-Path $claudeRepoTemp) {
+    $candidates += Get-ChildItem -LiteralPath $claudeRepoTemp -Recurse -File -Force -ErrorAction SilentlyContinue |
+      Where-Object {
+        $_.Length -ge 100MB -and
+        $_.LastWriteTime -lt $cutoff -and
+        ($_.Name -match '\.sqlite(?:\.bak)?$' -or $_.Name -match '\.bak$')
+      }
+  }
+
+  $candidates += Get-ChildItem -LiteralPath $env:TEMP -File -Force -Filter "probe_db_*.sqlite" -ErrorAction SilentlyContinue |
+    Where-Object { $_.Length -ge 100MB -and $_.LastWriteTime -lt $cutoff }
+
+  $removedBytes = [int64]0
+  foreach ($candidate in ($candidates | Sort-Object FullName -Unique)) {
+    $resolved = $candidate.FullName
+    $insideAllowedRoot = $false
+    foreach ($allowedRoot in $allowedRoots) {
+      if ($resolved.StartsWith($allowedRoot.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)) {
+        $insideAllowedRoot = $true
+        break
+      }
+    }
+
+    if (-not $insideAllowedRoot) {
+      throw "Refusing to remove unexpected scratch file $resolved"
+    }
+
+    $removedBytes += $candidate.Length
+    Remove-Item -LiteralPath $resolved -Force
+    Write-Host "Removed stale agent scratch file $resolved"
+  }
+
+  Write-Host "Removed $([math]::Round($removedBytes / 1GB, 2)) GB of stale agent scratch files."
+}
+
+if ($CleanupBackupsOnly) {
+  Remove-OldBackups -Keep $MaxBackups -MaxTotalGb $MaxBackupTotalGb
+  exit 0
+}
+
+if ($CleanupAgentScratchOnly) {
+  Remove-OldAgentScratchFiles -MinAgeHours $AgentScratchMinAgeHours
+  exit 0
+}
+
+if (-not $SkipBackup -and -not (Test-Path $sharedData)) {
+  throw "Could not find En Croissant data at $sharedData"
 }
 
 $devSessionMutex = New-Object System.Threading.Mutex($false, $devSessionMutexName)
@@ -195,6 +271,7 @@ if (-not $SkipBackup) {
     $dbDir = Join-Path $sharedData "db"
     $puzzlesDir = Join-Path $sharedData "puzzles"
     $enginesDir = Join-Path $sharedData "engines"
+    $localEvalsDir = Join-Path $sharedData "lichess-cloud-evals"
     $backupDbDir = Join-Path $backupPath "db"
 
     Write-Host "Creating fast En Croissant data backup."
@@ -212,14 +289,17 @@ if (-not $SkipBackup) {
       "/XD",
       $dbDir,
       $puzzlesDir,
-      $enginesDir
+      $enginesDir,
+      $localEvalsDir
     )
 
     if (Test-Path $dbDir) {
       New-Item -ItemType Directory -Force -Path $backupDbDir | Out-Null
+      $maxReviewSidecarBytes = [int64]$MaxReviewSidecarMb * 1MB
       Invoke-RobocopyChecked $dbDir $backupDbDir @(
         "*.opening-review.json",
         "*.mistake-review.json",
+        "/MAX:$maxReviewSidecarBytes",
         "/R:2",
         "/W:2",
         "/NFL",
@@ -235,7 +315,7 @@ if (-not $SkipBackup) {
     Write-Host "Backed up shared En Croissant data to $backupPath"
   }
 
-  Remove-OldBackups $MaxBackups
+  Remove-OldBackups -Keep $MaxBackups -MaxTotalGb $MaxBackupTotalGb
 }
 
 Set-Location $repoRoot
