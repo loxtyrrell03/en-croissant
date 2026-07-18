@@ -37,6 +37,21 @@ if (Test-Path -LiteralPath $pidPath) {
 
 Push-Location $repoRoot
 try {
+  $queryHelperSource = Join-Path $repoRoot 'src-tauri\src\bin\query_db_position.rs'
+  $queryHelper = Join-Path $repoRoot 'src-tauri\target\debug\query_db_position.exe'
+  if (
+    -not (Test-Path -LiteralPath $queryHelper) -or
+    (Get-Item -LiteralPath $queryHelperSource).LastWriteTimeUtc -gt
+      (Get-Item -LiteralPath $queryHelper).LastWriteTimeUtc
+  ) {
+    & (Get-Command cargo.exe -ErrorAction Stop).Source build `
+      --manifest-path (Join-Path $repoRoot 'src-tauri\Cargo.toml') `
+      --bin query_db_position
+    if ($LASTEXITCODE -ne 0) {
+      throw "Database query helper build failed with exit code $LASTEXITCODE."
+    }
+  }
+
   if (-not $SkipFrontendBuild) {
     & $npm run build-vite
     if ($LASTEXITCODE -ne 0) {

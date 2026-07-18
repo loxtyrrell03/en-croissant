@@ -43,12 +43,20 @@ const outpostDatabase = resolve(
   process.env.OUTPOST_HOME_DATABASE || join(roamingAppData, "app.outpost.chess", "library.sqlite"),
 );
 const libraryRoot = join(siteRoot, "web-library");
+const enPositionQueryBinary = join(
+  repoRoot,
+  "src-tauri",
+  "target",
+  "debug",
+  process.platform === "win32" ? "query_db_position.exe" : "query_db_position",
+);
 const maxStateBytes = 256 * 1024 * 1024;
 
 let outpostCatalog = null;
 let outpostCatalogLoadedAt = 0;
 let enCatalog = null;
 let enCatalogLoadedAt = 0;
+const enPositionCache = new Map();
 let libraryRefreshTimer = null;
 let libraryRefreshRunning = false;
 let libraryRefreshQueued = false;
@@ -188,7 +196,7 @@ async function writeDatabaseManifest(requestUrl, response) {
     200,
     {
       version: 1,
-      maxPly: collection ? 1000 : 0,
+      maxPly: collection || enDatabase.indexPath ? 1000 : 0,
       gameCount: database.gameCount,
       positionCount: 0,
       latestDate: database.latestDate,
@@ -202,7 +210,27 @@ async function writeDatabasePosition(requestUrl, response) {
   const hostedPath = normalizeHostedPath(requestUrl.searchParams.get("hostedPath") || "");
   const fen = normalizeFen(requestUrl.searchParams.get("fen") || "");
   const collection = await findOutpostCollection(hostedPath);
-  if (!collection || !fen) return writeJson(response, 404, { error: "Live database not found." });
+  if (!fen) return writeJson(response, 404, { error: "Live database not found." });
+
+  if (!collection) {
+    const enDatabase = await findEnDatabase(hostedPath);
+    if (!enDatabase?.indexPath)
+      return writeJson(response, 404, { error: "Live position index not found." });
+    const cacheKey = `${enDatabase.indexPath}|${fen}`;
+    let rows = enPositionCache.get(cacheKey);
+    if (!rows) {
+      const output = await runProcessOutput(enPositionQueryBinary, [
+        "--index",
+        enDatabase.indexPath,
+        "--fen",
+        fen,
+      ]);
+      rows = JSON.parse(output || "[]");
+      enPositionCache.set(cacheKey, rows);
+      if (enPositionCache.size > 256) enPositionCache.delete(enPositionCache.keys().next().value);
+    }
+    return writeJson(response, 200, rows, { "cache-control": "no-store" });
+  }
 
   const database = openOutpostDatabase();
   try {
@@ -328,6 +356,7 @@ async function getEnCatalog() {
       lastModified: fileStat.mtimeMs,
       latestDate: latestDate ? String(latestDate) : null,
       absolutePath: entry.absolutePath,
+      indexPath: await findEnSearchIndex(entry.absolutePath, fileStat),
     });
   }
 
@@ -359,6 +388,28 @@ async function collectEnDatabaseFiles(root, directory, output) {
 async function findEnDatabase(hostedPath) {
   const catalog = await getEnCatalog();
   return catalog.find((database) => database.hostedPath === hostedPath) || null;
+}
+
+async function findEnSearchIndex(databasePath, databaseStat) {
+  const direct = databasePath.replace(/\.db3$/i, ".ecsi");
+  const directStat = await stat(direct).catch(() => null);
+  if (directStat?.isFile() && directStat.mtimeMs >= databaseStat.mtimeMs) return direct;
+
+  const rootDatabase = join(enDatabaseRoots[0], basename(databasePath));
+  const rootIndex = rootDatabase.replace(/\.db3$/i, ".ecsi");
+  const [rootDatabaseStat, rootIndexStat] = await Promise.all([
+    stat(rootDatabase).catch(() => null),
+    stat(rootIndex).catch(() => null),
+  ]);
+  if (
+    rootDatabaseStat?.isFile() &&
+    rootDatabaseStat.size === databaseStat.size &&
+    rootIndexStat?.isFile() &&
+    rootIndexStat.mtimeMs >= rootDatabaseStat.mtimeMs
+  ) {
+    return rootIndex;
+  }
+  return null;
 }
 
 async function findOutpostCollection(hostedPath) {
@@ -513,6 +564,26 @@ function runProcess(command, args, extraEnvironment) {
     child.on("exit", (code) => {
       if (code === 0) resolvePromise();
       else rejectPromise(new Error(`${command} exited with ${code}: ${output.slice(-4000)}`));
+    });
+  });
+}
+
+function runProcessOutput(command, args) {
+  return new Promise((resolvePromise, rejectPromise) => {
+    const child = spawn(command, args, {
+      cwd: repoRoot,
+      env: process.env,
+      windowsHide: true,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => (stdout += chunk));
+    child.stderr.on("data", (chunk) => (stderr += chunk));
+    child.on("error", rejectPromise);
+    child.on("exit", (code) => {
+      if (code === 0) resolvePromise(stdout);
+      else rejectPromise(new Error(`${command} exited with ${code}: ${stderr.slice(-4000)}`));
     });
   });
 }
