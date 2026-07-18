@@ -1,3 +1,5 @@
+import { getWebServerUrl } from "./serverUrl";
+
 export type WebHostedFileEntry = {
     type: "file";
     name: string;
@@ -86,7 +88,7 @@ export type WebHostedDatabaseFolder = {
     latestDate?: string | null;
 };
 
-const WEB_LIBRARY_BASE = `${import.meta.env.BASE_URL}web-library/`;
+const WEB_LIBRARY_BASE = getWebServerUrl("web-library/");
 const HOSTED_DATABASE_ROOT = "Databases";
 
 export async function getHostedWebLibrary(): Promise<WebHostedLibrary> {

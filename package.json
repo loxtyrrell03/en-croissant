@@ -7,6 +7,7 @@
     "start-vite": "vite",
     "web:library": "node scripts/build-web-library.mjs",
     "web:publish": "powershell -ExecutionPolicy Bypass -File scripts/publish-web-site.ps1",
+    "web:publish-live": "powershell -ExecutionPolicy Bypass -File scripts/publish-web-site.ps1 -LiveServerUrl https://gaming-pc.tail89d19b.ts.net",
     "web:push": "node scripts/push-web-files.mjs",
     "web:watch": "powershell -ExecutionPolicy Bypass -File scripts/watch-web-sync.ps1",
     "web:install-sync": "powershell -ExecutionPolicy Bypass -File scripts/install-web-sync-task.ps1",

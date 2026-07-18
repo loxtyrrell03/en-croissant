@@ -3,6 +3,7 @@ param(
   [string]$PagesRepo = "",
   [string]$PagesRemote = "https://github.com/loxtyrrell03/loxtyrrell03.github.io.git",
   [string]$CommitMessage = "",
+  [string]$LiveServerUrl = "",
   [int]$MaxDatabaseMB = 200,
   [switch]$SkipDatabaseExports,
   [switch]$SkipBuild,
@@ -88,14 +89,25 @@ Write-Log "source: $resolvedSource"
 Write-Log "pages repo: $PagesRepo"
 
 if (-not $SkipBuild) {
-  $env:EN_CROISSANT_WEB_FILES_DIR = $resolvedSource.Path
-  if ($SkipDatabaseExports) {
-    $env:EN_CROISSANT_WEB_EXPORT_DATABASES = "0"
-  } elseif ($MaxDatabaseMB -gt 0) {
-    $env:EN_CROISSANT_WEB_DB_MAX_MB = "$MaxDatabaseMB"
+  if ($LiveServerUrl) {
+    $env:VITE_EN_CROISSANT_SERVER_URL = $LiveServerUrl.TrimEnd('/')
+    Invoke-Logged "npm.cmd" @("run", "build-vite") $repoRoot.Path
+    $publicRoot = Join-Path $repoRoot "public"
+    $distRoot = Join-Path $repoRoot "dist"
+    & robocopy.exe $publicRoot $distRoot /E /R:2 /W:1 /XD (Join-Path $publicRoot "web-library") | Out-Null
+    if ($LASTEXITCODE -ge 8) {
+      throw "Could not stage public phone assets (robocopy exit code $LASTEXITCODE)."
+    }
+  } else {
+    $env:EN_CROISSANT_WEB_FILES_DIR = $resolvedSource.Path
+    if ($SkipDatabaseExports) {
+      $env:EN_CROISSANT_WEB_EXPORT_DATABASES = "0"
+    } elseif ($MaxDatabaseMB -gt 0) {
+      $env:EN_CROISSANT_WEB_DB_MAX_MB = "$MaxDatabaseMB"
+    }
+    Invoke-Logged "npm.cmd" @("run", "web:library") $repoRoot.Path
+    Invoke-Logged "npm.cmd" @("run", "build-vite") $repoRoot.Path
   }
-  Invoke-Logged "npm.cmd" @("run", "web:library") $repoRoot.Path
-  Invoke-Logged "npm.cmd" @("run", "build-vite") $repoRoot.Path
 }
 
 if (-not (Test-Path -LiteralPath $PagesRepo)) {

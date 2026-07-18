@@ -1,11 +1,12 @@
 import { INITIAL_FEN } from "chessops/fen";
 import type { WebCompanionState } from "./model";
+import { getWebServerUrl } from "./serverUrl";
 
 const DB_NAME = "en-croissant-web-companion";
 const DB_VERSION = 1;
 const STORE_NAME = "state";
 const STATE_KEY = "main";
-const REMOTE_STATE_URL = `${import.meta.env.BASE_URL}api/web-state`;
+const REMOTE_STATE_URL = getWebServerUrl("api/web-state");
 
 let databasePromise: Promise<IDBDatabase> | null = null;
 

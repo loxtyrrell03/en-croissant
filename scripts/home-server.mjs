@@ -36,9 +36,7 @@ const host = "127.0.0.1";
 const documentsRoot = resolve(
   process.env.EN_CROISSANT_HOME_FILES_DIR || join(userProfile, "Documents", "EnCroissant"),
 );
-const enDatabaseRoots = [
-  join(roamingAppData, "org.encroissant.app", "db"),
-].filter(uniquePath);
+const enDatabaseRoots = [join(roamingAppData, "org.encroissant.app", "db")].filter(uniquePath);
 const outpostDatabase = resolve(
   process.env.OUTPOST_HOME_DATABASE || join(roamingAppData, "app.outpost.chess", "library.sqlite"),
 );
@@ -85,6 +83,11 @@ process.on("SIGTERM", () => server.close(() => process.exit(0)));
 
 async function handleRequest(request, response) {
   const method = request.method || "GET";
+  setCorsHeaders(response);
+  if (method === "OPTIONS") {
+    response.writeHead(204);
+    return response.end();
+  }
   const requestUrl = new URL(request.url || "/", `http://${host}:${port}`);
   const pathname = decodeURIComponent(requestUrl.pathname);
 
@@ -337,7 +340,9 @@ async function getEnCatalog() {
         gameCount = Number(values.get("GameCount") || 0);
       } catch {}
       try {
-        latestDate = database.prepare("SELECT MAX(Date) AS latestDate FROM Games").get()?.latestDate;
+        latestDate = database
+          .prepare("SELECT MAX(Date) AS latestDate FROM Games")
+          .get()?.latestDate;
       } catch {}
       database.close();
     } catch (error) {
@@ -645,6 +650,13 @@ function writeJson(response, status, body, extraHeaders = {}) {
     ...extraHeaders,
   });
   response.end(text);
+}
+
+function setCorsHeaders(response) {
+  response.setHeader("access-control-allow-headers", "content-type");
+  response.setHeader("access-control-allow-methods", "GET, HEAD, PUT, OPTIONS");
+  response.setHeader("access-control-allow-origin", "*");
+  response.setHeader("access-control-expose-headers", "content-length, content-range");
 }
 
 function isValidWebState(state) {
