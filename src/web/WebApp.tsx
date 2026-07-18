@@ -121,6 +121,7 @@ import {
 } from "./hostedDatabaseIndex";
 import {
   getHostedRawFileUrl,
+  getHostedDatabaseFolder,
   getHostedDatabaseFolders,
   getHostedDirectPgnFilesInPath,
   getHostedPgnFilesInPath,
@@ -765,14 +766,13 @@ export default function WebApp() {
       setImporting(true);
       try {
         const hostedFiles = getHostedPgnFilesInPath(library, path);
-        if (hostedFiles.length === 0) {
-          throw new Error("This hosted folder does not contain PGN files.");
-        }
+        const hostedFolder = getHostedDatabaseFolder(library, path);
 
         const reusableImport = getReusableHostedDatabaseImport({
           state,
           hostedPath: path,
           files: hostedFiles,
+          hostedFolder,
         });
         if (reusableImport) {
           notifications.show({
@@ -785,11 +785,17 @@ export default function WebApp() {
 
         const manifest = await getHostedDatabasePositionIndexManifest(path);
         if (!manifest) {
+          if (hostedFiles.length === 0) {
+            throw new Error("This hosted database is not available.");
+          }
           return await importHostedFolder(library, path, options);
         }
 
         const normalizedPath = normalizeHostedDatabasePath(path);
-        const latestHostedUpdate = Math.max(...hostedFiles.map((file) => file.lastModified), 0);
+        const latestHostedUpdate = Math.max(
+          hostedFolder?.lastModified ?? 0,
+          ...hostedFiles.map((file) => file.lastModified),
+        );
         const name = getHostedDatabaseLeafLabel(normalizedPath);
         const now = Date.now();
         const imported: WebImportResult = {
@@ -802,9 +808,10 @@ export default function WebApp() {
             hostedUpdatedAt: latestHostedUpdate,
             importedAt: now,
             updatedAt: now,
-            gameCount: manifest.gameCount,
-            sizeBytes: hostedFiles.reduce((sum, file) => sum + file.sizeBytes, 0),
-            latestDate: manifest.latestDate ?? null,
+            gameCount: hostedFolder?.gameCount ?? manifest.gameCount,
+            sizeBytes:
+              hostedFolder?.sizeBytes ?? hostedFiles.reduce((sum, file) => sum + file.sizeBytes, 0),
+            latestDate: hostedFolder?.latestDate ?? manifest.latestDate ?? null,
             playerNames: [],
           },
           games: [],
@@ -2190,8 +2197,7 @@ function DatabaseUnderBoardPanel({
     let active = true;
     void queryWebLichessCloudEngineMoves({
       fen: currentFen,
-      side:
-        trimmedLocalPlayerName && !isSelectedLocalLazy ? localColor : getFenColor(currentFen),
+      side: trimmedLocalPlayerName && !isSelectedLocalLazy ? localColor : getFenColor(currentFen),
       moves: localStatsBase.map((stat) => stat.move),
       multipv: localStatsBase.length,
       signal: controller.signal,

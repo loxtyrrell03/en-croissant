@@ -16,8 +16,7 @@ export function mergeImportedWebDatabases(
     for (const database of state.databases) {
       const sameId = database.id === result.database.id;
       const sameHostedPath =
-        Boolean(result.database.hostedPath) &&
-        database.hostedPath === result.database.hostedPath;
+        Boolean(result.database.hostedPath) && database.hostedPath === result.database.hostedPath;
       if (!sameId && !sameHostedPath) continue;
 
       replacedIds.add(database.id);
@@ -43,10 +42,7 @@ export function mergeImportedWebDatabases(
   };
 }
 
-function remapBoardSource(
-  board: WebCompanionState["board"],
-  replacementIds: Map<string, string>,
-) {
+function remapBoardSource(board: WebCompanionState["board"], replacementIds: Map<string, string>) {
   const oldDatabaseId = board.sourceDatabaseId;
   const newDatabaseId = oldDatabaseId ? replacementIds.get(oldDatabaseId) : undefined;
   if (!oldDatabaseId || !newDatabaseId) return board;
@@ -136,8 +132,10 @@ export function resolveWebDatabaseSourceId(
   if (value.startsWith(HOSTED_SOURCE_REF_PREFIX)) {
     const hostedPath = getWebDatabaseHostedPathFromSourceStorageValue(value);
     if (!hostedPath) return null;
-    return databases.find((database) => normalizeHostedPath(database.hostedPath ?? "") === hostedPath)
-      ?.id ?? null;
+    return (
+      databases.find((database) => normalizeHostedPath(database.hostedPath ?? "") === hostedPath)
+        ?.id ?? null
+    );
   }
 
   const id = value.startsWith(ID_SOURCE_REF_PREFIX)
@@ -150,13 +148,15 @@ export function getReusableHostedDatabaseImport({
   state,
   hostedPath,
   files,
+  hostedFolder: suppliedHostedFolder,
 }: {
   state: WebCompanionState;
   hostedPath: string;
   files: WebHostedFileEntry[];
+  hostedFolder?: WebHostedDatabaseFolder | null;
 }): WebImportResult | null {
   const normalizedHostedPath = normalizeHostedPath(hostedPath);
-  const hostedFolder = getHostedFolderSummary(normalizedHostedPath, files);
+  const hostedFolder = suppliedHostedFolder ?? getHostedFolderSummary(normalizedHostedPath, files);
   if (!hostedFolder) return null;
 
   const existingDatabase =
@@ -165,7 +165,7 @@ export function getReusableHostedDatabaseImport({
         database.hostedPath === normalizedHostedPath &&
         (database.hostedUpdatedAt ?? 0) >= hostedFolder.lastModified,
     ) ?? null;
-  const existingGames = existingDatabase ? state.gamesByDatabase[existingDatabase.id] ?? [] : [];
+  const existingGames = existingDatabase ? (state.gamesByDatabase[existingDatabase.id] ?? []) : [];
 
   if (
     !existingDatabase ||
@@ -185,7 +185,10 @@ export function getReusableHostedDatabaseImport({
   };
 }
 
-function getHostedFolderSummary(path: string, files: WebHostedFileEntry[]): WebHostedDatabaseFolder | null {
+function getHostedFolderSummary(
+  path: string,
+  files: WebHostedFileEntry[],
+): WebHostedDatabaseFolder | null {
   if (files.length === 0) return null;
   return {
     path,

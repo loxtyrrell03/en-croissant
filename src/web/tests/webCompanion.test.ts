@@ -1169,6 +1169,43 @@ describe("web companion PGN prep index", () => {
         expect(getHostedPgnFilesInPath(library, "Prep")).toHaveLength(1);
     });
 
+    test("lists live Outpost collections as lazy phone databases without PGN copies", () => {
+        const library: WebHostedLibrary = {
+            available: true,
+            manifest: {
+                version: 1,
+                generatedAt: "2026-07-18T12:00:00.000Z",
+                sourceName: "Gaming PC live library",
+                files: [],
+                databases: [
+                    {
+                        type: "database",
+                        path: "Databases/Outpost/Prep/My library",
+                        name: "My library",
+                        label: "Prep / My library",
+                        gameCount: 1_336_691,
+                        sizeBytes: 0,
+                        lastModified: 12,
+                        latestDate: "2026.07.18",
+                    },
+                ],
+            },
+        };
+
+        expect(getHostedDatabaseFolders(library)).toEqual([
+            {
+                path: "Databases/Outpost/Prep/My library",
+                name: "My library",
+                label: "Prep / My library",
+                fileCount: 0,
+                sizeBytes: 0,
+                lastModified: 12,
+                gameCount: 1_336_691,
+                latestDate: "2026.07.18",
+            },
+        ]);
+    });
+
     test("sorts hosted pinned folders and files before unpinned siblings", () => {
         const library: WebHostedLibrary = {
             available: true,

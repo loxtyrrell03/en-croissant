@@ -10,6 +10,8 @@
     "web:push": "node scripts/push-web-files.mjs",
     "web:watch": "powershell -ExecutionPolicy Bypass -File scripts/watch-web-sync.ps1",
     "web:install-sync": "powershell -ExecutionPolicy Bypass -File scripts/install-web-sync-task.ps1",
+    "web:home-server": "node scripts/home-server.mjs",
+    "web:install-home-server": "powershell -ExecutionPolicy Bypass -File scripts/install-home-server.ps1",
     "lichess-evals:build": "cargo run --release --manifest-path src-tauri/Cargo.toml --bin build_lichess_eval_db --",
     "build-web-library": "npm run web:library && npm run build-vite",
     "build-vite": "tsgo --noEmit && vite build",

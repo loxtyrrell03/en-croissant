@@ -28,6 +28,20 @@ export async function getHostedDatabasePositionIndexManifest(
   hostedPath: string,
   signal?: AbortSignal,
 ): Promise<WebHostedPositionIndexManifest | null> {
+  const liveResponse = await fetch(getLiveDatabaseManifestUrl(hostedPath), {
+    cache: "no-store",
+    signal,
+  });
+  if (liveResponse.ok && isJsonResponse(liveResponse)) {
+    const liveManifest = normalizeHostedPositionIndexManifest(
+      await liveResponse.json().catch(() => null),
+    );
+    if (liveManifest) return liveManifest;
+  }
+  if (!liveResponse.ok && liveResponse.status !== 404) {
+    throw new Error(`Live database manifest request failed: ${liveResponse.status}`);
+  }
+
   const response = await fetch(getHostedPositionIndexManifestUrl(hostedPath), { signal });
   if (response.status === 404) return null;
   if (!response.ok) {
@@ -48,6 +62,17 @@ export async function fetchHostedDatabasePositionMoves({
   signal?: AbortSignal;
 }): Promise<WebHostedPositionMove[]> {
   const key = normalizeWebFen(fen);
+  const liveResponse = await fetch(getLiveDatabasePositionUrl(hostedPath, key), {
+    cache: "no-store",
+    signal,
+  });
+  if (liveResponse.ok && isJsonResponse(liveResponse)) {
+    return normalizeHostedPositionMoves(await liveResponse.json().catch(() => null));
+  }
+  if (!liveResponse.ok && liveResponse.status !== 404) {
+    throw new Error(`Live database position request failed: ${liveResponse.status}`);
+  }
+
   const response = await fetch(getHostedPositionIndexShardUrl(hostedPath, key), { signal });
   if (response.status === 404) return [];
   if (!response.ok) {
@@ -61,6 +86,20 @@ export async function fetchHostedDatabasePositionMoves({
       getHostedMoveTotal(b) - getHostedMoveTotal(a) ||
       a.move.localeCompare(b.move, undefined, { sensitivity: "base" }),
   );
+}
+
+function isJsonResponse(response: Response) {
+  return response.headers.get("content-type")?.toLowerCase().includes("application/json") ?? false;
+}
+
+function getLiveDatabaseManifestUrl(hostedPath: string) {
+  const query = new URLSearchParams({ hostedPath });
+  return `${import.meta.env.BASE_URL}api/database-manifest?${query}`;
+}
+
+function getLiveDatabasePositionUrl(hostedPath: string, fen: string) {
+  const query = new URLSearchParams({ hostedPath, fen });
+  return `${import.meta.env.BASE_URL}api/database-position?${query}`;
 }
 
 function getHostedPositionIndexManifestUrl(hostedPath: string) {
@@ -126,6 +165,18 @@ function normalizeHostedPositionIndexShard(data: unknown): WebHostedPositionInde
   return { version: 1, positions };
 }
 
+function normalizeHostedPositionMoves(data: unknown) {
+  if (!Array.isArray(data)) return [];
+  return data
+    .map((move) => normalizeHostedPositionMove("", move))
+    .filter((move): move is WebHostedPositionMove => Boolean(move))
+    .sort(
+      (a, b) =>
+        getHostedMoveTotal(b) - getHostedMoveTotal(a) ||
+        a.move.localeCompare(b.move, undefined, { sensitivity: "base" }),
+    );
+}
+
 function normalizeHostedPositionMove(
   fallbackMove: string,
   value: unknown,
@@ -140,9 +191,8 @@ function normalizeHostedPositionMove(
     white: normalizeHostedCount(move?.white),
     draw: normalizeHostedCount(move?.draw),
     black: normalizeHostedCount(move?.black),
-    lastPlayed: typeof move?.lastPlayed === "string" && move.lastPlayed.trim()
-      ? move.lastPlayed
-      : null,
+    lastPlayed:
+      typeof move?.lastPlayed === "string" && move.lastPlayed.trim() ? move.lastPlayed : null,
   };
 }
 
