@@ -121,13 +121,11 @@ Invoke-Logged "git" @("-C", $resolvedPages, "pull", "--ff-only", "origin", "main
 $dist = Resolve-Path -LiteralPath (Join-Path $repoRoot "dist")
 Write-Log "mirroring $dist -> $resolvedPages"
 
-Get-ChildItem -LiteralPath $resolvedPages -Force |
-  Where-Object { $_.Name -ne ".git" } |
-  ForEach-Object {
-    Remove-Item -LiteralPath $_.FullName -Recurse -Force
-  }
-
-Copy-Item -Path (Join-Path $dist "*") -Destination $resolvedPages -Recurse -Force
+$gitDirectory = Join-Path $resolvedPages ".git"
+& robocopy.exe $dist $resolvedPages /MIR /R:2 /W:1 /XD $gitDirectory | Out-Null
+if ($LASTEXITCODE -ge 8) {
+  throw "Could not mirror the phone site (robocopy exit code $LASTEXITCODE)."
+}
 New-Item -Path (Join-Path $resolvedPages ".nojekyll") -ItemType File -Force | Out-Null
 
 $status = & git -C $resolvedPages status --porcelain
