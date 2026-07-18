@@ -5,6 +5,7 @@ import {
   mkdir,
   open,
   readFile,
+  readdir,
   rename,
   rm,
   stat,
@@ -13,7 +14,7 @@ import {
 } from "node:fs/promises";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
-import { dirname, extname, isAbsolute, join, normalize, resolve, sep } from "node:path";
+import { basename, dirname, extname, join, normalize, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
 
@@ -37,7 +38,6 @@ const documentsRoot = resolve(
 );
 const enDatabaseRoots = [
   join(roamingAppData, "org.encroissant.app", "db"),
-  join(roamingAppData, "org.encroissant.fork", "db"),
 ].filter(uniquePath);
 const outpostDatabase = resolve(
   process.env.OUTPOST_HOME_DATABASE || join(roamingAppData, "app.outpost.chess", "library.sqlite"),
@@ -47,6 +47,8 @@ const maxStateBytes = 256 * 1024 * 1024;
 
 let outpostCatalog = null;
 let outpostCatalogLoadedAt = 0;
+let enCatalog = null;
+let enCatalogLoadedAt = 0;
 let libraryRefreshTimer = null;
 let libraryRefreshRunning = false;
 let libraryRefreshQueued = false;
@@ -79,7 +81,10 @@ async function handleRequest(request, response) {
   const pathname = decodeURIComponent(requestUrl.pathname);
 
   if (method === "GET" && pathname === "/api/health") {
-    const catalog = await getOutpostCatalog().catch(() => []);
+    const [outpost, en] = await Promise.all([
+      getOutpostCatalog().catch(() => []),
+      getEnCatalog().catch(() => []),
+    ]);
     return writeJson(response, 200, {
       ok: true,
       service: "en-croissant-home-server",
@@ -87,7 +92,8 @@ async function handleRequest(request, response) {
       documentsRoot,
       enDatabaseRoots,
       outpostDatabase,
-      outpostCollections: catalog.length,
+      enDatabases: en.length,
+      outpostCollections: outpost.length,
       libraryRefreshRunning,
       lastLibraryRefresh,
       lastLibraryError,
@@ -149,20 +155,20 @@ async function writeWebState(request, response) {
 
 async function writeLiveLibraryManifest(response) {
   const base = await readJsonFile(join(libraryRoot, "manifest.json"));
-  const outpost = await getOutpostCatalog();
+  const [en, outpost] = await Promise.all([getEnCatalog(), getOutpostCatalog()]);
   const manifest = {
     version: 1,
     generatedAt: base?.generatedAt || new Date().toISOString(),
     sourceName: "Gaming PC live library",
     pinnedPaths: base?.pinnedPaths || [],
     files: base?.files || [],
-    databases: outpost.map((collection) => ({
+    databases: [...en, ...outpost].map((collection) => ({
       type: "database",
       path: collection.hostedPath,
       name: collection.name,
       label: collection.label,
       gameCount: collection.gameCount,
-      sizeBytes: 0,
+      sizeBytes: collection.sizeBytes || 0,
       lastModified: collection.lastModified,
       latestDate: collection.latestDate,
     })),
@@ -173,16 +179,19 @@ async function writeLiveLibraryManifest(response) {
 async function writeDatabaseManifest(requestUrl, response) {
   const hostedPath = normalizeHostedPath(requestUrl.searchParams.get("hostedPath") || "");
   const collection = await findOutpostCollection(hostedPath);
-  if (!collection) return writeJson(response, 404, { error: "Live database not found." });
+  const enDatabase = collection ? null : await findEnDatabase(hostedPath);
+  if (!collection && !enDatabase)
+    return writeJson(response, 404, { error: "Live database not found." });
+  const database = collection || enDatabase;
   return writeJson(
     response,
     200,
     {
       version: 1,
-      maxPly: 1000,
-      gameCount: collection.gameCount,
+      maxPly: collection ? 1000 : 0,
+      gameCount: database.gameCount,
       positionCount: 0,
-      latestDate: collection.latestDate,
+      latestDate: database.latestDate,
       shards: [],
     },
     { "cache-control": "no-store" },
@@ -277,6 +286,81 @@ async function getOutpostCatalog() {
   }
 }
 
+async function getEnCatalog() {
+  if (enCatalog && Date.now() - enCatalogLoadedAt < 60_000) return enCatalog;
+
+  const databaseFiles = [];
+  for (const root of enDatabaseRoots) await collectEnDatabaseFiles(root, root, databaseFiles);
+
+  const catalog = [];
+  for (const entry of databaseFiles) {
+    const fileStat = await stat(entry.absolutePath).catch(() => null);
+    if (!fileStat?.isFile()) continue;
+
+    let gameCount = 0;
+    let latestDate = null;
+    try {
+      const database = new DatabaseSync(entry.absolutePath, { readOnly: true });
+      database.exec("PRAGMA busy_timeout = 5000");
+      database.exec("PRAGMA query_only = ON");
+      try {
+        const info = database.prepare("SELECT Name, Value FROM Info").all();
+        const values = new Map(info.map((row) => [String(row.Name), String(row.Value || "")]));
+        gameCount = Number(values.get("GameCount") || 0);
+      } catch {}
+      try {
+        latestDate = database.prepare("SELECT MAX(Date) AS latestDate FROM Games").get()?.latestDate;
+      } catch {}
+      database.close();
+    } catch (error) {
+      await appendLog(`could not read En Croissant database ${entry.absolutePath}: ${error}`);
+    }
+
+    const pathWithoutExtension = entry.relativePath.replace(/\.db3$/i, "");
+    const pathParts = pathWithoutExtension.split("/").map(sanitizePathSegment).filter(Boolean);
+    const name = sanitizePathSegment(basename(pathWithoutExtension));
+    catalog.push({
+      name,
+      label: pathParts.join(" / "),
+      hostedPath: ["Databases", "Desktop", ...pathParts].join("/"),
+      gameCount: Number.isFinite(gameCount) ? gameCount : 0,
+      sizeBytes: fileStat.size,
+      lastModified: fileStat.mtimeMs,
+      latestDate: latestDate ? String(latestDate) : null,
+      absolutePath: entry.absolutePath,
+    });
+  }
+
+  enCatalog = catalog.sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
+  enCatalogLoadedAt = Date.now();
+  return enCatalog;
+}
+
+async function collectEnDatabaseFiles(root, directory, output) {
+  const entries = await readdir(directory, { withFileTypes: true }).catch(() => []);
+  for (const entry of entries) {
+    if (entry.name.startsWith(".")) continue;
+    const absolutePath = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      await collectEnDatabaseFiles(root, absolutePath, output);
+    } else if (
+      entry.isFile() &&
+      entry.name.toLowerCase().endsWith(".db3") &&
+      !entry.name.toLowerCase().includes(".tmp.")
+    ) {
+      output.push({
+        absolutePath,
+        relativePath: relative(root, absolutePath).replace(/\\/g, "/"),
+      });
+    }
+  }
+}
+
+async function findEnDatabase(hostedPath) {
+  const catalog = await getEnCatalog();
+  return catalog.find((database) => database.hostedPath === hostedPath) || null;
+}
+
 async function findOutpostCollection(hostedPath) {
   const catalog = await getOutpostCatalog();
   return catalog.find((collection) => collection.hostedPath === hostedPath) || null;
@@ -356,6 +440,10 @@ async function watchRoot(root, outpostOnly) {
         continue;
       }
       if (/\.(pgn|pdf|db3|json)$/i.test(filename)) scheduleLibraryRefresh();
+      if (/\.db3$/i.test(filename)) {
+        enCatalog = null;
+        enCatalogLoadedAt = 0;
+      }
     }
   } catch (error) {
     await appendLog(`watch failed for ${root}: ${error}`);
@@ -389,7 +477,8 @@ async function refreshLibrary() {
       {
         EN_CROISSANT_WEB_FILES_DIR: documentsRoot,
         EN_CROISSANT_WEB_DATABASE_DIRS: enDatabaseRoots.join(";"),
-        EN_CROISSANT_WEB_DB_MAX_MB: "4096",
+        EN_CROISSANT_WEB_DB_MAX_MB: "1024",
+        EN_CROISSANT_WEB_DB_EXPORT_CACHE: join(serverRoot, "db-exports"),
       },
     );
     const previousRoot = `${libraryRoot}.previous`;
