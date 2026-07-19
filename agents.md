@@ -1,5 +1,11 @@
 # AGENTS.md
 
+- On 2026-07-19, the desktop database library recovered from a leaked local
+  parity-harness override that pointed `databases-dir` at an isolated Temp
+  folder and made the intact real library appear missing. Directory startup
+  now recognizes only Outpost parity paths under the Windows Temp root as
+  leaked verification state, removes that override, and falls back to the real
+  app-data `db` tree; normal custom database locations remain untouched.
 - On 2026-07-17, Outpost development storage was recovered after 15 separate
   repo/worktree checkouts accumulated independent Rust `src-tauri/target`
   trees. Cargo now uses the user-level shared target directory

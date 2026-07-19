@@ -74,7 +74,13 @@ import { check } from "@tauri-apps/plugin-updater";
 import ErrorComponent from "@/components/ErrorComponent";
 import { RouteStartupFallback } from "@/components/common/StartupProgress";
 import { OpeningReviewAutoUpdateBanner } from "@/components/review/OpeningReviewAutoUpdateBanner";
-import { getDatabasesDir, getDocumentDir, getEnginesDir, getPuzzlesDir } from "@/utils/directories";
+import {
+  getDatabasesDir,
+  getDocumentDir,
+  getEnginesDir,
+  getPuzzlesDir,
+  getStoredDirectory,
+} from "@/utils/directories";
 import { initUserAgent } from "@/utils/http";
 import { getEffectivePieceSet } from "@/utils/boardStyle";
 import { useLichessStudyDatabaseAutoUpdater } from "@/utils/lichessStudyDatabaseAutoUpdate";
@@ -93,22 +99,11 @@ export type Dirs = {
 let cachedDirs: Dirs | null = readStoredDirs();
 let dirsRefreshPromise: Promise<Dirs> | null = null;
 
-function readStoredDir(key: string): string | null {
-  if (typeof localStorage === "undefined") return null;
-
-  try {
-    const value = JSON.parse(localStorage.getItem(key) ?? "null");
-    return typeof value === "string" && value.length > 0 ? value : null;
-  } catch {
-    return null;
-  }
-}
-
 function readStoredDirs(): Dirs | null {
-  const documentDir = readStoredDir("document-dir");
-  const databasesDir = readStoredDir("databases-dir");
-  const enginesDir = readStoredDir("engines-dir");
-  const puzzlesDir = readStoredDir("puzzles-dir");
+  const documentDir = getStoredDirectory("document-dir");
+  const databasesDir = getStoredDirectory("databases-dir");
+  const enginesDir = getStoredDirectory("engines-dir");
+  const puzzlesDir = getStoredDirectory("puzzles-dir");
 
   if (!documentDir || !databasesDir || !enginesDir || !puzzlesDir) return null;
 
