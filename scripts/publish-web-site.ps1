@@ -104,6 +104,7 @@ if (-not (Test-Path -LiteralPath $PagesRepo)) {
 }
 
 $resolvedPages = Assert-PagesRepo $PagesRepo
+Invoke-Logged "git" @("-C", $resolvedPages, "config", "core.longpaths", "true") $repoRoot.Path
 Invoke-Logged "git" @("-C", $resolvedPages, "pull", "--ff-only", "origin", "main") $repoRoot.Path
 
 $dist = Resolve-Path -LiteralPath (Join-Path $repoRoot "dist")
