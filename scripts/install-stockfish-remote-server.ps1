@@ -12,6 +12,7 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $installRoot = Join-Path $env:LOCALAPPDATA "Stockfish18Server"
 $serverRoot = Join-Path $installRoot "server"
 $serverScript = Join-Path $serverRoot "stockfish-remote-server.mjs"
+$localEvalReader = Join-Path $serverRoot "lichess-local-eval-reader.mjs"
 $configPath = Join-Path $installRoot "config.json"
 $logPath = Join-Path $installRoot "stockfish-remote-server.log"
 $node = (Get-Command node -ErrorAction Stop).Source
@@ -30,6 +31,7 @@ if (-not (Test-Path -LiteralPath $tailscale -PathType Leaf)) {
 
 New-Item -ItemType Directory -Force -Path $serverRoot | Out-Null
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\stockfish-remote-server.mjs") -Destination $serverScript -Force
+Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\lichess-local-eval-reader.mjs") -Destination $localEvalReader -Force
 
 $config = [ordered]@{
   enginePath = $EnginePath
@@ -41,6 +43,7 @@ $config = [ordered]@{
   httpPort = $HttpPort
   maxDepth = 40
   maxMultiPv = 8
+  localEvalPath = (Join-Path $env:APPDATA "org.encroissant.app\lichess-cloud-evals")
   allowedOrigins = @(
     "https://loxtyrrell03.github.io",
     "https://gaming-pc.tail89d19b.ts.net",

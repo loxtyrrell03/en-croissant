@@ -227,7 +227,7 @@ import {
 import { getWebBoardSourceTitle } from "./boardTitle";
 import { formatWebEngineScore } from "./engineScore";
 import { analyzeWithWebStockfish18, stopWebStockfish18Search } from "./stockfishEngine";
-import { analyzeWithRemoteStockfish18 } from "./remoteStockfishEngine";
+import { analyzeWithRemoteStockfish18, queryRemoteStoredCloudLines } from "./remoteStockfishEngine";
 
 type ViewMode = "board" | "files";
 type BoardPanelMode = "moves" | "database" | "prep" | "engine";
@@ -2191,8 +2191,7 @@ function DatabaseUnderBoardPanel({
     let active = true;
     void queryWebLichessCloudEngineMoves({
       fen: currentFen,
-      side:
-        trimmedLocalPlayerName && !isSelectedLocalLazy ? localColor : getFenColor(currentFen),
+      side: trimmedLocalPlayerName && !isSelectedLocalLazy ? localColor : getFenColor(currentFen),
       moves: localStatsBase.map((stat) => stat.move),
       multipv: localStatsBase.length,
       signal: controller.signal,
@@ -2684,7 +2683,7 @@ function EngineUnderBoardPanel({
   );
   const [stockfishLines, setStockfishLines] = useState<WebEngineLine[]>([]);
   const [status, setStatus] = useState<WebEnginePanelStatus>("idle");
-  const [backend, setBackend] = useState<"idle" | "checking" | "pc" | "phone">("idle");
+  const [backend, setBackend] = useState<"idle" | "checking" | "cloud" | "pc" | "phone">("idle");
   const [error, setError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -2717,6 +2716,21 @@ function EngineUnderBoardPanel({
     };
     const analyze = async () => {
       if (settings.useRemote) {
+        try {
+          const storedLines = await queryRemoteStoredCloudLines({
+            fen: currentFen,
+            multipv: settings.multipv,
+            signal: controller.signal,
+          });
+          if (storedLines.length > 0) {
+            if (active) setBackend("cloud");
+            return storedLines;
+          }
+        } catch (cloudError) {
+          if (isAbortError(cloudError)) throw cloudError;
+          console.warn("Stored cloud eval lookup failed; using Gaming PC Stockfish.", cloudError);
+        }
+
         try {
           const lines = await analyzeWithRemoteStockfish18({
             fen: currentFen,
@@ -2801,7 +2815,9 @@ function EngineUnderBoardPanel({
         <Box className={classes.enginePanelTitleArea}>
           <Group gap={6} wrap="nowrap" miw={0}>
             <Text fw={700} size="sm" truncate>
-              Stockfish 18{backend === "pc" ? " · PC" : backend === "phone" ? " · Phone" : ""}
+              {backend === "cloud"
+                ? "Stored cloud eval"
+                : `Stockfish 18${backend === "pc" ? " · PC" : backend === "phone" ? " · Phone" : ""}`}
             </Text>
             {headerStatus ? (
               <Code className={classes.enginePanelCode} c={engineStatusTextColor(status)}>
@@ -2980,11 +2996,13 @@ function EngineLineTable({
                   </button>
                   <Group gap={5} wrap="nowrap" className={classes.engineAnalysisMeta}>
                     <Code className={classes.enginePanelCode}>
-                      {line.source === "lichess-cloud"
-                        ? "Lichess"
-                        : line.source === "stockfish-remote"
-                          ? "Gaming PC"
-                          : "Phone"}
+                      {line.source === "lichess-cloud-stored"
+                        ? "Stored cloud"
+                        : line.source === "lichess-cloud"
+                          ? "Lichess"
+                          : line.source === "stockfish-remote"
+                            ? "Gaming PC"
+                            : "Phone"}
                     </Code>
                     <Text size="xs" c="dimmed">
                       d{line.depth || "?"}

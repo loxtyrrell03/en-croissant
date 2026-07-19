@@ -5,36 +5,53 @@ import { createServer as createTcpServer } from "node:net";
 import { dirname, join, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
+import { createLocalLichessEvalStore } from "./lichess-local-eval-reader.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const localAppData =
   process.env.LOCALAPPDATA || join(process.env.USERPROFILE || scriptDir, "AppData", "Local");
+const roamingAppData =
+  process.env.APPDATA || join(process.env.USERPROFILE || scriptDir, "AppData", "Roaming");
 const installRoot = resolve(
   process.env.STOCKFISH_REMOTE_ROOT || join(localAppData, "Stockfish18Server"),
 );
-const configPath = resolve(
-  process.env.STOCKFISH_REMOTE_CONFIG || join(installRoot, "config.json"),
-);
+const configPath = resolve(process.env.STOCKFISH_REMOTE_CONFIG || join(installRoot, "config.json"));
 const logPath = join(installRoot, "stockfish-remote-server.log");
 const config = readJson(configPath);
 const enginePath = resolve(
   process.env.STOCKFISH_REMOTE_ENGINE ||
     config.enginePath ||
-    join(
-      installRoot,
-      "stockfish-bmi2",
-      "stockfish",
-      "stockfish-windows-x86-64-bmi2.exe",
-    ),
+    join(installRoot, "stockfish-bmi2", "stockfish", "stockfish-windows-x86-64-bmi2.exe"),
 );
-const threads = positiveInteger(process.env.STOCKFISH_REMOTE_THREADS || config.threads, 16, 1, 1024);
+const threads = positiveInteger(
+  process.env.STOCKFISH_REMOTE_THREADS || config.threads,
+  16,
+  1,
+  1024,
+);
 const hashMb = positiveInteger(process.env.STOCKFISH_REMOTE_HASH_MB || config.hashMb, 2048, 1);
 const httpHost = String(config.httpHost || "127.0.0.1");
-const httpPort = positiveInteger(process.env.STOCKFISH_REMOTE_HTTP_PORT || config.httpPort, 38419, 1, 65535);
+const httpPort = positiveInteger(
+  process.env.STOCKFISH_REMOTE_HTTP_PORT || config.httpPort,
+  38419,
+  1,
+  65535,
+);
 const uciHost = String(config.uciHost || "127.0.0.1");
-const uciPort = positiveInteger(process.env.STOCKFISH_REMOTE_UCI_PORT || config.uciPort, 38418, 1, 65535);
+const uciPort = positiveInteger(
+  process.env.STOCKFISH_REMOTE_UCI_PORT || config.uciPort,
+  38418,
+  1,
+  65535,
+);
 const maxDepth = positiveInteger(config.maxDepth, 40, 1, 100);
 const maxMultiPv = positiveInteger(config.maxMultiPv, 8, 1, 256);
+const localEvalPath = resolve(
+  process.env.STOCKFISH_REMOTE_LOCAL_EVAL_PATH ||
+    config.localEvalPath ||
+    join(roamingAppData, "org.encroissant.app", "lichess-cloud-evals"),
+);
+const localEvalStore = createLocalLichessEvalStore(localEvalPath);
 const allowedOrigins = new Set(
   (Array.isArray(config.allowedOrigins) ? config.allowedOrigins : [])
     .map((value) => String(value).replace(/\/$/, ""))
@@ -138,7 +155,26 @@ async function handleHttpRequest(request, response) {
       processId: process.pid,
       engineReady: httpEngine.ready,
       queuedAnalyses: httpEngine.queued,
+      localEvals: localEvalStore.status,
     });
+  }
+
+  if (request.method === "GET" && requestUrl.pathname === "/v1/cloud-eval") {
+    const fen = normalizeFen(requestUrl.searchParams.get("fen"));
+    const multipv = positiveInteger(requestUrl.searchParams.get("multipv"), 3, 1, maxMultiPv);
+    if (!fen) return writeJson(response, 400, { error: "A valid FEN is required." });
+
+    const status = localEvalStore.status;
+    if (!status.available) {
+      return writeJson(response, status.error ? 503 : 404, {
+        error: status.error || "The stored Lichess cloud-eval database is unavailable.",
+      });
+    }
+    const evaluation = localEvalStore.lookup(fen, multipv);
+    if (!evaluation) {
+      return writeJson(response, 404, { error: "No stored cloud evaluation was found." });
+    }
+    return writeJson(response, 200, evaluation);
   }
 
   if (request.method !== "POST" || requestUrl.pathname !== "/v1/analyze") {
@@ -252,7 +288,9 @@ class PersistentStockfish {
     this.send("setoption name UCI_ShowWDL value true");
     await this.sendAndWaitReady();
     this.ready = true;
-    log(`Persistent Stockfish ready (${this.options.threads} threads, ${this.options.hashMb} MiB hash)`);
+    log(
+      `Persistent Stockfish ready (${this.options.threads} threads, ${this.options.hashMb} MiB hash)`,
+    );
   }
 
   sendAndWaitReady(command) {

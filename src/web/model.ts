@@ -146,7 +146,11 @@ export type WebEngineScore =
           value: number;
       };
 
-export type WebEngineLineSource = "stockfish" | "stockfish-remote" | "lichess-cloud";
+export type WebEngineLineSource =
+    | "stockfish"
+    | "stockfish-remote"
+    | "lichess-cloud"
+    | "lichess-cloud-stored";
 
 export type WebEngineLine = {
     source: WebEngineLineSource;
