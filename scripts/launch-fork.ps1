@@ -132,6 +132,20 @@ function Test-DevServerListening {
   }
 }
 
+function Test-DevServerHttpReady {
+  try {
+    $response = Invoke-WebRequest `
+      -UseBasicParsing `
+      -Uri "http://localhost:$port/" `
+      -TimeoutSec 15
+
+    return $response.StatusCode -eq 200 -and $response.Content.Contains('/src/index.tsx')
+  }
+  catch {
+    return $false
+  }
+}
+
 function Get-RepoViteProcesses {
   try {
     $listeners = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
@@ -240,8 +254,8 @@ function Start-DevServer {
 
   $deadline = (Get-Date).AddSeconds(45)
   while ((Get-Date) -lt $deadline) {
-    if (Test-DevServerListening) {
-      Write-LaunchLog "Vite dev server is ready."
+    if ((Test-DevServerListening) -and (Test-DevServerHttpReady)) {
+      Write-LaunchLog "Vite dev server entry page is ready."
       return $process
     }
     Start-Sleep -Milliseconds 500

@@ -1,5 +1,13 @@
 # AGENTS.md
 
+- On 2026-07-20, the live fork launcher stopped opening a permanently white
+  Tauri window during a cold Vite start. Listening on port 1420 is no longer
+  considered sufficient readiness: `scripts/launch-fork.ps1` now fetches and
+  validates the real entry HTML before opening the native shell, warming the
+  initial transform that can be delayed by the large hosted phone library.
+  The React entry point also renders a readable startup failure instead of a
+  silent white page if a future module import fails.
+
 - On 2026-07-19, Outpost recovered apparently missing desktop libraries caused
   by a parity smoke test persisting its disposable `outpost-fork-parity-*`
   database, file, engine, and puzzle directories in the real WebView local

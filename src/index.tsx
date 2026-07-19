@@ -73,4 +73,24 @@ async function renderRoot() {
   root.render(<Root />);
 }
 
-void renderRoot();
+void renderRoot().catch((error: unknown) => {
+  const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+  console.error("Failed to start En Croissant", error);
+  document.title = `En Croissant startup error: ${message}`;
+  root.render(
+    <main
+      style={{
+        boxSizing: "border-box",
+        minHeight: "100vh",
+        padding: "2rem",
+        background: "#fff",
+        color: "#202124",
+        fontFamily: "system-ui, sans-serif",
+      }}
+    >
+      <h1>En Croissant could not start</h1>
+      <p>{message}</p>
+      <p>Close and reopen the app after correcting the startup error.</p>
+    </main>,
+  );
+});
