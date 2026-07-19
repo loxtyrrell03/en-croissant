@@ -1,17 +1,6 @@
 import { appDataDir, documentDir, homeDir, resolve } from "@tauri-apps/api/path";
 import { exists, mkdir } from "@tauri-apps/plugin-fs";
-
-function getStoredDirectory(key: string): string | null {
-    const stored = localStorage.getItem(key);
-    if (!stored) return null;
-
-    try {
-        const parsed = JSON.parse(stored);
-        return typeof parsed === "string" && parsed.length > 0 ? parsed : null;
-    } catch {
-        return null;
-    }
-}
+import { readStoredDirectoryOverride } from "@/utils/directoryOverrides";
 
 async function ensureDirectory(path: string): Promise<string> {
     if (!(await exists(path))) {
@@ -21,7 +10,7 @@ async function ensureDirectory(path: string): Promise<string> {
 }
 
 export async function getDatabasesDir(): Promise<string> {
-    const customDir = getStoredDirectory("databases-dir");
+    const customDir = readStoredDirectoryOverride("databases-dir");
     if (customDir) {
         return ensureDirectory(customDir);
     }
@@ -30,7 +19,7 @@ export async function getDatabasesDir(): Promise<string> {
 }
 
 export async function getDocumentDir(): Promise<string> {
-    const customDir = getStoredDirectory("document-dir");
+    const customDir = readStoredDirectoryOverride("document-dir");
     if (customDir) {
         return ensureDirectory(customDir);
     }
@@ -43,7 +32,7 @@ export async function getDocumentDir(): Promise<string> {
 }
 
 export async function getEnginesDir(): Promise<string> {
-    const customDir = getStoredDirectory("engines-dir");
+    const customDir = readStoredDirectoryOverride("engines-dir");
     if (customDir) {
         return ensureDirectory(customDir);
     }
@@ -52,7 +41,7 @@ export async function getEnginesDir(): Promise<string> {
 }
 
 export async function getPuzzlesDir(): Promise<string> {
-    const customDir = getStoredDirectory("puzzles-dir");
+    const customDir = readStoredDirectoryOverride("puzzles-dir");
     if (customDir) {
         return ensureDirectory(customDir);
     }

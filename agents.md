@@ -1,5 +1,12 @@
 # AGENTS.md
 
+- On 2026-07-19, Outpost recovered apparently missing desktop libraries caused
+  by a parity smoke test persisting its disposable `outpost-fork-parity-*`
+  database, file, engine, and puzzle directories in the real WebView local
+  storage. The app now rejects and clears those ephemeral overrides at startup,
+  returning to the normal `%APPDATA%\org.encroissant.app` and
+  `Documents\EnCroissant` roots without moving or deleting user data.
+
 - On 2026-07-17, Outpost development storage was recovered after 15 separate
   repo/worktree checkouts accumulated independent Rust `src-tauri/target`
   trees. Cargo now uses the user-level shared target directory
