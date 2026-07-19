@@ -1,13 +1,9 @@
 import { appDataDir, documentDir, homeDir, resolve } from "@tauri-apps/api/path";
 import { exists, mkdir } from "@tauri-apps/plugin-fs";
 
-export function isLeakedOutpostVerificationDatabaseDir(path: string): boolean {
+export function isLeakedOutpostVerificationDir(path: string): boolean {
     const normalized = path.replaceAll("/", "\\").toLowerCase().replace(/\\+$/, "");
-    const isTemporary = normalized.includes("\\appdata\\local\\temp\\");
-    const isParityHarness =
-        normalized.includes("\\outpost-fork-parity-") ||
-        normalized.includes("\\outpost-parity-");
-    return isTemporary && isParityHarness && normalized.endsWith("\\db");
+    return /\\appdata\\local\\temp\\outpost-(?:fork-)?parity-[^\\]+(?:\\|$)/.test(normalized);
 }
 
 export function getStoredDirectory(key: string): string | null {
@@ -17,7 +13,7 @@ export function getStoredDirectory(key: string): string | null {
     try {
         const parsed = JSON.parse(stored);
         if (typeof parsed !== "string" || parsed.length === 0) return null;
-        if (key === "databases-dir" && isLeakedOutpostVerificationDatabaseDir(parsed)) {
+        if (isLeakedOutpostVerificationDir(parsed)) {
             localStorage.removeItem(key);
             return null;
         }
