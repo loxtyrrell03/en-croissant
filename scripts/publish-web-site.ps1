@@ -115,7 +115,11 @@ Get-ChildItem -LiteralPath $resolvedPages -Force |
     Remove-Item -LiteralPath $_.FullName -Recurse -Force
   }
 
-Copy-Item -Path (Join-Path $dist "*") -Destination $resolvedPages -Recurse -Force
+$null = & robocopy $dist $resolvedPages /E /R:3 /W:1 /NFL /NDL /NJH /NJS /NP
+$copyExitCode = $LASTEXITCODE
+if ($copyExitCode -ge 8) {
+  throw "robocopy failed with code $copyExitCode"
+}
 New-Item -Path (Join-Path $resolvedPages ".nojekyll") -ItemType File -Force | Out-Null
 
 $status = & git -C $resolvedPages status --porcelain
