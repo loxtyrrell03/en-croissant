@@ -356,17 +356,24 @@ const WEB_ENGINE_ARROW_COLORS = [
 ] as const;
 
 type WebEnginePanelSettings = {
+  version: 2;
   enabled: boolean;
   useRemote: boolean;
   multipv: number;
   depth: number;
+  infinite: boolean;
 };
 
+const MIN_WEB_ENGINE_DEPTH = 6;
+const MAX_WEB_ENGINE_DEPTH = 999;
+
 const DEFAULT_WEB_ENGINE_PANEL_SETTINGS: WebEnginePanelSettings = {
+  version: 2,
   enabled: false,
   useRemote: true,
   multipv: 3,
-  depth: 14,
+  depth: 70,
+  infinite: false,
 };
 
 type WebPrepStoredSetup = {
@@ -2686,9 +2693,23 @@ function EngineUnderBoardPanel({
   const [backend, setBackend] = useState<"idle" | "checking" | "cloud" | "pc" | "phone">("idle");
   const [error, setError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [depthDraft, setDepthDraft] = useState<string | number>(settings.depth);
 
   const updateSettings = (patch: Partial<WebEnginePanelSettings>) => {
     setSettings((current) => normalizeWebEnginePanelSettings({ ...current, ...patch }));
+  };
+
+  useEffect(() => setDepthDraft(settings.depth), [settings.depth]);
+
+  const commitDepthDraft = () => {
+    const depth = clampWholeNumber(
+      depthDraft,
+      MIN_WEB_ENGINE_DEPTH,
+      MAX_WEB_ENGINE_DEPTH,
+      settings.depth,
+    );
+    setDepthDraft(depth);
+    updateSettings({ depth });
   };
 
   useEffect(() => {
@@ -2717,14 +2738,16 @@ function EngineUnderBoardPanel({
     const analyze = async () => {
       if (settings.useRemote) {
         try {
-          const storedLines = await queryRemoteStoredCloudLines({
-            fen: currentFen,
-            multipv: settings.multipv,
-            signal: controller.signal,
-          });
-          if (storedLines.length > 0) {
-            if (active) setBackend("cloud");
-            return storedLines;
+          if (!settings.infinite) {
+            const storedLines = await queryRemoteStoredCloudLines({
+              fen: currentFen,
+              multipv: settings.multipv,
+              signal: controller.signal,
+            });
+            if (storedLines.length > 0) {
+              if (active) setBackend("cloud");
+              return storedLines;
+            }
           }
         } catch (cloudError) {
           if (isAbortError(cloudError)) throw cloudError;
@@ -2736,6 +2759,7 @@ function EngineUnderBoardPanel({
             fen: currentFen,
             multipv: settings.multipv,
             depth: settings.depth,
+            infinite: settings.infinite,
             signal: controller.signal,
             onUpdate: (lines) => updateLines(lines, "pc"),
           });
@@ -2752,6 +2776,7 @@ function EngineUnderBoardPanel({
         fen: currentFen,
         multipv: settings.multipv,
         depth: settings.depth,
+        infinite: settings.infinite,
         signal: controller.signal,
         onUpdate: (lines) => updateLines(lines, "phone"),
       });
@@ -2774,7 +2799,14 @@ function EngineUnderBoardPanel({
       active = false;
       controller.abort();
     };
-  }, [currentFen, settings.depth, settings.enabled, settings.multipv, settings.useRemote]);
+  }, [
+    currentFen,
+    settings.depth,
+    settings.enabled,
+    settings.infinite,
+    settings.multipv,
+    settings.useRemote,
+  ]);
 
   const displayLines = stockfishLines;
   useEffect(() => {
@@ -2791,6 +2823,7 @@ function EngineUnderBoardPanel({
     status,
     lines: displayLines,
     targetDepth: settings.depth,
+    infinite: settings.infinite,
   });
   const headerStatus = getWebEngineHeaderStatus({
     enabled: settings.enabled,
@@ -2874,15 +2907,35 @@ function EngineUnderBoardPanel({
               disabled={!settings.enabled}
               onChange={(multipv) => updateSettings({ multipv })}
             />
-            <EngineNumberStepper
-              label="Depth"
-              value={settings.depth}
-              min={6}
-              max={30}
-              disabled={!settings.enabled}
-              onChange={(depth) => updateSettings({ depth })}
+            <NumberInput
+              label="Depth ceiling"
+              min={MIN_WEB_ENGINE_DEPTH}
+              max={MAX_WEB_ENGINE_DEPTH}
+              step={1}
+              allowDecimal={false}
+              allowNegative={false}
+              clampBehavior="none"
+              disabled={!settings.enabled || settings.infinite}
+              value={depthDraft}
+              onChange={setDepthDraft}
+              onBlur={commitDepthDraft}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") event.currentTarget.blur();
+              }}
             />
           </Group>
+          <SegmentedControl
+            fullWidth
+            mt="xs"
+            aria-label="Stockfish depth limit"
+            disabled={!settings.enabled}
+            value={settings.infinite ? "infinite" : "ceiling"}
+            data={[
+              { value: "ceiling", label: `Stop at depth ${settings.depth}` },
+              { value: "infinite", label: "Infinite depth" },
+            ]}
+            onChange={(value) => updateSettings({ infinite: value === "infinite" })}
+          />
         </Box>
       </Collapse>
 
@@ -6092,16 +6145,19 @@ function getWebEngineProgress({
   status,
   lines,
   targetDepth,
+  infinite,
 }: {
   enabled: boolean;
   status: WebEnginePanelStatus;
   lines: WebEngineLine[];
   targetDepth: number;
+  infinite: boolean;
 }) {
   if (!enabled || status === "idle" || status === "error") return 0;
   if (status === "complete") return 100;
   const reachedDepth = Math.max(0, ...lines.map((line) => line.depth ?? 0));
   if (reachedDepth <= 0) return status === "loading" ? 22 : 35;
+  if (infinite) return Math.min(99, Math.max(35, reachedDepth));
   return Math.min(99, Math.max(35, Math.round((reachedDepth / Math.max(1, targetDepth)) * 100)));
 }
 
@@ -7669,10 +7725,17 @@ function normalizeWebEnginePanelSettings(
   value: Partial<WebEnginePanelSettings> | null | undefined,
 ): WebEnginePanelSettings {
   return {
+    version: 2,
     enabled: Boolean(value?.enabled),
     useRemote: value?.useRemote !== false,
     multipv: clampWholeNumber(value?.multipv, 1, 8, DEFAULT_WEB_ENGINE_PANEL_SETTINGS.multipv),
-    depth: clampWholeNumber(value?.depth, 6, 30, DEFAULT_WEB_ENGINE_PANEL_SETTINGS.depth),
+    depth: clampWholeNumber(
+      value?.version === 2 ? value.depth : DEFAULT_WEB_ENGINE_PANEL_SETTINGS.depth,
+      MIN_WEB_ENGINE_DEPTH,
+      MAX_WEB_ENGINE_DEPTH,
+      DEFAULT_WEB_ENGINE_PANEL_SETTINGS.depth,
+    ),
+    infinite: value?.infinite === true,
   };
 }
 

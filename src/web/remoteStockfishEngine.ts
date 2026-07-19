@@ -11,6 +11,7 @@ type RemoteStockfishRequest = {
     fen: string;
     multipv: number;
     depth: number;
+    infinite?: boolean;
     signal?: AbortSignal;
     onUpdate?: (lines: WebEngineLine[]) => void;
     baseUrl?: string;
@@ -72,6 +73,7 @@ export async function analyzeWithRemoteStockfish18({
     fen,
     multipv,
     depth,
+    infinite = false,
     signal,
     onUpdate,
     baseUrl = DEFAULT_REMOTE_STOCKFISH_URL,
@@ -89,7 +91,7 @@ export async function analyzeWithRemoteStockfish18({
         const response = await fetch(`${baseUrl.replace(/\/$/, "")}/v1/analyze`, {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ fen, multipv, depth }),
+            body: JSON.stringify({ fen, multipv, depth, infinite }),
             cache: "no-store",
             signal: requestController.signal,
         });

@@ -44,7 +44,7 @@ const uciPort = positiveInteger(
   1,
   65535,
 );
-const maxDepth = positiveInteger(config.maxDepth, 40, 1, 100);
+const maxDepth = positiveInteger(config.maxDepth, 999, 1, 999);
 const maxMultiPv = positiveInteger(config.maxMultiPv, 8, 1, 256);
 const localEvalPath = resolve(
   process.env.STOCKFISH_REMOTE_LOCAL_EVAL_PATH ||
@@ -184,7 +184,8 @@ async function handleHttpRequest(request, response) {
   const body = await readJsonBody(request, 32 * 1024);
   const fen = normalizeFen(body?.fen);
   const multipv = positiveInteger(body?.multipv, 3, 1, maxMultiPv);
-  const depth = positiveInteger(body?.depth, 14, 1, maxDepth);
+  const depth = positiveInteger(body?.depth, 70, 1, maxDepth);
+  const infinite = body?.infinite === true;
   if (!fen) return writeJson(response, 400, { error: "A valid FEN is required." });
 
   response.writeHead(200, {
@@ -206,7 +207,7 @@ async function handleHttpRequest(request, response) {
 
   try {
     const bestmove = await httpEngine.analyze(
-      { fen, multipv, depth },
+      { fen, multipv, depth, infinite },
       (line) => {
         if (!response.destroyed) response.write(`${JSON.stringify({ type: "uci", line })}\n`);
       },
@@ -251,7 +252,11 @@ class PersistentStockfish {
       await this.sendAndWaitReady(`setoption name MultiPV value ${params.multipv}`);
       if (signal?.aborted) throw abortError();
       this.send(`position fen ${params.fen}`);
-      return await this.runSearch(`go depth ${params.depth}`, onInfo, signal);
+      return await this.runSearch(
+        params.infinite ? "go infinite" : `go depth ${params.depth}`,
+        onInfo,
+        signal,
+      );
     } finally {
       this.queued -= 1;
       release();

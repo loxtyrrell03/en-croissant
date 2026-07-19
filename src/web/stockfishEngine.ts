@@ -22,6 +22,7 @@ export type WebStockfishAnalyzeRequest = {
     fen: string;
     multipv: number;
     depth: number;
+    infinite?: boolean;
     signal?: AbortSignal;
     onUpdate?: (lines: WebEngineLine[]) => void;
 };
@@ -30,12 +31,13 @@ export async function analyzeWithWebStockfish18({
     fen,
     multipv,
     depth,
+    infinite = false,
     signal,
     onUpdate,
 }: WebStockfishAnalyzeRequest): Promise<WebEngineLine[]> {
     const searchId = ++activeSearchId;
     const requestedMultipv = Math.max(1, Math.min(8, Math.round(multipv)));
-    const requestedDepth = Math.max(1, Math.min(30, Math.round(depth)));
+    const requestedDepth = Math.max(1, Math.min(999, Math.round(depth)));
     const linesByPv = new Map<number, WebEngineLine>();
     let lastUpdateAt = 0;
 
@@ -52,7 +54,7 @@ export async function analyzeWithWebStockfish18({
             settled = true;
             removeStockfishListener(onLine);
             signal?.removeEventListener("abort", onAbort);
-            window.clearTimeout(timeoutId);
+            if (timeoutId !== null) window.clearTimeout(timeoutId);
         };
 
         const finish = () => {
@@ -95,10 +97,13 @@ export async function analyzeWithWebStockfish18({
             publish();
         };
 
-        const timeoutId = window.setTimeout(() => {
-            postStockfish("stop");
-            fail(new Error("Stockfish 18 took too long to finish this search."));
-        }, STOCKFISH_SEARCH_TIMEOUT_MS);
+        const timeoutId =
+            infinite || requestedDepth > 30
+                ? null
+                : window.setTimeout(() => {
+                      postStockfish("stop");
+                      fail(new Error("Stockfish 18 took too long to finish this search."));
+                  }, STOCKFISH_SEARCH_TIMEOUT_MS);
 
         if (signal?.aborted) {
             onAbort();
@@ -108,7 +113,7 @@ export async function analyzeWithWebStockfish18({
         signal?.addEventListener("abort", onAbort, { once: true });
         addStockfishListener(onLine);
         postStockfish(`position fen ${fen}`);
-        postStockfish(`go depth ${requestedDepth}`);
+        postStockfish(infinite ? "go infinite" : `go depth ${requestedDepth}`);
     });
 }
 

@@ -1148,6 +1148,10 @@ Engine` selector on the phone workspace, and the active panel content starts
   the fork's desktop analysis panel anatomy: play/pause icon header, compact
   source/eval/depth summary, settings cog with collapsed controls, progress
   strip, inactive/error states, and table-style PV rows.
+- On 2026-07-19, the phone engine panel's default Stockfish depth ceiling was
+  raised to 70. The ceiling is now directly editable as a number, and an
+  `Infinite depth` mode sends `go infinite` to both the phone WASM engine and
+  the Gaming PC backend until the user pauses analysis or changes position.
 - On 2026-06-11, the agent workflow was tightened so future phone web
   companion code, asset, layout, PWA, hosted-library, or publish-script changes
   must be followed by `npm run web:publish` after local verification and the
