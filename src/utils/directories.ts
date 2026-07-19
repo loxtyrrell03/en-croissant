@@ -1,6 +1,9 @@
 import { appDataDir, documentDir, homeDir, resolve } from "@tauri-apps/api/path";
-import { exists, mkdir } from "@tauri-apps/plugin-fs";
-import { readStoredDirectoryOverride } from "@/utils/directoryOverrides";
+import { exists, mkdir, readDir } from "@tauri-apps/plugin-fs";
+import {
+    chooseDocumentDirectoryPath,
+    readStoredDirectoryOverride,
+} from "@/utils/directoryOverrides";
 
 async function ensureDirectory(path: string): Promise<string> {
     if (!(await exists(path))) {
@@ -19,15 +22,28 @@ export async function getDatabasesDir(): Promise<string> {
 }
 
 export async function getDocumentDir(): Promise<string> {
-    const customDir = readStoredDirectoryOverride("document-dir");
-    if (customDir) {
-        return ensureDirectory(customDir);
-    }
-
     try {
-        return ensureDirectory(await resolve(await documentDir(), "EnCroissant"));
+        const storedDir = readStoredDirectoryOverride("document-dir");
+        const platformDir = await resolve(await documentDir(), "EnCroissant");
+        const localDocumentsDir = await resolve(await homeDir(), "Documents", "EnCroissant");
+        const populatedPaths = new Set<string>();
+
+        for (const candidate of new Set([platformDir, localDocumentsDir])) {
+            if ((await exists(candidate)) && (await readDir(candidate)).length > 0) {
+                populatedPaths.add(candidate.replaceAll("\\", "/").toLowerCase().replace(/\/$/, ""));
+            }
+        }
+
+        return ensureDirectory(
+            chooseDocumentDirectoryPath({
+                storedPath: storedDir,
+                platformPath: platformDir,
+                localDocumentsPath: localDocumentsDir,
+                populatedPaths,
+            }),
+        );
     } catch {
-        return ensureDirectory(await resolve(await homeDir(), "EnCroissant"));
+        return ensureDirectory(await resolve(await homeDir(), "Documents", "EnCroissant"));
     }
 }
 

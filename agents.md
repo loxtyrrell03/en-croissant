@@ -1,5 +1,19 @@
 # AGENTS.md
 
+- On 2026-07-20, the remaining intermittent white startup was traced to the
+  lazy locale initialization being awaited without a deadline before React
+  rendered anything. Startup now paints a dark progress surface immediately
+  and caps the locale wait at two seconds; a slow or failed translation chunk
+  can no longer strand the Tauri window on a permanent white page.
+
+- On 2026-07-20, the genuinely empty Files page was traced to Windows Documents
+  redirection rather than missing or archived data: Tauri resolved Documents to
+  the empty `C:\Users\loxty\OneDrive\Documents\EnCroissant`, while the real
+  5,296-PGN library remained at `C:\Users\loxty\Documents\EnCroissant`.
+  Directory resolution now detects an empty redirected default (including a
+  cached copy of that default) and selects the populated local Documents
+  library, while continuing to preserve explicit custom directories.
+
 - On 2026-07-20, Files visibility recovery was completed after the same parity
   smoke test that redirected the libraries was found to have archived the real
   `Ifan prep` and `Oxford FIDE Congress U2300 player games` folders in the

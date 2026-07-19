@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  chooseDocumentDirectoryPath,
   isEphemeralDirectoryOverride,
   readStoredDirectoryOverride,
   recoverParityTestArchivedFileEntries,
@@ -59,5 +60,32 @@ describe("directory overrides", () => {
     expect(recoverParityTestArchivedFileEntries(storage)).toEqual([legitimate]);
     expect(JSON.parse(storage.value("archived-file-entries") ?? "[]")).toEqual([legitimate]);
     expect(storage.value("parity-file-visibility-recovery-v1")).toBe("done");
+  });
+
+  it("uses a populated local library instead of an empty OneDrive default", () => {
+    const platformPath = "C:\\Users\\loxty\\OneDrive\\Documents\\EnCroissant";
+    const localPath = "C:\\Users\\loxty\\Documents\\EnCroissant";
+
+    expect(
+      chooseDocumentDirectoryPath({
+        storedPath: platformPath,
+        platformPath,
+        localDocumentsPath: localPath,
+        populatedPaths: new Set([localPath.replaceAll("\\", "/").toLowerCase()]),
+      }),
+    ).toBe(localPath);
+  });
+
+  it("preserves an explicit populated custom library", () => {
+    const customPath = "D:\\Chess\\Files";
+
+    expect(
+      chooseDocumentDirectoryPath({
+        storedPath: customPath,
+        platformPath: "C:\\Users\\loxty\\OneDrive\\Documents\\EnCroissant",
+        localDocumentsPath: "C:\\Users\\loxty\\Documents\\EnCroissant",
+        populatedPaths: new Set(),
+      }),
+    ).toBe(customPath);
   });
 });

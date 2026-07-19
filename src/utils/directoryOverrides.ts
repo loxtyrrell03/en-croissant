@@ -63,3 +63,30 @@ export function recoverParityTestArchivedFileEntries(
     return null;
   }
 }
+
+export function chooseDocumentDirectoryPath({
+  storedPath,
+  platformPath,
+  localDocumentsPath,
+  populatedPaths,
+}: {
+  storedPath: string | null;
+  platformPath: string;
+  localDocumentsPath: string;
+  populatedPaths: ReadonlySet<string>;
+}): string {
+  const normalize = (path: string) => path.replaceAll("\\", "/").toLowerCase().replace(/\/$/, "");
+  const stored = storedPath ? normalize(storedPath) : null;
+  const platform = normalize(platformPath);
+  const local = normalize(localDocumentsPath);
+
+  // Windows may redirect its Documents API to OneDrive while an existing En
+  // Croissant library remains under the local user profile. A previously
+  // cached empty redirected default must not conceal that populated library.
+  if (storedPath && !(stored === platform && !populatedPaths.has(platform) && populatedPaths.has(local))) {
+    return storedPath;
+  }
+  if (populatedPaths.has(platform)) return platformPath;
+  if (populatedPaths.has(local)) return localDocumentsPath;
+  return platformPath;
+}
