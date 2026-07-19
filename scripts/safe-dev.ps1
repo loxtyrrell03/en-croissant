@@ -2,6 +2,7 @@ param(
   [switch]$SkipBackup,
   [switch]$FullBackup,
   [switch]$AllowLargeFullBackup,
+  [switch]$LocalOnly,
   [switch]$CleanupBackupsOnly,
   [switch]$CleanupAgentScratchOnly,
   [int]$MaxBackups = 3,
@@ -321,6 +322,17 @@ if (-not $SkipBackup) {
 Set-Location $repoRoot
 Stop-RepoViteProcesses "Stopping stale"
 Assert-DevPortAvailable
+
+if (-not $LocalOnly) {
+  . (Join-Path $PSScriptRoot "remote-compute.ps1")
+  if (Test-EnCroissantRemoteComputeAvailable) {
+    Write-Host "Gaming PC detected. Handing native build and Stockfish work to $script:EnCroissantRemoteHost."
+    Release-DevSessionMutex
+    & (Join-Path $PSScriptRoot "launch-fork.ps1")
+    exit $LASTEXITCODE
+  }
+  Write-Host "Gaming PC is unavailable. Continuing with local compute."
+}
 
 $devExitCode = 0
 try {

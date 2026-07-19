@@ -2,8 +2,14 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $srcTauri = Join-Path $repoRoot "src-tauri"
-$debugExe = Join-Path $srcTauri "target\debug\en-croissant-fork.exe"
+$remoteComputeScript = Join-Path $PSScriptRoot "remote-compute.ps1"
+. $remoteComputeScript
+$cargoTargetDir = Get-EnCroissantCargoTargetDirectory -RepoRoot $repoRoot
+$debugExe = Join-Path $cargoTargetDir "debug\en-croissant-fork.exe"
 $logDir = Join-Path $PSScriptRoot "logs"
+$remoteBuildLog = Join-Path $logDir "remote-compute.log"
+$sharedData = Join-Path $env:APPDATA "org.encroissant.app"
+$pendingRemoteExe = Join-Path $env:LOCALAPPDATA "EnCroissantRemoteCompute\pending\en-croissant-fork.exe"
 $port = 1420
 $launchMutexName = "Local\EnCroissantForkLaunch"
 $devSessionMutexName = "Local\EnCroissantForkDevSession"
@@ -251,16 +257,19 @@ function Start-DevServer {
 }
 
 function Start-SafeDevFallback {
-  $pnpm = Get-PnpmCommand
-  Write-LaunchLog "Debug binary is missing or stale; falling back to pnpm dev:safe."
-  Start-Process -FilePath "cmd.exe" `
+  Write-LaunchLog "Gaming PC build is unavailable; falling back to the local safe dev launcher."
+  $safeDevScript = Join-Path $PSScriptRoot "safe-dev.ps1"
+  Start-Process -FilePath "powershell.exe" `
     -WorkingDirectory $repoRoot `
     -WindowStyle Normal `
     -ArgumentList @(
-      "/d",
-      "/s",
-      "/c",
-      "`"$pnpm`" dev:safe"
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-File",
+      "`"$safeDevScript`"",
+      "-SkipBackup",
+      "-LocalOnly"
     )
 }
 
@@ -273,8 +282,8 @@ function Format-ExitCode {
 function Remove-DebugBinary {
   $debugFiles = @(
     $debugExe,
-    (Join-Path $srcTauri "target\debug\en-croissant-fork.d"),
-    (Join-Path $srcTauri "target\debug\en_croissant_fork.pdb")
+    (Join-Path $cargoTargetDir "debug\en-croissant-fork.d"),
+    (Join-Path $cargoTargetDir "debug\en_croissant_fork.pdb")
   )
 
   foreach ($path in $debugFiles) {
@@ -283,6 +292,17 @@ function Remove-DebugBinary {
       Write-LaunchLog "Removed stale debug artifact $path."
     }
   }
+}
+
+function Install-PendingRemoteBuild {
+  if (-not (Test-Path -LiteralPath $pendingRemoteExe -PathType Leaf)) {
+    return
+  }
+
+  $debugDir = Split-Path -Parent $debugExe
+  New-Item -ItemType Directory -Force -Path $debugDir | Out-Null
+  Move-Item -LiteralPath $pendingRemoteExe -Destination $debugExe -Force
+  Write-LaunchLog "Installed the verified pending gaming-PC build at $debugExe."
 }
 
 function Start-ForkBinary {
@@ -332,7 +352,36 @@ try {
     exit 0
   }
 
+  Install-PendingRemoteBuild
   Ensure-FrontendDependencies
+
+  $remoteAvailable = Test-EnCroissantRemoteComputeAvailable
+  if ($remoteAvailable) {
+    try {
+      Enable-EnCroissantRemoteEngineCompute -SharedDataRoot $sharedData -LogPath $remoteBuildLog | Out-Null
+    }
+    catch {
+      Write-LaunchLog "Remote Stockfish setup failed; engine work will stay local: $($_.Exception.Message)"
+      Remove-Item Env:EN_CROISSANT_REMOTE_COMPUTE_HOST -ErrorAction SilentlyContinue
+      Remove-Item Env:EN_CROISSANT_REMOTE_ENGINE_PATH -ErrorAction SilentlyContinue
+    }
+  }
+
+  if (-not (Test-DebugBinaryFresh) -and $remoteAvailable) {
+    try {
+      Write-LaunchLog "Native sources changed; building on gaming PC through $script:EnCroissantRemoteHost."
+      $remoteBuilt = Invoke-EnCroissantRemoteNativeBuild `
+        -RepoRoot $repoRoot `
+        -DestinationExe $debugExe `
+        -LogPath $remoteBuildLog
+      if ($remoteBuilt) {
+        Write-LaunchLog "Gaming PC build copied to $debugExe."
+      }
+    }
+    catch {
+      Write-LaunchLog "Gaming PC build failed; local fallback will be used: $($_.Exception.Message)"
+    }
+  }
 
   if (Test-DebugBinaryFresh) {
     $devSessionMutex = New-Object System.Threading.Mutex($false, $devSessionMutexName)

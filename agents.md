@@ -1,5 +1,14 @@
 # AGENTS.md
 
+- On 2026-07-19, the En Croissant launcher gained automatic gaming-PC compute
+  through the existing `gaming-pc-compute` SSH alias. When the host is
+  reachable, launch-time Rust builds run in an isolated remote worker tree and
+  copy only the finished Windows executable back into the laptop's shared
+  Cargo target; the local Vite server, app window, settings, and database files
+  stay on the laptop. The launcher also provisions Stockfish once and routes
+  Stockfish UCI sessions over SSH, covering live analysis, game analysis,
+  coach engine requests, and engine play. An unreachable host, failed remote
+  build, or failed engine provisioning falls back to the existing local paths.
 - On 2026-07-19, the desktop Files and database libraries recovered from leaked
   local parity-harness overrides that pointed their directory settings at an
   isolated Temp tree and made the intact real libraries appear missing.

@@ -1,6 +1,11 @@
-use std::{fmt::Display, path::PathBuf, process::Stdio};
+use std::{
+    env,
+    fmt::Display,
+    path::{Path, PathBuf},
+    process::Stdio,
+};
 
-use log::error;
+use log::{error, info};
 use serde::Serialize;
 use specta::Type;
 use tokio::{
@@ -21,6 +26,42 @@ pub const BELOW_NORMAL_PRIORITY_CLASS: u32 = 0x00004000;
 
 const ENGINE_STARTUP_TIMEOUT: Duration = Duration::from_secs(15);
 const MAX_ENGINE_LOGS: usize = 1000;
+const REMOTE_COMPUTE_HOST_ENV: &str = "EN_CROISSANT_REMOTE_COMPUTE_HOST";
+const REMOTE_ENGINE_PATH_ENV: &str = "EN_CROISSANT_REMOTE_ENGINE_PATH";
+
+fn is_stockfish_executable(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.to_ascii_lowercase().starts_with("stockfish"))
+}
+
+fn is_safe_ssh_host(value: &str) -> bool {
+    !value.is_empty()
+        && value
+            .chars()
+            .all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '-' | '_' | '.' | '@'))
+}
+
+fn is_safe_remote_engine_path(value: &str) -> bool {
+    !value.is_empty()
+        && value.chars().all(|ch| {
+            ch.is_ascii_alphanumeric() || matches!(ch, '-' | '_' | '.' | ':' | '/' | '\\')
+        })
+}
+
+fn remote_stockfish_target(path: &Path) -> Option<(String, String)> {
+    if !is_stockfish_executable(path) {
+        return None;
+    }
+
+    let host = env::var(REMOTE_COMPUTE_HOST_ENV).ok()?;
+    let remote_path = env::var(REMOTE_ENGINE_PATH_ENV).ok()?;
+    if !is_safe_ssh_host(&host) || !is_safe_remote_engine_path(&remote_path) {
+        return None;
+    }
+
+    Some((host, remote_path))
+}
 
 #[derive(Debug, Clone, Serialize, Type)]
 #[serde(tag = "type", content = "value", rename_all = "camelCase")]
@@ -41,7 +82,23 @@ pub struct BaseEngine {
 
 impl BaseEngine {
     pub async fn spawn(path: PathBuf) -> Result<Self, Error> {
-        let mut command = Command::new(&path);
+        let mut command = if let Some((host, remote_path)) = remote_stockfish_target(&path) {
+            info!("Offloading Stockfish engine work to SSH host {host}");
+            let mut remote = Command::new("ssh.exe");
+            // This SSH session intentionally keeps stdin open: it is the UCI
+            // transport between En Croissant and Stockfish on the gaming PC.
+            remote
+                .arg("-T")
+                .arg("-o")
+                .arg("BatchMode=yes")
+                .arg("-o")
+                .arg("ConnectTimeout=4")
+                .arg(host)
+                .arg(remote_path);
+            remote
+        } else {
+            Command::new(&path)
+        };
         command.current_dir(path.parent().unwrap_or(&path));
         command
             .stdin(Stdio::piped())
@@ -189,5 +246,29 @@ impl BaseEngine {
 impl Drop for BaseEngine {
     fn drop(&mut self) {
         let _ = self.child.start_kill();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{is_safe_remote_engine_path, is_safe_ssh_host, is_stockfish_executable};
+    use std::path::Path;
+
+    #[test]
+    fn remote_compute_only_substitutes_stockfish() {
+        assert!(is_stockfish_executable(Path::new(
+            r"C:\engines\stockfish-windows-x86-64-avx2.exe"
+        )));
+        assert!(!is_stockfish_executable(Path::new(r"C:\engines\lc0.exe")));
+    }
+
+    #[test]
+    fn remote_compute_rejects_shell_metacharacters() {
+        assert!(is_safe_ssh_host("gaming-pc-compute"));
+        assert!(!is_safe_ssh_host("gaming-pc-compute & whoami"));
+        assert!(is_safe_remote_engine_path(
+            "C:/Users/loxty/AppData/Local/EnCroissantRemoteCompute/stockfish.exe"
+        ));
+        assert!(!is_safe_remote_engine_path("stockfish.exe & whoami"));
     }
 }
