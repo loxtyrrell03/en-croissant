@@ -1,5 +1,12 @@
 # AGENTS.md
 
+- On 2026-07-20, Files visibility recovery was completed after the same parity
+  smoke test that redirected the libraries was found to have archived the real
+  `Ifan prep` and `Oxford FIDE Congress U2300 player games` folders in the
+  production WebView profile. A one-time migration now restores only those two
+  known test-toggled entries while preserving every other user archive choice;
+  all 5,296 PGNs and their metadata remained intact on disk.
+
 - On 2026-07-20, the live fork launcher stopped opening a permanently white
   Tauri window during a cold Vite start. Listening on port 1420 is no longer
   considered sufficient readiness: `scripts/launch-fork.ps1` now fetches and

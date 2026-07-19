@@ -38,6 +38,7 @@ import type { OpeningMoveHealthSidePreference } from "@/utils/openingMoveHealth"
 import type { OnlineGameSource } from "@/utils/onlineGameSource";
 import type { PrepBuilderSettings } from "@/utils/opponentPrep";
 import { DEFAULT_BOARD_STYLE, type BoardStyle } from "@/utils/boardStyle";
+import { recoverParityTestArchivedFileEntries } from "@/utils/directoryOverrides";
 import type { ColoredPlanExplorerLine } from "@/utils/planExplorer";
 import {
     type LichessGamesOptions,
@@ -61,6 +62,11 @@ const zodArray = <Input, Output>(itemSchema: z.ZodType<Output, z.ZodTypeDef, Inp
 
     return res as z.ZodType<Output[], z.ZodTypeDef, Input[]>;
 };
+
+// A localhost parity run accidentally archived two real Files folders in the
+// production WebView profile. Restore only those known entries once, while
+// preserving every archive choice the user made elsewhere.
+recoverParityTestArchivedFileEntries();
 
 // Tabs
 
