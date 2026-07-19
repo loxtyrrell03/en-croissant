@@ -176,7 +176,7 @@ function postStockfish(command: string) {
     worker?.postMessage(command);
 }
 
-function parseStockfishInfoLine(line: string, fen: string): WebEngineLine | null {
+export function parseStockfishInfoLine(line: string, fen: string): WebEngineLine | null {
     if (!line.startsWith("info ")) return null;
 
     const [position] = positionFromFen(fen);
@@ -240,7 +240,7 @@ function makeSanLineFromUci(fen: string, uciMoves: string[]) {
     return sans;
 }
 
-function sortEngineLines(linesByPv: Map<number, WebEngineLine>) {
+export function sortEngineLines(linesByPv: Map<number, WebEngineLine>) {
     return Array.from(linesByPv.values()).sort((a, b) => a.multipv - b.multipv);
 }
 

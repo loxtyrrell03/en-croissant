@@ -1,0 +1,7 @@
+# The Tailscale TCP endpoint is direct over the local Wi-Fi when both machines
+# are at home, and remains private/reachable over the tailnet elsewhere.
+Endpoint=gaming-pc.tail89d19b.ts.net:38418
+ConnectTimeoutMs=1500
+
+# Used automatically when the Gaming PC is off or unreachable.
+FallbackEngine=C:\Users\loxty\AppData\Roaming\org.encroissant.app\engines\stockfish\stockfish-windows-x86-64-avx2.exe

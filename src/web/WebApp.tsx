@@ -227,6 +227,7 @@ import {
 import { getWebBoardSourceTitle } from "./boardTitle";
 import { formatWebEngineScore } from "./engineScore";
 import { analyzeWithWebStockfish18, stopWebStockfish18Search } from "./stockfishEngine";
+import { analyzeWithRemoteStockfish18 } from "./remoteStockfishEngine";
 
 type ViewMode = "board" | "files";
 type BoardPanelMode = "moves" | "database" | "prep" | "engine";
@@ -356,14 +357,14 @@ const WEB_ENGINE_ARROW_COLORS = [
 
 type WebEnginePanelSettings = {
   enabled: boolean;
-  useCloud: boolean;
+  useRemote: boolean;
   multipv: number;
   depth: number;
 };
 
 const DEFAULT_WEB_ENGINE_PANEL_SETTINGS: WebEnginePanelSettings = {
   enabled: false,
-  useCloud: false,
+  useRemote: true,
   multipv: 3,
   depth: 14,
 };
@@ -2683,6 +2684,7 @@ function EngineUnderBoardPanel({
   );
   const [stockfishLines, setStockfishLines] = useState<WebEngineLine[]>([]);
   const [status, setStatus] = useState<WebEnginePanelStatus>("idle");
+  const [backend, setBackend] = useState<"idle" | "checking" | "pc" | "phone">("idle");
   const [error, setError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -2694,6 +2696,7 @@ function EngineUnderBoardPanel({
     if (!settings.enabled) {
       stopWebStockfish18Search();
       setStatus("idle");
+      setBackend("idle");
       setError(null);
       setStockfishLines([]);
       return;
@@ -2702,20 +2705,45 @@ function EngineUnderBoardPanel({
     const controller = new AbortController();
     let active = true;
     setStatus("running");
+    setBackend(settings.useRemote ? "checking" : "phone");
     setError(null);
     setStockfishLines([]);
 
-    void analyzeWithWebStockfish18({
-      fen: currentFen,
-      multipv: settings.multipv,
-      depth: settings.depth,
-      signal: controller.signal,
-      onUpdate: (lines) => {
-        if (!active) return;
-        setStockfishLines(lines);
-        setStatus("running");
-      },
-    })
+    const updateLines = (lines: WebEngineLine[], source: "pc" | "phone") => {
+      if (!active) return;
+      setBackend(source);
+      setStockfishLines(lines);
+      setStatus("running");
+    };
+    const analyze = async () => {
+      if (settings.useRemote) {
+        try {
+          const lines = await analyzeWithRemoteStockfish18({
+            fen: currentFen,
+            multipv: settings.multipv,
+            depth: settings.depth,
+            signal: controller.signal,
+            onUpdate: (lines) => updateLines(lines, "pc"),
+          });
+          if (active) setBackend("pc");
+          return lines;
+        } catch (remoteError) {
+          if (isAbortError(remoteError)) throw remoteError;
+          console.warn("Gaming PC Stockfish is unavailable; using phone Stockfish.", remoteError);
+        }
+      }
+
+      if (active) setBackend("phone");
+      return await analyzeWithWebStockfish18({
+        fen: currentFen,
+        multipv: settings.multipv,
+        depth: settings.depth,
+        signal: controller.signal,
+        onUpdate: (lines) => updateLines(lines, "phone"),
+      });
+    };
+
+    void analyze()
       .then((lines) => {
         if (!active) return;
         setStockfishLines(lines);
@@ -2732,7 +2760,7 @@ function EngineUnderBoardPanel({
       active = false;
       controller.abort();
     };
-  }, [currentFen, settings.depth, settings.enabled, settings.multipv]);
+  }, [currentFen, settings.depth, settings.enabled, settings.multipv, settings.useRemote]);
 
   const displayLines = stockfishLines;
   useEffect(() => {
@@ -2773,7 +2801,7 @@ function EngineUnderBoardPanel({
         <Box className={classes.enginePanelTitleArea}>
           <Group gap={6} wrap="nowrap" miw={0}>
             <Text fw={700} size="sm" truncate>
-              Stockfish 18
+              Stockfish 18{backend === "pc" ? " · PC" : backend === "phone" ? " · Phone" : ""}
             </Text>
             {headerStatus ? (
               <Code className={classes.enginePanelCode} c={engineStatusTextColor(status)}>
@@ -2952,7 +2980,11 @@ function EngineLineTable({
                   </button>
                   <Group gap={5} wrap="nowrap" className={classes.engineAnalysisMeta}>
                     <Code className={classes.enginePanelCode}>
-                      {line.source === "lichess-cloud" ? "Lichess" : "Stockfish"}
+                      {line.source === "lichess-cloud"
+                        ? "Lichess"
+                        : line.source === "stockfish-remote"
+                          ? "Gaming PC"
+                          : "Phone"}
                     </Code>
                     <Text size="xs" c="dimmed">
                       d{line.depth || "?"}
@@ -7620,7 +7652,7 @@ function normalizeWebEnginePanelSettings(
 ): WebEnginePanelSettings {
   return {
     enabled: Boolean(value?.enabled),
-    useCloud: value?.useCloud !== false,
+    useRemote: value?.useRemote !== false,
     multipv: clampWholeNumber(value?.multipv, 1, 8, DEFAULT_WEB_ENGINE_PANEL_SETTINGS.multipv),
     depth: clampWholeNumber(value?.depth, 6, 30, DEFAULT_WEB_ENGINE_PANEL_SETTINGS.depth),
   };

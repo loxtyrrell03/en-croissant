@@ -715,6 +715,19 @@ default.
   status chip, defaults cloud lookup off for stored settings normalization, and
   treats an enabled engine as `Stockfish`/running immediately instead of
   showing a `Loading` or warm-up state before the first line arrives.
+- On 2026-07-19, the phone/web Engine panel became Gaming-PC-first. It streams
+  Stockfish 18 analysis from the private Tailscale HTTPS endpoint at
+  `gaming-pc.tail89d19b.ts.net:8443`, labels remote lines as `Gaming PC`, and
+  falls back automatically to the bundled phone/WASM Stockfish when the PC is
+  asleep, offline, or not reachable within a short connection timeout. The
+  matching backend and generic UCI client live in
+  `scripts/stockfish-remote-server.mjs`, `scripts/stockfish-remote-client.rs`,
+  and `scripts/install-stockfish-remote-server.ps1`. Keep the HTTPS and raw UCI
+  listeners bound to localhost and expose them with tailnet-only Tailscale
+  Serve routes; do not move the compute endpoint onto the existing public
+  Funnel. The installed PC profile uses the official Stockfish 18 BMI2 build,
+  16 threads, and 2048 MiB hash. The laptop En Croissant engine points at the
+  UCI client and retains its local Stockfish executable as an offline fallback.
 - Anywhere phone file access should use a hosted static library rather than a
   laptop-dependent bridge. `scripts/build-web-library.mjs` mirrors PGN/PDF files
   from `Documents/EnCroissant` or `EN_CROISSANT_WEB_FILES_DIR` into ignored

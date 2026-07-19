@@ -146,7 +146,7 @@ export type WebEngineScore =
           value: number;
       };
 
-export type WebEngineLineSource = "stockfish" | "lichess-cloud";
+export type WebEngineLineSource = "stockfish" | "stockfish-remote" | "lichess-cloud";
 
 export type WebEngineLine = {
     source: WebEngineLineSource;
