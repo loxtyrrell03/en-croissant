@@ -1152,6 +1152,9 @@ Engine` selector on the phone workspace, and the active panel content starts
   raised to 70. The ceiling is now directly editable as a number, and an
   `Infinite depth` mode sends `go infinite` to both the phone WASM engine and
   the Gaming PC backend until the user pauses analysis or changes position.
+  Infinite mode still shows a saved local cloud evaluation immediately when
+  one exists, then replaces it with live Stockfish lines as the endless search
+  begins producing output.
 - On 2026-06-11, the agent workflow was tightened so future phone web
   companion code, asset, layout, PWA, hosted-library, or publish-script changes
   must be followed by `npm run web:publish` after local verification and the

@@ -2729,7 +2729,7 @@ function EngineUnderBoardPanel({
     setError(null);
     setStockfishLines([]);
 
-    const updateLines = (lines: WebEngineLine[], source: "pc" | "phone") => {
+    const updateLines = (lines: WebEngineLine[], source: "cloud" | "pc" | "phone") => {
       if (!active) return;
       setBackend(source);
       setStockfishLines(lines);
@@ -2738,16 +2738,14 @@ function EngineUnderBoardPanel({
     const analyze = async () => {
       if (settings.useRemote) {
         try {
-          if (!settings.infinite) {
-            const storedLines = await queryRemoteStoredCloudLines({
-              fen: currentFen,
-              multipv: settings.multipv,
-              signal: controller.signal,
-            });
-            if (storedLines.length > 0) {
-              if (active) setBackend("cloud");
-              return storedLines;
-            }
+          const storedLines = await queryRemoteStoredCloudLines({
+            fen: currentFen,
+            multipv: settings.multipv,
+            signal: controller.signal,
+          });
+          if (storedLines.length > 0) {
+            if (!settings.infinite) return storedLines;
+            updateLines(storedLines, "cloud");
           }
         } catch (cloudError) {
           if (isAbortError(cloudError)) throw cloudError;
