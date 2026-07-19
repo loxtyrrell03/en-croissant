@@ -110,13 +110,7 @@ Invoke-Logged "git" @("-C", $resolvedPages, "pull", "--ff-only", "origin", "main
 $dist = Resolve-Path -LiteralPath (Join-Path $repoRoot "dist")
 Write-Log "mirroring $dist -> $resolvedPages"
 
-Get-ChildItem -LiteralPath $resolvedPages -Force |
-  Where-Object { $_.Name -ne ".git" } |
-  ForEach-Object {
-    Remove-Item -LiteralPath $_.FullName -Recurse -Force
-  }
-
-$null = & robocopy $dist $resolvedPages /E /R:3 /W:1 /NFL /NDL /NJH /NJS /NP
+$null = & robocopy $dist $resolvedPages /MIR /XD (Join-Path $resolvedPages ".git") /R:3 /W:1 /NFL /NDL /NJH /NJS /NP
 $copyExitCode = $LASTEXITCODE
 if ($copyExitCode -ge 8) {
   throw "robocopy failed with code $copyExitCode"
