@@ -1,5 +1,15 @@
 # AGENTS.md
 
+- On 2026-07-20, the shared Stockfish 18 service was restored for the laptop
+  and phone. The UCI listener now binds directly to the gaming PC's private
+  Tailscale address because the former TCP Serve hop accepted and immediately
+  closed raw UCI connections; the laptop uses a repaired remote-client relay
+  under its existing engine ID and retains its local Stockfish fallback. The
+  phone engine is remote-first through the private HTTPS analysis endpoint and
+  falls back to its bundled WASM engine when the PC is unavailable. A recurring
+  `Stockfish18RemoteWatchdog` task checks the backend every two minutes and
+  restarts it after a failure.
+
 - On 2026-07-20, the remaining intermittent white startup was traced to the
   lazy locale initialization being awaited without a deadline before React
   rendered anything. Startup now paints a dark progress surface immediately

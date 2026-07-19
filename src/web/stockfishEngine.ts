@@ -10,12 +10,18 @@ import { normalizeWebEngineScoreForWhite } from "./engineScore";
 const STOCKFISH_READY_TIMEOUT_MS = 20_000;
 const STOCKFISH_SEARCH_TIMEOUT_MS = 90_000;
 const STOCKFISH_MIN_UPDATE_INTERVAL_MS = 120;
+const configuredRemoteStockfishUrl = String(
+    import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ??
+        "https://gaming-pc.tail89d19b.ts.net:8443",
+).trim();
+const REMOTE_STOCKFISH_URL = configuredRemoteStockfishUrl.replace(/\/+$/, "");
 
 type StockfishLineListener = (line: string) => void;
 
 let worker: Worker | null = null;
 let readyPromise: Promise<void> | null = null;
 let activeSearchId = 0;
+let activeRemoteController: AbortController | null = null;
 const listeners = new Set<StockfishLineListener>();
 
 export type WebStockfishAnalyzeRequest = {
@@ -27,6 +33,118 @@ export type WebStockfishAnalyzeRequest = {
 };
 
 export async function analyzeWithWebStockfish18({
+    fen,
+    multipv,
+    depth,
+    signal,
+    onUpdate,
+}: WebStockfishAnalyzeRequest): Promise<WebEngineLine[]> {
+    if (REMOTE_STOCKFISH_URL) {
+        try {
+            return await analyzeWithRemoteStockfish18({
+                fen,
+                multipv,
+                depth,
+                signal,
+                onUpdate,
+            });
+        } catch (error) {
+            if (isAbortError(error)) throw error;
+            console.warn("Gaming PC Stockfish unavailable; using the phone engine.", error);
+        }
+    }
+
+    return analyzeWithLocalStockfish18({ fen, multipv, depth, signal, onUpdate });
+}
+
+async function analyzeWithRemoteStockfish18({
+    fen,
+    multipv,
+    depth,
+    signal,
+    onUpdate,
+}: WebStockfishAnalyzeRequest): Promise<WebEngineLine[]> {
+    const searchId = ++activeSearchId;
+    const requestedMultipv = Math.max(1, Math.min(8, Math.round(multipv)));
+    const requestedDepth = Math.max(1, Math.min(30, Math.round(depth)));
+    const linesByPv = new Map<number, WebEngineLine>();
+    const controller = new AbortController();
+    activeRemoteController?.abort();
+    activeRemoteController = controller;
+    const onAbort = () => controller.abort();
+    signal?.addEventListener("abort", onAbort, { once: true });
+    let lastUpdateAt = 0;
+
+    const publish = (force = false) => {
+        if (!onUpdate || activeSearchId !== searchId) return;
+        const now = Date.now();
+        if (!force && now - lastUpdateAt < STOCKFISH_MIN_UPDATE_INTERVAL_MS) return;
+        lastUpdateAt = now;
+        onUpdate(sortEngineLines(linesByPv));
+    };
+
+    try {
+        throwIfAborted(signal);
+        const response = await fetch(`${REMOTE_STOCKFISH_URL}/v1/analyze`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ fen, multipv: requestedMultipv, depth: requestedDepth }),
+            signal: controller.signal,
+        });
+        if (!response.ok) {
+            throw new Error(`Gaming PC Stockfish returned HTTP ${response.status}.`);
+        }
+        if (!response.body) throw new Error("Gaming PC Stockfish returned an empty response.");
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let remoteError: Error | null = null;
+
+        const consumeLine = (rawLine: string) => {
+            const line = rawLine.trim();
+            if (!line) return;
+            const message = JSON.parse(line) as {
+                type?: string;
+                line?: string;
+                message?: string;
+            };
+            if (message.type === "error") {
+                remoteError = new Error(message.message || "Gaming PC Stockfish failed.");
+                return;
+            }
+            if (message.type !== "uci" || !message.line) return;
+            const parsed = parseStockfishInfoLine(message.line, fen);
+            if (!parsed || parsed.multipv > requestedMultipv) return;
+            linesByPv.set(parsed.multipv, parsed);
+            publish();
+        };
+
+        while (true) {
+            const { value, done } = await reader.read();
+            buffer += decoder.decode(value, { stream: !done });
+            const lines = buffer.split(/\r?\n/);
+            buffer = done ? "" : (lines.pop() ?? "");
+            for (const line of lines) consumeLine(line);
+            if (done) {
+                if (buffer.trim()) consumeLine(buffer);
+                break;
+            }
+        }
+
+        if (remoteError) throw remoteError;
+        if (linesByPv.size === 0) {
+            throw new Error("Gaming PC Stockfish returned no analysis lines.");
+        }
+        publish(true);
+        return sortEngineLines(linesByPv);
+    } finally {
+        signal?.removeEventListener("abort", onAbort);
+        if (activeRemoteController === controller) activeRemoteController = null;
+    }
+}
+
+async function analyzeWithLocalStockfish18({
     fen,
     multipv,
     depth,
@@ -114,6 +232,8 @@ export async function analyzeWithWebStockfish18({
 
 export function stopWebStockfish18Search() {
     activeSearchId += 1;
+    activeRemoteController?.abort();
+    activeRemoteController = null;
     postStockfish("stop");
 }
 
@@ -248,4 +368,11 @@ function throwIfAborted(signal?: AbortSignal) {
     if (signal?.aborted) {
         throw new DOMException("Stockfish analysis was cancelled.", "AbortError");
     }
+}
+
+function isAbortError(error: unknown) {
+    return (
+        (error instanceof DOMException && error.name === "AbortError") ||
+        (error instanceof Error && error.name === "AbortError")
+    );
 }
