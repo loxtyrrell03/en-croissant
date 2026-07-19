@@ -348,12 +348,7 @@ const WEB_ENGINE_ARROW_LARGE_BRUSH = 11;
 const WEB_ENGINE_ARROW_MEDIUM_BRUSH = 7.5;
 const WEB_ENGINE_ARROW_SMALL_BRUSH = 4;
 const WEB_ENGINE_ARROW_WIN_CHANCE_LIMIT = 10;
-const WEB_ENGINE_ARROW_COLORS = [
-  { strong: "blue", pale: "paleBlue" },
-  { strong: "green", pale: "paleGreen" },
-  { strong: "red", pale: "paleRed" },
-  { strong: "yellow", pale: "yellow" },
-] as const;
+const WEB_ENGINE_ARROW_COLOR = { strong: "blue", pale: "paleBlue" } as const;
 
 type WebEnginePanelSettings = {
   enabled: boolean;
@@ -7227,13 +7222,10 @@ function getWebEngineArrowShapes(lines: WebEngineLine[], fen: string): DrawShape
       continue;
     }
 
-    const color = WEB_ENGINE_ARROW_COLORS[Math.min(index, WEB_ENGINE_ARROW_COLORS.length - 1)];
     shapes.push({
       orig: from as Key,
       dest: to as Key,
-      // Only the first move of each multipv line is drawn, so each line uses
-      // its own strong brush (matches the desktop arrowColors mapping).
-      brush: color.strong,
+      brush: index === 0 ? WEB_ENGINE_ARROW_COLOR.strong : WEB_ENGINE_ARROW_COLOR.pale,
       modifiers: {
         lineWidth: getWebEngineArrowLineWidth(winChanceDrop),
       },

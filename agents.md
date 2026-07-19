@@ -728,6 +728,11 @@ default.
   Funnel. The installed PC profile uses the official Stockfish 18 BMI2 build,
   16 threads, and 2048 MiB hash. The laptop En Croissant engine points at the
   UCI client and retains its local Stockfish executable as an offline fallback.
+- On 2026-07-19, phone engine arrows were realigned with the single-engine
+  desktop fork treatment: the best MultiPV move uses strong blue and every
+  alternative uses pale blue, while arrow width continues to communicate the
+  win-chance gap. Do not assign green/red/yellow by MultiPV strength; those
+  desktop colors distinguish separate engines, not lines from one engine.
 - Anywhere phone file access should use a hosted static library rather than a
   laptop-dependent bridge. `scripts/build-web-library.mjs` mirrors PGN/PDF files
   from `Documents/EnCroissant` or `EN_CROISSANT_WEB_FILES_DIR` into ignored
@@ -1178,8 +1183,8 @@ Engine` selector on the phone workspace, and the active panel content starts
   `board.sourceGameId` alongside `sourceDatabaseId`; local position stats
   count each game at most once per (position, move) so annotated PGNs and
   repetitions no longer inflate W/D/L; custom-FEN games keep their start
-  position on the file board; engine pause clears stale eval/depth; engine
-  multipv arrows use per-line colors; lazy hosted sources ignore a remembered
+  position on the file board; engine pause clears stale eval/depth; lazy hosted
+  sources ignore a remembered
   player name when computing perspective; the opponent autofill only fires
   once per source so the field can be cleared; plus smaller fixes (media-query
   first-render flash, `state:asc` blank sort select, stale range-import
