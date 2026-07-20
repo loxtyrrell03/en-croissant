@@ -1,5 +1,10 @@
 # AGENTS.md
 
+- On 2026-07-20, the phone online-game importer moved out of the under-board
+  tool row and into the sticky top navigation beside `Board` and `Files`. Its
+  clearer `Import Online` label opens the existing Chess.com/Lichess game
+  picker, while the under-board row is reserved for board analysis tools.
+
 - On 2026-07-20, Lichess authentication became one-time and shared across the
   PC-hosted phone app, the GitHub Pages fallback, En Croissant, and Outpost.
   Moving the phone site between origins had exposed the old design flaw: its

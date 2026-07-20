@@ -435,6 +435,7 @@ export default function WebApp() {
   const [state, setState] = useState<WebCompanionState>(() => createEmptyWebState());
   const [loaded, setLoaded] = useState(false);
   const [view, setView] = useState<ViewMode>("board");
+  const [boardPanelMode, setBoardPanelMode] = useState<BoardPanelMode>("moves");
   const [importing, setImporting] = useState(false);
   const [selectedDatabaseId, setSelectedDatabaseId] = useState<string | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
@@ -1004,11 +1005,22 @@ export default function WebApp() {
             <Group className={classes.headerActions} justify="flex-end" gap="xs" wrap="nowrap">
               <SegmentedControl
                 size="xs"
-                value={view}
-                onChange={(value) => setView(value as ViewMode)}
+                value={
+                  view === "files" ? "files" : boardPanelMode === "online" ? "online" : "board"
+                }
+                onChange={(value) => {
+                  if (value === "files") {
+                    setView("files");
+                    return;
+                  }
+
+                  setView("board");
+                  setBoardPanelMode(value === "online" ? "online" : "moves");
+                }}
                 data={[
                   { value: "board", label: "Board" },
                   { value: "files", label: "Files" },
+                  { value: "online", label: "Import Online" },
                 ]}
               />
               <Button
@@ -1057,6 +1069,8 @@ export default function WebApp() {
               onStartBlankBoard={openEmptyBoard}
               onExitBoardFile={exitBoardFile}
               lichessToken={lichessToken}
+              panelMode={boardPanelMode}
+              setPanelMode={setBoardPanelMode}
             />
           ) : (
             <FilesWorkspace
@@ -1091,6 +1105,8 @@ function BoardWorkspace({
   onStartBlankBoard,
   onExitBoardFile,
   lichessToken,
+  panelMode,
+  setPanelMode,
 }: {
   state: WebCompanionState;
   setState: Dispatch<SetStateAction<WebCompanionState>>;
@@ -1102,8 +1118,9 @@ function BoardWorkspace({
   onStartBlankBoard: () => void;
   onExitBoardFile: () => void;
   lichessToken: string;
+  panelMode: BoardPanelMode;
+  setPanelMode: Dispatch<SetStateAction<BoardPanelMode>>;
 }) {
-  const [panelMode, setPanelMode] = useState<BoardPanelMode>("moves");
   const [onlineAnalysisRequestId, setOnlineAnalysisRequestId] = useState(0);
   const [engineArrowAnalysis, setEngineArrowAnalysis] = useState<{
     fen: string;
@@ -1461,7 +1478,7 @@ function BoardWorkspace({
         onNextMove={goToNextMove}
       />
 
-      <BoardStartActions activeMode={panelMode} onChooseMode={(mode) => setPanelMode(mode)} />
+      <BoardStartActions activeMode={panelMode} onChooseMode={setPanelMode} />
 
       <Box className={classes.underBoardPanel}>
         <Box className={classes.underBoardContent}>
@@ -1588,15 +1605,6 @@ function BoardStartActions({
         onClick={() => onChooseMode("moves")}
       >
         Moves
-      </Button>
-      <Button
-        aria-label="Analyze online game"
-        size="xs"
-        variant={activeMode === "online" ? "filled" : "light"}
-        leftSection={<IconCloudDownload size={14} />}
-        onClick={() => onChooseMode("online")}
-      >
-        Analyze
       </Button>
       <Button
         aria-label="Database"
