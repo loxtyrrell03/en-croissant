@@ -6,10 +6,15 @@ import { makeSan } from "chessops/san";
 import { positionFromFen } from "@/utils/chessops";
 import type { WebEngineLine, WebEngineScore } from "./model";
 import { normalizeWebEngineScoreForWhite } from "./engineScore";
+import {
+    type WebLichessCloudData,
+    webLichessCloudDataToLines,
+} from "./lichessCloud";
 
 const STOCKFISH_READY_TIMEOUT_MS = 20_000;
 const STOCKFISH_SEARCH_TIMEOUT_MS = 90_000;
 const STOCKFISH_MIN_UPDATE_INTERVAL_MS = 120;
+const REMOTE_CLOUD_TIMEOUT_MS = 3_500;
 const configuredRemoteStockfishUrl = String(
     import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ??
         "https://gaming-pc.tail89d19b.ts.net:8443",
@@ -41,6 +46,17 @@ export async function analyzeWithWebStockfish18({
 }: WebStockfishAnalyzeRequest): Promise<WebEngineLine[]> {
     if (REMOTE_STOCKFISH_URL) {
         try {
+            const storedLines = await queryRemoteStoredCloudLines({ fen, multipv, signal });
+            if (storedLines.length > 0) {
+                onUpdate?.(storedLines);
+                return storedLines;
+            }
+        } catch (error) {
+            if (isAbortError(error)) throw error;
+            console.warn("Stored cloud eval lookup failed; using Gaming PC Stockfish.", error);
+        }
+
+        try {
             return await analyzeWithRemoteStockfish18({
                 fen,
                 multipv,
@@ -55,6 +71,52 @@ export async function analyzeWithWebStockfish18({
     }
 
     return analyzeWithLocalStockfish18({ fen, multipv, depth, signal, onUpdate });
+}
+
+export async function queryRemoteStoredCloudLines({
+    fen,
+    multipv,
+    signal,
+}: {
+    fen: string;
+    multipv: number;
+    signal?: AbortSignal;
+}): Promise<WebEngineLine[]> {
+    if (!REMOTE_STOCKFISH_URL) return [];
+
+    const controller = new AbortController();
+    let timedOut = false;
+    const onAbort = () => controller.abort();
+    signal?.addEventListener("abort", onAbort, { once: true });
+    const timeoutId = window.setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+    }, REMOTE_CLOUD_TIMEOUT_MS);
+
+    const url = new URL(`${REMOTE_STOCKFISH_URL}/v1/cloud-eval`);
+    url.searchParams.set("fen", fen);
+    url.searchParams.set("multipv", String(Math.max(1, Math.min(8, Math.round(multipv)))));
+
+    try {
+        throwIfAborted(signal);
+        const response = await fetch(url, {
+            headers: { accept: "application/json" },
+            cache: "no-store",
+            signal: controller.signal,
+        });
+        if (response.status === 404) return [];
+        if (!response.ok) {
+            throw new Error(`Stored cloud eval lookup returned HTTP ${response.status}.`);
+        }
+        const data = (await response.json()) as WebLichessCloudData;
+        return webLichessCloudDataToLines(fen, data);
+    } catch (error) {
+        if (timedOut) throw new Error("Gaming PC stored cloud evals are unreachable.");
+        throw error;
+    } finally {
+        window.clearTimeout(timeoutId);
+        signal?.removeEventListener("abort", onAbort);
+    }
 }
 
 async function analyzeWithRemoteStockfish18({

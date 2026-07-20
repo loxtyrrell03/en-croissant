@@ -7,7 +7,7 @@ import { positionFromFen } from "@/utils/chessops";
 import type { PrepBuilderEngineMove } from "@/utils/opponentPrep";
 import type { WebColor, WebEngineLine } from "./model";
 
-type WebLichessCloudData = {
+export type WebLichessCloudData = {
   fen: string;
   knodes?: number;
   depth?: number;
@@ -90,6 +90,13 @@ export async function queryWebLichessCloudLines({
   if (!position) return [];
 
   const data = await getCloudEvaluation(fen, multipv, signal);
+  return webLichessCloudDataToLines(fen, data);
+}
+
+export function webLichessCloudDataToLines(
+  fen: string,
+  data: WebLichessCloudData,
+): WebEngineLine[] {
   return (data.pvs ?? [])
     .map((pv, index) => {
       const uciMoves = pv.moves.trim().split(/\s+/).filter(Boolean);

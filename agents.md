@@ -1,5 +1,14 @@
 # AGENTS.md
 
+- On 2026-07-20, the phone board gained a compact `Analyze` panel for public
+  Chess.com and Lichess games. Each provider remembers its own username;
+  `Analyze last game` opens the newest game immediately, while `Choose a game`
+  shows recent games in a small expandable list. Chosen games are indexed in
+  browser storage, open at move one with the board oriented to the account's
+  side, switch directly to the Engine panel, and start Stockfish 18. The
+  existing remote-first engine, bundled fallback, and blue/pale-blue arrow
+  hierarchy remain unchanged.
+
 - On 2026-07-20, the Southall Congress app-side prep layout was flattened at
   the user's request. All 13 OTB and online-account databases, their matching
   PGNs, search indexes, and import metadata now live directly in
