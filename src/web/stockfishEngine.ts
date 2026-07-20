@@ -11,7 +11,7 @@ import { type WebLichessCloudData, webLichessCloudDataToLines } from "./lichessC
 const STOCKFISH_READY_TIMEOUT_MS = 20_000;
 const STOCKFISH_SEARCH_TIMEOUT_MS = 90_000;
 const STOCKFISH_MIN_UPDATE_INTERVAL_MS = 120;
-const REMOTE_CLOUD_TIMEOUT_MS = 3_500;
+const REMOTE_CLOUD_TIMEOUT_MS = 10_000;
 const STOCKFISH_MAX_DEPTH = 70;
 const configuredRemoteStockfishUrl = String(
     import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ?? "https://gaming-pc.tail89d19b.ts.net:8443",

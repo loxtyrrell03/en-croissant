@@ -10,9 +10,11 @@
   priority, with the watchdog retaining a repair fallback. Controlled trials
   kept 16 threads and a 512 MiB hash: 16 threads beat 8, 12, 20, and 24, while
   512 MiB matched or beat 128 MiB and 2 GiB without the larger cold-start
-  cost. Do not smooth or inflate the NPS display; regression testing must cover
-  late cache responses, cold starts, cancellation queues, and sustained direct
-  and home-proxied searches.
+  cost. The concurrent cache deadline is ten seconds because a cold shard can
+  take over 2.5 seconds under live engine load; it does not delay live output
+  and is cancelled on position changes. Do not smooth or inflate the NPS
+  display; regression testing must cover late cache responses, cold starts,
+  cancellation queues, and sustained direct and home-proxied searches.
 
 - On 2026-07-20, the lawful AI Chess Coach library gained a reproducible local
   ingestion and retrieval layer under
