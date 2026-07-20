@@ -5,15 +5,41 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
+$gitCommonDirectory = (& git -C $repoRoot rev-parse --path-format=absolute --git-common-dir).Trim()
+if ($LASTEXITCODE -ne 0) {
+  throw 'Could not resolve the canonical En Croissant checkout.'
+}
+$canonicalRepoRoot = Split-Path -Parent $gitCommonDirectory
 $serverRoot = Join-Path $env:LOCALAPPDATA 'EnCroissantHomeServer'
 $pidPath = Join-Path $serverRoot 'home-server.pid'
 $stdoutPath = Join-Path $serverRoot 'stdout.log'
 $stderrPath = Join-Path $serverRoot 'stderr.log'
-$serverScript = Join-Path $PSScriptRoot 'home-server.mjs'
+$runtimeRoot = Join-Path $serverRoot 'runtime'
+$serverScript = Join-Path $runtimeRoot 'home-server.mjs'
+$sourceServerScript = Join-Path $PSScriptRoot 'home-server.mjs'
+$sourceLibraryIndex = Join-Path $PSScriptRoot 'home-library-index.mjs'
 $node = (Get-Command node.exe -ErrorAction Stop).Source
 $healthUrl = "http://127.0.0.1:$Port/api/health"
 
 New-Item -ItemType Directory -Path $serverRoot -Force | Out-Null
+New-Item -ItemType Directory -Path $runtimeRoot -Force | Out-Null
+
+foreach ($runtimeFile in @(
+  @{ Source = $sourceServerScript; Destination = $serverScript },
+  @{ Source = $sourceLibraryIndex; Destination = (Join-Path $runtimeRoot 'home-library-index.mjs') }
+)) {
+  $temporaryRuntimeFile = "$($runtimeFile.Destination).next-$PID"
+  Copy-Item -LiteralPath $runtimeFile.Source -Destination $temporaryRuntimeFile -Force
+  Move-Item -LiteralPath $temporaryRuntimeFile -Destination $runtimeFile.Destination -Force
+}
+
+function Test-EnCroissantHomeServerProcess {
+  param($Process)
+
+  if (-not $Process) { return $false }
+  $commandLine = [string]$Process.CommandLine
+  return $commandLine -like "*$serverScript*" -or $commandLine -like "*$sourceServerScript*"
+}
 
 if (-not $ForceRestart) {
   try {
@@ -28,7 +54,7 @@ if (-not $ForceRestart) {
 if (Test-Path -LiteralPath $pidPath) {
   $oldPid = [int](Get-Content -Raw -LiteralPath $pidPath)
   $oldProcess = Get-CimInstance Win32_Process -Filter "ProcessId=$oldPid" -ErrorAction SilentlyContinue
-  if ($oldProcess -and [string]$oldProcess.CommandLine -like "*$serverScript*") {
+  if (Test-EnCroissantHomeServerProcess $oldProcess) {
     Stop-Process -Id $oldPid -Force -ErrorAction SilentlyContinue
     Wait-Process -Id $oldPid -Timeout 5 -ErrorAction SilentlyContinue
   }
@@ -43,7 +69,7 @@ if ($ForceRestart) {
     if (-not $listenerProcess) {
       continue
     }
-    if ([string]$listenerProcess.CommandLine -notlike "*$serverScript*") {
+    if (-not (Test-EnCroissantHomeServerProcess $listenerProcess)) {
       throw "Port $Port is already owned by another process: $($listenerProcess.CommandLine)"
     }
     Stop-Process -Id $listener.OwningProcess -Force -ErrorAction SilentlyContinue
@@ -52,9 +78,10 @@ if ($ForceRestart) {
 }
 
 $env:EN_CROISSANT_HOME_SERVER_PORT = [string]$Port
+$env:EN_CROISSANT_REPO_ROOT = $canonicalRepoRoot
 $process = Start-Process -FilePath $node `
   -ArgumentList "`"$serverScript`"" `
-  -WorkingDirectory $repoRoot `
+  -WorkingDirectory $canonicalRepoRoot `
   -WindowStyle Hidden `
   -RedirectStandardOutput $stdoutPath `
   -RedirectStandardError $stderrPath `

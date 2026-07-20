@@ -24,7 +24,9 @@ import {
   listHostedLibraryDirectory,
 } from "./home-library-index.mjs";
 
-const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const repoRoot = resolve(
+  process.env.EN_CROISSANT_REPO_ROOT || resolve(dirname(fileURLToPath(import.meta.url)), ".."),
+);
 const localAppData =
   process.env.LOCALAPPDATA || join(process.env.USERPROFILE || tmpdir(), "AppData", "Local");
 const roamingAppData =
@@ -34,6 +36,8 @@ const serverRoot = resolve(
   process.env.EN_CROISSANT_HOME_SERVER_ROOT || join(localAppData, "EnCroissantHomeServer"),
 );
 const siteRoot = resolve(process.env.EN_CROISSANT_HOME_SERVER_SITE || join(serverRoot, "site"));
+const appReleasesRoot = join(serverRoot, "app-releases");
+const activeAppPath = join(serverRoot, "active-app.json");
 const statePath = join(serverRoot, "state", "web-state.json");
 const stateBackupRoot = join(serverRoot, "state", "backups");
 const lichessCredentialPath = join(serverRoot, "credentials", "lichess.json");
@@ -92,6 +96,7 @@ let lastLibraryRefresh = null;
 let lastLibraryError = null;
 let lastStateBackupAt = 0;
 let sharedLichessCredential = null;
+let activeAppCache = null;
 
 await mkdir(serverRoot, { recursive: true });
 await mkdir(dirname(statePath), { recursive: true });
@@ -131,11 +136,21 @@ async function handleRequest(request, response) {
   }
 
   if (method === "GET" && pathname === "/api/health") {
+    const activeApp = await getActiveAppState();
     return writeJson(response, 200, {
       ok: true,
       service: "en-croissant-home-server",
       pid: process.pid,
       siteRoot,
+      activeAppRoot: activeApp.root,
+      deployment: activeApp.deployment
+        ? {
+            sourceCommit: activeApp.deployment.sourceCommit ?? null,
+            sourceBranch: activeApp.deployment.sourceBranch ?? null,
+            builtAt: activeApp.deployment.builtAt ?? null,
+            appShellSha256: activeApp.deployment.appShellSha256 ?? null,
+          }
+        : null,
       documentsRoot,
       enDatabaseRoots,
       outpostDatabase,
@@ -188,7 +203,12 @@ async function handleRequest(request, response) {
     return writeJson(response, 405, { error: "Method not allowed." });
   }
 
-  return serveStatic(pathname, request, response, method === "HEAD");
+  const activeApp = await getActiveAppState();
+  const staticRoot =
+    pathname === "/web-library" || pathname.startsWith("/web-library/")
+      ? siteRoot
+      : activeApp.root;
+  return serveStatic(pathname, request, response, method === "HEAD", staticRoot);
 }
 
 function proxyStockfishRequest(request, response, requestUrl) {
@@ -875,10 +895,61 @@ function openOutpostDatabase() {
   return database;
 }
 
-async function serveStatic(pathname, request, response, headOnly) {
+async function getActiveAppState() {
+  const pointerStat = await stat(activeAppPath).catch(() => null);
+  if (!pointerStat?.isFile()) {
+    if (activeAppCache?.legacy) return activeAppCache;
+    const deployment = await readJsonFile(join(siteRoot, "app-version.json"));
+    activeAppCache = { root: siteRoot, deployment, legacy: true };
+    return activeAppCache;
+  }
+
+  if (
+    activeAppCache &&
+    !activeAppCache.legacy &&
+    activeAppCache.pointerMtimeMs === pointerStat.mtimeMs &&
+    activeAppCache.pointerSize === pointerStat.size
+  ) {
+    return activeAppCache;
+  }
+
+  const pointer = await readJsonFile(activeAppPath);
+  const releaseId = String(pointer?.releaseId || "");
+  if (!releaseId || releaseId.includes("/") || releaseId.includes("\\")) {
+    throw new Error("The active phone app release pointer is invalid.");
+  }
+  const releaseRoot = resolve(appReleasesRoot, releaseId);
+  if (!isInside(releaseRoot, appReleasesRoot)) {
+    throw new Error("The active phone app release escapes the release directory.");
+  }
+  const [indexStat, deployment] = await Promise.all([
+    stat(join(releaseRoot, "index.html")).catch(() => null),
+    readJsonFile(join(releaseRoot, "app-version.json")),
+  ]);
+  if (!indexStat?.isFile() || !deployment?.sourceCommit) {
+    throw new Error(`The active phone app release ${releaseId} is incomplete.`);
+  }
+  if (
+    pointer.sourceCommit !== deployment.sourceCommit ||
+    pointer.appShellSha256 !== deployment.appShellSha256
+  ) {
+    throw new Error(`The active phone app release ${releaseId} failed its identity check.`);
+  }
+
+  activeAppCache = {
+    root: releaseRoot,
+    deployment,
+    legacy: false,
+    pointerMtimeMs: pointerStat.mtimeMs,
+    pointerSize: pointerStat.size,
+  };
+  return activeAppCache;
+}
+
+async function serveStatic(pathname, request, response, headOnly, staticRoot) {
   let relativePath = pathname.replace(/^\/+/, "") || "index.html";
-  let filePath = resolve(siteRoot, relativePath);
-  if (!isInside(filePath, siteRoot)) return writeJson(response, 403, { error: "Forbidden." });
+  let filePath = resolve(staticRoot, relativePath);
+  if (!isInside(filePath, staticRoot)) return writeJson(response, 403, { error: "Forbidden." });
 
   let fileStat = await stat(filePath).catch(() => null);
   if (fileStat?.isDirectory()) {
@@ -886,15 +957,18 @@ async function serveStatic(pathname, request, response, headOnly) {
     fileStat = await stat(filePath).catch(() => null);
   }
   if (!fileStat?.isFile() && !extname(relativePath)) {
-    filePath = join(siteRoot, "index.html");
+    filePath = join(staticRoot, "index.html");
     fileStat = await stat(filePath).catch(() => null);
   }
   if (!fileStat?.isFile()) return writeJson(response, 404, { error: "Not found." });
 
   const mime = mimeType(filePath);
+  const fileName = basename(filePath);
   const cacheControl =
-    filePath.endsWith("index.html") || filePath.endsWith("manifest.json")
-      ? "no-cache"
+    fileName === "web-sw.js" || fileName === "app-version.json"
+      ? "no-store, max-age=0"
+      : fileName === "index.html" || fileName === "manifest.json"
+        ? "no-cache"
       : filePath.includes(`${sep}assets${sep}`)
         ? "public, max-age=31536000, immutable"
         : "public, max-age=60";

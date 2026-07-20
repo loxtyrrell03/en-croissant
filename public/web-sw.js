@@ -1,4 +1,5 @@
-const CACHE_NAME = "en-croissant-web-v2";
+const BUILD_ID = "__EN_CROISSANT_BUILD_ID__";
+const CACHE_NAME = `en-croissant-web-${BUILD_ID}`;
 const APP_BASE = new URL(self.registration.scope).pathname;
 const APP_SHELL = [APP_BASE, `${APP_BASE}manifest.webmanifest`, `${APP_BASE}logo.png`];
 
@@ -18,7 +19,15 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))),
       )
-      .then(() => self.clients.claim()),
+      .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({ type: "window", includeUncontrolled: true }))
+      .then((clients) =>
+        Promise.all(
+          clients.map((client) =>
+            client.navigate(client.url).catch(() => null),
+          ),
+        ),
+      ),
   );
 });
 
