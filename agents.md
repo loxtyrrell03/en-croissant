@@ -9,6 +9,15 @@
   clean-source, ancestry, mutex, immutable-release, and health guards below;
   never copy `dist` directly or weaken a guard to force a deployment.
 
+- On 2026-07-20, the phone engine display stopped treating a stored cloud
+  evaluation's missing NPS as an unfinished search. Cache hits are labelled
+  `Cloud evals` and show their stored depth in the compact strip; live searches
+  continue to show depth, total nodes, and NPS. The full Engine panel always
+  reserves visible metrics for Eval, Depth, Nodes, and NPS, and each line keeps
+  its source, depth, and node count. This `Cloud evals` wording supersedes the
+  historical `PC cache` UI-label requirements below while preserving the same
+  authoritative PC cache-first execution policy.
+
 - On 2026-07-20, the lawful chess-book corpus was wired into both AI Coach
   surfaces. The desktop Rust coach now performs native, diversified FTS5
   retrieval from the local corpus, sends up to six page-bounded passages to

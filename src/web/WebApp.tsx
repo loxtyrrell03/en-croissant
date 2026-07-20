@@ -3129,8 +3129,15 @@ function EngineUnderBoardPanel({
     status,
     topLine,
   });
-  const liveTopLine = stockfishLines[0] ?? null;
-  const liveLineSpeed = liveTopLine ? formatWebEngineNodeSpeed(liveTopLine.nps) : null;
+  const liveLineSpeed = topLine ? formatWebEngineNodeSpeed(topLine.nps) : null;
+  const nodeCount = topLine ? formatWebEngineNodeCount(topLine.nodes) : null;
+  const isCloudEvaluation = topLine?.source === "lichess-cloud";
+  const compactEngineMeta = getWebCompactEngineMeta({
+    enabled: settings.enabled,
+    topLine,
+    nodeCount,
+    liveLineSpeed,
+  });
 
   if (compact) {
     return (
@@ -3144,13 +3151,19 @@ function EngineUnderBoardPanel({
           <Group gap={6} wrap="nowrap" miw={0}>
             <IconCpu className={classes.compactEngineIcon} size={16} />
             <Text className={classes.compactEngineTitle} fw={700} size="xs" truncate>
-              Stockfish
+              {isCloudEvaluation ? "Cloud evals" : "Stockfish"}
             </Text>
           </Group>
           <Group className={classes.compactEngineHeaderRight} gap={6} wrap="nowrap">
-            {settings.enabled ? (
-              <Text className={classes.compactEngineNps} size="xs" c="dimmed">
-                {liveLineSpeed ? liveLineSpeed.replace(" NPS", " n/s") : "Starting…"}
+            {compactEngineMeta ? (
+              <Text
+                aria-label={compactEngineMeta.accessibleLabel}
+                className={classes.compactEngineMeta}
+                size="xs"
+                c="dimmed"
+                title={compactEngineMeta.accessibleLabel}
+              >
+                {compactEngineMeta.label}
               </Text>
             ) : null}
             <Switch
@@ -3248,6 +3261,14 @@ function EngineUnderBoardPanel({
             </Text>
             <Text size="sm" fw={800}>
               {topLine?.depth ? topLine.depth : "--"}
+            </Text>
+          </Box>
+          <Box className={classes.enginePanelMetric}>
+            <Text size="xs" c="dimmed">
+              Nodes
+            </Text>
+            <Text size="sm" fw={800} title={topLine?.nodes?.toLocaleString()}>
+              {nodeCount ?? "--"}
             </Text>
           </Box>
           <Box className={classes.enginePanelMetric}>
@@ -3398,6 +3419,7 @@ function EngineLineTable({
             const firstMove = line.uciMoves[0] ?? null;
             const pv = line.sanMoves.length > 0 ? line.sanMoves.join(" ") : line.uciMoves.join(" ");
             const speed = formatWebEngineNodeSpeed(line.nps);
+            const nodes = formatWebEngineNodeCount(line.nodes);
             return (
               <Table.Tr key={`${line.source}-${line.multipv}`}>
                 <Table.Td className={classes.engineAnalysisScoreCell}>
@@ -3423,6 +3445,11 @@ function EngineLineTable({
                     <Text size="xs" c="dimmed">
                       d{line.depth || "?"}
                     </Text>
+                    {nodes ? (
+                      <Text size="xs" c="dimmed" truncate title={line.nodes?.toLocaleString()}>
+                        {nodes} nodes
+                      </Text>
+                    ) : null}
                     {speed ? (
                       <Text size="xs" c="dimmed" truncate>
                         {speed}
@@ -6499,10 +6526,59 @@ function getWebEngineHeaderStatus({
 }
 
 function getWebEngineSourceLabel(line: WebEngineLine) {
-  if (line.source === "lichess-cloud") return "PC cache";
+  if (line.source === "lichess-cloud") return "Cloud evals";
   if (line.executionLocation === "gaming-pc") return "PC live";
   if (line.executionLocation === "phone") return "Phone fallback";
   return "Stockfish";
+}
+
+function getWebCompactEngineMeta({
+  enabled,
+  topLine,
+  nodeCount,
+  liveLineSpeed,
+}: {
+  enabled: boolean;
+  topLine: WebEngineLine | null;
+  nodeCount: string | null;
+  liveLineSpeed: string | null;
+}): { label: string; accessibleLabel: string } | null {
+  if (!enabled) return null;
+  if (!topLine) return { label: "Starting...", accessibleLabel: "Starting engine analysis" };
+
+  const depth = topLine.depth > 0 ? topLine.depth : null;
+  if (topLine.source === "lichess-cloud") {
+    const depthLabel = depth ? `Depth ${depth}` : "Depth unavailable";
+    return { label: depthLabel, accessibleLabel: `Cloud evals, ${depthLabel.toLowerCase()}` };
+  }
+
+  const parts = [
+    depth ? `d${depth}` : null,
+    nodeCount ? `${nodeCount} nodes` : null,
+    liveLineSpeed ? liveLineSpeed.replace(" NPS", " n/s") : null,
+  ].filter(Boolean);
+  const accessibleParts = [
+    depth ? `depth ${depth}` : null,
+    topLine.nodes ? `${topLine.nodes.toLocaleString()} total nodes` : null,
+    liveLineSpeed,
+  ].filter(Boolean);
+  return {
+    label: parts.join(" | ") || "Starting...",
+    accessibleLabel: accessibleParts.join(", ") || "Starting engine analysis",
+  };
+}
+
+function formatWebEngineNodeCount(value?: number | null) {
+  if (!value || !Number.isFinite(value) || value <= 0) return null;
+  if (value >= 1_000_000_000_000) return `${formatCompactEngineNumber(value / 1_000_000_000_000)}T`;
+  if (value >= 1_000_000_000) return `${formatCompactEngineNumber(value / 1_000_000_000)}B`;
+  if (value >= 1_000_000) return `${formatCompactEngineNumber(value / 1_000_000)}M`;
+  if (value >= 1_000) return `${formatCompactEngineNumber(value / 1_000)}k`;
+  return Math.round(value).toLocaleString();
+}
+
+function formatCompactEngineNumber(value: number) {
+  return value.toFixed(value >= 100 ? 0 : value >= 10 ? 1 : 2).replace(/\.0+$/, "");
 }
 
 function formatWebEngineNodeSpeed(value?: number | null) {

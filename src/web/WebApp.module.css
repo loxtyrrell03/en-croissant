@@ -878,10 +878,13 @@
   letter-spacing: -0.01em;
 }
 
-.compactEngineNps {
+.compactEngineMeta {
   min-width: 3.55rem;
+  max-width: min(13rem, 48vw);
+  overflow: hidden;
   white-space: nowrap;
   text-align: right;
+  text-overflow: ellipsis;
   font-size: 0.64rem;
   font-variant-numeric: tabular-nums;
 }
