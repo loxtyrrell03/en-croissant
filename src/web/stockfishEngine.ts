@@ -361,7 +361,26 @@ function makeSanLineFromUci(fen: string, uciMoves: string[]) {
 }
 
 function sortEngineLines(linesByPv: Map<number, WebEngineLine>) {
-    return Array.from(linesByPv.values()).sort((a, b) => a.multipv - b.multipv);
+    return dedupeWebStockfishLines(Array.from(linesByPv.values()));
+}
+
+export function dedupeWebStockfishLines(lines: WebEngineLine[]) {
+    const linesByRootMove = new Map<string, WebEngineLine>();
+
+    for (const line of lines) {
+        const rootMove = line.uciMoves[0];
+        const key = rootMove || `multipv:${line.multipv}`;
+        const existing = linesByRootMove.get(key);
+        if (
+            !existing ||
+            line.depth > existing.depth ||
+            (line.depth === existing.depth && line.multipv < existing.multipv)
+        ) {
+            linesByRootMove.set(key, line);
+        }
+    }
+
+    return Array.from(linesByRootMove.values()).sort((a, b) => a.multipv - b.multipv);
 }
 
 function throwIfAborted(signal?: AbortSignal) {

@@ -1,5 +1,12 @@
 # AGENTS.md
 
+- On 2026-07-20, transient duplicate top moves in the phone Stockfish table
+  were traced to mixed-depth MultiPV snapshots: Stockfish updates one rank at
+  a time, so a newly ranked move could briefly duplicate the stale next rank.
+  Every streamed update now deduplicates by root UCI move, preferring the
+  deepest result and then the better rank, before feeding both the table and
+  board arrows.
+
 - On 2026-07-20, the phone engine-arrow styling was restored on top of the
   remote-first Stockfish build after a publish from an older checkout briefly
   replaced it. The best MultiPV move uses the strong blue brush, alternative
