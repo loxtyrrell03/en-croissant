@@ -1,5 +1,23 @@
 # AGENTS.md
 
+- On 2026-07-20, the lawful AI Chess Coach book corpus was expanded from the
+  opening shelf into a complete nine-shelf library under
+  `C:\Users\loxty\Documents\EnCroissant\AI Chess Coach Library`. The combined
+  catalogue now records 103 books: the existing 39 opening titles plus 64
+  broad GM-led selections covering strategy, middlegames and pawn structures,
+  thinking and calculation, tactics, attack and defence, endgames, practical
+  improvement and computer chess, and annotated master games. Thinking and
+  calculation is intentionally a first-class shelf rather than being folded
+  into tactics, with sources for candidate generation, visualization,
+  evaluation, time use, psychology, and training design. Ninety-five official
+  publisher excerpts are installed; eight books remain clearly labelled
+  acquisition items because no usable authorized excerpt was available.
+  `00 Master Library Guide` contains the polished 17-page complete catalogue,
+  one machine-readable retrieval manifest, a rights/workflow README, and a
+  PDF audit. All 97 local PDFs parse successfully; the previously known
+  image-only *Modernized Sicilian Kan* excerpt remains the sole OCR target.
+  Full editions must be bought or supplied from copies the user lawfully owns.
+
 - On 2026-07-20, phone analysis was corrected after the restored stored-eval
   path accidentally prevented live Stockfish from starting on every cache hit.
   A PC-stored evaluation is now shown only as an immediate preview while the
