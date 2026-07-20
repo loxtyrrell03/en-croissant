@@ -58,6 +58,9 @@ try {
     -SourceCommit $newerCommit `
     -DeploymentMetadataPath $deploymentPath `
     -TargetName "test deployment"
+  if (Test-EnCroissantTrackedContentChanges -RepoRoot $repoRoot) {
+    throw "A clean tracked tree was reported as changed."
+  }
 
   [System.IO.File]::WriteAllText((Join-Path $buildRoot "index.html"), "<script src=`"/assets/app.js`"></script>")
   [System.IO.File]::WriteAllText((Join-Path $buildRoot "assets\app.js"), "console.log('current');")

@@ -22,6 +22,22 @@ function Get-EnCroissantCanonicalRepoRoot {
   return (Resolve-Path -LiteralPath (Split-Path -Parent $commonGitDirectory)).Path
 }
 
+function Test-EnCroissantTrackedContentChanges {
+  param([Parameter(Mandatory = $true)][string]$RepoRoot)
+
+  & git -C $RepoRoot diff --quiet --ignore-submodules -- 2>$null
+  if ($LASTEXITCODE -eq 1) { return $true }
+  if ($LASTEXITCODE -ne 0) {
+    throw "Could not compare tracked working-tree files before publishing."
+  }
+  & git -C $RepoRoot diff --cached --quiet --ignore-submodules -- 2>$null
+  if ($LASTEXITCODE -eq 1) { return $true }
+  if ($LASTEXITCODE -ne 0) {
+    throw "Could not compare staged source files before publishing."
+  }
+  return $false
+}
+
 function Enter-EnCroissantPhonePublish {
   param(
     [Parameter(Mandatory = $true)][string]$RepoRoot,
@@ -49,11 +65,7 @@ function Enter-EnCroissantPhonePublish {
       "--abbrev-ref",
       "HEAD"
     )
-    $trackedChanges = & git -C $RepoRoot status --porcelain --untracked-files=no
-    if ($LASTEXITCODE -ne 0) {
-      throw "Could not inspect the source worktree before publishing."
-    }
-    if ($trackedChanges) {
+    if (Test-EnCroissantTrackedContentChanges -RepoRoot $RepoRoot) {
       throw "The source worktree has uncommitted tracked changes. Commit them before publishing so the deployed version is reproducible."
     }
 
@@ -97,8 +109,7 @@ function Assert-EnCroissantPublishSourceUnchanged {
   if ($currentCommit -ne $PublishContext.SourceCommit) {
     throw "The source branch advanced from $($PublishContext.SourceCommit) to $currentCommit while publishing. Refusing to label a mixed build as either commit; retry from the new clean HEAD."
   }
-  $trackedChanges = & git -C $RepoRoot status --porcelain --untracked-files=no
-  if ($LASTEXITCODE -ne 0 -or $trackedChanges) {
+  if (Test-EnCroissantTrackedContentChanges -RepoRoot $RepoRoot) {
     throw "Tracked source files changed while the phone build was running. Refusing to deploy a potentially mixed parallel-agent build."
   }
 }
