@@ -73,7 +73,6 @@ const lichessExplorerStaleMs = 14 * 24 * 60 * 60 * 1000;
 const maxExplorerMemoryEntries = 1024;
 const privateCredentialOrigins = new Set([
   "https://gaming-pc.tail89d19b.ts.net",
-  "https://loxtyrrell03.github.io",
   "http://localhost:1420",
   "http://tauri.localhost",
   "https://tauri.localhost",
