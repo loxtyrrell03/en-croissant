@@ -29,6 +29,13 @@
   and older home-server builds, and retain tests proving directory requests do
   not include descendants while recursive imports do.
 
+- On 2026-07-20, PC phone publishes were hardened against stale home-server PID
+  files. A forced restart now resolves the actual listener on the configured
+  port, stops it only when its command line matches this home-server script,
+  refuses to replace unrelated listeners, and accepts startup health only from
+  the new process ID. This prevents a dead replacement process from being
+  mistaken for a successful deploy because an older server still answered.
+
 - On 2026-07-20, Lichess authentication became one-time and shared across the
   PC-hosted phone app, the GitHub Pages fallback, En Croissant, and Outpost.
   Moving the phone site between origins had exposed the old design flaw: its

@@ -134,6 +134,7 @@ async function handleRequest(request, response) {
     return writeJson(response, 200, {
       ok: true,
       service: "en-croissant-home-server",
+      pid: process.pid,
       siteRoot,
       documentsRoot,
       enDatabaseRoots,

@@ -34,6 +34,23 @@ if (Test-Path -LiteralPath $pidPath) {
   }
 }
 
+if ($ForceRestart) {
+  $listeners = @(Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue)
+  foreach ($listener in $listeners) {
+    $listenerProcess = Get-CimInstance Win32_Process `
+      -Filter "ProcessId=$($listener.OwningProcess)" `
+      -ErrorAction SilentlyContinue
+    if (-not $listenerProcess) {
+      continue
+    }
+    if ([string]$listenerProcess.CommandLine -notlike "*$serverScript*") {
+      throw "Port $Port is already owned by another process: $($listenerProcess.CommandLine)"
+    }
+    Stop-Process -Id $listener.OwningProcess -Force -ErrorAction SilentlyContinue
+    Wait-Process -Id $listener.OwningProcess -Timeout 5 -ErrorAction SilentlyContinue
+  }
+}
+
 $env:EN_CROISSANT_HOME_SERVER_PORT = [string]$Port
 $process = Start-Process -FilePath $node `
   -ArgumentList "`"$serverScript`"" `
@@ -52,15 +69,15 @@ Set-Content -LiteralPath $pidPath -Value $process.Id -Encoding ascii
 $deadline = (Get-Date).AddSeconds(30)
 while ((Get-Date) -lt $deadline) {
   Start-Sleep -Milliseconds 500
+  if ($process.HasExited) {
+    throw "Home server exited during startup. See $stderrPath"
+  }
   try {
     $health = Invoke-RestMethod -Uri $healthUrl -TimeoutSec 2
-    if ($health.ok) {
+    if ($health.ok -and [int]$health.pid -eq $process.Id) {
       exit 0
     }
   } catch {
-  }
-  if ($process.HasExited) {
-    throw "Home server exited during startup. See $stderrPath"
   }
 }
 
