@@ -15,6 +15,7 @@ import {
   buildPhoneCoachPrompt,
   buildStructuredPhoneCoachPrompt,
   codexExitIndicatesSignedOut,
+  codexUsageLimitFromOutput,
   collectPcCoachPositionEvaluations,
   getChessBookLibraryInventory,
   normalizeCloudCoachEvaluation,
@@ -89,6 +90,20 @@ test("model auth failure classification requires a nonzero exit and auth stderr"
   assert.equal(codexExitIndicatesSignedOut(1, "ordinary model error"), false);
 });
 
+test("Codex usage limits are recognized without treating transient rate limits as quota", () => {
+  assert.deepEqual(
+    codexUsageLimitFromOutput(
+      "\u001b[31mERROR: You've hit your usage limit. Purchase more credits or try again at Jul 26th, 2026 11:35 PM.\u001b[0m",
+    ),
+    { retryLabel: "Jul 26th, 2026 11:35 PM" },
+  );
+  assert.deepEqual(codexUsageLimitFromOutput("insufficient_quota; quota exhausted"), {
+    retryLabel: null,
+  });
+  assert.equal(codexUsageLimitFromOutput("429 Too Many Requests; retry in 2 seconds"), null);
+  assert.equal(codexUsageLimitFromOutput("Not logged in. Run codex login."), null);
+});
+
 test("public coach failures never expose raw stderr, secrets, or local paths", () => {
   const internal = new Error(
     "Codex crashed at C:\\Users\\loxty\\.codex\\secret with token sk-private and raw stderr",
@@ -105,6 +120,19 @@ test("public coach failures never expose raw stderr, secrets, or local paths", (
   const signedOut = new Error("not signed in; run codex login");
   signedOut.code = "MODEL_UNAVAILABLE";
   assert.match(publicChessCoachFailure(signedOut).error, /codex login/);
+
+  const usageLimited = new Error("raw diagnostics must stay private");
+  usageLimited.code = "MODEL_USAGE_LIMIT";
+  usageLimited.retryLabel = "Jul 26th, 2026 11:35 PM";
+  assert.deepEqual(publicChessCoachFailure(usageLimited), {
+    status: 429,
+    code: "MODEL_USAGE_LIMIT",
+    error:
+      "OpenAI Codex has reached its usage limit. Add credits or try again at Jul 26th, 2026 11:35 PM.",
+  });
+
+  usageLimited.retryLabel = "C:\\Users\\loxty\\secret";
+  assert.doesNotMatch(JSON.stringify(publicChessCoachFailure(usageLimited)), /Users|secret/);
 });
 
 test("Codex coach invocation is GPT-5.6 Sol, ephemeral, read-only, and tool-free", () => {

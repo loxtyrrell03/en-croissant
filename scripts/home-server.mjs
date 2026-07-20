@@ -30,6 +30,7 @@ import {
   buildPcCoachAnalysisResult,
   buildStructuredPhoneCoachPrompt,
   codexExitIndicatesSignedOut,
+  codexUsageLimitFromOutput,
   collectPcCoachPositionEvaluations,
   COACH_LIBRARY_PLAN_SCHEMA,
   COACH_REVIEW_SCHEMA,
@@ -155,6 +156,7 @@ let phoneCoachQueue = Promise.resolve();
 const phoneCoachProgress = new Map();
 const phoneCoachProgressExpiry = new Map();
 let coachAuthenticationCache = { checkedAt: 0, status: "unknown" };
+let coachUsageLimitCache = null;
 let coachAuthenticationProbe = null;
 
 await mkdir(serverRoot, { recursive: true });
@@ -1060,7 +1062,19 @@ async function writeChessCoachHealth(response) {
   const authentication = modelInstalled
     ? await getCoachModelAuthentication()
     : { status: "unavailable" };
-  const modelAvailable = modelInstalled && authentication.status === "authenticated";
+  const usageLimit = getActiveCoachUsageLimit();
+  const modelAvailable = modelInstalled && authentication.status === "authenticated" && !usageLimit;
+  const modelAvailability = usageLimit
+    ? "usage-limited"
+    : modelAvailable
+      ? "available"
+      : "unavailable";
+  const modelMessage = usageLimit
+    ? publicChessCoachFailure({
+        code: "MODEL_USAGE_LIMIT",
+        retryLabel: usageLimit.retryLabel,
+      }).error
+    : undefined;
   let bookCount = 0;
   let chunkCount = 0;
   if (corpusStat?.isFile()) {
@@ -1077,6 +1091,8 @@ async function writeChessCoachHealth(response) {
         modelInstalled,
         modelAvailable,
         modelStatus: authentication.status,
+        modelAvailability,
+        ...(modelMessage ? { modelMessage } : {}),
         model: coachModel,
         error: "The chess-book corpus could not be opened.",
       });
@@ -1088,6 +1104,8 @@ async function writeChessCoachHealth(response) {
     modelInstalled,
     modelAvailable,
     modelStatus: authentication.status,
+    modelAvailability,
+    ...(modelMessage ? { modelMessage } : {}),
     model: coachModel,
     bookCount,
     chunkCount,
@@ -1534,6 +1552,8 @@ async function runPhoneCoachModel(
     error.code = "MODEL_UNAVAILABLE";
     throw error;
   }
+  const activeUsageLimit = getActiveCoachUsageLimit();
+  if (activeUsageLimit) throw makeCoachUsageLimitError(activeUsageLimit);
   throwIfAborted(signal);
 
   return await new Promise((resolvePromise, rejectPromise) => {
@@ -1600,6 +1620,15 @@ async function runPhoneCoachModel(
         error.code = "MODEL_UNAVAILABLE";
         return finish(rejectPromise, error);
       }
+      const usageLimit = code === 0 ? null : codexUsageLimitFromOutput(`${stdout}\n${stderr}`);
+      if (usageLimit) {
+        coachUsageLimitCache = {
+          detectedAt: Date.now(),
+          expiresAt: Date.now() + 5 * 60_000,
+          retryLabel: usageLimit.retryLabel,
+        };
+        return finish(rejectPromise, makeCoachUsageLimitError(coachUsageLimitCache));
+      }
       if (code !== 0) {
         return finish(
           rejectPromise,
@@ -1615,6 +1644,7 @@ async function runPhoneCoachModel(
         .trim();
       if (!answer)
         return finish(rejectPromise, new Error("The PC coach returned an empty answer."));
+      coachUsageLimitCache = null;
       finish(resolvePromise, answer);
     });
     const handleStdinFailure = (error) => {
@@ -1635,6 +1665,22 @@ async function runPhoneCoachModel(
       closeModelInput = writeProcessStdinSafely(child.stdin, invocation.stdin, handleStdinFailure);
     }
   });
+}
+
+function getActiveCoachUsageLimit() {
+  if (!coachUsageLimitCache) return null;
+  if (coachUsageLimitCache.expiresAt <= Date.now()) {
+    coachUsageLimitCache = null;
+    return null;
+  }
+  return coachUsageLimitCache;
+}
+
+function makeCoachUsageLimitError(usageLimit) {
+  const error = new Error("OpenAI Codex has reached its usage limit.");
+  error.code = "MODEL_USAGE_LIMIT";
+  error.retryLabel = usageLimit?.retryLabel || null;
+  return error;
 }
 
 async function getCoachModelAuthentication() {

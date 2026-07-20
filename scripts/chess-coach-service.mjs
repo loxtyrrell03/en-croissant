@@ -152,9 +152,45 @@ export function codexExitIndicatesSignedOut(exitCode, stderr) {
   );
 }
 
+export function codexUsageLimitFromOutput(output) {
+  const text = String(output || "")
+    .replace(/\u001b\[[0-?]*[ -/]*[@-~]/g, "")
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, " ");
+  if (
+    !/you(?:'ve| have) hit your usage limit|usage limit (?:reached|exceeded)|insufficient[_ ]quota|quota (?:exhausted|exceeded)|purchase more credits|credits?.*(?:depleted|exhausted|insufficient)/i.test(
+      text,
+    )
+  ) {
+    return null;
+  }
+  const retryMatch = text.match(
+    /try again at\s+([A-Za-z]{3,9}\s+\d{1,2}(?:st|nd|rd|th)?,\s+\d{4}\s+\d{1,2}:\d{2}\s+(?:AM|PM)(?:\s+[A-Za-z0-9_+:/-]+)?)/i,
+  );
+  return {
+    retryLabel: retryMatch?.[1]?.replace(/\s+/g, " ").trim() || null,
+  };
+}
+
+function safeCodexUsageLimitRetryLabel(value) {
+  const match = String(value || "").match(
+    /^([A-Za-z]{3,9}\s+\d{1,2}(?:st|nd|rd|th)?,\s+\d{4}\s+\d{1,2}:\d{2}\s+(?:AM|PM)(?:\s+[A-Za-z0-9_+:/-]+)?)$/i,
+  );
+  return match?.[1] || null;
+}
+
 export function publicChessCoachFailure(error, { analysisOnly = false } = {}) {
   const code = String(error?.code || "");
   const message = String(error?.message || "");
+  if (code === "MODEL_USAGE_LIMIT") {
+    const retryLabel = safeCodexUsageLimitRetryLabel(error?.retryLabel);
+    return {
+      status: 429,
+      code,
+      error: retryLabel
+        ? `OpenAI Codex has reached its usage limit. Add credits or try again at ${retryLabel}.`
+        : "OpenAI Codex has reached its usage limit. Add credits or try again later.",
+    };
+  }
   if (code === "MODEL_UNAVAILABLE") {
     if (/not signed|not logged|codex login|unauthenticated/i.test(message)) {
       return {

@@ -627,6 +627,9 @@ pub enum CoachError {
     #[error("OpenAI Codex appears unauthenticated. Run `codex login`, then try again.")]
     GeminiUnauthenticated,
 
+    #[error("{0}")]
+    CodexUsageLimit(String),
+
     #[error("AI CLI timed out after {0} seconds")]
     GeminiTimeout(u64),
 
@@ -7909,6 +7912,9 @@ async fn run_gemini_cli_with_schema(
     if looks_unauthenticated(&combined) && !looks_authenticated(&combined) {
         return Err(CoachError::GeminiUnauthenticated);
     }
+    if let Some(message) = codex_usage_limit_message(&combined) {
+        return Err(CoachError::CodexUsageLimit(message));
+    }
     if !status.success() {
         return Err(CoachError::GeminiFailed {
             status: status.to_string(),
@@ -8169,6 +8175,50 @@ fn looks_authenticated(output: &str) -> bool {
         || output.contains("text_drip.go")
 }
 
+fn codex_usage_limit_message(output: &str) -> Option<String> {
+    let lowercase = output.to_ascii_lowercase();
+    let is_usage_limit = lowercase.contains("you've hit your usage limit")
+        || lowercase.contains("you have hit your usage limit")
+        || lowercase.contains("usage limit reached")
+        || lowercase.contains("usage limit exceeded")
+        || lowercase.contains("insufficient_quota")
+        || lowercase.contains("quota exhausted")
+        || lowercase.contains("quota exceeded")
+        || lowercase.contains("purchase more credits");
+    if !is_usage_limit {
+        return None;
+    }
+
+    let retry_label = lowercase.find("try again at ").and_then(|index| {
+        let start = index + "try again at ".len();
+        let value = output[start..]
+            .split(['\r', '\n'])
+            .next()
+            .unwrap_or_default()
+            .trim()
+            .trim_end_matches(['.', ';'])
+            .trim();
+        let safe = !value.is_empty()
+            && value.len() <= 100
+            && value.contains(',')
+            && value.contains(':')
+            && value.chars().all(|character| {
+                character.is_ascii_alphanumeric()
+                    || matches!(character, ' ' | ',' | ':' | '+' | '/' | '-' | '_')
+            });
+        safe.then(|| value.to_string())
+    });
+
+    Some(match retry_label {
+        Some(retry_label) => format!(
+            "OpenAI Codex has reached its usage limit. Add credits or try again at {retry_label}."
+        ),
+        None => {
+            "OpenAI Codex has reached its usage limit. Add credits or try again later.".to_string()
+        }
+    })
+}
+
 fn clean_gemini_output(output: &str) -> String {
     output
         .lines()
@@ -8266,6 +8316,20 @@ mod tests {
         assert!(!looks_authenticated(
             "Not logged in. Run `codex login` to authenticate."
         ));
+    }
+
+    #[test]
+    fn reports_codex_usage_limit_without_exposing_raw_diagnostics() {
+        let message = codex_usage_limit_message(
+            "ERROR: You've hit your usage limit. Purchase more credits or try again at Jul 26th, 2026 11:35 PM.\nC:\\Users\\loxty\\private",
+        )
+        .expect("usage limit should be recognized");
+        assert_eq!(
+            message,
+            "OpenAI Codex has reached its usage limit. Add credits or try again at Jul 26th, 2026 11:35 PM."
+        );
+        assert!(!message.contains("Users"));
+        assert!(codex_usage_limit_message("429 Too Many Requests").is_none());
     }
 
     #[test]

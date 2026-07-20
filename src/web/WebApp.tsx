@@ -1931,6 +1931,7 @@ function CoachUnderBoardPanel({
     } catch (coachError) {
       if (controller.signal.aborted) return;
       setError(coachError instanceof Error ? coachError.message : "The PC coach failed.");
+      void loadHealth();
     } finally {
       if (coachRequestRef.current === controller) {
         coachRequestRef.current = null;
@@ -1971,9 +1972,12 @@ function CoachUnderBoardPanel({
             {!health.corpusAvailable
               ? "The PC book corpus is unavailable."
               : health.modelInstalled
-                ? health.modelStatus === "unavailable"
-                  ? "The PC could not verify the Codex sign-in. It will retry automatically."
-                  : "OpenAI Codex needs its one-time ChatGPT sign-in."
+                ? health.modelAvailability === "usage-limited"
+                  ? health.modelMessage ||
+                    "OpenAI Codex has reached its usage limit. Add credits or try again later."
+                  : health.modelStatus === "unavailable"
+                    ? "The PC could not verify the Codex sign-in. It will retry automatically."
+                    : "OpenAI Codex needs its one-time ChatGPT sign-in."
                 : "The PC needs the OpenAI Codex app or CLI installed."}
           </Text>
           <Text size="xs" c="dimmed">
