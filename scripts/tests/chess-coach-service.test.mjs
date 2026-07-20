@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { EventEmitter } from "node:events";
+import { PassThrough } from "node:stream";
 import test from "node:test";
 import { DatabaseSync } from "node:sqlite";
 import {
@@ -6,8 +8,63 @@ import {
   buildChessBookSearchTerms,
   buildCriticalMoments,
   buildPhoneCoachPrompt,
+  preserveConfirmedCodexAuthentication,
+  probeCodexAuthentication,
   searchChessBookCorpus,
 } from "../chess-coach-service.mjs";
+
+function fakeCodexStatusProcess({ code, output = "", neverExits = false }) {
+  const child = new EventEmitter();
+  child.stdout = new PassThrough();
+  child.stderr = new PassThrough();
+  child.kill = () => {
+    child.killed = true;
+  };
+  queueMicrotask(() => {
+    if (neverExits) return;
+    child.stderr.write(output);
+    child.emit("exit", code);
+  });
+  return child;
+}
+
+test("Codex auth probe distinguishes login, signed-out, and transient timeout states", async () => {
+  const authenticated = await probeCodexAuthentication({
+    spawnProcess: () => fakeCodexStatusProcess({ code: 0, output: "Logged in using ChatGPT" }),
+    commandPath: "codex",
+    cwd: ".",
+    env: {},
+  });
+  assert.equal(authenticated.status, "authenticated");
+
+  const signedOut = await probeCodexAuthentication({
+    spawnProcess: () =>
+      fakeCodexStatusProcess({ code: 1, output: "Not logged in. Run codex login." }),
+    commandPath: "codex",
+    cwd: ".",
+    env: {},
+  });
+  assert.equal(signedOut.status, "signed-out");
+
+  const timedOut = await probeCodexAuthentication({
+    spawnProcess: () => fakeCodexStatusProcess({ neverExits: true }),
+    commandPath: "codex",
+    cwd: ".",
+    env: {},
+    timeoutMs: 5,
+  });
+  assert.equal(timedOut.status, "unavailable");
+  assert.match(timedOut.detail, /timed out/);
+});
+
+test("a transient Codex probe cannot erase a confirmed login", () => {
+  const result = preserveConfirmedCodexAuthentication(
+    { status: "authenticated", detail: "confirmed" },
+    { status: "unavailable", detail: "temporary timeout" },
+  );
+  assert.equal(result.status, "authenticated");
+  assert.equal(result.transientDetail, "temporary timeout");
+});
 
 test("Codex coach invocation is GPT-5.6 Sol, ephemeral, read-only, and tool-free", () => {
   const invocation = buildCodexCoachInvocation("Evidence payload");

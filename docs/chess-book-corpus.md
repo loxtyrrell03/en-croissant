@@ -110,7 +110,12 @@ passages.
 
 Codex is installed once on the gaming PC and uses its saved ChatGPT login. The
 server checks authentication with `codex login status` and disables the phone
-submit button until it succeeds.
+submit button until it succeeds. Authentication probes are coalesced, use the
+same explicit Codex home as model runs, and distinguish a genuine signed-out
+response from a transient process failure. A temporary probe timeout cannot
+erase a previously confirmed session. While the dependency is unavailable,
+the phone retries readiness automatically and clears obsolete errors after the
+PC recovers.
 
 ## Page and diagram fidelity
 

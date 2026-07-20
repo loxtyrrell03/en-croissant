@@ -28,6 +28,8 @@ import {
   buildCriticalMoments,
   buildPhoneCoachPrompt,
   normalizeFen as normalizeCoachFen,
+  preserveConfirmedCodexAuthentication,
+  probeCodexAuthentication,
   searchChessBookCorpus,
 } from "./chess-coach-service.mjs";
 
@@ -85,6 +87,10 @@ const coachCommandPath = resolve(
 const coachModel = "gpt-5.6-sol";
 const coachReasoningEffort = "medium";
 const coachWorkRoot = join(serverRoot, "coach-work");
+const coachProcessEnv = {
+  ...process.env,
+  CODEX_HOME: process.env.CODEX_HOME || join(userProfile, ".codex"),
+};
 const hostedLibraryIndex = new HostedLibraryIndexCache(join(libraryRoot, "manifest.json"));
 const enPositionQueryBinary = join(
   repoRoot,
@@ -128,7 +134,8 @@ let sharedLichessCredential = null;
 let activeAppCache = null;
 let chessBookDatabase = null;
 let phoneCoachQueue = Promise.resolve();
-let coachAuthenticationCache = { checkedAt: 0, available: false };
+let coachAuthenticationCache = { checkedAt: 0, status: "unknown" };
+let coachAuthenticationProbe = null;
 
 await mkdir(serverRoot, { recursive: true });
 await mkdir(dirname(statePath), { recursive: true });
@@ -1020,7 +1027,10 @@ async function writeChessCoachHealth(response) {
   const corpusStat = await stat(chessBookCorpusPath).catch(() => null);
   const commandStat = await stat(coachCommandPath).catch(() => null);
   const modelInstalled = Boolean(commandStat?.isFile());
-  const modelAvailable = modelInstalled && (await isCoachModelAuthenticated());
+  const authentication = modelInstalled
+    ? await getCoachModelAuthentication()
+    : { status: "unavailable" };
+  const modelAvailable = modelInstalled && authentication.status === "authenticated";
   let bookCount = 0;
   let chunkCount = 0;
   if (corpusStat?.isFile()) {
@@ -1034,6 +1044,7 @@ async function writeChessCoachHealth(response) {
         corpusAvailable: false,
         modelInstalled,
         modelAvailable,
+        modelStatus: authentication.status,
         model: coachModel,
         error: `Chess-book corpus could not be opened: ${error?.message || error}`,
       });
@@ -1044,6 +1055,7 @@ async function writeChessCoachHealth(response) {
     corpusAvailable: Boolean(corpusStat?.isFile()),
     modelInstalled,
     modelAvailable,
+    modelStatus: authentication.status,
     model: coachModel,
     bookCount,
     chunkCount,
@@ -1227,9 +1239,17 @@ async function runPhoneCoachModel(prompt) {
     error.code = "MODEL_UNAVAILABLE";
     throw error;
   }
-  if (!(await isCoachModelAuthenticated(true))) {
+  const authentication = await getCoachModelAuthentication();
+  if (authentication.status === "signed-out") {
     const error = new Error(
       "OpenAI Codex is installed but not signed in. Run `codex login` on the gaming PC.",
+    );
+    error.code = "MODEL_UNAVAILABLE";
+    throw error;
+  }
+  if (authentication.status !== "authenticated") {
+    const error = new Error(
+      "The PC could not verify the OpenAI Codex sign-in. Please try Check PC again.",
     );
     error.code = "MODEL_UNAVAILABLE";
     throw error;
@@ -1242,7 +1262,7 @@ async function runPhoneCoachModel(prompt) {
     });
     const child = spawn(coachCommandPath, invocation.args, {
         cwd: coachWorkRoot,
-        env: process.env,
+        env: coachProcessEnv,
         windowsHide: true,
         stdio: ["pipe", "pipe", "pipe"],
     });
@@ -1270,7 +1290,14 @@ async function runPhoneCoachModel(prompt) {
     child.once("error", (error) => finish(rejectPromise, error));
     child.once("exit", (code) => {
       const combined = `${stdout}\n${stderr}`;
-      if (/unauthenticated|not logged|codex login|authentication required|status.?401/i.test(combined)) {
+      if (
+        /unauthenticated|not logged|codex login|authentication required|status.?401/i.test(combined)
+      ) {
+        coachAuthenticationCache = {
+          checkedAt: Date.now(),
+          status: "signed-out",
+          detail: combined.replace(/\s+/g, " ").trim().slice(0, 1000),
+        };
         const error = new Error(
           "OpenAI Codex is installed but not signed in. Run `codex login` on the gaming PC.",
         );
@@ -1295,34 +1322,34 @@ async function runPhoneCoachModel(prompt) {
   });
 }
 
-async function isCoachModelAuthenticated(force = false) {
+async function getCoachModelAuthentication() {
   const now = Date.now();
-  if (!force && now - coachAuthenticationCache.checkedAt < 30000) {
-    return coachAuthenticationCache.available;
+  const cacheLifetime = coachAuthenticationCache.status === "unavailable" ? 5000 : 30000;
+  if (now - coachAuthenticationCache.checkedAt < cacheLifetime) {
+    return coachAuthenticationCache;
   }
-  const available = await new Promise((resolvePromise) => {
-    const child = spawn(coachCommandPath, ["login", "status"], {
-      cwd: coachWorkRoot,
-      env: process.env,
-      windowsHide: true,
-      stdio: ["ignore", "ignore", "ignore"],
+  if (coachAuthenticationProbe) return coachAuthenticationProbe;
+
+  const previous = coachAuthenticationCache;
+  coachAuthenticationProbe = probeCodexAuthentication({
+    spawnProcess: spawn,
+    commandPath: coachCommandPath,
+    cwd: coachWorkRoot,
+    env: coachProcessEnv,
+    timeoutMs: 15000,
+  })
+    .then(async (result) => {
+      const authentication = preserveConfirmedCodexAuthentication(previous, result);
+      coachAuthenticationCache = { ...authentication, checkedAt: Date.now() };
+      if (result.status === "unavailable") {
+        await appendLog(`Codex authentication probe was inconclusive: ${result.detail}`);
+      }
+      return coachAuthenticationCache;
+    })
+    .finally(() => {
+      coachAuthenticationProbe = null;
     });
-    let settled = false;
-    const finish = (value) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timeoutId);
-      resolvePromise(value);
-    };
-    const timeoutId = setTimeout(() => {
-      child.kill();
-      finish(false);
-    }, 5000);
-    child.once("error", () => finish(false));
-    child.once("exit", (code) => finish(code === 0));
-  });
-  coachAuthenticationCache = { checkedAt: now, available };
-  return available;
+  return coachAuthenticationProbe;
 }
 
 function publicBookPassages(passages) {

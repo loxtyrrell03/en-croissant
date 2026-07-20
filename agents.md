@@ -1,5 +1,17 @@
 # AGENTS.md
 
+- On 2026-07-20, the phone Coach's false `Codex is installed but not signed
+  in` warning was traced to two combined faults: its forced submission-time
+  `codex login status` process had a five-second deadline and mapped every
+  timeout or launch failure to signed-out while a 16-thread engine was active,
+  and the phone retained that request error after health recovered. Codex auth
+  probing is now tri-state, coalesced, allowed 15 seconds, pinned to the same
+  explicit `CODEX_HOME` as model execution, and preserves a confirmed login
+  across an inconclusive transient probe; only explicit auth output marks the
+  session signed out. The phone retries unavailable health every five seconds
+  and clears the obsolete error once readiness is confirmed. Preserve these
+  distinctions so compute contention can never masquerade as lost credentials.
+
 - On 2026-07-20, PC-hosted phone changes are not complete merely because they
   build locally. Unless the owner explicitly asks for local-only work, every
   completed phone UI or phone-server change must be committed, published with

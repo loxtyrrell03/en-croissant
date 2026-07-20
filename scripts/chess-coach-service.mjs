@@ -1,6 +1,92 @@
 const MAX_BOOK_PASSAGES = 6;
 const MAX_EXCERPT_CHARACTERS = 1100;
 
+export function classifyCodexAuthentication(exitCode, output = "") {
+  if (exitCode === 0) {
+    return { status: "authenticated", detail: "Codex login status succeeded." };
+  }
+
+  const detail = String(output || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 1000);
+  if (
+    /not logged in|not signed in|unauthenticated|authentication required|codex login|status.?401/i.test(
+      detail,
+    )
+  ) {
+    return { status: "signed-out", detail: detail || "Codex reported a signed-out session." };
+  }
+  return {
+    status: "unavailable",
+    detail: detail || `Codex login status exited with code ${String(exitCode)}.`,
+  };
+}
+
+export function preserveConfirmedCodexAuthentication(previous, next) {
+  if (next?.status === "unavailable" && previous?.status === "authenticated") {
+    return {
+      ...previous,
+      transientDetail: next.detail,
+    };
+  }
+  return next;
+}
+
+export function probeCodexAuthentication({
+  spawnProcess,
+  commandPath,
+  cwd,
+  env,
+  timeoutMs = 15000,
+}) {
+  return new Promise((resolvePromise) => {
+    let child;
+    try {
+      child = spawnProcess(commandPath, ["login", "status"], {
+        cwd,
+        env,
+        windowsHide: true,
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+    } catch (error) {
+      return resolvePromise({
+        status: "unavailable",
+        detail: `Codex login status could not start: ${error?.message || error}`,
+      });
+    }
+
+    let output = "";
+    let timeoutId;
+    let settled = false;
+    const finish = (result) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeoutId);
+      resolvePromise(result);
+    };
+    const appendOutput = (chunk) => {
+      if (output.length < 16 * 1024) output += String(chunk);
+    };
+    child.stdout?.on("data", appendOutput);
+    child.stderr?.on("data", appendOutput);
+    child.once("error", (error) =>
+      finish({
+        status: "unavailable",
+        detail: `Codex login status failed to start: ${error?.message || error}`,
+      }),
+    );
+    child.once("exit", (code) => finish(classifyCodexAuthentication(code, output)));
+    timeoutId = setTimeout(() => {
+      child.kill();
+      finish({
+        status: "unavailable",
+        detail: `Codex login status timed out after ${timeoutMs} ms.`,
+      });
+    }, timeoutMs);
+  });
+}
+
 export function buildCodexCoachInvocation(
   prompt,
   { model = "gpt-5.6-sol", reasoningEffort = "medium" } = {},

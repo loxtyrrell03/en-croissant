@@ -35,6 +35,7 @@ export type WebChessCoachHealth = {
   corpusAvailable: boolean;
   modelInstalled: boolean;
   modelAvailable: boolean;
+  modelStatus?: "authenticated" | "signed-out" | "unavailable" | "unknown";
   model: string;
   bookCount: number;
   chunkCount: number;

@@ -1738,25 +1738,41 @@ function CoachUnderBoardPanel({
   const [response, setResponse] = useState<WebChessCoachResponse | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const healthRequestRef = useRef<AbortController | null>(null);
 
   const loadHealth = useCallback(() => {
+    if (healthRequestRef.current) return healthRequestRef.current;
     const controller = new AbortController();
+    healthRequestRef.current = controller;
     setHealthError("");
     void getWebChessCoachHealth(controller.signal)
-      .then(setHealth)
+      .then((nextHealth) => {
+        setHealth(nextHealth);
+        if (nextHealth.ok) setError("");
+      })
       .catch((healthFailure) => {
+        if (controller.signal.aborted) return;
         setHealth(null);
         setHealthError(
           healthFailure instanceof Error ? healthFailure.message : "The PC coach is unreachable.",
         );
+      })
+      .finally(() => {
+        if (healthRequestRef.current === controller) healthRequestRef.current = null;
       });
     return controller;
   }, []);
 
   useEffect(() => {
-    const controller = loadHealth();
-    return () => controller.abort();
+    loadHealth();
+    return () => healthRequestRef.current?.abort();
   }, [loadHealth]);
+
+  useEffect(() => {
+    if (health?.ok) return;
+    const retryId = window.setInterval(loadHealth, 5000);
+    return () => window.clearInterval(retryId);
+  }, [health?.ok, loadHealth]);
 
   useEffect(() => {
     setPlayerColor(defaultPlayerColor);
@@ -1822,7 +1838,9 @@ function CoachUnderBoardPanel({
             {!health.corpusAvailable
               ? "The PC book corpus is unavailable."
               : health.modelInstalled
-                ? "OpenAI Codex needs its one-time ChatGPT sign-in."
+                ? health.modelStatus === "unavailable"
+                  ? "The PC could not verify the Codex sign-in. It will retry automatically."
+                  : "OpenAI Codex needs its one-time ChatGPT sign-in."
                 : "The PC needs the OpenAI Codex app or CLI installed."}
           </Text>
           <Text size="xs" c="dimmed">
