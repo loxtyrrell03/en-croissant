@@ -4,12 +4,15 @@
   of belonging to the Engine tab. Switching among Moves, Database, Prep, and
   the full Engine view no longer unmounts or cancels the current PC search;
   every non-engine tab carries a compact always-available strip with an
-  on/off switch, the top three moves, and their White-relative evaluations.
+  on/off switch, live NPS, the top three moves, and their White-relative
+  evaluations; the full Engine view also exposes NPS as a header metric.
   Live engine arrows also remain visible across those tabs. The phone board
   now has the fork-style 25 px evaluation rail on its left, oriented with the
-  board and driven by the same top line as the strip. Keep one engine component
-  mounted across board-panel changes so future UI reshuffles cannot reintroduce
-  cancellation or duplicate Stockfish requests.
+  board and driven by the same top line as the strip. Its visible score uses
+  the fork's compact one-decimal format so it cannot overflow the narrow rail,
+  while the accessible label retains the precise evaluation. Keep one engine
+  component mounted across board-panel changes so future UI reshuffles cannot
+  reintroduce cancellation or duplicate Stockfish requests.
 
 - On 2026-07-20, phone Database and Prep lookups were moved onto the gaming
   PC after Lichess All appeared to hang between positions. The visible delay

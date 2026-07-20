@@ -2822,10 +2822,6 @@ function EngineUnderBoardPanel({
   });
   const liveTopLine = stockfishLines[0] ?? null;
   const liveLineSpeed = liveTopLine ? formatWebEngineNodeSpeed(liveTopLine.nps) : null;
-  const liveStatus =
-    liveTopLine && liveLineSpeed
-      ? `${getWebEngineSourceLabel(liveTopLine)} · ${liveLineSpeed}`
-      : null;
 
   if (compact) {
     return (
@@ -2845,14 +2841,19 @@ function EngineUnderBoardPanel({
               {topLine ? formatWebEngineScore(topLine.score) : "--"}
             </Code>
           </Group>
-          <Switch
-            aria-label="Toggle Stockfish 18 analysis"
-            checked={settings.enabled}
-            onChange={(event) => updateSettings({ enabled: event.currentTarget.checked })}
-            onLabel="ON"
-            offLabel="OFF"
-            size="sm"
-          />
+          <Group className={classes.compactEngineHeaderRight} gap={6} wrap="nowrap">
+            <Text className={classes.compactEngineNps} size="xs" c="dimmed">
+              {liveLineSpeed ?? "-- NPS"}
+            </Text>
+            <Switch
+              aria-label="Toggle Stockfish 18 analysis"
+              checked={settings.enabled}
+              onChange={(event) => updateSettings({ enabled: event.currentTarget.checked })}
+              onLabel="ON"
+              offLabel="OFF"
+              size="sm"
+            />
+          </Group>
         </Group>
 
         {settings.enabled ? (
@@ -2922,11 +2923,6 @@ function EngineUnderBoardPanel({
               </Code>
             ) : null}
           </Group>
-          {settings.enabled && liveStatus ? (
-            <Text size="xs" c="dimmed" truncate>
-              {liveStatus}
-            </Text>
-          ) : null}
         </Box>
 
         <Group className={classes.enginePanelHeaderRight} gap={8} wrap="nowrap">
@@ -2944,6 +2940,14 @@ function EngineUnderBoardPanel({
             </Text>
             <Text size="sm" fw={800}>
               {topLine?.depth ? topLine.depth : "--"}
+            </Text>
+          </Box>
+          <Box className={classes.enginePanelMetric}>
+            <Text size="xs" c="dimmed">
+              NPS
+            </Text>
+            <Text size="sm" fw={800}>
+              {liveLineSpeed ? liveLineSpeed.replace(" NPS", "") : "--"}
             </Text>
           </Box>
           <ActionIcon.Group>
@@ -6195,9 +6199,9 @@ function getWebEngineSourceLabel(line: WebEngineLine) {
 
 function formatWebEngineNodeSpeed(value?: number | null) {
   if (!value || !Number.isFinite(value) || value <= 0) return null;
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)} Mn/s`;
-  if (value >= 1_000) return `${Math.round(value / 1_000)} kn/s`;
-  return `${Math.round(value)} n/s`;
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M NPS`;
+  if (value >= 1_000) return `${Math.round(value / 1_000)}k NPS`;
+  return `${Math.round(value)} NPS`;
 }
 
 function engineStatusTextColor(status: WebEnginePanelStatus) {
@@ -7042,7 +7046,7 @@ function WebBoardEvalBar({
         ? 100
         : 0
     : 50;
-  const scoreLabel = score ? formatWebEngineScore(score).replace(/^[+-]/, "") : "";
+  const scoreLabel = score ? formatWebEvalBarScore(score) : "";
   const blackSection = (
     <Box
       key="black"
@@ -7091,6 +7095,11 @@ function WebBoardEvalBar({
       </Box>
     </Tooltip>
   );
+}
+
+function formatWebEvalBarScore(score: WebEngineLine["score"]) {
+  if (score.type === "mate") return `M${Math.abs(score.value)}`;
+  return Math.abs(score.value / 100).toFixed(1);
 }
 
 const BOARD_SCROLL_INTENT_PX = 8;
