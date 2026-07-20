@@ -1,5 +1,13 @@
 # AGENTS.md
 
+- On 2026-07-20, the phone engine-arrow styling was restored on top of the
+  remote-first Stockfish build after a publish from an older checkout briefly
+  replaced it. The best MultiPV move uses the strong blue brush, alternative
+  moves use pale blue, and the existing win-chance-based widths remain intact.
+  The combined GitHub Pages bundle was verified to contain both this arrow
+  hierarchy and the gaming-PC Stockfish endpoint; future phone publishes must
+  preserve both changes together.
+
 - On 2026-07-20, the shared Stockfish 18 service was restored for the laptop
   and phone. The UCI listener now binds directly to the gaming PC's private
   Tailscale address because the former TCP Serve hop accepted and immediately
