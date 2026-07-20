@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
 import {
   copyFile,
@@ -31,6 +32,7 @@ const siteRoot = resolve(process.env.EN_CROISSANT_HOME_SERVER_SITE || join(serve
 const statePath = join(serverRoot, "state", "web-state.json");
 const stateBackupRoot = join(serverRoot, "state", "backups");
 const lichessCredentialPath = join(serverRoot, "credentials", "lichess.json");
+const lichessExplorerCacheRoot = join(serverRoot, "cache", "lichess-explorer");
 const logPath = join(serverRoot, "home-server.log");
 const port = positiveInteger(process.env.EN_CROISSANT_HOME_SERVER_PORT, 8787);
 const host = "127.0.0.1";
@@ -54,6 +56,11 @@ const enPositionQueryBinary = join(
 );
 const maxStateBytes = 256 * 1024 * 1024;
 const maxCredentialBytes = 4 * 1024;
+const lichessExplorerFreshMs = 30 * 60 * 1000;
+const lichessPlayerExplorerFreshMs = 5 * 60 * 1000;
+const lichessMastersExplorerFreshMs = 24 * 60 * 60 * 1000;
+const lichessExplorerStaleMs = 14 * 24 * 60 * 60 * 1000;
+const maxExplorerMemoryEntries = 1024;
 const privateCredentialOrigins = new Set([
   "https://gaming-pc.tail89d19b.ts.net",
   "https://loxtyrrell03.github.io",
@@ -66,7 +73,12 @@ let outpostCatalog = null;
 let outpostCatalogLoadedAt = 0;
 let enCatalog = null;
 let enCatalogLoadedAt = 0;
-const enPositionCache = new Map();
+const databasePositionCache = new Map();
+const lichessExplorerMemoryCache = new Map();
+const lichessExplorerRequests = new Map();
+let lichessExplorerCacheHits = 0;
+let lichessExplorerCacheMisses = 0;
+let lichessExplorerUpstreamRequests = 0;
 let libraryRefreshTimer = null;
 let libraryRefreshRunning = false;
 let libraryRefreshQueued = false;
@@ -119,11 +131,17 @@ async function handleRequest(request, response) {
       outpostDatabase,
       enDatabases: enCatalog?.length ?? null,
       outpostCollections: outpostCatalog?.length ?? null,
+      databasePositionCacheEntries: databasePositionCache.size,
       libraryRefreshRunning,
       lastLibraryRefresh,
       lastLibraryError,
       lichessConnected: Boolean(sharedLichessCredential),
       lichessUsername: sharedLichessCredential?.username ?? null,
+      lichessExplorerCacheEntries: lichessExplorerMemoryCache.size,
+      lichessExplorerCacheHits,
+      lichessExplorerCacheMisses,
+      lichessExplorerRequests: lichessExplorerRequests.size,
+      lichessExplorerUpstreamRequests,
     });
   }
 
@@ -136,6 +154,11 @@ async function handleRequest(request, response) {
   if (pathname === "/api/lichess-credential") {
     if (method === "GET") return readLichessCredential(response);
     if (method === "PUT") return writeLichessCredential(request, response);
+    return writeJson(response, 405, { error: "Method not allowed." });
+  }
+
+  if (pathname === "/api/lichess-explorer") {
+    if (method === "GET") return writeLichessExplorer(requestUrl, response);
     return writeJson(response, 405, { error: "Method not allowed." });
   }
 
@@ -303,6 +326,234 @@ async function writeLichessCredential(request, response) {
   return writeJson(response, 200, { connected: true, ...credential });
 }
 
+async function writeLichessExplorer(requestUrl, response) {
+  if (!sharedLichessCredential) {
+    return writeJson(response, 503, { error: "The shared Lichess account is unavailable." });
+  }
+
+  const upstreamUrl = buildLichessExplorerUrl(requestUrl);
+  if (!upstreamUrl) {
+    return writeJson(response, 400, { error: "Invalid Lichess explorer request." });
+  }
+
+  const cacheKey = upstreamUrl.toString();
+  const now = Date.now();
+  const freshMs = getLichessExplorerFreshMs(upstreamUrl);
+  const cached = await readLichessExplorerCache(cacheKey);
+  const ageMs = cached ? Math.max(0, now - cached.fetchedAt) : Number.POSITIVE_INFINITY;
+
+  if (cached && ageMs <= freshMs) {
+    lichessExplorerCacheHits += 1;
+    return writeJson(response, 200, cached.data, explorerResponseHeaders("hit", ageMs));
+  }
+
+  if (cached && ageMs <= lichessExplorerStaleMs) {
+    lichessExplorerCacheHits += 1;
+    void refreshLichessExplorer(cacheKey, upstreamUrl).catch((error) =>
+      appendLog(`Lichess explorer background refresh failed: ${error}`),
+    );
+    return writeJson(response, 200, cached.data, explorerResponseHeaders("stale", ageMs));
+  }
+
+  lichessExplorerCacheMisses += 1;
+  try {
+    const startedAt = Date.now();
+    const record = await refreshLichessExplorer(cacheKey, upstreamUrl);
+    return writeJson(response, 200, record.data, {
+      ...explorerResponseHeaders("miss", 0),
+      "server-timing": `lichess;dur=${Math.max(0, Date.now() - startedAt)}`,
+    });
+  } catch (error) {
+    const status = Number(error?.statusCode) || 502;
+    return writeJson(response, status, {
+      error: error instanceof Error ? error.message : "Lichess explorer request failed.",
+    });
+  }
+}
+
+function buildLichessExplorerUrl(requestUrl) {
+  const source = requestUrl.searchParams.get("source");
+  if (source !== "lichess-all" && source !== "lichess-masters") return null;
+
+  const fen = String(requestUrl.searchParams.get("fen") || "").trim();
+  if (!fen || fen.length > 120) return null;
+
+  const player = normalizeLichessPlayer(requestUrl.searchParams.get("player"));
+  const endpoint =
+    source === "lichess-masters" ? "masters" : player ? "player" : "lichess";
+  const upstreamUrl = new URL(`https://explorer.lichess.org/${endpoint}`);
+  upstreamUrl.searchParams.set("fen", fen);
+  upstreamUrl.searchParams.set(
+    "moves",
+    String(Math.max(1, Math.min(30, positiveInteger(requestUrl.searchParams.get("moves"), 12)))),
+  );
+
+  if (source === "lichess-all") {
+    upstreamUrl.searchParams.set("variant", "standard");
+    if (player) {
+      upstreamUrl.searchParams.set("player", player);
+      upstreamUrl.searchParams.set(
+        "color",
+        requestUrl.searchParams.get("color") === "black" ? "black" : "white",
+      );
+    }
+    appendAllowedCsvParam(upstreamUrl, requestUrl, "speeds", [
+      "ultraBullet",
+      "bullet",
+      "blitz",
+      "rapid",
+      "classical",
+      "correspondence",
+    ]);
+    appendAllowedCsvParam(upstreamUrl, requestUrl, "ratings", [
+      "0",
+      "1000",
+      "1200",
+      "1400",
+      "1600",
+      "1800",
+      "2000",
+      "2200",
+      "2500",
+    ]);
+    appendMatchingParam(upstreamUrl, requestUrl, "since", /^\d{4}-\d{2}$/);
+    appendMatchingParam(upstreamUrl, requestUrl, "until", /^\d{4}-\d{2}$/);
+  } else {
+    appendMatchingParam(upstreamUrl, requestUrl, "since", /^\d{4}$/);
+    appendMatchingParam(upstreamUrl, requestUrl, "until", /^\d{4}$/);
+  }
+
+  return upstreamUrl;
+}
+
+function normalizeLichessPlayer(value) {
+  const player = String(value || "").trim();
+  return /^[A-Za-z0-9_-]{1,30}$/.test(player) ? player : "";
+}
+
+function appendAllowedCsvParam(upstreamUrl, requestUrl, key, allowed) {
+  const values = String(requestUrl.searchParams.get(key) || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter((value) => allowed.includes(value));
+  if (values.length > 0) upstreamUrl.searchParams.set(key, [...new Set(values)].join(","));
+}
+
+function appendMatchingParam(upstreamUrl, requestUrl, key, pattern) {
+  const value = String(requestUrl.searchParams.get(key) || "").trim();
+  if (pattern.test(value)) upstreamUrl.searchParams.set(key, value);
+}
+
+function getLichessExplorerFreshMs(upstreamUrl) {
+  if (upstreamUrl.pathname.endsWith("/masters")) return lichessMastersExplorerFreshMs;
+  if (upstreamUrl.pathname.endsWith("/player")) return lichessPlayerExplorerFreshMs;
+  return lichessExplorerFreshMs;
+}
+
+async function readLichessExplorerCache(cacheKey) {
+  const memoryRecord = lichessExplorerMemoryCache.get(cacheKey);
+  if (memoryRecord) {
+    touchMapEntry(lichessExplorerMemoryCache, cacheKey, memoryRecord);
+    return memoryRecord;
+  }
+
+  const record = normalizeLichessExplorerCacheRecord(
+    await readJsonFile(getLichessExplorerCachePath(cacheKey)),
+    cacheKey,
+  );
+  if (record) rememberLichessExplorerCache(cacheKey, record);
+  return record;
+}
+
+function refreshLichessExplorer(cacheKey, upstreamUrl) {
+  const pending = lichessExplorerRequests.get(cacheKey);
+  if (pending) return pending;
+
+  const request = fetchLichessExplorer(upstreamUrl)
+    .then(async (data) => {
+      const record = { cacheKey, fetchedAt: Date.now(), data };
+      rememberLichessExplorerCache(cacheKey, record);
+      await mkdir(lichessExplorerCacheRoot, { recursive: true });
+      const cachePath = getLichessExplorerCachePath(cacheKey);
+      const temporaryPath = `${cachePath}.${process.pid}.tmp`;
+      await writeFile(temporaryPath, `${JSON.stringify(record)}\n`, "utf8");
+      await renameReplacing(temporaryPath, cachePath);
+      return record;
+    })
+    .finally(() => lichessExplorerRequests.delete(cacheKey));
+  lichessExplorerRequests.set(cacheKey, request);
+  return request;
+}
+
+async function fetchLichessExplorer(upstreamUrl) {
+  lichessExplorerUpstreamRequests += 1;
+  const upstreamResponse = await fetch(upstreamUrl, {
+    headers: {
+      accept: "application/json, application/x-ndjson",
+      authorization: `Bearer ${sharedLichessCredential.token}`,
+    },
+    signal: AbortSignal.timeout(20_000),
+  });
+  if (!upstreamResponse.ok) {
+    const error = new Error(`Lichess explorer returned HTTP ${upstreamResponse.status}.`);
+    error.statusCode = upstreamResponse.status;
+    throw error;
+  }
+
+  const text = await upstreamResponse.text();
+  const lastLine = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .at(-1);
+  if (!lastLine) throw new Error("Lichess explorer returned an empty response.");
+  const data = JSON.parse(lastLine);
+  if (!data || typeof data !== "object" || !Array.isArray(data.moves)) {
+    throw new Error("Lichess explorer returned an invalid response.");
+  }
+  return data;
+}
+
+function normalizeLichessExplorerCacheRecord(value, cacheKey) {
+  if (
+    !value ||
+    typeof value !== "object" ||
+    value.cacheKey !== cacheKey ||
+    !Number.isFinite(value.fetchedAt) ||
+    !value.data ||
+    typeof value.data !== "object" ||
+    !Array.isArray(value.data.moves)
+  ) {
+    return null;
+  }
+  return { cacheKey, fetchedAt: Number(value.fetchedAt), data: value.data };
+}
+
+function getLichessExplorerCachePath(cacheKey) {
+  const hash = createHash("sha256").update(cacheKey).digest("hex");
+  return join(lichessExplorerCacheRoot, `${hash}.json`);
+}
+
+function rememberLichessExplorerCache(cacheKey, record) {
+  touchMapEntry(lichessExplorerMemoryCache, cacheKey, record);
+  while (lichessExplorerMemoryCache.size > maxExplorerMemoryEntries) {
+    lichessExplorerMemoryCache.delete(lichessExplorerMemoryCache.keys().next().value);
+  }
+}
+
+function touchMapEntry(map, key, value) {
+  map.delete(key);
+  map.set(key, value);
+}
+
+function explorerResponseHeaders(cache, ageMs) {
+  return {
+    "cache-control": "private, no-store",
+    "x-en-croissant-cache": cache,
+    "x-en-croissant-cache-age": String(Math.round(Math.max(0, ageMs))),
+  };
+}
+
 async function writeLiveLibraryManifest(response) {
   const base = await readJsonFile(join(libraryRoot, "manifest.json"));
   const [en, outpost] = await Promise.all([getEnCatalog(), getOutpostCatalog()]);
@@ -328,8 +579,12 @@ async function writeLiveLibraryManifest(response) {
 
 async function writeDatabaseManifest(requestUrl, response) {
   const hostedPath = normalizeHostedPath(requestUrl.searchParams.get("hostedPath") || "");
-  const collection = await findOutpostCollection(hostedPath);
-  const enDatabase = collection ? null : await findEnDatabase(hostedPath);
+  const collection = hostedPath.startsWith("Databases/Outpost/")
+    ? await findOutpostCollection(hostedPath)
+    : null;
+  const enDatabase = hostedPath.startsWith("Databases/Desktop/")
+    ? await findEnDatabase(hostedPath)
+    : null;
   if (!collection && !enDatabase)
     return writeJson(response, 404, { error: "Live database not found." });
   const database = collection || enDatabase;
@@ -351,15 +606,17 @@ async function writeDatabaseManifest(requestUrl, response) {
 async function writeDatabasePosition(requestUrl, response) {
   const hostedPath = normalizeHostedPath(requestUrl.searchParams.get("hostedPath") || "");
   const fen = normalizeFen(requestUrl.searchParams.get("fen") || "");
-  const collection = await findOutpostCollection(hostedPath);
+  const collection = hostedPath.startsWith("Databases/Outpost/")
+    ? await findOutpostCollection(hostedPath)
+    : null;
   if (!fen) return writeJson(response, 404, { error: "Live database not found." });
 
   if (!collection) {
     const enDatabase = await findEnDatabase(hostedPath);
     if (!enDatabase?.indexPath)
       return writeJson(response, 404, { error: "Live position index not found." });
-    const cacheKey = `${enDatabase.indexPath}|${fen}`;
-    let rows = enPositionCache.get(cacheKey);
+    const cacheKey = `en|${enDatabase.indexPath}|${enDatabase.lastModified}|${fen}`;
+    let rows = databasePositionCache.get(cacheKey);
     if (!rows) {
       const output = await runProcessOutput(enPositionQueryBinary, [
         "--index",
@@ -368,10 +625,16 @@ async function writeDatabasePosition(requestUrl, response) {
         fen,
       ]);
       rows = JSON.parse(output || "[]");
-      enPositionCache.set(cacheKey, rows);
-      if (enPositionCache.size > 256) enPositionCache.delete(enPositionCache.keys().next().value);
+      rememberDatabasePosition(cacheKey, rows);
     }
     return writeJson(response, 200, rows, { "cache-control": "no-store" });
+  }
+
+  const cacheKey = `outpost|${collection.id}|${collection.lastModified}|${fen}`;
+  const cachedRows = databasePositionCache.get(cacheKey);
+  if (cachedRows) {
+    touchMapEntry(databasePositionCache, cacheKey, cachedRows);
+    return writeJson(response, 200, cachedRows, { "cache-control": "no-store" });
   }
 
   const database = openOutpostDatabase();
@@ -402,9 +665,17 @@ async function writeDatabasePosition(requestUrl, response) {
         black: Number(row.black || 0),
         lastPlayed: row.lastPlayed ? String(row.lastPlayed) : null,
       }));
+    rememberDatabasePosition(cacheKey, rows);
     return writeJson(response, 200, rows, { "cache-control": "no-store" });
   } finally {
     database.close();
+  }
+}
+
+function rememberDatabasePosition(cacheKey, rows) {
+  touchMapEntry(databasePositionCache, cacheKey, rows);
+  while (databasePositionCache.size > 512) {
+    databasePositionCache.delete(databasePositionCache.keys().next().value);
   }
 }
 
@@ -530,6 +801,8 @@ async function collectEnDatabaseFiles(root, directory, output) {
 }
 
 async function findEnDatabase(hostedPath) {
+  const cached = enCatalog?.find((database) => database.hostedPath === hostedPath);
+  if (cached) return cached;
   const catalog = await getEnCatalog();
   return catalog.find((database) => database.hostedPath === hostedPath) || null;
 }
@@ -557,6 +830,8 @@ async function findEnSearchIndex(databasePath, databaseStat) {
 }
 
 async function findOutpostCollection(hostedPath) {
+  const cached = outpostCatalog?.find((collection) => collection.hostedPath === hostedPath);
+  if (cached) return cached;
   const catalog = await getOutpostCatalog();
   return catalog.find((collection) => collection.hostedPath === hostedPath) || null;
 }
@@ -629,14 +904,12 @@ async function watchRoot(root, outpostOnly) {
       const filename = String(event.filename || "").toLowerCase();
       if (outpostOnly) {
         if (filename.includes("library.sqlite")) {
-          outpostCatalog = null;
           outpostCatalogLoadedAt = 0;
         }
         continue;
       }
       if (/\.(pgn|pdf|db3|json)$/i.test(filename)) scheduleLibraryRefresh();
       if (/\.db3$/i.test(filename)) {
-        enCatalog = null;
         enCatalogLoadedAt = 0;
       }
     }

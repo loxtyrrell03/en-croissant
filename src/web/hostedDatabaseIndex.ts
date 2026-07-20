@@ -24,6 +24,15 @@ type WebHostedPositionIndexShard = {
   positions: Record<string, Record<string, WebHostedPositionMove>>;
 };
 
+const configuredPrivateServerUrl = String(
+  import.meta.env.VITE_EN_CROISSANT_SERVER_URL ?? "https://gaming-pc.tail89d19b.ts.net",
+).trim();
+const PRIVATE_SERVER_URL = configuredPrivateServerUrl.replace(/\/+$/, "");
+const PRIVATE_POSITION_TIMEOUT_MS = 2_500;
+const MAX_POSITION_CACHE_ENTRIES = 500;
+const positionCache = new Map<string, WebHostedPositionMove[]>();
+const positionRequests = new Map<string, Promise<WebHostedPositionMove[]>>();
+
 export async function getHostedDatabasePositionIndexManifest(
   hostedPath: string,
   signal?: AbortSignal,
@@ -48,19 +57,101 @@ export async function fetchHostedDatabasePositionMoves({
   signal?: AbortSignal;
 }): Promise<WebHostedPositionMove[]> {
   const key = normalizeWebFen(fen);
-  const response = await fetch(getHostedPositionIndexShardUrl(hostedPath, key), { signal });
+  const cacheKey = `${hostedPath}|${key}`;
+  const cached = positionCache.get(cacheKey);
+  if (cached) {
+    touchPositionCache(cacheKey, cached);
+    return cached;
+  }
+
+  let request = positionRequests.get(cacheKey);
+  if (!request) {
+    request = fetchPrivateDatabasePosition(hostedPath, key)
+      .catch(() => fetchStaticDatabasePosition(hostedPath, key))
+      .then((moves) => {
+        touchPositionCache(cacheKey, moves);
+        while (positionCache.size > MAX_POSITION_CACHE_ENTRIES) {
+          const oldestKey = positionCache.keys().next().value;
+          if (oldestKey === undefined) break;
+          positionCache.delete(oldestKey);
+        }
+        return moves;
+      })
+      .finally(() => positionRequests.delete(cacheKey));
+    positionRequests.set(cacheKey, request);
+  }
+
+  return await waitForPositionRequest(request, signal);
+}
+
+async function fetchPrivateDatabasePosition(hostedPath: string, fen: string) {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), PRIVATE_POSITION_TIMEOUT_MS);
+  const url = new URL(`${PRIVATE_SERVER_URL}/api/database-position`);
+  url.searchParams.set("hostedPath", hostedPath);
+  url.searchParams.set("fen", fen);
+
+  try {
+    const response = await fetch(url, {
+      headers: { accept: "application/json" },
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      throw new Error(`Gaming PC database query returned HTTP ${response.status}.`);
+    }
+    return normalizeHostedPositionRows(await response.json().catch(() => null));
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+}
+
+async function fetchStaticDatabasePosition(hostedPath: string, fen: string) {
+  const response = await fetch(getHostedPositionIndexShardUrl(hostedPath, fen));
   if (response.status === 404) return [];
   if (!response.ok) {
     throw new Error(`Hosted database position request failed: ${response.status}`);
   }
 
   const shard = normalizeHostedPositionIndexShard(await response.json().catch(() => null));
-  const moves = shard.positions[key] ?? {};
+  const moves = shard.positions[fen] ?? {};
   return Object.values(moves).sort(
     (a, b) =>
       getHostedMoveTotal(b) - getHostedMoveTotal(a) ||
       a.move.localeCompare(b.move, undefined, { sensitivity: "base" }),
   );
+}
+
+function normalizeHostedPositionRows(data: unknown) {
+  if (!Array.isArray(data)) throw new Error("Gaming PC database query returned invalid data.");
+  return data
+    .map((move) => normalizeHostedPositionMove("", move))
+    .filter((move): move is WebHostedPositionMove => Boolean(move))
+    .sort(
+      (a, b) =>
+        getHostedMoveTotal(b) - getHostedMoveTotal(a) ||
+        a.move.localeCompare(b.move, undefined, { sensitivity: "base" }),
+    );
+}
+
+function touchPositionCache(cacheKey: string, moves: WebHostedPositionMove[]) {
+  positionCache.delete(cacheKey);
+  positionCache.set(cacheKey, moves);
+}
+
+function waitForPositionRequest(
+  request: Promise<WebHostedPositionMove[]>,
+  signal?: AbortSignal,
+) {
+  if (!signal) return request;
+  if (signal.aborted) {
+    return Promise.reject(new DOMException("Database query was cancelled.", "AbortError"));
+  }
+  return new Promise<WebHostedPositionMove[]>((resolve, reject) => {
+    const onAbort = () => reject(new DOMException("Database query was cancelled.", "AbortError"));
+    signal.addEventListener("abort", onAbort, { once: true });
+    request.then(resolve, reject).finally(() => signal.removeEventListener("abort", onAbort));
+  });
 }
 
 function getHostedPositionIndexManifestUrl(hostedPath: string) {

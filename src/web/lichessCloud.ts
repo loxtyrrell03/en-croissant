@@ -1,7 +1,6 @@
 import { parseUci } from "chessops";
 import { normalizeMove } from "chessops/chess";
-import { makeFen } from "chessops/fen";
-import { makeSan, parseSan } from "chessops/san";
+import { makeSan } from "chessops/san";
 import { BoundedMap, BoundedSet } from "@/utils/boundedCache";
 import { positionFromFen } from "@/utils/chessops";
 import type { PrepBuilderEngineMove } from "@/utils/opponentPrep";
@@ -23,7 +22,12 @@ const LICHESS_CLOUD_TIMEOUT_MS = 12_000;
 const LICHESS_CLOUD_MAX_MULTIPV = 5;
 const LICHESS_CLOUD_MIN_REQUEST_INTERVAL_MS = 1_000;
 const LICHESS_CLOUD_RATE_LIMIT_COOLDOWN_MS = 60_000;
-const MAX_CHILD_EVAL_MOVES = 20;
+const PC_STORED_EVAL_TIMEOUT_MS = 2_000;
+const configuredRemoteStockfishUrl = String(
+  import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ??
+    "https://gaming-pc.tail89d19b.ts.net:8443",
+).trim();
+const REMOTE_STOCKFISH_URL = configuredRemoteStockfishUrl.replace(/\/+$/, "");
 
 const cloudCache = new BoundedMap<string, WebLichessCloudData>(500);
 const missingCloudCache = new BoundedSet<string>(2000);
@@ -46,35 +50,17 @@ export async function queryWebLichessCloudEngineMoves({
   signal?: AbortSignal;
 }): Promise<PrepBuilderEngineMove[]> {
   const uniqueMoves = Array.from(new Set((moves ?? []).map(normalizeSan).filter(Boolean)));
-  const requestedMultipv = Math.max(1, Math.min(12, Math.round((multipv ?? uniqueMoves.length) || 1)));
-  const rootMoves = await queryRootCloudMoves({ fen, side, multipv: requestedMultipv, signal });
-  const bySan = new Map(rootMoves.map((move) => [normalizeSan(move.san), move]));
-  const missingMoves = uniqueMoves.filter((move) => !bySan.has(move)).slice(0, MAX_CHILD_EVAL_MOVES);
+  const requestedMultipv = Math.max(1, Math.min(8, Math.round((multipv ?? uniqueMoves.length) || 1)));
+  const data = await getPcStoredEvaluation(fen, requestedMultipv, signal).catch(() => null);
+  if (!data?.pvs?.length) return [];
 
-  const childMoves = await Promise.all(
-    missingMoves.map(async (san) => {
-      const childFen = applySanToFen(fen, san);
-      if (!childFen) return null;
-      const childData = await getCloudEvaluation(childFen, 1, signal).catch(() => null);
-      const firstPv = childData?.pvs?.[0] ?? null;
-      if (!firstPv) return null;
-      const scoreCpForWhite = cloudPvToCp(firstPv);
-      return {
-        san,
-        scoreCpForSide: side === "black" ? -scoreCpForWhite : scoreCpForWhite,
-        rank: null,
-        source: "lichess" as const,
-      };
-    }),
-  );
-
-  for (const move of childMoves) {
-    if (move) bySan.set(normalizeSan(move.san), move);
-  }
-
-  return Array.from(bySan.values()).sort(
-    (a, b) => (a.rank ?? 99) - (b.rank ?? 99) || a.san.localeCompare(b.san),
-  );
+  const rootMoves = cloudDataToPrepBuilderMoves({ fen, side, data });
+  const allowedMoves = new Set(uniqueMoves);
+  return rootMoves
+    .filter((move) => allowedMoves.size === 0 || allowedMoves.has(normalizeSan(move.san)))
+    .sort(
+      (a, b) => (a.rank ?? 99) - (b.rank ?? 99) || a.san.localeCompare(b.san),
+    );
 }
 
 export async function queryWebLichessCloudLines({
@@ -118,25 +104,20 @@ export function webLichessCloudDataToLines(
     .filter((line) => line.uciMoves.length > 0);
 }
 
-async function queryRootCloudMoves({
+function cloudDataToPrepBuilderMoves({
   fen,
   side,
-  multipv,
-  signal,
+  data,
 }: {
   fen: string;
   side: WebColor;
-  multipv: number;
-  signal?: AbortSignal;
+  data: WebLichessCloudData;
 }) {
   const [position] = positionFromFen(fen);
   if (!position) return [];
 
-  const data = await getCloudEvaluation(fen, multipv, signal).catch(() => null);
-  if (!data?.pvs?.length) return [];
-
   const moves: PrepBuilderEngineMove[] = [];
-  for (const [index, pv] of data.pvs.entries()) {
+  for (const [index, pv] of (data.pvs ?? []).entries()) {
     const [firstMove] = pv.moves.trim().split(/\s+/);
     if (!firstMove) continue;
 
@@ -155,6 +136,40 @@ async function queryRootCloudMoves({
   }
 
   return moves;
+}
+
+async function getPcStoredEvaluation(
+  fen: string,
+  multipv: number,
+  signal?: AbortSignal,
+): Promise<WebLichessCloudData> {
+  if (!REMOTE_STOCKFISH_URL) throw new Error("Gaming PC evaluation service is unavailable.");
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), PC_STORED_EVAL_TIMEOUT_MS);
+  const onAbort = () => controller.abort();
+
+  try {
+    if (signal) {
+      if (signal.aborted) controller.abort();
+      signal.addEventListener("abort", onAbort, { once: true });
+    }
+    const url = new URL(`${REMOTE_STOCKFISH_URL}/v1/cloud-eval`);
+    url.searchParams.set("fen", fen);
+    url.searchParams.set("multipv", String(multipv));
+    const response = await fetch(url, {
+      headers: { accept: "application/json" },
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    if (response.status === 404) return { fen, pvs: [] };
+    if (!response.ok) {
+      throw new Error(`Gaming PC stored evaluation returned HTTP ${response.status}.`);
+    }
+    return (await response.json()) as WebLichessCloudData;
+  } finally {
+    window.clearTimeout(timeoutId);
+    signal?.removeEventListener("abort", onAbort);
+  }
 }
 
 async function getCloudEvaluation(
@@ -310,15 +325,6 @@ async function fetchWithTimeout(url: string, signal?: AbortSignal) {
     window.clearTimeout(timeoutId);
     signal?.removeEventListener("abort", onAbort);
   }
-}
-
-function applySanToFen(fen: string, san: string) {
-  const [position] = positionFromFen(fen);
-  if (!position) return null;
-  const move = parseSan(position, san);
-  if (!move) return null;
-  position.play(move);
-  return makeFen(position.toSetup());
 }
 
 function cloudPvToCp(pv: WebLichessCloudPv) {
