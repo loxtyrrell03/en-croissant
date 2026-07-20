@@ -1,14 +1,19 @@
 # AGENTS.md
 
-- On 2026-07-20, phone publishing was made parallel-agent-safe after a stale
+- On 2026-07-20, the owner retired the GitHub Pages phone site and fallback.
+  This instruction supersedes every historical Pages, `web:publish`,
+  `web:push`, web-sync, and fallback-publishing note below. Do not publish the
+  app or hosted library to `loxtyrrell03.github.io`, do not reinstall its sync
+  task, and do not re-enable Pages. The phone app is PC-hosted only and phone
+  changes are deployed exclusively with `npm run web:publish-home`.
+
+- On 2026-07-20, PC phone publishing was made parallel-agent-safe after a stale
   detached worktree finished several minutes after a newer publish and rolled
-  both live sites back to an older mixed feature set. Both publish commands now
-  take one machine-wide mutex, require a clean committed source, stamp every
-  app-shell file into `app-version.json`, and reject any source commit that is
-  not a descendant of the currently deployed source. The Pages checkout also
-  installs a persistent pre-commit guard, so even an already-old publisher is
-  rejected when its metadata is missing, mixed, or behind the live source. PC
-  app shells now deploy into immutable release directories selected by one
+  the live site back to an older mixed feature set. Home publishes take one
+  machine-wide mutex, require a clean committed source, recheck that source
+  after the build, stamp every app-shell file into `app-version.json`, and
+  reject any source commit that is not a descendant of the active deployment.
+  PC app shells deploy into immutable release directories selected by one
   atomic pointer; the home server serves the active release separately from the
   mutable hosted library, so an obsolete script copying into the legacy site
   directory cannot alter the running phone UI. The home-server runtime has a
@@ -502,17 +507,17 @@ model, implementation map, and verification expectations for this app.
   the current design intent instead of only the code diff.
 - For every phone web companion change, treat publishing to the phone app site
   as part of the done criteria. After the app change is locally verified and
-  committed, run `npm run web:publish` so the GitHub Pages phone site is
-  rebuilt, committed, and pushed. This applies to `src/web/**`, browser/PWA
-  startup, `public/web-*`, hosted-library/export scripts, phone-only layout or
-  styling, and any other change whose result should appear on the phone. Do
-  not rely on auto-sync alone for code changes.
-- Phone publishes are serialized and fast-forward-only. If a publish reports
+  committed, run `npm run web:publish-home` so the private PC-hosted phone app
+  is rebuilt and deployed. This applies to `src/web/**`, browser/PWA startup,
+  `public/web-*`, phone-only layout or styling, and any other change whose
+  result should appear on the phone. GitHub Pages is retired; never run
+  `web:publish`, `web:push`, `web:watch`, or `web:install-sync`.
+- PC phone publishes are serialized and fast-forward-only. If a publish reports
   that another publish is active, wait and retry; if it reports that the live
   source is not an ancestor, integrate the deployed commit into the feature
-  worktree before retrying. Never bypass the deployment metadata, Pages hook,
-  immutable home release pointer, or clean-worktree check.
-- If `npm run web:publish` fails, or if the user explicitly asks to defer
+  worktree before retrying. Never bypass the deployment metadata, immutable
+  home release pointer, or clean-worktree check.
+- If `npm run web:publish-home` fails, or if the user explicitly asks to defer
   publishing, say so in the final response and do not describe the phone app
   change as deployed.
 - Do not wait until the end of a long session to save progress unless the user

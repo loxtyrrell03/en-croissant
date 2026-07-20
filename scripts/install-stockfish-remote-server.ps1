@@ -49,7 +49,6 @@ $config = [ordered]@{
   maxMultiPv = 8
   localEvalPath = (Join-Path $env:APPDATA "org.encroissant.app\lichess-cloud-evals")
   allowedOrigins = @(
-    "https://loxtyrrell03.github.io",
     "https://gaming-pc.tail89d19b.ts.net",
     "http://localhost:1420",
     "http://tauri.localhost",
