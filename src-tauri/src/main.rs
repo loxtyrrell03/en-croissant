@@ -105,6 +105,9 @@ pub struct AppState {
     db_cancel_flags: DashMap<String, Arc<AtomicBool>>,
     db_pause_flags: DashMap<String, Arc<AtomicBool>>,
     pgn_offsets: DashMap<String, Vec<u64>>,
+    // Databases with a PGN conversion currently writing to them; guards
+    // against concurrent journal-less imports into the same file.
+    active_conversions: DashMap<String, ()>,
 
     engine_processes: DashMap<(String, String), Arc<tokio::sync::Mutex<EngineProcess>>>,
     analysis_cancel_flags: DashMap<String, Arc<AtomicBool>>,

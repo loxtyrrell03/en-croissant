@@ -8,12 +8,11 @@ import { defineConfig } from "vite";
 
 const isDebug = !!process.env.TAURI_ENV_DEBUG;
 const host = process.env.TAURI_DEV_HOST;
-const usesLivePhoneServer = Boolean(process.env.VITE_EN_CROISSANT_SERVER_URL);
 const usesHomePhoneServer = process.env.VITE_EN_CROISSANT_HOME_BUILD === "1";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    publicDir: usesLivePhoneServer || usesHomePhoneServer ? false : "public",
+    publicDir: usesHomePhoneServer ? false : "public",
     plugins: [
         tanstackRouter({
             target: "react",

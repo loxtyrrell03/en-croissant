@@ -427,9 +427,41 @@ function EngineListener({
             cloudCoveredSearchKeysRef.current.add(searchKey);
           }
 
-          // Local engine payloads are already applied by the event listener. Avoid
-          // duplicating the same update from the request promise while users move.
+          // Local engine payloads are normally applied by the event listener. If the
+          // search finished before the listener attached, or an already-running
+          // search was rejoined (e.g. after window focus), the only copy of the
+          // result is here — fill it in so the panel doesn't stay on skeletons.
           if (engine.type === "local" && !cloudCovered) {
+            if (bestMoves.length === 0) {
+              return;
+            }
+            startTransition(() => {
+              let applied = false;
+              setEngineVariation((prev) => {
+                const existing = prev.get(searchKey);
+                if (existing && existing.length > 0) return prev;
+                applied = true;
+                return withLimitedMapEntry(
+                  prev,
+                  searchKey,
+                  bestMoves,
+                  MAX_ENGINE_RESULT_CACHE_ENTRIES,
+                );
+              });
+              if (!applied) return;
+              setProgress(progress);
+              const currentFirstEngineWithLines = firstEngineWithLinesRef.current;
+              if (
+                currentFirstEngineWithLines === engine.id ||
+                currentFirstEngineWithLines === null
+              ) {
+                setLiveEval({
+                  fen,
+                  movesKey: displayedMovesKey,
+                  score: bestMoves[0].score,
+                });
+              }
+            });
             return;
           }
 
@@ -494,8 +526,19 @@ function EngineListener({
           console.error(`Failed to start analysis for ${engine.name}`, error);
           startTransition(() => {
             if (engine.type === "local") {
-              setEngineVariation((prev) => withoutEmptyMapEntry(prev, searchKey));
-              setProgress(0);
+              if (localRestartAttempts < 1) {
+                setEngineVariation((prev) => withoutEmptyMapEntry(prev, searchKey));
+                setProgress(0);
+                return;
+              }
+              // Out of restart attempts — settle on "no analysis" instead of
+              // leaving the panel stuck on loading skeletons.
+              setEngineVariation((prev) => {
+                const existing = prev.get(searchKey);
+                if (existing && existing.length > 0) return prev;
+                return withLimitedMapEntry(prev, searchKey, [], MAX_ENGINE_RESULT_CACHE_ENTRIES);
+              });
+              setProgress(100);
               return;
             }
             setEngineVariation((prev) => {

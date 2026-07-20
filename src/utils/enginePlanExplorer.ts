@@ -39,6 +39,9 @@ export type EnginePlanPv = {
 
 export type EnginePlanEvidence = EnginePlanPv & {
     firstMove: string;
+    // 0-based ply within this PV at which the owning signal/setup became true;
+    // null when the signal is root-established or its ply is unavailable.
+    completionPly: number | null;
 };
 
 export type EnginePlanSignal = {
@@ -50,6 +53,9 @@ export type EnginePlanSignal = {
     routeSquares?: string[];
     routeSegments?: [string, string][];
     origin?: "pv" | "root" | "template";
+    // 0-based index into pv.uciMoves of the move that first established this
+    // signal within its PV. Undefined for root-origin signals (treated as 0).
+    ply?: number;
 };
 
 export type EnginePlan = EnginePlanSignal & {
@@ -68,6 +74,7 @@ export type EnginePlan = EnginePlanSignal & {
     weightedQualityCp: number | null;
     bestCpLoss: number | null;
     weightedCpLoss: number | null;
+    medianCompletionPly: number | null;
 };
 
 export type EnginePlanSetup = {
@@ -91,6 +98,7 @@ export type EnginePlanSetup = {
     weightedQualityCp: number | null;
     bestCpLoss: number | null;
     weightedCpLoss: number | null;
+    medianCompletionPly: number | null;
 };
 
 export type EnginePlanReport = {
@@ -137,14 +145,24 @@ type PieceState = {
     role: Role;
     squares: string[];
     uciMoves: string[];
+    // Parallel to uciMoves: the 0-based PV index of each tracked move, so the
+    // last entry gives the ply at which the piece reached its final square.
+    moveIndices: number[];
 };
 type ExpansionSide = "queenside" | "kingside" | "central";
-type ExpansionSegmentMap = Record<Color, Record<ExpansionSide, [string, string][]>>;
+type ExpansionSegment = { from: string; to: string; ply: number };
+type ExpansionSegmentMap = Record<Color, Record<ExpansionSide, ExpansionSegment[]>>;
 type EngineCastlingMove = {
     side: "kingside" | "queenside";
     kingTo: SquareName;
     rookFrom: SquareName;
     rookTo: SquareName;
+};
+// PVs whose quality stays within VIABLE_PV_CP of the best root line. Support is
+// measured against these rather than every requested (often junk) multipv line.
+type ViablePvContext = {
+    totalViable: number;
+    viableRanks: Set<number>;
 };
 
 const PV_WEIGHTS = [1, 0.8, 0.65, 0.5];
@@ -152,34 +170,31 @@ const MIN_CLEAR_PVS = 3;
 const MIN_STABLE_DEPTH = 6;
 const NEAR_BEST_CP = 80;
 const DECENT_CP = 150;
+const VIABLE_PV_CP = 80;
 const ENGINE_SETUP_FEATURED_SIGNALS_PER_COLOR = 7;
 const ENGINE_SETUP_MIN_PLANS = 3;
 const ENGINE_SETUP_MAX_PLANS = 6;
 const ENGINE_SETUP_MAX_RESULTS = 30;
-const PAWN_BREAKS: Record<Color, Set<string>> = {
-    white: new Set([
-        "b4",
-        "b5",
-        "c4",
-        "c5",
-        "d4",
-        "d5",
-        "e4",
-        "e5",
-        "f4",
-        "f5",
-        "g4",
-        "g5",
-        "h4",
-        "h5",
-    ]),
-    black: new Set(["b5", "c5", "e5", "f5", "g5", "h5"]),
-};
+// Color-symmetric: the attacksEnemyPawn gate prevents false positives, so both
+// colors share one set covering every {b..h}x{4,5} break square.
+const PAWN_BREAKS: Set<string> = new Set([
+    "b4",
+    "b5",
+    "c4",
+    "c5",
+    "d4",
+    "d5",
+    "e4",
+    "e5",
+    "f4",
+    "f5",
+    "g4",
+    "g5",
+    "h4",
+    "h5",
+]);
+// Single table shared by PV-observed pawn moves and root structure detection.
 const PAWN_SETUP_SQUARES: Record<Color, Set<string>> = {
-    white: new Set(["b3", "c3", "d3", "e3", "g3", "c4", "d4", "e4"]),
-    black: new Set(["b6", "c6", "d6", "e6", "g6", "c5", "d5", "e5"]),
-};
-const ROOT_SETUP_PAWN_SQUARES: Record<Color, Set<string>> = {
     white: new Set(["b3", "c3", "d3", "e3", "f3", "g3", "b4", "c4", "d4", "e4", "f4"]),
     black: new Set(["b6", "c6", "d6", "e6", "f6", "g6", "b5", "c5", "d5", "e5", "f5"]),
 };
@@ -333,6 +348,111 @@ const ENGINE_SETUP_TEMPLATES: EngineSetupTemplate[] = [
             setupCastlingComponent("black", "kingside"),
         ],
     },
+    {
+        id: "white-kia",
+        archetype: "King's Indian Attack",
+        color: "white",
+        required: ["piece_destination:white:bishop:g2", "pawn_setup:white:d3"],
+        preferredEvidence: ["pawn_setup:white:d3", "piece_destination:white:bishop:g2"],
+        components: [
+            setupPieceComponent("white", "knight", "g1", "f3"),
+            setupPawnComponent("white", "g2", "g3"),
+            setupPieceComponent("white", "bishop", "f1", "g2"),
+            setupPawnComponent("white", "d2", "d3"),
+            setupPawnComponent("white", "e2", "e4"),
+            setupPieceComponent("white", "knight", "b1", "d2"),
+            setupCastlingComponent("white", "kingside"),
+        ],
+    },
+    {
+        id: "white-torre",
+        archetype: "Torre",
+        color: "white",
+        required: ["pawn_setup:white:d4", "piece_destination:white:bishop:g5"],
+        preferredEvidence: ["piece_destination:white:bishop:g5"],
+        components: [
+            setupPawnComponent("white", "d2", "d4"),
+            setupPieceComponent("white", "knight", "g1", "f3"),
+            setupPieceComponent("white", "bishop", "c1", "g5"),
+            setupPawnComponent("white", "e2", "e3"),
+            setupPawnComponent("white", "c2", "c3"),
+            setupPieceComponent("white", "knight", "b1", "d2"),
+            setupCastlingComponent("white", "kingside"),
+        ],
+    },
+    {
+        id: "white-stonewall",
+        archetype: "Stonewall",
+        color: "white",
+        required: ["pawn_setup:white:d4", "pawn_setup:white:f4"],
+        preferredEvidence: ["pawn_setup:white:f4", "piece_destination:white:bishop:d3"],
+        components: [
+            setupPawnComponent("white", "d2", "d4"),
+            setupPawnComponent("white", "e2", "e3"),
+            setupPawnComponent("white", "f2", "f4"),
+            setupPieceComponent("white", "bishop", "f1", "d3"),
+            setupPieceComponent("white", "knight", "g1", "f3"),
+            setupPawnComponent("white", "c2", "c3"),
+            setupCastlingComponent("white", "kingside"),
+        ],
+    },
+    {
+        id: "white-jobava",
+        archetype: "Jobava London",
+        color: "white",
+        required: [
+            "pawn_setup:white:d4",
+            "piece_destination:white:knight:c3",
+            "piece_destination:white:bishop:f4",
+        ],
+        preferredEvidence: [
+            "piece_destination:white:knight:c3",
+            "piece_destination:white:bishop:f4",
+        ],
+        components: [
+            setupPawnComponent("white", "d2", "d4"),
+            setupPieceComponent("white", "knight", "b1", "c3"),
+            setupPieceComponent("white", "bishop", "c1", "f4"),
+            setupPawnComponent("white", "e2", "e3"),
+        ],
+    },
+    {
+        id: "black-stonewall-dutch",
+        archetype: "Stonewall Dutch",
+        color: "black",
+        required: ["pawn_setup:black:d5", "pawn_setup:black:f5"],
+        preferredEvidence: ["pawn_setup:black:f5", "piece_destination:black:bishop:d6"],
+        components: [
+            setupPawnComponent("black", "f7", "f5"),
+            setupPawnComponent("black", "e7", "e6"),
+            setupPawnComponent("black", "d7", "d5"),
+            setupPieceComponent("black", "bishop", "f8", "d6"),
+            setupPieceComponent("black", "knight", "g8", "f6"),
+            setupPawnComponent("black", "c7", "c6"),
+            setupCastlingComponent("black", "kingside"),
+        ],
+    },
+    {
+        id: "black-hedgehog",
+        archetype: "Hedgehog",
+        color: "black",
+        required: [
+            "pawn_setup:black:b6",
+            "pawn_setup:black:d6",
+            "pawn_setup:black:e6",
+        ],
+        preferredEvidence: ["piece_destination:black:bishop:b7", "pawn_setup:black:d6"],
+        components: [
+            setupPawnComponent("black", "b7", "b6"),
+            setupPieceComponent("black", "bishop", "c8", "b7"),
+            setupPawnComponent("black", "e7", "e6"),
+            setupPawnComponent("black", "d7", "d6"),
+            setupPieceComponent("black", "bishop", "f8", "e7"),
+            setupPieceComponent("black", "knight", "g8", "f6"),
+            setupPieceComponent("black", "knight", "b8", "d7"),
+            setupCastlingComponent("black", "kingside"),
+        ],
+    },
 ];
 
 export function buildEnginePlanReport(
@@ -347,6 +467,7 @@ export function buildEnginePlanReport(
         .map((line, index) => toEnginePlanPv(line, index + 1, sideToMove));
 
     const rootBestQuality = bestRootQuality(pvs);
+    const viable = computeViablePvs(pvs, rootBestQuality);
     const grouped = new Map<string, EnginePlanSignal & { evidence: EnginePlanEvidence[] }>();
     const signalsByPv = new Map<number, EnginePlanSignal[]>();
     const rootSetupSignals = extractRootSetupSignals(fen);
@@ -356,7 +477,11 @@ export function buildEnginePlanReport(
         signalsByPv.set(pv.rank, signals);
         for (const signal of signals) {
             const existing = grouped.get(signal.signature);
-            const evidence = { ...pv, firstMove: pv.sanMoves[0] ?? pv.uciMoves[0] ?? "" };
+            const evidence = {
+                ...pv,
+                firstMove: pv.sanMoves[0] ?? pv.uciMoves[0] ?? "",
+                completionPly: signal.ply ?? null,
+            };
             if (existing) {
                 existing.evidence.push(evidence);
             } else {
@@ -369,7 +494,7 @@ export function buildEnginePlanReport(
     }
 
     const plans = Array.from(grouped.values())
-        .map((group) => scorePlan(group, pvs.length, rootBestQuality))
+        .map((group) => scorePlan(group, pvs.length, rootBestQuality, viable))
         .sort(comparePlans);
     const setups = buildEnginePlanSetups(
         fen,
@@ -378,6 +503,7 @@ export function buildEnginePlanReport(
         plans,
         pvs,
         rootBestQuality,
+        viable,
     );
 
     return {
@@ -417,7 +543,7 @@ export function extractPlansFromPv(fen: string, pv: Pick<EnginePlanPv, "uciMoves
 
     initializePieces(pos, pieceStates, squareToPieceId);
 
-    for (const uci of pv.uciMoves) {
+    for (const [moveIndex, uci] of pv.uciMoves.entries()) {
         const move = parseUci(uci);
         if (!move || !isNormalMove(move)) break;
 
@@ -439,20 +565,28 @@ export function extractPlansFromPv(fen: string, pv: Pick<EnginePlanPv, "uciMoves
                 role: piece.role,
                 squares: [from],
                 uciMoves: [],
+                moveIndices: [],
             };
             pieceStates.set(pieceId, state);
         }
 
         state.squares.push(destination);
         state.uciMoves.push(uci);
+        state.moveIndices.push(moveIndex);
         if (move.promotion) {
             state.role = move.promotion;
         }
 
         if (piece.role === "pawn") {
-            recordPawnSignals(piece.color, from, destination, pos, signals);
+            recordPawnSignals(piece.color, from, destination, pos, signals, moveIndex);
             pawnMovementFiles[piece.color].add(destination[0]);
-            recordPawnExpansionSegment(piece.color, from, destination, pawnExpansionSegments);
+            recordPawnExpansionSegment(
+                piece.color,
+                from,
+                destination,
+                pawnExpansionSegments,
+                moveIndex,
+            );
         }
 
         if (castle) {
@@ -463,9 +597,10 @@ export function extractPlansFromPv(fen: string, pv: Pick<EnginePlanPv, "uciMoves
                 color: piece.color,
                 role: "king",
                 routeSquares: [from, castle.kingTo],
+                ply: moveIndex,
             });
             const rookId = squareToPieceId.get(castle.rookFrom);
-            moveTrackedCastlingRook(castle, uci, pieceStates, rookId);
+            moveTrackedCastlingRook(castle, uci, moveIndex, pieceStates, rookId);
             squareToPieceId.delete(from);
             squareToPieceId.delete(to);
             squareToPieceId.delete(castle.kingTo);
@@ -495,6 +630,8 @@ export function extractPlansFromPv(fen: string, pv: Pick<EnginePlanPv, "uciMoves
             state.color,
             finalSquare,
         );
+        // Established when the piece reaches its final square, i.e. its last move.
+        const arrivalPly = state.moveIndices[state.moveIndices.length - 1];
 
         if (movedAtLeastTwice) {
             addSignal(signals, {
@@ -507,6 +644,7 @@ export function extractPlansFromPv(fen: string, pv: Pick<EnginePlanPv, "uciMoves
                 color: state.color,
                 role: state.role,
                 routeSquares: state.squares,
+                ply: arrivalPly,
             });
         }
 
@@ -518,6 +656,7 @@ export function extractPlansFromPv(fen: string, pv: Pick<EnginePlanPv, "uciMoves
                 color: state.color,
                 role: state.role,
                 routeSquares: state.squares,
+                ply: arrivalPly,
             });
         }
     }
@@ -540,7 +679,7 @@ function extractRootSetupSignals(fen: string) {
 
     const signals = new Map<string, EnginePlanSignal>();
     for (const color of ["white", "black"] as const) {
-        for (const square of ROOT_SETUP_PAWN_SQUARES[color]) {
+        for (const square of PAWN_SETUP_SQUARES[color]) {
             const piece = pieceAt(pos, square);
             if (piece?.color !== color || piece.role !== "pawn") continue;
 
@@ -550,7 +689,7 @@ function extractRootSetupSignals(fen: string) {
                 label: `${capitalize(color)} has ${formatPawnSetupSquare(
                     color,
                     square,
-                )} ${pawnSetupKind(square)}`,
+                )} ${pawnSetupKind(color, square)}`,
                 color,
                 role: "pawn",
                 routeSquares: [square],
@@ -852,6 +991,7 @@ function buildEnginePlanSetups(
     plans: EnginePlan[],
     pvs: EnginePlanPv[],
     rootBestQuality: number | null,
+    viable: ViablePvContext,
 ): EnginePlanSetup[] {
     const plansBySignature = new Map(plans.map((plan) => [plan.signature, plan]));
     const rootSignalsBySignature = new Map(
@@ -865,9 +1005,12 @@ function buildEnginePlanSetups(
         const pv = pvsByRank.get(rank);
         if (!pv) continue;
 
+        // completionPly is resolved per-group after the final setup signatures are
+        // known (see the grouped.map below); this per-PV line is a placeholder.
         const evidence: EnginePlanEvidence = {
             ...pv,
             firstMove: pv.sanMoves[0] ?? pv.uciMoves[0] ?? "",
+            completionPly: null,
         };
         const uniqueSignals = uniqueSetupSignals([...rootSetupSignals, ...signals]);
         const byColor = groupSignalsByColor(uniqueSignals);
@@ -917,6 +1060,17 @@ function buildEnginePlanSetups(
     const pvSetups = grouped
         .map((group) => {
             const signatures = Array.from(group.signatures).sort((a, b) => a.localeCompare(b));
+            // Resolve each supporting PV's completion ply against this setup's final
+            // signature set: the latest ply among signatures that surface in that PV
+            // (root-origin signatures count as 0), or null when none appear.
+            const evidence = group.evidence.map((line) => ({
+                ...line,
+                completionPly: setupEvidenceCompletionPly(
+                    signatures,
+                    signalsByPv.get(line.rank) ?? [],
+                    rootSignatures,
+                ),
+            }));
             const setupPlans = signatures
                 .map((signature) => {
                     const plan = plansBySignature.get(signature);
@@ -926,9 +1080,10 @@ function buildEnginePlanSetups(
                     return rootSignal
                         ? scoreRootSetupAnchor(
                               rootSignal,
-                              group.evidence,
+                              evidence,
                               pvs.length,
                               rootBestQuality,
+                              viable,
                           )
                         : null;
                 })
@@ -938,9 +1093,10 @@ function buildEnginePlanSetups(
                 signatures,
                 group.color,
                 setupPlans,
-                group.evidence,
+                evidence,
                 pvs.length,
                 rootBestQuality,
+                viable,
             );
         })
         .filter((setup): setup is EnginePlanSetup => !!setup);
@@ -950,11 +1106,12 @@ function buildEnginePlanSetups(
         plansBySignature,
         pvs,
         rootBestQuality,
+        viable,
     );
 
-    return dedupeEngineSetups([...pvSetups, ...candidateSetups])
-        .sort(compareSetups)
-        .slice(0, ENGINE_SETUP_MAX_RESULTS);
+    const deduped = dedupeEngineSetups([...pvSetups, ...candidateSetups]);
+    const merged = mergeContainedSetups(deduped, { totalPvs: pvs.length, rootBestQuality, viable });
+    return merged.sort(compareSetups).slice(0, ENGINE_SETUP_MAX_RESULTS);
 }
 
 function buildCandidateEngineSetups(
@@ -963,6 +1120,7 @@ function buildCandidateEngineSetups(
     plansBySignature: Map<string, EnginePlan>,
     pvs: EnginePlanPv[],
     rootBestQuality: number | null,
+    viable: ViablePvContext,
 ) {
     const [pos] = positionFromFen(fen);
     if (!pos) return [];
@@ -990,7 +1148,7 @@ function buildCandidateEngineSetups(
                 const plan = plansBySignature.get(signal.signature);
                 if (plan) return plan;
 
-                return scoreRootSetupAnchor(signal, evidence, pvs.length, rootBestQuality);
+                return scoreRootSetupAnchor(signal, evidence, pvs.length, rootBestQuality, viable);
             })
             .sort(compareSetupPlans);
         const setup = scoreSetup(
@@ -1000,6 +1158,7 @@ function buildCandidateEngineSetups(
             evidence,
             pvs.length,
             rootBestQuality,
+            viable,
             template.archetype,
         );
         if (setup) candidates.push(setup);
@@ -1090,6 +1249,88 @@ function dedupeEngineSetups(setups: EnginePlanSetup[]) {
         }
     }
     return Array.from(bySignature.values());
+}
+
+type SetupScoreContext = {
+    totalPvs: number;
+    rootBestQuality: number | null;
+    viable: ViablePvContext;
+};
+
+// Collapse a setup whose plan-signature set is a strict subset of another
+// same-color setup into that superset, unioning their supporting evidence.
+// Processing smallest-first lets subset chains fully collapse into the largest.
+function mergeContainedSetups(
+    setups: EnginePlanSetup[],
+    ctx: SetupScoreContext,
+): EnginePlanSetup[] {
+    const dropped = new Set<EnginePlanSetup>();
+    const smallestFirst = setups.slice().sort((a, b) => a.plans.length - b.plans.length);
+
+    for (const subset of smallestFirst) {
+        if (dropped.has(subset)) continue;
+
+        const subsetSignatures = new Set(subset.plans.map((plan) => plan.signature));
+        const subsetSlots = setupSlots(subset.plans);
+
+        let target: EnginePlanSetup | null = null;
+        for (const candidate of setups) {
+            if (candidate === subset || dropped.has(candidate)) continue;
+            if (candidate.color !== subset.color) continue;
+
+            const candidateSignatures = new Set(candidate.plans.map((plan) => plan.signature));
+            if (!isStrictSubset(subsetSignatures, candidateSignatures)) continue;
+            if (!compatibleSetupSlots(setupSlots(candidate.plans), subsetSlots)) continue;
+
+            if (
+                !target ||
+                candidate.plans.length > target.plans.length ||
+                (candidate.plans.length === target.plans.length &&
+                    compareSetups(candidate, target) < 0)
+            ) {
+                target = candidate;
+            }
+        }
+
+        if (!target) continue;
+
+        rescoreMergedSetup(target, unionEvidenceByRank(target.evidence, subset.evidence), ctx);
+        dropped.add(subset);
+    }
+
+    return setups.filter((setup) => !dropped.has(setup));
+}
+
+function rescoreMergedSetup(
+    setup: EnginePlanSetup,
+    evidence: EnginePlanEvidence[],
+    ctx: SetupScoreContext,
+) {
+    const support = adjustSetupSupportForInferredComponents(
+        scoreEngineEvidence(evidence, ctx.totalPvs, ctx.rootBestQuality, ctx.viable, "setup"),
+        setup.plans,
+    );
+    const archetype = setupArchetype(setup.color, setup.plans);
+    setup.archetype = archetype;
+    setup.label = setupLabel(setup.color, setup.plans, archetype);
+    Object.assign(setup, support);
+}
+
+function isStrictSubset(subset: Set<string>, superset: Set<string>) {
+    if (subset.size >= superset.size) return false;
+    for (const value of subset) {
+        if (!superset.has(value)) return false;
+    }
+    return true;
+}
+
+function unionEvidenceByRank(a: EnginePlanEvidence[], b: EnginePlanEvidence[]) {
+    const byRank = new Map<number, EnginePlanEvidence>();
+    for (const line of a) byRank.set(line.rank, line);
+    for (const line of b) {
+        if (!byRank.has(line.rank)) byRank.set(line.rank, line);
+    }
+    return Array.from(byRank.values()).sort((x, y) => x.rank - y.rank);
 }
 
 function consolidateEngineSetupSignals(signals: EnginePlanSignal[]) {
@@ -1191,12 +1432,13 @@ function scoreSetup(
     evidence: EnginePlanEvidence[],
     totalPvs: number,
     rootBestQuality: number | null,
+    viable: ViablePvContext,
     forcedArchetype: string | null = null,
 ): EnginePlanSetup | null {
     if (plans.length < ENGINE_SETUP_MIN_PLANS) return null;
 
     const support = adjustSetupSupportForInferredComponents(
-        scoreEngineEvidence(evidence, totalPvs, rootBestQuality, "setup"),
+        scoreEngineEvidence(evidence, totalPvs, rootBestQuality, viable, "setup"),
         plans,
     );
     const archetype = forcedArchetype ?? setupArchetype(color, plans);
@@ -1249,10 +1491,11 @@ function scoreRootSetupAnchor(
     evidence: EnginePlanEvidence[],
     totalPvs: number,
     rootBestQuality: number | null,
+    viable: ViablePvContext,
 ): EnginePlan {
     return {
         ...signal,
-        ...scoreEngineEvidence(evidence, totalPvs, rootBestQuality, "setup"),
+        ...scoreEngineEvidence(evidence, totalPvs, rootBestQuality, viable, "setup"),
     };
 }
 
@@ -1260,19 +1503,32 @@ function scoreEngineEvidence(
     evidence: EnginePlanEvidence[],
     totalPvs: number,
     rootBestQuality: number | null,
+    viable: ViablePvContext,
     subject: "plan" | "setup",
 ) {
     const supportCount = evidence.length;
-    const supportRatio = totalPvs > 0 ? supportCount / totalPvs : 0;
+    const medianCompletionPly = medianCompletionPlyOf(evidence);
+    // Measure support against viable PVs (near the best eval) so junk multipv
+    // lines don't dilute the ratio. Fall back to raw totals when none are viable.
+    const viableSupport =
+        viable.totalViable > 0
+            ? evidence.filter((line) => viable.viableRanks.has(line.rank)).length
+            : supportCount;
+    const supportRatio =
+        viable.totalViable > 0
+            ? viableSupport / viable.totalViable
+            : totalPvs > 0
+              ? supportCount / totalPvs
+              : 0;
     const appearsInTopPv = evidence.some((line) => line.rank === 1);
     const cpEvidence = evidence.filter((line) => line.evalCp !== null);
     const qualityEvidence = evidence.filter((line) => line.qualityCp !== null);
     const hasMateOrMissingEval = cpEvidence.length !== evidence.length;
     const lowDepth = evidence.some((line) => line.depth > 0 && line.depth < MIN_STABLE_DEPTH);
-    const weightedEvalCp = weightedAverageCp(evidence, "evalCp");
+    const weightedEvalCp = weightedAverageCp(evidence, "evalCp", rootBestQuality);
     const averageEvalCp = averageCp(evidence, "evalCp");
     const bestEvalCp = bestSupportingEvalCp(evidence);
-    const weightedQualityCp = weightedAverageCp(evidence, "qualityCp");
+    const weightedQualityCp = weightedAverageCp(evidence, "qualityCp", rootBestQuality);
     const averageQualityCp = averageCp(evidence, "qualityCp");
     const bestQualityCp = bestSupportingQualityCp(evidence);
     const bestCpLoss =
@@ -1339,7 +1595,50 @@ function scoreEngineEvidence(
         weightedQualityCp,
         bestCpLoss,
         weightedCpLoss,
+        medianCompletionPly,
     };
+}
+
+// Median 0-based completion ply across the evidence lines that carry one, with an
+// even count returning the mean of the two middle values; null when none apply.
+function medianCompletionPlyOf(evidence: EnginePlanEvidence[]): number | null {
+    const plies = evidence
+        .map((line) => line.completionPly)
+        .filter((value): value is number => value !== null)
+        .sort((a, b) => a - b);
+    if (plies.length === 0) return null;
+
+    const mid = Math.floor(plies.length / 2);
+    return plies.length % 2 === 1 ? plies[mid] : (plies[mid - 1] + plies[mid]) / 2;
+}
+
+// Latest ply at which any of this setup's signatures becomes true within one PV.
+// Root-origin signatures are already established, so they contribute 0; PV
+// signatures contribute their own ply. Returns null when none of the setup's
+// signatures appear for this PV.
+function setupEvidenceCompletionPly(
+    signatures: string[],
+    pvSignals: EnginePlanSignal[],
+    rootSignatures: Set<string>,
+): number | null {
+    const plyBySignature = new Map<string, number>();
+    for (const signal of pvSignals) {
+        plyBySignature.set(signal.signature, signal.ply ?? 0);
+    }
+
+    let maxPly: number | null = null;
+    for (const signature of signatures) {
+        let contribution: number | null = null;
+        if (rootSignatures.has(signature)) {
+            contribution = 0;
+        } else if (plyBySignature.has(signature)) {
+            contribution = plyBySignature.get(signature)!;
+        }
+        if (contribution === null) continue;
+        maxPly = maxPly === null ? contribution : Math.max(maxPly, contribution);
+    }
+
+    return maxPly;
 }
 
 function setupLabel(color: Color, plans: EnginePlan[], archetype: string | null) {
@@ -1351,79 +1650,34 @@ function setupLabel(color: Color, plans: EnginePlan[], archetype: string | null)
     return `${prefix}: ${names.join(", ")}${suffix}`;
 }
 
+// Recognize a setup by matching it against the shared ENGINE_SETUP_TEMPLATES
+// rather than hand-rolled conditions, so recognition never drifts from the
+// templates used to build candidate setups.
 function setupArchetype(color: Color, plans: EnginePlan[]) {
     const signatures = new Set(plans.map((plan) => plan.signature));
-    const has = (signature: string) => signatures.has(signature);
 
-    if (
-        color === "white" &&
-        has("pawn_setup:white:d4") &&
-        has("pawn_setup:white:c4") &&
-        has("piece_destination:white:knight:f3") &&
-        (has("pawn_setup:white:g3") || has("piece_destination:white:bishop:g2"))
-    ) {
-        return "Catalan";
+    let best: { template: EngineSetupTemplate; matched: number } | null = null;
+    for (const template of ENGINE_SETUP_TEMPLATES) {
+        if (template.color !== color) continue;
+        if (!template.required.every((signature) => signatures.has(signature))) continue;
+        if (!template.preferredEvidence.some((signature) => signatures.has(signature))) continue;
+
+        const matched = template.components.filter((component) =>
+            signatures.has(component.signature),
+        ).length;
+        if (matched < 3) continue;
+
+        if (
+            !best ||
+            matched > best.matched ||
+            (matched === best.matched &&
+                template.required.length > best.template.required.length)
+        ) {
+            best = { template, matched };
+        }
     }
 
-    if (
-        color === "black" &&
-        has("pawn_setup:black:g6") &&
-        has("piece_destination:black:bishop:g7") &&
-        (has("pawn_setup:black:d6") || has("pawn_setup:black:e6")) &&
-        (has("piece_destination:black:knight:f6") || has("castling:black:kingside"))
-    ) {
-        return "King's Indian";
-    }
-
-    if (
-        color === "white" &&
-        has("pawn_setup:white:d4") &&
-        has("piece_destination:white:bishop:f4") &&
-        has("piece_destination:white:knight:f3") &&
-        has("pawn_setup:white:e3")
-    ) {
-        return "London";
-    }
-
-    if (
-        color === "white" &&
-        has("pawn_setup:white:d4") &&
-        has("piece_destination:white:knight:f3") &&
-        has("pawn_setup:white:e3") &&
-        has("piece_destination:white:bishop:d3")
-    ) {
-        return "Colle";
-    }
-
-    if (
-        color === "white" &&
-        has("pawn_setup:white:c4") &&
-        (has("pawn_setup:white:g3") || has("piece_destination:white:bishop:g2")) &&
-        (has("piece_destination:white:knight:c3") || has("piece_destination:white:knight:f3"))
-    ) {
-        return "English fianchetto";
-    }
-
-    if (
-        color === "black" &&
-        has("piece_destination:black:knight:f6") &&
-        has("pawn_setup:black:e6") &&
-        has("pawn_setup:black:b6") &&
-        has("piece_destination:black:bishop:b7")
-    ) {
-        return "Queen's Indian";
-    }
-
-    if (
-        color === "black" &&
-        has("pawn_setup:black:d5") &&
-        has("pawn_setup:black:c6") &&
-        has("piece_destination:black:knight:f6")
-    ) {
-        return "Slav";
-    }
-
-    return null;
+    return best?.template.archetype ?? null;
 }
 
 function compactPlanLabel(plan: EnginePlan) {
@@ -1505,10 +1759,11 @@ function scorePlan(
     group: EnginePlanSignal & { evidence: EnginePlanEvidence[] },
     totalPvs: number,
     rootBestQuality: number | null,
+    viable: ViablePvContext,
 ): EnginePlan {
     return {
         ...group,
-        ...scoreEngineEvidence(group.evidence, totalPvs, rootBestQuality, "plan"),
+        ...scoreEngineEvidence(group.evidence, totalPvs, rootBestQuality, viable, "plan"),
     };
 }
 
@@ -1583,19 +1838,38 @@ function approvalRank(approval: EngineApproval) {
     }
 }
 
-function weightedAverageCp(evidence: EnginePlanEvidence[], key: "evalCp" | "qualityCp") {
+function weightedAverageCp(
+    evidence: EnginePlanEvidence[],
+    key: "evalCp" | "qualityCp",
+    rootBestQuality: number | null,
+) {
     let weighted = 0;
     let totalWeight = 0;
     for (const line of evidence) {
         const value = line[key];
         if (value === null) continue;
 
-        const weight = pvWeight(line.rank);
+        const weight = evalGapWeight(line, rootBestQuality);
         weighted += value * weight;
         totalWeight += weight;
     }
 
     return totalWeight > 0 ? weighted / totalWeight : null;
+}
+
+// Weight a supporting line by how close its eval is to the best root line rather
+// than by its multipv rank. Rank-blind lines (mate/missing eval, or no root
+// baseline) fall back to the legacy rank weighting.
+function evalGapWeight(line: EnginePlanEvidence, rootBestQuality: number | null) {
+    if (line.qualityCp === null || rootBestQuality === null) {
+        return pvWeight(line.rank);
+    }
+    const gap = Math.max(0, rootBestQuality - line.qualityCp);
+    return clamp(1 - gap / (2 * DECENT_CP), 0.2, 1);
+}
+
+function clamp(value: number, min: number, max: number) {
+    return Math.min(max, Math.max(min, value));
 }
 
 function averageCp(evidence: EnginePlanEvidence[], key: "evalCp" | "qualityCp") {
@@ -1628,6 +1902,19 @@ function bestRootQuality(pvs: EnginePlanPv[]) {
     return Math.max(...values);
 }
 
+function computeViablePvs(pvs: EnginePlanPv[], rootBestQuality: number | null): ViablePvContext {
+    const viableRanks = new Set<number>();
+    if (rootBestQuality === null) {
+        return { totalViable: 0, viableRanks };
+    }
+    for (const pv of pvs) {
+        if (pv.qualityCp !== null && pv.qualityCp >= rootBestQuality - VIABLE_PV_CP) {
+            viableRanks.add(pv.rank);
+        }
+    }
+    return { totalViable: viableRanks.size, viableRanks };
+}
+
 function pvWeight(rank: number) {
     return PV_WEIGHTS[rank - 1] ?? 0.4;
 }
@@ -1658,6 +1945,7 @@ function initializePieces(
             role: piece.role,
             squares: [squareName],
             uciMoves: [],
+            moveIndices: [],
         });
         squareToPieceId.set(squareName, id);
     }
@@ -1703,6 +1991,7 @@ function engineCastlingMove(
 function moveTrackedCastlingRook(
     castle: EngineCastlingMove,
     uci: string,
+    moveIndex: number,
     pieceStates: Map<string, PieceState>,
     rookId: string | undefined,
 ) {
@@ -1713,6 +2002,7 @@ function moveTrackedCastlingRook(
 
     rookState.squares.push(castle.rookTo);
     rookState.uciMoves.push(uci);
+    rookState.moveIndices.push(moveIndex);
 }
 
 function recordPawnSignals(
@@ -1721,10 +2011,11 @@ function recordPawnSignals(
     destination: string,
     pos: NonNullable<ReturnType<typeof positionFromFen>[0]>,
     signals: Map<string, EnginePlanSignal>,
+    ply: number,
 ) {
-    recordPawnSetupSignal(color, origin, destination, signals);
+    recordPawnSetupSignal(color, origin, destination, signals, ply);
 
-    if (!PAWN_BREAKS[color].has(destination)) return;
+    if (!PAWN_BREAKS.has(destination)) return;
     if (!attacksEnemyPawn(color, destination, pos)) return;
 
     const file = destination[0];
@@ -1741,6 +2032,7 @@ function recordPawnSignals(
         color,
         role: "pawn",
         routeSquares: [origin, destination],
+        ply,
     });
 }
 
@@ -1749,6 +2041,7 @@ function recordPawnSetupSignal(
     origin: string,
     destination: string,
     signals: Map<string, EnginePlanSignal>,
+    ply: number,
 ) {
     if (!PAWN_SETUP_SQUARES[color].has(destination)) return;
 
@@ -1756,10 +2049,11 @@ function recordPawnSetupSignal(
     addSignal(signals, {
         signature: `pawn_setup:${color}:${destination}`,
         category: "pawnSetup",
-        label: `${capitalize(color)} plays ${moveLabel} ${pawnSetupKind(destination)}`,
+        label: `${capitalize(color)} plays ${moveLabel} ${pawnSetupKind(color, destination)}`,
         color,
         role: "pawn",
         routeSquares: [origin, destination],
+        ply,
     });
 }
 
@@ -1767,11 +2061,12 @@ function formatPawnSetupSquare(color: Color, square: string) {
     return color === "black" ? `...${square}` : square;
 }
 
-function pawnSetupKind(square: string) {
-    const file = square[0];
-    if (file === "b" || file === "g") return "fianchetto setup";
-    if (CENTRAL_FILES.has(file)) return "central structure";
-    return "support square";
+function pawnSetupKind(color: Color, square: string) {
+    const fianchetto =
+        color === "white" ? square === "b3" || square === "g3" : square === "b6" || square === "g6";
+    if (fianchetto) return "fianchetto setup";
+    if (CENTRAL_FILES.has(square[0])) return "central structure";
+    return "space gain";
 }
 
 function recordRootCastlingSignal(
@@ -1902,7 +2197,7 @@ function pawnAttackSquares(color: Color, square: string) {
 function recordSideExpansionSignals(
     color: Color,
     files: Set<string>,
-    segments: Record<ExpansionSide, [string, string][]>,
+    segments: Record<ExpansionSide, ExpansionSegment[]>,
     signals: Map<string, EnginePlanSignal>,
 ) {
     const queenside = countFiles(files, QUEENSIDE_FILES);
@@ -1923,7 +2218,7 @@ function recordSideExpansionSignals(
 function addSideExpansion(
     color: Color,
     side: "queenside" | "kingside" | "central",
-    segments: [string, string][],
+    segments: ExpansionSegment[],
     signals: Map<string, EnginePlanSignal>,
 ) {
     addSignal(signals, {
@@ -1932,8 +2227,24 @@ function addSideExpansion(
         label: `${capitalize(color)} ${side === "central" ? "central break" : `${side} expansion`}`,
         color,
         role: "pawn",
-        routeSegments: uniqueSegments(segments),
+        routeSegments: uniqueSegments(segments.map((segment): [string, string] => [segment.from, segment.to])),
+        // Established when this side reached its second distinct expanded file.
+        ply: sideExpansionPly(segments),
     });
+}
+
+// The move index at which a side's distinct-file count first reached 2 — i.e. the
+// ply that turned a single advanced pawn into an actual flank/central expansion.
+function sideExpansionPly(segments: ExpansionSegment[]): number {
+    const files = new Set<string>();
+    for (const segment of segments) {
+        const file = segment.to[0];
+        if (files.has(file)) continue;
+
+        files.add(file);
+        if (files.size === 2) return segment.ply;
+    }
+    return segments[segments.length - 1]?.ply ?? 0;
 }
 
 function recordPawnExpansionSegment(
@@ -1941,9 +2252,10 @@ function recordPawnExpansionSegment(
     origin: string,
     destination: string,
     segments: ExpansionSegmentMap,
+    ply: number,
 ) {
     const file = destination[0];
-    const segment: [string, string] = [origin, destination];
+    const segment: ExpansionSegment = { from: origin, to: destination, ply };
 
     if (QUEENSIDE_FILES.has(file)) {
         segments[color].queenside.push(segment);
@@ -2038,7 +2350,14 @@ function toRole(value: string): Role | null {
 }
 
 function addSignal(signals: Map<string, EnginePlanSignal>, signal: EnginePlanSignal) {
-    signals.set(signal.signature, { ...signal, origin: signal.origin ?? "pv" });
+    // Keep the earliest ply when the same signature is recorded twice within a PV,
+    // so a signal is credited to the move that first established it.
+    const existingPly = signals.get(signal.signature)?.ply;
+    const ply =
+        existingPly !== undefined && signal.ply !== undefined
+            ? Math.min(existingPly, signal.ply)
+            : (signal.ply ?? existingPly);
+    signals.set(signal.signature, { ...signal, origin: signal.origin ?? "pv", ply });
 }
 
 function isRoutePiece(role: Role) {

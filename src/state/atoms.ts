@@ -40,6 +40,7 @@ import type { PrepBuilderSettings } from "@/utils/opponentPrep";
 import { DEFAULT_BOARD_STYLE, type BoardStyle } from "@/utils/boardStyle";
 import { recoverParityTestArchivedFileEntries } from "@/utils/directoryOverrides";
 import type { ColoredPlanExplorerLine } from "@/utils/planExplorer";
+import { atomWithDebouncedStorage } from "@/state/store/debouncedLocalStorage";
 import {
     type LichessGamesOptions,
     lichessGamesOptionsSchema,
@@ -266,7 +267,11 @@ export const aiCoachPlannerModelAtom = atomWithStorage<string>(
 );
 export const aiCoachMultipvAtom = atomWithStorage<number>("ai-coach-multipv", 3);
 export const aiCoachTimeoutSecsAtom = atomWithStorage<number>("ai-coach-timeout-secs", 180);
-export const boardManualSizeAtom = atomWithStorage<number | null>("board-manual-size", null);
+// Debounced: written per pointermove while dragging the board resize corners.
+export const boardManualSizeAtom = atomWithDebouncedStorage<number | null>(
+    "board-manual-size",
+    null,
+);
 export const mistakeReviewAutoPlayLineAtom = atomWithStorage<boolean>(
     "mistake-review-auto-play-line",
     true,

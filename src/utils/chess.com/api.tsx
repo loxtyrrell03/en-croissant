@@ -223,9 +223,18 @@ export async function getRecentChessComGames(
     }));
 }
 
-export async function downloadChessCom(player: string, timestamp: number | null) {
+export async function downloadChessCom(
+  player: string,
+  timestamp: number | null,
+  options: { ratedOnly?: boolean; standardOnly?: boolean } = {},
+) {
   const timestampDate = new Date(timestamp ?? 0);
   const approximateDate = new Date(timestampDate.getFullYear(), timestampDate.getMonth(), 1);
+  // Per-game filters only exist on the JSON endpoint; the bulk /pgn endpoint
+  // returns every game in the archive (variants and unrated included).
+  const filterGames = Boolean(options.ratedOnly || options.standardOnly);
+  const matchesFilters = (game: ChessComGame) =>
+    (!options.standardOnly || game.rules === "chess") && (!options.ratedOnly || game.rated);
   const archives = await getGameArchives(player);
   const file = await resolve(await getDatabasesDir(), `${player}_chesscom.pgn`);
   info(`Found ${archives.archives.length} archives for ${player}`);
@@ -240,21 +249,23 @@ export async function downloadChessCom(player: string, timestamp: number | null)
 
   for (const [index, archive] of filteredArchives.entries()) {
     info(`Fetching games for ${player} from ${archive}`);
-    const pgnResponse = await fetch(`${archive}/pgn`, {
-      headers: apiHeaders(),
-      method: "GET",
-    });
-    if (pgnResponse.ok) {
-      const pgnChunk = await pgnResponse.text();
-      await writeTextFile(file, pgnChunk.trim() ? `${pgnChunk.trim()}\n\n` : "", {
-        append: true,
+    if (!filterGames) {
+      const pgnResponse = await fetch(`${archive}/pgn`, {
+        headers: apiHeaders(),
+        method: "GET",
       });
-      events.progressEvent.emit({
-        finished: false,
-        id: `chesscom_${player}`,
-        progress: ((index + 1) / filteredArchives.length) * 100,
-      });
-      continue;
+      if (pgnResponse.ok) {
+        const pgnChunk = await pgnResponse.text();
+        await writeTextFile(file, pgnChunk.trim() ? `${pgnChunk.trim()}\n\n` : "", {
+          append: true,
+        });
+        events.progressEvent.emit({
+          finished: false,
+          id: `chesscom_${player}`,
+          progress: ((index + 1) / filteredArchives.length) * 100,
+        });
+        continue;
+      }
     }
 
     const response = await fetch(archive, {
@@ -274,8 +285,12 @@ export async function downloadChessCom(player: string, timestamp: number | null)
       return;
     }
 
-    const pgnChunk = games.data.games.map((g) => g.pgn).join("\n");
-    await writeTextFile(file, pgnChunk ? `${pgnChunk}\n` : "", {
+    const pgnChunk = games.data.games
+      .filter(hasPgn)
+      .filter(matchesFilters)
+      .map((g) => g.pgn.trim())
+      .join("\n\n");
+    await writeTextFile(file, pgnChunk ? `${pgnChunk}\n\n` : "", {
       append: true,
     });
     events.progressEvent.emit({

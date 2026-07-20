@@ -35,7 +35,7 @@ import { BoardTab } from "./BoardTab";
 import ConfirmChangesModal from "./ConfirmChangesModal";
 import { platform } from "@tauri-apps/plugin-os";
 import { useNavigate } from "@tanstack/react-router";
-import { atomWithStorage } from "jotai/utils";
+import { atomWithDebouncedStorage } from "@/state/store/debouncedLocalStorage";
 import classes from "./BoardsPage.module.css";
 
 const BoardAnalysis = lazy(() => import("../boards/BoardAnalysis"));
@@ -317,7 +317,10 @@ interface WorkspaceLayoutState {
   bottomRightHeight: number | null;
 }
 
-const workspaceLayoutAtom = atomWithStorage<WorkspaceLayoutState>("boardWorkspaceLayout", {
+// Debounced storage: this atom is written on every pointermove while dragging
+// the pane dividers, and a synchronous localStorage write per event stutters
+// the drag.
+const workspaceLayoutAtom = atomWithDebouncedStorage<WorkspaceLayoutState>("boardWorkspaceLayout", {
   rightWidthPercent: 54,
   topRightHeight: null,
   bottomRightHeight: null,

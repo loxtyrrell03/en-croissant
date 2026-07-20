@@ -495,7 +495,11 @@ function isSetupFamilyPath(path: TrackedPath) {
 function dedupeSetupPaths(paths: TrackedPath[]) {
     const deduped = new Map<string, TrackedPath>();
     for (const path of paths) {
-        deduped.set(setupPathKey(path), path);
+        // Destination-based key: a piece that reached the same square twice via
+        // different routes collapses to one entry. Keep the first-seen route,
+        // since the explorer walks mainlines first (first-seen ~= most common).
+        const key = setupPathKey(path);
+        if (!deduped.has(key)) deduped.set(key, path);
     }
     return [...deduped.values()];
 }
@@ -536,7 +540,7 @@ function setupFamilyKeyFromPaths(paths: TrackedPath[]) {
             .sort(
                 (a, b) =>
                     selectedSetupPathPriority(b) - selectedSetupPathPriority(a) ||
-                    compareTrackedPath(a, b),
+                    compareSetupPath(a, b),
             )
             .slice(0, PLAN_SETUP_MAX_PLANS),
     );
@@ -618,7 +622,7 @@ function setupSupportPriority(path: TrackedPath) {
 }
 
 function setupFromPaths(paths: TrackedPath[], stats: ResultStats): PlanExplorerSetup {
-    const sorted = [...paths].sort(compareTrackedPath);
+    const sorted = [...paths].sort(compareSetupPath);
     return {
         plans: sorted.map((path) => setupPlanFromPath(path, stats)),
         games: stats.games,
@@ -629,10 +633,7 @@ function setupFromPaths(paths: TrackedPath[], stats: ResultStats): PlanExplorerS
 }
 
 function setupKeyFromPaths(paths: TrackedPath[]) {
-    return [...paths]
-        .sort(compareTrackedPath)
-        .map((path) => `${path.color}|${path.role}|${path.from}|${path.squares.join("-")}`)
-        .join("||");
+    return [...paths].sort(compareSetupPath).map(setupPathKey).join("||");
 }
 
 function setupSlots(paths: TrackedPath[]) {
@@ -847,12 +848,24 @@ function compareTrackedPath(a: TrackedPath, b: TrackedPath) {
     );
 }
 
+// Setup identity is destination-based: a piece is described by where it ends up,
+// not the route it took. Ordering setups by (color, role, from, final square)
+// keeps merged keys stable when transposed routes reach the same formation.
+function compareSetupPath(a: TrackedPath, b: TrackedPath) {
+    return (
+        a.color.localeCompare(b.color) ||
+        a.role.localeCompare(b.role) ||
+        a.from.localeCompare(b.from) ||
+        (a.squares.at(-1) ?? "").localeCompare(b.squares.at(-1) ?? "")
+    );
+}
+
 function setupKey(plans: PlanExplorerSetupPlan[]) {
     return plans.map(setupPlanKey).join("||");
 }
 
 function setupPlanKey(plan: PlanExplorerSetupPlan) {
-    return `${plan.color}|${plan.role}|${plan.from}|${plan.line.squares.join("-")}`;
+    return `${plan.color}|${plan.role}|${plan.from}|${plan.line.squares.at(-1) ?? ""}`;
 }
 
 function statsFromPosition(data: PositionData): ResultStats {
@@ -887,7 +900,7 @@ function isCastle(path: TrackedPath) {
 }
 
 function setupPathKey(path: TrackedPath) {
-    return `${path.color}|${path.role}|${path.from}|${path.squares.join("-")}`;
+    return `${path.color}|${path.role}|${path.from}|${path.squares.at(-1) ?? ""}`;
 }
 
 function clonePaths(paths: Map<string, TrackedPath>) {

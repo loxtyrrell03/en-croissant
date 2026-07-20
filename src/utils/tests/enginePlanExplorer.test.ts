@@ -27,6 +27,7 @@ const CATALAN_BLACK_TO_MOVE_FEN =
 const BLACK_FIANCHETTO_ROOT_FEN = "rnbqk2r/ppp1ppbp/3p1np1/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";
 const AFTER_D4_NF6_NF3_FEN = "rnbqkb1r/pppppppp/5n2/8/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 1 2";
 const AFTER_D4_D5_FEN = "rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 2";
+const BLACK_D5_BREAK_FEN = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
 
 function pv(rank: number, uciMoves: string[], cp: number, depth = 12): BestMoves {
     return {
@@ -95,6 +96,29 @@ describe("Engine Plan Explorer", () => {
             .find((line) => line.squares.join("-") === "e2-e4");
         expect(e2Pawn?.role).toBe("pawn");
         expect(e4Line?.squares).toEqual(["e2", "e4"]);
+    });
+
+    test("records a piece route's completion ply at its final tracked move", () => {
+        // The knight reaches its final square d5 on its second move, at index 6 of
+        // the PV, so that route's evidence line is completed at ply 6.
+        const report = buildEnginePlanReport(
+            INITIAL_FEN,
+            [
+                pv(1, ["b1c3", "b8c6", "e2e4", "e7e5", "g1f3", "g8f6", "c3d5"], 20),
+                pv(2, ["e2e4", "e7e5", "g1f3", "b8c6"], 15),
+                pv(3, ["d2d4", "d7d5"], 10),
+            ],
+            {
+                requestedMultipv: 3,
+                limitLabel: "Depth 12",
+            },
+        );
+
+        const route = report.plans.find(
+            (plan) => plan.signature === "piece_route:white:Nb1-c3-d5",
+        );
+        expect(route).toBeDefined();
+        expect(route?.evidence.find((line) => line.rank === 1)?.completionPly).toBe(6);
     });
 
     test("marks one low-ranked unsupported plan as weak", () => {
@@ -212,6 +236,9 @@ describe("Engine Plan Explorer", () => {
                 "castling:black:kingside",
             ]),
         );
+        // Both supporting PVs land the last component (kingside castling, ...O-O)
+        // at ply 9, so the median completion ply is 9.
+        expect(setup?.medianCompletionPly).toBe(9);
     });
 
     test("combines root structure with PV moves to suggest Catalan setups", () => {
@@ -245,6 +272,10 @@ describe("Engine Plan Explorer", () => {
         expect(catalan?.approval).toBe("Strong");
         expect(catalan?.supportCount).toBe(2);
         expect(catalan?.appearsInTopPv).toBe(true);
+        // d4/c4/Nf3 are already on the board (root-origin, ply 0); the PV moves
+        // g3 (0), Bg2 (2) and O-O (4) drive completion. Root contributes 0 and so
+        // never lifts the median above the PV plies: both PVs finish at ply 4.
+        expect(catalan?.medianCompletionPly).toBe(4);
     });
 
     test("shows full Catalan candidate arrows when the PV only starts with g3", () => {
@@ -650,6 +681,269 @@ describe("Engine Plan Explorer", () => {
                 },
             ),
         ).toBe("O-O (e8 -> g8)");
+    });
+
+    test("marks black ...d5 as a pawn break against a white e4 pawn", () => {
+        const report = buildEnginePlanReport(
+            BLACK_D5_BREAK_FEN,
+            [
+                pv(1, ["d7d5", "g1f3", "g8f6"], 10),
+                pv(2, ["e7e5", "g1f3"], 25),
+                pv(3, ["c7c5", "g1f3"], 30),
+            ],
+            {
+                requestedMultipv: 3,
+                limitLabel: "Depth 12",
+            },
+        );
+
+        const d5Break = report.plans.find((plan) => plan.signature === "pawn_break:black:d5");
+        expect(d5Break).toBeDefined();
+        expect(d5Break?.category).toBe("pawnBreak");
+        expect(d5Break?.routeSquares).toEqual(["d7", "d5"]);
+    });
+
+    test("recognizes a white f4 pawn setup and the Stonewall archetype from d4+f4", () => {
+        const report = buildEnginePlanReport(
+            INITIAL_FEN,
+            [
+                pv(
+                    1,
+                    [
+                        "d2d4",
+                        "g8f6",
+                        "e2e3",
+                        "d7d5",
+                        "f2f4",
+                        "e7e6",
+                        "f1d3",
+                        "f8e7",
+                        "g1f3",
+                        "e8g8",
+                    ],
+                    30,
+                ),
+                pv(
+                    2,
+                    [
+                        "d2d4",
+                        "d7d5",
+                        "e2e3",
+                        "g8f6",
+                        "f2f4",
+                        "e7e6",
+                        "g1f3",
+                        "f8d6",
+                        "f1d3",
+                        "e8g8",
+                    ],
+                    20,
+                ),
+                pv(3, ["g1f3", "d7d5", "d2d4", "g8f6", "e2e3", "e7e6"], 10),
+            ],
+            {
+                requestedMultipv: 3,
+                limitLabel: "Depth 12",
+            },
+        );
+
+        const f4Setup = report.plans.find((plan) => plan.signature === "pawn_setup:white:f4");
+        expect(f4Setup).toBeDefined();
+        expect(f4Setup?.category).toBe("pawnSetup");
+        expect(f4Setup?.supportCount).toBe(2);
+
+        const stonewall = report.setups.find((setup) => setup.archetype === "Stonewall");
+        expect(stonewall?.color).toBe("white");
+    });
+
+    test("uses viable-PV support so a plan backed by most near-best lines reaches Strong", () => {
+        const report = buildEnginePlanReport(
+            BREAK_FEN,
+            [
+                pv(1, ["e2e4", "g8f6"], 100),
+                pv(2, ["g1f3", "g8f6", "e2e4"], 90),
+                pv(3, ["b1c3", "g8f6", "e2e4"], 80),
+                pv(4, ["d2d4", "g8f6", "e2e4"], 60),
+                pv(5, ["c2c4", "g8f6", "g1f3"], 30),
+                pv(6, ["h2h3"], 10),
+                pv(7, ["a2a3"], 5),
+                pv(8, ["b2b3"], 0),
+                pv(9, ["g2g3"], -10),
+                pv(10, ["f2f3"], -20),
+                pv(11, ["a2a4"], -30),
+                pv(12, ["h2h4"], -40),
+            ],
+            {
+                requestedMultipv: 12,
+                limitLabel: "Depth 20",
+            },
+        );
+
+        const e4Break = report.plans.find((plan) => plan.signature === "pawn_break:white:e4");
+        expect(e4Break?.supportCount).toBe(4);
+        expect(e4Break?.appearsInTopPv).toBe(true);
+        expect(e4Break?.approval).toBe("Strong");
+        expect(e4Break?.confidence).toBe("High");
+    });
+
+    test("merges a subset setup into its superset with unioned support", () => {
+        const report = buildEnginePlanReport(
+            INITIAL_FEN,
+            [
+                pv(
+                    1,
+                    ["e2e4", "g8f6", "d2d3", "b8c6", "c2c3", "e7e6", "g1f3", "f8e7"],
+                    30,
+                ),
+                pv(
+                    2,
+                    ["e2e4", "b8c6", "d2d3", "g8f6", "c2c3", "e7e6", "g1f3", "f8e7"],
+                    20,
+                ),
+                pv(3, ["e2e4", "g8f6", "d2d3", "b8c6", "g1f3", "e7e6"], 10),
+            ],
+            {
+                requestedMultipv: 3,
+                limitLabel: "Depth 12",
+            },
+        );
+
+        const whiteSetups = report.setups.filter((setup) => {
+            const signatures = new Set(setup.plans.map((plan) => plan.signature));
+            return (
+                setup.color === "white" &&
+                signatures.has("pawn_setup:white:e4") &&
+                signatures.has("pawn_setup:white:d3") &&
+                signatures.has("piece_destination:white:knight:f3")
+            );
+        });
+
+        expect(whiteSetups).toHaveLength(1);
+        expect(whiteSetups[0].supportCount).toBe(3);
+    });
+
+    test("recognizes King's Indian Attack only when its required signatures are present", () => {
+        const withD3 = buildEnginePlanReport(
+            INITIAL_FEN,
+            [
+                pv(
+                    1,
+                    [
+                        "g1f3",
+                        "d7d5",
+                        "g2g3",
+                        "g8f6",
+                        "f1g2",
+                        "e7e6",
+                        "e1g1",
+                        "f8e7",
+                        "d2d3",
+                        "e8g8",
+                    ],
+                    30,
+                ),
+                pv(
+                    2,
+                    [
+                        "g1f3",
+                        "g8f6",
+                        "g2g3",
+                        "d7d5",
+                        "f1g2",
+                        "e7e6",
+                        "e1g1",
+                        "f8e7",
+                        "d2d3",
+                        "e8g8",
+                    ],
+                    24,
+                ),
+                pv(
+                    3,
+                    [
+                        "g2g3",
+                        "d7d5",
+                        "f1g2",
+                        "g8f6",
+                        "g1f3",
+                        "e7e6",
+                        "e1g1",
+                        "f8e7",
+                        "d2d3",
+                        "e8g8",
+                    ],
+                    18,
+                ),
+            ],
+            {
+                requestedMultipv: 3,
+                limitLabel: "Depth 12",
+            },
+        );
+        expect(
+            withD3.setups.find((setup) => setup.archetype === "King's Indian Attack"),
+        ).toBeDefined();
+
+        const withoutD3 = buildEnginePlanReport(
+            INITIAL_FEN,
+            [
+                pv(
+                    1,
+                    [
+                        "g1f3",
+                        "d7d5",
+                        "g2g3",
+                        "g8f6",
+                        "f1g2",
+                        "e7e6",
+                        "e1g1",
+                        "f8e7",
+                        "b1c3",
+                        "e8g8",
+                    ],
+                    30,
+                ),
+                pv(
+                    2,
+                    [
+                        "g1f3",
+                        "g8f6",
+                        "g2g3",
+                        "d7d5",
+                        "f1g2",
+                        "e7e6",
+                        "e1g1",
+                        "f8e7",
+                        "b1c3",
+                        "e8g8",
+                    ],
+                    24,
+                ),
+                pv(
+                    3,
+                    [
+                        "g2g3",
+                        "d7d5",
+                        "f1g2",
+                        "g8f6",
+                        "g1f3",
+                        "e7e6",
+                        "e1g1",
+                        "f8e7",
+                        "b1c3",
+                        "e8g8",
+                    ],
+                    18,
+                ),
+            ],
+            {
+                requestedMultipv: 3,
+                limitLabel: "Depth 12",
+            },
+        );
+        expect(
+            withoutD3.setups.find((setup) => setup.archetype === "King's Indian Attack"),
+        ).toBeUndefined();
     });
 });
 

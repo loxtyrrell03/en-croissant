@@ -1,5 +1,3 @@
-import { getWebServerUrl } from "./serverUrl";
-
 export type WebHostedFileEntry = {
     type: "file";
     name: string;
@@ -25,23 +23,11 @@ export type WebHostedDirectoryEntry = {
 
 export type WebHostedEntry = WebHostedDirectoryEntry | WebHostedFileEntry;
 
-export type WebHostedDatabaseEntry = {
-    type: "database";
-    path: string;
-    name: string;
-    label?: string;
-    gameCount: number;
-    sizeBytes: number;
-    lastModified: number;
-    latestDate?: string | null;
-};
-
 export type WebHostedLibraryManifest = {
     version: 1;
     generatedAt: string;
     sourceName: string;
     files: WebHostedFileEntry[];
-    databases?: WebHostedDatabaseEntry[];
     pinnedPaths?: string[];
 };
 
@@ -84,11 +70,9 @@ export type WebHostedDatabaseFolder = {
     fileCount: number;
     sizeBytes: number;
     lastModified: number;
-    gameCount?: number;
-    latestDate?: string | null;
 };
 
-const WEB_LIBRARY_BASE = getWebServerUrl("web-library/");
+const WEB_LIBRARY_BASE = `${import.meta.env.BASE_URL}web-library/`;
 const HOSTED_DATABASE_ROOT = "Databases";
 
 export async function getHostedWebLibrary(): Promise<WebHostedLibrary> {
@@ -231,29 +215,8 @@ export function getHostedDatabaseFolders(library: WebHostedLibrary) {
         });
     }
 
-    for (const database of library.manifest.databases ?? []) {
-        const existing = folders.get(database.path);
-        folders.set(database.path, {
-            path: database.path,
-            name: database.name,
-            label: database.label || getHostedDatabaseLabel(database.path),
-            fileCount: existing?.fileCount ?? 0,
-            sizeBytes: database.sizeBytes || existing?.sizeBytes || 0,
-            lastModified: Math.max(existing?.lastModified ?? 0, database.lastModified),
-            gameCount: database.gameCount,
-            latestDate: database.latestDate ?? null,
-        });
-    }
-
     return Array.from(folders.values()).sort((a, b) =>
         a.label.localeCompare(b.label, undefined, { sensitivity: "base", numeric: true }),
-    );
-}
-
-export function getHostedDatabaseFolder(library: WebHostedLibrary, path: string) {
-    const normalizedPath = normalizeHostedPath(path);
-    return (
-        getHostedDatabaseFolders(library).find((folder) => folder.path === normalizedPath) ?? null
     );
 }
 
@@ -320,12 +283,6 @@ function normalizeManifest(data: unknown): WebHostedLibraryManifest {
               path: normalizeHostedPath(file.path),
           }))
         : [];
-    const databases = Array.isArray(manifest.databases)
-        ? manifest.databases.filter(isHostedDatabaseEntry).map((database) => ({
-              ...database,
-              path: normalizeHostedPath(database.path),
-          }))
-        : [];
 
     return {
         version: 1,
@@ -340,7 +297,6 @@ function normalizeManifest(data: unknown): WebHostedLibraryManifest {
                   .map(normalizeHostedPath)
             : [],
         files,
-        databases,
     };
 }
 
@@ -352,18 +308,6 @@ function isHostedFileEntry(value: unknown): value is WebHostedFileEntry {
         typeof entry.url === "string" &&
         typeof entry.filename === "string" &&
         (entry.extension === "pgn" || entry.extension === "pdf")
-    );
-}
-
-function isHostedDatabaseEntry(value: unknown): value is WebHostedDatabaseEntry {
-    const entry = value as Partial<WebHostedDatabaseEntry>;
-    return (
-        entry?.type === "database" &&
-        typeof entry.path === "string" &&
-        typeof entry.name === "string" &&
-        Number.isFinite(entry.gameCount) &&
-        Number.isFinite(entry.sizeBytes) &&
-        Number.isFinite(entry.lastModified)
     );
 }
 

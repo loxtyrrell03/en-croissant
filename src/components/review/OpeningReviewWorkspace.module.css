@@ -4,22 +4,26 @@
   min-height: 0;
 }
 
-.reviewPanelRoot :global(.mantine-Button-label),
+.reviewPanelRoot :global(.mantine-Button-label) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .reviewPanelRoot :global(.mantine-Badge-label) {
   min-width: 0;
-  overflow: visible;
-  text-overflow: clip;
-  white-space: normal;
+  white-space: nowrap;
 }
 
 .reviewSection {
   background: color-mix(in srgb, var(--mantine-color-body) 92%, var(--mantine-color-gray-7));
 }
 
-.reviewActionGrid {
+.reviewFocusGrid {
   display: grid;
-  gap: 0.45rem;
-  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: 0.4rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   min-width: 0;
 }
 
@@ -123,7 +127,7 @@
 }
 
 @container (max-width: 26rem) {
-  .reviewActionGrid {
+  .reviewFocusGrid {
     grid-template-columns: 1fr;
   }
 

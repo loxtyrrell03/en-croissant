@@ -2550,7 +2550,7 @@ mod tests {
 
     #[test]
     fn legacy_progress_merge_preserves_saved_puzzle_elo() {
-        let now = 1_700_000_000_000;
+        let now = 1_700_000_000_000_i64;
         let target = RusqliteConnection::open_in_memory().unwrap();
         init_progress_schema(&target).unwrap();
         ensure_profile(&target, "Lichess Puzzles.db3:123:10").unwrap();

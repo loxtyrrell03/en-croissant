@@ -6,6 +6,7 @@ import { isPawns, parseComment } from "chessops/pgn";
 import { makeSan, parseSan } from "chessops/san";
 import { commands, type Outcome, type Score, type Token } from "@/bindings";
 import { ANNOTATION_INFO, isBasicAnnotation, NAG_INFO } from "./annotation";
+import { BoundedMap } from "./boundedCache";
 import { parseSanOrUci, positionFromFen } from "./chessops";
 import { harmonicMean, isPrefix, mean } from "./misc";
 import {
@@ -349,11 +350,17 @@ export function parseKeyboardMove(san: string, fen: string) {
     return null;
 }
 
+// Openings resolve within the first moves of a game; past this depth the name
+// can't change, so navigating deeper reuses the cached prefix lookup instead
+// of issuing an IPC round-trip on every move.
+const OPENING_LOOKUP_MAX_PLIES = 40;
+const openingLookupCache = new BoundedMap<string, string>(500);
+
 export async function getOpening(root: TreeNode, position: number[]): Promise<string> {
     const fens: string[] = [root.fen];
     let currentNode = root;
 
-    for (const index of position) {
+    for (const index of position.slice(0, OPENING_LOOKUP_MAX_PLIES)) {
         if (!currentNode.children || index >= currentNode.children.length) {
             break;
         }
@@ -361,8 +368,15 @@ export async function getOpening(root: TreeNode, position: number[]): Promise<st
         fens.push(currentNode.fen);
     }
 
+    const cacheKey = fens.join("|");
+    const cached = openingLookupCache.get(cacheKey);
+    if (cached !== undefined) {
+        return cached;
+    }
+
     const res = await commands.getOpeningFromFens(fens);
     if (res.status !== "error") {
+        openingLookupCache.set(cacheKey, res.data);
         return res.data;
     }
 

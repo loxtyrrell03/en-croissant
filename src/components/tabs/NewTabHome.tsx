@@ -282,16 +282,22 @@ function OpeningReviewModal({
       <Stack gap="sm">
         <Group justify="space-between" align="center" gap="sm">
           <Text size="sm" c="dimmed">
-            Analyze your repertoire, save the important positions, then train them here.
+            Scan your games for opening gaps, save the important positions, then train them here.
           </Text>
           <Group gap="xs">
-            <Button
-              size="xs"
-              leftSection={<IconCloudDownload size="0.9rem" />}
-              onClick={onAnalyzeOnline}
+            <Tooltip
+              label="Hand-pick specific recent games instead of scanning a period."
+              withArrow
             >
-              Online games
-            </Button>
+              <Button
+                size="xs"
+                variant="default"
+                leftSection={<IconCloudDownload size="0.9rem" />}
+                onClick={onAnalyzeOnline}
+              >
+                Pick games
+              </Button>
+            </Tooltip>
             <Button size="xs" leftSection={<IconSearch size="0.9rem" />} onClick={onAnalyze}>
               Analyze repertoire
             </Button>
@@ -305,7 +311,8 @@ function OpeningReviewModal({
               <IconTargetArrow size={36} style={{ opacity: 0.35 }} />
               <Text fw={600}>No review decks yet</Text>
               <Text size="sm" c="dimmed" ta="center">
-                Run Analyze Repertoire, then save review positions when the scan finishes.
+                Run Analyze repertoire — enter your Chess.com or Lichess username there and it
+                fetches your games and finds the gaps for you.
               </Text>
               <Button
                 size="xs"

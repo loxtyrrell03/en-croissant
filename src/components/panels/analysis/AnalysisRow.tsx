@@ -1,12 +1,12 @@
 import type { Key } from "@lichess-org/chessground/types";
 import { ActionIcon, Box, CopyButton, Flex, Portal, rem, Table, Tooltip } from "@mantine/core";
-import { useForceUpdate } from "@mantine/hooks";
 import { IconCheck, IconChevronDown, IconCopy } from "@tabler/icons-react";
 import { chessgroundMove } from "chessops/compat";
 import { makeFen } from "chessops/fen";
 import { parseSan } from "chessops/san";
+import equal from "fast-deep-equal";
 import { useAtom, useAtomValue } from "jotai";
-import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { memo, useContext, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "zustand";
 import type { BestMoveSource, Score } from "@/bindings";
@@ -44,36 +44,30 @@ function AnalysisRow({
   const { t } = useTranslation();
 
   const allMoves = moves;
-  const visibleMoves = open ? allMoves : allMoves.slice(0, 12);
   const engineOutputName = source ? `${engine} (${getBestMoveSourceLabel(source)})` : engine;
   const engineOutput = [engineOutputName, formatScore(score.value), allMoves.join(" ")]
     .filter(Boolean)
     .join(" ");
 
-  const [pos] = positionFromFen(fen);
-  const moveInfo = [];
-  if (pos) {
-    for (const san of visibleMoves) {
-      const move = parseSan(pos, san);
-      if (!move) break;
-      pos.play(move);
-      const fen = makeFen(pos.toSetup());
-      const lastMove = chessgroundMove(move);
-      const isCheck = pos.isCheck();
-      moveInfo.push({ fen, san, lastMove, isCheck });
+  const moveInfo = useMemo(() => {
+    const visibleMoves = open ? allMoves : allMoves.slice(0, 12);
+    const [pos] = positionFromFen(fen);
+    const info = [];
+    if (pos) {
+      for (const san of visibleMoves) {
+        const move = parseSan(pos, san);
+        if (!move) break;
+        pos.play(move);
+        const fen = makeFen(pos.toSetup());
+        const lastMove = chessgroundMove(move);
+        const isCheck = pos.isCheck();
+        info.push({ fen, san, lastMove, isCheck });
+      }
     }
-  }
+    return info;
+  }, [allMoves, fen, open]);
 
   const ref = useRef<HTMLTableRowElement>(null);
-  const reset = useForceUpdate();
-  useLayoutEffect(() => {
-    document.addEventListener("analysis-panel-scroll", reset);
-    return () => {
-      document.removeEventListener("analysis-panel-scroll", reset);
-    };
-  }, [reset]);
-
-  useEffect(() => reset(), [open, reset]);
 
   const [evalDisplay, setEvalDisplay] = useAtom(scoreTypeFamily(engine));
   const singleLine = compact && !open;
@@ -108,10 +102,7 @@ function AnalysisRow({
           >
             {moveInfo.map(({ san, fen, lastMove, isCheck }, index) => (
               <BoardPopover
-                position={{
-                  left: ref.current?.getClientRects()[0]?.left ?? 0,
-                  top: ref.current?.getClientRects()[0]?.top ?? 0,
-                }}
+                anchorRef={ref}
                 key={index}
                 san={san}
                 index={index}
@@ -191,7 +182,7 @@ function BoardPopover({
   threat,
   fen,
   orientation,
-  position,
+  anchorRef,
   compact = false,
 }: {
   san: string;
@@ -203,7 +194,7 @@ function BoardPopover({
   threat: boolean;
   fen: string;
   orientation: "white" | "black";
-  position: { left: number; top: number };
+  anchorRef: React.RefObject<HTMLTableRowElement | null>;
   compact?: boolean;
 }) {
   const total_moves = halfMoves + index + 1 + (threat ? 1 : 0);
@@ -215,11 +206,19 @@ function BoardPopover({
   const moveHighlight = useAtomValue(moveHighlightAtom);
 
   const [hovering, setHovering] = useState(false);
+  // Read the anchor position once when the hover starts instead of on every
+  // render: getClientRects during render forces a synchronous layout for each
+  // move cell, which makes the whole panel stutter while engines stream lines.
+  const [position, setPosition] = useState({ left: 0, top: 0 });
 
   return (
     <>
       <Box
-        onMouseEnter={() => setHovering(true)}
+        onMouseEnter={() => {
+          const rect = anchorRef.current?.getBoundingClientRect();
+          setPosition({ left: rect?.left ?? 0, top: rect?.top ?? 0 });
+          setHovering(true);
+        }}
         onMouseLeave={() => setHovering(false)}
         style={
           compact
@@ -279,4 +278,16 @@ function BoardPopover({
   );
 }
 
-export default AnalysisRow;
+export default memo(AnalysisRow, (prev, next) => {
+  return (
+    prev.engine === next.engine &&
+    prev.source === next.source &&
+    prev.halfMoves === next.halfMoves &&
+    prev.threat === next.threat &&
+    prev.fen === next.fen &&
+    prev.orientation === next.orientation &&
+    prev.compact === next.compact &&
+    equal(prev.score, next.score) &&
+    equal(prev.moves, next.moves)
+  );
+});

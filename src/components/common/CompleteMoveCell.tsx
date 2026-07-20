@@ -24,7 +24,7 @@ import { hasMorePriority, stripClock } from "@/utils/chess";
 import { formatMoveThinkTime, getMoveThinkTime } from "@/utils/clock";
 import { hideMoveQualityComments } from "@/utils/commentAnnotations";
 import { getTabFile } from "@/utils/tabs";
-import { type TreeNode, treeIterator } from "@/utils/treeReducer";
+import { type GameHeaders, type TreeNode, treeIterator } from "@/utils/treeReducer";
 import MoveCell from "./MoveCell";
 import moveCellStyles from "./MoveCell.module.css";
 import { TreeStateContext } from "./TreeStateContext";
@@ -33,6 +33,40 @@ const transpositionCache = new WeakMap<
   TreeStore,
   { structureVersion: number; map: Map<string, number[][]> }
 >();
+
+// Every move cell's think-time selector runs on every store update; cache the
+// results per tree/headers identity so navigation doesn't redo O(depth) walks
+// for every rendered move.
+const moveThinkTimeCache = new WeakMap<
+  TreeStore,
+  {
+    root: TreeNode;
+    headers: GameHeaders;
+    timings: Map<string, ReturnType<typeof getMoveThinkTime>>;
+  }
+>();
+
+function getCachedMoveThinkTime(
+  store: TreeStore,
+  root: TreeNode,
+  headers: GameHeaders,
+  movePath: number[],
+) {
+  let cached = moveThinkTimeCache.get(store);
+  if (!cached || cached.root !== root || cached.headers !== headers) {
+    cached = { root, headers, timings: new Map() };
+    moveThinkTimeCache.set(store, cached);
+  }
+
+  const key = movePath.join(",");
+  if (cached.timings.has(key)) {
+    return cached.timings.get(key) ?? null;
+  }
+
+  const timing = getMoveThinkTime({ headers, root, movePath });
+  cached.timings.set(key, timing);
+  return timing;
+}
 
 function getTranspositionMap(root: TreeNode, structureVersion: number, store: TreeStore) {
   const cached = transpositionCache.get(store);
@@ -128,7 +162,7 @@ function CompleteMoveCell({
   const tabFile = getTabFile(currentTab);
   const moveTiming = useStoreWithEqualityFn(
     store,
-    (s) => getMoveThinkTime({ headers: s.headers, root: s.root, movePath }),
+    (s) => getCachedMoveThinkTime(store, s.root, s.headers, movePath),
     equal,
   );
   const moveThinkTime = moveTiming ? formatMoveThinkTime(moveTiming.moveTimeSeconds) : null;

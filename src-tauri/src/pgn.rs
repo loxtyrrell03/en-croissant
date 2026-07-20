@@ -156,11 +156,17 @@ impl PgnParser {
 
         let mut line = String::new();
         loop {
-            let res = self.reader.read_line(&mut line);
-            if res.is_err() {
-                continue;
-            }
-            let bytes = res.unwrap();
+            let bytes = match self.reader.read_line(&mut line) {
+                Ok(bytes) => bytes,
+                // Invalid UTF-8: the bytes were already consumed, so skip the
+                // line. Anything else would retry the same failing read forever
+                // and hang the command (and everything awaiting it).
+                Err(error) if error.kind() == io::ErrorKind::InvalidData => {
+                    line.clear();
+                    continue;
+                }
+                Err(error) => return Err(error),
+            };
             skipped += bytes;
             if bytes == 0 {
                 break;
@@ -195,11 +201,16 @@ impl PgnParser {
         let mut in_comment = false;
         self.game.clear();
         loop {
-            let res = self.reader.read_line(&mut self.line);
-            if res.is_err() {
-                continue;
-            }
-            let bytes = res.unwrap();
+            let bytes = match self.reader.read_line(&mut self.line) {
+                Ok(bytes) => bytes,
+                // See skip_games: skip undecodable lines, bail on real I/O
+                // errors instead of retrying the same read forever.
+                Err(error) if error.kind() == io::ErrorKind::InvalidData => {
+                    self.line.clear();
+                    continue;
+                }
+                Err(error) => return Err(error),
+            };
             if bytes == 0 {
                 break;
             }
@@ -459,28 +470,30 @@ fn game_file_stem(game: &str, index: usize, ordered_filename: bool) -> String {
         parts.push(date);
     }
 
-    if let Some(study_label) = study_label {
-        parts.push(study_label);
-    } else if let Some(event) = event
-        .as_ref()
-        .filter(|_| players_are_generic(&white, &black))
-    {
-        parts.push(event.clone());
-    }
+    // A study chapter's name is the label the user gave the game, so it beats
+    // player tags, which studies often leave as placeholders like "Me". Ordered
+    // filenames are only produced for study-linked folders, where the database
+    // was imported from a study and the Event tag carries "Study - Chapter".
+    let no_players = white.is_none() && black.is_none();
+    let study_style_label = study_label.or_else(|| {
+        event
+            .clone()
+            .filter(|_| ordered_filename || players_are_generic(&white, &black) || no_players)
+    });
 
-    match (white, black) {
-        (Some(white), Some(black)) => parts.push(format!("{white} - {black}")),
-        (Some(white), None) => parts.push(white),
-        (None, Some(black)) => parts.push(black),
-        (None, None) => {
-            if let Some(event) = event {
-                parts.push(event);
-            }
+    if let Some(study_style_label) = study_style_label {
+        parts.push(study_style_label);
+    } else {
+        match (white, black) {
+            (Some(white), Some(black)) => parts.push(format!("{white} - {black}")),
+            (Some(white), None) => parts.push(white),
+            (None, Some(black)) => parts.push(black),
+            (None, None) => {}
         }
-    }
 
-    if let Some(round) = round {
-        parts.push(format!("Round {round}"));
+        if let Some(round) = round {
+            parts.push(format!("Round {round}"));
+        }
     }
 
     let label = if parts.is_empty() {
@@ -517,7 +530,7 @@ fn players_are_generic(white: &Option<String>, black: &Option<String>) -> bool {
 fn is_generic_player_name(name: &str) -> bool {
     matches!(
         name.trim().to_ascii_lowercase().as_str(),
-        "unknown" | "anonymous" | "?"
+        "unknown" | "anonymous" | "me" | "?"
     )
 }
 
@@ -706,7 +719,7 @@ mod tests {
 
         assert_eq!(
             game_file_stem(pgn, 1, false),
-            "2026.02.28 My classical games - Model game 7 Unknown - Unknown"
+            "2026.02.28 My classical games - Model game 7"
         );
     }
 
@@ -725,7 +738,55 @@ mod tests {
 
         assert_eq!(
             game_file_stem(pgn, 7, true),
-            "0007 2026.02.28 My classical games - Model game 7 Unknown - Unknown"
+            "0007 2026.02.28 My classical games - Model game 7"
+        );
+    }
+
+    #[test]
+    fn game_file_stem_keeps_chapter_name_for_study_exports_with_placeholder_players() {
+        // A study database re-exported to PGN loses StudyName/ChapterName and
+        // carries the chapter label in Event, with placeholder player tags.
+        let pgn = r#"[Event "My classical games - Lachlan vs Mike gale 1-0"]
+[Site "https://lichess.org/ihWj0d3o"]
+[Date "2026.04.20"]
+[Round "-"]
+[White "Me"]
+[Black "Me"]
+[Result "*"]
+
+1. Nf3 d5 *
+"#;
+
+        assert_eq!(
+            game_file_stem(pgn, 29, true),
+            "0029 2026.04.20 My classical games - Lachlan vs Mike gale 1-0"
+        );
+        assert_eq!(
+            game_file_stem(pgn, 29, false),
+            "2026.04.20 My classical games - Lachlan vs Mike gale 1-0"
+        );
+    }
+
+    #[test]
+    fn game_file_stem_prefers_event_over_real_players_for_ordered_study_exports() {
+        let pgn = r#"[Event "My classical games - Binx, Michael - Tyrrell, Lachlan 1-0"]
+[Date "2026.03.08"]
+[Round "-"]
+[White "Binx, Michael"]
+[Black "Tyrrell, Lachlan"]
+[Result "1-0"]
+
+1. d4 Nf6 1-0
+"#;
+
+        assert_eq!(
+            game_file_stem(pgn, 16, true),
+            "0016 2026.03.08 My classical games - Binx, Michael - Tyrrell, Lachlan 1-0"
+        );
+        // Outside ordered study syncs, real player names keep naming the file.
+        assert_eq!(
+            game_file_stem(pgn, 16, false),
+            "2026.03.08 Binx, Michael - Tyrrell, Lachlan"
         );
     }
 }

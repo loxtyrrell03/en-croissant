@@ -37,6 +37,8 @@ type ImportOnlineGamesOptions = {
     since: number | null;
     remainingGames?: number;
     token?: string;
+    /** Download only rated standard-chess games (skips variants and casual games). */
+    ratedOnly?: boolean;
     setProgress?: (progress: number) => void;
     setConversionState: SetDatabaseConversionState;
 };
@@ -479,6 +481,7 @@ export async function importOnlineGamesToDatabase({
     since,
     remainingGames = 0,
     token,
+    ratedOnly = false,
     setProgress = () => {},
     setConversionState,
 }: ImportOnlineGamesOptions) {
@@ -512,9 +515,15 @@ export async function importOnlineGamesToDatabase({
     }));
 
     if (source === "lichess") {
-        await downloadLichess(username, since, remainingGames, setProgress, token);
+        await downloadLichess(username, since, remainingGames, setProgress, token, { ratedOnly });
     } else {
-        await downloadChessCom(username, since);
+        // Variants are always excluded when filtering; their openings poison
+        // standard-chess position stats.
+        await downloadChessCom(
+            username,
+            since,
+            ratedOnly ? { ratedOnly: true, standardOnly: true } : {},
+        );
     }
 
     const totalGamesExpected = unwrap(await commands.countPgnGames(pgnPath));

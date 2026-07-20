@@ -126,20 +126,26 @@ function BestMovesComponent({
   const isDetached = detachedEngineId === engine.id;
   const theme = useMantineTheme();
 
-  const [pos, error] = positionFromFen(fen);
-  if (pos) {
-    for (const uci of moves) {
-      const move = parseUci(uci);
-      if (!move) {
-        console.log("Invalid move", uci);
-        break;
+  // Replaying the whole game is O(moves); memoize it so the streamed engine
+  // payloads (which re-render this panel several times a second) don't redo it.
+  const { error, isGameOver, finalFen } = useMemo(() => {
+    const [pos, error] = positionFromFen(fen);
+    if (pos) {
+      for (const uci of moves) {
+        const move = parseUci(uci);
+        if (!move) {
+          console.log("Invalid move", uci);
+          break;
+        }
+        pos.play(move);
       }
-      pos.play(move);
     }
-  }
-
-  const isGameOver = pos?.isEnd() ?? false;
-  const finalFen = useMemo(() => (pos ? makeFen(pos.toSetup()) : null), [pos]);
+    return {
+      error,
+      isGameOver: pos?.isEnd() ?? false,
+      finalFen: pos ? makeFen(pos.toSetup()) : null,
+    };
+  }, [fen, moves]);
 
   const { searchingFen, searchingMoves } = useMemo(
     () =>

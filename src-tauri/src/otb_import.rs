@@ -216,6 +216,13 @@ pub async fn collect_otb_games(
     request: OtbImportRequest,
     app: tauri::AppHandle,
 ) -> Result<OtbImportReport, String> {
+    collect_otb_games_with_runtime(request, app).await
+}
+
+pub async fn collect_otb_games_with_runtime<R: tauri::Runtime>(
+    request: OtbImportRequest,
+    app: tauri::AppHandle<R>,
+) -> Result<OtbImportReport, String> {
     let current_year = Utc::now().year().max(2020) as u16;
     if request.from_year < 1900 || request.from_year > current_year {
         return Err(format!(
@@ -241,6 +248,7 @@ pub async fn collect_otb_games(
     let client = Client::builder()
         .user_agent(USER_AGENT)
         .connect_timeout(Duration::from_secs(15))
+        .timeout(Duration::from_secs(60))
         .build()
         .map_err(|error| error.to_string())?;
     let mut collection = Collection::default();
@@ -335,11 +343,11 @@ pub async fn collect_otb_games(
     })
 }
 
-fn scan_local_pgn_sources(
+fn scan_local_pgn_sources<R: tauri::Runtime>(
     request: &OtbImportRequest,
     identity: &PlayerIdentity,
     collection: &mut Collection,
-    app: &tauri::AppHandle,
+    app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
     let mut report = OtbImportSourceReport::new("Local PGN / ChessBase export");
     let total = request.local_pgn_paths.len();
@@ -379,12 +387,12 @@ fn scan_local_pgn_sources(
     report
 }
 
-async fn scan_lichess_fide_broadcasts(
+async fn scan_lichess_fide_broadcasts<R: tauri::Runtime>(
     client: &Client,
     request: &OtbImportRequest,
     identity: &PlayerIdentity,
     collection: &mut Collection,
-    app: &tauri::AppHandle,
+    app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
     let mut report = OtbImportSourceReport::new("Lichess live FIDE broadcasts");
     let Some(fide_id) = identity.fide_id.as_deref() else {
@@ -533,12 +541,12 @@ async fn scan_lichess_fide_broadcasts(
     report
 }
 
-async fn scan_chessscope_broadcasts(
+async fn scan_chessscope_broadcasts<R: tauri::Runtime>(
     client: &Client,
     request: &OtbImportRequest,
     identity: &PlayerIdentity,
     collection: &mut Collection,
-    app: &tauri::AppHandle,
+    app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
     let mut report = OtbImportSourceReport::new("Chessscope broadcast discovery");
     emit_progress(
@@ -736,12 +744,12 @@ async fn scan_chessscope_broadcasts(
     report
 }
 
-async fn scan_lichess_broadcasts(
+async fn scan_lichess_broadcasts<R: tauri::Runtime>(
     client: &Client,
     request: &OtbImportRequest,
     identity: &PlayerIdentity,
     collection: &mut Collection,
-    app: &tauri::AppHandle,
+    app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
     let mut report = OtbImportSourceReport::new("Lichess broadcast database");
     let list = match client.get(LICHESS_BROADCAST_LIST).send().await {
@@ -826,12 +834,12 @@ async fn scan_lichess_broadcasts(
     report
 }
 
-async fn scan_chess_results(
+async fn scan_chess_results<R: tauri::Runtime>(
     client: &Client,
     request: &OtbImportRequest,
     identity: &PlayerIdentity,
     collection: &mut Collection,
-    app: &tauri::AppHandle,
+    app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
     let mut report = OtbImportSourceReport::new("Chess-Results FIDE player search");
     let Some(fide_id) = identity.fide_id.as_deref() else {
@@ -959,12 +967,12 @@ async fn scan_chess_results(
     report
 }
 
-async fn scan_chessbase_news(
+async fn scan_chessbase_news<R: tauri::Runtime>(
     client: &Client,
     request: &OtbImportRequest,
     identity: &PlayerIdentity,
     collection: &mut Collection,
-    app: &tauri::AppHandle,
+    app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
     let mut report = OtbImportSourceReport::new("ChessBase public news PGNs");
     let mut article_urls = HashSet::new();
@@ -1106,12 +1114,12 @@ async fn scan_chessbase_news(
     report
 }
 
-async fn scan_4ncl_otb_archive(
+async fn scan_4ncl_otb_archive<R: tauri::Runtime>(
     client: &Client,
     request: &OtbImportRequest,
     identity: &PlayerIdentity,
     collection: &mut Collection,
-    app: &tauri::AppHandle,
+    app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
     let mut report = OtbImportSourceReport::new("Official tournament PGN indexes (4NCL)");
     let index_html = match client.get(FOUR_NCL_PGN_INDEX).send().await {
@@ -1259,12 +1267,12 @@ fn is_4ncl_otb_archive_url(url: &str) -> bool {
         || lower.contains("gmspring")
 }
 
-async fn scan_britbase(
+async fn scan_britbase<R: tauri::Runtime>(
     client: &Client,
     request: &OtbImportRequest,
     identity: &PlayerIdentity,
     collection: &mut Collection,
-    app: &tauri::AppHandle,
+    app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
     let mut report = OtbImportSourceReport::new("BritBase public OTB archive");
     let relevant_indexes = BRITBASE_INDEXES
@@ -1396,12 +1404,12 @@ async fn scan_britbase(
     report
 }
 
-async fn scan_pgn_mentor(
+async fn scan_pgn_mentor<R: tauri::Runtime>(
     client: &Client,
     request: &OtbImportRequest,
     identity: &PlayerIdentity,
     collection: &mut Collection,
-    app: &tauri::AppHandle,
+    app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
     let mut report = OtbImportSourceReport::new("PGN Mentor public collections");
     emit_progress(
@@ -1509,12 +1517,12 @@ async fn scan_pgn_mentor(
     report
 }
 
-async fn scan_twic(
+async fn scan_twic<R: tauri::Runtime>(
     client: &Client,
     request: &OtbImportRequest,
     identity: &PlayerIdentity,
     collection: &mut Collection,
-    app: &tauri::AppHandle,
+    app: &tauri::AppHandle<R>,
 ) -> OtbImportSourceReport {
     let mut report = OtbImportSourceReport::new("The Week in Chess");
     let page = match client.get(TWIC_ARCHIVE).send().await {
@@ -2557,8 +2565,8 @@ fn write_collection(path: &Path, games: &[CollectedGame]) -> Result<(), String> 
     Ok(())
 }
 
-fn emit_progress(
-    app: &tauri::AppHandle,
+fn emit_progress<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
     request: &OtbImportRequest,
     source: &str,
     phase: &str,
