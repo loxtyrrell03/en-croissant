@@ -1,5 +1,13 @@
 # AGENTS.md
 
+- On 2026-07-20, the Southall Congress app-side prep layout was flattened at
+  the user's request. All 13 OTB and online-account databases, their matching
+  PGNs, search indexes, and import metadata now live directly in
+  `C:\Users\loxty\AppData\Roaming\org.encroissant.app\db\Southall Congress 260620 U2400`
+  rather than six per-player subfolders. The Southall manifests and layout
+  notes were updated to the new paths; the event folder remains active and was
+  not archived.
+
 - On 2026-07-20, transient duplicate top moves in the phone Stockfish table
   were traced to mixed-depth MultiPV snapshots: Stockfish updates one rank at
   a time, so a newly ranked move could briefly duplicate the stale next rank.
