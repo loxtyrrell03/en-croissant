@@ -44,6 +44,10 @@ try {
     Pop-Location
   }
 
+  Assert-EnCroissantPublishSourceUnchanged `
+    -RepoRoot $repoRoot `
+    -PublishContext $publishContext
+
   $distRoot = (Resolve-Path -LiteralPath (Join-Path $repoRoot "dist")).Path
   if ($SkipBuild) {
     $buildMetadata = Assert-EnCroissantPhoneBuildMetadata `
@@ -98,6 +102,9 @@ try {
     builtAt = $buildMetadata.builtAt
     appShellSha256 = $buildMetadata.appShellSha256
   }
+  Assert-EnCroissantPublishSourceUnchanged `
+    -RepoRoot $repoRoot `
+    -PublishContext $publishContext
   Write-EnCroissantJsonAtomically -Path $activeAppPath -Value $activeApp
 
   if (-not $SkipRestart) {

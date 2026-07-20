@@ -85,6 +85,13 @@ try {
     Enter-EnCroissantPhonePublish -RepoRoot $repoRoot -TargetName "dirty test" | Out-Null
   }
 
+  $unchangedContext = [pscustomobject]@{ SourceCommit = $newerCommit }
+  Assert-Throws -ExpectedMessage "Tracked source files changed" -Action {
+    Assert-EnCroissantPublishSourceUnchanged `
+      -RepoRoot $repoRoot `
+      -PublishContext $unchangedContext
+  }
+
   Write-Host "phone publish guard tests passed"
 } finally {
   if (Test-Path -LiteralPath $testRoot) {

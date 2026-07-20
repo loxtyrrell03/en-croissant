@@ -84,6 +84,25 @@ function Exit-EnCroissantPhonePublish {
   }
 }
 
+function Assert-EnCroissantPublishSourceUnchanged {
+  param(
+    [Parameter(Mandatory = $true)][string]$RepoRoot,
+    [Parameter(Mandatory = $true)]$PublishContext
+  )
+
+  $currentCommit = Invoke-EnCroissantGitValue -RepoRoot $RepoRoot -Arguments @(
+    "rev-parse",
+    "HEAD"
+  )
+  if ($currentCommit -ne $PublishContext.SourceCommit) {
+    throw "The source branch advanced from $($PublishContext.SourceCommit) to $currentCommit while publishing. Refusing to label a mixed build as either commit; retry from the new clean HEAD."
+  }
+  $trackedChanges = & git -C $RepoRoot status --porcelain --untracked-files=no
+  if ($LASTEXITCODE -ne 0 -or $trackedChanges) {
+    throw "Tracked source files changed while the phone build was running. Refusing to deploy a potentially mixed parallel-agent build."
+  }
+}
+
 function Read-EnCroissantDeployment {
   param([Parameter(Mandatory = $true)][string]$Path)
 

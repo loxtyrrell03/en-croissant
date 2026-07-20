@@ -140,6 +140,10 @@ try {
     Invoke-Logged "npm.cmd" @("run", "build-vite") $repoRoot.Path
   }
 
+  Assert-EnCroissantPublishSourceUnchanged `
+    -RepoRoot $repoRoot.Path `
+    -PublishContext $publishContext
+
   $dist = (Resolve-Path -LiteralPath (Join-Path $repoRoot "dist")).Path
   if ($SkipBuild) {
     Assert-EnCroissantPhoneBuildMetadata `
@@ -155,6 +159,9 @@ try {
     -ExpectedSourceCommit $publishContext.SourceCommit | Out-Null
 
   Write-Log "mirroring $dist -> $resolvedPages"
+  Assert-EnCroissantPublishSourceUnchanged `
+    -RepoRoot $repoRoot.Path `
+    -PublishContext $publishContext
   $gitDirectory = Join-Path $resolvedPages ".git"
   & robocopy.exe $dist $resolvedPages /MIR /R:2 /W:1 /XD $gitDirectory | Out-Null
   if ($LASTEXITCODE -ge 8) {
