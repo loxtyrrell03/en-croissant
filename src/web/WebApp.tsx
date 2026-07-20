@@ -231,7 +231,6 @@ import OnlineGameAnalysisPanel from "./OnlineGameAnalysisPanel";
 import { getWebOnlineAnalysisTitle, getWebOnlinePlayerColor } from "./onlineAnalysis";
 import {
   analyzeWithWebStockfish18,
-  chooseWebStockfishDisplayLines,
   stopWebStockfish18Search,
 } from "./stockfishEngine";
 
@@ -1096,6 +1095,10 @@ function BoardWorkspace({
   const cursor = clampCursor(board.cursor, activeLine.length);
   const currentFen = fenAtCursor(activeLine, cursor, startFen);
   const currentLine = activeLine.slice(0, cursor);
+  const upcomingEngineFens = useMemo(
+    () => activeLine.slice(cursor, cursor + 3).map((move) => move.fenAfter),
+    [activeLine, cursor],
+  );
   const sourceGame = useMemo(() => {
     if (activePrep || !board.sourceDatabaseId || !board.sourceGameId) return null;
     return (
@@ -1490,6 +1493,7 @@ function BoardWorkspace({
             <EngineUnderBoardPanel
               analysisRequestId={onlineAnalysisRequestId}
               currentFen={currentFen}
+              upcomingFens={upcomingEngineFens}
               onAnalysisLinesChange={handleEngineAnalysisLinesChange}
               onPlayMove={playEngineMove}
             />
@@ -2723,11 +2727,13 @@ function EngineNumberStepper({
 function EngineUnderBoardPanel({
   analysisRequestId,
   currentFen,
+  upcomingFens,
   onAnalysisLinesChange,
   onPlayMove,
 }: {
   analysisRequestId?: number;
   currentFen: string;
+  upcomingFens: string[];
   onAnalysisLinesChange: (fen: string, lines: WebEngineLine[]) => void;
   onPlayMove: (uci: string) => void;
 }) {
@@ -2737,7 +2743,6 @@ function EngineUnderBoardPanel({
     normalizeWebEnginePanelSettings,
   );
   const [stockfishLines, setStockfishLines] = useState<WebEngineLine[]>([]);
-  const [storedStockfishLines, setStoredStockfishLines] = useState<WebEngineLine[]>([]);
   const [status, setStatus] = useState<WebEnginePanelStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -2759,7 +2764,6 @@ function EngineUnderBoardPanel({
       setStatus("idle");
       setError(null);
       setStockfishLines([]);
-      setStoredStockfishLines([]);
       return;
     }
 
@@ -2768,18 +2772,14 @@ function EngineUnderBoardPanel({
     setStatus("running");
     setError(null);
     setStockfishLines([]);
-    setStoredStockfishLines([]);
 
     void analyzeWithWebStockfish18({
       fen: currentFen,
       multipv: settings.multipv,
       depth: settings.depth,
       infinite: settings.infinite,
+      prefetchFens: upcomingFens,
       signal: controller.signal,
-      onStoredUpdate: (lines) => {
-        if (!active) return;
-        setStoredStockfishLines(lines);
-      },
       onUpdate: (lines) => {
         if (!active) return;
         setStockfishLines(lines);
@@ -2802,12 +2802,16 @@ function EngineUnderBoardPanel({
       active = false;
       controller.abort();
     };
-  }, [currentFen, settings.depth, settings.enabled, settings.infinite, settings.multipv]);
+  }, [
+    currentFen,
+    settings.depth,
+    settings.enabled,
+    settings.infinite,
+    settings.multipv,
+    upcomingFens,
+  ]);
 
-  const displayLines = useMemo(
-    () => chooseWebStockfishDisplayLines(storedStockfishLines, stockfishLines),
-    [stockfishLines, storedStockfishLines],
-  );
+  const displayLines = stockfishLines;
   useEffect(() => {
     onAnalysisLinesChange(currentFen, settings.enabled ? displayLines : []);
   }, [currentFen, displayLines, onAnalysisLinesChange, settings.enabled]);

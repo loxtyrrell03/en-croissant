@@ -1,20 +1,22 @@
 # AGENTS.md
 
-- On 2026-07-20, phone cloud-eval visibility and sustained gaming-PC
-  throughput were repaired together. Stored lines now arrive through an
-  independent callback and remain displayed while they are deeper than the
-  concurrent live search, so a fast first PC line can no longer suppress a
-  later cache response. The engine header identifies `PC cache`, while its
-  secondary status continues to show the honest `PC live` NPS. The private
-  backend raises every spawned Stockfish HTTP/UCI child to Windows High
-  priority, with the watchdog retaining a repair fallback. Controlled trials
-  kept 16 threads and a 512 MiB hash: 16 threads beat 8, 12, 20, and 24, while
-  512 MiB matched or beat 128 MiB and 2 GiB without the larger cold-start
-  cost. The concurrent cache deadline is ten seconds because a cold shard can
-  take over 2.5 seconds under live engine load; it does not delay live output
-  and is cancelled on position changes. Do not smooth or inflate the NPS
-  display; regression testing must cover late cache responses, cold starts,
-  cancellation queues, and sustained direct and home-proxied searches.
+- On 2026-07-20, phone analysis made the gaming-PC eval store authoritative
+  and cache-first. Every position now completes its stored-eval lookup before
+  any engine request: a hit is the final result and never starts Stockfish on
+  top, while only a confirmed miss or failed lookup can proceed to `PC live`
+  and then `Phone fallback`. Known game lines prefetch the next three positions
+  sequentially into a 160-position browser LRU, so normal forward review is a
+  memory hit; position changes may join the same in-flight lookup without
+  spawning live analysis. With Stockfish idle, six cold consecutive opening
+  positions measured 93-107 ms direct and warm private-origin requests were
+  about 37 ms, so the old ten-second concurrent deadline was replaced by a
+  two-second failure deadline. The UI continues to identify `PC cache`, `PC
+  live`, and `Phone fallback` honestly. The private backend still raises every
+  Stockfish HTTP/UCI child to Windows High priority, and controlled trials keep
+  16 threads with a 512 MiB hash. Do not smooth or inflate NPS; regression
+  testing must prove that cache hits make no `/v1/analyze` request, misses are
+  ordered cache-before-live, cancellations cannot start live work, prefetched
+  positions are reused, and backend queues drain to zero.
 
 - On 2026-07-20, the lawful AI Chess Coach library gained a reproducible local
   ingestion and retrieval layer under
@@ -68,8 +70,9 @@
   Windows task launched the server and engine at Below Normal priority. The
   home proxy now destroys its upstream request when the phone response closes,
   the watchdog repairs task/process priority to Normal and restarts an
-  implausibly backed-up idle service, and the live PC request starts before the
-  stored-eval preview instead of waiting up to 3.5 seconds. The gaming PC keeps
+  implausibly backed-up idle service. A short-lived policy started the live PC
+  request before the stored-eval preview; the authoritative cache-first policy
+  at the top of this file supersedes that behavior. The gaming PC keeps
   all 16 threads but now uses a 512 MiB hash, which benchmarked faster than the
   previous 2 GiB allocation and cuts cold initialization cost. Phone engine
   depth is capped at 70 again, with a persistent `Infinite depth` toggle that
@@ -106,11 +109,12 @@
 
 - On 2026-07-20, phone analysis was corrected after the restored stored-eval
   path accidentally prevented live Stockfish from starting on every cache hit.
-  A PC-stored evaluation is now shown only as an immediate preview while the
-  phone continues into the gaming PC's live Stockfish 18 stream. Engine rows
-  and the header explicitly distinguish `PC cache`, `PC live`, and
-  `Phone fallback`, so future verification must confirm the execution source
-  rather than inferring it from generic Stockfish output.
+  That intermediate revision treated a PC-stored evaluation as a preview while
+  continuing into live Stockfish. It was superseded later the same day by the
+  authoritative cache-first policy at the top of this file. Engine rows and
+  the header still explicitly distinguish `PC cache`, `PC live`, and `Phone
+  fallback`, so verification must confirm the execution source rather than
+  inferring it from generic Stockfish output.
 
 - On 2026-07-20, a lawful broad GM-authored computer-era opening-book starter
   shelf was assembled under

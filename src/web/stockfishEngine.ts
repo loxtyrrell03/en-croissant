@@ -11,7 +11,9 @@ import { type WebLichessCloudData, webLichessCloudDataToLines } from "./lichessC
 const STOCKFISH_READY_TIMEOUT_MS = 20_000;
 const STOCKFISH_SEARCH_TIMEOUT_MS = 90_000;
 const STOCKFISH_MIN_UPDATE_INTERVAL_MS = 120;
-const REMOTE_CLOUD_TIMEOUT_MS = 10_000;
+const REMOTE_CLOUD_TIMEOUT_MS = 2_000;
+const STORED_CLOUD_CACHE_LIMIT = 160;
+const STORED_CLOUD_PREFETCH_LIMIT = 3;
 const STOCKFISH_MAX_DEPTH = 70;
 const configuredRemoteStockfishUrl = String(
     import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ?? "https://gaming-pc.tail89d19b.ts.net:8443",
@@ -25,6 +27,8 @@ let readyPromise: Promise<void> | null = null;
 let activeSearchId = 0;
 let activeRemoteController: AbortController | null = null;
 const listeners = new Set<StockfishLineListener>();
+const storedCloudLineCache = new Map<string, WebEngineLine[]>();
+const storedCloudLineRequests = new Map<string, Promise<WebEngineLine[]>>();
 
 export type WebStockfishAnalyzeRequest = {
     fen: string;
@@ -32,7 +36,7 @@ export type WebStockfishAnalyzeRequest = {
     depth: number;
     infinite?: boolean;
     signal?: AbortSignal;
-    onStoredUpdate?: (lines: WebEngineLine[]) => void;
+    prefetchFens?: string[];
     onUpdate?: (lines: WebEngineLine[]) => void;
 };
 
@@ -42,33 +46,32 @@ export async function analyzeWithWebStockfish18({
     depth,
     infinite = false,
     signal,
-    onStoredUpdate,
+    prefetchFens = [],
     onUpdate,
 }: WebStockfishAnalyzeRequest): Promise<WebEngineLine[]> {
     if (REMOTE_STOCKFISH_URL) {
-        const remoteAnalysis = analyzeWithRemoteStockfish18({
-            fen,
-            multipv,
-            depth,
-            infinite,
-            signal,
-            onUpdate,
-        });
-        void queryRemoteStoredCloudLines({ fen, multipv, signal })
-            .then((storedLines) => {
-                if (storedLines.length > 0) onStoredUpdate?.(storedLines);
-            })
-            .catch((error) => {
-                if (!isAbortError(error)) {
-                    console.warn(
-                        "Stored cloud eval lookup failed; using Gaming PC Stockfish.",
-                        error,
-                    );
-                }
-            });
+        try {
+            const storedLines = await queryRemoteStoredCloudLines({ fen, multipv, signal });
+            throwIfAborted(signal);
+            if (storedLines.length > 0) {
+                onUpdate?.(storedLines);
+                void prefetchRemoteStoredCloudLines(prefetchFens, multipv);
+                return storedLines;
+            }
+        } catch (error) {
+            if (isAbortError(error)) throw error;
+            console.warn("Stored cloud eval lookup failed; using Gaming PC Stockfish.", error);
+        }
 
         try {
-            return await remoteAnalysis;
+            return await analyzeWithRemoteStockfish18({
+                fen,
+                multipv,
+                depth,
+                infinite,
+                signal,
+                onUpdate,
+            });
         } catch (error) {
             if (isAbortError(error)) throw error;
             console.warn("Gaming PC Stockfish unavailable; using the phone engine.", error);
@@ -105,10 +108,41 @@ export async function queryRemoteStoredCloudLines({
 }): Promise<WebEngineLine[]> {
     if (!REMOTE_STOCKFISH_URL) return [];
 
+    throwIfAborted(signal);
+    const request = getRemoteStoredCloudLineRequest(fen, multipv);
+    return await waitForStoredCloudLineRequest(request, signal);
+}
+
+function getRemoteStoredCloudLineRequest(fen: string, multipv: number) {
+    const key = storedCloudCacheKey(fen, multipv);
+    const cached = storedCloudLineCache.get(key);
+    if (cached) {
+        storedCloudLineCache.delete(key);
+        storedCloudLineCache.set(key, cached);
+        return Promise.resolve(cached);
+    }
+
+    const pending = storedCloudLineRequests.get(key);
+    if (pending) return pending;
+
+    const request = fetchRemoteStoredCloudLines(fen, multipv)
+        .then((lines) => {
+            storedCloudLineCache.set(key, lines);
+            while (storedCloudLineCache.size > STORED_CLOUD_CACHE_LIMIT) {
+                const oldestKey = storedCloudLineCache.keys().next().value;
+                if (oldestKey === undefined) break;
+                storedCloudLineCache.delete(oldestKey);
+            }
+            return lines;
+        })
+        .finally(() => storedCloudLineRequests.delete(key));
+    storedCloudLineRequests.set(key, request);
+    return request;
+}
+
+async function fetchRemoteStoredCloudLines(fen: string, multipv: number) {
     const controller = new AbortController();
     let timedOut = false;
-    const onAbort = () => controller.abort();
-    signal?.addEventListener("abort", onAbort, { once: true });
     const timeoutId = window.setTimeout(() => {
         timedOut = true;
         controller.abort();
@@ -119,7 +153,6 @@ export async function queryRemoteStoredCloudLines({
     url.searchParams.set("multipv", String(Math.max(1, Math.min(8, Math.round(multipv)))));
 
     try {
-        throwIfAborted(signal);
         const response = await fetch(url, {
             headers: { accept: "application/json" },
             cache: "no-store",
@@ -136,8 +169,47 @@ export async function queryRemoteStoredCloudLines({
         throw error;
     } finally {
         window.clearTimeout(timeoutId);
-        signal?.removeEventListener("abort", onAbort);
     }
+}
+
+async function prefetchRemoteStoredCloudLines(fens: string[], multipv: number) {
+    const uniqueFens = Array.from(new Set(fens.map(normalizeStoredCloudFen).filter(Boolean))).slice(
+        0,
+        STORED_CLOUD_PREFETCH_LIMIT,
+    );
+    for (const fen of uniqueFens) {
+        try {
+            await getRemoteStoredCloudLineRequest(fen, multipv);
+        } catch {
+            break;
+        }
+    }
+}
+
+function waitForStoredCloudLineRequest(
+    request: Promise<WebEngineLine[]>,
+    signal?: AbortSignal,
+): Promise<WebEngineLine[]> {
+    if (!signal) return request;
+    throwIfAborted(signal);
+
+    return new Promise((resolve, reject) => {
+        const onAbort = () => reject(new DOMException("Stockfish analysis was cancelled.", "AbortError"));
+        signal.addEventListener("abort", onAbort, { once: true });
+        request.then(resolve, reject).finally(() => signal.removeEventListener("abort", onAbort));
+    });
+}
+
+function storedCloudCacheKey(fen: string, multipv: number) {
+    return `${normalizeStoredCloudFen(fen)}|${Math.max(1, Math.min(8, Math.round(multipv)))}`;
+}
+
+function normalizeStoredCloudFen(fen: string) {
+    return String(fen || "")
+        .trim()
+        .split(/\s+/)
+        .slice(0, 4)
+        .join(" ");
 }
 
 async function analyzeWithRemoteStockfish18({
@@ -459,18 +531,6 @@ function makeSanLineFromUci(fen: string, uciMoves: string[]) {
 
 function sortEngineLines(linesByPv: Map<number, WebEngineLine>) {
     return dedupeWebStockfishLines(Array.from(linesByPv.values()));
-}
-
-export function chooseWebStockfishDisplayLines(
-    storedLines: WebEngineLine[],
-    liveLines: WebEngineLine[],
-) {
-    if (storedLines.length === 0) return liveLines;
-    if (liveLines.length === 0) return storedLines;
-
-    const storedDepth = Math.max(0, ...storedLines.map((line) => line.depth ?? 0));
-    const liveDepth = Math.max(0, ...liveLines.map((line) => line.depth ?? 0));
-    return storedDepth > liveDepth ? storedLines : liveLines;
 }
 
 export function dedupeWebStockfishLines(lines: WebEngineLine[]) {
