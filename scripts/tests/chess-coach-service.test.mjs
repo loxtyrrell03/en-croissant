@@ -2,11 +2,27 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { DatabaseSync } from "node:sqlite";
 import {
+  buildCodexCoachInvocation,
   buildChessBookSearchTerms,
   buildCriticalMoments,
   buildPhoneCoachPrompt,
   searchChessBookCorpus,
 } from "../chess-coach-service.mjs";
+
+test("Codex coach invocation is GPT-5.6 Sol, ephemeral, read-only, and tool-free", () => {
+  const invocation = buildCodexCoachInvocation("Evidence payload");
+  assert.deepEqual(invocation.args.slice(0, 4), [
+    "exec",
+    "--ephemeral",
+    "--ignore-user-config",
+    "--ignore-rules",
+  ]);
+  assert.ok(invocation.args.includes("gpt-5.6-sol"));
+  assert.ok(invocation.args.includes("read-only"));
+  assert.ok(invocation.args.includes('model_reasoning_effort="medium"'));
+  assert.match(invocation.stdin, /Do not call tools/);
+  assert.match(invocation.stdin, /Evidence payload/);
+});
 
 test("book search retrieves cited chunks and diversifies books", () => {
   const database = new DatabaseSync(":memory:");

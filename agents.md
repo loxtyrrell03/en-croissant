@@ -11,29 +11,41 @@
 
 - On 2026-07-20, the phone engine display stopped treating a stored cloud
   evaluation's missing NPS as an unfinished search. Cache hits are labelled
-  `Cloud evals` and show their stored depth in the compact strip; live searches
-  continue to show depth, total nodes, and NPS. The full Engine panel always
-  reserves visible metrics for Eval, Depth, Nodes, and NPS, and each line keeps
-  its source, depth, and node count. This `Cloud evals` wording supersedes the
-  historical `PC cache` UI-label requirements below while preserving the same
-  authoritative PC cache-first execution policy.
+  `PC cloud evals` and show their stored depth in the compact strip; live
+  searches identify their source as `PC` or `Local phone` and continue to show
+  depth, total nodes, and NPS. The full Engine panel always reserves visible
+  metrics for Eval, Depth, Nodes, and NPS, and each line keeps its source,
+  depth, and node count. These source labels supersede the historical `PC
+  cache`, `PC live`, and `Phone fallback` UI-label requirements below while
+  preserving the same authoritative PC cache-first execution policy.
+
+- On 2026-07-20, the phone evaluation rail stopped resetting to an artificial
+  50/50 position whenever the board moved ahead of the next engine result. It
+  retains the last known score during the cache/live loading gap and updates
+  when the new position produces a result. Engine arrows remain strictly
+  scoped to their analyzed FEN so moves from the prior position are never
+  drawn on the new board.
 
 - On 2026-07-20, the lawful chess-book corpus was wired into both AI Coach
   surfaces. The desktop Rust coach now performs native, diversified FTS5
   retrieval from the local corpus, sends up to six page-bounded passages to
-  the existing pinned Gemini/Stockfish coach, and returns source objects
+  the existing model/Stockfish coach, and returns source objects
   separately so the UI shows exact excerpts, chapters, printed/PDF citations,
   and local PDF controls. The PC-hosted phone gained a fifth `Coach` board tab
   backed by private `/api/chess-coach`, `/api/chess-coach/health`,
   `/api/chess-books/search`, and byte-range `/api/chess-books/pdf` routes. A
   game review scans the PC's stored evaluations cache for the selected side,
   ranks centipawn-loss moments, retrieves the same citation-safe passages, and
-  sends both evidence classes to the pinned `gemini-3.5-pro-preview` local
-  Antigravity CLI. It never launches a live full-game Stockfish sweep. Keep
+  sends both evidence classes to a local, authenticated `codex exec` run using
+  explicit `gpt-5.6-sol` at medium reasoning. The Codex run is ephemeral,
+  read-only, ignores user config and rules, and is told to use no tools; it
+  receives only the prepared prompt evidence. This owner-requested provider
+  change supersedes the historical phone-coach Gemini and Antigravity pins
+  below. It never launches a live full-game Stockfish sweep. Keep
   engine verdicts and book principles distinct, preserve `[Book N]` mappings,
   never expose local paths or full book text to the phone, keep all coach/book
   APIs restricted to the private origins, and disable phone submission until
-  `agy models` confirms the PC's one-time Google authentication.
+  `codex login status` confirms the PC's saved ChatGPT authentication.
 
 - On 2026-07-20, the owner retired the GitHub Pages phone site and fallback.
   This instruction supersedes every historical Pages, `web:publish`,

@@ -1,6 +1,35 @@
 const MAX_BOOK_PASSAGES = 6;
 const MAX_EXCERPT_CHARACTERS = 1100;
 
+export function buildCodexCoachInvocation(
+  prompt,
+  { model = "gpt-5.6-sol", reasoningEffort = "medium" } = {},
+) {
+  return {
+    args: [
+      "exec",
+      "--ephemeral",
+      "--ignore-user-config",
+      "--ignore-rules",
+      "--skip-git-repo-check",
+      "--sandbox",
+      "read-only",
+      "--model",
+      model,
+      "-c",
+      `model_reasoning_effort=\"${reasoningEffort}\"`,
+      "-",
+    ],
+    stdin: [
+      "You are the response-generation layer inside a private chess coaching app.",
+      "Do not call tools, inspect files, browse, or modify anything. Use only the evidence in this prompt.",
+      "Return only the final Markdown coaching answer.",
+      "",
+      String(prompt || ""),
+    ].join("\n"),
+  };
+}
+
 const STOP_WORDS = new Set([
   "about",
   "after",

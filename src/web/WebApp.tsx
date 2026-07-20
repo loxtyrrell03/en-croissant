@@ -1823,8 +1823,8 @@ function CoachUnderBoardPanel({
             {!health.corpusAvailable
               ? "The PC book corpus is unavailable."
               : health.modelInstalled
-                ? "The PC coach model needs its one-time Google sign-in."
-                : "The PC coach model needs its one-time Antigravity install."}
+                ? "OpenAI Codex needs its one-time ChatGPT sign-in."
+                : "The PC needs the OpenAI Codex app or CLI installed."}
           </Text>
           <Text size="xs" c="dimmed">
             Stockfish remains available; Coach enables automatically when the PC dependency is

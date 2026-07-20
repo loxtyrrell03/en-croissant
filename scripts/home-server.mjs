@@ -24,6 +24,7 @@ import {
   listHostedLibraryDirectory,
 } from "./home-library-index.mjs";
 import {
+  buildCodexCoachInvocation,
   buildCriticalMoments,
   buildPhoneCoachPrompt,
   normalizeFen as normalizeCoachFen,
@@ -72,9 +73,17 @@ const chessBookCorpusPath = resolve(
 );
 const coachCommandPath = resolve(
   process.env.EN_CROISSANT_COACH_COMMAND ||
-    join(localAppData, "agy", "bin", process.platform === "win32" ? "agy.exe" : "agy"),
+    join(
+      localAppData,
+      "Programs",
+      "OpenAI",
+      "Codex",
+      "bin",
+      process.platform === "win32" ? "codex.exe" : "codex",
+    ),
 );
-const coachModel = "gemini-3.5-pro-preview";
+const coachModel = "gpt-5.6-sol";
+const coachReasoningEffort = "medium";
 const coachWorkRoot = join(serverRoot, "coach-work");
 const hostedLibraryIndex = new HostedLibraryIndexCache(join(libraryRoot, "manifest.json"));
 const enPositionQueryBinary = join(
@@ -1214,31 +1223,29 @@ async function queryStoredCoachEvaluation(fen) {
 async function runPhoneCoachModel(prompt) {
   const commandStat = await stat(coachCommandPath).catch(() => null);
   if (!commandStat?.isFile()) {
-    const error = new Error(
-      "The PC coach model needs its one-time Antigravity CLI install and Google sign-in.",
-    );
+    const error = new Error("The PC coach needs the OpenAI Codex app or CLI installed.");
     error.code = "MODEL_UNAVAILABLE";
     throw error;
   }
   if (!(await isCoachModelAuthenticated(true))) {
     const error = new Error(
-      "The PC coach model is installed but needs a one-time Google sign-in. Run agy once on the gaming PC.",
+      "OpenAI Codex is installed but not signed in. Run `codex login` on the gaming PC.",
     );
     error.code = "MODEL_UNAVAILABLE";
     throw error;
   }
 
   return await new Promise((resolvePromise, rejectPromise) => {
-    const child = spawn(
-      coachCommandPath,
-      ["--model", coachModel, "--print-timeout", "180s", "--print", "-"],
-      {
+    const invocation = buildCodexCoachInvocation(prompt, {
+      model: coachModel,
+      reasoningEffort: coachReasoningEffort,
+    });
+    const child = spawn(coachCommandPath, invocation.args, {
         cwd: coachWorkRoot,
         env: process.env,
         windowsHide: true,
         stdio: ["pipe", "pipe", "pipe"],
-      },
-    );
+    });
     let stdout = "";
     let stderr = "";
     let settled = false;
@@ -1263,9 +1270,9 @@ async function runPhoneCoachModel(prompt) {
     child.once("error", (error) => finish(rejectPromise, error));
     child.once("exit", (code) => {
       const combined = `${stdout}\n${stderr}`;
-      if (/unauthenticated|not logged|auth timed out|oauth token/i.test(combined)) {
+      if (/unauthenticated|not logged|codex login|authentication required|status.?401/i.test(combined)) {
         const error = new Error(
-          "The PC coach model is installed but needs a one-time Google sign-in. Run agy once on the gaming PC.",
+          "OpenAI Codex is installed but not signed in. Run `codex login` on the gaming PC.",
         );
         error.code = "MODEL_UNAVAILABLE";
         return finish(rejectPromise, error);
@@ -1284,7 +1291,7 @@ async function runPhoneCoachModel(prompt) {
       if (!answer) return finish(rejectPromise, new Error("The PC coach returned an empty answer."));
       finish(resolvePromise, answer);
     });
-    child.stdin.end(prompt);
+    child.stdin.end(invocation.stdin);
   });
 }
 
@@ -1294,7 +1301,7 @@ async function isCoachModelAuthenticated(force = false) {
     return coachAuthenticationCache.available;
   }
   const available = await new Promise((resolvePromise) => {
-    const child = spawn(coachCommandPath, ["models"], {
+    const child = spawn(coachCommandPath, ["login", "status"], {
       cwd: coachWorkRoot,
       env: process.env,
       windowsHide: true,

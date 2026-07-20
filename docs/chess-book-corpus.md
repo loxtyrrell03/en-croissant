@@ -75,7 +75,7 @@ from one title. Each result includes:
 The desktop coach reads the FTS5 corpus directly from Rust. Each question is
 expanded into a compact concept query, results are diversified to at most two
 passages per book, and up to six page-bounded passages are included in the
-existing Gemini/Stockfish prompt. The response carries the exact source
+existing model/Stockfish prompt. The response carries the exact source
 objects separately from the generated prose, so the UI can always show the
 excerpt, title, author, chapter, citation, and local PDF independently of what
 the model says. Stockfish remains authoritative for concrete move verdicts;
@@ -95,13 +95,14 @@ The phone scan is deliberately cache-first. It does not start a live
 Stockfish search for every move and therefore cannot clog the shared engine
 queue. If stored whole-game evidence is incomplete, the prompt must disclose
 that limitation and restrict concrete claims to evidence it actually has.
-The private server invokes the locally authenticated Antigravity CLI; no model
-credential or book text is stored in the browser.
+The private server invokes an ephemeral, read-only `codex exec` run with the
+explicit `gpt-5.6-sol` model at medium reasoning. The model receives only the
+prepared Stockfish and book evidence and is instructed not to use tools. No
+model credential or book text is stored in the browser.
 
-The model dependency is installed once on the gaming PC and requires one
-interactive Google sign-in by running `agy`. The server checks authentication
-with the non-interactive `agy models` command and disables the phone submit
-button until it succeeds.
+Codex is installed once on the gaming PC and uses its saved ChatGPT login. The
+server checks authentication with `codex login status` and disables the phone
+submit button until it succeeds.
 
 ## Page and diagram fidelity
 
