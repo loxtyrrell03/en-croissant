@@ -141,6 +141,18 @@ async function handleRequest(request, response) {
 
 function proxyStockfishRequest(request, response, requestUrl) {
   return new Promise((resolveRequest, rejectRequest) => {
+    let settled = false;
+    let clientClosed = false;
+    const resolveOnce = () => {
+      if (settled) return;
+      settled = true;
+      resolveRequest();
+    };
+    const rejectOnce = (error) => {
+      if (settled) return;
+      settled = true;
+      rejectRequest(error);
+    };
     const upstreamUrl = new URL(`${requestUrl.pathname}${requestUrl.search}`, stockfishBackendUrl);
     const headers = { ...request.headers };
     delete headers.host;
@@ -154,6 +166,11 @@ function proxyStockfishRequest(request, response, requestUrl) {
         headers,
       },
       (upstreamResponse) => {
+        if (clientClosed) {
+          upstreamResponse.destroy();
+          resolveOnce();
+          return;
+        }
         const responseHeaders = { ...upstreamResponse.headers };
         delete responseHeaders.connection;
         delete responseHeaders["access-control-allow-origin"];
@@ -161,16 +178,29 @@ function proxyStockfishRequest(request, response, requestUrl) {
         delete responseHeaders["access-control-allow-methods"];
         delete responseHeaders.vary;
         response.writeHead(upstreamResponse.statusCode || 502, responseHeaders);
+        response.flushHeaders?.();
         upstreamResponse.pipe(response);
-        upstreamResponse.once("end", resolveRequest);
-        upstreamResponse.once("error", rejectRequest);
+        upstreamResponse.once("end", resolveOnce);
+        upstreamResponse.once("error", (error) => {
+          if (clientClosed) resolveOnce();
+          else rejectOnce(error);
+        });
       },
     );
 
-    upstream.once("error", rejectRequest);
-    request.once("aborted", () => upstream.destroy());
+    upstream.once("socket", (socket) => socket.setNoDelay(true));
+    upstream.once("error", (error) => {
+      if (clientClosed) resolveOnce();
+      else rejectOnce(error);
+    });
+    const closeUpstream = () => {
+      clientClosed = true;
+      upstream.destroy();
+      resolveOnce();
+    };
+    request.once("aborted", closeUpstream);
     response.once("close", () => {
-      if (!response.writableEnded) upstream.destroy();
+      if (!response.writableEnded) closeUpstream();
     });
     request.pipe(upstream);
   });

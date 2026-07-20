@@ -1,5 +1,27 @@
 # AGENTS.md
 
+- On 2026-07-20, the remaining phone cache-miss delay and accidental phone
+  fallback were removed. The root causes were synchronous read/decompression
+  of 24 MiB stored-eval shards on the Stockfish HTTP control loop and running
+  all 16 Stockfish threads at Windows High priority, which could starve the
+  home proxy, Tailscale, and ordinary clients for 2.4-2.7 seconds. Stored-eval
+  shard I/O and Zstandard decompression are now asynchronous and de-duplicated,
+  with a 512 MiB shard LRU, so cache work cannot freeze live-engine control.
+  The backend remains High priority but Stockfish children use Above Normal:
+  controlled testing retained roughly 8.1-9.1 million NPS at depth 21 while 18
+  rapid PC starts averaged 23 ms with a 105 ms maximum, versus repeated
+  multi-second stalls at High. The home proxy runs at Normal priority, flushes
+  streamed headers immediately, disables Nagle on its upstream socket, and
+  treats expected client cancellation as a clean completion. When the private
+  PC origin is configured, browser Stockfish now makes two PC attempts with a
+  short retry and a four-second first-line guard, then reports a PC error;
+  it never instantiates bundled phone Stockfish automatically. A 20-position
+  cold cache-miss/cancel stress run through the real private HTTPS origin had
+  151 ms average stored-eval lookup, 145 ms average first PC depth, 556 ms
+  worst first depth, and a final backend queue of zero. Keep regression tests
+  for PC-only retry/failure, cache-before-live ordering, prompt streamed starts,
+  and queue drainage.
+
 - On 2026-07-20, phone analysis made the gaming-PC eval store authoritative
   and cache-first. Every position now completes its stored-eval lookup before
   any engine request: a hit is the final result and never starts Stockfish on

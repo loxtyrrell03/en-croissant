@@ -8,6 +8,8 @@ const PREFETCH_ROOT_FEN = "rnbqkbnr/pppppppp/8/8/2P5/8/PP1PPPPP/RNBQKBNR b KQkq 
 const PREFETCH_NEXT_FEN =
     "rnbqkbnr/pppp1ppp/8/4p3/2P5/8/PP1PPPPP/RNBQKBNR w KQkq - 0 2";
 const ABORT_FEN = "rnbqkbnr/pppppppp/8/8/4N3/8/PPPPPPPP/RNBQKB1R b KQkq - 1 1";
+const RETRY_FEN = "rnbqkbnr/pppp1ppp/8/4p3/6P1/8/PPPPPP1P/RNBQKBNR b KQkq - 0 2";
+const PC_ONLY_FEN = "rnbqkbnr/pppppp1p/6p1/8/5P2/8/PPPPP1PP/RNBQKBNR w KQkq - 0 2";
 
 afterEach(() => {
     vi.unstubAllGlobals();
@@ -111,6 +113,64 @@ describe("Stockfish phone line updates", () => {
             ]),
         ).toEqual([["stockfish", "gaming-pc", 14, "e2e4"]]);
         expect(liveUpdates.at(-1)).toEqual(lines);
+    });
+
+    it("retries a broken PC stream on the PC without starting the phone engine", async () => {
+        const encoder = new TextEncoder();
+        const remoteChunk = encoder.encode(
+            `${JSON.stringify({
+                type: "uci",
+                line: "info depth 12 multipv 1 score cp 18 nodes 80000 nps 5000000 pv g1f3 d7d5",
+            })}\n`,
+        );
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValueOnce({ ok: false, status: 404 })
+            .mockRejectedValueOnce(new TypeError("socket closed"))
+            .mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                body: {
+                    getReader: () => ({
+                        read: vi
+                            .fn()
+                            .mockResolvedValueOnce({ value: remoteChunk, done: false })
+                            .mockResolvedValueOnce({ value: undefined, done: true }),
+                    }),
+                },
+            });
+        const workerConstructor = vi.fn();
+        vi.stubGlobal("fetch", fetchMock);
+        vi.stubGlobal("Worker", workerConstructor);
+
+        const lines = await analyzeWithWebStockfish18({
+            fen: RETRY_FEN,
+            multipv: 3,
+            depth: 70,
+        });
+
+        expect(fetchMock).toHaveBeenCalledTimes(3);
+        expect(String(fetchMock.mock.calls[1]?.[0])).toContain("/v1/analyze");
+        expect(String(fetchMock.mock.calls[2]?.[0])).toContain("/v1/analyze");
+        expect(lines[0]).toMatchObject({ executionLocation: "gaming-pc", uciMoves: ["g1f3", "d7d5"] });
+        expect(workerConstructor).not.toHaveBeenCalled();
+    });
+
+    it("reports a PC failure instead of ever falling back to phone analysis", async () => {
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValueOnce({ ok: false, status: 404 })
+            .mockRejectedValueOnce(new TypeError("first PC stream failed"))
+            .mockRejectedValueOnce(new TypeError("second PC stream failed"));
+        const workerConstructor = vi.fn();
+        vi.stubGlobal("fetch", fetchMock);
+        vi.stubGlobal("Worker", workerConstructor);
+
+        await expect(
+            analyzeWithWebStockfish18({ fen: PC_ONLY_FEN, multipv: 3, depth: 70 }),
+        ).rejects.toThrow("phone analysis is disabled");
+        expect(fetchMock).toHaveBeenCalledTimes(3);
+        expect(workerConstructor).not.toHaveBeenCalled();
     });
 
     it("prefetches upcoming game positions and reuses them without another request", async () => {

@@ -22,19 +22,28 @@ function Set-RemoteProcessPriority {
   $serverProcesses = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
     $_.Name -eq "node.exe" -and [string]$_.CommandLine -like "*stockfish-remote-server.mjs*"
   }
-  $processIds = @($serverProcesses.ProcessId)
-  if ($processIds.Count -gt 0) {
-    $processIds += @(
-      Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
-        $_.ParentProcessId -in $processIds -and $_.Name -like "stockfish*.exe"
-      } | Select-Object -ExpandProperty ProcessId
-    )
-  }
-  foreach ($processId in $processIds) {
+  $serverProcessIds = @($serverProcesses.ProcessId)
+  foreach ($processId in $serverProcessIds) {
     try {
       (Get-Process -Id $processId -ErrorAction Stop).PriorityClass = "High"
     } catch {
       # A process may exit between discovery and priority repair.
+    }
+  }
+  if ($serverProcessIds.Count -gt 0) {
+    $engineProcessIds = @(
+      Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
+        $_.ParentProcessId -in $serverProcessIds -and $_.Name -like "stockfish*.exe"
+      } | Select-Object -ExpandProperty ProcessId
+    )
+    foreach ($processId in $engineProcessIds) {
+      try {
+        # Above Normal retains nearly all engine throughput without starving
+        # the phone proxy and Tailscale stream while all 16 threads are busy.
+        (Get-Process -Id $processId -ErrorAction Stop).PriorityClass = "AboveNormal"
+      } catch {
+        # A process may exit between discovery and priority repair.
+      }
     }
   }
 }

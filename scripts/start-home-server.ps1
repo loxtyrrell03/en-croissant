@@ -43,6 +43,10 @@ $process = Start-Process -FilePath $node `
   -RedirectStandardError $stderrPath `
   -PassThru
 
+# The phone proxy must be able to forward stream chunks and cancellations even
+# while Stockfish occupies every logical processor.
+$process.PriorityClass = 'Normal'
+
 Set-Content -LiteralPath $pidPath -Value $process.Id -Encoding ascii
 
 $deadline = (Get-Date).AddSeconds(30)

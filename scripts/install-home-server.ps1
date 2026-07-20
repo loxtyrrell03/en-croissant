@@ -112,6 +112,7 @@ $taskSettings = New-ScheduledTaskSettingsSet `
   -DontStopIfGoingOnBatteries `
   -RestartCount 3 `
   -RestartInterval (New-TimeSpan -Minutes 1)
+$taskSettings.Priority = 4
 Register-ScheduledTask `
   -TaskName $taskName `
   -Action $taskAction `

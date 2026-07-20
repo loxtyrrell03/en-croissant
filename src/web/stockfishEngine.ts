@@ -12,6 +12,9 @@ const STOCKFISH_READY_TIMEOUT_MS = 20_000;
 const STOCKFISH_SEARCH_TIMEOUT_MS = 90_000;
 const STOCKFISH_MIN_UPDATE_INTERVAL_MS = 120;
 const REMOTE_CLOUD_TIMEOUT_MS = 2_000;
+const REMOTE_STOCKFISH_FIRST_LINE_TIMEOUT_MS = 4_000;
+const REMOTE_STOCKFISH_RETRY_DELAY_MS = 100;
+const REMOTE_STOCKFISH_MAX_ATTEMPTS = 2;
 const STORED_CLOUD_CACHE_LIMIT = 160;
 const STORED_CLOUD_PREFETCH_LIMIT = 3;
 const STOCKFISH_MAX_DEPTH = 70;
@@ -63,21 +66,7 @@ export async function analyzeWithWebStockfish18({
             console.warn("Stored cloud eval lookup failed; using Gaming PC Stockfish.", error);
         }
 
-        try {
-            return await analyzeWithRemoteStockfish18({
-                fen,
-                multipv,
-                depth,
-                infinite,
-                signal,
-                onUpdate,
-            });
-        } catch (error) {
-            if (isAbortError(error)) throw error;
-            console.warn("Gaming PC Stockfish unavailable; using the phone engine.", error);
-        }
-
-        return await analyzeWithLocalStockfish18({
+        return await analyzeWithRemoteStockfish18WithRetry({
             fen,
             multipv,
             depth,
@@ -95,6 +84,28 @@ export async function analyzeWithWebStockfish18({
         signal,
         onUpdate,
     });
+}
+
+async function analyzeWithRemoteStockfish18WithRetry(
+    request: WebStockfishAnalyzeRequest,
+): Promise<WebEngineLine[]> {
+    let lastError: unknown = null;
+
+    for (let attempt = 1; attempt <= REMOTE_STOCKFISH_MAX_ATTEMPTS; attempt += 1) {
+        throwIfAborted(request.signal);
+        if (attempt > 1) await waitForAbortableDelay(REMOTE_STOCKFISH_RETRY_DELAY_MS, request.signal);
+
+        try {
+            return await analyzeWithRemoteStockfish18(request);
+        } catch (error) {
+            if (isAbortError(error) || request.signal?.aborted) throw error;
+            lastError = error;
+            console.warn(`Gaming PC Stockfish attempt ${attempt} failed.`, error);
+        }
+    }
+
+    const detail = lastError instanceof Error ? ` ${lastError.message}` : "";
+    throw new Error(`Gaming PC Stockfish is unavailable; phone analysis is disabled.${detail}`);
 }
 
 export async function queryRemoteStoredCloudLines({
@@ -230,6 +241,17 @@ async function analyzeWithRemoteStockfish18({
     const onAbort = () => controller.abort();
     signal?.addEventListener("abort", onAbort, { once: true });
     let lastUpdateAt = 0;
+    let firstLineTimedOut = false;
+    let firstLineTimeoutId: number | null = window.setTimeout(() => {
+        firstLineTimedOut = true;
+        controller.abort();
+    }, REMOTE_STOCKFISH_FIRST_LINE_TIMEOUT_MS);
+
+    const markAnalysisStarted = () => {
+        if (firstLineTimeoutId === null) return;
+        window.clearTimeout(firstLineTimeoutId);
+        firstLineTimeoutId = null;
+    };
 
     const publish = (force = false) => {
         if (!onUpdate || activeSearchId !== searchId) return;
@@ -277,6 +299,7 @@ async function analyzeWithRemoteStockfish18({
             if (message.type !== "uci" || !message.line) return;
             const parsed = parseStockfishInfoLine(message.line, fen, "gaming-pc");
             if (!parsed || parsed.multipv > requestedMultipv) return;
+            markAnalysisStarted();
             linesByPv.set(parsed.multipv, parsed);
             publish();
         };
@@ -299,10 +322,31 @@ async function analyzeWithRemoteStockfish18({
         }
         publish(true);
         return sortEngineLines(linesByPv);
+    } catch (error) {
+        if (firstLineTimedOut) {
+            throw new Error("Gaming PC Stockfish did not begin analysis within four seconds.");
+        }
+        throw error;
     } finally {
+        markAnalysisStarted();
         signal?.removeEventListener("abort", onAbort);
         if (activeRemoteController === controller) activeRemoteController = null;
     }
+}
+
+function waitForAbortableDelay(delayMs: number, signal?: AbortSignal) {
+    throwIfAborted(signal);
+    return new Promise<void>((resolve, reject) => {
+        const timeoutId = window.setTimeout(() => {
+            signal?.removeEventListener("abort", onAbort);
+            resolve();
+        }, delayMs);
+        const onAbort = () => {
+            window.clearTimeout(timeoutId);
+            reject(new DOMException("Stockfish analysis was cancelled.", "AbortError"));
+        };
+        signal?.addEventListener("abort", onAbort, { once: true });
+    });
 }
 
 async function analyzeWithLocalStockfish18({
