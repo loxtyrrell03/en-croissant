@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { WebEngineLine } from "../model";
-import { analyzeWithWebStockfish18, dedupeWebStockfishLines } from "../stockfishEngine";
+import {
+    analyzeWithWebStockfish18,
+    chooseWebStockfishDisplayLines,
+    dedupeWebStockfishLines,
+} from "../stockfishEngine";
 
 const INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -53,14 +57,16 @@ describe("Stockfish phone line updates", () => {
             })
             .mockImplementationOnce(() => cloudResponse);
         vi.stubGlobal("fetch", fetchMock);
-        const updates: WebEngineLine[][] = [];
+        const storedUpdates: WebEngineLine[][] = [];
+        const liveUpdates: WebEngineLine[][] = [];
 
         const analysis = analyzeWithWebStockfish18({
             fen: INITIAL_FEN,
             multipv: 3,
             depth: 100,
             infinite: true,
-            onUpdate: (nextLines) => updates.push(nextLines),
+            onStoredUpdate: (nextLines) => storedUpdates.push(nextLines),
+            onUpdate: (nextLines) => liveUpdates.push(nextLines),
         });
 
         await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
@@ -70,6 +76,19 @@ describe("Stockfish phone line updates", () => {
             depth: 70,
             infinite: true,
         });
+
+        resolveRemoteRead({ value: remoteChunk, done: false });
+        const lines = await analysis;
+        expect(
+            lines.map((line) => [
+                line.source,
+                line.executionLocation,
+                line.depth,
+                line.uciMoves[0],
+            ]),
+        ).toEqual([["stockfish", "gaming-pc", 14, "e2e4"]]);
+        expect(liveUpdates.at(-1)).toEqual(lines);
+        expect(storedUpdates).toHaveLength(0);
 
         resolveCloud({
             ok: true,
@@ -85,24 +104,27 @@ describe("Stockfish phone line updates", () => {
                 ],
             }),
         });
-        await vi.waitFor(() => expect(updates).toHaveLength(1));
-        expect(updates[0]?.map((line) => [line.source, line.depth, line.uciMoves[0]])).toEqual([
+        await vi.waitFor(() => expect(storedUpdates).toHaveLength(1));
+        expect(
+            storedUpdates[0]?.map((line) => [line.source, line.depth, line.uciMoves[0]]),
+        ).toEqual([
             ["lichess-cloud", 65, "c2c4"],
             ["lichess-cloud", 65, "e2e4"],
             ["lichess-cloud", 65, "g1f3"],
         ]);
+    });
 
-        resolveRemoteRead({ value: remoteChunk, done: false });
-        const lines = await analysis;
-        expect(
-            lines.map((line) => [
-                line.source,
-                line.executionLocation,
-                line.depth,
-                line.uciMoves[0],
-            ]),
-        ).toEqual([["stockfish", "gaming-pc", 14, "e2e4"]]);
-        expect(updates.at(-1)).toEqual(lines);
+    it("keeps the deeper PC cache visible while shallower live analysis continues", () => {
+        const storedLines = [
+            { ...makeLine(1, 65, "c2c4"), source: "lichess-cloud" as const },
+            { ...makeLine(2, 65, "e2e4"), source: "lichess-cloud" as const },
+        ];
+        const shallowLiveLines = [makeLine(1, 18, "e2e4")];
+        const deepLiveLines = [makeLine(1, 70, "e2e4")];
+
+        expect(chooseWebStockfishDisplayLines(storedLines, shallowLiveLines)).toBe(storedLines);
+        expect(chooseWebStockfishDisplayLines(storedLines, deepLiveLines)).toBe(deepLiveLines);
+        expect(chooseWebStockfishDisplayLines([], shallowLiveLines)).toBe(shallowLiveLines);
     });
 
     it("removes a stale duplicate root move while MultiPV ranks advance depth", () => {

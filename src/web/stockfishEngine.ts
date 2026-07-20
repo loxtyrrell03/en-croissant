@@ -32,6 +32,7 @@ export type WebStockfishAnalyzeRequest = {
     depth: number;
     infinite?: boolean;
     signal?: AbortSignal;
+    onStoredUpdate?: (lines: WebEngineLine[]) => void;
     onUpdate?: (lines: WebEngineLine[]) => void;
 };
 
@@ -41,15 +42,9 @@ export async function analyzeWithWebStockfish18({
     depth,
     infinite = false,
     signal,
+    onStoredUpdate,
     onUpdate,
 }: WebStockfishAnalyzeRequest): Promise<WebEngineLine[]> {
-    let analysisFinished = false;
-    let liveUpdateStarted = false;
-    const publishLiveUpdate = (lines: WebEngineLine[]) => {
-        liveUpdateStarted = true;
-        onUpdate?.(lines);
-    };
-
     if (REMOTE_STOCKFISH_URL) {
         const remoteAnalysis = analyzeWithRemoteStockfish18({
             fen,
@@ -57,13 +52,11 @@ export async function analyzeWithWebStockfish18({
             depth,
             infinite,
             signal,
-            onUpdate: publishLiveUpdate,
+            onUpdate,
         });
         void queryRemoteStoredCloudLines({ fen, multipv, signal })
             .then((storedLines) => {
-                if (!analysisFinished && !liveUpdateStarted && storedLines.length > 0) {
-                    onUpdate?.(storedLines);
-                }
+                if (storedLines.length > 0) onStoredUpdate?.(storedLines);
             })
             .catch((error) => {
                 if (!isAbortError(error)) {
@@ -75,38 +68,30 @@ export async function analyzeWithWebStockfish18({
             });
 
         try {
-            try {
-                return await remoteAnalysis;
-            } catch (error) {
-                if (isAbortError(error)) throw error;
-                console.warn("Gaming PC Stockfish unavailable; using the phone engine.", error);
-            }
-
-            return await analyzeWithLocalStockfish18({
-                fen,
-                multipv,
-                depth,
-                infinite,
-                signal,
-                onUpdate: publishLiveUpdate,
-            });
-        } finally {
-            analysisFinished = true;
+            return await remoteAnalysis;
+        } catch (error) {
+            if (isAbortError(error)) throw error;
+            console.warn("Gaming PC Stockfish unavailable; using the phone engine.", error);
         }
-    }
 
-    try {
         return await analyzeWithLocalStockfish18({
             fen,
             multipv,
             depth,
             infinite,
             signal,
-            onUpdate: publishLiveUpdate,
+            onUpdate,
         });
-    } finally {
-        analysisFinished = true;
     }
+
+    return await analyzeWithLocalStockfish18({
+        fen,
+        multipv,
+        depth,
+        infinite,
+        signal,
+        onUpdate,
+    });
 }
 
 export async function queryRemoteStoredCloudLines({
@@ -474,6 +459,18 @@ function makeSanLineFromUci(fen: string, uciMoves: string[]) {
 
 function sortEngineLines(linesByPv: Map<number, WebEngineLine>) {
     return dedupeWebStockfishLines(Array.from(linesByPv.values()));
+}
+
+export function chooseWebStockfishDisplayLines(
+    storedLines: WebEngineLine[],
+    liveLines: WebEngineLine[],
+) {
+    if (storedLines.length === 0) return liveLines;
+    if (liveLines.length === 0) return storedLines;
+
+    const storedDepth = Math.max(0, ...storedLines.map((line) => line.depth ?? 0));
+    const liveDepth = Math.max(0, ...liveLines.map((line) => line.depth ?? 0));
+    return storedDepth > liveDepth ? storedLines : liveLines;
 }
 
 export function dedupeWebStockfishLines(lines: WebEngineLine[]) {

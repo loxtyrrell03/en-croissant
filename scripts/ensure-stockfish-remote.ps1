@@ -32,7 +32,7 @@ function Set-RemoteProcessPriority {
   }
   foreach ($processId in $processIds) {
     try {
-      (Get-Process -Id $processId -ErrorAction Stop).PriorityClass = "Normal"
+      (Get-Process -Id $processId -ErrorAction Stop).PriorityClass = "High"
     } catch {
       # A process may exit between discovery and priority repair.
     }

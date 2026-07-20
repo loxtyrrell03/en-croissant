@@ -1,5 +1,19 @@
 # AGENTS.md
 
+- On 2026-07-20, phone cloud-eval visibility and sustained gaming-PC
+  throughput were repaired together. Stored lines now arrive through an
+  independent callback and remain displayed while they are deeper than the
+  concurrent live search, so a fast first PC line can no longer suppress a
+  later cache response. The engine header identifies `PC cache`, while its
+  secondary status continues to show the honest `PC live` NPS. The private
+  backend raises every spawned Stockfish HTTP/UCI child to Windows High
+  priority, with the watchdog retaining a repair fallback. Controlled trials
+  kept 16 threads and a 512 MiB hash: 16 threads beat 8, 12, 20, and 24, while
+  512 MiB matched or beat 128 MiB and 2 GiB without the larger cold-start
+  cost. Do not smooth or inflate the NPS display; regression testing must cover
+  late cache responses, cold starts, cancellation queues, and sustained direct
+  and home-proxied searches.
+
 - On 2026-07-20, the lawful AI Chess Coach library gained a reproducible local
   ingestion and retrieval layer under
   `C:\Users\loxty\Documents\EnCroissant\AI Chess Coach Library\00 AI Corpus`.
