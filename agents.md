@@ -1,5 +1,23 @@
 # AGENTS.md
 
+- On 2026-07-20, Lichess authentication became one-time and shared across the
+  PC-hosted phone app, the GitHub Pages fallback, En Croissant, and Outpost.
+  Moving the phone site between origins had exposed the old design flaw: its
+  token lived only in origin-scoped browser storage, while each desktop app
+  used a separate WebView profile. The private gaming-PC home server is now
+  the authoritative credential store at
+  `%LOCALAPPDATA%\EnCroissantHomeServer\credentials\lichess.json`; the existing
+  valid `lachlan1415` session was migrated there without exposing its token.
+  Phone startup silently hydrates that credential before rendering Prep, and
+  both desktop shells hydrate their normal Lichess session on mount. Future
+  OAuth completion from any surface validates the account against Lichess and
+  updates the same store. The phone UI no longer exposes bearer-token, forget,
+  or routine relink controls: it shows a quiet `Lichess saved` state, with a
+  one-time connect action only when no shared credential exists. The sensitive
+  API restricts browser CORS to the private phone origin, the Pages fallback,
+  and the two Tauri origins; persistence survives server restarts and origin
+  changes until the user explicitly revokes the Lichess token.
+
 - On 2026-07-20, the remaining phone cache-miss delay and accidental phone
   fallback were removed. The root causes were synchronous read/decompression
   of 24 MiB stored-eval shards on the Stockfish HTTP control loop and running

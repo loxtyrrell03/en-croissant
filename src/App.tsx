@@ -78,6 +78,7 @@ import { readStoredDirectoryOverride } from "@/utils/directoryOverrides";
 import { getDatabasesDir, getDocumentDir, getEnginesDir, getPuzzlesDir } from "@/utils/directories";
 import { initUserAgent } from "@/utils/http";
 import { getEffectivePieceSet } from "@/utils/boardStyle";
+import { useSharedLichessSession } from "@/hooks/useSharedLichessSession";
 import { useLichessStudyDatabaseAutoUpdater } from "@/utils/lichessStudyDatabaseAutoUpdate";
 import { useOnlineDatabaseAutoUpdater } from "@/utils/onlineDatabaseAutoUpdate";
 import { useMistakeReviewDeckAutoUpdater } from "@/utils/mistakeReviewAutoUpdate";
@@ -517,6 +518,7 @@ export default function App() {
   const setMistakeScanProgress = useSetAtom(mistakeReviewScanProgressAtom);
 
   useAppStartup();
+  useSharedLichessSession();
   useStopInteractiveEnginesWhenInactive();
   useOnlineDatabaseAutoUpdater();
   useLichessStudyDatabaseAutoUpdater();

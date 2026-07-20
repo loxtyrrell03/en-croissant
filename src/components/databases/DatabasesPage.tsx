@@ -138,6 +138,7 @@ import {
   upsertLichessStudyDatabaseUpdateRecord,
 } from "@/utils/lichess/study";
 import { getLichessAccount } from "@/utils/lichess/api";
+import { saveSharedLichessCredential } from "@/utils/sharedLichessAuth";
 import { createRepertoireDatabaseFromGameBatches } from "@/utils/repertoireCopy";
 import type { Session } from "@/utils/session";
 import { unwrap } from "@/utils/unwrap";
@@ -261,6 +262,9 @@ export default function DatabasesPage() {
       try {
         const account = await getLichessAccount({ token });
         if (!account) throw new Error("Could not read the authorized Lichess account.");
+        void saveSharedLichessCredential(token).catch((error) => {
+          console.warn("Could not save the shared Lichess sign-in.", error);
+        });
 
         setSessions((current) => {
           const existing = current.find(

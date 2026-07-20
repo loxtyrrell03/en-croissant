@@ -30,6 +30,7 @@ const serverRoot = resolve(
 const siteRoot = resolve(process.env.EN_CROISSANT_HOME_SERVER_SITE || join(serverRoot, "site"));
 const statePath = join(serverRoot, "state", "web-state.json");
 const stateBackupRoot = join(serverRoot, "state", "backups");
+const lichessCredentialPath = join(serverRoot, "credentials", "lichess.json");
 const logPath = join(serverRoot, "home-server.log");
 const port = positiveInteger(process.env.EN_CROISSANT_HOME_SERVER_PORT, 8787);
 const host = "127.0.0.1";
@@ -52,6 +53,14 @@ const enPositionQueryBinary = join(
   process.platform === "win32" ? "query_db_position.exe" : "query_db_position",
 );
 const maxStateBytes = 256 * 1024 * 1024;
+const maxCredentialBytes = 4 * 1024;
+const privateCredentialOrigins = new Set([
+  "https://gaming-pc.tail89d19b.ts.net",
+  "https://loxtyrrell03.github.io",
+  "http://localhost:1420",
+  "http://tauri.localhost",
+  "https://tauri.localhost",
+]);
 
 let outpostCatalog = null;
 let outpostCatalogLoadedAt = 0;
@@ -64,9 +73,11 @@ let libraryRefreshQueued = false;
 let lastLibraryRefresh = null;
 let lastLibraryError = null;
 let lastStateBackupAt = 0;
+let sharedLichessCredential = null;
 
 await mkdir(serverRoot, { recursive: true });
 await mkdir(dirname(statePath), { recursive: true });
+sharedLichessCredential = normalizeLichessCredential(await readJsonFile(lichessCredentialPath));
 
 const server = createServer((request, response) => {
   void handleRequest(request, response).catch(async (error) => {
@@ -86,13 +97,13 @@ process.on("SIGTERM", () => server.close(() => process.exit(0)));
 
 async function handleRequest(request, response) {
   const method = request.method || "GET";
-  setCorsHeaders(response);
+  const requestUrl = new URL(request.url || "/", `http://${host}:${port}`);
+  const pathname = decodeURIComponent(requestUrl.pathname);
+  setCorsHeaders(request, response, pathname === "/api/lichess-credential");
   if (method === "OPTIONS") {
     response.writeHead(204);
     return response.end();
   }
-  const requestUrl = new URL(request.url || "/", `http://${host}:${port}`);
-  const pathname = decodeURIComponent(requestUrl.pathname);
 
   if (pathname === "/v1" || pathname.startsWith("/v1/")) {
     return proxyStockfishRequest(request, response, requestUrl);
@@ -111,12 +122,20 @@ async function handleRequest(request, response) {
       libraryRefreshRunning,
       lastLibraryRefresh,
       lastLibraryError,
+      lichessConnected: Boolean(sharedLichessCredential),
+      lichessUsername: sharedLichessCredential?.username ?? null,
     });
   }
 
   if (pathname === "/api/web-state") {
     if (method === "GET") return readWebState(response);
     if (method === "PUT") return writeWebState(request, response);
+    return writeJson(response, 405, { error: "Method not allowed." });
+  }
+
+  if (pathname === "/api/lichess-credential") {
+    if (method === "GET") return readLichessCredential(response);
+    if (method === "PUT") return writeLichessCredential(request, response);
     return writeJson(response, 405, { error: "Method not allowed." });
   }
 
@@ -232,6 +251,56 @@ async function writeWebState(request, response) {
   await writeFile(temporaryPath, `${JSON.stringify(state)}\n`, "utf8");
   await renameReplacing(temporaryPath, statePath);
   return writeJson(response, 200, { ok: true, savedAt: new Date().toISOString() });
+}
+
+function readLichessCredential(response) {
+  if (!sharedLichessCredential) {
+    return writeJson(response, 404, { connected: false });
+  }
+  return writeJson(response, 200, {
+    connected: true,
+    ...sharedLichessCredential,
+  });
+}
+
+async function writeLichessCredential(request, response) {
+  const payload = await readJsonBody(request, maxCredentialBytes);
+  const token = String(payload?.token || "").trim();
+  if (!/^[A-Za-z0-9_-]{20,512}$/.test(token)) {
+    return writeJson(response, 400, { error: "A valid Lichess access token is required." });
+  }
+
+  const accountResponse = await fetch("https://lichess.org/api/account", {
+    headers: {
+      accept: "application/json",
+      authorization: `Bearer ${token}`,
+    },
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!accountResponse.ok) {
+    return writeJson(response, 401, { error: "Lichess rejected this access token." });
+  }
+  const account = await accountResponse.json();
+  const username = String(account?.username || "").trim();
+  if (!username) {
+    return writeJson(response, 502, { error: "Lichess returned an invalid account." });
+  }
+
+  const credential = {
+    token,
+    username,
+    updatedAt: Date.now(),
+  };
+  await mkdir(dirname(lichessCredentialPath), { recursive: true });
+  const temporaryPath = `${lichessCredentialPath}.${process.pid}.tmp`;
+  await writeFile(temporaryPath, `${JSON.stringify(credential)}\n`, {
+    encoding: "utf8",
+    mode: 0o600,
+  });
+  await renameReplacing(temporaryPath, lichessCredentialPath);
+  sharedLichessCredential = credential;
+  await appendLog(`updated shared Lichess credential for ${username}`);
+  return writeJson(response, 200, { connected: true, ...credential });
 }
 
 async function writeLiveLibraryManifest(response) {
@@ -722,11 +791,35 @@ function writeJson(response, status, body, extraHeaders = {}) {
   response.end(text);
 }
 
-function setCorsHeaders(response) {
+function setCorsHeaders(request, response, sensitive = false) {
   response.setHeader("access-control-allow-headers", "content-type");
   response.setHeader("access-control-allow-methods", "GET, HEAD, PUT, OPTIONS");
-  response.setHeader("access-control-allow-origin", "*");
+  const origin = String(request.headers.origin || "").replace(/\/$/, "");
+  if (!sensitive) {
+    response.setHeader("access-control-allow-origin", "*");
+  } else if (privateCredentialOrigins.has(origin)) {
+    response.setHeader("access-control-allow-origin", origin);
+    response.setHeader("vary", "Origin");
+  }
   response.setHeader("access-control-expose-headers", "content-length, content-range");
+}
+
+function normalizeLichessCredential(value) {
+  if (
+    !value ||
+    typeof value !== "object" ||
+    typeof value.token !== "string" ||
+    !/^[A-Za-z0-9_-]{20,512}$/.test(value.token) ||
+    typeof value.username !== "string" ||
+    !value.username.trim()
+  ) {
+    return null;
+  }
+  return {
+    token: value.token,
+    username: value.username.trim(),
+    updatedAt: positiveInteger(value.updatedAt, Date.now()),
+  };
 }
 
 function isValidWebState(state) {

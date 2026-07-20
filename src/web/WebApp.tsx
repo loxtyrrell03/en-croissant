@@ -85,6 +85,10 @@ import {
 import { positionFromFen } from "@/utils/chessops";
 import { getWinChance, normalizeScore } from "@/utils/score";
 import {
+  loadSharedLichessCredential,
+  saveSharedLichessCredential,
+} from "@/utils/sharedLichessAuth";
+import {
   normalizePrepBuilderSettings,
   type PrepBuilderEngineMove,
   type PrepBuilderSettings,
@@ -435,6 +439,8 @@ export default function WebApp() {
   const [selectedDatabaseId, setSelectedDatabaseId] = useState<string | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
   const [lichessToken, setLichessToken] = usePersistentString(WEB_LICHESS_TOKEN_STORAGE_KEY, "");
+  const [lichessAuthReady, setLichessAuthReady] = useState(false);
+  const lichessTokenAtStartup = useRef(lichessToken);
   const saveReady = useRef(false);
 
   useEffect(() => {
@@ -484,31 +490,48 @@ export default function WebApp() {
   }, []);
 
   useEffect(() => {
-    void completeWebLichessLoginIfPresent()
-      .then((result) => {
+    let active = true;
+
+    void (async () => {
+      try {
+        const result = await completeWebLichessLoginIfPresent();
         if (result.status === "complete") {
-          setLichessToken(result.token);
+          if (active) setLichessToken(result.token);
+          await saveSharedLichessCredential(result.token);
           notifications.show({
             title: "Lichess connected",
-            message: "Lichess All and Lichess Masters are available on this phone.",
+            message: "This Lichess sign-in is now shared permanently with your apps.",
             color: "green",
           });
-        } else if (result.status === "error") {
+          return;
+        }
+        if (result.status === "error") {
           notifications.show({
             title: "Lichess login failed",
             message: result.message,
             color: "red",
           });
+          return;
         }
-      })
-      .catch((error) => {
+
+        const shared = await loadSharedLichessCredential();
+        if (shared) {
+          if (active) setLichessToken(shared.token);
+          return;
+        }
+
+        const existingToken = lichessTokenAtStartup.current.trim();
+        if (existingToken) await saveSharedLichessCredential(existingToken);
+      } catch (error) {
         console.error(error);
-        notifications.show({
-          title: "Lichess login failed",
-          message: error instanceof Error ? error.message : "Could not finish Lichess login.",
-          color: "red",
-        });
-      });
+      } finally {
+        if (active) setLichessAuthReady(true);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
   }, [setLichessToken]);
 
   const activePrep = useMemo(
@@ -1013,7 +1036,7 @@ export default function WebApp() {
         </Box>
 
         <main className={classes.main}>
-          {!loaded ? (
+          {!loaded || !lichessAuthReady ? (
             <Center h="60svh">
               <Stack align="center" gap="xs">
                 <Loader />
@@ -1034,7 +1057,6 @@ export default function WebApp() {
               onStartBlankBoard={openEmptyBoard}
               onExitBoardFile={exitBoardFile}
               lichessToken={lichessToken}
-              setLichessToken={setLichessToken}
             />
           ) : (
             <FilesWorkspace
@@ -1069,7 +1091,6 @@ function BoardWorkspace({
   onStartBlankBoard,
   onExitBoardFile,
   lichessToken,
-  setLichessToken,
 }: {
   state: WebCompanionState;
   setState: Dispatch<SetStateAction<WebCompanionState>>;
@@ -1081,7 +1102,6 @@ function BoardWorkspace({
   onStartBlankBoard: () => void;
   onExitBoardFile: () => void;
   lichessToken: string;
-  setLichessToken: (value: string) => void;
 }) {
   const [panelMode, setPanelMode] = useState<BoardPanelMode>("moves");
   const [onlineAnalysisRequestId, setOnlineAnalysisRequestId] = useState(0);
@@ -1466,7 +1486,6 @@ function BoardWorkspace({
               onPlayMove={playMove}
               onOpenSourceGame={loadGameOnBoard}
               lichessToken={lichessToken}
-              setLichessToken={setLichessToken}
             />
           ) : panelMode === "prep" ? (
             <PrepUnderBoardPanel
@@ -1487,7 +1506,6 @@ function BoardWorkspace({
               importHostedFolder={importHostedFolder}
               importOnlineGames={importOnlineGames}
               lichessToken={lichessToken}
-              setLichessToken={setLichessToken}
             />
           ) : (
             <EngineUnderBoardPanel
@@ -1816,7 +1834,6 @@ function DatabaseUnderBoardPanel({
   onPlayMove,
   onOpenSourceGame,
   lichessToken,
-  setLichessToken,
 }: {
   currentFen: string;
   databases: WebDatabase[];
@@ -1825,7 +1842,6 @@ function DatabaseUnderBoardPanel({
   onPlayMove: (stat: WebPrepMoveStat) => void;
   onOpenSourceGame: (game: WebGame) => void;
   lichessToken: string;
-  setLichessToken: (value: string) => void;
 }) {
   const [storedSource, setStoredSource] = usePersistentString(
     WEB_DATABASE_PANEL_SOURCE_STORAGE_KEY,
@@ -2546,7 +2562,6 @@ function DatabaseUnderBoardPanel({
               <>
                 <WebLichessAccessControls
                   token={lichessToken}
-                  setToken={setLichessToken}
                   signedInLabel="Lichess saved"
                 />
                 <ActionIcon
@@ -3086,7 +3101,6 @@ function PrepUnderBoardPanel({
   importHostedFolder,
   importOnlineGames,
   lichessToken,
-  setLichessToken,
 }: {
   state: WebCompanionState;
   setState: Dispatch<SetStateAction<WebCompanionState>>;
@@ -3105,7 +3119,6 @@ function PrepUnderBoardPanel({
   importHostedFolder: WebHostedFolderImportHandler;
   importOnlineGames: WebOnlineImportHandler;
   lichessToken: string;
-  setLichessToken: (value: string) => void;
 }) {
   const [storedPrepSetup, setStoredPrepSetup] = usePersistentJson(
     WEB_PREP_SETUP_STORAGE_KEY,
@@ -4649,7 +4662,6 @@ function PrepUnderBoardPanel({
                 <Group gap="xs" align="flex-end" wrap="wrap">
                   <WebLichessAccessControls
                     token={lichessToken}
-                    setToken={setLichessToken}
                     signedInLabel="Lichess saved"
                   />
                   <Button
@@ -5224,62 +5236,30 @@ function WebDatabaseGamesList({
 
 function WebLichessAccessControls({
   token,
-  setToken,
   signedInLabel,
 }: {
   token: string;
-  setToken: (value: string) => void;
   signedInLabel: string;
 }) {
   const signedIn = Boolean(token.trim());
 
   if (signedIn) {
     return (
-      <Group gap={4} wrap="nowrap" style={{ flex: "1 1 12rem" }}>
-        <Badge color="green" variant="light">
-          {signedInLabel}
-        </Badge>
-        <Button
-          size="compact-xs"
-          variant="default"
-          leftSection={<IconCloudDownload size={14} />}
-          onClick={() => void startWebLichessLogin()}
-        >
-          Relink
-        </Button>
-        <Tooltip label="Forget saved Lichess token">
-          <ActionIcon
-            aria-label="Forget Lichess token"
-            variant="default"
-            onClick={() => setToken("")}
-          >
-            <IconX size={15} />
-          </ActionIcon>
-        </Tooltip>
-      </Group>
+      <Badge color="green" variant="light" style={{ flex: "0 0 auto" }}>
+        {signedInLabel}
+      </Badge>
     );
   }
 
   return (
-    <>
-      <TextInput
-        label="Lichess token"
-        size="xs"
-        type="password"
-        value={token}
-        onChange={(event) => setToken(event.currentTarget.value)}
-        placeholder="Bearer token"
-        style={{ flex: "1 1 12rem" }}
-      />
-      <Button
-        size="xs"
-        variant="light"
-        leftSection={<IconCloudDownload size={14} />}
-        onClick={() => void startWebLichessLogin()}
-      >
-        Sign in
-      </Button>
-    </>
+    <Button
+      size="xs"
+      variant="light"
+      leftSection={<IconCloudDownload size={14} />}
+      onClick={() => void startWebLichessLogin()}
+    >
+      Connect Lichess once
+    </Button>
   );
 }
 

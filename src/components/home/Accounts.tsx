@@ -19,6 +19,7 @@ import { sessionsAtom } from "@/state/atoms";
 import { getChessComAccount } from "@/utils/chess.com/api";
 import { getDatabases } from "@/utils/db";
 import { getLichessAccount } from "@/utils/lichess/api";
+import { saveSharedLichessCredential } from "@/utils/sharedLichessAuth";
 import type { ChessComSession, LichessSession } from "@/utils/session";
 import AccountCards from "../common/AccountCards";
 import GenericCard from "../common/GenericCard";
@@ -83,6 +84,9 @@ function Accounts() {
     sessionStorage.removeItem("lichess_player_alias");
     const account = await getLichessAccount({ token });
     if (!account) return;
+    void saveSharedLichessCredential(token).catch((error) => {
+      console.warn("Could not save the shared Lichess sign-in.", error);
+    });
     const username = account.username;
     const p = player !== "" ? player : username;
     addLichessSession(p, { accessToken: token, username: username, account });
