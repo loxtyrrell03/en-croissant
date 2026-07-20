@@ -14,9 +14,12 @@ import { getWebBoardSourceTitle } from "@/web/boardTitle";
 import { formatWebEngineScore, normalizeWebEngineScoreForWhite } from "@/web/engineScore";
 import { buildWebExplorerUrl } from "@/web/explorer";
 import {
+    clearHostedWebLibraryCache,
     getHostedDatabaseFolders,
     getHostedDirectPgnFilesInPath,
     getHostedPgnFilesInPath,
+    getHostedWebLibraryPath,
+    getHostedWebLibraryScope,
     listHostedLibraryPath,
     readHostedPgnFolder,
     type WebHostedLibrary,
@@ -1172,6 +1175,110 @@ describe("web companion PGN prep index", () => {
         expect(prep?.entries.map((entry) => entry.name)).toEqual(["Opponent", "report"]);
         expect(prep?.parentPath).toBe("");
         expect(getHostedPgnFilesInPath(library, "Prep")).toHaveLength(1);
+    });
+
+    test("lazy-loads one hosted directory and reuses it without refetching the manifest", async () => {
+        const originalFetch = globalThis.fetch;
+        const requests: string[] = [];
+        clearHostedWebLibraryCache();
+        globalThis.fetch = (async (url: RequestInfo | URL) => {
+            requests.push(String(url));
+            return new Response(
+                JSON.stringify({
+                    version: 1,
+                    generatedAt: "2026-07-20T12:00:00.000Z",
+                    sourceName: "Gaming PC live library",
+                    path: "Prep",
+                    parentPath: "",
+                    entries: [
+                        {
+                            type: "directory",
+                            name: "Opponent",
+                            path: "Prep/Opponent",
+                            lastModified: 2,
+                            sizeBytes: 20,
+                            pgnFileCount: 2,
+                            directPgnFileCount: 1,
+                        },
+                        {
+                            type: "file",
+                            name: "report",
+                            filename: "report.pdf",
+                            extension: "pdf",
+                            path: "Prep/report.pdf",
+                            url: "files/Prep/report.pdf",
+                            lastModified: 1,
+                            sizeBytes: 10,
+                        },
+                    ],
+                }),
+                { headers: { "content-type": "application/json" } },
+            );
+        }) as typeof fetch;
+
+        try {
+            const first = await getHostedWebLibraryPath("Prep");
+            const second = await getHostedWebLibraryPath("Prep");
+
+            expect(first.listing?.entries.map((entry) => entry.name)).toEqual([
+                "Opponent",
+                "report",
+            ]);
+            expect(second).toBe(first);
+            expect(requests).toHaveLength(1);
+            expect(requests[0]).toContain("scope=directory");
+            expect(requests[0]).toContain("path=Prep");
+        } finally {
+            globalThis.fetch = originalFetch;
+            clearHostedWebLibraryCache();
+        }
+    });
+
+    test("loads recursive hosted metadata only when importing a folder", async () => {
+        const originalFetch = globalThis.fetch;
+        clearHostedWebLibraryCache();
+        globalThis.fetch = (async (url: RequestInfo | URL) => {
+            expect(String(url)).toContain("scope=recursive");
+            return new Response(
+                JSON.stringify({
+                    version: 1,
+                    generatedAt: "2026-07-20T12:00:00.000Z",
+                    sourceName: "Gaming PC live library",
+                    files: [
+                        {
+                            type: "file",
+                            name: "one",
+                            filename: "one.pgn",
+                            extension: "pgn",
+                            path: "Prep/Opponent/one.pgn",
+                            url: "files/Prep/Opponent/one.pgn",
+                            lastModified: 1,
+                            sizeBytes: 10,
+                        },
+                        {
+                            type: "file",
+                            name: "outside",
+                            filename: "outside.pgn",
+                            extension: "pgn",
+                            path: "Other/outside.pgn",
+                            url: "files/Other/outside.pgn",
+                            lastModified: 1,
+                            sizeBytes: 10,
+                        },
+                    ],
+                }),
+            );
+        }) as typeof fetch;
+
+        try {
+            const library = await getHostedWebLibraryScope("Prep/Opponent");
+            expect(library.manifest?.files.map((file) => file.path)).toEqual([
+                "Prep/Opponent/one.pgn",
+            ]);
+        } finally {
+            globalThis.fetch = originalFetch;
+            clearHostedWebLibraryCache();
+        }
     });
 
     test("sorts hosted pinned folders and files before unpinned siblings", () => {

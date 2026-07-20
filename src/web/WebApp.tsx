@@ -126,10 +126,10 @@ import {
 import {
   getHostedRawFileUrl,
   getHostedDatabaseFolders,
-  getHostedDirectPgnFilesInPath,
   getHostedPgnFilesInPath,
   getHostedWebLibrary,
-  listHostedLibraryPath,
+  getHostedWebLibraryPath,
+  getHostedWebLibraryScope,
   readHostedPgnFolder,
   readHostedPgnFile,
   type WebHostedDatabaseFolder,
@@ -6774,18 +6774,20 @@ function HostedFilesPanel({
   const [path, setPath] = useState("");
   const [loading, setLoading] = useState(false);
   const directPgnFilesInPath = useMemo(
-    () => (library ? getHostedDirectPgnFilesInPath(library, path) : []),
-    [library, path],
+    () =>
+      listing?.entries.filter(
+        (entry): entry is WebHostedFileEntry => entry.type === "file" && entry.extension === "pgn",
+      ) ?? [],
+    [listing],
   );
 
   const load = useCallback(
-    async (nextPath = path) => {
+    async (nextPath = path, forceRefresh = false) => {
       setLoading(true);
       try {
-        const nextLibrary = await getHostedWebLibrary();
-        const nextListing = listHostedLibraryPath(nextLibrary, nextPath);
-        setLibrary(nextLibrary);
-        setListing(nextListing);
+        const result = await getHostedWebLibraryPath(nextPath, { forceRefresh });
+        setLibrary(result.library);
+        setListing(result.listing);
         setPath(nextPath);
       } catch (error) {
         console.error(error);
@@ -6804,6 +6806,27 @@ function HostedFilesPanel({
     [path],
   );
 
+  const importFolder = useCallback(
+    async (nextPath: string, openFirstGame: boolean) => {
+      if (!importHostedFolder) return;
+      setLoading(true);
+      try {
+        const scopedLibrary = await getHostedWebLibraryScope(nextPath);
+        await importHostedFolder(scopedLibrary, nextPath, { openFirstGame });
+      } catch (error) {
+        console.error(error);
+        notifications.show({
+          title: "Hosted folder unavailable",
+          message: error instanceof Error ? error.message : "The hosted folder did not respond.",
+          color: "red",
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [importHostedFolder],
+  );
+
   useEffect(() => {
     void load("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -6820,7 +6843,7 @@ function HostedFilesPanel({
               : "Published web library"}
           </Text>
         </Box>
-        <ActionIcon aria-label="Refresh files" onClick={() => void load(path)} loading={loading}>
+        <ActionIcon aria-label="Refresh files" onClick={() => void load(path, true)} loading={loading}>
           <IconRefresh size={16} />
         </ActionIcon>
       </Group>
@@ -6840,9 +6863,7 @@ function HostedFilesPanel({
               size="compact-xs"
               leftSection={<IconDatabase size={14} />}
               loading={loading}
-              onClick={() =>
-                void importHostedFolder(library, path, { openFirstGame: !preferFolderImport })
-              }
+              onClick={() => void importFolder(path, !preferFolderImport)}
             >
               Import database
             </Button>
@@ -6872,7 +6893,7 @@ function HostedFilesPanel({
                       entry.directPgnFileCount > 0 &&
                       library
                     ) {
-                      void importHostedFolder(library, entry.path, { openFirstGame: false });
+                      void importFolder(entry.path, false);
                       return;
                     }
                     void load(entry.path);

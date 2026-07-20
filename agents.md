@@ -5,6 +5,19 @@
   clearer `Import Online` label opens the existing Chess.com/Lichess game
   picker, while the under-board row is reserved for board analysis tools.
 
+- On 2026-07-20, the PC-hosted phone Files browser became genuinely lazy and
+  cache-backed. Ordinary navigation now requests only the current directory,
+  reuses visited listings in the phone session, and fetches recursive file
+  metadata only when a folder is opened as PGNs or imported as a database. The
+  home server parses the published manifest once, builds a directory index at
+  startup, and reuses it until the manifest timestamp or size changes; library
+  refreshes clear and pre-warm that index after the atomic directory swap. On
+  the live 2,298-file library this reduced the root response from a 1.4 MB,
+  roughly 1.5-second full-manifest request to a 3 KB directory response in
+  roughly 3 ms. Keep the scoped-query compatibility fallback for GitHub Pages
+  and older home-server builds, and retain tests proving directory requests do
+  not include descendants while recursive imports do.
+
 - On 2026-07-20, Lichess authentication became one-time and shared across the
   PC-hosted phone app, the GitHub Pages fallback, En Croissant, and Outpost.
   Moving the phone site between origins had exposed the old design flaw: its

@@ -18,6 +18,11 @@ import { tmpdir } from "node:os";
 import { basename, dirname, extname, join, normalize, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
+import {
+  getHostedLibraryScope,
+  HostedLibraryIndexCache,
+  listHostedLibraryDirectory,
+} from "./home-library-index.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const localAppData =
@@ -47,6 +52,7 @@ const outpostDatabase = resolve(
   process.env.OUTPOST_HOME_DATABASE || join(roamingAppData, "app.outpost.chess", "library.sqlite"),
 );
 const libraryRoot = join(siteRoot, "web-library");
+const hostedLibraryIndex = new HostedLibraryIndexCache(join(libraryRoot, "manifest.json"));
 const enPositionQueryBinary = join(
   repoRoot,
   "src-tauri",
@@ -102,6 +108,9 @@ const server = createServer((request, response) => {
 server.listen(port, host, async () => {
   await appendLog(`listening on http://${host}:${port}; site=${siteRoot}`);
   installWatchers();
+  void hostedLibraryIndex.get().catch((error) =>
+    appendLog(`hosted library index warm-up failed: ${error}`),
+  );
 });
 
 process.on("SIGINT", () => server.close(() => process.exit(0)));
@@ -171,7 +180,7 @@ async function handleRequest(request, response) {
   }
 
   if (method === "GET" && pathname === "/web-library/manifest.json") {
-    return writeLiveLibraryManifest(response);
+    return writeLiveLibraryManifest(requestUrl, response);
   }
 
   if (method !== "GET" && method !== "HEAD") {
@@ -554,8 +563,30 @@ function explorerResponseHeaders(cache, ageMs) {
   };
 }
 
-async function writeLiveLibraryManifest(response) {
-  const base = await readJsonFile(join(libraryRoot, "manifest.json"));
+async function writeLiveLibraryManifest(requestUrl, response) {
+  const scope = requestUrl.searchParams.get("scope");
+  if (scope === "directory") {
+    const index = await hostedLibraryIndex.get();
+    const listing = listHostedLibraryDirectory(index, requestUrl.searchParams.get("path") || "");
+    return writeJson(
+      response,
+      200,
+      { ...listing, sourceName: "Gaming PC live library" },
+      { "cache-control": "private, max-age=0, must-revalidate" },
+    );
+  }
+  if (scope === "recursive") {
+    const index = await hostedLibraryIndex.get();
+    const manifest = getHostedLibraryScope(index, requestUrl.searchParams.get("path") || "");
+    return writeJson(
+      response,
+      200,
+      { ...manifest, sourceName: "Gaming PC live library" },
+      { "cache-control": "private, max-age=0, must-revalidate" },
+    );
+  }
+
+  const base = (await hostedLibraryIndex.get()).manifest;
   const [en, outpost] = await Promise.all([getEnCatalog(), getOutpostCatalog()]);
   const manifest = {
     version: 1,
@@ -954,6 +985,10 @@ async function refreshLibrary() {
     if (await stat(libraryRoot).catch(() => null)) await rename(libraryRoot, previousRoot);
     await rename(stagingRoot, libraryRoot);
     await rm(previousRoot, { recursive: true, force: true });
+    hostedLibraryIndex.clear();
+    void hostedLibraryIndex.get().catch((error) =>
+      appendLog(`hosted library index refresh failed: ${error}`),
+    );
     lastLibraryRefresh = new Date().toISOString();
     await appendLog(`library refresh complete at ${lastLibraryRefresh}`);
   } catch (error) {
