@@ -25,12 +25,12 @@ function Get-EnCroissantCanonicalRepoRoot {
 function Test-EnCroissantTrackedContentChanges {
   param([Parameter(Mandatory = $true)][string]$RepoRoot)
 
-  & git -C $RepoRoot diff --quiet --ignore-submodules -- 2>$null
+  & git -c core.safecrlf=false -C $RepoRoot diff --quiet --ignore-submodules -- 2>$null
   if ($LASTEXITCODE -eq 1) { return $true }
   if ($LASTEXITCODE -ne 0) {
     throw "Could not compare tracked working-tree files before publishing."
   }
-  & git -C $RepoRoot diff --cached --quiet --ignore-submodules -- 2>$null
+  & git -c core.safecrlf=false -C $RepoRoot diff --cached --quiet --ignore-submodules -- 2>$null
   if ($LASTEXITCODE -eq 1) { return $true }
   if ($LASTEXITCODE -ne 0) {
     throw "Could not compare staged source files before publishing."
