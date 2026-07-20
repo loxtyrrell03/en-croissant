@@ -35,6 +35,17 @@
   the excerpt corpus AI-retrieval-ready, but the En Croissant coach UI is not
   wired yet and full-book coverage still requires lawfully acquired editions.
 
+- On 2026-07-20, the complete lawful chess PDF shelf was added to the live
+  private Jellyfin server as a dedicated `Chess Books` library. It points
+  directly at
+  `C:\Users\loxty\Documents\EnCroissant\AI Chess Coach Library`, so the source
+  files are neither copied nor moved. Jellyfin 10.11.11 completed its media
+  scan and indexed all 97 PDFs: the 95 installed publisher excerpts plus the
+  complete-library and opening-shelf catalogues, with zero missing or extra
+  book records. The `loxty` administrator retains all-library access, and an
+  authenticated byte-range download of a PDF succeeded through the private
+  `https://gaming-pc.tail89d19b.ts.net:10000` phone endpoint.
+
 - On 2026-07-20, phone Stockfish startup and cancellation were hardened after
   abandoned browser requests accumulated in the single-engine queue and the
   Windows task launched the server and engine at Below Normal priority. The
