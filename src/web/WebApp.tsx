@@ -34,6 +34,7 @@ import {
   Switch,
   Table,
   Text,
+  Textarea,
   TextInput,
   Tooltip,
   Title,
@@ -42,6 +43,7 @@ import { useMediaQuery } from "@mantine/hooks";
 import { notifications, Notifications } from "@mantine/notifications";
 import {
   IconArrowBackUp,
+  IconBook,
   IconArrowsSort,
   IconCheck,
   IconChevronDown,
@@ -62,10 +64,12 @@ import {
   IconPlayerPlay,
   IconRefresh,
   IconSearch,
+  IconSparkles,
   IconSettings,
   IconTarget,
   IconUpload,
   IconX,
+import ReactMarkdown from "react-markdown";
 } from "@tabler/icons-react";
 import { isNormal, makeSquare, parseSquare, parseUci } from "chessops";
 import { chessgroundDests } from "chessops/compat";
@@ -93,6 +97,15 @@ import {
   type PrepBuilderSettings,
 } from "@/utils/opponentPrep";
 import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
+import {
+  askWebChessCoach,
+  getWebChessCoachHealth,
+  getWebCoachBookPdfUrl,
+  getWebCoachMoves,
+  makeWebCoachMovetext,
+  type WebChessCoachHealth,
+  type WebChessCoachResponse,
+} from "./chessCoach";
 import classes from "./WebApp.module.css";
 import {
   DEFAULT_WEB_LICHESS_EXPLORER_OPTIONS,
@@ -234,7 +247,7 @@ import { getWebOnlineAnalysisTitle, getWebOnlinePlayerColor } from "./onlineAnal
 import { analyzeWithWebStockfish18, stopWebStockfish18Search } from "./stockfishEngine";
 
 type ViewMode = "board" | "files";
-type BoardPanelMode = "moves" | "online" | "database" | "prep" | "engine";
+type BoardPanelMode = "moves" | "online" | "database" | "prep" | "engine" | "coach";
 type WebHostedPgnImportHandler = (entry: WebHostedFileEntry) => Promise<WebImportResult | null>;
 type WebHostedFolderImportHandler = (
   library: WebHostedLibrary,
@@ -1476,7 +1489,7 @@ function BoardWorkspace({
                   onOpenSourceGame={loadGameOnBoard}
                   lichessToken={lichessToken}
                 />
-              ) : (
+              ) : panelMode === "prep" ? (
                 <PrepUnderBoardPanel
                   state={state}
                   setState={setState}
@@ -1495,6 +1508,16 @@ function BoardWorkspace({
                   importHostedFolder={importHostedFolder}
                   importOnlineGames={importOnlineGames}
                   lichessToken={lichessToken}
+              ) : (
+                <CoachUnderBoardPanel
+                  sourceGame={sourceGame}
+                  line={activeLine}
+                  currentFen={currentFen}
+                  currentLines={
+                    engineArrowAnalysis?.fen === currentFen ? engineArrowAnalysis.lines : []
+                  }
+                  defaultPlayerColor={orientation}
+                />
                 />
               )}
             </Box>
@@ -1599,7 +1622,249 @@ function BoardStartActions({
       >
         Engine
       </Button>
+      <Button
+        aria-label="Coach"
+        size="xs"
+        variant={activeMode === "coach" ? "filled" : "light"}
+        leftSection={<IconSparkles size={14} />}
+        onClick={() => onChooseMode("coach")}
+      >
+        Coach
+      </Button>
     </Group>
+  );
+}
+
+function CoachUnderBoardPanel({
+  sourceGame,
+  line,
+  currentFen,
+  currentLines,
+  defaultPlayerColor,
+}: {
+  sourceGame: WebGame | null;
+  line: WebPrepLineMove[];
+  currentFen: string;
+  currentLines: WebEngineLine[];
+  defaultPlayerColor: WebColor;
+}) {
+  const [health, setHealth] = useState<WebChessCoachHealth | null>(null);
+  const [healthError, setHealthError] = useState("");
+  const [playerColor, setPlayerColor] = useState<WebColor>(defaultPlayerColor);
+  const [scope, setScope] = useState<"position" | "whole-game">(
+    sourceGame || line.length > 4 ? "whole-game" : "position",
+  );
+  const [question, setQuestion] = useState(
+    sourceGame || line.length > 4
+      ? "Review this game for me. What went wrong, what should I learn, and which book lessons matter most?"
+      : "Explain this position, the best plan, and the most relevant lesson from my chess library.",
+  );
+  const [response, setResponse] = useState<WebChessCoachResponse | null>(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const loadHealth = useCallback(() => {
+    const controller = new AbortController();
+    setHealthError("");
+    void getWebChessCoachHealth(controller.signal)
+      .then(setHealth)
+      .catch((healthFailure) => {
+        setHealth(null);
+        setHealthError(
+          healthFailure instanceof Error ? healthFailure.message : "The PC coach is unreachable.",
+        );
+      });
+    return controller;
+  }, []);
+
+  useEffect(() => {
+    const controller = loadHealth();
+    return () => controller.abort();
+  }, [loadHealth]);
+
+  useEffect(() => {
+    setPlayerColor(defaultPlayerColor);
+  }, [defaultPlayerColor, sourceGame?.id]);
+
+  const coachMoves = useMemo(
+    () => getWebCoachMoves(sourceGame?.moves ?? null, line),
+    [line, sourceGame?.moves],
+  );
+  const pgn = sourceGame?.pgn ?? makeWebCoachMovetext(line);
+  const canAsk = Boolean(
+    question.trim() && health?.corpusAvailable && health.modelAvailable && !loading,
+  );
+
+  async function askCoach() {
+    if (!canAsk) return;
+    setLoading(true);
+    setError("");
+    setResponse(null);
+    try {
+      const result = await askWebChessCoach({
+        question: question.trim(),
+        pgn,
+        playerColor,
+        scope,
+        currentFen,
+        moves: coachMoves,
+        currentLines,
+      });
+      setResponse(result);
+    } catch (coachError) {
+      setError(coachError instanceof Error ? coachError.message : "The PC coach failed.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Stack gap="sm">
+      <Group justify="space-between" gap="xs" wrap="wrap">
+        <Group gap="xs">
+          <IconBook size={18} />
+          <Text fw={700}>AI Chess Coach</Text>
+          {health?.corpusAvailable ? (
+            <Badge color="teal" variant="light">
+              {health.bookCount} books
+            </Badge>
+          ) : null}
+          {currentLines.length > 0 ? <Badge variant="outline">live engine</Badge> : null}
+        </Group>
+        <Button size="compact-xs" variant="subtle" onClick={() => loadHealth()}>
+          Check PC
+        </Button>
+      </Group>
+
+      {healthError ? (
+        <Box className={classes.coachNotice} data-tone="error">
+          <Text size="sm">{healthError}</Text>
+        </Box>
+      ) : health && (!health.corpusAvailable || !health.modelAvailable) ? (
+        <Box className={classes.coachNotice} data-tone="warning">
+          <Text size="sm" fw={600}>
+            {!health.corpusAvailable
+              ? "The PC book corpus is unavailable."
+              : health.modelInstalled
+                ? "The PC coach model needs its one-time Google sign-in."
+                : "The PC coach model needs its one-time Antigravity install."}
+          </Text>
+          <Text size="xs" c="dimmed">
+            Stockfish remains available; Coach enables automatically when the PC dependency is
+            ready.
+          </Text>
+        </Box>
+      ) : null}
+
+      <Group grow gap="xs">
+        <SegmentedControl
+          size="xs"
+          value={playerColor}
+          onChange={(value) => setPlayerColor(value === "black" ? "black" : "white")}
+          data={[
+            { value: "white", label: "I'm White" },
+            { value: "black", label: "I'm Black" },
+          ]}
+        />
+        <SegmentedControl
+          size="xs"
+          value={scope}
+          onChange={(value) => setScope(value === "position" ? "position" : "whole-game")}
+          data={[
+            { value: "whole-game", label: "Review game" },
+            { value: "position", label: "Position" },
+          ]}
+        />
+      </Group>
+
+      <Textarea
+        autosize
+        minRows={3}
+        maxRows={7}
+        value={question}
+        onChange={(event) => setQuestion(event.currentTarget.value)}
+        placeholder="Ask what went wrong, what to play, or which lesson to study..."
+        disabled={loading}
+      />
+      <Button
+        leftSection={loading ? <Loader size="xs" /> : <IconSparkles size={16} />}
+        disabled={!canAsk}
+        loading={loading}
+        onClick={() => void askCoach()}
+      >
+        {scope === "whole-game" ? "Review with books" : "Ask Coach"}
+      </Button>
+      {loading ? (
+        <Box className={classes.coachNotice}>
+          <Text size="sm" fw={600}>
+            Finding critical moments and retrieving book passages...
+          </Text>
+          <Progress value={100} animated mt="xs" />
+          <Text size="xs" c="dimmed" mt={4}>
+            The phone uses PC-stored evaluations first; it does not queue a full live-game scan.
+          </Text>
+        </Box>
+      ) : null}
+      {error ? (
+        <Box className={classes.coachNotice} data-tone="error">
+          <Text size="sm">{error}</Text>
+        </Box>
+      ) : null}
+
+      {response ? (
+        <Stack gap="sm">
+          <Box className={classes.coachAnswer}>
+            <ReactMarkdown>{response.answer}</ReactMarkdown>
+          </Box>
+          <Group gap="xs">
+            <Badge variant="light">{response.model}</Badge>
+            <Badge variant="outline">{response.criticalMoments.length} critical moments</Badge>
+            <Badge color="teal" variant="outline">
+              {response.bookPassages.length} passages
+            </Badge>
+          </Group>
+          {response.bookPassages.length > 0 ? (
+            <Stack gap="xs">
+              <Text size="sm" fw={700}>
+                Retrieved book passages
+              </Text>
+              {response.bookPassages.map((passage, index) => (
+                <Box key={passage.chunkId} className={classes.coachSourceCard}>
+                  <Group justify="space-between" gap="xs" align="flex-start" wrap="nowrap">
+                    <Box miw={0}>
+                      <Text size="sm" fw={650}>
+                        [Book {index + 1}] {passage.title}
+                      </Text>
+                      <Text size="xs" c="dimmed">
+                        {passage.author}
+                        {passage.chapterTitle ? ` - ${passage.chapterTitle}` : ""}
+                      </Text>
+                    </Box>
+                    <Button
+                      component="a"
+                      href={getWebCoachBookPdfUrl(passage)}
+                      target="_blank"
+                      rel="noreferrer"
+                      size="compact-xs"
+                      variant="subtle"
+                      leftSection={<IconExternalLink size={12} />}
+                    >
+                      PDF
+                    </Button>
+                  </Group>
+                  <Text size="xs" mt={6} lineClamp={5}>
+                    {passage.excerpt}
+                  </Text>
+                  <Text size="xs" c="dimmed" mt={4}>
+                    {passage.citation}
+                  </Text>
+                </Box>
+              ))}
+            </Stack>
+          ) : null}
+        </Stack>
+      ) : null}
+    </Stack>
   );
 }
 

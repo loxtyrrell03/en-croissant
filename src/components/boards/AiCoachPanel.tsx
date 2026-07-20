@@ -12,8 +12,9 @@ import {
   Text,
   Textarea,
 } from "@mantine/core";
-import { IconAlertTriangle, IconSparkles } from "@tabler/icons-react";
+import { IconAlertTriangle, IconBook, IconExternalLink, IconSparkles } from "@tabler/icons-react";
 import { listen } from "@tauri-apps/api/event";
+import { openPath } from "@tauri-apps/plugin-opener";
 import { parseSan } from "chessops/san";
 import { useAtomValue } from "jotai";
 import { type ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -22,6 +23,7 @@ import { useShallow } from "zustand/react/shallow";
 import type {
   BestMoves,
   CoachChatMessage,
+  CoachBookPassage,
   CoachEngineLine,
   CoachGameAnalysisPoint,
   CoachOpeningContext,
@@ -61,6 +63,7 @@ type CoachUiMessage = CoachChatMessage & {
   baseSanMoves?: string[];
   engineLines?: CoachEngineLine[];
   targetedResults?: CoachTargetedResult[];
+  bookPassages?: CoachBookPassage[];
 };
 
 type CoachMessageSegment = { type: "text"; text: string } | { type: "line"; text: string };
@@ -927,6 +930,8 @@ export default function AiCoachPanel() {
   const [loading, setLoading] = useState(false);
   const [usedExistingAnalysis, setUsedExistingAnalysis] = useState(false);
   const [targetedCount, setTargetedCount] = useState(0);
+  const [bookPassageCount, setBookPassageCount] = useState(0);
+  const [bookCorpusAvailable, setBookCorpusAvailable] = useState<boolean | null>(null);
   const [targetedMemory, setTargetedMemory] = useState<CoachTargetedResult[]>([]);
   const [openingContextStatus, setOpeningContextStatus] = useState<
     "idle" | "loading" | "ready" | "unavailable" | "error"
@@ -1073,6 +1078,8 @@ export default function AiCoachPanel() {
     setError("");
     setAnswer("");
     setTargetedCount(0);
+    setBookPassageCount(0);
+    setBookCorpusAvailable(null);
     setUsedExistingAnalysis(false);
     setModelUsed("");
     setOpeningContextStatus("loading");
@@ -1232,10 +1239,13 @@ export default function AiCoachPanel() {
           baseSanMoves: requestBaseSanMoves,
           engineLines: response.stockfishLines,
           targetedResults: response.targetedResults,
+          bookPassages: response.bookPassages,
         },
       ]);
       setUsedExistingAnalysis(response.usedExistingAnalysis);
       setTargetedCount(response.targetedResults.length);
+      setBookPassageCount(response.bookPassages.length);
+      setBookCorpusAvailable(response.bookCorpusAvailable);
       setTargetedMemory((current) => {
         const merged = [...current, ...response.targetedResults];
         const seen = new Set<string>();
@@ -1283,6 +1293,8 @@ export default function AiCoachPanel() {
     setAnswer("");
     setError("");
     setTargetedCount(0);
+    setBookPassageCount(0);
+    setBookCorpusAvailable(null);
     setTargetedMemory([]);
     setOpeningContextStatus("idle");
     setOpeningMoveCount(0);
@@ -1298,6 +1310,16 @@ export default function AiCoachPanel() {
           <Badge variant="light">{modelUsed || geminiModel || "Gemini"}</Badge>
           {existingLines.length > 0 && <Badge variant="outline">cached lines</Badge>}
           {targetedCount > 0 && <Badge variant="outline">targeted Stockfish</Badge>}
+          {bookPassageCount > 0 && (
+            <Badge color="teal" variant="outline">
+              {bookPassageCount} book passages
+            </Badge>
+          )}
+          {bookCorpusAvailable === false && (
+            <Badge color="yellow" variant="outline">
+              book corpus unavailable
+            </Badge>
+          )}
           {openingContextStatus === "ready" && (
             <Badge variant="outline">Lichess All {openingMoveCount} moves</Badge>
           )}
@@ -1333,8 +1355,9 @@ export default function AiCoachPanel() {
             {messages.length === 0 && !loading && (
               <Paper withBorder p="sm">
                 <Text size="sm" c="dimmed">
-                  Ask about the current position. The planner chooses Stockfish lines up front when
-                  your question names a move, line, or what-if.
+                  Ask about the current position or request a whole-game review. Stockfish supplies
+                  the concrete evidence; the coach now retrieves exact, cited lessons from your
+                  chess-book library.
                 </Text>
               </Paper>
             )}
@@ -1359,6 +1382,7 @@ export default function AiCoachPanel() {
                     mainlineMoves={mainlineMoves}
                     engineLines={message.engineLines ?? []}
                     targetedResults={message.targetedResults ?? []}
+                    bookPassages={message.bookPassages ?? []}
                     onPlayMoves={playCoachMoves}
                   />
                 </Stack>
@@ -1467,6 +1491,7 @@ function CoachMessageContent({
   mainlineMoves,
   engineLines,
   targetedResults,
+  bookPassages,
   onPlayMoves,
 }: {
   content: string;
@@ -1478,6 +1503,7 @@ function CoachMessageContent({
   mainlineMoves: MainlineMove[];
   engineLines: CoachEngineLine[];
   targetedResults: CoachTargetedResult[];
+  bookPassages: CoachBookPassage[];
   onPlayMoves: (moves: string[], basePath?: number[]) => void;
 }) {
   const lineAnchors = useMemo(
@@ -1553,6 +1579,59 @@ function CoachMessageContent({
           </Stack>
         );
       })}
+      {bookPassages.length > 0 && <CoachBookSources passages={bookPassages} />}
     </Stack>
+  );
+}
+
+function CoachBookSources({ passages }: { passages: CoachBookPassage[] }) {
+  return (
+    <Paper withBorder p="sm" mt={4} bg="var(--mantine-color-teal-light)">
+      <Stack gap="xs">
+        <Group gap="xs">
+          <IconBook size="1rem" />
+          <Text size="sm" fw={700}>
+            Retrieved book passages
+          </Text>
+          <Badge size="xs" variant="light" color="teal">
+            {passages.length}
+          </Badge>
+        </Group>
+        {passages.map((passage, index) => (
+          <Paper key={passage.chunkId} withBorder p="xs">
+            <Stack gap={4}>
+              <Group justify="space-between" align="flex-start" gap="xs" wrap="nowrap">
+                <Box miw={0}>
+                  <Text size="sm" fw={650}>
+                    [Book {index + 1}] {passage.title}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {passage.author}
+                    {passage.chapterTitle ? ` · ${passage.chapterTitle}` : ""}
+                  </Text>
+                </Box>
+                {passage.localPath ? (
+                  <Button
+                    size="compact-xs"
+                    variant="subtle"
+                    color="teal"
+                    leftSection={<IconExternalLink size="0.8rem" />}
+                    onClick={() => void openPath(passage.localPath)}
+                  >
+                    PDF
+                  </Button>
+                ) : null}
+              </Group>
+              <Text size="xs" lineClamp={4}>
+                {passage.excerpt}
+              </Text>
+              <Text size="xs" c="dimmed">
+                {passage.citation}
+              </Text>
+            </Stack>
+          </Paper>
+        ))}
+      </Stack>
+    </Paper>
   );
 }

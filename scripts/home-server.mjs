@@ -23,6 +23,12 @@ import {
   HostedLibraryIndexCache,
   listHostedLibraryDirectory,
 } from "./home-library-index.mjs";
+import {
+  buildCriticalMoments,
+  buildPhoneCoachPrompt,
+  normalizeFen as normalizeCoachFen,
+  searchChessBookCorpus,
+} from "./chess-coach-service.mjs";
 
 const repoRoot = resolve(
   process.env.EN_CROISSANT_REPO_ROOT || resolve(dirname(fileURLToPath(import.meta.url)), ".."),
@@ -56,6 +62,20 @@ const outpostDatabase = resolve(
   process.env.OUTPOST_HOME_DATABASE || join(roamingAppData, "app.outpost.chess", "library.sqlite"),
 );
 const libraryRoot = join(siteRoot, "web-library");
+const chessBookLibraryRoot = resolve(
+  process.env.EN_CROISSANT_CHESS_BOOK_LIBRARY ||
+    join(userProfile, "Documents", "EnCroissant", "AI Chess Coach Library"),
+);
+const chessBookCorpusPath = resolve(
+  process.env.EN_CROISSANT_CHESS_BOOK_CORPUS ||
+    join(chessBookLibraryRoot, "00 AI Corpus", "chess-books.sqlite3"),
+);
+const coachCommandPath = resolve(
+  process.env.EN_CROISSANT_COACH_COMMAND ||
+    join(localAppData, "agy", "bin", process.platform === "win32" ? "agy.exe" : "agy"),
+);
+const coachModel = "gemini-3.5-pro-preview";
+const coachWorkRoot = join(serverRoot, "coach-work");
 const hostedLibraryIndex = new HostedLibraryIndexCache(join(libraryRoot, "manifest.json"));
 const enPositionQueryBinary = join(
   repoRoot,
@@ -66,6 +86,7 @@ const enPositionQueryBinary = join(
 );
 const maxStateBytes = 256 * 1024 * 1024;
 const maxCredentialBytes = 4 * 1024;
+const maxCoachRequestBytes = 512 * 1024;
 const lichessExplorerFreshMs = 30 * 60 * 1000;
 const lichessPlayerExplorerFreshMs = 5 * 60 * 1000;
 const lichessMastersExplorerFreshMs = 24 * 60 * 60 * 1000;
@@ -96,9 +117,13 @@ let lastLibraryError = null;
 let lastStateBackupAt = 0;
 let sharedLichessCredential = null;
 let activeAppCache = null;
+let chessBookDatabase = null;
+let phoneCoachQueue = Promise.resolve();
+let coachAuthenticationCache = { checkedAt: 0, available: false };
 
 await mkdir(serverRoot, { recursive: true });
 await mkdir(dirname(statePath), { recursive: true });
+await mkdir(coachWorkRoot, { recursive: true });
 sharedLichessCredential = normalizeLichessCredential(await readJsonFile(lichessCredentialPath));
 
 const server = createServer((request, response) => {
@@ -124,7 +149,11 @@ async function handleRequest(request, response) {
   const method = request.method || "GET";
   const requestUrl = new URL(request.url || "/", `http://${host}:${port}`);
   const pathname = decodeURIComponent(requestUrl.pathname);
-  setCorsHeaders(request, response, pathname === "/api/lichess-credential");
+  const sensitiveApi =
+    pathname === "/api/lichess-credential" ||
+    pathname.startsWith("/api/chess-coach") ||
+    pathname.startsWith("/api/chess-books");
+  setCorsHeaders(request, response, sensitiveApi);
   if (method === "OPTIONS") {
     response.writeHead(204);
     return response.end();
@@ -166,7 +195,33 @@ async function handleRequest(request, response) {
       lichessExplorerCacheMisses,
       lichessExplorerRequests: lichessExplorerRequests.size,
       lichessExplorerUpstreamRequests,
+      chessBookCorpusPath,
+      chessBookCorpusAvailable: Boolean(await stat(chessBookCorpusPath).catch(() => null)),
+      coachModel,
+      coachCommandAvailable: Boolean(await stat(coachCommandPath).catch(() => null)),
     });
+  }
+
+  if (pathname === "/api/chess-coach/health") {
+    if (method !== "GET") return writeJson(response, 405, { error: "Method not allowed." });
+    return writeChessCoachHealth(response);
+  }
+
+  if (pathname === "/api/chess-books/search") {
+    if (method !== "GET") return writeJson(response, 405, { error: "Method not allowed." });
+    return writeChessBookSearch(requestUrl, response);
+  }
+
+  if (pathname === "/api/chess-books/pdf") {
+    if (method !== "GET" && method !== "HEAD") {
+      return writeJson(response, 405, { error: "Method not allowed." });
+    }
+    return serveChessBookPdf(requestUrl, request, response, method === "HEAD");
+  }
+
+  if (pathname === "/api/chess-coach") {
+    if (method !== "POST") return writeJson(response, 405, { error: "Method not allowed." });
+    return writeChessCoachResponse(request, response);
   }
 
   if (pathname === "/api/web-state") {
@@ -945,6 +1000,356 @@ async function getActiveAppState() {
   return activeAppCache;
 }
 
+function getChessBookDatabase() {
+  if (!chessBookDatabase) {
+    chessBookDatabase = new DatabaseSync(chessBookCorpusPath, { readOnly: true });
+  }
+  return chessBookDatabase;
+}
+
+async function writeChessCoachHealth(response) {
+  const corpusStat = await stat(chessBookCorpusPath).catch(() => null);
+  const commandStat = await stat(coachCommandPath).catch(() => null);
+  const modelInstalled = Boolean(commandStat?.isFile());
+  const modelAvailable = modelInstalled && (await isCoachModelAuthenticated());
+  let bookCount = 0;
+  let chunkCount = 0;
+  if (corpusStat?.isFile()) {
+    try {
+      const database = getChessBookDatabase();
+      bookCount = Number(database.prepare("SELECT COUNT(*) AS count FROM books").get()?.count) || 0;
+      chunkCount = Number(database.prepare("SELECT COUNT(*) AS count FROM chunks").get()?.count) || 0;
+    } catch (error) {
+      return writeJson(response, 503, {
+        ok: false,
+        corpusAvailable: false,
+        modelInstalled,
+        modelAvailable,
+        model: coachModel,
+        error: `Chess-book corpus could not be opened: ${error?.message || error}`,
+      });
+    }
+  }
+  return writeJson(response, 200, {
+    ok: Boolean(corpusStat?.isFile() && modelAvailable),
+    corpusAvailable: Boolean(corpusStat?.isFile()),
+    modelInstalled,
+    modelAvailable,
+    model: coachModel,
+    bookCount,
+    chunkCount,
+  });
+}
+
+async function writeChessBookSearch(requestUrl, response) {
+  const query = String(requestUrl.searchParams.get("q") || "").trim().slice(0, 500);
+  if (!query) return writeJson(response, 400, { error: "A search query is required." });
+  if (!(await stat(chessBookCorpusPath).catch(() => null))) {
+    return writeJson(response, 503, { error: "Chess-book corpus is unavailable." });
+  }
+  const passages = publicBookPassages(
+    searchChessBookCorpus(getChessBookDatabase(), {
+      question: query,
+      scope: requestUrl.searchParams.get("scope") === "position" ? "position" : "whole-game",
+      moves: [],
+    }),
+  );
+  return writeJson(response, 200, { query, passages });
+}
+
+async function serveChessBookPdf(requestUrl, request, response, headOnly) {
+  const bookId = String(requestUrl.searchParams.get("bookId") || "").trim();
+  if (!/^[a-z0-9][a-z0-9-]{0,95}$/i.test(bookId)) {
+    return writeJson(response, 400, { error: "A valid book id is required." });
+  }
+  if (!(await stat(chessBookCorpusPath).catch(() => null))) {
+    return writeJson(response, 503, { error: "Chess-book corpus is unavailable." });
+  }
+  const row = getChessBookDatabase()
+    .prepare("SELECT local_path FROM books WHERE book_id = ?")
+    .get(bookId);
+  const filePath = resolve(String(row?.local_path || ""));
+  if (!row?.local_path || !isInside(filePath, chessBookLibraryRoot)) {
+    return writeJson(response, 404, { error: "Book PDF not found." });
+  }
+  return serveFilePath(filePath, request, response, headOnly, "private, max-age=300");
+}
+
+async function writeChessCoachResponse(request, response) {
+  const payload = normalizeChessCoachRequest(await readJsonBody(request, maxCoachRequestBytes));
+  const corpusStat = await stat(chessBookCorpusPath).catch(() => null);
+  if (!corpusStat?.isFile()) {
+    return writeJson(response, 503, {
+      code: "CORPUS_UNAVAILABLE",
+      error: "The PC chess-book corpus is unavailable.",
+    });
+  }
+
+  const bookPassages = searchChessBookCorpus(getChessBookDatabase(), {
+    question: payload.question,
+    scope: payload.scope,
+    moves: payload.moves,
+  });
+  const evaluations = await collectStoredCoachEvaluations(payload.moves, payload.playerColor);
+  const criticalMoments = buildCriticalMoments(
+    payload.moves,
+    evaluations,
+    payload.playerColor,
+    5,
+  );
+  const prompt = buildPhoneCoachPrompt({
+    ...payload,
+    criticalMoments,
+    bookPassages,
+  });
+
+  try {
+    const queued = phoneCoachQueue
+      .catch(() => {})
+      .then(() => runPhoneCoachModel(prompt));
+    phoneCoachQueue = queued.catch(() => {});
+    const answer = await queued;
+    return writeJson(response, 200, {
+      answer,
+      model: coachModel,
+      playerColor: payload.playerColor,
+      criticalMoments,
+      bookPassages: publicBookPassages(bookPassages),
+      storedEvaluationsUsed: evaluations.size,
+    });
+  } catch (error) {
+    await appendLog(`phone coach failed: ${error?.stack || error}`);
+    return writeJson(response, error?.code === "MODEL_UNAVAILABLE" ? 503 : 502, {
+      code: error?.code || "COACH_FAILED",
+      error: error?.message || "The PC coach model failed.",
+      criticalMoments,
+      bookPassages: publicBookPassages(bookPassages),
+    });
+  }
+}
+
+function normalizeChessCoachRequest(payload) {
+  if (!payload || typeof payload !== "object") throw new Error("Invalid coach request.");
+  const question = String(payload.question || "").trim().slice(0, 2000);
+  const currentFen = String(payload.currentFen || "").trim().slice(0, 160);
+  const pgn = String(payload.pgn || "").trim().slice(0, 16000);
+  if (!question) throw new Error("A coach question is required.");
+  if (!currentFen) throw new Error("The current FEN is required.");
+  const playerColor = payload.playerColor === "black" ? "black" : "white";
+  const moves = (Array.isArray(payload.moves) ? payload.moves : [])
+    .slice(0, 240)
+    .map((move, index) => ({
+      ply: positiveInteger(move?.ply, index + 1),
+      color: move?.color === "black" ? "black" : "white",
+      san: String(move?.san || `Ply ${index + 1}`).slice(0, 32),
+      fenBefore: String(move?.fenBefore || "").slice(0, 160),
+      fenAfter: String(move?.fenAfter || "").slice(0, 160),
+      annotations: Array.isArray(move?.annotations)
+        ? move.annotations.slice(0, 8).map((value) => String(value).slice(0, 200))
+        : [],
+    }))
+    .filter((move) => move.fenBefore && move.fenAfter);
+  const currentLines = (Array.isArray(payload.currentLines) ? payload.currentLines : [])
+    .slice(0, 5)
+    .map((line) => ({
+      depth: Number(line?.depth) || null,
+      eval: String(line?.eval || "").slice(0, 32),
+      score: line?.score ?? null,
+      sanMoves: Array.isArray(line?.sanMoves) ? line.sanMoves.slice(0, 16) : [],
+      uciMoves: Array.isArray(line?.uciMoves) ? line.uciMoves.slice(0, 16) : [],
+    }));
+  return {
+    question,
+    currentFen,
+    pgn: pgn || "Unavailable",
+    playerColor,
+    scope: payload.scope === "position" ? "position" : "whole-game",
+    moves,
+    currentLines,
+  };
+}
+
+async function collectStoredCoachEvaluations(moves, playerColor) {
+  const relevantMoves = moves.filter((move) => move.color === playerColor).slice(0, 80);
+  const fens = Array.from(
+    new Set(
+      relevantMoves
+        .flatMap((move) => [move.fenBefore, move.fenAfter])
+        .map(normalizeCoachFen)
+        .filter(Boolean),
+    ),
+  );
+  const evaluations = new Map();
+  for (let index = 0; index < fens.length; index += 6) {
+    await Promise.all(
+      fens.slice(index, index + 6).map(async (fen) => {
+        const result = await queryStoredCoachEvaluation(fen);
+        if (result) evaluations.set(fen, result);
+      }),
+    );
+  }
+  return evaluations;
+}
+
+async function queryStoredCoachEvaluation(fen) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 2500);
+  const url = new URL("/v1/cloud-eval", stockfishBackendUrl);
+  url.searchParams.set("fen", fen);
+  url.searchParams.set("multipv", "1");
+  try {
+    const response = await fetch(url, {
+      headers: { accept: "application/json" },
+      signal: controller.signal,
+    });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function runPhoneCoachModel(prompt) {
+  const commandStat = await stat(coachCommandPath).catch(() => null);
+  if (!commandStat?.isFile()) {
+    const error = new Error(
+      "The PC coach model needs its one-time Antigravity CLI install and Google sign-in.",
+    );
+    error.code = "MODEL_UNAVAILABLE";
+    throw error;
+  }
+  if (!(await isCoachModelAuthenticated(true))) {
+    const error = new Error(
+      "The PC coach model is installed but needs a one-time Google sign-in. Run agy once on the gaming PC.",
+    );
+    error.code = "MODEL_UNAVAILABLE";
+    throw error;
+  }
+
+  return await new Promise((resolvePromise, rejectPromise) => {
+    const child = spawn(
+      coachCommandPath,
+      ["--model", coachModel, "--print-timeout", "180s", "--print", "-"],
+      {
+        cwd: coachWorkRoot,
+        env: process.env,
+        windowsHide: true,
+        stdio: ["pipe", "pipe", "pipe"],
+      },
+    );
+    let stdout = "";
+    let stderr = "";
+    let settled = false;
+    const finish = (callback, value) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeoutId);
+      callback(value);
+    };
+    const timeoutId = setTimeout(() => {
+      child.kill();
+      finish(rejectPromise, new Error("The PC coach model timed out after 190 seconds."));
+    }, 190000);
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk;
+      if (stdout.length > 4 * 1024 * 1024) child.kill();
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk;
+      if (stderr.length > 1024 * 1024) child.kill();
+    });
+    child.once("error", (error) => finish(rejectPromise, error));
+    child.once("exit", (code) => {
+      const combined = `${stdout}\n${stderr}`;
+      if (/unauthenticated|not logged|auth timed out|oauth token/i.test(combined)) {
+        const error = new Error(
+          "The PC coach model is installed but needs a one-time Google sign-in. Run agy once on the gaming PC.",
+        );
+        error.code = "MODEL_UNAVAILABLE";
+        return finish(rejectPromise, error);
+      }
+      if (code !== 0) {
+        return finish(
+          rejectPromise,
+          new Error(`The PC coach model exited with code ${code}: ${stderr.slice(-1200)}`),
+        );
+      }
+      const answer = stdout
+        .split(/\r?\n/)
+        .filter((line) => !line.trim().startsWith("Warning: 256-color support"))
+        .join("\n")
+        .trim();
+      if (!answer) return finish(rejectPromise, new Error("The PC coach returned an empty answer."));
+      finish(resolvePromise, answer);
+    });
+    child.stdin.end(prompt);
+  });
+}
+
+async function isCoachModelAuthenticated(force = false) {
+  const now = Date.now();
+  if (!force && now - coachAuthenticationCache.checkedAt < 30000) {
+    return coachAuthenticationCache.available;
+  }
+  const available = await new Promise((resolvePromise) => {
+    const child = spawn(coachCommandPath, ["models"], {
+      cwd: coachWorkRoot,
+      env: process.env,
+      windowsHide: true,
+      stdio: ["ignore", "ignore", "ignore"],
+    });
+    let settled = false;
+    const finish = (value) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeoutId);
+      resolvePromise(value);
+    };
+    const timeoutId = setTimeout(() => {
+      child.kill();
+      finish(false);
+    }, 5000);
+    child.once("error", () => finish(false));
+    child.once("exit", (code) => finish(code === 0));
+  });
+  coachAuthenticationCache = { checkedAt: now, available };
+  return available;
+}
+
+function publicBookPassages(passages) {
+  return passages.map(({ localPath: _localPath, ...passage }) => ({
+    ...passage,
+    sourceUrl: `/api/chess-books/pdf?bookId=${encodeURIComponent(passage.bookId)}`,
+  }));
+}
+
+async function serveFilePath(filePath, request, response, headOnly, cacheControl) {
+  const fileStat = await stat(filePath).catch(() => null);
+  if (!fileStat?.isFile()) return writeJson(response, 404, { error: "Not found." });
+  const range = parseRange(request.headers.range, fileStat.size);
+  const headers = {
+    "accept-ranges": "bytes",
+    "cache-control": cacheControl,
+    "content-type": mimeType(filePath),
+    "content-disposition": `inline; filename="${basename(filePath).replace(/["\r\n]/g, "")}"`,
+    "x-content-type-options": "nosniff",
+  };
+  if (range) {
+    response.writeHead(206, {
+      ...headers,
+      "content-length": range.end - range.start + 1,
+      "content-range": `bytes ${range.start}-${range.end}/${fileStat.size}`,
+    });
+    if (headOnly) return response.end();
+    return createReadStream(filePath, { start: range.start, end: range.end }).pipe(response);
+  }
+  response.writeHead(200, { ...headers, "content-length": fileStat.size });
+  if (headOnly) return response.end();
+  return createReadStream(filePath).pipe(response);
+}
+
 async function serveStatic(pathname, request, response, headOnly, staticRoot) {
   let relativePath = pathname.replace(/^\/+/, "") || "index.html";
   let filePath = resolve(staticRoot, relativePath);
@@ -1175,7 +1580,7 @@ function writeJson(response, status, body, extraHeaders = {}) {
 
 function setCorsHeaders(request, response, sensitive = false) {
   response.setHeader("access-control-allow-headers", "content-type");
-  response.setHeader("access-control-allow-methods", "GET, HEAD, PUT, OPTIONS");
+  response.setHeader("access-control-allow-methods", "GET, HEAD, POST, PUT, OPTIONS");
   const origin = String(request.headers.origin || "").replace(/\/$/, "");
   if (!sensitive) {
     response.setHeader("access-control-allow-origin", "*");

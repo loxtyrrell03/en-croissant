@@ -5,8 +5,9 @@ layer. Generated data lives outside the repository at:
 
 `C:\Users\loxty\Documents\EnCroissant\AI Chess Coach Library\00 AI Corpus`
 
-This is the source layer for a future En Croissant analysis-coach UI. It is
-already queryable from the command line, but no app panel calls it yet.
+This is the source layer used by the En Croissant desktop AI Coach and the
+private PC-hosted phone Coach panel. It remains queryable from the command
+line for corpus QA and retrieval experiments.
 
 ## Current corpus
 
@@ -68,6 +69,39 @@ from one title. Each result includes:
 - access scope and source rights class
 - chess-notation and diagram-candidate flags
 - a ready-to-display citation
+
+## App integration
+
+The desktop coach reads the FTS5 corpus directly from Rust. Each question is
+expanded into a compact concept query, results are diversified to at most two
+passages per book, and up to six page-bounded passages are included in the
+existing Gemini/Stockfish prompt. The response carries the exact source
+objects separately from the generated prose, so the UI can always show the
+excerpt, title, author, chapter, citation, and local PDF independently of what
+the model says. Stockfish remains authoritative for concrete move verdicts;
+books support the human lesson and are cited as `[Book N]`.
+
+The phone uses the same retrieval contract through the private home server:
+
+- `GET /api/chess-coach/health` reports corpus and model readiness.
+- `GET /api/chess-books/search?q=...` returns citation-safe passages.
+- `GET /api/chess-books/pdf?bookId=...` streams an authorized local PDF with
+  byte-range support; the UI opens it at the cited PDF page.
+- `POST /api/chess-coach` retrieves passages, scans PC-stored evaluations for
+  the user's moves, ranks cache-backed critical moments, and asks the pinned
+  coach model to synthesize the review.
+
+The phone scan is deliberately cache-first. It does not start a live
+Stockfish search for every move and therefore cannot clog the shared engine
+queue. If stored whole-game evidence is incomplete, the prompt must disclose
+that limitation and restrict concrete claims to evidence it actually has.
+The private server invokes the locally authenticated Antigravity CLI; no model
+credential or book text is stored in the browser.
+
+The model dependency is installed once on the gaming PC and requires one
+interactive Google sign-in by running `agy`. The server checks authentication
+with the non-interactive `agy models` command and disables the phone submit
+button until it succeeds.
 
 ## Page and diagram fidelity
 
@@ -147,6 +181,6 @@ local-only and must not be redistributed. Catalogue-only books have
 `access_scope=publisher_excerpt`. Lawfully acquired complete editions should
 be imported as `access_scope=user_owned_full` in the future.
 
-The corpus is therefore technically ready for AI retrieval, but it does not
-provide full-book coverage. The future product must preserve source, edition,
-page, access scope, and attribution when answering or assembling a mini-PDF.
+The corpus is technically and product-integrated for AI retrieval, but it does
+not provide full-book coverage. Future full-edition imports and mini-PDF
+assembly must preserve source, edition, page, access scope, and attribution.

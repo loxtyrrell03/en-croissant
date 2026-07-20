@@ -7,6 +7,7 @@ use std::{
 };
 
 use log::{info, warn};
+use rusqlite::{Connection, OpenFlags};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use shakmaty::{
@@ -51,6 +52,8 @@ const MAX_PLAN_COACH_ITEMS: usize = 48;
 const MAX_PLAN_COACH_ITEM_CHARS: usize = 900;
 const MAX_PLAN_COACH_SUMMARY_CHARS: usize = 1_600;
 const MAX_GEMINI_ERROR_CHARS: usize = 1_200;
+const MAX_BOOK_PASSAGES: usize = 6;
+const MAX_BOOK_EXCERPT_CHARS: usize = 1_100;
 const OPENING_PHASE_MAX_PLY: u32 = 30;
 const CONVERSION_PHASE_WINDOW_PLIES: u32 = 40;
 const AI_COACH_PROGRESS_EVENT: &str = "ai-coach-progress";
@@ -233,6 +236,26 @@ pub struct AiCoachResponse {
     pub used_existing_analysis: bool,
     pub stockfish_lines: Vec<CoachEngineLine>,
     pub targeted_results: Vec<CoachTargetedResult>,
+    pub book_passages: Vec<CoachBookPassage>,
+    pub book_corpus_available: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct CoachBookPassage {
+    pub chunk_id: String,
+    pub book_id: String,
+    pub title: String,
+    pub author: String,
+    pub shelf: String,
+    pub chapter_title: String,
+    pub citation: String,
+    pub pdf_page_start: u32,
+    pub pdf_page_end: u32,
+    pub printed_page_start: Option<u32>,
+    pub printed_page_end: Option<u32>,
+    pub excerpt: String,
+    pub local_path: String,
 }
 
 #[derive(Debug, Deserialize, Type)]
@@ -601,6 +624,277 @@ fn emit_coach_progress(
     if let Err(error) = app.emit(AI_COACH_PROGRESS_EVENT, event) {
         warn!("ai_coach[{request_id}] failed to emit progress event `{stage}`: {error}");
     }
+}
+
+fn chess_book_corpus_path() -> Option<PathBuf> {
+    if let Some(configured) = env::var_os("EN_CROISSANT_CHESS_BOOK_CORPUS") {
+        let path = PathBuf::from(configured);
+        if path.is_file() {
+            return Some(path);
+        }
+    }
+
+    env::var_os("USERPROFILE")
+        .map(PathBuf::from)
+        .map(|profile| {
+            profile
+                .join("Documents")
+                .join("EnCroissant")
+                .join("AI Chess Coach Library")
+                .join("00 AI Corpus")
+                .join("chess-books.sqlite3")
+        })
+        .filter(|path| path.is_file())
+}
+
+fn is_book_search_stop_word(term: &str) -> bool {
+    matches!(
+        term,
+        "about"
+            | "after"
+            | "again"
+            | "also"
+            | "analyse"
+            | "analyze"
+            | "answer"
+            | "because"
+            | "before"
+            | "black"
+            | "chess"
+            | "could"
+            | "explain"
+            | "from"
+            | "game"
+            | "have"
+            | "help"
+            | "here"
+            | "move"
+            | "play"
+            | "please"
+            | "position"
+            | "should"
+            | "that"
+            | "their"
+            | "then"
+            | "there"
+            | "these"
+            | "think"
+            | "this"
+            | "what"
+            | "when"
+            | "where"
+            | "which"
+            | "white"
+            | "with"
+            | "would"
+            | "wrong"
+    )
+}
+
+fn push_book_search_terms(terms: &mut Vec<String>, text: &str) {
+    for token in text
+        .split(|character: char| !character.is_ascii_alphanumeric())
+        .map(str::to_ascii_lowercase)
+        .filter(|token| token.len() >= 3 && !is_book_search_stop_word(token))
+    {
+        if !terms.contains(&token) {
+            terms.push(token);
+        }
+        if terms.len() >= 32 {
+            break;
+        }
+    }
+}
+
+fn chess_book_search_terms(
+    request: &AiCoachRequest,
+    targeted_results: &[CoachTargetedResult],
+) -> Vec<String> {
+    let mut terms = Vec::new();
+    push_book_search_terms(&mut terms, &request.question);
+    if let Some(selected_move) = &request.selected_move {
+        push_book_search_terms(&mut terms, selected_move);
+    }
+    for point in request
+        .game_analysis
+        .iter()
+        .filter(|point| !point.annotations.is_empty())
+        .take(12)
+    {
+        push_book_search_terms(&mut terms, &point.annotations.join(" "));
+    }
+    for result in targeted_results.iter().take(6) {
+        push_book_search_terms(&mut terms, &result.reason);
+        push_book_search_terms(&mut terms, &result.label);
+    }
+
+    let question = request.question.to_ascii_lowercase();
+    let mut concepts = Vec::new();
+    if request.pgn_scope.trim() == "whole_game"
+        || ["review", "mistake", "blunder", "went wrong", "critical"]
+            .iter()
+            .any(|needle| question.contains(needle))
+    {
+        concepts.extend([
+            "calculation",
+            "candidates",
+            "threats",
+            "prophylaxis",
+            "strategy",
+            "decision",
+        ]);
+    }
+    if question_focus_phase(&request.question) == Some(CoachQuestionPhase::Opening) {
+        concepts.extend(["opening", "development", "centre", "king", "structure"]);
+    }
+    if question_focus_phase(&request.question) == Some(CoachQuestionPhase::Middlegame) {
+        concepts.extend(["middlegame", "coordination", "pawn", "break", "plan"]);
+    }
+    if question_focus_phase(&request.question) == Some(CoachQuestionPhase::EndgameConversion) {
+        concepts.extend(["endgame", "conversion", "activity", "king", "technique"]);
+    }
+    if [
+        "calculate",
+        "calculation",
+        "tactic",
+        "combination",
+        "visual",
+    ]
+    .iter()
+    .any(|needle| question.contains(needle))
+    {
+        concepts.extend([
+            "calculation",
+            "candidate",
+            "forcing",
+            "visualization",
+            "tactics",
+        ]);
+    }
+    if ["attack", "king safety", "sacrifice"]
+        .iter()
+        .any(|needle| question.contains(needle))
+    {
+        concepts.extend(["attack", "king", "initiative", "sacrifice"]);
+    }
+    if ["defend", "defence", "defense", "survive"]
+        .iter()
+        .any(|needle| question.contains(needle))
+    {
+        concepts.extend(["defence", "counterplay", "prophylaxis", "resistance"]);
+    }
+    for concept in concepts {
+        if !terms.iter().any(|term| term == concept) {
+            terms.push(concept.to_string());
+        }
+    }
+    if terms.is_empty() {
+        terms.extend(
+            ["calculation", "strategy", "candidates", "threats"]
+                .into_iter()
+                .map(str::to_string),
+        );
+    }
+    terms.truncate(32);
+    terms
+}
+
+fn search_chess_book_passages(
+    request: &AiCoachRequest,
+    targeted_results: &[CoachTargetedResult],
+) -> Result<(bool, Vec<CoachBookPassage>), String> {
+    let Some(corpus_path) = chess_book_corpus_path() else {
+        return Ok((false, Vec::new()));
+    };
+    let terms = chess_book_search_terms(request, targeted_results);
+    let expression = terms
+        .iter()
+        .map(|term| format!("\"{term}\""))
+        .collect::<Vec<_>>()
+        .join(" OR ");
+    let connection = Connection::open_with_flags(corpus_path, OpenFlags::SQLITE_OPEN_READ_ONLY)
+        .map_err(|error| error.to_string())?;
+    let mut statement = connection
+        .prepare(
+            r#"
+            SELECT c.chunk_id, c.book_id, b.title, b.author, COALESCE(b.shelf, ''),
+                   COALESCE(c.chapter_title, ''), c.citation, c.pdf_page_start,
+                   c.pdf_page_end, c.printed_page_start, c.printed_page_end,
+                   c.text, COALESCE(b.local_path, '')
+            FROM chunks_fts AS f
+            JOIN chunks AS c ON c.chunk_id = f.chunk_id
+            JOIN books AS b ON b.book_id = c.book_id
+            WHERE chunks_fts MATCH ?1
+            ORDER BY bm25(chunks_fts, 0.0, 6.0, 2.0, 3.0, 4.0, 2.0, 1.0)
+            LIMIT 48
+            "#,
+        )
+        .map_err(|error| error.to_string())?;
+    let candidates = statement
+        .query_map([expression], |row| {
+            let text: String = row.get(11)?;
+            Ok(CoachBookPassage {
+                chunk_id: row.get(0)?,
+                book_id: row.get(1)?,
+                title: row.get(2)?,
+                author: row.get(3)?,
+                shelf: row.get(4)?,
+                chapter_title: row.get(5)?,
+                citation: row.get(6)?,
+                pdf_page_start: row.get(7)?,
+                pdf_page_end: row.get(8)?,
+                printed_page_start: row.get(9)?,
+                printed_page_end: row.get(10)?,
+                excerpt: truncate_plan_coach_text(
+                    &text.split_whitespace().collect::<Vec<_>>().join(" "),
+                    MAX_BOOK_EXCERPT_CHARS,
+                ),
+                local_path: row.get(12)?,
+            })
+        })
+        .map_err(|error| error.to_string())?;
+
+    let mut passages = Vec::new();
+    let mut per_book = HashMap::<String, usize>::new();
+    for candidate in candidates {
+        let candidate = candidate.map_err(|error| error.to_string())?;
+        let count = per_book.entry(candidate.book_id.clone()).or_default();
+        if *count >= 2 {
+            continue;
+        }
+        *count += 1;
+        passages.push(candidate);
+        if passages.len() >= MAX_BOOK_PASSAGES {
+            break;
+        }
+    }
+    Ok((true, passages))
+}
+
+fn format_book_passages(passages: &[CoachBookPassage]) -> String {
+    if passages.is_empty() {
+        return "None retrieved. Do not invent a book citation.".to_string();
+    }
+    passages
+        .iter()
+        .enumerate()
+        .map(|(index, passage)| {
+            format!(
+                "[Book {number}] {title} — {author}\nChapter: {chapter}\nCitation: {citation}\nPassage: {excerpt}",
+                number = index + 1,
+                title = passage.title,
+                author = passage.author,
+                chapter = if passage.chapter_title.is_empty() {
+                    "Available excerpt"
+                } else {
+                    &passage.chapter_title
+                },
+                citation = passage.citation,
+                excerpt = passage.excerpt,
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n\n")
 }
 
 #[tauri::command]
@@ -1382,15 +1676,56 @@ async fn ask_ai_coach_inner(
         app,
         request_id,
         started,
+        "book_retrieval",
+        "Searching the chess library",
+        "Retrieving page-bounded passages from the local lawful corpus.",
+        73.0,
+        false,
+    );
+    let (book_corpus_available, book_passages) =
+        match search_chess_book_passages(&request, &targeted_results) {
+            Ok(result) => result,
+            Err(error) => {
+                warn!("ai_coach[{request_id}] chess-book retrieval failed: {error}");
+                (true, Vec::new())
+            }
+        };
+    emit_coach_progress(
+        app,
+        request_id,
+        started,
+        "book_retrieval_done",
+        if book_corpus_available {
+            "Chess-book passages ready"
+        } else {
+            "Chess-book corpus unavailable"
+        },
+        if book_corpus_available {
+            format!(
+                "Retrieved {} cited passage(s) across the local shelf.",
+                book_passages.len()
+            )
+        } else {
+            "The configured corpus database was not found; continuing without book claims."
+                .to_string()
+        },
+        74.0,
+        false,
+    );
+    emit_coach_progress(
+        app,
+        request_id,
+        started,
         "prompt",
         "Building coach prompt",
         format!(
-            "Packaging {} root line(s), {} targeted result(s), {} chess fact result(s), opening context, and chat history.",
+            "Packaging {} root line(s), {} targeted result(s), {} chess fact result(s), {} cited book passage(s), opening context, and chat history.",
             stockfish_lines.len(),
             targeted_results.len(),
-            chess_fact_results.len()
+            chess_fact_results.len(),
+            book_passages.len()
         ),
-        74.0,
+        76.0,
         false,
     );
     let prompt = build_coach_prompt_with_facts(
@@ -1400,6 +1735,7 @@ async fn ask_ai_coach_inner(
         &reference_context,
         &[],
         &chess_fact_results,
+        &book_passages,
     );
     emit_coach_progress(
         app,
@@ -1482,6 +1818,7 @@ async fn ask_ai_coach_inner(
                 &reference_context,
                 &correction_notes,
                 &chess_fact_results,
+                &book_passages,
             );
             emit_coach_progress(
                 app,
@@ -1632,6 +1969,8 @@ async fn ask_ai_coach_inner(
         used_existing_analysis,
         stockfish_lines,
         targeted_results,
+        book_passages,
+        book_corpus_available,
     })
 }
 
@@ -1649,6 +1988,7 @@ fn build_coach_prompt(
         reference_context,
         correction_notes,
         &[],
+        &[],
     )
 }
 
@@ -1659,6 +1999,7 @@ fn build_coach_prompt_with_facts(
     reference_context: &[CoachReferenceContext],
     correction_notes: &[String],
     chess_fact_results: &[CoachChessFactResult],
+    book_passages: &[CoachBookPassage],
 ) -> String {
     let pgn = request
         .pgn
@@ -1724,6 +2065,7 @@ fn build_coach_prompt_with_facts(
     let salvage_question = question_asks_for_salvage(&request.question);
     let correction_notes = format_correction_notes(correction_notes);
     let chess_facts = format_chess_fact_results(chess_fact_results);
+    let book_passages = format_book_passages(book_passages);
     let root_engine_label = if use_cloud_existing_lines {
         "Lichess Cloud root lines"
     } else {
@@ -1817,6 +2159,10 @@ Core rules:
 - For any recommended improvement, show the concrete Stockfish continuation from analyse_position/root lines that justifies the recommendation.
 - Material summaries are guardrails, not the main explanation. Do not claim "wins the exchange", "wins a piece", "wins a pawn", or similar material verdicts unless the supplied material summary for the cited PV supports that exact claim. If the engine line only proves a positional/evaluation swing, describe the tactical or strategic mechanism instead.
 - You may use general chess and opening knowledge for concepts, structures, plans, and naming, but only as explanation layered on top of engine-backed lines.
+- Retrieved chess-book passages are the source of truth for attributed teaching principles. Use them to explain the human lesson, while Stockfish remains the source of truth for this position's concrete verdict and variations.
+- When a retrieved passage materially supports a lesson, cite its exact identifier such as [Book 2] immediately after the supported sentence. Never invent a title, quotation, page, author, or [Book N] identifier.
+- Paraphrase book passages in your own words. Do not reproduce long excerpts. Do not imply that a passage analysed this exact game unless it actually contains the supplied game position.
+- If none of the retrieved passages is relevant, do not force a book citation. Give the engine-grounded answer and say no close library passage was used.
 - Explain like a strong GM/coach: use proper chess terminology such as isolated queen's pawn, minority attack, deflection, trapped piece, blockade, weak square, exchange sacrifice, or domination when it genuinely fits.
 - Treat Lichess All opening stats and blended strength as practical/popularity evidence only. Use it when relevant to opening choice, repertoire, popularity, or practical results; do not treat it as a tactical proof.
 - Do not request tools, shell commands, files, network lookups, external resources, or the Stockfish request protocol in your final answer. Separate planners have already requested all allowed Stockfish analysis and private board-state checks up front.
@@ -1868,6 +2214,9 @@ Targeted Stockfish result:
 Lichess All opening context:
 {opening_context}
 
+Retrieved chess-book passages (principle evidence; cite as [Book N]):
+{book_passages}
+
 Conversation so far:
 {chat_history}
 
@@ -1894,6 +2243,7 @@ User question:
         engine_lines = engine_lines,
         targeted = targeted,
         opening_context = opening_context,
+        book_passages = book_passages,
         chat_history = chat_history,
         question_focus = question_focus,
         reference_context = reference_context,
@@ -6474,6 +6824,49 @@ mod tests {
     }
 
     #[test]
+    fn book_search_terms_expand_whole_game_review_into_teaching_concepts() {
+        let mut request = sample_request();
+        request.pgn_scope = "whole_game".to_string();
+        request.question = "What went wrong in my game?".to_string();
+        let terms = chess_book_search_terms(&request, &[]);
+        assert!(terms.contains(&"calculation".to_string()));
+        assert!(terms.contains(&"candidates".to_string()));
+        assert!(terms.contains(&"prophylaxis".to_string()));
+    }
+
+    #[test]
+    fn coach_prompt_labels_retrieved_books_as_principle_evidence() {
+        let request = sample_request();
+        let passage = CoachBookPassage {
+            chunk_id: "chunk-1".to_string(),
+            book_id: "book-1".to_string(),
+            title: "Calculation Manual".to_string(),
+            author: "GM Author".to_string(),
+            shelf: "Thinking".to_string(),
+            chapter_title: "Candidate moves".to_string(),
+            citation: "Calculation Manual - PDF p. 12".to_string(),
+            pdf_page_start: 12,
+            pdf_page_end: 12,
+            printed_page_start: Some(20),
+            printed_page_end: Some(20),
+            excerpt: "Generate candidate moves before calculating.".to_string(),
+            local_path: "C:/books/calculation.pdf".to_string(),
+        };
+        let prompt = build_coach_prompt_with_facts(
+            &request,
+            &[],
+            &[],
+            &[],
+            &[],
+            &[],
+            std::slice::from_ref(&passage),
+        );
+        assert!(prompt.contains("[Book 1] Calculation Manual"));
+        assert!(prompt.contains("principle evidence"));
+        assert!(prompt.contains("Never invent a title"));
+    }
+
+    #[test]
     fn prompt_builder_includes_stockfish_grounding_and_protocol() {
         let prompt = build_coach_prompt(
             &sample_request(),
@@ -6544,6 +6937,7 @@ mod tests {
             &[],
             &[],
             std::slice::from_ref(&fact),
+            &[],
         );
 
         assert!(prompt.contains("Private board-state facts"));
