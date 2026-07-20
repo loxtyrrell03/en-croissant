@@ -996,26 +996,18 @@
 }
 
 .filesWorkspace {
-  display: grid;
-  grid-template-columns: minmax(280px, 0.86fr) minmax(0, 1.14fr);
-  gap: var(--mantine-spacing-md);
-  align-items: start;
   width: 100%;
   min-width: 0;
   max-width: 100%;
 }
 
-.filesSplit {
-  display: grid;
-  grid-template-columns: minmax(210px, 0.82fr) minmax(0, 1.18fr);
-  gap: var(--mantine-spacing-md);
-  align-items: start;
-  min-width: 0;
-  max-width: 100%;
+.filesPanel {
+  width: 100%;
+  max-width: 58rem;
+  margin-inline: auto;
 }
 
-.filesWorkspace > *,
-.filesSplit > * {
+.filesWorkspace > * {
   min-width: 0;
   max-width: 100%;
 }
@@ -1023,6 +1015,82 @@
 .filesWorkspace :global(.mantine-ScrollArea-root),
 .filesWorkspace :global(.mantine-ScrollArea-viewport) {
   max-width: 100%;
+}
+
+.filesPanelHeader {
+  min-height: 2.75rem;
+}
+
+.filesTitle {
+  overflow: hidden;
+  font-size: 1.55rem;
+  line-height: 1.12;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filesSubtitle {
+  margin-top: 0.16rem;
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+.filesBackButton,
+.filesRefreshButton {
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.openAllPgnsButton {
+  min-height: 2.75rem;
+}
+
+.hostedFileList {
+  gap: 0.38rem;
+}
+
+.hostedFileButton {
+  min-height: 4rem;
+  padding: 0.58rem 0.72rem;
+  border-color: rgba(255, 255, 255, 0.09);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.045);
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+}
+
+.hostedFileButton:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.hostedFileButton:focus-visible {
+  outline: 2px solid var(--mantine-primary-color-5);
+  outline-offset: 2px;
+}
+
+.hostedFileText {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.hostedFileName {
+  font-size: 1rem;
+  line-height: 1.22 !important;
+}
+
+.hostedFileMeta {
+  margin-top: 0.12rem;
+  font-size: 0.78rem;
+  line-height: 1.2 !important;
+}
+
+.hostedFolderChevron {
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  color: var(--mantine-color-gray-5);
 }
 
 .itemList {
@@ -1119,8 +1187,7 @@
 
   .workspace,
   .split,
-  .filesWorkspace,
-  .filesSplit {
+  .filesWorkspace {
     grid-template-columns: 1fr;
   }
 
@@ -1203,10 +1270,6 @@
   }
 
   .filesWorkspace {
-    gap: var(--mantine-spacing-sm);
-  }
-
-  .filesSplit {
     gap: var(--mantine-spacing-sm);
   }
 

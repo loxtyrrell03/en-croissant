@@ -99,13 +99,30 @@ export function filterWebDatabasesByHostedAvailability({
 
 export function filterWebSourceDatabases(databases: WebDatabase[], extraSourceIds: string[] = []) {
   const extraIds = new Set(extraSourceIds);
-  return databases.filter((database) => isWebSourceDatabase(database) || extraIds.has(database.id));
+  return databases.filter(
+    (database) =>
+      !isWebOpenedGame(database) &&
+      (isWebSourceDatabase(database) || extraIds.has(database.id)),
+  );
 }
 
 export function isWebSourceDatabase(database: WebDatabase) {
-  if (database.sourceKind === "opened-file") return false;
+  if (isWebOpenedGame(database)) return false;
   if (database.sourceKind === "source") return true;
   return Boolean(database.hostedPath);
+}
+
+function isWebOpenedGame(database: WebDatabase) {
+  if (database.sourceKind === "opened-file") return true;
+
+  // Online games opened by the Analyze panel were briefly saved as ordinary
+  // sources. Keep those existing one-game records out of every database picker.
+  return (
+    database.sourceKind === "source" &&
+    database.gameCount === 1 &&
+    !database.hostedPath &&
+    / · (?:Chess\.com|Lichess)$/i.test(database.name)
+  );
 }
 
 export function getWebDatabaseSourceStorageValue(database: WebDatabase) {

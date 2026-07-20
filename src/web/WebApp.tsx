@@ -54,7 +54,6 @@ import {
   IconCloudDownload,
   IconCpu,
   IconDatabase,
-  IconDownload,
   IconExternalLink,
   IconFileText,
   IconFolder,
@@ -65,7 +64,6 @@ import {
   IconSearch,
   IconSettings,
   IconTarget,
-  IconTrash,
   IconUpload,
   IconX,
 } from "@tabler/icons-react";
@@ -213,7 +211,6 @@ import {
   type WebPrepSetupSelection,
 } from "./prepSettings";
 import {
-  countWebGameVariationMoves,
   formatWebDate,
   getFenColor,
   normalizeWebFen,
@@ -234,10 +231,7 @@ import { getWebBoardSourceTitle } from "./boardTitle";
 import { formatWebEngineScore } from "./engineScore";
 import OnlineGameAnalysisPanel from "./OnlineGameAnalysisPanel";
 import { getWebOnlineAnalysisTitle, getWebOnlinePlayerColor } from "./onlineAnalysis";
-import {
-  analyzeWithWebStockfish18,
-  stopWebStockfish18Search,
-} from "./stockfishEngine";
+import { analyzeWithWebStockfish18, stopWebStockfish18Search } from "./stockfishEngine";
 
 type ViewMode = "board" | "files";
 type BoardPanelMode = "moves" | "online" | "database" | "prep" | "engine";
@@ -540,18 +534,6 @@ export default function WebApp() {
     () => state.prepWorkspaces.find((prep) => prep.id === state.activePrepId) ?? null,
     [state.activePrepId, state.prepWorkspaces],
   );
-  const activeDatabase = useMemo(
-    () => state.databases.find((database) => database.id === selectedDatabaseId) ?? null,
-    [selectedDatabaseId, state.databases],
-  );
-  const activeDatabaseGames = activeDatabase
-    ? (state.gamesByDatabase[activeDatabase.id] ?? [])
-    : [];
-  const selectedGame =
-    activeDatabaseGames.find((game) => game.id === selectedGameId) ??
-    activeDatabaseGames[0] ??
-    null;
-
   const loadGameOnBoard = useCallback(
     (game: WebGame, options: { cursor?: number; orientation?: WebColor } = {}) => {
       setState((current) => ({
@@ -646,7 +628,7 @@ export default function WebApp() {
       notifications.show({
         title: notificationTitle,
         message:
-          notificationMessage?.(imported) ?? `${pluralWeb(imported.games.length, "game")} indexed.`,
+          notificationMessage?.(imported) ?? `${pluralWeb(imported.games.length, "game")} ready.`,
         color: "green",
       });
 
@@ -664,6 +646,9 @@ export default function WebApp() {
         notificationTitle: "Game ready to analyze",
         notificationMessage: () =>
           `${getWebOnlineSourceLabel(onlineGame.source)} ${onlineGame.username} opened with Stockfish.`,
+        databasePatch: {
+          sourceKind: "opened-file",
+        },
         openFirstGame: false,
       });
       const game = imported.games[0];
@@ -692,7 +677,7 @@ export default function WebApp() {
             ...parsed,
             database: {
               ...parsed.database,
-              sourceKind: "source",
+              sourceKind: parsed.games.length === 1 ? "opened-file" : "source",
             },
           });
         }
@@ -704,11 +689,11 @@ export default function WebApp() {
         }
 
         notifications.show({
-          title: "PGN imported",
+          title: "PGN opened",
           message: `${pluralWeb(
             imported.reduce((sum, result) => sum + result.games.length, 0),
             "game",
-          )} indexed.`,
+          )} ready.`,
           color: "green",
         });
       } catch (error) {
@@ -735,7 +720,7 @@ export default function WebApp() {
           pgn: file.content,
           notificationTitle: "Hosted file opened",
           notificationMessage: (imported) =>
-            `${pluralWeb(imported.games.length, "game")} indexed from ${file.filename}.`,
+            `${pluralWeb(imported.games.length, "game")} opened from ${file.filename}.`,
           databasePatch: {
             sourceKind: "opened-file",
             hostedFilePath: entry.path,
@@ -788,7 +773,7 @@ export default function WebApp() {
           pgn: folder.content,
           notificationTitle: "Hosted database opened",
           notificationMessage: (imported) =>
-            `${pluralWeb(imported.games.length, "game")} indexed from ${pluralWeb(
+            `${pluralWeb(imported.games.length, "game")} loaded from ${pluralWeb(
               folder.files.length,
               "hosted PGN",
             )}.`,
@@ -931,7 +916,7 @@ export default function WebApp() {
                 `${pluralWeb(
                   imported.games.length,
                   `${getWebOnlineSourceLabel(source)} game`,
-                )} indexed for ${username}.`,
+                )} ready for ${username}.`,
             })
           : parsePgnDatabase(`${title}.pgn`, pgn);
         if (!saveDatabase) {
@@ -961,28 +946,6 @@ export default function WebApp() {
     },
     [importPgnText],
   );
-
-  const deleteDatabase = useCallback((database: WebDatabase) => {
-    setState((current) => {
-      const nextGames = { ...current.gamesByDatabase };
-      delete nextGames[database.id];
-
-      return {
-        ...current,
-        databases: current.databases.filter((item) => item.id !== database.id),
-        gamesByDatabase: nextGames,
-        prepWorkspaces: current.prepWorkspaces.map((prep) => ({
-          ...prep,
-          sourceIds: prep.sourceIds.filter((id) => id !== database.id),
-        })),
-        board:
-          current.board.sourceDatabaseId === database.id
-            ? createEmptyWebBoardState()
-            : current.board,
-      };
-    });
-    setSelectedDatabaseId((current) => (current === database.id ? null : current));
-  }, []);
 
   return (
     <MantineProvider defaultColorScheme="dark" theme={theme}>
@@ -1075,18 +1038,8 @@ export default function WebApp() {
             />
           ) : (
             <FilesWorkspace
-              databases={state.databases}
-              gamesByDatabase={state.gamesByDatabase}
-              selectedDatabaseId={selectedDatabaseId}
-              selectedGame={selectedGame}
-              importing={importing}
-              importFiles={importFiles}
               importHostedPgn={importHostedPgn}
               importHostedFolder={importHostedFolder}
-              setSelectedDatabaseId={setSelectedDatabaseId}
-              setSelectedGameId={setSelectedGameId}
-              deleteDatabase={deleteDatabase}
-              loadGameOnBoard={loadGameOnBoard}
             />
           )}
         </main>
@@ -2581,10 +2534,7 @@ function DatabaseUnderBoardPanel({
               </>
             ) : (
               <>
-                <WebLichessAccessControls
-                  token={lichessToken}
-                  signedInLabel="Lichess saved"
-                />
+                <WebLichessAccessControls token={lichessToken} signedInLabel="Lichess saved" />
                 <ActionIcon
                   aria-label="Refresh Lichess explorer"
                   onClick={() => setRefreshKey((key) => key + 1)}
@@ -4754,10 +4704,7 @@ function PrepUnderBoardPanel({
               </Group>
               {isOnlinePrepSource(selectedPrepSource) ? (
                 <Group gap="xs" align="flex-end" wrap="wrap">
-                  <WebLichessAccessControls
-                    token={lichessToken}
-                    signedInLabel="Lichess saved"
-                  />
+                  <WebLichessAccessControls token={lichessToken} signedInLabel="Lichess saved" />
                   <Button
                     size="compact-xs"
                     variant={explorerOptionsOpen ? "light" : "default"}
@@ -6660,186 +6607,15 @@ function formatWebPrepLastPlayedShort(value: string | null | undefined) {
 }
 
 function FilesWorkspace({
-  databases,
-  gamesByDatabase,
-  selectedDatabaseId,
-  selectedGame,
-  importing,
-  importFiles,
   importHostedPgn,
   importHostedFolder,
-  setSelectedDatabaseId,
-  setSelectedGameId,
-  deleteDatabase,
-  loadGameOnBoard,
 }: {
-  databases: WebDatabase[];
-  gamesByDatabase: Record<string, WebGame[]>;
-  selectedDatabaseId: string | null;
-  selectedGame: WebGame | null;
-  importing: boolean;
-  importFiles: (files: FileList | null) => Promise<void>;
   importHostedPgn: WebHostedPgnImportHandler;
   importHostedFolder: WebHostedFolderImportHandler;
-  setSelectedDatabaseId: (id: string | null) => void;
-  setSelectedGameId: (id: string | null) => void;
-  deleteDatabase: (database: WebDatabase) => void;
-  loadGameOnBoard: (game: WebGame) => void;
 }) {
-  const activeGames = selectedDatabaseId ? (gamesByDatabase[selectedDatabaseId] ?? []) : [];
-
   return (
     <Box className={classes.filesWorkspace}>
       <HostedFilesPanel importHostedPgn={importHostedPgn} importHostedFolder={importHostedFolder} />
-
-      <Box className={`${classes.panel} ${classes.panelBody}`}>
-        <Group justify="space-between" gap="xs" mb="sm">
-          <Box>
-            <Title order={3}>Indexed PGNs</Title>
-            <Text size="xs" c="dimmed">
-              Browser-side databases used by the board panels
-            </Text>
-          </Box>
-          <Button
-            component="label"
-            size="xs"
-            leftSection={<IconUpload size={14} />}
-            loading={importing}
-          >
-            Import
-            <input
-              hidden
-              multiple
-              type="file"
-              accept=".pgn,application/x-chess-pgn,text/plain"
-              onChange={(event) => {
-                void importFiles(event.currentTarget.files);
-                event.currentTarget.value = "";
-              }}
-            />
-          </Button>
-        </Group>
-
-        {databases.length === 0 ? (
-          <UnderBoardEmpty
-            icon={<IconFileText size={30} />}
-            title="No indexed PGNs"
-            text="Import a PGN or open one from Hosted files."
-          />
-        ) : (
-          <Box className={classes.filesSplit}>
-            <ScrollArea.Autosize mah={520}>
-              <Box className={classes.itemList}>
-                {databases.map((database) => (
-                  // A real <button> here would nest the delete ActionIcon
-                  // button inside it, which is invalid HTML.
-                  <Box
-                    key={database.id}
-                    className={classes.listButton}
-                    data-active={database.id === selectedDatabaseId}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => {
-                      setSelectedDatabaseId(database.id);
-                      setSelectedGameId(null);
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key !== "Enter" && event.key !== " ") return;
-                      event.preventDefault();
-                      setSelectedDatabaseId(database.id);
-                      setSelectedGameId(null);
-                    }}
-                  >
-                    <Group justify="space-between" gap="xs" wrap="nowrap">
-                      <Box miw={0}>
-                        <Text fw={700} size="xs" truncate>
-                          {database.name}
-                        </Text>
-                        <Text size="0.66rem" c="dimmed" truncate>
-                          {pluralWeb(database.gameCount, "game")} -{" "}
-                          {formatBytes(database.sizeBytes)}
-                        </Text>
-                      </Box>
-                      <ActionIcon
-                        aria-label="Delete database"
-                        color="red"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          deleteDatabase(database);
-                        }}
-                      >
-                        <IconTrash size={14} />
-                      </ActionIcon>
-                    </Group>
-                  </Box>
-                ))}
-              </Box>
-            </ScrollArea.Autosize>
-
-            <Stack gap="xs" miw={0}>
-              <Group justify="space-between" gap="xs">
-                <Text size="sm" fw={700}>
-                  Games
-                </Text>
-                {selectedGame && (
-                  <Button
-                    size="compact-xs"
-                    variant="light"
-                    leftSection={<IconDownload size={14} />}
-                    onClick={() =>
-                      downloadText(
-                        `${selectedGame.white}-${selectedGame.black}.pgn`,
-                        selectedGame.pgn,
-                      )
-                    }
-                  >
-                    PGN
-                  </Button>
-                )}
-              </Group>
-              <ScrollArea.Autosize mah={280}>
-                <Box className={classes.itemList}>
-                  {activeGames.map((game) => {
-                    const variationMoves = countWebGameVariationMoves(game);
-                    return (
-                      <button
-                        key={game.id}
-                        className={classes.listButton}
-                        data-active={game.id === selectedGame?.id}
-                        onClick={() => setSelectedGameId(game.id)}
-                        type="button"
-                      >
-                        <Text fw={700} size="xs" truncate>
-                          {game.white} - {game.black}
-                        </Text>
-                        <Text size="0.66rem" c="dimmed" truncate>
-                          {formatWebDate(game.date) || "undated"} - {game.result} -{" "}
-                          {pluralWeb(game.moves.length, "ply", "plies")}
-                          {variationMoves > 0
-                            ? ` + ${pluralWeb(variationMoves, "variation ply", "variation plies")}`
-                            : ""}
-                        </Text>
-                      </button>
-                    );
-                  })}
-                </Box>
-              </ScrollArea.Autosize>
-              {selectedGame && (
-                <Group gap="xs">
-                  <Button
-                    size="xs"
-                    leftSection={<IconChess size={14} />}
-                    onClick={() => loadGameOnBoard(selectedGame)}
-                  >
-                    Open on board
-                  </Button>
-                  <Badge variant="light">{selectedGame.result}</Badge>
-                </Group>
-              )}
-            </Stack>
-          </Box>
-        )}
-      </Box>
     </Box>
   );
 }
@@ -6918,23 +6694,58 @@ function HostedFilesPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const currentFolderName = path.split("/").filter(Boolean).at(-1) ?? "Files";
+
   return (
-    <Box className={embedded ? classes.prepToolBox : `${classes.panel} ${classes.panelBody}`}>
-      <Group justify="space-between" gap="xs" mb="sm">
-        <Box miw={0}>
-          <Title order={3}>Hosted files</Title>
-          <Text size="xs" c="dimmed" truncate>
-            {library?.manifest
-              ? `${library.manifest.sourceName} - ${formatLibraryDate(library.manifest.generatedAt)}`
-              : "Published web library"}
-          </Text>
-        </Box>
-        <ActionIcon aria-label="Refresh files" onClick={() => void load(path, true)} loading={loading}>
-          <IconRefresh size={16} />
+    <Box
+      className={
+        embedded
+          ? classes.prepToolBox
+          : `${classes.panel} ${classes.panelBody} ${classes.filesPanel}`
+      }
+    >
+      <Group className={classes.filesPanelHeader} justify="space-between" gap="xs" mb="md">
+        <Group gap="xs" wrap="nowrap" miw={0}>
+          {!embedded && listing?.parentPath !== null && (
+            <ActionIcon
+              aria-label="Back to parent folder"
+              className={classes.filesBackButton}
+              size="lg"
+              variant="subtle"
+              onClick={() => void load(listing?.parentPath ?? "")}
+            >
+              <IconChevronLeft size={24} />
+            </ActionIcon>
+          )}
+          <Box miw={0}>
+            <Title order={embedded ? 3 : 2} className={embedded ? undefined : classes.filesTitle}>
+              {embedded ? "Hosted files" : currentFolderName}
+            </Title>
+            <Text
+              className={embedded ? undefined : classes.filesSubtitle}
+              size="xs"
+              c="dimmed"
+              truncate
+            >
+              {path ||
+                (library?.manifest
+                  ? `${library.manifest.sourceName} · ${formatLibraryDate(library.manifest.generatedAt)}`
+                  : "Gaming PC library")}
+            </Text>
+          </Box>
+        </Group>
+        <ActionIcon
+          aria-label="Refresh files"
+          className={embedded ? undefined : classes.filesRefreshButton}
+          size={embedded ? "md" : "lg"}
+          onClick={() => void load(path, true)}
+          loading={loading}
+        >
+          <IconRefresh size={embedded ? 16 : 20} />
         </ActionIcon>
       </Group>
 
-      {listing && listing.parentPath !== null && (
+      {embedded && listing && listing.parentPath !== null && (
         <Group gap="xs" mb="xs" wrap="wrap">
           <Button
             size="compact-xs"
@@ -6957,6 +6768,23 @@ function HostedFilesPanel({
         </Group>
       )}
 
+      {!embedded &&
+        listing?.parentPath !== null &&
+        library &&
+        importHostedFolder &&
+        directPgnFilesInPath.length > 1 && (
+          <Button
+            className={classes.openAllPgnsButton}
+            variant="light"
+            leftSection={<IconChess size={18} />}
+            loading={loading}
+            mb="sm"
+            onClick={() => void importFolder(path, true)}
+          >
+            Open all {directPgnFilesInPath.length} PGNs
+          </Button>
+        )}
+
       {library && !library.available && (
         <Text size="sm" c="dimmed">
           No hosted file library is published with this build.
@@ -6964,12 +6792,12 @@ function HostedFilesPanel({
       )}
 
       {listing && (
-        <ScrollArea.Autosize mah={420}>
-          <Box className={classes.itemList}>
+        <ScrollArea.Autosize mah={embedded ? 420 : undefined}>
+          <Box className={`${classes.itemList} ${embedded ? "" : classes.hostedFileList}`}>
             {listing.entries.map((entry) => (
               <button
                 key={`${entry.type}-${entry.path}`}
-                className={classes.listButton}
+                className={`${classes.listButton} ${embedded ? "" : classes.hostedFileButton}`}
                 type="button"
                 onClick={() => {
                   if (entry.type === "directory") {
@@ -6992,25 +6820,48 @@ function HostedFilesPanel({
                   void importHostedPgn(entry);
                 }}
               >
-                <Group gap="xs" wrap="nowrap">
+                <Group gap={embedded ? "xs" : "sm"} wrap="nowrap">
                   {entry.type === "directory" ? (
-                    <IconFolder className={classes.listMainIcon} size={14} />
+                    <IconFolder
+                      className={classes.listMainIcon}
+                      size={embedded ? 14 : 22}
+                      stroke={1.7}
+                    />
                   ) : (
-                    <IconFileText className={classes.listMainIcon} size={14} />
+                    <IconFileText
+                      className={classes.listMainIcon}
+                      size={embedded ? 14 : 22}
+                      stroke={1.7}
+                    />
                   )}
-                  {entry.pinned && <IconPinned className={classes.listPinIcon} size={12} />}
-                  <Box miw={0}>
-                    <Text fw={700} size="xs" truncate>
+                  {entry.pinned && (
+                    <IconPinned className={classes.listPinIcon} size={embedded ? 12 : 15} />
+                  )}
+                  <Box className={classes.hostedFileText} miw={0}>
+                    <Text
+                      className={embedded ? undefined : classes.hostedFileName}
+                      fw={700}
+                      size={embedded ? "xs" : undefined}
+                      truncate
+                    >
                       {entry.name}
                     </Text>
-                    <Text size="0.66rem" c="dimmed" truncate>
+                    <Text
+                      className={embedded ? undefined : classes.hostedFileMeta}
+                      size={embedded ? "0.66rem" : undefined}
+                      c="dimmed"
+                      truncate
+                    >
                       {entry.type === "directory"
-                        ? entry.directPgnFileCount > 0
-                          ? `${entry.directPgnFileCount} PGN ${entry.directPgnFileCount === 1 ? "file" : "files"}`
-                          : `${entry.pgnFileCount} PGN ${entry.pgnFileCount === 1 ? "file" : "files"} inside`
-                        : `${entry.extension.toUpperCase()} - ${formatBytes(entry.sizeBytes)}`}
+                        ? entry.pgnFileCount > 0
+                          ? pluralWeb(entry.pgnFileCount, "PGN")
+                          : "Folder"
+                        : `${entry.extension.toUpperCase()} · ${formatBytes(entry.sizeBytes)}`}
                     </Text>
                   </Box>
+                  {entry.type === "directory" && !embedded && (
+                    <IconChevronRight className={classes.hostedFolderChevron} size={20} />
+                  )}
                 </Group>
               </button>
             ))}
@@ -7511,19 +7362,6 @@ function clampCursor(cursor: number, lineLength: number) {
 
 function prepBoardTitle(prep: WebPrepWorkspace) {
   return getWebPrepWorkspaceName(prep);
-}
-
-function downloadText(filename: string, text: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: "application/x-chess-pgn" }));
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = sanitizeFilename(filename);
-  link.click();
-  window.setTimeout(() => URL.revokeObjectURL(url), 0);
-}
-
-function sanitizeFilename(filename: string) {
-  return filename.replace(/[\\/:*?"<>|]+/g, "-");
 }
 
 function getExplorerSourceLabel(source: WebDatabaseExplorerSource) {

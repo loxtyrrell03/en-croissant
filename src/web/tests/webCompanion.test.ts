@@ -1484,11 +1484,22 @@ describe("web companion PGN prep index", () => {
                 playerNames: [],
             },
             {
-                id: "saved-import",
-                name: "Opponent Chess.com recent 25.pgn",
+                id: "legacy-online-analysis",
+                name: "Eliankung vs loxty · Chess.com",
                 sourceKind: "source" as const,
                 importedAt: 3,
                 updatedAt: 3,
+                gameCount: 1,
+                sizeBytes: 3600,
+                latestDate: "2026.07.20",
+                playerNames: ["Eliankung", "loxty"],
+            },
+            {
+                id: "saved-import",
+                name: "Opponent Chess.com recent 25.pgn",
+                sourceKind: "source" as const,
+                importedAt: 4,
+                updatedAt: 4,
                 gameCount: 25,
                 sizeBytes: 5000,
                 latestDate: "2026.06.01",
@@ -1498,8 +1509,8 @@ describe("web companion PGN prep index", () => {
                 id: "hosted-db",
                 name: "prep-source.pgn",
                 hostedPath: "Databases/Desktop/Prep/prep-source",
-                importedAt: 4,
-                updatedAt: 4,
+                importedAt: 5,
+                updatedAt: 5,
                 gameCount: 100,
                 sizeBytes: 20000,
                 latestDate: "2026.06.02",
@@ -1512,9 +1523,11 @@ describe("web companion PGN prep index", () => {
             "hosted-db",
         ]);
         expect(
-            filterWebSourceDatabases(databases, ["legacy-opened-file"]).map(
-                (database) => database.id,
-            ),
+            filterWebSourceDatabases(databases, [
+                "opened-file",
+                "legacy-opened-file",
+                "legacy-online-analysis",
+            ]).map((database) => database.id),
         ).toEqual(["legacy-opened-file", "saved-import", "hosted-db"]);
     });
 

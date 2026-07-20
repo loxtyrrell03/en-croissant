@@ -11,6 +11,24 @@
   mounted across board-panel changes so future UI reshuffles cannot reintroduce
   cancellation or duplicate Stockfish requests.
 
+- On 2026-07-20, phone Database and Prep lookups were moved onto the gaming
+  PC after Lichess All appeared to hang between positions. The visible delay
+  came from blocking the move table on a serialized one-request-per-second
+  cloud-eval sweep over as many as 20 child positions. Online explorer data
+  now goes through `/api/lichess-explorer`, where the shared PC credential is
+  applied privately, identical in-flight requests are collapsed, results are
+  cached in memory and on disk with stale-while-revalidate, and the next three
+  likely child positions are prefetched. The phone waits at most 75 ms for a
+  PC-stored strength evaluation and never performs the old child-eval sweep;
+  practical move statistics render first. Lazy local Database and Prep sources
+  now query the PC's precise `/api/database-position` index before falling back
+  to a static shard, with browser and server LRUs. Live tests measured eight
+  concurrent cold Lichess requests as one upstream request returning in 132 ms,
+  a 16 ms warm hit, and En Croissant database queries at 130 ms cold / 18 ms
+  warm. Keep explorer response latency independent of strength enrichment and
+  verify both caches, request coalescing, direct-Lichess fallback, and a zero
+  Stockfish queue before publishing future phone builds.
+
 - On 2026-07-20, the phone online-game importer moved out of the under-board
   tool row and into the sticky top navigation beside `Board` and `Files`. Its
   clearer `Import Online` label opens the existing Chess.com/Lichess game
@@ -35,6 +53,17 @@
   refuses to replace unrelated listeners, and accepts startup health only from
   the new process ID. This prevents a dead replacement process from being
   mistaken for a successful deploy because an older server still answered.
+
+- On 2026-07-20, the PC-hosted phone Files view was simplified into one
+  readable filesystem browser. The duplicate browser-cache manager was
+  removed from the page; folders now lead the current directory followed by
+  its PGN/PDF files, with larger type, icons, tap targets, clear back/refresh
+  controls, and an optional `Open all PGNs` action inside multi-PGN folders.
+  Individual hosted PGNs, uploaded one-game PGNs, and one-off Chess.com or
+  Lichess games opened for analysis remain available on the board but are
+  deliberately excluded from Database and Prep source pickers. Existing
+  one-game online-analysis records from the earlier behavior are recognized
+  and hidden as well.
 
 - On 2026-07-20, Lichess authentication became one-time and shared across the
   PC-hosted phone app, the GitHub Pages fallback, En Croissant, and Outpost.
