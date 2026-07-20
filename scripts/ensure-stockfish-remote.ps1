@@ -6,6 +6,44 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function Set-BackgroundChessBenchmarkPriority {
+  $processes = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue)
+  $benchmarkProcesses = @($processes | Where-Object { $_.Name -eq "fastchess.exe" })
+  if ($benchmarkProcesses.Count -eq 0) {
+    return
+  }
+
+  $benchmarkProcessIds = [System.Collections.Generic.HashSet[int]]::new()
+  foreach ($process in $benchmarkProcesses) {
+    [void]$benchmarkProcessIds.Add([int]$process.ProcessId)
+  }
+
+  # Include engines and SSH relays already launched by FastChess. New children
+  # inherit Idle priority from their demoted parent after this repair runs.
+  do {
+    $foundDescendant = $false
+    foreach ($process in $processes) {
+      if (
+        $benchmarkProcessIds.Contains([int]$process.ParentProcessId) -and
+        $benchmarkProcessIds.Add([int]$process.ProcessId)
+      ) {
+        $foundDescendant = $true
+      }
+    }
+  } while ($foundDescendant)
+
+  foreach ($processId in $benchmarkProcessIds) {
+    try {
+      # The gaming PC is also the interactive phone host. Benchmarks may use
+      # otherwise-idle CPU, but must always yield to the proxy, Tailscale, and
+      # the shared phone engine.
+      (Get-Process -Id $processId -ErrorAction Stop).PriorityClass = "Idle"
+    } catch {
+      # A match process may exit between discovery and priority repair.
+    }
+  }
+}
+
 function Set-RemoteTaskPriority {
   try {
     $remoteTask = Get-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -ErrorAction Stop
@@ -48,6 +86,7 @@ function Set-RemoteProcessPriority {
   }
 }
 
+Set-BackgroundChessBenchmarkPriority
 Set-RemoteTaskPriority
 
 try {

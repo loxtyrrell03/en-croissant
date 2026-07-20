@@ -9,6 +9,16 @@
   clean-source, ancestry, mutex, immutable-release, and health guards below;
   never copy `dist` directly or weaken a guard to force a deployment.
 
+- On 2026-07-20, a separate FastChess hardware match froze the PC-hosted phone
+  app by running a 16-thread, 4 GiB Stockfish child at Normal priority. The
+  recurring Stockfish remote watchdog now demotes every FastChess process tree
+  to Windows Idle priority without stopping the match, allowing benchmarks to
+  consume spare compute while always yielding to the home proxy, Tailscale,
+  and shared phone engine. All future benchmarks, stress tests, corpus jobs,
+  and other bulk compute on the gaming PC must likewise run at Idle or Below
+  Normal priority and must not monopolize the interactive phone host at Normal
+  or higher priority.
+
 - On 2026-07-20, the phone engine display stopped treating a stored cloud
   evaluation's missing NPS as an unfinished search. Cache hits are labelled
   `PC cloud evals` and show their stored depth in the compact strip; live
