@@ -254,16 +254,12 @@ export const planExplorerHoverEverywhereAtom = atomWithStorage<boolean>(
 export const showEngineDockAtom = atomWithStorage<boolean>("show-engine-dock", true);
 export const engineHotkeysEnabledAtom = atomWithStorage<boolean>("engine-hotkeys-enabled", true);
 export const aiCoachEnabledAtom = atomWithStorage<boolean>("ai-coach-enabled", true);
-export const aiCoachGeminiCommandAtom = atomWithStorage<string>(
-    "ai-coach-gemini-command-v2",
-    "agy",
-);
-// Owner directive 2026-07-07: this main coach/report model is hard-pinned.
-// Do not make it user-configurable or change the id.
-export const AI_COACH_GEMINI_MODEL = "gemini-3.5-pro-preview" as const;
+export const aiCoachGeminiCommandAtom = atomWithStorage<string>("ai-coach-command-v3", "codex");
+// Owner directive 2026-07-20: every active desktop coach stage uses Sol.
+export const AI_COACH_GEMINI_MODEL = "gpt-5.6-sol" as const;
 export const aiCoachPlannerModelAtom = atomWithStorage<string>(
-    "ai-coach-planner-model-v4",
-    "gemini-3.5-flash",
+    "ai-coach-planner-model-v5",
+    "gpt-5.6-sol",
 );
 export const aiCoachMultipvAtom = atomWithStorage<number>("ai-coach-multipv", 3);
 export const aiCoachTimeoutSecsAtom = atomWithStorage<number>("ai-coach-timeout-secs", 180);

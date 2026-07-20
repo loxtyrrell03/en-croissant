@@ -1306,8 +1306,8 @@ export default function AiCoachPanel() {
         <Group gap="xs" wrap="wrap">
           <Text fw={700}>AI Coach</Text>
           <Badge variant="light">{coachEngine?.name ?? "No Stockfish"}</Badge>
-          <Badge variant="light">{plannerModel || "Gemini Flash planner"}</Badge>
-          <Badge variant="light">{modelUsed || geminiModel || "Gemini"}</Badge>
+          <Badge variant="light">{plannerModel || "GPT-5.6 Sol planner"}</Badge>
+          <Badge variant="light">{modelUsed || geminiModel || "GPT-5.6 Sol"}</Badge>
           {existingLines.length > 0 && <Badge variant="outline">cached lines</Badge>}
           {targetedCount > 0 && <Badge variant="outline">targeted Stockfish</Badge>}
           {bookPassageCount > 0 && (
@@ -1430,7 +1430,7 @@ export default function AiCoachPanel() {
                     })}
                   </Stack>
                   <Text size="xs" c="dimmed">
-                    Showing the local pipeline; Gemini private reasoning is not exposed.
+                    Showing the local pipeline; model private reasoning is not exposed.
                   </Text>
                 </Stack>
               </Paper>
@@ -1474,7 +1474,8 @@ export default function AiCoachPanel() {
           </Button>
         </Group>
         <Text size="xs" c="dimmed" mt={4}>
-          Gemini explains; Stockfish supplies the chess truth. Enter sends; Shift+Enter adds a line.
+          GPT-5.6 Sol explains; Stockfish supplies the chess truth. Enter sends; Shift+Enter adds a
+          line.
         </Text>
       </Box>
     </Stack>

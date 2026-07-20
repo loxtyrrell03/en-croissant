@@ -57,6 +57,19 @@
   APIs restricted to the private origins, and disable phone submission until
   `codex login status` confirms the PC's saved ChatGPT authentication.
 
+- On 2026-07-20, the native En Croissant AI Coach also moved completely from
+  Gemini/Antigravity to the locally authenticated OpenAI Codex CLI. Its main
+  answer, Stockfish planner, chess-fact planner, repair/audit passes, opponent
+  prep prose, and inline plan reports are all owner-pinned to explicit
+  `gpt-5.6-sol` with medium reasoning. Codex runs ephemerally in a temporary
+  directory with read-only sandboxing, ignores user config and repository
+  rules, and receives only the prepared prompt evidence. New storage keys set
+  the command to `codex` and prevent saved `agy` or old planner-model values
+  from remaining active. Legacy Gemini-named Rust/TypeScript fields and the
+  dormant AGY compatibility branch may remain for binding and migration
+  safety, but no shipped coach surface may select them. This instruction
+  supersedes every historical desktop Gemini/Antigravity model pin below.
+
 - On 2026-07-20, the owner retired the GitHub Pages phone site and fallback.
   This instruction supersedes every historical Pages, `web:publish`,
   `web:push`, web-sync, and fallback-publishing note below. Do not publish the

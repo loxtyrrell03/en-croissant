@@ -100,6 +100,14 @@ explicit `gpt-5.6-sol` model at medium reasoning. The model receives only the
 prepared Stockfish and book evidence and is instructed not to use tools. No
 model credential or book text is stored in the browser.
 
+The native En Croissant coach uses the same contract for its main answer,
+Stockfish-work planner, chess-fact planner, line repair, fact audit, and inline
+plan reports. Every active stage is pinned to `gpt-5.6-sol` at medium reasoning
+through the locally authenticated Codex CLI; legacy request field names remain
+only for binding compatibility. Stockfish remains authoritative for concrete
+analysis, while the model explains that evidence and the retrieved book
+passages.
+
 Codex is installed once on the gaming PC and uses its saved ChatGPT login. The
 server checks authentication with `codex login status` and disables the phone
 submit button until it succeeds.

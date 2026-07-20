@@ -130,6 +130,6 @@ export default function PlanCoachInline({
 
 function normalizePlanCoachModel(model: string) {
   const trimmed = model.trim();
-  if (!trimmed) return "gemini-3.5-flash";
+  if (!trimmed) return "gpt-5.6-sol";
   return trimmed;
 }

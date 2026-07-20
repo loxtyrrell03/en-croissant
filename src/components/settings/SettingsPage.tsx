@@ -39,8 +39,6 @@ import {
   autoPromoteAtom,
   autoSaveAtom,
   aiCoachEnabledAtom,
-  aiCoachGeminiCommandAtom,
-  aiCoachPlannerModelAtom,
   aiCoachMultipvAtom,
   aiCoachTimeoutSecsAtom,
   enableBoardScrollAtom,
@@ -327,32 +325,14 @@ export default function Page() {
         category: "coach",
         title: "Enable AI Coach",
         description: "Show the local experimental Coach button beside the board controls.",
-        keywords: ["ai", "coach", "gemini", "stockfish"],
+        keywords: ["ai", "coach", "openai", "codex", "gpt", "stockfish"],
         render: () => <SettingsSwitch atom={aiCoachEnabledAtom} />,
-      },
-      {
-        id: "ai-coach-command",
-        category: "coach",
-        title: "AI CLI command",
-        description: "Command or executable path for the locally authenticated AGY or Gemini CLI.",
-        keywords: ["ai", "coach", "gemini", "antigravity", "agy", "cli", "command", "path"],
-        render: () => <TextSetting atom={aiCoachGeminiCommandAtom} placeholder="agy" />,
-      },
-      {
-        id: "ai-coach-planner-model",
-        category: "coach",
-        title: "Gemini planner model",
-        description: "Fast model used only to choose generous Stockfish lines before coaching.",
-        keywords: ["ai", "coach", "gemini", "planner", "flash", "stockfish"],
-        render: () => (
-          <TextSetting atom={aiCoachPlannerModelAtom} placeholder="gemini-3.5-flash" width={280} />
-        ),
       },
       {
         id: "ai-coach-multipv",
         category: "coach",
         title: "Coach Stockfish lines",
-        description: "Number of Stockfish MultiPV lines supplied to Gemini.",
+        description: "Number of Stockfish MultiPV lines supplied to GPT-5.6 Sol.",
         keywords: ["ai", "coach", "stockfish", "multipv", "lines"],
         render: () => (
           <NumberSetting atom={aiCoachMultipvAtom} min={3} max={8} step={1} fallback={3} />
@@ -361,9 +341,9 @@ export default function Page() {
       {
         id: "ai-coach-timeout",
         category: "coach",
-        title: "Gemini timeout",
-        description: "Seconds before the local Gemini CLI coaching request is stopped.",
-        keywords: ["ai", "coach", "gemini", "timeout"],
+        title: "AI coach timeout",
+        description: "Seconds before the local OpenAI Codex coaching request is stopped.",
+        keywords: ["ai", "coach", "openai", "codex", "timeout"],
         render: () => (
           <NumberSetting
             atom={aiCoachTimeoutSecsAtom}
@@ -938,7 +918,7 @@ export default function Page() {
       },
       coach: {
         title: "AI Coach",
-        description: "Local Gemini CLI coaching grounded in Stockfish analysis.",
+        description: "Local GPT-5.6 Sol coaching grounded in Stockfish analysis and your books.",
         icon: <IconSparkles size="1rem" />,
       },
       privacy: {
@@ -1204,7 +1184,7 @@ export default function Page() {
                     AI Coach
                   </Text>
                   <Text size="xs" c="dimmed" mt={3} mb="lg">
-                    Local Gemini CLI coaching grounded in Stockfish analysis.
+                    Local GPT-5.6 Sol coaching grounded in Stockfish analysis and your books.
                   </Text>
                   {renderCategorySettings("coach")}
                 </Tabs.Panel>

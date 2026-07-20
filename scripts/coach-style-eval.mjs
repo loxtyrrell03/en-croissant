@@ -1,13 +1,13 @@
 import { spawn } from "node:child_process";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 
-// Owner directive 2026-07-07: keep the main coach/report model pinned.
-const MODEL = "gemini-3.5-pro-preview";
-const GEMINI =
+// Owner directive 2026-07-20: evaluate the same model and reasoning contract as the app.
+const MODEL = "gpt-5.6-sol";
+const CODEX =
   process.env.COACH_EVAL_COMMAND ??
-  (process.platform === "win32" && process.env.APPDATA
-    ? `${process.env.APPDATA}\\npm\\gemini.cmd`
-    : "gemini");
+  (process.platform === "win32" && process.env.LOCALAPPDATA
+    ? `${process.env.LOCALAPPDATA}\\Programs\\OpenAI\\Codex\\bin\\codex.exe`
+    : "codex");
 const OUT_DIR = "tmp/coach-style-eval";
 
 const coachRs = await readFile("src-tauri/src/coach.rs", "utf8");
@@ -258,37 +258,31 @@ function scoreAnswer(testCase, answer) {
   };
 }
 
-function runGemini(prompt) {
+function runCodex(prompt) {
   return new Promise((resolve, reject) => {
     const commandArgs = [
-      "--skip-trust",
-      "--approval-mode",
-      "plan",
-      "--output-format",
-      "text",
+      "exec",
+      "--ephemeral",
+      "--ignore-user-config",
+      "--ignore-rules",
+      "--skip-git-repo-check",
+      "--sandbox",
+      "read-only",
       "--model",
       MODEL,
-      "--prompt",
-      "Use the complete chess coaching request supplied on stdin.",
+      "-c",
+      'model_reasoning_effort="medium"',
+      "-",
     ];
-    const child =
-      process.platform === "win32"
-        ? spawn(
-            "cmd.exe",
-            ["/d", "/c", `${GEMINI} ${commandArgs.map((arg) => `"${arg}"`).join(" ")}`],
-            {
-              stdio: ["pipe", "pipe", "pipe"],
-            },
-          )
-        : spawn(GEMINI, commandArgs, {
-            stdio: ["pipe", "pipe", "pipe"],
-          });
+    const child = spawn(CODEX, commandArgs, {
+      stdio: ["pipe", "pipe", "pipe"],
+    });
 
     let stdout = "";
     let stderr = "";
     const timer = setTimeout(() => {
       child.kill();
-      reject(new Error(`Gemini timed out after 90000ms`));
+      reject(new Error(`Codex timed out after 90000ms`));
     }, 90_000);
 
     child.stdout.setEncoding("utf8");
@@ -308,10 +302,14 @@ function runGemini(prompt) {
       if (code === 0) {
         resolve({ stdout, stderr });
       } else {
-        reject(new Error(`Gemini exited ${code}: ${stderr || stdout}`));
+        reject(new Error(`Codex exited ${code}: ${stderr || stdout}`));
       }
     });
-    child.stdin.end(prompt);
+    child.stdin.end(
+      `You are the response-generation layer inside a private chess coaching app.\n` +
+        `Do not call tools, inspect files, browse, or modify anything. Use only the evidence in this prompt.\n` +
+        `Return only the requested coaching response.\n\n${prompt}`,
+    );
   });
 }
 
@@ -321,7 +319,7 @@ const results = [];
 for (const testCase of cases) {
   const prompt = buildPrompt(testCase);
   const started = Date.now();
-  const { stdout, stderr } = await runGemini(prompt);
+  const { stdout, stderr } = await runCodex(prompt);
   const answer = stdout.trim();
   const score = scoreAnswer(testCase, answer);
   results.push({

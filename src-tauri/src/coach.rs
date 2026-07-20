@@ -36,11 +36,13 @@ use crate::{
 };
 
 const DEFAULT_STOCKFISH_DEPTH: u32 = 17;
-// Owner directive 2026-07-07: the main coach/report Gemini model is pinned.
-// Do not make this user-configurable or change the id.
-const DEFAULT_COACH_MODEL: &str = "gemini-3.5-pro-preview";
-const DEFAULT_PLANNER_MODEL: &str = "gemini-3.5-flash";
+// Owner directive 2026-07-20: all active desktop coach stages use the
+// authenticated local Codex CLI with GPT-5.6 Sol.
+const DEFAULT_COACH_MODEL: &str = "gpt-5.6-sol";
+const DEFAULT_PLANNER_MODEL: &str = DEFAULT_COACH_MODEL;
 const DEFAULT_PLAN_COACH_MODEL: &str = DEFAULT_PLANNER_MODEL;
+const DEFAULT_COACH_COMMAND: &str = "codex";
+const DEFAULT_CODEX_REASONING_EFFORT: &str = "medium";
 const MAX_PLANNER_STOCKFISH_REQUESTS: usize = 6;
 const MAX_CHESS_FACT_TOOL_CALLS: usize = 10;
 const MAX_WHOLE_GAME_CRITICAL_REQUESTS: usize = 3;
@@ -140,9 +142,14 @@ pub struct AiCoachRequest {
 #[serde(rename_all = "camelCase")]
 pub struct AiCoachSettings {
     pub enabled: bool,
+    // Retained in the IPC contract so saved clients remain compatible. The
+    // provider and models are owner-pinned by the native backend.
+    #[allow(dead_code)]
     pub gemini_command: String,
+    #[allow(dead_code)]
     pub gemini_model: String,
     #[serde(default)]
+    #[allow(dead_code)]
     pub planner_model: String,
     pub multipv: u8,
     pub timeout_secs: u32,
@@ -280,8 +287,11 @@ pub struct PlanCoachRequest {
 #[serde(rename_all = "camelCase")]
 pub struct PlanCoachSettings {
     pub enabled: bool,
+    // Legacy IPC names retained for compatibility; the backend ignores them.
+    #[allow(dead_code)]
     pub gemini_command: String,
     #[serde(default)]
+    #[allow(dead_code)]
     pub gemini_model: String,
     pub timeout_secs: u32,
 }
@@ -443,9 +453,7 @@ pub enum CoachError {
     #[error("AI CLI command not found: {0}")]
     GeminiMissing(String),
 
-    #[error(
-        "AI CLI appears unauthenticated. Run `agy --print \"Reply with only: ok\"` or `gemini` in a terminal, complete Google sign-in, then try again."
-    )]
+    #[error("OpenAI Codex appears unauthenticated. Run `codex login`, then try again.")]
     GeminiUnauthenticated,
 
     #[error("AI CLI timed out after {0} seconds")]
@@ -457,13 +465,13 @@ pub enum CoachError {
     #[error("AI CLI returned an empty response")]
     GeminiEmpty,
 
-    #[error("Gemini planner returned malformed JSON: {0}")]
+    #[error("Coach planner returned malformed JSON: {0}")]
     GeminiPlannerMalformed(String),
 
-    #[error("Gemini chess fact tool planner returned malformed JSON: {0}")]
+    #[error("Coach chess fact planner returned malformed JSON: {0}")]
     GeminiChessFactMalformed(String),
 
-    #[error("Gemini returned an unsupported engine line: {0}")]
+    #[error("Coach returned an unsupported engine line: {0}")]
     GeminiUnsupportedLine(String),
 
     #[error("Stockfish timed out while analysing {0}")]
@@ -472,13 +480,13 @@ pub enum CoachError {
     #[error("Stockfish returned no usable analysis for {0}")]
     StockfishEmpty(String),
 
-    #[error("Gemini requested malformed Stockfish JSON: {0}")]
+    #[error("Coach requested malformed Stockfish JSON: {0}")]
     MalformedStockfishRequest(String),
 
-    #[error("Gemini requested illegal Stockfish analysis: {0}")]
+    #[error("Coach requested illegal Stockfish analysis: {0}")]
     IllegalStockfishRequest(String),
 
-    #[error("Gemini requested illegal chess fact tool call: {0}")]
+    #[error("Coach requested illegal chess fact tool call: {0}")]
     IllegalChessFactToolCall(String),
 
     #[error(transparent)]
@@ -957,24 +965,13 @@ pub async fn ask_plan_coach(request: PlanCoachRequest) -> Result<PlanCoachRespon
     let model = normalize_plan_coach_model(&request.settings.gemini_model);
     let timeout_secs = u64::from(request.settings.timeout_secs.max(30));
     let prompt = build_plan_coach_prompt(&request)?;
-    let answer = run_gemini_cli(
-        &request.settings.gemini_command,
-        &model,
-        &prompt,
-        timeout_secs,
-    )
-    .await?;
+    let answer = run_gemini_cli(DEFAULT_COACH_COMMAND, &model, &prompt, timeout_secs).await?;
 
     Ok(PlanCoachResponse { answer, model })
 }
 
-fn normalize_plan_coach_model(model: &str) -> String {
-    let model = model.trim();
-    if model.is_empty() {
-        DEFAULT_PLAN_COACH_MODEL.to_string()
-    } else {
-        model.to_string()
-    }
+fn normalize_plan_coach_model(_model: &str) -> String {
+    DEFAULT_PLAN_COACH_MODEL.to_string()
 }
 
 fn build_plan_coach_prompt(request: &PlanCoachRequest) -> Result<String, CoachError> {
@@ -1057,12 +1054,7 @@ async fn ask_ai_coach_inner(
     let multipv = request.settings.multipv.clamp(3, 8);
     let timeout_secs = request.settings.timeout_secs.clamp(120, 240);
     let model = DEFAULT_COACH_MODEL.to_string();
-    let planner_model = request.settings.planner_model.trim().to_string();
-    let planner_model = if planner_model.is_empty() {
-        DEFAULT_PLANNER_MODEL.to_string()
-    } else {
-        planner_model
-    };
+    let planner_model = DEFAULT_PLANNER_MODEL.to_string();
     emit_coach_progress(
         app,
         request_id,
@@ -1070,7 +1062,7 @@ async fn ask_ai_coach_inner(
         "settings",
         "Settings ready",
         format!(
-            "Planner {planner_model}; coach {model}; MultiPV {multipv}; Gemini timeout {timeout_secs}s."
+            "Planner {planner_model}; coach {model}; MultiPV {multipv}; AI timeout {timeout_secs}s."
         ),
         6.0,
         false,
@@ -1145,7 +1137,7 @@ async fn ask_ai_coach_inner(
         &reference_context,
     );
     let planner_result = match run_gemini_cli(
-        &request.settings.gemini_command,
+        DEFAULT_COACH_COMMAND,
         &planner_model,
         &planner_prompt,
         PLANNER_TIMEOUT_SECS.min(timeout_secs.into()),
@@ -1568,7 +1560,7 @@ async fn ask_ai_coach_inner(
             &legal_moves,
         );
         match run_gemini_cli(
-            &request.settings.gemini_command,
+            DEFAULT_COACH_COMMAND,
             &planner_model,
             &chess_fact_prompt,
             PLANNER_TIMEOUT_SECS.min(timeout_secs.into()),
@@ -1744,25 +1736,20 @@ async fn ask_ai_coach_inner(
         "gemini_first",
         format!("Asking {model}"),
         format!(
-            "Sending {} characters to the local Gemini CLI.",
+            "Sending {} characters to the local OpenAI Codex CLI.",
             prompt.len()
         ),
         80.0,
         false,
     );
-    let mut final_answer = run_gemini_cli(
-        &request.settings.gemini_command,
-        &model,
-        &prompt,
-        timeout_secs.into(),
-    )
-    .await?;
+    let mut final_answer =
+        run_gemini_cli(DEFAULT_COACH_COMMAND, &model, &prompt, timeout_secs.into()).await?;
     emit_coach_progress(
         app,
         request_id,
         started,
         "gemini_first_done",
-        "Gemini replied",
+        "GPT-5.6 Sol replied",
         format!("First response was {} characters.", final_answer.len()),
         90.0,
         false,
@@ -1771,7 +1758,7 @@ async fn ask_ai_coach_inner(
     let mut correction_notes = Vec::new();
     if parse_stockfish_request(&final_answer)?.is_some() {
         return Err(CoachError::IllegalStockfishRequest(
-            "Gemini Pro asked for extra Stockfish after the planner phase. Follow-up Stockfish calls are disabled; make the planner request the needed lines up front.".to_string(),
+            "The coach asked for extra Stockfish after the planner phase. Follow-up Stockfish calls are disabled; the planner must request the needed lines up front.".to_string(),
         ));
     }
     if let Err(error) = validate_answer_line_blocks(
@@ -1834,7 +1821,7 @@ async fn ask_ai_coach_inner(
                 false,
             );
             final_answer = run_gemini_cli(
-                &request.settings.gemini_command,
+                DEFAULT_COACH_COMMAND,
                 &model,
                 &repair_prompt,
                 timeout_secs.into(),
@@ -1842,7 +1829,7 @@ async fn ask_ai_coach_inner(
             .await?;
             if parse_stockfish_request(&final_answer)?.is_some() {
                 return Err(CoachError::IllegalStockfishRequest(
-                    "Gemini asked for more Stockfish data while repairing an unsupported line"
+                    "The coach asked for more Stockfish data while repairing an unsupported line"
                         .to_string(),
                 ));
             }
@@ -1864,7 +1851,7 @@ async fn ask_ai_coach_inner(
                         started,
                         "answer_validation_demote",
                         "Demoted non-current line block",
-                        "Gemini repeated a non-current targeted line block during repair, so the app kept the moves as plain text.",
+                        "The coach repeated a non-current targeted line block during repair, so the app kept the moves as plain text.",
                         98.0,
                         false,
                     );
@@ -1889,7 +1876,7 @@ async fn ask_ai_coach_inner(
                         &repair_error.to_string(),
                     );
                     final_answer = run_gemini_cli(
-                        &request.settings.gemini_command,
+                        DEFAULT_COACH_COMMAND,
                         &planner_model,
                         &audit_prompt,
                         PLANNER_TIMEOUT_SECS.min(timeout_secs.into()),
@@ -1918,7 +1905,7 @@ async fn ask_ai_coach_inner(
             &final_answer,
         );
         match run_gemini_cli(
-            &request.settings.gemini_command,
+            DEFAULT_COACH_COMMAND,
             &planner_model,
             &fact_audit_prompt,
             PLANNER_TIMEOUT_SECS.min(timeout_secs.into()),
@@ -1950,7 +1937,7 @@ async fn ask_ai_coach_inner(
     }
     if parse_stockfish_request(&final_answer)?.is_some() {
         return Err(CoachError::IllegalStockfishRequest(
-            "Gemini asked for more Stockfish data during the chess fact audit".to_string(),
+            "The coach asked for more Stockfish data during the chess fact audit".to_string(),
         ));
     }
     final_answer = finalize_answer_line_safety(
@@ -6445,8 +6432,8 @@ async fn run_gemini_cli(
     timeout_secs: u64,
 ) -> Result<String, CoachError> {
     // Local personal-use bridge only: this assumes the user has authenticated
-    // Gemini CLI on their own machine. Do not expose this command from a
-    // public/server deployment or pass credentials through the app.
+    // the selected AI CLI on their own machine. Do not expose this command
+    // from a public deployment or pass credentials through the app.
     let command = command.trim();
     if command.is_empty() {
         return Err(CoachError::GeminiMissing("empty command".to_string()));
@@ -6456,10 +6443,13 @@ async fn run_gemini_cli(
 
     let temp_dir = tempdir()?;
     let agy_log_path = temp_dir.path().join("agy.log");
+    let is_codex = is_codex_command(command, &resolved_command);
     let is_agy = is_agy_command(command, &resolved_command);
     let mut command_builder = Command::new(&resolved_command);
     command_builder.current_dir(temp_dir.path());
-    if is_agy {
+    if is_codex {
+        command_builder.args(codex_cli_args(model));
+    } else if is_agy {
         command_builder
             .arg("--log-file")
             .arg(&agy_log_path)
@@ -6500,7 +6490,16 @@ async fn run_gemini_cli(
         })?;
 
     if let Some(mut stdin) = child.stdin.take() {
-        stdin.write_all(prompt.as_bytes()).await?;
+        let input = if is_codex {
+            format!(
+                "You are the response-generation layer inside a private chess coaching app.\n\
+                 Do not call tools, inspect files, browse, or modify anything. Use only the evidence in this prompt.\n\
+                 Return only the requested coaching or planner response.\n\n{prompt}"
+            )
+        } else {
+            prompt.to_string()
+        };
+        stdin.write_all(input.as_bytes()).await?;
     }
 
     let mut stdout = child.stdout.take().ok_or(Error::NoStdout)?;
@@ -6682,7 +6681,35 @@ fn resolve_cli_command(command: &str) -> PathBuf {
     command_path
 }
 
+fn codex_cli_args(model: &str) -> Vec<String> {
+    vec![
+        "exec".to_string(),
+        "--ephemeral".to_string(),
+        "--ignore-user-config".to_string(),
+        "--ignore-rules".to_string(),
+        "--skip-git-repo-check".to_string(),
+        "--sandbox".to_string(),
+        "read-only".to_string(),
+        "--model".to_string(),
+        model.to_string(),
+        "-c".to_string(),
+        format!(
+            "model_reasoning_effort=\"{}\"",
+            DEFAULT_CODEX_REASONING_EFFORT
+        ),
+        "-".to_string(),
+    ]
+}
+
+fn is_codex_command(command: &str, resolved_command: &Path) -> bool {
+    command_name(command, resolved_command).is_some_and(|name| name.eq_ignore_ascii_case("codex"))
+}
+
 fn is_agy_command(command: &str, resolved_command: &Path) -> bool {
+    command_name(command, resolved_command).is_some_and(|name| name.eq_ignore_ascii_case("agy"))
+}
+
+fn command_name<'a>(command: &'a str, resolved_command: &'a Path) -> Option<&'a str> {
     let command_name = Path::new(command)
         .file_stem()
         .or_else(|| Path::new(command).file_name())
@@ -6690,9 +6717,7 @@ fn is_agy_command(command: &str, resolved_command: &Path) -> bool {
     let resolved_name = resolved_command
         .file_stem()
         .and_then(|value| value.to_str());
-    command_name
-        .or(resolved_name)
-        .is_some_and(|name| name.eq_ignore_ascii_case("agy"))
+    command_name.or(resolved_name)
 }
 
 fn command_has_path_separator(command: &str) -> bool {
@@ -6710,6 +6735,14 @@ fn command_search_dirs() -> Vec<PathBuf> {
             dirs.push(PathBuf::from(appdata).join("npm"));
         }
         if let Some(localappdata) = env::var_os("LOCALAPPDATA") {
+            dirs.insert(
+                0,
+                PathBuf::from(&localappdata)
+                    .join("Programs")
+                    .join("OpenAI")
+                    .join("Codex")
+                    .join("bin"),
+            );
             dirs.push(PathBuf::from(localappdata).join("agy").join("bin"));
         }
         if let Some(userprofile) = env::var_os("USERPROFILE") {
@@ -6745,6 +6778,10 @@ fn looks_unauthenticated(output: &str) -> bool {
     let output = output.to_lowercase();
     output.contains("please set an auth method")
         || output.contains("unauthenticated")
+        || output.contains("not logged in")
+        || output.contains("codex login")
+        || output.contains("authentication required")
+        || output.contains("status 401")
         || output.contains("you are not logged into antigravity")
         || output.contains("auth timed out")
         || output.contains("failed to get oauth token")
@@ -6809,9 +6846,9 @@ mod tests {
             engine_path: PathBuf::from("stockfish"),
             settings: AiCoachSettings {
                 enabled: true,
-                gemini_command: "gemini".to_string(),
+                gemini_command: "codex".to_string(),
                 gemini_model: "legacy-model-ignored".to_string(),
-                planner_model: "gemini-3.5-flash".to_string(),
+                planner_model: "legacy-planner-model-ignored".to_string(),
                 multipv: 3,
                 timeout_secs: 60,
             },
@@ -6819,8 +6856,43 @@ mod tests {
     }
 
     #[test]
-    fn main_coach_model_is_owner_pinned() {
-        assert_eq!(DEFAULT_COACH_MODEL, "gemini-3.5-pro-preview");
+    fn desktop_coach_models_are_owner_pinned_to_sol() {
+        assert_eq!(DEFAULT_COACH_MODEL, "gpt-5.6-sol");
+        assert_eq!(DEFAULT_PLANNER_MODEL, "gpt-5.6-sol");
+        assert_eq!(normalize_plan_coach_model("legacy-model"), "gpt-5.6-sol");
+    }
+
+    #[test]
+    fn codex_runner_is_ephemeral_read_only_and_medium_reasoning() {
+        let args = codex_cli_args("gpt-5.6-sol");
+        assert_eq!(args.first().map(String::as_str), Some("exec"));
+        assert!(args.iter().any(|arg| arg == "--ephemeral"));
+        assert!(args.iter().any(|arg| arg == "--ignore-user-config"));
+        assert!(args.iter().any(|arg| arg == "--ignore-rules"));
+        assert!(args
+            .windows(2)
+            .any(|args| args == ["--sandbox", "read-only"]));
+        assert!(args
+            .windows(2)
+            .any(|args| args == ["--model", "gpt-5.6-sol"]));
+        assert!(args
+            .iter()
+            .any(|arg| arg == "model_reasoning_effort=\"medium\""));
+        assert_eq!(args.last().map(String::as_str), Some("-"));
+        assert!(is_codex_command(
+            "codex",
+            Path::new("C:\\Program Files\\OpenAI\\Codex\\codex.exe")
+        ));
+    }
+
+    #[test]
+    fn detects_codex_auth_failure_as_unauthenticated() {
+        assert!(looks_unauthenticated(
+            "Not logged in. Run `codex login` to authenticate."
+        ));
+        assert!(!looks_authenticated(
+            "Not logged in. Run `codex login` to authenticate."
+        ));
     }
 
     #[test]
