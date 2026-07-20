@@ -12,7 +12,7 @@ import {
   watch,
   writeFile,
 } from "node:fs/promises";
-import { createServer } from "node:http";
+import { createServer, request as createHttpRequest } from "node:http";
 import { tmpdir } from "node:os";
 import { basename, dirname, extname, join, normalize, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -33,6 +33,9 @@ const stateBackupRoot = join(serverRoot, "state", "backups");
 const logPath = join(serverRoot, "home-server.log");
 const port = positiveInteger(process.env.EN_CROISSANT_HOME_SERVER_PORT, 8787);
 const host = "127.0.0.1";
+const stockfishBackendUrl = new URL(
+  process.env.EN_CROISSANT_STOCKFISH_BACKEND_URL || "http://127.0.0.1:38419",
+);
 const documentsRoot = resolve(
   process.env.EN_CROISSANT_HOME_FILES_DIR || join(userProfile, "Documents", "EnCroissant"),
 );
@@ -91,11 +94,11 @@ async function handleRequest(request, response) {
   const requestUrl = new URL(request.url || "/", `http://${host}:${port}`);
   const pathname = decodeURIComponent(requestUrl.pathname);
 
+  if (pathname === "/v1" || pathname.startsWith("/v1/")) {
+    return proxyStockfishRequest(request, response, requestUrl);
+  }
+
   if (method === "GET" && pathname === "/api/health") {
-    const [outpost, en] = await Promise.all([
-      getOutpostCatalog().catch(() => []),
-      getEnCatalog().catch(() => []),
-    ]);
     return writeJson(response, 200, {
       ok: true,
       service: "en-croissant-home-server",
@@ -103,8 +106,8 @@ async function handleRequest(request, response) {
       documentsRoot,
       enDatabaseRoots,
       outpostDatabase,
-      enDatabases: en.length,
-      outpostCollections: outpost.length,
+      enDatabases: enCatalog?.length ?? null,
+      outpostCollections: outpostCatalog?.length ?? null,
       libraryRefreshRunning,
       lastLibraryRefresh,
       lastLibraryError,
@@ -134,6 +137,40 @@ async function handleRequest(request, response) {
   }
 
   return serveStatic(pathname, request, response, method === "HEAD");
+}
+
+function proxyStockfishRequest(request, response, requestUrl) {
+  return new Promise((resolveRequest, rejectRequest) => {
+    const upstreamUrl = new URL(`${requestUrl.pathname}${requestUrl.search}`, stockfishBackendUrl);
+    const headers = { ...request.headers };
+    delete headers.host;
+    delete headers.origin;
+    delete headers.connection;
+
+    const upstream = createHttpRequest(
+      upstreamUrl,
+      {
+        method: request.method,
+        headers,
+      },
+      (upstreamResponse) => {
+        const responseHeaders = { ...upstreamResponse.headers };
+        delete responseHeaders.connection;
+        delete responseHeaders["access-control-allow-origin"];
+        delete responseHeaders["access-control-allow-headers"];
+        delete responseHeaders["access-control-allow-methods"];
+        delete responseHeaders.vary;
+        response.writeHead(upstreamResponse.statusCode || 502, responseHeaders);
+        upstreamResponse.pipe(response);
+        upstreamResponse.once("end", resolveRequest);
+        upstreamResponse.once("error", rejectRequest);
+      },
+    );
+
+    upstream.once("error", rejectRequest);
+    request.once("aborted", () => upstream.destroy());
+    request.pipe(upstream);
+  });
 }
 
 async function readWebState(response) {

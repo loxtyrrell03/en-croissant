@@ -1,5 +1,6 @@
 param(
-  [int]$Port = 8787
+  [int]$Port = 8787,
+  [switch]$ForceRestart
 )
 
 $ErrorActionPreference = 'Stop'
@@ -14,12 +15,14 @@ $healthUrl = "http://127.0.0.1:$Port/api/health"
 
 New-Item -ItemType Directory -Path $serverRoot -Force | Out-Null
 
-try {
-  $health = Invoke-RestMethod -Uri $healthUrl -TimeoutSec 2
-  if ($health.ok) {
-    exit 0
+if (-not $ForceRestart) {
+  try {
+    $health = Invoke-RestMethod -Uri $healthUrl -TimeoutSec 2
+    if ($health.ok) {
+      exit 0
+    }
+  } catch {
   }
-} catch {
 }
 
 if (Test-Path -LiteralPath $pidPath) {

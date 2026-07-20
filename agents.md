@@ -1,5 +1,14 @@
 # AGENTS.md
 
+- On 2026-07-20, the gaming PC became the primary phone-app host over private
+  Tailscale Serve, with GitHub Pages retained as a fallback. The home server
+  now proxies `/v1/*` to the local Stockfish 18 service, so the phone UI,
+  workspace/database APIs, stored evals, and live engine share one HTTPS
+  origin. `npm run web:publish-home` performs a fast app-only build/deploy while
+  preserving the large live library, restarts only the home-server process,
+  restores private Serve if Funnel was enabled, and verifies both app and
+  Stockfish health. Home builds point both server URLs at the PC origin.
+
 - On 2026-07-20, the lawful AI Chess Coach book corpus was expanded from the
   opening shelf into a complete nine-shelf library under
   `C:\Users\loxty\Documents\EnCroissant\AI Chess Coach Library`. The combined
