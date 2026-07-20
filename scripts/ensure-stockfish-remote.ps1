@@ -6,9 +6,49 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function Set-RemoteTaskPriority {
+  try {
+    $remoteTask = Get-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -ErrorAction Stop
+    if ([int]$remoteTask.Settings.Priority -ne 4) {
+      $remoteTask.Settings.Priority = 4
+      Set-ScheduledTask -InputObject $remoteTask | Out-Null
+    }
+  } catch {
+    # Process priority repair below still protects an already-running service.
+  }
+}
+
+function Set-RemoteProcessPriority {
+  $serverProcesses = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
+    $_.Name -eq "node.exe" -and [string]$_.CommandLine -like "*stockfish-remote-server.mjs*"
+  }
+  $processIds = @($serverProcesses.ProcessId)
+  if ($processIds.Count -gt 0) {
+    $processIds += @(
+      Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
+        $_.ParentProcessId -in $processIds -and $_.Name -like "stockfish*.exe"
+      } | Select-Object -ExpandProperty ProcessId
+    )
+  }
+  foreach ($processId in $processIds) {
+    try {
+      (Get-Process -Id $processId -ErrorAction Stop).PriorityClass = "Normal"
+    } catch {
+      # A process may exit between discovery and priority repair.
+    }
+  }
+}
+
+Set-RemoteTaskPriority
+
 try {
   $health = Invoke-RestMethod -Uri $HealthUrl -TimeoutSec 5
-  if ($health.ok -and $health.service -eq "stockfish-18-remote") {
+  if (
+    $health.ok -and
+    $health.service -eq "stockfish-18-remote" -and
+    [int]$health.queuedAnalyses -le 2
+  ) {
+    Set-RemoteProcessPriority
     exit 0
   }
 } catch {
@@ -28,6 +68,7 @@ do {
   try {
     $health = Invoke-RestMethod -Uri $HealthUrl -TimeoutSec 3
     if ($health.ok -and $health.service -eq "stockfish-18-remote") {
+      Set-RemoteProcessPriority
       exit 0
     }
   } catch {

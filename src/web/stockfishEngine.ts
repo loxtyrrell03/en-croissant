@@ -6,18 +6,15 @@ import { makeSan } from "chessops/san";
 import { positionFromFen } from "@/utils/chessops";
 import type { WebEngineLine, WebEngineScore } from "./model";
 import { normalizeWebEngineScoreForWhite } from "./engineScore";
-import {
-    type WebLichessCloudData,
-    webLichessCloudDataToLines,
-} from "./lichessCloud";
+import { type WebLichessCloudData, webLichessCloudDataToLines } from "./lichessCloud";
 
 const STOCKFISH_READY_TIMEOUT_MS = 20_000;
 const STOCKFISH_SEARCH_TIMEOUT_MS = 90_000;
 const STOCKFISH_MIN_UPDATE_INTERVAL_MS = 120;
 const REMOTE_CLOUD_TIMEOUT_MS = 3_500;
+const STOCKFISH_MAX_DEPTH = 70;
 const configuredRemoteStockfishUrl = String(
-    import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ??
-        "https://gaming-pc.tail89d19b.ts.net:8443",
+    import.meta.env.VITE_EN_CROISSANT_STOCKFISH_URL ?? "https://gaming-pc.tail89d19b.ts.net:8443",
 ).trim();
 const REMOTE_STOCKFISH_URL = configuredRemoteStockfishUrl.replace(/\/+$/, "");
 
@@ -33,6 +30,7 @@ export type WebStockfishAnalyzeRequest = {
     fen: string;
     multipv: number;
     depth: number;
+    infinite?: boolean;
     signal?: AbortSignal;
     onUpdate?: (lines: WebEngineLine[]) => void;
 };
@@ -41,35 +39,74 @@ export async function analyzeWithWebStockfish18({
     fen,
     multipv,
     depth,
+    infinite = false,
     signal,
     onUpdate,
 }: WebStockfishAnalyzeRequest): Promise<WebEngineLine[]> {
+    let analysisFinished = false;
+    let liveUpdateStarted = false;
+    const publishLiveUpdate = (lines: WebEngineLine[]) => {
+        liveUpdateStarted = true;
+        onUpdate?.(lines);
+    };
+
     if (REMOTE_STOCKFISH_URL) {
-        try {
-            const storedLines = await queryRemoteStoredCloudLines({ fen, multipv, signal });
-            if (storedLines.length > 0) {
-                onUpdate?.(storedLines);
-            }
-        } catch (error) {
-            if (isAbortError(error)) throw error;
-            console.warn("Stored cloud eval lookup failed; using Gaming PC Stockfish.", error);
-        }
+        const remoteAnalysis = analyzeWithRemoteStockfish18({
+            fen,
+            multipv,
+            depth,
+            infinite,
+            signal,
+            onUpdate: publishLiveUpdate,
+        });
+        void queryRemoteStoredCloudLines({ fen, multipv, signal })
+            .then((storedLines) => {
+                if (!analysisFinished && !liveUpdateStarted && storedLines.length > 0) {
+                    onUpdate?.(storedLines);
+                }
+            })
+            .catch((error) => {
+                if (!isAbortError(error)) {
+                    console.warn(
+                        "Stored cloud eval lookup failed; using Gaming PC Stockfish.",
+                        error,
+                    );
+                }
+            });
 
         try {
-            return await analyzeWithRemoteStockfish18({
+            try {
+                return await remoteAnalysis;
+            } catch (error) {
+                if (isAbortError(error)) throw error;
+                console.warn("Gaming PC Stockfish unavailable; using the phone engine.", error);
+            }
+
+            return await analyzeWithLocalStockfish18({
                 fen,
                 multipv,
                 depth,
+                infinite,
                 signal,
-                onUpdate,
+                onUpdate: publishLiveUpdate,
             });
-        } catch (error) {
-            if (isAbortError(error)) throw error;
-            console.warn("Gaming PC Stockfish unavailable; using the phone engine.", error);
+        } finally {
+            analysisFinished = true;
         }
     }
 
-    return analyzeWithLocalStockfish18({ fen, multipv, depth, signal, onUpdate });
+    try {
+        return await analyzeWithLocalStockfish18({
+            fen,
+            multipv,
+            depth,
+            infinite,
+            signal,
+            onUpdate: publishLiveUpdate,
+        });
+    } finally {
+        analysisFinished = true;
+    }
 }
 
 export async function queryRemoteStoredCloudLines({
@@ -122,12 +159,13 @@ async function analyzeWithRemoteStockfish18({
     fen,
     multipv,
     depth,
+    infinite,
     signal,
     onUpdate,
 }: WebStockfishAnalyzeRequest): Promise<WebEngineLine[]> {
     const searchId = ++activeSearchId;
     const requestedMultipv = Math.max(1, Math.min(8, Math.round(multipv)));
-    const requestedDepth = Math.max(1, Math.min(30, Math.round(depth)));
+    const requestedDepth = Math.max(1, Math.min(STOCKFISH_MAX_DEPTH, Math.round(depth)));
     const linesByPv = new Map<number, WebEngineLine>();
     const controller = new AbortController();
     activeRemoteController?.abort();
@@ -149,7 +187,12 @@ async function analyzeWithRemoteStockfish18({
         const response = await fetch(`${REMOTE_STOCKFISH_URL}/v1/analyze`, {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ fen, multipv: requestedMultipv, depth: requestedDepth }),
+            body: JSON.stringify({
+                fen,
+                multipv: requestedMultipv,
+                depth: requestedDepth,
+                infinite: infinite === true,
+            }),
             signal: controller.signal,
         });
         if (!response.ok) {
@@ -209,12 +252,13 @@ async function analyzeWithLocalStockfish18({
     fen,
     multipv,
     depth,
+    infinite,
     signal,
     onUpdate,
 }: WebStockfishAnalyzeRequest): Promise<WebEngineLine[]> {
     const searchId = ++activeSearchId;
     const requestedMultipv = Math.max(1, Math.min(8, Math.round(multipv)));
-    const requestedDepth = Math.max(1, Math.min(30, Math.round(depth)));
+    const requestedDepth = Math.max(1, Math.min(STOCKFISH_MAX_DEPTH, Math.round(depth)));
     const linesByPv = new Map<number, WebEngineLine>();
     let lastUpdateAt = 0;
 
@@ -231,7 +275,7 @@ async function analyzeWithLocalStockfish18({
             settled = true;
             removeStockfishListener(onLine);
             signal?.removeEventListener("abort", onAbort);
-            window.clearTimeout(timeoutId);
+            if (timeoutId !== null) window.clearTimeout(timeoutId);
         };
 
         const finish = () => {
@@ -274,10 +318,12 @@ async function analyzeWithLocalStockfish18({
             publish();
         };
 
-        const timeoutId = window.setTimeout(() => {
-            postStockfish("stop");
-            fail(new Error("Stockfish 18 took too long to finish this search."));
-        }, STOCKFISH_SEARCH_TIMEOUT_MS);
+        const timeoutId = infinite
+            ? null
+            : window.setTimeout(() => {
+                  postStockfish("stop");
+                  fail(new Error("Stockfish 18 took too long to finish this search."));
+              }, STOCKFISH_SEARCH_TIMEOUT_MS);
 
         if (signal?.aborted) {
             onAbort();
@@ -287,7 +333,7 @@ async function analyzeWithLocalStockfish18({
         signal?.addEventListener("abort", onAbort, { once: true });
         addStockfishListener(onLine);
         postStockfish(`position fen ${fen}`);
-        postStockfish(`go depth ${requestedDepth}`);
+        postStockfish(infinite ? "go infinite" : `go depth ${requestedDepth}`);
     });
 }
 

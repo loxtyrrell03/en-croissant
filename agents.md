@@ -1,5 +1,19 @@
 # AGENTS.md
 
+- On 2026-07-20, phone Stockfish startup and cancellation were hardened after
+  abandoned browser requests accumulated in the single-engine queue and the
+  Windows task launched the server and engine at Below Normal priority. The
+  home proxy now destroys its upstream request when the phone response closes,
+  the watchdog repairs task/process priority to Normal and restarts an
+  implausibly backed-up idle service, and the live PC request starts before the
+  stored-eval preview instead of waiting up to 3.5 seconds. The gaming PC keeps
+  all 16 threads but now uses a 512 MiB hash, which benchmarked faster than the
+  previous 2 GiB allocation and cuts cold initialization cost. Phone engine
+  depth is capped at 70 again, with a persistent `Infinite depth` toggle that
+  sends a true infinite UCI search to either the PC or phone fallback until the
+  user pauses it or changes position. Cancellation stress tests must leave
+  `queuedAnalyses` at zero before this path is considered healthy.
+
 - On 2026-07-20, the gaming PC became the primary phone-app host over private
   Tailscale Serve, with GitHub Pages retained as a fallback. The home server
   now proxies `/v1/*` to the local Stockfish 18 service, so the phone UI,

@@ -359,6 +359,7 @@ type WebEnginePanelSettings = {
   useCloud: boolean;
   multipv: number;
   depth: number;
+  infinite: boolean;
 };
 
 const DEFAULT_WEB_ENGINE_PANEL_SETTINGS: WebEnginePanelSettings = {
@@ -366,6 +367,7 @@ const DEFAULT_WEB_ENGINE_PANEL_SETTINGS: WebEnginePanelSettings = {
   useCloud: false,
   multipv: 3,
   depth: 14,
+  infinite: false,
 };
 
 type WebPrepStoredSetup = {
@@ -2772,6 +2774,7 @@ function EngineUnderBoardPanel({
       fen: currentFen,
       multipv: settings.multipv,
       depth: settings.depth,
+      infinite: settings.infinite,
       signal: controller.signal,
       onUpdate: (lines) => {
         if (!active) return;
@@ -2795,7 +2798,7 @@ function EngineUnderBoardPanel({
       active = false;
       controller.abort();
     };
-  }, [currentFen, settings.depth, settings.enabled, settings.multipv]);
+  }, [currentFen, settings.depth, settings.enabled, settings.infinite, settings.multipv]);
 
   const displayLines = stockfishLines;
   useEffect(() => {
@@ -2811,7 +2814,7 @@ function EngineUnderBoardPanel({
     enabled: settings.enabled,
     status,
     lines: displayLines,
-    targetDepth: settings.depth,
+    targetDepth: settings.infinite ? 70 : settings.depth,
   });
   const headerStatus = getWebEngineHeaderStatus({
     enabled: settings.enabled,
@@ -2897,10 +2900,25 @@ function EngineUnderBoardPanel({
               label="Depth"
               value={settings.depth}
               min={6}
-              max={30}
-              disabled={!settings.enabled}
+              max={70}
+              disabled={!settings.enabled || settings.infinite}
               onChange={(depth) => updateSettings({ depth })}
             />
+            <Box className={classes.engineStepControl}>
+              <Text size="xs" c="dimmed" className={classes.engineStepLabel}>
+                Search
+              </Text>
+              <Button
+                aria-label="Toggle infinite-depth analysis"
+                aria-pressed={settings.infinite}
+                disabled={!settings.enabled}
+                onClick={() => updateSettings({ infinite: !settings.infinite })}
+                size="compact-sm"
+                variant={settings.infinite ? "filled" : "light"}
+              >
+                {settings.infinite ? "Infinite on" : "Infinite depth"}
+              </Button>
+            </Box>
           </Group>
         </Box>
       </Collapse>
@@ -7689,7 +7707,8 @@ function normalizeWebEnginePanelSettings(
     enabled: Boolean(value?.enabled),
     useCloud: value?.useCloud !== false,
     multipv: clampWholeNumber(value?.multipv, 1, 8, DEFAULT_WEB_ENGINE_PANEL_SETTINGS.multipv),
-    depth: clampWholeNumber(value?.depth, 6, 30, DEFAULT_WEB_ENGINE_PANEL_SETTINGS.depth),
+    depth: clampWholeNumber(value?.depth, 6, 70, DEFAULT_WEB_ENGINE_PANEL_SETTINGS.depth),
+    infinite: Boolean(value?.infinite),
   };
 }
 

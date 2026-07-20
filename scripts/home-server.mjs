@@ -169,6 +169,9 @@ function proxyStockfishRequest(request, response, requestUrl) {
 
     upstream.once("error", rejectRequest);
     request.once("aborted", () => upstream.destroy());
+    response.once("close", () => {
+      if (!response.writableEnded) upstream.destroy();
+    });
     request.pipe(upstream);
   });
 }
