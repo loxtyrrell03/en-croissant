@@ -1059,6 +1059,10 @@
     gap: 0.42rem;
   }
 
+  .boardStartActions :global(.mantine-Button-section) {
+    display: none;
+  }
+
   .filesWorkspace {
     gap: var(--mantine-spacing-sm);
   }

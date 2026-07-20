@@ -23,6 +23,11 @@ import {
 } from "@/web/hostedFiles";
 import { getWebOnlineImportTitle, getWebOnlineRangeLabel } from "@/web/onlineImport";
 import {
+    getWebOnlineAnalysisTitle,
+    getWebOnlineGameSummary,
+    getWebOnlinePlayerColor,
+} from "@/web/onlineAnalysis";
+import {
     findFirstWebPrepOpponentBranch,
     findWebPrepBranchStart,
     filterWebGamesByLocalFilters,
@@ -1999,5 +2004,31 @@ describe("web companion PGN prep index", () => {
             }),
         ).toBe("Opponent Chess.com recent 25");
         expect(getWebOnlineRangeLabel("1y")).toBe("Last year");
+    });
+
+    test("summarizes a chosen online game and orients it to the account", () => {
+        const game = {
+            source: "lichess" as const,
+            username: "phone_player",
+            playedAt: 1,
+            url: "https://lichess.org/abcdefgh",
+            pgn: `[Event "Rated Rapid game"]
+[White "Opponent"]
+[Black "Phone_Player"]
+[Result "0-1"]
+[ECO "B12"]
+
+1. e4 c6 0-1`,
+        };
+
+        expect(getWebOnlineGameSummary(game)).toEqual({
+            white: "Opponent",
+            black: "Phone_Player",
+            result: "0-1",
+            event: "Rated Rapid game",
+            opening: "B12",
+        });
+        expect(getWebOnlineAnalysisTitle(game)).toBe("Opponent vs Phone_Player · Lichess");
+        expect(getWebOnlinePlayerColor(game)).toBe("black");
     });
 });

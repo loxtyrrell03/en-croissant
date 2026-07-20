@@ -160,6 +160,7 @@ import {
   getWebOnlineImportTitle,
   getWebOnlineRangeLabel,
   getWebOnlineSourceLabel,
+  type WebOnlineImportedGame,
   type WebOnlineImportMode,
   type WebOnlineRangePreset,
   type WebOnlineSource,
@@ -227,10 +228,12 @@ import {
 } from "./storage";
 import { getWebBoardSourceTitle } from "./boardTitle";
 import { formatWebEngineScore } from "./engineScore";
+import OnlineGameAnalysisPanel from "./OnlineGameAnalysisPanel";
+import { getWebOnlineAnalysisTitle, getWebOnlinePlayerColor } from "./onlineAnalysis";
 import { analyzeWithWebStockfish18, stopWebStockfish18Search } from "./stockfishEngine";
 
 type ViewMode = "board" | "files";
-type BoardPanelMode = "moves" | "database" | "prep" | "engine";
+type BoardPanelMode = "moves" | "online" | "database" | "prep" | "engine";
 type WebHostedPgnImportHandler = (entry: WebHostedFileEntry) => Promise<WebImportResult | null>;
 type WebHostedFolderImportHandler = (
   library: WebHostedLibrary,
@@ -250,6 +253,7 @@ type WebOnlineImportHandler = (request: {
   saveDatabase?: boolean;
   setProgress: (progress: number | null) => void;
 }) => Promise<WebImportResult | null>;
+type WebOnlineAnalysisHandler = (game: WebOnlineImportedGame) => Promise<WebGame | null>;
 type WebPrepBranchStatus = "new" | "started" | "prepared" | "skipped";
 type WebPrepSortDirection = "asc" | "desc";
 type WebPrepSortColumn = WebPrepOpponentSortColumn;
@@ -519,25 +523,28 @@ export default function WebApp() {
     activeDatabaseGames[0] ??
     null;
 
-  const loadGameOnBoard = useCallback((game: WebGame) => {
-    setState((current) => ({
-      ...current,
-      activePrepId: null,
-      board: {
-        orientation: "white",
-        startFen: game.moves[0]?.fenBefore ?? INITIAL_FEN,
-        line: webGameToLine(game),
-        cursor: game.moves.length,
-        sourceTitle: getWebBoardSourceTitle(game, current.databases),
-        sourceDatabaseId: game.databaseId,
-        sourceGameId: game.id,
-        sourceComments: game.comments ?? [],
-      },
-    }));
-    setSelectedDatabaseId(game.databaseId);
-    setSelectedGameId(game.id);
-    setView("board");
-  }, []);
+  const loadGameOnBoard = useCallback(
+    (game: WebGame, options: { cursor?: number; orientation?: WebColor } = {}) => {
+      setState((current) => ({
+        ...current,
+        activePrepId: null,
+        board: {
+          orientation: options.orientation ?? "white",
+          startFen: game.moves[0]?.fenBefore ?? INITIAL_FEN,
+          line: webGameToLine(game),
+          cursor: clampCursor(options.cursor ?? game.moves.length, game.moves.length),
+          sourceTitle: getWebBoardSourceTitle(game, current.databases),
+          sourceDatabaseId: game.databaseId,
+          sourceGameId: game.id,
+          sourceComments: game.comments ?? [],
+        },
+      }));
+      setSelectedDatabaseId(game.databaseId);
+      setSelectedGameId(game.id);
+      setView("board");
+    },
+    [],
+  );
 
   const openEmptyBoard = useCallback(() => {
     setState((current) => ({
@@ -617,6 +624,29 @@ export default function WebApp() {
       return imported;
     },
     [addImportedDatabases, loadGameOnBoard],
+  );
+
+  const importOnlineGameForAnalysis = useCallback<WebOnlineAnalysisHandler>(
+    async (onlineGame) => {
+      const title = getWebOnlineAnalysisTitle(onlineGame);
+      const imported = await importPgnText({
+        name: title,
+        pgn: onlineGame.pgn,
+        notificationTitle: "Game ready to analyze",
+        notificationMessage: () =>
+          `${getWebOnlineSourceLabel(onlineGame.source)} ${onlineGame.username} opened with Stockfish.`,
+        openFirstGame: false,
+      });
+      const game = imported.games[0];
+      if (!game) throw new Error("This online game did not contain readable moves.");
+
+      loadGameOnBoard(game, {
+        cursor: 0,
+        orientation: getWebOnlinePlayerColor(onlineGame),
+      });
+      return game;
+    },
+    [importPgnText, loadGameOnBoard],
   );
 
   const importFiles = useCallback(
@@ -1000,6 +1030,7 @@ export default function WebApp() {
               setState={setState}
               activePrep={activePrep}
               importHostedFolder={openHostedDatabaseSource}
+              importOnlineGameForAnalysis={importOnlineGameForAnalysis}
               importOnlineGames={importOnlineGames}
               loadGameOnBoard={loadGameOnBoard}
               onStartBlankBoard={openEmptyBoard}
@@ -1034,6 +1065,7 @@ function BoardWorkspace({
   setState,
   activePrep,
   importHostedFolder,
+  importOnlineGameForAnalysis,
   importOnlineGames,
   loadGameOnBoard,
   onStartBlankBoard,
@@ -1045,6 +1077,7 @@ function BoardWorkspace({
   setState: Dispatch<SetStateAction<WebCompanionState>>;
   activePrep: WebPrepWorkspace | null;
   importHostedFolder: WebHostedFolderImportHandler;
+  importOnlineGameForAnalysis: WebOnlineAnalysisHandler;
   importOnlineGames: WebOnlineImportHandler;
   loadGameOnBoard: (game: WebGame) => void;
   onStartBlankBoard: () => void;
@@ -1053,6 +1086,7 @@ function BoardWorkspace({
   setLichessToken: (value: string) => void;
 }) {
   const [panelMode, setPanelMode] = useState<BoardPanelMode>("moves");
+  const [onlineAnalysisRequestId, setOnlineAnalysisRequestId] = useState(0);
   const [engineArrowAnalysis, setEngineArrowAnalysis] = useState<{
     fen: string;
     lines: WebEngineLine[];
@@ -1336,6 +1370,13 @@ function BoardWorkspace({
     appendMove(played.san, played.uci, played.fenAfter);
   };
 
+  const analyzeOnlineGame = async (onlineGame: WebOnlineImportedGame) => {
+    const game = await importOnlineGameForAnalysis(onlineGame);
+    if (!game) return;
+    setPanelMode("engine");
+    setOnlineAnalysisRequestId((requestId) => requestId + 1);
+  };
+
   const playMoveFromPrepRoot = (stat: WebPrepMoveStat) => {
     if (!prepBranchFen) return;
     const played = playSanMove(prepBranchFen, stat.move);
@@ -1412,6 +1453,8 @@ function BoardWorkspace({
               sourceTitle={boardTitle}
               sourceComments={activePrep ? [] : (board.sourceComments ?? [])}
             />
+          ) : panelMode === "online" ? (
+            <OnlineGameAnalysisPanel onAnalyzeGame={analyzeOnlineGame} />
           ) : panelMode === "database" ? (
             <DatabaseUnderBoardPanel
               currentFen={currentFen}
@@ -1446,6 +1489,7 @@ function BoardWorkspace({
             />
           ) : (
             <EngineUnderBoardPanel
+              analysisRequestId={onlineAnalysisRequestId}
               currentFen={currentFen}
               onAnalysisLinesChange={handleEngineAnalysisLinesChange}
               onPlayMove={playEngineMove}
@@ -1523,6 +1567,15 @@ function BoardStartActions({
         onClick={() => onChooseMode("moves")}
       >
         Moves
+      </Button>
+      <Button
+        aria-label="Analyze online game"
+        size="xs"
+        variant={activeMode === "online" ? "filled" : "light"}
+        leftSection={<IconCloudDownload size={14} />}
+        onClick={() => onChooseMode("online")}
+      >
+        Analyze
       </Button>
       <Button
         aria-label="Database"
@@ -2669,10 +2722,12 @@ function EngineNumberStepper({
 }
 
 function EngineUnderBoardPanel({
+  analysisRequestId,
   currentFen,
   onAnalysisLinesChange,
   onPlayMove,
 }: {
+  analysisRequestId?: number;
   currentFen: string;
   onAnalysisLinesChange: (fen: string, lines: WebEngineLine[]) => void;
   onPlayMove: (uci: string) => void;
@@ -2690,6 +2745,13 @@ function EngineUnderBoardPanel({
   const updateSettings = (patch: Partial<WebEnginePanelSettings>) => {
     setSettings((current) => normalizeWebEnginePanelSettings({ ...current, ...patch }));
   };
+
+  useEffect(() => {
+    if (!analysisRequestId) return;
+    setSettings((current) =>
+      current.enabled ? current : normalizeWebEnginePanelSettings({ ...current, enabled: true }),
+    );
+  }, [analysisRequestId, setSettings]);
 
   useEffect(() => {
     if (!settings.enabled) {
