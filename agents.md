@@ -48,6 +48,21 @@
   authenticated byte-range download of a PDF succeeded through the private
   `https://gaming-pc.tail89d19b.ts.net:10000` phone endpoint.
 
+- On 2026-07-20, the Jellyfin `Chess Books` shelf gained persistent cover art
+  after all PDF entries appeared as blank placeholders. The reproducible
+  `scripts/build-jellyfin-chess-book-covers.py` workflow now reads the catalogue,
+  retrieves and validates real product artwork, records reviewed overrides for
+  five retired or generic product links, and uses a rendered PDF front page only
+  as a final fallback. It writes same-basename JPEG sidecars beside the PDFs,
+  refreshes Jellyfin through its normal API without storing credentials, and
+  records provenance, dimensions, hashes, and verification in
+  `00 Master Library Guide/Jellyfin cover report.json`. The completed shelf has
+  95 recognisable book covers plus two designed catalogue covers; visual QA
+  caught and corrected one stale Yearbook image, all 97 Jellyfin entries expose
+  a primary image, and all 97 exact images were fetched successfully through the
+  private Tailscale phone endpoint. Cover art remains private and must not be
+  redistributed.
+
 - On 2026-07-20, phone Stockfish startup and cancellation were hardened after
   abandoned browser requests accumulated in the single-engine queue and the
   Windows task launched the server and engine at Below Normal priority. The

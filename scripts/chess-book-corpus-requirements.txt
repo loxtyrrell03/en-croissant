@@ -2,3 +2,4 @@ pypdf>=6.0,<7
 numpy>=2.0,<3
 fastembed>=0.8,<1
 rapidocr_onnxruntime>=1.4,<2
+Pillow>=11,<13

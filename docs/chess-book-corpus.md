@@ -114,6 +114,31 @@ exchange decisions, defence, rook endings, and computer chess. The current
 corpus passes every case, with an expected specialist source ranked first in
 each category.
 
+## Jellyfin cover artwork
+
+The local Jellyfin `Chess Books` library points at the source shelf directly.
+Build persistent JPEG sidecars and refresh that library with:
+
+```powershell
+python scripts/build-jellyfin-chess-book-covers.py --force
+```
+
+The script reads the catalogue's product-page URLs, downloads the corresponding
+official cover artwork, validates and normalizes each image, and writes it next
+to its PDF using the same basename. A small reviewed override table handles
+retired or generic catalogue links; a rendered first PDF page remains the final
+fallback. It never writes an access token: for a local refresh it reads an
+existing Jellyfin device token from Jellyfin's own database and uses the normal
+HTTP API. Use `--skip-jellyfin` when only the sidecars should be rebuilt.
+
+The current run produced 97 valid covers: 95 recognisable book covers and two
+designed shelf-catalogue covers. Jellyfin indexed all 97 as primary images, and
+all 97 were fetched successfully through the private HTTPS phone endpoint. The
+detailed source, dimensions, digest, fallback reason, and verification result
+are recorded in `00 Master Library Guide/Jellyfin cover report.json`.
+
+Cover images are for this private personal library and must not be redistributed.
+
 ## Rights boundary
 
 The current searchable content consists of official publisher excerpts. It is
