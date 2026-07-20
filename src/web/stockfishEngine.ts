@@ -49,7 +49,6 @@ export async function analyzeWithWebStockfish18({
             const storedLines = await queryRemoteStoredCloudLines({ fen, multipv, signal });
             if (storedLines.length > 0) {
                 onUpdate?.(storedLines);
-                return storedLines;
             }
         } catch (error) {
             if (isAbortError(error)) throw error;
@@ -176,7 +175,7 @@ async function analyzeWithRemoteStockfish18({
                 return;
             }
             if (message.type !== "uci" || !message.line) return;
-            const parsed = parseStockfishInfoLine(message.line, fen);
+            const parsed = parseStockfishInfoLine(message.line, fen, "gaming-pc");
             if (!parsed || parsed.multipv > requestedMultipv) return;
             linesByPv.set(parsed.multipv, parsed);
             publish();
@@ -269,7 +268,7 @@ async function analyzeWithLocalStockfish18({
                 return;
             }
 
-            const parsed = parseStockfishInfoLine(line, fen);
+            const parsed = parseStockfishInfoLine(line, fen, "phone");
             if (!parsed || parsed.multipv > requestedMultipv) return;
             linesByPv.set(parsed.multipv, parsed);
             publish();
@@ -358,7 +357,11 @@ function postStockfish(command: string) {
     worker?.postMessage(command);
 }
 
-function parseStockfishInfoLine(line: string, fen: string): WebEngineLine | null {
+function parseStockfishInfoLine(
+    line: string,
+    fen: string,
+    executionLocation: "gaming-pc" | "phone",
+): WebEngineLine | null {
     if (!line.startsWith("info ")) return null;
 
     const [position] = positionFromFen(fen);
@@ -379,6 +382,7 @@ function parseStockfishInfoLine(line: string, fen: string): WebEngineLine | null
 
     return {
         source: "stockfish",
+        executionLocation,
         multipv: readNumericInfoToken(tokens, "multipv") ?? 1,
         depth: readNumericInfoToken(tokens, "depth") ?? 0,
         seldepth: readNumericInfoToken(tokens, "seldepth"),

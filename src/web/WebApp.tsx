@@ -3015,7 +3015,7 @@ function EngineLineTable({
                   </button>
                   <Group gap={5} wrap="nowrap" className={classes.engineAnalysisMeta}>
                     <Code className={classes.enginePanelCode}>
-                      {line.source === "lichess-cloud" ? "Lichess" : "Stockfish"}
+                      {getWebEngineSourceLabel(line)}
                     </Code>
                     <Text size="xs" c="dimmed">
                       d{line.depth || "?"}
@@ -6129,7 +6129,14 @@ function getWebEngineHeaderStatus({
 }) {
   if (!enabled) return "Off";
   if (status === "error") return "Error";
-  if (topLine) return topLine.source === "lichess-cloud" ? "Lichess" : "Stockfish";
+  if (topLine) return getWebEngineSourceLabel(topLine);
+  return "Stockfish";
+}
+
+function getWebEngineSourceLabel(line: WebEngineLine) {
+  if (line.source === "lichess-cloud") return "PC cache";
+  if (line.executionLocation === "gaming-pc") return "PC live";
+  if (line.executionLocation === "phone") return "Phone fallback";
   return "Stockfish";
 }
 

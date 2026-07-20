@@ -1,5 +1,13 @@
 # AGENTS.md
 
+- On 2026-07-20, phone analysis was corrected after the restored stored-eval
+  path accidentally prevented live Stockfish from starting on every cache hit.
+  A PC-stored evaluation is now shown only as an immediate preview while the
+  phone continues into the gaming PC's live Stockfish 18 stream. Engine rows
+  and the header explicitly distinguish `PC cache`, `PC live`, and
+  `Phone fallback`, so future verification must confirm the execution source
+  rather than inferring it from generic Stockfish output.
+
 - On 2026-07-20, a lawful broad GM-authored computer-era opening-book starter
   shelf was assembled under
   `C:\Users\loxty\Documents\EnCroissant\AI Chess Coach Library\Opening Books`.

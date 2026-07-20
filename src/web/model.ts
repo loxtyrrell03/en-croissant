@@ -147,9 +147,11 @@ export type WebEngineScore =
       };
 
 export type WebEngineLineSource = "stockfish" | "lichess-cloud";
+export type WebEngineExecutionLocation = "gaming-pc" | "phone";
 
 export type WebEngineLine = {
     source: WebEngineLineSource;
+    executionLocation?: WebEngineExecutionLocation;
     multipv: number;
     depth: number;
     seldepth?: number | null;
