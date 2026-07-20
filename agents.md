@@ -1,5 +1,26 @@
 # AGENTS.md
 
+- On 2026-07-20, the lawful AI Chess Coach library gained a reproducible local
+  ingestion and retrieval layer under
+  `C:\Users\loxty\Documents\EnCroissant\AI Chess Coach Library\00 AI Corpus`.
+  `scripts/build-chess-book-corpus.py` now extracts and cleans all 95 installed
+  publisher-excerpt PDFs into book, page, chapter, and page-bounded chunk
+  records; performs local RapidOCR on the image-only *Modernized Sicilian Kan*;
+  removes private-use diagram-font noise while retaining visual-fallback flags;
+  preserves exact PDF and supported printed-page citations; and writes portable
+  JSONL plus a SQLite FTS5 database with local 384-dimensional
+  `BAAI/bge-small-en-v1.5` embeddings. The current corpus has 103 book records,
+  1,561 pages, 3,322 chapter entries, 1,609 chunks and matching embeddings, 22
+  OCR pages, zero extraction/OCR/citation/orphan failures, and no control or
+  private-use characters in searchable text. `scripts/search-chess-book-corpus.py`
+  provides diversified FTS, semantic, and hybrid retrieval;
+  `scripts/render-chess-book-page.py` supplies exact visual pages for diagrams;
+  and `scripts/test-chess-book-corpus.py` passes calculation, exchanges,
+  defence, rook-endgame, and computer-chess retrieval checks. The implementation
+  and rights boundary are documented in `docs/chess-book-corpus.md`. This makes
+  the excerpt corpus AI-retrieval-ready, but the En Croissant coach UI is not
+  wired yet and full-book coverage still requires lawfully acquired editions.
+
 - On 2026-07-20, phone Stockfish startup and cancellation were hardened after
   abandoned browser requests accumulated in the single-engine queue and the
   Windows task launched the server and engine at Below Normal priority. The
