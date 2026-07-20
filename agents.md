@@ -1,5 +1,20 @@
 # AGENTS.md
 
+- On 2026-07-20, a lawful broad GM-authored computer-era opening-book starter
+  shelf was assembled under
+  `C:\Users\loxty\Documents\EnCroissant\AI Chess Coach Library\Opening Books`.
+  It catalogs 39 respected titles across nine general, White-repertoire,
+  Black-defence, and sideline shelves and installs 38 publisher-authorized
+  sample PDFs rather than unlicensed scans. `00 Shelf Guide` contains a
+  polished acquisition catalogue PDF, machine-readable book metadata, and a
+  validation report with page counts, extraction status, sizes, and SHA-256
+  hashes. All 39 local PDFs parse cleanly; 37 of the 38 book samples have
+  extractable text, while the official *Modernized Sicilian Kan* sample is
+  image-only and is explicitly flagged for future OCR. Berg's French Defence
+  Volume One remains an acquisition-only catalogue slot because no official
+  PDF excerpt was offered. Full editions must come from books the user buys or
+  already owns, and the local corpus must not be redistributed.
+
 - On 2026-07-20, the phone board gained a compact `Analyze` panel for public
   Chess.com and Lichess games. Each provider remembers its own username;
   `Analyze last game` opens the newest game immediately, while `Choose a game`
