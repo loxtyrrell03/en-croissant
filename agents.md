@@ -1,5 +1,14 @@
 # AGENTS.md
 
+- On 2026-07-20, PC-hosted phone changes are not complete merely because they
+  build locally. Unless the owner explicitly asks for local-only work, every
+  completed phone UI or phone-server change must be committed, published with
+  `npm run web:publish-home`, and verified against the live private origin
+  before reporting completion. If publishing is genuinely blocked, state that
+  prominently instead of implying the change is live. Continue to use the
+  clean-source, ancestry, mutex, immutable-release, and health guards below;
+  never copy `dist` directly or weaken a guard to force a deployment.
+
 - On 2026-07-20, the lawful chess-book corpus was wired into both AI Coach
   surfaces. The desktop Rust coach now performs native, diversified FTS5
   retrieval from the local corpus, sends up to six page-bounded passages to

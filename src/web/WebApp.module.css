@@ -3,8 +3,7 @@
   max-width: 100vw;
   overflow-x: clip;
   background:
-    linear-gradient(135deg, rgba(34, 139, 230, 0.14), transparent 38%),
-    linear-gradient(315deg, rgba(18, 184, 134, 0.12), transparent 36%), var(--mantine-color-dark-8);
+    radial-gradient(circle at 50% -12rem, rgba(51, 112, 178, 0.13), transparent 34rem), #111315;
   color: var(--mantine-color-gray-0);
 }
 
@@ -12,9 +11,10 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: color-mix(in srgb, var(--mantine-color-dark-8) 86%, transparent);
-  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(17, 19, 21, 0.9);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(20px);
 }
 
 .headerInner {
@@ -34,15 +34,43 @@
 
 .brandIcon {
   flex: 0 0 auto;
+  color: var(--mantine-color-blue-3);
 }
 
-.brandTitle,
-.brandSubtitle {
+.brandTitle {
   max-width: 100%;
+  font-size: 1.05rem;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+  white-space: nowrap;
 }
 
 .headerActions {
   min-width: 0;
+}
+
+.headerNav {
+  padding: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.headerNav :global(.mantine-SegmentedControl-indicator) {
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 7px;
+  box-shadow: none;
+  background: rgba(255, 255, 255, 0.105);
+}
+
+.headerImportButton {
+  border: 1px solid rgba(75, 149, 222, 0.18);
+  background: rgba(39, 112, 185, 0.14);
+  color: var(--mantine-color-blue-2);
+}
+
+.headerImportButton:hover {
+  background: rgba(39, 112, 185, 0.22);
 }
 
 .main {
@@ -61,7 +89,7 @@
 
 .phoneBoard {
   display: grid;
-  gap: var(--mantine-spacing-sm);
+  gap: 0.65rem;
   width: 100%;
   min-width: 0;
   max-width: 760px;
@@ -70,14 +98,63 @@
 
 .boardHeader {
   display: flex;
-  gap: var(--mantine-spacing-sm);
+  gap: 0.65rem;
   align-items: center;
   justify-content: space-between;
   min-width: 0;
+  min-height: 2rem;
+}
+
+.boardHeaderTitle {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.boardHeaderActions {
+  flex: 0 0 auto;
+}
+
+.boardHeaderAction {
+  color: var(--mantine-color-gray-4);
+}
+
+.turnBadge {
+  height: 1.7rem;
+  padding-inline: 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--mantine-color-gray-2);
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.015em;
+  text-transform: none;
+}
+
+.turnDot {
+  display: inline-block;
+  width: 0.48rem;
+  height: 0.48rem;
+  margin-inline-end: 0.34rem;
+  border-radius: 50%;
+  vertical-align: 0.01rem;
+}
+
+.turnDot[data-color="white"] {
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  background: #f4f4ed;
+}
+
+.turnDot[data-color="black"] {
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  background: #202328;
 }
 
 .truncateTitle {
   overflow: hidden;
+  font-size: 1.08rem;
+  font-weight: 720;
+  letter-spacing: -0.02em;
+  line-height: 1.18;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -105,8 +182,9 @@
   width: 100%;
   aspect-ratio: 1;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #769656;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.24);
   touch-action: pan-y;
 }
 
@@ -119,7 +197,7 @@
 .boardMount cg-board {
   background-image: conic-gradient(#769656 25%, #eeeed2 0 50%, #769656 0 75%, #eeeed2 0);
   background-size: 25% 25%;
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 /* chessground class names must stay unhashed (CSS modules would rename them
@@ -177,7 +255,7 @@
   position: relative;
   display: grid;
   grid-template-columns: 25px minmax(0, 1fr);
-  gap: 0.5rem;
+  gap: 0.42rem;
   align-items: stretch;
   min-width: 0;
 }
@@ -193,7 +271,7 @@
   min-height: 0;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--mantine-radius-xs);
+  border-radius: 7px;
   background: var(--mantine-color-dark-4);
   font-variant-numeric: tabular-nums;
 }
@@ -264,28 +342,47 @@
 
 .boardStartActions {
   min-width: 0;
+  padding: 0.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .boardMoveControls {
   min-width: 0;
-  min-height: 2.5rem;
-  margin-block: -0.22rem -0.1rem;
+  width: max-content;
+  min-height: 2.25rem;
+  margin: -0.12rem auto -0.08rem;
+  padding: 0.12rem;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .boardMoveButton {
-  width: 2.5rem;
-  min-width: 2.5rem;
-  height: 2.5rem;
-  color: var(--mantine-color-gray-1);
+  width: 2rem;
+  min-width: 2rem;
+  height: 2rem;
+  color: var(--mantine-color-gray-2);
 }
 
 .boardMoveButton:disabled {
   opacity: 0.34;
 }
 
+.boardMoveCount {
+  min-width: 4.2rem;
+  color: var(--mantine-color-gray-4);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
 .boardStartActions :global(.mantine-Button-root) {
   min-width: 0;
-  padding-inline: 0.42rem;
+  min-height: 2.35rem;
+  padding-inline: 0.5rem;
 }
 
 .boardStartActions :global(.mantine-Button-section) {
@@ -297,26 +394,46 @@
   text-overflow: ellipsis;
 }
 
+.boardModeTab {
+  border: 1px solid transparent;
+  color: var(--mantine-color-gray-4);
+}
+
+.boardModeTab:hover {
+  color: var(--mantine-color-gray-1);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.boardModeTab[data-active="true"] {
+  border-color: rgba(75, 149, 222, 0.26);
+  background: rgba(39, 112, 185, 0.24);
+  color: var(--mantine-color-blue-1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.boardTabLabelShort {
+  display: none;
+}
+
 .underBoardPanel {
   min-width: 0;
   max-width: 100%;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--mantine-color-dark-7) 88%, transparent);
 }
 
 .underBoardContent {
   min-width: 0;
   min-height: 11rem;
   display: grid;
-  gap: 0.55rem;
+  gap: 0.5rem;
   align-content: start;
-  padding: 0.65rem;
 }
 
 .underBoardTabContent {
   min-width: 0;
+  padding: 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .coachNotice,
@@ -376,10 +493,10 @@
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
-  gap: 0.32rem;
-  padding: 0.5rem;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.04);
+  gap: 0.24rem 0.3rem;
+  padding: 0.28rem;
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.12);
   font-variant-numeric: tabular-nums;
 }
 
@@ -428,8 +545,8 @@
 }
 
 .movePill {
-  min-height: 2rem;
-  padding: 0.2rem 0.45rem;
+  min-height: 2.15rem;
+  padding: 0.24rem 0.5rem;
   border: 1px solid transparent;
   border-radius: 5px;
   background: transparent;
@@ -439,8 +556,9 @@
 }
 
 .movePill[data-current="true"] {
-  border-color: color-mix(in srgb, var(--mantine-primary-color-5) 55%, transparent);
-  background: color-mix(in srgb, var(--mantine-primary-color-9) 34%, rgba(255, 255, 255, 0.06));
+  border-color: rgba(75, 149, 222, 0.48);
+  background: rgba(39, 112, 185, 0.25);
+  color: var(--mantine-color-blue-0);
 }
 
 .moveGlyph {
@@ -718,27 +836,27 @@
   min-width: 0;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.04);
 }
 
 .compactEnginePanel {
   min-width: 0;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.035);
 }
 
 .compactEnginePanel[data-enabled="true"] {
-  border-color: color-mix(in srgb, var(--mantine-primary-color-5) 34%, transparent);
-  background: color-mix(in srgb, var(--mantine-primary-color-9) 13%, rgba(255, 255, 255, 0.035));
+  border-color: rgba(75, 149, 222, 0.22);
+  background: rgba(31, 48, 66, 0.48);
 }
 
 .compactEngineHeader {
   min-width: 0;
-  min-height: 2.1rem;
-  padding: 0.28rem 0.46rem;
+  min-height: 2.5rem;
+  padding: 0.38rem 0.58rem;
 }
 
 .compactEngineHeader > :first-child {
@@ -755,19 +873,13 @@
   color: var(--mantine-color-blue-4);
 }
 
-.compactEngineEval {
-  flex: 0 0 auto;
-  min-width: 3.25rem;
-  padding-inline: 0.34rem;
-  font-size: 0.68rem;
-  font-weight: 700;
-  line-height: 1.15rem;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
+.compactEngineTitle {
+  color: var(--mantine-color-gray-1);
+  letter-spacing: -0.01em;
 }
 
 .compactEngineNps {
-  min-width: 3.8rem;
+  min-width: 3.55rem;
   white-space: nowrap;
   text-align: right;
   font-size: 0.64rem;
@@ -786,7 +898,7 @@
   grid-template-columns: auto minmax(0, 1fr);
   gap: 0.3rem;
   align-items: center;
-  padding: 0.32rem 0.4rem;
+  padding: 0.42rem 0.5rem;
   border: 0;
   border-left: 1px solid rgba(255, 255, 255, 0.055);
   background: transparent;
@@ -806,7 +918,7 @@
 
 .compactEngineLineEval {
   color: var(--mantine-color-gray-1);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -814,7 +926,7 @@
 .compactEngineLineMoves {
   overflow: hidden;
   color: var(--mantine-color-gray-3);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   line-height: 1.12;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1275,7 +1387,7 @@
   .headerInner {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 0.42rem;
-    padding: 0.28rem max(0.5rem, env(safe-area-inset-right)) 0.28rem
+    padding: max(0.28rem, env(safe-area-inset-top)) max(0.5rem, env(safe-area-inset-right)) 0.28rem
       max(0.5rem, env(safe-area-inset-left));
   }
 
@@ -1289,12 +1401,8 @@
   }
 
   .brandTitle {
-    font-size: 0.92rem;
+    font-size: 0.88rem;
     line-height: 1;
-  }
-
-  .brandSubtitle {
-    display: none;
   }
 
   .headerActions {
@@ -1333,11 +1441,16 @@
   }
 
   .phoneBoard {
-    gap: 0.42rem;
+    gap: 0.52rem;
   }
 
   .boardStartActions :global(.mantine-Button-section) {
     display: none;
+  }
+
+  .boardStartActions :global(.mantine-Button-root) {
+    min-height: 2.5rem;
+    padding-inline: 0.32rem;
   }
 
   .filesWorkspace {
@@ -1353,36 +1466,56 @@
   }
 
   .boardHeader {
-    gap: 0.45rem;
-  }
-
-  .boardHeader > :first-child :global(.mantine-Text-root) {
-    line-height: 1;
+    gap: 0.35rem;
   }
 
   .boardHeader .truncateTitle {
-    font-size: 1.05rem;
-    line-height: 1.08;
+    font-size: 1rem;
+    line-height: 1.12;
   }
 
-  .boardHeader :global(.mantine-Button-root) {
-    min-height: 1.78rem;
-    height: 1.78rem;
-    padding-inline: 0.45rem;
-  }
-
-  .boardHeader :global(.mantine-Button-section) {
-    margin-inline-end: 0.22rem;
+  .boardHeaderAction {
+    width: 1.85rem;
+    min-width: 1.85rem;
+    height: 1.85rem;
   }
 
   .boardHeader :global(.mantine-Badge-root) {
-    min-height: 1.28rem;
-    height: 1.28rem;
-    padding-inline: 0.42rem;
+    min-height: 1.6rem;
+    height: 1.6rem;
+    padding-inline: 0.48rem;
+  }
+
+  .turnSuffix {
+    display: none;
   }
 
   .underBoardContent {
+    padding: 0;
+  }
+
+  .underBoardTabContent {
     padding: 0.55rem;
+  }
+
+  .compactEngineLines {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .compactEngineLine {
+    min-height: 2.3rem;
+    padding-inline: 0.58rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.055);
+    border-left: 0;
+  }
+
+  .compactEngineLine:first-child {
+    border-top: 0;
+  }
+
+  .compactEngineLineEval,
+  .compactEngineLineMoves {
+    font-size: 0.76rem;
   }
 
   .compactTable {
@@ -1424,5 +1557,25 @@
 
   .statGrid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 460px) {
+  .boardTabLabelLong {
+    display: none;
+  }
+
+  .boardTabLabelShort {
+    display: inline;
+  }
+
+  .boardStartActions :global(.mantine-Button-label) {
+    font-size: 0.72rem;
+  }
+}
+
+@media (max-width: 370px) {
+  .brandTitle {
+    display: none;
   }
 }

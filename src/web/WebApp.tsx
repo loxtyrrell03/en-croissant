@@ -34,8 +34,8 @@ import {
   Switch,
   Table,
   Text,
-  Textarea,
   TextInput,
+  Textarea,
   Tooltip,
   Title,
 } from "@mantine/core";
@@ -43,8 +43,8 @@ import { useMediaQuery } from "@mantine/hooks";
 import { notifications, Notifications } from "@mantine/notifications";
 import {
   IconArrowBackUp,
-  IconBook,
   IconArrowsSort,
+  IconBook,
   IconCheck,
   IconChevronDown,
   IconChevronLeft,
@@ -64,13 +64,13 @@ import {
   IconPlayerPlay,
   IconRefresh,
   IconSearch,
-  IconSparkles,
   IconSettings,
+  IconSparkles,
   IconTarget,
   IconUpload,
   IconX,
-import ReactMarkdown from "react-markdown";
 } from "@tabler/icons-react";
+import ReactMarkdown from "react-markdown";
 import { isNormal, makeSquare, parseSquare, parseUci } from "chessops";
 import { chessgroundDests } from "chessops/compat";
 import { INITIAL_FEN } from "chessops/fen";
@@ -97,6 +97,7 @@ import {
   type PrepBuilderSettings,
 } from "@/utils/opponentPrep";
 import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
+import classes from "./WebApp.module.css";
 import {
   askWebChessCoach,
   getWebChessCoachHealth,
@@ -106,7 +107,6 @@ import {
   type WebChessCoachHealth,
   type WebChessCoachResponse,
 } from "./chessCoach";
-import classes from "./WebApp.module.css";
 import {
   DEFAULT_WEB_LICHESS_EXPLORER_OPTIONS,
   DEFAULT_WEB_MASTERS_EXPLORER_OPTIONS,
@@ -969,18 +969,15 @@ export default function WebApp() {
             <Box className={classes.brand}>
               <Group gap="xs" wrap="nowrap">
                 <IconChess className={classes.brandIcon} size={24} />
-                <Box>
-                  <Title order={3} className={classes.brandTitle} lh={1.1}>
-                    En Croissant Web
-                  </Title>
-                  <Text className={classes.brandSubtitle} size="xs" c="dimmed" truncate>
-                    Board, files, prep
-                  </Text>
-                </Box>
+                <Title order={3} className={classes.brandTitle} lh={1.1}>
+                  En Croissant
+                </Title>
               </Group>
             </Box>
             <Group className={classes.headerActions} justify="flex-end" gap="xs" wrap="nowrap">
               <SegmentedControl
+                aria-label="Workspace"
+                className={classes.headerNav}
                 size="xs"
                 value={
                   view === "files" ? "files" : boardPanelMode === "online" ? "online" : "board"
@@ -997,16 +994,19 @@ export default function WebApp() {
                 data={[
                   { value: "board", label: "Board" },
                   { value: "files", label: "Files" },
-                  { value: "online", label: "Import Online" },
+                  { value: "online", label: "Online" },
                 ]}
               />
               <Button
                 aria-label="Import PGN files"
                 className={classes.headerImportButton}
+                color="blue"
                 component="label"
+                title="Import PGN files"
                 size="xs"
                 leftSection={<IconUpload size={15} />}
                 loading={importing}
+                variant="light"
               >
                 Import
                 <input
@@ -1403,26 +1403,35 @@ function BoardWorkspace({
   return (
     <Box className={classes.phoneBoard}>
       <Box className={classes.boardHeader}>
-        <Box miw={0}>
-          <Text size="xs" c="dimmed">
-            {activePrep ? "Prep board" : isViewingFile ? "File board" : "Board"}
-          </Text>
-          <Title order={3} className={classes.truncateTitle}>
+        <Box className={classes.boardHeaderTitle}>
+          <Title order={2} className={classes.truncateTitle} title={boardTitle}>
             {boardTitle}
           </Title>
         </Box>
-        <Group gap="xs" wrap="nowrap" style={{ flexShrink: 0 }}>
-          <Button
-            size="xs"
+        <Group className={classes.boardHeaderActions} gap={6} wrap="nowrap">
+          <Badge
+            aria-label={`${turnColor === "white" ? "White" : "Black"} to move`}
+            className={classes.turnBadge}
+            color="gray"
             variant="light"
-            leftSection={isViewingFile ? <IconX size={14} /> : <IconRefresh size={14} />}
-            onClick={isViewingFile ? onExitBoardFile : onStartBlankBoard}
           >
-            {isViewingFile ? "Exit file" : "New board"}
-          </Button>
-          <Badge color={turnColor === "white" ? "gray" : "dark"} variant="light">
-            {turnColor}
+            <span className={classes.turnDot} data-color={turnColor} />
+            {turnColor === "white" ? "White" : "Black"}
+            <span className={classes.turnSuffix}> to move</span>
           </Badge>
+          <Tooltip label={isViewingFile ? "Close file" : "New board"}>
+            <ActionIcon
+              aria-label={isViewingFile ? "Close file" : "New board"}
+              className={classes.boardHeaderAction}
+              color="gray"
+              onClick={isViewingFile ? onExitBoardFile : onStartBlankBoard}
+              radius="md"
+              size="md"
+              variant="subtle"
+            >
+              {isViewingFile ? <IconX size={17} /> : <IconRefresh size={17} />}
+            </ActionIcon>
+          </Tooltip>
         </Group>
       </Box>
 
@@ -1444,8 +1453,12 @@ function BoardWorkspace({
       />
 
       <BoardMoveControls
+        currentMove={cursor}
+        totalMoves={activeLine.length}
         canGoToPreviousMove={canGoToPreviousMove}
         canGoToNextMove={canGoToNextMove}
+        onFirstMove={() => setCursor(0)}
+        onLastMove={() => setCursor(activeLine.length)}
         onPreviousMove={goToPreviousMove}
         onNextMove={goToNextMove}
       />
@@ -1474,7 +1487,6 @@ function BoardWorkspace({
                   setCursor={setCursor}
                   rootLines={sourceRootLines}
                   onChooseLine={chooseMovePanelLine}
-                  sourceTitle={boardTitle}
                   sourceComments={activePrep ? [] : (board.sourceComments ?? [])}
                 />
               ) : panelMode === "online" ? (
@@ -1508,6 +1520,7 @@ function BoardWorkspace({
                   importHostedFolder={importHostedFolder}
                   importOnlineGames={importOnlineGames}
                   lichessToken={lichessToken}
+                />
               ) : (
                 <CoachUnderBoardPanel
                   sourceGame={sourceGame}
@@ -1517,7 +1530,6 @@ function BoardWorkspace({
                     engineArrowAnalysis?.fen === currentFen ? engineArrowAnalysis.lines : []
                   }
                   defaultPlayerColor={orientation}
-                />
                 />
               )}
             </Box>
@@ -1529,24 +1541,46 @@ function BoardWorkspace({
 }
 
 function BoardMoveControls({
+  currentMove,
+  totalMoves,
   canGoToPreviousMove,
   canGoToNextMove,
+  onFirstMove,
+  onLastMove,
   onPreviousMove,
   onNextMove,
 }: {
+  currentMove: number;
+  totalMoves: number;
   canGoToPreviousMove: boolean;
   canGoToNextMove: boolean;
+  onFirstMove: () => void;
+  onLastMove: () => void;
   onPreviousMove: () => void;
   onNextMove: () => void;
 }) {
   return (
     <Group
-      aria-label="Board move navigation"
+      aria-label={`Move ${currentMove} of ${totalMoves}`}
       className={classes.boardMoveControls}
-      gap="xs"
+      gap={2}
       justify="center"
+      role="navigation"
       wrap="nowrap"
     >
+      <Tooltip label="First move">
+        <ActionIcon
+          aria-label="First move"
+          className={classes.boardMoveButton}
+          disabled={!canGoToPreviousMove}
+          onClick={onFirstMove}
+          radius="xl"
+          size="sm"
+          variant="subtle"
+        >
+          <IconChevronsLeft size={17} />
+        </ActionIcon>
+      </Tooltip>
       <Tooltip label="Previous move">
         <ActionIcon
           aria-label="Previous move"
@@ -1560,6 +1594,9 @@ function BoardMoveControls({
           <IconChevronLeft size={18} />
         </ActionIcon>
       </Tooltip>
+      <Text aria-live="polite" className={classes.boardMoveCount} component="span">
+        {currentMove === 0 ? "Start" : `${currentMove} / ${totalMoves}`}
+      </Text>
       <Tooltip label="Next move">
         <ActionIcon
           aria-label="Next move"
@@ -1571,6 +1608,19 @@ function BoardMoveControls({
           variant="subtle"
         >
           <IconChevronRight size={18} />
+        </ActionIcon>
+      </Tooltip>
+      <Tooltip label="Last move">
+        <ActionIcon
+          aria-label="Last move"
+          className={classes.boardMoveButton}
+          disabled={!canGoToNextMove}
+          onClick={onLastMove}
+          radius="xl"
+          size="sm"
+          variant="subtle"
+        >
+          <IconChevronsRight size={17} />
         </ActionIcon>
       </Tooltip>
     </Group>
@@ -1585,51 +1635,78 @@ function BoardStartActions({
   onChooseMode: (mode: BoardPanelMode) => void;
 }) {
   return (
-    <Group className={classes.boardStartActions} gap={6} grow>
+    <Group
+      aria-label="Board tools"
+      className={classes.boardStartActions}
+      gap={2}
+      grow
+      role="tablist"
+    >
       <Button
         aria-label="Moves"
+        aria-selected={activeMode === "moves"}
+        className={classes.boardModeTab}
+        data-active={activeMode === "moves"}
+        role="tab"
         size="xs"
-        variant={activeMode === "moves" ? "filled" : "light"}
+        variant="subtle"
         leftSection={<IconPlayerPlay size={14} />}
         onClick={() => onChooseMode("moves")}
       >
-        Moves
+        <span>Moves</span>
       </Button>
       <Button
         aria-label="Database"
+        aria-selected={activeMode === "database"}
+        className={classes.boardModeTab}
+        data-active={activeMode === "database"}
+        role="tab"
         size="xs"
-        variant={activeMode === "database" ? "filled" : "light"}
+        variant="subtle"
         leftSection={<IconDatabase size={14} />}
         onClick={() => onChooseMode("database")}
       >
-        DB
+        <span className={classes.boardTabLabelLong}>Database</span>
+        <span className={classes.boardTabLabelShort}>DB</span>
       </Button>
       <Button
         aria-label="Prep"
+        aria-selected={activeMode === "prep"}
+        className={classes.boardModeTab}
+        data-active={activeMode === "prep"}
+        role="tab"
         size="xs"
-        variant={activeMode === "prep" ? "filled" : "light"}
+        variant="subtle"
         leftSection={<IconTarget size={14} />}
         onClick={() => onChooseMode("prep")}
       >
-        Prep
+        <span>Prep</span>
       </Button>
       <Button
         aria-label="Engine"
+        aria-selected={activeMode === "engine"}
+        className={classes.boardModeTab}
+        data-active={activeMode === "engine"}
+        role="tab"
         size="xs"
-        variant={activeMode === "engine" ? "filled" : "light"}
+        variant="subtle"
         leftSection={<IconCpu size={14} />}
         onClick={() => onChooseMode("engine")}
       >
-        Engine
+        <span>Engine</span>
       </Button>
       <Button
         aria-label="Coach"
+        aria-selected={activeMode === "coach"}
+        className={classes.boardModeTab}
+        data-active={activeMode === "coach"}
+        role="tab"
         size="xs"
-        variant={activeMode === "coach" ? "filled" : "light"}
+        variant="subtle"
         leftSection={<IconSparkles size={14} />}
         onClick={() => onChooseMode("coach")}
       >
-        Coach
+        <span>Coach</span>
       </Button>
     </Group>
   );
@@ -1874,7 +1951,6 @@ function MovesUnderBoardPanel({
   setCursor,
   rootLines,
   onChooseLine,
-  sourceTitle,
   sourceComments,
 }: {
   line: WebPrepLineMove[];
@@ -1882,7 +1958,6 @@ function MovesUnderBoardPanel({
   setCursor: (cursor: number) => void;
   rootLines: WebPrepLineMove[][];
   onChooseLine: (line: WebPrepLineMove[], cursor?: number) => void;
-  sourceTitle: string;
   sourceComments: string[];
 }) {
   const displayLines = getWebMovePanelDisplayLines(line, rootLines);
@@ -1976,37 +2051,6 @@ function MovesUnderBoardPanel({
 
   return (
     <Stack gap="xs">
-      <Group justify="space-between" gap="xs" wrap="nowrap">
-        <Text size="xs" c="dimmed" truncate>
-          {sourceTitle}
-        </Text>
-        <Group gap={2} wrap="nowrap">
-          <ActionIcon aria-label="Start" disabled={cursor === 0} onClick={() => setCursor(0)}>
-            <IconChevronsLeft size={16} />
-          </ActionIcon>
-          <ActionIcon
-            aria-label="Previous"
-            disabled={cursor === 0}
-            onClick={() => setCursor(cursor - 1)}
-          >
-            <IconChevronLeft size={16} />
-          </ActionIcon>
-          <ActionIcon
-            aria-label="Next"
-            disabled={cursor >= line.length}
-            onClick={() => setCursor(cursor + 1)}
-          >
-            <IconChevronRight size={16} />
-          </ActionIcon>
-          <ActionIcon
-            aria-label="End"
-            disabled={cursor >= line.length}
-            onClick={() => setCursor(line.length)}
-          >
-            <IconChevronsRight size={16} />
-          </ActionIcon>
-        </Group>
-      </Group>
       {sourceComments.length > 0 && (
         <Box className={classes.moveRootComments}>
           {sourceComments.map((comment, index) => (
@@ -2019,7 +2063,7 @@ function MovesUnderBoardPanel({
       <Box ref={moveListRef} className={classes.moveList}>
         {displayLines.length === 0 ? (
           <Text size="sm" c="dimmed">
-            Start
+            Play a move to begin
           </Text>
         ) : (
           <>
@@ -3099,24 +3143,21 @@ function EngineUnderBoardPanel({
         >
           <Group gap={6} wrap="nowrap" miw={0}>
             <IconCpu className={classes.compactEngineIcon} size={16} />
-            <Text fw={700} size="xs" truncate>
-              Stockfish 18
+            <Text className={classes.compactEngineTitle} fw={700} size="xs" truncate>
+              Stockfish
             </Text>
-            <Code className={classes.compactEngineEval}>
-              {topLine ? formatWebEngineScore(topLine.score) : "--"}
-            </Code>
           </Group>
           <Group className={classes.compactEngineHeaderRight} gap={6} wrap="nowrap">
-            <Text className={classes.compactEngineNps} size="xs" c="dimmed">
-              {liveLineSpeed ?? "-- NPS"}
-            </Text>
+            {settings.enabled ? (
+              <Text className={classes.compactEngineNps} size="xs" c="dimmed">
+                {liveLineSpeed ? liveLineSpeed.replace(" NPS", " n/s") : "Starting…"}
+              </Text>
+            ) : null}
             <Switch
               aria-label="Toggle Stockfish 18 analysis"
               checked={settings.enabled}
               onChange={(event) => updateSettings({ enabled: event.currentTarget.checked })}
-              onLabel="ON"
-              offLabel="OFF"
-              size="sm"
+              size="xs"
             />
           </Group>
         </Group>
@@ -3146,7 +3187,9 @@ function EngineUnderBoardPanel({
                     <span className={classes.compactEngineLineEval}>
                       {formatWebEngineScore(line.score)}
                     </span>
-                    <span className={classes.compactEngineLineMoves}>{pv || "-"}</span>
+                    <span className={classes.compactEngineLineMoves} title={pv || undefined}>
+                      {pv || "-"}
+                    </span>
                   </button>
                 );
               })}
