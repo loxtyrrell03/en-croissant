@@ -1,5 +1,23 @@
 # AGENTS.md
 
+- On 2026-07-20, phone publishing was made parallel-agent-safe after a stale
+  detached worktree finished several minutes after a newer publish and rolled
+  both live sites back to an older mixed feature set. Both publish commands now
+  take one machine-wide mutex, require a clean committed source, stamp every
+  app-shell file into `app-version.json`, and reject any source commit that is
+  not a descendant of the currently deployed source. The Pages checkout also
+  installs a persistent pre-commit guard, so even an already-old publisher is
+  rejected when its metadata is missing, mixed, or behind the live source. PC
+  app shells now deploy into immutable release directories selected by one
+  atomic pointer; the home server serves the active release separately from the
+  mutable hosted library, so an obsolete script copying into the legacy site
+  directory cannot alter the running phone UI. The home-server runtime has a
+  stable installed path across worktrees, and each source commit stamps a new
+  service-worker cache that reloads open clients on activation. Parallel agents
+  may build and commit independently, but a publisher must first integrate the
+  live deployed commit; never bypass these guards or publish by copying `dist`
+  directly.
+
 - On 2026-07-20, phone Stockfish analysis became a board-wide session instead
   of belonging to the Engine tab. Switching among Moves, Database, Prep, and
   the full Engine view no longer unmounts or cancels the current PC search;
@@ -489,6 +507,11 @@ model, implementation map, and verification expectations for this app.
   startup, `public/web-*`, hosted-library/export scripts, phone-only layout or
   styling, and any other change whose result should appear on the phone. Do
   not rely on auto-sync alone for code changes.
+- Phone publishes are serialized and fast-forward-only. If a publish reports
+  that another publish is active, wait and retry; if it reports that the live
+  source is not an ancestor, integrate the deployed commit into the feature
+  worktree before retrying. Never bypass the deployment metadata, Pages hook,
+  immutable home release pointer, or clean-worktree check.
 - If `npm run web:publish` fails, or if the user explicitly asks to defer
   publishing, say so in the final response and do not describe the phone app
   change as deployed.
