@@ -31,6 +31,7 @@ import {
   Select,
   Skeleton,
   Stack,
+  Switch,
   Table,
   Text,
   TextInput,
@@ -1218,10 +1219,10 @@ function BoardWorkspace({
   }, []);
   const engineArrowShapes = useMemo(
     () =>
-      panelMode === "engine" && engineArrowAnalysis?.fen === currentFen
+      engineArrowAnalysis?.fen === currentFen
         ? getWebEngineArrowShapes(engineArrowAnalysis.lines, currentFen)
         : [],
-    [currentFen, engineArrowAnalysis, panelMode],
+    [currentFen, engineArrowAnalysis],
   );
 
   useEffect(() => {
@@ -1464,6 +1465,11 @@ function BoardWorkspace({
         orientation={orientation}
         lastMoveUci={activeLastMove}
         engineArrowShapes={engineArrowShapes}
+        engineScore={
+          engineArrowAnalysis?.fen === currentFen
+            ? (engineArrowAnalysis.lines[0]?.score ?? null)
+            : null
+        }
         onMove={handleBoardMove}
         canGoToPreviousMove={canGoToPreviousMove}
         canGoToNextMove={canGoToNextMove}
@@ -1482,57 +1488,64 @@ function BoardWorkspace({
 
       <Box className={classes.underBoardPanel}>
         <Box className={classes.underBoardContent}>
-          {panelMode === "moves" ? (
-            <MovesUnderBoardPanel
-              line={activeLine}
-              cursor={cursor}
-              setCursor={setCursor}
-              rootLines={sourceRootLines}
-              onChooseLine={chooseMovePanelLine}
-              sourceTitle={boardTitle}
-              sourceComments={activePrep ? [] : (board.sourceComments ?? [])}
-            />
-          ) : panelMode === "online" ? (
-            <OnlineGameAnalysisPanel onAnalyzeGame={analyzeOnlineGame} />
-          ) : panelMode === "database" ? (
-            <DatabaseUnderBoardPanel
-              currentFen={currentFen}
-              databases={state.databases}
-              gamesByDatabase={state.gamesByDatabase}
-              importHostedFolder={importHostedFolder}
-              onPlayMove={playMove}
-              onOpenSourceGame={loadGameOnBoard}
-              lichessToken={lichessToken}
-            />
-          ) : panelMode === "prep" ? (
-            <PrepUnderBoardPanel
-              state={state}
-              setState={setState}
-              activePrep={activePrep}
-              currentFen={currentFen}
-              stats={prepStats}
-              branchFen={prepBranchFen}
-              branchStart={prepBranchStart}
-              rootStats={prepRootStats}
-              currentLine={currentLine}
-              rootLine={prepRootLine}
-              isInsidePrepLine={!activePrep || cursor >= prepRootPly}
-              onPlayMove={playMove}
-              onPlayRootMove={playMoveFromPrepRoot}
-              onOpenSourceGame={loadGameOnBoard}
-              importHostedFolder={importHostedFolder}
-              importOnlineGames={importOnlineGames}
-              lichessToken={lichessToken}
-            />
-          ) : (
-            <EngineUnderBoardPanel
-              analysisRequestId={onlineAnalysisRequestId}
-              currentFen={currentFen}
-              upcomingFens={upcomingEngineFens}
-              onAnalysisLinesChange={handleEngineAnalysisLinesChange}
-              onPlayMove={playEngineMove}
-            />
-          )}
+          {/* Keep one engine instance mounted across every panel so changing
+              tabs cannot abort an active PC search. */}
+          <EngineUnderBoardPanel
+            analysisRequestId={onlineAnalysisRequestId}
+            compact={panelMode !== "engine"}
+            currentFen={currentFen}
+            upcomingFens={upcomingEngineFens}
+            onAnalysisLinesChange={handleEngineAnalysisLinesChange}
+            onPlayMove={playEngineMove}
+          />
+
+          {panelMode !== "engine" ? (
+            <Box className={classes.underBoardTabContent}>
+              {panelMode === "moves" ? (
+                <MovesUnderBoardPanel
+                  line={activeLine}
+                  cursor={cursor}
+                  setCursor={setCursor}
+                  rootLines={sourceRootLines}
+                  onChooseLine={chooseMovePanelLine}
+                  sourceTitle={boardTitle}
+                  sourceComments={activePrep ? [] : (board.sourceComments ?? [])}
+                />
+              ) : panelMode === "online" ? (
+                <OnlineGameAnalysisPanel onAnalyzeGame={analyzeOnlineGame} />
+              ) : panelMode === "database" ? (
+                <DatabaseUnderBoardPanel
+                  currentFen={currentFen}
+                  databases={state.databases}
+                  gamesByDatabase={state.gamesByDatabase}
+                  importHostedFolder={importHostedFolder}
+                  onPlayMove={playMove}
+                  onOpenSourceGame={loadGameOnBoard}
+                  lichessToken={lichessToken}
+                />
+              ) : (
+                <PrepUnderBoardPanel
+                  state={state}
+                  setState={setState}
+                  activePrep={activePrep}
+                  currentFen={currentFen}
+                  stats={prepStats}
+                  branchFen={prepBranchFen}
+                  branchStart={prepBranchStart}
+                  rootStats={prepRootStats}
+                  currentLine={currentLine}
+                  rootLine={prepRootLine}
+                  isInsidePrepLine={!activePrep || cursor >= prepRootPly}
+                  onPlayMove={playMove}
+                  onPlayRootMove={playMoveFromPrepRoot}
+                  onOpenSourceGame={loadGameOnBoard}
+                  importHostedFolder={importHostedFolder}
+                  importOnlineGames={importOnlineGames}
+                  lichessToken={lichessToken}
+                />
+              )}
+            </Box>
+          ) : null}
         </Box>
       </Box>
     </Box>
@@ -2749,12 +2762,14 @@ function EngineNumberStepper({
 
 function EngineUnderBoardPanel({
   analysisRequestId,
+  compact = false,
   currentFen,
   upcomingFens,
   onAnalysisLinesChange,
   onPlayMove,
 }: {
   analysisRequestId?: number;
+  compact?: boolean;
   currentFen: string;
   upcomingFens: string[];
   onAnalysisLinesChange: (fen: string, lines: WebEngineLine[]) => void;
@@ -2861,6 +2876,77 @@ function EngineUnderBoardPanel({
     liveTopLine && liveLineSpeed
       ? `${getWebEngineSourceLabel(liveTopLine)} · ${liveLineSpeed}`
       : null;
+
+  if (compact) {
+    return (
+      <Box className={classes.compactEnginePanel} data-enabled={settings.enabled}>
+        <Group
+          className={classes.compactEngineHeader}
+          gap="xs"
+          justify="space-between"
+          wrap="nowrap"
+        >
+          <Group gap={6} wrap="nowrap" miw={0}>
+            <IconCpu className={classes.compactEngineIcon} size={16} />
+            <Text fw={700} size="xs" truncate>
+              Stockfish 18
+            </Text>
+            <Code className={classes.compactEngineEval}>
+              {topLine ? formatWebEngineScore(topLine.score) : "--"}
+            </Code>
+          </Group>
+          <Switch
+            aria-label="Toggle Stockfish 18 analysis"
+            checked={settings.enabled}
+            onChange={(event) => updateSettings({ enabled: event.currentTarget.checked })}
+            onLabel="ON"
+            offLabel="OFF"
+            size="sm"
+          />
+        </Group>
+
+        {settings.enabled ? (
+          error ? (
+            <Text className={classes.compactEngineMessage} size="xs" c="red" lineClamp={1}>
+              {error}
+            </Text>
+          ) : displayLines.length > 0 ? (
+            <Box className={classes.compactEngineLines}>
+              {displayLines.slice(0, 3).map((line) => {
+                const firstMove = line.uciMoves[0] ?? null;
+                const pv =
+                  line.sanMoves.length > 0
+                    ? line.sanMoves.slice(0, 5).join(" ")
+                    : line.uciMoves.slice(0, 5).join(" ");
+                return (
+                  <button
+                    key={`${line.source}-${line.multipv}`}
+                    type="button"
+                    className={classes.compactEngineLine}
+                    disabled={!firstMove}
+                    onClick={() => firstMove && onPlayMove(firstMove)}
+                    aria-label={`Play compact engine line ${line.multipv}`}
+                  >
+                    <span className={classes.compactEngineLineEval}>
+                      {formatWebEngineScore(line.score)}
+                    </span>
+                    <span className={classes.compactEngineLineMoves}>{pv || "-"}</span>
+                  </button>
+                );
+              })}
+            </Box>
+          ) : (
+            <Group className={classes.compactEngineMessage} gap={6} wrap="nowrap">
+              <Loader size={11} />
+              <Text size="xs" c="dimmed" truncate>
+                Waiting for the first PC line
+              </Text>
+            </Group>
+          )
+        ) : null}
+      </Box>
+    );
+  }
 
   return (
     <Box className={classes.enginePanelShell}>
@@ -6940,6 +7026,7 @@ function WebChessboard({
   orientation,
   lastMoveUci,
   engineArrowShapes,
+  engineScore,
   onMove,
   canGoToPreviousMove,
   canGoToNextMove,
@@ -6950,6 +7037,7 @@ function WebChessboard({
   orientation: WebColor;
   lastMoveUci: string | null;
   engineArrowShapes: DrawShape[];
+  engineScore: WebEngineLine["score"] | null;
   onMove: (uci: string) => void;
   canGoToPreviousMove: boolean;
   canGoToNextMove: boolean;
@@ -7040,49 +7128,117 @@ function WebChessboard({
 
   return (
     <Box className={classes.boardArea}>
-      <Box ref={boardRef} className={classes.boardMount} />
-      {pendingPromotion && (
-        <Box className={classes.promotionOverlay}>
-          <Box className={classes.promotionDialog}>
-            <Group gap={6} justify="center" wrap="nowrap">
-              {(["q", "r", "b", "n"] as const).map((role) => (
-                <button
-                  key={role}
-                  type="button"
-                  className={classes.promotionChoice}
-                  aria-label={`Promote to ${
-                    { q: "queen", r: "rook", b: "bishop", n: "knight" }[role]
-                  }`}
-                  onClick={() => {
-                    const uci = makeBoardMoveUci(
-                      fen,
-                      pendingPromotion.orig,
-                      pendingPromotion.dest,
-                      role,
-                    );
-                    setPendingPromotion(null);
-                    if (uci) onMoveRef.current(uci);
-                  }}
-                >
-                  {promotionGlyphs[role]}
-                </button>
-              ))}
-            </Group>
-            <Button
-              size="compact-xs"
-              variant="subtle"
-              color="gray"
-              onClick={() => {
-                setPendingPromotion(null);
-                apiRef.current?.set(config);
-              }}
-            >
-              Cancel
-            </Button>
+      <WebBoardEvalBar score={engineScore} orientation={orientation} />
+      <Box className={classes.boardSurface}>
+        <Box ref={boardRef} className={classes.boardMount} />
+        {pendingPromotion && (
+          <Box className={classes.promotionOverlay}>
+            <Box className={classes.promotionDialog}>
+              <Group gap={6} justify="center" wrap="nowrap">
+                {(["q", "r", "b", "n"] as const).map((role) => (
+                  <button
+                    key={role}
+                    type="button"
+                    className={classes.promotionChoice}
+                    aria-label={`Promote to ${
+                      { q: "queen", r: "rook", b: "bishop", n: "knight" }[role]
+                    }`}
+                    onClick={() => {
+                      const uci = makeBoardMoveUci(
+                        fen,
+                        pendingPromotion.orig,
+                        pendingPromotion.dest,
+                        role,
+                      );
+                      setPendingPromotion(null);
+                      if (uci) onMoveRef.current(uci);
+                    }}
+                  >
+                    {promotionGlyphs[role]}
+                  </button>
+                ))}
+              </Group>
+              <Button
+                size="compact-xs"
+                variant="subtle"
+                color="gray"
+                onClick={() => {
+                  setPendingPromotion(null);
+                  apiRef.current?.set(config);
+                }}
+              >
+                Cancel
+              </Button>
+            </Box>
           </Box>
-        </Box>
-      )}
+        )}
+      </Box>
     </Box>
+  );
+}
+
+function WebBoardEvalBar({
+  score,
+  orientation,
+}: {
+  score: WebEngineLine["score"] | null;
+  orientation: WebColor;
+}) {
+  const progress = score
+    ? score.type === "cp"
+      ? getWinChance(score.value)
+      : score.value > 0
+        ? 100
+        : 0
+    : 50;
+  const scoreLabel = score ? formatWebEngineScore(score).replace(/^[+-]/, "") : "";
+  const blackSection = (
+    <Box
+      key="black"
+      className={`${classes.evalBarSection} ${classes.evalBarBlack}`}
+      style={{ height: `${100 - progress}%` }}
+    >
+      {score && score.value <= 0 ? (
+        <Text
+          className={classes.evalBarLabel}
+          c="gray.2"
+          style={{ marginTop: orientation === "black" ? "auto" : undefined }}
+        >
+          {scoreLabel}
+        </Text>
+      ) : null}
+    </Box>
+  );
+  const whiteSection = (
+    <Box
+      key="white"
+      className={`${classes.evalBarSection} ${classes.evalBarWhite}`}
+      style={{ height: `${progress}%` }}
+    >
+      {score && score.value > 0 ? (
+        <Text
+          className={classes.evalBarLabel}
+          c="dark.8"
+          style={{ marginTop: orientation === "white" ? "auto" : undefined }}
+        >
+          {scoreLabel}
+        </Text>
+      ) : null}
+    </Box>
+  );
+  const sections =
+    orientation === "black" ? [whiteSection, blackSection] : [blackSection, whiteSection];
+
+  return (
+    <Tooltip label={score ? formatWebEngineScore(score) : "Engine off"} position="right">
+      <Box
+        aria-label={score ? `Evaluation ${formatWebEngineScore(score)}` : "Evaluation unavailable"}
+        className={classes.evalBar}
+        role="img"
+      >
+        {sections}
+      </Box>
+    </Tooltip>
   );
 }
 

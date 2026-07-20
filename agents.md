@@ -1,5 +1,16 @@
 # AGENTS.md
 
+- On 2026-07-20, phone Stockfish analysis became a board-wide session instead
+  of belonging to the Engine tab. Switching among Moves, Database, Prep, and
+  the full Engine view no longer unmounts or cancels the current PC search;
+  every non-engine tab carries a compact always-available strip with an
+  on/off switch, the top three moves, and their White-relative evaluations.
+  Live engine arrows also remain visible across those tabs. The phone board
+  now has the fork-style 25 px evaluation rail on its left, oriented with the
+  board and driven by the same top line as the strip. Keep one engine component
+  mounted across board-panel changes so future UI reshuffles cannot reintroduce
+  cancellation or duplicate Stockfish requests.
+
 - On 2026-07-20, the phone online-game importer moved out of the under-board
   tool row and into the sticky top navigation beside `Board` and `Files`. Its
   clearer `Import Online` label opens the existing Chess.com/Lichess game
