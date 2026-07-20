@@ -8,7 +8,9 @@ import {
   Paper,
   Progress,
   ScrollArea,
+  SegmentedControl,
   Stack,
+  Tabs,
   Text,
   Textarea,
 } from "@mantine/core";
@@ -22,6 +24,7 @@ import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 import type {
   BestMoves,
+  CoachAnalysisCoverage,
   CoachChatMessage,
   CoachBookPassage,
   CoachEngineLine,
@@ -64,6 +67,38 @@ type CoachUiMessage = CoachChatMessage & {
   engineLines?: CoachEngineLine[];
   targetedResults?: CoachTargetedResult[];
   bookPassages?: CoachBookPassage[];
+  overview?: string;
+  categories?: CoachUiCategory[];
+  analysisCoverage?: CoachAnalysisCoverage;
+};
+
+type CoachUiCategoryPosition = {
+  ply: number;
+  san: string;
+  title: string;
+  explanation: string;
+  engineEvidence: string;
+  betterPlan?: string;
+};
+
+type CoachUiCategoryBookReference = {
+  chunkId: string;
+  whyItMatters: string;
+  positionPly: number | null;
+};
+
+type CoachUiCategory = {
+  id: string;
+  label: string;
+  summary: string;
+  explanation: string;
+  positions: CoachUiCategoryPosition[];
+  bookReferences: CoachUiCategoryBookReference[];
+};
+
+type CoachStructuredResponse = {
+  overview?: unknown;
+  categories?: unknown;
 };
 
 type CoachMessageSegment = { type: "text"; text: string } | { type: "line"; text: string };
@@ -121,6 +156,106 @@ type CoachProgressPayload = {
   finished: boolean;
   elapsedMs: number;
 };
+
+function objectValue(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function stringValue(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function optionalPly(value: unknown): number | null {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : null;
+}
+
+function normalizeCoachCategories(response: CoachStructuredResponse): {
+  overview: string;
+  categories: CoachUiCategory[];
+} {
+  const rawCategories = Array.isArray(response.categories) ? response.categories : [];
+  const usedIds = new Set<string>();
+  const categories = rawCategories.flatMap((value, index): CoachUiCategory[] => {
+    const category = objectValue(value);
+    if (!category) return [];
+
+    const label = stringValue(category.label);
+    const summary = stringValue(category.summary);
+    const explanation = stringValue(category.explanation);
+    const rawPositions = Array.isArray(category.positions) ? category.positions : [];
+    const positions = rawPositions.flatMap((positionValue): CoachUiCategoryPosition[] => {
+      const position = objectValue(positionValue);
+      const ply = optionalPly(position?.ply);
+      if (!position || ply === null) return [];
+
+      const normalized = {
+        ply,
+        san: stringValue(position.san),
+        title: stringValue(position.title),
+        explanation: stringValue(position.explanation),
+        engineEvidence: stringValue(position.engineEvidence),
+        betterPlan: stringValue(position.betterPlan) || undefined,
+      };
+      if (
+        !normalized.san &&
+        !normalized.title &&
+        !normalized.explanation &&
+        !normalized.engineEvidence &&
+        !normalized.betterPlan
+      ) {
+        return [];
+      }
+      return [normalized];
+    });
+    const rawBookReferences = Array.isArray(category.bookReferences) ? category.bookReferences : [];
+    const bookReferences = rawBookReferences.flatMap(
+      (referenceValue): CoachUiCategoryBookReference[] => {
+        const reference = objectValue(referenceValue);
+        if (!reference) return [];
+        const chunkId = stringValue(reference.chunkId);
+        if (!chunkId) return [];
+        return [
+          {
+            chunkId,
+            whyItMatters: stringValue(reference.whyItMatters),
+            positionPly: optionalPly(reference.positionPly),
+          },
+        ];
+      },
+    );
+
+    if (!label || (!summary && !explanation && positions.length === 0)) {
+      return [];
+    }
+
+    const requestedId = stringValue(category.id) || `category-${index + 1}`;
+    let id = requestedId;
+    let suffix = 2;
+    while (usedIds.has(id)) {
+      id = `${requestedId}-${suffix}`;
+      suffix += 1;
+    }
+    usedIds.add(id);
+
+    return [
+      {
+        id,
+        label,
+        summary,
+        explanation,
+        positions,
+        bookReferences,
+      },
+    ];
+  });
+
+  return {
+    overview: stringValue(response.overview),
+    categories,
+  };
+}
 
 function createCoachRequestId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -186,27 +321,23 @@ async function getCoachCloudLines(fen: string, multipv: number): Promise<CoachEn
 
 function buildGameAnalysisContext(root: TreeNode): CoachGameAnalysisPoint[] {
   const mainline = [...treeIteratorMainLine(root)];
-  return mainline
-    .slice(1)
-    .map(({ node }, index) => {
-      const previousNode = mainline[index]?.node;
-      const [beforePosition] = positionFromFen(previousNode?.fen ?? root.fen);
-      const playedUci =
-        beforePosition && node.move ? uciNormalize(beforePosition, node.move) : null;
+  return mainline.slice(1).map(({ node }, index) => {
+    const previousNode = mainline[index]?.node;
+    const [beforePosition] = positionFromFen(previousNode?.fen ?? root.fen);
+    const playedUci = beforePosition && node.move ? uciNormalize(beforePosition, node.move) : null;
 
-      return {
-        ply: node.halfMoves,
-        move: node.san ?? `Ply ${node.halfMoves}`,
-        beforeFen: previousNode?.fen ?? null,
-        fen: node.fen,
-        playedUci,
-        playedSide: node.halfMoves % 2 === 1 ? "white" : "black",
-        eval: node.score ? formatScore(node.score.value) : null,
-        depth: node.depth,
-        annotations: node.annotations,
-      };
-    })
-    .slice(0, 240);
+    return {
+      ply: node.halfMoves,
+      move: node.san ?? `Ply ${node.halfMoves}`,
+      beforeFen: previousNode?.fen ?? null,
+      fen: node.fen,
+      playedUci,
+      playedSide: node.halfMoves % 2 === 1 ? "white" : "black",
+      eval: node.score ? formatScore(node.score.value) : null,
+      depth: node.depth,
+      annotations: node.annotations,
+    };
+  });
 }
 
 function splitCoachMessage(content: string): CoachMessageSegment[] {
@@ -817,8 +948,29 @@ function renderInlineMoves(text: string, context?: InlineMoveRenderContext): Rea
   return pieces;
 }
 
-function renderInlineMarkdown(text: string, context?: InlineMoveRenderContext) {
-  const parts = text.split(/(\*\*[^*\n]+\*\*|\*[^*\n]+\*)/g).filter((part) => part.length > 0);
+function formatBookReferenceLabel(passage: CoachBookPassage): string {
+  const chapter = passage.chapterTitle.trim();
+  const author = passage.author.trim();
+  return [passage.title.trim(), chapter, author].filter(Boolean).join(" - ");
+}
+
+function expandBookReferenceLabels(text: string, passages: CoachBookPassage[]): string {
+  if (passages.length === 0) return text;
+  return text.replace(/\[Book\s+(\d+)\]/gi, (match, rawIndex: string) => {
+    const passage = passages[Number(rawIndex) - 1];
+    return passage ? formatBookReferenceLabel(passage) : match;
+  });
+}
+
+function renderInlineMarkdown(
+  text: string,
+  context?: InlineMoveRenderContext,
+  bookPassages: CoachBookPassage[] = [],
+) {
+  const expandedText = expandBookReferenceLabels(text, bookPassages);
+  const parts = expandedText
+    .split(/(\*\*[^*\n]+\*\*|\*[^*\n]+\*)/g)
+    .filter((part) => part.length > 0);
   return parts.map((part, index) => {
     const doubleBold = part.startsWith("**") && part.endsWith("**");
     const singleBold = !doubleBold && part.startsWith("*") && part.endsWith("*");
@@ -832,7 +984,11 @@ function renderInlineMarkdown(text: string, context?: InlineMoveRenderContext) {
   });
 }
 
-function renderCoachText(text: string, context?: InlineMoveRenderContext) {
+function renderCoachText(
+  text: string,
+  context?: InlineMoveRenderContext,
+  bookPassages: CoachBookPassage[] = [],
+) {
   return text
     .split(/\n+/)
     .map((rawLine) => rawLine.trim())
@@ -842,7 +998,7 @@ function renderCoachText(text: string, context?: InlineMoveRenderContext) {
       if (heading) {
         return (
           <Text key={`${line}-${index}`} size="sm" fw={700} mt={index === 0 ? 0 : "xs"}>
-            {renderInlineMarkdown(heading[1], context)}
+            {renderInlineMarkdown(heading[1], context, bookPassages)}
           </Text>
         );
       }
@@ -854,14 +1010,14 @@ function renderCoachText(text: string, context?: InlineMoveRenderContext) {
             <Text size="sm" c="dimmed" aria-hidden>
               •
             </Text>
-            <Text size="sm">{renderInlineMarkdown(bullet[1], context)}</Text>
+            <Text size="sm">{renderInlineMarkdown(bullet[1], context, bookPassages)}</Text>
           </Group>
         );
       }
 
       return (
         <Text key={`${line}-${index}`} size="sm">
-          {renderInlineMarkdown(line, context)}
+          {renderInlineMarkdown(line, context, bookPassages)}
         </Text>
       );
     });
@@ -924,6 +1080,7 @@ export default function AiCoachPanel() {
   );
 
   const [question, setQuestion] = useState("");
+  const [playerColor, setPlayerColor] = useState<"white" | "black">("white");
   const [messages, setMessages] = useState<CoachUiMessage[]>([]);
   const [answer, setAnswer] = useState("");
   const [error, setError] = useState("");
@@ -1038,6 +1195,7 @@ export default function AiCoachPanel() {
     }
     const trimmedQuestion = question.trim();
     if (!trimmedQuestion) return;
+    const groundedQuestion = `I am ${playerColor === "black" ? "Black" : "White"} in this game or position. ${trimmedQuestion}`;
     const requestPath = [...currentPath];
     const requestBaseSanMoves = getSanVariationLine(root, requestPath);
     const requestBaseHalfMoves = currentNode.halfMoves;
@@ -1207,7 +1365,7 @@ export default function AiCoachPanel() {
           wholeGamePgn,
           gameAnalysis,
           selectedMove,
-          question: trimmedQuestion,
+          question: groundedQuestion,
           chatHistory,
           referenceContext,
           existingLines: requestExistingLines,
@@ -1226,6 +1384,9 @@ export default function AiCoachPanel() {
           },
         }),
       );
+      const structuredAnswer = normalizeCoachCategories(
+        response as unknown as CoachStructuredResponse,
+      );
       setAnswer(response.answer);
       setMessages((current) => [
         ...current,
@@ -1240,6 +1401,10 @@ export default function AiCoachPanel() {
           engineLines: response.stockfishLines,
           targetedResults: response.targetedResults,
           bookPassages: response.bookPassages,
+          overview: structuredAnswer.overview || undefined,
+          categories:
+            structuredAnswer.categories.length > 0 ? structuredAnswer.categories : undefined,
+          analysisCoverage: response.analysisCoverage ?? undefined,
         },
       ]);
       setUsedExistingAnalysis(response.usedExistingAnalysis);
@@ -1355,9 +1520,9 @@ export default function AiCoachPanel() {
             {messages.length === 0 && !loading && (
               <Paper withBorder p="sm">
                 <Text size="sm" c="dimmed">
-                  Ask about the current position or request a whole-game review. Stockfish supplies
-                  the concrete evidence; the coach now retrieves exact, cited lessons from your
-                  chess-book library.
+                  Ask about the current position or request a whole-game review. For a loaded game,
+                  the PC checks every unique position—cloud store first, then live PC Stockfish for
+                  misses—before AI chooses exact chapters and writes the cited coaching tabs.
                 </Text>
               </Paper>
             )}
@@ -1383,6 +1548,9 @@ export default function AiCoachPanel() {
                     engineLines={message.engineLines ?? []}
                     targetedResults={message.targetedResults ?? []}
                     bookPassages={message.bookPassages ?? []}
+                    overview={message.overview}
+                    categories={message.categories ?? []}
+                    analysisCoverage={message.analysisCoverage}
                     onPlayMoves={playCoachMoves}
                   />
                 </Stack>
@@ -1446,6 +1614,21 @@ export default function AiCoachPanel() {
       )}
 
       <Box>
+        <Group justify="space-between" align="center" gap="xs" mb="xs" wrap="wrap">
+          <Text size="xs" c="dimmed" fw={600}>
+            Coach my side
+          </Text>
+          <SegmentedControl
+            size="xs"
+            value={playerColor}
+            disabled={loading}
+            onChange={(value) => setPlayerColor(value === "black" ? "black" : "white")}
+            data={[
+              { value: "white", label: "I'm White" },
+              { value: "black", label: "I'm Black" },
+            ]}
+          />
+        </Group>
         <Group align="flex-end" gap="xs" wrap="nowrap">
           <Textarea
             flex={1}
@@ -1493,6 +1676,9 @@ function CoachMessageContent({
   engineLines,
   targetedResults,
   bookPassages,
+  overview,
+  categories,
+  analysisCoverage,
   onPlayMoves,
 }: {
   content: string;
@@ -1505,6 +1691,9 @@ function CoachMessageContent({
   engineLines: CoachEngineLine[];
   targetedResults: CoachTargetedResult[];
   bookPassages: CoachBookPassage[];
+  overview?: string;
+  categories: CoachUiCategory[];
+  analysisCoverage?: CoachAnalysisCoverage;
   onPlayMoves: (moves: string[], basePath?: number[]) => void;
 }) {
   const lineAnchors = useMemo(
@@ -1526,6 +1715,77 @@ function CoachMessageContent({
     lineAnchors,
     onPlayMoves,
   };
+
+  if (categories.length > 0) {
+    return (
+      <Stack gap="sm">
+        {analysisCoverage ? (
+          <Paper withBorder p="xs">
+            <Stack gap={6}>
+              <Group justify="space-between" gap="xs">
+                <Text size="xs" tt="uppercase" fw={700} c="dimmed">
+                  PC analysis coverage
+                </Text>
+                <Badge
+                  size="sm"
+                  color={
+                    analysisCoverage.complete && analysisCoverage.failed === 0 ? "teal" : "red"
+                  }
+                  variant="light"
+                >
+                  {analysisCoverage.complete && analysisCoverage.failed === 0
+                    ? "Complete"
+                    : "Incomplete"}
+                </Badge>
+              </Group>
+              <Group gap={6} wrap="wrap">
+                <Badge variant="outline">{analysisCoverage.totalPositions} positions</Badge>
+                <Badge variant="outline">{analysisCoverage.uniquePositions} unique</Badge>
+                <Badge variant="outline" color="cyan">
+                  {analysisCoverage.cloudHits} PC cloud
+                </Badge>
+                <Badge variant="outline" color="blue">
+                  {analysisCoverage.liveAnalyses} PC live
+                </Badge>
+                <Badge variant="outline" color={analysisCoverage.failed === 0 ? "gray" : "red"}>
+                  {analysisCoverage.failed} failed
+                </Badge>
+              </Group>
+            </Stack>
+          </Paper>
+        ) : null}
+        {overview ? (
+          <Paper withBorder p="sm" bg="var(--mantine-color-blue-light)">
+            <Stack gap={4}>
+              <Text size="xs" c="blue.2" tt="uppercase" fw={700}>
+                Game overview
+              </Text>
+              <CoachAnswerContent
+                content={overview}
+                basePath={basePath}
+                baseHalfMoves={baseHalfMoves}
+                baseSanMoves={baseSanMoves}
+                mainlineMoves={mainlineMoves}
+                bookPassages={bookPassages}
+                inlineContext={inlineContext}
+                onPlayMoves={onPlayMoves}
+              />
+            </Stack>
+          </Paper>
+        ) : null}
+        <CoachCategoryTabs
+          categories={categories}
+          basePath={basePath}
+          baseHalfMoves={baseHalfMoves}
+          baseSanMoves={baseSanMoves}
+          mainlineMoves={mainlineMoves}
+          bookPassages={bookPassages}
+          inlineContext={inlineContext}
+          onPlayMoves={onPlayMoves}
+        />
+      </Stack>
+    );
+  }
 
   return (
     <Stack gap={6}>
@@ -1576,7 +1836,7 @@ function CoachMessageContent({
 
         return (
           <Stack key={`${segment.type}-${index}`} gap={4}>
-            {renderCoachText(segment.text, inlineContext)}
+            {renderCoachText(segment.text, inlineContext, bookPassages)}
           </Stack>
         );
       })}
@@ -1585,53 +1845,368 @@ function CoachMessageContent({
   );
 }
 
-function CoachBookSources({ passages }: { passages: CoachBookPassage[] }) {
+function CoachAnswerContent({
+  content,
+  basePath,
+  baseHalfMoves,
+  baseSanMoves,
+  mainlineMoves,
+  bookPassages,
+  inlineContext,
+  onPlayMoves,
+}: {
+  content: string;
+  basePath: number[];
+  baseHalfMoves: number;
+  baseSanMoves: string[];
+  mainlineMoves: MainlineMove[];
+  bookPassages: CoachBookPassage[];
+  inlineContext: InlineMoveRenderContext;
+  onPlayMoves: (moves: string[], basePath?: number[]) => void;
+}) {
+  return splitCoachMessage(content).map((segment, index) => {
+    if (segment.type === "line") {
+      const preparedLine = prepareCoachLine({
+        line: segment.text,
+        defaultBasePath: basePath,
+        defaultBaseHalfMoves: baseHalfMoves,
+        defaultBaseSanMoves: baseSanMoves,
+        mainlineMoves,
+      });
+      if (!preparedLine) return null;
+
+      return (
+        <Paper
+          key={`${segment.type}-${index}-${segment.text}`}
+          withBorder
+          p={6}
+          bg="var(--mantine-color-blue-light)"
+          style={{ alignSelf: "stretch" }}
+        >
+          <Group gap={4} wrap="wrap">
+            <IconSparkles size="0.85rem" />
+            {preparedLine.moves.map((move, moveIndex) => (
+              <Group key={`${move.san}-${moveIndex}`} gap={3} wrap="nowrap">
+                {move.label && (
+                  <Text size="sm" c="blue.2" fw={700}>
+                    {move.label}
+                  </Text>
+                )}
+                <Button
+                  size="compact-xs"
+                  variant="subtle"
+                  color="blue"
+                  px={4}
+                  onClick={() => onPlayMoves(move.prefix, preparedLine.basePath)}
+                >
+                  {move.san}
+                </Button>
+              </Group>
+            ))}
+          </Group>
+        </Paper>
+      );
+    }
+
+    return (
+      <Stack key={`${segment.type}-${index}`} gap={4}>
+        {renderCoachText(segment.text, inlineContext, bookPassages)}
+      </Stack>
+    );
+  });
+}
+
+function mainlinePathAtPly(mainlineMoves: MainlineMove[], ply: number): number[] | null {
+  if (ply === 0) return [];
+  return mainlineMoves.find((move) => move.halfMoves === ply)?.path ?? null;
+}
+
+function positionMoveLabel(position: Pick<CoachUiCategoryPosition, "ply" | "san">): string {
+  if (position.ply === 0) return "Game start";
+  return position.san
+    ? formatReferenceMoveLabel(position.ply, position.san)
+    : `Ply ${position.ply}`;
+}
+
+function CoachCategoryTabs({
+  categories,
+  basePath,
+  baseHalfMoves,
+  baseSanMoves,
+  mainlineMoves,
+  bookPassages,
+  inlineContext,
+  onPlayMoves,
+}: {
+  categories: CoachUiCategory[];
+  basePath: number[];
+  baseHalfMoves: number;
+  baseSanMoves: string[];
+  mainlineMoves: MainlineMove[];
+  bookPassages: CoachBookPassage[];
+  inlineContext: InlineMoveRenderContext;
+  onPlayMoves: (moves: string[], basePath?: number[]) => void;
+}) {
+  return (
+    <Tabs defaultValue={categories[0].id} variant="pills" keepMounted={false}>
+      <Box style={{ overflowX: "auto", paddingBottom: 2 }}>
+        <Tabs.List style={{ flexWrap: "nowrap", minWidth: "100%", width: "max-content" }}>
+          {categories.map((category) => (
+            <Tabs.Tab key={category.id} value={category.id} style={{ whiteSpace: "nowrap" }}>
+              {category.label}
+            </Tabs.Tab>
+          ))}
+        </Tabs.List>
+      </Box>
+
+      {categories.map((category) => (
+        <Tabs.Panel key={category.id} value={category.id} pt="sm">
+          <Stack gap="sm">
+            {category.summary ? (
+              <Text size="sm" fw={650}>
+                {renderInlineMarkdown(category.summary, inlineContext, bookPassages)}
+              </Text>
+            ) : null}
+            {category.explanation ? (
+              <CoachAnswerContent
+                content={category.explanation}
+                basePath={basePath}
+                baseHalfMoves={baseHalfMoves}
+                baseSanMoves={baseSanMoves}
+                mainlineMoves={mainlineMoves}
+                bookPassages={bookPassages}
+                inlineContext={inlineContext}
+                onPlayMoves={onPlayMoves}
+              />
+            ) : null}
+            {category.positions.length > 0 ? (
+              <CoachCategoryPositions
+                positions={category.positions}
+                basePath={basePath}
+                baseHalfMoves={baseHalfMoves}
+                baseSanMoves={baseSanMoves}
+                mainlineMoves={mainlineMoves}
+                bookPassages={bookPassages}
+                inlineContext={inlineContext}
+                onPlayMoves={onPlayMoves}
+              />
+            ) : null}
+            {category.bookReferences.length > 0 ? (
+              <CoachBookSources
+                passages={bookPassages}
+                references={category.bookReferences}
+                mainlineMoves={mainlineMoves}
+                inlineContext={inlineContext}
+                onPlayMoves={onPlayMoves}
+              />
+            ) : null}
+          </Stack>
+        </Tabs.Panel>
+      ))}
+    </Tabs>
+  );
+}
+
+function CoachCategoryPositions({
+  positions,
+  basePath,
+  baseHalfMoves,
+  baseSanMoves,
+  mainlineMoves,
+  bookPassages,
+  inlineContext,
+  onPlayMoves,
+}: {
+  positions: CoachUiCategoryPosition[];
+  basePath: number[];
+  baseHalfMoves: number;
+  baseSanMoves: string[];
+  mainlineMoves: MainlineMove[];
+  bookPassages: CoachBookPassage[];
+  inlineContext: InlineMoveRenderContext;
+  onPlayMoves: (moves: string[], basePath?: number[]) => void;
+}) {
+  return (
+    <Stack gap="xs">
+      <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
+        Positions from your game
+      </Text>
+      {positions.map((position, index) => {
+        const positionPath = mainlinePathAtPly(mainlineMoves, position.ply);
+        const moveLabel = positionMoveLabel(position);
+        return (
+          <Paper key={`${position.ply}-${position.san}-${index}`} withBorder p="sm">
+            <Stack gap={6}>
+              <Group justify="space-between" align="flex-start" gap="xs" wrap="nowrap">
+                <Box miw={0}>
+                  <Text size="sm" fw={650}>
+                    {position.title || moveLabel}
+                  </Text>
+                  {position.title && (
+                    <Text size="xs" c="dimmed">
+                      {moveLabel}
+                    </Text>
+                  )}
+                </Box>
+                <Button
+                  size="compact-xs"
+                  variant="light"
+                  disabled={!positionPath}
+                  onClick={() => positionPath && onPlayMoves([], positionPath)}
+                >
+                  Show position
+                </Button>
+              </Group>
+              {position.explanation ? (
+                <CoachAnswerContent
+                  content={position.explanation}
+                  basePath={basePath}
+                  baseHalfMoves={baseHalfMoves}
+                  baseSanMoves={baseSanMoves}
+                  mainlineMoves={mainlineMoves}
+                  bookPassages={bookPassages}
+                  inlineContext={inlineContext}
+                  onPlayMoves={onPlayMoves}
+                />
+              ) : null}
+              {position.engineEvidence ? (
+                <Box>
+                  <Text size="xs" c="dimmed" tt="uppercase" fw={700} mb={2}>
+                    Engine evidence
+                  </Text>
+                  <CoachAnswerContent
+                    content={position.engineEvidence}
+                    basePath={basePath}
+                    baseHalfMoves={baseHalfMoves}
+                    baseSanMoves={baseSanMoves}
+                    mainlineMoves={mainlineMoves}
+                    bookPassages={bookPassages}
+                    inlineContext={inlineContext}
+                    onPlayMoves={onPlayMoves}
+                  />
+                </Box>
+              ) : null}
+              {position.betterPlan ? (
+                <Box>
+                  <Text size="xs" c="dimmed" tt="uppercase" fw={700} mb={2}>
+                    Better plan
+                  </Text>
+                  <CoachAnswerContent
+                    content={position.betterPlan}
+                    basePath={basePath}
+                    baseHalfMoves={baseHalfMoves}
+                    baseSanMoves={baseSanMoves}
+                    mainlineMoves={mainlineMoves}
+                    bookPassages={bookPassages}
+                    inlineContext={inlineContext}
+                    onPlayMoves={onPlayMoves}
+                  />
+                </Box>
+              ) : null}
+            </Stack>
+          </Paper>
+        );
+      })}
+    </Stack>
+  );
+}
+
+function CoachBookSources({
+  passages,
+  references = [],
+  mainlineMoves = [],
+  inlineContext,
+  onPlayMoves,
+}: {
+  passages: CoachBookPassage[];
+  references?: CoachUiCategoryBookReference[];
+  mainlineMoves?: MainlineMove[];
+  inlineContext?: InlineMoveRenderContext;
+  onPlayMoves?: (moves: string[], basePath?: number[]) => void;
+}) {
+  const passageByChunkId = new Map(passages.map((passage) => [passage.chunkId, passage]));
+  const sourceItems =
+    references.length > 0
+      ? references.flatMap((reference) => {
+          const passage = passageByChunkId.get(reference.chunkId);
+          return passage ? [{ passage, reference }] : [];
+        })
+      : passages.map((passage) => ({ passage, reference: undefined }));
+
+  if (sourceItems.length === 0) return null;
+
   return (
     <Paper withBorder p="sm" mt={4} bg="var(--mantine-color-teal-light)">
       <Stack gap="xs">
         <Group gap="xs">
           <IconBook size="1rem" />
           <Text size="sm" fw={700}>
-            Retrieved book passages
+            Book references
           </Text>
           <Badge size="xs" variant="light" color="teal">
-            {passages.length}
+            {sourceItems.length}
           </Badge>
         </Group>
-        {passages.map((passage, index) => (
-          <Paper key={passage.chunkId} withBorder p="xs">
-            <Stack gap={4}>
-              <Group justify="space-between" align="flex-start" gap="xs" wrap="nowrap">
-                <Box miw={0}>
-                  <Text size="sm" fw={650}>
-                    [Book {index + 1}] {passage.title}
-                  </Text>
-                  <Text size="xs" c="dimmed">
-                    {passage.author}
-                    {passage.chapterTitle ? ` · ${passage.chapterTitle}` : ""}
-                  </Text>
-                </Box>
-                {passage.localPath ? (
-                  <Button
-                    size="compact-xs"
-                    variant="subtle"
-                    color="teal"
-                    leftSection={<IconExternalLink size="0.8rem" />}
-                    onClick={() => void openPath(passage.localPath)}
-                  >
-                    PDF
-                  </Button>
+        {sourceItems.map(({ passage, reference }) => {
+          const positionPath =
+            reference?.positionPly !== null && reference?.positionPly !== undefined
+              ? mainlinePathAtPly(mainlineMoves, reference.positionPly)
+              : null;
+          return (
+            <Paper key={passage.chunkId} withBorder p="xs">
+              <Stack gap={4}>
+                <Group justify="space-between" align="flex-start" gap="xs" wrap="nowrap">
+                  <Box miw={0}>
+                    <Text size="sm" fw={650}>
+                      {passage.title}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      {[passage.author, passage.chapterTitle].filter(Boolean).join(" · ")}
+                    </Text>
+                  </Box>
+                  <Group gap={4} wrap="nowrap">
+                    {positionPath && onPlayMoves ? (
+                      <Button
+                        size="compact-xs"
+                        variant="subtle"
+                        onClick={() => onPlayMoves([], positionPath)}
+                      >
+                        Position
+                      </Button>
+                    ) : null}
+                    {passage.localPath ? (
+                      <Button
+                        size="compact-xs"
+                        variant="subtle"
+                        color="teal"
+                        leftSection={<IconExternalLink size="0.8rem" />}
+                        onClick={() => void openPath(passage.localPath)}
+                      >
+                        PDF
+                      </Button>
+                    ) : null}
+                  </Group>
+                </Group>
+                {reference?.whyItMatters ? (
+                  <Box>
+                    <Text size="xs" c="teal.3" fw={700}>
+                      Why this matters here
+                    </Text>
+                    <Text size="xs">
+                      {renderInlineMarkdown(reference.whyItMatters, inlineContext, passages)}
+                    </Text>
+                  </Box>
                 ) : null}
-              </Group>
-              <Text size="xs" lineClamp={4}>
-                {passage.excerpt}
-              </Text>
-              <Text size="xs" c="dimmed">
-                {passage.citation}
-              </Text>
-            </Stack>
-          </Paper>
-        ))}
+                <Text size="xs" lineClamp={4}>
+                  {passage.excerpt}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  {passage.citation}
+                </Text>
+              </Stack>
+            </Paper>
+          );
+        })}
       </Stack>
     </Paper>
   );

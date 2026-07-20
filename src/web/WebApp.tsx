@@ -33,6 +33,7 @@ import {
   Stack,
   Switch,
   Table,
+  Tabs,
   Text,
   TextInput,
   Textarea,
@@ -100,11 +101,19 @@ import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import classes from "./WebApp.module.css";
 import {
   askWebChessCoach,
+  getDefaultWebCoachScope,
   getWebChessCoachHealth,
+  getWebChessCoachProgress,
+  getWebCoachBookHeading,
   getWebCoachBookPdfUrl,
+  getWebCoachLineContextKey,
   getWebCoachMoves,
   makeWebCoachMovetext,
+  webCoachLineMatchesSourceGame,
+  type WebCoachBookPassage,
+  type WebCoachCategory,
   type WebChessCoachHealth,
+  type WebChessCoachProgress,
   type WebChessCoachResponse,
 } from "./chessCoach";
 import {
@@ -1089,6 +1098,7 @@ function BoardWorkspace({
   setPanelMode: Dispatch<SetStateAction<BoardPanelMode>>;
 }) {
   const [onlineAnalysisRequestId, setOnlineAnalysisRequestId] = useState(0);
+  const [coachReviewRunning, setCoachReviewRunning] = useState(false);
   const [engineArrowAnalysis, setEngineArrowAnalysis] = useState<{
     fen: string;
     lines: WebEngineLine[];
@@ -1475,6 +1485,7 @@ function BoardWorkspace({
             upcomingFens={upcomingEngineFens}
             onAnalysisLinesChange={handleEngineAnalysisLinesChange}
             onPlayMove={playEngineMove}
+            suspended={coachReviewRunning}
           />
 
           {panelMode !== "engine" ? (
@@ -1529,6 +1540,8 @@ function BoardWorkspace({
                     engineArrowAnalysis?.fen === currentFen ? engineArrowAnalysis.lines : []
                   }
                   defaultPlayerColor={orientation}
+                  onSelectPly={(ply) => setCursor(Math.min(activeLine.length, Math.max(0, ply)))}
+                  onReviewRunningChange={setCoachReviewRunning}
                 />
               )}
             </Box>
@@ -1717,18 +1730,22 @@ function CoachUnderBoardPanel({
   currentFen,
   currentLines,
   defaultPlayerColor,
+  onSelectPly,
+  onReviewRunningChange,
 }: {
   sourceGame: WebGame | null;
   line: WebPrepLineMove[];
   currentFen: string;
   currentLines: WebEngineLine[];
   defaultPlayerColor: WebColor;
+  onSelectPly: (ply: number) => void;
+  onReviewRunningChange: (running: boolean) => void;
 }) {
   const [health, setHealth] = useState<WebChessCoachHealth | null>(null);
   const [healthError, setHealthError] = useState("");
   const [playerColor, setPlayerColor] = useState<WebColor>(defaultPlayerColor);
   const [scope, setScope] = useState<"position" | "whole-game">(
-    sourceGame || line.length > 4 ? "whole-game" : "position",
+    getDefaultWebCoachScope(sourceGame, line),
   );
   const [question, setQuestion] = useState(
     sourceGame || line.length > 4
@@ -1736,9 +1753,33 @@ function CoachUnderBoardPanel({
       : "Explain this position, the best plan, and the most relevant lesson from my chess library.",
   );
   const [response, setResponse] = useState<WebChessCoachResponse | null>(null);
+  const [responseContextKey, setResponseContextKey] = useState<string | null>(null);
+  const [responseLineContextKey, setResponseLineContextKey] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState<WebChessCoachProgress | null>(null);
+  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
   const healthRequestRef = useRef<AbortController | null>(null);
+  const coachRequestRef = useRef<AbortController | null>(null);
+  const progressTimerRef = useRef<number | null>(null);
+  const lineContextKey = useMemo(
+    () => getWebCoachLineContextKey(sourceGame, line, currentFen),
+    [currentFen, line, sourceGame],
+  );
+  const coachContextKey = useMemo(
+    () =>
+      JSON.stringify([
+        lineContextKey,
+        scope,
+        playerColor,
+        scope === "position" ? currentFen : "whole-game",
+      ]),
+    [currentFen, lineContextKey, playerColor, scope],
+  );
+  const currentCoachContextRef = useRef(coachContextKey);
+  currentCoachContextRef.current = coachContextKey;
+  const previousLineContextRef = useRef(lineContextKey);
+  const previousCoachContextRef = useRef(coachContextKey);
 
   const loadHealth = useCallback(() => {
     if (healthRequestRef.current) return healthRequestRef.current;
@@ -1763,10 +1804,30 @@ function CoachUnderBoardPanel({
     return controller;
   }, []);
 
+  const clearCoachReview = useCallback(() => {
+    coachRequestRef.current?.abort();
+    coachRequestRef.current = null;
+    if (progressTimerRef.current !== null) window.clearInterval(progressTimerRef.current);
+    progressTimerRef.current = null;
+    setLoading(false);
+    setProgress(null);
+    setResponse(null);
+    setResponseContextKey(null);
+    setResponseLineContextKey(null);
+    setActiveCategoryId(null);
+    setError("");
+    onReviewRunningChange(false);
+  }, [onReviewRunningChange]);
+
   useEffect(() => {
     loadHealth();
-    return () => healthRequestRef.current?.abort();
-  }, [loadHealth]);
+    return () => {
+      healthRequestRef.current?.abort();
+      coachRequestRef.current?.abort();
+      if (progressTimerRef.current !== null) window.clearInterval(progressTimerRef.current);
+      onReviewRunningChange(false);
+    };
+  }, [loadHealth, onReviewRunningChange]);
 
   useEffect(() => {
     if (health?.ok) return;
@@ -1778,35 +1839,107 @@ function CoachUnderBoardPanel({
     setPlayerColor(defaultPlayerColor);
   }, [defaultPlayerColor, sourceGame?.id]);
 
-  const coachMoves = useMemo(
-    () => getWebCoachMoves(sourceGame?.moves ?? null, line),
-    [line, sourceGame?.moves],
+  useEffect(() => {
+    if (previousLineContextRef.current === lineContextKey) return;
+    previousLineContextRef.current = lineContextKey;
+    setScope(getDefaultWebCoachScope(sourceGame, line));
+    clearCoachReview();
+  }, [clearCoachReview, line, lineContextKey, sourceGame]);
+
+  useEffect(() => {
+    if (previousCoachContextRef.current === coachContextKey) return;
+    previousCoachContextRef.current = coachContextKey;
+    clearCoachReview();
+  }, [clearCoachReview, coachContextKey]);
+
+  const sourceLineIsUnchanged = useMemo(
+    () => webCoachLineMatchesSourceGame(sourceGame, line),
+    [line, sourceGame],
   );
-  const pgn = sourceGame?.pgn ?? makeWebCoachMovetext(line);
+  const coachMoves = useMemo(
+    () => getWebCoachMoves(sourceLineIsUnchanged ? (sourceGame?.moves ?? null) : null, line),
+    [line, sourceGame?.moves, sourceLineIsUnchanged],
+  );
+  const pgn = sourceLineIsUnchanged
+    ? (sourceGame?.pgn ?? makeWebCoachMovetext(line))
+    : makeWebCoachMovetext(line);
+  const visibleResponse =
+    response && responseContextKey === coachContextKey && responseLineContextKey === lineContextKey
+      ? response
+      : null;
   const canAsk = Boolean(
     question.trim() && health?.corpusAvailable && health.modelAvailable && !loading,
   );
 
   async function askCoach() {
     if (!canAsk) return;
+    coachRequestRef.current?.abort();
+    if (progressTimerRef.current !== null) window.clearInterval(progressTimerRef.current);
+    const controller = new AbortController();
+    const requestId = createWebCoachRequestId();
+    const submittedContextKey = coachContextKey;
+    const submittedLineContextKey = lineContextKey;
+    coachRequestRef.current = controller;
+    onReviewRunningChange(true);
+    stopWebStockfish18Search();
     setLoading(true);
+    setProgress({
+      requestId,
+      phase: "queued",
+      label: "Stopping the board engine and preparing the PC review...",
+      completed: 0,
+      total: 0,
+    });
     setError("");
     setResponse(null);
+    setActiveCategoryId(null);
     try {
+      await new Promise<void>((resolve) => window.setTimeout(resolve, 50));
+      if (controller.signal.aborted) return;
+      let progressFetchRunning = false;
+      const pollProgress = async () => {
+        if (progressFetchRunning || controller.signal.aborted) return;
+        progressFetchRunning = true;
+        try {
+          const nextProgress = await getWebChessCoachProgress(requestId, controller.signal);
+          if (!controller.signal.aborted) setProgress(nextProgress);
+        } catch {
+          // The POST may not have registered its progress record yet.
+        } finally {
+          progressFetchRunning = false;
+        }
+      };
+      progressTimerRef.current = window.setInterval(() => void pollProgress(), 750);
       const result = await askWebChessCoach({
         question: question.trim(),
+        requestId,
         pgn,
         playerColor,
         scope,
         currentFen,
         moves: coachMoves,
         currentLines,
+        signal: controller.signal,
       });
+      if (controller.signal.aborted || currentCoachContextRef.current !== submittedContextKey) {
+        return;
+      }
       setResponse(result);
+      setResponseContextKey(submittedContextKey);
+      setResponseLineContextKey(submittedLineContextKey);
+      setActiveCategoryId(result.categories[0]?.id ?? null);
     } catch (coachError) {
+      if (controller.signal.aborted) return;
       setError(coachError instanceof Error ? coachError.message : "The PC coach failed.");
     } finally {
-      setLoading(false);
+      if (coachRequestRef.current === controller) {
+        coachRequestRef.current = null;
+        if (progressTimerRef.current !== null) window.clearInterval(progressTimerRef.current);
+        progressTimerRef.current = null;
+        setLoading(false);
+        setProgress(null);
+        onReviewRunningChange(false);
+      }
     }
   }
 
@@ -1891,12 +2024,27 @@ function CoachUnderBoardPanel({
       {loading ? (
         <Box className={classes.coachNotice}>
           <Text size="sm" fw={600}>
-            Finding critical moments and retrieving book passages...
+            {progress?.label || "Building your PC-first game review..."}
           </Text>
-          <Progress value={100} animated mt="xs" />
-          <Text size="xs" c="dimmed" mt={4}>
-            The phone uses PC-stored evaluations first; it does not queue a full live-game scan.
-          </Text>
+          <Progress
+            value={
+              progress && progress.total > 0
+                ? Math.min(100, (progress.completed / progress.total) * 100)
+                : 100
+            }
+            animated={!progress || progress.total === 0}
+            mt="xs"
+          />
+          {progress && progress.total > 0 ? (
+            <Text size="xs" c="dimmed" mt={4}>
+              {progress.completed} of {progress.total}
+            </Text>
+          ) : null}
+          <Stack gap={3} mt="xs" className={classes.coachProgressSteps}>
+            <Text size="xs">1. PC checks every position, using cloud evals first.</Text>
+            <Text size="xs">2. GPT chooses the relevant books and exact chapters.</Text>
+            <Text size="xs">3. Coach writes the most useful topic tabs.</Text>
+          </Stack>
         </Box>
       ) : null}
       {error ? (
@@ -1905,60 +2053,262 @@ function CoachUnderBoardPanel({
         </Box>
       ) : null}
 
-      {response ? (
+      {visibleResponse ? (
         <Stack gap="sm">
-          <Box className={classes.coachAnswer}>
-            <ReactMarkdown>{response.answer}</ReactMarkdown>
+          <Box className={classes.coachOverview}>
+            <Text size="xs" fw={700} tt="uppercase" c="teal" mb={4}>
+              Game overview
+            </Text>
+            <Box className={classes.coachAnswer}>
+              <ReactMarkdown>{visibleResponse.overview}</ReactMarkdown>
+            </Box>
           </Box>
           <Group gap="xs">
-            <Badge variant="light">{response.model}</Badge>
-            <Badge variant="outline">{response.criticalMoments.length} critical moments</Badge>
+            <Badge variant="light">{visibleResponse.model}</Badge>
+            {visibleResponse.analysisCoverage.totalPositions > 0 ? (
+              <Badge variant="outline">
+                {visibleResponse.analysisCoverage.totalPositions} positions checked
+              </Badge>
+            ) : visibleResponse.criticalMoments.length > 0 ? (
+              <Badge variant="outline">
+                {visibleResponse.criticalMoments.length} critical moments
+              </Badge>
+            ) : null}
+            {visibleResponse.analysisCoverage.cloudHits > 0 ? (
+              <Badge color="blue" variant="outline">
+                {visibleResponse.analysisCoverage.cloudHits} cloud evals
+              </Badge>
+            ) : null}
+            {visibleResponse.analysisCoverage.liveAnalyses > 0 ? (
+              <Badge color="cyan" variant="outline">
+                {visibleResponse.analysisCoverage.liveAnalyses} fresh PC evals
+              </Badge>
+            ) : null}
             <Badge color="teal" variant="outline">
-              {response.bookPassages.length} passages
+              {visibleResponse.bookPassages.length} book passages
             </Badge>
           </Group>
-          {response.bookPassages.length > 0 ? (
+          {visibleResponse.analysisCoverage.failed > 0 ? (
+            <Box className={classes.coachNotice} data-tone="warning">
+              <Text size="xs">
+                {visibleResponse.analysisCoverage.failed} position
+                {visibleResponse.analysisCoverage.failed === 1 ? "" : "s"} could not be checked by
+                the PC. Treat conclusions around those moves with care.
+              </Text>
+            </Box>
+          ) : null}
+          {visibleResponse.categories.length > 0 ? (
+            <Tabs
+              value={activeCategoryId ?? visibleResponse.categories[0].id}
+              onChange={setActiveCategoryId}
+              keepMounted={false}
+              variant="pills"
+            >
+              <Box className={classes.coachTabsScroller}>
+                <Tabs.List className={classes.coachTabsList}>
+                  {visibleResponse.categories.map((category) => (
+                    <Tabs.Tab value={category.id} key={category.id} className={classes.coachTab}>
+                      {category.label}
+                    </Tabs.Tab>
+                  ))}
+                </Tabs.List>
+              </Box>
+              {visibleResponse.categories.map((category) => (
+                <Tabs.Panel value={category.id} key={category.id} pt="sm">
+                  <CoachCategoryPanel
+                    category={category}
+                    bookPassages={visibleResponse.bookPassages}
+                    onSelectPly={(ply) => {
+                      if (
+                        responseContextKey !== coachContextKey ||
+                        responseLineContextKey !== lineContextKey ||
+                        ply < 0 ||
+                        ply > line.length
+                      ) {
+                        return;
+                      }
+                      onSelectPly(ply);
+                    }}
+                  />
+                </Tabs.Panel>
+              ))}
+            </Tabs>
+          ) : visibleResponse.bookPassages.length > 0 ? (
             <Stack gap="xs">
               <Text size="sm" fw={700}>
-                Retrieved book passages
+                From your library
               </Text>
-              {response.bookPassages.map((passage, index) => (
-                <Box key={passage.chunkId} className={classes.coachSourceCard}>
-                  <Group justify="space-between" gap="xs" align="flex-start" wrap="nowrap">
-                    <Box miw={0}>
-                      <Text size="sm" fw={650}>
-                        [Book {index + 1}] {passage.title}
-                      </Text>
-                      <Text size="xs" c="dimmed">
-                        {passage.author}
-                        {passage.chapterTitle ? ` - ${passage.chapterTitle}` : ""}
-                      </Text>
-                    </Box>
-                    <Button
-                      component="a"
-                      href={getWebCoachBookPdfUrl(passage)}
-                      target="_blank"
-                      rel="noreferrer"
-                      size="compact-xs"
-                      variant="subtle"
-                      leftSection={<IconExternalLink size={12} />}
-                    >
-                      PDF
-                    </Button>
-                  </Group>
-                  <Text size="xs" mt={6} lineClamp={5}>
-                    {passage.excerpt}
-                  </Text>
-                  <Text size="xs" c="dimmed" mt={4}>
-                    {passage.citation}
-                  </Text>
-                </Box>
+              {visibleResponse.bookPassages.map((passage) => (
+                <CoachBookSourceCard key={passage.chunkId} passage={passage} />
               ))}
             </Stack>
           ) : null}
         </Stack>
       ) : null}
     </Stack>
+  );
+}
+
+function CoachCategoryPanel({
+  category,
+  bookPassages,
+  onSelectPly,
+}: {
+  category: WebCoachCategory;
+  bookPassages: WebCoachBookPassage[];
+  onSelectPly: (ply: number) => void;
+}) {
+  const passageById = new Map(bookPassages.map((passage) => [passage.chunkId, passage]));
+  const references = category.bookReferences.flatMap((reference) => {
+    const passage = passageById.get(reference.chunkId);
+    return passage ? [{ reference, passage }] : [];
+  });
+
+  return (
+    <Stack gap="sm">
+      {category.summary ? (
+        <Text size="sm" fw={650}>
+          {category.summary}
+        </Text>
+      ) : null}
+      {category.explanation ? (
+        <Box className={classes.coachAnswer}>
+          <ReactMarkdown>{category.explanation}</ReactMarkdown>
+        </Box>
+      ) : null}
+
+      {category.positions.length > 0 ? (
+        <Stack gap="xs">
+          <Text size="sm" fw={700}>
+            Key positions
+          </Text>
+          {category.positions.map((position, index) => (
+            <Box key={`${position.ply}-${index}`} className={classes.coachPositionCard}>
+              <Group justify="space-between" gap="xs" align="flex-start" wrap="nowrap">
+                <Box miw={0}>
+                  <Text size="sm" fw={650}>
+                    {position.title}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {formatCoachPlyLabel(position.ply, position.san)}
+                  </Text>
+                </Box>
+                <Button
+                  size="compact-xs"
+                  variant="light"
+                  leftSection={<IconTarget size={12} />}
+                  onClick={() => onSelectPly(position.ply)}
+                >
+                  Show
+                </Button>
+              </Group>
+              <Text size="xs" mt={6}>
+                {position.explanation}
+              </Text>
+              {position.engineEvidence ? (
+                <Text size="xs" c="blue.2" mt={5}>
+                  Engine: {position.engineEvidence}
+                </Text>
+              ) : null}
+              {position.betterPlan ? (
+                <Text size="xs" mt={5}>
+                  <strong>Better plan:</strong> {position.betterPlan}
+                </Text>
+              ) : null}
+            </Box>
+          ))}
+        </Stack>
+      ) : null}
+
+      {references.length > 0 ? (
+        <Stack gap="xs">
+          <Text size="sm" fw={700}>
+            From your library
+          </Text>
+          {references.map(({ reference, passage }) => (
+            <CoachBookSourceCard
+              key={passage.chunkId}
+              passage={passage}
+              whyItMatters={reference.whyItMatters}
+              positionPly={reference.positionPly}
+              onSelectPly={onSelectPly}
+            />
+          ))}
+        </Stack>
+      ) : null}
+    </Stack>
+  );
+}
+
+function CoachBookSourceCard({
+  passage,
+  whyItMatters,
+  positionPly,
+  onSelectPly,
+}: {
+  passage: WebCoachBookPassage;
+  whyItMatters?: string;
+  positionPly?: number | null;
+  onSelectPly?: (ply: number) => void;
+}) {
+  return (
+    <Box className={classes.coachSourceCard}>
+      <Group justify="space-between" gap="xs" align="flex-start" wrap="nowrap">
+        <Box miw={0}>
+          <Text size="sm" fw={650}>
+            {getWebCoachBookHeading(passage)}
+          </Text>
+          <Text size="xs" c="dimmed">
+            {passage.author}
+          </Text>
+        </Box>
+        {passage.sourceUrl ? (
+          <Button
+            component="a"
+            href={getWebCoachBookPdfUrl(passage)}
+            target="_blank"
+            rel="noreferrer"
+            size="compact-xs"
+            variant="subtle"
+            leftSection={<IconExternalLink size={12} />}
+          >
+            PDF
+          </Button>
+        ) : null}
+      </Group>
+      {whyItMatters ? (
+        <Text size="xs" mt={6} fw={550}>
+          {whyItMatters}
+        </Text>
+      ) : null}
+      {passage.excerpt ? (
+        <Text size="xs" mt={6} lineClamp={5}>
+          {passage.excerpt}
+        </Text>
+      ) : null}
+      <Group gap="xs" mt={4} justify="space-between" align="center">
+        <Text size="xs" c="dimmed">
+          {passage.citation}
+        </Text>
+        {positionPly && onSelectPly ? (
+          <Button size="compact-xs" variant="subtle" onClick={() => onSelectPly(positionPly)}>
+            See position
+          </Button>
+        ) : null}
+      </Group>
+    </Box>
+  );
+}
+
+function formatCoachPlyLabel(ply: number, san: string) {
+  const moveNumber = Math.ceil(ply / 2);
+  return `${moveNumber}${ply % 2 === 0 ? "..." : "."}${san ? ` ${san}` : ""}`;
+}
+
+function createWebCoachRequestId() {
+  return (
+    globalThis.crypto?.randomUUID?.() ??
+    `coach-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
   );
 }
 
@@ -3043,6 +3393,7 @@ function EngineUnderBoardPanel({
   upcomingFens,
   onAnalysisLinesChange,
   onPlayMove,
+  suspended = false,
 }: {
   analysisRequestId?: number;
   compact?: boolean;
@@ -3050,6 +3401,7 @@ function EngineUnderBoardPanel({
   upcomingFens: string[];
   onAnalysisLinesChange: (fen: string, lines: WebEngineLine[]) => void;
   onPlayMove: (uci: string) => void;
+  suspended?: boolean;
 }) {
   const [settings, setSettings] = usePersistentJson(
     WEB_ENGINE_PANEL_SETTINGS_STORAGE_KEY,
@@ -3073,7 +3425,7 @@ function EngineUnderBoardPanel({
   }, [analysisRequestId, setSettings]);
 
   useEffect(() => {
-    if (!settings.enabled) {
+    if (!settings.enabled || suspended) {
       stopWebStockfish18Search();
       setStatus("idle");
       setError(null);
@@ -3122,27 +3474,29 @@ function EngineUnderBoardPanel({
     settings.enabled,
     settings.infinite,
     settings.multipv,
+    suspended,
     upcomingFens,
   ]);
 
   const displayLines = stockfishLines;
   useEffect(() => {
-    onAnalysisLinesChange(currentFen, settings.enabled ? displayLines : []);
-  }, [currentFen, displayLines, onAnalysisLinesChange, settings.enabled]);
+    onAnalysisLinesChange(currentFen, settings.enabled && !suspended ? displayLines : []);
+  }, [currentFen, displayLines, onAnalysisLinesChange, settings.enabled, suspended]);
 
   useEffect(() => {
     return () => onAnalysisLinesChange(currentFen, []);
   }, [currentFen, onAnalysisLinesChange]);
 
   const topLine = displayLines[0] ?? null;
+  const analysisEnabled = settings.enabled && !suspended;
   const progress = getWebEngineProgress({
-    enabled: settings.enabled,
+    enabled: analysisEnabled,
     status,
     lines: displayLines,
     targetDepth: settings.infinite ? 70 : settings.depth,
   });
   const headerStatus = getWebEngineHeaderStatus({
-    enabled: settings.enabled,
+    enabled: analysisEnabled,
     status,
     topLine,
   });
@@ -3150,7 +3504,7 @@ function EngineUnderBoardPanel({
   const nodeCount = topLine ? formatWebEngineNodeCount(topLine.nodes) : null;
   const analysisSource = topLine ? getWebEngineSourceLabel(topLine) : "Stockfish";
   const compactEngineMeta = getWebCompactEngineMeta({
-    enabled: settings.enabled,
+    enabled: analysisEnabled,
     topLine,
     nodeCount,
     liveLineSpeed,
@@ -3158,7 +3512,7 @@ function EngineUnderBoardPanel({
 
   if (compact) {
     return (
-      <Box className={classes.compactEnginePanel} data-enabled={settings.enabled}>
+      <Box className={classes.compactEnginePanel} data-enabled={analysisEnabled}>
         <Group
           className={classes.compactEngineHeader}
           gap="xs"
@@ -3193,7 +3547,11 @@ function EngineUnderBoardPanel({
         </Group>
 
         {settings.enabled ? (
-          error ? (
+          suspended ? (
+            <Text className={classes.compactEngineMessage} size="xs" c="dimmed" lineClamp={1}>
+              Paused while Coach reviews the game
+            </Text>
+          ) : error ? (
             <Text className={classes.compactEngineMessage} size="xs" c="red" lineClamp={1}>
               {error}
             </Text>
@@ -3242,12 +3600,18 @@ function EngineUnderBoardPanel({
       <Box className={classes.enginePanelHeader}>
         <ActionIcon
           className={classes.enginePanelToggle}
-          aria-label={settings.enabled ? "Pause Stockfish 18" : "Start Stockfish 18"}
-          variant={settings.enabled ? "filled" : "subtle"}
-          color={settings.enabled ? "blue" : "gray"}
+          aria-label={
+            suspended
+              ? "Stockfish 18 paused while Coach reviews"
+              : settings.enabled
+                ? "Pause Stockfish 18"
+                : "Start Stockfish 18"
+          }
+          variant={analysisEnabled ? "filled" : "subtle"}
+          color={analysisEnabled ? "blue" : "gray"}
           onClick={() => updateSettings({ enabled: !settings.enabled })}
         >
-          {settings.enabled ? <IconPlayerPause size={17} /> : <IconPlayerPlay size={17} />}
+          {analysisEnabled ? <IconPlayerPause size={17} /> : <IconPlayerPlay size={17} />}
         </ActionIcon>
 
         <Box className={classes.enginePanelTitleArea}>
@@ -3255,7 +3619,9 @@ function EngineUnderBoardPanel({
             <Text fw={700} size="sm" truncate>
               Stockfish 18
             </Text>
-            {headerStatus ? (
+            {suspended && settings.enabled ? (
+              <Code className={classes.enginePanelCode}>Coach review</Code>
+            ) : headerStatus ? (
               <Code className={classes.enginePanelCode} c={engineStatusTextColor(status)}>
                 {headerStatus}
               </Code>

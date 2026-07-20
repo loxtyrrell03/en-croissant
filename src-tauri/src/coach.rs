@@ -47,15 +47,24 @@ const MAX_PLANNER_STOCKFISH_REQUESTS: usize = 6;
 const MAX_CHESS_FACT_TOOL_CALLS: usize = 10;
 const MAX_WHOLE_GAME_CRITICAL_REQUESTS: usize = 3;
 const PLANNER_TIMEOUT_SECS: u64 = 25;
-const MAX_PROMPT_PGN_CHARS: usize = 12_000;
+const MAX_PROMPT_PGN_CHARS: usize = 300_000;
 const MAX_CHAT_MESSAGE_CHARS: usize = 2_000;
 const MAX_REFERENCE_CONTEXT_ITEMS: usize = 120;
 const MAX_PLAN_COACH_ITEMS: usize = 48;
 const MAX_PLAN_COACH_ITEM_CHARS: usize = 900;
 const MAX_PLAN_COACH_SUMMARY_CHARS: usize = 1_600;
 const MAX_GEMINI_ERROR_CHARS: usize = 1_200;
-const MAX_BOOK_PASSAGES: usize = 6;
+const MAX_BOOK_PASSAGES: usize = 18;
+const MAX_BOOK_PASSAGES_PER_CATEGORY: usize = 3;
 const MAX_BOOK_EXCERPT_CHARS: usize = 1_100;
+const MAX_COACH_CATEGORIES: usize = 6;
+const MAX_LIBRARY_BOOKS_PER_CATEGORY: usize = 8;
+const MAX_LIBRARY_CHAPTERS_PER_CATEGORY: usize = 12;
+const MAX_LIBRARY_QUERIES_PER_CATEGORY: usize = 6;
+const LIBRARY_PLANNER_TIMEOUT_SECS: u64 = 120;
+const PC_GAME_ANALYSIS_TIMEOUT_SECS: u64 = 600;
+const LOCAL_HOME_SERVER_ORIGIN: &str = "http://127.0.0.1:8787";
+const PRIVATE_HOME_SERVER_ORIGIN: &str = "https://gaming-pc.tail89d19b.ts.net";
 const OPENING_PHASE_MAX_PLY: u32 = 30;
 const CONVERSION_PHASE_WINDOW_PLIES: u32 = 40;
 const AI_COACH_PROGRESS_EVENT: &str = "ai-coach-progress";
@@ -239,12 +248,58 @@ pub struct CoachOpeningMove {
 #[serde(rename_all = "camelCase")]
 pub struct AiCoachResponse {
     pub answer: String,
+    pub overview: String,
+    pub categories: Vec<CoachCategory>,
+    pub analysis_coverage: Option<CoachAnalysisCoverage>,
     pub model: String,
     pub used_existing_analysis: bool,
     pub stockfish_lines: Vec<CoachEngineLine>,
     pub targeted_results: Vec<CoachTargetedResult>,
     pub book_passages: Vec<CoachBookPassage>,
     pub book_corpus_available: bool,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct CoachAnalysisCoverage {
+    pub total_positions: u32,
+    pub unique_positions: u32,
+    pub cloud_hits: u32,
+    pub live_analyses: u32,
+    pub failed: u32,
+    pub live_depth: u32,
+    #[serde(default)]
+    pub complete: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct CoachCategory {
+    pub id: String,
+    pub label: String,
+    pub summary: String,
+    pub explanation: String,
+    pub positions: Vec<CoachCategoryPosition>,
+    pub book_references: Vec<CoachCategoryBookReference>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct CoachCategoryPosition {
+    pub ply: u32,
+    pub san: String,
+    pub title: String,
+    pub explanation: String,
+    pub engine_evidence: String,
+    pub better_plan: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct CoachCategoryBookReference {
+    pub chunk_id: String,
+    pub why_it_matters: String,
+    pub position_ply: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Type)]
@@ -442,6 +497,122 @@ struct CoachPlannerResponse {
     reason: String,
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CoachLibraryInventory {
+    books: Vec<CoachLibraryBook>,
+    chapters: Vec<CoachLibraryChapter>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CoachLibraryBook {
+    book_id: String,
+    title: String,
+    author: String,
+    shelf: String,
+    has_excerpt: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CoachLibraryChapter {
+    chapter_id: String,
+    book_id: String,
+    title: String,
+    printed_page_start: Option<u32>,
+    pdf_page_start: Option<u32>,
+    pdf_page_end: Option<u32>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+struct CoachLibraryPlan {
+    #[serde(default)]
+    overview: String,
+    #[serde(default)]
+    categories: Vec<CoachLibraryCategoryPlan>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+struct CoachLibraryCategoryPlan {
+    #[serde(default)]
+    id: String,
+    #[serde(default)]
+    label: String,
+    #[serde(default)]
+    reason: String,
+    #[serde(default)]
+    key_plies: Vec<u32>,
+    #[serde(default)]
+    book_ids: Vec<String>,
+    #[serde(default)]
+    chapter_ids: Vec<String>,
+    #[serde(default)]
+    search_queries: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+struct CoachStructuredReview {
+    #[serde(default)]
+    overview: String,
+    #[serde(default)]
+    categories: Vec<CoachCategory>,
+}
+
+#[derive(Debug, Default)]
+struct CoachBookRetrieval {
+    passages: Vec<CoachBookPassage>,
+    category_chunks: HashMap<String, Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CoachPcGameAnalysis {
+    request_id: String,
+    player_color: String,
+    scope: String,
+    #[serde(default)]
+    move_analysis: Vec<CoachPcMoveAnalysis>,
+    analysis_coverage: CoachAnalysisCoverage,
+    #[serde(default)]
+    stored_evaluations_used: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CoachPcMoveAnalysis {
+    ply: u32,
+    move_number: u32,
+    color: String,
+    san: String,
+    uci: String,
+    fen_before: String,
+    fen_after: String,
+    before: Option<CoachPcEvaluation>,
+    after: Option<CoachPcEvaluation>,
+    mover_loss_cp: Option<i32>,
+    player_loss_cp: Option<i32>,
+    #[serde(default)]
+    annotations: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CoachPcEvaluation {
+    white_cp: Option<i32>,
+    white_mate: Option<i32>,
+    depth: Option<u32>,
+    source: String,
+    nodes: Option<u64>,
+    #[serde(default)]
+    pv_uci: Vec<String>,
+    #[serde(default)]
+    terminal: bool,
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum CoachError {
     #[error("AI Coach is disabled in Settings")]
@@ -470,6 +641,18 @@ pub enum CoachError {
 
     #[error("Coach chess fact planner returned malformed JSON: {0}")]
     GeminiChessFactMalformed(String),
+
+    #[error("Coach library planner returned malformed JSON: {0}")]
+    GeminiLibraryPlannerMalformed(String),
+
+    #[error("Coach category synthesis returned malformed JSON: {0}")]
+    GeminiCategoryMalformed(String),
+
+    #[error("PC full-game analysis is unavailable: {0}")]
+    PcAnalysisUnavailable(String),
+
+    #[error("PC full-game analysis was incomplete: {0}")]
+    PcAnalysisIncomplete(String),
 
     #[error("Coach returned an unsupported engine line: {0}")]
     GeminiUnsupportedLine(String),
@@ -655,6 +838,287 @@ fn chess_book_corpus_path() -> Option<PathBuf> {
         .filter(|path| path.is_file())
 }
 
+fn question_requires_full_pc_game_analysis(request: &AiCoachRequest) -> bool {
+    if request.game_analysis.is_empty() {
+        return false;
+    }
+    let question = request.question.to_ascii_lowercase();
+    request.pgn_scope.trim() == "whole_game"
+        || question_explicitly_requests_whole_game(&request.question)
+        || question_focus_phase(&request.question).is_some()
+        || [
+            "review game",
+            "review my game",
+            "analyse my game",
+            "analyze my game",
+            "what went wrong",
+            "my mistakes",
+            "my blunders",
+            "critical moments",
+        ]
+        .iter()
+        .any(|needle| question.contains(needle))
+}
+
+fn should_run_pc_game_analysis(request: &AiCoachRequest) -> bool {
+    !request.game_analysis.is_empty()
+}
+
+fn infer_coach_player_color(request: &AiCoachRequest) -> &'static str {
+    let question = request.question.to_ascii_lowercase();
+    let explicitly_black = [
+        "i'm black",
+        "i am black",
+        "as black",
+        "my black game",
+        "black's game",
+        "black’s game",
+        "black's conversion",
+        "black’s conversion",
+    ]
+    .iter()
+    .any(|needle| question.contains(needle));
+    let explicitly_white = [
+        "i'm white",
+        "i am white",
+        "as white",
+        "my white game",
+        "white's game",
+        "white’s game",
+        "white's conversion",
+        "white’s conversion",
+    ]
+    .iter()
+    .any(|needle| question.contains(needle));
+    if explicitly_black && !explicitly_white {
+        "black"
+    } else {
+        "white"
+    }
+}
+
+fn pc_analysis_origins() -> Vec<String> {
+    let mut origins = Vec::new();
+    for configured in [
+        env::var("EN_CROISSANT_HOME_SERVER_URL").ok(),
+        Some(LOCAL_HOME_SERVER_ORIGIN.to_string()),
+        Some(PRIVATE_HOME_SERVER_ORIGIN.to_string()),
+    ]
+    .into_iter()
+    .flatten()
+    {
+        let origin = configured.trim().trim_end_matches('/').to_string();
+        if !origin.is_empty() && !origins.iter().any(|known| known == &origin) {
+            origins.push(origin);
+        }
+    }
+    origins
+}
+
+fn build_pc_game_analysis_payload(
+    request: &AiCoachRequest,
+) -> Result<serde_json::Value, CoachError> {
+    let moves = request
+        .game_analysis
+        .iter()
+        .map(|point| {
+            let fen_before = point.before_fen.as_deref().ok_or_else(|| {
+                CoachError::PcAnalysisIncomplete(format!(
+                    "ply {} is missing its before-position FEN",
+                    point.ply
+                ))
+            })?;
+            Ok(json!({
+                "ply": point.ply,
+                "color": point.played_side.as_deref().unwrap_or(if point.ply % 2 == 0 { "black" } else { "white" }),
+                "san": point.mv,
+                "uci": point.played_uci.as_deref().unwrap_or(""),
+                "fenBefore": fen_before,
+                "fenAfter": point.fen,
+                "annotations": point.annotations,
+            }))
+        })
+        .collect::<Result<Vec<_>, CoachError>>()?;
+    let current_lines = request
+        .existing_lines
+        .iter()
+        .take(5)
+        .map(|line| {
+            json!({
+                "depth": line.depth,
+                "eval": line.eval,
+                "sanMoves": line.san_moves,
+                "uciMoves": line.uci_moves,
+            })
+        })
+        .collect::<Vec<_>>();
+    Ok(json!({
+        "question": request.question,
+        "requestId": request.request_id,
+        "pgn": request.whole_game_pgn.as_deref().or(request.pgn.as_deref()).unwrap_or("*"),
+        "playerColor": infer_coach_player_color(request),
+        "scope": "whole-game",
+        "currentFen": request.fen,
+        "moves": moves,
+        "currentLines": current_lines,
+    }))
+}
+
+fn validate_pc_game_analysis(
+    request: &AiCoachRequest,
+    mut analysis: CoachPcGameAnalysis,
+) -> Result<CoachPcGameAnalysis, CoachError> {
+    let coverage = &analysis.analysis_coverage;
+    let expected_total = request.game_analysis.len().saturating_add(1) as u32;
+    if analysis.scope != "whole-game"
+        || coverage.failed != 0
+        || coverage.total_positions != expected_total
+        || coverage.unique_positions == 0
+        || coverage.unique_positions > coverage.total_positions
+        || coverage.cloud_hits.saturating_add(coverage.live_analyses) != coverage.unique_positions
+        || analysis.move_analysis.len() != request.game_analysis.len()
+    {
+        return Err(CoachError::PcAnalysisIncomplete(format!(
+            "coverage total={} unique={} cloud={} live={} failed={}, moves={}/{}",
+            coverage.total_positions,
+            coverage.unique_positions,
+            coverage.cloud_hits,
+            coverage.live_analyses,
+            coverage.failed,
+            analysis.move_analysis.len(),
+            request.game_analysis.len(),
+        )));
+    }
+
+    let mut seen_plies = HashSet::new();
+    for (point, row) in request.game_analysis.iter().zip(&analysis.move_analysis) {
+        let expected_before_fen = point.before_fen.as_deref().unwrap_or_default();
+        let expected_side = point
+            .played_side
+            .as_deref()
+            .unwrap_or(if point.ply % 2 == 0 { "black" } else { "white" });
+        let identity_matches = seen_plies.insert(row.ply)
+            && row.ply == point.ply
+            && row.fen_before == expected_before_fen
+            && row.fen_after == point.fen
+            && row.san == point.mv
+            && row.color.eq_ignore_ascii_case(expected_side)
+            && point
+                .played_uci
+                .as_deref()
+                .filter(|uci| !uci.trim().is_empty())
+                .is_none_or(|uci| row.uci == uci);
+        let evaluations_complete =
+            [row.before.as_ref(), row.after.as_ref()]
+                .into_iter()
+                .all(|evaluation| {
+                    evaluation.is_some_and(|evaluation| {
+                        matches!(evaluation.source.as_str(), "pc-cloud" | "pc-live")
+                            && (evaluation.white_cp.is_some()
+                                || evaluation.white_mate.is_some()
+                                || evaluation.terminal)
+                    })
+                });
+        if !identity_matches || !evaluations_complete {
+            return Err(CoachError::PcAnalysisIncomplete(format!(
+                "ply {} does not exactly match the supplied game or is missing a verified PC cloud/live before-or-after evaluation",
+                row.ply
+            )));
+        }
+    }
+    analysis.analysis_coverage.complete = true;
+    Ok(analysis)
+}
+
+async fn run_pc_game_analysis(request: &AiCoachRequest) -> Result<CoachPcGameAnalysis, CoachError> {
+    let payload = build_pc_game_analysis_payload(request)?;
+    let client = reqwest::Client::builder()
+        .connect_timeout(Duration::from_secs(5))
+        .timeout(Duration::from_secs(PC_GAME_ANALYSIS_TIMEOUT_SECS))
+        .build()
+        .map_err(|error| CoachError::PcAnalysisUnavailable(error.to_string()))?;
+    let mut connection_errors = Vec::new();
+
+    for origin in pc_analysis_origins() {
+        let url = format!("{origin}/api/chess-coach/analyze-game");
+        let response = match client.post(&url).json(&payload).send().await {
+            Ok(response) => response,
+            Err(error) => {
+                connection_errors.push(format!("{origin}: {error}"));
+                continue;
+            }
+        };
+        let status = response.status();
+        let body = response
+            .text()
+            .await
+            .map_err(|error| CoachError::PcAnalysisUnavailable(format!("{origin}: {error}")))?;
+        if status.is_success() {
+            let analysis = serde_json::from_str::<CoachPcGameAnalysis>(&body).map_err(|error| {
+                CoachError::PcAnalysisIncomplete(format!(
+                    "{origin} returned unreadable analysis: {error}"
+                ))
+            })?;
+            return validate_pc_game_analysis(request, analysis);
+        }
+        let message = extract_first_json_object(&body)
+            .and_then(|json| serde_json::from_str::<serde_json::Value>(&json).ok())
+            .and_then(|value| value.get("error")?.as_str().map(str::to_string))
+            .unwrap_or_else(|| trim_error_text(&body));
+        if matches!(status.as_u16(), 400 | 413) {
+            return Err(CoachError::PcAnalysisUnavailable(format!(
+                "{origin} rejected the game payload with HTTP {status}: {message}"
+            )));
+        }
+        connection_errors.push(format!("{origin} returned HTTP {status}: {message}"));
+    }
+
+    Err(CoachError::PcAnalysisUnavailable(
+        if connection_errors.is_empty() {
+            "no private PC origin is configured".to_string()
+        } else {
+            connection_errors.join("; ")
+        },
+    ))
+}
+
+fn apply_pc_game_analysis_to_request(request: &mut AiCoachRequest, analysis: &CoachPcGameAnalysis) {
+    let rows = analysis
+        .move_analysis
+        .iter()
+        .map(|row| (row.ply, row))
+        .collect::<HashMap<_, _>>();
+    for point in &mut request.game_analysis {
+        let Some(row) = rows.get(&point.ply) else {
+            continue;
+        };
+        if let Some(after) = row.after.as_ref() {
+            point.eval = Some(if let Some(cp) = after.white_cp {
+                if cp >= 0 {
+                    format!("+{:.2}", cp as f32 / 100.0)
+                } else {
+                    format!("{:.2}", cp as f32 / 100.0)
+                }
+            } else if let Some(mate) = after.white_mate {
+                if mate >= 0 {
+                    format!("+M{mate}")
+                } else {
+                    format!("-M{}", mate.abs())
+                }
+            } else {
+                "terminal".to_string()
+            });
+            point.depth = after.depth;
+        }
+    }
+}
+
+fn format_pc_game_analysis(analysis: Option<&CoachPcGameAnalysis>) -> String {
+    analysis
+        .and_then(|analysis| serde_json::to_string_pretty(analysis).ok())
+        .unwrap_or_else(|| "Not requested for this position-only question.".to_string())
+}
+
 fn is_book_search_stop_word(term: &str) -> bool {
     matches!(
         term,
@@ -714,169 +1178,411 @@ fn push_book_search_terms(terms: &mut Vec<String>, text: &str) {
     }
 }
 
-fn chess_book_search_terms(
+fn load_chess_book_inventory() -> Result<Option<CoachLibraryInventory>, String> {
+    let Some(corpus_path) = chess_book_corpus_path() else {
+        return Ok(None);
+    };
+    let connection = Connection::open_with_flags(corpus_path, OpenFlags::SQLITE_OPEN_READ_ONLY)
+        .map_err(|error| error.to_string())?;
+
+    let mut book_statement = connection
+        .prepare(
+            r#"
+            SELECT b.book_id, b.title, b.author, COALESCE(b.shelf, ''),
+                   EXISTS(SELECT 1 FROM chunks AS c WHERE c.book_id = b.book_id)
+            FROM books AS b
+            ORDER BY COALESCE(b.shelf, ''), b.title
+            "#,
+        )
+        .map_err(|error| error.to_string())?;
+    let books = book_statement
+        .query_map([], |row| {
+            Ok(CoachLibraryBook {
+                book_id: row.get(0)?,
+                title: row.get(1)?,
+                author: row.get(2)?,
+                shelf: row.get(3)?,
+                has_excerpt: row.get::<_, i64>(4)? != 0,
+            })
+        })
+        .map_err(|error| error.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|error| error.to_string())?;
+
+    let mut chapter_statement = connection
+        .prepare(
+            r#"
+            SELECT ch.chapter_id, ch.book_id, ch.title, ch.printed_page_start,
+                   ch.pdf_page_start, ch.pdf_page_end
+            FROM chapters AS ch
+            WHERE ch.accessible_in_excerpt = 1
+              AND EXISTS(SELECT 1 FROM chunks AS c WHERE c.chapter_id = ch.chapter_id)
+            ORDER BY ch.book_id, ch.order_index
+            "#,
+        )
+        .map_err(|error| error.to_string())?;
+    let chapters = chapter_statement
+        .query_map([], |row| {
+            Ok(CoachLibraryChapter {
+                chapter_id: row.get(0)?,
+                book_id: row.get(1)?,
+                title: row.get(2)?,
+                printed_page_start: row.get(3)?,
+                pdf_page_start: row.get(4)?,
+                pdf_page_end: row.get(5)?,
+            })
+        })
+        .map_err(|error| error.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|error| error.to_string())?;
+
+    Ok(Some(CoachLibraryInventory { books, chapters }))
+}
+
+fn build_library_planner_prompt(
     request: &AiCoachRequest,
+    stockfish_lines: &[CoachEngineLine],
     targeted_results: &[CoachTargetedResult],
-) -> Vec<String> {
-    let mut terms = Vec::new();
-    push_book_search_terms(&mut terms, &request.question);
-    if let Some(selected_move) = &request.selected_move {
-        push_book_search_terms(&mut terms, selected_move);
-    }
-    for point in request
+    inventory: &CoachLibraryInventory,
+    pc_game_analysis: Option<&CoachPcGameAnalysis>,
+) -> Result<String, CoachError> {
+    let inventory_json = serde_json::to_string(inventory)?;
+    let pgn = request
+        .pgn
+        .as_deref()
+        .map(trim_prompt_text)
+        .unwrap_or_else(|| "Unavailable".to_string());
+    let engine_lines = format_engine_lines_from(stockfish_lines, "current FEN", Some(&request.fen));
+    let targeted = if targeted_results.is_empty() {
+        "None".to_string()
+    } else {
+        targeted_results
+            .iter()
+            .map(format_targeted_result)
+            .collect::<Vec<_>>()
+            .join("\n\n")
+    };
+    let game_analysis = format_game_analysis_for_request(request);
+    let pc_game_analysis = format_pc_game_analysis(pc_game_analysis);
+
+    Ok(format!(
+        r#"Role: You are the librarian and curriculum designer for a private AI chess coach.
+
+Choose the few game-specific coaching categories and exact library chapters that deserve retrieval before the final coach writes. You—not a keyword heuristic—must decide which chess domains matter.
+
+Rules:
+- Choose 1-{MAX_COACH_CATEGORIES} categories, ordered by importance to this exact question/game. Category labels are free-form and specific (for example Opening plans, Calculation at move 24, Rook endgame technique, Dark-square strategy); do not mechanically include every phase.
+- Base category relevance on the PGN and supplied PC/Stockfish evidence. Never invent an evaluation or game event.
+- For an opening category, inspect the exact move order and early positions. Select chapters that can teach the resulting opening ideas, pawn structures, typical piece placement, thematic breaks, plans, and transition—not merely a generic book whose title contains "opening".
+- The catalogue includes every one of the 103 owned/catalogued books. `hasExcerpt=false` means no passage can currently be retrieved from that title. Only chapter IDs in the `chapters` array are accessible and chunk-backed.
+- Prefer exact accessible chapters. A book ID may supplement them when its available excerpt is relevant. Never invent or alter an ID.
+- `keyPlies` must refer to supplied game-analysis plies. `searchQueries` should be short chess concepts or exact opening/structure terms that help locate the best passage inside your selected chapters/books.
+- This is selection only. Do not write the coaching answer and do not quote book text.
+
+Question: {question}
+FEN: {fen}
+PGN scope: {scope}
+PGN:
+{pgn}
+
+Stored whole-game PC analysis:
+{game_analysis}
+
+Complete cache-first PC trace (authoritative; each evaluation identifies PC cloud/live source, depth, PV, and loss):
+{pc_game_analysis}
+
+Current-position engine lines:
+{engine_lines}
+
+Targeted Stockfish evidence:
+{targeted}
+
+Library catalogue JSON (book IDs plus only accessible, chunk-backed chapters):
+{inventory_json}
+"#,
+        question = request.question,
+        fen = request.fen,
+        scope = request.pgn_scope,
+    ))
+}
+
+fn sanitize_library_plan(
+    raw: CoachLibraryPlan,
+    inventory: &CoachLibraryInventory,
+    request: &AiCoachRequest,
+) -> CoachLibraryPlan {
+    let valid_books = inventory
+        .books
+        .iter()
+        .map(|book| book.book_id.as_str())
+        .collect::<HashSet<_>>();
+    let chapter_books = inventory
+        .chapters
+        .iter()
+        .map(|chapter| (chapter.chapter_id.as_str(), chapter.book_id.as_str()))
+        .collect::<HashMap<_, _>>();
+    let max_ply = request
         .game_analysis
         .iter()
-        .filter(|point| !point.annotations.is_empty())
-        .take(12)
-    {
-        push_book_search_terms(&mut terms, &point.annotations.join(" "));
-    }
-    for result in targeted_results.iter().take(6) {
-        push_book_search_terms(&mut terms, &result.reason);
-        push_book_search_terms(&mut terms, &result.label);
-    }
+        .map(|point| point.ply)
+        .max()
+        .unwrap_or(0);
+    let mut seen_labels = HashSet::new();
+    let mut seen_ids = HashSet::new();
+    let mut categories = Vec::new();
 
-    let question = request.question.to_ascii_lowercase();
-    let mut concepts = Vec::new();
-    if request.pgn_scope.trim() == "whole_game"
-        || ["review", "mistake", "blunder", "went wrong", "critical"]
-            .iter()
-            .any(|needle| question.contains(needle))
-    {
-        concepts.extend([
-            "calculation",
-            "candidates",
-            "threats",
-            "prophylaxis",
-            "strategy",
-            "decision",
-        ]);
-    }
-    if question_focus_phase(&request.question) == Some(CoachQuestionPhase::Opening) {
-        concepts.extend(["opening", "development", "centre", "king", "structure"]);
-    }
-    if question_focus_phase(&request.question) == Some(CoachQuestionPhase::Middlegame) {
-        concepts.extend(["middlegame", "coordination", "pawn", "break", "plan"]);
-    }
-    if question_focus_phase(&request.question) == Some(CoachQuestionPhase::EndgameConversion) {
-        concepts.extend(["endgame", "conversion", "activity", "king", "technique"]);
-    }
-    if [
-        "calculate",
-        "calculation",
-        "tactic",
-        "combination",
-        "visual",
-    ]
-    .iter()
-    .any(|needle| question.contains(needle))
-    {
-        concepts.extend([
-            "calculation",
-            "candidate",
-            "forcing",
-            "visualization",
-            "tactics",
-        ]);
-    }
-    if ["attack", "king safety", "sacrifice"]
-        .iter()
-        .any(|needle| question.contains(needle))
-    {
-        concepts.extend(["attack", "king", "initiative", "sacrifice"]);
-    }
-    if ["defend", "defence", "defense", "survive"]
-        .iter()
-        .any(|needle| question.contains(needle))
-    {
-        concepts.extend(["defence", "counterplay", "prophylaxis", "resistance"]);
-    }
-    for concept in concepts {
-        if !terms.iter().any(|term| term == concept) {
-            terms.push(concept.to_string());
+    for raw_category in raw.categories {
+        let label = truncate_plan_coach_text(raw_category.label.trim(), 64);
+        if label.is_empty() || !seen_labels.insert(label.to_ascii_lowercase()) {
+            continue;
+        }
+
+        let mut chapter_ids = Vec::new();
+        let mut book_ids = Vec::new();
+        for chapter_id in raw_category.chapter_ids {
+            let chapter_id = chapter_id.trim();
+            let Some(book_id) = chapter_books.get(chapter_id) else {
+                continue;
+            };
+            if !chapter_ids.iter().any(|id| id == chapter_id) {
+                chapter_ids.push(chapter_id.to_string());
+            }
+            if !book_ids.iter().any(|id| id == *book_id) {
+                book_ids.push((*book_id).to_string());
+            }
+            if chapter_ids.len() >= MAX_LIBRARY_CHAPTERS_PER_CATEGORY {
+                break;
+            }
+        }
+        for book_id in raw_category.book_ids {
+            let book_id = book_id.trim();
+            if valid_books.contains(book_id) && !book_ids.iter().any(|id| id == book_id) {
+                book_ids.push(book_id.to_string());
+            }
+            if book_ids.len() >= MAX_LIBRARY_BOOKS_PER_CATEGORY {
+                break;
+            }
+        }
+        book_ids.truncate(MAX_LIBRARY_BOOKS_PER_CATEGORY);
+
+        let mut key_plies = raw_category
+            .key_plies
+            .into_iter()
+            .filter(|ply| *ply > 0 && *ply <= max_ply)
+            .collect::<Vec<_>>();
+        key_plies.sort_unstable();
+        key_plies.dedup();
+        key_plies.truncate(12);
+
+        let mut search_queries = Vec::new();
+        for query in raw_category.search_queries {
+            let query = truncate_plan_coach_text(query.trim(), 100);
+            if !query.is_empty()
+                && !search_queries
+                    .iter()
+                    .any(|known: &String| known.eq_ignore_ascii_case(&query))
+            {
+                search_queries.push(query);
+            }
+            if search_queries.len() >= MAX_LIBRARY_QUERIES_PER_CATEGORY {
+                break;
+            }
+        }
+
+        let id = coach_category_id(&label, categories.len(), &mut seen_ids);
+        categories.push(CoachLibraryCategoryPlan {
+            id,
+            label,
+            reason: truncate_plan_coach_text(raw_category.reason.trim(), 600),
+            key_plies,
+            book_ids,
+            chapter_ids,
+            search_queries,
+        });
+        if categories.len() >= MAX_COACH_CATEGORIES {
+            break;
         }
     }
-    if terms.is_empty() {
-        terms.extend(
-            ["calculation", "strategy", "candidates", "threats"]
-                .into_iter()
-                .map(str::to_string),
-        );
+
+    CoachLibraryPlan {
+        overview: truncate_plan_coach_text(raw.overview.trim(), 800),
+        categories,
     }
-    terms.truncate(32);
-    terms
+}
+
+#[derive(Debug)]
+struct CoachBookCandidate {
+    passage: CoachBookPassage,
+    chapter_id: Option<String>,
+    search_text: String,
+}
+
+fn library_candidate_is_in_category(
+    category: &CoachLibraryCategoryPlan,
+    book_id: &str,
+    chapter_id: Option<&str>,
+) -> bool {
+    if !category.chapter_ids.is_empty() {
+        return chapter_id.is_some_and(|chapter_id| {
+            category
+                .chapter_ids
+                .iter()
+                .any(|selected| selected == chapter_id)
+        });
+    }
+    category.book_ids.iter().any(|selected| selected == book_id)
 }
 
 fn search_chess_book_passages(
-    request: &AiCoachRequest,
-    targeted_results: &[CoachTargetedResult],
-) -> Result<(bool, Vec<CoachBookPassage>), String> {
+    plan: &CoachLibraryPlan,
+) -> Result<(bool, CoachBookRetrieval), String> {
     let Some(corpus_path) = chess_book_corpus_path() else {
-        return Ok((false, Vec::new()));
+        return Ok((false, CoachBookRetrieval::default()));
     };
-    let terms = chess_book_search_terms(request, targeted_results);
-    let expression = terms
+    if plan.categories.is_empty() {
+        return Ok((true, CoachBookRetrieval::default()));
+    }
+    let selected_book_ids = plan
+        .categories
         .iter()
-        .map(|term| format!("\"{term}\""))
-        .collect::<Vec<_>>()
-        .join(" OR ");
+        .flat_map(|category| category.book_ids.iter().cloned())
+        .collect::<HashSet<_>>();
+    let selected_chapter_ids = plan
+        .categories
+        .iter()
+        .flat_map(|category| category.chapter_ids.iter().cloned())
+        .collect::<HashSet<_>>();
+    if selected_book_ids.is_empty() && selected_chapter_ids.is_empty() {
+        return Ok((true, CoachBookRetrieval::default()));
+    }
+
     let connection = Connection::open_with_flags(corpus_path, OpenFlags::SQLITE_OPEN_READ_ONLY)
         .map_err(|error| error.to_string())?;
     let mut statement = connection
         .prepare(
             r#"
-            SELECT c.chunk_id, c.book_id, b.title, b.author, COALESCE(b.shelf, ''),
-                   COALESCE(c.chapter_title, ''), c.citation, c.pdf_page_start,
-                   c.pdf_page_end, c.printed_page_start, c.printed_page_end,
-                   c.text, COALESCE(b.local_path, '')
-            FROM chunks_fts AS f
-            JOIN chunks AS c ON c.chunk_id = f.chunk_id
+            SELECT c.chunk_id, c.book_id, c.chapter_id, b.title, b.author,
+                   COALESCE(b.shelf, ''), COALESCE(c.chapter_title, ''), c.citation,
+                   c.pdf_page_start, c.pdf_page_end, c.printed_page_start,
+                   c.printed_page_end, c.text, COALESCE(b.local_path, '')
+            FROM chunks AS c
             JOIN books AS b ON b.book_id = c.book_id
-            WHERE chunks_fts MATCH ?1
-            ORDER BY bm25(chunks_fts, 0.0, 6.0, 2.0, 3.0, 4.0, 2.0, 1.0)
-            LIMIT 48
+            ORDER BY b.title, c.pdf_page_start, c.sequence_in_page
             "#,
         )
         .map_err(|error| error.to_string())?;
     let candidates = statement
-        .query_map([expression], |row| {
-            let text: String = row.get(11)?;
-            Ok(CoachBookPassage {
-                chunk_id: row.get(0)?,
-                book_id: row.get(1)?,
-                title: row.get(2)?,
-                author: row.get(3)?,
-                shelf: row.get(4)?,
-                chapter_title: row.get(5)?,
-                citation: row.get(6)?,
-                pdf_page_start: row.get(7)?,
-                pdf_page_end: row.get(8)?,
-                printed_page_start: row.get(9)?,
-                printed_page_end: row.get(10)?,
-                excerpt: truncate_plan_coach_text(
-                    &text.split_whitespace().collect::<Vec<_>>().join(" "),
-                    MAX_BOOK_EXCERPT_CHARS,
-                ),
-                local_path: row.get(12)?,
+        .query_map([], |row| {
+            let text: String = row.get(12)?;
+            let title: String = row.get(3)?;
+            let chapter_title: String = row.get(6)?;
+            Ok(CoachBookCandidate {
+                chapter_id: row.get(2)?,
+                search_text: format!("{title} {chapter_title} {text}").to_ascii_lowercase(),
+                passage: CoachBookPassage {
+                    chunk_id: row.get(0)?,
+                    book_id: row.get(1)?,
+                    title,
+                    author: row.get(4)?,
+                    shelf: row.get(5)?,
+                    chapter_title,
+                    citation: row.get(7)?,
+                    pdf_page_start: row.get(8)?,
+                    pdf_page_end: row.get(9)?,
+                    printed_page_start: row.get(10)?,
+                    printed_page_end: row.get(11)?,
+                    excerpt: truncate_plan_coach_text(
+                        &text.split_whitespace().collect::<Vec<_>>().join(" "),
+                        MAX_BOOK_EXCERPT_CHARS,
+                    ),
+                    local_path: row.get(13)?,
+                },
             })
         })
+        .map_err(|error| error.to_string())?
+        .collect::<Result<Vec<_>, _>>()
         .map_err(|error| error.to_string())?;
 
     let mut passages = Vec::new();
-    let mut per_book = HashMap::<String, usize>::new();
-    for candidate in candidates {
-        let candidate = candidate.map_err(|error| error.to_string())?;
-        let count = per_book.entry(candidate.book_id.clone()).or_default();
-        if *count >= 2 {
-            continue;
+    let mut category_chunks = HashMap::new();
+    let mut seen_chunks = HashSet::new();
+    for category in &plan.categories {
+        let category_chapters = category.chapter_ids.iter().collect::<HashSet<_>>();
+        let mut terms = Vec::new();
+        for query in &category.search_queries {
+            push_book_search_terms(&mut terms, query);
         }
-        *count += 1;
-        passages.push(candidate);
+        push_book_search_terms(&mut terms, &category.label);
+        push_book_search_terms(&mut terms, &category.reason);
+
+        let mut ranked = candidates
+            .iter()
+            .filter_map(|candidate| {
+                let chapter_selected = candidate
+                    .chapter_id
+                    .as_ref()
+                    .is_some_and(|chapter_id| category_chapters.contains(chapter_id));
+                if !library_candidate_is_in_category(
+                    category,
+                    &candidate.passage.book_id,
+                    candidate.chapter_id.as_deref(),
+                ) {
+                    return None;
+                }
+                let mut score = if chapter_selected { 10_000 } else { 1_000 };
+                for term in &terms {
+                    if candidate.search_text.contains(term) {
+                        score += 25;
+                    }
+                    if candidate
+                        .passage
+                        .chapter_title
+                        .to_ascii_lowercase()
+                        .contains(term)
+                    {
+                        score += 75;
+                    }
+                    if candidate.passage.title.to_ascii_lowercase().contains(term) {
+                        score += 40;
+                    }
+                }
+                Some((score, candidate))
+            })
+            .collect::<Vec<_>>();
+        ranked.sort_by(|(left_score, left), (right_score, right)| {
+            right_score.cmp(left_score).then_with(|| {
+                left.passage
+                    .pdf_page_start
+                    .cmp(&right.passage.pdf_page_start)
+            })
+        });
+
+        let mut category_count = 0;
+        let mut selected_chunks = Vec::new();
+        for (_, candidate) in ranked {
+            selected_chunks.push(candidate.passage.chunk_id.clone());
+            if seen_chunks.insert(candidate.passage.chunk_id.clone()) {
+                passages.push(candidate.passage.clone());
+            }
+            category_count += 1;
+            if category_count >= MAX_BOOK_PASSAGES_PER_CATEGORY
+                || passages.len() >= MAX_BOOK_PASSAGES
+            {
+                break;
+            }
+        }
+        category_chunks.insert(category.id.clone(), selected_chunks);
         if passages.len() >= MAX_BOOK_PASSAGES {
             break;
         }
     }
-    Ok((true, passages))
+    Ok((
+        true,
+        CoachBookRetrieval {
+            passages,
+            category_chunks,
+        },
+    ))
 }
 
 fn format_book_passages(passages: &[CoachBookPassage]) -> String {
@@ -885,11 +1591,10 @@ fn format_book_passages(passages: &[CoachBookPassage]) -> String {
     }
     passages
         .iter()
-        .enumerate()
-        .map(|(index, passage)| {
+        .map(|passage| {
             format!(
-                "[Book {number}] {title} — {author}\nChapter: {chapter}\nCitation: {citation}\nPassage: {excerpt}",
-                number = index + 1,
+                "[Source {chunk_id}] {title} — {author}\nChapter: {chapter}\nCitation: {citation}\nPassage: {excerpt}",
+                chunk_id = passage.chunk_id,
                 title = passage.title,
                 author = passage.author,
                 chapter = if passage.chapter_title.is_empty() {
@@ -1070,6 +1775,42 @@ async fn ask_ai_coach_inner(
 
     let focus_phase = question_focus_phase(&request.question);
     let phase_review = focus_phase.is_some();
+    let whole_game_review_requested = question_requires_full_pc_game_analysis(&request);
+    let full_pc_game_required = should_run_pc_game_analysis(&request);
+    let pc_game_analysis = if full_pc_game_required {
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "pc_game_analysis",
+            "Analyzing every game position on the PC",
+            "Checking the PC cloud store first for every unique position, then running live PC Stockfish only for cache misses.",
+            8.0,
+            false,
+        );
+        let analysis = run_pc_game_analysis(&request).await?;
+        apply_pc_game_analysis_to_request(&mut request, &analysis);
+        emit_coach_progress(
+            app,
+            request_id,
+            started,
+            "pc_game_analysis_done",
+            "Complete PC game trace ready",
+            format!(
+                "{} position(s), {} unique: {} PC cloud, {} PC live, {} failed.",
+                analysis.analysis_coverage.total_positions,
+                analysis.analysis_coverage.unique_positions,
+                analysis.analysis_coverage.cloud_hits,
+                analysis.analysis_coverage.live_analyses,
+                analysis.analysis_coverage.failed,
+            ),
+            11.0,
+            false,
+        );
+        Some(analysis)
+    } else {
+        None
+    };
     let legal_moves = format_legal_root_moves(&request.fen)?;
     let reference_context = normalized_reference_context(&request);
     let conversational_followup = question_asks_for_conversational_follow_up(&request.question)
@@ -1135,6 +1876,7 @@ async fn ask_ai_coach_inner(
         &legal_moves,
         &targeted_results,
         &reference_context,
+        pc_game_analysis.as_ref(),
     );
     let planner_result = match run_gemini_cli(
         DEFAULT_COACH_COMMAND,
@@ -1157,7 +1899,7 @@ async fn ask_ai_coach_inner(
     };
     let (mut planned_requests, rejected_planner_requests) = match planner_result {
         Ok((planner_response, mut planner_scope)) => {
-            if phase_review {
+            if phase_review || whole_game_review_requested {
                 planner_scope = CoachPgnScope::WholeGame;
             } else if conversational_followup
                 && !question_explicitly_requests_whole_game(&request.question)
@@ -1669,19 +2411,72 @@ async fn ask_ai_coach_inner(
         request_id,
         started,
         "book_retrieval",
-        "Searching the chess library",
-        "Retrieving page-bounded passages from the local lawful corpus.",
+        "Asking AI to choose library chapters",
+        "Giving GPT-5.6 Sol the complete book catalogue and only accessible, chunk-backed chapters.",
         73.0,
         false,
     );
-    let (book_corpus_available, book_passages) =
-        match search_chess_book_passages(&request, &targeted_results) {
-            Ok(result) => result,
-            Err(error) => {
-                warn!("ai_coach[{request_id}] chess-book retrieval failed: {error}");
-                (true, Vec::new())
-            }
-        };
+    let inventory = load_chess_book_inventory()
+        .map_err(CoachError::GeminiLibraryPlannerMalformed)?
+        .ok_or_else(|| {
+            CoachError::GeminiLibraryPlannerMalformed(
+                "the local chess-book corpus is unavailable".to_string(),
+            )
+        })?;
+    let book_corpus_available = true;
+    let librarian_prompt = build_library_planner_prompt(
+        &request,
+        &stockfish_lines,
+        &targeted_results,
+        &inventory,
+        pc_game_analysis.as_ref(),
+    )?;
+    let library_schema = library_plan_output_schema();
+    let library_output = run_gemini_cli_with_schema(
+        DEFAULT_COACH_COMMAND,
+        &planner_model,
+        &librarian_prompt,
+        LIBRARY_PLANNER_TIMEOUT_SECS.min(timeout_secs.into()),
+        Some(&library_schema),
+    )
+    .await?;
+    let library_plan = sanitize_library_plan(
+        parse_library_plan_output(&library_output)?,
+        &inventory,
+        &request,
+    );
+    if library_plan.categories.is_empty()
+        || library_plan
+            .categories
+            .iter()
+            .any(|category| category.book_ids.is_empty() && category.chapter_ids.is_empty())
+    {
+        return Err(CoachError::GeminiLibraryPlannerMalformed(
+            "AI did not select a real available book or accessible chapter for every coaching category"
+                .to_string(),
+        ));
+    }
+    let (_, book_retrieval) = search_chess_book_passages(&library_plan)
+        .map_err(CoachError::GeminiLibraryPlannerMalformed)?;
+    if library_plan.categories.iter().any(|category| {
+        book_retrieval
+            .category_chunks
+            .get(&category.id)
+            .is_none_or(Vec::is_empty)
+    }) {
+        return Err(CoachError::GeminiLibraryPlannerMalformed(
+            "AI-selected chapter scope did not contain a retrievable passage for every category"
+                .to_string(),
+        ));
+    }
+    let book_passages = book_retrieval.passages;
+    let category_chunks = book_retrieval.category_chunks;
+    let selected_chapter_count = library_plan
+        .categories
+        .iter()
+        .flat_map(|category| category.chapter_ids.iter())
+        .collect::<HashSet<_>>()
+        .len();
     emit_coach_progress(
         app,
         request_id,
@@ -1694,8 +2489,10 @@ async fn ask_ai_coach_inner(
         },
         if book_corpus_available {
             format!(
-                "Retrieved {} cited passage(s) across the local shelf.",
-                book_passages.len()
+                "AI chose {} topic(s) and {} accessible chapter(s); retrieved {} cited passage(s).",
+                library_plan.categories.len(),
+                selected_chapter_count,
+                book_passages.len(),
             )
         } else {
             "The configured corpus database was not found; continuing without book claims."
@@ -1728,6 +2525,8 @@ async fn ask_ai_coach_inner(
         &[],
         &chess_fact_results,
         &book_passages,
+        Some(&library_plan),
+        pc_game_analysis.as_ref(),
     );
     emit_coach_progress(
         app,
@@ -1806,6 +2605,8 @@ async fn ask_ai_coach_inner(
                 &correction_notes,
                 &chess_fact_results,
                 &book_passages,
+                Some(&library_plan),
+                pc_game_analysis.as_ref(),
             );
             emit_coach_progress(
                 app,
@@ -1950,8 +2751,93 @@ async fn ask_ai_coach_inner(
         &targeted_results,
     )?;
 
+    emit_coach_progress(
+        app,
+        request_id,
+        started,
+        "category_synthesis",
+        "Organising the answer into game-specific tabs",
+        "GPT-5.6 Sol is choosing the most relevant coaching categories and mapping exact book sources.",
+        99.0,
+        false,
+    );
+    let category_prompt = build_category_synthesis_prompt(
+        &request,
+        &final_answer,
+        &library_plan,
+        &category_chunks,
+        &book_passages,
+        &stockfish_lines,
+        &targeted_results,
+        pc_game_analysis.as_ref(),
+    )?;
+    let category_schema = category_output_schema();
+    let category_output = run_gemini_cli_with_schema(
+        DEFAULT_COACH_COMMAND,
+        &model,
+        &category_prompt,
+        u64::from(timeout_secs),
+        Some(&category_schema),
+    )
+    .await?;
+    let first_structured_review =
+        parse_structured_review_output(&category_output).and_then(|review| {
+            sanitize_structured_review(
+                review,
+                &request,
+                &final_answer,
+                &library_plan,
+                &category_chunks,
+                &book_passages,
+                &stockfish_lines,
+                &targeted_results,
+            )
+        });
+    let structured_review = match first_structured_review {
+        Ok(review) => review,
+        Err(error) => {
+            warn!("ai_coach[{request_id}] category synthesis needs repair: {error}");
+            emit_coach_progress(
+                app,
+                request_id,
+                started,
+                "category_synthesis_repair",
+                "Repairing category/source mapping",
+                error.to_string(),
+                99.5,
+                false,
+            );
+            let repair_prompt = format!(
+                "{category_prompt}\n\nCorrection required: {error}. Return every exact planned category once, preserve its ID/label/order, cite at least one allowed source chunk in each category, and remove every ordinal `Book N` reference."
+            );
+            let repaired_output = run_gemini_cli_with_schema(
+                DEFAULT_COACH_COMMAND,
+                &model,
+                &repair_prompt,
+                u64::from(timeout_secs),
+                Some(&category_schema),
+            )
+            .await?;
+            sanitize_structured_review(
+                parse_structured_review_output(&repaired_output)?,
+                &request,
+                &final_answer,
+                &library_plan,
+                &category_chunks,
+                &book_passages,
+                &stockfish_lines,
+                &targeted_results,
+            )?
+        }
+    };
+
     Ok(AiCoachResponse {
         answer: final_answer,
+        overview: structured_review.overview,
+        categories: structured_review.categories,
+        analysis_coverage: pc_game_analysis
+            .as_ref()
+            .map(|analysis| analysis.analysis_coverage.clone()),
         model,
         used_existing_analysis,
         stockfish_lines,
@@ -1976,6 +2862,8 @@ fn build_coach_prompt(
         correction_notes,
         &[],
         &[],
+        None,
+        None,
     )
 }
 
@@ -1987,6 +2875,8 @@ fn build_coach_prompt_with_facts(
     correction_notes: &[String],
     chess_fact_results: &[CoachChessFactResult],
     book_passages: &[CoachBookPassage],
+    library_plan: Option<&CoachLibraryPlan>,
+    pc_game_analysis: Option<&CoachPcGameAnalysis>,
 ) -> String {
     let pgn = request
         .pgn
@@ -2048,18 +2938,22 @@ fn build_coach_prompt_with_facts(
         )
     };
     let game_analysis = format_game_analysis_for_request(request);
+    let pc_game_analysis = format_pc_game_analysis(pc_game_analysis);
     let question_focus = format_question_focus_and_intent(request);
     let salvage_question = question_asks_for_salvage(&request.question);
     let correction_notes = format_correction_notes(correction_notes);
     let chess_facts = format_chess_fact_results(chess_fact_results);
     let book_passages = format_book_passages(book_passages);
+    let library_plan = library_plan
+        .and_then(|plan| serde_json::to_string_pretty(plan).ok())
+        .unwrap_or_else(|| "No AI library plan was supplied.".to_string());
     let root_engine_label = if use_cloud_existing_lines {
         "Lichess Cloud root lines"
     } else {
         "local Stockfish root MultiPV"
     };
     let scope_rules = if opening_phase {
-        "- This is an opening-phase review of the loaded game. Focus on the opening and early transition only, roughly moves 1-15 / plies 1-30.\n- Do not answer a previous chat topic, current endgame position, or later middlegame tactic unless the user explicitly asks to connect it to the opening.\n- Use the whole-game PGN only to identify the opening move order and phase boundary. Use opening-phase stored analysis and targeted opening Stockfish results as concrete evidence.\n- Do not include a Critical moments section about later blunders such as move 19 unless the latest question explicitly asks for later critical moments.".to_string()
+        "- This is an opening-phase review of the loaded game. Focus on the opening and early transition only, roughly moves 1-15 / plies 1-30.\n- Do not answer a previous chat topic, current endgame position, or later middlegame tactic unless the user explicitly asks to connect it to the opening.\n- Use the whole-game PGN to identify the exact opening move order, the first position where the setup or structure changed, and the phase boundary. Use opening-phase stored analysis and targeted opening Stockfish results as concrete evidence.\n- Explain the actual pawn structure, intended piece placement, thematic breaks, plans for both sides, and how the game position differs from the relevant named book chapter. Generic development advice is not enough.\n- Do not include a Critical moments section about later blunders such as move 19 unless the latest question explicitly asks for later critical moments.".to_string()
     } else if middlegame_phase {
         "- This is a middlegame-phase review of the loaded game. Focus on the middlegame decisions, pawn breaks, piece coordination, king safety, and transition into the later phase.\n- Do not drift into opening move-order advice or endgame conversion technique except for one short sentence of causal context if needed.\n- Use the whole-game PGN only to identify the middlegame phase and what actually happened. Use middlegame stored analysis and targeted middlegame Stockfish results as concrete evidence.\n- Do not include generic Critical moments from unrelated phases unless the latest question explicitly asks for the whole game.".to_string()
     } else if conversion_phase {
@@ -2128,6 +3022,7 @@ fn build_coach_prompt_with_facts(
 
 Core rules:
 - Supplied engine analysis is the source of truth for concrete evaluations and variations. Prefer Lichess Cloud root lines when they are supplied; otherwise use local Stockfish root MultiPV. Targeted follow-up results are local Stockfish.
+- For whole-game reviews, the complete cache-first PC trace is authoritative and covers every supplied unique position before any AI reasoning. Its scores are White-relative; preserve each PC cloud/live source and depth distinction, and do not replace it with opening memory or the older sparse stored-analysis summary.
 - Private board-state facts are guardrails for board-state claims, not prose material. Use them silently. In the final answer, never refer to evidence-gathering machinery, private checks, structured details, or verification process.
 - Your job is to teach the chess meaning of the evidence. Do not merely inventory facts, evals, or candidate moves. First name the strategic/tactical tension in human terms, then use the supplied line as proof.
 - For the current position, do not claim a move is legal/illegal, a piece is attacked, defended, undefended, loose, hanging, pinned, trapped, overloaded, forked, skewered, mating, checking, or tactically threatened unless the private chess facts support that claim.
@@ -2147,7 +3042,8 @@ Core rules:
 - Material summaries are guardrails, not the main explanation. Do not claim "wins the exchange", "wins a piece", "wins a pawn", or similar material verdicts unless the supplied material summary for the cited PV supports that exact claim. If the engine line only proves a positional/evaluation swing, describe the tactical or strategic mechanism instead.
 - You may use general chess and opening knowledge for concepts, structures, plans, and naming, but only as explanation layered on top of engine-backed lines.
 - Retrieved chess-book passages are the source of truth for attributed teaching principles. Use them to explain the human lesson, while Stockfish remains the source of truth for this position's concrete verdict and variations.
-- When a retrieved passage materially supports a lesson, cite its exact identifier such as [Book 2] immediately after the supported sentence. Never invent a title, quotation, page, author, or [Book N] identifier.
+- When a retrieved passage materially supports a lesson, name the actual book and chapter in the prose and cite its exact opaque source identifier such as [Source e406ce4596c7eca833b0342e]. Never use an ordinal placeholder such as [Book 3], and never invent a title, quotation, page, author, chapter, or source identifier.
+- For opening lessons, connect the named book/chapter to an exact move or position in this game and explain the relevant setup, pawn structure, thematic breaks, and plans. Do not merely say that an opening book is relevant.
 - Paraphrase book passages in your own words. Do not reproduce long excerpts. Do not imply that a passage analysed this exact game unless it actually contains the supplied game position.
 - If none of the retrieved passages is relevant, do not force a book citation. Give the engine-grounded answer and say no close library passage was used.
 - Explain like a strong GM/coach: use proper chess terminology such as isolated queen's pawn, minority attack, deflection, trapped piece, blockade, weak square, exchange sacrifice, or domination when it genuinely fits.
@@ -2189,6 +3085,9 @@ PGN context ({pgn_scope}):
 Stored whole-game Stockfish analysis:
 {game_analysis}
 
+Complete cache-first PC game analysis (PC cloud first, then live PC misses; authoritative):
+{pc_game_analysis}
+
 Private board-state facts (internal guardrails; do not mention this section):
 {chess_facts}
 
@@ -2201,8 +3100,11 @@ Targeted Stockfish result:
 Lichess All opening context:
 {opening_context}
 
-Retrieved chess-book passages (principle evidence; cite as [Book N]):
+Retrieved chess-book passages (principle evidence; cite by actual title/chapter and exact [Source chunk_id]):
 {book_passages}
+
+AI-selected library topics and chapters (selection context, not engine evidence):
+{library_plan}
 
 Conversation so far:
 {chat_history}
@@ -2226,11 +3128,13 @@ User question:
         pgn_scope = pgn_scope,
         pgn = pgn,
         game_analysis = game_analysis,
+        pc_game_analysis = pc_game_analysis,
         chess_facts = chess_facts,
         engine_lines = engine_lines,
         targeted = targeted,
         opening_context = opening_context,
         book_passages = book_passages,
+        library_plan = library_plan,
         chat_history = chat_history,
         question_focus = question_focus,
         reference_context = reference_context,
@@ -2244,11 +3148,329 @@ User question:
     )
 }
 
+fn build_category_synthesis_prompt(
+    request: &AiCoachRequest,
+    final_answer: &str,
+    library_plan: &CoachLibraryPlan,
+    category_chunks: &HashMap<String, Vec<String>>,
+    book_passages: &[CoachBookPassage],
+    stockfish_lines: &[CoachEngineLine],
+    targeted_results: &[CoachTargetedResult],
+    pc_game_analysis: Option<&CoachPcGameAnalysis>,
+) -> Result<String, CoachError> {
+    let allowed_positions = request
+        .game_analysis
+        .iter()
+        .map(|point| {
+            json!({
+                "ply": point.ply,
+                "san": point.mv,
+                "eval": point.eval,
+                "depth": point.depth,
+                "annotations": point.annotations,
+            })
+        })
+        .collect::<Vec<_>>();
+    let allowed_positions_json = serde_json::to_string(&allowed_positions)?;
+    let library_plan_json = serde_json::to_string(library_plan)?;
+    let category_chunks_json = serde_json::to_string(category_chunks)?;
+    let root_lines = format_engine_lines_from(stockfish_lines, "current FEN", Some(&request.fen));
+    let targeted = if targeted_results.is_empty() {
+        "None".to_string()
+    } else {
+        targeted_results
+            .iter()
+            .map(format_targeted_result)
+            .collect::<Vec<_>>()
+            .join("\n\n")
+    };
+    let passages = format_book_passages(book_passages);
+    let pc_game_analysis = format_pc_game_analysis(pc_game_analysis);
+
+    Ok(format!(
+        r#"Role: You are the final information architect for a chess coach response.
+
+Reorganize the already validated coaching answer into the clickable, game-specific categories selected by the AI librarian. Preserve the librarian plan's exact category IDs, labels, and order; do not emit a fixed checklist or add/drop categories.
+
+Non-negotiable grounding rules:
+- This is a faithful restructuring pass. Preserve the validated answer's chess meaning. Do not add a new evaluation, variation, tactic, board claim, opening identification, or book claim.
+- Engine evidence may only be restated from the validated answer or supplied engine evidence below.
+- For a whole-game review, use the complete cache-first PC trace below as the authoritative move-by-move record. Scores are White-relative; retain honest PC cloud/live source and depth distinctions.
+- A position entry is allowed only when its exact ply appears in `allowedPositions`; copy that entry's SAN exactly. If there are no allowed positions, return an empty positions array.
+- Every category must include at least one book reference. A reference is allowed only when its exact `chunkId` is listed for that category in `allowedCategorySources` and appears as `[Source <chunkId>]` below. Never output an ordinal label such as `[Book 3]`.
+- In the category explanation, name the actual book title and relevant chapter whenever a retrieved passage supports the lesson. Explain how that chapter connects to this game's exact move/position; do not merely list sources.
+- If opening play is materially relevant, make its category concrete: identify the exact early move/position, resulting pawn structure or piece setup, thematic breaks, plans for both sides, and why the selected named chapter applies. Do not substitute generic opening advice.
+- Keep Stockfish verdicts and book principles distinct: Stockfish proves what happened here; the named book/chapter supplies the transferable lesson.
+- `summary` is one short tab-preview sentence. `explanation` is the complete useful lesson for that tab. `engineEvidence` and `betterPlan` may be empty when the validated answer does not support them.
+- Do not mention prompts, planners, private facts, JSON, schemas, or evidence machinery.
+
+User question:
+{question}
+
+Validated coaching answer (authoritative prose to restructure):
+{final_answer}
+
+AI librarian's game-specific category/chapter plan:
+{library_plan_json}
+
+Allowed source chunk IDs for each exact category ID (`allowedCategorySources`):
+{category_chunks_json}
+
+Allowed positions (exact ply/SAN only):
+{allowed_positions_json}
+
+Current-FEN engine lines:
+{root_lines}
+
+Targeted Stockfish evidence:
+{targeted}
+
+Complete cache-first PC game trace:
+{pc_game_analysis}
+
+Retrieved named book passages:
+{passages}
+"#,
+        question = request.question,
+    ))
+}
+
+fn coach_category_id(label: &str, index: usize, seen: &mut HashSet<String>) -> String {
+    let mut base = label
+        .chars()
+        .flat_map(char::to_lowercase)
+        .map(|character| {
+            if character.is_ascii_alphanumeric() {
+                character
+            } else {
+                '-'
+            }
+        })
+        .collect::<String>();
+    while base.contains("--") {
+        base = base.replace("--", "-");
+    }
+    base = base.trim_matches('-').chars().take(48).collect();
+    if base.is_empty() {
+        base = format!("topic-{}", index + 1);
+    }
+    let mut id = base.clone();
+    let mut suffix = 2;
+    while !seen.insert(id.clone()) {
+        id = format!("{base}-{suffix}");
+        suffix += 1;
+    }
+    id
+}
+
+fn first_coach_paragraph(answer: &str) -> String {
+    answer
+        .split("\n\n")
+        .map(str::trim)
+        .find(|paragraph| !paragraph.is_empty())
+        .map(|paragraph| truncate_plan_coach_text(paragraph, 800))
+        .unwrap_or_else(|| "Your game review is ready.".to_string())
+}
+
+fn contains_ordinal_book_reference(text: &str) -> bool {
+    let lower = text.to_ascii_lowercase();
+    lower.match_indices("book ").any(|(index, _)| {
+        lower[index + "book ".len()..]
+            .trim_start_matches('#')
+            .chars()
+            .next()
+            .is_some_and(|character| character.is_ascii_digit())
+    })
+}
+
+fn structured_review_contains_ordinal_book_reference(review: &CoachStructuredReview) -> bool {
+    contains_ordinal_book_reference(&review.overview)
+        || review.categories.iter().any(|category| {
+            contains_ordinal_book_reference(&category.label)
+                || contains_ordinal_book_reference(&category.summary)
+                || contains_ordinal_book_reference(&category.explanation)
+                || category.positions.iter().any(|position| {
+                    contains_ordinal_book_reference(&position.title)
+                        || contains_ordinal_book_reference(&position.explanation)
+                        || contains_ordinal_book_reference(&position.engine_evidence)
+                        || contains_ordinal_book_reference(&position.better_plan)
+                })
+                || category
+                    .book_references
+                    .iter()
+                    .any(|reference| contains_ordinal_book_reference(&reference.why_it_matters))
+        })
+}
+
+fn sanitize_structured_review(
+    raw: CoachStructuredReview,
+    request: &AiCoachRequest,
+    final_answer: &str,
+    library_plan: &CoachLibraryPlan,
+    category_chunks: &HashMap<String, Vec<String>>,
+    book_passages: &[CoachBookPassage],
+    stockfish_lines: &[CoachEngineLine],
+    targeted_results: &[CoachTargetedResult],
+) -> Result<CoachStructuredReview, CoachError> {
+    let allowed_positions = request
+        .game_analysis
+        .iter()
+        .map(|point| (point.ply, point.mv.as_str()))
+        .collect::<HashMap<_, _>>();
+    let valid_chunks = book_passages
+        .iter()
+        .map(|passage| passage.chunk_id.as_str())
+        .collect::<HashSet<_>>();
+    let mut raw_categories = raw.categories;
+    let mut categories = Vec::new();
+
+    for planned_category in &library_plan.categories {
+        let raw_index = raw_categories
+            .iter()
+            .position(|category| category.id == planned_category.id)
+            .or_else(|| {
+                raw_categories.iter().position(|category| {
+                    category
+                        .label
+                        .trim()
+                        .eq_ignore_ascii_case(&planned_category.label)
+                })
+            })
+            .ok_or_else(|| {
+                CoachError::GeminiCategoryMalformed(format!(
+                    "missing planned category `{}`",
+                    planned_category.label
+                ))
+            })?;
+        let raw_category = raw_categories.remove(raw_index);
+        let label = planned_category.label.clone();
+        let mut explanation = truncate_plan_coach_text(raw_category.explanation.trim(), 8_000);
+        if explanation.is_empty() {
+            explanation = truncate_plan_coach_text(raw_category.summary.trim(), 8_000);
+        }
+        if explanation.is_empty() {
+            return Err(CoachError::GeminiCategoryMalformed(format!(
+                "category `{label}` has no explanation"
+            )));
+        }
+        explanation = strip_unsupported_line_blocks(
+            &request.fen,
+            &explanation,
+            stockfish_lines,
+            targeted_results,
+        );
+        let summary = truncate_plan_coach_text(raw_category.summary.trim(), 500);
+
+        let mut seen_plies = HashSet::new();
+        let positions = raw_category
+            .positions
+            .into_iter()
+            .filter_map(|position| {
+                let san = allowed_positions.get(&position.ply)?;
+                if !seen_plies.insert(position.ply) {
+                    return None;
+                }
+                Some(CoachCategoryPosition {
+                    ply: position.ply,
+                    san: (*san).to_string(),
+                    title: truncate_plan_coach_text(position.title.trim(), 140),
+                    explanation: strip_unsupported_line_blocks(
+                        &request.fen,
+                        &truncate_plan_coach_text(position.explanation.trim(), 1_500),
+                        stockfish_lines,
+                        targeted_results,
+                    ),
+                    engine_evidence: strip_unsupported_line_blocks(
+                        &request.fen,
+                        &truncate_plan_coach_text(position.engine_evidence.trim(), 1_200),
+                        stockfish_lines,
+                        targeted_results,
+                    ),
+                    better_plan: strip_unsupported_line_blocks(
+                        &request.fen,
+                        &truncate_plan_coach_text(position.better_plan.trim(), 1_200),
+                        stockfish_lines,
+                        targeted_results,
+                    ),
+                })
+            })
+            .take(8)
+            .collect::<Vec<_>>();
+
+        let allowed_category_chunks = category_chunks
+            .get(&planned_category.id)
+            .ok_or_else(|| {
+                CoachError::GeminiCategoryMalformed(format!(
+                    "category `{label}` has no retrieved source scope"
+                ))
+            })?
+            .iter()
+            .map(String::as_str)
+            .collect::<HashSet<_>>();
+        let mut seen_references = HashSet::new();
+        let book_references = raw_category
+            .book_references
+            .into_iter()
+            .filter_map(|reference| {
+                let chunk_id = reference.chunk_id.trim();
+                if !valid_chunks.contains(chunk_id)
+                    || !allowed_category_chunks.contains(chunk_id)
+                    || !seen_references.insert(chunk_id.to_string())
+                {
+                    return None;
+                }
+                Some(CoachCategoryBookReference {
+                    chunk_id: chunk_id.to_string(),
+                    why_it_matters: truncate_plan_coach_text(
+                        reference.why_it_matters.trim(),
+                        1_000,
+                    ),
+                    position_ply: reference
+                        .position_ply
+                        .filter(|ply| allowed_positions.contains_key(ply)),
+                })
+            })
+            .take(6)
+            .collect::<Vec<_>>();
+        if book_references.is_empty() {
+            return Err(CoachError::GeminiCategoryMalformed(format!(
+                "category `{label}` did not cite one of its named retrieved sources"
+            )));
+        }
+
+        categories.push(CoachCategory {
+            id: planned_category.id.clone(),
+            label,
+            summary,
+            explanation,
+            positions,
+            book_references,
+        });
+    }
+
+    let review = CoachStructuredReview {
+        overview: if raw.overview.trim().is_empty() {
+            first_coach_paragraph(final_answer)
+        } else {
+            truncate_plan_coach_text(raw.overview.trim(), 1_200)
+        },
+        categories,
+    };
+    if structured_review_contains_ordinal_book_reference(&review) {
+        return Err(CoachError::GeminiCategoryMalformed(
+            "visible text used an ordinal `Book N` reference instead of an actual title"
+                .to_string(),
+        ));
+    }
+    Ok(review)
+}
+
 fn build_planner_prompt(
     request: &AiCoachRequest,
     legal_moves: &str,
     targeted_results: &[CoachTargetedResult],
     reference_context: &[CoachReferenceContext],
+    pc_game_analysis: Option<&CoachPcGameAnalysis>,
 ) -> String {
     let selected_move = request
         .selected_move
@@ -2273,6 +3495,7 @@ fn build_planner_prompt(
         .map(trim_prompt_text)
         .unwrap_or_else(|| "Unavailable".to_string());
     let game_analysis = format_game_analysis_for_request(request);
+    let pc_game_analysis = format_pc_game_analysis(pc_game_analysis);
     let critical_positions = format_critical_game_positions(request);
     let chat_history = format_chat_history(&request.chat_history);
     let reference_context = format_reference_context(reference_context);
@@ -2348,6 +3571,9 @@ Whole-game PGN:
 Stored whole-game Stockfish analysis:
 {game_analysis}
 
+Complete cache-first PC game analysis (cloud hits plus live PC misses; authoritative):
+{pc_game_analysis}
+
 Critical whole-game positions:
 {critical_positions}
 
@@ -2383,6 +3609,7 @@ User question:
         current_line_pgn = current_line_pgn,
         whole_game_pgn = whole_game_pgn,
         game_analysis = game_analysis,
+        pc_game_analysis = pc_game_analysis,
         critical_positions = critical_positions,
         legal_moves = legal_moves,
         existing_engine_lines = existing_engine_lines,
@@ -2732,6 +3959,118 @@ fn parse_chess_fact_tool_plan(output: &str) -> Result<ChessFactToolPlan, CoachEr
     })?;
     serde_json::from_str(&json).map_err(|error| {
         CoachError::GeminiChessFactMalformed(format!("{} in `{}`", error, trim_error_text(output)))
+    })
+}
+
+fn parse_library_plan_output(output: &str) -> Result<CoachLibraryPlan, CoachError> {
+    let json = extract_first_json_object(output).ok_or_else(|| {
+        CoachError::GeminiLibraryPlannerMalformed("no JSON object was found".to_string())
+    })?;
+    serde_json::from_str(&json).map_err(|error| {
+        CoachError::GeminiLibraryPlannerMalformed(format!(
+            "{} in `{}`",
+            error,
+            trim_error_text(output)
+        ))
+    })
+}
+
+fn parse_structured_review_output(output: &str) -> Result<CoachStructuredReview, CoachError> {
+    let json = extract_first_json_object(output).ok_or_else(|| {
+        CoachError::GeminiCategoryMalformed("no JSON object was found".to_string())
+    })?;
+    serde_json::from_str(&json).map_err(|error| {
+        CoachError::GeminiCategoryMalformed(format!("{} in `{}`", error, trim_error_text(output)))
+    })
+}
+
+fn library_plan_output_schema() -> serde_json::Value {
+    json!({
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["overview", "categories"],
+        "properties": {
+            "overview": {"type": "string"},
+            "categories": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": MAX_COACH_CATEGORIES,
+                "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["label", "reason", "keyPlies", "bookIds", "chapterIds", "searchQueries"],
+                    "properties": {
+                        "label": {"type": "string"},
+                        "reason": {"type": "string"},
+                        "keyPlies": {"type": "array", "items": {"type": "integer", "minimum": 1}},
+                        "bookIds": {"type": "array", "items": {"type": "string"}},
+                        "chapterIds": {"type": "array", "items": {"type": "string"}},
+                        "searchQueries": {"type": "array", "items": {"type": "string"}}
+                    }
+                }
+            }
+        }
+    })
+}
+
+fn category_output_schema() -> serde_json::Value {
+    json!({
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["overview", "categories"],
+        "properties": {
+            "overview": {"type": "string"},
+            "categories": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": MAX_COACH_CATEGORIES,
+                "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["id", "label", "summary", "explanation", "positions", "bookReferences"],
+                    "properties": {
+                        "id": {"type": "string"},
+                        "label": {"type": "string"},
+                        "summary": {"type": "string"},
+                        "explanation": {"type": "string"},
+                        "positions": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": ["ply", "san", "title", "explanation", "engineEvidence", "betterPlan"],
+                                "properties": {
+                                    "ply": {"type": "integer", "minimum": 1},
+                                    "san": {"type": "string"},
+                                    "title": {"type": "string"},
+                                    "explanation": {"type": "string"},
+                                    "engineEvidence": {"type": "string"},
+                                    "betterPlan": {"type": "string"}
+                                }
+                            }
+                        },
+                        "bookReferences": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": ["chunkId", "whyItMatters", "positionPly"],
+                                "properties": {
+                                    "chunkId": {"type": "string"},
+                                    "whyItMatters": {"type": "string"},
+                                    "positionPly": {
+                                        "anyOf": [
+                                            {"type": "integer", "minimum": 1},
+                                            {"type": "null"}
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     })
 }
 
@@ -4106,7 +5445,7 @@ fn format_game_analysis(points: &[CoachGameAnalysisPoint]) -> String {
         return "Unavailable or not requested for this question.".to_string();
     }
 
-    format_game_analysis_points(points.iter().take(240))
+    format_game_analysis_points(points.iter())
 }
 
 fn format_game_analysis_for_request(request: &AiCoachRequest) -> String {
@@ -6431,6 +7770,16 @@ async fn run_gemini_cli(
     prompt: &str,
     timeout_secs: u64,
 ) -> Result<String, CoachError> {
+    run_gemini_cli_with_schema(command, model, prompt, timeout_secs, None).await
+}
+
+async fn run_gemini_cli_with_schema(
+    command: &str,
+    model: &str,
+    prompt: &str,
+    timeout_secs: u64,
+    output_schema: Option<&serde_json::Value>,
+) -> Result<String, CoachError> {
     // Local personal-use bridge only: this assumes the user has authenticated
     // the selected AI CLI on their own machine. Do not expose this command
     // from a public deployment or pass credentials through the app.
@@ -6443,12 +7792,22 @@ async fn run_gemini_cli(
 
     let temp_dir = tempdir()?;
     let agy_log_path = temp_dir.path().join("agy.log");
+    let output_schema_path = if let Some(schema) = output_schema {
+        let path = temp_dir.path().join("output-schema.json");
+        tokio::fs::write(&path, serde_json::to_vec_pretty(schema)?).await?;
+        Some(path)
+    } else {
+        None
+    };
     let is_codex = is_codex_command(command, &resolved_command);
     let is_agy = is_agy_command(command, &resolved_command);
     let mut command_builder = Command::new(&resolved_command);
     command_builder.current_dir(temp_dir.path());
     if is_codex {
-        command_builder.args(codex_cli_args(model));
+        command_builder.args(codex_cli_args_with_output_schema(
+            model,
+            output_schema_path.as_deref(),
+        ));
     } else if is_agy {
         command_builder
             .arg("--log-file")
@@ -6491,10 +7850,15 @@ async fn run_gemini_cli(
 
     if let Some(mut stdin) = child.stdin.take() {
         let input = if is_codex {
+            let response_instruction = if output_schema.is_some() {
+                "Return only one JSON object matching the supplied output schema."
+            } else {
+                "Return only the requested coaching or planner response."
+            };
             format!(
                 "You are the response-generation layer inside a private chess coaching app.\n\
                  Do not call tools, inspect files, browse, or modify anything. Use only the evidence in this prompt.\n\
-                 Return only the requested coaching or planner response.\n\n{prompt}"
+                 {response_instruction}\n\n{prompt}"
             )
         } else {
             prompt.to_string()
@@ -6682,7 +8046,11 @@ fn resolve_cli_command(command: &str) -> PathBuf {
 }
 
 fn codex_cli_args(model: &str) -> Vec<String> {
-    vec![
+    codex_cli_args_with_output_schema(model, None)
+}
+
+fn codex_cli_args_with_output_schema(model: &str, output_schema: Option<&Path>) -> Vec<String> {
+    let mut args = vec![
         "exec".to_string(),
         "--ephemeral".to_string(),
         "--ignore-user-config".to_string(),
@@ -6697,8 +8065,13 @@ fn codex_cli_args(model: &str) -> Vec<String> {
             "model_reasoning_effort=\"{}\"",
             DEFAULT_CODEX_REASONING_EFFORT
         ),
-        "-".to_string(),
-    ]
+    ];
+    if let Some(output_schema) = output_schema {
+        args.push("--output-schema".to_string());
+        args.push(output_schema.to_string_lossy().into_owned());
+    }
+    args.push("-".to_string());
+    args
 }
 
 fn is_codex_command(command: &str, resolved_command: &Path) -> bool {
@@ -6896,14 +8269,56 @@ mod tests {
     }
 
     #[test]
-    fn book_search_terms_expand_whole_game_review_into_teaching_concepts() {
+    fn coach_architecture_library_plan_uses_only_real_accessible_ids() {
         let mut request = sample_request();
-        request.pgn_scope = "whole_game".to_string();
-        request.question = "What went wrong in my game?".to_string();
-        let terms = chess_book_search_terms(&request, &[]);
-        assert!(terms.contains(&"calculation".to_string()));
-        assert!(terms.contains(&"candidates".to_string()));
-        assert!(terms.contains(&"prophylaxis".to_string()));
+        request.game_analysis.push(CoachGameAnalysisPoint {
+            ply: 12,
+            mv: "e5".to_string(),
+            before_fen: None,
+            fen: request.fen.clone(),
+            played_uci: None,
+            played_side: Some("black".to_string()),
+            eval: Some("+0.45".to_string()),
+            depth: Some(20),
+            annotations: vec!["inaccuracy".to_string()],
+        });
+        let inventory = CoachLibraryInventory {
+            books: vec![CoachLibraryBook {
+                book_id: "real-book".to_string(),
+                title: "Real Book".to_string(),
+                author: "GM Author".to_string(),
+                shelf: "Openings".to_string(),
+                has_excerpt: true,
+            }],
+            chapters: vec![CoachLibraryChapter {
+                chapter_id: "real-chapter".to_string(),
+                book_id: "real-book".to_string(),
+                title: "The central structure".to_string(),
+                printed_page_start: Some(20),
+                pdf_page_start: Some(8),
+                pdf_page_end: Some(10),
+            }],
+        };
+        let plan = sanitize_library_plan(
+            CoachLibraryPlan {
+                overview: "Opening matters".to_string(),
+                categories: vec![CoachLibraryCategoryPlan {
+                    id: String::new(),
+                    label: "Opening structure".to_string(),
+                    reason: "The centre changed.".to_string(),
+                    key_plies: vec![12, 99],
+                    book_ids: vec!["fake-book".to_string()],
+                    chapter_ids: vec!["real-chapter".to_string(), "fake-chapter".to_string()],
+                    search_queries: vec!["central break".to_string()],
+                }],
+            },
+            &inventory,
+            &request,
+        );
+
+        assert_eq!(plan.categories[0].key_plies, vec![12]);
+        assert_eq!(plan.categories[0].chapter_ids, vec!["real-chapter"]);
+        assert_eq!(plan.categories[0].book_ids, vec!["real-book"]);
     }
 
     #[test]
@@ -6932,10 +8347,260 @@ mod tests {
             &[],
             &[],
             std::slice::from_ref(&passage),
+            None,
+            None,
         );
-        assert!(prompt.contains("[Book 1] Calculation Manual"));
+        assert!(prompt.contains("[Source chunk-1] Calculation Manual"));
+        assert!(prompt.contains("actual book and chapter"));
+        assert!(!prompt.contains("[Book 1]"));
         assert!(prompt.contains("principle evidence"));
-        assert!(prompt.contains("Never invent a title"));
+        assert!(prompt.contains("never invent a title"));
+    }
+
+    #[test]
+    fn coach_architecture_codex_runner_passes_output_schema() {
+        let schema_path = Path::new("C:/Temp/coach-schema.json");
+        let args = codex_cli_args_with_output_schema("gpt-5.6-sol", Some(schema_path));
+        assert!(args
+            .windows(2)
+            .any(|args| args == ["--output-schema", "C:/Temp/coach-schema.json"]));
+        assert_eq!(args.last().map(String::as_str), Some("-"));
+    }
+
+    #[test]
+    fn coach_architecture_structured_review_scopes_sources_and_positions() {
+        let mut request = sample_request();
+        request.game_analysis.push(CoachGameAnalysisPoint {
+            ply: 7,
+            mv: "c5".to_string(),
+            before_fen: None,
+            fen: request.fen.clone(),
+            played_uci: None,
+            played_side: Some("black".to_string()),
+            eval: Some("+0.20".to_string()),
+            depth: Some(18),
+            annotations: Vec::new(),
+        });
+        let passage = CoachBookPassage {
+            chunk_id: "real-chunk".to_string(),
+            book_id: "real-book".to_string(),
+            title: "Opening Plans".to_string(),
+            author: "GM Author".to_string(),
+            shelf: "Openings".to_string(),
+            chapter_title: "The central break".to_string(),
+            citation: "PDF p. 10".to_string(),
+            pdf_page_start: 10,
+            pdf_page_end: 10,
+            printed_page_start: None,
+            printed_page_end: None,
+            excerpt: "Prepare the central break.".to_string(),
+            local_path: "C:/books/opening.pdf".to_string(),
+        };
+        let position = |ply| CoachCategoryPosition {
+            ply,
+            san: "invented".to_string(),
+            title: "Key position".to_string(),
+            explanation: "The centre changes.".to_string(),
+            engine_evidence: String::new(),
+            better_plan: String::new(),
+        };
+        let book_reference = |chunk_id: &str| CoachCategoryBookReference {
+            chunk_id: chunk_id.to_string(),
+            why_it_matters: "It explains the break.".to_string(),
+            position_ply: Some(99),
+        };
+        let library_plan = CoachLibraryPlan {
+            overview: "Opening overview".to_string(),
+            categories: vec![CoachLibraryCategoryPlan {
+                id: "opening-plans".to_string(),
+                label: "Opening plans".to_string(),
+                reason: "The centre mattered.".to_string(),
+                key_plies: vec![7],
+                book_ids: vec!["real-book".to_string()],
+                chapter_ids: vec!["real-chapter".to_string()],
+                search_queries: vec!["central break".to_string()],
+            }],
+        };
+        let category_chunks =
+            HashMap::from([("opening-plans".to_string(), vec!["real-chunk".to_string()])]);
+        let raw_review = CoachStructuredReview {
+            overview: "Opening overview".to_string(),
+            categories: vec![CoachCategory {
+                id: "model-controlled-id".to_string(),
+                label: "Opening plans".to_string(),
+                summary: "The early centre mattered.".to_string(),
+                explanation: "Use the central break.".to_string(),
+                positions: vec![position(7), position(99)],
+                book_references: vec![
+                    book_reference("real-chunk"),
+                    book_reference("invented-chunk"),
+                ],
+            }],
+        };
+        let review = sanitize_structured_review(
+            raw_review.clone(),
+            &request,
+            "Validated answer.",
+            &library_plan,
+            &category_chunks,
+            std::slice::from_ref(&passage),
+            &[],
+            &[],
+        )
+        .unwrap();
+
+        assert_eq!(review.categories[0].id, "opening-plans");
+        assert_eq!(review.categories[0].positions.len(), 1);
+        assert_eq!(review.categories[0].positions[0].san, "c5");
+        assert_eq!(review.categories[0].book_references.len(), 1);
+        assert_eq!(
+            review.categories[0].book_references[0].chunk_id,
+            "real-chunk"
+        );
+        assert_eq!(review.categories[0].book_references[0].position_ply, None);
+
+        let mut missing_reference = raw_review;
+        missing_reference.categories[0].book_references.clear();
+        assert!(matches!(
+            sanitize_structured_review(
+                missing_reference,
+                &request,
+                "Validated answer.",
+                &library_plan,
+                &category_chunks,
+                std::slice::from_ref(&passage),
+                &[],
+                &[],
+            ),
+            Err(CoachError::GeminiCategoryMalformed(_))
+        ));
+    }
+
+    #[test]
+    fn coach_architecture_exact_chapter_does_not_expand_to_parent_book() {
+        let category = CoachLibraryCategoryPlan {
+            id: "opening".to_string(),
+            label: "Opening".to_string(),
+            reason: String::new(),
+            key_plies: Vec::new(),
+            book_ids: vec!["book".to_string()],
+            chapter_ids: vec!["chosen-chapter".to_string()],
+            search_queries: Vec::new(),
+        };
+        assert!(library_candidate_is_in_category(
+            &category,
+            "book",
+            Some("chosen-chapter")
+        ));
+        assert!(!library_candidate_is_in_category(
+            &category,
+            "book",
+            Some("other-chapter")
+        ));
+        assert!(!library_candidate_is_in_category(&category, "book", None));
+    }
+
+    #[test]
+    fn coach_architecture_ordinal_book_placeholders_are_rejected() {
+        assert!(contains_ordinal_book_reference("Use [Book 3] here."));
+        assert!(contains_ordinal_book_reference("Book #12 explains it."));
+        assert!(!contains_ordinal_book_reference(
+            "Use Opening Plans by GM Author here."
+        ));
+    }
+
+    #[test]
+    fn coach_architecture_every_game_triggers_pc_preflight_with_every_ply() {
+        let mut request = sample_request();
+        request.question = "What is the plan here?".to_string();
+        request.game_analysis.push(CoachGameAnalysisPoint {
+            ply: 1,
+            mv: "e4".to_string(),
+            before_fen: Some(request.fen.clone()),
+            fen: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1".to_string(),
+            played_uci: Some("e2e4".to_string()),
+            played_side: Some("white".to_string()),
+            eval: None,
+            depth: None,
+            annotations: vec!["book".to_string()],
+        });
+
+        assert!(should_run_pc_game_analysis(&request));
+        let payload = build_pc_game_analysis_payload(&request).unwrap();
+        assert_eq!(payload["scope"], "whole-game");
+        assert_eq!(payload["moves"].as_array().unwrap().len(), 1);
+        assert_eq!(payload["moves"][0]["ply"], 1);
+        assert_eq!(payload["moves"][0]["fenBefore"], request.fen);
+        assert_eq!(payload["moves"][0]["uci"], "e2e4");
+    }
+
+    #[test]
+    fn coach_architecture_pc_completion_requires_all_positions_and_sources() {
+        let mut request = sample_request();
+        request.game_analysis.push(CoachGameAnalysisPoint {
+            ply: 1,
+            mv: "e4".to_string(),
+            before_fen: Some(request.fen.clone()),
+            fen: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1".to_string(),
+            played_uci: Some("e2e4".to_string()),
+            played_side: Some("white".to_string()),
+            eval: None,
+            depth: None,
+            annotations: Vec::new(),
+        });
+        let evaluation = CoachPcEvaluation {
+            white_cp: Some(24),
+            white_mate: None,
+            depth: Some(28),
+            source: "pc-cloud".to_string(),
+            nodes: Some(1_000_000),
+            pv_uci: vec!["e2e4".to_string()],
+            terminal: false,
+        };
+        let analysis = CoachPcGameAnalysis {
+            request_id: request.request_id.clone(),
+            player_color: "white".to_string(),
+            scope: "whole-game".to_string(),
+            move_analysis: vec![CoachPcMoveAnalysis {
+                ply: 1,
+                move_number: 1,
+                color: "white".to_string(),
+                san: "e4".to_string(),
+                uci: "e2e4".to_string(),
+                fen_before: request.fen.clone(),
+                fen_after: request.game_analysis[0].fen.clone(),
+                before: Some(evaluation.clone()),
+                after: Some(evaluation),
+                mover_loss_cp: Some(0),
+                player_loss_cp: Some(0),
+                annotations: Vec::new(),
+            }],
+            analysis_coverage: CoachAnalysisCoverage {
+                total_positions: 2,
+                unique_positions: 2,
+                cloud_hits: 2,
+                live_analyses: 0,
+                failed: 0,
+                live_depth: 18,
+                complete: false,
+            },
+            stored_evaluations_used: 2,
+        };
+
+        let validated = validate_pc_game_analysis(&request, analysis.clone()).unwrap();
+        assert!(validated.analysis_coverage.complete);
+        let mut mismatched = analysis.clone();
+        mismatched.move_analysis[0].fen_after = request.fen.clone();
+        assert!(matches!(
+            validate_pc_game_analysis(&request, mismatched),
+            Err(CoachError::PcAnalysisIncomplete(_))
+        ));
+        let mut incomplete = analysis;
+        incomplete.analysis_coverage.failed = 1;
+        assert!(matches!(
+            validate_pc_game_analysis(&request, incomplete),
+            Err(CoachError::PcAnalysisIncomplete(_))
+        ));
     }
 
     #[test]
@@ -7010,6 +8675,8 @@ mod tests {
             &[],
             std::slice::from_ref(&fact),
             &[],
+            None,
+            None,
         );
 
         assert!(prompt.contains("Private board-state facts"));
@@ -7342,7 +9009,7 @@ mod tests {
             annotations: vec!["??".to_string()],
         }];
 
-        let prompt = build_planner_prompt(&request, "e4 (e2e4), d4 (d2d4)", &[], &[]);
+        let prompt = build_planner_prompt(&request, "e4 (e2e4), d4 (d2d4)", &[], &[], None);
 
         assert!(prompt.contains("analyse_position"));
         assert!(prompt.contains("Critical whole-game positions"));
@@ -7381,7 +9048,7 @@ mod tests {
             },
         ];
 
-        let prompt = build_planner_prompt(&request, "Kd2 (e1d2)", &[], &[]);
+        let prompt = build_planner_prompt(&request, "Kd2 (e1d2)", &[], &[], None);
 
         assert!(prompt.contains("Question-referenced game position"));
         assert!(prompt.contains("Ply 19: white played Qxb5+"));
@@ -7443,7 +9110,8 @@ mod tests {
 
     #[test]
     fn planner_prompt_includes_legal_moves_and_json_schema() {
-        let prompt = build_planner_prompt(&sample_request(), "e4 (e2e4), d4 (d2d4)", &[], &[]);
+        let prompt =
+            build_planner_prompt(&sample_request(), "e4 (e2e4), d4 (d2d4)", &[], &[], None);
 
         assert!(prompt.contains("fast chess-analysis planner"));
         assert!(prompt.contains("\"requests\""));

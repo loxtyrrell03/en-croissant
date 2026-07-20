@@ -4,13 +4,30 @@ import { PassThrough } from "node:stream";
 import test from "node:test";
 import { DatabaseSync } from "node:sqlite";
 import {
+  assertNoNumberedBookPlaceholders,
+  buildCoachMoveAnalysis,
+  buildCoachPositionRecords,
   buildCodexCoachInvocation,
   buildChessBookSearchTerms,
   buildCriticalMoments,
+  buildLibraryPlannerPrompt,
+  buildPcCoachAnalysisResult,
   buildPhoneCoachPrompt,
+  buildStructuredPhoneCoachPrompt,
+  codexExitIndicatesSignedOut,
+  collectPcCoachPositionEvaluations,
+  getChessBookLibraryInventory,
+  normalizeCloudCoachEvaluation,
+  normalizeChessCoachRequestPayload,
+  normalizeLibraryPlan,
+  normalizeStructuredCoachReview,
+  parseStockfishCoachInfo,
   preserveConfirmedCodexAuthentication,
   probeCodexAuthentication,
+  publicChessCoachFailure,
+  retrievePlannedBookPassages,
   searchChessBookCorpus,
+  writeProcessStdinSafely,
 } from "../chess-coach-service.mjs";
 
 function fakeCodexStatusProcess({ code, output = "", neverExits = false }) {
@@ -66,8 +83,34 @@ test("a transient Codex probe cannot erase a confirmed login", () => {
   assert.equal(result.transientDetail, "temporary timeout");
 });
 
+test("model auth failure classification requires a nonzero exit and auth stderr", () => {
+  assert.equal(codexExitIndicatesSignedOut(1, "Authentication required; run codex login"), true);
+  assert.equal(codexExitIndicatesSignedOut(0, "Authentication required; run codex login"), false);
+  assert.equal(codexExitIndicatesSignedOut(1, "ordinary model error"), false);
+});
+
+test("public coach failures never expose raw stderr, secrets, or local paths", () => {
+  const internal = new Error(
+    "Codex crashed at C:\\Users\\loxty\\.codex\\secret with token sk-private and raw stderr",
+  );
+  internal.code = "COACH_FAILED";
+  const publicFailure = publicChessCoachFailure(internal);
+  assert.deepEqual(publicFailure, {
+    status: 502,
+    code: "COACH_FAILED",
+    error: "The PC coach could not complete this review. Please try again.",
+  });
+  assert.doesNotMatch(JSON.stringify(publicFailure), /Users|sk-private|stderr/);
+
+  const signedOut = new Error("not signed in; run codex login");
+  signedOut.code = "MODEL_UNAVAILABLE";
+  assert.match(publicChessCoachFailure(signedOut).error, /codex login/);
+});
+
 test("Codex coach invocation is GPT-5.6 Sol, ephemeral, read-only, and tool-free", () => {
-  const invocation = buildCodexCoachInvocation("Evidence payload");
+  const invocation = buildCodexCoachInvocation("Evidence payload", {
+    outputSchemaPath: "C:/schemas/coach.json",
+  });
   assert.deepEqual(invocation.args.slice(0, 4), [
     "exec",
     "--ephemeral",
@@ -77,8 +120,42 @@ test("Codex coach invocation is GPT-5.6 Sol, ephemeral, read-only, and tool-free
   assert.ok(invocation.args.includes("gpt-5.6-sol"));
   assert.ok(invocation.args.includes("read-only"));
   assert.ok(invocation.args.includes('model_reasoning_effort="medium"'));
+  assert.deepEqual(
+    invocation.args.slice(
+      invocation.args.indexOf("--output-schema"),
+      invocation.args.indexOf("--output-schema") + 2,
+    ),
+    ["--output-schema", "C:/schemas/coach.json"],
+  );
   assert.match(invocation.stdin, /Do not call tools/);
+  assert.match(invocation.stdin, /one JSON object/);
   assert.match(invocation.stdin, /Evidence payload/);
+});
+
+test("large model stdin handles a late Windows EOF without an uncaught stream error", async () => {
+  const stdin = new EventEmitter();
+  stdin.destroyed = false;
+  stdin.end = (input) => {
+    stdin.input = input;
+    queueMicrotask(() => {
+      const error = new Error("write EOF");
+      error.code = "EOF";
+      stdin.emit("error", error);
+    });
+  };
+  stdin.destroy = () => {
+    stdin.destroyed = true;
+  };
+  const errors = [];
+  const close = writeProcessStdinSafely(stdin, "x".repeat(256 * 1024), (error) =>
+    errors.push(error),
+  );
+  await new Promise((resolvePromise) => setImmediate(resolvePromise));
+  assert.equal(stdin.input.length, 256 * 1024);
+  assert.equal(errors.length, 1);
+  assert.equal(errors[0].code, "EOF");
+  close();
+  assert.equal(stdin.destroyed, true);
 });
 
 test("book search retrieves cited chunks and diversifies books", () => {
@@ -178,7 +255,531 @@ test("phone prompt keeps engine and book evidence in separate roles", () => {
     ],
   });
   assert.match(prompt, /Stockfish evaluations and lines are authoritative/);
-  assert.match(prompt, /\[Book 1\] Calculation/);
+  assert.match(prompt, /Title: Calculation/);
+  assert.match(prompt, /Chapter: Candidates/);
+  assert.doesNotMatch(prompt, /\[Book \d+\]/);
   assert.match(prompt, /Never invent an evaluation/);
-  assert.ok(buildChessBookSearchTerms({ question: "What went wrong?", scope: "whole-game" }).includes("calculation"));
+  assert.ok(
+    buildChessBookSearchTerms({ question: "What went wrong?", scope: "whole-game" }).includes(
+      "calculation",
+    ),
+  );
+});
+
+test("PC position sweep covers every ply, deduplicates transpositions, and keeps full FENs", () => {
+  const moves = [
+    {
+      ply: 1,
+      color: "white",
+      san: "Nf3",
+      fenBefore: "start w KQkq - 0 1",
+      fenAfter: "after-one b KQkq - 1 1",
+    },
+    {
+      ply: 2,
+      color: "black",
+      san: "Nf6",
+      fenBefore: "after-one b KQkq - 1 1",
+      fenAfter: "start w KQkq - 2 2",
+    },
+  ];
+  const positions = buildCoachPositionRecords({ moves, scope: "whole-game", currentFen: "" });
+  assert.equal(positions.length, 2);
+  assert.equal(positions[0].fen, "start w KQkq - 0 1");
+  assert.equal(positions[1].ply, 1);
+});
+
+test("coach request normalization never silently truncates the PGN or a long practical game", () => {
+  const pgn = `${"1. Nf3 Nf6 ".repeat(1800)}END-OF-PGN`;
+  const moves = Array.from({ length: 300 }, (_, index) => ({
+    ply: index + 1,
+    color: index % 2 === 0 ? "white" : "black",
+    san: index % 2 === 0 ? "Nf3" : "Nf6",
+    uci: index % 2 === 0 ? "g1f3" : "g8f6",
+    fenBefore: `position-${index} ${index % 2 === 0 ? "w" : "b"} - - 0 1`,
+    fenAfter: `position-${index + 1} ${index % 2 === 0 ? "b" : "w"} - - 0 1`,
+  }));
+  const normalized = normalizeChessCoachRequestPayload(
+    {
+      requestId: "coach-complete-input",
+      question: "Review the whole game",
+      currentFen: moves.at(-1).fenAfter,
+      pgn,
+      playerColor: "white",
+      scope: "whole-game",
+      moves,
+    },
+    { createRequestId: () => "unused-request-id" },
+  );
+  assert.equal(normalized.moves.length, 300);
+  assert.equal(normalized.pgn, pgn);
+  assert.match(normalized.pgn, /END-OF-PGN$/);
+
+  const prompt = buildLibraryPlannerPrompt({
+    ...normalized,
+    moveAnalysis: [],
+    inventory: { books: [], chapters: [] },
+  });
+  assert.match(prompt, /END-OF-PGN/);
+});
+
+test("coach request normalization explicitly rejects incomplete or oversized input", () => {
+  const base = {
+    question: "Review the game",
+    currentFen: "current w - - 0 1",
+    pgn: "1. e4",
+    moves: [],
+  };
+  assert.throws(
+    () =>
+      normalizeChessCoachRequestPayload({
+        ...base,
+        moves: [{ ply: 1, san: "e4", fenBefore: "start w - - 0 1" }],
+      }),
+    /missing its complete before\/after position data/,
+  );
+  assert.throws(
+    () => normalizeChessCoachRequestPayload({ ...base, pgn: "x".repeat(300_001) }),
+    /PGN is too large/,
+  );
+  const discontinuousMoves = [
+    {
+      ply: 1,
+      san: "e4",
+      fenBefore: "start w - - 0 1",
+      fenAfter: "after-e4 b - - 0 1",
+    },
+    {
+      ply: 2,
+      san: "e5",
+      fenBefore: "different b - - 0 1",
+      fenAfter: "after-e5 w - - 0 2",
+    },
+  ];
+  assert.equal(
+    buildCoachPositionRecords({ moves: discontinuousMoves, scope: "whole-game" }).length,
+    4,
+  );
+  assert.throws(
+    () => normalizeChessCoachRequestPayload({ ...base, moves: discontinuousMoves }),
+    /does not continue from the preceding game position/,
+  );
+});
+
+test("PC sweep checks every cloud position first and live-analyzes only misses sequentially", async () => {
+  const positions = ["one", "two", "three"].map((key) => ({ key, fen: `${key} w - - 0 1` }));
+  const calls = [];
+  let liveConcurrency = 0;
+  let maxLiveConcurrency = 0;
+  const progress = [];
+  const result = await collectPcCoachPositionEvaluations({
+    positions,
+    queryCloud: async (fen) => {
+      calls.push(`cloud:${fen.split(" ")[0]}`);
+      return fen.startsWith("two") ? { source: "pc-cloud", whiteCp: 10 } : null;
+    },
+    queryLive: async (fen) => {
+      const key = fen.split(" ")[0];
+      calls.push(`live:${key}:start`);
+      liveConcurrency += 1;
+      maxLiveConcurrency = Math.max(maxLiveConcurrency, liveConcurrency);
+      await new Promise((resolve) => setTimeout(resolve, 2));
+      liveConcurrency -= 1;
+      calls.push(`live:${key}:end`);
+      return { source: "pc-live", whiteCp: key === "one" ? 5 : -5 };
+    },
+    onProgress: (event) => progress.push(event),
+  });
+  assert.deepEqual(calls, [
+    "cloud:one",
+    "cloud:two",
+    "cloud:three",
+    "live:one:start",
+    "live:one:end",
+    "live:three:start",
+    "live:three:end",
+  ]);
+  assert.equal(maxLiveConcurrency, 1);
+  assert.equal(result.cloudHits, 1);
+  assert.equal(result.liveAnalyses, 2);
+  assert.equal(result.evaluations.size, 3);
+  assert.deepEqual(progress.at(-1), { phase: "live", completed: 2, total: 2 });
+});
+
+test("PC sweep aborts before a cache miss can start live Stockfish", async () => {
+  const controller = new AbortController();
+  let liveCalls = 0;
+  await assert.rejects(
+    collectPcCoachPositionEvaluations({
+      positions: [
+        { key: "one", fen: "one w - - 0 1" },
+        { key: "two", fen: "two w - - 0 1" },
+      ],
+      signal: controller.signal,
+      queryCloud: async (fen) => {
+        if (fen.startsWith("one")) controller.abort();
+        return null;
+      },
+      queryLive: async () => {
+        liveCalls += 1;
+        return { source: "pc-live", whiteCp: 0 };
+      },
+    }),
+    { name: "AbortError" },
+  );
+  assert.equal(liveCalls, 0);
+});
+
+test("cloud scores stay White-relative while live black-to-move scores are flipped", () => {
+  const cloud = normalizeCloudCoachEvaluation(
+    { depth: 31, knodes: 12, pvs: [{ cp: 73, moves: "a7a6" }] },
+    "fen b - - 0 1",
+  );
+  assert.equal(cloud.whiteCp, 73);
+  assert.equal(cloud.nodes, 12000);
+
+  const live = parseStockfishCoachInfo(
+    "info depth 18 seldepth 22 multipv 1 score cp -73 nodes 12000 nps 900000 pv a7a6 a2a3",
+    "fen b - - 0 1",
+  );
+  assert.equal(live.whiteCp, 73);
+  assert.equal(live.depth, 18);
+  assert.deepEqual(live.pvUci, ["a7a6", "a2a3"]);
+  assert.equal(
+    parseStockfishCoachInfo("info depth 20 score cp 5 lowerbound pv a2a3", "fen w - -"),
+    null,
+  );
+});
+
+test("AI planner is restricted to real accessible chapters and retrieval stays in its scope", () => {
+  const database = new DatabaseSync(":memory:");
+  database.exec(`
+    CREATE TABLE books (
+      book_id TEXT PRIMARY KEY, title TEXT, author TEXT, shelf TEXT, local_path TEXT
+    );
+    CREATE TABLE chapters (
+      chapter_id TEXT PRIMARY KEY, book_id TEXT, order_index INTEGER, number TEXT, title TEXT,
+      printed_page_start INTEGER, pdf_page_start INTEGER, pdf_page_end INTEGER,
+      accessible_in_excerpt INTEGER
+    );
+    CREATE TABLE chunks (
+      chunk_id TEXT PRIMARY KEY, book_id TEXT, chapter_id TEXT, chapter_title TEXT,
+      pdf_page_start INTEGER, pdf_page_end INTEGER, printed_page_start INTEGER,
+      printed_page_end INTEGER, sequence_in_page INTEGER, citation TEXT, text TEXT
+    );
+    INSERT INTO books VALUES
+      ('opening-book', 'Plans in the Dutch', 'GM Author', 'Openings', 'C:/books/dutch.pdf'),
+      ('endgame-book', 'Rook Endgames', 'GM Endgamer', 'Endgames', 'C:/books/rook.pdf');
+    INSERT INTO chapters VALUES
+      ('dutch-structure', 'opening-book', 1, '3', 'The Stonewall structure', 20, 8, 10, 1),
+      ('rook-active', 'endgame-book', 1, '5', 'Active rook defence', 40, 12, 13, 1),
+      ('hidden-toc', 'opening-book', 2, '9', 'Unavailable theory', 80, NULL, NULL, 0);
+    INSERT INTO chunks VALUES
+      ('dutch-a', 'opening-book', 'dutch-structure', 'The Stonewall structure', 8, 8, 20, 20, 0,
+       'Plans in the Dutch - PDF p. 8', 'The e5 break and dark-squared bishop determine the plan.'),
+      ('hidden-a', 'opening-book', 'hidden-toc', 'Unavailable theory', 20, 20, 80, 80, 0,
+       'Plans in the Dutch - PDF p. 20', 'An unrelated chapter that the planner did not select.'),
+      ('rook-a', 'endgame-book', 'rook-active', 'Active rook defence', 12, 12, 40, 40, 0,
+       'Rook Endgames - PDF p. 12', 'Keep the rook active behind the passed pawn.');
+  `);
+  const inventory = getChessBookLibraryInventory(database);
+  assert.deepEqual(
+    inventory.chapters.map((chapter) => chapter.chapterId),
+    ["rook-active", "dutch-structure"],
+  );
+  const plan = normalizeLibraryPlan(
+    {
+      overview: "The opening structure mattered.",
+      categories: [
+        {
+          id: "Opening ideas",
+          label: "Dutch structure",
+          reason: "White missed the thematic e5 response.",
+          keyPlies: [7, 999],
+          bookIds: ["invented-book"],
+          chapterIds: ["dutch-structure", "hidden-toc", "invented-chapter"],
+          searchQueries: ["e5 break dark squared bishop"],
+        },
+      ],
+    },
+    inventory,
+    [{ ply: 7 }],
+  );
+  assert.deepEqual(plan.categories[0].chapterIds, ["dutch-structure"]);
+  assert.deepEqual(plan.categories[0].bookIds, ["opening-book"]);
+  assert.deepEqual(plan.categories[0].keyPlies, [7]);
+  const retrieval = retrievePlannedBookPassages(database, plan);
+  assert.deepEqual(retrieval.categoryPassageIds[plan.categories[0].id], ["dutch-a"]);
+  assert.deepEqual(
+    retrieval.passages.map((passage) => passage.chunkId),
+    ["dutch-a"],
+  );
+  assert.equal(retrieval.passages[0].title, "Plans in the Dutch");
+  database.close();
+});
+
+test("structured review keeps AI categories but rejects invented source and position ids", () => {
+  const libraryPlan = {
+    overview: "Plan overview",
+    categories: [
+      {
+        id: "opening",
+        label: "Opening structure",
+        reason: "The structure was mishandled.",
+        keyPlies: [3],
+        bookIds: ["book"],
+        chapterIds: ["chapter"],
+        searchQueries: ["structure"],
+      },
+    ],
+  };
+  const bookPassages = [{ chunkId: "real-source", title: "Real Opening Book" }];
+  const review = normalizeStructuredCoachReview(
+    {
+      overview: "You chose the wrong plan.",
+      priorities: ["Study the structure"],
+      categories: [
+        {
+          id: "opening",
+          label: "Model tried to rename this",
+          summary: "A concrete opening lesson.",
+          explanation: "Use the thematic break.",
+          positions: [
+            {
+              ply: 3,
+              san: "Qh9",
+              title: "The first decision",
+              explanation: "The bishop belongs elsewhere.",
+              engineEvidence: "+0.10 to -0.35",
+              betterPlan: "Prepare e4.",
+            },
+            {
+              ply: 99,
+              san: "Qh9",
+              title: "Invented",
+              explanation: "",
+              engineEvidence: "",
+              betterPlan: "",
+            },
+          ],
+          bookReferences: [
+            { chunkId: "real-source", whyItMatters: "It explains the break.", positionPly: 3 },
+            { chunkId: "fake-source", whyItMatters: "Invented.", positionPly: null },
+          ],
+        },
+      ],
+    },
+    {
+      libraryPlan,
+      bookPassages,
+      moves: [{ ply: 3, san: "Bf4" }],
+      categoryPassageIds: { opening: ["real-source"] },
+    },
+  );
+  assert.equal(review.categories[0].label, "Opening structure");
+  assert.deepEqual(
+    review.categories[0].positions.map((position) => position.ply),
+    [3],
+  );
+  assert.equal(review.categories[0].positions[0].san, "Bf4");
+  assert.deepEqual(
+    review.categories[0].bookReferences.map((source) => source.chunkId),
+    ["real-source"],
+  );
+  const prompt = buildStructuredPhoneCoachPrompt({
+    question: "Review",
+    pgn: "1. Nf3",
+    playerColor: "white",
+    currentFen: "fen",
+    scope: "whole-game",
+    moveAnalysis: [],
+    analysisCoverage: { totalPositions: 2, cloudHits: 2, liveAnalyses: 0 },
+    libraryPlan,
+    bookPassages: [
+      {
+        ...bookPassages[0],
+        bookId: "book",
+        author: "GM Author",
+        shelf: "Openings",
+        chapterTitle: "Real chapter",
+        citation: "PDF p. 2",
+        excerpt: "The thematic break matters.",
+      },
+    ],
+    categoryPassageIds: { opening: ["real-source"] },
+  });
+  assert.match(prompt, /complete real title/);
+  assert.match(prompt, /exact relevant move\/position/);
+  assert.doesNotMatch(prompt, /\[Book \d+\]/);
+});
+
+test("structured coach output rejects numbered book placeholders in user-visible text", () => {
+  assert.throws(
+    () =>
+      assertNoNumberedBookPlaceholders({
+        overview: "Concrete overview",
+        categories: [
+          {
+            label: "Opening",
+            positions: [{ explanation: "This is supposedly explained by Book 3." }],
+          },
+        ],
+        priorities: ["Study the named chapter"],
+      }),
+    /numbered book placeholder/,
+  );
+  assert.doesNotThrow(() =>
+    assertNoNumberedBookPlaceholders({
+      overview: "Use Bologan's Ruy Lopez for Black, chapter Strategic Ideas & Themes.",
+      priorities: ["Study the named chapter"],
+    }),
+  );
+
+  assert.throws(
+    () =>
+      normalizeStructuredCoachReview(
+        {
+          overview: "Book 3 contains the answer.",
+          priorities: [],
+          categories: [
+            {
+              id: "opening",
+              summary: "Opening lesson",
+              explanation: "Use the thematic break.",
+              positions: [],
+              bookReferences: [
+                { chunkId: "real-source", whyItMatters: "Named source lesson", positionPly: null },
+              ],
+            },
+          ],
+        },
+        {
+          libraryPlan: {
+            overview: "Plan",
+            categories: [
+              {
+                id: "opening",
+                label: "Opening",
+                reason: "Opening lesson",
+                keyPlies: [],
+              },
+            ],
+          },
+          bookPassages: [{ chunkId: "real-source" }],
+          moves: [],
+          categoryPassageIds: { opening: ["real-source"] },
+        },
+      ),
+    /numbered book placeholder/,
+  );
+});
+
+test("structured coach output must include every AI-planned category", () => {
+  assert.throws(
+    () =>
+      normalizeStructuredCoachReview(
+        {
+          overview: "Review",
+          priorities: [],
+          categories: [
+            {
+              id: "opening",
+              summary: "Opening summary",
+              explanation: "Opening explanation",
+              positions: [],
+              bookReferences: [],
+            },
+          ],
+        },
+        {
+          libraryPlan: {
+            overview: "Plan",
+            categories: [
+              { id: "opening", label: "Opening", reason: "Opening reason", keyPlies: [] },
+              { id: "endgame", label: "Endgame", reason: "Endgame reason", keyPlies: [] },
+            ],
+          },
+          bookPassages: [],
+          moves: [],
+          categoryPassageIds: { opening: [], endgame: [] },
+        },
+      ),
+    /omitted the AI-planned review category Endgame/,
+  );
+});
+
+test("move trace keeps every move and records source/depth-aware player loss", () => {
+  const moves = [
+    {
+      ply: 1,
+      color: "white",
+      san: "e4",
+      uci: "e2e4",
+      fenBefore: "start w - - 0 1",
+      fenAfter: "after b - - 0 1",
+      annotations: [],
+    },
+  ];
+  const evaluations = new Map([
+    ["start w - -", { source: "pc-cloud", depth: 30, whiteCp: 40, pvUci: ["d2d4"] }],
+    ["after b - -", { source: "pc-live", depth: 18, whiteCp: -15, pvUci: ["e7e5"] }],
+  ]);
+  const trace = buildCoachMoveAnalysis(moves, evaluations, "white");
+  assert.equal(trace.length, 1);
+  assert.equal(trace[0].playerLossCp, 55);
+  assert.equal(trace[0].before.source, "pc-cloud");
+  assert.equal(trace[0].after.depth, 18);
+});
+
+test("PC analysis-only result reports complete coverage and a full per-move trace", () => {
+  const moves = [
+    {
+      ply: 1,
+      color: "white",
+      san: "e4",
+      uci: "e2e4",
+      fenBefore: "start w - - 0 1",
+      fenAfter: "after-one b - - 0 1",
+      annotations: [],
+    },
+    {
+      ply: 2,
+      color: "black",
+      san: "e5",
+      uci: "e7e5",
+      fenBefore: "after-one b - - 0 1",
+      fenAfter: "after-two w - - 0 2",
+      annotations: [],
+    },
+  ];
+  const positions = buildCoachPositionRecords({ moves, scope: "whole-game", currentFen: "" });
+  const evaluations = new Map([
+    ["start w - -", { source: "pc-cloud", depth: 30, whiteCp: 60, pvUci: ["d2d4"] }],
+    ["after-one b - -", { source: "pc-live", depth: 18, whiteCp: 10, pvUci: ["c7c5"] }],
+    ["after-two w - -", { source: "pc-cloud", depth: 31, whiteCp: 80, pvUci: ["g1f3"] }],
+  ]);
+  const result = buildPcCoachAnalysisResult({
+    scope: "whole-game",
+    currentFen: moves.at(-1).fenAfter,
+    moves,
+    positions,
+    evaluations,
+    playerColor: "white",
+    cloudHits: 2,
+    liveAnalyses: 1,
+    liveDepth: 18,
+  });
+  assert.equal(result.moveAnalysis.length, 2);
+  assert.deepEqual(result.analysisCoverage, {
+    totalPositions: 3,
+    uniquePositions: 3,
+    cloudHits: 2,
+    liveAnalyses: 1,
+    failed: 0,
+    liveDepth: 18,
+  });
+  assert.equal(result.moveAnalysis[0].before.source, "pc-cloud");
+  assert.equal(result.moveAnalysis[0].after.source, "pc-live");
+  assert.equal(result.moveAnalysis[0].moverLossCp, 50);
+  assert.equal(result.criticalMoments[0].ply, 1);
 });

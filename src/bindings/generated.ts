@@ -772,8 +772,12 @@ progressEvent: "progress-event"
 /** user-defined types **/
 
 export type AiCoachRequest = { requestId?: string; fen: string; sideToMove: string; moveHistory: string[]; pgn: string | null; pgnScope?: string; currentLinePgn?: string | null; wholeGamePgn?: string | null; gameAnalysis?: CoachGameAnalysisPoint[]; selectedMove: string | null; question: string; chatHistory?: CoachChatMessage[]; referenceContext?: CoachReferenceContext[]; existingLines: CoachEngineLine[]; existingLinesSource?: string; priorTargetedResults?: CoachTargetedResult[]; openingContext: CoachOpeningContext | null; openingContextError: string | null; enginePath: string; settings: AiCoachSettings }
-export type AiCoachResponse = { answer: string; model: string; usedExistingAnalysis: boolean; stockfishLines: CoachEngineLine[]; targetedResults: CoachTargetedResult[]; bookPassages: CoachBookPassage[]; bookCorpusAvailable: boolean }
+export type AiCoachResponse = { answer: string; overview: string; categories: CoachCategory[]; analysisCoverage: CoachAnalysisCoverage | null; model: string; usedExistingAnalysis: boolean; stockfishLines: CoachEngineLine[]; targetedResults: CoachTargetedResult[]; bookPassages: CoachBookPassage[]; bookCorpusAvailable: boolean }
 export type CoachBookPassage = { chunkId: string; bookId: string; title: string; author: string; shelf: string; chapterTitle: string; citation: string; pdfPageStart: number; pdfPageEnd: number; printedPageStart: number | null; printedPageEnd: number | null; excerpt: string; localPath: string }
+export type CoachAnalysisCoverage = { totalPositions: number; uniquePositions: number; cloudHits: number; liveAnalyses: number; failed: number; liveDepth: number; complete?: boolean }
+export type CoachCategory = { id: string; label: string; summary: string; explanation: string; positions: CoachCategoryPosition[]; bookReferences: CoachCategoryBookReference[] }
+export type CoachCategoryBookReference = { chunkId: string; whyItMatters: string; positionPly: number | null }
+export type CoachCategoryPosition = { ply: number; san: string; title: string; explanation: string; engineEvidence: string; betterPlan: string }
 export type AiCoachSettings = { enabled: boolean; geminiCommand: string; geminiModel: string; plannerModel?: string; multipv: number; timeoutSecs: number }
 export type AnalysisOptions = { fen: string; moves: string[]; annotateNovelties: boolean; referenceDb: string | null; reversed: boolean }
 export type BestMoveSource = "lichess" | "chessdb"

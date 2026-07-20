@@ -25,12 +25,27 @@ import {
 } from "./home-library-index.mjs";
 import {
   buildCodexCoachInvocation,
-  buildCriticalMoments,
-  buildPhoneCoachPrompt,
-  normalizeFen as normalizeCoachFen,
+  buildCoachPositionRecords,
+  buildLibraryPlannerPrompt,
+  buildPcCoachAnalysisResult,
+  buildStructuredPhoneCoachPrompt,
+  codexExitIndicatesSignedOut,
+  collectPcCoachPositionEvaluations,
+  COACH_LIBRARY_PLAN_SCHEMA,
+  COACH_REVIEW_SCHEMA,
+  getChessBookLibraryInventory,
+  normalizeCloudCoachEvaluation,
+  normalizeLibraryPlan,
+  normalizeChessCoachRequestPayload,
+  normalizeStructuredCoachReview,
+  parseStockfishCoachInfo,
   preserveConfirmedCodexAuthentication,
   probeCodexAuthentication,
+  publicChessCoachFailure,
+  retrievePlannedBookPassages,
   searchChessBookCorpus,
+  structuredCoachReviewToMarkdown,
+  writeProcessStdinSafely,
 } from "./chess-coach-service.mjs";
 
 const repoRoot = resolve(
@@ -87,6 +102,9 @@ const coachCommandPath = resolve(
 const coachModel = "gpt-5.6-sol";
 const coachReasoningEffort = "medium";
 const coachWorkRoot = join(serverRoot, "coach-work");
+const coachLibraryPlanSchemaPath = join(coachWorkRoot, "library-plan.schema.json");
+const coachReviewSchemaPath = join(coachWorkRoot, "coach-review.schema.json");
+const coachSweepDepth = positiveInteger(process.env.EN_CROISSANT_COACH_SWEEP_DEPTH, 18);
 const coachProcessEnv = {
   ...process.env,
   CODEX_HOME: process.env.CODEX_HOME || join(userProfile, ".codex"),
@@ -134,12 +152,18 @@ let sharedLichessCredential = null;
 let activeAppCache = null;
 let chessBookDatabase = null;
 let phoneCoachQueue = Promise.resolve();
+const phoneCoachProgress = new Map();
+const phoneCoachProgressExpiry = new Map();
 let coachAuthenticationCache = { checkedAt: 0, status: "unknown" };
 let coachAuthenticationProbe = null;
 
 await mkdir(serverRoot, { recursive: true });
 await mkdir(dirname(statePath), { recursive: true });
 await mkdir(coachWorkRoot, { recursive: true });
+await Promise.all([
+  writeFile(coachLibraryPlanSchemaPath, JSON.stringify(COACH_LIBRARY_PLAN_SCHEMA, null, 2)),
+  writeFile(coachReviewSchemaPath, JSON.stringify(COACH_REVIEW_SCHEMA, null, 2)),
+]);
 sharedLichessCredential = normalizeLichessCredential(await readJsonFile(lichessCredentialPath));
 
 const server = createServer((request, response) => {
@@ -153,9 +177,9 @@ const server = createServer((request, response) => {
 server.listen(port, host, async () => {
   await appendLog(`listening on http://${host}:${port}; site=${siteRoot}`);
   installWatchers();
-  void hostedLibraryIndex.get().catch((error) =>
-    appendLog(`hosted library index warm-up failed: ${error}`),
-  );
+  void hostedLibraryIndex
+    .get()
+    .catch((error) => appendLog(`hosted library index warm-up failed: ${error}`));
 });
 
 process.on("SIGINT", () => server.close(() => process.exit(0)));
@@ -211,7 +235,6 @@ async function handleRequest(request, response) {
       lichessExplorerCacheMisses,
       lichessExplorerRequests: lichessExplorerRequests.size,
       lichessExplorerUpstreamRequests,
-      chessBookCorpusPath,
       chessBookCorpusAvailable: Boolean(await stat(chessBookCorpusPath).catch(() => null)),
       coachModel,
       coachCommandAvailable: Boolean(await stat(coachCommandPath).catch(() => null)),
@@ -221,6 +244,11 @@ async function handleRequest(request, response) {
   if (pathname === "/api/chess-coach/health") {
     if (method !== "GET") return writeJson(response, 405, { error: "Method not allowed." });
     return writeChessCoachHealth(response);
+  }
+
+  if (pathname === "/api/chess-coach/progress") {
+    if (method !== "GET") return writeJson(response, 405, { error: "Method not allowed." });
+    return writeChessCoachProgress(requestUrl, response);
   }
 
   if (pathname === "/api/chess-books/search") {
@@ -233,6 +261,11 @@ async function handleRequest(request, response) {
       return writeJson(response, 405, { error: "Method not allowed." });
     }
     return serveChessBookPdf(requestUrl, request, response, method === "HEAD");
+  }
+
+  if (pathname === "/api/chess-coach/analyze-game") {
+    if (method !== "POST") return writeJson(response, 405, { error: "Method not allowed." });
+    return writeChessCoachAnalysisResponse(request, response);
   }
 
   if (pathname === "/api/chess-coach") {
@@ -275,9 +308,7 @@ async function handleRequest(request, response) {
 
   const activeApp = await getActiveAppState();
   const staticRoot =
-    pathname === "/web-library" || pathname.startsWith("/web-library/")
-      ? siteRoot
-      : activeApp.root;
+    pathname === "/web-library" || pathname.startsWith("/web-library/") ? siteRoot : activeApp.root;
   return serveStatic(pathname, request, response, method === "HEAD", staticRoot);
 }
 
@@ -479,8 +510,7 @@ function buildLichessExplorerUrl(requestUrl) {
   if (!fen || fen.length > 120) return null;
 
   const player = normalizeLichessPlayer(requestUrl.searchParams.get("player"));
-  const endpoint =
-    source === "lichess-masters" ? "masters" : player ? "player" : "lichess";
+  const endpoint = source === "lichess-masters" ? "masters" : player ? "player" : "lichess";
   const upstreamUrl = new URL(`https://explorer.lichess.org/${endpoint}`);
   upstreamUrl.searchParams.set("fen", fen);
   upstreamUrl.searchParams.set(
@@ -1037,8 +1067,10 @@ async function writeChessCoachHealth(response) {
     try {
       const database = getChessBookDatabase();
       bookCount = Number(database.prepare("SELECT COUNT(*) AS count FROM books").get()?.count) || 0;
-      chunkCount = Number(database.prepare("SELECT COUNT(*) AS count FROM chunks").get()?.count) || 0;
+      chunkCount =
+        Number(database.prepare("SELECT COUNT(*) AS count FROM chunks").get()?.count) || 0;
     } catch (error) {
+      await appendLog(`chess coach corpus health failed: ${error?.stack || error}`);
       return writeJson(response, 503, {
         ok: false,
         corpusAvailable: false,
@@ -1046,7 +1078,7 @@ async function writeChessCoachHealth(response) {
         modelAvailable,
         modelStatus: authentication.status,
         model: coachModel,
-        error: `Chess-book corpus could not be opened: ${error?.message || error}`,
+        error: "The chess-book corpus could not be opened.",
       });
     }
   }
@@ -1062,8 +1094,46 @@ async function writeChessCoachHealth(response) {
   });
 }
 
+function writeChessCoachProgress(requestUrl, response) {
+  const requestId = String(requestUrl.searchParams.get("requestId") || "").trim();
+  if (!/^[a-z0-9_-]{8,100}$/i.test(requestId)) {
+    return writeJson(response, 400, { error: "A valid coach request id is required." });
+  }
+  const progress = phoneCoachProgress.get(requestId);
+  if (!progress) {
+    return writeJson(response, 404, { error: "Coach review progress was not found." });
+  }
+  return writeJson(response, 200, progress);
+}
+
+function updatePhoneCoachProgress(requestId, phase, label, completed = 0, total = 0) {
+  if (!requestId) return;
+  phoneCoachProgress.set(requestId, {
+    requestId,
+    phase,
+    label,
+    completed: Math.max(0, Number(completed) || 0),
+    total: Math.max(0, Number(total) || 0),
+    updatedAt: new Date().toISOString(),
+  });
+  if (["complete", "error", "cancelled"].includes(phase)) {
+    clearTimeout(phoneCoachProgressExpiry.get(requestId));
+    const expiry = setTimeout(
+      () => {
+        phoneCoachProgress.delete(requestId);
+        phoneCoachProgressExpiry.delete(requestId);
+      },
+      15 * 60 * 1000,
+    );
+    expiry.unref?.();
+    phoneCoachProgressExpiry.set(requestId, expiry);
+  }
+}
+
 async function writeChessBookSearch(requestUrl, response) {
-  const query = String(requestUrl.searchParams.get("q") || "").trim().slice(0, 500);
+  const query = String(requestUrl.searchParams.get("q") || "")
+    .trim()
+    .slice(0, 500);
   if (!query) return writeJson(response, 400, { error: "A search query is required." });
   if (!(await stat(chessBookCorpusPath).catch(() => null))) {
     return writeJson(response, 503, { error: "Chess-book corpus is unavailable." });
@@ -1097,7 +1167,8 @@ async function serveChessBookPdf(requestUrl, request, response, headOnly) {
 }
 
 async function writeChessCoachResponse(request, response) {
-  const payload = normalizeChessCoachRequest(await readJsonBody(request, maxCoachRequestBytes));
+  const payload = await readNormalizedChessCoachRequest(request, response);
+  if (!payload) return;
   const corpusStat = await stat(chessBookCorpusPath).catch(() => null);
   if (!corpusStat?.isFile()) {
     return writeJson(response, 503, {
@@ -1105,134 +1176,343 @@ async function writeChessCoachResponse(request, response) {
       error: "The PC chess-book corpus is unavailable.",
     });
   }
-
-  const bookPassages = searchChessBookCorpus(getChessBookDatabase(), {
-    question: payload.question,
-    scope: payload.scope,
-    moves: payload.moves,
+  const controller = new AbortController();
+  const abortReview = () => controller.abort();
+  request.once("aborted", abortReview);
+  response.once("close", () => {
+    if (!response.writableEnded) abortReview();
   });
-  const evaluations = await collectStoredCoachEvaluations(payload.moves, payload.playerColor);
-  const criticalMoments = buildCriticalMoments(
-    payload.moves,
-    evaluations,
-    payload.playerColor,
-    5,
-  );
-  const prompt = buildPhoneCoachPrompt({
-    ...payload,
-    criticalMoments,
-    bookPassages,
-  });
-
+  updatePhoneCoachProgress(payload.requestId, "queued", "Waiting for the PC coach", 0, 0);
   try {
     const queued = phoneCoachQueue
       .catch(() => {})
-      .then(() => runPhoneCoachModel(prompt));
+      .then(() => runPhoneCoachReview(payload, controller.signal));
     phoneCoachQueue = queued.catch(() => {});
-    const answer = await queued;
-    return writeJson(response, 200, {
-      answer,
-      model: coachModel,
-      playerColor: payload.playerColor,
-      criticalMoments,
-      bookPassages: publicBookPassages(bookPassages),
-      storedEvaluationsUsed: evaluations.size,
-    });
+    const result = await queued;
+    updatePhoneCoachProgress(payload.requestId, "complete", "Review ready", 1, 1);
+    if (!controller.signal.aborted) return writeJson(response, 200, result);
   } catch (error) {
+    if (controller.signal.aborted) {
+      updatePhoneCoachProgress(payload.requestId, "cancelled", "Review cancelled", 0, 0);
+      return;
+    }
+    updatePhoneCoachProgress(payload.requestId, "error", "Review failed", 0, 0);
     await appendLog(`phone coach failed: ${error?.stack || error}`);
-    return writeJson(response, error?.code === "MODEL_UNAVAILABLE" ? 503 : 502, {
-      code: error?.code || "COACH_FAILED",
-      error: error?.message || "The PC coach model failed.",
-      criticalMoments,
-      bookPassages: publicBookPassages(bookPassages),
+    const publicFailure = publicChessCoachFailure(error);
+    return writeJson(response, publicFailure.status, {
+      code: publicFailure.code,
+      error: publicFailure.error,
     });
+  } finally {
+    request.off("aborted", abortReview);
   }
 }
 
-function normalizeChessCoachRequest(payload) {
-  if (!payload || typeof payload !== "object") throw new Error("Invalid coach request.");
-  const question = String(payload.question || "").trim().slice(0, 2000);
-  const currentFen = String(payload.currentFen || "").trim().slice(0, 160);
-  const pgn = String(payload.pgn || "").trim().slice(0, 16000);
-  if (!question) throw new Error("A coach question is required.");
-  if (!currentFen) throw new Error("The current FEN is required.");
-  const playerColor = payload.playerColor === "black" ? "black" : "white";
-  const moves = (Array.isArray(payload.moves) ? payload.moves : [])
-    .slice(0, 240)
-    .map((move, index) => ({
-      ply: positiveInteger(move?.ply, index + 1),
-      color: move?.color === "black" ? "black" : "white",
-      san: String(move?.san || `Ply ${index + 1}`).slice(0, 32),
-      fenBefore: String(move?.fenBefore || "").slice(0, 160),
-      fenAfter: String(move?.fenAfter || "").slice(0, 160),
-      annotations: Array.isArray(move?.annotations)
-        ? move.annotations.slice(0, 8).map((value) => String(value).slice(0, 200))
-        : [],
-    }))
-    .filter((move) => move.fenBefore && move.fenAfter);
-  const currentLines = (Array.isArray(payload.currentLines) ? payload.currentLines : [])
-    .slice(0, 5)
-    .map((line) => ({
-      depth: Number(line?.depth) || null,
-      eval: String(line?.eval || "").slice(0, 32),
-      score: line?.score ?? null,
-      sanMoves: Array.isArray(line?.sanMoves) ? line.sanMoves.slice(0, 16) : [],
-      uciMoves: Array.isArray(line?.uciMoves) ? line.uciMoves.slice(0, 16) : [],
-    }));
+async function readNormalizedChessCoachRequest(request, response) {
+  try {
+    return normalizeChessCoachRequestPayload(await readJsonBody(request, maxCoachRequestBytes));
+  } catch (error) {
+    const message = error?.message || "Invalid coach request.";
+    const status = /too large/i.test(message) ? 413 : 400;
+    writeJson(response, status, { code: "INVALID_COACH_REQUEST", error: message });
+    return null;
+  }
+}
+
+async function writeChessCoachAnalysisResponse(request, response) {
+  const payload = await readNormalizedChessCoachRequest(request, response);
+  if (!payload) return;
+  const controller = new AbortController();
+  const abortAnalysis = () => controller.abort();
+  request.once("aborted", abortAnalysis);
+  response.once("close", () => {
+    if (!response.writableEnded) abortAnalysis();
+  });
+  updatePhoneCoachProgress(payload.requestId, "queued", "Waiting for PC analysis", 0, 0);
+  try {
+    const queued = phoneCoachQueue
+      .catch(() => {})
+      .then(() => runPcCoachGameAnalysis(payload, controller.signal));
+    phoneCoachQueue = queued.catch(() => {});
+    const result = await queued;
+    updatePhoneCoachProgress(payload.requestId, "complete", "PC analysis ready", 1, 1);
+    if (controller.signal.aborted) return;
+    return writeJson(response, 200, {
+      requestId: payload.requestId,
+      playerColor: payload.playerColor,
+      scope: payload.scope,
+      moveAnalysis: result.moveAnalysis,
+      criticalMoments: result.criticalMoments,
+      analysisCoverage: result.analysisCoverage,
+      storedEvaluationsUsed: result.analysisCoverage.cloudHits,
+    });
+  } catch (error) {
+    if (controller.signal.aborted) {
+      updatePhoneCoachProgress(payload.requestId, "cancelled", "PC analysis cancelled", 0, 0);
+      return;
+    }
+    updatePhoneCoachProgress(payload.requestId, "error", "PC analysis failed", 0, 0);
+    await appendLog(`coach analysis failed: ${error?.stack || error}`);
+    const publicFailure = publicChessCoachFailure(error, { analysisOnly: true });
+    return writeJson(response, publicFailure.status, {
+      code: publicFailure.code,
+      error: publicFailure.error,
+    });
+  } finally {
+    request.off("aborted", abortAnalysis);
+  }
+}
+
+async function runPcCoachGameAnalysis(payload, signal) {
+  throwIfAborted(signal);
+  const positions = buildCoachPositionRecords(payload);
+  if (positions.length === 0) {
+    const error = new Error("No valid chess positions were supplied for PC analysis.");
+    error.code = "PC_ANALYSIS_FAILED";
+    throw error;
+  }
+
+  updatePhoneCoachProgress(
+    payload.requestId,
+    "cloud-evaluations",
+    `Checking PC cloud evaluations (0/${positions.length})`,
+    0,
+    positions.length,
+  );
+  let sweep;
+  try {
+    sweep = await collectPcCoachPositionEvaluations({
+      positions,
+      queryCloud: queryStoredCoachEvaluation,
+      queryLive: queryLiveCoachEvaluation,
+      signal,
+      onProgress: ({ phase, completed, total }) => {
+        const live = phase === "live";
+        updatePhoneCoachProgress(
+          payload.requestId,
+          live ? "live-evaluations" : "cloud-evaluations",
+          live
+            ? `Analyzing cache misses on the PC (${completed}/${total})`
+            : `Checking PC cloud evaluations (${completed}/${total})`,
+          completed,
+          total,
+        );
+      },
+    });
+  } catch (error) {
+    if (!signal.aborted) error.code = "PC_ANALYSIS_FAILED";
+    throw error;
+  }
+  const { evaluations, cloudHits, liveAnalyses } = sweep;
+  const result = buildPcCoachAnalysisResult({
+    ...payload,
+    positions,
+    evaluations,
+    cloudHits,
+    liveAnalyses,
+    liveDepth: coachSweepDepth,
+  });
+  if (result.analysisCoverage.failed > 0) {
+    const error = new Error(
+      `PC analysis was incomplete (${result.analysisCoverage.failed} unique position(s) missing).`,
+    );
+    error.code = "PC_ANALYSIS_FAILED";
+    throw error;
+  }
+  return result;
+}
+
+async function runPhoneCoachReview(payload, signal) {
+  throwIfAborted(signal);
+  const database = getChessBookDatabase();
+  const pcAnalysis = await runPcCoachGameAnalysis(payload, signal);
+  const { moveAnalysis, criticalMoments, analysisCoverage } = pcAnalysis;
+
+  const inventory = getChessBookLibraryInventory(database);
+  updatePhoneCoachProgress(
+    payload.requestId,
+    "library-planning",
+    "AI choosing the relevant books and chapters",
+    0,
+    0,
+  );
+  const rawPlan = await runPhoneCoachModel(
+    buildLibraryPlannerPrompt({ ...payload, moveAnalysis, inventory }),
+    {
+      outputSchemaPath: coachLibraryPlanSchemaPath,
+      signal,
+      timeoutMs: 190000,
+    },
+  );
+  const libraryPlan = normalizeLibraryPlan(rawPlan, inventory, payload.moves);
+
+  updatePhoneCoachProgress(
+    payload.requestId,
+    "passage-retrieval",
+    "Opening the AI-selected chapters",
+    0,
+    0,
+  );
+  const { passages: bookPassages, categoryPassageIds } = retrievePlannedBookPassages(
+    database,
+    libraryPlan,
+  );
+  if (bookPassages.length === 0) {
+    throw new Error("The AI-selected chapters did not contain any accessible source passages.");
+  }
+
+  updatePhoneCoachProgress(payload.requestId, "answer-writing", "Building the coaching tabs", 0, 0);
+  const rawReview = await runPhoneCoachModel(
+    buildStructuredPhoneCoachPrompt({
+      ...payload,
+      moveAnalysis,
+      analysisCoverage,
+      libraryPlan,
+      bookPassages,
+      categoryPassageIds,
+    }),
+    {
+      outputSchemaPath: coachReviewSchemaPath,
+      signal,
+      timeoutMs: 240000,
+    },
+  );
+  const review = normalizeStructuredCoachReview(rawReview, {
+    libraryPlan,
+    bookPassages,
+    moves: payload.moves,
+    categoryPassageIds,
+  });
   return {
-    question,
-    currentFen,
-    pgn: pgn || "Unavailable",
-    playerColor,
-    scope: payload.scope === "position" ? "position" : "whole-game",
-    moves,
-    currentLines,
+    answer: structuredCoachReviewToMarkdown(review, bookPassages),
+    overview: review.overview,
+    categories: review.categories,
+    priorities: review.priorities,
+    model: coachModel,
+    playerColor: payload.playerColor,
+    criticalMoments,
+    bookPassages: publicBookPassages(bookPassages),
+    storedEvaluationsUsed: analysisCoverage.cloudHits,
+    analysisCoverage,
   };
 }
 
-async function collectStoredCoachEvaluations(moves, playerColor) {
-  const relevantMoves = moves.filter((move) => move.color === playerColor).slice(0, 80);
-  const fens = Array.from(
-    new Set(
-      relevantMoves
-        .flatMap((move) => [move.fenBefore, move.fenAfter])
-        .map(normalizeCoachFen)
-        .filter(Boolean),
-    ),
-  );
-  const evaluations = new Map();
-  for (let index = 0; index < fens.length; index += 6) {
-    await Promise.all(
-      fens.slice(index, index + 6).map(async (fen) => {
-        const result = await queryStoredCoachEvaluation(fen);
-        if (result) evaluations.set(fen, result);
-      }),
-    );
-  }
-  return evaluations;
+function throwIfAborted(signal) {
+  if (!signal?.aborted) return;
+  const error = new Error("The coach review was cancelled.");
+  error.name = "AbortError";
+  throw error;
 }
 
-async function queryStoredCoachEvaluation(fen) {
+function createLinkedAbortController(signal, timeoutMs) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 2500);
+  const abort = () => controller.abort();
+  if (signal?.aborted) controller.abort();
+  else signal?.addEventListener("abort", abort, { once: true });
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  return {
+    signal: controller.signal,
+    cleanup() {
+      clearTimeout(timeoutId);
+      signal?.removeEventListener("abort", abort);
+    },
+  };
+}
+
+async function queryStoredCoachEvaluation(fen, signal) {
+  const linked = createLinkedAbortController(signal, 5000);
   const url = new URL("/v1/cloud-eval", stockfishBackendUrl);
   url.searchParams.set("fen", fen);
   url.searchParams.set("multipv", "1");
   try {
     const response = await fetch(url, {
       headers: { accept: "application/json" },
-      signal: controller.signal,
+      signal: linked.signal,
     });
     if (!response.ok) return null;
-    return await response.json();
+    return normalizeCloudCoachEvaluation(await response.json(), fen);
   } catch {
+    if (signal?.aborted) throwIfAborted(signal);
     return null;
   } finally {
-    clearTimeout(timeoutId);
+    linked.cleanup();
   }
 }
 
-async function runPhoneCoachModel(prompt) {
+async function queryLiveCoachEvaluation(fen, signal) {
+  const linked = createLinkedAbortController(signal, 185000);
+  try {
+    const url = new URL("/v1/analyze", stockfishBackendUrl);
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { accept: "application/x-ndjson", "content-type": "application/json" },
+      body: JSON.stringify({ fen, multipv: 1, depth: coachSweepDepth, infinite: false }),
+      signal: linked.signal,
+    });
+    if (!response.ok || !response.body) {
+      throw new Error(`Stockfish analysis returned HTTP ${response.status}.`);
+    }
+    const decoder = new TextDecoder();
+    let pending = "";
+    let best = null;
+    let finished = false;
+    let bestmove = "";
+    const consumeLine = (line) => {
+      if (!line.trim()) return;
+      let message;
+      try {
+        message = JSON.parse(line);
+      } catch {
+        return;
+      }
+      if (message.type === "error") {
+        throw new Error(String(message.message || "Stockfish analysis failed."));
+      }
+      if (message.type === "done") {
+        finished = true;
+        bestmove = String(message.bestmove || "");
+        return;
+      }
+      if (message.type !== "uci") return;
+      const candidate = parseStockfishCoachInfo(message.line, fen);
+      if (candidate && (!best || candidate.depth >= best.depth)) best = candidate;
+    };
+    for await (const chunk of response.body) {
+      pending += decoder.decode(chunk, { stream: true });
+      const lines = pending.split(/\r?\n/);
+      pending = lines.pop() || "";
+      for (const line of lines) consumeLine(line);
+    }
+    pending += decoder.decode();
+    if (pending.trim()) consumeLine(pending);
+    if (best) return best;
+    if (finished && /^(?:\(none\)|0000)?$/i.test(bestmove)) {
+      return {
+        fen,
+        source: "pc-live",
+        depth: 0,
+        nodes: 0,
+        nps: null,
+        whiteCp: null,
+        whiteMate: null,
+        pvUci: [],
+        terminal: true,
+      };
+    }
+    throw new Error("Stockfish completed without an evaluation.");
+  } catch (error) {
+    if (signal?.aborted) throwIfAborted(signal);
+    throw error;
+  } finally {
+    linked.cleanup();
+  }
+}
+
+async function runPhoneCoachModel(
+  prompt,
+  { outputSchemaPath = "", signal = null, timeoutMs = 190000 } = {},
+) {
+  throwIfAborted(signal);
   const commandStat = await stat(coachCommandPath).catch(() => null);
   if (!commandStat?.isFile()) {
     const error = new Error("The PC coach needs the OpenAI Codex app or CLI installed.");
@@ -1254,31 +1534,47 @@ async function runPhoneCoachModel(prompt) {
     error.code = "MODEL_UNAVAILABLE";
     throw error;
   }
+  throwIfAborted(signal);
 
   return await new Promise((resolvePromise, rejectPromise) => {
     const invocation = buildCodexCoachInvocation(prompt, {
       model: coachModel,
       reasoningEffort: coachReasoningEffort,
+      outputSchemaPath,
     });
     const child = spawn(coachCommandPath, invocation.args, {
-        cwd: coachWorkRoot,
-        env: coachProcessEnv,
-        windowsHide: true,
-        stdio: ["pipe", "pipe", "pipe"],
+      cwd: coachWorkRoot,
+      env: coachProcessEnv,
+      windowsHide: true,
+      stdio: ["pipe", "pipe", "pipe"],
     });
     let stdout = "";
     let stderr = "";
     let settled = false;
+    let stdinFailure = null;
+    let closeModelInput = () => {};
     const finish = (callback, value) => {
       if (settled) return;
       settled = true;
       clearTimeout(timeoutId);
+      signal?.removeEventListener("abort", abortModel);
       callback(value);
     };
-    const timeoutId = setTimeout(() => {
+    const abortModel = () => {
+      closeModelInput();
       child.kill();
-      finish(rejectPromise, new Error("The PC coach model timed out after 190 seconds."));
-    }, 190000);
+      const error = new Error("The coach review was cancelled.");
+      error.name = "AbortError";
+      finish(rejectPromise, error);
+    };
+    const timeoutId = setTimeout(() => {
+      closeModelInput();
+      child.kill();
+      finish(
+        rejectPromise,
+        new Error(`The PC coach model timed out after ${Math.round(timeoutMs / 1000)} seconds.`),
+      );
+    }, timeoutMs);
     child.stdout.on("data", (chunk) => {
       stdout += chunk;
       if (stdout.length > 4 * 1024 * 1024) child.kill();
@@ -1287,16 +1583,16 @@ async function runPhoneCoachModel(prompt) {
       stderr += chunk;
       if (stderr.length > 1024 * 1024) child.kill();
     });
-    child.once("error", (error) => finish(rejectPromise, error));
+    child.once("error", (error) => {
+      closeModelInput();
+      finish(rejectPromise, error);
+    });
     child.once("exit", (code) => {
-      const combined = `${stdout}\n${stderr}`;
-      if (
-        /unauthenticated|not logged|codex login|authentication required|status.?401/i.test(combined)
-      ) {
+      if (codexExitIndicatesSignedOut(code, stderr)) {
         coachAuthenticationCache = {
           checkedAt: Date.now(),
           status: "signed-out",
-          detail: combined.replace(/\s+/g, " ").trim().slice(0, 1000),
+          detail: stderr.replace(/\s+/g, " ").trim().slice(0, 1000),
         };
         const error = new Error(
           "OpenAI Codex is installed but not signed in. Run `codex login` on the gaming PC.",
@@ -1307,7 +1603,9 @@ async function runPhoneCoachModel(prompt) {
       if (code !== 0) {
         return finish(
           rejectPromise,
-          new Error(`The PC coach model exited with code ${code}: ${stderr.slice(-1200)}`),
+          new Error(
+            `The PC coach model exited with code ${code}: ${stderr.slice(-1200)}${stdinFailure ? ` (stdin: ${stdinFailure.message})` : ""}`,
+          ),
         );
       }
       const answer = stdout
@@ -1315,10 +1613,27 @@ async function runPhoneCoachModel(prompt) {
         .filter((line) => !line.trim().startsWith("Warning: 256-color support"))
         .join("\n")
         .trim();
-      if (!answer) return finish(rejectPromise, new Error("The PC coach returned an empty answer."));
+      if (!answer)
+        return finish(rejectPromise, new Error("The PC coach returned an empty answer."));
       finish(resolvePromise, answer);
     });
-    child.stdin.end(invocation.stdin);
+    const handleStdinFailure = (error) => {
+      stdinFailure = error;
+      if (settled || /^(?:EPIPE|EOF|ERR_STREAM_DESTROYED)$/i.test(String(error?.code || ""))) {
+        return;
+      }
+      child.kill();
+      finish(
+        rejectPromise,
+        new Error(`The PC coach model could not receive its prompt: ${error?.message || error}`),
+      );
+    };
+    signal?.addEventListener("abort", abortModel, { once: true });
+    if (signal?.aborted) {
+      abortModel();
+    } else {
+      closeModelInput = writeProcessStdinSafely(child.stdin, invocation.stdin, handleStdinFailure);
+    }
   });
 }
 
@@ -1407,9 +1722,9 @@ async function serveStatic(pathname, request, response, headOnly, staticRoot) {
       ? "no-store, max-age=0"
       : fileName === "index.html" || fileName === "manifest.json"
         ? "no-cache"
-      : filePath.includes(`${sep}assets${sep}`)
-        ? "public, max-age=31536000, immutable"
-        : "public, max-age=60";
+        : filePath.includes(`${sep}assets${sep}`)
+          ? "public, max-age=31536000, immutable"
+          : "public, max-age=60";
   const range = parseRange(request.headers.range, fileStat.size);
   const headers = {
     "accept-ranges": "bytes",
@@ -1499,9 +1814,9 @@ async function refreshLibrary() {
     await rename(stagingRoot, libraryRoot);
     await rm(previousRoot, { recursive: true, force: true });
     hostedLibraryIndex.clear();
-    void hostedLibraryIndex.get().catch((error) =>
-      appendLog(`hosted library index refresh failed: ${error}`),
-    );
+    void hostedLibraryIndex
+      .get()
+      .catch((error) => appendLog(`hosted library index refresh failed: ${error}`));
     lastLibraryRefresh = new Date().toISOString();
     await appendLog(`library refresh complete at ${lastLibraryRefresh}`);
   } catch (error) {
