@@ -9,6 +9,14 @@
   existing remote-first engine, bundled fallback, and blue/pale-blue arrow
   hierarchy remain unchanged.
 
+- On 2026-07-20, the phone's stored cloud-eval path was restored after a
+  later Stockfish publish accidentally skipped it. Phone analysis now queries
+  the gaming PC's `/v1/cloud-eval` endpoint first, converts a hit into the
+  normal engine lines/arrows, and only starts remote Stockfish (then bundled
+  WASM fallback) when no stored evaluation exists or the lookup fails. The
+  duplicate-root-move filter and blue/pale-blue arrow hierarchy remain layered
+  on the resulting lines.
+
 - On 2026-07-20, the Southall Congress app-side prep layout was flattened at
   the user's request. All 13 OTB and online-account databases, their matching
   PGNs, search indexes, and import metadata now live directly in
