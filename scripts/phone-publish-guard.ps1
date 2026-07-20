@@ -148,6 +148,22 @@ function Get-EnCroissantFileSha256 {
   return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLowerInvariant()
 }
 
+function Copy-EnCroissantPhonePublicShell {
+  param(
+    [Parameter(Mandatory = $true)][string]$PublicRoot,
+    [Parameter(Mandatory = $true)][string]$DistRoot
+  )
+
+  if (-not (Test-Path -LiteralPath $PublicRoot -PathType Container)) {
+    throw "The phone public directory is missing at $PublicRoot."
+  }
+  New-Item -ItemType Directory -Path $DistRoot -Force | Out-Null
+  & robocopy.exe $PublicRoot $DistRoot /E /R:2 /W:1 /XD (Join-Path $PublicRoot "web-library") | Out-Null
+  if ($LASTEXITCODE -ge 8) {
+    throw "Could not package the phone public shell (robocopy exit code $LASTEXITCODE)."
+  }
+}
+
 function Get-EnCroissantAppShellFiles {
   param([Parameter(Mandatory = $true)][string]$Root)
 

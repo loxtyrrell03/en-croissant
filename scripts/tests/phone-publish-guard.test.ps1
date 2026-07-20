@@ -25,6 +25,7 @@ function Assert-Throws {
 $testRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("en-croissant-publish-guard-" + [Guid]::NewGuid().ToString("N"))
 $repoRoot = Join-Path $testRoot "repo"
 $buildRoot = Join-Path $testRoot "build"
+$publicRoot = Join-Path $testRoot "public"
 New-Item -ItemType Directory -Path $repoRoot, (Join-Path $buildRoot "assets") -Force | Out-Null
 
 try {
@@ -90,6 +91,18 @@ try {
     Assert-EnCroissantPublishSourceUnchanged `
       -RepoRoot $repoRoot `
       -PublishContext $unchangedContext
+  }
+
+  New-Item -ItemType Directory -Path (Join-Path $publicRoot "web-library") -Force | Out-Null
+  [System.IO.File]::WriteAllText((Join-Path $publicRoot "logo.png"), "logo")
+  [System.IO.File]::WriteAllText((Join-Path $publicRoot "web-library\large.pgn"), "library")
+  $publicBuild = Join-Path $testRoot "public-build"
+  Copy-EnCroissantPhonePublicShell -PublicRoot $publicRoot -DistRoot $publicBuild
+  if (-not (Test-Path -LiteralPath (Join-Path $publicBuild "logo.png"))) {
+    throw "The public app shell was not copied."
+  }
+  if (Test-Path -LiteralPath (Join-Path $publicBuild "web-library\large.pgn")) {
+    throw "The hosted library was copied into the immutable app shell."
   }
 
   Write-Host "phone publish guard tests passed"

@@ -39,6 +39,9 @@ try {
       if ($LASTEXITCODE -ne 0) {
         throw "Phone app build failed with exit code $LASTEXITCODE."
       }
+      Copy-EnCroissantPhonePublicShell `
+        -PublicRoot (Join-Path $repoRoot "public") `
+        -DistRoot (Join-Path $repoRoot "dist")
     }
   } finally {
     Pop-Location
