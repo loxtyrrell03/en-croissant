@@ -1181,7 +1181,10 @@ function BoardWorkspace({
     [activePrep, prepBranchFen, prepGames, prepMoveLimit, prepMinGames, prepRootEngineMoves],
   );
   const handleEngineAnalysisLinesChange = useCallback((fen: string, lines: WebEngineLine[]) => {
-    setEngineArrowAnalysis(lines.length > 0 ? { fen, lines } : null);
+    // Keep the previous score available while the next position is waiting on
+    // cache/live analysis. Arrows remain FEN-scoped below, so stale moves are
+    // never drawn on the new position.
+    if (lines.length > 0) setEngineArrowAnalysis({ fen, lines });
   }, []);
   const engineArrowShapes = useMemo(
     () =>
@@ -1440,11 +1443,7 @@ function BoardWorkspace({
         orientation={orientation}
         lastMoveUci={activeLastMove}
         engineArrowShapes={engineArrowShapes}
-        engineScore={
-          engineArrowAnalysis?.fen === currentFen
-            ? (engineArrowAnalysis.lines[0]?.score ?? null)
-            : null
-        }
+        engineScore={engineArrowAnalysis?.lines[0]?.score ?? null}
         onMove={handleBoardMove}
         canGoToPreviousMove={canGoToPreviousMove}
         canGoToNextMove={canGoToNextMove}
@@ -3131,7 +3130,7 @@ function EngineUnderBoardPanel({
   });
   const liveLineSpeed = topLine ? formatWebEngineNodeSpeed(topLine.nps) : null;
   const nodeCount = topLine ? formatWebEngineNodeCount(topLine.nodes) : null;
-  const isCloudEvaluation = topLine?.source === "lichess-cloud";
+  const analysisSource = topLine ? getWebEngineSourceLabel(topLine) : "Stockfish";
   const compactEngineMeta = getWebCompactEngineMeta({
     enabled: settings.enabled,
     topLine,
@@ -3151,7 +3150,7 @@ function EngineUnderBoardPanel({
           <Group gap={6} wrap="nowrap" miw={0}>
             <IconCpu className={classes.compactEngineIcon} size={16} />
             <Text className={classes.compactEngineTitle} fw={700} size="xs" truncate>
-              {isCloudEvaluation ? "Cloud evals" : "Stockfish"}
+              {analysisSource}
             </Text>
           </Group>
           <Group className={classes.compactEngineHeaderRight} gap={6} wrap="nowrap">
@@ -6526,9 +6525,9 @@ function getWebEngineHeaderStatus({
 }
 
 function getWebEngineSourceLabel(line: WebEngineLine) {
-  if (line.source === "lichess-cloud") return "Cloud evals";
-  if (line.executionLocation === "gaming-pc") return "PC live";
-  if (line.executionLocation === "phone") return "Phone fallback";
+  if (line.source === "lichess-cloud") return "PC cloud evals";
+  if (line.executionLocation === "gaming-pc") return "PC";
+  if (line.executionLocation === "phone") return "Local phone";
   return "Stockfish";
 }
 
@@ -6549,7 +6548,7 @@ function getWebCompactEngineMeta({
   const depth = topLine.depth > 0 ? topLine.depth : null;
   if (topLine.source === "lichess-cloud") {
     const depthLabel = depth ? `Depth ${depth}` : "Depth unavailable";
-    return { label: depthLabel, accessibleLabel: `Cloud evals, ${depthLabel.toLowerCase()}` };
+    return { label: depthLabel, accessibleLabel: `PC cloud evals, ${depthLabel.toLowerCase()}` };
   }
 
   const parts = [
