@@ -1454,6 +1454,7 @@ dependencies = [
  "thiserror 2.0.17",
  "tokio",
  "vampirc-uci",
+ "windows-sys 0.61.2",
  "zip",
  "zstd",
 ]

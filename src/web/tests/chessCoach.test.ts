@@ -1,15 +1,22 @@
 import { describe, expect, it } from "vitest";
 import {
+    createWebCoachReviewRecord,
     getDefaultWebCoachScope,
     getWebCoachBookHeading,
     getWebCoachBookPdfUrl,
+    getWebCoachContextKey,
     getWebCoachLineContextKey,
     getWebCoachMoves,
     makeWebCoachMovetext,
     normalizeWebChessCoachResponse,
+    persistWebCoachReviewInState,
+    restoreWebCoachReview,
     webCoachLineMatchesSourceGame,
     type WebCoachBookPassage,
+    type WebChessCoachResponse,
 } from "../chessCoach";
+import type { WebGame, WebPrepLineMove } from "../model";
+import { createEmptyWebState } from "../storage";
 
 describe("phone chess coach context", () => {
     it("builds colour-aware move evidence from an analysis line", () => {
@@ -185,7 +192,248 @@ describe("phone chess coach context", () => {
         expect(getDefaultWebCoachScope(sourceGame, line)).toBe("whole-game");
         expect(getDefaultWebCoachScope(null, line)).toBe("position");
     });
+
+    it("restores a saved review only for the exact game line and analysis context", () => {
+        const line = reviewLine();
+        const game = reviewGame("database-a:0", 0, line);
+        const lineContextKey = getWebCoachLineContextKey(game, line, line[1].fenAfter);
+        const contextKey = getWebCoachContextKey(
+            lineContextKey,
+            "whole-game",
+            "white",
+            line[1].fenAfter,
+        );
+        const record = createWebCoachReviewRecord({
+            contextKey,
+            lineContextKey,
+            scope: "whole-game",
+            playerColor: "white",
+            question: "What should I learn?",
+            response: coachResponse("Saved review"),
+            savedAt: 123_456,
+        });
+
+        const restored = restoreWebCoachReview(JSON.parse(JSON.stringify(record)), {
+            lineContextKey,
+            currentFen: line[0].fenBefore,
+        });
+        expect(restored).toMatchObject({
+            question: "What should I learn?",
+            savedAt: 123_456,
+            response: { overview: "Saved review" },
+        });
+
+        const editedLine = [{ ...line[0], san: "d4", uci: "d2d4" }, line[1]];
+        const editedKey = getWebCoachLineContextKey(game, editedLine, line[1].fenAfter);
+        expect(
+            restoreWebCoachReview(record, {
+                lineContextKey: editedKey,
+                currentFen: line[1].fenAfter,
+            }),
+        ).toBeNull();
+    });
+
+    it("keeps position reviews tied to their selected position", () => {
+        const line = reviewLine();
+        const lineContextKey = getWebCoachLineContextKey(null, line, line[1].fenAfter);
+        const record = createWebCoachReviewRecord({
+            contextKey: getWebCoachContextKey(
+                lineContextKey,
+                "position",
+                "black",
+                line[1].fenAfter,
+            ),
+            lineContextKey,
+            scope: "position",
+            playerColor: "black",
+            question: "Explain this position.",
+            response: coachResponse("Position review"),
+            savedAt: 222,
+        });
+
+        expect(
+            restoreWebCoachReview(record, {
+                lineContextKey,
+                currentFen: line[1].fenAfter,
+            })?.response.overview,
+        ).toBe("Position review");
+        expect(
+            restoreWebCoachReview(record, {
+                lineContextKey,
+                currentFen: line[0].fenAfter,
+            }),
+        ).toBeNull();
+    });
+
+    it("stores one replaceable review on the exact source game", () => {
+        const line = reviewLine();
+        const firstGame = reviewGame("database-a:0", 0, line);
+        const secondGame = reviewGame("database-a:1", 1, line);
+        const state = {
+            ...createEmptyWebState(),
+            gamesByDatabase: { "database-a": [firstGame, secondGame] },
+        };
+        const firstRecord = reviewRecord(firstGame, line, "First answer", 100);
+        const secondRecord = reviewRecord(firstGame, line, "Replacement answer", 200);
+
+        const saved = persistWebCoachReviewInState(
+            state,
+            { sourceDatabaseId: "database-a", sourceGameId: firstGame.id },
+            firstRecord,
+        );
+        const replaced = persistWebCoachReviewInState(
+            saved,
+            { sourceDatabaseId: "database-a", sourceGameId: firstGame.id },
+            secondRecord,
+        );
+
+        expect(replaced.gamesByDatabase["database-a"][0].coachReview).toEqual(secondRecord);
+        expect(replaced.gamesByDatabase["database-a"][1].coachReview).toBeUndefined();
+        expect(replaced.board.coachReview).toBeUndefined();
+
+        const reloaded = JSON.parse(JSON.stringify(replaced)) as typeof replaced;
+        expect(
+            restoreWebCoachReview(reloaded.gamesByDatabase["database-a"][0].coachReview, {
+                lineContextKey: secondRecord.lineContextKey,
+                currentFen: line[1].fenAfter,
+            })?.response.overview,
+        ).toBe("Replacement answer");
+    });
+
+    it("uses a source-keyed board fallback for uploaded games without a retained game record", () => {
+        const line = reviewLine();
+        const sourceIdentity = "game:uploaded-db:0";
+        const sourceLineKey = getWebCoachLineContextKey(
+            null,
+            line,
+            line[1].fenAfter,
+            sourceIdentity,
+        );
+        const record = createWebCoachReviewRecord({
+            contextKey: getWebCoachContextKey(
+                sourceLineKey,
+                "whole-game",
+                "white",
+                line[1].fenAfter,
+            ),
+            lineContextKey: sourceLineKey,
+            scope: "whole-game",
+            playerColor: "white",
+            question: "Review this upload.",
+            response: coachResponse("Uploaded game review"),
+            savedAt: 300,
+        });
+        const state = {
+            ...createEmptyWebState(),
+            board: {
+                ...createEmptyWebState().board,
+                sourceDatabaseId: "uploaded-db",
+                sourceGameId: "uploaded-db:0",
+            },
+        };
+
+        const saved = persistWebCoachReviewInState(
+            state,
+            { sourceDatabaseId: "uploaded-db", sourceGameId: "uploaded-db:0" },
+            record,
+        );
+        expect(saved.board.coachReview).toEqual(record);
+        expect(
+            restoreWebCoachReview(saved.board.coachReview, {
+                lineContextKey: sourceLineKey,
+                currentFen: line[0].fenBefore,
+            })?.response.overview,
+        ).toBe("Uploaded game review");
+
+        const otherSourceKey = getWebCoachLineContextKey(
+            null,
+            line,
+            line[1].fenAfter,
+            "game:different-upload:0",
+        );
+        expect(
+            restoreWebCoachReview(saved.board.coachReview, {
+                lineContextKey: otherSourceKey,
+                currentFen: line[1].fenAfter,
+            }),
+        ).toBeNull();
+    });
 });
+
+function reviewLine(): WebPrepLineMove[] {
+    return [
+        {
+            actor: "user",
+            san: "e4",
+            uci: "e2e4",
+            fenBefore: "start w KQkq - 0 1",
+            fenAfter: "after-e4 b KQkq - 0 1",
+        },
+        {
+            actor: "opponent",
+            san: "e5",
+            uci: "e7e5",
+            fenBefore: "after-e4 b KQkq - 0 1",
+            fenAfter: "after-e5 w KQkq - 0 2",
+        },
+    ];
+}
+
+function reviewGame(id: string, index: number, line: WebPrepLineMove[]): WebGame {
+    return {
+        id,
+        databaseId: "database-a",
+        databaseName: "Games",
+        index,
+        event: "Training game",
+        site: "London",
+        date: "2026.07.21",
+        white: "White",
+        black: "Black",
+        whiteElo: 2200,
+        blackElo: 2200,
+        result: "1-0",
+        pgn: "1. e4 e5 1-0",
+        moves: getWebCoachMoves(null, line),
+        importedAt: 1,
+    };
+}
+
+function coachResponse(overview: string): WebChessCoachResponse {
+    const response = normalizeWebChessCoachResponse({
+        overview,
+        playerColor: "white",
+        categories: [
+            {
+                id: "opening",
+                label: "Opening",
+                summary: "Opening lesson",
+                explanation: "Develop first.",
+            },
+        ],
+        bookPassages: [],
+    });
+    if (!response) throw new Error("The coach response fixture must normalize.");
+    return response;
+}
+
+function reviewRecord(game: WebGame, line: WebPrepLineMove[], overview: string, savedAt: number) {
+    const lineContextKey = getWebCoachLineContextKey(game, line, line.at(-1)?.fenAfter ?? "");
+    return createWebCoachReviewRecord({
+        contextKey: getWebCoachContextKey(
+            lineContextKey,
+            "whole-game",
+            "white",
+            line.at(-1)?.fenAfter ?? "",
+        ),
+        lineContextKey,
+        scope: "whole-game",
+        playerColor: "white",
+        question: "Review this game.",
+        response: coachResponse(overview),
+        savedAt,
+    });
+}
 
 function bookPassage(chunkId: string, title: string, chapterTitle: string): WebCoachBookPassage {
     return {

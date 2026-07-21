@@ -251,6 +251,7 @@ pub struct AiCoachResponse {
     pub overview: String,
     pub categories: Vec<CoachCategory>,
     pub analysis_coverage: Option<CoachAnalysisCoverage>,
+    pub pgn_scope: String,
     pub model: String,
     pub used_existing_analysis: bool,
     pub stockfish_lines: Vec<CoachEngineLine>,
@@ -2841,6 +2842,7 @@ async fn ask_ai_coach_inner(
         analysis_coverage: pc_game_analysis
             .as_ref()
             .map(|analysis| analysis.analysis_coverage.clone()),
+        pgn_scope: request.pgn_scope.clone(),
         model,
         used_existing_analysis,
         stockfish_lines,

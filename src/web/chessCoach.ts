@@ -1,4 +1,12 @@
-import type { WebColor, WebEngineLine, WebGame, WebMove, WebPrepLineMove } from "./model";
+import type {
+    WebCoachReviewRecord,
+    WebColor,
+    WebCompanionState,
+    WebEngineLine,
+    WebGame,
+    WebMove,
+    WebPrepLineMove,
+} from "./model";
 import { getFenColor } from "./pgn";
 import { getWebServerUrl } from "./serverUrl";
 
@@ -103,6 +111,10 @@ export type WebChessCoachResponse = {
     analysisCoverage: WebCoachAnalysisCoverage;
 };
 
+export type RestoredWebCoachReview = Omit<WebCoachReviewRecord, "response"> & {
+    response: WebChessCoachResponse;
+};
+
 export async function getWebChessCoachHealth(signal?: AbortSignal) {
     const response = await fetch(getWebServerUrl("api/chess-coach/health"), {
         cache: "no-store",
@@ -205,13 +217,20 @@ export function getWebCoachMoves(sourceMoves: WebMove[] | null, line: WebPrepLin
 }
 
 export function getWebCoachLineContextKey(
-    sourceGame: Pick<WebGame, "id"> | null,
+    sourceGame:
+        | (Pick<WebGame, "id"> &
+              Partial<
+                  Pick<WebGame, "index" | "event" | "site" | "date" | "white" | "black" | "result">
+              >)
+        | null,
     line: WebPrepLineMove[],
     currentFen: string,
+    fallbackSourceIdentity: string | null = null,
 ) {
     const rootFen = line[0]?.fenBefore || currentFen;
     return JSON.stringify([
-        sourceGame?.id ?? "analysis-board",
+        "web-coach-line-v2",
+        getStableWebCoachSourceIdentity(sourceGame, fallbackSourceIdentity),
         normalizeCoachContextFen(rootFen),
         ...line.map((move, index) => [
             index + 1,
@@ -222,6 +241,136 @@ export function getWebCoachLineContextKey(
             ...(move.annotations ?? []),
         ]),
     ]);
+}
+
+export function getWebCoachContextKey(
+    lineContextKey: string,
+    scope: "position" | "whole-game",
+    playerColor: WebColor,
+    currentFen: string,
+) {
+    return JSON.stringify([
+        "web-coach-review-v1",
+        lineContextKey,
+        scope,
+        playerColor,
+        scope === "position" ? normalizeCoachContextFen(currentFen) : "whole-game",
+    ]);
+}
+
+export function createWebCoachReviewRecord({
+    contextKey,
+    lineContextKey,
+    scope,
+    playerColor,
+    question,
+    response,
+    savedAt = Date.now(),
+}: {
+    contextKey: string;
+    lineContextKey: string;
+    scope: "position" | "whole-game";
+    playerColor: WebColor;
+    question: string;
+    response: WebChessCoachResponse;
+    savedAt?: number;
+}): WebCoachReviewRecord {
+    return {
+        version: 1,
+        contextKey,
+        lineContextKey,
+        scope,
+        playerColor,
+        question: question.trim(),
+        response,
+        savedAt,
+    };
+}
+
+export function restoreWebCoachReview(
+    value: unknown,
+    {
+        lineContextKey,
+        currentFen,
+    }: {
+        lineContextKey: string;
+        currentFen: string;
+    },
+): RestoredWebCoachReview | null {
+    const review = asRecord(value);
+    if (!review || review.version !== 1) return null;
+
+    const storedLineContextKey = cleanString(review.lineContextKey);
+    const storedContextKey = cleanString(review.contextKey);
+    const scope =
+        review.scope === "position"
+            ? "position"
+            : review.scope === "whole-game"
+              ? "whole-game"
+              : null;
+    const playerColor =
+        review.playerColor === "white" ? "white" : review.playerColor === "black" ? "black" : null;
+    const question = cleanString(review.question);
+    const savedAt = finiteNumber(review.savedAt);
+    if (
+        !scope ||
+        !playerColor ||
+        !question ||
+        savedAt <= 0 ||
+        storedLineContextKey !== lineContextKey ||
+        storedContextKey !==
+            getWebCoachContextKey(storedLineContextKey, scope, playerColor, currentFen)
+    ) {
+        return null;
+    }
+
+    const response = normalizeWebChessCoachResponse(review.response);
+    if (!response) return null;
+    return {
+        version: 1,
+        contextKey: storedContextKey,
+        lineContextKey: storedLineContextKey,
+        scope,
+        playerColor,
+        question,
+        response,
+        savedAt,
+    };
+}
+
+export function persistWebCoachReviewInState(
+    state: WebCompanionState,
+    {
+        sourceDatabaseId,
+        sourceGameId,
+    }: {
+        sourceDatabaseId: string | null;
+        sourceGameId: string | null;
+    },
+    review: WebCoachReviewRecord,
+): WebCompanionState {
+    if (sourceDatabaseId && sourceGameId) {
+        const games = state.gamesByDatabase[sourceDatabaseId];
+        if (games?.some((game) => game.id === sourceGameId)) {
+            return {
+                ...state,
+                gamesByDatabase: {
+                    ...state.gamesByDatabase,
+                    [sourceDatabaseId]: games.map((game) =>
+                        game.id === sourceGameId ? { ...game, coachReview: review } : game,
+                    ),
+                },
+            };
+        }
+    }
+
+    return {
+        ...state,
+        board: {
+            ...state.board,
+            coachReview: review,
+        },
+    };
 }
 
 export function getDefaultWebCoachScope(
@@ -501,6 +650,34 @@ function normalizeCoachContextFen(fen: string) {
         .split(/\s+/)
         .slice(0, 4)
         .join(" ");
+}
+
+function getStableWebCoachSourceIdentity(
+    sourceGame:
+        | (Pick<WebGame, "id"> &
+              Partial<
+                  Pick<WebGame, "index" | "event" | "site" | "date" | "white" | "black" | "result">
+              >)
+        | null,
+    fallbackSourceIdentity: string | null,
+) {
+    if (!sourceGame) {
+        return fallbackSourceIdentity
+            ? ["board-source", fallbackSourceIdentity]
+            : ["analysis-board"];
+    }
+    const stableDetails = [
+        Number.isInteger(sourceGame.index) ? sourceGame.index : null,
+        cleanString(sourceGame.event),
+        cleanString(sourceGame.site),
+        cleanString(sourceGame.date),
+        cleanString(sourceGame.white),
+        cleanString(sourceGame.black),
+        cleanString(sourceGame.result),
+    ];
+    return stableDetails.some((value) => value !== null && value !== "")
+        ? ["source-game", ...stableDetails]
+        : ["source-game-id", sourceGame.id];
 }
 
 function formatCoachEngineScore(line: WebEngineLine) {

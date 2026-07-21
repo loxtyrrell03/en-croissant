@@ -19,7 +19,15 @@ import { listen } from "@tauri-apps/api/event";
 import { openPath } from "@tauri-apps/plugin-opener";
 import { parseSan } from "chessops/san";
 import { useAtomValue } from "jotai";
-import { type ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 import type {
@@ -43,6 +51,7 @@ import {
   aiCoachMultipvAtom,
   aiCoachPlannerModelAtom,
   aiCoachTimeoutSecsAtom,
+  currentTabAtom,
   engineMovesFamily,
   enginesAtom,
   lichessOptionsAtom,
@@ -50,6 +59,19 @@ import {
   sessionsAtom,
 } from "@/state/atoms";
 import { getPGN, getVariationLine, uciNormalize } from "@/utils/chess";
+import {
+  createAiCoachPersistenceContext,
+  createPersistedAiCoachReview,
+  getAiCoachPersistenceTarget,
+  loadPersistedAiCoachReview,
+  persistedAiCoachReviewMatches,
+  removePersistedAiCoachReview,
+  savePersistedAiCoachReview,
+  type AiCoachPersistenceContext,
+  type AiCoachPersistenceTarget,
+  type AiCoachPlayerColor,
+  type PersistedAiCoachReview,
+} from "@/utils/aiCoachPersistence";
 import { buildAiCoachOpeningContext } from "@/utils/aiCoachOpeningContext";
 import { positionFromFen } from "@/utils/chessops";
 import type { Engine, LocalEngine } from "@/utils/engines";
@@ -1059,6 +1081,7 @@ export default function AiCoachPanel() {
   const effectiveTimeoutSecs = Math.max(150, Math.min(240, timeoutSecs));
   const engines = useAtomValue(enginesAtom);
   const activeTab = useAtomValue(activeTabAtom);
+  const currentTab = useAtomValue(currentTabAtom);
   const sessions = useAtomValue(sessionsAtom);
   const lichessOptions = useAtomValue(lichessOptionsAtom);
   const moveStrengthSettings = useAtomValue(moveStrengthSettingsAtom);
@@ -1080,7 +1103,7 @@ export default function AiCoachPanel() {
   );
 
   const [question, setQuestion] = useState("");
-  const [playerColor, setPlayerColor] = useState<"white" | "black">("white");
+  const [playerColor, setPlayerColor] = useState<AiCoachPlayerColor>("white");
   const [messages, setMessages] = useState<CoachUiMessage[]>([]);
   const [answer, setAnswer] = useState("");
   const [error, setError] = useState("");
@@ -1099,7 +1122,17 @@ export default function AiCoachPanel() {
   const [elapsedSecs, setElapsedSecs] = useState(0);
   const [requestProgress, setRequestProgress] = useState<CoachProgressPayload | null>(null);
   const [progressLog, setProgressLog] = useState<CoachProgressPayload[]>([]);
+  const [persistenceCue, setPersistenceCue] = useState<{
+    kind: "saved" | "restored";
+    savedAt: string;
+  } | null>(null);
+  const [persistenceNotice, setPersistenceNotice] = useState("");
   const activeRequestIdRef = useRef("");
+  const persistenceLoadGenerationRef = useRef(0);
+  const savedReviewRef = useRef<PersistedAiCoachReview | null>(null);
+  const displayedReviewRef = useRef<PersistedAiCoachReview | null>(null);
+  const activeContextKeyRef = useRef("");
+  const persistenceContextRef = useRef<AiCoachPersistenceContext | null>(null);
 
   const [position] = useMemo(() => positionFromFen(currentNode.fen), [currentNode.fen]);
   const sideToMove =
@@ -1138,6 +1171,31 @@ export default function AiCoachPanel() {
       }),
     );
   }, [root]);
+  const persistenceTarget = useMemo(() => getAiCoachPersistenceTarget(currentTab), [currentTab]);
+  const persistenceContext = useMemo(
+    () =>
+      createAiCoachPersistenceContext({
+        rootFen,
+        wholeGamePgn,
+        currentFen: currentNode.fen,
+        currentPath,
+        currentLinePgn,
+      }),
+    [currentLinePgn, currentNode.fen, currentPath, rootFen, wholeGamePgn],
+  );
+  const persistenceTargetIdentity = persistenceTarget
+    ? `${persistenceTarget.sidecarPath}\u0000${persistenceTarget.recordKey}`
+    : `unsaved:${activeTab ?? "none"}`;
+  const activeContextKey = JSON.stringify([
+    persistenceTargetIdentity,
+    persistenceContext.gameFingerprint,
+    persistenceContext.currentFen,
+    persistenceContext.currentPath,
+    persistenceContext.currentLineFingerprint,
+    playerColor,
+  ]);
+  persistenceContextRef.current = persistenceContext;
+  activeContextKeyRef.current = activeContextKey;
   const gameAnalysis = useMemo(() => buildGameAnalysisContext(root), [root]);
   const mainlineMoves = useMemo(() => getMainlineMoves(root), [root]);
   const canSubmit = Boolean(enabled && coachEngine && question.trim().length > 0 && !loading);
@@ -1155,6 +1213,127 @@ export default function AiCoachPanel() {
     : answer
       ? 100
       : 0;
+
+  const resetCoachDisplay = useCallback(() => {
+    displayedReviewRef.current = null;
+    setMessages([]);
+    setAnswer("");
+    setError("");
+    setUsedExistingAnalysis(false);
+    setTargetedCount(0);
+    setBookPassageCount(0);
+    setBookCorpusAvailable(null);
+    setTargetedMemory([]);
+    setOpeningContextStatus("idle");
+    setOpeningMoveCount(0);
+    setModelUsed("");
+    setRequestProgress(null);
+    setProgressLog([]);
+    setPersistenceCue(null);
+  }, []);
+
+  const applyPersistedReview = useCallback((review: PersistedAiCoachReview) => {
+    const response = review.response;
+    const structuredAnswer = normalizeCoachCategories(
+      response as unknown as CoachStructuredResponse,
+    );
+    displayedReviewRef.current = review;
+    setMessages([
+      {
+        id: `saved-user-${review.savedAt}`,
+        role: "user",
+        content: review.question,
+        baseFen: review.base.fen,
+        basePath: [...review.base.path],
+        baseHalfMoves: review.base.halfMoves,
+        baseSanMoves: [...review.base.sanMoves],
+      },
+      {
+        id: `saved-assistant-${review.savedAt}`,
+        role: "assistant",
+        content: response.answer,
+        baseFen: review.base.fen,
+        basePath: [...review.base.path],
+        baseHalfMoves: review.base.halfMoves,
+        baseSanMoves: [...review.base.sanMoves],
+        engineLines: response.stockfishLines,
+        targetedResults: response.targetedResults,
+        bookPassages: response.bookPassages,
+        overview: structuredAnswer.overview || undefined,
+        categories:
+          structuredAnswer.categories.length > 0 ? structuredAnswer.categories : undefined,
+        analysisCoverage: response.analysisCoverage ?? undefined,
+      },
+    ]);
+    setQuestion("");
+    setAnswer(response.answer);
+    setError("");
+    setLoading(false);
+    setUsedExistingAnalysis(response.usedExistingAnalysis);
+    setTargetedCount(response.targetedResults.length);
+    setBookPassageCount(response.bookPassages.length);
+    setBookCorpusAvailable(response.bookCorpusAvailable);
+    setTargetedMemory(response.targetedResults.slice(-24));
+    setOpeningContextStatus("idle");
+    setOpeningMoveCount(0);
+    setModelUsed(response.model);
+    setRequestStartedAt(null);
+    setRequestProgress(null);
+    setProgressLog([]);
+    setPersistenceNotice("");
+    setPersistenceCue({ kind: "restored", savedAt: review.savedAt });
+  }, []);
+
+  useEffect(() => {
+    const generation = ++persistenceLoadGenerationRef.current;
+    activeRequestIdRef.current = "";
+    savedReviewRef.current = null;
+    resetCoachDisplay();
+    setLoading(false);
+    setRequestStartedAt(null);
+    setPersistenceNotice("");
+
+    if (!persistenceTarget) return;
+    const target: AiCoachPersistenceTarget = persistenceTarget;
+    void loadPersistedAiCoachReview(target)
+      .then((review) => {
+        if (generation !== persistenceLoadGenerationRef.current || !review) return;
+        const currentContext = persistenceContextRef.current;
+        if (!currentContext || review.gameFingerprint !== currentContext.gameFingerprint) return;
+        savedReviewRef.current = review;
+        setPlayerColor(review.playerColor);
+        if (persistedAiCoachReviewMatches(review, currentContext)) {
+          applyPersistedReview(review);
+        }
+      })
+      .catch((loadError) => {
+        if (generation !== persistenceLoadGenerationRef.current) return;
+        setPersistenceNotice(
+          `The saved coach review could not be read: ${
+            loadError instanceof Error ? loadError.message : String(loadError)
+          }`,
+        );
+      });
+  }, [
+    applyPersistedReview,
+    persistenceContext.gameFingerprint,
+    persistenceTargetIdentity,
+    resetCoachDisplay,
+  ]);
+
+  useEffect(() => {
+    const displayed = displayedReviewRef.current;
+    if (displayed && !persistedAiCoachReviewMatches(displayed, persistenceContext, playerColor)) {
+      resetCoachDisplay();
+    }
+    if (
+      !displayedReviewRef.current &&
+      savedReviewRef.current &&
+      persistedAiCoachReviewMatches(savedReviewRef.current, persistenceContext, playerColor)
+    ) {
+      applyPersistedReview(savedReviewRef.current);
+    }
+  }, [applyPersistedReview, persistenceContext, playerColor, resetCoachDisplay]);
 
   useEffect(() => {
     let disposed = false;
@@ -1195,10 +1374,17 @@ export default function AiCoachPanel() {
     }
     const trimmedQuestion = question.trim();
     if (!trimmedQuestion) return;
-    const groundedQuestion = `I am ${playerColor === "black" ? "Black" : "White"} in this game or position. ${trimmedQuestion}`;
+    const requestPlayerColor = playerColor;
+    const groundedQuestion = `I am ${requestPlayerColor === "black" ? "Black" : "White"} in this game or position. ${trimmedQuestion}`;
     const requestPath = [...currentPath];
     const requestBaseSanMoves = getSanVariationLine(root, requestPath);
     const requestBaseHalfMoves = currentNode.halfMoves;
+    const requestPersistenceTarget = persistenceTarget ? { ...persistenceTarget } : null;
+    const requestPersistenceContext: AiCoachPersistenceContext = {
+      ...persistenceContext,
+      currentPath: [...persistenceContext.currentPath],
+    };
+    const requestContextKey = activeContextKey;
     const referenceContext = buildCoachReferenceContext({
       root,
       currentPath: requestPath,
@@ -1232,8 +1418,10 @@ export default function AiCoachPanel() {
     };
 
     activeRequestIdRef.current = requestId;
+    persistenceLoadGenerationRef.current += 1;
     setLoading(true);
     setError("");
+    setPersistenceNotice("");
     setAnswer("");
     setTargetedCount(0);
     setBookPassageCount(0);
@@ -1387,48 +1575,103 @@ export default function AiCoachPanel() {
       const structuredAnswer = normalizeCoachCategories(
         response as unknown as CoachStructuredResponse,
       );
-      setAnswer(response.answer);
-      setMessages((current) => [
-        ...current,
-        {
-          id: `assistant-${Date.now()}`,
-          role: "assistant",
-          content: response.answer,
-          baseFen: currentNode.fen,
-          basePath: requestPath,
-          baseHalfMoves: requestBaseHalfMoves,
-          baseSanMoves: requestBaseSanMoves,
-          engineLines: response.stockfishLines,
-          targetedResults: response.targetedResults,
-          bookPassages: response.bookPassages,
-          overview: structuredAnswer.overview || undefined,
-          categories:
-            structuredAnswer.categories.length > 0 ? structuredAnswer.categories : undefined,
-          analysisCoverage: response.analysisCoverage ?? undefined,
-        },
-      ]);
-      setUsedExistingAnalysis(response.usedExistingAnalysis);
-      setTargetedCount(response.targetedResults.length);
-      setBookPassageCount(response.bookPassages.length);
-      setBookCorpusAvailable(response.bookCorpusAvailable);
-      setTargetedMemory((current) => {
-        const merged = [...current, ...response.targetedResults];
-        const seen = new Set<string>();
-        return merged
-          .filter((result) => {
-            const key = `${result.requestType}|${result.fen}|${result.moves.join(",")}`;
-            if (seen.has(key)) return false;
-            seen.add(key);
-            return true;
-          })
-          .slice(-24);
-      });
-      setModelUsed(response.model);
+      const requestStillCurrent =
+        activeRequestIdRef.current === requestId &&
+        activeContextKeyRef.current === requestContextKey;
+      if (requestStillCurrent) {
+        setAnswer(response.answer);
+        setMessages((current) => [
+          ...current,
+          {
+            id: `assistant-${Date.now()}`,
+            role: "assistant",
+            content: response.answer,
+            baseFen: requestPersistenceContext.currentFen,
+            basePath: requestPath,
+            baseHalfMoves: requestBaseHalfMoves,
+            baseSanMoves: requestBaseSanMoves,
+            engineLines: response.stockfishLines,
+            targetedResults: response.targetedResults,
+            bookPassages: response.bookPassages,
+            overview: structuredAnswer.overview || undefined,
+            categories:
+              structuredAnswer.categories.length > 0 ? structuredAnswer.categories : undefined,
+            analysisCoverage: response.analysisCoverage ?? undefined,
+          },
+        ]);
+        setUsedExistingAnalysis(response.usedExistingAnalysis);
+        setTargetedCount(response.targetedResults.length);
+        setBookPassageCount(response.bookPassages.length);
+        setBookCorpusAvailable(response.bookCorpusAvailable);
+        setTargetedMemory((current) => {
+          const merged = [...current, ...response.targetedResults];
+          const seen = new Set<string>();
+          return merged
+            .filter((result) => {
+              const key = `${result.requestType}|${result.fen}|${result.moves.join(",")}`;
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            })
+            .slice(-24);
+        });
+        setModelUsed(response.model);
+        setPersistenceCue(null);
+      }
+
+      if (structuredAnswer.categories.length > 0) {
+        try {
+          const persistedReview = createPersistedAiCoachReview({
+            question: trimmedQuestion,
+            playerColor: requestPlayerColor,
+            response,
+            context: requestPersistenceContext,
+            baseHalfMoves: requestBaseHalfMoves,
+            baseSanMoves: requestBaseSanMoves,
+          });
+          if (requestStillCurrent) {
+            displayedReviewRef.current = persistedReview;
+          }
+          if (requestPersistenceTarget) {
+            await savePersistedAiCoachReview(requestPersistenceTarget, persistedReview);
+            if (
+              activeRequestIdRef.current === requestId &&
+              activeContextKeyRef.current === requestContextKey
+            ) {
+              savedReviewRef.current = persistedReview;
+              displayedReviewRef.current = persistedReview;
+              setPersistenceCue({ kind: "saved", savedAt: persistedReview.savedAt });
+            }
+          }
+        } catch (saveError) {
+          if (
+            activeRequestIdRef.current === requestId &&
+            activeContextKeyRef.current === requestContextKey
+          ) {
+            setPersistenceNotice(
+              `The review is shown, but could not be saved with this game: ${
+                saveError instanceof Error ? saveError.message : String(saveError)
+              }`,
+            );
+          }
+        }
+      } else if (requestStillCurrent && requestPersistenceTarget) {
+        setPersistenceNotice(
+          "The review is shown, but was not saved because it did not contain structured coaching categories.",
+        );
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      if (
+        activeRequestIdRef.current === requestId &&
+        activeContextKeyRef.current === requestContextKey
+      ) {
+        setError(err instanceof Error ? err.message : String(err));
+      }
     } finally {
-      setLoading(false);
-      setRequestStartedAt(null);
+      if (activeRequestIdRef.current === requestId) {
+        setLoading(false);
+        setRequestStartedAt(null);
+      }
     }
   }
 
@@ -1453,16 +1696,23 @@ export default function AiCoachPanel() {
     });
   }
 
-  function clearChat() {
-    setMessages([]);
-    setAnswer("");
-    setError("");
-    setTargetedCount(0);
-    setBookPassageCount(0);
-    setBookCorpusAvailable(null);
-    setTargetedMemory([]);
-    setOpeningContextStatus("idle");
-    setOpeningMoveCount(0);
+  async function clearChat() {
+    const target = persistenceTarget ? { ...persistenceTarget } : null;
+    persistenceLoadGenerationRef.current += 1;
+    activeRequestIdRef.current = "";
+    savedReviewRef.current = null;
+    resetCoachDisplay();
+    setPersistenceNotice("");
+    if (!target) return;
+    try {
+      await removePersistedAiCoachReview(target);
+    } catch (removeError) {
+      setPersistenceNotice(
+        `The review was cleared here, but its saved copy could not be removed: ${
+          removeError instanceof Error ? removeError.message : String(removeError)
+        }`,
+      );
+    }
   }
 
   return (
@@ -1495,9 +1745,18 @@ export default function AiCoachPanel() {
             </Badge>
           )}
           {usedExistingAnalysis && <Badge variant="outline">used current analysis</Badge>}
+          {persistenceCue && (
+            <Badge
+              color="teal"
+              variant="light"
+              title={`Saved ${new Date(persistenceCue.savedAt).toLocaleString()}`}
+            >
+              {persistenceCue.kind === "saved" ? "saved with game" : "restored saved review"}
+            </Badge>
+          )}
         </Group>
         {messages.length > 0 && (
-          <Button size="xs" variant="subtle" disabled={loading} onClick={clearChat}>
+          <Button size="xs" variant="subtle" disabled={loading} onClick={() => void clearChat()}>
             Clear chat
           </Button>
         )}
@@ -1610,6 +1869,11 @@ export default function AiCoachPanel() {
       {error && (
         <Alert color="red" icon={<IconAlertTriangle size="1rem" />}>
           {error}
+        </Alert>
+      )}
+      {persistenceNotice && (
+        <Alert color="yellow" icon={<IconAlertTriangle size="1rem" />}>
+          {persistenceNotice}
         </Alert>
       )}
 

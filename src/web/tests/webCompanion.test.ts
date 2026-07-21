@@ -1681,6 +1681,16 @@ describe("web companion PGN prep index", () => {
         );
         oldImport.database.hostedPath = "Databases/Fork/Prep/Opponent";
         oldImport.database.hostedUpdatedAt = 10;
+        oldImport.games[0].coachReview = {
+            version: 1,
+            contextKey: "old-context",
+            lineContextKey: "old-line",
+            scope: "whole-game",
+            playerColor: "white",
+            question: "Old review",
+            response: { overview: "Must not follow a changed game." },
+            savedAt: 10,
+        };
 
         const newImport = parsePgnDatabase(
             "synced-db.pgn",
@@ -1734,8 +1744,56 @@ describe("web companion PGN prep index", () => {
         expect(merged.databases.map((database) => database.id)).toEqual([newImport.database.id]);
         expect(merged.gamesByDatabase[oldImport.database.id]).toBeUndefined();
         expect(merged.gamesByDatabase[newImport.database.id]).toHaveLength(1);
+        expect(merged.gamesByDatabase[newImport.database.id][0].coachReview).toBeUndefined();
         expect(merged.prepWorkspaces[0].sourceIds).toEqual([newImport.database.id]);
         expect(merged.board.sourceDatabaseId).toBe(newImport.database.id);
+    });
+
+    test("keeps a saved coach review when an unchanged hosted game is reimported", () => {
+        const pgn = `
+[Event "Same"]
+[Site "?"]
+[Date "2026.06.01"]
+[Round "?"]
+[White "Me"]
+[Black "Opponent"]
+[Result "1-0"]
+
+1. e4 c5 1-0
+`;
+        const oldImport = parsePgnDatabase("synced-db.pgn", pgn, 1);
+        oldImport.database.hostedPath = "Databases/Fork/Prep/Opponent";
+        oldImport.database.hostedUpdatedAt = 10;
+        const savedReview = {
+            version: 1 as const,
+            contextKey: "saved-context",
+            lineContextKey: "saved-line",
+            scope: "whole-game" as const,
+            playerColor: "white" as const,
+            question: "Saved review",
+            response: { overview: "Keep me." },
+            savedAt: 10,
+        };
+        oldImport.games[0].coachReview = savedReview;
+
+        const newImport = parsePgnDatabase("synced-db.pgn", pgn, 2);
+        newImport.database.hostedPath = oldImport.database.hostedPath;
+        newImport.database.hostedUpdatedAt = 20;
+        const state = {
+            ...createEmptyWebState(),
+            databases: [oldImport.database],
+            gamesByDatabase: { [oldImport.database.id]: oldImport.games },
+            board: {
+                ...createEmptyWebState().board,
+                sourceDatabaseId: oldImport.database.id,
+                sourceGameId: oldImport.games[0].id,
+            },
+        };
+
+        const merged = mergeImportedWebDatabases(state, [newImport]);
+
+        expect(merged.gamesByDatabase[newImport.database.id][0].coachReview).toEqual(savedReview);
+        expect(merged.board.sourceGameId).toBe(newImport.games[0].id);
     });
 
     test("resolves persisted phone database selections by hosted path after reloads", () => {

@@ -101,15 +101,20 @@ import DatabaseFolderSelect from "@/components/common/DatabaseFolderSelect";
 import classes from "./WebApp.module.css";
 import {
   askWebChessCoach,
+  createWebCoachReviewRecord,
   getDefaultWebCoachScope,
   getWebChessCoachHealth,
   getWebChessCoachProgress,
   getWebCoachBookHeading,
   getWebCoachBookPdfUrl,
+  getWebCoachContextKey,
   getWebCoachLineContextKey,
   getWebCoachMoves,
   makeWebCoachMovetext,
+  persistWebCoachReviewInState,
+  restoreWebCoachReview,
   webCoachLineMatchesSourceGame,
+  type RestoredWebCoachReview,
   type WebCoachBookPassage,
   type WebCoachCategory,
   type WebChessCoachHealth,
@@ -161,6 +166,7 @@ import {
 } from "./hostedFiles";
 import type {
   WebBoardState,
+  WebCoachReviewRecord,
   WebColor,
   WebCompanionState,
   WebDatabase,
@@ -1121,6 +1127,21 @@ function BoardWorkspace({
       ) ?? null
     );
   }, [activePrep, board.sourceDatabaseId, board.sourceGameId, state.gamesByDatabase]);
+  const coachFallbackSourceIdentity = sourceGame
+    ? null
+    : activePrep
+      ? `prep:${activePrep.id}`
+      : board.sourceGameId
+        ? `game:${board.sourceGameId}`
+        : board.sourceDatabaseId
+          ? `database:${board.sourceDatabaseId}:${board.sourceTitle ?? ""}`
+          : null;
+  const coachLineContextKey = useMemo(
+    () =>
+      getWebCoachLineContextKey(sourceGame, activeLine, currentFen, coachFallbackSourceIdentity),
+    [activeLine, coachFallbackSourceIdentity, currentFen, sourceGame],
+  );
+  const persistedCoachReview = sourceGame?.coachReview ?? board.coachReview ?? null;
   const sourceRootLines = useMemo(
     () => (sourceGame ? webGameToRootLines(sourceGame) : []),
     [sourceGame],
@@ -1533,13 +1554,28 @@ function BoardWorkspace({
                 />
               ) : (
                 <CoachUnderBoardPanel
+                  key={coachLineContextKey}
                   sourceGame={sourceGame}
+                  fallbackSourceIdentity={coachFallbackSourceIdentity}
                   line={activeLine}
                   currentFen={currentFen}
                   currentLines={
                     engineArrowAnalysis?.fen === currentFen ? engineArrowAnalysis.lines : []
                   }
                   defaultPlayerColor={orientation}
+                  persistedReview={persistedCoachReview}
+                  onPersistReview={(review) =>
+                    setState((current) =>
+                      persistWebCoachReviewInState(
+                        current,
+                        {
+                          sourceDatabaseId: activePrep ? null : board.sourceDatabaseId,
+                          sourceGameId: activePrep ? null : board.sourceGameId,
+                        },
+                        review,
+                      ),
+                    )
+                  }
                   onSelectPly={(ply) => setCursor(Math.min(activeLine.length, Math.max(0, ply)))}
                   onReviewRunningChange={setCoachReviewRunning}
                 />
@@ -1726,59 +1762,73 @@ function BoardStartActions({
 
 function CoachUnderBoardPanel({
   sourceGame,
+  fallbackSourceIdentity,
   line,
   currentFen,
   currentLines,
   defaultPlayerColor,
+  persistedReview,
+  onPersistReview,
   onSelectPly,
   onReviewRunningChange,
 }: {
   sourceGame: WebGame | null;
+  fallbackSourceIdentity: string | null;
   line: WebPrepLineMove[];
   currentFen: string;
   currentLines: WebEngineLine[];
   defaultPlayerColor: WebColor;
+  persistedReview: WebCoachReviewRecord | null | undefined;
+  onPersistReview: (review: WebCoachReviewRecord) => void;
   onSelectPly: (ply: number) => void;
   onReviewRunningChange: (running: boolean) => void;
 }) {
+  const lineContextKey = useMemo(
+    () => getWebCoachLineContextKey(sourceGame, line, currentFen, fallbackSourceIdentity),
+    [currentFen, fallbackSourceIdentity, line, sourceGame],
+  );
+  const restoredReview = useMemo(
+    () => restoreWebCoachReview(persistedReview, { lineContextKey, currentFen }),
+    [currentFen, lineContextKey, persistedReview],
+  );
   const [health, setHealth] = useState<WebChessCoachHealth | null>(null);
   const [healthError, setHealthError] = useState("");
-  const [playerColor, setPlayerColor] = useState<WebColor>(defaultPlayerColor);
+  const [playerColor, setPlayerColor] = useState<WebColor>(
+    restoredReview?.playerColor ?? defaultPlayerColor,
+  );
   const [scope, setScope] = useState<"position" | "whole-game">(
-    getDefaultWebCoachScope(sourceGame, line),
+    restoredReview?.scope ?? getDefaultWebCoachScope(sourceGame, line),
   );
   const [question, setQuestion] = useState(
-    sourceGame || line.length > 4
-      ? "Review this game for me. What went wrong, what should I learn, and which book lessons matter most?"
-      : "Explain this position, the best plan, and the most relevant lesson from my chess library.",
+    restoredReview?.question ?? getDefaultWebCoachQuestion(sourceGame, line),
   );
-  const [response, setResponse] = useState<WebChessCoachResponse | null>(null);
-  const [responseContextKey, setResponseContextKey] = useState<string | null>(null);
-  const [responseLineContextKey, setResponseLineContextKey] = useState<string | null>(null);
+  const [response, setResponse] = useState<WebChessCoachResponse | null>(
+    restoredReview?.response ?? null,
+  );
+  const [responseContextKey, setResponseContextKey] = useState<string | null>(
+    restoredReview?.contextKey ?? null,
+  );
+  const [responseLineContextKey, setResponseLineContextKey] = useState<string | null>(
+    restoredReview?.lineContextKey ?? null,
+  );
+  const [savedReviewAt, setSavedReviewAt] = useState<number | null>(
+    restoredReview?.savedAt ?? null,
+  );
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState<WebChessCoachProgress | null>(null);
-  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
+  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(
+    restoredReview?.response.categories[0]?.id ?? null,
+  );
   const healthRequestRef = useRef<AbortController | null>(null);
   const coachRequestRef = useRef<AbortController | null>(null);
   const progressTimerRef = useRef<number | null>(null);
-  const lineContextKey = useMemo(
-    () => getWebCoachLineContextKey(sourceGame, line, currentFen),
-    [currentFen, line, sourceGame],
-  );
   const coachContextKey = useMemo(
-    () =>
-      JSON.stringify([
-        lineContextKey,
-        scope,
-        playerColor,
-        scope === "position" ? currentFen : "whole-game",
-      ]),
+    () => getWebCoachContextKey(lineContextKey, scope, playerColor, currentFen),
     [currentFen, lineContextKey, playerColor, scope],
   );
   const currentCoachContextRef = useRef(coachContextKey);
   currentCoachContextRef.current = coachContextKey;
-  const previousLineContextRef = useRef(lineContextKey);
   const previousCoachContextRef = useRef(coachContextKey);
 
   const loadHealth = useCallback(() => {
@@ -1804,6 +1854,15 @@ function CoachUnderBoardPanel({
     return controller;
   }, []);
 
+  const showSavedReview = useCallback((review: RestoredWebCoachReview) => {
+    setQuestion(review.question);
+    setResponse(review.response);
+    setResponseContextKey(review.contextKey);
+    setResponseLineContextKey(review.lineContextKey);
+    setSavedReviewAt(review.savedAt);
+    setActiveCategoryId(review.response.categories[0]?.id ?? null);
+  }, []);
+
   const clearCoachReview = useCallback(() => {
     coachRequestRef.current?.abort();
     coachRequestRef.current = null;
@@ -1814,6 +1873,7 @@ function CoachUnderBoardPanel({
     setResponse(null);
     setResponseContextKey(null);
     setResponseLineContextKey(null);
+    setSavedReviewAt(null);
     setActiveCategoryId(null);
     setError("");
     onReviewRunningChange(false);
@@ -1836,21 +1896,11 @@ function CoachUnderBoardPanel({
   }, [health?.ok, loadHealth]);
 
   useEffect(() => {
-    setPlayerColor(defaultPlayerColor);
-  }, [defaultPlayerColor, sourceGame?.id]);
-
-  useEffect(() => {
-    if (previousLineContextRef.current === lineContextKey) return;
-    previousLineContextRef.current = lineContextKey;
-    setScope(getDefaultWebCoachScope(sourceGame, line));
-    clearCoachReview();
-  }, [clearCoachReview, line, lineContextKey, sourceGame]);
-
-  useEffect(() => {
     if (previousCoachContextRef.current === coachContextKey) return;
     previousCoachContextRef.current = coachContextKey;
     clearCoachReview();
-  }, [clearCoachReview, coachContextKey]);
+    if (restoredReview?.contextKey === coachContextKey) showSavedReview(restoredReview);
+  }, [clearCoachReview, coachContextKey, restoredReview, showSavedReview]);
 
   const sourceLineIsUnchanged = useMemo(
     () => webCoachLineMatchesSourceGame(sourceGame, line),
@@ -1879,6 +1929,9 @@ function CoachUnderBoardPanel({
     const requestId = createWebCoachRequestId();
     const submittedContextKey = coachContextKey;
     const submittedLineContextKey = lineContextKey;
+    const submittedQuestion = question.trim();
+    const submittedScope = scope;
+    const submittedPlayerColor = playerColor;
     coachRequestRef.current = controller;
     onReviewRunningChange(true);
     stopWebStockfish18Search();
@@ -1892,6 +1945,9 @@ function CoachUnderBoardPanel({
     });
     setError("");
     setResponse(null);
+    setResponseContextKey(null);
+    setResponseLineContextKey(null);
+    setSavedReviewAt(null);
     setActiveCategoryId(null);
     try {
       await new Promise<void>((resolve) => window.setTimeout(resolve, 50));
@@ -1911,7 +1967,7 @@ function CoachUnderBoardPanel({
       };
       progressTimerRef.current = window.setInterval(() => void pollProgress(), 750);
       const result = await askWebChessCoach({
-        question: question.trim(),
+        question: submittedQuestion,
         requestId,
         pgn,
         playerColor,
@@ -1924,13 +1980,24 @@ function CoachUnderBoardPanel({
       if (controller.signal.aborted || currentCoachContextRef.current !== submittedContextKey) {
         return;
       }
+      const savedReview = createWebCoachReviewRecord({
+        contextKey: submittedContextKey,
+        lineContextKey: submittedLineContextKey,
+        scope: submittedScope,
+        playerColor: submittedPlayerColor,
+        question: submittedQuestion,
+        response: result,
+      });
+      onPersistReview(savedReview);
       setResponse(result);
       setResponseContextKey(submittedContextKey);
       setResponseLineContextKey(submittedLineContextKey);
+      setSavedReviewAt(savedReview.savedAt);
       setActiveCategoryId(result.categories[0]?.id ?? null);
     } catch (coachError) {
       if (controller.signal.aborted) return;
       setError(coachError instanceof Error ? coachError.message : "The PC coach failed.");
+      if (restoredReview?.contextKey === submittedContextKey) showSavedReview(restoredReview);
       void loadHealth();
     } finally {
       if (coachRequestRef.current === controller) {
@@ -2069,6 +2136,16 @@ function CoachUnderBoardPanel({
           </Box>
           <Group gap="xs">
             <Badge variant="light">{visibleResponse.model}</Badge>
+            {savedReviewAt ? (
+              <Badge
+                color="green"
+                variant="light"
+                title={`Saved ${new Date(savedReviewAt).toLocaleString()}`}
+              >
+                {sourceGame || fallbackSourceIdentity ? "Saved with game" : "Saved on board"} ·{" "}
+                {formatWebCoachSavedTime(savedReviewAt)}
+              </Badge>
+            ) : null}
             {visibleResponse.analysisCoverage.totalPositions > 0 ? (
               <Badge variant="outline">
                 {visibleResponse.analysisCoverage.totalPositions} positions checked
@@ -2307,6 +2384,19 @@ function CoachBookSourceCard({
 function formatCoachPlyLabel(ply: number, san: string) {
   const moveNumber = Math.ceil(ply / 2);
   return `${moveNumber}${ply % 2 === 0 ? "..." : "."}${san ? ` ${san}` : ""}`;
+}
+
+function getDefaultWebCoachQuestion(sourceGame: WebGame | null, line: WebPrepLineMove[]) {
+  return sourceGame || line.length > 4
+    ? "Review this game for me. What went wrong, what should I learn, and which book lessons matter most?"
+    : "Explain this position, the best plan, and the most relevant lesson from my chess library.";
+}
+
+function formatWebCoachSavedTime(savedAt: number) {
+  return new Intl.DateTimeFormat(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(savedAt));
 }
 
 function createWebCoachRequestId() {

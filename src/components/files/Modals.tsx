@@ -6,6 +6,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { exists, mkdir, rename, writeTextFile } from "@tauri-apps/plugin-fs";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { getAiCoachSidecarPath } from "@/utils/aiCoachPersistence";
 import {
   getDefaultDatabaseFolderName,
   getGameFileCountText,
@@ -421,6 +422,9 @@ export function RenameModal({
 
       if (entry.type === "file" && isPgnFile(entry)) {
         await rename(getInfoPath(entry.path), getInfoPath(newPath)).catch(() => {});
+        await rename(getAiCoachSidecarPath(entry.path), getAiCoachSidecarPath(newPath)).catch(
+          () => {},
+        );
       }
 
       const newEntry = withRenamedEntryPaths(entry, entry.path, newPath, nextName);
@@ -505,6 +509,9 @@ export function EditModal({
 
     await rename(metadata.path, newPGNPath);
     await rename(metadataPath, getInfoPath(newPGNPath));
+    await rename(getAiCoachSidecarPath(metadata.path), getAiCoachSidecarPath(newPGNPath)).catch(
+      () => {},
+    );
 
     mutate();
     setSelected((selected) =>

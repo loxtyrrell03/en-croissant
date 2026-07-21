@@ -6,6 +6,12 @@ import type { StoreApi } from "zustand";
 import { commands } from "@/bindings";
 import { type FileMetadata, fileMetadataSchema } from "@/components/files/file";
 import type { TreeStoreState } from "@/state/store/tree";
+import {
+    getAiCoachPersistenceTarget,
+    getAiCoachSidecarPath,
+    loadPersistedAiCoachReview,
+    savePersistedAiCoachReview,
+} from "./aiCoachPersistence";
 import { getPGN, parsePGN } from "./chess";
 import { hydrateOnlinePgnClocks } from "./onlinePgnClocks";
 import { type GameHeaders, getGameName, type TreeState } from "./treeReducer";
@@ -243,6 +249,7 @@ export async function saveToFile({
             ? currentOrigin
             : undefined;
     const databaseOrigin = currentOrigin?.kind === "database" ? currentOrigin : undefined;
+    const sourceCoachTarget = getAiCoachPersistenceTarget(tab);
     const isTempFile = currentOrigin?.kind === "temp_file";
     const pgn = `${getPGN(store.getState().root, {
         headers: store.getState().headers,
@@ -286,6 +293,10 @@ export async function saveToFile({
 
         if (isTempFile && fileOrigin && !forceSaveAs) {
             await copyFile(fileOrigin.file.path, filePath);
+            const sourceCoachPath = getAiCoachSidecarPath(fileOrigin.file.path);
+            if (await exists(sourceCoachPath)) {
+                await copyFile(sourceCoachPath, getAiCoachSidecarPath(filePath));
+            }
         }
 
         const numGames = forceSaveAs ? 1 : isTempFile && fileOrigin ? fileOrigin.file.numGames : 1;
@@ -313,6 +324,23 @@ export async function saveToFile({
         });
     }
     await commands.writeGame(filePath, forceSaveAs ? 0 : (fileOrigin?.gameNumber ?? 0), pgn);
+    if (forceSaveAs && sourceCoachTarget) {
+        try {
+            const savedReview = await loadPersistedAiCoachReview(sourceCoachTarget);
+            if (savedReview) {
+                await savePersistedAiCoachReview(
+                    {
+                        sidecarPath: getAiCoachSidecarPath(filePath),
+                        recordKey: "pgn:0",
+                        sourceKind: "pgn",
+                    },
+                    savedReview,
+                );
+            }
+        } catch {
+            // Saving the PGN must still succeed if its optional coach sidecar cannot be copied.
+        }
+    }
     await ensureGameInfoSidecar(filePath);
     store.getState().save();
     return true;

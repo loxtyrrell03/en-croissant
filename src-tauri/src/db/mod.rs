@@ -6,6 +6,7 @@ mod search;
 mod search_index;
 
 use crate::{
+    coach_persistence::ai_coach_sidecar_path_for_source,
     db::{
         encoding::{decode_game_to_movetext, decode_move, iter_mainline_move_bytes},
         models::*,
@@ -2354,6 +2355,10 @@ pub async fn delete_database(
     // delete file
     remove_file(path_str)?;
     remove_file(get_index_path(&PathBuf::from(path_str)))?;
+    let coach_sidecar = ai_coach_sidecar_path_for_source(&file);
+    if coach_sidecar.exists() {
+        remove_file(coach_sidecar)?;
+    }
     Ok(())
 }
 
@@ -2372,6 +2377,18 @@ pub async fn move_database(
         return Err(Error::from(io::Error::new(
             io::ErrorKind::AlreadyExists,
             format!("Database already exists at {}", new_file.display()),
+        )));
+    }
+
+    let old_coach_sidecar = ai_coach_sidecar_path_for_source(&file);
+    let new_coach_sidecar = ai_coach_sidecar_path_for_source(&new_file);
+    if old_coach_sidecar.exists() && new_coach_sidecar.exists() {
+        return Err(Error::from(io::Error::new(
+            io::ErrorKind::AlreadyExists,
+            format!(
+                "AI Coach sidecar already exists at {}",
+                new_coach_sidecar.display()
+            ),
         )));
     }
 
@@ -2398,6 +2415,10 @@ pub async fn move_database(
             remove_file(&new_index)?;
         }
         rename(old_index, new_index)?;
+    }
+
+    if old_coach_sidecar.exists() {
+        rename(old_coach_sidecar, new_coach_sidecar)?;
     }
 
     Ok(())

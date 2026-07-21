@@ -25,6 +25,17 @@ export type WebMove = {
     variations?: WebMove[][];
 };
 
+export type WebCoachReviewRecord = {
+    version: 1;
+    contextKey: string;
+    lineContextKey: string;
+    scope: "position" | "whole-game";
+    playerColor: WebColor;
+    question: string;
+    response: unknown;
+    savedAt: number;
+};
+
 export type WebGame = {
     id: string;
     databaseId: string;
@@ -42,6 +53,7 @@ export type WebGame = {
     moves: WebMove[];
     rootVariations?: WebMove[][];
     comments?: string[];
+    coachReview?: WebCoachReviewRecord | null;
     importedAt: number;
 };
 
@@ -134,6 +146,7 @@ export type WebBoardState = {
     sourceDatabaseId: string | null;
     sourceGameId: string | null;
     sourceComments: string[];
+    coachReview?: WebCoachReviewRecord | null;
 };
 
 export type WebEngineScore =

@@ -173,6 +173,30 @@ async askPlanCoach(request: PlanCoachRequest) : Promise<Result<PlanCoachResponse
     else return { status: "error", error: e  as any };
 }
 },
+async readAiCoachSidecar(path: string) : Promise<Result<string | null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("read_ai_coach_sidecar", { path }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async upsertAiCoachSidecarRecord(path: string, recordKey: string, recordJson: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("upsert_ai_coach_sidecar_record", { path, recordKey, recordJson }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async removeAiCoachSidecarRecord(path: string, recordKey: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("remove_ai_coach_sidecar_record", { path, recordKey }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async memorySize() : Promise<number> {
     return await TAURI_INVOKE("memory_size");
 },
@@ -772,18 +796,18 @@ progressEvent: "progress-event"
 /** user-defined types **/
 
 export type AiCoachRequest = { requestId?: string; fen: string; sideToMove: string; moveHistory: string[]; pgn: string | null; pgnScope?: string; currentLinePgn?: string | null; wholeGamePgn?: string | null; gameAnalysis?: CoachGameAnalysisPoint[]; selectedMove: string | null; question: string; chatHistory?: CoachChatMessage[]; referenceContext?: CoachReferenceContext[]; existingLines: CoachEngineLine[]; existingLinesSource?: string; priorTargetedResults?: CoachTargetedResult[]; openingContext: CoachOpeningContext | null; openingContextError: string | null; enginePath: string; settings: AiCoachSettings }
-export type AiCoachResponse = { answer: string; overview: string; categories: CoachCategory[]; analysisCoverage: CoachAnalysisCoverage | null; model: string; usedExistingAnalysis: boolean; stockfishLines: CoachEngineLine[]; targetedResults: CoachTargetedResult[]; bookPassages: CoachBookPassage[]; bookCorpusAvailable: boolean }
-export type CoachBookPassage = { chunkId: string; bookId: string; title: string; author: string; shelf: string; chapterTitle: string; citation: string; pdfPageStart: number; pdfPageEnd: number; printedPageStart: number | null; printedPageEnd: number | null; excerpt: string; localPath: string }
-export type CoachAnalysisCoverage = { totalPositions: number; uniquePositions: number; cloudHits: number; liveAnalyses: number; failed: number; liveDepth: number; complete?: boolean }
-export type CoachCategory = { id: string; label: string; summary: string; explanation: string; positions: CoachCategoryPosition[]; bookReferences: CoachCategoryBookReference[] }
-export type CoachCategoryBookReference = { chunkId: string; whyItMatters: string; positionPly: number | null }
-export type CoachCategoryPosition = { ply: number; san: string; title: string; explanation: string; engineEvidence: string; betterPlan: string }
+export type AiCoachResponse = { answer: string; overview: string; categories: CoachCategory[]; analysisCoverage: CoachAnalysisCoverage | null; pgnScope: string; model: string; usedExistingAnalysis: boolean; stockfishLines: CoachEngineLine[]; targetedResults: CoachTargetedResult[]; bookPassages: CoachBookPassage[]; bookCorpusAvailable: boolean }
 export type AiCoachSettings = { enabled: boolean; geminiCommand: string; geminiModel: string; plannerModel?: string; multipv: number; timeoutSecs: number }
 export type AnalysisOptions = { fen: string; moves: string[]; annotateNovelties: boolean; referenceDb: string | null; reversed: boolean }
 export type BestMoveSource = "lichess" | "chessdb"
 export type BestMoves = { nodes: number; depth: number; score: Score; source?: BestMoveSource | null; uciMoves: string[]; sanMoves: string[]; multipv: number; nps: number }
 export type BestMovesPayload = { bestLines: BestMoves[]; engine: string; tab: string; fen: string; moves: string[]; progress: number }
 export type ClockUpdateEvent = { gameId: string; whiteTime: bigint | null; blackTime: bigint | null }
+export type CoachAnalysisCoverage = { totalPositions: number; uniquePositions: number; cloudHits: number; liveAnalyses: number; failed: number; liveDepth: number; complete?: boolean }
+export type CoachBookPassage = { chunkId: string; bookId: string; title: string; author: string; shelf: string; chapterTitle: string; citation: string; pdfPageStart: number; pdfPageEnd: number; printedPageStart: number | null; printedPageEnd: number | null; excerpt: string; localPath: string }
+export type CoachCategory = { id: string; label: string; summary: string; explanation: string; positions: CoachCategoryPosition[]; bookReferences: CoachCategoryBookReference[] }
+export type CoachCategoryBookReference = { chunkId: string; whyItMatters: string; positionPly: number | null }
+export type CoachCategoryPosition = { ply: number; san: string; title: string; explanation: string; engineEvidence: string; betterPlan: string }
 export type CoachChatMessage = { role: string; content: string }
 export type CoachEngineLine = { multipv: number; depth: number; eval: string; uciMoves: string[]; sanMoves: string[] }
 export type CoachGameAnalysisPoint = { ply: number; move: string; beforeFen?: string | null; fen: string; playedUci?: string | null; playedSide?: string | null; eval: string | null; depth: number | null; annotations: string[] }

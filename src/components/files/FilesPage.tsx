@@ -43,6 +43,7 @@ import {
   type FilesSortMode,
 } from "@/state/atoms";
 import { capitalize } from "@/utils/format";
+import { getAiCoachSidecarPath } from "@/utils/aiCoachPersistence";
 import ConfirmModal from "../common/ConfirmModal";
 import OpenFolderButton from "../common/OpenFolderButton";
 import DirectoryTree from "./DirectoryTree";
@@ -639,6 +640,7 @@ function FilesPage() {
       await remove(selected.path);
       if (isPgnFile(selected)) {
         await remove(selected.path.replace(/\.pgn$/i, ".info")).catch(() => {});
+        await remove(getAiCoachSidecarPath(selected.path)).catch(() => {});
       }
     }
 

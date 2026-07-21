@@ -5,6 +5,7 @@
 
 mod chess;
 mod coach;
+mod coach_persistence;
 mod db;
 mod engine;
 mod error;
@@ -44,6 +45,9 @@ use crate::chess::{
     stop_interactive_engines, stop_matching_engine, MistakeReviewScanProgress,
 };
 use crate::coach::{ask_ai_coach, ask_plan_coach};
+use crate::coach_persistence::{
+    read_ai_coach_sidecar, remove_ai_coach_sidecar_record, upsert_ai_coach_sidecar_record,
+};
 use crate::db::{
     cancel_database_search, clear_games, convert_pgn, create_indexes, delete_database,
     delete_db_game, delete_empty_games, delete_indexes, export_to_pgn, find_repertoire_gaps,
@@ -174,6 +178,9 @@ fn main() {
             get_engine_logs,
             ask_ai_coach,
             ask_plan_coach,
+            read_ai_coach_sidecar,
+            upsert_ai_coach_sidecar_record,
+            remove_ai_coach_sidecar_record,
             memory_size,
             get_puzzle,
             get_puzzle_progress,

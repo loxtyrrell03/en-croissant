@@ -40,6 +40,7 @@ import {
   type FilesSortMode,
 } from "@/state/atoms";
 import { openFile } from "@/utils/files";
+import { getAiCoachSidecarPath } from "@/utils/aiCoachPersistence";
 import classes from "./DirectoryTree.module.css";
 import { getFileExtension, isPdfFile, isPgnFile, stripSupportedFileExtension } from "./file";
 import type { Directory, FileMetadata } from "./file";
@@ -609,10 +610,7 @@ function DirectoryNode({
         return current.filter((path) => !isSameOrDescendantPath(path, node.path));
       }
 
-      return [
-        ...current.filter((path) => !isSameOrDescendantPath(path, node.path)),
-        node.path,
-      ];
+      return [...current.filter((path) => !isSameOrDescendantPath(path, node.path)), node.path];
     });
     setSelectedFile(null);
   }, [node.path, setArchivedPaths, setSelectedFile]);
@@ -729,6 +727,9 @@ function DirectoryNode({
             sourcePath.replace(/\.pgn$/i, ".info"),
             targetPath.replace(/\.pgn$/i, ".info"),
           ).catch(() => {});
+          await rename(getAiCoachSidecarPath(sourcePath), getAiCoachSidecarPath(targetPath)).catch(
+            () => {},
+          );
         }
         await refreshDirectory();
         setPinnedPaths((current) =>
@@ -916,7 +917,9 @@ function DirectoryNode({
             <FileIcon type={node.metadata.type} className={classes.typeIcon} />
           )}
           <span className={classes.label}>{node.name}</span>
-          {(isPinned || isArchived || (node.type === "file" && node.metadata.type === "repertoire")) && (
+          {(isPinned ||
+            isArchived ||
+            (node.type === "file" && node.metadata.type === "repertoire")) && (
             <div className={classes.badge}>
               {isPinned && <IconPinned size={12} />}
               {isArchived && <IconArchive size={12} />}
