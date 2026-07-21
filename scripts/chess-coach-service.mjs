@@ -625,6 +625,26 @@ export function normalizeChessCoachRequestPayload(payload, { createRequestId } =
     typeof createRequestId === "function"
       ? createRequestId()
       : `coach-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  let persistence = null;
+  if (payload.persistence !== undefined && payload.persistence !== null) {
+    if (typeof payload.persistence !== "object" || Array.isArray(payload.persistence)) {
+      throw new Error("Invalid coach persistence context.");
+    }
+    const storageKey = String(payload.persistence.storageKey || "");
+    const contextKey = String(payload.persistence.contextKey || "").trim();
+    const lineContextKey = String(payload.persistence.lineContextKey || "").trim();
+    if (
+      !storageKey ||
+      storageKey.length > 256 * 1024 ||
+      !contextKey ||
+      contextKey.length > 384 * 1024 ||
+      !lineContextKey ||
+      lineContextKey.length > 256 * 1024
+    ) {
+      throw new Error("Invalid coach persistence context.");
+    }
+    persistence = { storageKey, contextKey, lineContextKey };
+  }
   return {
     requestId: /^[a-z0-9_-]{8,100}$/i.test(String(payload.requestId || ""))
       ? String(payload.requestId)
@@ -636,6 +656,7 @@ export function normalizeChessCoachRequestPayload(payload, { createRequestId } =
     scope: payload.scope === "position" ? "position" : "whole-game",
     moves,
     currentLines,
+    persistence,
   };
 }
 

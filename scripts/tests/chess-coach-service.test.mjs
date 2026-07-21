@@ -378,6 +378,37 @@ test("coach request normalization never silently truncates the PGN or a long pra
   assert.match(prompt, /END-OF-PGN/);
 });
 
+test("coach request normalization carries validated PC persistence metadata", () => {
+  const normalized = normalizeChessCoachRequestPayload({
+    requestId: "coach-background-save",
+    question: "Review the game",
+    currentFen: "current w - - 0 1",
+    pgn: "1. e4",
+    moves: [],
+    persistence: {
+      storageKey: "game-storage-key",
+      contextKey: "game-context-key",
+      lineContextKey: "line-context-key",
+    },
+  });
+  assert.deepEqual(normalized.persistence, {
+    storageKey: "game-storage-key",
+    contextKey: "game-context-key",
+    lineContextKey: "line-context-key",
+  });
+  assert.throws(
+    () =>
+      normalizeChessCoachRequestPayload({
+        question: "Review the game",
+        currentFen: "current w - - 0 1",
+        pgn: "1. e4",
+        moves: [],
+        persistence: { storageKey: "game-storage-key" },
+      }),
+    /Invalid coach persistence context/,
+  );
+});
+
 test("coach request normalization explicitly rejects incomplete or oversized input", () => {
   const base = {
     question: "Review the game",

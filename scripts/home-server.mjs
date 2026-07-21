@@ -160,6 +160,8 @@ let phoneCoachQueue = Promise.resolve();
 let coachReviewWriteQueue = Promise.resolve();
 const phoneCoachProgress = new Map();
 const phoneCoachProgressExpiry = new Map();
+const phoneCoachJobs = new Map();
+const phoneCoachJobsByReviewKey = new Map();
 let coachAuthenticationCache = { checkedAt: 0, status: "unknown" };
 let coachUsageLimitCache = null;
 let coachAuthenticationProbe = null;
@@ -431,22 +433,46 @@ async function handleSavedChessCoachReview(request, response) {
   if (action === "read") {
     const store = await readCoachReviewStore();
     const entry = store.records[recordKey];
+    const pendingJob = getPendingPhoneCoachJob(recordKey);
     if (!entry || entry.storageKey !== storageKey) {
+      if (pendingJob) {
+        return writeJson(
+          response,
+          200,
+          {
+            review: null,
+            pending: true,
+            requestId: pendingJob.requestId,
+            progress: phoneCoachProgress.get(pendingJob.requestId) ?? null,
+          },
+          { "cache-control": "no-store" },
+        );
+      }
       return writeJson(response, 404, { review: null }, { "cache-control": "no-store" });
     }
     const review = normalizeSavedWebCoachReview(entry.review);
     if (!review) return writeJson(response, 404, { review: null }, { "cache-control": "no-store" });
-    return writeJson(response, 200, { review }, { "cache-control": "no-store" });
+    return writeJson(
+      response,
+      200,
+      {
+        review,
+        pending: Boolean(pendingJob),
+        ...(pendingJob
+          ? {
+              requestId: pendingJob.requestId,
+              progress: phoneCoachProgress.get(pendingJob.requestId) ?? null,
+            }
+          : {}),
+      },
+      { "cache-control": "no-store" },
+    );
   }
 
   if (action === "write") {
     const review = normalizeSavedWebCoachReview(payload.review);
     if (!review) return writeJson(response, 400, { error: "The coach review is invalid." });
-    await queueCoachReviewStoreWrite(async () => {
-      const store = await readCoachReviewStore();
-      store.records[recordKey] = { storageKey, review };
-      await writeCoachReviewStore(store);
-    });
+    await saveCoachReviewRecord(storageKey, review);
     return writeJson(response, 200, { ok: true, savedAt: review.savedAt });
   }
 
@@ -460,6 +486,27 @@ async function handleSavedChessCoachReview(request, response) {
   }
 
   return writeJson(response, 400, { error: "Unknown coach review action." });
+}
+
+function getCoachReviewRecordKey(storageKey) {
+  return createHash("sha256").update(storageKey, "utf8").digest("hex");
+}
+
+function getPendingPhoneCoachJob(recordKey) {
+  const jobs = phoneCoachJobsByReviewKey.get(recordKey);
+  if (!jobs?.size) return null;
+  return [...jobs].at(-1) ?? null;
+}
+
+async function saveCoachReviewRecord(storageKey, review) {
+  const normalized = normalizeSavedWebCoachReview(review);
+  if (!normalized) throw new Error("The coach review is invalid.");
+  const recordKey = getCoachReviewRecordKey(storageKey);
+  await queueCoachReviewStoreWrite(async () => {
+    const store = await readCoachReviewStore();
+    store.records[recordKey] = { storageKey, review: normalized };
+    await writeCoachReviewStore(store);
+  });
 }
 
 function queueCoachReviewStoreWrite(operation) {
@@ -1280,36 +1327,81 @@ async function writeChessCoachResponse(request, response) {
       error: "The PC chess-book corpus is unavailable.",
     });
   }
-  const controller = new AbortController();
-  const abortReview = () => controller.abort();
-  request.once("aborted", abortReview);
-  response.once("close", () => {
-    if (!response.writableEnded) abortReview();
-  });
-  updatePhoneCoachProgress(payload.requestId, "queued", "Waiting for the PC coach", 0, 0);
+  const job = startPhoneCoachJob(payload);
   try {
-    const queued = phoneCoachQueue
-      .catch(() => {})
-      .then(() => runPhoneCoachReview(payload, controller.signal));
-    phoneCoachQueue = queued.catch(() => {});
-    const result = await queued;
-    updatePhoneCoachProgress(payload.requestId, "complete", "Review ready", 1, 1);
-    if (!controller.signal.aborted) return writeJson(response, 200, result);
+    const result = await job.promise;
+    return writeJsonIfConnected(response, 200, result);
   } catch (error) {
-    if (controller.signal.aborted) {
-      updatePhoneCoachProgress(payload.requestId, "cancelled", "Review cancelled", 0, 0);
-      return;
-    }
-    updatePhoneCoachProgress(payload.requestId, "error", "Review failed", 0, 0);
-    await appendLog(`phone coach failed: ${error?.stack || error}`);
     const publicFailure = publicChessCoachFailure(error);
-    return writeJson(response, publicFailure.status, {
+    return writeJsonIfConnected(response, publicFailure.status, {
       code: publicFailure.code,
       error: publicFailure.error,
     });
-  } finally {
-    request.off("aborted", abortReview);
   }
+}
+
+function startPhoneCoachJob(payload) {
+  const existing = phoneCoachJobs.get(payload.requestId);
+  if (existing) return existing;
+
+  const controller = new AbortController();
+  const reviewRecordKey = payload.persistence
+    ? getCoachReviewRecordKey(payload.persistence.storageKey)
+    : null;
+  updatePhoneCoachProgress(payload.requestId, "queued", "Waiting for the PC coach", 0, 0);
+  const queued = phoneCoachQueue
+    .catch(() => {})
+    .then(async () => {
+      try {
+        const result = await runPhoneCoachReview(payload, controller.signal);
+        if (payload.persistence) {
+          const review = normalizeSavedWebCoachReview({
+            version: 1,
+            contextKey: payload.persistence.contextKey,
+            lineContextKey: payload.persistence.lineContextKey,
+            scope: payload.scope,
+            playerColor: payload.playerColor,
+            question: payload.question,
+            response: result,
+            savedAt: Date.now(),
+          });
+          if (!review) throw new Error("The completed coach review could not be persisted.");
+          await saveCoachReviewRecord(payload.persistence.storageKey, review);
+        }
+        updatePhoneCoachProgress(payload.requestId, "complete", "Review saved on the PC", 1, 1);
+        return result;
+      } catch (error) {
+        updatePhoneCoachProgress(payload.requestId, "error", "Review failed", 0, 0);
+        await appendLog(`phone coach failed: ${error?.stack || error}`);
+        throw error;
+      }
+    });
+  const job = {
+    requestId: payload.requestId,
+    reviewRecordKey,
+    controller,
+    promise: queued,
+  };
+  phoneCoachQueue = queued.catch(() => {});
+  phoneCoachJobs.set(payload.requestId, job);
+  if (reviewRecordKey) {
+    const jobs = phoneCoachJobsByReviewKey.get(reviewRecordKey) ?? new Set();
+    jobs.add(job);
+    phoneCoachJobsByReviewKey.set(reviewRecordKey, jobs);
+  }
+  void queued
+    .finally(() => {
+      if (phoneCoachJobs.get(payload.requestId) === job) {
+        phoneCoachJobs.delete(payload.requestId);
+      }
+      if (reviewRecordKey) {
+        const jobs = phoneCoachJobsByReviewKey.get(reviewRecordKey);
+        jobs?.delete(job);
+        if (!jobs?.size) phoneCoachJobsByReviewKey.delete(reviewRecordKey);
+      }
+    })
+    .catch(() => {});
+  return job;
 }
 
 async function readNormalizedChessCoachRequest(request, response) {
@@ -2057,6 +2149,11 @@ function writeJson(response, status, body, extraHeaders = {}) {
     ...extraHeaders,
   });
   response.end(text);
+}
+
+function writeJsonIfConnected(response, status, body, extraHeaders = {}) {
+  if (response.destroyed || response.writableEnded) return;
+  return writeJson(response, status, body, extraHeaders);
 }
 
 function setCorsHeaders(request, response, sensitive = false) {

@@ -17,6 +17,7 @@ import {
 import { IconAlertTriangle, IconBook, IconExternalLink, IconSparkles } from "@tabler/icons-react";
 import { listen } from "@tauri-apps/api/event";
 import { openPath } from "@tauri-apps/plugin-opener";
+import { exit } from "@tauri-apps/plugin-process";
 import { parseSan } from "chessops/san";
 import { useAtomValue } from "jotai";
 import {
@@ -73,6 +74,7 @@ import {
   type PersistedAiCoachReview,
 } from "@/utils/aiCoachPersistence";
 import { buildAiCoachOpeningContext } from "@/utils/aiCoachOpeningContext";
+import { beginAiCoachBackgroundJob, finishAiCoachBackgroundJob } from "@/utils/aiCoachBackground";
 import { positionFromFen } from "@/utils/chessops";
 import type { Engine, LocalEngine } from "@/utils/engines";
 import { getBestMoves as getLichessCloudBestMoves } from "@/utils/lichess/api";
@@ -1436,6 +1438,7 @@ export default function AiCoachPanel() {
     setProgressLog([initialProgress]);
     setQuestion("");
     setMessages((current) => [...current, userMessage]);
+    beginAiCoachBackgroundJob(requestId);
 
     try {
       let openingContext: CoachOpeningContext | null = null;
@@ -1672,6 +1675,7 @@ export default function AiCoachPanel() {
         setLoading(false);
         setRequestStartedAt(null);
       }
+      if (finishAiCoachBackgroundJob(requestId)) await exit(0);
     }
   }
 
@@ -1858,6 +1862,9 @@ export default function AiCoachPanel() {
                   </Stack>
                   <Text size="xs" c="dimmed">
                     Showing the local pipeline; model private reasoning is not exposed.
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    You can close the fork; this PC will finish the review, save it, then exit.
                   </Text>
                 </Stack>
               </Paper>

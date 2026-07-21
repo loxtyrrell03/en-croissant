@@ -1,5 +1,16 @@
 # AGENTS.md
 
+- On 2026-07-21, AI Coach reviews became background-safe across both shipped
+  surfaces. Phone review jobs are owned by the gaming-PC home server, are no
+  longer aborted when the browser request disconnects, and atomically save the
+  completed structured answer into the PC review store before reporting
+  success. Reopened phones poll that store while a replacement review is still
+  pending, including when an older saved answer exists. Native fork close/quit
+  requests during an active coach run now hide the window, let the existing
+  process finish and save the adjacent coach sidecar, then exit. Preserve the
+  PC-owned lifecycle: client disconnect, panel unmount, window close, and menu
+  quit must never cancel or discard an in-progress coach review.
+
 - On 2026-07-20, the phone Coach's false `Codex is installed but not signed
   in` warning was traced to two combined faults: its forced submission-time
   `codex login status` process had a five-second deadline and mapped every

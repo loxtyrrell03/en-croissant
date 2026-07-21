@@ -29,6 +29,7 @@ import {
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
 import { openFile } from "@/utils/files";
+import { requestExitAfterAiCoach } from "@/utils/aiCoachBackground";
 import { createTab } from "@/utils/tabs";
 
 type MenuGroup = {
@@ -136,6 +137,13 @@ function RootLayout() {
   const [opened, setOpened] = useState(false);
 
   const isMacOS = platform() === "macos";
+  const closeOrWaitForCoach = useCallback(async () => {
+    if (requestExitAfterAiCoach()) {
+      await getCurrentWindow().hide();
+      return;
+    }
+    await exit(0);
+  }, []);
 
   const aboutOption = useMemo<MenuAction>(
     () => ({
@@ -173,11 +181,13 @@ function RootLayout() {
           label: t("Menu.Application.Quit", {
             defaultValue: t("Menu.File.Exit"),
           }),
-          item: "Quit",
+          id: "quit",
+          shortcut: "Cmd+Q",
+          action: () => void closeOrWaitForCoach(),
         },
       ],
     }),
-    [aboutOption, openSettings, t],
+    [aboutOption, closeOrWaitForCoach, openSettings, t],
   );
 
   const macOSEditMenu = useMemo<MenuGroup>(
@@ -238,7 +248,7 @@ function RootLayout() {
                 {
                   label: t("Menu.File.Exit"),
                   id: "exit",
-                  action: () => exit(0),
+                  action: () => void closeOrWaitForCoach(),
                 },
               ]
             : []),
@@ -296,7 +306,17 @@ function RootLayout() {
         ],
       },
     ],
-    [aboutOption, appMenu, createNewTab, isMacOS, keyMap, macOSEditMenu, openNewFile, t],
+    [
+      aboutOption,
+      appMenu,
+      closeOrWaitForCoach,
+      createNewTab,
+      isMacOS,
+      keyMap,
+      macOSEditMenu,
+      openNewFile,
+      t,
+    ],
   );
 
   const { data: menu } = useSWRImmutable(["menu", menuActions], () => createMenu(menuActions));
@@ -314,6 +334,18 @@ function RootLayout() {
       getCurrentWindow().setDecorations(false);
     }
   }, [menu, isNative]);
+
+  useEffect(() => {
+    const unlisten = getCurrentWindow().onCloseRequested((event) => {
+      if (!requestExitAfterAiCoach()) return;
+      event.preventDefault();
+      void getCurrentWindow().hide();
+    });
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
 
   useEffect(() => {
     const unlisten = getCurrentWindow().listen(TauriEvent.DRAG_DROP, (event) => {

@@ -111,7 +111,7 @@ import {
   getWebCoachLineContextKey,
   getWebCoachMoves,
   getWebCoachStorageKey,
-  loadSavedWebCoachReview,
+  getSavedWebCoachReviewStatus,
   makeWebCoachMovetext,
   persistWebCoachReviewInState,
   rebaseWebCoachReviewLineContext,
@@ -1851,6 +1851,7 @@ function CoachUnderBoardPanel({
   const [persistenceError, setPersistenceError] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [backgroundReviewRunning, setBackgroundReviewRunning] = useState(false);
   const [progress, setProgress] = useState<WebChessCoachProgress | null>(null);
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(
     restoredReview?.response.categories[0]?.id ?? null,
@@ -1913,6 +1914,7 @@ function CoachUnderBoardPanel({
     if (progressTimerRef.current !== null) window.clearInterval(progressTimerRef.current);
     progressTimerRef.current = null;
     setLoading(false);
+    setBackgroundReviewRunning(false);
     setProgress(null);
     setResponse(null);
     setResponseContextKey(null);
@@ -1946,9 +1948,14 @@ function CoachUnderBoardPanel({
 
   useEffect(() => {
     const controller = new AbortController();
-    void loadSavedWebCoachReview(coachStorageKey, controller.signal)
-      .then(async (stored) => {
+    let retryTimer: number | null = null;
+    const synchronizeSavedReview = async () => {
+      try {
+        const status = await getSavedWebCoachReviewStatus(coachStorageKey, controller.signal);
         if (controller.signal.aborted) return;
+        setBackgroundReviewRunning(status.pending);
+        if (status.pending && status.progress) setProgress(status.progress);
+        const stored = status.review;
         const rebasedStoredReview = stored
           ? rebaseWebCoachReviewLineContext(stored, lineContextKey)
           : null;
@@ -1960,17 +1967,19 @@ function CoachUnderBoardPanel({
         if (remoteReview && (!localReview || remoteReview.savedAt >= localReview.savedAt)) {
           persistReviewRef.current(remoteReview);
           showSavedReview(remoteReview, true);
-          return;
-        }
-        if (localReview) {
+        } else if (localReview && !status.pending) {
           await saveWebCoachReview(localReview, coachStorageKey);
           if (!controller.signal.aborted) {
             setSavedOnPc(true);
             setPersistenceError("");
           }
         }
-      })
-      .catch((loadError) => {
+        if (status.pending && !controller.signal.aborted) {
+          retryTimer = window.setTimeout(() => void synchronizeSavedReview(), 5000);
+        } else if (!loading) {
+          setProgress(null);
+        }
+      } catch (loadError) {
         if (
           controller.signal.aborted ||
           (loadError instanceof DOMException && loadError.name === "AbortError")
@@ -1982,9 +1991,14 @@ function CoachUnderBoardPanel({
             ? loadError.message
             : "The saved review could not be loaded from the PC.",
         );
-      });
-    return () => controller.abort();
-  }, [coachStorageKey, currentFen, lineContextKey, showSavedReview]);
+      }
+    };
+    void synchronizeSavedReview();
+    return () => {
+      controller.abort();
+      if (retryTimer !== null) window.clearTimeout(retryTimer);
+    };
+  }, [coachStorageKey, currentFen, lineContextKey, loading, showSavedReview]);
 
   useEffect(() => {
     if (previousCoachContextRef.current === coachContextKey) return;
@@ -2009,7 +2023,11 @@ function CoachUnderBoardPanel({
       ? response
       : null;
   const canAsk = Boolean(
-    question.trim() && health?.corpusAvailable && health.modelAvailable && !loading,
+    question.trim() &&
+    health?.corpusAvailable &&
+    health.modelAvailable &&
+    !loading &&
+    !backgroundReviewRunning,
   );
 
   async function askCoach() {
@@ -2027,6 +2045,7 @@ function CoachUnderBoardPanel({
     onReviewRunningChange(true);
     stopWebStockfish18Search();
     setLoading(true);
+    setBackgroundReviewRunning(false);
     setProgress({
       requestId,
       phase: "queued",
@@ -2066,6 +2085,11 @@ function CoachUnderBoardPanel({
         currentFen,
         moves: coachMoves,
         currentLines,
+        persistence: {
+          storageKey: coachStorageKey,
+          contextKey: submittedContextKey,
+          lineContextKey: submittedLineContextKey,
+        },
         signal: controller.signal,
       });
       if (controller.signal.aborted || currentCoachContextRef.current !== submittedContextKey) {
@@ -2172,6 +2196,17 @@ function CoachUnderBoardPanel({
         </Box>
       ) : null}
 
+      {backgroundReviewRunning && !loading ? (
+        <Box className={classes.coachNotice}>
+          <Text size="sm" fw={600}>
+            {progress?.label || "This review is continuing on the PC."}
+          </Text>
+          <Text size="xs" c="dimmed">
+            You can close this app. The completed answer will be saved on the PC and restored here.
+          </Text>
+        </Box>
+      ) : null}
+
       <Group grow gap="xs">
         <SegmentedControl
           size="xs"
@@ -2233,6 +2268,7 @@ function CoachUnderBoardPanel({
             <Text size="xs">1. PC checks every position, using cloud evals first.</Text>
             <Text size="xs">2. GPT chooses the relevant books and exact chapters.</Text>
             <Text size="xs">3. Coach writes the most useful topic tabs.</Text>
+            <Text size="xs">You can close the app; the PC will finish and save this review.</Text>
           </Stack>
         </Box>
       ) : null}

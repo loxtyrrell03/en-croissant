@@ -115,6 +115,13 @@ export type RestoredWebCoachReview = Omit<WebCoachReviewRecord, "response"> & {
     response: WebChessCoachResponse;
 };
 
+export type SavedWebCoachReviewStatus = {
+    review: WebCoachReviewRecord | null;
+    pending: boolean;
+    requestId: string | null;
+    progress: WebChessCoachProgress | null;
+};
+
 export async function getWebChessCoachHealth(signal?: AbortSignal) {
     const response = await fetch(getWebServerUrl("api/chess-coach/health"), {
         cache: "no-store",
@@ -145,6 +152,13 @@ export async function loadSavedWebCoachReview(
     storageKey: string,
     signal?: AbortSignal,
 ): Promise<WebCoachReviewRecord | null> {
+    return (await getSavedWebCoachReviewStatus(storageKey, signal)).review;
+}
+
+export async function getSavedWebCoachReviewStatus(
+    storageKey: string,
+    signal?: AbortSignal,
+): Promise<SavedWebCoachReviewStatus> {
     const response = await fetch(getWebServerUrl("api/chess-coach/review"), {
         method: "POST",
         cache: "no-store",
@@ -152,10 +166,22 @@ export async function loadSavedWebCoachReview(
         body: JSON.stringify({ action: "read", storageKey }),
         signal,
     });
-    if (response.status === 404) return null;
-    const payload = (await response.json().catch(() => null)) as { review?: unknown } | null;
+    if (response.status === 404) {
+        return { review: null, pending: false, requestId: null, progress: null };
+    }
+    const payload = (await response.json().catch(() => null)) as {
+        review?: unknown;
+        pending?: unknown;
+        requestId?: unknown;
+        progress?: unknown;
+    } | null;
     if (!response.ok) throw new Error("The saved coach review could not be loaded from the PC.");
-    return (payload?.review ?? null) as WebCoachReviewRecord | null;
+    return {
+        review: (payload?.review ?? null) as WebCoachReviewRecord | null,
+        pending: payload?.pending === true,
+        requestId: typeof payload?.requestId === "string" ? payload.requestId : null,
+        progress: normalizeWebChessCoachProgress(payload?.progress) ?? null,
+    };
 }
 
 export async function saveWebCoachReview(
@@ -189,6 +215,7 @@ export async function askWebChessCoach({
     moves,
     currentLines,
     requestId,
+    persistence,
     signal,
 }: {
     question: string;
@@ -199,6 +226,11 @@ export async function askWebChessCoach({
     moves: ReturnType<typeof getWebCoachMoves>;
     currentLines: WebEngineLine[];
     requestId: string;
+    persistence: {
+        storageKey: string;
+        contextKey: string;
+        lineContextKey: string;
+    };
     signal?: AbortSignal;
 }) {
     const response = await fetch(getWebServerUrl("api/chess-coach"), {
@@ -212,6 +244,7 @@ export async function askWebChessCoach({
             scope,
             currentFen,
             moves,
+            persistence,
             currentLines: currentLines.map((line) => ({
                 depth: line.depth,
                 score: line.score,
