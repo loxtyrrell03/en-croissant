@@ -141,6 +141,45 @@ export async function getWebChessCoachProgress(requestId: string, signal?: Abort
     return progress;
 }
 
+export async function loadSavedWebCoachReview(
+    storageKey: string,
+    signal?: AbortSignal,
+): Promise<WebCoachReviewRecord | null> {
+    const response = await fetch(getWebServerUrl("api/chess-coach/review"), {
+        method: "POST",
+        cache: "no-store",
+        headers: { accept: "application/json", "content-type": "application/json" },
+        body: JSON.stringify({ action: "read", storageKey }),
+        signal,
+    });
+    if (response.status === 404) return null;
+    const payload = (await response.json().catch(() => null)) as { review?: unknown } | null;
+    if (!response.ok) throw new Error("The saved coach review could not be loaded from the PC.");
+    return (payload?.review ?? null) as WebCoachReviewRecord | null;
+}
+
+export async function saveWebCoachReview(
+    review: WebCoachReviewRecord,
+    storageKey: string,
+    signal?: AbortSignal,
+): Promise<void> {
+    const response = await fetch(getWebServerUrl("api/chess-coach/review"), {
+        method: "POST",
+        cache: "no-store",
+        headers: { accept: "application/json", "content-type": "application/json" },
+        body: JSON.stringify({
+            action: "write",
+            storageKey,
+            review,
+        }),
+        signal,
+    });
+    if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(payload?.error || "The PC could not save the coach review.");
+    }
+}
+
 export async function askWebChessCoach({
     question,
     pgn,
@@ -256,6 +295,49 @@ export function getWebCoachContextKey(
         playerColor,
         scope === "position" ? normalizeCoachContextFen(currentFen) : "whole-game",
     ]);
+}
+
+export function getWebCoachStorageKey(lineContextKey: string) {
+    try {
+        const parsed = JSON.parse(lineContextKey) as unknown;
+        if (!Array.isArray(parsed) || parsed[0] !== "web-coach-line-v2") return lineContextKey;
+        const identity = parsed[1];
+        if (
+            Array.isArray(identity) &&
+            ["analysis-board", "analysis-line", "board-source", "source-game-id"].includes(
+                String(identity[0] || ""),
+            )
+        ) {
+            return JSON.stringify([parsed[0], ["line-content"], ...parsed.slice(2)]);
+        }
+        return lineContextKey;
+    } catch {
+        return lineContextKey;
+    }
+}
+
+export function rebaseWebCoachReviewLineContext(
+    review: WebCoachReviewRecord,
+    lineContextKey: string,
+): WebCoachReviewRecord {
+    try {
+        const parsed = JSON.parse(review.contextKey) as unknown;
+        if (
+            Array.isArray(parsed) &&
+            parsed[0] === "web-coach-review-v1" &&
+            parsed[2] === review.scope &&
+            parsed[3] === review.playerColor
+        ) {
+            return {
+                ...review,
+                lineContextKey,
+                contextKey: JSON.stringify([parsed[0], lineContextKey, ...parsed.slice(2)]),
+            };
+        }
+    } catch {
+        // Invalid persisted context is rejected by restoreWebCoachReview below.
+    }
+    return review;
 }
 
 export function createWebCoachReviewRecord({

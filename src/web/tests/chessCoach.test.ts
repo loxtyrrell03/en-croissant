@@ -7,9 +7,11 @@ import {
     getWebCoachContextKey,
     getWebCoachLineContextKey,
     getWebCoachMoves,
+    getWebCoachStorageKey,
     makeWebCoachMovetext,
     normalizeWebChessCoachResponse,
     persistWebCoachReviewInState,
+    rebaseWebCoachReviewLineContext,
     restoreWebCoachReview,
     webCoachLineMatchesSourceGame,
     type WebCoachBookPassage,
@@ -300,7 +302,7 @@ describe("phone chess coach context", () => {
         ).toBe("Replacement answer");
     });
 
-    it("uses a source-keyed board fallback for uploaded games without a retained game record", () => {
+    it("restores an uploaded game after its volatile browser source id changes", () => {
         const line = reviewLine();
         const sourceIdentity = "game:uploaded-db:0";
         const sourceLineKey = getWebCoachLineContextKey(
@@ -351,9 +353,31 @@ describe("phone chess coach context", () => {
             line[1].fenAfter,
             "game:different-upload:0",
         );
+        expect(otherSourceKey).not.toBe(sourceLineKey);
+        expect(getWebCoachStorageKey(otherSourceKey)).toBe(getWebCoachStorageKey(sourceLineKey));
+        const reopenedReview = rebaseWebCoachReviewLineContext(
+            saved.board.coachReview!,
+            otherSourceKey,
+        );
+        expect(
+            restoreWebCoachReview(reopenedReview, {
+                lineContextKey: otherSourceKey,
+                currentFen: line[1].fenAfter,
+            })?.response.overview,
+        ).toBe("Uploaded game review");
+
+        const differentLineKey = getWebCoachLineContextKey(
+            null,
+            [{ ...line[0], san: "d4", uci: "d2d4" }, line[1]],
+            line[1].fenAfter,
+            "game:different-upload:0",
+        );
+        expect(getWebCoachStorageKey(differentLineKey)).not.toBe(
+            getWebCoachStorageKey(sourceLineKey),
+        );
         expect(
             restoreWebCoachReview(saved.board.coachReview, {
-                lineContextKey: otherSourceKey,
+                lineContextKey: differentLineKey,
                 currentFen: line[1].fenAfter,
             }),
         ).toBeNull();

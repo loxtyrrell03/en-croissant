@@ -1142,7 +1142,8 @@ export async function collectPcCoachPositionEvaluations({
   queryCloud,
   queryLive,
   signal,
-  liveAttempts = 2,
+  liveAttempts = 4,
+  liveRetryDelayMs = 400,
   onProgress = () => {},
 }) {
   const evaluations = new Map();
@@ -1174,6 +1175,10 @@ export async function collectPcCoachPositionEvaluations({
       } catch (error) {
         if (signal?.aborted) throw abortError();
         lastError = error;
+        if (attempt + 1 < Math.max(1, liveAttempts) && liveRetryDelayMs > 0) {
+          await new Promise((resolve) => setTimeout(resolve, liveRetryDelayMs));
+          if (signal?.aborted) throw abortError();
+        }
       }
     }
     if (!evaluation) {
@@ -1188,6 +1193,49 @@ export async function collectPcCoachPositionEvaluations({
     onProgress({ phase: "live", completed: index + 1, total: livePositions.length });
   }
   return { evaluations, livePositions, cloudHits, liveAnalyses };
+}
+
+export function normalizeSavedWebCoachReview(value, expectedLineContextKey = "") {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const lineContextKey = String(value.lineContextKey || "").trim();
+  const contextKey = String(value.contextKey || "").trim();
+  const question = String(value.question || "").trim();
+  const savedAt = Number(value.savedAt);
+  if (
+    value.version !== 1 ||
+    !lineContextKey ||
+    lineContextKey.length > 256 * 1024 ||
+    (expectedLineContextKey && lineContextKey !== expectedLineContextKey) ||
+    !contextKey ||
+    contextKey.length > 384 * 1024 ||
+    !question ||
+    question.length > 16 * 1024 ||
+    !Number.isFinite(savedAt) ||
+    savedAt <= 0 ||
+    (value.scope !== "position" && value.scope !== "whole-game") ||
+    (value.playerColor !== "white" && value.playerColor !== "black") ||
+    !value.response ||
+    typeof value.response !== "object" ||
+    Array.isArray(value.response)
+  ) {
+    return null;
+  }
+  return {
+    version: 1,
+    contextKey,
+    lineContextKey,
+    scope: value.scope,
+    playerColor: value.playerColor,
+    question,
+    response: value.response,
+    savedAt,
+  };
+}
+
+export function normalizeWebCoachReviewStore(value) {
+  const records =
+    value?.version === 1 && value.records && typeof value.records === "object" ? value.records : {};
+  return { version: 1, records: { ...records } };
 }
 
 export function normalizeCloudCoachEvaluation(payload, fen = "") {

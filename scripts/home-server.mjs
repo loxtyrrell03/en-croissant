@@ -38,7 +38,9 @@ import {
   normalizeCloudCoachEvaluation,
   normalizeLibraryPlan,
   normalizeChessCoachRequestPayload,
+  normalizeSavedWebCoachReview,
   normalizeStructuredCoachReview,
+  normalizeWebCoachReviewStore,
   parseStockfishCoachInfo,
   preserveConfirmedCodexAuthentication,
   probeCodexAuthentication,
@@ -65,6 +67,7 @@ const appReleasesRoot = join(serverRoot, "app-releases");
 const activeAppPath = join(serverRoot, "active-app.json");
 const statePath = join(serverRoot, "state", "web-state.json");
 const stateBackupRoot = join(serverRoot, "state", "backups");
+const coachReviewStorePath = join(serverRoot, "state", "chess-coach-reviews.json");
 const lichessCredentialPath = join(serverRoot, "credentials", "lichess.json");
 const lichessExplorerCacheRoot = join(serverRoot, "cache", "lichess-explorer");
 const logPath = join(serverRoot, "home-server.log");
@@ -121,6 +124,7 @@ const enPositionQueryBinary = join(
 const maxStateBytes = 256 * 1024 * 1024;
 const maxCredentialBytes = 4 * 1024;
 const maxCoachRequestBytes = 512 * 1024;
+const maxCoachReviewBytes = 2 * 1024 * 1024;
 const lichessExplorerFreshMs = 30 * 60 * 1000;
 const lichessPlayerExplorerFreshMs = 5 * 60 * 1000;
 const lichessMastersExplorerFreshMs = 24 * 60 * 60 * 1000;
@@ -153,6 +157,7 @@ let sharedLichessCredential = null;
 let activeAppCache = null;
 let chessBookDatabase = null;
 let phoneCoachQueue = Promise.resolve();
+let coachReviewWriteQueue = Promise.resolve();
 const phoneCoachProgress = new Map();
 const phoneCoachProgressExpiry = new Map();
 let coachAuthenticationCache = { checkedAt: 0, status: "unknown" };
@@ -251,6 +256,11 @@ async function handleRequest(request, response) {
   if (pathname === "/api/chess-coach/progress") {
     if (method !== "GET") return writeJson(response, 405, { error: "Method not allowed." });
     return writeChessCoachProgress(requestUrl, response);
+  }
+
+  if (pathname === "/api/chess-coach/review") {
+    if (method !== "POST") return writeJson(response, 405, { error: "Method not allowed." });
+    return handleSavedChessCoachReview(request, response);
   }
 
   if (pathname === "/api/chess-books/search") {
@@ -407,6 +417,82 @@ async function writeWebState(request, response) {
   await writeFile(temporaryPath, `${JSON.stringify(state)}\n`, "utf8");
   await renameReplacing(temporaryPath, statePath);
   return writeJson(response, 200, { ok: true, savedAt: new Date().toISOString() });
+}
+
+async function handleSavedChessCoachReview(request, response) {
+  const payload = await readJsonBody(request, maxCoachReviewBytes);
+  const action = String(payload?.action || "").trim();
+  const storageKey = String(payload?.storageKey || "");
+  if (!storageKey || storageKey.length > 256 * 1024) {
+    return writeJson(response, 400, { error: "A valid coach game key is required." });
+  }
+  const recordKey = createHash("sha256").update(storageKey, "utf8").digest("hex");
+
+  if (action === "read") {
+    const store = await readCoachReviewStore();
+    const entry = store.records[recordKey];
+    if (!entry || entry.storageKey !== storageKey) {
+      return writeJson(response, 404, { review: null }, { "cache-control": "no-store" });
+    }
+    const review = normalizeSavedWebCoachReview(entry.review);
+    if (!review) return writeJson(response, 404, { review: null }, { "cache-control": "no-store" });
+    return writeJson(response, 200, { review }, { "cache-control": "no-store" });
+  }
+
+  if (action === "write") {
+    const review = normalizeSavedWebCoachReview(payload.review);
+    if (!review) return writeJson(response, 400, { error: "The coach review is invalid." });
+    await queueCoachReviewStoreWrite(async () => {
+      const store = await readCoachReviewStore();
+      store.records[recordKey] = { storageKey, review };
+      await writeCoachReviewStore(store);
+    });
+    return writeJson(response, 200, { ok: true, savedAt: review.savedAt });
+  }
+
+  if (action === "delete") {
+    await queueCoachReviewStoreWrite(async () => {
+      const store = await readCoachReviewStore();
+      delete store.records[recordKey];
+      await writeCoachReviewStore(store);
+    });
+    return writeJson(response, 200, { ok: true });
+  }
+
+  return writeJson(response, 400, { error: "Unknown coach review action." });
+}
+
+function queueCoachReviewStoreWrite(operation) {
+  const queued = coachReviewWriteQueue.catch(() => {}).then(operation);
+  coachReviewWriteQueue = queued.catch(() => {});
+  return queued;
+}
+
+async function readCoachReviewStore() {
+  const primary = await readJsonFile(coachReviewStorePath);
+  if (primary) return normalizeWebCoachReviewStore(primary);
+  const recovery = await readJsonFile(`${coachReviewStorePath}.previous`);
+  return normalizeWebCoachReviewStore(recovery);
+}
+
+async function writeCoachReviewStore(store) {
+  await mkdir(dirname(coachReviewStorePath), { recursive: true });
+  const temporaryPath = `${coachReviewStorePath}.${process.pid}.${Date.now()}.tmp`;
+  const previousPath = `${coachReviewStorePath}.previous`;
+  await writeFile(temporaryPath, `${JSON.stringify(store)}\n`, "utf8");
+  await rm(previousPath, { force: true });
+  const hadExisting = Boolean(await stat(coachReviewStorePath).catch(() => null));
+  if (hadExisting) await rename(coachReviewStorePath, previousPath);
+  try {
+    await rename(temporaryPath, coachReviewStorePath);
+    await rm(previousPath, { force: true });
+  } catch (error) {
+    await rm(temporaryPath, { force: true }).catch(() => {});
+    if (hadExisting && !(await stat(coachReviewStorePath).catch(() => null))) {
+      await rename(previousPath, coachReviewStorePath).catch(() => {});
+    }
+    throw error;
+  }
 }
 
 function readLichessCredential(response) {

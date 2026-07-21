@@ -110,9 +110,13 @@ import {
   getWebCoachContextKey,
   getWebCoachLineContextKey,
   getWebCoachMoves,
+  getWebCoachStorageKey,
+  loadSavedWebCoachReview,
   makeWebCoachMovetext,
   persistWebCoachReviewInState,
+  rebaseWebCoachReviewLineContext,
   restoreWebCoachReview,
+  saveWebCoachReview,
   webCoachLineMatchesSourceGame,
   type RestoredWebCoachReview,
   type WebCoachBookPassage,
@@ -466,6 +470,7 @@ export default function WebApp() {
   const [lichessAuthReady, setLichessAuthReady] = useState(false);
   const lichessTokenAtStartup = useRef(lichessToken);
   const saveReady = useRef(false);
+  const coachMigrationStarted = useRef(false);
 
   useEffect(() => {
     void loadWebState()
@@ -504,6 +509,34 @@ export default function WebApp() {
     }, 250);
 
     return () => window.clearTimeout(timeout);
+  }, [loaded, state]);
+
+  useEffect(() => {
+    if (!loaded || coachMigrationStarted.current) return;
+    coachMigrationStarted.current = true;
+    const newestByGame = new Map<string, WebCoachReviewRecord>();
+    const candidates = [
+      state.board.coachReview,
+      ...Object.values(state.gamesByDatabase).flatMap((games) =>
+        games.map((game) => game.coachReview),
+      ),
+    ];
+    for (const review of candidates) {
+      if (!review) continue;
+      const storageKey = getWebCoachStorageKey(review.lineContextKey);
+      const previous = newestByGame.get(storageKey);
+      if (!previous || review.savedAt > previous.savedAt) newestByGame.set(storageKey, review);
+    }
+    if (newestByGame.size === 0) return;
+    void (async () => {
+      for (const [storageKey, review] of newestByGame) {
+        try {
+          await saveWebCoachReview(review, storageKey);
+        } catch (migrationError) {
+          console.error("Could not migrate a saved coach review to the PC.", migrationError);
+        }
+      }
+    })();
   }, [loaded, state]);
 
   useEffect(() => {
@@ -1814,6 +1847,8 @@ function CoachUnderBoardPanel({
   const [savedReviewAt, setSavedReviewAt] = useState<number | null>(
     restoredReview?.savedAt ?? null,
   );
+  const [savedOnPc, setSavedOnPc] = useState(false);
+  const [persistenceError, setPersistenceError] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState<WebChessCoachProgress | null>(null);
@@ -1823,10 +1858,14 @@ function CoachUnderBoardPanel({
   const healthRequestRef = useRef<AbortController | null>(null);
   const coachRequestRef = useRef<AbortController | null>(null);
   const progressTimerRef = useRef<number | null>(null);
+  const savedReviewRef = useRef<RestoredWebCoachReview | null>(restoredReview);
+  const persistReviewRef = useRef(onPersistReview);
+  persistReviewRef.current = onPersistReview;
   const coachContextKey = useMemo(
     () => getWebCoachContextKey(lineContextKey, scope, playerColor, currentFen),
     [currentFen, lineContextKey, playerColor, scope],
   );
+  const coachStorageKey = useMemo(() => getWebCoachStorageKey(lineContextKey), [lineContextKey]);
   const currentCoachContextRef = useRef(coachContextKey);
   currentCoachContextRef.current = coachContextKey;
   const previousCoachContextRef = useRef(coachContextKey);
@@ -1854,12 +1893,17 @@ function CoachUnderBoardPanel({
     return controller;
   }, []);
 
-  const showSavedReview = useCallback((review: RestoredWebCoachReview) => {
+  const showSavedReview = useCallback((review: RestoredWebCoachReview, onPc = false) => {
+    savedReviewRef.current = review;
+    setPlayerColor(review.playerColor);
+    setScope(review.scope);
     setQuestion(review.question);
     setResponse(review.response);
     setResponseContextKey(review.contextKey);
     setResponseLineContextKey(review.lineContextKey);
     setSavedReviewAt(review.savedAt);
+    setSavedOnPc(onPc);
+    setPersistenceError("");
     setActiveCategoryId(review.response.categories[0]?.id ?? null);
   }, []);
 
@@ -1874,6 +1918,7 @@ function CoachUnderBoardPanel({
     setResponseContextKey(null);
     setResponseLineContextKey(null);
     setSavedReviewAt(null);
+    setSavedOnPc(false);
     setActiveCategoryId(null);
     setError("");
     onReviewRunningChange(false);
@@ -1894,6 +1939,52 @@ function CoachUnderBoardPanel({
     const retryId = window.setInterval(loadHealth, 5000);
     return () => window.clearInterval(retryId);
   }, [health?.ok, loadHealth]);
+
+  useEffect(() => {
+    savedReviewRef.current = restoredReview;
+  }, [restoredReview]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadSavedWebCoachReview(coachStorageKey, controller.signal)
+      .then(async (stored) => {
+        if (controller.signal.aborted) return;
+        const rebasedStoredReview = stored
+          ? rebaseWebCoachReviewLineContext(stored, lineContextKey)
+          : null;
+        const remoteReview = restoreWebCoachReview(rebasedStoredReview, {
+          lineContextKey,
+          currentFen,
+        });
+        const localReview = savedReviewRef.current;
+        if (remoteReview && (!localReview || remoteReview.savedAt >= localReview.savedAt)) {
+          persistReviewRef.current(remoteReview);
+          showSavedReview(remoteReview, true);
+          return;
+        }
+        if (localReview) {
+          await saveWebCoachReview(localReview, coachStorageKey);
+          if (!controller.signal.aborted) {
+            setSavedOnPc(true);
+            setPersistenceError("");
+          }
+        }
+      })
+      .catch((loadError) => {
+        if (
+          controller.signal.aborted ||
+          (loadError instanceof DOMException && loadError.name === "AbortError")
+        ) {
+          return;
+        }
+        setPersistenceError(
+          loadError instanceof Error
+            ? loadError.message
+            : "The saved review could not be loaded from the PC.",
+        );
+      });
+    return () => controller.abort();
+  }, [coachStorageKey, currentFen, lineContextKey, showSavedReview]);
 
   useEffect(() => {
     if (previousCoachContextRef.current === coachContextKey) return;
@@ -1988,16 +2079,37 @@ function CoachUnderBoardPanel({
         question: submittedQuestion,
         response: result,
       });
+      let persistedOnPc = false;
+      try {
+        await saveWebCoachReview(savedReview, coachStorageKey);
+        persistedOnPc = true;
+        setPersistenceError("");
+      } catch (saveError) {
+        setPersistenceError(
+          saveError instanceof Error
+            ? `The answer is visible, but the PC could not save it: ${saveError.message}`
+            : "The answer is visible, but the PC could not save it.",
+        );
+      }
       onPersistReview(savedReview);
+      const normalizedSavedReview = restoreWebCoachReview(savedReview, {
+        lineContextKey: submittedLineContextKey,
+        currentFen,
+      });
+      if (normalizedSavedReview) savedReviewRef.current = normalizedSavedReview;
+      if (currentCoachContextRef.current !== submittedContextKey) return;
       setResponse(result);
       setResponseContextKey(submittedContextKey);
       setResponseLineContextKey(submittedLineContextKey);
       setSavedReviewAt(savedReview.savedAt);
+      setSavedOnPc(persistedOnPc);
       setActiveCategoryId(result.categories[0]?.id ?? null);
     } catch (coachError) {
       if (controller.signal.aborted) return;
       setError(coachError instanceof Error ? coachError.message : "The PC coach failed.");
-      if (restoredReview?.contextKey === submittedContextKey) showSavedReview(restoredReview);
+      if (savedReviewRef.current?.contextKey === submittedContextKey) {
+        showSavedReview(savedReviewRef.current, savedOnPc);
+      }
       void loadHealth();
     } finally {
       if (coachRequestRef.current === controller) {
@@ -2051,6 +2163,12 @@ function CoachUnderBoardPanel({
             Stockfish remains available; Coach enables automatically when the PC dependency is
             ready.
           </Text>
+        </Box>
+      ) : null}
+
+      {persistenceError ? (
+        <Box className={classes.coachNotice} data-tone="warning">
+          <Text size="sm">{persistenceError}</Text>
         </Box>
       ) : null}
 
@@ -2142,7 +2260,7 @@ function CoachUnderBoardPanel({
                 variant="light"
                 title={`Saved ${new Date(savedReviewAt).toLocaleString()}`}
               >
-                {sourceGame || fallbackSourceIdentity ? "Saved with game" : "Saved on board"} ·{" "}
+                {savedOnPc ? "Saved on PC" : "Saved on this phone"} ·{" "}
                 {formatWebCoachSavedTime(savedReviewAt)}
               </Badge>
             ) : null}

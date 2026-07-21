@@ -21,7 +21,9 @@ import {
   normalizeCloudCoachEvaluation,
   normalizeChessCoachRequestPayload,
   normalizeLibraryPlan,
+  normalizeSavedWebCoachReview,
   normalizeStructuredCoachReview,
+  normalizeWebCoachReviewStore,
   parseStockfishCoachInfo,
   preserveConfirmedCodexAuthentication,
   probeCodexAuthentication,
@@ -30,6 +32,31 @@ import {
   searchChessBookCorpus,
   writeProcessStdinSafely,
 } from "../chess-coach-service.mjs";
+
+test("saved phone coach reviews are validated against their exact game key", () => {
+  const review = {
+    version: 1,
+    contextKey: "context-a",
+    lineContextKey: "line-a",
+    scope: "whole-game",
+    playerColor: "white",
+    question: "Review my game",
+    response: { overview: "Saved answer", categories: [] },
+    savedAt: 123,
+  };
+  assert.deepEqual(normalizeSavedWebCoachReview(review, "line-a"), review);
+  assert.equal(normalizeSavedWebCoachReview(review, "line-b"), null);
+  assert.equal(normalizeSavedWebCoachReview({ ...review, response: null }, "line-a"), null);
+});
+
+test("saved phone coach store normalization preserves records and repairs missing stores", () => {
+  const entry = { lineContextKey: "line-a", review: { savedAt: 123 } };
+  assert.deepEqual(normalizeWebCoachReviewStore({ version: 1, records: { abc: entry } }), {
+    version: 1,
+    records: { abc: entry },
+  });
+  assert.deepEqual(normalizeWebCoachReviewStore(null), { version: 1, records: {} });
+});
 
 function fakeCodexStatusProcess({ code, output = "", neverExits = false }) {
   const child = new EventEmitter();
@@ -456,6 +483,22 @@ test("PC sweep aborts before a cache miss can start live Stockfish", async () =>
     { name: "AbortError" },
   );
   assert.equal(liveCalls, 0);
+});
+
+test("PC sweep retries a transient live Stockfish transport failure", async () => {
+  let attempts = 0;
+  const result = await collectPcCoachPositionEvaluations({
+    positions: [{ key: "one", fen: "one w - - 0 1" }],
+    queryCloud: async () => null,
+    queryLive: async () => {
+      attempts += 1;
+      if (attempts < 3) throw new Error("fetch failed");
+      return { source: "pc-live", whiteCp: 12 };
+    },
+    liveRetryDelayMs: 0,
+  });
+  assert.equal(attempts, 3);
+  assert.equal(result.evaluations.get("one").whiteCp, 12);
 });
 
 test("cloud scores stay White-relative while live black-to-move scores are flipped", () => {
