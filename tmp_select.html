@@ -1,0 +1,784 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1">
+<script async src="https://cdn.fuseplatform.net/publift/tags/2/3060/fuse.js"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta content="Chess-Results.com is a powerful and dedicated server only for chess-results. The tournament archive of chess-results.com contains more than 40.000 tournaments from around the world." name="description"/>
+<meta content="Chess tournament, Chess, Herzog, Heinz, Heinz Herzog, Swiss-Manager, Chesspairing, chess results, chess championship, European chess championship, FIDE, Chess International, chess calendar, Chess Austria, rating, PGN, chess games"	name="keywords"/>
+<meta content="Dipl.Ing. Heinz Herzog - https://chess-results.com" name="author"/>
+<meta content="Dipl.Ing. Heinz Herzog" name="publisher"/>
+<meta content="Sport" name="page-topic"/>
+<meta content="Webdesign Dipl.Ing. Heinz Herzog - https://chess-results.com" name="copyright"/>
+<style type="text/css"><!-- 
+body { font-size: 11pt; } 
+div.fed { width:37px; }
+.Daten { width:1000px; }
+ --></style><link href="StylesE.css" type="text/css" rel="stylesheet"/><link rel="icon" type="image/x-icon" href="/images/Icon_32x32.png" /><meta http-equiv="content-type" content="text/html; charset=UTF-8"/><title>
+	Chess-Results.com - Partien
+</title></head>
+<body  ONLOAD="initall()">
+<SCRIPT language="JavaScript1.1" type="text/javascript">
+<!--
+var timex;
+function initall(){
+window.status = "Loading pieces...";
+bwk      = new Image(); bwk.src  = "images/pgn/64/WK64.gif";
+bwd      = new Image(); bwd.src  = "images/pgn/64/WD64.gif";
+bwt      = new Image(); bwt.src  = "images/pgn/64/WT64.gif";
+bwl      = new Image(); bwl.src  = "images/pgn/64/WL64.gif";
+bws      = new Image(); bws.src  = "images/pgn/64/WS64.gif";
+bwb      = new Image(); bwb.src  = "images/pgn/64/WB64.gif";
+bsk      = new Image(); bsk.src  = "images/pgn/64/SK64.gif";
+bsd      = new Image(); bsd.src  = "images/pgn/64/SD64.gif";
+bst      = new Image(); bst.src  = "images/pgn/64/ST64.gif";
+bsl      = new Image(); bsl.src  = "images/pgn/64/SL64.gif";
+bss      = new Image(); bss.src  = "images/pgn/64/SS64.gif";
+bsb      = new Image(); bsb.src  = "images/pgn/64/SB64.gif";
+bleer    = new Image(); bleer.src= "images/pgn/fleer.gif";
+window.status = "";
+
+zugNr=0;
+h="";
+brettdrehen=0;
+timer_is_on=0;
+offset=0;
+zuege=new Array(
+"RNBQKBNRPPPPPPPP--------------------------------pppppppprnbqkbnr0"
+,"RNBQKBNRPPPP-PPP------------P-------------------pppppppprnbqkbnr0"
+,"RNBQKBNRPPPP-PPP------------P---------------p---pppp-ppprnbqkbnr0"
+,"RNBQKBNRPPP--PPP-----------PP---------------p---pppp-ppprnbqkbnr0"
+,"RNBQKBNRPPP--PPP-----------PP------p--------p---ppp--ppprnbqkbnr0"
+,"R-BQKBNRPPPN-PPP-----------PP------p--------p---ppp--ppprnbqkbnr0"
+,"R-BQKBNRPPPN-PPP-----------Pp---------------p---ppp--ppprnbqkbnr0"
+,"R-BQKBNRPPP--PPP-----------PN---------------p---ppp--ppprnbqkbnr0"
+,"R-BQKBNRPPP--PPP-----------PN---------------p---pppn-pppr-bqkbnr0"
+,"R-BQKB-RPPP--PPP-----N-----PN---------------p---pppn-pppr-bqkbnr0"
+,"R-BQKB-RPPP--PPP-----N-----PN---------------pn--pppn-pppr-bqkb-r0"
+,"R-BQKB-RPPP--PPP-----N-----P----------------pN--pppn-pppr-bqkb-r0"
+,"R-BQKB-RPPP--PPP-----N-----P----------------pn--ppp--pppr-bqkb-r0"
+,"R-BQK--RPPP--PPP---B-N-----P----------------pn--ppp--pppr-bqkb-r0"
+,"R-BQK--RPPP--PPP---B-N-----P------p---------pn--pp---pppr-bqkb-r0"
+,"R-BQ-RK-PPP--PPP---B-N-----P------p---------pn--pp---pppr-bqkb-r0"
+,"R-BQ-RK-PPP--PPP---B-N-----P------p---------pn--pp--bpppr-bqk--r0"
+,"R-BQ-RK-PPP--PPP---B-N------------P---------pn--pp--bpppr-bqk--r0"
+,"R-BQ-RK-PPP--PPP---B-N------------b---------pn--pp---pppr-bqk--r0"
+,"R--Q-RK-PPP--PPP---B-N------------b---B-----pn--pp---pppr-bqk--r0"
+,"R--Q-RK-PPP--PPP---B-N------------b---B-----pn--pp---pppr-bq-rk-0"
+,"R----RK-PPPQ-PPP---B-N------------b---B-----pn--pp---pppr-bq-rk-0"
+,"R----RK-PPPQ-PPP---B-N----------------B-----pn--pp--bpppr-bq-rk-0"
+,"R----RK-PPP--PPP---B-N-------Q--------B-----pn--pp--bpppr-bq-rk-0"
+,"R----RK-PPP--PPP---B-N-------Q-----n--B-----p---pp--bpppr-bq-rk-0"
+,"R----RK-PPP--PPP---B-N---------Q---n--B-----p---pp--bpppr-bq-rk-0"
+,"R----RK-PPP--PPP---B-N---------Q---n--B-----p--ppp--bpp-r-bq-rk-0"
+,"R----RK-PPP--PPP---B-N---------Q---n--------p--ppp--Bpp-r-bq-rk-0"
+,"R----RK-PPP--PPP---B-N---------Q---n--------p--ppp--qpp-r-b--rk-0"
+,"R----RK-PPP--PPP---B-N------Q------n--------p--ppp--qpp-r-b--rk-0"
+,"R----RK-PPP--PPP---B-N------Q---------------pn-ppp--qpp-r-b--rk-0"
+,"R----RK-PPP--PPP---B-N---------Q------------pn-ppp--qpp-r-b--rk-0"
+,"R----RK-PPP--PPP---B-N---------Q---n--------p--ppp--qpp-r-b--rk-0"
+,"R----RK-PPP--PPP---B-NQ------------n--------p--ppp--qpp-r-b--rk-0"
+,"R----RK-PPP--PPP---B-NQ------------n-----p--p--pp---qpp-r-b--rk-0"
+,"----RRK-PPP--PPP---B-NQ------------n-----p--p--pp---qpp-r-b--rk-0"
+,"----RRK-PPP--PPP---B-NQ------------------p--pn-pp---qpp-r-b--rk-0"
+,"----RRK-PPP--PPP---B--Q----N-------------p--pn-pp---qpp-r-b--rk-0"
+,"----RRK-PPP--PPP---B--Q--q-N-------------p--pn-pp----pp-r-b--rk-0"
+,"----RRK-PPP--PPP-N-B--Q--q---------------p--pn-pp----pp-r-b--rk-0"
+,"----RRK-PPP--PPP-N-B--Q-q----------------p--pn-pp----pp-r-b--rk-0"
+,"----RRK-PPP--PPP-N-B----q-----------Q----p--pn-pp----pp-r-b--rk-0"
+,"----RRK-PPP--PPP-N-B----q-----------Q---bp--pn-pp----pp-r----rk-0"
+,"----RRK-PPP--PPP-N------q-----------Q---Bp--pn-pp----pp-r----rk-0"
+,"----RRK-PPP--PPP-N------------------Q---qp--pn-pp----pp-r----rk-0"
+,"----RRK--PP--PPPPN------------------Q---qp--pn-pp----pp-r----rk-0"
+,"----RRK--PP--PPPPN------------------Q----p--pn-pp----pp-r-q--rk-0"
+,"----RRK--P---PPPPNP-----------------Q----p--pn-pp----pp-r-q--rk-0"
+,"----RRK--P---PPPPNP-----------------Q----p--pn-pp----pp-rq---rk-0"
+,"----RRK--P---PPPP-P--------N--------Q----p--pn-pp----pp-rq---rk-0"
+,"----RRK--P---PPPP-P--------N--------q----p--pn-pp----pp-r----rk-0"
+,"-----RK--P---PPPP-P--------N--------R----p--pn-pp----pp-r----rk-0"
+,"-----RK--P---PPPP-P--------N--------R----p--pn-pp----pp-r-r---k-0"
+,"-----RK--P----PPP-P--------N-P------R----p--pn-pp----pp-r-r---k-0"
+,"-----RK--P----PPP-P--------N-Pn-----R----p--p--pp----pp-r-r---k-0"
+,"-----RK--P----PPP-P--------NRPn----------p--p--pp----pp-r-r---k-0"
+,"-----RK--P----PPP-P--------NRP-----------p--pn-pp----pp-r-r---k-0"
+,"-----RK--P----PPP-P--------N-P------R----p--pn-pp----pp-r-r---k-0"
+,"-----RK--P----PPP-P--------N-Pn-----R----p--p--pp----pp-r-r---k-0"
+,"-----RK--P--R-PPP-P--------N-Pn----------p--p--pp----pp-r-r---k-0"
+,"-----RK--P--R-PPP-P--------N-P-----------p--pn-pp----pp-r-r---k-0"
+,"-----RK--P--R-PPP-P--------N---------P---p--pn-pp----pp-r-r---k-0"
+,"-----RK--P--R-PPP-P--------N---------p---p---n-pp----pp-r-r---k-0"
+,"------K--P--R-PPP-P--------N---------R---p---n-pp----pp-r-r---k-0"
+,"------K--P--R-PPP-P--------N---------R---p---n-pp----pp-r---r-k-0"
+,"------K--P--R-PPP-P--------N--------R----p---n-pp----pp-r---r-k-0"
+,"------K--P--R-PPP-P--------N--------r----p---n-pp----pp-r-----k-0"
+,"------K--P----PPP-P--------N--------R----p---n-pp----pp-r-----k-0"
+,"------K--P----PPP-P--------N--------R----p---n-pp----pp-----r-k-0"
+,"------K--P----PPP-P--------N-------------p---n-pp----pp-----R-k-0"
+,"------K--P----PPP-P--------N-------------p-----pp----pp-----n-k-0"
+,"------K--P----PPP-P----------------------pN----pp----pp-----n-k-0"
+,"------K--P----PPP-P---------------------ppN----p-----pp-----n-k-0"
+,"---------P---KPPP-P---------------------ppN----p-----pp-----n-k-0"
+,"---------P---KPPP-P---------------------ppN----p-----pp-----nk--0"
+,"---------P----PPP-P-K-------------------ppN----p-----pp-----nk--0"
+,"---------P----PPP-P-K-------------------ppNn---p-----pp------k--0"
+,"---------P----PPP-P--------K------------ppNn---p-----pp------k--0"
+,"---------P----PPP-P--------K------------ppNn---p-----pp-----k---0"
+,"---------P----PPP-P----------------K----ppNn---p-----pp-----k---0"
+,"---------P----PPP-P----------------K-n--ppN----p-----pp-----k---0"
+,"---------P----PPP-P----------------K-n--pp-----p-----pp--N--k---0"
+,"---------P----PPP-P-n--------------K----pp-----p-----pp--N--k---0"
+,"---------P----PPP-P-n-------------------ppK----p-----pp--N--k---0"
+,"---------P----nPP-P---------------------ppK----p-----pp--N--k---0"
+,"---------P----nPP-P---------------------pK-----p-----pp--N--k---0"
+,"---------P----nPP-P------------------p--pK-----p------p--N--k---0"
+,"---------P----nPP---------P----------p--pK-----p------p--N--k---0"
+,"---------P----nPP---------P--p----------pK-----p------p--N--k---0"
+,"---------P----nPP------------p----P-----pK-----p------p--N--k---0"
+,"---------P----nPP----p------------P-----pK-----p------p--N--k---0"
+,"---------P----nPP----p------------------pKP----p------p--N--k---0"
+,"---------P---pnPP-----------------------pKP----p------p--N--k---0"
+,"---------P---pnPP-----------------------pK-----p--P---p--N--k---0"
+,"-----q---P----nPP-----------------------pK-----p--P---p--N--k---0"
+,"-----q---P----nPP-----------------------pK-----p------p--NQ-k---0"
+,"-----q---P----nPP-----------------------pK-----p-----kp--NQ-----0"
+,"-----q---P----nPP-----------------------pK-----p-Q---kp--N------0"
+,"-----q---P----nPP-----------------------pK----kp-Q----p--N------0"
+,"-----q---P----nPP-----------------------QK----kp------p--N------0"
+,"---------P---qnPP-----------------------QK----kp------p--N------0"
+,"---------P---qnPP-----------------------Q-----kp--K---p--N------0"
+,"---------P---qnPP---------------------k-Q------p--K---p--N------0"
+,"---------P---qnPP----------------Q----k--------p--K---p--N------0"
+,"---------P---qnPP-------------k--Q-------------p--K---p--N------0"
+,"---------P---qnPP-------------k----------------p--KQ--p--N------0"
+,"---------P---qnPP----------------------k-------p--KQ--p--N------0"
+,"---------P---qnPP------Q---------------k-------p--K---p--N------0"
+,"---------P---q-PP------Q-------n-------k-------p--K---p--N------0"
+,"-------------q-PP------Q-P-----n-------k-------p--K---p--N------0"
+,"---------------PP------Q-P-----n-------k-------pq-K---p--N------0"
+,"---------------PP------Q-P-----n-------k-------pq-----p--NK-----0"
+,"---------------PP------Q-P-----n-------k-q-----p------p--NK-----0"
+,"---------------PP--------P-----n-------k-q-----p---Q--p--NK-----0"
+,"---------------PP--------P-----n-------k-----q-p---Q--p--NK-----0"
+,"---------------PP--------------n-P-----k-----q-p---Q--p--NK-----0"
+,"---------------PP-q------------n-P-----k-------p---Q--p--NK-----0"
+,"---------------PP-q------------n-P-----k--Q----p------p--NK-----0"
+,"---------------Pq--------------n-P-----k--Q----p------p--NK-----0"
+,"---------------Pq--------------n-------k-PQ----p------p--NK-----0"
+,"---------------P-------q-------n-------k-PQ----p------p--NK-----0"
+,"---------------P-------q-------n-------k-PQ----p---N--p---K-----0"
+,"---------------P-------q-------------n-k-PQ----p---N--p---K-----0"
+,"---------------P-------q----------Q--n-k-P-----p---N--p---K-----0"
+,"---------------q------------------Q--n-k-P-----p---N--p---K-----0"
+,"---------------q---------------------Q-k-P-----p---N--p---K-----0"
+,"---------------q---------------------Qpk-P-----p---N------K-----0"
+,"---------------q---------------------Qpk-------p-P-N------K-----0"
+,"--------q----------------------------Qpk-------p-P-N------K-----0"
+,"--------q----------------------------Qpk-----N-p-P--------K-----0"
+,"--------q----------------------k-----Qp------N-p-P--------K-----0"
+,"--------q---------------------Qk------p------N-p-P--------K-----0"
+
+);
+with(document)
+ { for(ix=0;ix<images.length;ix++)
+    if ((images[ix].name!=null) && (images[ix].name=="D0")) offset=ix; 
+    if (offset>0) setstellung(0);
+ }
+}
+function setstellung(zug){
+var bild;
+var hstellung=zuege[zug];
+for(i=1;i<=zuege.length-1;i++)
+   if (document.getElementById("l" + String(i) + "")!=null)  document.getElementById("l" + String(i) + "").style.background ='';
+for(i=0;i<=7;i++)
+ for(j=0;j<=7;j++)
+  { figur=hstellung.charAt(i*8+j);
+    if(figur=="K")     {bild=bwk.src}
+    else if(figur=="Q"){bild=bwd.src}
+    else if(figur=="R"){bild=bwt.src}
+    else if(figur=="B"){bild=bwl.src}
+    else if(figur=="N"){bild=bws.src}
+    else if(figur=="P"){bild=bwb.src}
+    else if(figur=="k"){bild=bsk.src}
+    else if(figur=="q"){bild=bsd.src}
+    else if(figur=="r"){bild=bst.src}
+    else if(figur=="b"){bild=bsl.src}
+    else if(figur=="n"){bild=bss.src}
+    else if(figur=="p"){bild=bsb.src}
+    else                 {bild=bleer.src}
+    k=56-i*8+j;
+    if (brettdrehen==1) k=63-(56-i*8+j);
+    k+=offset;
+    if (document.images[k]!=null) document.images[k].src=bild;
+  }
+  zugNr=zug;
+  if ((zug > 0) && (document.getElementById("l" + String(i) + "")!=null))  document.getElementById("l" + String(zug) + "").style.background ='#dedede';
+}
+function drehen(){
+ brettdrehen=(brettdrehen + 1) % 2;
+ setbeschriftung();
+ setstellung(zugNr)
+}
+function c(zug){
+  setstellung(zug)
+}
+function cx(art){
+  if (art==1) {
+     for(i=zugNr-1;i>=0;i--)
+       if (zuege[i].charAt(64)=="0") {  setstellung(i); break; }
+     }
+  if (art==2) {
+     for(i=zugNr+1;i<=zuege.length-1;i++)
+       if (zuege[i].charAt(64)=="0") {  setstellung(i); break; }
+     }
+  if (art==3) {
+     for(i=zuege.length-1;i>=0;i--)
+       if (zuege[i].charAt(64)=="0") {  setstellung(i); break; }
+     }
+}
+function timedCount(){
+cx(2);
+ if (timer_is_on==1) timex=setTimeout("timedCount()",1000);
+}
+function doTimer(){
+ timer_is_on=(timer_is_on+1) % 2;
+ if (timer_is_on==1) { document.getElementById("auto").value=' stop '; timedCount(); }
+ if (timer_is_on==0) { document.getElementById("auto").value=' autoplay '; clearTimeout(timex); }
+}
+function setbeschriftung(){
+for(i1=1;i1<=8;i1++)
+  { jx=i1; 
+    rx=String.fromCharCode('a'.charCodeAt(0) + i1-1);
+    if (brettdrehen==1) {
+         jx=9-i1;
+         rx=String.fromCharCode('a'.charCodeAt(0) + 8-i1);
+       }
+    if (document.getElementById("Reihe"  + String(i1) + "")!=null) document.getElementById("Reihe" + String(i1) + "").innerHTML=jx;
+    if (document.getElementById("Spalte" + String(i1) + "")!=null) document.getElementById("Spalte" + String(i1) + "").innerHTML=rx;
+   }
+}
+function setname(name){
+  if (document.getElementById("NameD"  + String(currentgameM1) + "")!=null) document.getElementById("NameD" + String(currentgameM1) + "").innerHTML=name;
+}
+function GameSelect(name){
+  for(ix=0;ix<maxgames;ix++)
+  { GameCSS='liD0'; 
+    xname = "GameD" + String(ix); 
+    if (document.getElementById(xname)!=null) 
+       { if (name==xname) 
+            { GameCSS='liD0sel'; 
+              if (document.getElementById(xname).className=='liD0sel') GameCSS='liD0';
+            }
+         document.getElementById(xname).className=GameCSS;
+       }
+  }
+}
+//-->
+</script>
+		
+
+<form method="post" action="./partiesuche.aspx?art=4&amp;lan=1&amp;rd=8&amp;tnr=1025067" id="form1">
+<div class="aspNetHidden">
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="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" />
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+var theForm = document.forms['form1'];
+if (!theForm) {
+    theForm = document.form1;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+
+
+<div class="aspNetHidden">
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="A76FDF19" />
+	<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="/wEdAAedaZS2jumZ3gsKXTOAw9Uxhtw9EEsH8KdQerhnbBNZwgaJSi8S66M3Or/mbx/5o3SHJ+IcPeZG69v+VW6HmmupD1nidbtsxf62vsHH/mrZkwrAjreLNkhwu76f8NqCClYqxMd0PeyYEwj3p740UufOGrHon1tdGZcwgsC8/yTmwr8x7/15kC08JIpgx7fNho4=" />
+</div>
+
+
+<table id="kopfvisible" class="daten" cellspacing="0" cellpadding="0" border="0" width="1000">
+	<tr>
+		<td class="CR0">
+ 
+
+<div id="kopf" style="WIDTH:1000px;HEIGHT:97px;position:relative;background-color:#334166;">
+<div id="Div1" class="daten" style="WIDTH:1000px;HEIGHT:97px;position:relative;">
+ <div id="Div2" style="WIDTH:728px;HEIGHT:97px;left:272px;position:absolute;">
+
+ </div>
+</div>
+
+ <div style="top:0px;left:0px; position:absolute;">
+   <img src="images/chessResults_ENG_1000x90.jpg" id="Image_kopfLogo" alt="Chess-Results Logo" />
+ </div>
+ <div style="top:0px; position:absolute;">
+  <table id="Table3" class="daten" cellspacing="0" cellpadding="0" border="0" width="1000">
+			<tr>
+				<td onclick="DoNav(&#39;Default.aspx&#39;);" onmouseover="this.style.cursor=&#39;pointer&#39;" valign="top" class="CR0" width="261"></td>
+				<td class="CR0" width="10"></td>
+				<td class="CR0" width="729" align="left">
+     
+<div data-fuse="home_header"></div>
+
+    </td>
+			</tr>
+		</table>
+		
+ </div>
+</div>
+
+	 </td>
+	</tr>
+	<tr>
+		<td>
+   
+   </td>
+	</tr>
+	<tr>
+		<td class="CR0">
+	 <div  id="menu0" style="WIDTH: 1000px">
+     <ul class="navlist">
+			<li><div id="l_user" class="userinfo">Logged on: Gast</div></li>
+			<li style="FLOAT: right"><div id="l_uinfo" class="userinfo">Servertime 30.06.2026 12:30:51</div></li>
+     </ul>
+   </div>
+	 </td>
+	</tr>
+	<tr>
+		<td class="CR0">
+	 <div  id="menu0L"  style="WIDTH: 1000px">
+     <ul class="navlist">
+			<li style="FLOAT: right"><a id="h_logout" class="OtherTabs" href="Default.aspx?id=60061" style="display:inline-block;height:12px;">Logout</a></li>
+			<li style="FLOAT: right"><a id="h_login" class="OtherTabs" href="Login.aspx?xx=0" style="display:inline-block;height:12px;">Login</a></li>
+	<li style="FLOAT: right"></li>
+	<li style="FLOAT: right"></li>
+      <li><a id="Hyp_EGY" class="OtherTabs" href="Default.aspx?lan=35" style="display:inline-block;height:12px;">Arabic</a></li>
+      <li><a id="Hyp_ARM" class="OtherTabs" href="Default.aspx?lan=28" style="display:inline-block;height:12px;">ARM</a></li>
+      <li><a id="Hyp_AZE" class="OtherTabs" href="Default.aspx?lan=34" style="display:inline-block;height:12px;">AZE</a></li>
+      <li><a id="Hyp_BIH" class="OtherTabs" href="Default.aspx?lan=15" style="display:inline-block;height:12px;">BIH</a></li>
+      <li><a id="Hyp_BUL" class="OtherTabs" href="Default.aspx?lan=24" style="display:inline-block;height:12px;">BUL</a></li>
+      <li><a id="Hyp_CAT" class="OtherTabs" href="Default.aspx?lan=9" style="display:inline-block;height:12px;">CAT</a></li>
+      <li><a id="Hyp_CHN" class="OtherTabs" href="Default.aspx?lan=33" style="display:inline-block;height:12px;">CHN</a></li>
+      <li><a id="Hyp_CRO" class="OtherTabs" href="Default.aspx?lan=13" style="display:inline-block;height:12px;">CRO</a></li>
+      <li><a id="Hyp_CZE" class="OtherTabs" href="Default.aspx?lan=5" style="display:inline-block;height:12px;">CZE</a></li>
+      <li><a id="Hyp_DEN" class="OtherTabs" href="Default.aspx?lan=32" style="display:inline-block;height:12px;">DEN</a></li>
+      <li><a id="Hyp_ENG" class="SelectedTab" href="Default.aspx?lan=1" style="display:inline-block;height:12px;">ENG</a></li>
+      <li><a id="Hyp_ESP" class="OtherTabs" href="Default.aspx?lan=2" style="display:inline-block;height:12px;">ESP</a></li>
+      <li></li>
+      <li><a id="Hyp_FAI" class="OtherTabs" href="Default.aspx?lan=7" style="display:inline-block;height:12px;">FAI</a></li>
+      <li><a id="Hyp_FIN" class="OtherTabs" href="Default.aspx?lan=18" style="display:inline-block;height:12px;">FIN</a></li>
+      <li><a id="Hyp_FRA" class="OtherTabs" href="Default.aspx?lan=20" style="display:inline-block;height:12px;">FRA</a></li>
+      <li><a id="Hyp_GER" class="OtherTabs" href="Default.aspx?lan=0" style="display:inline-block;height:12px;">GER</a></li>
+      <li><a id="Hyp_GRE" class="OtherTabs" href="Default.aspx?lan=19" style="display:inline-block;height:12px;">GRE</a></li>
+      <li><a id="Hyp_INA" class="OtherTabs" href="Default.aspx?lan=26" style="display:inline-block;height:12px;">INA</a></li>
+      <li></li>
+      <li><a id="Hyp_ITA" class="OtherTabs" href="Default.aspx?lan=16" style="display:inline-block;height:12px;">ITA</a></li>
+      <li><a id="Hyp_JPN" class="OtherTabs" href="Default.aspx?lan=22" style="display:inline-block;height:12px;">JPN</a></li>
+      <li><a id="Hyp_MKD" class="OtherTabs" href="Default.aspx?lan=21" style="display:inline-block;height:12px;">MKD</a></li>
+      <li><a id="Hyp_LTU" class="OtherTabs" href="Default.aspx?lan=30" style="display:inline-block;height:12px;">LTU</a></li>
+      <li><a id="Hyp_NED" class="OtherTabs" href="Default.aspx?lan=17" style="display:inline-block;height:12px;">NED</a></li>
+      <li><a id="Hyp_POL" class="OtherTabs" href="Default.aspx?lan=3" style="display:inline-block;height:12px;">POL</a></li>
+      <li><a id="Hyp_POR" class="OtherTabs" href="Default.aspx?lan=10" style="display:inline-block;height:12px;">POR</a></li>
+      <li><a id="Hyp_ROU" class="OtherTabs" href="Default.aspx?lan=27" style="display:inline-block;height:12px;">ROU</a></li>
+      <li><a id="Hyp_RUS" class="OtherTabs" href="Default.aspx?lan=11" style="display:inline-block;height:12px;">RUS</a></li>
+      <li><a id="Hyp_SRB" class="OtherTabs" href="Default.aspx?lan=14" style="display:inline-block;height:12px;">SRB</a></li>
+      <li><a id="Hyp_SVK" class="OtherTabs" href="Default.aspx?lan=4" style="display:inline-block;height:12px;">SVK</a></li>
+      <li><a id="Hyp_SWE" class="OtherTabs" href="Default.aspx?lan=6" style="display:inline-block;height:12px;">SWE</a></li>
+      <li><a id="Hyp_TUR" class="OtherTabs" href="Default.aspx?lan=8" style="display:inline-block;height:12px;">TUR</a></li>
+      <li><a id="Hyp_UKR" class="OtherTabs" href="Default.aspx?lan=12" style="display:inline-block;height:12px;">UKR</a></li>
+      <li><a id="Hyp_VIE" class="OtherTabs" href="Default.aspx?lan=29" style="display:inline-block;height:12px;">VIE</a></li>
+      <li><a id="Hyp_Font" class="OtherTabs" href="Default.aspx?id=123" style="display:inline-block;height:12px;">FontSize:11pt</a></li>
+     </ul>
+   </div>
+	 </td>
+	</tr>
+	<tr>
+		<td class="CR0">
+	 <div  id="menu1" style="WIDTH: 1000px">
+     <ul class="navlist">
+      <li><a id="H_HOME" class="OtherTabs" href="Default.aspx?lan=1" style="display:inline-block;height:19px;">Home</a></li>
+      <li><a id="H_TurnierDB" class="SelectedTab" href="TurnierDB.aspx?lan=1" style="display:inline-block;height:19px;">Tournament-Database</a></li>
+      <li><a id="H_Meisterschaft" class="OtherTabs" href="meisterschaft.aspx?lan=1&amp;jahr=2025" style="display:inline-block;height:19px;">AUT championship</a></li>
+      <li><a id="H_Fotos" class="OtherTabs" href="Fotos.aspx?lan=1" style="display:inline-block;height:19px;">Pictures</a></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li><a id="H_Forum" class="OtherTabs" href="FAQ.aspx?lan=1" style="display:inline-block;height:19px;">FAQ</a></li>
+      <li><a id="H_Anmeldung" class="OtherTabs" href="AnmeldungSpez.aspx?lan=1&amp;art=1" style="display:inline-block;height:19px;">Online Registration</a></li>
+      <li><a id="H_SM" class="Link" href="https://swiss-manager.at/" target="_blank" style="display:inline-block;height:19px;">Swiss-Manager</a></li>
+      <li><a id="H_OESB" class="Link" href="https://www.chess.at" target="_blank" style="display:inline-block;height:19px;">&Ouml;SB</a></li>
+      <li></li>
+      <li><a id="H_FIDE" class="Link" href="https://www.fide.com" target="_blank" style="display:inline-block;height:19px;">FIDE</a></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+     </ul>
+   </div>
+	 </td>
+	</tr>
+	<tr>
+		<td class="CR0">
+	 <div  id="menu2" style="WIDTH: 1000px">
+ 	  <ul class="navlist">
+			<li></li>
+			<li></li>
+			<li><a id="H_menu2_2" class="OtherTabs" href="turniersuche.aspx?lan=1" style="display:inline-block;height:18px;">Tournament search</a></li>
+			<li><a id="H_menu2_3" class="OtherTabs" href="spielersuche.aspx?lan=1" style="display:inline-block;height:18px;">Player search</a></li>
+			<li><a id="H_menu2_4" class="SelectedTab" href="partiesuche.aspx?lan=1" style="display:inline-block;height:18px;">Game search</a></li>
+			<li></li>
+			<li><a id="H_menu2_6" class="OtherTabs" href="UploadLog.aspx?lan=1" style="display:inline-block;height:18px;">Upload log</a></li>
+			<li><a id="H_menu2_7" class="OtherTabs" href="UploadLogShort.aspx?lan=1" style="display:inline-block;height:18px;">Upload log (short)</a></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+		</ul>
+	 </div>
+	 </td>
+	</tr>
+	<tr>
+		<td class="CR0">
+	 <div id="P_ImpMessage" class="info"></div>
+	 
+	 
+	 
+   </td>
+	</tr>
+	<tr>
+		<td class="CR0">
+  
+
+
+   <div>
+
+<table id="datenxx" cellspacing="0" cellpadding="0" border="0">
+			<tr valign="top">
+				<td width="996" class="CR0grau">
+  <div id="F7" class="F7" style="PADDING:0px 0px 0px 2px;FLOAT:left;MARGIN:0px;WIDTH:996px;">
+    
+
+
+
+
+
+<div style="width:526px;height:574px;position:relative; FLOAT:left; padding:2px;margin: 0px 5px 5px 0px;" >
+<div style="width:512px;height:512px;position:relative; FLOAT:left; PADDING:5px; background:#E978FF" >
+<table border=0 cellpadding=0 cellspacing=0>
+
+<tr>
+<td class="CR0" bgcolor=#F8E1B8><img border=0 NAME=D0 height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+</tr>
+<tr>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+</tr>
+<tr>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+</tr>
+<tr>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+</tr>
+<tr>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+</tr>
+<tr>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+</tr>
+<tr>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+</tr>
+<tr>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#AE823E><img border=0  height=64 width=64></td>
+<td class="CR0" bgcolor=#F8E1B8><img border=0  height=64 width=64></td>
+</tr></table>
+ </div>
+<div style="width:512px;height:48px;position:relative; FLOAT:left;padding:5px;">
+ <center>
+ <input id="auto" TYPE='button' VALUE=' Autoplay ' ONCLICK='doTimer()' >
+ <input TYPE='button' VALUE=' |&lt; ' ONCLICK='c(0)' >
+ <input TYPE='button' VALUE=' &lt;&lt; ' ONKEYPRESS='cx(1)' ONCLICK='cx(1)' >
+ <input TYPE='button' VALUE=' &gt;&gt; ' ONKEYPRESS='cx(2)' ONCLICK='cx(2)' >
+ <input TYPE='button' VALUE=' &gt;| ' ONCLICK='cx(3)'>
+ <input TYPE='button' VALUE=' Brett drehen ' ONCLICK='drehen()' >
+ </center>
+ <p><center>Feldgrösse (Pixel):
+ <a  href=partiesuche.aspx?lan=1&amp;art=36&amp;id=5509045&fsize=42>42<a>
+ <a  href=partiesuche.aspx?lan=1&amp;art=36&amp;id=5509045&fsize=52>52<a>
+ <a class="fett"  href=partiesuche.aspx?lan=1&amp;art=36&amp;id=5509045&fsize=64>64<a>
+ <a  href=partiesuche.aspx?lan=1&amp;art=36&amp;id=5509045&fsize=74>74<a>
+ <a  href=partiesuche.aspx?lan=1&amp;art=36&amp;id=5509045&fsize=84>84<a>
+ </center></p>
+ </div>
+ </div>
+<p><b>Bryant, Harry</b> (1990) - <b>Kodukula, Sameera</b> (1243)<br>2024 UK Chess Challenge Terafinal (Blenheim Palace, Oxfordshire), 13.10.2024</p>
+<p>
+<a class="game0" href="javascript:c(1)" id="l1">1.e4</a> 
+<a class="game0" href="javascript:c(2)" id="l2">e6</a> 
+<a class="game0" href="javascript:c(3)" id="l3">2.d4</a> 
+<a class="game0" href="javascript:c(4)" id="l4">d5</a> 
+<a class="game0" href="javascript:c(5)" id="l5">3.Nd2</a> 
+<a class="game0" href="javascript:c(6)" id="l6">dxe4</a> 
+<a class="game0" href="javascript:c(7)" id="l7">4.Nxe4</a> 
+<a class="game0" href="javascript:c(8)" id="l8">Nd7</a> 
+<a class="game0" href="javascript:c(9)" id="l9">5.Nf3</a> 
+<a class="game0" href="javascript:c(10)" id="l10">Ngf6</a> 
+<a class="game0" href="javascript:c(11)" id="l11">6.Nxf6+</a> 
+<a class="game0" href="javascript:c(12)" id="l12">Nxf6</a> 
+<a class="game0" href="javascript:c(13)" id="l13">7.Bd3</a> 
+<a class="game0" href="javascript:c(14)" id="l14">c5</a> 
+<a class="game0" href="javascript:c(15)" id="l15">8.O-O</a> 
+<a class="game0" href="javascript:c(16)" id="l16">Be7</a> 
+<a class="game0" href="javascript:c(17)" id="l17">9.dxc5</a> 
+<a class="game0" href="javascript:c(18)" id="l18">Bxc5</a> 
+<a class="game0" href="javascript:c(19)" id="l19">10.Bg5</a> 
+<a class="game0" href="javascript:c(20)" id="l20">O-O</a> 
+<a class="game0" href="javascript:c(21)" id="l21">11.Qd2</a> 
+<a class="game0" href="javascript:c(22)" id="l22">Be7</a> 
+<a class="game0" href="javascript:c(23)" id="l23">12.Qf4</a> 
+<a class="game0" href="javascript:c(24)" id="l24">Nd5</a> 
+<a class="game0" href="javascript:c(25)" id="l25">13.Qh4</a> 
+<a class="game0" href="javascript:c(26)" id="l26">h6</a> 
+<a class="game0" href="javascript:c(27)" id="l27">14.Bxe7</a> 
+<a class="game0" href="javascript:c(28)" id="l28">Qxe7</a> 
+<a class="game0" href="javascript:c(29)" id="l29">15.Qe4</a> 
+<a class="game0" href="javascript:c(30)" id="l30">Nf6</a> 
+<a class="game0" href="javascript:c(31)" id="l31">16.Qh4</a> 
+<a class="game0" href="javascript:c(32)" id="l32">Nd5</a> 
+<a class="game0" href="javascript:c(33)" id="l33">17.Qg3</a> 
+<a class="game0" href="javascript:c(34)" id="l34">b6</a> 
+<a class="game0" href="javascript:c(35)" id="l35">18.Rae1</a> 
+<a class="game0" href="javascript:c(36)" id="l36">Nf6</a> 
+<a class="game0" href="javascript:c(37)" id="l37">19.Nd4</a> 
+<a class="game0" href="javascript:c(38)" id="l38">Qb4</a> 
+<a class="game0" href="javascript:c(39)" id="l39">20.Nb3</a> 
+<a class="game0" href="javascript:c(40)" id="l40">Qa4</a> 
+<a class="game0" href="javascript:c(41)" id="l41">21.Qe5</a> 
+<a class="game0" href="javascript:c(42)" id="l42">Ba6</a> 
+<a class="game0" href="javascript:c(43)" id="l43">22.Bxa6</a> 
+<a class="game0" href="javascript:c(44)" id="l44">Qxa6</a> 
+<a class="game0" href="javascript:c(45)" id="l45">23.a3</a> 
+<a class="game0" href="javascript:c(46)" id="l46">Qc8</a> 
+<a class="game0" href="javascript:c(47)" id="l47">24.c3</a> 
+<a class="game0" href="javascript:c(48)" id="l48">Qb8</a> 
+<a class="game0" href="javascript:c(49)" id="l49">25.Nd4</a> 
+<a class="game0" href="javascript:c(50)" id="l50">Qxe5</a> 
+<a class="game0" href="javascript:c(51)" id="l51">26.Rxe5</a> 
+<a class="game0" href="javascript:c(52)" id="l52">Rfc8</a> 
+<a class="game0" href="javascript:c(53)" id="l53">27.f4</a> 
+<a class="game0" href="javascript:c(54)" id="l54">Ng4</a> 
+<a class="game0" href="javascript:c(55)" id="l55">28.Re4</a> 
+<a class="game0" href="javascript:c(56)" id="l56">Nf6</a> 
+<a class="game0" href="javascript:c(57)" id="l57">29.Re5</a> 
+<a class="game0" href="javascript:c(58)" id="l58">Ng4</a> 
+<a class="game0" href="javascript:c(59)" id="l59">30.Re2</a> 
+<a class="game0" href="javascript:c(60)" id="l60">Nf6</a> 
+<a class="game0" href="javascript:c(61)" id="l61">31.f5</a> 
+<a class="game0" href="javascript:c(62)" id="l62">exf5</a> 
+<a class="game0" href="javascript:c(63)" id="l63">32.Rxf5</a> 
+<a class="game0" href="javascript:c(64)" id="l64">Re8</a> 
+<a class="game0" href="javascript:c(65)" id="l65">33.Rfe5</a> 
+<a class="game0" href="javascript:c(66)" id="l66">Rxe5</a> 
+<a class="game0" href="javascript:c(67)" id="l67">34.Rxe5</a> 
+<a class="game0" href="javascript:c(68)" id="l68">Re8</a> 
+<a class="game0" href="javascript:c(69)" id="l69">35.Rxe8+</a> 
+<a class="game0" href="javascript:c(70)" id="l70">Nxe8</a> 
+<a class="game0" href="javascript:c(71)" id="l71">36.Nc6</a> 
+<a class="game0" href="javascript:c(72)" id="l72">a6</a> 
+<a class="game0" href="javascript:c(73)" id="l73">37.Kf2</a> 
+<a class="game0" href="javascript:c(74)" id="l74">Kf8</a> 
+<a class="game0" href="javascript:c(75)" id="l75">38.Ke3</a> 
+<a class="game0" href="javascript:c(76)" id="l76">Nd6</a> 
+<a class="game0" href="javascript:c(77)" id="l77">39.Kd4</a> 
+<a class="game0" href="javascript:c(78)" id="l78">Ke8</a> 
+<a class="game0" href="javascript:c(79)" id="l79">40.Kd5</a> 
+<a class="game0" href="javascript:c(80)" id="l80">Nf5</a> 
+<a class="game0" href="javascript:c(81)" id="l81">41.Nb8</a> 
+<a class="game0" href="javascript:c(82)" id="l82">Ne3+</a> 
+<a class="game0" href="javascript:c(83)" id="l83">42.Kc6</a> 
+<a class="game0" href="javascript:c(84)" id="l84">Nxg2</a> 
+<a class="game0" href="javascript:c(85)" id="l85">43.Kxb6</a> 
+<a class="game0" href="javascript:c(86)" id="l86">f5</a> 
+<a class="game0" href="javascript:c(87)" id="l87">44.c4</a> 
+<a class="game0" href="javascript:c(88)" id="l88">f4</a> 
+<a class="game0" href="javascript:c(89)" id="l89">45.c5</a> 
+<a class="game0" href="javascript:c(90)" id="l90">f3</a> 
+<a class="game0" href="javascript:c(91)" id="l91">46.c6</a> 
+<a class="game0" href="javascript:c(92)" id="l92">f2</a> 
+<a class="game0" href="javascript:c(93)" id="l93">47.c7</a> 
+<a class="game0" href="javascript:c(94)" id="l94">f1=Q</a> 
+<a class="game0" href="javascript:c(95)" id="l95">48.c8=Q+</a> 
+<a class="game0" href="javascript:c(96)" id="l96">Kf7</a> 
+<a class="game0" href="javascript:c(97)" id="l97">49.Qb7+</a> 
+<a class="game0" href="javascript:c(98)" id="l98">Kg6</a> 
+<a class="game0" href="javascript:c(99)" id="l99">50.Qxa6</a> 
+<a class="game0" href="javascript:c(100)" id="l100">Qf2+</a> 
+<a class="game0" href="javascript:c(101)" id="l101">51.Kc7+</a> 
+<a class="game0" href="javascript:c(102)" id="l102">Kg5</a> 
+<a class="game0" href="javascript:c(103)" id="l103">52.Qb5+</a> 
+<a class="game0" href="javascript:c(104)" id="l104">Kg4</a> 
+<a class="game0" href="javascript:c(105)" id="l105">53.Qd7+</a> 
+<a class="game0" href="javascript:c(106)" id="l106">Kh5</a> 
+<a class="game0" href="javascript:c(107)" id="l107">54.Qh3+</a> 
+<a class="game0" href="javascript:c(108)" id="l108">Nh4</a> 
+<a class="game0" href="javascript:c(109)" id="l109">55.b4</a> 
+<a class="game0" href="javascript:c(110)" id="l110">Qa7+</a> 
+<a class="game0" href="javascript:c(111)" id="l111">56.Kc8</a> 
+<a class="game0" href="javascript:c(112)" id="l112">Qb6</a> 
+<a class="game0" href="javascript:c(113)" id="l113">57.Qd7</a> 
+<a class="game0" href="javascript:c(114)" id="l114">Qf6</a> 
+<a class="game0" href="javascript:c(115)" id="l115">58.b5</a> 
+<a class="game0" href="javascript:c(116)" id="l116">Qc3+</a> 
+<a class="game0" href="javascript:c(117)" id="l117">59.Qc6</a> 
+<a class="game0" href="javascript:c(118)" id="l118">Qxa3</a> 
+<a class="game0" href="javascript:c(119)" id="l119">60.b6</a> 
+<a class="game0" href="javascript:c(120)" id="l120">Qh3+</a> 
+<a class="game0" href="javascript:c(121)" id="l121">61.Nd7</a> 
+<a class="game0" href="javascript:c(122)" id="l122">Nf5</a> 
+<a class="game0" href="javascript:c(123)" id="l123">62.Qc5</a> 
+<a class="game0" href="javascript:c(124)" id="l124">Qxh2</a> 
+<a class="game0" href="javascript:c(125)" id="l125">63.Qxf5+</a> 
+<a class="game0" href="javascript:c(126)" id="l126">g5</a> 
+<a class="game0" href="javascript:c(127)" id="l127">64.b7</a> 
+<a class="game0" href="javascript:c(128)" id="l128">Qa2</a> 
+<a class="game0" href="javascript:c(129)" id="l129">65.Nf6+</a> 
+<a class="game0" href="javascript:c(130)" id="l130">Kh4</a> 
+<a class="game0" href="javascript:c(131)" id="l131">66.Qg4#</a> </p>
+<p>1-0</p>
+<p><a class="CRLink" href="http://en.wikipedia.org/wiki/Chess_piece" TARGET="_blank"><small>The chess pieces</small></a><small> created by Colin M.L. Burnett. are distributed under the terms of GFDL & BSD & GPL.</small></p>
+
+
+<div>
+					<table class="Grid" cellspacing="0" rules="all" border="1" id="P1_GridView1" style="border-collapse:collapse;">
+						<tr style="background-color:#FFCC66;">
+							<th scope="col">Game</th><th align="left" scope="col">Board Pairings</th><th scope="col">Res.</th><th scope="col">dbkey</th><th scope="col">Rd</th><th align="left" scope="col">Tournament</th><th scope="col">PGN</th><th scope="col">GameID</th>
+						</tr><tr>
+							<td style="white-space:nowrap;"><a href="javascript:__doPostBack(&#39;ctl00$P1$GridView1&#39;,&#39;Select$0&#39;)">Show</a></td><td style="white-space:nowrap;">Hanache, Kai (2198) - Roychowdhury, Aashita (1601)</td><td style="white-space:nowrap;">1-0</td><td style="white-space:nowrap;">1025067</td><td style="white-space:nowrap;">8</td><td style="white-space:nowrap;">2024 UK Chess Challenge Terafinal</td><td style="white-space:nowrap;">1. e4 c6 2. d4 d5 3. e5 Bf5 4.</td><td style="white-space:nowrap;">5509043</td>
+						</tr><tr style="background-color:#E8E8E8;">
+							<td style="white-space:nowrap;"><a href="javascript:__doPostBack(&#39;ctl00$P1$GridView1&#39;,&#39;Select$1&#39;)">Show</a></td><td style="white-space:nowrap;">Van Neerven, Yvon (1396) - Lebedev, Lion (2027)</td><td style="white-space:nowrap;">0-1</td><td style="white-space:nowrap;">1025067</td><td style="white-space:nowrap;">8</td><td style="white-space:nowrap;">2024 UK Chess Challenge Terafinal</td><td style="white-space:nowrap;">1. d4 d5 2. Nf3 Nf6 3. Bf4 c5 </td><td style="white-space:nowrap;">5509044</td>
+						</tr><tr>
+							<td style="white-space:nowrap;"><a href="javascript:__doPostBack(&#39;ctl00$P1$GridView1&#39;,&#39;Select$2&#39;)">Show</a></td><td style="white-space:nowrap;">Bryant, Harry (1990) - Kodukula, Sameera (1243)</td><td style="white-space:nowrap;">1-0</td><td style="white-space:nowrap;">1025067</td><td style="white-space:nowrap;">8</td><td style="white-space:nowrap;">2024 UK Chess Challenge Terafinal</td><td style="white-space:nowrap;">1. e4 e6 2. d4 d5 3. Nd2 dxe4 </td><td style="white-space:nowrap;">5509045</td>
+						</tr><tr style="background-color:#E8E8E8;">
+							<td style="white-space:nowrap;"><a href="javascript:__doPostBack(&#39;ctl00$P1$GridView1&#39;,&#39;Select$3&#39;)">Show</a></td><td style="white-space:nowrap;">Fellowes, Billy (2093) - Sasikumar, Srivathsan (1987)</td><td style="white-space:nowrap;">1-0</td><td style="white-space:nowrap;">1025067</td><td style="white-space:nowrap;">8</td><td style="white-space:nowrap;">2024 UK Chess Challenge Terafinal</td><td style="white-space:nowrap;">1. e4 c5 2. Nf3 Nc6 3. Bb5 e6 </td><td style="white-space:nowrap;">5509046</td>
+						</tr><tr>
+							<td style="white-space:nowrap;"><a href="javascript:__doPostBack(&#39;ctl00$P1$GridView1&#39;,&#39;Select$4&#39;)">Show</a></td><td style="white-space:nowrap;">CM Zhao, George (2161) - Johnson, Felix (1918)</td><td style="white-space:nowrap;">1-0</td><td style="white-space:nowrap;">1025067</td><td style="white-space:nowrap;">8</td><td style="white-space:nowrap;">2024 UK Chess Challenge Terafinal</td><td style="white-space:nowrap;">1. d4 d5 2. c4 c6 3. g3 Nf6 4.</td><td style="white-space:nowrap;">5509047</td>
+						</tr><tr style="background-color:#E8E8E8;">
+							<td style="white-space:nowrap;"><a href="javascript:__doPostBack(&#39;ctl00$P1$GridView1&#39;,&#39;Select$5&#39;)">Show</a></td><td style="white-space:nowrap;">Vaidyanathan, Adithya (2091) - WFM Rida, Ruqayyah (2123)</td><td style="white-space:nowrap;">1-0</td><td style="white-space:nowrap;">1025067</td><td style="white-space:nowrap;">8</td><td style="white-space:nowrap;">2024 UK Chess Challenge Terafinal</td><td style="white-space:nowrap;">1. Nf3 Nf6 2. d4 g6 3. c4 Bg7 </td><td style="white-space:nowrap;">5509048</td>
+						</tr>
+					</table>
+				</div>
+    
+
+
+
+
+  </div>
+</td>
+				<td width="6" class="CR0"></td>
+				<td width="300" align="left" class="CR0grau">
+    <div id="F8" style="PADDING: 0px; MARGIN: 0px; visibility: visible;"></div>
+</td>
+			</tr>
+		</table>
+		 
+   </div>
+	 </td>
+	</tr>
+	<tr>
+		<td class="CR0">
+	 
+	 
+	 
+   </td>
+	</tr>
+	<tr>
+		<td class="CR0">
+     <div id="fuss" style="WIDTH: 986px"><a href="Default.aspx?lan=1" target="_blank"><b>Chess-Tournament-Results-Server</b></a><a href="https://swiss-manager.at/author.aspx?lan=1" target="_blank"> &copy; 2006-2026 Heinz Herzog</a>, CMS-Version 28.05.2026 09:15, Node S1<br/><a href="Impressum.aspx?lan=1">Legal details/Terms of use</a></div>
+	 </td>
+	</tr>
+</table>
+
+	
+
+
+
+
+</form>
+
+
+</body>
+</html>

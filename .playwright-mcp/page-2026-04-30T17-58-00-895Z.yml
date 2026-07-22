@@ -1,0 +1,106 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - img [ref=e9]
+        - generic [ref=e10]:
+          - button "File" [ref=e11] [cursor=pointer]:
+            - generic [ref=e13]: File
+          - button "View" [ref=e14] [cursor=pointer]:
+            - generic [ref=e16]: View
+          - button "Help" [ref=e17] [cursor=pointer]:
+            - generic [ref=e19]: Help
+      - generic [ref=e21]:
+        - img "Minimize" [ref=e23]
+        - img "Restore" [ref=e26]
+        - img "Close" [ref=e29]
+  - navigation [ref=e31]:
+    - generic [ref=e33]:
+      - link [ref=e34] [cursor=pointer]:
+        - /url: /
+        - img [ref=e35]
+      - link [ref=e38] [cursor=pointer]:
+        - /url: /accounts
+        - img [ref=e39]
+      - link [ref=e42] [cursor=pointer]:
+        - /url: /files
+        - img [ref=e43]
+      - link [ref=e47] [cursor=pointer]:
+        - /url: /databases
+        - img [ref=e48]
+      - link [ref=e52] [cursor=pointer]:
+        - /url: /engines
+        - img [ref=e53]
+    - link [ref=e58] [cursor=pointer]:
+      - /url: /settings
+      - img [ref=e59]
+  - main [ref=e62]:
+    - generic [ref=e63]:
+      - generic [ref=e67]:
+        - button "New Tab" [ref=e68]:
+          - generic [ref=e70] [cursor=pointer]:
+            - generic [ref=e72]: New Tab
+            - img [ref=e76]
+        - button "New Tab" [ref=e172]:
+          - generic [ref=e174] [cursor=pointer]:
+            - generic [ref=e176]: New Tab
+            - img [ref=e180]
+        - button [active] [ref=e79] [cursor=pointer]:
+          - img [ref=e81]
+      - tabpanel [ref=e183]:
+        - generic [ref=e184]:
+          - generic [ref=e185]:
+            - generic [ref=e187]:
+              - img [ref=e188]
+              - generic [ref=e191]:
+                - paragraph [ref=e192]: Play Chess
+                - paragraph [ref=e193]: Play against an engine or a friend
+              - button "Play" [ref=e194] [cursor=pointer]:
+                - generic [ref=e196]: Play
+            - generic [ref=e198]:
+              - img "Chessboard" [ref=e199]
+              - generic [ref=e201]:
+                - paragraph [ref=e202]: Analysis Board
+                - paragraph [ref=e203]: Analyze a game or position
+              - button "Open" [ref=e204] [cursor=pointer]:
+                - generic [ref=e206]: Open
+            - generic [ref=e208]:
+              - img [ref=e209]
+              - generic [ref=e215]:
+                - paragraph [ref=e216]: New Repertoire
+                - paragraph [ref=e217]: Build and practice your opening repertoire
+              - button "Create" [ref=e218] [cursor=pointer]:
+                - generic [ref=e220]: Create
+            - generic [ref=e222]:
+              - img [ref=e223]
+              - generic [ref=e227]:
+                - paragraph [ref=e228]: Opening Review
+                - paragraph [ref=e229]: Analyze your repertoire and train saved positions with spaced repetition.
+              - button "Open" [ref=e230] [cursor=pointer]:
+                - generic [ref=e232]: Open
+            - generic [ref=e234]:
+              - img [ref=e235]
+              - generic [ref=e237]:
+                - paragraph [ref=e238]: Mistake Review
+                - paragraph [ref=e239]: Scan your games for mistakes and train them with spaced repetition.
+              - button "Open" [ref=e240] [cursor=pointer]:
+                - generic [ref=e242]: Open
+            - generic [ref=e244]:
+              - img [ref=e245]
+              - generic [ref=e248]:
+                - paragraph [ref=e249]: Import Game
+                - paragraph [ref=e250]: Import a game from a PGN
+              - button "Import" [ref=e251] [cursor=pointer]:
+                - generic [ref=e253]: Import
+            - generic [ref=e255]:
+              - img [ref=e256]
+              - generic [ref=e258]:
+                - paragraph [ref=e259]: Puzzles
+                - paragraph [ref=e260]: Train your chess skills
+              - button "Train" [ref=e261] [cursor=pointer]:
+                - generic [ref=e263]: Train
+          - generic [ref=e264]:
+            - paragraph [ref=e265]: Recent Files
+            - generic [ref=e266]:
+              - img [ref=e267]
+              - paragraph [ref=e270]: No files open recently

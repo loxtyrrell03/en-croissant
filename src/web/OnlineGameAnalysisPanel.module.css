@@ -1,0 +1,52 @@
+.shell {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.introIcon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--mantine-primary-color-8) 52%, transparent);
+  color: var(--mantine-primary-color-3);
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.actions :global(.mantine-Button-root) {
+  min-width: 0;
+}
+
+.gameList {
+  display: grid;
+  gap: 0.38rem;
+}
+
+.gameCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: center;
+  min-width: 0;
+  padding: 0.52rem 0.58rem;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.gameDetails {
+  min-width: 0;
+}
+
+@media (max-width: 390px) {
+  .actions {
+    grid-template-columns: 1fr;
+  }
+}

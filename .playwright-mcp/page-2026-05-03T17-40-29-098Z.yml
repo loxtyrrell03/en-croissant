@@ -1,0 +1,215 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - img [ref=e9]
+        - generic [ref=e10]:
+          - button "File" [ref=e11] [cursor=pointer]:
+            - generic [ref=e13]: File
+          - button "View" [ref=e14] [cursor=pointer]:
+            - generic [ref=e16]: View
+          - button "Help" [ref=e17] [cursor=pointer]:
+            - generic [ref=e19]: Help
+      - generic [ref=e21]:
+        - img "Minimize" [ref=e23]
+        - img "Restore" [ref=e26]
+        - img "Close" [ref=e29]
+  - navigation [ref=e31]:
+    - generic [ref=e33]:
+      - link [ref=e34] [cursor=pointer]:
+        - /url: /home
+        - img [ref=e35]
+      - link [ref=e39] [cursor=pointer]:
+        - /url: /
+        - img [ref=e40]
+      - link [ref=e43] [cursor=pointer]:
+        - /url: /files
+        - img [ref=e44]
+      - link [ref=e48] [cursor=pointer]:
+        - /url: /databases
+        - img [ref=e49]
+      - link [ref=e53] [cursor=pointer]:
+        - /url: /engines
+        - img [ref=e54]
+    - link [ref=e59] [cursor=pointer]:
+      - /url: /settings
+      - img [ref=e60]
+  - main [ref=e63]:
+    - generic [ref=e185]:
+      - generic [ref=e189]:
+        - button "New Game" [ref=e190]:
+          - generic [ref=e192] [cursor=pointer]:
+            - img [ref=e194]
+            - generic [ref=e198]: New Game
+            - img [ref=e202]
+        - button [ref=e205] [cursor=pointer]:
+          - img [ref=e207]
+      - tabpanel [ref=e209]:
+        - generic [ref=e210]:
+          - generic [ref=e213]:
+            - generic [ref=e214]:
+              - generic:
+                - paragraph
+            - generic [ref=e219]:
+              - generic [ref=e221]:
+                - img [ref=e223]
+                - img
+                - img
+              - separator "Resize board" [ref=e224]
+              - separator "Resize board" [ref=e225]
+              - separator "Resize board" [ref=e226]
+              - separator "Resize board" [ref=e227]
+            - generic [ref=e228]:
+              - generic:
+                - paragraph
+          - separator "Resize board and side panels" [ref=e229]
+          - generic [ref=e231]:
+            - generic [ref=e235]:
+              - generic [ref=e239]:
+                - generic [ref=e240]:
+                  - paragraph [ref=e241]: White
+                  - button [ref=e242] [cursor=pointer]:
+                    - img [ref=e244]
+                  - paragraph [ref=e247]: Black
+                - generic [ref=e249]:
+                  - generic [ref=e250]:
+                    - radiogroup [ref=e251]:
+                      - generic [ref=e253]:
+                        - radio "Human" [checked]
+                        - generic [ref=e256] [cursor=pointer]:
+                          - img [ref=e257]
+                          - generic [ref=e260]: Human
+                      - generic [ref=e261]:
+                        - radio "Trainer"
+                        - generic [ref=e264] [cursor=pointer]:
+                          - img [ref=e265]
+                          - generic [ref=e269]: Trainer
+                      - generic [ref=e270]:
+                        - radio "Engine"
+                        - generic [ref=e273] [cursor=pointer]:
+                          - img [ref=e274]
+                          - generic [ref=e277]: Engine
+                    - textbox [ref=e280]: Player
+                    - separator [ref=e281]:
+                      - generic [ref=e282]: Time Settings
+                    - radiogroup [ref=e283]:
+                      - generic [ref=e285]:
+                        - radio "Time" [checked]
+                        - generic [ref=e286] [cursor=pointer]: Time
+                      - generic [ref=e287]:
+                        - radio "Unlimited"
+                        - generic [ref=e288] [cursor=pointer]: Unlimited
+                    - generic [ref=e289]:
+                      - generic [ref=e290]:
+                        - generic [ref=e291]: Time
+                        - generic [ref=e293]:
+                          - textbox [ref=e294]: "3"
+                          - generic [ref=e297]:
+                            - textbox [ref=e298] [cursor=pointer]: m
+                            - generic:
+                              - img
+                      - generic [ref=e299]:
+                        - generic [ref=e300]: Increment
+                        - generic [ref=e302]:
+                          - textbox [ref=e303]: "2"
+                          - generic [ref=e306]:
+                            - textbox [ref=e307] [cursor=pointer]: s
+                            - generic:
+                              - img
+                  - separator [ref=e308]
+                  - generic [ref=e309]:
+                    - radiogroup [ref=e310]:
+                      - generic [ref=e312]:
+                        - radio "Human" [checked]
+                        - generic [ref=e315] [cursor=pointer]:
+                          - img [ref=e316]
+                          - generic [ref=e319]: Human
+                      - generic [ref=e320]:
+                        - radio "Trainer"
+                        - generic [ref=e323] [cursor=pointer]:
+                          - img [ref=e324]
+                          - generic [ref=e328]: Trainer
+                      - generic [ref=e329]:
+                        - radio "Engine"
+                        - generic [ref=e332] [cursor=pointer]:
+                          - img [ref=e333]
+                          - generic [ref=e336]: Engine
+                    - textbox [ref=e339]: Player
+                    - separator [ref=e340]:
+                      - generic [ref=e341]: Time Settings
+                    - radiogroup [ref=e342]:
+                      - generic [ref=e344]:
+                        - radio "Time" [checked]
+                        - generic [ref=e345] [cursor=pointer]: Time
+                      - generic [ref=e346]:
+                        - radio "Unlimited"
+                        - generic [ref=e347] [cursor=pointer]: Unlimited
+                    - generic [ref=e348]:
+                      - generic [ref=e349]:
+                        - generic [ref=e350]: Time
+                        - generic [ref=e352]:
+                          - textbox [ref=e353]: "3"
+                          - generic [ref=e356]:
+                            - textbox [ref=e357] [cursor=pointer]: m
+                            - generic:
+                              - img
+                      - generic [ref=e358]:
+                        - generic [ref=e359]: Increment
+                        - generic [ref=e361]:
+                          - textbox [ref=e362]: "2"
+                          - generic [ref=e365]:
+                            - textbox [ref=e366] [cursor=pointer]: s
+                            - generic:
+                              - img
+                - generic [ref=e368]:
+                  - generic [ref=e370]:
+                    - generic [ref=e371]:
+                      - checkbox "Same time control" [checked] [ref=e372]
+                      - img
+                    - generic [ref=e374]: Same time control
+                  - separator [ref=e375]
+                  - generic [ref=e377]:
+                    - generic [ref=e378]:
+                      - checkbox "Enable Opening Book" [ref=e379]
+                      - img
+                    - generic [ref=e381]: Enable Opening Book
+              - separator [ref=e382]
+              - button "Start game" [ref=e383] [cursor=pointer]:
+                - generic [ref=e385]: Start game
+            - separator "Resize right side panels" [ref=e386]
+            - generic [ref=e388]:
+              - generic [ref=e390]:
+                - generic [ref=e394]:
+                  - button [ref=e395] [cursor=pointer]:
+                    - img [ref=e397]
+                  - button [ref=e400] [cursor=pointer]:
+                    - img [ref=e402]
+                  - button [ref=e406] [cursor=pointer]:
+                    - img [ref=e408]
+                  - button [ref=e411] [cursor=pointer]:
+                    - img [ref=e413]
+                  - button [ref=e417] [cursor=pointer]:
+                    - img [ref=e419]
+                - separator [ref=e422]
+                - generic [ref=e424]:
+                  - generic [ref=e425]:
+                    - paragraph
+                    - generic [ref=e426]:
+                      - button [ref=e427] [cursor=pointer]:
+                        - img [ref=e429]
+                      - button [ref=e432] [cursor=pointer]:
+                        - img [ref=e434]
+                      - button [ref=e437] [cursor=pointer]:
+                        - img [ref=e439]
+                      - button [ref=e441] [cursor=pointer]:
+                        - img [ref=e443]
+                  - separator [ref=e448]
+              - generic [ref=e456]:
+                - button [ref=e457] [cursor=pointer]:
+                  - img [ref=e459]
+                - button [ref=e462] [cursor=pointer]:
+                  - img [ref=e464]
+                - button [ref=e466] [cursor=pointer]:
+                  - img [ref=e468]
+                - button [ref=e470] [cursor=pointer]:
+                  - img [ref=e472]

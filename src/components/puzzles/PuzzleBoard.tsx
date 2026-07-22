@@ -1,0 +1,204 @@
+import { Box, Center, Stack, Text } from "@mantine/core";
+import { useElementSize, useForceUpdate } from "@mantine/hooks";
+import { type Move, makeUci, type NormalMove, parseSquare } from "chessops";
+import { chessgroundDests, chessgroundMove } from "chessops/compat";
+import { parseFen } from "chessops/fen";
+import equal from "fast-deep-equal";
+import { useAtomValue } from "jotai";
+import { useContext, useState } from "react";
+import { useStore } from "zustand";
+import { Chessground } from "@/chessground/Chessground";
+import { moveHighlightAtom, showCoordinatesAtom } from "@/state/atoms";
+import classes from "@/styles/Chessboard.module.css";
+import { positionFromFen } from "@/utils/chessops";
+import type { Completion, Puzzle } from "@/utils/puzzles";
+import { getNodeAtPath, treeIteratorMainLine } from "@/utils/treeReducer";
+import PromotionModal from "../boards/PromotionModal";
+import { TreeStateContext } from "../common/TreeStateContext";
+
+function PuzzleBoard({
+  puzzles,
+  currentPuzzle,
+  changeCompletion,
+  blindfoldMode = false,
+  blindfoldHidden = false,
+}: {
+  puzzles: Puzzle[];
+  currentPuzzle: number;
+  changeCompletion: (
+    completion: Exclude<Completion, "incomplete">,
+    options?: { wrongMoves?: number },
+  ) => Promise<void>;
+  blindfoldMode?: boolean;
+  blindfoldHidden?: boolean;
+}) {
+  const store = useContext(TreeStateContext)!;
+  const root = useStore(store, (s) => s.root);
+  const position = useStore(store, (s) => s.position);
+  const moveHighlight = useAtomValue(moveHighlightAtom);
+  const boardShapes = useStore(store, (s) => s.currentNode().shapes);
+  const makeMove = useStore(store, (s) => s.makeMove);
+  const makeMoves = useStore(store, (s) => s.makeMoves);
+  const reset = useForceUpdate();
+
+  const currentNode = getNodeAtPath(root, position);
+
+  let puzzle: Puzzle | null = null;
+  if (puzzles.length > 0) {
+    puzzle = puzzles[currentPuzzle];
+  }
+  const [ended, setEnded] = useState(false);
+
+  const [pos] = positionFromFen(currentNode.fen);
+
+  const treeIter = treeIteratorMainLine(root);
+  treeIter.next();
+  let currentMove = 0;
+  if (puzzle) {
+    for (const { node } of treeIter) {
+      if (node.move && makeUci(node.move) === puzzle.moves[currentMove]) {
+        currentMove++;
+      } else {
+        break;
+      }
+    }
+  }
+  const orientation = puzzle?.fen
+    ? parseFen(puzzle.fen).unwrap().turn === "white"
+      ? "black"
+      : "white"
+    : "white";
+  const [pendingMove, setPendingMove] = useState<NormalMove | null>(null);
+
+  const dests = pos ? chessgroundDests(pos) : new Map();
+  const turn = pos?.turn || "white";
+  const showCoordinates = useAtomValue(showCoordinatesAtom);
+
+  async function checkMove(move: Move) {
+    if (!pos) return;
+    if (!puzzle) return;
+
+    const newPos = pos.clone();
+    const uci = makeUci(move);
+    newPos.play(move);
+
+    if (puzzle.moves[currentMove] === uci || newPos.isCheckmate()) {
+      if (currentMove === puzzle.moves.length - 1) {
+        if (puzzle.completion !== "incorrect") {
+          await changeCompletion("correct");
+        }
+        setEnded(false);
+      }
+      const newMoves = puzzle.moves.slice(currentMove, currentMove + 2);
+      makeMoves({
+        payload: newMoves,
+        mainline: true,
+        changeHeaders: false,
+      });
+    } else {
+      makeMove({
+        payload: move,
+        changePosition: false,
+        changeHeaders: false,
+      });
+      if (!ended) {
+        await changeCompletion("incorrect", { wrongMoves: (puzzle.wrongMoves ?? 0) + 1 });
+      }
+      setEnded(true);
+    }
+    reset();
+  }
+
+  const { ref: parentRef, height: parentHeight } = useElementSize();
+
+  return (
+    <Box w="100%" h="100%" ref={parentRef} style={{ position: "relative" }}>
+      <Box
+        className={classes.chessboard}
+        style={{
+          maxWidth: parentHeight,
+        }}
+      >
+        <PromotionModal
+          pendingMove={pendingMove}
+          cancelMove={() => setPendingMove(null)}
+          confirmMove={async (p) => {
+            if (pendingMove) {
+              await checkMove({ ...pendingMove, promotion: p });
+              setPendingMove(null);
+            }
+          }}
+          turn={turn}
+          orientation={orientation}
+        />
+        <Chessground
+          animation={{
+            enabled: true,
+          }}
+          coordinates={showCoordinates !== "no"}
+          coordinatesOnSquares={showCoordinates === "all"}
+          orientation={orientation}
+          drawable={{
+            enabled: true,
+            visible: true,
+            autoShapes: boardShapes,
+          }}
+          movable={{
+            free: false,
+            color:
+              !blindfoldMode &&
+              puzzle &&
+              equal(position, Array(currentMove).fill(0)) &&
+              (puzzle.completion === "incomplete" || puzzle.completion === "incorrect")
+                ? turn
+                : undefined,
+            dests: dests,
+            events: {
+              after: (orig, dest) => {
+                const from = parseSquare(orig)!;
+                const to = parseSquare(dest)!;
+                const move: NormalMove = { from, to };
+                if (
+                  pos?.board.get(from)?.role === "pawn" &&
+                  ((dest[1] === "8" && turn === "white") || (dest[1] === "1" && turn === "black"))
+                ) {
+                  setPendingMove(move);
+                } else {
+                  checkMove(move);
+                }
+              },
+            },
+          }}
+          lastMove={
+            moveHighlight && currentNode.move ? chessgroundMove(currentNode.move) : undefined
+          }
+          turnColor={turn}
+          fen={currentNode.fen}
+          check={moveHighlight && pos?.isCheck()}
+        />
+      </Box>
+      {blindfoldHidden && (
+        <Center
+          pos="absolute"
+          inset={0}
+          style={{
+            zIndex: 4,
+            background: "var(--mantine-color-dark-8)",
+            color: "var(--mantine-color-gray-0)",
+          }}
+        >
+          <Stack gap={4} align="center">
+            <Text fw={900} size="xl">
+              Board hidden
+            </Text>
+            <Text size="sm" c="dimmed">
+              Solve from memory
+            </Text>
+          </Stack>
+        </Center>
+      )}
+    </Box>
+  );
+}
+
+export default PuzzleBoard;

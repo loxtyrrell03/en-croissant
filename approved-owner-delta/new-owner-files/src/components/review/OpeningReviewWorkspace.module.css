@@ -1,0 +1,147 @@
+﻿.reviewPanelRoot {
+  container-type: inline-size;
+  min-width: 0;
+  min-height: 0;
+}
+
+.reviewPanelRoot :global(.mantine-Button-label),
+.reviewPanelRoot :global(.mantine-Badge-label) {
+  min-width: 0;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.reviewSection {
+  background: color-mix(in srgb, var(--mantine-color-body) 92%, var(--mantine-color-gray-7));
+}
+
+.reviewActionGrid {
+  display: grid;
+  gap: 0.45rem;
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  min-width: 0;
+}
+
+.reviewSplitButton {
+  min-width: 0;
+}
+
+.reviewActionButton {
+  min-height: 2.25rem;
+}
+
+.reviewActionButton :global(.mantine-Button-inner) {
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.reviewActionButton :global(.mantine-Button-label) {
+  flex: 1 1 auto;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.reviewActionButton :global(.mantine-Button-section[data-position="right"]) {
+  flex: 0 0 auto;
+  margin-left: auto;
+  min-width: fit-content;
+}
+
+.reviewActionCountBadge {
+  flex: 0 0 auto;
+  min-width: 2.25rem;
+  padding-inline: 0.6rem;
+}
+
+.reviewActionCountBadge :global(.mantine-Badge-label) {
+  white-space: nowrap;
+}
+
+.reviewBadgeGroup {
+  max-width: 45%;
+}
+
+.reviewDetailValue {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.reviewMovesExpanded {
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.reviewMovesPanel {
+  flex: 0 0 auto;
+  height: clamp(13rem, 30vh, 18rem);
+  min-height: 13rem;
+  background: var(--mantine-color-body);
+}
+
+.reviewMovesPanel :global(.mantine-ScrollArea-viewport) {
+  font-size: var(--mantine-font-size-sm);
+}
+
+.openingStatsPanel {
+  container-type: inline-size;
+  min-width: 0;
+}
+
+.openingStatsFilterChips {
+  min-width: 0;
+}
+
+.openingStatsHoverLabel {
+  cursor: help;
+  width: fit-content;
+}
+
+.openingStatsOpeningList {
+  border-top: 1px solid var(--mantine-color-default-border);
+}
+
+.openingStatsOpeningRow {
+  justify-content: space-between;
+  min-width: 0;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+.openingStatsOpeningMain {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.openingStatsOpeningText {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.openingStatsOpeningActions {
+  flex: 0 0 auto;
+}
+
+@container (max-width: 26rem) {
+  .reviewActionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .reviewBadgeGroup {
+    max-width: 52%;
+  }
+
+  .reviewMovesPanel {
+    height: clamp(12rem, 28vh, 15rem);
+    min-height: 12rem;
+  }
+
+  .openingStatsOpeningRow {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .openingStatsOpeningActions {
+    margin-left: calc(92px + var(--mantine-spacing-xs));
+  }
+}

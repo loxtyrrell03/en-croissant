@@ -1,0 +1,26 @@
+.section {
+  border-bottom: 1px solid var(--mantine-color-default-border);
+  padding: 0.75rem;
+}
+
+.timelineRow {
+  border-left: 3px solid var(--mantine-color-blue-5);
+  border-radius: var(--mantine-radius-sm);
+  padding: 0.55rem 0.65rem;
+  text-align: left;
+  transition: background-color 120ms ease;
+  width: 100%;
+}
+
+.timelineRow:hover {
+  background: var(--mantine-color-default-hover);
+}
+
+.unknownRow {
+  border-left-color: var(--mantine-color-gray-5);
+}
+
+.transitionRow {
+  border-top: 1px solid var(--mantine-color-default-border);
+  padding-top: 0.5rem;
+}

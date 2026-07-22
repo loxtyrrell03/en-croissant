@@ -1,0 +1,878 @@
+{
+  "summary": {
+    "IfanRJ": {
+      "rapid": {
+        "games": 1010,
+        "first_date": "2017-08-12",
+        "last_date": "2026-06-07",
+        "first_rating": 1639,
+        "current": 2610,
+        "peak": 2629,
+        "peak_date": "2026-05-06",
+        "gain": 971,
+        "gain_per_year": 110.11028866612656,
+        "gain_per_game": 0.9623389494549058,
+        "milestones": {
+          "1800": {
+            "date": "2018-06-12",
+            "game": 3,
+            "rating": 1867
+          },
+          "2000": {
+            "date": "2019-09-02",
+            "game": 8,
+            "rating": 2044
+          },
+          "2200": {
+            "date": "2020-04-13",
+            "game": 15,
+            "rating": 2209
+          },
+          "2300": {
+            "date": "2023-04-17",
+            "game": 495,
+            "rating": 2300
+          },
+          "2400": {
+            "date": "2025-07-01",
+            "game": 872,
+            "rating": 2405
+          },
+          "2500": {
+            "date": "2026-04-02",
+            "game": 924,
+            "rating": 2501
+          },
+          "2600": {
+            "date": "2026-04-30",
+            "game": 996,
+            "rating": 2603
+          }
+        },
+        "windows": {
+          "10": {
+            "gain": -9,
+            "from": "2026-05-06",
+            "to": "2026-06-07",
+            "perf": {
+              "games": 10,
+              "score": 7.0,
+              "score_pct": 70.0,
+              "avg_opp": 2442.0,
+              "pr": 2589.1907141178376,
+              "record": "7-0-3"
+            }
+          },
+          "25": {
+            "gain": 30,
+            "from": "2026-04-25",
+            "to": "2026-06-07",
+            "perf": {
+              "games": 25,
+              "score": 17.0,
+              "score_pct": 68.0,
+              "avg_opp": 2480.72,
+              "pr": 2611.663573754532,
+              "record": "16-2-7"
+            }
+          },
+          "50": {
+            "gain": 53,
+            "from": "2026-04-10",
+            "to": "2026-06-07",
+            "perf": {
+              "games": 50,
+              "score": 31.0,
+              "score_pct": 62.0,
+              "avg_opp": 2486.88,
+              "pr": 2571.9232371525777,
+              "record": "28-6-16"
+            }
+          },
+          "100": {
+            "gain": 122,
+            "from": "2026-03-31",
+            "to": "2026-06-07",
+            "perf": {
+              "games": 100,
+              "score": 62.5,
+              "score_pct": 62.5,
+              "avg_opp": 2482.12,
+              "pr": 2570.8594998465423,
+              "record": "55-15-30"
+            }
+          },
+          "200": {
+            "gain": 263,
+            "from": "2025-04-20",
+            "to": "2026-06-07",
+            "perf": {
+              "games": 200,
+              "score": 124.5,
+              "score_pct": 62.25000000000001,
+              "avg_opp": 2424.12,
+              "pr": 2511.008959921027,
+              "record": "113-23-64"
+            }
+          },
+          "500": {
+            "gain": 300,
+            "from": "2023-07-02",
+            "to": "2026-06-07",
+            "perf": {
+              "games": 500,
+              "score": 282.0,
+              "score_pct": 56.39999999999999,
+              "avg_opp": 2348.832,
+              "pr": 2393.549045885902,
+              "record": "254-56-190"
+            }
+          }
+        }
+      },
+      "blitz": {
+        "games": 11130,
+        "first_date": "2015-11-26",
+        "last_date": "2026-06-08",
+        "first_rating": 1593,
+        "current": 2643,
+        "peak": 2681,
+        "peak_date": "2026-06-06",
+        "gain": 1050,
+        "gain_per_year": 99.69100538289935,
+        "gain_per_game": 0.09434809955970887,
+        "milestones": {
+          "1800": {
+            "date": "2018-03-25",
+            "game": 248,
+            "rating": 1801
+          },
+          "2000": {
+            "date": "2018-06-16",
+            "game": 301,
+            "rating": 2004
+          },
+          "2200": {
+            "date": "2019-11-12",
+            "game": 633,
+            "rating": 2204
+          },
+          "2300": {
+            "date": "2021-01-07",
+            "game": 1790,
+            "rating": 2302
+          },
+          "2400": {
+            "date": "2021-03-11",
+            "game": 2219,
+            "rating": 2404
+          },
+          "2500": {
+            "date": "2023-11-25",
+            "game": 5665,
+            "rating": 2503
+          },
+          "2600": {
+            "date": "2025-03-26",
+            "game": 8107,
+            "rating": 2603
+          }
+        },
+        "windows": {
+          "10": {
+            "gain": 21,
+            "from": "2026-06-08",
+            "to": "2026-06-08",
+            "perf": {
+              "games": 10,
+              "score": 6.5,
+              "score_pct": 65.0,
+              "avg_opp": 2621.3,
+              "pr": 2728.838124917032,
+              "record": "6-1-3"
+            }
+          },
+          "25": {
+            "gain": 37,
+            "from": "2026-06-08",
+            "to": "2026-06-08",
+            "perf": {
+              "games": 25,
+              "score": 14.5,
+              "score_pct": 57.99999999999999,
+              "avg_opp": 2617.04,
+              "pr": 2673.111481266015,
+              "record": "13-3-9"
+            }
+          },
+          "50": {
+            "gain": -30,
+            "from": "2026-06-06",
+            "to": "2026-06-08",
+            "perf": {
+              "games": 50,
+              "score": 24.5,
+              "score_pct": 49.0,
+              "avg_opp": 2617.66,
+              "pr": 2610.710361572231,
+              "record": "22-5-23"
+            }
+          },
+          "100": {
+            "gain": 65,
+            "from": "2026-05-25",
+            "to": "2026-06-08",
+            "perf": {
+              "games": 100,
+              "score": 56.0,
+              "score_pct": 56.00000000000001,
+              "avg_opp": 2602.01,
+              "pr": 2643.9041402080056,
+              "record": "53-6-41"
+            }
+          },
+          "200": {
+            "gain": 212,
+            "from": "2026-05-11",
+            "to": "2026-06-08",
+            "perf": {
+              "games": 200,
+              "score": 116.5,
+              "score_pct": 58.25,
+              "avg_opp": 2556.965,
+              "pr": 2614.8207799513743,
+              "record": "111-11-78"
+            }
+          },
+          "500": {
+            "gain": 159,
+            "from": "2026-03-18",
+            "to": "2026-06-08",
+            "perf": {
+              "games": 500,
+              "score": 267.5,
+              "score_pct": 53.5,
+              "avg_opp": 2520.256,
+              "pr": 2544.61633165251,
+              "record": "247-41-212"
+            }
+          }
+        }
+      }
+    },
+    "loxi-ty": {
+      "rapid": {
+        "games": 666,
+        "first_date": "2020-09-24",
+        "last_date": "2026-06-08",
+        "first_rating": 1732,
+        "current": 2401,
+        "peak": 2401,
+        "peak_date": "2026-06-08",
+        "gain": 669,
+        "gain_per_year": 117.31217485682348,
+        "gain_per_game": 1.006015037593985,
+        "milestones": {
+          "1800": {
+            "date": "2023-03-26",
+            "game": 101,
+            "rating": 1806
+          },
+          "2000": {
+            "date": "2023-12-19",
+            "game": 179,
+            "rating": 2007
+          },
+          "2200": {
+            "date": "2025-06-25",
+            "game": 314,
+            "rating": 2201
+          },
+          "2300": {
+            "date": "2025-10-23",
+            "game": 530,
+            "rating": 2304
+          },
+          "2400": {
+            "date": "2026-06-08",
+            "game": 666,
+            "rating": 2401
+          }
+        },
+        "windows": {
+          "10": {
+            "gain": 40,
+            "from": "2026-06-08",
+            "to": "2026-06-08",
+            "perf": {
+              "games": 10,
+              "score": 7.0,
+              "score_pct": 70.0,
+              "avg_opp": 2375.9,
+              "pr": 2523.0907141178377,
+              "record": "7-0-3"
+            }
+          },
+          "25": {
+            "gain": 99,
+            "from": "2026-06-07",
+            "to": "2026-06-08",
+            "perf": {
+              "games": 25,
+              "score": 19.0,
+              "score_pct": 76.0,
+              "avg_opp": 2352.6,
+              "pr": 2552.840940227674,
+              "record": "19-0-6"
+            }
+          },
+          "50": {
+            "gain": 101,
+            "from": "2026-05-16",
+            "to": "2026-06-08",
+            "perf": {
+              "games": 50,
+              "score": 30.5,
+              "score_pct": 61.0,
+              "avg_opp": 2324.78,
+              "pr": 2402.486091193707,
+              "record": "29-3-18"
+            }
+          },
+          "100": {
+            "gain": 78,
+            "from": "2025-12-01",
+            "to": "2026-06-08",
+            "perf": {
+              "games": 100,
+              "score": 54.0,
+              "score_pct": 54.0,
+              "avg_opp": 2311.38,
+              "pr": 2339.234371256558,
+              "record": "50-8-42"
+            }
+          },
+          "200": {
+            "gain": 166,
+            "from": "2025-10-16",
+            "to": "2026-06-08",
+            "perf": {
+              "games": 200,
+              "score": 116.0,
+              "score_pct": 57.99999999999999,
+              "avg_opp": 2264.575,
+              "pr": 2320.6464812660147,
+              "record": "105-22-73"
+            }
+          },
+          "500": {
+            "gain": 444,
+            "from": "2023-11-29",
+            "to": "2026-06-08",
+            "perf": {
+              "games": 500,
+              "score": 293.0,
+              "score_pct": 58.599999999999994,
+              "avg_opp": 2169.086,
+              "pr": 2229.4449099588765,
+              "record": "272-42-186"
+            }
+          }
+        }
+      },
+      "blitz": {
+        "games": 2358,
+        "first_date": "2020-10-02",
+        "last_date": "2026-03-24",
+        "first_rating": 1422,
+        "current": 2403,
+        "peak": 2403,
+        "peak_date": "2026-03-24",
+        "gain": 981,
+        "gain_per_year": 179.3032140978566,
+        "gain_per_game": 0.4162070428510819,
+        "milestones": {
+          "1800": {
+            "date": "2024-04-04",
+            "game": 294,
+            "rating": 1800
+          },
+          "2000": {
+            "date": "2025-01-15",
+            "game": 618,
+            "rating": 2006
+          },
+          "2200": {
+            "date": "2025-05-19",
+            "game": 1195,
+            "rating": 2209
+          },
+          "2300": {
+            "date": "2025-10-07",
+            "game": 1619,
+            "rating": 2301
+          },
+          "2400": {
+            "date": "2026-03-24",
+            "game": 2358,
+            "rating": 2403
+          }
+        },
+        "windows": {
+          "10": {
+            "gain": 23,
+            "from": "2026-03-24",
+            "to": "2026-03-24",
+            "perf": {
+              "games": 10,
+              "score": 6.0,
+              "score_pct": 60.0,
+              "avg_opp": 2385.6,
+              "pr": 2456.0365036222724,
+              "record": "6-0-4"
+            }
+          },
+          "25": {
+            "gain": 41,
+            "from": "2026-03-23",
+            "to": "2026-03-24",
+            "perf": {
+              "games": 25,
+              "score": 16.5,
+              "score_pct": 66.0,
+              "avg_opp": 2348.08,
+              "pr": 2463.3060073998454,
+              "record": "16-1-8"
+            }
+          },
+          "50": {
+            "gain": 23,
+            "from": "2026-03-22",
+            "to": "2026-03-24",
+            "perf": {
+              "games": 50,
+              "score": 29.5,
+              "score_pct": 59.0,
+              "avg_opp": 2342.66,
+              "pr": 2405.8872619689632,
+              "record": "28-3-19"
+            }
+          },
+          "100": {
+            "gain": 24,
+            "from": "2026-03-22",
+            "to": "2026-03-24",
+            "perf": {
+              "games": 100,
+              "score": 56.0,
+              "score_pct": 56.00000000000001,
+              "avg_opp": 2330.33,
+              "pr": 2372.2241402080053,
+              "record": "51-10-39"
+            }
+          },
+          "200": {
+            "gain": 91,
+            "from": "2026-02-23",
+            "to": "2026-03-24",
+            "perf": {
+              "games": 200,
+              "score": 111.0,
+              "score_pct": 55.50000000000001,
+              "avg_opp": 2317.01,
+              "pr": 2355.3831888566983,
+              "record": "103-16-81"
+            }
+          },
+          "500": {
+            "gain": 112,
+            "from": "2025-12-10",
+            "to": "2026-03-24",
+            "perf": {
+              "games": 500,
+              "score": 267.0,
+              "score_pct": 53.400000000000006,
+              "avg_opp": 2316.982,
+              "pr": 2340.6441361354223,
+              "record": "249-36-215"
+            }
+          }
+        }
+      }
+    }
+  },
+  "phases": {
+    "ifan_rapid_2300_2400": {
+      "start": {
+        "dt": "2023-04-17 11:54:58+01:00",
+        "end_time": 1681728898,
+        "rating": 2300,
+        "opp_rating": 2149,
+        "score": 1.0,
+        "res": "W",
+        "opp": "bgv81",
+        "color": "white",
+        "time_control": "600",
+        "url": "https://www.chess.com/game/live/75467567977"
+      },
+      "end": {
+        "dt": "2025-07-01 12:09:28+01:00",
+        "end_time": 1751368168,
+        "rating": 2405,
+        "opp_rating": 2375,
+        "score": 1.0,
+        "res": "W",
+        "opp": "MadMaxPayne26",
+        "color": "white",
+        "time_control": "600",
+        "url": "https://www.chess.com/game/live/140206228294"
+      },
+      "games_inclusive": 378,
+      "games_after_start": 377,
+      "days": 806.0100694444444,
+      "perf": {
+        "games": 378,
+        "score": 202.0,
+        "score_pct": 53.43915343915344,
+        "avg_opp": 2295.6666666666665,
+        "pr": 2319.602147319656,
+        "record": "182-40-156"
+      },
+      "avg_opp": 2295.6666666666665,
+      "median_opp": 2298
+    },
+    "ifan_rapid_2400_2600": {
+      "start": {
+        "dt": "2025-07-01 12:09:28+01:00",
+        "end_time": 1751368168,
+        "rating": 2405,
+        "opp_rating": 2375,
+        "score": 1.0,
+        "res": "W",
+        "opp": "MadMaxPayne26",
+        "color": "white",
+        "time_control": "600",
+        "url": "https://www.chess.com/game/live/140206228294"
+      },
+      "end": {
+        "dt": "2026-04-30 17:33:02+01:00",
+        "end_time": 1777566782,
+        "rating": 2603,
+        "opp_rating": 2477,
+        "score": 0.0,
+        "res": "L",
+        "opp": "Saiyan_raised_on_Earth",
+        "color": "black",
+        "time_control": "600",
+        "url": "https://www.chess.com/game/live/168046872668"
+      },
+      "games_inclusive": 125,
+      "games_after_start": 124,
+      "days": 303.22469907407407,
+      "perf": {
+        "games": 125,
+        "score": 79.0,
+        "score_pct": 63.2,
+        "avg_opp": 2473.504,
+        "pr": 2567.451703843547,
+        "record": "70-18-37"
+      },
+      "avg_opp": 2473.504,
+      "median_opp": 2468
+    },
+    "you_rapid_2300_2400": {
+      "start": {
+        "dt": "2025-10-23 19:41:19+01:00",
+        "end_time": 1761244879,
+        "rating": 2304,
+        "opp_rating": 2415,
+        "score": 1.0,
+        "res": "W",
+        "opp": "ahmedradwan12xv",
+        "color": "black",
+        "time_control": "600",
+        "url": "https://www.chess.com/game/live/144647236820"
+      },
+      "end": {
+        "dt": "2026-06-08 19:12:13+01:00",
+        "end_time": 1780942333,
+        "rating": 2401,
+        "opp_rating": 2387,
+        "score": 1.0,
+        "res": "W",
+        "opp": "kaushikkonwar007",
+        "color": "black",
+        "time_control": "600",
+        "url": "https://www.chess.com/game/live/169904823946"
+      },
+      "games_inclusive": 137,
+      "games_after_start": 136,
+      "days": 227.97979166666667,
+      "perf": {
+        "games": 137,
+        "score": 76.0,
+        "score_pct": 55.47445255474452,
+        "avg_opp": 2296.605839416058,
+        "pr": 2334.7993423240678,
+        "record": "70-12-55"
+      },
+      "avg_opp": 2296.605839416058,
+      "median_opp": 2299
+    },
+    "ifan_blitz_2300_2400": {
+      "start": {
+        "dt": "2021-01-07 05:34:19+01:00",
+        "end_time": 1609994059,
+        "rating": 2302,
+        "opp_rating": 2270,
+        "score": 1.0,
+        "res": "W",
+        "opp": "AntunesPeroza",
+        "color": "black",
+        "time_control": "180",
+        "url": "https://www.chess.com/game/live/6165121680"
+      },
+      "end": {
+        "dt": "2021-03-11 17:10:00+01:00",
+        "end_time": 1615479000,
+        "rating": 2404,
+        "opp_rating": 2292,
+        "score": 1.0,
+        "res": "W",
+        "opp": "bulut_ilbilgi",
+        "color": "white",
+        "time_control": "180",
+        "url": "https://www.chess.com/game/live/9217587811"
+      },
+      "games_inclusive": 430,
+      "games_after_start": 429,
+      "days": 63.48311342592593,
+      "perf": {
+        "games": 430,
+        "score": 228.0,
+        "score_pct": 53.02325581395348,
+        "avg_opp": 2249.020930232558,
+        "pr": 2270.0543212540897,
+        "record": "214-28-188"
+      },
+      "avg_opp": 2249.020930232558,
+      "median_opp": 2256
+    },
+    "you_blitz_2300_2400": {
+      "start": {
+        "dt": "2025-10-07 20:08:57+01:00",
+        "end_time": 1759864137,
+        "rating": 2301,
+        "opp_rating": 2174,
+        "score": 1.0,
+        "res": "W",
+        "opp": "rolllerss",
+        "color": "black",
+        "time_control": "180",
+        "url": "https://www.chess.com/game/live/144021441720"
+      },
+      "end": {
+        "dt": "2026-03-24 02:52:06+01:00",
+        "end_time": 1774317126,
+        "rating": 2403,
+        "opp_rating": 2407,
+        "score": 1.0,
+        "res": "W",
+        "opp": "yordan_asenov86",
+        "color": "black",
+        "time_control": "180",
+        "url": "https://www.chess.com/game/live/166348848308"
+      },
+      "games_inclusive": 740,
+      "games_after_start": 739,
+      "days": 167.2799652777778,
+      "perf": {
+        "games": 740,
+        "score": 390.0,
+        "score_pct": 52.702702702702695,
+        "avg_opp": 2309.772972972973,
+        "pr": 2328.5715980434625,
+        "record": "365-50-325"
+      },
+      "avg_opp": 2309.772972972973,
+      "median_opp": 2309
+    }
+  },
+  "volume": [
+    {
+      "month": "2024-06",
+      "rapid": 1,
+      "blitz": 22,
+      "bullet": 10,
+      "daily": 0
+    },
+    {
+      "month": "2024-07",
+      "rapid": 0,
+      "blitz": 3,
+      "bullet": 1,
+      "daily": 0
+    },
+    {
+      "month": "2024-08",
+      "rapid": 0,
+      "blitz": 0,
+      "bullet": 0,
+      "daily": 0
+    },
+    {
+      "month": "2024-09",
+      "rapid": 0,
+      "blitz": 32,
+      "bullet": 0,
+      "daily": 0
+    },
+    {
+      "month": "2024-10",
+      "rapid": 0,
+      "blitz": 0,
+      "bullet": 0,
+      "daily": 1
+    },
+    {
+      "month": "2024-11",
+      "rapid": 3,
+      "blitz": 22,
+      "bullet": 26,
+      "daily": 0
+    },
+    {
+      "month": "2024-12",
+      "rapid": 3,
+      "blitz": 63,
+      "bullet": 0,
+      "daily": 0
+    },
+    {
+      "month": "2025-01",
+      "rapid": 2,
+      "blitz": 49,
+      "bullet": 46,
+      "daily": 0
+    },
+    {
+      "month": "2025-02",
+      "rapid": 10,
+      "blitz": 81,
+      "bullet": 53,
+      "daily": 1
+    },
+    {
+      "month": "2025-03",
+      "rapid": 15,
+      "blitz": 41,
+      "bullet": 57,
+      "daily": 1
+    },
+    {
+      "month": "2025-04",
+      "rapid": 44,
+      "blitz": 270,
+      "bullet": 57,
+      "daily": 2
+    },
+    {
+      "month": "2025-05",
+      "rapid": 13,
+      "blitz": 184,
+      "bullet": 2,
+      "daily": 2
+    },
+    {
+      "month": "2025-06",
+      "rapid": 41,
+      "blitz": 2,
+      "bullet": 33,
+      "daily": 1
+    },
+    {
+      "month": "2025-07",
+      "rapid": 7,
+      "blitz": 45,
+      "bullet": 34,
+      "daily": 0
+    },
+    {
+      "month": "2025-08",
+      "rapid": 5,
+      "blitz": 52,
+      "bullet": 0,
+      "daily": 0
+    },
+    {
+      "month": "2025-09",
+      "rapid": 53,
+      "blitz": 222,
+      "bullet": 0,
+      "daily": 0
+    },
+    {
+      "month": "2025-10",
+      "rapid": 156,
+      "blitz": 127,
+      "bullet": 35,
+      "daily": 0
+    },
+    {
+      "month": "2025-11",
+      "rapid": 30,
+      "blitz": 158,
+      "bullet": 0,
+      "daily": 3
+    },
+    {
+      "month": "2025-12",
+      "rapid": 8,
+      "blitz": 178,
+      "bullet": 0,
+      "daily": 0
+    },
+    {
+      "month": "2026-01",
+      "rapid": 18,
+      "blitz": 176,
+      "bullet": 0,
+      "daily": 0
+    },
+    {
+      "month": "2026-02",
+      "rapid": 2,
+      "blitz": 15,
+      "bullet": 0,
+      "daily": 0
+    },
+    {
+      "month": "2026-03",
+      "rapid": 13,
+      "blitz": 187,
+      "bullet": 1,
+      "daily": 0
+    },
+    {
+      "month": "2026-04",
+      "rapid": 8,
+      "blitz": 0,
+      "bullet": 0,
+      "daily": 2
+    },
+    {
+      "month": "2026-05",
+      "rapid": 13,
+      "blitz": 0,
+      "bullet": 0,
+      "daily": 0
+    },
+    {
+      "month": "2026-06",
+      "rapid": 39,
+      "blitz": 0,
+      "bullet": 0,
+      "daily": 0
+    }
+  ]
+}

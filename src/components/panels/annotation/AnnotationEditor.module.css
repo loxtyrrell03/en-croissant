@@ -1,0 +1,34 @@
+.compactEditor {
+  font-size: var(--mantine-font-size-sm);
+}
+
+.compactEditor :global(.mantine-RichTextEditor-toolbar) {
+  gap: 2px;
+  overflow-x: auto;
+  padding: 2px;
+  scrollbar-width: thin;
+}
+
+.compactEditor :global(.mantine-RichTextEditor-controlsGroup) {
+  gap: 0;
+}
+
+.compactEditor :global(.mantine-RichTextEditor-control) {
+  height: 1.35rem;
+  min-width: 1.35rem;
+  width: 1.35rem;
+}
+
+.compactEditor :global(.mantine-RichTextEditor-content .ProseMirror) {
+  min-height: 2.25rem;
+  padding: 0.25rem 0.4rem;
+}
+
+.compactEditor :global(.ProseMirror p) {
+  margin-bottom: 0.25rem;
+  margin-top: 0;
+}
+
+.compactEditor :global(.ProseMirror p:last-child) {
+  margin-bottom: 0;
+}

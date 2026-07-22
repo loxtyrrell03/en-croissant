@@ -1,0 +1,1549 @@
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Checkbox,
+  Divider,
+  Group,
+  NumberInput,
+  Paper,
+  Portal,
+  ScrollArea,
+  SegmentedControl,
+  Stack,
+  Text,
+} from "@mantine/core";
+import { useToggle } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
+import {
+  IconArrowsExchange,
+  IconFileText,
+  IconPlus,
+  IconX,
+  IconZoomCheck,
+} from "@tabler/icons-react";
+import { useLoaderData } from "@tanstack/react-router";
+import { open } from "@tauri-apps/plugin-dialog";
+import type { Piece } from "chessops";
+import { makeUci, parseUci } from "chessops";
+import { INITIAL_FEN } from "chessops/fen";
+import { useAtom, useAtomValue } from "jotai";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { match } from "ts-pattern";
+import { useStore } from "zustand";
+import type { Outcome } from "@/bindings";
+import {
+  commands,
+  type EngineLog,
+  events,
+  type GameConfig,
+  type GameResult,
+  type PlayerConfig,
+} from "@/bindings";
+import type { ChessgroundRef } from "@/chessground/Chessground";
+import {
+  activeTabAtom,
+  blindfoldSavedGamesAtom,
+  currentBlindfoldMarksAtom,
+  currentBlindfoldGameSettingsAtom,
+  currentBlindfoldSessionIdAtom,
+  currentGameIdAtom,
+  currentGameStateAtom,
+  currentTabAtom,
+  currentPlayersAtom,
+  gameInputColorAtom,
+  gameOpeningBookEnabledAtom,
+  gameOpeningBookMaxPlyAtom,
+  gameOpeningBookPathAtom,
+  gamePlayer1SettingsAtom,
+  gamePlayer2SettingsAtom,
+  gameSameTimeControlAtom,
+  tabsAtom,
+} from "@/state/atoms";
+import { getLastMainlinePosition, parsePGN } from "@/utils/chess";
+import { positionFromFen } from "@/utils/chessops";
+import type { GameHeaders, TreeNode } from "@/utils/treeReducer";
+import { unwrap } from "@/utils/unwrap";
+import {
+  addLostTrackComment,
+  blindfoldPathKey,
+  buildBlindfoldSavedGame,
+  canResumeBlindfoldSavedGame,
+  createBlindfoldLostTrackMark,
+  removeLostTrackComment,
+  upsertBlindfoldSavedGame,
+} from "@/utils/blindfoldGameLibrary";
+import {
+  buildPracticeBotOptions,
+  createDefaultBlindfoldHumanOpponent,
+  createDefaultBlindfoldMaiaOpponent,
+  DEFAULT_BLINDFOLD_MAIA_ELO,
+  ensureManagedMaiaEngine,
+  formatPracticeBotName,
+  getPracticeBotGoMode,
+  getPracticeBotMoveDelay,
+  maiaLevelFromElo,
+  preparePracticeBotOpponent,
+  shouldUseClockTimeManagement,
+} from "@/utils/practiceBot";
+import { genID, saveToFile } from "@/utils/tabs";
+import EngineLogsView from "../common/EngineLogsView";
+import FileInput from "../common/FileInput";
+import GameInfo from "../common/GameInfo";
+import GameNotation from "../common/GameNotation";
+import MoveControls from "../common/MoveControls";
+import { ResponsivePanel } from "../common/ResponsivePanel";
+import { TreeStateContext } from "../common/TreeStateContext";
+import Board from "./Board";
+import BoardControls from "./BoardControls";
+import { BlindfoldGamePanel, BlindfoldMaiaSetupPanel } from "./BlindfoldTrainingPanel";
+import { BoardWithAnnotationLayout } from "./BoardWithAnnotationLayout";
+import EditingCard from "./EditingCard";
+import EngineDockedPanel from "./EngineDockedPanel";
+import EvalListener from "./EvalListener";
+import { OpponentForm, type OpponentSettings } from "./OpponentForm";
+
+function gameResultToOutcome(result: GameResult): Outcome {
+  if (result.type === "whiteWins") return "1-0";
+  if (result.type === "blackWins") return "0-1";
+  return "1/2-1/2";
+}
+
+type BackendMove = { uci: string; clock: number | null };
+
+function mapBackendMoves(moves: { uci: string; clock: bigint | null }[]): BackendMove[] {
+  return moves.map((m) => ({
+    uci: m.uci,
+    clock: m.clock !== null ? Number(m.clock) : null,
+  }));
+}
+
+function getMainlineEnd(root: TreeNode): TreeNode {
+  let node = root;
+  while (node.children.length > 0) {
+    node = node.children[0];
+  }
+  return node;
+}
+
+function getHumanPlayerColor(players: {
+  white: OpponentSettings;
+  black: OpponentSettings;
+}): "white" | "black" | null {
+  if (players.white.type === "human" && players.black.type !== "human") return "white";
+  if (players.black.type === "human" && players.white.type !== "human") return "black";
+  return null;
+}
+
+function activeColorFromFen(fen: string): "white" | "black" {
+  return fen.split(/\s+/)[1] === "b" ? "black" : "white";
+}
+
+function BoardGame() {
+  const { t } = useTranslation();
+  const { documentDir } = useLoaderData({ from: "/" });
+  const activeTab = useAtomValue(activeTabAtom);
+
+  const [editingMode, toggleEditingMode] = useToggle();
+  const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
+
+  const [inputColor, setInputColor] = useAtom(gameInputColorAtom);
+  function cycleColor() {
+    setInputColor((prev) =>
+      match(prev)
+        .with("white", () => "black" as const)
+        .with("black", () => "random" as const)
+        .with("random", () => "white" as const)
+        .exhaustive(),
+    );
+  }
+
+  const [player1Settings, setPlayer1Settings] = useAtom(gamePlayer1SettingsAtom);
+  const [player2Settings, setPlayer2Settings] = useAtom(gamePlayer2SettingsAtom);
+
+  function getPlayers() {
+    let isPlayer1White = inputColor === "white";
+
+    if (inputColor === "random") {
+      isPlayer1White = Math.random() > 0.5;
+    }
+
+    return {
+      white: isPlayer1White ? player1Settings : player2Settings,
+      black: isPlayer1White ? player2Settings : player1Settings,
+    };
+  }
+
+  const store = useContext(TreeStateContext)!;
+  const root = useStore(store, (s) => s.root);
+  const currentNode = useStore(store, (s) => s.currentNode());
+  const headers = useStore(store, (s) => s.headers);
+  const setFen = useStore(store, (s) => s.setFen);
+  const setHeaders = useStore(store, (s) => s.setHeaders);
+  const setResult = useStore(store, (s) => s.setResult);
+  const appendMove = useStore(store, (s) => s.appendMove);
+  const resetTree = useStore(store, (s) => s.reset);
+  const goToMove = useStore(store, (s) => s.goToMove);
+  const setState = useStore(store, (s) => s.setState);
+  const setCommentAtPath = useStore(store, (s) => s.setCommentAtPath);
+  const currentPath = useStore(store, (s) => s.position);
+
+  const [, setTabs] = useAtom(tabsAtom);
+  const [currentTab, setCurrentTab] = useAtom(currentTabAtom);
+  const [savedBlindfoldGames, setSavedBlindfoldGames] = useAtom(blindfoldSavedGamesAtom);
+  const [blindfoldSessionId, setBlindfoldSessionId] = useAtom(currentBlindfoldSessionIdAtom);
+  const [blindfoldMarks, setBlindfoldMarks] = useAtom(currentBlindfoldMarksAtom);
+
+  const boardRef = useRef(null);
+  const cgRef = useRef<ChessgroundRef>(null);
+  const maiaAutoPrepareLevelRef = useRef<number | null>(null);
+  const [gameState, setGameState] = useAtom(currentGameStateAtom);
+  const [players, setPlayers] = useAtom(currentPlayersAtom);
+
+  const [whiteTime, setWhiteTime] = useState<number | null>(null);
+  const [blackTime, setBlackTime] = useState<number | null>(null);
+  const [gameId, setGameId] = useAtom(currentGameIdAtom);
+
+  const [logsOpened, toggleLogsOpened] = useToggle();
+  const [logsColor, setLogsColor] = useState<"white" | "black">("white");
+  const [engineLogs, setEngineLogs] = useState<EngineLog[]>([]);
+  const [blindfoldSettings, setBlindfoldSettings] = useAtom(currentBlindfoldGameSettingsAtom);
+  const [blindfoldBoardRevealed, setBlindfoldBoardRevealed] = useState(false);
+  const [openingBookPath, setOpeningBookPath] = useAtom(gameOpeningBookPathAtom);
+  const [openingBookEnabled, setOpeningBookEnabled] = useAtom(gameOpeningBookEnabledAtom);
+  const [openingBookMaxPly, setOpeningBookMaxPly] = useAtom(gameOpeningBookMaxPlyAtom);
+  const [startingGame, setStartingGame] = useState(false);
+  const [blindfoldResumeStartRequest, setBlindfoldResumeStartRequest] = useState(0);
+  const [installingMaia, setInstallingMaia] = useState(false);
+  const [maiaInstallError, setMaiaInstallError] = useState<string | null>(null);
+
+  const hasEngine = players.white.type === "engine" || players.black.type === "engine";
+  const blindfoldActive = blindfoldSettings.enabled;
+  const blindfoldMaiaElo =
+    player2Settings.type === "engine" && player2Settings.botProfile?.kind === "maia"
+      ? maiaLevelFromElo(player2Settings.botProfile.fideElo)
+      : DEFAULT_BLINDFOLD_MAIA_ELO;
+  const blindfoldMaiaWeightsReady =
+    player2Settings.type === "engine" &&
+    Boolean(
+      player2Settings.botProfile?.maiaWeightsPath ||
+      (player2Settings.engineSettings ?? player2Settings.engine?.settings)?.some(
+        (setting) => setting.name === "WeightsFile",
+      ),
+    );
+  const blindfoldMaiaReady =
+    player2Settings.type === "engine" &&
+    Boolean(player2Settings.engine?.path) &&
+    blindfoldMaiaWeightsReady;
+  const mainlineEnd = useMemo(() => getMainlineEnd(root), [root]);
+  const currentLineAtEnd =
+    currentNode.fen === mainlineEnd.fen && currentNode.halfMoves === mainlineEnd.halfMoves;
+  const blindfoldCanHideBoard =
+    blindfoldActive && blindfoldSettings.hideBoard && gameState !== "settingUp";
+  const blindfoldBoardHidden = blindfoldCanHideBoard && !blindfoldBoardRevealed;
+  const humanPlayerColor = getHumanPlayerColor(players);
+  const lastMoveColor =
+    mainlineEnd.move && mainlineEnd.halfMoves > 0
+      ? mainlineEnd.halfMoves % 2 === 1
+        ? "white"
+        : "black"
+      : null;
+  const lastEngineMoveSan =
+    humanPlayerColor && lastMoveColor && lastMoveColor !== humanPlayerColor
+      ? mainlineEnd.san
+      : null;
+
+  const isPlayerVsEngine =
+    (players.white.type === "human" && players.black.type === "engine") ||
+    (players.black.type === "human" && players.white.type === "engine");
+
+  useEffect(() => {
+    if (!blindfoldActive || gameState === "settingUp") return;
+
+    const sessionId = blindfoldSessionId ?? genID();
+    if (!blindfoldSessionId) {
+      setBlindfoldSessionId(sessionId);
+    }
+
+    setSavedBlindfoldGames((current) => {
+      const existing = current.find((game) => game.id === sessionId) ?? null;
+      const snapshot = buildBlindfoldSavedGame({
+        id: sessionId,
+        root,
+        headers,
+        settings: blindfoldSettings,
+        marks: blindfoldMarks,
+        humanColor: humanPlayerColor,
+        existing,
+        now: Date.now(),
+      });
+
+      const unchanged =
+        existing &&
+        existing.pgn === snapshot.pgn &&
+        existing.result === snapshot.result &&
+        existing.white === snapshot.white &&
+        existing.black === snapshot.black &&
+        existing.humanColor === snapshot.humanColor &&
+        JSON.stringify(existing.settings) === JSON.stringify(snapshot.settings) &&
+        JSON.stringify(existing.marks) === JSON.stringify(snapshot.marks);
+
+      return unchanged ? current : upsertBlindfoldSavedGame(current, snapshot);
+    });
+  }, [
+    blindfoldActive,
+    blindfoldMarks,
+    blindfoldSessionId,
+    blindfoldSettings,
+    gameState,
+    headers,
+    humanPlayerColor,
+    root,
+    setBlindfoldSessionId,
+    setSavedBlindfoldGames,
+  ]);
+
+  const fetchEngineLogs = useCallback(async () => {
+    if (!gameId || !hasEngine) return;
+    let color = logsColor;
+    if (players.white.type === "human" && players.black.type === "engine") {
+      color = "black";
+    } else if (players.black.type === "human" && players.white.type === "engine") {
+      color = "white";
+    }
+    const result = await commands.getGameEngineLogs(gameId, color);
+    if (result.status === "ok") {
+      setEngineLogs(result.data);
+    }
+  }, [gameId, logsColor, hasEngine, players.white.type, players.black.type]);
+
+  useEffect(() => {
+    if (logsOpened) {
+      fetchEngineLogs();
+    }
+  }, [logsOpened, fetchEngineLogs]);
+
+  const syncTreeWithMoves = useCallback(
+    (backendMoves: BackendMove[]) => {
+      const treeMoves: string[] = [];
+      let node = root;
+      while (node.children.length > 0) {
+        node = node.children[0];
+        if (node.move) {
+          treeMoves.push(makeUci(node.move));
+        }
+      }
+
+      let needsReset = false;
+      for (let i = 0; i < treeMoves.length; i++) {
+        if (i >= backendMoves.length || treeMoves[i] !== backendMoves[i].uci) {
+          needsReset = true;
+          break;
+        }
+      }
+
+      if (needsReset) {
+        setFen(root.fen);
+        for (const move of backendMoves) {
+          const parsed = parseUci(move.uci);
+          if (parsed) {
+            appendMove({
+              payload: parsed,
+              clock: move.clock !== null ? Number(move.clock) : undefined,
+            });
+          }
+        }
+        return true;
+      }
+
+      if (backendMoves.length > treeMoves.length) {
+        for (let i = treeMoves.length; i < backendMoves.length; i++) {
+          const move = backendMoves[i];
+          const parsed = parseUci(move.uci);
+          if (parsed) {
+            appendMove({
+              payload: parsed,
+              clock: move.clock !== null ? Number(move.clock) : undefined,
+            });
+          }
+        }
+        return true;
+      }
+
+      return false;
+    },
+    [root, setFen, appendMove],
+  );
+
+  function changeToAnalysisMode() {
+    setTabs((prev) =>
+      prev.map((tab) => (tab.value === activeTab ? { ...tab, type: "analysis" } : tab)),
+    );
+  }
+
+  const [pos, error] = useMemo(() => {
+    let node = root;
+    while (node.children.length > 0) {
+      node = node.children[0];
+    }
+    return positionFromFen(node.fen);
+  }, [root]);
+
+  function toPlayerConfig(settings: OpponentSettings): PlayerConfig {
+    if (settings.type === "human") {
+      return {
+        type: "human",
+        name: settings.name ?? "Player",
+      };
+    }
+    const botProfile = settings.botProfile?.enabled ? settings.botProfile : null;
+    const engineSettings = settings.engineSettings ?? settings.engine?.settings ?? [];
+    return {
+      type: "engine",
+      name: botProfile
+        ? formatPracticeBotName(botProfile, settings.timeControl)
+        : (settings.engine?.name ?? "Engine"),
+      path: settings.engine?.path ?? "",
+      options: buildPracticeBotOptions(engineSettings, botProfile, settings.timeControl),
+      go: getPracticeBotGoMode(botProfile, settings.go),
+      useClockTimeManagement: shouldUseClockTimeManagement(botProfile),
+      moveDelay: getPracticeBotMoveDelay(botProfile, settings.timeControl),
+    };
+  }
+
+  function getTreeMoves(): string[] {
+    const moves: string[] = [];
+    let node = root;
+    while (node.children.length > 0) {
+      node = node.children[0];
+      if (node.move) {
+        moves.push(makeUci(node.move));
+      }
+    }
+    return moves;
+  }
+
+  async function startGame() {
+    const isBlindfoldGame = blindfoldSettings.enabled;
+    const selectedPlayers = getPlayers();
+    const missingEngine = [selectedPlayers.white, selectedPlayers.black].some(
+      (player) => player.type === "engine" && !player.botProfile?.enabled && !player.engine?.path,
+    );
+    if (missingEngine) {
+      console.error("Cannot start game without an engine path");
+      return;
+    }
+
+    setStartingGame(true);
+    try {
+      if (isBlindfoldGame) {
+        setMaiaInstallError(null);
+      }
+
+      const playerSettings = {
+        white: await preparePracticeBotOpponent(selectedPlayers.white),
+        black: await preparePracticeBotOpponent(selectedPlayers.black),
+      };
+
+      const missingPreparedEngine = [playerSettings.white, playerSettings.black].some(
+        (player) => player.type === "engine" && !player.engine?.path,
+      );
+      if (missingPreparedEngine) {
+        console.error("Cannot start game without an engine path");
+        return;
+      }
+
+      setPlayers(playerSettings);
+
+      const newGameId = `${activeTab}-game`;
+      setGameId(newGameId);
+
+      const initialMoves = getTreeMoves();
+
+      const config: GameConfig = {
+        white: toPlayerConfig(playerSettings.white),
+        black: toPlayerConfig(playerSettings.black),
+        whiteTimeControl:
+          !isBlindfoldGame && playerSettings.white.timeControl
+            ? {
+                initialTime: playerSettings.white.timeControl.seconds,
+                increment: playerSettings.white.timeControl.increment ?? 0,
+              }
+            : null,
+        blackTimeControl:
+          !isBlindfoldGame && playerSettings.black.timeControl
+            ? {
+                initialTime: playerSettings.black.timeControl.seconds,
+                increment: playerSettings.black.timeControl.increment ?? 0,
+              }
+            : null,
+        initialFen: root.fen === INITIAL_FEN ? null : root.fen,
+        initialMoves,
+        openingBook:
+          !isBlindfoldGame && openingBookEnabled && openingBookPath
+            ? { path: openingBookPath, maxPly: Math.max(1, openingBookMaxPly) }
+            : null,
+      } as GameConfig;
+
+      const result = await commands.startGame(newGameId, config);
+      const state = unwrap(result);
+
+      setWhiteTime(!isBlindfoldGame && state.whiteTime !== null ? Number(state.whiteTime) : null);
+      setBlackTime(!isBlindfoldGame && state.blackTime !== null ? Number(state.blackTime) : null);
+
+      setGameState("playing");
+      if (isBlindfoldGame) {
+        setBlindfoldSessionId(blindfoldSessionId ?? genID());
+        setBlindfoldBoardRevealed(false);
+      }
+
+      setFen(state.initialFen);
+      for (const move of mapBackendMoves(state.moves)) {
+        const parsed = parseUci(move.uci);
+        if (parsed) {
+          appendMove({
+            payload: parsed,
+            clock: move.clock ?? undefined,
+          });
+        }
+      }
+
+      const now = new Date();
+      const dateStr = now.toISOString().slice(0, 10).replace(/-/g, ".");
+      const timeStr = now.toISOString().slice(11, 19);
+
+      const whiteIsEngine = playerSettings.white.type === "engine";
+      const blackIsEngine = playerSettings.black.type === "engine";
+      let eventStr = "Casual Game";
+      if (isBlindfoldGame) {
+        eventStr = "Blindfold";
+      } else if (whiteIsEngine && blackIsEngine) {
+        eventStr = "Engine Match";
+      } else if (whiteIsEngine || blackIsEngine) {
+        eventStr = "Player vs Engine";
+      } else {
+        eventStr = "Player Match";
+      }
+
+      const formatTimeControl = (settings: OpponentSettings): string => {
+        if (!settings.timeControl) return "-";
+        const seconds = settings.timeControl.seconds / 1000;
+        const increment = (settings.timeControl.increment ?? 0) / 1000;
+        return increment ? `${seconds}+${increment}` : `${seconds}`;
+      };
+
+      const whiteTimeControl = formatTimeControl(playerSettings.white);
+      const blackTimeControl = formatTimeControl(playerSettings.black);
+      const sameTimeControl = whiteTimeControl === blackTimeControl;
+
+      const newHeaders: Partial<GameHeaders> = {
+        white: state.whitePlayer,
+        black: state.blackPlayer,
+        event: eventStr,
+        site: "En Croissant",
+        date: dateStr,
+        time: timeStr,
+        time_control: undefined,
+        white_time_control: undefined,
+        black_time_control: undefined,
+      };
+
+      if (!isBlindfoldGame && sameTimeControl) {
+        if (whiteTimeControl !== "-") {
+          newHeaders.time_control = whiteTimeControl;
+        }
+      } else if (!isBlindfoldGame) {
+        newHeaders.white_time_control = whiteTimeControl;
+        newHeaders.black_time_control = blackTimeControl;
+      }
+
+      setHeaders({
+        ...headers,
+        ...newHeaders,
+        fen: state.initialFen,
+      });
+
+      setTabs((prev) =>
+        prev.map((tab) =>
+          tab.value === activeTab
+            ? { ...tab, name: `${state.whitePlayer} vs. ${state.blackPlayer}` }
+            : tab,
+        ),
+      );
+    } catch (err) {
+      console.error("Failed to start game:", err);
+      notifications.show({
+        color: "red",
+        title: "Could not start trainer",
+        message: err instanceof Error ? err.message : String(err),
+      });
+    } finally {
+      setStartingGame(false);
+    }
+  }
+
+  const startGameRef = useRef(startGame);
+  startGameRef.current = startGame;
+
+  const handleHumanMove = useCallback(
+    async (uci: string) => {
+      if (!gameId || gameState !== "playing") return;
+
+      try {
+        await commands.makeGameMove(gameId, uci);
+      } catch (err) {
+        console.error("Failed to make move:", err);
+      }
+    },
+    [gameId, gameState],
+  );
+
+  const handleBlindfoldMove = useCallback(
+    async (uci: string) => {
+      await handleHumanMove(uci);
+    },
+    [handleHumanMove],
+  );
+
+  const loadBlindfoldFen = useCallback(
+    (fen: string) => {
+      const [loadedPosition, loadError] = positionFromFen(fen);
+      if (!loadedPosition || loadError) return false;
+
+      const sideToMove = activeColorFromFen(fen);
+      setGameId(null);
+      setGameState("settingUp");
+      setWhiteTime(null);
+      setBlackTime(null);
+      setBlindfoldBoardRevealed(false);
+      setBlindfoldSessionId(null);
+      setBlindfoldMarks([]);
+      setFen(fen);
+      setHeaders({
+        ...headers,
+        event: headers.event || "Blindfold",
+        fen,
+        orientation: sideToMove,
+        result: "*",
+      });
+      setInputColor(sideToMove);
+      setBlindfoldSettings((current) => ({
+        ...current,
+        enabled: true,
+      }));
+      return true;
+    },
+    [
+      headers,
+      setBlackTime,
+      setBlindfoldMarks,
+      setBlindfoldSessionId,
+      setBlindfoldSettings,
+      setFen,
+      setGameId,
+      setGameState,
+      setHeaders,
+      setInputColor,
+      setWhiteTime,
+    ],
+  );
+
+  const handleToggleLostTrack = useCallback(() => {
+    const path = [...currentPath];
+    const pathKey = blindfoldPathKey(path);
+    const existing = blindfoldMarks.find((mark) => blindfoldPathKey(mark.path) === pathKey);
+
+    if (existing) {
+      setBlindfoldMarks((current) =>
+        current.filter((mark) => blindfoldPathKey(mark.path) !== pathKey),
+      );
+      setCommentAtPath(path, removeLostTrackComment(currentNode.comment));
+      return;
+    }
+
+    const mark = createBlindfoldLostTrackMark({
+      id: genID(),
+      root,
+      path,
+      now: Date.now(),
+    });
+    if (!mark) return;
+
+    setBlindfoldMarks((current) => [...current, mark]);
+    setCommentAtPath(path, addLostTrackComment(currentNode.comment));
+  }, [blindfoldMarks, currentNode.comment, currentPath, root, setBlindfoldMarks, setCommentAtPath]);
+
+  const handleGoToBlindfoldMark = useCallback((path: number[]) => goToMove(path), [goToMove]);
+
+  const handlePlayBlindfoldFromCurrentPosition = useCallback(async () => {
+    if (gameState === "playing" && gameId) {
+      try {
+        await commands.abortGame(gameId);
+      } catch {
+        // Loading the position still gives the user the requested new setup.
+      }
+    }
+    const loaded = loadBlindfoldFen(currentNode.fen);
+    if (loaded) {
+      notifications.show({
+        title: "Position loaded",
+        message: "Start the game to play this position blindfold against Maia.",
+      });
+    }
+  }, [currentNode.fen, gameId, gameState, loadBlindfoldFen]);
+
+  const handleBlindfoldPlayerColorChange = useCallback(
+    (color: "white" | "black") => {
+      setInputColor(color);
+      setPlayer1Settings((current) =>
+        current.type === "human"
+          ? { ...current, timeControl: undefined }
+          : createDefaultBlindfoldHumanOpponent(),
+      );
+      setPlayer2Settings((current) =>
+        current.type === "engine" && current.botProfile?.kind === "maia"
+          ? { ...current, timeControl: undefined }
+          : createDefaultBlindfoldMaiaOpponent(
+              current.type === "engine" ? current.engine : null,
+              blindfoldMaiaElo,
+            ),
+      );
+    },
+    [blindfoldMaiaElo, setInputColor, setPlayer1Settings, setPlayer2Settings],
+  );
+
+  const handleBlindfoldMaiaEloChange = useCallback(
+    (elo: number) => {
+      const level = maiaLevelFromElo(elo);
+      setMaiaInstallError(null);
+      setPlayer2Settings((current) => {
+        const engine = current.type === "engine" ? current.engine : null;
+        const next = createDefaultBlindfoldMaiaOpponent(engine, level) as Extract<
+          OpponentSettings,
+          { type: "engine" }
+        >;
+        if (current.type !== "engine") return next;
+
+        const keepWeights =
+          current.botProfile?.kind === "maia" &&
+          maiaLevelFromElo(current.botProfile.fideElo) === level
+            ? current.botProfile.maiaWeightsPath
+            : undefined;
+        const currentEngineSettings = current.engineSettings ?? engine?.settings ?? [];
+        const nextEngineSettings = keepWeights
+          ? currentEngineSettings
+          : currentEngineSettings.filter((setting) => setting.name !== "WeightsFile");
+
+        return {
+          ...next,
+          go: current.go,
+          timeControl: undefined,
+          timeUnit: next.timeUnit,
+          incrementUnit: next.incrementUnit,
+          engineSettings: nextEngineSettings,
+          botProfile: {
+            ...next.botProfile!,
+            timeUse: current.botProfile?.timeUse ?? next.botProfile!.timeUse,
+            maiaWeightsPath: keepWeights,
+          },
+        };
+      });
+    },
+    [setPlayer2Settings],
+  );
+
+  const handlePrepareManagedMaia = useCallback(
+    async (showNotification = false) => {
+      const level = maiaLevelFromElo(blindfoldMaiaElo);
+      setInstallingMaia(true);
+      setMaiaInstallError(null);
+      try {
+        const engine = await ensureManagedMaiaEngine(level);
+        const weightsPath = engine.settings?.find(
+          (setting) => setting.name === "WeightsFile",
+        )?.value;
+        setPlayer2Settings((current) => {
+          const next = createDefaultBlindfoldMaiaOpponent(engine, level) as Extract<
+            OpponentSettings,
+            { type: "engine" }
+          >;
+          return {
+            ...next,
+            go: current.type === "engine" ? current.go : next.go,
+            timeControl: undefined,
+            timeUnit: next.timeUnit,
+            incrementUnit: next.incrementUnit,
+            botProfile: {
+              ...next.botProfile!,
+              timeUse:
+                current.type === "engine"
+                  ? (current.botProfile?.timeUse ?? next.botProfile!.timeUse)
+                  : next.botProfile!.timeUse,
+              maiaWeightsPath: typeof weightsPath === "string" ? weightsPath : undefined,
+            },
+          };
+        });
+        if (showNotification) {
+          notifications.show({
+            title: "Ready",
+            message: `Maia ${level} is ready.`,
+          });
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setMaiaInstallError(message);
+        if (showNotification) {
+          notifications.show({
+            color: "red",
+            title: "Could not prepare Maia",
+            message,
+          });
+        }
+      } finally {
+        setInstallingMaia(false);
+      }
+    },
+    [blindfoldMaiaElo, setPlayer2Settings],
+  );
+
+  useEffect(() => {
+    if (!blindfoldActive || gameState !== "settingUp") return;
+    if (blindfoldMaiaReady || installingMaia) return;
+    if (maiaAutoPrepareLevelRef.current === blindfoldMaiaElo) return;
+
+    maiaAutoPrepareLevelRef.current = blindfoldMaiaElo;
+    void handlePrepareManagedMaia(false);
+  }, [
+    blindfoldActive,
+    blindfoldMaiaElo,
+    blindfoldMaiaReady,
+    gameState,
+    handlePrepareManagedMaia,
+    installingMaia,
+  ]);
+
+  const handleSaveBlindfoldGameToFile = useCallback(async () => {
+    try {
+      const saved = await saveToFile({
+        dir: documentDir,
+        tab: currentTab ?? undefined,
+        setCurrentTab,
+        store,
+        isUserSave: true,
+        forceSaveAs: true,
+      });
+      if (saved) {
+        notifications.show({
+          title: "Blindfold game saved",
+          message: "The current game was exported as a PGN file.",
+        });
+      }
+    } catch (err) {
+      notifications.show({
+        color: "red",
+        title: "Could not save PGN",
+        message: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }, [currentTab, documentDir, setCurrentTab, store]);
+
+  const handleLoadSavedBlindfoldGame = useCallback(
+    async (id: string) => {
+      const savedGame = savedBlindfoldGames.find((game) => game.id === id);
+      if (!savedGame) return;
+
+      try {
+        const treeState = await parsePGN(savedGame.pgn, savedGame.initialFen);
+        treeState.position = getLastMainlinePosition(treeState.root);
+        const resumeNode = getMainlineEnd(treeState.root);
+        const canResume = canResumeBlindfoldSavedGame(savedGame.result, resumeNode.fen);
+        setState(treeState);
+        setBlindfoldSettings({
+          ...savedGame.settings,
+          enabled: true,
+        });
+        setBlindfoldMarks(savedGame.marks);
+        setBlindfoldSessionId(savedGame.id);
+        setGameId(null);
+        setGameState(canResume ? "settingUp" : "gameOver");
+        setBlindfoldResumeStartRequest((current) => (canResume ? current + 1 : current));
+        setWhiteTime(null);
+        setBlackTime(null);
+        setBlindfoldBoardRevealed(false);
+        setInputColor(savedGame.humanColor ?? activeColorFromFen(savedGame.initialFen));
+
+        const humanName =
+          savedGame.humanColor === "black" ? savedGame.black : savedGame.white || "Player";
+        const human = createDefaultBlindfoldHumanOpponent(humanName || "Player");
+        const maia = createDefaultBlindfoldMaiaOpponent(null, DEFAULT_BLINDFOLD_MAIA_ELO);
+        setPlayer1Settings(human);
+        setPlayer2Settings(maia);
+        setPlayers(
+          savedGame.humanColor === "black"
+            ? { white: maia, black: human }
+            : { white: human, black: maia },
+        );
+
+        setCurrentTab((tab) =>
+          tab
+            ? {
+                ...tab,
+                type: "play",
+                name: `Blindfold: ${savedGame.title}`,
+              }
+            : tab,
+        );
+      } catch (err) {
+        notifications.show({
+          color: "red",
+          title: "Could not load blindfold game",
+          message: err instanceof Error ? err.message : String(err),
+        });
+      }
+    },
+    [
+      savedBlindfoldGames,
+      setBlackTime,
+      setBlindfoldMarks,
+      setBlindfoldSessionId,
+      setBlindfoldSettings,
+      setCurrentTab,
+      setGameId,
+      setGameState,
+      setInputColor,
+      setPlayer1Settings,
+      setPlayer2Settings,
+      setPlayers,
+      setState,
+      setWhiteTime,
+    ],
+  );
+
+  const pendingMovesRef = useRef<{ uci: string; clock: number | null }[] | null>(null);
+  const pendingTimesRef = useRef<{
+    white: number | null;
+    black: number | null;
+  } | null>(null);
+  const throttleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const THROTTLE_MS = 150;
+
+  const syncTreeWithMovesRef = useRef(syncTreeWithMoves);
+  syncTreeWithMovesRef.current = syncTreeWithMoves;
+
+  const applyPendingUpdates = useCallback(() => {
+    if (pendingMovesRef.current) {
+      syncTreeWithMovesRef.current(pendingMovesRef.current);
+      pendingMovesRef.current = null;
+    }
+    if (pendingTimesRef.current) {
+      setWhiteTime(pendingTimesRef.current.white);
+      setBlackTime(pendingTimesRef.current.black);
+      pendingTimesRef.current = null;
+    }
+    throttleTimerRef.current = null;
+
+    setTimeout(() => {
+      cgRef.current?.playPremove();
+    }, 0);
+  }, []);
+
+  const scheduleUpdate = useCallback(() => {
+    if (!throttleTimerRef.current) {
+      throttleTimerRef.current = setTimeout(applyPendingUpdates, THROTTLE_MS);
+    }
+  }, [applyPendingUpdates]);
+
+  const onTakeBack = useCallback(async () => {
+    if (!gameId || gameState !== "playing") return;
+    await commands.takeBackGameMove(gameId);
+  }, [gameId, gameState]);
+
+  useEffect(() => {
+    if (gameState !== "playing" || !gameId) return;
+
+    const currentGameId = gameId;
+
+    const unlistenMove = events.gameMoveEvent.listen(({ payload }) => {
+      if (payload.gameId !== currentGameId) return;
+
+      pendingMovesRef.current = mapBackendMoves(payload.moves);
+      pendingTimesRef.current = {
+        white: payload.whiteTime !== null ? Number(payload.whiteTime) : null,
+        black: payload.blackTime !== null ? Number(payload.blackTime) : null,
+      };
+      scheduleUpdate();
+    });
+
+    const unlistenClock = events.clockUpdateEvent.listen(({ payload }) => {
+      if (payload.gameId !== currentGameId) return;
+      setWhiteTime(payload.whiteTime !== null ? Number(payload.whiteTime) : null);
+      setBlackTime(payload.blackTime !== null ? Number(payload.blackTime) : null);
+    });
+
+    const unlistenGameOver = events.gameOverEvent.listen(({ payload }) => {
+      if (payload.gameId !== currentGameId) return;
+
+      if (throttleTimerRef.current) {
+        clearTimeout(throttleTimerRef.current);
+        throttleTimerRef.current = null;
+      }
+      pendingMovesRef.current = null;
+      pendingTimesRef.current = null;
+
+      syncTreeWithMovesRef.current(mapBackendMoves(payload.moves));
+
+      setGameState("gameOver");
+      setResult(gameResultToOutcome(payload.result));
+    });
+
+    return () => {
+      if (throttleTimerRef.current) {
+        clearTimeout(throttleTimerRef.current);
+        throttleTimerRef.current = null;
+      }
+      unlistenMove.then((f) => f());
+      unlistenClock.then((f) => f());
+      unlistenGameOver.then((f) => f());
+    };
+  }, [gameId, gameState, scheduleUpdate, setGameState, setResult]);
+
+  useEffect(() => {
+    if (gameState === "playing" && gameId) {
+      commands.getGameState(gameId).then((result) => {
+        if (result.status === "ok") {
+          const state = result.data;
+
+          syncTreeWithMovesRef.current(mapBackendMoves(state.moves));
+
+          setWhiteTime(state.whiteTime !== null ? Number(state.whiteTime) : null);
+          setBlackTime(state.blackTime !== null ? Number(state.blackTime) : null);
+
+          if (state.status !== "playing") {
+            setGameState("gameOver");
+            if (typeof state.status === "object" && "finished" in state.status) {
+              setResult(gameResultToOutcome(state.status.finished.result));
+            }
+          }
+        }
+      });
+    }
+  }, [gameId, gameState, setGameState, setResult]);
+
+  const movable = useMemo(() => {
+    if (players.white.type === "human" && players.black.type === "human") {
+      return "turn";
+    }
+    if (players.white.type === "human") {
+      return "white";
+    }
+    if (players.black.type === "human") {
+      return "black";
+    }
+    return "none";
+  }, [players]);
+
+  const [sameTimeControl, setSameTimeControl] = useAtom(gameSameTimeControlAtom);
+
+  useEffect(() => {
+    if (!blindfoldActive || gameState !== "settingUp") return;
+
+    if (inputColor === "random") {
+      setInputColor("white");
+    }
+
+    if (player1Settings.type !== "human") {
+      setPlayer1Settings(createDefaultBlindfoldHumanOpponent());
+    } else if (player1Settings.timeControl) {
+      setPlayer1Settings({ ...player1Settings, timeControl: undefined });
+    }
+
+    if (player2Settings.type !== "engine" || player2Settings.botProfile?.kind !== "maia") {
+      const engine = player2Settings.type === "engine" ? player2Settings.engine : null;
+      setPlayer2Settings(createDefaultBlindfoldMaiaOpponent(engine, blindfoldMaiaElo));
+    } else if (player2Settings.timeControl) {
+      setPlayer2Settings({ ...player2Settings, timeControl: undefined });
+    }
+
+    if (!sameTimeControl) {
+      setSameTimeControl(true);
+    }
+  }, [
+    blindfoldActive,
+    blindfoldMaiaElo,
+    gameState,
+    inputColor,
+    player1Settings,
+    player2Settings,
+    sameTimeControl,
+    setInputColor,
+    setPlayer1Settings,
+    setPlayer2Settings,
+    setSameTimeControl,
+  ]);
+
+  const onePlayerIsEngine = players.white.type !== players.black.type;
+  const isEngineVsEngine = players.white.type === "engine" && players.black.type === "engine";
+
+  const setupIssue = useMemo(() => {
+    const configuredPlayers = [player1Settings, player2Settings];
+    for (const player of configuredPlayers) {
+      if (player.type !== "engine") continue;
+      if (player.botProfile?.enabled) {
+        continue;
+      }
+      if (!player.engine?.path) return "Select an engine before starting.";
+    }
+    return null;
+  }, [player1Settings, player2Settings]);
+
+  useEffect(() => {
+    if (blindfoldResumeStartRequest === 0) return;
+    if (!blindfoldActive || gameState !== "settingUp") return;
+    if (startingGame || installingMaia || error !== null || setupIssue !== null) return;
+
+    setBlindfoldResumeStartRequest(0);
+    void startGameRef.current();
+  }, [
+    blindfoldActive,
+    blindfoldResumeStartRequest,
+    error,
+    gameState,
+    installingMaia,
+    setupIssue,
+    startingGame,
+  ]);
+
+  function getResignationLosingColor(): "white" | "black" {
+    if (isPlayerVsEngine) {
+      return players.white.type === "human" ? "white" : "black";
+    }
+    return pos?.turn === "white" ? "white" : "black";
+  }
+
+  async function handleAbort() {
+    if (!gameId) return;
+    await commands.abortGame(gameId);
+    setGameState("gameOver");
+    setResult("*");
+  }
+
+  async function handleResign() {
+    if (!gameId) return;
+    const losingColor = getResignationLosingColor();
+    await commands.resignGame(gameId, losingColor);
+  }
+
+  async function handleNewGame() {
+    setGameId(null);
+    setGameState("settingUp");
+    setWhiteTime(null);
+    setBlackTime(null);
+    setBlindfoldSessionId(null);
+    setBlindfoldMarks([]);
+    setBlindfoldBoardRevealed(false);
+    resetTree();
+  }
+
+  const handleDeleteBlindfoldSavedGame = useCallback(
+    (id: string) => {
+      setSavedBlindfoldGames((current) => current.filter((game) => game.id !== id));
+      if (blindfoldSessionId === id) {
+        setBlindfoldSessionId(null);
+      }
+    },
+    [blindfoldSessionId, setBlindfoldSessionId, setSavedBlindfoldGames],
+  );
+
+  const handleExitBlindfoldGame = useCallback(async () => {
+    if (gameState === "playing" && gameId) {
+      try {
+        await commands.abortGame(gameId);
+      } catch {
+        // Exiting the local trainer should still return the user to setup.
+      }
+    }
+    setGameId(null);
+    setGameState("settingUp");
+    setWhiteTime(null);
+    setBlackTime(null);
+    setBlindfoldSessionId(null);
+    setBlindfoldMarks([]);
+    setBlindfoldBoardRevealed(false);
+    resetTree();
+    setCurrentTab((tab) => (tab ? { ...tab, type: "play", name: "Blindfold" } : tab));
+  }, [
+    gameId,
+    gameState,
+    resetTree,
+    setBlackTime,
+    setBlindfoldMarks,
+    setBlindfoldSessionId,
+    setCurrentTab,
+    setGameId,
+    setGameState,
+    setWhiteTime,
+  ]);
+
+  async function handleSelectOpeningBook() {
+    const selected = await open({
+      multiple: false,
+      filters: [
+        {
+          name: "Opening Book",
+          extensions: ["pgn", "epd", "bin", "zip"],
+        },
+      ],
+    });
+
+    if (typeof selected === "string") {
+      setOpeningBookPath(selected);
+    }
+  }
+
+  const boardElement = (
+    <Board
+      editingMode={gameState === "settingUp" && editingMode}
+      viewOnly={gameState !== "playing" && !editingMode}
+      disableVariations
+      boardRef={boardRef}
+      movable={
+        blindfoldBoardHidden || (gameState === "settingUp" && editingMode) ? "none" : movable
+      }
+      whiteTime={gameState === "playing" && !blindfoldActive ? (whiteTime ?? undefined) : undefined}
+      blackTime={gameState === "playing" && !blindfoldActive ? (blackTime ?? undefined) : undefined}
+      onMove={handleHumanMove}
+      selectedPiece={selectedPiece}
+      cgRef={cgRef}
+      enablePremoves={isPlayerVsEngine && gameState === "playing"}
+      showDestsOverride={
+        blindfoldActive && gameState === "playing"
+          ? blindfoldSettings.showPieceDestinations
+          : undefined
+      }
+      moveHighlightOverride={
+        blindfoldActive && gameState === "playing" ? blindfoldSettings.highlightLastMove : undefined
+      }
+      blindfoldOverlay={
+        blindfoldCanHideBoard
+          ? {
+              hidden: blindfoldBoardHidden,
+              revealed: blindfoldBoardRevealed,
+              canReveal: blindfoldSettings.allowPeeking,
+              onReveal: () => setBlindfoldBoardRevealed(true),
+              onHide: () => setBlindfoldBoardRevealed(false),
+              label: "Board hidden",
+            }
+          : undefined
+      }
+    />
+  );
+
+  return (
+    <>
+      {blindfoldActive && <EvalListener active={gameState !== "settingUp"} />}
+      <Portal target="#left" style={{ height: "100%" }}>
+        {blindfoldActive && gameState !== "settingUp" ? (
+          <BoardWithAnnotationLayout
+            board={boardElement}
+            underBoard={
+              <Stack h="100%" gap="xs">
+                <GameNotation
+                  topBar
+                  compact
+                  controls={
+                    <BoardControls
+                      editingMode={false}
+                      toggleEditingMode={toggleEditingMode}
+                      dirty={false}
+                      canTakeBack={onePlayerIsEngine}
+                      onTakeBack={onTakeBack}
+                      disableVariations
+                      allowEditing={false}
+                    />
+                  }
+                />
+                <MoveControls />
+              </Stack>
+            }
+          />
+        ) : (
+          boardElement
+        )}
+      </Portal>
+      <Portal target="#topRight" style={{ height: "100%", overflow: "hidden" }}>
+        <Paper withBorder shadow="sm" p="md" h="100%">
+          <ResponsivePanel>
+            {logsOpened ? (
+              <EngineLogsView
+                logs={engineLogs}
+                onRefresh={fetchEngineLogs}
+                additionalControls={
+                  <>
+                    {players.white.type === "engine" && players.black.type === "engine" ? (
+                      <SegmentedControl
+                        value={logsColor}
+                        onChange={(value) => setLogsColor(value as "white" | "black")}
+                        data={[
+                          { value: "white", label: "White" },
+                          { value: "black", label: "Black" },
+                        ]}
+                      />
+                    ) : (
+                      <div />
+                    )}
+                    <ActionIcon flex={0} onClick={() => toggleLogsOpened()}>
+                      <IconX size="1.2rem" />
+                    </ActionIcon>
+                  </>
+                }
+              />
+            ) : (
+              <>
+                {gameState === "settingUp" && (
+                  <Stack h="100%" gap={0}>
+                    <ScrollArea style={{ flex: 1 }} offsetScrollbars>
+                      <Stack>
+                        {blindfoldActive ? (
+                          <BlindfoldMaiaSetupPanel
+                            currentFen={root.fen}
+                            playerColor={inputColor === "black" ? "black" : "white"}
+                            maiaElo={blindfoldMaiaElo}
+                            maiaReady={blindfoldMaiaReady}
+                            maiaInstallLoading={installingMaia}
+                            maiaInstallError={maiaInstallError}
+                            savedGames={savedBlindfoldGames}
+                            onPlayerColorChange={handleBlindfoldPlayerColorChange}
+                            onMaiaEloChange={handleBlindfoldMaiaEloChange}
+                            onLoadFen={loadBlindfoldFen}
+                            onLoadSavedGame={handleLoadSavedBlindfoldGame}
+                            onDeleteSavedGame={handleDeleteBlindfoldSavedGame}
+                          />
+                        ) : (
+                          <>
+                            <Group>
+                              <Text flex={1} ta="center" fz="lg" fw="bold">
+                                {match(inputColor)
+                                  .with("white", () => "White")
+                                  .with("random", () => "Random")
+                                  .with("black", () => "Black")
+                                  .exhaustive()}
+                              </Text>
+                              <ActionIcon onClick={cycleColor}>
+                                <IconArrowsExchange />
+                              </ActionIcon>
+                              <Text flex={1} ta="center" fz="lg" fw="bold">
+                                {match(inputColor)
+                                  .with("white", () => "Black")
+                                  .with("random", () => "Random")
+                                  .with("black", () => "White")
+                                  .exhaustive()}
+                              </Text>
+                            </Group>
+                            <Box flex={1}>
+                              <Group style={{ alignItems: "start" }}>
+                                <OpponentForm
+                                  sameTimeControl={sameTimeControl}
+                                  opponent={player1Settings}
+                                  setOpponent={setPlayer1Settings}
+                                  setOtherOpponent={setPlayer2Settings}
+                                />
+                                <Divider orientation="vertical" />
+                                <OpponentForm
+                                  sameTimeControl={sameTimeControl}
+                                  opponent={player2Settings}
+                                  setOpponent={setPlayer2Settings}
+                                  setOtherOpponent={setPlayer1Settings}
+                                />
+                              </Group>
+                            </Box>
+
+                            <Paper withBorder p="sm">
+                              <Stack>
+                                <Checkbox
+                                  label={t("Board.Opponent.SameTimeControl")}
+                                  checked={sameTimeControl}
+                                  onChange={(e) => {
+                                    const checked = e.target.checked;
+                                    setSameTimeControl(checked);
+                                    if (checked) {
+                                      setPlayer2Settings((prev) => ({
+                                        ...prev,
+                                        timeControl: player1Settings.timeControl,
+                                        timeUnit: player1Settings.timeUnit,
+                                        incrementUnit: player1Settings.incrementUnit,
+                                      }));
+                                    }
+                                  }}
+                                />
+
+                                <Divider variant="dashed" />
+
+                                <Checkbox
+                                  label="Enable Opening Book"
+                                  checked={openingBookEnabled}
+                                  onChange={(e) => setOpeningBookEnabled(e.currentTarget.checked)}
+                                />
+
+                                {openingBookEnabled && (
+                                  <>
+                                    <FileInput
+                                      label="Opening book (.pgn/.epd/.bin/.zip)"
+                                      description={t("Import.PGN.ClickToSelect")}
+                                      filename={openingBookPath}
+                                      onClick={handleSelectOpeningBook}
+                                    />
+                                    {openingBookPath?.includes(".bin") && (
+                                      <NumberInput
+                                        label="Polyglot max plies"
+                                        description="Maximum number of plies from the starting position that the opening book will be used for."
+                                        min={1}
+                                        value={openingBookMaxPly}
+                                        onChange={(value) => {
+                                          if (typeof value === "number" && Number.isFinite(value)) {
+                                            setOpeningBookMaxPly(Math.max(1, Math.trunc(value)));
+                                          }
+                                        }}
+                                      />
+                                    )}
+                                  </>
+                                )}
+                              </Stack>
+                            </Paper>
+                          </>
+                        )}
+                      </Stack>
+                    </ScrollArea>
+
+                    <Divider pb="sm" />
+                    {setupIssue && (
+                      <Text size="xs" c="red" ta="center" pb="xs">
+                        {setupIssue}
+                      </Text>
+                    )}
+                    <Button
+                      onClick={startGame}
+                      fullWidth
+                      variant="light"
+                      loading={startingGame}
+                      disabled={
+                        error !== null || setupIssue !== null || startingGame || installingMaia
+                      }
+                    >
+                      {blindfoldActive ? "Start" : t("Board.Opponent.StartGame")}
+                    </Button>
+                  </Stack>
+                )}
+                {(gameState === "playing" || gameState === "gameOver") &&
+                  (blindfoldActive ? (
+                    <EngineDockedPanel>
+                      <BlindfoldGamePanel
+                        fen={currentNode.fen}
+                        gameState={gameState}
+                        players={players}
+                        currentLineAtEnd={currentLineAtEnd}
+                        boardHidden={blindfoldBoardHidden}
+                        boardRevealed={
+                          blindfoldActive && blindfoldSettings.hideBoard && !blindfoldBoardHidden
+                        }
+                        canRevealBoard={blindfoldSettings.allowPeeking}
+                        canTakeBack={
+                          gameState === "playing" && Boolean(gameId) && onePlayerIsEngine
+                        }
+                        lastMoveSan={lastEngineMoveSan}
+                        marks={blindfoldMarks}
+                        currentPath={currentPath}
+                        onRevealBoard={() => setBlindfoldBoardRevealed(true)}
+                        onHideBoard={() => setBlindfoldBoardRevealed(false)}
+                        onToggleLostTrack={handleToggleLostTrack}
+                        onPlayFromCurrentPosition={handlePlayBlindfoldFromCurrentPosition}
+                        onSaveGameToFile={handleSaveBlindfoldGameToFile}
+                        onExitGame={handleExitBlindfoldGame}
+                        onTakeBack={onTakeBack}
+                        onPlayMove={handleBlindfoldMove}
+                        onGoToMark={handleGoToBlindfoldMark}
+                      />
+                    </EngineDockedPanel>
+                  ) : (
+                    <Stack h="100%">
+                      <Box flex={1}>
+                        <GameInfo headers={headers} />
+                      </Box>
+                      <Group grow>
+                        {gameState === "playing" && (
+                          <Button
+                            variant="default"
+                            color="red"
+                            onClick={isEngineVsEngine ? handleAbort : handleResign}
+                            leftSection={<IconX />}
+                          >
+                            {isEngineVsEngine ? "Abort" : "Resign"}
+                          </Button>
+                        )}
+                        {gameState === "gameOver" && (
+                          <Button
+                            variant="default"
+                            onClick={handleNewGame}
+                            leftSection={<IconPlus />}
+                          >
+                            New Game
+                          </Button>
+                        )}
+                        <Button
+                          variant="default"
+                          onClick={() => changeToAnalysisMode()}
+                          leftSection={<IconZoomCheck />}
+                        >
+                          Analyze
+                        </Button>
+
+                        {hasEngine && (
+                          <Button
+                            variant="default"
+                            onClick={() => toggleLogsOpened()}
+                            leftSection={<IconFileText size="1rem" />}
+                          >
+                            Engine Logs
+                          </Button>
+                        )}
+                      </Group>
+                    </Stack>
+                  ))}
+              </>
+            )}
+          </ResponsivePanel>
+        </Paper>
+      </Portal>
+      <Portal target="#bottomRight" style={{ height: "100%" }}>
+        {gameState === "settingUp" && editingMode ? (
+          <EditingCard
+            boardRef={boardRef}
+            setEditingMode={toggleEditingMode}
+            selectedPiece={selectedPiece}
+            setSelectedPiece={setSelectedPiece}
+          />
+        ) : blindfoldActive ? null : (
+          <Stack h="100%" gap="xs">
+            <GameNotation
+              topBar
+              controls={
+                <BoardControls
+                  editingMode={gameState === "settingUp" && editingMode}
+                  toggleEditingMode={toggleEditingMode}
+                  dirty={false}
+                  canTakeBack={onePlayerIsEngine}
+                  onTakeBack={onTakeBack}
+                  disableVariations
+                  allowEditing={gameState === "settingUp"}
+                />
+              }
+            />
+            <MoveControls />
+          </Stack>
+        )}
+      </Portal>
+    </>
+  );
+}
+
+export default BoardGame;

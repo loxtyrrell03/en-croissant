@@ -1,0 +1,16 @@
+{
+  "name": "En Croissant Web",
+  "short_name": "En Croissant",
+  "description": "Mobile prep, PGN files, and browser-side chess databases.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#141517",
+  "theme_color": "#141517",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "any",
+      "type": "image/png"
+    }
+  ]
+}

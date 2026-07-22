@@ -1,0 +1,413 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e7]:
+          - img [ref=e9]
+          - generic [ref=e10]:
+            - button "File" [ref=e11] [cursor=pointer]:
+              - generic [ref=e13]: File
+            - button "View" [ref=e14] [cursor=pointer]:
+              - generic [ref=e16]: View
+            - button "Help" [ref=e17] [cursor=pointer]:
+              - generic [ref=e19]: Help
+        - generic [ref=e21]:
+          - img "Minimize" [ref=e23]
+          - img "Restore" [ref=e26]
+          - img "Close" [ref=e29]
+    - navigation [ref=e31]:
+      - generic [ref=e33]:
+        - link [ref=e34] [cursor=pointer]:
+          - /url: /home
+          - img [ref=e35]
+        - link [ref=e39] [cursor=pointer]:
+          - /url: /
+          - img [ref=e40]
+        - link [ref=e43] [cursor=pointer]:
+          - /url: /files
+          - img [ref=e44]
+        - link [ref=e48] [cursor=pointer]:
+          - /url: /databases
+          - img [ref=e49]
+        - link [ref=e53] [cursor=pointer]:
+          - /url: /engines
+          - img [ref=e54]
+      - link [ref=e59] [cursor=pointer]:
+        - /url: /settings
+        - img [ref=e60]
+    - main [ref=e63]:
+      - generic [ref=e64]:
+        - generic [ref=e68]:
+          - button "Mistake Type Smoke Deck" [ref=e69]:
+            - generic [ref=e71] [cursor=pointer]:
+              - img [ref=e73]
+              - generic [ref=e76]: Mistake Type Smoke Deck
+              - img [ref=e80]
+          - button [ref=e83] [cursor=pointer]:
+            - img [ref=e85]
+        - tabpanel [ref=e87]:
+          - generic [ref=e88]:
+            - generic [ref=e91]:
+              - generic [ref=e94]:
+                - generic [ref=e95]:
+                  - generic:
+                    - paragraph
+                - generic [ref=e100]:
+                  - generic [ref=e102]:
+                    - img [ref=e104]
+                    - img
+                    - img
+                  - separator "Resize board" [ref=e105]
+                  - separator "Resize board" [ref=e106]
+                  - separator "Resize board" [ref=e107]
+                  - separator "Resize board" [ref=e108]
+                - generic [ref=e109]:
+                  - generic:
+                    - paragraph
+              - generic [ref=e110]:
+                - generic [ref=e112]:
+                  - button "Back" [disabled] [ref=e113]:
+                    - generic [ref=e114]:
+                      - img [ref=e116]
+                      - generic [ref=e118]: Back
+                  - paragraph [ref=e119]: 2 review positions
+                  - button "Next" [ref=e120] [cursor=pointer]:
+                    - generic [ref=e121]:
+                      - generic [ref=e122]: Next
+                      - img [ref=e124]
+                - button [ref=e126] [cursor=pointer]:
+                  - img [ref=e128]
+            - separator "Resize board and side panels" [ref=e132]
+            - generic [ref=e138]:
+              - tablist [ref=e139]:
+                - tab "Review" [selected] [ref=e140] [cursor=pointer]:
+                  - img [ref=e142]
+                  - generic: Review
+                - tab "Analysis" [ref=e148] [cursor=pointer]:
+                  - img [ref=e150]
+                  - generic: Analysis
+                - tab "Database" [ref=e154] [cursor=pointer]:
+                  - img [ref=e156]
+                  - generic: Database
+                - tab "Plan Explorer" [ref=e160] [cursor=pointer]:
+                  - img [ref=e162]
+                  - generic: Plan Explorer
+                - tab "Engine Plans" [ref=e166] [cursor=pointer]:
+                  - img [ref=e168]
+                  - generic: Engine Plans
+                - tab "Compare" [ref=e171] [cursor=pointer]:
+                  - img [ref=e173]
+                  - generic: Compare
+                - tab "Info" [ref=e180] [cursor=pointer]:
+                  - img [ref=e182]
+                  - generic: Info
+              - tabpanel "Review" [ref=e185]:
+                - generic [ref=e186]:
+                  - generic [ref=e188]:
+                    - generic [ref=e189]:
+                      - generic [ref=e190]:
+                        - paragraph [ref=e191]: Mistake Type Smoke Deck
+                        - paragraph [ref=e192]: 2 mistake cards
+                      - button "Positions" [ref=e193] [cursor=pointer]:
+                        - generic [ref=e194]:
+                          - img [ref=e196]
+                          - generic [ref=e199]: Positions
+                    - generic [ref=e202]:
+                      - generic [ref=e204]: Sync off
+                      - paragraph [ref=e205]: No database sync is configured for this deck
+                    - generic [ref=e206]:
+                      - generic [ref=e207]:
+                        - paragraph [ref=e208]: Review progress
+                        - paragraph [ref=e209]: 0%
+                      - generic [ref=e210]:
+                        - progressbar
+                        - progressbar [ref=e211]
+                        - progressbar [ref=e212]
+                    - generic [ref=e213]:
+                      - generic [ref=e214]:
+                        - paragraph [ref=e215]: Due
+                        - paragraph [ref=e216]: "1"
+                      - generic [ref=e217]:
+                        - paragraph [ref=e218]: Unseen
+                        - paragraph [ref=e219]: "1"
+                      - generic [ref=e220]:
+                        - paragraph [ref=e221]: Done
+                        - paragraph [ref=e222]: "0"
+                    - generic [ref=e225]:
+                      - generic [ref=e226]:
+                        - paragraph [ref=e227]: Urgency ranking
+                        - paragraph [ref=e228]: 2 ranked positions
+                      - button "Show" [ref=e230] [cursor=pointer]:
+                        - generic [ref=e231]:
+                          - img [ref=e233]
+                          - generic [ref=e235]: Show
+                    - generic [ref=e236]:
+                      - generic [ref=e237]:
+                        - generic [ref=e238]:
+                          - generic [ref=e239]:
+                            - button "Daily review 2" [ref=e240] [cursor=pointer]:
+                              - generic [ref=e241]:
+                                - img [ref=e243]
+                                - generic [ref=e247]: Daily review
+                                - generic [ref=e250]: "2"
+                            - button "Daily review settings" [ref=e251] [cursor=pointer]:
+                              - img [ref=e253]
+                          - button "Train time management 1" [ref=e257] [cursor=pointer]:
+                            - generic [ref=e258]:
+                              - img [ref=e260]
+                              - generic [ref=e263]: Train time management
+                              - generic [ref=e266]: "1"
+                          - button "Train by type" [ref=e267] [cursor=pointer]:
+                            - generic [ref=e268]:
+                              - img [ref=e270]
+                              - generic [ref=e276]: Train by type
+                              - img [ref=e278]
+                          - button "Train by phase" [ref=e280] [cursor=pointer]:
+                            - generic [ref=e281]:
+                              - img [ref=e283]
+                              - generic [ref=e289]: Train by phase
+                              - img [ref=e291]
+                        - paragraph [ref=e293]: 0 / 40 done today
+                      - button "Train due positions 2" [ref=e294] [cursor=pointer]:
+                        - generic [ref=e295]:
+                          - img [ref=e297]
+                          - generic [ref=e301]: Train due positions
+                          - generic [ref=e304]: "2"
+                      - button "Train all positions 2" [ref=e305] [cursor=pointer]:
+                        - generic [ref=e306]:
+                          - img [ref=e308]
+                          - generic [ref=e311]: Train all positions
+                          - generic [ref=e314]: "2"
+                    - generic [ref=e315]:
+                      - generic [ref=e317]: Correct 0
+                      - generic [ref=e319]: Incorrect 0
+                      - generic [ref=e321]: Streak 0
+                    - generic [ref=e324]:
+                      - generic [ref=e325]:
+                        - paragraph [ref=e326]: Game information
+                        - paragraph [ref=e327]: Tester vs Smoke Opponent
+                      - generic [ref=e328]:
+                        - generic [ref=e330]: Positional
+                        - generic [ref=e332]: Mistake
+                        - button "Show" [ref=e333] [cursor=pointer]:
+                          - generic [ref=e334]:
+                            - img [ref=e336]
+                            - generic [ref=e338]: Show
+                    - generic [ref=e339]:
+                      - generic [ref=e343]:
+                        - generic [ref=e344]:
+                          - paragraph
+                          - generic [ref=e345]:
+                            - button "Copy PGN" [ref=e346] [cursor=pointer]:
+                              - img [ref=e348]
+                            - button [ref=e351] [cursor=pointer]:
+                              - img [ref=e353]
+                            - button [ref=e356] [cursor=pointer]:
+                              - img [ref=e358]
+                            - button [ref=e361] [cursor=pointer]:
+                              - img [ref=e363]
+                            - button [ref=e365] [cursor=pointer]:
+                              - img [ref=e367]
+                        - separator [ref=e372]
+                      - generic [ref=e380]:
+                        - button [ref=e381] [cursor=pointer]:
+                          - img [ref=e383]
+                        - button [ref=e386] [cursor=pointer]:
+                          - img [ref=e388]
+                        - button [ref=e390] [cursor=pointer]:
+                          - img [ref=e392]
+                        - button [ref=e394] [cursor=pointer]:
+                          - img [ref=e396]
+                  - generic [ref=e402]:
+                    - button "Manage Engines" [ref=e403] [cursor=pointer]:
+                      - generic [ref=e404]:
+                        - img [ref=e406]
+                        - generic [ref=e409]: Manage Engines
+                    - button [ref=e410] [cursor=pointer]:
+                      - img [ref=e412]
+  - dialog "Review positions" [ref=e441]:
+    - banner [ref=e442]:
+      - heading "Review positions" [level=2] [ref=e443]
+      - button [active] [ref=e444] [cursor=pointer]:
+        - img [ref=e445]
+    - generic [ref=e447]:
+      - generic [ref=e448]:
+        - generic [ref=e449]:
+          - generic [ref=e450]:
+            - generic [ref=e451]: Sort
+            - generic [ref=e452]:
+              - textbox "Sort" [ref=e453] [cursor=pointer]: Game date newest
+              - generic:
+                - img
+          - generic [ref=e454]:
+            - generic [ref=e455]: Opening
+            - generic [ref=e456]:
+              - textbox "Opening" [ref=e459]:
+                - /placeholder: Any opening
+              - generic:
+                - img
+          - generic [ref=e460]:
+            - generic [ref=e461]: Quality
+            - generic [ref=e462]:
+              - textbox "Quality" [ref=e465] [cursor=pointer]:
+                - /placeholder: All
+              - generic:
+                - img
+          - generic [ref=e466]:
+            - generic [ref=e467]: Type
+            - generic [ref=e468]:
+              - textbox "Type" [ref=e469] [cursor=pointer]: All types (2)
+              - generic:
+                - img
+          - generic [ref=e470]:
+            - generic [ref=e471]: Phase
+            - generic [ref=e472]:
+              - textbox "Phase" [ref=e473] [cursor=pointer]: All phases (2)
+              - generic:
+                - img
+          - generic [ref=e474]:
+            - generic [ref=e475]: Think time
+            - generic [ref=e476]:
+              - textbox "Think time" [ref=e477] [cursor=pointer]: All
+              - generic:
+                - img
+          - generic [ref=e478]:
+            - generic [ref=e479]: Time control
+            - generic [ref=e480]:
+              - textbox "Time control" [ref=e481]: All controls (2)
+              - generic:
+                - img
+          - generic [ref=e482]:
+            - paragraph [ref=e483]: Colour
+            - radiogroup [ref=e484]:
+              - generic [ref=e486]:
+                - radio "All" [checked]
+                - generic [ref=e487] [cursor=pointer]: All
+              - generic [ref=e488]:
+                - radio "White"
+                - generic [ref=e489] [cursor=pointer]: White
+              - generic [ref=e490]:
+                - radio "Black"
+                - generic [ref=e491] [cursor=pointer]: Black
+          - generic [ref=e492]:
+            - generic [ref=e493]: Game date
+            - generic [ref=e494]:
+              - textbox "Game date" [ref=e495] [cursor=pointer]: All dates
+              - generic:
+                - img
+          - button "Review due 2" [ref=e496] [cursor=pointer]:
+            - generic [ref=e497]:
+              - img [ref=e499]
+              - generic [ref=e503]:
+                - text: Review due
+                - generic [ref=e505]: "2"
+          - button "Review 2" [ref=e506] [cursor=pointer]:
+            - generic [ref=e507]:
+              - img [ref=e509]
+              - generic [ref=e512]:
+                - text: Review
+                - generic [ref=e514]: "2"
+        - generic [ref=e517]: 2 shown
+      - table [ref=e519]:
+        - rowgroup [ref=e520]:
+          - row "Position Quality Opening Moves Game date Think time Evidence Status Actions" [ref=e521]:
+            - columnheader "Position" [ref=e522]
+            - columnheader "Quality" [ref=e523]
+            - columnheader "Opening" [ref=e524]
+            - columnheader "Moves" [ref=e525]
+            - columnheader "Game date" [ref=e526]
+            - columnheader "Think time" [ref=e527]
+            - columnheader "Evidence" [ref=e528]
+            - columnheader "Status" [ref=e529]
+            - columnheader "Actions" [ref=e530]
+        - rowgroup [ref=e531]:
+          - 'row "Load Nxe5+ review position Blunder Opening Tactical Long think King Pawn White side h3 Best: Nxe5+ May 10, 2026 18:05 44s (20s+ target) Clock after 4:10 Smoke Opponent 5 min 230 cp, 18.0% win-prob Unseen Due 2026-05-10 19:06:48 Load position on board Edit correct move Delete from deck" [ref=e532]':
+            - cell "Load Nxe5+ review position" [ref=e533]:
+              - button "Load Nxe5+ review position" [ref=e534] [cursor=pointer]:
+                - generic [ref=e536]:
+                  - img [ref=e538]
+                  - img
+                  - img
+            - cell "Blunder Opening Tactical Long think" [ref=e539]:
+              - generic [ref=e540]:
+                - generic [ref=e542]: Blunder
+                - paragraph [ref=e543]: Opening
+                - generic [ref=e545]: Tactical
+                - generic [ref=e547]: Long think
+            - cell "King Pawn White side" [ref=e548]:
+              - generic [ref=e549]:
+                - paragraph [ref=e550]: King Pawn
+                - generic [ref=e552]: White side
+            - 'cell "h3 Best: Nxe5+" [ref=e553]':
+              - generic [ref=e554]:
+                - paragraph [ref=e555]: h3
+                - paragraph [ref=e556]: "Best: Nxe5+"
+            - cell "May 10, 2026 18:05" [ref=e557]:
+              - paragraph [ref=e558]: May 10, 2026 18:05
+            - cell "44s (20s+ target) Clock after 4:10" [ref=e559]:
+              - generic [ref=e560]:
+                - paragraph [ref=e561]: 44s (20s+ target)
+                - paragraph [ref=e562]: Clock after 4:10
+            - cell "Smoke Opponent 5 min 230 cp, 18.0% win-prob" [ref=e563]:
+              - generic [ref=e564]:
+                - paragraph [ref=e565]: Smoke Opponent
+                - paragraph [ref=e566]: 5 min
+                - paragraph [ref=e567]: 230 cp, 18.0% win-prob
+            - cell "Unseen Due 2026-05-10 19:06:48" [ref=e568]:
+              - generic [ref=e569]:
+                - generic [ref=e571]: Unseen
+                - paragraph [ref=e572]: Due 2026-05-10 19:06:48
+            - cell "Load position on board Edit correct move Delete from deck" [ref=e573]:
+              - generic [ref=e574]:
+                - button "Load position on board" [ref=e575] [cursor=pointer]:
+                  - img [ref=e577]
+                - button "Edit correct move" [ref=e581] [cursor=pointer]:
+                  - img [ref=e583]
+                - button "Delete from deck" [ref=e586] [cursor=pointer]:
+                  - img [ref=e588]
+          - 'row "Load Nf6 review position Mistake Opening Positional King Pawn Black side a6 Best: Nf6 May 10, 2026 18:00 8s Clock after 4:52 Smoke Opponent 5 min 110 cp, 6.0% win-prob Due Due 2026-05-09 19:06:48 Load position on board Edit correct move Delete from deck" [ref=e591]':
+            - cell "Load Nf6 review position" [ref=e592]:
+              - button "Load Nf6 review position" [ref=e593] [cursor=pointer]:
+                - generic [ref=e595]:
+                  - img [ref=e597]
+                  - img
+                  - img
+            - cell "Mistake Opening Positional" [ref=e598]:
+              - generic [ref=e599]:
+                - generic [ref=e601]: Mistake
+                - paragraph [ref=e602]: Opening
+                - generic [ref=e604]: Positional
+            - cell "King Pawn Black side" [ref=e605]:
+              - generic [ref=e606]:
+                - paragraph [ref=e607]: King Pawn
+                - generic [ref=e609]: Black side
+            - 'cell "a6 Best: Nf6" [ref=e610]':
+              - generic [ref=e611]:
+                - paragraph [ref=e612]: a6
+                - paragraph [ref=e613]: "Best: Nf6"
+            - cell "May 10, 2026 18:00" [ref=e614]:
+              - paragraph [ref=e615]: May 10, 2026 18:00
+            - cell "8s Clock after 4:52" [ref=e616]:
+              - generic [ref=e617]:
+                - paragraph [ref=e618]: 8s
+                - paragraph [ref=e619]: Clock after 4:52
+            - cell "Smoke Opponent 5 min 110 cp, 6.0% win-prob" [ref=e620]:
+              - generic [ref=e621]:
+                - paragraph [ref=e622]: Smoke Opponent
+                - paragraph [ref=e623]: 5 min
+                - paragraph [ref=e624]: 110 cp, 6.0% win-prob
+            - cell "Due Due 2026-05-09 19:06:48" [ref=e625]:
+              - generic [ref=e626]:
+                - generic [ref=e628]: Due
+                - paragraph [ref=e629]: Due 2026-05-09 19:06:48
+            - cell "Load position on board Edit correct move Delete from deck" [ref=e630]:
+              - generic [ref=e631]:
+                - button "Load position on board" [ref=e632] [cursor=pointer]:
+                  - img [ref=e634]
+                - button "Edit correct move" [ref=e638] [cursor=pointer]:
+                  - img [ref=e640]
+                - button "Delete from deck" [ref=e643] [cursor=pointer]:
+                  - img [ref=e645]
+      - generic [ref=e648]:
+        - img [ref=e649]
+        - paragraph [ref=e652]: Deck progress, notes, arrows, and move edits are saved back to the review file automatically.

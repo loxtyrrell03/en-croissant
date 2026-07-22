@@ -1,0 +1,218 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - img [ref=e9]
+        - generic [ref=e10]:
+          - button "File" [ref=e11] [cursor=pointer]:
+            - generic [ref=e13]: File
+          - button "View" [ref=e14] [cursor=pointer]:
+            - generic [ref=e16]: View
+          - button "Help" [ref=e17] [cursor=pointer]:
+            - generic [ref=e19]: Help
+      - generic [ref=e21]:
+        - img "Minimize" [ref=e23]
+        - img "Restore" [ref=e26]
+        - img "Close" [ref=e29]
+  - navigation [ref=e31]:
+    - generic [ref=e33]:
+      - link [ref=e34] [cursor=pointer]:
+        - /url: /home
+        - img [ref=e35]
+      - link [ref=e39] [cursor=pointer]:
+        - /url: /
+        - img [ref=e40]
+      - link [ref=e43] [cursor=pointer]:
+        - /url: /files
+        - img [ref=e44]
+      - link [ref=e48] [cursor=pointer]:
+        - /url: /databases
+        - img [ref=e49]
+      - link [ref=e53] [cursor=pointer]:
+        - /url: /engines
+        - img [ref=e54]
+    - link [ref=e59] [cursor=pointer]:
+      - /url: /settings
+      - img [ref=e60]
+  - main [ref=e63]:
+    - generic [ref=e64]:
+      - generic [ref=e68]:
+        - button "Fixture Mistake Review With Long Source Labels" [ref=e69]:
+          - generic [ref=e71] [cursor=pointer]:
+            - img [ref=e73]
+            - generic [ref=e76]: Fixture Mistake Review With Long Source Labels
+            - img [ref=e80]
+        - button [ref=e83] [cursor=pointer]:
+          - img [ref=e85]
+      - tabpanel [ref=e87]:
+        - generic [ref=e88]:
+          - generic [ref=e91]:
+            - generic [ref=e94]:
+              - generic [ref=e95]:
+                - generic:
+                  - paragraph
+              - generic [ref=e348]:
+                - generic [ref=e350]:
+                  - img [ref=e352]
+                  - img
+                  - img
+                - separator "Resize board" [ref=e100]
+                - separator "Resize board" [ref=e101]
+                - separator "Resize board" [ref=e102]
+                - separator "Resize board" [ref=e103]
+              - generic [ref=e104]:
+                - generic:
+                  - paragraph
+            - generic [ref=e105]:
+              - generic [ref=e107]:
+                - button "Back" [disabled] [ref=e108]:
+                  - generic [ref=e109]:
+                    - img [ref=e111]
+                    - generic [ref=e113]: Back
+                - paragraph [ref=e114]: 3 review positions
+                - button "Next" [ref=e115] [cursor=pointer]:
+                  - generic [ref=e116]:
+                    - generic [ref=e117]: Next
+                    - img [ref=e119]
+              - button [ref=e121] [cursor=pointer]:
+                - img [ref=e123]
+          - separator "Resize board and side panels" [ref=e127]
+          - generic [ref=e133]:
+            - tablist [ref=e134]:
+              - tab "Rev" [selected] [ref=e135] [cursor=pointer]:
+                - img [ref=e137]
+                - generic [ref=e143]: Rev
+              - tab "Eval" [ref=e144] [cursor=pointer]:
+                - img [ref=e146]
+                - generic [ref=e150]: Eval
+              - tab "DB" [ref=e151] [cursor=pointer]:
+                - img [ref=e153]
+                - generic [ref=e157]: DB
+              - tab "Plan" [ref=e158] [cursor=pointer]:
+                - img [ref=e160]
+                - generic [ref=e164]: Plan
+              - tab "Eng" [ref=e165] [cursor=pointer]:
+                - img [ref=e167]
+                - generic [ref=e170]: Eng
+              - tab "Vs" [ref=e171] [cursor=pointer]:
+                - img [ref=e173]
+                - generic [ref=e180]: Vs
+              - tab "Info" [ref=e181] [cursor=pointer]:
+                - img [ref=e183]
+                - generic [ref=e186]: Info
+            - tabpanel "Rev" [ref=e187]:
+              - generic [ref=e189]:
+                - generic [ref=e190]:
+                  - generic [ref=e191]:
+                    - paragraph [ref=e192]: Fixture Mistake Review With Long Source Labels
+                    - paragraph [ref=e193]: 3 mistake cards
+                  - button "Positions" [ref=e194] [cursor=pointer]:
+                    - generic [ref=e195]:
+                      - img [ref=e197]
+                      - generic [ref=e200]: Positions
+                - generic [ref=e202]:
+                  - generic [ref=e203]:
+                    - generic [ref=e205]: Sync off
+                    - paragraph [ref=e206]: Last synced May 14, 2026 13:31 - 2 new mistakes added
+                  - paragraph [ref=e207]: Database updated May 14, 2026 14:01
+                - generic [ref=e208]:
+                  - generic [ref=e209]:
+                    - paragraph [ref=e210]: Review progress
+                    - paragraph [ref=e211]: 33%
+                  - generic [ref=e212]:
+                    - progressbar [ref=e213]
+                    - progressbar [ref=e214]
+                    - progressbar [ref=e215]
+                - generic [ref=e216]:
+                  - generic [ref=e217]:
+                    - paragraph [ref=e218]: Due
+                    - paragraph [ref=e219]: "1"
+                  - generic [ref=e220]:
+                    - paragraph [ref=e221]: Unseen
+                    - paragraph [ref=e222]: "1"
+                  - generic [ref=e223]:
+                    - paragraph [ref=e224]: Done
+                    - paragraph [ref=e225]: "1"
+                - generic [ref=e226]:
+                  - generic [ref=e227]:
+                    - generic [ref=e228]:
+                      - generic [ref=e229]:
+                        - button "Daily review 1" [ref=e230] [cursor=pointer]:
+                          - generic [ref=e231]:
+                            - img [ref=e233]
+                            - generic [ref=e237]: Daily review
+                            - generic [ref=e240]: "1"
+                        - button "Daily review settings" [ref=e241] [cursor=pointer]:
+                          - img [ref=e243]
+                      - button "Train time management 2" [ref=e247] [cursor=pointer]:
+                        - generic [ref=e248]:
+                          - img [ref=e250]
+                          - generic [ref=e253]: Train time management
+                          - generic [ref=e256]: "2"
+                      - button "Train by type" [ref=e257] [cursor=pointer]:
+                        - generic [ref=e258]:
+                          - img [ref=e260]
+                          - generic [ref=e266]: Train by type
+                          - img [ref=e268]
+                      - button "Train by phase" [ref=e270] [cursor=pointer]:
+                        - generic [ref=e271]:
+                          - img [ref=e273]
+                          - generic [ref=e279]: Train by phase
+                          - img [ref=e281]
+                    - paragraph [ref=e283]: 1 / 40 done today
+                  - button "Train due positions 2" [ref=e284] [cursor=pointer]:
+                    - generic [ref=e285]:
+                      - img [ref=e287]
+                      - generic [ref=e291]: Train due positions
+                      - generic [ref=e294]: "2"
+                  - button "Train all positions 3" [ref=e295] [cursor=pointer]:
+                    - generic [ref=e296]:
+                      - img [ref=e298]
+                      - generic [ref=e301]: Train all positions
+                      - generic [ref=e304]: "3"
+                - generic [ref=e305]:
+                  - generic [ref=e307]: Correct 0
+                  - generic [ref=e309]: Incorrect 0
+                  - generic [ref=e311]: Streak 0
+                - generic [ref=e313]:
+                  - generic [ref=e314]:
+                    - generic [ref=e315]:
+                      - paragraph [ref=e316]: Game information
+                      - paragraph [ref=e317]: loxty vs LongOpponentNameThatShouldRemainReadable
+                    - generic [ref=e318]:
+                      - generic [ref=e320]: Positional
+                      - generic [ref=e322]: Blunder
+                      - button "Show game details" [ref=e323] [cursor=pointer]:
+                        - img [ref=e325]
+                  - generic [ref=e327]:
+                    - generic [ref=e328]:
+                      - paragraph [ref=e329]: Played
+                      - paragraph [ref=e330]: May 12, 2026
+                    - generic [ref=e331]:
+                      - paragraph [ref=e332]: Time control
+                      - paragraph [ref=e333]: 10s
+                    - generic [ref=e334]:
+                      - paragraph [ref=e335]: Best move
+                      - paragraph [ref=e336]: Nd5
+                - generic [ref=e353]:
+                  - generic [ref=e354]:
+                    - paragraph [ref=e355]: Moves
+                    - button "Hide" [ref=e356] [cursor=pointer]:
+                      - generic [ref=e357]:
+                        - img [ref=e359]
+                        - generic [ref=e361]: Hide
+                  - generic [ref=e365]:
+                    - generic [ref=e366]:
+                      - paragraph [ref=e367]: Fixture Opening
+                      - generic [ref=e368]:
+                        - button "Copy PGN" [ref=e369] [cursor=pointer]:
+                          - img [ref=e371]
+                        - button [ref=e374] [cursor=pointer]:
+                          - img [ref=e376]
+                        - button [ref=e379] [cursor=pointer]:
+                          - img [ref=e381]
+                        - button [ref=e384] [cursor=pointer]:
+                          - img [ref=e386]
+                        - button [ref=e388] [cursor=pointer]:
+                          - img [ref=e390]
+                    - separator [ref=e395]

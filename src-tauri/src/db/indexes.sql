@@ -1,0 +1,11 @@
+CREATE INDEX IF NOT EXISTS games_date_idx ON Games(Date);
+CREATE INDEX IF NOT EXISTS games_white_idx ON Games(WhiteID);
+CREATE INDEX IF NOT EXISTS games_black_idx ON Games(BlackID);
+CREATE INDEX IF NOT EXISTS games_result_idx ON Games(Result);
+CREATE INDEX IF NOT EXISTS games_white_elo_idx ON Games(WhiteElo);
+CREATE INDEX IF NOT EXISTS games_black_elo_idx ON Games(BlackElo);
+CREATE INDEX IF NOT EXISTS games_plycount_idx ON Games(PlyCount);
+CREATE INDEX IF NOT EXISTS mistake_review_move_evals_game_idx ON MistakeReviewMoveEvals(GameID);
+CREATE INDEX IF NOT EXISTS mistake_review_move_evals_player_idx ON MistakeReviewMoveEvals(PlayerID);
+CREATE INDEX IF NOT EXISTS mistake_review_move_evals_fen_idx ON MistakeReviewMoveEvals(NormalizedFEN);
+CREATE INDEX IF NOT EXISTS mistake_review_move_evals_updated_idx ON MistakeReviewMoveEvals(UpdatedAt);

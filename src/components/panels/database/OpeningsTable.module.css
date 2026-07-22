@@ -1,0 +1,38 @@
+[data-mantine-color-scheme="light"] .result {
+  outline: 1px solid var(--mantine-color-gray-3);
+}
+
+[data-mantine-color-scheme="dark"] .result {
+  outline: 1px solid var(--mantine-color-gray-8);
+}
+
+[data-mantine-color-scheme="light"] .whiteResultsSection {
+  background-color: var(--mantine-color-gray-1);
+}
+
+[data-mantine-color-scheme="dark"] .whiteResultsSection {
+  background-color: var(--mantine-color-white);
+}
+
+.healthBadge {
+  min-width: 58px;
+  justify-content: center;
+}
+
+.denseTable :global(.mantine-datatable-table th),
+.denseTable :global(.mantine-datatable-table td) {
+  font-size: 0.68rem;
+}
+
+.denseTable :global(.mantine-datatable-header-cell-sortable-group) {
+  gap: 0.12rem;
+}
+
+.denseHealthBadge {
+  min-width: 32px;
+  padding-inline: 0.25rem;
+}
+
+.denseResult :global(.mantine-Progress-label) {
+  font-size: 0.58rem;
+}

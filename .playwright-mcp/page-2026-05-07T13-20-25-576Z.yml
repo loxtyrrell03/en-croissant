@@ -1,0 +1,272 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e7]:
+          - img [ref=e9]
+          - generic [ref=e10]:
+            - button "File" [ref=e11] [cursor=pointer]:
+              - generic [ref=e13]: File
+            - button "View" [ref=e14] [cursor=pointer]:
+              - generic [ref=e16]: View
+            - button "Help" [ref=e17] [cursor=pointer]:
+              - generic [ref=e19]: Help
+        - generic [ref=e21]:
+          - img "Minimize" [ref=e23]
+          - img "Restore" [ref=e26]
+          - img "Close" [ref=e29]
+    - navigation [ref=e31]:
+      - generic [ref=e33]:
+        - link [ref=e34] [cursor=pointer]:
+          - /url: /home
+          - img [ref=e35]
+        - link [ref=e39] [cursor=pointer]:
+          - /url: /
+          - img [ref=e40]
+        - link [ref=e43] [cursor=pointer]:
+          - /url: /files
+          - img [ref=e44]
+        - link [ref=e48] [cursor=pointer]:
+          - /url: /databases
+          - img [ref=e49]
+        - link [ref=e53] [cursor=pointer]:
+          - /url: /engines
+          - img [ref=e54]
+      - link [ref=e59] [cursor=pointer]:
+        - /url: /settings
+        - img [ref=e60]
+    - main [ref=e63]:
+      - generic [ref=e64]:
+        - generic [ref=e68]:
+          - button "Analysis Board" [ref=e69]:
+            - generic [ref=e71] [cursor=pointer]:
+              - img [ref=e73]
+              - generic [ref=e78]: Analysis Board
+              - img [ref=e82]
+          - button [ref=e85] [cursor=pointer]:
+            - img [ref=e87]
+        - tabpanel [ref=e89]:
+          - generic [ref=e90]:
+            - generic [ref=e92]:
+              - generic [ref=e96]:
+                - generic [ref=e97]:
+                  - generic:
+                    - paragraph
+                - generic [ref=e102]:
+                  - generic [ref=e104]:
+                    - img [ref=e106]
+                    - img
+                    - img
+                  - separator "Resize board" [ref=e107]
+                  - separator "Resize board" [ref=e108]
+                  - separator "Resize board" [ref=e109]
+                  - separator "Resize board" [ref=e110]
+                - generic [ref=e111]:
+                  - generic:
+                    - paragraph
+              - generic [ref=e113]:
+                - generic [ref=e114]:
+                  - generic [ref=e115]:
+                    - button "!!" [ref=e116] [cursor=pointer]:
+                      - paragraph [ref=e118]: "!!"
+                    - button "!" [ref=e119] [cursor=pointer]:
+                      - paragraph [ref=e121]: "!"
+                    - button "!?" [ref=e122] [cursor=pointer]:
+                      - paragraph [ref=e124]: "!?"
+                    - button "?!" [ref=e125] [cursor=pointer]:
+                      - paragraph [ref=e127]: "?!"
+                    - button "?" [ref=e128] [cursor=pointer]:
+                      - paragraph [ref=e130]: "?"
+                    - button "??" [ref=e131] [cursor=pointer]:
+                      - paragraph [ref=e133]: "??"
+                  - separator [ref=e134]:
+                    - button [ref=e136] [cursor=pointer]:
+                      - img [ref=e138]
+                - generic [ref=e143]:
+                  - generic [ref=e144]:
+                    - generic [ref=e145]:
+                      - button "Bold" [ref=e146] [cursor=pointer]:
+                        - img [ref=e147]
+                      - button "Italic" [ref=e151] [cursor=pointer]:
+                        - img [ref=e152]
+                      - button "Underline" [ref=e155] [cursor=pointer]:
+                        - img [ref=e156]
+                      - button "Strikethrough" [ref=e159] [cursor=pointer]:
+                        - img [ref=e160]
+                      - button "Clear formatting" [ref=e163] [cursor=pointer]:
+                        - img [ref=e164]
+                    - generic [ref=e169]:
+                      - button "Heading 1" [ref=e170] [cursor=pointer]:
+                        - img [ref=e171]
+                      - button "Heading 2" [ref=e174] [cursor=pointer]:
+                        - img [ref=e175]
+                      - button "Heading 3" [ref=e178] [cursor=pointer]:
+                        - img [ref=e179]
+                      - button "Heading 4" [ref=e183] [cursor=pointer]:
+                        - img [ref=e184]
+                    - generic [ref=e187]:
+                      - button "Blockquote" [ref=e188] [cursor=pointer]:
+                        - img [ref=e189]
+                      - button "Horizontal line" [ref=e193] [cursor=pointer]:
+                        - img [ref=e194]
+                      - button "Bullet list" [ref=e196] [cursor=pointer]:
+                        - img [ref=e197]
+                      - button "Ordered list" [ref=e199] [cursor=pointer]:
+                        - img [ref=e200]
+                    - generic [ref=e204]:
+                      - button "Link" [ref=e205] [cursor=pointer]:
+                        - img [ref=e206]
+                      - button "Remove link" [ref=e211] [cursor=pointer]:
+                        - img [ref=e212]
+                  - textbox [ref=e219]:
+                    - paragraph [ref=e220]: Write here...
+            - separator "Resize board and side panels" [ref=e221]
+            - generic [ref=e223]:
+              - generic [ref=e227]:
+                - tablist [ref=e228]:
+                  - tab "Analysis" [ref=e229] [cursor=pointer]:
+                    - img [ref=e231]
+                    - generic: Analysis
+                    - text: Analysis
+                  - tab "Database" [ref=e235] [cursor=pointer]:
+                    - img [ref=e237]
+                    - generic: Database
+                    - text: Database
+                  - tab "Prep" [selected] [ref=e241] [cursor=pointer]:
+                    - img [ref=e243]
+                    - generic: Prep
+                    - text: Prep
+                  - tab "Plan Explorer" [ref=e247] [cursor=pointer]:
+                    - img [ref=e249]
+                    - generic: Plan Explorer
+                    - text: Plan Explorer
+                  - tab "Engine Plans" [ref=e253] [cursor=pointer]:
+                    - img [ref=e255]
+                    - generic: Engine Plans
+                    - text: Engine Plans
+                  - tab "Compare" [ref=e258] [cursor=pointer]:
+                    - img [ref=e260]
+                    - generic: Compare
+                    - text: Compare
+                  - tab "Info" [ref=e267] [cursor=pointer]:
+                    - img [ref=e269]
+                    - generic: Info
+                    - text: Info
+                - tabpanel "Prep" [ref=e461]:
+                  - generic [ref=e462]:
+                    - generic [ref=e464]:
+                      - generic [ref=e465]:
+                        - generic [ref=e466]:
+                          - paragraph [ref=e467]: Opening prep
+                          - generic [ref=e562]: You as black
+                        - generic [ref=e468]:
+                          - button "Start here" [ref=e469] [cursor=pointer]:
+                            - generic [ref=e470]:
+                              - img [ref=e472]
+                              - generic [ref=e476]: Start here
+                          - button [ref=e477] [cursor=pointer]:
+                            - img [ref=e479]
+                          - button [ref=e482] [cursor=pointer]:
+                            - img [ref=e484]
+                      - generic [ref=e487]:
+                        - radiogroup "Prep target" [ref=e488]:
+                          - generic [ref=e490]:
+                            - radio "Player"
+                            - generic [ref=e491] [cursor=pointer]: Player
+                          - generic [ref=e492]:
+                            - radio "General" [checked] [active]
+                            - generic [ref=e493] [cursor=pointer]: General
+                        - generic [ref=e495]:
+                          - textbox "Prep source" [ref=e496]
+                          - generic:
+                            - img
+                        - radiogroup "Your prep side" [ref=e563]:
+                          - generic [ref=e565]:
+                            - radio "White"
+                            - generic [ref=e566] [cursor=pointer]: White
+                          - generic [ref=e567]:
+                            - radio "Black" [checked]
+                            - generic [ref=e568] [cursor=pointer]: Black
+                        - generic [ref=e497]:
+                          - generic [ref=e498]: Min games
+                          - generic [ref=e499]:
+                            - textbox "Minimum games" [ref=e500]: "2"
+                            - generic [ref=e502]:
+                              - button [ref=e503] [cursor=pointer]:
+                                - img [ref=e504]
+                              - button [ref=e506] [cursor=pointer]:
+                                - img [ref=e507]
+                        - generic [ref=e509]:
+                          - generic [ref=e510]: Show top
+                          - generic [ref=e511]:
+                            - textbox "Top opponent moves to show" [ref=e512]: "8"
+                            - generic [ref=e514]:
+                              - button [ref=e515] [cursor=pointer]:
+                                - img [ref=e516]
+                              - button [ref=e518] [cursor=pointer]:
+                                - img [ref=e519]
+                      - generic [ref=e521]:
+                        - generic [ref=e522]:
+                          - paragraph [ref=e523]: "Start: game start"
+                          - paragraph [ref=e524]: White to move
+                        - generic [ref=e525]:
+                          - button "Common move" [disabled] [ref=e526]:
+                            - generic [ref=e527]:
+                              - img [ref=e529]
+                              - generic [ref=e531]: Common move
+                          - button "Done + next" [disabled] [ref=e532]:
+                            - generic [ref=e533]:
+                              - img [ref=e535]
+                              - generic [ref=e538]: Done + next
+                      - alert [ref=e539]:
+                        - generic [ref=e542]: Choose a prep source before starting.
+                    - generic [ref=e547]:
+                      - button "Manage Engines" [ref=e548] [cursor=pointer]:
+                        - generic [ref=e549]:
+                          - img [ref=e551]
+                          - generic [ref=e554]: Manage Engines
+                      - button [ref=e555] [cursor=pointer]:
+                        - img [ref=e557]
+              - separator "Resize right side panels" [ref=e358]
+              - generic [ref=e360]:
+                - generic [ref=e362]:
+                  - generic [ref=e366]:
+                    - button [ref=e367] [cursor=pointer]:
+                      - img [ref=e369]
+                    - button [ref=e372] [cursor=pointer]:
+                      - img [ref=e374]
+                    - button [ref=e378] [cursor=pointer]:
+                      - img [ref=e380]
+                    - button [ref=e384] [cursor=pointer]:
+                      - img [ref=e386]
+                    - button [ref=e389] [cursor=pointer]:
+                      - img [ref=e391]
+                    - button [ref=e395] [cursor=pointer]:
+                      - img [ref=e397]
+                    - button [ref=e401] [cursor=pointer]:
+                      - img [ref=e403]
+                  - separator [ref=e406]
+                  - generic [ref=e408]:
+                    - generic [ref=e409]:
+                      - paragraph
+                      - generic [ref=e410]:
+                        - button [ref=e411] [cursor=pointer]:
+                          - img [ref=e413]
+                        - button [ref=e416] [cursor=pointer]:
+                          - img [ref=e418]
+                        - button [ref=e421] [cursor=pointer]:
+                          - img [ref=e423]
+                        - button [ref=e425] [cursor=pointer]:
+                          - img [ref=e427]
+                    - separator [ref=e432]
+                - generic [ref=e440]:
+                  - button [ref=e441] [cursor=pointer]:
+                    - img [ref=e443]
+                  - button [ref=e446] [cursor=pointer]:
+                    - img [ref=e448]
+                  - button [ref=e450] [cursor=pointer]:
+                    - img [ref=e452]
+                  - button [ref=e454] [cursor=pointer]:
+                    - img [ref=e456]
+  - generic:
+    - tooltip "Choose whether to target one player or a general opening source"

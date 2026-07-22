@@ -1,0 +1,181 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - img [ref=e9]
+        - generic [ref=e10]:
+          - button "File" [ref=e11] [cursor=pointer]:
+            - generic [ref=e13]: File
+          - button "View" [ref=e14] [cursor=pointer]:
+            - generic [ref=e16]: View
+          - button "Help" [ref=e17] [cursor=pointer]:
+            - generic [ref=e19]: Help
+      - generic [ref=e21]:
+        - img "Minimize" [ref=e23]
+        - img "Restore" [ref=e26]
+        - img "Close" [ref=e29]
+  - navigation [ref=e31]:
+    - generic [ref=e33]:
+      - link [ref=e34] [cursor=pointer]:
+        - /url: /home
+        - img [ref=e35]
+      - link [ref=e39] [cursor=pointer]:
+        - /url: /
+        - img [ref=e40]
+      - link [ref=e43] [cursor=pointer]:
+        - /url: /files
+        - img [ref=e44]
+      - link [ref=e48] [cursor=pointer]:
+        - /url: /databases
+        - img [ref=e49]
+      - link [ref=e53] [cursor=pointer]:
+        - /url: /engines
+        - img [ref=e54]
+    - link [ref=e59] [cursor=pointer]:
+      - /url: /settings
+      - img [ref=e60]
+  - main [ref=e63]:
+    - generic [ref=e64]:
+      - generic [ref=e65]:
+        - heading "Databases" [level=1] [ref=e66]
+        - button [ref=e67] [cursor=pointer]:
+          - img [ref=e69]
+      - generic [ref=e71]:
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - generic [ref=e76]:
+              - generic:
+                - img
+              - textbox "Search" [ref=e77]
+            - button [ref=e78] [cursor=pointer]:
+              - img [ref=e80]
+          - separator [ref=e81]
+          - generic [ref=e87] [cursor=pointer]:
+            - generic [ref=e88]:
+              - generic [ref=e89]:
+                - img [ref=e90]
+                - generic [ref=e94]:
+                  - paragraph [ref=e95]: Demo Database
+                  - paragraph [ref=e96]: Stub database for export UI verification
+              - generic [ref=e99]:
+                - radio "0" [checked]
+                - img [ref=e102]
+                - radio "1"
+                - img [ref=e106]
+            - generic [ref=e108]:
+              - generic [ref=e109]:
+                - paragraph [ref=e110]: Games
+                - paragraph [ref=e111]: "42"
+              - generic [ref=e112]:
+                - paragraph [ref=e113]: Storage
+                - paragraph [ref=e114]: 2 KB
+        - generic [ref=e128]:
+          - separator [ref=e129]:
+            - generic [ref=e130]: General settings
+          - generic [ref=e131]:
+            - generic [ref=e132]: Name
+            - textbox "Name" [ref=e134]: Demo Database
+          - generic [ref=e135]:
+            - generic [ref=e136]: Description
+            - textbox "Description" [ref=e138]: Stub database for export UI verification
+          - generic [ref=e140]:
+            - generic [ref=e141]:
+              - checkbox "Reference Database" [ref=e142]
+              - img
+            - generic [ref=e144]: Reference Database
+          - generic [ref=e147]:
+            - generic [ref=e148]:
+              - checkbox "Indexed" [ref=e149]
+              - img
+            - generic [ref=e151]: Indexed
+          - generic [ref=e152]:
+            - paragraph [ref=e153]: Online accounts
+            - generic [ref=e154]:
+              - generic [ref=e155]:
+                - generic [ref=e156]: Website
+                - radiogroup [ref=e157]:
+                  - generic [ref=e159]:
+                    - radio "Lichess" [checked]
+                    - generic [ref=e160] [cursor=pointer]: Lichess
+                  - generic [ref=e161]:
+                    - radio "Chess.com"
+                    - generic [ref=e162] [cursor=pointer]: Chess.com
+              - generic [ref=e163]:
+                - generic [ref=e164]: Username
+                - textbox "Username" [ref=e166]:
+                  - /placeholder: Verifier
+              - button "Add account" [disabled] [ref=e167]:
+                - generic [ref=e168]:
+                  - img [ref=e170]
+                  - generic [ref=e171]: Add account
+          - separator [ref=e172]:
+            - generic [ref=e173]: Data
+          - generic [ref=e174]:
+            - generic [ref=e175]:
+              - paragraph [ref=e176]: Games
+              - paragraph [ref=e177]: "42"
+            - generic [ref=e178]:
+              - paragraph [ref=e179]: Players
+              - paragraph [ref=e180]: "2"
+            - generic [ref=e181]:
+              - paragraph [ref=e182]: Events
+              - paragraph [ref=e183]: "1"
+          - link "Explore" [ref=e185] [cursor=pointer]:
+            - /url: /databases/Demo%20Database
+            - generic [ref=e186]:
+              - generic [ref=e187]: Explore
+              - img [ref=e189]
+          - separator [ref=e192]:
+            - generic [ref=e193]: Advanced tools
+          - generic [ref=e194]:
+            - generic [ref=e195]:
+              - paragraph [ref=e196]: Copy repertoire
+              - paragraph [ref=e197]: Create a new database containing only this player's choices from positions where they were to move.
+              - generic [ref=e198]:
+                - generic [ref=e200]:
+                  - img [ref=e202]
+                  - textbox "Player" [ref=e205]
+                - button "Copy repertoire" [disabled] [ref=e206]:
+                  - generic [ref=e207]:
+                    - generic [ref=e208]: Copy repertoire
+                    - img [ref=e210]
+            - generic [ref=e214]:
+              - paragraph [ref=e215]: Merge Players
+              - paragraph [ref=e216]: Replace all occurrences of the first player with the second player in the database.
+              - generic [ref=e217]:
+                - generic [ref=e219]:
+                  - img [ref=e221]
+                  - textbox "Player 1" [ref=e224]
+                - button "Merge" [ref=e225] [cursor=pointer]:
+                  - generic [ref=e226]:
+                    - generic [ref=e227]: Merge
+                    - img [ref=e229]
+                - generic [ref=e233]:
+                  - img [ref=e235]
+                  - textbox "Player 2" [ref=e238]
+            - generic [ref=e239]:
+              - paragraph [ref=e240]: Batch Delete
+              - paragraph [ref=e241]: These actions will irreversibly remove games from the database. Use with caution.
+              - generic [ref=e242]:
+                - button "Remove Duplicates" [ref=e243] [cursor=pointer]:
+                  - generic [ref=e245]: Remove Duplicates
+                - button "Remove Empty Games" [ref=e246] [cursor=pointer]:
+                  - generic [ref=e248]: Remove Empty Games
+          - separator [ref=e249]:
+            - generic [ref=e250]: Actions
+          - generic [ref=e251]:
+            - generic [ref=e252]:
+              - button "Add Games" [ref=e253] [cursor=pointer]:
+                - generic [ref=e254]:
+                  - generic [ref=e255]: Add Games
+                  - img [ref=e257]
+              - button "Export to PGN" [ref=e258] [cursor=pointer]:
+                - generic [ref=e259]:
+                  - generic [ref=e260]: Export to PGN
+                  - img [ref=e262]
+              - button "Export to files" [ref=e265] [cursor=pointer]:
+                - generic [ref=e266]:
+                  - generic [ref=e267]: Export to files
+                  - img [ref=e269]
+            - button "Delete" [ref=e272] [cursor=pointer]:
+              - generic [ref=e274]: Delete

@@ -1,0 +1,139 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e7]:
+          - img [ref=e9]
+          - generic [ref=e10]:
+            - button "File" [ref=e11] [cursor=pointer]:
+              - generic [ref=e13]: File
+            - button "View" [ref=e14] [cursor=pointer]:
+              - generic [ref=e16]: View
+            - button "Help" [ref=e17] [cursor=pointer]:
+              - generic [ref=e19]: Help
+        - generic [ref=e21]:
+          - img "Minimize" [ref=e23]
+          - img "Restore" [ref=e26]
+          - img "Close" [ref=e29]
+    - navigation [ref=e31]:
+      - generic [ref=e33]:
+        - link [ref=e34] [cursor=pointer]:
+          - /url: /home
+          - img [ref=e35]
+        - link [ref=e39] [cursor=pointer]:
+          - /url: /
+          - img [ref=e40]
+        - link [ref=e43] [cursor=pointer]:
+          - /url: /files
+          - img [ref=e44]
+        - link [ref=e48] [cursor=pointer]:
+          - /url: /databases
+          - img [ref=e49]
+        - link [ref=e53] [cursor=pointer]:
+          - /url: /engines
+          - img [ref=e54]
+      - link [ref=e59] [cursor=pointer]:
+        - /url: /settings
+        - img [ref=e60]
+    - main [ref=e63]:
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - generic [ref=e67]:
+            - img [ref=e68]
+            - generic [ref=e71]:
+              - paragraph [ref=e72]: Play Chess
+              - paragraph [ref=e73]: Play against an engine or a friend
+            - button "Play" [ref=e74] [cursor=pointer]:
+              - generic [ref=e76]: Play
+          - generic [ref=e78]:
+            - img "Chessboard" [ref=e79]
+            - generic [ref=e81]:
+              - paragraph [ref=e82]: Analysis Board
+              - paragraph [ref=e83]: Analyze a game or position
+            - button "Open" [ref=e84] [cursor=pointer]:
+              - generic [ref=e86]: Open
+          - generic [ref=e88]:
+            - img [ref=e89]
+            - generic [ref=e92]:
+              - paragraph [ref=e93]: Analyse your last game
+              - paragraph [ref=e94]: Search 1 of 2 linked accounts.
+            - generic [ref=e95]:
+              - button "Analyse latest" [ref=e96] [cursor=pointer]:
+                - generic [ref=e98]: Analyse latest
+              - button "Choose accounts" [ref=e99] [cursor=pointer]:
+                - img [ref=e101]
+          - generic [ref=e105]:
+            - img [ref=e106]
+            - generic [ref=e109]:
+              - paragraph [ref=e110]: Choose online game
+              - paragraph [ref=e111]: Pick one linked online game and open it in the analysis board.
+            - generic [ref=e112]:
+              - button "Choose game" [ref=e113] [cursor=pointer]:
+                - generic [ref=e115]: Choose game
+              - button "Online game accounts" [ref=e116] [cursor=pointer]:
+                - img [ref=e118]
+          - generic [ref=e122]:
+            - img [ref=e123]
+            - generic [ref=e129]:
+              - paragraph [ref=e130]: New Repertoire
+              - paragraph [ref=e131]: Build and practice your opening repertoire
+            - button "Create" [ref=e132] [cursor=pointer]:
+              - generic [ref=e134]: Create
+          - generic [ref=e136]:
+            - img [ref=e137]
+            - generic [ref=e141]:
+              - paragraph [ref=e142]: Opening Review
+              - paragraph [ref=e143]: Analyze your repertoire and train saved positions with spaced repetition.
+            - button "Open" [ref=e144] [cursor=pointer]:
+              - generic [ref=e146]: Open
+          - generic [ref=e148]:
+            - img [ref=e149]
+            - generic [ref=e151]:
+              - paragraph [ref=e152]: Mistake Review
+              - paragraph [ref=e153]: Scan your games for mistakes and train them with spaced repetition.
+            - button "Open" [ref=e154] [cursor=pointer]:
+              - generic [ref=e156]: Open
+          - generic [ref=e158]:
+            - img [ref=e159]
+            - generic [ref=e162]:
+              - paragraph [ref=e163]: Import Game
+              - paragraph [ref=e164]: Import a game from a PGN
+            - button "Import" [ref=e165] [cursor=pointer]:
+              - generic [ref=e167]: Import
+          - generic [ref=e169]:
+            - img [ref=e170]
+            - generic [ref=e172]:
+              - paragraph [ref=e173]: Puzzles
+              - paragraph [ref=e174]: Train your chess skills
+            - button "Train" [ref=e175] [cursor=pointer]:
+              - generic [ref=e177]: Train
+        - generic [ref=e178]:
+          - paragraph [ref=e179]: Recent Files
+          - generic [ref=e180]:
+            - img [ref=e181]
+            - paragraph [ref=e184]: No files open recently
+  - dialog "Opening Review" [ref=e186]:
+    - banner [ref=e187]:
+      - heading "Opening Review" [level=2] [ref=e188]
+      - button [active] [ref=e189] [cursor=pointer]:
+        - img [ref=e190]
+    - generic [ref=e193]:
+      - generic [ref=e194]:
+        - paragraph [ref=e195]: Analyze your repertoire, save the important positions, then train them here.
+        - generic [ref=e196]:
+          - button "Online games" [ref=e197] [cursor=pointer]:
+            - generic [ref=e198]:
+              - img [ref=e200]
+              - generic [ref=e203]: Online games
+          - button "Analyze repertoire" [ref=e204] [cursor=pointer]:
+            - generic [ref=e205]:
+              - img [ref=e207]
+              - generic [ref=e210]: Analyze repertoire
+      - generic [ref=e212]:
+        - img [ref=e213]
+        - paragraph [ref=e219]: No review decks yet
+        - paragraph [ref=e220]: Run Analyze Repertoire, then save review positions when the scan finishes.
+        - button "Analyze repertoire" [ref=e221] [cursor=pointer]:
+          - generic [ref=e222]:
+            - img [ref=e224]
+            - generic [ref=e227]: Analyze repertoire

@@ -1,0 +1,95 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e7]:
+          - img [ref=e9]
+          - generic [ref=e10]:
+            - button "File" [ref=e11] [cursor=pointer]:
+              - generic [ref=e13]: File
+            - button "View" [ref=e14] [cursor=pointer]:
+              - generic [ref=e16]: View
+            - button "Help" [ref=e17] [cursor=pointer]:
+              - generic [ref=e19]: Help
+        - generic [ref=e21]:
+          - img "Minimize" [ref=e23]
+          - img "Restore" [ref=e26]
+          - img "Close" [ref=e29]
+    - navigation [ref=e31]:
+      - generic [ref=e33]:
+        - link [ref=e34] [cursor=pointer]:
+          - /url: /home
+          - img [ref=e35]
+        - link [ref=e39] [cursor=pointer]:
+          - /url: /
+          - img [ref=e40]
+        - link [ref=e43] [cursor=pointer]:
+          - /url: /files
+          - img [ref=e44]
+        - link [ref=e48] [cursor=pointer]:
+          - /url: /databases
+          - img [ref=e49]
+        - link [ref=e53] [cursor=pointer]:
+          - /url: /engines
+          - img [ref=e54]
+      - link [ref=e59] [cursor=pointer]:
+        - /url: /settings
+        - img [ref=e60]
+    - main [ref=e63]:
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - heading "Files" [level=1] [ref=e66]
+          - button [ref=e67] [cursor=pointer]:
+            - img [ref=e69]
+        - generic [ref=e71]:
+          - generic [ref=e73]:
+            - generic [ref=e74]:
+              - generic [ref=e75]:
+                - generic:
+                  - img
+                - textbox "Search for files" [ref=e76]
+              - button [ref=e77] [cursor=pointer]:
+                - img [ref=e79]
+              - button [ref=e82] [cursor=pointer]:
+                - img [ref=e84]
+              - button "Import database as files" [ref=e86] [cursor=pointer]:
+                - img [ref=e88]
+            - separator [ref=e91]
+            - generic [ref=e92]:
+              - generic [ref=e93]:
+                - checkbox "Game"
+                - generic [ref=e95] [cursor=pointer]: Game
+              - generic [ref=e96]:
+                - checkbox "Repertoire"
+                - generic [ref=e98] [cursor=pointer]: Repertoire
+              - generic [ref=e99]:
+                - checkbox "Tournament"
+                - generic [ref=e101] [cursor=pointer]: Tournament
+              - generic [ref=e102]:
+                - checkbox "Puzzle"
+                - generic [ref=e104] [cursor=pointer]: Puzzle
+              - generic [ref=e105]:
+                - checkbox "Other"
+                - generic [ref=e107] [cursor=pointer]: Other
+            - separator [ref=e108]
+          - generic [ref=e113]:
+            - img [ref=e115]
+            - paragraph [ref=e118]: No file selected
+  - dialog "Import database as files" [ref=e120]:
+    - banner [ref=e121]:
+      - heading "Import database as files" [level=2] [ref=e122]
+      - button [active] [ref=e123] [cursor=pointer]:
+        - img [ref=e124]
+    - generic [ref=e128]:
+      - paragraph [ref=e129]: Choose a PGN, compressed PGN, or En Croissant database. The named folder will be created or reused under Files root, with one game file per game.
+      - generic [ref=e130]:
+        - generic [ref=e131]: Source database *
+        - paragraph [ref=e132]: PGN, PGN.ZST, PGN.BZ2, or DB3
+        - button "Source database" [ref=e134]:
+          - paragraph
+      - generic [ref=e135]:
+        - generic [ref=e136]: Folder name
+        - paragraph [ref=e137]: Each imported game will be saved as a separate PGN file in this folder.
+        - textbox "Folder name" [ref=e139]
+      - button "Import games" [ref=e140] [cursor=pointer]:
+        - generic [ref=e142]: Import games

@@ -1,0 +1,955 @@
+import { Badge, Box, Loader, Text } from "@mantine/core";
+import {
+  IconArchive,
+  IconArchiveOff,
+  IconChevronRight,
+  IconEdit,
+  IconEye,
+  IconFolder,
+  IconFolderOpen,
+  IconPinned,
+  IconPinnedOff,
+  IconTarget,
+  IconTrash,
+} from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
+import { basename, join, sep } from "@tauri-apps/api/path";
+import { rename } from "@tauri-apps/plugin-fs";
+import clsx from "clsx";
+import Fuse from "fuse.js";
+import { useAtom, useSetAtom } from "jotai";
+import { useContextMenu } from "mantine-contextmenu";
+import Draggable, { type DraggableEvent } from "react-draggable";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  createContext,
+  useContext,
+} from "react";
+import {
+  activeTabAtom,
+  archivedFileEntriesAtom,
+  deckAtomFamily,
+  tabsAtom,
+  expandedDirectoriesAtom,
+  manualFileEntryOrderAtom,
+  pinnedFileEntriesAtom,
+  type FilesSortMode,
+} from "@/state/atoms";
+import { openFile } from "@/utils/files";
+import { getAiCoachSidecarPath } from "@/utils/aiCoachPersistence";
+import classes from "./DirectoryTree.module.css";
+import { getFileExtension, isPdfFile, isPgnFile, stripSupportedFileExtension } from "./file";
+import type { Directory, FileMetadata } from "./file";
+import { getStats } from "./opening";
+import { FileIcon } from "./FileIcon";
+
+type DragContextType = {
+  draggingPath: string | null;
+  setDraggingPath: (path: string | null) => void;
+  hoverTarget: DropTarget | null;
+  setHoverTarget: (target: DropTarget | null) => void;
+  registerFolder: (path: string, ref: HTMLDivElement | null) => void;
+  registerRow: (entry: DragRowRegistration, ref: HTMLDivElement | null) => void;
+  getDropTarget: (
+    clientX: number,
+    clientY: number,
+    draggingPath?: string | null,
+  ) => DropTarget | null;
+  checkHover: (clientX: number, clientY: number, draggingPath?: string | null) => void;
+  reorderEntry: (sourcePath: string, targetPath: string, position: "before" | "after") => void;
+  replaceOrderedPathPrefix: (oldPath: string, newPath: string) => void;
+  documentDir: string;
+};
+
+export const DragContext = createContext<DragContextType | null>(null);
+
+const DRAG_START_THRESHOLD_PX = 8;
+const TREE_BASE_PADDING_PX = 8;
+const TREE_INDENT_PX = 16;
+type Entry = FileMetadata | Directory;
+type ShowContextMenu = ReturnType<typeof useContextMenu>["showContextMenu"];
+export type DropTarget =
+  | { kind: "into"; path: string }
+  | { kind: "before"; path: string }
+  | { kind: "after"; path: string };
+export type DragRowRegistration = {
+  path: string;
+  parentPath: string;
+  type: Entry["type"];
+};
+
+function flattenFiles(files: Entry[]): Entry[] {
+  return files.flatMap((f) => (f.type === "directory" ? flattenFiles(f.children) : [f]));
+}
+
+function filterTree(files: Entry[], predicate: (file: FileMetadata) => boolean): Entry[] {
+  return files
+    .map((file) => {
+      if (file.type === "file") {
+        return predicate(file) ? file : null;
+      }
+
+      const children = filterTree(file.children, predicate);
+      return children.length > 0 ? { ...file, children } : null;
+    })
+    .filter((file): file is Entry => file !== null);
+}
+
+function filterArchivedTree(
+  files: Entry[],
+  archivedPaths: ReadonlySet<string>,
+  showArchived: boolean,
+): Entry[] {
+  return files
+    .map((entry) => filterArchivedEntry(entry, archivedPaths, showArchived, false))
+    .filter((entry): entry is Entry => entry !== null);
+}
+
+function filterArchivedEntry(
+  entry: Entry,
+  archivedPaths: ReadonlySet<string>,
+  showArchived: boolean,
+  parentArchived: boolean,
+): Entry | null {
+  const archived = parentArchived || archivedPaths.has(entry.path);
+
+  if (entry.type === "file") {
+    return archived === showArchived ? entry : null;
+  }
+
+  if (!showArchived && archived) {
+    return null;
+  }
+
+  const children = entry.children
+    .map((child) => filterArchivedEntry(child, archivedPaths, showArchived, archived))
+    .filter((child): child is Entry => child !== null);
+
+  if (showArchived && !archived && children.length === 0) {
+    return null;
+  }
+
+  return {
+    ...entry,
+    children,
+  };
+}
+
+function getEventPoint(event: DraggableEvent): { x: number; y: number } | null {
+  if ("clientX" in event && "clientY" in event) {
+    return { x: event.clientX, y: event.clientY };
+  }
+
+  if ("touches" in event && event.touches.length > 0) {
+    const touch = event.touches[0];
+    return { x: touch.clientX, y: touch.clientY };
+  }
+
+  return null;
+}
+
+function getEntryTimestamp(entry: Entry): number {
+  return entry.lastModified;
+}
+
+function replacePathPrefix(path: string, oldPath: string, newPath: string) {
+  if (path === oldPath) {
+    return newPath;
+  }
+
+  if (path.startsWith(`${oldPath}/`) || path.startsWith(`${oldPath}\\`)) {
+    return `${newPath}${path.slice(oldPath.length)}`;
+  }
+
+  return path;
+}
+
+function isSameOrDescendantPath(path: string, parent: string) {
+  return path === parent || path.startsWith(`${parent}/`) || path.startsWith(`${parent}\\`);
+}
+
+function recursiveSort(
+  files: Entry[],
+  pruneEmpty = false,
+  pinnedPaths: ReadonlySet<string> = new Set(),
+  sortMode: FilesSortMode = "newest",
+  manualOrder: Record<string, string[]> = {},
+  parentPath = "",
+): Entry[] {
+  return files
+    .map((f) => {
+      if (f.type === "file") return f;
+      return {
+        ...f,
+        children: recursiveSort(f.children, pruneEmpty, pinnedPaths, sortMode, manualOrder, f.path),
+      };
+    })
+    .filter((f) => {
+      return f.type === "file" || !pruneEmpty || f.children.length > 0;
+    })
+    .sort((a, b) => {
+      const pinnedDifference = Number(pinnedPaths.has(b.path)) - Number(pinnedPaths.has(a.path));
+      if (pinnedDifference !== 0) {
+        return pinnedDifference;
+      }
+
+      const modeDifference =
+        sortMode === "manual"
+          ? compareEntriesByManualOrder(a, b, manualOrder[parentPath] ?? [])
+          : compareEntriesByMode(a, b, sortMode);
+
+      if (modeDifference !== 0) {
+        return modeDifference;
+      }
+
+      return compareNames(a, b, "asc");
+    });
+}
+
+function compareEntriesByManualOrder(a: Entry, b: Entry, order: string[]) {
+  const aIndex = order.indexOf(a.path);
+  const bIndex = order.indexOf(b.path);
+
+  if (aIndex >= 0 && bIndex >= 0) {
+    return aIndex - bIndex;
+  }
+
+  if (aIndex >= 0) {
+    return -1;
+  }
+
+  if (bIndex >= 0) {
+    return 1;
+  }
+
+  return compareNames(a, b, "asc");
+}
+
+function compareEntriesByMode(a: Entry, b: Entry, sortMode: FilesSortMode): number {
+  switch (sortMode) {
+    case "oldest":
+      return getEntryTimestamp(a) - getEntryTimestamp(b);
+    case "name-asc":
+      return compareNames(a, b, "asc");
+    case "name-desc":
+      return compareNames(a, b, "desc");
+    case "type": {
+      const typeDifference = getEntryTypeLabel(a).localeCompare(getEntryTypeLabel(b), "en", {
+        numeric: true,
+        sensitivity: "base",
+      });
+      return typeDifference || compareNames(a, b, "asc");
+    }
+    case "newest":
+    default:
+      return getEntryTimestamp(b) - getEntryTimestamp(a);
+  }
+}
+
+function compareNames(a: Entry, b: Entry, direction: "asc" | "desc") {
+  const result = a.name.localeCompare(b.name, "en", {
+    numeric: true,
+    sensitivity: "base",
+  });
+
+  return direction === "asc" ? result : -result;
+}
+
+function getEntryTypeLabel(entry: Entry) {
+  return entry.type === "directory" ? "folder" : entry.metadata.type;
+}
+
+export default function DirectoryTree({
+  files,
+  refreshDirectory,
+  loadDirectory,
+  loadingDirectories,
+  isDeepLoading,
+  selectedFile,
+  setSelectedFile,
+  onRequestDelete,
+  onRequestRename,
+  search,
+  filter,
+  showArchived,
+  sortMode,
+  documentDir,
+}: {
+  files: Entry[] | undefined;
+  refreshDirectory: () => Promise<unknown>;
+  loadDirectory: (path: string) => Promise<void>;
+  loadingDirectories: Set<string>;
+  isDeepLoading: boolean;
+  selectedFile: Entry | null;
+  setSelectedFile: (file: Entry | null) => void;
+  onRequestDelete: (file: Entry) => void;
+  onRequestRename: (file: Entry) => void;
+  search: string;
+  filter: string;
+  showArchived: boolean;
+  sortMode: FilesSortMode;
+  documentDir: string;
+}) {
+  const [pinnedPaths, setPinnedPaths] = useAtom(pinnedFileEntriesAtom);
+  const [archivedPaths, setArchivedPaths] = useAtom(archivedFileEntriesAtom);
+  const [manualOrder] = useAtom(manualFileEntryOrderAtom);
+  const pinnedPathSet = useMemo(() => new Set(pinnedPaths), [pinnedPaths]);
+  const archivedPathSet = useMemo(() => new Set(archivedPaths), [archivedPaths]);
+  const flattedFiles = useMemo(() => flattenFiles(files ?? []), [files]);
+  const fuse = useMemo(
+    () =>
+      new Fuse(flattedFiles ?? [], {
+        keys: ["name"],
+      }),
+    [flattedFiles],
+  );
+
+  const filteredFiles = useMemo(() => {
+    let next = files ?? [];
+
+    if (search) {
+      const searchMatches = new Set(fuse.search(search).map((result) => result.item.path));
+      next = filterTree(next, (file) => searchMatches.has(file.path));
+    }
+
+    if (filter) {
+      next = filterTree(next, (file) => file.metadata.type === filter);
+    }
+
+    next = filterArchivedTree(next, archivedPathSet, showArchived);
+
+    return recursiveSort(
+      next,
+      !!(search || filter),
+      pinnedPathSet,
+      sortMode,
+      manualOrder,
+      documentDir,
+    );
+  }, [
+    files,
+    search,
+    filter,
+    fuse,
+    archivedPathSet,
+    showArchived,
+    pinnedPathSet,
+    sortMode,
+    manualOrder,
+    documentDir,
+  ]);
+
+  return (
+    <Box className={classes.tree}>
+      {isDeepLoading && (search || filter) && (
+        <Box px="xs" py={4}>
+          <Text size="xs" c="dimmed">
+            Loading folders for search...
+          </Text>
+        </Box>
+      )}
+      <Tree
+        files={filteredFiles}
+        refreshDirectory={refreshDirectory}
+        loadDirectory={loadDirectory}
+        loadingDirectories={loadingDirectories}
+        depth={0}
+        selected={selectedFile}
+        setSelectedFile={setSelectedFile}
+        onRequestDelete={onRequestDelete}
+        onRequestRename={onRequestRename}
+        pinnedPaths={pinnedPathSet}
+        setPinnedPaths={setPinnedPaths}
+        archivedPaths={archivedPathSet}
+        setArchivedPaths={setArchivedPaths}
+        expandedByDefault={!!(search || filter)}
+        parentPath={documentDir}
+      />
+    </Box>
+  );
+}
+
+function Tree({
+  files,
+  depth,
+  refreshDirectory,
+  loadDirectory,
+  loadingDirectories,
+  selected,
+  setSelectedFile,
+  onRequestDelete,
+  onRequestRename,
+  pinnedPaths,
+  setPinnedPaths,
+  archivedPaths,
+  setArchivedPaths,
+  expandedByDefault,
+  parentPath,
+}: {
+  files: Entry[];
+  depth: number;
+  refreshDirectory: () => Promise<unknown>;
+  loadDirectory: (path: string) => Promise<void>;
+  loadingDirectories: Set<string>;
+  selected: Entry | null;
+  setSelectedFile: (file: Entry | null) => void;
+  onRequestDelete: (file: Entry) => void;
+  onRequestRename: (file: Entry) => void;
+  pinnedPaths: ReadonlySet<string>;
+  setPinnedPaths: React.Dispatch<React.SetStateAction<string[]>>;
+  archivedPaths: ReadonlySet<string>;
+  setArchivedPaths: React.Dispatch<React.SetStateAction<string[]>>;
+  expandedByDefault?: boolean;
+  parentPath: string;
+}) {
+  const [expandedIds, setExpandedIds] = useAtom(expandedDirectoriesAtom);
+  const navigate = useNavigate();
+  const [, setTabs] = useAtom(tabsAtom);
+  const setActiveTab = useSetAtom(activeTabAtom);
+  const { showContextMenu } = useContextMenu();
+
+  const handleOpenFile = useCallback(
+    async (record: FileMetadata) => {
+      if (isPdfFile(record)) {
+        setSelectedFile(record);
+        return;
+      }
+
+      await openFile(record, setTabs, setActiveTab);
+      void navigate({ to: "/" });
+    },
+    [setActiveTab, setTabs, navigate, setSelectedFile],
+  );
+
+  const toggleExpand = (node: Entry, event: React.MouseEvent) => {
+    event.stopPropagation();
+    const isCurrentlyExpanded = expandedIds.includes(node.path);
+    setExpandedIds((prev) => {
+      const next = [...prev];
+      const index = next.indexOf(node.path);
+      if (index >= 0) {
+        next.splice(index, 1);
+      } else {
+        next.push(node.path);
+      }
+      return next;
+    });
+
+    if (!isCurrentlyExpanded && node.type === "directory" && node.childrenLoaded !== true) {
+      void loadDirectory(node.path);
+    }
+  };
+
+  useEffect(() => {
+    if (expandedByDefault) {
+      return;
+    }
+
+    for (const node of files) {
+      if (
+        node.type === "directory" &&
+        expandedIds.includes(node.path) &&
+        node.childrenLoaded !== true &&
+        !loadingDirectories.has(node.path)
+      ) {
+        void loadDirectory(node.path);
+      }
+    }
+  }, [expandedByDefault, expandedIds, files, loadDirectory, loadingDirectories]);
+
+  return (
+    <>
+      {files.map((node) => {
+        const isExpanded = expandedByDefault || expandedIds.includes(node.path);
+        const isSelected = selected?.path === node.path;
+
+        return (
+          <DirectoryNode
+            key={node.path}
+            node={node}
+            depth={depth}
+            isSelected={isSelected}
+            selectedFile={selected}
+            isExpanded={isExpanded}
+            setExpandedIds={setExpandedIds}
+            toggleExpand={(e) => toggleExpand(node, e)}
+            setSelectedFile={setSelectedFile}
+            handleOpenFile={handleOpenFile}
+            onRequestDelete={onRequestDelete}
+            onRequestRename={onRequestRename}
+            pinnedPaths={pinnedPaths}
+            setPinnedPaths={setPinnedPaths}
+            archivedPaths={archivedPaths}
+            setArchivedPaths={setArchivedPaths}
+            refreshDirectory={refreshDirectory}
+            showContextMenu={showContextMenu}
+            parentPath={parentPath}
+          >
+            {node.type === "directory" &&
+              isExpanded &&
+              (loadingDirectories.has(node.path) ? (
+                <LoadingDirectoryRow depth={depth + 1} />
+              ) : (
+                node.children.length > 0 && (
+                  <Tree
+                    files={node.children}
+                    refreshDirectory={refreshDirectory}
+                    loadDirectory={loadDirectory}
+                    loadingDirectories={loadingDirectories}
+                    depth={depth + 1}
+                    selected={selected}
+                    setSelectedFile={setSelectedFile}
+                    onRequestDelete={onRequestDelete}
+                    onRequestRename={onRequestRename}
+                    pinnedPaths={pinnedPaths}
+                    setPinnedPaths={setPinnedPaths}
+                    archivedPaths={archivedPaths}
+                    setArchivedPaths={setArchivedPaths}
+                    expandedByDefault={expandedByDefault}
+                    parentPath={node.path}
+                  />
+                )
+              ))}
+          </DirectoryNode>
+        );
+      })}
+    </>
+  );
+}
+
+function LoadingDirectoryRow({ depth }: { depth: number }) {
+  return (
+    <div
+      className={classes.row}
+      style={{
+        paddingLeft: TREE_BASE_PADDING_PX + depth * TREE_INDENT_PX,
+      }}
+    >
+      <div className={classes.iconContainer}>
+        <Loader size={12} />
+      </div>
+      <Text component="span" size="xs" c="dimmed" className={classes.label}>
+        Loading...
+      </Text>
+    </div>
+  );
+}
+
+function DirectoryNode({
+  node,
+  depth,
+  isSelected,
+  selectedFile,
+  isExpanded,
+  setExpandedIds,
+  toggleExpand,
+  setSelectedFile,
+  handleOpenFile,
+  onRequestDelete,
+  onRequestRename,
+  pinnedPaths,
+  setPinnedPaths,
+  archivedPaths,
+  setArchivedPaths,
+  refreshDirectory,
+  showContextMenu,
+  parentPath,
+  children,
+}: {
+  node: Entry;
+  depth: number;
+  isSelected: boolean;
+  selectedFile: Entry | null;
+  isExpanded: boolean;
+  setExpandedIds: React.Dispatch<React.SetStateAction<string[]>>;
+  toggleExpand: (e: React.MouseEvent) => void;
+  setSelectedFile: (file: Entry | null) => void;
+  handleOpenFile: (file: FileMetadata) => Promise<void>;
+  onRequestDelete: (file: Entry) => void;
+  onRequestRename: (file: Entry) => void;
+  pinnedPaths: ReadonlySet<string>;
+  setPinnedPaths: React.Dispatch<React.SetStateAction<string[]>>;
+  archivedPaths: ReadonlySet<string>;
+  setArchivedPaths: React.Dispatch<React.SetStateAction<string[]>>;
+  refreshDirectory: () => Promise<unknown>;
+  showContextMenu: ShowContextMenu;
+  parentPath: string;
+  children?: React.ReactNode;
+}) {
+  const rowRef = useRef<HTMLDivElement>(null);
+  const didDragRef = useRef(false);
+  const suppressClickRef = useRef(false);
+  const dragStartPointRef = useRef<{ x: number; y: number } | null>(null);
+  const dragContext = useContext(DragContext);
+
+  const [isDraggingNode, setIsDraggingNode] = useState(false);
+  const isPinned = pinnedPaths.has(node.path);
+  const directArchived = archivedPaths.has(node.path);
+  const archiveAncestor = Array.from(archivedPaths).find(
+    (path) => path !== node.path && isSameOrDescendantPath(node.path, path),
+  );
+  const isArchived = directArchived || !!archiveAncestor;
+
+  const togglePin = useCallback(() => {
+    setPinnedPaths((current) => {
+      if (current.includes(node.path)) {
+        return current.filter((path) => path !== node.path);
+      }
+
+      return [...current, node.path];
+    });
+  }, [node.path, setPinnedPaths]);
+
+  const toggleArchive = useCallback(() => {
+    setArchivedPaths((current) => {
+      if (current.includes(node.path)) {
+        return current.filter((path) => !isSameOrDescendantPath(path, node.path));
+      }
+
+      return [...current.filter((path) => !isSameOrDescendantPath(path, node.path)), node.path];
+    });
+    setSelectedFile(null);
+  }, [node.path, setArchivedPaths, setSelectedFile]);
+
+  useEffect(() => {
+    if (!dragContext) {
+      return;
+    }
+
+    dragContext.registerRow(
+      {
+        path: node.path,
+        parentPath,
+        type: node.type,
+      },
+      rowRef.current,
+    );
+
+    if (node.type === "directory") {
+      dragContext.registerFolder(node.path, rowRef.current);
+    }
+
+    return () => {
+      dragContext.registerRow(
+        {
+          path: node.path,
+          parentPath,
+          type: node.type,
+        },
+        null,
+      );
+      if (node.type === "directory") {
+        dragContext.registerFolder(node.path, null);
+      }
+    };
+  }, [node.path, node.type, parentPath, dragContext]);
+
+  const onDragStart = (e: DraggableEvent) => {
+    didDragRef.current = false;
+    dragStartPointRef.current = getEventPoint(e);
+  };
+
+  const onDragMove = (e: DraggableEvent) => {
+    if (!dragContext) return;
+
+    const point = getEventPoint(e);
+    if (!point) {
+      return;
+    }
+
+    if (!didDragRef.current && dragStartPointRef.current) {
+      const dx = point.x - dragStartPointRef.current.x;
+      const dy = point.y - dragStartPointRef.current.y;
+      const distance = Math.hypot(dx, dy);
+
+      if (distance >= DRAG_START_THRESHOLD_PX) {
+        didDragRef.current = true;
+        dragContext.setDraggingPath(node.path);
+        setIsDraggingNode(true);
+      }
+    }
+
+    if (!didDragRef.current) {
+      return;
+    }
+
+    if (!isDraggingNode) setIsDraggingNode(true);
+    dragContext.checkHover(point.x, point.y, node.path);
+  };
+
+  const onDragStop = (e: DraggableEvent) => {
+    if (!dragContext) return;
+    const wasDragging = didDragRef.current;
+    didDragRef.current = false;
+    dragStartPointRef.current = null;
+    setIsDraggingNode(false);
+    suppressClickRef.current = wasDragging;
+    if (wasDragging) {
+      setTimeout(() => {
+        suppressClickRef.current = false;
+      }, 0);
+    }
+
+    dragContext.setDraggingPath(null);
+    const point = getEventPoint(e);
+    const target = point
+      ? dragContext.getDropTarget(point.x, point.y, node.path)
+      : dragContext.hoverTarget;
+    dragContext.setHoverTarget(null);
+
+    if (!wasDragging || !target) return;
+
+    const sourcePath = node.path;
+    if (sourcePath === target.path) return;
+
+    if (target.kind !== "into") {
+      dragContext.reorderEntry(sourcePath, target.path, target.kind);
+      return;
+    }
+
+    const handleDrop = async () => {
+      const separator = sep();
+      if (target.path.startsWith(sourcePath + separator)) return;
+
+      const sourceBasename = await basename(sourcePath);
+      const targetPath = await join(target.path, sourceBasename);
+
+      if (sourcePath === targetPath) return;
+
+      try {
+        await rename(sourcePath, targetPath);
+        if (node.type !== "directory" && isPgnFile(node)) {
+          await rename(
+            sourcePath.replace(/\.pgn$/i, ".info"),
+            targetPath.replace(/\.pgn$/i, ".info"),
+          ).catch(() => {});
+          await rename(getAiCoachSidecarPath(sourcePath), getAiCoachSidecarPath(targetPath)).catch(
+            () => {},
+          );
+        }
+        await refreshDirectory();
+        setPinnedPaths((current) =>
+          Array.from(
+            new Set(current.map((path) => replacePathPrefix(path, sourcePath, targetPath))),
+          ),
+        );
+        setArchivedPaths((current) =>
+          Array.from(
+            new Set(current.map((path) => replacePathPrefix(path, sourcePath, targetPath))),
+          ),
+        );
+        dragContext.replaceOrderedPathPrefix(sourcePath, targetPath);
+        if (target.path !== dragContext.documentDir) {
+          setExpandedIds((prev) => (prev.includes(target.path) ? prev : [...prev, target.path]));
+        }
+
+        if (selectedFile) {
+          if (selectedFile.path === sourcePath) {
+            setSelectedFile(
+              selectedFile.type === "file"
+                ? {
+                    ...selectedFile,
+                    path: targetPath,
+                    name: stripSupportedFileExtension(sourceBasename),
+                    extension: getFileExtension(selectedFile),
+                  }
+                : {
+                    ...selectedFile,
+                    path: targetPath,
+                    name: sourceBasename,
+                  },
+            );
+          } else if (selectedFile.path.startsWith(sourcePath + separator)) {
+            const trailingPath = selectedFile.path.slice(sourcePath.length + separator.length);
+            const newPath = await join(targetPath, trailingPath);
+            setSelectedFile({ ...selectedFile, path: newPath });
+          }
+        }
+      } catch (err) {
+        console.error("Drop failed", err);
+      }
+    };
+
+    void handleDrop();
+  };
+
+  const isOverInto =
+    dragContext?.hoverTarget?.kind === "into" &&
+    dragContext.hoverTarget.path === node.path &&
+    node.type === "directory" &&
+    dragContext?.draggingPath !== node.path &&
+    !node.path.startsWith(dragContext?.draggingPath + "/") &&
+    !node.path.startsWith(dragContext?.draggingPath + "\\");
+  const isInsertBefore =
+    dragContext?.hoverTarget?.kind === "before" && dragContext.hoverTarget.path === node.path;
+  const isInsertAfter =
+    dragContext?.hoverTarget?.kind === "after" && dragContext.hoverTarget.path === node.path;
+
+  const contextMenuHandler = showContextMenu([
+    {
+      key: "pin-entry",
+      icon: isPinned ? <IconPinnedOff size={16} /> : <IconPinned size={16} />,
+      title: isPinned ? "Unpin" : "Pin",
+      onClick: togglePin,
+    },
+    {
+      key: "open-file",
+      icon: <IconEye size={16} />,
+      title: "Open",
+      disabled: node.type === "directory",
+      onClick: () => {
+        if (node.type === "directory") return;
+        void handleOpenFile(node);
+      },
+    },
+    {
+      key: "rename-file",
+      icon: <IconEdit size={16} />,
+      title: "Rename",
+      onClick: () => {
+        onRequestRename(node);
+      },
+    },
+    {
+      key: "archive-file",
+      icon: isArchived ? <IconArchiveOff size={16} /> : <IconArchive size={16} />,
+      title: directArchived ? "Unarchive" : archiveAncestor ? "Archived by parent" : "Archive",
+      disabled: !!archiveAncestor,
+      onClick: toggleArchive,
+    },
+    {
+      key: "delete-file",
+      icon: <IconTrash size={16} />,
+      title: "Delete",
+      color: "red",
+      onClick: () => {
+        onRequestDelete(node);
+      },
+    },
+  ]);
+
+  return (
+    <>
+      <Draggable
+        position={{ x: 0, y: 0 }}
+        onStart={onDragStart}
+        onDrag={onDragMove}
+        onStop={onDragStop}
+        scale={1}
+        nodeRef={rowRef as React.RefObject<HTMLElement>}
+      >
+        <div
+          ref={rowRef}
+          data-files-tree-row="true"
+          className={clsx(classes.row, {
+            [classes.selected]: isSelected,
+            [classes.dragOver]: isOverInto,
+            [classes.dragInsertBefore]: isInsertBefore,
+            [classes.dragInsertAfter]: isInsertAfter,
+          })}
+          style={{
+            paddingLeft: TREE_BASE_PADDING_PX + depth * TREE_INDENT_PX,
+            opacity: isDraggingNode ? 0.5 : 1,
+            zIndex: isDraggingNode ? 50 : undefined,
+            position: "relative",
+          }}
+          onClick={(e) => {
+            if (suppressClickRef.current) {
+              e.preventDefault();
+              e.stopPropagation();
+              return;
+            }
+
+            if (node.type === "directory") {
+              toggleExpand(e);
+              setSelectedFile(node);
+            } else {
+              setSelectedFile(node);
+            }
+          }}
+          onDoubleClick={() => {
+            if (node.type === "file") {
+              void handleOpenFile(node);
+            }
+          }}
+          onContextMenu={(event) => {
+            setSelectedFile(node);
+            contextMenuHandler(event);
+          }}
+        >
+          {depth > 0 && (
+            <div
+              aria-hidden
+              className={classes.guides}
+              style={{
+                left: TREE_BASE_PADDING_PX + TREE_INDENT_PX / 2,
+                width: depth * TREE_INDENT_PX,
+              }}
+            />
+          )}
+          <div
+            className={classes.iconContainer}
+            onClick={(e) => {
+              if (node.type === "directory") {
+                toggleExpand(e);
+              }
+            }}
+          >
+            {node.type === "directory" && (
+              <IconChevronRight
+                className={clsx(classes.expandIcon, {
+                  [classes.expandIconRotated]: isExpanded,
+                })}
+              />
+            )}
+          </div>
+          {node.type === "directory" ? (
+            isExpanded ? (
+              <IconFolderOpen className={classes.typeIcon} />
+            ) : (
+              <IconFolder className={classes.typeIcon} />
+            )
+          ) : (
+            <FileIcon type={node.metadata.type} className={classes.typeIcon} />
+          )}
+          <span className={classes.label}>{node.name}</span>
+          {(isPinned ||
+            isArchived ||
+            (node.type === "file" && node.metadata.type === "repertoire")) && (
+            <div className={classes.badge}>
+              {isPinned && <IconPinned size={12} />}
+              {isArchived && <IconArchive size={12} />}
+              {node.type === "file" && node.metadata.type === "repertoire" && (
+                <DuePositions file={node.path} />
+              )}
+            </div>
+          )}
+        </div>
+      </Draggable>
+      {children}
+    </>
+  );
+}
+
+function DuePositions({ file }: { file: string }) {
+  const [deck] = useAtom(
+    deckAtomFamily({
+      file,
+      game: 0,
+    }),
+  );
+
+  const stats = getStats(deck.positions);
+
+  if (stats.due + stats.unseen === 0) return null;
+
+  return (
+    <Badge size="xs" variant="light" leftSection={<IconTarget size={10} />}>
+      {stats.due + stats.unseen}
+    </Badge>
+  );
+}
