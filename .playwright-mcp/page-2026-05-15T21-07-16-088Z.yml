@@ -1,0 +1,204 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - img [ref=e9]
+        - generic [ref=e10]:
+          - button "File" [ref=e11] [cursor=pointer]:
+            - generic [ref=e13]: File
+          - button "View" [ref=e14] [cursor=pointer]:
+            - generic [ref=e16]: View
+          - button "Help" [ref=e17] [cursor=pointer]:
+            - generic [ref=e19]: Help
+      - generic [ref=e21]:
+        - img "Minimize" [ref=e23]
+        - img "Restore" [ref=e26]
+        - img "Close" [ref=e29]
+  - navigation [ref=e31]:
+    - generic [ref=e33]:
+      - link [ref=e34] [cursor=pointer]:
+        - /url: /home
+        - img [ref=e35]
+      - link [ref=e39] [cursor=pointer]:
+        - /url: /
+        - img [ref=e40]
+      - link [ref=e43] [cursor=pointer]:
+        - /url: /files
+        - img [ref=e44]
+      - link [ref=e48] [cursor=pointer]:
+        - /url: /databases
+        - img [ref=e49]
+      - link [ref=e53] [cursor=pointer]:
+        - /url: /engines
+        - img [ref=e54]
+    - link [ref=e59] [cursor=pointer]:
+      - /url: /settings
+      - img [ref=e60]
+  - main [ref=e63]:
+    - generic [ref=e266]:
+      - generic [ref=e270]:
+        - button "Analysis Board" [ref=e271]:
+          - generic [ref=e273] [cursor=pointer]:
+            - img [ref=e275]
+            - generic [ref=e280]: Analysis Board
+            - img [ref=e284]
+        - button [ref=e287] [cursor=pointer]:
+          - img [ref=e289]
+      - tabpanel [ref=e291]:
+        - generic [ref=e292]:
+          - generic [ref=e299]:
+            - generic [ref=e303]:
+              - generic [ref=e304]:
+                - generic:
+                  - generic:
+                    - paragraph
+              - generic [ref=e309]:
+                - generic [ref=e311]:
+                  - img [ref=e313]
+                  - img
+                  - img
+                - separator "Resize board" [ref=e314]
+                - separator "Resize board" [ref=e315]
+                - separator "Resize board" [ref=e316]
+                - separator "Resize board" [ref=e317]
+              - generic [ref=e318]:
+                - generic:
+                  - generic:
+                    - paragraph
+            - generic [ref=e320]:
+              - generic [ref=e322]:
+                - generic [ref=e326]:
+                  - button [ref=e327] [cursor=pointer]:
+                    - img [ref=e329]
+                  - button [ref=e332] [cursor=pointer]:
+                    - img [ref=e334]
+                  - button [ref=e338] [cursor=pointer]:
+                    - img [ref=e340]
+                  - button [ref=e344] [cursor=pointer]:
+                    - img [ref=e346]
+                  - button [ref=e349] [cursor=pointer]:
+                    - img [ref=e351]
+                  - button [ref=e355] [cursor=pointer]:
+                    - img [ref=e357]
+                  - button [ref=e361] [cursor=pointer]:
+                    - img [ref=e363]
+                - separator [ref=e366]
+                - generic [ref=e368]:
+                  - generic [ref=e369]:
+                    - paragraph
+                    - generic [ref=e370]:
+                      - button "Copy PGN" [ref=e371] [cursor=pointer]:
+                        - img [ref=e373]
+                      - button [ref=e376] [cursor=pointer]:
+                        - img [ref=e378]
+                      - button [ref=e381] [cursor=pointer]:
+                        - img [ref=e383]
+                      - button [ref=e386] [cursor=pointer]:
+                        - img [ref=e388]
+                      - button [ref=e390] [cursor=pointer]:
+                        - img [ref=e392]
+                  - separator [ref=e397]
+              - generic [ref=e406]:
+                - button "Start" [ref=e407] [cursor=pointer]:
+                  - img [ref=e409]
+                - button "Previous move" [ref=e412] [cursor=pointer]:
+                  - img [ref=e414]
+                - button "Watch at game pace" [disabled] [ref=e416]:
+                  - generic [ref=e417]:
+                    - img [ref=e419]
+                    - generic [ref=e421]: Live replay
+                - button "Next move" [ref=e422] [cursor=pointer]:
+                  - img [ref=e424]
+                - button "End" [ref=e426] [cursor=pointer]:
+                  - img [ref=e428]
+          - separator "Resize board and side panels" [ref=e294]
+          - generic [ref=e433]:
+            - tablist [ref=e434]:
+              - tab "Analysis" [ref=e435] [cursor=pointer]:
+                - img [ref=e437]
+                - generic: Analysis
+                - text: Analysis
+              - tab "Database" [ref=e441] [cursor=pointer]:
+                - img [ref=e443]
+                - generic: Database
+                - text: Database
+              - tab "Prep" [ref=e447] [cursor=pointer]:
+                - img [ref=e449]
+                - generic: Prep
+                - text: Prep
+              - tab "Structures" [ref=e453] [cursor=pointer]:
+                - img [ref=e455]
+                - generic: Structures
+                - text: Structures
+              - tab "Plan Explorer" [ref=e461] [cursor=pointer]:
+                - img [ref=e463]
+                - generic: Plan Explorer
+                - text: Plan Explorer
+              - tab "Engine Plans" [ref=e467] [cursor=pointer]:
+                - img [ref=e469]
+                - generic: Engine Plans
+                - text: Engine Plans
+              - tab "Compare" [ref=e472] [cursor=pointer]:
+                - img [ref=e474]
+                - generic: Compare
+                - text: Compare
+              - tab "Info" [selected] [ref=e481] [cursor=pointer]:
+                - img [ref=e483]
+                - generic: Info
+                - text: Info
+            - tabpanel "Info" [ref=e577]:
+              - generic [ref=e578]:
+                - generic [ref=e584]:
+                  - generic [ref=e585]:
+                    - generic [ref=e586]:
+                      - paragraph [ref=e587]: White
+                      - textbox "Unknown Event" [ref=e589]
+                      - paragraph [ref=e590]: Black
+                    - generic [ref=e591]:
+                      - textbox "?" [ref=e592]
+                      - generic [ref=e593]:
+                        - textbox "Unknown Site" [ref=e594]
+                        - textbox "????.??.??" [ref=e597]
+                      - textbox "?" [ref=e598]
+                      - textbox "Unknown ELO" [ref=e599]
+                      - textbox [ref=e602] [cursor=pointer]: "*"
+                      - textbox "Unknown ELO" [ref=e603]
+                  - textbox "Enter FEN" [active] [ref=e606]: 6k1/pp3ppp/2p5/3p4/3P4/4P3/PP3PPP/6K1 w - - 0 1
+                  - generic [ref=e607]:
+                    - paragraph [ref=e608]: PGN
+                    - generic [ref=e609]:
+                      - generic [ref=e611]:
+                        - generic [ref=e612]:
+                          - checkbox "Comments" [checked] [ref=e613]
+                          - img
+                        - generic [ref=e615]: Comments
+                      - generic [ref=e617]:
+                        - generic [ref=e618]:
+                          - checkbox "Glyphs" [checked] [ref=e619]
+                          - img
+                        - generic [ref=e621]: Glyphs
+                      - generic [ref=e623]:
+                        - generic [ref=e624]:
+                          - checkbox "Variations" [checked] [ref=e625]
+                          - img
+                        - generic [ref=e627]: Variations
+                      - generic [ref=e629]:
+                        - generic [ref=e630]:
+                          - checkbox "Extra Markups" [checked] [ref=e631]
+                          - img
+                        - generic [ref=e633]: Extra Markups
+                    - generic [ref=e634]:
+                      - textbox [ref=e637]: "[Event \"?\"] [Site \"?\"] [Date \"????.??.??\"] [Round \"?\"] [White \"?\"] [Black \"?\"] [Result \"*\"] [SetUp \"1\"] [FEN \"6k1/pp3ppp/2p5/3p4/3P4/4P3/PP3PPP/6K1 w - - 0 1\"] *"
+                      - button [ref=e638] [cursor=pointer]:
+                        - img [ref=e640]
+                  - generic [ref=e643]:
+                    - paragraph [ref=e644]: "Variations: 1"
+                    - paragraph [ref=e645]: "Max Depth: 0"
+                    - paragraph [ref=e646]: "Total Moves: 0"
+                - generic [ref=e650]:
+                  - button "Manage Engines" [ref=e651] [cursor=pointer]:
+                    - generic [ref=e652]:
+                      - img [ref=e654]
+                      - generic [ref=e657]: Manage Engines
+                  - button [ref=e658] [cursor=pointer]:
+                    - img [ref=e660]

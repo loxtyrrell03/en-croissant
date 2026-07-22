@@ -1,0 +1,37 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - img [ref=e9]
+        - generic [ref=e10]:
+          - button "File" [ref=e11] [cursor=pointer]:
+            - generic [ref=e13]: File
+          - button "View" [ref=e14] [cursor=pointer]:
+            - generic [ref=e16]: View
+          - button "Help" [ref=e17] [cursor=pointer]:
+            - generic [ref=e19]: Help
+      - generic [ref=e21]:
+        - img "Minimize" [ref=e23]
+        - img "Restore" [ref=e26]
+        - img "Close" [ref=e29]
+  - navigation [ref=e31]:
+    - generic [ref=e33]:
+      - link [ref=e34] [cursor=pointer]:
+        - /url: /home
+        - img [ref=e35]
+      - link [ref=e39] [cursor=pointer]:
+        - /url: /
+        - img [ref=e40]
+      - link [ref=e43] [cursor=pointer]:
+        - /url: /files
+        - img [ref=e44]
+      - link [ref=e48] [cursor=pointer]:
+        - /url: /databases
+        - img [ref=e49]
+      - link [ref=e53] [cursor=pointer]:
+        - /url: /engines
+        - img [ref=e54]
+    - link [ref=e59] [cursor=pointer]:
+      - /url: /settings
+      - img [ref=e60]
+  - main [ref=e63]

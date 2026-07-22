@@ -1,0 +1,174 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - img [ref=e9]
+        - generic [ref=e10]:
+          - button "File" [ref=e11] [cursor=pointer]:
+            - generic [ref=e13]: File
+          - button "View" [ref=e14] [cursor=pointer]:
+            - generic [ref=e16]: View
+          - button "Help" [ref=e17] [cursor=pointer]:
+            - generic [ref=e19]: Help
+      - generic [ref=e21]:
+        - img "Minimize" [ref=e23]
+        - img "Restore" [ref=e26]
+        - img "Close" [ref=e29]
+  - navigation [ref=e31]:
+    - generic [ref=e33]:
+      - link [ref=e34] [cursor=pointer]:
+        - /url: /home
+        - img [ref=e35]
+      - link [ref=e39] [cursor=pointer]:
+        - /url: /
+        - img [ref=e40]
+      - link [ref=e43] [cursor=pointer]:
+        - /url: /files
+        - img [ref=e44]
+      - link [ref=e48] [cursor=pointer]:
+        - /url: /databases
+        - img [ref=e49]
+      - link [ref=e53] [cursor=pointer]:
+        - /url: /engines
+        - img [ref=e54]
+    - link [ref=e59] [cursor=pointer]:
+      - /url: /settings
+      - img [ref=e60]
+  - main [ref=e63]:
+    - generic [ref=e266]:
+      - generic [ref=e270]:
+        - button "Analysis Board" [ref=e271]:
+          - generic [ref=e273] [cursor=pointer]:
+            - img [ref=e275]
+            - generic [ref=e280]: Analysis Board
+            - img [ref=e284]
+        - button [ref=e287] [cursor=pointer]:
+          - img [ref=e289]
+      - tabpanel [ref=e291]:
+        - generic [ref=e292]:
+          - generic [ref=e294]:
+            - generic [ref=e298]:
+              - generic [ref=e299]:
+                - generic:
+                  - generic:
+                    - paragraph
+              - generic [ref=e304]:
+                - generic [ref=e306]:
+                  - img [ref=e308]
+                  - img
+                  - img
+                - separator "Resize board" [ref=e309]
+                - separator "Resize board" [ref=e310]
+                - separator "Resize board" [ref=e311]
+                - separator "Resize board" [ref=e312]
+              - generic [ref=e313]:
+                - generic:
+                  - generic:
+                    - paragraph
+            - generic [ref=e315]:
+              - generic [ref=e317]:
+                - generic [ref=e321]:
+                  - button [ref=e322] [cursor=pointer]:
+                    - img [ref=e324]
+                  - button [ref=e327] [cursor=pointer]:
+                    - img [ref=e329]
+                  - button [ref=e333] [cursor=pointer]:
+                    - img [ref=e335]
+                  - button [ref=e339] [cursor=pointer]:
+                    - img [ref=e341]
+                  - button [ref=e344] [cursor=pointer]:
+                    - img [ref=e346]
+                  - button [ref=e350] [cursor=pointer]:
+                    - img [ref=e352]
+                  - button [ref=e356] [cursor=pointer]:
+                    - img [ref=e358]
+                - separator [ref=e361]
+                - generic [ref=e363]:
+                  - generic [ref=e364]:
+                    - paragraph
+                    - generic [ref=e365]:
+                      - button "Copy PGN" [ref=e366] [cursor=pointer]:
+                        - img [ref=e368]
+                      - button [ref=e371] [cursor=pointer]:
+                        - img [ref=e373]
+                      - button [ref=e376] [cursor=pointer]:
+                        - img [ref=e378]
+                      - button [ref=e381] [cursor=pointer]:
+                        - img [ref=e383]
+                      - button [ref=e385] [cursor=pointer]:
+                        - img [ref=e387]
+                  - separator [ref=e392]
+              - generic [ref=e401]:
+                - button "Start" [ref=e402] [cursor=pointer]:
+                  - img [ref=e404]
+                - button "Previous move" [ref=e407] [cursor=pointer]:
+                  - img [ref=e409]
+                - button "Watch at game pace" [disabled] [ref=e411]:
+                  - generic [ref=e412]:
+                    - img [ref=e414]
+                    - generic [ref=e416]: Live replay
+                - button "Next move" [ref=e417] [cursor=pointer]:
+                  - img [ref=e419]
+                - button "End" [ref=e421] [cursor=pointer]:
+                  - img [ref=e423]
+          - separator "Resize board and side panels" [ref=e426]
+          - generic [ref=e432]:
+            - generic [ref=e433]:
+              - tablist [ref=e434]:
+                - tab "Analysis" [selected] [ref=e435] [cursor=pointer]:
+                  - img [ref=e437]
+                  - generic: Analysis
+                  - text: Analysis
+                - tab "Database" [ref=e441] [cursor=pointer]:
+                  - img [ref=e443]
+                  - generic: Database
+                  - text: Database
+                - tab "Prep" [ref=e447] [cursor=pointer]:
+                  - img [ref=e449]
+                  - generic: Prep
+                  - text: Prep
+                - tab "Structures" [ref=e453] [cursor=pointer]:
+                  - img [ref=e455]
+                  - generic: Structures
+                  - text: Structures
+                - tab "Plan Explorer" [ref=e461] [cursor=pointer]:
+                  - img [ref=e463]
+                  - generic: Plan Explorer
+                  - text: Plan Explorer
+                - tab "Engine Plans" [ref=e467] [cursor=pointer]:
+                  - img [ref=e469]
+                  - generic: Engine Plans
+                  - text: Engine Plans
+                - tab "Compare" [ref=e472] [cursor=pointer]:
+                  - img [ref=e474]
+                  - generic: Compare
+                  - text: Compare
+                - tab "Info" [ref=e481] [cursor=pointer]:
+                  - img [ref=e483]
+                  - generic: Info
+                  - text: Info
+              - button "Save game to files" [ref=e486] [cursor=pointer]:
+                - img [ref=e488]
+            - tabpanel "Analysis" [ref=e492]:
+              - generic [ref=e494]:
+                - tablist [ref=e495]:
+                  - tab "Engines" [selected] [ref=e496] [cursor=pointer]:
+                    - generic [ref=e497]: Engines
+                  - tab "Report" [ref=e498] [cursor=pointer]:
+                    - generic [ref=e499]: Report
+                  - tab "Logs" [disabled] [ref=e500]:
+                    - generic [ref=e501]: Logs
+                - tabpanel "Engines" [ref=e502]:
+                  - generic [ref=e507]:
+                    - generic [ref=e508]:
+                      - paragraph [ref=e509]: Press E to toggle engine. Space plays best move. Click moves to explore.
+                      - generic [ref=e511]:
+                        - switch "Hide engine arrows" [checked] [ref=e512]
+                        - generic [ref=e517]: Arrows
+                    - generic [ref=e518]:
+                      - button "Manage Engines" [ref=e519] [cursor=pointer]:
+                        - generic [ref=e520]:
+                          - img [ref=e522]
+                          - generic [ref=e525]: Manage Engines
+                      - button [ref=e526] [cursor=pointer]:
+                        - img [ref=e528]

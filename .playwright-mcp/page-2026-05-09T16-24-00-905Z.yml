@@ -1,0 +1,544 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - img [ref=e9]
+        - generic [ref=e10]:
+          - button "File" [ref=e11] [cursor=pointer]:
+            - generic [ref=e13]: File
+          - button "View" [ref=e14] [cursor=pointer]:
+            - generic [ref=e16]: View
+          - button "Help" [ref=e17] [cursor=pointer]:
+            - generic [ref=e19]: Help
+      - generic [ref=e21]:
+        - img "Minimize" [ref=e23]
+        - img "Restore" [ref=e26]
+        - img "Close" [ref=e29]
+  - navigation [ref=e31]:
+    - generic [ref=e33]:
+      - link [ref=e34] [cursor=pointer]:
+        - /url: /home
+        - img [ref=e35]
+      - link [ref=e39] [cursor=pointer]:
+        - /url: /
+        - img [ref=e40]
+      - link [ref=e43] [cursor=pointer]:
+        - /url: /files
+        - img [ref=e44]
+      - link [ref=e48] [cursor=pointer]:
+        - /url: /databases
+        - img [ref=e49]
+      - link [ref=e53] [cursor=pointer]:
+        - /url: /engines
+        - img [ref=e54]
+    - link [ref=e59] [cursor=pointer]:
+      - /url: /settings
+      - img [ref=e60]
+  - main [ref=e63]:
+    - generic [ref=e64]:
+      - generic [ref=e68]:
+        - button "prep" [ref=e69]:
+          - generic [ref=e71] [cursor=pointer]:
+            - img [ref=e73]
+            - generic [ref=e78]: prep
+            - img [ref=e82]
+        - button [ref=e85] [cursor=pointer]:
+          - img [ref=e87]
+      - tabpanel [ref=e89]:
+        - generic [ref=e90]:
+          - generic [ref=e92]:
+            - generic [ref=e96]:
+              - generic [ref=e97]:
+                - generic:
+                  - paragraph
+              - generic [ref=e102]:
+                - generic [ref=e104]:
+                  - img [ref=e106]
+                  - img
+                  - img
+                - separator "Resize board" [ref=e107]
+                - separator "Resize board" [ref=e108]
+                - separator "Resize board" [ref=e109]
+                - separator "Resize board" [ref=e110]
+              - generic [ref=e111]:
+                - generic:
+                  - paragraph
+            - generic [ref=e113]:
+              - generic [ref=e114]:
+                - generic [ref=e115]:
+                  - button "!!" [ref=e116] [cursor=pointer]:
+                    - paragraph [ref=e118]: "!!"
+                  - button "!" [ref=e119] [cursor=pointer]:
+                    - paragraph [ref=e121]: "!"
+                  - button "!?" [ref=e122] [cursor=pointer]:
+                    - paragraph [ref=e124]: "!?"
+                  - button "?!" [ref=e125] [cursor=pointer]:
+                    - paragraph [ref=e127]: "?!"
+                  - button "?" [ref=e128] [cursor=pointer]:
+                    - paragraph [ref=e130]: "?"
+                  - button "??" [ref=e131] [cursor=pointer]:
+                    - paragraph [ref=e133]: "??"
+                - separator [ref=e134]:
+                  - button [ref=e136] [cursor=pointer]:
+                    - img [ref=e138]
+              - generic [ref=e143]:
+                - generic [ref=e144]:
+                  - generic [ref=e145]:
+                    - button "Bold" [ref=e146] [cursor=pointer]:
+                      - img [ref=e147]
+                    - button "Italic" [ref=e151] [cursor=pointer]:
+                      - img [ref=e152]
+                    - button "Underline" [ref=e155] [cursor=pointer]:
+                      - img [ref=e156]
+                    - button "Strikethrough" [ref=e159] [cursor=pointer]:
+                      - img [ref=e160]
+                    - button "Clear formatting" [ref=e163] [cursor=pointer]:
+                      - img [ref=e164]
+                  - generic [ref=e169]:
+                    - button "Heading 1" [ref=e170] [cursor=pointer]:
+                      - img [ref=e171]
+                    - button "Heading 2" [ref=e174] [cursor=pointer]:
+                      - img [ref=e175]
+                    - button "Heading 3" [ref=e178] [cursor=pointer]:
+                      - img [ref=e179]
+                    - button "Heading 4" [ref=e183] [cursor=pointer]:
+                      - img [ref=e184]
+                  - generic [ref=e187]:
+                    - button "Blockquote" [ref=e188] [cursor=pointer]:
+                      - img [ref=e189]
+                    - button "Horizontal line" [ref=e193] [cursor=pointer]:
+                      - img [ref=e194]
+                    - button "Bullet list" [ref=e196] [cursor=pointer]:
+                      - img [ref=e197]
+                    - button "Ordered list" [ref=e199] [cursor=pointer]:
+                      - img [ref=e200]
+                  - generic [ref=e204]:
+                    - button "Link" [ref=e205] [cursor=pointer]:
+                      - img [ref=e206]
+                    - button "Remove link" [ref=e211] [cursor=pointer]:
+                      - img [ref=e212]
+                - textbox [ref=e219]:
+                  - paragraph [ref=e220]: Write here...
+          - separator "Resize board and side panels" [ref=e221]
+          - generic [ref=e223]:
+            - generic [ref=e227]:
+              - tablist [ref=e228]:
+                - tab "Analysis" [ref=e229] [cursor=pointer]:
+                  - img [ref=e231]
+                  - generic: Analysis
+                  - text: Analysis
+                - tab "Database" [ref=e235] [cursor=pointer]:
+                  - img [ref=e237]
+                  - generic: Database
+                  - text: Database
+                - tab "Prep" [ref=e241] [cursor=pointer]:
+                  - img [ref=e243]
+                  - generic: Prep
+                  - text: Prep
+                - tab "Plan Explorer" [ref=e247] [cursor=pointer]:
+                  - img [ref=e249]
+                  - generic: Plan Explorer
+                  - text: Plan Explorer
+                - tab "Engine Plans" [ref=e253] [cursor=pointer]:
+                  - img [ref=e255]
+                  - generic: Engine Plans
+                  - text: Engine Plans
+                - tab "Compare" [active] [selected] [ref=e258] [cursor=pointer]:
+                  - img [ref=e260]
+                  - generic: Compare
+                  - text: Compare
+                - tab "Info" [ref=e267] [cursor=pointer]:
+                  - img [ref=e269]
+                  - generic: Info
+                  - text: Info
+              - tabpanel "Compare" [ref=e505]:
+                - generic [ref=e506]:
+                  - generic [ref=e514]:
+                    - generic [ref=e515]:
+                      - button [ref=e517] [cursor=pointer]:
+                        - img [ref=e519]
+                      - button "Stockfish" [expanded] [ref=e521] [cursor=pointer]:
+                        - generic:
+                          - img
+                        - paragraph [ref=e526]: Stockfish
+                      - group [ref=e527]:
+                        - button [disabled] [ref=e528]:
+                          - img [ref=e530]
+                        - button [ref=e536] [cursor=pointer]:
+                          - img [ref=e538]
+                        - button "Hide engine arrows" [ref=e540] [cursor=pointer]:
+                          - img [ref=e542]
+                        - button [ref=e545] [cursor=pointer]:
+                          - img [ref=e547]
+                        - button [ref=e550]:
+                          - img [ref=e552]
+                    - generic [ref=e559]:
+                      - progressbar
+                    - region "Stockfish" [ref=e560]:
+                      - table [ref=e562]:
+                        - rowgroup [ref=e563]:
+                          - row "Engine isn't enabled" [ref=e564]:
+                            - cell "Engine isn't enabled" [ref=e565]:
+                              - paragraph [ref=e566]: Engine isn't enabled
+                  - generic [ref=e568]:
+                    - generic [ref=e569]:
+                      - paragraph [ref=e570]: Database comparison
+                      - generic [ref=e573]:
+                        - textbox [ref=e574] [cursor=pointer]: Side to move
+                        - generic:
+                          - img
+                    - generic [ref=e575]:
+                      - generic [ref=e576]:
+                        - generic [ref=e577]:
+                          - generic [ref=e579]:
+                            - textbox "Database 1" [ref=e580]: Carlsen, Magnus repertoire
+                            - generic:
+                              - img
+                          - generic [ref=e581]:
+                            - button "Prep" [disabled] [ref=e582]:
+                              - generic [ref=e583]:
+                                - img [ref=e585]
+                                - generic [ref=e589]: Prep
+                            - paragraph [ref=e590]: 13,735,000 matches
+                        - generic [ref=e592]:
+                          - generic [ref=e595]:
+                            - img [ref=e597]
+                            - textbox "Username" [ref=e600]
+                          - radiogroup "Database player color" [ref=e601]:
+                            - generic [ref=e603]:
+                              - radio "White" [checked]
+                              - generic [ref=e604] [cursor=pointer]: White
+                            - generic [ref=e605]:
+                              - radio "Black"
+                              - generic [ref=e606] [cursor=pointer]: Black
+                        - generic [ref=e608]:
+                          - textbox [ref=e609] [cursor=pointer]: Most played
+                          - generic:
+                            - img
+                        - generic [ref=e610]:
+                          - progressbar
+                        - generic [ref=e612]:
+                          - table [ref=e616]:
+                            - rowgroup [ref=e617]:
+                              - row "Move Not sorted Str. Not sorted Rank Not sorted Games Sorted descending W/D/B Not sorted" [ref=e618]:
+                                - button "Move Not sorted" [ref=e619] [cursor=pointer]:
+                                  - generic [ref=e620]:
+                                    - generic "Move" [ref=e622]
+                                    - img "Not sorted" [ref=e623]:
+                                      - img [ref=e624]
+                                - button "Str. Not sorted" [ref=e628] [cursor=pointer]:
+                                  - generic [ref=e629]:
+                                    - generic "Str." [ref=e631]
+                                    - img "Not sorted" [ref=e632]:
+                                      - img [ref=e633]
+                                - button "Rank Not sorted" [ref=e637] [cursor=pointer]:
+                                  - generic [ref=e638]:
+                                    - generic "Rank" [ref=e640]
+                                    - img "Not sorted" [ref=e641]:
+                                      - img [ref=e642]
+                                - button "Games Sorted descending" [ref=e646] [cursor=pointer]:
+                                  - generic [ref=e647]:
+                                    - generic "Games" [ref=e649]
+                                    - img "Sorted descending" [ref=e650]:
+                                      - img [ref=e651]
+                                - button "W/D/B Not sorted" [ref=e655] [cursor=pointer]:
+                                  - generic [ref=e656]:
+                                    - generic "W/D/B" [ref=e658]
+                                    - img "Not sorted" [ref=e659]:
+                                      - img [ref=e660]
+                            - rowgroup [ref=e664]:
+                              - row "d6 ST - 80% 11,000,000 36.36363636363637% 15.454545454545453% 48.18181818181818%" [ref=e665] [cursor=pointer]:
+                                - cell "d6" [ref=e666]:
+                                  - paragraph [ref=e667]: d6
+                                - cell "ST" [ref=e668]:
+                                  - generic [ref=e670]: ST
+                                - cell "-" [ref=e671]:
+                                  - paragraph [ref=e673]: "-"
+                                - cell "80% 11,000,000" [ref=e674]:
+                                  - generic [ref=e675]:
+                                    - paragraph [ref=e676]: 80%
+                                    - paragraph [ref=e677]: 11,000,000
+                                - cell "36.36363636363637% 15.454545454545453% 48.18181818181818%" [ref=e678]:
+                                  - generic [ref=e679]:
+                                    - progressbar [ref=e680]:
+                                      - generic [ref=e681]: 36.4%
+                                    - progressbar [ref=e682]
+                                    - progressbar [ref=e683]:
+                                      - generic [ref=e684]: 48.2%
+                              - row "c5 OK - 9% 1,300,000 34.61538461538461% 11.538461538461538% 53.84615384615385%" [ref=e685] [cursor=pointer]:
+                                - cell "c5" [ref=e686]:
+                                  - paragraph [ref=e687]: c5
+                                - cell "OK" [ref=e688]:
+                                  - generic [ref=e690]: OK
+                                - cell "-" [ref=e691]:
+                                  - paragraph [ref=e693]: "-"
+                                - cell "9% 1,300,000" [ref=e694]:
+                                  - generic [ref=e695]:
+                                    - paragraph [ref=e696]: 9%
+                                    - paragraph [ref=e697]: 1,300,000
+                                - cell "34.61538461538461% 11.538461538461538% 53.84615384615385%" [ref=e698]:
+                                  - generic [ref=e699]:
+                                    - progressbar [ref=e700]:
+                                      - generic [ref=e701]: 34.6%
+                                    - progressbar [ref=e702]
+                                    - progressbar [ref=e703]:
+                                      - generic [ref=e704]: 53.8%
+                              - row "♘f6 OK - 5% 670,000 47.76119402985074% 13.432835820895523% 38.80597014925373%" [ref=e705] [cursor=pointer]:
+                                - cell "♘f6" [ref=e706]:
+                                  - paragraph [ref=e707]: ♘f6
+                                - cell "OK" [ref=e708]:
+                                  - generic [ref=e710]: OK
+                                - cell "-" [ref=e711]:
+                                  - paragraph [ref=e713]: "-"
+                                - cell "5% 670,000" [ref=e714]:
+                                  - generic [ref=e715]:
+                                    - paragraph [ref=e716]: 5%
+                                    - paragraph [ref=e717]: 670,000
+                                - cell "47.76119402985074% 13.432835820895523% 38.80597014925373%" [ref=e718]:
+                                  - generic [ref=e719]:
+                                    - progressbar [ref=e720]:
+                                      - generic [ref=e721]: 47.8%
+                                    - progressbar [ref=e722]
+                                    - progressbar [ref=e723]:
+                                      - generic [ref=e724]: 38.8%
+                              - row "g6 OK - 3% 460,000 47.82608695652174% 13.043478260869565% 39.130434782608695%" [ref=e725] [cursor=pointer]:
+                                - cell "g6" [ref=e726]:
+                                  - paragraph [ref=e727]: g6
+                                - cell "OK" [ref=e728]:
+                                  - generic [ref=e730]: OK
+                                - cell "-" [ref=e731]:
+                                  - paragraph [ref=e733]: "-"
+                                - cell "3% 460,000" [ref=e734]:
+                                  - generic [ref=e735]:
+                                    - paragraph [ref=e736]: 3%
+                                    - paragraph [ref=e737]: 460,000
+                                - cell "47.82608695652174% 13.043478260869565% 39.130434782608695%" [ref=e738]:
+                                  - generic [ref=e739]:
+                                    - progressbar [ref=e740]:
+                                      - generic [ref=e741]: 47.8%
+                                    - progressbar [ref=e742]
+                                    - progressbar [ref=e743]:
+                                      - generic [ref=e744]: 39.1%
+                              - row "e6 OK - 2% 305,000 42.62295081967213% 18.0327868852459% 39.34426229508197%" [ref=e745] [cursor=pointer]:
+                                - cell "e6" [ref=e746]:
+                                  - paragraph [ref=e747]: e6
+                                - cell "OK" [ref=e748]:
+                                  - generic [ref=e750]: OK
+                                - cell "-" [ref=e751]:
+                                  - paragraph [ref=e753]: "-"
+                                - cell "2% 305,000" [ref=e754]:
+                                  - generic [ref=e755]:
+                                    - paragraph [ref=e756]: 2%
+                                    - paragraph [ref=e757]: 305,000
+                                - cell "42.62295081967213% 18.0327868852459% 39.34426229508197%" [ref=e758]:
+                                  - generic [ref=e759]:
+                                    - progressbar [ref=e760]:
+                                      - generic [ref=e761]: 42.6%
+                                    - progressbar [ref=e762]:
+                                      - generic [ref=e763]: 18.0%
+                                    - progressbar [ref=e764]:
+                                      - generic [ref=e765]: 39.3%
+                              - row "Total 13,735,000 37.27702948671278% 14.961776483436475% 47.76119402985074%" [ref=e766] [cursor=pointer]:
+                                - cell "Total" [ref=e767]:
+                                  - paragraph [ref=e768]: Total
+                                - cell [ref=e769]
+                                - cell [ref=e770]
+                                - cell "13,735,000" [ref=e771]:
+                                  - paragraph [ref=e773]: 13,735,000
+                                - cell "37.27702948671278% 14.961776483436475% 47.76119402985074%" [ref=e774]:
+                                  - generic [ref=e775]:
+                                    - progressbar [ref=e776]:
+                                      - generic [ref=e777]: 37.3%
+                                    - progressbar [ref=e778]
+                                    - progressbar [ref=e779]:
+                                      - generic [ref=e780]: 47.8%
+                          - generic: No continuations found
+                      - generic [ref=e781]:
+                        - generic [ref=e782]:
+                          - generic [ref=e784]:
+                            - textbox "Database 2" [ref=e785]: classical games
+                            - generic:
+                              - img
+                          - generic [ref=e786]:
+                            - button "Prep" [disabled] [ref=e787]:
+                              - generic [ref=e788]:
+                                - img [ref=e790]
+                                - generic [ref=e794]: Prep
+                            - paragraph [ref=e795]: 48 matches
+                        - generic [ref=e797]:
+                          - generic [ref=e800]:
+                            - img [ref=e802]
+                            - textbox "Username" [ref=e805]
+                          - radiogroup "Database player color" [ref=e806]:
+                            - generic [ref=e808]:
+                              - radio "White" [checked]
+                              - generic [ref=e809] [cursor=pointer]: White
+                            - generic [ref=e810]:
+                              - radio "Black"
+                              - generic [ref=e811] [cursor=pointer]: Black
+                        - generic [ref=e813]:
+                          - textbox [ref=e814] [cursor=pointer]: Most played
+                          - generic:
+                            - img
+                        - generic [ref=e815]:
+                          - progressbar
+                        - generic [ref=e817]:
+                          - table [ref=e821]:
+                            - rowgroup [ref=e822]:
+                              - row "Move Not sorted Str. Not sorted Rank Not sorted Games Sorted descending W/D/B Not sorted" [ref=e823]:
+                                - button "Move Not sorted" [ref=e824] [cursor=pointer]:
+                                  - generic [ref=e825]:
+                                    - generic "Move" [ref=e827]
+                                    - img "Not sorted" [ref=e828]:
+                                      - img [ref=e829]
+                                - button "Str. Not sorted" [ref=e833] [cursor=pointer]:
+                                  - generic [ref=e834]:
+                                    - generic "Str." [ref=e836]
+                                    - img "Not sorted" [ref=e837]:
+                                      - img [ref=e838]
+                                - button "Rank Not sorted" [ref=e842] [cursor=pointer]:
+                                  - generic [ref=e843]:
+                                    - generic "Rank" [ref=e845]
+                                    - img "Not sorted" [ref=e846]:
+                                      - img [ref=e847]
+                                - button "Games Sorted descending" [ref=e851] [cursor=pointer]:
+                                  - generic [ref=e852]:
+                                    - generic "Games" [ref=e854]
+                                    - img "Sorted descending" [ref=e855]:
+                                      - img [ref=e856]
+                                - button "W/D/B Not sorted" [ref=e860] [cursor=pointer]:
+                                  - generic [ref=e861]:
+                                    - generic "W/D/B" [ref=e863]
+                                    - img "Not sorted" [ref=e864]:
+                                      - img [ref=e865]
+                            - rowgroup [ref=e869]:
+                              - row "d6 OK - 58% 28 35.714285714285715% 0% 64.28571428571429%" [ref=e870] [cursor=pointer]:
+                                - cell "d6" [ref=e871]:
+                                  - paragraph [ref=e872]: d6
+                                - cell "OK" [ref=e873]:
+                                  - generic [ref=e875]: OK
+                                - cell "-" [ref=e876]:
+                                  - paragraph [ref=e878]: "-"
+                                - cell "58% 28" [ref=e879]:
+                                  - generic [ref=e880]:
+                                    - paragraph [ref=e881]: 58%
+                                    - paragraph [ref=e882]: "28"
+                                - cell "35.714285714285715% 0% 64.28571428571429%" [ref=e883]:
+                                  - generic [ref=e884]:
+                                    - progressbar [ref=e885]:
+                                      - generic [ref=e886]: 35.7%
+                                    - progressbar
+                                    - progressbar [ref=e887]:
+                                      - generic [ref=e888]: 64.3%
+                              - row "c5 OK - 23% 11 54.54545454545454% 9.090909090909092% 36.36363636363637%" [ref=e889] [cursor=pointer]:
+                                - cell "c5" [ref=e890]:
+                                  - paragraph [ref=e891]: c5
+                                - cell "OK" [ref=e892]:
+                                  - generic [ref=e894]: OK
+                                - cell "-" [ref=e895]:
+                                  - paragraph [ref=e897]: "-"
+                                - cell "23% 11" [ref=e898]:
+                                  - generic [ref=e899]:
+                                    - paragraph [ref=e900]: 23%
+                                    - paragraph [ref=e901]: "11"
+                                - cell "54.54545454545454% 9.090909090909092% 36.36363636363637%" [ref=e902]:
+                                  - generic [ref=e903]:
+                                    - progressbar [ref=e904]:
+                                      - generic [ref=e905]: 54.5%
+                                    - progressbar [ref=e906]
+                                    - progressbar [ref=e907]:
+                                      - generic [ref=e908]: 36.4%
+                              - row "♘f6 OK - 10% 5 60% 0% 40%" [ref=e909] [cursor=pointer]:
+                                - cell "♘f6" [ref=e910]:
+                                  - paragraph [ref=e911]: ♘f6
+                                - cell "OK" [ref=e912]:
+                                  - generic [ref=e914]: OK
+                                - cell "-" [ref=e915]:
+                                  - paragraph [ref=e917]: "-"
+                                - cell "10% 5" [ref=e918]:
+                                  - generic [ref=e919]:
+                                    - paragraph [ref=e920]: 10%
+                                    - paragraph [ref=e921]: "5"
+                                - cell "60% 0% 40%" [ref=e922]:
+                                  - generic [ref=e923]:
+                                    - progressbar [ref=e924]:
+                                      - generic [ref=e925]: 60.0%
+                                    - progressbar
+                                    - progressbar [ref=e926]:
+                                      - generic [ref=e927]: 40.0%
+                              - row "g6 OK - 8% 4 50% 25% 25%" [ref=e928] [cursor=pointer]:
+                                - cell "g6" [ref=e929]:
+                                  - paragraph [ref=e930]: g6
+                                - cell "OK" [ref=e931]:
+                                  - generic [ref=e933]: OK
+                                - cell "-" [ref=e934]:
+                                  - paragraph [ref=e936]: "-"
+                                - cell "8% 4" [ref=e937]:
+                                  - generic [ref=e938]:
+                                    - paragraph [ref=e939]: 8%
+                                    - paragraph [ref=e940]: "4"
+                                - cell "50% 25% 25%" [ref=e941]:
+                                  - generic [ref=e942]:
+                                    - progressbar [ref=e943]:
+                                      - generic [ref=e944]: 50.0%
+                                    - progressbar [ref=e945]:
+                                      - generic [ref=e946]: 25.0%
+                                    - progressbar [ref=e947]:
+                                      - generic [ref=e948]: 25.0%
+                              - row "Total 48 43.75% 4.166666666666666% 52.083333333333336%" [ref=e949] [cursor=pointer]:
+                                - cell "Total" [ref=e950]:
+                                  - paragraph [ref=e951]: Total
+                                - cell [ref=e952]
+                                - cell [ref=e953]
+                                - cell "48" [ref=e954]:
+                                  - paragraph [ref=e956]: "48"
+                                - cell "43.75% 4.166666666666666% 52.083333333333336%" [ref=e957]:
+                                  - generic [ref=e958]:
+                                    - progressbar [ref=e959]:
+                                      - generic [ref=e960]: 43.8%
+                                    - progressbar [ref=e961]
+                                    - progressbar [ref=e962]:
+                                      - generic [ref=e963]: 52.1%
+                          - generic: No continuations found
+            - generic:
+              - generic:
+                - generic [ref=e405]:
+                  - generic:
+                    - generic [ref=e410]:
+                      - button [ref=e411] [cursor=pointer]:
+                        - img [ref=e413]
+                      - button [ref=e416] [cursor=pointer]:
+                        - img [ref=e418]
+                      - button [ref=e422] [cursor=pointer]:
+                        - img [ref=e424]
+                      - button [ref=e428] [cursor=pointer]:
+                        - img [ref=e430]
+                      - button [ref=e433] [cursor=pointer]:
+                        - img [ref=e435]
+                      - button [ref=e439] [cursor=pointer]:
+                        - img [ref=e441]
+                      - button [ref=e445] [cursor=pointer]:
+                        - img [ref=e447]
+                    - separator
+                    - generic [ref=e452]:
+                      - generic [ref=e453]:
+                        - paragraph
+                        - generic [ref=e454]:
+                          - button [ref=e455] [cursor=pointer]:
+                            - img [ref=e457]
+                          - button [ref=e460] [cursor=pointer]:
+                            - img [ref=e462]
+                          - button [ref=e465] [cursor=pointer]:
+                            - img [ref=e467]
+                          - button [ref=e469] [cursor=pointer]:
+                            - img [ref=e471]
+                      - separator [ref=e476]
+                - generic [ref=e484]:
+                  - button [ref=e485] [cursor=pointer]:
+                    - img [ref=e487]
+                  - button [ref=e490] [cursor=pointer]:
+                    - img [ref=e492]
+                  - button [ref=e494] [cursor=pointer]:
+                    - img [ref=e496]
+                  - button [ref=e498] [cursor=pointer]:
+                    - img [ref=e500]

@@ -1,0 +1,210 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e7]:
+          - img [ref=e9]
+          - generic [ref=e10]:
+            - button "File" [ref=e11] [cursor=pointer]:
+              - generic [ref=e13]: File
+            - button "View" [ref=e14] [cursor=pointer]:
+              - generic [ref=e16]: View
+            - button "Help" [ref=e17] [cursor=pointer]:
+              - generic [ref=e19]: Help
+        - generic [ref=e21]:
+          - img "Minimize" [ref=e23]
+          - img "Restore" [ref=e26]
+          - img "Close" [ref=e29]
+    - navigation [ref=e31]:
+      - generic [ref=e33]:
+        - link [ref=e34] [cursor=pointer]:
+          - /url: /home
+          - img [ref=e35]
+        - link [ref=e39] [cursor=pointer]:
+          - /url: /
+          - img [ref=e40]
+        - link [ref=e43] [cursor=pointer]:
+          - /url: /files
+          - img [ref=e44]
+        - link [ref=e48] [cursor=pointer]:
+          - /url: /databases
+          - img [ref=e49]
+        - link [ref=e53] [cursor=pointer]:
+          - /url: /engines
+          - img [ref=e54]
+      - link [ref=e59] [cursor=pointer]:
+        - /url: /settings
+        - img [ref=e60]
+    - main [ref=e63]:
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - generic [ref=e66]:
+            - generic [ref=e67]:
+              - paragraph [ref=e68]: Daily goals
+              - paragraph [ref=e69]: Sunday, May 10, 2026
+            - generic [ref=e70]:
+              - generic [ref=e71]:
+                - paragraph [ref=e73]: "0"
+                - paragraph [ref=e74]: Streak
+              - button "Customize daily goals" [ref=e75] [cursor=pointer]:
+                - img [ref=e77]
+          - generic [ref=e80]:
+            - generic [ref=e81]:
+              - generic [ref=e82]: "4"
+              - paragraph [ref=e83]: Mon
+            - generic [ref=e84]:
+              - generic [ref=e85]: "5"
+              - paragraph [ref=e86]: Tue
+            - generic [ref=e87]:
+              - generic [ref=e88]: "6"
+              - paragraph [ref=e89]: Wed
+            - generic [ref=e90]:
+              - generic [ref=e91]: "7"
+              - paragraph [ref=e92]: Thu
+            - generic [ref=e93]:
+              - generic [ref=e94]: "8"
+              - paragraph [ref=e95]: Fri
+            - generic [ref=e96]:
+              - generic [ref=e97]: "9"
+              - paragraph [ref=e98]: Sat
+            - generic [ref=e99]:
+              - generic [ref=e100]: "10"
+              - paragraph [ref=e101]: Sun
+          - button "Start Mistake review" [ref=e103] [cursor=pointer]:
+            - generic [ref=e104]:
+              - img [ref=e106]
+              - generic [ref=e108]: Start Mistake review
+          - generic [ref=e109]:
+            - generic [ref=e110]:
+              - img [ref=e112]
+              - generic [ref=e116]:
+                - paragraph [ref=e118]: Mistake review
+                - paragraph [ref=e119]: No mistake review set linked
+                - generic [ref=e120]:
+                  - progressbar
+              - generic [ref=e121]:
+                - generic [ref=e123]: 0 / 15
+                - button "Set up" [ref=e124] [cursor=pointer]:
+                  - generic [ref=e126]: Set up
+            - generic [ref=e127]:
+              - img [ref=e129]
+              - generic [ref=e135]:
+                - paragraph [ref=e137]: Opening gaps
+                - paragraph [ref=e138]: No opening review set linked
+                - generic [ref=e139]:
+                  - progressbar
+              - generic [ref=e140]:
+                - generic [ref=e142]: 0 / 15
+                - button "Set up" [ref=e143] [cursor=pointer]:
+                  - generic [ref=e145]: Set up
+        - generic [ref=e146]:
+          - generic [ref=e148]:
+            - img [ref=e149]
+            - generic [ref=e152]:
+              - paragraph [ref=e153]: Play Chess
+              - paragraph [ref=e154]: Play against an engine or a friend
+            - button "Play" [ref=e155] [cursor=pointer]:
+              - generic [ref=e157]: Play
+          - generic [ref=e159]:
+            - img "Chessboard" [ref=e160]
+            - generic [ref=e162]:
+              - paragraph [ref=e163]: Analysis Board
+              - paragraph [ref=e164]: Analyze a game or position
+            - button "Open" [ref=e165] [cursor=pointer]:
+              - generic [ref=e167]: Open
+          - generic [ref=e169]:
+            - img [ref=e170]
+            - generic [ref=e173]:
+              - paragraph [ref=e174]: Analyse your last game
+              - paragraph [ref=e175]: Pull the newest linked Chess.com or Lichess game into the analysis board.
+            - generic [ref=e176]:
+              - button "Analyse latest" [ref=e177] [cursor=pointer]:
+                - generic [ref=e179]: Analyse latest
+              - button "Choose accounts" [ref=e180] [cursor=pointer]:
+                - img [ref=e182]
+          - generic [ref=e186]:
+            - img [ref=e187]
+            - generic [ref=e190]:
+              - paragraph [ref=e191]: Choose online game
+              - paragraph [ref=e192]: Pick one linked online game and open it in the analysis board.
+            - generic [ref=e193]:
+              - button "Choose game" [ref=e194] [cursor=pointer]:
+                - generic [ref=e196]: Choose game
+              - button "Online game accounts" [ref=e197] [cursor=pointer]:
+                - img [ref=e199]
+          - generic [ref=e203]:
+            - img [ref=e204]
+            - generic [ref=e210]:
+              - paragraph [ref=e211]: New Repertoire
+              - paragraph [ref=e212]: Build and practice your opening repertoire
+            - button "Create" [ref=e213] [cursor=pointer]:
+              - generic [ref=e215]: Create
+          - generic [ref=e217]:
+            - img [ref=e218]
+            - generic [ref=e222]:
+              - paragraph [ref=e223]: Opening Review
+              - paragraph [ref=e224]: Analyze your repertoire and train saved positions with spaced repetition.
+            - button "Open" [ref=e225] [cursor=pointer]:
+              - generic [ref=e227]: Open
+          - generic [ref=e229]:
+            - img [ref=e230]
+            - generic [ref=e232]:
+              - paragraph [ref=e233]: Mistake Review
+              - paragraph [ref=e234]: Scan your games for mistakes and train them with spaced repetition.
+            - button "Open" [ref=e235] [cursor=pointer]:
+              - generic [ref=e237]: Open
+          - generic [ref=e239]:
+            - img [ref=e240]
+            - generic [ref=e243]:
+              - paragraph [ref=e244]: Import Game
+              - paragraph [ref=e245]: Import a game from a PGN
+            - button "Import" [ref=e246] [cursor=pointer]:
+              - generic [ref=e248]: Import
+          - generic [ref=e250]:
+            - img [ref=e251]
+            - generic [ref=e253]:
+              - paragraph [ref=e254]: Puzzles
+              - paragraph [ref=e255]: Train your chess skills
+            - button "Train" [ref=e256] [cursor=pointer]:
+              - generic [ref=e258]: Train
+        - generic [ref=e259]:
+          - paragraph [ref=e260]: Recent Files
+          - generic [ref=e261]:
+            - img [ref=e262]
+            - paragraph [ref=e265]: No files open recently
+  - dialog "Mistake Review" [ref=e267]:
+    - banner [ref=e268]:
+      - heading "Mistake Review" [level=2] [ref=e269]
+      - button [active] [ref=e270] [cursor=pointer]:
+        - img [ref=e271]
+    - generic [ref=e274]:
+      - generic [ref=e275]:
+        - generic [ref=e276]:
+          - paragraph [ref=e277]: Scan your own games, create Stockfish-backed mistake cards, and review them daily.
+          - paragraph [ref=e278]: "Online scans: No Stockfish selected; depth 17; MultiPV 3; inaccuracies, mistakes, blunders; all mistake timings"
+        - generic [ref=e279]:
+          - button "Online mistake scan settings" [ref=e280] [cursor=pointer]:
+            - img [ref=e282]
+          - button "Latest game" [ref=e285] [cursor=pointer]:
+            - generic [ref=e286]:
+              - img [ref=e288]
+              - generic [ref=e290]: Latest game
+          - button "Choose games" [ref=e291] [cursor=pointer]:
+            - generic [ref=e292]:
+              - img [ref=e294]
+              - generic [ref=e297]: Choose games
+          - button "Local scan" [ref=e298] [cursor=pointer]:
+            - generic [ref=e299]:
+              - img [ref=e301]
+              - generic [ref=e305]: Local scan
+      - generic [ref=e307]:
+        - img [ref=e308]
+        - paragraph [ref=e310]: No mistake decks yet
+        - paragraph [ref=e311]: Analyze your latest online game, choose recent online games, or scan a local games database.
+        - generic [ref=e312]:
+          - button "Latest game" [ref=e313] [cursor=pointer]:
+            - generic [ref=e315]: Latest game
+          - button "Choose games" [ref=e316] [cursor=pointer]:
+            - generic [ref=e318]: Choose games
+          - button "Local scan" [ref=e319] [cursor=pointer]:
+            - generic [ref=e321]: Local scan

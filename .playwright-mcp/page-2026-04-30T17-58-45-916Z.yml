@@ -1,0 +1,250 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e650]:
+    - banner [ref=e651]:
+      - generic [ref=e652]:
+        - generic [ref=e654]:
+          - img [ref=e656]
+          - generic [ref=e657]:
+            - button "File" [ref=e658] [cursor=pointer]:
+              - generic [ref=e660]: File
+            - button "View" [ref=e661] [cursor=pointer]:
+              - generic [ref=e663]: View
+            - button "Help" [ref=e664] [cursor=pointer]:
+              - generic [ref=e666]: Help
+        - generic [ref=e668]:
+          - img "Minimize" [ref=e670]
+          - img "Restore" [ref=e673]
+          - img "Close" [ref=e676]
+    - navigation [ref=e678]:
+      - generic [ref=e680]:
+        - link [ref=e681] [cursor=pointer]:
+          - /url: /
+          - img [ref=e682]
+        - link [ref=e685] [cursor=pointer]:
+          - /url: /accounts
+          - img [ref=e686]
+        - link [ref=e689] [cursor=pointer]:
+          - /url: /files
+          - img [ref=e690]
+        - link [ref=e694] [cursor=pointer]:
+          - /url: /databases
+          - img [ref=e695]
+        - link [ref=e699] [cursor=pointer]:
+          - /url: /engines
+          - img [ref=e700]
+      - link [ref=e705] [cursor=pointer]:
+        - /url: /settings
+        - img [ref=e706]
+    - main [ref=e709]:
+      - generic [ref=e710]:
+        - generic [ref=e714]:
+          - button "New Tab" [ref=e715]:
+            - generic [ref=e717] [cursor=pointer]:
+              - generic [ref=e719]: New Tab
+              - img [ref=e723]
+          - button "Analysis Board" [ref=e726]:
+            - generic [ref=e728] [cursor=pointer]:
+              - img [ref=e730]
+              - generic [ref=e735]: Analysis Board
+              - img [ref=e739]
+          - button [ref=e742] [cursor=pointer]:
+            - img [ref=e744]
+        - tabpanel [ref=e746]:
+          - generic [ref=e747]:
+            - generic [ref=e749]:
+              - generic [ref=e753]:
+                - generic [ref=e754]:
+                  - generic:
+                    - paragraph
+                - generic [ref=e759]:
+                  - generic [ref=e761]:
+                    - img [ref=e763]
+                    - img
+                    - img
+                  - separator "Resize board" [ref=e764]
+                  - separator "Resize board" [ref=e765]
+                  - separator "Resize board" [ref=e766]
+                  - separator "Resize board" [ref=e767]
+                - generic [ref=e768]:
+                  - generic:
+                    - paragraph
+              - generic [ref=e770]:
+                - generic [ref=e771]:
+                  - generic [ref=e772]:
+                    - button "!!" [ref=e773] [cursor=pointer]:
+                      - paragraph [ref=e775]: "!!"
+                    - button "!" [ref=e776] [cursor=pointer]:
+                      - paragraph [ref=e778]: "!"
+                    - button "!?" [ref=e779] [cursor=pointer]:
+                      - paragraph [ref=e781]: "!?"
+                    - button "?!" [ref=e782] [cursor=pointer]:
+                      - paragraph [ref=e784]: "?!"
+                    - button "?" [ref=e785] [cursor=pointer]:
+                      - paragraph [ref=e787]: "?"
+                    - button "??" [ref=e788] [cursor=pointer]:
+                      - paragraph [ref=e790]: "??"
+                  - separator [ref=e791]:
+                    - button [ref=e793] [cursor=pointer]:
+                      - img [ref=e795]
+                - generic [ref=e800]:
+                  - generic [ref=e801]:
+                    - generic [ref=e802]:
+                      - button "Bold" [ref=e803] [cursor=pointer]:
+                        - img [ref=e804]
+                      - button "Italic" [ref=e808] [cursor=pointer]:
+                        - img [ref=e809]
+                      - button "Underline" [ref=e812] [cursor=pointer]:
+                        - img [ref=e813]
+                      - button "Strikethrough" [ref=e816] [cursor=pointer]:
+                        - img [ref=e817]
+                      - button "Clear formatting" [ref=e820] [cursor=pointer]:
+                        - img [ref=e821]
+                    - generic [ref=e826]:
+                      - button "Heading 1" [ref=e827] [cursor=pointer]:
+                        - img [ref=e828]
+                      - button "Heading 2" [ref=e831] [cursor=pointer]:
+                        - img [ref=e832]
+                      - button "Heading 3" [ref=e835] [cursor=pointer]:
+                        - img [ref=e836]
+                      - button "Heading 4" [ref=e840] [cursor=pointer]:
+                        - img [ref=e841]
+                    - generic [ref=e844]:
+                      - button "Blockquote" [ref=e845] [cursor=pointer]:
+                        - img [ref=e846]
+                      - button "Horizontal line" [ref=e850] [cursor=pointer]:
+                        - img [ref=e851]
+                      - button "Bullet list" [ref=e853] [cursor=pointer]:
+                        - img [ref=e854]
+                      - button "Ordered list" [ref=e856] [cursor=pointer]:
+                        - img [ref=e857]
+                    - generic [ref=e861]:
+                      - button "Link" [ref=e862] [cursor=pointer]:
+                        - img [ref=e863]
+                      - button "Remove link" [ref=e868] [cursor=pointer]:
+                        - img [ref=e869]
+                  - textbox [ref=e876]:
+                    - paragraph [ref=e877]: Write here...
+            - separator "Resize board and side panels" [ref=e878]
+            - generic [ref=e880]:
+              - generic [ref=e884]:
+                - tablist [ref=e885]:
+                  - tab "Analysis" [ref=e886] [cursor=pointer]:
+                    - img [ref=e888]
+                    - generic: Analysis
+                  - tab "Database" [ref=e892] [cursor=pointer]:
+                    - img [ref=e894]
+                    - generic: Database
+                  - tab "Plan Explorer" [ref=e898] [cursor=pointer]:
+                    - img [ref=e900]
+                    - generic: Plan Explorer
+                  - tab "Engine Plans" [ref=e904] [cursor=pointer]:
+                    - img [ref=e906]
+                    - generic: Engine Plans
+                  - tab "Compare" [ref=e909] [cursor=pointer]:
+                    - img [ref=e911]
+                    - generic: Compare
+                  - tab "Info" [selected] [ref=e918] [cursor=pointer]:
+                    - img [ref=e920]
+                    - generic: Info
+                - tabpanel "Info" [ref=e923]:
+                  - generic [ref=e924]:
+                    - generic [ref=e930]:
+                      - generic [ref=e931]:
+                        - generic [ref=e932]:
+                          - paragraph [ref=e933]: White
+                          - textbox "Unknown Event" [ref=e935]
+                          - paragraph [ref=e936]: Black
+                        - generic [ref=e937]:
+                          - textbox "?" [ref=e938]
+                          - generic [ref=e939]:
+                            - textbox "Unknown Site" [ref=e940]
+                            - textbox "????.??.??" [ref=e943]
+                          - textbox "?" [ref=e944]
+                          - textbox "Unknown ELO" [ref=e945]
+                          - textbox [ref=e948] [cursor=pointer]: "*"
+                          - textbox "Unknown ELO" [ref=e949]
+                      - textbox "Enter FEN" [ref=e952]: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+                      - generic [ref=e953]:
+                        - paragraph [ref=e954]: PGN
+                        - generic [ref=e955]:
+                          - generic [ref=e957]:
+                            - generic [ref=e958]:
+                              - checkbox "Comments" [checked] [ref=e959]
+                              - img
+                            - generic [ref=e961]: Comments
+                          - generic [ref=e963]:
+                            - generic [ref=e964]:
+                              - checkbox "Glyphs" [checked] [ref=e965]
+                              - img
+                            - generic [ref=e967]: Glyphs
+                          - generic [ref=e969]:
+                            - generic [ref=e970]:
+                              - checkbox "Variations" [checked] [ref=e971]
+                              - img
+                            - generic [ref=e973]: Variations
+                          - generic [ref=e975]:
+                            - generic [ref=e976]:
+                              - checkbox "Extra Markups" [checked] [ref=e977]
+                              - img
+                            - generic [ref=e979]: Extra Markups
+                        - generic [ref=e980]:
+                          - textbox [ref=e983]: "[Event \"?\"] [Site \"?\"] [Date \"????.??.??\"] [Round \"?\"] [White \"?\"] [Black \"?\"] [Result \"*\"] *"
+                          - button [ref=e984] [cursor=pointer]:
+                            - img [ref=e986]
+                      - generic [ref=e989]:
+                        - paragraph [ref=e990]: "Variations: 1"
+                        - paragraph [ref=e991]: "Max Depth: 0"
+                        - paragraph [ref=e992]: "Total Moves: 0"
+                    - generic [ref=e998]:
+                      - generic [ref=e1000]:
+                        - paragraph [ref=e1001]: Engine arrows
+                        - switch "Hide engine arrows" [checked] [ref=e1004]
+                      - paragraph [ref=e1008]: Press E to toggle engine. Space plays best move. Click moves to explore.
+                      - generic [ref=e1009]:
+                        - button "Manage Engines" [ref=e1010] [cursor=pointer]:
+                          - generic [ref=e1011]:
+                            - img [ref=e1013]
+                            - generic [ref=e1016]: Manage Engines
+                        - button [ref=e1017] [cursor=pointer]:
+                          - img [ref=e1019]
+              - separator "Resize right side panels" [ref=e1022]
+              - generic [ref=e1024]:
+                - generic [ref=e1026]:
+                  - generic [ref=e1030]:
+                    - button [ref=e1031] [cursor=pointer]:
+                      - img [ref=e1033]
+                    - button [ref=e1036] [cursor=pointer]:
+                      - img [ref=e1038]
+                    - button [ref=e1042] [cursor=pointer]:
+                      - img [ref=e1044]
+                    - button [ref=e1047] [cursor=pointer]:
+                      - img [ref=e1049]
+                    - button [ref=e1053] [cursor=pointer]:
+                      - img [ref=e1055]
+                    - button [ref=e1059] [cursor=pointer]:
+                      - img [ref=e1061]
+                  - separator [ref=e1064]
+                  - generic [ref=e1066]:
+                    - generic [ref=e1067]:
+                      - paragraph
+                      - generic [ref=e1068]:
+                        - button [ref=e1069] [cursor=pointer]:
+                          - img [ref=e1071]
+                        - button [ref=e1074] [cursor=pointer]:
+                          - img [ref=e1076]
+                        - button [ref=e1079] [cursor=pointer]:
+                          - img [ref=e1081]
+                        - button [ref=e1083] [cursor=pointer]:
+                          - img [ref=e1085]
+                    - separator [ref=e1090]
+                - generic [ref=e1098]:
+                  - button [ref=e1099] [cursor=pointer]:
+                    - img [ref=e1101]
+                  - button [ref=e1104] [cursor=pointer]:
+                    - img [ref=e1106]
+                  - button [ref=e1108] [cursor=pointer]:
+                    - img [ref=e1110]
+                  - button [ref=e1112] [cursor=pointer]:
+                    - img [ref=e1114]
+  - generic:
+    - tooltip "Analysis": Analysis

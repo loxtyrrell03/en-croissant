@@ -1,0 +1,270 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - img [ref=e9]
+        - generic [ref=e10]:
+          - button "File" [ref=e11] [cursor=pointer]:
+            - generic [ref=e13]: File
+          - button "View" [ref=e14] [cursor=pointer]:
+            - generic [ref=e16]: View
+          - button "Help" [ref=e17] [cursor=pointer]:
+            - generic [ref=e19]: Help
+      - generic [ref=e21]:
+        - img "Minimize" [ref=e23]
+        - img "Restore" [ref=e26]
+        - img "Close" [ref=e29]
+  - navigation [ref=e31]:
+    - generic [ref=e33]:
+      - link [ref=e34] [cursor=pointer]:
+        - /url: /home
+        - img [ref=e35]
+      - link [ref=e39] [cursor=pointer]:
+        - /url: /
+        - img [ref=e40]
+      - link [ref=e43] [cursor=pointer]:
+        - /url: /files
+        - img [ref=e44]
+      - link [ref=e48] [cursor=pointer]:
+        - /url: /databases
+        - img [ref=e49]
+      - link [ref=e53] [cursor=pointer]:
+        - /url: /engines
+        - img [ref=e54]
+    - link [ref=e59] [cursor=pointer]:
+      - /url: /settings
+      - img [ref=e60]
+  - main [ref=e63]:
+    - generic [ref=e64]:
+      - generic [ref=e68]:
+        - button "Analysis Board" [ref=e69]:
+          - generic [ref=e71] [cursor=pointer]:
+            - img [ref=e73]
+            - generic [ref=e78]: Analysis Board
+            - img [ref=e82]
+        - button [ref=e85] [cursor=pointer]:
+          - img [ref=e87]
+      - tabpanel [ref=e89]:
+        - generic [ref=e90]:
+          - generic [ref=e92]:
+            - generic [ref=e96]:
+              - generic [ref=e97]:
+                - generic:
+                  - paragraph
+              - generic [ref=e102]:
+                - generic [ref=e104]:
+                  - img [ref=e106]
+                  - img
+                  - img
+                - separator "Resize board" [ref=e107]
+                - separator "Resize board" [ref=e108]
+                - separator "Resize board" [ref=e109]
+                - separator "Resize board" [ref=e110]
+              - generic [ref=e111]:
+                - generic:
+                  - paragraph
+            - generic [ref=e113]:
+              - generic [ref=e114]:
+                - generic [ref=e115]:
+                  - button "!!" [ref=e116] [cursor=pointer]:
+                    - paragraph [ref=e118]: "!!"
+                  - button "!" [ref=e119] [cursor=pointer]:
+                    - paragraph [ref=e121]: "!"
+                  - button "!?" [ref=e122] [cursor=pointer]:
+                    - paragraph [ref=e124]: "!?"
+                  - button "?!" [ref=e125] [cursor=pointer]:
+                    - paragraph [ref=e127]: "?!"
+                  - button "?" [ref=e128] [cursor=pointer]:
+                    - paragraph [ref=e130]: "?"
+                  - button "??" [ref=e131] [cursor=pointer]:
+                    - paragraph [ref=e133]: "??"
+                - separator [ref=e134]:
+                  - button [ref=e136] [cursor=pointer]:
+                    - img [ref=e138]
+              - generic [ref=e143]:
+                - generic [ref=e144]:
+                  - generic [ref=e145]:
+                    - button "Bold" [ref=e146] [cursor=pointer]:
+                      - img [ref=e147]
+                    - button "Italic" [ref=e151] [cursor=pointer]:
+                      - img [ref=e152]
+                    - button "Underline" [ref=e155] [cursor=pointer]:
+                      - img [ref=e156]
+                    - button "Strikethrough" [ref=e159] [cursor=pointer]:
+                      - img [ref=e160]
+                    - button "Clear formatting" [ref=e163] [cursor=pointer]:
+                      - img [ref=e164]
+                  - generic [ref=e169]:
+                    - button "Heading 1" [ref=e170] [cursor=pointer]:
+                      - img [ref=e171]
+                    - button "Heading 2" [ref=e174] [cursor=pointer]:
+                      - img [ref=e175]
+                    - button "Heading 3" [ref=e178] [cursor=pointer]:
+                      - img [ref=e179]
+                    - button "Heading 4" [ref=e183] [cursor=pointer]:
+                      - img [ref=e184]
+                  - generic [ref=e187]:
+                    - button "Blockquote" [ref=e188] [cursor=pointer]:
+                      - img [ref=e189]
+                    - button "Horizontal line" [ref=e193] [cursor=pointer]:
+                      - img [ref=e194]
+                    - button "Bullet list" [ref=e196] [cursor=pointer]:
+                      - img [ref=e197]
+                    - button "Ordered list" [ref=e199] [cursor=pointer]:
+                      - img [ref=e200]
+                  - generic [ref=e204]:
+                    - button "Link" [ref=e205] [cursor=pointer]:
+                      - img [ref=e206]
+                    - button "Remove link" [ref=e211] [cursor=pointer]:
+                      - img [ref=e212]
+                - textbox [ref=e219]:
+                  - paragraph [ref=e220]: Write here...
+          - separator "Resize board and side panels" [ref=e221]
+          - generic [ref=e223]:
+            - generic [ref=e227]:
+              - tablist [ref=e228]:
+                - tab "Analysis" [ref=e229] [cursor=pointer]:
+                  - img [ref=e231]
+                  - generic: Analysis
+                  - text: Analysis
+                - tab "Database" [ref=e235] [cursor=pointer]:
+                  - img [ref=e237]
+                  - generic: Database
+                  - text: Database
+                - tab "Prep" [selected] [ref=e241] [cursor=pointer]:
+                  - img [ref=e243]
+                  - generic: Prep
+                  - text: Prep
+                - tab "Plan Explorer" [ref=e247] [cursor=pointer]:
+                  - img [ref=e249]
+                  - generic: Plan Explorer
+                  - text: Plan Explorer
+                - tab "Engine Plans" [ref=e253] [cursor=pointer]:
+                  - img [ref=e255]
+                  - generic: Engine Plans
+                  - text: Engine Plans
+                - tab "Compare" [ref=e258] [cursor=pointer]:
+                  - img [ref=e260]
+                  - generic: Compare
+                  - text: Compare
+                - tab "Info" [ref=e267] [cursor=pointer]:
+                  - img [ref=e269]
+                  - generic: Info
+                  - text: Info
+              - tabpanel "Prep" [ref=e272]:
+                - generic [ref=e273]:
+                  - generic [ref=e275]:
+                    - generic [ref=e276]:
+                      - generic [ref=e277]:
+                        - paragraph [ref=e278]: Opening prep
+                        - generic [ref=e493]: Lichess All
+                        - generic [ref=e280]: You as white
+                      - generic [ref=e281]:
+                        - button "Start here" [ref=e282] [cursor=pointer]:
+                          - generic [ref=e283]:
+                            - img [ref=e285]
+                            - generic [ref=e289]: Start here
+                        - button [ref=e290] [cursor=pointer]:
+                          - img [ref=e292]
+                        - button [ref=e295] [cursor=pointer]:
+                          - img [ref=e297]
+                    - generic [ref=e300]:
+                      - radiogroup "Prep target" [ref=e301]:
+                        - generic [ref=e303]:
+                          - radio "Player"
+                          - generic [ref=e304] [cursor=pointer]: Player
+                        - generic [ref=e305]:
+                          - radio "General" [checked]
+                          - generic [ref=e306] [cursor=pointer]: General
+                      - generic [ref=e308]:
+                        - textbox "Prep source" [active] [ref=e309]: Lichess All
+                        - generic:
+                          - img
+                      - radiogroup "Your prep side" [ref=e310]:
+                        - generic [ref=e312]:
+                          - radio "White" [checked]
+                          - generic [ref=e313] [cursor=pointer]: White
+                        - generic [ref=e314]:
+                          - radio "Black"
+                          - generic [ref=e315] [cursor=pointer]: Black
+                      - generic [ref=e316]:
+                        - generic [ref=e317]: Min games
+                        - generic [ref=e318]:
+                          - textbox "Minimum games" [ref=e319]: "2"
+                          - generic [ref=e321]:
+                            - button [ref=e322] [cursor=pointer]:
+                              - img [ref=e323]
+                            - button [ref=e325] [cursor=pointer]:
+                              - img [ref=e326]
+                      - generic [ref=e328]:
+                        - generic [ref=e329]: Show top
+                        - generic [ref=e330]:
+                          - textbox "Top opponent moves to show" [ref=e331]: "8"
+                          - generic [ref=e333]:
+                            - button [ref=e334] [cursor=pointer]:
+                              - img [ref=e335]
+                            - button [ref=e337] [cursor=pointer]:
+                              - img [ref=e338]
+                    - generic [ref=e340]:
+                      - generic [ref=e341]:
+                        - paragraph [ref=e342]: "Start: game start"
+                        - paragraph [ref=e343]: Play your white move on the board
+                      - generic [ref=e344]:
+                        - button "Common move" [disabled] [ref=e345]:
+                          - generic [ref=e346]:
+                            - img [ref=e348]
+                            - generic [ref=e350]: Common move
+                        - button "Done + next" [disabled] [ref=e351]:
+                          - generic [ref=e352]:
+                            - img [ref=e354]
+                            - generic [ref=e357]: Done + next
+                    - alert [ref=e358]:
+                      - generic [ref=e361]: Link a Lichess account to use Lichess All or Lichess Masters in prep.
+                  - generic [ref=e366]:
+                    - button "Manage Engines" [ref=e367] [cursor=pointer]:
+                      - generic [ref=e368]:
+                        - img [ref=e370]
+                        - generic [ref=e373]: Manage Engines
+                    - button [ref=e374] [cursor=pointer]:
+                      - img [ref=e376]
+            - separator "Resize right side panels" [ref=e379]
+            - generic [ref=e381]:
+              - generic [ref=e383]:
+                - generic [ref=e387]:
+                  - button [ref=e388] [cursor=pointer]:
+                    - img [ref=e390]
+                  - button [ref=e393] [cursor=pointer]:
+                    - img [ref=e395]
+                  - button [ref=e399] [cursor=pointer]:
+                    - img [ref=e401]
+                  - button [ref=e405] [cursor=pointer]:
+                    - img [ref=e407]
+                  - button [ref=e410] [cursor=pointer]:
+                    - img [ref=e412]
+                  - button [ref=e416] [cursor=pointer]:
+                    - img [ref=e418]
+                  - button [ref=e422] [cursor=pointer]:
+                    - img [ref=e424]
+                - separator [ref=e427]
+                - generic [ref=e429]:
+                  - generic [ref=e430]:
+                    - paragraph
+                    - generic [ref=e431]:
+                      - button [ref=e432] [cursor=pointer]:
+                        - img [ref=e434]
+                      - button [ref=e437] [cursor=pointer]:
+                        - img [ref=e439]
+                      - button [ref=e442] [cursor=pointer]:
+                        - img [ref=e444]
+                      - button [ref=e446] [cursor=pointer]:
+                        - img [ref=e448]
+                  - separator [ref=e453]
+              - generic [ref=e461]:
+                - button [ref=e462] [cursor=pointer]:
+                  - img [ref=e464]
+                - button [ref=e467] [cursor=pointer]:
+                  - img [ref=e469]
+                - button [ref=e471] [cursor=pointer]:
+                  - img [ref=e473]
+                - button [ref=e475] [cursor=pointer]:
+                  - img [ref=e477]

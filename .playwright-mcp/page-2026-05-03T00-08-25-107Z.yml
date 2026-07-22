@@ -1,0 +1,245 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - img [ref=e9]
+        - generic [ref=e10]:
+          - button "File" [ref=e11] [cursor=pointer]:
+            - generic [ref=e13]: File
+          - button "View" [ref=e14] [cursor=pointer]:
+            - generic [ref=e16]: View
+          - button "Help" [ref=e17] [cursor=pointer]:
+            - generic [ref=e19]: Help
+      - generic [ref=e21]:
+        - img "Minimize" [ref=e23]
+        - img "Restore" [ref=e26]
+        - img "Close" [ref=e29]
+  - navigation [ref=e31]:
+    - generic [ref=e33]:
+      - link [ref=e34] [cursor=pointer]:
+        - /url: /
+        - img [ref=e35]
+      - link [ref=e38] [cursor=pointer]:
+        - /url: /accounts
+        - img [ref=e39]
+      - link [ref=e42] [cursor=pointer]:
+        - /url: /files
+        - img [ref=e43]
+      - link [ref=e47] [cursor=pointer]:
+        - /url: /databases
+        - img [ref=e48]
+      - link [ref=e52] [cursor=pointer]:
+        - /url: /engines
+        - img [ref=e53]
+    - link [ref=e58] [cursor=pointer]:
+      - /url: /settings
+      - img [ref=e59]
+  - main [ref=e62]:
+    - generic [ref=e63]:
+      - generic [ref=e67]:
+        - button "Smoke Review" [ref=e237]:
+          - generic [ref=e239] [cursor=pointer]:
+            - img [ref=e241]
+            - generic [ref=e248]: Smoke Review
+            - img [ref=e252]
+        - button [ref=e79] [cursor=pointer]:
+          - img [ref=e81]
+      - tabpanel [ref=e255]:
+        - generic [ref=e256]:
+          - generic [ref=e258]:
+            - generic [ref=e259]:
+              - generic [ref=e262]:
+                - generic [ref=e263]:
+                  - generic:
+                    - paragraph
+                - generic [ref=e265]:
+                  - button [ref=e631] [cursor=pointer]:
+                    - img [ref=e633]
+                  - generic [ref=e268]:
+                    - generic [ref=e270]:
+                      - img [ref=e272]
+                      - img
+                      - img
+                    - separator "Resize board" [ref=e273]
+                    - separator "Resize board" [ref=e274]
+                    - separator "Resize board" [ref=e275]
+                    - separator "Resize board" [ref=e276]
+                - generic [ref=e277]:
+                  - generic:
+                    - paragraph
+              - generic [ref=e278]:
+                - button "Back" [disabled] [ref=e279]:
+                  - generic [ref=e280]:
+                    - img [ref=e282]
+                    - generic [ref=e284]: Back
+                - paragraph [ref=e285]: Position 1 / 1
+                - button "Next" [disabled] [ref=e286]:
+                  - generic [ref=e287]:
+                    - generic [ref=e288]: Next
+                    - img [ref=e290]
+            - generic [ref=e293]:
+              - generic [ref=e294]:
+                - generic [ref=e295]:
+                  - button "!!" [ref=e296] [cursor=pointer]:
+                    - paragraph [ref=e298]: "!!"
+                  - button "!" [ref=e299] [cursor=pointer]:
+                    - paragraph [ref=e301]: "!"
+                  - button "!?" [ref=e302] [cursor=pointer]:
+                    - paragraph [ref=e304]: "!?"
+                  - button "?!" [ref=e305] [cursor=pointer]:
+                    - paragraph [ref=e307]: "?!"
+                  - button "?" [ref=e308] [cursor=pointer]:
+                    - paragraph [ref=e310]: "?"
+                  - button "??" [ref=e311] [cursor=pointer]:
+                    - paragraph [ref=e313]: "??"
+                - separator [ref=e314]:
+                  - button [ref=e316] [cursor=pointer]:
+                    - img [ref=e318]
+              - generic [ref=e323]:
+                - generic [ref=e324]:
+                  - generic [ref=e325]:
+                    - button "Bold" [ref=e326] [cursor=pointer]:
+                      - img [ref=e327]
+                    - button "Italic" [ref=e331] [cursor=pointer]:
+                      - img [ref=e332]
+                    - button "Underline" [ref=e335] [cursor=pointer]:
+                      - img [ref=e336]
+                    - button "Strikethrough" [ref=e339] [cursor=pointer]:
+                      - img [ref=e340]
+                    - button "Clear formatting" [ref=e343] [cursor=pointer]:
+                      - img [ref=e344]
+                  - generic [ref=e349]:
+                    - button "Heading 1" [ref=e350] [cursor=pointer]:
+                      - img [ref=e351]
+                    - button "Heading 2" [ref=e354] [cursor=pointer]:
+                      - img [ref=e355]
+                    - button "Heading 3" [ref=e358] [cursor=pointer]:
+                      - img [ref=e359]
+                    - button "Heading 4" [ref=e363] [cursor=pointer]:
+                      - img [ref=e364]
+                  - generic [ref=e367]:
+                    - button "Blockquote" [ref=e368] [cursor=pointer]:
+                      - img [ref=e369]
+                    - button "Horizontal line" [ref=e373] [cursor=pointer]:
+                      - img [ref=e374]
+                    - button "Bullet list" [ref=e376] [cursor=pointer]:
+                      - img [ref=e377]
+                    - button "Ordered list" [ref=e379] [cursor=pointer]:
+                      - img [ref=e380]
+                  - generic [ref=e384]:
+                    - button "Link" [ref=e385] [cursor=pointer]:
+                      - img [ref=e386]
+                    - button "Remove link" [ref=e391] [cursor=pointer]:
+                      - img [ref=e392]
+                - textbox [ref=e399]:
+                  - paragraph [ref=e400]: Write here...
+          - separator "Resize board and side panels" [ref=e401]
+          - generic [ref=e403]:
+            - generic [ref=e407]:
+              - tablist [ref=e408]:
+                - tab "Review" [selected] [ref=e409] [cursor=pointer]:
+                  - img [ref=e411]
+                  - generic: Review
+                - tab "Analysis" [ref=e417] [cursor=pointer]:
+                  - img [ref=e419]
+                  - generic: Analysis
+                - tab "Database" [ref=e423] [cursor=pointer]:
+                  - img [ref=e425]
+                  - generic: Database
+                - tab "Plan Explorer" [ref=e429] [cursor=pointer]:
+                  - img [ref=e431]
+                  - generic: Plan Explorer
+                - tab "Engine Plans" [ref=e435] [cursor=pointer]:
+                  - img [ref=e437]
+                  - generic: Engine Plans
+                - tab "Compare" [ref=e440] [cursor=pointer]:
+                  - img [ref=e442]
+                  - generic: Compare
+                - tab "Info" [ref=e449] [cursor=pointer]:
+                  - img [ref=e451]
+                  - generic: Info
+              - tabpanel "Review" [ref=e454]:
+                - generic [ref=e455]:
+                  - generic [ref=e457]:
+                    - generic [ref=e458]:
+                      - radiogroup [ref=e459]:
+                        - generic [ref=e461]:
+                          - radio "Review positions" [checked]
+                          - generic [ref=e462] [cursor=pointer]: Review positions
+                        - generic [ref=e463]:
+                          - radio "Stats"
+                          - generic [ref=e464] [cursor=pointer]: Stats
+                        - generic [ref=e465]:
+                          - radio "Analyze repertoire"
+                          - generic [ref=e466] [cursor=pointer]: Analyze repertoire
+                      - paragraph [ref=e467]: Analyze lines, save what matters, then train them here.
+                    - generic [ref=e468]:
+                      - generic [ref=e469]:
+                        - paragraph [ref=e470]: Smoke Review
+                        - paragraph [ref=e471]: 1 saved position
+                      - button "Positions" [ref=e472] [cursor=pointer]:
+                        - generic [ref=e473]:
+                          - img [ref=e475]
+                          - generic [ref=e478]: Positions
+                    - generic [ref=e636]:
+                      - generic [ref=e637]:
+                        - paragraph [ref=e638]: Review session
+                        - paragraph [ref=e639]: 0 / 1 complete
+                      - generic [ref=e640]:
+                        - progressbar
+                      - generic [ref=e641]:
+                        - generic [ref=e643]: 0 correct
+                        - generic [ref=e645]: 0 retry
+                        - generic [ref=e647]: 1 left
+                    - generic [ref=e649]:
+                      - paragraph [ref=e650]: Play the move you want to remember.
+                      - button "Stop" [ref=e651] [cursor=pointer]:
+                        - generic [ref=e653]: Stop
+                    - generic [ref=e655]:
+                      - generic [ref=e656]:
+                        - paragraph [ref=e657]: Current position
+                        - paragraph [ref=e658]: e4 - 1. e4
+                      - button "Delete" [ref=e659] [cursor=pointer]:
+                        - generic [ref=e660]:
+                          - img [ref=e662]
+                          - generic [ref=e665]: Delete
+                    - generic [ref=e536]:
+                      - generic [ref=e538]: Correct 0
+                      - generic [ref=e540]: Incorrect 0
+                      - generic [ref=e542]: Streak 0
+                  - generic [ref=e548]:
+                    - generic [ref=e550]:
+                      - paragraph [ref=e551]: Engine arrows
+                      - switch "Hide engine arrows" [checked] [ref=e554]
+                    - paragraph [ref=e558]: Press E to toggle engine. Space plays best move. Click moves to explore.
+                    - generic [ref=e559]:
+                      - button "Manage Engines" [ref=e560] [cursor=pointer]:
+                        - generic [ref=e561]:
+                          - img [ref=e563]
+                          - generic [ref=e566]: Manage Engines
+                      - button [ref=e567] [cursor=pointer]:
+                        - img [ref=e569]
+            - separator "Resize right side panels" [ref=e572]
+            - generic [ref=e574]:
+              - generic [ref=e578]:
+                - generic [ref=e579]:
+                  - paragraph
+                  - generic [ref=e580]:
+                    - button [ref=e581] [cursor=pointer]:
+                      - img [ref=e583]
+                    - button [ref=e586] [cursor=pointer]:
+                      - img [ref=e588]
+                    - button [ref=e591] [cursor=pointer]:
+                      - img [ref=e666]
+                    - button [ref=e595] [cursor=pointer]:
+                      - img [ref=e597]
+                - separator [ref=e602]
+              - generic [ref=e610]:
+                - button [ref=e611] [cursor=pointer]:
+                  - img [ref=e613]
+                - button [ref=e616] [cursor=pointer]:
+                  - img [ref=e618]
+                - button [ref=e620] [cursor=pointer]:
+                  - img [ref=e622]
+                - button [ref=e624] [cursor=pointer]:
+                  - img [ref=e626]

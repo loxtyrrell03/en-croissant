@@ -1,0 +1,55 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - img [ref=e9]
+        - generic [ref=e10]:
+          - button "File" [ref=e11] [cursor=pointer]:
+            - generic [ref=e13]: File
+          - button "View" [ref=e14] [cursor=pointer]:
+            - generic [ref=e16]: View
+          - button "Help" [ref=e17] [cursor=pointer]:
+            - generic [ref=e19]: Help
+      - generic [ref=e21]:
+        - img "Minimize" [ref=e23]
+        - img "Restore" [ref=e26]
+        - img "Close" [ref=e29]
+  - navigation [ref=e31]:
+    - generic [ref=e33]:
+      - link [ref=e34] [cursor=pointer]:
+        - /url: /home
+        - img [ref=e35]
+      - link [ref=e39] [cursor=pointer]:
+        - /url: /
+        - img [ref=e40]
+      - link [ref=e43] [cursor=pointer]:
+        - /url: /files
+        - img [ref=e44]
+      - link [ref=e48] [cursor=pointer]:
+        - /url: /databases
+        - img [ref=e49]
+      - link [ref=e53] [cursor=pointer]:
+        - /url: /engines
+        - img [ref=e54]
+    - link [ref=e59] [cursor=pointer]:
+      - /url: /settings
+      - img [ref=e60]
+  - main [ref=e63]:
+    - generic [ref=e228]:
+      - heading "An error occurred" [level=1] [ref=e229]
+      - paragraph [ref=e230]:
+        - generic [ref=e231]: "TypeError:"
+        - text: Cannot read properties of null (reading 'toLowerCase')
+      - code [ref=e232]: "TypeError: Cannot read properties of null (reading 'toLowerCase') at isFileBackedReviewDeck (http://localhost:1420/src/state/atoms.ts?t=1777848266426:403:25) at http://localhost:1420/src/state/atoms.ts?t=1777848266426:407:6 at createAtom (http://localhost:1420/node_modules/.vite/deps/jotai_utils.js?v=4ef8bb5b:36:19) at OpeningReviewWorkspace (http://localhost:1420/src/components/review/OpeningReviewWorkspace.tsx?t=1777848385250:113:34) at Object.react_stack_bottom_frame (http://localhost:1420/node_modules/.vite/deps/react-dom_client.js?v=4ef8bb5b:12868:12) at renderWithHooks (http://localhost:1420/node_modules/.vite/deps/react-dom_client.js?v=4ef8bb5b:4213:19) at updateFunctionComponent (http://localhost:1420/node_modules/.vite/deps/react-dom_client.js?v=4ef8bb5b:5569:16) at beginWork (http://localhost:1420/node_modules/.vite/deps/react-dom_client.js?v=4ef8bb5b:6140:20) at runWithFiberInDEV (http://localhost:1420/node_modules/.vite/deps/react-dom_client.js?v=4ef8bb5b:851:66) at performUnitOfWork (http://localhost:1420/node_modules/.vite/deps/react-dom_client.js?v=4ef8bb5b:8429:92)"
+      - generic [ref=e233]:
+        - button "Copy stack trace" [ref=e234] [cursor=pointer]:
+          - generic [ref=e236]: Copy stack trace
+        - button "Reload" [ref=e237] [cursor=pointer]:
+          - generic [ref=e239]: Reload
+      - paragraph [ref=e240]:
+        - text: Please report this on
+        - link "GitHub" [ref=e241] [cursor=pointer]:
+          - /url: https://github.com/franciscoBSalgueiro/en-croissant/issues/new?assignees=&labels=bug&projects=&template=bug.yml
+        - text: or on the
+        - link "Discord server" [ref=e242] [cursor=pointer]:
+          - /url: https://discord.com/invite/tdYzfDbSSW
