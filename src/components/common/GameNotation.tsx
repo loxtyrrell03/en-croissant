@@ -103,7 +103,11 @@ function GameNotation({
   const targetRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    if (viewport.current) {
+    // Defer the scroll to the next frame: getBoundingClientRect forces a
+    // synchronous layout, which would otherwise land in the middle of the
+    // commit for every move played.
+    const frame = window.requestAnimationFrame(() => {
+      if (!viewport.current) return;
       if (currentFen === INITIAL_FEN) {
         viewport.current.scrollTo({ top: 0, behavior: "auto" });
       } else if (targetRef.current) {
@@ -117,7 +121,8 @@ function GameNotation({
           behavior: "auto",
         });
       }
-    }
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [currentFen]);
 
   const [invisibleValue, setInvisible] = useAtom(currentInvisibleAtom);
@@ -326,6 +331,9 @@ function NotationHeader({
   const [copying, setCopying] = useState(false);
   const [copied, setCopied] = useState(false);
   const copiedTimeout = useRef<number | null>(null);
+  // Walks the whole mainline and computes accuracies — memoize per tree
+  // revision so it doesn't run twice on every header render.
+  const hasGameAnalysis = useMemo(() => hasCompleteGameAnalysis(root), [root]);
 
   useEffect(() => {
     return () => {
@@ -385,7 +393,7 @@ function NotationHeader({
       return;
     }
 
-    if (hasCompleteGameAnalysis(root)) {
+    if (hasGameAnalysis) {
       setReportVisible(true);
       return;
     }
@@ -467,7 +475,7 @@ function NotationHeader({
   const copyPgnLabel = copied ? t("Common.Copied") : `${t("Menu.Edit.Copy") || "Copy"} PGN`;
   const analyzeLabel = reportVisible
     ? "Show moves"
-    : hasCompleteGameAnalysis(root)
+    : hasGameAnalysis
       ? "Show game report"
       : "Analyze game with Stockfish";
   const notationDetailsHidden = !evalOpen || !showComments || !showMoveAnnotations;

@@ -104,6 +104,9 @@ pub enum Error {
 
     #[error("Search stopped")]
     SearchStopped,
+
+    #[error("An import is already writing to this database: {0}")]
+    ConversionInProgress(String),
 }
 
 impl From<std::io::Error> for Error {

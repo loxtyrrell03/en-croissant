@@ -81,7 +81,7 @@ export default function EnginePanelContent({ compact = false }: { compact?: bool
   const allEnabled = useAtomValue(allEnabledAtom);
   const [expanded, setExpanded] = useAtom(currentExpandedEnginesAtom);
   const [showEngineArrows, setShowEngineArrows] = useAtom(showArrowsAtom);
-  const [pos] = positionFromFen(currentNodeFen);
+  const pos = useMemo(() => positionFromFen(currentNodeFen)[0], [currentNodeFen]);
   const navigate = useNavigate();
 
   const engineContent = (
@@ -241,11 +241,7 @@ export default function EnginePanelContent({ compact = false }: { compact?: bool
 
   return (
     <Stack h="100%" gap="sm" style={{ minHeight: 0 }}>
-      <ScrollArea
-        flex={1}
-        offsetScrollbars
-        onScrollPositionChange={() => document.dispatchEvent(new Event("analysis-panel-scroll"))}
-      >
+      <ScrollArea flex={1} offsetScrollbars>
         {engineContent}
       </ScrollArea>
     </Stack>

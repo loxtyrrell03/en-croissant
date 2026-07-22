@@ -61,6 +61,9 @@ pub struct EngineProcess {
     idle_generation: u64,
     real_multipv: u16,
     start: Instant,
+    // Number of `go` commands whose `bestmove` reply hasn't been consumed yet.
+    // Anything above 1 means output currently read belongs to a superseded search.
+    pending_gos: u32,
 }
 
 impl EngineProcess {
@@ -82,6 +85,7 @@ impl EngineProcess {
                 running: false,
                 idle_generation: 0,
                 start: Instant::now(),
+                pending_gos: 0,
             },
             reader,
         ))
@@ -147,7 +151,20 @@ impl EngineProcess {
         self.running = true;
         self.idle_generation = self.idle_generation.wrapping_add(1);
         self.start = Instant::now();
+        self.pending_gos = self.pending_gos.saturating_add(1);
         Ok(())
+    }
+
+    /// Consumes one `bestmove` reply. Returns true when it belongs to the
+    /// latest `go` (i.e. no newer search has been started since).
+    fn note_bestmove(&mut self) -> bool {
+        self.pending_gos = self.pending_gos.saturating_sub(1);
+        self.pending_gos == 0
+    }
+
+    /// Whether engine output currently being read belongs to the latest search.
+    fn reading_latest_search(&self) -> bool {
+        self.pending_gos <= 1
     }
 
     async fn stop(&mut self) -> Result<u64, Error> {
@@ -487,31 +504,22 @@ pub async fn get_best_moves(
     let key = (tab.clone(), id.clone());
 
     if state.engine_processes.contains_key(&key) {
-        let mut wait_for_stop = false;
-        {
-            let process = state.engine_processes.get_mut(&key).unwrap();
-            let mut process = process.lock().await;
-            if options == process.options && go_mode == process.go_mode && process.running {
-                return Ok(Some((
-                    process.last_progress,
-                    process.last_best_moves.clone(),
-                )));
-            }
-            if process.running {
-                process.stop().await?;
-                wait_for_stop = true;
-            }
+        let process = state.engine_processes.get_mut(&key).unwrap();
+        let mut process = process.lock().await;
+        if options == process.options && go_mode == process.go_mode && process.running {
+            return Ok(Some((
+                process.last_progress,
+                process.last_best_moves.clone(),
+            )));
         }
-        if wait_for_stop {
-            // Give the reader task time to consume the engine's bestmove before reusing it.
-            tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+        if process.running {
+            process.stop().await?;
         }
-        {
-            let process = state.engine_processes.get_mut(&key).unwrap();
-            let mut process = process.lock().await;
-            process.set_options(options.clone()).await?;
-            process.go(&go_mode).await?;
-        }
+        // Restart under a single lock: `pending_gos` lets the reader task discard
+        // any output still belonging to the search that was just stopped, so
+        // there's no need to sleep-and-relock (which raced concurrent restarts).
+        process.set_options(options.clone()).await?;
+        process.go(&go_mode).await?;
         return Ok(None);
     }
 
@@ -530,6 +538,13 @@ pub async fn get_best_moves(
         let mut proc = process.lock().await;
         match parse_one(&line) {
             UciMessage::Info(attrs) => {
+                if !proc.reading_latest_search() {
+                    // Output from a superseded search; parsing it against the new
+                    // position would produce wrong lines.
+                    proc.base.log_engine(&line);
+                    drop(proc);
+                    continue;
+                }
                 match parse_uci_attrs(attrs, &proc.options.fen.parse()?, &proc.options.moves) {
                     Ok(best_moves) => {
                         if best_moves.score.lower_bound == Some(true)
@@ -579,17 +594,19 @@ pub async fn get_best_moves(
                 }
             }
             UciMessage::BestMove { .. } => {
-                BestMovesPayload {
-                    best_lines: proc.last_best_moves.clone(),
-                    engine: id.clone(),
-                    tab: tab.clone(),
-                    fen: proc.options.fen.clone(),
-                    moves: proc.options.moves.clone(),
-                    progress: 100.0,
+                if proc.note_bestmove() {
+                    BestMovesPayload {
+                        best_lines: proc.last_best_moves.clone(),
+                        engine: id.clone(),
+                        tab: tab.clone(),
+                        fen: proc.options.fen.clone(),
+                        moves: proc.options.moves.clone(),
+                        progress: 100.0,
+                    }
+                    .emit(&app)?;
+                    proc.last_progress = 100.0;
+                    idle_generation = Some(proc.mark_finished());
                 }
-                .emit(&app)?;
-                proc.last_progress = 100.0;
-                idle_generation = Some(proc.mark_finished());
             }
             _ => {}
         }

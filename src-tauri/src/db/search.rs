@@ -558,9 +558,18 @@ struct PlanLineKey {
     squares: Vec<Square>,
 }
 
+// Setup identity is destination-based: a setup plan is described by which piece
+// ends up on which square, not the route it took. This lets transposed routes
+// (Bc1-f4 vs Bc1-d2-f4) and continuation-depth noise merge into one setup plan.
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+struct PlanSetupPlanKey {
+    piece: PieceKey,
+    destination: Option<Square>,
+}
+
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 struct PlanSetupKey {
-    plans: Vec<PlanLineKey>,
+    plans: Vec<PlanSetupPlanKey>,
 }
 
 #[derive(Debug, Clone)]
@@ -634,7 +643,7 @@ impl SetupPlanStats {
 
 #[derive(Debug, Clone)]
 struct SetupVariantStats {
-    plans: HashMap<PlanLineKey, SetupPlanStats>,
+    plans: HashMap<PlanSetupPlanKey, SetupPlanStats>,
     slots: HashMap<String, String>,
     games: i32,
     white: i32,
@@ -663,7 +672,7 @@ impl SetupVariantStats {
     }
 
     fn add_plan(&mut self, path: ObservedPiecePath, result: GameResult) {
-        let key = plan_line_key_from_path(&path);
+        let key = plan_setup_plan_key_from_path(&path);
         self.plans
             .entry(key)
             .and_modify(|plan| plan.add_stats(SetupPlanStats::new(path.clone(), result)))
@@ -2520,7 +2529,7 @@ fn plan_setup_key_from_paths(paths: &[ObservedPiecePath]) -> PlanSetupKey {
         plans: anchors
             .into_iter()
             .take(PLAN_SETUP_MAX_PLANS)
-            .map(plan_line_key_from_path)
+            .map(plan_setup_plan_key_from_path)
             .collect(),
     }
 }
@@ -2757,6 +2766,13 @@ fn plan_line_key_from_path(path: &ObservedPiecePath) -> PlanLineKey {
     PlanLineKey {
         piece: path.piece,
         squares: path.squares.clone(),
+    }
+}
+
+fn plan_setup_plan_key_from_path(path: &ObservedPiecePath) -> PlanSetupPlanKey {
+    PlanSetupPlanKey {
+        piece: path.piece,
+        destination: path.squares.last().copied(),
     }
 }
 
@@ -4411,6 +4427,77 @@ mod tests {
         assert_eq!(routes.get("white:pawn:g2").unwrap(), &vec!["g2", "g3"]);
         assert_eq!(routes.get("white:bishop:f1").unwrap(), &vec!["f1", "g2"]);
         assert_eq!(routes.get("white:king:e1").unwrap(), &vec!["e1", "g1"]);
+    }
+
+    #[test]
+    fn plan_setup_mining_merges_transposed_routes_to_same_destination() {
+        let e3_pawn = ObservedPiecePath {
+            piece: PieceKey {
+                color: Color::White,
+                role: Role::Pawn,
+                from: Square::E2,
+            },
+            squares: vec![Square::E2, Square::E3],
+            san: vec!["e3".to_string()],
+            uci: vec!["e2e3".to_string()],
+        };
+        // First sample: bishop reaches f4 directly (Bc1-f4).
+        let bishop_direct = ObservedPiecePath {
+            piece: PieceKey {
+                color: Color::White,
+                role: Role::Bishop,
+                from: Square::C1,
+            },
+            squares: vec![Square::C1, Square::F4],
+            san: vec!["Bf4".to_string()],
+            uci: vec!["c1f4".to_string()],
+        };
+        // Second sample: same bishop reaches f4 via d2 (Bc1-d2, Bd2-f4).
+        let bishop_via_d2 = ObservedPiecePath {
+            piece: PieceKey {
+                color: Color::White,
+                role: Role::Bishop,
+                from: Square::C1,
+            },
+            squares: vec![Square::C1, Square::D2, Square::F4],
+            san: vec!["Bd2".to_string(), "Bf4".to_string()],
+            uci: vec!["c1d2".to_string(), "d2f4".to_string()],
+        };
+
+        let mut mined = HashMap::new();
+        for (paths, result) in [
+            (
+                vec![e3_pawn.clone(), bishop_direct.clone()],
+                GameResult::WhiteWin,
+            ),
+            (
+                vec![e3_pawn.clone(), bishop_via_d2.clone()],
+                GameResult::BlackWin,
+            ),
+        ] {
+            for (key, stats) in collect_plan_setup_entries(&paths, result) {
+                mined
+                    .entry(key)
+                    .and_modify(|existing: &mut SetupStats| existing.add_stats(stats.clone()))
+                    .or_insert(stats);
+            }
+        }
+
+        let setup_rows = plan_setups_from_stats(mined);
+        assert_eq!(setup_rows.len(), 1);
+        let setup = setup_rows.into_iter().next().unwrap();
+        assert_eq!(setup.games, 2);
+
+        // The two routes to f4 collapse into a single bishop plan, with the
+        // first-seen (direct) route preserved for display and games summed.
+        let bishops = setup
+            .plans
+            .iter()
+            .filter(|plan| plan.role == "bishop" && plan.from == "c1")
+            .collect::<Vec<_>>();
+        assert_eq!(bishops.len(), 1);
+        assert_eq!(bishops[0].line.squares, vec!["c1", "f4"]);
+        assert_eq!(bishops[0].line.games, 2);
     }
 
     #[test]

@@ -98,15 +98,23 @@ import {
 } from "@/utils/planExplorer";
 import { getOnlinePlanExplorer } from "@/utils/lichess/planExplorer";
 import {
-  evaluateMoveStrength,
+  blendExpectedScores,
+  getBlendEngineWeight,
   getEngineScoreSpreadCp,
   getPracticalWdlRate,
-  getUsageAwarePracticalWdlRate,
+  getShrunkPracticalScore,
   normalizeMoveStrengthSettings,
   type MoveStrengthSettings,
 } from "@/utils/moveStrength";
+import {
+  computeEngineSetupStrength,
+  getEngineSetupCpLoss,
+  PLAN_STRENGTH_DRAW_WEIGHT,
+  type EngineSetupStrength,
+} from "@/utils/planStrength";
 import { withLimitedRecordEntry } from "@/utils/boundedCache";
 import { positionFromFen } from "@/utils/chessops";
+import { MoveStrengthSettingsButton } from "../database/MoveStrengthSettingsButton";
 import PlanCoachInline, { type PlanCoachInlineRequest } from "../plan/PlanCoachInline";
 
 const MAX_ENGINE_PLAN_REPORT_CACHE_ENTRIES = 24;
@@ -141,10 +149,12 @@ type EngineSetupBlend = {
   score: number;
   label: string;
   detail: string;
-  databaseScore: number | null;
-  databaseWdlLoss: number | null;
+  expected: number;
+  practicalExpected: number | null;
+  engineExpected: number | null;
   engineCpLoss: number | null;
   engineUnsafe: boolean;
+  engineMissing: boolean;
   practical: EngineSetupPracticalMatch | null;
 };
 type EngineSetupVerdict = {
@@ -331,14 +341,24 @@ function EnginePlanExplorerPanel() {
       explorerToken,
     ),
   );
+  const setupStrengthBySignature = useMemo(() => {
+    const settings = normalizeMoveStrengthSettings(moveStrengthSettings);
+    return new Map<string, EngineSetupStrength | null>(
+      (filteredReport?.setups ?? []).map((setup) => [
+        setup.signature,
+        computeEngineSetupStrength({ setup, settings }),
+      ]),
+    );
+  }, [filteredReport?.setups, moveStrengthSettings]);
   const practicalSetupBlends = useMemo(
     () =>
       buildEngineSetupBlendBySignature(
         filteredReport?.setups ?? [],
         practicalSetupData?.setups ?? [],
         moveStrengthSettings,
+        setupStrengthBySignature,
       ),
-    [filteredReport?.setups, moveStrengthSettings, practicalSetupData?.setups],
+    [filteredReport?.setups, moveStrengthSettings, practicalSetupData?.setups, setupStrengthBySignature],
   );
 
   useEffect(() => {
@@ -644,10 +664,11 @@ function EnginePlanExplorerPanel() {
                     : practicalSetupError
                       ? "Lichess All unavailable"
                       : explorerToken
-                        ? "Lichess All blend"
-                        : "Link Lichess for blend"}
+                        ? "Lichess practical linked"
+                        : "Engine-only blend"}
                 </Badge>
               )}
+              {view === "setups" && <MoveStrengthSettingsButton size="sm" />}
             </Group>
             <Text size="xs" c="dimmed">
               Raw eval details are kept inside each row.
@@ -686,6 +707,7 @@ function EnginePlanExplorerPanel() {
               totalPvs={visibleReport.totalPvs}
               sort={planSort}
               setSort={setPlanSort}
+              strengthBySignature={setupStrengthBySignature}
               blendBySetupSignature={practicalSetupBlends}
               practicalLoading={practicalSetupLoading}
               practicalError={practicalSetupError}
@@ -948,6 +970,7 @@ function SetupsTable({
   totalPvs,
   sort,
   setSort,
+  strengthBySignature,
   blendBySetupSignature,
   practicalLoading,
   practicalError,
@@ -963,6 +986,7 @@ function SetupsTable({
   totalPvs: number;
   sort: EnginePlanSort;
   setSort: Dispatch<SetStateAction<EnginePlanSort>>;
+  strengthBySignature: Map<string, EngineSetupStrength | null>;
   blendBySetupSignature: Map<string, EngineSetupBlend>;
   practicalLoading: boolean;
   practicalError: unknown;
@@ -974,8 +998,8 @@ function SetupsTable({
   clearPreview: () => void;
 }) {
   const sortedSetups = useMemo(
-    () => sortEngineSetups(setups, sort, blendBySetupSignature).slice(0, 30),
-    [blendBySetupSignature, setups, sort],
+    () => sortEngineSetups(setups, sort, strengthBySignature, blendBySetupSignature).slice(0, 30),
+    [blendBySetupSignature, setups, sort, strengthBySignature],
   );
 
   return (
@@ -1012,6 +1036,7 @@ function SetupsTable({
             setup={setup}
             rootFen={rootFen}
             totalPvs={totalPvs}
+            strength={strengthBySignature.get(setup.signature) ?? null}
             blend={blendBySetupSignature.get(setup.signature) ?? null}
             practicalLoading={practicalLoading}
             practicalError={practicalError}
@@ -1032,6 +1057,7 @@ function SetupRow({
   setup,
   rootFen,
   totalPvs,
+  strength,
   blend,
   practicalLoading,
   practicalError,
@@ -1045,6 +1071,7 @@ function SetupRow({
   setup: EnginePlanSetup;
   rootFen: string;
   totalPvs: number;
+  strength: EngineSetupStrength | null;
   blend: EngineSetupBlend | null;
   practicalLoading: boolean;
   practicalError: unknown;
@@ -1064,8 +1091,8 @@ function SetupRow({
     [blend, setup, totalPvs],
   );
   const coachRequest = useMemo(
-    () => buildEngineSetupCoachRequest(setup, rootFen, totalPvs, blend, verdict),
-    [blend, rootFen, setup, totalPvs, verdict],
+    () => buildEngineSetupCoachRequest(setup, rootFen, totalPvs, strength, blend, verdict),
+    [blend, rootFen, setup, strength, totalPvs, verdict],
   );
   const coachCacheKey = useMemo(
     () =>
@@ -1076,11 +1103,12 @@ function SetupRow({
         setup.approval,
         setup.supportCount,
         setup.weightedEvalCp ?? "mate-or-none",
+        strength?.score ?? "no-strength",
         blend?.score ?? "no-blend",
         blend?.practical?.setup.games ?? "no-practical",
         verdict.label,
       ].join("|"),
-    [blend, rootFen, setup, verdict],
+    [blend, rootFen, setup, strength, verdict],
   );
 
   return (
@@ -1148,7 +1176,7 @@ function SetupRow({
         />
       </Table.Td>
       <Table.Td>
-        <EngineStrengthCell target={setup} totalPvs={totalPvs} />
+        <EngineSetupStrengthCell setup={setup} strength={strength} totalPvs={totalPvs} />
       </Table.Td>
       <Table.Td>{formatEvalCp(setup.weightedEvalCp)}</Table.Td>
       <Table.Td>
@@ -1183,50 +1211,85 @@ function SetupBlendCell({
   error: unknown;
   hasExplorerToken: boolean;
 }) {
-  if (!hasExplorerToken) {
-    return (
-      <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
-        Link Lichess
-      </Text>
-    );
-  }
-
-  if (loading && !blend) {
-    return (
-      <Text size="xs" c="dimmed">
-        Loading
-      </Text>
-    );
-  }
-
-  if (error && !blend) {
-    return (
-      <Text size="xs" c="orange">
-        Unavailable
-      </Text>
-    );
-  }
-
   if (!blend) {
     return (
       <Text size="xs" c="dimmed">
-        No match
+        n/a
       </Text>
     );
   }
+
+  const color = blend.engineUnsafe ? "yellow" : blend.engineMissing ? "gray" : "teal";
+  const practicalMissing = !blend.practical;
+  const practicalNote = blend.practical
+    ? `${blend.practical.setup.games.toLocaleString()} games`
+    : !hasExplorerToken
+      ? "engine only — link Lichess"
+      : loading
+        ? "Lichess loading"
+        : error
+          ? "practical unavailable"
+          : "engine only";
 
   return (
     <Tooltip label={blend.detail} multiline w={330} withArrow>
       <Stack gap={3}>
-        <Badge color={blend.engineUnsafe ? "yellow" : "teal"} variant="light">
+        <Badge color={color} variant="light">
           {blend.label}
         </Badge>
-        <Progress value={blend.score} color={blend.engineUnsafe ? "yellow" : "teal"} size={3} />
-        {blend.practical && (
-          <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
-            {blend.practical.setup.games.toLocaleString()} games
-          </Text>
-        )}
+        <Progress value={blend.score} color={color} size={3} />
+        <Text
+          size="xs"
+          c={practicalMissing && !!error ? "orange" : "dimmed"}
+          style={{ whiteSpace: "nowrap" }}
+        >
+          {practicalNote}
+        </Text>
+      </Stack>
+    </Tooltip>
+  );
+}
+
+function EngineSetupStrengthCell({
+  setup,
+  strength,
+  totalPvs,
+}: {
+  setup: EnginePlanSetup;
+  strength: EngineSetupStrength | null;
+  totalPvs: number;
+}) {
+  if (!strength) {
+    return (
+      <Stack gap={2}>
+        <Badge color={approvalColor(setup.approval)} variant="light">
+          {setup.approval}
+        </Badge>
+        <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+          No usable eval
+        </Text>
+      </Stack>
+    );
+  }
+
+  const color = strength.engineUnsafe ? "yellow" : "teal";
+  const backedPlans = Math.round(strength.pvBackedShare * setup.plans.length);
+
+  return (
+    <Tooltip label={strength.detail} multiline w={320} withArrow>
+      <Stack gap={2}>
+        <Group gap={4} wrap="nowrap">
+          <Badge color={color} variant="light">
+            {strength.score}
+          </Badge>
+          <Badge color={approvalColor(setup.approval)} variant="outline" size="xs">
+            {setup.approval}
+          </Badge>
+        </Group>
+        <Progress value={strength.score} color={color} size={3} />
+        <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+          {`${setup.supportCount}/${totalPvs} PVs · ${backedPlans}/${setup.plans.length} backed`}
+        </Text>
       </Stack>
     </Tooltip>
   );
@@ -1560,6 +1623,7 @@ function sortEnginePlans(plans: EnginePlan[], sort: EnginePlanSort) {
 function sortEngineSetups(
   setups: EnginePlanSetup[],
   sort: EnginePlanSort,
+  strengthBySignature: Map<string, EngineSetupStrength | null>,
   blendBySetupSignature: Map<string, EngineSetupBlend>,
 ) {
   const direction = sort.direction === "asc" ? 1 : -1;
@@ -1579,6 +1643,8 @@ function sortEngineSetups(
         break;
       case "strength":
         diff =
+          (strengthBySignature.get(a.signature)?.score ?? -1) -
+            (strengthBySignature.get(b.signature)?.score ?? -1) ||
           engineStrengthSortScore(a) - engineStrengthSortScore(b) ||
           a.plans.length - b.plans.length;
         break;
@@ -1718,16 +1784,18 @@ function buildEngineSetupBlendBySignature(
   setups: EnginePlanSetup[],
   practicalSetups: PlanExplorerSetup[],
   strengthSettings: Partial<MoveStrengthSettings> | null | undefined,
+  strengthBySignature: Map<string, EngineSetupStrength | null>,
 ) {
   const settings = normalizeMoveStrengthSettings(strengthSettings);
-  if (setups.length === 0 || practicalSetups.length === 0) {
+  if (setups.length === 0) {
     return new Map<string, EngineSetupBlend>();
   }
 
   const candidates = setups.map((setup) => {
-    const practical = findPracticalSetupMatch(setup, practicalSetups);
+    const practical =
+      practicalSetups.length > 0 ? findPracticalSetupMatch(setup, practicalSetups) : null;
     const games = practical?.setup.games ?? 0;
-    const databaseScore =
+    const practicalRaw =
       practical && games > 0
         ? getPracticalWdlRate(
             {
@@ -1736,19 +1804,26 @@ function buildEngineSetupBlendBySignature(
               black: practical.setup.black,
             },
             setup.color,
+            PLAN_STRENGTH_DRAW_WEIGHT,
           )
         : null;
+    const strength = strengthBySignature.get(setup.signature) ?? null;
+    // The realization-adjusted engine expected score already discounts template
+    // inference and thin PV support, so no separate coverage weighting here.
+    const engineExpected =
+      strength === null ? null : 0.5 + (strength.ownerExpected - 0.5) * strength.realization;
 
     return {
       setup,
       practical,
       perspective: setup.color,
       games,
-      databaseScore,
-      engineCpLoss: getEngineSetupCpLoss(setup, settings),
+      practicalRaw,
+      engineExpected,
+      engineCpLoss: strength?.engineCpLoss ?? getEngineSetupCpLoss(setup, settings),
     };
   });
-  const baselines = getEngineSetupBlendBaselines(candidates);
+  const poolAverages = getEngineSetupPoolAverages(candidates);
   const engineSpread = getEngineScoreSpreadCp(
     candidates.map((candidate) =>
       candidate.engineCpLoss === null ? null : -candidate.engineCpLoss,
@@ -1757,48 +1832,50 @@ function buildEngineSetupBlendBySignature(
   const entries: [string, EngineSetupBlend][] = [];
 
   for (const candidate of candidates) {
-    if (!candidate.practical) continue;
+    if (candidate.engineExpected === null && candidate.practicalRaw === null) continue;
 
-    const baseline = baselines.get(candidate.perspective);
-    const databaseScore = getUsageAwarePracticalWdlRate({
-      score: candidate.databaseScore,
-      total: candidate.games,
-      usageShare:
-        baseline && baseline.totalGames > 0 ? candidate.games / baseline.totalGames : null,
-      baseline: baseline?.average ?? null,
-      mode: settings.mode,
-    });
-    const databaseWdlLoss =
-      databaseScore === null || baseline?.best === null || baseline?.best === undefined
+    const baseline = poolAverages.get(candidate.perspective) ?? 0.5;
+    const practicalExpected =
+      candidate.practicalRaw === null
         ? null
-        : Math.max(0, baseline.best - databaseScore);
-    const blended = evaluateMoveStrength({
+        : getShrunkPracticalScore({
+            score: candidate.practicalRaw,
+            games: candidate.games,
+            baseline,
+          });
+    const blend = blendExpectedScores({
       settings,
+      engineExpected: candidate.engineExpected,
       engineCpLoss: candidate.engineCpLoss,
-      hasEngineMoves: true,
-      databaseWdlLoss,
+      hasEngine: true,
+      practicalExpected,
       engineScoreSpreadCp: engineSpread,
     });
 
     entries.push([
       candidate.setup.signature,
       {
-        score: blended.score,
-        label: blended.score.toString(),
+        score: blend.score,
+        label: String(blend.score),
         detail: formatEngineSetupBlendDetail({
           settings,
-          score: blended.score,
+          score: blend.score,
+          engineExpected: candidate.engineExpected,
           engineCpLoss: candidate.engineCpLoss,
-          engineUnsafe: blended.engineUnsafe,
-          databaseScore,
-          databaseWdlLoss,
+          engineUnsafe: blend.engineUnsafe,
+          engineMissing: blend.engineMissing,
+          practicalExpected,
+          practicalRaw: candidate.practicalRaw,
           practical: candidate.practical,
           perspective: candidate.perspective,
+          engineScoreSpreadCp: engineSpread,
         }),
-        databaseScore,
-        databaseWdlLoss,
+        expected: blend.expected,
+        practicalExpected,
+        engineExpected: candidate.engineExpected,
         engineCpLoss: candidate.engineCpLoss,
-        engineUnsafe: blended.engineUnsafe,
+        engineUnsafe: blend.engineUnsafe,
+        engineMissing: blend.engineMissing,
         practical: candidate.practical,
       },
     ]);
@@ -1915,100 +1992,16 @@ function isSetupStructuralSignature(signature: string) {
   return signature.startsWith("pawn_setup:");
 }
 
-function getEngineSetupCpLoss(setup: EnginePlanSetup, settings: MoveStrengthSettings) {
-  const setupCpLoss = setup.bestCpLoss ?? setup.weightedCpLoss;
-  const planCpLosses = setup.plans
-    .map((plan) => plan.bestCpLoss ?? plan.weightedCpLoss)
-    .filter((value): value is number => value !== null);
-
-  if (setupCpLoss !== null) {
-    if (planCpLosses.length === 0) return setupCpLoss;
-
-    const average = planCpLosses.reduce((sum, loss) => sum + loss, 0) / planCpLosses.length;
-    const worst = Math.max(...planCpLosses);
-    return setupCpLoss * 0.65 + average * 0.2 + worst * 0.15;
-  }
-
-  const maxLoss = Math.max(1, settings.maxEngineCpLoss);
-  const setupLoss = getEngineEvidenceCpLoss({
-    approval: setup.approval,
-    confidence: setup.confidence,
-    supportCount: setup.supportCount,
-    appearsInTopPv: setup.appearsInTopPv,
-    maxLoss,
-  });
-  const planLosses = setup.plans.map(
-    (plan) =>
-      plan.bestCpLoss ??
-      plan.weightedCpLoss ??
-      getEngineEvidenceCpLoss({
-        approval: plan.approval,
-        confidence: plan.confidence,
-        supportCount: plan.supportCount,
-        appearsInTopPv: plan.appearsInTopPv,
-        maxLoss,
-      }),
-  );
-  if (planLosses.length === 0) return setupLoss;
-
-  const average = planLosses.reduce((sum, loss) => sum + loss, 0) / planLosses.length;
-  const worst = Math.max(...planLosses);
-  return setupLoss * 0.5 + average * 0.25 + worst * 0.25;
-}
-
-function getEngineEvidenceCpLoss({
-  approval,
-  confidence,
-  supportCount,
-  appearsInTopPv,
-  maxLoss,
-}: {
-  approval: EnginePlan["approval"];
-  confidence: EnginePlan["confidence"];
-  supportCount: number;
-  appearsInTopPv: boolean;
-  maxLoss: number;
-}) {
-  const approvalLoss = (() => {
-    switch (approval) {
-      case "Strong":
-        return appearsInTopPv ? 0 : maxLoss * 0.12;
-      case "OK":
-        return maxLoss * 0.38;
-      case "Unclear":
-        return maxLoss * 0.72;
-      case "Weak":
-        return maxLoss * 1.15;
-    }
-  })();
-  const confidencePenalty =
-    confidence === "High" ? 0 : confidence === "Medium" ? maxLoss * 0.08 : maxLoss * 0.16;
-  const supportBonus = Math.min(maxLoss * 0.18, Math.max(0, supportCount - 1) * maxLoss * 0.05);
-
-  return Math.max(0, approvalLoss + confidencePenalty - supportBonus);
-}
-
-function getEngineSetupBlendBaselines<
-  T extends { perspective: string; games: number; databaseScore: number | null },
+function getEngineSetupPoolAverages<
+  T extends { perspective: string; games: number; practicalRaw: number | null },
 >(candidates: T[]) {
-  const grouped = new Map<
-    string,
-    { totalGames: number; weightedScore: number; best: number | null }
-  >();
+  const grouped = new Map<string, { totalGames: number; weightedScore: number }>();
 
   for (const candidate of candidates) {
-    const current = grouped.get(candidate.perspective) ?? {
-      totalGames: 0,
-      weightedScore: 0,
-      best: null,
-    };
+    const current = grouped.get(candidate.perspective) ?? { totalGames: 0, weightedScore: 0 };
     current.totalGames += candidate.games;
-    if (candidate.databaseScore !== null) {
-      current.weightedScore += candidate.databaseScore * candidate.games;
-      current.best =
-        current.best === null
-          ? candidate.databaseScore
-          : Math.max(current.best, candidate.databaseScore);
+    if (candidate.practicalRaw !== null) {
+      current.weightedScore += candidate.practicalRaw * candidate.games;
     }
     grouped.set(candidate.perspective, current);
   }
@@ -2016,11 +2009,7 @@ function getEngineSetupBlendBaselines<
   return new Map(
     [...grouped.entries()].map(([perspective, value]) => [
       perspective,
-      {
-        totalGames: value.totalGames,
-        average: value.totalGames > 0 ? value.weightedScore / value.totalGames : 0.5,
-        best: value.best,
-      },
+      value.totalGames > 0 ? value.weightedScore / value.totalGames : 0.5,
     ]),
   );
 }
@@ -2028,41 +2017,55 @@ function getEngineSetupBlendBaselines<
 function formatEngineSetupBlendDetail({
   settings,
   score,
+  engineExpected,
   engineCpLoss,
   engineUnsafe,
-  databaseScore,
-  databaseWdlLoss,
+  engineMissing,
+  practicalExpected,
+  practicalRaw,
   practical,
   perspective,
+  engineScoreSpreadCp,
 }: {
   settings: MoveStrengthSettings;
   score: number;
+  engineExpected: number | null;
   engineCpLoss: number | null;
   engineUnsafe: boolean;
-  databaseScore: number | null;
-  databaseWdlLoss: number | null;
-  practical: EngineSetupPracticalMatch;
+  engineMissing: boolean;
+  practicalExpected: number | null;
+  practicalRaw: number | null;
+  practical: EngineSetupPracticalMatch | null;
   perspective: "white" | "black";
+  engineScoreSpreadCp: number | null;
 }) {
-  const parts = [`Blended strength ${score}`];
+  const parts = [`Expected score ${score}`];
   parts.push(
-    `${formatMoveStrengthMode(settings.mode)} mode, ${settings.engineWeight}% engine blend, max ${settings.maxEngineCpLoss} cp drop`,
+    `${formatMoveStrengthMode(settings.mode)} mode, ${Math.round(
+      getBlendEngineWeight(settings, engineScoreSpreadCp) * 100,
+    )}% engine blend, max ${settings.maxEngineCpLoss} cp drop`,
   );
-  parts.push(
-    engineCpLoss === null
-      ? "No engine CP-loss score"
-      : `${formatEngineCpLoss(engineCpLoss)} engine CP loss versus the strongest available PV`,
-  );
-  parts.push(
-    `Lichess All match ${practical.matchedComponents}/${practical.totalComponents} setup components (${practical.setup.games.toLocaleString()} games)`,
-  );
-  if (databaseScore === null) {
-    parts.push("Practical WDL unavailable");
+  if (engineMissing || engineExpected === null) {
+    parts.push("No engine expected score — practical only, shrunk toward neutral");
+  } else if (engineCpLoss === null) {
+    parts.push(`Engine ${formatPercent(engineExpected)}`);
   } else {
-    parts.push(`Practical WDL ${formatPercent(databaseScore)} for ${formatSideName(perspective)}`);
+    parts.push(
+      `Engine ${formatPercent(engineExpected)} (${Math.round(engineCpLoss)} cp behind best PV)`,
+    );
   }
-  if (databaseWdlLoss !== null && databaseWdlLoss > 0) {
-    parts.push(`${formatWdlPointLoss(databaseWdlLoss)} WDL points behind best matched setup`);
+  parts.push(
+    practical
+      ? `Lichess All match ${practical.matchedComponents}/${practical.totalComponents} setup components (${practical.setup.games.toLocaleString()} games)`
+      : "No practical setup match — engine-only expected score",
+  );
+  if (practicalExpected === null) {
+    if (practical) parts.push("Practical WDL unavailable");
+  } else {
+    const rawText = practicalRaw === null ? "" : ` (raw ${formatPercent(practicalRaw)})`;
+    parts.push(
+      `Practical ${formatPercent(practicalExpected)} for ${formatSideName(perspective)}${rawText}`,
+    );
   }
   if (engineUnsafe) {
     parts.push("Over the configured CP-drop limit");
@@ -2082,11 +2085,7 @@ function formatMoveStrengthMode(mode: MoveStrengthSettings["mode"]) {
 }
 
 function formatPercent(value: number) {
-  return `${(value * 100).toFixed(1).replace(/\.0$/, "")}%`;
-}
-
-function formatWdlPointLoss(value: number) {
-  return (value * 100).toFixed(1).replace(/\.0$/, "");
+  return `${Math.round(value * 100)}%`;
 }
 
 function formatSideName(side: "white" | "black") {
@@ -2222,6 +2221,7 @@ function buildEngineSetupCoachRequest(
   setup: EnginePlanSetup,
   rootFen: string,
   totalPvs: number,
+  strength: EngineSetupStrength | null,
   blend: EngineSetupBlend | null,
   verdict: EngineSetupVerdict,
 ): PlanCoachInlineRequest {
@@ -2238,11 +2238,12 @@ function buildEngineSetupCoachRequest(
       )}. Explain whether this has features of a named setup, such as a King's Indian setup, Hedgehog, fianchetto setup, minority attack, or other standard structure, only when the supplied facts justify it.`,
     planLines: setup.plans.map((plan) => formatEnginePlanForCoach(plan, totalPvs)),
     stats: [
-      blend
+      blend?.practical
         ? "Source: local Stockfish PV setup extraction plus Lichess All practical setup match"
         : "Source: local Stockfish PV setup extraction",
       `Position: ${sideToMoveLabel(rootFen)} to move`,
       `Color: ${setup.color}`,
+      strength ? `Engine strength: ${strength.score}/100. ${strength.detail}` : null,
       `Engine approval: ${setup.approval}`,
       `Setup verdict: ${verdict.label}. ${verdict.detail}`,
       `Confidence: ${setup.confidence}`,
@@ -2254,8 +2255,11 @@ function buildEngineSetupCoachRequest(
       `Best supporting eval: ${formatNullableEvalCp(setup.bestEvalCp)}`,
       `Setup size: ${setup.plans.length} component plans`,
       blend
-        ? `Blended strength: ${blend.label}. ${blend.detail}`
-        : "Lichess All practical stats: no matching setup row available.",
+        ? `Expected score: ${blend.label}. ${blend.detail}`
+        : "Expected score unavailable: no usable engine or practical evidence.",
+      blend && !blend.practical
+        ? "Lichess All practical stats: no matching setup row available."
+        : null,
     ].filter((item): item is string => !!item),
     evidence: [
       ...setup.plans.flatMap((plan) => formatEngineEvidenceForCoach(plan.evidence).slice(0, 2)),

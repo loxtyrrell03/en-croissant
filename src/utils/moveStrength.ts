@@ -126,12 +126,132 @@ export function getEngineScoreSpreadCp(scores: (number | null | undefined)[], to
 export function getPracticalWdlRate(
     opening: { white: number; draw: number; black: number },
     side: "white" | "black",
+    drawWeight = 0.35,
 ) {
     const total = opening.white + opening.draw + opening.black;
     if (total <= 0) return 0;
 
     const wins = side === "white" ? opening.white : opening.black;
-    return (wins + opening.draw * 0.35) / total;
+    return (wins + opening.draw * drawWeight) / total;
+}
+
+/**
+ * Lichess logistic mapping from a WHITE-relative centipawn eval to an expected
+ * score in [0, 1]. Callers convert perspective (owner black → 1 - value).
+ */
+export function cpToExpectedScore(cp: number): number {
+    return 1 / (1 + Math.exp(-0.00368208 * cp));
+}
+
+/**
+ * Engine UCI per-mille WDL triple [w, d, l] from the SIDE-TO-MOVE perspective to
+ * an expected score in [0, 1].
+ */
+export function wdlToExpectedScore(wdl: [number, number, number]): number {
+    const [w, d, l] = wdl;
+    return (w + 0.5 * d) / Math.max(1, w + d + l);
+}
+
+export const PRACTICAL_SHRINKAGE_PRIOR_GAMES = 24;
+
+/**
+ * Shrinks a raw practical score toward a pool baseline using a fixed prior
+ * sample size, so small-sample rows regress to the mean. Returns null when the
+ * raw score is null.
+ */
+export function getShrunkPracticalScore({
+    score,
+    games,
+    baseline,
+    priorGames = PRACTICAL_SHRINKAGE_PRIOR_GAMES,
+}: {
+    score: number | null;
+    games: number;
+    baseline: number | null | undefined;
+    priorGames?: number;
+}): number | null {
+    if (score === null) return null;
+
+    const clampedBaseline = clampNumber(baseline, 0, 1, 0.5);
+    const safeGames = Math.max(0, games);
+    const denom = safeGames + priorGames;
+    if (denom <= 0) return score;
+
+    return (score * safeGames + clampedBaseline * priorGames) / denom;
+}
+
+/**
+ * The engine share of the blend for a given mode: fixed 0.85 for engine mode and
+ * 0.15 for practical mode; smart mode reuses the usage-aware smart tilt.
+ */
+export function getBlendEngineWeight(
+    settings: MoveStrengthSettings,
+    engineScoreSpreadCp?: number | null,
+): number {
+    const normalized = normalizeMoveStrengthSettings(settings);
+    if (normalized.mode === "engine") return 0.85;
+    if (normalized.mode === "practical") return 0.15;
+    return getSmartMoveStrengthEngineWeight(normalized, engineScoreSpreadCp);
+}
+
+/**
+ * Blends engine and practical expected scores (both in [0, 1]) into a single
+ * 0..100 strength. engineUnsafe is a gate flag driven by cp-loss; it does not
+ * zero the score. engineMissing marks rows with no usable engine evidence, which
+ * shrink toward neutral so they rank below equally-scoring verified rows.
+ */
+export function blendExpectedScores({
+    settings,
+    engineExpected,
+    engineCpLoss,
+    hasEngine,
+    practicalExpected,
+    engineScoreSpreadCp,
+    coverage = 1,
+}: {
+    settings: MoveStrengthSettings;
+    engineExpected: number | null;
+    engineCpLoss: number | null;
+    hasEngine: boolean;
+    practicalExpected: number | null;
+    engineScoreSpreadCp?: number | null;
+    coverage?: number;
+}): { score: number; expected: number; engineUnsafe: boolean; engineMissing: boolean } {
+    const normalized = normalizeMoveStrengthSettings(settings);
+    const maxEngineCpLoss = Math.max(1, normalized.maxEngineCpLoss);
+    const clampedCoverage = clampNumber(coverage, 0, 1, 1);
+    const engineWeight = getBlendEngineWeight(normalized, engineScoreSpreadCp) * clampedCoverage;
+
+    const engineMissing = hasEngine && engineExpected === null;
+    const engineUnsafe = engineCpLoss !== null && engineCpLoss > maxEngineCpLoss;
+    const enginePresent = hasEngine && engineExpected !== null;
+    const practicalPresent = practicalExpected !== null;
+
+    let expected: number;
+    if (enginePresent && practicalPresent) {
+        expected =
+            engineWeight * (engineExpected as number) +
+            (1 - engineWeight) * (practicalExpected as number);
+    } else if (practicalPresent) {
+        // engineMissing (engine ran but this row has no match) shrinks toward
+        // neutral so it ranks below matched peers; a pure-practical row (engine
+        // strength simply not in use) keeps its score unshrunk.
+        expected = engineMissing
+            ? 0.5 + ((practicalExpected as number) - 0.5) * 0.85
+            : (practicalExpected as number);
+    } else if (enginePresent) {
+        expected = 0.5 + ((engineExpected as number) - 0.5) * 0.9;
+    } else {
+        expected = 0.5;
+    }
+
+    const clampedExpected = clampNumber(expected, 0, 1, 0.5);
+    return {
+        score: clampInteger(clampedExpected * 100, 0, 100, 50),
+        expected: clampedExpected,
+        engineUnsafe,
+        engineMissing,
+    };
 }
 
 function getMoveStrengthLoss({

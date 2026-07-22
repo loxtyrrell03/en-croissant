@@ -533,8 +533,11 @@ export default function App() {
   }, [fontSize]);
 
   useEffect(() => {
+    // Conversion state is persisted in sessionStorage, but the flow that owns
+    // it dies with the previous document. Anything still marked in-progress at
+    // mount is orphaned and would pin the banner on screen forever.
     setDatabaseConversionState((prev) =>
-      prev.inProgress && !prev.startedAt
+      prev.inProgress
         ? {
             ...prev,
             inProgress: false,
@@ -556,13 +559,16 @@ export default function App() {
   }, [setDatabaseConversionState]);
 
   useEffect(() => {
-    if (!databaseConversionState.inProgress || !databaseConversionState.startedAt) return undefined;
+    if (!databaseConversionState.inProgress) return undefined;
 
     const staleAfter =
       databaseConversionState.phase === "downloading"
         ? STALE_DOWNLOAD_CONVERSION_MS
         : STALE_DATABASE_CONVERSION_MS;
-    const lastActivity = databaseConversionState.updatedAt ?? databaseConversionState.startedAt;
+    // A missing timestamp must count as stale, not disarm the watchdog:
+    // in-progress state that never clears pins the banner on screen.
+    const lastActivity =
+      databaseConversionState.updatedAt ?? databaseConversionState.startedAt ?? 0;
     const delay = lastActivity + staleAfter - Date.now();
 
     const clearStaleConversion = () => {
@@ -608,18 +614,26 @@ export default function App() {
 
     void listen<number[]>("convert_progress", (event) => {
       const [totalGames, elapsedMs] = event.payload;
-      setDatabaseConversionState((prev) => ({
-        ...prev,
-        inProgress: true,
-        totalGames,
-        elapsedSeconds: elapsedMs / 1000,
-        phase: prev.phase ?? "converting",
-        updatedAt: Date.now(),
-        progress:
-          prev.totalGamesExpected && prev.totalGamesExpected > 0
-            ? Math.min(99, (totalGames / prev.totalGamesExpected) * 100)
-            : prev.progress,
-      }));
+      setDatabaseConversionState((prev) => {
+        // Only refresh a conversion some flow in this window owns. Forcing
+        // inProgress on here let conversions without an owner (a backend
+        // convert outliving a reload, or a trailing event after the owner's
+        // reset) resurrect the banner with state nothing would ever clear.
+        if (!prev.inProgress) return prev;
+
+        return {
+          ...prev,
+          totalGames,
+          elapsedSeconds: elapsedMs / 1000,
+          phase: prev.phase ?? "converting",
+          startedAt: prev.startedAt ?? Date.now(),
+          updatedAt: Date.now(),
+          progress:
+            prev.totalGamesExpected && prev.totalGamesExpected > 0
+              ? Math.min(99, (totalGames / prev.totalGamesExpected) * 100)
+              : prev.progress,
+        };
+      });
     }).then((fn) => {
       unlisten = fn;
     });

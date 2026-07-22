@@ -21,6 +21,7 @@ import { positionFromFen } from "@/utils/chessops";
 import { skipWhile, takeWhile } from "@/utils/misc";
 import { getGamePhases } from "@/utils/phase";
 import { formatScore } from "@/utils/score";
+import type { TreeStore } from "@/state/store/tree";
 import { type ListNode, type TreeNode, treeIteratorMainLine } from "@/utils/treeReducer";
 import classes from "./EvalChart.module.css";
 import { TreeStateContext } from "./TreeStateContext";
@@ -43,6 +44,80 @@ type DataPoint = {
   Black: number;
 };
 
+function gradientOffset(data: DataPoint[]) {
+  const dataMax = Math.max(...data.map((i) => (i.yValue !== "none" ? i.yValue : 0)));
+  const dataMin = Math.min(...data.map((i) => (i.yValue !== "none" ? i.yValue : 0)));
+
+  if (dataMax <= 0) return 0;
+  if (dataMin >= 0) return 1;
+
+  return dataMax / (dataMax - dataMin);
+}
+
+function getYValue(node: TreeNode): number | undefined {
+  if (node.score) {
+    let cp: number = node.score.value.value;
+    if (node.score.value.type === "mate") {
+      cp = node.score.value.value > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+    }
+    return 2 / (1 + Math.exp(-0.004 * cp)) - 1;
+  }
+  if (node.children.length === 0) {
+    // Only terminal nodes without a score need a FEN parse (mate/stalemate check).
+    const [pos] = positionFromFen(node.fen);
+    if (pos) {
+      if (pos.isCheckmate()) {
+        return pos?.turn === "white" ? -1 : 1;
+      }
+      if (pos.isStalemate()) {
+        return 0;
+      }
+    }
+  }
+}
+
+type TranslateFn = (key: string) => string;
+
+function getEvalText(node: TreeNode, type: "cp" | "wdl", t: TranslateFn): string {
+  if (node.score) {
+    if (type === "cp") {
+      return `${t("Board.Analysis.Advantage")}: ${formatScore(node.score.value)}`;
+    }
+    if (type === "wdl" && node.score.wdl) {
+      return `
+         White: ${node.score.wdl[0] / 10}%
+         Draw: ${node.score.wdl[1] / 10}%
+         Black: ${node.score.wdl[2] / 10}%`;
+    }
+  }
+  if (node.children.length === 0) {
+    const [pos] = positionFromFen(node.fen);
+    if (pos) {
+      if (pos.isCheckmate()) return t("Common.Checkmate");
+      if (pos.isStalemate()) return t("Common.Stalemate");
+    }
+  }
+  return t("Board.Analysis.NotAnalysed");
+}
+
+// Phase detection parses every mainline FEN — only redo it when the mainline
+// actually changes, not on every score/variation update to the tree.
+const phasesCache = new WeakMap<
+  TreeStore,
+  { key: string; phases: ReturnType<typeof getGamePhases> }
+>();
+
+function getCachedGamePhases(store: TreeStore, nodes: ListNode[]) {
+  const key = nodes.length ? `${nodes.length}:${nodes[nodes.length - 1].node.fen}` : "";
+  const cached = phasesCache.get(store);
+  if (cached && cached.key === key) return cached.phases;
+
+  const validBoards = nodes.map((n) => positionFromFen(n.node.fen)[0]).filter((b) => b !== null);
+  const phases = getGamePhases(validBoards);
+  phasesCache.set(store, { key, phases });
+  return phases;
+}
+
 function EvalChart(props: EvalChartProps) {
   const { t } = useTranslation();
 
@@ -52,90 +127,39 @@ function EvalChart(props: EvalChartProps) {
   const goToMove = useStore(store, (s) => s.goToMove);
   const theme = useMantineTheme();
 
-  function getYValue(node: TreeNode): number | undefined {
-    if (node.score) {
-      let cp: number = node.score.value.value;
-      if (node.score.value.type === "mate") {
-        cp = node.score.value.value > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
-      }
-      return 2 / (1 + Math.exp(-0.004 * cp)) - 1;
-    }
-    if (node.children.length === 0) {
-      const [pos, error] = positionFromFen(node.fen);
-      if (pos) {
-        if (pos.isCheckmate()) {
-          return pos?.turn === "white" ? -1 : 1;
-        }
-        if (pos.isStalemate()) {
-          return 0;
-        }
-      }
-    }
-  }
-
-  function getEvalText(node: TreeNode, type: "cp" | "wdl"): string {
-    if (node.score) {
-      if (type === "cp") {
-        return `${t("Board.Analysis.Advantage")}: ${formatScore(node.score.value)}`;
-      }
-      if (type === "wdl" && node.score.wdl) {
-        return `
-         White: ${node.score.wdl[0] / 10}%
-         Draw: ${node.score.wdl[1] / 10}%
-         Black: ${node.score.wdl[2] / 10}%`;
-      }
-    }
-    if (node.children.length === 0) {
-      const [pos, error] = positionFromFen(node.fen);
-      if (pos) {
-        if (pos.isCheckmate()) return t("Common.Checkmate");
-        if (pos.isStalemate()) return t("Common.Stalemate");
-      }
-    }
-    return t("Board.Analysis.NotAnalysed");
-  }
-
-  function getNodes(): ListNode[] {
+  const nodes = useMemo<ListNode[]>(() => {
     const allNodes = treeIteratorMainLine(root);
     const withoutRoot = skipWhile(allNodes, (node: ListNode) => node.position.length === 0);
     const withMoves = takeWhile(withoutRoot, (node: ListNode) => node.node.move !== undefined);
     return [...withMoves];
-  }
+  }, [root]);
 
-  function* getData(): Iterable<DataPoint> {
-    const nodes = getNodes();
-    for (let i = 0; i < nodes.length; i++) {
-      const currentNode = nodes[i];
-      const yValue = getYValue(currentNode.node);
-      const [pos] = positionFromFen(currentNode.node.fen);
-      const wdl = currentNode.node.score?.wdl;
+  const data = useMemo<DataPoint[]>(
+    () =>
+      nodes.map((currentNode) => {
+        const node = currentNode.node;
+        const yValue = getYValue(node);
+        const wdl = node.score?.wdl;
+        // halfMoves parity gives the side that just moved without parsing the FEN
+        const whiteJustMoved = node.halfMoves % 2 === 1;
 
-      yield {
-        name: `${Math.ceil(currentNode.node.halfMoves / 2)}.${
-          pos?.turn === "black" ? "" : ".."
-        } ${currentNode.node.san}${currentNode.node.annotations}`,
-        cpText: getEvalText(currentNode.node, "cp"),
-        wdlText: getEvalText(currentNode.node, "wdl"),
-        yValue: yValue ?? "none",
-        movePath: currentNode.position,
-        color: ANNOTATION_INFO[currentNode.node.annotations[0]]?.color || "gray",
-        annotation: currentNode.node.annotations[0],
-        White: wdl ? wdl[0] : 0,
-        Draw: wdl ? wdl[1] : 0,
-        Black: wdl ? wdl[2] : 0,
-      };
-    }
-  }
-
-  function gradientOffset(data: DataPoint[]) {
-    const dataMax = Math.max(...data.map((i) => (i.yValue !== "none" ? i.yValue : 0)));
-    const dataMin = Math.min(...data.map((i) => (i.yValue !== "none" ? i.yValue : 0)));
-
-    if (dataMax <= 0) return 0;
-    if (dataMin >= 0) return 1;
-
-    return dataMax / (dataMax - dataMin);
-  }
+        return {
+          name: `${Math.ceil(node.halfMoves / 2)}.${
+            whiteJustMoved ? "" : ".."
+          } ${node.san}${node.annotations}`,
+          cpText: getEvalText(node, "cp", t),
+          wdlText: getEvalText(node, "wdl", t),
+          yValue: yValue ?? ("none" as const),
+          movePath: currentNode.position,
+          color: ANNOTATION_INFO[node.annotations[0]]?.color || "gray",
+          annotation: node.annotations[0],
+          White: wdl ? wdl[0] : 0,
+          Draw: wdl ? wdl[1] : 0,
+          Black: wdl ? wdl[2] : 0,
+        };
+      }),
+    [nodes, t],
+  );
 
   const onChartClick: CategoricalChartFunc = (e) => {
     const match = data.find((d) => d.name === e.activeLabel);
@@ -144,13 +168,7 @@ function EvalChart(props: EvalChartProps) {
     }
   };
 
-  const data = [...getData()];
-  const nodes = getNodes();
-
-  const phases = useMemo(() => {
-    const validBoards = nodes.map((n) => positionFromFen(n.node.fen)[0]).filter((b) => b !== null);
-    return getGamePhases(validBoards);
-  }, [nodes]);
+  const phases = getCachedGamePhases(store, nodes);
 
   const currentPositionName = data.find((point) => equal(point.movePath, position))?.name;
 

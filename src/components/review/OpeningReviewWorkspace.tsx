@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   Center,
+  Collapse,
   Group,
   Loader,
   Menu,
@@ -39,6 +40,7 @@ import {
   IconDatabase,
   IconGitCompare,
   IconEye,
+  IconFilter,
   IconInfoCircle,
   IconPencil,
   IconRobot,
@@ -335,7 +337,13 @@ type ReviewCardPerformanceUpdate = {
 };
 type OpeningReviewStatsResultFilter = "wins" | "draws" | "losses";
 type OpeningReviewStatsGroupBy = "family" | "line";
-type OpeningReviewStatsSort = "planGap" | "scoreDesc" | "scoreAsc" | "reviewDesc" | "gamesDesc";
+type OpeningReviewStatsSort =
+  | "relevance"
+  | "planGap"
+  | "scoreDesc"
+  | "scoreAsc"
+  | "reviewDesc"
+  | "gamesDesc";
 
 const MISTAKE_REVIEW_POSITION_SEVERITIES: MistakeReviewAttemptLabel[] = [
   "blunder",
@@ -347,10 +355,17 @@ const MISTAKE_REVIEW_POSITION_SEVERITIES: MistakeReviewAttemptLabel[] = [
 ];
 
 const openingReviewOpeningNameCache = new BoundedMap<string, string>(2000);
-const reviewPositionLineStateCache = new WeakMap<
-  Position,
-  Map<string, { path: number[]; state: TreeState }>
->();
+type ReviewLineStateCacheEntry = {
+  path: number[];
+  state: TreeState;
+  reviewTree: Position["reviewTree"];
+  annotations: Position["annotations"];
+  comment: Position["comment"];
+  shapes: Position["shapes"];
+};
+// Keyed by position content rather than object identity so cache hits survive
+// the deck updates (grading, persistence) that recreate Position objects.
+const reviewPositionLineStateCache = new BoundedMap<string, ReviewLineStateCacheEntry>(120);
 const REVIEW_DECK_SAVE_DEBOUNCE_MS = 1200;
 const REVIEW_POSITION_PREWARM_LIMIT = 3;
 
@@ -1606,14 +1621,10 @@ function loadReviewPositionOnBoard({
 
 function getReviewPositionLineState(position: Position, headers: GameHeaders) {
   const headersKey = reviewLineHeadersCacheKey(headers);
-  let positionCache = reviewPositionLineStateCache.get(position);
-  if (!positionCache) {
-    positionCache = new Map();
-    reviewPositionLineStateCache.set(position, positionCache);
-  }
+  const cacheKey = `${position.fen}|${position.moveSequence ?? ""}|${headersKey}`;
 
-  const cached = positionCache.get(headersKey);
-  if (cached) {
+  const cached = reviewPositionLineStateCache.get(cacheKey);
+  if (cached && reviewLineStateCacheEntryMatches(cached, position)) {
     return {
       path: [...cached.path],
       state: cloneTreeState(cached.state),
@@ -1621,17 +1632,35 @@ function getReviewPositionLineState(position: Position, headers: GameHeaders) {
   }
 
   const reviewLine = createReviewPositionLineState(position, headers);
-  if (!reviewLine) return null;
+  if (!reviewLine) {
+    reviewPositionLineStateCache.delete(cacheKey);
+    return null;
+  }
 
-  positionCache.set(headersKey, {
+  reviewPositionLineStateCache.set(cacheKey, {
     path: [...reviewLine.path],
     state: cloneTreeState(reviewLine.state),
+    reviewTree: position.reviewTree,
+    annotations: position.annotations,
+    comment: position.comment,
+    shapes: position.shapes,
   });
 
   return {
     path: [...reviewLine.path],
     state: reviewLine.state,
   };
+}
+
+function reviewLineStateCacheEntryMatches(entry: ReviewLineStateCacheEntry, position: Position) {
+  // Reference checks: deck updates spread Position objects, so unchanged
+  // annotation state keeps the same references.
+  return (
+    entry.reviewTree === position.reviewTree &&
+    entry.annotations === position.annotations &&
+    entry.comment === position.comment &&
+    entry.shapes === position.shapes
+  );
 }
 
 function reviewLineHeadersCacheKey(headers: GameHeaders) {
@@ -1815,7 +1844,9 @@ function reviewPersistenceSnapshot(position: Position) {
     comment: position.comment || undefined,
     annotations: position.annotations?.length ? position.annotations : undefined,
     shapes: position.shapes?.length ? position.shapes : undefined,
-    reviewTree: position.reviewTree ? cloneReviewTreeNode(position.reviewTree) : undefined,
+    // Compared via JSON.stringify — serializing the tree directly is enough,
+    // cloning it first would just double the work.
+    reviewTree: position.reviewTree ?? undefined,
   };
 }
 
@@ -1836,21 +1867,17 @@ function cloneTreeState(state: TreeState): TreeState {
 function cloneReviewTreeNode(node: TreeNode): TreeNode {
   return {
     fen: node.fen,
-    move: cloneJson(node.move) ?? null,
+    move: node.move ? { ...node.move } : null,
     san: node.san ?? null,
     children: node.children.map(cloneReviewTreeNode),
-    score: cloneJson(node.score) ?? null,
+    score: node.score ? structuredClone(node.score) : null,
     depth: node.depth ?? null,
     halfMoves: node.halfMoves,
-    shapes: cloneJson(node.shapes ?? []),
+    shapes: node.shapes?.length ? node.shapes.map((shape) => ({ ...shape })) : [],
     annotations: [...(node.annotations ?? [])],
     comment: node.comment ?? "",
     ...(node.clock !== undefined ? { clock: node.clock } : {}),
   };
-}
-
-function cloneJson<T>(value: T): T {
-  return value === null || value === undefined ? value : JSON.parse(JSON.stringify(value));
 }
 
 function tokenizeReviewMoveSequence(moveSequence: string) {
@@ -3083,6 +3110,23 @@ function OpeningReviewPanel({
     }
   }, [practiceState.phase, setInvisible, setShowComments]);
 
+  // Analyze → train handoff: when scan gaps are saved into THIS tab's deck,
+  // reload it and land on Review positions so training starts immediately.
+  const onAnalyzeDeckSaved = useCallback(
+    (savedPath: string) => {
+      if (savedPath !== deckPath || isMistakeReview) return;
+      readOpeningReviewDeck(deckPath)
+        .then((nextDeck) => {
+          setDeck({ positions: nextDeck.positions, logs: nextDeck.logs });
+          setPanelView("review");
+        })
+        .catch(() => {
+          // The deck refresh effect will catch up; stay on the analyze view.
+        });
+    },
+    [deckPath, isMistakeReview, setDeck],
+  );
+
   if (!loaded) {
     return <Alert color="blue">Loading review deck...</Alert>;
   }
@@ -3113,11 +3157,13 @@ function OpeningReviewPanel({
 
   if (!isMistakeReview && panelView === "analyze") {
     return (
-      <Stack h="100%" gap="sm">
+      <Stack h="100%" gap="sm" style={{ minHeight: 0 }}>
         {panelModeControl}
-        <DeferredPanel>
-          <RepertoireGapsPanel />
-        </DeferredPanel>
+        <Box style={{ flex: 1, minHeight: 0 }}>
+          <DeferredPanel>
+            <RepertoireGapsPanel onDeckSaved={onAnalyzeDeckSaved} />
+          </DeferredPanel>
+        </Box>
       </Stack>
     );
   }
@@ -3247,7 +3293,7 @@ function OpeningReviewPanel({
               {deckName}
             </Text>
             <Text size="xs" c="dimmed">
-              {deck.positions.length}{" "}
+              {formatReviewCount(deck.positions.length)}{" "}
               {isMistakeReview
                 ? `mistake card${deck.positions.length === 1 ? "" : "s"}`
                 : `saved position${deck.positions.length === 1 ? "" : "s"}`}
@@ -3305,6 +3351,9 @@ function OpeningReviewPanel({
                 <Badge size="sm" variant="light" color="red">
                   {sessionStats.incorrect} retry
                 </Badge>
+                <Badge size="sm" variant="light" color="orange">
+                  {sessionStats.streak} streak
+                </Badge>
                 <Badge size="sm" variant="light" color="blue">
                   {sessionRemaining} left
                 </Badge>
@@ -3313,36 +3362,37 @@ function OpeningReviewPanel({
           </Paper>
         ) : (
           <>
-            <Stack gap={3}>
-              <Group justify="space-between">
-                <Text size="xs" fw={600}>
-                  Review progress
-                </Text>
-                <Text size="xs" c="dimmed">
-                  {stats.total > 0 ? Math.round((stats.practiced / stats.total) * 100) : 0}%
-                </Text>
-              </Group>
-              <Progress.Root size="xs">
-                <Progress.Section
-                  value={stats.total ? (stats.practiced / stats.total) * 100 : 0}
-                  color="blue"
-                />
-                <Progress.Section
-                  value={stats.total ? (stats.due / stats.total) * 100 : 0}
-                  color="yellow"
-                />
-                <Progress.Section
-                  value={stats.total ? (stats.unseen / stats.total) * 100 : 0}
-                  color="gray"
-                />
-              </Progress.Root>
-            </Stack>
-
-            <SimpleGrid cols={3} spacing={6}>
-              <ReviewStat label="Due" value={stats.due} color="yellow" />
-              <ReviewStat label="Unseen" value={stats.unseen} color="gray" />
-              <ReviewStat label="Done" value={stats.practiced} color="blue" />
-            </SimpleGrid>
+            <Paper px="sm" py="xs" withBorder radius="sm" className={classes.reviewSection}>
+              <Stack gap={6}>
+                <Group justify="space-between">
+                  <Text size="xs" fw={600}>
+                    Review progress
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {stats.total > 0 ? Math.round((stats.practiced / stats.total) * 100) : 0}%
+                  </Text>
+                </Group>
+                <Progress.Root size="xs">
+                  <Progress.Section
+                    value={stats.total ? (stats.practiced / stats.total) * 100 : 0}
+                    color="blue"
+                  />
+                  <Progress.Section
+                    value={stats.total ? (stats.due / stats.total) * 100 : 0}
+                    color="yellow"
+                  />
+                  <Progress.Section
+                    value={stats.total ? (stats.unseen / stats.total) * 100 : 0}
+                    color="gray"
+                  />
+                </Progress.Root>
+                <Group gap="md" wrap="wrap">
+                  <ReviewStat label="due" value={stats.due} color="yellow" />
+                  <ReviewStat label="unseen" value={stats.unseen} color="gray" />
+                  <ReviewStat label="done" value={stats.practiced} color="blue" />
+                </Group>
+              </Stack>
+            </Paper>
 
             <OpeningReviewPrioritySummary
               positions={deck.positions}
@@ -3355,237 +3405,220 @@ function OpeningReviewPanel({
           <Stack gap="xs">
             {(isMistakeReview ? mistakeDailySettings : openingDailySettings) && (
               <Stack gap={4}>
-                <Box className={classes.reviewActionGrid}>
-                  <Group
-                    gap={0}
-                    wrap="nowrap"
-                    align="stretch"
-                    className={classes.reviewSplitButton}
+                <Group gap={0} wrap="nowrap" align="stretch" className={classes.reviewSplitButton}>
+                  <Button
+                    className={classes.reviewActionButton}
+                    variant="light"
+                    leftSection={<IconTarget size={18} />}
+                    onClick={() => startDuePractice(dailyScopeIndices, dailyReviewScopeLabel)}
+                    justify="space-between"
+                    disabled={dailyScopeIndices.length === 0}
+                    rightSection={
+                      <Badge variant="white" className={classes.reviewActionCountBadge}>
+                        {formatReviewCount(dailyScopeIndices.length)}
+                      </Badge>
+                    }
+                    style={{
+                      flex: 1,
+                      borderTopRightRadius: 0,
+                      borderBottomRightRadius: 0,
+                    }}
                   >
-                    <Button
-                      className={classes.reviewActionButton}
+                    Daily review
+                  </Button>
+                  <Tooltip label="Daily review settings">
+                    <ActionIcon
+                      aria-label="Daily review settings"
                       variant="light"
-                      leftSection={<IconTarget size={18} />}
-                      onClick={() => startDuePractice(dailyScopeIndices, dailyReviewScopeLabel)}
-                      justify="space-between"
-                      disabled={dailyScopeIndices.length === 0}
-                      rightSection={
-                        <Badge variant="white" className={classes.reviewActionCountBadge}>
-                          {dailyScopeIndices.length}
-                        </Badge>
-                      }
+                      color="blue"
+                      onClick={() => setDailySettingsOpen(true)}
                       style={{
-                        flex: 1,
-                        borderTopRightRadius: 0,
-                        borderBottomRightRadius: 0,
+                        alignSelf: "stretch",
+                        height: "auto",
+                        minWidth: 42,
+                        borderTopLeftRadius: 0,
+                        borderBottomLeftRadius: 0,
                       }}
                     >
-                      Daily review
-                    </Button>
-                    <Tooltip label="Daily review settings">
-                      <ActionIcon
-                        aria-label="Daily review settings"
-                        variant="light"
-                        color="blue"
-                        onClick={() => setDailySettingsOpen(true)}
-                        style={{
-                          alignSelf: "stretch",
-                          height: "auto",
-                          minWidth: 42,
-                          borderTopLeftRadius: 0,
-                          borderBottomLeftRadius: 0,
-                        }}
-                      >
-                        <IconSettings size={16} />
-                      </ActionIcon>
-                    </Tooltip>
-                  </Group>
-                  {!isMistakeReview && (
-                    <Tooltip
-                      label={
-                        openingPlanGapScopeIndices.length === 0
-                          ? "No opening plan gaps saved in this deck yet"
-                          : "Train lines where your usual move is playable but results trail the reference"
-                      }
-                    >
-                      <Box style={{ minWidth: 0 }}>
-                        <Button
-                          className={classes.reviewActionButton}
-                          fullWidth
-                          variant="light"
-                          color="blue"
-                          leftSection={<IconRoute size={18} />}
-                          onClick={startOpeningPlanGapPractice}
-                          justify="space-between"
-                          disabled={openingPlanGapScopeIndices.length === 0}
-                          rightSection={
-                            <Badge variant="white" className={classes.reviewActionCountBadge}>
-                              {openingPlanGapScopeIndices.length}
-                            </Badge>
-                          }
-                        >
-                          Train plan gaps
-                        </Button>
-                      </Box>
-                    </Tooltip>
-                  )}
-                  {isMistakeReview && (
-                    <Group
-                      gap={0}
-                      wrap="nowrap"
-                      align="stretch"
-                      className={classes.reviewSplitButton}
-                    >
-                      <Tooltip
-                        label={
-                          timeManagementScopeCount === 0
-                            ? timeManagementClockDataCount === 0
-                              ? "No long-think clock data in this deck yet"
-                              : `No due or new long-think mistakes at ${timeManagementThresholdText}+ yet`
-                            : `${timeManagementScopeCount} due or new ${timeManagementThresholdText}+ long-think mistakes`
-                        }
-                      >
-                        <Box style={{ flex: 1, minWidth: 0, display: "flex" }}>
-                          <Button
-                            className={classes.reviewActionButton}
-                            fullWidth
-                            variant="light"
-                            color="orange"
-                            leftSection={<IconClock size={18} />}
-                            onClick={startMistakeTimeManagementPractice}
-                            justify="space-between"
-                            disabled={timeManagementScopeCount === 0}
-                            rightSection={
-                              <Badge variant="white" className={classes.reviewActionCountBadge}>
-                                {timeManagementScopeCount}
-                              </Badge>
-                            }
-                            style={{
-                              flex: 1,
-                              borderTopRightRadius: 0,
-                              borderBottomRightRadius: 0,
-                            }}
-                          >
-                            Train time management
-                          </Button>
-                        </Box>
-                      </Tooltip>
-                      <Tooltip label="Long-think settings">
-                        <ActionIcon
-                          aria-label="Long-think settings"
-                          variant="light"
-                          color="orange"
-                          onClick={() => setTimeManagementSettingsOpen(true)}
-                          style={{
-                            alignSelf: "stretch",
-                            height: "auto",
-                            minWidth: 42,
-                            borderTopLeftRadius: 0,
-                            borderBottomLeftRadius: 0,
-                          }}
-                        >
-                          <IconSettings size={16} />
-                        </ActionIcon>
-                      </Tooltip>
-                    </Group>
-                  )}
-                  {isMistakeReview && mistakeNatureCounts && (
-                    <Menu width={280} position="bottom-end" withinPortal>
-                      <Menu.Target>
-                        <Button
-                          className={classes.reviewActionButton}
-                          fullWidth
-                          variant="light"
-                          color="red"
-                          leftSection={<IconTargetArrow size={18} />}
-                          rightSection={<IconChevronDown size={16} />}
-                          disabled={MISTAKE_REVIEW_NATURES.every(
-                            (nature) => mistakeNatureCounts[nature.id].total === 0,
-                          )}
-                        >
-                          Train by type
-                        </Button>
-                      </Menu.Target>
-                      <Menu.Dropdown>
-                        {MISTAKE_REVIEW_NATURES.map((nature) => {
-                          const count = mistakeNatureCounts[nature.id];
-                          return (
-                            <Menu.Item
-                              key={nature.id}
-                              disabled={count.total === 0}
-                              onClick={() => startMistakeNaturePractice(nature.id)}
-                              rightSection={
-                                <Group gap={4} wrap="nowrap">
-                                  <Badge size="xs" variant="light" color="yellow">
-                                    {count.due} due
-                                  </Badge>
-                                  <Badge size="xs" variant="light" color="gray">
-                                    {count.total}
-                                  </Badge>
-                                </Group>
-                              }
-                            >
-                              <Stack gap={0}>
-                                <Text size="sm">{nature.label}</Text>
-                                <Text size="xs" c="dimmed" lineClamp={1}>
-                                  {nature.description}
-                                </Text>
-                              </Stack>
-                            </Menu.Item>
-                          );
-                        })}
-                      </Menu.Dropdown>
-                    </Menu>
-                  )}
-                  {isMistakeReview && mistakePhaseCounts && (
-                    <Menu width={260} position="bottom-end" withinPortal>
-                      <Menu.Target>
-                        <Button
-                          className={classes.reviewActionButton}
-                          fullWidth
-                          variant="light"
-                          color="teal"
-                          leftSection={<IconTargetArrow size={18} />}
-                          rightSection={<IconChevronDown size={16} />}
-                          disabled={MISTAKE_REVIEW_PHASES.every(
-                            (phase) => mistakePhaseCounts[phase.id].total === 0,
-                          )}
-                        >
-                          Train by phase
-                        </Button>
-                      </Menu.Target>
-                      <Menu.Dropdown>
-                        {MISTAKE_REVIEW_PHASES.map((phase) => {
-                          const count = mistakePhaseCounts[phase.id];
-                          return (
-                            <Menu.Item
-                              key={phase.id}
-                              disabled={count.total === 0}
-                              onClick={() => startMistakePhasePractice(phase.id)}
-                              rightSection={
-                                <Group gap={4} wrap="nowrap">
-                                  <Badge size="xs" variant="light" color="yellow">
-                                    {count.due} due
-                                  </Badge>
-                                  <Badge size="xs" variant="light" color="gray">
-                                    {count.total}
-                                  </Badge>
-                                </Group>
-                              }
-                            >
-                              {phase.label}
-                            </Menu.Item>
-                          );
-                        })}
-                      </Menu.Dropdown>
-                    </Menu>
-                  )}
-                </Box>
+                      <IconSettings size={16} />
+                    </ActionIcon>
+                  </Tooltip>
+                </Group>
                 {dailyProgress && (
                   <Text size="xs" c="dimmed">
                     {Math.min(dailyProgress.completed, dailyProgress.target)} /{" "}
                     {dailyProgress.target} done today
                   </Text>
+                )}
+                {!isMistakeReview && (
+                  <Tooltip
+                    label={
+                      openingPlanGapScopeIndices.length === 0
+                        ? "No opening plan gaps saved in this deck yet"
+                        : "Train lines where your usual move is playable but results trail the reference"
+                    }
+                  >
+                    <Box style={{ minWidth: 0 }}>
+                      <Button
+                        className={classes.reviewActionButton}
+                        fullWidth
+                        variant="light"
+                        color="blue"
+                        leftSection={<IconRoute size={18} />}
+                        onClick={startOpeningPlanGapPractice}
+                        justify="space-between"
+                        disabled={openingPlanGapScopeIndices.length === 0}
+                        rightSection={
+                          <Badge variant="white" className={classes.reviewActionCountBadge}>
+                            {formatReviewCount(openingPlanGapScopeIndices.length)}
+                          </Badge>
+                        }
+                      >
+                        Train plan gaps
+                      </Button>
+                    </Box>
+                  </Tooltip>
+                )}
+                {isMistakeReview && (
+                  <Stack gap={4} mt={2}>
+                    <Text size="xs" fw={600} c="dimmed">
+                      Focused training
+                    </Text>
+                    <Box className={classes.reviewFocusGrid}>
+                      {mistakeNatureCounts && (
+                        <Menu width={280} position="bottom-start" withinPortal>
+                          <Menu.Target>
+                            <Button
+                              className={classes.reviewActionButton}
+                              fullWidth
+                              variant="light"
+                              color="red"
+                              rightSection={<IconChevronDown size={14} />}
+                              disabled={MISTAKE_REVIEW_NATURES.every(
+                                (nature) => mistakeNatureCounts[nature.id].total === 0,
+                              )}
+                            >
+                              By type
+                            </Button>
+                          </Menu.Target>
+                          <Menu.Dropdown>
+                            {MISTAKE_REVIEW_NATURES.map((nature) => {
+                              const count = mistakeNatureCounts[nature.id];
+                              return (
+                                <Menu.Item
+                                  key={nature.id}
+                                  disabled={count.total === 0}
+                                  onClick={() => startMistakeNaturePractice(nature.id)}
+                                  rightSection={
+                                    <Group gap={4} wrap="nowrap">
+                                      <Badge size="xs" variant="light" color="yellow">
+                                        {formatReviewCount(count.due)} due
+                                      </Badge>
+                                      <Badge size="xs" variant="light" color="gray">
+                                        {formatReviewCount(count.total)}
+                                      </Badge>
+                                    </Group>
+                                  }
+                                >
+                                  <Stack gap={0}>
+                                    <Text size="sm">{nature.label}</Text>
+                                    <Text size="xs" c="dimmed" lineClamp={1}>
+                                      {nature.description}
+                                    </Text>
+                                  </Stack>
+                                </Menu.Item>
+                              );
+                            })}
+                          </Menu.Dropdown>
+                        </Menu>
+                      )}
+                      {mistakePhaseCounts && (
+                        <Menu width={260} position="bottom" withinPortal>
+                          <Menu.Target>
+                            <Button
+                              className={classes.reviewActionButton}
+                              fullWidth
+                              variant="light"
+                              color="teal"
+                              rightSection={<IconChevronDown size={14} />}
+                              disabled={MISTAKE_REVIEW_PHASES.every(
+                                (phase) => mistakePhaseCounts[phase.id].total === 0,
+                              )}
+                            >
+                              By phase
+                            </Button>
+                          </Menu.Target>
+                          <Menu.Dropdown>
+                            {MISTAKE_REVIEW_PHASES.map((phase) => {
+                              const count = mistakePhaseCounts[phase.id];
+                              return (
+                                <Menu.Item
+                                  key={phase.id}
+                                  disabled={count.total === 0}
+                                  onClick={() => startMistakePhasePractice(phase.id)}
+                                  rightSection={
+                                    <Group gap={4} wrap="nowrap">
+                                      <Badge size="xs" variant="light" color="yellow">
+                                        {formatReviewCount(count.due)} due
+                                      </Badge>
+                                      <Badge size="xs" variant="light" color="gray">
+                                        {formatReviewCount(count.total)}
+                                      </Badge>
+                                    </Group>
+                                  }
+                                >
+                                  {phase.label}
+                                </Menu.Item>
+                              );
+                            })}
+                          </Menu.Dropdown>
+                        </Menu>
+                      )}
+                      <Menu width={280} position="bottom-end" withinPortal>
+                        <Menu.Target>
+                          <Button
+                            className={classes.reviewActionButton}
+                            fullWidth
+                            variant="light"
+                            color="orange"
+                            rightSection={<IconChevronDown size={14} />}
+                          >
+                            Long thinks
+                          </Button>
+                        </Menu.Target>
+                        <Menu.Dropdown>
+                          <Menu.Item
+                            leftSection={<IconClock size={16} />}
+                            disabled={timeManagementScopeCount === 0}
+                            onClick={startMistakeTimeManagementPractice}
+                            rightSection={
+                              <Badge size="xs" variant="light" color="orange">
+                                {formatReviewCount(timeManagementScopeCount)}
+                              </Badge>
+                            }
+                          >
+                            <Stack gap={0}>
+                              <Text size="sm">Train long thinks</Text>
+                              <Text size="xs" c="dimmed" lineClamp={1}>
+                                {timeManagementScopeCount === 0
+                                  ? timeManagementClockDataCount === 0
+                                    ? "No clock data in this deck yet"
+                                    : `Nothing due at ${timeManagementThresholdText}+ yet`
+                                  : `Mistakes made after thinking ${timeManagementThresholdText}+`}
+                              </Text>
+                            </Stack>
+                          </Menu.Item>
+                          <Menu.Divider />
+                          <Menu.Item
+                            leftSection={<IconSettings size={16} />}
+                            onClick={() => setTimeManagementSettingsOpen(true)}
+                          >
+                            Long-think settings
+                          </Menu.Item>
+                        </Menu.Dropdown>
+                      </Menu>
+                    </Box>
+                  </Stack>
                 )}
               </Stack>
             )}
@@ -3613,7 +3646,11 @@ function OpeningReviewPanel({
                 leftSection={<IconTarget size={18} />}
                 onClick={() => startDuePractice()}
                 justify="space-between"
-                rightSection={<Badge variant="white">{stats.due + stats.unseen}</Badge>}
+                rightSection={
+                  <Badge variant="white" className={classes.reviewActionCountBadge}>
+                    {formatReviewCount(stats.due + stats.unseen)}
+                  </Badge>
+                }
               >
                 Train due positions
               </Button>
@@ -3626,7 +3663,11 @@ function OpeningReviewPanel({
               leftSection={<IconBook size={18} />}
               onClick={() => startFullPractice()}
               justify="space-between"
-              rightSection={<Badge variant="white">{deck.positions.length}</Badge>}
+              rightSection={
+                <Badge variant="white" className={classes.reviewActionCountBadge}>
+                  {formatReviewCount(deck.positions.length)}
+                </Badge>
+              }
             >
               Train all positions
             </Button>
@@ -3863,12 +3904,6 @@ function OpeningReviewPanel({
           />
         )}
 
-        <Group gap="xs">
-          <SessionBadge label="Correct" value={sessionStats.correct} color="green" />
-          <SessionBadge label="Incorrect" value={sessionStats.incorrect} color="red" />
-          <SessionBadge label="Streak" value={sessionStats.streak} color="orange" />
-        </Group>
-
         {isMistakeReview && (
           <>
             <MistakeReviewGameInfoPanel
@@ -3963,16 +3998,26 @@ function OpeningReviewPanel({
   );
 }
 
+function formatReviewCount(value: number) {
+  return value.toLocaleString("en-US");
+}
+
 function ReviewStat({ label, value, color }: { label: string; value: number; color: string }) {
   return (
-    <Paper px="sm" py="xs" withBorder radius="sm" className={classes.reviewSection}>
-      <Text size="xs" c="dimmed" fw={600}>
+    <Group gap={5} wrap="nowrap">
+      <Box
+        w={8}
+        h={8}
+        bg={`var(--mantine-color-${color}-5)`}
+        style={{ borderRadius: "50%", flexShrink: 0 }}
+      />
+      <Text size="xs" fw={700}>
+        {formatReviewCount(value)}
+      </Text>
+      <Text size="xs" c="dimmed">
         {label}
       </Text>
-      <Text size="md" fw={700} c={color} lh={1.1}>
-        {value}
-      </Text>
-    </Paper>
+    </Group>
   );
 }
 
@@ -4046,23 +4091,16 @@ function MistakeReviewDeckSyncStatus({
       : null;
 
   return (
-    <Paper px="sm" py="xs" withBorder radius="sm" className={classes.reviewSection}>
-      <Stack gap={3}>
-        <Group gap={6} wrap="nowrap" miw={0}>
-          <Badge size="xs" color={badgeColor} variant="light">
-            {badgeLabel}
-          </Badge>
-          <Text size="xs" c={config?.lastError ? "red" : "dimmed"}>
-            {primary}
-          </Text>
-        </Group>
-        {secondary && (
-          <Text size="xs" c="dimmed">
-            {secondary}
-          </Text>
-        )}
-      </Stack>
-    </Paper>
+    <Tooltip label={secondary} disabled={!secondary} openDelay={300} withinPortal>
+      <Group gap={6} wrap="nowrap" miw={0}>
+        <Badge size="xs" color={badgeColor} variant="light" style={{ flexShrink: 0 }}>
+          {badgeLabel}
+        </Badge>
+        <Text size="xs" c={config?.lastError ? "red" : "dimmed"} truncate>
+          {primary}
+        </Text>
+      </Group>
+    </Tooltip>
   );
 }
 
@@ -4096,6 +4134,14 @@ type OpeningReviewStatsGroup = {
   lapses: number;
   urgency: number;
   timeControls: string[];
+  moveGapCards: number;
+  planGapCards: number;
+  lastPlayed: string | null;
+  lastPlayedTime: number;
+  recency: number;
+  gamesShare: number;
+  relevance: number;
+  estPointsLost: number | null;
 };
 type OpeningReviewStatsAccumulator = {
   key: string;
@@ -4124,6 +4170,10 @@ type OpeningReviewStatsAccumulator = {
   lapses: number;
   urgencyTotal: number;
   timeControls: Set<string>;
+  moveGapCards: number;
+  planGapCards: number;
+  lastPlayed: string | null;
+  lastPlayedTime: number;
 };
 
 function OpeningReviewStatsPage({
@@ -4144,8 +4194,9 @@ function OpeningReviewStatsPage({
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
   const [groupBy, setGroupBy] = useState<OpeningReviewStatsGroupBy>("family");
-  const [sortBy, setSortBy] = useState<OpeningReviewStatsSort>("planGap");
+  const [sortBy, setSortBy] = useState<OpeningReviewStatsSort>("relevance");
   const [minGames, setMinGames] = useState(3);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [openingNamesByKey, setOpeningNamesByKey] = useState<Record<string, string>>({});
   const dateBounds = useMemo(
     () => getOpeningHealthDateBounds(dateRange, customStartDate, customEndDate),
@@ -4297,26 +4348,54 @@ function OpeningReviewStatsPage({
         .slice(0, 5),
     [sampleRows],
   );
-  const planGapRows = useMemo(
+  const priorityRows = useMemo(
     () =>
       [...sampleRows]
         .filter(
           (row) =>
-            row.games > 0 &&
-            row.normalWinRate !== null &&
-            row.winRate !== null &&
-            (row.reviewScore ?? 0) >= 0.7 &&
-            ((row.winRateGap ?? row.scoreGap ?? 0) >= 0.06 ||
-              (row.scoreGap !== null && row.scoreGap >= 0.08)),
+            (row.winRateGap ?? row.scoreGap ?? 0) > 0.02 ||
+            (row.score !== null && row.games > 0 && row.score < 0.5) ||
+            row.due > 0,
         )
         .sort(
           (a, b) =>
+            b.relevance - a.relevance ||
             compareNullableNumber(b.winRateGap ?? b.scoreGap, a.winRateGap ?? a.scoreGap) ||
-            compareNullableNumber(b.reviewScore, a.reviewScore) ||
             b.games - a.games,
         )
-        .slice(0, 5),
+        .slice(0, 6),
     [sampleRows],
+  );
+  const totalPointsLost = useMemo(
+    () => statsRows.reduce((total, row) => total + (row.estPointsLost ?? 0), 0),
+    [statsRows],
+  );
+  const gapTypeBreakdown = useMemo(() => {
+    const now = new Date();
+    const breakdown = {
+      moveGap: { indices: [] as number[], due: 0 },
+      planGap: { indices: [] as number[], due: 0 },
+    };
+    for (const row of filteredRows) {
+      const type = getOpeningReviewGapTrainingType(row.position);
+      if (type === "other") continue;
+      const bucket = type === "planGap" ? breakdown.planGap : breakdown.moveGap;
+      bucket.indices.push(row.index);
+      if (getOpeningReviewStatsReview(row.position, now).due) bucket.due += 1;
+    }
+    return breakdown;
+  }, [filteredRows]);
+  const activeFilterCount = useMemo(
+    () =>
+      [
+        colourFilter !== "any",
+        resultFilters.length > 0,
+        timeControlFilter !== "all",
+        openingHealthDateBoundsAreActive(dateBounds),
+        groupBy !== "family",
+        minGames !== 3,
+      ].filter(Boolean).length,
+    [colourFilter, dateBounds, groupBy, minGames, resultFilters.length, timeControlFilter],
   );
 
   if (positions.length === 0) {
@@ -4327,171 +4406,222 @@ function OpeningReviewStatsPage({
     <Stack gap="sm" style={scrollablePanelStyle} className={classes.openingStatsPanel}>
       <Paper p="xs" withBorder>
         <Stack gap="xs">
-          <Group justify="space-between" align="center">
-            <OpeningReviewStatsSectionHeader
-              title="Filters"
-              detail="Every section below uses these filters. Min games only affects the opening lists and table."
-            />
-            <Group gap={6} wrap="nowrap">
-              <Badge variant="light">
-                {formatReviewNumber(filteredRows.length)} / {formatReviewNumber(positions.length)}{" "}
-                cards
-              </Badge>
-              <Badge variant="light">{formatReviewNumber(sampleRows.length)} groups shown</Badge>
-            </Group>
-          </Group>
-          <OpeningReviewStatsFilterSummary
-            colourFilter={colourFilter}
-            resultFilters={resultFilters}
-            timeControlFilter={timeControlFilter}
-            dateBounds={dateBounds}
-            groupBy={groupBy}
-            sortBy={sortBy}
-            minGames={minGames}
-          />
-          <Stack gap="xs">
+          <Group justify="space-between" align="center" gap="xs">
             <SegmentedControl
+              size="xs"
               value={colourFilter}
               onChange={(value) => setColourFilter(value as OpeningReviewColourFilter)}
               data={[
-                { value: "any", label: "All" },
-                { value: "white", label: "White" },
-                { value: "black", label: "Black" },
+                { value: "any", label: "Both colours" },
+                { value: "white", label: "As White" },
+                { value: "black", label: "As Black" },
               ]}
             />
-            <Group gap="xs" grow align="flex-end">
-              <MultiSelect
-                label="Results"
-                value={resultFilters}
-                onChange={(values) => setResultFilters(values as OpeningReviewStatsResultFilter[])}
-                data={[
-                  { value: "wins", label: "Wins" },
-                  { value: "draws", label: "Draws" },
-                  { value: "losses", label: "Losses" },
-                ]}
-                placeholder="All results"
-                clearable
-              />
-              <Select
-                label="Time control"
-                value={timeControlFilter}
-                onChange={(value) => setTimeControlFilter(value ?? "all")}
-                data={timeControlOptions}
-                searchable
-                allowDeselect={false}
-              />
-            </Group>
-            <Group gap="xs" grow align="flex-end">
-              <Select
-                label="Last played"
-                value={dateRange}
-                onChange={(value) => setDateRange((value as OpeningHealthDateRange) ?? "all")}
-                data={OPENING_HEALTH_DATE_RANGE_OPTIONS}
-                allowDeselect={false}
-              />
-              {dateRange === "custom" && (
-                <>
-                  <TextInput
-                    label="From"
-                    type="date"
-                    value={openingHealthDbDateToInput(customStartDate)}
-                    onChange={(event) => setCustomStartDate(event.currentTarget.value)}
+            <Group gap={6} wrap="nowrap">
+              <Tooltip
+                label={`Showing ${formatReviewNumber(filteredRows.length)} of ${formatReviewNumber(
+                  positions.length,
+                )} saved positions with the current filters.`}
+                withArrow
+              >
+                <Badge variant="light">
+                  {formatReviewNumber(filteredRows.length)} / {formatReviewNumber(positions.length)}{" "}
+                  positions
+                </Badge>
+              </Tooltip>
+              <Button
+                size="compact-xs"
+                variant={activeFilterCount > 0 ? "light" : "default"}
+                leftSection={<IconFilter size={13} />}
+                rightSection={
+                  <IconChevronDown
+                    size={13}
+                    style={{
+                      transform: filtersOpen ? "rotate(180deg)" : undefined,
+                      transition: "transform 150ms ease",
+                    }}
                   />
-                  <TextInput
-                    label="To"
-                    type="date"
-                    value={openingHealthDbDateToInput(customEndDate)}
-                    onChange={(event) => setCustomEndDate(event.currentTarget.value)}
-                  />
-                </>
-              )}
+                }
+                onClick={() => setFiltersOpen((open) => !open)}
+              >
+                Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+              </Button>
             </Group>
-            <Group gap="xs" grow align="flex-end">
-              <Select
-                label="Group"
-                value={groupBy}
-                onChange={(value) => setGroupBy((value as OpeningReviewStatsGroupBy) ?? "family")}
-                data={[
-                  { value: "family", label: "Opening family" },
-                  { value: "line", label: "Exact line" },
-                ]}
-                allowDeselect={false}
-              />
-              <Select
-                label="Sort"
-                value={sortBy}
-                onChange={(value) => setSortBy((value as OpeningReviewStatsSort) ?? "planGap")}
-                data={[
-                  { value: "planGap", label: "Plan gaps" },
-                  { value: "scoreAsc", label: "Worst score" },
-                  { value: "scoreDesc", label: "Best score" },
-                  { value: "reviewDesc", label: "Best review" },
-                  { value: "gamesDesc", label: "Most games" },
-                ]}
-                allowDeselect={false}
-              />
-              <NumberInput
-                label="Min games"
-                value={minGames}
-                min={0}
-                max={999}
-                onChange={(value) => setMinGames(Math.max(0, Math.round(Number(value) || 0)))}
-              />
-            </Group>
-          </Stack>
+          </Group>
+          {!filtersOpen && (
+            <OpeningReviewStatsFilterSummary
+              colourFilter={colourFilter}
+              resultFilters={resultFilters}
+              timeControlFilter={timeControlFilter}
+              dateBounds={dateBounds}
+              groupBy={groupBy}
+              sortBy={sortBy}
+              minGames={minGames}
+            />
+          )}
+          <Collapse in={filtersOpen}>
+            <Stack gap="xs">
+              <Text size="xs" c="dimmed">
+                Every section below uses these filters. Min games only affects the opening lists and
+                table.
+              </Text>
+              <Group gap="xs" grow align="flex-end">
+                <MultiSelect
+                  label="Results"
+                  value={resultFilters}
+                  onChange={(values) =>
+                    setResultFilters(values as OpeningReviewStatsResultFilter[])
+                  }
+                  data={[
+                    { value: "wins", label: "Wins" },
+                    { value: "draws", label: "Draws" },
+                    { value: "losses", label: "Losses" },
+                  ]}
+                  placeholder="All results"
+                  clearable
+                />
+                <Select
+                  label="Time control"
+                  value={timeControlFilter}
+                  onChange={(value) => setTimeControlFilter(value ?? "all")}
+                  data={timeControlOptions}
+                  searchable
+                  allowDeselect={false}
+                />
+              </Group>
+              <Group gap="xs" grow align="flex-end">
+                <Select
+                  label="Last played"
+                  value={dateRange}
+                  onChange={(value) => setDateRange((value as OpeningHealthDateRange) ?? "all")}
+                  data={OPENING_HEALTH_DATE_RANGE_OPTIONS}
+                  allowDeselect={false}
+                />
+                {dateRange === "custom" && (
+                  <>
+                    <TextInput
+                      label="From"
+                      type="date"
+                      value={openingHealthDbDateToInput(customStartDate)}
+                      onChange={(event) => setCustomStartDate(event.currentTarget.value)}
+                    />
+                    <TextInput
+                      label="To"
+                      type="date"
+                      value={openingHealthDbDateToInput(customEndDate)}
+                      onChange={(event) => setCustomEndDate(event.currentTarget.value)}
+                    />
+                  </>
+                )}
+              </Group>
+              <Group gap="xs" grow align="flex-end">
+                <Select
+                  label="Group by"
+                  value={groupBy}
+                  onChange={(value) => setGroupBy((value as OpeningReviewStatsGroupBy) ?? "family")}
+                  data={[
+                    { value: "family", label: "Opening family" },
+                    { value: "line", label: "Exact line" },
+                  ]}
+                  allowDeselect={false}
+                />
+                <Select
+                  label="Sort table by"
+                  value={sortBy}
+                  onChange={(value) => setSortBy((value as OpeningReviewStatsSort) ?? "relevance")}
+                  data={[
+                    { value: "relevance", label: "Most relevant to you" },
+                    { value: "planGap", label: "Biggest gap vs reference" },
+                    { value: "scoreAsc", label: "Worst score" },
+                    { value: "scoreDesc", label: "Best score" },
+                    { value: "reviewDesc", label: "Best recall" },
+                    { value: "gamesDesc", label: "Most games" },
+                  ]}
+                  allowDeselect={false}
+                />
+                <NumberInput
+                  label="Min games"
+                  value={minGames}
+                  min={0}
+                  max={999}
+                  onChange={(value) => setMinGames(Math.max(0, Math.round(Number(value) || 0)))}
+                />
+              </Group>
+            </Stack>
+          </Collapse>
         </Stack>
       </Paper>
 
       <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="xs">
         <OpeningReviewStatsMetric
-          label="Cards"
-          value={formatReviewNumber(filteredRows.length)}
-          detail={`${formatReviewNumber(positions.length)} in deck`}
-          tooltip="Review cards after the filter controls above."
+          label="Openings"
+          value={formatReviewNumber(sampleRows.length)}
+          detail={`${formatReviewNumber(filteredRows.length)} of ${formatReviewNumber(
+            positions.length,
+          )} positions, by ${groupBy === "line" ? "exact line" : "family"}`}
+          tooltip={`Opening groups with at least ${formatReviewNumber(minGames)} games (groups you already trained always count), built from the filtered positions.`}
         />
         <OpeningReviewStatsMetric
-          label="Groups"
-          value={formatReviewNumber(sampleRows.length)}
-          detail={`${formatReviewNumber(statsRows.length)} filtered`}
-          tooltip={`Opening groups after Min games (${formatReviewNumber(minGames)}), plus any group with review attempts.`}
+          label="Est. points lost"
+          value={
+            totalPointsLost >= 0.05 ? `≈${formatOpeningReviewStatsPoints(totalPointsLost)}` : "—"
+          }
+          detail={
+            totalPointsLost >= 0.05
+              ? "vs reference, across your games"
+              : "no openings scoring below reference"
+          }
+          tooltip="For every opening where you score below the reference: gap × your games, summed. Roughly how many game points these weaknesses have cost you."
         />
         <OpeningReviewStatsMetric
           label="Game score"
           value={formatNullableReviewPercent(summary.score)}
-          detail={formatReviewRecord(summary)}
-          tooltip="Score from your filtered games: win = 1, draw = 0.5, loss = 0."
+          detail={summary.score === null ? "no game results yet" : formatReviewRecord(summary)}
+          tooltip="How you actually scored in these openings: win = 1, draw = 0.5, loss = 0."
         />
         <OpeningReviewStatsMetric
           label="Recall"
-          value={formatNullableReviewPercent(summary.reviewScore)}
-          detail={formatOpeningReviewStatsReviewDetail(summary.attempts, summary.lapses)}
-          tooltip="Review recall from trained cards in the filtered set."
+          value={
+            summary.reviewScore === null ? "—" : formatNullableReviewPercent(summary.reviewScore)
+          }
+          detail={
+            summary.attempts === 0
+              ? "not trained yet"
+              : formatOpeningReviewStatsReviewDetail(summary.attempts, summary.lapses)
+          }
+          tooltip="How often you remembered the saved move while training these positions."
         />
       </SimpleGrid>
 
       <OpeningReviewStatsList
-        title="Plan gaps"
-        description="Filtered groups where recall is decent but game results trail reference results."
-        rows={planGapRows}
-        empty="No obvious plan gaps with these filters."
-        mode="gap"
+        title="Work on these first"
+        description="Your openings ranked by how much they matter to you right now: results below the reference, how often and how recently you play them, and cards that still need training. Each row says why it is here."
+        rows={priorityRows}
+        empty="Nothing urgent — no opening combines bad results with frequent, recent play."
+        mode="relevance"
         onTrainOpening={onReviewOpening}
+      />
+
+      <OpeningReviewGapTypeSummary
+        moveGaps={gapTypeBreakdown.moveGap}
+        planGaps={gapTypeBreakdown.planGap}
+        onTrain={onReviewOpening}
       />
 
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
         <OpeningReviewStatsList
-          title="Best shown"
-          description="Highest game score after the filters above."
+          title="Your strongest openings"
+          description="Openings with your highest game score under the current filters."
           rows={bestRows}
-          empty="No result data yet."
+          empty="No game results yet."
           mode="score"
           onTrainOpening={onReviewOpening}
         />
         <OpeningReviewStatsList
-          title="Worst shown"
-          description="Lowest game score after the filters above."
+          title="Your weakest openings"
+          description="Openings with your lowest game score under the current filters — the fastest place to win points back."
           rows={worstRows}
-          empty="No result data yet."
+          empty="No game results yet."
           mode="score"
           onTrainOpening={onReviewOpening}
         />
@@ -4501,17 +4631,23 @@ function OpeningReviewStatsPage({
         <Stack gap="xs">
           <Group justify="space-between" align="center">
             <OpeningReviewStatsSectionHeader
-              title="All shown"
-              detail="Filtered opening groups, sorted by the Sort control. This is the full table behind the summary lists."
+              title="All openings"
+              detail="Every opening group that matches the filters, most relevant to you first (change it with the Sort control). This is the full table behind the summary lists above."
             />
-            <Badge variant="light">{rankedRows.length} shown</Badge>
+            <Badge variant="light">{rankedRows.length} openings</Badge>
           </Group>
           <Box style={{ overflowX: "auto" }}>
-            <Table miw={1040}>
+            <Table miw={1120}>
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th>Position</Table.Th>
                   <Table.Th>Opening</Table.Th>
+                  <Table.Th>
+                    <OpeningReviewStatsColumnHeader
+                      label="Priority"
+                      detail="How relevant this opening is to you right now: results cost vs the reference, how often and how recently you play it, and cards that still need training. The 'Most relevant' sort uses this score."
+                    />
+                  </Table.Th>
                   <Table.Th>
                     <OpeningReviewStatsColumnHeader
                       label="Your WDL"
@@ -4563,6 +4699,18 @@ function OpeningReviewStatsPage({
                       </Stack>
                     </Table.Td>
                     <Table.Td>
+                      <Tooltip
+                        label={getOpeningReviewStatsRelevanceReason(row)}
+                        withArrow
+                        multiline
+                        w={280}
+                      >
+                        <Badge color={openingReviewUrgencyColor(row.relevance)} variant="light">
+                          {row.relevance}
+                        </Badge>
+                      </Tooltip>
+                    </Table.Td>
+                    <Table.Td>
                       <OpeningReviewWdlBar
                         label="Your record"
                         wins={row.wins}
@@ -4602,7 +4750,7 @@ function OpeningReviewStatsPage({
                 ))}
                 {rankedRows.length === 0 && (
                   <Table.Tr>
-                    <Table.Td colSpan={7}>
+                    <Table.Td colSpan={8}>
                       <Text c="dimmed" ta="center" py="sm">
                         No openings match those filters.
                       </Text>
@@ -4682,24 +4830,21 @@ function OpeningReviewStatsFilterSummary({
     {
       label: "Min games",
       value: formatReviewNumber(minGames),
-      active: minGames > 0,
+      active: minGames !== 3,
     },
     {
       label: "Sort",
       value: formatOpeningReviewStatsSort(sortBy),
-      active: sortBy !== "planGap",
+      active: sortBy !== "relevance",
     },
-  ];
+  ].filter((chip) => chip.active);
+
+  if (chips.length === 0) return null;
 
   return (
     <Group gap={6} className={classes.openingStatsFilterChips}>
       {chips.map((chip) => (
-        <Badge
-          key={chip.label}
-          size="sm"
-          variant={chip.active ? "light" : "outline"}
-          color={chip.active ? "blue" : "gray"}
-        >
+        <Badge key={chip.label} size="sm" variant="light" color="blue">
           {chip.label}: {chip.value}
         </Badge>
       ))}
@@ -4729,6 +4874,108 @@ function OpeningReviewStatsMetric({
       <Text size="xs" c="dimmed">
         {detail}
       </Text>
+    </Paper>
+  );
+}
+
+function OpeningReviewGapTypeSummary({
+  moveGaps,
+  planGaps,
+  onTrain,
+}: {
+  moveGaps: { indices: number[]; due: number };
+  planGaps: { indices: number[]; due: number };
+  onTrain: (indices: number[], label: string) => void;
+}) {
+  if (moveGaps.indices.length === 0 && planGaps.indices.length === 0) return null;
+
+  return (
+    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
+      <OpeningReviewGapTypeTile
+        type="openingGap"
+        icon={<IconTargetArrow size={16} />}
+        headline="Different move, fix the choice"
+        explainer="You played a move strong players rarely play. These cards drill the better move itself."
+        count={moveGaps.indices.length}
+        due={moveGaps.due}
+        onTrain={() => onTrain(moveGaps.indices, "Move gaps")}
+      />
+      <OpeningReviewGapTypeTile
+        type="planGap"
+        icon={<IconRoute size={16} />}
+        headline="Same move, learn the plan"
+        explainer="Your move is fine, but your results after it trail the reference. These cards are about the follow-up plans."
+        count={planGaps.indices.length}
+        due={planGaps.due}
+        onTrain={() => onTrain(planGaps.indices, "Plan gaps")}
+      />
+    </SimpleGrid>
+  );
+}
+
+function OpeningReviewGapTypeTile({
+  type,
+  icon,
+  headline,
+  explainer,
+  count,
+  due,
+  onTrain,
+}: {
+  type: OpeningReviewGapTrainingType;
+  icon: ReactNode;
+  headline: string;
+  explainer: string;
+  count: number;
+  due: number;
+  onTrain: () => void;
+}) {
+  const color = openingReviewGapTrainingTypeColor(type);
+  const label = openingReviewGapTrainingTypeLabel(type);
+
+  return (
+    <Paper p="xs" withBorder>
+      <Stack gap={6} h="100%" justify="space-between">
+        <Group gap="xs" align="flex-start" wrap="nowrap">
+          <ThemeIcon size="md" radius="xl" color={color} variant="light">
+            {icon}
+          </ThemeIcon>
+          <Stack gap={1} miw={0}>
+            <Group gap={6} wrap="nowrap">
+              <Text fw={700} size="sm">
+                {label}
+              </Text>
+              <Text size="xs" c="dimmed" fw={600}>
+                {headline}
+              </Text>
+            </Group>
+            <Text size="xs" c="dimmed">
+              {explainer}
+            </Text>
+          </Stack>
+        </Group>
+        <Group gap={6} wrap="nowrap" justify="space-between">
+          <Group gap={4} wrap="nowrap">
+            <Badge color={color} variant="light">
+              {formatReviewNumber(count)} position{count === 1 ? "" : "s"}
+            </Badge>
+            {due > 0 && (
+              <Badge color="orange" variant="light">
+                {formatReviewNumber(due)} due
+              </Badge>
+            )}
+          </Group>
+          <Button
+            size="compact-xs"
+            color={color}
+            variant="light"
+            disabled={count === 0}
+            onClick={onTrain}
+          >
+            Train {openingReviewGapTrainingTypePluralLabel(type)}
+          </Button>
+        </Group>
+      </Stack>
     </Paper>
   );
 }
@@ -4792,7 +5039,7 @@ function OpeningReviewStatsList({
   description: string;
   rows: OpeningReviewStatsGroup[];
   empty: string;
-  mode: "score" | "gap";
+  mode: "score" | "gap" | "relevance";
   onTrainOpening: (indices: number[], label: string) => void;
 }) {
   return (
@@ -4809,10 +5056,17 @@ function OpeningReviewStatsList({
         ) : (
           <Stack gap={0} className={classes.openingStatsOpeningList}>
             {rows.map((row) => {
+              const gapValue = row.winRateGap ?? row.scoreGap;
               const metric =
-                mode === "gap"
-                  ? formatSignedReviewPoints(row.winRateGap ?? row.scoreGap)
-                  : formatNullableReviewPercent(row.score);
+                mode === "relevance"
+                  ? `Priority ${row.relevance}`
+                  : mode === "gap"
+                    ? gapValue === null
+                      ? "Unknown"
+                      : `${Math.abs(Math.round(gapValue * 100))}pp ${
+                          gapValue >= 0 ? "behind" : "ahead of"
+                        } ref`
+                    : formatNullableReviewPercent(row.score);
 
               return (
                 <Group
@@ -4828,64 +5082,80 @@ function OpeningReviewStatsList({
                       size={OPENING_REVIEW_STATS_LIST_BOARD_SIZE}
                     />
                     <Stack gap={4} className={classes.openingStatsOpeningText}>
-                      <Group gap={4} wrap="nowrap" miw={0}>
-                        <Text
-                          size="sm"
-                          fw={700}
-                          lineClamp={1}
-                          className={classes.reviewDetailValue}
-                        >
-                          {row.name}
-                        </Text>
+                      <Group gap={6} wrap="nowrap" miw={0} align="baseline">
+                        <Tooltip label={row.name} withArrow openDelay={400}>
+                          <Text
+                            size="sm"
+                            fw={700}
+                            lineClamp={2}
+                            className={classes.reviewDetailValue}
+                          >
+                            {row.name}
+                          </Text>
+                        </Tooltip>
                         <Badge
                           size="xs"
                           variant="light"
                           color={row.side === "white" ? "gray" : "dark"}
+                          style={{ flexShrink: 0 }}
                         >
-                          {row.side === "white" ? "White" : "Black"}
+                          as {row.side === "white" ? "White" : "Black"}
                         </Badge>
                       </Group>
-                      <Group gap={4}>
-                        <Badge size="xs" variant="light">
-                          {formatReviewNumber(row.games)} games
-                        </Badge>
-                        <Badge size="xs" variant="light">
-                          {formatReviewRecord(row)}
-                        </Badge>
-                        <Badge size="xs" variant="light">
-                          {formatReviewNumber(row.positions)} cards
-                        </Badge>
-                        {row.due > 0 && (
+                      <Text size="xs" c="dimmed">
+                        {formatReviewNumber(row.games)} game{row.games === 1 ? "" : "s"} (
+                        {formatReviewRecord(row)}) · {formatReviewNumber(row.positions)} position
+                        {row.positions === 1 ? "" : "s"} to train
+                        {row.due > 0 ? ` · ${formatReviewNumber(row.due)} due now` : ""}
+                      </Text>
+                      {mode === "relevance" && (
+                        <Text size="xs" c="dimmed" fs="italic">
+                          {getOpeningReviewStatsRelevanceReason(row)}
+                        </Text>
+                      )}
+                      <Group gap={6} wrap="wrap">
+                        <OpeningReviewStatsInlineStat
+                          label={mode === "gap" ? "Your wins" : "Your score"}
+                          value={formatNullableReviewPercent(
+                            mode === "gap" ? row.winRate : row.score,
+                          )}
+                        />
+                        <OpeningReviewStatsInlineStat
+                          label={
+                            mode === "gap"
+                              ? "Reference wins"
+                              : mode === "relevance"
+                                ? "Reference"
+                                : "Win rate"
+                          }
+                          value={formatNullableReviewPercent(
+                            mode === "gap"
+                              ? row.normalWinRate
+                              : mode === "relevance"
+                                ? row.normalScore
+                                : row.winRate,
+                          )}
+                        />
+                        <OpeningReviewStatsInlineStat
+                          label="Recall"
+                          value={
+                            row.reviewScore === null
+                              ? "not trained"
+                              : formatNullableReviewPercent(row.reviewScore)
+                          }
+                          dimValue={row.reviewScore === null}
+                        />
+                        {row.moveGapCards > 0 && (
                           <Badge size="xs" variant="light" color="orange">
-                            {formatReviewNumber(row.due)} due
+                            {formatReviewNumber(row.moveGapCards)} move gap
+                            {row.moveGapCards === 1 ? "" : "s"}
                           </Badge>
                         )}
-                      </Group>
-                      <Group gap={4}>
-                        {mode === "gap" ? (
-                          <>
-                            <Badge size="xs" variant="outline">
-                              You {formatNullableReviewPercent(row.winRate)}
-                            </Badge>
-                            <Badge size="xs" variant="outline">
-                              Ref {formatNullableReviewPercent(row.normalWinRate)}
-                            </Badge>
-                            <Badge size="xs" variant="outline">
-                              Recall {formatNullableReviewPercent(row.reviewScore)}
-                            </Badge>
-                          </>
-                        ) : (
-                          <>
-                            <Badge size="xs" variant="outline">
-                              Score {formatNullableReviewPercent(row.score)}
-                            </Badge>
-                            <Badge size="xs" variant="outline">
-                              Win {formatNullableReviewPercent(row.winRate)}
-                            </Badge>
-                            <Badge size="xs" variant="outline">
-                              Recall {formatNullableReviewPercent(row.reviewScore)}
-                            </Badge>
-                          </>
+                        {row.planGapCards > 0 && (
+                          <Badge size="xs" variant="light" color="blue">
+                            {formatReviewNumber(row.planGapCards)} plan gap
+                            {row.planGapCards === 1 ? "" : "s"}
+                          </Badge>
                         )}
                       </Group>
                     </Stack>
@@ -4898,7 +5168,13 @@ function OpeningReviewStatsList({
                       w={300}
                     >
                       <Badge
-                        color={mode === "gap" ? "orange" : openingReviewStatsScoreColor(row.score)}
+                        color={
+                          mode === "relevance"
+                            ? openingReviewUrgencyColor(row.relevance)
+                            : mode === "gap"
+                              ? "orange"
+                              : openingReviewStatsScoreColor(row.score)
+                        }
                       >
                         {metric}
                       </Badge>
@@ -4915,12 +5191,31 @@ function OpeningReviewStatsList({
   );
 }
 
+function OpeningReviewStatsInlineStat({
+  label,
+  value,
+  dimValue = false,
+}: {
+  label: string;
+  value: string;
+  dimValue?: boolean;
+}) {
+  return (
+    <Text size="xs" c="dimmed" span>
+      {label}{" "}
+      <Text size="xs" fw={700} span c={dimValue ? "dimmed" : undefined}>
+        {value}
+      </Text>
+    </Text>
+  );
+}
+
 function OpeningReviewStatsRowTooltip({
   row,
   mode,
 }: {
   row: OpeningReviewStatsGroup;
-  mode: "score" | "gap";
+  mode: "score" | "gap" | "relevance";
 }) {
   const gap = row.winRateGap ?? row.scoreGap;
   const referenceRecord = formatReviewRecord({
@@ -4946,6 +5241,11 @@ function OpeningReviewStatsRowTooltip({
       </Text>
       {mode === "gap" && gap !== null && (
         <Text size="xs">Gap: {formatSignedReviewPercent(gap)} below reference/normal.</Text>
+      )}
+      {mode === "relevance" && (
+        <Text size="xs">
+          Priority {row.relevance}/100: {getOpeningReviewStatsRelevanceReason(row)}
+        </Text>
       )}
       {row.timeControls.length > 0 && (
         <Text size="xs">Time controls: {row.timeControls.join(", ")}.</Text>
@@ -5183,6 +5483,10 @@ function buildOpeningReviewStatsGroups(
         lapses: 0,
         urgencyTotal: 0,
         timeControls: new Set<string>(),
+        moveGapCards: 0,
+        planGapCards: 0,
+        lastPlayed: null,
+        lastPlayedTime: 0,
       };
       groups.set(key, group);
     } else if (row.urgency > group.previewUrgency) {
@@ -5220,6 +5524,13 @@ function buildOpeningReviewStatsGroups(
     group.lapses += review.lapses;
     group.urgencyTotal += row.urgency;
     group.timeControls.add(timeControl);
+    if (row.lastPlayedTime > group.lastPlayedTime) {
+      group.lastPlayedTime = row.lastPlayedTime;
+      group.lastPlayed = row.position.openingHealth?.lastPlayed ?? null;
+    }
+    const gapType = getOpeningReviewGapTrainingType(row.position);
+    if (gapType === "openingGap") group.moveGapCards += 1;
+    else if (gapType === "planGap") group.planGapCards += 1;
   }
 
   return Array.from(groups.values()).map(finalizeOpeningReviewStatsGroup);
@@ -5277,6 +5588,14 @@ function finalizeOpeningReviewStatsGroup(group: OpeningReviewStatsAccumulator) {
     lapses: group.lapses,
     urgency: group.positions > 0 ? group.urgencyTotal / group.positions : 0,
     timeControls: Array.from(group.timeControls).sort(),
+    moveGapCards: group.moveGapCards,
+    planGapCards: group.planGapCards,
+    lastPlayed: group.lastPlayed,
+    lastPlayedTime: group.lastPlayedTime,
+    recency: openingReviewStatsRecencyScore(group.lastPlayedTime),
+    gamesShare: 0,
+    relevance: 0,
+    estPointsLost: null,
   } satisfies OpeningReviewStatsGroup;
 }
 
@@ -5319,15 +5638,102 @@ function applyOpeningReviewStatsPlanSignals(
       group.winRate !== null && normalWinRate !== null ? normalWinRate - group.winRate : null;
     const scoreGap =
       group.score !== null && normalScore !== null ? normalScore - group.score : null;
-
-    return {
+    const pointsGap = scoreGap ?? winRateGap;
+    const estPointsLost =
+      pointsGap !== null && pointsGap > 0 && group.games > 0 ? pointsGap * group.games : null;
+    const gamesShare = summary.games > 0 ? group.games / summary.games : 0;
+    const withSignals = {
       ...group,
       normalScore,
       normalWinRate,
       winRateGap,
       scoreGap,
+      gamesShare,
+      estPointsLost,
+    };
+
+    return {
+      ...withSignals,
+      relevance: computeOpeningReviewStatsRelevance(withSignals),
     };
   });
+}
+
+/**
+ * 0-100 "how much should this opening worry you right now" score: results cost
+ * vs the reference carries the most weight, then how often the opening shows
+ * up in the player's games, how recently it was played, and whether its cards
+ * still need training (per-card urgency already folds in engine severity).
+ */
+function computeOpeningReviewStatsRelevance(row: OpeningReviewStatsGroup) {
+  const gap = Math.max(row.winRateGap ?? row.scoreGap ?? 0, 0);
+  const gapSignal = clamp(gap / 0.25, 0, 1);
+  const poorScore = row.score === null ? 0 : clamp((0.55 - row.score) / 0.4, 0, 1);
+  const sampleConfidence = clamp(Math.log1p(row.games) / Math.log1p(40), 0.35, 1);
+  const cost = (gapSignal * 0.7 + poorScore * 0.3) * sampleConfidence;
+
+  const volume = clamp(Math.log1p(row.games) / Math.log1p(200), 0, 1);
+  const share = clamp(row.gamesShare / 0.15, 0, 1);
+  const exposure = volume * 0.6 + share * 0.4;
+
+  const dueShare = row.positions > 0 ? row.due / row.positions : 0;
+  const trainingNeed = clamp(row.urgency / 100, 0, 1) * 0.6 + clamp(dueShare, 0, 1) * 0.4;
+
+  return Math.round(
+    clamp(cost * 0.45 + exposure * 0.22 + row.recency * 0.18 + trainingNeed * 0.15, 0, 1) * 100,
+  );
+}
+
+/** Recency of the group's most recent game; unknown dates sit in the middle. */
+function openingReviewStatsRecencyScore(lastPlayedTime: number) {
+  if (!lastPlayedTime) return 0.35;
+  const ageYears = Math.max(0, (Date.now() - lastPlayedTime) / 31_557_600_000);
+  return clamp(Math.exp(-ageYears / 2), 0.08, 1);
+}
+
+/** One-line "why this ranks here" explanation for a relevance-ranked row. */
+function getOpeningReviewStatsRelevanceReason(row: OpeningReviewStatsGroup) {
+  const parts: string[] = [];
+  if (row.estPointsLost !== null && row.estPointsLost >= 0.5) {
+    parts.push(`≈${formatOpeningReviewStatsPoints(row.estPointsLost)} pts lost vs reference`);
+  } else if (row.score !== null && row.games > 0 && row.score < 0.5) {
+    parts.push(
+      `scoring ${formatReviewPercent(row.score)} over ${formatReviewNumber(row.games)} games`,
+    );
+  }
+  if (row.gamesShare >= 0.03) {
+    parts.push(`${Math.round(row.gamesShare * 100)}% of your games`);
+  }
+  const lastPlayedText = formatOpeningReviewStatsLastPlayedShort(row.lastPlayedTime);
+  if (lastPlayedText) parts.push(lastPlayedText);
+  if (
+    row.reviewScore !== null &&
+    row.reviewScore >= 0.7 &&
+    (row.winRateGap ?? row.scoreGap ?? 0) >= 0.06
+  ) {
+    parts.push("recall is fine — work on the plans");
+  } else if (row.attempts > 0 && row.reviewScore !== null && row.reviewScore < 0.7) {
+    parts.push(`recall ${formatReviewPercent(row.reviewScore)}`);
+  }
+  if (row.due > 0) parts.push(`${formatReviewNumber(row.due)} card${row.due === 1 ? "" : "s"} due`);
+  return parts.length > 0 ? parts.join(" · ") : "No strong weakness signals under these filters.";
+}
+
+function formatOpeningReviewStatsPoints(value: number) {
+  const rounded = Math.round(value * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+}
+
+function formatOpeningReviewStatsLastPlayedShort(lastPlayedTime: number) {
+  if (!lastPlayedTime) return null;
+  const ageDays = Math.max(0, Math.round((Date.now() - lastPlayedTime) / 86_400_000));
+  if (ageDays === 0) return "played today";
+  if (ageDays === 1) return "played yesterday";
+  if (ageDays < 45) return `played ${ageDays} days ago`;
+  const ageMonths = Math.round(ageDays / 30.44);
+  if (ageMonths < 18) return `played ${ageMonths} month${ageMonths === 1 ? "" : "s"} ago`;
+  const ageYears = Math.round(ageMonths / 12);
+  return `played ${ageYears} year${ageYears === 1 ? "" : "s"} ago`;
 }
 
 function sortOpeningReviewStatsRows(
@@ -5336,6 +5742,12 @@ function sortOpeningReviewStatsRows(
 ) {
   return [...rows].sort((a, b) => {
     switch (sortBy) {
+      case "relevance":
+        return (
+          b.relevance - a.relevance ||
+          compareNullableNumber(b.winRateGap ?? b.scoreGap, a.winRateGap ?? a.scoreGap) ||
+          b.games - a.games
+        );
       case "scoreAsc":
         return compareNullableNumber(a.score, b.score) || b.games - a.games;
       case "scoreDesc":
@@ -5500,8 +5912,10 @@ function formatOpeningReviewStatsGroupBy(value: OpeningReviewStatsGroupBy) {
 
 function formatOpeningReviewStatsSort(value: OpeningReviewStatsSort) {
   switch (value) {
+    case "relevance":
+      return "Most relevant";
     case "planGap":
-      return "Plan gaps";
+      return "Biggest gap vs reference";
     case "scoreAsc":
       return "Worst score";
     case "scoreDesc":
@@ -5515,12 +5929,6 @@ function formatOpeningReviewStatsSort(value: OpeningReviewStatsSort) {
 
 function formatNullableReviewPercent(value: number | null) {
   return value === null ? "Unknown" : formatReviewPercent(value);
-}
-
-function formatSignedReviewPoints(value: number | null) {
-  if (value === null) return "Unknown";
-  const rounded = Math.round(value * 100);
-  return `${rounded > 0 ? "+" : ""}${rounded}pp`;
 }
 
 function formatSignedReviewPercent(value: number | null) {
@@ -5563,14 +5971,6 @@ function compareNullableNumber(a: number | null | undefined, b: number | null | 
 
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
-}
-
-function SessionBadge({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <Badge color={color} variant="light">
-      {label} {value}
-    </Badge>
-  );
 }
 
 function OpeningReviewDailySettingsModal({
@@ -6025,16 +6425,16 @@ function OpeningReviewPrioritySummary({
   return (
     <Paper px="sm" py="xs" withBorder radius="sm" className={classes.reviewSection}>
       <Stack gap="xs">
-        <Group justify="space-between" gap="xs">
-          <Stack gap={0}>
-            <Text size="xs" fw={700}>
+        <Group justify="space-between" gap="xs" wrap="nowrap">
+          <Group gap={6} wrap="nowrap" miw={0}>
+            <Text size="xs" fw={700} style={{ flexShrink: 0 }}>
               Urgency ranking
             </Text>
-            <Text size="xs" c="dimmed">
-              {positions.length} ranked position{positions.length === 1 ? "" : "s"}
+            <Text size="xs" c="dimmed" truncate>
+              {formatReviewCount(positions.length)} ranked
             </Text>
-          </Stack>
-          <Group gap={4}>
+          </Group>
+          <Group gap={4} wrap="nowrap">
             {expanded && (
               <Button size="compact-xs" variant="subtle" onClick={onOpenPositions}>
                 See all

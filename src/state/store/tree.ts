@@ -213,15 +213,17 @@ export const createTreeStore = (id?: string, initialTree?: TreeState) => {
                         if (!move) return;
                         payload = move;
                     }
-                    if (makeMove({
-                        state,
-                        move: payload,
-                        last: false,
-                        changePosition,
-                        changeHeaders,
-                        mainline,
-                        clock,
-                    })) {
+                    if (
+                        makeMove({
+                            state,
+                            move: payload,
+                            last: false,
+                            changePosition,
+                            changeHeaders,
+                            mainline,
+                            clock,
+                        })
+                    ) {
                         state.structureVersion += 1;
                     }
                 }),
@@ -595,8 +597,13 @@ function makeMove({
     clock?: number;
     sound?: boolean;
 }): boolean {
-    const mainLine = Array.from(treeIteratorMainLine(state.root));
-    const position = last ? mainLine[mainLine.length - 1].position : state.position;
+    let position = state.position;
+    if (last) {
+        // Only walk the mainline when appending to the end — iterating the whole
+        // tree through immer draft proxies is expensive on long games.
+        const mainLine = Array.from(treeIteratorMainLine(state.root));
+        position = mainLine[mainLine.length - 1].position;
+    }
     const moveNode = getNodeAtPath(state.root, position);
     if (!moveNode) return false;
     const [pos] = positionFromFen(moveNode.fen);

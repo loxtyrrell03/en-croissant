@@ -698,10 +698,14 @@ export async function downloadLichess(
   games: number,
   setProgress: (progress: number) => void,
   token?: string,
+  options: { ratedOnly?: boolean } = {},
 ) {
   let url = `${baseURL}/games/user/${player}?perfType=ultraBullet,bullet,blitz,rapid,classical,correspondence&sort=dateAsc`;
   url += "&clocks=true";
   url += "&evals=true&accuracy=true&opening=true&division=true";
+  if (options.ratedOnly) {
+    url += "&rated=true";
+  }
   if (timestamp) {
     url += `&since=${timestamp}`;
   }

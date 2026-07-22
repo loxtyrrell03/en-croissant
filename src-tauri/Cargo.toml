@@ -8,6 +8,11 @@ repository = "https://github.com/franciscoBSalgueiro/en-croissant"
 edition = "2021"
 default-run = "en-croissant-fork"
 
+[[bin]]
+name = "collect_otb_games"
+path = "src/bin/collect_otb_games.rs"
+required-features = ["headless-otb"]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
@@ -78,3 +83,4 @@ default = ["custom-protocol"]
 # this feature is used for production builds where `devPath` points to the filesystem
 # DO NOT remove this
 custom-protocol = ["tauri/custom-protocol"]
+headless-otb = ["tauri/test"]

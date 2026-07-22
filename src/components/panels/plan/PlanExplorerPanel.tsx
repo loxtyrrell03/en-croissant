@@ -115,13 +115,14 @@ import {
   type ColoredPlanExplorerLine,
 } from "@/utils/planExplorer";
 import {
-  evaluateMoveStrength,
-  getEngineScoreSpreadCp,
-  getPracticalWdlRate,
-  getUsageAwarePracticalWdlRate,
-  normalizeMoveStrengthSettings,
-  type MoveStrengthSettings,
-} from "@/utils/moveStrength";
+  buildPlanStrengthByKey,
+  buildSetupStrengthByKey,
+  getSetupPerspective,
+  planLineKey,
+  planSetupKey,
+  type PlanStrength,
+  setupSide,
+} from "@/utils/planStrength";
 import { withLimitedRecordEntry } from "@/utils/boundedCache";
 import { DatabasePerspectiveControls } from "../database/DatabasePerspectiveControls";
 import { DatabaseWdlBar } from "../database/DatabaseWdlBar";
@@ -141,17 +142,6 @@ type PlanSortKey = "piece" | "blend" | "routes" | "games" | "results" | "engine"
 type PlanSort = {
   key: PlanSortKey;
   direction: SortDirection;
-};
-type PlanStrength = {
-  score: number;
-  loss: number;
-  label: string;
-  databaseScore: number | null;
-  databaseWdlLoss: number | null;
-  engineCpLoss: number | null;
-  engineUnsafe: boolean;
-  usingEngine: boolean;
-  detail: string;
 };
 type SetupVerdict = {
   label: string;
@@ -1404,292 +1394,10 @@ function getLineResultScore(
   return (wins + line.draw * 0.5) / total;
 }
 
-function buildPlanStrengthByKey(
-  pieces: PlanExplorerPiece[],
-  engineReport: EnginePlanReport | null,
-  resultPerspective: DatabaseResultPerspective | null,
-  strengthSettings: Partial<MoveStrengthSettings> | null | undefined,
-) {
-  const settings = normalizeMoveStrengthSettings(strengthSettings);
-  const usingEngine = !!engineReport;
-  const effectiveSettings = usingEngine ? settings : { ...settings, mode: "practical" as const };
-  const candidates = pieces.flatMap((piece) =>
-    piece.lines.map((line) => {
-      const perspective = resultPerspective ?? piece.color;
-      const games = line.white + line.draw + line.black;
-      return {
-        key: planLineKey(piece, line),
-        piece,
-        line,
-        perspective,
-        games,
-        databaseScore:
-          games > 0
-            ? getPracticalWdlRate(
-                { white: line.white, draw: line.draw, black: line.black },
-                perspective === "black" ? "black" : "white",
-              )
-            : null,
-        engineCpLoss: getPlanLineEngineCpLoss(piece, line, engineReport, effectiveSettings),
-      };
-    }),
-  );
-  const baselines = getStrengthBaselines(candidates);
-  const engineSpread = getEngineScoreSpreadCp(
-    candidates.map((candidate) =>
-      candidate.engineCpLoss === null ? null : -candidate.engineCpLoss,
-    ),
-  );
-
-  return new Map(
-    candidates.map((candidate) => {
-      const baseline = baselines.get(candidate.perspective);
-      const databaseScore = getUsageAwarePracticalWdlRate({
-        score: candidate.databaseScore,
-        total: candidate.games,
-        usageShare:
-          baseline && baseline.totalGames > 0 ? candidate.games / baseline.totalGames : null,
-        baseline: baseline?.average ?? null,
-        mode: effectiveSettings.mode,
-      });
-      const databaseWdlLoss =
-        databaseScore === null || baseline?.best === null || baseline?.best === undefined
-          ? null
-          : Math.max(0, baseline.best - databaseScore);
-      const strength = evaluatePlanStrength({
-        settings: effectiveSettings,
-        usingEngine,
-        engineCpLoss: candidate.engineCpLoss,
-        databaseScore,
-        databaseWdlLoss,
-        engineScoreSpreadCp: engineSpread,
-      });
-      return [candidate.key, strength] as const;
-    }),
-  );
-}
-
-function buildSetupStrengthByKey(
-  setups: PlanExplorerSetup[],
-  engineReport: EnginePlanReport | null,
-  resultPerspective: DatabaseResultPerspective | null,
-  sideFilter: SideFilter,
-  fen: string,
-  strengthSettings: Partial<MoveStrengthSettings> | null | undefined,
-) {
-  const settings = normalizeMoveStrengthSettings(strengthSettings);
-  const usingEngine = !!engineReport;
-  const effectiveSettings = usingEngine ? settings : { ...settings, mode: "practical" as const };
-  const candidates = setups.map((setup) => {
-    const perspective = getSetupPerspective(setup, resultPerspective, sideFilter, fen);
-    const games = setup.white + setup.draw + setup.black;
-    return {
-      key: planSetupKey(setup),
-      setup,
-      perspective,
-      games,
-      databaseScore:
-        games > 0
-          ? getPracticalWdlRate(
-              { white: setup.white, draw: setup.draw, black: setup.black },
-              perspective,
-            )
-          : null,
-      engineCpLoss: getSetupEngineCpLoss(setup, engineReport, effectiveSettings),
-    };
-  });
-  const baselines = getStrengthBaselines(candidates);
-  const engineSpread = getEngineScoreSpreadCp(
-    candidates.map((candidate) =>
-      candidate.engineCpLoss === null ? null : -candidate.engineCpLoss,
-    ),
-  );
-
-  return new Map(
-    candidates.map((candidate) => {
-      const baseline = baselines.get(candidate.perspective);
-      const databaseScore = getUsageAwarePracticalWdlRate({
-        score: candidate.databaseScore,
-        total: candidate.games,
-        usageShare:
-          baseline && baseline.totalGames > 0 ? candidate.games / baseline.totalGames : null,
-        baseline: baseline?.average ?? null,
-        mode: effectiveSettings.mode,
-      });
-      const databaseWdlLoss =
-        databaseScore === null || baseline?.best === null || baseline?.best === undefined
-          ? null
-          : Math.max(0, baseline.best - databaseScore);
-      const strength = evaluatePlanStrength({
-        settings: effectiveSettings,
-        usingEngine,
-        engineCpLoss: candidate.engineCpLoss,
-        databaseScore,
-        databaseWdlLoss,
-        engineScoreSpreadCp: engineSpread,
-      });
-      return [candidate.key, strength] as const;
-    }),
-  );
-}
-
-function getStrengthBaselines<
-  T extends { perspective: string; games: number; databaseScore: number | null },
->(candidates: T[]) {
-  const grouped = new Map<
-    string,
-    { totalGames: number; weightedScore: number; best: number | null }
-  >();
-  for (const candidate of candidates) {
-    const current = grouped.get(candidate.perspective) ?? {
-      totalGames: 0,
-      weightedScore: 0,
-      best: null,
-    };
-    current.totalGames += candidate.games;
-    if (candidate.databaseScore !== null) {
-      current.weightedScore += candidate.databaseScore * candidate.games;
-      current.best =
-        current.best === null
-          ? candidate.databaseScore
-          : Math.max(current.best, candidate.databaseScore);
-    }
-    grouped.set(candidate.perspective, current);
-  }
-
-  return new Map(
-    [...grouped.entries()].map(([perspective, value]) => [
-      perspective,
-      {
-        totalGames: value.totalGames,
-        average: value.totalGames > 0 ? value.weightedScore / value.totalGames : 0.5,
-        best: value.best,
-      },
-    ]),
-  );
-}
-
-function evaluatePlanStrength({
-  settings,
-  usingEngine,
-  engineCpLoss,
-  databaseScore,
-  databaseWdlLoss,
-  engineScoreSpreadCp,
-}: {
-  settings: MoveStrengthSettings;
-  usingEngine: boolean;
-  engineCpLoss: number | null;
-  databaseScore: number | null;
-  databaseWdlLoss: number | null;
-  engineScoreSpreadCp: number | null;
-}) {
-  const blended = evaluateMoveStrength({
-    settings,
-    engineCpLoss,
-    hasEngineMoves: usingEngine,
-    databaseWdlLoss,
-    engineScoreSpreadCp,
-  });
-
-  return {
-    score: blended.score,
-    loss: blended.loss,
-    label: blended.score.toString(),
-    databaseScore,
-    databaseWdlLoss,
-    engineCpLoss: usingEngine ? engineCpLoss : null,
-    engineUnsafe: blended.engineUnsafe,
-    usingEngine,
-    detail: formatPlanStrengthDetail({
-      settings,
-      usingEngine,
-      engineCpLoss: usingEngine ? engineCpLoss : null,
-      databaseScore,
-      databaseWdlLoss,
-      engineUnsafe: blended.engineUnsafe,
-      score: blended.score,
-    }),
-  };
-}
-
-function getPlanLineEngineCpLoss(
-  piece: Pick<PlanExplorerPiece, "color" | "role">,
-  line: PlanExplorerLine,
-  engineReport: EnginePlanReport | null,
-  settings: MoveStrengthSettings,
-) {
-  const match = getPlanExplorerLineEnginePlan(piece, line, engineReport);
-  return getEnginePlanCpLoss(match?.plan ?? null, settings);
-}
-
-function getSetupEngineCpLoss(
-  setup: PlanExplorerSetup,
-  engineReport: EnginePlanReport | null,
-  settings: MoveStrengthSettings,
-) {
-  if (!engineReport) return null;
-
-  const losses = setup.plans.map((plan) =>
-    getPlanLineEngineCpLoss(plan, plan.line, engineReport, settings),
-  );
-  const finiteLosses = losses.filter((loss): loss is number => typeof loss === "number");
-  if (finiteLosses.length === 0) return null;
-  const average = finiteLosses.reduce((sum, loss) => sum + loss, 0) / finiteLosses.length;
-  const worst = Math.max(...finiteLosses);
-
-  return average * 0.45 + worst * 0.55;
-}
-
-function getEnginePlanCpLoss(plan: EnginePlan | null, settings: MoveStrengthSettings) {
-  if (!plan) return null;
-
-  const maxLoss = Math.max(1, settings.maxEngineCpLoss);
-  const approvalLoss = (() => {
-    switch (plan.approval) {
-      case "Strong":
-        return plan.appearsInTopPv ? 0 : maxLoss * 0.12;
-      case "OK":
-        return maxLoss * 0.38;
-      case "Unclear":
-        return maxLoss * 0.72;
-      case "Weak":
-        return maxLoss * 1.15;
-    }
-  })();
-  const confidencePenalty =
-    plan.confidence === "High" ? 0 : plan.confidence === "Medium" ? maxLoss * 0.08 : maxLoss * 0.16;
-  const supportBonus = Math.min(
-    maxLoss * 0.18,
-    Math.max(0, plan.supportCount - 1) * maxLoss * 0.05,
-  );
-
-  return Math.max(0, approvalLoss + confidencePenalty - supportBonus);
-}
-
 function getPieceStrength(piece: PlanExplorerPiece, strengthByKey: Map<string, PlanStrength>) {
   const topLine = piece.lines[0];
   if (!topLine) return null;
   return strengthByKey.get(planLineKey(piece, topLine)) ?? null;
-}
-
-function planLineKey(
-  piece: Pick<PlanExplorerPiece, "color" | "role" | "from">,
-  line: PlanExplorerLine,
-) {
-  return `${piece.color}|${piece.role}|${piece.from}|${line.squares.join("-")}`;
-}
-
-function planSetupKey(setup: PlanExplorerSetup) {
-  return setup.plans.map((plan) => planLineKey(plan, plan.line)).join("||");
-}
-
-function setupSide(setup: PlanExplorerSetup): "white" | "black" | null {
-  const colors = new Set(setup.plans.map((plan) => plan.color));
-  if (colors.size !== 1) return null;
-
-  const color = setup.plans[0]?.color;
-  return color === "white" || color === "black" ? color : null;
 }
 
 function countSetupSides(setups: PlanExplorerSetup[]) {
@@ -1723,21 +1431,6 @@ function sideFilterOptions(
   ];
 }
 
-function getSetupPerspective(
-  setup: PlanExplorerSetup,
-  resultPerspective: DatabaseResultPerspective | null,
-  sideFilter: SideFilter,
-  fen: string | null,
-): "white" | "black" {
-  if (resultPerspective === "white" || resultPerspective === "black") return resultPerspective;
-  if (sideFilter === "white" || sideFilter === "black") return sideFilter;
-
-  const setupColor = setupSide(setup);
-  if (setupColor) return setupColor;
-
-  return fen?.split(" ")[1] === "b" ? "black" : "white";
-}
-
 function toResultSide(color: string): "white" | "black" {
   return color === "black" ? "black" : "white";
 }
@@ -1751,69 +1444,8 @@ function getSetupResultScore(
   return getLineResultScore(setup, getSetupPerspective(setup, resultPerspective, sideFilter, fen));
 }
 
-function formatPlanStrengthDetail({
-  settings,
-  usingEngine,
-  engineCpLoss,
-  databaseScore,
-  databaseWdlLoss,
-  engineUnsafe,
-  score,
-}: {
-  settings: MoveStrengthSettings;
-  usingEngine: boolean;
-  engineCpLoss: number | null;
-  databaseScore: number | null;
-  databaseWdlLoss: number | null;
-  engineUnsafe: boolean;
-  score: number;
-}) {
-  const parts = [`Blended strength ${score}`];
-  parts.push(
-    usingEngine
-      ? `${formatMoveStrengthMode(settings.mode)} mode, ${settings.engineWeight}% engine blend, max ${settings.maxEngineCpLoss} cp drop`
-      : "Practical WDL only until engine strength is available",
-  );
-  if (usingEngine) {
-    parts.push(
-      engineCpLoss === null
-        ? "No matching engine plan"
-        : `${Math.round(engineCpLoss)} cp-equivalent behind the matched engine plan best`,
-    );
-  }
-  if (databaseScore === null) {
-    parts.push("WDL unavailable");
-  } else {
-    const scoreText = formatPercent(databaseScore);
-    parts.push(
-      databaseWdlLoss !== null && databaseWdlLoss > 0
-        ? `WDL ${formatWdlPointLoss(databaseWdlLoss)} pts behind the best comparable row (${scoreText})`
-        : `WDL best comparable row (${scoreText})`,
-    );
-  }
-  if (engineUnsafe) {
-    parts.push("Over the configured CP-drop limit");
-  }
-  return parts.join(". ");
-}
-
-function formatMoveStrengthMode(mode: "smart" | "engine" | "practical") {
-  switch (mode) {
-    case "smart":
-      return "Smart";
-    case "engine":
-      return "Engine";
-    case "practical":
-      return "Practical";
-  }
-}
-
 function formatPercent(value: number) {
   return `${(value * 100).toFixed(1).replace(/\.0$/, "")}%`;
-}
-
-function formatWdlPointLoss(value: number) {
-  return (value * 100).toFixed(1).replace(/\.0$/, "");
 }
 
 function getPieceEngineMatch(
@@ -2076,8 +1708,8 @@ export function buildPiecePlanCoachRequest({
       `Piece route games: ${formatNumber(piece.total)}`,
       `Result perspective: ${capitalize(perspective)}`,
       strength
-        ? `Blended strength: ${strength.label}. ${strength.detail}`
-        : "Blended strength: unavailable",
+        ? `Expected score: ${strength.label}. ${strength.detail}`
+        : "Expected score: unavailable",
       formatPlanCoachEngineStatus(engineStrengthEnabled, engineRunning, engineReport),
       engineMatch
         ? `Best engine match: ${formatEngineMatchForCoach(engineMatch, engineReport)}`
@@ -2157,8 +1789,8 @@ export function buildSetupPlanCoachRequest({
       `Result perspective: ${capitalize(perspective)}`,
       `Setup verdict: ${verdict.label}. ${verdict.detail}`,
       strength
-        ? `Blended strength: ${strength.label}. ${strength.detail}`
-        : "Blended strength: unavailable",
+        ? `Expected score: ${strength.label}. ${strength.detail}`
+        : "Expected score: unavailable",
       formatPlanCoachEngineStatus(engineStrengthEnabled, engineRunning, engineReport),
       engineStrengthEnabled
         ? `Engine coverage: ${engineMatches.length}/${setup.plans.length} routes matched engine plans.`
@@ -2584,17 +2216,15 @@ function PlanStrengthCell({ strength }: { strength: PlanStrength | null }) {
     );
   }
 
+  const color = strength.engineUnsafe ? "yellow" : strength.engineMissing ? "gray" : "teal";
+
   return (
     <Tooltip label={strength.detail} multiline w={300} withArrow>
       <Stack gap={3}>
-        <Badge color={strength.engineUnsafe ? "yellow" : "teal"} variant="light">
+        <Badge color={color} variant="light">
           {strength.label}
         </Badge>
-        <Progress
-          value={strength.score}
-          color={strength.engineUnsafe ? "yellow" : "teal"}
-          size={3}
-        />
+        <Progress value={strength.score} color={color} size={3} />
       </Stack>
     </Tooltip>
   );

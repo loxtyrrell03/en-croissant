@@ -752,6 +752,17 @@ pub async fn convert_pgn(
     convert_pgn_inner(&file, &db_path, timestamp, &app, title, description, &state)
 }
 
+struct ActiveConversionGuard<'a> {
+    conversions: &'a DashMap<String, ()>,
+    key: String,
+}
+
+impl Drop for ActiveConversionGuard<'_> {
+    fn drop(&mut self) {
+        self.conversions.remove(&self.key);
+    }
+}
+
 fn convert_pgn_inner(
     file: &Path,
     db_path: &Path,
@@ -761,6 +772,23 @@ fn convert_pgn_inner(
     description: Option<String>,
     state: &tauri::State<'_, AppState>,
 ) -> Result<(), Error> {
+    // Imports run with the rollback journal disabled, so two conversions
+    // writing the same database (e.g. an auto-update starting while a convert
+    // orphaned by a webview reload is still running) can corrupt it.
+    let conversion_key = db_path.to_string_lossy().to_string();
+    let _conversion_guard = match state.active_conversions.entry(conversion_key.clone()) {
+        dashmap::mapref::entry::Entry::Occupied(_) => {
+            return Err(Error::ConversionInProgress(conversion_key));
+        }
+        dashmap::mapref::entry::Entry::Vacant(entry) => {
+            entry.insert(());
+            ActiveConversionGuard {
+                conversions: &state.active_conversions,
+                key: conversion_key,
+            }
+        }
+    };
+
     let description = description.unwrap_or_default();
     let extension = file.extension();
 
@@ -800,7 +828,10 @@ fn convert_pgn_inner(
         {
             if i % 1000 == 0 {
                 let elapsed = start.elapsed().as_millis() as u32;
-                app.emit("convert_progress", (i, elapsed)).unwrap();
+                // A failed emit (e.g. webview mid-reload) must not panic: the
+                // panic would drop the invoke responder and leave the frontend
+                // awaiting this command forever.
+                let _ = app.emit("convert_progress", (i, elapsed));
             }
             game.insert_to_db(db)?;
         }

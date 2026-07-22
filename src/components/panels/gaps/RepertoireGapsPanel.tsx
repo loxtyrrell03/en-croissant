@@ -5,6 +5,7 @@ import {
   Badge,
   Box,
   Button,
+  Collapse,
   Group,
   Modal,
   NumberInput,
@@ -22,6 +23,8 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import {
+  IconChevronDown,
+  IconCloudDownload,
   IconInfoCircle,
   IconDeviceFloppy,
   IconPlayerPause,
@@ -33,6 +36,7 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 import { listen } from "@tauri-apps/api/event";
+import { resolve } from "@tauri-apps/api/path";
 import { useLoaderData } from "@tanstack/react-router";
 import { makeUci, parseUci, type Move, type SquareName } from "chessops";
 import { chessgroundMove } from "chessops/compat";
@@ -41,6 +45,7 @@ import { INITIAL_FEN, makeFen } from "chessops/fen";
 import { makeSan, parseSan } from "chessops/san";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { mutate } from "swr";
 import useSWR from "swr/immutable";
 import {
   commands,
@@ -69,6 +74,7 @@ import {
   openingHealthVerifyDepthAtom,
   openingHealthVerifyDuringScanAtom,
   onlineDatabaseUpdatesAtom,
+  databaseConversionStateAtom,
   type OpeningHealthVerification,
   type OpeningHealthVerificationStatus,
   type OpeningHealthProgress,
@@ -118,7 +124,17 @@ import {
   type OpeningHealthDateBounds,
   type OpeningHealthDateRange,
 } from "@/utils/openingHealthDateFilter";
-import { getOnlineDatabaseUpdateRecord } from "@/utils/onlineGameImport";
+import {
+  getDefaultOnlineGameDatabaseTitle,
+  getLastOnlineDatabaseGameDate,
+  getOnlineDatabaseUpdateRecord,
+  getOnlineGameDatabaseFilename,
+  getOnlineGameSourceLabel,
+  importOnlineGamesToDatabase,
+  resetDatabaseConversionState,
+  type OnlineGameSource,
+} from "@/utils/onlineGameImport";
+import { getDatabasesDir } from "@/utils/directories";
 import resultClasses from "../database/OpeningsTable.module.css";
 
 type OpeningHealthMode = "opponent" | "self";
@@ -175,7 +191,85 @@ type EngineVerification = OpeningHealthVerification;
 const openingHealthScanControlState = { paused: false, stopRequested: false };
 let openingHealthEngineVerificationControl: { engineId: string; tab: string } | null = null;
 
-function RepertoireGapsPanel() {
+type OpeningHealthGameSource = "account" | "database";
+const GAP_GAME_SOURCE_KEY = "opening-health-game-source";
+const GAP_ACCOUNT_PLATFORM_KEY = "opening-health-account-platform";
+const GAP_ACCOUNT_USERNAME_KEY = "opening-health-account-username";
+const GAP_ACCOUNT_KEY = "opening-health-account-key";
+const GAP_RATED_ONLY_KEY = "opening-health-rated-only";
+
+function gapAccountKey(platform: OnlineGameSource, username: string) {
+  return `${platform}:${username.toLowerCase()}`;
+}
+
+function subjectPlayerLabelFor(
+  options: { value: string; label: string }[],
+  subjectPlayerId: string | null,
+) {
+  return options.find((option) => option.value === subjectPlayerId)?.label ?? null;
+}
+
+function loadStoredGapGameSource(): OpeningHealthGameSource | null {
+  try {
+    const raw = localStorage.getItem(GAP_GAME_SOURCE_KEY);
+    return raw === "account" || raw === "database" ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
+function loadStoredGapAccountPlatform(): OnlineGameSource | null {
+  try {
+    const raw = localStorage.getItem(GAP_ACCOUNT_PLATFORM_KEY);
+    return raw === "lichess" || raw === "chesscom" ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
+function loadStoredGapAccountUsername(): string {
+  try {
+    return localStorage.getItem(GAP_ACCOUNT_USERNAME_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+/** "YYYY.MM.DD" (scan date-bounds format) → epoch ms at local midnight, or null. */
+function openingHealthDbDateToTimestamp(value: string | null | undefined) {
+  const match = value?.match(/^(\d{4})[.-](\d{1,2})[.-](\d{1,2})$/);
+  if (!match) return null;
+  const timestamp = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])).getTime();
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+/** Case/format-insensitive player lookup in a freshly imported online-games database. */
+async function resolveOnlineAccountPlayer(dbPath: string, username: string) {
+  const players = await query_players(dbPath, {
+    name: username,
+    range: null,
+    options: {
+      skipCount: true,
+      page: 1,
+      pageSize: 50,
+      sort: "name",
+      direction: "asc",
+    },
+  });
+  const normalize = (value: string | null | undefined) =>
+    (value ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const target = normalize(username);
+  return (
+    players.data.find((player) => normalize(player.name) === target) ?? players.data[0] ?? null
+  );
+}
+
+function RepertoireGapsPanel({
+  onDeckSaved,
+}: {
+  /** Called with the deck path after gaps are saved to a review deck. */
+  onDeckSaved?: (path: string) => void;
+} = {}) {
   const store = useContext(TreeStateContext)!;
   const activeTab = useAtomValue(activeTabAtom);
   const currentTab = useAtomValue(currentTabAtom);
@@ -220,10 +314,193 @@ function RepertoireGapsPanel() {
   );
 
   const [personalDb, setPersonalDb] = useState<string | null>(null);
-  const [referenceDb, setReferenceDb] = useState<string | null>(storedReferenceDb);
+  const [referenceDb, setReferenceDb] = useState<string | null>(
+    storedReferenceDb ?? LICHESS_MASTER_SOURCE,
+  );
   const [subjectPlayerId, setSubjectPlayerId] = useState<string | null>(null);
   const [subjectPlayerSearch, setSubjectPlayerSearch] = useState("");
-  const [analysisMode, setAnalysisMode] = useState<OpeningHealthMode>("opponent");
+  const [analysisMode, setAnalysisMode] = useState<OpeningHealthMode>("self");
+  const linkedAccounts = useMemo(() => {
+    const accounts: { platform: OnlineGameSource; username: string; rating: number | null }[] = [];
+    for (const session of sessions) {
+      if (session.lichess?.username) {
+        const perfs = session.lichess.account?.perfs;
+        accounts.push({
+          platform: "lichess",
+          username: session.lichess.username,
+          rating:
+            perfs?.rapid?.rating ??
+            perfs?.blitz?.rating ??
+            perfs?.classical?.rating ??
+            perfs?.bullet?.rating ??
+            null,
+        });
+      }
+      if (session.chessCom?.username) {
+        const stats = session.chessCom.stats;
+        accounts.push({
+          platform: "chesscom",
+          username: session.chessCom.username,
+          rating:
+            stats?.chess_rapid?.last?.rating ??
+            stats?.chess_blitz?.last?.rating ??
+            stats?.chess_daily?.last?.rating ??
+            stats?.chess_bullet?.last?.rating ??
+            null,
+        });
+      }
+    }
+    return accounts;
+  }, [sessions]);
+  const [gameSource, setGameSource] = useState<OpeningHealthGameSource>(
+    () => loadStoredGapGameSource() ?? (linkedAccounts.length > 0 ? "account" : "database"),
+  );
+  const [accountPlatform, setAccountPlatform] = useState<OnlineGameSource>(
+    () => loadStoredGapAccountPlatform() ?? linkedAccounts[0]?.platform ?? "chesscom",
+  );
+  const [accountUsername, setAccountUsername] = useState(
+    () =>
+      loadStoredGapAccountUsername() ||
+      (linkedAccounts.find(
+        (account) =>
+          account.platform === (loadStoredGapAccountPlatform() ?? linkedAccounts[0]?.platform),
+      )?.username ??
+        ""),
+  );
+  const [accountKey, setAccountKey] = useState<string>(() => {
+    try {
+      const stored = localStorage.getItem(GAP_ACCOUNT_KEY);
+      if (stored) return stored;
+    } catch {
+      // Preference persistence is best-effort.
+    }
+    return "custom";
+  });
+  const [ratedOnly, setRatedOnly] = useState(() => {
+    try {
+      return localStorage.getItem(GAP_RATED_ONLY_KEY) !== "false";
+    } catch {
+      return true;
+    }
+  });
+  const [fetchingGames, setFetchingGames] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [setupOpen, setSetupOpen] = useState(true);
+  /** Who the current report is about, frozen at scan time (setup can change after). */
+  const lastScanSubjectRef = useRef<string | null>(null);
+  const setConversionState = useSetAtom(databaseConversionStateAtom);
+  const currentTabDeckPath =
+    currentTab?.gameOrigin?.kind === "opening_review" ? currentTab.gameOrigin.path : null;
+  const linkedAccountForPlatform = useCallback(
+    (platform: OnlineGameSource) =>
+      linkedAccounts.find((account) => account.platform === platform) ?? null,
+    [linkedAccounts],
+  );
+  const accountIsLinked = useMemo(
+    () =>
+      linkedAccounts.some(
+        (account) =>
+          account.platform === accountPlatform &&
+          account.username.toLowerCase() === accountUsername.trim().toLowerCase(),
+      ),
+    [accountPlatform, accountUsername, linkedAccounts],
+  );
+  /** Stored key normalized against the accounts that are actually linked now. */
+  const resolvedAccountKey = useMemo(() => {
+    if (accountKey === "custom") return "custom";
+    if (
+      linkedAccounts.some(
+        (account) => gapAccountKey(account.platform, account.username) === accountKey,
+      )
+    ) {
+      return accountKey;
+    }
+    const first = linkedAccounts[0];
+    return first ? gapAccountKey(first.platform, first.username) : "custom";
+  }, [accountKey, linkedAccounts]);
+  const selectedLinkedAccount = useMemo(
+    () =>
+      resolvedAccountKey === "custom"
+        ? null
+        : (linkedAccounts.find(
+            (account) => gapAccountKey(account.platform, account.username) === resolvedAccountKey,
+          ) ?? null),
+    [linkedAccounts, resolvedAccountKey],
+  );
+  /** The account the scan will actually fetch: a linked account or the typed one. */
+  const effectiveAccount = useMemo(
+    () =>
+      selectedLinkedAccount ?? {
+        platform: accountPlatform,
+        username: accountUsername.trim(),
+        rating: null as number | null,
+      },
+    [accountPlatform, accountUsername, selectedLinkedAccount],
+  );
+  const accountSelectData = useMemo(
+    () => [
+      ...linkedAccounts.map((account) => ({
+        value: gapAccountKey(account.platform, account.username),
+        label: `${getOnlineGameSourceLabel(account.platform)} — ${account.username}${
+          account.rating !== null ? ` · ${account.rating}` : ""
+        }`,
+      })),
+      { value: "custom", label: "Someone else…" },
+    ],
+    [linkedAccounts],
+  );
+
+  function selectAccountKey(next: string) {
+    setAccountKey(next);
+    try {
+      localStorage.setItem(GAP_ACCOUNT_KEY, next);
+    } catch {
+      // Preference persistence is best-effort.
+    }
+  }
+
+  function toggleRatedOnly(next: boolean) {
+    setRatedOnly(next);
+    try {
+      localStorage.setItem(GAP_RATED_ONLY_KEY, String(next));
+    } catch {
+      // Preference persistence is best-effort.
+    }
+  }
+
+  function selectGameSource(next: OpeningHealthGameSource) {
+    setGameSource(next);
+    try {
+      localStorage.setItem(GAP_GAME_SOURCE_KEY, next);
+    } catch {
+      // Preference persistence is best-effort.
+    }
+  }
+
+  function selectAccountPlatform(next: OnlineGameSource) {
+    setAccountPlatform(next);
+    const linked = linkedAccountForPlatform(next);
+    const currentIsLinkedName = linkedAccounts.some(
+      (account) => account.username.toLowerCase() === accountUsername.trim().toLowerCase(),
+    );
+    if (linked && (!accountUsername.trim() || currentIsLinkedName)) {
+      updateAccountUsername(linked.username);
+    }
+    try {
+      localStorage.setItem(GAP_ACCOUNT_PLATFORM_KEY, next);
+    } catch {
+      // Preference persistence is best-effort.
+    }
+  }
+
+  function updateAccountUsername(next: string) {
+    setAccountUsername(next);
+    try {
+      localStorage.setItem(GAP_ACCOUNT_USERNAME_KEY, next);
+    } catch {
+      // Preference persistence is best-effort.
+    }
+  }
   const colorFilter: OpeningHealthColorFilter = "any";
   const [sortMode, setSortMode] = useState<OpeningHealthSortMode>("priority");
   const [maxPlies, setMaxPlies] = useState(DEFAULT_MAX_PLIES);
@@ -259,6 +536,13 @@ function RepertoireGapsPanel() {
     () => getOpeningHealthDateBounds(dateRange, customStartDate, customEndDate),
     [customEndDate, customStartDate, dateRange],
   );
+  const scanComplete = Boolean(report) && !loading;
+
+  // Once results exist, the setup card folds into a one-line summary so the
+  // findings own the panel; Edit setup reopens it.
+  useEffect(() => {
+    if (scanComplete) setSetupOpen(false);
+  }, [scanComplete]);
   const { data: reviewDecks, mutate: mutateReviewDecks } = useSWR(
     reviewSaveOpen ? ["opening-review-decks", documentDir] : null,
     () => listOpeningReviewDecks(documentDir),
@@ -441,10 +725,6 @@ function RepertoireGapsPanel() {
   const visibleRows = useMemo(() => {
     return sortOpeningHealthRows(activeRows, engineVerifications, colorFilter, sortMode);
   }, [activeRows, colorFilter, engineVerifications, sortMode]);
-  const verifiedCount = useMemo(
-    () => Object.keys(engineVerifications).length,
-    [engineVerifications],
-  );
   const remainingVerificationCount = useMemo(
     () => visibleRows.filter((gap) => !engineVerifications[gapKey(gap)]).length,
     [engineVerifications, visibleRows],
@@ -469,8 +749,12 @@ function RepertoireGapsPanel() {
 
   useEffect(() => clearMovePreview, [clearMovePreview]);
 
-  async function analyze() {
-    if (!personalDb || !referenceDb) {
+  async function analyze(overrides?: { personalDb: string; playerId: number }) {
+    const scanPersonalDb = overrides?.personalDb ?? personalDb;
+    if (overrides === undefined) {
+      lastScanSubjectRef.current = subjectPlayerLabelFor(subjectPlayerOptions, subjectPlayerId);
+    }
+    if (!scanPersonalDb || !referenceDb) {
       notifications.show({
         title: "Missing databases",
         message: `Choose ${modeCopy.databaseMissingText} and a strong-games source.`,
@@ -479,7 +763,7 @@ function RepertoireGapsPanel() {
       return;
     }
 
-    if (!subjectPlayerId) {
+    if (overrides === undefined && !subjectPlayerId) {
       notifications.show({
         title: "Choose a player",
         message: `Select ${modeCopy.subjectPlayerLabel.toLowerCase()} so the scan only counts that player's moves.`,
@@ -488,7 +772,7 @@ function RepertoireGapsPanel() {
       return;
     }
 
-    const playerId = Number(subjectPlayerId);
+    const playerId = overrides?.playerId ?? Number(subjectPlayerId);
 
     const onlineReference = getOnlineReferenceSource(referenceDb);
     if (onlineReference && !explorerToken) {
@@ -551,7 +835,7 @@ function RepertoireGapsPanel() {
       const result = onlineReference
         ? await analyzeOnlineReference({
             id,
-            personalDb,
+            personalDb: scanPersonalDb,
             playerId,
             source: onlineReference,
             explorerToken: explorerToken!,
@@ -566,7 +850,7 @@ function RepertoireGapsPanel() {
             getControlState: () => scanControlRef.current,
           })
         : await commands.findRepertoireGaps({
-            playerDb: personalDb,
+            playerDb: scanPersonalDb,
             referenceDb,
             playerId,
             color: colorFilter,
@@ -749,6 +1033,119 @@ function RepertoireGapsPanel() {
     }
   }
 
+  /**
+   * Account mode: download the account's games straight from Lichess/Chess.com
+   * into the standard `{username}_{platform}.db3` database (only new games when
+   * that database already exists), resolve the player, then run the same scan
+   * as database mode. The date range doubles as the download bound.
+   */
+  async function fetchAccountGamesAndScan() {
+    const { platform, username } = effectiveAccount;
+    if (!username) {
+      notifications.show({
+        title: "Choose an account",
+        message: `Pick a linked account or type the ${getOnlineGameSourceLabel(
+          platform,
+        )} username whose games should be scanned.`,
+        color: "yellow",
+      });
+      return;
+    }
+    if (!referenceDb) {
+      notifications.show({
+        title: "Choose a strong-games source",
+        message: "Pick what to compare the games against before scanning.",
+        color: "yellow",
+      });
+      return;
+    }
+    if (getOnlineReferenceSource(referenceDb) && !explorerToken) {
+      notifications.show({
+        title: "Lichess login required",
+        message: "Sign in to Lichess before using Lichess All or Lichess Masters here.",
+        color: "yellow",
+      });
+      return;
+    }
+    if (!openingHealthDateBoundsAreValid(scanDateBounds)) {
+      notifications.show({
+        title: "Date range is invalid",
+        message: "The start date must be before the end date.",
+        color: "yellow",
+      });
+      return;
+    }
+
+    setFetchingGames(true);
+    try {
+      const databaseDir = await getDatabasesDir();
+      // Rated-only games live in their own database so unrated and variant
+      // games from earlier full downloads never leak into a filtered scan.
+      const dbFilename = ratedOnly
+        ? `${username}_${platform}_rated.db3`
+        : getOnlineGameDatabaseFilename(platform, username);
+      const dbPath = await resolve(databaseDir, dbFilename);
+      const existingDatabase = localDatabases.find((database) => database.file === dbPath);
+      // Incremental refresh: an existing account database only needs games
+      // newer than its last stored game; a fresh one starts at the date-range
+      // start (or a full download for "All dates").
+      const since = existingDatabase
+        ? await getLastOnlineDatabaseGameDate(dbPath).catch(() => null)
+        : openingHealthDbDateToTimestamp(scanDateBounds.startDate);
+      const token =
+        platform === "lichess"
+          ? sessions.find(
+              (session) => session.lichess?.username.toLowerCase() === username.toLowerCase(),
+            )?.lichess?.accessToken
+          : undefined;
+
+      await importOnlineGamesToDatabase({
+        source: platform,
+        username,
+        databaseDir,
+        dbPath,
+        title: `${getDefaultOnlineGameDatabaseTitle(platform, username)}${
+          ratedOnly ? " (rated)" : ""
+        }`,
+        description: null,
+        since,
+        token,
+        ratedOnly,
+        setConversionState,
+      });
+      await mutate("databases");
+
+      const player = await resolveOnlineAccountPlayer(dbPath, username);
+      if (!player) {
+        notifications.show({
+          title: "No games found",
+          message: `No ${ratedOnly ? "rated " : ""}games for "${username}" on ${getOnlineGameSourceLabel(
+            platform,
+          )} in the selected period.`,
+          color: "yellow",
+        });
+        return;
+      }
+
+      setPersonalDb(dbPath);
+      setSubjectPlayerId(String(player.id));
+      lastScanSubjectRef.current = `${getOnlineGameSourceLabel(platform)} · ${player.name ?? username}${
+        ratedOnly ? " · rated" : ""
+      }`;
+      await analyze({ personalDb: dbPath, playerId: player.id });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      notifications.show({
+        title: "Could not fetch online games",
+        message,
+        color: "red",
+      });
+    } finally {
+      resetDatabaseConversionState(setConversionState);
+      setFetchingGames(false);
+    }
+  }
+
   async function togglePause() {
     if (!requestId || !loading || isOpeningHealthFinalizing(progress)) return;
     const paused = !scan.paused;
@@ -910,8 +1307,12 @@ function RepertoireGapsPanel() {
       "Analyze Repertoire";
     const date = new Date().toISOString().slice(0, 10);
     setReviewDeckName(`${analysisMode === "self" ? "My gaps" : "Prep"} - ${playerName} - ${date}`);
-    setReviewDeckMode((reviewDecks?.length ?? 0) > 0 ? "existing" : "new");
-    setReviewDeckPath(reviewDecks?.[0]?.path ?? null);
+    // Inside an opening-review tab, merging into that tab's own deck is the
+    // expected destination — preselect it so Save trains in place.
+    setReviewDeckMode(
+      currentTabDeckPath !== null || (reviewDecks?.length ?? 0) > 0 ? "existing" : "new",
+    );
+    setReviewDeckPath(currentTabDeckPath ?? reviewDecks?.[0]?.path ?? null);
     setReviewAutoUpdate(canAutoUpdateReviewDeck);
     setReviewSaveOpen(true);
   }
@@ -961,6 +1362,7 @@ function RepertoireGapsPanel() {
               dateBounds: scanDateBounds,
             })
           : null;
+      let savedPath: string;
       if (reviewDeckMode === "existing") {
         if (!reviewDeckPath) {
           throw new Error("Choose an existing review deck.");
@@ -973,9 +1375,13 @@ function RepertoireGapsPanel() {
           source: existing.source ?? source,
           autoUpdate: autoUpdateConfig ?? existing.autoUpdate,
         });
+        savedPath = reviewDeckPath;
         notifications.show({
           title: "Review deck updated",
-          message: `${positions.length} position${positions.length === 1 ? "" : "s"} merged into ${existing.name}. Existing review progress was kept.`,
+          message:
+            reviewDeckPath === currentTabDeckPath
+              ? `${positions.length} position${positions.length === 1 ? "" : "s"} added — ready to train under Review positions.`
+              : `${positions.length} position${positions.length === 1 ? "" : "s"} merged into ${existing.name}. Existing review progress was kept.`,
           color: "green",
         });
       } else {
@@ -988,6 +1394,7 @@ function RepertoireGapsPanel() {
           positions,
         });
         await writeOpeningReviewDeck(path, deck);
+        savedPath = path;
         notifications.show({
           title: "Review deck saved",
           message: `${positions.length} position${positions.length === 1 ? "" : "s"} saved. Open it from Opening Review on the home page.`,
@@ -996,6 +1403,7 @@ function RepertoireGapsPanel() {
       }
       setReviewSaveOpen(false);
       await mutateReviewDecks();
+      onDeckSaved?.(savedPath);
     } catch (error) {
       notifications.show({
         title: "Could not save review deck",
@@ -1388,190 +1796,400 @@ function RepertoireGapsPanel() {
             engineVerificationRun.lichess > 0 ? `, ${engineVerificationRun.lichess} local eval` : ""
           }${engineVerificationRun.missing > 0 ? `, ${engineVerificationRun.missing} missing` : ""}`
     : null;
+  const subjectPlayerLabel =
+    subjectPlayerOptions.find((option) => option.value === subjectPlayerId)?.label ?? null;
+  const referenceLabel =
+    referenceDb === LICHESS_ALL_SOURCE
+      ? "Lichess All"
+      : referenceDb === LICHESS_MASTER_SOURCE
+        ? "Lichess Masters"
+        : (localDatabases.find((database) => database.file === referenceDb)?.title ??
+          "local reference");
+  const setupSummary = `${
+    gameSource === "account"
+      ? `${getOnlineGameSourceLabel(effectiveAccount.platform)} · ${
+          effectiveAccount.username || "no username"
+        }${effectiveAccount.rating !== null ? ` (${effectiveAccount.rating})` : ""}${
+          ratedOnly ? " · rated only" : ""
+        }`
+      : `${selectedPersonalDatabase?.title ?? "no database"}${
+          subjectPlayerLabel ? ` · ${subjectPlayerLabel}` : ""
+        }`
+  } · vs ${referenceLabel} · ${formatOpeningHealthDateFilter(scanDateBounds)}`;
 
   return (
     <>
-      <Stack h="100%" gap="xs" p="sm">
+      <Stack h="100%" gap="xs" p="sm" style={{ minHeight: 0 }}>
         <Paper withBorder p="xs">
           <Stack gap="xs">
-            <Group align="flex-end" justify="space-between" gap="sm">
-              <Stack gap={4}>
-                <Text size="sm" fw={700}>
-                  Mode
-                </Text>
-                <SegmentedControl
-                  value={analysisMode}
-                  onChange={(value) => setAnalysisMode(value as OpeningHealthMode)}
-                  data={[
-                    { value: "opponent", label: "Prep vs opponent" },
-                    { value: "self", label: "Find my gaps" },
-                  ]}
-                />
-              </Stack>
-              <Text size="sm" c="dimmed" maw={520}>
-                {modeCopy.description}
-              </Text>
-            </Group>
-
-            <Group grow align="flex-end">
-              <DatabaseFolderSelect
-                label={modeCopy.personalDatabaseLabel}
-                data={databaseOptions}
-                value={personalDb}
-                onChange={setPersonalDb}
-                allowDeselect={false}
-              />
-              <Select
-                label={modeCopy.subjectPlayerLabel}
-                data={subjectPlayerOptions}
-                value={subjectPlayerId}
-                onChange={setSubjectPlayerId}
-                searchValue={subjectPlayerSearch}
-                onSearchChange={setSubjectPlayerSearch}
-                placeholder={playerSearchSeed || "Search player"}
-                searchable
-                allowDeselect={false}
-              />
-              <DatabaseFolderSelect
-                label="Strong games source"
-                data={referenceOptions}
-                value={referenceDb}
-                onChange={setReferenceDb}
-                allowDeselect={false}
-              />
-            </Group>
-
-            <Group align="flex-end">
-              <Select
-                label="Player games date"
-                value={dateRange}
-                onChange={(value) => setDateRange((value as OpeningHealthDateRange) ?? "all")}
-                data={OPENING_HEALTH_DATE_RANGE_OPTIONS}
-                allowDeselect={false}
-                w={190}
-              />
-              {dateRange === "custom" && (
-                <>
-                  <TextInput
-                    label="From"
-                    type="date"
-                    value={openingHealthDbDateToInput(customStartDate)}
-                    onChange={(event) => setCustomStartDate(event.currentTarget.value)}
-                    w={150}
-                  />
-                  <TextInput
-                    label="To"
-                    type="date"
-                    value={openingHealthDbDateToInput(customEndDate)}
-                    onChange={(event) => setCustomEndDate(event.currentTarget.value)}
-                    w={150}
-                  />
-                </>
-              )}
-              {openingHealthDateBoundsAreActive(scanDateBounds) && (
-                <Badge variant="light" mb={6}>
-                  {formatOpeningHealthDateFilter(scanDateBounds)}
-                </Badge>
-              )}
-            </Group>
-
-            <Group align="flex-end">
-              <NumberInput
-                label={modeCopy.minimumGamesLabel}
-                value={minPersonalGames}
-                onChange={(value) => setMinPersonalGames(Math.max(1, Number(value) || 1))}
-                min={1}
-                w={180}
-              />
-              <NumberInput
-                label="Minimum strong games"
-                value={minReferenceGames}
-                onChange={(value) => setMinReferenceGames(Math.max(1, Number(value) || 1))}
-                min={1}
-                w={185}
-              />
-              <NumberInput
-                label="Opening ply"
-                value={maxPlies}
-                onChange={(value) => setMaxPlies(Math.min(80, Math.max(2, Number(value) || 2)))}
-                min={2}
-                max={80}
-                w={120}
-              />
-              <Stack gap={4} miw={180}>
-                <Group gap={4}>
-                  <Text size="sm" fw={500}>
-                    Local eval validation
+            {!setupOpen && (
+              <Group justify="space-between" gap="xs" wrap="wrap">
+                <Group gap={6} wrap="wrap" miw={0}>
+                  <Badge variant="light">
+                    {analysisMode === "self" ? "My gaps" : "Opponent prep"}
+                  </Badge>
+                  <Text size="sm" fw={600}>
+                    {setupSummary}
                   </Text>
-                  <Tooltip
-                    label="During the scan, local Lichess evals validate the flagged positions. If the local dump has no usable coverage, the local engine fallback can analyze that position."
-                    multiline
-                    maw={280}
-                    withArrow
-                  >
-                    <ActionIcon
-                      aria-label="Local eval validation help"
-                      size="xs"
-                      variant="subtle"
-                      color="gray"
-                    >
-                      <IconInfoCircle size="0.8rem" />
-                    </ActionIcon>
-                  </Tooltip>
                 </Group>
-                <Switch
-                  checked={verifyDuringScan}
-                  onChange={(event) => setVerifyDuringScan(event.currentTarget.checked)}
-                  label="During scan"
-                />
-                <Switch
-                  checked={localFallback}
-                  onChange={(event) => setLocalFallback(event.currentTarget.checked)}
-                  label="Engine fallback"
-                  disabled={!verifyDuringScan}
-                />
-              </Stack>
-              <NumberInput
-                label="Fallback depth"
-                value={engineVerifyDepth}
-                onChange={(value) =>
-                  setEngineVerifyDepth(Math.min(20, Math.max(4, Math.round(Number(value) || 4))))
-                }
-                min={4}
-                max={20}
-                w={125}
-                disabled={!verifyDuringScan || !localFallback}
-              />
-              <Button
-                leftSection={<IconSearch size="1rem" />}
-                onClick={analyze}
-                loading={loading}
-                disabled={(engineVerificationRun?.running ?? false) && !loading}
-              >
-                Run scan
-              </Button>
-              {loading && !finalizing && (
-                <>
+                <Group gap="xs" wrap="nowrap">
+                  {loading && !finalizing && (
+                    <>
+                      <Button size="compact-sm" variant="light" onClick={togglePause}>
+                        {scan.paused ? "Resume" : "Pause"}
+                      </Button>
+                      <Button size="compact-sm" color="red" variant="light" onClick={stopScan}>
+                        Stop
+                      </Button>
+                    </>
+                  )}
+                  <Button size="compact-sm" variant="default" onClick={() => setSetupOpen(true)}>
+                    Edit setup
+                  </Button>
                   <Button
-                    variant="light"
+                    size="compact-sm"
                     leftSection={
-                      scan.paused ? <IconPlayerPlay size="1rem" /> : <IconPlayerPause size="1rem" />
+                      gameSource === "account" ? (
+                        <IconCloudDownload size={14} />
+                      ) : (
+                        <IconSearch size={14} />
+                      )
                     }
-                    onClick={togglePause}
+                    loading={loading || fetchingGames}
+                    disabled={(engineVerificationRun?.running ?? false) && !loading}
+                    onClick={() =>
+                      gameSource === "account" ? void fetchAccountGamesAndScan() : void analyze()
+                    }
                   >
-                    {scan.paused ? "Resume" : "Pause"}
+                    Rescan
                   </Button>
+                </Group>
+              </Group>
+            )}
+            {setupOpen && (
+              <>
+                <Group align="flex-end" justify="space-between" gap="sm">
+                  <Stack gap={4}>
+                    <Text size="sm" fw={700}>
+                      Mode
+                    </Text>
+                    <SegmentedControl
+                      value={analysisMode}
+                      onChange={(value) => {
+                        const nextMode = value as OpeningHealthMode;
+                        setAnalysisMode(nextMode);
+                        // Opponents are rarely linked accounts; scouting
+                        // defaults to a typed username.
+                        if (nextMode === "opponent") selectAccountKey("custom");
+                      }}
+                      data={[
+                        { value: "self", label: "Find my gaps" },
+                        { value: "opponent", label: "Prep vs opponent" },
+                      ]}
+                    />
+                  </Stack>
+                  <Text size="sm" c="dimmed" maw={520}>
+                    {modeCopy.description}
+                  </Text>
+                </Group>
+
+                <Stack gap={4}>
+                  <Text size="sm" fw={700}>
+                    {analysisMode === "self" ? "Your games" : "Opponent's games"}
+                  </Text>
+                  <SegmentedControl
+                    value={gameSource}
+                    onChange={(value) => selectGameSource(value as OpeningHealthGameSource)}
+                    data={[
+                      { value: "account", label: "Online account" },
+                      { value: "database", label: "Local database" },
+                    ]}
+                    w="fit-content"
+                  />
+                </Stack>
+
+                {gameSource === "account" ? (
+                  <>
+                    <Group grow align="flex-end">
+                      <Select
+                        label={analysisMode === "self" ? "Account" : "Opponent's account"}
+                        value={resolvedAccountKey}
+                        onChange={(value) => selectAccountKey(value ?? "custom")}
+                        data={accountSelectData}
+                        allowDeselect={false}
+                      />
+                      {resolvedAccountKey === "custom" && (
+                        <Select
+                          label="Platform"
+                          value={accountPlatform}
+                          onChange={(value) =>
+                            selectAccountPlatform((value as OnlineGameSource) ?? "chesscom")
+                          }
+                          data={[
+                            { value: "chesscom", label: "Chess.com" },
+                            { value: "lichess", label: "Lichess" },
+                          ]}
+                          allowDeselect={false}
+                        />
+                      )}
+                      {resolvedAccountKey === "custom" && (
+                        <TextInput
+                          label={analysisMode === "self" ? "Username" : "Opponent's username"}
+                          value={accountUsername}
+                          onChange={(event) => updateAccountUsername(event.currentTarget.value)}
+                          placeholder={`${getOnlineGameSourceLabel(accountPlatform)} username`}
+                          rightSection={
+                            accountIsLinked ? (
+                              <Tooltip label="This is one of your linked accounts." withArrow>
+                                <Badge size="xs" variant="light" color="green">
+                                  Linked
+                                </Badge>
+                              </Tooltip>
+                            ) : undefined
+                          }
+                          rightSectionWidth={accountIsLinked ? 64 : undefined}
+                        />
+                      )}
+                      <DatabaseFolderSelect
+                        label="Compare against"
+                        data={referenceOptions}
+                        value={referenceDb}
+                        onChange={setReferenceDb}
+                        allowDeselect={false}
+                      />
+                    </Group>
+                    <Group justify="space-between" gap="xs" align="center">
+                      <Text size="xs" c="dimmed">
+                        Games download straight from{" "}
+                        {getOnlineGameSourceLabel(effectiveAccount.platform)} into a local database.
+                        Later scans only fetch games played since the last download.
+                      </Text>
+                      <Tooltip
+                        label="Skips casual games and variants (Chess960, bughouse…), which add noise to the report."
+                        withArrow
+                        multiline
+                        maw={280}
+                      >
+                        <Switch
+                          size="xs"
+                          checked={ratedOnly}
+                          onChange={(event) => toggleRatedOnly(event.currentTarget.checked)}
+                          label="Rated games only"
+                        />
+                      </Tooltip>
+                    </Group>
+                  </>
+                ) : (
+                  <Group grow align="flex-end">
+                    <DatabaseFolderSelect
+                      label={modeCopy.personalDatabaseLabel}
+                      data={databaseOptions}
+                      value={personalDb}
+                      onChange={setPersonalDb}
+                      allowDeselect={false}
+                    />
+                    <Select
+                      label={modeCopy.subjectPlayerLabel}
+                      data={subjectPlayerOptions}
+                      value={subjectPlayerId}
+                      onChange={setSubjectPlayerId}
+                      searchValue={subjectPlayerSearch}
+                      onSearchChange={setSubjectPlayerSearch}
+                      placeholder={playerSearchSeed || "Search player"}
+                      searchable
+                      allowDeselect={false}
+                    />
+                    <DatabaseFolderSelect
+                      label="Compare against"
+                      data={referenceOptions}
+                      value={referenceDb}
+                      onChange={setReferenceDb}
+                      allowDeselect={false}
+                    />
+                  </Group>
+                )}
+
+                <Group align="flex-end">
+                  <Select
+                    label="Games played"
+                    value={dateRange}
+                    onChange={(value) => setDateRange((value as OpeningHealthDateRange) ?? "all")}
+                    data={OPENING_HEALTH_DATE_RANGE_OPTIONS}
+                    allowDeselect={false}
+                    w={190}
+                  />
+                  {dateRange === "custom" && (
+                    <>
+                      <TextInput
+                        label="From"
+                        type="date"
+                        value={openingHealthDbDateToInput(customStartDate)}
+                        onChange={(event) => setCustomStartDate(event.currentTarget.value)}
+                        w={150}
+                      />
+                      <TextInput
+                        label="To"
+                        type="date"
+                        value={openingHealthDbDateToInput(customEndDate)}
+                        onChange={(event) => setCustomEndDate(event.currentTarget.value)}
+                        w={150}
+                      />
+                    </>
+                  )}
+                  {openingHealthDateBoundsAreActive(scanDateBounds) && (
+                    <Badge variant="light" mb={6}>
+                      {formatOpeningHealthDateFilter(scanDateBounds)}
+                    </Badge>
+                  )}
+                </Group>
+
+                <Group justify="space-between" align="center">
                   <Button
-                    color="red"
-                    variant="light"
-                    leftSection={<IconPlayerStop size="1rem" />}
-                    onClick={stopScan}
+                    variant="subtle"
+                    color="gray"
+                    size="compact-sm"
+                    leftSection={
+                      <IconChevronDown
+                        size={14}
+                        style={{
+                          transform: advancedOpen ? "rotate(180deg)" : undefined,
+                          transition: "transform 150ms ease",
+                        }}
+                      />
+                    }
+                    onClick={() => setAdvancedOpen((open) => !open)}
                   >
-                    Stop
+                    Advanced options
                   </Button>
-                </>
-              )}
-            </Group>
+                  <Group gap="xs">
+                    {loading && !finalizing && (
+                      <>
+                        <Button
+                          variant="light"
+                          leftSection={
+                            scan.paused ? (
+                              <IconPlayerPlay size="1rem" />
+                            ) : (
+                              <IconPlayerPause size="1rem" />
+                            )
+                          }
+                          onClick={togglePause}
+                        >
+                          {scan.paused ? "Resume" : "Pause"}
+                        </Button>
+                        <Button
+                          color="red"
+                          variant="light"
+                          leftSection={<IconPlayerStop size="1rem" />}
+                          onClick={stopScan}
+                        >
+                          Stop
+                        </Button>
+                      </>
+                    )}
+                    <Button
+                      leftSection={
+                        gameSource === "account" ? (
+                          <IconCloudDownload size="1rem" />
+                        ) : (
+                          <IconSearch size="1rem" />
+                        )
+                      }
+                      onClick={() =>
+                        gameSource === "account" ? void fetchAccountGamesAndScan() : void analyze()
+                      }
+                      loading={loading || fetchingGames}
+                      disabled={(engineVerificationRun?.running ?? false) && !loading}
+                    >
+                      {gameSource === "account" ? "Fetch games & scan" : "Run scan"}
+                    </Button>
+                  </Group>
+                </Group>
+                {fetchingGames && (
+                  <Text size="xs" c="dimmed">
+                    Downloading {ratedOnly ? "rated " : ""}
+                    {getOnlineGameSourceLabel(effectiveAccount.platform)} games for{" "}
+                    {effectiveAccount.username}… Large accounts can take a minute on the first
+                    fetch.
+                  </Text>
+                )}
+
+                <Collapse in={advancedOpen}>
+                  <Group align="flex-end">
+                    <NumberInput
+                      label={modeCopy.minimumGamesLabel}
+                      value={minPersonalGames}
+                      onChange={(value) => setMinPersonalGames(Math.max(1, Number(value) || 1))}
+                      min={1}
+                      w={180}
+                    />
+                    <NumberInput
+                      label="Minimum strong games"
+                      value={minReferenceGames}
+                      onChange={(value) => setMinReferenceGames(Math.max(1, Number(value) || 1))}
+                      min={1}
+                      w={185}
+                    />
+                    <NumberInput
+                      label="Opening ply"
+                      value={maxPlies}
+                      onChange={(value) =>
+                        setMaxPlies(Math.min(80, Math.max(2, Number(value) || 2)))
+                      }
+                      min={2}
+                      max={80}
+                      w={120}
+                    />
+                    <Stack gap={4} miw={180}>
+                      <Group gap={4}>
+                        <Text size="sm" fw={500}>
+                          Local eval validation
+                        </Text>
+                        <Tooltip
+                          label="During the scan, local Lichess evals validate the flagged positions. If the local dump has no usable coverage, the local engine fallback can analyze that position."
+                          multiline
+                          maw={280}
+                          withArrow
+                        >
+                          <ActionIcon
+                            aria-label="Local eval validation help"
+                            size="xs"
+                            variant="subtle"
+                            color="gray"
+                          >
+                            <IconInfoCircle size="0.8rem" />
+                          </ActionIcon>
+                        </Tooltip>
+                      </Group>
+                      <Switch
+                        checked={verifyDuringScan}
+                        onChange={(event) => setVerifyDuringScan(event.currentTarget.checked)}
+                        label="During scan"
+                      />
+                      <Switch
+                        checked={localFallback}
+                        onChange={(event) => setLocalFallback(event.currentTarget.checked)}
+                        label="Engine fallback"
+                        disabled={!verifyDuringScan}
+                      />
+                    </Stack>
+                    <NumberInput
+                      label="Fallback depth"
+                      value={engineVerifyDepth}
+                      onChange={(value) =>
+                        setEngineVerifyDepth(
+                          Math.min(20, Math.max(4, Math.round(Number(value) || 4))),
+                        )
+                      }
+                      min={4}
+                      max={20}
+                      w={125}
+                      disabled={!verifyDuringScan || !localFallback}
+                    />
+                  </Group>
+                </Collapse>
+              </>
+            )}
           </Stack>
         </Paper>
 
@@ -1587,18 +2205,28 @@ function RepertoireGapsPanel() {
         )}
 
         {report && (
-          <Group justify="space-between" wrap="wrap" gap="xs">
-            <Group gap="xs">
-              <Badge variant="light">
-                {formatNumber(report.playerGames)} {modeCopy.gamesBadge}
-              </Badge>
-              <Badge variant="light">{formatNumber(report.candidatePositions)} lines checked</Badge>
-              <Badge variant="light">
-                {formatNumber(report.referencePositions)} found in strong games
-              </Badge>
-              <Badge color="orange" variant="light">
+          <Group justify="space-between" wrap="wrap" gap="xs" align="center">
+            <Group gap="xs" miw={0}>
+              <Badge color="orange" size="lg" variant="light">
                 {formatNumber(activeRows.length)} {modeCopy.flaggedBadge}
               </Badge>
+              {lastScanSubjectRef.current && (
+                <Tooltip
+                  label="Whose games this report is about. If this is the wrong account, edit the setup and rescan."
+                  withArrow
+                  multiline
+                  maw={260}
+                >
+                  <Badge variant="outline" color="gray">
+                    {lastScanSubjectRef.current}
+                  </Badge>
+                </Tooltip>
+              )}
+              <Text size="sm" c="dimmed">
+                from {formatNumber(report.playerGames)} {modeCopy.gamesBadge} ·{" "}
+                {formatNumber(report.candidatePositions)} lines checked ·{" "}
+                {formatNumber(report.referencePositions)} found in strong games
+              </Text>
               {dismissedGapKeys.size > 0 && (
                 <Button
                   size="compact-xs"
@@ -1611,28 +2239,6 @@ function RepertoireGapsPanel() {
             </Group>
 
             <Group gap="xs">
-              <Button
-                size="xs"
-                variant="light"
-                leftSection={<IconPlus size="1rem" />}
-                onClick={saveVisibleRowsToOpeningSet}
-                disabled={loading || visibleRows.length === 0}
-              >
-                Save to opening set
-              </Button>
-              <Button
-                size="xs"
-                variant="light"
-                leftSection={<IconDeviceFloppy size="1rem" />}
-                onClick={openReviewSaveModal}
-                disabled={visibleRows.length === 0}
-              >
-                Save review deck
-              </Button>
-              <Badge variant="light">
-                {sortMode === "frequency" ? "Sorted by frequency" : "Ranked by urgency"}
-                {verifiedCount > 0 ? ` + ${verifiedCount} validated` : ""}
-              </Badge>
               <Select
                 size="xs"
                 w={150}
@@ -1640,8 +2246,8 @@ function RepertoireGapsPanel() {
                 value={sortMode}
                 onChange={(value) => setSortMode((value as OpeningHealthSortMode) ?? "priority")}
                 data={[
-                  { value: "priority", label: "Sort: priority" },
-                  { value: "frequency", label: "Sort: frequency" },
+                  { value: "priority", label: "Sort: most relevant" },
+                  { value: "frequency", label: "Sort: most played" },
                 ]}
                 allowDeselect={false}
               />
@@ -1668,6 +2274,34 @@ function RepertoireGapsPanel() {
                     : `Validate remaining ${remainingVerificationCount}`}
                 </Button>
               </Tooltip>
+              <Button
+                size="xs"
+                variant="light"
+                leftSection={<IconPlus size="1rem" />}
+                onClick={saveVisibleRowsToOpeningSet}
+                disabled={loading || visibleRows.length === 0}
+              >
+                Save to opening set
+              </Button>
+              <Tooltip
+                label={
+                  currentTabDeckPath
+                    ? "Adds these gaps to this tab's review deck, then jumps to Review positions so you can train them."
+                    : "Save these gaps as spaced-repetition cards in a review deck."
+                }
+                withArrow
+                multiline
+                maw={280}
+              >
+                <Button
+                  size="xs"
+                  leftSection={<IconDeviceFloppy size="1rem" />}
+                  onClick={openReviewSaveModal}
+                  disabled={visibleRows.length === 0}
+                >
+                  Save {formatNumber(visibleRows.length)} & train
+                </Button>
+              </Tooltip>
             </Group>
           </Group>
         )}
@@ -1687,32 +2321,29 @@ function RepertoireGapsPanel() {
         )}
 
         {visibleRows.length > 0 && (
-          <ScrollArea flex={1} offsetScrollbars>
+          <ScrollArea flex={1} mih={0} offsetScrollbars>
             <Table withTableBorder highlightOnHover stickyHeader>
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th style={{ minWidth: 230 }}>
+                  <Table.Th style={{ width: 170 }}>
                     <ColumnHeader label="Priority" help={modeCopy.priorityHelp} />
                   </Table.Th>
-                  <Table.Th style={{ minWidth: 240 }}>
+                  <Table.Th style={{ minWidth: 250 }}>
                     <ColumnHeader label="Opening line" help={modeCopy.lineHelp} />
                   </Table.Th>
-                  <Table.Th style={{ width: 135 }}>
-                    <ColumnHeader label={modeCopy.playedColumnLabel} help={modeCopy.playedHelp} />
-                  </Table.Th>
-                  <Table.Th style={{ width: 150 }}>
+                  <Table.Th style={{ minWidth: 200 }}>
                     <ColumnHeader
-                      label={modeCopy.nextStepColumnLabel}
-                      help={modeCopy.nextStepHelp}
+                      label={`${modeCopy.playedColumnLabel} → next step`}
+                      help={`${modeCopy.playedHelp} ${modeCopy.nextStepHelp}`}
                     />
                   </Table.Th>
-                  <Table.Th style={{ width: 145 }}>
+                  <Table.Th style={{ width: 160 }}>
                     <ColumnHeader label="Evidence" help={modeCopy.evidenceHelp} />
                   </Table.Th>
                   <Table.Th style={{ minWidth: 240 }}>
                     <ColumnHeader label="Result" help={modeCopy.resultHelp} />
                   </Table.Th>
-                  <Table.Th style={{ width: 112 }}>
+                  <Table.Th style={{ width: 100 }}>
                     <ColumnHeader label="Actions" help={modeCopy.saveHelp} />
                   </Table.Th>
                 </Table.Tr>
@@ -2831,7 +3462,7 @@ function OpeningHealthRow({
           <Badge color={priority.color} variant="light" w="fit-content">
             {priority.label}
           </Badge>
-          <Text size="xs" c="dimmed">
+          <Text size="xs" c="dimmed" lineClamp={2} title={priority.description}>
             {priority.description}
           </Text>
         </Stack>
@@ -2846,57 +3477,58 @@ function OpeningHealthRow({
             onClearPreview={onClearPreview}
           />
           <Text size="xs" c="dimmed">
-            Ply {gap.ply + 1}, {gap.sideToMove} to move
+            Ply {gap.ply + 1} · {gap.sideToMove} to move
+          </Text>
+        </Stack>
+      </Table.Td>
+      <Table.Td>
+        <Stack gap={4}>
+          <Group gap={6} wrap="nowrap" align="center">
+            <OpeningHealthMoveChip
+              move={playedMove}
+              fallback={gap.playerMoveSan}
+              fw={700}
+              onLoad={onLoad}
+              onPreview={onPreview}
+              onClearPreview={onClearPreview}
+            />
+            <Text size="sm" c="dimmed" span>
+              →
+            </Text>
+            <OpeningHealthSuggestedMove
+              gap={gap}
+              title={nextStepTitle}
+              moveUci={
+                trainingMove?.uci ??
+                nextStep.trainingMove?.uci ??
+                effectiveVerification?.bestMoveUci ??
+                null
+              }
+              fw={700}
+              onLoad={onLoad}
+              onPreview={onPreview}
+              onClearPreview={onClearPreview}
+            />
+          </Group>
+          <Text size="xs" c="dimmed" lineClamp={2} title={`${rankText}. ${nextStepDetail}`}>
+            {rankText} · {nextStepDetail}
           </Text>
         </Stack>
       </Table.Td>
       <Table.Td>
         <Stack gap={2}>
-          <OpeningHealthMoveChip
-            move={playedMove}
-            fallback={gap.playerMoveSan}
-            fw={700}
-            onLoad={onLoad}
-            onPreview={onPreview}
-            onClearPreview={onClearPreview}
-          />
-          <Text size="xs" c="dimmed">
-            {rankText}
-          </Text>
-        </Stack>
-      </Table.Td>
-      <Table.Td>
-        <Stack gap={2}>
-          <OpeningHealthSuggestedMove
-            gap={gap}
-            title={nextStepTitle}
-            moveUci={
-              trainingMove?.uci ??
-              nextStep.trainingMove?.uci ??
-              effectiveVerification?.bestMoveUci ??
-              null
-            }
-            fw={700}
-            onLoad={onLoad}
-            onPreview={onPreview}
-            onClearPreview={onClearPreview}
-          />
-          <Text size="xs" c="dimmed">
-            {nextStepDetail}
-          </Text>
-        </Stack>
-      </Table.Td>
-      <Table.Td>
-        <Stack gap={2}>
-          <Text size="sm">{formatNumber(gap.playerPositionGames)} games</Text>
-          <Text size="xs" c="dimmed">
-            {formatNumber(gap.referenceGames)} strong games
+          <Text size="sm" fw={600}>
+            {formatNumber(gap.playerPositionGames)} game
+            {gap.playerPositionGames === 1 ? "" : "s"}
           </Text>
           <Text size="xs" c="dimmed">
+            {formatCompactGameCount(gap.referenceGames)} strong games
+          </Text>
+          <Text size="xs" c="dimmed" lineClamp={1} title={formatLastPlayed(gap.lastPlayed)}>
             {formatLastPlayed(gap.lastPlayed)}
           </Text>
           {verificationLabel && (
-            <Text size="xs" c="dimmed">
+            <Text size="xs" c="dimmed" lineClamp={1} title={verificationLabel}>
               {verificationLabel}
             </Text>
           )}
@@ -3496,6 +4128,13 @@ function parseOpeningHealthDate(value: string | null | undefined) {
 
 function formatLastPlayed(lastPlayed: string | null | undefined) {
   return formatOpeningReviewLastPlayed(lastPlayed);
+}
+
+/** 22456 → "22.5k": large reference counts stay scannable in narrow columns. */
+function formatCompactGameCount(value: number) {
+  if (value >= 10_000) return `${Math.round(value / 1000)}k`;
+  if (value >= 1_000) return `${(value / 1000).toFixed(1)}k`;
+  return formatNumber(value);
 }
 
 function buildLichessCloudVerification(

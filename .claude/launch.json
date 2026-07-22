@@ -6,6 +6,63 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["-C", "C:/Users/loxty/Desktop/Repos/outpost-chess", "dev"],
       "port": 4780
+    },
+    {
+      "name": "outpost-web-alt",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "-C",
+        "C:/Users/loxty/Desktop/Repos/outpost-chess",
+        "dev",
+        "--port",
+        "4791",
+        "--strictPort"
+      ],
+      "port": 4791
+    },
+    {
+      "name": "outpost-web-3",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "-C",
+        "C:/Users/loxty/Desktop/Repos/outpost-chess",
+        "dev",
+        "--port",
+        "4796",
+        "--strictPort"
+      ],
+      "port": 4796
+    },
+    {
+      "name": "outpost-hardening-web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "-C",
+        "C:/Users/loxty/Desktop/Repos/outpost-hardening",
+        "dev",
+        "--port",
+        "4795",
+        "--strictPort"
+      ],
+      "port": 4795
+    },
+    {
+      "name": "fork-web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["start-vite"],
+      "port": 1420
+    },
+    {
+      "name": "fork-web-preview",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["start-vite", "--port", "1435", "--strictPort"],
+      "port": 1435
+    },
+    {
+      "name": "fork-web-preview-2",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["start-vite", "--port", "1437", "--strictPort"],
+      "port": 1437
     }
   ]
 }

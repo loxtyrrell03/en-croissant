@@ -12,7 +12,6 @@ import {
   currentDetachedEngineAtom,
   currentThreatAtom,
   engineMovesFamily,
-  engineProgressFamily,
   enginesAtom,
   tabEngineSettingsFamily,
 } from "@/state/atoms";
@@ -78,16 +77,22 @@ const DetachedEvalInner = memo(function DetachedEvalInner({
 
   const ev = useAtomValue(engineMovesFamily({ engine: engineId, tab: activeTab! }));
 
-  const [pos] = positionFromFen(rootFen);
-  if (pos) {
-    for (const uci of moves) {
-      const move = parseUci(uci);
-      if (!move) break;
-      pos.play(move);
+  // Memoized: replaying the game per render is wasteful while engine payloads
+  // stream in several times a second.
+  const { isGameOver, finalFen } = useMemo(() => {
+    const [pos] = positionFromFen(rootFen);
+    if (pos) {
+      for (const uci of moves) {
+        const move = parseUci(uci);
+        if (!move) break;
+        pos.play(move);
+      }
     }
-  }
-  const isGameOver = pos?.isEnd() ?? false;
-  const finalFen = useMemo(() => (pos ? makeFen(pos.toSetup()) : null), [pos]);
+    return {
+      isGameOver: pos?.isEnd() ?? false,
+      finalFen: pos ? makeFen(pos.toSetup()) : null,
+    };
+  }, [rootFen, moves]);
 
   const { searchingFen, searchingMoves } = useMemo(() => {
     if (threat) {

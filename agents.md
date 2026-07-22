@@ -67,6 +67,42 @@
   because root-move practical results are not setup evidence. Technical reach,
   joint-core, and reply details remain behind expansion/tooltips rather than
   becoming permanent columns.
+- On 2026-07-17, Outpost Plan Explorer and Engine Plans replaced flat
+  fixed-size setup unions with one shared target-state family miner. Nested
+  subsets now collapse into exclusive named or learned themes with a natural
+  identity/core, horizon-aware additions, choose-one variants, and nested
+  opponent-reply modules; defence names also require the matching opponent
+  structure. Plan Explorer measures reply robustness from the family identity
+  rather than reply-specific extras, while Engine Plans explicitly leaves it
+  unmeasured until independent reply trees exist. Setup strength now uses the
+  exact final-state core occurring together in the same PVs, weighted CP loss
+  from those joint lines, reliability-shrunk exact-core practical results, and
+  separate reach/cohesion/reply-confidence signals. This avoids fabricated
+  arrows, pass-through target evidence, subset noise, and WDL/engine evidence
+  being conflated into one unsupported claim.
+- On 2026-07-17, Outpost Prep's color controls now consistently say `I'm
+  white` and `I'm black`. Opponent Prep mirrors those choices into its internal
+  opponent-color filter, so the label, selected state, and queried games all
+  describe the user's own side rather than the opponent's side.
+- On 2026-07-17, Outpost Opponent Prep now refreshes the opponent field on
+  every local database change. The previous database's player is cleared while
+  the lookup runs, the selected database's most common player is applied, and
+  stale lookups cannot overwrite a newer selection or a name typed while the
+  current lookup is in flight.
+- On 2026-07-17, Outpost Prep stopped selecting or querying a database when a
+  Prep panel opens. Player and General Prep now begin in an explicit blank
+  state, show a clear prompt instead of a loading move table, and include a
+  `No database selected` choice so any active database can be deselected and
+  returned to the idle state. Prep source choices are intentionally
+  session-only so reopening the panel never silently reloads prior evidence.
+- On 2026-07-15, the Outpost desktop live launcher was recovered after Vite
+  began watching the 20 GB native `src-tauri/target` tree and stalled before
+  Tauri could open the window. Outpost's Vite configuration now excludes that
+  generated tree, reducing the live server from roughly 37,000 handles to
+  roughly 1,900. The in-progress deterministic OTB importer also received its
+  missing Tokio time and Reqwest JSON/query/form features so the native build
+  succeeds; the real desktop shortcut was relaunched and verified with a
+  responsive `Outpost` window.
 - On 2026-07-13, the Home `Import player games` dock was promoted above Daily
   Goals so the unified Chess.com, Lichess, and OTB database workflow is visible
   immediately. Its copy now frames the action around gathering one player's
@@ -118,6 +154,10 @@
   adjacent Share, Games, and full-size W/D/L columns. Routes are ordered by
   the current blended-strength score, so hovering a piece on the board previews
   the same clearly marked strongest route shown first in that piece's group.
+- On 2026-07-12, Outpost General Opening Prep adopted the Database panel's
+  visible `Local | Lichess All | Lichess Masters` segmented source selector.
+  Local database selection remains available beside it only while Local is
+  active, and Opponent Prep retains its player-oriented grouped source picker.
 
 This file is the working product map for the En Croissant fork on the
 `codex/en-croissant-fork` branch. It records the major features added during
@@ -586,6 +626,27 @@ default.
   `scripts/launch-latest.ps1`. Both launchers invoke the checked-in Tauri/Vite
   Node entrypoints directly so a temporarily missing `node_modules\.bin` or
   `npx` package-name resolution cannot break desktop startup.
+- On 2026-07-11 evening, an Outpost visual-parity session landed three focused
+  milestones on `main`: `e57c6f8` replaced the Files inline create-folder,
+  rename, kind-edit, delete, and import-database flows with a fork-anatomy
+  dialog family (focus trap/restore, designed destructive confirmation);
+  `060dc2f` matched fork dialog geometry across the Home modals (top-anchored
+  placement, 440/760 widths, single-line Import tabs, flat account-chooser
+  rows, and a full online-game-picker rebuild with account chips, pager,
+  provider tabs, three-line rows, pinned footer, and a board-thumbnail
+  move-chip preview); `cc6c8d0` matched Accounts card flow/density and
+  restructured the Engines detail panel into the fork's General/Search/
+  Advanced form. New paired native evidence lives under Outpost
+  `docs/parity-audit/2026-07-09/pairs/` (Accounts populated at both baselines,
+  Engines, Home modal states, Files dialogs, tab states) and the matrix, gap
+  ledger, and capture coverage were updated the same evening. Recorded fork
+  baselines discovered during pairing: the fork deletes accounts and closes
+  dirty analysis tabs without confirmation, has no live FEN validation
+  (raw i18n key on error), and its picker provider fetches run in Rust so
+  browser-level interception cannot fixture them. E-007 install progress and
+  S-018 startup skeletons are recorded as not-fixturable. Capture stayed
+  hidden/off-screen against isolated storage throughout; the owner-active
+  board/database/settings/titlebar files were left untouched.
 
 ## Product Map
 
@@ -764,8 +825,7 @@ default.
   primary "report" again.
 - On 2026-07-07, the owner explicitly reverted and pinned the main Gemini
   coach/report model to `gemini-3.5-pro-preview`. Do not change this model id,
-  default, placeholder, or prep-report override again unless the owner
-  explicitly asks for a different Gemini model.
+  default, placeholder, or prep-report override again.
 - A later 2026-06-23 correction fixed the desktop candidate-row `After prep`
   semantics. The column must never show a `Current` fallback: it means the
   source/opponent's most common response after the displayed candidate, followed
@@ -1705,6 +1765,8 @@ game`, and `go through this game` must select `whole_game`. If scope
   unsupported tactical claims, so keep notes/annotations internal-only. Engine
   PVs now include material summaries; any claim like "wins the exchange",
   "wins a piece", or "wins a pawn" must match those summaries.
+- Outpost's Coach composer parity requires a blank textarea input, Enter to
+  submit, Shift+Enter to insert a newline, and empty/busy submissions blocked.
 - Whole-game Coach Stockfish requests may legally start from exact critical
   before-move FENs selected from the stored game analysis, not only from the
   live board FEN or chat reference FENs. Keep planner sanitizing, request
@@ -3352,3 +3414,31 @@ a concrete risk that the check would resolve.
   source-order/parser/cache/orientation tests, all 1,902 frontend tests, and the
   production build passed; the live API returned the formerly blank `g6`,
   `a6`, and `dxc4` evaluations from the owner's screenshot position.
+
+## Recent Database Evaluation Behavior
+
+- On 2026-07-12, the database move table removed its redundant Engine
+  STRONG/WEAK column while retaining blended strength and numeric Eval. Stored
+  local Lichess evaluations now fill moves omitted by the root position's
+  five-PV ceiling from each move's evaluated child position, so rows no longer
+  incorrectly show `Out` merely because they fell outside the root MultiPV
+  list.
+
+## Prep Source Selection
+
+- On 2026-07-12, fresh Prep panels stopped restoring or inferring a database
+  source. Prep now remains idle until the user explicitly selects a database,
+  switching from General back to Player also returns to an empty source, and
+  the legacy aggregate `My Library` database is excluded from Prep's picker so
+  Prep cannot accidentally query across the full database collection.
+
+## Recent Outpost Database Selection Performance
+
+- On 2026-07-12, Outpost's Prep and Database source pickers stopped deferring
+  position requests with UI timers. Native collection-scoped position queries
+  now use a compact covering metadata index and a collection-first join, so a
+  selected database no longer scans every collection or repeatedly reads large
+  PGN-bearing table pages. The Database Games subtab also limits matching game
+  IDs before loading full PGNs. This fixes source changes becoming trapped
+  behind long SQLite work in multi-gigabyte libraries while preserving exact
+  move totals, filters, recency evidence, paging, and stale-result protection.

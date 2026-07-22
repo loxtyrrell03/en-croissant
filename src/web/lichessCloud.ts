@@ -170,7 +170,7 @@ async function getCloudEvaluation(
 
   const request = enqueueCloudEvaluationRequest(async () => {
     return await fetchCloudEvaluation(fen, safeMultipv, cacheKey, signal);
-  }).finally(() => {
+  }, signal).finally(() => {
     inFlightCloudCache.delete(cacheKey);
   });
   inFlightCloudCache.set(cacheKey, request);
@@ -207,16 +207,24 @@ async function fetchCloudEvaluation(
   return data;
 }
 
-async function enqueueCloudEvaluationRequest<T>(run: () => Promise<T>): Promise<T> {
+async function enqueueCloudEvaluationRequest<T>(
+  run: () => Promise<T>,
+  signal?: AbortSignal,
+): Promise<T> {
   const task = cloudRequestQueue.then(async () => {
+    // Bail out of stale queued requests (e.g. positions the user already
+    // navigated away from) without consuming a rate-limit slot, so the
+    // request for the current position isn't stuck behind them.
+    throwIfCloudAborted(signal);
     if (Date.now() < cloudRateLimitedUntil) {
       throw new Error("Lichess cloud evaluation is rate-limited.");
     }
 
     const waitMs = nextCloudRequestAt - Date.now();
     if (waitMs > 0) {
-      await sleep(waitMs);
+      await sleep(waitMs, signal);
     }
+    throwIfCloudAborted(signal);
 
     try {
       return await run();
@@ -249,10 +257,24 @@ function parseRetryAfterMs(value: string | null) {
   return null;
 }
 
-function sleep(ms: number) {
-  return new Promise<void>((resolve) => {
-    window.setTimeout(resolve, ms);
+function sleep(ms: number, signal?: AbortSignal) {
+  return new Promise<void>((resolve, reject) => {
+    const onAbort = () => {
+      window.clearTimeout(timeoutId);
+      reject(new DOMException("Lichess cloud evaluation was cancelled.", "AbortError"));
+    };
+    const timeoutId = window.setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    signal?.addEventListener("abort", onAbort, { once: true });
   });
+}
+
+function throwIfCloudAborted(signal?: AbortSignal) {
+  if (signal?.aborted) {
+    throw new DOMException("Lichess cloud evaluation was cancelled.", "AbortError");
+  }
 }
 
 async function fetchWithTimeout(url: string, signal?: AbortSignal) {

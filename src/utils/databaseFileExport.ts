@@ -28,6 +28,7 @@ type ExistingPgnIndex = {
     entriesByPath: Map<string, ExistingPgnEntry>;
     contentHashes: Map<string, ExistingPgnEntry[]>;
     mainlineHashes: Map<string, ExistingPgnEntry[]>;
+    orderedSlots: Map<string, ExistingPgnEntry[]>;
 };
 
 export function removeDatabaseExtension(name: string) {
@@ -173,46 +174,112 @@ export async function syncDatabaseLinkedFolder({
             .filter((entry) => entry.isFile && entry.name.toLowerCase().endsWith(".pgn"))
             .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
 
+        const splitGames: Array<{
+            name: string;
+            path: string;
+            text: string;
+            contentHash: string;
+            mainlineHash: string;
+        }> = [];
+        for (const entry of splitEntries) {
+            const path = await resolve(temporaryTargetDir, entry.name);
+            const text = await readTextFile(path);
+            splitGames.push({
+                name: entry.name,
+                path,
+                text,
+                contentHash: hashPgnContent(text),
+                mainlineHash: hashPgnMainline(text),
+            });
+        }
+        const incomingContentHashes = new Set(splitGames.map((game) => game.contentHash));
+        const incomingMainlineHashes = new Set(splitGames.map((game) => game.mainlineHash));
+
         let created = 0;
         let skipped = 0;
 
-        for (const entry of splitEntries) {
-            const sourceGamePath = await resolve(temporaryTargetDir, entry.name);
-            const sourceGameText = await readTextFile(sourceGamePath);
-            const hash = hashPgnContent(sourceGameText);
-            const mainlineHash = orderedFilenames ? hashPgnMainline(sourceGameText) : null;
-            const targetFileName = getPrefixedPgnFileName(entry.name, fileNamePrefix);
+        for (const game of splitGames) {
+            const sourceGamePath = game.path;
+            const sourceGameText = game.text;
+            const hash = game.contentHash;
+            const mainlineHash = orderedFilenames ? game.mainlineHash : null;
+            const targetFileName = getPrefixedPgnFileName(game.name, fileNamePrefix);
             const existingEntry = findReusablePgnEntry(existingIndex, {
                 contentHash: hash,
                 mainlineHash,
                 targetFileName,
             });
 
-            if (existingEntry) {
-                if (orderedFilenames) {
-                    if (mainlineHash) {
-                        const duplicatePaths = getDuplicatePgnPathsForMainline(
-                            existingIndex,
-                            mainlineHash,
-                            existingEntry.path,
-                        );
-                        await removeExistingPgnFiles(duplicatePaths);
-                        for (const duplicatePath of duplicatePaths) {
-                            removeExistingPgnIndexPath(existingIndex, duplicatePath);
-                        }
-                    }
+            let keeper = existingEntry ?? null;
 
-                    const renamedPath = await renameExistingPgnToTargetName(
+            if (orderedFilenames) {
+                // Older copies of this game can occupy the same source-order slot
+                // without matching either hash (e.g. the chapter's mainline moves
+                // changed remotely). Reconcile the slot to a single file instead of
+                // stacking "name 2.pgn" duplicates, keeping whichever version
+                // carries the most analysis.
+                const staleSlotEntries = getStaleOrderedSlotEntries(existingIndex, {
+                    targetFileName,
+                    excludePath: existingEntry?.path ?? null,
+                    incomingContentHashes,
+                    incomingMainlineHashes,
+                });
+                const bestStale = staleSlotEntries.reduce<ExistingPgnEntry | null>(
+                    (best, candidate) =>
+                        !best || candidate.annotationScore > best.annotationScore
+                            ? candidate
+                            : best,
+                    null,
+                );
+                const incomingScore = getPgnAnnotationScore(sourceGameText);
+                if (
+                    bestStale &&
+                    bestStale.annotationScore > incomingScore &&
+                    bestStale.annotationScore > (keeper?.annotationScore ?? -1)
+                ) {
+                    keeper = bestStale;
+                }
+
+                const removablePaths = new Set(
+                    staleSlotEntries
+                        .filter((candidate) => candidate.path !== keeper?.path)
+                        .map((candidate) => candidate.path),
+                );
+                if (keeper && existingEntry && keeper.path !== existingEntry.path) {
+                    // The hash-matched copy is superseded by a better-annotated
+                    // local version; its content is recoverable from the database.
+                    removablePaths.add(existingEntry.path);
+                }
+                if (keeper?.path === existingEntry?.path && mainlineHash && existingEntry) {
+                    for (const duplicatePath of getDuplicatePgnPathsForMainline(
+                        existingIndex,
+                        mainlineHash,
                         existingEntry.path,
+                    )) {
+                        removablePaths.add(duplicatePath);
+                    }
+                }
+
+                await removeExistingPgnFiles([...removablePaths]);
+                for (const removablePath of removablePaths) {
+                    removeExistingPgnIndexPath(existingIndex, removablePath);
+                }
+
+                if (keeper) {
+                    const renamedPath = await renameExistingPgnToTargetName(
+                        keeper.path,
                         targetDir,
                         targetFileName,
                     );
-                    removeExistingPgnIndexPath(existingIndex, existingEntry.path);
+                    removeExistingPgnIndexPath(existingIndex, keeper.path);
                     addExistingPgnIndexEntry(existingIndex, {
-                        ...existingEntry,
+                        ...keeper,
                         path: renamedPath,
                     });
+                    skipped += 1;
+                    continue;
                 }
+            } else if (existingEntry) {
                 skipped += 1;
                 continue;
             }
@@ -231,7 +298,7 @@ export async function syncDatabaseLinkedFolder({
             addExistingPgnIndexEntry(existingIndex, {
                 path: targetGamePath,
                 contentHash: hash,
-                mainlineHash: hashPgnMainline(sourceGameText),
+                mainlineHash: game.mainlineHash,
                 annotationScore: getPgnAnnotationScore(sourceGameText),
             });
             created += 1;
@@ -264,6 +331,7 @@ async function readExistingPgnIndex(targetDir: string): Promise<ExistingPgnIndex
         entriesByPath: new Map(),
         contentHashes: new Map(),
         mainlineHashes: new Map(),
+        orderedSlots: new Map(),
     };
 
     for (const entry of entries) {
@@ -289,6 +357,30 @@ function addExistingPgnIndexEntry(index: ExistingPgnIndex, entry: ExistingPgnEnt
     index.entriesByPath.set(entry.path, entry);
     appendIndexEntry(index.contentHashes, entry.contentHash, entry);
     appendIndexEntry(index.mainlineHashes, entry.mainlineHash, entry);
+
+    const slot = getOrderedSlotFromFileName(getPathFileName(entry.path));
+    if (slot) {
+        appendIndexEntry(index.orderedSlots, slot, entry);
+    }
+}
+
+function getOrderedSlotFromFileName(fileName: string) {
+    const stem = fileName.toLowerCase().endsWith(".pgn")
+        ? fileName.slice(0, -".pgn".length)
+        : fileName;
+    // Ordered sync names start with a 4-digit source index, optionally behind a
+    // study-title prefix from older syncs ("My study 0016 ...").
+    for (const token of stem.split(" ")) {
+        if (/^\d{4}$/.test(token)) {
+            return token;
+        }
+        // Stop scanning once we hit a date-like token so we never treat a
+        // rating or year later in the name as the source index.
+        if (/^\d{4}\.\d{2}\.\d{2}$/.test(token)) {
+            return null;
+        }
+    }
+    return null;
 }
 
 function appendIndexEntry(
@@ -310,6 +402,11 @@ function removeExistingPgnIndexPath(index: ExistingPgnIndex, path: string) {
     index.entriesByPath.delete(path);
     removeIndexEntry(index.contentHashes, entry.contentHash, path);
     removeIndexEntry(index.mainlineHashes, entry.mainlineHash, path);
+
+    const slot = getOrderedSlotFromFileName(getPathFileName(path));
+    if (slot) {
+        removeIndexEntry(index.orderedSlots, slot, path);
+    }
 }
 
 function removeIndexEntry(map: Map<string, ExistingPgnEntry[]>, key: string, path: string) {
@@ -364,6 +461,41 @@ function compareReusablePgnEntries(
             numeric: true,
         })
     );
+}
+
+function getStaleOrderedSlotEntries(
+    index: ExistingPgnIndex,
+    {
+        targetFileName,
+        excludePath,
+        incomingContentHashes,
+        incomingMainlineHashes,
+    }: {
+        targetFileName: string;
+        excludePath: string | null;
+        incomingContentHashes: Set<string>;
+        incomingMainlineHashes: Set<string>;
+    },
+) {
+    const slot = getOrderedSlotFromFileName(targetFileName);
+    const date = getDateTokenFromFileName(targetFileName);
+    // Without both the source index and the game date we cannot safely tell an
+    // old copy of this game apart from a reordered neighbour, so do nothing.
+    if (!slot || !date) return [];
+
+    return (index.orderedSlots.get(slot) ?? []).filter(
+        (entry) =>
+            entry.path !== excludePath &&
+            getDateTokenFromFileName(getPathFileName(entry.path)) === date &&
+            // A file matching any game in the database is that game's current
+            // copy, not a stale leftover — its own turn will rename it.
+            !incomingContentHashes.has(entry.contentHash) &&
+            !incomingMainlineHashes.has(entry.mainlineHash),
+    );
+}
+
+function getDateTokenFromFileName(fileName: string) {
+    return fileName.match(/\b\d{4}\.\d{2}\.\d{2}\b/)?.[0] ?? null;
 }
 
 function getDuplicatePgnPathsForMainline(
@@ -456,6 +588,12 @@ function getPrefixedPgnFileName(fileName: string, prefix?: string | null) {
     const stem = safeName.slice(0, -".pgn".length).trim() || "Game";
     if (stem.toLowerCase().includes(cleanPrefix.toLowerCase())) {
         return safeName;
+    }
+
+    // Keep the source-order index first so prefixed files still sort in study order.
+    const ordered = stem.match(/^(\d{4}) (.*)$/);
+    if (ordered) {
+        return `${ordered[1]} ${cleanPrefix} ${ordered[2]}.pgn`;
     }
 
     return `${cleanPrefix} ${stem}.pgn`;
@@ -573,6 +711,7 @@ export const __databaseFileExportTestUtils = {
             entriesByPath: new Map(),
             contentHashes: new Map(),
             mainlineHashes: new Map(),
+            orderedSlots: new Map(),
         };
         for (const entry of entries) {
             addExistingPgnIndexEntry(index, entry);
@@ -581,4 +720,7 @@ export const __databaseFileExportTestUtils = {
     },
     findReusablePgnEntry,
     getDuplicatePgnPathsForMainline,
+    getOrderedSlotFromFileName,
+    getPrefixedPgnFileName,
+    getStaleOrderedSlotEntries,
 };
