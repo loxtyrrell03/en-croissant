@@ -8,9 +8,31 @@ const NUMBERED_BOOK_PLACEHOLDER = /\bbook\s*(?:(?:no\.?|number)\s*|#\s*)?\d+\b/i
 export const COACH_LIBRARY_PLAN_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["overview", "categories"],
+  required: ["overview", "openingClassification", "categories"],
   properties: {
     overview: { type: "string" },
+    openingClassification: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "relevant",
+        "initialMoveOrder",
+        "resultingFamily",
+        "classificationPly",
+        "transposition",
+        "explanation",
+      ],
+      properties: {
+        relevant: { type: "boolean" },
+        initialMoveOrder: { type: "string" },
+        resultingFamily: { type: "string" },
+        classificationPly: {
+          anyOf: [{ type: "integer", minimum: 1 }, { type: "null" }],
+        },
+        transposition: { type: "boolean" },
+        explanation: { type: "string" },
+      },
+    },
     categories: {
       type: "array",
       minItems: 1,
@@ -775,11 +797,14 @@ export function findExactOpeningBookMatches(database, moves, { limit = 18 } = {}
       }
       const sharedPlies = sharedHistoryPlies + sharedForwardPlies;
       if (gameMoves.length > 1 && gameMove.ply === 1 && sharedPlies < 2) continue;
-      if (!playedMoveMatched && sharedHistoryPlies < 2) continue;
+      if (!playedMoveMatched && sharedHistoryPlies < 2 && gameMove.ply < 5) continue;
+      const shallowDivergence = !playedMoveMatched && gameMove.ply <= 4;
+      const transposedPosition =
+        gameMove.ply >= 5 && sharedHistoryPlies < Math.min(2, Math.max(0, gameMove.ply - 1));
       const score =
-        (playedMoveMatched ? 1000 : 2000) +
+        (transposedPosition ? 3000 : playedMoveMatched ? 1200 : shallowDivergence ? 2500 : 2000) +
+        Math.min(30, gameMove.ply) * 150 +
         sharedPlies * 100 +
-        gameMove.ply * 8 +
         Number(row.book_ply || 0) +
         Math.min(40, Number(row.move_count || 0)) +
         Number(row.move_confidence || 0) * 10;
@@ -789,6 +814,8 @@ export function findExactOpeningBookMatches(database, moves, { limit = 18 } = {}
         row,
         gameMove,
         playedMoveMatched,
+        sharedHistoryPlies,
+        sharedForwardPlies,
         sharedPlies,
         score,
       });
@@ -814,35 +841,46 @@ export function findExactOpeningBookMatches(database, moves, { limit = 18 } = {}
       diverse.push(candidate);
       if (diverse.length >= limit) break;
     }
-    return diverse.map(({ row, gameMove, playedMoveMatched, sharedPlies }) => ({
-      lineId: String(row.line_id),
-      bookId: String(row.book_id),
-      title: String(row.title),
-      author: String(row.author),
-      shelf: String(row.shelf),
-      chapterId: row.chapter_id ? String(row.chapter_id) : null,
-      chapterTitle: String(row.chapter_title),
-      citation: String(row.citation) || `PDF page ${Number(row.source_pdf_page) || "unknown"}`,
-      sourceChunkId: row.match_chunk_id
-        ? String(row.match_chunk_id)
-        : row.source_chunk_id
-          ? String(row.source_chunk_id)
-          : null,
-      lineKind: String(row.line_kind),
-      pgn: String(row.pgn),
-      confidence: Number(row.confidence),
-      completeGame: Boolean(row.complete_game),
-      matchedGamePly: gameMove.ply,
-      matchedBookMoveIndex: Number(row.move_index),
-      matchedBookPly: Number(row.book_ply),
-      playedSan: gameMove.san,
-      playedUci: gameMove.playedUci,
-      bookMoveSan: String(row.book_san),
-      bookMoveUci: String(row.book_uci),
-      playedMoveMatched,
-      sharedPlies,
-      moves: openingLineMoves(database, String(row.line_id)),
-    }));
+    return diverse.map(
+      ({
+        row,
+        gameMove,
+        playedMoveMatched,
+        sharedHistoryPlies,
+        sharedForwardPlies,
+        sharedPlies,
+      }) => ({
+        lineId: String(row.line_id),
+        bookId: String(row.book_id),
+        title: String(row.title),
+        author: String(row.author),
+        shelf: String(row.shelf),
+        chapterId: row.chapter_id ? String(row.chapter_id) : null,
+        chapterTitle: String(row.chapter_title),
+        citation: String(row.citation) || `PDF page ${Number(row.source_pdf_page) || "unknown"}`,
+        sourceChunkId: row.match_chunk_id
+          ? String(row.match_chunk_id)
+          : row.source_chunk_id
+            ? String(row.source_chunk_id)
+            : null,
+        lineKind: String(row.line_kind),
+        pgn: String(row.pgn),
+        confidence: Number(row.confidence),
+        completeGame: Boolean(row.complete_game),
+        matchedGamePly: gameMove.ply,
+        matchedBookMoveIndex: Number(row.move_index),
+        matchedBookPly: Number(row.book_ply),
+        playedSan: gameMove.san,
+        playedUci: gameMove.playedUci,
+        bookMoveSan: String(row.book_san),
+        bookMoveUci: String(row.book_uci),
+        playedMoveMatched,
+        sharedHistoryPlies,
+        sharedForwardPlies,
+        sharedPlies,
+        moves: openingLineMoves(database, String(row.line_id)),
+      }),
+    );
   } catch (error) {
     if (/no such table: opening_(?:lines|line_moves)/i.test(String(error?.message || error))) {
       return [];
@@ -854,10 +892,17 @@ export function findExactOpeningBookMatches(database, moves, { limit = 18 } = {}
 function formatExactOpeningMatches(matches) {
   if (!matches?.length) return "No exact indexed book-line position matched this game.";
   return matches
-    .map(
-      (match) =>
-        `EXACT_LINE|book=${oneLine(match.bookId, 100)}|chapter=${oneLine(match.chapterId || "", 100)}|game_ply=${match.matchedGamePly}|book_ply=${match.matchedBookPly}|shared_plies=${match.sharedPlies}|played=${oneLine(match.playedSan || match.playedUci, 30)}|book_move=${oneLine(match.bookMoveSan, 30)}|same_move=${match.playedMoveMatched ? "yes" : "no"}|${oneLine(match.title)}|${oneLine(match.chapterTitle)}|${oneLine(match.citation, 180)}|PGN=${oneLine(match.pgn, 1200)}`,
-    )
+    .map((match) => {
+      const shallowDivergence = !match.playedMoveMatched && match.matchedGamePly <= 4;
+      const relation = shallowDivergence
+        ? "shallow_move_order_divergence"
+        : match.sharedHistoryPlies < Math.min(2, Math.max(0, match.matchedGamePly - 1))
+          ? "transposed_position"
+          : match.playedMoveMatched
+            ? "same_continuation"
+            : "later_divergence";
+      return `EXACT_LINE|relation=${relation}|book=${oneLine(match.bookId, 100)}|chapter=${oneLine(match.chapterId || "", 100)}|game_ply=${match.matchedGamePly}|book_ply=${match.matchedBookPly}|history_plies=${match.sharedHistoryPlies}|forward_plies=${match.sharedForwardPlies}|played=${oneLine(match.playedSan || match.playedUci, 30)}|book_move=${oneLine(match.bookMoveSan, 30)}|same_move=${match.playedMoveMatched ? "yes" : "no"}|${oneLine(match.title)}|${oneLine(match.chapterTitle)}|${oneLine(match.citation, 180)}|PGN=${oneLine(match.pgn, 1200)}`;
+    })
     .join("\n");
 }
 
@@ -878,10 +923,14 @@ You must decide which coaching categories are genuinely relevant to this specifi
 Evidence rules:
 - The complete PC Stockfish trace below is authoritative for concrete chess verdicts.
 - Scores are White-relative. Each position records whether it came from the PC cloud store or a live PC search and its depth; treat small differences across unlike depths cautiously.
-- Use the PGN and FENs to recognize the exact opening position, pawn structure, piece placement, transition, and practical plans.
+- Classify the opening from the deepest stable opening position, central pawn structure, and piece placement reached in the game—not from move one or the first book line that happens to match. Explicitly detect transpositions and name the resulting opening family.
+- openingClassification is mandatory. Record the initial move order separately from the resulting family, identify the ply where the position's real opening identity became clear, and explain any transposition.
+- A move such as 1.Nf3 does not make the resulting game a Réti. If White soon occupies the centre with d4/c4 or reaches a Queen's Gambit, Catalan, King's Indian, Grünfeld, or other mainline position by transposition, select the book/chapter for that resulting position.
 - Select only IDs printed in the library inventory. A CHAPTER entry means its text is actually accessible in the lawful local corpus. Never invent an ID or select a table-of-contents-only chapter.
 - Prefer exact chapter IDs over broad book IDs. Every category should have focused search queries that would find the most relevant page-bounded lesson inside the selected material.
-- EXACT_LINE records are legality-checked, position-indexed lines recovered from the installed book pages. Treat a matching game ply as concrete evidence that the book and chapter are relevant. Select that exact book/chapter when the line teaches something material; distinguish whether the game followed the book move or chose a different move.
+- EXACT_LINE records are legality-checked, position-indexed lines recovered from installed book pages, but they are evidence for their listed position—not automatic labels for the whole opening. A shallow_move_order_divergence may describe only how the game left that repertoire and must not outrank a later transposed structure. A transposed_position is an exact position match reached by a different move order.
+- Never call leaving an arbitrary repertoire a mistake, or imply that the player intended that repertoire. Only criticize a move when the PC evidence or a genuinely applicable resulting-position lesson supports the criticism.
+- For an opening category, select books and chapters for resultingFamily. Use an initial move-order book only when its lesson remains relevant after the transposition.
 - Give opening coverage materially more attention when the opening produced an instructive inaccuracy, unfamiliar structure, misplaced piece, missed break, or plan error. Tie it to exact move numbers and positions, not generic opening advice.
 - Categories may be specific, for example “Dutch opening structure”, “Calculation at move 31”, “Rook endgame technique”, or “Defensive decision-making”. Choose the clearest short tab label.
 
@@ -1007,8 +1056,27 @@ export function normalizeLibraryPlan(value, inventory, moves = []) {
   if (!categories.some((category) => category.chapterIds.length || category.bookIds.length)) {
     throw new Error("The AI library planner did not select any available books or chapters.");
   }
+  const rawOpening =
+    parsed.openingClassification && typeof parsed.openingClassification === "object"
+      ? parsed.openingClassification
+      : {};
+  const requestedClassificationPly = Number(rawOpening.classificationPly);
+  const classificationPly =
+    Number.isInteger(requestedClassificationPly) &&
+    requestedClassificationPly > 0 &&
+    (validPlies.size === 0 || validPlies.has(requestedClassificationPly))
+      ? requestedClassificationPly
+      : null;
   return {
     overview: oneLine(parsed.overview, 1600) || "The AI selected the most relevant lessons.",
+    openingClassification: {
+      relevant: rawOpening.relevant === true,
+      initialMoveOrder: oneLine(rawOpening.initialMoveOrder, 300),
+      resultingFamily: oneLine(rawOpening.resultingFamily, 300),
+      classificationPly,
+      transposition: rawOpening.transposition === true,
+      explanation: oneLine(rawOpening.explanation, 1200),
+    },
     categories,
   };
 }
@@ -1074,6 +1142,8 @@ function passageRelevanceScore(row, category, exactOpeningMatches = []) {
   }
   if (String(row.chapter_title || "").trim()) score += 1;
   for (const match of exactOpeningMatches) {
+    const shallowDivergence = !match.playedMoveMatched && match.matchedGamePly <= 4;
+    if (shallowDivergence) continue;
     if (match.sourceChunkId && match.sourceChunkId === String(row.chunk_id)) score += 500;
     else if (
       match.chapterId &&
@@ -1195,6 +1265,7 @@ Grounding rules:
 - Every bookReferences.chunkId must exactly match a supplied chunkId available to that planned category. Never invent a title, author, chapter, page, quotation, chunk ID, evaluation, or line.
 - Paraphrase source lessons. Do not reproduce long excerpts and do not claim an author analyzed this exact game.
 - exactOpeningLines are legality-checked move trees recovered from the cited book pages. Use them for concrete comparison at matchedGamePly, including whether the player followed the cited continuation or diverged. Do not substitute an uncited database line.
+- The library plan's openingClassification controls the opening identity. Do not rename a transposed d4/c4 position after an earlier 1.Nf3 repertoire, and do not portray departure from an arbitrary repertoire as an error.
 - Keep the AI-selected category IDs, labels, and order. Do not add a fixed generic section.
 - Each category explanation should connect concrete positions to the human decision, the engine evidence, the better plan, and the cited teaching lesson.
 - A position ply identifies the move just played: ply 1 is White's first move. Use only plies in the supplied trace.
@@ -1216,7 +1287,15 @@ Complete move-by-move PC trace:
 ${JSON.stringify(moveAnalysis || [], null, 2)}
 
 AI-selected library plan:
-${JSON.stringify({ overview: libraryPlan.overview, categories: plannedCategories }, null, 2)}
+${JSON.stringify(
+  {
+    overview: libraryPlan.overview,
+    openingClassification: libraryPlan.openingClassification,
+    categories: plannedCategories,
+  },
+  null,
+  2,
+)}
 
 Permitted source passages:
 ${JSON.stringify(sources, null, 2)}

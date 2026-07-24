@@ -377,6 +377,10 @@ test("coach request normalization never silently truncates the PGN or a long pra
     inventory: { books: [], chapters: [] },
   });
   assert.match(prompt, /END-OF-PGN/);
+  assert.match(prompt, /deepest stable opening position/);
+  assert.match(prompt, /openingClassification/);
+  assert.match(prompt, /does not make the resulting game a/);
+  assert.match(prompt, /resultingFamily/);
 });
 
 test("coach request normalization carries validated PC persistence metadata", () => {
@@ -600,7 +604,10 @@ test("AI planner is restricted to real accessible chapters and retrieval stays i
       ('generic-divergence', 'opening-book', 'dutch-structure', 'variation', '1. e4 c5',
        0.98, 0, 'dutch-a', 2, 'e2e4 c7c5'),
       ('grounded-divergence', 'opening-book', 'dutch-structure', 'variation', '1. e4 e6 2. d4',
-       0.98, 0, 'dutch-a', 3, 'e2e4 e7e6 d2d4');
+       0.98, 0, 'dutch-a', 3, 'e2e4 e7e6 d2d4'),
+      ('transposed-position', 'opening-book', 'dutch-structure', 'variation',
+       '1. d4 d5 2. Nf3 Nf6 3. c4',
+       0.98, 0, 'dutch-a', 5, 'd2d4 d7d5 g1f3 g8f6 c2c4');
     INSERT INTO opening_line_moves VALUES
       ('dutch-line', 0, 1, 'e4', 'e2e4',
        'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
@@ -643,6 +650,12 @@ test("AI planner is restricted to real accessible chapters and retrieval stays i
        'rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -',
        'rnbqkbnr/pppp1ppp/4p3/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq - 0 2',
        'rnbqkbnr/pppp1ppp/4p3/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq -',
+       8, 20, 'dutch-a', 0.98),
+      ('transposed-position', 4, 5, 'c4', 'c2c4',
+       'rnbqkb1r/ppp1pppp/5n2/3p4/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 2 3',
+       'rnbqkb1r/ppp1pppp/5n2/3p4/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq -',
+       'rnbqkb1r/ppp1pppp/5n2/3p4/2PP4/5N2/PP2PPPP/RNBQKB1R b KQkq - 0 3',
+       'rnbqkb1r/ppp1pppp/5n2/3p4/2PP4/5N2/PP2PPPP/RNBQKB1R b KQkq -',
        8, 20, 'dutch-a', 0.98);
   `);
   const inventory = getChessBookLibraryInventory(database);
@@ -653,6 +666,14 @@ test("AI planner is restricted to real accessible chapters and retrieval stays i
   const plan = normalizeLibraryPlan(
     {
       overview: "The opening structure mattered.",
+      openingClassification: {
+        relevant: true,
+        initialMoveOrder: "1.Nf3 d5",
+        resultingFamily: "Queen's Gambit by transposition",
+        classificationPly: 7,
+        transposition: true,
+        explanation: "The d4/c4 centre determines the opening family.",
+      },
       categories: [
         {
           id: "Opening ideas",
@@ -671,6 +692,14 @@ test("AI planner is restricted to real accessible chapters and retrieval stays i
   assert.deepEqual(plan.categories[0].chapterIds, ["dutch-structure"]);
   assert.deepEqual(plan.categories[0].bookIds, ["opening-book"]);
   assert.deepEqual(plan.categories[0].keyPlies, [7]);
+  assert.deepEqual(plan.openingClassification, {
+    relevant: true,
+    initialMoveOrder: "1.Nf3 d5",
+    resultingFamily: "Queen's Gambit by transposition",
+    classificationPly: 7,
+    transposition: true,
+    explanation: "The d4/c4 centre determines the opening family.",
+  });
   const exactOpeningMatches = findExactOpeningBookMatches(database, [
     {
       ply: 1,
@@ -715,6 +744,55 @@ test("AI planner is restricted to real accessible chapters and retrieval stays i
   );
   assert.equal(groundedDivergence?.playedMoveMatched, false);
   assert.equal(groundedDivergence?.sharedPlies, 2);
+  const transposedMatches = findExactOpeningBookMatches(database, [
+    {
+      ply: 1,
+      san: "Nf3",
+      uci: "g1f3",
+      fenBefore: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    },
+    {
+      ply: 2,
+      san: "Nf6",
+      uci: "g8f6",
+      fenBefore: "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 1 1",
+    },
+    {
+      ply: 3,
+      san: "d4",
+      uci: "d2d4",
+      fenBefore: "rnbqkb1r/pppppppp/5n2/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 2 2",
+    },
+    {
+      ply: 4,
+      san: "d5",
+      uci: "d7d5",
+      fenBefore: "rnbqkb1r/pppppppp/5n2/8/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 0 2",
+    },
+    {
+      ply: 5,
+      san: "c4",
+      uci: "c2c4",
+      fenBefore: "rnbqkb1r/ppp1pppp/5n2/3p4/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 2 3",
+    },
+  ]);
+  const transposedPosition = transposedMatches.find(
+    (match) => match.lineId === "transposed-position",
+  );
+  assert.equal(transposedPosition?.playedMoveMatched, true);
+  assert.equal(transposedPosition?.matchedGamePly, 5);
+  assert.equal(transposedPosition?.sharedHistoryPlies, 0);
+  const transpositionPrompt = buildLibraryPlannerPrompt({
+    question: "Review the opening",
+    pgn: "1. Nf3 Nf6 2. d4 d5 3. c4",
+    playerColor: "white",
+    scope: "whole-game",
+    currentFen: "",
+    moveAnalysis: [{ ply: 5 }],
+    inventory,
+    exactOpeningMatches: transposedMatches,
+  });
+  assert.match(transpositionPrompt, /relation=transposed_position/);
   const retrieval = retrievePlannedBookPassages(database, plan, { exactOpeningMatches });
   assert.deepEqual(retrieval.categoryPassageIds[plan.categories[0].id], ["dutch-a"]);
   assert.deepEqual(

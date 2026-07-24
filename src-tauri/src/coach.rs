@@ -568,7 +568,26 @@ struct CoachLibraryPlan {
     #[serde(default)]
     overview: String,
     #[serde(default)]
+    opening_classification: CoachOpeningClassification,
+    #[serde(default)]
     categories: Vec<CoachLibraryCategoryPlan>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+struct CoachOpeningClassification {
+    #[serde(default)]
+    relevant: bool,
+    #[serde(default)]
+    initial_move_order: String,
+    #[serde(default)]
+    resulting_family: String,
+    #[serde(default)]
+    classification_ply: Option<u32>,
+    #[serde(default)]
+    transposition: bool,
+    #[serde(default)]
+    explanation: String,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -1287,6 +1306,8 @@ struct CoachExactOpeningMatch {
     chapter_id: Option<String>,
     chapter_title: String,
     source_chunk_id: Option<String>,
+    shared_history_plies: u32,
+    shared_forward_plies: u32,
     line: CoachBookLine,
 }
 
@@ -1460,15 +1481,22 @@ fn exact_opening_book_matches(
             if game_points.len() > 1 && point.ply == 1 && shared_plies < 2 {
                 continue;
             }
-            if !played_move_matched && shared_history_plies < 2 {
+            if !played_move_matched && shared_history_plies < 2 && point.ply < 5 {
                 continue;
             }
-            let score = if played_move_matched {
-                1_000_000
+            let shallow_divergence = !played_move_matched && point.ply <= 4;
+            let transposed_position =
+                point.ply >= 5 && shared_history_plies < 2_u32.min(point.ply.saturating_sub(1));
+            let score = if transposed_position {
+                3_000_000
+            } else if played_move_matched {
+                1_200_000
+            } else if shallow_divergence {
+                2_500_000
             } else {
                 2_000_000
-            } + i64::from(shared_plies) * 100_000
-                + i64::from(point.ply) * 1_000
+            } + i64::from(point.ply.min(30)) * 150_000
+                + i64::from(shared_plies) * 100_000
                 + i64::from(book_ply)
                 + i64::from(line_move_count.min(40));
             if best_by_line
@@ -1488,6 +1516,8 @@ fn exact_opening_book_matches(
                         chapter_id: chapter_id.clone(),
                         chapter_title: chapter_title.clone(),
                         source_chunk_id: move_chunk_id.clone().or_else(|| line_chunk_id.clone()),
+                        shared_history_plies,
+                        shared_forward_plies,
                         line: CoachBookLine {
                             line_id: line_id.clone(),
                             line_kind: line_kind.clone(),
@@ -1583,13 +1613,28 @@ fn format_exact_opening_matches(matches: &[CoachExactOpeningMatch]) -> String {
     matches
         .iter()
         .map(|exact_match| {
+            let shallow_divergence =
+                !exact_match.line.played_move_matched && exact_match.line.matched_game_ply <= 4;
+            let relation = if shallow_divergence {
+                "shallow_move_order_divergence"
+            } else if exact_match.shared_history_plies
+                < 2_u32.min(exact_match.line.matched_game_ply.saturating_sub(1))
+            {
+                "transposed_position"
+            } else if exact_match.line.played_move_matched {
+                "same_continuation"
+            } else {
+                "later_divergence"
+            };
             format!(
-                "EXACT_LINE|book={book_id}|chapter={chapter_id}|game_ply={game_ply}|book_ply={book_ply}|shared_plies={shared_plies}|played={played}|book_move={book_move}|same_move={same_move}|{title}|{author}|{chapter}|{citation}|PGN={pgn}",
+                "EXACT_LINE|relation={relation}|book={book_id}|chapter={chapter_id}|game_ply={game_ply}|book_ply={book_ply}|history_plies={history_plies}|forward_plies={forward_plies}|played={played}|book_move={book_move}|same_move={same_move}|{title}|{author}|{chapter}|{citation}|PGN={pgn}",
+                relation = relation,
                 book_id = exact_match.book_id,
                 chapter_id = exact_match.chapter_id.as_deref().unwrap_or_default(),
                 game_ply = exact_match.line.matched_game_ply,
                 book_ply = exact_match.line.matched_book_ply,
-                shared_plies = exact_match.line.shared_plies,
+                history_plies = exact_match.shared_history_plies,
+                forward_plies = exact_match.shared_forward_plies,
                 played = exact_match.line.played_san,
                 book_move = exact_match.line.book_move_san,
                 same_move = if exact_match.line.played_move_matched { "yes" } else { "no" },
@@ -1640,6 +1685,11 @@ Choose the few game-specific coaching categories and exact library chapters that
 Rules:
 - Choose 1-{MAX_COACH_CATEGORIES} categories, ordered by importance to this exact question/game. Category labels are free-form and specific (for example Opening plans, Calculation at move 24, Rook endgame technique, Dark-square strategy); do not mechanically include every phase.
 - Base category relevance on the PGN and supplied PC/Stockfish evidence. Never invent an evaluation or game event.
+- Classify the opening from the deepest stable opening position, central pawn structure, and piece placement reached in the game, not from move one or the first book line that happens to match. Explicitly detect transpositions and name the resulting opening family.
+- `openingClassification` is mandatory. Record the initial move order separately from the resulting family, identify the ply where the position's real opening identity became clear, and explain any transposition.
+- A move such as 1.Nf3 does not make the resulting game a Reti. If White soon occupies the centre with d4/c4 or reaches a Queen's Gambit, Catalan, King's Indian, Grunfeld, or other mainline position by transposition, select the book/chapter for that resulting position.
+- EXACT_LINE records are evidence for their listed position, not automatic labels for the whole opening. A `shallow_move_order_divergence` may describe only how the game left that repertoire and must not outrank a later transposed structure. A `transposed_position` is an exact position match reached by a different move order.
+- Never call leaving an arbitrary repertoire a mistake or imply that the player intended that repertoire. Only criticize a move when the PC evidence or a genuinely applicable resulting-position lesson supports the criticism.
 - EXACT_LINE records are legality-checked, position-indexed lines recovered from installed book pages. When one is materially relevant, select that exact book/chapter and distinguish whether the game followed the cited move or diverged.
 - For an opening category, inspect the exact move order and early positions. Select chapters that can teach the resulting opening ideas, pawn structures, typical piece placement, thematic breaks, plans, and transition—not merely a generic book whose title contains "opening".
 - The catalogue includes every one of the 103 owned/catalogued books. `hasExcerpt=false` means no passage can currently be retrieved from that title. Only chapter IDs in the `chapters` array are accessible and chunk-backed.
@@ -1701,6 +1751,8 @@ fn sanitize_library_plan(
     let mut seen_labels = HashSet::new();
     let mut seen_ids = HashSet::new();
     let mut categories = Vec::new();
+    let raw_overview = raw.overview;
+    let raw_opening_classification = raw.opening_classification;
 
     for raw_category in raw.categories {
         let label = truncate_plan_coach_text(raw_category.label.trim(), 64);
@@ -1776,7 +1828,26 @@ fn sanitize_library_plan(
     }
 
     CoachLibraryPlan {
-        overview: truncate_plan_coach_text(raw.overview.trim(), 800),
+        overview: truncate_plan_coach_text(raw_overview.trim(), 800),
+        opening_classification: CoachOpeningClassification {
+            relevant: raw_opening_classification.relevant,
+            initial_move_order: truncate_plan_coach_text(
+                raw_opening_classification.initial_move_order.trim(),
+                300,
+            ),
+            resulting_family: truncate_plan_coach_text(
+                raw_opening_classification.resulting_family.trim(),
+                300,
+            ),
+            classification_ply: raw_opening_classification
+                .classification_ply
+                .filter(|ply| *ply > 0 && *ply <= max_ply),
+            transposition: raw_opening_classification.transposition,
+            explanation: truncate_plan_coach_text(
+                raw_opening_classification.explanation.trim(),
+                800,
+            ),
+        },
         categories,
     }
 }
@@ -1920,6 +1991,11 @@ fn search_chess_book_passages(
                     }
                 }
                 for exact_match in exact_opening_matches {
+                    let shallow_divergence = !exact_match.line.played_move_matched
+                        && exact_match.line.matched_game_ply <= 4;
+                    if shallow_divergence {
+                        continue;
+                    }
                     if exact_match.source_chunk_id.as_deref()
                         == Some(candidate.passage.chunk_id.as_str())
                     {
@@ -3470,6 +3546,7 @@ Core rules:
 - When a retrieved passage materially supports a lesson, name the actual book and chapter in the prose and cite its exact opaque source identifier such as [Source e406ce4596c7eca833b0342e]. Never use an ordinal placeholder such as [Book 3], and never invent a title, quotation, page, author, chapter, or source identifier.
 - For opening lessons, connect the named book/chapter to an exact move or position in this game and explain the relevant setup, pawn structure, thematic breaks, and plans. Do not merely say that an opening book is relevant.
 - An "Exact indexed book line" is a legality-checked PGN recovered from that cited source page. Use its game-ply match for concrete comparison, state whether the played move follows or diverges from the book move, and never replace it with an uncited database line.
+- The AI library plan's `openingClassification` controls the opening identity. Do not rename a transposed d4/c4 position after an earlier 1.Nf3 repertoire, and do not portray departure from an arbitrary repertoire as an error.
 - Paraphrase book passages in your own words. Do not reproduce long excerpts. Do not imply that a passage analysed this exact game unless it actually contains the supplied game position.
 - If none of the retrieved passages is relevant, do not force a book citation. Give the engine-grounded answer and say no close library passage was used.
 - Explain like a strong GM/coach: use proper chess terminology such as isolated queen's pawn, minority attack, deflection, trapped piece, blockade, weak square, exchange sacrifice, or domination when it genuinely fits.
@@ -4415,9 +4492,34 @@ fn library_plan_output_schema() -> serde_json::Value {
     json!({
         "type": "object",
         "additionalProperties": false,
-        "required": ["overview", "categories"],
+        "required": ["overview", "openingClassification", "categories"],
         "properties": {
             "overview": {"type": "string"},
+            "openingClassification": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "relevant",
+                    "initialMoveOrder",
+                    "resultingFamily",
+                    "classificationPly",
+                    "transposition",
+                    "explanation"
+                ],
+                "properties": {
+                    "relevant": {"type": "boolean"},
+                    "initialMoveOrder": {"type": "string"},
+                    "resultingFamily": {"type": "string"},
+                    "classificationPly": {
+                        "anyOf": [
+                            {"type": "integer", "minimum": 1},
+                            {"type": "null"}
+                        ]
+                    },
+                    "transposition": {"type": "boolean"},
+                    "explanation": {"type": "string"}
+                }
+            },
             "categories": {
                 "type": "array",
                 "minItems": 1,
@@ -8790,6 +8892,14 @@ mod tests {
         let plan = sanitize_library_plan(
             CoachLibraryPlan {
                 overview: "Opening matters".to_string(),
+                opening_classification: CoachOpeningClassification {
+                    relevant: true,
+                    initial_move_order: "1.Nf3 d5".to_string(),
+                    resulting_family: "Queen's Gambit by transposition".to_string(),
+                    classification_ply: Some(12),
+                    transposition: true,
+                    explanation: "The central pawn structure determines the family.".to_string(),
+                },
                 categories: vec![CoachLibraryCategoryPlan {
                     id: String::new(),
                     label: "Opening structure".to_string(),
@@ -8807,6 +8917,12 @@ mod tests {
         assert_eq!(plan.categories[0].key_plies, vec![12]);
         assert_eq!(plan.categories[0].chapter_ids, vec!["real-chapter"]);
         assert_eq!(plan.categories[0].book_ids, vec!["real-book"]);
+        assert_eq!(
+            plan.opening_classification.resulting_family,
+            "Queen's Gambit by transposition"
+        );
+        assert_eq!(plan.opening_classification.classification_ply, Some(12));
+        assert!(plan.opening_classification.transposition);
     }
 
     #[test]
@@ -8844,6 +8960,8 @@ mod tests {
         assert!(!prompt.contains("[Book 1]"));
         assert!(prompt.contains("principle evidence"));
         assert!(prompt.contains("never invent a title"));
+        assert!(prompt.contains("openingClassification"));
+        assert!(prompt.contains("Do not rename a transposed d4/c4 position"));
     }
 
     #[test]
@@ -8854,6 +8972,10 @@ mod tests {
             .windows(2)
             .any(|args| args == ["--output-schema", "C:/Temp/coach-schema.json"]));
         assert_eq!(args.last().map(String::as_str), Some("-"));
+        let schema = library_plan_output_schema();
+        assert!(schema["required"]
+            .as_array()
+            .is_some_and(|required| required.contains(&json!("openingClassification"))));
     }
 
     #[test]
@@ -8901,6 +9023,14 @@ mod tests {
         };
         let library_plan = CoachLibraryPlan {
             overview: "Opening overview".to_string(),
+            opening_classification: CoachOpeningClassification {
+                relevant: true,
+                initial_move_order: "1.Nf3 d5".to_string(),
+                resulting_family: "Queen's Gambit by transposition".to_string(),
+                classification_ply: Some(7),
+                transposition: true,
+                explanation: "The resulting d4/c4 centre controls the classification.".to_string(),
+            },
             categories: vec![CoachLibraryCategoryPlan {
                 id: "opening-plans".to_string(),
                 label: "Opening plans".to_string(),
