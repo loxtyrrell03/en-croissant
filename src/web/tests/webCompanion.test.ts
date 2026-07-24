@@ -10,7 +10,7 @@ import {
     needsHostedDatabaseRefresh,
     resolveWebDatabaseSourceId,
 } from "@/web/databaseSync";
-import { getWebBoardSourceTitle } from "@/web/boardTitle";
+import { getWebBoardPlayerLabels, getWebBoardSourceTitle } from "@/web/boardTitle";
 import { formatWebEngineScore, normalizeWebEngineScoreForWhite } from "@/web/engineScore";
 import { buildWebExplorerUrl } from "@/web/explorer";
 import {
@@ -145,6 +145,24 @@ describe("web companion PGN prep index", () => {
 
         expect(getWebBoardSourceTitle(game, [imported.database])).toBe("opening-notes.pgn");
         expect(getWebBoardSourceTitle(game, [])).toBe("opening-notes.pgn");
+    });
+
+    test("places game players above and below the board according to orientation", () => {
+        const game = {
+            white: "Alice",
+            black: "Bob",
+            whiteElo: 1820,
+            blackElo: 1795,
+        };
+
+        expect(getWebBoardPlayerLabels(game, "white")).toEqual({
+            top: { color: "black", name: "Bob", rating: 1795 },
+            bottom: { color: "white", name: "Alice", rating: 1820 },
+        });
+        expect(getWebBoardPlayerLabels(game, "black")).toEqual({
+            top: { color: "white", name: "Alice", rating: 1820 },
+            bottom: { color: "black", name: "Bob", rating: 1795 },
+        });
     });
 
     test("keeps PGN variations visible and indexed for phone game files", () => {

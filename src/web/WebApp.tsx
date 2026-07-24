@@ -266,7 +266,11 @@ import {
   loadWebState,
   saveWebState,
 } from "./storage";
-import { getWebBoardSourceTitle } from "./boardTitle";
+import {
+  getWebBoardPlayerLabels,
+  getWebBoardSourceTitle,
+  type WebBoardPlayerLabel,
+} from "./boardTitle";
 import { formatWebEngineScore } from "./engineScore";
 import OnlineGameAnalysisPanel from "./OnlineGameAnalysisPanel";
 import { getWebOnlineAnalysisTitle, getWebOnlinePlayerColor } from "./onlineAnalysis";
@@ -1594,15 +1598,18 @@ function BoardWorkspace({
   const activeLastMove = cursor > 0 ? (activeLine[cursor - 1]?.uci ?? null) : null;
   const orientation = activePrep?.userColor ?? board.orientation;
   const isViewingFile = !activePrep && Boolean(board.sourceDatabaseId || board.sourceGameId);
+  const boardPlayers = sourceGame ? getWebBoardPlayerLabels(sourceGame, orientation) : null;
 
   return (
     <Box className={classes.phoneBoard}>
       <Box className={classes.boardHeader}>
-        <Box className={classes.boardHeaderTitle}>
-          <Title order={2} className={classes.truncateTitle} title={boardTitle}>
-            {boardTitle}
-          </Title>
-        </Box>
+        {!boardPlayers ? (
+          <Box className={classes.boardHeaderTitle}>
+            <Title order={2} className={classes.truncateTitle} title={boardTitle}>
+              {boardTitle}
+            </Title>
+          </Box>
+        ) : null}
         <Group className={classes.boardHeaderActions} gap={6} wrap="nowrap">
           <Badge
             aria-label={`${turnColor === "white" ? "White" : "Black"} to move`}
@@ -1630,18 +1637,22 @@ function BoardWorkspace({
         </Group>
       </Box>
 
-      <WebChessboard
-        fen={currentFen}
-        orientation={orientation}
-        lastMoveUci={activeLastMove}
-        engineArrowShapes={engineArrowShapes}
-        engineScore={engineArrowAnalysis?.lines[0]?.score ?? null}
-        onMove={handleBoardMove}
-        canGoToPreviousMove={canGoToPreviousMove}
-        canGoToNextMove={canGoToNextMove}
-        onPreviousMove={goToPreviousMove}
-        onNextMove={goToNextMove}
-      />
+      <Box className={classes.boardPlayerStack}>
+        {boardPlayers ? <BoardPlayerRow player={boardPlayers.top} /> : null}
+        <WebChessboard
+          fen={currentFen}
+          orientation={orientation}
+          lastMoveUci={activeLastMove}
+          engineArrowShapes={engineArrowShapes}
+          engineScore={engineArrowAnalysis?.lines[0]?.score ?? null}
+          onMove={handleBoardMove}
+          canGoToPreviousMove={canGoToPreviousMove}
+          canGoToNextMove={canGoToNextMove}
+          onPreviousMove={goToPreviousMove}
+          onNextMove={goToNextMove}
+        />
+        {boardPlayers ? <BoardPlayerRow player={boardPlayers.bottom} /> : null}
+      </Box>
 
       <BoardMoveControls
         currentMove={cursor}
@@ -1751,6 +1762,25 @@ function BoardWorkspace({
           ) : null}
         </Box>
       </Box>
+    </Box>
+  );
+}
+
+function BoardPlayerRow({ player }: { player: WebBoardPlayerLabel }) {
+  return (
+    <Box
+      className={classes.boardPlayerRow}
+      aria-label={`${player.name}, ${player.color}${player.rating ? `, rated ${player.rating}` : ""}`}
+    >
+      <span className={classes.boardPlayerColor} data-color={player.color} aria-hidden="true" />
+      <Text className={classes.boardPlayerName} fw={700} size="sm" title={player.name}>
+        {player.name}
+      </Text>
+      {player.rating ? (
+        <Text className={classes.boardPlayerRating} c="dimmed" size="xs">
+          {player.rating}
+        </Text>
+      ) : null}
     </Box>
   );
 }
@@ -2149,10 +2179,16 @@ function CoachUnderBoardPanel({
   useEffect(() => {
     const controller = new AbortController();
     let retryTimer: number | null = null;
+    const retrySavedReviewSync = () => {
+      if (controller.signal.aborted) return;
+      if (retryTimer !== null) window.clearTimeout(retryTimer);
+      retryTimer = window.setTimeout(() => void synchronizeSavedReview(), 5000);
+    };
     const synchronizeSavedReview = async () => {
       try {
         const status = await getSavedWebCoachReviewStatus(coachStorageKey, controller.signal);
         if (controller.signal.aborted) return;
+        setPersistenceError("");
         setBackgroundReviewRunning(status.pending);
         if (status.pending && status.progress) setProgress(status.progress);
         const stored = status.review;
@@ -2175,7 +2211,7 @@ function CoachUnderBoardPanel({
           }
         }
         if (status.pending && !controller.signal.aborted) {
-          retryTimer = window.setTimeout(() => void synchronizeSavedReview(), 5000);
+          retrySavedReviewSync();
         } else if (!loading) {
           setProgress(null);
         }
@@ -2186,11 +2222,8 @@ function CoachUnderBoardPanel({
         ) {
           return;
         }
-        setPersistenceError(
-          loadError instanceof Error
-            ? loadError.message
-            : "The saved review could not be loaded from the PC.",
-        );
+        setPersistenceError("PC review sync was interrupted. Retrying automatically.");
+        retrySavedReviewSync();
       }
     };
     void synchronizeSavedReview();
