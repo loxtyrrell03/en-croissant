@@ -23,6 +23,7 @@ import {
   HostedLibraryIndexCache,
   listHostedLibraryDirectory,
 } from "./home-library-index.mjs";
+import { getOpeningIdentificationBook, publicDerivedEvidence } from "./chess-coach-derived.mjs";
 import {
   buildCodexCoachInvocation,
   buildCoachPositionRecords,
@@ -1442,6 +1443,7 @@ async function writeChessCoachAnalysisResponse(request, response) {
       criticalMoments: result.criticalMoments,
       analysisCoverage: result.analysisCoverage,
       storedEvaluationsUsed: result.analysisCoverage.cloudHits,
+      derived: publicDerivedEvidence(result.derived),
     });
   } catch (error) {
     if (controller.signal.aborted) {
@@ -1508,6 +1510,7 @@ async function runPcCoachGameAnalysis(payload, signal) {
     cloudHits,
     liveAnalyses,
     liveDepth: coachSweepDepth,
+    openingBook: getOpeningIdentificationBook(join(repoRoot, "src-tauri", "data")),
   });
   if (result.analysisCoverage.failed > 0) {
     const error = new Error(
@@ -1540,6 +1543,7 @@ async function runPhoneCoachReview(payload, signal) {
       moveAnalysis,
       inventory,
       exactOpeningMatches,
+      derivedEvidence: pcAnalysis.derived,
     }),
     {
       outputSchemaPath: coachLibraryPlanSchemaPath,
@@ -1574,6 +1578,8 @@ async function runPhoneCoachReview(payload, signal) {
       libraryPlan,
       bookPassages,
       categoryPassageIds,
+      derivedEvidence: pcAnalysis.derived,
+      exactOpeningMatches,
     }),
     {
       outputSchemaPath: coachReviewSchemaPath,

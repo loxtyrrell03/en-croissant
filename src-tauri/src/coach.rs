@@ -33,6 +33,7 @@ use vampirc_uci::{
 use crate::{
     engine::{parse_fen_and_apply_moves, parse_fen_to_position, BaseEngine, GoMode},
     error::Error,
+    opening::{get_opening_from_setup, get_opening_movetext},
 };
 
 const DEFAULT_STOCKFISH_DEPTH: u32 = 17;
@@ -635,6 +636,106 @@ struct CoachPcGameAnalysis {
     analysis_coverage: CoachAnalysisCoverage,
     #[serde(default)]
     stored_evaluations_used: u32,
+    // Deterministic evidence computed by the PC service with a real chess
+    // library (SAN engine lines, win-probability severity, tactical/positional
+    // nature facts, transposition-aware opening identity). Optional so older
+    // home servers keep working.
+    #[serde(default)]
+    derived: Option<CoachPcDerivedEvidence>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+struct CoachPcDerivedEvidence {
+    opening_identification: Option<CoachPcOpeningIdentification>,
+    key_moments: Vec<CoachPcKeyMoment>,
+    moves: Vec<CoachPcDerivedMove>,
+    summary: Option<CoachPcDerivedSummary>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+struct CoachPcOpeningIdentification {
+    source: String,
+    eco: String,
+    name: String,
+    matched_ply: Option<u32>,
+    book_movetext: String,
+    game_movetext: String,
+    transposed: Option<bool>,
+    left_named_theory: Option<CoachPcLeftNamedTheory>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+struct CoachPcLeftNamedTheory {
+    ply: u32,
+    san: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+struct CoachPcKeyMoment {
+    ply: u32,
+    san: String,
+    move_label: String,
+    color: String,
+    phase: String,
+    severity: Option<String>,
+    eval_before: String,
+    eval_after: String,
+    loss_cp: Option<i32>,
+    win_prob_before: Option<f64>,
+    win_prob_after: Option<f64>,
+    win_prob_loss: Option<f64>,
+    best_move_san: Option<String>,
+    best_line_san: Option<String>,
+    refutation_line_san: Option<String>,
+    nature_assessment: Option<CoachPcNatureAssessment>,
+    opening_related: bool,
+    already_losing: bool,
+    decisive_swing: bool,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+struct CoachPcNatureAssessment {
+    nature: String,
+    confidence: String,
+    motifs: Vec<String>,
+    facts: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+struct CoachPcDerivedMove {
+    ply: u32,
+    color: String,
+    san: String,
+    phase: String,
+    win_prob_before: Option<f64>,
+    win_prob_after: Option<f64>,
+    win_prob_loss: Option<f64>,
+    severity: Option<String>,
+    best_move_san: Option<String>,
+    reply_move_san: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+struct CoachPcDerivedSummary {
+    player_color: String,
+    player_move_count: u32,
+    mistakes_by_phase: Option<CoachPcPhaseCounts>,
+    inaccuracies_by_phase: Option<CoachPcPhaseCounts>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+struct CoachPcPhaseCounts {
+    opening: u32,
+    middlegame: u32,
+    endgame: u32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1172,10 +1273,386 @@ fn apply_pc_game_analysis_to_request(request: &mut AiCoachRequest, analysis: &Co
     }
 }
 
+fn pc_evaluation_text(evaluation: Option<&CoachPcEvaluation>) -> String {
+    let Some(evaluation) = evaluation else {
+        return "n/a".to_string();
+    };
+    if let Some(mate) = evaluation.white_mate {
+        return if mate >= 0 {
+            format!("#{mate}")
+        } else {
+            format!("#-{}", mate.abs())
+        };
+    }
+    if let Some(cp) = evaluation.white_cp {
+        let pawns = cp as f64 / 100.0;
+        return if pawns >= 0.0 {
+            format!("+{pawns:.2}")
+        } else {
+            format!("{pawns:.2}")
+        };
+    }
+    if evaluation.terminal {
+        "game over".to_string()
+    } else {
+        "n/a".to_string()
+    }
+}
+
+fn pc_white_win_prob(evaluation: &CoachPcEvaluation) -> Option<f64> {
+    if let Some(mate) = evaluation.white_mate {
+        if mate == 0 {
+            return None;
+        }
+        return Some(if mate > 0 { 100.0 } else { 0.0 });
+    }
+    let cp = evaluation.white_cp? as f64;
+    let clamped = cp.clamp(-1500.0, 1500.0);
+    Some(100.0 * (0.5 + 0.5 * (2.0 / (1.0 + (-0.003_682_08_f64 * clamped).exp()) - 1.0)))
+}
+
+fn pc_mover_win_prob(evaluation: Option<&CoachPcEvaluation>, color: &str) -> Option<f64> {
+    let white = pc_white_win_prob(evaluation?)?;
+    Some(if color.eq_ignore_ascii_case("black") {
+        100.0 - white
+    } else {
+        white
+    })
+}
+
+fn pc_severity_label(win_prob_loss: Option<f64>) -> Option<&'static str> {
+    let loss = win_prob_loss?;
+    if loss >= 30.0 {
+        Some("blunder")
+    } else if loss >= 20.0 {
+        Some("mistake")
+    } else if loss >= 10.0 {
+        Some("inaccuracy")
+    } else {
+        None
+    }
+}
+
+fn format_pc_opening_identification(identification: &CoachPcOpeningIdentification) -> String {
+    let eco_prefix = if identification.eco.is_empty() {
+        String::new()
+    } else {
+        format!("{} ", identification.eco)
+    };
+    let mut lines = vec![
+        format!(
+            "Deepest named opening position actually reached: {eco_prefix}{} (after ply {}).",
+            identification.name,
+            identification
+                .matched_ply
+                .map(|ply| ply.to_string())
+                .unwrap_or_else(|| "?".to_string()),
+        ),
+        format!(
+            "Reference move order for that named position: {}",
+            identification.book_movetext
+        ),
+    ];
+    if !identification.game_movetext.is_empty() {
+        lines.push(format!(
+            "This game's move order to that position: {}",
+            identification.game_movetext
+        ));
+    }
+    match identification.transposed {
+        Some(true) => lines.push(
+            "The game TRANSPOSED into this opening: the position matches exactly, but the move order differs from the reference line. Name and coach the resulting opening family, not the first-move label."
+                .to_string(),
+        ),
+        Some(false) => {
+            lines.push("The game followed this exact move order (no transposition).".to_string())
+        }
+        None => lines.push(
+            "Move-order comparison was unavailable; the position match itself is exact.".to_string(),
+        ),
+    }
+    if let Some(left) = identification.left_named_theory.as_ref() {
+        lines.push(format!(
+            "The game left the named-opening table at ply {} with {}. Leaving the table is not automatically an error; judge it with the engine trace.",
+            left.ply, left.san
+        ));
+    }
+    lines.push(
+        "This exact-position match is a transposition-aware opening-family anchor. The coach may refine it to a compatible sub-variation from later structure and book evidence, but must not replace it with a first-move label."
+            .to_string(),
+    );
+    lines.join("\n")
+}
+
+// Native fallback: identify the deepest named opening position from the
+// request's own per-ply FENs via the bundled openings table when the PC
+// service did not supply a derived identification.
+fn native_opening_identification(request: &AiCoachRequest) -> Option<CoachPcOpeningIdentification> {
+    let mut points: Vec<&CoachGameAnalysisPoint> = request.game_analysis.iter().collect();
+    points.sort_by_key(|point| point.ply);
+    let mut deepest: Option<(&CoachGameAnalysisPoint, String)> = None;
+    for point in points.iter().take(80) {
+        // Route through a real position so the en-passant square is
+        // legality-normalized the same way the openings table builds its keys.
+        let Ok(position) = parse_fen_to_position(&point.fen) else {
+            continue;
+        };
+        if let Ok(name) = get_opening_from_setup(position.into_setup(EnPassantMode::Legal)) {
+            if name == "Starting Position" || name == "Empty Board" {
+                continue;
+            }
+            deepest = Some((point, name));
+        }
+    }
+    let (matched_point, name) = deepest?;
+    let book_movetext = get_opening_movetext(&name).unwrap_or_default();
+    let game_sans: Vec<String> = points
+        .iter()
+        .filter(|point| point.ply <= matched_point.ply)
+        .map(|point| point.mv.trim_end_matches(['!', '?']).to_string())
+        .collect();
+    let game_movetext = game_sans
+        .iter()
+        .enumerate()
+        .map(|(index, san)| {
+            let ply = index as u32 + 1;
+            if ply % 2 == 1 {
+                format!("{}. {san}", ply.div_ceil(2))
+            } else {
+                san.clone()
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(" ");
+    let book_sans: Vec<String> = book_movetext
+        .split_whitespace()
+        .filter(|token| {
+            !token.is_empty() && !token.chars().next().is_some_and(|c| c.is_ascii_digit())
+        })
+        .map(|token| token.to_string())
+        .collect();
+    let transposed = if game_sans.len() == matched_point.ply as usize && !book_sans.is_empty() {
+        Some(game_sans != book_sans)
+    } else {
+        None
+    };
+    let left_named_theory = points
+        .iter()
+        .find(|point| point.ply == matched_point.ply + 1)
+        .map(|point| CoachPcLeftNamedTheory {
+            ply: point.ply,
+            san: point.mv.clone(),
+        });
+    Some(CoachPcOpeningIdentification {
+        source: "native-position-table".to_string(),
+        eco: String::new(),
+        name,
+        matched_ply: Some(matched_point.ply),
+        book_movetext,
+        game_movetext,
+        transposed,
+        left_named_theory,
+    })
+}
+
+fn format_deterministic_opening_identification(
+    request: &AiCoachRequest,
+    pc_game_analysis: Option<&CoachPcGameAnalysis>,
+) -> String {
+    if let Some(identification) = pc_game_analysis
+        .and_then(|analysis| analysis.derived.as_ref())
+        .and_then(|derived| derived.opening_identification.as_ref())
+    {
+        return format_pc_opening_identification(identification);
+    }
+    if let Some(identification) = native_opening_identification(request) {
+        return format_pc_opening_identification(&identification);
+    }
+    "No named opening position from the reference position table matched this game. Do not force an opening label; classify from the pawn structure and piece placement instead.".to_string()
+}
+
+fn format_pc_key_moments(derived: &CoachPcDerivedEvidence) -> String {
+    if derived.key_moments.is_empty() {
+        return "No key moments crossed the win-probability thresholds for the reviewed player."
+            .to_string();
+    }
+    derived
+        .key_moments
+        .iter()
+        .map(|moment| {
+            let mut lines = vec![
+                format!(
+                    "KEY MOMENT — {} by {} ({}, {}{}):",
+                    moment.move_label,
+                    moment.color,
+                    moment.severity.as_deref().unwrap_or("notable"),
+                    moment.phase,
+                    if moment.opening_related {
+                        ", opening-related"
+                    } else {
+                        ""
+                    }
+                ),
+                format!(
+                    "  Eval {} -> {} (mover loss {}cp; win prob {}% -> {}%).",
+                    moment.eval_before,
+                    moment.eval_after,
+                    moment
+                        .loss_cp
+                        .map(|value| value.to_string())
+                        .unwrap_or_else(|| "n/a".to_string()),
+                    moment
+                        .win_prob_before
+                        .map(|value| format!("{value:.1}"))
+                        .unwrap_or_else(|| "?".to_string()),
+                    moment
+                        .win_prob_after
+                        .map(|value| format!("{value:.1}"))
+                        .unwrap_or_else(|| "?".to_string()),
+                ),
+            ];
+            if let Some(line) = moment.best_line_san.as_deref() {
+                lines.push(format!("  Engine-preferred continuation instead: {line}"));
+            }
+            if let Some(line) = moment.refutation_line_san.as_deref() {
+                lines.push(format!(
+                    "  Engine's punishing line after the played move: {line}"
+                ));
+            }
+            if let Some(nature) = moment.nature_assessment.as_ref() {
+                lines.push(format!(
+                    "  Evidence-based nature assessment: {} (confidence {}{}).",
+                    nature.nature,
+                    nature.confidence,
+                    if nature.motifs.is_empty() {
+                        String::new()
+                    } else {
+                        format!("; motifs: {}", nature.motifs.join(", "))
+                    }
+                ));
+                for fact in &nature.facts {
+                    lines.push(format!("  Fact: {fact}"));
+                }
+            }
+            if moment.already_losing {
+                lines.push(
+                    "  Context: the position was already lost before this move; weigh this lesson below decisive moments."
+                        .to_string(),
+                );
+            }
+            if moment.decisive_swing {
+                lines.push(
+                    "  Context: this single move turned a holdable position into a losing one."
+                        .to_string(),
+                );
+            }
+            lines.join("\n")
+        })
+        .collect::<Vec<_>>()
+        .join("\n\n")
+}
+
 fn format_pc_game_analysis(analysis: Option<&CoachPcGameAnalysis>) -> String {
-    analysis
-        .and_then(|analysis| serde_json::to_string_pretty(analysis).ok())
-        .unwrap_or_else(|| "Not requested for this position-only question.".to_string())
+    let Some(analysis) = analysis else {
+        return "Not requested for this position-only question.".to_string();
+    };
+    let derived_moves: HashMap<u32, &CoachPcDerivedMove> = analysis
+        .derived
+        .as_ref()
+        .map(|derived| {
+            derived
+                .moves
+                .iter()
+                .map(|entry| (entry.ply, entry))
+                .collect()
+        })
+        .unwrap_or_default();
+    let mut sections = vec![format!(
+        "Reviewed player: {}. Coverage: {} positions, {} unique, {} PC cloud, {} PC live, {} failed.",
+        analysis.player_color,
+        analysis.analysis_coverage.total_positions,
+        analysis.analysis_coverage.unique_positions,
+        analysis.analysis_coverage.cloud_hits,
+        analysis.analysis_coverage.live_analyses,
+        analysis.analysis_coverage.failed,
+    )];
+    if let Some(derived) = analysis.derived.as_ref() {
+        sections.push(format!(
+            "Key moments with derived tactical/positional evidence (SAN lines here are the quotable engine lines):\n{}",
+            format_pc_key_moments(derived)
+        ));
+    }
+    let mut trace = vec![
+        "Move-by-move trace. Columns: move | played by | eval before -> after (White-relative) | centipawn loss for the mover | mover win-probability before -> after | severity | engine's best move before the move | engine's reply after the move | evaluation source/depth."
+            .to_string(),
+    ];
+    for row in &analysis.move_analysis {
+        let derived_entry = derived_moves.get(&row.ply);
+        let (win_before, win_after, win_loss) = match derived_entry {
+            Some(entry) => (
+                entry.win_prob_before,
+                entry.win_prob_after,
+                entry.win_prob_loss,
+            ),
+            None => {
+                let before = pc_mover_win_prob(row.before.as_ref(), &row.color);
+                let after = pc_mover_win_prob(row.after.as_ref(), &row.color);
+                let loss = match (before, after) {
+                    (Some(before), Some(after)) => Some((before - after).max(0.0)),
+                    _ => None,
+                };
+                (before, after, loss)
+            }
+        };
+        let severity = derived_entry
+            .and_then(|entry| entry.severity.as_deref())
+            .or_else(|| pc_severity_label(win_loss));
+        let move_label = if row.ply % 2 == 1 {
+            format!("{}.{}", row.move_number, row.san)
+        } else {
+            format!("{}...{}", row.move_number, row.san)
+        };
+        let win_text = match (win_before, win_after) {
+            (Some(before), Some(after)) => format!("{before:.1}% -> {after:.1}%"),
+            _ => "n/a".to_string(),
+        };
+        trace.push(format!(
+            "{move_label} | {} | {} -> {} | loss {} | winprob {win_text} | {} | best {} | reply {} | {} d{} -> {} d{}",
+            row.color,
+            pc_evaluation_text(row.before.as_ref()),
+            pc_evaluation_text(row.after.as_ref()),
+            row.mover_loss_cp
+                .map(|value| format!("{value}cp"))
+                .unwrap_or_else(|| "n/a".to_string()),
+            severity.unwrap_or("ok"),
+            derived_entry
+                .and_then(|entry| entry.best_move_san.as_deref())
+                .unwrap_or("n/a"),
+            derived_entry
+                .and_then(|entry| entry.reply_move_san.as_deref())
+                .unwrap_or("n/a"),
+            row.before
+                .as_ref()
+                .map(|evaluation| evaluation.source.as_str())
+                .unwrap_or("n/a"),
+            row.before
+                .as_ref()
+                .and_then(|evaluation| evaluation.depth)
+                .map(|depth| depth.to_string())
+                .unwrap_or_else(|| "?".to_string()),
+            row.after
+                .as_ref()
+                .map(|evaluation| evaluation.source.as_str())
+                .unwrap_or("n/a"),
+            row.after
+                .as_ref()
+                .and_then(|evaluation| evaluation.depth)
+                .map(|depth| depth.to_string())
+                .unwrap_or_else(|| "?".to_string()),
+        ));
+    }
+    sections.push(trace.join("\n"));
+    sections.join("\n\n")
 }
 
 fn is_book_search_stop_word(term: &str) -> bool {
@@ -1674,6 +2151,8 @@ fn build_library_planner_prompt(
             .join("\n\n")
     };
     let game_analysis = format_game_analysis_for_request(request);
+    let opening_identification =
+        format_deterministic_opening_identification(request, pc_game_analysis);
     let pc_game_analysis = format_pc_game_analysis(pc_game_analysis);
     let exact_opening_matches = format_exact_opening_matches(exact_opening_matches);
 
@@ -1685,9 +2164,12 @@ Choose the few game-specific coaching categories and exact library chapters that
 Rules:
 - Choose 1-{MAX_COACH_CATEGORIES} categories, ordered by importance to this exact question/game. Category labels are free-form and specific (for example Opening plans, Calculation at move 24, Rook endgame technique, Dark-square strategy); do not mechanically include every phase.
 - Base category relevance on the PGN and supplied PC/Stockfish evidence. Never invent an evaluation or game event.
-- Classify the opening from the deepest stable opening position, central pawn structure, and piece placement reached in the game, not from move one or the first book line that happens to match. Explicitly detect transpositions and name the resulting opening family.
+- A transposition-aware opening-family anchor computed from an exact position table may be supplied below. When present, refine it only to a more specific compatible sub-variation; never override the reached position with a label forced from the initial move order.
+- If no deterministic identification matched, classify the opening from the deepest stable opening position, central pawn structure, and piece placement reached in the game, not from move one or the first book line that happens to match. Explicitly detect transpositions and name the resulting opening family.
 - `openingClassification` is mandatory. Record the initial move order separately from the resulting family, identify the ply where the position's real opening identity became clear, and explain any transposition.
 - A move such as 1.Nf3 does not make the resulting game a Reti. If White soon occupies the centre with d4/c4 or reaches a Queen's Gambit, Catalan, King's Indian, Grunfeld, or other mainline position by transposition, select the book/chapter for that resulting position.
+- Derived key moments in the PC trace carry an evidence-based tactical/positional/mixed assessment plus concrete SAN, mate, forcing-move, and material signals. Validate the label against those supplied facts and engine lines. Forced material loss or mate needs calculation/tactics material; a quiet concession with no tactical signal needs positional/strategic material. If the evidence is uncertain, select material that can teach both layers instead of forcing a false explanation.
+- Judge which lessons matter by teaching value, not raw eval loss: a decisive swing in a holdable position outranks further losses in an already-lost position, and a motif repeated across moves deserves one category with several keyPlies.
 - EXACT_LINE records are evidence for their listed position, not automatic labels for the whole opening. A `shallow_move_order_divergence` may describe only how the game left that repertoire and must not outrank a later transposed structure. A `transposed_position` is an exact position match reached by a different move order.
 - Never call leaving an arbitrary repertoire a mistake or imply that the player intended that repertoire. Only criticize a move when the PC evidence or a genuinely applicable resulting-position lesson supports the criticism.
 - EXACT_LINE records are legality-checked, position-indexed lines recovered from installed book pages. When one is materially relevant, select that exact book/chapter and distinguish whether the game followed the cited move or diverged.
@@ -1706,7 +2188,10 @@ PGN:
 Stored whole-game PC analysis:
 {game_analysis}
 
-Complete cache-first PC trace (authoritative; each evaluation identifies PC cloud/live source, depth, PV, and loss):
+Exact-position opening-family anchor (transposition-aware):
+{opening_identification}
+
+Complete cache-first PC trace (authoritative; each move records PC cloud/live source, depth, loss, win-probability, and severity):
 {pc_game_analysis}
 
 Current-position engine lines:
@@ -3439,6 +3924,8 @@ fn build_coach_prompt_with_facts(
         )
     };
     let game_analysis = format_game_analysis_for_request(request);
+    let opening_identification =
+        format_deterministic_opening_identification(request, pc_game_analysis);
     let pc_game_analysis = format_pc_game_analysis(pc_game_analysis);
     let question_focus = format_question_focus_and_intent(request);
     let salvage_question = question_asks_for_salvage(&request.question);
@@ -3546,7 +4033,10 @@ Core rules:
 - When a retrieved passage materially supports a lesson, name the actual book and chapter in the prose and cite its exact opaque source identifier such as [Source e406ce4596c7eca833b0342e]. Never use an ordinal placeholder such as [Book 3], and never invent a title, quotation, page, author, chapter, or source identifier.
 - For opening lessons, connect the named book/chapter to an exact move or position in this game and explain the relevant setup, pawn structure, thematic breaks, and plans. Do not merely say that an opening book is relevant.
 - An "Exact indexed book line" is a legality-checked PGN recovered from that cited source page. Use its game-ply match for concrete comparison, state whether the played move follows or diverges from the book move, and never replace it with an uncited database line.
-- The AI library plan's `openingClassification` controls the opening identity. Do not rename a transposed d4/c4 position after an earlier 1.Nf3 repertoire, and do not portray departure from an arbitrary repertoire as an error.
+- The exact-position opening-family anchor controls the family actually reached; the AI library plan's `openingClassification` may refine it to a compatible sub-variation. Do not rename a transposed d4/c4 position after an earlier 1.Nf3 repertoire, and do not portray departure from an arbitrary repertoire as an error.
+- Derived key moments in the PC trace carry an evidence-based nature assessment and concrete facts. Check the label against the supplied SAN lines: explain a tactical mistake tactically — quote the punishing line, name what it wins, and name the motif — and explain a positional mistake positionally — name the structural or planning cost the eval drop reflects. Never explain a forced material loss in vague positional language. For mixed or low-confidence cases, explain both layers or resolve the uncertainty from the supplied engine lines; concrete engine facts always outrank the heuristic label.
+- When the PC trace supplies SAN engine lines for a key moment, quote those SAN lines verbatim instead of converting UCI yourself or extending a line beyond what is supplied.
+- Weigh lessons by the derived context: a decisive swing in a holdable position is the headline lesson; further losses in an already-lost position matter less; a missed-punishment motif means the opponent's error went unpunished — say that plainly.
 - Paraphrase book passages in your own words. Do not reproduce long excerpts. Do not imply that a passage analysed this exact game unless it actually contains the supplied game position.
 - If none of the retrieved passages is relevant, do not force a book citation. Give the engine-grounded answer and say no close library passage was used.
 - Explain like a strong GM/coach: use proper chess terminology such as isolated queen's pawn, minority attack, deflection, trapped piece, blockade, weak square, exchange sacrifice, or domination when it genuinely fits.
@@ -3587,6 +4077,9 @@ PGN context ({pgn_scope}):
 
 Stored whole-game Stockfish analysis:
 {game_analysis}
+
+Exact-position opening-family anchor (transposition-aware):
+{opening_identification}
 
 Complete cache-first PC game analysis (PC cloud first, then live PC misses; authoritative):
 {pc_game_analysis}
@@ -3688,6 +4181,8 @@ fn build_category_synthesis_prompt(
             .join("\n\n")
     };
     let passages = format_book_passages(book_passages);
+    let opening_identification =
+        format_deterministic_opening_identification(request, pc_game_analysis);
     let pc_game_analysis = format_pc_game_analysis(pc_game_analysis);
 
     Ok(format!(
@@ -3704,6 +4199,8 @@ Non-negotiable grounding rules:
 - In the category explanation, name the actual book title and relevant chapter whenever a retrieved passage supports the lesson. Explain how that chapter connects to this game's exact move/position; do not merely list sources.
 - If opening play is materially relevant, make its category concrete: identify the exact early move/position, resulting pawn structure or piece setup, thematic breaks, plans for both sides, and why the selected named chapter applies. Do not substitute generic opening advice.
 - When a source includes an "Exact indexed book line", use its matched game ply and cited PGN to say whether the game followed or diverged from that concrete book continuation.
+- The exact-position opening-family anchor below controls the family reached; keep every opening reference compatible with it.
+- Preserve the tactical-vs-positional character supported by the validated answer, the SAN lines, and the derived nature assessments. Do not soften a forced material loss into positional language, do not invent a tactic for a quiet positional error, and let concrete engine facts outrank a heuristic label if they conflict.
 - Keep Stockfish verdicts and book principles distinct: Stockfish proves what happened here; the named book/chapter supplies the transferable lesson.
 - `summary` is one short tab-preview sentence. `explanation` is the complete useful lesson for that tab. `engineEvidence` and `betterPlan` may be empty when the validated answer does not support them.
 - Do not mention prompts, planners, private facts, JSON, schemas, or evidence machinery.
@@ -3728,6 +4225,9 @@ Current-FEN engine lines:
 
 Targeted Stockfish evidence:
 {targeted}
+
+Exact-position opening-family anchor (transposition-aware):
+{opening_identification}
 
 Complete cache-first PC game trace:
 {pc_game_analysis}
@@ -9205,6 +9705,7 @@ mod tests {
                 complete: false,
             },
             stored_evaluations_used: 2,
+            derived: None,
         };
 
         let validated = validate_pc_game_analysis(&request, analysis.clone()).unwrap();
@@ -9221,6 +9722,159 @@ mod tests {
             validate_pc_game_analysis(&request, incomplete),
             Err(CoachError::PcAnalysisIncomplete(_))
         ));
+    }
+
+    #[test]
+    fn pc_trace_formatting_is_compact_and_severity_aware() {
+        let evaluation = |cp: i32, depth: u32| CoachPcEvaluation {
+            white_cp: Some(cp),
+            white_mate: None,
+            depth: Some(depth),
+            source: "pc-cloud".to_string(),
+            nodes: Some(1_000),
+            pv_uci: vec![],
+            terminal: false,
+        };
+        let analysis = CoachPcGameAnalysis {
+            request_id: "req".to_string(),
+            player_color: "white".to_string(),
+            scope: "whole-game".to_string(),
+            move_analysis: vec![CoachPcMoveAnalysis {
+                ply: 5,
+                move_number: 3,
+                color: "white".to_string(),
+                san: "Nxe5".to_string(),
+                uci: "f3e5".to_string(),
+                fen_before: "before".to_string(),
+                fen_after: "after".to_string(),
+                before: Some(evaluation(30, 22)),
+                after: Some(evaluation(-260, 22)),
+                mover_loss_cp: Some(290),
+                player_loss_cp: Some(290),
+                annotations: Vec::new(),
+            }],
+            analysis_coverage: CoachAnalysisCoverage {
+                total_positions: 2,
+                unique_positions: 2,
+                cloud_hits: 2,
+                live_analyses: 0,
+                failed: 0,
+                live_depth: 18,
+                complete: true,
+            },
+            stored_evaluations_used: 2,
+            derived: Some(CoachPcDerivedEvidence {
+                opening_identification: None,
+                key_moments: vec![CoachPcKeyMoment {
+                    ply: 5,
+                    san: "Nxe5".to_string(),
+                    move_label: "3.Nxe5".to_string(),
+                    color: "white".to_string(),
+                    phase: "opening".to_string(),
+                    severity: Some("mistake".to_string()),
+                    eval_before: "+0.30".to_string(),
+                    eval_after: "-2.60".to_string(),
+                    loss_cp: Some(290),
+                    win_prob_before: Some(52.8),
+                    win_prob_after: Some(27.7),
+                    win_prob_loss: Some(25.0),
+                    best_move_san: Some("Bb5".to_string()),
+                    best_line_san: Some("3. Bb5 a6".to_string()),
+                    refutation_line_san: Some("3... Nxe5 4. d4 Nc6".to_string()),
+                    nature_assessment: Some(CoachPcNatureAssessment {
+                        nature: "tactical".to_string(),
+                        confidence: "high".to_string(),
+                        motifs: vec!["capture-of-moved-piece".to_string()],
+                        facts: vec![
+                            "The engine reply Nxe5 immediately captures the knight that just arrived on e5."
+                                .to_string(),
+                        ],
+                    }),
+                    opening_related: true,
+                    already_losing: false,
+                    decisive_swing: false,
+                }],
+                moves: vec![],
+                summary: None,
+            }),
+        };
+
+        let formatted = format_pc_game_analysis(Some(&analysis));
+        assert!(formatted.contains("KEY MOMENT — 3.Nxe5 by white (mistake, opening"));
+        assert!(formatted.contains("Evidence-based nature assessment: tactical (confidence high"));
+        assert!(formatted
+            .contains("Engine's punishing line after the played move: 3... Nxe5 4. d4 Nc6"));
+        assert!(formatted.contains("3.Nxe5 | white | +0.30 -> -2.60 | loss 290cp"));
+        // With no per-move derived entry, severity is computed natively from
+        // the win-probability drop (52.8% -> 27.7% is a mistake).
+        assert!(
+            formatted.contains("| mistake | best n/a | reply n/a | pc-cloud d22 -> pc-cloud d22")
+        );
+        assert!(!formatted.contains("\"moveAnalysis\""));
+    }
+
+    #[test]
+    fn native_opening_identification_detects_transposition_from_position_table() {
+        let mut request = sample_request();
+        request.game_analysis = vec![
+            CoachGameAnalysisPoint {
+                ply: 1,
+                mv: "Nf3".to_string(),
+                before_fen: Some(
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1".to_string(),
+                ),
+                fen: "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 1 1".to_string(),
+                played_uci: Some("g1f3".to_string()),
+                played_side: Some("white".to_string()),
+                eval: None,
+                depth: None,
+                annotations: Vec::new(),
+            },
+            CoachGameAnalysisPoint {
+                ply: 2,
+                mv: "d5".to_string(),
+                before_fen: Some(
+                    "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 1 1".to_string(),
+                ),
+                fen: "rnbqkbnr/ppp1pppp/8/3p4/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 2".to_string(),
+                played_uci: Some("d7d5".to_string()),
+                played_side: Some("black".to_string()),
+                eval: None,
+                depth: None,
+                annotations: Vec::new(),
+            },
+            CoachGameAnalysisPoint {
+                ply: 3,
+                mv: "d4".to_string(),
+                before_fen: Some(
+                    "rnbqkbnr/ppp1pppp/8/3p4/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 2".to_string(),
+                ),
+                fen: "rnbqkbnr/ppp1pppp/8/3p4/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 0 2".to_string(),
+                played_uci: Some("d2d4".to_string()),
+                played_side: Some("white".to_string()),
+                eval: None,
+                depth: None,
+                annotations: Vec::new(),
+            },
+        ];
+
+        let identification = native_opening_identification(&request).unwrap();
+        assert_eq!(
+            identification.name,
+            "Queen's Pawn Game: Zukertort Variation"
+        );
+        assert_eq!(identification.matched_ply, Some(3));
+        assert_eq!(identification.transposed, Some(true));
+
+        let text = format_deterministic_opening_identification(&request, None);
+        assert!(text.contains("Queen's Pawn Game: Zukertort Variation"));
+        assert!(text.contains("TRANSPOSED"));
+
+        // Without any game analysis the section must say no table match instead
+        // of inventing an opening label.
+        request.game_analysis.clear();
+        let empty = format_deterministic_opening_identification(&request, None);
+        assert!(empty.contains("No named opening position"));
     }
 
     #[test]

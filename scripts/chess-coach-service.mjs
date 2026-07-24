@@ -1,3 +1,11 @@
+import {
+  deriveCoachReviewEvidence,
+  formatCoachTraceForPrompt,
+  formatDerivedSummaryForPrompt,
+  formatKeyMomentsForPrompt,
+  formatOpeningIdentificationForPrompt,
+} from "./chess-coach-derived.mjs";
+
 const MAX_BOOK_PASSAGES = 6;
 const MAX_EXCERPT_CHARACTERS = 1100;
 export const MAX_COACH_MOVES = 4096;
@@ -915,6 +923,7 @@ export function buildLibraryPlannerPrompt({
   moveAnalysis,
   inventory,
   exactOpeningMatches = [],
+  derivedEvidence = null,
 }) {
   return `Role: You are the chess-library editor and syllabus planner for a rigorous private coach.
 
@@ -923,14 +932,17 @@ You must decide which coaching categories are genuinely relevant to this specifi
 Evidence rules:
 - The complete PC Stockfish trace below is authoritative for concrete chess verdicts.
 - Scores are White-relative. Each position records whether it came from the PC cloud store or a live PC search and its depth; treat small differences across unlike depths cautiously.
-- Classify the opening from the deepest stable opening position, central pawn structure, and piece placement reached in the game—not from move one or the first book line that happens to match. Explicitly detect transpositions and name the resulting opening family.
+- A transposition-aware opening-family anchor computed from an exact position table may be supplied below. When present, refine it only to a more specific compatible sub-variation; never override the reached position with a label forced from the initial move order.
+- If no deterministic identification matched, classify the opening from the deepest stable opening position, central pawn structure, and piece placement reached in the game—not from move one or the first book line that happens to match. Explicitly detect transpositions and name the resulting opening family.
 - openingClassification is mandatory. Record the initial move order separately from the resulting family, identify the ply where the position's real opening identity became clear, and explain any transposition.
 - A move such as 1.Nf3 does not make the resulting game a Réti. If White soon occupies the centre with d4/c4 or reaches a Queen's Gambit, Catalan, King's Indian, Grünfeld, or other mainline position by transposition, select the book/chapter for that resulting position.
+- The derived key moments below carry an evidence-based tactical/positional/mixed assessment plus concrete SAN, mate, forcing-move, and material signals. Validate the label against those supplied facts and engine lines. Forced material loss or mate needs calculation/tactics material; a quiet concession with no tactical signal needs positional/strategic material. If the evidence is uncertain, select material that can teach both layers instead of forcing a false explanation.
+- Judge which lessons matter by teaching value, not raw eval loss: a decisive swing in a holdable position outranks further losses in an already-lost position, and a motif repeated across several moves deserves one category with several keyPlies rather than scattered mentions.
 - Select only IDs printed in the library inventory. A CHAPTER entry means its text is actually accessible in the lawful local corpus. Never invent an ID or select a table-of-contents-only chapter.
 - Prefer exact chapter IDs over broad book IDs. Every category should have focused search queries that would find the most relevant page-bounded lesson inside the selected material.
 - EXACT_LINE records are legality-checked, position-indexed lines recovered from installed book pages, but they are evidence for their listed position—not automatic labels for the whole opening. A shallow_move_order_divergence may describe only how the game left that repertoire and must not outrank a later transposed structure. A transposed_position is an exact position match reached by a different move order.
 - Never call leaving an arbitrary repertoire a mistake, or imply that the player intended that repertoire. Only criticize a move when the PC evidence or a genuinely applicable resulting-position lesson supports the criticism.
-- For an opening category, select books and chapters for resultingFamily. Use an initial move-order book only when its lesson remains relevant after the transposition.
+- For an opening category, select books and chapters for resultingFamily. Use an initial move-order book only when its lesson remains relevant after the transposition. Prefer chapters that teach the reached structure's plans for both sides, typical piece placement, thematic pawn breaks, typical exchanges, and move-order ideas.
 - Give opening coverage materially more attention when the opening produced an instructive inaccuracy, unfamiliar structure, misplaced piece, missed break, or plan error. Tie it to exact move numbers and positions, not generic opening advice.
 - Categories may be specific, for example “Dutch opening structure”, “Calculation at move 31”, “Rook endgame technique”, or “Defensive decision-making”. Choose the clearest short tab label.
 
@@ -942,8 +954,17 @@ Current FEN: ${oneLine(currentFen, 180)}
 PGN:
 ${completeCoachPgn(pgn)}
 
-Complete PC analysis trace (one record per played move):
-${JSON.stringify(moveAnalysis || [], null, 2)}
+Exact-position opening-family anchor (transposition-aware):
+${formatOpeningIdentificationForPrompt(derivedEvidence?.openingIdentification)}
+
+Derived review summary:
+${formatDerivedSummaryForPrompt(derivedEvidence) || "No derived summary was computed."}
+
+Key moments with derived tactical/positional evidence:
+${formatKeyMomentsForPrompt(derivedEvidence)}
+
+Complete PC analysis trace (one line per played move):
+${formatCoachTraceForPrompt(moveAnalysis, derivedEvidence)}
 
 Exact position matches in indexed opening-book lines:
 ${formatExactOpeningMatches(exactOpeningMatches)}
@@ -1228,6 +1249,8 @@ export function buildStructuredPhoneCoachPrompt({
   libraryPlan,
   bookPassages,
   categoryPassageIds,
+  derivedEvidence = null,
+  exactOpeningMatches = [],
 }) {
   const sources = bookPassages.map((passage) => ({
     chunkId: passage.chunkId,
@@ -1257,7 +1280,7 @@ export function buildStructuredPhoneCoachPrompt({
   }));
   return `Role: You are a rigorous, practical chess coach writing a structured review for ${playerColor}.
 
-The PC has already analyzed every requested unique position. The AI library editor has already chosen the relevant categories, books, and accessible chapters. Your job is to synthesize those two evidence classes into clear, category-tab content.
+The PC has already analyzed every requested unique position. The AI library editor has already chosen the relevant categories, books, and accessible chapters. Your job is to synthesize those evidence classes into clear, category-tab content that feels written for this exact game.
 
 Grounding rules:
 - PC Stockfish is authoritative for evaluations, tactical claims, and better moves. Scores are White-relative. State the source/depth when it matters and avoid treating small cross-depth changes as exact.
@@ -1265,13 +1288,17 @@ Grounding rules:
 - Every bookReferences.chunkId must exactly match a supplied chunkId available to that planned category. Never invent a title, author, chapter, page, quotation, chunk ID, evaluation, or line.
 - Paraphrase source lessons. Do not reproduce long excerpts and do not claim an author analyzed this exact game.
 - exactOpeningLines are legality-checked move trees recovered from the cited book pages. Use them for concrete comparison at matchedGamePly, including whether the player followed the cited continuation or diverged. Do not substitute an uncited database line.
-- The library plan's openingClassification controls the opening identity. Do not rename a transposed d4/c4 position after an earlier 1.Nf3 repertoire, and do not portray departure from an arbitrary repertoire as an error.
+- The exact-position opening-family anchor below controls the family actually reached; the plan's openingClassification may refine it to a compatible sub-variation. Do not rename a transposed d4/c4 position after an earlier 1.Nf3 repertoire, and do not portray departure from an arbitrary repertoire as an error.
+- Every derived key moment carries an evidence-based nature assessment and concrete facts. Check the label against the supplied SAN lines: explain a tactical mistake tactically — quote the punishing line, name what it wins, and name the motif (loose piece, fork, pin, overloaded defender, back rank, mate net). Explain a positional mistake positionally — name the structural or planning cost (weak square, bad piece, lost tempo, wrong pawn break, king safety, worse endgame). Never explain a forced material loss in vague positional language. For mixed or low-confidence cases, explain both layers or resolve the uncertainty from the supplied engine lines; concrete engine facts always outrank the heuristic label.
+- Quote engine variations using the SAN continuations supplied in the key moments verbatim. Do not re-derive, extend, or translate UCI yourself, and do not quote a line that is not supplied.
+- Weigh lessons by the derived context flags: a decisiveSwing moment in a holdable position is the headline; alreadyLosing moments matter less; a missed-punishment motif means the player let the opponent's error go unpunished — say so plainly.
 - Keep the AI-selected category IDs, labels, and order. Do not add a fixed generic section.
 - Each category explanation should connect concrete positions to the human decision, the engine evidence, the better plan, and the cited teaching lesson.
 - A position ply identifies the move just played: ply 1 is White's first move. Use only plies in the supplied trace.
-- When an opening category was selected, be unusually specific: identify the exact relevant move/position, the pawn structure and piece placement, thematic plans and breaks, what the played move misunderstood, and how the selected opening chapter applies. Do not settle for generic development principles.
+- When an opening category was selected, be unusually specific: identify the exact relevant move/position, the pawn structure and piece placement, thematic plans and breaks for both sides, typical exchanges and manoeuvres, move-order ideas, what the played move misunderstood, and how the selected opening chapter applies. Compare the game against the exact book lines: name the ply where it followed and the ply where it diverged. Do not settle for generic development principles.
+- Be personal and memorable, never generic: anchor every lesson to this game's exact squares, pieces, and move numbers, and give each key moment one short transferable takeaway phrased from this game (for example “the knight on d5 had no retreat once ...c6 came — check retreat squares before advancing”). Delete any sentence that could appear unchanged in a review of a different game.
 - Use Markdown inside explanation fields sparingly. Do not put category headings inside them because the UI provides tabs.
-- Answer the user's question directly in overview and finish with a short ordered priorities list.
+- Answer the user's question directly in overview and finish with a short ordered priorities list. Each priority must name the habit to train, tie it to a move from this game, and give one concrete practice method.
 
 User question: ${oneLine(question, 2000)}
 Scope: ${scope}
@@ -1283,8 +1310,20 @@ ${completeCoachPgn(pgn)}
 PC analysis coverage:
 ${JSON.stringify(analysisCoverage, null, 2)}
 
+Exact-position opening-family anchor (transposition-aware):
+${formatOpeningIdentificationForPrompt(derivedEvidence?.openingIdentification)}
+
+Derived review summary:
+${formatDerivedSummaryForPrompt(derivedEvidence) || "No derived summary was computed."}
+
+Key moments with derived tactical/positional evidence (SAN lines here are the quotable engine lines):
+${formatKeyMomentsForPrompt(derivedEvidence)}
+
 Complete move-by-move PC trace:
-${JSON.stringify(moveAnalysis || [], null, 2)}
+${formatCoachTraceForPrompt(moveAnalysis, derivedEvidence)}
+
+Exact position matches in indexed opening-book lines:
+${formatExactOpeningMatches(exactOpeningMatches)}
 
 AI-selected library plan:
 ${JSON.stringify(
@@ -1680,6 +1719,7 @@ export function buildPcCoachAnalysisResult({
   cloudHits = 0,
   liveAnalyses = 0,
   liveDepth = 18,
+  openingBook = null,
 }) {
   const wholeGameMoveAnalysis = buildCoachMoveAnalysis(moves, evaluations, playerColor);
   const moveAnalysis =
@@ -1705,14 +1745,32 @@ export function buildPcCoachAnalysisResult({
     liveDepth: Number(liveDepth) || 18,
   };
   const selectedColor = playerColor === "black" ? "black" : "white";
+  const derived = deriveCoachReviewEvidence({
+    moveAnalysis: wholeGameMoveAnalysis,
+    playerColor: selectedColor,
+    scope,
+    currentFen,
+    openingBook,
+  });
+  const derivedByPly = new Map((derived?.moves || []).map((entry) => [entry.ply, entry]));
   const criticalMoments = wholeGameMoveAnalysis
-    .filter(
-      (move) =>
-        move.color === selectedColor &&
-        Number.isFinite(move.playerLossCp) &&
-        move.playerLossCp >= 20,
-    )
-    .sort((left, right) => right.playerLossCp - left.playerLossCp || left.ply - right.ply)
+    .filter((move) => {
+      if (move.color !== selectedColor) return false;
+      const winProbLoss = derivedByPly.get(move.ply)?.winProbLoss;
+      return (
+        (Number.isFinite(move.playerLossCp) && move.playerLossCp >= 20) ||
+        (Number.isFinite(winProbLoss) && winProbLoss >= 8)
+      );
+    })
+    .sort((left, right) => {
+      const leftWinProbLoss = derivedByPly.get(left.ply)?.winProbLoss ?? -1;
+      const rightWinProbLoss = derivedByPly.get(right.ply)?.winProbLoss ?? -1;
+      return (
+        rightWinProbLoss - leftWinProbLoss ||
+        (right.playerLossCp ?? 0) - (left.playerLossCp ?? 0) ||
+        left.ply - right.ply
+      );
+    })
     .slice(0, 8)
     .map((move) => ({
       ply: move.ply,
@@ -1724,12 +1782,15 @@ export function buildPcCoachAnalysisResult({
       depth: move.before?.depth ?? null,
       bestLineUci: move.before?.pvUci ?? [],
       replyLineUci: move.after?.pvUci ?? [],
+      winProbLoss: derivedByPly.get(move.ply)?.winProbLoss ?? null,
+      severity: derivedByPly.get(move.ply)?.severity ?? null,
     }));
   return {
     moveAnalysis,
     wholeGameMoveAnalysis,
     criticalMoments,
     analysisCoverage,
+    derived,
   };
 }
 

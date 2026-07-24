@@ -19,6 +19,7 @@ $serverScript = Join-Path $runtimeRoot 'home-server.mjs'
 $sourceServerScript = Join-Path $PSScriptRoot 'home-server.mjs'
 $sourceLibraryIndex = Join-Path $PSScriptRoot 'home-library-index.mjs'
 $sourceChessCoachService = Join-Path $PSScriptRoot 'chess-coach-service.mjs'
+$sourceChessCoachDerived = Join-Path $PSScriptRoot 'chess-coach-derived.mjs'
 $node = (Get-Command node.exe -ErrorAction Stop).Source
 $healthUrl = "http://127.0.0.1:$Port/api/health"
 
@@ -28,7 +29,8 @@ New-Item -ItemType Directory -Path $runtimeRoot -Force | Out-Null
 foreach ($runtimeFile in @(
   @{ Source = $sourceServerScript; Destination = $serverScript },
   @{ Source = $sourceLibraryIndex; Destination = (Join-Path $runtimeRoot 'home-library-index.mjs') },
-  @{ Source = $sourceChessCoachService; Destination = (Join-Path $runtimeRoot 'chess-coach-service.mjs') }
+  @{ Source = $sourceChessCoachService; Destination = (Join-Path $runtimeRoot 'chess-coach-service.mjs') },
+  @{ Source = $sourceChessCoachDerived; Destination = (Join-Path $runtimeRoot 'chess-coach-derived.mjs') }
 )) {
   $temporaryRuntimeFile = "$($runtimeFile.Destination).next-$PID"
   Copy-Item -LiteralPath $runtimeFile.Source -Destination $temporaryRuntimeFile -Force

@@ -1,5 +1,29 @@
 # AGENTS.md
 
+- On 2026-07-24, both AI Coach surfaces gained a pre-model chess-evidence
+  layer. `scripts/chess-coach-derived.mjs` uses chessops to convert verified PC
+  Stockfish PVs to legal SAN; calculate win-probability severity, decisive
+  swings, and already-lost context; attach concrete mate, forcing-move,
+  immediate-capture, and material-change facts; and find the deepest opening
+  family reached by exact position against the bundled Lichess opening TSVs.
+  The exact-position opening match and SAN are deterministic anchors. The
+  tactical/positional/mixed label is deliberately a conservative heuristic:
+  prompts must validate it against the concrete lines and facts, and engine
+  evidence wins if they conflict. The phone planner/review and native Rust
+  coach now receive the same optional `derived` evidence, retain the engine's
+  best SAN move and reply on every trace row, rank teaching moments by
+  win-probability and game context, and require personal lessons tied to exact
+  moves, squares, plans, and practice habits. Opening lessons must use the
+  resulting transposed family, concrete book chapters/lines, pawn structures,
+  piece placement, manoeuvres, thematic breaks, exchanges, and plans for both
+  sides. `opening.rs` matches clock-normalized positions and exposes a safe
+  movetext lookup. Keep the `derived` field optional for older home servers,
+  keep `chess-coach-derived.mjs` in the stable home-server runtime copy set,
+  and resolve chessops from `EN_CROISSANT_REPO_ROOT` because that runtime lives
+  outside the repository's `node_modules`. Tests include
+  `scripts/tests/chess-coach-derived.test.mjs`, the coach-service Node suite,
+  and the focused Rust coach/opening tests.
+
 - On 2026-07-24, the phone board header replaced its contextual
   `New board`/`Close file` control with two permanent controls: `Reset board`
   and a rightmost `Flip board`. Flip changes the displayed orientation and

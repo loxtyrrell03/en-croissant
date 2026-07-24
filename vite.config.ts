@@ -5,6 +5,7 @@ import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import babel from "@rolldown/plugin-babel";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import { defineConfig } from "vite";
+import { configDefaults } from "vitest/config";
 
 const isDebug = !!process.env.TAURI_ENV_DEBUG;
 const host = process.env.TAURI_DEV_HOST;
@@ -47,6 +48,16 @@ export default defineConfig({
     },
     test: {
         environment: "jsdom",
+        exclude: [
+            ...configDefaults.exclude,
+            // These suites use Node's built-in runner and are run separately
+            // with `node --test scripts/tests/<file>.test.mjs`.
+            "scripts/tests/**",
+            // Local snapshots and incomplete dependency archives are not
+            // production source trees and must not be collected as tests.
+            "approved-owner-delta/**",
+            "node_modules.incomplete-from-laptop-archive/**",
+        ],
     },
     define: {
         "import.meta.env.VITE_PLATFORM": JSON.stringify(os.platform()),

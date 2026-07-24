@@ -194,6 +194,51 @@ const cases = [
     must: ["king", "Kg6", "fxg5", "isolated", "pawns"],
     nice: ["invade", "endgame", "concession", "structure"],
   },
+  {
+    id: "tactical-mistake-stays-tactical",
+    source:
+      "Derived-evidence contract: a move classified as a tactical material loss must be explained with the concrete refutation, not with vague positional language.",
+    question: "Why was 19.Nxd5 a mistake?",
+    evidence: [
+      "Key moment 19.Nxd5, eval +0.40 -> -2.30 (loss 270cp; win prob 54% -> 29%).",
+      "Evidence-based nature assessment: tactical (confidence high; motifs: capture-of-moved-piece, loses-material).",
+      "Fact: the engine reply 19...Qxd5 immediately captures the knight that just arrived on d5.",
+      "Fact: the punishing engine line wins about 3 pawns of material from White: 19...Qxd5 20.c4 Qd7.",
+      "Engine-preferred continuation instead: 19.Rd1 Rc8 20.c4 keeping the pin on the d-file (eval +0.40).",
+    ],
+    must: ["Qxd5", "knight", "d5", "19.Rd1", ["material", "wins the", "loses the"]],
+    nice: ["capture", "defender", "count", "concrete"],
+  },
+  {
+    id: "positional-mistake-stays-positional",
+    source:
+      "Derived-evidence contract: a move classified as positional (no immediate tactical signal in the supplied lines) must be explained through structure/plans, without inventing a tactic.",
+    question: "Why was 14...c4 wrong when it doesn't lose anything?",
+    evidence: [
+      "Key moment 14...c4, eval -0.20 -> +0.75 (mover loss 95cp; win prob 52% -> 41%).",
+      "Evidence-based nature assessment: positional (confidence medium; motifs: none).",
+      "Fact: no immediate material loss, forced mate, check, or capture appears in the supplied engine continuations; inspect structure, activity, king safety, and plan.",
+      "Engine line after 14...c4: 15.b4 keeps the queenside closed; the d4 square becomes a permanent hole and Black's light-squared bishop is locked behind the fixed c4/d5 chain.",
+      "Engine-preferred continuation instead: 14...cxd4 15.exd4 Rc8 with pressure on the half-open c-file (eval -0.20).",
+    ],
+    must: ["c4", "d4", ["hole", "weak square", "outpost"], "cxd4", ["c-file", "pressure"]],
+    nice: ["released the tension", "bishop", "closed", "plan"],
+  },
+  {
+    id: "opening-transposition-resulting-family",
+    source:
+      "Derived-evidence contract: opening identity is anchored by the exact-position table, not the first move; a 1.Nf3 start that transposes must be coached as the resulting family.",
+    question: "What opening did we end up in and what should I study for it?",
+    evidence: [
+      "Exact-position opening-family anchor (transposition-aware): deepest named opening position actually reached: D06 Queen's Gambit Declined (after ply 6).",
+      "Reference move order for that named position: 1. d4 d5 2. c4 e6.",
+      "This game's move order to that position: 1. Nf3 d5 2. d4 e6 3. c4.",
+      "The game TRANSPOSED into this opening: the position matches exactly, but the move order differs from the reference line.",
+      "Book lesson (The Queen's Gambit Declined, chapter Carlsbad Structures): the minority attack with b4-b5 against the c6 pawn is the main plan in the exchange structure.",
+    ],
+    must: ["Queen's Gambit Declined", ["transpos", "move order"], ["minority", "b4-b5"]],
+    nice: ["Carlsbad", "1.Nf3", "position", "family"],
+  },
 ];
 
 function buildPrompt(testCase) {
@@ -339,7 +384,7 @@ for (const testCase of cases) {
 const report = {
   generatedAt: new Date().toISOString(),
   model: MODEL,
-  command: GEMINI,
+  command: CODEX,
   results,
 };
 const outputPath = `${OUT_DIR}/latest.json`;
