@@ -36,6 +36,7 @@ export type WebCoachOpeningLine = {
     bookMoveSan: string;
     bookMoveUci: string;
     playedMoveMatched: boolean;
+    sharedPlies: number;
     moves: WebCoachOpeningLineMove[];
 };
 
@@ -760,6 +761,7 @@ function normalizeOpeningLines(value: unknown): WebCoachOpeningLine[] {
                 bookMoveSan: cleanString(line.bookMoveSan),
                 bookMoveUci: cleanString(line.bookMoveUci),
                 playedMoveMatched: line.playedMoveMatched === true,
+                sharedPlies: nonNegativeInteger(line.sharedPlies),
                 moves,
             },
         ];

@@ -62,6 +62,7 @@ const coachBookLineSchema = z.object({
     bookMoveSan: z.string(),
     bookMoveUci: z.string(),
     playedMoveMatched: z.boolean(),
+    sharedPlies: z.number().int().nonnegative(),
     moves: z.array(coachBookLineMoveSchema),
 });
 const coachBookPassageSchema = z.object({
@@ -218,12 +219,26 @@ export function parseAiCoachSidecar(raw: string): AiCoachSidecar | null {
         const candidate = JSON.parse(raw) as {
             records?: Record<
                 string,
-                { response?: { bookPassages?: Array<{ openingLines?: unknown }> } }
+                {
+                    response?: {
+                        bookPassages?: Array<{
+                            openingLines?: Array<{ sharedPlies?: unknown }>;
+                        }>;
+                    };
+                }
             >;
         };
         for (const record of Object.values(candidate.records ?? {})) {
             for (const passage of record.response?.bookPassages ?? []) {
                 if (!Array.isArray(passage.openingLines)) passage.openingLines = [];
+                for (const line of passage.openingLines) {
+                    if (
+                        typeof line.sharedPlies !== "number" ||
+                        !Number.isFinite(line.sharedPlies)
+                    ) {
+                        line.sharedPlies = 0;
+                    }
+                }
             }
         }
         return sidecarSchema.parse(candidate);

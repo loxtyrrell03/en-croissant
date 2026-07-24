@@ -353,6 +353,7 @@ pub struct CoachBookLine {
     pub book_move_san: String,
     pub book_move_uci: String,
     pub played_move_matched: bool,
+    pub shared_plies: u32,
     pub moves: Vec<CoachBookLineMove>,
 }
 
@@ -1332,6 +1333,16 @@ fn exact_opening_book_matches(
             .or_default()
             .push(*point);
     }
+    let game_uci_by_ply = request
+        .game_analysis
+        .iter()
+        .filter_map(|point| {
+            point
+                .played_uci
+                .as_ref()
+                .map(|uci| (point.ply, uci.to_ascii_lowercase()))
+        })
+        .collect::<HashMap<_, _>>();
     let position_keys = game_by_position.keys().cloned().collect::<Vec<_>>();
     let placeholders = std::iter::repeat_n("?", position_keys.len())
         .collect::<Vec<_>>()
@@ -1340,16 +1351,18 @@ fn exact_opening_book_matches(
         r#"
         SELECT move.line_id, move.move_index, move.ply, move.san, move.uci,
                move.fen_before_key, move.source_chunk_id, move.source_pdf_page,
-               line.book_id, line.chapter_id, line.line_kind, line.pgn,
+               line.book_id, COALESCE(chunk.chapter_id, line.chapter_id),
+               line.line_kind, line.pgn, line.uci_line,
                line.confidence, line.source_chunk_id, line.move_count,
                book.title, book.author, COALESCE(chapter.title, ''),
                COALESCE(chunk.citation, '')
         FROM opening_line_moves AS move
         JOIN opening_lines AS line ON line.line_id=move.line_id
         JOIN books AS book ON book.book_id=line.book_id
-        LEFT JOIN chapters AS chapter ON chapter.chapter_id=line.chapter_id
         LEFT JOIN chunks AS chunk
           ON chunk.chunk_id=COALESCE(move.source_chunk_id, line.source_chunk_id)
+        LEFT JOIN chapters AS chapter
+          ON chapter.chapter_id=COALESCE(chunk.chapter_id, line.chapter_id)
         WHERE move.fen_before_key IN ({placeholders})
         "#
     );
@@ -1371,13 +1384,14 @@ fn exact_opening_book_matches(
                 row.get::<_, Option<String>>(9)?,
                 row.get::<_, String>(10)?,
                 row.get::<_, String>(11)?,
-                row.get::<_, f64>(12)?,
-                row.get::<_, Option<String>>(13)?,
-                row.get::<_, u32>(14)?,
-                row.get::<_, String>(15)?,
+                row.get::<_, String>(12)?,
+                row.get::<_, f64>(13)?,
+                row.get::<_, Option<String>>(14)?,
+                row.get::<_, u32>(15)?,
                 row.get::<_, String>(16)?,
                 row.get::<_, String>(17)?,
                 row.get::<_, String>(18)?,
+                row.get::<_, String>(19)?,
             ))
         })
         .map_err(|error| error.to_string())?
@@ -1399,6 +1413,7 @@ fn exact_opening_book_matches(
         chapter_id,
         line_kind,
         pgn,
+        uci_line,
         _confidence,
         line_chunk_id,
         line_move_count,
@@ -1419,7 +1434,40 @@ fn exact_opening_book_matches(
                 .to_ascii_lowercase();
             let played_move_matched =
                 !played_uci.is_empty() && played_uci == book_uci.to_ascii_lowercase();
-            let score = i64::from(played_move_matched) * 1_000_000
+            let book_uci_moves = uci_line
+                .split_whitespace()
+                .map(str::to_ascii_lowercase)
+                .collect::<Vec<_>>();
+            let mut shared_forward_plies = 0_u32;
+            while book_uci_moves
+                .get((move_index + shared_forward_plies) as usize)
+                .zip(game_uci_by_ply.get(&(point.ply + shared_forward_plies)))
+                .is_some_and(|(book_move, game_move)| book_move == game_move)
+            {
+                shared_forward_plies += 1;
+            }
+            let mut shared_history_plies = 0_u32;
+            while move_index > shared_history_plies
+                && point.ply > shared_history_plies + 1
+                && book_uci_moves
+                    .get((move_index - shared_history_plies - 1) as usize)
+                    .zip(game_uci_by_ply.get(&(point.ply - shared_history_plies - 1)))
+                    .is_some_and(|(book_move, game_move)| book_move == game_move)
+            {
+                shared_history_plies += 1;
+            }
+            let shared_plies = shared_history_plies + shared_forward_plies;
+            if game_points.len() > 1 && point.ply == 1 && shared_plies < 2 {
+                continue;
+            }
+            if !played_move_matched && shared_history_plies < 2 {
+                continue;
+            }
+            let score = if played_move_matched {
+                1_000_000
+            } else {
+                2_000_000
+            } + i64::from(shared_plies) * 100_000
                 + i64::from(point.ply) * 1_000
                 + i64::from(book_ply)
                 + i64::from(line_move_count.min(40));
@@ -1457,6 +1505,7 @@ fn exact_opening_book_matches(
                             book_move_san: book_san.clone(),
                             book_move_uci: book_uci.clone(),
                             played_move_matched,
+                            shared_plies,
                             moves: Vec::new(),
                         },
                     },
@@ -1475,7 +1524,7 @@ fn exact_opening_book_matches(
         let signature = format!(
             "{}|{}|{}|{}",
             exact_match.book_id,
-            exact_match.chapter_id.as_deref().unwrap_or_default(),
+            exact_match.chapter_title.to_ascii_lowercase(),
             exact_match.line.matched_game_ply,
             exact_match.line.book_move_uci,
         );
@@ -1535,11 +1584,12 @@ fn format_exact_opening_matches(matches: &[CoachExactOpeningMatch]) -> String {
         .iter()
         .map(|exact_match| {
             format!(
-                "EXACT_LINE|book={book_id}|chapter={chapter_id}|game_ply={game_ply}|book_ply={book_ply}|played={played}|book_move={book_move}|same_move={same_move}|{title}|{author}|{chapter}|{citation}|PGN={pgn}",
+                "EXACT_LINE|book={book_id}|chapter={chapter_id}|game_ply={game_ply}|book_ply={book_ply}|shared_plies={shared_plies}|played={played}|book_move={book_move}|same_move={same_move}|{title}|{author}|{chapter}|{citation}|PGN={pgn}",
                 book_id = exact_match.book_id,
                 chapter_id = exact_match.chapter_id.as_deref().unwrap_or_default(),
                 game_ply = exact_match.line.matched_game_ply,
                 book_ply = exact_match.line.matched_book_ply,
+                shared_plies = exact_match.line.shared_plies,
                 played = exact_match.line.played_san,
                 book_move = exact_match.line.book_move_san,
                 same_move = if exact_match.line.played_move_matched { "yes" } else { "no" },
@@ -1950,9 +2000,10 @@ fn format_book_passages(passages: &[CoachBookPassage]) -> String {
                         .opening_lines
                         .iter()
                         .map(|line| format!(
-                            "- game ply {game_ply}, book ply {book_ply}: played {played}; book move {book_move}; same move: {same_move}; PGN: {pgn}",
+                            "- game ply {game_ply}, book ply {book_ply}, shared plies {shared_plies}: played {played}; book move {book_move}; same move: {same_move}; PGN: {pgn}",
                             game_ply = line.matched_game_ply,
                             book_ply = line.matched_book_ply,
+                            shared_plies = line.shared_plies,
                             played = line.played_san,
                             book_move = line.book_move_san,
                             same_move = if line.played_move_matched { "yes" } else { "no" },

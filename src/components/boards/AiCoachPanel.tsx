@@ -2611,6 +2611,7 @@ function CoachBookSources({
                         : `the book gives ${line.bookMoveSan} where you played ${
                             line.playedSan || line.playedUci
                           }`}
+                      {line.sharedPlies > 1 ? ` · ${line.sharedPlies} matching plies` : ""}
                     </Text>
                     <Text size="xs" c="dimmed" mt={3}>
                       {line.pgn}

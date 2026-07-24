@@ -572,7 +572,8 @@ test("AI planner is restricted to real accessible chapters and retrieval stays i
     );
     CREATE TABLE opening_lines (
       line_id TEXT PRIMARY KEY, book_id TEXT, chapter_id TEXT, line_kind TEXT, pgn TEXT,
-      confidence REAL, complete_game INTEGER, source_chunk_id TEXT, move_count INTEGER
+      confidence REAL, complete_game INTEGER, source_chunk_id TEXT, move_count INTEGER,
+      uci_line TEXT
     );
     CREATE TABLE opening_line_moves (
       line_id TEXT, move_index INTEGER, ply INTEGER, san TEXT, uci TEXT, fen_before TEXT,
@@ -595,7 +596,11 @@ test("AI planner is restricted to real accessible chapters and retrieval stays i
        'Rook Endgames - PDF p. 12', 'Keep the rook active behind the passed pawn.');
     INSERT INTO opening_lines VALUES
       ('dutch-line', 'opening-book', 'dutch-structure', 'variation', '1. e4 e6',
-       0.98, 0, 'dutch-a', 2);
+       0.98, 0, 'dutch-a', 2, 'e2e4 e7e6'),
+      ('generic-divergence', 'opening-book', 'dutch-structure', 'variation', '1. e4 c5',
+       0.98, 0, 'dutch-a', 2, 'e2e4 c7c5'),
+      ('grounded-divergence', 'opening-book', 'dutch-structure', 'variation', '1. e4 e6 2. d4',
+       0.98, 0, 'dutch-a', 3, 'e2e4 e7e6 d2d4');
     INSERT INTO opening_line_moves VALUES
       ('dutch-line', 0, 1, 'e4', 'e2e4',
        'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
@@ -608,6 +613,36 @@ test("AI planner is restricted to real accessible chapters and retrieval stays i
        'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq -',
        'rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2',
        'rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -',
+       8, 20, 'dutch-a', 0.98),
+      ('generic-divergence', 0, 1, 'e4', 'e2e4',
+       'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+       'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -',
+       'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1',
+       'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq -',
+       8, 20, 'dutch-a', 0.98),
+      ('generic-divergence', 1, 2, 'c5', 'c7c5',
+       'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1',
+       'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq -',
+       'rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2',
+       'rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -',
+       8, 20, 'dutch-a', 0.98),
+      ('grounded-divergence', 0, 1, 'e4', 'e2e4',
+       'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+       'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -',
+       'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1',
+       'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq -',
+       8, 20, 'dutch-a', 0.98),
+      ('grounded-divergence', 1, 2, 'e6', 'e7e6',
+       'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1',
+       'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq -',
+       'rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2',
+       'rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -',
+       8, 20, 'dutch-a', 0.98),
+      ('grounded-divergence', 2, 3, 'd4', 'd2d4',
+       'rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2',
+       'rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -',
+       'rnbqkbnr/pppp1ppp/4p3/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq - 0 2',
+       'rnbqkbnr/pppp1ppp/4p3/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq -',
        8, 20, 'dutch-a', 0.98);
   `);
   const inventory = getChessBookLibraryInventory(database);
@@ -648,9 +683,38 @@ test("AI planner is restricted to real accessible chapters and retrieval stays i
   assert.equal(exactOpeningMatches[0].playedMoveMatched, true);
   assert.equal(exactOpeningMatches[0].title, "Plans in the Dutch");
   assert.deepEqual(
-    exactOpeningMatches[0].moves.map((move) => move.uci),
+    exactOpeningMatches[0].moves.slice(0, 2).map((move) => move.uci),
     ["e2e4", "e7e6"],
   );
+  const divergentMatches = findExactOpeningBookMatches(database, [
+    {
+      ply: 1,
+      san: "e4",
+      uci: "e2e4",
+      fenBefore: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    },
+    {
+      ply: 2,
+      san: "e6",
+      uci: "e7e6",
+      fenBefore: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+    },
+    {
+      ply: 3,
+      san: "Nf3",
+      uci: "g1f3",
+      fenBefore: "rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+    },
+  ]);
+  assert.equal(
+    divergentMatches.some((match) => match.lineId === "generic-divergence"),
+    false,
+  );
+  const groundedDivergence = divergentMatches.find(
+    (match) => match.lineId === "grounded-divergence",
+  );
+  assert.equal(groundedDivergence?.playedMoveMatched, false);
+  assert.equal(groundedDivergence?.sharedPlies, 2);
   const retrieval = retrievePlannedBookPassages(database, plan, { exactOpeningMatches });
   assert.deepEqual(retrieval.categoryPassageIds[plan.categories[0].id], ["dutch-a"]);
   assert.deepEqual(
@@ -658,7 +722,7 @@ test("AI planner is restricted to real accessible chapters and retrieval stays i
     ["dutch-a"],
   );
   assert.equal(retrieval.passages[0].title, "Plans in the Dutch");
-  assert.equal(retrieval.passages[0].openingLines[0].lineId, "dutch-line");
+  assert.equal(retrieval.passages[0].openingLines.length, 1);
   database.close();
 });
 

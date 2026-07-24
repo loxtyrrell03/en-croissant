@@ -141,6 +141,7 @@ describe("phone chess coach context", () => {
                     bookMoveSan: "e4",
                     bookMoveUci: "e2e4",
                     playedMoveMatched: true,
+                    sharedPlies: 2,
                     moves: [
                         {
                             moveIndex: 0,
@@ -168,6 +169,7 @@ describe("phone chess coach context", () => {
             lineId: "line-1",
             playedMoveMatched: true,
             matchedBookMoveIndex: 0,
+            sharedPlies: 2,
         });
         expect(response?.bookPassages[0].openingLines[0].moves[0].uci).toBe("e2e4");
     });

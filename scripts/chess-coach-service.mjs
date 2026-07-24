@@ -720,6 +720,7 @@ export function findExactOpeningBookMatches(database, moves, { limit = 18 } = {}
   if (gameMoves.length === 0) return [];
   const positionKeys = [...new Set(gameMoves.map((move) => move.beforeKey))];
   const gameMoveByPosition = new Map(gameMoves.map((move) => [move.beforeKey, move]));
+  const gameUciByPly = new Map(gameMoves.map((move) => [move.ply, move.playedUci]));
   try {
     const rows = database
       .prepare(
@@ -728,7 +729,8 @@ export function findExactOpeningBookMatches(database, moves, { limit = 18 } = {}
           move.line_id, move.move_index, move.ply AS book_ply, move.san AS book_san,
           move.uci AS book_uci, move.fen_before_key, move.source_chunk_id AS match_chunk_id,
           move.source_pdf_page, move.source_printed_page, move.confidence AS move_confidence,
-          line.book_id, line.chapter_id, line.line_kind, line.pgn, line.confidence,
+          line.book_id, COALESCE(chunk.chapter_id, line.chapter_id) AS chapter_id,
+          line.line_kind, line.pgn, line.uci_line, line.confidence,
           line.complete_game, line.source_chunk_id, line.move_count,
           book.title, book.author, COALESCE(book.shelf, '') AS shelf,
           COALESCE(chapter.title, '') AS chapter_title,
@@ -736,8 +738,9 @@ export function findExactOpeningBookMatches(database, moves, { limit = 18 } = {}
         FROM opening_line_moves AS move
         JOIN opening_lines AS line ON line.line_id=move.line_id
         JOIN books AS book ON book.book_id=line.book_id
-        LEFT JOIN chapters AS chapter ON chapter.chapter_id=line.chapter_id
         LEFT JOIN chunks AS chunk ON chunk.chunk_id=COALESCE(move.source_chunk_id, line.source_chunk_id)
+        LEFT JOIN chapters AS chapter
+          ON chapter.chapter_id=COALESCE(chunk.chapter_id, line.chapter_id)
         WHERE move.fen_before_key IN (${positionKeys.map(() => "?").join(", ")})
         `,
       )
@@ -749,15 +752,46 @@ export function findExactOpeningBookMatches(database, moves, { limit = 18 } = {}
       const playedMoveMatched =
         Boolean(gameMove.playedUci) &&
         gameMove.playedUci === String(row.book_uci || "").toLowerCase();
+      const bookUcis = String(row.uci_line || "")
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(Boolean);
+      let sharedForwardPlies = 0;
+      while (
+        bookUcis[Number(row.move_index) + sharedForwardPlies] &&
+        bookUcis[Number(row.move_index) + sharedForwardPlies] ===
+          gameUciByPly.get(gameMove.ply + sharedForwardPlies)
+      ) {
+        sharedForwardPlies += 1;
+      }
+      let sharedHistoryPlies = 0;
+      while (
+        Number(row.move_index) - sharedHistoryPlies - 1 >= 0 &&
+        gameMove.ply - sharedHistoryPlies - 1 >= 1 &&
+        bookUcis[Number(row.move_index) - sharedHistoryPlies - 1] ===
+          gameUciByPly.get(gameMove.ply - sharedHistoryPlies - 1)
+      ) {
+        sharedHistoryPlies += 1;
+      }
+      const sharedPlies = sharedHistoryPlies + sharedForwardPlies;
+      if (gameMoves.length > 1 && gameMove.ply === 1 && sharedPlies < 2) continue;
+      if (!playedMoveMatched && sharedHistoryPlies < 2) continue;
       const score =
-        (playedMoveMatched ? 1000 : 0) +
+        (playedMoveMatched ? 1000 : 2000) +
+        sharedPlies * 100 +
         gameMove.ply * 8 +
         Number(row.book_ply || 0) +
         Math.min(40, Number(row.move_count || 0)) +
         Number(row.move_confidence || 0) * 10;
       const current = bestByLine.get(String(row.line_id));
       if (current && current.score >= score) continue;
-      bestByLine.set(String(row.line_id), { row, gameMove, playedMoveMatched, score });
+      bestByLine.set(String(row.line_id), {
+        row,
+        gameMove,
+        playedMoveMatched,
+        sharedPlies,
+        score,
+      });
     }
     const diverse = [];
     const seenTeachingPoints = new Set();
@@ -767,7 +801,9 @@ export function findExactOpeningBookMatches(database, moves, { limit = 18 } = {}
     )) {
       const signature = [
         candidate.row.book_id,
-        candidate.row.chapter_id || "",
+        String(candidate.row.chapter_title || candidate.row.chapter_id || "")
+          .toLowerCase()
+          .trim(),
         candidate.gameMove.ply,
         candidate.row.book_uci,
       ].join("|");
@@ -778,7 +814,7 @@ export function findExactOpeningBookMatches(database, moves, { limit = 18 } = {}
       diverse.push(candidate);
       if (diverse.length >= limit) break;
     }
-    return diverse.map(({ row, gameMove, playedMoveMatched }) => ({
+    return diverse.map(({ row, gameMove, playedMoveMatched, sharedPlies }) => ({
       lineId: String(row.line_id),
       bookId: String(row.book_id),
       title: String(row.title),
@@ -804,6 +840,7 @@ export function findExactOpeningBookMatches(database, moves, { limit = 18 } = {}
       bookMoveSan: String(row.book_san),
       bookMoveUci: String(row.book_uci),
       playedMoveMatched,
+      sharedPlies,
       moves: openingLineMoves(database, String(row.line_id)),
     }));
   } catch (error) {
@@ -819,7 +856,7 @@ function formatExactOpeningMatches(matches) {
   return matches
     .map(
       (match) =>
-        `EXACT_LINE|book=${oneLine(match.bookId, 100)}|chapter=${oneLine(match.chapterId || "", 100)}|game_ply=${match.matchedGamePly}|book_ply=${match.matchedBookPly}|played=${oneLine(match.playedSan || match.playedUci, 30)}|book_move=${oneLine(match.bookMoveSan, 30)}|same_move=${match.playedMoveMatched ? "yes" : "no"}|${oneLine(match.title)}|${oneLine(match.chapterTitle)}|${oneLine(match.citation, 180)}|PGN=${oneLine(match.pgn, 1200)}`,
+        `EXACT_LINE|book=${oneLine(match.bookId, 100)}|chapter=${oneLine(match.chapterId || "", 100)}|game_ply=${match.matchedGamePly}|book_ply=${match.matchedBookPly}|shared_plies=${match.sharedPlies}|played=${oneLine(match.playedSan || match.playedUci, 30)}|book_move=${oneLine(match.bookMoveSan, 30)}|same_move=${match.playedMoveMatched ? "yes" : "no"}|${oneLine(match.title)}|${oneLine(match.chapterTitle)}|${oneLine(match.citation, 180)}|PGN=${oneLine(match.pgn, 1200)}`,
     )
     .join("\n");
 }
@@ -1140,6 +1177,7 @@ export function buildStructuredPhoneCoachPrompt({
       playedSan: line.playedSan,
       bookMoveSan: line.bookMoveSan,
       playedMoveMatched: line.playedMoveMatched,
+      sharedPlies: line.sharedPlies,
       citation: line.citation,
     })),
   }));
