@@ -105,6 +105,10 @@ export function parsePgnDatabase(
             whiteElo: parseRating(game.headers.get("WhiteElo")),
             blackElo: parseRating(game.headers.get("BlackElo")),
             result,
+            timeControl: game.headers.get("TimeControl"),
+            whiteTimeControl: game.headers.get("WhiteTimeControl"),
+            blackTimeControl: game.headers.get("BlackTimeControl"),
+            startedAtSeconds: parseWebPgnStartSeconds(game.headers),
             pgn: makePgn(game),
             moves,
             importedAt,
@@ -177,11 +181,35 @@ export function currentWebFen(line: { fenAfter: string }[], startFen = INITIAL_F
 }
 
 export function webGameToLine(game: WebGame): WebPrepLineMove[] {
-    return webMovesToLine(game.moves);
+    return webMovesToLine(getReplayHydratedWebMoves(game));
 }
 
 export function webGameToRootLines(game: WebGame): WebPrepLineMove[][] {
     return [webGameToLine(game), ...webMoveVariationLinesToPrepLines(game.rootVariations ?? [])];
+}
+
+export function getWebGameReplayTiming(game: WebGame) {
+    if (
+        game.timeControl !== undefined ||
+        game.whiteTimeControl !== undefined ||
+        game.blackTimeControl !== undefined ||
+        game.startedAtSeconds !== undefined
+    ) {
+        return {
+            timeControl: game.timeControl,
+            whiteTimeControl: game.whiteTimeControl,
+            blackTimeControl: game.blackTimeControl,
+            startedAtSeconds: game.startedAtSeconds,
+        };
+    }
+
+    const parsed = parsePgn(game.pgn)[0];
+    return {
+        timeControl: parsed?.headers.get("TimeControl"),
+        whiteTimeControl: parsed?.headers.get("WhiteTimeControl"),
+        blackTimeControl: parsed?.headers.get("BlackTimeControl"),
+        startedAtSeconds: parsed ? parseWebPgnStartSeconds(parsed.headers) : null,
+    };
 }
 
 export function getWebGameIndexedMoves(game: WebGame) {
@@ -290,6 +318,13 @@ function buildWebMove({
         fenBefore,
         fenAfter: makeFen(positionAfter.toSetup()),
     };
+    const clockSeconds = findLastWebCommentValue(child.data.comments, (comment) => {
+        return parseComment(comment).clock;
+    });
+    const timestampSeconds = findLastWebCommentValue(
+        child.data.comments,
+        parseWebPgnTimestampSeconds,
+    );
     const annotations = formatWebNags(child.data.nags);
     const startingComments = formatWebComments(child.data.startingComments);
     const comments = formatWebComments(child.data.comments);
@@ -301,6 +336,8 @@ function buildWebMove({
         warnings,
     });
 
+    if (clockSeconds !== undefined) webMove.clockSeconds = clockSeconds;
+    if (timestampSeconds !== undefined) webMove.timestampSeconds = timestampSeconds;
     if (annotations.length > 0) webMove.annotations = annotations;
     if (startingComments.length > 0) webMove.startingComments = startingComments;
     if (comments.length > 0) webMove.comments = comments;
@@ -349,6 +386,8 @@ function webMoveToLineMove(move: WebMove): WebPrepLineMove {
         san: move.san,
         uci: move.uci,
         actor: move.color === "white" ? "user" : "opponent",
+        clockSeconds: move.clockSeconds,
+        timestampSeconds: move.timestampSeconds,
         annotations: move.annotations,
         comments: move.comments,
         startingComments: move.startingComments,
@@ -440,4 +479,69 @@ function formatWebComment(comment: string) {
         .replace(/[ \t]{2,}/g, " ")
         .replace(/\n{3,}/g, "\n\n")
         .trim();
+}
+
+function getReplayHydratedWebMoves(game: WebGame) {
+    if (
+        game.moves.some(
+            (move) =>
+                typeof move.clockSeconds === "number" || typeof move.timestampSeconds === "number",
+        ) ||
+        !/\[%(?:clk|timestamp)\s/i.test(game.pgn)
+    ) {
+        return game.moves;
+    }
+
+    const parsed = parsePgn(game.pgn)[0];
+    if (!parsed) return game.moves;
+
+    try {
+        return buildWebMoveLine({
+            firstChild: parsed.moves.children[0],
+            position: startingPosition(parsed.headers).unwrap(),
+            previousPly: 0,
+            gameIndex: 0,
+            warnings: [],
+        });
+    } catch {
+        return game.moves;
+    }
+}
+
+function findLastWebCommentValue(
+    comments: readonly string[] | undefined,
+    readValue: (comment: string) => number | undefined,
+) {
+    for (let index = (comments?.length ?? 0) - 1; index >= 0; index -= 1) {
+        const value = readValue(comments?.[index] ?? "");
+        if (value !== undefined) return value;
+    }
+    return undefined;
+}
+
+function parseWebPgnTimestampSeconds(comment: string) {
+    const match = comment.match(/\[%timestamp\s+(\d+(?:\.\d+)?)\]/i);
+    if (!match) return undefined;
+    const value = Number(match[1]);
+    return Number.isFinite(value) ? value : undefined;
+}
+
+function parseWebPgnStartSeconds(headers: Map<string, string>) {
+    const date = headers.get("UTCDate") ?? headers.get("Date");
+    const time = headers.get("UTCTime") ?? headers.get("Time");
+    if (!date || !time) return null;
+
+    const dateMatch = date.match(/^(\d{4})\.(\d{1,2})\.(\d{1,2})$/);
+    const timeMatch = time.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+    if (!dateMatch || !timeMatch) return null;
+
+    const timestamp = Date.UTC(
+        Number(dateMatch[1]),
+        Number(dateMatch[2]) - 1,
+        Number(dateMatch[3]),
+        Number(timeMatch[1]),
+        Number(timeMatch[2]),
+        Number(timeMatch[3] ?? "0"),
+    );
+    return Number.isFinite(timestamp) ? timestamp / 1000 : null;
 }

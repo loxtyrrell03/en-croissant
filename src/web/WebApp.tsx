@@ -87,6 +87,7 @@ import {
   type SetStateAction,
 } from "react";
 import { positionFromFen } from "@/utils/chessops";
+import { formatMoveThinkTime } from "@/utils/clock";
 import { getWinChance, normalizeScore } from "@/utils/score";
 import {
   loadSharedLichessCredential,
@@ -206,6 +207,11 @@ import {
 } from "./lichessAuth";
 import { queryWebLichessCloudEngineMoves } from "./lichessCloud";
 import {
+  getWebLiveReplayProgress,
+  getWebLiveReplayStep,
+  type WebLiveReplayProgress,
+} from "./liveReplay";
+import {
   collectGamesForSources,
   findFirstWebPrepOpponentBranch,
   findWebPrepBranchStart,
@@ -245,6 +251,7 @@ import {
 import {
   formatWebDate,
   getFenColor,
+  getWebGameReplayTiming,
   normalizeWebFen,
   oppositeWebColor,
   parsePgnDatabase,
@@ -1142,6 +1149,10 @@ function BoardWorkspace({
     fen: string;
     lines: WebEngineLine[];
   } | null>(null);
+  const [liveReplay, setLiveReplay] = useState(false);
+  const [liveReplayRemainingMs, setLiveReplayRemainingMs] = useState<number | null>(null);
+  const liveReplayTimeoutRef = useRef<number | null>(null);
+  const liveReplayTickRef = useRef<number | null>(null);
   const board = state.board ?? createEmptyWebBoardState();
   const activeLine = activePrep?.line ?? board.line;
   const startFen = activePrep?.startFen ?? board.startFen;
@@ -1160,6 +1171,105 @@ function BoardWorkspace({
       ) ?? null
     );
   }, [activePrep, board.sourceDatabaseId, board.sourceGameId, state.gamesByDatabase]);
+  const liveReplayTiming = useMemo(
+    () => (sourceGame ? getWebGameReplayTiming(sourceGame) : {}),
+    [sourceGame],
+  );
+  const liveReplayStep = useMemo(
+    () =>
+      getWebLiveReplayStep({
+        line: activeLine,
+        cursor,
+        timing: liveReplayTiming,
+      }),
+    [activeLine, cursor, liveReplayTiming],
+  );
+  const initialLiveReplayStep = useMemo(
+    () =>
+      getWebLiveReplayStep({
+        line: activeLine,
+        cursor: 0,
+        timing: liveReplayTiming,
+      }),
+    [activeLine, liveReplayTiming],
+  );
+  const liveReplayCurrentMoveElapsedMs =
+    liveReplay && liveReplayStep && liveReplayRemainingMs !== null
+      ? liveReplayStep.delayMs - liveReplayRemainingMs
+      : 0;
+  const liveReplayProgress = useMemo(
+    () =>
+      getWebLiveReplayProgress({
+        line: activeLine,
+        cursor,
+        timing: liveReplayTiming,
+        currentMoveElapsedMs: liveReplayCurrentMoveElapsedMs,
+      }),
+    [activeLine, cursor, liveReplayCurrentMoveElapsedMs, liveReplayTiming],
+  );
+  const clearLiveReplayTimers = useCallback(() => {
+    if (liveReplayTimeoutRef.current !== null) {
+      window.clearTimeout(liveReplayTimeoutRef.current);
+      liveReplayTimeoutRef.current = null;
+    }
+    if (liveReplayTickRef.current !== null) {
+      window.clearInterval(liveReplayTickRef.current);
+      liveReplayTickRef.current = null;
+    }
+  }, []);
+  const stopLiveReplay = useCallback(() => {
+    clearLiveReplayTimers();
+    setLiveReplay(false);
+    setLiveReplayRemainingMs(null);
+  }, [clearLiveReplayTimers]);
+
+  useEffect(() => {
+    if (!liveReplay) {
+      clearLiveReplayTimers();
+      setLiveReplayRemainingMs(null);
+      return;
+    }
+    if (!liveReplayStep) {
+      stopLiveReplay();
+      return;
+    }
+
+    clearLiveReplayTimers();
+    const deadline = window.performance.now() + liveReplayStep.delayMs;
+    setLiveReplayRemainingMs(liveReplayStep.delayMs);
+    liveReplayTickRef.current = window.setInterval(() => {
+      setLiveReplayRemainingMs(Math.max(0, deadline - window.performance.now()));
+    }, 100);
+    liveReplayTimeoutRef.current = window.setTimeout(() => {
+      clearLiveReplayTimers();
+      setLiveReplayRemainingMs(0);
+      setState((current) => {
+        const currentBoard = {
+          ...createEmptyWebBoardState(),
+          ...current.board,
+        };
+        return {
+          ...current,
+          board: {
+            ...currentBoard,
+            cursor: clampCursor(currentBoard.cursor + 1, currentBoard.line.length),
+          },
+        };
+      });
+    }, liveReplayStep.delayMs);
+
+    return clearLiveReplayTimers;
+  }, [clearLiveReplayTimers, liveReplay, liveReplayStep, setState, stopLiveReplay]);
+
+  useEffect(() => {
+    return () => {
+      clearLiveReplayTimers();
+    };
+  }, [clearLiveReplayTimers]);
+
+  useEffect(() => {
+    stopLiveReplay();
+  }, [activeLine, sourceGame?.id, stopLiveReplay]);
   const coachFallbackSourceIdentity = sourceGame
     ? null
     : activePrep
@@ -1337,6 +1447,7 @@ function BoardWorkspace({
   };
 
   const setCursor = (nextCursor: number) => {
+    stopLiveReplay();
     updateBoard({ cursor: clampCursor(nextCursor, activeLine.length) });
   };
 
@@ -1458,9 +1569,26 @@ function BoardWorkspace({
   };
 
   const handleBoardMove = (uci: string) => {
+    stopLiveReplay();
     const played = playUciMove(currentFen, uci);
     if (!played) return;
     appendMove(played.san, played.uci, played.fenAfter);
+  };
+
+  const canStartLiveReplay = Boolean(
+    liveReplayStep ||
+    (cursor === activeLine.length && activeLine.length > 0 && initialLiveReplayStep),
+  );
+  const toggleLiveReplay = () => {
+    if (liveReplay) {
+      stopLiveReplay();
+      return;
+    }
+    if (!canStartLiveReplay) return;
+    if (!liveReplayStep) {
+      updateBoard({ cursor: 0 });
+    }
+    setLiveReplay(true);
   };
 
   const activeLastMove = cursor > 0 ? (activeLine[cursor - 1]?.uci ?? null) : null;
@@ -1524,6 +1652,12 @@ function BoardWorkspace({
         onLastMove={() => setCursor(activeLine.length)}
         onPreviousMove={goToPreviousMove}
         onNextMove={goToNextMove}
+        liveReplay={liveReplay}
+        liveReplayStepSeconds={liveReplayStep?.moveTimeSeconds ?? null}
+        liveReplayRemainingMs={liveReplayRemainingMs}
+        liveReplayProgress={liveReplayProgress}
+        canStartLiveReplay={canStartLiveReplay}
+        onToggleLiveReplay={toggleLiveReplay}
       />
 
       <BoardStartActions activeMode={panelMode} onChooseMode={setPanelMode} />
@@ -1630,6 +1764,12 @@ function BoardMoveControls({
   onLastMove,
   onPreviousMove,
   onNextMove,
+  liveReplay,
+  liveReplayStepSeconds,
+  liveReplayRemainingMs,
+  liveReplayProgress,
+  canStartLiveReplay,
+  onToggleLiveReplay,
 }: {
   currentMove: number;
   totalMoves: number;
@@ -1639,72 +1779,132 @@ function BoardMoveControls({
   onLastMove: () => void;
   onPreviousMove: () => void;
   onNextMove: () => void;
+  liveReplay: boolean;
+  liveReplayStepSeconds: number | null;
+  liveReplayRemainingMs: number | null;
+  liveReplayProgress: WebLiveReplayProgress | null;
+  canStartLiveReplay: boolean;
+  onToggleLiveReplay: () => void;
 }) {
+  const nextMoveSeconds =
+    liveReplay && liveReplayRemainingMs !== null
+      ? liveReplayRemainingMs / 1000
+      : liveReplayStepSeconds;
+  const liveReplayTooltip = liveReplay
+    ? `Pause live replay${
+        nextMoveSeconds !== null ? ` - next move in ${formatMoveThinkTime(nextMoveSeconds)}` : ""
+      }`
+    : canStartLiveReplay
+      ? `Watch at recorded game pace${
+          nextMoveSeconds !== null ? ` - next move in ${formatMoveThinkTime(nextMoveSeconds)}` : ""
+        }`
+      : "Live replay needs recorded move times";
+  const gameTimeLeftLabel = liveReplayProgress
+    ? formatMoveThinkTime(liveReplayProgress.remainingMs / 1000)
+    : "";
+
   return (
-    <Group
-      aria-label={`Move ${currentMove} of ${totalMoves}`}
-      className={classes.boardMoveControls}
-      gap={2}
-      justify="center"
-      role="navigation"
-      wrap="nowrap"
-    >
-      <Tooltip label="First move">
-        <ActionIcon
-          aria-label="First move"
-          className={classes.boardMoveButton}
-          disabled={!canGoToPreviousMove}
-          onClick={onFirstMove}
-          radius="xl"
-          size="sm"
-          variant="subtle"
-        >
-          <IconChevronsLeft size={17} />
-        </ActionIcon>
-      </Tooltip>
-      <Tooltip label="Previous move">
-        <ActionIcon
-          aria-label="Previous move"
-          className={classes.boardMoveButton}
-          disabled={!canGoToPreviousMove}
-          onClick={onPreviousMove}
-          radius="xl"
-          size="sm"
-          variant="subtle"
-        >
-          <IconChevronLeft size={18} />
-        </ActionIcon>
-      </Tooltip>
-      <Text aria-live="polite" className={classes.boardMoveCount} component="span">
-        {currentMove === 0 ? "Start" : `${currentMove} / ${totalMoves}`}
-      </Text>
-      <Tooltip label="Next move">
-        <ActionIcon
-          aria-label="Next move"
-          className={classes.boardMoveButton}
-          disabled={!canGoToNextMove}
-          onClick={onNextMove}
-          radius="xl"
-          size="sm"
-          variant="subtle"
-        >
-          <IconChevronRight size={18} />
-        </ActionIcon>
-      </Tooltip>
-      <Tooltip label="Last move">
-        <ActionIcon
-          aria-label="Last move"
-          className={classes.boardMoveButton}
-          disabled={!canGoToNextMove}
-          onClick={onLastMove}
-          radius="xl"
-          size="sm"
-          variant="subtle"
-        >
-          <IconChevronsRight size={17} />
-        </ActionIcon>
-      </Tooltip>
-    </Group>
+    <Stack className={classes.boardReplayControls} gap={3}>
+      <Group
+        aria-label={`Move ${currentMove} of ${totalMoves}`}
+        className={classes.boardMoveControls}
+        gap={2}
+        justify="center"
+        role="navigation"
+        wrap="nowrap"
+      >
+        <Tooltip label="First move">
+          <ActionIcon
+            aria-label="First move"
+            className={classes.boardMoveButton}
+            disabled={!canGoToPreviousMove}
+            onClick={onFirstMove}
+            radius="xl"
+            size="sm"
+            variant="subtle"
+          >
+            <IconChevronsLeft size={17} />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="Previous move">
+          <ActionIcon
+            aria-label="Previous move"
+            className={classes.boardMoveButton}
+            disabled={!canGoToPreviousMove}
+            onClick={onPreviousMove}
+            radius="xl"
+            size="sm"
+            variant="subtle"
+          >
+            <IconChevronLeft size={18} />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label={liveReplayTooltip}>
+          <ActionIcon
+            aria-disabled={!liveReplay && !canStartLiveReplay}
+            aria-label={liveReplay ? "Pause live replay" : "Start live replay at recorded pace"}
+            aria-pressed={liveReplay}
+            className={classes.boardReplayButton}
+            data-active={liveReplay}
+            data-disabled={!liveReplay && !canStartLiveReplay}
+            onClick={onToggleLiveReplay}
+            radius="xl"
+            size="sm"
+            variant="subtle"
+          >
+            {liveReplay ? <IconPlayerPause size={17} /> : <IconPlayerPlay size={17} />}
+          </ActionIcon>
+        </Tooltip>
+        <Text aria-live="polite" className={classes.boardMoveCount} component="span">
+          {currentMove === 0 ? "Start" : `${currentMove} / ${totalMoves}`}
+        </Text>
+        <Tooltip label="Next move">
+          <ActionIcon
+            aria-label="Next move"
+            className={classes.boardMoveButton}
+            disabled={!canGoToNextMove}
+            onClick={onNextMove}
+            radius="xl"
+            size="sm"
+            variant="subtle"
+          >
+            <IconChevronRight size={18} />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="Last move">
+          <ActionIcon
+            aria-label="Last move"
+            className={classes.boardMoveButton}
+            disabled={!canGoToNextMove}
+            onClick={onLastMove}
+            radius="xl"
+            size="sm"
+            variant="subtle"
+          >
+            <IconChevronsRight size={17} />
+          </ActionIcon>
+        </Tooltip>
+      </Group>
+      {liveReplay && liveReplayProgress ? (
+        <Box className={classes.boardReplayProgress}>
+          <Group gap="xs" justify="space-between" wrap="nowrap">
+            <Text className={classes.boardReplayStatus} component="span">
+              Recorded pace
+            </Text>
+            <Text className={classes.boardReplayStatus} component="span">
+              {gameTimeLeftLabel} left
+            </Text>
+          </Group>
+          <Progress
+            aria-label="Live replay game progress"
+            color="blue"
+            radius="xs"
+            size={3}
+            value={liveReplayProgress.value}
+          />
+        </Box>
+      ) : null}
+    </Stack>
   );
 }
 

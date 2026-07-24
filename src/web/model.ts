@@ -19,6 +19,8 @@ export type WebMove = {
     uci: string | null;
     fenBefore: string;
     fenAfter: string;
+    clockSeconds?: number;
+    timestampSeconds?: number;
     annotations?: string[];
     startingComments?: string[];
     comments?: string[];
@@ -49,6 +51,10 @@ export type WebGame = {
     whiteElo: number | null;
     blackElo: number | null;
     result: WebResult;
+    timeControl?: string | null;
+    whiteTimeControl?: string | null;
+    blackTimeControl?: string | null;
+    startedAtSeconds?: number | null;
     pgn: string;
     moves: WebMove[];
     rootVariations?: WebMove[][];
@@ -79,6 +85,8 @@ export type WebPrepLineMove = {
     san: string;
     uci: string | null;
     actor: "user" | "opponent";
+    clockSeconds?: number;
+    timestampSeconds?: number;
     annotations?: string[];
     startingComments?: string[];
     comments?: string[];

@@ -359,6 +359,16 @@
   background: rgba(255, 255, 255, 0.035);
 }
 
+.boardReplayControls {
+  width: max-content;
+  max-width: 100%;
+  margin: -0.12rem auto -0.08rem;
+}
+
+.boardReplayControls .boardMoveControls {
+  margin: 0 auto;
+}
+
 .boardMoveButton {
   width: 2rem;
   min-width: 2rem;
@@ -370,12 +380,41 @@
   opacity: 0.34;
 }
 
+.boardReplayButton {
+  width: 2rem;
+  min-width: 2rem;
+  height: 2rem;
+  color: var(--mantine-color-blue-2);
+}
+
+.boardReplayButton[data-active="true"] {
+  background: rgba(39, 112, 185, 0.42);
+  color: var(--mantine-color-blue-0);
+}
+
+.boardReplayButton[data-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
 .boardMoveCount {
   min-width: 4.2rem;
   color: var(--mantine-color-gray-4);
   font-size: 0.7rem;
   font-weight: 700;
   text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.boardReplayProgress {
+  width: calc(100% - 0.4rem);
+  margin-inline: auto;
+}
+
+.boardReplayStatus {
+  color: var(--mantine-color-gray-4);
+  font-size: 0.65rem;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
