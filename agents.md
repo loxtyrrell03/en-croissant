@@ -1,5 +1,13 @@
 # AGENTS.md
 
+- On 2026-07-24, the phone board header replaced its contextual
+  `New board`/`Close file` control with two permanent controls: `Reset board`
+  and a rightmost `Flip board`. Flip changes the displayed orientation and
+  keeps the player rows attached to the correct side in analysis, loaded
+  games, online games, and active prep. Reset returns a loaded game to its
+  first position, active prep to its root, and a free analysis board to the
+  standard starting position.
+
 - On 2026-07-24, the lawful opening-book corpus gained a schema-v2 concrete
   line index. Figurine/SAN notation and nested variations are replayed from
   rooted positions; every accepted ply stores SAN, UCI, before/after FEN,

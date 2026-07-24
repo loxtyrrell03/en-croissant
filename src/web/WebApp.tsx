@@ -67,6 +67,7 @@ import {
   IconSearch,
   IconSettings,
   IconSparkles,
+  IconSwitchVertical,
   IconTarget,
   IconUpload,
   IconX,
@@ -642,23 +643,6 @@ export default function WebApp() {
     setView("board");
   }, []);
 
-  const exitBoardFile = useCallback(() => {
-    setState((current) => ({
-      ...current,
-      activePrepId: null,
-      board: {
-        ...createEmptyWebBoardState(),
-        ...current.board,
-        sourceTitle: "Analysis board",
-        sourceDatabaseId: null,
-        sourceGameId: null,
-        sourceComments: [],
-      },
-    }));
-    setSelectedGameId(null);
-    setView("board");
-  }, []);
-
   const addImportedDatabases = useCallback(
     (imported: WebImportResult[]) => {
       setState((current) => mergeImportedWebDatabases(current, imported));
@@ -1103,7 +1087,6 @@ export default function WebApp() {
               importOnlineGames={importOnlineGames}
               loadGameOnBoard={loadGameOnBoard}
               onStartBlankBoard={openEmptyBoard}
-              onExitBoardFile={exitBoardFile}
               lichessToken={lichessToken}
               panelMode={boardPanelMode}
               setPanelMode={setBoardPanelMode}
@@ -1129,7 +1112,6 @@ function BoardWorkspace({
   importOnlineGames,
   loadGameOnBoard,
   onStartBlankBoard,
-  onExitBoardFile,
   lichessToken,
   panelMode,
   setPanelMode,
@@ -1142,7 +1124,6 @@ function BoardWorkspace({
   importOnlineGames: WebOnlineImportHandler;
   loadGameOnBoard: (game: WebGame) => void;
   onStartBlankBoard: () => void;
-  onExitBoardFile: () => void;
   lichessToken: string;
   panelMode: BoardPanelMode;
   setPanelMode: Dispatch<SetStateAction<BoardPanelMode>>;
@@ -1158,6 +1139,11 @@ function BoardWorkspace({
   const liveReplayTimeoutRef = useRef<number | null>(null);
   const liveReplayTickRef = useRef<number | null>(null);
   const board = state.board ?? createEmptyWebBoardState();
+  const baseOrientation = activePrep?.userColor ?? board.orientation;
+  const [orientationOverride, setOrientationOverride] = useState<WebColor | null>(null);
+  useEffect(() => {
+    setOrientationOverride(null);
+  }, [activePrep?.id, baseOrientation, board.sourceDatabaseId, board.sourceGameId, board.startFen]);
   const activeLine = activePrep?.line ?? board.line;
   const startFen = activePrep?.startFen ?? board.startFen;
   const cursor = clampCursor(board.cursor, activeLine.length);
@@ -1596,9 +1582,22 @@ function BoardWorkspace({
   };
 
   const activeLastMove = cursor > 0 ? (activeLine[cursor - 1]?.uci ?? null) : null;
-  const orientation = activePrep?.userColor ?? board.orientation;
+  const orientation = orientationOverride ?? baseOrientation;
   const isViewingFile = !activePrep && Boolean(board.sourceDatabaseId || board.sourceGameId);
   const boardPlayers = sourceGame ? getWebBoardPlayerLabels(sourceGame, orientation) : null;
+  const flipBoard = () => {
+    setOrientationOverride((current) => oppositeWebColor(current ?? baseOrientation));
+  };
+  const resetBoard = () => {
+    setOrientationOverride(null);
+    if (activePrep) {
+      setCursor(prepRootPly);
+    } else if (isViewingFile) {
+      setCursor(0);
+    } else {
+      onStartBlankBoard();
+    }
+  };
 
   return (
     <Box className={classes.phoneBoard}>
@@ -1621,17 +1620,30 @@ function BoardWorkspace({
             {turnColor === "white" ? "White" : "Black"}
             <span className={classes.turnSuffix}> to move</span>
           </Badge>
-          <Tooltip label={isViewingFile ? "Close file" : "New board"}>
+          <Tooltip label="Reset board">
             <ActionIcon
-              aria-label={isViewingFile ? "Close file" : "New board"}
+              aria-label="Reset board"
               className={classes.boardHeaderAction}
               color="gray"
-              onClick={isViewingFile ? onExitBoardFile : onStartBlankBoard}
+              onClick={resetBoard}
               radius="md"
               size="md"
               variant="subtle"
             >
-              {isViewingFile ? <IconX size={17} /> : <IconRefresh size={17} />}
+              <IconRefresh size={17} />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="Flip board">
+            <ActionIcon
+              aria-label="Flip board"
+              className={classes.boardHeaderAction}
+              color="gray"
+              onClick={flipBoard}
+              radius="md"
+              size="md"
+              variant="subtle"
+            >
+              <IconSwitchVertical size={17} />
             </ActionIcon>
           </Tooltip>
         </Group>
